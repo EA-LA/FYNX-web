@@ -22,24 +22,373 @@
   </div>
 
   <div id="rootRouter">
-    <!-- ROUTER CONTENT (unchanged) -->
-    <!-- YOUR onboarding, login, app, modals stay exactly as you had them -->
+
+    <!-- ONBOARDING -->
+    <section id="screenOnboarding" class="routeScreen onboardingScreen" hidden>
+      <div class="obGrokBg" aria-hidden="true">
+        <div class="obAura obAuraTop"></div>
+        <div class="obAura obAuraBottom" id="obAuraBottom"></div>
+        <div class="obScan" id="obScan"></div>
+      </div>
+
+      <div class="obCard card">
+        <div class="obPager">
+          <div class="obPages" id="obPages">
+            <article class="obPage" data-ob-page="0">
+              <div class="obIcon">📈</div>
+              <h1 class="obTitle">Hi there!</h1>
+              <div class="obText">
+                <p>Welcome to FYNX — your trading toolkit for Forex & crypto.</p>
+                <p>Get precise position size, pip value, ATR-based stops, and P/L previews. Keep a journal to track discipline.</p>
+                <p>No usage analytics. Clean, fast, trader-first.</p>
+              </div>
+              <div class="obFooterCard">
+                <div class="obFooterIcon">✨</div>
+                <div>
+                  <div class="obFooterTitle">Built for focus</div>
+                  <div class="obFooterSub">One clean place for your risk tools, calculator and journal.</div>
+                </div>
+              </div>
+            </article>
+
+            <article class="obPage" data-ob-page="1">
+              <div class="obIcon">⚠️</div>
+              <h1 class="obTitle">Warning</h1>
+              <div class="obText">
+                <p>This app is a tool for traders. Trading involves risk. Only trade what you can afford to lose.</p>
+                <p>Best practices:</p>
+              </div>
+              <ul class="obBullets">
+                <li><span class="check">✔</span> Use position sizing and risk % per trade</li>
+                <li><span class="check">✔</span> Set a daily max loss</li>
+                <li><span class="check">✔</span> Back up your journal regularly</li>
+              </ul>
+              <div class="obFooterCard">
+                <div class="obFooterIcon">🛡️</div>
+                <div>
+                  <div class="obFooterTitle">Protect your capital</div>
+                  <div class="obFooterSub">Your first job as a trader is survival. Protect the downside.</div>
+                </div>
+              </div>
+            </article>
+
+            <article class="obPage" data-ob-page="2">
+              <div class="obIcon">📄</div>
+              <h1 class="obTitle">Terms</h1>
+              <div class="obText">
+                <p>By continuing you confirm you have read and agree to the Terms of Service and Privacy Policy.</p>
+                <p>FYNX is an educational tool and does not provide financial advice.</p>
+              </div>
+              <div class="obFooterCard">
+                <div class="obFooterIcon">✅</div>
+                <div>
+                  <div class="obFooterTitle">Clear rules</div>
+                  <div class="obFooterSub">Know what you agree to. Tap Terms or Privacy any time to review.</div>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <div class="obDots" id="obDots">
+            <button class="obDot" data-dot="0" aria-label="Page 1"></button>
+            <button class="obDot" data-dot="1" aria-label="Page 2"></button>
+            <button class="obDot" data-dot="2" aria-label="Page 3"></button>
+          </div>
+
+          <div class="obTerms" id="obTerms" hidden>
+            <label class="obCheckbox">
+              <input type="checkbox" id="obAcceptedTerms" />
+              <span class="box"></span>
+              <span class="label">I agree to the Terms of Service & Privacy Policy</span>
+            </label>
+            <div class="obLinks">
+              <a href="https://elhamamini.cc/FYNX-Site/terms.html" target="_blank" rel="noopener">Terms</a>
+              <a href="https://elhamamini.cc/FYNX-Site/privacy.html" target="_blank" rel="noopener">Privacy</a>
+            </div>
+          </div>
+
+          <div class="obAction">
+            <button class="obContinue" id="obContinue">Continue</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOGIN -->
+    <section id="screenLogin" class="routeScreen loginScreen" hidden>
+      <div class="loginHero">
+        <div class="loginGlow" aria-hidden="true"></div>
+
+        <video class="loginVideo" id="loginVideo" autoplay muted loop playsinline preload="auto">
+          <source src="./assets/media/headloop.mp4" type="video/mp4" />
+        </video>
+
+        <div class="loginFade" aria-hidden="true"></div>
+      </div>
+
+      <div class="loginBrand">
+        <div class="loginTitle">FYNX</div>
+        <div class="loginMeta">v1.0.0 • Alpha Access</div>
+        <div class="loginTyped" aria-label="Trade Beyond Limits">
+          <span id="typedText"></span><span id="typedCursor">_</span>
+        </div>
+      </div>
+
+      <div class="loginButtons">
+        <button class="glassBtn" id="btnLoginGoogle">
+          <span class="btnIcon">G</span>
+          <span class="btnLabel">Continue with Google</span>
+          <span class="btnSpacer"></span>
+        </button>
+
+        <button class="glassBtn" id="btnLoginApple">
+          <span class="btnIcon"></span>
+          <span class="btnLabel">Continue with Apple</span>
+          <span class="btnSpacer"></span>
+        </button>
+
+        <button class="otherOptionsBtn" id="btnOtherOptions">Other options</button>
+
+        <div class="emailWrap" id="emailWrap" hidden>
+          <button class="glassBtn" id="btnLoginEmail">
+            <span class="btnIcon">✉</span>
+            <span class="btnLabel">Continue with Email</span>
+            <span class="btnSpacer"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="loginLegal">
+        <div class="legalLine1">By continuing you agree to the</div>
+        <div class="legalLine2">
+          <a href="https://elhamamini.cc/FYNX-Site/terms.html" target="_blank" rel="noopener">Terms of Service</a>
+          <span>and</span>
+          <a href="https://elhamamini.cc/FYNX-Site/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+        </div>
+      </div>
+
+      <!-- EMAIL SHEET -->
+      <div class="modal" id="emailModal" aria-hidden="true">
+        <div class="modalBackdrop" data-close-email="true"></div>
+
+        <div class="modalCard card emailCard signinCard" role="dialog" aria-modal="true" aria-label="Email Sign In">
+          <div class="signinHeader">
+            <video class="signinHeaderVideo" autoplay muted loop playsinline preload="auto">
+              <source src="./assets/media/auth_code.mp4" type="video/mp4" />
+            </video>
+            <div class="signinHeaderOverlay"></div>
+
+            <div class="signinHeaderText">
+              <div class="signinHeaderTitle">Account</div>
+              <div class="signinHeaderWelcome">Welcome to FYNX</div>
+              <div class="signinHeaderSub">Sign in to continue</div>
+            </div>
+          </div>
+
+          <div class="signinBody">
+            <div class="signinFields">
+              <input class="signinInput" id="signinEmail" placeholder="Email" type="email" autocomplete="email" />
+              <input class="signinInput" id="signinPassword" placeholder="Password (min 6)" type="password" autocomplete="current-password" />
+
+              <div class="signinForgotRow">
+                <button class="signinLink" id="btnForgot">Forgot password?</button>
+              </div>
+            </div>
+
+            <button class="signinPrimary" id="btnSignIn">
+              <span class="signinBtnText" id="signinBtnText">Sign In</span>
+              <span class="signinSpinner" id="signinSpinner" hidden></span>
+            </button>
+
+            <button class="signinSecondary" id="btnGoBack">Go back</button>
+
+            <div class="signinSignupRow">
+              <span class="muted">Don't have an account?</span>
+              <button class="signinLinkBright" id="btnShowSignUp">Sign up</button>
+            </div>
+          </div>
+
+          <div class="signinLegal">
+            <div class="legalLine1">By continuing you agree to the</div>
+            <div class="legalLine2">
+              <a href="https://elhamamini.cc/FYNX-Site/terms.html" target="_blank" rel="noopener">Terms of Service</a>
+              <span>and</span>
+              <a href="https://elhamamini.cc/FYNX-Site/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Forgot Password sheet -->
+        <div class="modal" id="forgotModal" aria-hidden="true">
+          <div class="modalBackdrop" data-close-forgot="true"></div>
+          <div class="modalCard card smallModal" role="dialog" aria-modal="true" aria-label="Forgot Password">
+            <div class="modalHeader">
+              <div class="modalTitle">Reset Password</div>
+              <button class="iconBtn" data-close-forgot="true">×</button>
+            </div>
+            <div class="modalBody">
+              <p class="muted">Enter your email and we’ll send a reset link.</p>
+              <input class="signinInput" id="forgotEmail" placeholder="Email" type="email" autocomplete="email" />
+              <button class="primaryBtn" id="btnSendReset">Send reset link</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sign Up sheet -->
+        <div class="modal" id="signupModal" aria-hidden="true">
+          <div class="modalBackdrop" data-close-signup="true"></div>
+          <div class="modalCard card smallModal" role="dialog" aria-modal="true" aria-label="Sign Up">
+            <div class="modalHeader">
+              <div class="modalTitle">Create Account</div>
+              <button class="iconBtn" data-close-signup="true">×</button>
+            </div>
+            <div class="modalBody">
+              <p class="muted">Create your account. We’ll send a verification email.</p>
+              <input class="signinInput" id="signupEmail" placeholder="Email" type="email" autocomplete="email" />
+              <input class="signinInput" id="signupPassword" placeholder="Password (min 6)" type="password" autocomplete="new-password" />
+              <button class="primaryBtn" id="btnCreateAccount">Create account</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Auth Message -->
+        <div class="modal" id="authAlert" aria-hidden="true">
+          <div class="modalBackdrop" data-close-authalert="true"></div>
+          <div class="modalCard card smallModal" role="dialog" aria-modal="true" aria-label="Auth Message">
+            <div class="modalHeader">
+              <div class="modalTitle">Auth Message</div>
+              <button class="iconBtn" data-close-authalert="true">×</button>
+            </div>
+            <div class="modalBody">
+              <p class="muted" id="authAlertMsg">Message</p>
+              <button class="primaryBtn" data-close-authalert="true">OK</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- APP -->
+    <div id="screenApp" hidden>
+      <div class="app-shell">
+
+        <header class="topbar card">
+          <div class="topbar-left">
+            <div class="logo">F</div>
+            <div class="topbar-titles">
+              <div class="topbar-title" id="navTitle">Home</div>
+              <div class="topbar-subtitle">FYNX Finance World</div>
+            </div>
+          </div>
+          <div class="topbar-right"></div>
+        </header>
+
+        <main class="content">
+          <section class="page homePage" data-tab="home">
+            <div class="tvShell"><div class="tvFrame" id="tvFrame"></div></div>
+          </section>
+
+          <section class="page card" data-tab="calculators" hidden>
+            <h2>Calculators</h2>
+            <p class="muted">FYNXCalculatorsView placeholder</p>
+          </section>
+
+          <section class="page card" data-tab="news" hidden>
+            <div class="newsHeader">
+              <h2 id="newsTitle">News</h2>
+              <div class="newsSubtabs">
+                <button class="chip" data-news-subtab="0">News</button>
+                <button class="chip" data-news-subtab="1">HeatMap</button>
+                <button class="chip" data-news-subtab="2">Sentiment</button>
+                <button class="chip" data-news-subtab="3">Challenges</button>
+              </div>
+            </div>
+            <div class="newsPanels">
+              <div class="newsPanel" data-news-panel="0"><p class="muted">News feed placeholder</p></div>
+              <div class="newsPanel" data-news-panel="1" hidden><p class="muted">HeatMap placeholder</p></div>
+              <div class="newsPanel" data-news-panel="2" hidden><p class="muted">Sentiment placeholder</p></div>
+              <div class="newsPanel" data-news-panel="3" hidden><p class="muted">Challenges placeholder</p></div>
+            </div>
+          </section>
+
+          <section class="page card" data-tab="calendar" hidden>
+            <h2>Calendar</h2>
+            <p class="muted">CalendarView placeholder</p>
+          </section>
+
+          <section class="page card" data-tab="profile" hidden>
+            <h2>Profile</h2>
+            <p class="muted">ProfileView placeholder</p>
+            <div style="margin-top:12px;">
+              <button class="dangerBtn" id="btnLogoutFromProfile">Log out</button>
+            </div>
+          </section>
+        </main>
+
+        <nav class="tabbar" aria-label="Main tabs">
+          <button class="tab" data-tab-btn="home" aria-label="Home">
+            <span class="tabIcon">⌂</span><span class="tabText">Home</span>
+          </button>
+          <button class="tab" data-tab-btn="calculators" aria-label="Calculators">
+            <span class="tabIcon">ƒ</span><span class="tabText">Calculators</span>
+          </button>
+          <button class="tab" data-tab-btn="news" aria-label="News">
+            <span class="tabIcon">📰</span><span class="tabText">News</span>
+          </button>
+          <button class="tab" data-tab-btn="calendar" aria-label="Calendar">
+            <span class="tabIcon">📅</span><span class="tabText">Calendar</span>
+          </button>
+          <button class="tab" data-tab-btn="profile" aria-label="Profile">
+            <span class="tabIcon">👤</span><span class="tabText">Profile</span>
+          </button>
+        </nav>
+
+        <button class="ai-fab" id="aiFab" aria-label="FYNX AI">✨</button>
+
+        <div class="modal" id="aiModal" aria-hidden="true">
+          <div class="modalBackdrop" data-close-modal="true"></div>
+          <div class="modalCard card" role="dialog" aria-modal="true" aria-label="FYNX AI">
+            <div class="modalHeader">
+              <div class="modalTitle">FYNX AI</div>
+              <button class="iconBtn" data-close-modal="true" aria-label="Close">×</button>
+            </div>
+            <div class="modalBody">
+              <p class="muted">AICenterView placeholder</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- AUTH TRANSITION -->
+    <div id="authTransition" class="authTransition" aria-hidden="true">
+      <div class="authTransitionInner">
+        <div class="authMark">FYNX</div>
+        <div class="authMsg" id="authMsg">Loading…</div>
+        <div class="authBar"><div class="authBarFill"></div></div>
+        <div class="authHint">Secure session transition</div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Background animation -->
   <script src="./assets/js/background.js"></script>
 
-  <!-- 🔥 FIREBASE INIT (MUST LOAD FIRST) -->
+  <!-- 🔥 Firebase init (must load before modules that use auth) -->
   <script type="module" src="./assets/js/firebase-init.js"></script>
 
-  <!-- ROUTER + AUTH LOGIC -->
+  <!-- Router + UI logic -->
   <script type="module" src="./assets/js/root-router.js"></script>
   <script type="module" src="./assets/js/onboarding.js"></script>
   <script type="module" src="./assets/js/login.js"></script>
   <script type="module" src="./assets/js/signin.js"></script>
 
-  <!-- Non-module -->
+  <!-- Non-module scripts -->
   <script src="./assets/js/tabs.js"></script>
   <script src="./assets/js/home-tradingview.js"></script>
 </body>
 </html>
+
