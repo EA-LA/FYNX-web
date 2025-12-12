@@ -170,3 +170,29 @@
 }
 .iconBtn:hover{ background: rgba(255,255,255,.08); }
 .modalBody{ padding-top: 12px; }
+/* HOME: full-screen TradingView like iOS */
+.homePage{
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.tvShell{
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 86px); /* leaves room for fixed tabbar */
+  background: #000;
+  overflow: hidden;
+
+  /* mimic safe areas */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 49px);
+}
+
+.tvFrame{
+  position: absolute;
+  left: 0; right: 0;
+  top: env(safe-area-inset-top);
+  bottom: calc(env(safe-area-inset-bottom) + 49px);
+}
