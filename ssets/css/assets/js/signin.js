@@ -1,3 +1,4 @@
+// assets/js/signin.js
 import { FynxAuth } from "./auth.js";
 
 (() => {
@@ -30,18 +31,18 @@ import { FynxAuth } from "./auth.js";
   function closeModal(el){ el?.setAttribute("aria-hidden","true"); }
 
   function showAuthAlert(msg){
-    if (authAlertMsg) authAlertMsg.textContent = msg;
+    if (authAlertMsg) authAlertMsg.textContent = msg || "Auth message";
     openModal(authAlert);
   }
 
   function setBusy(isBusy){
     if (!btnSignIn) return;
-    btnSignIn.disabled = isBusy;
+    btnSignIn.disabled = !!isBusy;
     if (spinner) spinner.hidden = !isBusy;
     if (btnText) btnText.textContent = isBusy ? "" : "Sign In";
   }
 
-  // Subscribe to busy state from auth layer
+  // Subscribe to auth-layer events
   FynxAuth.subscribe((evt) => {
     if (evt?.type === "busy") setBusy(!!evt.busy);
     if (evt?.type === "message" && evt.message) showAuthAlert(evt.message);
@@ -61,44 +62,45 @@ import { FynxAuth } from "./auth.js";
 
   // Forgot password
   btnForgot?.addEventListener("click", () => {
-    forgotEmail.value = emailInput.value || "";
+    if (forgotEmail) forgotEmail.value = (emailInput?.value || "");
     openModal(forgotModal);
   });
 
   btnSendReset?.addEventListener("click", async () => {
     try {
-      await FynxAuth.sendPasswordReset(forgotEmail.value || emailInput.value || "");
+      const e = (forgotEmail?.value || emailInput?.value || "");
+      await FynxAuth.sendPasswordReset(e);
       closeModal(forgotModal);
-      // message will show via subscribe()
-    } catch (e) {
-      showAuthAlert(e?.message || "Couldn’t send reset link.");
+      // message is shown via subscribe()
+    } catch (err) {
+      showAuthAlert(err?.message || "Couldn’t send reset link.");
     }
   });
 
   // Sign up
   btnShowSignUp?.addEventListener("click", () => {
-    signupEmail.value = emailInput.value || "";
-    signupPassword.value = "";
+    if (signupEmail) signupEmail.value = (emailInput?.value || "");
+    if (signupPassword) signupPassword.value = "";
     openModal(signupModal);
   });
 
   btnCreateAccount?.addEventListener("click", async () => {
     try {
-      await FynxAuth.signUp(signupEmail.value, signupPassword.value);
+      await FynxAuth.signUp(signupEmail?.value || "", signupPassword?.value || "");
       closeModal(signupModal);
-      // message will show via subscribe()
-    } catch (e) {
-      showAuthAlert(e?.message || "Sign up failed.");
+      // message is shown via subscribe()
+    } catch (err) {
+      showAuthAlert(err?.message || "Sign up failed.");
     }
   });
 
   // Sign in
   btnSignIn?.addEventListener("click", async () => {
     try {
-      await FynxAuth.signIn(emailInput.value, passInput.value);
-      closeModal(emailModal); // router will swap to app
-    } catch (e) {
-      showAuthAlert(e?.message || "Sign in failed.");
+      await FynxAuth.signIn(emailInput?.value || "", passInput?.value || "");
+      closeModal(emailModal); // router should swap to app
+    } catch (err) {
+      showAuthAlert(err?.message || "Sign in failed.");
     }
   });
 
