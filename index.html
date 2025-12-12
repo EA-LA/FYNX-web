@@ -8,8 +8,9 @@
   <link rel="stylesheet" href="./assets/css/fynx.css" />
   <link rel="stylesheet" href="./assets/css/tabs.css" />
 </head>
+
 <body>
-  <!-- Background (your Grok/star feel) -->
+  <!-- Background (Grok / star feel) -->
   <div class="bg">
     <canvas id="stars"></canvas>
     <div class="overlay"></div>
@@ -18,7 +19,7 @@
   <!-- Main app shell -->
   <div class="app-shell">
 
-    <!-- Header title (acts like NavigationStack title) -->
+    <!-- Header (NavigationStack title equivalent) -->
     <header class="topbar card">
       <div class="topbar-left">
         <div class="logo">F</div>
@@ -27,32 +28,36 @@
           <div class="topbar-subtitle">FYNX Finance World</div>
         </div>
       </div>
-
-      <div class="topbar-right">
-        <!-- Placeholder for future header actions if you want -->
-      </div>
+      <div class="topbar-right"></div>
     </header>
 
-    <!-- Content pages (each tab is a "screen") -->
+    <!-- Content -->
     <main class="content">
 
-      <!-- HOME -->
-      <section class="page card" data-tab="home">
-        <h2>Home</h2>
-        <p class="muted">HomeView (web placeholder). Next: we convert HomeView.swift into this section.</p>
+      <!-- ========================= -->
+      <!-- HOME (FULLSCREEN CHART) -->
+      <!-- ========================= -->
+      <section class="page homePage" data-tab="home">
+        <div class="tvShell">
+          <div class="tvFrame" id="tvFrame"></div>
+        </div>
       </section>
 
+      <!-- ========================= -->
       <!-- CALCULATORS -->
+      <!-- ========================= -->
       <section class="page card" data-tab="calculators" hidden>
         <h2>Calculators</h2>
-        <p class="muted">FYNXCalculatorsView (web placeholder). Next: we convert your toolkit hub.</p>
+        <p class="muted">FYNXCalculatorsView (web placeholder).</p>
       </section>
 
-      <!-- NEWS (with subpages inside) -->
+      <!-- ========================= -->
+      <!-- NEWS -->
+      <!-- ========================= -->
       <section class="page card" data-tab="news" hidden>
         <div class="newsHeader">
           <h2 id="newsTitle">News</h2>
-          <div class="newsSubtabs" role="tablist" aria-label="News pages">
+          <div class="newsSubtabs">
             <button class="chip" data-news-subtab="0">News</button>
             <button class="chip" data-news-subtab="1">HeatMap</button>
             <button class="chip" data-news-subtab="2">Sentiment</button>
@@ -62,75 +67,89 @@
 
         <div class="newsPanels">
           <div class="newsPanel" data-news-panel="0">
-            <p class="muted">NewsView → News feed page (web placeholder).</p>
+            <p class="muted">News feed placeholder</p>
           </div>
           <div class="newsPanel" data-news-panel="1" hidden>
-            <p class="muted">HeatMap page (web placeholder).</p>
+            <p class="muted">HeatMap placeholder</p>
           </div>
           <div class="newsPanel" data-news-panel="2" hidden>
-            <p class="muted">Sentiment page (web placeholder).</p>
+            <p class="muted">Sentiment placeholder</p>
           </div>
           <div class="newsPanel" data-news-panel="3" hidden>
-            <p class="muted">Challenges page (web placeholder).</p>
+            <p class="muted">Challenges placeholder</p>
           </div>
         </div>
       </section>
 
+      <!-- ========================= -->
       <!-- CALENDAR -->
+      <!-- ========================= -->
       <section class="page card" data-tab="calendar" hidden>
         <h2>Calendar</h2>
-        <p class="muted">CalendarView (web placeholder). Next: we convert CalendarView.swift.</p>
+        <p class="muted">CalendarView placeholder</p>
       </section>
 
+      <!-- ========================= -->
       <!-- PROFILE -->
+      <!-- ========================= -->
       <section class="page card" data-tab="profile" hidden>
         <h2>Profile</h2>
-        <p class="muted">ProfileView (web placeholder). Next: we convert ProfileView.swift.</p>
+        <p class="muted">ProfileView placeholder</p>
       </section>
 
     </main>
 
-    <!-- Bottom tab bar -->
-    <nav class="tabbar" aria-label="Main tabs">
-      <button class="tab" data-tab-btn="home" aria-label="Home">
+    <!-- ========================= -->
+    <!-- TAB BAR -->
+    <!-- ========================= -->
+    <nav class="tabbar">
+      <button class="tab" data-tab-btn="home">
         <span class="tabIcon">⌂</span><span class="tabText">Home</span>
       </button>
-      <button class="tab" data-tab-btn="calculators" aria-label="Calculators">
+      <button class="tab" data-tab-btn="calculators">
         <span class="tabIcon">ƒ</span><span class="tabText">Calculators</span>
       </button>
-      <button class="tab" data-tab-btn="news" aria-label="News">
+      <button class="tab" data-tab-btn="news">
         <span class="tabIcon">📰</span><span class="tabText">News</span>
       </button>
-      <button class="tab" data-tab-btn="calendar" aria-label="Calendar">
+      <button class="tab" data-tab-btn="calendar">
         <span class="tabIcon">📅</span><span class="tabText">Calendar</span>
       </button>
-      <button class="tab" data-tab-btn="profile" aria-label="Profile">
+      <button class="tab" data-tab-btn="profile">
         <span class="tabIcon">👤</span><span class="tabText">Profile</span>
       </button>
     </nav>
 
-    <!-- Global AI Button (sparkles) -->
-    <button class="ai-fab" id="aiFab" aria-label="FYNX AI">
-      ✨
-    </button>
+    <!-- ========================= -->
+    <!-- GLOBAL AI BUTTON -->
+    <!-- ========================= -->
+    <button class="ai-fab" id="aiFab">✨</button>
 
-    <!-- AI Modal (your .sheet) -->
-    <div class="modal" id="aiModal" aria-hidden="true">
-      <div class="modalBackdrop" data-close-modal="true"></div>
-      <div class="modalCard card" role="dialog" aria-modal="true" aria-label="FYNX AI">
+    <!-- ========================= -->
+    <!-- AI MODAL -->
+    <!-- ========================= -->
+    <div class="modal" id="aiModal">
+      <div class="modalBackdrop" data-close-modal></div>
+      <div class="modalCard card">
         <div class="modalHeader">
           <div class="modalTitle">FYNX AI</div>
-          <button class="iconBtn" data-close-modal="true" aria-label="Close">×</button>
+          <button class="iconBtn" data-close-modal>×</button>
         </div>
         <div class="modalBody">
-          <p class="muted">AICenterView (web placeholder). Next: we convert AICenterView.swift into this modal.</p>
+          <p class="muted">AICenterView placeholder</p>
         </div>
       </div>
     </div>
 
   </div>
 
+  <!-- ========================= -->
+  <!-- SCRIPTS -->
+  <!-- ========================= -->
   <script src="./assets/js/background.js"></script>
   <script src="./assets/js/tabs.js"></script>
+  <script src="./assets/js/home-tradingview.js"></script>
+
 </body>
 </html>
+
