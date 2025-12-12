@@ -10,25 +10,19 @@
   <link rel="stylesheet" href="./assets/css/router.css" />
   <link rel="stylesheet" href="./assets/css/onboarding.css" />
   <link rel="stylesheet" href="./assets/css/login.css" />
+  <link rel="stylesheet" href="./assets/css/signin.css" />
 </head>
 
 <body>
-  <!-- Background (star feel) -->
   <div class="bg">
     <canvas id="stars"></canvas>
     <div class="overlay"></div>
   </div>
 
-  <!-- ========================= -->
-  <!-- ROOT ROUTER (Entry) -->
-  <!-- ========================= -->
   <div id="rootRouter">
 
-    <!-- ------------------------- -->
-    <!-- ONBOARDING (first launch) -->
-    <!-- ------------------------- -->
+    <!-- ONBOARDING -->
     <section id="screenOnboarding" class="routeScreen onboardingScreen" hidden>
-
       <div class="obGrokBg" aria-hidden="true">
         <div class="obAura obAuraTop"></div>
         <div class="obAura obAuraBottom" id="obAuraBottom"></div>
@@ -37,7 +31,6 @@
 
       <div class="obCard card">
         <div class="obPager">
-
           <div class="obPages" id="obPages">
             <article class="obPage" data-ob-page="0">
               <div class="obIcon">📈</div>
@@ -106,7 +99,6 @@
               <span class="box"></span>
               <span class="label">I agree to the Terms of Service & Privacy Policy</span>
             </label>
-
             <div class="obLinks">
               <a href="https://elhamamini.cc/FYNX-Site/terms.html" target="_blank" rel="noopener">Terms</a>
               <a href="https://elhamamini.cc/FYNX-Site/privacy.html" target="_blank" rel="noopener">Privacy</a>
@@ -116,53 +108,31 @@
           <div class="obAction">
             <button class="obContinue" id="obContinue">Continue</button>
           </div>
-
         </div>
       </div>
     </section>
 
-    <!-- ------------------------- -->
-    <!-- LOGIN (logged out) -->
-    <!-- ------------------------- -->
+    <!-- LOGIN -->
     <section id="screenLogin" class="routeScreen loginScreen" hidden>
-
-      <!-- HERO AREA -->
       <div class="loginHero">
-
-        <!-- Soft cosmic glow from top -->
         <div class="loginGlow" aria-hidden="true"></div>
 
-        <!-- Video (replace the src with your real path) -->
-        <video
-          class="loginVideo"
-          id="loginVideo"
-          autoplay
-          muted
-          loop
-          playsinline
-          preload="auto"
-        >
-          <!-- Put your file here (recommended path): assets/media/headloop.mp4 -->
+        <video class="loginVideo" id="loginVideo" autoplay muted loop playsinline preload="auto">
           <source src="./assets/media/headloop.mp4" type="video/mp4" />
         </video>
 
-        <!-- Bottom fade to black -->
         <div class="loginFade" aria-hidden="true"></div>
       </div>
 
-      <!-- BRAND STACK -->
       <div class="loginBrand">
         <div class="loginTitle">FYNX</div>
         <div class="loginMeta">v1.0.0 • Alpha Access</div>
-
         <div class="loginTyped" aria-label="Trade Beyond Limits">
           <span id="typedText"></span><span id="typedCursor">_</span>
         </div>
       </div>
 
-      <!-- BUTTONS -->
       <div class="loginButtons">
-
         <button class="glassBtn" id="btnLoginGoogle">
           <span class="btnIcon">G</span>
           <span class="btnLabel">Continue with Google</span>
@@ -184,10 +154,8 @@
             <span class="btnSpacer"></span>
           </button>
         </div>
-
       </div>
 
-      <!-- LEGAL FOOTER -->
       <div class="loginLegal">
         <div class="legalLine1">By continuing you agree to the</div>
         <div class="legalLine2">
@@ -200,33 +168,111 @@
       <!-- EMAIL SHEET (fullScreenCover equivalent) -->
       <div class="modal" id="emailModal" aria-hidden="true">
         <div class="modalBackdrop" data-close-email="true"></div>
-        <div class="modalCard card emailCard" role="dialog" aria-modal="true" aria-label="Email Sign In">
-          <div class="modalHeader">
-            <button class="iconBtn" id="btnEmailClose" data-close-email="true">Close</button>
-            <div class="modalTitle">Sign In</div>
-            <div style="width:60px;"></div>
-          </div>
-          <div class="modalBody">
-            <p class="muted">SignInView placeholder (web). Send your SignInView.swift next and I will convert it fully.</p>
 
-            <!-- Demo email sign in -->
-            <div class="emailForm">
-              <input class="input" id="emailInput" placeholder="Email" type="email" autocomplete="email" />
-              <input class="input" id="passInput" placeholder="Password" type="password" autocomplete="current-password" />
-              <button class="primaryBtn" id="btnEmailDemoSignIn">Sign In (Demo)</button>
+        <div class="modalCard card emailCard signinCard" role="dialog" aria-modal="true" aria-label="Email Sign In">
+          <!-- TOP CARD (video header) -->
+          <div class="signinHeader">
+            <video class="signinHeaderVideo" autoplay muted loop playsinline preload="auto">
+              <source src="./assets/media/auth_code.mp4" type="video/mp4" />
+            </video>
+            <div class="signinHeaderOverlay"></div>
+
+            <div class="signinHeaderText">
+              <div class="signinHeaderTitle">Account</div>
+              <div class="signinHeaderWelcome">Welcome to FYNX</div>
+              <div class="signinHeaderSub">Sign in to continue</div>
+            </div>
+          </div>
+
+          <!-- FORM -->
+          <div class="signinBody">
+            <div class="signinFields">
+              <input class="signinInput" id="signinEmail" placeholder="Email" type="email" autocomplete="email" />
+              <input class="signinInput" id="signinPassword" placeholder="Password (min 6)" type="password" autocomplete="current-password" />
+
+              <div class="signinForgotRow">
+                <button class="signinLink" id="btnForgot">Forgot password?</button>
+              </div>
+            </div>
+
+            <button class="signinPrimary" id="btnSignIn">
+              <span class="signinBtnText" id="signinBtnText">Sign In</span>
+              <span class="signinSpinner" id="signinSpinner" hidden></span>
+            </button>
+
+            <button class="signinSecondary" id="btnGoBack">Go back</button>
+
+            <div class="signinSignupRow">
+              <span class="muted">Don't have an account?</span>
+              <button class="signinLinkBright" id="btnShowSignUp">Sign up</button>
+            </div>
+          </div>
+
+          <!-- LEGAL -->
+          <div class="signinLegal">
+            <div class="legalLine1">By continuing you agree to the</div>
+            <div class="legalLine2">
+              <a href="https://elhamamini.cc/FYNX-Site/terms.html" target="_blank" rel="noopener">Terms of Service</a>
+              <span>and</span>
+              <a href="https://elhamamini.cc/FYNX-Site/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
             </div>
           </div>
         </div>
-      </div>
 
+        <!-- Forgot Password sheet -->
+        <div class="modal" id="forgotModal" aria-hidden="true">
+          <div class="modalBackdrop" data-close-forgot="true"></div>
+          <div class="modalCard card smallModal" role="dialog" aria-modal="true" aria-label="Forgot Password">
+            <div class="modalHeader">
+              <div class="modalTitle">Reset Password</div>
+              <button class="iconBtn" data-close-forgot="true">×</button>
+            </div>
+            <div class="modalBody">
+              <p class="muted">ForgotPasswordSheet placeholder (web).</p>
+              <input class="signinInput" id="forgotEmail" placeholder="Email" type="email" autocomplete="email" />
+              <button class="primaryBtn" id="btnSendReset">Send reset link (Demo)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sign Up sheet -->
+        <div class="modal" id="signupModal" aria-hidden="true">
+          <div class="modalBackdrop" data-close-signup="true"></div>
+          <div class="modalCard card smallModal" role="dialog" aria-modal="true" aria-label="Sign Up">
+            <div class="modalHeader">
+              <div class="modalTitle">Create Account</div>
+              <button class="iconBtn" data-close-signup="true">×</button>
+            </div>
+            <div class="modalBody">
+              <p class="muted">SignUpView placeholder (web). Send your SignUpView.swift and I’ll convert it fully.</p>
+              <input class="signinInput" id="signupEmail" placeholder="Email" type="email" autocomplete="email" />
+              <input class="signinInput" id="signupPassword" placeholder="Password (min 6)" type="password" autocomplete="new-password" />
+              <button class="primaryBtn" id="btnCreateAccount">Create account (Demo)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Auth Message alert (SwiftUI .alert equivalent) -->
+        <div class="modal" id="authAlert" aria-hidden="true">
+          <div class="modalBackdrop" data-close-authalert="true"></div>
+          <div class="modalCard card smallModal" role="dialog" aria-modal="true" aria-label="Auth Message">
+            <div class="modalHeader">
+              <div class="modalTitle">Auth Message</div>
+              <button class="iconBtn" data-close-authalert="true">×</button>
+            </div>
+            <div class="modalBody">
+              <p class="muted" id="authAlertMsg">Message</p>
+              <button class="primaryBtn" data-close-authalert="true">OK</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </section>
 
-    <!-- ------------------------- -->
-    <!-- APP (logged in) -->
-    <!-- ------------------------- -->
+    <!-- APP -->
     <div id="screenApp" hidden>
       <div class="app-shell">
-
         <header class="topbar card">
           <div class="topbar-left">
             <div class="logo">F</div>
@@ -240,9 +286,7 @@
 
         <main class="content">
           <section class="page homePage" data-tab="home">
-            <div class="tvShell">
-              <div class="tvFrame" id="tvFrame"></div>
-            </div>
+            <div class="tvShell"><div class="tvFrame" id="tvFrame"></div></div>
           </section>
 
           <section class="page card" data-tab="calculators" hidden>
@@ -302,7 +346,6 @@
             <div class="modalBody"><p class="muted">AICenterView placeholder</p></div>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -318,11 +361,11 @@
 
   </div>
 
-  <!-- Scripts -->
   <script src="./assets/js/background.js"></script>
   <script src="./assets/js/root-router.js"></script>
   <script src="./assets/js/onboarding.js"></script>
   <script src="./assets/js/login.js"></script>
+  <script src="./assets/js/signin.js"></script>
   <script src="./assets/js/tabs.js"></script>
   <script src="./assets/js/home-tradingview.js"></script>
 </body>
