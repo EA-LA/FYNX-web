@@ -1,3 +1,4 @@
+// assets/js/root-router.js
 import { FynxAuth } from "./auth.js";
 
 (() => {
@@ -30,26 +31,38 @@ import { FynxAuth } from "./auth.js";
   function triggerAuthTransition(direction /* "into" | "out" */) {
     if (!authTransition) return;
 
-    authMsg.textContent = direction === "into" ? "Loading your data…" : "Securing your session…";
+    if (authMsg) {
+      authMsg.textContent = direction === "into"
+        ? "Loading your data…"
+        : "Securing your session…";
+    }
+
     authTransition.setAttribute("aria-hidden", "false");
 
-    // hide after ~5 seconds like your iOS
+    // hide after ~5 seconds like iOS
     setTimeout(() => {
       authTransition.setAttribute("aria-hidden", "true");
     }, 5000);
   }
 
-  // Decide initial screen immediately (before auth callback)
+  // Decide initial screen immediately (before auth event arrives)
   if (!hasSeenOnboarding()) {
     showOnly(screenOnboarding);
   } else {
     showOnly(screenLogin); // until auth tells us otherwise
   }
 
-  // Firebase auth state drives login/app
-  FynxAuth.onState((user) => {
+  // Firebase auth state drives login/app (via auth.js events)
+  FynxAuth.subscribe((evt) => {
+    if (!evt) return;
+
+    // Only care about auth state events here
+    if (evt.type !== "auth") return;
+
+    const user = evt.user || null;
     const isLoggedIn = !!user;
 
+    // If onboarding not done, always force onboarding
     if (!hasSeenOnboarding()) {
       showOnly(screenOnboarding);
       handledInitialAuth = true;
@@ -57,7 +70,7 @@ import { FynxAuth } from "./auth.js";
       return;
     }
 
-    // First time state arrives = just set screen, no animation
+    // First auth state we receive: set screen, no animation
     if (!handledInitialAuth) {
       handledInitialAuth = true;
       wasLoggedIn = isLoggedIn;
@@ -65,7 +78,7 @@ import { FynxAuth } from "./auth.js";
       return;
     }
 
-    // Change detected => animate transition
+    // Subsequent changes: animate transition
     if (isLoggedIn !== wasLoggedIn) {
       triggerAuthTransition(isLoggedIn ? "into" : "out");
       showOnly(isLoggedIn ? screenApp : screenLogin);
@@ -73,7 +86,7 @@ import { FynxAuth } from "./auth.js";
     }
   });
 
-  // Onboarding completion event (onboarding.js will call this)
+  // Onboarding completion hook (onboarding.js will call this)
   window.FYNX_SET_SEEN_ONBOARDING = () => {
     localStorage.setItem(KEY_HAS_SEEN, "true");
     showOnly(screenLogin);
@@ -85,7 +98,6 @@ import { FynxAuth } from "./auth.js";
     try {
       await FynxAuth.signOut();
     } catch (e) {
-      // optional: show modal alert if you want
       console.warn(e?.message || e);
     }
   });
