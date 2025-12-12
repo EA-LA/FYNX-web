@@ -14,6 +14,7 @@
 </head>
 
 <body>
+  <!-- Background -->
   <div class="bg">
     <canvas id="stars"></canvas>
     <div class="overlay"></div>
@@ -117,6 +118,7 @@
       <div class="loginHero">
         <div class="loginGlow" aria-hidden="true"></div>
 
+        <!-- If your source is .mov, convert to mp4 for web -->
         <video class="loginVideo" id="loginVideo" autoplay muted loop playsinline preload="auto">
           <source src="./assets/media/headloop.mp4" type="video/mp4" />
         </video>
@@ -165,12 +167,11 @@
         </div>
       </div>
 
-      <!-- EMAIL SHEET (fullScreenCover equivalent) -->
+      <!-- EMAIL SHEET -->
       <div class="modal" id="emailModal" aria-hidden="true">
         <div class="modalBackdrop" data-close-email="true"></div>
 
         <div class="modalCard card emailCard signinCard" role="dialog" aria-modal="true" aria-label="Email Sign In">
-          <!-- TOP CARD (video header) -->
           <div class="signinHeader">
             <video class="signinHeaderVideo" autoplay muted loop playsinline preload="auto">
               <source src="./assets/media/auth_code.mp4" type="video/mp4" />
@@ -184,7 +185,6 @@
             </div>
           </div>
 
-          <!-- FORM -->
           <div class="signinBody">
             <div class="signinFields">
               <input class="signinInput" id="signinEmail" placeholder="Email" type="email" autocomplete="email" />
@@ -208,7 +208,6 @@
             </div>
           </div>
 
-          <!-- LEGAL -->
           <div class="signinLegal">
             <div class="legalLine1">By continuing you agree to the</div>
             <div class="legalLine2">
@@ -228,9 +227,9 @@
               <button class="iconBtn" data-close-forgot="true">×</button>
             </div>
             <div class="modalBody">
-              <p class="muted">ForgotPasswordSheet placeholder (web).</p>
+              <p class="muted">Enter your email and we’ll send a reset link.</p>
               <input class="signinInput" id="forgotEmail" placeholder="Email" type="email" autocomplete="email" />
-              <button class="primaryBtn" id="btnSendReset">Send reset link (Demo)</button>
+              <button class="primaryBtn" id="btnSendReset">Send reset link</button>
             </div>
           </div>
         </div>
@@ -244,15 +243,15 @@
               <button class="iconBtn" data-close-signup="true">×</button>
             </div>
             <div class="modalBody">
-              <p class="muted">SignUpView placeholder (web). Send your SignUpView.swift and I’ll convert it fully.</p>
+              <p class="muted">Create your account. We’ll send a verification email.</p>
               <input class="signinInput" id="signupEmail" placeholder="Email" type="email" autocomplete="email" />
               <input class="signinInput" id="signupPassword" placeholder="Password (min 6)" type="password" autocomplete="new-password" />
-              <button class="primaryBtn" id="btnCreateAccount">Create account (Demo)</button>
+              <button class="primaryBtn" id="btnCreateAccount">Create account</button>
             </div>
           </div>
         </div>
 
-        <!-- Auth Message alert (SwiftUI .alert equivalent) -->
+        <!-- Auth Message -->
         <div class="modal" id="authAlert" aria-hidden="true">
           <div class="modalBackdrop" data-close-authalert="true"></div>
           <div class="modalCard card smallModal" role="dialog" aria-modal="true" aria-label="Auth Message">
@@ -273,6 +272,7 @@
     <!-- APP -->
     <div id="screenApp" hidden>
       <div class="app-shell">
+
         <header class="topbar card">
           <div class="topbar-left">
             <div class="logo">F</div>
@@ -326,30 +326,43 @@
           </section>
         </main>
 
-        <nav class="tabbar">
-          <button class="tab" data-tab-btn="home"><span class="tabIcon">⌂</span><span class="tabText">Home</span></button>
-          <button class="tab" data-tab-btn="calculators"><span class="tabIcon">ƒ</span><span class="tabText">Calculators</span></button>
-          <button class="tab" data-tab-btn="news"><span class="tabIcon">📰</span><span class="tabText">News</span></button>
-          <button class="tab" data-tab-btn="calendar"><span class="tabIcon">📅</span><span class="tabText">Calendar</span></button>
-          <button class="tab" data-tab-btn="profile"><span class="tabIcon">👤</span><span class="tabText">Profile</span></button>
+        <nav class="tabbar" aria-label="Main tabs">
+          <button class="tab" data-tab-btn="home" aria-label="Home">
+            <span class="tabIcon">⌂</span><span class="tabText">Home</span>
+          </button>
+          <button class="tab" data-tab-btn="calculators" aria-label="Calculators">
+            <span class="tabIcon">ƒ</span><span class="tabText">Calculators</span>
+          </button>
+          <button class="tab" data-tab-btn="news" aria-label="News">
+            <span class="tabIcon">📰</span><span class="tabText">News</span>
+          </button>
+          <button class="tab" data-tab-btn="calendar" aria-label="Calendar">
+            <span class="tabIcon">📅</span><span class="tabText">Calendar</span>
+          </button>
+          <button class="tab" data-tab-btn="profile" aria-label="Profile">
+            <span class="tabIcon">👤</span><span class="tabText">Profile</span>
+          </button>
         </nav>
 
-        <button class="ai-fab" id="aiFab">✨</button>
+        <button class="ai-fab" id="aiFab" aria-label="FYNX AI">✨</button>
 
         <div class="modal" id="aiModal" aria-hidden="true">
           <div class="modalBackdrop" data-close-modal="true"></div>
-          <div class="modalCard card">
+          <div class="modalCard card" role="dialog" aria-modal="true" aria-label="FYNX AI">
             <div class="modalHeader">
               <div class="modalTitle">FYNX AI</div>
-              <button class="iconBtn" data-close-modal="true">×</button>
+              <button class="iconBtn" data-close-modal="true" aria-label="Close">×</button>
             </div>
-            <div class="modalBody"><p class="muted">AICenterView placeholder</p></div>
+            <div class="modalBody">
+              <p class="muted">AICenterView placeholder</p>
+            </div>
           </div>
         </div>
+
       </div>
     </div>
 
-    <!-- AUTH TRANSITION OVERLAY -->
+    <!-- AUTH TRANSITION -->
     <div id="authTransition" class="authTransition" aria-hidden="true">
       <div class="authTransitionInner">
         <div class="authMark">FYNX</div>
@@ -362,10 +375,14 @@
   </div>
 
   <script src="./assets/js/background.js"></script>
-  <script src="./assets/js/root-router.js"></script>
-  <script src="./assets/js/onboarding.js"></script>
-  <script src="./assets/js/login.js"></script>
-  <script src="./assets/js/signin.js"></script>
+
+  <!-- IMPORTANT: Firebase scripts are ES Modules -->
+  <script type="module" src="./assets/js/root-router.js"></script>
+  <script type="module" src="./assets/js/onboarding.js"></script>
+  <script type="module" src="./assets/js/login.js"></script>
+  <script type="module" src="./assets/js/signin.js"></script>
+
+  <!-- Non-module scripts -->
   <script src="./assets/js/tabs.js"></script>
   <script src="./assets/js/home-tradingview.js"></script>
 </body>
