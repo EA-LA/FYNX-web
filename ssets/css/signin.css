@@ -1,0 +1,172 @@
+/* Sign-in card overrides inside email modal */
+.signinCard{
+  padding: 0;
+  overflow: hidden;
+  border-radius: 22px;
+  max-width: 720px;
+}
+
+.signinHeader{
+  position: relative;
+  height: 120px;
+  border-radius: 20px;
+  margin: 16px 16px 0;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.signinHeaderVideo{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  transform: scale(1.05);
+  background:#000;
+}
+
+.signinHeaderOverlay{
+  position:absolute;
+  inset:0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.60), rgba(0,0,0,.82));
+}
+
+.signinHeaderText{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap: 6px;
+  padding: 0 16px;
+  text-align:center;
+}
+
+.signinHeaderTitle{
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.signinHeaderWelcome{
+  font-size: 20px;
+  font-weight: 850;
+}
+
+.signinHeaderSub{
+  font-size: 14px;
+  color: rgba(255,255,255,.70);
+}
+
+.signinBody{
+  padding: 16px 20px 10px;
+  display:flex;
+  flex-direction:column;
+  gap: 12px;
+}
+
+.signinFields{
+  display:flex;
+  flex-direction:column;
+  gap: 14px;
+}
+
+.signinInput{
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+  outline: none;
+}
+.signinInput::placeholder{ color: rgba(255,255,255,.40); }
+
+.signinForgotRow{
+  display:flex;
+  justify-content:flex-end;
+  margin-top: -4px;
+}
+
+.signinLink{
+  background: transparent;
+  border: 0;
+  color: #4DA3FF;
+  font-weight: 850;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+.signinLink:hover{ text-decoration: underline; }
+
+.signinPrimary{
+  width: 100%;
+  height: 56px;
+  border-radius: 18px;
+  border: 0;
+  background: #fff;
+  color: #000;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 20px 20px rgba(0,0,0,.60);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 10px;
+}
+
+.signinSecondary{
+  width: 100%;
+  height: 56px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.07);
+  color: rgba(255,255,255,.95);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.signinSecondary:hover{ background: rgba(255,255,255,.10); }
+
+.signinSignupRow{
+  display:flex;
+  justify-content:center;
+  gap: 8px;
+  align-items:center;
+  font-size: 14px;
+  padding: 6px 0 0;
+}
+
+.signinLinkBright{
+  background: transparent;
+  border: 0;
+  color: rgba(255,255,255,.96);
+  font-weight: 900;
+  cursor:pointer;
+  padding: 0;
+}
+.signinLinkBright:hover{ text-decoration: underline; }
+
+.signinLegal{
+  padding: 10px 24px 20px;
+  text-align:center;
+}
+
+.smallModal{
+  max-width: 520px;
+}
+
+/* Busy spinner */
+.signinSpinner{
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,.20);
+  border-top-color: rgba(0,0,0,.80);
+  animation: spin 800ms linear infinite;
+}
+@keyframes spin{
+  from{ transform: rotate(0deg); }
+  to{ transform: rotate(360deg); }
+}
