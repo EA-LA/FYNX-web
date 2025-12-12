@@ -1,17 +1,33 @@
-// Firebase init (GitHub Pages friendly, no build tools)
-// IMPORTANT: Fill firebaseConfig from your Firebase Console -> Project settings.
+// assets/js/firebase-init.js
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  OAuthProvider
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+// 🔐 Firebase config (YOUR PROJECT)
 const firebaseConfig = {
-  apiKey: "PASTE_API_KEY",
-  authDomain: "PASTE_AUTH_DOMAIN",
-  projectId: "PASTE_PROJECT_ID",
-  storageBucket: "PASTE_STORAGE_BUCKET",
-  messagingSenderId: "PASTE_SENDER_ID",
-  appId: "PASTE_APP_ID",
+  apiKey: "AIzaSyDGSYIB_YIpbWyUMJ1d-v00-xADnvaWckk",
+  authDomain: "fynx-c7a28.firebaseapp.com",
+  databaseURL: "https://fynx-c7a28-default-rtdb.firebaseio.com",
+  projectId: "fynx-c7a28",
+  storageBucket: "fynx-c7a28.firebasestorage.app",
+  messagingSenderId: "1011050657868",
+  appId: "1:1011050657868:web:2c5ad5a1b275e669b05ce9",
+  measurementId: "G-SDW6273VYJ"
 };
 
+// 🚀 Init Firebase
 export const app = initializeApp(firebaseConfig);
+
+// 🔑 Auth
 export const auth = getAuth(app);
+
+// Providers
+export const googleProvider = new GoogleAuthProvider();
+export const appleProvider = new OAuthProvider("apple.com");
+
+// Debug (remove later)
+console.log("🔥 Firebase Web connected:", firebaseConfig.projectId);
