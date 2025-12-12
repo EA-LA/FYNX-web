@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="./assets/css/tabs.css" />
   <link rel="stylesheet" href="./assets/css/router.css" />
   <link rel="stylesheet" href="./assets/css/onboarding.css" />
+  <link rel="stylesheet" href="./assets/css/login.css" />
 </head>
 
 <body>
@@ -28,7 +29,6 @@
     <!-- ------------------------- -->
     <section id="screenOnboarding" class="routeScreen onboardingScreen" hidden>
 
-      <!-- Grok-style onboarding background (page-reactive) -->
       <div class="obGrokBg" aria-hidden="true">
         <div class="obAura obAuraTop"></div>
         <div class="obAura obAuraBottom" id="obAuraBottom"></div>
@@ -38,19 +38,15 @@
       <div class="obCard card">
         <div class="obPager">
 
-          <!-- PAGES -->
           <div class="obPages" id="obPages">
-            <!-- Page 0 -->
             <article class="obPage" data-ob-page="0">
               <div class="obIcon">📈</div>
               <h1 class="obTitle">Hi there!</h1>
-
               <div class="obText">
                 <p>Welcome to FYNX — your trading toolkit for Forex & crypto.</p>
                 <p>Get precise position size, pip value, ATR-based stops, and P/L previews. Keep a journal to track discipline.</p>
                 <p>No usage analytics. Clean, fast, trader-first.</p>
               </div>
-
               <div class="obFooterCard">
                 <div class="obFooterIcon">✨</div>
                 <div>
@@ -60,22 +56,18 @@
               </div>
             </article>
 
-            <!-- Page 1 -->
             <article class="obPage" data-ob-page="1">
               <div class="obIcon">⚠️</div>
               <h1 class="obTitle">Warning</h1>
-
               <div class="obText">
                 <p>This app is a tool for traders. Trading involves risk. Only trade what you can afford to lose.</p>
                 <p>Best practices:</p>
               </div>
-
               <ul class="obBullets">
                 <li><span class="check">✔</span> Use position sizing and risk % per trade</li>
                 <li><span class="check">✔</span> Set a daily max loss</li>
                 <li><span class="check">✔</span> Back up your journal regularly</li>
               </ul>
-
               <div class="obFooterCard">
                 <div class="obFooterIcon">🛡️</div>
                 <div>
@@ -85,16 +77,13 @@
               </div>
             </article>
 
-            <!-- Page 2 -->
             <article class="obPage" data-ob-page="2">
               <div class="obIcon">📄</div>
               <h1 class="obTitle">Terms</h1>
-
               <div class="obText">
                 <p>By continuing you confirm you have read and agree to the Terms of Service and Privacy Policy.</p>
                 <p>FYNX is an educational tool and does not provide financial advice.</p>
               </div>
-
               <div class="obFooterCard">
                 <div class="obFooterIcon">✅</div>
                 <div>
@@ -105,14 +94,12 @@
             </article>
           </div>
 
-          <!-- DOTS -->
-          <div class="obDots" id="obDots" aria-label="Onboarding pages">
+          <div class="obDots" id="obDots">
             <button class="obDot" data-dot="0" aria-label="Page 1"></button>
             <button class="obDot" data-dot="1" aria-label="Page 2"></button>
             <button class="obDot" data-dot="2" aria-label="Page 3"></button>
           </div>
 
-          <!-- TERMS BLOCK (only final page) -->
           <div class="obTerms" id="obTerms" hidden>
             <label class="obCheckbox">
               <input type="checkbox" id="obAcceptedTerms" />
@@ -126,7 +113,6 @@
             </div>
           </div>
 
-          <!-- CONTINUE BUTTON -->
           <div class="obAction">
             <button class="obContinue" id="obContinue">Continue</button>
           </div>
@@ -138,23 +124,101 @@
     <!-- ------------------------- -->
     <!-- LOGIN (logged out) -->
     <!-- ------------------------- -->
-    <section id="screenLogin" class="routeScreen card" hidden>
-      <div class="routeHeader">
-        <div class="routeTitle">Sign in</div>
-        <div class="routeSub">Cinematic login placeholder</div>
+    <section id="screenLogin" class="routeScreen loginScreen" hidden>
+
+      <!-- HERO AREA -->
+      <div class="loginHero">
+
+        <!-- Soft cosmic glow from top -->
+        <div class="loginGlow" aria-hidden="true"></div>
+
+        <!-- Video (replace the src with your real path) -->
+        <video
+          class="loginVideo"
+          id="loginVideo"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+        >
+          <!-- Put your file here (recommended path): assets/media/headloop.mp4 -->
+          <source src="./assets/media/headloop.mp4" type="video/mp4" />
+        </video>
+
+        <!-- Bottom fade to black -->
+        <div class="loginFade" aria-hidden="true"></div>
       </div>
 
-      <div class="routeBody">
-        <p class="muted">
-          OnboardingLoginView placeholder (web). This currently uses demo login state in localStorage.
-          When you’re ready, we’ll plug in real Firebase Web Auth (Google + Apple).
-        </p>
+      <!-- BRAND STACK -->
+      <div class="loginBrand">
+        <div class="loginTitle">FYNX</div>
+        <div class="loginMeta">v1.0.0 • Alpha Access</div>
 
-        <div class="routeActions">
-          <button class="primaryBtn" id="btnLoginGoogle">Continue with Google</button>
-          <button class="ghostBtn" id="btnLoginApple">Continue with Apple</button>
+        <div class="loginTyped" aria-label="Trade Beyond Limits">
+          <span id="typedText"></span><span id="typedCursor">_</span>
         </div>
       </div>
+
+      <!-- BUTTONS -->
+      <div class="loginButtons">
+
+        <button class="glassBtn" id="btnLoginGoogle">
+          <span class="btnIcon">G</span>
+          <span class="btnLabel">Continue with Google</span>
+          <span class="btnSpacer"></span>
+        </button>
+
+        <button class="glassBtn" id="btnLoginApple">
+          <span class="btnIcon"></span>
+          <span class="btnLabel">Continue with Apple</span>
+          <span class="btnSpacer"></span>
+        </button>
+
+        <button class="otherOptionsBtn" id="btnOtherOptions">Other options</button>
+
+        <div class="emailWrap" id="emailWrap" hidden>
+          <button class="glassBtn" id="btnLoginEmail">
+            <span class="btnIcon">✉</span>
+            <span class="btnLabel">Continue with Email</span>
+            <span class="btnSpacer"></span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- LEGAL FOOTER -->
+      <div class="loginLegal">
+        <div class="legalLine1">By continuing you agree to the</div>
+        <div class="legalLine2">
+          <a href="https://elhamamini.cc/FYNX-Site/terms.html" target="_blank" rel="noopener">Terms of Service</a>
+          <span>and</span>
+          <a href="https://elhamamini.cc/FYNX-Site/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+        </div>
+      </div>
+
+      <!-- EMAIL SHEET (fullScreenCover equivalent) -->
+      <div class="modal" id="emailModal" aria-hidden="true">
+        <div class="modalBackdrop" data-close-email="true"></div>
+        <div class="modalCard card emailCard" role="dialog" aria-modal="true" aria-label="Email Sign In">
+          <div class="modalHeader">
+            <button class="iconBtn" id="btnEmailClose" data-close-email="true">Close</button>
+            <div class="modalTitle">Sign In</div>
+            <div style="width:60px;"></div>
+          </div>
+          <div class="modalBody">
+            <p class="muted">SignInView placeholder (web). Send your SignInView.swift next and I will convert it fully.</p>
+
+            <!-- Demo email sign in -->
+            <div class="emailForm">
+              <input class="input" id="emailInput" placeholder="Email" type="email" autocomplete="email" />
+              <input class="input" id="passInput" placeholder="Password" type="password" autocomplete="current-password" />
+              <button class="primaryBtn" id="btnEmailDemoSignIn">Sign In (Demo)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </section>
 
     <!-- ------------------------- -->
@@ -196,7 +260,6 @@
                 <button class="chip" data-news-subtab="3">Challenges</button>
               </div>
             </div>
-
             <div class="newsPanels">
               <div class="newsPanel" data-news-panel="0"><p class="muted">News feed placeholder</p></div>
               <div class="newsPanel" data-news-panel="1" hidden><p class="muted">HeatMap placeholder</p></div>
@@ -259,6 +322,7 @@
   <script src="./assets/js/background.js"></script>
   <script src="./assets/js/root-router.js"></script>
   <script src="./assets/js/onboarding.js"></script>
+  <script src="./assets/js/login.js"></script>
   <script src="./assets/js/tabs.js"></script>
   <script src="./assets/js/home-tradingview.js"></script>
 </body>
