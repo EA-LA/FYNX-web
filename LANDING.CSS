@@ -1,0 +1,95 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  background: #000;
+  color: #fff;
+  overflow-x: hidden;
+}
+
+.nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  padding: 20px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
+
+.logo {
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.btn {
+  padding: 10px 18px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.btn.ghost {
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.btn.solid {
+  background: #fff;
+  color: #000;
+}
+
+.hero {
+  height: 100vh;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+#fynxCore {
+  position: absolute;
+  inset: 0;
+}
+
+.hero-text {
+  position: relative;
+  z-index: 2;
+  max-width: 640px;
+  text-align: center;
+}
+
+.hero-text h1 {
+  font-size: 48px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.hero-text p {
+  opacity: 0.7;
+}
+
+.footer {
+  position: relative;
+  padding: 120px 32px 32px;
+}
+
+.shadow-word {
+  font-size: 18vw;
+  font-weight: 800;
+  opacity: 0.04;
+  letter-spacing: 0.2em;
+  text-align: center;
+  pointer-events: none;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  font-size: 13px;
+  opacity: 0.6;
+}
