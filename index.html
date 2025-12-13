@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FYNX — Trading Toolkit</title>
+  <meta name="description" content="FYNX is a clean trading toolkit: calculators, curated news, economic calendar, and analytics—built for speed and clarity." />
+  <link rel="stylesheet" href="./assets/css/fynx-landing.css" />
+</head>
+
+<body>
+  <div class="bg">
+    <canvas id="stars"></canvas>
+    <div class="vignette"></div>
+  </div>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="./index.html">FYNX</a>
+      <nav class="links">
+        <a href="#features">Features</a>
+        <a href="#toolkit">Toolkit</a>
+        <a href="#pricing">Pricing</a>
+      </nav>
+      <div class="actions">
+        <a class="btn ghost" href="./login.html">Log in</a>
+        <a class="btn primary" href="./login.html">Get started</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-left">
+        <div class="pill">v1.0 • Alpha Access • Built for speed</div>
+        <h1>The trading toolkit that keeps your workflow clean, fast, and disciplined.</h1>
+        <p class="sub">
+          FYNX bundles pro-grade calculators, curated market news, an economic calendar, and analytics—
+          designed for traders who want clarity, not clutter.
+        </p>
+        <div class="cta">
+          <a class="btn primary big" href="./login.html">Continue</a>
+          <a class="btn ghost big" href="#features">See what’s inside</a>
+        </div>
+        <div class="meta">
+          <div><b>Forex</b> • Crypto • Stocks</div>
+          <div><b>Dark-first</b> UI</div>
+          <div><b>Risk-first</b> workflow</div>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="card">
+          <div class="card-top">
+            <span>FYNX / Dashboard</span>
+            <span class="dots"></span>
+          </div>
+          <div class="card-body">
+            <div class="grid">
+              <div class="mini"><b>ATR Stop</b><span>Auto-suggest</span></div>
+              <div class="mini"><b>Break-even</b><span>Instant calc</span></div>
+              <div class="mini"><b>News</b><span>Curated</span></div>
+              <div class="mini"><b>Calendar</b><span>Events</span></div>
+            </div>
+            <a class="btn primary w100" href="./login.html">Open FYNX</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="section">
+      <h2>Everything you need to execute with control</h2>
+      <div class="cards">
+        <div class="feat"><b>Pro Calculators</b><p>Pip, margin, break-even, ATR tools, risk sizing.</p></div>
+        <div class="feat"><b>Curated News</b><p>Fast scanning. Less noise. More signal.</p></div>
+        <div class="feat"><b>Economic Calendar</b><p>CPI, NFP, FOMC, earnings — stay prepared.</p></div>
+        <div class="feat"><b>Analytics</b><p>Turn history into discipline and clarity.</p></div>
+      </div>
+    </section>
+
+    <section id="pricing" class="section">
+      <h2>Simple pricing</h2>
+      <div class="pricing">
+        <div class="price"><b>Free</b><p>Core tools</p><a class="btn ghost w100" href="./login.html">Start</a></div>
+        <div class="price best"><b>Pro</b><p>Full toolkit</p><a class="btn primary w100" href="./login.html">Go Pro</a></div>
+        <div class="price"><b>Teams</b><p>Coming later</p><a class="btn ghost w100" href="./login.html">Join waitlist</a></div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div>© <span id="year"></span> FYNX</div>
+      <div class="footlinks">
+        <a href="https://elhamamini.cc/FYNX-Site/terms.html" target="_blank" rel="noopener">Terms</a>
+        <a href="https://elhamamini.cc/FYNX-Site/privacy.html" target="_blank" rel="noopener">Privacy</a>
+        <a href="./login.html">Log in</a>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+  <script src="./assets/js/stars-landing.js"></script>
+</body>
+</html>
