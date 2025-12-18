@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fynx Finance World - Master Trading & Investing</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6;
+            color: #ffffff;
+            background: #000000;
+            overflow-x: hidden;
+        }
+        
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: #000000;
+            overflow: hidden;
+        }
+        
+        .grid-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #ffffff 0%, transparent 70%);
+            top: -200px;
+            left: -200px;
+            animation-delay: 0s;
+        }
+        
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #ffffff 0%, transparent 70%);
+            bottom: -150px;
+            right: -150px;
+            animation-delay: 5s;
+        }
+        
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, #ffffff 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            animation-delay: 10s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(50px, -50px) scale(1.1); }
+            66% { transform: translate(-50px, 50px) scale(0.9); }
+        }
+        
+        /* Particles */
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 50%;
+            animation: particleFloat 15s linear infinite;
+        }
+        
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% {
+                transform: translateY(-100vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+        
+        /* Header & Navigation */
+        header {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+        
+        header.scrolled {
+            background: rgba(0, 0, 0, 0.95);
+            box-shadow: 0 5px 30px rgba(255,255,255,0.1);
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: -1px;
+            transition: transform 0.3s;
+        }
+        
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo i {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+        }
+        
+        nav a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: white;
+            transition: width 0.3s;
+        }
+        
+        nav a:hover {
+            color: white;
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        .mobile-menu {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .hero-content {
+            max-width: 900px;
+            z-index: 1;
+        }
+        
+        .hero h1 {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 900;
+            letter-spacing: -3px;
+            line-height: 1.1;
+            animation: fadeInUp 1s;
+            background: linear-gradient(135deg, #ffffff 0%, #888888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero p {
+            font-size: 1.4rem;
+            margin-bottom: 3rem;
+            opacity: 0.7;
+            animation: fadeInUp 1s 0.2s backwards;
+            line-height: 1.8;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 1s 0.4s backwards;
+        }
+        
+        .btn {
+            padding: 1.2rem 3rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn span {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .btn-primary {
+            background: white;
+            color: #000;
+            box-shadow: 0 0 30px rgba(255,255,255,0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 40px rgba(255,255,255,0.4);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-secondary:hover {
+            background: white;
+            color: #000;
+            transform: translateY(-3px);
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 8rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 3.5rem;
+            margin-bottom: 4rem;
+            font-weight: 900;
+            letter-spacing: -2px;
+            animation: fadeInUp 1s;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature-card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.4s;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .feature-card:hover::before {
+            left: 100%;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 20px 60px rgba(255,255,255,0.1);
+        }
+        
+        .feature-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .feature-card p {
+            color: rgba(255,255,255,0.6);
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+        
+        /* Learning Section */
+        .learning-section {
+            background: rgba(255,255,255,0.02);
+            padding: 8rem 2rem;
+            position: relative;
+        }
+        
+        .learning-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 100px 100px;
+            pointer-events: none;
+        }
+        
+        .learning-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+        
+        .course-card {
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.4s;
+        }
+        
+        .course-card:hover {
+            transform: scale(1.03) translateY(-10px);
+            border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 20px 60px rgba(255,255,255,0.15);
+        }
+        
+        .course-image {
+            height: 250px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .course-image::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        
+        .course-image i {
+            position: relative;
+            z-index: 1;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .course-content {
+            padding: 2rem;
+        }
+        
+        .course-content h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .course-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .course-content p {
+            color: rgba(255,255,255,0.6);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Tools Section */
+        .tools-section {
+            padding: 8rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        
+        .tool-item {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tool-item::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .tool-item:hover::after {
+            width: 500px;
+            height: 500px;
+        }
+        
+        .tool-item:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 20px 60px rgba(255,255,255,0.15);
+        }
+        
+        .tool-item i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .tool-item h3 {
+            position: relative;
+            z-index: 1;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        /* Footer */
+        footer {
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 4rem 2rem 2rem;
+        }
+        
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+        }
+        
+        .footer-section h3 {
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem 0;
+            transition: all 0.3s;
+            position: relative;
+            padding-left: 0;
+        }
+        
+        .footer-section a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 0;
+            height: 1px;
+            background: white;
+            transition: width 0.3s;
+            transform: translateY(-50%);
+        }
+        
+        .footer-section a:hover {
+            color: white;
+            padding-left: 20px;
+        }
+        
+        .footer-section a:hover::before {
+            width: 15px;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            transition: all 0.3s;
+            padding: 0;
+        }
+        
+        .social-links a:hover {
+            background: white;
+            color: #000;
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 10px 30px rgba(255,255,255,0.3);
+            padding-left: 0;
+        }
+        
+        .social-links a:hover::before {
+            width: 0;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 3rem;
+            margin-top: 3rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.4);
+            font-size: 0.95rem;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+        }
+        
+        .scroll-indicator i {
+            font-size: 2rem;
+            opacity: 0.5;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-20px); }
+            60% { transform: translateX(-50%) translateY(-10px); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav ul {
+                display: none;
+            }
+            
+            .mobile-menu {
+                display: block;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+                letter-spacing: -1px;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .section-title {
+                font-size: 2.5rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+            }
+            
+            .feature-grid,
+            .course-grid,
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="grid-overlay"></div>
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <!-- Header -->
+    <header id="header">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <span>FYNX</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#learn">Learn</a></li>
+                    <li><a href="#tools">Tools</a></li>
+                    <li><a href="#news">News</a></li>
+                    <li><a href="#community">Community</a></li>
+                </ul>
+            </nav>
+            <div class="mobile-menu">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1>Master Trading & Investing</h1>
+            <p>The ultimate platform for learning forex, crypto, and market analysis. Join thousands of traders achieving financial freedom.</p>
+            <div class="cta-buttons">
+                <a href="#learn" class="btn btn-primary"><span>Start Learning Free</span></a>
+                <a href="#tools" class="btn btn-secondary"><span>Explore Tools</span></a>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <h2 class="section-title">Why Choose Fynx?</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-graduation-cap"></i></div>
+                <h3>Expert Education</h3>
+                <p>Comprehensive courses from beginner to advanced, covering forex, crypto, stocks, and trading psychology.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
+                <h3>Real-Time Analysis</h3>
+                <p>Stay ahead with live market analysis, technical indicators, and professional trading insights.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-calculator"></i></div>
+                <h3>Trading Tools</h3>
+                <p>Access powerful calculators, risk management tools, and market analysis instruments.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-users"></i></div>
+                <h3>Active Community</h3>
+                <p>Connect with thousands of traders, share strategies, and learn from experienced professionals.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-newspaper"></i></div>
+                <h3>Daily Market News</h3>
+                <p>Get breaking financial news, market updates, and economic calendar events in real-time.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
+                <h3>Mobile App</h3>
+                <p>Trade on the go with our Fynx Finance World mobile app, available for iOS and Android.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Learning Section -->
+    <section class="learning-section" id="learn">
+        <div class="learning-container">
+            <h2 class="section-title">Start Your Learning Journey</h2>
+            <div class="course-grid">
+                <div class="course-card">
+                    <div class="course-image">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div class="course-content">
+                        <span class="course-badge">Beginner</span>
+                        <h3>Forex Trading 101</h3>
+                        <p>Learn the fundamentals of forex trading, currency pairs, and how to analyze market movements.</p>
+                        <a href="#" class="btn btn-primary"><span>Start Course</span></a>
+                    </div>
+                </div>
+                <div class="course-card">
+                    <div class="course-image">
+                        <i class="fab fa-bitcoin"></i>
+                    </div>
+                    <div class="course-content">
+                        <span class="course-badge">Intermediate</span>
+                        <h3>Cryptocurrency Mastery</h3>
+                        <p>Dive into crypto trading, blockchain technology, DeFi, and digital asset management.</p>
+                        <a href="#" class="btn btn-primary"><span>Start Course</span></a>
+                    </div>
+                </div>
+                <div class="course-card">
+                    <div class="course-image">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="course-content">
+                        <span class="course-badge">Advanced</span>
+                        <h3>Technical Analysis Pro</h3>
+                        <p>Master chart patterns, indicators, and advanced trading strategies used by professionals.</p>
+                        <a href="#" class="btn btn-primary"><span>Start Course</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools Section -->
+    <section class="tools-section" id="tools">
+        <h2 class="section-title">Trading Tools & Calculators</h2>
+        <div class="tools-grid">
+            <div class="tool-item">
+                <i class="fas fa-calculator"></i>
+                <h3>Position Size Calculator</h3>
+            </div>
+            <div class="tool-item">
+                <i class="fas fa-balance-scale"></i>
+                <h3>Risk/Reward Calculator</h3>
+            </div>
+            <div class="tool-item">
+                <i class="fas fa-dollar-sign"></i>
+                <h3>Pip Value Calculator</h3>
+            </div>
+            <div class="tool-item">
+                <i class="fas fa-chart-area"></i>
+                <h3>Market Correlation</h3>
+            </div>
+            <div class="tool-item">
+                <i class="fas fa-clock"></i>
+                <h3>Market Hours</h3>
+            </div>
+            <div class="tool-item">
+                <i class="fas fa-calendar-alt"></i>
+                <h3>Economic Calendar</h3>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>Learn</h3>
+                <ul>
+                    <li><a href="#">Forex Trading</a></li>
+                    <li><a href="#">Crypto Trading</a></li>
+                    <li><a href="#">Stock Market</a></li>
+                    <li><a href="#">Trading Psychology</a></li>
+                    <li><a href="#">Risk Management</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="#">Trading Tools</a></li>
+                    <li><a href="#">Market Analysis</a></li>
+                    <li><a href="#">Economic Calendar</a></li>
+                    <li><a href="#">Trading Glossary</a></li>
+                    <li><a href="#">Quizzes</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Community</h3>
+                <ul>
+                    <li><a href="#">Forums</a></li>
+                    <li><a href="#">Trading Ideas</a></li>
+                    <li><a href="#">Success Stories</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Company</h3>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Download App</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
