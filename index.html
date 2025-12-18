@@ -908,15 +908,43 @@
                     <li><a href="#">Forums</a></li>
                     <li><a href="#">Trading Ideas</a></li>
                     <li><a href="#">Success Stories</a></li>
-                    <li><a href="#">Blog</a></li>
+                    <li><a href="https://elhamamini.cc/fynx-blog/index.html" target="_blank" rel="noopener">Blog</a></li>
                 </ul>
             </div>
             <div class="footer-section">
                 <h3>Company</h3>
                 <ul>
-                    <li><a href="#">About Us</a></li>
-                    <li><a href="#">Contact</a></li>
-                    <li><a href="#">Download App</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="https://elhamamini.cc/FYNX-Site/index.html" target="_blank" rel="noopener">About Us</a></li>
+                    <li><a href="https://elhamamini.cc/FYNX-Site/support.html" target="_blank" rel="noopener">Contact</a></li>
+                    <li><a href="https://apps.apple.com/us/app/fynx-finance-world/id6752357210" target="_blank" rel="noopener">Download App</a></li>
+                    <li><a href="https://elhamamini.cc/FYNX-Site/privacy.html" target="_blank" rel="noopener">Privacy Policy</a></li>
+                    <li><a href="https://elhamamini.cc/FYNX-Site/terms.html" target="_blank" rel="noopener">Terms of Service</a></li>
                 </ul>
+            </div>
+        </div>
+        <div class="copyright">
+            © 2025 FYNX. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        // Header scroll effect
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) header.classList.add('scrolled');
+            else header.classList.remove('scrolled');
+        });
+
+        // Create particles
+        const bg = document.querySelector('.animated-bg');
+        for (let i = 0; i < 40; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDelay = (Math.random() * 15) + 's';
+            p.style.animationDuration = (10 + Math.random() * 10) + 's';
+            bg.appendChild(p);
+        }
+    </script>
+</body>
+</html>
