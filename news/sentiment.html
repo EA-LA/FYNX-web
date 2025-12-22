@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FYNX — Sentiment</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter','Segoe UI',system-ui,sans-serif;color:#fff;background:#000;min-height:100vh;overflow-x:hidden}
+    .animated-bg{position:fixed;inset:0;z-index:-1;background:#000;overflow:hidden}
+    .grid-overlay{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);background-size:50px 50px;animation:gridMove 20s linear infinite}
+    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
+    .gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.25;animation:float 20s ease-in-out infinite}
+    .orb-1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-220px;left:-220px}
+    .orb-2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
+    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
+    header{position:sticky;top:0;z-index:1000;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.1);padding:1rem 0}
+    .nav{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem;gap:1rem}
+    .brand{display:flex;align-items:center;gap:.6rem;font-weight:900;letter-spacing:-1px;font-size:1.25rem}
+    .nav a{color:rgba(255,255,255,.85);text-decoration:none;font-weight:700;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);padding:.55rem .9rem;border-radius:999px;transition:all .25s ease;white-space:nowrap}
+    .nav a:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
+    .tabs{position:sticky;top:72px;z-index:999;background:rgba(0,0,0,.72);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.1)}
+    .tabs-inner{max-width:1200px;margin:0 auto;padding:.65rem 1.25rem;display:flex;gap:.75rem;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
+    .tabs-inner::-webkit-scrollbar{height:6px}
+    .tabs-inner::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:10px}
+    .tab{display:inline-flex;align-items:center;gap:.55rem;padding:.55rem .9rem;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:rgba(255,255,255,.85);text-decoration:none;font-weight:700;white-space:nowrap;transition:all .25s ease}
+    .tab:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
+    .tab.active{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.10)}
+    main{max-width:1200px;margin:0 auto;padding:2.25rem 1.25rem 4.5rem}
+    .card{border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03);border-radius:22px;backdrop-filter:blur(10px);padding:2rem}
+    h1{font-size:2.7rem;line-height:1.1;letter-spacing:-2px;margin-bottom:.75rem;background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    p{color:rgba(255,255,255,.65);font-size:1.05rem;line-height:1.8;max-width:75ch}
+  </style>
+</head>
+<body>
+  <div class="animated-bg">
+    <div class="grid-overlay"></div>
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+  </div>
+
+  <header>
+    <div class="nav">
+      <div class="brand"><i class="fas fa-face-smile"></i> Market News</div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
+        <a href="../index.html"><i class="fas fa-house"></i> Home</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <div class="tabs-inner">
+      <a class="tab" href="news.html"><i class="fas fa-newspaper"></i> News</a>
+      <a class="tab" href="heatmap.html"><i class="fas fa-fire"></i> Heat Map</a>
+      <a class="tab active" href="sentiment.html"><i class="fas fa-face-smile"></i> Sentiment</a>
+      <a class="tab" href="challenges.html"><i class="fas fa-trophy"></i> Challenges</a>
+    </div>
+  </div>
+
+  <main>
+    <div class="card">
+      <h1>Sentiment</h1>
+      <p>Put your sentiment UI here (bull/bear gauge, indices mood, crowd data, etc.).</p>
+    </div>
+  </main>
+</body>
+</html>
