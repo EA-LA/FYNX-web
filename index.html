@@ -192,8 +192,7 @@
         }
         /* ========= END TOOLS SUB-NAV ========= */
 
-
-        /* ========= NEWS SUB-NAV (NEW) ========= */
+        /* ========= NEWS SUB-NAV ========= */
         .news-subnav{
             position: sticky;
             top: var(--header-h);
@@ -255,6 +254,141 @@
             background: rgba(255,255,255,0.10);
         }
         /* ========= END NEWS SUB-NAV ========= */
+
+        /* ========= LEARN SUB-NAV (NEW) ========= */
+        .learn-subnav{
+            position: sticky;
+            top: var(--header-h);
+            z-index: 999;
+            background: rgba(0,0,0,0.72);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transform: translateY(-8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all .25s ease;
+        }
+
+        body.learn-open .learn-subnav{
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .learn-subnav-inner{
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: .65rem 2rem;
+            display: flex;
+            gap: .75rem;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .learn-subnav-inner::-webkit-scrollbar{ height: 6px; }
+        .learn-subnav-inner::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.15); border-radius: 10px; }
+
+        .learn-pill{
+            display:inline-flex;
+            align-items:center;
+            gap:.55rem;
+            padding:.55rem .9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.85);
+            text-decoration:none;
+            font-weight: 600;
+            font-size: .95rem;
+            white-space: nowrap;
+            transition: all .25s ease;
+            cursor: pointer;
+        }
+
+        .learn-pill:hover{
+            color: #fff;
+            border-color: rgba(255,255,255,0.28);
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-1px);
+        }
+
+        .learn-pill.active{
+            border-color: rgba(255,255,255,0.28);
+            background: rgba(255,255,255,0.10);
+            color: #fff;
+        }
+
+        .learn-detail-subnav{
+            position: sticky;
+            top: calc(var(--header-h) + 54px);
+            z-index: 998;
+            background: rgba(0,0,0,0.66);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transform: translateY(-8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all .25s ease;
+        }
+
+        body.learn-detail-open .learn-detail-subnav{
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .learn-detail-inner{
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: .55rem 2rem;
+            display: flex;
+            gap: .75rem;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .learn-detail-inner::-webkit-scrollbar{ height: 6px; }
+        .learn-detail-inner::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.15); border-radius: 10px; }
+
+        .learn-detail-pill{
+            display:inline-flex;
+            align-items:center;
+            gap:.55rem;
+            padding:.55rem .9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.85);
+            text-decoration:none;
+            font-weight: 600;
+            font-size: .95rem;
+            white-space: nowrap;
+            transition: all .25s ease;
+        }
+
+        .learn-detail-pill:hover{
+            color: #fff;
+            border-color: rgba(255,255,255,0.28);
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-1px);
+        }
+
+        .learn-caption{
+            display:inline-flex;
+            align-items:center;
+            gap:.55rem;
+            padding:.55rem .9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.03);
+            color: rgba(255,255,255,0.70);
+            font-weight: 700;
+            font-size: .92rem;
+            white-space: nowrap;
+        }
+        /* ========= END LEARN SUB-NAV ========= */
 
         /* Hero Section */
         .hero{
@@ -610,6 +744,8 @@
 
             .tools-subnav-inner{ padding: .65rem 1rem; }
             .news-subnav-inner{ padding: .65rem 1rem; }
+            .learn-subnav-inner{ padding: .65rem 1rem; }
+            .learn-detail-inner{ padding: .55rem 1rem; }
         }
     </style>
 </head>
@@ -632,12 +768,14 @@
             <nav>
                 <ul>
                     <li><a href="#home">Home</a></li>
-                    <li><a href="#learn">Learn</a></li>
 
-                    <!-- Tools toggles its sub-nav -->
+                    <!-- Learn now toggles the learn bar -->
+                    <li><a href="#learn" id="learnToggle">Learn <span style="opacity:.7;">▾</span></a></li>
+
+                    <!-- Tools now toggles the sub-nav bar -->
                     <li><a href="#tools" id="toolsToggle">Tools <span style="opacity:.7;">▾</span></a></li>
 
-                    <!-- News toggles its sub-nav (NEW) -->
+                    <!-- News now toggles the news sub-nav bar -->
                     <li><a href="#news" id="newsToggle">News <span style="opacity:.7;">▾</span></a></li>
 
                     <li><a href="#community">Community</a></li>
@@ -648,6 +786,36 @@
             </div>
         </div>
     </header>
+
+    <!-- LEARN SUB-NAV (NEW) -->
+    <div class="learn-subnav" id="learnSubnav" aria-hidden="true">
+        <div class="learn-subnav-inner">
+            <span class="learn-caption"><i class="fas fa-graduation-cap"></i> Learn Markets</span>
+
+            <button class="learn-pill" type="button" data-topic="stocks">Stocks</button>
+            <button class="learn-pill" type="button" data-topic="funds">Funds</button>
+            <button class="learn-pill" type="button" data-topic="futures">Futures</button>
+            <button class="learn-pill" type="button" data-topic="forex">Forex</button>
+            <button class="learn-pill" type="button" data-topic="crypto">Crypto</button>
+            <button class="learn-pill" type="button" data-topic="indices">Indices</button>
+            <button class="learn-pill" type="button" data-topic="bonds">Bonds</button>
+            <button class="learn-pill" type="button" data-topic="economy">Economy</button>
+            <button class="learn-pill" type="button" data-topic="options">Options</button>
+        </div>
+    </div>
+    <!-- END LEARN SUB-NAV -->
+
+    <!-- LEARN DETAIL SUB-NAV (NEW) -->
+    <div class="learn-detail-subnav" id="learnDetailSubnav" aria-hidden="true">
+        <div class="learn-detail-inner">
+            <span class="learn-caption" id="learnDetailCaption"><i class="fas fa-layer-group"></i> Topic</span>
+
+            <a class="learn-detail-pill" id="learnHowTo" href="learn/topic.html?topic=forex&section=howto"><i class="fas fa-play"></i> How to Trade</a>
+            <a class="learn-detail-pill" id="learnQuizzes" href="learn/topic.html?topic=forex&section=quizzes"><i class="fas fa-circle-question"></i> Trading Quizzes</a>
+            <a class="learn-detail-pill" id="learnGlossary" href="learn/topic.html?topic=forex&section=glossary"><i class="fas fa-book"></i> Glossary</a>
+        </div>
+    </div>
+    <!-- END LEARN DETAIL SUB-NAV -->
 
     <!-- TOOLS SUB-NAV -->
     <div class="tools-subnav" id="toolsSubnav" aria-hidden="true">
@@ -666,7 +834,7 @@
             <a class="tools-pill" href="tools/currency.html"><i class="fas fa-arrows-rotate"></i> Currency <span class="tag">FX</span></a>
             <a class="tools-pill" href="tools/breakeven.html"><i class="fas fa-equals"></i> Break-Even <span class="tag">Calc</span></a>
 
-            <!-- Pro tools -->
+            <!-- Pro tools (no Journal / Streaks) -->
             <a class="tools-pill" href="tools/profit-loss.html"><i class="fas fa-dollar-sign"></i> Profit/Loss <span class="tag">Pro</span></a>
             <a class="tools-pill" href="tools/calendar-alerts.html"><i class="fas fa-calendar-check"></i> Calendar <span class="tag">Pro</span></a>
             <a class="tools-pill" href="tools/symbol-news.html"><i class="fas fa-newspaper"></i> Symbol News <span class="tag">Pro</span></a>
@@ -686,7 +854,7 @@
     </div>
     <!-- END TOOLS SUB-NAV -->
 
-    <!-- NEWS SUB-NAV (NEW) -->
+    <!-- NEWS SUB-NAV -->
     <div class="news-subnav" id="newsSubnav" aria-hidden="true">
         <div class="news-subnav-inner">
             <a class="news-pill primary" href="news/news.html"><i class="fas fa-newspaper"></i> News</a>
@@ -901,15 +1069,47 @@
         const toolsToggle = document.getElementById('toolsToggle');
         const toolsSubnav = document.getElementById('toolsSubnav');
 
-        // News subnav toggle (NEW)
+        // News subnav toggle
         const newsToggle = document.getElementById('newsToggle');
         const newsSubnav = document.getElementById('newsSubnav');
 
+        // Learn subnav toggle (NEW)
+        const learnToggle = document.getElementById('learnToggle');
+        const learnSubnav = document.getElementById('learnSubnav');
+        const learnDetailSubnav = document.getElementById('learnDetailSubnav');
+
+        const learnDetailCaption = document.getElementById('learnDetailCaption');
+        const learnHowTo = document.getElementById('learnHowTo');
+        const learnQuizzes = document.getElementById('learnQuizzes');
+        const learnGlossary = document.getElementById('learnGlossary');
+
+        const topicLabel = {
+            stocks: "Stocks",
+            funds: "Funds",
+            futures: "Futures",
+            forex: "Forex",
+            crypto: "Crypto",
+            indices: "Indices",
+            bonds: "Bonds",
+            economy: "Economy",
+            options: "Options"
+        };
+
+        function closeAllBars() {
+            document.body.classList.remove('tools-open','news-open','learn-open','learn-detail-open');
+            toolsSubnav.setAttribute('aria-hidden', 'true');
+            newsSubnav.setAttribute('aria-hidden', 'true');
+            learnSubnav.setAttribute('aria-hidden', 'true');
+            learnDetailSubnav.setAttribute('aria-hidden', 'true');
+        }
+
         toolsToggle.addEventListener('click', (e) => {
             e.preventDefault();
-            // close news if open
-            document.body.classList.remove('news-open');
+
+            document.body.classList.remove('news-open','learn-open','learn-detail-open');
             newsSubnav.setAttribute('aria-hidden', 'true');
+            learnSubnav.setAttribute('aria-hidden', 'true');
+            learnDetailSubnav.setAttribute('aria-hidden', 'true');
 
             document.body.classList.toggle('tools-open');
             toolsSubnav.setAttribute('aria-hidden', document.body.classList.contains('tools-open') ? 'false' : 'true');
@@ -917,12 +1117,63 @@
 
         newsToggle.addEventListener('click', (e) => {
             e.preventDefault();
-            // close tools if open
-            document.body.classList.remove('tools-open');
+
+            document.body.classList.remove('tools-open','learn-open','learn-detail-open');
             toolsSubnav.setAttribute('aria-hidden', 'true');
+            learnSubnav.setAttribute('aria-hidden', 'true');
+            learnDetailSubnav.setAttribute('aria-hidden', 'true');
 
             document.body.classList.toggle('news-open');
             newsSubnav.setAttribute('aria-hidden', document.body.classList.contains('news-open') ? 'false' : 'true');
+        });
+
+        learnToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            document.body.classList.remove('tools-open','news-open');
+            toolsSubnav.setAttribute('aria-hidden', 'true');
+            newsSubnav.setAttribute('aria-hidden', 'true');
+
+            document.body.classList.toggle('learn-open');
+            learnSubnav.setAttribute('aria-hidden', document.body.classList.contains('learn-open') ? 'false' : 'true');
+
+            // if closing learn, also close detail
+            if (!document.body.classList.contains('learn-open')) {
+                document.body.classList.remove('learn-detail-open');
+                learnDetailSubnav.setAttribute('aria-hidden', 'true');
+            }
+        });
+
+        // Learn topic buttons (NEW)
+        const learnTopicButtons = document.querySelectorAll('.learn-pill[data-topic]');
+        let activeTopic = null;
+
+        function setActiveTopic(topic) {
+            activeTopic = topic;
+
+            // active button styling
+            learnTopicButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-topic') === topic);
+            });
+
+            // open detail bar
+            document.body.classList.add('learn-detail-open');
+            learnDetailSubnav.setAttribute('aria-hidden', 'false');
+
+            // caption
+            learnDetailCaption.innerHTML = '<i class="fas fa-layer-group"></i> ' + (topicLabel[topic] || 'Topic');
+
+            // update links (single file, different params)
+            learnHowTo.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=howto';
+            learnQuizzes.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=quizzes';
+            learnGlossary.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=glossary';
+        }
+
+        learnTopicButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const topic = btn.getAttribute('data-topic');
+                setActiveTopic(topic);
+            });
         });
 
         // Close when clicking outside
@@ -930,24 +1181,18 @@
             const clickedInsideHeader = header.contains(e.target);
             const clickedInsideTools = toolsSubnav.contains(e.target);
             const clickedInsideNews = newsSubnav.contains(e.target);
+            const clickedInsideLearn = learnSubnav.contains(e.target);
+            const clickedInsideLearnDetail = learnDetailSubnav.contains(e.target);
 
-            if (!clickedInsideHeader && !clickedInsideTools && !clickedInsideNews) {
-                document.body.classList.remove('tools-open');
-                toolsSubnav.setAttribute('aria-hidden', 'true');
-
-                document.body.classList.remove('news-open');
-                newsSubnav.setAttribute('aria-hidden', 'true');
+            if (!clickedInsideHeader && !clickedInsideTools && !clickedInsideNews && !clickedInsideLearn && !clickedInsideLearnDetail) {
+                closeAllBars();
             }
         });
 
         // Close on ESC
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                document.body.classList.remove('tools-open');
-                toolsSubnav.setAttribute('aria-hidden', 'true');
-
-                document.body.classList.remove('news-open');
-                newsSubnav.setAttribute('aria-hidden', 'true');
+                closeAllBars();
             }
         });
     </script>
