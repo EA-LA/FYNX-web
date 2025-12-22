@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FYNX — Learn</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter','Segoe UI',system-ui,sans-serif;color:#fff;background:#000;overflow-x:hidden;min-height:100vh}
+    .animated-bg{position:fixed;inset:0;z-index:-1;background:#000;overflow:hidden}
+    .grid-overlay{
+      position:absolute;inset:0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size:50px 50px;
+      animation:gridMove 20s linear infinite;
+    }
+    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
+    .gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.25;animation:float 20s ease-in-out infinite}
+    .orb-1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-220px;left:-220px}
+    .orb-2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
+    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
+
+    header{
+      position:sticky;top:0;z-index:1000;
+      background:rgba(0,0,0,.85);
+      backdrop-filter:blur(20px);
+      border-bottom:1px solid rgba(255,255,255,.1);
+      padding:1rem 0;
+    }
+    .nav{
+      max-width:1200px;margin:0 auto;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 1.25rem;
+    }
+    .brand{display:flex;align-items:center;gap:.6rem;font-weight:900;letter-spacing:-1px;font-size:1.25rem}
+    .nav a{
+      color:rgba(255,255,255,.85);
+      text-decoration:none;font-weight:700;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.04);
+      padding:.55rem .9rem;border-radius:999px;
+      transition:all .25s ease;white-space:nowrap;
+    }
+    .nav a:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
+
+    main{max-width:1200px;margin:0 auto;padding:3.5rem 1.25rem 5rem}
+    .hero{
+      padding:2.25rem 1.75rem;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      border-radius:22px;
+      backdrop-filter:blur(10px);
+    }
+    h1{
+      font-size:3rem;line-height:1.1;letter-spacing:-2px;
+      background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      margin-bottom:.75rem;
+    }
+    p{color:rgba(255,255,255,.65);font-size:1.1rem;line-height:1.8;max-width:70ch}
+    .panel{margin-top:1.25rem;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.55);border-radius:18px;padding:1.25rem;backdrop-filter:blur(10px)}
+    .panel h2{font-size:1.2rem;margin-bottom:.5rem}
+    .muted{color:rgba(255,255,255,.6);font-size:.98rem}
+
+    .chips{margin-top:1rem;display:flex;gap:.6rem;flex-wrap:wrap}
+    .chip{
+      display:inline-flex;align-items:center;gap:.5rem;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.04);
+      padding:.55rem .9rem;border-radius:999px;
+      color:rgba(255,255,255,.85);
+      font-weight:700;text-decoration:none;
+      transition:all .25s ease;
+    }
+    .chip:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
+    .chip.active{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.10);color:#fff}
+  </style>
+</head>
+<body>
+  <div class="animated-bg">
+    <div class="grid-overlay"></div>
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+  </div>
+
+  <header>
+    <div class="nav">
+      <div class="brand" id="brandTitle"><i class="fas fa-graduation-cap"></i> Learn</div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
+        <a href="../index.html"><i class="fas fa-house"></i> Home</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1 id="pageTitle">Learn</h1>
+      <p id="pageDesc">This page changes based on the topic + section you clicked.</p>
+
+      <div class="chips">
+        <a class="chip" id="chipHowto" href="#"><i class="fas fa-play"></i> How to Trade</a>
+        <a class="chip" id="chipQuizzes" href="#"><i class="fas fa-circle-question"></i> Trading Quizzes</a>
+        <a class="chip" id="chipGlossary" href="#"><i class="fas fa-book"></i> Glossary</a>
+      </div>
+
+      <div class="panel">
+        <h2 id="panelTitle">Placeholder</h2>
+        <div class="muted" id="panelText">Add your content here.</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const topic = (params.get('topic') || 'forex').toLowerCase();
+    const section = (params.get('section') || 'howto').toLowerCase();
+
+    const labels = {
+      stocks: "Stocks",
+      funds: "Funds",
+      futures: "Futures",
+      forex: "Forex",
+      crypto: "Crypto",
+      indices: "Indices",
+      bonds: "Bonds",
+      economy: "Economy",
+      options: "Options"
+    };
+
+    const sectionLabels = {
+      howto: "How to Trade",
+      quizzes: "Trading Quizzes",
+      glossary: "Glossary"
+    };
+
+    const brandTitle = document.getElementById('brandTitle');
+    const pageTitle = document.getElementById('pageTitle');
+    const pageDesc = document.getElementById('pageDesc');
+    const panelTitle = document.getElementById('panelTitle');
+    const panelText = document.getElementById('panelText');
+
+    const chipHowto = document.getElementById('chipHowto');
+    const chipQuizzes = document.getElementById('chipQuizzes');
+    const chipGlossary = document.getElementById('chipGlossary');
+
+    function buildLink(sec){
+      return 'topic.html?topic=' + encodeURIComponent(topic) + '&section=' + encodeURIComponent(sec);
+    }
+
+    chipHowto.href = buildLink('howto');
+    chipQuizzes.href = buildLink('quizzes');
+    chipGlossary.href = buildLink('glossary');
+
+    chipHowto.classList.toggle('active', section === 'howto');
+    chipQuizzes.classList.toggle('active', section === 'quizzes');
+    chipGlossary.classList.toggle('active', section === 'glossary');
+
+    const topicName = labels[topic] || 'Market';
+    const sectionName = sectionLabels[section] || 'Learn';
+
+    brandTitle.innerHTML = '<i class="fas fa-graduation-cap"></i> ' + topicName;
+    pageTitle.textContent = topicName + ' — ' + sectionName;
+
+    if (section === 'howto') {
+      pageDesc.textContent = 'How to trade ' + topicName + '. Put step-by-step lessons here.';
+      panelTitle.textContent = 'How to Trade ' + topicName;
+      panelText.textContent = 'Add your full “how to trade” guide for ' + topicName + ' here.';
+    } else if (section === 'quizzes') {
+      pageDesc.textContent = 'Quizzes for ' + topicName + '. Put your questions + answers here.';
+      panelTitle.textContent = topicName + ' Trading Quizzes';
+      panelText.textContent = 'Add quiz UI, multiple choice, scoring, etc. for ' + topicName + ' here.';
+    } else if (section === 'glossary') {
+      pageDesc.textContent = 'Glossary for ' + topicName + '. Put terms + definitions here.';
+      panelTitle.textContent = topicName + ' Glossary';
+      panelText.textContent = 'Add glossary terms (A–Z) for ' + topicName + ' here.';
+    }
+  </script>
+</body>
+</html>
