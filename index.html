@@ -117,7 +117,7 @@
 
         .mobile-menu{ display:none; font-size:1.5rem; cursor:pointer; }
 
-        /* ========= TOOLS SUB-NAV (NEW) ========= */
+        /* ========= TOOLS SUB-NAV ========= */
         :root{
             --header-h: 78px;
         }
@@ -191,6 +191,70 @@
             color: rgba(255,255,255,0.75);
         }
         /* ========= END TOOLS SUB-NAV ========= */
+
+
+        /* ========= NEWS SUB-NAV (NEW) ========= */
+        .news-subnav{
+            position: sticky;
+            top: var(--header-h);
+            z-index: 999;
+            background: rgba(0,0,0,0.72);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transform: translateY(-8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all .25s ease;
+        }
+
+        body.news-open .news-subnav{
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .news-subnav-inner{
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: .65rem 2rem;
+            display: flex;
+            gap: .75rem;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .news-subnav-inner::-webkit-scrollbar{ height: 6px; }
+        .news-subnav-inner::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.15); border-radius: 10px; }
+
+        .news-pill{
+            display:inline-flex;
+            align-items:center;
+            gap:.55rem;
+            padding:.55rem .9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.85);
+            text-decoration:none;
+            font-weight: 600;
+            font-size: .95rem;
+            white-space: nowrap;
+            transition: all .25s ease;
+        }
+
+        .news-pill:hover{
+            color: #fff;
+            border-color: rgba(255,255,255,0.28);
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-1px);
+        }
+
+        .news-pill.primary{
+            border-color: rgba(255,255,255,0.28);
+            background: rgba(255,255,255,0.10);
+        }
+        /* ========= END NEWS SUB-NAV ========= */
 
         /* Hero Section */
         .hero{
@@ -545,6 +609,7 @@
             .feature-grid, .course-grid, .tools-grid{ grid-template-columns:1fr; }
 
             .tools-subnav-inner{ padding: .65rem 1rem; }
+            .news-subnav-inner{ padding: .65rem 1rem; }
         }
     </style>
 </head>
@@ -569,10 +634,12 @@
                     <li><a href="#home">Home</a></li>
                     <li><a href="#learn">Learn</a></li>
 
-                    <!-- Tools now toggles the sub-nav bar -->
+                    <!-- Tools toggles its sub-nav -->
                     <li><a href="#tools" id="toolsToggle">Tools <span style="opacity:.7;">▾</span></a></li>
 
-                    <li><a href="#news">News</a></li>
+                    <!-- News toggles its sub-nav (NEW) -->
+                    <li><a href="#news" id="newsToggle">News <span style="opacity:.7;">▾</span></a></li>
+
                     <li><a href="#community">Community</a></li>
                 </ul>
             </nav>
@@ -582,7 +649,7 @@
         </div>
     </header>
 
-    <!-- TOOLS SUB-NAV (NEW) -->
+    <!-- TOOLS SUB-NAV -->
     <div class="tools-subnav" id="toolsSubnav" aria-hidden="true">
         <div class="tools-subnav-inner">
             <a class="tools-pill primary" href="#tools"><i class="fas fa-th-large"></i> Tools Overview</a>
@@ -599,7 +666,7 @@
             <a class="tools-pill" href="tools/currency.html"><i class="fas fa-arrows-rotate"></i> Currency <span class="tag">FX</span></a>
             <a class="tools-pill" href="tools/breakeven.html"><i class="fas fa-equals"></i> Break-Even <span class="tag">Calc</span></a>
 
-            <!-- Pro tools (no Journal / Streaks) -->
+            <!-- Pro tools -->
             <a class="tools-pill" href="tools/profit-loss.html"><i class="fas fa-dollar-sign"></i> Profit/Loss <span class="tag">Pro</span></a>
             <a class="tools-pill" href="tools/calendar-alerts.html"><i class="fas fa-calendar-check"></i> Calendar <span class="tag">Pro</span></a>
             <a class="tools-pill" href="tools/symbol-news.html"><i class="fas fa-newspaper"></i> Symbol News <span class="tag">Pro</span></a>
@@ -618,6 +685,17 @@
         </div>
     </div>
     <!-- END TOOLS SUB-NAV -->
+
+    <!-- NEWS SUB-NAV (NEW) -->
+    <div class="news-subnav" id="newsSubnav" aria-hidden="true">
+        <div class="news-subnav-inner">
+            <a class="news-pill primary" href="news/news.html"><i class="fas fa-newspaper"></i> News</a>
+            <a class="news-pill" href="news/heatmap.html"><i class="fas fa-fire"></i> Heat Map</a>
+            <a class="news-pill" href="news/sentiment.html"><i class="fas fa-face-smile"></i> Sentiment</a>
+            <a class="news-pill" href="news/challenges.html"><i class="fas fa-trophy"></i> Challenges</a>
+        </div>
+    </div>
+    <!-- END NEWS SUB-NAV -->
 
     <!-- Hero Section -->
     <section class="hero" id="home">
@@ -823,19 +901,42 @@
         const toolsToggle = document.getElementById('toolsToggle');
         const toolsSubnav = document.getElementById('toolsSubnav');
 
+        // News subnav toggle (NEW)
+        const newsToggle = document.getElementById('newsToggle');
+        const newsSubnav = document.getElementById('newsSubnav');
+
         toolsToggle.addEventListener('click', (e) => {
             e.preventDefault();
+            // close news if open
+            document.body.classList.remove('news-open');
+            newsSubnav.setAttribute('aria-hidden', 'true');
+
             document.body.classList.toggle('tools-open');
             toolsSubnav.setAttribute('aria-hidden', document.body.classList.contains('tools-open') ? 'false' : 'true');
+        });
+
+        newsToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            // close tools if open
+            document.body.classList.remove('tools-open');
+            toolsSubnav.setAttribute('aria-hidden', 'true');
+
+            document.body.classList.toggle('news-open');
+            newsSubnav.setAttribute('aria-hidden', document.body.classList.contains('news-open') ? 'false' : 'true');
         });
 
         // Close when clicking outside
         document.addEventListener('click', (e) => {
             const clickedInsideHeader = header.contains(e.target);
-            const clickedInsideSubnav = toolsSubnav.contains(e.target);
-            if (!clickedInsideHeader && !clickedInsideSubnav) {
+            const clickedInsideTools = toolsSubnav.contains(e.target);
+            const clickedInsideNews = newsSubnav.contains(e.target);
+
+            if (!clickedInsideHeader && !clickedInsideTools && !clickedInsideNews) {
                 document.body.classList.remove('tools-open');
                 toolsSubnav.setAttribute('aria-hidden', 'true');
+
+                document.body.classList.remove('news-open');
+                newsSubnav.setAttribute('aria-hidden', 'true');
             }
         });
 
@@ -844,6 +945,9 @@
             if (e.key === 'Escape') {
                 document.body.classList.remove('tools-open');
                 toolsSubnav.setAttribute('aria-hidden', 'true');
+
+                document.body.classList.remove('news-open');
+                newsSubnav.setAttribute('aria-hidden', 'true');
             }
         });
     </script>
