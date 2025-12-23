@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FYNX — Home Hub</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter','Segoe UI',system-ui,sans-serif;color:#fff;background:#000;overflow-x:hidden;min-height:100vh}
+    .animated-bg{position:fixed;inset:0;z-index:-1;background:#000;overflow:hidden}
+    .grid-overlay{
+      position:absolute;inset:0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size:50px 50px;
+      animation:gridMove 20s linear infinite;
+    }
+    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
+    .orb{position:absolute;border-radius:50%;filter:blur(85px);opacity:.25;animation:float 20s ease-in-out infinite}
+    .orb1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-220px;left:-220px}
+    .orb2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
+    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
+
+    header{
+      position:sticky;top:0;z-index:1000;
+      background:rgba(0,0,0,.85);
+      backdrop-filter:blur(20px);
+      border-bottom:1px solid rgba(255,255,255,.1);
+      padding:1rem 0;
+    }
+    .nav{
+      max-width:1200px;margin:0 auto;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 1.25rem;
+      gap:1rem;
+    }
+    .brand{display:flex;align-items:center;gap:.6rem;font-weight:900;letter-spacing:-1px;font-size:1.15rem}
+    .nav a{
+      color:rgba(255,255,255,.85);
+      text-decoration:none;font-weight:700;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.04);
+      padding:.55rem .9rem;border-radius:999px;
+      transition:all .25s ease;white-space:nowrap;
+    }
+    .nav a:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
+
+    main{max-width:1200px;margin:0 auto;padding:3.5rem 1.25rem 5rem}
+    .card{
+      padding:2.25rem 1.75rem;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      border-radius:22px;
+      backdrop-filter:blur(10px);
+    }
+    h1{
+      font-size:3rem;line-height:1.1;letter-spacing:-2px;
+      background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      margin-bottom:.75rem;
+    }
+    p{color:rgba(255,255,255,.65);font-size:1.1rem;line-height:1.8;max-width:75ch}
+    .panel{margin-top:1.25rem;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.55);border-radius:18px;padding:1.25rem;backdrop-filter:blur(10px)}
+    .panel h2{font-size:1.2rem;margin-bottom:.5rem}
+    .muted{color:rgba(255,255,255,.6);font-size:.98rem}
+  </style>
+</head>
+<body>
+  <div class="animated-bg">
+    <div class="grid-overlay"></div>
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+  </div>
+
+  <header>
+    <div class="nav">
+      <div class="brand" id="brand"><i class="fas fa-house"></i> Home</div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
+        <a href="../index.html"><i class="fas fa-arrow-left"></i> Back</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="card">
+      <h1 id="title">Home Hub</h1>
+      <p id="desc">This page changes based on what you clicked on Home.</p>
+
+      <div class="panel">
+        <h2 id="panelTitle">Placeholder</h2>
+        <div class="muted" id="panelText">Add your real content here.</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const section = (params.get('section') || 'market-holidays').toLowerCase();
+
+    const map = {
+      'market-holidays': {
+        icon: 'fa-umbrella-beach',
+        title: 'Market Holidays',
+        desc: 'Holiday calendars by market (FX, US stocks, crypto, etc.).',
+        panel: 'Market Holidays',
+        text: 'Add holiday schedule tables here.'
+      },
+      'interest-rates': {
+        icon: 'fa-percent',
+        title: 'Interest Rates',
+        desc: 'Track central bank rates and rate expectations.',
+        panel: 'Interest Rates',
+        text: 'Add rate tables, last decisions, and charts here.'
+      },
+      'economic-heatmap': {
+        icon: 'fa-fire',
+        title: 'Economic Indicators Heatmap',
+        desc: 'Heatmap of economic indicators and surprises.',
+        panel: 'Economic Heatmap',
+        text: 'Add the heatmap UI and filters here.'
+      },
+      'recent-topics': {
+        icon: 'fa-comment-dots',
+        title: 'Recent Topics Discussed',
+        desc: 'Recent market topics and discussions.',
+        panel: 'Recent Topics',
+        text: 'Add a feed/list of topics and links here.'
+      }
+    };
+
+    const cfg = map[section] || map['market-holidays'];
+
+    document.getElementById('brand').innerHTML = '<i class="fas ' + cfg.icon + '"></i> Home';
+    document.getElementById('title').textContent = cfg.title;
+    document.getElementById('desc').textContent = cfg.desc;
+    document.getElementById('panelTitle').textContent = cfg.panel;
+    document.getElementById('panelText').textContent = cfg.text;
+  </script>
+</body>
+</html>
