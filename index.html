@@ -255,7 +255,7 @@
         }
         /* ========= END NEWS SUB-NAV ========= */
 
-        /* ========= LEARN SUB-NAV (NEW) ========= */
+        /* ========= LEARN SUB-NAV ========= */
         .learn-subnav{
             position: sticky;
             top: var(--header-h);
@@ -389,6 +389,140 @@
             white-space: nowrap;
         }
         /* ========= END LEARN SUB-NAV ========= */
+
+        /* ========= HOME SUB-NAV (NEW) ========= */
+        .home-subnav{
+            position: sticky;
+            top: var(--header-h);
+            z-index: 999;
+            background: rgba(0,0,0,0.72);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transform: translateY(-8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all .25s ease;
+        }
+
+        body.home-open .home-subnav{
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .home-subnav-inner{
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: .65rem 2rem;
+            display: flex;
+            gap: .75rem;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .home-subnav-inner::-webkit-scrollbar{ height: 6px; }
+        .home-subnav-inner::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.15); border-radius: 10px; }
+
+        .home-pill{
+            display:inline-flex;
+            align-items:center;
+            gap:.55rem;
+            padding:.55rem .9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.85);
+            text-decoration:none;
+            font-weight: 600;
+            font-size: .95rem;
+            white-space: nowrap;
+            transition: all .25s ease;
+            cursor: pointer;
+        }
+
+        .home-pill:hover{
+            color:#fff;
+            border-color: rgba(255,255,255,0.28);
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-1px);
+        }
+
+        .home-pill.primary{
+            border-color: rgba(255,255,255,0.28);
+            background: rgba(255,255,255,0.10);
+        }
+
+        .home-caption{
+            display:inline-flex;
+            align-items:center;
+            gap:.55rem;
+            padding:.55rem .9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.03);
+            color: rgba(255,255,255,0.70);
+            font-weight: 700;
+            font-size: .92rem;
+            white-space: nowrap;
+        }
+
+        .home-detail-subnav{
+            position: sticky;
+            top: calc(var(--header-h) + 54px);
+            z-index: 998;
+            background: rgba(0,0,0,0.66);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transform: translateY(-8px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all .25s ease;
+        }
+
+        body.home-detail-open .home-detail-subnav{
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .home-detail-inner{
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: .55rem 2rem;
+            display: flex;
+            gap: .75rem;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .home-detail-inner::-webkit-scrollbar{ height: 6px; }
+        .home-detail-inner::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.15); border-radius: 10px; }
+
+        .home-detail-pill{
+            display:inline-flex;
+            align-items:center;
+            gap:.55rem;
+            padding:.55rem .9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.85);
+            text-decoration:none;
+            font-weight: 600;
+            font-size: .95rem;
+            white-space: nowrap;
+            transition: all .25s ease;
+        }
+
+        .home-detail-pill:hover{
+            color:#fff;
+            border-color: rgba(255,255,255,0.28);
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-1px);
+        }
+        /* ========= END HOME SUB-NAV ========= */
 
         /* Hero Section */
         .hero{
@@ -746,6 +880,8 @@
             .news-subnav-inner{ padding: .65rem 1rem; }
             .learn-subnav-inner{ padding: .65rem 1rem; }
             .learn-detail-inner{ padding: .55rem 1rem; }
+            .home-subnav-inner{ padding: .65rem 1rem; }
+            .home-detail-inner{ padding: .55rem 1rem; }
         }
     </style>
 </head>
@@ -767,7 +903,8 @@
             </div>
             <nav>
                 <ul>
-                    <li><a href="#home">Home</a></li>
+                    <!-- Home now toggles the home bar -->
+                    <li><a href="#home" id="homeToggle">Home <span style="opacity:.7;">▾</span></a></li>
 
                     <!-- Learn now toggles the learn bar -->
                     <li><a href="#learn" id="learnToggle">Learn <span style="opacity:.7;">▾</span></a></li>
@@ -787,7 +924,43 @@
         </div>
     </header>
 
-    <!-- LEARN SUB-NAV (NEW) -->
+    <!-- HOME SUB-NAV (NEW) -->
+    <div class="home-subnav" id="homeSubnav" aria-hidden="true">
+        <div class="home-subnav-inner">
+            <span class="home-caption"><i class="fas fa-house"></i> Home</span>
+
+            <a class="home-pill primary" href="tools/economic-calendar.html"><i class="fas fa-calendar-alt"></i> Economic Calendar</a>
+            <a class="home-pill" href="home/hub.html?section=market-holidays"><i class="fas fa-umbrella-beach"></i> Market Holidays</a>
+            <a class="home-pill" href="tools/market-hours.html"><i class="fas fa-clock"></i> Market Hour</a>
+            <a class="home-pill" href="home/hub.html?section=interest-rates"><i class="fas fa-percent"></i> Interest Rates</a>
+            <a class="home-pill" href="home/hub.html?section=economic-heatmap"><i class="fas fa-fire"></i> Economic Indicators Heatmap</a>
+            <a class="home-pill" href="home/hub.html?section=recent-topics"><i class="fas fa-comment-dots"></i> Recent Topics Discussed</a>
+
+            <!-- Markets opens a second bar -->
+            <button class="home-pill" type="button" id="marketsToggle"><i class="fas fa-layer-group"></i> Markets <span style="opacity:.7;">▾</span></button>
+        </div>
+    </div>
+    <!-- END HOME SUB-NAV -->
+
+    <!-- HOME MARKETS DETAIL SUB-NAV (NEW) -->
+    <div class="home-detail-subnav" id="homeMarketsSubnav" aria-hidden="true">
+        <div class="home-detail-inner">
+            <span class="home-caption"><i class="fas fa-layer-group"></i> Markets</span>
+
+            <a class="home-detail-pill" href="markets/index.html?section=currencies"><i class="fas fa-dollar-sign"></i> Currencies</a>
+            <a class="home-detail-pill" href="markets/index.html?section=crypto"><i class="fab fa-bitcoin"></i> Crypto</a>
+            <a class="home-detail-pill" href="markets/index.html?section=indicators"><i class="fas fa-chart-line"></i> Indicators</a>
+            <a class="home-detail-pill" href="markets/index.html?section=patterns"><i class="fas fa-shapes"></i> Patterns</a>
+            <a class="home-detail-pill" href="markets/index.html?section=volatility"><i class="fas fa-wave-square"></i> Volatility</a>
+            <a class="home-detail-pill" href="markets/index.html?section=correlation"><i class="fas fa-chart-area"></i> Correlation</a>
+            <a class="home-detail-pill" href="markets/index.html?section=cot"><i class="fas fa-clipboard-list"></i> Commitments of Traders</a>
+            <a class="home-detail-pill" href="markets/index.html?section=liquidity"><i class="fas fa-water"></i> Liquidity</a>
+            <a class="home-detail-pill" href="markets/index.html?section=historical-data"><i class="fas fa-database"></i> Historical Data</a>
+        </div>
+    </div>
+    <!-- END HOME MARKETS DETAIL SUB-NAV -->
+
+    <!-- LEARN SUB-NAV -->
     <div class="learn-subnav" id="learnSubnav" aria-hidden="true">
         <div class="learn-subnav-inner">
             <span class="learn-caption"><i class="fas fa-graduation-cap"></i> Learn Markets</span>
@@ -805,7 +978,7 @@
     </div>
     <!-- END LEARN SUB-NAV -->
 
-    <!-- LEARN DETAIL SUB-NAV (NEW) -->
+    <!-- LEARN DETAIL SUB-NAV -->
     <div class="learn-detail-subnav" id="learnDetailSubnav" aria-hidden="true">
         <div class="learn-detail-inner">
             <span class="learn-caption" id="learnDetailCaption"><i class="fas fa-layer-group"></i> Topic</span>
@@ -1065,18 +1238,21 @@
         window.addEventListener('resize', setHeaderHeightVar);
         setHeaderHeightVar();
 
-        // Tools subnav toggle
+        // Bars
         const toolsToggle = document.getElementById('toolsToggle');
         const toolsSubnav = document.getElementById('toolsSubnav');
 
-        // News subnav toggle
         const newsToggle = document.getElementById('newsToggle');
         const newsSubnav = document.getElementById('newsSubnav');
 
-        // Learn subnav toggle (NEW)
         const learnToggle = document.getElementById('learnToggle');
         const learnSubnav = document.getElementById('learnSubnav');
         const learnDetailSubnav = document.getElementById('learnDetailSubnav');
+
+        const homeToggle = document.getElementById('homeToggle');
+        const homeSubnav = document.getElementById('homeSubnav');
+        const marketsToggle = document.getElementById('marketsToggle');
+        const homeMarketsSubnav = document.getElementById('homeMarketsSubnav');
 
         const learnDetailCaption = document.getElementById('learnDetailCaption');
         const learnHowTo = document.getElementById('learnHowTo');
@@ -1096,20 +1272,26 @@
         };
 
         function closeAllBars() {
-            document.body.classList.remove('tools-open','news-open','learn-open','learn-detail-open');
+            document.body.classList.remove(
+                'tools-open','news-open','learn-open','learn-detail-open','home-open','home-detail-open'
+            );
             toolsSubnav.setAttribute('aria-hidden', 'true');
             newsSubnav.setAttribute('aria-hidden', 'true');
             learnSubnav.setAttribute('aria-hidden', 'true');
             learnDetailSubnav.setAttribute('aria-hidden', 'true');
+            homeSubnav.setAttribute('aria-hidden', 'true');
+            homeMarketsSubnav.setAttribute('aria-hidden', 'true');
         }
 
         toolsToggle.addEventListener('click', (e) => {
             e.preventDefault();
 
-            document.body.classList.remove('news-open','learn-open','learn-detail-open');
+            document.body.classList.remove('news-open','learn-open','learn-detail-open','home-open','home-detail-open');
             newsSubnav.setAttribute('aria-hidden', 'true');
             learnSubnav.setAttribute('aria-hidden', 'true');
             learnDetailSubnav.setAttribute('aria-hidden', 'true');
+            homeSubnav.setAttribute('aria-hidden', 'true');
+            homeMarketsSubnav.setAttribute('aria-hidden', 'true');
 
             document.body.classList.toggle('tools-open');
             toolsSubnav.setAttribute('aria-hidden', document.body.classList.contains('tools-open') ? 'false' : 'true');
@@ -1118,10 +1300,12 @@
         newsToggle.addEventListener('click', (e) => {
             e.preventDefault();
 
-            document.body.classList.remove('tools-open','learn-open','learn-detail-open');
+            document.body.classList.remove('tools-open','learn-open','learn-detail-open','home-open','home-detail-open');
             toolsSubnav.setAttribute('aria-hidden', 'true');
             learnSubnav.setAttribute('aria-hidden', 'true');
             learnDetailSubnav.setAttribute('aria-hidden', 'true');
+            homeSubnav.setAttribute('aria-hidden', 'true');
+            homeMarketsSubnav.setAttribute('aria-hidden', 'true');
 
             document.body.classList.toggle('news-open');
             newsSubnav.setAttribute('aria-hidden', document.body.classList.contains('news-open') ? 'false' : 'true');
@@ -1130,40 +1314,60 @@
         learnToggle.addEventListener('click', (e) => {
             e.preventDefault();
 
-            document.body.classList.remove('tools-open','news-open');
+            document.body.classList.remove('tools-open','news-open','home-open','home-detail-open');
             toolsSubnav.setAttribute('aria-hidden', 'true');
             newsSubnav.setAttribute('aria-hidden', 'true');
+            homeSubnav.setAttribute('aria-hidden', 'true');
+            homeMarketsSubnav.setAttribute('aria-hidden', 'true');
 
             document.body.classList.toggle('learn-open');
             learnSubnav.setAttribute('aria-hidden', document.body.classList.contains('learn-open') ? 'false' : 'true');
 
-            // if closing learn, also close detail
             if (!document.body.classList.contains('learn-open')) {
                 document.body.classList.remove('learn-detail-open');
                 learnDetailSubnav.setAttribute('aria-hidden', 'true');
             }
         });
 
-        // Learn topic buttons (NEW)
+        homeToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            document.body.classList.remove('tools-open','news-open','learn-open','learn-detail-open');
+            toolsSubnav.setAttribute('aria-hidden', 'true');
+            newsSubnav.setAttribute('aria-hidden', 'true');
+            learnSubnav.setAttribute('aria-hidden', 'true');
+            learnDetailSubnav.setAttribute('aria-hidden', 'true');
+
+            document.body.classList.toggle('home-open');
+            homeSubnav.setAttribute('aria-hidden', document.body.classList.contains('home-open') ? 'false' : 'true');
+
+            if (!document.body.classList.contains('home-open')) {
+                document.body.classList.remove('home-detail-open');
+                homeMarketsSubnav.setAttribute('aria-hidden', 'true');
+            }
+        });
+
+        marketsToggle.addEventListener('click', () => {
+            if (!document.body.classList.contains('home-open')) {
+                document.body.classList.add('home-open');
+                homeSubnav.setAttribute('aria-hidden', 'false');
+            }
+            document.body.classList.toggle('home-detail-open');
+            homeMarketsSubnav.setAttribute('aria-hidden', document.body.classList.contains('home-detail-open') ? 'false' : 'true');
+        });
+
+        // Learn topic buttons
         const learnTopicButtons = document.querySelectorAll('.learn-pill[data-topic]');
-        let activeTopic = null;
-
         function setActiveTopic(topic) {
-            activeTopic = topic;
-
-            // active button styling
             learnTopicButtons.forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-topic') === topic);
             });
 
-            // open detail bar
             document.body.classList.add('learn-detail-open');
             learnDetailSubnav.setAttribute('aria-hidden', 'false');
 
-            // caption
             learnDetailCaption.innerHTML = '<i class="fas fa-layer-group"></i> ' + (topicLabel[topic] || 'Topic');
 
-            // update links (single file, different params)
             learnHowTo.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=howto';
             learnQuizzes.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=quizzes';
             learnGlossary.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=glossary';
@@ -1183,17 +1387,17 @@
             const clickedInsideNews = newsSubnav.contains(e.target);
             const clickedInsideLearn = learnSubnav.contains(e.target);
             const clickedInsideLearnDetail = learnDetailSubnav.contains(e.target);
+            const clickedInsideHome = homeSubnav.contains(e.target);
+            const clickedInsideHomeDetail = homeMarketsSubnav.contains(e.target);
 
-            if (!clickedInsideHeader && !clickedInsideTools && !clickedInsideNews && !clickedInsideLearn && !clickedInsideLearnDetail) {
+            if (!clickedInsideHeader && !clickedInsideTools && !clickedInsideNews && !clickedInsideLearn && !clickedInsideLearnDetail && !clickedInsideHome && !clickedInsideHomeDetail) {
                 closeAllBars();
             }
         });
 
         // Close on ESC
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeAllBars();
-            }
+            if (e.key === 'Escape') closeAllBars();
         });
     </script>
 </body>
