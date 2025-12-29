@@ -97,15 +97,18 @@
 
   <script>
     const params = new URLSearchParams(location.search);
-    const section = (params.get('section') || 'market-holidays').toLowerCase();
+    const section = (params.get('section') || 'home').toLowerCase();
+
+    // CLEAN HOME HUB: Market Holidays is removed.
+    // Market Holidays must live in its own file: /tools/market-holidays.html
 
     const map = {
-      'market-holidays': {
-        icon: 'fa-umbrella-beach',
-        title: 'Market Holidays',
-        desc: 'Holiday calendars by market (FX, US stocks, crypto, etc.).',
-        panel: 'Market Holidays',
-        text: 'Add holiday schedule tables here.'
+      'home': {
+        icon: 'fa-house',
+        title: 'Home Hub',
+        desc: 'Choose a module from the Home navigation. This hub page is now clean.',
+        panel: 'Home',
+        text: 'Market Holidays has been separated into /tools/market-holidays.html.'
       },
       'interest-rates': {
         icon: 'fa-percent',
@@ -130,7 +133,7 @@
       }
     };
 
-    const cfg = map[section] || map['market-holidays'];
+    const cfg = map[section] || map['home'];
 
     document.getElementById('brand').innerHTML = '<i class="fas ' + cfg.icon + '"></i> Home';
     document.getElementById('title').textContent = cfg.title;
