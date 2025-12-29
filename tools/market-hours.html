@@ -2,133 +2,1328 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX Tools — Forex Calculator</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FYNX Tools — Market Hours</title>
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{
-      font-family:'Inter','Segoe UI',system-ui,sans-serif;
-      color:#fff;background:#000;overflow-x:hidden;min-height:100vh;
-    }
-    .animated-bg{position:fixed;inset:0;z-index:-1;background:#000;overflow:hidden}
-    .grid-overlay{
-      position:absolute;inset:0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-      background-size:50px 50px;
-      animation:gridMove 20s linear infinite;
-    }
-    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-    .gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.25;animation:float 20s ease-in-out infinite}
-    .orb-1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-220px;left:-220px}
-    .orb-2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
-    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
+    :root{
+      color-scheme: dark;
+      --bg: #000000;
+      --panel: rgba(255,255,255,0.06);
+      --panel2: rgba(255,255,255,0.085);
+      --border: rgba(255,255,255,0.12);
+      --border2: rgba(255,255,255,0.18);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.68);
+      --muted2: rgba(255,255,255,0.55);
+      --shadow: 0 20px 60px rgba(0,0,0,0.55);
+      --radius: 18px;
+      --radius2: 14px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Roboto, Helvetica, Arial;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 
-    header{
-      position:sticky;top:0;z-index:1000;
-      background:rgba(0,0,0,.85);
-      backdrop-filter:blur(20px);
-      border-bottom:1px solid rgba(255,255,255,.1);
-      padding:1rem 0;
+      /* bar colors (still reads as B/W product) */
+      --c1: rgba(255,255,255,0.92);
+      --c2: rgba(255,255,255,0.72);
+      --c3: rgba(255,255,255,0.55);
+      --c4: rgba(255,255,255,0.42);
+
+      --ok: rgba(160,255,200,0.95);
+      --bad: rgba(255,160,160,0.95);
+      --warn: rgba(255,225,160,0.95);
     }
-    .nav{
-      max-width:1200px;margin:0 auto;
-      display:flex;align-items:center;justify-content:space-between;
-      padding:0 1.25rem;
+
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    body{
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      overflow-x:hidden;
+      min-height: 100vh;
+    }
+
+    /* grok-ish background */
+    .bg{
+      position:fixed; inset:0; z-index:-2;
+      background: radial-gradient(1200px 700px at 15% 20%, rgba(255,255,255,0.10), transparent 60%),
+                  radial-gradient(900px 600px at 80% 10%, rgba(255,255,255,0.08), transparent 58%),
+                  radial-gradient(900px 700px at 50% 85%, rgba(255,255,255,0.06), transparent 60%),
+                  #000;
+    }
+    .grid{
+      position:fixed; inset:0; z-index:-1; opacity:0.45;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: radial-gradient(circle at 50% 30%, black 0%, black 55%, transparent 78%);
+      animation: drift 22s linear infinite;
+    }
+    @keyframes drift{
+      from{ transform: translate3d(0,0,0); }
+      to{ transform: translate3d(52px,52px,0); }
+    }
+    .orbs{
+      position:fixed; inset:0; z-index:-1; pointer-events:none;
+    }
+    .orb{
+      position:absolute; width:520px; height:520px; border-radius:50%;
+      filter: blur(34px);
+      background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.20), rgba(255,255,255,0.05) 45%, transparent 70%);
+      opacity:0.35;
+      animation: float 18s ease-in-out infinite;
+    }
+    .orb:nth-child(1){ left:-180px; top:120px; animation-delay: -2s; }
+    .orb:nth-child(2){ right:-240px; top:80px; width:620px; height:620px; animation-delay:-7s; opacity:0.28;}
+    .orb:nth-child(3){ left:20%; bottom:-280px; width:700px; height:700px; animation-delay:-12s; opacity:0.22;}
+    @keyframes float{
+      0%,100%{ transform: translate3d(0,0,0) scale(1); }
+      50%{ transform: translate3d(0,-22px,0) scale(1.03); }
+    }
+
+    .wrap{
+      max-width: 1180px;
+      margin: 28px auto 80px;
+      padding: 0 18px;
+    }
+
+    /* top bar */
+    .top{
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 14px;
+      margin-bottom: 18px;
     }
     .brand{
-      display:flex;align-items:center;gap:.6rem;
-      font-weight:900;letter-spacing:-1px;font-size:1.25rem;
+      display:flex; align-items:center; gap:12px;
+      min-width: 240px;
     }
-    .brand i{opacity:.9}
-    .nav a{
-      color:rgba(255,255,255,.85);
-      text-decoration:none;font-weight:700;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.04);
-      padding:.55rem .9rem;border-radius:999px;
-      transition:all .25s ease;
+    .logo{
+      width:34px; height:34px; border-radius:10px;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.35) 45%, rgba(255,255,255,0.12) 70%);
+      border: 1px solid var(--border2);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.55);
+    }
+    .brand h1{
+      font-size: 16px; letter-spacing:0.6px; font-weight: 700;
+    }
+    .brand .sub{
+      font-size: 12px; color: var(--muted2);
+      margin-top: 2px;
+    }
+
+    .actions{
+      display:flex; align-items:center; gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      border-radius: 999px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.40);
+      backdrop-filter: blur(10px);
+    }
+    .pill label{
+      font-size: 12px;
+      color: var(--muted);
       white-space:nowrap;
     }
-    .nav a:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
-
-    main{max-width:1200px;margin:0 auto;padding:3.5rem 1.25rem 5rem}
-    .hero{
-      padding:2.25rem 1.75rem;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.03);
-      border-radius:22px;
-      backdrop-filter:blur(10px);
+    select{
+      background: rgba(0,0,0,0.35);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 8px 10px;
+      outline:none;
+      font-size: 12px;
     }
-    h1{
-      font-size:3rem;line-height:1.1;letter-spacing:-2px;
-      background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-      margin-bottom:.75rem;
+    .clock{
+      font-family: var(--mono);
+      font-size: 12.5px;
+      color: rgba(255,255,255,0.88);
+      letter-spacing: 0.4px;
+      white-space:nowrap;
     }
-    p{color:rgba(255,255,255,.65);font-size:1.1rem;line-height:1.8;max-width:70ch}
 
-    .panel-grid{
+    .btn{
+      cursor:pointer;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.9);
+      font-size: 12px;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      user-select:none;
+    }
+    .btn:hover{
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.07);
+    }
+
+    /* main card */
+    .card{
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.04));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      overflow:hidden;
+    }
+
+    .cardHead{
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid var(--border);
+      display:flex; align-items:flex-end; justify-content:space-between;
+      gap: 14px;
+    }
+    .titleBlock h2{
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+    .titleBlock p{
+      margin-top: 4px;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+    .meta{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .metaChip{
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.25);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: var(--muted);
+      display:inline-flex; gap:8px; align-items:center;
+      white-space:nowrap;
+    }
+    .dot{
+      width:8px; height:8px; border-radius:50%;
+      background: rgba(255,255,255,0.85);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+    }
+
+    /* tabs */
+    .tabs{
+      display:flex; gap:10px;
+      padding: 14px 18px 0;
+      flex-wrap:wrap;
+    }
+    .tab{
+      cursor:pointer;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.78);
+      font-size: 12px;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      user-select:none;
+    }
+    .tab:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,0.22); }
+    .tab.active{
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.92);
+    }
+
+    /* layout */
+    .content{
+      padding: 16px 18px 20px;
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-      gap:1.25rem;
-      margin-top:1.25rem;
+      grid-template-columns: 1.45fr 0.95fr;
+      gap: 14px;
     }
-    .panel{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.55);
-      border-radius:18px;
-      padding:1.25rem 1.25rem 1.4rem;
-      backdrop-filter:blur(10px);
-      min-height:180px;
+    @media (max-width: 980px){
+      .content{ grid-template-columns: 1fr; }
+      .brand{ min-width: unset; }
+      .actions{ justify-content:flex-start; }
     }
-    .panel h2{font-size:1.2rem;margin-bottom:.5rem}
-    .panel .muted{color:rgba(255,255,255,.6);font-size:.98rem}
 
-    .hint{
-      margin-top:1.2rem;
-      color:rgba(255,255,255,.55);
-      font-size:.95rem;
+    .panel{
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.25);
+      border-radius: var(--radius2);
+      padding: 14px;
+    }
+    .panel h3{
+      font-size: 13px;
+      letter-spacing: 0.4px;
+      color: rgba(255,255,255,0.86);
+      margin-bottom: 10px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 10px;
+    }
+    .panel h3 span{
+      font-size: 12px;
+      color: var(--muted2);
+      font-weight: 600;
+    }
+
+    /* timeline */
+    .timeline{
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      border-radius: 14px;
+      padding: 12px 12px 10px;
+      overflow:hidden;
+    }
+    .axis{
+      position:relative;
+      height: 22px;
+      margin-bottom: 8px;
+    }
+    .axis .tick{
+      position:absolute; top:0; transform: translateX(-50%);
+      font-size: 11px;
+      color: rgba(255,255,255,0.55);
+      font-family: var(--mono);
+    }
+    .axisLine{
+      height: 1px;
+      background: rgba(255,255,255,0.10);
+      margin-top: 16px;
+    }
+
+    .bars{
+      position:relative;
+      height: 86px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.08);
+      overflow:hidden;
+    }
+    .bars .gridv{
+      position:absolute; inset:0;
+      background-image: linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: calc(100% / 24) 100%;
+      opacity:0.55;
+      pointer-events:none;
+    }
+    .bar{
+      position:absolute;
+      height: 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.55);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.35);
+      display:flex; align-items:center;
+      padding: 0 10px;
+      gap: 10px;
+      overflow:hidden;
+      white-space:nowrap;
+    }
+    .bar small{
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(0,0,0,0.86);
+      mix-blend-mode: screen;
+      opacity:0.9;
+    }
+    .bar .barName{
+      font-size: 11px;
+      color: rgba(0,0,0,0.88);
+      mix-blend-mode: screen;
+      opacity: 0.95;
+    }
+
+    .bar.c1{ background: var(--c1); }
+    .bar.c2{ background: var(--c2); }
+    .bar.c3{ background: var(--c3); }
+    .bar.c4{ background: var(--c4); }
+
+    .nowLine{
+      position:absolute; top:0; bottom:0;
+      width: 2px;
+      background: rgba(255,255,255,0.95);
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.10);
+      z-index: 5;
+    }
+    .nowTag{
+      position:absolute;
+      top: 6px;
+      transform: translateX(-50%);
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 6px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.20);
+      background: rgba(0,0,0,0.55);
+      color: rgba(255,255,255,0.90);
+      z-index: 6;
+      white-space:nowrap;
+    }
+
+    /* status list */
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    .row{
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.035);
+      border-radius: 14px;
+      padding: 12px 12px;
+      display:grid;
+      grid-template-columns: 1.2fr 0.9fr;
+      gap: 12px;
+      align-items:start;
+    }
+    @media (max-width: 640px){
+      .row{ grid-template-columns: 1fr; }
+    }
+    .rowTop{
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .marketName{
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+    .badge{
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.25);
+      color: rgba(255,255,255,0.85);
+      font-family: var(--mono);
+      white-space:nowrap;
+    }
+    .badge.open{ border-color: rgba(160,255,200,0.35); color: var(--ok); }
+    .badge.closed{ border-color: rgba(255,160,160,0.35); color: var(--bad); }
+    .badge.break{ border-color: rgba(255,225,160,0.35); color: var(--warn); }
+
+    .kv{
+      display:grid;
+      grid-template-columns: 110px 1fr;
+      gap: 8px 10px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.80);
+    }
+    .kv b{
+      color: rgba(255,255,255,0.62);
+      font-weight: 700;
+      font-family: var(--mono);
+      font-size: 11.5px;
+    }
+    .desc{
+      font-size: 12px;
+      color: rgba(255,255,255,0.62);
+      line-height: 1.45;
+    }
+
+    /* insights */
+    .insight{
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.035);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .insightTitle{
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .insightTitle b{
+      font-size: 13px;
+      letter-spacing:0.3px;
+    }
+    .insightTitle span{
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted2);
+    }
+    .notes{
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    .note{
+      display:flex;
+      gap: 10px;
+      align-items:flex-start;
+    }
+    .ico{
+      width: 22px; height: 22px;
+      border-radius: 9px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.25);
+      display:flex; align-items:center; justify-content:center;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(255,255,255,0.80);
+      flex: 0 0 auto;
+    }
+    .note b{
+      display:block;
+      font-size: 12.5px;
+      margin-bottom: 2px;
+      color: rgba(255,255,255,0.86);
+    }
+    .note p{
+      font-size: 12px;
+      color: rgba(255,255,255,0.62);
+      line-height: 1.45;
+    }
+
+    .footerHint{
+      padding: 12px 18px 18px;
+      border-top: 1px solid var(--border);
+      display:flex; justify-content:space-between; gap: 12px; flex-wrap:wrap;
+      color: var(--muted2);
+      font-size: 12px;
+    }
+    .footerHint code{
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(255,255,255,0.75);
     }
   </style>
 </head>
 <body>
-  <div class="animated-bg">
-    <div class="grid-overlay"></div>
-    <div class="gradient-orb orb-1"></div>
-    <div class="gradient-orb orb-2"></div>
+  <div class="bg"></div>
+  <div class="grid"></div>
+  <div class="orbs">
+    <div class="orb"></div><div class="orb"></div><div class="orb"></div>
   </div>
 
-  <header>
-    <div class="nav">
-      <div class="brand"><i class="fas fa-chart-line"></i> FYNX Tools</div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
-        <a href="../index.html#tools"><i class="fas fa-arrow-left"></i> Back</a>
-        <a href="../index.html"><i class="fas fa-house"></i> Home</a>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>FYNX Tools</h1>
+          <div class="sub">Market Hours • Real-time, timezone-correct</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <div class="pill">
+          <label for="tz">Timezone</label>
+          <select id="tz"></select>
+        </div>
+        <div class="pill">
+          <label>Now</label>
+          <div id="clock" class="clock">—</div>
+        </div>
+        <div class="btn" id="refreshBtn" title="Force refresh">Refresh</div>
       </div>
     </div>
-  </header>
 
-  <main>
-    <section class="hero">
-      <h1>Forex Calculator</h1>
-      <p>Dedicated page for the Forex calculator. Put your real calculator code here (inputs, outputs, formulas, UI).</p>
-
-      <div class="panel-grid">
-        <div class="panel">
-          <h2>Calculator UI</h2>
-          <div class="muted">Add inputs (pair, lot size, risk %, stop loss pips, etc.) and compute results.</div>
+    <div class="card">
+      <div class="cardHead">
+        <div class="titleBlock">
+          <h2>Market Hours</h2>
+          <p id="subtitle">Loading…</p>
         </div>
-        <div class="panel">
-          <h2>Results</h2>
-          <div class="muted">Show position size, pip value, risk amount, margin estimate, and notes.</div>
+        <div class="meta">
+          <div class="metaChip"><span class="dot"></span><span id="liveChip">Live</span></div>
+          <div class="metaChip">Next change: <span id="nextChange">—</span></div>
         </div>
       </div>
 
-      <div class="hint">Tip: when you’re ready, tell me which tool you want first and I’ll write the full working calculator code for that page.</div>
-    </section>
-  </main>
+      <div class="tabs" id="tabs"></div>
+
+      <div class="content">
+        <div class="panel">
+          <h3>
+            24-Hour Sessions
+            <span id="dayLabel">—</span>
+          </h3>
+
+          <div class="timeline">
+            <div class="axis" id="axis"></div>
+            <div class="axisLine"></div>
+            <div class="bars" id="bars">
+              <div class="gridv"></div>
+              <div class="nowLine" id="nowLine" style="left:0%"></div>
+              <div class="nowTag" id="nowTag" style="left:0%">—</div>
+            </div>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <h3>
+            Market Status
+            <span id="statusHint">—</span>
+          </h3>
+          <div class="list" id="list"></div>
+        </div>
+
+        <div class="panel">
+          <h3>
+            Insights
+            <span id="insightHint">—</span>
+          </h3>
+          <div class="insight">
+            <div class="insightTitle">
+              <b id="insightTitle">Trading Notes</b>
+              <span id="insightSub">—</span>
+            </div>
+            <div class="notes" id="notes"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footerHint">
+        <div>
+          Accuracy: uses <code>IANA time zones</code> + DST-aware conversion (no hardcoded offsets).
+        </div>
+        <div>
+          Tip: if you want this to default to <code>America/Boise</code>, keep it selected in the timezone menu.
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/**
+ * Market Hours — DST-aware, timezone-correct
+ * - Defines sessions in exchange local timezone (IANA), then converts to chosen display timezone.
+ * - Uses a robust "wall time -> UTC instant" converter with Intl.DateTimeFormat.
+ * - Updates live every 15s (clock) and 30s (status + timeline).
+ */
+
+/* ---------- Timezone utilities (DST aware) ---------- */
+const DTF_CACHE = new Map();
+function dtf(tz){
+  const k = tz;
+  if(!DTF_CACHE.has(k)){
+    DTF_CACHE.set(k, new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      year:'numeric', month:'2-digit', day:'2-digit',
+      hour:'2-digit', minute:'2-digit', second:'2-digit',
+      hour12:false
+    }));
+  }
+  return DTF_CACHE.get(k);
+}
+function partsInTZ(date, tz){
+  const parts = dtf(tz).formatToParts(date);
+  const out = {};
+  for(const p of parts){
+    if(p.type !== 'literal') out[p.type] = p.value;
+  }
+  return {
+    year: +out.year,
+    month: +out.month,
+    day: +out.day,
+    hour: +out.hour,
+    minute: +out.minute,
+    second: +out.second
+  };
+}
+function ymdInTZ(date, tz){
+  const p = partsInTZ(date, tz);
+  return {year:p.year, month:p.month, day:p.day};
+}
+function minutesSinceMidnightInTZ(date, tz){
+  const p = partsInTZ(date, tz);
+  return p.hour * 60 + p.minute + p.second/60;
+}
+function fmtTime(date, tz){
+  const p = partsInTZ(date, tz);
+  return `${String(p.hour).padStart(2,'0')}:${String(p.minute).padStart(2,'0')}`;
+}
+function fmtDateLine(date, tz){
+  const p = partsInTZ(date, tz);
+  const mo = String(p.month).padStart(2,'0');
+  const da = String(p.day).padStart(2,'0');
+  return `${p.year}-${mo}-${da}`;
+}
+function humanDay(date, tz){
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    weekday:'long', month:'long', day:'2-digit', year:'numeric'
+  }).format(date);
+}
+
+/**
+ * Convert a desired wall time in a timezone to a UTC Date.
+ * Algorithm:
+ * 1) Guess UTC = Date.UTC(y, m-1, d, hh, mm, ss).
+ * 2) Format that UTC guess in the target timezone -> get what wall time it shows.
+ * 3) Compute difference (desired - shown) in minutes -> adjust UTC.
+ * 4) Repeat once to settle around DST boundaries.
+ */
+function zonedWallTimeToUtcDate({year, month, day, hour, minute, second=0}, tz){
+  let utcMs = Date.UTC(year, month-1, day, hour, minute, second);
+  for(let i=0;i<2;i++){
+    const shown = partsInTZ(new Date(utcMs), tz);
+    const desiredTotal = (((year*12+month)*31+day)*24+hour)*60 + minute;
+    const shownTotal   = (((shown.year*12+shown.month)*31+shown.day)*24+shown.hour)*60 + shown.minute;
+    const diffMin = desiredTotal - shownTotal;
+    utcMs += diffMin * 60_000;
+  }
+  return new Date(utcMs);
+}
+function addDaysYMD({year, month, day}, add){
+  const d = new Date(Date.UTC(year, month-1, day + add, 12,0,0));
+  const p = partsInTZ(d, 'UTC');
+  return {year:p.year, month:p.month, day:p.day};
+}
+function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+function pad2(n){ return String(n).padStart(2,'0'); }
+function minutesToHM(min){
+  const h = Math.floor(min/60), m = Math.round(min%60);
+  return `${pad2(h)}:${pad2(m)}`;
+}
+
+/* ---------- Market definitions (local exchange TZ) ---------- */
+const MARKETS = {
+  forex: {
+    label: "Forex",
+    legend: [
+      {key:"Sydney", c:"c4"},
+      {key:"Tokyo",  c:"c3"},
+      {key:"London", c:"c2"},
+      {key:"New York", c:"c1"}
+    ],
+    sessions: [
+      {
+        id:"sydney",
+        name:"Sydney Session",
+        venue:"Sydney",
+        tz:"Australia/Sydney",
+        // Typical FX session window (local): 08:00–17:00
+        open:{h:8, m:0},
+        close:{h:17, m:0},
+        color:"c4",
+        blurb:"Starts the trading week. Often lower liquidity vs London/NY; AUD crosses can move."
+      },
+      {
+        id:"tokyo",
+        name:"Tokyo Session",
+        venue:"Tokyo",
+        tz:"Asia/Tokyo",
+        open:{h:9, m:0},
+        close:{h:18, m:0},
+        color:"c3",
+        blurb:"Asian liquidity. JPY pairs active; good for range and mean reversion days."
+      },
+      {
+        id:"london",
+        name:"London Session",
+        venue:"London",
+        tz:"Europe/London",
+        open:{h:8, m:0},
+        close:{h:17, m:0},
+        color:"c2",
+        blurb:"Highest FX liquidity. Big moves on EUR/GBP; watch London–NY overlap."
+      },
+      {
+        id:"newyork",
+        name:"New York Session",
+        venue:"New York",
+        tz:"America/New_York",
+        open:{h:8, m:0},
+        close:{h:17, m:0},
+        color:"c1",
+        blurb:"USD dominance. Strong trend continuation; overlap with London is prime volatility."
+      }
+    ],
+    insights: [
+      {k:"01", t:"London ↔ New York Overlap", p:"Peak liquidity window. Tightest spreads and highest volume across majors."},
+      {k:"02", t:"Asia Range Behavior", p:"Tokyo hours often form ranges; breakouts can trigger into London open."},
+      {k:"03", t:"Weekend Gap Risk", p:"Avoid holding into Friday close if you trade spot FX; gaps happen on re-open."}
+    ]
+  },
+
+  stocks: {
+    label: "Stocks",
+    legend: [
+      {key:"HKEX", c:"c3"},
+      {key:"LSE", c:"c2"},
+      {key:"NYSE", c:"c1"},
+      {key:"NASDAQ", c:"c4"}
+    ],
+    sessions: [
+      {
+        id:"hkex",
+        name:"Hong Kong Exchange",
+        venue:"HKEX",
+        tz:"Asia/Hong_Kong",
+        open:{h:9, m:30},
+        close:{h:16, m:0},
+        breaks:[{start:{h:12,m:0}, end:{h:13,m:0}}],
+        color:"c3",
+        blurb:"Asian equities lead. Includes a midday lunch break."
+      },
+      {
+        id:"lse",
+        name:"London Stock Exchange",
+        venue:"LSE",
+        tz:"Europe/London",
+        open:{h:8, m:0},
+        close:{h:16, m:30},
+        color:"c2",
+        blurb:"European session. Watch UK macro + earnings; often trends into US open."
+      },
+      {
+        id:"nyse",
+        name:"NYSE",
+        venue:"NYSE",
+        tz:"America/New_York",
+        open:{h:9, m:30},
+        close:{h:16, m:0},
+        color:"c1",
+        blurb:"US cash equities. First/last 30 minutes frequently highest volatility."
+      },
+      {
+        id:"nasdaq",
+        name:"NASDAQ",
+        venue:"NASDAQ",
+        tz:"America/New_York",
+        open:{h:9, m:30},
+        close:{h:16, m:0},
+        color:"c4",
+        blurb:"Tech-heavy. Same cash hours as NYSE; high beta names amplify moves."
+      }
+    ],
+    insights: [
+      {k:"01", t:"US Market Open Volatility", p:"First 30 minutes often sets the day’s direction. Watch spreads + liquidity."},
+      {k:"02", t:"Global Rotation Sequence", p:"Asia → Europe → US. Gaps can form when US reacts to overnight news."},
+      {k:"03", t:"Earnings Season Impact", p:"After-hours + pre-market can gap hard. Avoid oversized positions into reports."}
+    ]
+  },
+
+  options: {
+    label: "Options",
+    legend: [{key:"CBOE", c:"c1"}],
+    sessions: [
+      {
+        id:"cboe",
+        name:"CBOE (Chicago Board Options Exchange)",
+        venue:"CBOE",
+        tz:"America/Chicago",
+        open:{h:8, m:30},     // 8:30 CT = 9:30 ET
+        close:{h:15, m:0},    // 15:00 CT = 16:00 ET
+        color:"c1",
+        blurb:"Primary US listed options session. Aligns with US equities regular trading hours."
+      }
+    ],
+    insights: [
+      {k:"01", t:"Liquidity During RTH", p:"Options liquidity is best during regular hours; spreads widen after-hours."},
+      {k:"02", t:"Friday Expiration", p:"Weekly expiries concentrate gamma; manage risk into close on popular strikes."},
+      {k:"03", t:"Implied Volatility Crush", p:"IV often spikes into major events (earnings/FOMC) then compresses after."}
+    ]
+  },
+
+  crypto: {
+    label: "Crypto",
+    legend: [{key:"Crypto 24/7", c:"c2"}],
+    sessions: [
+      {
+        id:"crypto247",
+        name:"Cryptocurrency Markets",
+        venue:"Crypto",
+        tz:"UTC",
+        open:{h:0, m:0},
+        close:{h:24, m:0}, // handled as full day
+        color:"c2",
+        blurb:"Continuous trading. Liquidity varies by region; weekends can be thinner."
+      }
+    ],
+    insights: [
+      {k:"01", t:"Peak Liquidity Windows", p:"Often strongest during US/EU business hours; spreads tighten and depth improves."},
+      {k:"02", t:"Weekend Trading Active", p:"Crypto trades 24/7; weekend flows can be choppy with thinner order books."},
+      {k:"03", t:"Low Liquidity Risk", p:"Asian late night (in UTC) can widen spreads; use limits and manage slippage."}
+    ]
+  }
+};
+
+/* ---------- UI + rendering ---------- */
+const tzSelect = document.getElementById('tz');
+const clockEl = document.getElementById('clock');
+const subtitleEl = document.getElementById('subtitle');
+const dayLabelEl = document.getElementById('dayLabel');
+const nextChangeEl = document.getElementById('nextChange');
+const tabsEl = document.getElementById('tabs');
+const axisEl = document.getElementById('axis');
+const barsEl = document.getElementById('bars');
+const listEl = document.getElementById('list');
+const nowLineEl = document.getElementById('nowLine');
+const nowTagEl = document.getElementById('nowTag');
+const statusHintEl = document.getElementById('statusHint');
+const insightHintEl = document.getElementById('insightHint');
+const notesEl = document.getElementById('notes');
+const insightSubEl = document.getElementById('insightSub');
+const refreshBtn = document.getElementById('refreshBtn');
+
+let STATE = {
+  tz: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+  active: 'forex'
+};
+
+const COMMON_TZ = [
+  'America/Boise','America/Los_Angeles','America/Denver','America/Chicago','America/New_York',
+  'Europe/London','Europe/Paris','Europe/Berlin',
+  'Asia/Tokyo','Asia/Hong_Kong','Asia/Singapore','Asia/Dubai',
+  'Australia/Sydney','UTC'
+];
+
+function buildTZMenu(){
+  tzSelect.innerHTML = '';
+  const set = new Set(COMMON_TZ);
+  // ensure user's tz included
+  set.add(STATE.tz);
+  const items = Array.from(set);
+  items.sort((a,b)=> a.localeCompare(b));
+  for(const tz of items){
+    const opt = document.createElement('option');
+    opt.value = tz;
+    opt.textContent = tz;
+    tzSelect.appendChild(opt);
+  }
+  tzSelect.value = STATE.tz;
+}
+
+function buildTabs(){
+  tabsEl.innerHTML = '';
+  for(const [key, obj] of Object.entries(MARKETS)){
+    const t = document.createElement('div');
+    t.className = 'tab' + (key===STATE.active ? ' active' : '');
+    t.textContent = obj.label;
+    t.onclick = () => { STATE.active = key; renderAll(); };
+    tabsEl.appendChild(t);
+  }
+}
+
+function renderAxis(){
+  axisEl.innerHTML = '';
+  const ticks = [0,6,12,18,24];
+  for(const h of ticks){
+    const el = document.createElement('div');
+    el.className = 'tick';
+    el.style.left = (h/24*100) + '%';
+    el.textContent = String(h).padStart(2,'0');
+    axisEl.appendChild(el);
+  }
+}
+
+/* ---------- Session calculations ---------- */
+function sessionIntervalsForDisplayDay(session, displayTZ, baseDate /* Date now */){
+  // display day's YMD
+  const ymd = ymdInTZ(baseDate, displayTZ);
+
+  // build "today" in exchange tz (same YMD as display day, but in exchange tz)
+  // This creates a consistent "timeline day" in the user's selected timezone.
+  // Then we convert each exchange session's wall times to UTC instants anchored to that day.
+  const startWall = {year: ymd.year, month: ymd.month, day: ymd.day, hour: session.open.h, minute: session.open.m, second:0};
+  const endH = session.close.h;
+  const endWall = {year: ymd.year, month: ymd.month, day: ymd.day, hour: (endH===24?23:endH), minute: (endH===24?59:session.close.m), second:(endH===24?59:0)};
+  // handle close=24:00 as end of day
+  let startUtc = zonedWallTimeToUtcDate(startWall, session.tz);
+  let endUtc;
+  if(session.close.h === 24 && session.close.m === 0){
+    // full day
+    // represent as [00:00, 24:00) in display day, we'll special-case later
+    endUtc = zonedWallTimeToUtcDate({year: ymd.year, month: ymd.month, day: ymd.day, hour:23, minute:59, second:59}, session.tz);
+  } else {
+    endUtc = zonedWallTimeToUtcDate(endWall, session.tz);
+    // if end <= start, session crosses midnight in exchange local time -> add 1 day to end
+    if(endUtc.getTime() <= startUtc.getTime()){
+      const y2 = addDaysYMD({year: ymd.year, month: ymd.month, day: ymd.day}, 1);
+      endUtc = zonedWallTimeToUtcDate({year:y2.year, month:y2.month, day:y2.day, hour: session.close.h, minute: session.close.m, second:0}, session.tz);
+    }
+  }
+
+  // Now project interval onto display-day (00:00 to 24:00) boundaries in UTC instants.
+  const dayStartUtc = zonedWallTimeToUtcDate({year: ymd.year, month: ymd.month, day: ymd.day, hour:0, minute:0, second:0}, displayTZ);
+  const dayEndUtc   = zonedWallTimeToUtcDate({year: ymd.year, month: ymd.month, day: ymd.day, hour:23, minute:59, second:59}, displayTZ);
+
+  // Clip to [dayStart, dayEnd]
+  const a = Math.max(startUtc.getTime(), dayStartUtc.getTime());
+  const b = Math.min(endUtc.getTime(), dayEndUtc.getTime());
+  if(b <= a) return [];
+
+  // Convert clipped UTC instants into minutes-from-midnight in display TZ
+  const startMin = minutesSinceMidnightInTZ(new Date(a), displayTZ);
+  const endMin = minutesSinceMidnightInTZ(new Date(b), displayTZ);
+  return [{startMin, endMin, startUtc: new Date(a), endUtc: new Date(b)}];
+}
+
+function breakIntervalsForDisplayDay(session, displayTZ, baseDate){
+  if(!session.breaks || !session.breaks.length) return [];
+  const ymd = ymdInTZ(baseDate, displayTZ);
+  const intervals = [];
+  for(const br of session.breaks){
+    let s = zonedWallTimeToUtcDate({year: ymd.year, month: ymd.month, day: ymd.day, hour: br.start.h, minute: br.start.m, second:0}, session.tz);
+    let e = zonedWallTimeToUtcDate({year: ymd.year, month: ymd.month, day: ymd.day, hour: br.end.h, minute: br.end.m, second:0}, session.tz);
+    if(e.getTime() <= s.getTime()){
+      const y2 = addDaysYMD({year: ymd.year, month: ymd.month, day: ymd.day}, 1);
+      e = zonedWallTimeToUtcDate({year:y2.year, month:y2.month, day:y2.day, hour: br.end.h, minute: br.end.m, second:0}, session.tz);
+    }
+    const dayStartUtc = zonedWallTimeToUtcDate({year: ymd.year, month: ymd.month, day: ymd.day, hour:0, minute:0, second:0}, displayTZ);
+    const dayEndUtc   = zonedWallTimeToUtcDate({year: ymd.year, month: ymd.month, day: ymd.day, hour:23, minute:59, second:59}, displayTZ);
+    const a = Math.max(s.getTime(), dayStartUtc.getTime());
+    const b = Math.min(e.getTime(), dayEndUtc.getTime());
+    if(b <= a) continue;
+    const startMin = minutesSinceMidnightInTZ(new Date(a), displayTZ);
+    const endMin = minutesSinceMidnightInTZ(new Date(b), displayTZ);
+    intervals.push({startMin, endMin, startUtc:new Date(a), endUtc:new Date(b)});
+  }
+  return intervals;
+}
+
+function isOpenNow(session, displayTZ, now){
+  const ints = sessionIntervalsForDisplayDay(session, displayTZ, now);
+  if(!ints.length) return {state:'closed', next: null};
+  const nowMin = minutesSinceMidnightInTZ(now, displayTZ);
+
+  // check breaks (if within open interval but in break => break)
+  const breaks = breakIntervalsForDisplayDay(session, displayTZ, now);
+  const inOpen = ints.some(x => nowMin >= x.startMin && nowMin <= x.endMin);
+  if(!inOpen){
+    // next change = next open today or tomorrow
+    return {state:'closed', next: nextEventForSession(session, displayTZ, now)};
+  }
+  const inBreak = breaks.some(x => nowMin >= x.startMin && nowMin <= x.endMin);
+  if(inBreak){
+    return {state:'break', next: nextEventForSession(session, displayTZ, now)};
+  }
+  return {state:'open', next: nextEventForSession(session, displayTZ, now)};
+}
+
+function nextEventForSession(session, displayTZ, now){
+  // compute today's open/close/break boundaries in display TZ (as minutes)
+  const todayInts = sessionIntervalsForDisplayDay(session, displayTZ, now);
+  const todayBreaks = breakIntervalsForDisplayDay(session, displayTZ, now);
+  const nowMin = minutesSinceMidnightInTZ(now, displayTZ);
+
+  const points = [];
+  for(const i of todayInts){
+    points.push({t:i.startMin, kind:'opens'});
+    points.push({t:i.endMin, kind:'closes'});
+  }
+  for(const b of todayBreaks){
+    points.push({t:b.startMin, kind:'break starts'});
+    points.push({t:b.endMin, kind:'break ends'});
+  }
+  points.sort((a,b)=>a.t-b.t);
+
+  const nextToday = points.find(p => p.t > nowMin + 0.01);
+  if(nextToday){
+    return {inDays:0, atMin: nextToday.t, kind: nextToday.kind};
+  }
+
+  // else: compute tomorrow's open (next significant event)
+  const tomorrow = new Date(now.getTime() + 24*60*60*1000);
+  const tInts = sessionIntervalsForDisplayDay(session, displayTZ, tomorrow);
+  const tBreaks = breakIntervalsForDisplayDay(session, displayTZ, tomorrow);
+  const tPoints = [];
+  for(const i of tInts){
+    tPoints.push({t:i.startMin, kind:'opens'});
+    tPoints.push({t:i.endMin, kind:'closes'});
+  }
+  for(const b of tBreaks){
+    tPoints.push({t:b.startMin, kind:'break starts'});
+    tPoints.push({t:b.endMin, kind:'break ends'});
+  }
+  tPoints.sort((a,b)=>a.t-b.t);
+  const first = tPoints[0];
+  if(!first) return null;
+  return {inDays:1, atMin:first.t, kind:first.kind};
+}
+
+function computeNextGlobalChange(activeKey, displayTZ, now){
+  const sessions = MARKETS[activeKey].sessions;
+  const events = [];
+  for(const s of sessions){
+    const nx = nextEventForSession(s, displayTZ, now);
+    if(!nx) continue;
+    events.push({...nx, session:s});
+  }
+  if(!events.length) return null;
+
+  // compare by absolute time: today minutes vs tomorrow minutes + 1440
+  events.sort((a,b)=>{
+    const ta = a.atMin + a.inDays*1440;
+    const tb = b.atMin + b.inDays*1440;
+    return ta - tb;
+  });
+  return events[0];
+}
+
+/* ---------- Rendering timeline + list ---------- */
+function clearBars(){
+  // remove all bars but keep gridv + nowline + nowtag
+  const keep = new Set(['gridv','nowLine','nowTag']);
+  const children = Array.from(barsEl.children);
+  for(const el of children){
+    if(el.classList.contains('gridv')) continue;
+    if(el.id === 'nowLine' || el.id === 'nowTag') continue;
+    barsEl.removeChild(el);
+  }
+}
+
+function renderBars(activeKey, displayTZ, now){
+  clearBars();
+  const sessions = MARKETS[activeKey].sessions;
+
+  // now line
+  const nowMin = minutesSinceMidnightInTZ(now, displayTZ);
+  const nowPct = clamp(nowMin/1440*100, 0, 100);
+  nowLineEl.style.left = nowPct + '%';
+  nowTagEl.style.left = nowPct + '%';
+  nowTagEl.textContent = fmtTime(now, displayTZ);
+
+  // lane layout
+  const laneH = 20;
+  const laneGap = 6;
+
+  sessions.forEach((s, idx)=>{
+    const intervals = sessionIntervalsForDisplayDay(s, displayTZ, now);
+
+    // if crypto full day: just draw full width
+    if(s.close.h===24 && s.open.h===0){
+      intervals.length = 0;
+      intervals.push({startMin:0, endMin:1440});
+    }
+
+    for(const it of intervals){
+      const left = clamp(it.startMin/1440*100, 0, 100);
+      const width = clamp((it.endMin-it.startMin)/1440*100, 0, 100);
+
+      const bar = document.createElement('div');
+      bar.className = `bar ${s.color}`;
+      bar.style.left = left + '%';
+      bar.style.width = width + '%';
+      bar.style.top = (10 + idx*(laneH+laneGap)) + 'px';
+      bar.style.height = laneH + 'px';
+
+      const name = document.createElement('div');
+      name.className = 'barName';
+      name.textContent = s.venue;
+
+      const time = document.createElement('small');
+      // display open/close in display TZ for the clipped interval
+      const openT = minutesToHM(it.startMin);
+      const closeT = minutesToHM(it.endMin);
+      time.textContent = `${openT}–${closeT}`;
+
+      bar.appendChild(name);
+      bar.appendChild(time);
+
+      barsEl.appendChild(bar);
+    }
+  });
+
+  // adjust container height based on number of lanes
+  const h = 10 + sessions.length*(laneH+laneGap) + 10;
+  barsEl.style.height = Math.max(86, h) + 'px';
+}
+
+function renderList(activeKey, displayTZ, now){
+  listEl.innerHTML = '';
+  const sessions = MARKETS[activeKey].sessions;
+  const nowMin = minutesSinceMidnightInTZ(now, displayTZ);
+
+  // hint line
+  statusHintEl.textContent = `Evaluated in ${displayTZ}`;
+
+  for(const s of sessions){
+    const status = isOpenNow(s, displayTZ, now);
+
+    // compute today's open/close in display TZ (for display)
+    let openStr = '—', closeStr = '—';
+    const ints = sessionIntervalsForDisplayDay(s, displayTZ, now);
+    if(s.close.h===24 && s.open.h===0){
+      openStr = '00:00';
+      closeStr = '24:00';
+    } else if(ints.length){
+      // not perfect if clipped, so compute using exchange wall times but displayed in displayTZ:
+      // build absolute instants for open/close for the timeline day then format.
+      const ymd = ymdInTZ(now, displayTZ);
+      const openUtc = zonedWallTimeToUtcDate({year: ymd.year, month: ymd.month, day: ymd.day, hour:s.open.h, minute:s.open.m, second:0}, s.tz);
+      let closeUtc = zonedWallTimeToUtcDate({year: ymd.year, month: ymd.month, day: ymd.day, hour:s.close.h, minute:s.close.m, second:0}, s.tz);
+      if(s.close.h===24 && s.close.m===0){
+        closeUtc = new Date(openUtc.getTime() + 24*60*60*1000);
+      } else if(closeUtc.getTime() <= openUtc.getTime()){
+        const y2 = addDaysYMD(ymd, 1);
+        closeUtc = zonedWallTimeToUtcDate({year:y2.year, month:y2.month, day:y2.day, hour:s.close.h, minute:s.close.m, second:0}, s.tz);
+      }
+      openStr = fmtTime(openUtc, displayTZ);
+      closeStr = fmtTime(closeUtc, displayTZ);
+    }
+
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    const left = document.createElement('div');
+    const top = document.createElement('div');
+    top.className = 'rowTop';
+
+    const nm = document.createElement('div');
+    nm.className = 'marketName';
+    nm.textContent = s.name;
+
+    const badge = document.createElement('div');
+    badge.className = 'badge ' + (status.state === 'open' ? 'open' : status.state === 'break' ? 'break' : 'closed');
+    badge.textContent = status.state.toUpperCase();
+
+    top.appendChild(nm);
+    top.appendChild(badge);
+
+    const kv = document.createElement('div');
+    kv.className = 'kv';
+
+    const addKV = (k,v)=>{
+      const b = document.createElement('b'); b.textContent = k;
+      const d = document.createElement('div'); d.textContent = v;
+      kv.appendChild(b); kv.appendChild(d);
+    };
+
+    addKV('LOCAL', `${openStr} → ${closeStr}`);
+    addKV('EXCHANGE', `${s.tz}`);
+
+    // next
+    let nextTxt = '—';
+    const nx = status.next;
+    if(nx){
+      const whenMin = nx.atMin + nx.inDays*1440;
+      const deltaMin = Math.max(0, whenMin - nowMin);
+      const h = Math.floor(deltaMin/60);
+      const m = Math.floor(deltaMin%60);
+      nextTxt = `${nx.kind} in ${h}h ${m}m`;
+    }
+    addKV('NEXT', nextTxt);
+
+    const bl = document.createElement('div');
+    bl.className = 'desc';
+    bl.textContent = s.blurb;
+
+    left.appendChild(top);
+    left.appendChild(kv);
+    left.appendChild(document.createElement('div')).style.height = '8px';
+    left.appendChild(bl);
+
+    // right: if breaks exist, show them (display tz)
+    const right = document.createElement('div');
+    if(s.breaks && s.breaks.length){
+      const brs = breakIntervalsForDisplayDay(s, displayTZ, now);
+      const kv2 = document.createElement('div');
+      kv2.className = 'kv';
+      const title = document.createElement('b'); title.textContent = 'BREAK';
+      const val = document.createElement('div');
+      if(brs.length){
+        // show first break
+        val.textContent = `${minutesToHM(brs[0].startMin)} → ${minutesToHM(brs[0].endMin)} (display TZ)`;
+      } else {
+        val.textContent = '—';
+      }
+      kv2.appendChild(title); kv2.appendChild(val);
+
+      const tipB = document.createElement('b'); tipB.textContent = 'NOTE';
+      const tipV = document.createElement('div'); tipV.textContent = 'During breaks liquidity can drop; spreads may widen.';
+      kv2.appendChild(tipB); kv2.appendChild(tipV);
+
+      right.appendChild(kv2);
+    } else {
+      const kv2 = document.createElement('div');
+      kv2.className = 'kv';
+      const title = document.createElement('b'); title.textContent = 'MODE';
+      const val = document.createElement('div'); val.textContent = 'Continuous session (no break)';
+      kv2.appendChild(title); kv2.appendChild(val);
+      right.appendChild(kv2);
+    }
+
+    row.appendChild(left);
+    row.appendChild(right);
+    listEl.appendChild(row);
+  }
+}
+
+function renderInsights(activeKey, displayTZ, now){
+  const data = MARKETS[activeKey];
+  notesEl.innerHTML = '';
+  insightHintEl.textContent = `Context: ${data.label}`;
+  insightSubEl.textContent = `${fmtDateLine(now, displayTZ)} • ${displayTZ}`;
+
+  data.insights.forEach(x=>{
+    const note = document.createElement('div');
+    note.className = 'note';
+    const ico = document.createElement('div');
+    ico.className = 'ico';
+    ico.textContent = x.k;
+    const body = document.createElement('div');
+    const b = document.createElement('b'); b.textContent = x.t;
+    const p = document.createElement('p'); p.textContent = x.p;
+    body.appendChild(b); body.appendChild(p);
+    note.appendChild(ico); note.appendChild(body);
+    notesEl.appendChild(note);
+  });
+}
+
+function renderSubtitle(displayTZ, now){
+  subtitleEl.textContent = `${humanDay(now, displayTZ)} • ${displayTZ} • Live`;
+  dayLabelEl.textContent = humanDay(now, displayTZ);
+}
+
+function renderNextChange(activeKey, displayTZ, now){
+  const ev = computeNextGlobalChange(activeKey, displayTZ, now);
+  if(!ev){
+    nextChangeEl.textContent = '—';
+    return;
+  }
+  const whenMin = ev.atMin + ev.inDays*1440;
+  const nowMin = minutesSinceMidnightInTZ(now, displayTZ);
+  const delta = Math.max(0, whenMin - nowMin);
+  const h = Math.floor(delta/60);
+  const m = Math.floor(delta%60);
+  const at = minutesToHM(ev.atMin);
+  const daySuffix = ev.inDays ? ' tomorrow' : ' today';
+  nextChangeEl.textContent = `${ev.session.venue} ${ev.kind} in ${h}h ${m}m (${at}${daySuffix})`;
+}
+
+function renderAll(){
+  const now = new Date();
+  renderSubtitle(STATE.tz, now);
+  renderAxis();
+  buildTabs();
+  renderBars(STATE.active, STATE.tz, now);
+  renderList(STATE.active, STATE.tz, now);
+  renderInsights(STATE.active, STATE.tz, now);
+  renderNextChange(STATE.active, STATE.tz, now);
+}
+
+/* ---------- Live clock + loops ---------- */
+function tickClock(){
+  const now = new Date();
+  clockEl.textContent = `${fmtTime(now, STATE.tz)} • ${fmtDateLine(now, STATE.tz)}`;
+}
+function tickMain(){
+  renderAll();
+}
+
+/* ---------- Init ---------- */
+buildTZMenu();
+buildTabs();
+renderAxis();
+tickClock();
+renderAll();
+
+tzSelect.addEventListener('change', ()=>{
+  STATE.tz = tzSelect.value;
+  renderAll();
+});
+refreshBtn.addEventListener('click', ()=>{
+  tickClock();
+  renderAll();
+});
+
+setInterval(tickClock, 15000);
+setInterval(tickMain, 30000);
+</script>
 </body>
 </html>
