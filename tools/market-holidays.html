@@ -1,1384 +1,1223 @@
-import React, { useEffect, useMemo, useState } from "react";
-import {
-  Calendar,
-  Clock,
-  Globe,
-  ChevronLeft,
-  ChevronRight,
-  TrendingDown,
-} from "lucide-react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FYNX — Market Holidays (2025–2027)</title>
 
-/**
- * FYNX — Market Holidays (2025–2027)
- * - Black/white product UI
- * - Generates holidays programmatically for major markets + FX liquidity warnings
- * - DST/timezone-correct display using Intl (no hard-coded UTC offsets)
- *
- * Notes:
- * - “Forex” is mostly open 24/5. This dashboard includes *liquidity-impact bank holidays* (US/UK/EU)
- *   and global holidays that historically reduce participation.
- * - “Crypto” is 24/7; we treat major global holidays as liquidity/behavior warnings (not market closures).
- */
+  <!-- Icons (works on GitHub Pages) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-/* ----------------------------- Date helpers ----------------------------- */
-
-const MS_DAY = 24 * 60 * 60 * 1000;
-
-function addDays(date, days) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
-}
-
-function startOfDay(date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
-}
-
-function sameDay(a, b) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
-
-function isWeekend(d) {
-  const w = d.getDay();
-  return w === 0 || w === 6;
-}
-
-function observeFixedHoliday(date) {
-  // Market observation convention (common for US/UK):
-  // - If Saturday -> observed Friday
-  // - If Sunday -> observed Monday
-  const day = date.getDay();
-  if (day === 6) return addDays(date, -1);
-  if (day === 0) return addDays(date, 1);
-  return date;
-}
-
-function nthWeekdayOfMonth(year, monthIndex, weekday /*0-6*/, n /*1..5*/) {
-  const first = new Date(year, monthIndex, 1);
-  const firstDay = first.getDay();
-  const delta = (weekday - firstDay + 7) % 7;
-  const day = 1 + delta + (n - 1) * 7;
-  return new Date(year, monthIndex, day);
-}
-
-function lastWeekdayOfMonth(year, monthIndex, weekday /*0-6*/) {
-  const last = new Date(year, monthIndex + 1, 0);
-  const lastDay = last.getDay();
-  const delta = (lastDay - weekday + 7) % 7;
-  return new Date(year, monthIndex, last.getDate() - delta);
-}
-
-// Anonymous Gregorian algorithm (Meeus/Jones/Butcher) for Easter Sunday.
-function easterSunday(year) {
-  const a = year % 19;
-  const b = Math.floor(year / 100);
-  const c = year % 100;
-  const d = Math.floor(b / 4);
-  const e = b % 4;
-  const f = Math.floor((b + 8) / 25);
-  const g = Math.floor((b - f + 1) / 3);
-  const h = (19 * a + b - d - g + 15) % 30;
-  const i = Math.floor(c / 4);
-  const k = c % 4;
-  const l = (32 + 2 * e + 2 * i - h - k) % 7;
-  const m = Math.floor((a + 11 * h + 22 * l) / 451);
-  const month = Math.floor((h + l - 7 * m + 114) / 31); // 3=March, 4=April
-  const day = ((h + l - 7 * m + 114) % 31) + 1;
-  return new Date(year, month - 1, day);
-}
-
-function goodFriday(year) {
-  return addDays(easterSunday(year), -2);
-}
-
-function formatInTZ(date, timeZone, opts) {
-  return new Intl.DateTimeFormat("en-US", { timeZone, ...opts }).format(date);
-}
-
-/* --------------------------- Market definitions -------------------------- */
-
-const REGIONS = ["Americas", "Europe", "Asia"];
-const MARKET_TYPES = ["Stocks", "Options", "Forex", "Crypto"];
-
-const EXCHANGES = {
-  US: { code: "US", label: "NYSE/NASDAQ", region: "Americas", markets: ["Stocks", "Options"] },
-  UK: { code: "UK", label: "LSE", region: "Europe", markets: ["Stocks"] },
-  HK: { code: "HK", label: "HKEX", region: "Asia", markets: ["Stocks"] },
-  JP: { code: "JP", label: "TSE", region: "Asia", markets: ["Stocks"] },
-  FX: { code: "FX", label: "FX Liquidity", region: "Global", markets: ["Forex"] },
-  CR: { code: "CR", label: "Crypto", region: "Global", markets: ["Crypto"] },
-};
-
-function mkHoliday({
-  name,
-  date,
-  status = "closed", // closed | early | warning
-  impact = "medium", // high | medium | low
-  regions,
-  exchanges,
-  markets,
-  notes,
-}) {
-  const d = startOfDay(date);
-  return {
-    id: `${name}-${d.getFullYear()}-${d.getMonth()}-${d.getDate()}-${exchanges.join(",")}`,
-    name,
-    date: d,
-    status,
-    impact,
-    regions,
-    exchanges,
-    markets,
-    notes,
-  };
-}
-
-/* ---------------------- Holiday generators (2025–2027) ------------------- */
-
-function buildUSHolidays(year) {
-  const list = [];
-
-  // Fixed (observed)
-  const newYear = observeFixedHoliday(new Date(year, 0, 1));
-  list.push(
-    mkHoliday({
-      name: "New Year’s Day",
-      date: newYear,
-      status: "closed",
-      impact: "high",
-      regions: ["Americas"],
-      exchanges: ["NYSE", "NASDAQ"],
-      markets: ["Stocks", "Options"],
-      notes:
-        "US equities closed. FX open but liquidity can be uneven, especially around the first London/NY overlap of the year.",
-    })
-  );
-
-  // MLK Day: 3rd Monday Jan
-  list.push(
-    mkHoliday({
-      name: "Martin Luther King Jr. Day",
-      date: nthWeekdayOfMonth(year, 0, 1, 3),
-      status: "closed",
-      impact: "medium",
-      regions: ["Americas"],
-      exchanges: ["NYSE", "NASDAQ"],
-      markets: ["Stocks", "Options"],
-      notes: "US equities closed. FX continues; expect thinner NY session liquidity.",
-    })
-  );
-
-  // Presidents' Day: 3rd Monday Feb
-  list.push(
-    mkHoliday({
-      name: "Presidents’ Day",
-      date: nthWeekdayOfMonth(year, 1, 1, 3),
-      status: "closed",
-      impact: "medium",
-      regions: ["Americas"],
-      exchanges: ["NYSE", "NASDAQ"],
-      markets: ["Stocks", "Options"],
-      notes: "US equities closed. Watch for reduced NY participation across risk assets.",
-    })
-  );
-
-  // Good Friday (not a US equity holiday normally; US markets are open)
-  // Keep it as a *FX/global liquidity warning* (handled elsewhere) but not US closure.
-
-  // Memorial Day: last Monday May
-  list.push(
-    mkHoliday({
-      name: "Memorial Day",
-      date: lastWeekdayOfMonth(year, 4, 1),
-      status: "closed",
-      impact: "medium",
-      regions: ["Americas"],
-      exchanges: ["NYSE", "NASDAQ"],
-      markets: ["Stocks", "Options"],
-      notes: "US equities closed. Liquidity lower into Tuesday open; avoid thin-market traps.",
-    })
-  );
-
-  // Juneteenth: June 19 observed
-  list.push(
-    mkHoliday({
-      name: "Juneteenth National Independence Day",
-      date: observeFixedHoliday(new Date(year, 5, 19)),
-      status: "closed",
-      impact: "medium",
-      regions: ["Americas"],
-      exchanges: ["NYSE", "NASDAQ"],
-      markets: ["Stocks", "Options"],
-      notes: "US equities closed. FX continues; NY liquidity reduced.",
-    })
-  );
-
-  // Independence Day: July 4 observed
-  list.push(
-    mkHoliday({
-      name: "Independence Day",
-      date: observeFixedHoliday(new Date(year, 6, 4)),
-      status: "closed",
-      impact: "medium",
-      regions: ["Americas"],
-      exchanges: ["NYSE", "NASDAQ"],
-      markets: ["Stocks", "Options"],
-      notes: "US equities closed. Summer volumes already lower; spreads can widen.",
-    })
-  );
-
-  // Labor Day: 1st Monday Sep
-  list.push(
-    mkHoliday({
-      name: "Labor Day",
-      date: nthWeekdayOfMonth(year, 8, 1, 1),
-      status: "closed",
-      impact: "medium",
-      regions: ["Americas"],
-      exchanges: ["NYSE", "NASDAQ"],
-      markets: ["Stocks", "Options"],
-      notes: "US equities closed. FX continues; US desks reduced.",
-    })
-  );
-
-  // Thanksgiving: 4th Thursday Nov
-  const thanksgiving = nthWeekdayOfMonth(year, 10, 4, 4);
-  list.push(
-    mkHoliday({
-      name: "Thanksgiving Day",
-      date: thanksgiving,
-      status: "closed",
-      impact: "high",
-      regions: ["Americas"],
-      exchanges: ["NYSE", "NASDAQ"],
-      markets: ["Stocks", "Options"],
-      notes: "US equities closed. Liquidity often thins across global markets.",
-    })
-  );
-
-  // Black Friday: day after Thanksgiving (early close)
-  list.push(
-    mkHoliday({
-      name: "Day After Thanksgiving (Early Close)",
-      date: addDays(thanksgiving, 1),
-      status: "early",
-      impact: "low",
-      regions: ["Americas"],
-      exchanges: ["NYSE", "NASDAQ"],
-      markets: ["Stocks", "Options"],
-      notes: "US equities typically close early. Reduced volume; false breakouts more likely.",
-    })
-  );
-
-  // Christmas: Dec 25 observed
-  list.push(
-    mkHoliday({
-      name: "Christmas Day",
-      date: observeFixedHoliday(new Date(year, 11, 25)),
-      status: "closed",
-      impact: "high",
-      regions: ["Americas"],
-      exchanges: ["NYSE", "NASDAQ"],
-      markets: ["Stocks", "Options"],
-      notes: "US equities closed. Global liquidity very low; avoid oversized risk.",
-    })
-  );
-
-  // Christmas Eve: Dec 24 (early close, common)
-  list.push(
-    mkHoliday({
-      name: "Christmas Eve (Early Close)",
-      date: new Date(year, 11, 24),
-      status: "early",
-      impact: "medium",
-      regions: ["Americas"],
-      exchanges: ["NYSE", "NASDAQ"],
-      markets: ["Stocks", "Options"],
-      notes: "US equities often close early. Year-end positioning dominates flows.",
-    })
-  );
-
-  return list;
-}
-
-function buildUKHolidays(year) {
-  const list = [];
-  // UK: New Year’s Day (no Sat/Sun observation differences can exist; we keep common observation)
-  list.push(
-    mkHoliday({
-      name: "UK New Year’s Day",
-      date: observeFixedHoliday(new Date(year, 0, 1)),
-      status: "closed",
-      impact: "medium",
-      regions: ["Europe"],
-      exchanges: ["LSE"],
-      markets: ["Stocks"],
-      notes: "UK equities closed. London FX desks may be lighter depending on broader Europe participation.",
-    })
-  );
-
-  // Good Friday + Easter Monday
-  const gf = goodFriday(year);
-  list.push(
-    mkHoliday({
-      name: "Good Friday",
-      date: gf,
-      status: "closed",
-      impact: "high",
-      regions: ["Europe", "Americas", "Asia"],
-      exchanges: ["LSE"],
-      markets: ["Stocks"],
-      notes: "European market closures reduce global liquidity; watch erratic moves and wider spreads.",
-    })
-  );
-  list.push(
-    mkHoliday({
-      name: "Easter Monday",
-      date: addDays(gf, 3),
-      status: "closed",
-      impact: "high",
-      regions: ["Europe"],
-      exchanges: ["LSE"],
-      markets: ["Stocks"],
-      notes: "UK equities closed. London liquidity reduced; FX still open but thinner.",
-    })
-  );
-
-  // Early May bank holiday: 1st Monday May
-  list.push(
-    mkHoliday({
-      name: "Early May Bank Holiday",
-      date: nthWeekdayOfMonth(year, 4, 1, 1),
-      status: "closed",
-      impact: "medium",
-      regions: ["Europe"],
-      exchanges: ["LSE"],
-      markets: ["Stocks"],
-      notes: "UK equities closed. London participation reduced across Europe hours.",
-    })
-  );
-
-  // Spring bank holiday: last Monday May
-  list.push(
-    mkHoliday({
-      name: "Spring Bank Holiday",
-      date: lastWeekdayOfMonth(year, 4, 1),
-      status: "closed",
-      impact: "medium",
-      regions: ["Europe"],
-      exchanges: ["LSE"],
-      markets: ["Stocks"],
-      notes: "UK equities closed. London liquidity reduced.",
-    })
-  );
-
-  // Summer bank holiday: last Monday Aug
-  list.push(
-    mkHoliday({
-      name: "Summer Bank Holiday (UK)",
-      date: lastWeekdayOfMonth(year, 7, 1),
-      status: "closed",
-      impact: "medium",
-      regions: ["Europe"],
-      exchanges: ["LSE"],
-      markets: ["Stocks"],
-      notes: "UK equities closed. Summer liquidity can be thin; manage size.",
-    })
-  );
-
-  // Christmas + Boxing Day (observed)
-  const xmas = observeFixedHoliday(new Date(year, 11, 25));
-  const boxing = observeFixedHoliday(new Date(year, 11, 26));
-  list.push(
-    mkHoliday({
-      name: "Christmas Day (UK)",
-      date: xmas,
-      status: "closed",
-      impact: "high",
-      regions: ["Europe"],
-      exchanges: ["LSE"],
-      markets: ["Stocks"],
-      notes: "UK equities closed. Global risk liquidity very low.",
-    })
-  );
-  list.push(
-    mkHoliday({
-      name: "Boxing Day (UK)",
-      date: boxing,
-      status: "closed",
-      impact: "high",
-      regions: ["Europe"],
-      exchanges: ["LSE"],
-      markets: ["Stocks"],
-      notes: "UK equities closed. London desks minimal; FX can be thin.",
-    })
-  );
-
-  return list;
-}
-
-function buildHKHolidays(year) {
-  // HKEX has a longer list; for a “real product” feel without missing key closures,
-  // we include the most impactful HK closures that affect Asia liquidity:
-  const list = [];
-  list.push(
-    mkHoliday({
-      name: "Hong Kong New Year’s Day",
-      date: observeFixedHoliday(new Date(year, 0, 1)),
-      status: "closed",
-      impact: "medium",
-      regions: ["Asia"],
-      exchanges: ["HKEX"],
-      markets: ["Stocks"],
-      notes: "HK equities closed. Asia risk participation reduced early in the year.",
-    })
-  );
-
-  // Lunar New Year (approx) varies; without an external calendar, we include a WARNING window instead of fake dates.
-  // You asked “must be correct”; so we avoid inaccurate hardcoding and label as advisory.
-  list.push(
-    mkHoliday({
-      name: "Lunar New Year (Asia Liquidity Window)",
-      date: new Date(year, 0, 29), // advisory anchor (not a closure date claim)
-      status: "warning",
-      impact: "high",
-      regions: ["Asia"],
-      exchanges: ["HKEX"],
-      markets: ["Stocks"],
-      notes:
-        "Advisory: Lunar New Year week often reduces Asia liquidity. Exact HKEX closure dates vary by year; confirm official HKEX calendar for trading-day specifics.",
-    })
-  );
-
-  // Good Friday / Easter Monday impact in HK can vary; treat as warning unless confirmed.
-  const gf = goodFriday(year);
-  list.push(
-    mkHoliday({
-      name: "Good Friday (Asia Liquidity Watch)",
-      date: gf,
-      status: "warning",
-      impact: "medium",
-      regions: ["Asia", "Europe"],
-      exchanges: ["HKEX"],
-      markets: ["Stocks"],
-      notes:
-        "Advisory: Global holiday cluster can reduce participation. Check HKEX official schedule for exact closures.",
-    })
-  );
-
-  // Christmas
-  list.push(
-    mkHoliday({
-      name: "Christmas Day (Hong Kong)",
-      date: new Date(year, 11, 25),
-      status: "warning",
-      impact: "medium",
-      regions: ["Asia"],
-      exchanges: ["HKEX"],
-      markets: ["Stocks"],
-      notes:
-        "Advisory: Many global desks are offline; Asia liquidity can be thin even if local markets partially operate.",
-    })
-  );
-
-  return list;
-}
-
-function buildJPHolidays(year) {
-  // Similar correctness note: Japan has many public holidays; exact market closures depend on TSE calendar.
-  // To avoid incorrect “all holidays”, we add major liquidity-impact warnings.
-  const list = [];
-  list.push(
-    mkHoliday({
-      name: "Japan New Year Liquidity Window",
-      date: new Date(year, 0, 2),
-      status: "warning",
-      impact: "high",
-      regions: ["Asia"],
-      exchanges: ["TSE"],
-      markets: ["Stocks"],
-      notes:
-        "Advisory: Early January often sees reduced Japan participation. Confirm TSE calendar for exact closure days.",
-    })
-  );
-  // Golden Week window (late Apr–early May)
-  list.push(
-    mkHoliday({
-      name: "Golden Week (Japan Liquidity Window)",
-      date: new Date(year, 3, 29),
-      status: "warning",
-      impact: "high",
-      regions: ["Asia"],
-      exchanges: ["TSE"],
-      markets: ["Stocks"],
-      notes:
-        "Advisory: Golden Week reduces Japan liquidity. Exact market closure dates vary; confirm TSE calendar for the year.",
-    })
-  );
-  return list;
-}
-
-function buildFXLiquidityHolidays(year) {
-  // FX: open 24/5; include liquidity-impact bank holidays and year-end effects.
-  const list = [];
-  const gf = goodFriday(year);
-
-  list.push(
-    mkHoliday({
-      name: "Good Friday (FX Liquidity)",
-      date: gf,
-      status: "warning",
-      impact: "high",
-      regions: ["Americas", "Europe", "Asia"],
-      exchanges: ["FX"],
-      markets: ["Forex"],
-      notes:
-        "FX is open, but participation is reduced. Expect wider spreads and irregular price action; avoid forcing setups.",
-    })
-  );
-
-  list.push(
-    mkHoliday({
-      name: "Christmas Day (FX Liquidity)",
-      date: new Date(year, 11, 25),
-      status: "warning",
-      impact: "high",
-      regions: ["Americas", "Europe", "Asia"],
-      exchanges: ["FX"],
-      markets: ["Forex"],
-      notes:
-        "FX liquidity can be extremely low. Spreads and slippage risk increase; consider staying flat.",
-    })
-  );
-
-  list.push(
-    mkHoliday({
-      name: "New Year Week (FX Liquidity)",
-      date: new Date(year, 0, 2),
-      status: "warning",
-      impact: "medium",
-      regions: ["Americas", "Europe", "Asia"],
-      exchanges: ["FX"],
-      markets: ["Forex"],
-      notes:
-        "First week of the year often has reduced participation and choppy conditions. Prioritize A+ setups only.",
-    })
-  );
-
-  // US Thanksgiving effect
-  list.push(
-    mkHoliday({
-      name: "Thanksgiving (FX Liquidity)",
-      date: nthWeekdayOfMonth(year, 10, 4, 4),
-      status: "warning",
-      impact: "medium",
-      regions: ["Americas"],
-      exchanges: ["FX"],
-      markets: ["Forex"],
-      notes:
-        "NY participation reduced. London may carry flow, but liquidity can be thinner during NY hours.",
-    })
-  );
-
-  return list;
-}
-
-function buildCryptoHolidays(year) {
-  // Crypto is always open; we provide behavior/participation notes on major global holidays.
-  return [
-    mkHoliday({
-      name: "Christmas Day (Crypto Behavior Watch)",
-      date: new Date(year, 11, 25),
-      status: "warning",
-      impact: "medium",
-      regions: ["Americas", "Europe", "Asia"],
-      exchanges: ["Crypto"],
-      markets: ["Crypto"],
-      notes:
-        "Crypto remains open. Institutional participation often lower; watch thin books and sudden spikes.",
-    }),
-    mkHoliday({
-      name: "New Year’s Day (Crypto Behavior Watch)",
-      date: new Date(year, 0, 1),
-      status: "warning",
-      impact: "medium",
-      regions: ["Americas", "Europe", "Asia"],
-      exchanges: ["Crypto"],
-      markets: ["Crypto"],
-      notes:
-        "Crypto remains open. Liquidity can be patchy; avoid over-leverage during holiday hours.",
-    }),
-  ];
-}
-
-function buildHolidayDataset() {
-  const years = [2025, 2026, 2027];
-  const all = [];
-  for (const y of years) {
-    all.push(...buildUSHolidays(y));
-    all.push(...buildUKHolidays(y));
-    all.push(...buildHKHolidays(y));
-    all.push(...buildJPHolidays(y));
-    all.push(...buildFXLiquidityHolidays(y));
-    all.push(...buildCryptoHolidays(y));
-  }
-
-  // De-duplicate by id
-  const map = new Map();
-  for (const h of all) map.set(h.id, h);
-
-  return Array.from(map.values()).sort((a, b) => a.date - b.date);
-}
-
-/* ------------------------------ UI helpers ------------------------------ */
-
-function statusLabel(status) {
-  if (status === "closed") return "Market Closed";
-  if (status === "early") return "Early Close";
-  return "Liquidity Warning";
-}
-
-function impactRank(impact) {
-  if (impact === "high") return 3;
-  if (impact === "medium") return 2;
-  return 1;
-}
-
-/* ------------------------------- Component ------------------------------ */
-
-const MarketHolidaysDashboard = () => {
-  const holidaysAll = useMemo(() => buildHolidayDataset(), []);
-
-  const [selectedRegion, setSelectedRegion] = useState("all");
-  const [selectedMarket, setSelectedMarket] = useState("all");
-  const [selectedYear, setSelectedYear] = useState(2025);
-  const [highImpactOnly, setHighImpactOnly] = useState(false);
-  const [viewMode, setViewMode] = useState("list"); // list | timeline | heatmap
-  const [currentMonth, setCurrentMonth] = useState(0);
-
-  const [timeZone, setTimeZone] = useState(() => {
-    try {
-      return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Boise";
-    } catch {
-      return "America/Boise";
+  <style>
+    /* =========================
+       FYNX Black/White UI
+       (No React, no Tailwind)
+       ========================= */
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      font-family:'Inter','Segoe UI',system-ui,sans-serif;
+      color:#fff;background:#000;min-height:100vh;overflow-x:hidden;
     }
-  });
 
-  const [now, setNow] = useState(() => new Date());
+    /* Animated Background */
+    .animated-bg{position:fixed;inset:0;z-index:-1;background:#000;overflow:hidden}
+    .grid-overlay{
+      position:absolute;inset:0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size:50px 50px;
+      animation:gridMove 20s linear infinite;
+    }
+    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
+    .orb{position:absolute;border-radius:50%;filter:blur(85px);opacity:.20;animation:float 20s ease-in-out infinite}
+    .orb1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-220px;left:-220px}
+    .orb2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
+    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
 
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 15000);
-    return () => clearInterval(t);
-  }, []);
+    /* Header */
+    header{
+      position:sticky;top:0;z-index:999;
+      background:rgba(0,0,0,.88);
+      backdrop-filter:blur(18px);
+      border-bottom:1px solid rgba(255,255,255,.10);
+      padding:1rem 0;
+    }
+    .nav{
+      max-width:1200px;margin:0 auto;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 1.25rem;gap:1rem;
+    }
+    .brand{
+      display:flex;align-items:center;gap:.6rem;
+      font-weight:900;letter-spacing:-1px;font-size:1.1rem;
+    }
+    .nav a{
+      color:rgba(255,255,255,.85);
+      text-decoration:none;font-weight:800;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.04);
+      padding:.55rem .9rem;border-radius:999px;
+      transition:all .25s ease;white-space:nowrap;
+    }
+    .nav a:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
 
-  // Regions list in your original code didn’t include “Global”; keep UI simple
-  const regionOptions = ["all", "Americas", "Europe", "Asia"];
+    /* Layout */
+    main{max-width:1200px;margin:0 auto;padding:2.2rem 1.25rem 5rem}
+    .card{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      border-radius:22px;
+      backdrop-filter:blur(10px);
+      padding:1.7rem 1.6rem;
+    }
+    .hero{
+      display:flex;align-items:flex-start;justify-content:space-between;
+      gap:1rem;flex-wrap:wrap;
+      padding-bottom:1.1rem;margin-bottom:1.1rem;
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+    h1{
+      font-size:2.4rem;line-height:1.05;letter-spacing:-2px;
+      background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      margin-bottom:.35rem;
+    }
+    .sub{
+      color:rgba(255,255,255,.60);
+      font-size:1rem;line-height:1.7;max-width:78ch;
+    }
+    .tiny{
+      margin-top:.7rem;
+      color:rgba(255,255,255,.42);
+      font-size:.84rem;line-height:1.7;max-width:95ch;
+    }
 
-  const filteredHolidays = useMemo(() => {
-    return holidaysAll
-      .filter((h) => h.date.getFullYear() === selectedYear)
-      .filter((h) => {
-        if (selectedRegion === "all") return true;
-        return h.regions.includes(selectedRegion);
-      })
-      .filter((h) => {
-        if (selectedMarket === "all") return true;
-        return h.markets.includes(selectedMarket);
-      })
-      .filter((h) => {
-        if (!highImpactOnly) return true;
-        return h.impact === "high";
-      })
-      .sort((a, b) => a.date - b.date);
-  }, [holidaysAll, selectedYear, selectedRegion, selectedMarket, highImpactOnly]);
+    /* Pills & chips */
+    .chips{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end}
+    .chip{
+      display:inline-flex;align-items:center;gap:.45rem;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.04);
+      padding:.42rem .7rem;border-radius:999px;
+      color:rgba(255,255,255,.82);
+      font-weight:900;font-size:.83rem;
+    }
+    .pill{
+      display:inline-flex;align-items:center;gap:.4rem;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.05);
+      padding:.25rem .55rem;border-radius:999px;
+      font-size:.78rem;color:rgba(255,255,255,.82);
+      font-weight:900;white-space:nowrap;
+    }
 
-  const nextEvent = useMemo(() => {
-    const start = startOfDay(now);
-    return (
-      holidaysAll
-        .filter((h) => h.date.getFullYear() === selectedYear)
-        .filter((h) => h.date.getTime() >= start.getTime())
-        .sort((a, b) => a.date - b.date)[0] || null
-    );
-  }, [holidaysAll, selectedYear, now]);
+    /* Next Event */
+    .nextBox{
+      margin-top:1rem;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      border-radius:18px;
+      padding:1rem 1.1rem;
+    }
+    .nextRow{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+    .nextLeft{display:flex;align-items:flex-start;gap:.75rem}
+    .nextLabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:.25rem}
+    .nextName{font-size:1.15rem;font-weight:900;color:#fff}
+    .nextMeta{font-size:.82rem;color:rgba(255,255,255,.45);margin-top:.2rem}
+    .nextDate{font-size:1.85rem;font-weight:300;color:#fff;text-align:right}
+    .badge{
+      display:inline-flex;align-items:center;gap:.4rem;
+      border-radius:999px;
+      padding:.25rem .65rem;
+      font-size:.78rem;font-weight:900;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.05);
+      color:rgba(255,255,255,.85);
+      margin-top:.35rem;
+    }
 
-  const globalImpact = useMemo(() => {
-    if (!nextEvent) return null;
-    const daysUntil = Math.max(0, Math.ceil((nextEvent.date - startOfDay(now)) / MS_DAY));
-    return {
-      event: nextEvent,
-      regions: nextEvent.regions,
-      liquidityImpact: nextEvent.impact,
-      daysUntil,
-    };
-  }, [nextEvent, now]);
+    /* Global Impact */
+    .impactBox{
+      margin-top:1rem;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.40);
+      border-radius:18px;
+      padding:1rem 1.1rem;
+    }
+    .impactGrid{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;
+    }
+    @media(max-width:980px){ .impactGrid{grid-template-columns:repeat(2,1fr)} }
+    @media(max-width:560px){ .impactGrid{grid-template-columns:1fr} }
+    .impactTitle{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:.35rem}
+    .impactBig{font-size:1.65rem;font-weight:300;color:#fff}
+    .impactSmall{font-size:.82rem;color:rgba(255,255,255,.40);margin-top:.15rem}
+    .bar{
+      height:10px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);
+      overflow:hidden;margin-top:.45rem;
+    }
+    .bar > div{height:10px;border-radius:999px;background:rgba(255,255,255,.80)}
 
-  // Timeline (month grid)
-  const timelineData = useMemo(() => {
-    const daysInMonth = new Date(selectedYear, currentMonth + 1, 0).getDate();
-    const monthHolidays = filteredHolidays.filter((h) => h.date.getMonth() === currentMonth);
+    /* Filters sticky */
+    .filtersWrap{
+      margin-top:1.2rem;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.45);
+      border-radius:18px;
+      padding:1rem 1.1rem;
+    }
+    .filters{
+      display:grid;grid-template-columns: 1fr 1fr 1fr 1.2fr auto;
+      gap:.75rem;align-items:end;
+    }
+    @media(max-width:980px){ .filters{grid-template-columns:1fr 1fr; } .filters .rightBtn{grid-column:1/-1; justify-content:flex-start} }
+    @media(max-width:560px){ .filters{grid-template-columns:1fr; } .filters .rightBtn{grid-column:auto} }
+    .field{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      border-radius:14px;
+      padding:.75rem .85rem;
+    }
+    .label{
+      font-size:.72rem;font-weight:900;letter-spacing:.18em;
+      text-transform:uppercase;color:rgba(255,255,255,.45);
+      margin-bottom:.35rem;
+    }
+    select,input{
+      width:100%;
+      background:transparent;border:0;outline:none;
+      color:#fff;font-weight:900;font-size:.95rem;
+    }
+    option{color:#000}
+    .btn{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+      color:rgba(255,255,255,.80);
+      padding:.75rem 1rem;border-radius:14px;
+      font-weight:900;font-size:.9rem;
+      cursor:pointer;transition:.2s;
+      display:inline-flex;align-items:center;gap:.55rem;
+      white-space:nowrap;
+    }
+    .btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.20);transform:translateY(-1px)}
+    .btn.active{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.22);color:#fff}
+    .rightBtn{display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap}
 
-    return Array.from({ length: daysInMonth }, (_, i) => {
-      const day = i + 1;
-      const holiday = monthHolidays.find((h) => h.date.getDate() === day) || null;
-      return { day, holiday };
-    });
-  }, [filteredHolidays, selectedYear, currentMonth]);
+    /* Views */
+    .viewSection{margin-top:1.1rem}
+    .tabs{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end}
+    .tab{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);padding:.55rem .8rem;border-radius:12px;font-weight:900;font-size:.9rem;color:rgba(255,255,255,.70);cursor:pointer;transition:.2s}
+    .tab:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.20);transform:translateY(-1px)}
+    .tab.active{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.22);color:#fff}
 
-  // Heatmap counts by region x month
-  const heatmapData = useMemo(() => {
-    const regions = ["Americas", "Europe", "Asia"];
-    const months = Array.from({ length: 12 }, (_, i) => i);
+    .statLine{
+      margin-top:.75rem;
+      font-size:.82rem;
+      color:rgba(255,255,255,.45);
+      display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;
+    }
+    .dotSep{color:rgba(255,255,255,.20)}
 
-    return regions.map((region) => {
-      const counts = months.map((m) => {
-        const count = holidaysAll.filter(
-          (h) =>
-            h.date.getFullYear() === selectedYear &&
-            h.date.getMonth() === m &&
-            h.regions.includes(region)
-        ).length;
-        return { month: m, count };
-      });
-      return { region, months: counts };
-    });
-  }, [holidaysAll, selectedYear]);
+    /* List cards */
+    .list{display:flex;flex-direction:column;gap:.85rem;margin-top:1rem}
+    .eventCard{
+      border:1px solid rgba(255,255,255,.10);
+      background:linear-gradient(135deg, rgba(255,255,255,.06), rgba(0,0,0,.65));
+      border-radius:18px;
+      padding:1.1rem 1.1rem;
+      transition:.2s;
+      box-shadow:0 30px 80px rgba(0,0,0,0.55);
+    }
+    .eventCard:hover{border-color:rgba(255,255,255,.16)}
+    .eventTop{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+    .eventNameRow{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+    .eventName{font-size:1.1rem;font-weight:300;color:#fff}
+    .eventDate{font-size:.95rem;color:rgba(255,255,255,.55);margin-top:.2rem}
+    .impactDot{width:10px;height:10px;border-radius:50%}
+    .impact-high{background:#fff}
+    .impact-medium{background:rgba(255,255,255,.70)}
+    .impact-low{background:rgba(255,255,255,.45)}
 
-  const monthNames = useMemo(
-    () => [
-      "January","February","March","April","May","June",
-      "July","August","September","October","November","December"
-    ],
-    []
-  );
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.85rem;padding-top:.85rem;border-top:1px solid rgba(255,255,255,.10)}
+    @media(max-width:780px){ .grid2{grid-template-columns:1fr} }
 
-  // Black/white styling (no red/green UI dependency)
-  const badgeClass = (status) => {
-    if (status === "closed") return "border-white/20 bg-white/5 text-white";
-    if (status === "early") return "border-white/20 bg-white/5 text-white/90";
-    return "border-white/15 bg-white/4 text-white/80";
-  };
+    .sectionTitle{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:.5rem}
+    .tags{display:flex;gap:.45rem;flex-wrap:wrap}
+    .tag{
+      padding:.32rem .55rem;border-radius:10px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);
+      color:rgba(255,255,255,.72);
+      font-size:.78rem;font-weight:900;
+    }
 
-  const impactDotClass = (impact) => {
-    // grayscale intensity only
-    if (impact === "high") return "bg-white";
-    if (impact === "medium") return "bg-white/70";
-    return "bg-white/45";
-  };
+    .impactNote{
+      margin-top:.9rem;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.45);
+      border-radius:16px;
+      padding:.85rem .9rem;
+      display:flex;gap:.7rem;align-items:flex-start;
+    }
+    .impactNote p{color:rgba(255,255,255,.65);font-size:.92rem;line-height:1.7;font-weight:700}
 
-  const heatCellClass = (count) => {
-    if (count === 0) return "bg-white/3 border-white/10";
-    if (count === 1) return "bg-white/6 border-white/15";
-    if (count === 2) return "bg-white/10 border-white/15";
-    return "bg-white/14 border-white/20";
-  };
+    /* Timeline */
+    .timelineTop{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:1rem}
+    .timelineTitle{font-size:1.35rem;font-weight:300;color:#fff}
+    .monthBtns{display:flex;gap:.5rem}
+    .iconBtn{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+      color:#fff;
+      padding:.55rem .65rem;border-radius:12px;
+      cursor:pointer;transition:.2s;
+      display:inline-flex;align-items:center;justify-content:center;
+    }
+    .iconBtn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.20);transform:translateY(-1px)}
+    .iconBtn:disabled{opacity:.3;cursor:not-allowed;transform:none}
+    .grid7{display:grid;grid-template-columns:repeat(7,1fr);gap:.5rem;margin-top:.8rem}
+    .dayCell{
+      aspect-ratio:1/1;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      padding:.55rem .55rem;
+      transition:.2s;
+      overflow:hidden;
+    }
+    .dayCell:hover{background:rgba(255,255,255,.05)}
+    .dayNum{font-size:.9rem;color:rgba(255,255,255,.60);font-weight:900}
+    .dayName{margin-top:.45rem;font-size:.70rem;color:rgba(255,255,255,.55);line-height:1.2;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    .cellClosed{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.20)}
+    .cellEarly{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18)}
+    .cellWarn{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15)}
+    .cellTop{display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem}
+    .tip{margin-top:.85rem;color:rgba(255,255,255,.45);font-size:.82rem}
 
-  const timelineCellClass = (holiday) => {
-    if (!holiday) return "bg-white/3 border-white/10 hover:bg-white/5";
-    // status still B/W
-    if (holiday.status === "closed") return "bg-white/10 border-white/20 hover:bg-white/14";
-    if (holiday.status === "early") return "bg-white/8 border-white/18 hover:bg-white/12";
-    return "bg-white/6 border-white/15 hover:bg-white/9";
-  };
+    /* Heatmap */
+    .heatWrap{margin-top:1rem;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.35);border-radius:18px;overflow:auto}
+    table{width:100%;border-collapse:collapse;min-width:900px}
+    th,td{padding:.75rem .7rem;border-bottom:1px solid rgba(255,255,255,.08)}
+    th{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);background:rgba(255,255,255,.03);text-align:center}
+    th:first-child, td:first-child{text-align:left}
+    .heatCell{height:28px;border-radius:10px;border:1px solid rgba(255,255,255,.10)}
+    .h0{background:rgba(255,255,255,.03)}
+    .h1{background:rgba(255,255,255,.06)}
+    .h2{background:rgba(255,255,255,.10)}
+    .h3{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.20)}
 
-  const tzLabel = useMemo(() => {
-    const dayStr = formatInTZ(now, timeZone, {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-    const timeStr = formatInTZ(now, timeZone, {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-    return `${timeZone} · ${timeStr} · ${dayStr}`;
-  }, [now, timeZone]);
+    /* Big Notes sections */
+    .bigNote{
+      margin-top:1.2rem;
+      border:1px solid rgba(255,255,255,.10);
+      background:linear-gradient(135deg, rgba(255,255,255,.06), rgba(0,0,0,.70));
+      border-radius:18px;
+      padding:1.2rem 1.2rem;
+    }
+    .bigNote h2{font-size:1.35rem;font-weight:300;color:#fff;margin-bottom:.7rem}
+    .cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+    @media(max-width:980px){ .cols3{grid-template-columns:1fr} }
+    .bigNote h3{font-size:.95rem;color:rgba(255,255,255,.75);font-weight:900;margin-bottom:.35rem}
+    .bigNote p{color:rgba(255,255,255,.55);line-height:1.7;font-weight:700;font-size:.92rem}
+    .legend{margin-top:1.2rem;border-top:1px solid rgba(255,255,255,.10);padding-top:1rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+    .legendItems{display:flex;gap:1rem;flex-wrap:wrap}
+    .legendItem{display:flex;align-items:center;gap:.45rem;color:rgba(255,255,255,.55);font-weight:800}
+    .box{width:16px;height:16px;border-radius:6px;border:1px solid rgba(255,255,255,.16)}
+    .bClosed{background:rgba(255,255,255,.10)}
+    .bEarly{background:rgba(255,255,255,.08)}
+    .bWarn{background:rgba(255,255,255,.06)}
+    .foot{max-width:700px;color:rgba(255,255,255,.45);font-size:.80rem;line-height:1.7;font-weight:700}
 
-  // A “smart” list ordering when not filtered: show high impact first on same day
-  const listSorted = useMemo(() => {
-    if (viewMode !== "list") return filteredHolidays;
-    return [...filteredHolidays].sort((a, b) => {
-      if (a.date.getTime() !== b.date.getTime()) return a.date - b.date;
-      return impactRank(b.impact) - impactRank(a.impact);
-    });
-  }, [filteredHolidays, viewMode]);
+    /* Util */
+    .hide{display:none !important}
+  </style>
+</head>
 
-  return (
-    <div className="min-h-screen bg-black text-white font-sans">
-      {/* Header */}
-      <div className="border-b border-white/10 bg-gradient-to-b from-white/5 to-black">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="flex items-start justify-between gap-6 flex-wrap">
-            <div>
-              <h1 className="text-4xl font-light tracking-tight text-white mb-2">
-                Market Holidays
-              </h1>
-              <p className="text-white/55 text-sm tracking-wide">
-                2025–2027 · Market closures, early closes, and liquidity-impact days
-              </p>
-              <p className="mt-3 text-xs text-white/45 max-w-2xl leading-relaxed">
-                Forex is generally open 24/5 and Crypto is 24/7. “Liquidity Warning” entries represent
-                periods where participation often drops and spreads/slippage risk rises. For exchange-perfect
-                calendars, always confirm official notices. This tool is designed for trading risk management.
-              </p>
-            </div>
+<body>
+  <div class="animated-bg">
+    <div class="grid-overlay"></div>
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+  </div>
 
-            <div className="text-right">
-              <div className="flex items-center justify-end gap-2 text-white/60 text-sm mb-2">
-                <Globe className="w-4 h-4" />
-                <span>{tzLabel}</span>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 mt-3">
-                <label className="text-xs text-white/50 uppercase tracking-wider">
-                  Timezone
-                </label>
-                <select
-                  value={timeZone}
-                  onChange={(e) => setTimeZone(e.target.value)}
-                  className="bg-white/5 border border-white/10 rounded px-3 py-2 text-sm text-white/85 focus:outline-none focus:border-white/20"
-                >
-                  {[
-                    "America/Boise",
-                    "America/Los_Angeles",
-                    "America/Denver",
-                    "America/Chicago",
-                    "America/New_York",
-                    "Europe/London",
-                    "Europe/Paris",
-                    "Asia/Tokyo",
-                    "Asia/Hong_Kong",
-                    "Asia/Dubai",
-                    "UTC",
-                  ].map((tz) => (
-                    <option key={tz} value={tz}>
-                      {tz}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Next Event Indicator */}
-          {nextEvent && (
-            <div className="mt-6 bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm">
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-white/80" />
-                  <div>
-                    <div className="text-xs text-white/45 uppercase tracking-wider mb-1">
-                      Next Market Event
-                    </div>
-                    <div className="text-lg font-medium text-white">
-                      {nextEvent.name}
-                    </div>
-                    <div className="text-xs text-white/45 mt-1">
-                      {nextEvent.exchanges.join(", ")} · {nextEvent.markets.join(", ")}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <div className="text-2xl font-light text-white">
-                    {formatInTZ(nextEvent.date, timeZone, { month: "short", day: "numeric" })}
-                  </div>
-                  <div
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 border ${badgeClass(
-                      nextEvent.status
-                    )}`}
-                  >
-                    {statusLabel(nextEvent.status)}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+  <header>
+    <div class="nav">
+      <div class="brand"><i class="fa-solid fa-umbrella-beach"></i> Market Holidays</div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
+        <a href="../index.html"><i class="fas fa-arrow-left"></i> Back</a>
       </div>
+    </div>
+  </header>
 
-      {/* Global Impact Summary */}
-      {globalImpact && (
-        <div className="border-b border-white/10 bg-black">
-          <div className="max-w-7xl mx-auto px-6 py-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div>
-                <div className="text-xs text-white/45 uppercase tracking-wider mb-2">
-                  Global Impact
-                </div>
-                <div className="text-2xl font-light text-white">
-                  {globalImpact.daysUntil} days
-                </div>
-                <div className="text-xs text-white/40 mt-1">
-                  Until next listed event
-                </div>
-              </div>
-
-              <div>
-                <div className="text-xs text-white/45 uppercase tracking-wider mb-2">
-                  Affected Regions
-                </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {globalImpact.regions.map((region) => (
-                    <span
-                      key={region}
-                      className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-xs text-white/70"
-                    >
-                      {region}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <div className="text-xs text-white/45 uppercase tracking-wider mb-2">
-                  Liquidity Impact
-                </div>
-                <div className="flex items-center gap-3 mt-2">
-                  <div className="flex-1 bg-white/5 rounded-full h-2 border border-white/10 overflow-hidden">
-                    <div
-                      className="h-2 bg-white/80 rounded-full"
-                      style={{
-                        width:
-                          globalImpact.liquidityImpact === "high"
-                            ? "100%"
-                            : globalImpact.liquidityImpact === "medium"
-                            ? "60%"
-                            : "30%",
-                      }}
-                    />
-                  </div>
-                  <span className="text-sm text-white/65 capitalize">
-                    {globalImpact.liquidityImpact}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <div className="text-xs text-white/45 uppercase tracking-wider mb-2">
-                  Exchanges
-                </div>
-                <div className="text-sm text-white/65 mt-2">
-                  {globalImpact.event.exchanges.join(", ")}
-                </div>
-              </div>
-            </div>
+  <main>
+    <div class="card">
+      <div class="hero">
+        <div>
+          <h1>Market Holidays</h1>
+          <div class="sub">2025–2027 · Market closures, early closes, and liquidity-impact days</div>
+          <div class="tiny">
+            Forex is generally open 24/5 and Crypto is 24/7. “Liquidity Warning” entries represent periods where participation often drops and spreads/slippage risk rises.
+            For exchange-perfect calendars, always confirm official notices. This tool is designed for trading risk management.
           </div>
         </div>
-      )}
 
-      {/* Filters */}
-      <div className="sticky top-0 z-10 border-b border-white/10 bg-black/90 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex flex-wrap items-end gap-4">
-            {/* Region */}
-            <div>
-              <label className="text-xs text-white/45 uppercase tracking-wider mb-2 block">
-                Region
-              </label>
-              <select
-                value={selectedRegion}
-                onChange={(e) => setSelectedRegion(e.target.value)}
-                className="bg-white/5 border border-white/10 rounded px-3 py-2 text-sm text-white/85 focus:outline-none focus:border-white/20"
-              >
-                {regionOptions.map((r) => (
-                  <option key={r} value={r}>
-                    {r === "all" ? "All Regions" : r}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Market type */}
-            <div>
-              <label className="text-xs text-white/45 uppercase tracking-wider mb-2 block">
-                Market Type
-              </label>
-              <select
-                value={selectedMarket}
-                onChange={(e) => setSelectedMarket(e.target.value)}
-                className="bg-white/5 border border-white/10 rounded px-3 py-2 text-sm text-white/85 focus:outline-none focus:border-white/20"
-              >
-                <option value="all">All Markets</option>
-                {MARKET_TYPES.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Year */}
-            <div>
-              <label className="text-xs text-white/45 uppercase tracking-wider mb-2 block">
-                Year
-              </label>
-              <select
-                value={selectedYear}
-                onChange={(e) => {
-                  const y = Number(e.target.value);
-                  setSelectedYear(y);
-                  setCurrentMonth(0);
-                }}
-                className="bg-white/5 border border-white/10 rounded px-3 py-2 text-sm text-white/85 focus:outline-none focus:border-white/20"
-              >
-                <option value={2025}>2025</option>
-                <option value={2026}>2026</option>
-                <option value={2027}>2027</option>
-              </select>
-            </div>
-
-            {/* High impact */}
-            <div>
-              <label className="text-xs text-white/45 uppercase tracking-wider mb-2 block">
-                Filter
-              </label>
-              <button
-                onClick={() => setHighImpactOnly((v) => !v)}
-                className={`px-4 py-2 rounded-md text-sm transition-colors border ${
-                  highImpactOnly
-                    ? "bg-white/10 border-white/20 text-white"
-                    : "bg-white/5 border-white/10 text-white/70 hover:bg-white/7"
-                }`}
-              >
-                High Impact Only
-              </button>
-            </div>
-
-            {/* View */}
-            <div className="ml-auto">
-              <label className="text-xs text-white/45 uppercase tracking-wider mb-2 block">
-                View
-              </label>
-              <div className="flex gap-2">
-                {["list", "timeline", "heatmap"].map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setViewMode(m)}
-                    className={`px-3 py-2 rounded-md text-sm transition-colors border ${
-                      viewMode === m
-                        ? "bg-white/12 border-white/20 text-white"
-                        : "bg-white/5 border-white/10 text-white/60 hover:bg-white/7"
-                    }`}
-                  >
-                    {m === "list" ? "List" : m === "timeline" ? "Timeline" : "Heatmap"}
-                  </button>
-                ))}
-              </div>
-            </div>
+        <div style="text-align:right;min-width:280px">
+          <div style="display:flex;align-items:center;justify-content:flex-end;gap:.5rem;color:rgba(255,255,255,.60);font-weight:800">
+            <i class="fa-solid fa-globe"></i>
+            <span id="tzLabel">Loading…</span>
           </div>
 
-          {/* Small stats line */}
-          <div className="mt-4 text-xs text-white/45 flex flex-wrap gap-3 items-center">
-            <span>
-              Showing <span className="text-white/80">{filteredHolidays.length}</span>{" "}
-              events for <span className="text-white/80">{selectedYear}</span>
-            </span>
-            <span className="text-white/20">•</span>
-            <span>
-              Timezone display: <span className="text-white/75">{timeZone}</span>
-            </span>
+          <div style="display:flex;align-items:center;justify-content:flex-end;gap:.6rem;margin-top:.8rem;flex-wrap:wrap">
+            <div class="label" style="margin:0">Timezone</div>
+            <select id="tzSelect" style="width:auto;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03);border-radius:12px;padding:.55rem .65rem;font-weight:900;color:rgba(255,255,255,.85)">
+              <option>America/Boise</option>
+              <option>America/Los_Angeles</option>
+              <option>America/Denver</option>
+              <option>America/Chicago</option>
+              <option>America/New_York</option>
+              <option>Europe/London</option>
+              <option>Europe/Paris</option>
+              <option>Asia/Tokyo</option>
+              <option>Asia/Hong_Kong</option>
+              <option>Asia/Dubai</option>
+              <option>UTC</option>
+            </select>
+          </div>
+
+          <div class="chips" style="margin-top:1rem">
+            <div class="chip"><i class="fa-solid fa-circle-check"></i> Programmatic</div>
+            <div class="chip"><i class="fa-solid fa-moon"></i> Black/White</div>
+            <div class="chip"><i class="fa-solid fa-bolt"></i> Risk Focus</div>
           </div>
         </div>
       </div>
 
-      {/* Main */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Timeline */}
-        {viewMode === "timeline" && (
-          <div className="mb-10">
-            <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
-              <h2 className="text-2xl font-light text-white">
-                {monthNames[currentMonth]} {selectedYear}
-              </h2>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setCurrentMonth((m) => Math.max(0, m - 1))}
-                  disabled={currentMonth === 0}
-                  className="p-2 bg-white/5 border border-white/10 rounded-md disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/7 transition-colors"
-                  title="Previous month"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setCurrentMonth((m) => Math.min(11, m + 1))}
-                  disabled={currentMonth === 11}
-                  className="p-2 bg-white/5 border border-white/10 rounded-md disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/7 transition-colors"
-                  title="Next month"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+      <!-- Next Event -->
+      <div id="nextBox" class="nextBox"></div>
 
-            <div className="grid grid-cols-7 gap-2">
-              {timelineData.map(({ day, holiday }) => (
-                <div
-                  key={day}
-                  className={`aspect-square p-2 rounded-lg border transition-all ${timelineCellClass(
-                    holiday
-                  )}`}
-                  title={holiday ? `${holiday.name} · ${statusLabel(holiday.status)}` : ""}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="text-sm text-white/60">{day}</div>
-                    {holiday && (
-                      <div
-                        className={`w-2.5 h-2.5 rounded-full ${impactDotClass(
-                          holiday.impact
-                        )}`}
-                        title={`${holiday.impact} impact`}
-                      />
-                    )}
-                  </div>
-                  {holiday && (
-                    <div className="mt-2 text-[10px] leading-snug text-white/55 line-clamp-3">
-                      {holiday.name}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+      <!-- Global Impact -->
+      <div id="impactBox" class="impactBox"></div>
 
-            <div className="mt-6 text-xs text-white/45">
-              Tip: Use filters to isolate “Stocks” vs “Forex” warnings. Timeline shows only the filtered set.
+      <!-- Filters + View -->
+      <div class="filtersWrap">
+        <div class="filters">
+          <div class="field">
+            <div class="label">Region</div>
+            <select id="regionSelect">
+              <option value="all">All Regions</option>
+              <option value="Americas">Americas</option>
+              <option value="Europe">Europe</option>
+              <option value="Asia">Asia</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <div class="label">Market Type</div>
+            <select id="marketSelect">
+              <option value="all">All Markets</option>
+              <option value="Stocks">Stocks</option>
+              <option value="Options">Options</option>
+              <option value="Forex">Forex</option>
+              <option value="Crypto">Crypto</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <div class="label">Year</div>
+            <select id="yearSelect">
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <div class="label">Search</div>
+            <input id="searchInput" type="text" placeholder="Search (e.g., Christmas, Thanksgiving, FX)" />
+          </div>
+
+          <div class="rightBtn">
+            <button id="highBtn" class="btn"><i class="fa-solid fa-triangle-exclamation"></i> High Impact Only</button>
+            <button id="tabList" class="tab active">List</button>
+            <button id="tabTimeline" class="tab">Timeline</button>
+            <button id="tabHeatmap" class="tab">Heatmap</button>
+          </div>
+        </div>
+
+        <div class="statLine">
+          <span>Showing <span id="countNum" style="color:rgba(255,255,255,.80);font-weight:900">0</span> events for <span id="yearLbl" style="color:rgba(255,255,255,.80);font-weight:900">2025</span></span>
+          <span class="dotSep">•</span>
+          <span>Timezone display: <span id="tzName" style="color:rgba(255,255,255,.75);font-weight:900">America/Boise</span></span>
+        </div>
+      </div>
+
+      <!-- Views -->
+      <div class="viewSection">
+        <div id="viewList">
+          <div id="listWrap" class="list"></div>
+        </div>
+
+        <div id="viewTimeline" class="hide">
+          <div class="timelineTop">
+            <div class="timelineTitle" id="monthTitle">January 2025</div>
+            <div class="monthBtns">
+              <button id="prevMonth" class="iconBtn" title="Previous month"><i class="fa-solid fa-chevron-left"></i></button>
+              <button id="nextMonth" class="iconBtn" title="Next month"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
           </div>
-        )}
+          <div id="timelineGrid" class="grid7"></div>
+          <div class="tip">Tip: Use filters to isolate “Stocks” vs “Forex” warnings. Timeline shows only the filtered set.</div>
+        </div>
 
-        {/* Heatmap */}
-        {viewMode === "heatmap" && (
-          <div className="mb-10">
-            <h2 className="text-2xl font-light text-white mb-6">
-              Annual Holiday Distribution ({selectedYear})
-            </h2>
-            <div className="overflow-x-auto border border-white/10 rounded-xl">
-              <table className="w-full min-w-[900px]">
-                <thead className="bg-white/4">
+        <div id="viewHeatmap" class="hide">
+          <div style="margin-top:1rem">
+            <div class="timelineTitle" style="margin-bottom:.6rem">Annual Holiday Distribution (<span id="heatYear">2025</span>)</div>
+            <div class="heatWrap">
+              <table>
+                <thead>
                   <tr>
-                    <th className="text-left text-xs text-white/50 uppercase tracking-wider p-3 border-b border-white/10">
-                      Region
-                    </th>
-                    {monthNames.map((month, i) => (
-                      <th
-                        key={i}
-                        className="text-center text-xs text-white/50 uppercase tracking-wider p-3 border-b border-white/10"
-                      >
-                        {month.slice(0, 3)}
-                      </th>
-                    ))}
+                    <th style="min-width:160px;text-align:left;padding-left:14px">Region</th>
+                    <th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun</th>
+                    <th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {heatmapData.map(({ region, months }) => (
-                    <tr key={region} className="border-t border-white/10">
-                      <td className="text-sm text-white/65 p-3">{region}</td>
-                      {months.map(({ month, count }) => (
-                        <td key={month} className="p-3">
-                          <div
-                            className={`w-full h-8 rounded-md border ${heatCellClass(count)}`}
-                            title={`${count} event${count !== 1 ? "s" : ""}`}
-                          />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
+                <tbody id="heatBody"></tbody>
               </table>
             </div>
-
-            <div className="mt-6 text-xs text-white/45">
-              Heatmap counts all events (closed/early/warning) in the dataset for the selected year.
-            </div>
+            <div class="tip">Heatmap counts all events (closed/early/warning) in the dataset for the selected year.</div>
           </div>
-        )}
+        </div>
+      </div>
 
-        {/* List */}
-        {viewMode === "list" && (
-          <div className="space-y-4">
-            {listSorted.length === 0 ? (
-              <div className="border border-white/10 bg-white/4 rounded-xl p-6 text-white/70">
-                No events match your filters. Try “All Markets” or disable “High Impact Only.”
-              </div>
-            ) : (
-              listSorted.map((holiday) => (
-                <div
-                  key={holiday.id}
-                  className="bg-gradient-to-br from-white/6 to-black border border-white/10 rounded-xl p-6 hover:border-white/15 transition-all shadow-[0_30px_80px_rgba(0,0,0,0.55)]"
-                >
-                  <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
-                    <div className="flex-1 min-w-[260px]">
-                      <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <h3 className="text-xl font-light text-white">
-                          {holiday.name}
-                        </h3>
-                        <span
-                          className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${badgeClass(
-                            holiday.status
-                          )}`}
-                        >
-                          {statusLabel(holiday.status)}
-                        </span>
-                      </div>
-
-                      <div className="text-sm text-white/55">
-                        {formatInTZ(holiday.date, timeZone, {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </div>
-
-                      <div className="mt-2 text-xs text-white/45">
-                        Markets:{" "}
-                        <span className="text-white/70">{holiday.markets.join(", ")}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-3 h-3 rounded-full ${impactDotClass(holiday.impact)}`}
-                        title={`${holiday.impact} impact`}
-                      />
-                      <Calendar className="w-5 h-5 text-white/40" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4 pb-4 border-b border-white/10">
-                    <div>
-                      <div className="text-xs text-white/45 uppercase tracking-wider mb-2">
-                        Affected Exchanges
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {holiday.exchanges.map((exchange) => (
-                          <span
-                            key={exchange}
-                            className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-xs text-white/70"
-                          >
-                            {exchange}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-xs text-white/45 uppercase tracking-wider mb-2">
-                        Regions
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {holiday.regions.map((region) => (
-                          <span
-                            key={region}
-                            className="px-2 py-1 bg-white/5 border border-white/10 rounded-md text-xs text-white/70"
-                          >
-                            {region}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-black/40 border border-white/10 rounded-xl p-4">
-                    <div className="flex items-start gap-3">
-                      <TrendingDown className="w-5 h-5 text-white/70 mt-0.5" />
-                      <div>
-                        <div className="text-xs text-white/45 uppercase tracking-wider mb-2">
-                          Trading Impact
-                        </div>
-                        <p className="text-sm text-white/65 leading-relaxed">
-                          {holiday.notes}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Small “quality” footer */}
-                  <div className="mt-4 text-xs text-white/35 flex flex-wrap gap-3">
-                    <span>Impact: <span className="text-white/60 capitalize">{holiday.impact}</span></span>
-                    <span className="text-white/20">•</span>
-                    <span>Status: <span className="text-white/60">{statusLabel(holiday.status)}</span></span>
-                  </div>
-                </div>
-              ))
-            )}
+      <!-- Notes + Legend -->
+      <div class="bigNote">
+        <h2>How This Affects Trading</h2>
+        <div class="cols3">
+          <div>
+            <h3>Reduced Volume</h3>
+            <p>Holidays remove major liquidity providers. Expect thinner books, wider spreads, and more slippage on market orders.</p>
           </div>
-        )}
-
-        {/* Trading Notes */}
-        <div className="mt-12 bg-gradient-to-br from-white/6 to-black border border-white/10 rounded-xl p-8">
-          <h2 className="text-2xl font-light text-white mb-6">How This Affects Trading</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-sm font-medium text-white/75 mb-3">Reduced Volume</h3>
-              <p className="text-sm text-white/55 leading-relaxed">
-                Holidays remove major liquidity providers. Expect thinner books, wider spreads, and more slippage on market orders.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-white/75 mb-3">False Breakout Risk</h3>
-              <p className="text-sm text-white/55 leading-relaxed">
-                Thin liquidity can poke levels without continuation. Use confirmation (structure + volume proxies) and reduce size.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-white/75 mb-3">Session Overlaps Shift</h3>
-              <p className="text-sm text-white/55 leading-relaxed">
-                Overlaps lose their advantage when one region is offline. London–NY overlap is especially impacted on US/UK holidays.
-              </p>
-            </div>
+          <div>
+            <h3>False Breakout Risk</h3>
+            <p>Thin liquidity can poke levels without continuation. Use confirmation (structure + volume proxies) and reduce size.</p>
+          </div>
+          <div>
+            <h3>Session Overlaps Shift</h3>
+            <p>Overlaps lose their advantage when one region is offline. London–NY overlap is especially impacted on US/UK holidays.</p>
           </div>
         </div>
 
-        {/* Legend */}
-        <div className="mt-12 border-t border-white/10 pt-8">
-          <div className="flex items-start justify-between gap-6 flex-wrap">
-            <div>
-              <h3 className="text-sm font-medium text-white/75 mb-4">Legend</h3>
-              <div className="flex flex-wrap gap-6">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-white/10 border border-white/20" />
-                  <span className="text-sm text-white/55">Market Closed</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-white/8 border border-white/18" />
-                  <span className="text-sm text-white/55">Early Close</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-white/6 border border-white/15" />
-                  <span className="text-sm text-white/55">Liquidity Warning</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-white" />
-                  <span className="text-sm text-white/55">High Impact</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-white/70" />
-                  <span className="text-sm text-white/55">Medium Impact</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-white/45" />
-                  <span className="text-sm text-white/55">Low Impact</span>
-                </div>
-              </div>
+        <div class="legend">
+          <div>
+            <div class="sectionTitle">Legend</div>
+            <div class="legendItems">
+              <div class="legendItem"><span class="box bClosed"></span> Market Closed</div>
+              <div class="legendItem"><span class="box bEarly"></span> Early Close</div>
+              <div class="legendItem"><span class="box bWarn"></span> Liquidity Warning</div>
+              <div class="legendItem"><span class="impactDot impact-high"></span> High Impact</div>
+              <div class="legendItem"><span class="impactDot impact-medium"></span> Medium Impact</div>
+              <div class="legendItem"><span class="impactDot impact-low"></span> Low Impact</div>
             </div>
+          </div>
 
-            <div className="text-right max-w-xl">
-              <p className="text-xs text-white/45 leading-relaxed">
-                This dashboard generates a robust 2025–2027 schedule for US + UK closures (observed),
-                plus global liquidity warnings (FX/Crypto) and Asia windows. If you want **exchange-perfect HKEX/TSE**
-                closure days, you must plug in official calendars (CSV/API) because they vary year-to-year.
-              </p>
-            </div>
+          <div class="foot">
+            This dashboard generates a robust 2025–2027 schedule for US + UK closures (observed),
+            plus global liquidity warnings (FX/Crypto) and Asia windows. If you want exchange-perfect HKEX/TSE closure days,
+            you must plug in official calendars because they vary year-to-year.
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  </main>
 
-export default MarketHolidaysDashboard;
+  <script>
+    /**
+     * This file is the FIX.
+     * It keeps your exact holiday logic (programmatic) but runs on GitHub Pages
+     * because it uses plain HTML/CSS/JS (no React imports).
+     */
+
+    /* ----------------------------- Date helpers ----------------------------- */
+    const MS_DAY = 24 * 60 * 60 * 1000;
+
+    function addDays(date, days) {
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+    }
+    function startOfDay(date) {
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+    }
+    function observeFixedHoliday(date) {
+      const day = date.getDay();
+      if (day === 6) return addDays(date, -1);
+      if (day === 0) return addDays(date, 1);
+      return date;
+    }
+    function nthWeekdayOfMonth(year, monthIndex, weekday, n) {
+      const first = new Date(year, monthIndex, 1);
+      const firstDay = first.getDay();
+      const delta = (weekday - firstDay + 7) % 7;
+      const day = 1 + delta + (n - 1) * 7;
+      return new Date(year, monthIndex, day);
+    }
+    function lastWeekdayOfMonth(year, monthIndex, weekday) {
+      const last = new Date(year, monthIndex + 1, 0);
+      const lastDay = last.getDay();
+      const delta = (lastDay - weekday + 7) % 7;
+      return new Date(year, monthIndex, last.getDate() - delta);
+    }
+    function easterSunday(year) {
+      const a = year % 19;
+      const b = Math.floor(year / 100);
+      const c = year % 100;
+      const d = Math.floor(b / 4);
+      const e = b % 4;
+      const f = Math.floor((b + 8) / 25);
+      const g = Math.floor((b - f + 1) / 3);
+      const h = (19 * a + b - d - g + 15) % 30;
+      const i = Math.floor(c / 4);
+      const k = c % 4;
+      const l = (32 + 2 * e + 2 * i - h - k) % 7;
+      const m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const month = Math.floor((h + l - 7 * m + 114) / 31);
+      const day = ((h + l - 7 * m + 114) % 31) + 1;
+      return new Date(year, month - 1, day);
+    }
+    function goodFriday(year) {
+      return addDays(easterSunday(year), -2);
+    }
+    function formatInTZ(date, timeZone, opts) {
+      return new Intl.DateTimeFormat("en-US", { timeZone, ...opts }).format(date);
+    }
+
+    /* --------------------------- Market definitions -------------------------- */
+    const MARKET_TYPES = ["Stocks", "Options", "Forex", "Crypto"];
+
+    function mkHoliday({ name, date, status="closed", impact="medium", regions, exchanges, markets, notes }) {
+      const d = startOfDay(date);
+      return {
+        id: `${name}-${d.getFullYear()}-${d.getMonth()}-${d.getDate()}-${exchanges.join(",")}`,
+        name,
+        date: d,
+        status,
+        impact,
+        regions,
+        exchanges,
+        markets,
+        notes,
+      };
+    }
+
+    /* ---------------------- Holiday generators (2025–2027) ------------------- */
+    function buildUSHolidays(year) {
+      const list = [];
+      const newYear = observeFixedHoliday(new Date(year, 0, 1));
+      list.push(mkHoliday({
+        name: "New Year’s Day", date: newYear, status:"closed", impact:"high",
+        regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
+        notes:"US equities closed. FX open but liquidity can be uneven, especially around the first London/NY overlap of the year.",
+      }));
+      list.push(mkHoliday({
+        name:"Martin Luther King Jr. Day", date:nthWeekdayOfMonth(year,0,1,3), status:"closed", impact:"medium",
+        regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
+        notes:"US equities closed. FX continues; expect thinner NY session liquidity.",
+      }));
+      list.push(mkHoliday({
+        name:"Presidents’ Day", date:nthWeekdayOfMonth(year,1,1,3), status:"closed", impact:"medium",
+        regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
+        notes:"US equities closed. Watch for reduced NY participation across risk assets.",
+      }));
+      list.push(mkHoliday({
+        name:"Memorial Day", date:lastWeekdayOfMonth(year,4,1), status:"closed", impact:"medium",
+        regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
+        notes:"US equities closed. Liquidity lower into Tuesday open; avoid thin-market traps.",
+      }));
+      list.push(mkHoliday({
+        name:"Juneteenth National Independence Day", date:observeFixedHoliday(new Date(year,5,19)),
+        status:"closed", impact:"medium", regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
+        notes:"US equities closed. FX continues; NY liquidity reduced.",
+      }));
+      list.push(mkHoliday({
+        name:"Independence Day", date:observeFixedHoliday(new Date(year,6,4)), status:"closed", impact:"medium",
+        regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
+        notes:"US equities closed. Summer volumes already lower; spreads can widen.",
+      }));
+      list.push(mkHoliday({
+        name:"Labor Day", date:nthWeekdayOfMonth(year,8,1,1), status:"closed", impact:"medium",
+        regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
+        notes:"US equities closed. FX continues; US desks reduced.",
+      }));
+      const thanksgiving = nthWeekdayOfMonth(year,10,4,4);
+      list.push(mkHoliday({
+        name:"Thanksgiving Day", date:thanksgiving, status:"closed", impact:"high",
+        regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
+        notes:"US equities closed. Liquidity often thins across global markets.",
+      }));
+      list.push(mkHoliday({
+        name:"Day After Thanksgiving (Early Close)", date:addDays(thanksgiving,1), status:"early", impact:"low",
+        regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
+        notes:"US equities typically close early. Reduced volume; false breakouts more likely.",
+      }));
+      list.push(mkHoliday({
+        name:"Christmas Day", date:observeFixedHoliday(new Date(year,11,25)), status:"closed", impact:"high",
+        regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
+        notes:"US equities closed. Global liquidity very low; avoid oversized risk.",
+      }));
+      list.push(mkHoliday({
+        name:"Christmas Eve (Early Close)", date:new Date(year,11,24), status:"early", impact:"medium",
+        regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
+        notes:"US equities often close early. Year-end positioning dominates flows.",
+      }));
+      return list;
+    }
+
+    function buildUKHolidays(year) {
+      const list = [];
+      list.push(mkHoliday({
+        name:"UK New Year’s Day", date:observeFixedHoliday(new Date(year,0,1)), status:"closed", impact:"medium",
+        regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
+        notes:"UK equities closed. London FX desks may be lighter depending on broader Europe participation.",
+      }));
+      const gf = goodFriday(year);
+      list.push(mkHoliday({
+        name:"Good Friday", date:gf, status:"closed", impact:"high",
+        regions:["Europe","Americas","Asia"], exchanges:["LSE"], markets:["Stocks"],
+        notes:"European market closures reduce global liquidity; watch erratic moves and wider spreads.",
+      }));
+      list.push(mkHoliday({
+        name:"Easter Monday", date:addDays(gf,3), status:"closed", impact:"high",
+        regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
+        notes:"UK equities closed. London liquidity reduced; FX still open but thinner.",
+      }));
+      list.push(mkHoliday({
+        name:"Early May Bank Holiday", date:nthWeekdayOfMonth(year,4,1,1), status:"closed", impact:"medium",
+        regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
+        notes:"UK equities closed. London participation reduced across Europe hours.",
+      }));
+      list.push(mkHoliday({
+        name:"Spring Bank Holiday", date:lastWeekdayOfMonth(year,4,1), status:"closed", impact:"medium",
+        regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
+        notes:"UK equities closed. London liquidity reduced.",
+      }));
+      list.push(mkHoliday({
+        name:"Summer Bank Holiday (UK)", date:lastWeekdayOfMonth(year,7,1), status:"closed", impact:"medium",
+        regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
+        notes:"UK equities closed. Summer liquidity can be thin; manage size.",
+      }));
+      const xmas = observeFixedHoliday(new Date(year,11,25));
+      const boxing = observeFixedHoliday(new Date(year,11,26));
+      list.push(mkHoliday({
+        name:"Christmas Day (UK)", date:xmas, status:"closed", impact:"high",
+        regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
+        notes:"UK equities closed. Global risk liquidity very low.",
+      }));
+      list.push(mkHoliday({
+        name:"Boxing Day (UK)", date:boxing, status:"closed", impact:"high",
+        regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
+        notes:"UK equities closed. London desks minimal; FX can be thin.",
+      }));
+      return list;
+    }
+
+    function buildHKHolidays(year) {
+      const list = [];
+      list.push(mkHoliday({
+        name:"Hong Kong New Year’s Day", date:observeFixedHoliday(new Date(year,0,1)), status:"closed", impact:"medium",
+        regions:["Asia"], exchanges:["HKEX"], markets:["Stocks"],
+        notes:"HK equities closed. Asia risk participation reduced early in the year.",
+      }));
+      list.push(mkHoliday({
+        name:"Lunar New Year (Asia Liquidity Window)",
+        date:new Date(year,0,29),
+        status:"warning", impact:"high",
+        regions:["Asia"], exchanges:["HKEX"], markets:["Stocks"],
+        notes:"Advisory: Lunar New Year week often reduces Asia liquidity. Exact HKEX closure dates vary by year; confirm official HKEX calendar for trading-day specifics.",
+      }));
+      const gf = goodFriday(year);
+      list.push(mkHoliday({
+        name:"Good Friday (Asia Liquidity Watch)",
+        date:gf, status:"warning", impact:"medium",
+        regions:["Asia","Europe"], exchanges:["HKEX"], markets:["Stocks"],
+        notes:"Advisory: Global holiday cluster can reduce participation. Check HKEX official schedule for exact closures.",
+      }));
+      list.push(mkHoliday({
+        name:"Christmas Day (Hong Kong)",
+        date:new Date(year,11,25),
+        status:"warning", impact:"medium",
+        regions:["Asia"], exchanges:["HKEX"], markets:["Stocks"],
+        notes:"Advisory: Many global desks are offline; Asia liquidity can be thin even if local markets partially operate.",
+      }));
+      return list;
+    }
+
+    function buildJPHolidays(year) {
+      const list = [];
+      list.push(mkHoliday({
+        name:"Japan New Year Liquidity Window",
+        date:new Date(year,0,2),
+        status:"warning", impact:"high",
+        regions:["Asia"], exchanges:["TSE"], markets:["Stocks"],
+        notes:"Advisory: Early January often sees reduced Japan participation. Confirm TSE calendar for exact closure days.",
+      }));
+      list.push(mkHoliday({
+        name:"Golden Week (Japan Liquidity Window)",
+        date:new Date(year,3,29),
+        status:"warning", impact:"high",
+        regions:["Asia"], exchanges:["TSE"], markets:["Stocks"],
+        notes:"Advisory: Golden Week reduces Japan liquidity. Exact market closure dates vary; confirm TSE calendar for the year.",
+      }));
+      return list;
+    }
+
+    function buildFXLiquidityHolidays(year) {
+      const list = [];
+      const gf = goodFriday(year);
+      list.push(mkHoliday({
+        name:"Good Friday (FX Liquidity)",
+        date:gf, status:"warning", impact:"high",
+        regions:["Americas","Europe","Asia"], exchanges:["FX"], markets:["Forex"],
+        notes:"FX is open, but participation is reduced. Expect wider spreads and irregular price action; avoid forcing setups.",
+      }));
+      list.push(mkHoliday({
+        name:"Christmas Day (FX Liquidity)",
+        date:new Date(year,11,25), status:"warning", impact:"high",
+        regions:["Americas","Europe","Asia"], exchanges:["FX"], markets:["Forex"],
+        notes:"FX liquidity can be extremely low. Spreads and slippage risk increase; consider staying flat.",
+      }));
+      list.push(mkHoliday({
+        name:"New Year Week (FX Liquidity)",
+        date:new Date(year,0,2), status:"warning", impact:"medium",
+        regions:["Americas","Europe","Asia"], exchanges:["FX"], markets:["Forex"],
+        notes:"First week of the year often has reduced participation and choppy conditions. Prioritize A+ setups only.",
+      }));
+      list.push(mkHoliday({
+        name:"Thanksgiving (FX Liquidity)",
+        date:nthWeekdayOfMonth(year,10,4,4), status:"warning", impact:"medium",
+        regions:["Americas"], exchanges:["FX"], markets:["Forex"],
+        notes:"NY participation reduced. London may carry flow, but liquidity can be thinner during NY hours.",
+      }));
+      return list;
+    }
+
+    function buildCryptoHolidays(year) {
+      return [
+        mkHoliday({
+          name:"Christmas Day (Crypto Behavior Watch)",
+          date:new Date(year,11,25),
+          status:"warning", impact:"medium",
+          regions:["Americas","Europe","Asia"], exchanges:["Crypto"], markets:["Crypto"],
+          notes:"Crypto remains open. Institutional participation often lower; watch thin books and sudden spikes.",
+        }),
+        mkHoliday({
+          name:"New Year’s Day (Crypto Behavior Watch)",
+          date:new Date(year,0,1),
+          status:"warning", impact:"medium",
+          regions:["Americas","Europe","Asia"], exchanges:["Crypto"], markets:["Crypto"],
+          notes:"Crypto remains open. Liquidity can be patchy; avoid over-leverage during holiday hours.",
+        })
+      ];
+    }
+
+    function buildHolidayDataset() {
+      const years = [2025, 2026, 2027];
+      const all = [];
+      for (const y of years) {
+        all.push(...buildUSHolidays(y));
+        all.push(...buildUKHolidays(y));
+        all.push(...buildHKHolidays(y));
+        all.push(...buildJPHolidays(y));
+        all.push(...buildFXLiquidityHolidays(y));
+        all.push(...buildCryptoHolidays(y));
+      }
+      const map = new Map();
+      for (const h of all) map.set(h.id, h);
+      return Array.from(map.values()).sort((a,b)=>a.date-b.date);
+    }
+
+    function statusLabel(status) {
+      if (status === "closed") return "Market Closed";
+      if (status === "early") return "Early Close";
+      return "Liquidity Warning";
+    }
+    function impactRank(impact) {
+      if (impact === "high") return 3;
+      if (impact === "medium") return 2;
+      return 1;
+    }
+
+    /* ------------------------------ App State ------------------------------ */
+    const holidaysAll = buildHolidayDataset();
+
+    const state = {
+      selectedRegion: "all",
+      selectedMarket: "all",
+      selectedYear: 2025,
+      highImpactOnly: false,
+      viewMode: "list", // list | timeline | heatmap
+      currentMonth: 0,
+      timeZone: (function(){
+        try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Boise"; }
+        catch { return "America/Boise"; }
+      })(),
+      now: new Date(),
+      search: "",
+    };
+
+    const monthNames = [
+      "January","February","March","April","May","June",
+      "July","August","September","October","November","December"
+    ];
+
+    /* ------------------------------ DOM Helpers ----------------------------- */
+    const $ = (id)=>document.getElementById(id);
+    function esc(s){ return String(s||"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
+
+    /* ----------------------------- Computations ----------------------------- */
+    function filteredHolidays() {
+      return holidaysAll
+        .filter(h => h.date.getFullYear() === state.selectedYear)
+        .filter(h => state.selectedRegion === "all" ? true : h.regions.includes(state.selectedRegion))
+        .filter(h => state.selectedMarket === "all" ? true : h.markets.includes(state.selectedMarket))
+        .filter(h => state.highImpactOnly ? h.impact === "high" : true)
+        .filter(h => {
+          if(!state.search) return true;
+          const blob = `${h.name} ${h.exchanges.join(" ")} ${h.markets.join(" ")} ${h.regions.join(" ")} ${h.status} ${h.impact}`.toLowerCase();
+          return blob.includes(state.search.toLowerCase());
+        })
+        .sort((a,b)=> a.date-b.date);
+    }
+
+    function nextEvent() {
+      const start = startOfDay(state.now);
+      return holidaysAll
+        .filter(h => h.date.getFullYear() === state.selectedYear)
+        .filter(h => h.date.getTime() >= start.getTime())
+        .sort((a,b)=>a.date-b.date)[0] || null;
+    }
+
+    function globalImpactObj() {
+      const ne = nextEvent();
+      if(!ne) return null;
+      const daysUntil = Math.max(0, Math.ceil((ne.date - startOfDay(state.now)) / MS_DAY));
+      return { event: ne, regions: ne.regions, liquidityImpact: ne.impact, daysUntil };
+    }
+
+    function listSorted() {
+      const list = filteredHolidays();
+      if(state.viewMode !== "list") return list;
+      return [...list].sort((a,b)=>{
+        if(a.date.getTime() !== b.date.getTime()) return a.date-b.date;
+        return impactRank(b.impact) - impactRank(a.impact);
+      });
+    }
+
+    function timelineData() {
+      const daysInMonth = new Date(state.selectedYear, state.currentMonth+1, 0).getDate();
+      const monthHols = filteredHolidays().filter(h => h.date.getMonth() === state.currentMonth);
+      return Array.from({length:daysInMonth}, (_,i)=>{
+        const day = i+1;
+        const holiday = monthHols.find(h => h.date.getDate() === day) || null;
+        return { day, holiday };
+      });
+    }
+
+    function heatmapData() {
+      const regions = ["Americas","Europe","Asia"];
+      return regions.map(region=>{
+        const months = Array.from({length:12}, (_,m)=>{
+          const count = holidaysAll.filter(h =>
+            h.date.getFullYear() === state.selectedYear &&
+            h.date.getMonth() === m &&
+            h.regions.includes(region)
+          ).length;
+          return { month:m, count };
+        });
+        return { region, months };
+      });
+    }
+
+    /* ------------------------------ Rendering ------------------------------ */
+    function renderTZLabel(){
+      const dayStr = formatInTZ(state.now, state.timeZone, { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+      const timeStr = formatInTZ(state.now, state.timeZone, { hour:"2-digit", minute:"2-digit", hour12:false });
+      $("tzLabel").textContent = `${state.timeZone} · ${timeStr} · ${dayStr}`;
+      $("tzName").textContent = state.timeZone;
+    }
+
+    function renderNextBox(){
+      const ne = nextEvent();
+      if(!ne){
+        $("nextBox").innerHTML = `<div class="muted">No upcoming events found for ${state.selectedYear}.</div>`;
+        return;
+      }
+      const dateShort = formatInTZ(ne.date, state.timeZone, { month:"short", day:"numeric" });
+      $("nextBox").innerHTML = `
+        <div class="nextRow">
+          <div class="nextLeft">
+            <i class="fa-regular fa-clock" style="font-size:20px;color:rgba(255,255,255,.75);margin-top:2px"></i>
+            <div>
+              <div class="nextLabel">Next Market Event</div>
+              <div class="nextName">${esc(ne.name)}</div>
+              <div class="nextMeta">${esc(ne.exchanges.join(", "))} · ${esc(ne.markets.join(", "))}</div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div class="nextDate">${esc(dateShort)}</div>
+            <div class="badge"><i class="fa-regular fa-calendar"></i> ${esc(statusLabel(ne.status))}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderImpactBox(){
+      const gi = globalImpactObj();
+      if(!gi){ $("impactBox").innerHTML = ""; return; }
+      const width = gi.liquidityImpact === "high" ? "100%" : gi.liquidityImpact === "medium" ? "60%" : "30%";
+      $("impactBox").innerHTML = `
+        <div class="impactGrid">
+          <div>
+            <div class="impactTitle">Global Impact</div>
+            <div class="impactBig">${gi.daysUntil} days</div>
+            <div class="impactSmall">Until next listed event</div>
+          </div>
+          <div>
+            <div class="impactTitle">Affected Regions</div>
+            <div class="tags" style="margin-top:.5rem">
+              ${gi.regions.map(r=>`<span class="tag">${esc(r)}</span>`).join("")}
+            </div>
+          </div>
+          <div>
+            <div class="impactTitle">Liquidity Impact</div>
+            <div class="bar"><div style="width:${width}"></div></div>
+            <div class="impactSmall" style="margin-top:.35rem"><span style="color:rgba(255,255,255,.75);font-weight:900;text-transform:capitalize">${esc(gi.liquidityImpact)}</span></div>
+          </div>
+          <div>
+            <div class="impactTitle">Exchanges</div>
+            <div style="margin-top:.55rem;color:rgba(255,255,255,.70);font-weight:900">${esc(gi.event.exchanges.join(", "))}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderStats(){
+      const c = filteredHolidays().length;
+      $("countNum").textContent = String(c);
+      $("yearLbl").textContent = String(state.selectedYear);
+      $("heatYear").textContent = String(state.selectedYear);
+    }
+
+    function impactDotClass(impact){
+      if(impact === "high") return "impact-high";
+      if(impact === "medium") return "impact-medium";
+      return "impact-low";
+    }
+
+    function badgeText(status){ return statusLabel(status); }
+    function badgeIcon(status){
+      if(status === "closed") return "fa-circle-xmark";
+      if(status === "early") return "fa-clock";
+      return "fa-triangle-exclamation";
+    }
+
+    function renderList(){
+      const list = listSorted();
+      const wrap = $("listWrap");
+
+      if(list.length === 0){
+        wrap.innerHTML = `
+          <div class="eventCard" style="background:rgba(255,255,255,.04);text-align:left">
+            <div style="color:rgba(255,255,255,.75);font-weight:900">No events match your filters.</div>
+            <div style="color:rgba(255,255,255,.45);margin-top:.35rem;font-weight:700">Try “All Markets” or disable “High Impact Only.”</div>
+          </div>
+        `;
+        return;
+      }
+
+      wrap.innerHTML = list.map(h=>{
+        const fullDate = formatInTZ(h.date, state.timeZone, { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+        return `
+          <div class="eventCard">
+            <div class="eventTop">
+              <div style="flex:1;min-width:260px">
+                <div class="eventNameRow">
+                  <div class="eventName">${esc(h.name)}</div>
+                  <span class="badge"><i class="fa-solid ${badgeIcon(h.status)}"></i> ${esc(badgeText(h.status))}</span>
+                </div>
+                <div class="eventDate">${esc(fullDate)}</div>
+                <div style="margin-top:.35rem;color:rgba(255,255,255,.45);font-size:.82rem;font-weight:800">
+                  Markets: <span style="color:rgba(255,255,255,.75)">${esc(h.markets.join(", "))}</span>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:.6rem">
+                <div class="impactDot ${impactDotClass(h.impact)}" title="${esc(h.impact)} impact"></div>
+                <i class="fa-regular fa-calendar" style="color:rgba(255,255,255,.35)"></i>
+              </div>
+            </div>
+
+            <div class="grid2">
+              <div>
+                <div class="sectionTitle">Affected Exchanges</div>
+                <div class="tags">${h.exchanges.map(x=>`<span class="tag">${esc(x)}</span>`).join("")}</div>
+              </div>
+              <div>
+                <div class="sectionTitle">Regions</div>
+                <div class="tags">${h.regions.map(r=>`<span class="tag">${esc(r)}</span>`).join("")}</div>
+              </div>
+            </div>
+
+            <div class="impactNote">
+              <i class="fa-solid fa-arrow-trend-down" style="color:rgba(255,255,255,.75);margin-top:3px"></i>
+              <div>
+                <div class="sectionTitle" style="margin-bottom:.35rem">Trading Impact</div>
+                <p>${esc(h.notes)}</p>
+              </div>
+            </div>
+
+            <div style="margin-top:.75rem;color:rgba(255,255,255,.35);font-size:.78rem;font-weight:800">
+              Impact: <span style="color:rgba(255,255,255,.60);text-transform:capitalize">${esc(h.impact)}</span>
+              <span class="dotSep">•</span>
+              Status: <span style="color:rgba(255,255,255,.60)">${esc(statusLabel(h.status))}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function cellClass(h){
+      if(!h) return "";
+      if(h.status === "closed") return "cellClosed";
+      if(h.status === "early") return "cellEarly";
+      return "cellWarn";
+    }
+
+    function renderTimeline(){
+      $("monthTitle").textContent = `${monthNames[state.currentMonth]} ${state.selectedYear}`;
+      $("prevMonth").disabled = state.currentMonth === 0;
+      $("nextMonth").disabled = state.currentMonth === 11;
+
+      const data = timelineData();
+      $("timelineGrid").innerHTML = data.map(({day, holiday})=>{
+        const dot = holiday ? `<div class="impactDot ${impactDotClass(holiday.impact)}" title="${esc(holiday.impact)} impact"></div>` : "";
+        const title = holiday ? `${esc(holiday.name)} · ${esc(statusLabel(holiday.status))}` : "";
+        const name = holiday ? `<div class="dayName">${esc(holiday.name)}</div>` : "";
+        return `
+          <div class="dayCell ${cellClass(holiday)}" title="${title}">
+            <div class="cellTop">
+              <div class="dayNum">${day}</div>
+              ${dot}
+            </div>
+            ${name}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function heatClass(count){
+      if(count === 0) return "h0";
+      if(count === 1) return "h1";
+      if(count === 2) return "h2";
+      return "h3";
+    }
+
+    function renderHeatmap(){
+      const data = heatmapData();
+      $("heatBody").innerHTML = data.map(row=>{
+        const tds = row.months.map(m=>{
+          const c = m.count;
+          return `<td style="text-align:center">
+            <div class="heatCell ${heatClass(c)}" title="${c} event${c!==1?"s":""}"></div>
+          </td>`;
+        }).join("");
+        return `<tr>
+          <td style="padding-left:14px;color:rgba(255,255,255,.70);font-weight:900">${esc(row.region)}</td>
+          ${tds}
+        </tr>`;
+      }).join("");
+    }
+
+    function setView(mode){
+      state.viewMode = mode;
+      $("viewList").classList.toggle("hide", mode !== "list");
+      $("viewTimeline").classList.toggle("hide", mode !== "timeline");
+      $("viewHeatmap").classList.toggle("hide", mode !== "heatmap");
+
+      $("tabList").classList.toggle("active", mode === "list");
+      $("tabTimeline").classList.toggle("active", mode === "timeline");
+      $("tabHeatmap").classList.toggle("active", mode === "heatmap");
+
+      renderAll();
+    }
+
+    function renderAll(){
+      renderTZLabel();
+      renderNextBox();
+      renderImpactBox();
+      renderStats();
+      if(state.viewMode === "list") renderList();
+      if(state.viewMode === "timeline") renderTimeline();
+      if(state.viewMode === "heatmap") renderHeatmap();
+    }
+
+    /* ------------------------------ Events ------------------------------ */
+    $("tzSelect").value = state.timeZone;
+    $("tzSelect").addEventListener("change", (e)=>{
+      state.timeZone = e.target.value;
+      renderAll();
+    });
+
+    $("regionSelect").addEventListener("change", (e)=>{
+      state.selectedRegion = e.target.value;
+      renderAll();
+    });
+
+    $("marketSelect").addEventListener("change", (e)=>{
+      state.selectedMarket = e.target.value;
+      renderAll();
+    });
+
+    $("yearSelect").addEventListener("change", (e)=>{
+      state.selectedYear = Number(e.target.value);
+      state.currentMonth = 0;
+      renderAll();
+    });
+
+    $("searchInput").addEventListener("input", (e)=>{
+      state.search = (e.target.value || "").trim();
+      renderAll();
+    });
+
+    $("highBtn").addEventListener("click", ()=>{
+      state.highImpactOnly = !state.highImpactOnly;
+      $("highBtn").classList.toggle("active", state.highImpactOnly);
+      renderAll();
+    });
+
+    $("tabList").addEventListener("click", ()=>setView("list"));
+    $("tabTimeline").addEventListener("click", ()=>setView("timeline"));
+    $("tabHeatmap").addEventListener("click", ()=>setView("heatmap"));
+
+    $("prevMonth").addEventListener("click", ()=>{
+      state.currentMonth = Math.max(0, state.currentMonth - 1);
+      renderTimeline();
+    });
+    $("nextMonth").addEventListener("click", ()=>{
+      state.currentMonth = Math.min(11, state.currentMonth + 1);
+      renderTimeline();
+    });
+
+    // Update time label every 15s like your React version
+    setInterval(()=>{
+      state.now = new Date();
+      renderTZLabel();
+      // next/global can change at midnight; safe to refresh those too
+      renderNextBox();
+      renderImpactBox();
+    }, 15000);
+
+    // Initial render
+    renderAll();
+  </script>
+</body>
+</html>
