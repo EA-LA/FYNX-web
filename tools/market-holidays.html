@@ -3,23 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX — Market Holidays (2025–2027)</title>
-
-  <!-- Icons (works on GitHub Pages) -->
+  <title>FYNX — Market Holidays</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
   <style>
-    /* =========================
-       FYNX Black/White UI
-       (No React, no Tailwind)
-       ========================= */
     *{margin:0;padding:0;box-sizing:border-box}
-    body{
-      font-family:'Inter','Segoe UI',system-ui,sans-serif;
-      color:#fff;background:#000;min-height:100vh;overflow-x:hidden;
-    }
+    body{font-family:'Inter','Segoe UI',system-ui,sans-serif;color:#fff;background:#000;overflow-x:hidden;min-height:100vh}
 
-    /* Animated Background */
+    /* Grok-ish background */
     .animated-bg{position:fixed;inset:0;z-index:-1;background:#000;overflow:hidden}
     .grid-overlay{
       position:absolute;inset:0;
@@ -30,15 +20,15 @@
       animation:gridMove 20s linear infinite;
     }
     @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-    .orb{position:absolute;border-radius:50%;filter:blur(85px);opacity:.20;animation:float 20s ease-in-out infinite}
-    .orb1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-220px;left:-220px}
-    .orb2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
+    .orb{position:absolute;border-radius:50%;filter:blur(85px);opacity:.22;animation:float 20s ease-in-out infinite}
+    .orb1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-240px;left:-240px}
+    .orb2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-190px;right:-190px;animation-delay:6s}
     @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
 
     /* Header */
     header{
-      position:sticky;top:0;z-index:999;
-      background:rgba(0,0,0,.88);
+      position:sticky;top:0;z-index:1000;
+      background:rgba(0,0,0,.85);
       backdrop-filter:blur(18px);
       border-bottom:1px solid rgba(255,255,255,.10);
       padding:1rem 0;
@@ -46,296 +36,219 @@
     .nav{
       max-width:1200px;margin:0 auto;
       display:flex;align-items:center;justify-content:space-between;
-      padding:0 1.25rem;gap:1rem;
+      padding:0 1.25rem;
+      gap:1rem;
     }
-    .brand{
-      display:flex;align-items:center;gap:.6rem;
-      font-weight:900;letter-spacing:-1px;font-size:1.1rem;
-    }
-    .nav a{
+    .brand{display:flex;align-items:center;gap:.6rem;font-weight:900;letter-spacing:-1px;font-size:1.15rem}
+    .nav .right{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+    .pill{
       color:rgba(255,255,255,.85);
-      text-decoration:none;font-weight:800;
+      text-decoration:none;font-weight:700;
       border:1px solid rgba(255,255,255,.14);
       background:rgba(255,255,255,.04);
       padding:.55rem .9rem;border-radius:999px;
       transition:all .25s ease;white-space:nowrap;
+      display:inline-flex;align-items:center;gap:.45rem;
     }
-    .nav a:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
+    .pill:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
 
     /* Layout */
-    main{max-width:1200px;margin:0 auto;padding:2.2rem 1.25rem 5rem}
-    .card{
+    main{max-width:1200px;margin:0 auto;padding:2.25rem 1.25rem 4.5rem}
+    .hero{
       border:1px solid rgba(255,255,255,.10);
       background:rgba(255,255,255,.03);
       border-radius:22px;
       backdrop-filter:blur(10px);
-      padding:1.7rem 1.6rem;
-    }
-    .hero{
-      display:flex;align-items:flex-start;justify-content:space-between;
-      gap:1rem;flex-wrap:wrap;
-      padding-bottom:1.1rem;margin-bottom:1.1rem;
-      border-bottom:1px solid rgba(255,255,255,.10);
+      box-shadow:0 30px 90px rgba(0,0,0,.55);
+      padding:2rem 1.75rem;
     }
     h1{
-      font-size:2.4rem;line-height:1.05;letter-spacing:-2px;
+      font-size:2.7rem;line-height:1.08;letter-spacing:-2px;
       background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
       -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-      margin-bottom:.35rem;
+      margin-bottom:.55rem;
+      font-weight:300;
     }
-    .sub{
-      color:rgba(255,255,255,.60);
-      font-size:1rem;line-height:1.7;max-width:78ch;
-    }
-    .tiny{
-      margin-top:.7rem;
-      color:rgba(255,255,255,.42);
-      font-size:.84rem;line-height:1.7;max-width:95ch;
-    }
+    .sub{color:rgba(255,255,255,.55);font-size:.95rem;letter-spacing:.04em}
+    .note{margin-top:.8rem;color:rgba(255,255,255,.45);font-size:.82rem;line-height:1.65;max-width:110ch}
 
-    /* Pills & chips */
-    .chips{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end}
-    .chip{
-      display:inline-flex;align-items:center;gap:.45rem;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.04);
-      padding:.42rem .7rem;border-radius:999px;
-      color:rgba(255,255,255,.82);
-      font-weight:900;font-size:.83rem;
-    }
-    .pill{
-      display:inline-flex;align-items:center;gap:.4rem;
-      border:1px solid rgba(255,255,255,.16);
-      background:rgba(255,255,255,.05);
-      padding:.25rem .55rem;border-radius:999px;
-      font-size:.78rem;color:rgba(255,255,255,.82);
-      font-weight:900;white-space:nowrap;
-    }
-
-    /* Next Event */
-    .nextBox{
+    /* Next event card */
+    .next{
       margin-top:1rem;
       border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.04);
-      border-radius:18px;
-      padding:1rem 1.1rem;
+      background:rgba(255,255,255,.05);
+      border-radius:16px;
+      padding:1rem;
+      display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;
     }
-    .nextRow{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-    .nextLeft{display:flex;align-items:flex-start;gap:.75rem}
-    .nextLabel{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:.25rem}
-    .nextName{font-size:1.15rem;font-weight:900;color:#fff}
-    .nextMeta{font-size:.82rem;color:rgba(255,255,255,.45);margin-top:.2rem}
-    .nextDate{font-size:1.85rem;font-weight:300;color:#fff;text-align:right}
+    .next .left{display:flex;gap:.75rem;align-items:flex-start}
+    .next .label{color:rgba(255,255,255,.45);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.25rem}
+    .next .name{font-size:1.1rem;color:#fff;font-weight:500}
+    .next .meta{color:rgba(255,255,255,.45);font-size:.8rem;margin-top:.25rem}
+    .next .dateBox{text-align:right}
+    .next .bigDate{font-size:1.65rem;font-weight:300;letter-spacing:-.5px}
     .badge{
       display:inline-flex;align-items:center;gap:.4rem;
-      border-radius:999px;
-      padding:.25rem .65rem;
-      font-size:.78rem;font-weight:900;
       border:1px solid rgba(255,255,255,.18);
       background:rgba(255,255,255,.05);
       color:rgba(255,255,255,.85);
+      padding:.35rem .65rem;
+      border-radius:999px;
+      font-size:.72rem;
+      font-weight:700;
       margin-top:.35rem;
     }
 
-    /* Global Impact */
+    /* Controls bar */
+    .bar{
+      position:sticky;top:76px;z-index:900;
+      margin-top:1.25rem;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.75);
+      backdrop-filter:blur(14px);
+      border-radius:18px;
+      padding:1rem;
+    }
+    .controls{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end}
+    .group{display:flex;flex-direction:column;gap:.45rem}
+    .group label{color:rgba(255,255,255,.45);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase}
+    select,button{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+      color:rgba(255,255,255,.85);
+      padding:.65rem .75rem;
+      border-radius:12px;
+      outline:none;
+      font-weight:700;
+    }
+    select:focus,button:focus{border-color:rgba(255,255,255,.22)}
+    button{cursor:pointer;transition:all .2s ease}
+    button:hover{background:rgba(255,255,255,.07)}
+    .toggleOn{background:rgba(255,255,255,.10)!important;border-color:rgba(255,255,255,.22)!important;color:#fff!important}
+    .views{margin-left:auto;display:flex;gap:.5rem;flex-wrap:wrap}
+    .statline{margin-top:.75rem;color:rgba(255,255,255,.45);font-size:.8rem;display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+    .dotSep{color:rgba(255,255,255,.20)}
+
+    /* Sections */
+    .section{margin-top:1.25rem}
+
+    /* Timeline grid */
+    .timelineHead{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.8rem}
+    .timelineTitle{font-size:1.5rem;font-weight:300}
+    .iconBtn{padding:.55rem .7rem;border-radius:12px}
+    .iconBtn[disabled]{opacity:.35;cursor:not-allowed}
+    .grid7{display:grid;grid-template-columns:repeat(7,1fr);gap:.5rem}
+    .dayCell{
+      aspect-ratio:1/1;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      border-radius:14px;
+      padding:.55rem;
+      transition:all .15s ease;
+      overflow:hidden;
+    }
+    .dayCell:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.14)}
+    .dayTop{display:flex;align-items:flex-start;justify-content:space-between}
+    .dayNum{color:rgba(255,255,255,.60);font-size:.85rem}
+    .impactDot{width:10px;height:10px;border-radius:50%}
+    .impactHigh{background:#fff}
+    .impactMed{background:rgba(255,255,255,.70)}
+    .impactLow{background:rgba(255,255,255,.45)}
+    .dayName{
+      margin-top:.45rem;
+      font-size:.68rem;
+      color:rgba(255,255,255,.55);
+      line-height:1.25;
+      display:-webkit-box;
+      -webkit-line-clamp:3;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+
+    /* Heatmap table */
+    .tableWrap{overflow:auto;border:1px solid rgba(255,255,255,.10);border-radius:18px}
+    table{width:100%;min-width:900px;border-collapse:collapse}
+    thead{background:rgba(255,255,255,.04)}
+    th,td{padding:.9rem .7rem;border-bottom:1px solid rgba(255,255,255,.10)}
+    th{text-align:left;color:rgba(255,255,255,.50);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase}
+    td{color:rgba(255,255,255,.70)}
+    .hmCell{height:32px;border-radius:10px;border:1px solid rgba(255,255,255,.12)}
+    .hm0{background:rgba(255,255,255,.03)}
+    .hm1{background:rgba(255,255,255,.06)}
+    .hm2{background:rgba(255,255,255,.10)}
+    .hm3{background:rgba(255,255,255,.14)}
+
+    /* List cards */
+    .cards{display:flex;flex-direction:column;gap:1rem}
+    .card{
+      border:1px solid rgba(255,255,255,.10);
+      background:linear-gradient(145deg, rgba(255,255,255,.06), rgba(0,0,0,.65));
+      border-radius:18px;
+      padding:1.25rem;
+      box-shadow:0 30px 80px rgba(0,0,0,.50);
+      transition:all .2s ease;
+    }
+    .card:hover{border-color:rgba(255,255,255,.16)}
+    .rowTop{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.8rem}
+    .hName{font-size:1.25rem;font-weight:300;color:#fff}
+    .dateLine{color:rgba(255,255,255,.55);font-size:.9rem;margin-top:.25rem}
+    .mini{color:rgba(255,255,255,.45);font-size:.8rem;margin-top:.5rem}
+    .chips{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.55rem}
+    .chip{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);
+      color:rgba(255,255,255,.75);
+      padding:.3rem .55rem;
+      border-radius:10px;
+      font-size:.78rem;
+      font-weight:700;
+    }
+    .impactWrap{display:flex;align-items:center;gap:.55rem}
+    .impactLabel{color:rgba(255,255,255,.45);font-size:.78rem;text-transform:capitalize}
+    .impactDotLg{width:12px;height:12px;border-radius:50%}
+
     .impactBox{
       margin-top:1rem;
       border:1px solid rgba(255,255,255,.10);
       background:rgba(0,0,0,.40);
-      border-radius:18px;
-      padding:1rem 1.1rem;
-    }
-    .impactGrid{
-      display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;
-    }
-    @media(max-width:980px){ .impactGrid{grid-template-columns:repeat(2,1fr)} }
-    @media(max-width:560px){ .impactGrid{grid-template-columns:1fr} }
-    .impactTitle{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:.35rem}
-    .impactBig{font-size:1.65rem;font-weight:300;color:#fff}
-    .impactSmall{font-size:.82rem;color:rgba(255,255,255,.40);margin-top:.15rem}
-    .bar{
-      height:10px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.05);
-      overflow:hidden;margin-top:.45rem;
-    }
-    .bar > div{height:10px;border-radius:999px;background:rgba(255,255,255,.80)}
-
-    /* Filters sticky */
-    .filtersWrap{
-      margin-top:1.2rem;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.45);
-      border-radius:18px;
-      padding:1rem 1.1rem;
-    }
-    .filters{
-      display:grid;grid-template-columns: 1fr 1fr 1fr 1.2fr auto;
-      gap:.75rem;align-items:end;
-    }
-    @media(max-width:980px){ .filters{grid-template-columns:1fr 1fr; } .filters .rightBtn{grid-column:1/-1; justify-content:flex-start} }
-    @media(max-width:560px){ .filters{grid-template-columns:1fr; } .filters .rightBtn{grid-column:auto} }
-    .field{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.03);
-      border-radius:14px;
-      padding:.75rem .85rem;
-    }
-    .label{
-      font-size:.72rem;font-weight:900;letter-spacing:.18em;
-      text-transform:uppercase;color:rgba(255,255,255,.45);
-      margin-bottom:.35rem;
-    }
-    select,input{
-      width:100%;
-      background:transparent;border:0;outline:none;
-      color:#fff;font-weight:900;font-size:.95rem;
-    }
-    option{color:#000}
-    .btn{
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.04);
-      color:rgba(255,255,255,.80);
-      padding:.75rem 1rem;border-radius:14px;
-      font-weight:900;font-size:.9rem;
-      cursor:pointer;transition:.2s;
-      display:inline-flex;align-items:center;gap:.55rem;
-      white-space:nowrap;
-    }
-    .btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.20);transform:translateY(-1px)}
-    .btn.active{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.22);color:#fff}
-    .rightBtn{display:flex;gap:.5rem;justify-content:flex-end;flex-wrap:wrap}
-
-    /* Views */
-    .viewSection{margin-top:1.1rem}
-    .tabs{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end}
-    .tab{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);padding:.55rem .8rem;border-radius:12px;font-weight:900;font-size:.9rem;color:rgba(255,255,255,.70);cursor:pointer;transition:.2s}
-    .tab:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.20);transform:translateY(-1px)}
-    .tab.active{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.22);color:#fff}
-
-    .statLine{
-      margin-top:.75rem;
-      font-size:.82rem;
-      color:rgba(255,255,255,.45);
-      display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;
-    }
-    .dotSep{color:rgba(255,255,255,.20)}
-
-    /* List cards */
-    .list{display:flex;flex-direction:column;gap:.85rem;margin-top:1rem}
-    .eventCard{
-      border:1px solid rgba(255,255,255,.10);
-      background:linear-gradient(135deg, rgba(255,255,255,.06), rgba(0,0,0,.65));
-      border-radius:18px;
-      padding:1.1rem 1.1rem;
-      transition:.2s;
-      box-shadow:0 30px 80px rgba(0,0,0,0.55);
-    }
-    .eventCard:hover{border-color:rgba(255,255,255,.16)}
-    .eventTop{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-    .eventNameRow{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
-    .eventName{font-size:1.1rem;font-weight:300;color:#fff}
-    .eventDate{font-size:.95rem;color:rgba(255,255,255,.55);margin-top:.2rem}
-    .impactDot{width:10px;height:10px;border-radius:50%}
-    .impact-high{background:#fff}
-    .impact-medium{background:rgba(255,255,255,.70)}
-    .impact-low{background:rgba(255,255,255,.45)}
-
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.85rem;padding-top:.85rem;border-top:1px solid rgba(255,255,255,.10)}
-    @media(max-width:780px){ .grid2{grid-template-columns:1fr} }
-
-    .sectionTitle{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:.5rem}
-    .tags{display:flex;gap:.45rem;flex-wrap:wrap}
-    .tag{
-      padding:.32rem .55rem;border-radius:10px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.05);
-      color:rgba(255,255,255,.72);
-      font-size:.78rem;font-weight:900;
-    }
-
-    .impactNote{
-      margin-top:.9rem;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.45);
       border-radius:16px;
-      padding:.85rem .9rem;
-      display:flex;gap:.7rem;align-items:flex-start;
+      padding:1rem;
+      display:flex;gap:.85rem;align-items:flex-start;
     }
-    .impactNote p{color:rgba(255,255,255,.65);font-size:.92rem;line-height:1.7;font-weight:700}
+    .impactText h4{color:rgba(255,255,255,.45);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.4rem}
+    .impactText p{color:rgba(255,255,255,.65);font-size:.92rem;line-height:1.65}
+    .footerLine{margin-top:.8rem;color:rgba(255,255,255,.35);font-size:.75rem;display:flex;gap:.6rem;flex-wrap:wrap}
+    .divider{color:rgba(255,255,255,.20)}
 
-    /* Timeline */
-    .timelineTop{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:1rem}
-    .timelineTitle{font-size:1.35rem;font-weight:300;color:#fff}
-    .monthBtns{display:flex;gap:.5rem}
-    .iconBtn{
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.04);
-      color:#fff;
-      padding:.55rem .65rem;border-radius:12px;
-      cursor:pointer;transition:.2s;
-      display:inline-flex;align-items:center;justify-content:center;
-    }
-    .iconBtn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.20);transform:translateY(-1px)}
-    .iconBtn:disabled{opacity:.3;cursor:not-allowed;transform:none}
-    .grid7{display:grid;grid-template-columns:repeat(7,1fr);gap:.5rem;margin-top:.8rem}
-    .dayCell{
-      aspect-ratio:1/1;
-      border-radius:14px;
+    /* Bottom sections */
+    .bigPanel{
+      margin-top:1.75rem;
       border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.03);
-      padding:.55rem .55rem;
-      transition:.2s;
-      overflow:hidden;
-    }
-    .dayCell:hover{background:rgba(255,255,255,.05)}
-    .dayNum{font-size:.9rem;color:rgba(255,255,255,.60);font-weight:900}
-    .dayName{margin-top:.45rem;font-size:.70rem;color:rgba(255,255,255,.55);line-height:1.2;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-    .cellClosed{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.20)}
-    .cellEarly{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18)}
-    .cellWarn{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15)}
-    .cellTop{display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem}
-    .tip{margin-top:.85rem;color:rgba(255,255,255,.45);font-size:.82rem}
-
-    /* Heatmap */
-    .heatWrap{margin-top:1rem;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.35);border-radius:18px;overflow:auto}
-    table{width:100%;border-collapse:collapse;min-width:900px}
-    th,td{padding:.75rem .7rem;border-bottom:1px solid rgba(255,255,255,.08)}
-    th{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);background:rgba(255,255,255,.03);text-align:center}
-    th:first-child, td:first-child{text-align:left}
-    .heatCell{height:28px;border-radius:10px;border:1px solid rgba(255,255,255,.10)}
-    .h0{background:rgba(255,255,255,.03)}
-    .h1{background:rgba(255,255,255,.06)}
-    .h2{background:rgba(255,255,255,.10)}
-    .h3{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.20)}
-
-    /* Big Notes sections */
-    .bigNote{
-      margin-top:1.2rem;
-      border:1px solid rgba(255,255,255,.10);
-      background:linear-gradient(135deg, rgba(255,255,255,.06), rgba(0,0,0,.70));
+      background:linear-gradient(145deg, rgba(255,255,255,.06), rgba(0,0,0,.65));
       border-radius:18px;
-      padding:1.2rem 1.2rem;
+      padding:1.5rem;
     }
-    .bigNote h2{font-size:1.35rem;font-weight:300;color:#fff;margin-bottom:.7rem}
-    .cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
-    @media(max-width:980px){ .cols3{grid-template-columns:1fr} }
-    .bigNote h3{font-size:.95rem;color:rgba(255,255,255,.75);font-weight:900;margin-bottom:.35rem}
-    .bigNote p{color:rgba(255,255,255,.55);line-height:1.7;font-weight:700;font-size:.92rem}
-    .legend{margin-top:1.2rem;border-top:1px solid rgba(255,255,255,.10);padding-top:1rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-    .legendItems{display:flex;gap:1rem;flex-wrap:wrap}
-    .legendItem{display:flex;align-items:center;gap:.45rem;color:rgba(255,255,255,.55);font-weight:800}
-    .box{width:16px;height:16px;border-radius:6px;border:1px solid rgba(255,255,255,.16)}
+    .bigPanel h2{font-size:1.6rem;font-weight:300;margin-bottom:1rem}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+    @media (max-width:900px){.grid3{grid-template-columns:1fr}}
+    .miniCard h3{font-size:.95rem;color:rgba(255,255,255,.78);margin-bottom:.45rem}
+    .miniCard p{color:rgba(255,255,255,.55);font-size:.9rem;line-height:1.65}
+
+    .legend{margin-top:1.75rem;border-top:1px solid rgba(255,255,255,.10);padding-top:1.25rem}
+    .legendRow{display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center;justify-content:space-between}
+    .legendItems{display:flex;gap:1.25rem;flex-wrap:wrap}
+    .leg{display:flex;align-items:center;gap:.55rem}
+    .box{width:18px;height:18px;border-radius:7px;border:1px solid rgba(255,255,255,.16)}
     .bClosed{background:rgba(255,255,255,.10)}
     .bEarly{background:rgba(255,255,255,.08)}
     .bWarn{background:rgba(255,255,255,.06)}
-    .foot{max-width:700px;color:rgba(255,255,255,.45);font-size:.80rem;line-height:1.7;font-weight:700}
+    .leg span{color:rgba(255,255,255,.55);font-size:.9rem}
+    .rightNote{color:rgba(255,255,255,.45);font-size:.8rem;line-height:1.65;max-width:80ch;text-align:right}
 
-    /* Util */
-    .hide{display:none !important}
+    /* Simple hide/show */
+    .hidden{display:none!important}
   </style>
 </head>
-
 <body>
   <div class="animated-bg">
     <div class="grid-overlay"></div>
@@ -345,201 +258,185 @@
 
   <header>
     <div class="nav">
-      <div class="brand"><i class="fa-solid fa-umbrella-beach"></i> Market Holidays</div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
-        <a href="../index.html"><i class="fas fa-arrow-left"></i> Back</a>
+      <div class="brand"><i class="fas fa-calendar-days"></i> Market Holidays</div>
+      <div class="right">
+        <a class="pill" href="../home/index.html"><i class="fas fa-house"></i> Home Hub</a>
+        <a class="pill" href="../index.html"><i class="fas fa-arrow-left"></i> Back</a>
       </div>
     </div>
   </header>
 
   <main>
-    <div class="card">
-      <div class="hero">
+    <div class="hero">
+      <h1>Market Holidays</h1>
+      <div class="sub">2025–2027 · Market closures, early closes, and liquidity-impact days</div>
+      <div class="note">
+        Forex is generally open 24/5 and Crypto is 24/7. “Liquidity Warning” entries represent periods where participation
+        often drops and spreads/slippage risk rises. For exchange-perfect calendars, always confirm official notices.
+        This tool is designed for trading risk management.
+      </div>
+
+      <div class="next" id="nextWrap" style="display:none;">
+        <div class="left">
+          <div style="margin-top:.1rem;color:rgba(255,255,255,.75)"><i class="fa-regular fa-clock"></i></div>
+          <div>
+            <div class="label">Next Market Event</div>
+            <div class="name" id="nextName">—</div>
+            <div class="meta" id="nextMeta">—</div>
+          </div>
+        </div>
+        <div class="dateBox">
+          <div class="bigDate" id="nextDate">—</div>
+          <div class="badge" id="nextBadge">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bar">
+      <div class="controls">
+        <div class="group">
+          <label>Region</label>
+          <select id="regionSel">
+            <option value="all">All Regions</option>
+            <option value="Americas">Americas</option>
+            <option value="Europe">Europe</option>
+            <option value="Asia">Asia</option>
+          </select>
+        </div>
+
+        <div class="group">
+          <label>Market Type</label>
+          <select id="marketSel">
+            <option value="all">All Markets</option>
+            <option value="Stocks">Stocks</option>
+            <option value="Options">Options</option>
+            <option value="Forex">Forex</option>
+            <option value="Crypto">Crypto</option>
+          </select>
+        </div>
+
+        <div class="group">
+          <label>Year</label>
+          <select id="yearSel">
+            <option value="2025">2025</option>
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+          </select>
+        </div>
+
+        <div class="group">
+          <label>Filter</label>
+          <button id="impactBtn" type="button">High Impact Only</button>
+        </div>
+
+        <div class="group" style="min-width:260px">
+          <label>Timezone</label>
+          <select id="tzSel"></select>
+        </div>
+
+        <div class="views">
+          <div class="group">
+            <label>View</label>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+              <button id="viewList" type="button" class="toggleOn">List</button>
+              <button id="viewTimeline" type="button">Timeline</button>
+              <button id="viewHeatmap" type="button">Heatmap</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="statline">
+        <span>Showing <span id="count" style="color:rgba(255,255,255,.82)">0</span> events for <span id="yearTxt" style="color:rgba(255,255,255,.82)">2025</span></span>
+        <span class="dotSep">•</span>
+        <span>Timezone display: <span id="tzTxt" style="color:rgba(255,255,255,.75)">—</span></span>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div class="section" id="secList">
+      <div class="cards" id="cards"></div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="section hidden" id="secTimeline">
+      <div class="timelineHead">
+        <div class="timelineTitle" id="timelineTitle">—</div>
+        <div style="display:flex;gap:.5rem">
+          <button class="iconBtn" id="prevMonth" type="button" title="Previous month"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="iconBtn" id="nextMonth" type="button" title="Next month"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="grid7" id="timelineGrid"></div>
+      <div style="margin-top:.8rem;color:rgba(255,255,255,.45);font-size:.8rem">
+        Tip: Use filters to isolate “Stocks” vs “Forex” warnings. Timeline shows only the filtered set.
+      </div>
+    </div>
+
+    <!-- Heatmap -->
+    <div class="section hidden" id="secHeatmap">
+      <div style="font-size:1.6rem;font-weight:300;margin-bottom:.8rem">
+        Annual Holiday Distribution (<span id="heatYear">2025</span>)
+      </div>
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Region</th>
+              <th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun</th>
+              <th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th>
+            </tr>
+          </thead>
+          <tbody id="heatBody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:.8rem;color:rgba(255,255,255,.45);font-size:.8rem">
+        Heatmap counts all events (closed/early/warning) in the dataset for the selected year.
+      </div>
+    </div>
+
+    <!-- Trading Notes -->
+    <div class="bigPanel">
+      <h2>How This Affects Trading</h2>
+      <div class="grid3">
+        <div class="miniCard">
+          <h3>Reduced Volume</h3>
+          <p>Holidays remove major liquidity providers. Expect thinner books, wider spreads, and more slippage on market orders.</p>
+        </div>
+        <div class="miniCard">
+          <h3>False Breakout Risk</h3>
+          <p>Thin liquidity can poke levels without continuation. Use confirmation (structure + volume proxies) and reduce size.</p>
+        </div>
+        <div class="miniCard">
+          <h3>Session Overlaps Shift</h3>
+          <p>Overlaps lose their advantage when one region is offline. London–NY overlap is especially impacted on US/UK holidays.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legendRow">
         <div>
-          <h1>Market Holidays</h1>
-          <div class="sub">2025–2027 · Market closures, early closes, and liquidity-impact days</div>
-          <div class="tiny">
-            Forex is generally open 24/5 and Crypto is 24/7. “Liquidity Warning” entries represent periods where participation often drops and spreads/slippage risk rises.
-            For exchange-perfect calendars, always confirm official notices. This tool is designed for trading risk management.
+          <div style="color:rgba(255,255,255,.75);font-weight:700;margin-bottom:.8rem">Legend</div>
+          <div class="legendItems">
+            <div class="leg"><div class="box bClosed"></div><span>Market Closed</span></div>
+            <div class="leg"><div class="box bEarly"></div><span>Early Close</span></div>
+            <div class="leg"><div class="box bWarn"></div><span>Liquidity Warning</span></div>
+            <div class="leg"><div class="impactDotLg impactHigh"></div><span>High Impact</span></div>
+            <div class="leg"><div class="impactDotLg impactMed"></div><span>Medium Impact</span></div>
+            <div class="leg"><div class="impactDotLg impactLow"></div><span>Low Impact</span></div>
           </div>
         </div>
-
-        <div style="text-align:right;min-width:280px">
-          <div style="display:flex;align-items:center;justify-content:flex-end;gap:.5rem;color:rgba(255,255,255,.60);font-weight:800">
-            <i class="fa-solid fa-globe"></i>
-            <span id="tzLabel">Loading…</span>
-          </div>
-
-          <div style="display:flex;align-items:center;justify-content:flex-end;gap:.6rem;margin-top:.8rem;flex-wrap:wrap">
-            <div class="label" style="margin:0">Timezone</div>
-            <select id="tzSelect" style="width:auto;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03);border-radius:12px;padding:.55rem .65rem;font-weight:900;color:rgba(255,255,255,.85)">
-              <option>America/Boise</option>
-              <option>America/Los_Angeles</option>
-              <option>America/Denver</option>
-              <option>America/Chicago</option>
-              <option>America/New_York</option>
-              <option>Europe/London</option>
-              <option>Europe/Paris</option>
-              <option>Asia/Tokyo</option>
-              <option>Asia/Hong_Kong</option>
-              <option>Asia/Dubai</option>
-              <option>UTC</option>
-            </select>
-          </div>
-
-          <div class="chips" style="margin-top:1rem">
-            <div class="chip"><i class="fa-solid fa-circle-check"></i> Programmatic</div>
-            <div class="chip"><i class="fa-solid fa-moon"></i> Black/White</div>
-            <div class="chip"><i class="fa-solid fa-bolt"></i> Risk Focus</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Next Event -->
-      <div id="nextBox" class="nextBox"></div>
-
-      <!-- Global Impact -->
-      <div id="impactBox" class="impactBox"></div>
-
-      <!-- Filters + View -->
-      <div class="filtersWrap">
-        <div class="filters">
-          <div class="field">
-            <div class="label">Region</div>
-            <select id="regionSelect">
-              <option value="all">All Regions</option>
-              <option value="Americas">Americas</option>
-              <option value="Europe">Europe</option>
-              <option value="Asia">Asia</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <div class="label">Market Type</div>
-            <select id="marketSelect">
-              <option value="all">All Markets</option>
-              <option value="Stocks">Stocks</option>
-              <option value="Options">Options</option>
-              <option value="Forex">Forex</option>
-              <option value="Crypto">Crypto</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <div class="label">Year</div>
-            <select id="yearSelect">
-              <option value="2025">2025</option>
-              <option value="2026">2026</option>
-              <option value="2027">2027</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <div class="label">Search</div>
-            <input id="searchInput" type="text" placeholder="Search (e.g., Christmas, Thanksgiving, FX)" />
-          </div>
-
-          <div class="rightBtn">
-            <button id="highBtn" class="btn"><i class="fa-solid fa-triangle-exclamation"></i> High Impact Only</button>
-            <button id="tabList" class="tab active">List</button>
-            <button id="tabTimeline" class="tab">Timeline</button>
-            <button id="tabHeatmap" class="tab">Heatmap</button>
-          </div>
-        </div>
-
-        <div class="statLine">
-          <span>Showing <span id="countNum" style="color:rgba(255,255,255,.80);font-weight:900">0</span> events for <span id="yearLbl" style="color:rgba(255,255,255,.80);font-weight:900">2025</span></span>
-          <span class="dotSep">•</span>
-          <span>Timezone display: <span id="tzName" style="color:rgba(255,255,255,.75);font-weight:900">America/Boise</span></span>
-        </div>
-      </div>
-
-      <!-- Views -->
-      <div class="viewSection">
-        <div id="viewList">
-          <div id="listWrap" class="list"></div>
-        </div>
-
-        <div id="viewTimeline" class="hide">
-          <div class="timelineTop">
-            <div class="timelineTitle" id="monthTitle">January 2025</div>
-            <div class="monthBtns">
-              <button id="prevMonth" class="iconBtn" title="Previous month"><i class="fa-solid fa-chevron-left"></i></button>
-              <button id="nextMonth" class="iconBtn" title="Next month"><i class="fa-solid fa-chevron-right"></i></button>
-            </div>
-          </div>
-          <div id="timelineGrid" class="grid7"></div>
-          <div class="tip">Tip: Use filters to isolate “Stocks” vs “Forex” warnings. Timeline shows only the filtered set.</div>
-        </div>
-
-        <div id="viewHeatmap" class="hide">
-          <div style="margin-top:1rem">
-            <div class="timelineTitle" style="margin-bottom:.6rem">Annual Holiday Distribution (<span id="heatYear">2025</span>)</div>
-            <div class="heatWrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th style="min-width:160px;text-align:left;padding-left:14px">Region</th>
-                    <th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun</th>
-                    <th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th>
-                  </tr>
-                </thead>
-                <tbody id="heatBody"></tbody>
-              </table>
-            </div>
-            <div class="tip">Heatmap counts all events (closed/early/warning) in the dataset for the selected year.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Notes + Legend -->
-      <div class="bigNote">
-        <h2>How This Affects Trading</h2>
-        <div class="cols3">
-          <div>
-            <h3>Reduced Volume</h3>
-            <p>Holidays remove major liquidity providers. Expect thinner books, wider spreads, and more slippage on market orders.</p>
-          </div>
-          <div>
-            <h3>False Breakout Risk</h3>
-            <p>Thin liquidity can poke levels without continuation. Use confirmation (structure + volume proxies) and reduce size.</p>
-          </div>
-          <div>
-            <h3>Session Overlaps Shift</h3>
-            <p>Overlaps lose their advantage when one region is offline. London–NY overlap is especially impacted on US/UK holidays.</p>
-          </div>
-        </div>
-
-        <div class="legend">
-          <div>
-            <div class="sectionTitle">Legend</div>
-            <div class="legendItems">
-              <div class="legendItem"><span class="box bClosed"></span> Market Closed</div>
-              <div class="legendItem"><span class="box bEarly"></span> Early Close</div>
-              <div class="legendItem"><span class="box bWarn"></span> Liquidity Warning</div>
-              <div class="legendItem"><span class="impactDot impact-high"></span> High Impact</div>
-              <div class="legendItem"><span class="impactDot impact-medium"></span> Medium Impact</div>
-              <div class="legendItem"><span class="impactDot impact-low"></span> Low Impact</div>
-            </div>
-          </div>
-
-          <div class="foot">
-            This dashboard generates a robust 2025–2027 schedule for US + UK closures (observed),
-            plus global liquidity warnings (FX/Crypto) and Asia windows. If you want exchange-perfect HKEX/TSE closure days,
-            you must plug in official calendars because they vary year-to-year.
-          </div>
+        <div class="rightNote">
+          This dashboard generates a robust 2025–2027 schedule for US + UK closures (observed), plus global liquidity warnings (FX/Crypto) and Asia windows.
+          If you want exchange-perfect HKEX/TSE closure days, you must plug in official calendars (CSV/API) because they vary year-to-year.
         </div>
       </div>
     </div>
   </main>
 
   <script>
-    /**
-     * This file is the FIX.
-     * It keeps your exact holiday logic (programmatic) but runs on GitHub Pages
-     * because it uses plain HTML/CSS/JS (no React imports).
-     */
-
     /* ----------------------------- Date helpers ----------------------------- */
     const MS_DAY = 24 * 60 * 60 * 1000;
 
@@ -550,6 +447,7 @@
       return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
     }
     function observeFixedHoliday(date) {
+      // If Saturday -> observed Friday, If Sunday -> observed Monday
       const day = date.getDay();
       if (day === 6) return addDays(date, -1);
       if (day === 0) return addDays(date, 1);
@@ -568,6 +466,7 @@
       const delta = (lastDay - weekday + 7) % 7;
       return new Date(year, monthIndex, last.getDate() - delta);
     }
+    // Easter Sunday (Meeus/Jones/Butcher)
     function easterSunday(year) {
       const a = year % 19;
       const b = Math.floor(year / 100);
@@ -581,7 +480,7 @@
       const k = c % 4;
       const l = (32 + 2 * e + 2 * i - h - k) % 7;
       const m = Math.floor((a + 11 * h + 22 * l) / 451);
-      const month = Math.floor((h + l - 7 * m + 114) / 31);
+      const month = Math.floor((h + l - 7 * m + 114) / 31); // 3=March,4=April
       const day = ((h + l - 7 * m + 114) % 31) + 1;
       return new Date(year, month - 1, day);
     }
@@ -599,76 +498,89 @@
       const d = startOfDay(date);
       return {
         id: `${name}-${d.getFullYear()}-${d.getMonth()}-${d.getDate()}-${exchanges.join(",")}`,
-        name,
-        date: d,
-        status,
-        impact,
-        regions,
-        exchanges,
-        markets,
-        notes,
+        name, date: d, status, impact, regions, exchanges, markets, notes
       };
     }
 
-    /* ---------------------- Holiday generators (2025–2027) ------------------- */
     function buildUSHolidays(year) {
       const list = [];
-      const newYear = observeFixedHoliday(new Date(year, 0, 1));
       list.push(mkHoliday({
-        name: "New Year’s Day", date: newYear, status:"closed", impact:"high",
+        name:"New Year’s Day",
+        date: observeFixedHoliday(new Date(year,0,1)),
+        status:"closed", impact:"high",
         regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
-        notes:"US equities closed. FX open but liquidity can be uneven, especially around the first London/NY overlap of the year.",
+        notes:"US equities closed. FX open but liquidity can be uneven, especially around the first London/NY overlap of the year."
       }));
       list.push(mkHoliday({
-        name:"Martin Luther King Jr. Day", date:nthWeekdayOfMonth(year,0,1,3), status:"closed", impact:"medium",
+        name:"Martin Luther King Jr. Day",
+        date:nthWeekdayOfMonth(year,0,1,3),
+        status:"closed", impact:"medium",
         regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
-        notes:"US equities closed. FX continues; expect thinner NY session liquidity.",
+        notes:"US equities closed. FX continues; expect thinner NY session liquidity."
       }));
       list.push(mkHoliday({
-        name:"Presidents’ Day", date:nthWeekdayOfMonth(year,1,1,3), status:"closed", impact:"medium",
+        name:"Presidents’ Day",
+        date:nthWeekdayOfMonth(year,1,1,3),
+        status:"closed", impact:"medium",
         regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
-        notes:"US equities closed. Watch for reduced NY participation across risk assets.",
+        notes:"US equities closed. Watch for reduced NY participation across risk assets."
       }));
       list.push(mkHoliday({
-        name:"Memorial Day", date:lastWeekdayOfMonth(year,4,1), status:"closed", impact:"medium",
+        name:"Memorial Day",
+        date:lastWeekdayOfMonth(year,4,1),
+        status:"closed", impact:"medium",
         regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
-        notes:"US equities closed. Liquidity lower into Tuesday open; avoid thin-market traps.",
+        notes:"US equities closed. Liquidity lower into Tuesday open; avoid thin-market traps."
       }));
       list.push(mkHoliday({
-        name:"Juneteenth National Independence Day", date:observeFixedHoliday(new Date(year,5,19)),
-        status:"closed", impact:"medium", regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
-        notes:"US equities closed. FX continues; NY liquidity reduced.",
+        name:"Juneteenth National Independence Day",
+        date: observeFixedHoliday(new Date(year,5,19)),
+        status:"closed", impact:"medium",
+        regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
+        notes:"US equities closed. FX continues; NY liquidity reduced."
       }));
       list.push(mkHoliday({
-        name:"Independence Day", date:observeFixedHoliday(new Date(year,6,4)), status:"closed", impact:"medium",
+        name:"Independence Day",
+        date: observeFixedHoliday(new Date(year,6,4)),
+        status:"closed", impact:"medium",
         regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
-        notes:"US equities closed. Summer volumes already lower; spreads can widen.",
+        notes:"US equities closed. Summer volumes already lower; spreads can widen."
       }));
       list.push(mkHoliday({
-        name:"Labor Day", date:nthWeekdayOfMonth(year,8,1,1), status:"closed", impact:"medium",
+        name:"Labor Day",
+        date:nthWeekdayOfMonth(year,8,1,1),
+        status:"closed", impact:"medium",
         regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
-        notes:"US equities closed. FX continues; US desks reduced.",
+        notes:"US equities closed. FX continues; US desks reduced."
       }));
       const thanksgiving = nthWeekdayOfMonth(year,10,4,4);
       list.push(mkHoliday({
-        name:"Thanksgiving Day", date:thanksgiving, status:"closed", impact:"high",
+        name:"Thanksgiving Day",
+        date:thanksgiving,
+        status:"closed", impact:"high",
         regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
-        notes:"US equities closed. Liquidity often thins across global markets.",
+        notes:"US equities closed. Liquidity often thins across global markets."
       }));
       list.push(mkHoliday({
-        name:"Day After Thanksgiving (Early Close)", date:addDays(thanksgiving,1), status:"early", impact:"low",
+        name:"Day After Thanksgiving (Early Close)",
+        date:addDays(thanksgiving,1),
+        status:"early", impact:"low",
         regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
-        notes:"US equities typically close early. Reduced volume; false breakouts more likely.",
+        notes:"US equities typically close early. Reduced volume; false breakouts more likely."
       }));
       list.push(mkHoliday({
-        name:"Christmas Day", date:observeFixedHoliday(new Date(year,11,25)), status:"closed", impact:"high",
+        name:"Christmas Eve (Early Close)",
+        date:new Date(year,11,24),
+        status:"early", impact:"medium",
         regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
-        notes:"US equities closed. Global liquidity very low; avoid oversized risk.",
+        notes:"US equities often close early. Year-end positioning dominates flows."
       }));
       list.push(mkHoliday({
-        name:"Christmas Eve (Early Close)", date:new Date(year,11,24), status:"early", impact:"medium",
+        name:"Christmas Day",
+        date: observeFixedHoliday(new Date(year,11,25)),
+        status:"closed", impact:"high",
         regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
-        notes:"US equities often close early. Year-end positioning dominates flows.",
+        notes:"US equities closed. Global liquidity very low; avoid oversized risk."
       }));
       return list;
     }
@@ -676,47 +588,61 @@
     function buildUKHolidays(year) {
       const list = [];
       list.push(mkHoliday({
-        name:"UK New Year’s Day", date:observeFixedHoliday(new Date(year,0,1)), status:"closed", impact:"medium",
+        name:"UK New Year’s Day",
+        date: observeFixedHoliday(new Date(year,0,1)),
+        status:"closed", impact:"medium",
         regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
-        notes:"UK equities closed. London FX desks may be lighter depending on broader Europe participation.",
+        notes:"UK equities closed. London FX desks may be lighter depending on broader Europe participation."
       }));
       const gf = goodFriday(year);
       list.push(mkHoliday({
-        name:"Good Friday", date:gf, status:"closed", impact:"high",
+        name:"Good Friday",
+        date:gf,
+        status:"closed", impact:"high",
         regions:["Europe","Americas","Asia"], exchanges:["LSE"], markets:["Stocks"],
-        notes:"European market closures reduce global liquidity; watch erratic moves and wider spreads.",
+        notes:"European market closures reduce global liquidity; watch erratic moves and wider spreads."
       }));
       list.push(mkHoliday({
-        name:"Easter Monday", date:addDays(gf,3), status:"closed", impact:"high",
+        name:"Easter Monday",
+        date:addDays(gf,3),
+        status:"closed", impact:"high",
         regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
-        notes:"UK equities closed. London liquidity reduced; FX still open but thinner.",
+        notes:"UK equities closed. London liquidity reduced; FX still open but thinner."
       }));
       list.push(mkHoliday({
-        name:"Early May Bank Holiday", date:nthWeekdayOfMonth(year,4,1,1), status:"closed", impact:"medium",
+        name:"Early May Bank Holiday",
+        date:nthWeekdayOfMonth(year,4,1,1),
+        status:"closed", impact:"medium",
         regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
-        notes:"UK equities closed. London participation reduced across Europe hours.",
+        notes:"UK equities closed. London participation reduced across Europe hours."
       }));
       list.push(mkHoliday({
-        name:"Spring Bank Holiday", date:lastWeekdayOfMonth(year,4,1), status:"closed", impact:"medium",
+        name:"Spring Bank Holiday",
+        date:lastWeekdayOfMonth(year,4,1),
+        status:"closed", impact:"medium",
         regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
-        notes:"UK equities closed. London liquidity reduced.",
+        notes:"UK equities closed. London liquidity reduced."
       }));
       list.push(mkHoliday({
-        name:"Summer Bank Holiday (UK)", date:lastWeekdayOfMonth(year,7,1), status:"closed", impact:"medium",
+        name:"Summer Bank Holiday (UK)",
+        date:lastWeekdayOfMonth(year,7,1),
+        status:"closed", impact:"medium",
         regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
-        notes:"UK equities closed. Summer liquidity can be thin; manage size.",
-      }));
-      const xmas = observeFixedHoliday(new Date(year,11,25));
-      const boxing = observeFixedHoliday(new Date(year,11,26));
-      list.push(mkHoliday({
-        name:"Christmas Day (UK)", date:xmas, status:"closed", impact:"high",
-        regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
-        notes:"UK equities closed. Global risk liquidity very low.",
+        notes:"UK equities closed. Summer liquidity can be thin; manage size."
       }));
       list.push(mkHoliday({
-        name:"Boxing Day (UK)", date:boxing, status:"closed", impact:"high",
+        name:"Christmas Day (UK)",
+        date: observeFixedHoliday(new Date(year,11,25)),
+        status:"closed", impact:"high",
         regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
-        notes:"UK equities closed. London desks minimal; FX can be thin.",
+        notes:"UK equities closed. Global risk liquidity very low."
+      }));
+      list.push(mkHoliday({
+        name:"Boxing Day (UK)",
+        date: observeFixedHoliday(new Date(year,11,26)),
+        status:"closed", impact:"high",
+        regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
+        notes:"UK equities closed. London desks minimal; FX can be thin."
       }));
       return list;
     }
@@ -724,30 +650,33 @@
     function buildHKHolidays(year) {
       const list = [];
       list.push(mkHoliday({
-        name:"Hong Kong New Year’s Day", date:observeFixedHoliday(new Date(year,0,1)), status:"closed", impact:"medium",
+        name:"Hong Kong New Year’s Day",
+        date: observeFixedHoliday(new Date(year,0,1)),
+        status:"closed", impact:"medium",
         regions:["Asia"], exchanges:["HKEX"], markets:["Stocks"],
-        notes:"HK equities closed. Asia risk participation reduced early in the year.",
+        notes:"HK equities closed. Asia risk participation reduced early in the year."
       }));
       list.push(mkHoliday({
         name:"Lunar New Year (Asia Liquidity Window)",
         date:new Date(year,0,29),
         status:"warning", impact:"high",
         regions:["Asia"], exchanges:["HKEX"], markets:["Stocks"],
-        notes:"Advisory: Lunar New Year week often reduces Asia liquidity. Exact HKEX closure dates vary by year; confirm official HKEX calendar for trading-day specifics.",
+        notes:"Advisory: Lunar New Year week often reduces Asia liquidity. Exact HKEX closure dates vary by year; confirm official HKEX calendar for trading-day specifics."
       }));
       const gf = goodFriday(year);
       list.push(mkHoliday({
         name:"Good Friday (Asia Liquidity Watch)",
-        date:gf, status:"warning", impact:"medium",
+        date:gf,
+        status:"warning", impact:"medium",
         regions:["Asia","Europe"], exchanges:["HKEX"], markets:["Stocks"],
-        notes:"Advisory: Global holiday cluster can reduce participation. Check HKEX official schedule for exact closures.",
+        notes:"Advisory: Global holiday cluster can reduce participation. Check HKEX official schedule for exact closures."
       }));
       list.push(mkHoliday({
         name:"Christmas Day (Hong Kong)",
         date:new Date(year,11,25),
         status:"warning", impact:"medium",
         regions:["Asia"], exchanges:["HKEX"], markets:["Stocks"],
-        notes:"Advisory: Many global desks are offline; Asia liquidity can be thin even if local markets partially operate.",
+        notes:"Advisory: Many global desks are offline; Asia liquidity can be thin even if local markets partially operate."
       }));
       return list;
     }
@@ -759,14 +688,14 @@
         date:new Date(year,0,2),
         status:"warning", impact:"high",
         regions:["Asia"], exchanges:["TSE"], markets:["Stocks"],
-        notes:"Advisory: Early January often sees reduced Japan participation. Confirm TSE calendar for exact closure days.",
+        notes:"Advisory: Early January often sees reduced Japan participation. Confirm TSE calendar for exact closure days."
       }));
       list.push(mkHoliday({
         name:"Golden Week (Japan Liquidity Window)",
         date:new Date(year,3,29),
         status:"warning", impact:"high",
         regions:["Asia"], exchanges:["TSE"], markets:["Stocks"],
-        notes:"Advisory: Golden Week reduces Japan liquidity. Exact market closure dates vary; confirm TSE calendar for the year.",
+        notes:"Advisory: Golden Week reduces Japan liquidity. Exact market closure dates vary; confirm TSE calendar for the year."
       }));
       return list;
     }
@@ -776,27 +705,31 @@
       const gf = goodFriday(year);
       list.push(mkHoliday({
         name:"Good Friday (FX Liquidity)",
-        date:gf, status:"warning", impact:"high",
+        date:gf,
+        status:"warning", impact:"high",
         regions:["Americas","Europe","Asia"], exchanges:["FX"], markets:["Forex"],
-        notes:"FX is open, but participation is reduced. Expect wider spreads and irregular price action; avoid forcing setups.",
+        notes:"FX is open, but participation is reduced. Expect wider spreads and irregular price action; avoid forcing setups."
       }));
       list.push(mkHoliday({
         name:"Christmas Day (FX Liquidity)",
-        date:new Date(year,11,25), status:"warning", impact:"high",
+        date:new Date(year,11,25),
+        status:"warning", impact:"high",
         regions:["Americas","Europe","Asia"], exchanges:["FX"], markets:["Forex"],
-        notes:"FX liquidity can be extremely low. Spreads and slippage risk increase; consider staying flat.",
+        notes:"FX liquidity can be extremely low. Spreads and slippage risk increase; consider staying flat."
       }));
       list.push(mkHoliday({
         name:"New Year Week (FX Liquidity)",
-        date:new Date(year,0,2), status:"warning", impact:"medium",
+        date:new Date(year,0,2),
+        status:"warning", impact:"medium",
         regions:["Americas","Europe","Asia"], exchanges:["FX"], markets:["Forex"],
-        notes:"First week of the year often has reduced participation and choppy conditions. Prioritize A+ setups only.",
+        notes:"First week of the year often has reduced participation and choppy conditions. Prioritize A+ setups only."
       }));
       list.push(mkHoliday({
         name:"Thanksgiving (FX Liquidity)",
-        date:nthWeekdayOfMonth(year,10,4,4), status:"warning", impact:"medium",
+        date:nthWeekdayOfMonth(year,10,4,4),
+        status:"warning", impact:"medium",
         regions:["Americas"], exchanges:["FX"], markets:["Forex"],
-        notes:"NY participation reduced. London may carry flow, but liquidity can be thinner during NY hours.",
+        notes:"NY participation reduced. London may carry flow, but liquidity can be thinner during NY hours."
       }));
       return list;
     }
@@ -808,14 +741,14 @@
           date:new Date(year,11,25),
           status:"warning", impact:"medium",
           regions:["Americas","Europe","Asia"], exchanges:["Crypto"], markets:["Crypto"],
-          notes:"Crypto remains open. Institutional participation often lower; watch thin books and sudden spikes.",
+          notes:"Crypto remains open. Institutional participation often lower; watch thin books and sudden spikes."
         }),
         mkHoliday({
           name:"New Year’s Day (Crypto Behavior Watch)",
           date:new Date(year,0,1),
           status:"warning", impact:"medium",
           regions:["Americas","Europe","Asia"], exchanges:["Crypto"], markets:["Crypto"],
-          notes:"Crypto remains open. Liquidity can be patchy; avoid over-leverage during holiday hours.",
+          notes:"Crypto remains open. Liquidity can be patchy; avoid over-leverage during holiday hours."
         })
       ];
     }
@@ -833,9 +766,10 @@
       }
       const map = new Map();
       for (const h of all) map.set(h.id, h);
-      return Array.from(map.values()).sort((a,b)=>a.date-b.date);
+      return Array.from(map.values()).sort((a,b) => a.date - b.date);
     }
 
+    /* ------------------------------ UI helpers ------------------------------ */
     function statusLabel(status) {
       if (status === "closed") return "Market Closed";
       if (status === "early") return "Early Close";
@@ -846,378 +780,320 @@
       if (impact === "medium") return 2;
       return 1;
     }
+    function impactClass(impact) {
+      if (impact === "high") return "impactHigh";
+      if (impact === "medium") return "impactMed";
+      return "impactLow";
+    }
 
-    /* ------------------------------ App State ------------------------------ */
-    const holidaysAll = buildHolidayDataset();
+    /* ------------------------------ App state ------------------------------ */
+    const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+    const ALL = buildHolidayDataset();
 
     const state = {
-      selectedRegion: "all",
-      selectedMarket: "all",
-      selectedYear: 2025,
+      region: "all",
+      market: "all",
+      year: 2025,
       highImpactOnly: false,
-      viewMode: "list", // list | timeline | heatmap
-      currentMonth: 0,
-      timeZone: (function(){
-        try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Boise"; }
-        catch { return "America/Boise"; }
-      })(),
-      now: new Date(),
-      search: "",
+      view: "list",
+      month: 0,
+      tz: (Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Boise"),
+      now: new Date()
     };
 
-    const monthNames = [
-      "January","February","March","April","May","June",
-      "July","August","September","October","November","December"
+    /* ------------------------------ DOM refs ------------------------------ */
+    const regionSel = document.getElementById("regionSel");
+    const marketSel = document.getElementById("marketSel");
+    const yearSel = document.getElementById("yearSel");
+    const impactBtn = document.getElementById("impactBtn");
+    const tzSel = document.getElementById("tzSel");
+
+    const viewList = document.getElementById("viewList");
+    const viewTimeline = document.getElementById("viewTimeline");
+    const viewHeatmap = document.getElementById("viewHeatmap");
+
+    const secList = document.getElementById("secList");
+    const secTimeline = document.getElementById("secTimeline");
+    const secHeatmap = document.getElementById("secHeatmap");
+
+    const cards = document.getElementById("cards");
+    const countEl = document.getElementById("count");
+    const yearTxt = document.getElementById("yearTxt");
+    const tzTxt = document.getElementById("tzTxt");
+
+    const nextWrap = document.getElementById("nextWrap");
+    const nextName = document.getElementById("nextName");
+    const nextMeta = document.getElementById("nextMeta");
+    const nextDate = document.getElementById("nextDate");
+    const nextBadge = document.getElementById("nextBadge");
+
+    const timelineTitle = document.getElementById("timelineTitle");
+    const timelineGrid = document.getElementById("timelineGrid");
+    const prevMonth = document.getElementById("prevMonth");
+    const nextMonth = document.getElementById("nextMonth");
+
+    const heatYear = document.getElementById("heatYear");
+    const heatBody = document.getElementById("heatBody");
+
+    /* ------------------------------ Timezone list ------------------------------ */
+    const tzList = [
+      "America/Boise",
+      "America/Los_Angeles",
+      "America/Denver",
+      "America/Chicago",
+      "America/New_York",
+      "Europe/London",
+      "Europe/Paris",
+      "Asia/Tokyo",
+      "Asia/Hong_Kong",
+      "Asia/Dubai",
+      "UTC"
     ];
+    function buildTZOptions() {
+      tzSel.innerHTML = "";
+      tzList.forEach(tz => {
+        const o = document.createElement("option");
+        o.value = tz; o.textContent = tz;
+        tzSel.appendChild(o);
+      });
+      tzSel.value = state.tz;
+    }
 
-    /* ------------------------------ DOM Helpers ----------------------------- */
-    const $ = (id)=>document.getElementById(id);
-    function esc(s){ return String(s||"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
-
-    /* ----------------------------- Computations ----------------------------- */
-    function filteredHolidays() {
-      return holidaysAll
-        .filter(h => h.date.getFullYear() === state.selectedYear)
-        .filter(h => state.selectedRegion === "all" ? true : h.regions.includes(state.selectedRegion))
-        .filter(h => state.selectedMarket === "all" ? true : h.markets.includes(state.selectedMarket))
+    /* ------------------------------ Filtering ------------------------------ */
+    function filtered() {
+      return ALL
+        .filter(h => h.date.getFullYear() === state.year)
+        .filter(h => state.region === "all" ? true : h.regions.includes(state.region))
+        .filter(h => state.market === "all" ? true : h.markets.includes(state.market))
         .filter(h => state.highImpactOnly ? h.impact === "high" : true)
-        .filter(h => {
-          if(!state.search) return true;
-          const blob = `${h.name} ${h.exchanges.join(" ")} ${h.markets.join(" ")} ${h.regions.join(" ")} ${h.status} ${h.impact}`.toLowerCase();
-          return blob.includes(state.search.toLowerCase());
-        })
-        .sort((a,b)=> a.date-b.date);
+        .sort((a,b) => a.date - b.date);
     }
 
-    function nextEvent() {
+    function nextEventForYear() {
       const start = startOfDay(state.now);
-      return holidaysAll
-        .filter(h => h.date.getFullYear() === state.selectedYear)
+      return ALL
+        .filter(h => h.date.getFullYear() === state.year)
         .filter(h => h.date.getTime() >= start.getTime())
-        .sort((a,b)=>a.date-b.date)[0] || null;
+        .sort((a,b) => a.date - b.date)[0] || null;
     }
 
-    function globalImpactObj() {
-      const ne = nextEvent();
-      if(!ne) return null;
-      const daysUntil = Math.max(0, Math.ceil((ne.date - startOfDay(state.now)) / MS_DAY));
-      return { event: ne, regions: ne.regions, liquidityImpact: ne.impact, daysUntil };
+    /* ------------------------------ Render: header next ------------------------------ */
+    function renderNext() {
+      const n = nextEventForYear();
+      if (!n) { nextWrap.style.display = "none"; return; }
+
+      nextWrap.style.display = "flex";
+      nextName.textContent = n.name;
+      nextMeta.textContent = `${n.exchanges.join(", ")} · ${n.markets.join(", ")}`;
+      nextDate.textContent = formatInTZ(n.date, state.tz, { month:"short", day:"numeric" });
+      nextBadge.textContent = statusLabel(n.status);
     }
 
-    function listSorted() {
-      const list = filteredHolidays();
-      if(state.viewMode !== "list") return list;
-      return [...list].sort((a,b)=>{
-        if(a.date.getTime() !== b.date.getTime()) return a.date-b.date;
+    /* ------------------------------ Render: list ------------------------------ */
+    function renderList(items) {
+      const sorted = [...items].sort((a,b) => {
+        if (a.date.getTime() !== b.date.getTime()) return a.date - b.date;
         return impactRank(b.impact) - impactRank(a.impact);
       });
-    }
 
-    function timelineData() {
-      const daysInMonth = new Date(state.selectedYear, state.currentMonth+1, 0).getDate();
-      const monthHols = filteredHolidays().filter(h => h.date.getMonth() === state.currentMonth);
-      return Array.from({length:daysInMonth}, (_,i)=>{
-        const day = i+1;
-        const holiday = monthHols.find(h => h.date.getDate() === day) || null;
-        return { day, holiday };
-      });
-    }
-
-    function heatmapData() {
-      const regions = ["Americas","Europe","Asia"];
-      return regions.map(region=>{
-        const months = Array.from({length:12}, (_,m)=>{
-          const count = holidaysAll.filter(h =>
-            h.date.getFullYear() === state.selectedYear &&
-            h.date.getMonth() === m &&
-            h.regions.includes(region)
-          ).length;
-          return { month:m, count };
-        });
-        return { region, months };
-      });
-    }
-
-    /* ------------------------------ Rendering ------------------------------ */
-    function renderTZLabel(){
-      const dayStr = formatInTZ(state.now, state.timeZone, { weekday:"long", year:"numeric", month:"long", day:"numeric" });
-      const timeStr = formatInTZ(state.now, state.timeZone, { hour:"2-digit", minute:"2-digit", hour12:false });
-      $("tzLabel").textContent = `${state.timeZone} · ${timeStr} · ${dayStr}`;
-      $("tzName").textContent = state.timeZone;
-    }
-
-    function renderNextBox(){
-      const ne = nextEvent();
-      if(!ne){
-        $("nextBox").innerHTML = `<div class="muted">No upcoming events found for ${state.selectedYear}.</div>`;
+      if (sorted.length === 0) {
+        cards.innerHTML = `
+          <div class="card" style="color:rgba(255,255,255,.70)">
+            No events match your filters. Try “All Markets” or disable “High Impact Only.”
+          </div>
+        `;
         return;
       }
-      const dateShort = formatInTZ(ne.date, state.timeZone, { month:"short", day:"numeric" });
-      $("nextBox").innerHTML = `
-        <div class="nextRow">
-          <div class="nextLeft">
-            <i class="fa-regular fa-clock" style="font-size:20px;color:rgba(255,255,255,.75);margin-top:2px"></i>
+
+      cards.innerHTML = "";
+      sorted.forEach(h => {
+        const dateText = formatInTZ(h.date, state.tz, { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+        const dot = impactClass(h.impact);
+        const chipsEx = h.exchanges.map(x => `<span class="chip">${x}</span>`).join("");
+        const chipsRg = h.regions.map(x => `<span class="chip">${x}</span>`).join("");
+
+        const el = document.createElement("div");
+        el.className = "card";
+        el.innerHTML = `
+          <div class="rowTop">
+            <div style="min-width:260px;flex:1">
+              <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center">
+                <div class="hName">${escapeHtml(h.name)}</div>
+                <span class="badge">${statusLabel(h.status)}</span>
+              </div>
+              <div class="dateLine">${escapeHtml(dateText)}</div>
+              <div class="mini">Markets: <span style="color:rgba(255,255,255,.70)">${escapeHtml(h.markets.join(", "))}</span></div>
+            </div>
+            <div class="impactWrap">
+              <div class="impactDotLg ${dot}" title="${h.impact} impact"></div>
+              <div class="impactLabel">${h.impact}</div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.10);padding-top:1rem">
             <div>
-              <div class="nextLabel">Next Market Event</div>
-              <div class="nextName">${esc(ne.name)}</div>
-              <div class="nextMeta">${esc(ne.exchanges.join(", "))} · ${esc(ne.markets.join(", "))}</div>
+              <div style="color:rgba(255,255,255,.45);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem">Affected Exchanges</div>
+              <div class="chips">${chipsEx}</div>
+            </div>
+            <div>
+              <div style="color:rgba(255,255,255,.45);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem">Regions</div>
+              <div class="chips">${chipsRg}</div>
             </div>
           </div>
-          <div style="text-align:right">
-            <div class="nextDate">${esc(dateShort)}</div>
-            <div class="badge"><i class="fa-regular fa-calendar"></i> ${esc(statusLabel(ne.status))}</div>
-          </div>
-        </div>
-      `;
-    }
 
-    function renderImpactBox(){
-      const gi = globalImpactObj();
-      if(!gi){ $("impactBox").innerHTML = ""; return; }
-      const width = gi.liquidityImpact === "high" ? "100%" : gi.liquidityImpact === "medium" ? "60%" : "30%";
-      $("impactBox").innerHTML = `
-        <div class="impactGrid">
-          <div>
-            <div class="impactTitle">Global Impact</div>
-            <div class="impactBig">${gi.daysUntil} days</div>
-            <div class="impactSmall">Until next listed event</div>
-          </div>
-          <div>
-            <div class="impactTitle">Affected Regions</div>
-            <div class="tags" style="margin-top:.5rem">
-              ${gi.regions.map(r=>`<span class="tag">${esc(r)}</span>`).join("")}
+          <div class="impactBox">
+            <div style="color:rgba(255,255,255,.75)"><i class="fa-solid fa-arrow-trend-down"></i></div>
+            <div class="impactText">
+              <h4>Trading Impact</h4>
+              <p>${escapeHtml(h.notes || "")}</p>
             </div>
           </div>
-          <div>
-            <div class="impactTitle">Liquidity Impact</div>
-            <div class="bar"><div style="width:${width}"></div></div>
-            <div class="impactSmall" style="margin-top:.35rem"><span style="color:rgba(255,255,255,.75);font-weight:900;text-transform:capitalize">${esc(gi.liquidityImpact)}</span></div>
-          </div>
-          <div>
-            <div class="impactTitle">Exchanges</div>
-            <div style="margin-top:.55rem;color:rgba(255,255,255,.70);font-weight:900">${esc(gi.event.exchanges.join(", "))}</div>
-          </div>
-        </div>
-      `;
-    }
 
-    function renderStats(){
-      const c = filteredHolidays().length;
-      $("countNum").textContent = String(c);
-      $("yearLbl").textContent = String(state.selectedYear);
-      $("heatYear").textContent = String(state.selectedYear);
-    }
-
-    function impactDotClass(impact){
-      if(impact === "high") return "impact-high";
-      if(impact === "medium") return "impact-medium";
-      return "impact-low";
-    }
-
-    function badgeText(status){ return statusLabel(status); }
-    function badgeIcon(status){
-      if(status === "closed") return "fa-circle-xmark";
-      if(status === "early") return "fa-clock";
-      return "fa-triangle-exclamation";
-    }
-
-    function renderList(){
-      const list = listSorted();
-      const wrap = $("listWrap");
-
-      if(list.length === 0){
-        wrap.innerHTML = `
-          <div class="eventCard" style="background:rgba(255,255,255,.04);text-align:left">
-            <div style="color:rgba(255,255,255,.75);font-weight:900">No events match your filters.</div>
-            <div style="color:rgba(255,255,255,.45);margin-top:.35rem;font-weight:700">Try “All Markets” or disable “High Impact Only.”</div>
+          <div class="footerLine">
+            <span>Impact: <span style="color:rgba(255,255,255,.60)">${h.impact}</span></span>
+            <span class="divider">•</span>
+            <span>Status: <span style="color:rgba(255,255,255,.60)">${statusLabel(h.status)}</span></span>
           </div>
         `;
-        return;
+        cards.appendChild(el);
+      });
+    }
+
+    /* ------------------------------ Render: timeline ------------------------------ */
+    function renderTimeline(items) {
+      timelineTitle.textContent = `${monthNames[state.month]} ${state.year}`;
+
+      prevMonth.disabled = (state.month === 0);
+      nextMonth.disabled = (state.month === 11);
+
+      const daysInMonth = new Date(state.year, state.month + 1, 0).getDate();
+      const monthItems = items.filter(h => h.date.getMonth() === state.month);
+
+      timelineGrid.innerHTML = "";
+      for (let d=1; d<=daysInMonth; d++) {
+        const holiday = monthItems.find(h => h.date.getDate() === d) || null;
+        const cell = document.createElement("div");
+        cell.className = "dayCell";
+        if (holiday) {
+          cell.title = `${holiday.name} · ${statusLabel(holiday.status)}`;
+        }
+        const dotClass = holiday ? impactClass(holiday.impact) : "";
+        cell.innerHTML = `
+          <div class="dayTop">
+            <div class="dayNum">${d}</div>
+            ${holiday ? `<div class="impactDot ${dotClass}"></div>` : ``}
+          </div>
+          ${holiday ? `<div class="dayName">${escapeHtml(holiday.name)}</div>` : ``}
+        `;
+        timelineGrid.appendChild(cell);
       }
-
-      wrap.innerHTML = list.map(h=>{
-        const fullDate = formatInTZ(h.date, state.timeZone, { weekday:"long", year:"numeric", month:"long", day:"numeric" });
-        return `
-          <div class="eventCard">
-            <div class="eventTop">
-              <div style="flex:1;min-width:260px">
-                <div class="eventNameRow">
-                  <div class="eventName">${esc(h.name)}</div>
-                  <span class="badge"><i class="fa-solid ${badgeIcon(h.status)}"></i> ${esc(badgeText(h.status))}</span>
-                </div>
-                <div class="eventDate">${esc(fullDate)}</div>
-                <div style="margin-top:.35rem;color:rgba(255,255,255,.45);font-size:.82rem;font-weight:800">
-                  Markets: <span style="color:rgba(255,255,255,.75)">${esc(h.markets.join(", "))}</span>
-                </div>
-              </div>
-              <div style="display:flex;align-items:center;gap:.6rem">
-                <div class="impactDot ${impactDotClass(h.impact)}" title="${esc(h.impact)} impact"></div>
-                <i class="fa-regular fa-calendar" style="color:rgba(255,255,255,.35)"></i>
-              </div>
-            </div>
-
-            <div class="grid2">
-              <div>
-                <div class="sectionTitle">Affected Exchanges</div>
-                <div class="tags">${h.exchanges.map(x=>`<span class="tag">${esc(x)}</span>`).join("")}</div>
-              </div>
-              <div>
-                <div class="sectionTitle">Regions</div>
-                <div class="tags">${h.regions.map(r=>`<span class="tag">${esc(r)}</span>`).join("")}</div>
-              </div>
-            </div>
-
-            <div class="impactNote">
-              <i class="fa-solid fa-arrow-trend-down" style="color:rgba(255,255,255,.75);margin-top:3px"></i>
-              <div>
-                <div class="sectionTitle" style="margin-bottom:.35rem">Trading Impact</div>
-                <p>${esc(h.notes)}</p>
-              </div>
-            </div>
-
-            <div style="margin-top:.75rem;color:rgba(255,255,255,.35);font-size:.78rem;font-weight:800">
-              Impact: <span style="color:rgba(255,255,255,.60);text-transform:capitalize">${esc(h.impact)}</span>
-              <span class="dotSep">•</span>
-              Status: <span style="color:rgba(255,255,255,.60)">${esc(statusLabel(h.status))}</span>
-            </div>
-          </div>
-        `;
-      }).join("");
     }
 
-    function cellClass(h){
-      if(!h) return "";
-      if(h.status === "closed") return "cellClosed";
-      if(h.status === "early") return "cellEarly";
-      return "cellWarn";
+    /* ------------------------------ Render: heatmap ------------------------------ */
+    function renderHeatmap() {
+      heatYear.textContent = String(state.year);
+
+      const regions = ["Americas","Europe","Asia"];
+      heatBody.innerHTML = "";
+      regions.forEach(r => {
+        const tr = document.createElement("tr");
+        const td0 = document.createElement("td");
+        td0.textContent = r;
+        tr.appendChild(td0);
+
+        for (let m=0; m<12; m++) {
+          const count = ALL.filter(h =>
+            h.date.getFullYear() === state.year &&
+            h.date.getMonth() === m &&
+            h.regions.includes(r)
+          ).length;
+
+          const td = document.createElement("td");
+          const box = document.createElement("div");
+          box.className = "hmCell " + (count === 0 ? "hm0" : count === 1 ? "hm1" : count === 2 ? "hm2" : "hm3");
+          box.title = `${count} event${count !== 1 ? "s" : ""}`;
+          td.appendChild(box);
+          tr.appendChild(td);
+        }
+
+        heatBody.appendChild(tr);
+      });
     }
 
-    function renderTimeline(){
-      $("monthTitle").textContent = `${monthNames[state.currentMonth]} ${state.selectedYear}`;
-      $("prevMonth").disabled = state.currentMonth === 0;
-      $("nextMonth").disabled = state.currentMonth === 11;
+    /* ------------------------------ View switching ------------------------------ */
+    function setView(v) {
+      state.view = v;
+      viewList.classList.toggle("toggleOn", v==="list");
+      viewTimeline.classList.toggle("toggleOn", v==="timeline");
+      viewHeatmap.classList.toggle("toggleOn", v==="heatmap");
 
-      const data = timelineData();
-      $("timelineGrid").innerHTML = data.map(({day, holiday})=>{
-        const dot = holiday ? `<div class="impactDot ${impactDotClass(holiday.impact)}" title="${esc(holiday.impact)} impact"></div>` : "";
-        const title = holiday ? `${esc(holiday.name)} · ${esc(statusLabel(holiday.status))}` : "";
-        const name = holiday ? `<div class="dayName">${esc(holiday.name)}</div>` : "";
-        return `
-          <div class="dayCell ${cellClass(holiday)}" title="${title}">
-            <div class="cellTop">
-              <div class="dayNum">${day}</div>
-              ${dot}
-            </div>
-            ${name}
-          </div>
-        `;
-      }).join("");
+      secList.classList.toggle("hidden", v!=="list");
+      secTimeline.classList.toggle("hidden", v!=="timeline");
+      secHeatmap.classList.toggle("hidden", v!=="heatmap");
     }
 
-    function heatClass(count){
-      if(count === 0) return "h0";
-      if(count === 1) return "h1";
-      if(count === 2) return "h2";
-      return "h3";
-    }
+    /* ------------------------------ Render all ------------------------------ */
+    function render() {
+      const items = filtered();
 
-    function renderHeatmap(){
-      const data = heatmapData();
-      $("heatBody").innerHTML = data.map(row=>{
-        const tds = row.months.map(m=>{
-          const c = m.count;
-          return `<td style="text-align:center">
-            <div class="heatCell ${heatClass(c)}" title="${c} event${c!==1?"s":""}"></div>
-          </td>`;
-        }).join("");
-        return `<tr>
-          <td style="padding-left:14px;color:rgba(255,255,255,.70);font-weight:900">${esc(row.region)}</td>
-          ${tds}
-        </tr>`;
-      }).join("");
-    }
+      countEl.textContent = String(items.length);
+      yearTxt.textContent = String(state.year);
+      tzTxt.textContent = state.tz;
 
-    function setView(mode){
-      state.viewMode = mode;
-      $("viewList").classList.toggle("hide", mode !== "list");
-      $("viewTimeline").classList.toggle("hide", mode !== "timeline");
-      $("viewHeatmap").classList.toggle("hide", mode !== "heatmap");
+      renderNext();
 
-      $("tabList").classList.toggle("active", mode === "list");
-      $("tabTimeline").classList.toggle("active", mode === "timeline");
-      $("tabHeatmap").classList.toggle("active", mode === "heatmap");
-
-      renderAll();
-    }
-
-    function renderAll(){
-      renderTZLabel();
-      renderNextBox();
-      renderImpactBox();
-      renderStats();
-      if(state.viewMode === "list") renderList();
-      if(state.viewMode === "timeline") renderTimeline();
-      if(state.viewMode === "heatmap") renderHeatmap();
+      if (state.view === "list") renderList(items);
+      if (state.view === "timeline") renderTimeline(items);
+      if (state.view === "heatmap") renderHeatmap();
     }
 
     /* ------------------------------ Events ------------------------------ */
-    $("tzSelect").value = state.timeZone;
-    $("tzSelect").addEventListener("change", (e)=>{
-      state.timeZone = e.target.value;
-      renderAll();
-    });
-
-    $("regionSelect").addEventListener("change", (e)=>{
-      state.selectedRegion = e.target.value;
-      renderAll();
-    });
-
-    $("marketSelect").addEventListener("change", (e)=>{
-      state.selectedMarket = e.target.value;
-      renderAll();
-    });
-
-    $("yearSelect").addEventListener("change", (e)=>{
-      state.selectedYear = Number(e.target.value);
-      state.currentMonth = 0;
-      renderAll();
-    });
-
-    $("searchInput").addEventListener("input", (e)=>{
-      state.search = (e.target.value || "").trim();
-      renderAll();
-    });
-
-    $("highBtn").addEventListener("click", ()=>{
+    regionSel.addEventListener("change", () => { state.region = regionSel.value; render(); });
+    marketSel.addEventListener("change", () => { state.market = marketSel.value; render(); });
+    yearSel.addEventListener("change", () => { state.year = Number(yearSel.value); state.month = 0; render(); });
+    impactBtn.addEventListener("click", () => {
       state.highImpactOnly = !state.highImpactOnly;
-      $("highBtn").classList.toggle("active", state.highImpactOnly);
-      renderAll();
+      impactBtn.classList.toggle("toggleOn", state.highImpactOnly);
+      render();
     });
 
-    $("tabList").addEventListener("click", ()=>setView("list"));
-    $("tabTimeline").addEventListener("click", ()=>setView("timeline"));
-    $("tabHeatmap").addEventListener("click", ()=>setView("heatmap"));
+    tzSel.addEventListener("change", () => { state.tz = tzSel.value; render(); });
 
-    $("prevMonth").addEventListener("click", ()=>{
-      state.currentMonth = Math.max(0, state.currentMonth - 1);
-      renderTimeline();
-    });
-    $("nextMonth").addEventListener("click", ()=>{
-      state.currentMonth = Math.min(11, state.currentMonth + 1);
-      renderTimeline();
-    });
+    viewList.addEventListener("click", () => { setView("list"); render(); });
+    viewTimeline.addEventListener("click", () => { setView("timeline"); render(); });
+    viewHeatmap.addEventListener("click", () => { setView("heatmap"); render(); });
 
-    // Update time label every 15s like your React version
-    setInterval(()=>{
-      state.now = new Date();
-      renderTZLabel();
-      // next/global can change at midnight; safe to refresh those too
-      renderNextBox();
-      renderImpactBox();
-    }, 15000);
+    prevMonth.addEventListener("click", () => { state.month = Math.max(0, state.month - 1); render(); });
+    nextMonth.addEventListener("click", () => { state.month = Math.min(11, state.month + 1); render(); });
 
-    // Initial render
-    renderAll();
+    /* ------------------------------ Utilities ------------------------------ */
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    /* ------------------------------ Init ------------------------------ */
+    function init() {
+      buildTZOptions();
+
+      // initial state from UI defaults
+      regionSel.value = state.region;
+      marketSel.value = state.market;
+      yearSel.value = String(state.year);
+      impactBtn.classList.toggle("toggleOn", state.highImpactOnly);
+      tzSel.value = state.tz;
+
+      setView("list");
+      render();
+
+      setInterval(() => { state.now = new Date(); renderNext(); }, 15000);
+    }
+    init();
   </script>
 </body>
 </html>
