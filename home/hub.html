@@ -54,6 +54,7 @@
       background:rgba(255,255,255,.03);
       border-radius:22px;
       backdrop-filter:blur(10px);
+      box-shadow:0 30px 90px rgba(0,0,0,.55);
     }
     h1{
       font-size:3rem;line-height:1.1;letter-spacing:-2px;
@@ -99,8 +100,8 @@
     const params = new URLSearchParams(location.search);
     const section = (params.get('section') || 'home').toLowerCase();
 
-    // CLEAN HOME HUB: Market Holidays is removed.
-    // Market Holidays must live in its own file: /tools/market-holidays.html
+    // CLEAN HOME HUB: Market Holidays is removed from this hub.
+    // Market Holidays lives in its own file: /tools/market-holidays.html
 
     const map = {
       'home': {
