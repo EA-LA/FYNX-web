@@ -1,0 +1,2132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FYNX — Trader Journal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#000;
+      --panel:rgba(255,255,255,0.04);
+      --panel2:rgba(255,255,255,0.06);
+      --border:rgba(255,255,255,0.12);
+      --border2:rgba(255,255,255,0.18);
+      --text:rgba(255,255,255,0.92);
+      --muted:rgba(255,255,255,0.62);
+      --muted2:rgba(255,255,255,0.45);
+      --shadow:0 20px 70px rgba(255,255,255,0.08);
+      --radius:18px;
+      --radius2:22px;
+      --sidebarW:84px;
+      --topH:72px;
+    }
+
+    body{
+      font-family:'Inter','Segoe UI',system-ui,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      overflow-x:hidden;
+      min-height:100vh;
+    }
+
+    /* Grok-ish animated background (black/white only) */
+    .animated-bg{
+      position:fixed;inset:0;z-index:-2;background:#000;overflow:hidden;
+    }
+    .grid-overlay{
+      position:absolute;inset:0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
+      background-size:56px 56px;
+      animation:gridMove 20s linear infinite;
+      opacity:.85;
+    }
+    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(56px,56px)}}
+
+    .orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.22;animation:float 18s ease-in-out infinite;}
+    .orb.a{width:520px;height:520px;left:-220px;top:-240px;background:radial-gradient(circle, rgba(255,255,255,.8) 0%, transparent 70%);animation-delay:0s}
+    .orb.b{width:420px;height:420px;right:-180px;bottom:-220px;background:radial-gradient(circle, rgba(255,255,255,.75) 0%, transparent 72%);animation-delay:6s}
+    .orb.c{width:320px;height:320px;left:45%;top:46%;transform:translate(-50%,-50%);background:radial-gradient(circle, rgba(255,255,255,.6) 0%, transparent 70%);animation-delay:10s}
+    @keyframes float{
+      0%,100%{transform:translate(0,0) scale(1)}
+      33%{transform:translate(50px,-40px) scale(1.08)}
+      66%{transform:translate(-40px,45px) scale(.92)}
+    }
+
+    .particle{
+      position:absolute;width:2px;height:2px;background:rgba(255,255,255,0.55);
+      border-radius:50%;animation:particleFloat 16s linear infinite;
+    }
+    @keyframes particleFloat{
+      0%{transform:translateY(100vh) translateX(0);opacity:0}
+      12%{opacity:1}
+      90%{opacity:1}
+      100%{transform:translateY(-110vh) translateX(120px);opacity:0}
+    }
+
+    /* Top bar */
+    header{
+      position:sticky;top:0;z-index:50;
+      height:var(--topH);
+      display:flex;align-items:center;
+      background:rgba(0,0,0,0.78);
+      backdrop-filter:blur(18px);
+      border-bottom:1px solid var(--border);
+    }
+    .topbar{
+      width:100%;
+      max-width:1600px;
+      margin:0 auto;
+      padding:0 18px;
+      display:flex;align-items:center;justify-content:space-between;
+      gap:14px;
+    }
+    .brand{
+      display:flex;align-items:center;gap:10px;
+      font-weight:900;letter-spacing:-1px;
+      font-size:18px;
+      user-select:none;
+    }
+    .brand i{opacity:.9}
+    .crumb{
+      display:flex;align-items:center;gap:10px;
+      color:var(--muted);
+      font-weight:700;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .crumb a{
+      color:var(--text);
+      text-decoration:none;
+      opacity:.85;
+      transition:opacity .2s ease;
+    }
+    .crumb a:hover{opacity:1}
+    .top-actions{
+      display:flex;align-items:center;gap:10px;
+    }
+    .pill{
+      display:inline-flex;align-items:center;gap:10px;
+      padding:10px 14px;border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.04);
+      color:var(--text);
+      font-weight:800;font-size:13px;
+      text-decoration:none;
+      transition:all .2s ease;
+      white-space:nowrap;
+    }
+    .pill:hover{
+      transform:translateY(-1px);
+      border-color:var(--border2);
+      background:rgba(255,255,255,0.07);
+    }
+    .pill .dot{
+      width:8px;height:8px;border-radius:99px;background:rgba(255,255,255,0.65);
+      box-shadow:0 0 12px rgba(255,255,255,0.25);
+    }
+
+    /* App layout */
+    .app{
+      max-width:1600px;
+      margin:0 auto;
+      padding:16px 16px 40px;
+      display:grid;
+      grid-template-columns: var(--sidebarW) 1fr;
+      gap:14px;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      position:sticky;
+      top:calc(var(--topH) + 16px);
+      height:calc(100vh - var(--topH) - 32px);
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.03);
+      border-radius:20px;
+      display:flex;
+      flex-direction:column;
+      padding:12px;
+      gap:10px;
+      backdrop-filter:blur(16px);
+    }
+    .navbtn{
+      width:100%;
+      height:54px;
+      border-radius:16px;
+      border:1px solid transparent;
+      background:transparent;
+      color:rgba(255,255,255,0.75);
+      cursor:pointer;
+      transition:all .2s ease;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      outline:none;
+    }
+    .navbtn i{font-size:18px}
+    .navbtn:hover{
+      background:rgba(255,255,255,0.05);
+      color:#fff;
+      border-color:rgba(255,255,255,0.10);
+      transform:translateY(-1px);
+    }
+    .navbtn.active{
+      background:rgba(255,255,255,0.08);
+      color:#fff;
+      border-color:rgba(255,255,255,0.18);
+      box-shadow:0 10px 30px rgba(255,255,255,0.08);
+    }
+    .navbtn .tip{
+      position:absolute;
+      left:92px;
+      top:50%;
+      transform:translateY(-50%);
+      background:rgba(0,0,0,0.85);
+      border:1px solid var(--border);
+      padding:8px 10px;
+      border-radius:12px;
+      color:var(--text);
+      font-weight:900;
+      font-size:12px;
+      white-space:nowrap;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .2s ease;
+    }
+    .navbtn:hover .tip{opacity:1}
+
+    .sidebar .spacer{flex:1}
+    .sidebar .mini{
+      height:46px;border-radius:16px;
+      background:rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.10);
+      display:flex;align-items:center;justify-content:center;
+      color:rgba(255,255,255,0.75);
+      cursor:pointer;
+      transition:all .2s ease;
+    }
+    .sidebar .mini:hover{
+      background:rgba(255,255,255,0.06);
+      border-color:rgba(255,255,255,0.16);
+      color:#fff;
+    }
+
+    /* Main content */
+    .main{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.02);
+      border-radius:22px;
+      padding:18px;
+      backdrop-filter:blur(16px);
+      box-shadow:var(--shadow);
+      min-height:calc(100vh - var(--topH) - 32px);
+    }
+
+    .page{display:none}
+    .page.active{display:block}
+
+    .page-head{
+      display:flex;align-items:flex-end;justify-content:space-between;gap:16px;
+      padding:8px 6px 14px;
+    }
+    .title{
+      font-size:26px;
+      font-weight:1000;
+      letter-spacing:-1px;
+      line-height:1.15;
+    }
+    .subtitle{
+      margin-top:4px;
+      color:var(--muted);
+      font-weight:700;
+      font-size:13px;
+    }
+
+    .head-right{
+      display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;
+    }
+    .chip{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 12px;border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.03);
+      color:var(--muted);
+      font-weight:900;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .chip b{color:var(--text)}
+    .chip .spark{
+      width:22px;height:22px;border-radius:8px;
+      display:inline-flex;align-items:center;justify-content:center;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.04);
+      color:rgba(255,255,255,0.82);
+    }
+
+    /* Grids */
+    .grid-4{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(220px, 1fr));
+      gap:12px;
+    }
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(260px, 1fr));
+      gap:12px;
+    }
+    .grid-2{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(320px, 1fr));
+      gap:12px;
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:14px;
+      position:relative;
+      overflow:hidden;
+    }
+    .card::before{
+      content:"";
+      position:absolute;inset:-40%;
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+      transform:rotate(18deg) translateX(-40%);
+      opacity:0;
+      transition:opacity .35s ease, transform .55s ease;
+    }
+    .card:hover::before{opacity:1;transform:rotate(18deg) translateX(40%)}
+    .card:hover{
+      border-color:rgba(255,255,255,0.18);
+      background:rgba(255,255,255,0.05);
+    }
+
+    .metric-top{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      margin-bottom:10px;
+    }
+    .metric-label{
+      color:var(--muted);
+      font-weight:900;
+      font-size:12px;
+      letter-spacing:.2px;
+    }
+    .metric-icon{
+      width:30px;height:30px;border-radius:12px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.04);
+      display:flex;align-items:center;justify-content:center;
+      color:rgba(255,255,255,0.82);
+    }
+    .metric-val{
+      font-size:26px;
+      font-weight:1000;
+      letter-spacing:-1px;
+      line-height:1;
+    }
+    .metric-sub{
+      margin-top:6px;
+      color:var(--muted2);
+      font-weight:800;
+      font-size:12px;
+    }
+
+    /* Charts */
+    .chart-wrap{
+      height:220px;
+      padding:10px 10px 6px;
+    }
+    canvas{width:100%;height:100%}
+
+    .section-row{
+      margin-top:12px;
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:12px;
+      align-items:stretch;
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:6px;
+    }
+    .list-item{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(0,0,0,0.25);
+    }
+    .li-left{display:flex;align-items:center;gap:12px}
+    .badge{
+      width:30px;height:30px;border-radius:10px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.04);
+      display:flex;align-items:center;justify-content:center;
+      color:rgba(255,255,255,0.85);
+      font-weight:1000;font-size:12px;
+    }
+    .li-title{font-weight:1000}
+    .li-sub{color:var(--muted);font-weight:800;font-size:12px;margin-top:2px}
+    .li-right{
+      text-align:right;
+      font-weight:1000;
+      font-size:14px;
+      color:rgba(255,255,255,0.92);
+    }
+    .muted{color:var(--muted)}
+    .muted2{color:var(--muted2)}
+    .sep{height:1px;background:rgba(255,255,255,0.10);margin:10px 0}
+
+    /* Buttons & inputs */
+    .btn{
+      border:none;
+      cursor:pointer;
+      border-radius:14px;
+      font-weight:1000;
+      letter-spacing:.1px;
+      padding:12px 14px;
+      transition:all .2s ease;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      white-space:nowrap;
+    }
+    .btn.primary{
+      background:#fff;color:#000;
+      box-shadow:0 18px 50px rgba(255,255,255,0.16);
+    }
+    .btn.primary:hover{transform:translateY(-1px);box-shadow:0 22px 64px rgba(255,255,255,0.20)}
+    .btn.ghost{
+      background:rgba(255,255,255,0.04);
+      color:#fff;
+      border:1px solid rgba(255,255,255,0.14);
+    }
+    .btn.ghost:hover{
+      background:rgba(255,255,255,0.07);
+      border-color:rgba(255,255,255,0.20);
+      transform:translateY(-1px);
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap:12px;
+      align-items:start;
+    }
+    .form-card{padding:16px}
+    .form-title{
+      font-weight:1000;
+      letter-spacing:-.3px;
+      margin-bottom:10px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .toggle-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .toggle{
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.03);
+      padding:12px;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      font-weight:1000;
+      color:rgba(255,255,255,0.85);
+      cursor:pointer;
+      transition:all .2s ease;
+      user-select:none;
+    }
+    .toggle.active{
+      background:rgba(255,255,255,0.08);
+      border-color:rgba(255,255,255,0.22);
+      color:#fff;
+    }
+    .field{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:7px;
+      margin-bottom:10px;
+    }
+    label{
+      font-size:12px;
+      font-weight:900;
+      color:rgba(255,255,255,0.70);
+    }
+    input, select, textarea{
+      width:100%;
+      background:rgba(0,0,0,0.38);
+      border:1px solid rgba(255,255,255,0.12);
+      color:rgba(255,255,255,0.92);
+      padding:12px 12px;
+      border-radius:14px;
+      outline:none;
+      font-weight:800;
+      transition:border-color .2s ease, background .2s ease;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color:rgba(255,255,255,0.24);
+      background:rgba(0,0,0,0.48);
+    }
+    textarea{min-height:92px;resize:vertical}
+
+    .two-col{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .tag-row{
+      display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;
+    }
+    .tagbtn{
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.03);
+      color:rgba(255,255,255,0.82);
+      padding:8px 10px;border-radius:999px;
+      font-weight:900;font-size:12px;
+      cursor:pointer;
+      transition:all .2s ease;
+    }
+    .tagbtn.active{
+      background:rgba(255,255,255,0.08);
+      border-color:rgba(255,255,255,0.22);
+      color:#fff;
+    }
+
+    .upload{
+      border:1px dashed rgba(255,255,255,0.18);
+      background:rgba(255,255,255,0.03);
+      border-radius:18px;
+      padding:16px;
+      display:flex;flex-direction:column;gap:10px;
+      min-height:210px;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+    }
+    .upload i{font-size:26px;opacity:.9}
+    .upload .small{font-size:12px;color:var(--muted);font-weight:800}
+    .upload .note{
+      margin-top:6px;
+      font-size:12px;
+      color:rgba(255,255,255,0.70);
+      font-weight:900;
+      padding:8px 10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.03);
+      width:100%;
+    }
+
+    /* Replay */
+    .replay{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    .chart-frame{
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(0,0,0,0.35);
+      height:260px;
+      overflow:hidden;
+      position:relative;
+    }
+    .chart-frame .hint{
+      position:absolute;top:12px;left:12px;
+      padding:10px 12px;border-radius:14px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(0,0,0,0.55);
+      font-weight:1000;font-size:12px;color:rgba(255,255,255,0.92);
+    }
+    .chart-frame .pillbuy{
+      position:absolute;top:12px;right:12px;
+      padding:10px 12px;border-radius:14px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.06);
+      font-weight:1000;font-size:12px;color:#fff;
+    }
+
+    .replay-meta{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:10px;
+    }
+    .kv{
+      padding:12px;border-radius:16px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(255,255,255,0.03);
+    }
+    .kv .k{color:var(--muted);font-weight:900;font-size:12px}
+    .kv .v{margin-top:6px;font-weight:1000}
+    .navrow{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      margin-top:8px;
+    }
+
+    /* Calendar */
+    .cal-wrap{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:12px;
+      align-items:start;
+    }
+    .calendar{
+      padding:14px;
+    }
+    .cal-head{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      margin-bottom:10px;
+    }
+    .cal-head .m{
+      font-weight:1000;font-size:16px;letter-spacing:-.3px;
+    }
+    .cal-head .arrows{
+      display:flex;gap:8px;
+    }
+    .iconbtn{
+      width:40px;height:40px;border-radius:14px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.03);
+      color:#fff;cursor:pointer;
+      transition:all .2s ease;
+    }
+    .iconbtn:hover{
+      background:rgba(255,255,255,0.06);
+      border-color:rgba(255,255,255,0.20);
+      transform:translateY(-1px);
+    }
+    .cal-grid{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap:8px;
+    }
+    .dow{
+      font-size:11px;
+      font-weight:1000;
+      color:rgba(255,255,255,0.55);
+      text-transform:uppercase;
+      letter-spacing:.6px;
+      padding:6px 4px;
+    }
+    .day{
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(0,0,0,0.26);
+      min-height:64px;
+      padding:10px;
+      position:relative;
+      overflow:hidden;
+    }
+    .day .n{
+      font-weight:1000;font-size:12px;color:rgba(255,255,255,0.78);
+    }
+    .day .p{
+      position:absolute;bottom:8px;left:10px;right:10px;
+      font-size:12px;font-weight:1000;
+      color:rgba(255,255,255,0.88);
+      opacity:.9;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .day.win{
+      background:rgba(255,255,255,0.07);
+      border-color:rgba(255,255,255,0.18);
+    }
+    .day.loss{
+      background:rgba(255,255,255,0.02);
+      border-style:dashed;
+      border-color:rgba(255,255,255,0.14);
+    }
+    .legend{
+      display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;
+      color:rgba(255,255,255,0.70);
+      font-weight:900;font-size:12px;
+    }
+    .sw{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:999px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(255,255,255,0.03);
+    }
+    .sq{width:12px;height:12px;border-radius:4px;border:1px solid rgba(255,255,255,0.20)}
+    .sq.win{background:rgba(255,255,255,0.10)}
+    .sq.loss{background:rgba(0,0,0,0.12);border-style:dashed}
+    .sq.none{background:rgba(0,0,0,0.26)}
+
+    /* Responsive */
+    @media (max-width: 1100px){
+      .grid-4{grid-template-columns:repeat(2, minmax(220px,1fr))}
+      .section-row{grid-template-columns:1fr}
+      .form-grid{grid-template-columns:1fr}
+      .cal-wrap{grid-template-columns:1fr}
+      .replay-meta{grid-template-columns:1fr}
+    }
+    @media (max-width: 760px){
+      .app{grid-template-columns:1fr}
+      .sidebar{
+        position:sticky;
+        top:calc(var(--topH) + 10px);
+        height:auto;
+        flex-direction:row;
+        justify-content:space-between;
+        gap:8px;
+        padding:10px;
+        border-radius:18px;
+      }
+      .navbtn{height:50px;border-radius:14px}
+      .navbtn .tip{display:none}
+      .sidebar .spacer{display:none}
+      .sidebar .mini{display:none}
+      .main{padding:14px}
+      .grid-4{grid-template-columns:1fr}
+      .grid-3{grid-template-columns:1fr}
+      .grid-2{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="animated-bg">
+    <div class="grid-overlay"></div>
+    <div class="orb a"></div>
+    <div class="orb b"></div>
+    <div class="orb c"></div>
+  </div>
+
+  <header>
+    <div class="topbar">
+      <div class="brand">
+        <i class="fas fa-chart-line"></i>
+        <span>FYNX</span>
+      </div>
+
+      <div class="crumb">
+        <span style="opacity:.7;">Trader Journal</span>
+        <span style="opacity:.45;">•</span>
+        <a href="index.html" title="Back to main site">Back to Site</a>
+      </div>
+
+      <div class="top-actions">
+        <a class="pill" href="#" onclick="return false;">
+          <span class="dot"></span>
+          <span>London Session</span>
+        </a>
+        <a class="pill" href="#" onclick="return false;">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Discipline Mode</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <button class="navbtn active" data-page="dash" title="Dashboard">
+        <i class="fa-solid fa-gauge-high"></i>
+        <span class="tip">Dashboard</span>
+      </button>
+      <button class="navbtn" data-page="newtrade" title="New Trade Entry">
+        <i class="fa-solid fa-square-plus"></i>
+        <span class="tip">New Trade Entry</span>
+      </button>
+      <button class="navbtn" data-page="analytics" title="Performance Analytics">
+        <i class="fa-solid fa-chart-column"></i>
+        <span class="tip">Performance Analytics</span>
+      </button>
+      <button class="navbtn" data-page="replay" title="Trade Replay">
+        <i class="fa-solid fa-play"></i>
+        <span class="tip">Trade Replay</span>
+      </button>
+      <button class="navbtn" data-page="streaks" title="Streaks & Discipline">
+        <i class="fa-solid fa-bolt"></i>
+        <span class="tip">Streaks & Discipline</span>
+      </button>
+      <button class="navbtn" data-page="calendar" title="Trading Calendar">
+        <i class="fa-solid fa-calendar-days"></i>
+        <span class="tip">Trading Calendar</span>
+      </button>
+
+      <div class="spacer"></div>
+      <div class="mini" title="Settings"><i class="fa-solid fa-gear"></i></div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+      <!-- DASHBOARD -->
+      <section class="page active" id="page-dash">
+        <div class="page-head">
+          <div>
+            <div class="title">Welcome back, Trader</div>
+            <div class="subtitle">Track your performance and improve your edge</div>
+          </div>
+          <div class="head-right">
+            <div class="chip"><span class="spark"><i class="fa-solid fa-trophy"></i></span> Daily Streak: <b>14 Days</b></div>
+            <div class="chip"><span class="spark"><i class="fa-solid fa-signal"></i></span> Win Rate: <b>58.4%</b></div>
+            <a class="btn primary" href="#" onclick="openPage('newtrade');return false;"><i class="fa-solid fa-square-plus"></i> New Trade</a>
+          </div>
+        </div>
+
+        <div class="grid-4">
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Total Trades</div>
+              <div class="metric-icon"><i class="fa-solid fa-layer-group"></i></div>
+            </div>
+            <div class="metric-val">247</div>
+            <div class="metric-sub">+12 this week</div>
+          </div>
+
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Win Rate</div>
+              <div class="metric-icon"><i class="fa-solid fa-crosshairs"></i></div>
+            </div>
+            <div class="metric-val">58.4%</div>
+            <div class="metric-sub">steady this month</div>
+          </div>
+
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Total P/L</div>
+              <div class="metric-icon"><i class="fa-solid fa-dollar-sign"></i></div>
+            </div>
+            <div class="metric-val">+$5,340</div>
+            <div class="metric-sub">ROI: +3.4%</div>
+          </div>
+
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Best Day</div>
+              <div class="metric-icon"><i class="fa-solid fa-star"></i></div>
+            </div>
+            <div class="metric-val">+$1,240</div>
+            <div class="metric-sub">Feb 12 • 4 trades</div>
+          </div>
+        </div>
+
+        <div class="section-row">
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Equity Curve</div>
+              <div class="metric-icon"><i class="fa-solid fa-chart-line"></i></div>
+            </div>
+            <div class="chart-wrap"><canvas id="eqCurve"></canvas></div>
+            <div class="sep"></div>
+            <div class="list">
+              <div class="list-item">
+                <div class="li-left">
+                  <div class="badge">AS</div>
+                  <div>
+                    <div class="li-title">Asia</div>
+                    <div class="li-sub">12 trades</div>
+                  </div>
+                </div>
+                <div class="li-right">+$420</div>
+              </div>
+              <div class="list-item">
+                <div class="li-left">
+                  <div class="badge">LO</div>
+                  <div>
+                    <div class="li-title">London</div>
+                    <div class="li-sub">28 trades</div>
+                  </div>
+                </div>
+                <div class="li-right">+$1,240</div>
+              </div>
+              <div class="list-item">
+                <div class="li-left">
+                  <div class="badge">NY</div>
+                  <div>
+                    <div class="li-title">NY</div>
+                    <div class="li-sub">35 trades</div>
+                  </div>
+                </div>
+                <div class="li-right">+$890</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Top Winning Setup</div>
+              <div class="metric-icon"><i class="fa-solid fa-crown"></i></div>
+            </div>
+            <div style="font-weight:1000;font-size:16px;margin-top:2px;">BOS + FVG</div>
+            <div class="metric-sub">72% win rate • 45 trades</div>
+
+            <div class="sep"></div>
+
+            <div class="metric-top">
+              <div class="metric-label">Biggest Mistake Pattern</div>
+              <div class="metric-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            </div>
+            <div style="font-weight:1000;font-size:16px;margin-top:2px;">Emotional Trading</div>
+            <div class="metric-sub">12 occurrences • impact: -$840</div>
+
+            <div class="sep"></div>
+
+            <div class="metric-top">
+              <div class="metric-label">Focus Area</div>
+              <div class="metric-icon"><i class="fa-solid fa-bullseye"></i></div>
+            </div>
+            <div class="metric-sub" style="opacity:.85">
+              Keep execution mechanical: pre-defined entry rules, fixed risk, no revenge trades.
+            </div>
+
+            <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+              <a class="btn ghost" href="#" onclick="openPage('analytics');return false;"><i class="fa-solid fa-chart-column"></i> View Analytics</a>
+              <a class="btn ghost" href="#" onclick="openPage('streaks');return false;"><i class="fa-solid fa-bolt"></i> Discipline</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- NEW TRADE ENTRY -->
+      <section class="page" id="page-newtrade">
+        <div class="page-head">
+          <div>
+            <div class="title">New Trade Entry</div>
+            <div class="subtitle">Document your trade for future analysis</div>
+          </div>
+          <div class="head-right">
+            <a class="btn ghost" href="#" onclick="openPage('dash');return false;"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="card form-card">
+            <div class="form-title">
+              <span>Trade Details</span>
+              <span class="muted" style="font-size:12px;font-weight:900;">Black/White Journal UI</span>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle active" id="toggleBuy" onclick="setSide('buy')"><i class="fa-solid fa-arrow-trend-up"></i> Buy / Long</div>
+              <div class="toggle" id="toggleSell" onclick="setSide('sell')"><i class="fa-solid fa-arrow-trend-down"></i> Sell / Short</div>
+            </div>
+
+            <div class="two-col">
+              <div class="field">
+                <label>Symbol</label>
+                <input type="text" placeholder="e.g., EURUSD, GBPUSD" value="EURUSD" />
+              </div>
+              <div class="field">
+                <label>Session</label>
+                <select>
+                  <option>Asia</option>
+                  <option selected>London</option>
+                  <option>NY</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="two-col">
+              <div class="field">
+                <label>Entry Price</label>
+                <input type="text" placeholder="0.0000" value="1.0845" />
+              </div>
+              <div class="field">
+                <label>Lot Size</label>
+                <input type="text" placeholder="0.00" value="0.10" />
+              </div>
+            </div>
+
+            <div class="two-col">
+              <div class="field">
+                <label>Stop Loss</label>
+                <input type="text" placeholder="0.0000" value="1.0825" />
+              </div>
+              <div class="field">
+                <label>Take Profit</label>
+                <input type="text" placeholder="0.0000" value="1.0885" />
+              </div>
+            </div>
+
+            <div class="two-col">
+              <div class="field">
+                <label>Risk %</label>
+                <input type="text" placeholder="0.0" value="1.0" />
+              </div>
+              <div class="field">
+                <label>R:R Ratio</label>
+                <input type="text" placeholder="1:2" value="1:2" />
+              </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="form-title">Psychology & Emotions</div>
+            <div class="field">
+              <label>Confidence Level (0–10)</label>
+              <input type="range" min="0" max="10" value="7" oninput="document.getElementById('confVal').textContent=this.value+'/10'">
+              <div class="muted" style="display:flex;justify-content:space-between;font-weight:900;font-size:12px;margin-top:4px;">
+                <span>Low</span><span id="confVal">7/10</span><span>High</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Emotional State</label>
+              <div class="tag-row" id="emotionTags">
+                <button class="tagbtn" type="button">FOMO</button>
+                <button class="tagbtn" type="button">Greed</button>
+                <button class="tagbtn" type="button">Fear</button>
+                <button class="tagbtn" type="button">Revenge</button>
+                <button class="tagbtn active" type="button">Calm</button>
+                <button class="tagbtn active" type="button">Focused</button>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="form-title">Trade Reasoning</div>
+            <div class="field">
+              <label>Why did you enter?</label>
+              <div class="tag-row" id="reasonTags">
+                <button class="tagbtn active" type="button">Liquidity Grab</button>
+                <button class="tagbtn active" type="button">Break of Structure</button>
+                <button class="tagbtn" type="button">Fair Value Gap</button>
+                <button class="tagbtn" type="button">Retracement</button>
+                <button class="tagbtn" type="button">News Catalyst</button>
+                <button class="tagbtn" type="button">Order Block</button>
+                <button class="tagbtn" type="button">SMT Divergence</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>What I saw</label>
+              <textarea placeholder="Describe market structure, key levels, etc."></textarea>
+            </div>
+            <div class="field">
+              <label>Why I entered</label>
+              <textarea placeholder="Your reasoning for taking this trade"></textarea>
+            </div>
+            <div class="field">
+              <label>What I learned / Will improve</label>
+              <textarea placeholder="Lessons and improvements for next time"></textarea>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="card form-card">
+              <div class="form-title">Chart Screenshot</div>
+              <div class="upload">
+                <i class="fa-solid fa-upload"></i>
+                <div style="font-weight:1000">Click to upload or drag and drop</div>
+                <div class="small">PNG, JPG up to 10MB</div>
+                <div class="note"><i class="fa-solid fa-lock"></i> Pro tip: You can draw on your screenshot after uploading</div>
+              </div>
+            </div>
+
+            <div class="card form-card">
+              <div class="form-title">Quick Stats</div>
+              <div class="list">
+                <div class="list-item">
+                  <div class="li-left">
+                    <div class="badge"><i class="fa-solid fa-layer-group"></i></div>
+                    <div>
+                      <div class="li-title">Total Trades Today</div>
+                      <div class="li-sub">current session</div>
+                    </div>
+                  </div>
+                  <div class="li-right">3</div>
+                </div>
+                <div class="list-item">
+                  <div class="li-left">
+                    <div class="badge"><i class="fa-solid fa-crosshairs"></i></div>
+                    <div>
+                      <div class="li-title">Win Rate Today</div>
+                      <div class="li-sub">so far</div>
+                    </div>
+                  </div>
+                  <div class="li-right">66%</div>
+                </div>
+                <div class="list-item">
+                  <div class="li-left">
+                    <div class="badge"><i class="fa-solid fa-dollar-sign"></i></div>
+                    <div>
+                      <div class="li-title">P/L Today</div>
+                      <div class="li-sub">net</div>
+                    </div>
+                  </div>
+                  <div class="li-right">+$240</div>
+                </div>
+              </div>
+
+              <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn primary" type="button" onclick="fakeSave()">
+                  <i class="fa-solid fa-floppy-disk"></i> Save Trade
+                </button>
+                <button class="btn ghost" type="button" onclick="openPage('replay')">
+                  <i class="fa-solid fa-play"></i> Replay
+                </button>
+              </div>
+              <div class="metric-sub" id="saveMsg" style="margin-top:10px;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PERFORMANCE ANALYTICS -->
+      <section class="page" id="page-analytics">
+        <div class="page-head">
+          <div>
+            <div class="title">Performance Analytics</div>
+            <div class="subtitle">Deep dive into your trading patterns and edge</div>
+          </div>
+          <div class="head-right">
+            <div class="chip"><span class="spark"><i class="fa-solid fa-clock"></i></span> Avg Duration: <b>4.2h</b></div>
+            <a class="btn ghost" href="#" onclick="openPage('dash');return false;"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+          </div>
+        </div>
+
+        <div class="grid-4">
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Avg Win</div>
+              <div class="metric-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
+            </div>
+            <div class="metric-val">+$124</div>
+            <div class="metric-sub">last 30 days</div>
+          </div>
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Avg Loss</div>
+              <div class="metric-icon"><i class="fa-solid fa-arrow-trend-down"></i></div>
+            </div>
+            <div class="metric-val">-$58</div>
+            <div class="metric-sub">last 30 days</div>
+          </div>
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Avg R:R</div>
+              <div class="metric-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+            </div>
+            <div class="metric-val">1:2.14</div>
+            <div class="metric-sub">stable</div>
+          </div>
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Expectancy</div>
+              <div class="metric-icon"><i class="fa-solid fa-wave-square"></i></div>
+            </div>
+            <div class="metric-val">+0.42R</div>
+            <div class="metric-sub">per trade</div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top:12px;">
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Win Rate Trend</div>
+              <div class="metric-icon"><i class="fa-solid fa-chart-line"></i></div>
+            </div>
+            <div class="chart-wrap"><canvas id="winTrend"></canvas></div>
+          </div>
+
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Profit by Session</div>
+              <div class="metric-icon"><i class="fa-solid fa-bars"></i></div>
+            </div>
+            <div class="chart-wrap"><canvas id="profitBars"></canvas></div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top:12px;">
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Profit by Day of Week</div>
+              <div class="metric-icon"><i class="fa-solid fa-calendar-week"></i></div>
+            </div>
+            <div class="chart-wrap"><canvas id="dowBars"></canvas></div>
+          </div>
+
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Risk/Reward Distribution</div>
+              <div class="metric-icon"><i class="fa-solid fa-chart-pie"></i></div>
+            </div>
+            <div class="chart-wrap"><canvas id="rrPie"></canvas></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px;">
+          <div class="metric-top">
+            <div class="metric-label">Setup Performance Analysis</div>
+            <div class="metric-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+          </div>
+
+          <div class="list" style="margin-top:10px;">
+            <div class="list-item">
+              <div class="li-left">
+                <div class="badge"><i class="fa-solid fa-crown"></i></div>
+                <div>
+                  <div class="li-title">BOS + FVG</div>
+                  <div class="li-sub">Win Rate 72% • Trades 45 • Avg R:R 1:2.1</div>
+                </div>
+              </div>
+              <div class="li-right">Performance: ████▌</div>
+            </div>
+
+            <div class="list-item">
+              <div class="li-left">
+                <div class="badge"><i class="fa-solid fa-water"></i></div>
+                <div>
+                  <div class="li-title">Liquidity Sweep</div>
+                  <div class="li-sub">Win Rate 65% • Trades 38 • Avg R:R 1:1.9</div>
+                </div>
+              </div>
+              <div class="li-right">Performance: ████</div>
+            </div>
+
+            <div class="list-item">
+              <div class="li-left">
+                <div class="badge"><i class="fa-solid fa-rotate-left"></i></div>
+                <div>
+                  <div class="li-title">Break + Retest</div>
+                  <div class="li-sub">Win Rate 60% • Trades 52 • Avg R:R 1:1.8</div>
+                </div>
+              </div>
+              <div class="li-right">Performance: ███▌</div>
+            </div>
+
+            <div class="list-item">
+              <div class="li-left">
+                <div class="badge"><i class="fa-solid fa-cube"></i></div>
+                <div>
+                  <div class="li-title">Order Block</div>
+                  <div class="li-sub">Win Rate 69% • Trades 31 • Avg R:R 1:2.3</div>
+                </div>
+              </div>
+              <div class="li-right">Performance: ████▌</div>
+            </div>
+
+            <div class="list-item">
+              <div class="li-left">
+                <div class="badge"><i class="fa-solid fa-bullseye"></i></div>
+                <div>
+                  <div class="li-title">ICT Killzone</div>
+                  <div class="li-sub">Win Rate 61% • Trades 24 • Avg R:R 1:1.9</div>
+                </div>
+              </div>
+              <div class="li-right">Performance: ███▌</div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="metric-top">
+            <div class="metric-label">Mistake Tracking & Impact</div>
+            <div class="metric-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          </div>
+
+          <div class="grid-2" style="margin-top:10px;">
+            <div class="card" style="background:rgba(255,255,255,0.03);">
+              <div class="metric-label">Entered Early</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+                <div class="muted">18x</div>
+                <div style="font-weight:1000;">-$420</div>
+              </div>
+            </div>
+
+            <div class="card" style="background:rgba(255,255,255,0.03);">
+              <div class="metric-label">No Stop Loss</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+                <div class="muted">6x</div>
+                <div style="font-weight:1000;">-$900</div>
+              </div>
+            </div>
+
+            <div class="card" style="background:rgba(255,255,255,0.03);">
+              <div class="metric-label">Over-leveraged</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+                <div class="muted">9x</div>
+                <div style="font-weight:1000;">-$340</div>
+              </div>
+            </div>
+
+            <div class="card" style="background:rgba(255,255,255,0.03);">
+              <div class="metric-label">Emotional Trading</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+                <div class="muted">12x</div>
+                <div style="font-weight:1000;">-$840</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+          <div class="muted" style="font-weight:900;font-size:12px;">
+            Focus Area: “No Stop Loss” has the highest impact on losses. Consider strict SL discipline.
+          </div>
+        </div>
+      </section>
+
+      <!-- TRADE REPLAY -->
+      <section class="page" id="page-replay">
+        <div class="page-head">
+          <div>
+            <div class="title">Trade Replay</div>
+            <div class="subtitle">Review and learn from your past trades</div>
+          </div>
+          <div class="head-right">
+            <a class="btn ghost" href="#" onclick="openPage('dash');return false;"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+          </div>
+        </div>
+
+        <div class="replay">
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Trade 1 of 5</div>
+              <div class="metric-icon"><i class="fa-solid fa-play"></i></div>
+            </div>
+
+            <div class="chart-frame">
+              <div class="hint">+$470</div>
+              <div class="pillbuy"><i class="fa-solid fa-cart-shopping"></i> BUY</div>
+              <canvas id="replayChart" style="width:100%;height:100%;"></canvas>
+            </div>
+
+            <div class="replay-meta" style="margin-top:12px;">
+              <div class="kv">
+                <div class="k">Symbol</div>
+                <div class="v">EURUSD</div>
+                <div class="muted2" style="margin-top:6px;font-weight:900;font-size:12px;">Mar 15, 2025 • London Session</div>
+              </div>
+              <div class="kv">
+                <div class="k">Entry / Exit</div>
+                <div class="v">1.0845 → 1.0892</div>
+                <div class="muted2" style="margin-top:6px;font-weight:900;font-size:12px;">R:R 1:2.3</div>
+              </div>
+              <div class="kv">
+                <div class="k">Setup & State</div>
+                <div class="v">BOS + FVG</div>
+                <div class="muted2" style="margin-top:6px;font-weight:900;font-size:12px;">Focused • Calm</div>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="kv" style="margin-bottom:10px;">
+              <div class="k">What I learned</div>
+              <div class="v">Perfect execution — waited for confirmation before entry.</div>
+            </div>
+            <div class="kv">
+              <div class="k">What I’ll do next time</div>
+              <div class="v">Look for similar setups during London killzone.</div>
+            </div>
+
+            <div class="navrow">
+              <button class="btn ghost" type="button" onclick="replayPrev()"><i class="fa-solid fa-arrow-left"></i> Previous</button>
+              <div class="muted" style="font-weight:900;font-size:12px;">Keep reviewing to improve</div>
+              <button class="btn primary" type="button" onclick="replayNext()">Next <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STREAKS & DISCIPLINE -->
+      <section class="page" id="page-streaks">
+        <div class="page-head">
+          <div>
+            <div class="title">Streaks & Discipline</div>
+            <div class="subtitle">Track your consistency and build winning habits</div>
+          </div>
+          <div class="head-right">
+            <a class="btn ghost" href="#" onclick="openPage('dash');return false;"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+          </div>
+        </div>
+
+        <div class="grid-4">
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Daily Streak</div>
+              <div class="metric-icon"><i class="fa-solid fa-fire"></i></div>
+            </div>
+            <div class="metric-val">14 Days</div>
+            <div class="metric-sub">best: 21 days</div>
+          </div>
+
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Win Streak</div>
+              <div class="metric-icon"><i class="fa-solid fa-trophy"></i></div>
+            </div>
+            <div class="metric-val">7 Trades</div>
+            <div class="metric-sub">best: 12 trades</div>
+          </div>
+
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Discipline Score</div>
+              <div class="metric-icon"><i class="fa-solid fa-bullseye"></i></div>
+            </div>
+            <div class="metric-val">86/100</div>
+            <div class="metric-sub">+4 from last week</div>
+          </div>
+
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Total XP</div>
+              <div class="metric-icon"><i class="fa-solid fa-bolt"></i></div>
+            </div>
+            <div class="metric-val">12,450</div>
+            <div class="metric-sub">level 24 trader</div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top:12px;">
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Emotional Control Score</div>
+              <div class="metric-icon"><i class="fa-solid fa-heart"></i></div>
+            </div>
+            <div class="chart-wrap"><canvas id="emoLine"></canvas></div>
+            <div class="muted" style="font-weight:900;font-size:12px;margin-top:8px;">
+              Your emotional control is improving. Keep maintaining SL discipline.
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Discipline Breakdown</div>
+              <div class="metric-icon"><i class="fa-solid fa-diagram-project"></i></div>
+            </div>
+            <div class="chart-wrap"><canvas id="radar"></canvas></div>
+            <div class="muted" style="font-weight:900;font-size:12px;margin-top:8px;">
+              Focus on improving: Entry Timing (R:R/100)
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px;">
+          <div class="metric-top">
+            <div class="metric-label">30-Day Consistency</div>
+            <div class="metric-icon"><i class="fa-solid fa-calendar-check"></i></div>
+          </div>
+
+          <div class="cal-grid" style="grid-template-columns:repeat(10,1fr);margin-top:10px;">
+            <!-- simple “heatmap” blocks -->
+            <div class="day win"><div class="n">1</div></div>
+            <div class="day win"><div class="n">2</div></div>
+            <div class="day loss"><div class="n">3</div></div>
+            <div class="day win"><div class="n">4</div></div>
+            <div class="day win"><div class="n">5</div></div>
+            <div class="day loss"><div class="n">6</div></div>
+            <div class="day win"><div class="n">7</div></div>
+            <div class="day win"><div class="n">8</div></div>
+            <div class="day win"><div class="n">9</div></div>
+            <div class="day loss"><div class="n">10</div></div>
+
+            <div class="day win"><div class="n">11</div></div>
+            <div class="day win"><div class="n">12</div></div>
+            <div class="day win"><div class="n">13</div></div>
+            <div class="day win"><div class="n">14</div></div>
+            <div class="day win"><div class="n">15</div></div>
+            <div class="day win"><div class="n">16</div></div>
+            <div class="day win"><div class="n">17</div></div>
+            <div class="day loss"><div class="n">18</div></div>
+            <div class="day win"><div class="n">19</div></div>
+            <div class="day win"><div class="n">20</div></div>
+
+            <div class="day win"><div class="n">21</div></div>
+            <div class="day win"><div class="n">22</div></div>
+            <div class="day win"><div class="n">23</div></div>
+            <div class="day win"><div class="n">24</div></div>
+            <div class="day loss"><div class="n">25</div></div>
+            <div class="day win"><div class="n">26</div></div>
+            <div class="day win"><div class="n">27</div></div>
+            <div class="day win"><div class="n">28</div></div>
+            <div class="day win"><div class="n">29</div></div>
+            <div class="day win"><div class="n">30</div></div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="grid-3">
+            <div class="card">
+              <div class="metric-top">
+                <div class="metric-label">Achievements & Badges</div>
+                <div class="metric-icon"><i class="fa-solid fa-medal"></i></div>
+              </div>
+              <div class="list">
+                <div class="list-item">
+                  <div class="li-left">
+                    <div class="badge"><i class="fa-solid fa-fire"></i></div>
+                    <div>
+                      <div class="li-title">Fire Streak</div>
+                      <div class="li-sub">14-day consistency</div>
+                    </div>
+                  </div>
+                  <div class="li-right">Unlocked</div>
+                </div>
+                <div class="list-item">
+                  <div class="li-left">
+                    <div class="badge"><i class="fa-solid fa-gem"></i></div>
+                    <div>
+                      <div class="li-title">Diamond Hands</div>
+                      <div class="li-sub">Held to plan</div>
+                    </div>
+                  </div>
+                  <div class="li-right">Unlocked</div>
+                </div>
+                <div class="list-item">
+                  <div class="li-left">
+                    <div class="badge"><i class="fa-solid fa-bullseye"></i></div>
+                    <div>
+                      <div class="li-title">Sniper Entry</div>
+                      <div class="li-sub">High precision entries</div>
+                    </div>
+                  </div>
+                  <div class="li-right">Unlocked</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="metric-top">
+                <div class="metric-label">Next Milestone</div>
+                <div class="metric-icon"><i class="fa-solid fa-flag-checkered"></i></div>
+              </div>
+              <div style="font-weight:1000;font-size:16px;margin-top:4px;">Beat your personal best</div>
+              <div class="metric-sub">You’re on a 14-day streak. Just 7 more days to hit 21.</div>
+              <div style="margin-top:12px;">
+                <button class="btn primary" type="button" onclick="openPage('calendar')">
+                  <i class="fa-solid fa-calendar-days"></i> View Calendar
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="metric-top">
+                <div class="metric-label">Rules Reminder</div>
+                <div class="metric-icon"><i class="fa-solid fa-shield-halved"></i></div>
+              </div>
+              <div class="list">
+                <div class="list-item">
+                  <div class="li-left">
+                    <div class="badge"><i class="fa-solid fa-check"></i></div>
+                    <div>
+                      <div class="li-title">Stop Loss always set</div>
+                      <div class="li-sub">no exceptions</div>
+                    </div>
+                  </div>
+                  <div class="li-right">Rule</div>
+                </div>
+                <div class="list-item">
+                  <div class="li-left">
+                    <div class="badge"><i class="fa-solid fa-check"></i></div>
+                    <div>
+                      <div class="li-title">Fixed risk per trade</div>
+                      <div class="li-sub">1.0% max</div>
+                    </div>
+                  </div>
+                  <div class="li-right">Rule</div>
+                </div>
+                <div class="list-item">
+                  <div class="li-left">
+                    <div class="badge"><i class="fa-solid fa-check"></i></div>
+                    <div>
+                      <div class="li-title">No revenge trades</div>
+                      <div class="li-sub">pause after loss</div>
+                    </div>
+                  </div>
+                  <div class="li-right">Rule</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TRADING CALENDAR -->
+      <section class="page" id="page-calendar">
+        <div class="page-head">
+          <div>
+            <div class="title">Trading Calendar</div>
+            <div class="subtitle">View your daily performance at a glance</div>
+          </div>
+          <div class="head-right">
+            <a class="btn ghost" href="#" onclick="openPage('dash');return false;"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+          </div>
+        </div>
+
+        <div class="cal-wrap">
+          <div class="card calendar">
+            <div class="cal-head">
+              <div class="m" id="calMonthLabel">December 2025</div>
+              <div class="arrows">
+                <button class="iconbtn" type="button" onclick="calPrev()"><i class="fa-solid fa-chevron-left"></i></button>
+                <button class="iconbtn" type="button" onclick="calNext()"><i class="fa-solid fa-chevron-right"></i></button>
+              </div>
+            </div>
+
+            <div class="cal-grid" id="calGrid">
+              <!-- Filled by JS -->
+            </div>
+
+            <div class="legend">
+              <span class="sw"><span class="sq win"></span> Profitable Day</span>
+              <span class="sw"><span class="sq loss"></span> Loss Day</span>
+              <span class="sw"><span class="sq none"></span> No Trading</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="metric-top">
+              <div class="metric-label">Monthly Summary</div>
+              <div class="metric-icon"><i class="fa-solid fa-clipboard"></i></div>
+            </div>
+
+            <div class="list">
+              <div class="list-item">
+                <div class="li-left">
+                  <div class="badge"><i class="fa-solid fa-dollar-sign"></i></div>
+                  <div>
+                    <div class="li-title">Total P/L</div>
+                    <div class="li-sub">month to date</div>
+                  </div>
+                </div>
+                <div class="li-right">+$2,340</div>
+              </div>
+
+              <div class="list-item">
+                <div class="li-left">
+                  <div class="badge"><i class="fa-solid fa-calendar-check"></i></div>
+                  <div>
+                    <div class="li-title">Trading Days</div>
+                    <div class="li-sub">active days</div>
+                  </div>
+                </div>
+                <div class="li-right">19</div>
+              </div>
+
+              <div class="list-item">
+                <div class="li-left">
+                  <div class="badge"><i class="fa-solid fa-layer-group"></i></div>
+                  <div>
+                    <div class="li-title">Total Trades</div>
+                    <div class="li-sub">executed</div>
+                  </div>
+                </div>
+                <div class="li-right">94</div>
+              </div>
+
+              <div class="list-item">
+                <div class="li-left">
+                  <div class="badge"><i class="fa-solid fa-crosshairs"></i></div>
+                  <div>
+                    <div class="li-title">Win Rate</div>
+                    <div class="li-sub">month</div>
+                  </div>
+                </div>
+                <div class="li-right">60%</div>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="upload" style="min-height:160px;">
+              <i class="fa-solid fa-hand-pointer"></i>
+              <div style="font-weight:1000">Select a day to view details</div>
+              <div class="small">This is a UI demo. You can connect real data later.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    /* particles */
+    const bg = document.querySelector('.animated-bg');
+    for (let i=0;i<48;i++){
+      const p=document.createElement('div');
+      p.className='particle';
+      p.style.left=(Math.random()*100)+'%';
+      p.style.animationDelay=(Math.random()*16)+'s';
+      p.style.animationDuration=(12+Math.random()*10)+'s';
+      bg.appendChild(p);
+    }
+
+    /* sidebar navigation */
+    const navBtns = document.querySelectorAll('.navbtn[data-page]');
+    function openPage(key){
+      navBtns.forEach(b=>b.classList.toggle('active', b.getAttribute('data-page')===key));
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      const el=document.getElementById('page-'+key);
+      if(el) el.classList.add('active');
+
+      // draw charts when needed
+      requestAnimationFrame(()=>drawAll());
+    }
+    navBtns.forEach(btn=>{
+      btn.addEventListener('click', ()=>openPage(btn.getAttribute('data-page')));
+    });
+
+    /* Buy/Sell toggle */
+    let side='buy';
+    function setSide(s){
+      side=s;
+      document.getElementById('toggleBuy').classList.toggle('active', s==='buy');
+      document.getElementById('toggleSell').classList.toggle('active', s==='sell');
+    }
+
+    /* tag toggle */
+    function wireTagGroup(id){
+      const root=document.getElementById(id);
+      if(!root) return;
+      root.querySelectorAll('.tagbtn').forEach(b=>{
+        b.addEventListener('click', ()=>b.classList.toggle('active'));
+      });
+    }
+    wireTagGroup('emotionTags');
+    wireTagGroup('reasonTags');
+
+    function fakeSave(){
+      const el=document.getElementById('saveMsg');
+      el.textContent="Saved (demo). Hook this to your backend later.";
+    }
+
+    /* Minimal canvas chart helpers (black/white) */
+    function fitCanvas(c){
+      if(!c) return null;
+      const rect = c.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      c.width = Math.max(1, Math.floor(rect.width * dpr));
+      c.height = Math.max(1, Math.floor(rect.height * dpr));
+      const ctx = c.getContext('2d');
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      return ctx;
+    }
+
+    function clear(ctx,w,h){
+      ctx.clearRect(0,0,w,h);
+    }
+
+    function drawGrid(ctx,w,h){
+      ctx.save();
+      ctx.globalAlpha=0.18;
+      ctx.strokeStyle='rgba(255,255,255,0.18)';
+      ctx.lineWidth=1;
+
+      const stepY = h/5;
+      for(let i=1;i<5;i++){
+        ctx.beginPath();
+        ctx.moveTo(10, i*stepY);
+        ctx.lineTo(w-10, i*stepY);
+        ctx.stroke();
+      }
+
+      const stepX = w/6;
+      for(let i=1;i<6;i++){
+        ctx.beginPath();
+        ctx.moveTo(i*stepX, 10);
+        ctx.lineTo(i*stepX, h-10);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function lineChart(canvasId, data){
+      const c=document.getElementById(canvasId);
+      if(!c) return;
+      const ctx=fitCanvas(c);
+      const w=c.getBoundingClientRect().width;
+      const h=c.getBoundingClientRect().height;
+      clear(ctx,w,h);
+
+      drawGrid(ctx,w,h);
+
+      const pad=14;
+      const min=Math.min(...data);
+      const max=Math.max(...data);
+      const span = (max-min) || 1;
+
+      ctx.beginPath();
+      data.forEach((v,i)=>{
+        const x = pad + (i*(w-2*pad)/(data.length-1));
+        const y = (h-pad) - ((v-min)/span)*(h-2*pad);
+        if(i===0) ctx.moveTo(x,y);
+        else ctx.lineTo(x,y);
+      });
+      ctx.lineWidth=2;
+      ctx.strokeStyle='rgba(255,255,255,0.92)';
+      ctx.stroke();
+
+      // soft fill
+      ctx.lineTo(w-pad,h-pad);
+      ctx.lineTo(pad,h-pad);
+      ctx.closePath();
+      ctx.fillStyle='rgba(255,255,255,0.06)';
+      ctx.fill();
+    }
+
+    function barChart(canvasId, labels, values){
+      const c=document.getElementById(canvasId);
+      if(!c) return;
+      const ctx=fitCanvas(c);
+      const w=c.getBoundingClientRect().width;
+      const h=c.getBoundingClientRect().height;
+      clear(ctx,w,h);
+
+      drawGrid(ctx,w,h);
+
+      const pad=18;
+      const max=Math.max(...values.map(v=>Math.abs(v))) || 1;
+      const barW = (w-2*pad)/(values.length*1.6);
+
+      values.forEach((v,i)=>{
+        const x = pad + i*(barW*1.6);
+        const norm = Math.abs(v)/max;
+        const bh = norm*(h-2*pad);
+        const y = (h-pad) - bh;
+
+        ctx.fillStyle='rgba(255,255,255,0.18)';
+        ctx.strokeStyle='rgba(255,255,255,0.35)';
+        ctx.lineWidth=1;
+
+        ctx.beginPath();
+        roundRect(ctx, x, y, barW, bh, 10);
+        ctx.fill();
+        ctx.stroke();
+
+        // label (small)
+        ctx.fillStyle='rgba(255,255,255,0.65)';
+        ctx.font='700 11px Inter, system-ui, sans-serif';
+        ctx.textAlign='center';
+        ctx.fillText(labels[i], x+barW/2, h-6);
+      });
+    }
+
+    function pieChart(canvasId, parts){
+      const c=document.getElementById(canvasId);
+      if(!c) return;
+      const ctx=fitCanvas(c);
+      const w=c.getBoundingClientRect().width;
+      const h=c.getBoundingClientRect().height;
+      clear(ctx,w,h);
+
+      const cx=w/2, cy=h/2;
+      const r=Math.min(w,h)*0.34;
+
+      // background ring
+      ctx.beginPath();
+      ctx.arc(cx,cy,r,0,Math.PI*2);
+      ctx.strokeStyle='rgba(255,255,255,0.18)';
+      ctx.lineWidth=18;
+      ctx.stroke();
+
+      const total = parts.reduce((a,b)=>a+b.value,0) || 1;
+      let a0 = -Math.PI/2;
+      parts.forEach((p,idx)=>{
+        const frac = p.value/total;
+        const a1 = a0 + frac*(Math.PI*2);
+
+        ctx.beginPath();
+        ctx.arc(cx,cy,r,a0,a1);
+        ctx.strokeStyle = `rgba(255,255,255,${0.35 + idx*0.12})`;
+        ctx.lineWidth=18;
+        ctx.stroke();
+
+        a0=a1;
+      });
+
+      // center label
+      ctx.fillStyle='rgba(255,255,255,0.9)';
+      ctx.font='900 14px Inter, system-ui, sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText('R:R', cx, cy-2);
+      ctx.fillStyle='rgba(255,255,255,0.6)';
+      ctx.font='900 12px Inter, system-ui, sans-serif';
+      ctx.fillText('Distribution', cx, cy+16);
+    }
+
+    function radarChart(canvasId, labels, values){
+      const c=document.getElementById(canvasId);
+      if(!c) return;
+      const ctx=fitCanvas(c);
+      const w=c.getBoundingClientRect().width;
+      const h=c.getBoundingClientRect().height;
+      clear(ctx,w,h);
+
+      const cx=w/2, cy=h/2;
+      const r=Math.min(w,h)*0.34;
+      const n=labels.length;
+
+      // rings
+      for(let k=1;k<=4;k++){
+        ctx.beginPath();
+        for(let i=0;i<n;i++){
+          const ang = (-Math.PI/2) + i*(2*Math.PI/n);
+          const rr = r*(k/4);
+          const x=cx+Math.cos(ang)*rr;
+          const y=cy+Math.sin(ang)*rr;
+          if(i===0) ctx.moveTo(x,y);
+          else ctx.lineTo(x,y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle='rgba(255,255,255,0.16)';
+        ctx.stroke();
+      }
+
+      // axes
+      for(let i=0;i<n;i++){
+        const ang = (-Math.PI/2)+i*(2*Math.PI/n);
+        ctx.beginPath();
+        ctx.moveTo(cx,cy);
+        ctx.lineTo(cx+Math.cos(ang)*r, cy+Math.sin(ang)*r);
+        ctx.strokeStyle='rgba(255,255,255,0.14)';
+        ctx.stroke();
+      }
+
+      // polygon
+      ctx.beginPath();
+      values.forEach((v,i)=>{
+        const ang = (-Math.PI/2)+i*(2*Math.PI/n);
+        const rr = r*(v/100);
+        const x=cx+Math.cos(ang)*rr;
+        const y=cy+Math.sin(ang)*rr;
+        if(i===0) ctx.moveTo(x,y);
+        else ctx.lineTo(x,y);
+      });
+      ctx.closePath();
+      ctx.fillStyle='rgba(255,255,255,0.08)';
+      ctx.strokeStyle='rgba(255,255,255,0.55)';
+      ctx.lineWidth=2;
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    function roundRect(ctx, x, y, w, h, r){
+      const rr = Math.min(r, w/2, h/2);
+      ctx.moveTo(x+rr, y);
+      ctx.arcTo(x+w, y, x+w, y+h, rr);
+      ctx.arcTo(x+w, y+h, x, y+h, rr);
+      ctx.arcTo(x, y+h, x, y, rr);
+      ctx.arcTo(x, y, x+w, y, rr);
+    }
+
+    /* Replay chart (simple candle-ish) */
+    function replayChart(){
+      const c=document.getElementById('replayChart');
+      if(!c) return;
+      const ctx=fitCanvas(c);
+      const w=c.getBoundingClientRect().width;
+      const h=c.getBoundingClientRect().height;
+      clear(ctx,w,h);
+
+      // background grid
+      ctx.save();
+      ctx.globalAlpha=.20;
+      ctx.strokeStyle='rgba(255,255,255,0.16)';
+      for(let i=1;i<6;i++){
+        ctx.beginPath();ctx.moveTo(10, i*h/6);ctx.lineTo(w-10, i*h/6);ctx.stroke();
+      }
+      ctx.restore();
+
+      // draw “candles”
+      const candles=28;
+      const pad=18;
+      const cw=(w-2*pad)/candles;
+      let yBase=h*0.55;
+      for(let i=0;i<candles;i++){
+        const x=pad + i*cw;
+        const drift = Math.sin(i/3)*10 + (i*0.9);
+        const open = yBase - drift;
+        const close = open + (Math.random()*18 - 9);
+        const high = Math.min(open,close) - (6+Math.random()*8);
+        const low  = Math.max(open,close) + (6+Math.random()*8);
+
+        // wick
+        ctx.strokeStyle='rgba(255,255,255,0.55)';
+        ctx.beginPath();
+        ctx.moveTo(x+cw/2, high);
+        ctx.lineTo(x+cw/2, low);
+        ctx.stroke();
+
+        // body
+        const top=Math.min(open,close);
+        const bh=Math.max(6, Math.abs(close-open));
+        ctx.fillStyle = (close<open) ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.12)';
+        ctx.strokeStyle='rgba(255,255,255,0.35)';
+        ctx.beginPath();
+        roundRect(ctx, x+cw*0.18, top, cw*0.64, bh, 6);
+        ctx.fill(); ctx.stroke();
+      }
+
+      // moving average-ish lines
+      ctx.strokeStyle='rgba(255,255,255,0.45)';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      for(let i=0;i<candles;i++){
+        const x=pad + i*cw + cw/2;
+        const y=h*0.35 + Math.cos(i/4)*12 + i*1.0;
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+
+      ctx.strokeStyle='rgba(255,255,255,0.28)';
+      ctx.beginPath();
+      for(let i=0;i<candles;i++){
+        const x=pad + i*cw + cw/2;
+        const y=h*0.42 + Math.sin(i/5)*10 + i*0.9;
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+
+    /* Chart draw dispatcher */
+    function drawAll(){
+      // dashboard
+      lineChart('eqCurve', [10200,10480,10350,10890,11200,11110,11450,11980,11820,12120,12340]);
+
+      // analytics
+      lineChart('winTrend', [55,58,60,57,59,61,58]);
+      barChart('profitBars', ['Asia','London','NY'], [420,1240,890]);
+      barChart('dowBars', ['Mon','Tue','Wed','Thu','Fri'], [320,520,140,610,380]);
+      pieChart('rrPie', [
+        {label:'1:1', value:18},
+        {label:'1:2', value:42},
+        {label:'1:3', value:26},
+        {label:'>1:3', value:14},
+      ]);
+
+      // streaks
+      lineChart('emoLine', [7.2,7.6,7.4,7.9,8.1,8.0,8.2]);
+      radarChart('radar',
+        ['Journaling','Risk Mgmt','Entry Timing','Plan Adherence','Emotional Control','Exit Strategy'],
+        [88,92,74,86,84,80]
+      );
+
+      // replay
+      replayChart();
+    }
+
+    /* Replay navigation (demo) */
+    let replayIndex=1;
+    function replayPrev(){
+      replayIndex=Math.max(1,replayIndex-1);
+      drawAll();
+    }
+    function replayNext(){
+      replayIndex=Math.min(5,replayIndex+1);
+      drawAll();
+    }
+
+    /* Calendar */
+    const dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const demoDays = {
+      // day -> {type:'win'|'loss'|'none', pl:'+$123' }
+      2:{type:'loss',pl:'-$210'},
+      3:{type:'win',pl:'+$320'},
+      4:{type:'loss',pl:'-$140'},
+      7:{type:'loss',pl:'-$80'},
+      8:{type:'loss',pl:'-$90'},
+      11:{type:'loss',pl:'-$101'},
+      12:{type:'win',pl:'+$200'},
+      13:{type:'win',pl:'+$177'},
+      14:{type:'win',pl:'+$205'},
+      16:{type:'win',pl:'+$84'},
+      18:{type:'win',pl:'+$277'},
+      19:{type:'win',pl:'+$304'},
+      20:{type:'win',pl:'+$244'},
+      23:{type:'loss',pl:'-$95'},
+      24:{type:'win',pl:'+$204'},
+      25:{type:'win',pl:'+$113'},
+      26:{type:'win',pl:'+$72'},
+      27:{type:'win',pl:'+$170'},
+      30:{type:'win',pl:'+$91'}
+    };
+
+    let calYear=2025, calMonth=11; // Dec 2025 (0-based)
+    const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    function buildCal(){
+      const grid=document.getElementById('calGrid');
+      if(!grid) return;
+      grid.innerHTML='';
+
+      // dow headers
+      dow.forEach(d=>{
+        const el=document.createElement('div');
+        el.className='dow';
+        el.textContent=d;
+        grid.appendChild(el);
+      });
+
+      const first=new Date(calYear,calMonth,1);
+      const startDay=first.getDay();
+      const daysIn=new Date(calYear,calMonth+1,0).getDate();
+
+      // blanks
+      for(let i=0;i<startDay;i++){
+        const b=document.createElement('div');
+        b.className='day';
+        b.style.opacity='.35';
+        grid.appendChild(b);
+      }
+
+      for(let day=1;day<=daysIn;day++){
+        const info=demoDays[day] || {type:'none',pl:''};
+        const d=document.createElement('div');
+        d.className='day ' + (info.type==='win'?'win': info.type==='loss'?'loss':'');
+        const n=document.createElement('div');
+        n.className='n';
+        n.textContent=day;
+        d.appendChild(n);
+
+        if(info.pl){
+          const p=document.createElement('div');
+          p.className='p';
+          p.textContent=info.pl;
+          d.appendChild(p);
+        }
+        d.addEventListener('click', ()=>{
+          // demo: just highlight
+          document.querySelectorAll('.day').forEach(x=>x.style.outline='none');
+          d.style.outline='2px solid rgba(255,255,255,0.28)';
+          d.style.outlineOffset='2px';
+        });
+        grid.appendChild(d);
+      }
+
+      document.getElementById('calMonthLabel').textContent = monthNames[calMonth] + ' ' + calYear;
+    }
+
+    function calPrev(){
+      calMonth--;
+      if(calMonth<0){calMonth=11;calYear--}
+      buildCal();
+    }
+    function calNext(){
+      calMonth++;
+      if(calMonth>11){calMonth=0;calYear++}
+      buildCal();
+    }
+
+    /* init */
+    buildCal();
+    drawAll();
+
+    // redraw on resize
+    window.addEventListener('resize', ()=>drawAll());
+  </script>
+</body>
+</html>
