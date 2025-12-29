@@ -1283,8 +1283,14 @@
             homeMarketsSubnav.setAttribute('aria-hidden', 'true');
         }
 
+        // ✅ NEW: keep page at top when opening any top menu bar
+        function keepAtTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         toolsToggle.addEventListener('click', (e) => {
             e.preventDefault();
+            keepAtTop(); // ✅ FIX
 
             document.body.classList.remove('news-open','learn-open','learn-detail-open','home-open','home-detail-open');
             newsSubnav.setAttribute('aria-hidden', 'true');
@@ -1299,6 +1305,7 @@
 
         newsToggle.addEventListener('click', (e) => {
             e.preventDefault();
+            keepAtTop(); // ✅ FIX
 
             document.body.classList.remove('tools-open','learn-open','learn-detail-open','home-open','home-detail-open');
             toolsSubnav.setAttribute('aria-hidden', 'true');
@@ -1313,6 +1320,7 @@
 
         learnToggle.addEventListener('click', (e) => {
             e.preventDefault();
+            keepAtTop(); // ✅ FIX
 
             document.body.classList.remove('tools-open','news-open','home-open','home-detail-open');
             toolsSubnav.setAttribute('aria-hidden', 'true');
@@ -1331,6 +1339,7 @@
 
         homeToggle.addEventListener('click', (e) => {
             e.preventDefault();
+            keepAtTop(); // ✅ FIX (keeps Home consistent too)
 
             document.body.classList.remove('tools-open','news-open','learn-open','learn-detail-open');
             toolsSubnav.setAttribute('aria-hidden', 'true');
@@ -1348,6 +1357,8 @@
         });
 
         marketsToggle.addEventListener('click', () => {
+            keepAtTop(); // ✅ FIX
+
             if (!document.body.classList.contains('home-open')) {
                 document.body.classList.add('home-open');
                 homeSubnav.setAttribute('aria-hidden', 'false');
