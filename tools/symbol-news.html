@@ -3,97 +3,383 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX Tools — Forex Calculator</title>
+  <title>FYNX Tools — Symbol News</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{
-      font-family:'Inter','Segoe UI',system-ui,sans-serif;
-      color:#fff;background:#000;overflow-x:hidden;min-height:100vh;
+    :root{
+      --bg:#000;
+      --panel: rgba(255,255,255,.06);
+      --panel2: rgba(255,255,255,.04);
+      --border: rgba(255,255,255,.12);
+      --border2: rgba(255,255,255,.08);
+      --text:#fff;
+      --muted: rgba(255,255,255,.68);
+      --muted2: rgba(255,255,255,.50);
+      --danger:#ff4d4d;
+      --shadow: 0 24px 70px rgba(0,0,0,.55);
+      --radius: 18px;
+      --radius2: 22px;
+      --max: 1200px;
     }
-    .animated-bg{position:fixed;inset:0;z-index:-1;background:#000;overflow:hidden}
+
+    body{
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      overflow-x:hidden;
+      min-height:100vh;
+    }
+
+    /* Grok-style background (black/white) */
+    .animated-bg{
+      position:fixed; inset:0; z-index:-1;
+      background:#000; overflow:hidden;
+    }
     .grid-overlay{
-      position:absolute;inset:0;
+      position:absolute; inset:0;
       background-image:
         linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-      background-size:50px 50px;
-      animation:gridMove 20s linear infinite;
+      background-size: 52px 52px;
+      animation: gridMove 20s linear infinite;
+      opacity:.75;
     }
-    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-    .gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.25;animation:float 20s ease-in-out infinite}
-    .orb-1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-220px;left:-220px}
-    .orb-2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
-    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
+    @keyframes gridMove{
+      0%{transform:translate(0,0)}
+      100%{transform:translate(52px,52px)}
+    }
+    .gradient-orb{
+      position:absolute; border-radius:999px; filter: blur(90px);
+      opacity:.20;
+      animation: floaty 18s ease-in-out infinite;
+    }
+    .orb-1{ width:560px; height:560px; left:-260px; top:-260px; background: radial-gradient(circle, #fff 0%, transparent 65%); }
+    .orb-2{ width:560px; height:560px; right:-280px; bottom:-280px; background: radial-gradient(circle, #fff 0%, transparent 65%); animation-delay: 3s;}
+    @keyframes floaty{
+      0%,100%{transform:translate(0,0) scale(1)}
+      50%{transform:translate(34px,-26px) scale(.97)}
+    }
 
+    /* Header */
     header{
-      position:sticky;top:0;z-index:1000;
-      background:rgba(0,0,0,.85);
-      backdrop-filter:blur(20px);
-      border-bottom:1px solid rgba(255,255,255,.1);
-      padding:1rem 0;
+      position:sticky; top:0; z-index:1000;
+      background: rgba(0,0,0,.78);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border2);
     }
     .nav{
-      max-width:1200px;margin:0 auto;
-      display:flex;align-items:center;justify-content:space-between;
-      padding:0 1.25rem;
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 14px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
     }
     .brand{
-      display:flex;align-items:center;gap:.6rem;
-      font-weight:900;letter-spacing:-1px;font-size:1.25rem;
+      display:flex; align-items:center; gap:10px;
+      font-weight: 850;
+      letter-spacing:.4px;
+      user-select:none;
     }
-    .brand i{opacity:.9}
-    .nav a{
-      color:rgba(255,255,255,.85);
-      text-decoration:none;font-weight:700;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.04);
-      padding:.55rem .9rem;border-radius:999px;
-      transition:all .25s ease;
+    .brand i{opacity:.92}
+    .nav-actions{display:flex; align-items:center; gap:10px;}
+    .btn{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      text-decoration:none;
+      font-weight: 700;
+      font-size: 14px;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
       white-space:nowrap;
     }
-    .nav a:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
+    .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18)}
+    .btn i{opacity:.9}
 
-    main{max-width:1200px;margin:0 auto;padding:3.5rem 1.25rem 5rem}
-    .hero{
-      padding:2.25rem 1.75rem;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.03);
-      border-radius:22px;
-      backdrop-filter:blur(10px);
+    /* Layout */
+    main{max-width: var(--max); margin:0 auto; padding: 46px 18px 70px;}
+    .shell{
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border: 1px solid var(--border2);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+      padding: 26px;
     }
-    h1{
-      font-size:3rem;line-height:1.1;letter-spacing:-2px;
-      background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-      margin-bottom:.75rem;
+    .title{
+      font-size: 44px;
+      line-height: 1.04;
+      font-weight: 950;
+      letter-spacing: -1px;
+      margin-bottom: 10px;
     }
-    p{color:rgba(255,255,255,.65);font-size:1.1rem;line-height:1.8;max-width:70ch}
+    .subtitle{
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.55;
+      max-width: 960px;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 980px){
+      .title{font-size: 36px}
+    }
 
-    .panel-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-      gap:1.25rem;
-      margin-top:1.25rem;
+    /* Search card */
+    .searchCard{
+      padding: 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border2);
+      background: rgba(255,255,255,.05);
     }
-    .panel{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.55);
-      border-radius:18px;
-      padding:1.25rem 1.25rem 1.4rem;
-      backdrop-filter:blur(10px);
-      min-height:180px;
+    .searchLabel{
+      font-size: 13px;
+      font-weight: 850;
+      color: var(--muted);
+      margin-bottom: 10px;
     }
-    .panel h2{font-size:1.2rem;margin-bottom:.5rem}
-    .panel .muted{color:rgba(255,255,255,.6);font-size:.98rem}
+    .searchRow{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .searchInput{
+      flex: 1 1 320px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border2);
+      background: rgba(0,0,0,.30);
+    }
+    .searchInput i{opacity:.85}
+    input[type="text"]{
+      width:100%;
+      border:none;
+      outline:none;
+      background:transparent;
+      color: var(--text);
+      font-weight: 850;
+      font-size: 14px;
+      letter-spacing: .2px;
+      text-transform: uppercase;
+    }
+    .searchBtn{
+      border-radius: 14px;
+      padding: 11px 14px;
+      border: 1px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.14);
+      color:#fff;
+      font-weight: 950;
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      display:inline-flex; align-items:center; gap:10px;
+      white-space:nowrap;
+    }
+    .searchBtn:hover{transform: translateY(-1px); background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.28)}
+    .chips{
+      display:flex;
+      gap:8px;
+      margin-top: 12px;
+      overflow:auto;
+      padding-bottom: 2px;
+    }
+    .chip{
+      border:none;
+      cursor:pointer;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(255,255,255,.92);
+      font-weight: 900;
+      font-size: 12px;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      white-space:nowrap;
+    }
+    .chip:hover{transform: translateY(-1px); background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.16)}
 
-    .hint{
-      margin-top:1.2rem;
-      color:rgba(255,255,255,.55);
-      font-size:.95rem;
+    /* Status */
+    .statusBar{
+      display:flex; justify-content:space-between; align-items:center;
+      gap:10px;
+      margin-top: 14px;
+      padding: 10px 4px 0;
+      color: var(--muted2);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .loadingRow{
+      display:none;
+      gap:10px;
+      align-items:center;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border2);
+      background: rgba(255,255,255,.04);
+      width: fit-content;
+    }
+    .spinner{
+      width:16px; height:16px; border-radius:999px;
+      border: 2px solid rgba(255,255,255,.18);
+      border-top-color: rgba(255,255,255,.80);
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin{to{transform: rotate(360deg)}}
+
+    .errorBox{
+      display:none;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,77,77,.30);
+      background: rgba(255,77,77,.08);
+      color: #ffd0d0;
+      font-weight: 850;
+      font-size: 13px;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .errorBox i{color: var(--danger); margin-top:2px}
+
+    /* List */
+    .list{
+      margin-top: 14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .newsCard{
+      width:100%;
+      border: 1px solid var(--border2);
+      background: rgba(255,255,255,.05);
+      border-radius: 16px;
+      padding: 14px;
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    }
+    .newsCard:hover{transform: translateY(-1px); background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.14)}
+    .iconBubble{
+      width:34px; height:34px; border-radius:999px;
+      display:flex; align-items:center; justify-content:center;
+      background: rgba(255,255,255,.08);
+      flex: 0 0 auto;
+      margin-top: 2px;
+    }
+    .iconBubble i{opacity:.9}
+    .newsBody{flex:1 1 auto; min-width:0}
+    .newsTitle{
+      font-weight: 900;
+      font-size: 14px;
+      line-height: 1.35;
+      color: rgba(255,255,255,.94);
+      display:-webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow:hidden;
+    }
+    .meta{
+      margin-top: 6px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      color: var(--muted2);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .chev{
+      margin-left: 6px;
+      color: var(--muted2);
+      margin-top: 6px;
+      flex: 0 0 auto;
+    }
+
+    .empty{
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border2);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      font-weight: 850;
+      font-size: 13px;
+    }
+
+    /* Modal (Safari sheet-like) */
+    .modalOverlay{
+      position:fixed; inset:0; z-index:2000;
+      background: rgba(0,0,0,.62);
+      backdrop-filter: blur(10px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+    }
+    .modal{
+      width:min(1100px, 100%);
+      height:min(78vh, 760px);
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.70);
+      box-shadow: 0 30px 90px rgba(0,0,0,.65);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .modalTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+    }
+    .modalTop .left{
+      display:flex; align-items:center; gap:10px; min-width:0;
+      color: rgba(255,255,255,.90);
+      font-weight: 900;
+      font-size: 13px;
+    }
+    .modalTop .left span{
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      max-width: 520px;
+    }
+    .modalTop .actions{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+    .mBtn{
+      border-radius: 12px;
+      padding: 8px 10px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.92);
+      font-weight: 900;
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      display:inline-flex; align-items:center; gap:8px;
+      font-size: 12px;
+      white-space:nowrap;
+    }
+    .mBtn:hover{transform: translateY(-1px); background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.18)}
+    iframe{
+      width:100%;
+      height:100%;
+      border:none;
+      background:#000;
     }
   </style>
 </head>
+
 <body>
   <div class="animated-bg">
     <div class="grid-overlay"></div>
@@ -103,32 +389,360 @@
 
   <header>
     <div class="nav">
-      <div class="brand"><i class="fas fa-chart-line"></i> FYNX Tools</div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
-        <a href="../index.html#tools"><i class="fas fa-arrow-left"></i> Back</a>
-        <a href="../index.html"><i class="fas fa-house"></i> Home</a>
+      <div class="brand"><i class="fa-solid fa-newspaper"></i> FYNX Tools</div>
+      <div class="nav-actions">
+        <a class="btn" href="javascript:history.back()"><i class="fa-solid fa-arrow-left"></i> Back</a>
+        <a class="btn" href="../index.html"><i class="fa-solid fa-house"></i> Home</a>
       </div>
     </div>
   </header>
 
   <main>
-    <section class="hero">
-      <h1>Forex Calculator</h1>
-      <p>Dedicated page for the Forex calculator. Put your real calculator code here (inputs, outputs, formulas, UI).</p>
+    <div class="shell" id="tapDismiss">
+      <div class="title">Symbol News</div>
+      <div class="subtitle">
+        Search by symbol or keyword (e.g. <b>XAUUSD</b>, <b>EURUSD</b>, <b>BTCUSD</b>). Headlines are fetched from Google News RSS.
+      </div>
 
-      <div class="panel-grid">
-        <div class="panel">
-          <h2>Calculator UI</h2>
-          <div class="muted">Add inputs (pair, lot size, risk %, stop loss pips, etc.) and compute results.</div>
+      <div class="searchCard">
+        <div class="searchLabel">Search by symbol</div>
+
+        <div class="searchRow">
+          <div class="searchInput">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input id="query" type="text" value="XAUUSD" placeholder="Symbol or keyword (e.g. EURUSD)" />
+          </div>
+
+          <button id="searchBtn" class="searchBtn">
+            <i class="fa-solid fa-magnifying-glass"></i> Search
+          </button>
         </div>
-        <div class="panel">
-          <h2>Results</h2>
-          <div class="muted">Show position size, pip value, risk amount, margin estimate, and notes.</div>
+
+        <div class="chips" aria-label="Quick presets">
+          <button class="chip" data-q="XAUUSD">XAUUSD</button>
+          <button class="chip" data-q="EURUSD">EURUSD</button>
+          <button class="chip" data-q="US30">US30</button>
+          <button class="chip" data-q="BTCUSD">BTCUSD</button>
         </div>
       </div>
 
-      <div class="hint">Tip: when you’re ready, tell me which tool you want first and I’ll write the full working calculator code for that page.</div>
-    </section>
+      <div class="loadingRow" id="loadingRow">
+        <div class="spinner"></div>
+        <div style="font-weight:900; color:rgba(255,255,255,.84); font-size:13px;">Loading news…</div>
+      </div>
+
+      <div class="errorBox" id="errorBox">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <div id="errorText">Failed to load news.</div>
+      </div>
+
+      <div class="statusBar">
+        <div id="statusLeft">No articles yet. Try searching a symbol.</div>
+        <div id="statusRight">Source: Google News RSS</div>
+      </div>
+
+      <div class="list" id="list"></div>
+      <div class="empty" id="empty" style="display:none;">No articles yet. Try searching a symbol.</div>
+    </div>
   </main>
+
+  <!-- Safari sheet-like modal -->
+  <div class="modalOverlay" id="modalOverlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modalTop">
+        <div class="left">
+          <i class="fa-solid fa-globe"></i>
+          <span id="modalTitle">Article</span>
+        </div>
+        <div class="actions">
+          <button class="mBtn" id="openNewTab"><i class="fa-solid fa-up-right-from-square"></i> Open</button>
+          <button class="mBtn" id="copyLink"><i class="fa-solid fa-link"></i> Copy Link</button>
+          <button class="mBtn" id="closeModal"><i class="fa-solid fa-xmark"></i> Close</button>
+        </div>
+      </div>
+      <iframe id="modalFrame" title="News article"></iframe>
+    </div>
+  </div>
+
+  <script>
+    const el = {
+      q: document.getElementById("query"),
+      searchBtn: document.getElementById("searchBtn"),
+      chips: Array.from(document.querySelectorAll(".chip")),
+      loadingRow: document.getElementById("loadingRow"),
+      errorBox: document.getElementById("errorBox"),
+      errorText: document.getElementById("errorText"),
+      statusLeft: document.getElementById("statusLeft"),
+      list: document.getElementById("list"),
+      empty: document.getElementById("empty"),
+      tapDismiss: document.getElementById("tapDismiss"),
+
+      modalOverlay: document.getElementById("modalOverlay"),
+      modalTitle: document.getElementById("modalTitle"),
+      modalFrame: document.getElementById("modalFrame"),
+      openNewTab: document.getElementById("openNewTab"),
+      copyLink: document.getElementById("copyLink"),
+      closeModal: document.getElementById("closeModal"),
+    };
+
+    let currentOpenUrl = null;
+
+    function setLoading(isLoading){
+      el.loadingRow.style.display = isLoading ? "flex" : "none";
+      if (isLoading) hideError();
+    }
+
+    function showError(msg){
+      el.errorText.textContent = msg || "Failed to load news.";
+      el.errorBox.style.display = "flex";
+    }
+    function hideError(){
+      el.errorBox.style.display = "none";
+      el.errorText.textContent = "";
+    }
+
+    function setStatus(count, query){
+      const q = (query || "").trim().toUpperCase();
+      if (!count){
+        el.statusLeft.textContent = "No articles yet. Try searching a symbol.";
+      } else {
+        el.statusLeft.textContent = `${count} articles for ${q}`;
+      }
+    }
+
+    function clearList(){
+      el.list.innerHTML = "";
+      el.empty.style.display = "none";
+    }
+
+    function renderItems(items, query){
+      clearList();
+      if (!items || items.length === 0){
+        el.empty.style.display = "block";
+        setStatus(0, query);
+        return;
+      }
+
+      setStatus(items.length, query);
+
+      for (const item of items){
+        const card = document.createElement("div");
+        card.className = "newsCard";
+        card.tabIndex = 0;
+
+        const domain = (() => {
+          try { return new URL(item.link).host.replace(/^www\./,""); }
+          catch { return ""; }
+        })();
+
+        const when = item.published ? formatDate(item.published) : "";
+
+        card.innerHTML = `
+          <div class="iconBubble"><i class="fa-solid fa-newspaper"></i></div>
+          <div class="newsBody">
+            <div class="newsTitle"></div>
+            <div class="meta">
+              ${domain ? `<span>${escapeHtml(domain)}</span>` : ""}
+              ${when ? `<span>• ${escapeHtml(when)}</span>` : ""}
+            </div>
+          </div>
+          <div class="chev"><i class="fa-solid fa-chevron-right"></i></div>
+        `;
+
+        card.querySelector(".newsTitle").textContent = item.title || "Untitled";
+
+        const open = () => openArticle(item.link, item.title);
+        card.addEventListener("click", open);
+        card.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " "){
+            e.preventDefault();
+            open();
+          }
+        });
+
+        el.list.appendChild(card);
+      }
+    }
+
+    function formatDate(iso){
+      // Google News RSS doesn't always provide perfect dates via our parser,
+      // but if we have one, format nicely.
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return "";
+      return d.toLocaleString(undefined, { dateStyle:"medium", timeStyle:"short" });
+    }
+
+    function escapeHtml(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    /* ===== RSS fetch + parse =====
+       Important: direct fetch from news.google.com/rss may be blocked by CORS on GitHub Pages.
+       This implementation tries direct first; if blocked, it falls back to a public CORS proxy.
+       If you prefer your own proxy endpoint, replace CORS_PROXY with your domain.
+    */
+    const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+
+    async function fetchNews(query){
+      const trimmed = (query || "").trim();
+      if (!trimmed){
+        clearList();
+        setStatus(0, "");
+        return;
+      }
+
+      setLoading(true);
+      hideError();
+
+      const q = encodeURIComponent(trimmed);
+      const rssUrl = `https://news.google.com/rss/search?q=${q}`;
+      let xmlText = null;
+
+      try{
+        const r = await fetch(rssUrl, { cache: "no-store" });
+        if (!r.ok) throw new Error("Network error");
+        xmlText = await r.text();
+      } catch (e){
+        // likely CORS or blocked request
+        try{
+          const r2 = await fetch(CORS_PROXY + encodeURIComponent(rssUrl), { cache: "no-store" });
+          if (!r2.ok) throw new Error("Proxy network error");
+          xmlText = await r2.text();
+        } catch {
+          setLoading(false);
+          showError("Failed to load news. (CORS blocked). Use your own proxy for production.");
+          clearList();
+          setStatus(0, trimmed);
+          return;
+        }
+      }
+
+      try{
+        const items = parseRSS(xmlText);
+        renderItems(items, trimmed);
+      } catch {
+        showError("Failed to parse news.");
+        clearList();
+        setStatus(0, trimmed);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function parseRSS(xmlText){
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(xmlText, "text/xml");
+
+      // Basic validation
+      const parseError = doc.querySelector("parsererror");
+      if (parseError) throw new Error("Bad XML");
+
+      const nodes = Array.from(doc.querySelectorAll("item"));
+      const items = [];
+
+      for (const n of nodes){
+        const title = (n.querySelector("title")?.textContent || "")
+          .replace(/\n/g," ")
+          .trim();
+
+        const link = (n.querySelector("link")?.textContent || "").trim();
+
+        // pubDate is RFC822 (e.g. "Mon, 29 Dec 2025 22:10:00 GMT")
+        const pub = (n.querySelector("pubDate")?.textContent || "").trim();
+        const pubIso = pub ? (new Date(pub)).toISOString() : null;
+
+        if (link){
+          items.push({
+            title: title || "Untitled",
+            link,
+            published: pubIso
+          });
+        }
+      }
+      return items;
+    }
+
+    /* ===== Modal (Safari sheet-like) ===== */
+    function openArticle(url, title){
+      currentOpenUrl = url;
+      el.modalTitle.textContent = title || "Article";
+      el.modalFrame.src = url;
+      el.modalOverlay.style.display = "flex";
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeModal(){
+      el.modalOverlay.style.display = "none";
+      el.modalFrame.src = "about:blank";
+      document.body.style.overflow = "";
+      currentOpenUrl = null;
+    }
+
+    el.closeModal.addEventListener("click", closeModal);
+    el.modalOverlay.addEventListener("click", (e) => {
+      if (e.target === el.modalOverlay) closeModal();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && el.modalOverlay.style.display === "flex") closeModal();
+    });
+
+    el.openNewTab.addEventListener("click", () => {
+      if (currentOpenUrl) window.open(currentOpenUrl, "_blank", "noopener,noreferrer");
+    });
+
+    el.copyLink.addEventListener("click", async () => {
+      if (!currentOpenUrl) return;
+      try{
+        await navigator.clipboard.writeText(currentOpenUrl);
+      } catch {
+        const ta = document.createElement("textarea");
+        ta.value = currentOpenUrl;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      // tiny feedback
+      el.copyLink.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+      setTimeout(() => el.copyLink.innerHTML = '<i class="fa-solid fa-link"></i> Copy Link', 900);
+    });
+
+    /* ===== Keyboard dismiss behavior (tap outside) ===== */
+    el.tapDismiss.addEventListener("click", (e) => {
+      const t = e.target;
+      const isInput = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA");
+      if (!isInput){
+        document.activeElement && document.activeElement.blur && document.activeElement.blur();
+      }
+    });
+
+    /* ===== Bind ===== */
+    el.searchBtn.addEventListener("click", () => fetchNews(el.q.value));
+
+    el.q.addEventListener("keydown", (e) => {
+      if (e.key === "Enter"){
+        e.preventDefault();
+        fetchNews(el.q.value);
+        document.activeElement.blur();
+      }
+    });
+
+    el.chips.forEach(chip => {
+      chip.addEventListener("click", () => {
+        const q = chip.getAttribute("data-q") || "";
+        el.q.value = q;
+        fetchNews(q);
+        document.activeElement.blur();
+      });
+    });
+
+    // Initial load like .task { if empty fetch default }
+    fetchNews(el.q.value);
+  </script>
 </body>
 </html>
