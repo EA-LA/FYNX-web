@@ -117,13 +117,16 @@
 
         .mobile-menu{ display:none; font-size:1.5rem; cursor:pointer; }
 
-        /* ========= TOOLS SUB-NAV ========= */
-        :root{
-            --header-h: 78px;
-        }
+        /* ========= SUB-NAV FIX =========
+           The issue was: hidden bars still took space in the page flow, pushing content down.
+           Fix: make all subnav bars POSITION: FIXED so they never push the page down.
+        */
+        :root{ --header-h: 78px; }
 
+        /* ========= TOOLS SUB-NAV ========= */
         .tools-subnav{
-            position: sticky;
+            position: fixed;              /* ✅ was sticky */
+            left: 0; right: 0; width: 100%;
             top: var(--header-h);
             z-index: 999;
             background: rgba(0,0,0,0.72);
@@ -194,7 +197,8 @@
 
         /* ========= NEWS SUB-NAV ========= */
         .news-subnav{
-            position: sticky;
+            position: fixed;              /* ✅ was sticky */
+            left: 0; right: 0; width: 100%;
             top: var(--header-h);
             z-index: 999;
             background: rgba(0,0,0,0.72);
@@ -257,7 +261,8 @@
 
         /* ========= LEARN SUB-NAV ========= */
         .learn-subnav{
-            position: sticky;
+            position: fixed;              /* ✅ was sticky */
+            left: 0; right: 0; width: 100%;
             top: var(--header-h);
             z-index: 999;
             background: rgba(0,0,0,0.72);
@@ -320,7 +325,8 @@
         }
 
         .learn-detail-subnav{
-            position: sticky;
+            position: fixed;              /* ✅ was sticky */
+            left: 0; right: 0; width: 100%;
             top: calc(var(--header-h) + 54px);
             z-index: 998;
             background: rgba(0,0,0,0.66);
@@ -392,7 +398,8 @@
 
         /* ========= HOME SUB-NAV (NEW) ========= */
         .home-subnav{
-            position: sticky;
+            position: fixed;              /* ✅ was sticky */
+            left: 0; right: 0; width: 100%;
             top: var(--header-h);
             z-index: 999;
             background: rgba(0,0,0,0.72);
@@ -468,7 +475,8 @@
         }
 
         .home-detail-subnav{
-            position: sticky;
+            position: fixed;              /* ✅ was sticky */
+            left: 0; right: 0; width: 100%;
             top: calc(var(--header-h) + 54px);
             z-index: 998;
             background: rgba(0,0,0,0.66);
@@ -903,18 +911,10 @@
             </div>
             <nav>
                 <ul>
-                    <!-- Home now toggles the home bar -->
                     <li><a href="#home" id="homeToggle">Home <span style="opacity:.7;">▾</span></a></li>
-
-                    <!-- Learn now toggles the learn bar -->
                     <li><a href="#learn" id="learnToggle">Learn <span style="opacity:.7;">▾</span></a></li>
-
-                    <!-- Tools now toggles the sub-nav bar -->
                     <li><a href="#tools" id="toolsToggle">Tools <span style="opacity:.7;">▾</span></a></li>
-
-                    <!-- News now toggles the news sub-nav bar -->
                     <li><a href="#news" id="newsToggle">News <span style="opacity:.7;">▾</span></a></li>
-
                     <li><a href="trader-journal.html">Trader Journal</a></li>
                 </ul>
             </nav>
@@ -928,18 +928,12 @@
     <div class="home-subnav" id="homeSubnav" aria-hidden="true">
         <div class="home-subnav-inner">
             <span class="home-caption"><i class="fas fa-house"></i> Home</span>
-
             <a class="home-pill primary" href="tools/economic-calendar.html"><i class="fas fa-calendar-alt"></i> Economic Calendar</a>
-
-            <!-- ✅ FIXED: Market Holidays now goes to its own real page -->
             <a class="home-pill" href="tools/market-holidays.html"><i class="fas fa-umbrella-beach"></i> Market Holidays</a>
-
             <a class="home-pill" href="tools/market-hours.html"><i class="fas fa-clock"></i> Market Hour</a>
             <a class="home-pill" href="home/hub.html?section=interest-rates"><i class="fas fa-percent"></i> Interest Rates</a>
             <a class="home-pill" href="home/hub.html?section=economic-heatmap"><i class="fas fa-fire"></i> Economic Indicators Heatmap</a>
             <a class="home-pill" href="home/hub.html?section=recent-topics"><i class="fas fa-comment-dots"></i> Recent Topics Discussed</a>
-
-            <!-- Markets opens a second bar -->
             <button class="home-pill" type="button" id="marketsToggle"><i class="fas fa-layer-group"></i> Markets <span style="opacity:.7;">▾</span></button>
         </div>
     </div>
@@ -949,7 +943,6 @@
     <div class="home-detail-subnav" id="homeMarketsSubnav" aria-hidden="true">
         <div class="home-detail-inner">
             <span class="home-caption"><i class="fas fa-layer-group"></i> Markets</span>
-
             <a class="home-detail-pill" href="markets/index.html?section=currencies"><i class="fas fa-dollar-sign"></i> Currencies</a>
             <a class="home-detail-pill" href="markets/index.html?section=crypto"><i class="fab fa-bitcoin"></i> Crypto</a>
             <a class="home-detail-pill" href="markets/index.html?section=indicators"><i class="fas fa-chart-line"></i> Indicators</a>
@@ -967,7 +960,6 @@
     <div class="learn-subnav" id="learnSubnav" aria-hidden="true">
         <div class="learn-subnav-inner">
             <span class="learn-caption"><i class="fas fa-graduation-cap"></i> Learn Markets</span>
-
             <button class="learn-pill" type="button" data-topic="stocks">Stocks</button>
             <button class="learn-pill" type="button" data-topic="funds">Funds</button>
             <button class="learn-pill" type="button" data-topic="futures">Futures</button>
@@ -985,7 +977,6 @@
     <div class="learn-detail-subnav" id="learnDetailSubnav" aria-hidden="true">
         <div class="learn-detail-inner">
             <span class="learn-caption" id="learnDetailCaption"><i class="fas fa-layer-group"></i> Topic</span>
-
             <a class="learn-detail-pill" id="learnHowTo" href="learn/topic.html?topic=forex&section=howto"><i class="fas fa-play"></i> How to Trade</a>
             <a class="learn-detail-pill" id="learnQuizzes" href="learn/topic.html?topic=forex&section=quizzes"><i class="fas fa-circle-question"></i> Trading Quizzes</a>
             <a class="learn-detail-pill" id="learnGlossary" href="learn/topic.html?topic=forex&section=glossary"><i class="fas fa-book"></i> Glossary</a>
@@ -998,7 +989,6 @@
         <div class="tools-subnav-inner">
             <a class="tools-pill primary" href="#tools"><i class="fas fa-th-large"></i> Tools Overview</a>
 
-            <!-- Calculators -->
             <a class="tools-pill" href="tools/forex.html"><i class="fas fa-chart-line"></i> Forex <span class="tag">Calc</span></a>
             <a class="tools-pill" href="tools/crypto.html"><i class="fab fa-bitcoin"></i> Crypto <span class="tag">Calc</span></a>
             <a class="tools-pill" href="tools/stock.html"><i class="fas fa-chart-bar"></i> Stock <span class="tag">Calc</span></a>
@@ -1010,7 +1000,6 @@
             <a class="tools-pill" href="tools/currency.html"><i class="fas fa-arrows-rotate"></i> Currency <span class="tag">FX</span></a>
             <a class="tools-pill" href="tools/breakeven.html"><i class="fas fa-equals"></i> Break-Even <span class="tag">Calc</span></a>
 
-            <!-- Pro tools (no Journal / Streaks) -->
             <a class="tools-pill" href="tools/profit-loss.html"><i class="fas fa-dollar-sign"></i> Profit/Loss <span class="tag">Pro</span></a>
             <a class="tools-pill" href="tools/calendar-alerts.html"><i class="fas fa-calendar-check"></i> Calendar <span class="tag">Pro</span></a>
             <a class="tools-pill" href="tools/symbol-news.html"><i class="fas fa-newspaper"></i> Symbol News <span class="tag">Pro</span></a>
@@ -1021,7 +1010,6 @@
             <a class="tools-pill" href="tools/risk-reward.html"><i class="fas fa-scale-balanced"></i> Risk/Reward <span class="tag">Pro</span></a>
             <a class="tools-pill" href="tools/compound.html"><i class="fas fa-seedling"></i> Compound <span class="tag">Pro</span></a>
 
-            <!-- Website tools you already show -->
             <a class="tools-pill" href="tools/position-size.html"><i class="fas fa-calculator"></i> Position Size</a>
             <a class="tools-pill" href="tools/correlation.html"><i class="fas fa-chart-area"></i> Correlation</a>
             <a class="tools-pill" href="tools/market-hours.html"><i class="fas fa-clock"></i> Market Hours</a>
@@ -1286,14 +1274,14 @@
             homeMarketsSubnav.setAttribute('aria-hidden', 'true');
         }
 
-        // ✅ NEW: keep page at top when opening any top menu bar
+        // keep page at top when opening any top menu bar
         function keepAtTop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         toolsToggle.addEventListener('click', (e) => {
             e.preventDefault();
-            keepAtTop(); // ✅ FIX
+            keepAtTop();
 
             document.body.classList.remove('news-open','learn-open','learn-detail-open','home-open','home-detail-open');
             newsSubnav.setAttribute('aria-hidden', 'true');
@@ -1308,7 +1296,7 @@
 
         newsToggle.addEventListener('click', (e) => {
             e.preventDefault();
-            keepAtTop(); // ✅ FIX
+            keepAtTop();
 
             document.body.classList.remove('tools-open','learn-open','learn-detail-open','home-open','home-detail-open');
             toolsSubnav.setAttribute('aria-hidden', 'true');
@@ -1323,7 +1311,7 @@
 
         learnToggle.addEventListener('click', (e) => {
             e.preventDefault();
-            keepAtTop(); // ✅ FIX
+            keepAtTop();
 
             document.body.classList.remove('tools-open','news-open','home-open','home-detail-open');
             toolsSubnav.setAttribute('aria-hidden', 'true');
@@ -1342,7 +1330,7 @@
 
         homeToggle.addEventListener('click', (e) => {
             e.preventDefault();
-            keepAtTop(); // ✅ FIX (keeps Home consistent too)
+            keepAtTop();
 
             document.body.classList.remove('tools-open','news-open','learn-open','learn-detail-open');
             toolsSubnav.setAttribute('aria-hidden', 'true');
@@ -1360,7 +1348,7 @@
         });
 
         marketsToggle.addEventListener('click', () => {
-            keepAtTop(); // ✅ FIX
+            keepAtTop();
 
             if (!document.body.classList.contains('home-open')) {
                 document.body.classList.add('home-open');
