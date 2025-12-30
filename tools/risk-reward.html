@@ -3,97 +3,330 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX Tools — Forex Calculator</title>
+  <title>FYNX Tools — Risk/Reward</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{
-      font-family:'Inter','Segoe UI',system-ui,sans-serif;
-      color:#fff;background:#000;overflow-x:hidden;min-height:100vh;
+    :root{
+      --bg:#000;
+      --panel: rgba(255,255,255,.06);
+      --panel2: rgba(255,255,255,.04);
+      --border: rgba(255,255,255,.12);
+      --border2: rgba(255,255,255,.08);
+      --text:#fff;
+      --muted: rgba(255,255,255,.68);
+      --muted2: rgba(255,255,255,.50);
+      --danger:#ff4d4d;
+      --ok: rgba(255,255,255,.92);
+      --shadow: 0 24px 70px rgba(0,0,0,.55);
+      --radius: 18px;
+      --radius2: 22px;
+      --max: 1200px;
     }
-    .animated-bg{position:fixed;inset:0;z-index:-1;background:#000;overflow:hidden}
+
+    body{
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      overflow-x:hidden;
+      min-height:100vh;
+    }
+
+    /* Background */
+    .animated-bg{
+      position:fixed; inset:0; z-index:-1;
+      background:#000; overflow:hidden;
+    }
     .grid-overlay{
-      position:absolute;inset:0;
+      position:absolute; inset:0;
       background-image:
         linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-      background-size:50px 50px;
-      animation:gridMove 20s linear infinite;
+      background-size: 52px 52px;
+      animation: gridMove 20s linear infinite;
+      opacity:.75;
     }
-    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-    .gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.25;animation:float 20s ease-in-out infinite}
-    .orb-1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-220px;left:-220px}
-    .orb-2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
-    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
+    @keyframes gridMove{
+      0%{transform:translate(0,0)}
+      100%{transform:translate(52px,52px)}
+    }
+    .gradient-orb{
+      position:absolute; border-radius:999px; filter: blur(80px);
+      opacity:.22;
+      animation: floaty 18s ease-in-out infinite;
+    }
+    .orb-1{ width:520px; height:520px; left:-220px; top:-220px; background: radial-gradient(circle, #fff 0%, transparent 65%); }
+    .orb-2{ width:520px; height:520px; right:-240px; bottom:-240px; background: radial-gradient(circle, #fff 0%, transparent 65%); animation-delay: 3s;}
+    @keyframes floaty{
+      0%,100%{transform:translate(0,0) scale(1)}
+      50%{transform:translate(30px,-24px) scale(.97)}
+    }
 
+    /* Header */
     header{
-      position:sticky;top:0;z-index:1000;
-      background:rgba(0,0,0,.85);
-      backdrop-filter:blur(20px);
-      border-bottom:1px solid rgba(255,255,255,.1);
-      padding:1rem 0;
+      position:sticky; top:0; z-index:1000;
+      background: rgba(0,0,0,.78);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border2);
     }
     .nav{
-      max-width:1200px;margin:0 auto;
-      display:flex;align-items:center;justify-content:space-between;
-      padding:0 1.25rem;
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 14px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
     }
     .brand{
-      display:flex;align-items:center;gap:.6rem;
-      font-weight:900;letter-spacing:-1px;font-size:1.25rem;
+      display:flex; align-items:center; gap:10px;
+      font-weight: 800;
+      letter-spacing:.4px;
+      user-select:none;
     }
-    .brand i{opacity:.9}
-    .nav a{
-      color:rgba(255,255,255,.85);
-      text-decoration:none;font-weight:700;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.04);
-      padding:.55rem .9rem;border-radius:999px;
-      transition:all .25s ease;
+    .brand i{opacity:.92}
+    .nav-actions{
+      display:flex; align-items:center; gap:10px;
+    }
+    .btn{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      text-decoration:none;
+      font-weight: 650;
+      font-size: 14px;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
       white-space:nowrap;
     }
-    .nav a:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
+    .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18)}
+    .btn i{opacity:.9}
 
-    main{max-width:1200px;margin:0 auto;padding:3.5rem 1.25rem 5rem}
-    .hero{
-      padding:2.25rem 1.75rem;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.03);
-      border-radius:22px;
-      backdrop-filter:blur(10px);
+    /* Layout */
+    main{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 46px 18px 70px;
     }
-    h1{
-      font-size:3rem;line-height:1.1;letter-spacing:-2px;
-      background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-      margin-bottom:.75rem;
+    .shell{
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border: 1px solid var(--border2);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+      padding: 30px;
     }
-    p{color:rgba(255,255,255,.65);font-size:1.1rem;line-height:1.8;max-width:70ch}
 
-    .panel-grid{
+    .title{
+      font-size: 44px;
+      line-height: 1.04;
+      font-weight: 900;
+      letter-spacing: -1px;
+      margin-bottom: 10px;
+    }
+    .subtitle{
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.55;
+      max-width: 860px;
+      margin-bottom: 22px;
+    }
+
+    .grid{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-      gap:1.25rem;
-      margin-top:1.25rem;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 16px;
+      margin-top: 10px;
     }
-    .panel{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.55);
-      border-radius:18px;
-      padding:1.25rem 1.25rem 1.4rem;
-      backdrop-filter:blur(10px);
-      min-height:180px;
+    @media (max-width: 980px){
+      .title{font-size: 36px}
+      .grid{grid-template-columns:1fr}
     }
-    .panel h2{font-size:1.2rem;margin-bottom:.5rem}
-    .panel .muted{color:rgba(255,255,255,.6);font-size:.98rem}
 
+    .card{
+      border: 1px solid var(--border2);
+      background: rgba(0,0,0,.35);
+      border-radius: var(--radius);
+      padding: 16px;
+      min-height: 220px;
+    }
+    .card h3{
+      font-size: 16px;
+      font-weight: 850;
+      margin-bottom: 10px;
+      color: rgba(255,255,255,.92);
+    }
     .hint{
-      margin-top:1.2rem;
-      color:rgba(255,255,255,.55);
-      font-size:.95rem;
+      color: var(--muted2);
+      font-size: 13px;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 10px;
+      align-items:center;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 560px){
+      .row{grid-template-columns:1fr}
+    }
+    label{
+      color: rgba(255,255,255,.86);
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .field{
+      width:100%;
+      border-radius: 12px;
+      border: 1px solid var(--border2);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      padding: 10px 12px;
+      outline:none;
+      font-weight: 750;
+    }
+    .field:focus{
+      border-color: rgba(255,255,255,.22);
+      background: rgba(255,255,255,.06);
+    }
+    .mono{
+      font-variant-numeric: tabular-nums;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .divider{
+      height:1px; background: rgba(255,255,255,.08);
+      margin: 10px 0;
+    }
+
+    .actions{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top: 12px;
+      justify-content:flex-end;
+    }
+    .primary{
+      border-radius: 14px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.14);
+      color: #fff;
+      font-weight: 900;
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      display:inline-flex; align-items:center; gap:10px;
+    }
+    .primary:hover{transform: translateY(-1px); background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.28)}
+    .ghost{
+      border-radius: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--border2);
+      background: rgba(255,255,255,.05);
+      color: rgba(255,255,255,.88);
+      font-weight: 850;
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      display:inline-flex; align-items:center; gap:10px;
+    }
+    .ghost:hover{transform: translateY(-1px); background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.16)}
+
+    .msg{
+      margin-top: 12px;
+      color: var(--danger);
+      font-weight: 900;
+      font-size: 13px;
+      min-height: 18px;
+    }
+
+    /* Results */
+    .resultsBox{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top: 6px;
+    }
+    .kv{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:12px;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border2);
+      background: rgba(255,255,255,.04);
+    }
+    .kv .k{
+      color: var(--muted2);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing:.2px;
+      text-transform: uppercase;
+    }
+    .kv .v{
+      font-size: 18px;
+      font-weight: 950;
+      letter-spacing:-.2px;
+    }
+    .kv small{
+      color: var(--muted2);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .rrHighlight{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.06);
+    }
+    .rrBadge{
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.14);
+      font-weight: 950;
+      letter-spacing: .2px;
+    }
+
+    .note{
+      color: var(--muted2);
+      font-size: 12px;
+      line-height: 1.55;
+      margin-top: 8px;
+    }
+
+    /* Share */
+    .shareRow{
+      display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px;
+      align-items:center; justify-content:flex-end;
+    }
+    .toast{
+      position:fixed;
+      left:50%; bottom:22px;
+      transform:translateX(-50%);
+      background: rgba(0,0,0,.78);
+      border: 1px solid rgba(255,255,255,.14);
+      color: rgba(255,255,255,.9);
+      padding: 10px 12px;
+      border-radius: 999px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 14px 40px rgba(0,0,0,.55);
+      display:none;
+      z-index:2000;
+      font-weight: 850;
+      font-size: 13px;
     }
   </style>
 </head>
+
 <body>
   <div class="animated-bg">
     <div class="grid-overlay"></div>
@@ -103,32 +336,359 @@
 
   <header>
     <div class="nav">
-      <div class="brand"><i class="fas fa-chart-line"></i> FYNX Tools</div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
-        <a href="../index.html#tools"><i class="fas fa-arrow-left"></i> Back</a>
-        <a href="../index.html"><i class="fas fa-house"></i> Home</a>
+      <div class="brand"><i class="fa-solid fa-scale-balanced"></i> FYNX Tools</div>
+      <div class="nav-actions">
+        <a class="btn" href="javascript:history.back()"><i class="fa-solid fa-arrow-left"></i> Back</a>
+        <a class="btn" href="../index.html"><i class="fa-solid fa-house"></i> Home</a>
       </div>
     </div>
   </header>
 
   <main>
-    <section class="hero">
-      <h1>Forex Calculator</h1>
-      <p>Dedicated page for the Forex calculator. Put your real calculator code here (inputs, outputs, formulas, UI).</p>
+    <div class="shell" id="tapDismiss">
+      <div class="title">Risk/Reward</div>
+      <div class="subtitle">
+        Turn any setup into a clean R:R. Enter your <b>entry</b>, <b>stop-loss</b>, and <b>take-profit</b> to see
+        risk in price units, reward in price units, and the final risk-to-reward ratio.
+      </div>
 
-      <div class="panel-grid">
-        <div class="panel">
-          <h2>Calculator UI</h2>
-          <div class="muted">Add inputs (pair, lot size, risk %, stop loss pips, etc.) and compute results.</div>
+      <div class="grid">
+        <!-- Inputs -->
+        <div class="card">
+          <h3>Trade Setup</h3>
+          <div class="hint">Tip: Use prices in the same direction (e.g. long: SL &lt; entry &lt; TP).</div>
+
+          <div class="row">
+            <label for="entry">Entry Price</label>
+            <input id="entry" class="field mono" type="text" inputmode="decimal" placeholder="e.g. 1.26750" />
+          </div>
+
+          <div class="row">
+            <label for="sl">Stop Loss</label>
+            <input id="sl" class="field mono" type="text" inputmode="decimal" placeholder="e.g. 1.26500" />
+          </div>
+
+          <div class="row">
+            <label for="tp">Take Profit</label>
+            <input id="tp" class="field mono" type="text" inputmode="decimal" placeholder="e.g. 1.27500" />
+          </div>
+
+          <div class="actions">
+            <button id="calcBtn" class="primary"><i class="fa-solid fa-sliders"></i> Calculate</button>
+            <button id="clearBtn" class="ghost"><i class="fa-solid fa-eraser"></i> Clear</button>
+          </div>
+
+          <div class="msg" id="error"></div>
         </div>
-        <div class="panel">
-          <h2>Results</h2>
-          <div class="muted">Show position size, pip value, risk amount, margin estimate, and notes.</div>
+
+        <!-- Results -->
+        <div class="card" id="resultsCard">
+          <h3>Risk/Reward Result</h3>
+          <div class="hint" id="emptyHint">Enter values and tap Calculate to see risk, reward, and R:R.</div>
+
+          <div class="resultsBox" id="resultsBox" style="display:none;">
+            <div class="rrHighlight">
+              <div>
+                <div class="k" style="text-transform:none; color:var(--muted2); font-weight:900;">R : R</div>
+                <small>risk-to-reward</small>
+              </div>
+              <div class="rrBadge mono" id="rrOut">—</div>
+            </div>
+
+            <div class="kv">
+              <div>
+                <div class="k">Entry</div>
+                <small>price</small>
+              </div>
+              <div class="v mono" id="entryOut">—</div>
+            </div>
+
+            <div class="kv">
+              <div>
+                <div class="k">Stop</div>
+                <small>stop-loss</small>
+              </div>
+              <div class="v mono" id="slOut">—</div>
+            </div>
+
+            <div class="kv">
+              <div>
+                <div class="k">Take Profit</div>
+                <small>target</small>
+              </div>
+              <div class="v mono" id="tpOut">—</div>
+            </div>
+
+            <div class="kv">
+              <div>
+                <div class="k">Risk</div>
+                <small>|entry − stop|</small>
+              </div>
+              <div class="v mono" id="riskOut">—</div>
+            </div>
+
+            <div class="kv">
+              <div>
+                <div class="k">Reward</div>
+                <small>|take − entry|</small>
+              </div>
+              <div class="v mono" id="rewardOut">—</div>
+            </div>
+
+            <div class="note" id="noteOut"></div>
+
+            <div class="shareRow">
+              <button id="copyBtn" class="ghost"><i class="fa-solid fa-copy"></i> Copy</button>
+              <button id="shareBtn" class="ghost"><i class="fa-solid fa-share-nodes"></i> Share</button>
+              <button id="downloadBtn" class="ghost"><i class="fa-solid fa-download"></i> Download PNG</button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="hint">Tip: when you’re ready, tell me which tool you want first and I’ll write the full working calculator code for that page.</div>
-    </section>
+      <div class="note" style="margin-top:14px;">
+        This web version matches your iOS logic: risk = |entry − stop|, reward = |take − entry|, R:R = reward / risk.
+      </div>
+    </div>
   </main>
+
+  <div class="toast" id="toast">Copied</div>
+
+  <!-- html2canvas for snapshot download -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <script>
+    const el = {
+      entry: document.getElementById("entry"),
+      sl: document.getElementById("sl"),
+      tp: document.getElementById("tp"),
+      calcBtn: document.getElementById("calcBtn"),
+      clearBtn: document.getElementById("clearBtn"),
+      error: document.getElementById("error"),
+
+      emptyHint: document.getElementById("emptyHint"),
+      resultsBox: document.getElementById("resultsBox"),
+      resultsCard: document.getElementById("resultsCard"),
+
+      rrOut: document.getElementById("rrOut"),
+      entryOut: document.getElementById("entryOut"),
+      slOut: document.getElementById("slOut"),
+      tpOut: document.getElementById("tpOut"),
+      riskOut: document.getElementById("riskOut"),
+      rewardOut: document.getElementById("rewardOut"),
+      noteOut: document.getElementById("noteOut"),
+
+      copyBtn: document.getElementById("copyBtn"),
+      shareBtn: document.getElementById("shareBtn"),
+      downloadBtn: document.getElementById("downloadBtn"),
+
+      toast: document.getElementById("toast"),
+      tapDismiss: document.getElementById("tapDismiss"),
+    };
+
+    /* ===== iOS-like helpers ===== */
+    function toDouble(s){
+      const cleaned = String(s ?? "")
+        .replaceAll(",", "")
+        .replaceAll(" ", "")
+        .replace(/[^0-9.\-]/g, "");
+      const n = Number(cleaned);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function money(x){
+      const n = Number(x);
+      if (!Number.isFinite(n)) return "—";
+      return n.toFixed(4);
+    }
+
+    function rrFmt(x){
+      const n = Number(x);
+      if (!Number.isFinite(n)) return "—";
+      return n.toFixed(2);
+    }
+
+    function setError(msg){
+      el.error.textContent = msg || "";
+    }
+
+    function showToast(text){
+      el.toast.textContent = text || "Done";
+      el.toast.style.display = "block";
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => el.toast.style.display = "none", 1400);
+    }
+
+    function resetResults(){
+      el.emptyHint.style.display = "block";
+      el.resultsBox.style.display = "none";
+      el.rrOut.textContent = "—";
+      el.entryOut.textContent = "—";
+      el.slOut.textContent = "—";
+      el.tpOut.textContent = "—";
+      el.riskOut.textContent = "—";
+      el.rewardOut.textContent = "—";
+      el.noteOut.textContent = "";
+    }
+
+    function shareText(){
+      const entryT = el.entry.value.trim() || "—";
+      const slT = el.sl.value.trim() || "—";
+      const tpT = el.tp.value.trim() || "—";
+
+      const resultLines = el.resultsBox.style.display === "none"
+        ? "—"
+        : [
+            `Entry: ${el.entryOut.textContent}`,
+            `Stop: ${el.slOut.textContent}`,
+            `Take Profit: ${el.tpOut.textContent}`,
+            `Risk: ${el.riskOut.textContent}`,
+            `Reward: ${el.rewardOut.textContent}`,
+            `R:R = ${el.rrOut.textContent}`,
+          ].join("\n");
+
+      return `FYNX • Risk/Reward Calculator\n\nEntry: ${entryT}\nStop: ${slT}\nTake Profit: ${tpT}\n\nResult:\n${resultLines}\n`;
+    }
+
+    /* ===== Numeric input filtering (soft) ===== */
+    function clampNumber(str){
+      const filtered = String(str ?? "").replace(/[^0-9.\-]/g,"");
+      // allow only one dot, one leading minus
+      let s = filtered;
+      const minusCount = (s.match(/\-/g) || []).length;
+      if (minusCount > 1) s = s.replace(/\-/g, "");
+      if (s.includes("-") && s.indexOf("-") !== 0) s = s.replace(/\-/g,"");
+      const parts = s.split(".");
+      if (parts.length > 2) s = parts[0] + "." + parts.slice(1).join("");
+      return s;
+    }
+    ["entry","sl","tp"].forEach(id => {
+      const input = document.getElementById(id);
+      input.addEventListener("input", () => {
+        const c = clampNumber(input.value);
+        if (c !== input.value) input.value = c;
+      });
+    });
+
+    /* ===== Calculate (matches Swift logic) ===== */
+    function calculate(){
+      setError("");
+
+      const entry = toDouble(el.entry.value);
+      const sl = toDouble(el.sl.value);
+      const tp = toDouble(el.tp.value);
+
+      if (!(entry > 0 && sl > 0 && tp > 0) || entry === sl){
+        setError("Enter valid prices (entry ≠ stop).");
+        resetResults();
+        return;
+      }
+
+      const risk = Math.abs(entry - sl);
+      const reward = Math.abs(tp - entry);
+      const rr = reward / Math.max(risk, Number.EPSILON);
+
+      el.emptyHint.style.display = "none";
+      el.resultsBox.style.display = "flex";
+
+      el.entryOut.textContent = money(entry);
+      el.slOut.textContent = money(sl);
+      el.tpOut.textContent = money(tp);
+      el.riskOut.textContent = money(risk);
+      el.rewardOut.textContent = money(reward);
+      el.rrOut.textContent = rrFmt(rr);
+
+      // Extra guidance note (optional, still black/white)
+      const direction =
+        (sl < entry && entry < tp) ? "Long (SL < Entry < TP)" :
+        (tp < entry && entry < sl) ? "Short (TP < Entry < SL)" :
+        "Mixed direction (check levels)";
+      el.noteOut.textContent = `Detected: ${direction}.`;
+    }
+
+    function clearAll(){
+      el.entry.value = "";
+      el.sl.value = "";
+      el.tp.value = "";
+      setError("");
+      resetResults();
+      el.entry.focus();
+    }
+
+    /* ===== Copy / Share / Download ===== */
+    async function copyResult(){
+      const text = shareText();
+      try{
+        await navigator.clipboard.writeText(text);
+        showToast("Copied");
+      } catch {
+        // fallback
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        showToast("Copied");
+      }
+    }
+
+    async function shareResult(){
+      const text = shareText();
+      if (navigator.share){
+        try{
+          await navigator.share({ title: "FYNX Risk/Reward", text });
+        } catch { /* user cancelled */ }
+      } else {
+        await copyResult();
+        showToast("Share not supported — copied");
+      }
+    }
+
+    async function downloadPNG(){
+      // Snapshot the results card only (like SnapshotKit)
+      try{
+        const canvas = await html2canvas(el.resultsCard, {
+          backgroundColor: null,
+          scale: 2
+        });
+        const a = document.createElement("a");
+        a.download = "fynx-risk-reward.png";
+        a.href = canvas.toDataURL("image/png");
+        a.click();
+      } catch {
+        showToast("Download failed");
+      }
+    }
+
+    /* ===== Keyboard dismiss behavior (tap outside inputs) ===== */
+    el.tapDismiss.addEventListener("click", (e) => {
+      const t = e.target;
+      const isInput = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA");
+      if (!isInput){
+        document.activeElement && document.activeElement.blur && document.activeElement.blur();
+      }
+    });
+
+    /* ===== Bind ===== */
+    el.calcBtn.addEventListener("click", calculate);
+    el.clearBtn.addEventListener("click", clearAll);
+    el.copyBtn.addEventListener("click", copyResult);
+    el.shareBtn.addEventListener("click", shareResult);
+    el.downloadBtn.addEventListener("click", downloadPNG);
+
+    // Enter key -> Calculate
+    [el.entry, el.sl, el.tp].forEach(inp => {
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter"){
+          e.preventDefault();
+          calculate();
+          document.activeElement.blur();
+        }
+      });
+    });
+
+    resetResults();
+  </script>
 </body>
 </html>
