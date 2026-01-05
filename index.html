@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fynx Finance World - Master Trading & Investing</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -80,7 +80,6 @@
       justify-content: space-between;
       align-items:center;
       padding: 0 2rem;
-      position: relative;
     }
 
     .logo{
@@ -91,8 +90,8 @@
       gap:.5rem;
       letter-spacing:-1px;
       transition: transform .3s;
-      cursor: pointer;
       user-select: none;
+      cursor: pointer;
     }
     .logo:hover{ transform: scale(1.05); }
     .logo i{ animation: pulse 2s ease-in-out infinite; }
@@ -118,111 +117,17 @@
     nav a:hover{ color:white; }
     nav a:hover::after{ width:100%; }
 
-    /* Hamburger */
     .mobile-menu{
       display:none;
       font-size:1.5rem;
       cursor:pointer;
-      width: 44px;
-      height: 44px;
+      width: 44px; height: 44px;
+      align-items:center; justify-content:center;
       border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.05);
-      align-items:center;
-      justify-content:center;
-      transition: all .25s ease;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .mobile-menu:hover{
-      background: rgba(255,255,255,0.08);
-      border-color: rgba(255,255,255,0.22);
-    }
-
-    /* ===== MOBILE NAV PANEL (NEW) ===== */
-    .mobile-nav-overlay{
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.55);
-      backdrop-filter: blur(6px);
-      z-index: 1500;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .2s ease;
-    }
-    body.mobile-nav-open .mobile-nav-overlay{
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .mobile-nav{
-      position: fixed;
-      left: 12px;
-      right: 12px;
-      top: calc(var(--header-h) + 10px);
-      z-index: 1600;
-      background: rgba(0,0,0,0.92);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 18px;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
-      overflow: hidden;
-
-      transform: translateY(-10px);
-      opacity: 0;
-      pointer-events: none;
-      transition: all .2s ease;
-    }
-    body.mobile-nav-open .mobile-nav{
-      transform: translateY(0);
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .mobile-nav .mobile-nav-inner{
-      padding: 12px;
-      display: grid;
-      gap: 8px;
-    }
-
-    .mobile-nav a,
-    .mobile-nav button{
-      width: 100%;
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 14px 14px;
-      border-radius: 14px;
       border: 1px solid rgba(255,255,255,0.12);
       background: rgba(255,255,255,0.04);
-      color: rgba(255,255,255,0.9);
-      text-decoration:none;
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all .2s ease;
-      -webkit-tap-highlight-color: transparent;
     }
-    .mobile-nav a:hover,
-    .mobile-nav button:hover{
-      background: rgba(255,255,255,0.07);
-      border-color: rgba(255,255,255,0.22);
-    }
-
-    .mobile-nav .left{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-    }
-    .mobile-nav .hint{
-      opacity: .65;
-      font-weight: 700;
-    }
-
-    /* lock scroll when menu open */
-    body.mobile-nav-open{
-      overflow: hidden;
-      touch-action: none;
-    }
+    .mobile-menu:hover{ border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.06); }
 
     /* ========= SUB-NAV FIX ========= */
     :root{ --header-h: 78px; }
@@ -542,6 +447,7 @@
       font-size: .92rem;
       white-space: nowrap;
     }
+
     .home-detail-subnav{
       position: fixed;
       left: 0; right: 0; width: 100%;
@@ -594,6 +500,163 @@
       transform: translateY(-1px);
     }
 
+    /* ========= MOBILE DRAWER MENU (FIX) =========
+       Your issue: on iPhone, nav <ul> is hidden, so Home/Learn/Tools/News clicks are impossible.
+       Fix: make the 3-line icon open a mobile drawer with the same sections + subitems.
+    */
+    .mobile-overlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(6px);
+      z-index: 1400;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+    .mobile-drawer{
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(420px, 92vw);
+      height: 100vh;
+      z-index: 1500;
+      background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(18px);
+      border-left: 1px solid rgba(255,255,255,0.12);
+      transform: translateX(102%);
+      transition: transform .25s ease;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    body.mobile-menu-open .mobile-overlay{
+      opacity: 1;
+      pointer-events: auto;
+    }
+    body.mobile-menu-open .mobile-drawer{
+      transform: translateX(0);
+    }
+
+    .mobile-drawer-top{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      padding: .35rem .25rem;
+    }
+    .mobile-title{
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      font-weight: 900;
+      letter-spacing:-0.5px;
+    }
+    .mobile-close{
+      width: 44px; height: 44px;
+      display:flex; align-items:center; justify-content:center;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      cursor: pointer;
+    }
+    .mobile-close:hover{ border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.06); }
+
+    .mobile-list{
+      display:flex;
+      flex-direction: column;
+      gap: .75rem;
+      padding: .25rem;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .m-accordion{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      overflow: hidden;
+    }
+    .m-acc-btn{
+      width: 100%;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      padding: 1rem 1rem;
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.92);
+      font-weight: 800;
+      font-size: 1.05rem;
+      cursor: pointer;
+    }
+    .m-acc-btn .left{
+      display:flex;
+      align-items:center;
+      gap: .8rem;
+    }
+    .m-acc-btn i{ opacity: .9; }
+    .m-acc-panel{
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .25s ease;
+      border-top: 1px solid rgba(255,255,255,0.10);
+    }
+    .m-accordion.open .m-acc-panel{
+      max-height: 1200px; /* enough for all links */
+    }
+
+    .m-links{
+      display:flex;
+      flex-direction: column;
+      padding: .6rem;
+      gap: .45rem;
+    }
+    .m-link{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: .75rem;
+      padding: .85rem .9rem;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.35);
+      color: rgba(255,255,255,0.88);
+      text-decoration:none;
+      font-weight: 700;
+    }
+    .m-link:hover{ border-color: rgba(255,255,255,0.20); background: rgba(0,0,0,0.45); color:#fff; }
+    .m-link .left{
+      display:flex;
+      align-items:center;
+      gap: .75rem;
+      min-width: 0;
+    }
+    .m-link .left span{
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .m-single{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      overflow: hidden;
+    }
+    .m-single a{
+      width: 100%;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      padding: 1rem 1rem;
+      color: rgba(255,255,255,0.92);
+      text-decoration:none;
+      font-weight: 800;
+      font-size: 1.05rem;
+    }
+    .m-single a .left{ display:flex; align-items:center; gap: .8rem; }
+
     /* Hero Section */
     .hero{
       min-height: 100vh;
@@ -605,7 +668,6 @@
       position:relative;
     }
     .hero-content{ max-width: 900px; z-index: 1; }
-
     .hero h1{
       font-size:5rem;
       margin-bottom:1.5rem;
@@ -625,7 +687,6 @@
       animation: fadeInUp 1s .2s backwards;
       line-height:1.8;
     }
-
     .cta-buttons{
       display:flex;
       gap:1.5rem;
@@ -633,7 +694,6 @@
       flex-wrap:wrap;
       animation: fadeInUp 1s .4s backwards;
     }
-
     .btn{
       padding:1.2rem 3rem;
       border:none;
@@ -659,7 +719,6 @@
     }
     .btn:hover::before{ width:300px; height:300px; }
     .btn span{ position:relative; z-index:1; }
-
     .btn-primary{
       background:white;
       color:#000;
@@ -903,6 +962,7 @@
     }
     .footer-section a:hover{ color:white; padding-left:20px; }
     .footer-section a:hover::before{ width:15px; }
+
     .copyright{
       text-align:center;
       padding-top:3rem;
@@ -950,10 +1010,12 @@
       .learn-detail-inner{ padding: .55rem 1rem; }
       .home-subnav-inner{ padding: .65rem 1rem; }
       .home-detail-inner{ padding: .55rem 1rem; }
+
+      /* On mobile we use the drawer; keep desktop subnav bars usable if you still trigger them via code,
+         but they are not needed from UI because nav links are hidden. */
     }
   </style>
 </head>
-
 <body>
   <!-- Animated Background -->
   <div class="animated-bg">
@@ -981,39 +1043,163 @@
         </ul>
       </nav>
 
-      <!-- MOBILE MENU BUTTON -->
-      <div class="mobile-menu" id="mobileMenuBtn" aria-label="Open menu" role="button" tabindex="0">
-        <i class="fas fa-bars" id="mobileMenuIcon"></i>
-      </div>
+      <!-- Mobile Hamburger -->
+      <button class="mobile-menu" id="mobileMenuBtn" type="button" aria-label="Open menu" aria-controls="mobileDrawer" aria-expanded="false">
+        <i class="fas fa-bars"></i>
+      </button>
     </div>
   </header>
 
-  <!-- MOBILE MENU OVERLAY + PANEL (NEW) -->
-  <div class="mobile-nav-overlay" id="mobileNavOverlay" aria-hidden="true"></div>
-  <div class="mobile-nav" id="mobileNav" aria-hidden="true">
-    <div class="mobile-nav-inner">
-      <a href="#home" data-mobile-link>
-        <span class="left"><i class="fas fa-house"></i> Home</span>
-        <span class="hint">▾</span>
-      </a>
-      <a href="#learn" data-mobile-link>
-        <span class="left"><i class="fas fa-graduation-cap"></i> Learn</span>
-        <span class="hint">▾</span>
-      </a>
-      <a href="#tools" data-mobile-link>
-        <span class="left"><i class="fas fa-th-large"></i> Tools</span>
-        <span class="hint">▾</span>
-      </a>
-      <a href="#news" data-mobile-link>
-        <span class="left"><i class="fas fa-newspaper"></i> News</span>
-        <span class="hint">▾</span>
-      </a>
-      <a href="trader-journal.html" data-mobile-link>
-        <span class="left"><i class="fas fa-book"></i> Trader Journal</span>
-        <span class="hint">→</span>
-      </a>
+  <!-- MOBILE OVERLAY + DRAWER (NEW) -->
+  <div class="mobile-overlay" id="mobileOverlay" aria-hidden="true"></div>
+
+  <aside class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+    <div class="mobile-drawer-top">
+      <div class="mobile-title">
+        <i class="fas fa-chart-line"></i>
+        <span>FYNX</span>
+      </div>
+      <button class="mobile-close" id="mobileCloseBtn" type="button" aria-label="Close menu">
+        <i class="fas fa-xmark"></i>
+      </button>
     </div>
-  </div>
+
+    <div class="mobile-list">
+      <!-- HOME -->
+      <div class="m-accordion" data-acc="home">
+        <button class="m-acc-btn" type="button">
+          <span class="left"><i class="fas fa-house"></i> Home</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="m-acc-panel">
+          <div class="m-links">
+            <a class="m-link" href="tools/economic-calendar.html">
+              <span class="left"><i class="fas fa-calendar-alt"></i><span>Economic Calendar</span></span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+            <a class="m-link" href="tools/market-holidays.html">
+              <span class="left"><i class="fas fa-umbrella-beach"></i><span>Market Holidays</span></span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+            <a class="m-link" href="tools/market-hours.html">
+              <span class="left"><i class="fas fa-clock"></i><span>Market Hours</span></span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+            <a class="m-link" href="home/hub.html?section=interest-rates">
+              <span class="left"><i class="fas fa-percent"></i><span>Interest Rates</span></span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+            <a class="m-link" href="home/hub.html?section=economic-heatmap">
+              <span class="left"><i class="fas fa-fire"></i><span>Economic Indicators Heatmap</span></span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+            <a class="m-link" href="home/hub.html?section=recent-topics">
+              <span class="left"><i class="fas fa-comment-dots"></i><span>Recent Topics Discussed</span></span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+
+            <div class="m-accordion" data-acc="homeMarkets" style="margin-top:.4rem;">
+              <button class="m-acc-btn" type="button">
+                <span class="left"><i class="fas fa-layer-group"></i> Markets</span>
+                <i class="fas fa-chevron-down"></i>
+              </button>
+              <div class="m-acc-panel">
+                <div class="m-links">
+                  <a class="m-link" href="markets/index.html?section=currencies"><span class="left"><i class="fas fa-dollar-sign"></i><span>Currencies</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/index.html?section=crypto"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/index.html?section=indicators"><span class="left"><i class="fas fa-chart-line"></i><span>Indicators</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/index.html?section=patterns"><span class="left"><i class="fas fa-shapes"></i><span>Patterns</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/index.html?section=volatility"><span class="left"><i class="fas fa-wave-square"></i><span>Volatility</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/index.html?section=correlation"><span class="left"><i class="fas fa-chart-area"></i><span>Correlation</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/index.html?section=cot"><span class="left"><i class="fas fa-clipboard-list"></i><span>Commitments of Traders</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/index.html?section=liquidity"><span class="left"><i class="fas fa-water"></i><span>Liquidity</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/index.html?section=historical-data"><span class="left"><i class="fas fa-database"></i><span>Historical Data</span></span><i class="fas fa-arrow-right"></i></a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- LEARN -->
+      <div class="m-accordion" data-acc="learn">
+        <button class="m-acc-btn" type="button">
+          <span class="left"><i class="fas fa-graduation-cap"></i> Learn</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="m-acc-panel">
+          <div class="m-links">
+            <!-- Each goes to your learn/topic.html (like your desktop second-row) -->
+            <a class="m-link" href="learn/topic.html?topic=stocks&section=howto"><span class="left"><i class="fas fa-chart-bar"></i><span>Stocks</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/topic.html?topic=funds&section=howto"><span class="left"><i class="fas fa-coins"></i><span>Funds</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/topic.html?topic=futures&section=howto"><span class="left"><i class="fas fa-bolt"></i><span>Futures</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/topic.html?topic=forex&section=howto"><span class="left"><i class="fas fa-dollar-sign"></i><span>Forex</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/topic.html?topic=crypto&section=howto"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/topic.html?topic=indices&section=howto"><span class="left"><i class="fas fa-layer-group"></i><span>Indices</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/topic.html?topic=bonds&section=howto"><span class="left"><i class="fas fa-landmark"></i><span>Bonds</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/topic.html?topic=economy&section=howto"><span class="left"><i class="fas fa-globe"></i><span>Economy</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/topic.html?topic=options&section=howto"><span class="left"><i class="fas fa-table-cells"></i><span>Options</span></span><i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOOLS -->
+      <div class="m-accordion" data-acc="tools">
+        <button class="m-acc-btn" type="button">
+          <span class="left"><i class="fas fa-th-large"></i> Tools</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="m-acc-panel">
+          <div class="m-links">
+            <a class="m-link" href="#tools"><span class="left"><i class="fas fa-th-large"></i><span>Tools Overview</span></span><i class="fas fa-arrow-right"></i></a>
+
+            <a class="m-link" href="tools/forex.html"><span class="left"><i class="fas fa-chart-line"></i><span>Forex Calculator</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/crypto.html"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto Calculator</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/stock.html"><span class="left"><i class="fas fa-chart-bar"></i><span>Stock Calculator</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/options.html"><span class="left"><i class="fas fa-table-cells"></i><span>Options Calculator</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/pip.html"><span class="left"><i class="fas fa-ruler-horizontal"></i><span>Pip Value</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/margin.html"><span class="left"><i class="fas fa-percent"></i><span>Margin</span></span><i class="fas fa-arrow-right"></i></a>
+
+            <a class="m-link" href="tools/position-size.html"><span class="left"><i class="fas fa-calculator"></i><span>Position Size</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/risk-reward.html"><span class="left"><i class="fas fa-scale-balanced"></i><span>Risk/Reward</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/market-hours.html"><span class="left"><i class="fas fa-clock"></i><span>Market Hours</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/economic-calendar.html"><span class="left"><i class="fas fa-calendar-alt"></i><span>Economic Calendar</span></span><i class="fas fa-arrow-right"></i></a>
+
+            <!-- Pro tools -->
+            <a class="m-link" href="tools/profit-loss.html"><span class="left"><i class="fas fa-dollar-sign"></i><span>Profit/Loss (Pro)</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/calendar-alerts.html"><span class="left"><i class="fas fa-calendar-check"></i><span>Calendar Alerts (Pro)</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/heatmap.html"><span class="left"><i class="fas fa-fire"></i><span>Heat Map (Pro)</span></span><i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEWS -->
+      <div class="m-accordion" data-acc="news">
+        <button class="m-acc-btn" type="button">
+          <span class="left"><i class="fas fa-newspaper"></i> News</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="m-acc-panel">
+          <div class="m-links">
+            <a class="m-link" href="news/news.html"><span class="left"><i class="fas fa-newspaper"></i><span>News</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="news/heatmap.html"><span class="left"><i class="fas fa-fire"></i><span>Heat Map</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="news/sentiment.html"><span class="left"><i class="fas fa-face-smile"></i><span>Sentiment</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="news/challenges.html"><span class="left"><i class="fas fa-trophy"></i><span>Challenges</span></span><i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRADER JOURNAL (single) -->
+      <div class="m-single">
+        <a href="trader-journal.html">
+          <span class="left"><i class="fas fa-book"></i> Trader Journal</span>
+          <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  </aside>
+  <!-- END MOBILE DRAWER -->
 
   <!-- HOME SUB-NAV -->
   <div class="home-subnav" id="homeSubnav" aria-hidden="true">
@@ -1075,6 +1261,7 @@
   <div class="tools-subnav" id="toolsSubnav" aria-hidden="true">
     <div class="tools-subnav-inner">
       <a class="tools-pill primary" href="#tools"><i class="fas fa-th-large"></i> Tools Overview</a>
+
       <a class="tools-pill" href="tools/forex.html"><i class="fas fa-chart-line"></i> Forex <span class="tag">Calc</span></a>
       <a class="tools-pill" href="tools/crypto.html"><i class="fab fa-bitcoin"></i> Crypto <span class="tag">Calc</span></a>
       <a class="tools-pill" href="tools/stock.html"><i class="fas fa-chart-bar"></i> Stock <span class="tag">Calc</span></a>
@@ -1313,7 +1500,7 @@
     window.addEventListener('resize', setHeaderHeightVar);
     setHeaderHeightVar();
 
-    // Bars
+    // ===== Desktop subnav toggles =====
     const toolsToggle = document.getElementById('toolsToggle');
     const toolsSubnav = document.getElementById('toolsSubnav');
 
@@ -1363,7 +1550,7 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    toolsToggle.addEventListener('click', (e) => {
+    if (toolsToggle) toolsToggle.addEventListener('click', (e) => {
       e.preventDefault();
       keepAtTop();
 
@@ -1378,7 +1565,7 @@
       toolsSubnav.setAttribute('aria-hidden', document.body.classList.contains('tools-open') ? 'false' : 'true');
     });
 
-    newsToggle.addEventListener('click', (e) => {
+    if (newsToggle) newsToggle.addEventListener('click', (e) => {
       e.preventDefault();
       keepAtTop();
 
@@ -1393,7 +1580,7 @@
       newsSubnav.setAttribute('aria-hidden', document.body.classList.contains('news-open') ? 'false' : 'true');
     });
 
-    learnToggle.addEventListener('click', (e) => {
+    if (learnToggle) learnToggle.addEventListener('click', (e) => {
       e.preventDefault();
       keepAtTop();
 
@@ -1412,7 +1599,7 @@
       }
     });
 
-    homeToggle.addEventListener('click', (e) => {
+    if (homeToggle) homeToggle.addEventListener('click', (e) => {
       e.preventDefault();
       keepAtTop();
 
@@ -1431,7 +1618,7 @@
       }
     });
 
-    marketsToggle.addEventListener('click', () => {
+    if (marketsToggle) marketsToggle.addEventListener('click', () => {
       keepAtTop();
 
       if (!document.body.classList.contains('home-open')) {
@@ -1442,7 +1629,7 @@
       homeMarketsSubnav.setAttribute('aria-hidden', document.body.classList.contains('home-detail-open') ? 'false' : 'true');
     });
 
-    // Learn topic buttons
+    // Learn topic buttons (desktop bar)
     const learnTopicButtons = document.querySelectorAll('.learn-pill[data-topic]');
     function setActiveTopic(topic) {
       learnTopicButtons.forEach(btn => {
@@ -1458,7 +1645,6 @@
       learnQuizzes.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=quizzes';
       learnGlossary.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=glossary';
     }
-
     learnTopicButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         const topic = btn.getAttribute('data-topic');
@@ -1466,7 +1652,7 @@
       });
     });
 
-    // Close when clicking outside (desktop subnav logic)
+    // Close desktop bars when clicking outside
     document.addEventListener('click', (e) => {
       const clickedInsideHeader = header.contains(e.target);
       const clickedInsideTools = toolsSubnav.contains(e.target);
@@ -1476,68 +1662,82 @@
       const clickedInsideHome = homeSubnav.contains(e.target);
       const clickedInsideHomeDetail = homeMarketsSubnav.contains(e.target);
 
-      if (!clickedInsideHeader && !clickedInsideTools && !clickedInsideNews && !clickedInsideLearn && !clickedInsideLearnDetail && !clickedInsideHome && !clickedInsideHomeDetail) {
-        closeAllBars();
+      const clickedInsideDrawer = document.getElementById('mobileDrawer').contains(e.target);
+      const clickedInsideOverlay = document.getElementById('mobileOverlay').contains(e.target);
+
+      // If clicking outside all bars AND not on mobile drawer/overlay
+      if (!clickedInsideDrawer && !clickedInsideOverlay) {
+        if (!clickedInsideHeader && !clickedInsideTools && !clickedInsideNews && !clickedInsideLearn && !clickedInsideLearnDetail && !clickedInsideHome && !clickedInsideHomeDetail) {
+          closeAllBars();
+        }
       }
     });
 
-    // Close on ESC
+    // Close on ESC (desktop bars + mobile drawer)
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         closeAllBars();
-        closeMobileNav();
+        closeMobileMenu();
       }
     });
 
-    // ===== MOBILE NAV TOGGLE (NEW) =====
+    // ===== MOBILE MENU (NEW FIX) =====
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const mobileMenuIcon = document.getElementById('mobileMenuIcon');
-    const mobileNav = document.getElementById('mobileNav');
-    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+    const mobileCloseBtn = document.getElementById('mobileCloseBtn');
+    const mobileDrawer = document.getElementById('mobileDrawer');
 
-    function openMobileNav(){
-      document.body.classList.add('mobile-nav-open');
-      mobileNav.setAttribute('aria-hidden', 'false');
-      mobileNavOverlay.setAttribute('aria-hidden', 'false');
-      mobileMenuIcon.classList.remove('fa-bars');
-      mobileMenuIcon.classList.add('fa-xmark');
-
-      // When mobile menu opens, close all desktop bars to avoid stacking.
+    function openMobileMenu() {
+      // close desktop bars so they don't conflict
       closeAllBars();
+
+      document.body.classList.add('mobile-menu-open');
+      mobileMenuBtn.setAttribute('aria-expanded', 'true');
+      mobileOverlay.setAttribute('aria-hidden', 'false');
+      mobileDrawer.setAttribute('aria-hidden', 'false');
     }
 
-    function closeMobileNav(){
-      document.body.classList.remove('mobile-nav-open');
-      mobileNav.setAttribute('aria-hidden', 'true');
-      mobileNavOverlay.setAttribute('aria-hidden', 'true');
-      mobileMenuIcon.classList.add('fa-bars');
-      mobileMenuIcon.classList.remove('fa-xmark');
+    function closeMobileMenu() {
+      document.body.classList.remove('mobile-menu-open');
+      mobileMenuBtn.setAttribute('aria-expanded', 'false');
+      mobileOverlay.setAttribute('aria-hidden', 'true');
+      mobileDrawer.setAttribute('aria-hidden', 'true');
+
+      // close all accordions inside drawer
+      document.querySelectorAll('.m-accordion.open').forEach(el => el.classList.remove('open'));
     }
 
-    function toggleMobileNav(){
-      if (document.body.classList.contains('mobile-nav-open')) closeMobileNav();
-      else openMobileNav();
-    }
-
-    mobileMenuBtn.addEventListener('click', toggleMobileNav);
-    mobileMenuBtn.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleMobileNav();
-      }
+    mobileMenuBtn.addEventListener('click', () => {
+      const isOpen = document.body.classList.contains('mobile-menu-open');
+      if (isOpen) closeMobileMenu();
+      else openMobileMenu();
     });
 
-    // overlay click closes
-    mobileNavOverlay.addEventListener('click', closeMobileNav);
+    mobileCloseBtn.addEventListener('click', closeMobileMenu);
+    mobileOverlay.addEventListener('click', closeMobileMenu);
 
-    // clicking any mobile link closes
-    document.querySelectorAll('[data-mobile-link]').forEach(link => {
-      link.addEventListener('click', () => closeMobileNav());
+    // Accordion behavior in drawer
+    document.querySelectorAll('.m-accordion > .m-acc-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const acc = btn.parentElement;
+
+        // Optional: close other top-level accordions (keep nested ones independent)
+        const isNested = acc.closest('.m-acc-panel') !== null;
+        if (!isNested) {
+          document.querySelectorAll('.mobile-drawer .m-accordion').forEach(other => {
+            if (other !== acc && other.getAttribute('data-acc') && !other.closest('.m-acc-panel')) {
+              other.classList.remove('open');
+            }
+          });
+        }
+
+        acc.classList.toggle('open');
+      });
     });
 
-    // If user rotates / resizes to desktop, close mobile menu
-    window.addEventListener('resize', () => {
-      if (window.innerWidth > 768) closeMobileNav();
+    // Close drawer when user clicks any link (so it feels like a real app)
+    document.querySelectorAll('.mobile-drawer a').forEach(a => {
+      a.addEventListener('click', () => closeMobileMenu());
     });
   </script>
 </body>
