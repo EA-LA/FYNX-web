@@ -992,6 +992,168 @@
       60%{ transform: translateX(-50%) translateY(-10px); }
     }
 
+    /* ========= FYNX FLOATING DOWNLOAD QR (NEW) ========= */
+    .fynx-download{
+      position: fixed;
+      left: 22px;
+      bottom: 22px;
+      z-index: 9999;
+      text-decoration: none;
+      color: inherit;
+      transform: translateZ(0);
+    }
+
+    .fynx-card{
+      width: 320px;
+      padding: 14px 14px 12px;
+      border-radius: 18px;
+      background: rgba(10, 10, 12, 0.78);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow:
+        0 18px 60px rgba(0,0,0,0.55),
+        0 0 0 1px rgba(255,255,255,0.05) inset;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      overflow: hidden;
+      position: relative;
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+
+    .fynx-download:hover .fynx-card{
+      transform: translateY(-2px) scale(1.01);
+      border-color: rgba(255,255,255,0.18);
+      box-shadow:
+        0 22px 72px rgba(0,0,0,0.62),
+        0 0 0 1px rgba(255,255,255,0.06) inset;
+    }
+
+    .fynx-aura{
+      position: absolute;
+      inset: -80px;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(0,255,255,0.20), transparent 52%),
+        radial-gradient(circle at 80% 60%, rgba(255,255,255,0.10), transparent 55%),
+        radial-gradient(circle at 50% 90%, rgba(0,180,255,0.14), transparent 55%);
+      filter: blur(18px);
+      opacity: .85;
+      animation: fynxAura 5.2s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes fynxAura{
+      0%{ transform: translate3d(-6px,-4px,0) scale(1); }
+      50%{ transform: translate3d(10px,8px,0) scale(1.03); }
+      100%{ transform: translate3d(-6px,-4px,0) scale(1); }
+    }
+
+    .fynx-scan{
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent, rgba(255,255,255,0.06), transparent);
+      opacity: .35;
+      transform: translateY(-120%);
+      animation: fynxScan 3.3s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes fynxScan{
+      0%{ transform: translateY(-120%); }
+      100%{ transform: translateY(120%); }
+    }
+
+    .fynx-top{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .fynx-badge{
+      font-weight: 800;
+      letter-spacing: .12em;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      user-select: none;
+    }
+
+    .fynx-close{
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.85);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      line-height: 1;
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+    }
+
+    .fynx-close:hover{
+      transform: scale(1.04);
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.20);
+    }
+
+    .fynx-content{
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: 12px;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .fynx-qr{
+      width: 96px;
+      height: 96px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.14);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .fynx-title{
+      font-size: 16px;
+      font-weight: 900;
+      color: rgba(255,255,255,0.95);
+      margin-bottom: 4px;
+    }
+
+    .fynx-sub{
+      font-size: 12.5px;
+      color: rgba(255,255,255,0.70);
+      margin-bottom: 10px;
+    }
+
+    .fynx-pill{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,255,255,0.22);
+      background: rgba(0,255,255,0.10);
+      color: rgba(255,255,255,0.92);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    @media (max-width: 480px){
+      .fynx-card{ width: 280px; }
+      .fynx-content{ grid-template-columns: 86px 1fr; }
+      .fynx-qr{ width: 86px; height: 86px; }
+    }
+
     /* Responsive */
     @media (max-width: 768px){
       nav ul{ display:none; }
@@ -1473,6 +1635,31 @@
     </div>
   </footer>
 
+  <!-- FYNX Download QR (Floating) -->
+  <a class="fynx-download" id="fynxDownload" href="https://apps.apple.com/us/app/fynx-finance-world/id6752357210" target="_blank" rel="noopener">
+    <div class="fynx-card">
+      <div class="fynx-aura"></div>
+      <div class="fynx-scan"></div>
+
+      <div class="fynx-top">
+        <div class="fynx-badge">FYNX</div>
+        <button class="fynx-close" id="fynxClose" aria-label="Hide download widget" type="button">×</button>
+      </div>
+
+      <div class="fynx-content">
+        <div class="fynx-qr" id="fynxQr"></div>
+        <div class="fynx-text">
+          <div class="fynx-title">Download FYNX Now</div>
+          <div class="fynx-sub">Scan or click to install</div>
+          <div class="fynx-pill">App Store</div>
+        </div>
+      </div>
+    </div>
+  </a>
+
+  <!-- QR library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
   <script>
     // Header scroll effect
     const header = document.getElementById('header');
@@ -1739,6 +1926,51 @@
     document.querySelectorAll('.mobile-drawer a').forEach(a => {
       a.addEventListener('click', () => closeMobileMenu());
     });
+
+    /* ========= FYNX DOWNLOAD QR (NEW) ========= */
+    (function(){
+      const APP_URL = "https://apps.apple.com/us/app/fynx-finance-world/id6752357210";
+      const widget = document.getElementById("fynxDownload");
+      const closeBtn = document.getElementById("fynxClose");
+      const qrHost = document.getElementById("fynxQr");
+
+      if (!widget || !closeBtn || !qrHost) return;
+
+      // Respect user choice if they hid it
+      if (localStorage.getItem("fynxDownloadHidden") === "1") {
+        widget.style.display = "none";
+        return;
+      }
+
+      // Close button should not navigate
+      closeBtn.addEventListener("click", function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        localStorage.setItem("fynxDownloadHidden", "1");
+        widget.style.display = "none";
+      });
+
+      // Generate QR for the App Store link
+      qrHost.innerHTML = "";
+      if (window.QRCode) {
+        new QRCode(qrHost, {
+          text: APP_URL,
+          width: 84,
+          height: 84,
+          correctLevel: QRCode.CorrectLevel.M
+        });
+
+        const qrEl = qrHost.querySelector("img, canvas");
+        if (qrEl) {
+          qrEl.style.borderRadius = "10px";
+          qrEl.style.background = "white";
+          qrEl.style.padding = "6px";
+        }
+      } else {
+        // Fallback if CDN fails
+        qrHost.innerHTML = '<div style="font-size:12px;opacity:.75;line-height:1.2;padding:10px;text-align:center;">QR failed to load.<br>Tap to open App Store.</div>';
+      }
+    })();
   </script>
 </body>
 </html>
