@@ -995,16 +995,34 @@
     /* ========= FYNX FLOATING DOWNLOAD QR (NEW) ========= */
     .fynx-download{
       position: fixed;
-      left: 22px;
+
+      /* ✅ FIX: move to RIGHT side (desktop) */
+      right: 22px;
+      left: auto;
+
       bottom: 22px;
       z-index: 9999;
       text-decoration: none;
       color: inherit;
       transform: translateZ(0);
+
+      /* ✅ Smooth show/hide */
+      opacity: 1;
+      transform: translateY(0) translateZ(0);
+      transition: opacity .22s ease, transform .22s ease;
+    }
+
+    /* ✅ Hidden state (mobile scroll-up or close button) */
+    .fynx-download.is-hidden{
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(14px) translateZ(0);
     }
 
     .fynx-card{
-      width: 320px;
+      /* ✅ FIX: make it smaller */
+      width: 300px;
+
       padding: 14px 14px 12px;
       border-radius: 18px;
       background: rgba(10, 10, 12, 0.78);
@@ -1031,9 +1049,9 @@
       position: absolute;
       inset: -80px;
       background:
-        radial-gradient(circle at 30% 20%, rgba(0,255,255,0.20), transparent 52%),
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,0.16), transparent 52%),
         radial-gradient(circle at 80% 60%, rgba(255,255,255,0.10), transparent 55%),
-        radial-gradient(circle at 50% 90%, rgba(0,180,255,0.14), transparent 55%);
+        radial-gradient(circle at 50% 90%, rgba(255,255,255,0.12), transparent 55%);
       filter: blur(18px);
       opacity: .85;
       animation: fynxAura 5.2s ease-in-out infinite;
@@ -1104,7 +1122,10 @@
 
     .fynx-content{
       display: grid;
-      grid-template-columns: 96px 1fr;
+
+      /* ✅ FIX: slightly smaller layout */
+      grid-template-columns: 88px 1fr;
+
       gap: 12px;
       align-items: center;
       position: relative;
@@ -1112,8 +1133,8 @@
     }
 
     .fynx-qr{
-      width: 96px;
-      height: 96px;
+      width: 88px;
+      height: 88px;
       border-radius: 14px;
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.14);
@@ -1141,17 +1162,30 @@
       gap: 8px;
       padding: 8px 12px;
       border-radius: 999px;
-      border: 1px solid rgba(0,255,255,0.22);
-      background: rgba(0,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.10);
       color: rgba(255,255,255,0.92);
       font-size: 12px;
       font-weight: 800;
     }
 
     @media (max-width: 480px){
-      .fynx-card{ width: 280px; }
+      .fynx-card{ width: 100%; }
       .fynx-content{ grid-template-columns: 86px 1fr; }
       .fynx-qr{ width: 86px; height: 86px; }
+    }
+
+    /* ✅ Mobile: full-width bottom bar style */
+    @media (max-width: 768px){
+      .fynx-download{
+        left: 12px;
+        right: 12px;
+        bottom: 14px;
+      }
+      .fynx-card{
+        width: 100%;
+        border-radius: 20px;
+      }
     }
 
     /* Responsive */
@@ -1936,18 +1970,15 @@
 
       if (!widget || !closeBtn || !qrHost) return;
 
-      // Respect user choice if they hid it
-      if (localStorage.getItem("fynxDownloadHidden") === "1") {
-        widget.style.display = "none";
-        return;
-      }
+      // ✅ IMPORTANT FIX:
+      // Remove the "hide forever" localStorage behavior.
+      // Widget ALWAYS returns on refresh / revisit.
 
-      // Close button should not navigate
+      // Close button should not navigate (hide only this session)
       closeBtn.addEventListener("click", function(e){
         e.preventDefault();
         e.stopPropagation();
-        localStorage.setItem("fynxDownloadHidden", "1");
-        widget.style.display = "none";
+        widget.classList.add("is-hidden");
       });
 
       // Generate QR for the App Store link
@@ -1955,8 +1986,8 @@
       if (window.QRCode) {
         new QRCode(qrHost, {
           text: APP_URL,
-          width: 84,
-          height: 84,
+          width: 74,
+          height: 74,
           correctLevel: QRCode.CorrectLevel.M
         });
 
@@ -1970,6 +2001,44 @@
         // Fallback if CDN fails
         qrHost.innerHTML = '<div style="font-size:12px;opacity:.75;line-height:1.2;padding:10px;text-align:center;">QR failed to load.<br>Tap to open App Store.</div>';
       }
+
+      // ✅ Mobile scroll behavior:
+      // Show when scrolling DOWN, hide when scrolling UP, hide near top.
+      let lastY = window.scrollY || 0;
+      const isMobile = () => window.matchMedia("(max-width: 768px)").matches;
+
+      function applyInitialState(){
+        // Desktop: always visible
+        if (!isMobile()) {
+          widget.classList.remove("is-hidden");
+          return;
+        }
+        // Mobile: hidden until user scrolls down
+        widget.classList.add("is-hidden");
+      }
+
+      function onScroll(){
+        if (!isMobile()) return;
+
+        const y = window.scrollY || 0;
+        const goingDown = y > lastY;
+
+        // Near top: hidden
+        if (y < 80) {
+          widget.classList.add("is-hidden");
+          lastY = y;
+          return;
+        }
+
+        if (goingDown) widget.classList.remove("is-hidden");
+        else widget.classList.add("is-hidden");
+
+        lastY = y;
+      }
+
+      applyInitialState();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", applyInitialState);
     })();
   </script>
 </body>
