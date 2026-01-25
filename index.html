@@ -1,233 +1,216 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fynx Finance World - Master Trading & Investing</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- MAIN CSS -->
+  <link rel="stylesheet" href="assets/css/main.css" />
 </head>
+
 <body>
-  <div class="animated-bg">
-    <div class="grid-overlay"></div>
-    <div class="gradient-orb orb-1"></div>
-    <div class="gradient-orb orb-2"></div>
-    <div class="gradient-orb orb-3"></div>
+
+<!-- ================== BACKGROUND ================== -->
+<div class="animated-bg">
+  <div class="grid-overlay"></div>
+  <div class="gradient-orb orb-1"></div>
+  <div class="gradient-orb orb-2"></div>
+  <div class="gradient-orb orb-3"></div>
+</div>
+
+<!-- ================== HEADER ================== -->
+<header id="header">
+  <div class="nav-container">
+    <div class="logo" onclick="location.href='#home'">
+      <i class="fas fa-chart-line"></i>
+      <span>FYNX</span>
+    </div>
+
+    <nav>
+      <ul>
+        <li><a href="#home" id="homeToggle">Home ▾</a></li>
+        <li><a href="#learn" id="learnToggle">Learn ▾</a></li>
+        <li><a href="#tools" id="toolsToggle">Tools ▾</a></li>
+        <li><a href="#news" id="newsToggle">News ▾</a></li>
+        <li><a href="trader-journal.html">Trader Journal</a></li>
+      </ul>
+    </nav>
+
+    <button class="mobile-menu" id="mobileMenuBtn" aria-label="Menu">
+      <i class="fas fa-bars"></i>
+    </button>
+  </div>
+</header>
+
+<!-- ================== MOBILE MENU ================== -->
+<div class="mobile-overlay" id="mobileOverlay"></div>
+
+<aside class="mobile-drawer" id="mobileDrawer">
+  <div class="mobile-drawer-top">
+    <div class="mobile-title">
+      <i class="fas fa-chart-line"></i><span>FYNX</span>
+    </div>
+    <button class="mobile-close" id="mobileCloseBtn">✕</button>
   </div>
 
-  <header id="header">
-    <div class="nav-container">
-      <div class="logo" onclick="location.href='#home'">
-        <i class="fas fa-chart-line"></i>
-        <span>FYNX</span>
-      </div>
-      <nav>
-        <ul>
-          <li><a href="#home" id="homeToggle">Home <span style="opacity:.7;">▾</span></a></li>
-          <li><a href="#learn" id="learnToggle">Learn <span style="opacity:.7;">▾</span></a></li>
-          <li><a href="#tools" id="toolsToggle">Tools <span style="opacity:.7;">▾</span></a></li>
-          <li><a href="#news" id="newsToggle">News <span style="opacity:.7;">▾</span></a></li>
-          <li><a href="trader-journal.html">Trader Journal</a></li>
-        </ul>
-      </nav>
-      <button class="mobile-menu" id="mobileMenuBtn" type="button" aria-label="Open menu" aria-controls="mobileDrawer" aria-expanded="false">
-        <i class="fas fa-bars"></i>
+  <div class="mobile-list">
+
+    <!-- HOME -->
+    <div class="m-accordion">
+      <button class="m-acc-btn">
+        <span class="left"><i class="fas fa-house"></i> Home</span>
+        <i class="fas fa-chevron-down"></i>
       </button>
-    </div>
-  </header>
-
-  <div class="mobile-overlay" id="mobileOverlay" aria-hidden="true"></div>
-  <aside class="mobile-drawer" id="mobileDrawer" aria-hidden="true"></aside>
-
-  <div class="home-subnav" id="homeSubnav" aria-hidden="true"></div>
-  <div class="home-detail-subnav" id="homeMarketsSubnav" aria-hidden="true"></div>
-  <div class="learn-subnav" id="learnSubnav" aria-hidden="true"></div>
-  <div class="learn-detail-subnav" id="learnDetailSubnav" aria-hidden="true"></div>
-  <div class="tools-subnav" id="toolsSubnav" aria-hidden="true"></div>
-  <div class="news-subnav" id="newsSubnav" aria-hidden="true"></div>
-
-  <section class="hero" id="home">
-    <div class="hero-content">
-      <h1>Master Trading & Investing</h1>
-      <p>The ultimate platform for learning forex, crypto, and market analysis. Join thousands of traders achieving financial freedom.</p>
-      <div class="cta-buttons">
-        <a href="#learn" class="btn btn-primary"><span>Start Learning Free</span></a>
-        <a href="#tools" class="btn btn-secondary"><span>Explore Tools</span></a>
-      </div>
-    </div>
-    <div class="scroll-indicator">
-      <i class="fas fa-chevron-down"></i>
-    </div>
-  </section>
-
-  <section class="features">
-    <h2 class="section-title">Why Choose Fynx?</h2>
-    <div class="feature-grid">
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-graduation-cap"></i></div>
-        <h3>Expert Education</h3>
-        <p>Comprehensive courses from beginner to advanced, covering forex, crypto, stocks, and trading psychology.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
-        <h3>Real-Time Analysis</h3>
-        <p>Stay ahead with live market analysis, technical indicators, and professional trading insights.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-calculator"></i></div>
-        <h3>Trading Tools</h3>
-        <p>Access powerful calculators, risk management tools, and market analysis instruments.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-users"></i></div>
-        <h3>Active Community</h3>
-        <p>Connect with thousands of traders, share strategies, and learn from experienced professionals.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-newspaper"></i></div>
-        <h3>Daily Market News</h3>
-        <p>Get breaking financial news, market updates, and economic calendar events in real-time.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
-        <h3>Mobile App</h3>
-        <p>Trade on the go with our Fynx Finance World mobile app, available for iOS and Android.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="learning-section" id="learn">
-    <div class="learning-container">
-      <h2 class="section-title">Start Your Learning Journey</h2>
-      <div class="course-grid">
-        <div class="course-card">
-          <div class="course-image"><i class="fas fa-book-open"></i></div>
-          <div class="course-content">
-            <span class="course-badge">Beginner</span>
-            <h3>Forex Trading 101</h3>
-            <p>Learn the fundamentals of forex trading, currency pairs, and how to analyze market movements.</p>
-            <a href="#" class="btn btn-primary"><span>Start Course</span></a>
-          </div>
-        </div>
-        <div class="course-card">
-          <div class="course-image"><i class="fab fa-bitcoin"></i></div>
-          <div class="course-content">
-            <span class="course-badge">Intermediate</span>
-            <h3>Cryptocurrency Mastery</h3>
-            <p>Dive into crypto trading, blockchain technology, DeFi, and digital asset management.</p>
-            <a href="#" class="btn btn-primary"><span>Start Course</span></a>
-          </div>
-        </div>
-        <div class="course-card">
-          <div class="course-image"><i class="fas fa-chart-line"></i></div>
-          <div class="course-content">
-            <span class="course-badge">Advanced</span>
-            <h3>Technical Analysis Pro</h3>
-            <p>Master chart patterns, indicators, and advanced trading strategies used by professionals.</p>
-            <a href="#" class="btn btn-primary"><span>Start Course</span></a>
-          </div>
+      <div class="m-acc-panel">
+        <div class="m-links">
+          <a class="m-link" href="tools/economic-calendar.html"><span class="left">Economic Calendar</span></a>
+          <a class="m-link" href="tools/market-hours.html"><span class="left">Market Hours</span></a>
+          <a class="m-link" href="tools/market-holidays.html"><span class="left">Market Holidays</span></a>
         </div>
       </div>
     </div>
-  </section>
 
-  <section class="tools-section" id="tools">
-    <h2 class="section-title">Trading Tools & Calculators</h2>
-    <div class="tools-grid">
-      <div class="tool-item" onclick="location.href='tools/position-size.html'">
-        <i class="fas fa-calculator"></i>
-        <h3>Position Size Calculator</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/risk-reward.html'">
-        <i class="fas fa-balance-scale"></i>
-        <h3>Risk/Reward Calculator</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/pip.html'">
-        <i class="fas fa-dollar-sign"></i>
-        <h3>Pip Value Calculator</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/correlation.html'">
-        <i class="fas fa-chart-area"></i>
-        <h3>Market Correlation</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/market-hours.html'">
-        <i class="fas fa-clock"></i>
-        <h3>Market Hours</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/economic-calendar.html'">
-        <i class="fas fa-calendar-alt"></i>
-        <h3>Economic Calendar</h3>
-      </div>
-    </div>
-  </section>
-
-  <footer>
-    <div class="footer-container">
-      <div class="footer-section">
-        <h3>Learn</h3>
-        <ul>
-          <li><a href="#">Forex Trading</a></li>
-          <li><a href="#">Crypto Trading</a></li>
-          <li><a href="#">Stock Market</a></li>
-          <li><a href="#">Trading Psychology</a></li>
-          <li><a href="#">Risk Management</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h3>Resources</h3>
-        <ul>
-          <li><a href="#tools">Trading Tools</a></li>
-          <li><a href="#">Market Analysis</a></li>
-          <li><a href="tools/economic-calendar.html">Economic Calendar</a></li>
-          <li><a href="#">Trading Glossary</a></li>
-          <li><a href="#">Quizzes</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h3>Community</h3>
-        <ul>
-          <li><a href="#">Forums</a></li>
-          <li><a href="#">Trading Ideas</a></li>
-          <li><a href="#">Success Stories</a></li>
-          <li><a href="https://elhamamini.cc/fynx-blog/index.html" target="_blank" rel="noopener">Blog</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h3>Company</h3>
-        <ul>
-          <li><a href="https://elhamamini.cc/FYNX-Site/index.html" target="_blank" rel="noopener">About Us</a></li>
-          <li><a href="https://elhamamini.cc/FYNX-Site/support.html" target="_blank" rel="noopener">Contact</a></li>
-          <li><a href="https://apps.apple.com/us/app/fynx-finance-world/id6752357210" target="_blank" rel="noopener">Download App</a></li>
-          <li><a href="https://elhamamini.cc/FYNX-Site/privacy.html" target="_blank" rel="noopener">Privacy Policy</a></li>
-          <li><a href="https://elhamamini.cc/FYNX-Site/terms.html" target="_blank" rel="noopener">Terms of Service</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="copyright">© 2025 FYNX. All rights reserved.</div>
-  </footer>
-
-  <a class="fynx-download" id="fynxDownload" href="https://apps.apple.com/us/app/fynx-finance-world/id6752357210" target="_blank" rel="noopener">
-    <div class="fynx-card">
-      <div class="fynx-aura"></div>
-      <div class="fynx-scan"></div>
-      <div class="fynx-top">
-        <div class="fynx-badge">FYNX</div>
-        <button class="fynx-close" id="fynxClose" aria-label="Hide download widget" type="button">×</button>
-      </div>
-      <div class="fynx-content">
-        <div class="fynx-qr" id="fynxQr"></div>
-        <div class="fynx-text">
-          <div class="fynx-title">Download FYNX Now</div>
-          <div class="fynx-sub">Scan or click to install</div>
-          <div class="fynx-pill">App Store</div>
+    <!-- LEARN -->
+    <div class="m-accordion">
+      <button class="m-acc-btn">
+        <span class="left"><i class="fas fa-graduation-cap"></i> Learn</span>
+        <i class="fas fa-chevron-down"></i>
+      </button>
+      <div class="m-acc-panel">
+        <div class="m-links">
+          <a class="m-link" href="learn/topic.html?topic=forex">Forex</a>
+          <a class="m-link" href="learn/topic.html?topic=crypto">Crypto</a>
+          <a class="m-link" href="learn/topic.html?topic=stocks">Stocks</a>
         </div>
       </div>
     </div>
-  </a>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="navigation.js"></script>
-  <script src="mobile-menu.js"></script>
-  <script src="widget.js"></script>
+    <!-- TOOLS -->
+    <div class="m-accordion">
+      <button class="m-acc-btn">
+        <span class="left"><i class="fas fa-th-large"></i> Tools</span>
+        <i class="fas fa-chevron-down"></i>
+      </button>
+      <div class="m-acc-panel">
+        <div class="m-links">
+          <a class="m-link" href="tools/position-size.html">Position Size</a>
+          <a class="m-link" href="tools/risk-reward.html">Risk / Reward</a>
+          <a class="m-link" href="tools/pip.html">Pip Value</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEWS -->
+    <div class="m-accordion">
+      <button class="m-acc-btn">
+        <span class="left"><i class="fas fa-newspaper"></i> News</span>
+        <i class="fas fa-chevron-down"></i>
+      </button>
+      <div class="m-acc-panel">
+        <div class="m-links">
+          <a class="m-link" href="news/news.html">Market News</a>
+          <a class="m-link" href="news/sentiment.html">Sentiment</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-single">
+      <a href="trader-journal.html">
+        <span class="left"><i class="fas fa-book"></i> Trader Journal</span>
+      </a>
+    </div>
+
+  </div>
+</aside>
+
+<!-- ================== SUB NAVS ================== -->
+<div class="home-subnav" id="homeSubnav"></div>
+<div class="home-detail-subnav" id="homeMarketsSubnav"></div>
+<div class="learn-subnav" id="learnSubnav"></div>
+<div class="learn-detail-subnav" id="learnDetailSubnav"></div>
+<div class="tools-subnav" id="toolsSubnav"></div>
+<div class="news-subnav" id="newsSubnav"></div>
+
+<!-- ================== HERO ================== -->
+<section class="hero" id="home">
+  <div class="hero-content">
+    <h1>Master Trading & Investing</h1>
+    <p>The ultimate platform for forex, crypto, and market mastery.</p>
+    <div class="cta-buttons">
+      <a href="#learn" class="btn btn-primary"><span>Start Learning Free</span></a>
+      <a href="#tools" class="btn btn-secondary"><span>Explore Tools</span></a>
+    </div>
+  </div>
+  <div class="scroll-indicator"><i class="fas fa-chevron-down"></i></div>
+</section>
+
+<!-- ================== FEATURES ================== -->
+<section class="features">
+  <h2 class="section-title">Why Choose Fynx?</h2>
+  <div class="feature-grid">
+    <div class="feature-card"><h3>Expert Education</h3></div>
+    <div class="feature-card"><h3>Market Analysis</h3></div>
+    <div class="feature-card"><h3>Advanced Tools</h3></div>
+    <div class="feature-card"><h3>Trading Community</h3></div>
+  </div>
+</section>
+
+<!-- ================== LEARNING ================== -->
+<section class="learning-section" id="learn">
+  <div class="learning-container">
+    <h2 class="section-title">Start Learning</h2>
+  </div>
+</section>
+
+<!-- ================== TOOLS ================== -->
+<section class="tools-section" id="tools">
+  <h2 class="section-title">Trading Tools</h2>
+</section>
+
+<!-- ================== FOOTER ================== -->
+<footer>
+  <div class="footer-container">
+    <div class="footer-section">
+      <h3>Company</h3>
+      <ul>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Privacy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="copyright">© 2025 FYNX</div>
+</footer>
+
+<!-- ================== DOWNLOAD WIDGET ================== -->
+<a class="fynx-download" id="fynxDownload" href="https://apps.apple.com/us/app/fynx-finance-world/id6752357210" target="_blank">
+  <div class="fynx-card">
+    <div class="fynx-aura"></div>
+    <div class="fynx-scan"></div>
+    <div class="fynx-top">
+      <div class="fynx-badge">FYNX</div>
+      <button class="fynx-close" id="fynxClose">×</button>
+    </div>
+    <div class="fynx-content">
+      <div class="fynx-qr" id="fynxQr"></div>
+      <div>
+        <div class="fynx-title">Download FYNX Now</div>
+        <div class="fynx-sub">Scan or click to install</div>
+      </div>
+    </div>
+  </div>
+</a>
+
+<!-- ================== SCRIPTS ================== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script src="assets/js/navigation.js"></script>
+<script src="assets/js/mobile.js"></script>
+<script src="assets/js/download-widget.js"></script>
+
 </body>
 </html>
