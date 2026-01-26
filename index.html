@@ -1,216 +1,2045 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fynx Finance World - Master Trading & Investing</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    body{
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      line-height: 1.6;
+      color: #ffffff;
+      background: #000000;
+      overflow-x: hidden;
+    }
 
-  <!-- MAIN CSS -->
-  <link rel="stylesheet" href="assets/css/main.css" />
+    /* Animated Background */
+    .animated-bg{
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1; background: #000000; overflow: hidden;
+    }
+    .grid-overlay{
+      position: absolute; width: 100%; height: 100%;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      animation: gridMove 20s linear infinite;
+    }
+    @keyframes gridMove{ 0%{transform:translate(0,0)} 100%{transform:translate(50px,50px)} }
+
+    .gradient-orb{ position:absolute; border-radius:50%; filter:blur(80px); opacity:.3; animation: float 20s ease-in-out infinite; }
+    .orb-1{ width:500px; height:500px; background: radial-gradient(circle, #ffffff 0%, transparent 70%); top:-200px; left:-200px; animation-delay:0s; }
+    .orb-2{ width:400px; height:400px; background: radial-gradient(circle, #ffffff 0%, transparent 70%); bottom:-150px; right:-150px; animation-delay:5s; }
+    .orb-3{ width:300px; height:300px; background: radial-gradient(circle, #ffffff 0%, transparent 70%); top:50%; left:50%; animation-delay:10s; }
+    @keyframes float{
+      0%,100%{ transform: translate(0,0) scale(1); }
+      33%{ transform: translate(50px,-50px) scale(1.1); }
+      66%{ transform: translate(-50px,50px) scale(0.9); }
+    }
+
+    /* Particles */
+    .particle{
+      position:absolute; width:2px; height:2px;
+      background: rgba(255,255,255,0.5);
+      border-radius:50%;
+      animation: particleFloat 15s linear infinite;
+    }
+    @keyframes particleFloat{
+      0%{ transform: translateY(100vh) translateX(0); opacity:0; }
+      10%{ opacity:1; }
+      90%{ opacity:1; }
+      100%{ transform: translateY(-100vh) translateX(100px); opacity:0; }
+    }
+
+    /* Header & Navigation */
+    header{
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: white;
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      transition: all 0.3s;
+    }
+    header.scrolled{
+      background: rgba(0,0,0,0.95);
+      box-shadow: 0 5px 30px rgba(255,255,255,0.1);
+    }
+
+    .nav-container{
+      max-width: 1400px;
+      margin: 0 auto;
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      padding: 0 2rem;
+    }
+
+    .logo{
+      font-size:1.8rem;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+      letter-spacing:-1px;
+      transition: transform .3s;
+      user-select: none;
+      cursor: pointer;
+    }
+    .logo:hover{ transform: scale(1.05); }
+    .logo i{ animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse{ 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+
+    nav ul{ display:flex; list-style:none; gap:2.5rem; }
+    nav a{
+      color: rgba(255,255,255,0.8);
+      text-decoration:none;
+      font-weight:500;
+      transition: all .3s;
+      position:relative;
+      padding:.5rem 0;
+    }
+    nav a::after{
+      content:'';
+      position:absolute;
+      bottom:0; left:0;
+      width:0; height:2px;
+      background:white;
+      transition: width .3s;
+    }
+    nav a:hover{ color:white; }
+    nav a:hover::after{ width:100%; }
+
+    .mobile-menu{
+      display:none;
+      font-size:1.5rem;
+      cursor:pointer;
+      width: 44px; height: 44px;
+      align-items:center; justify-content:center;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+    }
+    .mobile-menu:hover{ border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.06); }
+
+    /* ========= SUB-NAV FIX ========= */
+    :root{ --header-h: 78px; }
+
+    /* ========= TOOLS SUB-NAV ========= */
+    .tools-subnav{
+      position: fixed;
+      left: 0; right: 0; width: 100%;
+      top: var(--header-h);
+      z-index: 999;
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      transform: translateY(-8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all .25s ease;
+    }
+    body.tools-open .tools-subnav{
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .tools-subnav-inner{
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: .65rem 2rem;
+      display: flex;
+      gap: .75rem;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tools-subnav-inner::-webkit-scrollbar{ height: 6px; }
+    .tools-subnav-inner::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.15); border-radius: 10px; }
+    .tools-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:.55rem;
+      padding:.55rem .9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.85);
+      text-decoration:none;
+      font-weight: 600;
+      font-size: .95rem;
+      white-space: nowrap;
+      transition: all .25s ease;
+    }
+    .tools-pill:hover{
+      color: #fff;
+      border-color: rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-1px);
+    }
+    .tools-pill.primary{
+      border-color: rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.10);
+    }
+    .tools-pill .tag{
+      font-size: .75rem;
+      padding: .12rem .45rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.75);
+    }
+
+    /* ========= NEWS SUB-NAV ========= */
+    .news-subnav{
+      position: fixed;
+      left: 0; right: 0; width: 100%;
+      top: var(--header-h);
+      z-index: 999;
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      transform: translateY(-8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all .25s ease;
+    }
+    body.news-open .news-subnav{
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .news-subnav-inner{
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: .65rem 2rem;
+      display: flex;
+      gap: .75rem;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .news-subnav-inner::-webkit-scrollbar{ height: 6px; }
+    .news-subnav-inner::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.15); border-radius: 10px; }
+    .news-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:.55rem;
+      padding:.55rem .9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.85);
+      text-decoration:none;
+      font-weight: 600;
+      font-size: .95rem;
+      white-space: nowrap;
+      transition: all .25s ease;
+    }
+    .news-pill:hover{
+      color: #fff;
+      border-color: rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-1px);
+    }
+    .news-pill.primary{
+      border-color: rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.10);
+    }
+
+    /* ========= LEARN SUB-NAV ========= */
+    .learn-subnav{
+      position: fixed;
+      left: 0; right: 0; width: 100%;
+      top: var(--header-h);
+      z-index: 999;
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      transform: translateY(-8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all .25s ease;
+    }
+    body.learn-open .learn-subnav{
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .learn-subnav-inner{
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: .65rem 2rem;
+      display: flex;
+      gap: .75rem;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .learn-subnav-inner::-webkit-scrollbar{ height: 6px; }
+    .learn-subnav-inner::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.15); border-radius: 10px; }
+    .learn-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:.55rem;
+      padding:.55rem .9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.85);
+      text-decoration:none;
+      font-weight: 600;
+      font-size: .95rem;
+      white-space: nowrap;
+      transition: all .25s ease;
+      cursor: pointer;
+    }
+    .learn-pill:hover{
+      color: #fff;
+      border-color: rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-1px);
+    }
+    .learn-pill.active{
+      border-color: rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.10);
+      color: #fff;
+    }
+
+    .learn-detail-subnav{
+      position: fixed;
+      left: 0; right: 0; width: 100%;
+      top: calc(var(--header-h) + 54px);
+      z-index: 998;
+      background: rgba(0,0,0,0.66);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      transform: translateY(-8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all .25s ease;
+    }
+    body.learn-detail-open .learn-detail-subnav{
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .learn-detail-inner{
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: .55rem 2rem;
+      display: flex;
+      gap: .75rem;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .learn-detail-inner::-webkit-scrollbar{ height: 6px; }
+    .learn-detail-inner::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.15); border-radius: 10px; }
+    .learn-detail-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:.55rem;
+      padding:.55rem .9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.85);
+      text-decoration:none;
+      font-weight: 600;
+      font-size: .95rem;
+      white-space: nowrap;
+      transition: all .25s ease;
+    }
+    .learn-detail-pill:hover{
+      color: #fff;
+      border-color: rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-1px);
+    }
+    .learn-caption{
+      display:inline-flex;
+      align-items:center;
+      gap:.55rem;
+      padding:.55rem .9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.03);
+      color: rgba(255,255,255,0.70);
+      font-weight: 700;
+      font-size: .92rem;
+      white-space: nowrap;
+    }
+
+    /* ========= HOME SUB-NAV ========= */
+    .home-subnav{
+      position: fixed;
+      left: 0; right: 0; width: 100%;
+      top: var(--header-h);
+      z-index: 999;
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      transform: translateY(-8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all .25s ease;
+    }
+    body.home-open .home-subnav{
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .home-subnav-inner{
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: .65rem 2rem;
+      display: flex;
+      gap: .75rem;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .home-subnav-inner::-webkit-scrollbar{ height: 6px; }
+    .home-subnav-inner::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.15); border-radius: 10px; }
+    .home-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:.55rem;
+      padding:.55rem .9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.85);
+      text-decoration:none;
+      font-weight: 600;
+      font-size: .95rem;
+      white-space: nowrap;
+      transition: all .25s ease;
+      cursor: pointer;
+    }
+    .home-pill:hover{
+      color:#fff;
+      border-color: rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-1px);
+    }
+    .home-pill.primary{
+      border-color: rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.10);
+    }
+    .home-caption{
+      display:inline-flex;
+      align-items:center;
+      gap:.55rem;
+      padding:.55rem .9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.03);
+      color: rgba(255,255,255,0.70);
+      font-weight: 700;
+      font-size: .92rem;
+      white-space: nowrap;
+    }
+
+    .home-detail-subnav{
+      position: fixed;
+      left: 0; right: 0; width: 100%;
+      top: calc(var(--header-h) + 54px);
+      z-index: 998;
+      background: rgba(0,0,0,0.66);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      transform: translateY(-8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all .25s ease;
+    }
+    body.home-detail-open .home-detail-subnav{
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .home-detail-inner{
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: .55rem 2rem;
+      display: flex;
+      gap: .75rem;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .home-detail-inner::-webkit-scrollbar{ height: 6px; }
+    .home-detail-inner::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.15); border-radius: 10px; }
+    .home-detail-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:.55rem;
+      padding:.55rem .9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.85);
+      text-decoration:none;
+      font-weight: 600;
+      font-size: .95rem;
+      white-space: nowrap;
+      transition: all .25s ease;
+    }
+    .home-detail-pill:hover{
+      color:#fff;
+      border-color: rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.08);
+      transform: translateY(-1px);
+    }
+
+    /* ========= MOBILE DRAWER MENU (FIX) =========
+       Your issue: on iPhone, nav <ul> is hidden, so Home/Learn/Tools/News clicks are impossible.
+       Fix: make the 3-line icon open a mobile drawer with the same sections + subitems.
+    */
+    .mobile-overlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(6px);
+      z-index: 1400;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+    .mobile-drawer{
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(420px, 92vw);
+      height: 100vh;
+      z-index: 1500;
+      background: rgba(0,0,0,0.88);
+      backdrop-filter: blur(18px);
+      border-left: 1px solid rgba(255,255,255,0.12);
+      transform: translateX(102%);
+      transition: transform .25s ease;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    body.mobile-menu-open .mobile-overlay{
+      opacity: 1;
+      pointer-events: auto;
+    }
+    body.mobile-menu-open .mobile-drawer{
+      transform: translateX(0);
+    }
+
+    .mobile-drawer-top{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      padding: .35rem .25rem;
+    }
+    .mobile-title{
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      font-weight: 900;
+      letter-spacing:-0.5px;
+    }
+    .mobile-close{
+      width: 44px; height: 44px;
+      display:flex; align-items:center; justify-content:center;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      cursor: pointer;
+    }
+    .mobile-close:hover{ border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.06); }
+
+    .mobile-list{
+      display:flex;
+      flex-direction: column;
+      gap: .75rem;
+      padding: .25rem;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .m-accordion{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      overflow: hidden;
+    }
+    .m-acc-btn{
+      width: 100%;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      padding: 1rem 1rem;
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.92);
+      font-weight: 800;
+      font-size: 1.05rem;
+      cursor: pointer;
+    }
+    .m-acc-btn .left{
+      display:flex;
+      align-items:center;
+      gap: .8rem;
+    }
+    .m-acc-btn i{ opacity: .9; }
+    .m-acc-panel{
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .25s ease;
+      border-top: 1px solid rgba(255,255,255,0.10);
+    }
+    .m-accordion.open .m-acc-panel{
+      max-height: 1200px; /* enough for all links */
+    }
+
+    .m-links{
+      display:flex;
+      flex-direction: column;
+      padding: .6rem;
+      gap: .45rem;
+    }
+    .m-link{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: .75rem;
+      padding: .85rem .9rem;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.35);
+      color: rgba(255,255,255,0.88);
+      text-decoration:none;
+      font-weight: 700;
+    }
+    .m-link:hover{ border-color: rgba(255,255,255,0.20); background: rgba(0,0,0,0.45); color:#fff; }
+    .m-link .left{
+      display:flex;
+      align-items:center;
+      gap: .75rem;
+      min-width: 0;
+    }
+    .m-link .left span{
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .m-single{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      overflow: hidden;
+    }
+    .m-single a{
+      width: 100%;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      padding: 1rem 1rem;
+      color: rgba(255,255,255,0.92);
+      text-decoration:none;
+      font-weight: 800;
+      font-size: 1.05rem;
+    }
+    .m-single a .left{ display:flex; align-items:center; gap: .8rem; }
+
+    /* Hero Section */
+    .hero{
+      min-height: 100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:2rem;
+      position:relative;
+    }
+    .hero-content{ max-width: 900px; z-index: 1; }
+    .hero h1{
+      font-size:5rem;
+      margin-bottom:1.5rem;
+      font-weight:900;
+      letter-spacing:-3px;
+      line-height:1.1;
+      animation: fadeInUp 1s;
+      background: linear-gradient(135deg, #ffffff 0%, #888888 100%);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    .hero p{
+      font-size:1.4rem;
+      margin-bottom:3rem;
+      opacity:.7;
+      animation: fadeInUp 1s .2s backwards;
+      line-height:1.8;
+    }
+    .cta-buttons{
+      display:flex;
+      gap:1.5rem;
+      justify-content:center;
+      flex-wrap:wrap;
+      animation: fadeInUp 1s .4s backwards;
+    }
+    .btn{
+      padding:1.2rem 3rem;
+      border:none;
+      border-radius:50px;
+      font-size:1.1rem;
+      font-weight:700;
+      cursor:pointer;
+      transition:all .3s;
+      text-decoration:none;
+      display:inline-block;
+      position:relative;
+      overflow:hidden;
+    }
+    .btn::before{
+      content:'';
+      position:absolute;
+      top:50%; left:50%;
+      width:0; height:0;
+      border-radius:50%;
+      background: rgba(255,255,255,0.3);
+      transform: translate(-50%,-50%);
+      transition: width .6s, height .6s;
+    }
+    .btn:hover::before{ width:300px; height:300px; }
+    .btn span{ position:relative; z-index:1; }
+    .btn-primary{
+      background:white;
+      color:#000;
+      box-shadow: 0 0 30px rgba(255,255,255,0.3);
+    }
+    .btn-primary:hover{
+      transform: translateY(-3px);
+      box-shadow: 0 10px 40px rgba(255,255,255,0.4);
+    }
+    .btn-secondary{
+      background: transparent;
+      color: white;
+      border: 2px solid white;
+    }
+    .btn-secondary:hover{
+      background:white;
+      color:#000;
+      transform: translateY(-3px);
+    }
+
+    /* Features Section */
+    .features{
+      padding: 8rem 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .section-title{
+      text-align:center;
+      font-size:3.5rem;
+      margin-bottom:4rem;
+      font-weight:900;
+      letter-spacing:-2px;
+      animation: fadeInUp 1s;
+    }
+    .feature-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap:2rem;
+    }
+    .feature-card{
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(10px);
+      padding:3rem;
+      border-radius:20px;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all .4s;
+      text-align:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .feature-card::before{
+      content:'';
+      position:absolute;
+      top:0; left:-100%;
+      width:100%; height:100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transition: left .5s;
+    }
+    .feature-card:hover::before{ left:100%; }
+    .feature-card:hover{
+      transform: translateY(-10px);
+      border-color: rgba(255,255,255,0.3);
+      box-shadow: 0 20px 60px rgba(255,255,255,0.1);
+    }
+    .feature-icon{ font-size:3.5rem; margin-bottom:1.5rem; animation: float 3s ease-in-out infinite; }
+    .feature-card h3{ font-size:1.8rem; margin-bottom:1rem; font-weight:700; }
+    .feature-card p{ color: rgba(255,255,255,0.6); line-height:1.8; font-size:1.05rem; }
+
+    /* Learning Section */
+    .learning-section{
+      background: rgba(255,255,255,0.02);
+      padding: 8rem 2rem;
+      position: relative;
+    }
+    .learning-section::before{
+      content:'';
+      position:absolute;
+      top:0; left:0;
+      width:100%; height:100%;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 100px 100px;
+      pointer-events:none;
+    }
+    .learning-container{
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .course-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap:2.5rem;
+      margin-top:3rem;
+    }
+    .course-card{
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      border-radius:20px;
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all .4s;
+    }
+    .course-card:hover{
+      transform: scale(1.03) translateY(-10px);
+      border-color: rgba(255,255,255,0.3);
+      box-shadow: 0 20px 60px rgba(255,255,255,0.15);
+    }
+    .course-image{
+      height:250px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:5rem;
+      position:relative;
+      overflow:hidden;
+    }
+    .course-image::before{
+      content:'';
+      position:absolute;
+      width:200%;
+      height:200%;
+      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+      animation: shimmer 3s infinite;
+    }
+    @keyframes shimmer{
+      0%{ transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+      100%{ transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+    .course-image i{ position:relative; z-index:1; animation: float 3s ease-in-out infinite; }
+    .course-content{ padding:2rem; }
+    .course-content h3{ font-size:1.8rem; margin-bottom:1rem; font-weight:700; }
+    .course-badge{
+      display:inline-block;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      color:white;
+      padding:.4rem 1rem;
+      border-radius:20px;
+      font-size:.85rem;
+      font-weight:600;
+      margin-bottom:1rem;
+      text-transform: uppercase;
+      letter-spacing:1px;
+    }
+    .course-content p{ color: rgba(255,255,255,0.6); line-height:1.8; margin-bottom:1.5rem; }
+
+    /* Tools Section */
+    .tools-section{
+      padding: 8rem 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .tools-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap:2rem;
+    }
+    .tool-item{
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      color:white;
+      padding:3rem 2rem;
+      border-radius:15px;
+      text-align:center;
+      cursor:pointer;
+      transition: all .4s;
+      position:relative;
+      overflow:hidden;
+    }
+    .tool-item::after{
+      content:'';
+      position:absolute;
+      top:50%; left:50%;
+      width:0; height:0;
+      background: rgba(255,255,255,0.1);
+      border-radius:50%;
+      transform: translate(-50%,-50%);
+      transition: width .6s, height .6s;
+    }
+    .tool-item:hover::after{ width:500px; height:500px; }
+    .tool-item:hover{
+      transform: translateY(-10px) scale(1.02);
+      border-color: rgba(255,255,255,0.3);
+      box-shadow: 0 20px 60px rgba(255,255,255,0.15);
+    }
+    .tool-item i{
+      font-size:3rem;
+      margin-bottom:1rem;
+      position:relative;
+      z-index:1;
+      animation: float 3s ease-in-out infinite;
+    }
+    .tool-item h3{
+      position:relative;
+      z-index:1;
+      font-size:1.3rem;
+      font-weight:600;
+    }
+
+    /* Footer */
+    footer{
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      color:white;
+      padding:4rem 2rem 2rem;
+    }
+    .footer-container{
+      max-width:1400px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap:3rem;
+    }
+    .footer-section h3{ margin-bottom:1.5rem; font-size:1.3rem; font-weight:700; }
+    .footer-section ul{ list-style:none; }
+    .footer-section a{
+      color: rgba(255,255,255,0.6);
+      text-decoration:none;
+      display:block;
+      padding:.5rem 0;
+      transition: all .3s;
+      position:relative;
+      padding-left:0;
+    }
+    .footer-section a::before{
+      content:'';
+      position:absolute;
+      left:0; top:50%;
+      width:0; height:1px;
+      background:white;
+      transition: width .3s;
+      transform: translateY(-50%);
+    }
+    .footer-section a:hover{ color:white; padding-left:20px; }
+    .footer-section a:hover::before{ width:15px; }
+
+    .copyright{
+      text-align:center;
+      padding-top:3rem;
+      margin-top:3rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.4);
+      font-size:.95rem;
+    }
+
+    @keyframes fadeInUp{
+      from{ opacity:0; transform: translateY(40px); }
+      to{ opacity:1; transform: translateY(0); }
+    }
+
+    /* Scroll Indicator */
+    .scroll-indicator{
+      position:absolute;
+      bottom:30px;
+      left:50%;
+      transform: translateX(-50%);
+      animation: bounce 2s infinite;
+    }
+    .scroll-indicator i{ font-size:2rem; opacity:.5; }
+    @keyframes bounce{
+      0%,20%,50%,80%,100%{ transform: translateX(-50%) translateY(0); }
+      40%{ transform: translateX(-50%) translateY(-20px); }
+      60%{ transform: translateX(-50%) translateY(-10px); }
+    }
+
+    /* ========= FYNX FLOATING DOWNLOAD QR (NEW) ========= */
+    .fynx-download{
+      position: fixed;
+
+      /* ✅ FIX: move to RIGHT side (desktop) */
+      right: 22px;
+      left: auto;
+
+      bottom: 22px;
+      z-index: 9999;
+      text-decoration: none;
+      color: inherit;
+      transform: translateZ(0);
+
+      /* ✅ Smooth show/hide */
+      opacity: 1;
+      transform: translateY(0) translateZ(0);
+      transition: opacity .22s ease, transform .22s ease;
+    }
+
+    /* ✅ Hidden state (mobile scroll-up or close button) */
+    .fynx-download.is-hidden{
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(14px) translateZ(0);
+    }
+
+    .fynx-card{
+      /* ✅ FIX: make it smaller */
+      width: 300px;
+
+      padding: 14px 14px 12px;
+      border-radius: 18px;
+      background: rgba(10, 10, 12, 0.78);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow:
+        0 18px 60px rgba(0,0,0,0.55),
+        0 0 0 1px rgba(255,255,255,0.05) inset;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      overflow: hidden;
+      position: relative;
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+
+    .fynx-download:hover .fynx-card{
+      transform: translateY(-2px) scale(1.01);
+      border-color: rgba(255,255,255,0.18);
+      box-shadow:
+        0 22px 72px rgba(0,0,0,0.62),
+        0 0 0 1px rgba(255,255,255,0.06) inset;
+    }
+
+    .fynx-aura{
+      position: absolute;
+      inset: -80px;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,0.16), transparent 52%),
+        radial-gradient(circle at 80% 60%, rgba(255,255,255,0.10), transparent 55%),
+        radial-gradient(circle at 50% 90%, rgba(255,255,255,0.12), transparent 55%);
+      filter: blur(18px);
+      opacity: .85;
+      animation: fynxAura 5.2s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes fynxAura{
+      0%{ transform: translate3d(-6px,-4px,0) scale(1); }
+      50%{ transform: translate3d(10px,8px,0) scale(1.03); }
+      100%{ transform: translate3d(-6px,-4px,0) scale(1); }
+    }
+
+    .fynx-scan{
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent, rgba(255,255,255,0.06), transparent);
+      opacity: .35;
+      transform: translateY(-120%);
+      animation: fynxScan 3.3s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes fynxScan{
+      0%{ transform: translateY(-120%); }
+      100%{ transform: translateY(120%); }
+    }
+
+    .fynx-top{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .fynx-badge{
+      font-weight: 800;
+      letter-spacing: .12em;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      user-select: none;
+    }
+
+    .fynx-close{
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.85);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      line-height: 1;
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+    }
+
+    .fynx-close:hover{
+      transform: scale(1.04);
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.20);
+    }
+
+    .fynx-content{
+      display: grid;
+
+      /* ✅ FIX: slightly smaller layout */
+      grid-template-columns: 88px 1fr;
+
+      gap: 12px;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .fynx-qr{
+      width: 88px;
+      height: 88px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.14);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .fynx-title{
+      font-size: 16px;
+      font-weight: 900;
+      color: rgba(255,255,255,0.95);
+      margin-bottom: 4px;
+    }
+
+    .fynx-sub{
+      font-size: 12.5px;
+      color: rgba(255,255,255,0.70);
+      margin-bottom: 10px;
+    }
+
+    .fynx-pill{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.92);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    @media (max-width: 480px){
+      .fynx-card{ width: 100%; }
+      .fynx-content{ grid-template-columns: 86px 1fr; }
+      .fynx-qr{ width: 86px; height: 86px; }
+    }
+
+    /* ✅ Mobile: full-width bottom bar style */
+    @media (max-width: 768px){
+      .fynx-download{
+        left: 12px;
+        right: 12px;
+        bottom: 14px;
+      }
+      .fynx-card{
+        width: 100%;
+        border-radius: 20px;
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px){
+      nav ul{ display:none; }
+      .mobile-menu{ display:flex; }
+
+      .hero h1{ font-size:2.5rem; letter-spacing:-1px; }
+      .hero p{ font-size:1.1rem; }
+      .section-title{ font-size:2.5rem; }
+      .cta-buttons{ flex-direction:column; }
+
+      .feature-grid, .course-grid, .tools-grid{ grid-template-columns:1fr; }
+
+      .tools-subnav-inner{ padding: .65rem 1rem; }
+      .news-subnav-inner{ padding: .65rem 1rem; }
+      .learn-subnav-inner{ padding: .65rem 1rem; }
+      .learn-detail-inner{ padding: .55rem 1rem; }
+      .home-subnav-inner{ padding: .65rem 1rem; }
+      .home-detail-inner{ padding: .55rem 1rem; }
+
+      /* On mobile we use the drawer; keep desktop subnav bars usable if you still trigger them via code,
+         but they are not needed from UI because nav links are hidden. */
+    }
+  </style>
 </head>
-
 <body>
-
-<!-- ================== BACKGROUND ================== -->
-<div class="animated-bg">
-  <div class="grid-overlay"></div>
-  <div class="gradient-orb orb-1"></div>
-  <div class="gradient-orb orb-2"></div>
-  <div class="gradient-orb orb-3"></div>
-</div>
-
-<!-- ================== HEADER ================== -->
-<header id="header">
-  <div class="nav-container">
-    <div class="logo" onclick="location.href='#home'">
-      <i class="fas fa-chart-line"></i>
-      <span>FYNX</span>
-    </div>
-
-    <nav>
-      <ul>
-        <li><a href="#home" id="homeToggle">Home ▾</a></li>
-        <li><a href="#learn" id="learnToggle">Learn ▾</a></li>
-        <li><a href="#tools" id="toolsToggle">Tools ▾</a></li>
-        <li><a href="#news" id="newsToggle">News ▾</a></li>
-        <li><a href="trader-journal.html">Trader Journal</a></li>
-      </ul>
-    </nav>
-
-    <button class="mobile-menu" id="mobileMenuBtn" aria-label="Menu">
-      <i class="fas fa-bars"></i>
-    </button>
-  </div>
-</header>
-
-<!-- ================== MOBILE MENU ================== -->
-<div class="mobile-overlay" id="mobileOverlay"></div>
-
-<aside class="mobile-drawer" id="mobileDrawer">
-  <div class="mobile-drawer-top">
-    <div class="mobile-title">
-      <i class="fas fa-chart-line"></i><span>FYNX</span>
-    </div>
-    <button class="mobile-close" id="mobileCloseBtn">✕</button>
+  <!-- Animated Background -->
+  <div class="animated-bg">
+    <div class="grid-overlay"></div>
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+    <div class="gradient-orb orb-3"></div>
   </div>
 
-  <div class="mobile-list">
+  <!-- Header -->
+  <header id="header">
+    <div class="nav-container">
+      <div class="logo" onclick="location.href='#home'">
+        <i class="fas fa-chart-line"></i>
+        <span>FYNX</span>
+      </div>
 
-    <!-- HOME -->
-    <div class="m-accordion">
-      <button class="m-acc-btn">
-        <span class="left"><i class="fas fa-house"></i> Home</span>
-        <i class="fas fa-chevron-down"></i>
+      <nav>
+        <ul>
+          <li><a href="#home" id="homeToggle">Home <span style="opacity:.7;">▾</span></a></li>
+          <li><a href="#learn" id="learnToggle">Learn <span style="opacity:.7;">▾</span></a></li>
+          <li><a href="#tools" id="toolsToggle">Tools <span style="opacity:.7;">▾</span></a></li>
+          <li><a href="#news" id="newsToggle">News <span style="opacity:.7;">▾</span></a></li>
+          <li><a href="trader-journal.html">Trader Journal</a></li>
+        </ul>
+      </nav>
+
+      <!-- Mobile Hamburger -->
+      <button class="mobile-menu" id="mobileMenuBtn" type="button" aria-label="Open menu" aria-controls="mobileDrawer" aria-expanded="false">
+        <i class="fas fa-bars"></i>
       </button>
-      <div class="m-acc-panel">
-        <div class="m-links">
-          <a class="m-link" href="tools/economic-calendar.html"><span class="left">Economic Calendar</span></a>
-          <a class="m-link" href="tools/market-hours.html"><span class="left">Market Hours</span></a>
-          <a class="m-link" href="tools/market-holidays.html"><span class="left">Market Holidays</span></a>
+    </div>
+  </header>
+
+  <!-- MOBILE OVERLAY + DRAWER (NEW) -->
+  <div class="mobile-overlay" id="mobileOverlay" aria-hidden="true"></div>
+
+  <aside class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+    <div class="mobile-drawer-top">
+      <div class="mobile-title">
+        <i class="fas fa-chart-line"></i>
+        <span>FYNX</span>
+      </div>
+      <button class="mobile-close" id="mobileCloseBtn" type="button" aria-label="Close menu">
+        <i class="fas fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="mobile-list">
+      <!-- HOME -->
+      <div class="m-accordion" data-acc="home">
+        <button class="m-acc-btn" type="button">
+          <span class="left"><i class="fas fa-house"></i> Home</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="m-acc-panel">
+          <div class="m-links">
+            <a class="m-link" href="tools/economic-calendar.html">
+              <span class="left"><i class="fas fa-calendar-alt"></i><span>Economic Calendar</span></span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+            <a class="m-link" href="tools/market-holidays.html">
+              <span class="left"><i class="fas fa-umbrella-beach"></i><span>Market Holidays</span></span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+            <a class="m-link" href="tools/market-hours.html">
+              <span class="left"><i class="fas fa-clock"></i><span>Market Hours</span></span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+            <a class="m-link" href="home/hub.html?section=interest-rates">
+              <span class="left"><i class="fas fa-percent"></i><span>Interest Rates</span></span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+            <a class="m-link" href="home/hub.html?section=economic-heatmap">
+              <span class="left"><i class="fas fa-fire"></i><span>Economic Indicators Heatmap</span></span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+            <a class="m-link" href="home/hub.html?section=recent-topics">
+              <span class="left"><i class="fas fa-comment-dots"></i><span>Recent Topics Discussed</span></span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+
+            <div class="m-accordion" data-acc="homeMarkets" style="margin-top:.4rem;">
+              <button class="m-acc-btn" type="button">
+                <span class="left"><i class="fas fa-layer-group"></i> Markets</span>
+                <i class="fas fa-chevron-down"></i>
+              </button>
+              <div class="m-acc-panel">
+                <div class="m-links">
+                  <a class="m-link" href="markets/index.html?section=currencies"><span class="left"><i class="fas fa-dollar-sign"></i><span>Currencies</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/index.html?section=crypto"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/index.html?section=indicators"><span class="left"><i class="fas fa-chart-line"></i><span>Indicators</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/index.html?section=patterns"><span class="left"><i class="fas fa-shapes"></i><span>Patterns</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/index.html?section=volatility"><span class="left"><i class="fas fa-wave-square"></i><span>Volatility</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/index.html?section=correlation"><span class="left"><i class="fas fa-chart-area"></i><span>Correlation</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/index.html?section=cot"><span class="left"><i class="fas fa-clipboard-list"></i><span>Commitments of Traders</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/index.html?section=liquidity"><span class="left"><i class="fas fa-water"></i><span>Liquidity</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/index.html?section=historical-data"><span class="left"><i class="fas fa-database"></i><span>Historical Data</span></span><i class="fas fa-arrow-right"></i></a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- LEARN -->
+      <div class="m-accordion" data-acc="learn">
+        <button class="m-acc-btn" type="button">
+          <span class="left"><i class="fas fa-graduation-cap"></i> Learn</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="m-acc-panel">
+          <div class="m-links">
+            <!-- Each goes to your learn/topic.html (like your desktop second-row) -->
+            <a class="m-link" href="learn/topic.html?topic=stocks&section=howto"><span class="left"><i class="fas fa-chart-bar"></i><span>Stocks</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/topic.html?topic=funds&section=howto"><span class="left"><i class="fas fa-coins"></i><span>Funds</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/topic.html?topic=futures&section=howto"><span class="left"><i class="fas fa-bolt"></i><span>Futures</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/topic.html?topic=forex&section=howto"><span class="left"><i class="fas fa-dollar-sign"></i><span>Forex</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/topic.html?topic=crypto&section=howto"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/topic.html?topic=indices&section=howto"><span class="left"><i class="fas fa-layer-group"></i><span>Indices</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/topic.html?topic=bonds&section=howto"><span class="left"><i class="fas fa-landmark"></i><span>Bonds</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/topic.html?topic=economy&section=howto"><span class="left"><i class="fas fa-globe"></i><span>Economy</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/topic.html?topic=options&section=howto"><span class="left"><i class="fas fa-table-cells"></i><span>Options</span></span><i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOOLS -->
+      <div class="m-accordion" data-acc="tools">
+        <button class="m-acc-btn" type="button">
+          <span class="left"><i class="fas fa-th-large"></i> Tools</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="m-acc-panel">
+          <div class="m-links">
+            <a class="m-link" href="#tools"><span class="left"><i class="fas fa-th-large"></i><span>Tools Overview</span></span><i class="fas fa-arrow-right"></i></a>
+
+            <a class="m-link" href="tools/forex.html"><span class="left"><i class="fas fa-chart-line"></i><span>Forex Calculator</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/crypto.html"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto Calculator</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/stock.html"><span class="left"><i class="fas fa-chart-bar"></i><span>Stock Calculator</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/options.html"><span class="left"><i class="fas fa-table-cells"></i><span>Options Calculator</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/pip.html"><span class="left"><i class="fas fa-ruler-horizontal"></i><span>Pip Value</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/margin.html"><span class="left"><i class="fas fa-percent"></i><span>Margin</span></span><i class="fas fa-arrow-right"></i></a>
+
+            <a class="m-link" href="tools/position-size.html"><span class="left"><i class="fas fa-calculator"></i><span>Position Size</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/risk-reward.html"><span class="left"><i class="fas fa-scale-balanced"></i><span>Risk/Reward</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/market-hours.html"><span class="left"><i class="fas fa-clock"></i><span>Market Hours</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/economic-calendar.html"><span class="left"><i class="fas fa-calendar-alt"></i><span>Economic Calendar</span></span><i class="fas fa-arrow-right"></i></a>
+
+            <!-- Pro tools -->
+            <a class="m-link" href="tools/profit-loss.html"><span class="left"><i class="fas fa-dollar-sign"></i><span>Profit/Loss (Pro)</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/calendar-alerts.html"><span class="left"><i class="fas fa-calendar-check"></i><span>Calendar Alerts (Pro)</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/heatmap.html"><span class="left"><i class="fas fa-fire"></i><span>Heat Map (Pro)</span></span><i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEWS -->
+      <div class="m-accordion" data-acc="news">
+        <button class="m-acc-btn" type="button">
+          <span class="left"><i class="fas fa-newspaper"></i> News</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="m-acc-panel">
+          <div class="m-links">
+            <a class="m-link" href="news/news.html"><span class="left"><i class="fas fa-newspaper"></i><span>News</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="news/heatmap.html"><span class="left"><i class="fas fa-fire"></i><span>Heat Map</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="news/sentiment.html"><span class="left"><i class="fas fa-face-smile"></i><span>Sentiment</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="news/challenges.html"><span class="left"><i class="fas fa-trophy"></i><span>Challenges</span></span><i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRADER JOURNAL (single) -->
+      <div class="m-single">
+        <a href="trader-journal.html">
+          <span class="left"><i class="fas fa-book"></i> Trader Journal</span>
+          <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  </aside>
+  <!-- END MOBILE DRAWER -->
+
+  <!-- HOME SUB-NAV -->
+  <div class="home-subnav" id="homeSubnav" aria-hidden="true">
+    <div class="home-subnav-inner">
+      <span class="home-caption"><i class="fas fa-house"></i> Home</span>
+      <a class="home-pill primary" href="tools/economic-calendar.html"><i class="fas fa-calendar-alt"></i> Economic Calendar</a>
+      <a class="home-pill" href="tools/market-holidays.html"><i class="fas fa-umbrella-beach"></i> Market Holidays</a>
+      <a class="home-pill" href="tools/market-hours.html"><i class="fas fa-clock"></i> Market Hour</a>
+      <a class="home-pill" href="home/hub.html?section=interest-rates"><i class="fas fa-percent"></i> Interest Rates</a>
+      <a class="home-pill" href="home/hub.html?section=economic-heatmap"><i class="fas fa-fire"></i> Economic Indicators Heatmap</a>
+      <a class="home-pill" href="home/hub.html?section=recent-topics"><i class="fas fa-comment-dots"></i> Recent Topics Discussed</a>
+      <button class="home-pill" type="button" id="marketsToggle"><i class="fas fa-layer-group"></i> Markets <span style="opacity:.7;">▾</span></button>
+    </div>
+  </div>
+
+  <!-- HOME MARKETS DETAIL SUB-NAV -->
+  <div class="home-detail-subnav" id="homeMarketsSubnav" aria-hidden="true">
+    <div class="home-detail-inner">
+      <span class="home-caption"><i class="fas fa-layer-group"></i> Markets</span>
+      <a class="home-detail-pill" href="markets/index.html?section=currencies"><i class="fas fa-dollar-sign"></i> Currencies</a>
+      <a class="home-detail-pill" href="markets/index.html?section=crypto"><i class="fab fa-bitcoin"></i> Crypto</a>
+      <a class="home-detail-pill" href="markets/index.html?section=indicators"><i class="fas fa-chart-line"></i> Indicators</a>
+      <a class="home-detail-pill" href="markets/index.html?section=patterns"><i class="fas fa-shapes"></i> Patterns</a>
+      <a class="home-detail-pill" href="markets/index.html?section=volatility"><i class="fas fa-wave-square"></i> Volatility</a>
+      <a class="home-detail-pill" href="markets/index.html?section=correlation"><i class="fas fa-chart-area"></i> Correlation</a>
+      <a class="home-detail-pill" href="markets/index.html?section=cot"><i class="fas fa-clipboard-list"></i> Commitments of Traders</a>
+      <a class="home-detail-pill" href="markets/index.html?section=liquidity"><i class="fas fa-water"></i> Liquidity</a>
+      <a class="home-detail-pill" href="markets/index.html?section=historical-data"><i class="fas fa-database"></i> Historical Data</a>
+    </div>
+  </div>
+
+  <!-- LEARN SUB-NAV -->
+  <div class="learn-subnav" id="learnSubnav" aria-hidden="true">
+    <div class="learn-subnav-inner">
+      <span class="learn-caption"><i class="fas fa-graduation-cap"></i> Learn Markets</span>
+      <button class="learn-pill" type="button" data-topic="stocks">Stocks</button>
+      <button class="learn-pill" type="button" data-topic="funds">Funds</button>
+      <button class="learn-pill" type="button" data-topic="futures">Futures</button>
+      <button class="learn-pill" type="button" data-topic="forex">Forex</button>
+      <button class="learn-pill" type="button" data-topic="crypto">Crypto</button>
+      <button class="learn-pill" type="button" data-topic="indices">Indices</button>
+      <button class="learn-pill" type="button" data-topic="bonds">Bonds</button>
+      <button class="learn-pill" type="button" data-topic="economy">Economy</button>
+      <button class="learn-pill" type="button" data-topic="options">Options</button>
+    </div>
+  </div>
+
+  <!-- LEARN DETAIL SUB-NAV -->
+  <div class="learn-detail-subnav" id="learnDetailSubnav" aria-hidden="true">
+    <div class="learn-detail-inner">
+      <span class="learn-caption" id="learnDetailCaption"><i class="fas fa-layer-group"></i> Topic</span>
+      <a class="learn-detail-pill" id="learnHowTo" href="learn/topic.html?topic=forex&section=howto"><i class="fas fa-play"></i> How to Trade</a>
+      <a class="learn-detail-pill" id="learnQuizzes" href="learn/topic.html?topic=forex&section=quizzes"><i class="fas fa-circle-question"></i> Trading Quizzes</a>
+      <a class="learn-detail-pill" id="learnGlossary" href="learn/topic.html?topic=forex&section=glossary"><i class="fas fa-book"></i> Glossary</a>
+    </div>
+  </div>
+
+  <!-- TOOLS SUB-NAV -->
+  <div class="tools-subnav" id="toolsSubnav" aria-hidden="true">
+    <div class="tools-subnav-inner">
+      <a class="tools-pill primary" href="#tools"><i class="fas fa-th-large"></i> Tools Overview</a>
+
+      <a class="tools-pill" href="tools/forex.html"><i class="fas fa-chart-line"></i> Forex <span class="tag">Calc</span></a>
+      <a class="tools-pill" href="tools/crypto.html"><i class="fab fa-bitcoin"></i> Crypto <span class="tag">Calc</span></a>
+      <a class="tools-pill" href="tools/stock.html"><i class="fas fa-chart-bar"></i> Stock <span class="tag">Calc</span></a>
+      <a class="tools-pill" href="tools/options.html"><i class="fas fa-table-cells"></i> Options <span class="tag">Calc</span></a>
+      <a class="tools-pill" href="tools/pip.html"><i class="fas fa-ruler-horizontal"></i> Pip <span class="tag">Calc</span></a>
+      <a class="tools-pill" href="tools/margin.html"><i class="fas fa-percent"></i> Margin <span class="tag">Calc</span></a>
+      <a class="tools-pill" href="tools/pivot.html"><i class="fas fa-bullseye"></i> Pivot <span class="tag">Points</span></a>
+      <a class="tools-pill" href="tools/fibonacci.html"><i class="fas fa-wave-square"></i> Fibonacci <span class="tag">Ret</span></a>
+      <a class="tools-pill" href="tools/currency.html"><i class="fas fa-arrows-rotate"></i> Currency <span class="tag">FX</span></a>
+      <a class="tools-pill" href="tools/breakeven.html"><i class="fas fa-equals"></i> Break-Even <span class="tag">Calc</span></a>
+
+      <a class="tools-pill" href="tools/profit-loss.html"><i class="fas fa-dollar-sign"></i> Profit/Loss <span class="tag">Pro</span></a>
+      <a class="tools-pill" href="tools/calendar-alerts.html"><i class="fas fa-calendar-check"></i> Calendar <span class="tag">Pro</span></a>
+      <a class="tools-pill" href="tools/symbol-news.html"><i class="fas fa-newspaper"></i> Symbol News <span class="tag">Pro</span></a>
+      <a class="tools-pill" href="tools/atr-stop.html"><i class="fas fa-chart-column"></i> ATR Stop <span class="tag">Pro</span></a>
+      <a class="tools-pill" href="tools/liquidation-guard.html"><i class="fas fa-shield-halved"></i> Liquidation <span class="tag">Pro</span></a>
+      <a class="tools-pill" href="tools/heatmap.html"><i class="fas fa-fire"></i> Heat Map <span class="tag">Pro</span></a>
+      <a class="tools-pill" href="tools/options-payoff.html"><i class="fas fa-diagram-project"></i> Options Payoff <span class="tag">Pro</span></a>
+      <a class="tools-pill" href="tools/risk-reward.html"><i class="fas fa-scale-balanced"></i> Risk/Reward <span class="tag">Pro</span></a>
+      <a class="tools-pill" href="tools/compound.html"><i class="fas fa-seedling"></i> Compound <span class="tag">Pro</span></a>
+
+      <a class="tools-pill" href="tools/position-size.html"><i class="fas fa-calculator"></i> Position Size</a>
+      <a class="tools-pill" href="tools/correlation.html"><i class="fas fa-chart-area"></i> Correlation</a>
+      <a class="tools-pill" href="tools/market-hours.html"><i class="fas fa-clock"></i> Market Hours</a>
+      <a class="tools-pill" href="tools/economic-calendar.html"><i class="fas fa-calendar-alt"></i> Economic Calendar</a>
+    </div>
+  </div>
+
+  <!-- NEWS SUB-NAV -->
+  <div class="news-subnav" id="newsSubnav" aria-hidden="true">
+    <div class="news-subnav-inner">
+      <a class="news-pill primary" href="news/news.html"><i class="fas fa-newspaper"></i> News</a>
+      <a class="news-pill" href="news/heatmap.html"><i class="fas fa-fire"></i> Heat Map</a>
+      <a class="news-pill" href="news/sentiment.html"><i class="fas fa-face-smile"></i> Sentiment</a>
+      <a class="news-pill" href="news/challenges.html"><i class="fas fa-trophy"></i> Challenges</a>
+    </div>
+  </div>
+
+  <!-- Hero Section -->
+  <section class="hero" id="home">
+    <div class="hero-content">
+      <h1>Master Trading & Investing</h1>
+      <p>The ultimate platform for learning forex, crypto, and market analysis. Join thousands of traders achieving financial freedom.</p>
+      <div class="cta-buttons">
+        <a href="#learn" class="btn btn-primary"><span>Start Learning Free</span></a>
+        <a href="#tools" class="btn btn-secondary"><span>Explore Tools</span></a>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <i class="fas fa-chevron-down"></i>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features">
+    <h2 class="section-title">Why Choose Fynx?</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-graduation-cap"></i></div>
+        <h3>Expert Education</h3>
+        <p>Comprehensive courses from beginner to advanced, covering forex, crypto, stocks, and trading psychology.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
+        <h3>Real-Time Analysis</h3>
+        <p>Stay ahead with live market analysis, technical indicators, and professional trading insights.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-calculator"></i></div>
+        <h3>Trading Tools</h3>
+        <p>Access powerful calculators, risk management tools, and market analysis instruments.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-users"></i></div>
+        <h3>Active Community</h3>
+        <p>Connect with thousands of traders, share strategies, and learn from experienced professionals.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-newspaper"></i></div>
+        <h3>Daily Market News</h3>
+        <p>Get breaking financial news, market updates, and economic calendar events in real-time.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
+        <h3>Mobile App</h3>
+        <p>Trade on the go with our Fynx Finance World mobile app, available for iOS and Android.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Learning Section -->
+  <section class="learning-section" id="learn">
+    <div class="learning-container">
+      <h2 class="section-title">Start Your Learning Journey</h2>
+      <div class="course-grid">
+        <div class="course-card">
+          <div class="course-image">
+            <i class="fas fa-book-open"></i>
+          </div>
+          <div class="course-content">
+            <span class="course-badge">Beginner</span>
+            <h3>Forex Trading 101</h3>
+            <p>Learn the fundamentals of forex trading, currency pairs, and how to analyze market movements.</p>
+            <a href="#" class="btn btn-primary"><span>Start Course</span></a>
+          </div>
+        </div>
+        <div class="course-card">
+          <div class="course-image">
+            <i class="fab fa-bitcoin"></i>
+          </div>
+          <div class="course-content">
+            <span class="course-badge">Intermediate</span>
+            <h3>Cryptocurrency Mastery</h3>
+            <p>Dive into crypto trading, blockchain technology, DeFi, and digital asset management.</p>
+            <a href="#" class="btn btn-primary"><span>Start Course</span></a>
+          </div>
+        </div>
+        <div class="course-card">
+          <div class="course-image">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="course-content">
+            <span class="course-badge">Advanced</span>
+            <h3>Technical Analysis Pro</h3>
+            <p>Master chart patterns, indicators, and advanced trading strategies used by professionals.</p>
+            <a href="#" class="btn btn-primary"><span>Start Course</span></a>
+          </div>
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- LEARN -->
-    <div class="m-accordion">
-      <button class="m-acc-btn">
-        <span class="left"><i class="fas fa-graduation-cap"></i> Learn</span>
-        <i class="fas fa-chevron-down"></i>
-      </button>
-      <div class="m-acc-panel">
-        <div class="m-links">
-          <a class="m-link" href="learn/topic.html?topic=forex">Forex</a>
-          <a class="m-link" href="learn/topic.html?topic=crypto">Crypto</a>
-          <a class="m-link" href="learn/topic.html?topic=stocks">Stocks</a>
+  <!-- Tools Section -->
+  <section class="tools-section" id="tools">
+    <h2 class="section-title">Trading Tools & Calculators</h2>
+    <div class="tools-grid">
+      <div class="tool-item" onclick="location.href='tools/position-size.html'">
+        <i class="fas fa-calculator"></i>
+        <h3>Position Size Calculator</h3>
+      </div>
+      <div class="tool-item" onclick="location.href='tools/risk-reward.html'">
+        <i class="fas fa-balance-scale"></i>
+        <h3>Risk/Reward Calculator</h3>
+      </div>
+      <div class="tool-item" onclick="location.href='tools/pip.html'">
+        <i class="fas fa-dollar-sign"></i>
+        <h3>Pip Value Calculator</h3>
+      </div>
+      <div class="tool-item" onclick="location.href='tools/correlation.html'">
+        <i class="fas fa-chart-area"></i>
+        <h3>Market Correlation</h3>
+      </div>
+      <div class="tool-item" onclick="location.href='tools/market-hours.html'">
+        <i class="fas fa-clock"></i>
+        <h3>Market Hours</h3>
+      </div>
+      <div class="tool-item" onclick="location.href='tools/economic-calendar.html'">
+        <i class="fas fa-calendar-alt"></i>
+        <h3>Economic Calendar</h3>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-container">
+      <div class="footer-section">
+        <h3>Learn</h3>
+        <ul>
+          <li><a href="#">Forex Trading</a></li>
+          <li><a href="#">Crypto Trading</a></li>
+          <li><a href="#">Stock Market</a></li>
+          <li><a href="#">Trading Psychology</a></li>
+          <li><a href="#">Risk Management</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h3>Resources</h3>
+        <ul>
+          <li><a href="#tools">Trading Tools</a></li>
+          <li><a href="#">Market Analysis</a></li>
+          <li><a href="tools/economic-calendar.html">Economic Calendar</a></li>
+          <li><a href="#">Trading Glossary</a></li>
+          <li><a href="#">Quizzes</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h3>Community</h3>
+        <ul>
+          <li><a href="#">Forums</a></li>
+          <li><a href="#">Trading Ideas</a></li>
+          <li><a href="#">Success Stories</a></li>
+          <li><a href="https://elhamamini.cc/fynx-blog/index.html" target="_blank" rel="noopener">Blog</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h3>Company</h3>
+        <ul>
+          <li><a href="https://elhamamini.cc/FYNX-Site/index.html" target="_blank" rel="noopener">About Us</a></li>
+          <li><a href="https://elhamamini.cc/FYNX-Site/support.html" target="_blank" rel="noopener">Contact</a></li>
+          <li><a href="https://apps.apple.com/us/app/fynx-finance-world/id6752357210" target="_blank" rel="noopener">Download App</a></li>
+          <li><a href="https://elhamamini.cc/FYNX-Site/privacy.html" target="_blank" rel="noopener">Privacy Policy</a></li>
+          <li><a href="https://elhamamini.cc/FYNX-Site/terms.html" target="_blank" rel="noopener">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="copyright">
+      © 2025 FYNX. All rights reserved.
+    </div>
+  </footer>
+
+  <!-- FYNX Download QR (Floating) -->
+  <a class="fynx-download" id="fynxDownload" href="https://apps.apple.com/us/app/fynx-finance-world/id6752357210" target="_blank" rel="noopener">
+    <div class="fynx-card">
+      <div class="fynx-aura"></div>
+      <div class="fynx-scan"></div>
+
+      <div class="fynx-top">
+        <div class="fynx-badge">FYNX</div>
+        <button class="fynx-close" id="fynxClose" aria-label="Hide download widget" type="button">×</button>
+      </div>
+
+      <div class="fynx-content">
+        <div class="fynx-qr" id="fynxQr"></div>
+        <div class="fynx-text">
+          <div class="fynx-title">Download FYNX Now</div>
+          <div class="fynx-sub">Scan or click to install</div>
+          <div class="fynx-pill">App Store</div>
         </div>
       </div>
     </div>
+  </a>
 
-    <!-- TOOLS -->
-    <div class="m-accordion">
-      <button class="m-acc-btn">
-        <span class="left"><i class="fas fa-th-large"></i> Tools</span>
-        <i class="fas fa-chevron-down"></i>
-      </button>
-      <div class="m-acc-panel">
-        <div class="m-links">
-          <a class="m-link" href="tools/position-size.html">Position Size</a>
-          <a class="m-link" href="tools/risk-reward.html">Risk / Reward</a>
-          <a class="m-link" href="tools/pip.html">Pip Value</a>
-        </div>
-      </div>
-    </div>
+  <!-- QR library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-    <!-- NEWS -->
-    <div class="m-accordion">
-      <button class="m-acc-btn">
-        <span class="left"><i class="fas fa-newspaper"></i> News</span>
-        <i class="fas fa-chevron-down"></i>
-      </button>
-      <div class="m-acc-panel">
-        <div class="m-links">
-          <a class="m-link" href="news/news.html">Market News</a>
-          <a class="m-link" href="news/sentiment.html">Sentiment</a>
-        </div>
-      </div>
-    </div>
+  <script>
+    // Header scroll effect
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) header.classList.add('scrolled');
+      else header.classList.remove('scrolled');
+    });
 
-    <div class="m-single">
-      <a href="trader-journal.html">
-        <span class="left"><i class="fas fa-book"></i> Trader Journal</span>
-      </a>
-    </div>
+    // Create particles
+    const bg = document.querySelector('.animated-bg');
+    for (let i = 0; i < 40; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDelay = (Math.random() * 15) + 's';
+      p.style.animationDuration = (10 + Math.random() * 10) + 's';
+      bg.appendChild(p);
+    }
 
-  </div>
-</aside>
+    // Make subnav sit exactly under header (dynamic height)
+    function setHeaderHeightVar() {
+      const h = header.getBoundingClientRect().height;
+      document.documentElement.style.setProperty('--header-h', h + 'px');
+    }
+    window.addEventListener('resize', setHeaderHeightVar);
+    setHeaderHeightVar();
 
-<!-- ================== SUB NAVS ================== -->
-<div class="home-subnav" id="homeSubnav"></div>
-<div class="home-detail-subnav" id="homeMarketsSubnav"></div>
-<div class="learn-subnav" id="learnSubnav"></div>
-<div class="learn-detail-subnav" id="learnDetailSubnav"></div>
-<div class="tools-subnav" id="toolsSubnav"></div>
-<div class="news-subnav" id="newsSubnav"></div>
+    // ===== Desktop subnav toggles =====
+    const toolsToggle = document.getElementById('toolsToggle');
+    const toolsSubnav = document.getElementById('toolsSubnav');
 
-<!-- ================== HERO ================== -->
-<section class="hero" id="home">
-  <div class="hero-content">
-    <h1>Master Trading & Investing</h1>
-    <p>The ultimate platform for forex, crypto, and market mastery.</p>
-    <div class="cta-buttons">
-      <a href="#learn" class="btn btn-primary"><span>Start Learning Free</span></a>
-      <a href="#tools" class="btn btn-secondary"><span>Explore Tools</span></a>
-    </div>
-  </div>
-  <div class="scroll-indicator"><i class="fas fa-chevron-down"></i></div>
-</section>
+    const newsToggle = document.getElementById('newsToggle');
+    const newsSubnav = document.getElementById('newsSubnav');
 
-<!-- ================== FEATURES ================== -->
-<section class="features">
-  <h2 class="section-title">Why Choose Fynx?</h2>
-  <div class="feature-grid">
-    <div class="feature-card"><h3>Expert Education</h3></div>
-    <div class="feature-card"><h3>Market Analysis</h3></div>
-    <div class="feature-card"><h3>Advanced Tools</h3></div>
-    <div class="feature-card"><h3>Trading Community</h3></div>
-  </div>
-</section>
+    const learnToggle = document.getElementById('learnToggle');
+    const learnSubnav = document.getElementById('learnSubnav');
+    const learnDetailSubnav = document.getElementById('learnDetailSubnav');
 
-<!-- ================== LEARNING ================== -->
-<section class="learning-section" id="learn">
-  <div class="learning-container">
-    <h2 class="section-title">Start Learning</h2>
-  </div>
-</section>
+    const homeToggle = document.getElementById('homeToggle');
+    const homeSubnav = document.getElementById('homeSubnav');
+    const marketsToggle = document.getElementById('marketsToggle');
+    const homeMarketsSubnav = document.getElementById('homeMarketsSubnav');
 
-<!-- ================== TOOLS ================== -->
-<section class="tools-section" id="tools">
-  <h2 class="section-title">Trading Tools</h2>
-</section>
+    const learnDetailCaption = document.getElementById('learnDetailCaption');
+    const learnHowTo = document.getElementById('learnHowTo');
+    const learnQuizzes = document.getElementById('learnQuizzes');
+    const learnGlossary = document.getElementById('learnGlossary');
 
-<!-- ================== FOOTER ================== -->
-<footer>
-  <div class="footer-container">
-    <div class="footer-section">
-      <h3>Company</h3>
-      <ul>
-        <li><a href="#">About</a></li>
-        <li><a href="#">Contact</a></li>
-        <li><a href="#">Privacy</a></li>
-      </ul>
-    </div>
-  </div>
-  <div class="copyright">© 2025 FYNX</div>
-</footer>
+    const topicLabel = {
+      stocks: "Stocks",
+      funds: "Funds",
+      futures: "Futures",
+      forex: "Forex",
+      crypto: "Crypto",
+      indices: "Indices",
+      bonds: "Bonds",
+      economy: "Economy",
+      options: "Options"
+    };
 
-<!-- ================== DOWNLOAD WIDGET ================== -->
-<a class="fynx-download" id="fynxDownload" href="https://apps.apple.com/us/app/fynx-finance-world/id6752357210" target="_blank">
-  <div class="fynx-card">
-    <div class="fynx-aura"></div>
-    <div class="fynx-scan"></div>
-    <div class="fynx-top">
-      <div class="fynx-badge">FYNX</div>
-      <button class="fynx-close" id="fynxClose">×</button>
-    </div>
-    <div class="fynx-content">
-      <div class="fynx-qr" id="fynxQr"></div>
-      <div>
-        <div class="fynx-title">Download FYNX Now</div>
-        <div class="fynx-sub">Scan or click to install</div>
-      </div>
-    </div>
-  </div>
-</a>
+    function closeAllBars() {
+      document.body.classList.remove(
+        'tools-open','news-open','learn-open','learn-detail-open','home-open','home-detail-open'
+      );
+      toolsSubnav.setAttribute('aria-hidden', 'true');
+      newsSubnav.setAttribute('aria-hidden', 'true');
+      learnSubnav.setAttribute('aria-hidden', 'true');
+      learnDetailSubnav.setAttribute('aria-hidden', 'true');
+      homeSubnav.setAttribute('aria-hidden', 'true');
+      homeMarketsSubnav.setAttribute('aria-hidden', 'true');
+    }
 
-<!-- ================== SCRIPTS ================== -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    // keep page at top when opening any top menu bar
+    function keepAtTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-<script src="assets/js/navigation.js"></script>
-<script src="assets/js/mobile.js"></script>
-<script src="assets/js/download-widget.js"></script>
+    if (toolsToggle) toolsToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      keepAtTop();
 
+      document.body.classList.remove('news-open','learn-open','learn-detail-open','home-open','home-detail-open');
+      newsSubnav.setAttribute('aria-hidden', 'true');
+      learnSubnav.setAttribute('aria-hidden', 'true');
+      learnDetailSubnav.setAttribute('aria-hidden', 'true');
+      homeSubnav.setAttribute('aria-hidden', 'true');
+      homeMarketsSubnav.setAttribute('aria-hidden', 'true');
+
+      document.body.classList.toggle('tools-open');
+      toolsSubnav.setAttribute('aria-hidden', document.body.classList.contains('tools-open') ? 'false' : 'true');
+    });
+
+    if (newsToggle) newsToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      keepAtTop();
+
+      document.body.classList.remove('tools-open','learn-open','learn-detail-open','home-open','home-detail-open');
+      toolsSubnav.setAttribute('aria-hidden', 'true');
+      learnSubnav.setAttribute('aria-hidden', 'true');
+      learnDetailSubnav.setAttribute('aria-hidden', 'true');
+      homeSubnav.setAttribute('aria-hidden', 'true');
+      homeMarketsSubnav.setAttribute('aria-hidden', 'true');
+
+      document.body.classList.toggle('news-open');
+      newsSubnav.setAttribute('aria-hidden', document.body.classList.contains('news-open') ? 'false' : 'true');
+    });
+
+    if (learnToggle) learnToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      keepAtTop();
+
+      document.body.classList.remove('tools-open','news-open','home-open','home-detail-open');
+      toolsSubnav.setAttribute('aria-hidden', 'true');
+      newsSubnav.setAttribute('aria-hidden', 'true');
+      homeSubnav.setAttribute('aria-hidden', 'true');
+      homeMarketsSubnav.setAttribute('aria-hidden', 'true');
+
+      document.body.classList.toggle('learn-open');
+      learnSubnav.setAttribute('aria-hidden', document.body.classList.contains('learn-open') ? 'false' : 'true');
+
+      if (!document.body.classList.contains('learn-open')) {
+        document.body.classList.remove('learn-detail-open');
+        learnDetailSubnav.setAttribute('aria-hidden', 'true');
+      }
+    });
+
+    if (homeToggle) homeToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      keepAtTop();
+
+      document.body.classList.remove('tools-open','news-open','learn-open','learn-detail-open');
+      toolsSubnav.setAttribute('aria-hidden', 'true');
+      newsSubnav.setAttribute('aria-hidden', 'true');
+      learnSubnav.setAttribute('aria-hidden', 'true');
+      learnDetailSubnav.setAttribute('aria-hidden', 'true');
+
+      document.body.classList.toggle('home-open');
+      homeSubnav.setAttribute('aria-hidden', document.body.classList.contains('home-open') ? 'false' : 'true');
+
+      if (!document.body.classList.contains('home-open')) {
+        document.body.classList.remove('home-detail-open');
+        homeMarketsSubnav.setAttribute('aria-hidden', 'true');
+      }
+    });
+
+    if (marketsToggle) marketsToggle.addEventListener('click', () => {
+      keepAtTop();
+
+      if (!document.body.classList.contains('home-open')) {
+        document.body.classList.add('home-open');
+        homeSubnav.setAttribute('aria-hidden', 'false');
+      }
+      document.body.classList.toggle('home-detail-open');
+      homeMarketsSubnav.setAttribute('aria-hidden', document.body.classList.contains('home-detail-open') ? 'false' : 'true');
+    });
+
+    // Learn topic buttons (desktop bar)
+    const learnTopicButtons = document.querySelectorAll('.learn-pill[data-topic]');
+    function setActiveTopic(topic) {
+      learnTopicButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-topic') === topic);
+      });
+
+      document.body.classList.add('learn-detail-open');
+      learnDetailSubnav.setAttribute('aria-hidden', 'false');
+
+      learnDetailCaption.innerHTML = '<i class="fas fa-layer-group"></i> ' + (topicLabel[topic] || 'Topic');
+
+      learnHowTo.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=howto';
+      learnQuizzes.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=quizzes';
+      learnGlossary.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=glossary';
+    }
+    learnTopicButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const topic = btn.getAttribute('data-topic');
+        setActiveTopic(topic);
+      });
+    });
+
+    // Close desktop bars when clicking outside
+    document.addEventListener('click', (e) => {
+      const clickedInsideHeader = header.contains(e.target);
+      const clickedInsideTools = toolsSubnav.contains(e.target);
+      const clickedInsideNews = newsSubnav.contains(e.target);
+      const clickedInsideLearn = learnSubnav.contains(e.target);
+      const clickedInsideLearnDetail = learnDetailSubnav.contains(e.target);
+      const clickedInsideHome = homeSubnav.contains(e.target);
+      const clickedInsideHomeDetail = homeMarketsSubnav.contains(e.target);
+
+      const clickedInsideDrawer = document.getElementById('mobileDrawer').contains(e.target);
+      const clickedInsideOverlay = document.getElementById('mobileOverlay').contains(e.target);
+
+      // If clicking outside all bars AND not on mobile drawer/overlay
+      if (!clickedInsideDrawer && !clickedInsideOverlay) {
+        if (!clickedInsideHeader && !clickedInsideTools && !clickedInsideNews && !clickedInsideLearn && !clickedInsideLearnDetail && !clickedInsideHome && !clickedInsideHomeDetail) {
+          closeAllBars();
+        }
+      }
+    });
+
+    // Close on ESC (desktop bars + mobile drawer)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeAllBars();
+        closeMobileMenu();
+      }
+    });
+
+    // ===== MOBILE MENU (NEW FIX) =====
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+    const mobileCloseBtn = document.getElementById('mobileCloseBtn');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+
+    function openMobileMenu() {
+      // close desktop bars so they don't conflict
+      closeAllBars();
+
+      document.body.classList.add('mobile-menu-open');
+      mobileMenuBtn.setAttribute('aria-expanded', 'true');
+      mobileOverlay.setAttribute('aria-hidden', 'false');
+      mobileDrawer.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeMobileMenu() {
+      document.body.classList.remove('mobile-menu-open');
+      mobileMenuBtn.setAttribute('aria-expanded', 'false');
+      mobileOverlay.setAttribute('aria-hidden', 'true');
+      mobileDrawer.setAttribute('aria-hidden', 'true');
+
+      // close all accordions inside drawer
+      document.querySelectorAll('.m-accordion.open').forEach(el => el.classList.remove('open'));
+    }
+
+    mobileMenuBtn.addEventListener('click', () => {
+      const isOpen = document.body.classList.contains('mobile-menu-open');
+      if (isOpen) closeMobileMenu();
+      else openMobileMenu();
+    });
+
+    mobileCloseBtn.addEventListener('click', closeMobileMenu);
+    mobileOverlay.addEventListener('click', closeMobileMenu);
+
+    // Accordion behavior in drawer
+    document.querySelectorAll('.m-accordion > .m-acc-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const acc = btn.parentElement;
+
+        // Optional: close other top-level accordions (keep nested ones independent)
+        const isNested = acc.closest('.m-acc-panel') !== null;
+        if (!isNested) {
+          document.querySelectorAll('.mobile-drawer .m-accordion').forEach(other => {
+            if (other !== acc && other.getAttribute('data-acc') && !other.closest('.m-acc-panel')) {
+              other.classList.remove('open');
+            }
+          });
+        }
+
+        acc.classList.toggle('open');
+      });
+    });
+
+    // Close drawer when user clicks any link (so it feels like a real app)
+    document.querySelectorAll('.mobile-drawer a').forEach(a => {
+      a.addEventListener('click', () => closeMobileMenu());
+    });
+
+    /* ========= FYNX DOWNLOAD QR (NEW) ========= */
+    (function(){
+      const APP_URL = "https://apps.apple.com/us/app/fynx-finance-world/id6752357210";
+      const widget = document.getElementById("fynxDownload");
+      const closeBtn = document.getElementById("fynxClose");
+      const qrHost = document.getElementById("fynxQr");
+
+      if (!widget || !closeBtn || !qrHost) return;
+
+      // ✅ IMPORTANT FIX:
+      // Remove the "hide forever" localStorage behavior.
+      // Widget ALWAYS returns on refresh / revisit.
+
+      // Close button should not navigate (hide only this session)
+      closeBtn.addEventListener("click", function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        widget.classList.add("is-hidden");
+      });
+
+      // Generate QR for the App Store link
+      qrHost.innerHTML = "";
+      if (window.QRCode) {
+        new QRCode(qrHost, {
+          text: APP_URL,
+          width: 74,
+          height: 74,
+          correctLevel: QRCode.CorrectLevel.M
+        });
+
+        const qrEl = qrHost.querySelector("img, canvas");
+        if (qrEl) {
+          qrEl.style.borderRadius = "10px";
+          qrEl.style.background = "white";
+          qrEl.style.padding = "6px";
+        }
+      } else {
+        // Fallback if CDN fails
+        qrHost.innerHTML = '<div style="font-size:12px;opacity:.75;line-height:1.2;padding:10px;text-align:center;">QR failed to load.<br>Tap to open App Store.</div>';
+      }
+
+      // ✅ Mobile scroll behavior:
+      // Show when scrolling DOWN, hide when scrolling UP, hide near top.
+      let lastY = window.scrollY || 0;
+      const isMobile = () => window.matchMedia("(max-width: 768px)").matches;
+
+      function applyInitialState(){
+        // Desktop: always visible
+        if (!isMobile()) {
+          widget.classList.remove("is-hidden");
+          return;
+        }
+        // Mobile: hidden until user scrolls down
+        widget.classList.add("is-hidden");
+      }
+
+      function onScroll(){
+        if (!isMobile()) return;
+
+        const y = window.scrollY || 0;
+        const goingDown = y > lastY;
+
+        // Near top: hidden
+        if (y < 80) {
+          widget.classList.add("is-hidden");
+          lastY = y;
+          return;
+        }
+
+        if (goingDown) widget.classList.remove("is-hidden");
+        else widget.classList.add("is-hidden");
+
+        lastY = y;
+      }
+
+      applyInitialState();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", applyInitialState);
+    })();
+  </script>
 </body>
 </html>
