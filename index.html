@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
   <!-- Animated Background -->
   <div class="animated-bg">
     <div class="grid-overlay"></div>
@@ -16,7 +15,6 @@
     <div class="gradient-orb orb-2"></div>
     <div class="gradient-orb orb-3"></div>
   </div>
-
   <!-- Header -->
   <header id="header">
     <div class="nav-container">
@@ -39,7 +37,6 @@
       </button>
     </div>
   </header>
-
   <!-- MOBILE OVERLAY + DRAWER (NEW) -->
   <div class="mobile-overlay" id="mobileOverlay" aria-hidden="true"></div>
   <aside class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
@@ -176,7 +173,6 @@
       </div>
     </div>
   </aside>
-
   <!-- HOME SUB-NAV -->
   <div class="home-subnav" id="homeSubnav" aria-hidden="true">
     <div class="home-subnav-inner">
@@ -190,7 +186,6 @@
       <button class="home-pill" type="button" id="marketsToggle"><i class="fas fa-layer-group"></i> Markets <span style="opacity:.7;">▾</span></button>
     </div>
   </div>
-
   <!-- HOME MARKETS DETAIL SUB-NAV -->
   <div class="home-detail-subnav" id="homeMarketsSubnav" aria-hidden="true">
     <div class="home-detail-inner">
@@ -206,7 +201,6 @@
       <a class="home-detail-pill" href="markets/index.html?section=historical-data"><i class="fas fa-database"></i> Historical Data</a>
     </div>
   </div>
-
   <!-- LEARN SUB-NAV -->
   <div class="learn-subnav" id="learnSubnav" aria-hidden="true">
     <div class="learn-subnav-inner">
@@ -222,7 +216,6 @@
       <button class="learn-pill" type="button" data-topic="options">Options</button>
     </div>
   </div>
-
   <!-- LEARN DETAIL SUB-NAV -->
   <div class="learn-detail-subnav" id="learnDetailSubnav" aria-hidden="true">
     <div class="learn-detail-inner">
@@ -232,7 +225,6 @@
       <a class="learn-detail-pill" id="learnGlossary" href="learn/topic.html?topic=forex&section=glossary"><i class="fas fa-book"></i> Glossary</a>
     </div>
   </div>
-
   <!-- TOOLS SUB-NAV -->
   <div class="tools-subnav" id="toolsSubnav" aria-hidden="true">
     <div class="tools-subnav-inner">
@@ -262,7 +254,6 @@
       <a class="tools-pill" href="tools/economic-calendar.html"><i class="fas fa-calendar-alt"></i> Economic Calendar</a>
     </div>
   </div>
-
   <!-- NEWS SUB-NAV -->
   <div class="news-subnav" id="newsSubnav" aria-hidden="true">
     <div class="news-subnav-inner">
@@ -272,7 +263,6 @@
       <a class="news-pill" href="news/challenges.html"><i class="fas fa-trophy"></i> Challenges</a>
     </div>
   </div>
-
   <!-- Hero Section -->
   <section class="hero" id="home">
     <div class="hero-content">
@@ -287,7 +277,6 @@
       <i class="fas fa-chevron-down"></i>
     </div>
   </section>
-
   <!-- Features Section -->
   <section class="features">
     <h2 class="section-title">Why Choose Fynx?</h2>
@@ -324,7 +313,6 @@
       </div>
     </div>
   </section>
-
   <!-- Learning Section -->
   <section class="learning-section" id="learn">
     <div class="learning-container">
@@ -366,7 +354,6 @@
       </div>
     </div>
   </section>
-
   <!-- Tools Section -->
   <section class="tools-section" id="tools">
     <h2 class="section-title">Trading Tools & Calculators</h2>
@@ -394,6 +381,42 @@
       <div class="tool-item" onclick="location.href='tools/economic-calendar.html'">
         <i class="fas fa-calendar-alt"></i>
         <h3>Economic Calendar</h3>
+      </div>
+    </div>
+  </section>
+
+  <!-- New FAQs Section (black/dark theme, slow smooth accordion) -->
+  <section class="faq-section" id="faqs">
+    <div class="faq-container">
+      <h2 class="section-title">FAQs</h2>
+      <div class="faq-accordion">
+        <div class="faq-item">
+          <button class="faq-question">
+            How does FYNX work?
+            <i class="fas fa-plus faq-icon"></i>
+          </button>
+          <div class="faq-answer">
+            <p>Create your free account, explore our learning resources, use powerful trading calculators, and stay updated with real-time market news & tools — all designed to help you master trading and investing step by step.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            Why use FYNX tools & calculators?
+            <i class="fas fa-plus faq-icon"></i>
+          </button>
+          <div class="faq-answer">
+            <p>Our calculators (position size, risk/reward, pip value, etc.) help you manage risk precisely, make smarter trades, avoid emotional decisions, and improve your overall trading performance — completely free.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            Is FYNX suitable for beginners?
+            <i class="fas fa-plus faq-icon"></i>
+          </button>
+          <div class="faq-answer">
+            <p>Yes — we offer beginner-friendly courses, simple tools, and clear explanations. Start with Forex/Crypto 101 and basic calculators, then advance at your own pace with our structured learning path.</p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -445,7 +468,6 @@
       © 2025 FYNX. All rights reserved.
     </div>
   </footer>
-
   <!-- FYNX Download QR (Floating) -->
   <a class="fynx-download" id="fynxDownload" href="https://apps.apple.com/us/app/fynx-finance-world/id6752357210" target="_blank" rel="noopener">
     <div class="fynx-card">
@@ -465,10 +487,28 @@
       </div>
     </div>
   </a>
-
   <!-- QR library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="script.js"></script>
 
+  <!-- Minimal JS for FAQ accordion smooth toggle -->
+  <script>
+    document.querySelectorAll('.faq-question').forEach(button => {
+      button.addEventListener('click', () => {
+        const faqItem = button.parentElement;
+        const isOpen = faqItem.classList.contains('active');
+
+        // Close all others (accordion behavior)
+        document.querySelectorAll('.faq-item').forEach(item => {
+          if (item !== faqItem) {
+            item.classList.remove('active');
+          }
+        });
+
+        // Toggle current
+        faqItem.classList.toggle('active');
+      });
+    });
+  </script>
 </body>
 </html>
