@@ -263,14 +263,14 @@
       <a class="news-pill" href="news/challenges.html"><i class="fas fa-trophy"></i> Challenges</a>
     </div>
   </div>
-  <!-- Hero Section -->
+  <!-- Hero Section (updated only this part) -->
   <section class="hero" id="home">
     <div class="hero-content">
       <h1>Master Trading & Investing</h1>
       <p>The ultimate platform for learning forex, crypto, and market analysis. Join thousands of traders achieving financial freedom.</p>
       <div class="cta-buttons">
-        <a href="#learn" class="btn btn-primary"><span>Start Learning Free</span></a>
-        <a href="#tools" class="btn btn-secondary"><span>Explore Tools</span></a>
+        <a href="auth/login.html" class="btn btn-primary"><span>Login</span></a>
+        <a href="auth/signup.html" class="btn btn-secondary"><span>Sign Up</span></a>
       </div>
     </div>
     <div class="scroll-indicator">
@@ -384,7 +384,6 @@
       </div>
     </div>
   </section>
-
   <!-- New FAQs Section (black/dark theme, slow smooth accordion) -->
   <section class="faq-section" id="faqs">
     <div class="faq-container">
@@ -420,7 +419,6 @@
       </div>
     </div>
   </section>
-
   <!-- Footer -->
   <footer>
     <div class="footer-container">
@@ -490,21 +488,18 @@
   <!-- QR library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="script.js"></script>
-
   <!-- Minimal JS for FAQ accordion smooth toggle -->
   <script>
     document.querySelectorAll('.faq-question').forEach(button => {
       button.addEventListener('click', () => {
         const faqItem = button.parentElement;
         const isOpen = faqItem.classList.contains('active');
-
         // Close all others (accordion behavior)
         document.querySelectorAll('.faq-item').forEach(item => {
           if (item !== faqItem) {
             item.classList.remove('active');
           }
         });
-
         // Toggle current
         faqItem.classList.toggle('active');
       });
