@@ -1131,3 +1131,71 @@ footer{
   .home-subnav-inner{ padding: .65rem 1rem; }
   .home-detail-inner{ padding: .55rem 1rem; }
 }
+
+/* ==============================================
+   FAQs Section - Dark minimalist accordion
+   Added at the end - nothing else was modified
+============================================== */
+.faq-section {
+  padding: 80px 20px;
+  background: #0a0a0a;
+  color: #ffffff;
+}
+
+.faq-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.faq-accordion {
+  margin-top: 40px;
+}
+
+.faq-item {
+  margin-bottom: 16px;
+  border: 1px solid #222;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #111;
+}
+
+.faq-question {
+  width: 100%;
+  padding: 20px 24px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.3s ease;
+}
+
+.faq-question:hover {
+  background: #1a1a1a;
+}
+
+.faq-icon {
+  transition: transform 0.4s ease;
+}
+
+.faq-item.active .faq-icon {
+  transform: rotate(45deg);
+}
+
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 24px;
+  background: #0f0f0f;
+  transition: max-height 0.6s ease-out, padding 0.6s ease-out;
+}
+
+.faq-item.active .faq-answer {
+  max-height: 300px; /* increase if your answers are longer */
+  padding: 24px;
+}
