@@ -202,35 +202,46 @@
       justify-content:center;
       min-height: 520px;
     }
+
+    /* UPDATED: rightInner stays the same vibe, but now hosts the video */
     .rightInner{
       width:100%;
       height:100%;
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,.10);
-      background:
-        radial-gradient(700px 520px at 30% 20%, rgba(255,255,255,.10), transparent 60%),
-        radial-gradient(520px 420px at 80% 40%, rgba(255,255,255,.08), transparent 60%),
-        linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
       position:relative;
       overflow:hidden;
+      background:#000;
     }
-    .rightInner::before{
+
+    /* NEW: video layer */
+    .heroVideo{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      opacity:.92;
+      filter: contrast(1.05) saturate(0) brightness(.95);
+      transform: translateZ(0);
+    }
+
+    /* NEW: overlay to keep text readable + grok feel */
+    .rightInner::after{
       content:"";
-      position:absolute; inset:-35%;
-      background: radial-gradient(circle at 40% 40%, rgba(255,255,255,.20), transparent 55%);
-      filter: blur(10px);
-      animation: float2 6.5s ease-in-out infinite;
-      opacity:.9;
-    }
-    @keyframes float2{
-      0%,100%{ transform: translate(-10px,-10px) rotate(0deg); }
-      50%{ transform: translate(20px,18px) rotate(6deg); }
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(900px 600px at 35% 25%, rgba(0,0,0,.10), rgba(0,0,0,.55)),
+        linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.55));
+      pointer-events:none;
     }
 
     .fynxLogo{
       position:absolute; inset:0;
       display:grid; place-items:center;
       text-align:center; padding: 28px;
+      pointer-events:none;
     }
     .fynxLogo .big{
       font-weight:900;
@@ -311,7 +322,13 @@
       </div>
 
       <div class="panel right" aria-hidden="true">
-        <div class="rightInner"></div>
+        <div class="rightInner">
+          <!-- NEW: signup video -->
+          <video class="heroVideo" autoplay muted loop playsinline preload="auto">
+            <source src="../assets/video/fynx-signup.mp4" type="video/mp4" />
+          </video>
+        </div>
+
         <div class="fynxLogo">
           <div>
             <div class="big">F Y N X</div>
