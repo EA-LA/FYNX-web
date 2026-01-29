@@ -394,7 +394,6 @@
       signInWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-    // ✅ PASTE YOUR FIREBASE WEB CONFIG HERE (from Firebase console -> Web app)
     const firebaseConfig = {
       apiKey: "AIzaSyDGSYIB_YIpbWyUMJ1d-v00-xADnvaWckk",
       authDomain: "fynx-c7a28.firebaseapp.com",
@@ -414,20 +413,22 @@
       alert(e?.message || String(e));
     }
 
+    // ✅ root dashboard file (repo shows dashboard.html at root)
+    const DASHBOARD_URL = "../dashboard.html";
+
     loginGoogleBtn.addEventListener("click", async () => {
       try{
         const provider = new GoogleAuthProvider();
         await signInWithPopup(auth, provider);
-        window.location.href = "./dashboard.html";
+        window.location.href = DASHBOARD_URL;
       }catch(e){ showErr(e); }
     });
 
     loginAppleBtn.addEventListener("click", async () => {
       try{
-        // NOTE: Apple requires proper provider configuration in Firebase + Apple Developer.
         const provider = new OAuthProvider("apple.com");
         await signInWithPopup(auth, provider);
-        window.location.href = "./dashboard.html";
+        window.location.href = DASHBOARD_URL;
       }catch(e){ showErr(e); }
     });
 
@@ -437,7 +438,7 @@
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
         await signInWithEmailAndPassword(auth, email, password);
-        window.location.href = "./dashboard.html";
+        window.location.href = DASHBOARD_URL;
       }catch(err){ showErr(err); }
     });
 
@@ -446,7 +447,7 @@
       window.location.href = deepLink;
 
       setTimeout(() => {
-        window.location.href = "./dashboard.html";
+        window.location.href = DASHBOARD_URL;
       }, 1500);
     });
   </script>
