@@ -373,7 +373,7 @@
       try{
         const provider = new GoogleAuthProvider();
         await signInWithPopup(auth, provider);
-        window.location.href = "../index.html";
+        window.location.href = "./login.html";
       }catch(e){ showErr(e); }
     });
 
@@ -381,7 +381,7 @@
       try{
         const provider = new OAuthProvider("apple.com");
         await signInWithPopup(auth, provider);
-        window.location.href = "../index.html";
+        window.location.href = "./login.html";
       }catch(e){ showErr(e); }
     });
 
@@ -403,7 +403,7 @@
         if(displayName){
           await updateProfile(cred.user, { displayName });
         }
-        window.location.href = "../index.html";
+        window.location.href = "./login.html";
       }catch(err){ showErr(err); }
     });
   </script>
