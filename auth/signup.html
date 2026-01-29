@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -340,25 +341,68 @@
     </section>
   </main>
 
-  <script>
-    // PLACEHOLDERS — Firebase later
-    document.getElementById('signupGoogle').addEventListener('click', () => {
-      alert('Google signup will be connected to Firebase later.');
-    });
-    document.getElementById('signupApple').addEventListener('click', () => {
-      alert('Apple signup will be connected to Firebase later.');
+  <!-- ONLY CHANGE: Replace old placeholder script with Firebase wiring -->
+  <script type="module">
+    import { loginWithGoogle, loginWithApple, loginWithEmail } from "./auth-ui.js";
+    import { auth } from "./firebase.js";
+    import {
+      createUserWithEmailAndPassword,
+      updateProfile
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+    const googleBtn = document.getElementById("signupGoogle");
+    const appleBtn  = document.getElementById("signupApple");
+    const form      = document.getElementById("emailSignupForm");
+
+    function showErr(e){
+      const msg = (e && e.message) ? e.message : String(e);
+      alert(msg);
+      console.error(e);
+    }
+
+    googleBtn.addEventListener("click", async () => {
+      try{
+        // Google popup (same flow as login, creates account if new)
+        await loginWithGoogle();
+        window.location.href = "../home/index.html";
+      }catch(e){
+        showErr(e);
+      }
     });
 
-    document.getElementById('emailSignupForm').addEventListener('submit', (e) => {
+    appleBtn.addEventListener("click", async () => {
+      try{
+        // Apple popup (creates account if new)
+        await loginWithApple();
+        window.location.href = "../home/index.html";
+      }catch(e){
+        showErr(e);
+      }
+    });
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const pw = document.getElementById('password').value;
-      const cf = document.getElementById('confirm').value;
+      const displayName = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const pw = document.getElementById("password").value;
+      const cf = document.getElementById("confirm").value;
+
       if(pw !== cf){
-        alert('Passwords do not match.');
+        alert("Passwords do not match.");
         return;
       }
-      alert('Email signup will be connected to Firebase later.');
+
+      try{
+        const cred = await createUserWithEmailAndPassword(auth, email, pw);
+        if(displayName){
+          await updateProfile(cred.user, { displayName });
+        }
+        window.location.href = "../home/index.html";
+      }catch(err){
+        showErr(err);
+      }
     });
   </script>
 </body>
 </html>
+```
