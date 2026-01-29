@@ -418,7 +418,7 @@
       try{
         const provider = new GoogleAuthProvider();
         await signInWithPopup(auth, provider);
-        window.location.href = "../index.html";
+        window.location.href = "./dashboard.html";
       }catch(e){ showErr(e); }
     });
 
@@ -427,7 +427,7 @@
         // NOTE: Apple requires proper provider configuration in Firebase + Apple Developer.
         const provider = new OAuthProvider("apple.com");
         await signInWithPopup(auth, provider);
-        window.location.href = "../index.html";
+        window.location.href = "./dashboard.html";
       }catch(e){ showErr(e); }
     });
 
@@ -437,7 +437,7 @@
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
         await signInWithEmailAndPassword(auth, email, password);
-        window.location.href = "../index.html";
+        window.location.href = "./dashboard.html";
       }catch(err){ showErr(err); }
     });
 
@@ -446,7 +446,7 @@
       window.location.href = deepLink;
 
       setTimeout(() => {
-        window.location.href = "../index.html";
+        window.location.href = "./dashboard.html";
       }, 1500);
     });
   </script>
