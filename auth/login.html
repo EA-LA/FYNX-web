@@ -33,7 +33,6 @@
       overflow-x:hidden;
     }
 
-    /* Grok-ish animated background */
     .bg{
       position:fixed; inset:0; z-index:-1; overflow:hidden;
       background:
@@ -232,7 +231,6 @@
     .foot a{ color: rgba(255,255,255,.85); text-decoration:none; border-bottom:1px solid rgba(255,255,255,.18); }
     .foot a:hover{ border-bottom-color: rgba(255,255,255,.55); }
 
-    /* Right side visual */
     .right{
       position:relative;
       padding: 24px;
@@ -242,7 +240,6 @@
       min-height: 520px;
     }
 
-    /* NEW: video hero like Grok */
     .rightInner{
       width:100%;
       height:100%;
@@ -262,7 +259,6 @@
       filter: contrast(1.05) saturate(0) brightness(.95);
       transform: translateZ(0);
     }
-    /* NEW: dark gradient overlay to keep logo readable */
     .rightInner::after{
       content:"";
       position:absolute; inset:0;
@@ -362,15 +358,16 @@
           <button class="btn" id="loginApp" type="button">Login with App</button>
 
           <p class="foot">
-            By continuing, you agree to FYNX <a href="#" onclick="alert('Add Terms link later'); return false;">Terms of Service</a>
-            and <a href="#" onclick="alert('Add Privacy link later'); return false;">Privacy Policy</a>.
+            By continuing, you agree to FYNX
+            <a href="https://elhamamini.cc/FYNX-Site/terms.html">Terms of Service</a>
+            and
+            <a href="https://elhamamini.cc/FYNX-Site/privacy.html">Privacy Policy</a>.
           </p>
         </form>
       </div>
 
       <div class="panel right" aria-hidden="true">
         <div class="rightInner">
-          <!-- NEW: VIDEO (Grok-style) -->
           <video class="heroVideo" autoplay muted loop playsinline preload="auto">
             <source src="../assets/video/fynx-loop.mp4" type="video/mp4" />
           </video>
@@ -387,53 +384,64 @@
     </section>
   </main>
 
-  <!-- ONLY CHANGE: Replace old placeholder script with Firebase wiring -->
   <script type="module">
-    import { loginWithGoogle, loginWithApple, loginWithEmail } from "./auth-ui.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getAuth,
+      signInWithPopup,
+      GoogleAuthProvider,
+      OAuthProvider,
+      signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-    const googleBtn = document.getElementById("loginGoogle");
-    const appleBtn  = document.getElementById("loginApple");
-    const form      = document.getElementById("emailLoginForm");
+    // ✅ PASTE YOUR FIREBASE WEB CONFIG HERE (from Firebase console -> Web app)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDGSYIB_YIpbWyUMJ1d-v00-xADnvaWckk",
+      authDomain: "fynx-c7a28.firebaseapp.com",
+      projectId: "fynx-c7a28",
+      appId: "1:1011050657868:web:2c5ad5a1b275e669b05ce9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const loginGoogleBtn = document.getElementById("loginGoogle");
+    const loginAppleBtn  = document.getElementById("loginApple");
+    const emailForm      = document.getElementById("emailLoginForm");
 
     function showErr(e){
-      const msg = (e && e.message) ? e.message : String(e);
-      alert(msg);
       console.error(e);
+      alert(e?.message || String(e));
     }
 
-    googleBtn.addEventListener("click", async () => {
+    loginGoogleBtn.addEventListener("click", async () => {
       try{
-        await loginWithGoogle();
-        window.location.href = "../home/index.html";
-      }catch(e){
-        showErr(e);
-      }
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+        window.location.href = "../index.html";
+      }catch(e){ showErr(e); }
     });
 
-    appleBtn.addEventListener("click", async () => {
+    loginAppleBtn.addEventListener("click", async () => {
       try{
-        await loginWithApple();
-        window.location.href = "../home/index.html";
-      }catch(e){
-        showErr(e);
-      }
+        // NOTE: Apple requires proper provider configuration in Firebase + Apple Developer.
+        const provider = new OAuthProvider("apple.com");
+        await signInWithPopup(auth, provider);
+        window.location.href = "../index.html";
+      }catch(e){ showErr(e); }
     });
 
-    form.addEventListener("submit", async (e) => {
+    emailForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const email = document.getElementById("email").value.trim();
-      const pass  = document.getElementById("password").value;
-
       try{
-        await loginWithEmail(email, pass);
-        window.location.href = "../home/index.html";
-      }catch(err){
-        showErr(err);
-      }
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.href = "../index.html";
+      }catch(err){ showErr(err); }
     });
 
-    // "Login with App" deep link placeholder (unchanged)
-    document.getElementById('loginApp').addEventListener('click', () => {
+    document.getElementById("loginApp").addEventListener("click", () => {
       const deepLink = "fynx://auth/login";
       window.location.href = deepLink;
 
