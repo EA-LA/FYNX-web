@@ -313,6 +313,115 @@
       </div>
     </div>
   </section>
+  <!-- === REPLACED: Unique Finance Section - "FYNX Quantum Edge" (something fresh, not seen on typical finance sites) === -->
+  <section class="learning-section" id="learn">
+    <div class="learning-container">
+      <h2 class="section-title">FYNX Quantum Edge</h2>
+      <p style="text-align:center; margin-bottom:3rem; max-width:800px; margin-left:auto; margin-right:auto; opacity:0.9;">
+        Unlock proprietary tools that combine AI-driven predictions, real-time quantum-inspired volatility mapping, and adaptive risk engines — features rarely found together on any trading platform.
+      </p>
+      <div class="course-grid"> <!-- Keeping the grid style for consistency, but repurposed -->
+        <div class="course-card">
+          <div class="course-image">
+            <i class="fas fa-atom" style="font-size:5rem; color:#00ffff;"></i>
+          </div>
+          <div class="course-content">
+            <span class="course-badge" style="background:#00ffff33;">QUANTUM</span>
+            <h3>Volatility Quantum Map</h3>
+            <p>Visualize multi-dimensional volatility surfaces in real-time — predict explosive moves before they happen using quantum probability models adapted for markets.</p>
+            <a href="#tools" class="btn btn-primary"><span>Activate Map</span></a>
+          </div>
+        </div>
+        <div class="course-card">
+          <div class="course-image">
+            <i class="fas fa-brain" style="font-size:5rem; color:#ff00aa;"></i>
+          </div>
+          <div class="course-content">
+            <span class="course-badge" style="background:#ff00aa33;">AI CORE</span>
+            <h3>Adaptive AI Sentinel</h3>
+            <p>An always-on AI that learns your trading style, suggests personalized entries/exits, and auto-adjusts risk parameters in volatile conditions — like having a quant desk in your pocket.</p>
+            <a href="auth/signup.html" class="btn btn-primary"><span>Enable Sentinel</span></a>
+          </div>
+        </div>
+        <div class="course-card">
+          <div class="course-image">
+            <i class="fas fa-shield-halved" style="font-size:5rem; color:#00ff88;"></i>
+          </div>
+          <div class="course-content">
+            <span class="course-badge" style="background:#00ff8833;">DEFENSE</span>
+            <h3>Fractal Risk Engine</h3>
+            <p>Fractal-based risk modeling that detects hidden correlations and black-swan setups — automatically scales positions and sets dynamic stops to protect capital in any regime.</p>
+            <a href="#tools" class="btn btn-primary"><span>Deploy Engine</span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Tools Section -->
+  <section class="tools-section" id="tools">
+    <h2 class="section-title">Trading Tools & Calculators</h2>
+    <div class="tools-grid">
+      <div class="tool-item" onclick="location.href='tools/position-size.html'">
+        <i class="fas fa-calculator"></i>
+        <h3>Position Size Calculator</h3>
+      </div>
+      <div class="tool-item" onclick="location.href='tools/risk-reward.html'">
+        <i class="fas fa-balance-scale"></i>
+        <h3>Risk/Reward Calculator</h3>
+      </div>
+      <div class="tool-item" onclick="location.href='tools/pip.html'">
+        <i class="fas fa-dollar-sign"></i>
+        <h3>Pip Value Calculator</h3>
+      </div>
+      <div class="tool-item" onclick="location.href='tools/correlation.html'">
+        <i class="fas fa-chart-area"></i>
+        <h3>Market Correlation</h3>
+      </div>
+      <div class="tool-item" onclick="location.href='tools/market-hours.html'">
+        <i class="fas fa-clock"></i>
+        <h3>Market Hours</h3>
+      </div>
+      <div class="tool-item" onclick="location.href='tools/economic-calendar.html'">
+        <i class="fas fa-calendar-alt"></i>
+        <h3>Economic Calendar</h3>
+      </div>
+    </div>
+  </section>
+  <!-- New FAQs Section (black/dark theme, slow smooth accordion) -->
+  <section class="faq-section" id="faqs">
+    <div class="faq-container">
+      <h2 class="section-title">FAQs</h2>
+      <div class="faq-accordion">
+        <div class="faq-item">
+          <button class="faq-question">
+            How does FYNX work?
+            <i class="fas fa-plus faq-icon"></i>
+          </button>
+          <div class="faq-answer">
+            <p>Create your free account, explore our learning resources, use powerful trading calculators, and stay updated with real-time market news & tools — all designed to help you master trading and investing step by step.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            Why use FYNX tools & calculators?
+            <i class="fas fa-plus faq-icon"></i>
+          </button>
+          <div class="faq-answer">
+            <p>Our calculators (position size, risk/reward, pip value, etc.) help you manage risk precisely, make smarter trades, avoid emotional decisions, and improve your overall trading performance — completely free.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            Is FYNX suitable for beginners?
+            <i class="fas fa-plus faq-icon"></i>
+          </button>
+          <div class="faq-answer">
+            <p>Yes — we offer beginner-friendly courses, simple tools, and clear explanations. Start with Forex/Crypto 101 and basic calculators, then advance at your own pace with our structured learning path.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
   <!-- Footer -->
   <footer>
     <div class="footer-container">
@@ -360,6 +469,44 @@
       © 2025 FYNX. All rights reserved.
     </div>
   </footer>
+  <!-- FYNX Download QR (Floating) -->
+  <a class="fynx-download" id="fynxDownload" href="https://apps.apple.com/us/app/fynx-finance-world/id6752357210" target="_blank" rel="noopener">
+    <div class="fynx-card">
+      <div class="fynx-aura"></div>
+      <div class="fynx-scan"></div>
+      <div class="fynx-top">
+        <div class="fynx-badge">FYNX</div>
+        <button class="fynx-close" id="fynxClose" aria-label="Hide download widget" type="button">×</button>
+      </div>
+      <div class="fynx-content">
+        <div class="fynx-qr" id="fynxQr"></div>
+        <div class="fynx-text">
+          <div class="fynx-title">Download FYNX Now</div>
+          <div class="fynx-sub">Scan or click to install</div>
+          <div class="fynx-pill">App Store</div>
+        </div>
+      </div>
+    </div>
+  </a>
+  <!-- QR library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="script.js"></script>
+  <!-- Minimal JS for FAQ accordion smooth toggle -->
+  <script>
+    document.querySelectorAll('.faq-question').forEach(button => {
+      button.addEventListener('click', () => {
+        const faqItem = button.parentElement;
+        const isOpen = faqItem.classList.contains('active');
+        // Close all others (accordion behavior)
+        document.querySelectorAll('.faq-item').forEach(item => {
+          if (item !== faqItem) {
+            item.classList.remove('active');
+          }
+        });
+        // Toggle current
+        faqItem.classList.toggle('active');
+      });
+    });
+  </script>
 </body>
 </html>
