@@ -1,520 +1,500 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FYNX Finance World - Dashboard</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FYNX — Journal</title>
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-            background: #ffffff;
-            color: #000000;
-            overflow: hidden;
-            height: 100vh;
-        }
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
 
-        body.dark-mode {
-            background: #000000;
-            color: #ffffff;
-        }
+    body{
+      font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      background:#ffffff;
+      color:#0b0b0b;
+      height:100vh;
+      overflow:hidden;
+    }
+    body.dark-mode{background:#000;color:#fff}
 
-        .dashboard-container {
-            display: flex;
-            height: 100vh;
-            width: 100vw;
-        }
+    .dashboard-container{display:flex;height:100vh;width:100vw}
 
-        .nav-panel {
-            width: 120px;
-            background: #fafafa;
-            border-right: 1px solid #e5e5e5;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            left: 0;
-            top: 0;
-            height: 100vh;
-            z-index: 100;
-        }
+    /* Sidebar (match screenshot) */
+    .nav-panel{
+      width:104px;
+      background:#fbfbfb;
+      border-right:1px solid #eeeeee;
+      display:flex;
+      flex-direction:column;
+      position:fixed;
+      left:0;top:0;
+      height:100vh;
+      z-index:100;
+    }
+    body.dark-mode .nav-panel{
+      background:#000;
+      border-right:1px solid rgba(255,255,255,.08);
+    }
 
-        body.dark-mode .nav-panel {
-            background: #000000;
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
-        }
+    .nav-logo{
+      padding:26px 0;
+      text-align:center;
+      border-bottom:1px solid #eeeeee;
+    }
+    body.dark-mode .nav-logo{
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .nav-logo h1{
+      font-size:16px;
+      font-weight:800;
+      letter-spacing:.12em;
+      color:#000;
+      user-select:none;
+    }
+    body.dark-mode .nav-logo h1{color:#fff}
 
-        .nav-logo {
-            padding: 32px 0;
-            text-align: center;
-            border-bottom: 1px solid #e5e5e5;
-        }
+    .nav-menu{
+      flex:1;
+      padding:22px 0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+    }
 
-        body.dark-mode .nav-logo {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        }
+    .nav-item{
+      width:78px;
+      padding:14px 0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      cursor:pointer;
+      transition:all .18s ease;
+      position:relative;
+      border-radius:14px;
+    }
+    .nav-item:hover{background:#f2f2f2}
+    body.dark-mode .nav-item:hover{background:rgba(255,255,255,.05)}
 
-        .nav-logo h1 {
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-            color: #000000;
-        }
+    .nav-item.active{background:#ffffff}
+    body.dark-mode .nav-item.active{background:rgba(255,255,255,.08)}
 
-        body.dark-mode .nav-logo h1 { color: #ffffff; }
+    .nav-item.active::after{
+      content:'';
+      position:absolute;
+      left:0;
+      top:50%;
+      transform:translateY(-50%);
+      width:3px;
+      height:26px;
+      background:#000;
+      border-radius:0 3px 3px 0;
+    }
+    body.dark-mode .nav-item.active::after{background:#fff}
 
-        .nav-menu {
-            flex: 1;
-            padding: 24px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
+    .nav-icon{
+      width:22px;height:22px;
+      stroke:#707070;
+      stroke-width:1.6;
+      fill:none;
+      transition:stroke .18s ease;
+    }
+    body.dark-mode .nav-icon{stroke:rgba(255,255,255,.55)}
+    .nav-item.active .nav-icon,
+    .nav-item:hover .nav-icon{stroke:#000}
+    body.dark-mode .nav-item.active .nav-icon,
+    body.dark-mode .nav-item:hover .nav-icon{stroke:#fff}
 
-        .nav-item {
-            width: 80px;
-            padding: 16px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            border-radius: 8px;
-        }
+    .nav-label{
+      font-size:11px;
+      font-weight:600;
+      letter-spacing:.01em;
+      color:#777;
+      transition:color .18s ease;
+      user-select:none;
+    }
+    body.dark-mode .nav-label{color:rgba(255,255,255,.55)}
+    .nav-item.active .nav-label,
+    .nav-item:hover .nav-label{color:#111}
+    body.dark-mode .nav-item.active .nav-label,
+    body.dark-mode .nav-item:hover .nav-label{color:#fff}
 
-        .nav-item:hover { background: #f0f0f0; }
-        body.dark-mode .nav-item:hover { background: rgba(255, 255, 255, 0.05); }
+    /* Main */
+    .main-content{
+      margin-left:104px;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      height:100vh;
+      overflow:hidden;
+      background:#fff;
+    }
+    body.dark-mode .main-content{background:#000}
 
-        .nav-item.active { background: #ffffff; }
-        body.dark-mode .nav-item.active { background: rgba(255, 255, 255, 0.08); }
+    .top-bar{
+      height:64px;
+      border-bottom:1px solid #eeeeee;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 42px;
+      background:#ffffff;
+    }
+    body.dark-mode .top-bar{
+      border-bottom:1px solid rgba(255,255,255,.08);
+      background:#000;
+    }
 
-        .nav-item.active::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 24px;
-            background: #000000;
-            border-radius: 0 2px 2px 0;
-        }
+    .page-title{
+      font-size:14px;
+      font-weight:600;
+      color:#7a7a7a;
+      letter-spacing:.01em;
+    }
+    body.dark-mode .page-title{color:rgba(255,255,255,.55)}
 
-        body.dark-mode .nav-item.active::after { background: #ffffff; }
+    .top-bar-right{display:flex;align-items:center;gap:18px}
 
-        .nav-icon {
-            width: 22px;
-            height: 22px;
-            stroke: #666666;
-            stroke-width: 1.5;
-            fill: none;
-            transition: stroke 0.2s ease;
-        }
+    .theme-toggle{
+      width:22px;height:22px;
+      cursor:pointer;
+      opacity:.55;
+      transition:opacity .18s ease;
+    }
+    .theme-toggle:hover{opacity:1}
+    .theme-toggle svg{width:100%;height:100%;stroke:#000;stroke-width:1.6;fill:none}
+    body.dark-mode .theme-toggle svg{stroke:#fff}
 
-        body.dark-mode .nav-icon { stroke: rgba(255, 255, 255, 0.5); }
+    .notification-icon{
+      width:20px;height:20px;
+      stroke:#000;stroke-width:1.6;fill:none;
+      opacity:.5;cursor:pointer;transition:opacity .18s ease;
+    }
+    body.dark-mode .notification-icon{stroke:#fff}
+    .notification-icon:hover{opacity:1}
 
-        .nav-item.active .nav-icon,
-        .nav-item:hover .nav-icon { stroke: #000000; }
+    .user-avatar{
+      width:34px;height:34px;
+      border-radius:999px;
+      background:#f2f2f2;
+      border:1px solid #e8e8e8;
+      display:flex;align-items:center;justify-content:center;
+      font-size:12px;font-weight:800;color:#666;
+      cursor:pointer;
+      transition:transform .18s ease,border-color .18s ease;
+      user-select:none;
+    }
+    body.dark-mode .user-avatar{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      color:rgba(255,255,255,.75);
+    }
+    .user-avatar:hover{transform:scale(1.05);border-color:#d0d0d0}
+    body.dark-mode .user-avatar:hover{border-color:rgba(255,255,255,.28)}
 
-        body.dark-mode .nav-item.active .nav-icon,
-        body.dark-mode .nav-item:hover .nav-icon { stroke: #ffffff; }
+    /* Content */
+    .content-area{
+      flex:1;
+      overflow-y:auto;
+      padding:46px 42px;
+      background:#ffffff;
+    }
+    body.dark-mode .content-area{background:#000}
 
-        .nav-label {
-            font-size: 11px;
-            font-weight: 500;
-            letter-spacing: 0.2px;
-            color: #666666;
-            transition: color 0.2s ease;
-        }
+    .content-area::-webkit-scrollbar{width:6px}
+    .content-area::-webkit-scrollbar-track{background:transparent}
+    .content-area::-webkit-scrollbar-thumb{background:#e7e7e7;border-radius:999px}
+    body.dark-mode .content-area::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12)}
+    .content-area::-webkit-scrollbar-thumb:hover{background:#d2d2d2}
+    body.dark-mode .content-area::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.20)}
 
-        body.dark-mode .nav-label { color: rgba(255, 255, 255, 0.5); }
+    .section-header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+      margin-bottom:22px;
+    }
+    .section-header h2{
+      font-size:30px;
+      line-height:1.05;
+      font-weight:800;
+      letter-spacing:-.02em;
+      color:#0b0b0b;
+      margin-bottom:6px;
+    }
+    body.dark-mode .section-header h2{color:#fff}
 
-        .nav-item.active .nav-label,
-        .nav-item:hover .nav-label { color: #000000; }
+    .section-header p{
+      font-size:14px;
+      color:#8f8f8f;
+      font-weight:500;
+    }
+    body.dark-mode .section-header p{color:rgba(255,255,255,.45)}
 
-        body.dark-mode .nav-item.active .nav-label,
-        body.dark-mode .nav-item:hover .nav-label { color: #ffffff; }
+    .action-button{
+      padding:10px 14px;
+      border:1px solid #e8e8e8;
+      border-radius:10px;
+      background:#ffffff;
+      font-size:13px;
+      font-weight:700;
+      color:#111;
+      cursor:pointer;
+      transition:background .18s ease,border-color .18s ease;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      height:40px;
+      margin-top:6px;
+    }
+    body.dark-mode .action-button{
+      background:rgba(255,255,255,.06);
+      border-color:rgba(255,255,255,.14);
+      color:#fff;
+    }
+    .action-button:hover{background:#f7f7f7;border-color:#d6d6d6}
+    body.dark-mode .action-button:hover{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.22)}
 
-        .main-content {
-            margin-left: 120px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
+    /* Journal list like screenshot */
+    .entry-list{display:flex;flex-direction:column;gap:14px;margin-top:10px}
 
-        .top-bar {
-            height: 64px;
-            border-bottom: 1px solid #e5e5e5;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 48px;
-            background: #ffffff;
-        }
+    .entry-card{
+      background:#ffffff;
+      border:1px solid #ededed;
+      border-radius:14px;
+      padding:18px 22px;
+      transition:border-color .18s ease, transform .18s ease, background .18s ease;
+      cursor:pointer;
+    }
+    body.dark-mode .entry-card{
+      background:rgba(255,255,255,.03);
+      border-color:rgba(255,255,255,.10);
+    }
+    .entry-card:hover{background:#fcfcfc;border-color:#dcdcdc;transform:translateY(-1px)}
+    body.dark-mode .entry-card:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.18)}
 
-        body.dark-mode .top-bar {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            background: #000000;
-        }
+    .entry-date{
+      font-size:11px;
+      color:#9a9a9a;
+      margin-bottom:10px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:600;
+    }
+    body.dark-mode .entry-date{color:rgba(255,255,255,.45)}
+    .entry-time{font-size:11px;color:#c1c1c1;font-weight:700}
+    body.dark-mode .entry-time{color:rgba(255,255,255,.32)}
 
-        .page-title {
-            font-size: 15px;
-            font-weight: 500;
-            color: #666666;
-        }
+    .entry-title{
+      font-size:15px;
+      font-weight:800;
+      color:#111;
+      margin-bottom:6px;
+      letter-spacing:-.01em;
+    }
+    body.dark-mode .entry-title{color:#fff}
 
-        body.dark-mode .page-title { color: rgba(255, 255, 255, 0.5); }
+    .entry-preview{
+      font-size:13px;
+      color:#8e8e8e;
+      line-height:1.55;
+      font-weight:500;
+    }
+    body.dark-mode .entry-preview{color:rgba(255,255,255,.45)}
 
-        .top-bar-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .theme-toggle {
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-            opacity: 0.5;
-        }
-
-        .theme-toggle:hover { opacity: 1; }
-
-        .theme-toggle svg {
-            width: 100%;
-            height: 100%;
-            stroke: #000000;
-            stroke-width: 1.5;
-            fill: none;
-        }
-
-        body.dark-mode .theme-toggle svg { stroke: #ffffff; }
-
-        .notification-icon {
-            width: 20px;
-            height: 20px;
-            stroke: #000000;
-            stroke-width: 1.5;
-            fill: none;
-            opacity: 0.5;
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-        }
-
-        body.dark-mode .notification-icon { stroke: #ffffff; }
-        .notification-icon:hover { opacity: 1; }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #f0f0f0;
-            border: 1px solid #e5e5e5;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 600;
-            color: #666666;
-        }
-
-        body.dark-mode .user-avatar {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .user-avatar:hover { border-color: #cccccc; transform: scale(1.05); }
-        body.dark-mode .user-avatar:hover { border-color: rgba(255, 255, 255, 0.3); }
-
-        .content-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 48px;
-            background: #ffffff;
-        }
-
-        body.dark-mode .content-area { background: #000000; }
-
-        .content-area::-webkit-scrollbar { width: 6px; }
-        .content-area::-webkit-scrollbar-track { background: transparent; }
-        .content-area::-webkit-scrollbar-thumb { background: #e5e5e5; border-radius: 3px; }
-        body.dark-mode .content-area::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); }
-        .content-area::-webkit-scrollbar-thumb:hover { background: #cccccc; }
-        body.dark-mode .content-area::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
-
-        .section-header { margin-bottom: 32px; }
-
-        .section-header h2 {
-            font-size: 28px;
-            font-weight: 600;
-            letter-spacing: -0.5px;
-            margin-bottom: 6px;
-            color: #000000;
-        }
-
-        body.dark-mode .section-header h2 { color: #ffffff; }
-
-        .section-header p {
-            font-size: 14px;
-            color: #999999;
-            font-weight: 400;
-        }
-
-        body.dark-mode .section-header p { color: rgba(255, 255, 255, 0.4); }
-
-        .action-button {
-            padding: 8px 16px;
-            border: 1px solid #e5e5e5;
-            border-radius: 6px;
-            background: #ffffff;
-            font-size: 13px;
-            font-weight: 500;
-            color: #000000;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        body.dark-mode .action-button {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.1);
-            color: #ffffff;
-        }
-
-        .action-button:hover { background: #fafafa; border-color: #cccccc; }
-        body.dark-mode .action-button:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); }
-
-        .entry-list { display: flex; flex-direction: column; gap: 12px; }
-
-        .entry-card {
-            background: #fafafa;
-            border: 1px solid #e5e5e5;
-            border-radius: 10px;
-            padding: 20px 24px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        body.dark-mode .entry-card {
-            background: rgba(255, 255, 255, 0.02);
-            border-color: rgba(255, 255, 255, 0.06);
-        }
-
-        .entry-card:hover { background: #f5f5f5; border-color: #d4d4d4; }
-        body.dark-mode .entry-card:hover { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.1); }
-
-        .entry-date {
-            font-size: 11px;
-            color: #999999;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        body.dark-mode .entry-date { color: rgba(255, 255, 255, 0.4); }
-
-        .entry-time { font-size: 11px; color: #cccccc; }
-        body.dark-mode .entry-time { color: rgba(255, 255, 255, 0.3); }
-
-        .entry-title {
-            font-size: 15px;
-            font-weight: 500;
-            margin-bottom: 6px;
-            color: #000000;
-        }
-
-        body.dark-mode .entry-title { color: #ffffff; }
-
-        .entry-preview { font-size: 13px; color: #999999; line-height: 1.5; }
-        body.dark-mode .entry-preview { color: rgba(255, 255, 255, 0.4); }
-    </style>
+    /* Responsive */
+    @media (max-width: 820px){
+      .top-bar{padding:0 18px}
+      .content-area{padding:26px 18px}
+      .section-header{flex-direction:column;align-items:flex-start}
+      .action-button{margin-top:0}
+    }
+  </style>
 </head>
+
 <body>
-    <div class="dashboard-container">
-        <nav class="nav-panel">
-            <div class="nav-logo">
-                <h1>FYNX</h1>
-            </div>
-            
-            <div class="nav-menu">
-                <div class="nav-item" data-view="home">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                    </svg>
-                    <span class="nav-label">Home</span>
-                </div>
-                
-                <div class="nav-item active" data-view="journal">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                    </svg>
-                    <span class="nav-label">Journal</span>
-                </div>
-                
-                <div class="nav-item" data-view="calculator">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <rect x="4" y="2" width="16" height="20" rx="2"></rect>
-                        <line x1="8" y1="6" x2="16" y2="6"></line>
-                        <line x1="8" y1="10" x2="16" y2="10"></line>
-                        <line x1="8" y1="14" x2="16" y2="14"></line>
-                        <line x1="8" y1="18" x2="16" y2="18"></line>
-                    </svg>
-                    <span class="nav-label">Calculator</span>
-                </div>
-                
-                <div class="nav-item" data-view="news">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
-                        <line x1="12" y1="11" x2="18" y2="11"></line>
-                        <line x1="12" y1="7" x2="18" y2="7"></line>
-                    </svg>
-                    <span class="nav-label">News</span>
-                </div>
-                
-                <div class="nav-item" data-view="calendar">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    <span class="nav-label">Calendar</span>
-                </div>
-                
-                <div class="nav-item" data-view="profile">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    <span class="nav-label">Profile</span>
-                </div>
-            </div>
-        </nav>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <nav class="nav-panel">
+      <div class="nav-logo">
+        <h1>FYNX</h1>
+      </div>
 
-        <main class="main-content">
-            <div class="top-bar">
-                <h1 class="page-title">Journal</h1>
-                <div class="top-bar-right">
-                    <div class="theme-toggle" onclick="toggleTheme()">
-                        <svg class="sun-icon" viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="5"></circle>
-                            <line x1="12" y1="1" x2="12" y2="3"></line>
-                            <line x1="12" y1="21" x2="12" y2="23"></line>
-                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                            <line x1="1" y1="12" x2="3" y2="12"></line>
-                            <line x1="21" y1="12" x2="23" y2="12"></line>
-                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                        </svg>
-                    </div>
-                    <svg class="notification-icon" viewBox="0 0 24 24">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                    </svg>
-                    <div class="user-avatar">FX</div>
-                </div>
-            </div>
+      <div class="nav-menu">
+        <div class="nav-item" data-view="home">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span class="nav-label">Home</span>
+        </div>
 
-            <div class="content-area">
-                <div class="journal-view" id="journal" style="display:block;">
-                    <div class="section-header" style="display: flex; align-items: center; justify-content: space-between;">
-                        <div>
-                            <h2>Journal</h2>
-                            <p>Document your trading journey</p>
-                        </div>
-                        <button class="action-button">
-                            <svg style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="8" x2="12" y2="16"></line>
-                                <line x1="8" y1="12" x2="16" y2="12"></line>
-                            </svg>
-                            New Entry
-                        </button>
-                    </div>
+        <div class="nav-item active" data-view="journal">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <span class="nav-label">Journal</span>
+        </div>
 
-                    <div class="entry-list">
-                        <div class="entry-card">
-                            <div class="entry-date">Jan 29, 2026 <span class="entry-time">14:23</span></div>
-                            <h3 class="entry-title">Market Analysis - Tech Sector</h3>
-                            <p class="entry-preview">Strong momentum in semiconductor stocks. Noted increased volume...</p>
-                        </div>
-                        <div class="entry-card">
-                            <div class="entry-date">Jan 28, 2026 <span class="entry-time">09:15</span></div>
-                            <h3 class="entry-title">Trade Review: AAPL Position</h3>
-                            <p class="entry-preview">Closed position with +5.2% gain. Entry was well-timed based on...</p>
-                        </div>
-                        <div class="entry-card">
-                            <div class="entry-date">Jan 27, 2026 <span class="entry-time">16:45</span></div>
-                            <h3 class="entry-title">Risk Management Notes</h3>
-                            <p class="entry-preview">Adjusting position sizes due to increased volatility. New max...</p>
-                        </div>
-                        <div class="entry-card">
-                            <div class="entry-date">Jan 26, 2026 <span class="entry-time">11:30</span></div>
-                            <h3 class="entry-title">Weekly Strategy Review</h3>
-                            <p class="entry-preview">Focus on defensive plays. Market showing signs of consolidation...</p>
-                        </div>
-                        <div class="entry-card">
-                            <div class="entry-date">Jan 25, 2026 <span class="entry-time">08:00</span></div>
-                            <h3 class="entry-title">Pre-Market Analysis</h3>
-                            <p class="entry-preview">Futures pointing to a gap up. Key levels to watch today...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
+        <div class="nav-item" data-view="calculator">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+            <line x1="8" y1="6" x2="16" y2="6"></line>
+            <line x1="8" y1="10" x2="16" y2="10"></line>
+            <line x1="8" y1="14" x2="16" y2="14"></line>
+            <line x1="8" y1="18" x2="16" y2="18"></line>
+          </svg>
+          <span class="nav-label">Calculator</span>
+        </div>
 
-    <script>
-        const navItems = document.querySelectorAll('.nav-item');
-        const pageTitle = document.querySelector('.page-title');
+        <div class="nav-item" data-view="news">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+            <line x1="12" y1="11" x2="18" y2="11"></line>
+            <line x1="12" y1="7" x2="18" y2="7"></line>
+          </svg>
+          <span class="nav-label">News</span>
+        </div>
 
-        const viewTitles = {
-            home: 'Home',
-            journal: 'Journal',
-            calculator: 'Calculator',
-            news: 'News',
-            calendar: 'Calendar',
-            profile: 'Profile'
-        };
+        <div class="nav-item" data-view="calendar">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span class="nav-label">Calendar</span>
+        </div>
 
-        const viewPages = {
-            home: 'home.html',
-            journal: 'journal.html',
-            calculator: 'calculator.html',
-            news: 'news.html',
-            calendar: 'calendar.html',
-            profile: 'profile.html'
-        };
+        <div class="nav-item" data-view="profile">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span class="nav-label">Profile</span>
+        </div>
+      </div>
+    </nav>
 
-        navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                const viewName = item.getAttribute('data-view');
-                pageTitle.textContent = viewTitles[viewName];
-                if (viewPages[viewName]) {
-                    window.location.href = viewPages[viewName];
-                }
-            });
-        });
+    <!-- Main -->
+    <main class="main-content">
+      <div class="top-bar">
+        <h1 class="page-title">Journal</h1>
 
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-        }
-    </script>
+        <div class="top-bar-right">
+          <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </div>
+
+          <svg class="notification-icon" viewBox="0 0 24 24" title="Notifications">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+
+          <div class="user-avatar" title="Profile">FX</div>
+        </div>
+      </div>
+
+      <div class="content-area">
+        <div class="section-header">
+          <div>
+            <h2>Journal</h2>
+            <p>Document your trading journey</p>
+          </div>
+
+          <button class="action-button" type="button">
+            <svg style="width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            New Entry
+          </button>
+        </div>
+
+        <div class="entry-list">
+          <div class="entry-card">
+            <div class="entry-date">Jan 29, 2026 <span class="entry-time">14:23</span></div>
+            <div class="entry-title">Market Analysis - Tech Sector</div>
+            <div class="entry-preview">Strong momentum in semiconductor stocks. Noted increased volume...</div>
+          </div>
+
+          <div class="entry-card">
+            <div class="entry-date">Jan 28, 2026 <span class="entry-time">09:15</span></div>
+            <div class="entry-title">Trade Review: AAPL Position</div>
+            <div class="entry-preview">Closed position with +5.2% gain. Entry was well-timed based on...</div>
+          </div>
+
+          <div class="entry-card">
+            <div class="entry-date">Jan 27, 2026 <span class="entry-time">16:45</span></div>
+            <div class="entry-title">Risk Management Notes</div>
+            <div class="entry-preview">Adjusting position sizes due to increased volatility. New max...</div>
+          </div>
+
+          <div class="entry-card">
+            <div class="entry-date">Jan 26, 2026 <span class="entry-time">11:30</span></div>
+            <div class="entry-title">Weekly Strategy Review</div>
+            <div class="entry-preview">Focus on defensive plays. Market showing signs of consolidation...</div>
+          </div>
+
+          <div class="entry-card">
+            <div class="entry-date">Jan 25, 2026 <span class="entry-time">08:00</span></div>
+            <div class="entry-title">Pre-Market Analysis</div>
+            <div class="entry-preview">Futures pointing to a gap up. Key levels to watch today...</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const navItems = document.querySelectorAll('.nav-item');
+    const pageTitle = document.querySelector('.page-title');
+
+    const viewTitles = {
+      home: 'Home',
+      journal: 'Journal',
+      calculator: 'Calculator',
+      news: 'News',
+      calendar: 'Calendar',
+      profile: 'Profile'
+    };
+
+    const viewPages = {
+      home: 'home.html',
+      journal: 'journal.html',
+      calculator: 'calculator.html',
+      news: 'news.html',
+      calendar: 'calendar.html',
+      profile: 'profile.html'
+    };
+
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const viewName = item.getAttribute('data-view');
+        pageTitle.textContent = viewTitles[viewName] || 'FYNX';
+        if (viewPages[viewName]) window.location.href = viewPages[viewName];
+      });
+    });
+
+    function toggleTheme(){
+      document.body.classList.toggle('dark-mode');
+    }
+  </script>
 </body>
 </html>
