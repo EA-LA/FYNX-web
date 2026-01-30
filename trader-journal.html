@@ -554,25 +554,25 @@
                 <div class="grid cols-12">
                   <div class="stat" style="grid-column: span 3;">
                     <small>Total Trades</small>
-                    <b id="kpiTrades">247</b>
-                    <div class="delta"><span class="badge">+12</span> vs last period</div>
+                    <b id="kpiTrades">0</b>
+                    <div class="delta"><span class="badge" id="kpiTradesDelta">—</span> vs last period</div>
                   </div>
 
                   <div class="stat" style="grid-column: span 3;">
                     <small>Win Rate</small>
-                    <b id="kpiWin">58.4%</b>
-                    <div class="delta"><span class="badge">+1.2%</span> improvement</div>
+                    <b id="kpiWin">0.0%</b>
+                    <div class="delta"><span class="badge" id="kpiWinDelta">—</span> improvement</div>
                   </div>
 
                   <div class="stat" style="grid-column: span 3;">
                     <small>Total P/L</small>
-                    <b id="kpiPL" class="good">+$5,340</b>
-                    <div class="delta"><span class="badge">+ $640</span> realized</div>
+                    <b id="kpiPL">+$0</b>
+                    <div class="delta"><span class="badge" id="kpiPLDelta">—</span> realized</div>
                   </div>
 
                   <div class="stat" style="grid-column: span 3;">
                     <small>Daily Streak</small>
-                    <b id="kpiStreak">14</b>
+                    <b id="kpiStreak">0</b>
                     <div class="delta"><span class="badge">days</span> logged</div>
                   </div>
 
@@ -591,36 +591,7 @@
                       <b>Session Performance</b>
                       <small>Where you win</small>
                     </div>
-                    <div class="bd" id="sessionList">
-                      <div class="row">
-                        <div class="l">
-                          <b>London</b>
-                          <small>Highest consistency</small>
-                        </div>
-                        <div class="r"><span class="badge good">+$1,920</span></div>
-                      </div>
-                      <div class="row">
-                        <div class="l">
-                          <b>New York</b>
-                          <small>High volatility</small>
-                        </div>
-                        <div class="r"><span class="badge good">+$1,140</span></div>
-                      </div>
-                      <div class="row">
-                        <div class="l">
-                          <b>Asia</b>
-                          <small>Lower frequency</small>
-                        </div>
-                        <div class="r"><span class="badge bad">-$220</span></div>
-                      </div>
-                      <div class="row">
-                        <div class="l">
-                          <b>Overlap</b>
-                          <small>Best R:R setups</small>
-                        </div>
-                        <div class="r"><span class="badge good">+$2,500</span></div>
-                      </div>
-                    </div>
+                    <div class="bd" id="sessionList"></div>
                   </div>
 
                   <div class="card" style="grid-column: span 6;">
@@ -628,29 +599,7 @@
                       <b>Top Winning Setup</b>
                       <small>Keep repeating what works</small>
                     </div>
-                    <div class="bd">
-                      <div class="row">
-                        <div class="l">
-                          <b>Break & Retest</b>
-                          <small>Win rate 67% · Avg R:R 2.1</small>
-                        </div>
-                        <div class="r"><span class="badge good">+$2,060</span></div>
-                      </div>
-                      <div class="row">
-                        <div class="l">
-                          <b>Liquidity Sweep</b>
-                          <small>Win rate 61% · Avg R:R 1.8</small>
-                        </div>
-                        <div class="r"><span class="badge good">+$1,420</span></div>
-                      </div>
-                      <div class="row">
-                        <div class="l">
-                          <b>Trend Pullback</b>
-                          <small>Win rate 55% · Avg R:R 1.6</small>
-                        </div>
-                        <div class="r"><span class="badge good">+$960</span></div>
-                      </div>
-                    </div>
+                    <div class="bd" id="topSetupList"></div>
                   </div>
 
                   <div class="card" style="grid-column: span 6;">
@@ -658,29 +607,7 @@
                       <b>Biggest Mistake Pattern</b>
                       <small>What to eliminate</small>
                     </div>
-                    <div class="bd">
-                      <div class="row">
-                        <div class="l">
-                          <b>Chasing entries</b>
-                          <small>Late confirmation</small>
-                        </div>
-                        <div class="r"><span class="badge bad">- $780</span></div>
-                      </div>
-                      <div class="row">
-                        <div class="l">
-                          <b>Overtrading</b>
-                          <small>Revenge sequences</small>
-                        </div>
-                        <div class="r"><span class="badge bad">- $620</span></div>
-                      </div>
-                      <div class="row">
-                        <div class="l">
-                          <b>Moving stop</b>
-                          <small>Breaking rules</small>
-                        </div>
-                        <div class="r"><span class="badge bad">- $410</span></div>
-                      </div>
-                    </div>
+                    <div class="bd" id="mistakePatternList"></div>
                   </div>
 
                 </div><!-- inner grid -->
@@ -994,22 +921,22 @@
                 <div class="grid cols-12">
                   <div class="stat" style="grid-column: span 3;">
                     <small>Streak</small>
-                    <b id="sStreak">12 Days</b>
+                    <b id="sStreak">0 Days</b>
                     <div class="delta"><span class="badge">current</span></div>
                   </div>
                   <div class="stat" style="grid-column: span 3;">
                     <small>Rules Followed</small>
-                    <b id="sRules">78%</b>
+                    <b id="sRules">0%</b>
                     <div class="delta"><span class="badge">avg</span></div>
                   </div>
                   <div class="stat" style="grid-column: span 3;">
                     <small>Emotional Control</small>
-                    <b id="sEmotion">84/100</b>
+                    <b id="sEmotion">0/100</b>
                     <div class="delta"><span class="badge">score</span></div>
                   </div>
                   <div class="stat" style="grid-column: span 3;">
                     <small>Consistency</small>
-                    <b id="sCons">14/30</b>
+                    <b id="sCons">0/30</b>
                     <div class="delta"><span class="badge">days logged</span></div>
                   </div>
 
@@ -1090,7 +1017,7 @@
                 <div class="grid cols-12">
                   <div class="card" style="grid-column: span 8; background: rgba(0,0,0,.18); box-shadow:none;">
                     <div class="hd">
-                      <b id="calTitle">December</b>
+                      <b id="calTitle">Month</b>
                       <small id="calSub">Month view</small>
                     </div>
                     <div class="bd">
@@ -1127,374 +1054,766 @@
     </main>
   </div><!-- app -->
 
+  <!-- Firebase (LIVE) -->
+  <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-storage-compat.js"></script>
+
   <script>
-    // ---------- Simple local storage model ----------
-    const STORAGE_KEY = "fynx_trader_journal_v1";
-    const loadState = () => {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { trades: [], replayNotes: {} }; }
-      catch { return { trades: [], replayNotes: {} }; }
-    };
-    const saveState = (state) => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    let state = loadState();
-    let replayIndex = Math.max(0, state.trades.length - 1);
-
-    // ---------- Navigation ----------
-    const navBtns = [...document.querySelectorAll(".navbtn[data-view]")];
-    const views = {
-      dash: document.getElementById("view-dash"),
-      entry: document.getElementById("view-entry"),
-      analytics: document.getElementById("view-analytics"),
-      replay: document.getElementById("view-replay"),
-      streaks: document.getElementById("view-streaks"),
-      calendar: document.getElementById("view-calendar")
+    // =========================
+    // LIVE PRODUCT (Firebase)
+    // =========================
+    // 1) Create Firebase project
+    // 2) Enable Auth (Email/Google/Apple OR at least Anonymous)
+    // 3) Enable Firestore + Storage
+    // 4) Paste your firebaseConfig below
+    const firebaseConfig = {
+      apiKey: "PASTE_YOURS",
+      authDomain: "PASTE_YOURS",
+      projectId: "PASTE_YOURS",
+      storageBucket: "PASTE_YOURS",
+      messagingSenderId: "PASTE_YOURS",
+      appId: "PASTE_YOURS"
     };
 
-    const setActiveView = (key) => {
-      navBtns.forEach(b => b.classList.toggle("active", b.dataset.view === key));
-      Object.entries(views).forEach(([k, el]) => el.classList.toggle("active", k === key));
-      if(key === "analytics") refreshAnalytics();
-      if(key === "replay") refreshReplay();
-      if(key === "streaks") refreshStreaks();
-      if(key === "calendar") refreshCalendar();
-    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
 
-    navBtns.forEach(btn => {
-      btn.addEventListener("click", () => setActiveView(btn.dataset.view));
-    });
+    // ---------- App state (backed by Firestore) ----------
+    let state = { trades: [], replayNotes: {} };
+    let replayIndex = 0;
+    let currentUid = null;
+    let unsubTrades = null;
 
-    document.getElementById("quickAddBtn").addEventListener("click", () => setActiveView("entry"));
-    document.getElementById("goReplayBtn").addEventListener("click", () => setActiveView("replay"));
-
-    // ---------- Charts ----------
-    const mkChartDefaults = () => ({
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        legend:{ labels:{ color:"rgba(255,255,255,.72)", font:{ size:11 } } },
-        tooltip:{ enabled:true }
-      },
-      scales:{
-        x:{ ticks:{ color:"rgba(255,255,255,.55)", font:{ size:11 } }, grid:{ color:"rgba(255,255,255,.07)" } },
-        y:{ ticks:{ color:"rgba(255,255,255,.55)", font:{ size:11 } }, grid:{ color:"rgba(255,255,255,.07)" } }
+    // If user is not logged in: try anonymous (so it "just works").
+    // If you want strict login only, replace signInAnonymously() with redirect to login.html
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        try {
+          await auth.signInAnonymously();
+          return;
+        } catch (e) {
+          console.error(e);
+          alert("Login required. Redirecting to login...");
+          location.href = "login.html";
+          return;
+        }
       }
+      currentUid = user.uid;
+      bootLive();
     });
 
-    let equityChart, winTrendChart, sessionPLChart, emotionChart, disciplineChart;
+    const tradesCol = () => db.collection("users").doc(currentUid).collection("trades");
 
-    const initCharts = () => {
-      // Equity
-      const ec = document.getElementById("equityChart");
-      equityChart = new Chart(ec, {
-        type:"line",
-        data:{
-          labels:["W1","W2","W3","W4","W5","W6","W7"],
-          datasets:[{
+    function bootLive() {
+      // ---------- Navigation ----------
+      const navBtns = [...document.querySelectorAll(".navbtn[data-view]")];
+      const views = {
+        dash: document.getElementById("view-dash"),
+        entry: document.getElementById("view-entry"),
+        analytics: document.getElementById("view-analytics"),
+        replay: document.getElementById("view-replay"),
+        streaks: document.getElementById("view-streaks"),
+        calendar: document.getElementById("view-calendar")
+      };
+
+      const setActiveView = (key) => {
+        navBtns.forEach(b => b.classList.toggle("active", b.dataset.view === key));
+        Object.entries(views).forEach(([k, el]) => el.classList.toggle("active", k === key));
+        if(key === "analytics") refreshAnalytics();
+        if(key === "replay") refreshReplay();
+        if(key === "streaks") refreshStreaks();
+        if(key === "calendar") refreshCalendar();
+        if(key === "dash") refreshDashboard();
+      };
+
+      navBtns.forEach(btn => btn.addEventListener("click", () => setActiveView(btn.dataset.view)));
+      document.getElementById("quickAddBtn").addEventListener("click", () => setActiveView("entry"));
+      document.getElementById("goReplayBtn").addEventListener("click", () => setActiveView("replay"));
+
+      // ---------- Charts ----------
+      const mkChartDefaults = () => ({
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{
+          legend:{ labels:{ color:"rgba(255,255,255,.72)", font:{ size:11 } } },
+          tooltip:{ enabled:true }
+        },
+        scales:{
+          x:{ ticks:{ color:"rgba(255,255,255,.55)", font:{ size:11 } }, grid:{ color:"rgba(255,255,255,.07)" } },
+          y:{ ticks:{ color:"rgba(255,255,255,.55)", font:{ size:11 } }, grid:{ color:"rgba(255,255,255,.07)" } }
+        }
+      });
+
+      let equityChart, winTrendChart, sessionPLChart, emotionChart, disciplineChart;
+
+      const initCharts = () => {
+        // Equity
+        equityChart = new Chart(document.getElementById("equityChart"), {
+          type:"line",
+          data:{ labels:[], datasets:[{
             label:"Equity",
-            data:[0, 420, 260, 980, 1240, 1720, 2140],
+            data:[],
             borderColor:"rgba(255,255,255,.85)",
             backgroundColor:"rgba(255,255,255,.08)",
             fill:true,
             tension:.35,
             pointRadius:0
-          }]
-        },
-        options: mkChartDefaults()
-      });
+          }]},
+          options: mkChartDefaults()
+        });
 
-      // Win trend
-      const wt = document.getElementById("winTrendChart");
-      winTrendChart = new Chart(wt, {
-        type:"line",
-        data:{
-          labels:["D1","D5","D10","D15","D20","D25","D30"],
-          datasets:[{
-            label:"Win Rate %",
-            data:[52, 55, 57, 56, 60, 58, 59],
+        // Win trend
+        winTrendChart = new Chart(document.getElementById("winTrendChart"), {
+          type:"line",
+          data:{ labels:[], datasets:[{
+            label:"Win Rate % (rolling)",
+            data:[],
             borderColor:"rgba(255,255,255,.85)",
             backgroundColor:"rgba(255,255,255,.08)",
             fill:true,
             tension:.35,
             pointRadius:0
-          }]
-        },
-        options: mkChartDefaults()
-      });
+          }]},
+          options: mkChartDefaults()
+        });
 
-      // Session P/L
-      const sp = document.getElementById("sessionPLChart");
-      sessionPLChart = new Chart(sp, {
-        type:"bar",
-        data:{
-          labels:["London","NY","Asia","Overlap"],
-          datasets:[{
+        // Session P/L
+        sessionPLChart = new Chart(document.getElementById("sessionPLChart"), {
+          type:"bar",
+          data:{ labels:["London","New York","Asia","Overlap"], datasets:[{
             label:"Net P/L",
-            data:[1920, 1140, -220, 2500],
+            data:[0,0,0,0],
             borderColor:"rgba(255,255,255,.85)",
             backgroundColor:"rgba(255,255,255,.14)"
-          }]
-        },
-        options:{
-          ...mkChartDefaults(),
-          scales:{
-            x:{ ticks:{ color:"rgba(255,255,255,.55)", font:{ size:11 } }, grid:{ color:"rgba(255,255,255,.07)" } },
-            y:{ ticks:{ color:"rgba(255,255,255,.55)", font:{ size:11 } }, grid:{ color:"rgba(255,255,255,.07)" } }
-          }
-        }
-      });
+          }]},
+          options: mkChartDefaults()
+        });
 
-      // Emotion control
-      const em = document.getElementById("emotionChart");
-      emotionChart = new Chart(em, {
-        type:"line",
-        data:{
-          labels:["W1","W2","W3","W4","W5","W6"],
-          datasets:[{
-            label:"Control Score",
-            data:[72, 78, 76, 82, 85, 84],
+        // Emotion control (proxy)
+        emotionChart = new Chart(document.getElementById("emotionChart"), {
+          type:"line",
+          data:{ labels:[], datasets:[{
+            label:"Control Score (proxy)",
+            data:[],
             borderColor:"rgba(255,255,255,.85)",
             backgroundColor:"rgba(255,255,255,.08)",
             fill:true,
             tension:.35,
             pointRadius:0
-          }]
-        },
-        options: mkChartDefaults()
-      });
+          }]},
+          options: mkChartDefaults()
+        });
 
-      // Discipline radar
-      const dr = document.getElementById("disciplineChart");
-      disciplineChart = new Chart(dr, {
-        type:"radar",
-        data:{
-          labels:["Rules","Timing","Risk","Patience","Journal","Focus"],
-          datasets:[{
-            label:"Discipline",
-            data:[78, 72, 80, 66, 82, 74],
-            borderColor:"rgba(255,255,255,.85)",
-            backgroundColor:"rgba(255,255,255,.10)",
-            pointBackgroundColor:"rgba(255,255,255,.85)",
-            pointRadius:2
-          }]
-        },
-        options:{
-          responsive:true,
-          maintainAspectRatio:false,
-          plugins:{ legend:{ labels:{ color:"rgba(255,255,255,.72)", font:{ size:11 } } } },
-          scales:{
-            r:{
-              grid:{ color:"rgba(255,255,255,.10)" },
-              angleLines:{ color:"rgba(255,255,255,.10)" },
-              pointLabels:{ color:"rgba(255,255,255,.70)", font:{ size:11 } },
-              ticks:{ display:false }
+        // Discipline radar (proxy)
+        disciplineChart = new Chart(document.getElementById("disciplineChart"), {
+          type:"radar",
+          data:{
+            labels:["Rules","Timing","Risk","Patience","Journal","Focus"],
+            datasets:[{
+              label:"Discipline",
+              data:[0,0,0,0,0,0],
+              borderColor:"rgba(255,255,255,.85)",
+              backgroundColor:"rgba(255,255,255,.10)",
+              pointBackgroundColor:"rgba(255,255,255,.85)",
+              pointRadius:2
+            }]
+          },
+          options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            plugins:{ legend:{ labels:{ color:"rgba(255,255,255,.72)", font:{ size:11 } } } },
+            scales:{
+              r:{
+                grid:{ color:"rgba(255,255,255,.10)" },
+                angleLines:{ color:"rgba(255,255,255,.10)" },
+                pointLabels:{ color:"rgba(255,255,255,.70)", font:{ size:11 } },
+                ticks:{ display:false }
+              }
             }
           }
+        });
+      };
+
+      const updateCharts = () => {
+        const trades = [...state.trades].sort((a,b) => (a.dateTsMs||0) - (b.dateTsMs||0));
+
+        // Equity curve by date (cumulative)
+        const labels = [];
+        const data = [];
+        let cum = 0;
+        trades.forEach(t => {
+          const d = String(t.date || "").slice(5); // MM-DD
+          labels.push(d || "—");
+          cum += (t.pl || 0);
+          data.push(Number(cum.toFixed(2)));
+        });
+        equityChart.data.labels = labels;
+        equityChart.data.datasets[0].data = data;
+        equityChart.update();
+
+        // Rolling win rate (window=10)
+        const wlabels = [];
+        const wdata = [];
+        const window = 10;
+        for (let i=0;i<trades.length;i++){
+          const start = Math.max(0, i-window+1);
+          const slice = trades.slice(start, i+1);
+          const wins = slice.filter(x => (x.pl||0) > 0).length;
+          const wr = slice.length ? (wins/slice.length)*100 : 0;
+          wlabels.push(String(trades[i].date||"").slice(5) || "—");
+          wdata.push(Number(wr.toFixed(1)));
+        }
+        winTrendChart.data.labels = wlabels;
+        winTrendChart.data.datasets[0].data = wdata;
+        winTrendChart.update();
+
+        // Session P/L
+        const sessions = { "London":0, "New York":0, "Asia":0, "Overlap":0 };
+        state.trades.forEach(t => { sessions[t.session] = (sessions[t.session]||0) + (t.pl||0); });
+        sessionPLChart.data.datasets[0].data = [
+          sessions["London"]||0,
+          sessions["New York"]||0,
+          sessions["Asia"]||0,
+          sessions["Overlap"]||0
+        ].map(x => Number(x.toFixed(2)));
+        sessionPLChart.update();
+
+        // Emotion trend (proxy from rules adherence)
+        const emoLabels = [];
+        const emoData = [];
+        trades.slice(-12).forEach(t => {
+          const reasons = (t.reasons||[]).length;
+          const control = Math.min(100, Math.max(0, 60 + reasons*5 - (t.emotions||[]).includes("Revenge")*15 - (t.emotions||[]).includes("FOMO")*10));
+          emoLabels.push(String(t.date||"").slice(5) || "—");
+          emoData.push(control);
+        });
+        emotionChart.data.labels = emoLabels;
+        emotionChart.data.datasets[0].data = emoData;
+        emotionChart.update();
+
+        // Discipline radar (proxy)
+        const total = state.trades.length || 1;
+        const avgReasons = state.trades.reduce((a,t)=>a+(t.reasons||[]).length,0)/total;
+        const rules = Math.min(100, Math.round(avgReasons*10));
+        const timing = Math.min(100, 60 + Math.round((state.trades.filter(t=>t.session==="London"||t.session==="Overlap").length/total)*40));
+        const risk = Math.min(100, 65 + Math.round((state.trades.filter(t=>(t.conf||0)>=70).length/total)*35));
+        const patience = Math.min(100, 55 + Math.round((state.trades.filter(t=>(t.emotions||[]).includes("Hesitant")).length/total)*10));
+        const journal = Math.min(100, 50 + Math.round((state.trades.filter(t=>(t.notes||"").trim().length>20).length/total)*50));
+        const focus = Math.min(100, 55 + Math.round((state.trades.filter(t=>!(t.emotions||[]).includes("Overconfident")).length/total)*45));
+        disciplineChart.data.datasets[0].data = [rules,timing,risk,patience,journal,focus];
+        disciplineChart.update();
+      };
+
+      // ---------- Entry form behaviors ----------
+      const dirSeg = document.querySelectorAll(".seg button");
+      let direction = "Long";
+      dirSeg.forEach(b => b.addEventListener("click", () => {
+        dirSeg.forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+        direction = b.dataset.dir;
+      }));
+
+      const toggleChipGroup = (id) => {
+        const wrap = document.getElementById(id);
+        wrap.querySelectorAll(".chip").forEach(ch => ch.addEventListener("click", () => ch.classList.toggle("on")));
+      };
+      toggleChipGroup("reasonChips");
+      toggleChipGroup("emotionChips");
+
+      const fEntry = document.getElementById("fEntry");
+      const fSL = document.getElementById("fSL");
+      const fTP = document.getElementById("fTP");
+      const fConf = document.getElementById("fConf");
+
+      const qRisk = document.getElementById("qRisk");
+      const qReward = document.getElementById("qReward");
+      const qRR = document.getElementById("qRR");
+      const qConf = document.getElementById("qConf");
+
+      const calcStats = () => {
+        const e = parseFloat(fEntry.value);
+        const sl = parseFloat(fSL.value);
+        const tp = parseFloat(fTP.value);
+
+        qConf.textContent = `${fConf.value}%`;
+
+        if(!isFinite(e) || !isFinite(sl) || !isFinite(tp)){
+          qRisk.textContent = "—";
+          qReward.textContent = "—";
+          qRR.textContent = "—";
+          return;
+        }
+
+        const risk = Math.abs(e - sl);
+        const reward = Math.abs(tp - e);
+        const rr = risk > 0 ? (reward / risk) : 0;
+
+        qRisk.textContent = risk.toFixed(2);
+        qReward.textContent = reward.toFixed(2);
+        qRR.textContent = rr.toFixed(2);
+      };
+      [fEntry,fSL,fTP,fConf].forEach(el => el.addEventListener("input", calcStats));
+
+      // Screenshot preview (upload to Firebase Storage on save)
+      const fShot = document.getElementById("fShot");
+      const shotPreview = document.getElementById("shotPreview");
+      const shotImg = document.getElementById("shotImg");
+      let shotFile = null;
+
+      fShot.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if(!file){ shotFile=null; shotPreview.style.display="none"; return; }
+        shotFile = file;
+        const reader = new FileReader();
+        reader.onload = () => {
+          shotImg.src = String(reader.result || "");
+          shotPreview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      });
+
+      const getChips = (id) =>
+        [...document.querySelectorAll(`#${id} .chip.on`)].map(c => c.textContent.trim());
+
+      const saveTradeBtn = document.getElementById("saveTradeBtn");
+      const resetFormBtn = document.getElementById("resetFormBtn");
+      const deleteLastBtn = document.getElementById("deleteLastBtn");
+
+      const clearForm = () => {
+        document.getElementById("fSymbol").value = "";
+        document.getElementById("fDate").valueAsDate = new Date();
+        fEntry.value = "";
+        fSL.value = "";
+        fTP.value = "";
+        document.getElementById("fSetup").selectedIndex = 0;
+        document.getElementById("fSession").selectedIndex = 0;
+        document.getElementById("fNotes").value = "";
+        fConf.value = 70;
+        qConf.textContent = "70%";
+        shotFile = null;
+        fShot.value = "";
+        shotPreview.style.display = "none";
+        document.querySelectorAll(".chip.on").forEach(x => x.classList.remove("on"));
+        calcStats();
+      };
+      resetFormBtn.addEventListener("click", clearForm);
+
+      const estimatePL = (entry, tp, sl, dir) => {
+        const e = parseFloat(entry), T = parseFloat(tp), S = parseFloat(sl);
+        if(!isFinite(e) || !isFinite(T) || !isFinite(S)) return 0;
+        const reward = Math.abs(T - e);
+        const risk = Math.abs(e - S);
+        return (reward - (risk * 0.4)); // proxy
+      };
+
+      async function uploadScreenshotIfAny(tradeId) {
+        if(!shotFile) return "";
+        const path = `users/${currentUid}/trades/${tradeId}/screenshot_${Date.now()}.jpg`;
+        const ref = storage.ref().child(path);
+        await ref.put(shotFile, { contentType: shotFile.type || "image/jpeg" });
+        return await ref.getDownloadURL();
+      }
+
+      saveTradeBtn.addEventListener("click", async () => {
+        try{
+          saveTradeBtn.disabled = true;
+
+          const symbol = document.getElementById("fSymbol").value.trim() || "—";
+          const date = document.getElementById("fDate").value || new Date().toISOString().slice(0,10);
+          const entry = document.getElementById("fEntry").value;
+          const sl = document.getElementById("fSL").value;
+          const tp = document.getElementById("fTP").value;
+          const setup = document.getElementById("fSetup").value;
+          const session = document.getElementById("fSession").value;
+          const reasons = getChips("reasonChips");
+          const emotions = getChips("emotionChips");
+          const notes = document.getElementById("fNotes").value.trim();
+          const conf = parseInt(document.getElementById("fConf").value, 10) || 0;
+
+          const pl = estimatePL(entry, tp, sl, direction);
+
+          const tradeId = crypto.randomUUID();
+          const dateTs = firebase.firestore.Timestamp.fromDate(new Date(date + "T00:00:00"));
+
+          const screenshotUrl = await uploadScreenshotIfAny(tradeId);
+
+          const tradeDoc = {
+            id: tradeId,
+            symbol, date, direction,
+            entry, sl, tp,
+            setup, session,
+            reasons, emotions,
+            notes, conf,
+            screenshot: screenshotUrl || "",
+            pl: Number.isFinite(pl) ? pl : 0,
+            dateTs,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+
+          await tradesCol().doc(tradeId).set(tradeDoc, { merge:false });
+
+          clearForm();
+          setActiveView("replay");
+        } catch(err){
+          console.error(err);
+          alert("Save failed. Check Firebase config + Firestore/Storage rules.");
+        } finally {
+          saveTradeBtn.disabled = false;
         }
       });
-    };
 
-    // ---------- Entry form behaviors ----------
-    const dirSeg = document.querySelectorAll(".seg button");
-    let direction = "Long";
-    dirSeg.forEach(b => b.addEventListener("click", () => {
-      dirSeg.forEach(x => x.classList.remove("active"));
-      b.classList.add("active");
-      direction = b.dataset.dir;
-    }));
-
-    const toggleChipGroup = (id) => {
-      const wrap = document.getElementById(id);
-      wrap.querySelectorAll(".chip").forEach(ch => ch.addEventListener("click", () => ch.classList.toggle("on")));
-    };
-    toggleChipGroup("reasonChips");
-    toggleChipGroup("emotionChips");
-
-    const fEntry = document.getElementById("fEntry");
-    const fSL = document.getElementById("fSL");
-    const fTP = document.getElementById("fTP");
-    const fConf = document.getElementById("fConf");
-
-    const qRisk = document.getElementById("qRisk");
-    const qReward = document.getElementById("qReward");
-    const qRR = document.getElementById("qRR");
-    const qConf = document.getElementById("qConf");
-
-    const calcStats = () => {
-      const e = parseFloat(fEntry.value);
-      const sl = parseFloat(fSL.value);
-      const tp = parseFloat(fTP.value);
-
-      qConf.textContent = `${fConf.value}%`;
-
-      if(!isFinite(e) || !isFinite(sl) || !isFinite(tp)){
-        qRisk.textContent = "—";
-        qReward.textContent = "—";
-        qRR.textContent = "—";
-        return;
-      }
-
-      const risk = Math.abs(e - sl);
-      const reward = Math.abs(tp - e);
-      const rr = risk > 0 ? (reward / risk) : 0;
-
-      qRisk.textContent = risk.toFixed(2);
-      qReward.textContent = reward.toFixed(2);
-      qRR.textContent = rr.toFixed(2);
-    };
-
-    [fEntry,fSL,fTP,fConf].forEach(el => el.addEventListener("input", calcStats));
-
-    // Screenshot preview (stored as dataURL in localStorage)
-    const fShot = document.getElementById("fShot");
-    const shotPreview = document.getElementById("shotPreview");
-    const shotImg = document.getElementById("shotImg");
-    let shotDataUrl = "";
-
-    fShot.addEventListener("change", async (e) => {
-      const file = e.target.files && e.target.files[0];
-      if(!file){ shotDataUrl=""; shotPreview.style.display="none"; return; }
-      const reader = new FileReader();
-      reader.onload = () => {
-        shotDataUrl = String(reader.result || "");
-        shotImg.src = shotDataUrl;
-        shotPreview.style.display = "block";
-      };
-      reader.readAsDataURL(file);
-    });
-
-    // Save trade
-    const getChips = (id) =>
-      [...document.querySelectorAll(`#${id} .chip.on`)].map(c => c.textContent.trim());
-
-    const saveTradeBtn = document.getElementById("saveTradeBtn");
-    const resetFormBtn = document.getElementById("resetFormBtn");
-    const deleteLastBtn = document.getElementById("deleteLastBtn");
-
-    const clearForm = () => {
-      document.getElementById("fSymbol").value = "";
-      document.getElementById("fDate").valueAsDate = new Date();
-      fEntry.value = "";
-      fSL.value = "";
-      fTP.value = "";
-      document.getElementById("fSetup").selectedIndex = 0;
-      document.getElementById("fSession").selectedIndex = 0;
-      document.getElementById("fNotes").value = "";
-      fConf.value = 70;
-      qConf.textContent = "70%";
-      shotDataUrl = "";
-      shotPreview.style.display = "none";
-      document.querySelectorAll(".chip.on").forEach(x => x.classList.remove("on"));
-      calcStats();
-    };
-
-    resetFormBtn.addEventListener("click", clearForm);
-
-    const estimatePL = (entry, tp, sl, dir) => {
-      // simple estimator (not pip-accurate): assumes 1 unit size
-      const e = parseFloat(entry), T = parseFloat(tp), S = parseFloat(sl);
-      if(!isFinite(e) || !isFinite(T) || !isFinite(S)) return 0;
-      const reward = Math.abs(T - e);
-      const risk = Math.abs(e - S);
-      // assume outcome depends on direction; use reward as positive target
-      // stored P/L will be set manually later if you want; this keeps calendar visuals meaningful
-      return (reward - (risk * 0.4)); // pseudo expectancy
-    };
-
-    saveTradeBtn.addEventListener("click", () => {
-      const symbol = document.getElementById("fSymbol").value.trim() || "—";
-      const date = document.getElementById("fDate").value || new Date().toISOString().slice(0,10);
-      const entry = document.getElementById("fEntry").value;
-      const sl = document.getElementById("fSL").value;
-      const tp = document.getElementById("fTP").value;
-      const setup = document.getElementById("fSetup").value;
-      const session = document.getElementById("fSession").value;
-      const reasons = getChips("reasonChips");
-      const emotions = getChips("emotionChips");
-      const notes = document.getElementById("fNotes").value.trim();
-      const conf = parseInt(document.getElementById("fConf").value, 10) || 0;
-
-      const pl = estimatePL(entry, tp, sl, direction);
-      const trade = {
-        id: crypto.randomUUID(),
-        symbol, date, direction,
-        entry, sl, tp,
-        setup, session,
-        reasons, emotions,
-        notes, conf,
-        screenshot: shotDataUrl,
-        pl: Number.isFinite(pl) ? pl : 0
-      };
-
-      state.trades.push(trade);
-      saveState(state);
-      replayIndex = state.trades.length - 1;
-
-      // Update dashboard KPI (simple)
-      document.getElementById("kpiTrades").textContent = state.trades.length;
-
-      // Jump to replay
-      setActiveView("replay");
-    });
-
-    deleteLastBtn.addEventListener("click", () => {
-      if(state.trades.length === 0) return;
-      const t = state.trades.pop();
-      delete state.replayNotes[t.id];
-      saveState(state);
-      replayIndex = Math.max(0, state.trades.length - 1);
-      document.getElementById("kpiTrades").textContent = state.trades.length;
-      refreshReplay();
-    });
-
-    // Default date today
-    document.getElementById("fDate").valueAsDate = new Date();
-
-    // ---------- Analytics ----------
-    const refreshAnalytics = () => {
-      document.getElementById("tradeCountBadge").textContent = `Trades: ${state.trades.length}`;
-
-      if(state.trades.length === 0){
-        document.getElementById("aWin").textContent = "+$0";
-        document.getElementById("aLoss").textContent = "-$0";
-        document.getElementById("aExp").textContent = "+$0";
-        document.getElementById("aQual").textContent = "—";
-        document.getElementById("setupTable").innerHTML =
-          `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades yet. Add trades to see analytics.</div>`;
-        document.getElementById("mistakeList").innerHTML =
-          `<div style="color:rgba(255,255,255,.58); font-size:12px;">No data yet.</div>`;
-        return;
-      }
-
-      const pls = state.trades.map(t => t.pl || 0);
-      const wins = pls.filter(x => x > 0);
-      const losses = pls.filter(x => x < 0);
-
-      const avg = (arr) => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length) : 0;
-      const avgWin = avg(wins);
-      const avgLoss = avg(losses);
-
-      document.getElementById("aWin").textContent = `+$${Math.abs(avgWin).toFixed(0)}`;
-      document.getElementById("aLoss").textContent = `-$${Math.abs(avgLoss).toFixed(0)}`;
-
-      const winRate = wins.length / state.trades.length;
-      const expectancy = (winRate * avgWin) + ((1-winRate) * avgLoss);
-      const expEl = document.getElementById("aExp");
-      expEl.textContent = `${expectancy >= 0 ? "+" : "-"}$${Math.abs(expectancy).toFixed(0)}`;
-      expEl.className = expectancy >= 0 ? "good" : "bad";
-
-      // Quality score: how many checklist reasons selected (proxy)
-      const reasonCount = state.trades.map(t => (t.reasons||[]).length);
-      const q = Math.round(avg(reasonCount) * 12); // rough scaler
-      document.getElementById("aQual").textContent = `${Math.min(100, Math.max(0,q))}/100`;
-
-      // Setup performance table
-      const bySetup = {};
-      state.trades.forEach(t => {
-        bySetup[t.setup] = (bySetup[t.setup] || 0) + (t.pl || 0);
+      deleteLastBtn.addEventListener("click", async () => {
+        if(state.trades.length === 0) return;
+        const t = state.trades[state.trades.length - 1];
+        try{
+          await tradesCol().doc(t.id).delete();
+          // best-effort: screenshot files may remain if multiple versions exist; safe to ignore.
+        } catch(err){
+          console.error(err);
+          alert("Delete failed. Check Firestore rules.");
+        }
       });
-      const setupRows = Object.entries(bySetup)
-        .sort((a,b)=> b[1]-a[1])
-        .slice(0,6)
-        .map(([name, val]) => {
+
+      // ---------- Analytics ----------
+      const refreshAnalytics = () => {
+        document.getElementById("tradeCountBadge").textContent = `Trades: ${state.trades.length}`;
+
+        if(state.trades.length === 0){
+          document.getElementById("aWin").textContent = "+$0";
+          document.getElementById("aLoss").textContent = "-$0";
+          document.getElementById("aExp").textContent = "+$0";
+          document.getElementById("aQual").textContent = "—";
+          document.getElementById("setupTable").innerHTML =
+            `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades yet. Add trades to see analytics.</div>`;
+          document.getElementById("mistakeList").innerHTML =
+            `<div style="color:rgba(255,255,255,.58); font-size:12px;">No data yet.</div>`;
+          return;
+        }
+
+        const pls = state.trades.map(t => t.pl || 0);
+        const wins = pls.filter(x => x > 0);
+        const losses = pls.filter(x => x < 0);
+
+        const avg = (arr) => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length) : 0;
+        const avgWin = avg(wins);
+        const avgLoss = avg(losses);
+
+        document.getElementById("aWin").textContent = `+$${Math.abs(avgWin).toFixed(0)}`;
+        document.getElementById("aLoss").textContent = `-$${Math.abs(avgLoss).toFixed(0)}`;
+
+        const winRate = wins.length / state.trades.length;
+        const expectancy = (winRate * avgWin) + ((1-winRate) * avgLoss);
+        const expEl = document.getElementById("aExp");
+        expEl.textContent = `${expectancy >= 0 ? "+" : "-"}$${Math.abs(expectancy).toFixed(0)}`;
+        expEl.className = expectancy >= 0 ? "good" : "bad";
+
+        // Quality score: how many checklist reasons selected (proxy)
+        const reasonCount = state.trades.map(t => (t.reasons||[]).length);
+        const q = Math.round(avg(reasonCount) * 12);
+        document.getElementById("aQual").textContent = `${Math.min(100, Math.max(0,q))}/100`;
+
+        // Setup performance table
+        const bySetup = {};
+        state.trades.forEach(t => { bySetup[t.setup] = (bySetup[t.setup] || 0) + (t.pl || 0); });
+        const setupRows = Object.entries(bySetup)
+          .sort((a,b)=> b[1]-a[1])
+          .slice(0,6)
+          .map(([name, val]) => {
+            const cls = val >= 0 ? "good" : "bad";
+            return `
+              <div class="row">
+                <div class="l">
+                  <b>${escapeHtml(name)}</b>
+                  <small>Net P/L</small>
+                </div>
+                <div class="r"><span class="badge ${cls}">${val>=0?"+":"-"}$${Math.abs(val).toFixed(0)}</span></div>
+              </div>`;
+          }).join("");
+        document.getElementById("setupTable").innerHTML = setupRows || `<div style="color:rgba(255,255,255,.58); font-size:12px;">No setups logged.</div>`;
+
+        // Mistake tracker from emotions (proxy)
+        const mistakeBuckets = {};
+        state.trades.forEach(t => { (t.emotions||[]).forEach(e => mistakeBuckets[e] = (mistakeBuckets[e]||0)+1); });
+        const mistakes = Object.entries(mistakeBuckets).sort((a,b)=>b[1]-a[1]).slice(0,6);
+        document.getElementById("mistakeList").innerHTML = mistakes.length ? mistakes.map(([m,c]) => `
+          <div class="row">
+            <div class="l">
+              <b>${escapeHtml(m)}</b>
+              <small>Occurrences</small>
+            </div>
+            <div class="r"><span class="badge">${c}</span></div>
+          </div>
+        `).join("") : `<div style="color:rgba(255,255,255,.58); font-size:12px;">No mistake tags yet.</div>`;
+      };
+
+      // ---------- Replay ----------
+      const replaySummary = document.getElementById("replaySummary");
+      const replayShotBox = document.getElementById("replayShotBox");
+      const replayNotes = document.getElementById("replayNotes");
+
+      const refreshReplay = () => {
+        if(state.trades.length === 0){
+          replaySummary.innerHTML = `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades saved yet. Use “New Trade Entry”.</div>`;
+          replayShotBox.innerHTML = `<div style="text-align:center; color:rgba(255,255,255,.55); font-size:12px; padding:18px;">No trade selected.</div>`;
+          replayNotes.value = "";
+          return;
+        }
+        replayIndex = Math.max(0, Math.min(replayIndex, state.trades.length - 1));
+        const t = state.trades[replayIndex];
+
+        const pl = t.pl || 0;
+        const cls = pl >= 0 ? "good" : "bad";
+
+        replaySummary.innerHTML = `
+          <div class="row">
+            <div class="l"><b>${escapeHtml(t.symbol)}</b><small>${escapeHtml(t.date)}</small></div>
+            <div class="r"><span class="badge ${cls}">${pl>=0?"+":"-"}$${Math.abs(pl).toFixed(0)}</span></div>
+          </div>
+          <div class="row"><div class="l"><b>Direction</b><small>${escapeHtml(t.direction)}</small></div><div class="r"><span class="badge">${escapeHtml(t.session)}</span></div></div>
+          <div class="row"><div class="l"><b>Setup</b><small>${escapeHtml(t.setup)}</small></div><div class="r"><span class="badge">${escapeHtml(String(t.conf||0))}%</span></div></div>
+          <div class="row"><div class="l"><b>Entry</b><small>${escapeHtml(String(t.entry||"—"))}</small></div><div class="r"><span class="badge">SL ${escapeHtml(String(t.sl||"—"))}</span></div></div>
+          <div class="row"><div class="l"><b>TP</b><small>${escapeHtml(String(t.tp||"—"))}</small></div><div class="r"><span class="badge">ID</span></div></div>
+        `;
+
+        if(t.screenshot){
+          replayShotBox.innerHTML = `<img alt="Trade screenshot" src="${t.screenshot}" style="width:100%; display:block;" />`;
+        } else {
+          replayShotBox.innerHTML = `<div style="text-align:center; color:rgba(255,255,255,.55); font-size:12px; padding:18px;">No screenshot saved for this trade.</div>`;
+        }
+
+        replayNotes.value = String(t.replayNotes || "");
+      };
+
+      document.getElementById("prevTradeBtn").addEventListener("click", () => {
+        if(state.trades.length === 0) return;
+        replayIndex = Math.max(0, replayIndex - 1);
+        refreshReplay();
+      });
+      document.getElementById("nextTradeBtn").addEventListener("click", () => {
+        if(state.trades.length === 0) return;
+        replayIndex = Math.min(state.trades.length - 1, replayIndex + 1);
+        refreshReplay();
+      });
+
+      document.getElementById("saveReplayNotesBtn").addEventListener("click", async () => {
+        if(state.trades.length === 0) return;
+        const t = state.trades[replayIndex];
+        try{
+          await tradesCol().doc(t.id).set({ replayNotes: replayNotes.value }, { merge:true });
+        } catch(err){
+          console.error(err);
+          alert("Replay notes save failed. Check Firestore rules.");
+        }
+      });
+
+      // ---------- Streaks ----------
+      const refreshStreaks = () => {
+        const dates = [...new Set(state.trades.map(t => t.date).filter(Boolean))].sort();
+        let streak = 0;
+        if(dates.length){
+          const toDay = (s)=> new Date(s+"T00:00:00");
+          const today = new Date(); today.setHours(0,0,0,0);
+          const dateSet = new Set(dates);
+          while(true){
+            const d = new Date(today);
+            d.setDate(d.getDate() - streak);
+            const iso = d.toISOString().slice(0,10);
+            if(dateSet.has(iso)) streak++;
+            else break;
+          }
+        }
+
+        document.getElementById("sStreak").textContent = `${Math.max(0, streak)} Days`;
+
+        const avgReasons = state.trades.length ? state.trades.reduce((a,t)=>a+(t.reasons||[]).length,0)/state.trades.length : 0;
+        const rules = Math.min(100, Math.round(avgReasons * 10));
+        document.getElementById("sRules").textContent = `${rules}%`;
+
+        const control = Math.min(100, Math.max(0, 70 + Math.round((rules-50)/2)));
+        document.getElementById("sEmotion").textContent = `${control}/100`;
+
+        const logged = [...new Set(state.trades.map(t => t.date).filter(Boolean))].length;
+        document.getElementById("sCons").textContent = `${Math.min(30, logged)}/30`;
+
+        const heat = document.getElementById("consistencyHeat");
+        heat.innerHTML = "";
+        const today = new Date(); today.setHours(0,0,0,0);
+        const loggedSet = new Set(state.trades.map(t => t.date).filter(Boolean));
+        for(let i=29;i>=0;i--){
+          const d = new Date(today);
+          d.setDate(d.getDate()-i);
+          const iso = d.toISOString().slice(0,10);
+          const cell = document.createElement("div");
+          cell.className = "day " + (loggedSet.has(iso) ? "pos" : "");
+          cell.innerHTML = `<small>${iso.slice(5)}</small><b>${loggedSet.has(iso) ? "Logged" : ""}</b>`;
+          heat.appendChild(cell);
+        }
+      };
+
+      // ---------- Calendar ----------
+      const calendarHeat = document.getElementById("calendarHeat");
+      const monthSummary = document.getElementById("monthSummary");
+      const dayDetails = document.getElementById("dayDetails");
+
+      const refreshCalendar = () => {
+        calendarHeat.innerHTML = "";
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth();
+        const monthName = today.toLocaleString(undefined, { month:"long" });
+        document.getElementById("calTitle").textContent = monthName;
+        document.getElementById("calSub").textContent = `${year}`;
+
+        const plByDate = {};
+        state.trades.forEach(t => {
+          const dt = t.date;
+          if(!dt) return;
+          plByDate[dt] = (plByDate[dt]||0) + (t.pl||0);
+        });
+
+        const first = new Date(year, month, 1);
+        const startDow = first.getDay();
+        const last = new Date(year, month+1, 0);
+        const daysInMonth = last.getDate();
+
+        const totalCells = 42;
+        for(let i=0;i<totalCells;i++){
+          const dayNum = i - startDow + 1;
+          const cell = document.createElement("div");
+          cell.className = "day";
+          if(dayNum < 1 || dayNum > daysInMonth){
+            cell.style.opacity = ".35";
+            cell.innerHTML = `<small>—</small><b></b>`;
+            calendarHeat.appendChild(cell);
+            continue;
+          }
+          const iso = new Date(year, month, dayNum).toISOString().slice(0,10);
+          const pl = plByDate[iso] || 0;
+          if(pl > 0) cell.classList.add("pos");
+          if(pl < 0) cell.classList.add("neg");
+          cell.innerHTML = `<small>${dayNum}</small><b>${pl === 0 ? "" : (pl>0?"+":"-") + "$" + Math.abs(pl).toFixed(0)}</b>`;
+          cell.style.cursor = "pointer";
+          cell.addEventListener("click", () => showDay(iso));
+          calendarHeat.appendChild(cell);
+        }
+
+        const monthTrades = state.trades.filter(t => {
+          if(!t.date) return false;
+          const d = new Date(t.date+"T00:00:00");
+          return d.getFullYear() === year && d.getMonth() === month;
+        });
+
+        const monthPL = monthTrades.reduce((a,t)=>a+(t.pl||0),0);
+        const wins = monthTrades.filter(t => (t.pl||0) > 0).length;
+        const total = monthTrades.length;
+        const wr = total ? (wins/total)*100 : 0;
+
+        const cls = monthPL >= 0 ? "good" : "bad";
+
+        monthSummary.innerHTML = `
+          <div class="row">
+            <div class="l"><b>Net P/L</b><small>This month</small></div>
+            <div class="r"><span class="badge ${cls}">${monthPL>=0?"+":"-"}$${Math.abs(monthPL).toFixed(0)}</span></div>
+          </div>
+          <div class="row">
+            <div class="l"><b>Trades</b><small>Total</small></div>
+            <div class="r"><span class="badge">${total}</span></div>
+          </div>
+          <div class="row">
+            <div class="l"><b>Win Rate</b><small>Estimated</small></div>
+            <div class="r"><span class="badge">${wr.toFixed(1)}%</span></div>
+          </div>
+          <div class="row">
+            <div class="l"><b>Notes</b><small>Focus area</small></div>
+            <div class="r"><span class="badge">Patience</span></div>
+          </div>
+        `;
+      };
+
+      const showDay = (iso) => {
+        const trades = state.trades.filter(t => t.date === iso);
+        if(!trades.length){
+          dayDetails.innerHTML = `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades on ${escapeHtml(iso)}.</div>`;
+          return;
+        }
+        const rows = trades.map(t => {
+          const pl = t.pl || 0;
+          const cls = pl >= 0 ? "good" : "bad";
+          return `
+            <div class="row">
+              <div class="l">
+                <b>${escapeHtml(t.symbol)} · ${escapeHtml(t.setup)}</b>
+                <small>${escapeHtml(t.session)} · ${escapeHtml(t.direction)} · ${escapeHtml(String(t.conf||0))}%</small>
+              </div>
+              <div class="r"><span class="badge ${cls}">${pl>=0?"+":"-"}$${Math.abs(pl).toFixed(0)}</span></div>
+            </div>
+          `;
+        }).join("");
+        dayDetails.innerHTML = rows;
+      };
+
+      // ---------- Dashboard (REAL) ----------
+      function refreshDashboard() {
+        const total = state.trades.length;
+        document.getElementById("kpiTrades").textContent = String(total);
+
+        const wins = state.trades.filter(t => (t.pl||0) > 0).length;
+        const wr = total ? (wins/total)*100 : 0;
+        document.getElementById("kpiWin").textContent = `${wr.toFixed(1)}%`;
+
+        const totalPL = state.trades.reduce((a,t)=>a+(t.pl||0),0);
+        const kpiPL = document.getElementById("kpiPL");
+        kpiPL.textContent = `${totalPL>=0?"+":"-"}$${Math.abs(totalPL).toFixed(0)}`;
+        kpiPL.className = totalPL >= 0 ? "good" : "bad";
+
+        // streak (reuse streak calc)
+        const dates = [...new Set(state.trades.map(t => t.date).filter(Boolean))].sort();
+        let streak = 0;
+        if(dates.length){
+          const today = new Date(); today.setHours(0,0,0,0);
+          const set = new Set(dates);
+          while(true){
+            const d = new Date(today);
+            d.setDate(d.getDate() - streak);
+            const iso = d.toISOString().slice(0,10);
+            if(set.has(iso)) streak++;
+            else break;
+          }
+        }
+        document.getElementById("kpiStreak").textContent = String(streak);
+
+        // Session list
+        const bySession = {};
+        state.trades.forEach(t => bySession[t.session] = (bySession[t.session]||0) + (t.pl||0));
+        const sessionOrder = ["London","New York","Asia","Overlap"];
+        document.getElementById("sessionList").innerHTML = sessionOrder.map(name => {
+          const val = bySession[name] || 0;
+          const cls = val >= 0 ? "good" : "bad";
+          const sub =
+            name==="London" ? "Highest consistency" :
+            name==="New York" ? "High volatility" :
+            name==="Asia" ? "Lower frequency" :
+            "Best R:R setups";
+          return `
+            <div class="row">
+              <div class="l">
+                <b>${escapeHtml(name)}</b>
+                <small>${escapeHtml(sub)}</small>
+              </div>
+              <div class="r"><span class="badge ${cls}">${val>=0?"+":"-"}$${Math.abs(val).toFixed(0)}</span></div>
+            </div>
+          `;
+        }).join("") || `<div style="color:rgba(255,255,255,.58); font-size:12px;">No data yet.</div>`;
+
+        // Top setup list
+        const bySetup = {};
+        state.trades.forEach(t => bySetup[t.setup] = (bySetup[t.setup]||0) + (t.pl||0));
+        const topSetups = Object.entries(bySetup).sort((a,b)=>b[1]-a[1]).slice(0,3);
+        document.getElementById("topSetupList").innerHTML = topSetups.length ? topSetups.map(([name,val]) => {
           const cls = val >= 0 ? "good" : "bad";
           return `
             <div class="row">
@@ -1503,262 +1822,95 @@
                 <small>Net P/L</small>
               </div>
               <div class="r"><span class="badge ${cls}">${val>=0?"+":"-"}$${Math.abs(val).toFixed(0)}</span></div>
-            </div>`;
-        }).join("");
-      document.getElementById("setupTable").innerHTML = setupRows || `<div style="color:rgba(255,255,255,.58); font-size:12px;">No setups logged.</div>`;
+            </div>
+          `;
+        }).join("") : `<div style="color:rgba(255,255,255,.58); font-size:12px;">No setups logged yet.</div>`;
 
-      // Mistake tracker from emotions (proxy)
-      const mistakeBuckets = {};
-      state.trades.forEach(t => {
-        (t.emotions||[]).forEach(e => mistakeBuckets[e] = (mistakeBuckets[e]||0)+1);
-      });
-      const mistakes = Object.entries(mistakeBuckets).sort((a,b)=>b[1]-a[1]).slice(0,6);
-      document.getElementById("mistakeList").innerHTML = mistakes.length ? mistakes.map(([m,c]) => `
-        <div class="row">
-          <div class="l">
-            <b>${escapeHtml(m)}</b>
-            <small>Occurrences</small>
-          </div>
-          <div class="r"><span class="badge">${c}</span></div>
-        </div>
-      `).join("") : `<div style="color:rgba(255,255,255,.58); font-size:12px;">No mistake tags yet.</div>`;
-    };
-
-    // ---------- Replay ----------
-    const replaySummary = document.getElementById("replaySummary");
-    const replayShotBox = document.getElementById("replayShotBox");
-    const replayNotes = document.getElementById("replayNotes");
-
-    const refreshReplay = () => {
-      if(state.trades.length === 0){
-        replaySummary.innerHTML = `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades saved yet. Use “New Trade Entry”.</div>`;
-        replayShotBox.innerHTML = `<div style="text-align:center; color:rgba(255,255,255,.55); font-size:12px; padding:18px;">No trade selected.</div>`;
-        replayNotes.value = "";
-        return;
-      }
-      replayIndex = Math.max(0, Math.min(replayIndex, state.trades.length - 1));
-      const t = state.trades[replayIndex];
-
-      const pl = t.pl || 0;
-      const cls = pl >= 0 ? "good" : "bad";
-
-      replaySummary.innerHTML = `
-        <div class="row">
-          <div class="l"><b>${escapeHtml(t.symbol)}</b><small>${escapeHtml(t.date)}</small></div>
-          <div class="r"><span class="badge ${cls}">${pl>=0?"+":"-"}$${Math.abs(pl).toFixed(0)}</span></div>
-        </div>
-        <div class="row"><div class="l"><b>Direction</b><small>${escapeHtml(t.direction)}</small></div><div class="r"><span class="badge">${escapeHtml(t.session)}</span></div></div>
-        <div class="row"><div class="l"><b>Setup</b><small>${escapeHtml(t.setup)}</small></div><div class="r"><span class="badge">${escapeHtml(String(t.conf||0))}%</span></div></div>
-        <div class="row"><div class="l"><b>Entry</b><small>${escapeHtml(String(t.entry||"—"))}</small></div><div class="r"><span class="badge">SL ${escapeHtml(String(t.sl||"—"))}</span></div></div>
-        <div class="row"><div class="l"><b>TP</b><small>${escapeHtml(String(t.tp||"—"))}</small></div><div class="r"><span class="badge">ID</span></div></div>
-      `;
-
-      if(t.screenshot){
-        replayShotBox.innerHTML = `<img alt="Trade screenshot" src="${t.screenshot}" style="width:100%; display:block;" />`;
-      } else {
-        replayShotBox.innerHTML = `<div style="text-align:center; color:rgba(255,255,255,.55); font-size:12px; padding:18px;">No screenshot saved for this trade.</div>`;
-      }
-
-      replayNotes.value = state.replayNotes[t.id] || "";
-    };
-
-    document.getElementById("prevTradeBtn").addEventListener("click", () => {
-      if(state.trades.length === 0) return;
-      replayIndex = Math.max(0, replayIndex - 1);
-      refreshReplay();
-    });
-    document.getElementById("nextTradeBtn").addEventListener("click", () => {
-      if(state.trades.length === 0) return;
-      replayIndex = Math.min(state.trades.length - 1, replayIndex + 1);
-      refreshReplay();
-    });
-
-    document.getElementById("saveReplayNotesBtn").addEventListener("click", () => {
-      if(state.trades.length === 0) return;
-      const t = state.trades[replayIndex];
-      state.replayNotes[t.id] = replayNotes.value;
-      saveState(state);
-    });
-
-    // ---------- Streaks ----------
-    const refreshStreaks = () => {
-      // streak = consecutive unique dates with at least 1 trade
-      const dates = [...new Set(state.trades.map(t => t.date))].sort();
-      let streak = 0;
-      if(dates.length){
-        const toDay = (s)=> new Date(s+"T00:00:00");
-        for(let i = dates.length-1; i >= 0; i--){
-          const expected = new Date();
-          expected.setHours(0,0,0,0);
-          expected.setDate(expected.getDate() - streak);
-          const d = toDay(dates[i]);
-          if(d.getTime() === expected.getTime()) streak++;
-          else if(streak === 0 && d.getTime() === expected.getTime()) streak++;
-          else break;
-        }
-      }
-
-      document.getElementById("sStreak").textContent = `${Math.max(0, streak)} Days`;
-
-      const avgReasons = state.trades.length ? state.trades.reduce((a,t)=>a+(t.reasons||[]).length,0)/state.trades.length : 0;
-      const rules = Math.min(100, Math.round(avgReasons * 10));
-      document.getElementById("sRules").textContent = `${rules}%`;
-
-      const control = Math.min(100, Math.max(0, 70 + Math.round((rules-50)/2)));
-      document.getElementById("sEmotion").textContent = `${control}/100`;
-
-      const logged = [...new Set(state.trades.map(t => t.date))].length;
-      document.getElementById("sCons").textContent = `${Math.min(30, logged)}/30`;
-
-      // Heat grid 30 cells (logged days)
-      const heat = document.getElementById("consistencyHeat");
-      heat.innerHTML = "";
-      const today = new Date(); today.setHours(0,0,0,0);
-      const loggedSet = new Set(state.trades.map(t => t.date));
-      for(let i=29;i>=0;i--){
-        const d = new Date(today);
-        d.setDate(d.getDate()-i);
-        const iso = d.toISOString().slice(0,10);
-        const cell = document.createElement("div");
-        cell.className = "day " + (loggedSet.has(iso) ? "pos" : "");
-        cell.innerHTML = `<small>${iso.slice(5)}</small><b>${loggedSet.has(iso) ? "Logged" : ""}</b>`;
-        heat.appendChild(cell);
-      }
-    };
-
-    // ---------- Calendar ----------
-    const calendarHeat = document.getElementById("calendarHeat");
-    const monthSummary = document.getElementById("monthSummary");
-    const dayDetails = document.getElementById("dayDetails");
-
-    const refreshCalendar = () => {
-      calendarHeat.innerHTML = "";
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = today.getMonth(); // current month
-      const monthName = today.toLocaleString(undefined, { month:"long" });
-      document.getElementById("calTitle").textContent = monthName;
-      document.getElementById("calSub").textContent = `${year}`;
-
-      // Map date -> pl (sum)
-      const plByDate = {};
-      state.trades.forEach(t => {
-        const dt = t.date;
-        if(!dt) return;
-        plByDate[dt] = (plByDate[dt]||0) + (t.pl||0);
-      });
-
-      // build month grid with leading blanks (start day)
-      const first = new Date(year, month, 1);
-      const startDow = first.getDay(); // 0 Sun
-      const last = new Date(year, month+1, 0);
-      const daysInMonth = last.getDate();
-
-      // render 6 weeks * 7 = 42 cells like typical calendar
-      const totalCells = 42;
-      for(let i=0;i<totalCells;i++){
-        const dayNum = i - startDow + 1;
-        const cell = document.createElement("div");
-        cell.className = "day";
-        if(dayNum < 1 || dayNum > daysInMonth){
-          cell.style.opacity = ".35";
-          cell.innerHTML = `<small>—</small><b></b>`;
-          calendarHeat.appendChild(cell);
-          continue;
-        }
-        const iso = new Date(year, month, dayNum).toISOString().slice(0,10);
-        const pl = plByDate[iso] || 0;
-        if(pl > 0) cell.classList.add("pos");
-        if(pl < 0) cell.classList.add("neg");
-        cell.innerHTML = `<small>${dayNum}</small><b>${pl === 0 ? "" : (pl>0?"+":"-") + "$" + Math.abs(pl).toFixed(0)}</b>`;
-        cell.style.cursor = "pointer";
-        cell.addEventListener("click", () => showDay(iso));
-        calendarHeat.appendChild(cell);
-      }
-
-      const monthTrades = state.trades.filter(t => {
-        if(!t.date) return false;
-        const d = new Date(t.date+"T00:00:00");
-        return d.getFullYear() === year && d.getMonth() === month;
-      });
-
-      const monthPL = monthTrades.reduce((a,t)=>a+(t.pl||0),0);
-      const wins = monthTrades.filter(t => (t.pl||0) > 0).length;
-      const total = monthTrades.length;
-      const wr = total ? (wins/total)*100 : 0;
-
-      const cls = monthPL >= 0 ? "good" : "bad";
-
-      monthSummary.innerHTML = `
-        <div class="row">
-          <div class="l"><b>Net P/L</b><small>This month</small></div>
-          <div class="r"><span class="badge ${cls}">${monthPL>=0?"+":"-"}$${Math.abs(monthPL).toFixed(0)}</span></div>
-        </div>
-        <div class="row">
-          <div class="l"><b>Trades</b><small>Total</small></div>
-          <div class="r"><span class="badge">${total}</span></div>
-        </div>
-        <div class="row">
-          <div class="l"><b>Win Rate</b><small>Estimated</small></div>
-          <div class="r"><span class="badge">${wr.toFixed(1)}%</span></div>
-        </div>
-        <div class="row">
-          <div class="l"><b>Notes</b><small>Focus area</small></div>
-          <div class="r"><span class="badge">Patience</span></div>
-        </div>
-      `;
-    };
-
-    const showDay = (iso) => {
-      const trades = state.trades.filter(t => t.date === iso);
-      if(!trades.length){
-        dayDetails.innerHTML = `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades on ${escapeHtml(iso)}.</div>`;
-        return;
-      }
-      const rows = trades.map(t => {
-        const pl = t.pl || 0;
-        const cls = pl >= 0 ? "good" : "bad";
-        return `
+        // Mistake patterns (emotion tags proxy)
+        const bucket = {};
+        state.trades.forEach(t => (t.emotions||[]).forEach(e => bucket[e] = (bucket[e]||0) + 1));
+        const topMistakes = Object.entries(bucket).sort((a,b)=>b[1]-a[1]).slice(0,3);
+        document.getElementById("mistakePatternList").innerHTML = topMistakes.length ? topMistakes.map(([m,c]) => `
           <div class="row">
             <div class="l">
-              <b>${escapeHtml(t.symbol)} · ${escapeHtml(t.setup)}</b>
-              <small>${escapeHtml(t.session)} · ${escapeHtml(t.direction)} · ${escapeHtml(String(t.conf||0))}%</small>
+              <b>${escapeHtml(m)}</b>
+              <small>Occurrences</small>
             </div>
-            <div class="r"><span class="badge ${cls}">${pl>=0?"+":"-"}$${Math.abs(pl).toFixed(0)}</span></div>
+            <div class="r"><span class="badge">${c}</span></div>
           </div>
-        `;
-      }).join("");
-      dayDetails.innerHTML = rows;
-    };
+        `).join("") : `<div style="color:rgba(255,255,255,.58); font-size:12px;">No mistake tags yet.</div>`;
+      }
 
-    // ---------- Export ----------
-    document.getElementById("exportBtn").addEventListener("click", () => {
-      const data = JSON.stringify(state, null, 2);
-      const blob = new Blob([data], { type:"application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "trader-journal-export.json";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    });
+      // ---------- Export ----------
+      document.getElementById("exportBtn").addEventListener("click", () => {
+        const data = JSON.stringify({ trades: state.trades }, null, 2);
+        const blob = new Blob([data], { type:"application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "trader-journal-export.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      });
 
-    // ---------- Utils ----------
-    function escapeHtml(str){
-      return String(str).replace(/[&<>"']/g, s => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-      }[s]));
+      // ---------- Utils ----------
+      function escapeHtml(str){
+        return String(str).replace(/[&<>"']/g, s => ({
+          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+        }[s]));
+      }
+
+      // ---------- Live Firestore sync ----------
+      function attachTradesListener() {
+        if (unsubTrades) unsubTrades();
+
+        unsubTrades = tradesCol()
+          .orderBy("dateTs", "asc")
+          .onSnapshot((snap) => {
+            const trades = [];
+            snap.forEach(doc => {
+              const d = doc.data() || {};
+              // store a sortable ms value for charts
+              let dateTsMs = 0;
+              try{
+                if (d.dateTs && typeof d.dateTs.toMillis === "function") dateTsMs = d.dateTs.toMillis();
+              }catch{}
+              trades.push({ ...d, dateTsMs });
+            });
+
+            state.trades = trades;
+
+            // keep replayIndex pointing at last by default if new trades arrive
+            replayIndex = Math.max(0, state.trades.length - 1);
+
+            // refresh everything that depends on trades
+            refreshDashboard();
+            refreshAnalytics();
+            refreshReplay();
+            refreshStreaks();
+            refreshCalendar();
+            updateCharts();
+          }, (err) => {
+            console.error(err);
+            alert("Firestore sync failed. Check Firestore rules + indexes.");
+          });
+      }
+
+      // ---------- Boot ----------
+      clearForm();
+      initCharts();
+      attachTradesListener();
+
+      // Make dashboard immediately correct even before first snapshot
+      refreshDashboard();
+      refreshAnalytics();
+      refreshReplay();
+      refreshStreaks();
+      refreshCalendar();
+      updateCharts();
     }
-
-    // ---------- Boot ----------
-    clearForm();
-    initCharts();
-    refreshAnalytics();
-    refreshReplay();
-    refreshStreaks();
-    refreshCalendar();
   </script>
 </body>
 </html>
