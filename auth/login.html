@@ -307,6 +307,51 @@
     }
     .toplink:hover{ color:#fff; border-color: rgba(255,255,255,.22); }
 
+    /* ===== small status modal (new) ===== */
+    .statusModal{
+      position: fixed;
+      inset: 0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,.55);
+      z-index: 9999;
+      padding: 18px;
+    }
+    .statusCard{
+      width: min(520px, 100%);
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(20,20,20,.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 20px 90px rgba(0,0,0,.75);
+      padding: 18px 16px;
+    }
+    .statusTitle{
+      font-weight: 800;
+      letter-spacing: -.01em;
+      margin: 0 0 6px;
+      font-size: 14px;
+    }
+    .statusText{
+      margin: 0;
+      color: rgba(255,255,255,.72);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .spinner{
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,.18);
+      border-top-color: rgba(255,255,255,.9);
+      border-radius: 999px;
+      animation: spin .8s linear infinite;
+      display:inline-block;
+      vertical-align: -4px;
+      margin-right: 10px;
+    }
+    @keyframes spin{ to { transform: rotate(360deg); } }
+
     @media (max-width: 920px){
       .shell{ grid-template-columns: 1fr; }
       .right{ min-height: 260px; }
@@ -384,6 +429,14 @@
     </section>
   </main>
 
+  <!-- status modal -->
+  <div class="statusModal" id="statusModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="statusCard">
+      <p class="statusTitle" id="statusTitle"><span class="spinner"></span>Working…</p>
+      <p class="statusText" id="statusText">Please wait.</p>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
@@ -391,8 +444,13 @@
       signInWithPopup,
       GoogleAuthProvider,
       OAuthProvider,
-      signInWithEmailAndPassword
+      signInWithEmailAndPassword,
+      onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFunctions,
+      httpsCallable
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDGSYIB_YIpbWyUMJ1d-v00-xADnvaWckk",
@@ -403,21 +461,59 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const functions = getFunctions(app);
 
     const loginGoogleBtn = document.getElementById("loginGoogle");
     const loginAppleBtn  = document.getElementById("loginApple");
     const emailForm      = document.getElementById("emailLoginForm");
+    const loginAppBtn    = document.getElementById("loginApp");
+
+    // Where you want to land after ANY successful login
+    const DASHBOARD_URL = "../dashboard.html";
+
+    // App Store fallback
+    const APP_STORE_URL = "https://apps.apple.com/app/id6752357210";
+
+    // IMPORTANT:
+    // app-return.html will sign user in and then redirect to this dashboard.
+    // We pass returnTo so the app-return page knows where to go.
+    const APP_RETURN_URL = new URL("./app-return.html", window.location.href);
+    APP_RETURN_URL.searchParams.set("returnTo", DASHBOARD_URL);
+
+    // Optional "open-app.html" helper for better fallback
+    const OPEN_APP_URL = new URL("./open-app.html", window.location.href);
+    OPEN_APP_URL.searchParams.set("returnTo", APP_RETURN_URL.toString());
+
+    function showStatus(title, text){
+      document.getElementById("statusTitle").innerHTML = `<span class="spinner"></span>${title}`;
+      document.getElementById("statusText").textContent = text;
+      const m = document.getElementById("statusModal");
+      m.style.display = "flex";
+      m.setAttribute("aria-hidden","false");
+    }
+    function hideStatus(){
+      const m = document.getElementById("statusModal");
+      m.style.display = "none";
+      m.setAttribute("aria-hidden","true");
+    }
 
     function showErr(e){
       console.error(e);
       alert(e?.message || String(e));
+      hideStatus();
     }
 
-    // ✅ root dashboard file (repo shows dashboard.html at root)
-    const DASHBOARD_URL = "../dashboard.html";
+    // If already logged in on web, go dashboard
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // If you don't want auto-redirect, remove this block.
+        // window.location.href = DASHBOARD_URL;
+      }
+    });
 
     loginGoogleBtn.addEventListener("click", async () => {
       try{
+        showStatus("Signing in…", "Connecting with Google.");
         const provider = new GoogleAuthProvider();
         await signInWithPopup(auth, provider);
         window.location.href = DASHBOARD_URL;
@@ -426,6 +522,7 @@
 
     loginAppleBtn.addEventListener("click", async () => {
       try{
+        showStatus("Signing in…", "Connecting with Apple.");
         const provider = new OAuthProvider("apple.com");
         await signInWithPopup(auth, provider);
         window.location.href = DASHBOARD_URL;
@@ -435,6 +532,7 @@
     emailForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       try{
+        showStatus("Signing in…", "Checking your email and password.");
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
         await signInWithEmailAndPassword(auth, email, password);
@@ -442,13 +540,15 @@
       }catch(err){ showErr(err); }
     });
 
-    document.getElementById("loginApp").addEventListener("click", () => {
-      const deepLink = "fynx://auth/login";
-      window.location.href = deepLink;
-
-      setTimeout(() => {
-        window.location.href = DASHBOARD_URL;
-      }, 1500);
+    // ✅ The real "Login with App" flow:
+    // 1) Go to open-app.html which tries to open the app
+    // 2) App shows confirm -> creates a one-time ticket via Cloud Function
+    // 3) App returns to app-return.html?ticket=...
+    // 4) app-return.html exchanges ticket -> signs in -> redirects to dashboard
+    loginAppBtn.addEventListener("click", () => {
+      // You can show a message, but we navigate fast
+      showStatus("Opening FYNX…", "Confirm the login inside the app.");
+      window.location.href = OPEN_APP_URL.toString();
     });
   </script>
 </body>
