@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open FYNX…</title>
+  <style>
+    body{
+      margin:0; height:100vh; display:grid; place-items:center;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:#000; color:#fff;
+    }
+    .card{
+      width:min(520px, 92vw);
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      border-radius:18px;
+      padding:18px 16px;
+    }
+    .title{ font-weight:800; margin:0 0 6px; font-size:14px; }
+    .text{ margin:0; color: rgba(255,255,255,.72); font-size:13px; line-height:1.5; }
+    .spinner{
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,.18);
+      border-top-color: rgba(255,255,255,.9);
+      border-radius: 999px;
+      animation: spin .8s linear infinite;
+      display:inline-block;
+      vertical-align: -4px;
+      margin-right: 10px;
+    }
+    @keyframes spin{ to { transform: rotate(360deg); } }
+    a{ color:#fff; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <p class="title"><span class="spinner"></span>Opening FYNX…</p>
+    <p class="text">If the app is installed, it will open now. Confirm login inside the app.</p>
+    <p class="text" style="margin-top:10px;">If nothing happens, you’ll be sent to the App Store.</p>
+  </div>
+
+  <script>
+    const APP_STORE_URL = "https://apps.apple.com/app/id6752357210";
+
+    // Where we want the app to send the user back after confirm (app-return.html)
+    const url = new URL(window.location.href);
+    const returnTo = url.searchParams.get("returnTo") || "";
+
+    // Your URL scheme (must exist in iOS app: fynx://)
+    // We pass returnTo so app knows where to go back after confirm.
+    const deepLink = `fynx://auth/web-login?returnTo=${encodeURIComponent(returnTo)}`;
+
+    // Try open app
+    window.location.href = deepLink;
+
+    // Fallback to App Store if app didn’t open
+    setTimeout(() => {
+      window.location.href = APP_STORE_URL;
+    }, 1200);
+  </script>
+</body>
+</html>
