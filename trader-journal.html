@@ -28,8 +28,8 @@
       --r2:14px;
       --sidebar:88px;
       --topbar:64px;
-      --good:#46e6a6;   /* minimal accent (P/L) */
-      --bad:#ff4d6d;    /* minimal accent (P/L) */
+      --good:#46e6a6;
+      --bad:#ff4d6d;
       --warn:#f7c948;
     }
 
@@ -45,7 +45,6 @@
       overflow-x:hidden;
     }
 
-    /* Subtle moving “Grok-ish” layers (black/white) */
     .bg-grid{
       position:fixed; inset:0;
       background-image:
@@ -78,11 +77,7 @@
       50%{transform: translate3d(90px,30px,0)}
     }
 
-    /* Layout */
-    .app{
-      min-height:100vh;
-      display:flex;
-    }
+    .app{ min-height:100vh; display:flex; }
 
     .sidebar{
       width:var(--sidebar);
@@ -108,12 +103,7 @@
       color:rgba(255,255,255,.92);
       user-select:none;
     }
-    .nav{
-      margin-top:14px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
+    .nav{ margin-top:14px; display:flex; flex-direction:column; gap:10px; }
     .navbtn{
       height:52px;
       border-radius:16px;
@@ -135,11 +125,7 @@
       color: rgba(255,255,255,.92);
       box-shadow: 0 10px 28px rgba(0,0,0,.35);
     }
-    .navbtn span{
-      font-size:18px;
-      line-height:1;
-      transform: translateY(-1px);
-    }
+    .navbtn span{ font-size:18px; line-height:1; transform: translateY(-1px); }
     .navlabel{
       position:absolute;
       left: 78px;
@@ -156,11 +142,7 @@
       transition:.16s ease;
     }
     .navbtn:hover .navlabel{opacity:1; transform: translateX(0);}
-    .sidebar .spacer{flex:1}
-    .sidefoot{
-      margin-top:14px;
-      display:flex; flex-direction:column; gap:10px;
-    }
+    .sidefoot{ margin-top:14px; display:flex; flex-direction:column; gap:10px; }
 
     .main{
       margin-left:var(--sidebar);
@@ -181,19 +163,10 @@
       backdrop-filter: blur(14px);
       border-bottom:1px solid var(--stroke);
     }
-    .title{
-      display:flex;
-      flex-direction:column;
-      line-height:1.1;
-    }
+    .title{ display:flex; flex-direction:column; line-height:1.1; }
     .title b{font-size:14px; letter-spacing:.02em}
     .title small{font-size:12px; color:var(--muted)}
-    .topbar .right{
-      margin-left:auto;
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
+    .topbar .right{ margin-left:auto; display:flex; align-items:center; gap:10px; }
     .pill{
       display:flex;
       align-items:center;
@@ -229,17 +202,9 @@
       letter-spacing:.01em;
     }
 
-    .content{
-      padding:18px;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
+    .content{ padding:18px; max-width: 1400px; margin: 0 auto; }
 
-    /* Cards / grids */
-    .grid{
-      display:grid;
-      gap:14px;
-    }
+    .grid{ display:grid; gap:14px; }
     .grid.cols-12{ grid-template-columns: repeat(12, minmax(0,1fr)); }
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
@@ -256,17 +221,10 @@
       justify-content:space-between;
       gap:10px;
     }
-    .card .hd b{
-      font-size:13px;
-      letter-spacing:.01em;
-    }
-    .card .hd small{
-      color:var(--muted);
-      font-size:12px;
-    }
-    .card .bd{
-      padding:14px 16px 16px 16px;
-    }
+    .card .hd b{ font-size:13px; letter-spacing:.01em; }
+    .card .hd small{ color:var(--muted); font-size:12px; }
+    .card .bd{ padding:14px 16px 16px 16px; }
+
     .stat{
       display:flex;
       flex-direction:column;
@@ -278,11 +236,7 @@
     }
     .stat small{ color:var(--muted); font-size:12px }
     .stat b{ font-size:22px; letter-spacing:.01em }
-    .stat .delta{
-      font-size:12px;
-      color: var(--muted);
-      display:flex; align-items:center; gap:8px;
-    }
+    .stat .delta{ font-size:12px; color: var(--muted); display:flex; align-items:center; gap:8px; }
     .good{ color: var(--good) !important; }
     .bad{ color: var(--bad) !important; }
 
@@ -295,10 +249,7 @@
       border-bottom:1px dashed rgba(255,255,255,.08);
     }
     .row:last-child{border-bottom:none}
-    .row .l{
-      display:flex; flex-direction:column; gap:2px;
-      min-width:0;
-    }
+    .row .l{ display:flex; flex-direction:column; gap:2px; min-width:0; }
     .row .l b{font-size:12px; font-weight:700}
     .row .l small{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
     .row .r{
@@ -316,19 +267,9 @@
       white-space:nowrap;
     }
 
-    /* Forms */
-    .formgrid{
-      display:grid;
-      grid-template-columns: repeat(12, minmax(0,1fr));
-      gap:14px;
-    }
-    .field{
-      display:flex; flex-direction:column; gap:8px;
-    }
-    label{
-      font-size:12px;
-      color: var(--muted);
-    }
+    .formgrid{ display:grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap:14px; }
+    .field{ display:flex; flex-direction:column; gap:8px; }
+    label{ font-size:12px; color: var(--muted); }
     input[type="text"], input[type="number"], input[type="date"], textarea, select{
       width:100%;
       padding:12px 12px;
@@ -364,9 +305,7 @@
       border-color: rgba(255,255,255,.16);
       color: rgba(255,255,255,.92);
     }
-    .chips{
-      display:flex; flex-wrap:wrap; gap:8px;
-    }
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; }
     .chip{
       padding:8px 10px;
       border-radius: 999px;
@@ -378,13 +317,8 @@
       user-select:none;
       transition:.14s ease;
     }
-    .chip.on{
-      background: rgba(255,255,255,.10);
-      border-color: rgba(255,255,255,.20);
-    }
-    .actions{
-      display:flex; gap:10px; flex-wrap:wrap;
-    }
+    .chip.on{ background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.20); }
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; }
     .btn{
       padding:12px 14px;
       border-radius: 14px;
@@ -398,22 +332,10 @@
       transition:.16s ease;
     }
     .btn:hover{ background: rgba(255,255,255,.10); }
-    .btn.ghost{
-      background: transparent;
-      border-color: rgba(255,255,255,.12);
-      color: rgba(255,255,255,.82);
-    }
-    .btn.danger{
-      border-color: rgba(255,77,109,.35);
-      background: rgba(255,77,109,.10);
-    }
+    .btn.ghost{ background: transparent; border-color: rgba(255,255,255,.12); color: rgba(255,255,255,.82); }
+    .btn.danger{ border-color: rgba(255,77,109,.35); background: rgba(255,77,109,.10); }
 
-    /* Calendar heatmap */
-    .heat{
-      display:grid;
-      grid-template-columns: repeat(7, minmax(0,1fr));
-      gap:10px;
-    }
+    .heat{ display:grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap:10px; }
     .day{
       height:54px;
       border-radius: 14px;
@@ -441,11 +363,25 @@
     .dot.neg{ background: rgba(255,77,109,.30); border-color: rgba(255,77,109,.35); }
     .dot.neu{ background: rgba(255,255,255,.10); }
 
-    /* Sections */
     section.view{ display:none; }
     section.view.active{ display:block; }
 
-    /* Responsive */
+    /* Public lock banner */
+    .lockbar{
+      margin: 0 0 14px 0;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.82);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      font-size:12px;
+    }
+    .lockbar b{ color: rgba(255,255,255,.92); }
+
     @media (max-width: 980px){
       .grid.cols-12{ grid-template-columns: repeat(6, minmax(0,1fr)); }
       .main{ width:100%; }
@@ -472,39 +408,31 @@
 
       <div class="nav">
         <button class="navbtn active" data-view="dash" aria-label="Dashboard">
-          <span>▦</span>
-          <div class="navlabel">Dashboard</div>
+          <span>▦</span><div class="navlabel">Dashboard</div>
         </button>
         <button class="navbtn" data-view="entry" aria-label="New Trade Entry">
-          <span>＋</span>
-          <div class="navlabel">New Trade Entry</div>
+          <span>＋</span><div class="navlabel">New Trade Entry</div>
         </button>
         <button class="navbtn" data-view="analytics" aria-label="Performance Analytics">
-          <span>⟐</span>
-          <div class="navlabel">Performance Analytics</div>
+          <span>⟐</span><div class="navlabel">Performance Analytics</div>
         </button>
         <button class="navbtn" data-view="replay" aria-label="Trade Replay">
-          <span>▶</span>
-          <div class="navlabel">Trade Replay</div>
+          <span>▶</span><div class="navlabel">Trade Replay</div>
         </button>
         <button class="navbtn" data-view="streaks" aria-label="Streaks & Discipline">
-          <span>⚡</span>
-          <div class="navlabel">Streaks & Discipline</div>
+          <span>⚡</span><div class="navlabel">Streaks & Discipline</div>
         </button>
         <button class="navbtn" data-view="calendar" aria-label="Trading Calendar">
-          <span>▣</span>
-          <div class="navlabel">Trading Calendar</div>
+          <span>▣</span><div class="navlabel">Trading Calendar</div>
         </button>
       </div>
 
       <div class="sidefoot">
         <button class="navbtn" id="exportBtn" aria-label="Export JSON">
-          <span>⇩</span>
-          <div class="navlabel">Export</div>
+          <span>⇩</span><div class="navlabel">Export</div>
         </button>
         <a class="navbtn" href="index.html" aria-label="Back to Home" style="text-decoration:none;">
-          <span>←</span>
-          <div class="navlabel">Back</div>
+          <span>←</span><div class="navlabel">Back</div>
         </a>
       </div>
     </aside>
@@ -537,6 +465,10 @@
       </div>
 
       <div class="content">
+        <div class="lockbar">
+          <div>🔒 <b>View-only mode:</b> You can explore the journal. To add/save trades, you must log in.</div>
+          <button class="btn" id="loginNowBtn" type="button">Login</button>
+        </div>
 
         <!-- DASHBOARD -->
         <section class="view active" id="view-dash">
@@ -610,20 +542,20 @@
                     <div class="bd" id="mistakePatternList"></div>
                   </div>
 
-                </div><!-- inner grid -->
-              </div><!-- bd -->
-            </div><!-- card -->
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        <!-- NEW TRADE ENTRY -->
+        <!-- NEW TRADE ENTRY (PUBLIC: force login on save) -->
         <section class="view" id="view-entry">
           <div class="grid cols-12">
             <div class="card" style="grid-column: span 12;">
               <div class="hd">
                 <div>
                   <b>New Trade Entry</b>
-                  <small>Log the trade the same day. Keep it clean.</small>
+                  <small>Preview only. Login required to save.</small>
                 </div>
                 <div class="actions">
                   <button class="btn ghost" id="resetFormBtn" type="button">Reset</button>
@@ -766,9 +698,9 @@
                     </div>
                   </div>
 
-                </div><!-- formgrid -->
-              </div><!-- bd -->
-            </div><!-- card -->
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -856,7 +788,7 @@
               <div class="hd">
                 <div>
                   <b>Trade Replay</b>
-                  <small>Review the last saved trade</small>
+                  <small>Review the last saved trade (demo)</small>
                 </div>
                 <div class="actions">
                   <button class="btn ghost" id="prevTradeBtn" type="button">Previous</button>
@@ -890,7 +822,7 @@
                   <div class="card" style="grid-column: span 12; background: rgba(0,0,0,.18); box-shadow:none;">
                     <div class="hd">
                       <b>Replay Notes</b>
-                      <small>What happened vs plan</small>
+                      <small>Write freely (demo)</small>
                     </div>
                     <div class="bd">
                       <textarea id="replayNotes" placeholder="Write the replay review here..."></textarea>
@@ -1050,867 +982,586 @@
           </div>
         </section>
 
-      </div><!-- content -->
+      </div>
     </main>
-  </div><!-- app -->
-
-  <!-- Firebase (LIVE) -->
-  <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-storage-compat.js"></script>
+  </div>
 
   <script>
-    // =========================
-    // LIVE PRODUCT (Firebase)
-    // =========================
-    // 1) Create Firebase project
-    // 2) Enable Auth (Email/Google/Apple OR at least Anonymous)
-    // 3) Enable Firestore + Storage
-    // 4) Paste your firebaseConfig below
-    const firebaseConfig = {
-      apiKey: "PASTE_YOURS",
-      authDomain: "PASTE_YOURS",
-      projectId: "PASTE_YOURS",
-      storageBucket: "PASTE_YOURS",
-      messagingSenderId: "PASTE_YOURS",
-      appId: "PASTE_YOURS"
+    // PUBLIC MODE: show UI + demo data, force login for save/add/delete
+    const LOGIN_URL = "login.html"; // change if your login file name is different
+
+    const demoTrades = [
+      { id:"t1", symbol:"XAUUSD", date: new Date().toISOString().slice(0,10), direction:"Long", entry:"2030", sl:"2024", tp:"2045", setup:"Liquidity Sweep", session:"London", reasons:["HTF Bias","Liquidity","BOS"], emotions:["Calm"], notes:"Clean sweep + BOS, waited pullback.", conf:82, screenshot:"", pl: 180, dateTsMs: Date.now() - 1000*60*60*24*3 },
+      { id:"t2", symbol:"EURUSD", date: new Date(Date.now()-1000*60*60*24*1).toISOString().slice(0,10), direction:"Short", entry:"1.0910", sl:"1.0930", tp:"1.0860", setup:"Break & Retest", session:"New York", reasons:["Time Window","Clean R:R"], emotions:["Hesitant"], notes:"Entered a bit late but managed risk.", conf:67, screenshot:"", pl: -60, dateTsMs: Date.now() - 1000*60*60*24*1 },
+      { id:"t3", symbol:"BTCUSD", date: new Date(Date.now()-1000*60*60*24*6).toISOString().slice(0,10), direction:"Long", entry:"42000", sl:"41400", tp:"43200", setup:"Trend Pullback", session:"Overlap", reasons:["HTF Bias","Pullback","Clean R:R"], emotions:["Confident"], notes:"Trend continuation, took partials.", conf:74, screenshot:"", pl: 95, dateTsMs: Date.now() - 1000*60*60*24*6 }
+    ];
+
+    let state = { trades: demoTrades };
+    let replayIndex = Math.max(0, state.trades.length - 1);
+
+    const navBtns = [...document.querySelectorAll(".navbtn[data-view]")];
+    const views = {
+      dash: document.getElementById("view-dash"),
+      entry: document.getElementById("view-entry"),
+      analytics: document.getElementById("view-analytics"),
+      replay: document.getElementById("view-replay"),
+      streaks: document.getElementById("view-streaks"),
+      calendar: document.getElementById("view-calendar")
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    const storage = firebase.storage();
+    const setActiveView = (key) => {
+      navBtns.forEach(b => b.classList.toggle("active", b.dataset.view === key));
+      Object.entries(views).forEach(([k, el]) => el.classList.toggle("active", k === key));
+      if(key === "analytics") refreshAnalytics();
+      if(key === "replay") refreshReplay();
+      if(key === "streaks") refreshStreaks();
+      if(key === "calendar") refreshCalendar();
+      if(key === "dash") refreshDashboard();
+    };
 
-    // ---------- App state (backed by Firestore) ----------
-    let state = { trades: [], replayNotes: {} };
-    let replayIndex = 0;
-    let currentUid = null;
-    let unsubTrades = null;
+    navBtns.forEach(btn => btn.addEventListener("click", () => setActiveView(btn.dataset.view)));
 
-    // If user is not logged in: try anonymous (so it "just works").
-    // If you want strict login only, replace signInAnonymously() with redirect to login.html
-    auth.onAuthStateChanged(async (user) => {
-      if (!user) {
-        try {
-          await auth.signInAnonymously();
-          return;
-        } catch (e) {
-          console.error(e);
-          alert("Login required. Redirecting to login...");
-          location.href = "login.html";
-          return;
-        }
+    document.getElementById("quickAddBtn").addEventListener("click", () => {
+      alert("Login required to add trades.");
+      location.href = LOGIN_URL;
+    });
+    document.getElementById("goReplayBtn").addEventListener("click", () => setActiveView("replay"));
+
+    document.getElementById("loginNowBtn").addEventListener("click", () => location.href = LOGIN_URL);
+
+    // Charts
+    const mkChartDefaults = () => ({
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{ labels:{ color:"rgba(255,255,255,.72)", font:{ size:11 } } },
+        tooltip:{ enabled:true }
+      },
+      scales:{
+        x:{ ticks:{ color:"rgba(255,255,255,.55)", font:{ size:11 } }, grid:{ color:"rgba(255,255,255,.07)" } },
+        y:{ ticks:{ color:"rgba(255,255,255,.55)", font:{ size:11 } }, grid:{ color:"rgba(255,255,255,.07)" } }
       }
-      currentUid = user.uid;
-      bootLive();
     });
 
-    const tradesCol = () => db.collection("users").doc(currentUid).collection("trades");
+    let equityChart, winTrendChart, sessionPLChart, emotionChart, disciplineChart;
 
-    function bootLive() {
-      // ---------- Navigation ----------
-      const navBtns = [...document.querySelectorAll(".navbtn[data-view]")];
-      const views = {
-        dash: document.getElementById("view-dash"),
-        entry: document.getElementById("view-entry"),
-        analytics: document.getElementById("view-analytics"),
-        replay: document.getElementById("view-replay"),
-        streaks: document.getElementById("view-streaks"),
-        calendar: document.getElementById("view-calendar")
-      };
-
-      const setActiveView = (key) => {
-        navBtns.forEach(b => b.classList.toggle("active", b.dataset.view === key));
-        Object.entries(views).forEach(([k, el]) => el.classList.toggle("active", k === key));
-        if(key === "analytics") refreshAnalytics();
-        if(key === "replay") refreshReplay();
-        if(key === "streaks") refreshStreaks();
-        if(key === "calendar") refreshCalendar();
-        if(key === "dash") refreshDashboard();
-      };
-
-      navBtns.forEach(btn => btn.addEventListener("click", () => setActiveView(btn.dataset.view)));
-      document.getElementById("quickAddBtn").addEventListener("click", () => setActiveView("entry"));
-      document.getElementById("goReplayBtn").addEventListener("click", () => setActiveView("replay"));
-
-      // ---------- Charts ----------
-      const mkChartDefaults = () => ({
-        responsive:true,
-        maintainAspectRatio:false,
-        plugins:{
-          legend:{ labels:{ color:"rgba(255,255,255,.72)", font:{ size:11 } } },
-          tooltip:{ enabled:true }
-        },
-        scales:{
-          x:{ ticks:{ color:"rgba(255,255,255,.55)", font:{ size:11 } }, grid:{ color:"rgba(255,255,255,.07)" } },
-          y:{ ticks:{ color:"rgba(255,255,255,.55)", font:{ size:11 } }, grid:{ color:"rgba(255,255,255,.07)" } }
-        }
+    const initCharts = () => {
+      equityChart = new Chart(document.getElementById("equityChart"), {
+        type:"line",
+        data:{ labels:[], datasets:[{ label:"Equity", data:[], borderColor:"rgba(255,255,255,.85)", backgroundColor:"rgba(255,255,255,.08)", fill:true, tension:.35, pointRadius:0 }]},
+        options: mkChartDefaults()
       });
 
-      let equityChart, winTrendChart, sessionPLChart, emotionChart, disciplineChart;
-
-      const initCharts = () => {
-        // Equity
-        equityChart = new Chart(document.getElementById("equityChart"), {
-          type:"line",
-          data:{ labels:[], datasets:[{
-            label:"Equity",
-            data:[],
-            borderColor:"rgba(255,255,255,.85)",
-            backgroundColor:"rgba(255,255,255,.08)",
-            fill:true,
-            tension:.35,
-            pointRadius:0
-          }]},
-          options: mkChartDefaults()
-        });
-
-        // Win trend
-        winTrendChart = new Chart(document.getElementById("winTrendChart"), {
-          type:"line",
-          data:{ labels:[], datasets:[{
-            label:"Win Rate % (rolling)",
-            data:[],
-            borderColor:"rgba(255,255,255,.85)",
-            backgroundColor:"rgba(255,255,255,.08)",
-            fill:true,
-            tension:.35,
-            pointRadius:0
-          }]},
-          options: mkChartDefaults()
-        });
-
-        // Session P/L
-        sessionPLChart = new Chart(document.getElementById("sessionPLChart"), {
-          type:"bar",
-          data:{ labels:["London","New York","Asia","Overlap"], datasets:[{
-            label:"Net P/L",
-            data:[0,0,0,0],
-            borderColor:"rgba(255,255,255,.85)",
-            backgroundColor:"rgba(255,255,255,.14)"
-          }]},
-          options: mkChartDefaults()
-        });
-
-        // Emotion control (proxy)
-        emotionChart = new Chart(document.getElementById("emotionChart"), {
-          type:"line",
-          data:{ labels:[], datasets:[{
-            label:"Control Score (proxy)",
-            data:[],
-            borderColor:"rgba(255,255,255,.85)",
-            backgroundColor:"rgba(255,255,255,.08)",
-            fill:true,
-            tension:.35,
-            pointRadius:0
-          }]},
-          options: mkChartDefaults()
-        });
-
-        // Discipline radar (proxy)
-        disciplineChart = new Chart(document.getElementById("disciplineChart"), {
-          type:"radar",
-          data:{
-            labels:["Rules","Timing","Risk","Patience","Journal","Focus"],
-            datasets:[{
-              label:"Discipline",
-              data:[0,0,0,0,0,0],
-              borderColor:"rgba(255,255,255,.85)",
-              backgroundColor:"rgba(255,255,255,.10)",
-              pointBackgroundColor:"rgba(255,255,255,.85)",
-              pointRadius:2
-            }]
-          },
-          options:{
-            responsive:true,
-            maintainAspectRatio:false,
-            plugins:{ legend:{ labels:{ color:"rgba(255,255,255,.72)", font:{ size:11 } } } },
-            scales:{
-              r:{
-                grid:{ color:"rgba(255,255,255,.10)" },
-                angleLines:{ color:"rgba(255,255,255,.10)" },
-                pointLabels:{ color:"rgba(255,255,255,.70)", font:{ size:11 } },
-                ticks:{ display:false }
-              }
-            }
-          }
-        });
-      };
-
-      const updateCharts = () => {
-        const trades = [...state.trades].sort((a,b) => (a.dateTsMs||0) - (b.dateTsMs||0));
-
-        // Equity curve by date (cumulative)
-        const labels = [];
-        const data = [];
-        let cum = 0;
-        trades.forEach(t => {
-          const d = String(t.date || "").slice(5); // MM-DD
-          labels.push(d || "—");
-          cum += (t.pl || 0);
-          data.push(Number(cum.toFixed(2)));
-        });
-        equityChart.data.labels = labels;
-        equityChart.data.datasets[0].data = data;
-        equityChart.update();
-
-        // Rolling win rate (window=10)
-        const wlabels = [];
-        const wdata = [];
-        const window = 10;
-        for (let i=0;i<trades.length;i++){
-          const start = Math.max(0, i-window+1);
-          const slice = trades.slice(start, i+1);
-          const wins = slice.filter(x => (x.pl||0) > 0).length;
-          const wr = slice.length ? (wins/slice.length)*100 : 0;
-          wlabels.push(String(trades[i].date||"").slice(5) || "—");
-          wdata.push(Number(wr.toFixed(1)));
-        }
-        winTrendChart.data.labels = wlabels;
-        winTrendChart.data.datasets[0].data = wdata;
-        winTrendChart.update();
-
-        // Session P/L
-        const sessions = { "London":0, "New York":0, "Asia":0, "Overlap":0 };
-        state.trades.forEach(t => { sessions[t.session] = (sessions[t.session]||0) + (t.pl||0); });
-        sessionPLChart.data.datasets[0].data = [
-          sessions["London"]||0,
-          sessions["New York"]||0,
-          sessions["Asia"]||0,
-          sessions["Overlap"]||0
-        ].map(x => Number(x.toFixed(2)));
-        sessionPLChart.update();
-
-        // Emotion trend (proxy from rules adherence)
-        const emoLabels = [];
-        const emoData = [];
-        trades.slice(-12).forEach(t => {
-          const reasons = (t.reasons||[]).length;
-          const control = Math.min(100, Math.max(0, 60 + reasons*5 - (t.emotions||[]).includes("Revenge")*15 - (t.emotions||[]).includes("FOMO")*10));
-          emoLabels.push(String(t.date||"").slice(5) || "—");
-          emoData.push(control);
-        });
-        emotionChart.data.labels = emoLabels;
-        emotionChart.data.datasets[0].data = emoData;
-        emotionChart.update();
-
-        // Discipline radar (proxy)
-        const total = state.trades.length || 1;
-        const avgReasons = state.trades.reduce((a,t)=>a+(t.reasons||[]).length,0)/total;
-        const rules = Math.min(100, Math.round(avgReasons*10));
-        const timing = Math.min(100, 60 + Math.round((state.trades.filter(t=>t.session==="London"||t.session==="Overlap").length/total)*40));
-        const risk = Math.min(100, 65 + Math.round((state.trades.filter(t=>(t.conf||0)>=70).length/total)*35));
-        const patience = Math.min(100, 55 + Math.round((state.trades.filter(t=>(t.emotions||[]).includes("Hesitant")).length/total)*10));
-        const journal = Math.min(100, 50 + Math.round((state.trades.filter(t=>(t.notes||"").trim().length>20).length/total)*50));
-        const focus = Math.min(100, 55 + Math.round((state.trades.filter(t=>!(t.emotions||[]).includes("Overconfident")).length/total)*45));
-        disciplineChart.data.datasets[0].data = [rules,timing,risk,patience,journal,focus];
-        disciplineChart.update();
-      };
-
-      // ---------- Entry form behaviors ----------
-      const dirSeg = document.querySelectorAll(".seg button");
-      let direction = "Long";
-      dirSeg.forEach(b => b.addEventListener("click", () => {
-        dirSeg.forEach(x => x.classList.remove("active"));
-        b.classList.add("active");
-        direction = b.dataset.dir;
-      }));
-
-      const toggleChipGroup = (id) => {
-        const wrap = document.getElementById(id);
-        wrap.querySelectorAll(".chip").forEach(ch => ch.addEventListener("click", () => ch.classList.toggle("on")));
-      };
-      toggleChipGroup("reasonChips");
-      toggleChipGroup("emotionChips");
-
-      const fEntry = document.getElementById("fEntry");
-      const fSL = document.getElementById("fSL");
-      const fTP = document.getElementById("fTP");
-      const fConf = document.getElementById("fConf");
-
-      const qRisk = document.getElementById("qRisk");
-      const qReward = document.getElementById("qReward");
-      const qRR = document.getElementById("qRR");
-      const qConf = document.getElementById("qConf");
-
-      const calcStats = () => {
-        const e = parseFloat(fEntry.value);
-        const sl = parseFloat(fSL.value);
-        const tp = parseFloat(fTP.value);
-
-        qConf.textContent = `${fConf.value}%`;
-
-        if(!isFinite(e) || !isFinite(sl) || !isFinite(tp)){
-          qRisk.textContent = "—";
-          qReward.textContent = "—";
-          qRR.textContent = "—";
-          return;
-        }
-
-        const risk = Math.abs(e - sl);
-        const reward = Math.abs(tp - e);
-        const rr = risk > 0 ? (reward / risk) : 0;
-
-        qRisk.textContent = risk.toFixed(2);
-        qReward.textContent = reward.toFixed(2);
-        qRR.textContent = rr.toFixed(2);
-      };
-      [fEntry,fSL,fTP,fConf].forEach(el => el.addEventListener("input", calcStats));
-
-      // Screenshot preview (upload to Firebase Storage on save)
-      const fShot = document.getElementById("fShot");
-      const shotPreview = document.getElementById("shotPreview");
-      const shotImg = document.getElementById("shotImg");
-      let shotFile = null;
-
-      fShot.addEventListener("change", (e) => {
-        const file = e.target.files && e.target.files[0];
-        if(!file){ shotFile=null; shotPreview.style.display="none"; return; }
-        shotFile = file;
-        const reader = new FileReader();
-        reader.onload = () => {
-          shotImg.src = String(reader.result || "");
-          shotPreview.style.display = "block";
-        };
-        reader.readAsDataURL(file);
+      winTrendChart = new Chart(document.getElementById("winTrendChart"), {
+        type:"line",
+        data:{ labels:[], datasets:[{ label:"Win Rate % (rolling)", data:[], borderColor:"rgba(255,255,255,.85)", backgroundColor:"rgba(255,255,255,.08)", fill:true, tension:.35, pointRadius:0 }]},
+        options: mkChartDefaults()
       });
 
-      const getChips = (id) =>
-        [...document.querySelectorAll(`#${id} .chip.on`)].map(c => c.textContent.trim());
+      sessionPLChart = new Chart(document.getElementById("sessionPLChart"), {
+        type:"bar",
+        data:{ labels:["London","New York","Asia","Overlap"], datasets:[{ label:"Net P/L", data:[0,0,0,0], borderColor:"rgba(255,255,255,.85)", backgroundColor:"rgba(255,255,255,.14)" }]},
+        options: mkChartDefaults()
+      });
 
-      const saveTradeBtn = document.getElementById("saveTradeBtn");
-      const resetFormBtn = document.getElementById("resetFormBtn");
-      const deleteLastBtn = document.getElementById("deleteLastBtn");
+      emotionChart = new Chart(document.getElementById("emotionChart"), {
+        type:"line",
+        data:{ labels:[], datasets:[{ label:"Control Score (proxy)", data:[], borderColor:"rgba(255,255,255,.85)", backgroundColor:"rgba(255,255,255,.08)", fill:true, tension:.35, pointRadius:0 }]},
+        options: mkChartDefaults()
+      });
 
-      const clearForm = () => {
-        document.getElementById("fSymbol").value = "";
-        document.getElementById("fDate").valueAsDate = new Date();
-        fEntry.value = "";
-        fSL.value = "";
-        fTP.value = "";
-        document.getElementById("fSetup").selectedIndex = 0;
-        document.getElementById("fSession").selectedIndex = 0;
-        document.getElementById("fNotes").value = "";
-        fConf.value = 70;
-        qConf.textContent = "70%";
-        shotFile = null;
-        fShot.value = "";
-        shotPreview.style.display = "none";
-        document.querySelectorAll(".chip.on").forEach(x => x.classList.remove("on"));
-        calcStats();
+      disciplineChart = new Chart(document.getElementById("disciplineChart"), {
+        type:"radar",
+        data:{ labels:["Rules","Timing","Risk","Patience","Journal","Focus"], datasets:[{ label:"Discipline", data:[0,0,0,0,0,0], borderColor:"rgba(255,255,255,.85)", backgroundColor:"rgba(255,255,255,.10)", pointBackgroundColor:"rgba(255,255,255,.85)", pointRadius:2 }]},
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{ legend:{ labels:{ color:"rgba(255,255,255,.72)", font:{ size:11 } } } },
+          scales:{ r:{ grid:{ color:"rgba(255,255,255,.10)" }, angleLines:{ color:"rgba(255,255,255,.10)" }, pointLabels:{ color:"rgba(255,255,255,.70)", font:{ size:11 } }, ticks:{ display:false } } }
+        }
+      });
+    };
+
+    const updateCharts = () => {
+      const trades = [...state.trades].sort((a,b) => (a.dateTsMs||0) - (b.dateTsMs||0));
+
+      // Equity
+      const labels = [];
+      const data = [];
+      let cum = 0;
+      trades.forEach(t => {
+        labels.push(String(t.date||"").slice(5) || "—");
+        cum += (t.pl || 0);
+        data.push(Number(cum.toFixed(2)));
+      });
+      equityChart.data.labels = labels;
+      equityChart.data.datasets[0].data = data;
+      equityChart.update();
+
+      // Rolling win rate
+      const wlabels = [];
+      const wdata = [];
+      const window = 10;
+      for (let i=0;i<trades.length;i++){
+        const start = Math.max(0, i-window+1);
+        const slice = trades.slice(start, i+1);
+        const wins = slice.filter(x => (x.pl||0) > 0).length;
+        const wr = slice.length ? (wins/slice.length)*100 : 0;
+        wlabels.push(String(trades[i].date||"").slice(5) || "—");
+        wdata.push(Number(wr.toFixed(1)));
+      }
+      winTrendChart.data.labels = wlabels;
+      winTrendChart.data.datasets[0].data = wdata;
+      winTrendChart.update();
+
+      // Session P/L
+      const sessions = { "London":0, "New York":0, "Asia":0, "Overlap":0 };
+      state.trades.forEach(t => { sessions[t.session] = (sessions[t.session]||0) + (t.pl||0); });
+      sessionPLChart.data.datasets[0].data = [
+        sessions["London"]||0, sessions["New York"]||0, sessions["Asia"]||0, sessions["Overlap"]||0
+      ].map(x => Number(x.toFixed(2)));
+      sessionPLChart.update();
+
+      // Emotion trend proxy
+      const emoLabels = [];
+      const emoData = [];
+      trades.slice(-12).forEach(t => {
+        const reasons = (t.reasons||[]).length;
+        const control = Math.min(100, Math.max(0, 60 + reasons*5 - ((t.emotions||[]).includes("Revenge")?15:0) - ((t.emotions||[]).includes("FOMO")?10:0)));
+        emoLabels.push(String(t.date||"").slice(5) || "—");
+        emoData.push(control);
+      });
+      emotionChart.data.labels = emoLabels;
+      emotionChart.data.datasets[0].data = emoData;
+      emotionChart.update();
+
+      // Discipline proxy
+      const total = state.trades.length || 1;
+      const avgReasons = state.trades.reduce((a,t)=>a+(t.reasons||[]).length,0)/total;
+      const rules = Math.min(100, Math.round(avgReasons*10));
+      const timing = Math.min(100, 60 + Math.round((state.trades.filter(t=>t.session==="London"||t.session==="Overlap").length/total)*40));
+      const risk = Math.min(100, 65 + Math.round((state.trades.filter(t=>(t.conf||0)>=70).length/total)*35));
+      const patience = Math.min(100, 55 + Math.round((state.trades.filter(t=>(t.emotions||[]).includes("Hesitant")).length/total)*10));
+      const journal = Math.min(100, 50 + Math.round((state.trades.filter(t=>(t.notes||"").trim().length>20).length/total)*50));
+      const focus = Math.min(100, 55 + Math.round((state.trades.filter(t=>!(t.emotions||[]).includes("Overconfident")).length/total)*45));
+      disciplineChart.data.datasets[0].data = [rules,timing,risk,patience,journal,focus];
+      disciplineChart.update();
+    };
+
+    // Entry form behaviors (demo only)
+    const dirSeg = document.querySelectorAll(".seg button");
+    let direction = "Long";
+    dirSeg.forEach(b => b.addEventListener("click", () => {
+      dirSeg.forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      direction = b.dataset.dir;
+    }));
+
+    const toggleChipGroup = (id) => {
+      const wrap = document.getElementById(id);
+      wrap.querySelectorAll(".chip").forEach(ch => ch.addEventListener("click", () => ch.classList.toggle("on")));
+    };
+    toggleChipGroup("reasonChips");
+    toggleChipGroup("emotionChips");
+
+    const fEntry = document.getElementById("fEntry");
+    const fSL = document.getElementById("fSL");
+    const fTP = document.getElementById("fTP");
+    const fConf = document.getElementById("fConf");
+    const qRisk = document.getElementById("qRisk");
+    const qReward = document.getElementById("qReward");
+    const qRR = document.getElementById("qRR");
+    const qConf = document.getElementById("qConf");
+
+    const calcStats = () => {
+      const e = parseFloat(fEntry.value);
+      const sl = parseFloat(fSL.value);
+      const tp = parseFloat(fTP.value);
+      qConf.textContent = `${fConf.value}%`;
+
+      if(!isFinite(e) || !isFinite(sl) || !isFinite(tp)){
+        qRisk.textContent = "—";
+        qReward.textContent = "—";
+        qRR.textContent = "—";
+        return;
+      }
+      const risk = Math.abs(e - sl);
+      const reward = Math.abs(tp - e);
+      const rr = risk > 0 ? (reward / risk) : 0;
+      qRisk.textContent = risk.toFixed(2);
+      qReward.textContent = reward.toFixed(2);
+      qRR.textContent = rr.toFixed(2);
+    };
+    [fEntry,fSL,fTP,fConf].forEach(el => el.addEventListener("input", calcStats));
+
+    // Screenshot preview (demo only)
+    const fShot = document.getElementById("fShot");
+    const shotPreview = document.getElementById("shotPreview");
+    const shotImg = document.getElementById("shotImg");
+    fShot.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if(!file){ shotPreview.style.display="none"; return; }
+      const reader = new FileReader();
+      reader.onload = () => { shotImg.src = String(reader.result || ""); shotPreview.style.display = "block"; };
+      reader.readAsDataURL(file);
+    });
+
+    const clearForm = () => {
+      document.getElementById("fSymbol").value = "";
+      document.getElementById("fDate").valueAsDate = new Date();
+      fEntry.value = ""; fSL.value = ""; fTP.value = "";
+      document.getElementById("fSetup").selectedIndex = 0;
+      document.getElementById("fSession").selectedIndex = 0;
+      document.getElementById("fNotes").value = "";
+      fConf.value = 70;
+      qConf.textContent = "70%";
+      fShot.value = "";
+      shotPreview.style.display = "none";
+      document.querySelectorAll(".chip.on").forEach(x => x.classList.remove("on"));
+      calcStats();
+    };
+    document.getElementById("resetFormBtn").addEventListener("click", clearForm);
+
+    // Force login actions
+    const forceLogin = () => { alert("Login required to save trades."); location.href = LOGIN_URL; };
+    document.getElementById("saveTradeBtn").addEventListener("click", forceLogin);
+    document.getElementById("deleteLastBtn").addEventListener("click", forceLogin);
+
+    // Replay
+    const replaySummary = document.getElementById("replaySummary");
+    const replayShotBox = document.getElementById("replayShotBox");
+    const replayNotes = document.getElementById("replayNotes");
+
+    const refreshReplay = () => {
+      if(state.trades.length === 0){
+        replaySummary.innerHTML = `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades available.</div>`;
+        replayShotBox.innerHTML = `<div style="text-align:center; color:rgba(255,255,255,.55); font-size:12px; padding:18px;">No trade selected.</div>`;
+        replayNotes.value = "";
+        return;
+      }
+      replayIndex = Math.max(0, Math.min(replayIndex, state.trades.length - 1));
+      const t = state.trades[replayIndex];
+      const pl = t.pl || 0;
+      const cls = pl >= 0 ? "good" : "bad";
+
+      replaySummary.innerHTML = `
+        <div class="row">
+          <div class="l"><b>${escapeHtml(t.symbol)}</b><small>${escapeHtml(t.date)}</small></div>
+          <div class="r"><span class="badge ${cls}">${pl>=0?"+":"-"}$${Math.abs(pl).toFixed(0)}</span></div>
+        </div>
+        <div class="row"><div class="l"><b>Direction</b><small>${escapeHtml(t.direction)}</small></div><div class="r"><span class="badge">${escapeHtml(t.session)}</span></div></div>
+        <div class="row"><div class="l"><b>Setup</b><small>${escapeHtml(t.setup)}</small></div><div class="r"><span class="badge">${escapeHtml(String(t.conf||0))}%</span></div></div>
+        <div class="row"><div class="l"><b>Entry</b><small>${escapeHtml(String(t.entry||"—"))}</small></div><div class="r"><span class="badge">SL ${escapeHtml(String(t.sl||"—"))}</span></div></div>
+        <div class="row"><div class="l"><b>TP</b><small>${escapeHtml(String(t.tp||"—"))}</small></div><div class="r"><span class="badge">ID</span></div></div>
+      `;
+
+      replayShotBox.innerHTML = t.screenshot
+        ? `<img alt="Trade screenshot" src="${t.screenshot}" style="width:100%; display:block;" />`
+        : `<div style="text-align:center; color:rgba(255,255,255,.55); font-size:12px; padding:18px;">No screenshot saved for this trade.</div>`;
+
+      // local notes demo
+      const key = "fynx_public_replay_notes_" + t.id;
+      replayNotes.value = localStorage.getItem(key) || "";
+      document.getElementById("saveReplayNotesBtn").onclick = () => {
+        localStorage.setItem(key, replayNotes.value);
+        alert("Saved (local only). Login to save to cloud.");
       };
-      resetFormBtn.addEventListener("click", clearForm);
+    };
 
-      const estimatePL = (entry, tp, sl, dir) => {
-        const e = parseFloat(entry), T = parseFloat(tp), S = parseFloat(sl);
-        if(!isFinite(e) || !isFinite(T) || !isFinite(S)) return 0;
-        const reward = Math.abs(T - e);
-        const risk = Math.abs(e - S);
-        return (reward - (risk * 0.4)); // proxy
-      };
+    document.getElementById("prevTradeBtn").addEventListener("click", () => {
+      if(state.trades.length === 0) return;
+      replayIndex = Math.max(0, replayIndex - 1);
+      refreshReplay();
+    });
+    document.getElementById("nextTradeBtn").addEventListener("click", () => {
+      if(state.trades.length === 0) return;
+      replayIndex = Math.min(state.trades.length - 1, replayIndex + 1);
+      refreshReplay();
+    });
 
-      async function uploadScreenshotIfAny(tradeId) {
-        if(!shotFile) return "";
-        const path = `users/${currentUid}/trades/${tradeId}/screenshot_${Date.now()}.jpg`;
-        const ref = storage.ref().child(path);
-        await ref.put(shotFile, { contentType: shotFile.type || "image/jpeg" });
-        return await ref.getDownloadURL();
+    // Analytics
+    const refreshAnalytics = () => {
+      document.getElementById("tradeCountBadge").textContent = `Trades: ${state.trades.length}`;
+      if(state.trades.length === 0){
+        document.getElementById("aWin").textContent = "+$0";
+        document.getElementById("aLoss").textContent = "-$0";
+        document.getElementById("aExp").textContent = "+$0";
+        document.getElementById("aQual").textContent = "—";
+        document.getElementById("setupTable").innerHTML = `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades yet.</div>`;
+        document.getElementById("mistakeList").innerHTML = `<div style="color:rgba(255,255,255,.58); font-size:12px;">No data yet.</div>`;
+        return;
       }
 
-      saveTradeBtn.addEventListener("click", async () => {
-        try{
-          saveTradeBtn.disabled = true;
+      const pls = state.trades.map(t => t.pl || 0);
+      const wins = pls.filter(x => x > 0);
+      const losses = pls.filter(x => x < 0);
+      const avg = (arr) => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length) : 0;
+      const avgWin = avg(wins);
+      const avgLoss = avg(losses);
 
-          const symbol = document.getElementById("fSymbol").value.trim() || "—";
-          const date = document.getElementById("fDate").value || new Date().toISOString().slice(0,10);
-          const entry = document.getElementById("fEntry").value;
-          const sl = document.getElementById("fSL").value;
-          const tp = document.getElementById("fTP").value;
-          const setup = document.getElementById("fSetup").value;
-          const session = document.getElementById("fSession").value;
-          const reasons = getChips("reasonChips");
-          const emotions = getChips("emotionChips");
-          const notes = document.getElementById("fNotes").value.trim();
-          const conf = parseInt(document.getElementById("fConf").value, 10) || 0;
+      document.getElementById("aWin").textContent = `+$${Math.abs(avgWin).toFixed(0)}`;
+      document.getElementById("aLoss").textContent = `-$${Math.abs(avgLoss).toFixed(0)}`;
 
-          const pl = estimatePL(entry, tp, sl, direction);
+      const winRate = wins.length / state.trades.length;
+      const expectancy = (winRate * avgWin) + ((1-winRate) * avgLoss);
+      const expEl = document.getElementById("aExp");
+      expEl.textContent = `${expectancy >= 0 ? "+" : "-"}$${Math.abs(expectancy).toFixed(0)}`;
+      expEl.className = expectancy >= 0 ? "good" : "bad";
 
-          const tradeId = crypto.randomUUID();
-          const dateTs = firebase.firestore.Timestamp.fromDate(new Date(date + "T00:00:00"));
+      const reasonCount = state.trades.map(t => (t.reasons||[]).length);
+      const q = Math.round(avg(reasonCount) * 12);
+      document.getElementById("aQual").textContent = `${Math.min(100, Math.max(0,q))}/100`;
 
-          const screenshotUrl = await uploadScreenshotIfAny(tradeId);
+      const bySetup = {};
+      state.trades.forEach(t => { bySetup[t.setup] = (bySetup[t.setup] || 0) + (t.pl || 0); });
+      document.getElementById("setupTable").innerHTML = Object.entries(bySetup)
+        .sort((a,b)=> b[1]-a[1])
+        .slice(0,6)
+        .map(([name, val]) => {
+          const cls = val >= 0 ? "good" : "bad";
+          return `
+            <div class="row">
+              <div class="l"><b>${escapeHtml(name)}</b><small>Net P/L</small></div>
+              <div class="r"><span class="badge ${cls}">${val>=0?"+":"-"}$${Math.abs(val).toFixed(0)}</span></div>
+            </div>`;
+        }).join("");
 
-          const tradeDoc = {
-            id: tradeId,
-            symbol, date, direction,
-            entry, sl, tp,
-            setup, session,
-            reasons, emotions,
-            notes, conf,
-            screenshot: screenshotUrl || "",
-            pl: Number.isFinite(pl) ? pl : 0,
-            dateTs,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          };
+      const mistakeBuckets = {};
+      state.trades.forEach(t => { (t.emotions||[]).forEach(e => mistakeBuckets[e] = (mistakeBuckets[e]||0)+1); });
+      const mistakes = Object.entries(mistakeBuckets).sort((a,b)=>b[1]-a[1]).slice(0,6);
+      document.getElementById("mistakeList").innerHTML = mistakes.length ? mistakes.map(([m,c]) => `
+        <div class="row">
+          <div class="l"><b>${escapeHtml(m)}</b><small>Occurrences</small></div>
+          <div class="r"><span class="badge">${c}</span></div>
+        </div>`).join("") : `<div style="color:rgba(255,255,255,.58); font-size:12px;">No mistake tags yet.</div>`;
+    };
 
-          await tradesCol().doc(tradeId).set(tradeDoc, { merge:false });
-
-          clearForm();
-          setActiveView("replay");
-        } catch(err){
-          console.error(err);
-          alert("Save failed. Check Firebase config + Firestore/Storage rules.");
-        } finally {
-          saveTradeBtn.disabled = false;
-        }
-      });
-
-      deleteLastBtn.addEventListener("click", async () => {
-        if(state.trades.length === 0) return;
-        const t = state.trades[state.trades.length - 1];
-        try{
-          await tradesCol().doc(t.id).delete();
-          // best-effort: screenshot files may remain if multiple versions exist; safe to ignore.
-        } catch(err){
-          console.error(err);
-          alert("Delete failed. Check Firestore rules.");
-        }
-      });
-
-      // ---------- Analytics ----------
-      const refreshAnalytics = () => {
-        document.getElementById("tradeCountBadge").textContent = `Trades: ${state.trades.length}`;
-
-        if(state.trades.length === 0){
-          document.getElementById("aWin").textContent = "+$0";
-          document.getElementById("aLoss").textContent = "-$0";
-          document.getElementById("aExp").textContent = "+$0";
-          document.getElementById("aQual").textContent = "—";
-          document.getElementById("setupTable").innerHTML =
-            `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades yet. Add trades to see analytics.</div>`;
-          document.getElementById("mistakeList").innerHTML =
-            `<div style="color:rgba(255,255,255,.58); font-size:12px;">No data yet.</div>`;
-          return;
-        }
-
-        const pls = state.trades.map(t => t.pl || 0);
-        const wins = pls.filter(x => x > 0);
-        const losses = pls.filter(x => x < 0);
-
-        const avg = (arr) => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length) : 0;
-        const avgWin = avg(wins);
-        const avgLoss = avg(losses);
-
-        document.getElementById("aWin").textContent = `+$${Math.abs(avgWin).toFixed(0)}`;
-        document.getElementById("aLoss").textContent = `-$${Math.abs(avgLoss).toFixed(0)}`;
-
-        const winRate = wins.length / state.trades.length;
-        const expectancy = (winRate * avgWin) + ((1-winRate) * avgLoss);
-        const expEl = document.getElementById("aExp");
-        expEl.textContent = `${expectancy >= 0 ? "+" : "-"}$${Math.abs(expectancy).toFixed(0)}`;
-        expEl.className = expectancy >= 0 ? "good" : "bad";
-
-        // Quality score: how many checklist reasons selected (proxy)
-        const reasonCount = state.trades.map(t => (t.reasons||[]).length);
-        const q = Math.round(avg(reasonCount) * 12);
-        document.getElementById("aQual").textContent = `${Math.min(100, Math.max(0,q))}/100`;
-
-        // Setup performance table
-        const bySetup = {};
-        state.trades.forEach(t => { bySetup[t.setup] = (bySetup[t.setup] || 0) + (t.pl || 0); });
-        const setupRows = Object.entries(bySetup)
-          .sort((a,b)=> b[1]-a[1])
-          .slice(0,6)
-          .map(([name, val]) => {
-            const cls = val >= 0 ? "good" : "bad";
-            return `
-              <div class="row">
-                <div class="l">
-                  <b>${escapeHtml(name)}</b>
-                  <small>Net P/L</small>
-                </div>
-                <div class="r"><span class="badge ${cls}">${val>=0?"+":"-"}$${Math.abs(val).toFixed(0)}</span></div>
-              </div>`;
-          }).join("");
-        document.getElementById("setupTable").innerHTML = setupRows || `<div style="color:rgba(255,255,255,.58); font-size:12px;">No setups logged.</div>`;
-
-        // Mistake tracker from emotions (proxy)
-        const mistakeBuckets = {};
-        state.trades.forEach(t => { (t.emotions||[]).forEach(e => mistakeBuckets[e] = (mistakeBuckets[e]||0)+1); });
-        const mistakes = Object.entries(mistakeBuckets).sort((a,b)=>b[1]-a[1]).slice(0,6);
-        document.getElementById("mistakeList").innerHTML = mistakes.length ? mistakes.map(([m,c]) => `
-          <div class="row">
-            <div class="l">
-              <b>${escapeHtml(m)}</b>
-              <small>Occurrences</small>
-            </div>
-            <div class="r"><span class="badge">${c}</span></div>
-          </div>
-        `).join("") : `<div style="color:rgba(255,255,255,.58); font-size:12px;">No mistake tags yet.</div>`;
-      };
-
-      // ---------- Replay ----------
-      const replaySummary = document.getElementById("replaySummary");
-      const replayShotBox = document.getElementById("replayShotBox");
-      const replayNotes = document.getElementById("replayNotes");
-
-      const refreshReplay = () => {
-        if(state.trades.length === 0){
-          replaySummary.innerHTML = `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades saved yet. Use “New Trade Entry”.</div>`;
-          replayShotBox.innerHTML = `<div style="text-align:center; color:rgba(255,255,255,.55); font-size:12px; padding:18px;">No trade selected.</div>`;
-          replayNotes.value = "";
-          return;
-        }
-        replayIndex = Math.max(0, Math.min(replayIndex, state.trades.length - 1));
-        const t = state.trades[replayIndex];
-
-        const pl = t.pl || 0;
-        const cls = pl >= 0 ? "good" : "bad";
-
-        replaySummary.innerHTML = `
-          <div class="row">
-            <div class="l"><b>${escapeHtml(t.symbol)}</b><small>${escapeHtml(t.date)}</small></div>
-            <div class="r"><span class="badge ${cls}">${pl>=0?"+":"-"}$${Math.abs(pl).toFixed(0)}</span></div>
-          </div>
-          <div class="row"><div class="l"><b>Direction</b><small>${escapeHtml(t.direction)}</small></div><div class="r"><span class="badge">${escapeHtml(t.session)}</span></div></div>
-          <div class="row"><div class="l"><b>Setup</b><small>${escapeHtml(t.setup)}</small></div><div class="r"><span class="badge">${escapeHtml(String(t.conf||0))}%</span></div></div>
-          <div class="row"><div class="l"><b>Entry</b><small>${escapeHtml(String(t.entry||"—"))}</small></div><div class="r"><span class="badge">SL ${escapeHtml(String(t.sl||"—"))}</span></div></div>
-          <div class="row"><div class="l"><b>TP</b><small>${escapeHtml(String(t.tp||"—"))}</small></div><div class="r"><span class="badge">ID</span></div></div>
-        `;
-
-        if(t.screenshot){
-          replayShotBox.innerHTML = `<img alt="Trade screenshot" src="${t.screenshot}" style="width:100%; display:block;" />`;
-        } else {
-          replayShotBox.innerHTML = `<div style="text-align:center; color:rgba(255,255,255,.55); font-size:12px; padding:18px;">No screenshot saved for this trade.</div>`;
-        }
-
-        replayNotes.value = String(t.replayNotes || "");
-      };
-
-      document.getElementById("prevTradeBtn").addEventListener("click", () => {
-        if(state.trades.length === 0) return;
-        replayIndex = Math.max(0, replayIndex - 1);
-        refreshReplay();
-      });
-      document.getElementById("nextTradeBtn").addEventListener("click", () => {
-        if(state.trades.length === 0) return;
-        replayIndex = Math.min(state.trades.length - 1, replayIndex + 1);
-        refreshReplay();
-      });
-
-      document.getElementById("saveReplayNotesBtn").addEventListener("click", async () => {
-        if(state.trades.length === 0) return;
-        const t = state.trades[replayIndex];
-        try{
-          await tradesCol().doc(t.id).set({ replayNotes: replayNotes.value }, { merge:true });
-        } catch(err){
-          console.error(err);
-          alert("Replay notes save failed. Check Firestore rules.");
-        }
-      });
-
-      // ---------- Streaks ----------
-      const refreshStreaks = () => {
-        const dates = [...new Set(state.trades.map(t => t.date).filter(Boolean))].sort();
-        let streak = 0;
-        if(dates.length){
-          const toDay = (s)=> new Date(s+"T00:00:00");
-          const today = new Date(); today.setHours(0,0,0,0);
-          const dateSet = new Set(dates);
-          while(true){
-            const d = new Date(today);
-            d.setDate(d.getDate() - streak);
-            const iso = d.toISOString().slice(0,10);
-            if(dateSet.has(iso)) streak++;
-            else break;
-          }
-        }
-
-        document.getElementById("sStreak").textContent = `${Math.max(0, streak)} Days`;
-
-        const avgReasons = state.trades.length ? state.trades.reduce((a,t)=>a+(t.reasons||[]).length,0)/state.trades.length : 0;
-        const rules = Math.min(100, Math.round(avgReasons * 10));
-        document.getElementById("sRules").textContent = `${rules}%`;
-
-        const control = Math.min(100, Math.max(0, 70 + Math.round((rules-50)/2)));
-        document.getElementById("sEmotion").textContent = `${control}/100`;
-
-        const logged = [...new Set(state.trades.map(t => t.date).filter(Boolean))].length;
-        document.getElementById("sCons").textContent = `${Math.min(30, logged)}/30`;
-
-        const heat = document.getElementById("consistencyHeat");
-        heat.innerHTML = "";
+    // Streaks
+    const refreshStreaks = () => {
+      const dates = [...new Set(state.trades.map(t => t.date).filter(Boolean))].sort();
+      let streak = 0;
+      if(dates.length){
         const today = new Date(); today.setHours(0,0,0,0);
-        const loggedSet = new Set(state.trades.map(t => t.date).filter(Boolean));
-        for(let i=29;i>=0;i--){
+        const dateSet = new Set(dates);
+        while(true){
           const d = new Date(today);
-          d.setDate(d.getDate()-i);
+          d.setDate(d.getDate() - streak);
           const iso = d.toISOString().slice(0,10);
-          const cell = document.createElement("div");
-          cell.className = "day " + (loggedSet.has(iso) ? "pos" : "");
-          cell.innerHTML = `<small>${iso.slice(5)}</small><b>${loggedSet.has(iso) ? "Logged" : ""}</b>`;
-          heat.appendChild(cell);
+          if(dateSet.has(iso)) streak++;
+          else break;
         }
-      };
+      }
 
-      // ---------- Calendar ----------
+      document.getElementById("sStreak").textContent = `${Math.max(0, streak)} Days`;
+
+      const avgReasons = state.trades.length ? state.trades.reduce((a,t)=>a+(t.reasons||[]).length,0)/state.trades.length : 0;
+      const rules = Math.min(100, Math.round(avgReasons * 10));
+      document.getElementById("sRules").textContent = `${rules}%`;
+
+      const control = Math.min(100, Math.max(0, 70 + Math.round((rules-50)/2)));
+      document.getElementById("sEmotion").textContent = `${control}/100`;
+
+      const logged = [...new Set(state.trades.map(t => t.date).filter(Boolean))].length;
+      document.getElementById("sCons").textContent = `${Math.min(30, logged)}/30`;
+
+      const heat = document.getElementById("consistencyHeat");
+      heat.innerHTML = "";
+      const today = new Date(); today.setHours(0,0,0,0);
+      const loggedSet = new Set(state.trades.map(t => t.date).filter(Boolean));
+      for(let i=29;i>=0;i--){
+        const d = new Date(today);
+        d.setDate(d.getDate()-i);
+        const iso = d.toISOString().slice(0,10);
+        const cell = document.createElement("div");
+        cell.className = "day " + (loggedSet.has(iso) ? "pos" : "");
+        cell.innerHTML = `<small>${iso.slice(5)}</small><b>${loggedSet.has(iso) ? "Logged" : ""}</b>`;
+        heat.appendChild(cell);
+      }
+    };
+
+    // Calendar
+    const refreshCalendar = () => {
       const calendarHeat = document.getElementById("calendarHeat");
       const monthSummary = document.getElementById("monthSummary");
       const dayDetails = document.getElementById("dayDetails");
+      calendarHeat.innerHTML = "";
 
-      const refreshCalendar = () => {
-        calendarHeat.innerHTML = "";
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth();
-        const monthName = today.toLocaleString(undefined, { month:"long" });
-        document.getElementById("calTitle").textContent = monthName;
-        document.getElementById("calSub").textContent = `${year}`;
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth();
+      const monthName = today.toLocaleString(undefined, { month:"long" });
+      document.getElementById("calTitle").textContent = monthName;
+      document.getElementById("calSub").textContent = `${year}`;
 
-        const plByDate = {};
-        state.trades.forEach(t => {
-          const dt = t.date;
-          if(!dt) return;
-          plByDate[dt] = (plByDate[dt]||0) + (t.pl||0);
-        });
-
-        const first = new Date(year, month, 1);
-        const startDow = first.getDay();
-        const last = new Date(year, month+1, 0);
-        const daysInMonth = last.getDate();
-
-        const totalCells = 42;
-        for(let i=0;i<totalCells;i++){
-          const dayNum = i - startDow + 1;
-          const cell = document.createElement("div");
-          cell.className = "day";
-          if(dayNum < 1 || dayNum > daysInMonth){
-            cell.style.opacity = ".35";
-            cell.innerHTML = `<small>—</small><b></b>`;
-            calendarHeat.appendChild(cell);
-            continue;
-          }
-          const iso = new Date(year, month, dayNum).toISOString().slice(0,10);
-          const pl = plByDate[iso] || 0;
-          if(pl > 0) cell.classList.add("pos");
-          if(pl < 0) cell.classList.add("neg");
-          cell.innerHTML = `<small>${dayNum}</small><b>${pl === 0 ? "" : (pl>0?"+":"-") + "$" + Math.abs(pl).toFixed(0)}</b>`;
-          cell.style.cursor = "pointer";
-          cell.addEventListener("click", () => showDay(iso));
-          calendarHeat.appendChild(cell);
-        }
-
-        const monthTrades = state.trades.filter(t => {
-          if(!t.date) return false;
-          const d = new Date(t.date+"T00:00:00");
-          return d.getFullYear() === year && d.getMonth() === month;
-        });
-
-        const monthPL = monthTrades.reduce((a,t)=>a+(t.pl||0),0);
-        const wins = monthTrades.filter(t => (t.pl||0) > 0).length;
-        const total = monthTrades.length;
-        const wr = total ? (wins/total)*100 : 0;
-
-        const cls = monthPL >= 0 ? "good" : "bad";
-
-        monthSummary.innerHTML = `
-          <div class="row">
-            <div class="l"><b>Net P/L</b><small>This month</small></div>
-            <div class="r"><span class="badge ${cls}">${monthPL>=0?"+":"-"}$${Math.abs(monthPL).toFixed(0)}</span></div>
-          </div>
-          <div class="row">
-            <div class="l"><b>Trades</b><small>Total</small></div>
-            <div class="r"><span class="badge">${total}</span></div>
-          </div>
-          <div class="row">
-            <div class="l"><b>Win Rate</b><small>Estimated</small></div>
-            <div class="r"><span class="badge">${wr.toFixed(1)}%</span></div>
-          </div>
-          <div class="row">
-            <div class="l"><b>Notes</b><small>Focus area</small></div>
-            <div class="r"><span class="badge">Patience</span></div>
-          </div>
-        `;
-      };
-
-      const showDay = (iso) => {
-        const trades = state.trades.filter(t => t.date === iso);
-        if(!trades.length){
-          dayDetails.innerHTML = `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades on ${escapeHtml(iso)}.</div>`;
-          return;
-        }
-        const rows = trades.map(t => {
-          const pl = t.pl || 0;
-          const cls = pl >= 0 ? "good" : "bad";
-          return `
-            <div class="row">
-              <div class="l">
-                <b>${escapeHtml(t.symbol)} · ${escapeHtml(t.setup)}</b>
-                <small>${escapeHtml(t.session)} · ${escapeHtml(t.direction)} · ${escapeHtml(String(t.conf||0))}%</small>
-              </div>
-              <div class="r"><span class="badge ${cls}">${pl>=0?"+":"-"}$${Math.abs(pl).toFixed(0)}</span></div>
-            </div>
-          `;
-        }).join("");
-        dayDetails.innerHTML = rows;
-      };
-
-      // ---------- Dashboard (REAL) ----------
-      function refreshDashboard() {
-        const total = state.trades.length;
-        document.getElementById("kpiTrades").textContent = String(total);
-
-        const wins = state.trades.filter(t => (t.pl||0) > 0).length;
-        const wr = total ? (wins/total)*100 : 0;
-        document.getElementById("kpiWin").textContent = `${wr.toFixed(1)}%`;
-
-        const totalPL = state.trades.reduce((a,t)=>a+(t.pl||0),0);
-        const kpiPL = document.getElementById("kpiPL");
-        kpiPL.textContent = `${totalPL>=0?"+":"-"}$${Math.abs(totalPL).toFixed(0)}`;
-        kpiPL.className = totalPL >= 0 ? "good" : "bad";
-
-        // streak (reuse streak calc)
-        const dates = [...new Set(state.trades.map(t => t.date).filter(Boolean))].sort();
-        let streak = 0;
-        if(dates.length){
-          const today = new Date(); today.setHours(0,0,0,0);
-          const set = new Set(dates);
-          while(true){
-            const d = new Date(today);
-            d.setDate(d.getDate() - streak);
-            const iso = d.toISOString().slice(0,10);
-            if(set.has(iso)) streak++;
-            else break;
-          }
-        }
-        document.getElementById("kpiStreak").textContent = String(streak);
-
-        // Session list
-        const bySession = {};
-        state.trades.forEach(t => bySession[t.session] = (bySession[t.session]||0) + (t.pl||0));
-        const sessionOrder = ["London","New York","Asia","Overlap"];
-        document.getElementById("sessionList").innerHTML = sessionOrder.map(name => {
-          const val = bySession[name] || 0;
-          const cls = val >= 0 ? "good" : "bad";
-          const sub =
-            name==="London" ? "Highest consistency" :
-            name==="New York" ? "High volatility" :
-            name==="Asia" ? "Lower frequency" :
-            "Best R:R setups";
-          return `
-            <div class="row">
-              <div class="l">
-                <b>${escapeHtml(name)}</b>
-                <small>${escapeHtml(sub)}</small>
-              </div>
-              <div class="r"><span class="badge ${cls}">${val>=0?"+":"-"}$${Math.abs(val).toFixed(0)}</span></div>
-            </div>
-          `;
-        }).join("") || `<div style="color:rgba(255,255,255,.58); font-size:12px;">No data yet.</div>`;
-
-        // Top setup list
-        const bySetup = {};
-        state.trades.forEach(t => bySetup[t.setup] = (bySetup[t.setup]||0) + (t.pl||0));
-        const topSetups = Object.entries(bySetup).sort((a,b)=>b[1]-a[1]).slice(0,3);
-        document.getElementById("topSetupList").innerHTML = topSetups.length ? topSetups.map(([name,val]) => {
-          const cls = val >= 0 ? "good" : "bad";
-          return `
-            <div class="row">
-              <div class="l">
-                <b>${escapeHtml(name)}</b>
-                <small>Net P/L</small>
-              </div>
-              <div class="r"><span class="badge ${cls}">${val>=0?"+":"-"}$${Math.abs(val).toFixed(0)}</span></div>
-            </div>
-          `;
-        }).join("") : `<div style="color:rgba(255,255,255,.58); font-size:12px;">No setups logged yet.</div>`;
-
-        // Mistake patterns (emotion tags proxy)
-        const bucket = {};
-        state.trades.forEach(t => (t.emotions||[]).forEach(e => bucket[e] = (bucket[e]||0) + 1));
-        const topMistakes = Object.entries(bucket).sort((a,b)=>b[1]-a[1]).slice(0,3);
-        document.getElementById("mistakePatternList").innerHTML = topMistakes.length ? topMistakes.map(([m,c]) => `
-          <div class="row">
-            <div class="l">
-              <b>${escapeHtml(m)}</b>
-              <small>Occurrences</small>
-            </div>
-            <div class="r"><span class="badge">${c}</span></div>
-          </div>
-        `).join("") : `<div style="color:rgba(255,255,255,.58); font-size:12px;">No mistake tags yet.</div>`;
-      }
-
-      // ---------- Export ----------
-      document.getElementById("exportBtn").addEventListener("click", () => {
-        const data = JSON.stringify({ trades: state.trades }, null, 2);
-        const blob = new Blob([data], { type:"application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "trader-journal-export.json";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
+      const plByDate = {};
+      state.trades.forEach(t => {
+        const dt = t.date;
+        if(!dt) return;
+        plByDate[dt] = (plByDate[dt]||0) + (t.pl||0);
       });
 
-      // ---------- Utils ----------
-      function escapeHtml(str){
-        return String(str).replace(/[&<>"']/g, s => ({
-          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-        }[s]));
+      const first = new Date(year, month, 1);
+      const startDow = first.getDay();
+      const last = new Date(year, month+1, 0);
+      const daysInMonth = last.getDate();
+
+      const totalCells = 42;
+      for(let i=0;i<totalCells;i++){
+        const dayNum = i - startDow + 1;
+        const cell = document.createElement("div");
+        cell.className = "day";
+        if(dayNum < 1 || dayNum > daysInMonth){
+          cell.style.opacity = ".35";
+          cell.innerHTML = `<small>—</small><b></b>`;
+          calendarHeat.appendChild(cell);
+          continue;
+        }
+        const iso = new Date(year, month, dayNum).toISOString().slice(0,10);
+        const pl = plByDate[iso] || 0;
+        if(pl > 0) cell.classList.add("pos");
+        if(pl < 0) cell.classList.add("neg");
+        cell.innerHTML = `<small>${dayNum}</small><b>${pl === 0 ? "" : (pl>0?"+":"-") + "$" + Math.abs(pl).toFixed(0)}</b>`;
+        cell.style.cursor = "pointer";
+        cell.addEventListener("click", () => {
+          const trades = state.trades.filter(t => t.date === iso);
+          if(!trades.length){
+            dayDetails.innerHTML = `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades on ${escapeHtml(iso)}.</div>`;
+            return;
+          }
+          dayDetails.innerHTML = trades.map(t => {
+            const pl = t.pl || 0;
+            const cls = pl >= 0 ? "good" : "bad";
+            return `
+              <div class="row">
+                <div class="l">
+                  <b>${escapeHtml(t.symbol)} · ${escapeHtml(t.setup)}</b>
+                  <small>${escapeHtml(t.session)} · ${escapeHtml(t.direction)} · ${escapeHtml(String(t.conf||0))}%</small>
+                </div>
+                <div class="r"><span class="badge ${cls}">${pl>=0?"+":"-"}$${Math.abs(pl).toFixed(0)}</span></div>
+              </div>`;
+          }).join("");
+        });
+        calendarHeat.appendChild(cell);
       }
 
-      // ---------- Live Firestore sync ----------
-      function attachTradesListener() {
-        if (unsubTrades) unsubTrades();
+      const monthTrades = state.trades.filter(t => {
+        if(!t.date) return false;
+        const d = new Date(t.date+"T00:00:00");
+        return d.getFullYear() === year && d.getMonth() === month;
+      });
 
-        unsubTrades = tradesCol()
-          .orderBy("dateTs", "asc")
-          .onSnapshot((snap) => {
-            const trades = [];
-            snap.forEach(doc => {
-              const d = doc.data() || {};
-              // store a sortable ms value for charts
-              let dateTsMs = 0;
-              try{
-                if (d.dateTs && typeof d.dateTs.toMillis === "function") dateTsMs = d.dateTs.toMillis();
-              }catch{}
-              trades.push({ ...d, dateTsMs });
-            });
+      const monthPL = monthTrades.reduce((a,t)=>a+(t.pl||0),0);
+      const wins = monthTrades.filter(t => (t.pl||0) > 0).length;
+      const total = monthTrades.length;
+      const wr = total ? (wins/total)*100 : 0;
+      const cls = monthPL >= 0 ? "good" : "bad";
 
-            state.trades = trades;
+      monthSummary.innerHTML = `
+        <div class="row"><div class="l"><b>Net P/L</b><small>This month</small></div><div class="r"><span class="badge ${cls}">${monthPL>=0?"+":"-"}$${Math.abs(monthPL).toFixed(0)}</span></div></div>
+        <div class="row"><div class="l"><b>Trades</b><small>Total</small></div><div class="r"><span class="badge">${total}</span></div></div>
+        <div class="row"><div class="l"><b>Win Rate</b><small>Estimated</small></div><div class="r"><span class="badge">${wr.toFixed(1)}%</span></div></div>
+        <div class="row"><div class="l"><b>Notes</b><small>Focus area</small></div><div class="r"><span class="badge">Patience</span></div></div>
+      `;
+    };
 
-            // keep replayIndex pointing at last by default if new trades arrive
-            replayIndex = Math.max(0, state.trades.length - 1);
+    // Dashboard
+    function refreshDashboard() {
+      const total = state.trades.length;
+      document.getElementById("kpiTrades").textContent = String(total);
 
-            // refresh everything that depends on trades
-            refreshDashboard();
-            refreshAnalytics();
-            refreshReplay();
-            refreshStreaks();
-            refreshCalendar();
-            updateCharts();
-          }, (err) => {
-            console.error(err);
-            alert("Firestore sync failed. Check Firestore rules + indexes.");
-          });
+      const wins = state.trades.filter(t => (t.pl||0) > 0).length;
+      const wr = total ? (wins/total)*100 : 0;
+      document.getElementById("kpiWin").textContent = `${wr.toFixed(1)}%`;
+
+      const totalPL = state.trades.reduce((a,t)=>a+(t.pl||0),0);
+      const kpiPL = document.getElementById("kpiPL");
+      kpiPL.textContent = `${totalPL>=0?"+":"-"}$${Math.abs(totalPL).toFixed(0)}`;
+      kpiPL.className = totalPL >= 0 ? "good" : "bad";
+
+      const dates = [...new Set(state.trades.map(t => t.date).filter(Boolean))].sort();
+      let streak = 0;
+      if(dates.length){
+        const today = new Date(); today.setHours(0,0,0,0);
+        const set = new Set(dates);
+        while(true){
+          const d = new Date(today);
+          d.setDate(d.getDate() - streak);
+          const iso = d.toISOString().slice(0,10);
+          if(set.has(iso)) streak++;
+          else break;
+        }
       }
+      document.getElementById("kpiStreak").textContent = String(streak);
 
-      // ---------- Boot ----------
-      clearForm();
-      initCharts();
-      attachTradesListener();
+      const bySession = {};
+      state.trades.forEach(t => bySession[t.session] = (bySession[t.session]||0) + (t.pl||0));
+      const sessionOrder = ["London","New York","Asia","Overlap"];
+      document.getElementById("sessionList").innerHTML = sessionOrder.map(name => {
+        const val = bySession[name] || 0;
+        const cls = val >= 0 ? "good" : "bad";
+        const sub =
+          name==="London" ? "Highest consistency" :
+          name==="New York" ? "High volatility" :
+          name==="Asia" ? "Lower frequency" :
+          "Best R:R setups";
+        return `
+          <div class="row">
+            <div class="l"><b>${escapeHtml(name)}</b><small>${escapeHtml(sub)}</small></div>
+            <div class="r"><span class="badge ${cls}">${val>=0?"+":"-"}$${Math.abs(val).toFixed(0)}</span></div>
+          </div>`;
+      }).join("") || `<div style="color:rgba(255,255,255,.58); font-size:12px;">No data yet.</div>`;
 
-      // Make dashboard immediately correct even before first snapshot
-      refreshDashboard();
-      refreshAnalytics();
-      refreshReplay();
-      refreshStreaks();
-      refreshCalendar();
-      updateCharts();
+      const bySetup = {};
+      state.trades.forEach(t => bySetup[t.setup] = (bySetup[t.setup]||0) + (t.pl||0));
+      const topSetups = Object.entries(bySetup).sort((a,b)=>b[1]-a[1]).slice(0,3);
+      document.getElementById("topSetupList").innerHTML = topSetups.length ? topSetups.map(([name,val]) => {
+        const cls = val >= 0 ? "good" : "bad";
+        return `
+          <div class="row">
+            <div class="l"><b>${escapeHtml(name)}</b><small>Net P/L</small></div>
+            <div class="r"><span class="badge ${cls}">${val>=0?"+":"-"}$${Math.abs(val).toFixed(0)}</span></div>
+          </div>`;
+      }).join("") : `<div style="color:rgba(255,255,255,.58); font-size:12px;">No setups logged yet.</div>`;
+
+      const bucket = {};
+      state.trades.forEach(t => (t.emotions||[]).forEach(e => bucket[e] = (bucket[e]||0) + 1));
+      const topMistakes = Object.entries(bucket).sort((a,b)=>b[1]-a[1]).slice(0,3);
+      document.getElementById("mistakePatternList").innerHTML = topMistakes.length ? topMistakes.map(([m,c]) => `
+        <div class="row">
+          <div class="l"><b>${escapeHtml(m)}</b><small>Occurrences</small></div>
+          <div class="r"><span class="badge">${c}</span></div>
+        </div>`).join("") : `<div style="color:rgba(255,255,255,.58); font-size:12px;">No mistake tags yet.</div>`;
     }
+
+    // Export
+    document.getElementById("exportBtn").addEventListener("click", () => {
+      const data = JSON.stringify({ trades: state.trades }, null, 2);
+      const blob = new Blob([data], { type:"application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "trader-journal-export.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, s => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[s]));
+    }
+
+    // Boot
+    clearForm();
+    initCharts();
+    refreshDashboard();
+    refreshAnalytics();
+    refreshReplay();
+    refreshStreaks();
+    refreshCalendar();
+    updateCharts();
   </script>
 </body>
 </html>
