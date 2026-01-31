@@ -7,6 +7,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- ✅ Global theme system -->
+  <link rel="stylesheet" href="../assets/theme.css">
+
   <style>
     :root{
       --bg:#000;
@@ -19,7 +23,19 @@
       --shadow: 0 18px 60px rgba(0,0,0,.65);
       --r: 22px;
       --focus: 0 0 0 3px rgba(255,255,255,.18);
+
+      /* Light-mode tokens */
+      --bgL: var(--bg-light, #fbfbfb);
+      --textL: var(--text-light, #0b0b0b);
+      --cardL: rgba(255,255,255,.78);
+      --strokeL: rgba(0,0,0,.10);
+      --strokeL2: rgba(0,0,0,.16);
+      --mutedL: rgba(0,0,0,.62);
+      --mutedL2: rgba(0,0,0,.48);
+      --shadowL: 0 18px 60px rgba(0,0,0,.18);
+      --focusL: 0 0 0 3px rgba(0,0,0,.14);
     }
+
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
     body{
@@ -29,6 +45,7 @@
       background: var(--bg);
       overflow-x:hidden;
     }
+
     .bg{
       position:fixed; inset:0; z-index:-1; overflow:hidden;
       background:
@@ -58,6 +75,7 @@
       place-items:center;
       padding: 22px;
     }
+
     .card{
       width:min(680px, 100%);
       border-radius: var(--r);
@@ -65,25 +83,41 @@
       border: 1px solid var(--stroke);
       box-shadow: var(--shadow);
       backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       padding: 26px;
       position:relative;
+      overflow:hidden;
     }
+
+    /* ✅ Topbar prevents overlap + adds theme toggle */
+    .topbar{
+      position:absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      z-index: 5;
+    }
+
     a.top{
-      position:absolute; top:14px; left:14px;
       display:inline-flex; align-items:center; gap:8px;
       color: rgba(255,255,255,.78);
       text-decoration:none;
       font-size: 12px;
-      padding: 8px 10px;
+      padding: 7px 10px; /* slightly smaller fit */
       border: 1px solid rgba(255,255,255,.12);
       border-radius: 999px;
       background: rgba(0,0,0,.25);
       backdrop-filter: blur(8px);
+      white-space: nowrap;
     }
     a.top:hover{ color:#fff; border-color: rgba(255,255,255,.22); }
 
     h1{
-      margin: 22px 0 8px;
+      margin: 34px 0 8px; /* space for topbar */
       font-size: 26px;
       letter-spacing:-.02em;
     }
@@ -108,8 +142,10 @@
       background: rgba(0,0,0,.35);
       color:#fff;
       outline:none;
+      transition: box-shadow .12s ease, border-color .12s ease, background .12s ease;
     }
     input:focus{ box-shadow: var(--focus); border-color: rgba(255,255,255,.32); }
+
     .btn{
       width:100%;
       margin-top: 12px;
@@ -120,8 +156,10 @@
       color:#000;
       font-weight: 800;
       cursor:pointer;
+      transition: background .12s ease, border-color .12s ease, color .12s ease;
     }
     .btn:hover{ background: rgba(255,255,255,.98); }
+
     .mini{
       display:flex;
       justify-content:space-between;
@@ -135,13 +173,81 @@
       border-bottom:1px solid rgba(255,255,255,.18);
     }
     .mini a:hover{ color:#fff; border-bottom-color: rgba(255,255,255,.55); }
+
+    /* =====================================================================
+       ✅ LIGHT MODE OVERRIDES (same behavior as login/signup)
+       ===================================================================== */
+
+    body.light-mode{
+      background: var(--bgL);
+      color: var(--textL);
+    }
+
+    /* micro-dots from theme.css: hide dark bg */
+    body.light-mode .bg{ display:none; }
+
+    body.light-mode .card{
+      background: var(--cardL);
+      border-color: var(--strokeL);
+      box-shadow: var(--shadowL);
+    }
+
+    body.light-mode p{ color: var(--mutedL); }
+    body.light-mode label{ color: var(--mutedL2); }
+
+    body.light-mode input{
+      background: rgba(255,255,255,.86);
+      color: rgba(0,0,0,.92);
+      border-color: var(--strokeL2);
+    }
+    body.light-mode input::placeholder{ color: rgba(0,0,0,.40); }
+    body.light-mode input:focus{
+      box-shadow: var(--focusL);
+      border-color: rgba(0,0,0,.22);
+    }
+
+    body.light-mode .btn{
+      background: rgba(0,0,0,.92);
+      border-color: rgba(0,0,0,.92);
+      color:#fff;
+    }
+    body.light-mode .btn:hover{ background: rgba(0,0,0,.96); }
+
+    body.light-mode .mini a{
+      color: rgba(0,0,0,.70);
+      border-bottom-color: rgba(0,0,0,.18);
+    }
+    body.light-mode .mini a:hover{
+      color: rgba(0,0,0,.92);
+      border-bottom-color: rgba(0,0,0,.45);
+    }
+
+    body.light-mode a.top{
+      color: rgba(0,0,0,.72);
+      border-color: var(--strokeL);
+      background: rgba(255,255,255,.72);
+    }
+    body.light-mode a.top:hover{
+      color: rgba(0,0,0,.92);
+      border-color: var(--strokeL2);
+    }
   </style>
 </head>
-<body>
+
+<body class="dark-mode">
   <div class="bg"></div>
+
   <main class="wrap">
     <section class="card">
-      <a class="top" href="./login.html">← Back to Login</a>
+
+      <div class="topbar">
+        <a class="top" href="./login.html">← Back to Login</a>
+
+        <!-- ✅ Theme toggle (same as other pages) -->
+        <button class="fynx-theme-toggle" type="button" data-fynx-theme-toggle aria-label="Toggle theme" title="Toggle theme">
+          ◐
+        </button>
+      </div>
 
       <h1>Reset your password</h1>
       <p>Enter your email and we’ll send a reset link. (We’ll connect this to Firebase in the next step.)</p>
@@ -158,6 +264,9 @@
       </div>
     </section>
   </main>
+
+  <!-- ✅ Theme persistence -->
+  <script src="../assets/theme.js"></script>
 
   <script>
     document.getElementById('resetForm').addEventListener('submit', (e) => {
