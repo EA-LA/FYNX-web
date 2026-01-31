@@ -16,6 +16,111 @@
   <!-- ✅ NEW: Global Theme (Light micro-dots + Dark grid) -->
   <link rel="stylesheet" href="assets/theme.css">
   <script src="assets/theme.js" defer></script>
+
+  <!-- ✅ FIX: FAQ CSS (KAST-style) — ONLY affects .fynx-faq -->
+  <style>
+  /* ==============================================
+     FYNX FAQ — KAST-style split layout (FIXED)
+     Scoped only to .fynx-faq so nothing else changes
+  ============================================== */
+  .fynx-faq, .fynx-faq * { box-sizing: border-box; }
+
+  .fynx-faq{
+    padding: 72px 0 40px;
+    color: rgba(255,255,255,0.92);
+  }
+
+  .fynx-faq__wrap{
+    width: min(1100px, 92vw);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 48px;
+    align-items: start;
+  }
+
+  .fynx-faq__title{
+    margin: 0;
+    font-size: 44px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: rgba(255,255,255,0.92);
+  }
+
+  .fynx-faq__right{
+    border-top: 1px solid rgba(255,255,255,0.12);
+  }
+
+  .fynx-faq__item{
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+  }
+
+  .fynx-faq__q{
+    width: 100%;
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 18px 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    cursor: pointer;
+    text-align: left;
+
+    font-size: 16px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.88);
+  }
+
+  .fynx-faq__q:hover{
+    color: rgba(255,255,255,1);
+  }
+
+  .fynx-faq__icon{
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.02);
+    color: rgba(255,255,255,0.9);
+    flex: 0 0 auto;
+    transition: transform 220ms ease, background 220ms ease, border-color 220ms ease;
+  }
+
+  .fynx-faq__item.is-open .fynx-faq__icon{
+    transform: rotate(45deg); /* + → X */
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.22);
+  }
+
+  .fynx-faq__a{
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 320ms ease;
+  }
+
+  .fynx-faq__a p{
+    margin: 0;
+    padding: 0 6px 18px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.68);
+  }
+
+  /* Mobile: title moves above list */
+  @media (max-width: 820px){
+    .fynx-faq__wrap{
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+    .fynx-faq__title{
+      font-size: 34px;
+    }
+  }
+  </style>
 </head>
 <body>
   <!-- Animated Background -->
@@ -422,62 +527,62 @@
     </div>
   </section>
 
- <!-- =========================
-     FAQ Section (KAST-style split)
-     Replace ONLY your FAQ section with this
-========================= -->
-<section class="fynx-faq" id="faqs">
-  <div class="fynx-faq__wrap">
-    <div class="fynx-faq__left">
-      <h2 class="fynx-faq__title">FAQs</h2>
+  <!-- =========================
+       FAQ Section (KAST-style split)
+       Replace ONLY your FAQ section with this
+  ========================= -->
+  <section class="fynx-faq" id="faqs">
+    <div class="fynx-faq__wrap">
+      <div class="fynx-faq__left">
+        <h2 class="fynx-faq__title">FAQs</h2>
+      </div>
+
+      <div class="fynx-faq__right" role="list">
+        <!-- Item 1 -->
+        <div class="fynx-faq__item" role="listitem">
+          <button class="fynx-faq__q" type="button" aria-expanded="false">
+            <span>How does FYNX work?</span>
+            <span class="fynx-faq__icon" aria-hidden="true">+</span>
+          </button>
+          <div class="fynx-faq__a" hidden>
+            <p>
+              Create your free account, explore our learning resources, use powerful trading calculators,
+              and stay updated with real-time market news & tools — all designed to help you master trading
+              and investing step by step.
+            </p>
+          </div>
+        </div>
+
+        <!-- Item 2 -->
+        <div class="fynx-faq__item" role="listitem">
+          <button class="fynx-faq__q" type="button" aria-expanded="false">
+            <span>Why use FYNX tools & calculators?</span>
+            <span class="fynx-faq__icon" aria-hidden="true">+</span>
+          </button>
+          <div class="fynx-faq__a" hidden>
+            <p>
+              Our calculators (position size, risk/reward, pip value, etc.) help you manage risk precisely,
+              make smarter trades, avoid emotional decisions, and improve overall performance — completely free.
+            </p>
+          </div>
+        </div>
+
+        <!-- Item 3 -->
+        <div class="fynx-faq__item" role="listitem">
+          <button class="fynx-faq__q" type="button" aria-expanded="false">
+            <span>Is FYNX suitable for beginners?</span>
+            <span class="fynx-faq__icon" aria-hidden="true">+</span>
+          </button>
+          <div class="fynx-faq__a" hidden>
+            <p>
+              Yes — we offer beginner-friendly courses, simple tools, and clear explanations. Start with
+              Forex/Crypto 101 and basic calculators, then advance at your own pace with our structured learning path.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <div class="fynx-faq__right" role="list">
-      <!-- Item 1 -->
-      <div class="fynx-faq__item" role="listitem">
-        <button class="fynx-faq__q" type="button" aria-expanded="false">
-          <span>How does FYNX work?</span>
-          <span class="fynx-faq__icon" aria-hidden="true">+</span>
-        </button>
-        <div class="fynx-faq__a" hidden>
-          <p>
-            Create your free account, explore our learning resources, use powerful trading calculators,
-            and stay updated with real-time market news & tools — all designed to help you master trading
-            and investing step by step.
-          </p>
-        </div>
-      </div>
-
-      <!-- Item 2 -->
-      <div class="fynx-faq__item" role="listitem">
-        <button class="fynx-faq__q" type="button" aria-expanded="false">
-          <span>Why use FYNX tools & calculators?</span>
-          <span class="fynx-faq__icon" aria-hidden="true">+</span>
-        </button>
-        <div class="fynx-faq__a" hidden>
-          <p>
-            Our calculators (position size, risk/reward, pip value, etc.) help you manage risk precisely,
-            make smarter trades, avoid emotional decisions, and improve overall performance — completely free.
-          </p>
-        </div>
-      </div>
-
-      <!-- Item 3 -->
-      <div class="fynx-faq__item" role="listitem">
-        <button class="fynx-faq__q" type="button" aria-expanded="false">
-          <span>Is FYNX suitable for beginners?</span>
-          <span class="fynx-faq__icon" aria-hidden="true">+</span>
-        </button>
-        <div class="fynx-faq__a" hidden>
-          <p>
-            Yes — we offer beginner-friendly courses, simple tools, and clear explanations. Start with
-            Forex/Crypto 101 and basic calculators, then advance at your own pace with our structured learning path.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+  </section>
 
   <!-- Footer -->
   <footer>
@@ -551,22 +656,51 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="script.js"></script>
 
-  <!-- Minimal JS for FAQ accordion smooth toggle -->
+  <!-- ✅ FIX: FAQ JS (KAST-style) — replaces the wrong old FAQ script -->
   <script>
-    document.querySelectorAll('.faq-question').forEach(button => {
-      button.addEventListener('click', () => {
-        const faqItem = button.parentElement;
-        const isOpen = faqItem.classList.contains('active');
-        // Close all others (accordion behavior)
-        document.querySelectorAll('.faq-item').forEach(item => {
-          if (item !== faqItem) {
-            item.classList.remove('active');
-          }
-        });
-        // Toggle current
-        faqItem.classList.toggle('active');
+  (function(){
+    const root = document.querySelector('.fynx-faq');
+    if(!root) return;
+
+    const items = Array.from(root.querySelectorAll('.fynx-faq__item'));
+
+    function closeItem(item){
+      const btn = item.querySelector('.fynx-faq__q');
+      const ans = item.querySelector('.fynx-faq__a');
+      item.classList.remove('is-open');
+      btn.setAttribute('aria-expanded', 'false');
+      ans.style.maxHeight = '0px';
+      ans.hidden = true;
+    }
+
+    function openItem(item){
+      const btn = item.querySelector('.fynx-faq__q');
+      const ans = item.querySelector('.fynx-faq__a');
+      item.classList.add('is-open');
+      btn.setAttribute('aria-expanded', 'true');
+      ans.hidden = false;
+      ans.style.maxHeight = ans.scrollHeight + 'px';
+    }
+
+    items.forEach(item => {
+      const ans = item.querySelector('.fynx-faq__a');
+      ans.hidden = true;
+      ans.style.maxHeight = '0px';
+
+      item.querySelector('.fynx-faq__q').addEventListener('click', () => {
+        const isOpen = item.classList.contains('is-open');
+        items.forEach(closeItem);
+        if(!isOpen) openItem(item);
       });
     });
+
+    window.addEventListener('resize', () => {
+      const openAns = root.querySelector('.fynx-faq__item.is-open .fynx-faq__a');
+      if(openAns && !openAns.hidden){
+        openAns.style.maxHeight = openAns.scrollHeight + 'px';
+      }
+    });
+  })();
   </script>
 </body>
 </html>
