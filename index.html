@@ -120,6 +120,123 @@
       font-size: 34px;
     }
   }
+
+  /* ==============================================
+     ✅ FIX ONLY: Download Widget follows Theme
+     - Default (Light): light card
+     - Dark mode: dark card
+     - Scoped ONLY to .fynx-download so nothing else changes
+  ============================================== */
+
+  /* Light theme (default) */
+  .fynx-download .fynx-card{
+    background: rgba(255,255,255,0.92);
+    border: 1px solid rgba(0,0,0,0.12);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    color: rgba(0,0,0,0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  .fynx-download .fynx-badge{
+    background: rgba(0,0,0,0.08);
+    color: rgba(0,0,0,0.88);
+    border: 1px solid rgba(0,0,0,0.10);
+  }
+
+  .fynx-download .fynx-title{
+    color: rgba(0,0,0,0.92);
+  }
+
+  .fynx-download .fynx-sub{
+    color: rgba(0,0,0,0.62);
+  }
+
+  .fynx-download .fynx-pill{
+    background: rgba(0,0,0,0.10);
+    color: rgba(0,0,0,0.88);
+    border: 1px solid rgba(0,0,0,0.14);
+  }
+
+  .fynx-download .fynx-close{
+    color: rgba(0,0,0,0.70);
+  }
+
+  .fynx-download .fynx-close:hover{
+    color: rgba(0,0,0,0.92);
+  }
+
+  .fynx-download .fynx-qr{
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.10);
+    border-radius: 10px;
+    padding: 8px;
+  }
+
+  /* Dark theme (support multiple theme toggling patterns safely) */
+  body.dark-mode .fynx-download .fynx-card,
+  html.dark-mode .fynx-download .fynx-card,
+  [data-theme="dark"] .fynx-download .fynx-card,
+  [data-fynx-theme="dark"] .fynx-download .fynx-card{
+    background: rgba(0,0,0,0.78);
+    border: 1px solid rgba(255,255,255,0.14);
+    box-shadow: 0 12px 44px rgba(0,0,0,0.55);
+    color: rgba(255,255,255,0.92);
+  }
+
+  body.dark-mode .fynx-download .fynx-badge,
+  html.dark-mode .fynx-download .fynx-badge,
+  [data-theme="dark"] .fynx-download .fynx-badge,
+  [data-fynx-theme="dark"] .fynx-download .fynx-badge{
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.88);
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+
+  body.dark-mode .fynx-download .fynx-title,
+  html.dark-mode .fynx-download .fynx-title,
+  [data-theme="dark"] .fynx-download .fynx-title,
+  [data-fynx-theme="dark"] .fynx-download .fynx-title{
+    color: rgba(255,255,255,0.92);
+  }
+
+  body.dark-mode .fynx-download .fynx-sub,
+  html.dark-mode .fynx-download .fynx-sub,
+  [data-theme="dark"] .fynx-download .fynx-sub,
+  [data-fynx-theme="dark"] .fynx-download .fynx-sub{
+    color: rgba(255,255,255,0.66);
+  }
+
+  body.dark-mode .fynx-download .fynx-pill,
+  html.dark-mode .fynx-download .fynx-pill,
+  [data-theme="dark"] .fynx-download .fynx-pill,
+  [data-fynx-theme="dark"] .fynx-download .fynx-pill{
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.90);
+    border: 1px solid rgba(255,255,255,0.14);
+  }
+
+  body.dark-mode .fynx-download .fynx-close,
+  html.dark-mode .fynx-download .fynx-close,
+  [data-theme="dark"] .fynx-download .fynx-close,
+  [data-fynx-theme="dark"] .fynx-download .fynx-close{
+    color: rgba(255,255,255,0.74);
+  }
+
+  body.dark-mode .fynx-download .fynx-close:hover,
+  html.dark-mode .fynx-download .fynx-close:hover,
+  [data-theme="dark"] .fynx-download .fynx-close:hover,
+  [data-fynx-theme="dark"] .fynx-download .fynx-close:hover{
+    color: rgba(255,255,255,0.95);
+  }
+
+  body.dark-mode .fynx-download .fynx-qr,
+  html.dark-mode .fynx-download .fynx-qr,
+  [data-theme="dark"] .fynx-download .fynx-qr,
+  [data-fynx-theme="dark"] .fynx-download .fynx-qr{
+    background: #ffffff; /* keep QR readable */
+    border: 1px solid rgba(255,255,255,0.14);
+  }
   </style>
 </head>
 <body>
@@ -704,3 +821,4 @@
   </script>
 </body>
 </html>
+>
