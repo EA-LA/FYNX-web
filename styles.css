@@ -1,5 +1,4 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
+ * { margin: 0; padding: 0; box-sizing: border-box; }
 body{
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   line-height: 1.6;
@@ -920,76 +919,6 @@ body:not(.dark-mode) .hero h1{
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
   background-clip:text;
-}
-
-/* ======================================================================
-   ✅ FIX ONLY: TITLE HOVER + CLICK FX (Pioneer style)
-   - nothing happens when mouse not on it
-   - hover = subtle outline + tech shimmer
-   - click/hold = bigger/stronger
-   - auto flips color for light/dark
-====================================================================== */
-:root{
-  --fynx-title-fx: rgba(255,255,255,.92);
-  --fynx-title-fx-soft: rgba(255,255,255,.34);
-}
-body:not(.dark-mode){
-  --fynx-title-fx: rgba(0,0,0,.92);
-  --fynx-title-fx-soft: rgba(0,0,0,.28);
-}
-
-/* apply to hero title + section titles only */
-.hero h1,
-.section-title{
-  position: relative;
-  display: inline-block;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* overlay box + “tech lines/dots” */
-.hero h1::after,
-.section-title::after{
-  content:"";
-  position:absolute;
-  inset:-12px -16px;
-  border-radius: 16px;
-  border: 1px solid var(--fynx-title-fx-soft);
-  opacity: 0;
-  transform: scale(.985);
-  transition: opacity .18s ease, transform .18s ease, filter .18s ease, border-color .18s ease;
-  pointer-events: none;
-
-  background:
-    radial-gradient(circle at 18% 28%, var(--fynx-title-fx-soft) 0 2px, transparent 3px),
-    radial-gradient(circle at 78% 62%, var(--fynx-title-fx-soft) 0 2px, transparent 3px),
-    linear-gradient(90deg, transparent 0 36%, var(--fynx-title-fx-soft) 36% 37%, transparent 37% 100%),
-    linear-gradient(0deg, transparent 0 58%, var(--fynx-title-fx-soft) 58% 59%, transparent 59% 100%);
-
-  mix-blend-mode: screen;
-}
-
-/* hover = subtle */
-.hero h1:hover::after,
-.section-title:hover::after{
-  opacity: 1;
-  transform: scale(1.02);
-  filter: drop-shadow(0 10px 22px rgba(0,0,0,.18));
-}
-
-/* click/hold = stronger + bigger */
-.hero h1:active::after,
-.section-title:active::after{
-  opacity: 1;
-  transform: scale(1.085);
-  border-color: var(--fynx-title-fx);
-  filter: drop-shadow(0 14px 30px rgba(0,0,0,.22));
-}
-
-/* Light mode blend fix so it still looks clean */
-body:not(.dark-mode) .hero h1::after,
-body:not(.dark-mode) .section-title::after{
-  mix-blend-mode: multiply;
 }
 
 .hero p{
