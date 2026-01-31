@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -302,12 +303,11 @@
   /* ==============================================
      ✅ ONLY FIX YOU ASKED FOR:
      Desktop hover opens the subnavs (no click required)
-     - Home/Learn/Tools/News open on mouse hover
-     - Markets (inside Home subnav) opens on hover
-     - On mobile/touch: hover is ignored, click behavior stays
+     NOTE: CSS sibling selectors won't work here because subnavs
+     are not siblings of the nav links in the DOM.
+     We keep this block harmless, and we FIX IT with JS below.
   ============================================== */
   @media (hover: hover) and (pointer: fine){
-    /* show Home subnav when hovering Home nav link OR the subnav itself */
     #homeToggle:hover ~ #homeSubnav,
     #homeSubnav:hover{
       display: block !important;
@@ -316,7 +316,6 @@
       pointer-events: auto !important;
     }
 
-    /* show Learn subnav when hovering Learn nav link OR the subnav itself */
     #learnToggle:hover ~ #learnSubnav,
     #learnSubnav:hover{
       display: block !important;
@@ -325,7 +324,6 @@
       pointer-events: auto !important;
     }
 
-    /* show Tools subnav when hovering Tools nav link OR the subnav itself */
     #toolsToggle:hover ~ #toolsSubnav,
     #toolsSubnav:hover{
       display: block !important;
@@ -334,7 +332,6 @@
       pointer-events: auto !important;
     }
 
-    /* show News subnav when hovering News nav link OR the subnav itself */
     #newsToggle:hover ~ #newsSubnav,
     #newsSubnav:hover{
       display: block !important;
@@ -343,7 +340,6 @@
       pointer-events: auto !important;
     }
 
-    /* Markets inside Home subnav: hover opens detail subnav */
     #marketsToggle:hover ~ #homeMarketsSubnav,
     #homeMarketsSubnav:hover{
       display: block !important;
@@ -1217,5 +1213,151 @@
     });
   })();
   </script>
+
+  <!-- ✅ FIX: Desktop hover subnavs (REAL FIX) -->
+  <script>
+  (function(){
+    // Only on desktop hover devices. Mobile keeps your click behavior.
+    const canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if(!canHover) return;
+
+    const homeToggle = document.getElementById('homeToggle');
+    const learnToggle = document.getElementById('learnToggle');
+    const toolsToggle = document.getElementById('toolsToggle');
+    const newsToggle = document.getElementById('newsToggle');
+
+    const homeSubnav = document.getElementById('homeSubnav');
+    const learnSubnav = document.getElementById('learnSubnav');
+    const toolsSubnav = document.getElementById('toolsSubnav');
+    const newsSubnav = document.getElementById('newsSubnav');
+
+    const marketsToggle = document.getElementById('marketsToggle');
+    const homeMarketsSubnav = document.getElementById('homeMarketsSubnav');
+
+    const panels = [homeSubnav, learnSubnav, toolsSubnav, newsSubnav, homeMarketsSubnav].filter(Boolean);
+
+    function show(el){
+      if(!el) return;
+      el.style.display = 'block';
+      el.style.opacity = '1';
+      el.style.visibility = 'visible';
+      el.style.pointerEvents = 'auto';
+      el.setAttribute('aria-hidden', 'false');
+    }
+
+    function hide(el){
+      if(!el) return;
+      el.style.opacity = '';
+      el.style.visibility = '';
+      el.style.pointerEvents = '';
+      el.style.display = '';
+      el.setAttribute('aria-hidden', 'true');
+    }
+
+    function hideAll(except){
+      panels.forEach(p => {
+        if(p && p !== except) hide(p);
+      });
+    }
+
+    // Small delay so the user can move mouse from link -> panel without it closing.
+    function hoverPair(triggerEl, panelEl, onOpen){
+      if(!triggerEl || !panelEl) return;
+
+      let t = null;
+      const OPEN_DELAY = 0;
+      const CLOSE_DELAY = 140;
+
+      const open = () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+          hideAll(panelEl);
+          show(panelEl);
+          if(typeof onOpen === 'function') onOpen();
+        }, OPEN_DELAY);
+      };
+
+      const close = () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+          // Only close if mouse is not over trigger or panel
+          hide(panelEl);
+        }, CLOSE_DELAY);
+      };
+
+      triggerEl.addEventListener('mouseenter', open);
+      triggerEl.addEventListener('mouseleave', close);
+
+      panelEl.addEventListener('mouseenter', () => {
+        clearTimeout(t);
+        show(panelEl);
+      });
+      panelEl.addEventListener('mouseleave', close);
+    }
+
+    // Prevent jump to #hash when hovering (but allow normal click nav)
+    function preventHashOnHover(a){
+      if(!a) return;
+      a.addEventListener('mouseenter', (e) => {
+        // nothing needed here; just keeping behavior stable
+      });
+    }
+
+    preventHashOnHover(homeToggle);
+    preventHashOnHover(learnToggle);
+    preventHashOnHover(toolsToggle);
+    preventHashOnHover(newsToggle);
+
+    hoverPair(homeToggle, homeSubnav, () => { hide(homeMarketsSubnav); });
+    hoverPair(learnToggle, learnSubnav, () => { hide(homeMarketsSubnav); });
+    hoverPair(toolsToggle, toolsSubnav, () => { hide(homeMarketsSubnav); });
+    hoverPair(newsToggle, newsSubnav, () => { hide(homeMarketsSubnav); });
+
+    // Markets submenu inside Home
+    if(marketsToggle && homeMarketsSubnav){
+      let t2 = null;
+      const CLOSE_DELAY = 140;
+
+      const openMarkets = () => {
+        clearTimeout(t2);
+        show(homeSubnav);      // keep Home open
+        show(homeMarketsSubnav);
+      };
+
+      const closeMarkets = () => {
+        clearTimeout(t2);
+        t2 = setTimeout(() => {
+          hide(homeMarketsSubnav);
+        }, CLOSE_DELAY);
+      };
+
+      marketsToggle.addEventListener('mouseenter', openMarkets);
+      marketsToggle.addEventListener('mouseleave', closeMarkets);
+
+      homeMarketsSubnav.addEventListener('mouseenter', () => {
+        clearTimeout(t2);
+        show(homeSubnav);
+        show(homeMarketsSubnav);
+      });
+      homeMarketsSubnav.addEventListener('mouseleave', closeMarkets);
+    }
+
+    // If you hover anywhere else on the page, close all
+    document.addEventListener('mousemove', (e) => {
+      const withinHeader = e.target.closest && e.target.closest('#header');
+      const withinPanels = e.target.closest && (
+        e.target.closest('#homeSubnav') ||
+        e.target.closest('#learnSubnav') ||
+        e.target.closest('#toolsSubnav') ||
+        e.target.closest('#newsSubnav') ||
+        e.target.closest('#homeMarketsSubnav')
+      );
+      if(!withinHeader && !withinPanels){
+        hideAll(null);
+      }
+    });
+  })();
+  </script>
 </body>
 </html>
+```
