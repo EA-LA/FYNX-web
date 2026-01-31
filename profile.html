@@ -1,455 +1,842 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FYNX Finance World - Dashboard</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FYNX Finance World - Profile</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-            background: #ffffff;
-            color: #000000;
-            overflow: hidden;
-            height: 100vh;
-        }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+      background: #ffffff;
+      color: #000000;
+      overflow: hidden;
+      height: 100vh;
+    }
+    body.dark-mode { background: #000000; color: #ffffff; }
 
-        body.dark-mode { background: #000000; color: #ffffff; }
+    .dashboard-container { display: flex; height: 100vh; width: 100vw; }
 
-        .dashboard-container { display: flex; height: 100vh; width: 100vw; }
+    .nav-panel {
+      width: 120px;
+      background: #fafafa;
+      border-right: 1px solid #e5e5e5;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      z-index: 100;
+    }
+    body.dark-mode .nav-panel { background: #000000; border-right: 1px solid rgba(255, 255, 255, 0.08); }
 
-        .nav-panel {
-            width: 120px;
-            background: #fafafa;
-            border-right: 1px solid #e5e5e5;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            left: 0;
-            top: 0;
-            height: 100vh;
-            z-index: 100;
-        }
+    .nav-logo { padding: 32px 0; text-align: center; border-bottom: 1px solid #e5e5e5; }
+    body.dark-mode .nav-logo { border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
 
-        body.dark-mode .nav-panel { background: #000000; border-right: 1px solid rgba(255, 255, 255, 0.08); }
+    .nav-logo h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; color: #000000; }
+    body.dark-mode .nav-logo h1 { color: #ffffff; }
 
-        .nav-logo { padding: 32px 0; text-align: center; border-bottom: 1px solid #e5e5e5; }
-        body.dark-mode .nav-logo { border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+    .nav-menu { flex: 1; padding: 24px 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 
-        .nav-logo h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; color: #000000; }
-        body.dark-mode .nav-logo h1 { color: #ffffff; }
+    .nav-item {
+      width: 80px;
+      padding: 16px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      border-radius: 8px;
+    }
 
-        .nav-menu { flex: 1; padding: 24px 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .nav-item:hover { background: #f0f0f0; }
+    body.dark-mode .nav-item:hover { background: rgba(255, 255, 255, 0.05); }
 
-        .nav-item {
-            width: 80px;
-            padding: 16px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            border-radius: 8px;
-        }
+    .nav-item.active { background: #ffffff; }
+    body.dark-mode .nav-item.active { background: rgba(255, 255, 255, 0.08); }
 
-        .nav-item:hover { background: #f0f0f0; }
-        body.dark-mode .nav-item:hover { background: rgba(255, 255, 255, 0.05); }
+    .nav-item.active::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 24px;
+      background: #000000;
+      border-radius: 0 2px 2px 0;
+    }
+    body.dark-mode .nav-item.active::after { background: #ffffff; }
 
-        .nav-item.active { background: #ffffff; }
-        body.dark-mode .nav-item.active { background: rgba(255, 255, 255, 0.08); }
+    .nav-icon { width: 22px; height: 22px; stroke: #666666; stroke-width: 1.5; fill: none; transition: stroke 0.2s ease; }
+    body.dark-mode .nav-icon { stroke: rgba(255, 255, 255, 0.5); }
 
-        .nav-item.active::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 24px;
-            background: #000000;
-            border-radius: 0 2px 2px 0;
-        }
+    .nav-item.active .nav-icon,
+    .nav-item:hover .nav-icon { stroke: #000000; }
+    body.dark-mode .nav-item.active .nav-icon,
+    body.dark-mode .nav-item:hover .nav-icon { stroke: #ffffff; }
 
-        body.dark-mode .nav-item.active::after { background: #ffffff; }
+    .nav-label { font-size: 11px; font-weight: 500; letter-spacing: 0.2px; color: #666666; transition: color 0.2s ease; }
+    body.dark-mode .nav-label { color: rgba(255, 255, 255, 0.5); }
 
-        .nav-icon { width: 22px; height: 22px; stroke: #666666; stroke-width: 1.5; fill: none; transition: stroke 0.2s ease; }
-        body.dark-mode .nav-icon { stroke: rgba(255, 255, 255, 0.5); }
+    .nav-item.active .nav-label,
+    .nav-item:hover .nav-label { color: #000000; }
+    body.dark-mode .nav-item.active .nav-label,
+    body.dark-mode .nav-item:hover .nav-label { color: #ffffff; }
 
-        .nav-item.active .nav-icon,
-        .nav-item:hover .nav-icon { stroke: #000000; }
-        body.dark-mode .nav-item.active .nav-icon,
-        body.dark-mode .nav-item:hover .nav-icon { stroke: #ffffff; }
+    .main-content { margin-left: 120px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        .nav-label { font-size: 11px; font-weight: 500; letter-spacing: 0.2px; color: #666666; transition: color 0.2s ease; }
-        body.dark-mode .nav-label { color: rgba(255, 255, 255, 0.5); }
+    .top-bar {
+      height: 64px;
+      border-bottom: 1px solid #e5e5e5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      background: #ffffff;
+    }
+    body.dark-mode .top-bar { border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: #000000; }
 
-        .nav-item.active .nav-label,
-        .nav-item:hover .nav-label { color: #000000; }
-        body.dark-mode .nav-item.active .nav-label,
-        body.dark-mode .nav-item:hover .nav-label { color: #ffffff; }
+    .page-title { font-size: 15px; font-weight: 500; color: #666666; }
+    body.dark-mode .page-title { color: rgba(255, 255, 255, 0.5); }
 
-        .main-content { margin-left: 120px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    .top-bar-right { display: flex; align-items: center; gap: 20px; }
 
-        .top-bar {
-            height: 64px;
-            border-bottom: 1px solid #e5e5e5;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 48px;
-            background: #ffffff;
-        }
+    .theme-toggle { width: 24px; height: 24px; cursor: pointer; transition: opacity 0.2s ease; opacity: 0.5; }
+    .theme-toggle:hover { opacity: 1; }
+    .theme-toggle svg { width: 100%; height: 100%; stroke: #000000; stroke-width: 1.5; fill: none; }
+    body.dark-mode .theme-toggle svg { stroke: #ffffff; }
 
-        body.dark-mode .top-bar { border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: #000000; }
+    .notification-icon { width: 20px; height: 20px; stroke: #000000; stroke-width: 1.5; fill: none; opacity: 0.5; cursor: pointer; transition: opacity 0.2s ease; }
+    body.dark-mode .notification-icon { stroke: #ffffff; }
+    .notification-icon:hover { opacity: 1; }
 
-        .page-title { font-size: 15px; font-weight: 500; color: #666666; }
-        body.dark-mode .page-title { color: rgba(255, 255, 255, 0.5); }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #f0f0f0;
+      border: 1px solid #e5e5e5;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666666;
+      overflow: hidden;
+    }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; display:block; }
+    body.dark-mode .user-avatar { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.5); }
 
-        .top-bar-right { display: flex; align-items: center; gap: 20px; }
+    .content-area { flex: 1; overflow-y: auto; padding: 48px; background: #ffffff; }
+    body.dark-mode .content-area { background: #000000; }
 
-        .theme-toggle { width: 24px; height: 24px; cursor: pointer; transition: opacity 0.2s ease; opacity: 0.5; }
-        .theme-toggle:hover { opacity: 1; }
+    .section-header { margin-bottom: 32px; }
+    .section-header h2 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 6px; color: #000000; }
+    body.dark-mode .section-header h2 { color: #ffffff; }
+    .section-header p { font-size: 14px; color: #999999; font-weight: 400; }
+    body.dark-mode .section-header p { color: rgba(255, 255, 255, 0.4); }
 
-        .theme-toggle svg { width: 100%; height: 100%; stroke: #000000; stroke-width: 1.5; fill: none; }
-        body.dark-mode .theme-toggle svg { stroke: #ffffff; }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 40px;
+      padding: 32px;
+      background: #fafafa;
+      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+    }
+    body.dark-mode .profile-header { background: rgba(255, 255, 255, 0.02); border-color: rgba(255, 255, 255, 0.06); }
 
-        .notification-icon { width: 20px; height: 20px; stroke: #000000; stroke-width: 1.5; fill: none; opacity: 0.5; cursor: pointer; transition: opacity 0.2s ease; }
-        body.dark-mode .notification-icon { stroke: #ffffff; }
-        .notification-icon:hover { opacity: 1; }
+    .profile-avatar-large {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 1px solid #e5e5e5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 600;
+      color: #666666;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .profile-avatar-large img { width: 100%; height: 100%; object-fit: cover; display:block; }
+    body.dark-mode .profile-avatar-large { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.5); }
 
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #f0f0f0;
-            border: 1px solid #e5e5e5;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 600;
-            color: #666666;
-        }
+    .profile-info { flex: 1; }
 
-        body.dark-mode .user-avatar { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.5); }
+    .profile-name-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
 
-        .content-area { flex: 1; overflow-y: auto; padding: 48px; background: #ffffff; }
-        body.dark-mode .content-area { background: #000000; }
+    .profile-info h2 { font-size: 20px; font-weight: 600; color: #000000; }
+    body.dark-mode .profile-info h2 { color: #ffffff; }
 
-        .section-header { margin-bottom: 32px; }
-        .section-header h2 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 6px; color: #000000; }
-        body.dark-mode .section-header h2 { color: #ffffff; }
-        .section-header p { font-size: 14px; color: #999999; font-weight: 400; }
-        body.dark-mode .section-header p { color: rgba(255, 255, 255, 0.4); }
+    .edit-profile-btn {
+      padding: 6px 14px;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      background: #ffffff;
+      font-size: 12px;
+      font-weight: 500;
+      color: #000000;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .edit-profile-btn:hover { transform: translateY(-1px); }
+    body.dark-mode .edit-profile-btn { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: #ffffff; }
 
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-            margin-bottom: 40px;
-            padding: 32px;
-            background: #fafafa;
-            border: 1px solid #e5e5e5;
-            border-radius: 12px;
-        }
+    .profile-info p { font-size: 13px; color: #999999; margin-bottom: 20px; }
+    body.dark-mode .profile-info p { color: rgba(255, 255, 255, 0.4); }
 
-        body.dark-mode .profile-header { background: rgba(255, 255, 255, 0.02); border-color: rgba(255, 255, 255, 0.06); }
+    .profile-stats { display: flex; gap: 40px; flex-wrap: wrap; }
 
-        .profile-avatar-large {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 1px solid #e5e5e5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: 600;
-            color: #666666;
-            flex-shrink: 0;
-        }
+    .profile-stat-item h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: #999999; margin-bottom: 6px; font-weight: 600; }
+    body.dark-mode .profile-stat-item h4 { color: rgba(255, 255, 255, 0.4); }
 
-        body.dark-mode .profile-avatar-large { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.5); }
+    .profile-stat-item p { font-size: 18px; font-weight: 600; color: #000000; margin: 0; }
+    body.dark-mode .profile-stat-item p { color: #ffffff; }
 
-        .profile-info { flex: 1; }
+    .settings-section-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #000000; }
+    body.dark-mode .settings-section-title { color: #ffffff; }
 
-        .profile-name-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .settings-list { display: flex; flex-direction: column; gap: 8px; }
 
-        .profile-info h2 { font-size: 20px; font-weight: 600; color: #000000; }
-        body.dark-mode .profile-info h2 { color: #ffffff; }
+    .settings-item {
+      background: #fafafa;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .settings-item:hover { transform: translateY(-1px); }
 
-        .edit-profile-btn {
-            padding: 6px 14px;
-            border: 1px solid #e5e5e5;
-            border-radius: 6px;
-            background: #ffffff;
-            font-size: 12px;
-            font-weight: 500;
-            color: #000000;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
+    body.dark-mode .settings-item { background: rgba(255, 255, 255, 0.02); border-color: rgba(255, 255, 255, 0.06); }
 
-        body.dark-mode .edit-profile-btn { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: #ffffff; }
+    .settings-icon { width: 20px; height: 20px; stroke: #666666; stroke-width: 1.5; fill: none; }
+    body.dark-mode .settings-icon { stroke: rgba(255, 255, 255, 0.5); }
 
-        .profile-info p { font-size: 13px; color: #999999; margin-bottom: 20px; }
-        body.dark-mode .profile-info p { color: rgba(255, 255, 255, 0.4); }
+    .settings-text { flex: 1; }
+    .settings-label { font-size: 14px; font-weight: 500; color: #000000; margin-bottom: 2px; }
+    body.dark-mode .settings-label { color: #ffffff; }
+    .settings-value { font-size: 12px; color: #999999; }
+    body.dark-mode .settings-value { color: rgba(255, 255, 255, 0.4); }
 
-        .profile-stats { display: flex; gap: 40px; }
+    /* Modal */
+    .modal-backdrop{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 24px;
+    }
+    body.dark-mode .modal-backdrop{ background: rgba(0,0,0,.55); }
 
-        .profile-stat-item h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: #999999; margin-bottom: 6px; font-weight: 600; }
-        body.dark-mode .profile-stat-item h4 { color: rgba(255, 255, 255, 0.4); }
+    .modal{
+      width: 520px;
+      max-width: 100%;
+      background: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 30px 80px rgba(0,0,0,.18);
+    }
+    body.dark-mode .modal{
+      background: #000000;
+      border-color: rgba(255,255,255,.10);
+      box-shadow: 0 30px 80px rgba(0,0,0,.40);
+    }
 
-        .profile-stat-item p { font-size: 18px; font-weight: 600; color: #000000; margin: 0; }
-        body.dark-mode .profile-stat-item p { color: #ffffff; }
+    .modal-head{
+      display:flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .modal-title{
+      font-size: 15px;
+      font-weight: 700;
+      color:#000;
+      letter-spacing: -.2px;
+    }
+    body.dark-mode .modal-title{ color:#fff; }
 
-        .settings-section-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #000000; }
-        body.dark-mode .settings-section-title { color: #ffffff; }
+    .modal-close{
+      width: 32px; height: 32px;
+      border-radius: 10px;
+      border: 1px solid #e5e5e5;
+      background: #fafafa;
+      cursor: pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      opacity:.8;
+    }
+    .modal-close:hover{ opacity:1; }
+    body.dark-mode .modal-close{
+      background: rgba(255,255,255,.04);
+      border-color: rgba(255,255,255,.10);
+    }
 
-        .settings-list { display: flex; flex-direction: column; gap: 8px; }
+    .form-row{ display:flex; gap: 14px; margin-top: 12px; }
+    .form-col{ flex:1; }
 
-        .settings-item {
-            background: #fafafa;
-            border: 1px solid #e5e5e5;
-            border-radius: 10px;
-            padding: 18px 20px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
+    label{
+      display:block;
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 6px;
+      font-weight: 600;
+      letter-spacing: .2px;
+    }
+    body.dark-mode label{ color: rgba(255,255,255,.55); }
 
-        body.dark-mode .settings-item { background: rgba(255, 255, 255, 0.02); border-color: rgba(255, 255, 255, 0.06); }
+    input[type="text"], input[type="email"]{
+      width: 100%;
+      height: 42px;
+      border-radius: 10px;
+      border: 1px solid #e5e5e5;
+      padding: 0 12px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+      color: #000;
+    }
+    body.dark-mode input[type="text"], body.dark-mode input[type="email"]{
+      background: rgba(255,255,255,.04);
+      border-color: rgba(255,255,255,.10);
+      color:#fff;
+    }
 
-        .settings-icon { width: 20px; height: 20px; stroke: #666666; stroke-width: 1.5; fill: none; }
-        body.dark-mode .settings-icon { stroke: rgba(255, 255, 255, 0.5); }
+    input[type="file"]{
+      width:100%;
+      border-radius: 10px;
+      border: 1px dashed #d8d8d8;
+      padding: 12px;
+      background: #fafafa;
+      color: #000;
+      cursor:pointer;
+    }
+    body.dark-mode input[type="file"]{
+      background: rgba(255,255,255,.03);
+      border-color: rgba(255,255,255,.14);
+      color:#fff;
+    }
 
-        .settings-text { flex: 1; }
+    .modal-actions{
+      display:flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+    }
 
-        .settings-label { font-size: 14px; font-weight: 500; color: #000000; margin-bottom: 2px; }
-        body.dark-mode .settings-label { color: #ffffff; }
+    .btn{
+      height: 40px;
+      padding: 0 14px;
+      border-radius: 10px;
+      border: 1px solid #e5e5e5;
+      background: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      cursor:pointer;
+    }
+    body.dark-mode .btn{
+      background: rgba(255,255,255,.04);
+      border-color: rgba(255,255,255,.12);
+      color:#fff;
+    }
 
-        .settings-value { font-size: 12px; color: #999999; }
-        body.dark-mode .settings-value { color: rgba(255, 255, 255, 0.4); }
-    </style>
+    .btn-primary{
+      background:#000;
+      border-color:#000;
+      color:#fff;
+    }
+    body.dark-mode .btn-primary{
+      background:#fff;
+      border-color:#fff;
+      color:#000;
+    }
+
+    .hint{
+      font-size: 12px;
+      margin-top: 10px;
+      color:#999;
+      line-height: 1.5;
+    }
+    body.dark-mode .hint{ color: rgba(255,255,255,.45); }
+  </style>
 </head>
+
 <body>
-    <div class="dashboard-container">
-        <nav class="nav-panel">
-            <div class="nav-logo">
-                <h1>FYNX</h1>
+  <div class="dashboard-container">
+    <nav class="nav-panel">
+      <div class="nav-logo"><h1>FYNX</h1></div>
+
+      <div class="nav-menu">
+        <div class="nav-item" data-view="home">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span class="nav-label">Home</span>
+        </div>
+
+        <div class="nav-item" data-view="journal">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <span class="nav-label">Journal</span>
+        </div>
+
+        <div class="nav-item" data-view="calculator">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+            <line x1="8" y1="6" x2="16" y2="6"></line>
+            <line x1="8" y1="10" x2="16" y2="10"></line>
+            <line x1="8" y1="14" x2="16" y2="14"></line>
+            <line x1="8" y1="18" x2="16" y2="18"></line>
+          </svg>
+          <span class="nav-label">Calculator</span>
+        </div>
+
+        <div class="nav-item" data-view="news">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+            <line x1="12" y1="11" x2="18" y2="11"></line>
+            <line x1="12" y1="7" x2="18" y2="7"></line>
+          </svg>
+          <span class="nav-label">News</span>
+        </div>
+
+        <div class="nav-item" data-view="calendar">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span class="nav-label">Calendar</span>
+        </div>
+
+        <div class="nav-item active" data-view="profile">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span class="nav-label">Profile</span>
+        </div>
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <div class="top-bar">
+        <h1 class="page-title">Profile</h1>
+
+        <div class="top-bar-right">
+          <div class="theme-toggle" onclick="toggleTheme()">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </div>
+
+          <svg class="notification-icon" viewBox="0 0 24 24">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+
+          <div class="user-avatar" id="topAvatar">FX</div>
+        </div>
+      </div>
+
+      <div class="content-area">
+        <div class="section-header">
+          <h2>Profile</h2>
+          <p>Manage your account and settings</p>
+        </div>
+
+        <div class="profile-header">
+          <div class="profile-avatar-large" id="profileAvatarLarge">FX</div>
+
+          <div class="profile-info">
+            <div class="profile-name-row">
+              <h2 id="profileName">FYNX User</h2>
+              <button class="edit-profile-btn" id="editProfileBtn">Edit Profile</button>
             </div>
-            
-            <div class="nav-menu">
-                <div class="nav-item" data-view="home">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                    </svg>
-                    <span class="nav-label">Home</span>
-                </div>
-                
-                <div class="nav-item" data-view="journal">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                    </svg>
-                    <span class="nav-label">Journal</span>
-                </div>
-                
-                <div class="nav-item" data-view="calculator">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <rect x="4" y="2" width="16" height="20" rx="2"></rect>
-                        <line x1="8" y1="6" x2="16" y2="6"></line>
-                        <line x1="8" y1="10" x2="16" y2="10"></line>
-                        <line x1="8" y1="14" x2="16" y2="14"></line>
-                        <line x1="8" y1="18" x2="16" y2="18"></line>
-                    </svg>
-                    <span class="nav-label">Calculator</span>
-                </div>
-                
-                <div class="nav-item" data-view="news">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
-                        <line x1="12" y1="11" x2="18" y2="11"></line>
-                        <line x1="12" y1="7" x2="18" y2="7"></line>
-                    </svg>
-                    <span class="nav-label">News</span>
-                </div>
-                
-                <div class="nav-item" data-view="calendar">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    <span class="nav-label">Calendar</span>
-                </div>
-                
-                <div class="nav-item active" data-view="profile">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    <span class="nav-label">Profile</span>
-                </div>
-            </div>
-        </nav>
 
-        <main class="main-content">
-            <div class="top-bar">
-                <h1 class="page-title">Profile</h1>
-                <div class="top-bar-right">
-                    <div class="theme-toggle" onclick="toggleTheme()">
-                        <svg class="sun-icon" viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="5"></circle>
-                            <line x1="12" y1="1" x2="12" y2="3"></line>
-                            <line x1="12" y1="21" x2="12" y2="23"></line>
-                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                            <line x1="1" y1="12" x2="3" y2="12"></line>
-                            <line x1="21" y1="12" x2="23" y2="12"></line>
-                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                        </svg>
-                    </div>
-                    <svg class="notification-icon" viewBox="0 0 24 24">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                    </svg>
-                    <div class="user-avatar">FX</div>
-                </div>
+            <p id="profileEmail">fynx.user@example.com</p>
+
+            <div class="profile-stats">
+              <div class="profile-stat-item">
+                <h4>TOTAL TRADES</h4>
+                <p id="statTotalTrades">—</p>
+              </div>
+              <div class="profile-stat-item">
+                <h4>WIN RATE</h4>
+                <p id="statWinRate">—</p>
+              </div>
+              <div class="profile-stat-item">
+                <h4>AVG. RETURN</h4>
+                <p id="statAvgReturn">—</p>
+              </div>
+              <div class="profile-stat-item">
+                <h4>MEMBER SINCE</h4>
+                <p id="statMemberSince">—</p>
+              </div>
             </div>
 
-            <div class="content-area">
-                <div class="profile-view" id="profile" style="display:block;">
-                    <div class="section-header">
-                        <h2>Profile</h2>
-                        <p>Manage your account and settings</p>
-                    </div>
-
-                    <div class="profile-header">
-                        <div class="profile-avatar-large">FX</div>
-                        <div class="profile-info">
-                            <div class="profile-name-row">
-                                <h2>FYNX User</h2>
-                                <button class="edit-profile-btn">Edit Profile</button>
-                            </div>
-                            <p>fynx.user@example.com</p>
-                            <div class="profile-stats">
-                                <div class="profile-stat-item">
-                                    <h4>TOTAL TRADES</h4>
-                                    <p>1,247</p>
-                                </div>
-                                <div class="profile-stat-item">
-                                    <h4>WIN RATE</h4>
-                                    <p>64.2%</p>
-                                </div>
-                                <div class="profile-stat-item">
-                                    <h4>AVG. RETURN</h4>
-                                    <p>+3.8%</p>
-                                </div>
-                                <div class="profile-stat-item">
-                                    <h4>MEMBER SINCE</h4>
-                                    <p>Jan 2024</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="settings-section-title">Settings</div>
-
-                    <div class="settings-list">
-                        <div class="settings-item">
-                            <svg class="settings-icon" viewBox="0 0 24 24">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
-                            <div class="settings-text">
-                                <div class="settings-label">Account Settings</div>
-                                <div class="settings-value">Update your personal information</div>
-                            </div>
-                        </div>
-                        <div class="settings-item">
-                            <svg class="settings-icon" viewBox="0 0 24 24">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg>
-                            <div class="settings-text">
-                                <div class="settings-label">Security</div>
-                                <div class="settings-value">Manage password and 2FA</div>
-                            </div>
-                        </div>
-                        <div class="settings-item">
-                            <svg class="settings-icon" viewBox="0 0 24 24">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                            </svg>
-                            <div class="settings-text">
-                                <div class="settings-label">Notifications</div>
-                                <div class="settings-value">Configure alert preferences</div>
-                            </div>
-                        </div>
-                        <div class="settings-item">
-                            <svg class="settings-icon" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="3"></circle>
-                                <path d="M12 1v6m0 6v6m5.66-13.66l-4.24 4.24m0 6.84l-4.24 4.24m13.66-5.66h-6m-6 0H1m13.66 5.66l-4.24-4.24m0-6.84l-4.24-4.24"></path>
-                            </svg>
-                            <div class="settings-text">
-                                <div class="settings-label">Preferences</div>
-                                <div class="settings-value">Customize your experience</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="hint">
+              Stats load from your real data if you store it in <b>localStorage</b>:
+              <br>- <b>fynx_trades</b> (array of trades)
+              <br>- or <b>fynx_metrics</b> (precomputed stats)
             </div>
-        </main>
+          </div>
+        </div>
+
+        <div class="settings-section-title">Settings</div>
+
+        <div class="settings-list">
+          <div class="settings-item" data-link="account-settings.html">
+            <svg class="settings-icon" viewBox="0 0 24 24">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <div class="settings-text">
+              <div class="settings-label">Account Settings</div>
+              <div class="settings-value">Update your personal information</div>
+            </div>
+          </div>
+
+          <div class="settings-item" data-link="security.html">
+            <svg class="settings-icon" viewBox="0 0 24 24">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <div class="settings-text">
+              <div class="settings-label">Security</div>
+              <div class="settings-value">Manage password and 2FA</div>
+            </div>
+          </div>
+
+          <div class="settings-item" data-link="notifications.html">
+            <svg class="settings-icon" viewBox="0 0 24 24">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <div class="settings-text">
+              <div class="settings-label">Notifications</div>
+              <div class="settings-value">Configure alert preferences</div>
+            </div>
+          </div>
+
+          <div class="settings-item" data-link="preferences.html">
+            <svg class="settings-icon" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M12 1v6m0 6v6m5.66-13.66l-4.24 4.24m0 6.84l-4.24 4.24m13.66-5.66h-6m-6 0H1m13.66 5.66l-4.24-4.24m0-6.84l-4.24-4.24"></path>
+            </svg>
+            <div class="settings-text">
+              <div class="settings-label">Preferences</div>
+              <div class="settings-value">Customize your experience</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">Edit Profile</div>
+        <button class="modal-close" id="modalClose" aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" style="stroke:currentColor; fill:none; stroke-width:2;">
+            <path d="M18 6L6 18"></path>
+            <path d="M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-col">
+          <label for="nameInput">Name</label>
+          <input type="text" id="nameInput" placeholder="Your name" />
+        </div>
+        <div class="form-col">
+          <label for="emailInput">Email (demo)</label>
+          <input type="email" id="emailInput" placeholder="you@example.com" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-col">
+          <label for="avatarInput">Profile Image</label>
+          <input type="file" id="avatarInput" accept="image/*" />
+          <div class="hint">Upload a PNG/JPG. It saves to localStorage (demo product mode).</div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn" id="cancelBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveBtn">Save</button>
+      </div>
     </div>
+  </div>
 
-    <script>
-        const navItems = document.querySelectorAll('.nav-item');
-        const pageTitle = document.querySelector('.page-title');
+  <script>
+    // ---------- Navigation ----------
+    const navItems = document.querySelectorAll('.nav-item');
+    const viewPages = {
+      home: 'home.html',
+      journal: 'journal.html',
+      calculator: 'calculator.html',
+      news: 'news.html',
+      calendar: 'calendar.html',
+      profile: 'profile.html'
+    };
 
-        const viewTitles = {
-            home: 'Home',
-            journal: 'Journal',
-            calculator: 'Calculator',
-            news: 'News',
-            calendar: 'Calendar',
-            profile: 'Profile'
-        };
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const viewName = item.getAttribute('data-view');
+        if (viewPages[viewName]) window.location.href = viewPages[viewName];
+      });
+    });
 
-        const viewPages = {
-            home: 'home.html',
-            journal: 'journal.html',
-            calculator: 'calculator.html',
-            news: 'news.html',
-            calendar: 'calendar.html',
-            profile: 'profile.html'
-        };
+    // ---------- Theme persistence ----------
+    function applyThemeFromStorage(){
+      const t = localStorage.getItem('fynx_theme');
+      if (t === 'dark') document.body.classList.add('dark-mode');
+      else document.body.classList.remove('dark-mode');
+    }
 
-        navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                const viewName = item.getAttribute('data-view');
-                pageTitle.textContent = viewTitles[viewName];
-                if (viewPages[viewName]) {
-                    window.location.href = viewPages[viewName];
-                }
-            });
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('fynx_theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    }
+
+    applyThemeFromStorage();
+
+    // ---------- Profile + Stats (Real mode via localStorage) ----------
+    const DEFAULT_PROFILE = {
+      name: 'FYNX User',
+      email: 'fynx.user@example.com',
+      avatarDataUrl: '',
+      memberSince: 'Jan 2024'
+    };
+
+    function safeJSONParse(v, fallback){
+      try { return JSON.parse(v); } catch(e){ return fallback; }
+    }
+
+    function getProfile(){
+      const p = safeJSONParse(localStorage.getItem('fynx_profile'), null);
+      return { ...DEFAULT_PROFILE, ...(p || {}) };
+    }
+
+    function setProfile(profile){
+      localStorage.setItem('fynx_profile', JSON.stringify(profile));
+    }
+
+    function initialsFromName(name){
+      const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+      const a = (parts[0] || 'F').slice(0,1);
+      const b = (parts[1] || parts[0] || 'X').slice(0,1);
+      return (a + b).toUpperCase();
+    }
+
+    function renderAvatar(el, profile){
+      el.innerHTML = '';
+      if (profile.avatarDataUrl){
+        const img = document.createElement('img');
+        img.src = profile.avatarDataUrl;
+        img.alt = 'Avatar';
+        el.appendChild(img);
+      } else {
+        el.textContent = initialsFromName(profile.name);
+      }
+    }
+
+    function loadMetrics(){
+      // Option A: precomputed metrics
+      const metrics = safeJSONParse(localStorage.getItem('fynx_metrics'), null);
+      if (metrics && typeof metrics === 'object') return metrics;
+
+      // Option B: derive from trades
+      const trades = safeJSONParse(localStorage.getItem('fynx_trades'), []);
+      const total = Array.isArray(trades) ? trades.length : 0;
+
+      let wins = 0;
+      let sumReturn = 0;
+      let returnCount = 0;
+
+      if (Array.isArray(trades)){
+        trades.forEach(t => {
+          // win detection: result === 'win' OR pnl > 0
+          const pnl = Number(t?.pnl);
+          const isWin = (String(t?.result || '').toLowerCase() === 'win') || (!Number.isNaN(pnl) && pnl > 0);
+          if (isWin) wins++;
+
+          // avg return: use returnPct / pnlPct / return
+          const rp = Number(t?.returnPct ?? t?.pnlPct ?? t?.return);
+          if (!Number.isNaN(rp)){
+            sumReturn += rp;
+            returnCount++;
+          }
         });
+      }
 
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-        }
-    </script>
+      const winRate = total ? (wins / total) * 100 : null;
+      const avgReturn = returnCount ? (sumReturn / returnCount) : null;
+
+      // member since: earliest trade date if available
+      let memberSince = null;
+      const dates = (Array.isArray(trades) ? trades : [])
+        .map(t => new Date(t?.date || t?.createdAt || t?.timestamp || ''))
+        .filter(d => !isNaN(d.getTime()))
+        .sort((a,b)=>a-b);
+
+      if (dates.length){
+        const d = dates[0];
+        memberSince = d.toLocaleString(undefined, { month: 'short', year: 'numeric' });
+      }
+
+      return { total, winRate, avgReturn, memberSince };
+    }
+
+    function fmtNumber(n){
+      const x = Number(n);
+      if (Number.isNaN(x)) return '—';
+      return x.toLocaleString();
+    }
+
+    function fmtPercent(n, decimals=1){
+      const x = Number(n);
+      if (Number.isNaN(x)) return '—';
+      return x.toFixed(decimals) + '%';
+    }
+
+    function fmtReturn(n){
+      const x = Number(n);
+      if (Number.isNaN(x)) return '—';
+      const sign = x > 0 ? '+' : '';
+      return sign + x.toFixed(1) + '%';
+    }
+
+    function renderProfile(){
+      const profile = getProfile();
+      document.getElementById('profileName').textContent = profile.name || DEFAULT_PROFILE.name;
+      document.getElementById('profileEmail').textContent = profile.email || DEFAULT_PROFILE.email;
+
+      renderAvatar(document.getElementById('profileAvatarLarge'), profile);
+      renderAvatar(document.getElementById('topAvatar'), profile);
+
+      const m = loadMetrics();
+
+      document.getElementById('statTotalTrades').textContent =
+        (m.total !== undefined && m.total !== null) ? fmtNumber(m.total) : '—';
+
+      document.getElementById('statWinRate').textContent =
+        (m.winRate !== undefined && m.winRate !== null) ? fmtPercent(m.winRate, 1) : '—';
+
+      document.getElementById('statAvgReturn').textContent =
+        (m.avgReturn !== undefined && m.avgReturn !== null) ? fmtReturn(m.avgReturn) : '—';
+
+      document.getElementById('statMemberSince').textContent =
+        (m.memberSince || profile.memberSince || DEFAULT_PROFILE.memberSince);
+    }
+
+    renderProfile();
+
+    // ---------- Settings links ----------
+    document.querySelectorAll('.settings-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const link = item.getAttribute('data-link');
+        if (link) window.location.href = link;
+      });
+    });
+
+    // ---------- Edit profile modal ----------
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const editBtn = document.getElementById('editProfileBtn');
+    const closeBtn = document.getElementById('modalClose');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const saveBtn = document.getElementById('saveBtn');
+
+    const nameInput = document.getElementById('nameInput');
+    const emailInput = document.getElementById('emailInput');
+    const avatarInput = document.getElementById('avatarInput');
+
+    let pendingAvatarDataUrl = '';
+
+    function openModal(){
+      const p = getProfile();
+      nameInput.value = p.name || '';
+      emailInput.value = p.email || '';
+      pendingAvatarDataUrl = p.avatarDataUrl || '';
+      avatarInput.value = '';
+      modalBackdrop.style.display = 'flex';
+    }
+
+    function closeModal(){
+      modalBackdrop.style.display = 'none';
+    }
+
+    editBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    modalBackdrop.addEventListener('click', (e) => {
+      if (e.target === modalBackdrop) closeModal();
+    });
+
+    avatarInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        pendingAvatarDataUrl = String(reader.result || '');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    saveBtn.addEventListener('click', () => {
+      const p = getProfile();
+      const next = {
+        ...p,
+        name: (nameInput.value || '').trim() || DEFAULT_PROFILE.name,
+        email: (emailInput.value || '').trim() || DEFAULT_PROFILE.email,
+        avatarDataUrl: pendingAvatarDataUrl || p.avatarDataUrl || ''
+      };
+
+      setProfile(next);
+      renderProfile();
+      closeModal();
+    });
+  </script>
 </body>
 </html>
