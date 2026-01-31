@@ -298,6 +298,60 @@
   @media (max-width: 820px){
     .fynx-link-row{ display:none; }
   }
+
+  /* ==============================================
+     ✅ ONLY FIX YOU ASKED FOR:
+     Desktop hover opens the subnavs (no click required)
+     - Home/Learn/Tools/News open on mouse hover
+     - Markets (inside Home subnav) opens on hover
+     - On mobile/touch: hover is ignored, click behavior stays
+  ============================================== */
+  @media (hover: hover) and (pointer: fine){
+    /* show Home subnav when hovering Home nav link OR the subnav itself */
+    #homeToggle:hover ~ #homeSubnav,
+    #homeSubnav:hover{
+      display: block !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+    }
+
+    /* show Learn subnav when hovering Learn nav link OR the subnav itself */
+    #learnToggle:hover ~ #learnSubnav,
+    #learnSubnav:hover{
+      display: block !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+    }
+
+    /* show Tools subnav when hovering Tools nav link OR the subnav itself */
+    #toolsToggle:hover ~ #toolsSubnav,
+    #toolsSubnav:hover{
+      display: block !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+    }
+
+    /* show News subnav when hovering News nav link OR the subnav itself */
+    #newsToggle:hover ~ #newsSubnav,
+    #newsSubnav:hover{
+      display: block !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+    }
+
+    /* Markets inside Home subnav: hover opens detail subnav */
+    #marketsToggle:hover ~ #homeMarketsSubnav,
+    #homeMarketsSubnav:hover{
+      display: block !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+    }
+  }
   </style>
 </head>
 <body>
