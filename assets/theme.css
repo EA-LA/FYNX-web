@@ -17,7 +17,17 @@
 
   /* Strokes */
   --stroke-light: rgba(0,0,0,.10);
+  --stroke-light-2: rgba(0,0,0,.14);
   --stroke-dark: rgba(255,255,255,.12);
+
+  /* Surfaces */
+  --card-light: rgba(255,255,255,.75);
+  --card-light-strong: rgba(255,255,255,.92);
+  --card-dark: rgba(255,255,255,.06);
+
+  /* Muted text */
+  --muted-light: rgba(0,0,0,.62);
+  --muted-dark: rgba(255,255,255,.70);
 }
 
 html, body { height: 100%; }
@@ -43,7 +53,7 @@ body.light-mode::before{
   content:"";
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: -2; /* important: always behind everything */
   pointer-events: none;
   background:
     radial-gradient(var(--dot) 1px, transparent 1px) 0 0/18px 18px,
@@ -52,9 +62,14 @@ body.light-mode::before{
     radial-gradient(ellipse at 50% 100%, rgba(0,0,0,.04), transparent 60%);
 }
 
+/* In dark mode, remove the light overlay */
+body.dark-mode::before{ content: none; }
+
 /* Hide your dark animated background when in Light mode */
 body.light-mode .animated-bg,
-body.light-mode .grid-overlay{
+body.light-mode .grid-overlay,
+body.light-mode .gradient-orb,
+body.light-mode .particle{
   display: none !important;
 }
 
@@ -79,4 +94,279 @@ body.light-mode .fynx-theme-toggle{
   border-color: var(--stroke-light);
   background: rgba(0,0,0,.04);
   color: #111;
+}
+
+/* =======================================================================
+   ✅ LIGHT MODE OVERRIDES (this is the real fix)
+   Your styles.css is dark-first (hard-coded whites / dark surfaces),
+   so we override the main components here.
+   ======================================================================= */
+
+/* Global typography + links */
+body.light-mode a{ color: rgba(0,0,0,.85); }
+body.light-mode a:hover{ color: rgba(0,0,0,1); }
+
+/* Header + Nav */
+body.light-mode header{
+  background: rgba(255,255,255,.72) !important;
+  color: var(--text-light) !important;
+  border-bottom: 1px solid var(--stroke-light) !important;
+  backdrop-filter: blur(18px);
+}
+body.light-mode header.scrolled{
+  background: rgba(255,255,255,.92) !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,.10) !important;
+}
+body.light-mode .logo{ color: var(--text-light) !important; }
+body.light-mode nav a{
+  color: rgba(0,0,0,.70) !important;
+}
+body.light-mode nav a:hover{
+  color: rgba(0,0,0,.95) !important;
+}
+body.light-mode nav a::after{
+  background: rgba(0,0,0,.85) !important;
+}
+
+/* Mobile menu button */
+body.light-mode .mobile-menu{
+  border: 1px solid var(--stroke-light) !important;
+  background: rgba(0,0,0,.04) !important;
+  color: rgba(0,0,0,.88) !important;
+}
+
+/* Sub-nav bars (home / learn / tools / news) */
+body.light-mode .tools-subnav,
+body.light-mode .news-subnav,
+body.light-mode .learn-subnav,
+body.light-mode .learn-detail-subnav,
+body.light-mode .home-subnav,
+body.light-mode .home-detail-subnav{
+  background: rgba(255,255,255,.78) !important;
+  border-bottom: 1px solid var(--stroke-light) !important;
+  backdrop-filter: blur(18px);
+}
+body.light-mode .tools-pill,
+body.light-mode .news-pill,
+body.light-mode .learn-pill,
+body.light-mode .learn-detail-pill,
+body.light-mode .home-pill,
+body.light-mode .home-detail-pill,
+body.light-mode .learn-caption,
+body.light-mode .home-caption{
+  color: rgba(0,0,0,.82) !important;
+  border-color: var(--stroke-light) !important;
+  background: rgba(255,255,255,.70) !important;
+}
+body.light-mode .tools-pill:hover,
+body.light-mode .news-pill:hover,
+body.light-mode .learn-pill:hover,
+body.light-mode .learn-detail-pill:hover,
+body.light-mode .home-pill:hover,
+body.light-mode .home-detail-pill:hover{
+  background: rgba(255,255,255,.92) !important;
+  border-color: var(--stroke-light-2) !important;
+  color: rgba(0,0,0,.95) !important;
+}
+body.light-mode .tools-pill .tag{
+  border-color: var(--stroke-light) !important;
+  color: rgba(0,0,0,.60) !important;
+  background: rgba(0,0,0,.04) !important;
+}
+
+/* Mobile drawer */
+body.light-mode .mobile-overlay{
+  background: rgba(0,0,0,.22) !important;
+}
+body.light-mode .mobile-drawer{
+  background: rgba(255,255,255,.90) !important;
+  border-left: 1px solid var(--stroke-light) !important;
+  color: rgba(0,0,0,.90) !important;
+}
+body.light-mode .m-accordion,
+body.light-mode .m-single{
+  border: 1px solid var(--stroke-light) !important;
+  background: rgba(255,255,255,.70) !important;
+}
+body.light-mode .m-acc-btn,
+body.light-mode .m-single a{
+  color: rgba(0,0,0,.90) !important;
+}
+body.light-mode .m-acc-panel{
+  border-top: 1px solid var(--stroke-light) !important;
+}
+body.light-mode .m-link{
+  background: rgba(0,0,0,.03) !important;
+  border: 1px solid var(--stroke-light) !important;
+  color: rgba(0,0,0,.82) !important;
+}
+body.light-mode .m-link:hover{
+  background: rgba(0,0,0,.05) !important;
+  border-color: var(--stroke-light-2) !important;
+  color: rgba(0,0,0,.95) !important;
+}
+body.light-mode .mobile-close{
+  border: 1px solid var(--stroke-light) !important;
+  background: rgba(0,0,0,.04) !important;
+  color: rgba(0,0,0,.88) !important;
+}
+
+/* Hero text */
+body.light-mode .hero h1{
+  background: linear-gradient(135deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.45) 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+body.light-mode .hero p{ color: rgba(0,0,0,.62) !important; }
+
+/* Buttons */
+body.light-mode .btn-primary{
+  background: rgba(0,0,0,.92) !important;
+  color: #fff !important;
+  box-shadow: 0 14px 40px rgba(0,0,0,.18) !important;
+}
+body.light-mode .btn-secondary{
+  color: rgba(0,0,0,.92) !important;
+  border-color: rgba(0,0,0,.28) !important;
+}
+body.light-mode .btn-secondary:hover{
+  background: rgba(0,0,0,.92) !important;
+  color: #fff !important;
+}
+
+/* Section titles */
+body.light-mode .section-title{
+  color: rgba(0,0,0,.92) !important;
+}
+
+/* Feature cards */
+body.light-mode .feature-card{
+  background: var(--card-light) !important;
+  border: 1px solid var(--stroke-light) !important;
+  color: rgba(0,0,0,.90) !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,.06) !important;
+}
+body.light-mode .feature-card p{
+  color: rgba(0,0,0,.62) !important;
+}
+
+/* Learning section + course cards */
+body.light-mode .learning-section{
+  background: rgba(255,255,255,.35) !important;
+}
+body.light-mode .course-card{
+  background: var(--card-light-strong) !important;
+  border: 1px solid var(--stroke-light) !important;
+}
+body.light-mode .course-content p{
+  color: rgba(0,0,0,.62) !important;
+}
+body.light-mode .course-badge{
+  color: rgba(0,0,0,.78) !important;
+  border-color: var(--stroke-light) !important;
+  background: rgba(0,0,0,.04) !important;
+}
+
+/* Tools cards */
+body.light-mode .tool-item{
+  background: var(--card-light) !important;
+  border: 1px solid var(--stroke-light) !important;
+  color: rgba(0,0,0,.90) !important;
+}
+body.light-mode .tool-item h3{ color: rgba(0,0,0,.88) !important; }
+
+/* FAQ sections (both your styles) */
+body.light-mode .fynx-faq{
+  color: rgba(0,0,0,.92) !important;
+}
+body.light-mode .fynx-faq__title{ color: rgba(0,0,0,.92) !important; }
+body.light-mode .fynx-faq__right{
+  border-top: 1px solid var(--stroke-light) !important;
+}
+body.light-mode .fynx-faq__item{
+  border-bottom: 1px solid var(--stroke-light) !important;
+}
+body.light-mode .fynx-faq__q{
+  color: rgba(0,0,0,.88) !important;
+}
+body.light-mode .fynx-faq__q:hover{
+  color: rgba(0,0,0,1) !important;
+}
+body.light-mode .fynx-faq__icon{
+  border-color: var(--stroke-light) !important;
+  background: rgba(0,0,0,.03) !important;
+  color: rgba(0,0,0,.85) !important;
+}
+body.light-mode .fynx-faq__a p{
+  color: rgba(0,0,0,.62) !important;
+}
+
+/* If you still have the older .faq-section somewhere */
+body.light-mode .faq-section{
+  background: transparent !important;
+  color: rgba(0,0,0,.92) !important;
+}
+body.light-mode .faq-item{
+  background: var(--card-light-strong) !important;
+  border-color: var(--stroke-light) !important;
+}
+body.light-mode .faq-question{
+  color: rgba(0,0,0,.90) !important;
+}
+body.light-mode .faq-answer{
+  background: rgba(0,0,0,.02) !important;
+  color: rgba(0,0,0,.70) !important;
+}
+
+/* Footer */
+body.light-mode footer{
+  background: rgba(255,255,255,.78) !important;
+  border-top: 1px solid var(--stroke-light) !important;
+  color: rgba(0,0,0,.88) !important;
+}
+body.light-mode .footer-section a{
+  color: rgba(0,0,0,.62) !important;
+}
+body.light-mode .footer-section a:hover{
+  color: rgba(0,0,0,.92) !important;
+}
+body.light-mode .footer-section a::before{
+  background: rgba(0,0,0,.85) !important;
+}
+body.light-mode .copyright{
+  border-top: 1px solid var(--stroke-light) !important;
+  color: rgba(0,0,0,.45) !important;
+}
+
+/* Floating download widget (your QR card) */
+body.light-mode .fynx-card{
+  background: rgba(255,255,255,.92) !important;
+  border: 1px solid var(--stroke-light) !important;
+  box-shadow: 0 18px 60px rgba(0,0,0,.18) !important;
+  color: rgba(0,0,0,.92) !important;
+}
+body.light-mode .fynx-badge{
+  background: rgba(0,0,0,.06) !important;
+  border-color: var(--stroke-light) !important;
+  color: rgba(0,0,0,.88) !important;
+}
+body.light-mode .fynx-title{ color: rgba(0,0,0,.92) !important; }
+body.light-mode .fynx-sub{ color: rgba(0,0,0,.60) !important; }
+body.light-mode .fynx-pill{
+  background: rgba(0,0,0,.06) !important;
+  border-color: var(--stroke-light) !important;
+  color: rgba(0,0,0,.88) !important;
+}
+body.light-mode .fynx-close{
+  background: rgba(0,0,0,.04) !important;
+  border-color: var(--stroke-light) !important;
+  color: rgba(0,0,0,.70) !important;
+}
+body.light-mode .fynx-close:hover{
+  color: rgba(0,0,0,.92) !important;
+}
+body.light-mode .fynx-qr{
+  background: #fff !important;
+  border-color: var(--stroke-light) !important;
 }
