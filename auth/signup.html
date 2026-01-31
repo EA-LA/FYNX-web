@@ -9,6 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- ✅ Global theme (must exist at ../assets/theme.css) -->
+  <link rel="stylesheet" href="../assets/theme.css">
+
   <style>
     :root{
       --bg:#000;
@@ -21,7 +24,19 @@
       --shadow: 0 18px 60px rgba(0,0,0,.65);
       --r: 22px;
       --focus: 0 0 0 3px rgba(255,255,255,.18);
+
+      /* Light-mode tokens */
+      --bgL: var(--bg-light, #fbfbfb);
+      --textL: var(--text-light, #0b0b0b);
+      --cardL: rgba(255,255,255,.78);
+      --strokeL: rgba(0,0,0,.10);
+      --strokeL2: rgba(0,0,0,.16);
+      --mutedL: rgba(0,0,0,.62);
+      --mutedL2: rgba(0,0,0,.48);
+      --shadowL: 0 18px 60px rgba(0,0,0,.18);
+      --focusL: 0 0 0 3px rgba(0,0,0,.14);
     }
+
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
     body{
@@ -95,19 +110,33 @@
       flex-direction:column;
       justify-content:center;
       gap: 16px;
+      position: relative;
+    }
+
+    /* ✅ Fix overlap: topbar holds Back + Toggle, so it never blocks brand */
+    .topbar{
+      position:absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 5;
     }
 
     .toplink{
-      position:absolute; top:14px; left:14px;
       display:flex; align-items:center; gap:8px;
       color: rgba(255,255,255,.78);
       text-decoration:none;
       font-size: 12px;
-      padding: 8px 10px;
+      padding: 7px 10px; /* slightly smaller to fit perfect */
       border: 1px solid rgba(255,255,255,.12);
       border-radius: 999px;
       background: rgba(0,0,0,.25);
       backdrop-filter: blur(8px);
+      white-space: nowrap;
     }
     .toplink:hover{ color:#fff; border-color: rgba(255,255,255,.22); }
 
@@ -115,6 +144,7 @@
       display:flex; align-items:center; gap:10px;
       letter-spacing:.2px;
       user-select:none;
+      margin-top: 22px; /* space because topbar is absolute */
     }
     .brand .mark{
       width:34px; height:34px;
@@ -177,7 +207,7 @@
       background: rgba(0,0,0,.35);
       color:#fff;
       outline:none;
-      transition: box-shadow .12s ease, border-color .12s ease;
+      transition: box-shadow .12s ease, border-color .12s ease, background .12s ease;
     }
     input:focus{ box-shadow: var(--focus); border-color: rgba(255,255,255,.32); }
 
@@ -257,17 +287,108 @@
     @media (max-width: 920px){
       .shell{ grid-template-columns: 1fr; }
       .right{ min-height: 260px; }
+      .left{ padding-top: 62px; }
     }
+
+    /* =====================================================================
+       ✅ LIGHT MODE OVERRIDES (same system as Login)
+       ===================================================================== */
+
+    body.light-mode{
+      background: var(--bgL);
+      color: var(--textL);
+    }
+
+    /* Show micro-dots from theme.css: hide dark .bg */
+    body.light-mode .bg{ display:none; }
+
+    body.light-mode .panel{
+      background: var(--cardL);
+      border-color: var(--strokeL);
+      box-shadow: var(--shadowL);
+    }
+
+    body.light-mode .brand .mark{
+      border-color: var(--strokeL2);
+      background:
+        radial-gradient(circle at 30% 30%, rgba(0,0,0,.10), transparent 60%),
+        rgba(0,0,0,.03);
+    }
+
+    body.light-mode .sub{ color: var(--mutedL); }
+    body.light-mode label{ color: var(--mutedL2); }
+
+    body.light-mode input{
+      background: rgba(255,255,255,.86);
+      color: rgba(0,0,0,.92);
+      border-color: var(--strokeL2);
+    }
+    body.light-mode input::placeholder{ color: rgba(0,0,0,.40); }
+    body.light-mode input:focus{
+      box-shadow: var(--focusL);
+      border-color: rgba(0,0,0,.22);
+    }
+
+    body.light-mode .btn{
+      background: rgba(0,0,0,.04);
+      color: rgba(0,0,0,.90);
+      border-color: var(--strokeL2);
+    }
+    body.light-mode .btn:hover{ background: rgba(0,0,0,.06); }
+
+    body.light-mode .btn.primary{
+      background: rgba(0,0,0,.92);
+      color: #fff;
+      border-color: rgba(0,0,0,.92);
+    }
+    body.light-mode .btn.primary:hover{ background: rgba(0,0,0,.96); }
+
+    body.light-mode .mini{ color: rgba(0,0,0,.55); }
+    body.light-mode .mini:hover{ color: rgba(0,0,0,.90); }
+
+    body.light-mode .foot{ color: rgba(0,0,0,.52); }
+    body.light-mode .foot a{
+      color: rgba(0,0,0,.85);
+      border-bottom-color: rgba(0,0,0,.18);
+    }
+    body.light-mode .foot a:hover{
+      border-bottom-color: rgba(0,0,0,.42);
+    }
+
+    body.light-mode .toplink{
+      color: rgba(0,0,0,.72);
+      border-color: var(--strokeL);
+      background: rgba(255,255,255,.72);
+    }
+    body.light-mode .toplink:hover{
+      color: rgba(0,0,0,.92);
+      border-color: var(--strokeL2);
+    }
+
+    /* Right panel stays cinematic (keep black) */
+    body.light-mode .rightInner{
+      border-color: rgba(0,0,0,.10);
+      background: #000;
+    }
+    body.light-mode .fynxLogo .tag{ color: rgba(255,255,255,.70); }
   </style>
 </head>
-<body>
+
+<body class="dark-mode">
   <div class="bg"></div>
 
   <main class="wrap">
     <section class="shell">
 
-      <div class="panel left" style="position:relative;">
-        <a class="toplink" href="../index.html">← Back to FYNX</a>
+      <div class="panel left">
+        <div class="topbar">
+          <a class="toplink" href="../index.html">← Back to FYNX</a>
+
+          <!-- ✅ Same toggle system as Login -->
+          <button class="fynx-theme-toggle" type="button" data-fynx-theme-toggle aria-label="Toggle theme" title="Toggle theme">
+            ◐
+          </button>
+        </div>
 
         <div class="brand">
           <div class="mark" aria-hidden="true"></div>
@@ -338,6 +459,9 @@
     </section>
   </main>
 
+  <!-- ✅ Theme persistence (must exist at ../assets/theme.js) -->
+  <script src="../assets/theme.js"></script>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
@@ -349,7 +473,6 @@
       updateProfile
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-    // ✅ PASTE YOUR FIREBASE WEB CONFIG HERE (from Firebase console -> Web app)
     const firebaseConfig = {
       apiKey: "AIzaSyDGSYIB_YIpbWyUMJ1d-v00-xADnvaWckk",
       authDomain: "fynx-c7a28.firebaseapp.com",
