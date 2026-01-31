@@ -12,6 +12,10 @@
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
+
+  <!-- ✅ NEW: Global Theme (Light micro-dots + Dark grid) -->
+  <link rel="stylesheet" href="assets/theme.css">
+  <script src="assets/theme.js" defer></script>
 </head>
 <body>
   <!-- Animated Background -->
@@ -21,6 +25,7 @@
     <div class="gradient-orb orb-2"></div>
     <div class="gradient-orb orb-3"></div>
   </div>
+
   <!-- Header -->
   <header id="header">
     <div class="nav-container">
@@ -28,6 +33,7 @@
         <i class="fas fa-chart-line"></i>
         <span>FYNX</span>
       </div>
+
       <nav>
         <ul>
           <li><a href="#home" id="homeToggle">Home <span style="opacity:.7;">▾</span></a></li>
@@ -37,12 +43,19 @@
           <li><a href="trader-journal.html">Trader Journal</a></li>
         </ul>
       </nav>
+
+      <!-- ✅ NEW: Theme Toggle (right side, small) -->
+      <button class="fynx-theme-toggle" type="button" aria-label="Toggle theme" data-fynx-theme-toggle title="Toggle theme">
+        <i class="fas fa-sun"></i>
+      </button>
+
       <!-- Mobile Hamburger -->
       <button class="mobile-menu" id="mobileMenuBtn" type="button" aria-label="Open menu" aria-controls="mobileDrawer" aria-expanded="false">
         <i class="fas fa-bars"></i>
       </button>
     </div>
   </header>
+
   <!-- MOBILE OVERLAY + DRAWER (NEW) -->
   <div class="mobile-overlay" id="mobileOverlay" aria-hidden="true"></div>
   <aside class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
@@ -55,6 +68,7 @@
         <i class="fas fa-xmark"></i>
       </button>
     </div>
+
     <div class="mobile-list">
       <!-- HOME -->
       <div class="m-accordion" data-acc="home">
@@ -110,6 +124,7 @@
           </div>
         </div>
       </div>
+
       <!-- LEARN -->
       <div class="m-accordion" data-acc="learn">
         <button class="m-acc-btn" type="button">
@@ -130,6 +145,7 @@
           </div>
         </div>
       </div>
+
       <!-- TOOLS -->
       <div class="m-accordion" data-acc="tools">
         <button class="m-acc-btn" type="button">
@@ -155,6 +171,7 @@
           </div>
         </div>
       </div>
+
       <!-- NEWS -->
       <div class="m-accordion" data-acc="news">
         <button class="m-acc-btn" type="button">
@@ -170,6 +187,7 @@
           </div>
         </div>
       </div>
+
       <!-- TRADER JOURNAL (single) -->
       <div class="m-single">
         <a href="trader-journal.html">
@@ -179,6 +197,7 @@
       </div>
     </div>
   </aside>
+
   <!-- HOME SUB-NAV -->
   <div class="home-subnav" id="homeSubnav" aria-hidden="true">
     <div class="home-subnav-inner">
@@ -192,6 +211,7 @@
       <button class="home-pill" type="button" id="marketsToggle"><i class="fas fa-layer-group"></i> Markets <span style="opacity:.7;">▾</span></button>
     </div>
   </div>
+
   <!-- HOME MARKETS DETAIL SUB-NAV -->
   <div class="home-detail-subnav" id="homeMarketsSubnav" aria-hidden="true">
     <div class="home-detail-inner">
@@ -207,6 +227,7 @@
       <a class="home-detail-pill" href="markets/index.html?section=historical-data"><i class="fas fa-database"></i> Historical Data</a>
     </div>
   </div>
+
   <!-- LEARN SUB-NAV -->
   <div class="learn-subnav" id="learnSubnav" aria-hidden="true">
     <div class="learn-subnav-inner">
@@ -222,6 +243,7 @@
       <button class="learn-pill" type="button" data-topic="options">Options</button>
     </div>
   </div>
+
   <!-- LEARN DETAIL SUB-NAV -->
   <div class="learn-detail-subnav" id="learnDetailSubnav" aria-hidden="true">
     <div class="learn-detail-inner">
@@ -231,6 +253,7 @@
       <a class="learn-detail-pill" id="learnGlossary" href="learn/topic.html?topic=forex&section=glossary"><i class="fas fa-book"></i> Glossary</a>
     </div>
   </div>
+
   <!-- TOOLS SUB-NAV -->
   <div class="tools-subnav" id="toolsSubnav" aria-hidden="true">
     <div class="tools-subnav-inner">
@@ -260,6 +283,7 @@
       <a class="tools-pill" href="tools/economic-calendar.html"><i class="fas fa-calendar-alt"></i> Economic Calendar</a>
     </div>
   </div>
+
   <!-- NEWS SUB-NAV -->
   <div class="news-subnav" id="newsSubnav" aria-hidden="true">
     <div class="news-subnav-inner">
@@ -269,6 +293,7 @@
       <a class="news-pill" href="news/challenges.html"><i class="fas fa-trophy"></i> Challenges</a>
     </div>
   </div>
+
   <!-- Hero Section -->
   <section class="hero" id="home">
     <div class="hero-content">
@@ -283,6 +308,7 @@
       <i class="fas fa-chevron-down"></i>
     </div>
   </section>
+
   <!-- Features Section -->
   <section class="features">
     <h2 class="section-title">Why Choose Fynx?</h2>
@@ -319,6 +345,7 @@
       </div>
     </div>
   </section>
+
   <!-- === REPLACED: Unique Finance Section - "FYNX Quantum Edge" (something fresh, not seen on typical finance sites) === -->
   <section class="learning-section" id="learn">
     <div class="learning-container">
@@ -326,7 +353,7 @@
       <p style="text-align:center; margin-bottom:3rem; max-width:800px; margin-left:auto; margin-right:auto; opacity:0.9;">
         Unlock proprietary tools that combine AI-driven predictions, real-time quantum-inspired volatility mapping, and adaptive risk engines — features rarely found together on any trading platform.
       </p>
-      <div class="course-grid"> <!-- Keeping the grid style for consistency, but repurposed -->
+      <div class="course-grid">
         <div class="course-card">
           <div class="course-image">
             <i class="fas fa-atom" style="font-size:5rem; color:#00ffff;"></i>
@@ -363,6 +390,7 @@
       </div>
     </div>
   </section>
+
   <!-- Tools Section -->
   <section class="tools-section" id="tools">
     <h2 class="section-title">Trading Tools & Calculators</h2>
@@ -393,6 +421,7 @@
       </div>
     </div>
   </section>
+
   <!-- New FAQs Section (black/dark theme, slow smooth accordion) -->
   <section class="faq-section" id="faqs">
     <div class="faq-container">
@@ -428,6 +457,7 @@
       </div>
     </div>
   </section>
+
   <!-- Footer -->
   <footer>
     <div class="footer-container">
@@ -475,6 +505,7 @@
       © 2025 FYNX. All rights reserved.
     </div>
   </footer>
+
   <!-- FYNX Download QR (Floating) -->
   <a class="fynx-download" id="fynxDownload" href="https://apps.apple.com/us/app/fynx-finance-world/id6752357210" target="_blank" rel="noopener">
     <div class="fynx-card">
@@ -494,9 +525,11 @@
       </div>
     </div>
   </a>
+
   <!-- QR library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="script.js"></script>
+
   <!-- Minimal JS for FAQ accordion smooth toggle -->
   <script>
     document.querySelectorAll('.faq-question').forEach(button => {
