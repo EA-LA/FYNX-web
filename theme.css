@@ -1,0 +1,98 @@
+/* =======================================================================
+   FYNX Global Theme System (Light micro-dots + Dark grid)
+   File: assets/theme.css
+   ======================================================================= */
+
+:root{
+  --bg-dark: #000000;
+  --text-dark: #ffffff;
+
+  /* Light mode = "premium white" */
+  --bg-light: #fbfbfb;          /* not pure white */
+  --text-light: #0b0b0b;
+
+  /* Dots */
+  --dot: rgba(0,0,0,.06);       /* tiny dots, subtle */
+  --dot2: rgba(0,0,0,.035);     /* second layer for depth */
+
+  /* Borders / card strokes */
+  --stroke-light: rgba(0,0,0,.10);
+  --stroke-dark: rgba(255,255,255,.12);
+}
+
+/* ------------------------------
+   Base theme wiring
+--------------------------------*/
+html, body { height: 100%; }
+
+body{
+  margin: 0;
+  background: var(--bg-dark);
+  color: var(--text-dark);
+  transition: background-color .25s ease, color .25s ease;
+}
+
+/* If you already use body.dark-mode in some pages,
+   we’ll also support a "light-mode" class. */
+body.light-mode{
+  background: var(--bg-light);
+  color: var(--text-light);
+}
+
+/* ------------------------------
+   LIGHT MODE: premium micro-dots
+   This is the look from your example
+--------------------------------*/
+body.light-mode::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  /* 2 dot layers + soft vignette = high-end paper feel */
+  background:
+    radial-gradient(var(--dot) 1px, transparent 1px) 0 0/18px 18px,
+    radial-gradient(var(--dot2) 1px, transparent 1px) 9px 9px/18px 18px,
+    radial-gradient(ellipse at 50% 0%, rgba(0,0,0,.05), transparent 55%),
+    radial-gradient(ellipse at 50% 100%, rgba(0,0,0,.04), transparent 60%);
+}
+
+/* ------------------------------
+   DARK MODE: your grid stays
+   (Only apply if you already have .animated-bg / grid overlay)
+--------------------------------*/
+
+/* Optional: If your dark pages use a fixed animated background div,
+   make sure it’s hidden in light mode */
+body.light-mode .animated-bg{
+  display: none !important;
+}
+
+/* Optional: If you want the dark grid hidden only when light-mode */
+body.light-mode .grid-overlay{
+  display: none !important;
+}
+
+/* ------------------------------
+   Theme toggle button (global)
+--------------------------------*/
+.fynx-theme-toggle{
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  border: 1px solid var(--stroke-dark);
+  background: rgba(255,255,255,.06);
+  color: #fff;
+  transition: transform .15s ease, background .25s ease, border-color .25s ease;
+}
+.fynx-theme-toggle:active{ transform: scale(.98); }
+
+body.light-mode .fynx-theme-toggle{
+  border-color: var(--stroke-light);
+  background: rgba(0,0,0,.04);
+  color: #111;
+}
