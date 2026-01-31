@@ -237,6 +237,67 @@
     background: #ffffff; /* keep QR readable */
     border: 1px solid rgba(255,255,255,0.14);
   }
+
+  /* ==============================================
+     ✅ NEW: Header Inline Icon Logos (4 links)
+     - Scoped to .fynx-link-row only
+     - Looks like small logos in one line
+     - Works in light + dark
+  ============================================== */
+  .fynx-link-row{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 12px;
+  }
+
+  .fynx-link-row a{
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    text-decoration: none;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.65);
+    color: rgba(0,0,0,0.82);
+    box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+    transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border-color 180ms ease;
+  }
+
+  .fynx-link-row a:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.82);
+  }
+
+  .fynx-link-row a:active{
+    transform: translateY(0px);
+  }
+
+  /* Dark mode */
+  body.dark-mode .fynx-link-row a,
+  html.dark-mode .fynx-link-row a,
+  [data-theme="dark"] .fynx-link-row a,
+  [data-fynx-theme="dark"] .fynx-link-row a{
+    border-color: rgba(255,255,255,0.14);
+    background: rgba(0,0,0,0.55);
+    color: rgba(255,255,255,0.88);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.45);
+  }
+
+  body.dark-mode .fynx-link-row a:hover,
+  html.dark-mode .fynx-link-row a:hover,
+  [data-theme="dark"] .fynx-link-row a:hover,
+  [data-fynx-theme="dark"] .fynx-link-row a:hover{
+    background: rgba(0,0,0,0.72);
+    border-color: rgba(255,255,255,0.22);
+  }
+
+  /* Keep header clean on small screens (mobile drawer already exists) */
+  @media (max-width: 820px){
+    .fynx-link-row{ display:none; }
+  }
   </style>
 </head>
 <body>
@@ -265,6 +326,22 @@
           <li><a href="trader-journal.html">Trader Journal</a></li>
         </ul>
       </nav>
+
+      <!-- ✅ NEW: Small Inline Logos (4 links) -->
+      <div class="fynx-link-row" aria-label="FYNX quick links">
+        <a href="https://elhamamini.cc/fynx-blog/#" target="_blank" rel="noopener" aria-label="FYNX Blog" title="Blog">
+          <i class="fa-solid fa-pen-nib"></i>
+        </a>
+        <a href="https://elhamamini.cc/FYNX-Site/index.html" target="_blank" rel="noopener" aria-label="FYNX Main Site" title="Main Site">
+          <i class="fa-solid fa-globe"></i>
+        </a>
+        <a href="https://apps.apple.com/app/id6752357210" target="_blank" rel="noopener" aria-label="FYNX App Store" title="App Store">
+          <i class="fa-brands fa-apple"></i>
+        </a>
+        <a href="https://elhamamini.cc/RoadMap-FYNX/" target="_blank" rel="noopener" aria-label="FYNX Roadmap" title="Roadmap">
+          <i class="fa-solid fa-road"></i>
+        </a>
+      </div>
 
       <!-- ✅ NEW: Theme Toggle (right side, small) -->
       <button class="fynx-theme-toggle" type="button" aria-label="Toggle theme" data-fynx-theme-toggle title="Toggle theme">
@@ -821,4 +898,3 @@
   </script>
 </body>
 </html>
->
