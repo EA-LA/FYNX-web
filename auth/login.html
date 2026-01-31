@@ -9,6 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- ✅ Global theme (must exist at ../assets/theme.css) -->
+  <link rel="stylesheet" href="../assets/theme.css">
+
   <style>
     :root{
       --bg:#000;
@@ -21,6 +24,17 @@
       --shadow: 0 18px 60px rgba(0,0,0,.65);
       --r: 22px;
       --focus: 0 0 0 3px rgba(255,255,255,.18);
+
+      /* Light-mode tokens (premium off-white like your example) */
+      --bgL: var(--bg-light, #fbfbfb);
+      --textL: var(--text-light, #0b0b0b);
+      --cardL: rgba(255,255,255,.78);
+      --strokeL: rgba(0,0,0,.10);
+      --strokeL2: rgba(0,0,0,.16);
+      --mutedL: rgba(0,0,0,.62);
+      --mutedL2: rgba(0,0,0,.48);
+      --shadowL: 0 18px 60px rgba(0,0,0,.18);
+      --focusL: 0 0 0 3px rgba(0,0,0,.14);
     }
 
     *{ box-sizing:border-box; }
@@ -33,6 +47,7 @@
       overflow-x:hidden;
     }
 
+    /* Your dark background layer */
     .bg{
       position:fixed; inset:0; z-index:-1; overflow:hidden;
       background:
@@ -97,12 +112,42 @@
       flex-direction:column;
       justify-content:center;
       gap: 16px;
+      position: relative;
     }
 
+    /* Top row: back link + theme toggle */
+    .topbar{
+      position:absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 5;
+    }
+
+    .toplink{
+      display:flex; align-items:center; gap:8px;
+      color: rgba(255,255,255,.78);
+      text-decoration:none;
+      font-size: 12px;
+      padding: 8px 10px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 999px;
+      background: rgba(0,0,0,.25);
+      backdrop-filter: blur(8px);
+      white-space: nowrap;
+    }
+    .toplink:hover{ color:#fff; border-color: rgba(255,255,255,.22); }
+
+    /* Brand */
     .brand{
       display:flex; align-items:center; gap:10px;
       letter-spacing:.2px;
       user-select:none;
+      margin-top: 22px; /* because topbar is absolute */
     }
     .brand .mark{
       width:34px; height:34px;
@@ -201,7 +246,7 @@
       background: rgba(0,0,0,.35);
       color:#fff;
       outline:none;
-      transition: box-shadow .12s ease, border-color .12s ease;
+      transition: box-shadow .12s ease, border-color .12s ease, background .12s ease;
     }
     input:focus{
       box-shadow: var(--focus);
@@ -293,21 +338,7 @@
       text-shadow: 0 18px 70px rgba(0,0,0,.65);
     }
 
-    .toplink{
-      position:absolute; top:14px; left:14px;
-      display:flex; align-items:center; gap:8px;
-      color: rgba(255,255,255,.78);
-      text-decoration:none;
-      font-size: 12px;
-      padding: 8px 10px;
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 999px;
-      background: rgba(0,0,0,.25);
-      backdrop-filter: blur(8px);
-    }
-    .toplink:hover{ color:#fff; border-color: rgba(255,255,255,.22); }
-
-    /* ===== small status modal (new) ===== */
+    /* ===== small status modal ===== */
     .statusModal{
       position: fixed;
       inset: 0;
@@ -355,17 +386,126 @@
     @media (max-width: 920px){
       .shell{ grid-template-columns: 1fr; }
       .right{ min-height: 260px; }
+      .left{ padding-top: 62px; }
+    }
+
+    /* =====================================================================
+       ✅ LIGHT MODE OVERRIDES (matches your premium off-white page)
+       Theme is controlled by body.light-mode from assets/theme.js
+       ===================================================================== */
+
+    body.light-mode{
+      background: var(--bgL);
+      color: var(--textL);
+    }
+
+    /* Hide dark background layer so micro-dots from theme.css show */
+    body.light-mode .bg{ display:none; }
+
+    body.light-mode .panel{
+      background: var(--cardL);
+      border-color: var(--strokeL);
+      box-shadow: var(--shadowL);
+    }
+
+    body.light-mode .brand .mark{
+      border-color: var(--strokeL2);
+      background:
+        radial-gradient(circle at 30% 30%, rgba(0,0,0,.10), transparent 60%),
+        rgba(0,0,0,.03);
+    }
+
+    body.light-mode .sub{ color: var(--mutedL); }
+
+    body.light-mode label{ color: var(--mutedL2); }
+
+    body.light-mode input{
+      background: rgba(255,255,255,.86);
+      color: rgba(0,0,0,.92);
+      border-color: var(--strokeL2);
+    }
+    body.light-mode input::placeholder{ color: rgba(0,0,0,.40); }
+    body.light-mode input:focus{
+      box-shadow: var(--focusL);
+      border-color: rgba(0,0,0,.22);
+    }
+
+    body.light-mode .btn{
+      background: rgba(0,0,0,.04);
+      color: rgba(0,0,0,.90);
+      border-color: var(--strokeL2);
+    }
+    body.light-mode .btn:hover{
+      background: rgba(0,0,0,.06);
+    }
+    body.light-mode .btn.primary{
+      background: rgba(0,0,0,.92);
+      color: #fff;
+      border-color: rgba(0,0,0,.92);
+    }
+    body.light-mode .btn.primary:hover{
+      background: rgba(0,0,0,.96);
+    }
+
+    body.light-mode .mini{ color: rgba(0,0,0,.55); }
+    body.light-mode .mini:hover{ color: rgba(0,0,0,.90); }
+
+    body.light-mode .foot{ color: rgba(0,0,0,.52); }
+    body.light-mode .foot a{
+      color: rgba(0,0,0,.85);
+      border-bottom-color: rgba(0,0,0,.18);
+    }
+    body.light-mode .foot a:hover{
+      border-bottom-color: rgba(0,0,0,.42);
+    }
+
+    body.light-mode .toplink{
+      color: rgba(0,0,0,.72);
+      border-color: var(--strokeL);
+      background: rgba(255,255,255,.72);
+    }
+    body.light-mode .toplink:hover{
+      color: rgba(0,0,0,.92);
+      border-color: var(--strokeL2);
+    }
+
+    /* Right panel stays cinematic (keep black) */
+    body.light-mode .rightInner{
+      border-color: rgba(0,0,0,.10);
+      background: #000;
+    }
+    body.light-mode .fynxLogo .tag{ color: rgba(255,255,255,.70); }
+
+    /* Modal in light mode */
+    body.light-mode .statusModal{ background: rgba(0,0,0,.30); }
+    body.light-mode .statusCard{
+      background: rgba(255,255,255,.92);
+      border-color: rgba(0,0,0,.10);
+      box-shadow: 0 20px 90px rgba(0,0,0,.25);
+    }
+    body.light-mode .statusText{ color: rgba(0,0,0,.60); }
+    body.light-mode .spinner{
+      border-color: rgba(0,0,0,.16);
+      border-top-color: rgba(0,0,0,.70);
     }
   </style>
 </head>
-<body>
+
+<body class="dark-mode">
   <div class="bg"></div>
 
   <main class="wrap">
     <section class="shell">
 
       <div class="panel left">
-        <a class="toplink" href="../index.html">← Back to FYNX</a>
+        <div class="topbar">
+          <a class="toplink" href="../index.html">← Back to FYNX</a>
+
+          <!-- ✅ Theme toggle (persists via assets/theme.js) -->
+          <button class="fynx-theme-toggle" type="button" data-fynx-theme-toggle aria-label="Toggle theme" title="Toggle theme">
+            ◐
+          </button>
+        </div>
 
         <div class="brand">
           <div class="mark" aria-hidden="true"></div>
@@ -437,6 +577,9 @@
     </div>
   </div>
 
+  <!-- ✅ Theme persistence (must exist at ../assets/theme.js) -->
+  <script src="../assets/theme.js"></script>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
@@ -468,19 +611,12 @@
     const emailForm      = document.getElementById("emailLoginForm");
     const loginAppBtn    = document.getElementById("loginApp");
 
-    // Where you want to land after ANY successful login
     const DASHBOARD_URL = "../dashboard.html";
-
-    // App Store fallback
     const APP_STORE_URL = "https://apps.apple.com/app/id6752357210";
 
-    // IMPORTANT:
-    // app-return.html will sign user in and then redirect to this dashboard.
-    // We pass returnTo so the app-return page knows where to go.
     const APP_RETURN_URL = new URL("./app-return.html", window.location.href);
     APP_RETURN_URL.searchParams.set("returnTo", DASHBOARD_URL);
 
-    // Optional "open-app.html" helper for better fallback
     const OPEN_APP_URL = new URL("./open-app.html", window.location.href);
     OPEN_APP_URL.searchParams.set("returnTo", APP_RETURN_URL.toString());
 
@@ -503,10 +639,8 @@
       hideStatus();
     }
 
-    // If already logged in on web, go dashboard
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        // If you don't want auto-redirect, remove this block.
         // window.location.href = DASHBOARD_URL;
       }
     });
@@ -540,13 +674,7 @@
       }catch(err){ showErr(err); }
     });
 
-    // ✅ The real "Login with App" flow:
-    // 1) Go to open-app.html which tries to open the app
-    // 2) App shows confirm -> creates a one-time ticket via Cloud Function
-    // 3) App returns to app-return.html?ticket=...
-    // 4) app-return.html exchanges ticket -> signs in -> redirects to dashboard
     loginAppBtn.addEventListener("click", () => {
-      // You can show a message, but we navigate fast
       showStatus("Opening FYNX…", "Confirm the login inside the app.");
       window.location.href = OPEN_APP_URL.toString();
     });
