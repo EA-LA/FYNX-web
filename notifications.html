@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FYNX - Notifications</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;background:#fff;color:#000;overflow:hidden;height:100vh}
+    body.dark-mode{background:#000;color:#fff}
+    .dashboard-container{display:flex;height:100vh;width:100vw}
+    .nav-panel{width:120px;background:#fafafa;border-right:1px solid #e5e5e5;display:flex;flex-direction:column;position:fixed;left:0;top:0;height:100vh;z-index:100}
+    body.dark-mode .nav-panel{background:#000;border-right:1px solid rgba(255,255,255,.08)}
+    .nav-logo{padding:32px 0;text-align:center;border-bottom:1px solid #e5e5e5}
+    body.dark-mode .nav-logo{border-bottom:1px solid rgba(255,255,255,.06)}
+    .nav-logo h1{font-size:18px;font-weight:700;letter-spacing:-.5px;color:#000}
+    body.dark-mode .nav-logo h1{color:#fff}
+    .nav-menu{flex:1;padding:24px 0;display:flex;flex-direction:column;align-items:center;gap:8px}
+    .nav-item{width:80px;padding:16px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:.2s;border-radius:8px;position:relative}
+    .nav-item:hover{background:#f0f0f0}
+    body.dark-mode .nav-item:hover{background:rgba(255,255,255,.05)}
+    .nav-item.active{background:#fff}
+    body.dark-mode .nav-item.active{background:rgba(255,255,255,.08)}
+    .nav-item.active::after{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:24px;background:#000;border-radius:0 2px 2px 0}
+    body.dark-mode .nav-item.active::after{background:#fff}
+    .nav-icon{width:22px;height:22px;stroke:#666;stroke-width:1.5;fill:none}
+    body.dark-mode .nav-icon{stroke:rgba(255,255,255,.5)}
+    .nav-item.active .nav-icon,.nav-item:hover .nav-icon{stroke:#000}
+    body.dark-mode .nav-item.active .nav-icon,body.dark-mode .nav-item:hover .nav-icon{stroke:#fff}
+    .nav-label{font-size:11px;font-weight:500;letter-spacing:.2px;color:#666}
+    body.dark-mode .nav-label{color:rgba(255,255,255,.5)}
+    .nav-item.active .nav-label,.nav-item:hover .nav-label{color:#000}
+    body.dark-mode .nav-item.active .nav-label,body.dark-mode .nav-item:hover .nav-label{color:#fff}
+    .main-content{margin-left:120px;flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+    .top-bar{height:64px;border-bottom:1px solid #e5e5e5;display:flex;align-items:center;justify-content:space-between;padding:0 48px;background:#fff}
+    body.dark-mode .top-bar{border-bottom:1px solid rgba(255,255,255,.08);background:#000}
+    .page-title{font-size:15px;font-weight:500;color:#666}
+    body.dark-mode .page-title{color:rgba(255,255,255,.5)}
+    .top-bar-right{display:flex;align-items:center;gap:20px}
+    .theme-toggle{width:24px;height:24px;cursor:pointer;opacity:.5}
+    .theme-toggle:hover{opacity:1}
+    .theme-toggle svg{width:100%;height:100%;stroke:#000;stroke-width:1.5;fill:none}
+    body.dark-mode .theme-toggle svg{stroke:#fff}
+    .content-area{flex:1;overflow-y:auto;padding:48px;background:#fff}
+    body.dark-mode .content-area{background:#000}
+    .section-header{margin-bottom:24px}
+    .section-header h2{font-size:28px;font-weight:600;letter-spacing:-.5px;margin-bottom:6px;color:#000}
+    body.dark-mode .section-header h2{color:#fff}
+    .section-header p{font-size:14px;color:#999}
+    body.dark-mode .section-header p{color:rgba(255,255,255,.4)}
+    .card{background:#fafafa;border:1px solid #e5e5e5;border-radius:12px;padding:18px}
+    body.dark-mode .card{background:rgba(255,255,255,.02);border-color:rgba(255,255,255,.06)}
+    .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+    body.dark-mode .toggle-row{border-bottom:1px solid rgba(255,255,255,.08)}
+    .toggle-row:last-child{border-bottom:none}
+    .switch{width:46px;height:28px;border-radius:999px;border:1px solid #e5e5e5;background:#fff;position:relative;cursor:pointer}
+    body.dark-mode .switch{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.04)}
+    .knob{width:22px;height:22px;border-radius:50%;background:#000;position:absolute;top:2px;left:2px;transition:.2s}
+    body.dark-mode .knob{background:#fff}
+    .switch.on .knob{left:22px}
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <nav class="nav-panel">
+      <div class="nav-logo"><h1>FYNX</h1></div>
+      <div class="nav-menu">
+        <div class="nav-item" data-view="home"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg><span class="nav-label">Home</span></div>
+        <div class="nav-item" data-view="journal"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg><span class="nav-label">Journal</span></div>
+        <div class="nav-item" data-view="calculator"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="16" y2="14"></line><line x1="8" y1="18" x2="16" y2="18"></line></svg><span class="nav-label">Calculator</span></div>
+        <div class="nav-item" data-view="news"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><line x1="12" y1="11" x2="18" y2="11"></line><line x1="12" y1="7" x2="18" y2="7"></line></svg><span class="nav-label">News</span></div>
+        <div class="nav-item" data-view="calendar"><svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg><span class="nav-label">Calendar</span></div>
+        <div class="nav-item active" data-view="profile"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span class="nav-label">Profile</span></div>
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <div class="top-bar">
+        <h1 class="page-title">Notifications</h1>
+        <div class="top-bar-right">
+          <div class="theme-toggle" onclick="toggleTheme()">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-area">
+        <div class="section-header">
+          <h2>Notifications</h2>
+          <p>Demo switches — we’ll wire real alerts later.</p>
+        </div>
+
+        <div class="card">
+          <div class="toggle-row">
+            <div>
+              <div style="font-weight:900;font-size:14px;">Trade Reminders</div>
+              <div style="font-size:12px;color:#999;margin-top:4px;">Daily journal + plan reminders.</div>
+            </div>
+            <div class="switch" onclick="toggleSwitch(this)"><div class="knob"></div></div>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <div style="font-weight:900;font-size:14px;">News Alerts</div>
+              <div style="font-size:12px;color:#999;margin-top:4px;">High-impact market events.</div>
+            </div>
+            <div class="switch" onclick="toggleSwitch(this)"><div class="knob"></div></div>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+              <div style="font-weight:900;font-size:14px;">Calendar Notifications</div>
+              <div style="font-size:12px;color:#999;margin-top:4px;">Sessions, macro releases, tasks.</div>
+            </div>
+            <div class="switch on" onclick="toggleSwitch(this)"><div class="knob"></div></div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;font-size:12px;color:#999;">
+          This page is demo now. Next: save preferences + send real alerts.
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const viewPages = {home:'home.html',journal:'journal.html',calculator:'calculator.html',news:'news.html',calendar:'calendar.html',profile:'profile.html'};
+    document.querySelectorAll('.nav-item').forEach(i=>i.addEventListener('click',()=>window.location.href=viewPages[i.getAttribute('data-view')]));
+    function applyTheme(){ const t=localStorage.getItem('fynx_theme'); if(t==='dark')document.body.classList.add('dark-mode'); }
+    function toggleTheme(){ document.body.classList.toggle('dark-mode'); localStorage.setItem('fynx_theme',document.body.classList.contains('dark-mode')?'dark':'light'); }
+    applyTheme();
+    function toggleSwitch(el){ el.classList.toggle('on'); }
+  </script>
+</body>
+</html>
