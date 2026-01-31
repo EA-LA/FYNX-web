@@ -352,6 +352,250 @@
       pointer-events: auto !important;
     }
   }
+
+  /* ==============================================
+     ✅ NEW SECTION YOU ASKED FOR (ONLY)
+     Everything you need to grow in finance (3 auto-moving images)
+     - Scoped ONLY to .fynx-grow
+     - Uses your GitHub images:
+       assets/img/holidays.jpg
+       assets/img/calculators.jpg
+       assets/img/journal.jpg
+  ============================================== */
+  .fynx-grow, .fynx-grow *{ box-sizing: border-box; }
+
+  .fynx-grow{
+    padding: 84px 0 64px;
+  }
+
+  .fynx-grow__wrap{
+    width: min(1180px, 92vw);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 44px;
+    align-items: center;
+  }
+
+  .fynx-grow__kicker{
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.82);
+    font-weight: 700;
+    letter-spacing: .02em;
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+
+  .fynx-grow__title{
+    margin: 0;
+    font-size: 44px;
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+    color: rgba(255,255,255,0.94);
+    font-weight: 900;
+  }
+
+  .fynx-grow__sub{
+    margin: 14px 0 22px;
+    max-width: 54ch;
+    color: rgba(255,255,255,0.72);
+    font-size: 15.5px;
+    line-height: 1.65;
+  }
+
+  .fynx-grow__cta{
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.92);
+    text-decoration: none;
+    font-weight: 800;
+    box-shadow: 0 16px 44px rgba(0,0,0,0.35);
+    transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+  }
+
+  .fynx-grow__cta:hover{
+    transform: translateY(-1px);
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.22);
+  }
+
+  .fynx-grow__cta i{ opacity: .9; }
+
+  .fynx-grow__stack{
+    position: relative;
+    width: 100%;
+    height: 440px;
+    border-radius: 26px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    overflow: hidden;
+    box-shadow: 0 26px 70px rgba(0,0,0,0.40);
+  }
+
+  .fynx-grow__glow{
+    position: absolute;
+    inset: -40%;
+    background: radial-gradient(circle at 30% 30%, rgba(0,255,255,0.20), transparent 55%),
+                radial-gradient(circle at 70% 70%, rgba(255,0,170,0.18), transparent 55%),
+                radial-gradient(circle at 60% 30%, rgba(0,255,136,0.16), transparent 55%);
+    filter: blur(18px);
+    opacity: .55;
+    pointer-events: none;
+  }
+
+  .fynx-grow__card{
+    position: absolute;
+    width: 78%;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(0,0,0,0.45);
+    box-shadow: 0 24px 70px rgba(0,0,0,0.55);
+    transform: translateZ(0);
+    pointer-events: none; /* ✅ no hover/click */
+  }
+
+  .fynx-grow__card img{
+    width: 100%;
+    height: 220px;
+    display: block;
+    object-fit: cover;
+    filter: contrast(1.02) saturate(1.02);
+  }
+
+  .fynx-grow__meta{
+    padding: 14px 16px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+
+  .fynx-grow__label{
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.92);
+    letter-spacing: -0.01em;
+    font-size: 14px;
+  }
+
+  .fynx-grow__tag{
+    font-size: 11px;
+    font-weight: 800;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.80);
+  }
+
+  /* Positions */
+  .fynx-grow__card--markets{ top: 34px; left: 10%; transform: rotate(-2deg); }
+  .fynx-grow__card--calc{ top: 132px; left: 16%; transform: rotate(1.5deg); }
+  .fynx-grow__card--journal{ top: 230px; left: 12%; transform: rotate(-1deg); }
+
+  /* Auto-motion (smooth, premium) */
+  @keyframes fynxFloatA{
+    0%   { transform: translate3d(0,0,0) rotate(-2deg); }
+    50%  { transform: translate3d(12px,-10px,0) rotate(-1deg); }
+    100% { transform: translate3d(0,0,0) rotate(-2deg); }
+  }
+  @keyframes fynxFloatB{
+    0%   { transform: translate3d(0,0,0) rotate(1.5deg); }
+    50%  { transform: translate3d(-14px,-8px,0) rotate(2.2deg); }
+    100% { transform: translate3d(0,0,0) rotate(1.5deg); }
+  }
+  @keyframes fynxFloatC{
+    0%   { transform: translate3d(0,0,0) rotate(-1deg); }
+    50%  { transform: translate3d(10px,10px,0) rotate(-2deg); }
+    100% { transform: translate3d(0,0,0) rotate(-1deg); }
+  }
+
+  .fynx-grow__card--markets{ animation: fynxFloatA 7.8s ease-in-out infinite; }
+  .fynx-grow__card--calc{ animation: fynxFloatB 8.6s ease-in-out infinite; }
+  .fynx-grow__card--journal{ animation: fynxFloatC 9.2s ease-in-out infinite; }
+
+  /* Light mode support */
+  body:not(.dark-mode) .fynx-grow__kicker,
+  html:not(.dark-mode) .fynx-grow__kicker,
+  body:not(.dark-mode) .fynx-grow__cta,
+  html:not(.dark-mode) .fynx-grow__cta{
+    border-color: rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.70);
+    color: rgba(0,0,0,0.86);
+  }
+
+  body:not(.dark-mode) .fynx-grow__title,
+  html:not(.dark-mode) .fynx-grow__title{
+    color: rgba(0,0,0,0.92);
+  }
+
+  body:not(.dark-mode) .fynx-grow__sub,
+  html:not(.dark-mode) .fynx-grow__sub{
+    color: rgba(0,0,0,0.62);
+  }
+
+  body:not(.dark-mode) .fynx-grow__stack,
+  html:not(.dark-mode) .fynx-grow__stack{
+    border-color: rgba(0,0,0,0.10);
+    background: rgba(255,255,255,0.70);
+    box-shadow: 0 26px 70px rgba(0,0,0,0.18);
+  }
+
+  body:not(.dark-mode) .fynx-grow__card,
+  html:not(.dark-mode) .fynx-grow__card{
+    border-color: rgba(0,0,0,0.10);
+    background: rgba(255,255,255,0.82);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+  }
+
+  body:not(.dark-mode) .fynx-grow__label,
+  html:not(.dark-mode) .fynx-grow__label{
+    color: rgba(0,0,0,0.90);
+  }
+
+  body:not(.dark-mode) .fynx-grow__tag,
+  html:not(.dark-mode) .fynx-grow__tag{
+    border-color: rgba(0,0,0,0.10);
+    background: rgba(0,0,0,0.06);
+    color: rgba(0,0,0,0.72);
+  }
+
+  @media (max-width: 980px){
+    .fynx-grow__wrap{
+      grid-template-columns: 1fr;
+      gap: 22px;
+    }
+    .fynx-grow__stack{
+      height: 460px;
+    }
+    .fynx-grow__title{
+      font-size: 38px;
+    }
+  }
+
+  @media (max-width: 520px){
+    .fynx-grow{ padding: 68px 0 54px; }
+    .fynx-grow__title{ font-size: 34px; }
+    .fynx-grow__stack{ height: 470px; }
+    .fynx-grow__card{ width: 86%; }
+    .fynx-grow__card--markets{ left: 7%; }
+    .fynx-grow__card--calc{ left: 10%; }
+    .fynx-grow__card--journal{ left: 8%; }
+  }
   </style>
 </head>
 <body>
@@ -699,46 +943,69 @@
     </div>
   </section>
 
-  <!-- === REPLACED: Unique Finance Section - "FYNX Quantum Edge" (something fresh, not seen on typical finance sites) === -->
-  <section class="learning-section" id="learn">
-    <div class="learning-container">
-      <h2 class="section-title">FYNX Quantum Edge</h2>
-      <p style="text-align:center; margin-bottom:3rem; max-width:800px; margin-left:auto; margin-right:auto; opacity:0.9;">
-        Unlock proprietary tools that combine AI-driven predictions, real-time quantum-inspired volatility mapping, and adaptive risk engines — features rarely found together on any trading platform.
-      </p>
-      <div class="course-grid">
-        <div class="course-card">
-          <div class="course-image">
-            <i class="fas fa-atom" style="font-size:5rem; color:#00ffff;"></i>
-          </div>
-          <div class="course-content">
-            <span class="course-badge" style="background:#00ffff33;">QUANTUM</span>
-            <h3>Volatility Quantum Map</h3>
-            <p>Visualize multi-dimensional volatility surfaces in real-time — predict explosive moves before they happen using quantum probability models adapted for markets.</p>
-            <a href="#tools" class="btn btn-primary"><span>Activate Map</span></a>
-          </div>
+  <!-- ✅ REPLACED ONLY THIS SECTION: (Removed Quantum Edge) -->
+  <!-- ✅ NEW: Everything you need to grow in finance (with your 3 images auto-moving) -->
+  <section class="fynx-grow" id="learn">
+    <div class="fynx-grow__wrap">
+      <div class="fynx-grow__left">
+        <div class="fynx-grow__kicker">
+          <i class="fas fa-sparkles"></i>
+          <span>FYNX CORE</span>
         </div>
-        <div class="course-card">
-          <div class="course-image">
-            <i class="fas fa-brain" style="font-size:5rem; color:#ff00aa;"></i>
+
+        <h2 class="fynx-grow__title">Everything you need to grow in finance.</h2>
+        <p class="fynx-grow__sub">
+          Build your edge with markets context, precision calculators, and a real trader journal — designed for clean execution
+          and long-term skill growth.
+        </p>
+
+        <a class="fynx-grow__cta" href="#tools">
+          <i class="fas fa-bolt"></i>
+          <span>Get Best in Finance</span>
+          <i class="fas fa-arrow-right" style="opacity:.8;"></i>
+        </a>
+      </div>
+
+      <div class="fynx-grow__right" aria-hidden="true">
+        <div class="fynx-grow__stack">
+          <div class="fynx-grow__glow"></div>
+
+          <!-- MARKETS -->
+          <div class="fynx-grow__card fynx-grow__card--markets">
+            <img src="assets/img/holidays.jpg" alt="Markets">
+            <div class="fynx-grow__meta">
+              <div class="fynx-grow__label">
+                <i class="fas fa-layer-group" style="opacity:.9;"></i>
+                <span>Markets</span>
+              </div>
+              <span class="fynx-grow__tag">Live Context</span>
+            </div>
           </div>
-          <div class="course-content">
-            <span class="course-badge" style="background:#ff00aa33;">AI CORE</span>
-            <h3>Adaptive AI Sentinel</h3>
-            <p>An always-on AI that learns your trading style, suggests personalized entries/exits, and auto-adjusts risk parameters in volatile conditions — like having a quant desk in your pocket.</p>
-            <a href="auth/signup.html" class="btn btn-primary"><span>Enable Sentinel</span></a>
+
+          <!-- CALCULATORS -->
+          <div class="fynx-grow__card fynx-grow__card--calc">
+            <img src="assets/img/calculators.jpg" alt="Calculators">
+            <div class="fynx-grow__meta">
+              <div class="fynx-grow__label">
+                <i class="fas fa-calculator" style="opacity:.9;"></i>
+                <span>Calculators</span>
+              </div>
+              <span class="fynx-grow__tag">Risk Precision</span>
+            </div>
           </div>
-        </div>
-        <div class="course-card">
-          <div class="course-image">
-            <i class="fas fa-shield-halved" style="font-size:5rem; color:#00ff88;"></i>
+
+          <!-- JOURNAL -->
+          <div class="fynx-grow__card fynx-grow__card--journal">
+            <img src="assets/img/journal.jpg" alt="Trader Journal">
+            <div class="fynx-grow__meta">
+              <div class="fynx-grow__label">
+                <i class="fas fa-book" style="opacity:.9;"></i>
+                <span>Journal</span>
+              </div>
+              <span class="fynx-grow__tag">Track Growth</span>
+            </div>
           </div>
-          <div class="course-content">
-            <span class="course-badge" style="background:#00ff8833;">DEFENSE</span>
-            <h3>Fractal Risk Engine</h3>
-            <p>Fractal-based risk modeling that detects hidden correlations and black-swan setups — automatically scales positions and sets dynamic stops to protect capital in any regime.</p>
-            <a href="#tools" class="btn btn-primary"><span>Deploy Engine</span></a>
-          </div>
+
         </div>
       </div>
     </div>
