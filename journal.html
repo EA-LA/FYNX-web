@@ -1,983 +1,886 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Trader Journal — FYNX (Live)</title>
-  <meta name="description" content="Trader Journal dashboard, analytics, trade replay, streaks, and calendar." />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FYNX — Journal</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+
     :root{
-      --bg:#07080a;
-      --bg2:#0b0d11;
-      --card:#11141b;
-      --card2:#0f1218;
-      --stroke:rgba(255,255,255,.08);
-      --stroke2:rgba(255,255,255,.12);
-      --text:rgba(255,255,255,.92);
-      --muted:rgba(255,255,255,.60);
-      --muted2:rgba(255,255,255,.40);
-      --shadow: 0 18px 50px rgba(0,0,0,.55);
-      --r:18px;
-      --r2:14px;
-      --sidebar:88px;
-      --topbar:64px;
-      --good:#46e6a6;
-      --bad:#ff4d6d;
-      --warn:#f7c948;
+      --bg:#ffffff;
+      --text:#0b0b0b;
+      --muted:#7a7a7a;
+      --stroke:#eeeeee;
+      --panel:#fbfbfb;
+      --card:#ffffff;
+      --cardStroke:#ededed;
+
+      --j-bg:#07080a;
+      --j-text:rgba(255,255,255,.92);
+      --j-muted:rgba(255,255,255,.60);
+      --j-stroke:rgba(255,255,255,.10);
+      --j-card:rgba(0,0,0,.22);
+      --j-good:#46e6a6;
+      --j-bad:#ff4d6d;
     }
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
     body{
-      margin:0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: radial-gradient(1200px 900px at 20% -10%, rgba(255,255,255,.08), transparent 60%),
-                  radial-gradient(900px 700px at 90% 10%, rgba(255,255,255,.06), transparent 55%),
-                  linear-gradient(180deg, var(--bg), #05060a 55%, #040509);
+      font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);
       color:var(--text);
-      overflow-x:hidden;
+      height:100vh;
+      overflow:hidden;
     }
 
-    .bg-grid{
-      position:fixed; inset:0;
-      background-image:
-        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
-      background-size: 72px 72px;
-      opacity:.05;
-      pointer-events:none;
-      mask-image: radial-gradient(800px 500px at 50% 12%, black 10%, transparent 75%);
-    }
-    .bg-noise{
-      position:fixed; inset:0;
-      pointer-events:none;
-      opacity:.06;
-      mix-blend-mode: overlay;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
-      background-size: 260px 260px;
-    }
-    .bg-sheen{
-      position:fixed; inset:-200px -200px auto -200px;
-      height:520px;
-      background: radial-gradient(closest-side at 40% 40%, rgba(255,255,255,.11), transparent 65%);
-      filter: blur(10px);
-      pointer-events:none;
-      animation: floatSheen 9s ease-in-out infinite;
-      opacity:.6;
-    }
-    @keyframes floatSheen{
-      0%,100%{transform: translate3d(0,0,0)}
-      50%{transform: translate3d(90px,30px,0)}
+    body.dark-mode{
+      --bg:#000;
+      --text:#fff;
+      --muted:rgba(255,255,255,.55);
+      --stroke:rgba(255,255,255,.08);
+      --panel:#000;
+      --card:rgba(255,255,255,.03);
+      --cardStroke:rgba(255,255,255,.10);
     }
 
-    .app{ min-height:100vh; display:flex; }
+    .dashboard-container{display:flex;height:100vh;width:100vw}
 
-    .sidebar{
-      width:var(--sidebar);
-      position:fixed;
-      top:0; left:0; bottom:0;
-      padding:16px 12px;
-      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+    /* Sidebar */
+    .nav-panel{
+      width:104px;
+      background:var(--panel);
       border-right:1px solid var(--stroke);
-      backdrop-filter: blur(10px);
-      z-index:30;
-    }
-    .brand{
-      height:44px;
       display:flex;
-      align-items:center;
-      justify-content:center;
-      border-radius:14px;
-      background: rgba(255,255,255,.05);
-      border:1px solid var(--stroke);
-      letter-spacing:.18em;
-      font-weight:800;
-      font-size:12px;
-      color:rgba(255,255,255,.92);
-      user-select:none;
-    }
-    .nav{ margin-top:14px; display:flex; flex-direction:column; gap:10px; }
-    .navbtn{
-      height:52px;
-      border-radius:16px;
-      border:1px solid transparent;
-      background: transparent;
-      color:rgba(255,255,255,.70);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      transition: .18s ease;
-      position:relative;
-      outline:none;
-    }
-    .navbtn:hover{ background: rgba(255,255,255,.05); border-color:var(--stroke); }
-    .navbtn.active{
-      background: rgba(255,255,255,.08);
-      border-color: rgba(255,255,255,.16);
-      color: rgba(255,255,255,.92);
-      box-shadow: 0 10px 28px rgba(0,0,0,.35);
-    }
-    .navbtn span{ font-size:18px; line-height:1; transform: translateY(-1px); }
-    .navlabel{
-      position:absolute;
-      left: 78px;
-      white-space:nowrap;
-      padding:8px 10px;
-      border-radius:12px;
-      background: rgba(15,18,24,.92);
-      border:1px solid var(--stroke);
-      color: rgba(255,255,255,.86);
-      font-size:12px;
-      opacity:0;
-      transform: translateX(-6px);
-      pointer-events:none;
-      transition:.16s ease;
-    }
-    .navbtn:hover .navlabel{opacity:1; transform: translateX(0);}
-    .sidefoot{ margin-top:14px; display:flex; flex-direction:column; gap:10px; }
-
-    .main{
-      margin-left:var(--sidebar);
-      width:calc(100% - var(--sidebar));
-      min-height:100vh;
+      flex-direction:column;
+      position:fixed;
+      left:0;top:0;
+      height:100vh;
+      z-index:100;
     }
 
-    .topbar{
-      position:sticky;
-      top:0;
-      z-index:20;
-      height:var(--topbar);
-      display:flex;
-      align-items:center;
-      gap:14px;
-      padding:12px 18px;
-      background: rgba(7,8,10,.45);
-      backdrop-filter: blur(14px);
+    .nav-logo{
+      padding:26px 0;
+      text-align:center;
       border-bottom:1px solid var(--stroke);
     }
-    .title{ display:flex; flex-direction:column; line-height:1.1; }
-    .title b{font-size:14px; letter-spacing:.02em}
-    .title small{font-size:12px; color:var(--muted)}
-    .topbar .right{ margin-left:auto; display:flex; align-items:center; gap:10px; }
+    .nav-logo h1{
+      font-size:16px;
+      font-weight:800;
+      letter-spacing:.12em;
+      color:var(--text);
+      user-select:none;
+    }
+
+    .nav-menu{
+      flex:1;
+      padding:22px 0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+    }
+
+    .nav-item{
+      width:78px;
+      padding:14px 0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      cursor:pointer;
+      transition:all .18s ease;
+      position:relative;
+      border-radius:14px;
+    }
+    .nav-item:hover{background:rgba(0,0,0,.05)}
+    body.dark-mode .nav-item:hover{background:rgba(255,255,255,.05)}
+
+    .nav-item.active{background:rgba(0,0,0,.03)}
+    body.dark-mode .nav-item.active{background:rgba(255,255,255,.08)}
+
+    .nav-item.active::after{
+      content:'';
+      position:absolute;
+      left:0;
+      top:50%;
+      transform:translateY(-50%);
+      width:3px;
+      height:26px;
+      background:var(--text);
+      border-radius:0 3px 3px 0;
+    }
+
+    .nav-icon{
+      width:22px;height:22px;
+      stroke:rgba(0,0,0,.55);
+      stroke-width:1.7;
+      fill:none;
+      transition:stroke .18s ease;
+    }
+    body.dark-mode .nav-icon{stroke:rgba(255,255,255,.55)}
+    .nav-item.active .nav-icon,
+    .nav-item:hover .nav-icon{stroke:var(--text)}
+
+    .nav-label{
+      font-size:11px;
+      font-weight:600;
+      letter-spacing:.01em;
+      color:rgba(0,0,0,.48);
+      transition:color .18s ease;
+      user-select:none;
+    }
+    body.dark-mode .nav-label{color:rgba(255,255,255,.55)}
+    .nav-item.active .nav-label,
+    .nav-item:hover .nav-label{color:var(--text)}
+
+    /* Main */
+    .main-content{
+      margin-left:104px;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      height:100vh;
+      overflow:hidden;
+      background:var(--bg);
+    }
+
+    .top-bar{
+      height:64px;
+      border-bottom:1px solid var(--stroke);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 42px;
+      background:var(--bg);
+    }
+
+    .page-title{
+      font-size:14px;
+      font-weight:700;
+      color:var(--muted);
+      letter-spacing:.01em;
+    }
+
+    .top-bar-right{display:flex;align-items:center;gap:18px}
+
+    .theme-toggle{
+      width:22px;height:22px;
+      cursor:pointer;
+      opacity:.55;
+      transition:opacity .18s ease;
+    }
+    .theme-toggle:hover{opacity:1}
+    .theme-toggle svg{width:100%;height:100%;stroke:var(--text);stroke-width:1.7;fill:none}
+
+    .notification-icon{
+      width:20px;height:20px;
+      stroke:var(--text);stroke-width:1.7;fill:none;
+      opacity:.5;cursor:pointer;transition:opacity .18s ease;
+    }
+    .notification-icon:hover{opacity:1}
+
+    .user-avatar{
+      width:34px;height:34px;
+      border-radius:999px;
+      background:rgba(0,0,0,.06);
+      border:1px solid rgba(0,0,0,.08);
+      display:flex;align-items:center;justify-content:center;
+      font-size:12px;font-weight:800;color:rgba(0,0,0,.55);
+      cursor:pointer;
+      transition:transform .18s ease,border-color .18s ease;
+      user-select:none;
+    }
+    body.dark-mode .user-avatar{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      color:rgba(255,255,255,.75);
+    }
+    .user-avatar:hover{transform:scale(1.05);}
+
+    /* Content */
+    .content-area{
+      flex:1;
+      overflow-y:auto;
+      padding:26px 42px;
+      background:var(--bg);
+    }
+
+    /* Journal inner shell (Grok-style, but inside normal page) */
+    .journal-shell{
+      border:1px solid var(--cardStroke);
+      border-radius:18px;
+      background: linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.01));
+      overflow:hidden;
+    }
+    body.dark-mode .journal-shell{
+      background: radial-gradient(1200px 900px at 20% -10%, rgba(255,255,255,.08), transparent 60%),
+                  radial-gradient(900px 700px at 90% 10%, rgba(255,255,255,.06), transparent 55%),
+                  linear-gradient(180deg, var(--j-bg), #05060a 55%, #040509);
+      border-color: rgba(255,255,255,.10);
+    }
+
+    .journal-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:16px 18px;
+      border-bottom:1px solid var(--cardStroke);
+      background: rgba(255,255,255,.70);
+      backdrop-filter: blur(10px);
+    }
+    body.dark-mode .journal-top{
+      background: rgba(7,8,10,.35);
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+
+    .jt-title{
+      display:flex;
+      flex-direction:column;
+      line-height:1.1;
+    }
+    .jt-title b{font-size:14px}
+    .jt-title small{font-size:12px;color:var(--muted)}
+    body.dark-mode .jt-title b{color:var(--j-text)}
+    body.dark-mode .jt-title small{color:var(--j-muted)}
+
+    .jt-right{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
     .pill{
       display:flex;
       align-items:center;
       gap:8px;
       padding:10px 12px;
       border-radius:999px;
+      background: rgba(0,0,0,.04);
+      border:1px solid rgba(0,0,0,.08);
+      color: rgba(0,0,0,.70);
+      font-size:12px;
+    }
+    body.dark-mode .pill{
       background: rgba(255,255,255,.05);
-      border:1px solid var(--stroke);
+      border:1px solid rgba(255,255,255,.10);
       color: rgba(255,255,255,.82);
-      font-size:12px;
     }
-    .pill input{
+    .pill input, .pill select{
       border:none; outline:none;
       background: transparent;
-      color: rgba(255,255,255,.82);
+      color: inherit;
       font-size:12px;
-      width: 130px;
     }
-    .pill select{
-      border:none; outline:none;
-      background: transparent;
-      color: rgba(255,255,255,.82);
-      font-size:12px;
-      appearance:none;
-      cursor:pointer;
-    }
+    .pill input{width:120px}
     .pill button{
       border:none; outline:none;
       background: transparent;
-      color: rgba(255,255,255,.82);
+      color: inherit;
       cursor:pointer;
-      font-weight:700;
-      letter-spacing:.01em;
+      font-weight:800;
     }
 
-    .content{ padding:18px; max-width: 1400px; margin: 0 auto; }
-
-    .grid{ display:grid; gap:14px; }
-    .grid.cols-12{ grid-template-columns: repeat(12, minmax(0,1fr)); }
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border:1px solid var(--stroke);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .card .hd{
-      padding:14px 16px 10px 16px;
-      border-bottom:1px solid rgba(255,255,255,.06);
+    .journal-body{
       display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:10px;
+      min-height: 640px;
     }
-    .card .hd b{ font-size:13px; letter-spacing:.01em; }
-    .card .hd small{ color:var(--muted); font-size:12px; }
-    .card .bd{ padding:14px 16px 16px 16px; }
 
-    .stat{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      padding:14px 16px;
-      border-radius: var(--r2);
+    /* Inner Journal Nav (smaller) */
+    .jnav{
+      width: 220px;
+      border-right:1px solid var(--cardStroke);
+      padding:14px;
+      background: rgba(255,255,255,.55);
+    }
+    body.dark-mode .jnav{
       background: rgba(0,0,0,.22);
-      border:1px solid rgba(255,255,255,.07);
-    }
-    .stat small{ color:var(--muted); font-size:12px }
-    .stat b{ font-size:22px; letter-spacing:.01em }
-    .stat .delta{ font-size:12px; color: var(--muted); display:flex; align-items:center; gap:8px; }
-    .good{ color: var(--good) !important; }
-    .bad{ color: var(--bad) !important; }
-
-    .row{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      padding:10px 0;
-      border-bottom:1px dashed rgba(255,255,255,.08);
-    }
-    .row:last-child{border-bottom:none}
-    .row .l{ display:flex; flex-direction:column; gap:2px; min-width:0; }
-    .row .l b{font-size:12px; font-weight:700}
-    .row .l small{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-    .row .r{
-      font-size:12px;
-      color:rgba(255,255,255,.84);
-      display:flex; align-items:center; gap:10px;
-    }
-    .badge{
-      font-size:11px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      color: rgba(255,255,255,.80);
-      white-space:nowrap;
+      border-right:1px solid rgba(255,255,255,.10);
     }
 
-    .formgrid{ display:grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap:14px; }
-    .field{ display:flex; flex-direction:column; gap:8px; }
-    label{ font-size:12px; color: var(--muted); }
-    input[type="text"], input[type="number"], input[type="date"], textarea, select{
+    .jbtn{
       width:100%;
-      padding:12px 12px;
-      border-radius: 14px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.22);
-      color: rgba(255,255,255,.90);
-      outline:none;
-    }
-    textarea{ min-height: 110px; resize: vertical; }
-    .seg{
       display:flex;
-      gap:8px;
-      padding:6px;
-      border-radius: 16px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.22);
-    }
-    .seg button{
-      flex:1;
-      padding:10px 10px;
-      border-radius: 12px;
+      align-items:center;
+      gap:10px;
+      padding:12px 12px;
+      border-radius:14px;
       border:1px solid transparent;
       background: transparent;
-      color: rgba(255,255,255,.75);
       cursor:pointer;
-      font-weight:700;
-      font-size:12px;
       transition:.16s ease;
+      color: rgba(0,0,0,.72);
+      font-weight:800;
+      font-size:12px;
+      text-align:left;
     }
-    .seg button.active{
+    body.dark-mode .jbtn{ color: rgba(255,255,255,.78); }
+    .jbtn:hover{ background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.08); }
+    body.dark-mode .jbtn:hover{ background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); }
+
+    .jbtn.active{
+      background: rgba(0,0,0,.06);
+      border-color: rgba(0,0,0,.12);
+      color: rgba(0,0,0,.88);
+    }
+    body.dark-mode .jbtn.active{
       background: rgba(255,255,255,.08);
       border-color: rgba(255,255,255,.16);
       color: rgba(255,255,255,.92);
     }
-    .chips{ display:flex; flex-wrap:wrap; gap:8px; }
-    .chip{
-      padding:8px 10px;
-      border-radius: 999px;
+
+    .jico{width:18px;height:18px;stroke:currentColor;stroke-width:1.8;fill:none;opacity:.9}
+
+    .jcontent{
+      flex:1;
+      padding:16px 16px 18px 16px;
+    }
+
+    .grid{display:grid;gap:14px}
+    .grid.cols-12{grid-template-columns:repeat(12,minmax(0,1fr))}
+    .card{
+      background: var(--card);
+      border:1px solid var(--cardStroke);
+      border-radius:18px;
+      overflow:hidden;
+    }
+    body.dark-mode .card{
+      background: rgba(0,0,0,.22);
+      border-color: rgba(255,255,255,.10);
+    }
+    .hd{
+      padding:14px 16px 10px 16px;
+      border-bottom:1px solid rgba(0,0,0,.06);
+      display:flex;align-items:flex-end;justify-content:space-between;gap:10px
+    }
+    body.dark-mode .hd{border-bottom:1px solid rgba(255,255,255,.08)}
+    .hd b{font-size:13px}
+    .hd small{font-size:12px;color:var(--muted)}
+    body.dark-mode .hd b{color:var(--j-text)}
+    body.dark-mode .hd small{color:var(--j-muted)}
+    .bd{padding:14px 16px 16px 16px}
+
+    .stat{
+      padding:14px 16px;
+      border-radius:14px;
+      border:1px solid rgba(0,0,0,.06);
+      background: rgba(0,0,0,.02);
+      display:flex;flex-direction:column;gap:6px
+    }
+    body.dark-mode .stat{
+      border-color: rgba(255,255,255,.08);
+      background: rgba(0,0,0,.18);
+    }
+    .stat small{font-size:12px;color:var(--muted)}
+    .stat b{font-size:22px}
+    body.dark-mode .stat small{color:var(--j-muted)}
+    body.dark-mode .stat b{color:var(--j-text)}
+    .good{color:var(--j-good)!important}
+    .bad{color:var(--j-bad)!important}
+
+    .row{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:10px;padding:10px 0;border-bottom:1px dashed rgba(0,0,0,.10)
+    }
+    body.dark-mode .row{border-bottom:1px dashed rgba(255,255,255,.10)}
+    .row:last-child{border-bottom:none}
+    .row .l{display:flex;flex-direction:column;gap:2px;min-width:0}
+    .row .l b{font-size:12px}
+    .row .l small{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    body.dark-mode .row .l b{color:rgba(255,255,255,.90)}
+    body.dark-mode .row .l small{color:rgba(255,255,255,.60)}
+    .badge{
+      font-size:11px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,.10);
+      background: rgba(0,0,0,.03);
+      color: rgba(0,0,0,.70);
+      white-space:nowrap;
+    }
+    body.dark-mode .badge{
       border:1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.04);
       color: rgba(255,255,255,.82);
-      font-size:12px;
-      cursor:pointer;
-      user-select:none;
-      transition:.14s ease;
     }
-    .chip.on{ background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.20); }
-    .actions{ display:flex; gap:10px; flex-wrap:wrap; }
+
+    /* form */
+    label{font-size:12px;color:var(--muted)}
+    body.dark-mode label{color:rgba(255,255,255,.60)}
+    input[type="text"], input[type="number"], input[type="date"], textarea, select{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(0,0,0,.10);
+      background: rgba(0,0,0,.03);
+      color: rgba(0,0,0,.88);
+      outline:none;
+    }
+    body.dark-mode input, body.dark-mode textarea, body.dark-mode select{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+      color: rgba(255,255,255,.90);
+    }
+    textarea{min-height:110px;resize:vertical}
+
     .btn{
       padding:12px 14px;
       border-radius: 14px;
+      border:1px solid rgba(0,0,0,.12);
+      background: rgba(0,0,0,.04);
+      color: rgba(0,0,0,.85);
+      cursor:pointer;
+      font-weight:900;
+      font-size:12px;
+      transition:.16s ease;
+    }
+    body.dark-mode .btn{
       border:1px solid rgba(255,255,255,.14);
       background: rgba(255,255,255,.06);
       color: rgba(255,255,255,.90);
-      cursor:pointer;
-      font-weight:800;
-      font-size:12px;
-      letter-spacing:.01em;
-      transition:.16s ease;
     }
-    .btn:hover{ background: rgba(255,255,255,.10); }
-    .btn.ghost{ background: transparent; border-color: rgba(255,255,255,.12); color: rgba(255,255,255,.82); }
-    .btn.danger{ border-color: rgba(255,77,109,.35); background: rgba(255,77,109,.10); }
+    .btn:hover{background: rgba(0,0,0,.06)}
+    body.dark-mode .btn:hover{background: rgba(255,255,255,.10)}
+    .btn.ghost{background:transparent}
 
-    .heat{ display:grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap:10px; }
-    .day{
-      height:54px;
-      border-radius: 14px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      padding:10px;
-      position:relative;
-      overflow:hidden;
-    }
-    .day small{ color: rgba(255,255,255,.55); font-size:11px; }
-    .day b{ font-size:12px; }
-    .day.pos{ background: rgba(70,230,166,.10); border-color: rgba(70,230,166,.22); }
-    .day.neg{ background: rgba(255,77,109,.10); border-color: rgba(255,77,109,.22); }
-    .legend{
-      display:flex; gap:10px; flex-wrap:wrap;
+    .note{
+      font-size:12px;
       color: var(--muted);
-      font-size:12px;
-      align-items:center;
+      margin-top:10px;
     }
-    .dot{width:10px; height:10px; border-radius:999px; display:inline-block; border:1px solid rgba(255,255,255,.14)}
-    .dot.pos{ background: rgba(70,230,166,.30); border-color: rgba(70,230,166,.35); }
-    .dot.neg{ background: rgba(255,77,109,.30); border-color: rgba(255,77,109,.35); }
-    .dot.neu{ background: rgba(255,255,255,.10); }
+    body.dark-mode .note{color: rgba(255,255,255,.55)}
 
-    section.view{ display:none; }
-    section.view.active{ display:block; }
+    section.view{display:none}
+    section.view.active{display:block}
 
     @media (max-width: 980px){
-      .grid.cols-12{ grid-template-columns: repeat(6, minmax(0,1fr)); }
-      .main{ width:100%; }
+      .jnav{width: 190px}
+      .grid.cols-12{grid-template-columns:repeat(6,minmax(0,1fr))}
     }
-    @media (max-width: 760px){
-      :root{ --sidebar: 72px; }
-      .topbar .title small{display:none}
-      .pill input{ width: 90px; }
-      .grid.cols-12{ grid-template-columns: repeat(1, minmax(0,1fr)); }
-      .content{ padding:14px; }
+    @media (max-width: 820px){
+      .top-bar{padding:0 18px}
+      .content-area{padding:18px}
+      .journal-body{flex-direction:column}
+      .jnav{width:100%;display:flex;gap:10px;overflow:auto;border-right:none;border-bottom:1px solid var(--cardStroke)}
+      body.dark-mode .jnav{border-bottom:1px solid rgba(255,255,255,.10)}
+      .jbtn{min-width: 210px}
     }
   </style>
 </head>
 
 <body>
-  <div class="bg-sheen"></div>
-  <div class="bg-grid"></div>
-  <div class="bg-noise"></div>
+  <div class="dashboard-container">
+    <!-- Outer Sidebar -->
+    <nav class="nav-panel">
+      <div class="nav-logo"><h1>FYNX</h1></div>
 
-  <div class="app">
-    <!-- Sidebar -->
-    <aside class="sidebar" aria-label="Trader Journal Navigation">
-      <div class="brand">FYNX</div>
+      <div class="nav-menu">
+        <div class="nav-item" data-view="home">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span class="nav-label">Home</span>
+        </div>
 
-      <div class="nav">
-        <button class="navbtn active" data-view="dash" aria-label="Dashboard">
-          <span>▦</span><div class="navlabel">Dashboard</div>
-        </button>
-        <button class="navbtn" data-view="entry" aria-label="New Trade Entry">
-          <span>＋</span><div class="navlabel">New Trade Entry</div>
-        </button>
-        <button class="navbtn" data-view="analytics" aria-label="Performance Analytics">
-          <span>⟐</span><div class="navlabel">Performance Analytics</div>
-        </button>
-        <button class="navbtn" data-view="replay" aria-label="Trade Replay">
-          <span>▶</span><div class="navlabel">Trade Replay</div>
-        </button>
-        <button class="navbtn" data-view="streaks" aria-label="Streaks & Discipline">
-          <span>⚡</span><div class="navlabel">Streaks & Discipline</div>
-        </button>
-        <button class="navbtn" data-view="calendar" aria-label="Trading Calendar">
-          <span>▣</span><div class="navlabel">Trading Calendar</div>
-        </button>
+        <div class="nav-item active" data-view="journal">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <span class="nav-label">Journal</span>
+        </div>
+
+        <div class="nav-item" data-view="calculator">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+            <line x1="8" y1="6" x2="16" y2="6"></line>
+            <line x1="8" y1="10" x2="16" y2="10"></line>
+            <line x1="8" y1="14" x2="16" y2="14"></line>
+            <line x1="8" y1="18" x2="16" y2="18"></line>
+          </svg>
+          <span class="nav-label">Calculator</span>
+        </div>
+
+        <div class="nav-item" data-view="news">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+            <line x1="12" y1="11" x2="18" y2="11"></line>
+            <line x1="12" y1="7" x2="18" y2="7"></line>
+          </svg>
+          <span class="nav-label">News</span>
+        </div>
+
+        <div class="nav-item" data-view="calendar">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span class="nav-label">Calendar</span>
+        </div>
+
+        <div class="nav-item" data-view="profile">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span class="nav-label">Profile</span>
+        </div>
       </div>
-
-      <div class="sidefoot">
-        <button class="navbtn" id="exportBtn" aria-label="Export JSON">
-          <span>⇩</span><div class="navlabel">Export</div>
-        </button>
-        <a class="navbtn" href="dashboard.html" aria-label="Back to Dashboard" style="text-decoration:none;">
-          <span>←</span><div class="navlabel">Back</div>
-        </a>
-      </div>
-    </aside>
+    </nav>
 
     <!-- Main -->
-    <main class="main">
-      <div class="topbar">
-        <div class="title">
-          <b>Trader Journal</b>
-          <small>Black & white Grok-style journal UI</small>
-        </div>
+    <main class="main-content">
+      <div class="top-bar">
+        <h1 class="page-title">Journal</h1>
 
-        <div class="right">
-          <div class="pill" title="Date range (visual only)">
-            <span style="opacity:.85;">🗓</span>
-            <input type="text" value="Last 30 days" aria-label="Date range" />
+        <div class="top-bar-right">
+          <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
           </div>
-          <div class="pill" title="Account">
-            <span style="opacity:.85;">◎</span>
-            <select aria-label="Account">
-              <option>Live</option>
-              <option>Demo</option>
-              <option>Prop</option>
-            </select>
-          </div>
-          <div class="pill">
-            <button id="quickAddBtn" type="button">Quick Add</button>
-          </div>
+
+          <svg class="notification-icon" viewBox="0 0 24 24" title="Notifications">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+
+          <div class="user-avatar" id="avatar" title="Profile">FX</div>
         </div>
       </div>
 
-      <div class="content">
+      <div class="content-area">
+        <div class="journal-shell">
+          <div class="journal-top">
+            <div class="jt-title">
+              <b>Trader Journal</b>
+              <small id="modeText">Guest mode (view only) — login to save</small>
+            </div>
 
-        <!-- DASHBOARD -->
-        <section class="view active" id="view-dash">
-          <div class="grid cols-12">
-            <div class="card" style="grid-column: span 12;">
-              <div class="hd">
-                <div>
-                  <b>Welcome back, Trader</b>
-                  <small id="dashSub">Here’s your performance snapshot</small>
-                </div>
-                <div class="badge">Journal v1</div>
+            <div class="jt-right">
+              <div class="pill" title="Date range (visual only)">
+                <span style="opacity:.85;">🗓</span>
+                <input type="text" value="Last 30 days" aria-label="Date range" />
               </div>
-
-              <div class="bd">
-                <div class="grid cols-12">
-                  <div class="stat" style="grid-column: span 3;">
-                    <small>Total Trades</small>
-                    <b id="kpiTrades">0</b>
-                    <div class="delta"><span class="badge" id="kpiTradesDelta">—</span> vs last period</div>
-                  </div>
-
-                  <div class="stat" style="grid-column: span 3;">
-                    <small>Win Rate</small>
-                    <b id="kpiWin">0.0%</b>
-                    <div class="delta"><span class="badge" id="kpiWinDelta">—</span> improvement</div>
-                  </div>
-
-                  <div class="stat" style="grid-column: span 3;">
-                    <small>Total P/L</small>
-                    <b id="kpiPL">+$0</b>
-                    <div class="delta"><span class="badge" id="kpiPLDelta">—</span> realized</div>
-                  </div>
-
-                  <div class="stat" style="grid-column: span 3;">
-                    <small>Daily Streak</small>
-                    <b id="kpiStreak">0</b>
-                    <div class="delta"><span class="badge">days</span> logged</div>
-                  </div>
-
-                  <div class="card" style="grid-column: span 8;">
-                    <div class="hd">
-                      <b>Equity Curve</b>
-                      <small>Net P/L over time</small>
-                    </div>
-                    <div class="bd">
-                      <canvas id="equityChart" height="120"></canvas>
-                    </div>
-                  </div>
-
-                  <div class="card" style="grid-column: span 4;">
-                    <div class="hd">
-                      <b>Session Performance</b>
-                      <small>Where you win</small>
-                    </div>
-                    <div class="bd" id="sessionList"></div>
-                  </div>
-
-                  <div class="card" style="grid-column: span 6;">
-                    <div class="hd">
-                      <b>Top Winning Setup</b>
-                      <small>Keep repeating what works</small>
-                    </div>
-                    <div class="bd" id="topSetupList"></div>
-                  </div>
-
-                  <div class="card" style="grid-column: span 6;">
-                    <div class="hd">
-                      <b>Biggest Mistake Pattern</b>
-                      <small>What to eliminate</small>
-                    </div>
-                    <div class="bd" id="mistakePatternList"></div>
-                  </div>
-
-                </div>
+              <div class="pill" title="Account">
+                <span style="opacity:.85;">◎</span>
+                <select aria-label="Account">
+                  <option>Live</option>
+                  <option>Demo</option>
+                  <option>Prop</option>
+                </select>
+              </div>
+              <div class="pill">
+                <button id="quickAddBtn" type="button">Quick Add</button>
               </div>
             </div>
           </div>
-        </section>
 
-        <!-- NEW TRADE ENTRY -->
-        <section class="view" id="view-entry">
-          <div class="grid cols-12">
-            <div class="card" style="grid-column: span 12;">
-              <div class="hd">
-                <div>
-                  <b>New Trade Entry</b>
-                  <small>Log the trade the same day. Keep it clean.</small>
-                </div>
-                <div class="actions">
-                  <button class="btn ghost" id="resetFormBtn" type="button">Reset</button>
-                  <button class="btn" id="saveTradeBtn" type="button">Save Trade</button>
-                </div>
+          <div class="journal-body">
+            <!-- Inner Journal Nav -->
+            <aside class="jnav" aria-label="Journal Navigation">
+              <button class="jbtn active" data-view="dash">
+                <svg class="jico" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"></rect><rect x="13" y="3" width="8" height="8" rx="2"></rect><rect x="3" y="13" width="8" height="8" rx="2"></rect><rect x="13" y="13" width="8" height="8" rx="2"></rect></svg>
+                Dashboard
+              </button>
+
+              <button class="jbtn" data-view="entry">
+                <svg class="jico" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+                New Trade Entry
+              </button>
+
+              <button class="jbtn" data-view="analytics">
+                <svg class="jico" viewBox="0 0 24 24"><path d="M4 19V5"></path><path d="M4 19h16"></path><path d="M8 15v-5"></path><path d="M12 19v-9"></path><path d="M16 19v-12"></path></svg>
+                Performance Analytics
+              </button>
+
+              <button class="jbtn" data-view="replay">
+                <svg class="jico" viewBox="0 0 24 24"><path d="M8 5v14l12-7-12-7z"></path></svg>
+                Trade Replay
+              </button>
+
+              <button class="jbtn" data-view="streaks">
+                <svg class="jico" viewBox="0 0 24 24"><path d="M13 2L3 14h7l-1 8 12-14h-7l-1-6z"></path></svg>
+                Streaks & Discipline
+              </button>
+
+              <button class="jbtn" data-view="calendar">
+                <svg class="jico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></svg>
+                Trading Calendar
+              </button>
+
+              <div class="note">
+                Export removed (it was just a JSON backup download).
               </div>
+            </aside>
 
-              <div class="bd">
-                <div class="formgrid">
-                  <div style="grid-column: span 8;">
-                    <div class="grid" style="grid-template-columns: repeat(12, minmax(0,1fr)); gap:14px;">
-                      <div class="field" style="grid-column: span 6;">
-                        <label>Symbol</label>
-                        <input id="fSymbol" type="text" placeholder="EURUSD / XAUUSD / BTCUSD" />
+            <!-- Inner Content -->
+            <div class="jcontent">
+              <!-- DASH -->
+              <section class="view active" id="view-dash">
+                <div class="grid cols-12">
+                  <div class="card" style="grid-column: span 12;">
+                    <div class="hd">
+                      <div>
+                        <b>Welcome back, Trader</b>
+                        <small>Here’s your performance snapshot</small>
                       </div>
-
-                      <div class="field" style="grid-column: span 6;">
-                        <label>Date</label>
-                        <input id="fDate" type="date" />
-                      </div>
-
-                      <div class="field" style="grid-column: span 12;">
-                        <label>Direction</label>
-                        <div class="seg" role="group" aria-label="Direction">
-                          <button type="button" class="active" data-dir="Long">Long</button>
-                          <button type="button" data-dir="Short">Short</button>
-                        </div>
-                      </div>
-
-                      <div class="field" style="grid-column: span 4;">
-                        <label>Entry</label>
-                        <input id="fEntry" type="number" step="0.00001" placeholder="0.00000" />
-                      </div>
-                      <div class="field" style="grid-column: span 4;">
-                        <label>Stop Loss</label>
-                        <input id="fSL" type="number" step="0.00001" placeholder="0.00000" />
-                      </div>
-                      <div class="field" style="grid-column: span 4;">
-                        <label>Take Profit</label>
-                        <input id="fTP" type="number" step="0.00001" placeholder="0.00000" />
-                      </div>
-
-                      <div class="field" style="grid-column: span 6;">
-                        <label>Setup</label>
-                        <select id="fSetup">
-                          <option>Break & Retest</option>
-                          <option>Liquidity Sweep</option>
-                          <option>Trend Pullback</option>
-                          <option>Range Fade</option>
-                          <option>News / Catalyst</option>
-                        </select>
-                      </div>
-
-                      <div class="field" style="grid-column: span 6;">
-                        <label>Session</label>
-                        <select id="fSession">
-                          <option>London</option>
-                          <option>New York</option>
-                          <option>Asia</option>
-                          <option>Overlap</option>
-                        </select>
-                      </div>
-
-                      <div class="field" style="grid-column: span 12;">
-                        <label>Reasons / Checklist</label>
-                        <div class="chips" id="reasonChips">
-                          <div class="chip">HTF Bias</div>
-                          <div class="chip">Liquidity</div>
-                          <div class="chip">BOS</div>
-                          <div class="chip">Pullback</div>
-                          <div class="chip">Clean R:R</div>
-                          <div class="chip">No News Risk</div>
-                          <div class="chip">Asia Liquidity Taken</div>
-                          <div class="chip">Time Window</div>
-                        </div>
-                      </div>
-
-                      <div class="field" style="grid-column: span 12;">
-                        <label>Emotion Tags</label>
-                        <div class="chips" id="emotionChips">
-                          <div class="chip">Calm</div>
-                          <div class="chip">Confident</div>
-                          <div class="chip">FOMO</div>
-                          <div class="chip">Revenge</div>
-                          <div class="chip">Hesitant</div>
-                          <div class="chip">Overconfident</div>
-                        </div>
-                      </div>
-
-                      <div class="field" style="grid-column: span 12;">
-                        <label>Notes</label>
-                        <textarea id="fNotes" placeholder="What was the plan? What did you execute? What would you do differently?"></textarea>
-                      </div>
+                      <div class="badge">Journal v1</div>
                     </div>
-                  </div>
 
-                  <div style="grid-column: span 4;">
-                    <div class="card" style="background: rgba(0,0,0,.18); box-shadow:none;">
-                      <div class="hd">
-                        <b>Quick Stats</b>
-                        <small>Auto from entry/SL/TP</small>
-                      </div>
-                      <div class="bd">
-                        <div class="row">
-                          <div class="l"><b>Risk (pips/pts)</b><small>Distance to SL</small></div>
-                          <div class="r"><span class="badge" id="qRisk">—</span></div>
-                        </div>
-                        <div class="row">
-                          <div class="l"><b>Reward</b><small>Distance to TP</small></div>
-                          <div class="r"><span class="badge" id="qReward">—</span></div>
-                        </div>
-                        <div class="row">
-                          <div class="l"><b>R:R</b><small>Reward / Risk</small></div>
-                          <div class="r"><span class="badge" id="qRR">—</span></div>
-                        </div>
-                        <div class="row">
-                          <div class="l"><b>Confidence</b><small>Slider</small></div>
-                          <div class="r"><span class="badge" id="qConf">70%</span></div>
-                        </div>
-
-                        <div class="field" style="margin-top:12px;">
-                          <label>Confidence</label>
-                          <input id="fConf" type="range" min="0" max="100" value="70" />
-                        </div>
-
-                        <div class="field" style="margin-top:12px;">
-                          <label>Upload Screenshot</label>
-                          <input id="fShot" type="file" accept="image/*" />
-                          <div id="shotPreview" style="margin-top:10px; border-radius:14px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.20); overflow:hidden; display:none;">
-                            <img id="shotImg" alt="Screenshot preview" style="width:100%; display:block;" />
+                    <div class="bd">
+                      <div class="grid cols-12">
+                        <div class="stat" style="grid-column: span 3;">
+                          <small>Total Trades</small>
+                          <b id="kpiTrades">0</b>
+                          <div class="row" style="border-bottom:none;padding:8px 0 0 0;">
+                            <div class="l"><small>vs last period</small></div>
+                            <div class="r"><span class="badge" id="kpiTradesDelta">—</span></div>
                           </div>
                         </div>
 
-                        <div class="actions" style="margin-top:12px;">
-                          <button class="btn ghost" id="goReplayBtn" type="button">Open Replay</button>
-                          <button class="btn danger" id="deleteLastBtn" type="button">Delete Last</button>
+                        <div class="stat" style="grid-column: span 3;">
+                          <small>Win Rate</small>
+                          <b id="kpiWin">0.0%</b>
+                          <div class="row" style="border-bottom:none;padding:8px 0 0 0;">
+                            <div class="l"><small>improvement</small></div>
+                            <div class="r"><span class="badge" id="kpiWinDelta">—</span></div>
+                          </div>
+                        </div>
+
+                        <div class="stat" style="grid-column: span 3;">
+                          <small>Total P/L</small>
+                          <b id="kpiPL">+$0</b>
+                          <div class="row" style="border-bottom:none;padding:8px 0 0 0;">
+                            <div class="l"><small>realized</small></div>
+                            <div class="r"><span class="badge" id="kpiPLDelta">—</span></div>
+                          </div>
+                        </div>
+
+                        <div class="stat" style="grid-column: span 3;">
+                          <small>Daily Streak</small>
+                          <b id="kpiStreak">0</b>
+                          <div class="row" style="border-bottom:none;padding:8px 0 0 0;">
+                            <div class="l"><small>days logged</small></div>
+                            <div class="r"><span class="badge">days</span></div>
+                          </div>
+                        </div>
+
+                        <div class="card" style="grid-column: span 8;">
+                          <div class="hd">
+                            <b>Equity Curve</b>
+                            <small>Net P/L over time</small>
+                          </div>
+                          <div class="bd">
+                            <canvas id="equityChart" height="120"></canvas>
+                          </div>
+                        </div>
+
+                        <div class="card" style="grid-column: span 4;">
+                          <div class="hd">
+                            <b>Session Performance</b>
+                            <small>Where you win</small>
+                          </div>
+                          <div class="bd" id="sessionList"></div>
                         </div>
 
                       </div>
                     </div>
                   </div>
-
                 </div>
-              </div>
-            </div>
-          </div>
-        </section>
+              </section>
 
-        <!-- ANALYTICS -->
-        <section class="view" id="view-analytics">
-          <div class="grid cols-12">
-            <div class="card" style="grid-column: span 12;">
-              <div class="hd">
-                <div>
-                  <b>Performance Analytics</b>
-                  <small>Trend, sessions, setups, and mistakes</small>
-                </div>
-                <div class="badge" id="tradeCountBadge">Trades: 0</div>
-              </div>
-
-              <div class="bd">
-                <div class="grid cols-12">
-                  <div class="stat" style="grid-column: span 3;">
-                    <small>Avg Win</small>
-                    <b id="aWin" class="good">+$0</b>
-                    <div class="delta"><span class="badge">per trade</span></div>
-                  </div>
-                  <div class="stat" style="grid-column: span 3;">
-                    <small>Avg Loss</small>
-                    <b id="aLoss" class="bad">-$0</b>
-                    <div class="delta"><span class="badge">per trade</span></div>
-                  </div>
-                  <div class="stat" style="grid-column: span 3;">
-                    <small>Expectancy</small>
-                    <b id="aExp">+$0</b>
-                    <div class="delta"><span class="badge">estimated</span></div>
-                  </div>
-                  <div class="stat" style="grid-column: span 3;">
-                    <small>Quality Score</small>
-                    <b id="aQual">—</b>
-                    <div class="delta"><span class="badge">rules adherence</span></div>
-                  </div>
-
-                  <div class="card" style="grid-column: span 8;">
-                    <div class="hd">
-                      <b>Win Rate Trend</b>
-                      <small>Rolling performance</small>
+              <!-- ENTRY -->
+              <section class="view" id="view-entry">
+                <div class="card">
+                  <div class="hd">
+                    <div>
+                      <b>New Trade Entry</b>
+                      <small>Log the trade the same day. Keep it clean.</small>
                     </div>
-                    <div class="bd">
-                      <canvas id="winTrendChart" height="120"></canvas>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                      <button class="btn ghost" id="resetFormBtn" type="button">Reset</button>
+                      <button class="btn" id="saveTradeBtn" type="button">Save Trade</button>
                     </div>
                   </div>
+                  <div class="bd">
+                    <div class="grid" style="grid-template-columns: repeat(12, minmax(0,1fr)); gap:14px;">
+                      <div style="grid-column: span 6;">
+                        <label>Symbol</label>
+                        <input id="fSymbol" type="text" placeholder="EURUSD / XAUUSD / BTCUSD" />
+                      </div>
+                      <div style="grid-column: span 6;">
+                        <label>Date</label>
+                        <input id="fDate" type="date" />
+                      </div>
+                      <div style="grid-column: span 4;">
+                        <label>Entry</label>
+                        <input id="fEntry" type="number" step="0.00001" placeholder="0.00000" />
+                      </div>
+                      <div style="grid-column: span 4;">
+                        <label>Stop Loss</label>
+                        <input id="fSL" type="number" step="0.00001" placeholder="0.00000" />
+                      </div>
+                      <div style="grid-column: span 4;">
+                        <label>Take Profit</label>
+                        <input id="fTP" type="number" step="0.00001" placeholder="0.00000" />
+                      </div>
+                      <div style="grid-column: span 12;">
+                        <label>Notes</label>
+                        <textarea id="fNotes" placeholder="Plan, execution, mistakes, next improvement..."></textarea>
+                      </div>
 
-                  <div class="card" style="grid-column: span 4;">
-                    <div class="hd">
-                      <b>P/L by Session</b>
-                      <small>Where money is made</small>
-                    </div>
-                    <div class="bd">
-                      <canvas id="sessionPLChart" height="170"></canvas>
-                    </div>
-                  </div>
+                      <div style="grid-column: span 12; display:flex; gap:10px; flex-wrap:wrap;">
+                        <span class="badge" id="qRR">R:R —</span>
+                        <span class="badge" id="qRisk">Risk —</span>
+                        <span class="badge" id="qReward">Reward —</span>
+                      </div>
 
-                  <div class="card" style="grid-column: span 6;">
-                    <div class="hd">
-                      <b>Setup Performance</b>
-                      <small>Top setups by net P/L</small>
-                    </div>
-                    <div class="bd" id="setupTable"></div>
-                  </div>
-
-                  <div class="card" style="grid-column: span 6;">
-                    <div class="hd">
-                      <b>Mistake Tracker</b>
-                      <small>Most frequent rule breaks</small>
-                    </div>
-                    <div class="bd" id="mistakeList"></div>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- REPLAY -->
-        <section class="view" id="view-replay">
-          <div class="grid cols-12">
-            <div class="card" style="grid-column: span 12;">
-              <div class="hd">
-                <div>
-                  <b>Trade Replay</b>
-                  <small>Review the last saved trade</small>
-                </div>
-                <div class="actions">
-                  <button class="btn ghost" id="prevTradeBtn" type="button">Previous</button>
-                  <button class="btn ghost" id="nextTradeBtn" type="button">Next</button>
-                </div>
-              </div>
-              <div class="bd">
-                <div class="grid cols-12">
-                  <div class="card" style="grid-column: span 8; background: rgba(0,0,0,.18); box-shadow:none;">
-                    <div class="hd">
-                      <b>Chart Snapshot</b>
-                      <small>Screenshot or placeholder</small>
-                    </div>
-                    <div class="bd">
-                      <div id="replayShotBox" style="border-radius:16px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.22); overflow:hidden; min-height:240px; display:flex; align-items:center; justify-content:center;">
-                        <div style="text-align:center; color:rgba(255,255,255,.55); font-size:12px; padding:18px;">
-                          No screenshot saved for this trade.
-                        </div>
+                      <div class="note" id="loginNote" style="grid-column: span 12; display:none;">
+                        You’re in guest mode. To save trades, you must login. Redirecting to login when you click “Save”.
                       </div>
                     </div>
                   </div>
+                </div>
+              </section>
 
-                  <div class="card" style="grid-column: span 4; background: rgba(0,0,0,.18); box-shadow:none;">
-                    <div class="hd">
-                      <b>Trade Summary</b>
-                      <small>Key details</small>
+              <!-- ANALYTICS -->
+              <section class="view" id="view-analytics">
+                <div class="card">
+                  <div class="hd">
+                    <div>
+                      <b>Performance Analytics</b>
+                      <small>Win trend + session P/L</small>
                     </div>
-                    <div class="bd" id="replaySummary"></div>
+                    <div class="badge" id="tradeCountBadge">Trades: 0</div>
                   </div>
-
-                  <div class="card" style="grid-column: span 12; background: rgba(0,0,0,.18); box-shadow:none;">
-                    <div class="hd">
-                      <b>Replay Notes</b>
-                      <small>What happened vs plan</small>
-                    </div>
-                    <div class="bd">
-                      <textarea id="replayNotes" placeholder="Write the replay review here..."></textarea>
-                      <div class="actions" style="margin-top:10px;">
-                        <button class="btn" id="saveReplayNotesBtn" type="button">Save Replay Notes</button>
+                  <div class="bd">
+                    <div class="grid cols-12">
+                      <div class="card" style="grid-column: span 8;">
+                        <div class="hd"><b>Win Rate Trend</b><small>Rolling performance</small></div>
+                        <div class="bd"><canvas id="winTrendChart" height="120"></canvas></div>
+                      </div>
+                      <div class="card" style="grid-column: span 4;">
+                        <div class="hd"><b>P/L by Session</b><small>Where money is made</small></div>
+                        <div class="bd"><canvas id="sessionPLChart" height="170"></canvas></div>
                       </div>
                     </div>
                   </div>
-
                 </div>
-              </div>
-            </div>
-          </div>
-        </section>
+              </section>
 
-        <!-- STREAKS -->
-        <section class="view" id="view-streaks">
-          <div class="grid cols-12">
-            <div class="card" style="grid-column: span 12;">
-              <div class="hd">
-                <div>
-                  <b>Streaks & Discipline</b>
-                  <small>Consistency beats intensity</small>
+              <!-- REPLAY -->
+              <section class="view" id="view-replay">
+                <div class="card">
+                  <div class="hd">
+                    <div>
+                      <b>Trade Replay</b>
+                      <small>Review the last saved trade</small>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                      <button class="btn ghost" id="prevTradeBtn" type="button">Previous</button>
+                      <button class="btn ghost" id="nextTradeBtn" type="button">Next</button>
+                    </div>
+                  </div>
+                  <div class="bd" id="replaySummary"></div>
                 </div>
-                <div class="badge">30-day view</div>
-              </div>
-              <div class="bd">
-                <div class="grid cols-12">
-                  <div class="stat" style="grid-column: span 3;">
-                    <small>Streak</small>
-                    <b id="sStreak">0 Days</b>
-                    <div class="delta"><span class="badge">current</span></div>
-                  </div>
-                  <div class="stat" style="grid-column: span 3;">
-                    <small>Rules Followed</small>
-                    <b id="sRules">0%</b>
-                    <div class="delta"><span class="badge">avg</span></div>
-                  </div>
-                  <div class="stat" style="grid-column: span 3;">
-                    <small>Emotional Control</small>
-                    <b id="sEmotion">0/100</b>
-                    <div class="delta"><span class="badge">score</span></div>
-                  </div>
-                  <div class="stat" style="grid-column: span 3;">
-                    <small>Consistency</small>
-                    <b id="sCons">0/30</b>
-                    <div class="delta"><span class="badge">days logged</span></div>
-                  </div>
+              </section>
 
-                  <div class="card" style="grid-column: span 8;">
-                    <div class="hd">
-                      <b>Emotional Control Trend</b>
-                      <small>Keep it stable</small>
-                    </div>
-                    <div class="bd">
-                      <canvas id="emotionChart" height="120"></canvas>
-                    </div>
+              <!-- STREAKS -->
+              <section class="view" id="view-streaks">
+                <div class="card">
+                  <div class="hd">
+                    <div><b>Streaks & Discipline</b><small>Consistency beats intensity</small></div>
+                    <div class="badge" id="sBadge">—</div>
                   </div>
-
-                  <div class="card" style="grid-column: span 4;">
-                    <div class="hd">
-                      <b>Discipline Profile</b>
-                      <small>Radar</small>
-                    </div>
-                    <div class="bd">
-                      <canvas id="disciplineChart" height="190"></canvas>
-                    </div>
-                  </div>
-
-                  <div class="card" style="grid-column: span 12;">
-                    <div class="hd">
-                      <b>30-Day Consistency</b>
-                      <small>Green = logged day</small>
-                    </div>
-                    <div class="bd">
-                      <div class="heat" id="consistencyHeat"></div>
-                      <div style="height:10px"></div>
-                      <div class="legend">
-                        <span class="dot neu"></span> no log
-                        <span style="width:12px"></span>
-                        <span class="dot pos"></span> logged
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="card" style="grid-column: span 12;">
-                    <div class="hd">
-                      <b>Achievements & Badges</b>
-                      <small>Progress rewards</small>
-                    </div>
-                    <div class="bd" style="display:flex; gap:12px; flex-wrap:wrap;">
-                      <span class="badge">7-day streak</span>
-                      <span class="badge">No revenge trades (7d)</span>
-                      <span class="badge">Perfect checklist (x10)</span>
-                      <span class="badge">+3R hit</span>
-                      <span class="badge">Journal discipline</span>
-                      <span class="badge">Calm executor</span>
-                    </div>
-                  </div>
-
+                  <div class="bd" id="streakBox"></div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </section>
+              </section>
 
-        <!-- CALENDAR -->
-        <section class="view" id="view-calendar">
-          <div class="grid cols-12">
-            <div class="card" style="grid-column: span 12;">
-              <div class="hd">
-                <div>
-                  <b>Trading Calendar</b>
-                  <small>Daily profit/loss heatmap</small>
-                </div>
-                <div class="legend">
-                  <span class="dot pos"></span> profit
-                  <span class="dot neg"></span> loss
-                  <span class="dot neu"></span> flat
-                </div>
-              </div>
-
-              <div class="bd">
-                <div class="grid cols-12">
-                  <div class="card" style="grid-column: span 8; background: rgba(0,0,0,.18); box-shadow:none;">
-                    <div class="hd">
-                      <b id="calTitle">Month</b>
-                      <small id="calSub">Month view</small>
-                    </div>
-                    <div class="bd">
-                      <div class="heat" id="calendarHeat"></div>
-                    </div>
+              <!-- CALENDAR -->
+              <section class="view" id="view-calendar">
+                <div class="card">
+                  <div class="hd">
+                    <div><b>Trading Calendar</b><small>Monthly overview</small></div>
+                    <div class="badge" id="calBadge">This month</div>
                   </div>
-
-                  <div class="card" style="grid-column: span 4; background: rgba(0,0,0,.18); box-shadow:none;">
-                    <div class="hd">
-                      <b>Monthly Summary</b>
-                      <small>Totals & notes</small>
-                    </div>
-                    <div class="bd" id="monthSummary"></div>
-                  </div>
-
-                  <div class="card" style="grid-column: span 12; background: rgba(0,0,0,.18); box-shadow:none;">
-                    <div class="hd">
-                      <b>Day Details</b>
-                      <small>Tap a day on the calendar</small>
-                    </div>
-                    <div class="bd" id="dayDetails">
-                      <div style="color:rgba(255,255,255,.58); font-size:12px;">Select a day to view details.</div>
-                    </div>
-                  </div>
-
+                  <div class="bd" id="calendarBox"></div>
                 </div>
-              </div>
+              </section>
 
             </div>
           </div>
-        </section>
-
+        </div>
       </div>
     </main>
   </div>
 
-  <!-- Firebase (LIVE) -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-storage-compat.js"></script>
 
   <script>
-    // ====== IMPORTANT ======
-    // If your login page file name is different, change this:
-    const LOGIN_URL = "login.html";
+    /* =========================
+       THEME (persist across pages)
+    ========================= */
+    function applySavedTheme(){
+      const t = localStorage.getItem("fynx_theme") || "light";
+      document.body.classList.toggle("dark-mode", t === "dark");
+    }
+    function toggleTheme(){
+      const next = document.body.classList.contains("dark-mode") ? "light" : "dark";
+      localStorage.setItem("fynx_theme", next);
+      applySavedTheme();
+      // charts need refresh on theme switch
+      setTimeout(()=>{ if (window.__updateCharts) window.__updateCharts(); }, 50);
+    }
+    applySavedTheme();
 
-    // Your Firebase config (you provided this)
+    /* =========================
+       OUTER NAV (normal pages)
+    ========================= */
+    const navItems = document.querySelectorAll('.nav-item');
+    const viewPages = {
+      home: 'home.html',          // change to dashboard.html if that’s your file
+      journal: 'journal.html',
+      calculator: 'calculator.html',
+      news: 'news.html',
+      calendar: 'calendar.html',
+      profile: 'profile.html'
+    };
+
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const viewName = item.getAttribute('data-view');
+        if (viewPages[viewName]) window.location.href = viewPages[viewName];
+      });
+    });
+
+    /* =========================
+       JOURNAL APP (guest + live)
+    ========================= */
     const firebaseConfig = {
       apiKey: "AIzaSyDGSYIB_YIpbWyUMJ1d-v00-xADnvaWckk",
       authDomain: "fynx-c7a28.firebaseapp.com",
@@ -992,762 +895,394 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    const storage = firebase.storage();
 
-    let state = { trades: [] };
-    let replayIndex = 0;
+    const modeText = document.getElementById("modeText");
+    const loginNote = document.getElementById("loginNote");
+    const avatar = document.getElementById("avatar");
+
+    // inner nav
+    const jBtns = [...document.querySelectorAll(".jbtn[data-view]")];
+    const views = {
+      dash: document.getElementById("view-dash"),
+      entry: document.getElementById("view-entry"),
+      analytics: document.getElementById("view-analytics"),
+      replay: document.getElementById("view-replay"),
+      streaks: document.getElementById("view-streaks"),
+      calendar: document.getElementById("view-calendar"),
+    };
+
+    function setActiveView(key){
+      jBtns.forEach(b => b.classList.toggle("active", b.dataset.view === key));
+      Object.entries(views).forEach(([k, el]) => el.classList.toggle("active", k === key));
+      if (key === "dash") refreshDashboard();
+      if (key === "analytics") refreshAnalytics();
+      if (key === "replay") refreshReplay();
+      if (key === "streaks") refreshStreaks();
+      if (key === "calendar") refreshCalendar();
+    }
+    jBtns.forEach(btn => btn.addEventListener("click", () => setActiveView(btn.dataset.view)));
+    document.getElementById("quickAddBtn").addEventListener("click", () => setActiveView("entry"));
+
+    // State
     let currentUid = null;
     let unsubTrades = null;
-
-    // Require login for this page (PRIVATE)
-    auth.onAuthStateChanged((user) => {
-      if (!user) {
-        location.href = LOGIN_URL;
-        return;
-      }
-      currentUid = user.uid;
-      bootLive();
-    });
+    let state = { trades: [] };
+    let replayIndex = 0;
 
     const tradesCol = () => db.collection("users").doc(currentUid).collection("trades");
 
-    function bootLive() {
-      // ---------- Navigation ----------
-      const navBtns = [...document.querySelectorAll(".navbtn[data-view]")];
-      const views = {
-        dash: document.getElementById("view-dash"),
-        entry: document.getElementById("view-entry"),
-        analytics: document.getElementById("view-analytics"),
-        replay: document.getElementById("view-replay"),
-        streaks: document.getElementById("view-streaks"),
-        calendar: document.getElementById("view-calendar")
-      };
+    // Demo trades for guest view (so the page doesn’t look empty)
+    const demoTrades = [
+      { id:"d1", date:"2026-01-29", symbol:"XAUUSD", session:"New York", pl: 120 },
+      { id:"d2", date:"2026-01-28", symbol:"EURUSD", session:"London", pl: -55 },
+      { id:"d3", date:"2026-01-27", symbol:"BTCUSD", session:"Asia", pl: 80 }
+    ];
 
-      const setActiveView = (key) => {
-        navBtns.forEach(b => b.classList.toggle("active", b.dataset.view === key));
-        Object.entries(views).forEach(([k, el]) => el.classList.toggle("active", k === key));
-        if(key === "analytics") refreshAnalytics();
-        if(key === "replay") refreshReplay();
-        if(key === "streaks") refreshStreaks();
-        if(key === "calendar") refreshCalendar();
-        if(key === "dash") refreshDashboard();
-      };
+    // Charts
+    let equityChart, winTrendChart, sessionPLChart;
 
-      navBtns.forEach(btn => btn.addEventListener("click", () => setActiveView(btn.dataset.view)));
-      document.getElementById("quickAddBtn").addEventListener("click", () => setActiveView("entry"));
-      document.getElementById("goReplayBtn").addEventListener("click", () => setActiveView("replay"));
+    function mkChartDefaults(){
+      const dark = document.body.classList.contains("dark-mode");
+      const tick = dark ? "rgba(255,255,255,.55)" : "rgba(0,0,0,.45)";
+      const grid = dark ? "rgba(255,255,255,.10)" : "rgba(0,0,0,.08)";
+      const line = dark ? "rgba(255,255,255,.85)" : "rgba(0,0,0,.75)";
+      const fill = dark ? "rgba(255,255,255,.08)" : "rgba(0,0,0,.06)";
+      return { tick, grid, line, fill };
+    }
 
-      // ---------- Charts ----------
-      const mkChartDefaults = () => ({
-        responsive:true,
-        maintainAspectRatio:false,
-        plugins:{
-          legend:{ labels:{ color:"rgba(255,255,255,.72)", font:{ size:11 } } },
-          tooltip:{ enabled:true }
-        },
-        scales:{
-          x:{ ticks:{ color:"rgba(255,255,255,.55)", font:{ size:11 } }, grid:{ color:"rgba(255,255,255,.07)" } },
-          y:{ ticks:{ color:"rgba(255,255,255,.55)", font:{ size:11 } }, grid:{ color:"rgba(255,255,255,.07)" } }
-        }
-      });
+    function initCharts(){
+      const c = mkChartDefaults();
 
-      let equityChart, winTrendChart, sessionPLChart, emotionChart, disciplineChart;
-
-      const initCharts = () => {
-        equityChart = new Chart(document.getElementById("equityChart"), {
-          type:"line",
-          data:{ labels:[], datasets:[{
-            label:"Equity",
-            data:[],
-            borderColor:"rgba(255,255,255,.85)",
-            backgroundColor:"rgba(255,255,255,.08)",
-            fill:true,
-            tension:.35,
-            pointRadius:0
-          }]},
-          options: mkChartDefaults()
-        });
-
-        winTrendChart = new Chart(document.getElementById("winTrendChart"), {
-          type:"line",
-          data:{ labels:[], datasets:[{
-            label:"Win Rate % (rolling)",
-            data:[],
-            borderColor:"rgba(255,255,255,.85)",
-            backgroundColor:"rgba(255,255,255,.08)",
-            fill:true,
-            tension:.35,
-            pointRadius:0
-          }]},
-          options: mkChartDefaults()
-        });
-
-        sessionPLChart = new Chart(document.getElementById("sessionPLChart"), {
-          type:"bar",
-          data:{ labels:["London","New York","Asia","Overlap"], datasets:[{
-            label:"Net P/L",
-            data:[0,0,0,0],
-            borderColor:"rgba(255,255,255,.85)",
-            backgroundColor:"rgba(255,255,255,.14)"
-          }]},
-          options: mkChartDefaults()
-        });
-
-        emotionChart = new Chart(document.getElementById("emotionChart"), {
-          type:"line",
-          data:{ labels:[], datasets:[{
-            label:"Control Score (proxy)",
-            data:[],
-            borderColor:"rgba(255,255,255,.85)",
-            backgroundColor:"rgba(255,255,255,.08)",
-            fill:true,
-            tension:.35,
-            pointRadius:0
-          }]},
-          options: mkChartDefaults()
-        });
-
-        disciplineChart = new Chart(document.getElementById("disciplineChart"), {
-          type:"radar",
-          data:{
-            labels:["Rules","Timing","Risk","Patience","Journal","Focus"],
-            datasets:[{
-              label:"Discipline",
-              data:[0,0,0,0,0,0],
-              borderColor:"rgba(255,255,255,.85)",
-              backgroundColor:"rgba(255,255,255,.10)",
-              pointBackgroundColor:"rgba(255,255,255,.85)",
-              pointRadius:2
-            }]
-          },
-          options:{
-            responsive:true,
-            maintainAspectRatio:false,
-            plugins:{ legend:{ labels:{ color:"rgba(255,255,255,.72)", font:{ size:11 } } } },
-            scales:{
-              r:{
-                grid:{ color:"rgba(255,255,255,.10)" },
-                angleLines:{ color:"rgba(255,255,255,.10)" },
-                pointLabels:{ color:"rgba(255,255,255,.70)", font:{ size:11 } },
-                ticks:{ display:false }
-              }
-            }
+      equityChart = new Chart(document.getElementById("equityChart"), {
+        type:"line",
+        data:{ labels:[], datasets:[{
+          label:"Equity",
+          data:[],
+          borderColor:c.line,
+          backgroundColor:c.fill,
+          fill:true, tension:.35, pointRadius:0
+        }]},
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{ labels:{ color:c.tick, font:{ size:11 } } } },
+          scales:{
+            x:{ ticks:{ color:c.tick }, grid:{ color:c.grid } },
+            y:{ ticks:{ color:c.tick }, grid:{ color:c.grid } }
           }
-        });
-      };
-
-      const updateCharts = () => {
-        const trades = [...state.trades].sort((a,b) => (a.dateTsMs||0) - (b.dateTsMs||0));
-
-        const labels = [];
-        const data = [];
-        let cum = 0;
-        trades.forEach(t => {
-          labels.push(String(t.date || "").slice(5) || "—");
-          cum += (t.pl || 0);
-          data.push(Number(cum.toFixed(2)));
-        });
-        equityChart.data.labels = labels;
-        equityChart.data.datasets[0].data = data;
-        equityChart.update();
-
-        const wlabels = [];
-        const wdata = [];
-        const window = 10;
-        for (let i=0;i<trades.length;i++){
-          const start = Math.max(0, i-window+1);
-          const slice = trades.slice(start, i+1);
-          const wins = slice.filter(x => (x.pl||0) > 0).length;
-          const wr = slice.length ? (wins/slice.length)*100 : 0;
-          wlabels.push(String(trades[i].date||"").slice(5) || "—");
-          wdata.push(Number(wr.toFixed(1)));
         }
-        winTrendChart.data.labels = wlabels;
-        winTrendChart.data.datasets[0].data = wdata;
-        winTrendChart.update();
-
-        const sessions = { "London":0, "New York":0, "Asia":0, "Overlap":0 };
-        state.trades.forEach(t => { sessions[t.session] = (sessions[t.session]||0) + (t.pl||0); });
-        sessionPLChart.data.datasets[0].data = [
-          sessions["London"]||0,
-          sessions["New York"]||0,
-          sessions["Asia"]||0,
-          sessions["Overlap"]||0
-        ].map(x => Number(x.toFixed(2)));
-        sessionPLChart.update();
-
-        const emoLabels = [];
-        const emoData = [];
-        trades.slice(-12).forEach(t => {
-          const reasons = (t.reasons||[]).length;
-          const control = Math.min(100, Math.max(0, 60 + reasons*5 - (t.emotions||[]).includes("Revenge")*15 - (t.emotions||[]).includes("FOMO")*10));
-          emoLabels.push(String(t.date||"").slice(5) || "—");
-          emoData.push(control);
-        });
-        emotionChart.data.labels = emoLabels;
-        emotionChart.data.datasets[0].data = emoData;
-        emotionChart.update();
-
-        const total = state.trades.length || 1;
-        const avgReasons = state.trades.reduce((a,t)=>a+(t.reasons||[]).length,0)/total;
-        const rules = Math.min(100, Math.round(avgReasons*10));
-        const timing = Math.min(100, 60 + Math.round((state.trades.filter(t=>t.session==="London"||t.session==="Overlap").length/total)*40));
-        const risk = Math.min(100, 65 + Math.round((state.trades.filter(t=>(t.conf||0)>=70).length/total)*35));
-        const patience = Math.min(100, 55 + Math.round((state.trades.filter(t=>(t.emotions||[]).includes("Hesitant")).length/total)*10));
-        const journal = Math.min(100, 50 + Math.round((state.trades.filter(t=>(t.notes||"").trim().length>20).length/total)*50));
-        const focus = Math.min(100, 55 + Math.round((state.trades.filter(t=>!(t.emotions||[]).includes("Overconfident")).length/total)*45));
-        disciplineChart.data.datasets[0].data = [rules,timing,risk,patience,journal,focus];
-        disciplineChart.update();
-      };
-
-      // ---------- Entry form ----------
-      const dirSeg = document.querySelectorAll(".seg button");
-      let direction = "Long";
-      dirSeg.forEach(b => b.addEventListener("click", () => {
-        dirSeg.forEach(x => x.classList.remove("active"));
-        b.classList.add("active");
-        direction = b.dataset.dir;
-      }));
-
-      const toggleChipGroup = (id) => {
-        const wrap = document.getElementById(id);
-        wrap.querySelectorAll(".chip").forEach(ch => ch.addEventListener("click", () => ch.classList.toggle("on")));
-      };
-      toggleChipGroup("reasonChips");
-      toggleChipGroup("emotionChips");
-
-      const fEntry = document.getElementById("fEntry");
-      const fSL = document.getElementById("fSL");
-      const fTP = document.getElementById("fTP");
-      const fConf = document.getElementById("fConf");
-      const qRisk = document.getElementById("qRisk");
-      const qReward = document.getElementById("qReward");
-      const qRR = document.getElementById("qRR");
-      const qConf = document.getElementById("qConf");
-
-      const calcStats = () => {
-        const e = parseFloat(fEntry.value);
-        const sl = parseFloat(fSL.value);
-        const tp = parseFloat(fTP.value);
-
-        qConf.textContent = `${fConf.value}%`;
-
-        if(!isFinite(e) || !isFinite(sl) || !isFinite(tp)){
-          qRisk.textContent = "—";
-          qReward.textContent = "—";
-          qRR.textContent = "—";
-          return;
-        }
-
-        const risk = Math.abs(e - sl);
-        const reward = Math.abs(tp - e);
-        const rr = risk > 0 ? (reward / risk) : 0;
-
-        qRisk.textContent = risk.toFixed(2);
-        qReward.textContent = reward.toFixed(2);
-        qRR.textContent = rr.toFixed(2);
-      };
-      [fEntry,fSL,fTP,fConf].forEach(el => el.addEventListener("input", calcStats));
-
-      // Screenshot preview + upload
-      const fShot = document.getElementById("fShot");
-      const shotPreview = document.getElementById("shotPreview");
-      const shotImg = document.getElementById("shotImg");
-      let shotFile = null;
-
-      fShot.addEventListener("change", (e) => {
-        const file = e.target.files && e.target.files[0];
-        if(!file){ shotFile=null; shotPreview.style.display="none"; return; }
-        shotFile = file;
-        const reader = new FileReader();
-        reader.onload = () => { shotImg.src = String(reader.result || ""); shotPreview.style.display = "block"; };
-        reader.readAsDataURL(file);
       });
 
-      const getChips = (id) =>
-        [...document.querySelectorAll(`#${id} .chip.on`)].map(c => c.textContent.trim());
+      winTrendChart = new Chart(document.getElementById("winTrendChart"), {
+        type:"line",
+        data:{ labels:[], datasets:[{
+          label:"Win Rate % (rolling)",
+          data:[],
+          borderColor:c.line,
+          backgroundColor:c.fill,
+          fill:true, tension:.35, pointRadius:0
+        }]},
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{ labels:{ color:c.tick, font:{ size:11 } } } },
+          scales:{
+            x:{ ticks:{ color:c.tick }, grid:{ color:c.grid } },
+            y:{ ticks:{ color:c.tick }, grid:{ color:c.grid } }
+          }
+        }
+      });
 
-      const saveTradeBtn = document.getElementById("saveTradeBtn");
-      const resetFormBtn = document.getElementById("resetFormBtn");
-      const deleteLastBtn = document.getElementById("deleteLastBtn");
+      sessionPLChart = new Chart(document.getElementById("sessionPLChart"), {
+        type:"bar",
+        data:{ labels:["London","New York","Asia","Overlap"], datasets:[{
+          label:"Net P/L",
+          data:[0,0,0,0],
+          borderColor:c.line,
+          backgroundColor:c.fill
+        }]},
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{ labels:{ color:c.tick, font:{ size:11 } } } },
+          scales:{
+            x:{ ticks:{ color:c.tick }, grid:{ color:c.grid } },
+            y:{ ticks:{ color:c.tick }, grid:{ color:c.grid } }
+          }
+        }
+      });
+    }
 
-      const clearForm = () => {
-        document.getElementById("fSymbol").value = "";
-        document.getElementById("fDate").valueAsDate = new Date();
-        fEntry.value = "";
-        fSL.value = "";
-        fTP.value = "";
-        document.getElementById("fSetup").selectedIndex = 0;
-        document.getElementById("fSession").selectedIndex = 0;
-        document.getElementById("fNotes").value = "";
-        fConf.value = 70;
-        qConf.textContent = "70%";
-        shotFile = null;
-        fShot.value = "";
-        shotPreview.style.display = "none";
-        document.querySelectorAll(".chip.on").forEach(x => x.classList.remove("on"));
-        calcStats();
-      };
-      resetFormBtn.addEventListener("click", clearForm);
+    function rebuildChartsTheme(){
+      const c = mkChartDefaults();
+      [equityChart, winTrendChart, sessionPLChart].forEach(ch => {
+        if(!ch) return;
+        ch.data.datasets.forEach(ds => {
+          ds.borderColor = c.line;
+          ds.backgroundColor = c.fill;
+        });
+        ch.options.plugins.legend.labels.color = c.tick;
+        ch.options.scales.x.ticks.color = c.tick;
+        ch.options.scales.y.ticks.color = c.tick;
+        ch.options.scales.x.grid.color = c.grid;
+        ch.options.scales.y.grid.color = c.grid;
+        ch.update();
+      });
+    }
+    window.__updateCharts = rebuildChartsTheme;
 
-      const estimatePL = (entry, tp, sl) => {
-        const e = parseFloat(entry), T = parseFloat(tp), S = parseFloat(sl);
-        if(!isFinite(e) || !isFinite(T) || !isFinite(S)) return 0;
+    function updateCharts(){
+      const trades = [...state.trades].sort((a,b) => String(a.date||"").localeCompare(String(b.date||"")));
+      let cum = 0;
+      const labels = [];
+      const data = [];
+      trades.forEach(t => {
+        labels.push(String(t.date||"").slice(5) || "—");
+        cum += (t.pl || 0);
+        data.push(Number(cum.toFixed(2)));
+      });
+      equityChart.data.labels = labels;
+      equityChart.data.datasets[0].data = data;
+      equityChart.update();
+
+      // rolling win rate
+      const wlabels=[], wdata=[];
+      const winArr = trades.map(t => (t.pl||0) > 0 ? 1 : 0);
+      for(let i=0;i<trades.length;i++){
+        const start = Math.max(0, i-9);
+        const slice = winArr.slice(start, i+1);
+        const wr = slice.length ? (slice.reduce((a,b)=>a+b,0)/slice.length)*100 : 0;
+        wlabels.push(String(trades[i].date||"").slice(5) || "—");
+        wdata.push(Number(wr.toFixed(1)));
+      }
+      winTrendChart.data.labels = wlabels;
+      winTrendChart.data.datasets[0].data = wdata;
+      winTrendChart.update();
+
+      // session PL
+      const sessions = { "London":0, "New York":0, "Asia":0, "Overlap":0 };
+      trades.forEach(t => { sessions[t.session] = (sessions[t.session]||0) + (t.pl||0); });
+      sessionPLChart.data.datasets[0].data = [
+        sessions["London"]||0,
+        sessions["New York"]||0,
+        sessions["Asia"]||0,
+        sessions["Overlap"]||0
+      ].map(x => Number(x.toFixed(2)));
+      sessionPLChart.update();
+    }
+
+    function refreshDashboard(){
+      const total = state.trades.length;
+      document.getElementById("kpiTrades").textContent = String(total);
+
+      const wins = state.trades.filter(t => (t.pl||0) > 0).length;
+      const wr = total ? (wins/total)*100 : 0;
+      document.getElementById("kpiWin").textContent = `${wr.toFixed(1)}%`;
+
+      const totalPL = state.trades.reduce((a,t)=>a+(t.pl||0),0);
+      const kpiPL = document.getElementById("kpiPL");
+      kpiPL.textContent = `${totalPL>=0?"+":"-"}$${Math.abs(totalPL).toFixed(0)}`;
+      kpiPL.className = totalPL >= 0 ? "good" : "bad";
+
+      // streak (simple consecutive days)
+      const dates = [...new Set(state.trades.map(t => t.date).filter(Boolean))].sort();
+      let streak = 0;
+      if(dates.length){
+        const today = new Date(); today.setHours(0,0,0,0);
+        const set = new Set(dates);
+        while(true){
+          const d = new Date(today);
+          d.setDate(d.getDate() - streak);
+          const iso = d.toISOString().slice(0,10);
+          if(set.has(iso)) streak++;
+          else break;
+        }
+      }
+      document.getElementById("kpiStreak").textContent = String(streak);
+
+      // session list
+      const bySession = {};
+      state.trades.forEach(t => bySession[t.session] = (bySession[t.session]||0) + (t.pl||0));
+      const order = ["London","New York","Asia","Overlap"];
+      document.getElementById("sessionList").innerHTML = order.map(name => {
+        const val = bySession[name] || 0;
+        const cls = val >= 0 ? "good" : "bad";
+        return `
+          <div class="row">
+            <div class="l"><b>${name}</b><small>Net P/L</small></div>
+            <div class="r"><span class="badge ${cls}">${val>=0?"+":"-"}$${Math.abs(val).toFixed(0)}</span></div>
+          </div>`;
+      }).join("");
+    }
+
+    function refreshAnalytics(){
+      document.getElementById("tradeCountBadge").textContent = `Trades: ${state.trades.length}`;
+    }
+
+    function refreshReplay(){
+      const box = document.getElementById("replaySummary");
+      if(state.trades.length === 0){
+        box.innerHTML = `<div class="note">No trades yet.</div>`;
+        return;
+      }
+      replayIndex = Math.max(0, Math.min(replayIndex, state.trades.length - 1));
+      const t = state.trades[replayIndex];
+      const pl = t.pl || 0;
+      const cls = pl >= 0 ? "good" : "bad";
+      box.innerHTML = `
+        <div class="row">
+          <div class="l"><b>${t.symbol || "—"}</b><small>${t.date || "—"} · ${t.session || "—"}</small></div>
+          <div class="r"><span class="badge ${cls}">${pl>=0?"+":"-"}$${Math.abs(pl).toFixed(0)}</span></div>
+        </div>
+        <div class="note">This is a simplified replay box. If you want, I’ll bring back the full replay UI with screenshot + notes.</div>
+      `;
+    }
+
+    function refreshStreaks(){
+      document.getElementById("sBadge").textContent = `${new Set(state.trades.map(t=>t.date)).size} days logged`;
+      document.getElementById("streakBox").innerHTML = `<div class="note">Streaks UI can be expanded next (heatmap + discipline score).</div>`;
+    }
+
+    function refreshCalendar(){
+      document.getElementById("calendarBox").innerHTML = `<div class="note">Calendar UI can be expanded next (monthly heatmap like your Grok design).</div>`;
+    }
+
+    // Entry form helpers
+    const fEntry = document.getElementById("fEntry");
+    const fSL = document.getElementById("fSL");
+    const fTP = document.getElementById("fTP");
+    const qRisk = document.getElementById("qRisk");
+    const qReward = document.getElementById("qReward");
+    const qRR = document.getElementById("qRR");
+
+    function calcStats(){
+      const e = parseFloat(fEntry.value);
+      const sl = parseFloat(fSL.value);
+      const tp = parseFloat(fTP.value);
+      if(!isFinite(e) || !isFinite(sl) || !isFinite(tp)){
+        qRisk.textContent = "Risk —";
+        qReward.textContent = "Reward —";
+        qRR.textContent = "R:R —";
+        return;
+      }
+      const risk = Math.abs(e - sl);
+      const reward = Math.abs(tp - e);
+      const rr = risk > 0 ? (reward / risk) : 0;
+      qRisk.textContent = `Risk ${risk.toFixed(2)}`;
+      qReward.textContent = `Reward ${reward.toFixed(2)}`;
+      qRR.textContent = `R:R ${rr.toFixed(2)}`;
+    }
+    [fEntry,fSL,fTP].forEach(el => el.addEventListener("input", calcStats));
+
+    function clearForm(){
+      document.getElementById("fSymbol").value = "";
+      document.getElementById("fDate").valueAsDate = new Date();
+      fEntry.value = "";
+      fSL.value = "";
+      fTP.value = "";
+      document.getElementById("fNotes").value = "";
+      calcStats();
+    }
+    document.getElementById("resetFormBtn").addEventListener("click", clearForm);
+
+    document.getElementById("prevTradeBtn").addEventListener("click", () => {
+      if(state.trades.length === 0) return;
+      replayIndex = Math.max(0, replayIndex - 1);
+      refreshReplay();
+    });
+    document.getElementById("nextTradeBtn").addEventListener("click", () => {
+      if(state.trades.length === 0) return;
+      replayIndex = Math.min(state.trades.length - 1, replayIndex + 1);
+      refreshReplay();
+    });
+
+    async function saveTradeLive(){
+      const symbol = document.getElementById("fSymbol").value.trim() || "—";
+      const date = document.getElementById("fDate").value || new Date().toISOString().slice(0,10);
+      const entry = document.getElementById("fEntry").value;
+      const sl = document.getElementById("fSL").value;
+      const tp = document.getElementById("fTP").value;
+      const notes = document.getElementById("fNotes").value.trim();
+
+      // simple proxy P/L so you see charts moving (replace later with real calculation)
+      const e = parseFloat(entry), S = parseFloat(sl), T = parseFloat(tp);
+      let pl = 0;
+      if(isFinite(e) && isFinite(S) && isFinite(T)){
         const reward = Math.abs(T - e);
         const risk = Math.abs(e - S);
-        return (reward - (risk * 0.4)); // proxy until you replace with real P/L logic
-      };
-
-      async function uploadScreenshotIfAny(tradeId) {
-        if(!shotFile) return "";
-        const path = `users/${currentUid}/trades/${tradeId}/screenshot_${Date.now()}.jpg`;
-        const ref = storage.ref().child(path);
-        await ref.put(shotFile, { contentType: shotFile.type || "image/jpeg" });
-        return await ref.getDownloadURL();
+        pl = (reward - risk*0.4);
       }
 
-      saveTradeBtn.addEventListener("click", async () => {
-        try{
-          saveTradeBtn.disabled = true;
+      const tradeId = crypto.randomUUID();
+      const dateTs = firebase.firestore.Timestamp.fromDate(new Date(date + "T00:00:00"));
 
-          const symbol = document.getElementById("fSymbol").value.trim() || "—";
-          const date = document.getElementById("fDate").value || new Date().toISOString().slice(0,10);
-          const entry = document.getElementById("fEntry").value;
-          const sl = document.getElementById("fSL").value;
-          const tp = document.getElementById("fTP").value;
-          const setup = document.getElementById("fSetup").value;
-          const session = document.getElementById("fSession").value;
-          const reasons = getChips("reasonChips");
-          const emotions = getChips("emotionChips");
-          const notes = document.getElementById("fNotes").value.trim();
-          const conf = parseInt(document.getElementById("fConf").value, 10) || 0;
-
-          const pl = estimatePL(entry, tp, sl);
-          const tradeId = crypto.randomUUID();
-          const dateTs = firebase.firestore.Timestamp.fromDate(new Date(date + "T00:00:00"));
-
-          const screenshotUrl = await uploadScreenshotIfAny(tradeId);
-
-          const tradeDoc = {
-            id: tradeId,
-            symbol, date, direction,
-            entry, sl, tp,
-            setup, session,
-            reasons, emotions,
-            notes, conf,
-            screenshot: screenshotUrl || "",
-            pl: Number.isFinite(pl) ? pl : 0,
-            dateTs,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          };
-
-          await tradesCol().doc(tradeId).set(tradeDoc, { merge:false });
-
-          clearForm();
-          setActiveView("replay");
-        } catch(err){
-          console.error(err);
-          alert("Save failed. Check Firestore + Storage rules.");
-        } finally {
-          saveTradeBtn.disabled = false;
-        }
+      await tradesCol().doc(tradeId).set({
+        id: tradeId,
+        symbol, date,
+        session: "New York",
+        entry, sl, tp,
+        notes,
+        pl: Number.isFinite(pl) ? pl : 0,
+        dateTs,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      deleteLastBtn.addEventListener("click", async () => {
-        if(state.trades.length === 0) return;
-        const t = state.trades[state.trades.length - 1];
-        try{
-          await tradesCol().doc(t.id).delete();
-        } catch(err){
-          console.error(err);
-          alert("Delete failed. Check Firestore rules.");
-        }
-      });
-
-      // ---------- Analytics ----------
-      const refreshAnalytics = () => {
-        document.getElementById("tradeCountBadge").textContent = `Trades: ${state.trades.length}`;
-        if(state.trades.length === 0){
-          document.getElementById("aWin").textContent = "+$0";
-          document.getElementById("aLoss").textContent = "-$0";
-          document.getElementById("aExp").textContent = "+$0";
-          document.getElementById("aQual").textContent = "—";
-          document.getElementById("setupTable").innerHTML =
-            `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades yet. Add trades to see analytics.</div>`;
-          document.getElementById("mistakeList").innerHTML =
-            `<div style="color:rgba(255,255,255,.58); font-size:12px;">No data yet.</div>`;
-          return;
-        }
-
-        const pls = state.trades.map(t => t.pl || 0);
-        const wins = pls.filter(x => x > 0);
-        const losses = pls.filter(x => x < 0);
-
-        const avg = (arr) => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length) : 0;
-        const avgWin = avg(wins);
-        const avgLoss = avg(losses);
-
-        document.getElementById("aWin").textContent = `+$${Math.abs(avgWin).toFixed(0)}`;
-        document.getElementById("aLoss").textContent = `-$${Math.abs(avgLoss).toFixed(0)}`;
-
-        const winRate = wins.length / state.trades.length;
-        const expectancy = (winRate * avgWin) + ((1-winRate) * avgLoss);
-        const expEl = document.getElementById("aExp");
-        expEl.textContent = `${expectancy >= 0 ? "+" : "-"}$${Math.abs(expectancy).toFixed(0)}`;
-        expEl.className = expectancy >= 0 ? "good" : "bad";
-
-        const reasonCount = state.trades.map(t => (t.reasons||[]).length);
-        const q = Math.round(avg(reasonCount) * 12);
-        document.getElementById("aQual").textContent = `${Math.min(100, Math.max(0,q))}/100`;
-
-        const bySetup = {};
-        state.trades.forEach(t => { bySetup[t.setup] = (bySetup[t.setup] || 0) + (t.pl || 0); });
-        document.getElementById("setupTable").innerHTML = Object.entries(bySetup)
-          .sort((a,b)=> b[1]-a[1])
-          .slice(0,6)
-          .map(([name, val]) => {
-            const cls = val >= 0 ? "good" : "bad";
-            return `
-              <div class="row">
-                <div class="l"><b>${escapeHtml(name)}</b><small>Net P/L</small></div>
-                <div class="r"><span class="badge ${cls}">${val>=0?"+":"-"}$${Math.abs(val).toFixed(0)}</span></div>
-              </div>`;
-          }).join("");
-
-        const mistakeBuckets = {};
-        state.trades.forEach(t => { (t.emotions||[]).forEach(e => mistakeBuckets[e] = (mistakeBuckets[e]||0)+1); });
-        const mistakes = Object.entries(mistakeBuckets).sort((a,b)=>b[1]-a[1]).slice(0,6);
-        document.getElementById("mistakeList").innerHTML = mistakes.length ? mistakes.map(([m,c]) => `
-          <div class="row">
-            <div class="l"><b>${escapeHtml(m)}</b><small>Occurrences</small></div>
-            <div class="r"><span class="badge">${c}</span></div>
-          </div>
-        `).join("") : `<div style="color:rgba(255,255,255,.58); font-size:12px;">No mistake tags yet.</div>`;
-      };
-
-      // ---------- Replay ----------
-      const replaySummary = document.getElementById("replaySummary");
-      const replayShotBox = document.getElementById("replayShotBox");
-      const replayNotes = document.getElementById("replayNotes");
-
-      const refreshReplay = () => {
-        if(state.trades.length === 0){
-          replaySummary.innerHTML = `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades saved yet. Use “New Trade Entry”.</div>`;
-          replayShotBox.innerHTML = `<div style="text-align:center; color:rgba(255,255,255,.55); font-size:12px; padding:18px;">No trade selected.</div>`;
-          replayNotes.value = "";
-          return;
-        }
-        replayIndex = Math.max(0, Math.min(replayIndex, state.trades.length - 1));
-        const t = state.trades[replayIndex];
-
-        const pl = t.pl || 0;
-        const cls = pl >= 0 ? "good" : "bad";
-
-        replaySummary.innerHTML = `
-          <div class="row">
-            <div class="l"><b>${escapeHtml(t.symbol)}</b><small>${escapeHtml(t.date)}</small></div>
-            <div class="r"><span class="badge ${cls}">${pl>=0?"+":"-"}$${Math.abs(pl).toFixed(0)}</span></div>
-          </div>
-          <div class="row"><div class="l"><b>Direction</b><small>${escapeHtml(t.direction)}</small></div><div class="r"><span class="badge">${escapeHtml(t.session)}</span></div></div>
-          <div class="row"><div class="l"><b>Setup</b><small>${escapeHtml(t.setup)}</small></div><div class="r"><span class="badge">${escapeHtml(String(t.conf||0))}%</span></div></div>
-          <div class="row"><div class="l"><b>Entry</b><small>${escapeHtml(String(t.entry||"—"))}</small></div><div class="r"><span class="badge">SL ${escapeHtml(String(t.sl||"—"))}</span></div></div>
-          <div class="row"><div class="l"><b>TP</b><small>${escapeHtml(String(t.tp||"—"))}</small></div><div class="r"><span class="badge">ID</span></div></div>
-        `;
-
-        if(t.screenshot){
-          replayShotBox.innerHTML = `<img alt="Trade screenshot" src="${t.screenshot}" style="width:100%; display:block;" />`;
-        } else {
-          replayShotBox.innerHTML = `<div style="text-align:center; color:rgba(255,255,255,.55); font-size:12px; padding:18px;">No screenshot saved for this trade.</div>`;
-        }
-
-        replayNotes.value = String(t.replayNotes || "");
-      };
-
-      document.getElementById("prevTradeBtn").addEventListener("click", () => {
-        if(state.trades.length === 0) return;
-        replayIndex = Math.max(0, replayIndex - 1);
-        refreshReplay();
-      });
-      document.getElementById("nextTradeBtn").addEventListener("click", () => {
-        if(state.trades.length === 0) return;
-        replayIndex = Math.min(state.trades.length - 1, replayIndex + 1);
-        refreshReplay();
-      });
-
-      document.getElementById("saveReplayNotesBtn").addEventListener("click", async () => {
-        if(state.trades.length === 0) return;
-        const t = state.trades[replayIndex];
-        try{
-          await tradesCol().doc(t.id).set({ replayNotes: replayNotes.value }, { merge:true });
-        } catch(err){
-          console.error(err);
-          alert("Replay notes save failed. Check Firestore rules.");
-        }
-      });
-
-      // ---------- Streaks ----------
-      const refreshStreaks = () => {
-        const dates = [...new Set(state.trades.map(t => t.date).filter(Boolean))].sort();
-        let streak = 0;
-        if(dates.length){
-          const today = new Date(); today.setHours(0,0,0,0);
-          const dateSet = new Set(dates);
-          while(true){
-            const d = new Date(today);
-            d.setDate(d.getDate() - streak);
-            const iso = d.toISOString().slice(0,10);
-            if(dateSet.has(iso)) streak++;
-            else break;
-          }
-        }
-
-        document.getElementById("sStreak").textContent = `${Math.max(0, streak)} Days`;
-
-        const avgReasons = state.trades.length ? state.trades.reduce((a,t)=>a+(t.reasons||[]).length,0)/state.trades.length : 0;
-        const rules = Math.min(100, Math.round(avgReasons * 10));
-        document.getElementById("sRules").textContent = `${rules}%`;
-
-        const control = Math.min(100, Math.max(0, 70 + Math.round((rules-50)/2)));
-        document.getElementById("sEmotion").textContent = `${control}/100`;
-
-        const logged = [...new Set(state.trades.map(t => t.date).filter(Boolean))].length;
-        document.getElementById("sCons").textContent = `${Math.min(30, logged)}/30`;
-
-        const heat = document.getElementById("consistencyHeat");
-        heat.innerHTML = "";
-        const today = new Date(); today.setHours(0,0,0,0);
-        const loggedSet = new Set(state.trades.map(t => t.date).filter(Boolean));
-        for(let i=29;i>=0;i--){
-          const d = new Date(today);
-          d.setDate(d.getDate()-i);
-          const iso = d.toISOString().slice(0,10);
-          const cell = document.createElement("div");
-          cell.className = "day " + (loggedSet.has(iso) ? "pos" : "");
-          cell.innerHTML = `<small>${iso.slice(5)}</small><b>${loggedSet.has(iso) ? "Logged" : ""}</b>`;
-          heat.appendChild(cell);
-        }
-      };
-
-      // ---------- Calendar ----------
-      const refreshCalendar = () => {
-        const calendarHeat = document.getElementById("calendarHeat");
-        const monthSummary = document.getElementById("monthSummary");
-        const dayDetails = document.getElementById("dayDetails");
-        calendarHeat.innerHTML = "";
-
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth();
-        const monthName = today.toLocaleString(undefined, { month:"long" });
-        document.getElementById("calTitle").textContent = monthName;
-        document.getElementById("calSub").textContent = `${year}`;
-
-        const plByDate = {};
-        state.trades.forEach(t => {
-          const dt = t.date;
-          if(!dt) return;
-          plByDate[dt] = (plByDate[dt]||0) + (t.pl||0);
-        });
-
-        const first = new Date(year, month, 1);
-        const startDow = first.getDay();
-        const last = new Date(year, month+1, 0);
-        const daysInMonth = last.getDate();
-
-        const totalCells = 42;
-        for(let i=0;i<totalCells;i++){
-          const dayNum = i - startDow + 1;
-          const cell = document.createElement("div");
-          cell.className = "day";
-          if(dayNum < 1 || dayNum > daysInMonth){
-            cell.style.opacity = ".35";
-            cell.innerHTML = `<small>—</small><b></b>`;
-            calendarHeat.appendChild(cell);
-            continue;
-          }
-          const iso = new Date(year, month, dayNum).toISOString().slice(0,10);
-          const pl = plByDate[iso] || 0;
-          if(pl > 0) cell.classList.add("pos");
-          if(pl < 0) cell.classList.add("neg");
-          cell.innerHTML = `<small>${dayNum}</small><b>${pl === 0 ? "" : (pl>0?"+":"-") + "$" + Math.abs(pl).toFixed(0)}</b>`;
-          cell.style.cursor = "pointer";
-          cell.addEventListener("click", () => {
-            const trades = state.trades.filter(t => t.date === iso);
-            if(!trades.length){
-              dayDetails.innerHTML = `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades on ${escapeHtml(iso)}.</div>`;
-              return;
-            }
-            dayDetails.innerHTML = trades.map(t => {
-              const pl = t.pl || 0;
-              const cls = pl >= 0 ? "good" : "bad";
-              return `
-                <div class="row">
-                  <div class="l">
-                    <b>${escapeHtml(t.symbol)} · ${escapeHtml(t.setup)}</b>
-                    <small>${escapeHtml(t.session)} · ${escapeHtml(t.direction)} · ${escapeHtml(String(t.conf||0))}%</small>
-                  </div>
-                  <div class="r"><span class="badge ${cls}">${pl>=0?"+":"-"}$${Math.abs(pl).toFixed(0)}</span></div>
-                </div>`;
-            }).join("");
-          });
-          calendarHeat.appendChild(cell);
-        }
-
-        const monthTrades = state.trades.filter(t => {
-          if(!t.date) return false;
-          const d = new Date(t.date+"T00:00:00");
-          return d.getFullYear() === year && d.getMonth() === month;
-        });
-
-        const monthPL = monthTrades.reduce((a,t)=>a+(t.pl||0),0);
-        const wins = monthTrades.filter(t => (t.pl||0) > 0).length;
-        const total = monthTrades.length;
-        const wr = total ? (wins/total)*100 : 0;
-
-        const cls = monthPL >= 0 ? "good" : "bad";
-
-        monthSummary.innerHTML = `
-          <div class="row"><div class="l"><b>Net P/L</b><small>This month</small></div><div class="r"><span class="badge ${cls}">${monthPL>=0?"+":"-"}$${Math.abs(monthPL).toFixed(0)}</span></div></div>
-          <div class="row"><div class="l"><b>Trades</b><small>Total</small></div><div class="r"><span class="badge">${total}</span></div></div>
-          <div class="row"><div class="l"><b>Win Rate</b><small>Estimated</small></div><div class="r"><span class="badge">${wr.toFixed(1)}%</span></div></div>
-          <div class="row"><div class="l"><b>Notes</b><small>Focus area</small></div><div class="r"><span class="badge">Patience</span></div></div>
-        `;
-      };
-
-      // ---------- Dashboard ----------
-      function refreshDashboard() {
-        const total = state.trades.length;
-        document.getElementById("kpiTrades").textContent = String(total);
-
-        const wins = state.trades.filter(t => (t.pl||0) > 0).length;
-        const wr = total ? (wins/total)*100 : 0;
-        document.getElementById("kpiWin").textContent = `${wr.toFixed(1)}%`;
-
-        const totalPL = state.trades.reduce((a,t)=>a+(t.pl||0),0);
-        const kpiPL = document.getElementById("kpiPL");
-        kpiPL.textContent = `${totalPL>=0?"+":"-"}$${Math.abs(totalPL).toFixed(0)}`;
-        kpiPL.className = totalPL >= 0 ? "good" : "bad";
-
-        const dates = [...new Set(state.trades.map(t => t.date).filter(Boolean))].sort();
-        let streak = 0;
-        if(dates.length){
-          const today = new Date(); today.setHours(0,0,0,0);
-          const set = new Set(dates);
-          while(true){
-            const d = new Date(today);
-            d.setDate(d.getDate() - streak);
-            const iso = d.toISOString().slice(0,10);
-            if(set.has(iso)) streak++;
-            else break;
-          }
-        }
-        document.getElementById("kpiStreak").textContent = String(streak);
-
-        const bySession = {};
-        state.trades.forEach(t => bySession[t.session] = (bySession[t.session]||0) + (t.pl||0));
-        const sessionOrder = ["London","New York","Asia","Overlap"];
-        document.getElementById("sessionList").innerHTML = sessionOrder.map(name => {
-          const val = bySession[name] || 0;
-          const cls = val >= 0 ? "good" : "bad";
-          const sub =
-            name==="London" ? "Highest consistency" :
-            name==="New York" ? "High volatility" :
-            name==="Asia" ? "Lower frequency" :
-            "Best R:R setups";
-          return `
-            <div class="row">
-              <div class="l"><b>${escapeHtml(name)}</b><small>${escapeHtml(sub)}</small></div>
-              <div class="r"><span class="badge ${cls}">${val>=0?"+":"-"}$${Math.abs(val).toFixed(0)}</span></div>
-            </div>`;
-        }).join("") || `<div style="color:rgba(255,255,255,.58); font-size:12px;">No data yet.</div>`;
-
-        const bySetup = {};
-        state.trades.forEach(t => bySetup[t.setup] = (bySetup[t.setup]||0) + (t.pl||0));
-        const topSetups = Object.entries(bySetup).sort((a,b)=>b[1]-a[1]).slice(0,3);
-        document.getElementById("topSetupList").innerHTML = topSetups.length ? topSetups.map(([name,val]) => {
-          const cls = val >= 0 ? "good" : "bad";
-          return `
-            <div class="row">
-              <div class="l"><b>${escapeHtml(name)}</b><small>Net P/L</small></div>
-              <div class="r"><span class="badge ${cls}">${val>=0?"+":"-"}$${Math.abs(val).toFixed(0)}</span></div>
-            </div>`;
-        }).join("") : `<div style="color:rgba(255,255,255,.58); font-size:12px;">No setups logged yet.</div>`;
-
-        const bucket = {};
-        state.trades.forEach(t => (t.emotions||[]).forEach(e => bucket[e] = (bucket[e]||0) + 1));
-        const topMistakes = Object.entries(bucket).sort((a,b)=>b[1]-a[1]).slice(0,3);
-        document.getElementById("mistakePatternList").innerHTML = topMistakes.length ? topMistakes.map(([m,c]) => `
-          <div class="row">
-            <div class="l"><b>${escapeHtml(m)}</b><small>Occurrences</small></div>
-            <div class="r"><span class="badge">${c}</span></div>
-          </div>
-        `).join("") : `<div style="color:rgba(255,255,255,.58); font-size:12px;">No mistake tags yet.</div>`;
-      }
-
-      // ---------- Export ----------
-      document.getElementById("exportBtn").addEventListener("click", () => {
-        const data = JSON.stringify({ trades: state.trades }, null, 2);
-        const blob = new Blob([data], { type:"application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "trader-journal-export.json";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-      });
-
-      function escapeHtml(str){
-        return String(str).replace(/[&<>"']/g, s => ({
-          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-        }[s]));
-      }
-
-      // ---------- Firestore sync ----------
-      function attachTradesListener() {
-        if (unsubTrades) unsubTrades();
-
-        unsubTrades = tradesCol()
-          .orderBy("dateTs", "asc")
-          .onSnapshot((snap) => {
-            const trades = [];
-            snap.forEach(doc => {
-              const d = doc.data() || {};
-              let dateTsMs = 0;
-              try{
-                if (d.dateTs && typeof d.dateTs.toMillis === "function") dateTsMs = d.dateTs.toMillis();
-              }catch{}
-              trades.push({ ...d, dateTsMs });
-            });
-
-            state.trades = trades;
-            replayIndex = Math.max(0, state.trades.length - 1);
-
-            refreshDashboard();
-            refreshAnalytics();
-            refreshReplay();
-            refreshStreaks();
-            refreshCalendar();
-            updateCharts();
-          }, (err) => {
-            console.error(err);
-            alert("Firestore sync failed. Check Firestore rules + indexes.");
-          });
-      }
-
-      // ---------- Boot ----------
       clearForm();
-      initCharts();
-      attachTradesListener();
-
-      refreshDashboard();
-      refreshAnalytics();
-      refreshReplay();
-      refreshStreaks();
-      refreshCalendar();
-      updateCharts();
+      setActiveView("replay");
     }
+
+    document.getElementById("saveTradeBtn").addEventListener("click", async () => {
+      // Guest mode → force login
+      if(!currentUid){
+        loginNote.style.display = "block";
+        setTimeout(()=> location.href = "login.html", 600);
+        return;
+      }
+      try{
+        await saveTradeLive();
+      }catch(err){
+        console.error(err);
+        alert("Save failed. This is almost always Firestore Rules. See the rules I sent you.");
+      }
+    });
+
+    function attachTradesListener(){
+      if(unsubTrades) unsubTrades();
+      unsubTrades = tradesCol().orderBy("dateTs","asc").onSnapshot((snap) => {
+        const trades = [];
+        snap.forEach(doc => trades.push(doc.data() || {}));
+        state.trades = trades;
+        replayIndex = Math.max(0, state.trades.length - 1);
+        refreshDashboard(); refreshAnalytics(); refreshReplay(); refreshStreaks(); refreshCalendar();
+        updateCharts();
+      }, (err) => {
+        console.error(err);
+        alert("Firestore sync failed. This is rules/permissions. Fix rules (below).");
+      });
+    }
+
+    // Boot
+    clearForm();
+    initCharts();
+
+    // AUTH: guest shows demo; logged-in shows live
+    auth.onAuthStateChanged((user) => {
+      if(!user){
+        currentUid = null;
+        avatar.textContent = "FX";
+        modeText.textContent = "Guest mode (view only) — login to save";
+        loginNote.style.display = "none";
+        state.trades = demoTrades;
+        refreshDashboard(); refreshAnalytics(); refreshReplay(); refreshStreaks(); refreshCalendar();
+        updateCharts();
+        return;
+      }
+      currentUid = user.uid;
+      avatar.textContent = "ME";
+      modeText.textContent = "Live mode — saving to Firestore";
+      attachTradesListener();
+    });
+
+    // IMPORTANT:
+    // Do NOT anonymous-login here because you want “view only” until real login.
+    // Your login.html should handle auth and then redirect back to journal.html.
   </script>
 </body>
 </html>
