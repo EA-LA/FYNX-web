@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -236,6 +237,148 @@
   [data-fynx-theme="dark"] .fynx-download .fynx-qr{
     background: #ffffff; /* keep QR readable */
     border: 1px solid rgba(255,255,255,0.14);
+  }
+
+  /* ==============================================
+     ✅ ONLY CHANGE YOU ASKED FOR:
+     Make the QR download widget SMALL + CLEAN like KAST
+     - Compact height
+     - Smaller QR
+     - Smaller text + button
+     - Removes big effects inside widget only
+     - Scoped ONLY to .fynx-download
+  ============================================== */
+
+  /* Clean: remove heavy internal effects (only inside widget) */
+  .fynx-download .fynx-aura,
+  .fynx-download .fynx-scan{
+    display: none !important;
+  }
+
+  /* Compact card sizing */
+  .fynx-download .fynx-card{
+    border-radius: 18px;
+    padding: 10px 12px 12px;
+    width: 320px;
+    max-width: calc(100vw - 28px);
+  }
+
+  /* Top row */
+  .fynx-download .fynx-top{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .fynx-download .fynx-badge{
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    padding: 4px 10px;
+    border-radius: 999px;
+    line-height: 1;
+  }
+
+  .fynx-download .fynx-close{
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    border: 1px solid rgba(0,0,0,0.08);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  body.dark-mode .fynx-download .fynx-close,
+  html.dark-mode .fynx-download .fynx-close,
+  [data-theme="dark"] .fynx-download .fynx-close,
+  [data-fynx-theme="dark"] .fynx-download .fynx-close{
+    border-color: rgba(255,255,255,0.12);
+  }
+
+  /* Content row */
+  .fynx-download .fynx-content{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* QR box smaller like KAST */
+  .fynx-download .fynx-qr{
+    padding: 6px;
+    border-radius: 12px;
+    flex: 0 0 auto;
+  }
+
+  /* Force the generated QR (canvas/img) to be small */
+  .fynx-download #fynxQr canvas,
+  .fynx-download #fynxQr img{
+    width: 54px !important;
+    height: 54px !important;
+    display: block;
+  }
+
+  /* Text block */
+  .fynx-download .fynx-text{
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .fynx-download .fynx-title{
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .fynx-download .fynx-sub{
+    font-size: 12px;
+    line-height: 1.2;
+    opacity: .9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Small pill button like KAST */
+  .fynx-download .fynx-pill{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 6px 10px;
+    border-radius: 999px;
+    width: fit-content;
+    margin-top: 6px;
+    line-height: 1;
+  }
+
+  /* Mobile: even tighter */
+  @media (max-width: 520px){
+    .fynx-download .fynx-card{
+      width: 292px;
+      padding: 10px 10px 11px;
+      border-radius: 16px;
+    }
+    .fynx-download #fynxQr canvas,
+    .fynx-download #fynxQr img{
+      width: 50px !important;
+      height: 50px !important;
+    }
+    .fynx-download .fynx-title{ font-size: 13.5px; }
+    .fynx-download .fynx-sub{ font-size: 11.5px; }
+    .fynx-download .fynx-pill{ font-size: 11.5px; padding: 6px 10px; }
   }
 
   /* ==============================================
