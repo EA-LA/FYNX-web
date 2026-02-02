@@ -553,6 +553,26 @@
 
   /* ==============================================
      ✅ ONLY FIX YOU ASKED FOR:
+     Resources dropdown was opening/clipping "a little bit" (cut off).
+     Fix = allow overflow + raise stacking context ONLY for header area.
+     (Doesn't touch your layout, only prevents clipping.)
+  ============================================== */
+  #header,
+  #header .nav-container,
+  #header nav,
+  #header nav ul{
+    overflow: visible !important;
+  }
+  #header{
+    position: relative;
+    z-index: 9999;
+  }
+  .fynx-top-actions{ position: relative; z-index: 10000; }
+  .fynx-menu{ z-index: 10001; }
+  .fynx-menu-panel{ z-index: 10002; }
+
+  /* ==============================================
+     ✅ ONLY FIX YOU ASKED FOR:
      Desktop hover opens the subnavs (no click required)
      NOTE: CSS sibling selectors won't work here because subnavs
      are not siblings of the nav links in the DOM.
