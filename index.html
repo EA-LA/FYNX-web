@@ -381,64 +381,174 @@
   }
 
   /* ==============================================
-     ✅ NEW: Header Inline Icon Logos (4 links)
-     - Scoped to .fynx-link-row only
-     - Looks like small logos in one line
-     - Works in light + dark
+     ✅ UPDATED: Header Resources + Network actions
+     - Replaces the 4 icon links
+     - Resources opens dropdown on hover/click
+     - Network stays visible
+     - Theme icon next to Network
   ============================================== */
-  .fynx-link-row{
+  .fynx-top-actions{
     display: flex;
     align-items: center;
     gap: 10px;
     margin-left: 12px;
+    position: relative;
   }
 
-  .fynx-link-row a{
-    width: 34px;
-    height: 34px;
-    display: grid;
-    place-items: center;
+  .fynx-menu{
+    position: relative;
+  }
+
+  .fynx-menu-btn,
+  .fynx-network-btn,
+  .fynx-network-theme{
+    height: 36px;
     border-radius: 10px;
-    text-decoration: none;
     border: 1px solid rgba(0,0,0,0.12);
     background: rgba(255,255,255,0.65);
-    color: rgba(0,0,0,0.82);
+    color: rgba(0,0,0,0.85);
     box-shadow: 0 10px 22px rgba(0,0,0,0.08);
     transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border-color 180ms ease;
   }
 
-  .fynx-link-row a:hover{
+  .fynx-menu-btn,
+  .fynx-network-btn{
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .fynx-network-theme{
+    width: 36px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+
+  .fynx-menu-btn{
+    cursor: pointer;
+  }
+
+  .fynx-menu-btn:hover,
+  .fynx-network-btn:hover,
+  .fynx-network-theme:hover{
     transform: translateY(-1px);
     box-shadow: 0 14px 28px rgba(0,0,0,0.12);
     background: rgba(255,255,255,0.82);
   }
 
-  .fynx-link-row a:active{
-    transform: translateY(0px);
+  .fynx-menu-btn:active,
+  .fynx-network-btn:active,
+  .fynx-network-theme:active{
+    transform: translateY(0);
+  }
+
+  .fynx-menu-panel{
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 250px;
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.10);
+    background: rgba(255,255,255,0.95);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.16);
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(4px);
+    transition: opacity 150ms ease, visibility 150ms ease, transform 150ms ease;
+    z-index: 1000;
+  }
+
+  .fynx-menu.open .fynx-menu-panel{
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .fynx-menu-panel a{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(0,0,0,0.86);
+    padding: 9px 10px;
+    border-radius: 10px;
+  }
+
+  .fynx-menu-panel a:hover{
+    background: rgba(0,0,0,0.06);
   }
 
   /* Dark mode */
-  body.dark-mode .fynx-link-row a,
-  html.dark-mode .fynx-link-row a,
-  [data-theme="dark"] .fynx-link-row a,
-  [data-fynx-theme="dark"] .fynx-link-row a{
+  body.dark-mode .fynx-menu-btn,
+  html.dark-mode .fynx-menu-btn,
+  [data-theme="dark"] .fynx-menu-btn,
+  [data-fynx-theme="dark"] .fynx-menu-btn,
+  body.dark-mode .fynx-network-btn,
+  html.dark-mode .fynx-network-btn,
+  [data-theme="dark"] .fynx-network-btn,
+  [data-fynx-theme="dark"] .fynx-network-btn,
+  body.dark-mode .fynx-network-theme,
+  html.dark-mode .fynx-network-theme,
+  [data-theme="dark"] .fynx-network-theme,
+  [data-fynx-theme="dark"] .fynx-network-theme{
     border-color: rgba(255,255,255,0.14);
     background: rgba(0,0,0,0.55);
-    color: rgba(255,255,255,0.88);
+    color: rgba(255,255,255,0.9);
     box-shadow: 0 14px 30px rgba(0,0,0,0.45);
   }
 
-  body.dark-mode .fynx-link-row a:hover,
-  html.dark-mode .fynx-link-row a:hover,
-  [data-theme="dark"] .fynx-link-row a:hover,
-  [data-fynx-theme="dark"] .fynx-link-row a:hover{
+  body.dark-mode .fynx-menu-btn:hover,
+  html.dark-mode .fynx-menu-btn:hover,
+  [data-theme="dark"] .fynx-menu-btn:hover,
+  [data-fynx-theme="dark"] .fynx-menu-btn:hover,
+  body.dark-mode .fynx-network-btn:hover,
+  html.dark-mode .fynx-network-btn:hover,
+  [data-theme="dark"] .fynx-network-btn:hover,
+  [data-fynx-theme="dark"] .fynx-network-btn:hover,
+  body.dark-mode .fynx-network-theme:hover,
+  html.dark-mode .fynx-network-theme:hover,
+  [data-theme="dark"] .fynx-network-theme:hover,
+  [data-fynx-theme="dark"] .fynx-network-theme:hover{
     background: rgba(0,0,0,0.72);
     border-color: rgba(255,255,255,0.22);
   }
 
+  body.dark-mode .fynx-menu-panel,
+  html.dark-mode .fynx-menu-panel,
+  [data-theme="dark"] .fynx-menu-panel,
+  [data-fynx-theme="dark"] .fynx-menu-panel{
+    border-color: rgba(255,255,255,0.14);
+    background: rgba(8,8,8,0.95);
+    box-shadow: 0 24px 45px rgba(0,0,0,0.52);
+  }
+
+  body.dark-mode .fynx-menu-panel a,
+  html.dark-mode .fynx-menu-panel a,
+  [data-theme="dark"] .fynx-menu-panel a,
+  [data-fynx-theme="dark"] .fynx-menu-panel a{
+    color: rgba(255,255,255,0.9);
+  }
+
+  body.dark-mode .fynx-menu-panel a:hover,
+  html.dark-mode .fynx-menu-panel a:hover,
+  [data-theme="dark"] .fynx-menu-panel a:hover,
+  [data-fynx-theme="dark"] .fynx-menu-panel a:hover{
+    background: rgba(255,255,255,0.08);
+  }
+
   /* Keep header clean on small screens (mobile drawer already exists) */
   @media (max-width: 820px){
-    .fynx-link-row{ display:none; }
+    .fynx-top-actions{ display:none; }
   }
 
   /* ==============================================
@@ -762,26 +872,42 @@
         </ul>
       </nav>
 
-      <!-- ✅ NEW: Small Inline Logos (4 links) -->
-      <div class="fynx-link-row" aria-label="FYNX quick links">
-        <a href="https://elhamamini.cc/fynx-blog/#" target="_blank" rel="noopener" aria-label="FYNX Blog" title="Blog">
-          <i class="fa-solid fa-pen-nib"></i>
-        </a>
-        <a href="https://elhamamini.cc/FYNX-Site/index.html" target="_blank" rel="noopener" aria-label="FYNX Main Site" title="Main Site">
+      <!-- ✅ UPDATED: Resources + Network + Theme icon -->
+      <div class="fynx-top-actions" aria-label="FYNX quick actions">
+        <div class="fynx-menu" id="resourcesMenu">
+          <button class="fynx-menu-btn" type="button" id="resourcesToggle" aria-expanded="false" aria-controls="resourcesPanel">
+            <span>Resources</span>
+            <i class="fa-solid fa-chevron-down" style="font-size:12px;opacity:.8;"></i>
+          </button>
+
+          <div class="fynx-menu-panel" id="resourcesPanel" role="menu" aria-hidden="true">
+            <a href="whitepaper.html" target="_blank" rel="noopener" role="menuitem">
+              <i class="fa-regular fa-file-lines"></i><span>Whitepaper</span>
+            </a>
+            <a href="https://elhamamini.cc/fynx-blog/#" target="_blank" rel="noopener" role="menuitem">
+              <i class="fa-solid fa-pen-nib"></i><span>Blog</span>
+            </a>
+            <a href="https://elhamamini.cc/FYNX-Site/index.html" target="_blank" rel="noopener" role="menuitem">
+              <i class="fa-solid fa-globe"></i><span>Main Site</span>
+            </a>
+            <a href="https://apps.apple.com/app/id6752357210" target="_blank" rel="noopener" role="menuitem">
+              <i class="fa-brands fa-apple"></i><span>App Store</span>
+            </a>
+            <a href="https://elhamamini.cc/RoadMap-FYNX/" target="_blank" rel="noopener" role="menuitem">
+              <i class="fa-solid fa-road"></i><span>Roadmap</span>
+            </a>
+          </div>
+        </div>
+
+        <a class="fynx-network-btn" href="https://elhamamini.cc/FYNX-Site/index.html" target="_blank" rel="noopener" aria-label="Network">
+          <span>Network</span>
           <i class="fa-solid fa-globe"></i>
         </a>
-        <a href="https://apps.apple.com/app/id6752357210" target="_blank" rel="noopener" aria-label="FYNX App Store" title="App Store">
-          <i class="fa-brands fa-apple"></i>
-        </a>
-        <a href="https://elhamamini.cc/RoadMap-FYNX/" target="_blank" rel="noopener" aria-label="FYNX Roadmap" title="Roadmap">
-          <i class="fa-solid fa-road"></i>
-        </a>
-      </div>
 
-      <!-- ✅ NEW: Theme Toggle (right side, small) -->
-      <button class="fynx-theme-toggle" type="button" aria-label="Toggle theme" data-fynx-theme-toggle title="Toggle theme">
-        <i class="fas fa-sun"></i>
-      </button>
+        <button class="fynx-network-theme" type="button" aria-label="Toggle theme" data-fynx-theme-toggle title="Toggle black/white mode">
+          <i class="fas fa-circle-half-stroke"></i>
+        </button>
+      </div>
 
       <!-- Mobile Hamburger -->
       <button class="mobile-menu" id="mobileMenuBtn" type="button" aria-label="Open menu" aria-controls="mobileDrawer" aria-expanded="false">
@@ -1355,6 +1481,53 @@
   })();
   </script>
 
+  <!-- ✅ NEW: Resources dropdown interaction -->
+  <script>
+  (function(){
+    const menu = document.getElementById('resourcesMenu');
+    const toggle = document.getElementById('resourcesToggle');
+    const panel = document.getElementById('resourcesPanel');
+    if(!menu || !toggle || !panel) return;
+
+    let closeTimer = null;
+    const canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    function openMenu(){
+      clearTimeout(closeTimer);
+      menu.classList.add('open');
+      toggle.setAttribute('aria-expanded', 'true');
+      panel.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeMenu(){
+      menu.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+      panel.setAttribute('aria-hidden', 'true');
+    }
+
+    toggle.addEventListener('click', function(e){
+      e.preventDefault();
+      if(menu.classList.contains('open')) closeMenu();
+      else openMenu();
+    });
+
+    if(canHover){
+      menu.addEventListener('mouseenter', openMenu);
+      menu.addEventListener('mouseleave', function(){
+        closeTimer = setTimeout(closeMenu, 120);
+      });
+    }
+
+    document.addEventListener('click', function(e){
+      if(!menu.contains(e.target)) closeMenu();
+    });
+
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape') closeMenu();
+    });
+  })();
+  </script>
+
   <!-- ✅ FIX: Desktop hover subnavs (REAL FIX) -->
   <script>
   (function(){
@@ -1501,4 +1674,3 @@
   </script>
 </body>
 </html>
-```
