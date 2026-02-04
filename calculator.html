@@ -1,371 +1,497 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FYNX Finance World - Dashboard</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FYNX Finance World - Calculators</title>
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-            background: #ffffff;
-            color: #000000;
-            overflow: hidden;
-            height: 100vh;
-        }
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet" />
 
-        body.dark-mode { background: #000000; color: #ffffff; }
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --accent: #0ea5e9;
+      --accent2: #22c55e;
+      --chip: #eff6ff;
+      --card-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    }
 
-        .dashboard-container { display: flex; height: 100vh; width: 100vw; }
+    body.dark-mode {
+      --bg: #020617;
+      --panel: #0b1220;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --line: #1e293b;
+      --accent: #38bdf8;
+      --accent2: #4ade80;
+      --chip: #0f172a;
+      --card-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
+    }
 
-        .nav-panel {
-            width: 120px;
-            background: #fafafa;
-            border-right: 1px solid #e5e5e5;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            left: 0;
-            top: 0;
-            height: 100vh;
-            z-index: 100;
-        }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body.dark-mode .nav-panel { background: #000000; border-right: 1px solid rgba(255, 255, 255, 0.08); }
+    body {
+      font-family: "Manrope", sans-serif;
+      background:
+        radial-gradient(circle at 20% -10%, #dbeafe 0%, transparent 35%),
+        radial-gradient(circle at 100% 0%, #dcfce7 0%, transparent 30%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
 
-        .nav-logo { padding: 32px 0; text-align: center; border-bottom: 1px solid #e5e5e5; }
-        body.dark-mode .nav-logo { border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+    body.dark-mode {
+      background:
+        radial-gradient(circle at 20% -10%, rgba(14, 165, 233, 0.2) 0%, transparent 35%),
+        radial-gradient(circle at 100% 0%, rgba(34, 197, 94, 0.15) 0%, transparent 30%),
+        var(--bg);
+    }
 
-        .nav-logo h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; color: #000000; }
-        body.dark-mode .nav-logo h1 { color: #ffffff; }
+    .dashboard-container { display: flex; min-height: 100vh; }
 
-        .nav-menu { flex: 1; padding: 24px 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .nav-panel {
+      width: 112px;
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      z-index: 10;
+    }
 
-        .nav-item {
-            width: 80px;
-            padding: 16px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            border-radius: 8px;
-        }
+    .nav-logo {
+      height: 88px;
+      display: grid;
+      place-items: center;
+      border-bottom: 1px solid var(--line);
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
 
-        .nav-item:hover { background: #f0f0f0; }
-        body.dark-mode .nav-item:hover { background: rgba(255, 255, 255, 0.05); }
+    .nav-menu {
+      padding: 16px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+    }
 
-        .nav-item.active { background: #ffffff; }
-        body.dark-mode .nav-item.active { background: rgba(255, 255, 255, 0.08); }
+    .nav-item {
+      width: 90px;
+      text-align: center;
+      padding: 12px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid transparent;
+      transition: 0.2s;
+      font-weight: 700;
+    }
 
-        .nav-item.active::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 24px;
-            background: #000000;
-            border-radius: 0 2px 2px 0;
-        }
+    .nav-item:hover {
+      background: var(--chip);
+      color: var(--text);
+      border-color: var(--line);
+    }
 
-        body.dark-mode .nav-item.active::after { background: #ffffff; }
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(14,165,233,0.12), rgba(34,197,94,0.12));
+      color: var(--text);
+      border-color: rgba(14,165,233,0.35);
+    }
 
-        .nav-icon {
-            width: 22px;
-            height: 22px;
-            stroke: #666666;
-            stroke-width: 1.5;
-            fill: none;
-            transition: stroke 0.2s ease;
-        }
+    .main-content {
+      margin-left: 112px;
+      width: calc(100% - 112px);
+    }
 
-        body.dark-mode .nav-icon { stroke: rgba(255, 255, 255, 0.5); }
+    .top-bar {
+      height: 76px;
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in oklab, var(--panel) 92%, transparent);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
 
-        .nav-item.active .nav-icon,
-        .nav-item:hover .nav-icon { stroke: #000000; }
+    .title-wrap h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
 
-        body.dark-mode .nav-item.active .nav-icon,
-        body.dark-mode .nav-item:hover .nav-icon { stroke: #ffffff; }
+    .title-wrap p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
 
-        .nav-label { font-size: 11px; font-weight: 500; letter-spacing: 0.2px; color: #666666; transition: color 0.2s ease; }
-        body.dark-mode .nav-label { color: rgba(255, 255, 255, 0.5); }
+    .top-actions { display: flex; align-items: center; gap: 12px; }
 
-        .nav-item.active .nav-label,
-        .nav-item:hover .nav-label { color: #000000; }
+    .theme-btn, .avatar {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 12px;
+      height: 40px;
+      min-width: 40px;
+      padding: 0 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
 
-        body.dark-mode .nav-item.active .nav-label,
-        body.dark-mode .nav-item:hover .nav-label { color: #ffffff; }
+    .avatar {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      padding: 0;
+    }
 
-        .main-content { margin-left: 120px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    .content-area {
+      padding: 24px;
+    }
 
-        .top-bar {
-            height: 64px;
-            border-bottom: 1px solid #e5e5e5;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 48px;
-            background: #ffffff;
-        }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
 
-        body.dark-mode .top-bar { border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: #000000; }
+    .hero-card, .quick-calc {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--card-shadow);
+    }
 
-        .page-title { font-size: 15px; font-weight: 500; color: #666666; }
-        body.dark-mode .page-title { color: rgba(255, 255, 255, 0.5); }
+    .hero-card {
+      padding: 20px;
+    }
 
-        .top-bar-right { display: flex; align-items: center; gap: 20px; }
+    .hero-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 6px 10px;
+      margin-bottom: 12px;
+    }
 
-        .theme-toggle { width: 24px; height: 24px; cursor: pointer; transition: opacity 0.2s ease; opacity: 0.5; }
-        .theme-toggle:hover { opacity: 1; }
+    .hero h2 {
+      font-size: 28px;
+      line-height: 1.1;
+      letter-spacing: -0.8px;
+      margin-bottom: 8px;
+    }
 
-        .theme-toggle svg { width: 100%; height: 100%; stroke: #000000; stroke-width: 1.5; fill: none; }
-        body.dark-mode .theme-toggle svg { stroke: #ffffff; }
+    .hero p { color: var(--muted); max-width: 60ch; }
 
-        .notification-icon {
-            width: 20px;
-            height: 20px;
-            stroke: #000000;
-            stroke-width: 1.5;
-            fill: none;
-            opacity: 0.5;
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-        }
+    .quick-calc {
+      padding: 16px;
+    }
 
-        body.dark-mode .notification-icon { stroke: #ffffff; }
-        .notification-icon:hover { opacity: 1; }
+    .calc-display {
+      border: 1px solid var(--line);
+      background: var(--chip);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: right;
+      font-size: 30px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      min-height: 64px;
+    }
 
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #f0f0f0;
-            border: 1px solid #e5e5e5;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 600;
-            color: #666666;
-        }
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
 
-        body.dark-mode .user-avatar {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.5);
-        }
+    .calc-btn {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px;
+      font-weight: 800;
+      cursor: pointer;
+    }
 
-        .user-avatar:hover { border-color: #cccccc; transform: scale(1.05); }
-        body.dark-mode .user-avatar:hover { border-color: rgba(255, 255, 255, 0.3); }
+    .calc-btn.op {
+      background: var(--chip);
+    }
 
-        .content-area { flex: 1; overflow-y: auto; padding: 48px; background: #ffffff; }
-        body.dark-mode .content-area { background: #000000; }
+    .filters {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
 
-        /* CALCULATOR VIEW */
-        .calculator-view {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding-top: 80px;
-        }
+    .search {
+      width: 100%;
+      max-width: 420px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 11px 12px;
+      font-family: inherit;
+      font-weight: 700;
+    }
 
-        .calculator-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 48px;
-            width: 480px;
-        }
+    .count {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
 
-        .calculator-display {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 8px;
-            padding: 32px 24px;
-            text-align: right;
-            margin-bottom: 32px;
-        }
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+    }
 
-        .calculator-result { font-size: 48px; font-weight: 300; letter-spacing: -1px; }
+    .tool-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: var(--card-shadow);
+      transition: 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-        .calculator-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .tool-card:hover {
+      transform: translateY(-3px);
+      border-color: color-mix(in oklab, var(--accent) 45%, var(--line));
+    }
 
-        .calc-button {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
-            padding: 24px;
-            font-size: 18px;
-            color: #ffffff;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
+    .tool-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
 
-        .calc-button:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.15); }
-    </style>
+    .tool-title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+    }
+
+    .tool-chip {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--accent);
+      background: var(--chip);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 8px;
+    }
+
+    .tool-desc {
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 34px;
+    }
+
+    .tool-link {
+      margin-top: auto;
+      text-decoration: none;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    @media (max-width: 980px) {
+      .hero { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      .nav-panel { width: 82px; }
+      .main-content { margin-left: 82px; width: calc(100% - 82px); }
+      .nav-item { width: 64px; font-size: 11px; padding: 10px 6px; }
+      .content-area { padding: 14px; }
+      .hero h2 { font-size: 24px; }
+    }
+  </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <nav class="nav-panel">
-            <div class="nav-logo">
-                <h1>FYNX</h1>
-            </div>
-            
-            <div class="nav-menu">
-                <div class="nav-item" data-view="home">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                    </svg>
-                    <span class="nav-label">Home</span>
-                </div>
-                
-                <div class="nav-item" data-view="journal">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                    </svg>
-                    <span class="nav-label">Journal</span>
-                </div>
-                
-                <div class="nav-item active" data-view="calculator">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <rect x="4" y="2" width="16" height="20" rx="2"></rect>
-                        <line x1="8" y1="6" x2="16" y2="6"></line>
-                        <line x1="8" y1="10" x2="16" y2="10"></line>
-                        <line x1="8" y1="14" x2="16" y2="14"></line>
-                        <line x1="8" y1="18" x2="16" y2="18"></line>
-                    </svg>
-                    <span class="nav-label">Calculator</span>
-                </div>
-                
-                <div class="nav-item" data-view="news">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
-                        <line x1="12" y1="11" x2="18" y2="11"></line>
-                        <line x1="12" y1="7" x2="18" y2="7"></line>
-                    </svg>
-                    <span class="nav-label">News</span>
-                </div>
-                
-                <div class="nav-item" data-view="calendar">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    <span class="nav-label">Calendar</span>
-                </div>
-                
-                <div class="nav-item" data-view="profile">
-                    <svg class="nav-icon" viewBox="0 0 24 24">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    <span class="nav-label">Profile</span>
-                </div>
-            </div>
-        </nav>
+  <div class="dashboard-container">
+    <nav class="nav-panel">
+      <div class="nav-logo">FYNX</div>
+      <div class="nav-menu">
+        <a class="nav-item" href="home.html">Home</a>
+        <a class="nav-item" href="journal.html">Journal</a>
+        <a class="nav-item active" href="calculator.html">Calculator</a>
+        <a class="nav-item" href="news.html">News</a>
+        <a class="nav-item" href="calendar.html">Calendar</a>
+        <a class="nav-item" href="profile.html">Profile</a>
+      </div>
+    </nav>
 
-        <main class="main-content">
-            <div class="top-bar">
-                <h1 class="page-title">Calculator</h1>
-                <div class="top-bar-right">
-                    <div class="theme-toggle" onclick="toggleTheme()">
-                        <svg class="sun-icon" viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="5"></circle>
-                            <line x1="12" y1="1" x2="12" y2="3"></line>
-                            <line x1="12" y1="21" x2="12" y2="23"></line>
-                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                            <line x1="1" y1="12" x2="3" y2="12"></line>
-                            <line x1="21" y1="12" x2="23" y2="12"></line>
-                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                        </svg>
-                    </div>
-                    <svg class="notification-icon" viewBox="0 0 24 24">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                    </svg>
-                    <div class="user-avatar">FX</div>
-                </div>
-            </div>
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="title-wrap">
+          <h1>Calculator Suite</h1>
+          <p>Professional trading and finance tools</p>
+        </div>
+        <div class="top-actions">
+          <button class="theme-btn" onclick="toggleTheme()">Theme</button>
+          <div class="avatar">FX</div>
+        </div>
+      </header>
 
-            <div class="content-area">
-                <div class="calculator-view" id="calculator">
-                    <div class="calculator-card">
-                        <div class="calculator-display">
-                            <div class="calculator-result">0</div>
-                        </div>
-                        <div class="calculator-grid">
-                            <div class="calc-button">7</div>
-                            <div class="calc-button">8</div>
-                            <div class="calc-button">9</div>
-                            <div class="calc-button">÷</div>
-                            <div class="calc-button">4</div>
-                            <div class="calc-button">5</div>
-                            <div class="calc-button">6</div>
-                            <div class="calc-button">×</div>
-                            <div class="calc-button">1</div>
-                            <div class="calc-button">2</div>
-                            <div class="calc-button">3</div>
-                            <div class="calc-button">−</div>
-                            <div class="calc-button">0</div>
-                            <div class="calc-button">.</div>
-                            <div class="calc-button">=</div>
-                            <div class="calc-button">+</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
+      <section class="content-area">
+        <div class="hero">
+          <div class="hero-card">
+            <span class="hero-badge">FYNX PRO TOOLS</span>
+            <h2>All Calculators in One Place</h2>
+            <p>Use real-product style cards, fast access, and clean UX for every tool: risk, options, forex, stocks, and market timing.</p>
+          </div>
 
-    <script>
-        const navItems = document.querySelectorAll('.nav-item');
-        const pageTitle = document.querySelector('.page-title');
+          <div class="quick-calc">
+            <div class="calc-display" id="display">0</div>
+            <div class="calc-grid" id="calcGrid"></div>
+          </div>
+        </div>
 
-        const viewTitles = {
-            home: 'Home',
-            journal: 'Journal',
-            calculator: 'Calculator',
-            news: 'News',
-            calendar: 'Calendar',
-            profile: 'Profile'
-        };
+        <div class="filters">
+          <input id="searchInput" class="search" type="text" placeholder="Search calculators..." />
+          <div class="count" id="countText">0 tools</div>
+        </div>
 
-        const viewPages = {
-            home: 'home.html',
-            journal: 'journal.html',
-            calculator: 'calculator.html',
-            news: 'news.html',
-            calendar: 'calendar.html',
-            profile: 'profile.html'
-        };
+        <div class="tools-grid" id="toolsGrid"></div>
+      </section>
+    </main>
+  </div>
 
-        navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                const viewName = item.getAttribute('data-view');
-                pageTitle.textContent = viewTitles[viewName];
-                if (viewPages[viewName]) {
-                    window.location.href = viewPages[viewName];
-                }
-            });
-        });
+  <script>
+    const tools = [
+      { name: "ATR Stop", file: "tools/atr-stop.html", desc: "Volatility-based stop loss levels." },
+      { name: "Breakeven", file: "tools/breakeven.html", desc: "Find exact breakeven price quickly." },
+      { name: "Calendar Alerts", file: "tools/calendar-alerts.html", desc: "Important event alert timing." },
+      { name: "Compound", file: "tools/compound.html", desc: "Compound growth and return planner." },
+      { name: "Correlation", file: "tools/correlation.html", desc: "Asset relationship and correlation check." },
+      { name: "Crypto", file: "tools/crypto.html", desc: "Crypto sizing and trade utility set." },
+      { name: "Currency", file: "tools/currency.html", desc: "FX conversion and quote helper." },
+      { name: "Economic Calendar", file: "tools/economic-calendar.html", desc: "Macro events by date and impact." },
+      { name: "Fibonacci", file: "tools/fibonacci.html", desc: "Fib retracement and extension levels." },
+      { name: "Forex", file: "tools/forex.html", desc: "Forex trade planning calculator." },
+      { name: "Heatmap", file: "tools/heatmap.html", desc: "Visual market strength overview." },
+      { name: "Liquidation Guard", file: "tools/liquidation-guard.html", desc: "Liquidation risk checker." },
+      { name: "Margin", file: "tools/margin.html", desc: "Required margin and leverage math." },
+      { name: "Market Holidays", file: "tools/market-holidays.html", desc: "Exchange holiday calendar lookup." },
+      { name: "Market Hours", file: "tools/market-hours.html", desc: "Open/close sessions across regions." },
+      { name: "Options Payoff", file: "tools/options-payoff.html", desc: "Strategy payoff profile." },
+      { name: "Options", file: "tools/options.html", desc: "Options pricing and quick metrics." },
+      { name: "Pip", file: "tools/pip.html", desc: "Pip value and move calculator." },
+      { name: "Pivot", file: "tools/pivot.html", desc: "Pivot point support/resistance levels." },
+      { name: "Position Size", file: "tools/position-size.html", desc: "Risk-based position sizing tool." },
+      { name: "Profit Loss", file: "tools/profit-loss.html", desc: "Trade P/L estimation instantly." },
+      { name: "Risk Reward", file: "tools/risk-reward.html", desc: "Risk to reward ratio calculator." },
+      { name: "Stock", file: "tools/stock.html", desc: "Stock return and position utility." },
+      { name: "Symbol News", file: "tools/symbol-news.html", desc: "Company/symbol focused news module." }
+    ];
 
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
+    const toolsGrid = document.getElementById("toolsGrid");
+    const searchInput = document.getElementById("searchInput");
+    const countText = document.getElementById("countText");
+
+    function renderTools(list) {
+      toolsGrid.innerHTML = list.map(tool => `
+        <article class="tool-card">
+          <div class="tool-head">
+            <h3 class="tool-title">${tool.name}</h3>
+            <span class="tool-chip">PRO</span>
+          </div>
+          <p class="tool-desc">${tool.desc}</p>
+          <a class="tool-link" href="${tool.file}">Open Tool</a>
+        </article>
+      `).join("");
+
+      countText.textContent = `${list.length} tools`;
+    }
+
+    searchInput.addEventListener("input", () => {
+      const q = searchInput.value.toLowerCase().trim();
+      const filtered = tools.filter(t =>
+        t.name.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q)
+      );
+      renderTools(filtered);
+    });
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark-mode");
+    }
+
+    // mini calculator
+    const calcButtons = ["C", "⌫", "%", "÷", "7", "8", "9", "×", "4", "5", "6", "-", "1", "2", "3", "+", "0", ".", "="];
+    const calcGrid = document.getElementById("calcGrid");
+    const display = document.getElementById("display");
+    let expression = "";
+
+    calcButtons.forEach(btn => {
+      const button = document.createElement("button");
+      button.className = "calc-btn " + (["÷","×","-","+","=","%"].includes(btn) ? "op" : "");
+      button.textContent = btn;
+      button.onclick = () => onCalc(btn);
+      calcGrid.appendChild(button);
+    });
+
+    function onCalc(value) {
+      if (value === "C") {
+        expression = "";
+        display.textContent = "0";
+        return;
+      }
+      if (value === "⌫") {
+        expression = expression.slice(0, -1);
+        display.textContent = expression || "0";
+        return;
+      }
+      if (value === "=") {
+        try {
+          const jsExpr = expression.replaceAll("÷", "/").replaceAll("×", "*");
+          const result = eval(jsExpr || "0");
+          expression = String(result);
+          display.textContent = expression;
+        } catch {
+          display.textContent = "Error";
+          expression = "";
         }
-    </script>
+        return;
+      }
+      expression += value;
+      display.textContent = expression;
+    }
+
+    renderTools(tools);
+  </script>
 </body>
 </html>
