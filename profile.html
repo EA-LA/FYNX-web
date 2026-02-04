@@ -2,240 +2,413 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>FYNX Finance World - Profile</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root{
+      /* ===== Monochrome System (Light) ===== */
+      --bg:#ffffff;
+      --surface:#ffffff;
+      --surface-2: rgba(11,11,12,0.04);
+      --text:#0b0b0c;
+      --muted:#5b616a;
+      --line: rgba(11,11,12,0.10);
 
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-      background: #ffffff;
-      color: #000000;
-      overflow: hidden;
-      height: 100vh;
+      --accent:#0b0b0c;
+      --accent-soft: rgba(11,11,12,0.08);
+
+      --shadow: 0 18px 38px rgba(0,0,0,0.06);
+      --radius: 14px;
+      --nav-width: 108px;
+
+      --focus: 0 0 0 3px rgba(11,11,12,0.18);
     }
-    body.dark-mode { background: #000000; color: #ffffff; }
 
-    .dashboard-container { display: flex; height: 100vh; width: 100vw; }
+    body.dark-mode{
+      /* ===== Monochrome System (Dark) ===== */
+      --bg:#000000;
+      --surface:#0b0b0c;
+      --surface-2: rgba(242,243,245,0.08);
+      --text:#f2f3f5;
+      --muted:#a9b0bb;
+      --line: rgba(242,243,245,0.12);
 
-    .nav-panel {
-      width: 120px;
-      background: #fafafa;
-      border-right: 1px solid #e5e5e5;
-      display: flex;
-      flex-direction: column;
+      --accent:#f2f3f5;
+      --accent-soft: rgba(242,243,245,0.10);
+
+      --shadow: 0 20px 44px rgba(0,0,0,0.55);
+
+      --focus: 0 0 0 3px rgba(242,243,245,0.18);
+    }
+
+    *{ margin:0; padding:0; box-sizing:border-box; }
+
+    body{
+      font-family:"Manrope", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      min-height:100vh;
+
+      /* Light: micro-dots */
+      background:
+        radial-gradient(circle at 1px 1px, rgba(0,0,0,0.06) 1px, transparent 1px) 0 0 / 18px 18px,
+        linear-gradient(var(--bg), var(--bg));
+    }
+
+    body.dark-mode{
+      /* Dark: grid */
+      background:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / 26px 26px,
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / 26px 26px,
+        radial-gradient(circle at 40% 10%, rgba(255,255,255,0.06) 0%, transparent 45%),
+        radial-gradient(circle at 70% 0%, rgba(255,255,255,0.04) 0%, transparent 40%),
+        linear-gradient(var(--bg), var(--bg));
+    }
+
+    .dashboard-container{ display:flex; min-height:100vh; width:100%; }
+
+    /* ===== Sidebar ===== */
+    .nav-panel{
+      width: var(--nav-width);
+      background: color-mix(in oklab, var(--surface) 92%, transparent);
+      border-right: 1px solid var(--line);
       position: fixed;
-      left: 0;
-      top: 0;
-      height: 100vh;
-      z-index: 100;
-    }
-    body.dark-mode .nav-panel { background: #000000; border-right: 1px solid rgba(255, 255, 255, 0.08); }
-
-    .nav-logo { padding: 32px 0; text-align: center; border-bottom: 1px solid #e5e5e5; }
-    body.dark-mode .nav-logo { border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
-
-    .nav-logo h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; color: #000000; }
-    body.dark-mode .nav-logo h1 { color: #ffffff; }
-
-    .nav-menu { flex: 1; padding: 24px 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-
-    .nav-item {
-      width: 80px;
-      padding: 16px 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      position: relative;
-      border-radius: 8px;
+      left:0; top:0;
+      height:100vh;
+      z-index:100;
+      display:flex;
+      flex-direction:column;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
     }
 
-    .nav-item:hover { background: #f0f0f0; }
-    body.dark-mode .nav-item:hover { background: rgba(255, 255, 255, 0.05); }
-
-    .nav-item.active { background: #ffffff; }
-    body.dark-mode .nav-item.active { background: rgba(255, 255, 255, 0.08); }
-
-    .nav-item.active::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 3px;
-      height: 24px;
-      background: #000000;
-      border-radius: 0 2px 2px 0;
+    .nav-logo{
+      height:84px;
+      border-bottom:1px solid var(--line);
+      display:grid;
+      place-items:center;
+      font-size:24px;
+      font-weight:900;
+      letter-spacing:-0.7px;
     }
-    body.dark-mode .nav-item.active::after { background: #ffffff; }
 
-    .nav-icon { width: 22px; height: 22px; stroke: #666666; stroke-width: 1.5; fill: none; transition: stroke 0.2s ease; }
-    body.dark-mode .nav-icon { stroke: rgba(255, 255, 255, 0.5); }
-
-    .nav-item.active .nav-icon,
-    .nav-item:hover .nav-icon { stroke: #000000; }
-    body.dark-mode .nav-item.active .nav-icon,
-    body.dark-mode .nav-item:hover .nav-icon { stroke: #ffffff; }
-
-    .nav-label { font-size: 11px; font-weight: 500; letter-spacing: 0.2px; color: #666666; transition: color 0.2s ease; }
-    body.dark-mode .nav-label { color: rgba(255, 255, 255, 0.5); }
-
-    .nav-item.active .nav-label,
-    .nav-item:hover .nav-label { color: #000000; }
-    body.dark-mode .nav-item.active .nav-label,
-    body.dark-mode .nav-item:hover .nav-label { color: #ffffff; }
-
-    .main-content { margin-left: 120px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-
-    .top-bar {
-      height: 64px;
-      border-bottom: 1px solid #e5e5e5;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 48px;
-      background: #ffffff;
+    .nav-menu{
+      padding:16px 0;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:center;
     }
-    body.dark-mode .top-bar { border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: #000000; }
 
-    .page-title { font-size: 15px; font-weight: 500; color: #666666; }
-    body.dark-mode .page-title { color: rgba(255, 255, 255, 0.5); }
-
-    .top-bar-right { display: flex; align-items: center; gap: 20px; }
-
-    .theme-toggle { width: 24px; height: 24px; cursor: pointer; transition: opacity 0.2s ease; opacity: 0.5; }
-    .theme-toggle:hover { opacity: 1; }
-    .theme-toggle svg { width: 100%; height: 100%; stroke: #000000; stroke-width: 1.5; fill: none; }
-    body.dark-mode .theme-toggle svg { stroke: #ffffff; }
-
-    .notification-icon { width: 20px; height: 20px; stroke: #000000; stroke-width: 1.5; fill: none; opacity: 0.5; cursor: pointer; transition: opacity 0.2s ease; }
-    body.dark-mode .notification-icon { stroke: #ffffff; }
-    .notification-icon:hover { opacity: 1; }
-
-    .user-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: #f0f0f0;
-      border: 1px solid #e5e5e5;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 600;
-      color: #666666;
-      overflow: hidden;
+    .nav-item{
+      width:82px;
+      border-radius:12px;
+      padding:12px 4px;
+      display:grid;
+      gap:6px;
+      place-items:center;
+      cursor:pointer;
+      color: var(--muted);
+      border:1px solid transparent;
+      transition:0.18s ease;
+      position:relative;
+      user-select:none;
+      text-decoration:none;
     }
-    .user-avatar img { width: 100%; height: 100%; object-fit: cover; display:block; }
-    body.dark-mode .user-avatar { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.5); }
 
-    .content-area { flex: 1; overflow-y: auto; padding: 48px; background: #ffffff; }
-    body.dark-mode .content-area { background: #000000; }
-
-    .section-header { margin-bottom: 32px; }
-    .section-header h2 { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 6px; color: #000000; }
-    body.dark-mode .section-header h2 { color: #ffffff; }
-    .section-header p { font-size: 14px; color: #999999; font-weight: 400; }
-    body.dark-mode .section-header p { color: rgba(255, 255, 255, 0.4); }
-
-    .profile-header {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      margin-bottom: 40px;
-      padding: 32px;
-      background: #fafafa;
-      border: 1px solid #e5e5e5;
-      border-radius: 12px;
+    .nav-item:hover{
+      background: var(--surface-2);
+      color: var(--text);
+      border-color: var(--line);
+      transform: translateY(-1px);
     }
-    body.dark-mode .profile-header { background: rgba(255, 255, 255, 0.02); border-color: rgba(255, 255, 255, 0.06); }
 
-    .profile-avatar-large {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: #ffffff;
-      border: 1px solid #e5e5e5;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: 600;
-      color: #666666;
-      flex-shrink: 0;
-      overflow: hidden;
+    .nav-item.active{
+      background: var(--accent-soft);
+      color: var(--text);
+      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
     }
-    .profile-avatar-large img { width: 100%; height: 100%; object-fit: cover; display:block; }
-    body.dark-mode .profile-avatar-large { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.5); }
 
-    .profile-info { flex: 1; }
-
-    .profile-name-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-
-    .profile-info h2 { font-size: 20px; font-weight: 600; color: #000000; }
-    body.dark-mode .profile-info h2 { color: #ffffff; }
-
-    .edit-profile-btn {
-      padding: 6px 14px;
-      border: 1px solid #e5e5e5;
-      border-radius: 6px;
-      background: #ffffff;
-      font-size: 12px;
-      font-weight: 500;
-      color: #000000;
-      cursor: pointer;
-      transition: all 0.2s ease;
+    .nav-item.active::after{
+      content:"";
+      position:absolute;
+      left:-13px;
+      top:50%;
+      transform:translateY(-50%);
+      width:4px;
+      height:30px;
+      border-radius:999px;
+      background: var(--accent);
+      opacity: 0.9;
     }
-    .edit-profile-btn:hover { transform: translateY(-1px); }
-    body.dark-mode .edit-profile-btn { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: #ffffff; }
 
-    .profile-info p { font-size: 13px; color: #999999; margin-bottom: 20px; }
-    body.dark-mode .profile-info p { color: rgba(255, 255, 255, 0.4); }
+    .nav-icon{ width:20px; height:20px; stroke:currentColor; stroke-width:1.8; fill:none; }
+    .nav-label{ font-size:11px; font-weight:800; }
 
-    .profile-stats { display: flex; gap: 40px; flex-wrap: wrap; }
-
-    .profile-stat-item h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: #999999; margin-bottom: 6px; font-weight: 600; }
-    body.dark-mode .profile-stat-item h4 { color: rgba(255, 255, 255, 0.4); }
-
-    .profile-stat-item p { font-size: 18px; font-weight: 600; color: #000000; margin: 0; }
-    body.dark-mode .profile-stat-item p { color: #ffffff; }
-
-    .settings-section-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #000000; }
-    body.dark-mode .settings-section-title { color: #ffffff; }
-
-    .settings-list { display: flex; flex-direction: column; gap: 8px; }
-
-    .settings-item {
-      background: #fafafa;
-      border: 1px solid #e5e5e5;
-      border-radius: 10px;
-      padding: 18px 20px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      transition: all 0.2s ease;
-      cursor: pointer;
+    .main-content{
+      margin-left: var(--nav-width);
+      width: calc(100% - var(--nav-width));
+      display:flex;
+      flex-direction:column;
+      min-height:100vh;
     }
-    .settings-item:hover { transform: translateY(-1px); }
 
-    body.dark-mode .settings-item { background: rgba(255, 255, 255, 0.02); border-color: rgba(255, 255, 255, 0.06); }
+    /* ===== Top Bar ===== */
+    .top-bar{
+      height:72px;
+      border-bottom:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 88%, transparent);
+      backdrop-filter: blur(10px);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 24px;
+      position:sticky;
+      top:0;
+      z-index:10;
+    }
 
-    .settings-icon { width: 20px; height: 20px; stroke: #666666; stroke-width: 1.5; fill: none; }
-    body.dark-mode .settings-icon { stroke: rgba(255, 255, 255, 0.5); }
+    .page-title{
+      font-size:16px;
+      font-weight:900;
+      letter-spacing:-0.2px;
+    }
 
-    .settings-text { flex: 1; }
-    .settings-label { font-size: 14px; font-weight: 500; color: #000000; margin-bottom: 2px; }
-    body.dark-mode .settings-label { color: #ffffff; }
-    .settings-value { font-size: 12px; color: #999999; }
-    body.dark-mode .settings-value { color: rgba(255, 255, 255, 0.4); }
+    .top-bar-right{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      color: var(--muted);
+      font-size:13px;
+      font-weight:800;
+    }
 
-    /* Modal */
+    .icon-btn{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background: var(--surface);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      color: var(--muted);
+      transition:0.18s ease;
+    }
+
+    .icon-btn:hover{
+      color: var(--text);
+      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
+      transform: translateY(-1px);
+    }
+
+    .icon-btn:focus-visible{
+      outline:none;
+      box-shadow: var(--focus);
+    }
+
+    .icon-btn svg{
+      width:18px;
+      height:18px;
+      stroke: currentColor;
+      fill:none;
+      stroke-width:1.8;
+    }
+
+    .user-avatar{
+      width:34px; height:34px;
+      border-radius:999px;
+      background: var(--surface-2);
+      border:1px solid var(--line);
+      display:grid;
+      place-items:center;
+      font-size:12px;
+      font-weight:900;
+      color: var(--muted);
+      overflow:hidden;
+    }
+    .user-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+    .content-area{
+      padding:24px;
+      display:grid;
+      gap:16px;
+    }
+
+    .section-header{ margin-bottom: 6px; }
+    .section-header h2{
+      font-size:28px;
+      line-height:1.1;
+      letter-spacing:-0.8px;
+      margin-bottom:6px;
+      font-weight:900;
+    }
+    .section-header p{
+      color: var(--muted);
+      font-size:14px;
+      font-weight:800;
+    }
+
+    /* ===== Panels ===== */
+    .panel{
+      background: color-mix(in oklab, var(--surface) 92%, transparent);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .profile-header{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      padding:18px;
+    }
+
+    .profile-avatar-large{
+      width:78px;
+      height:78px;
+      border-radius:999px;
+      background: var(--surface-2);
+      border:1px solid var(--line);
+      display:grid;
+      place-items:center;
+      font-size:22px;
+      font-weight:900;
+      color: var(--muted);
+      flex-shrink:0;
+      overflow:hidden;
+    }
+    .profile-avatar-large img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+    .profile-info{ flex:1; min-width:0; }
+
+    .profile-name-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:6px;
+    }
+
+    .profile-info h2{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-0.3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .edit-profile-btn{
+      padding:8px 12px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background: var(--surface);
+      font-size:12px;
+      font-weight:900;
+      color: var(--text);
+      cursor:pointer;
+      transition:0.18s ease;
+      white-space:nowrap;
+    }
+    .edit-profile-btn:hover{
+      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
+      transform: translateY(-1px);
+    }
+    .edit-profile-btn:focus-visible{ outline:none; box-shadow: var(--focus); }
+
+    .profile-email{
+      font-size:13px;
+      color: var(--muted);
+      font-weight:800;
+      margin-bottom:12px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .profile-stats{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap:10px;
+      margin-top: 10px;
+    }
+
+    .profile-stat-item{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      background: var(--surface-2);
+      display:grid;
+      gap:6px;
+    }
+
+    .profile-stat-item h4{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:0.8px;
+      color: var(--muted);
+      font-weight:900;
+    }
+
+    .profile-stat-item p{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-0.4px;
+      margin:0;
+    }
+
+    .hint{
+      margin: 12px 18px 18px;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 90%, var(--surface-2));
+      color: var(--muted);
+      font-size:12px;
+      line-height:1.5;
+      font-weight:800;
+    }
+
+    .settings-section-title{
+      font-size:15px;
+      font-weight:900;
+      letter-spacing:-0.2px;
+      margin: 10px 0 2px;
+    }
+
+    .settings-list{ display:flex; flex-direction:column; gap:10px; }
+
+    .settings-item{
+      background: color-mix(in oklab, var(--surface) 92%, transparent);
+      border:1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 14px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      transition:0.18s ease;
+      cursor:pointer;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+    .settings-item:hover{
+      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
+      transform: translateY(-1px);
+    }
+
+    .settings-icon{ width:20px; height:20px; stroke: var(--muted); stroke-width:1.8; fill:none; }
+
+    .settings-text{ flex:1; min-width:0; }
+    .settings-label{ font-size:14px; font-weight:900; color: var(--text); margin-bottom:2px; }
+    .settings-value{ font-size:12px; color: var(--muted); font-weight:800; }
+
+    /* ===== Modal ===== */
     .modal-backdrop{
       position: fixed;
       inset: 0;
@@ -251,161 +424,204 @@
     .modal{
       width: 520px;
       max-width: 100%;
-      background: #ffffff;
-      border: 1px solid #e5e5e5;
-      border-radius: 14px;
-      padding: 22px;
+      background: color-mix(in oklab, var(--surface) 96%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
       box-shadow: 0 30px 80px rgba(0,0,0,.18);
-    }
-    body.dark-mode .modal{
-      background: #000000;
-      border-color: rgba(255,255,255,.10);
-      box-shadow: 0 30px 80px rgba(0,0,0,.40);
+      backdrop-filter: blur(10px);
     }
 
     .modal-head{
       display:flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
     .modal-title{
       font-size: 15px;
-      font-weight: 700;
-      color:#000;
+      font-weight: 900;
       letter-spacing: -.2px;
+      color: var(--text);
     }
-    body.dark-mode .modal-title{ color:#fff; }
 
     .modal-close{
-      width: 32px; height: 32px;
+      width: 34px; height: 34px;
       border-radius: 10px;
-      border: 1px solid #e5e5e5;
-      background: #fafafa;
+      border: 1px solid var(--line);
+      background: var(--surface);
       cursor: pointer;
       display:flex;
       align-items:center;
       justify-content:center;
-      opacity:.8;
+      color: var(--muted);
+      transition:0.18s ease;
     }
-    .modal-close:hover{ opacity:1; }
-    body.dark-mode .modal-close{
-      background: rgba(255,255,255,.04);
-      border-color: rgba(255,255,255,.10);
+    .modal-close:hover{
+      color: var(--text);
+      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
+      transform: translateY(-1px);
     }
+    .modal-close:focus-visible{ outline:none; box-shadow: var(--focus); }
 
-    .form-row{ display:flex; gap: 14px; margin-top: 12px; }
-    .form-col{ flex:1; }
+    .form-row{ display:flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+    .form-col{ flex:1; min-width: 210px; }
 
     label{
       display:block;
       font-size: 12px;
-      color: #666;
+      color: var(--muted);
       margin-bottom: 6px;
-      font-weight: 600;
+      font-weight: 900;
       letter-spacing: .2px;
     }
-    body.dark-mode label{ color: rgba(255,255,255,.55); }
 
     input[type="text"], input[type="email"]{
       width: 100%;
       height: 42px;
-      border-radius: 10px;
-      border: 1px solid #e5e5e5;
+      border-radius: 12px;
+      border: 1px solid var(--line);
       padding: 0 12px;
       font-size: 14px;
       outline: none;
-      background: #fff;
-      color: #000;
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 800;
     }
-    body.dark-mode input[type="text"], body.dark-mode input[type="email"]{
-      background: rgba(255,255,255,.04);
-      border-color: rgba(255,255,255,.10);
-      color:#fff;
+    input[type="text"]:focus, input[type="email"]:focus{
+      box-shadow: var(--focus);
+      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
     }
 
     input[type="file"]{
       width:100%;
-      border-radius: 10px;
-      border: 1px dashed #d8d8d8;
+      border-radius: 12px;
+      border: 1px dashed color-mix(in oklab, var(--text) 18%, var(--line));
       padding: 12px;
-      background: #fafafa;
-      color: #000;
+      background: var(--surface-2);
+      color: var(--text);
       cursor:pointer;
-    }
-    body.dark-mode input[type="file"]{
-      background: rgba(255,255,255,.03);
-      border-color: rgba(255,255,255,.14);
-      color:#fff;
+      font-weight: 800;
     }
 
     .modal-actions{
       display:flex;
       justify-content: flex-end;
       gap: 10px;
-      margin-top: 18px;
+      margin-top: 14px;
     }
 
     .btn{
       height: 40px;
       padding: 0 14px;
-      border-radius: 10px;
-      border: 1px solid #e5e5e5;
-      background: #fff;
-      font-weight: 700;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      font-weight: 900;
       font-size: 13px;
       cursor:pointer;
+      color: var(--text);
+      transition:0.18s ease;
     }
-    body.dark-mode .btn{
-      background: rgba(255,255,255,.04);
-      border-color: rgba(255,255,255,.12);
-      color:#fff;
+    .btn:hover{
+      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
+      transform: translateY(-1px);
     }
+    .btn:focus-visible{ outline:none; box-shadow: var(--focus); }
 
     .btn-primary{
-      background:#000;
-      border-color:#000;
-      color:#fff;
+      background: var(--text);
+      border-color: var(--text);
+      color: var(--bg);
     }
     body.dark-mode .btn-primary{
-      background:#fff;
-      border-color:#fff;
-      color:#000;
+      background: var(--text);
+      border-color: var(--text);
+      color: var(--bg);
     }
 
-    .hint{
-      font-size: 12px;
-      margin-top: 10px;
-      color:#999;
-      line-height: 1.5;
+    /* ===== Responsive ===== */
+    @media (max-width:1200px){
+      .profile-stats{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
-    body.dark-mode .hint{ color: rgba(255,255,255,.45); }
+
+    @media (max-width:900px){
+      :root{ --nav-width: 0px; }
+
+      .nav-panel{
+        position:fixed;
+        bottom:0;
+        top:auto;
+        width:100%;
+        height:70px;
+        border-right:none;
+        border-top:1px solid var(--line);
+        flex-direction:row;
+        justify-content:center;
+        padding-bottom: env(safe-area-inset-bottom);
+        box-shadow: 0 -12px 28px rgba(0,0,0,0.14);
+      }
+      .nav-logo{ display:none; }
+      .nav-menu{
+        flex-direction:row;
+        width:100%;
+        justify-content:space-around;
+        padding:6px 8px;
+      }
+      .nav-item{
+        width:auto;
+        min-width:54px;
+        padding:8px;
+      }
+      .nav-item.active::after{ display:none; }
+      .nav-label{ font-size:10px; }
+
+      .main-content{
+        margin-left:0;
+        width:100%;
+        padding-bottom: calc(80px + env(safe-area-inset-bottom));
+      }
+
+      .top-bar{ padding:0 14px; }
+      .content-area{ padding:14px; }
+
+      .profile-header{ padding:14px; gap:14px; }
+      .profile-avatar-large{ width:70px; height:70px; }
+    }
+
+    @media (max-width:520px){
+      .section-header h2{ font-size:22px; }
+      .profile-name-row{ flex-direction:column; align-items:flex-start; }
+      .edit-profile-btn{ width:100%; }
+      .profile-stats{ grid-template-columns: 1fr; }
+      .form-col{ min-width: 100%; }
+    }
   </style>
 </head>
 
 <body>
   <div class="dashboard-container">
     <nav class="nav-panel">
-      <div class="nav-logo"><h1>FYNX</h1></div>
+      <div class="nav-logo">FYNX</div>
 
       <div class="nav-menu">
-        <div class="nav-item" data-view="home">
+        <a class="nav-item" href="home.html" data-view="home">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
           <span class="nav-label">Home</span>
-        </div>
+        </a>
 
-        <div class="nav-item" data-view="journal">
+        <a class="nav-item" href="journal.html" data-view="journal">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
           </svg>
           <span class="nav-label">Journal</span>
-        </div>
+        </a>
 
-        <div class="nav-item" data-view="calculator">
+        <a class="nav-item" href="calculator.html" data-view="calculator">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <rect x="4" y="2" width="16" height="20" rx="2"></rect>
             <line x1="8" y1="6" x2="16" y2="6"></line>
@@ -414,18 +630,18 @@
             <line x1="8" y1="18" x2="16" y2="18"></line>
           </svg>
           <span class="nav-label">Calculator</span>
-        </div>
+        </a>
 
-        <div class="nav-item" data-view="news">
+        <a class="nav-item" href="news.html" data-view="news">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
             <line x1="12" y1="11" x2="18" y2="11"></line>
             <line x1="12" y1="7" x2="18" y2="7"></line>
           </svg>
           <span class="nav-label">News</span>
-        </div>
+        </a>
 
-        <div class="nav-item" data-view="calendar">
+        <a class="nav-item" href="calendar.html" data-view="calendar">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
             <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -433,15 +649,15 @@
             <line x1="3" y1="10" x2="21" y2="10"></line>
           </svg>
           <span class="nav-label">Calendar</span>
-        </div>
+        </a>
 
-        <div class="nav-item active" data-view="profile">
+        <a class="nav-item active" href="profile.html" data-view="profile">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
           <span class="nav-label">Profile</span>
-        </div>
+        </a>
       </div>
     </nav>
 
@@ -450,24 +666,19 @@
         <h1 class="page-title">Profile</h1>
 
         <div class="top-bar-right">
-          <div class="theme-toggle" onclick="toggleTheme()">
+          <button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">
             <svg viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              <path d="M12 3v2M12 19v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M3 12h2M19 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+              <circle cx="12" cy="12" r="4"></circle>
             </svg>
-          </div>
+          </button>
 
-          <svg class="notification-icon" viewBox="0 0 24 24">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-          </svg>
+          <button class="icon-btn" title="Notifications" aria-label="Notifications">
+            <svg viewBox="0 0 24 24">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </button>
 
           <div class="user-avatar" id="topAvatar">FX</div>
         </div>
@@ -479,43 +690,45 @@
           <p>Manage your account and settings</p>
         </div>
 
-        <div class="profile-header">
-          <div class="profile-avatar-large" id="profileAvatarLarge">FX</div>
+        <section class="panel">
+          <div class="profile-header">
+            <div class="profile-avatar-large" id="profileAvatarLarge">FX</div>
 
-          <div class="profile-info">
-            <div class="profile-name-row">
-              <h2 id="profileName">FYNX User</h2>
-              <button class="edit-profile-btn" id="editProfileBtn">Edit Profile</button>
-            </div>
+            <div class="profile-info">
+              <div class="profile-name-row">
+                <h2 id="profileName">FYNX User</h2>
+                <button class="edit-profile-btn" id="editProfileBtn">Edit Profile</button>
+              </div>
 
-            <p id="profileEmail">fynx.user@example.com</p>
+              <div class="profile-email" id="profileEmail">fynx.user@example.com</div>
 
-            <div class="profile-stats">
-              <div class="profile-stat-item">
-                <h4>TOTAL TRADES</h4>
-                <p id="statTotalTrades">—</p>
+              <div class="profile-stats">
+                <div class="profile-stat-item">
+                  <h4>TOTAL TRADES</h4>
+                  <p id="statTotalTrades">—</p>
+                </div>
+                <div class="profile-stat-item">
+                  <h4>WIN RATE</h4>
+                  <p id="statWinRate">—</p>
+                </div>
+                <div class="profile-stat-item">
+                  <h4>AVG. RETURN</h4>
+                  <p id="statAvgReturn">—</p>
+                </div>
+                <div class="profile-stat-item">
+                  <h4>MEMBER SINCE</h4>
+                  <p id="statMemberSince">—</p>
+                </div>
               </div>
-              <div class="profile-stat-item">
-                <h4>WIN RATE</h4>
-                <p id="statWinRate">—</p>
-              </div>
-              <div class="profile-stat-item">
-                <h4>AVG. RETURN</h4>
-                <p id="statAvgReturn">—</p>
-              </div>
-              <div class="profile-stat-item">
-                <h4>MEMBER SINCE</h4>
-                <p id="statMemberSince">—</p>
-              </div>
-            </div>
-
-            <div class="hint">
-              Stats load from your real data if you store it in <b>localStorage</b>:
-              <br>- <b>fynx_trades</b> (array of trades)
-              <br>- or <b>fynx_metrics</b> (precomputed stats)
             </div>
           </div>
-        </div>
+
+          <div class="hint">
+            Stats load from your real data if you store it in <b>localStorage</b>:
+            <br>- <b>fynx_trades</b> (array of trades)
+            <br>- or <b>fynx_metrics</b> (precomputed stats)
+          </div>
+        </section>
 
         <div class="settings-section-title">Settings</div>
 
@@ -596,7 +809,9 @@
         <div class="form-col">
           <label for="avatarInput">Profile Image</label>
           <input type="file" id="avatarInput" accept="image/*" />
-          <div class="hint">Upload a PNG/JPG. It saves to localStorage (demo product mode).</div>
+          <div class="hint" style="margin:10px 0 0; padding:10px;">
+            Upload a PNG/JPG. It saves to localStorage (demo product mode).
+          </div>
         </div>
       </div>
 
@@ -608,44 +823,31 @@
   </div>
 
   <script>
-    // ---------- Navigation ----------
-    const navItems = document.querySelectorAll('.nav-item');
-    const viewPages = {
-      home: 'home.html',
-      journal: 'journal.html',
-      calculator: 'calculator.html',
-      news: 'news.html',
-      calendar: 'calendar.html',
-      profile: 'profile.html'
-    };
+    /* =========================
+       GLOBAL THEME (SYNCED)
+       - theme button ONLY here on profile
+    ========================= */
+    const THEME_KEY = "fynx_theme";
+    const themeBtn = document.getElementById("themeBtn");
 
-    navItems.forEach(item => {
-      item.addEventListener('click', () => {
-        const viewName = item.getAttribute('data-view');
-        if (viewPages[viewName]) window.location.href = viewPages[viewName];
-      });
+    function applySavedTheme(){
+      const saved = localStorage.getItem(THEME_KEY) || "light";
+      document.body.classList.toggle("dark-mode", saved === "dark");
+    }
+    applySavedTheme();
+
+    themeBtn.addEventListener("click", () => {
+      const isDarkNow = !document.body.classList.contains("dark-mode");
+      document.body.classList.toggle("dark-mode", isDarkNow);
+      localStorage.setItem(THEME_KEY, isDarkNow ? "dark" : "light");
     });
-
-    // ---------- Theme persistence ----------
-    function applyThemeFromStorage(){
-      const t = localStorage.getItem('fynx_theme');
-      if (t === 'dark') document.body.classList.add('dark-mode');
-      else document.body.classList.remove('dark-mode');
-    }
-
-    function toggleTheme() {
-      document.body.classList.toggle('dark-mode');
-      localStorage.setItem('fynx_theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-    }
-
-    applyThemeFromStorage();
 
     // ---------- Profile + Stats (Real mode via localStorage) ----------
     const DEFAULT_PROFILE = {
-      name: 'FYNX User',
-      email: 'fynx.user@example.com',
-      avatarDataUrl: '',
-      memberSince: 'Jan 2024'
+      name: "FYNX User",
+      email: "fynx.user@example.com",
+      avatarDataUrl: "",
+      memberSince: "Jan 2024"
     };
 
     function safeJSONParse(v, fallback){
@@ -653,27 +855,27 @@
     }
 
     function getProfile(){
-      const p = safeJSONParse(localStorage.getItem('fynx_profile'), null);
+      const p = safeJSONParse(localStorage.getItem("fynx_profile"), null);
       return { ...DEFAULT_PROFILE, ...(p || {}) };
     }
 
     function setProfile(profile){
-      localStorage.setItem('fynx_profile', JSON.stringify(profile));
+      localStorage.setItem("fynx_profile", JSON.stringify(profile));
     }
 
     function initialsFromName(name){
-      const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
-      const a = (parts[0] || 'F').slice(0,1);
-      const b = (parts[1] || parts[0] || 'X').slice(0,1);
+      const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+      const a = (parts[0] || "F").slice(0,1);
+      const b = (parts[1] || parts[0] || "X").slice(0,1);
       return (a + b).toUpperCase();
     }
 
     function renderAvatar(el, profile){
-      el.innerHTML = '';
+      el.innerHTML = "";
       if (profile.avatarDataUrl){
-        const img = document.createElement('img');
+        const img = document.createElement("img");
         img.src = profile.avatarDataUrl;
-        img.alt = 'Avatar';
+        img.alt = "Avatar";
         el.appendChild(img);
       } else {
         el.textContent = initialsFromName(profile.name);
@@ -681,12 +883,10 @@
     }
 
     function loadMetrics(){
-      // Option A: precomputed metrics
-      const metrics = safeJSONParse(localStorage.getItem('fynx_metrics'), null);
-      if (metrics && typeof metrics === 'object') return metrics;
+      const metrics = safeJSONParse(localStorage.getItem("fynx_metrics"), null);
+      if (metrics && typeof metrics === "object") return metrics;
 
-      // Option B: derive from trades
-      const trades = safeJSONParse(localStorage.getItem('fynx_trades'), []);
+      const trades = safeJSONParse(localStorage.getItem("fynx_trades"), []);
       const total = Array.isArray(trades) ? trades.length : 0;
 
       let wins = 0;
@@ -695,12 +895,10 @@
 
       if (Array.isArray(trades)){
         trades.forEach(t => {
-          // win detection: result === 'win' OR pnl > 0
           const pnl = Number(t?.pnl);
-          const isWin = (String(t?.result || '').toLowerCase() === 'win') || (!Number.isNaN(pnl) && pnl > 0);
+          const isWin = (String(t?.result || "").toLowerCase() === "win") || (!Number.isNaN(pnl) && pnl > 0);
           if (isWin) wins++;
 
-          // avg return: use returnPct / pnlPct / return
           const rp = Number(t?.returnPct ?? t?.pnlPct ?? t?.return);
           if (!Number.isNaN(rp)){
             sumReturn += rp;
@@ -712,16 +910,15 @@
       const winRate = total ? (wins / total) * 100 : null;
       const avgReturn = returnCount ? (sumReturn / returnCount) : null;
 
-      // member since: earliest trade date if available
       let memberSince = null;
       const dates = (Array.isArray(trades) ? trades : [])
-        .map(t => new Date(t?.date || t?.createdAt || t?.timestamp || ''))
+        .map(t => new Date(t?.date || t?.createdAt || t?.timestamp || ""))
         .filter(d => !isNaN(d.getTime()))
         .sort((a,b)=>a-b);
 
       if (dates.length){
         const d = dates[0];
-        memberSince = d.toLocaleString(undefined, { month: 'short', year: 'numeric' });
+        memberSince = d.toLocaleString(undefined, { month: "short", year: "numeric" });
       }
 
       return { total, winRate, avgReturn, memberSince };
@@ -729,108 +926,108 @@
 
     function fmtNumber(n){
       const x = Number(n);
-      if (Number.isNaN(x)) return '—';
+      if (Number.isNaN(x)) return "—";
       return x.toLocaleString();
     }
 
     function fmtPercent(n, decimals=1){
       const x = Number(n);
-      if (Number.isNaN(x)) return '—';
-      return x.toFixed(decimals) + '%';
+      if (Number.isNaN(x)) return "—";
+      return x.toFixed(decimals) + "%";
     }
 
     function fmtReturn(n){
       const x = Number(n);
-      if (Number.isNaN(x)) return '—';
-      const sign = x > 0 ? '+' : '';
-      return sign + x.toFixed(1) + '%';
+      if (Number.isNaN(x)) return "—";
+      const sign = x > 0 ? "+" : "";
+      return sign + x.toFixed(1) + "%";
     }
 
     function renderProfile(){
       const profile = getProfile();
-      document.getElementById('profileName').textContent = profile.name || DEFAULT_PROFILE.name;
-      document.getElementById('profileEmail').textContent = profile.email || DEFAULT_PROFILE.email;
+      document.getElementById("profileName").textContent = profile.name || DEFAULT_PROFILE.name;
+      document.getElementById("profileEmail").textContent = profile.email || DEFAULT_PROFILE.email;
 
-      renderAvatar(document.getElementById('profileAvatarLarge'), profile);
-      renderAvatar(document.getElementById('topAvatar'), profile);
+      renderAvatar(document.getElementById("profileAvatarLarge"), profile);
+      renderAvatar(document.getElementById("topAvatar"), profile);
 
       const m = loadMetrics();
 
-      document.getElementById('statTotalTrades').textContent =
-        (m.total !== undefined && m.total !== null) ? fmtNumber(m.total) : '—';
+      document.getElementById("statTotalTrades").textContent =
+        (m.total !== undefined && m.total !== null) ? fmtNumber(m.total) : "—";
 
-      document.getElementById('statWinRate').textContent =
-        (m.winRate !== undefined && m.winRate !== null) ? fmtPercent(m.winRate, 1) : '—';
+      document.getElementById("statWinRate").textContent =
+        (m.winRate !== undefined && m.winRate !== null) ? fmtPercent(m.winRate, 1) : "—";
 
-      document.getElementById('statAvgReturn').textContent =
-        (m.avgReturn !== undefined && m.avgReturn !== null) ? fmtReturn(m.avgReturn) : '—';
+      document.getElementById("statAvgReturn").textContent =
+        (m.avgReturn !== undefined && m.avgReturn !== null) ? fmtReturn(m.avgReturn) : "—";
 
-      document.getElementById('statMemberSince').textContent =
+      document.getElementById("statMemberSince").textContent =
         (m.memberSince || profile.memberSince || DEFAULT_PROFILE.memberSince);
     }
 
     renderProfile();
 
     // ---------- Settings links ----------
-    document.querySelectorAll('.settings-item').forEach(item => {
-      item.addEventListener('click', () => {
-        const link = item.getAttribute('data-link');
+    document.querySelectorAll(".settings-item").forEach(item => {
+      item.addEventListener("click", () => {
+        const link = item.getAttribute("data-link");
         if (link) window.location.href = link;
       });
     });
 
     // ---------- Edit profile modal ----------
-    const modalBackdrop = document.getElementById('modalBackdrop');
-    const editBtn = document.getElementById('editProfileBtn');
-    const closeBtn = document.getElementById('modalClose');
-    const cancelBtn = document.getElementById('cancelBtn');
-    const saveBtn = document.getElementById('saveBtn');
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    const editBtn = document.getElementById("editProfileBtn");
+    const closeBtn = document.getElementById("modalClose");
+    const cancelBtn = document.getElementById("cancelBtn");
+    const saveBtn = document.getElementById("saveBtn");
 
-    const nameInput = document.getElementById('nameInput');
-    const emailInput = document.getElementById('emailInput');
-    const avatarInput = document.getElementById('avatarInput');
+    const nameInput = document.getElementById("nameInput");
+    const emailInput = document.getElementById("emailInput");
+    const avatarInput = document.getElementById("avatarInput");
 
-    let pendingAvatarDataUrl = '';
+    let pendingAvatarDataUrl = "";
 
     function openModal(){
       const p = getProfile();
-      nameInput.value = p.name || '';
-      emailInput.value = p.email || '';
-      pendingAvatarDataUrl = p.avatarDataUrl || '';
-      avatarInput.value = '';
-      modalBackdrop.style.display = 'flex';
+      nameInput.value = p.name || "";
+      emailInput.value = p.email || "";
+      pendingAvatarDataUrl = p.avatarDataUrl || "";
+      avatarInput.value = "";
+      modalBackdrop.style.display = "flex";
     }
 
     function closeModal(){
-      modalBackdrop.style.display = 'none';
+      modalBackdrop.style.display = "none";
     }
 
-    editBtn.addEventListener('click', openModal);
-    closeBtn.addEventListener('click', closeModal);
-    cancelBtn.addEventListener('click', closeModal);
+    editBtn.addEventListener("click", openModal);
+    closeBtn.addEventListener("click", closeModal);
+    cancelBtn.addEventListener("click", closeModal);
 
-    modalBackdrop.addEventListener('click', (e) => {
+    modalBackdrop.addEventListener("click", (e) => {
       if (e.target === modalBackdrop) closeModal();
     });
 
-    avatarInput.addEventListener('change', (e) => {
+    avatarInput.addEventListener("change", (e) => {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
       reader.onload = () => {
-        pendingAvatarDataUrl = String(reader.result || '');
+        pendingAvatarDataUrl = String(reader.result || "");
       };
       reader.readAsDataURL(file);
     });
 
-    saveBtn.addEventListener('click', () => {
+    saveBtn.addEventListener("click", () => {
       const p = getProfile();
       const next = {
         ...p,
-        name: (nameInput.value || '').trim() || DEFAULT_PROFILE.name,
-        email: (emailInput.value || '').trim() || DEFAULT_PROFILE.email,
-        avatarDataUrl: pendingAvatarDataUrl || p.avatarDataUrl || ''
+        name: (nameInput.value || "").trim() || DEFAULT_PROFILE.name,
+        email: (emailInput.value || "").trim() || DEFAULT_PROFILE.email,
+        avatarDataUrl: pendingAvatarDataUrl || p.avatarDataUrl || ""
       };
 
       setProfile(next);
@@ -840,3 +1037,4 @@
   </script>
 </body>
 </html>
+```
