@@ -1,8 +1,9 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>FYNX Finance World - Calculators</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -158,7 +159,10 @@
 
     .top-actions{ display:flex; align-items:center; gap:12px; }
 
-    .theme-btn, .avatar{
+    /* Theme button removed here (ONLY on profile.html) */
+    .theme-btn{ display:none; }
+
+    .avatar{
       border: 1px solid var(--line);
       background: var(--panel);
       color: var(--text);
@@ -171,12 +175,12 @@
       transition: 0.18s ease;
     }
 
-    .theme-btn:hover, .avatar:hover{
+    .avatar:hover{
       transform: translateY(-1px);
       border-color: color-mix(in oklab, var(--text) 18%, var(--line));
     }
 
-    .theme-btn:focus-visible, .avatar:focus-visible{
+    .avatar:focus-visible{
       outline: none;
       box-shadow: var(--focus);
     }
@@ -430,6 +434,59 @@
       .content-area{ padding: 14px; }
       .hero h2{ font-size: 24px; }
     }
+
+    /* iPhone: make outer nav a bottom bar */
+    @media (max-width: 720px){
+      .nav-panel{
+        width:100%;
+        height:74px;
+        top:auto;
+        bottom:0;
+        left:0;
+        right:0;
+        border-right:none;
+        border-top:1px solid var(--line);
+        backdrop-filter: blur(12px);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .nav-logo{ display:none; }
+      .nav-menu{
+        flex-direction:row;
+        justify-content:space-around;
+        padding:10px 10px;
+        gap:8px;
+      }
+      .nav-item{
+        width:auto;
+        min-width:56px;
+        padding:10px 10px;
+        border-radius:12px;
+      }
+
+      .main-content{
+        margin-left:0;
+        width:100%;
+        padding-bottom: calc(88px + env(safe-area-inset-bottom));
+      }
+
+      .top-bar{
+        padding: 0 14px;
+        height: 72px;
+      }
+
+      .content-area{ padding: 14px; }
+
+      .hero-card{ padding: 16px; }
+      .hero h2{ font-size: 22px; }
+
+      .filters{
+        flex-direction:column;
+        align-items:stretch;
+        gap:10px;
+      }
+      .search{ max-width: 100%; }
+      .count{ text-align:left; }
+    }
   </style>
 </head>
 
@@ -454,7 +511,7 @@
           <p>Professional trading and finance tools</p>
         </div>
         <div class="top-actions">
-          <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">Theme</button>
+          <!-- Theme button REMOVED here (ONLY on profile.html) -->
           <div class="avatar">FX</div>
         </div>
       </header>
@@ -485,34 +542,14 @@
 
   <script>
     /* =========================
-       GLOBAL THEME (SYNCED)
-       - Uses same localStorage key across ALL pages
-       - When user changes on Home, it stays here too
+       THEME (SYNCED ACROSS PAGES)
+       - No toggle here (ONLY on profile.html)
     ========================= */
     const THEME_KEY = "fynx_theme"; // "dark" or "light"
-
     function applySavedTheme() {
-      const saved = localStorage.getItem(THEME_KEY);
-      const isDark = saved === "dark";
-      document.body.classList.toggle("dark-mode", isDark);
-      setThemeButtonLabel();
+      const saved = localStorage.getItem(THEME_KEY) || "light";
+      document.body.classList.toggle("dark-mode", saved === "dark");
     }
-
-    function setThemeButtonLabel() {
-      const btn = document.getElementById("themeBtn");
-      if (!btn) return;
-      const isDark = document.body.classList.contains("dark-mode");
-      btn.textContent = isDark ? "Light" : "Dark";
-    }
-
-    function toggleTheme() {
-      const isDarkNow = !document.body.classList.contains("dark-mode");
-      document.body.classList.toggle("dark-mode", isDarkNow);
-      localStorage.setItem(THEME_KEY, isDarkNow ? "dark" : "light");
-      setThemeButtonLabel();
-    }
-
-    // Apply theme ASAP on load
     applySavedTheme();
 
     /* =========================
@@ -620,3 +657,4 @@
   </script>
 </body>
 </html>
+```
