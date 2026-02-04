@@ -1,9 +1,8 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>FYNX Finance World - Live News</title>
 
   <style>
@@ -183,7 +182,10 @@
       font-weight: 900;
     }
 
-    .theme-toggle, .notification-icon{
+    /* Theme toggle removed here (ONLY on profile.html) */
+    .theme-toggle{ display:none; }
+
+    .notification-icon{
       width:34px;
       height:34px;
       border-radius:10px;
@@ -196,18 +198,18 @@
       transition: 0.18s ease;
     }
 
-    .theme-toggle:hover, .notification-icon:hover{
+    .notification-icon:hover{
       color: var(--text);
       transform: translateY(-1px);
       border-color: color-mix(in oklab, var(--text) 18%, var(--line));
     }
 
-    .theme-toggle:focus-visible, .notification-icon:focus-visible{
+    .notification-icon:focus-visible{
       outline:none;
       box-shadow: var(--focus);
     }
 
-    .theme-toggle svg, .notification-icon svg{
+    .notification-icon svg{
       width:18px; height:18px;
       stroke: currentColor;
       fill:none;
@@ -262,6 +264,7 @@
       white-space:nowrap;
       overflow-x:auto;
       scrollbar-width: thin;
+      -webkit-overflow-scrolling: touch;
     }
 
     .ticker-item{ font-size:13px; font-weight:900; }
@@ -413,6 +416,7 @@
       max-height: calc(100vh - 236px);
       overflow:auto;
       padding-right:4px;
+      -webkit-overflow-scrolling: touch;
     }
 
     .news-card{
@@ -522,12 +526,15 @@
     @media (max-width:720px){
       .nav-panel{
         width:100%;
-        height:auto;
-        bottom:0;
+        height:74px;
         top:auto;
+        bottom:0;
+        left:0;
+        right:0;
         border-right:0;
         border-top: 1px solid var(--line);
         flex-direction: row;
+        padding-bottom: env(safe-area-inset-bottom);
       }
       .nav-logo{ display:none; }
       .nav-menu{
@@ -536,15 +543,16 @@
         justify-content: space-around;
         padding:8px;
       }
-      .nav-item{ width:auto; padding:8px; }
+      .nav-item{ width:auto; padding:8px 10px; }
       .main-content{
         margin-left:0;
         width:100%;
-        padding-bottom:88px;
+        padding-bottom: calc(88px + env(safe-area-inset-bottom));
       }
       .top-bar{ padding:0 12px; }
       .section-header h2{ font-size:23px; }
       .content-area{ padding:12px; }
+      .filters{ top:auto; }
     }
   </style>
 </head>
@@ -586,9 +594,9 @@
         <h1 class="page-title">Live Finance News</h1>
         <div class="top-bar-right">
           <span class="chip" id="lastUpdated">Updating...</span>
-          <button class="theme-toggle" id="themeBtn" aria-label="Toggle theme">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.2" y1="4.2" x2="5.7" y2="5.7"></line><line x1="18.3" y1="18.3" x2="19.8" y2="19.8"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.2" y1="19.8" x2="5.7" y2="18.3"></line><line x1="18.3" y1="5.7" x2="19.8" y2="4.2"></line></svg>
-          </button>
+
+          <!-- Theme toggle REMOVED here (ONLY on profile.html) -->
+
           <button class="notification-icon" aria-label="Alerts">
             <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
           </button>
@@ -687,23 +695,17 @@
     const refreshBtn = document.getElementById("refreshBtn");
     const totalCount = document.getElementById("totalCount");
     const sourceCount= document.getElementById("sourceCount");
-    const themeBtn   = document.getElementById("themeBtn");
 
     /* =========================
        GLOBAL THEME (SYNCED)
+       - No toggle here (ONLY on profile.html)
     ========================= */
     const THEME_KEY = "fynx_theme";
     function applySavedTheme(){
-      const saved = localStorage.getItem(THEME_KEY);
+      const saved = localStorage.getItem(THEME_KEY) || "light";
       document.body.classList.toggle("dark-mode", saved === "dark");
     }
     applySavedTheme();
-
-    themeBtn.addEventListener("click", () => {
-      const isDarkNow = !document.body.classList.contains("dark-mode");
-      document.body.classList.toggle("dark-mode", isDarkNow);
-      localStorage.setItem(THEME_KEY, isDarkNow ? "dark" : "light");
-    });
 
     /* =========================
        UI
@@ -896,17 +898,20 @@
 
       refreshBtn.addEventListener("click", refreshNews);
 
-      buildFilterButtons("regionFilters", REGIONS, state.region, (value) => {
+      const onPickRegion = (value) => {
         state.region = value;
-        buildFilterButtons("regionFilters", REGIONS, state.region, arguments.callee);
+        buildFilterButtons("regionFilters", REGIONS, state.region, onPickRegion);
         applyFilters();
-      });
+      };
 
-      buildFilterButtons("topicFilters", TOPICS, state.topic, (value) => {
+      const onPickTopic = (value) => {
         state.topic = value;
-        buildFilterButtons("topicFilters", TOPICS, state.topic, arguments.callee);
+        buildFilterButtons("topicFilters", TOPICS, state.topic, onPickTopic);
         applyFilters();
-      });
+      };
+
+      buildFilterButtons("regionFilters", REGIONS, state.region, onPickRegion);
+      buildFilterButtons("topicFilters", TOPICS, state.topic, onPickTopic);
     }
 
     function startAutoRefresh(){
