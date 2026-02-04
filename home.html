@@ -1,8 +1,9 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>FYNX Finance World - Dashboard</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -579,17 +580,20 @@
     }
 
     @media (max-width: 720px){
-      /* bottom nav like your other pages */
+      /* bottom nav locked to viewport (prevents right-shift) */
       .nav-panel{
         width:100%;
         height:74px;
         bottom:0;
         top:auto;
+        left:0;
+        right:0;
         border-right:none;
         border-top:1px solid var(--line);
         flex-direction:row;
         align-items:center;
         justify-content:center;
+        padding-bottom: env(safe-area-inset-bottom);
       }
       .nav-logo{ display:none; }
       .nav-menu{
@@ -605,7 +609,7 @@
       .main-content{
         margin-left:0;
         width:100%;
-        padding-bottom:88px;
+        padding-bottom: calc(88px + env(safe-area-inset-bottom));
       }
     }
   </style>
@@ -684,19 +688,7 @@
         <div class="top-bar-right">
           <span class="chip" id="dateChip">Loading...</span>
 
-          <button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">
-            <svg viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.2" y1="4.2" x2="5.7" y2="5.7"></line>
-              <line x1="18.3" y1="18.3" x2="19.8" y2="19.8"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.2" y1="19.8" x2="5.7" y2="18.3"></line>
-              <line x1="18.3" y1="5.7" x2="19.8" y2="4.2"></line>
-            </svg>
-          </button>
+          <!-- Theme button REMOVED from this page (will live ONLY on Profile) -->
 
           <button class="icon-btn" title="Notifications" aria-label="Notifications">
             <svg viewBox="0 0 24 24">
@@ -840,6 +832,17 @@
 
   <script>
     // =========================
+    // THEME (APPLY ONLY) — synced across pages via ONE key: fynx_theme
+    // Theme toggle button is removed here (will exist ONLY on Profile).
+    // =========================
+    const THEME_KEY = "fynx_theme";
+    (function applyThemeFromStorage(){
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === "dark") document.body.classList.add("dark-mode");
+      else document.body.classList.remove("dark-mode");
+    })();
+
+    // =========================
     // NAV ROUTING
     // =========================
     const navItems = document.querySelectorAll(".nav-item");
@@ -862,27 +865,6 @@
     // Quick buttons
     document.getElementById("goToolsBtn").addEventListener("click", () => window.location.href = "calculator.html");
     document.getElementById("goJournalBtn").addEventListener("click", () => window.location.href = "journal.html");
-
-    // =========================
-    // THEME (SYNC ACROSS PAGES)
-    // Uses ONE key: fynx_theme
-    // =========================
-    const THEME_KEY = "fynx_theme";
-    const themeBtn = document.getElementById("themeBtn");
-
-    function applyThemeFromStorage(){
-      const saved = localStorage.getItem(THEME_KEY);
-      if (saved === "dark") document.body.classList.add("dark-mode");
-      else document.body.classList.remove("dark-mode");
-    }
-
-    function toggleTheme(){
-      document.body.classList.toggle("dark-mode");
-      localStorage.setItem(THEME_KEY, document.body.classList.contains("dark-mode") ? "dark" : "light");
-    }
-
-    applyThemeFromStorage();
-    themeBtn.addEventListener("click", toggleTheme);
 
     // =========================
     // DATE CHIP
@@ -916,3 +898,4 @@
   </script>
 </body>
 </html>
+```
