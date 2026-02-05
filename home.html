@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -779,46 +780,194 @@
       color:var(--muted);
     }
 
-    .tab-bar{
-      display:flex;
-      gap:8px;
-      margin:12px 0 14px;
+    /* ✅ NEW: Live Activity + News (black/white, same style) */
+    .live-stack{
+      display:grid;
+      gap:12px;
     }
 
-    .tab-button{
-      padding:7px 12px;
+    .live-toprow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .live-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .live-title{
+      font-size:12px;
+      font-weight:1000;
+      letter-spacing:0.9px;
+      text-transform:uppercase;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .live-pill{
+      display:flex;
+      align-items:center;
+      gap:8px;
       border:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 88%, transparent);
       border-radius:999px;
-      background:var(--surface);
+      padding:6px 10px;
+      font-size:10px;
+      font-weight:1000;
+      letter-spacing:0.8px;
+      text-transform:uppercase;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .live-dot{
+      width:8px; height:8px;
+      border-radius:999px;
+      background: var(--text);
+      opacity:0.95;
+      animation: softPulse 2.2s ease-in-out infinite;
+    }
+
+    .live-updated{
       font-size:12px;
       font-weight:900;
       color:var(--muted);
-      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .tv-wrap{
+      border:1px solid var(--line);
+      border-radius:14px;
+      overflow:hidden;
+      background: var(--surface);
+    }
+
+    .news-wrap{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: color-mix(in oklab, var(--surface-2) 94%, transparent);
+      overflow:hidden;
+    }
+
+    .news-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 12px;
+      border-bottom:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 92%, transparent);
+    }
+
+    .news-head .label{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .news-head .label strong{
+      font-size:12px;
+      font-weight:1000;
+      letter-spacing:0.9px;
+      text-transform:uppercase;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .news-sub{
+      font-size:12px;
+      font-weight:900;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .news-list{
+      display:grid;
+      gap:0;
+      max-height:320px;
+      overflow:auto;
+    }
+    .news-list::-webkit-scrollbar{ width:6px; }
+    .news-list::-webkit-scrollbar-track{ background:transparent; }
+    .news-list::-webkit-scrollbar-thumb{ background:color-mix(in oklab, var(--muted) 22%, transparent); border-radius:6px; }
+    .news-list::-webkit-scrollbar-thumb:hover{ background:color-mix(in oklab, var(--muted) 35%, transparent); }
+
+    .news-item{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 12px;
+      border-top:1px solid var(--line);
+      text-decoration:none;
+      color:inherit;
       transition:0.18s ease;
     }
-
-    .tab-button.active{
-      background:var(--btn-bg);
-      border-color:var(--btn-border);
-      color:var(--btn-text);
+    .news-item:hover{
+      background: color-mix(in oklab, var(--surface) 90%, transparent);
+      transform: translateY(-1px);
     }
 
-    .tab-button:hover:not(.active){
-      transform:translateY(-1px);
-      color:var(--text);
-      border-color:color-mix(in oklab, var(--text) 18%, var(--line));
-    }
-
-    .chart-box{
-      height:220px;
-      border:1px solid var(--line);
-      background:var(--surface-2);
-      border-radius:14px;
+    .news-main{
       display:grid;
-      place-items:center;
+      gap:6px;
+      min-width:0;
+    }
+
+    .news-source{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:11px;
+      font-weight:1000;
       color:var(--muted);
+      letter-spacing:0.3px;
+      min-width:0;
+    }
+
+    .news-source .badge{
+      font-size:10px;
+      font-weight:1000;
+      letter-spacing:0.8px;
+      text-transform:uppercase;
+      padding:5px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 88%, transparent);
+      color: var(--muted);
+      white-space:nowrap;
+    }
+
+    .news-title{
+      font-size:13px;
       font-weight:900;
-      letter-spacing:0.2px;
+      color:var(--text);
+      line-height:1.35;
+      overflow:hidden;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+    }
+
+    .news-time{
+      font-size:11px;
+      font-weight:900;
+      color:var(--muted);
+      white-space:nowrap;
+      margin-top:2px;
+    }
+
+    .news-empty{
+      padding:14px 12px;
+      font-size:13px;
+      font-weight:900;
+      color:var(--muted);
     }
 
     /* Mobile */
@@ -863,6 +1012,7 @@
         width:100%;
         padding-bottom: calc(88px + env(safe-area-inset-bottom));
       }
+      .news-list{ max-height:360px; }
     }
   </style>
 </head>
@@ -1108,20 +1258,34 @@
             </div>
           </div>
 
+          <!-- ✅ REPLACED: Portfolio Overview removed. Added Live Activity + News (updates every 5 min, links clickable) -->
           <div class="dashboard-card card-large">
-            <div class="card-header">
-              <span class="card-section-title">Portfolio Overview</span>
-              <span class="chip" id="portfolioHint">3M selected</span>
-            </div>
+            <div class="live-stack">
+              <div class="live-toprow">
+                <div class="live-left">
+                  <span class="live-title">Live Activity</span>
+                  <span class="live-pill"><span class="live-dot"></span> Live</span>
+                </div>
+                <span class="live-updated" id="liveUpdated">—</span>
+              </div>
 
-            <div class="tab-bar">
-              <button class="tab-button" data-range="1M">1M</button>
-              <button class="tab-button active" data-range="3M">3M</button>
-              <button class="tab-button" data-range="1Y">1Y</button>
-              <button class="tab-button" data-range="ALL">ALL</button>
-            </div>
+              <!-- Real market moving strip (TradingView ticker tape) -->
+              <div class="tv-wrap" id="tvTapeWrap" aria-label="Market moving strip"></div>
 
-            <div class="chart-box" id="chartBox">Chart Visualization</div>
+              <!-- News (updates every 5 min) -->
+              <div class="news-wrap" aria-label="Market-moving news">
+                <div class="news-head">
+                  <div class="label">
+                    <strong>Latest Market News</strong>
+                    <span class="live-pill"><span class="live-dot"></span> Live</span>
+                  </div>
+                  <div class="news-sub" id="newsUpdated">Updating…</div>
+                </div>
+                <div class="news-list" id="newsList">
+                  <div class="news-empty">Loading headlines…</div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </div>
@@ -1164,23 +1328,6 @@
     // =========================
     const dateChip = document.getElementById("dateChip");
     dateChip.textContent = new Date().toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric", year:"numeric" });
-
-    // =========================
-    // Portfolio tabs (UI only)
-    // =========================
-    const tabs = document.querySelectorAll(".tab-button");
-    const portfolioHint = document.getElementById("portfolioHint");
-    const chartBox = document.getElementById("chartBox");
-
-    tabs.forEach(btn => {
-      btn.addEventListener("click", () => {
-        tabs.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        const r = btn.dataset.range || "3M";
-        portfolioHint.textContent = `${r} selected`;
-        chartBox.textContent = `Chart Visualization (${r})`;
-      });
-    });
 
     // =========================
     // Mini pulse timestamp (placeholder)
@@ -1565,7 +1712,7 @@
         } else {
           let nextOpen = w.openAt;
           if (now >= w.closeAt) nextOpen = new Date(w.openAt.getTime() + 24*60*60*1000);
-          // show PRE-MARKET label
+
           const dot = document.getElementById("dotAsia");
           dot.classList.remove("open");
           document.getElementById("badgeAsia").classList.remove("open");
@@ -1579,6 +1726,156 @@
     }
 
     // =============================================================================
+    // ✅ LIVE MARKET MOVING STRIP (Real data) — TradingView (refresh every 5 min)
+    // =============================================================================
+    function tvTheme(){
+      return document.body.classList.contains("dark-mode") ? "dark" : "light";
+    }
+
+    function mountTickerTape(){
+      const wrap = document.getElementById("tvTapeWrap");
+      if (!wrap) return;
+
+      wrap.innerHTML = "";
+
+      const holder = document.createElement("div");
+      holder.className = "tradingview-widget-container";
+      const widgetDiv = document.createElement("div");
+      widgetDiv.className = "tradingview-widget-container__widget";
+      holder.appendChild(widgetDiv);
+
+      const script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
+      script.async = true;
+
+      script.innerHTML = JSON.stringify({
+        symbols: [
+          { proName: "FOREXCOM:SPXUSD", title: "S&P 500" },
+          { proName: "FOREXCOM:DJI", title: "Dow" },
+          { proName: "NASDAQ:NDX", title: "Nasdaq 100" },
+          { proName: "FX_IDC:EURUSD", title: "EUR/USD" },
+          { proName: "FX_IDC:GBPUSD", title: "GBP/USD" },
+          { proName: "FX_IDC:USDJPY", title: "USD/JPY" },
+          { proName: "OANDA:XAUUSD", title: "Gold" },
+          { proName: "BINANCE:BTCUSDT", title: "BTC" }
+        ],
+        showSymbolLogo: false,
+        isTransparent: true,
+        displayMode: "adaptive",
+        colorTheme: tvTheme(),
+        locale: "en"
+      });
+
+      holder.appendChild(script);
+      wrap.appendChild(holder);
+    }
+
+    // =============================================================================
+    // ✅ LIVE NEWS (updates every 5 min) — clickable → opens source
+    // NOTE: This uses Google News RSS via an open CORS proxy (AllOrigins raw).
+    // =============================================================================
+    const NEWS_REFRESH_MS = 5 * 60 * 1000;
+    const NEWS_MAX_ITEMS = 8;
+
+    // You can tune the query anytime:
+    const RSS_URL = "https://news.google.com/rss/search?q=market+moving+news+forex+stocks&hl=en-US&gl=US&ceid=US:en";
+
+    function fmtTimeAgo(date){
+      if (!(date instanceof Date) || isNaN(date.getTime())) return "";
+      const diff = Date.now() - date.getTime();
+      const m = Math.floor(diff / 60000);
+      if (m < 1) return "now";
+      if (m < 60) return `${m}m ago`;
+      const h = Math.floor(m / 60);
+      if (h < 24) return `${h}h ago`;
+      const d = Math.floor(h / 24);
+      return `${d}d ago`;
+    }
+
+    function safeText(s){
+      return String(s || "").replace(/\s+/g, " ").trim();
+    }
+
+    function parseGoogleNewsSource(titleText){
+      // Google News RSS titles often: "Headline - Source"
+      const t = safeText(titleText);
+      const parts = t.split(" - ");
+      if (parts.length >= 2) return safeText(parts[parts.length - 1]);
+      return "News";
+    }
+
+    async function fetchRssXml(url){
+      const proxied = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      const res = await fetch(proxied, { cache: "no-store" });
+      if (!res.ok) throw new Error("Failed to fetch feed");
+      return await res.text();
+    }
+
+    function renderNews(items){
+      const list = document.getElementById("newsList");
+      if (!list) return;
+
+      if (!items || !items.length){
+        list.innerHTML = `<div class="news-empty">No headlines right now.</div>`;
+        return;
+      }
+
+      list.innerHTML = items.map(it => {
+        const title = safeText(it.title);
+        const link = safeText(it.link);
+        const source = safeText(it.source || "News");
+        const ago = it.pubDate ? fmtTimeAgo(it.pubDate) : "";
+
+        return `
+          <a class="news-item" href="${link}" target="_blank" rel="noopener">
+            <div class="news-main">
+              <div class="news-source">
+                <span class="badge">${source}</span>
+              </div>
+              <div class="news-title">${title}</div>
+            </div>
+            <div class="news-time">${ago}</div>
+          </a>
+        `;
+      }).join("");
+    }
+
+    async function refreshNews(){
+      const upd = document.getElementById("newsUpdated");
+      const liveUpd = document.getElementById("liveUpdated");
+      const now = new Date();
+
+      if (upd) upd.textContent = `Updated ${now.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
+      if (liveUpd) liveUpd.textContent = `Updated ${now.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
+
+      try{
+        const xml = await fetchRssXml(RSS_URL);
+        const doc = new DOMParser().parseFromString(xml, "text/xml");
+        const nodes = Array.from(doc.querySelectorAll("item")).slice(0, NEWS_MAX_ITEMS);
+
+        const items = nodes.map(n => {
+          const title = n.querySelector("title")?.textContent || "";
+          const link = n.querySelector("link")?.textContent || "";
+          const pub = n.querySelector("pubDate")?.textContent || "";
+          const pubDate = pub ? new Date(pub) : null;
+
+          return {
+            title: safeText(title),
+            link: safeText(link),
+            source: parseGoogleNewsSource(title),
+            pubDate
+          };
+        }).filter(x => x.title && x.link);
+
+        renderNews(items);
+      }catch(e){
+        const list = document.getElementById("newsList");
+        if (list) list.innerHTML = `<div class="news-empty">News feed unavailable right now. Try again.</div>`;
+      }
+    }
+
+    // =============================================================================
     // INIT + LIVE UPDATE
     // =============================================================================
     function initHome(){
@@ -1586,13 +1883,32 @@
       setDailyLine();
       updateMarketHours();
 
+      // mount real market tape + news
+      mountTickerTape();
+      refreshNews();
+
+      // "alive" updates (clock/session)
       setInterval(() => {
         renderGreeting();
         updateMarketHours();
-      }, 20 * 1000); // a bit faster = feels alive
+      }, 20 * 1000);
+
+      // refresh ticker/news every 5 minutes
+      setInterval(() => {
+        mountTickerTape();
+        refreshNews();
+      }, NEWS_REFRESH_MS);
+
+      // if user toggles theme on another page and comes back, re-mount ticker on visibility
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden){
+          mountTickerTape();
+        }
+      });
     }
 
     initHome();
   </script>
 </body>
 </html>
+```
