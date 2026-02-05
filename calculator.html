@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -109,6 +110,16 @@
       border: 1px solid transparent;
       transition: 0.18s ease;
       font-weight: 800;
+
+      /* ✅ FIX: lock layout so items never jump (no wrapping / no height changes) */
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .nav-item:hover{
@@ -429,7 +440,7 @@
     @media (max-width: 760px){
       .nav-panel{ width: 82px; }
       .main-content{ margin-left: 82px; width: calc(100% - 82px); }
-      .nav-item{ width: 64px; font-size: 11px; padding: 10px 6px; }
+      .nav-item{ width: 64px; font-size: 11px; padding: 10px 6px; height: 44px; }
       .content-area{ padding: 14px; }
       .hero h2{ font-size: 24px; }
     }
@@ -460,6 +471,13 @@
         min-width:56px;
         padding:10px 10px;
         border-radius:12px;
+
+        /* ✅ keep iPhone behavior exactly as-is */
+        height: auto;
+        line-height: normal;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
       }
 
       .main-content{
@@ -656,4 +674,4 @@
   </script>
 </body>
 </html>
-
+```
