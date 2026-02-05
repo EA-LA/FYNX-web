@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,8 +28,9 @@
       --chip:#f3f4f6;
       --chip-line:#e5e7eb;
 
-      --pos:#0ea371;
-      --neg:#d6375f;
+      /* STRICT black/white only: use grayscale for pos/neg */
+      --pos:#111827;
+      --neg:#111827;
 
       --hero-dot: rgba(0,0,0,0.06);
       --hero-grid: rgba(0,0,0,0.06);
@@ -39,6 +41,9 @@
 
       --card-bg:#fafafa;
       --card-hover:#f5f5f5;
+
+      --ring: rgba(0,0,0,0.12);
+      --glow: rgba(0,0,0,0.06);
     }
 
     body.dark-mode{
@@ -64,6 +69,9 @@
 
       --card-bg:rgba(255,255,255,0.03);
       --card-hover:rgba(255,255,255,0.05);
+
+      --ring: rgba(255,255,255,0.14);
+      --glow: rgba(255,255,255,0.08);
     }
 
     *{ margin:0; padding:0; box-sizing:border-box; }
@@ -93,6 +101,21 @@
         linear-gradient(to right, transparent 0%, transparent 45%, rgba(255,255,255,0.06) 50%, transparent 55%, transparent 100%),
         linear-gradient(to bottom, transparent 0%, transparent 45%, rgba(255,255,255,0.06) 50%, transparent 55%, transparent 100%);
       opacity:0.35;
+    }
+
+    /* Micro-animations (clean) */
+    @keyframes riseIn {
+      from { transform: translateY(10px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes softPulse {
+      0%,100% { opacity: .85; transform: translateY(0); }
+      50%     { opacity: 1; transform: translateY(-1px); }
+    }
+    @keyframes shimmerLine {
+      0% { transform: translateX(-40%); opacity: 0; }
+      30% { opacity: .9; }
+      100% { transform: translateX(140%); opacity: 0; }
     }
 
     .dashboard-container{ display:flex; height:100vh; width:100vw; }
@@ -299,6 +322,7 @@
       overflow:hidden;
       position:relative;
       margin-bottom:16px;
+      animation: riseIn .38s ease both;
     }
 
     .hero::before{
@@ -314,6 +338,24 @@
       background:
         radial-gradient(900px 320px at 18% 0%, rgba(255,255,255,0.08) 0%, transparent 60%),
         radial-gradient(700px 260px at 92% 0%, rgba(255,255,255,0.06) 0%, transparent 60%);
+    }
+
+    /* subtle moving shine line */
+    .hero::after{
+      content:"";
+      position:absolute;
+      top:0; left:-40%;
+      width:40%;
+      height:100%;
+      background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--text) 10%, transparent), transparent);
+      opacity:.14;
+      transform:translateX(-40%);
+      pointer-events:none;
+      animation: shimmerLine 6.5s ease-in-out infinite;
+    }
+    body.dark-mode .hero::after{
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+      opacity:.12;
     }
 
     .hero-inner{
@@ -340,6 +382,44 @@
       color:var(--muted);
       max-width:62ch;
       line-height:1.5;
+    }
+
+    /* NEW: Greeting block like reference */
+    .greeting{
+      display:grid;
+      gap:6px;
+      margin-bottom:10px;
+    }
+    .greeting .hello{
+      font-size:18px;
+      font-weight:800;
+      letter-spacing:-0.3px;
+      color:var(--text);
+      line-height:1.2;
+    }
+    .greeting .meta{
+      font-size:12px;
+      font-weight:700;
+      color:var(--muted);
+      letter-spacing:0.2px;
+    }
+    .greeting .daily{
+      margin-top:6px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: color-mix(in oklab, var(--surface) 88%, transparent);
+      box-shadow: 0 1px 0 color-mix(in oklab, var(--text) 8%, transparent);
+      font-size:13px;
+      line-height:1.45;
+      color: var(--text);
+      font-weight:700;
+      animation: riseIn .45s ease both;
+    }
+    .greeting .daily span{
+      color: var(--muted);
+      font-weight:800;
+      margin-right:6px;
     }
 
     .hero-right{
@@ -379,6 +459,109 @@
       border-color:var(--btn-border);
     }
     .btn.primary:hover{ opacity:0.92; }
+
+    /* Market Hours (like example, premium) */
+    .market-hours{
+      width:100%;
+      border:1px solid var(--line);
+      background:var(--surface);
+      border-radius:14px;
+      padding:12px;
+      display:grid;
+      gap:10px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .market-hours::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(520px 180px at 12% 0%, var(--glow) 0%, transparent 62%),
+        radial-gradient(520px 180px at 92% 0%, var(--glow) 0%, transparent 62%);
+      pointer-events:none;
+    }
+
+    .mh-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+    .mh-title{
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:0.6px;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+    .mh-updated{
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+    }
+
+    .mh-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+
+    .mh-card{
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:var(--surface-2);
+      padding:10px;
+      display:grid;
+      gap:6px;
+      min-height:78px;
+      transition:0.18s ease;
+    }
+    .mh-card:hover{
+      transform:translateY(-1px);
+      border-color:color-mix(in oklab, var(--text) 18%, var(--line));
+      background:color-mix(in oklab, var(--surface-2) 90%, transparent);
+    }
+
+    .mh-name{
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:0.7px;
+      text-transform:uppercase;
+      color:var(--text);
+      opacity:0.9;
+    }
+
+    .mh-state{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      font-weight:900;
+      color:var(--muted);
+    }
+
+    .dot{
+      width:8px; height:8px;
+      border-radius:999px;
+      background: var(--text);
+      opacity:0.25;
+    }
+    .dot.open{
+      opacity:0.95;
+      animation: softPulse 2.4s ease-in-out infinite;
+    }
+
+    .mh-time{
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+      line-height:1.3;
+    }
 
     .mini-pulse{
       width:100%;
@@ -435,9 +618,10 @@
     .pulse-card .c{
       font-size:12px;
       font-weight:800;
+      color: var(--muted); /* strict grayscale */
     }
-    .up{ color:var(--pos); }
-    .down{ color:var(--neg); }
+    .up{ color:var(--muted); }
+    .down{ color:var(--muted); }
 
     /* GRID CARDS like your example */
     .card-grid{
@@ -456,6 +640,7 @@
       box-shadow:var(--shadow-2);
       position:relative;
       overflow:hidden;
+      animation: riseIn .42s ease both;
     }
 
     .dashboard-card:hover{
@@ -572,6 +757,7 @@
       .hero-inner{ flex-direction:column; align-items:flex-start; }
       .hero-right{ width:100%; align-items:flex-start; min-width:0; }
       .pulse-values{ grid-template-columns:1fr 1fr; }
+      .mh-grid{ grid-template-columns:1fr 1fr; }
       .card-grid{ grid-template-columns:1fr; }
       .card-large{ grid-column:span 1; }
       .content-area{ padding:16px; }
@@ -696,7 +882,7 @@
             </svg>
           </button>
 
-          <div class="user-avatar">FX</div>
+          <div class="user-avatar" id="avatarInitials">FX</div>
         </div>
       </div>
 
@@ -706,6 +892,13 @@
         <section class="hero">
           <div class="hero-inner">
             <div class="hero-left">
+              <!-- NEW: Greeting + daily message -->
+              <div class="greeting">
+                <div class="hello" id="greetingText">Good evening, Trader.</div>
+                <div class="meta" id="greetingMeta">Local time —</div>
+                <div class="daily" id="dailyLine"><span>Daily:</span> Loading message…</div>
+              </div>
+
               <h2>Dashboard</h2>
               <p>Clean black & white system. Track performance, activity, and live market pulse — consistent across Home, Calculator, News, Calendar.</p>
             </div>
@@ -716,6 +909,41 @@
                 <button class="btn" id="goJournalBtn">Open Journal</button>
               </div>
 
+              <!-- NEW: Market Hours block (real computation, updates live) -->
+              <div class="market-hours" aria-label="Market Hours">
+                <div class="mh-top">
+                  <span class="mh-title">Market Hours</span>
+                  <span class="mh-updated" id="mhUpdated">—</span>
+                </div>
+
+                <div class="mh-grid">
+                  <div class="mh-card">
+                    <div class="mh-name">London</div>
+                    <div class="mh-state"><span class="dot" id="dotLondon"></span><span id="stateLondon">—</span></div>
+                    <div class="mh-time" id="timeLondon">—</div>
+                  </div>
+
+                  <div class="mh-card">
+                    <div class="mh-name">New York</div>
+                    <div class="mh-state"><span class="dot" id="dotNewYork"></span><span id="stateNewYork">—</span></div>
+                    <div class="mh-time" id="timeNewYork">—</div>
+                  </div>
+
+                  <div class="mh-card">
+                    <div class="mh-name">Sydney</div>
+                    <div class="mh-state"><span class="dot" id="dotSydney"></span><span id="stateSydney">—</span></div>
+                    <div class="mh-time" id="timeSydney">—</div>
+                  </div>
+
+                  <div class="mh-card">
+                    <div class="mh-name">Asia</div>
+                    <div class="mh-state"><span class="dot" id="dotAsia"></span><span id="stateAsia">—</span></div>
+                    <div class="mh-time" id="timeAsia">—</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Existing pulse -->
               <div class="mini-pulse">
                 <div class="pulse-row">
                   <span>Market Pulse</span>
@@ -725,15 +953,16 @@
                   <div class="pulse-card">
                     <div class="k">S&P 500</div>
                     <div class="v" id="spxVal">5,234.18</div>
-                    <div class="c up" id="spxChg">+0.41%</div>
+                    <div class="c" id="spxChg">+0.41%</div>
                   </div>
                   <div class="pulse-card">
                     <div class="k">NASDAQ</div>
                     <div class="v" id="nasVal">16,847.22</div>
-                    <div class="c up" id="nasChg">+0.72%</div>
+                    <div class="c" id="nasChg">+0.72%</div>
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
         </section>
@@ -894,6 +1123,385 @@
     // =========================
     document.getElementById("pulseUpdated").textContent =
       `Updated ${new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
+
+    // =============================================================================
+    // PROFILE NAME (from Profile) + GREETING (morning/afternoon/evening/night)
+    // =============================================================================
+    // IMPORTANT: This page will try multiple common keys so it works with your Profile.
+    // If your Profile saves a different key, add it into NAME_KEYS below.
+    const NAME_KEYS = ["fynx_profile_name", "profile_name", "user_name", "fynx_name", "fynxUserName", "displayName", "name"];
+    function getProfileName(){
+      for (const k of NAME_KEYS){
+        const v = localStorage.getItem(k);
+        if (v && String(v).trim().length > 0) return String(v).trim();
+      }
+      return null;
+    }
+
+    function firstName(full){
+      if (!full) return null;
+      const parts = String(full).trim().split(/\s+/);
+      return parts[0] || full;
+    }
+
+    function getDayGreeting(h){
+      // Strict & clean
+      if (h >= 5 && h < 12) return "Good morning";
+      if (h >= 12 && h < 17) return "Good afternoon";
+      if (h >= 17 && h < 21) return "Good evening";
+      return "Good night";
+    }
+
+    function safeCityLabel(){
+      // We won’t show street location. We’ll show timezone + "Local time".
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "Local";
+      return tz;
+    }
+
+    function setAvatarFromName(name){
+      const el = document.getElementById("avatarInitials");
+      if (!el) return;
+      const n = (name || "").trim();
+      if (!n){
+        el.textContent = "FX";
+        return;
+      }
+      const parts = n.split(/\s+/).filter(Boolean);
+      let initials = parts[0]?.[0] || "F";
+      if (parts.length > 1) initials += parts[parts.length-1]?.[0] || "";
+      el.textContent = initials.toUpperCase();
+    }
+
+    function renderGreeting(){
+      const greetEl = document.getElementById("greetingText");
+      const metaEl = document.getElementById("greetingMeta");
+
+      const fullName = getProfileName();
+      const fn = firstName(fullName) || "Trader";
+
+      setAvatarFromName(fullName);
+
+      const d = new Date();
+      const h = d.getHours();
+      const g = getDayGreeting(h);
+
+      const timeStr = d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+      const tz = safeCityLabel();
+
+      greetEl.textContent = `${g}, ${fn}.`;
+      metaEl.textContent = `Local time ${timeStr} — ${tz}`;
+    }
+
+    // =============================================================================
+    // DAILY ROTATING MESSAGE (100 lines) — changes once per day
+    // =============================================================================
+    const DAILY_KEY = "fynx_daily_line_index_v1";
+
+    const DAILY_LINES = [
+      "Your edge is discipline, not luck.",
+      "Protect capital first. Opportunity comes second.",
+      "A clean plan beats a loud opinion.",
+      "Small mistakes compound. Fix them early.",
+      "Patience is a position.",
+      "Trade the plan. Not the mood.",
+      "Consistency is the real flex.",
+      "If it’s not clear, it’s a no.",
+      "Win the process, and results follow.",
+      "You don’t need more trades — you need better trades.",
+      "Risk small. Think big.",
+      "Momentum is earned, not gifted.",
+      "Reduce noise. Increase signal.",
+      "The chart rewards calm minds.",
+      "One good setup can pay for a week of boredom.",
+      "You are paid for waiting.",
+      "Precision beats speed.",
+      "A+ setups only. Everything else is distraction.",
+      "Cut the impulse. Keep the structure.",
+      "A stop-loss is self-respect.",
+      "No revenge trades. Ever.",
+      "Your rules are your freedom.",
+      "Protect your sleep. Protect your decisions.",
+      "Track behavior, not just P&L.",
+      "You can be right and still lose — manage risk.",
+      "The goal is repeatable execution.",
+      "Trade less. Review more.",
+      "Never confuse activity with progress.",
+      "If you can’t explain it, you can’t trade it.",
+      "Your best trade is often no trade.",
+      "Shrink drawdowns. Grow confidence.",
+      "Confidence comes from receipts: journaling.",
+      "If you hesitate, size down.",
+      "Structure first. Entry second.",
+      "Stop hunting — start selecting.",
+      "Let price come to you.",
+      "Avoid chaos sessions. Trade your window.",
+      "Your future self is built by today’s choices.",
+      "Simplicity scales.",
+      "Respect the range. Attack the breakout.",
+      "Protect the downside. Upside takes care of itself.",
+      "Don’t predict. React with rules.",
+      "Your system is your identity.",
+      "Be ruthless with weak setups.",
+      "The market pays for clarity.",
+      "A plan without risk is a fantasy.",
+      "When unsure, do nothing.",
+      "Boredom is a sign you’re doing it right.",
+      "Execution > motivation.",
+      "Your edge is in the boring details.",
+      "Never increase risk to fix a mistake.",
+      "Trust your rules — not your feelings.",
+      "Focus is wealth.",
+      "Don’t chase — confirm.",
+      "Reduce positions when emotions rise.",
+      "A clean entry starts with a clean mind.",
+      "You only need one good trade per day.",
+      "If it’s not in your model, it’s not for you.",
+      "Protect your mental capital.",
+      "One rule broken can erase ten good days.",
+      "Track mistakes like you track profits.",
+      "The market punishes ego.",
+      "Be systematic. Be patient.",
+      "Stop trying to be a hero.",
+      "The goal is to survive and compound.",
+      "Take what the market gives — not what you want.",
+      "Price is the final truth.",
+      "Setup quality beats win rate.",
+      "If you can’t manage it, don’t enter it.",
+      "Your watchlist is your battlefield.",
+      "Speed kills precision.",
+      "Let the setup breathe.",
+      "Don’t trade to feel something.",
+      "Trade to execute something.",
+      "The less you force, the more you win.",
+      "One mistake is information. Two is a pattern.",
+      "Today is for execution, not experimentation.",
+      "Keep the rules. Remove the drama.",
+      "Be a sniper, not a machine gun.",
+      "Your risk is your responsibility.",
+      "A calm trader is a profitable trader.",
+      "Journal the why, not just the what.",
+      "One percent improvements compound fast.",
+      "When you win, stay humble.",
+      "When you lose, stay logical.",
+      "Trend or range — choose before you act.",
+      "Wait for confirmation. Then commit.",
+      "Trade the level, not the story.",
+      "If you can’t hold it, don’t take it.",
+      "Your system should feel boring.",
+      "Don’t marry positions.",
+      "Let winners work. Cut losers fast.",
+      "You don’t need perfect — you need repeatable.",
+      "The best traders say “no” most of the time.",
+      "Respect liquidity. Respect timing.",
+      "One clean session is enough.",
+      "Focus on expectancy.",
+      "Protect your account like it’s a business.",
+      "Your habits are your strategy.",
+      "Clarity is the currency of performance."
+    ];
+
+    function getDayStamp(d){
+      // YYYY-MM-DD local
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function setDailyLine(){
+      const el = document.getElementById("dailyLine");
+      if (!el) return;
+
+      const today = new Date();
+      const stamp = getDayStamp(today);
+
+      // stable daily index derived from date string
+      // hash-like: sum of char codes
+      let sum = 0;
+      for (let i = 0; i < stamp.length; i++) sum += stamp.charCodeAt(i) * (i + 1);
+
+      const idx = sum % DAILY_LINES.length;
+      localStorage.setItem(DAILY_KEY, String(idx));
+
+      const msg = DAILY_LINES[idx] || "Stay sharp. Stay disciplined.";
+      el.innerHTML = `<span>Daily:</span> ${msg}`;
+    }
+
+    // =============================================================================
+    // MARKET HOURS (Real computation) — Sessions in their correct local times using TZ
+    // We compute using Intl timeZone conversions (no fake data).
+    // =============================================================================
+    // Session definitions (FX sessions):
+    // Sydney: 22:00 - 07:00 (Australia/Sydney)
+    // Tokyo (Asia): 00:00 - 09:00 (Asia/Tokyo)
+    // London: 08:00 - 17:00 (Europe/London)
+    // New York: 08:00 - 17:00 (America/New_York)
+    //
+    // NOTE: Real-world can vary by liquidity, DST etc; using region timezones handles DST.
+    const SESSIONS = {
+      London:   { tz: "Europe/London",      open: "08:00", close: "17:00" },
+      NewYork:  { tz: "America/New_York",   open: "08:00", close: "17:00" },
+      Sydney:   { tz: "Australia/Sydney",   open: "22:00", close: "07:00" },
+      Asia:     { tz: "Asia/Tokyo",         open: "00:00", close: "09:00" }
+    };
+
+    function parseHHMM(s){
+      const [hh, mm] = s.split(":").map(Number);
+      return { hh, mm };
+    }
+
+    function zonedParts(date, timeZone){
+      const fmt = new Intl.DateTimeFormat("en-US", {
+        timeZone,
+        year:"numeric", month:"2-digit", day:"2-digit",
+        hour:"2-digit", minute:"2-digit", second:"2-digit",
+        hour12:false
+      });
+      const parts = fmt.formatToParts(date);
+      const map = {};
+      for (const p of parts) map[p.type] = p.value;
+      return {
+        year: Number(map.year),
+        month: Number(map.month),
+        day: Number(map.day),
+        hour: Number(map.hour),
+        minute: Number(map.minute),
+        second: Number(map.second)
+      };
+    }
+
+    function makeZonedDateLike(dateNow, timeZone, hh, mm){
+      // Create a UTC Date that corresponds to "today at hh:mm" in that timezone.
+      // Approach: get Y/M/D in that tz, then find the equivalent UTC by iterative offset.
+      const p = zonedParts(dateNow, timeZone);
+      // start with an approx UTC time using Date.UTC
+      const approx = new Date(Date.UTC(p.year, p.month - 1, p.day, hh, mm, 0));
+
+      // Determine actual zoned time for approx; compute diff to target; adjust
+      const pp = zonedParts(approx, timeZone);
+      const targetMinutes = hh * 60 + mm;
+      const gotMinutes = pp.hour * 60 + pp.minute;
+
+      // If day mismatch due to UTC shift, handle by comparing YMD
+      const dayDiff =
+        (pp.year - p.year) * 525600 +
+        (pp.month - p.month) * 43200 +
+        (pp.day - p.day) * 1440;
+
+      const minuteDiff = (gotMinutes - targetMinutes) + dayDiff;
+      return new Date(approx.getTime() - minuteDiff * 60 * 1000);
+    }
+
+    function formatDuration(ms){
+      const s = Math.max(0, Math.floor(ms / 1000));
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      if (h <= 0) return `${m}m`;
+      return `${h}h ${m}m`;
+    }
+
+    function setSessionUI(key, isOpen, stateText, timeText){
+      document.getElementById(`state${key}`).textContent = stateText;
+      document.getElementById(`time${key}`).textContent = timeText;
+
+      const dot = document.getElementById(`dot${key}`);
+      dot.classList.remove("open");
+      if (isOpen) dot.classList.add("open");
+    }
+
+    function computeSession(sessionName, cfg, now){
+      const { tz, open, close } = cfg;
+      const o = parseHHMM(open);
+      const c = parseHHMM(close);
+
+      const openToday = makeZonedDateLike(now, tz, o.hh, o.mm);
+      let closeToday = makeZonedDateLike(now, tz, c.hh, c.mm);
+
+      // overnight session if close <= open
+      if (c.hh * 60 + c.mm <= o.hh * 60 + o.mm) {
+        // close is next day in that timezone
+        closeToday = new Date(closeToday.getTime() + 24 * 60 * 60 * 1000);
+        // If now is before open, open might actually be "yesterday's" open in overnight window
+        // Determine window that contains "now"
+        if (now < openToday) {
+          // shift window back one day
+          return {
+            openAt: new Date(openToday.getTime() - 24 * 60 * 60 * 1000),
+            closeAt: new Date(closeToday.getTime() - 24 * 60 * 60 * 1000)
+          };
+        }
+      }
+
+      return { openAt: openToday, closeAt: closeToday };
+    }
+
+    function updateMarketHours(){
+      const now = new Date();
+      const updated = `Updated ${now.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
+      document.getElementById("mhUpdated").textContent = updated;
+
+      // London
+      const l = computeSession("London", SESSIONS.London, now);
+      const londonOpen = (now >= l.openAt && now < l.closeAt);
+      if (londonOpen){
+        setSessionUI("London", true, "OPEN", `Closes in ${formatDuration(l.closeAt - now)}`);
+      } else {
+        // next open
+        let nextOpen = l.openAt;
+        if (now >= l.closeAt) nextOpen = new Date(l.openAt.getTime() + 24*60*60*1000);
+        setSessionUI("London", false, "CLOSED", `Opens in ${formatDuration(nextOpen - now)}`);
+      }
+
+      // New York
+      const ny = computeSession("NewYork", SESSIONS.NewYork, now);
+      const nyOpen = (now >= ny.openAt && now < ny.closeAt);
+      if (nyOpen){
+        setSessionUI("NewYork", true, "OPEN", `Closes in ${formatDuration(ny.closeAt - now)}`);
+      } else {
+        let nextOpen = ny.openAt;
+        if (now >= ny.closeAt) nextOpen = new Date(ny.openAt.getTime() + 24*60*60*1000);
+        setSessionUI("NewYork", false, "CLOSED", `Opens in ${formatDuration(nextOpen - now)}`);
+      }
+
+      // Sydney (overnight)
+      const sy = computeSession("Sydney", SESSIONS.Sydney, now);
+      const syOpen = (now >= sy.openAt && now < sy.closeAt);
+      if (syOpen){
+        setSessionUI("Sydney", true, "OPEN", `Closes in ${formatDuration(sy.closeAt - now)}`);
+      } else {
+        let nextOpen = sy.openAt;
+        if (now >= sy.closeAt) nextOpen = new Date(sy.openAt.getTime() + 24*60*60*1000);
+        setSessionUI("Sydney", false, "CLOSED", `Opens in ${formatDuration(nextOpen - now)}`);
+      }
+
+      // Asia (Tokyo)
+      const as = computeSession("Asia", SESSIONS.Asia, now);
+      const asOpen = (now >= as.openAt && now < as.closeAt);
+      if (asOpen){
+        setSessionUI("Asia", true, "PRE-MARKET / OPEN", `Closes in ${formatDuration(as.closeAt - now)}`);
+      } else {
+        let nextOpen = as.openAt;
+        if (now >= as.closeAt) nextOpen = new Date(as.openAt.getTime() + 24*60*60*1000);
+        setSessionUI("Asia", false, "PRE-MARKET", `Opens in ${formatDuration(nextOpen - now)}`);
+      }
+    }
+
+    // =============================================================================
+    // INIT + LIVE UPDATE
+    // =============================================================================
+    function initHome(){
+      renderGreeting();
+      setDailyLine();
+      updateMarketHours();
+
+      // refresh time-based components
+      setInterval(() => {
+        renderGreeting();
+        updateMarketHours();
+      }, 30 * 1000); // every 30s
+    }
+
+    initHome();
   </script>
 </body>
 </html>
