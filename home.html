@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,22 +28,26 @@
       --chip:#f3f4f6;
       --chip-line:#e5e7eb;
 
-      /* STRICT black/white only: use grayscale for pos/neg */
+      /* STRICT black/white only */
       --pos:#111827;
       --neg:#111827;
 
       --hero-dot: rgba(0,0,0,0.06);
-      --hero-grid: rgba(0,0,0,0.06);
 
-      --btn-bg:#0b0f17;
-      --btn-text:#ffffff;
+      /* ✅ FIX #1: Buttons follow theme strictly:
+         Light mode => fully white button (black text)
+         Dark mode  => fully black button (white text)
+      */
+      --btn-bg:#ffffff;
+      --btn-text:#0b0f17;
       --btn-border:#0b0f17;
 
       --card-bg:#fafafa;
       --card-hover:#f5f5f5;
 
       --ring: rgba(0,0,0,0.12);
-      --glow: rgba(0,0,0,0.06);
+      --glow: rgba(0,0,0,0.08);
+      --alive: rgba(0,0,0,0.06);
     }
 
     body.dark-mode{
@@ -60,17 +65,18 @@
       --chip-line:rgba(255,255,255,0.10);
 
       --hero-dot: rgba(255,255,255,0.08);
-      --hero-grid: rgba(255,255,255,0.08);
 
-      --btn-bg:#ffffff;
-      --btn-text:#000000;
+      /* ✅ FIX #1: dark mode primary button = fully black */
+      --btn-bg:#000000;
+      --btn-text:#ffffff;
       --btn-border:#ffffff;
 
       --card-bg:rgba(255,255,255,0.03);
       --card-hover:rgba(255,255,255,0.05);
 
       --ring: rgba(255,255,255,0.14);
-      --glow: rgba(255,255,255,0.08);
+      --glow: rgba(255,255,255,0.10);
+      --alive: rgba(255,255,255,0.08);
     }
 
     *{ margin:0; padding:0; box-sizing:border-box; }
@@ -85,7 +91,7 @@
       overflow:hidden;
     }
 
-    /* Subtle grid fade like your examples */
+    /* Subtle grid fade */
     .bg-grid{
       position:fixed; inset:0;
       pointer-events:none;
@@ -102,19 +108,24 @@
       opacity:0.35;
     }
 
-    /* Micro-animations (clean) */
+    /* Micro-animations (clean + alive) */
     @keyframes riseIn {
       from { transform: translateY(10px); opacity: 0; }
       to   { transform: translateY(0); opacity: 1; }
     }
     @keyframes softPulse {
-      0%,100% { opacity: .85; transform: translateY(0); }
+      0%,100% { opacity: .55; transform: translateY(0); }
       50%     { opacity: 1; transform: translateY(-1px); }
     }
     @keyframes shimmerLine {
       0% { transform: translateX(-40%); opacity: 0; }
       30% { opacity: .9; }
       100% { transform: translateX(140%); opacity: 0; }
+    }
+    @keyframes scan {
+      0% { transform: translateX(-30%); opacity: 0; }
+      30% { opacity: .95; }
+      100% { transform: translateX(130%); opacity: 0; }
     }
 
     .dashboard-container{ display:flex; height:100vh; width:100vw; }
@@ -312,7 +323,7 @@
     .content-area::-webkit-scrollbar-thumb{ background:color-mix(in oklab, var(--muted) 22%, transparent); border-radius:6px; }
     .content-area::-webkit-scrollbar-thumb:hover{ background:color-mix(in oklab, var(--muted) 35%, transparent); }
 
-    /* HERO (top design stuff like your example) */
+    /* HERO */
     .hero{
       border:1px solid var(--line);
       border-radius:18px;
@@ -330,7 +341,6 @@
       background:
         radial-gradient(900px 320px at 18% 0%, rgba(0,0,0,0.06) 0%, transparent 60%),
         radial-gradient(700px 260px at 92% 0%, rgba(0,0,0,0.05) 0%, transparent 60%);
-      opacity:1;
       pointer-events:none;
     }
     body.dark-mode .hero::before{
@@ -339,7 +349,6 @@
         radial-gradient(700px 260px at 92% 0%, rgba(255,255,255,0.06) 0%, transparent 60%);
     }
 
-    /* subtle moving shine line */
     .hero::after{
       content:"";
       position:absolute;
@@ -348,7 +357,6 @@
       height:100%;
       background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--text) 10%, transparent), transparent);
       opacity:.14;
-      transform:translateX(-40%);
       pointer-events:none;
       animation: shimmerLine 6.5s ease-in-out infinite;
     }
@@ -367,38 +375,22 @@
       z-index:1;
     }
 
-    .hero-left h2{
-      font-size:28px;
-      line-height:1.1;
-      letter-spacing:-0.8px;
-      font-weight:800;
-      margin-bottom:6px;
-      color:var(--text);
-    }
-
-    .hero-left p{
-      font-size:14px;
-      color:var(--muted);
-      max-width:62ch;
-      line-height:1.5;
-    }
-
-    /* NEW: Greeting block like reference */
+    /* Greeting block */
     .greeting{
       display:grid;
       gap:6px;
       margin-bottom:10px;
     }
     .greeting .hello{
-      font-size:18px;
-      font-weight:800;
-      letter-spacing:-0.3px;
+      font-size:20px;
+      font-weight:900;
+      letter-spacing:-0.4px;
       color:var(--text);
-      line-height:1.2;
+      line-height:1.15;
     }
     .greeting .meta{
       font-size:12px;
-      font-weight:700;
+      font-weight:800;
       color:var(--muted);
       letter-spacing:0.2px;
     }
@@ -412,35 +404,22 @@
       font-size:13px;
       line-height:1.45;
       color: var(--text);
-      font-weight:700;
+      font-weight:800;
       animation: riseIn .45s ease both;
     }
     .greeting .daily span{
       color: var(--muted);
-      font-weight:800;
+      font-weight:900;
       margin-right:6px;
+      letter-spacing:0.2px;
     }
 
-    .hero-right{
-      display:flex;
-      flex-direction:column;
-      align-items:flex-end;
-      gap:10px;
-      min-width:280px;
-    }
-
-    .hero-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
-
+    /* Primary button (kept in code but not used on Home now) */
     .btn{
       border-radius:999px;
       padding:10px 14px;
       font-size:13px;
-      font-weight:800;
+      font-weight:900;
       cursor:pointer;
       transition:0.18s ease;
       border:1px solid var(--line);
@@ -451,7 +430,6 @@
       transform:translateY(-1px);
       border-color:color-mix(in oklab, var(--text) 22%, var(--line));
     }
-
     .btn.primary{
       background:var(--btn-bg);
       color:var(--btn-text);
@@ -459,26 +437,45 @@
     }
     .btn.primary:hover{ opacity:0.92; }
 
-    /* Market Hours (like example, premium) */
+    /* ✅ Market Hours (more alive like example) */
     .market-hours{
       width:100%;
       border:1px solid var(--line);
       background:var(--surface);
-      border-radius:14px;
+      border-radius:16px;
       padding:12px;
       display:grid;
-      gap:10px;
+      gap:12px;
       position:relative;
       overflow:hidden;
+      margin-top:10px;
     }
 
+    /* Alive background + scan */
     .market-hours::before{
       content:"";
       position:absolute; inset:-2px;
       background:
         radial-gradient(520px 180px at 12% 0%, var(--glow) 0%, transparent 62%),
-        radial-gradient(520px 180px at 92% 0%, var(--glow) 0%, transparent 62%);
+        radial-gradient(520px 180px at 92% 0%, var(--glow) 0%, transparent 62%),
+        linear-gradient(180deg, transparent, var(--alive), transparent);
+      opacity:1;
       pointer-events:none;
+    }
+    .market-hours::after{
+      content:"";
+      position:absolute;
+      top:0; left:-30%;
+      width:30%;
+      height:100%;
+      background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--text) 12%, transparent), transparent);
+      opacity:.12;
+      pointer-events:none;
+      animation: scan 4.8s ease-in-out infinite;
+    }
+    body.dark-mode .market-hours::after{
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
+      opacity:.12;
     }
 
     .mh-top{
@@ -492,13 +489,13 @@
     .mh-title{
       font-size:12px;
       font-weight:900;
-      letter-spacing:0.6px;
+      letter-spacing:0.9px;
       text-transform:uppercase;
       color:var(--muted);
     }
     .mh-updated{
       font-size:12px;
-      font-weight:800;
+      font-weight:900;
       color:var(--muted);
     }
 
@@ -512,13 +509,15 @@
 
     .mh-card{
       border:1px solid var(--line);
-      border-radius:12px;
-      background:var(--surface-2);
+      border-radius:14px;
+      background:color-mix(in oklab, var(--surface-2) 94%, transparent);
       padding:10px;
       display:grid;
-      gap:6px;
-      min-height:78px;
+      gap:8px;
+      min-height:92px;
       transition:0.18s ease;
+      position:relative;
+      overflow:hidden;
     }
     .mh-card:hover{
       transform:translateY(-1px);
@@ -526,42 +525,115 @@
       background:color-mix(in oklab, var(--surface-2) 90%, transparent);
     }
 
-    .mh-name{
-      font-size:11px;
-      font-weight:900;
-      letter-spacing:0.7px;
-      text-transform:uppercase;
-      color:var(--text);
-      opacity:0.9;
+    /* Animated inner glow on open */
+    .mh-card.open::before{
+      content:"";
+      position:absolute; inset:-1px;
+      background:
+        radial-gradient(260px 110px at 20% 0%, color-mix(in oklab, var(--text) 10%, transparent), transparent 60%),
+        radial-gradient(260px 110px at 80% 0%, color-mix(in oklab, var(--text) 10%, transparent), transparent 60%);
+      opacity:.55;
+      pointer-events:none;
+    }
+    body.dark-mode .mh-card.open::before{
+      background:
+        radial-gradient(260px 110px at 20% 0%, rgba(255,255,255,0.12), transparent 60%),
+        radial-gradient(260px 110px at 80% 0%, rgba(255,255,255,0.10), transparent 60%);
+      opacity:.55;
     }
 
-    .mh-state{
+    .mh-head{
       display:flex;
       align-items:center;
-      gap:8px;
-      font-size:12px;
-      font-weight:900;
-      color:var(--muted);
+      justify-content:space-between;
+      gap:10px;
+      position:relative;
+      z-index:1;
     }
 
-    .dot{
-      width:8px; height:8px;
-      border-radius:999px;
-      background: var(--text);
-      opacity:0.25;
-    }
-    .dot.open{
+    .mh-name{
+      font-size:11px;
+      font-weight:1000;
+      letter-spacing:0.9px;
+      text-transform:uppercase;
+      color:var(--text);
       opacity:0.95;
-      animation: softPulse 2.4s ease-in-out infinite;
+    }
+
+    .mh-badge{
+      font-size:10px;
+      font-weight:1000;
+      letter-spacing:0.8px;
+      text-transform:uppercase;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 86%, transparent);
+      color: var(--muted);
+      white-space:nowrap;
+    }
+    .mh-badge.open{
+      color: var(--text);
+      border-color: color-mix(in oklab, var(--text) 26%, var(--line));
+      background: color-mix(in oklab, var(--surface) 92%, transparent);
+    }
+    body.dark-mode .mh-badge.open{
+      border-color: rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.06);
+      color:#ffffff;
     }
 
     .mh-time{
       font-size:12px;
-      font-weight:800;
+      font-weight:900;
       color:var(--muted);
       line-height:1.3;
+      position:relative;
+      z-index:1;
     }
 
+    /* Open dot */
+    .mh-dotrow{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      position:relative;
+      z-index:1;
+    }
+    .dot{
+      width:8px; height:8px;
+      border-radius:999px;
+      background: var(--text);
+      opacity:0.22;
+    }
+    .dot.open{
+      opacity:0.95;
+      animation: softPulse 2.2s ease-in-out infinite;
+    }
+
+    /* Progress bar */
+    .mh-bar{
+      height:8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 88%, transparent);
+      overflow:hidden;
+      position:relative;
+      z-index:1;
+    }
+    .mh-fill{
+      height:100%;
+      width:0%;
+      background: var(--text);
+      opacity:0.22;
+      transition: width .35s ease;
+    }
+    body.dark-mode .mh-fill{
+      background:#ffffff;
+      opacity:0.18;
+    }
+
+    /* Existing pulse (unchanged style) */
     .mini-pulse{
       width:100%;
       border:1px solid var(--line);
@@ -570,6 +642,7 @@
       padding:12px;
       display:grid;
       gap:8px;
+      margin-top:12px;
     }
 
     .pulse-row{
@@ -579,7 +652,7 @@
       gap:10px;
       font-size:12px;
       color:var(--muted);
-      font-weight:700;
+      font-weight:800;
       letter-spacing:0.2px;
     }
 
@@ -602,27 +675,25 @@
     .pulse-card .k{
       font-size:11px;
       color:var(--muted);
-      font-weight:800;
+      font-weight:900;
       letter-spacing:0.6px;
       text-transform:uppercase;
     }
 
     .pulse-card .v{
       font-size:16px;
-      font-weight:800;
+      font-weight:900;
       color:var(--text);
       letter-spacing:-0.3px;
     }
 
     .pulse-card .c{
       font-size:12px;
-      font-weight:800;
-      color: var(--muted); /* strict grayscale */
+      font-weight:900;
+      color: var(--muted);
     }
-    .up{ color:var(--muted); }
-    .down{ color:var(--muted); }
 
-    /* GRID CARDS like your example */
+    /* GRID CARDS */
     .card-grid{
       display:grid;
       grid-template-columns:repeat(3, minmax(0, 1fr));
@@ -657,7 +728,7 @@
 
     .card-title{
       font-size:11px;
-      font-weight:800;
+      font-weight:900;
       letter-spacing:0.9px;
       text-transform:uppercase;
       color:var(--muted);
@@ -672,7 +743,7 @@
 
     .card-value{
       font-size:30px;
-      font-weight:800;
+      font-weight:900;
       letter-spacing:-1px;
       margin-bottom:6px;
       color:var(--text);
@@ -681,7 +752,7 @@
     .card-subtitle{
       font-size:13px;
       color:var(--muted);
-      font-weight:600;
+      font-weight:700;
     }
 
     .card-meta{
@@ -693,8 +764,8 @@
     }
 
     .card-meta-item{ display:flex; flex-direction:column; gap:4px; }
-    .card-meta-label{ font-size:11px; color:var(--muted); font-weight:700; }
-    .card-meta-value{ font-size:13px; font-weight:800; color:var(--text); }
+    .card-meta-label{ font-size:11px; color:var(--muted); font-weight:800; }
+    .card-meta-value{ font-size:13px; font-weight:900; color:var(--text); }
 
     .card-large{
       grid-column:span 3;
@@ -703,7 +774,7 @@
 
     .card-section-title{
       font-size:11px;
-      font-weight:800;
+      font-weight:900;
       letter-spacing:0.9px;
       text-transform:uppercase;
       color:var(--muted);
@@ -721,7 +792,7 @@
       border-radius:999px;
       background:var(--surface);
       font-size:12px;
-      font-weight:800;
+      font-weight:900;
       color:var(--muted);
       cursor:pointer;
       transition:0.18s ease;
@@ -747,16 +818,15 @@
       display:grid;
       place-items:center;
       color:var(--muted);
-      font-weight:800;
+      font-weight:900;
       letter-spacing:0.2px;
     }
 
     /* Mobile */
     @media (max-width: 980px){
       .hero-inner{ flex-direction:column; align-items:flex-start; }
-      .hero-right{ width:100%; align-items:flex-start; min-width:0; }
-      .pulse-values{ grid-template-columns:1fr 1fr; }
       .mh-grid{ grid-template-columns:1fr 1fr; }
+      .pulse-values{ grid-template-columns:1fr 1fr; }
       .card-grid{ grid-template-columns:1fr; }
       .card-large{ grid-column:span 1; }
       .content-area{ padding:16px; }
@@ -764,7 +834,6 @@
     }
 
     @media (max-width: 720px){
-      /* bottom nav locked to viewport (prevents right-shift) */
       .nav-panel{
         width:100%;
         height:74px;
@@ -872,8 +941,6 @@
         <div class="top-bar-right">
           <span class="chip" id="dateChip">Loading...</span>
 
-          <!-- Theme button REMOVED from this page (will live ONLY on Profile) -->
-
           <button class="icon-btn" title="Notifications" aria-label="Notifications">
             <svg viewBox="0 0 24 24">
               <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -887,28 +954,22 @@
 
       <!-- CONTENT -->
       <div class="content-area">
-        <!-- HERO / TOP DESIGN -->
         <section class="hero">
           <div class="hero-inner">
             <div class="hero-left">
-              <!-- NEW: Greeting + daily message -->
+              <!-- Greeting + daily message -->
               <div class="greeting">
                 <div class="hello" id="greetingText">Good evening, Trader.</div>
                 <div class="meta" id="greetingMeta">Local time —</div>
                 <div class="daily" id="dailyLine"><span>Daily:</span> Loading message…</div>
               </div>
 
-              <h2>Dashboard</h2>
-              <p>Clean black & white system. Track performance, activity, and live market pulse — consistent across Home, Calculator, News, Calendar.</p>
+              <!-- ✅ Remove the long paragraph + remove Open Tools/Open Journal (per request) -->
+              <h2 style="font-size:34px; font-weight:1000; letter-spacing:-1px; margin-top:10px;">Dashboard</h2>
             </div>
 
-            <div class="hero-right">
-              <div class="hero-actions">
-                <button class="btn primary" id="goToolsBtn">Open Tools</button>
-                <button class="btn" id="goJournalBtn">Open Journal</button>
-              </div>
-
-              <!-- NEW: Market Hours block (real computation, updates live) -->
+            <div class="hero-right" style="width:100%; min-width:0; align-items:stretch;">
+              <!-- Market Hours (alive) -->
               <div class="market-hours" aria-label="Market Hours">
                 <div class="mh-top">
                   <span class="mh-title">Market Hours</span>
@@ -916,33 +977,45 @@
                 </div>
 
                 <div class="mh-grid">
-                  <div class="mh-card">
-                    <div class="mh-name">London</div>
-                    <div class="mh-state"><span class="dot" id="dotLondon"></span><span id="stateLondon">—</span></div>
-                    <div class="mh-time" id="timeLondon">—</div>
+                  <div class="mh-card" id="cardLondon">
+                    <div class="mh-head">
+                      <div class="mh-name">London</div>
+                      <div class="mh-badge" id="badgeLondon">—</div>
+                    </div>
+                    <div class="mh-dotrow"><span class="dot" id="dotLondon"></span><span class="mh-time" id="timeLondon">—</span></div>
+                    <div class="mh-bar"><div class="mh-fill" id="fillLondon"></div></div>
                   </div>
 
-                  <div class="mh-card">
-                    <div class="mh-name">New York</div>
-                    <div class="mh-state"><span class="dot" id="dotNewYork"></span><span id="stateNewYork">—</span></div>
-                    <div class="mh-time" id="timeNewYork">—</div>
+                  <div class="mh-card" id="cardNewYork">
+                    <div class="mh-head">
+                      <div class="mh-name">New York</div>
+                      <div class="mh-badge" id="badgeNewYork">—</div>
+                    </div>
+                    <div class="mh-dotrow"><span class="dot" id="dotNewYork"></span><span class="mh-time" id="timeNewYork">—</span></div>
+                    <div class="mh-bar"><div class="mh-fill" id="fillNewYork"></div></div>
                   </div>
 
-                  <div class="mh-card">
-                    <div class="mh-name">Sydney</div>
-                    <div class="mh-state"><span class="dot" id="dotSydney"></span><span id="stateSydney">—</span></div>
-                    <div class="mh-time" id="timeSydney">—</div>
+                  <div class="mh-card" id="cardSydney">
+                    <div class="mh-head">
+                      <div class="mh-name">Sydney</div>
+                      <div class="mh-badge" id="badgeSydney">—</div>
+                    </div>
+                    <div class="mh-dotrow"><span class="dot" id="dotSydney"></span><span class="mh-time" id="timeSydney">—</span></div>
+                    <div class="mh-bar"><div class="mh-fill" id="fillSydney"></div></div>
                   </div>
 
-                  <div class="mh-card">
-                    <div class="mh-name">Asia</div>
-                    <div class="mh-state"><span class="dot" id="dotAsia"></span><span id="stateAsia">—</span></div>
-                    <div class="mh-time" id="timeAsia">—</div>
+                  <div class="mh-card" id="cardAsia">
+                    <div class="mh-head">
+                      <div class="mh-name">Asia</div>
+                      <div class="mh-badge" id="badgeAsia">—</div>
+                    </div>
+                    <div class="mh-dotrow"><span class="dot" id="dotAsia"></span><span class="mh-time" id="timeAsia">—</span></div>
+                    <div class="mh-bar"><div class="mh-fill" id="fillAsia"></div></div>
                   </div>
                 </div>
               </div>
 
-              <!-- Existing pulse -->
+              <!-- Existing Market Pulse -->
               <div class="mini-pulse">
                 <div class="pulse-row">
                   <span>Market Pulse</span>
@@ -1036,7 +1109,6 @@
             </div>
           </div>
 
-          <!-- PORTFOLIO -->
           <div class="dashboard-card card-large">
             <div class="card-header">
               <span class="card-section-title">Portfolio Overview</span>
@@ -1060,7 +1132,6 @@
   <script>
     // =========================
     // THEME (APPLY ONLY) — synced across pages via ONE key: fynx_theme
-    // Theme toggle button is removed here (will exist ONLY on Profile).
     // =========================
     const THEME_KEY = "fynx_theme";
     (function applyThemeFromStorage(){
@@ -1089,16 +1160,11 @@
       });
     });
 
-    // Quick buttons
-    document.getElementById("goToolsBtn").addEventListener("click", () => window.location.href = "calculator.html");
-    document.getElementById("goJournalBtn").addEventListener("click", () => window.location.href = "journal.html");
-
     // =========================
     // DATE CHIP
     // =========================
     const dateChip = document.getElementById("dateChip");
-    const now = new Date();
-    dateChip.textContent = now.toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric", year:"numeric" });
+    dateChip.textContent = new Date().toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric", year:"numeric" });
 
     // =========================
     // Portfolio tabs (UI only)
@@ -1124,17 +1190,59 @@
       `Updated ${new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
 
     // =============================================================================
-    // PROFILE NAME (from Profile) + GREETING (morning/afternoon/evening/night)
+    // ✅ FIX #2: PROFILE NAME always shows from username (whatever user sets)
+    // We read common keys + JSON profile objects used by profile pages.
     // =============================================================================
-    // IMPORTANT: This page will try multiple common keys so it works with your Profile.
-    // If your Profile saves a different key, add it into NAME_KEYS below.
-    const NAME_KEYS = ["fynx_profile_name", "profile_name", "user_name", "fynx_name", "fynxUserName", "displayName", "name"];
+    const NAME_KEYS = [
+      "fynx_profile_name",
+      "fynx_username",
+      "username",
+      "profile_name",
+      "user_name",
+      "fynx_name",
+      "fynxUserName",
+      "displayName",
+      "name"
+    ];
+    const PROFILE_JSON_KEYS = ["fynx_profile", "profile", "fynx_user", "userProfile", "fynx_account"];
+
+    function pickNameFromJson(obj){
+      if (!obj || typeof obj !== "object") return null;
+      const candidates = [
+        obj.username, obj.userName, obj.name, obj.displayName, obj.fullName,
+        obj.profile?.username, obj.profile?.name, obj.profile?.displayName
+      ];
+      for (const c of candidates){
+        if (c && String(c).trim()) return String(c).trim();
+      }
+      return null;
+    }
+
     function getProfileName(){
+      // 1) direct keys
       for (const k of NAME_KEYS){
         const v = localStorage.getItem(k);
         if (v && String(v).trim().length > 0) return String(v).trim();
       }
+      // 2) JSON profile blobs
+      for (const k of PROFILE_JSON_KEYS){
+        const raw = localStorage.getItem(k);
+        if (!raw) continue;
+        try{
+          const obj = JSON.parse(raw);
+          const n = pickNameFromJson(obj);
+          if (n) return n;
+        }catch(e){}
+      }
       return null;
+    }
+
+    function cleanDisplayName(full){
+      if (!full) return null;
+      let s = String(full).trim();
+      // remove trailing punctuation so we don't show "Elham.."
+      s = s.replace(/[.!,;:]+$/g, "").trim();
+      return s || null;
     }
 
     function firstName(full){
@@ -1144,23 +1252,21 @@
     }
 
     function getDayGreeting(h){
-      // Strict & clean
       if (h >= 5 && h < 12) return "Good morning";
       if (h >= 12 && h < 17) return "Good afternoon";
       if (h >= 17 && h < 21) return "Good evening";
       return "Good night";
     }
 
-    function safeCityLabel(){
-      // We won’t show street location. We’ll show timezone + "Local time".
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "Local";
-      return tz;
+    function safeTZLabel(){
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || "Local";
     }
 
     function setAvatarFromName(name){
       const el = document.getElementById("avatarInitials");
       if (!el) return;
-      const n = (name || "").trim();
+
+      const n = cleanDisplayName(name || "");
       if (!n){
         el.textContent = "FX";
         return;
@@ -1175,17 +1281,17 @@
       const greetEl = document.getElementById("greetingText");
       const metaEl = document.getElementById("greetingMeta");
 
-      const fullName = getProfileName();
-      const fn = firstName(fullName) || "Trader";
+      const rawName = getProfileName();
+      const displayName = cleanDisplayName(rawName);
+      const fn = cleanDisplayName(firstName(displayName)) || "Trader";
 
-      setAvatarFromName(fullName);
+      setAvatarFromName(displayName);
 
       const d = new Date();
-      const h = d.getHours();
-      const g = getDayGreeting(h);
+      const g = getDayGreeting(d.getHours());
 
       const timeStr = d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
-      const tz = safeCityLabel();
+      const tz = safeTZLabel();
 
       greetEl.textContent = `${g}, ${fn}.`;
       metaEl.textContent = `Local time ${timeStr} — ${tz}`;
@@ -1194,8 +1300,6 @@
     // =============================================================================
     // DAILY ROTATING MESSAGE (100 lines) — changes once per day
     // =============================================================================
-    const DAILY_KEY = "fynx_daily_line_index_v1";
-
     const DAILY_LINES = [
       "Your edge is discipline, not luck.",
       "Protect capital first. Opportunity comes second.",
@@ -1300,7 +1404,6 @@
     ];
 
     function getDayStamp(d){
-      // YYYY-MM-DD local
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, "0");
       const day = String(d.getDate()).padStart(2, "0");
@@ -1311,32 +1414,17 @@
       const el = document.getElementById("dailyLine");
       if (!el) return;
 
-      const today = new Date();
-      const stamp = getDayStamp(today);
-
-      // stable daily index derived from date string
-      // hash-like: sum of char codes
+      const stamp = getDayStamp(new Date());
       let sum = 0;
       for (let i = 0; i < stamp.length; i++) sum += stamp.charCodeAt(i) * (i + 1);
 
       const idx = sum % DAILY_LINES.length;
-      localStorage.setItem(DAILY_KEY, String(idx));
-
-      const msg = DAILY_LINES[idx] || "Stay sharp. Stay disciplined.";
-      el.innerHTML = `<span>Daily:</span> ${msg}`;
+      el.innerHTML = `<span>Daily:</span> ${DAILY_LINES[idx] || "Stay sharp. Stay disciplined."}`;
     }
 
     // =============================================================================
-    // MARKET HOURS (Real computation) — Sessions in their correct local times using TZ
-    // We compute using Intl timeZone conversions (no fake data).
+    // MARKET HOURS (Real computation) + more “alive” UI (badge, dot, progress)
     // =============================================================================
-    // Session definitions (FX sessions):
-    // Sydney: 22:00 - 07:00 (Australia/Sydney)
-    // Tokyo (Asia): 00:00 - 09:00 (Asia/Tokyo)
-    // London: 08:00 - 17:00 (Europe/London)
-    // New York: 08:00 - 17:00 (America/New_York)
-    //
-    // NOTE: Real-world can vary by liquidity, DST etc; using region timezones handles DST.
     const SESSIONS = {
       London:   { tz: "Europe/London",      open: "08:00", close: "17:00" },
       NewYork:  { tz: "America/New_York",   open: "08:00", close: "17:00" },
@@ -1370,18 +1458,13 @@
     }
 
     function makeZonedDateLike(dateNow, timeZone, hh, mm){
-      // Create a UTC Date that corresponds to "today at hh:mm" in that timezone.
-      // Approach: get Y/M/D in that tz, then find the equivalent UTC by iterative offset.
       const p = zonedParts(dateNow, timeZone);
-      // start with an approx UTC time using Date.UTC
       const approx = new Date(Date.UTC(p.year, p.month - 1, p.day, hh, mm, 0));
-
-      // Determine actual zoned time for approx; compute diff to target; adjust
       const pp = zonedParts(approx, timeZone);
+
       const targetMinutes = hh * 60 + mm;
       const gotMinutes = pp.hour * 60 + pp.minute;
 
-      // If day mismatch due to UTC shift, handle by comparing YMD
       const dayDiff =
         (pp.year - p.year) * 525600 +
         (pp.month - p.month) * 43200 +
@@ -1399,16 +1482,7 @@
       return `${h}h ${m}m`;
     }
 
-    function setSessionUI(key, isOpen, stateText, timeText){
-      document.getElementById(`state${key}`).textContent = stateText;
-      document.getElementById(`time${key}`).textContent = timeText;
-
-      const dot = document.getElementById(`dot${key}`);
-      dot.classList.remove("open");
-      if (isOpen) dot.classList.add("open");
-    }
-
-    function computeSession(sessionName, cfg, now){
+    function computeSession(cfg, now){
       const { tz, open, close } = cfg;
       const o = parseHHMM(open);
       const c = parseHHMM(close);
@@ -1418,71 +1492,91 @@
 
       // overnight session if close <= open
       if (c.hh * 60 + c.mm <= o.hh * 60 + o.mm) {
-        // close is next day in that timezone
         closeToday = new Date(closeToday.getTime() + 24 * 60 * 60 * 1000);
-        // If now is before open, open might actually be "yesterday's" open in overnight window
-        // Determine window that contains "now"
         if (now < openToday) {
-          // shift window back one day
           return {
             openAt: new Date(openToday.getTime() - 24 * 60 * 60 * 1000),
             closeAt: new Date(closeToday.getTime() - 24 * 60 * 60 * 1000)
           };
         }
       }
-
       return { openAt: openToday, closeAt: closeToday };
+    }
+
+    function setSessionUI(key, isOpen, badgeText, lineText, progressPct){
+      const dot = document.getElementById(`dot${key}`);
+      const badge = document.getElementById(`badge${key}`);
+      const time = document.getElementById(`time${key}`);
+      const fill = document.getElementById(`fill${key}`);
+      const card = document.getElementById(`card${key}`);
+
+      dot.classList.remove("open");
+      badge.classList.remove("open");
+      card.classList.remove("open");
+
+      if (isOpen){
+        dot.classList.add("open");
+        badge.classList.add("open");
+        card.classList.add("open");
+      }
+
+      badge.textContent = badgeText;
+      time.textContent = lineText;
+      fill.style.width = `${Math.max(0, Math.min(100, progressPct || 0))}%`;
     }
 
     function updateMarketHours(){
       const now = new Date();
-      const updated = `Updated ${now.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
-      document.getElementById("mhUpdated").textContent = updated;
+      document.getElementById("mhUpdated").textContent =
+        `Updated ${now.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
 
-      // London
-      const l = computeSession("London", SESSIONS.London, now);
-      const londonOpen = (now >= l.openAt && now < l.closeAt);
-      if (londonOpen){
-        setSessionUI("London", true, "OPEN", `Closes in ${formatDuration(l.closeAt - now)}`);
-      } else {
-        // next open
-        let nextOpen = l.openAt;
-        if (now >= l.closeAt) nextOpen = new Date(l.openAt.getTime() + 24*60*60*1000);
-        setSessionUI("London", false, "CLOSED", `Opens in ${formatDuration(nextOpen - now)}`);
+      // Helper
+      function updateOne(labelKey, cfg){
+        const w = computeSession(cfg, now);
+        const isOpen = (now >= w.openAt && now < w.closeAt);
+
+        const total = (w.closeAt - w.openAt);
+        const elapsed = Math.max(0, Math.min(total, now - w.openAt));
+        const pct = total > 0 ? (elapsed / total) * 100 : 0;
+
+        if (isOpen){
+          setSessionUI(labelKey, true, "OPEN", `Closes in ${formatDuration(w.closeAt - now)}`, pct);
+        } else {
+          let nextOpen = w.openAt;
+          if (now >= w.closeAt) nextOpen = new Date(w.openAt.getTime() + 24*60*60*1000);
+          setSessionUI(labelKey, false, "CLOSED", `Opens in ${formatDuration(nextOpen - now)}`, 0);
+        }
       }
 
-      // New York
-      const ny = computeSession("NewYork", SESSIONS.NewYork, now);
-      const nyOpen = (now >= ny.openAt && now < ny.closeAt);
-      if (nyOpen){
-        setSessionUI("NewYork", true, "OPEN", `Closes in ${formatDuration(ny.closeAt - now)}`);
-      } else {
-        let nextOpen = ny.openAt;
-        if (now >= ny.closeAt) nextOpen = new Date(ny.openAt.getTime() + 24*60*60*1000);
-        setSessionUI("NewYork", false, "CLOSED", `Opens in ${formatDuration(nextOpen - now)}`);
-      }
+      updateOne("London", SESSIONS.London);
+      updateOne("NewYork", SESSIONS.NewYork);
+      updateOne("Sydney", SESSIONS.Sydney);
 
-      // Sydney (overnight)
-      const sy = computeSession("Sydney", SESSIONS.Sydney, now);
-      const syOpen = (now >= sy.openAt && now < sy.closeAt);
-      if (syOpen){
-        setSessionUI("Sydney", true, "OPEN", `Closes in ${formatDuration(sy.closeAt - now)}`);
-      } else {
-        let nextOpen = sy.openAt;
-        if (now >= sy.closeAt) nextOpen = new Date(sy.openAt.getTime() + 24*60*60*1000);
-        setSessionUI("Sydney", false, "CLOSED", `Opens in ${formatDuration(nextOpen - now)}`);
-      }
+      // Asia badge uses PRE-MARKET wording when closed (like your reference)
+      (function updateAsia(){
+        const cfg = SESSIONS.Asia;
+        const w = computeSession(cfg, now);
+        const isOpen = (now >= w.openAt && now < w.closeAt);
+        const total = (w.closeAt - w.openAt);
+        const elapsed = Math.max(0, Math.min(total, now - w.openAt));
+        const pct = total > 0 ? (elapsed / total) * 100 : 0;
 
-      // Asia (Tokyo)
-      const as = computeSession("Asia", SESSIONS.Asia, now);
-      const asOpen = (now >= as.openAt && now < as.closeAt);
-      if (asOpen){
-        setSessionUI("Asia", true, "PRE-MARKET / OPEN", `Closes in ${formatDuration(as.closeAt - now)}`);
-      } else {
-        let nextOpen = as.openAt;
-        if (now >= as.closeAt) nextOpen = new Date(as.openAt.getTime() + 24*60*60*1000);
-        setSessionUI("Asia", false, "PRE-MARKET", `Opens in ${formatDuration(nextOpen - now)}`);
-      }
+        if (isOpen){
+          setSessionUI("Asia", true, "OPEN", `Closes in ${formatDuration(w.closeAt - now)}`, pct);
+        } else {
+          let nextOpen = w.openAt;
+          if (now >= w.closeAt) nextOpen = new Date(w.openAt.getTime() + 24*60*60*1000);
+          // show PRE-MARKET label
+          const dot = document.getElementById("dotAsia");
+          dot.classList.remove("open");
+          document.getElementById("badgeAsia").classList.remove("open");
+          document.getElementById("cardAsia").classList.remove("open");
+
+          document.getElementById("badgeAsia").textContent = "PRE-MARKET";
+          document.getElementById("timeAsia").textContent = `Opens in ${formatDuration(nextOpen - now)}`;
+          document.getElementById("fillAsia").style.width = "0%";
+        }
+      })();
     }
 
     // =============================================================================
@@ -1493,15 +1587,14 @@
       setDailyLine();
       updateMarketHours();
 
-      // refresh time-based components
       setInterval(() => {
         renderGreeting();
         updateMarketHours();
-      }, 30 * 1000); // every 30s
+      }, 20 * 1000); // a bit faster = feels alive
     }
 
     initHome();
   </script>
 </body>
 </html>
-```
+
