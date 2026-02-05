@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -512,12 +511,13 @@
     <nav class="nav-panel">
       <div class="nav-logo">FYNX</div>
       <div class="nav-menu">
-        <a class="nav-item" href="home.html">Home</a>
-        <a class="nav-item" href="journal.html">Journal</a>
-        <a class="nav-item active" href="calculator.html">Calculator</a>
-        <a class="nav-item" href="news.html">News</a>
-        <a class="nav-item" href="calendar.html">Calendar</a>
-        <a class="nav-item" href="profile.html">Profile</a>
+        <!-- ✅ FIX ONLY: same nav routing behavior as the other pages -->
+        <a class="nav-item" href="javascript:void(0)" data-view="home">Home</a>
+        <a class="nav-item" href="javascript:void(0)" data-view="journal">Journal</a>
+        <a class="nav-item active" href="javascript:void(0)" data-view="calculator">Calculator</a>
+        <a class="nav-item" href="javascript:void(0)" data-view="news">News</a>
+        <a class="nav-item" href="javascript:void(0)" data-view="calendar">Calendar</a>
+        <a class="nav-item" href="javascript:void(0)" data-view="profile">Profile</a>
       </div>
     </nav>
 
@@ -558,6 +558,25 @@
   </div>
 
   <script>
+    /* =========================
+       ✅ FIX ONLY: NAV ROUTING
+    ========================= */
+    const navItems = document.querySelectorAll(".nav-item");
+    const viewPages = {
+      home: "home.html",
+      journal: "journal.html",
+      calculator: "calculator.html",
+      news: "news.html",
+      calendar: "calendar.html",
+      profile: "profile.html"
+    };
+    navItems.forEach(item => {
+      item.addEventListener("click", () => {
+        const viewName = item.getAttribute("data-view");
+        if (viewPages[viewName]) window.location.href = viewPages[viewName];
+      });
+    });
+
     /* =========================
        THEME (SYNCED ACROSS PAGES)
        - No toggle here (ONLY on profile.html)
@@ -674,4 +693,4 @@
   </script>
 </body>
 </html>
-```
+
