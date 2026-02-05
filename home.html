@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>FYNX Finance World - Dashboard</title>
 
+  <!-- ✅ FIX: iPhone/Safari top+bottom bars follow theme (no white gaps) -->
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -80,13 +85,19 @@
 
     *{ margin:0; padding:0; box-sizing:border-box; }
 
+    /* ✅ FIX: force full-screen background for Safari safe-areas */
+    html, body{
+      height:100%;
+      background: var(--bg);
+    }
+
     body{
       font-family:"Manrope", system-ui, -apple-system, Segoe UI, sans-serif;
       background:
         radial-gradient(circle at 1px 1px, var(--hero-dot) 1px, transparent 1px) 0 0 / 18px 18px,
         linear-gradient(var(--bg), var(--bg));
       color:var(--text);
-      height:100vh;
+      min-height:100vh;
       overflow:hidden;
     }
 
@@ -105,6 +116,14 @@
         linear-gradient(to right, transparent 0%, transparent 45%, rgba(255,255,255,0.06) 50%, transparent 55%, transparent 100%),
         linear-gradient(to bottom, transparent 0%, transparent 45%, rgba(255,255,255,0.06) 50%, transparent 55%, transparent 100%);
       opacity:0.35;
+    }
+
+    /* ✅ FIX: ensure the notch + home-indicator areas are themed */
+    @supports (padding: max(0px)){
+      body{
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
     }
 
     /* Micro-animations (clean + alive) */
@@ -1579,6 +1598,135 @@
     }
 
     // =============================================================================
+    // ✅ FIX #2: PROFILE NAME always shows from username (whatever user sets)
+    // We read common keys + JSON profile objects used by profile pages.
+    // =============================================================================
+    const NAME_KEYS = [
+      "fynx_profile_name",
+      "fynx_username",
+      "username",
+      "profile_name",
+      "user_name",
+      "fynx_name",
+      "fynxUserName",
+      "displayName",
+      "name"
+    ];
+    const PROFILE_JSON_KEYS = ["fynx_profile", "profile", "fynx_user", "userProfile", "fynx_account"];
+
+    function pickNameFromJson(obj){
+      if (!obj || typeof obj !== "object") return null;
+      const candidates = [
+        obj.username, obj.userName, obj.name, obj.displayName, obj.fullName,
+        obj.profile?.username, obj.profile?.name, obj.profile?.displayName
+      ];
+      for (const c of candidates){
+        if (c && String(c).trim()) return String(c).trim();
+      }
+      return null;
+    }
+
+    function getProfileName(){
+      // 1) direct keys
+      for (const k of NAME_KEYS){
+        const v = localStorage.getItem(k);
+        if (v && String(v).trim().length > 0) return String(v).trim();
+      }
+      // 2) JSON profile blobs
+      for (const k of PROFILE_JSON_KEYS){
+        const raw = localStorage.getItem(k);
+        if (!raw) continue;
+        try{
+          const obj = JSON.parse(raw);
+          const n = pickNameFromJson(obj);
+          if (n) return n;
+        }catch(e){}
+      }
+      return null;
+    }
+
+    function cleanDisplayName(full){
+      if (!full) return null;
+      let s = String(full).trim();
+      s = s.replace(/[.!,;:]+$/g, "").trim();
+      return s || null;
+    }
+
+    function firstName(full){
+      if (!full) return null;
+      const parts = String(full).trim().split(/\s+/);
+      return parts[0] || full;
+    }
+
+    function getDayGreeting(h){
+      if (h >= 5 && h < 12) return "Good morning";
+      if (h >= 12 && h < 17) return "Good afternoon";
+      if (h >= 17 && h < 21) return "Good evening";
+      return "Good night";
+    }
+
+    function safeTZLabel(){
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || "Local";
+    }
+
+    function setAvatarFromName(name){
+      const el = document.getElementById("avatarInitials");
+      if (!el) return;
+
+      const n = cleanDisplayName(name || "");
+      if (!n){
+        el.textContent = "FX";
+        return;
+      }
+      const parts = n.split(/\s+/).filter(Boolean);
+      let initials = parts[0]?.[0] || "F";
+      if (parts.length > 1) initials += parts[parts.length-1]?.[0] || "";
+      el.textContent = initials.toUpperCase();
+    }
+
+    function renderGreeting(){
+      const greetEl = document.getElementById("greetingText");
+      const metaEl = document.getElementById("greetingMeta");
+
+      const rawName = getProfileName();
+      const displayName = cleanDisplayName(rawName);
+      const fn = cleanDisplayName(firstName(displayName)) || "Trader";
+
+      setAvatarFromName(displayName);
+
+      const d = new Date();
+      const g = getDayGreeting(d.getHours());
+
+      const timeStr = d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+      const tz = safeTZLabel();
+
+      greetEl.textContent = `${g}, ${fn}.`;
+      metaEl.textContent = `Local time ${timeStr} — ${tz}`;
+    }
+
+    // =============================================================================
+    // DAILY ROTATING MESSAGE (100 lines) — changes once per day
+    // =============================================================================
+    function getDayStamp(d){
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function setDailyLine(){
+      const el = document.getElementById("dailyLine");
+      if (!el) return;
+
+      const stamp = getDayStamp(new Date());
+      let sum = 0;
+      for (let i = 0; i < stamp.length; i++) sum += stamp.charCodeAt(i) * (i + 1);
+
+      const idx = sum % DAILY_LINES.length;
+      el.innerHTML = `<span>Daily:</span> ${DAILY_LINES[idx] || "Stay sharp. Stay disciplined."}`;
+    }
+
+    // =============================================================================
     // INIT + LIVE UPDATE
     // =============================================================================
     function initHome(){
@@ -1596,4 +1744,3 @@
   </script>
 </body>
 </html>
-
