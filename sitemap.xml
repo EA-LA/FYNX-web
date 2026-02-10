@@ -1,10 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://fynxfinanceworld.com/</loc></url>
-  <url><loc>https://fynxfinanceworld.com/home.html</loc></url>
-  <url><loc>https://fynxfinanceworld.com/dashboard.html</loc></url>
-  <url><loc>https://fynxfinanceworld.com/tools.html</loc></url>
-  <url><loc>https://fynxfinanceworld.com/news.html</loc></url>
-  <url><loc>https://fynxfinanceworld.com/journal.html</loc></url>
-  <url><loc>https://fynxfinanceworld.com/trader-journal.html</loc></url>
+
+<url>
+  <loc>https://www.fynxfinanceworld.com/</loc>
+</url>
+
+<url>
+  <loc>https://blog.fynxfinanceworld.com/</loc>
+</url>
+
+<url>
+  <loc>https://site.fynxfinanceworld.com/index.html</loc>
+</url>
+
+<url>
+  <loc>https://roadmap.fynxfinanceworld.com/</loc>
+</url>
+
+<url>
+  <loc>https://www.fynxfinanceworld.com/assets/docs/FYNX-Whitepaper.pdf</loc>
+</url>
+
 </urlset>
