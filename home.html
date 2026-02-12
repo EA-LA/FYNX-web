@@ -4,11 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>FYNX Finance World - Dashboard</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-
   <style>
     :root{
       --bg:#ffffff;
@@ -17,38 +15,29 @@
       --text:#0b0f17;
       --muted:#6b7280;
       --line:#e5e7eb;
-
       --shadow:0 16px 42px rgba(11,37,84,0.08);
       --shadow-2:0 10px 30px rgba(15,23,42,0.08);
       --radius:14px;
-
       --nav-width:120px;
-
       --chip:#f3f4f6;
       --chip-line:#e5e7eb;
-
       /* STRICT black/white only */
       --pos:#111827;
       --neg:#111827;
-
       --hero-dot: rgba(0,0,0,0.06);
-
       /* ✅ FIX #1: Buttons follow theme strictly:
          Light mode => fully white button (black text)
-         Dark mode  => fully black button (white text)
+         Dark mode => fully black button (white text)
       */
       --btn-bg:#ffffff;
       --btn-text:#0b0f17;
       --btn-border:#0b0f17;
-
       --card-bg:#fafafa;
       --card-hover:#f5f5f5;
-
       --ring: rgba(0,0,0,0.12);
       --glow: rgba(0,0,0,0.08);
       --alive: rgba(0,0,0,0.06);
     }
-
     body.dark-mode{
       --bg:#000000;
       --surface:#000000;
@@ -56,30 +45,22 @@
       --text:#ffffff;
       --muted:rgba(255,255,255,0.55);
       --line:rgba(255,255,255,0.10);
-
       --shadow:0 16px 42px rgba(0,0,0,0.45);
       --shadow-2:0 12px 34px rgba(0,0,0,0.55);
-
       --chip:rgba(255,255,255,0.06);
       --chip-line:rgba(255,255,255,0.10);
-
       --hero-dot: rgba(255,255,255,0.08);
-
       /* ✅ FIX #1: dark mode primary button = fully black */
       --btn-bg:#000000;
       --btn-text:#ffffff;
       --btn-border:#ffffff;
-
       --card-bg:rgba(255,255,255,0.03);
       --card-hover:rgba(255,255,255,0.05);
-
       --ring: rgba(255,255,255,0.14);
       --glow: rgba(255,255,255,0.10);
       --alive: rgba(255,255,255,0.08);
     }
-
     *{ margin:0; padding:0; box-sizing:border-box; }
-
     body{
       font-family:"Manrope", system-ui, -apple-system, Segoe UI, sans-serif;
       background:
@@ -89,7 +70,6 @@
       height:100vh;
       overflow:hidden;
     }
-
     /* Subtle grid fade */
     .bg-grid{
       position:fixed; inset:0;
@@ -106,15 +86,14 @@
         linear-gradient(to bottom, transparent 0%, transparent 45%, rgba(255,255,255,0.06) 50%, transparent 55%, transparent 100%);
       opacity:0.35;
     }
-
     /* Micro-animations (clean + alive) */
     @keyframes riseIn {
       from { transform: translateY(10px); opacity: 0; }
-      to   { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(0); opacity: 1; }
     }
     @keyframes softPulse {
       0%,100% { opacity: .55; transform: translateY(0); }
-      50%     { opacity: 1; transform: translateY(-1px); }
+      50% { opacity: 1; transform: translateY(-1px); }
     }
     @keyframes shimmerLine {
       0% { transform: translateX(-40%); opacity: 0; }
@@ -126,9 +105,7 @@
       30% { opacity: .95; }
       100% { transform: translateX(130%); opacity: 0; }
     }
-
     .dashboard-container{ display:flex; height:100vh; width:100vw; }
-
     /* NAV */
     .nav-panel{
       width:var(--nav-width);
@@ -142,20 +119,17 @@
       flex-direction:column;
       backdrop-filter: blur(10px);
     }
-
     .nav-logo{
       padding:30px 0;
       text-align:center;
       border-bottom:1px solid var(--line);
     }
-
     .nav-logo h1{
       font-size:18px;
       font-weight:800;
       letter-spacing:-0.6px;
       color:var(--text);
     }
-
     .nav-menu{
       flex:1;
       padding:18px 0;
@@ -164,7 +138,6 @@
       align-items:center;
       gap:8px;
     }
-
     .nav-item{
       width:86px;
       padding:14px 0;
@@ -181,21 +154,18 @@
       border:1px solid transparent;
       user-select:none;
     }
-
     .nav-item:hover{
       background:var(--surface-2);
       color:var(--text);
       border-color:var(--line);
       transform:translateY(-1px);
     }
-
     .nav-item.active{
       background:var(--surface-2);
       color:var(--text);
       border-color:transparent;
       box-shadow:var(--shadow-2);
     }
-
     .nav-item.active::after{
       content:"";
       position:absolute;
@@ -209,7 +179,6 @@
       opacity:0.9;
     }
     body.dark-mode .nav-item.active::after{ background:#ffffff; opacity:0.9; }
-
     .nav-icon{
       width:22px; height:22px;
       stroke:currentColor;
@@ -217,13 +186,11 @@
       fill:none;
       opacity:0.9;
     }
-
     .nav-label{
       font-size:11px;
       font-weight:700;
       letter-spacing:0.2px;
     }
-
     /* MAIN */
     .main-content{
       margin-left:var(--nav-width);
@@ -233,7 +200,6 @@
       display:flex;
       flex-direction:column;
     }
-
     /* TOP BAR */
     .top-bar{
       height:72px;
@@ -248,20 +214,17 @@
       top:0;
       z-index:20;
     }
-
     .page-title{
       font-size:14px;
       font-weight:700;
       color:var(--muted);
       letter-spacing:0.2px;
     }
-
     .top-bar-right{
       display:flex;
       align-items:center;
       gap:12px;
     }
-
     .chip{
       border:1px solid var(--chip-line);
       background:var(--chip);
@@ -271,7 +234,6 @@
       padding:8px 12px;
       font-weight:700;
     }
-
     .icon-btn{
       width:34px;
       height:34px;
@@ -290,7 +252,6 @@
       transform:translateY(-1px);
     }
     .icon-btn svg{ width:18px; height:18px; stroke:currentColor; stroke-width:1.7; fill:none; }
-
     .user-avatar{
       width:34px; height:34px;
       border-radius:999px;
@@ -309,19 +270,16 @@
       border-color:color-mix(in oklab, var(--text) 28%, var(--line));
       color:var(--text);
     }
-
     /* CONTENT */
     .content-area{
       flex:1;
       overflow-y:auto;
       padding:24px 28px 28px;
     }
-
     .content-area::-webkit-scrollbar{ width:6px; }
     .content-area::-webkit-scrollbar-track{ background:transparent; }
     .content-area::-webkit-scrollbar-thumb{ background:color-mix(in oklab, var(--muted) 22%, transparent); border-radius:6px; }
     .content-area::-webkit-scrollbar-thumb:hover{ background:color-mix(in oklab, var(--muted) 35%, transparent); }
-
     /* HERO */
     .hero{
       border:1px solid var(--line);
@@ -333,7 +291,6 @@
       margin-bottom:16px;
       animation: riseIn .38s ease both;
     }
-
     .hero::before{
       content:"";
       position:absolute; inset:-2px;
@@ -347,7 +304,6 @@
         radial-gradient(900px 320px at 18% 0%, rgba(255,255,255,0.08) 0%, transparent 60%),
         radial-gradient(700px 260px at 92% 0%, rgba(255,255,255,0.06) 0%, transparent 60%);
     }
-
     .hero::after{
       content:"";
       position:absolute;
@@ -363,7 +319,6 @@
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
       opacity:.12;
     }
-
     .hero-inner{
       display:flex;
       align-items:flex-start;
@@ -373,7 +328,6 @@
       position:relative;
       z-index:1;
     }
-
     /* Greeting block */
     .greeting{
       display:grid;
@@ -412,7 +366,6 @@
       margin-right:6px;
       letter-spacing:0.2px;
     }
-
     /* Primary button (kept in code but not used on Home now) */
     .btn{
       border-radius:999px;
@@ -435,7 +388,6 @@
       border-color:var(--btn-border);
     }
     .btn.primary:hover{ opacity:0.92; }
-
     /* ✅ Market Hours (more alive like example) */
     .market-hours{
       width:100%;
@@ -449,7 +401,6 @@
       overflow:hidden;
       margin-top:10px;
     }
-
     /* Alive background + scan */
     .market-hours::before{
       content:"";
@@ -476,7 +427,6 @@
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
       opacity:.12;
     }
-
     .mh-top{
       display:flex;
       justify-content:space-between;
@@ -497,7 +447,6 @@
       font-weight:900;
       color:var(--muted);
     }
-
     .mh-grid{
       display:grid;
       grid-template-columns:1fr 1fr;
@@ -505,7 +454,6 @@
       position:relative;
       z-index:1;
     }
-
     .mh-card{
       border:1px solid var(--line);
       border-radius:14px;
@@ -523,7 +471,6 @@
       border-color:color-mix(in oklab, var(--text) 18%, var(--line));
       background:color-mix(in oklab, var(--surface-2) 90%, transparent);
     }
-
     /* Animated inner glow on open */
     .mh-card.open::before{
       content:"";
@@ -540,7 +487,6 @@
         radial-gradient(260px 110px at 80% 0%, rgba(255,255,255,0.10), transparent 60%);
       opacity:.55;
     }
-
     .mh-head{
       display:flex;
       align-items:center;
@@ -549,7 +495,6 @@
       position:relative;
       z-index:1;
     }
-
     .mh-name{
       font-size:11px;
       font-weight:1000;
@@ -558,7 +503,6 @@
       color:var(--text);
       opacity:0.95;
     }
-
     .mh-badge{
       font-size:10px;
       font-weight:1000;
@@ -581,7 +525,6 @@
       background: rgba(255,255,255,0.06);
       color:#ffffff;
     }
-
     .mh-time{
       font-size:12px;
       font-weight:900;
@@ -590,7 +533,6 @@
       position:relative;
       z-index:1;
     }
-
     /* Open dot */
     .mh-dotrow{
       display:flex;
@@ -609,7 +551,6 @@
       opacity:0.95;
       animation: softPulse 2.2s ease-in-out infinite;
     }
-
     /* Progress bar */
     .mh-bar{
       height:8px;
@@ -631,7 +572,6 @@
       background:#ffffff;
       opacity:0.18;
     }
-
     /* Existing pulse (unchanged style) */
     .mini-pulse{
       width:100%;
@@ -643,7 +583,6 @@
       gap:8px;
       margin-top:12px;
     }
-
     .pulse-row{
       display:flex;
       justify-content:space-between;
@@ -654,14 +593,12 @@
       font-weight:800;
       letter-spacing:0.2px;
     }
-
     .pulse-values{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:10px;
       margin-top:2px;
     }
-
     .pulse-card{
       border:1px solid var(--line);
       border-radius:12px;
@@ -670,7 +607,6 @@
       display:grid;
       gap:6px;
     }
-
     .pulse-card .k{
       font-size:11px;
       color:var(--muted);
@@ -678,20 +614,17 @@
       letter-spacing:0.6px;
       text-transform:uppercase;
     }
-
     .pulse-card .v{
       font-size:16px;
       font-weight:900;
       color:var(--text);
       letter-spacing:-0.3px;
     }
-
     .pulse-card .c{
       font-size:12px;
       font-weight:900;
       color: var(--muted);
     }
-
     /* GRID CARDS */
     .card-grid{
       display:grid;
@@ -699,7 +632,6 @@
       gap:16px;
       margin-bottom:16px;
     }
-
     .dashboard-card{
       background:var(--card-bg);
       border:1px solid var(--line);
@@ -711,20 +643,17 @@
       overflow:hidden;
       animation: riseIn .42s ease both;
     }
-
     .dashboard-card:hover{
       background:var(--card-hover);
       border-color:color-mix(in oklab, var(--text) 14%, var(--line));
       transform:translateY(-2px);
     }
-
     .card-header{
       display:flex;
       justify-content:space-between;
       align-items:center;
       margin-bottom:12px;
     }
-
     .card-title{
       font-size:11px;
       font-weight:900;
@@ -732,14 +661,12 @@
       text-transform:uppercase;
       color:var(--muted);
     }
-
     .card-icon{
       width:16px; height:16px;
       stroke:color-mix(in oklab, var(--muted) 70%, transparent);
       stroke-width:1.7;
       fill:none;
     }
-
     .card-value{
       font-size:30px;
       font-weight:900;
@@ -747,13 +674,11 @@
       margin-bottom:6px;
       color:var(--text);
     }
-
     .card-subtitle{
       font-size:13px;
       color:var(--muted);
       font-weight:700;
     }
-
     .card-meta{
       display:flex;
       gap:16px;
@@ -761,16 +686,13 @@
       padding-top:14px;
       border-top:1px solid var(--line);
     }
-
     .card-meta-item{ display:flex; flex-direction:column; gap:4px; }
     .card-meta-label{ font-size:11px; color:var(--muted); font-weight:800; }
     .card-meta-value{ font-size:13px; font-weight:900; color:var(--text); }
-
     .card-large{
       grid-column:span 3;
       padding:18px;
     }
-
     .card-section-title{
       font-size:11px;
       font-weight:900;
@@ -778,27 +700,23 @@
       text-transform:uppercase;
       color:var(--muted);
     }
-
     /* ✅ NEW: Live Activity + News (black/white, same style) */
     .live-stack{
       display:grid;
       gap:12px;
     }
-
     .live-toprow{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
     }
-
     .live-left{
       display:flex;
       align-items:center;
       gap:10px;
       min-width:0;
     }
-
     .live-title{
       font-size:12px;
       font-weight:1000;
@@ -807,7 +725,6 @@
       color:var(--muted);
       white-space:nowrap;
     }
-
     .live-pill{
       display:flex;
       align-items:center;
@@ -823,7 +740,6 @@
       color:var(--muted);
       white-space:nowrap;
     }
-
     .live-dot{
       width:8px; height:8px;
       border-radius:999px;
@@ -831,28 +747,24 @@
       opacity:0.95;
       animation: softPulse 2.2s ease-in-out infinite;
     }
-
     .live-updated{
       font-size:12px;
       font-weight:900;
       color:var(--muted);
       white-space:nowrap;
     }
-
     .tv-wrap{
       border:1px solid var(--line);
       border-radius:14px;
       overflow:hidden;
       background: var(--surface);
     }
-
     .news-wrap{
       border:1px solid var(--line);
       border-radius:14px;
       background: color-mix(in oklab, var(--surface-2) 94%, transparent);
       overflow:hidden;
     }
-
     .news-head{
       display:flex;
       align-items:center;
@@ -862,14 +774,12 @@
       border-bottom:1px solid var(--line);
       background: color-mix(in oklab, var(--surface) 92%, transparent);
     }
-
     .news-head .label{
       display:flex;
       align-items:center;
       gap:10px;
       min-width:0;
     }
-
     .news-head .label strong{
       font-size:12px;
       font-weight:1000;
@@ -878,14 +788,12 @@
       color:var(--muted);
       white-space:nowrap;
     }
-
     .news-sub{
       font-size:12px;
       font-weight:900;
       color:var(--muted);
       white-space:nowrap;
     }
-
     .news-list{
       display:grid;
       gap:0;
@@ -896,7 +804,6 @@
     .news-list::-webkit-scrollbar-track{ background:transparent; }
     .news-list::-webkit-scrollbar-thumb{ background:color-mix(in oklab, var(--muted) 22%, transparent); border-radius:6px; }
     .news-list::-webkit-scrollbar-thumb:hover{ background:color-mix(in oklab, var(--muted) 35%, transparent); }
-
     .news-item{
       display:flex;
       align-items:flex-start;
@@ -912,13 +819,11 @@
       background: color-mix(in oklab, var(--surface) 90%, transparent);
       transform: translateY(-1px);
     }
-
     .news-main{
       display:grid;
       gap:6px;
       min-width:0;
     }
-
     .news-source{
       display:flex;
       align-items:center;
@@ -929,7 +834,6 @@
       letter-spacing:0.3px;
       min-width:0;
     }
-
     .news-source .badge{
       font-size:10px;
       font-weight:1000;
@@ -942,7 +846,6 @@
       color: var(--muted);
       white-space:nowrap;
     }
-
     .news-title{
       font-size:13px;
       font-weight:900;
@@ -953,7 +856,6 @@
       -webkit-line-clamp:2;
       -webkit-box-orient:vertical;
     }
-
     .news-time{
       font-size:11px;
       font-weight:900;
@@ -961,14 +863,12 @@
       white-space:nowrap;
       margin-top:2px;
     }
-
     .news-empty{
       padding:14px 12px;
       font-size:13px;
       font-weight:900;
       color:var(--muted);
     }
-
     /* Mobile */
     @media (max-width: 980px){
       .hero-inner{ flex-direction:column; align-items:flex-start; }
@@ -979,7 +879,6 @@
       .content-area{ padding:16px; }
       .top-bar{ padding:0 16px; }
     }
-
     @media (max-width: 720px){
       .nav-panel{
         width:100%;
@@ -1005,7 +904,6 @@
       }
       .nav-item{ width:auto; min-width:56px; padding:10px 10px; }
       .nav-item.active::after{ display:none; }
-
       .main-content{
         margin-left:0;
         width:100%;
@@ -1015,15 +913,12 @@
     }
   </style>
 </head>
-
 <body>
   <div class="bg-grid"></div>
-
   <div class="dashboard-container">
     <!-- LEFT NAVIGATION PANEL -->
     <nav class="nav-panel">
       <div class="nav-logo"><h1>FYNX</h1></div>
-
       <div class="nav-menu">
         <div class="nav-item active" data-view="home">
           <svg class="nav-icon" viewBox="0 0 24 24">
@@ -1032,7 +927,6 @@
           </svg>
           <span class="nav-label">Home</span>
         </div>
-
         <div class="nav-item" data-view="journal">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -1040,7 +934,6 @@
           </svg>
           <span class="nav-label">Journal</span>
         </div>
-
         <div class="nav-item" data-view="calculator">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <rect x="4" y="2" width="16" height="20" rx="2"></rect>
@@ -1051,7 +944,6 @@
           </svg>
           <span class="nav-label">Calculator</span>
         </div>
-
         <div class="nav-item" data-view="news">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
@@ -1060,7 +952,6 @@
           </svg>
           <span class="nav-label">News</span>
         </div>
-
         <div class="nav-item" data-view="calendar">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -1070,7 +961,6 @@
           </svg>
           <span class="nav-label">Calendar</span>
         </div>
-
         <div class="nav-item" data-view="profile">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -1088,14 +978,12 @@
         <h1 class="page-title">Home</h1>
         <div class="top-bar-right">
           <span class="chip" id="dateChip">Loading...</span>
-
           <button class="icon-btn" title="Notifications" aria-label="Notifications">
             <svg viewBox="0 0 24 24">
               <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
           </button>
-
           <div class="user-avatar" id="avatarInitials">FX</div>
         </div>
       </div>
@@ -1111,11 +999,9 @@
                 <div class="meta" id="greetingMeta">Local time —</div>
                 <div class="daily" id="dailyLine"><span>Daily:</span> Loading message…</div>
               </div>
-
               <!-- ✅ Remove the long paragraph + remove Open Tools/Open Journal (per request) -->
               <h2 style="font-size:34px; font-weight:1000; letter-spacing:-1px; margin-top:10px;">Dashboard</h2>
             </div>
-
             <div class="hero-right" style="width:100%; min-width:0; align-items:stretch;">
               <!-- Market Hours (alive) -->
               <div class="market-hours" aria-label="Market Hours">
@@ -1123,7 +1009,6 @@
                   <span class="mh-title">Market Hours</span>
                   <span class="mh-updated" id="mhUpdated">—</span>
                 </div>
-
                 <div class="mh-grid">
                   <div class="mh-card" id="cardLondon">
                     <div class="mh-head">
@@ -1133,7 +1018,6 @@
                     <div class="mh-dotrow"><span class="dot" id="dotLondon"></span><span class="mh-time" id="timeLondon">—</span></div>
                     <div class="mh-bar"><div class="mh-fill" id="fillLondon"></div></div>
                   </div>
-
                   <div class="mh-card" id="cardNewYork">
                     <div class="mh-head">
                       <div class="mh-name">New York</div>
@@ -1142,7 +1026,6 @@
                     <div class="mh-dotrow"><span class="dot" id="dotNewYork"></span><span class="mh-time" id="timeNewYork">—</span></div>
                     <div class="mh-bar"><div class="mh-fill" id="fillNewYork"></div></div>
                   </div>
-
                   <div class="mh-card" id="cardSydney">
                     <div class="mh-head">
                       <div class="mh-name">Sydney</div>
@@ -1151,7 +1034,6 @@
                     <div class="mh-dotrow"><span class="dot" id="dotSydney"></span><span class="mh-time" id="timeSydney">—</span></div>
                     <div class="mh-bar"><div class="mh-fill" id="fillSydney"></div></div>
                   </div>
-
                   <div class="mh-card" id="cardAsia">
                     <div class="mh-head">
                       <div class="mh-name">Asia</div>
@@ -1162,7 +1044,6 @@
                   </div>
                 </div>
               </div>
-
               <!-- Existing Market Pulse -->
               <div class="mini-pulse">
                 <div class="pulse-row">
@@ -1182,7 +1063,6 @@
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         </section>
@@ -1198,7 +1078,6 @@
             </div>
             <div class="card-value">+12.4%</div>
             <div class="card-subtitle">Updated 2 hours ago</div>
-
             <div class="card-meta">
               <div class="card-meta-item">
                 <span class="card-meta-label">This Month</span>
@@ -1210,7 +1089,6 @@
               </div>
             </div>
           </div>
-
           <div class="dashboard-card">
             <div class="card-header">
               <span class="card-title">Recent Activity</span>
@@ -1221,7 +1099,6 @@
             </div>
             <div class="card-value">24</div>
             <div class="card-subtitle">Last 7 days</div>
-
             <div class="card-meta">
               <div class="card-meta-item">
                 <span class="card-meta-label">Trades</span>
@@ -1233,7 +1110,6 @@
               </div>
             </div>
           </div>
-
           <div class="dashboard-card">
             <div class="card-header">
               <span class="card-title">Market Snapshot</span>
@@ -1244,7 +1120,6 @@
             </div>
             <div class="card-value">Live</div>
             <div class="card-subtitle">Real-time view</div>
-
             <div class="card-meta">
               <div class="card-meta-item">
                 <span class="card-meta-label">S&P 500</span>
@@ -1257,7 +1132,7 @@
             </div>
           </div>
 
-          <!-- ✅ REPLACED: Portfolio Overview removed. Added Live Activity + News (updates every 5 min, links clickable) -->
+          <!-- Live Activity + News -->
           <div class="dashboard-card card-large">
             <div class="live-stack">
               <div class="live-toprow">
@@ -1267,10 +1142,8 @@
                 </div>
                 <span class="live-updated" id="liveUpdated">—</span>
               </div>
-
               <!-- Real market moving strip (TradingView ticker tape) -->
               <div class="tv-wrap" id="tvTapeWrap" aria-label="Market moving strip"></div>
-
               <!-- News (updates every 5 min) -->
               <div class="news-wrap" aria-label="Market-moving news">
                 <div class="news-head">
@@ -1314,7 +1187,6 @@
       calendar: "calendar.html",
       profile: "profile.html"
     };
-
     navItems.forEach(item => {
       item.addEventListener("click", () => {
         const viewName = item.getAttribute("data-view");
@@ -1335,19 +1207,11 @@
       `Updated ${new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
 
     // =============================================================================
-    // ✅ FIX #2: PROFILE NAME always shows from username (whatever user sets)
-    // We read common keys + JSON profile objects used by profile pages.
+    // PROFILE NAME / GREETING
     // =============================================================================
     const NAME_KEYS = [
-      "fynx_profile_name",
-      "fynx_username",
-      "username",
-      "profile_name",
-      "user_name",
-      "fynx_name",
-      "fynxUserName",
-      "displayName",
-      "name"
+      "fynx_profile_name", "fynx_username", "username", "profile_name", "user_name",
+      "fynx_name", "fynxUserName", "displayName", "name"
     ];
     const PROFILE_JSON_KEYS = ["fynx_profile", "profile", "fynx_user", "userProfile", "fynx_account"];
 
@@ -1364,12 +1228,10 @@
     }
 
     function getProfileName(){
-      // 1) direct keys
       for (const k of NAME_KEYS){
         const v = localStorage.getItem(k);
         if (v && String(v).trim().length > 0) return String(v).trim();
       }
-      // 2) JSON profile blobs
       for (const k of PROFILE_JSON_KEYS){
         const raw = localStorage.getItem(k);
         if (!raw) continue;
@@ -1385,7 +1247,6 @@
     function cleanDisplayName(full){
       if (!full) return null;
       let s = String(full).trim();
-      // remove trailing punctuation so we don't show "Elham.."
       s = s.replace(/[.!,;:]+$/g, "").trim();
       return s || null;
     }
@@ -1410,7 +1271,6 @@
     function setAvatarFromName(name){
       const el = document.getElementById("avatarInitials");
       if (!el) return;
-
       const n = cleanDisplayName(name || "");
       if (!n){
         el.textContent = "FX";
@@ -1425,25 +1285,20 @@
     function renderGreeting(){
       const greetEl = document.getElementById("greetingText");
       const metaEl = document.getElementById("greetingMeta");
-
       const rawName = getProfileName();
       const displayName = cleanDisplayName(rawName);
       const fn = cleanDisplayName(firstName(displayName)) || "Trader";
-
       setAvatarFromName(displayName);
-
       const d = new Date();
       const g = getDayGreeting(d.getHours());
-
       const timeStr = d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
       const tz = safeTZLabel();
-
       greetEl.textContent = `${g}, ${fn}.`;
       metaEl.textContent = `Local time ${timeStr} — ${tz}`;
     }
 
     // =============================================================================
-    // DAILY ROTATING MESSAGE (100 lines) — changes once per day
+    // DAILY ROTATING MESSAGE
     // =============================================================================
     const DAILY_LINES = [
       "Your edge is discipline, not luck.",
@@ -1558,23 +1413,21 @@
     function setDailyLine(){
       const el = document.getElementById("dailyLine");
       if (!el) return;
-
       const stamp = getDayStamp(new Date());
       let sum = 0;
       for (let i = 0; i < stamp.length; i++) sum += stamp.charCodeAt(i) * (i + 1);
-
       const idx = sum % DAILY_LINES.length;
       el.innerHTML = `<span>Daily:</span> ${DAILY_LINES[idx] || "Stay sharp. Stay disciplined."}`;
     }
 
     // =============================================================================
-    // MARKET HOURS (Real computation) + more “alive” UI (badge, dot, progress)
+    // MARKET HOURS
     // =============================================================================
     const SESSIONS = {
-      London:   { tz: "Europe/London",      open: "08:00", close: "17:00" },
-      NewYork:  { tz: "America/New_York",   open: "08:00", close: "17:00" },
-      Sydney:   { tz: "Australia/Sydney",   open: "22:00", close: "07:00" },
-      Asia:     { tz: "Asia/Tokyo",         open: "00:00", close: "09:00" }
+      London: { tz: "Europe/London", open: "08:00", close: "17:00" },
+      NewYork: { tz: "America/New_York", open: "08:00", close: "17:00" },
+      Sydney: { tz: "Australia/Sydney", open: "22:00", close: "07:00" },
+      Asia: { tz: "Asia/Tokyo", open: "00:00", close: "09:00" }
     };
 
     function parseHHMM(s){
@@ -1606,15 +1459,12 @@
       const p = zonedParts(dateNow, timeZone);
       const approx = new Date(Date.UTC(p.year, p.month - 1, p.day, hh, mm, 0));
       const pp = zonedParts(approx, timeZone);
-
       const targetMinutes = hh * 60 + mm;
       const gotMinutes = pp.hour * 60 + pp.minute;
-
       const dayDiff =
         (pp.year - p.year) * 525600 +
         (pp.month - p.month) * 43200 +
         (pp.day - p.day) * 1440;
-
       const minuteDiff = (gotMinutes - targetMinutes) + dayDiff;
       return new Date(approx.getTime() - minuteDiff * 60 * 1000);
     }
@@ -1631,11 +1481,8 @@
       const { tz, open, close } = cfg;
       const o = parseHHMM(open);
       const c = parseHHMM(close);
-
       const openToday = makeZonedDateLike(now, tz, o.hh, o.mm);
       let closeToday = makeZonedDateLike(now, tz, c.hh, c.mm);
-
-      // overnight session if close <= open
       if (c.hh * 60 + c.mm <= o.hh * 60 + o.mm) {
         closeToday = new Date(closeToday.getTime() + 24 * 60 * 60 * 1000);
         if (now < openToday) {
@@ -1654,17 +1501,14 @@
       const time = document.getElementById(`time${key}`);
       const fill = document.getElementById(`fill${key}`);
       const card = document.getElementById(`card${key}`);
-
       dot.classList.remove("open");
       badge.classList.remove("open");
       card.classList.remove("open");
-
       if (isOpen){
         dot.classList.add("open");
         badge.classList.add("open");
         card.classList.add("open");
       }
-
       badge.textContent = badgeText;
       time.textContent = lineText;
       fill.style.width = `${Math.max(0, Math.min(100, progressPct || 0))}%`;
@@ -1675,15 +1519,12 @@
       document.getElementById("mhUpdated").textContent =
         `Updated ${now.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
 
-      // Helper
       function updateOne(labelKey, cfg){
         const w = computeSession(cfg, now);
         const isOpen = (now >= w.openAt && now < w.closeAt);
-
         const total = (w.closeAt - w.openAt);
         const elapsed = Math.max(0, Math.min(total, now - w.openAt));
         const pct = total > 0 ? (elapsed / total) * 100 : 0;
-
         if (isOpen){
           setSessionUI(labelKey, true, "OPEN", `Closes in ${formatDuration(w.closeAt - now)}`, pct);
         } else {
@@ -1697,7 +1538,7 @@
       updateOne("NewYork", SESSIONS.NewYork);
       updateOne("Sydney", SESSIONS.Sydney);
 
-      // Asia badge uses PRE-MARKET wording when closed (like your reference)
+      // Asia special handling
       (function updateAsia(){
         const cfg = SESSIONS.Asia;
         const w = computeSession(cfg, now);
@@ -1705,18 +1546,15 @@
         const total = (w.closeAt - w.openAt);
         const elapsed = Math.max(0, Math.min(total, now - w.openAt));
         const pct = total > 0 ? (elapsed / total) * 100 : 0;
-
         if (isOpen){
           setSessionUI("Asia", true, "OPEN", `Closes in ${formatDuration(w.closeAt - now)}`, pct);
         } else {
           let nextOpen = w.openAt;
           if (now >= w.closeAt) nextOpen = new Date(w.openAt.getTime() + 24*60*60*1000);
-
           const dot = document.getElementById("dotAsia");
           dot.classList.remove("open");
           document.getElementById("badgeAsia").classList.remove("open");
           document.getElementById("cardAsia").classList.remove("open");
-
           document.getElementById("badgeAsia").textContent = "PRE-MARKET";
           document.getElementById("timeAsia").textContent = `Opens in ${formatDuration(nextOpen - now)}`;
           document.getElementById("fillAsia").style.width = "0%";
@@ -1725,20 +1563,22 @@
     }
 
     // =============================================================================
-    // ✅ LIVE MARKET MOVING STRIP (Real data) — TradingView (refresh every 5 min)
+    // LIVE MARKET MOVING STRIP (TradingView) — FIXED VERSION
     // =============================================================================
-    function tvTheme(){
+    function tvTheme() {
       return document.body.classList.contains("dark-mode") ? "dark" : "light";
     }
 
-    function mountTickerTape(){
+    function mountTickerTape() {
       const wrap = document.getElementById("tvTapeWrap");
       if (!wrap) return;
 
+      // Clear any previous content to prevent duplicates
       wrap.innerHTML = "";
 
       const holder = document.createElement("div");
       holder.className = "tradingview-widget-container";
+
       const widgetDiv = document.createElement("div");
       widgetDiv.className = "tradingview-widget-container__widget";
       holder.appendChild(widgetDiv);
@@ -1748,7 +1588,7 @@
       script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
       script.async = true;
 
-      script.innerHTML = JSON.stringify({
+      const config = {
         symbols: [
           { proName: "FOREXCOM:SPXUSD", title: "S&P 500" },
           { proName: "FOREXCOM:DJI", title: "Dow" },
@@ -1764,20 +1604,31 @@
         displayMode: "adaptive",
         colorTheme: tvTheme(),
         locale: "en"
-      });
+      };
+
+      script.text = JSON.stringify(config);
 
       holder.appendChild(script);
-      wrap.appendChild(holder);
+
+      // Mount with small delay to ensure DOM is ready
+      requestAnimationFrame(() => {
+        wrap.appendChild(holder);
+
+        // Safety fallback: re-mount if widget didn't appear after 1–1.2 seconds
+        setTimeout(() => {
+          if (!wrap.querySelector(".tv-ticker-tape")) {
+            console.log("Ticker tape fallback re-mount triggered");
+            mountTickerTape();
+          }
+        }, 1100);
+      });
     }
 
     // =============================================================================
-    // ✅ LIVE NEWS (updates every 5 min) — clickable → opens source
-    // NOTE: This uses Google News RSS via an open CORS proxy (AllOrigins raw).
+    // LIVE NEWS
     // =============================================================================
     const NEWS_REFRESH_MS = 5 * 60 * 1000;
     const NEWS_MAX_ITEMS = 8;
-
-    // You can tune the query anytime:
     const RSS_URL = "https://news.google.com/rss/search?q=market+moving+news+forex+stocks&hl=en-US&gl=US&ceid=US:en";
 
     function fmtTimeAgo(date){
@@ -1797,7 +1648,6 @@
     }
 
     function parseGoogleNewsSource(titleText){
-      // Google News RSS titles often: "Headline - Source"
       const t = safeText(titleText);
       const parts = t.split(" - ");
       if (parts.length >= 2) return safeText(parts[parts.length - 1]);
@@ -1814,18 +1664,15 @@
     function renderNews(items){
       const list = document.getElementById("newsList");
       if (!list) return;
-
       if (!items || !items.length){
         list.innerHTML = `<div class="news-empty">No headlines right now.</div>`;
         return;
       }
-
       list.innerHTML = items.map(it => {
         const title = safeText(it.title);
         const link = safeText(it.link);
         const source = safeText(it.source || "News");
         const ago = it.pubDate ? fmtTimeAgo(it.pubDate) : "";
-
         return `
           <a class="news-item" href="${link}" target="_blank" rel="noopener">
             <div class="news-main">
@@ -1844,21 +1691,17 @@
       const upd = document.getElementById("newsUpdated");
       const liveUpd = document.getElementById("liveUpdated");
       const now = new Date();
-
       if (upd) upd.textContent = `Updated ${now.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
       if (liveUpd) liveUpd.textContent = `Updated ${now.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
-
       try{
         const xml = await fetchRssXml(RSS_URL);
         const doc = new DOMParser().parseFromString(xml, "text/xml");
         const nodes = Array.from(doc.querySelectorAll("item")).slice(0, NEWS_MAX_ITEMS);
-
         const items = nodes.map(n => {
           const title = n.querySelector("title")?.textContent || "";
           const link = n.querySelector("link")?.textContent || "";
           const pub = n.querySelector("pubDate")?.textContent || "";
           const pubDate = pub ? new Date(pub) : null;
-
           return {
             title: safeText(title),
             link: safeText(link),
@@ -1866,7 +1709,6 @@
             pubDate
           };
         }).filter(x => x.title && x.link);
-
         renderNews(items);
       }catch(e){
         const list = document.getElementById("newsList");
@@ -1881,24 +1723,22 @@
       renderGreeting();
       setDailyLine();
       updateMarketHours();
-
-      // mount real market tape + news
       mountTickerTape();
       refreshNews();
 
-      // "alive" updates (clock/session)
+      // Live updates
       setInterval(() => {
         renderGreeting();
         updateMarketHours();
       }, 20 * 1000);
 
-      // refresh ticker/news every 5 minutes
+      // Refresh ticker + news
       setInterval(() => {
         mountTickerTape();
         refreshNews();
       }, NEWS_REFRESH_MS);
 
-      // if user toggles theme on another page and comes back, re-mount ticker on visibility
+      // Re-mount ticker when page becomes visible again
       document.addEventListener("visibilitychange", () => {
         if (!document.hidden){
           mountTickerTape();
@@ -1910,4 +1750,3 @@
   </script>
 </body>
 </html>
-```
