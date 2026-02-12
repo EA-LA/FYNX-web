@@ -1,1697 +1,1913 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fynx Finance World - Master Trading & Investing</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>FYNX Finance World - Dashboard</title>
 
-  <!-- Favicon / Tab Logo -->
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
-
-  <!-- ✅ NEW: Global Theme (Light micro-dots + Dark grid) -->
-  <link rel="stylesheet" href="assets/theme.css">
-  <script src="assets/theme.js" defer></script>
-
-  <!-- ✅ FIX: FAQ CSS (KAST-style) — ONLY affects .fynx-faq -->
   <style>
-  /* ==============================================
-     FYNX FAQ — KAST-style split layout (FIXED)
-     Scoped only to .fynx-faq so nothing else changes
-  ============================================== */
-  .fynx-faq, .fynx-faq * { box-sizing: border-box; }
-
-  .fynx-faq{
-    padding: 72px 0 40px;
-    color: rgba(255,255,255,0.92);
-  }
-
-  .fynx-faq__wrap{
-    width: min(1100px, 92vw);
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 260px 1fr;
-    gap: 48px;
-    align-items: start;
-  }
-
-  .fynx-faq__title{
-    margin: 0;
-    font-size: 44px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: rgba(255,255,255,0.92);
-  }
-
-  .fynx-faq__right{
-    border-top: 1px solid rgba(255,255,255,0.12);
-  }
-
-  .fynx-faq__item{
-    border-bottom: 1px solid rgba(255,255,255,0.12);
-  }
-
-  .fynx-faq__q{
-    width: 100%;
-    appearance: none;
-    background: transparent;
-    border: 0;
-    padding: 18px 6px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    cursor: pointer;
-    text-align: left;
-
-    font-size: 16px;
-    font-weight: 700;
-    color: rgba(255,255,255,0.88);
-  }
-
-  .fynx-faq__q:hover{
-    color: rgba(255,255,255,1);
-  }
-
-  .fynx-faq__icon{
-    width: 34px;
-    height: 34px;
-    display: grid;
-    place-items: center;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(255,255,255,0.02);
-    color: rgba(255,255,255,0.9);
-    flex: 0 0 auto;
-    transition: transform 220ms ease, background 220ms ease, border-color 220ms ease;
-  }
-
-  .fynx-faq__item.is-open .fynx-faq__icon{
-    transform: rotate(45deg); /* + → X */
-    background: rgba(255,255,255,0.06);
-    border-color: rgba(255,255,255,0.22);
-  }
-
-  .fynx-faq__a{
-    overflow: hidden;
-    max-height: 0;
-    transition: max-height 320ms ease;
-  }
-
-  .fynx-faq__a p{
-    margin: 0;
-    padding: 0 6px 18px;
-    font-size: 14px;
-    line-height: 1.6;
-    color: rgba(255,255,255,0.68);
-  }
-
-  /* Mobile: title moves above list */
-  @media (max-width: 820px){
-    .fynx-faq__wrap{
-      grid-template-columns: 1fr;
-      gap: 18px;
-    }
-    .fynx-faq__title{
-      font-size: 34px;
-    }
-  }
-
-  /* ==============================================
-     ✅ FIX ONLY: Download Widget follows Theme
-     - Default (Light): light card
-     - Dark mode: dark card
-     - Scoped ONLY to .fynx-download so nothing else changes
-  ============================================== */
-
-  /* Light theme (default) */
-  .fynx-download .fynx-card{
-    background: rgba(255,255,255,0.92);
-    border: 1px solid rgba(0,0,0,0.12);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
-    color: rgba(0,0,0,0.92);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-  }
-
-  .fynx-download .fynx-badge{
-    background: rgba(0,0,0,0.08);
-    color: rgba(0,0,0,0.88);
-    border: 1px solid rgba(0,0,0,0.10);
-  }
-
-  .fynx-download .fynx-title{
-    color: rgba(0,0,0,0.92);
-  }
-
-  .fynx-download .fynx-sub{
-    color: rgba(0,0,0,0.62);
-  }
-
-  .fynx-download .fynx-pill{
-    background: rgba(0,0,0,0.10);
-    color: rgba(0,0,0,0.88);
-    border: 1px solid rgba(0,0,0,0.14);
-  }
-
-  .fynx-download .fynx-close{
-    color: rgba(0,0,0,0.70);
-  }
-
-  .fynx-download .fynx-close:hover{
-    color: rgba(0,0,0,0.92);
-  }
-
-  .fynx-download .fynx-qr{
-    background: #ffffff;
-    border: 1px solid rgba(0,0,0,0.10);
-    border-radius: 10px;
-    padding: 8px;
-  }
-
-  /* Dark theme (support multiple theme toggling patterns safely) */
-  body.dark-mode .fynx-download .fynx-card,
-  html.dark-mode .fynx-download .fynx-card,
-  [data-theme="dark"] .fynx-download .fynx-card,
-  [data-fynx-theme="dark"] .fynx-download .fynx-card{
-    background: rgba(0,0,0,0.78);
-    border: 1px solid rgba(255,255,255,0.14);
-    box-shadow: 0 12px 44px rgba(0,0,0,0.55);
-    color: rgba(255,255,255,0.92);
-  }
-
-  body.dark-mode .fynx-download .fynx-badge,
-  html.dark-mode .fynx-download .fynx-badge,
-  [data-theme="dark"] .fynx-download .fynx-badge,
-  [data-fynx-theme="dark"] .fynx-download .fynx-badge{
-    background: rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.88);
-    border: 1px solid rgba(255,255,255,0.12);
-  }
-
-  body.dark-mode .fynx-download .fynx-title,
-  html.dark-mode .fynx-download .fynx-title,
-  [data-theme="dark"] .fynx-download .fynx-title,
-  [data-fynx-theme="dark"] .fynx-download .fynx-title{
-    color: rgba(255,255,255,0.92);
-  }
-
-  body.dark-mode .fynx-download .fynx-sub,
-  html.dark-mode .fynx-download .fynx-sub,
-  [data-theme="dark"] .fynx-download .fynx-sub,
-  [data-fynx-theme="dark"] .fynx-download .fynx-sub{
-    color: rgba(255,255,255,0.66);
-  }
-
-  body.dark-mode .fynx-download .fynx-pill,
-  html.dark-mode .fynx-download .fynx-pill,
-  [data-theme="dark"] .fynx-download .fynx-pill,
-  [data-fynx-theme="dark"] .fynx-download .fynx-pill{
-    background: rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.90);
-    border: 1px solid rgba(255,255,255,0.14);
-  }
-
-  body.dark-mode .fynx-download .fynx-close,
-  html.dark-mode .fynx-download .fynx-close,
-  [data-theme="dark"] .fynx-download .fynx-close,
-  [data-fynx-theme="dark"] .fynx-download .fynx-close{
-    color: rgba(255,255,255,0.74);
-  }
-
-  body.dark-mode .fynx-download .fynx-close:hover,
-  html.dark-mode .fynx-download .fynx-close:hover,
-  [data-theme="dark"] .fynx-download .fynx-close:hover,
-  [data-fynx-theme="dark"] .fynx-download .fynx-close:hover{
-    color: rgba(255,255,255,0.95);
-  }
-
-  body.dark-mode .fynx-download .fynx-qr,
-  html.dark-mode .fynx-download .fynx-qr,
-  [data-theme="dark"] .fynx-download .fynx-qr,
-  [data-fynx-theme="dark"] .fynx-download .fynx-qr{
-    background: #ffffff; /* keep QR readable */
-    border: 1px solid rgba(255,255,255,0.14);
-  }
-
-  /* ==============================================
-     ✅ ONLY CHANGE YOU ASKED FOR:
-     Make the QR download widget SMALL + CLEAN like KAST
-     - Compact height
-     - Smaller QR
-     - Smaller text + button
-     - Removes big effects inside widget only
-     - Scoped ONLY to .fynx-download
-  ============================================== */
-
-  /* Clean: remove heavy internal effects (only inside widget) */
-  .fynx-download .fynx-aura,
-  .fynx-download .fynx-scan{
-    display: none !important;
-  }
-
-  /* Compact card sizing */
-  .fynx-download .fynx-card{
-    border-radius: 18px;
-    padding: 10px 12px 12px;
-    width: 320px;
-    max-width: calc(100vw - 28px);
-  }
-
-  /* Top row */
-  .fynx-download .fynx-top{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-
-  .fynx-download .fynx-badge{
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: .08em;
-    padding: 4px 10px;
-    border-radius: 999px;
-    line-height: 1;
-  }
-
-  .fynx-download .fynx-close{
-    width: 28px;
-    height: 28px;
-    border-radius: 10px;
-    display: grid;
-    place-items: center;
-    background: transparent;
-    border: 1px solid rgba(0,0,0,0.08);
-    font-size: 16px;
-    line-height: 1;
-    cursor: pointer;
-  }
-
-  body.dark-mode .fynx-download .fynx-close,
-  html.dark-mode .fynx-download .fynx-close,
-  [data-theme="dark"] .fynx-download .fynx-close,
-  [data-fynx-theme="dark"] .fynx-download .fynx-close{
-    border-color: rgba(255,255,255,0.12);
-  }
-
-  /* Content row */
-  .fynx-download .fynx-content{
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  /* QR box smaller like KAST */
-  .fynx-download .fynx-qr{
-    padding: 6px;
-    border-radius: 12px;
-    flex: 0 0 auto;
-  }
-
-  /* Force the generated QR (canvas/img) to be small */
-  .fynx-download #fynxQr canvas,
-  .fynx-download #fynxQr img{
-    width: 54px !important;
-    height: 54px !important;
-    display: block;
-  }
-
-  /* Text block */
-  .fynx-download .fynx-text{
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-
-  .fynx-download .fynx-title{
-    font-size: 14px;
-    font-weight: 800;
-    letter-spacing: -0.01em;
-    line-height: 1.15;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .fynx-download .fynx-sub{
-    font-size: 12px;
-    line-height: 1.2;
-    opacity: .9;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* Small pill button like KAST */
-  .fynx-download .fynx-pill{
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 800;
-    padding: 6px 10px;
-    border-radius: 999px;
-    width: fit-content;
-    margin-top: 6px;
-    line-height: 1;
-  }
-
-  /* Mobile: even tighter */
-  @media (max-width: 520px){
-    .fynx-download .fynx-card{
-      width: 292px;
-      padding: 10px 10px 11px;
-      border-radius: 16px;
-    }
-    .fynx-download #fynxQr canvas,
-    .fynx-download #fynxQr img{
-      width: 50px !important;
-      height: 50px !important;
-    }
-    .fynx-download .fynx-title{ font-size: 13.5px; }
-    .fynx-download .fynx-sub{ font-size: 11.5px; }
-    .fynx-download .fynx-pill{ font-size: 11.5px; padding: 6px 10px; }
-  }
-
-  /* ==============================================
-     ✅ UPDATED: Header Resources + Network actions
-     - Replaces the 4 icon links
-     - Resources opens dropdown on hover/click
-     - Network stays visible
-     - Theme icon next to Network
-  ============================================== */
-  .fynx-top-actions{
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: 12px;
-    position: relative;
-  }
-
-  .fynx-menu{
-    position: relative;
-  }
-
-  .fynx-menu-btn,
-  .fynx-network-btn,
-  .fynx-network-theme{
-    height: 36px;
-    border-radius: 10px;
-    border: 1px solid rgba(0,0,0,0.12);
-    background: rgba(255,255,255,0.65);
-    color: rgba(0,0,0,0.85);
-    box-shadow: 0 10px 22px rgba(0,0,0,0.08);
-    transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border-color 180ms ease;
-  }
-
-  .fynx-menu-btn,
-  .fynx-network-btn{
-    padding: 0 12px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 700;
-  }
-
-  .fynx-network-theme{
-    width: 36px;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-  }
-
-  .fynx-menu-btn{
-    cursor: pointer;
-  }
-
-  .fynx-menu-btn:hover,
-  .fynx-network-btn:hover,
-  .fynx-network-theme:hover{
-    transform: translateY(-1px);
-    box-shadow: 0 14px 28px rgba(0,0,0,0.12);
-    background: rgba(255,255,255,0.82);
-  }
-
-  .fynx-menu-btn:active,
-  .fynx-network-btn:active,
-  .fynx-network-theme:active{
-    transform: translateY(0);
-  }
-
-  .fynx-menu-panel{
-    position: absolute;
-    top: calc(100% + 10px);
-    right: 0;
-    width: 250px;
-    border-radius: 14px;
-    border: 1px solid rgba(0,0,0,0.10);
-    background: rgba(255,255,255,0.95);
-    box-shadow: 0 18px 40px rgba(0,0,0,0.16);
-    padding: 8px;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: translateY(4px);
-    transition: opacity 150ms ease, visibility 150ms ease, transform 150ms ease;
-    z-index: 1000;
-  }
-
-  .fynx-menu.open .fynx-menu-panel{
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: translateY(0);
-  }
-
-  .fynx-menu-panel a{
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-    color: rgba(0,0,0,0.86);
-    padding: 9px 10px;
-    border-radius: 10px;
-  }
-
-  .fynx-menu-panel a:hover{
-    background: rgba(0,0,0,0.06);
-  }
-
-  /* Dark mode */
-  body.dark-mode .fynx-menu-btn,
-  html.dark-mode .fynx-menu-btn,
-  [data-theme="dark"] .fynx-menu-btn,
-  [data-fynx-theme="dark"] .fynx-menu-btn,
-  body.dark-mode .fynx-network-btn,
-  html.dark-mode .fynx-network-btn,
-  [data-theme="dark"] .fynx-network-btn,
-  [data-fynx-theme="dark"] .fynx-network-btn,
-  body.dark-mode .fynx-network-theme,
-  html.dark-mode .fynx-network-theme,
-  [data-theme="dark"] .fynx-network-theme,
-  [data-fynx-theme="dark"] .fynx-network-theme{
-    border-color: rgba(255,255,255,0.14);
-    background: rgba(0,0,0,0.55);
-    color: rgba(255,255,255,0.9);
-    box-shadow: 0 14px 30px rgba(0,0,0,0.45);
-  }
-
-  body.dark-mode .fynx-menu-btn:hover,
-  html.dark-mode .fynx-menu-btn:hover,
-  [data-theme="dark"] .fynx-menu-btn:hover,
-  [data-fynx-theme="dark"] .fynx-menu-btn:hover,
-  body.dark-mode .fynx-network-btn:hover,
-  html.dark-mode .fynx-network-btn:hover,
-  [data-theme="dark"] .fynx-network-btn:hover,
-  [data-fynx-theme="dark"] .fynx-network-btn:hover,
-  body.dark-mode .fynx-network-theme:hover,
-  html.dark-mode .fynx-network-theme:hover,
-  [data-theme="dark"] .fynx-network-theme:hover,
-  [data-fynx-theme="dark"] .fynx-network-theme:hover{
-    background: rgba(0,0,0,0.72);
-    border-color: rgba(255,255,255,0.22);
-  }
-
-  body.dark-mode .fynx-menu-panel,
-  html.dark-mode .fynx-menu-panel,
-  [data-theme="dark"] .fynx-menu-panel,
-  [data-fynx-theme="dark"] .fynx-menu-panel{
-    border-color: rgba(255,255,255,0.14);
-    background: rgba(8,8,8,0.95);
-    box-shadow: 0 24px 45px rgba(0,0,0,0.52);
-  }
-
-  body.dark-mode .fynx-menu-panel a,
-  html.dark-mode .fynx-menu-panel a,
-  [data-theme="dark"] .fynx-menu-panel a,
-  [data-fynx-theme="dark"] .fynx-menu-panel a{
-    color: rgba(255,255,255,0.9);
-  }
-
-  body.dark-mode .fynx-menu-panel a:hover,
-  html.dark-mode .fynx-menu-panel a:hover,
-  [data-theme="dark"] .fynx-menu-panel a:hover,
-  [data-fynx-theme="dark"] .fynx-menu-panel a:hover{
-    background: rgba(255,255,255,0.08);
-  }
-
-  /* Keep header clean on small screens (mobile drawer already exists) */
-  @media (max-width: 820px){
-    .fynx-top-actions{ display:none; }
-  }
-
-  /* ==============================================
-     ✅ ONLY FIX YOU ASKED FOR:
-     Resources dropdown was opening/clipping "a little bit" (cut off).
-     Fix = allow overflow + raise stacking context ONLY for header area.
-     (Doesn't touch your layout, only prevents clipping.)
-  ============================================== */
-  #header,
-  #header .nav-container,
-  #header nav,
-  #header nav ul{
-    overflow: visible !important;
-  }
-  #header{
-    position: relative;
-    z-index: 9999;
-  }
-  .fynx-top-actions{ position: relative; z-index: 10000; }
-  .fynx-menu{ z-index: 10001; }
-  .fynx-menu-panel{ z-index: 10002; }
-
-  /* ==============================================
-     ✅ ONLY FIX YOU ASKED FOR:
-     Desktop hover opens the subnavs (no click required)
-     NOTE: CSS sibling selectors won't work here because subnavs
-     are not siblings of the nav links in the DOM.
-     We keep this block harmless, and we FIX IT with JS below.
-  ============================================== */
-  @media (hover: hover) and (pointer: fine){
-    #homeToggle:hover ~ #homeSubnav,
-    #homeSubnav:hover{
-      display: block !important;
-      opacity: 1 !important;
-      visibility: visible !important;
-      pointer-events: auto !important;
+    :root{
+      --bg:#ffffff;
+      --surface:#ffffff;
+      --surface-2:#f6f7f9;
+      --text:#0b0f17;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+
+      --shadow:0 16px 42px rgba(11,37,84,0.08);
+      --shadow-2:0 10px 30px rgba(15,23,42,0.08);
+      --radius:14px;
+
+      --nav-width:120px;
+
+      --chip:#f3f4f6;
+      --chip-line:#e5e7eb;
+
+      /* STRICT black/white only */
+      --pos:#111827;
+      --neg:#111827;
+
+      --hero-dot: rgba(0,0,0,0.06);
+
+      /* ✅ FIX #1: Buttons follow theme strictly:
+         Light mode => fully white button (black text)
+         Dark mode  => fully black button (white text)
+      */
+      --btn-bg:#ffffff;
+      --btn-text:#0b0f17;
+      --btn-border:#0b0f17;
+
+      --card-bg:#fafafa;
+      --card-hover:#f5f5f5;
+
+      --ring: rgba(0,0,0,0.12);
+      --glow: rgba(0,0,0,0.08);
+      --alive: rgba(0,0,0,0.06);
     }
 
-    #learnToggle:hover ~ #learnSubnav,
-    #learnSubnav:hover{
-      display: block !important;
-      opacity: 1 !important;
-      visibility: visible !important;
-      pointer-events: auto !important;
+    body.dark-mode{
+      --bg:#000000;
+      --surface:#000000;
+      --surface-2:rgba(255,255,255,0.04);
+      --text:#ffffff;
+      --muted:rgba(255,255,255,0.55);
+      --line:rgba(255,255,255,0.10);
+
+      --shadow:0 16px 42px rgba(0,0,0,0.45);
+      --shadow-2:0 12px 34px rgba(0,0,0,0.55);
+
+      --chip:rgba(255,255,255,0.06);
+      --chip-line:rgba(255,255,255,0.10);
+
+      --hero-dot: rgba(255,255,255,0.08);
+
+      /* ✅ FIX #1: dark mode primary button = fully black */
+      --btn-bg:#000000;
+      --btn-text:#ffffff;
+      --btn-border:#ffffff;
+
+      --card-bg:rgba(255,255,255,0.03);
+      --card-hover:rgba(255,255,255,0.05);
+
+      --ring: rgba(255,255,255,0.14);
+      --glow: rgba(255,255,255,0.10);
+      --alive: rgba(255,255,255,0.08);
     }
 
-    #toolsToggle:hover ~ #toolsSubnav,
-    #toolsSubnav:hover{
-      display: block !important;
-      opacity: 1 !important;
-      visibility: visible !important;
-      pointer-events: auto !important;
+    *{ margin:0; padding:0; box-sizing:border-box; }
+
+    body{
+      font-family:"Manrope", system-ui, -apple-system, Segoe UI, sans-serif;
+      background:
+        radial-gradient(circle at 1px 1px, var(--hero-dot) 1px, transparent 1px) 0 0 / 18px 18px,
+        linear-gradient(var(--bg), var(--bg));
+      color:var(--text);
+      height:100vh;
+      overflow:hidden;
     }
 
-    #newsToggle:hover ~ #newsSubnav,
-    #newsSubnav:hover{
-      display: block !important;
-      opacity: 1 !important;
-      visibility: visible !important;
-      pointer-events: auto !important;
+    /* Subtle grid fade */
+    .bg-grid{
+      position:fixed; inset:0;
+      pointer-events:none;
+      background:
+        linear-gradient(to right, transparent 0%, transparent 45%, rgba(0,0,0,0.04) 50%, transparent 55%, transparent 100%),
+        linear-gradient(to bottom, transparent 0%, transparent 45%, rgba(0,0,0,0.04) 50%, transparent 55%, transparent 100%);
+      opacity:0.45;
+      mix-blend-mode:normal;
+    }
+    body.dark-mode .bg-grid{
+      background:
+        linear-gradient(to right, transparent 0%, transparent 45%, rgba(255,255,255,0.06) 50%, transparent 55%, transparent 100%),
+        linear-gradient(to bottom, transparent 0%, transparent 45%, rgba(255,255,255,0.06) 50%, transparent 55%, transparent 100%);
+      opacity:0.35;
     }
 
-    #marketsToggle:hover ~ #homeMarketsSubnav,
-    #homeMarketsSubnav:hover{
-      display: block !important;
-      opacity: 1 !important;
-      visibility: visible !important;
-      pointer-events: auto !important;
+    /* Micro-animations (clean + alive) */
+    @keyframes riseIn {
+      from { transform: translateY(10px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
     }
-  }
-
-  /* ==============================================
-     ✅ NEW SECTION YOU ASKED FOR (ONLY)
-     Everything you need to grow in finance (3 auto-moving images)
-     - Scoped ONLY to .fynx-grow
-     - Uses your GitHub images:
-       assets/img/holidays.jpg
-       assets/img/calculators.jpg
-       assets/img/journal.jpg
-  ============================================== */
-  .fynx-grow, .fynx-grow *{ box-sizing: border-box; }
-
-  .fynx-grow{
-    padding: 84px 0 64px;
-  }
-
-  .fynx-grow__wrap{
-    width: min(1180px, 92vw);
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: 44px;
-    align-items: center;
-  }
-
-  .fynx-grow__kicker{
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(255,255,255,0.06);
-    color: rgba(255,255,255,0.82);
-    font-weight: 700;
-    letter-spacing: .02em;
-    font-size: 12px;
-    margin-bottom: 14px;
-  }
-
-  .fynx-grow__title{
-    margin: 0;
-    font-size: 44px;
-    line-height: 1.06;
-    letter-spacing: -0.03em;
-    color: rgba(255,255,255,0.94);
-    font-weight: 900;
-  }
-
-  .fynx-grow__sub{
-    margin: 14px 0 22px;
-    max-width: 54ch;
-    color: rgba(255,255,255,0.72);
-    font-size: 15.5px;
-    line-height: 1.65;
-  }
-
-  .fynx-grow__cta{
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.92);
-    text-decoration: none;
-    font-weight: 800;
-    box-shadow: 0 16px 44px rgba(0,0,0,0.35);
-    transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
-  }
-
-  .fynx-grow__cta:hover{
-    transform: translateY(-1px);
-    background: rgba(255,255,255,0.12);
-    border-color: rgba(255,255,255,0.22);
-  }
-
-  .fynx-grow__cta i{ opacity: .9; }
-
-  .fynx-grow__stack{
-    position: relative;
-    width: 100%;
-    height: 440px;
-    border-radius: 26px;
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(255,255,255,0.04);
-    overflow: hidden;
-    box-shadow: 0 26px 70px rgba(0,0,0,0.40);
-  }
-
-  .fynx-grow__glow{
-    position: absolute;
-    inset: -40%;
-    background: radial-gradient(circle at 30% 30%, rgba(0,255,255,0.20), transparent 55%),
-                radial-gradient(circle at 70% 70%, rgba(255,0,170,0.18), transparent 55%),
-                radial-gradient(circle at 60% 30%, rgba(0,255,136,0.16), transparent 55%);
-    filter: blur(18px);
-    opacity: .55;
-    pointer-events: none;
-  }
-
-  .fynx-grow__card{
-    position: absolute;
-    width: 78%;
-    border-radius: 22px;
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(0,0,0,0.45);
-    box-shadow: 0 24px 70px rgba(0,0,0,0.55);
-    transform: translateZ(0);
-    pointer-events: none; /* ✅ no hover/click */
-  }
-
-  .fynx-grow__card img{
-    width: 100%;
-    height: 220px;
-    display: block;
-    object-fit: cover;
-    filter: contrast(1.02) saturate(1.02);
-  }
-
-  .fynx-grow__meta{
-    padding: 14px 16px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-  }
-
-  .fynx-grow__label{
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 900;
-    color: rgba(255,255,255,0.92);
-    letter-spacing: -0.01em;
-    font-size: 14px;
-  }
-
-  .fynx-grow__tag{
-    font-size: 11px;
-    font-weight: 800;
-    padding: 6px 10px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(255,255,255,0.06);
-    color: rgba(255,255,255,0.80);
-  }
-
-  /* Positions */
-  .fynx-grow__card--markets{ top: 34px; left: 10%; transform: rotate(-2deg); }
-  .fynx-grow__card--calc{ top: 132px; left: 16%; transform: rotate(1.5deg); }
-  .fynx-grow__card--journal{ top: 230px; left: 12%; transform: rotate(-1deg); }
-
-  /* Auto-motion (smooth, premium) */
-  @keyframes fynxFloatA{
-    0%   { transform: translate3d(0,0,0) rotate(-2deg); }
-    50%  { transform: translate3d(12px,-10px,0) rotate(-1deg); }
-    100% { transform: translate3d(0,0,0) rotate(-2deg); }
-  }
-  @keyframes fynxFloatB{
-    0%   { transform: translate3d(0,0,0) rotate(1.5deg); }
-    50%  { transform: translate3d(-14px,-8px,0) rotate(2.2deg); }
-    100% { transform: translate3d(0,0,0) rotate(1.5deg); }
-  }
-  @keyframes fynxFloatC{
-    0%   { transform: translate3d(0,0,0) rotate(-1deg); }
-    50%  { transform: translate3d(10px,10px,0) rotate(-2deg); }
-    100% { transform: translate3d(0,0,0) rotate(-1deg); }
-  }
-
-  .fynx-grow__card--markets{ animation: fynxFloatA 7.8s ease-in-out infinite; }
-  .fynx-grow__card--calc{ animation: fynxFloatB 8.6s ease-in-out infinite; }
-  .fynx-grow__card--journal{ animation: fynxFloatC 9.2s ease-in-out infinite; }
-
-  /* Light mode support */
-  body:not(.dark-mode) .fynx-grow__kicker,
-  html:not(.dark-mode) .fynx-grow__kicker,
-  body:not(.dark-mode) .fynx-grow__cta,
-  html:not(.dark-mode) .fynx-grow__cta{
-    border-color: rgba(0,0,0,0.12);
-    background: rgba(255,255,255,0.70);
-    color: rgba(0,0,0,0.86);
-  }
-
-  body:not(.dark-mode) .fynx-grow__title,
-  html:not(.dark-mode) .fynx-grow__title{
-    color: rgba(0,0,0,0.92);
-  }
-
-  body:not(.dark-mode) .fynx-grow__sub,
-  html:not(.dark-mode) .fynx-grow__sub{
-    color: rgba(0,0,0,0.62);
-  }
-
-  body:not(.dark-mode) .fynx-grow__stack,
-  html:not(.dark-mode) .fynx-grow__stack{
-    border-color: rgba(0,0,0,0.10);
-    background: rgba(255,255,255,0.70);
-    box-shadow: 0 26px 70px rgba(0,0,0,0.18);
-  }
-
-  body:not(.dark-mode) .fynx-grow__card,
-  html:not(.dark-mode) .fynx-grow__card{
-    border-color: rgba(0,0,0,0.10);
-    background: rgba(255,255,255,0.82);
-    box-shadow: 0 24px 60px rgba(0,0,0,0.18);
-  }
-
-  body:not(.dark-mode) .fynx-grow__label,
-  html:not(.dark-mode) .fynx-grow__label{
-    color: rgba(0,0,0,0.90);
-  }
-
-  body:not(.dark-mode) .fynx-grow__tag,
-  html:not(.dark-mode) .fynx-grow__tag{
-    border-color: rgba(0,0,0,0.10);
-    background: rgba(0,0,0,0.06);
-    color: rgba(0,0,0,0.72);
-  }
-
-  @media (max-width: 980px){
-    .fynx-grow__wrap{
-      grid-template-columns: 1fr;
-      gap: 22px;
+    @keyframes softPulse {
+      0%,100% { opacity: .55; transform: translateY(0); }
+      50%     { opacity: 1; transform: translateY(-1px); }
     }
-    .fynx-grow__stack{
-      height: 460px;
+    @keyframes shimmerLine {
+      0% { transform: translateX(-40%); opacity: 0; }
+      30% { opacity: .9; }
+      100% { transform: translateX(140%); opacity: 0; }
     }
-    .fynx-grow__title{
-      font-size: 38px;
+    @keyframes scan {
+      0% { transform: translateX(-30%); opacity: 0; }
+      30% { opacity: .95; }
+      100% { transform: translateX(130%); opacity: 0; }
     }
-  }
 
-  @media (max-width: 520px){
-    .fynx-grow{ padding: 68px 0 54px; }
-    .fynx-grow__title{ font-size: 34px; }
-    .fynx-grow__stack{ height: 470px; }
-    .fynx-grow__card{ width: 86%; }
-    .fynx-grow__card--markets{ left: 7%; }
-    .fynx-grow__card--calc{ left: 10%; }
-    .fynx-grow__card--journal{ left: 8%; }
-  }
+    .dashboard-container{ display:flex; height:100vh; width:100vw; }
+
+    /* NAV */
+    .nav-panel{
+      width:var(--nav-width);
+      background:color-mix(in oklab, var(--surface) 92%, transparent);
+      border-right:1px solid var(--line);
+      position:fixed;
+      left:0; top:0;
+      height:100vh;
+      z-index:100;
+      display:flex;
+      flex-direction:column;
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-logo{
+      padding:30px 0;
+      text-align:center;
+      border-bottom:1px solid var(--line);
+    }
+
+    .nav-logo h1{
+      font-size:18px;
+      font-weight:800;
+      letter-spacing:-0.6px;
+      color:var(--text);
+    }
+
+    .nav-menu{
+      flex:1;
+      padding:18px 0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+    }
+
+    .nav-item{
+      width:86px;
+      padding:14px 0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      cursor:pointer;
+      transition:all .18s ease;
+      position:relative;
+      border-radius:12px;
+      color:var(--muted);
+      border:1px solid transparent;
+      user-select:none;
+    }
+
+    .nav-item:hover{
+      background:var(--surface-2);
+      color:var(--text);
+      border-color:var(--line);
+      transform:translateY(-1px);
+    }
+
+    .nav-item.active{
+      background:var(--surface-2);
+      color:var(--text);
+      border-color:transparent;
+      box-shadow:var(--shadow-2);
+    }
+
+    .nav-item.active::after{
+      content:"";
+      position:absolute;
+      left:-1px;
+      top:50%;
+      transform:translateY(-50%);
+      width:3px;
+      height:26px;
+      background:var(--text);
+      border-radius:0 3px 3px 0;
+      opacity:0.9;
+    }
+    body.dark-mode .nav-item.active::after{ background:#ffffff; opacity:0.9; }
+
+    .nav-icon{
+      width:22px; height:22px;
+      stroke:currentColor;
+      stroke-width:1.7;
+      fill:none;
+      opacity:0.9;
+    }
+
+    .nav-label{
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:0.2px;
+    }
+
+    /* MAIN */
+    .main-content{
+      margin-left:var(--nav-width);
+      flex:1;
+      height:100vh;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* TOP BAR */
+    .top-bar{
+      height:72px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 28px;
+      background:color-mix(in oklab, var(--surface) 90%, transparent);
+      backdrop-filter: blur(10px);
+      position:sticky;
+      top:0;
+      z-index:20;
+    }
+
+    .page-title{
+      font-size:14px;
+      font-weight:700;
+      color:var(--muted);
+      letter-spacing:0.2px;
+    }
+
+    .top-bar-right{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .chip{
+      border:1px solid var(--chip-line);
+      background:var(--chip);
+      color:var(--muted);
+      border-radius:999px;
+      font-size:12px;
+      padding:8px 12px;
+      font-weight:700;
+    }
+
+    .icon-btn{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:color-mix(in oklab, var(--surface) 92%, transparent);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      color:var(--muted);
+      transition:0.18s ease;
+    }
+    .icon-btn:hover{
+      color:var(--text);
+      border-color:color-mix(in oklab, var(--text) 28%, var(--line));
+      transform:translateY(-1px);
+    }
+    .icon-btn svg{ width:18px; height:18px; stroke:currentColor; stroke-width:1.7; fill:none; }
+
+    .user-avatar{
+      width:34px; height:34px;
+      border-radius:999px;
+      background:var(--surface-2);
+      border:1px solid var(--line);
+      display:grid;
+      place-items:center;
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+      transition:0.18s ease;
+      cursor:pointer;
+    }
+    .user-avatar:hover{
+      transform:translateY(-1px);
+      border-color:color-mix(in oklab, var(--text) 28%, var(--line));
+      color:var(--text);
+    }
+
+    /* CONTENT */
+    .content-area{
+      flex:1;
+      overflow-y:auto;
+      padding:24px 28px 28px;
+    }
+
+    .content-area::-webkit-scrollbar{ width:6px; }
+    .content-area::-webkit-scrollbar-track{ background:transparent; }
+    .content-area::-webkit-scrollbar-thumb{ background:color-mix(in oklab, var(--muted) 22%, transparent); border-radius:6px; }
+    .content-area::-webkit-scrollbar-thumb:hover{ background:color-mix(in oklab, var(--muted) 35%, transparent); }
+
+    /* HERO */
+    .hero{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:color-mix(in oklab, var(--surface) 92%, transparent);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      position:relative;
+      margin-bottom:16px;
+      animation: riseIn .38s ease both;
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(900px 320px at 18% 0%, rgba(0,0,0,0.06) 0%, transparent 60%),
+        radial-gradient(700px 260px at 92% 0%, rgba(0,0,0,0.05) 0%, transparent 60%);
+      pointer-events:none;
+    }
+    body.dark-mode .hero::before{
+      background:
+        radial-gradient(900px 320px at 18% 0%, rgba(255,255,255,0.08) 0%, transparent 60%),
+        radial-gradient(700px 260px at 92% 0%, rgba(255,255,255,0.06) 0%, transparent 60%);
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      top:0; left:-40%;
+      width:40%;
+      height:100%;
+      background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--text) 10%, transparent), transparent);
+      opacity:.14;
+      pointer-events:none;
+      animation: shimmerLine 6.5s ease-in-out infinite;
+    }
+    body.dark-mode .hero::after{
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+      opacity:.12;
+    }
+
+    .hero-inner{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      padding:18px 18px 16px;
+      position:relative;
+      z-index:1;
+    }
+
+    /* Greeting block */
+    .greeting{
+      display:grid;
+      gap:6px;
+      margin-bottom:10px;
+    }
+    .greeting .hello{
+      font-size:20px;
+      font-weight:900;
+      letter-spacing:-0.4px;
+      color:var(--text);
+      line-height:1.15;
+    }
+    .greeting .meta{
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+      letter-spacing:0.2px;
+    }
+    .greeting .daily{
+      margin-top:6px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: color-mix(in oklab, var(--surface) 88%, transparent);
+      box-shadow: 0 1px 0 color-mix(in oklab, var(--text) 8%, transparent);
+      font-size:13px;
+      line-height:1.45;
+      color: var(--text);
+      font-weight:800;
+      animation: riseIn .45s ease both;
+    }
+    .greeting .daily span{
+      color: var(--muted);
+      font-weight:900;
+      margin-right:6px;
+      letter-spacing:0.2px;
+    }
+
+    /* Primary button (kept in code but not used on Home now) */
+    .btn{
+      border-radius:999px;
+      padding:10px 14px;
+      font-size:13px;
+      font-weight:900;
+      cursor:pointer;
+      transition:0.18s ease;
+      border:1px solid var(--line);
+      background:var(--surface);
+      color:var(--text);
+    }
+    .btn:hover{
+      transform:translateY(-1px);
+      border-color:color-mix(in oklab, var(--text) 22%, var(--line));
+    }
+    .btn.primary{
+      background:var(--btn-bg);
+      color:var(--btn-text);
+      border-color:var(--btn-border);
+    }
+    .btn.primary:hover{ opacity:0.92; }
+
+    /* ✅ Market Hours (more alive like example) */
+    .market-hours{
+      width:100%;
+      border:1px solid var(--line);
+      background:var(--surface);
+      border-radius:16px;
+      padding:12px;
+      display:grid;
+      gap:12px;
+      position:relative;
+      overflow:hidden;
+      margin-top:10px;
+    }
+
+    /* Alive background + scan */
+    .market-hours::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(520px 180px at 12% 0%, var(--glow) 0%, transparent 62%),
+        radial-gradient(520px 180px at 92% 0%, var(--glow) 0%, transparent 62%),
+        linear-gradient(180deg, transparent, var(--alive), transparent);
+      opacity:1;
+      pointer-events:none;
+    }
+    .market-hours::after{
+      content:"";
+      position:absolute;
+      top:0; left:-30%;
+      width:30%;
+      height:100%;
+      background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--text) 12%, transparent), transparent);
+      opacity:.12;
+      pointer-events:none;
+      animation: scan 4.8s ease-in-out infinite;
+    }
+    body.dark-mode .market-hours::after{
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
+      opacity:.12;
+    }
+
+    .mh-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+    .mh-title{
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:0.9px;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+    .mh-updated{
+      font-size:12px;
+      font-weight:900;
+      color:var(--muted);
+    }
+
+    .mh-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+
+    .mh-card{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:color-mix(in oklab, var(--surface-2) 94%, transparent);
+      padding:10px;
+      display:grid;
+      gap:8px;
+      min-height:92px;
+      transition:0.18s ease;
+      position:relative;
+      overflow:hidden;
+    }
+    .mh-card:hover{
+      transform:translateY(-1px);
+      border-color:color-mix(in oklab, var(--text) 18%, var(--line));
+      background:color-mix(in oklab, var(--surface-2) 90%, transparent);
+    }
+
+    /* Animated inner glow on open */
+    .mh-card.open::before{
+      content:"";
+      position:absolute; inset:-1px;
+      background:
+        radial-gradient(260px 110px at 20% 0%, color-mix(in oklab, var(--text) 10%, transparent), transparent 60%),
+        radial-gradient(260px 110px at 80% 0%, color-mix(in oklab, var(--text) 10%, transparent), transparent 60%);
+      opacity:.55;
+      pointer-events:none;
+    }
+    body.dark-mode .mh-card.open::before{
+      background:
+        radial-gradient(260px 110px at 20% 0%, rgba(255,255,255,0.12), transparent 60%),
+        radial-gradient(260px 110px at 80% 0%, rgba(255,255,255,0.10), transparent 60%);
+      opacity:.55;
+    }
+
+    .mh-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+
+    .mh-name{
+      font-size:11px;
+      font-weight:1000;
+      letter-spacing:0.9px;
+      text-transform:uppercase;
+      color:var(--text);
+      opacity:0.95;
+    }
+
+    .mh-badge{
+      font-size:10px;
+      font-weight:1000;
+      letter-spacing:0.8px;
+      text-transform:uppercase;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 86%, transparent);
+      color: var(--muted);
+      white-space:nowrap;
+    }
+    .mh-badge.open{
+      color: var(--text);
+      border-color: color-mix(in oklab, var(--text) 26%, var(--line));
+      background: color-mix(in oklab, var(--surface) 92%, transparent);
+    }
+    body.dark-mode .mh-badge.open{
+      border-color: rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.06);
+      color:#ffffff;
+    }
+
+    .mh-time{
+      font-size:12px;
+      font-weight:900;
+      color:var(--muted);
+      line-height:1.3;
+      position:relative;
+      z-index:1;
+    }
+
+    /* Open dot */
+    .mh-dotrow{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      position:relative;
+      z-index:1;
+    }
+    .dot{
+      width:8px; height:8px;
+      border-radius:999px;
+      background: var(--text);
+      opacity:0.22;
+    }
+    .dot.open{
+      opacity:0.95;
+      animation: softPulse 2.2s ease-in-out infinite;
+    }
+
+    /* Progress bar */
+    .mh-bar{
+      height:8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 88%, transparent);
+      overflow:hidden;
+      position:relative;
+      z-index:1;
+    }
+    .mh-fill{
+      height:100%;
+      width:0%;
+      background: var(--text);
+      opacity:0.22;
+      transition: width .35s ease;
+    }
+    body.dark-mode .mh-fill{
+      background:#ffffff;
+      opacity:0.18;
+    }
+
+    /* Existing pulse (unchanged style) */
+    .mini-pulse{
+      width:100%;
+      border:1px solid var(--line);
+      background:var(--surface);
+      border-radius:14px;
+      padding:12px;
+      display:grid;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .pulse-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      letter-spacing:0.2px;
+    }
+
+    .pulse-values{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:2px;
+    }
+
+    .pulse-card{
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:var(--surface-2);
+      padding:10px;
+      display:grid;
+      gap:6px;
+    }
+
+    .pulse-card .k{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:900;
+      letter-spacing:0.6px;
+      text-transform:uppercase;
+    }
+
+    .pulse-card .v{
+      font-size:16px;
+      font-weight:900;
+      color:var(--text);
+      letter-spacing:-0.3px;
+    }
+
+    .pulse-card .c{
+      font-size:12px;
+      font-weight:900;
+      color: var(--muted);
+    }
+
+    /* GRID CARDS */
+    .card-grid{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:16px;
+      margin-bottom:16px;
+    }
+
+    .dashboard-card{
+      background:var(--card-bg);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      transition:0.18s ease;
+      box-shadow:var(--shadow-2);
+      position:relative;
+      overflow:hidden;
+      animation: riseIn .42s ease both;
+    }
+
+    .dashboard-card:hover{
+      background:var(--card-hover);
+      border-color:color-mix(in oklab, var(--text) 14%, var(--line));
+      transform:translateY(-2px);
+    }
+
+    .card-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:12px;
+    }
+
+    .card-title{
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:0.9px;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+
+    .card-icon{
+      width:16px; height:16px;
+      stroke:color-mix(in oklab, var(--muted) 70%, transparent);
+      stroke-width:1.7;
+      fill:none;
+    }
+
+    .card-value{
+      font-size:30px;
+      font-weight:900;
+      letter-spacing:-1px;
+      margin-bottom:6px;
+      color:var(--text);
+    }
+
+    .card-subtitle{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .card-meta{
+      display:flex;
+      gap:16px;
+      margin-top:14px;
+      padding-top:14px;
+      border-top:1px solid var(--line);
+    }
+
+    .card-meta-item{ display:flex; flex-direction:column; gap:4px; }
+    .card-meta-label{ font-size:11px; color:var(--muted); font-weight:800; }
+    .card-meta-value{ font-size:13px; font-weight:900; color:var(--text); }
+
+    .card-large{
+      grid-column:span 3;
+      padding:18px;
+    }
+
+    .card-section-title{
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:0.9px;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+
+    /* ✅ NEW: Live Activity + News (black/white, same style) */
+    .live-stack{
+      display:grid;
+      gap:12px;
+    }
+
+    .live-toprow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .live-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .live-title{
+      font-size:12px;
+      font-weight:1000;
+      letter-spacing:0.9px;
+      text-transform:uppercase;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .live-pill{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 88%, transparent);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:10px;
+      font-weight:1000;
+      letter-spacing:0.8px;
+      text-transform:uppercase;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .live-dot{
+      width:8px; height:8px;
+      border-radius:999px;
+      background: var(--text);
+      opacity:0.95;
+      animation: softPulse 2.2s ease-in-out infinite;
+    }
+
+    .live-updated{
+      font-size:12px;
+      font-weight:900;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .tv-wrap{
+      border:1px solid var(--line);
+      border-radius:14px;
+      overflow:hidden;
+      background: var(--surface);
+    }
+
+    .news-wrap{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: color-mix(in oklab, var(--surface-2) 94%, transparent);
+      overflow:hidden;
+    }
+
+    .news-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 12px;
+      border-bottom:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 92%, transparent);
+    }
+
+    .news-head .label{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .news-head .label strong{
+      font-size:12px;
+      font-weight:1000;
+      letter-spacing:0.9px;
+      text-transform:uppercase;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .news-sub{
+      font-size:12px;
+      font-weight:900;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .news-list{
+      display:grid;
+      gap:0;
+      max-height:320px;
+      overflow:auto;
+    }
+    .news-list::-webkit-scrollbar{ width:6px; }
+    .news-list::-webkit-scrollbar-track{ background:transparent; }
+    .news-list::-webkit-scrollbar-thumb{ background:color-mix(in oklab, var(--muted) 22%, transparent); border-radius:6px; }
+    .news-list::-webkit-scrollbar-thumb:hover{ background:color-mix(in oklab, var(--muted) 35%, transparent); }
+
+    .news-item{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 12px;
+      border-top:1px solid var(--line);
+      text-decoration:none;
+      color:inherit;
+      transition:0.18s ease;
+    }
+    .news-item:hover{
+      background: color-mix(in oklab, var(--surface) 90%, transparent);
+      transform: translateY(-1px);
+    }
+
+    .news-main{
+      display:grid;
+      gap:6px;
+      min-width:0;
+    }
+
+    .news-source{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:11px;
+      font-weight:1000;
+      color:var(--muted);
+      letter-spacing:0.3px;
+      min-width:0;
+    }
+
+    .news-source .badge{
+      font-size:10px;
+      font-weight:1000;
+      letter-spacing:0.8px;
+      text-transform:uppercase;
+      padding:5px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 88%, transparent);
+      color: var(--muted);
+      white-space:nowrap;
+    }
+
+    .news-title{
+      font-size:13px;
+      font-weight:900;
+      color:var(--text);
+      line-height:1.35;
+      overflow:hidden;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+    }
+
+    .news-time{
+      font-size:11px;
+      font-weight:900;
+      color:var(--muted);
+      white-space:nowrap;
+      margin-top:2px;
+    }
+
+    .news-empty{
+      padding:14px 12px;
+      font-size:13px;
+      font-weight:900;
+      color:var(--muted);
+    }
+
+    /* Mobile */
+    @media (max-width: 980px){
+      .hero-inner{ flex-direction:column; align-items:flex-start; }
+      .mh-grid{ grid-template-columns:1fr 1fr; }
+      .pulse-values{ grid-template-columns:1fr 1fr; }
+      .card-grid{ grid-template-columns:1fr; }
+      .card-large{ grid-column:span 1; }
+      .content-area{ padding:16px; }
+      .top-bar{ padding:0 16px; }
+    }
+
+    @media (max-width: 720px){
+      .nav-panel{
+        width:100%;
+        height:74px;
+        bottom:0;
+        top:auto;
+        left:0;
+        right:0;
+        border-right:none;
+        border-top:1px solid var(--line);
+        flex-direction:row;
+        align-items:center;
+        justify-content:center;
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .nav-logo{ display:none; }
+      .nav-menu{
+        flex-direction:row;
+        width:100%;
+        justify-content:space-around;
+        padding:8px 10px;
+        gap:8px;
+      }
+      .nav-item{ width:auto; min-width:56px; padding:10px 10px; }
+      .nav-item.active::after{ display:none; }
+
+      .main-content{
+        margin-left:0;
+        width:100%;
+        padding-bottom: calc(88px + env(safe-area-inset-bottom));
+      }
+      .news-list{ max-height:360px; }
+    }
   </style>
 </head>
+
 <body>
-  <!-- Animated Background -->
-  <div class="animated-bg">
-    <div class="grid-overlay"></div>
-    <div class="gradient-orb orb-1"></div>
-    <div class="gradient-orb orb-2"></div>
-    <div class="gradient-orb orb-3"></div>
-  </div>
+  <div class="bg-grid"></div>
 
-  <!-- Header -->
-  <header id="header">
-    <div class="nav-container">
-      <div class="logo" onclick="location.href='#home'">
-        <i class="fas fa-chart-line"></i>
-        <span>FYNX</span>
-      </div>
+  <div class="dashboard-container">
+    <!-- LEFT NAVIGATION PANEL -->
+    <nav class="nav-panel">
+      <div class="nav-logo"><h1>FYNX</h1></div>
 
-      <nav>
-        <ul>
-          <li><a href="#home" id="homeToggle">Home <span style="opacity:.7;">▾</span></a></li>
-          <li><a href="#learn" id="learnToggle">Learn <span style="opacity:.7;">▾</span></a></li>
-          <li><a href="#tools" id="toolsToggle">Tools <span style="opacity:.7;">▾</span></a></li>
-          <li><a href="#news" id="newsToggle">News <span style="opacity:.7;">▾</span></a></li>
-          <li><a href="trader-journal.html">Trader Journal</a></li>
-        </ul>
-      </nav>
-
-      <!-- ✅ UPDATED: Resources + Network + Theme icon -->
-      <div class="fynx-top-actions" aria-label="FYNX quick actions">
-        <div class="fynx-menu" id="resourcesMenu">
-          <button class="fynx-menu-btn" type="button" id="resourcesToggle" aria-expanded="false" aria-controls="resourcesPanel">
-            <span>Resources</span>
-            <i class="fa-solid fa-chevron-down" style="font-size:12px;opacity:.8;"></i>
-          </button>
-
-          <div class="fynx-menu-panel" id="resourcesPanel" role="menu" aria-hidden="true">
-            <a href="/assets/docs/FYNX-Whitepaper.pdf" target="_blank" rel="noopener" role="menuitem">
-  <i class="fa-regular fa-file-lines"></i><span>Whitepaper</span>
-</a>
-            <a href="https://elhamamini.cc/fynx-blog/#" target="_blank" rel="noopener" role="menuitem">
-              <i class="fa-solid fa-pen-nib"></i><span>Blog</span>
-            </a>
-            <a href="https://elhamamini.cc/FYNX-Site/index.html" target="_blank" rel="noopener" role="menuitem">
-              <i class="fa-solid fa-globe"></i><span>Main Site</span>
-            </a>
-            <a href="https://apps.apple.com/app/id6752357210" target="_blank" rel="noopener" role="menuitem">
-              <i class="fa-brands fa-apple"></i><span>App Store</span>
-            </a>
-            <a href="https://elhamamini.cc/RoadMap-FYNX/" target="_blank" rel="noopener" role="menuitem">
-              <i class="fa-solid fa-road"></i><span>Roadmap</span>
-            </a>
-          </div>
+      <div class="nav-menu">
+        <div class="nav-item active" data-view="home">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span class="nav-label">Home</span>
         </div>
 
-        <a class="fynx-network-btn" href="https://elhamamini.cc/FYNX-Site/index.html" target="_blank" rel="noopener" aria-label="Network">
-          <span>Network</span>
-          <i class="fa-solid fa-globe"></i>
-        </a>
+        <div class="nav-item" data-view="journal">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <span class="nav-label">Journal</span>
+        </div>
 
-        <button class="fynx-network-theme" type="button" aria-label="Toggle theme" data-fynx-theme-toggle title="Toggle black/white mode">
-          <i class="fas fa-circle-half-stroke"></i>
-        </button>
+        <div class="nav-item" data-view="calculator">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+            <line x1="8" y1="6" x2="16" y2="6"></line>
+            <line x1="8" y1="10" x2="16" y2="10"></line>
+            <line x1="8" y1="14" x2="16" y2="14"></line>
+            <line x1="8" y1="18" x2="16" y2="18"></line>
+          </svg>
+          <span class="nav-label">Calculator</span>
+        </div>
+
+        <div class="nav-item" data-view="news">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+            <line x1="12" y1="11" x2="18" y2="11"></line>
+            <line x1="12" y1="7" x2="18" y2="7"></line>
+          </svg>
+          <span class="nav-label">News</span>
+        </div>
+
+        <div class="nav-item" data-view="calendar">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span class="nav-label">Calendar</span>
+        </div>
+
+        <div class="nav-item" data-view="profile">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span class="nav-label">Profile</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <!-- TOP BAR -->
+      <div class="top-bar">
+        <h1 class="page-title">Home</h1>
+        <div class="top-bar-right">
+          <span class="chip" id="dateChip">Loading...</span>
+
+          <button class="icon-btn" title="Notifications" aria-label="Notifications">
+            <svg viewBox="0 0 24 24">
+              <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </button>
+
+          <div class="user-avatar" id="avatarInitials">FX</div>
+        </div>
       </div>
 
-      <!-- Mobile Hamburger -->
-      <button class="mobile-menu" id="mobileMenuBtn" type="button" aria-label="Open menu" aria-controls="mobileDrawer" aria-expanded="false">
-        <i class="fas fa-bars"></i>
-      </button>
-    </div>
-  </header>
+      <!-- CONTENT -->
+      <div class="content-area">
+        <section class="hero">
+          <div class="hero-inner">
+            <div class="hero-left">
+              <!-- Greeting + daily message -->
+              <div class="greeting">
+                <div class="hello" id="greetingText">Good evening, Trader.</div>
+                <div class="meta" id="greetingMeta">Local time —</div>
+                <div class="daily" id="dailyLine"><span>Daily:</span> Loading message…</div>
+              </div>
 
-  <!-- MOBILE OVERLAY + DRAWER (NEW) -->
-  <div class="mobile-overlay" id="mobileOverlay" aria-hidden="true"></div>
-  <aside class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
-    <div class="mobile-drawer-top">
-      <div class="mobile-title">
-        <i class="fas fa-chart-line"></i>
-        <span>FYNX</span>
-      </div>
-      <button class="mobile-close" id="mobileCloseBtn" type="button" aria-label="Close menu">
-        <i class="fas fa-xmark"></i>
-      </button>
-    </div>
+              <!-- ✅ Remove the long paragraph + remove Open Tools/Open Journal (per request) -->
+              <h2 style="font-size:34px; font-weight:1000; letter-spacing:-1px; margin-top:10px;">Dashboard</h2>
+            </div>
 
-    <div class="mobile-list">
-      <!-- HOME -->
-      <div class="m-accordion" data-acc="home">
-        <button class="m-acc-btn" type="button">
-          <span class="left"><i class="fas fa-house"></i> Home</span>
-          <i class="fas fa-chevron-down"></i>
-        </button>
-        <div class="m-acc-panel">
-          <div class="m-links">
-            <a class="m-link" href="tools/economic-calendar.html">
-              <span class="left"><i class="fas fa-calendar-alt"></i><span>Economic Calendar</span></span>
-              <i class="fas fa-arrow-right"></i>
-            </a>
-            <a class="m-link" href="tools/market-holidays.html">
-              <span class="left"><i class="fas fa-umbrella-beach"></i><span>Market Holidays</span></span>
-              <i class="fas fa-arrow-right"></i>
-            </a>
-            <a class="m-link" href="tools/market-hours.html">
-              <span class="left"><i class="fas fa-clock"></i><span>Market Hours</span></span>
-              <i class="fas fa-arrow-right"></i>
-            </a>
-            <a class="m-link" href="home/hub.html?section=interest-rates">
-              <span class="left"><i class="fas fa-percent"></i><span>Interest Rates</span></span>
-              <i class="fas fa-arrow-right"></i>
-            </a>
-            <a class="m-link" href="home/hub.html?section=economic-heatmap">
-              <span class="left"><i class="fas fa-fire"></i><span>Economic Indicators Heatmap</span></span>
-              <i class="fas fa-arrow-right"></i>
-            </a>
-            <a class="m-link" href="home/hub.html?section=recent-topics">
-              <span class="left"><i class="fas fa-comment-dots"></i><span>Recent Topics Discussed</span></span>
-              <i class="fas fa-arrow-right"></i>
-            </a>
-            <div class="m-accordion" data-acc="homeMarkets" style="margin-top:.4rem;">
-              <button class="m-acc-btn" type="button">
-                <span class="left"><i class="fas fa-layer-group"></i> Markets</span>
-                <i class="fas fa-chevron-down"></i>
-              </button>
-              <div class="m-acc-panel">
-                <div class="m-links">
-                  <a class="m-link" href="markets/index.html?section=currencies"><span class="left"><i class="fas fa-dollar-sign"></i><span>Currencies</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=crypto"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=indicators"><span class="left"><i class="fas fa-chart-line"></i><span>Indicators</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=patterns"><span class="left"><i class="fas fa-shapes"></i><span>Patterns</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=volatility"><span class="left"><i class="fas fa-wave-square"></i><span>Volatility</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=correlation"><span class="left"><i class="fas fa-chart-area"></i><span>Correlation</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=cot"><span class="left"><i class="fas fa-clipboard-list"></i><span>Commitments of Traders</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=liquidity"><span class="left"><i class="fas fa-water"></i><span>Liquidity</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=historical-data"><span class="left"><i class="fas fa-database"></i><span>Historical Data</span></span><i class="fas fa-arrow-right"></i></a>
+            <div class="hero-right" style="width:100%; min-width:0; align-items:stretch;">
+              <!-- Market Hours (alive) -->
+              <div class="market-hours" aria-label="Market Hours">
+                <div class="mh-top">
+                  <span class="mh-title">Market Hours</span>
+                  <span class="mh-updated" id="mhUpdated">—</span>
+                </div>
+
+                <div class="mh-grid">
+                  <div class="mh-card" id="cardLondon">
+                    <div class="mh-head">
+                      <div class="mh-name">London</div>
+                      <div class="mh-badge" id="badgeLondon">—</div>
+                    </div>
+                    <div class="mh-dotrow"><span class="dot" id="dotLondon"></span><span class="mh-time" id="timeLondon">—</span></div>
+                    <div class="mh-bar"><div class="mh-fill" id="fillLondon"></div></div>
+                  </div>
+
+                  <div class="mh-card" id="cardNewYork">
+                    <div class="mh-head">
+                      <div class="mh-name">New York</div>
+                      <div class="mh-badge" id="badgeNewYork">—</div>
+                    </div>
+                    <div class="mh-dotrow"><span class="dot" id="dotNewYork"></span><span class="mh-time" id="timeNewYork">—</span></div>
+                    <div class="mh-bar"><div class="mh-fill" id="fillNewYork"></div></div>
+                  </div>
+
+                  <div class="mh-card" id="cardSydney">
+                    <div class="mh-head">
+                      <div class="mh-name">Sydney</div>
+                      <div class="mh-badge" id="badgeSydney">—</div>
+                    </div>
+                    <div class="mh-dotrow"><span class="dot" id="dotSydney"></span><span class="mh-time" id="timeSydney">—</span></div>
+                    <div class="mh-bar"><div class="mh-fill" id="fillSydney"></div></div>
+                  </div>
+
+                  <div class="mh-card" id="cardAsia">
+                    <div class="mh-head">
+                      <div class="mh-name">Asia</div>
+                      <div class="mh-badge" id="badgeAsia">—</div>
+                    </div>
+                    <div class="mh-dotrow"><span class="dot" id="dotAsia"></span><span class="mh-time" id="timeAsia">—</span></div>
+                    <div class="mh-bar"><div class="mh-fill" id="fillAsia"></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Existing Market Pulse -->
+              <div class="mini-pulse">
+                <div class="pulse-row">
+                  <span>Market Pulse</span>
+                  <span id="pulseUpdated">—</span>
+                </div>
+                <div class="pulse-values">
+                  <div class="pulse-card">
+                    <div class="k">S&P 500</div>
+                    <div class="v" id="spxVal">5,234.18</div>
+                    <div class="c" id="spxChg">+0.41%</div>
+                  </div>
+                  <div class="pulse-card">
+                    <div class="k">NASDAQ</div>
+                    <div class="v" id="nasVal">16,847.22</div>
+                    <div class="c" id="nasChg">+0.72%</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- KPI CARDS -->
+        <section class="card-grid">
+          <div class="dashboard-card">
+            <div class="card-header">
+              <span class="card-title">Performance</span>
+              <svg class="card-icon" viewBox="0 0 24 24">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+            </div>
+            <div class="card-value">+12.4%</div>
+            <div class="card-subtitle">Updated 2 hours ago</div>
+
+            <div class="card-meta">
+              <div class="card-meta-item">
+                <span class="card-meta-label">This Month</span>
+                <span class="card-meta-value">+8.2%</span>
+              </div>
+              <div class="card-meta-item">
+                <span class="card-meta-label">This Year</span>
+                <span class="card-meta-value">+32.1%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-card">
+            <div class="card-header">
+              <span class="card-title">Recent Activity</span>
+              <svg class="card-icon" viewBox="0 0 24 24">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+              </svg>
+            </div>
+            <div class="card-value">24</div>
+            <div class="card-subtitle">Last 7 days</div>
+
+            <div class="card-meta">
+              <div class="card-meta-item">
+                <span class="card-meta-label">Trades</span>
+                <span class="card-meta-value">18</span>
+              </div>
+              <div class="card-meta-item">
+                <span class="card-meta-label">Journal Entries</span>
+                <span class="card-meta-value">6</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-card">
+            <div class="card-header">
+              <span class="card-title">Market Snapshot</span>
+              <svg class="card-icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M12 7v5l3 3"></path>
+              </svg>
+            </div>
+            <div class="card-value">Live</div>
+            <div class="card-subtitle">Real-time view</div>
+
+            <div class="card-meta">
+              <div class="card-meta-item">
+                <span class="card-meta-label">S&P 500</span>
+                <span class="card-meta-value">5,234.18</span>
+              </div>
+              <div class="card-meta-item">
+                <span class="card-meta-label">NASDAQ</span>
+                <span class="card-meta-value">16,847.22</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ✅ REPLACED: Portfolio Overview removed. Added Live Activity + News (updates every 5 min, links clickable) -->
+          <div class="dashboard-card card-large">
+            <div class="live-stack">
+              <div class="live-toprow">
+                <div class="live-left">
+                  <span class="live-title">Live Activity</span>
+                  <span class="live-pill"><span class="live-dot"></span> Live</span>
+                </div>
+                <span class="live-updated" id="liveUpdated">—</span>
+              </div>
+
+              <!-- Real market moving strip (TradingView ticker tape) -->
+              <div class="tv-wrap" id="tvTapeWrap" aria-label="Market moving strip"></div>
+
+              <!-- News (updates every 5 min) -->
+              <div class="news-wrap" aria-label="Market-moving news">
+                <div class="news-head">
+                  <div class="label">
+                    <strong>Latest Market News</strong>
+                    <span class="live-pill"><span class="live-dot"></span> Live</span>
+                  </div>
+                  <div class="news-sub" id="newsUpdated">Updating…</div>
+                </div>
+                <div class="news-list" id="newsList">
+                  <div class="news-empty">Loading headlines…</div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
-
-      <!-- LEARN -->
-      <div class="m-accordion" data-acc="learn">
-        <button class="m-acc-btn" type="button">
-          <span class="left"><i class="fas fa-graduation-cap"></i> Learn</span>
-          <i class="fas fa-chevron-down"></i>
-        </button>
-        <div class="m-acc-panel">
-          <div class="m-links">
-            <a class="m-link" href="learn/topic.html?topic=stocks&section=howto"><span class="left"><i class="fas fa-chart-bar"></i><span>Stocks</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="learn/topic.html?topic=funds&section=howto"><span class="left"><i class="fas fa-coins"></i><span>Funds</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="learn/topic.html?topic=futures&section=howto"><span class="left"><i class="fas fa-bolt"></i><span>Futures</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="learn/topic.html?topic=forex&section=howto"><span class="left"><i class="fas fa-dollar-sign"></i><span>Forex</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="learn/topic.html?topic=crypto&section=howto"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="learn/topic.html?topic=indices&section=howto"><span class="left"><i class="fas fa-layer-group"></i><span>Indices</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="learn/topic.html?topic=bonds&section=howto"><span class="left"><i class="fas fa-landmark"></i><span>Bonds</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="learn/topic.html?topic=economy&section=howto"><span class="left"><i class="fas fa-globe"></i><span>Economy</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="learn/topic.html?topic=options&section=howto"><span class="left"><i class="fas fa-table-cells"></i><span>Options</span></span><i class="fas fa-arrow-right"></i></a>
-          </div>
-        </div>
-      </div>
-
-      <!-- TOOLS -->
-      <div class="m-accordion" data-acc="tools">
-        <button class="m-acc-btn" type="button">
-          <span class="left"><i class="fas fa-th-large"></i> Tools</span>
-          <i class="fas fa-chevron-down"></i>
-        </button>
-        <div class="m-acc-panel">
-          <div class="m-links">
-            <a class="m-link" href="#tools"><span class="left"><i class="fas fa-th-large"></i><span>Tools Overview</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="tools/forex.html"><span class="left"><i class="fas fa-chart-line"></i><span>Forex Calculator</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="tools/crypto.html"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto Calculator</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="tools/stock.html"><span class="left"><i class="fas fa-chart-bar"></i><span>Stock Calculator</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="tools/options.html"><span class="left"><i class="fas fa-table-cells"></i><span>Options Calculator</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="tools/pip.html"><span class="left"><i class="fas fa-ruler-horizontal"></i><span>Pip Value</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="tools/margin.html"><span class="left"><i class="fas fa-percent"></i><span>Margin</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="tools/position-size.html"><span class="left"><i class="fas fa-calculator"></i><span>Position Size</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="tools/risk-reward.html"><span class="left"><i class="fas fa-scale-balanced"></i><span>Risk/Reward</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="tools/market-hours.html"><span class="left"><i class="fas fa-clock"></i><span>Market Hours</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="tools/economic-calendar.html"><span class="left"><i class="fas fa-calendar-alt"></i><span>Economic Calendar</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="tools/profit-loss.html"><span class="left"><i class="fas fa-dollar-sign"></i><span>Profit/Loss (Pro)</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="tools/calendar-alerts.html"><span class="left"><i class="fas fa-calendar-check"></i><span>Calendar Alerts (Pro)</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="tools/heatmap.html"><span class="left"><i class="fas fa-fire"></i><span>Heat Map (Pro)</span></span><i class="fas fa-arrow-right"></i></a>
-          </div>
-        </div>
-      </div>
-
-      <!-- NEWS -->
-      <div class="m-accordion" data-acc="news">
-        <button class="m-acc-btn" type="button">
-          <span class="left"><i class="fas fa-newspaper"></i> News</span>
-          <i class="fas fa-chevron-down"></i>
-        </button>
-        <div class="m-acc-panel">
-          <div class="m-links">
-            <a class="m-link" href="news/news.html"><span class="left"><i class="fas fa-newspaper"></i><span>News</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="news/heatmap.html"><span class="left"><i class="fas fa-fire"></i><span>Heat Map</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="news/sentiment.html"><span class="left"><i class="fas fa-face-smile"></i><span>Sentiment</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="news/challenges.html"><span class="left"><i class="fas fa-trophy"></i><span>Challenges</span></span><i class="fas fa-arrow-right"></i></a>
-          </div>
-        </div>
-      </div>
-
-      <!-- TRADER JOURNAL (single) -->
-      <div class="m-single">
-        <a href="trader-journal.html">
-          <span class="left"><i class="fas fa-book"></i> Trader Journal</span>
-          <i class="fas fa-arrow-right"></i>
-        </a>
-      </div>
-    </div>
-  </aside>
-
-  <!-- HOME SUB-NAV -->
-  <div class="home-subnav" id="homeSubnav" aria-hidden="true">
-    <div class="home-subnav-inner">
-      <span class="home-caption"><i class="fas fa-house"></i> Home</span>
-      <a class="home-pill primary" href="tools/economic-calendar.html"><i class="fas fa-calendar-alt"></i> Economic Calendar</a>
-      <a class="home-pill" href="tools/market-holidays.html"><i class="fas fa-umbrella-beach"></i> Market Holidays</a>
-      <a class="home-pill" href="tools/market-hours.html"><i class="fas fa-clock"></i> Market Hour</a>
-      <a class="home-pill" href="home/hub.html?section=interest-rates"><i class="fas fa-percent"></i> Interest Rates</a>
-      <a class="home-pill" href="home/hub.html?section=economic-heatmap"><i class="fas fa-fire"></i> Economic Indicators Heatmap</a>
-      <a class="home-pill" href="home/hub.html?section=recent-topics"><i class="fas fa-comment-dots"></i> Recent Topics Discussed</a>
-      <button class="home-pill" type="button" id="marketsToggle"><i class="fas fa-layer-group"></i> Markets <span style="opacity:.7;">▾</span></button>
-    </div>
+    </main>
   </div>
 
-  <!-- HOME MARKETS DETAIL SUB-NAV -->
-  <div class="home-detail-subnav" id="homeMarketsSubnav" aria-hidden="true">
-    <div class="home-detail-inner">
-      <span class="home-caption"><i class="fas fa-layer-group"></i> Markets</span>
-      <a class="home-detail-pill" href="markets/index.html?section=currencies"><i class="fas fa-dollar-sign"></i> Currencies</a>
-      <a class="home-detail-pill" href="markets/index.html?section=crypto"><i class="fab fa-bitcoin"></i> Crypto</a>
-      <a class="home-detail-pill" href="markets/index.html?section=indicators"><i class="fas fa-chart-line"></i> Indicators</a>
-      <a class="home-detail-pill" href="markets/index.html?section=patterns"><i class="fas fa-shapes"></i> Patterns</a>
-      <a class="home-detail-pill" href="markets/index.html?section=volatility"><i class="fas fa-wave-square"></i> Volatility</a>
-      <a class="home-detail-pill" href="markets/index.html?section=correlation"><i class="fas fa-chart-area"></i> Correlation</a>
-      <a class="home-detail-pill" href="markets/index.html?section=cot"><i class="fas fa-clipboard-list"></i> Commitments of Traders</a>
-      <a class="home-detail-pill" href="markets/index.html?section=liquidity"><i class="fas fa-water"></i> Liquidity</a>
-      <a class="home-detail-pill" href="markets/index.html?section=historical-data"><i class="fas fa-database"></i> Historical Data</a>
-    </div>
-  </div>
-
-  <!-- LEARN SUB-NAV -->
-  <div class="learn-subnav" id="learnSubnav" aria-hidden="true">
-    <div class="learn-subnav-inner">
-      <span class="learn-caption"><i class="fas fa-graduation-cap"></i> Learn Markets</span>
-      <button class="learn-pill" type="button" data-topic="stocks">Stocks</button>
-      <button class="learn-pill" type="button" data-topic="funds">Funds</button>
-      <button class="learn-pill" type="button" data-topic="futures">Futures</button>
-      <button class="learn-pill" type="button" data-topic="forex">Forex</button>
-      <button class="learn-pill" type="button" data-topic="crypto">Crypto</button>
-      <button class="learn-pill" type="button" data-topic="indices">Indices</button>
-      <button class="learn-pill" type="button" data-topic="bonds">Bonds</button>
-      <button class="learn-pill" type="button" data-topic="economy">Economy</button>
-      <button class="learn-pill" type="button" data-topic="options">Options</button>
-    </div>
-  </div>
-
-  <!-- LEARN DETAIL SUB-NAV -->
-  <div class="learn-detail-subnav" id="learnDetailSubnav" aria-hidden="true">
-    <div class="learn-detail-inner">
-      <span class="learn-caption" id="learnDetailCaption"><i class="fas fa-layer-group"></i> Topic</span>
-      <a class="learn-detail-pill" id="learnHowTo" href="learn/topic.html?topic=forex&section=howto"><i class="fas fa-play"></i> How to Trade</a>
-      <a class="learn-detail-pill" id="learnQuizzes" href="learn/topic.html?topic=forex&section=quizzes"><i class="fas fa-circle-question"></i> Trading Quizzes</a>
-      <a class="learn-detail-pill" id="learnGlossary" href="learn/topic.html?topic=forex&section=glossary"><i class="fas fa-book"></i> Glossary</a>
-    </div>
-  </div>
-
-  <!-- TOOLS SUB-NAV -->
-  <div class="tools-subnav" id="toolsSubnav" aria-hidden="true">
-    <div class="tools-subnav-inner">
-      <a class="tools-pill primary" href="#tools"><i class="fas fa-th-large"></i> Tools Overview</a>
-      <a class="tools-pill" href="tools/forex.html"><i class="fas fa-chart-line"></i> Forex <span class="tag">Calc</span></a>
-      <a class="tools-pill" href="tools/crypto.html"><i class="fab fa-bitcoin"></i> Crypto <span class="tag">Calc</span></a>
-      <a class="tools-pill" href="tools/stock.html"><i class="fas fa-chart-bar"></i> Stock <span class="tag">Calc</span></a>
-      <a class="tools-pill" href="tools/options.html"><i class="fas fa-table-cells"></i> Options <span class="tag">Calc</span></a>
-      <a class="tools-pill" href="tools/pip.html"><i class="fas fa-ruler-horizontal"></i> Pip <span class="tag">Calc</span></a>
-      <a class="tools-pill" href="tools/margin.html"><i class="fas fa-percent"></i> Margin <span class="tag">Calc</span></a>
-      <a class="tools-pill" href="tools/pivot.html"><i class="fas fa-bullseye"></i> Pivot <span class="tag">Points</span></a>
-      <a class="tools-pill" href="tools/fibonacci.html"><i class="fas fa-wave-square"></i> Fibonacci <span class="tag">Ret</span></a>
-      <a class="tools-pill" href="tools/currency.html"><i class="fas fa-arrows-rotate"></i> Currency <span class="tag">FX</span></a>
-      <a class="tools-pill" href="tools/breakeven.html"><i class="fas fa-equals"></i> Break-Even <span class="tag">Calc</span></a>
-      <a class="tools-pill" href="tools/profit-loss.html"><i class="fas fa-dollar-sign"></i> Profit/Loss <span class="tag">Pro</span></a>
-      <a class="tools-pill" href="tools/calendar-alerts.html"><i class="fas fa-calendar-check"></i> Calendar <span class="tag">Pro</span></a>
-      <a class="tools-pill" href="tools/symbol-news.html"><i class="fas fa-newspaper"></i> Symbol News <span class="tag">Pro</span></a>
-      <a class="tools-pill" href="tools/atr-stop.html"><i class="fas fa-chart-column"></i> ATR Stop <span class="tag">Pro</span></a>
-      <a class="tools-pill" href="tools/liquidation-guard.html"><i class="fas fa-shield-halved"></i> Liquidation <span class="tag">Pro</span></a>
-      <a class="tools-pill" href="tools/heatmap.html"><i class="fas fa-fire"></i> Heat Map <span class="tag">Pro</span></a>
-      <a class="tools-pill" href="tools/options-payoff.html"><i class="fas fa-diagram-project"></i> Options Payoff <span class="tag">Pro</span></a>
-      <a class="tools-pill" href="tools/risk-reward.html"><i class="fas fa-scale-balanced"></i> Risk/Reward <span class="tag">Pro</span></a>
-      <a class="tools-pill" href="tools/compound.html"><i class="fas fa-seedling"></i> Compound <span class="tag">Pro</span></a>
-      <a class="tools-pill" href="tools/position-size.html"><i class="fas fa-calculator"></i> Position Size</a>
-      <a class="tools-pill" href="tools/correlation.html"><i class="fas fa-chart-area"></i> Correlation</a>
-      <a class="tools-pill" href="tools/market-hours.html"><i class="fas fa-clock"></i> Market Hours</a>
-      <a class="tools-pill" href="tools/economic-calendar.html"><i class="fas fa-calendar-alt"></i> Economic Calendar</a>
-    </div>
-  </div>
-
-  <!-- NEWS SUB-NAV -->
-  <div class="news-subnav" id="newsSubnav" aria-hidden="true">
-    <div class="news-subnav-inner">
-      <a class="news-pill primary" href="news/news.html"><i class="fas fa-newspaper"></i> News</a>
-      <a class="news-pill" href="news/heatmap.html"><i class="fas fa-fire"></i> Heat Map</a>
-      <a class="news-pill" href="news/sentiment.html"><i class="fas fa-face-smile"></i> Sentiment</a>
-      <a class="news-pill" href="news/challenges.html"><i class="fas fa-trophy"></i> Challenges</a>
-    </div>
-  </div>
-
-  <!-- Hero Section -->
-  <section class="hero" id="home">
-    <div class="hero-content">
-      <h1>Master Trading & Investing</h1>
-      <p>The ultimate platform for learning forex, crypto, and market analysis. Join thousands of traders achieving financial freedom.</p>
-      <div class="cta-buttons">
-        <a href="auth/login.html" class="btn btn-primary"><span>Login</span></a>
-        <a href="auth/signup.html" class="btn btn-secondary"><span>Sign Up</span></a>
-      </div>
-    </div>
-    <div class="scroll-indicator">
-      <i class="fas fa-chevron-down"></i>
-    </div>
-  </section>
-
-  <!-- Features Section -->
-  <section class="features">
-    <h2 class="section-title">Why Choose Fynx?</h2>
-    <div class="feature-grid">
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-graduation-cap"></i></div>
-        <h3>Expert Education</h3>
-        <p>Comprehensive courses from beginner to advanced, covering forex, crypto, stocks, and trading psychology.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
-        <h3>Real-Time Analysis</h3>
-        <p>Stay ahead with live market analysis, technical indicators, and professional trading insights.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-calculator"></i></div>
-        <h3>Trading Tools</h3>
-        <p>Access powerful calculators, risk management tools, and market analysis instruments.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-users"></i></div>
-        <h3>Active Community</h3>
-        <p>Connect with thousands of traders, share strategies, and learn from experienced professionals.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-newspaper"></i></div>
-        <h3>Daily Market News</h3>
-        <p>Get breaking financial news, market updates, and economic calendar events in real-time.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
-        <h3>Mobile App</h3>
-        <p>Trade on the go with our Fynx Finance World mobile app, available for iOS and Android.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ✅ REPLACED ONLY THIS SECTION: (Removed Quantum Edge) -->
-  <!-- ✅ NEW: Everything you need to grow in finance (with your 3 images auto-moving) -->
-  <section class="fynx-grow" id="learn">
-    <div class="fynx-grow__wrap">
-      <div class="fynx-grow__left">
-        <div class="fynx-grow__kicker">
-          <i class="fas fa-sparkles"></i>
-          <span>FYNX CORE</span>
-        </div>
-
-        <h2 class="fynx-grow__title">Everything you need to grow in finance.</h2>
-        <p class="fynx-grow__sub">
-          Build your edge with markets context, precision calculators, and a real trader journal — designed for clean execution
-          and long-term skill growth.
-        </p>
-
-        <a class="fynx-grow__cta" href="#tools">
-          <i class="fas fa-bolt"></i>
-          <span>Get Best in Finance</span>
-          <i class="fas fa-arrow-right" style="opacity:.8;"></i>
-        </a>
-      </div>
-
-      <div class="fynx-grow__right" aria-hidden="true">
-        <div class="fynx-grow__stack">
-          <div class="fynx-grow__glow"></div>
-
-          <!-- MARKETS -->
-          <div class="fynx-grow__card fynx-grow__card--markets">
-            <img src="assets/img/holidays.jpg" alt="Markets">
-            <div class="fynx-grow__meta">
-              <div class="fynx-grow__label">
-                <i class="fas fa-layer-group" style="opacity:.9;"></i>
-                <span>Markets</span>
-              </div>
-              <span class="fynx-grow__tag">Live Context</span>
-            </div>
-          </div>
-
-          <!-- CALCULATORS -->
-          <div class="fynx-grow__card fynx-grow__card--calc">
-            <img src="assets/img/calculators.jpg" alt="Calculators">
-            <div class="fynx-grow__meta">
-              <div class="fynx-grow__label">
-                <i class="fas fa-calculator" style="opacity:.9;"></i>
-                <span>Calculators</span>
-              </div>
-              <span class="fynx-grow__tag">Risk Precision</span>
-            </div>
-          </div>
-
-          <!-- JOURNAL -->
-          <div class="fynx-grow__card fynx-grow__card--journal">
-            <img src="assets/img/journal.jpg" alt="Trader Journal">
-            <div class="fynx-grow__meta">
-              <div class="fynx-grow__label">
-                <i class="fas fa-book" style="opacity:.9;"></i>
-                <span>Journal</span>
-              </div>
-              <span class="fynx-grow__tag">Track Growth</span>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Tools Section -->
-  <section class="tools-section" id="tools">
-    <h2 class="section-title">Trading Tools & Calculators</h2>
-    <div class="tools-grid">
-      <div class="tool-item" onclick="location.href='tools/position-size.html'">
-        <i class="fas fa-calculator"></i>
-        <h3>Position Size Calculator</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/risk-reward.html'">
-        <i class="fas fa-balance-scale"></i>
-        <h3>Risk/Reward Calculator</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/pip.html'">
-        <i class="fas fa-dollar-sign"></i>
-        <h3>Pip Value Calculator</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/correlation.html'">
-        <i class="fas fa-chart-area"></i>
-        <h3>Market Correlation</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/market-hours.html'">
-        <i class="fas fa-clock"></i>
-        <h3>Market Hours</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/economic-calendar.html'">
-        <i class="fas fa-calendar-alt"></i>
-        <h3>Economic Calendar</h3>
-      </div>
-    </div>
-  </section>
-
-  <!-- =========================
-       FAQ Section (KAST-style split)
-       Replace ONLY your FAQ section with this
-  ========================= -->
-  <section class="fynx-faq" id="faqs">
-    <div class="fynx-faq__wrap">
-      <div class="fynx-faq__left">
-        <h2 class="fynx-faq__title">FAQs</h2>
-      </div>
-
-      <div class="fynx-faq__right" role="list">
-        <!-- Item 1 -->
-        <div class="fynx-faq__item" role="listitem">
-          <button class="fynx-faq__q" type="button" aria-expanded="false">
-            <span>How does FYNX work?</span>
-            <span class="fynx-faq__icon" aria-hidden="true">+</span>
-          </button>
-          <div class="fynx-faq__a" hidden>
-            <p>
-              Create your free account, explore our learning resources, use powerful trading calculators,
-              and stay updated with real-time market news & tools — all designed to help you master trading
-              and investing step by step.
-            </p>
-          </div>
-        </div>
-
-        <!-- Item 2 -->
-        <div class="fynx-faq__item" role="listitem">
-          <button class="fynx-faq__q" type="button" aria-expanded="false">
-            <span>Why use FYNX tools & calculators?</span>
-            <span class="fynx-faq__icon" aria-hidden="true">+</span>
-          </button>
-          <div class="fynx-faq__a" hidden>
-            <p>
-              Our calculators (position size, risk/reward, pip value, etc.) help you manage risk precisely,
-              make smarter trades, avoid emotional decisions, and improve overall performance — completely free.
-            </p>
-          </div>
-        </div>
-
-        <!-- Item 3 -->
-        <div class="fynx-faq__item" role="listitem">
-          <button class="fynx-faq__q" type="button" aria-expanded="false">
-            <span>Is FYNX suitable for beginners?</span>
-            <span class="fynx-faq__icon" aria-hidden="true">+</span>
-          </button>
-          <div class="fynx-faq__a" hidden>
-            <p>
-              Yes — we offer beginner-friendly courses, simple tools, and clear explanations. Start with
-              Forex/Crypto 101 and basic calculators, then advance at your own pace with our structured learning path.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer>
-    <div class="footer-container">
-      <div class="footer-section">
-        <h3>Learn</h3>
-        <ul>
-          <li><a href="#">Forex Trading</a></li>
-          <li><a href="#">Crypto Trading</a></li>
-          <li><a href="#">Stock Market</a></li>
-          <li><a href="#">Trading Psychology</a></li>
-          <li><a href="#">Risk Management</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h3>Resources</h3>
-        <ul>
-          <li><a href="#tools">Trading Tools</a></li>
-          <li><a href="#">Market Analysis</a></li>
-          <li><a href="tools/economic-calendar.html">Economic Calendar</a></li>
-          <li><a href="#">Trading Glossary</a></li>
-          <li><a href="#">Quizzes</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h3>Community</h3>
-        <ul>
-          <li><a href="#">Forums</a></li>
-          <li><a href="#">Trading Ideas</a></li>
-          <li><a href="#">Success Stories</a></li>
-          <li><a href="https://elhamamini.cc/fynx-blog/index.html" target="_blank" rel="noopener">Blog</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h3>Company</h3>
-        <ul>
-          <li><a href="https://elhamamini.cc/FYNX-Site/index.html" target="_blank" rel="noopener">About Us</a></li>
-          <li><a href="https://elhamamini.cc/FYNX-Site/support.html" target="_blank" rel="noopener">Contact</a></li>
-          <li><a href="https://apps.apple.com/us/app/fynx-finance-world/id6752357210" target="_blank" rel="noopener">Download App</a></li>
-          <li><a href="https://elhamamini.cc/FYNX-Site/privacy.html" target="_blank" rel="noopener">Privacy Policy</a></li>
-          <li><a href="https://elhamamini.cc/FYNX-Site/terms.html" target="_blank" rel="noopener">Terms of Service</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="copyright">
-      © 2025 FYNX. All rights reserved.
-    </div>
-  </footer>
-
-  <!-- FYNX Download QR (Floating) -->
-  <a class="fynx-download" id="fynxDownload" href="https://apps.apple.com/us/app/fynx-finance-world/id6752357210" target="_blank" rel="noopener">
-    <div class="fynx-card">
-      <div class="fynx-aura"></div>
-      <div class="fynx-scan"></div>
-      <div class="fynx-top">
-        <div class="fynx-badge">FYNX</div>
-        <button class="fynx-close" id="fynxClose" aria-label="Hide download widget" type="button">×</button>
-      </div>
-      <div class="fynx-content">
-        <div class="fynx-qr" id="fynxQr"></div>
-        <div class="fynx-text">
-          <div class="fynx-title">Download FYNX Now</div>
-          <div class="fynx-sub">Scan or click to install</div>
-          <div class="fynx-pill">App Store</div>
-        </div>
-      </div>
-    </div>
-  </a>
-
-  <!-- QR library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="script.js"></script>
-
-  <!-- ✅ FIX: FAQ JS (KAST-style) — replaces the wrong old FAQ script -->
   <script>
-  (function(){
-    const root = document.querySelector('.fynx-faq');
-    if(!root) return;
+    // =========================
+    // THEME (APPLY ONLY) — synced across pages via ONE key: fynx_theme
+    // =========================
+    const THEME_KEY = "fynx_theme";
+    (function applyThemeFromStorage(){
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === "dark") document.body.classList.add("dark-mode");
+      else document.body.classList.remove("dark-mode");
+    })();
 
-    const items = Array.from(root.querySelectorAll('.fynx-faq__item'));
+    // =========================
+    // NAV ROUTING
+    // =========================
+    const navItems = document.querySelectorAll(".nav-item");
+    const viewPages = {
+      home: "home.html",
+      journal: "journal.html",
+      calculator: "calculator.html",
+      news: "news.html",
+      calendar: "calendar.html",
+      profile: "profile.html"
+    };
 
-    function closeItem(item){
-      const btn = item.querySelector('.fynx-faq__q');
-      const ans = item.querySelector('.fynx-faq__a');
-      item.classList.remove('is-open');
-      btn.setAttribute('aria-expanded', 'false');
-      ans.style.maxHeight = '0px';
-      ans.hidden = true;
-    }
-
-    function openItem(item){
-      const btn = item.querySelector('.fynx-faq__q');
-      const ans = item.querySelector('.fynx-faq__a');
-      item.classList.add('is-open');
-      btn.setAttribute('aria-expanded', 'true');
-      ans.hidden = false;
-      ans.style.maxHeight = ans.scrollHeight + 'px';
-    }
-
-    items.forEach(item => {
-      const ans = item.querySelector('.fynx-faq__a');
-      ans.hidden = true;
-      ans.style.maxHeight = '0px';
-
-      item.querySelector('.fynx-faq__q').addEventListener('click', () => {
-        const isOpen = item.classList.contains('is-open');
-        items.forEach(closeItem);
-        if(!isOpen) openItem(item);
+    navItems.forEach(item => {
+      item.addEventListener("click", () => {
+        const viewName = item.getAttribute("data-view");
+        if (viewPages[viewName]) window.location.href = viewPages[viewName];
       });
     });
 
-    window.addEventListener('resize', () => {
-      const openAns = root.querySelector('.fynx-faq__item.is-open .fynx-faq__a');
-      if(openAns && !openAns.hidden){
-        openAns.style.maxHeight = openAns.scrollHeight + 'px';
+    // =========================
+    // DATE CHIP
+    // =========================
+    const dateChip = document.getElementById("dateChip");
+    dateChip.textContent = new Date().toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric", year:"numeric" });
+
+    // =========================
+    // Mini pulse timestamp (placeholder)
+    // =========================
+    document.getElementById("pulseUpdated").textContent =
+      `Updated ${new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
+
+    // =============================================================================
+    // ✅ FIX #2: PROFILE NAME always shows from username (whatever user sets)
+    // We read common keys + JSON profile objects used by profile pages.
+    // =============================================================================
+    const NAME_KEYS = [
+      "fynx_profile_name",
+      "fynx_username",
+      "username",
+      "profile_name",
+      "user_name",
+      "fynx_name",
+      "fynxUserName",
+      "displayName",
+      "name"
+    ];
+    const PROFILE_JSON_KEYS = ["fynx_profile", "profile", "fynx_user", "userProfile", "fynx_account"];
+
+    function pickNameFromJson(obj){
+      if (!obj || typeof obj !== "object") return null;
+      const candidates = [
+        obj.username, obj.userName, obj.name, obj.displayName, obj.fullName,
+        obj.profile?.username, obj.profile?.name, obj.profile?.displayName
+      ];
+      for (const c of candidates){
+        if (c && String(c).trim()) return String(c).trim();
       }
-    });
-  })();
-  </script>
-
-  <!-- ✅ NEW: Resources dropdown interaction -->
-  <script>
-  (function(){
-    const menu = document.getElementById('resourcesMenu');
-    const toggle = document.getElementById('resourcesToggle');
-    const panel = document.getElementById('resourcesPanel');
-    if(!menu || !toggle || !panel) return;
-
-    let closeTimer = null;
-    const canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-    function openMenu(){
-      clearTimeout(closeTimer);
-      menu.classList.add('open');
-      toggle.setAttribute('aria-expanded', 'true');
-      panel.setAttribute('aria-hidden', 'false');
+      return null;
     }
 
-    function closeMenu(){
-      menu.classList.remove('open');
-      toggle.setAttribute('aria-expanded', 'false');
-      panel.setAttribute('aria-hidden', 'true');
-    }
-
-    toggle.addEventListener('click', function(e){
-      e.preventDefault();
-      if(menu.classList.contains('open')) closeMenu();
-      else openMenu();
-    });
-
-    if(canHover){
-      menu.addEventListener('mouseenter', openMenu);
-      menu.addEventListener('mouseleave', function(){
-        closeTimer = setTimeout(closeMenu, 120);
-      });
-    }
-
-    document.addEventListener('click', function(e){
-      if(!menu.contains(e.target)) closeMenu();
-    });
-
-    document.addEventListener('keydown', function(e){
-      if(e.key === 'Escape') closeMenu();
-    });
-  })();
-  </script>
-
-  <!-- ✅ FIX: Desktop hover subnavs (REAL FIX) -->
-  <script>
-  (function(){
-    // Only on desktop hover devices. Mobile keeps your click behavior.
-    const canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    if(!canHover) return;
-
-    const homeToggle = document.getElementById('homeToggle');
-    const learnToggle = document.getElementById('learnToggle');
-    const toolsToggle = document.getElementById('toolsToggle');
-    const newsToggle = document.getElementById('newsToggle');
-
-    const homeSubnav = document.getElementById('homeSubnav');
-    const learnSubnav = document.getElementById('learnSubnav');
-    const toolsSubnav = document.getElementById('toolsSubnav');
-    const newsSubnav = document.getElementById('newsSubnav');
-
-    const marketsToggle = document.getElementById('marketsToggle');
-    const homeMarketsSubnav = document.getElementById('homeMarketsSubnav');
-
-    const panels = [homeSubnav, learnSubnav, toolsSubnav, newsSubnav, homeMarketsSubnav].filter(Boolean);
-
-    function show(el){
-      if(!el) return;
-      el.style.display = 'block';
-      el.style.opacity = '1';
-      el.style.visibility = 'visible';
-      el.style.pointerEvents = 'auto';
-      el.setAttribute('aria-hidden', 'false');
-    }
-
-    function hide(el){
-      if(!el) return;
-      el.style.opacity = '';
-      el.style.visibility = '';
-      el.style.pointerEvents = '';
-      el.style.display = '';
-      el.setAttribute('aria-hidden', 'true');
-    }
-
-    function hideAll(except){
-      panels.forEach(p => {
-        if(p && p !== except) hide(p);
-      });
-    }
-
-    // Small delay so the user can move mouse from link -> panel without it closing.
-    function hoverPair(triggerEl, panelEl, onOpen){
-      if(!triggerEl || !panelEl) return;
-
-      let t = null;
-      const OPEN_DELAY = 0;
-      const CLOSE_DELAY = 140;
-
-      const open = () => {
-        clearTimeout(t);
-        t = setTimeout(() => {
-          hideAll(panelEl);
-          show(panelEl);
-          if(typeof onOpen === 'function') onOpen();
-        }, OPEN_DELAY);
-      };
-
-      const close = () => {
-        clearTimeout(t);
-        t = setTimeout(() => {
-          // Only close if mouse is not over trigger or panel
-          hide(panelEl);
-        }, CLOSE_DELAY);
-      };
-
-      triggerEl.addEventListener('mouseenter', open);
-      triggerEl.addEventListener('mouseleave', close);
-
-      panelEl.addEventListener('mouseenter', () => {
-        clearTimeout(t);
-        show(panelEl);
-      });
-      panelEl.addEventListener('mouseleave', close);
-    }
-
-    // Prevent jump to #hash when hovering (but allow normal click nav)
-    function preventHashOnHover(a){
-      if(!a) return;
-      a.addEventListener('mouseenter', (e) => {
-        // nothing needed here; just keeping behavior stable
-      });
-    }
-
-    preventHashOnHover(homeToggle);
-    preventHashOnHover(learnToggle);
-    preventHashOnHover(toolsToggle);
-    preventHashOnHover(newsToggle);
-
-    hoverPair(homeToggle, homeSubnav, () => { hide(homeMarketsSubnav); });
-    hoverPair(learnToggle, learnSubnav, () => { hide(homeMarketsSubnav); });
-    hoverPair(toolsToggle, toolsSubnav, () => { hide(homeMarketsSubnav); });
-    hoverPair(newsToggle, newsSubnav, () => { hide(homeMarketsSubnav); });
-
-    // Markets submenu inside Home
-    if(marketsToggle && homeMarketsSubnav){
-      let t2 = null;
-      const CLOSE_DELAY = 140;
-
-      const openMarkets = () => {
-        clearTimeout(t2);
-        show(homeSubnav);      // keep Home open
-        show(homeMarketsSubnav);
-      };
-
-      const closeMarkets = () => {
-        clearTimeout(t2);
-        t2 = setTimeout(() => {
-          hide(homeMarketsSubnav);
-        }, CLOSE_DELAY);
-      };
-
-      marketsToggle.addEventListener('mouseenter', openMarkets);
-      marketsToggle.addEventListener('mouseleave', closeMarkets);
-
-      homeMarketsSubnav.addEventListener('mouseenter', () => {
-        clearTimeout(t2);
-        show(homeSubnav);
-        show(homeMarketsSubnav);
-      });
-      homeMarketsSubnav.addEventListener('mouseleave', closeMarkets);
-    }
-
-    // If you hover anywhere else on the page, close all
-    document.addEventListener('mousemove', (e) => {
-      const withinHeader = e.target.closest && e.target.closest('#header');
-      const withinPanels = e.target.closest && (
-        e.target.closest('#homeSubnav') ||
-        e.target.closest('#learnSubnav') ||
-        e.target.closest('#toolsSubnav') ||
-        e.target.closest('#newsSubnav') ||
-        e.target.closest('#homeMarketsSubnav')
-      );
-      if(!withinHeader && !withinPanels){
-        hideAll(null);
+    function getProfileName(){
+      // 1) direct keys
+      for (const k of NAME_KEYS){
+        const v = localStorage.getItem(k);
+        if (v && String(v).trim().length > 0) return String(v).trim();
       }
-    });
-  })();
+      // 2) JSON profile blobs
+      for (const k of PROFILE_JSON_KEYS){
+        const raw = localStorage.getItem(k);
+        if (!raw) continue;
+        try{
+          const obj = JSON.parse(raw);
+          const n = pickNameFromJson(obj);
+          if (n) return n;
+        }catch(e){}
+      }
+      return null;
+    }
+
+    function cleanDisplayName(full){
+      if (!full) return null;
+      let s = String(full).trim();
+      // remove trailing punctuation so we don't show "Elham.."
+      s = s.replace(/[.!,;:]+$/g, "").trim();
+      return s || null;
+    }
+
+    function firstName(full){
+      if (!full) return null;
+      const parts = String(full).trim().split(/\s+/);
+      return parts[0] || full;
+    }
+
+    function getDayGreeting(h){
+      if (h >= 5 && h < 12) return "Good morning";
+      if (h >= 12 && h < 17) return "Good afternoon";
+      if (h >= 17 && h < 21) return "Good evening";
+      return "Good night";
+    }
+
+    function safeTZLabel(){
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || "Local";
+    }
+
+    function setAvatarFromName(name){
+      const el = document.getElementById("avatarInitials");
+      if (!el) return;
+
+      const n = cleanDisplayName(name || "");
+      if (!n){
+        el.textContent = "FX";
+        return;
+      }
+      const parts = n.split(/\s+/).filter(Boolean);
+      let initials = parts[0]?.[0] || "F";
+      if (parts.length > 1) initials += parts[parts.length-1]?.[0] || "";
+      el.textContent = initials.toUpperCase();
+    }
+
+    function renderGreeting(){
+      const greetEl = document.getElementById("greetingText");
+      const metaEl = document.getElementById("greetingMeta");
+
+      const rawName = getProfileName();
+      const displayName = cleanDisplayName(rawName);
+      const fn = cleanDisplayName(firstName(displayName)) || "Trader";
+
+      setAvatarFromName(displayName);
+
+      const d = new Date();
+      const g = getDayGreeting(d.getHours());
+
+      const timeStr = d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+      const tz = safeTZLabel();
+
+      greetEl.textContent = `${g}, ${fn}.`;
+      metaEl.textContent = `Local time ${timeStr} — ${tz}`;
+    }
+
+    // =============================================================================
+    // DAILY ROTATING MESSAGE (100 lines) — changes once per day
+    // =============================================================================
+    const DAILY_LINES = [
+      "Your edge is discipline, not luck.",
+      "Protect capital first. Opportunity comes second.",
+      "A clean plan beats a loud opinion.",
+      "Small mistakes compound. Fix them early.",
+      "Patience is a position.",
+      "Trade the plan. Not the mood.",
+      "Consistency is the real flex.",
+      "If it’s not clear, it’s a no.",
+      "Win the process, and results follow.",
+      "You don’t need more trades — you need better trades.",
+      "Risk small. Think big.",
+      "Momentum is earned, not gifted.",
+      "Reduce noise. Increase signal.",
+      "The chart rewards calm minds.",
+      "One good setup can pay for a week of boredom.",
+      "You are paid for waiting.",
+      "Precision beats speed.",
+      "A+ setups only. Everything else is distraction.",
+      "Cut the impulse. Keep the structure.",
+      "A stop-loss is self-respect.",
+      "No revenge trades. Ever.",
+      "Your rules are your freedom.",
+      "Protect your sleep. Protect your decisions.",
+      "Track behavior, not just P&L.",
+      "You can be right and still lose — manage risk.",
+      "The goal is repeatable execution.",
+      "Trade less. Review more.",
+      "Never confuse activity with progress.",
+      "If you can’t explain it, you can’t trade it.",
+      "Your best trade is often no trade.",
+      "Shrink drawdowns. Grow confidence.",
+      "Confidence comes from receipts: journaling.",
+      "If you hesitate, size down.",
+      "Structure first. Entry second.",
+      "Stop hunting — start selecting.",
+      "Let price come to you.",
+      "Avoid chaos sessions. Trade your window.",
+      "Your future self is built by today’s choices.",
+      "Simplicity scales.",
+      "Respect the range. Attack the breakout.",
+      "Protect the downside. Upside takes care of itself.",
+      "Don’t predict. React with rules.",
+      "Your system is your identity.",
+      "Be ruthless with weak setups.",
+      "The market pays for clarity.",
+      "A plan without risk is a fantasy.",
+      "When unsure, do nothing.",
+      "Boredom is a sign you’re doing it right.",
+      "Execution > motivation.",
+      "Your edge is in the boring details.",
+      "Never increase risk to fix a mistake.",
+      "Trust your rules — not your feelings.",
+      "Focus is wealth.",
+      "Don’t chase — confirm.",
+      "Reduce positions when emotions rise.",
+      "A clean entry starts with a clean mind.",
+      "You only need one good trade per day.",
+      "If it’s not in your model, it’s not for you.",
+      "Protect your mental capital.",
+      "One rule broken can erase ten good days.",
+      "Track mistakes like you track profits.",
+      "The market punishes ego.",
+      "Be systematic. Be patient.",
+      "Stop trying to be a hero.",
+      "The goal is to survive and compound.",
+      "Take what the market gives — not what you want.",
+      "Price is the final truth.",
+      "Setup quality beats win rate.",
+      "If you can’t manage it, don’t enter it.",
+      "Your watchlist is your battlefield.",
+      "Speed kills precision.",
+      "Let the setup breathe.",
+      "Don’t trade to feel something.",
+      "Trade to execute something.",
+      "The less you force, the more you win.",
+      "One mistake is information. Two is a pattern.",
+      "Today is for execution, not experimentation.",
+      "Keep the rules. Remove the drama.",
+      "Be a sniper, not a machine gun.",
+      "Your risk is your responsibility.",
+      "A calm trader is a profitable trader.",
+      "Journal the why, not just the what.",
+      "One percent improvements compound fast.",
+      "When you win, stay humble.",
+      "When you lose, stay logical.",
+      "Trend or range — choose before you act.",
+      "Wait for confirmation. Then commit.",
+      "Trade the level, not the story.",
+      "If you can’t hold it, don’t take it.",
+      "Your system should feel boring.",
+      "Don’t marry positions.",
+      "Let winners work. Cut losers fast.",
+      "You don’t need perfect — you need repeatable.",
+      "The best traders say “no” most of the time.",
+      "Respect liquidity. Respect timing.",
+      "One clean session is enough.",
+      "Focus on expectancy.",
+      "Protect your account like it’s a business.",
+      "Your habits are your strategy.",
+      "Clarity is the currency of performance."
+    ];
+
+    function getDayStamp(d){
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function setDailyLine(){
+      const el = document.getElementById("dailyLine");
+      if (!el) return;
+
+      const stamp = getDayStamp(new Date());
+      let sum = 0;
+      for (let i = 0; i < stamp.length; i++) sum += stamp.charCodeAt(i) * (i + 1);
+
+      const idx = sum % DAILY_LINES.length;
+      el.innerHTML = `<span>Daily:</span> ${DAILY_LINES[idx] || "Stay sharp. Stay disciplined."}`;
+    }
+
+    // =============================================================================
+    // MARKET HOURS (Real computation) + more “alive” UI (badge, dot, progress)
+    // =============================================================================
+    const SESSIONS = {
+      London:   { tz: "Europe/London",      open: "08:00", close: "17:00" },
+      NewYork:  { tz: "America/New_York",   open: "08:00", close: "17:00" },
+      Sydney:   { tz: "Australia/Sydney",   open: "22:00", close: "07:00" },
+      Asia:     { tz: "Asia/Tokyo",         open: "00:00", close: "09:00" }
+    };
+
+    function parseHHMM(s){
+      const [hh, mm] = s.split(":").map(Number);
+      return { hh, mm };
+    }
+
+    function zonedParts(date, timeZone){
+      const fmt = new Intl.DateTimeFormat("en-US", {
+        timeZone,
+        year:"numeric", month:"2-digit", day:"2-digit",
+        hour:"2-digit", minute:"2-digit", second:"2-digit",
+        hour12:false
+      });
+      const parts = fmt.formatToParts(date);
+      const map = {};
+      for (const p of parts) map[p.type] = p.value;
+      return {
+        year: Number(map.year),
+        month: Number(map.month),
+        day: Number(map.day),
+        hour: Number(map.hour),
+        minute: Number(map.minute),
+        second: Number(map.second)
+      };
+    }
+
+    function makeZonedDateLike(dateNow, timeZone, hh, mm){
+      const p = zonedParts(dateNow, timeZone);
+      const approx = new Date(Date.UTC(p.year, p.month - 1, p.day, hh, mm, 0));
+      const pp = zonedParts(approx, timeZone);
+
+      const targetMinutes = hh * 60 + mm;
+      const gotMinutes = pp.hour * 60 + pp.minute;
+
+      const dayDiff =
+        (pp.year - p.year) * 525600 +
+        (pp.month - p.month) * 43200 +
+        (pp.day - p.day) * 1440;
+
+      const minuteDiff = (gotMinutes - targetMinutes) + dayDiff;
+      return new Date(approx.getTime() - minuteDiff * 60 * 1000);
+    }
+
+    function formatDuration(ms){
+      const s = Math.max(0, Math.floor(ms / 1000));
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      if (h <= 0) return `${m}m`;
+      return `${h}h ${m}m`;
+    }
+
+    function computeSession(cfg, now){
+      const { tz, open, close } = cfg;
+      const o = parseHHMM(open);
+      const c = parseHHMM(close);
+
+      const openToday = makeZonedDateLike(now, tz, o.hh, o.mm);
+      let closeToday = makeZonedDateLike(now, tz, c.hh, c.mm);
+
+      // overnight session if close <= open
+      if (c.hh * 60 + c.mm <= o.hh * 60 + o.mm) {
+        closeToday = new Date(closeToday.getTime() + 24 * 60 * 60 * 1000);
+        if (now < openToday) {
+          return {
+            openAt: new Date(openToday.getTime() - 24 * 60 * 60 * 1000),
+            closeAt: new Date(closeToday.getTime() - 24 * 60 * 60 * 1000)
+          };
+        }
+      }
+      return { openAt: openToday, closeAt: closeToday };
+    }
+
+    function setSessionUI(key, isOpen, badgeText, lineText, progressPct){
+      const dot = document.getElementById(`dot${key}`);
+      const badge = document.getElementById(`badge${key}`);
+      const time = document.getElementById(`time${key}`);
+      const fill = document.getElementById(`fill${key}`);
+      const card = document.getElementById(`card${key}`);
+
+      dot.classList.remove("open");
+      badge.classList.remove("open");
+      card.classList.remove("open");
+
+      if (isOpen){
+        dot.classList.add("open");
+        badge.classList.add("open");
+        card.classList.add("open");
+      }
+
+      badge.textContent = badgeText;
+      time.textContent = lineText;
+      fill.style.width = `${Math.max(0, Math.min(100, progressPct || 0))}%`;
+    }
+
+    function updateMarketHours(){
+      const now = new Date();
+      document.getElementById("mhUpdated").textContent =
+        `Updated ${now.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
+
+      // Helper
+      function updateOne(labelKey, cfg){
+        const w = computeSession(cfg, now);
+        const isOpen = (now >= w.openAt && now < w.closeAt);
+
+        const total = (w.closeAt - w.openAt);
+        const elapsed = Math.max(0, Math.min(total, now - w.openAt));
+        const pct = total > 0 ? (elapsed / total) * 100 : 0;
+
+        if (isOpen){
+          setSessionUI(labelKey, true, "OPEN", `Closes in ${formatDuration(w.closeAt - now)}`, pct);
+        } else {
+          let nextOpen = w.openAt;
+          if (now >= w.closeAt) nextOpen = new Date(w.openAt.getTime() + 24*60*60*1000);
+          setSessionUI(labelKey, false, "CLOSED", `Opens in ${formatDuration(nextOpen - now)}`, 0);
+        }
+      }
+
+      updateOne("London", SESSIONS.London);
+      updateOne("NewYork", SESSIONS.NewYork);
+      updateOne("Sydney", SESSIONS.Sydney);
+
+      // Asia badge uses PRE-MARKET wording when closed (like your reference)
+      (function updateAsia(){
+        const cfg = SESSIONS.Asia;
+        const w = computeSession(cfg, now);
+        const isOpen = (now >= w.openAt && now < w.closeAt);
+        const total = (w.closeAt - w.openAt);
+        const elapsed = Math.max(0, Math.min(total, now - w.openAt));
+        const pct = total > 0 ? (elapsed / total) * 100 : 0;
+
+        if (isOpen){
+          setSessionUI("Asia", true, "OPEN", `Closes in ${formatDuration(w.closeAt - now)}`, pct);
+        } else {
+          let nextOpen = w.openAt;
+          if (now >= w.closeAt) nextOpen = new Date(w.openAt.getTime() + 24*60*60*1000);
+
+          const dot = document.getElementById("dotAsia");
+          dot.classList.remove("open");
+          document.getElementById("badgeAsia").classList.remove("open");
+          document.getElementById("cardAsia").classList.remove("open");
+
+          document.getElementById("badgeAsia").textContent = "PRE-MARKET";
+          document.getElementById("timeAsia").textContent = `Opens in ${formatDuration(nextOpen - now)}`;
+          document.getElementById("fillAsia").style.width = "0%";
+        }
+      })();
+    }
+
+    // =============================================================================
+    // ✅ LIVE MARKET MOVING STRIP (Real data) — TradingView (refresh every 5 min)
+    // =============================================================================
+    function tvTheme(){
+      return document.body.classList.contains("dark-mode") ? "dark" : "light";
+    }
+
+    function mountTickerTape(){
+      const wrap = document.getElementById("tvTapeWrap");
+      if (!wrap) return;
+
+      wrap.innerHTML = "";
+
+      const holder = document.createElement("div");
+      holder.className = "tradingview-widget-container";
+      const widgetDiv = document.createElement("div");
+      widgetDiv.className = "tradingview-widget-container__widget";
+      holder.appendChild(widgetDiv);
+
+      const script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
+      script.async = true;
+
+      script.innerHTML = JSON.stringify({
+        symbols: [
+          { proName: "FOREXCOM:SPXUSD", title: "S&P 500" },
+          { proName: "FOREXCOM:DJI", title: "Dow" },
+          { proName: "NASDAQ:NDX", title: "Nasdaq 100" },
+          { proName: "FX_IDC:EURUSD", title: "EUR/USD" },
+          { proName: "FX_IDC:GBPUSD", title: "GBP/USD" },
+          { proName: "FX_IDC:USDJPY", title: "USD/JPY" },
+          { proName: "OANDA:XAUUSD", title: "Gold" },
+          { proName: "BINANCE:BTCUSDT", title: "BTC" }
+        ],
+        showSymbolLogo: false,
+        isTransparent: true,
+        displayMode: "adaptive",
+        colorTheme: tvTheme(),
+        locale: "en"
+      });
+
+      holder.appendChild(script);
+      wrap.appendChild(holder);
+    }
+
+    // =============================================================================
+    // ✅ LIVE NEWS (updates every 5 min) — clickable → opens source
+    // NOTE: This uses Google News RSS via an open CORS proxy (AllOrigins raw).
+    // =============================================================================
+    const NEWS_REFRESH_MS = 5 * 60 * 1000;
+    const NEWS_MAX_ITEMS = 8;
+
+    // You can tune the query anytime:
+    const RSS_URL = "https://news.google.com/rss/search?q=market+moving+news+forex+stocks&hl=en-US&gl=US&ceid=US:en";
+
+    function fmtTimeAgo(date){
+      if (!(date instanceof Date) || isNaN(date.getTime())) return "";
+      const diff = Date.now() - date.getTime();
+      const m = Math.floor(diff / 60000);
+      if (m < 1) return "now";
+      if (m < 60) return `${m}m ago`;
+      const h = Math.floor(m / 60);
+      if (h < 24) return `${h}h ago`;
+      const d = Math.floor(h / 24);
+      return `${d}d ago`;
+    }
+
+    function safeText(s){
+      return String(s || "").replace(/\s+/g, " ").trim();
+    }
+
+    function parseGoogleNewsSource(titleText){
+      // Google News RSS titles often: "Headline - Source"
+      const t = safeText(titleText);
+      const parts = t.split(" - ");
+      if (parts.length >= 2) return safeText(parts[parts.length - 1]);
+      return "News";
+    }
+
+    async function fetchRssXml(url){
+      const proxied = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      const res = await fetch(proxied, { cache: "no-store" });
+      if (!res.ok) throw new Error("Failed to fetch feed");
+      return await res.text();
+    }
+
+    function renderNews(items){
+      const list = document.getElementById("newsList");
+      if (!list) return;
+
+      if (!items || !items.length){
+        list.innerHTML = `<div class="news-empty">No headlines right now.</div>`;
+        return;
+      }
+
+      list.innerHTML = items.map(it => {
+        const title = safeText(it.title);
+        const link = safeText(it.link);
+        const source = safeText(it.source || "News");
+        const ago = it.pubDate ? fmtTimeAgo(it.pubDate) : "";
+
+        return `
+          <a class="news-item" href="${link}" target="_blank" rel="noopener">
+            <div class="news-main">
+              <div class="news-source">
+                <span class="badge">${source}</span>
+              </div>
+              <div class="news-title">${title}</div>
+            </div>
+            <div class="news-time">${ago}</div>
+          </a>
+        `;
+      }).join("");
+    }
+
+    async function refreshNews(){
+      const upd = document.getElementById("newsUpdated");
+      const liveUpd = document.getElementById("liveUpdated");
+      const now = new Date();
+
+      if (upd) upd.textContent = `Updated ${now.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
+      if (liveUpd) liveUpd.textContent = `Updated ${now.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
+
+      try{
+        const xml = await fetchRssXml(RSS_URL);
+        const doc = new DOMParser().parseFromString(xml, "text/xml");
+        const nodes = Array.from(doc.querySelectorAll("item")).slice(0, NEWS_MAX_ITEMS);
+
+        const items = nodes.map(n => {
+          const title = n.querySelector("title")?.textContent || "";
+          const link = n.querySelector("link")?.textContent || "";
+          const pub = n.querySelector("pubDate")?.textContent || "";
+          const pubDate = pub ? new Date(pub) : null;
+
+          return {
+            title: safeText(title),
+            link: safeText(link),
+            source: parseGoogleNewsSource(title),
+            pubDate
+          };
+        }).filter(x => x.title && x.link);
+
+        renderNews(items);
+      }catch(e){
+        const list = document.getElementById("newsList");
+        if (list) list.innerHTML = `<div class="news-empty">News feed unavailable right now. Try again.</div>`;
+      }
+    }
+
+    // =============================================================================
+    // INIT + LIVE UPDATE
+    // =============================================================================
+    function initHome(){
+      renderGreeting();
+      setDailyLine();
+      updateMarketHours();
+
+      // mount real market tape + news
+      mountTickerTape();
+      refreshNews();
+
+      // "alive" updates (clock/session)
+      setInterval(() => {
+        renderGreeting();
+        updateMarketHours();
+      }, 20 * 1000);
+
+      // refresh ticker/news every 5 minutes
+      setInterval(() => {
+        mountTickerTape();
+        refreshNews();
+      }, NEWS_REFRESH_MS);
+
+      // if user toggles theme on another page and comes back, re-mount ticker on visibility
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden){
+          mountTickerTape();
+        }
+      });
+    }
+
+    initHome();
   </script>
 </body>
 </html>
-
+```
