@@ -729,7 +729,7 @@
                   <div class="card" style="grid-column: span 12;">
                     <div class="hd">
                       <div>
-                        <b>Welcome back, Trader</b>
+                        <b id="welcomeTitle">Welcome back, Trader</b>
                         <small>Here’s your performance snapshot</small>
                       </div>
                       <div class="badge">Journal v1</div>
@@ -942,6 +942,95 @@
       document.body.classList.toggle("dark-mode", t === "dark");
     }
     applySavedTheme();
+
+    /* =========================
+       ✅ PROFILE NAME + AVATAR (same as Home)
+    ========================= */
+    const NAME_KEYS = [
+      "fynx_profile_name",
+      "fynx_username",
+      "username",
+      "profile_name",
+      "user_name",
+      "fynx_name",
+      "fynxUserName",
+      "displayName",
+      "name"
+    ];
+    const PROFILE_JSON_KEYS = ["fynx_profile", "profile", "fynx_user", "userProfile", "fynx_account"];
+
+    function pickNameFromJson(obj){
+      if (!obj || typeof obj !== "object") return null;
+      const candidates = [
+        obj.username, obj.userName, obj.name, obj.displayName, obj.fullName,
+        obj.profile?.username, obj.profile?.name, obj.profile?.displayName
+      ];
+      for (const c of candidates){
+        if (c && String(c).trim()) return String(c).trim();
+      }
+      return null;
+    }
+
+    function getProfileName(){
+      for (const k of NAME_KEYS){
+        const v = localStorage.getItem(k);
+        if (v && String(v).trim().length > 0) return String(v).trim();
+      }
+      for (const k of PROFILE_JSON_KEYS){
+        const raw = localStorage.getItem(k);
+        if (!raw) continue;
+        try{
+          const obj = JSON.parse(raw);
+          const n = pickNameFromJson(obj);
+          if (n) return n;
+        }catch(e){}
+      }
+      return null;
+    }
+
+    function cleanDisplayName(full){
+      if (!full) return null;
+      let s = String(full).trim();
+      s = s.replace(/[.!,;:]+$/g, "").trim();
+      return s || null;
+    }
+
+    function firstName(full){
+      if (!full) return null;
+      const parts = String(full).trim().split(/\s+/);
+      return parts[0] || full;
+    }
+
+    function setAvatarFromName(name){
+      const el = document.getElementById("avatar");
+      if (!el) return;
+
+      const n = cleanDisplayName(name || "");
+      if (!n){
+        el.textContent = "FX";
+        return;
+      }
+      const parts = n.split(/\s+/).filter(Boolean);
+      let initials = parts[0]?.[0] || "F";
+      if (parts.length > 1) initials += parts[parts.length-1]?.[0] || "";
+      el.textContent = initials.toUpperCase();
+    }
+
+    function renderWelcome(){
+      const titleEl = document.getElementById("welcomeTitle");
+      const rawName = getProfileName();
+      const displayName = cleanDisplayName(rawName);
+      const fn = cleanDisplayName(firstName(displayName)) || "Trader";
+
+      setAvatarFromName(displayName);
+
+      if (titleEl){
+        titleEl.textContent = `Welcome back, ${fn}`;
+      }
+    }
+
+    // run once immediately
+    renderWelcome();
 
     /* =========================
        OUTER NAV (normal pages)
@@ -1350,7 +1439,8 @@
     auth.onAuthStateChanged((user) => {
       if(!user){
         currentUid = null;
-        avatar.textContent = "FX";
+        // keep name/initials from profile (if exists)
+        renderWelcome();
         modeText.textContent = "Guest mode (view only) — login to save";
         loginNote.style.display = "none";
         state.trades = demoTrades;
@@ -1359,11 +1449,14 @@
         return;
       }
       currentUid = user.uid;
-      avatar.textContent = "ME";
+      // keep name/initials from profile (if exists)
+      renderWelcome();
       modeText.textContent = "Live mode — saving to Firestore";
       attachTradesListener();
     });
   </script>
+
+  <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
+  <script src="fynx-usercard.js"></script>
 </body>
 </html>
-```
