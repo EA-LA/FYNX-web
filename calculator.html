@@ -589,6 +589,86 @@
     applySavedTheme();
 
     /* =========================
+       ✅ PROFILE NAME + AVATAR (same as Home)
+    ========================= */
+    const NAME_KEYS = [
+      "fynx_profile_name",
+      "fynx_username",
+      "username",
+      "profile_name",
+      "user_name",
+      "fynx_name",
+      "fynxUserName",
+      "displayName",
+      "name"
+    ];
+    const PROFILE_JSON_KEYS = ["fynx_profile", "profile", "fynx_user", "userProfile", "fynx_account"];
+
+    function pickNameFromJson(obj){
+      if (!obj || typeof obj !== "object") return null;
+      const candidates = [
+        obj.username, obj.userName, obj.name, obj.displayName, obj.fullName,
+        obj.profile?.username, obj.profile?.name, obj.profile?.displayName
+      ];
+      for (const c of candidates){
+        if (c && String(c).trim()) return String(c).trim();
+      }
+      return null;
+    }
+
+    function getProfileName(){
+      for (const k of NAME_KEYS){
+        const v = localStorage.getItem(k);
+        if (v && String(v).trim().length > 0) return String(v).trim();
+      }
+      for (const k of PROFILE_JSON_KEYS){
+        const raw = localStorage.getItem(k);
+        if (!raw) continue;
+        try{
+          const obj = JSON.parse(raw);
+          const n = pickNameFromJson(obj);
+          if (n) return n;
+        }catch(e){}
+      }
+      return null;
+    }
+
+    function cleanDisplayName(full){
+      if (!full) return null;
+      let s = String(full).trim();
+      s = s.replace(/[.!,;:]+$/g, "").trim();
+      return s || null;
+    }
+
+    function setAvatarFromName(name){
+      const el = document.querySelector(".avatar");
+      if (!el) return;
+
+      const n = cleanDisplayName(name || "");
+      if (!n){
+        el.textContent = "FX";
+        return;
+      }
+      const parts = n.split(/\s+/).filter(Boolean);
+      let initials = parts[0]?.[0] || "F";
+      if (parts.length > 1) initials += parts[parts.length-1]?.[0] || "";
+      el.textContent = initials.toUpperCase();
+    }
+
+    function renderAvatar(){
+      const rawName = getProfileName();
+      const displayName = cleanDisplayName(rawName);
+      setAvatarFromName(displayName);
+    }
+
+    renderAvatar();
+  </script>
+
+  <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
+  <script src="fynx-usercard.js"></script>
+
+  <script>
+    /* =========================
        TOOLS
     ========================= */
     const tools = [
@@ -693,4 +773,3 @@
   </script>
 </body>
 </html>
-
