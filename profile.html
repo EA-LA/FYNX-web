@@ -332,6 +332,18 @@
       white-space:nowrap;
     }
 
+    /* ✅ NEW: description display (no style changes elsewhere) */
+    .profile-desc{
+      font-size:13px;
+      color: var(--muted);
+      font-weight:800;
+      margin-top:-6px;
+      margin-bottom:12px;
+      line-height:1.4;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
     .profile-stats{
       display:grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -363,17 +375,8 @@
       margin:0;
     }
 
-    .hint{
-      margin: 12px 18px 18px;
-      padding:12px 12px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background: color-mix(in oklab, var(--surface) 90%, var(--surface-2));
-      color: var(--muted);
-      font-size:12px;
-      line-height:1.5;
-      font-weight:800;
-    }
+    /* ✅ FIX 1: remove "Stats load..." hint box (kept style, just hidden) */
+    .hint{ display:none; }
 
     .settings-section-title{
       font-size:15px;
@@ -493,6 +496,26 @@
       border-color: color-mix(in oklab, var(--text) 18%, var(--line));
     }
 
+    /* ✅ NEW: description input (kept same input look) */
+    textarea{
+      width:100%;
+      min-height: 92px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 800;
+      resize: none;
+      line-height: 1.35;
+    }
+    textarea:focus{
+      box-shadow: var(--focus);
+      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
+    }
+
     input[type="file"]{
       width:100%;
       border-radius: 12px;
@@ -585,8 +608,9 @@
       .top-bar{ padding:0 14px; }
       .content-area{ padding:14px; }
 
-      .profile-header{ padding:14px; gap:14px; }
-      .profile-avatar-large{ width:70px; height:70px; }
+      /* ✅ FIX 2: iPhone box a bit big -> tiny reduce only on mobile */
+      .profile-header{ padding:12px; gap:12px; }
+      .profile-avatar-large{ width:64px; height:64px; font-size:20px; }
     }
 
     @media (max-width:520px){
@@ -700,7 +724,10 @@
                 <button class="edit-profile-btn" id="editProfileBtn">Edit Profile</button>
               </div>
 
-              <div class="profile-email" id="profileEmail">fynx.user@example.com</div>
+              <div class="profile-email" id="profileEmail">—</div>
+
+              <!-- ✅ NEW: description shown under email -->
+              <div class="profile-desc" id="profileDesc"></div>
 
               <div class="profile-stats">
                 <div class="profile-stat-item">
@@ -800,8 +827,17 @@
           <input type="text" id="nameInput" placeholder="Your name" />
         </div>
         <div class="form-col">
-          <label for="emailInput">Email (demo)</label>
-          <input type="email" id="emailInput" placeholder="you@example.com" />
+          <!-- ✅ FIX 4: real email from login (not editable) -->
+          <label for="emailInput">Email</label>
+          <input type="email" id="emailInput" placeholder="you@example.com" disabled />
+        </div>
+      </div>
+
+      <!-- ✅ NEW: description box -->
+      <div class="form-row">
+        <div class="form-col">
+          <label for="descInput">Description</label>
+          <textarea id="descInput" placeholder="Tell people about you..."></textarea>
         </div>
       </div>
 
@@ -809,9 +845,7 @@
         <div class="form-col">
           <label for="avatarInput">Profile Image</label>
           <input type="file" id="avatarInput" accept="image/*" />
-          <div class="hint" style="margin:10px 0 0; padding:10px;">
-            Upload a PNG/JPG. It saves to localStorage (demo product mode).
-          </div>
+          <!-- ✅ FIX 5: removed demo hint text -->
         </div>
       </div>
 
@@ -842,11 +876,15 @@
       localStorage.setItem(THEME_KEY, isDarkNow ? "dark" : "light");
     });
 
-    // ---------- Profile + Stats (Real mode via localStorage) ----------
+    // ---------- Profile + Stats (LocalStorage only) ----------
+    // ✅ Email comes from login storage (you must set this when user logs in):
+    // localStorage.setItem("fynx_auth_email", userEmail)
+    const AUTH_EMAIL_KEY = "fynx_auth_email";
+
     const DEFAULT_PROFILE = {
       name: "FYNX User",
-      email: "fynx.user@example.com",
       avatarDataUrl: "",
+      description: "",
       memberSince: "Jan 2024"
     };
 
@@ -854,13 +892,24 @@
       try { return JSON.parse(v); } catch(e){ return fallback; }
     }
 
+    function getAuthEmail(){
+      const v = (localStorage.getItem(AUTH_EMAIL_KEY) || "").trim();
+      return v || "";
+    }
+
     function getProfile(){
       const p = safeJSONParse(localStorage.getItem("fynx_profile"), null);
-      return { ...DEFAULT_PROFILE, ...(p || {}) };
+      // ✅ never store email in profile (always from AUTH key)
+      const merged = { ...DEFAULT_PROFILE, ...(p || {}) };
+      delete merged.email;
+      return merged;
     }
 
     function setProfile(profile){
-      localStorage.setItem("fynx_profile", JSON.stringify(profile));
+      // ✅ never store email in profile
+      const copy = { ...(profile || {}) };
+      delete copy.email;
+      localStorage.setItem("fynx_profile", JSON.stringify(copy));
     }
 
     function initialsFromName(name){
@@ -883,6 +932,7 @@
     }
 
     function loadMetrics(){
+      // ✅ FIX 1: ONLY localStorage fynx_metrics OR fynx_trades. No other "demo" source.
       const metrics = safeJSONParse(localStorage.getItem("fynx_metrics"), null);
       if (metrics && typeof metrics === "object") return metrics;
 
@@ -945,9 +995,18 @@
 
     function renderProfile(){
       const profile = getProfile();
-      document.getElementById("profileName").textContent = profile.name || DEFAULT_PROFILE.name;
-      document.getElementById("profileEmail").textContent = profile.email || DEFAULT_PROFILE.email;
 
+      // ✅ FIX 3: name persists forever via localStorage fynx_profile
+      document.getElementById("profileName").textContent = profile.name || DEFAULT_PROFILE.name;
+
+      // ✅ FIX 4: real email from auth storage only
+      const authEmail = getAuthEmail();
+      document.getElementById("profileEmail").textContent = authEmail || "—";
+
+      // ✅ NEW: description shown
+      document.getElementById("profileDesc").textContent = (profile.description || "").trim();
+
+      // ✅ FIX 5: avatar behaves like IG/WhatsApp (circle image)
       renderAvatar(document.getElementById("profileAvatarLarge"), profile);
       renderAvatar(document.getElementById("topAvatar"), profile);
 
@@ -985,6 +1044,7 @@
 
     const nameInput = document.getElementById("nameInput");
     const emailInput = document.getElementById("emailInput");
+    const descInput = document.getElementById("descInput");
     const avatarInput = document.getElementById("avatarInput");
 
     let pendingAvatarDataUrl = "";
@@ -992,7 +1052,10 @@
     function openModal(){
       const p = getProfile();
       nameInput.value = p.name || "";
-      emailInput.value = p.email || "";
+      descInput.value = p.description || "";
+
+      // ✅ FIX 4: email shown but not editable (real login email)
+      emailInput.value = getAuthEmail() || "";
       pendingAvatarDataUrl = p.avatarDataUrl || "";
       avatarInput.value = "";
       modalBackdrop.style.display = "flex";
@@ -1025,8 +1088,11 @@
       const p = getProfile();
       const next = {
         ...p,
+        // ✅ FIX 3: save name forever (localStorage)
         name: (nameInput.value || "").trim() || DEFAULT_PROFILE.name,
-        email: (emailInput.value || "").trim() || DEFAULT_PROFILE.email,
+        // ✅ NEW: save description
+        description: (descInput.value || "").trim(),
+        // ✅ FIX 5: save avatar
         avatarDataUrl: pendingAvatarDataUrl || p.avatarDataUrl || ""
       };
 
@@ -1037,4 +1103,3 @@
   </script>
 </body>
 </html>
-
