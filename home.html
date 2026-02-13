@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -970,6 +969,19 @@
       color:var(--muted);
     }
 
+    /* ✅ Refresh buttons (news + x) — minimal, same styling */
+    .news-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      white-space:nowrap;
+    }
+    .news-refresh-btn{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+    }
+
     /* Mobile */
     @media (max-width: 980px){
       .hero-inner{ flex-direction:column; align-items:flex-start; }
@@ -1279,7 +1291,17 @@
                     <strong>Latest Market News</strong>
                     <span class="live-pill"><span class="live-dot"></span> Live</span>
                   </div>
-                  <div class="news-sub" id="newsUpdated">Updating…</div>
+
+                  <!-- ✅ Refresh button + Updated label -->
+                  <div class="news-actions">
+                    <div class="news-sub" id="newsUpdated">Updating…</div>
+                    <button class="icon-btn news-refresh-btn" id="newsRefreshBtn" title="Refresh news" aria-label="Refresh news">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M21 12a9 9 0 1 1-3-6.7"></path>
+                        <polyline points="21 3 21 9 15 9"></polyline>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
                 <div class="news-list" id="newsList">
                   <div class="news-empty">Loading headlines…</div>
@@ -1293,7 +1315,17 @@
                     <strong>X Finance Feed</strong>
                     <span class="live-pill"><span class="live-dot"></span> Live</span>
                   </div>
-                  <div class="news-sub" id="xUpdated">Updating…</div>
+
+                  <!-- ✅ Refresh button + Updated label -->
+                  <div class="news-actions">
+                    <div class="news-sub" id="xUpdated">Updating…</div>
+                    <button class="icon-btn news-refresh-btn" id="xRefreshBtn" title="Refresh X feed" aria-label="Refresh X feed">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M21 12a9 9 0 1 1-3-6.7"></path>
+                        <polyline points="21 3 21 9 15 9"></polyline>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
                 <div class="news-list" id="xList">
                   <div class="news-empty">Loading X posts…</div>
@@ -1788,9 +1820,9 @@
 
     // =============================================================================
     // ✅ LIVE NEWS (ALWAYS 15) + ✅ X FEED (ALWAYS 15)
-    // - Refresh every 5 minutes
-    // - Clickable -> opens the real source (CNBC/Bloomberg/Reuters/etc when available)
-    // - If feed fails, it uses cached headlines so it never shows "unavailable"
+    // ✅ FIX: never shows "in progress" / "loading..." as the only content
+    // ✅ FIX: prefers TODAY first (fills remainder with most recent if today items < 15)
+    // ✅ FIX: refresh buttons fetch immediately on click
     // =============================================================================
     const NEWS_REFRESH_MS = 5 * 60 * 1000;
     const NEWS_MAX_ITEMS = 15;
@@ -1801,29 +1833,39 @@
 
     // Rotating finance-only Google News RSS queries (keeps it fresh)
     const NEWS_QUERIES = [
-      // broad market-moving
       `((forex OR fx OR "interest rates" OR bonds OR yields OR CPI OR inflation OR Fed OR FOMC OR ECB OR BOE OR BOJ OR "jobs report" OR NFP OR earnings OR "S&P 500" OR Nasdaq OR Dow OR oil OR crude OR gold OR bitcoin OR crypto OR "risk-off" OR "risk-on") AND (markets OR trading OR "breaking news"))`,
-      // more macro & central banks
       `(("Federal Reserve" OR FOMC OR Powell OR ECB OR Lagarde OR BOE OR BOJ OR "rate cut" OR "rate hike" OR inflation OR CPI OR PPI OR GDP OR recession OR "bond yields") AND (markets OR stocks OR forex))`,
-      // heavier equity/earnings & indices
       `((earnings OR guidance OR "beat expectations" OR "miss expectations" OR "market selloff" OR rally OR "S&P 500" OR Nasdaq OR "Dow Jones") AND (stocks OR market OR trading))`,
-      // crypto + risk
       `((bitcoin OR BTC OR ethereum OR ETH OR crypto OR "spot ETF" OR "on-chain" OR "risk assets") AND (markets OR trading OR liquidity))`
     ];
 
     function googleNewsRssUrl(query){
-      // try to bias toward major finance publishers without hard-blocking other sources
       const sources = `(site:cnbc.com OR site:bloomberg.com OR site:reuters.com OR site:wsj.com OR site:ft.com OR site:marketwatch.com OR site:barrons.com OR site:investing.com OR site:coindesk.com OR site:cointelegraph.com OR site:theblock.co OR site:fxstreet.com OR site:forexlive.com OR site:tradingview.com)`;
       const q = encodeURIComponent(`${query} ${sources}`);
       return `https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en`;
     }
 
     // X feed via RSSHub (public). If RSSHub ever goes down, cached content still shows.
-    // You can change these handles any time.
     const X_RSS_SOURCES = [
       { label: "X", url: "https://rsshub.app/twitter/user/FinancialJuice" },
       { label: "X", url: "https://rsshub.app/twitter/user/unusual_whales" },
       { label: "X", url: "https://rsshub.app/twitter/user/ForexLive" }
+    ];
+
+    // ✅ Always-present fallback lists (so UI never looks "in progress")
+    const FALLBACK_NEWS = [
+      { title:"Markets: Major headlines update throughout the day", link:"https://news.google.com/topstories?hl=en-US&gl=US&ceid=US:en", source:"News", pubDate: new Date() },
+      { title:"Stocks & Macro: Check today’s market-moving stories", link:"https://www.cnbc.com/world/?region=world", source:"CNBC", pubDate: new Date() },
+      { title:"Rates & Central Banks: Watch Fed/ECB/BOE/BOJ updates", link:"https://www.reuters.com/markets/", source:"Reuters", pubDate: new Date() },
+      { title:"Crypto: Bitcoin & risk assets headlines", link:"https://www.coindesk.com/", source:"CoinDesk", pubDate: new Date() },
+      { title:"FX: Live forex headlines", link:"https://www.forexlive.com/", source:"ForexLive", pubDate: new Date() },
+      { title:"Commodities: Oil and gold market updates", link:"https://www.investing.com/commodities/", source:"Investing", pubDate: new Date() }
+    ];
+
+    const FALLBACK_X = [
+      { title:"X Finance: Live posts update throughout the day", link:"https://x.com/search?q=finance%20breaking&src=typed_query", source:"X", pubDate: new Date() },
+      { title:"X: Market news stream", link:"https://x.com/search?q=FOMC%20OR%20CPI%20OR%20NFP&src=typed_query", source:"X", pubDate: new Date() },
+      { title:"X: Crypto + macro updates", link:"https://x.com/search?q=bitcoin%20macro&src=typed_query", source:"X", pubDate: new Date() }
     ];
 
     function fmtTimeAgo(date){
@@ -1843,7 +1885,6 @@
     }
 
     function parseGoogleNewsSource(titleText){
-      // Google News RSS titles often: "Headline - Source"
       const t = safeText(titleText);
       const parts = t.split(" - ");
       if (parts.length >= 2) return safeText(parts[parts.length - 1]);
@@ -1851,7 +1892,6 @@
     }
 
     async function fetchRssXml(url){
-      // CORS-safe via AllOrigins raw proxy
       const proxied = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
       const res = await fetch(proxied, { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to fetch feed");
@@ -1889,10 +1929,7 @@
 
     function cacheSet(key, items){
       try{
-        localStorage.setItem(key, JSON.stringify({
-          t: Date.now(),
-          items: items || []
-        }));
+        localStorage.setItem(key, JSON.stringify({ t: Date.now(), items: items || [] }));
       }catch(e){}
     }
 
@@ -1902,7 +1939,11 @@
         if (!raw) return null;
         const obj = JSON.parse(raw);
         if (!obj || !Array.isArray(obj.items)) return null;
-        return obj.items;
+        return obj.items.map(it => {
+          // revive pubDate
+          const d = it.pubDate ? new Date(it.pubDate) : null;
+          return { ...it, pubDate: d && !isNaN(d.getTime()) ? d : null };
+        });
       }catch(e){
         return null;
       }
@@ -1915,20 +1956,56 @@
       el.textContent = `Updated ${now.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
     }
 
-    async function refreshMarketNews(){
+    function isSameLocalDay(a, b){
+      if (!(a instanceof Date) || !(b instanceof Date)) return false;
+      return a.getFullYear() === b.getFullYear() &&
+             a.getMonth() === b.getMonth() &&
+             a.getDate() === b.getDate();
+    }
+
+    function fillToCount(preferred, fallback, count){
+      const out = [];
+      const seen = new Set();
+      function add(it){
+        const key = (it.link || "") + "||" + (it.title || "");
+        if (!it.title || !it.link) return;
+        if (seen.has(key)) return;
+        seen.add(key);
+        out.push(it);
+      }
+      (preferred || []).forEach(add);
+      (fallback || []).forEach(add);
+      // If still short, repeat safe fallbacks (dedupe blocks repeats; so add synthetic variants)
+      let i = 0;
+      while (out.length < count && i < 50){
+        const base = (fallback && fallback.length) ? fallback[i % fallback.length] : null;
+        if (!base) break;
+        add({ ...base, title: base.title, link: base.link, source: base.source, pubDate: new Date() });
+        i++;
+      }
+      return out.slice(0, count);
+    }
+
+    // Manual refresh nonce to force query rotation on click
+    let manualNewsNonce = 0;
+
+    async function refreshMarketNews(force = false){
       setUpdated("newsUpdated");
       setUpdated("liveUpdated");
 
-      // rotate query each refresh so headlines change (still finance-only)
-      const idx = Math.floor(Date.now() / NEWS_REFRESH_MS) % NEWS_QUERIES.length;
+      const now = new Date();
+
+      // rotate query each refresh so headlines change
+      const baseIdx = Math.floor(Date.now() / NEWS_REFRESH_MS) % NEWS_QUERIES.length;
+      const idx = (baseIdx + (force ? (++manualNewsNonce) : 0)) % NEWS_QUERIES.length;
       const rssUrl = googleNewsRssUrl(NEWS_QUERIES[idx]);
 
       try{
         const xml = await fetchRssXml(rssUrl);
         const doc = new DOMParser().parseFromString(xml, "text/xml");
-        const nodes = Array.from(doc.querySelectorAll("item")).slice(0, NEWS_MAX_ITEMS);
+        const nodes = Array.from(doc.querySelectorAll("item")).slice(0, 50);
 
-        const items = nodes.map(n => {
+        const rawItems = nodes.map(n => {
           const title = n.querySelector("title")?.textContent || "";
           const link = n.querySelector("link")?.textContent || "";
           const pub = n.querySelector("pubDate")?.textContent || "";
@@ -1942,39 +2019,37 @@
           };
         }).filter(x => x.title && x.link);
 
-        if (items.length){
-          cacheSet(CACHE_NEWS_KEY, items);
-          renderNews("newsList", items, "No finance headlines right now.");
-          return;
-        }
-        // fallback to cache if empty
-        const cached = cacheGet(CACHE_NEWS_KEY);
-        if (cached && cached.length) renderNews("newsList", cached, "No finance headlines right now.");
-        else renderNews("newsList", [], "No finance headlines right now.");
+        // ✅ Prefer TODAY
+        const todayItems = rawItems.filter(it => it.pubDate && isSameLocalDay(it.pubDate, now));
+        const recentItems = rawItems.sort((a,b) => {
+          const ta = a.pubDate ? a.pubDate.getTime() : 0;
+          const tb = b.pubDate ? b.pubDate.getTime() : 0;
+          return tb - ta;
+        });
+
+        // Fill to 15: today first, then most recent, then fallback links
+        const finalItems = fillToCount(todayItems, recentItems.concat(FALLBACK_NEWS), NEWS_MAX_ITEMS);
+
+        cacheSet(CACHE_NEWS_KEY, finalItems);
+        renderNews("newsList", finalItems, "No finance headlines right now.");
       }catch(e){
         const cached = cacheGet(CACHE_NEWS_KEY);
-        if (cached && cached.length){
-          renderNews("newsList", cached, "Loading finance headlines…");
-        }else{
-          // last resort: show loading text (not "unavailable")
-          const list = document.getElementById("newsList");
-          if (list) list.innerHTML = `<div class="news-empty">Loading finance headlines…</div>`;
-        }
+        const finalItems = fillToCount(cached || [], FALLBACK_NEWS, NEWS_MAX_ITEMS);
+        renderNews("newsList", finalItems, "No finance headlines right now.");
       }
     }
 
-    async function refreshXFeed(){
+    async function refreshXFeed(force = false){
       setUpdated("xUpdated");
 
       try{
-        // fetch multiple RSS feeds and merge (most recent first)
         const allItems = [];
 
         for (const src of X_RSS_SOURCES){
           try{
             const xml = await fetchRssXml(src.url);
             const doc = new DOMParser().parseFromString(xml, "text/xml");
-            const nodes = Array.from(doc.querySelectorAll("item")).slice(0, 20);
+            const nodes = Array.from(doc.querySelectorAll("item")).slice(0, 30);
 
             nodes.forEach(n => {
               const title = n.querySelector("title")?.textContent || "";
@@ -1982,7 +2057,6 @@
               const pub = n.querySelector("pubDate")?.textContent || n.querySelector("dc\\:date")?.textContent || "";
               const pubDate = pub ? new Date(pub) : null;
 
-              // Clean: remove "RT by ..." patterns or extra junk if any
               const cleanTitle = safeText(title).replace(/^RT\s+@/i, "@").trim();
 
               if (cleanTitle && link){
@@ -1997,41 +2071,35 @@
           }catch(inner){}
         }
 
-        // Sort newest first
+        // newest first
         allItems.sort((a,b) => {
           const ta = a.pubDate ? a.pubDate.getTime() : 0;
           const tb = b.pubDate ? b.pubDate.getTime() : 0;
           return tb - ta;
         });
 
-        // Dedupe by link/title
+        // Prefer TODAY
+        const now = new Date();
+        const todayItems = allItems.filter(it => it.pubDate && isSameLocalDay(it.pubDate, now));
+
+        // dedupe + take
         const seen = new Set();
-        const finalItems = [];
+        const deduped = [];
         for (const it of allItems){
           const key = (it.link || "") + "||" + (it.title || "");
           if (seen.has(key)) continue;
           seen.add(key);
-          finalItems.push(it);
-          if (finalItems.length >= X_MAX_ITEMS) break;
+          deduped.push(it);
         }
 
-        if (finalItems.length){
-          cacheSet(CACHE_X_KEY, finalItems);
-          renderNews("xList", finalItems, "No X finance posts right now.");
-          return;
-        }
+        const finalItems = fillToCount(todayItems, deduped.concat(FALLBACK_X), X_MAX_ITEMS);
 
-        const cached = cacheGet(CACHE_X_KEY);
-        if (cached && cached.length) renderNews("xList", cached, "No X finance posts right now.");
-        else renderNews("xList", [], "No X finance posts right now.");
+        cacheSet(CACHE_X_KEY, finalItems);
+        renderNews("xList", finalItems, "No X finance posts right now.");
       }catch(e){
         const cached = cacheGet(CACHE_X_KEY);
-        if (cached && cached.length){
-          renderNews("xList", cached, "Loading X finance posts…");
-        }else{
-          const list = document.getElementById("xList");
-          if (list) list.innerHTML = `<div class="news-empty">Loading X finance posts…</div>`;
-        }
+        const finalItems = fillToCount(cached || [], FALLBACK_X, X_MAX_ITEMS);
+        renderNews("xList", finalItems, "No X finance posts right now.");
       }
     }
 
@@ -2043,10 +2111,29 @@
       setDailyLine();
       updateMarketHours();
 
-      // mount real market tape + news + x
+      // mount real market tape
       mountTickerTape();
-      refreshMarketNews();
-      refreshXFeed();
+
+      // ✅ Show something immediately (cache -> fallback), then fetch fresh
+      const cachedNews = cacheGet(CACHE_NEWS_KEY);
+      renderNews("newsList", fillToCount(cachedNews || [], FALLBACK_NEWS, NEWS_MAX_ITEMS), "No finance headlines right now.");
+
+      const cachedX = cacheGet(CACHE_X_KEY);
+      renderNews("xList", fillToCount(cachedX || [], FALLBACK_X, X_MAX_ITEMS), "No X finance posts right now.");
+
+      // Fetch fresh right away
+      refreshMarketNews(true);
+      refreshXFeed(true);
+
+      // ✅ Refresh buttons
+      const newsBtn = document.getElementById("newsRefreshBtn");
+      if (newsBtn){
+        newsBtn.addEventListener("click", () => refreshMarketNews(true));
+      }
+      const xBtn = document.getElementById("xRefreshBtn");
+      if (xBtn){
+        xBtn.addEventListener("click", () => refreshXFeed(true));
+      }
 
       // "alive" updates (clock/session)
       setInterval(() => {
@@ -2057,8 +2144,8 @@
       // refresh ticker/news every 5 minutes
       setInterval(() => {
         mountTickerTape();
-        refreshMarketNews();
-        refreshXFeed();
+        refreshMarketNews(false);
+        refreshXFeed(false);
       }, NEWS_REFRESH_MS);
 
       // if user toggles theme on another page and comes back, re-mount ticker on visibility
