@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -819,13 +818,10 @@
         </div>
       `).join("");
 
-      // Click + keyboard activate = load 50 news for that symbol (today)
       el.querySelectorAll(".ticker-item").forEach(node => {
         const sym = node.dataset.symbol;
         const activate = () => {
           state.symbol = sym || "All";
-          // Reset query so user immediately sees symbol news
-          // (keeps region/topic selection as-is)
           refreshNews(true);
         };
         node.addEventListener("click", activate);
@@ -891,8 +887,8 @@
 
     function isFromToday(dateValue){
       const t = new Date(dateValue).getTime();
-      if (!Number.isFinite(t)) return true; // keep if date missing
-      return (Date.now() - t) <= 24 * 60 * 60 * 1000; // last 24h
+      if (!Number.isFinite(t)) return true;
+      return (Date.now() - t) <= 24 * 60 * 60 * 1000;
     }
 
     function normalizeUrl(url){
@@ -902,53 +898,103 @@
     }
 
     /* =========================
-       FEEDS (CORS PROXY: Jina first, fallback AllOrigins)
-       - This fixes "feeds failed" in most hosting setups.
+       FEEDS (CORS PROXIES)
+       - Uses RAW proxies only (returns actual RSS XML)
+       - Validates XML; if parse error -> tries next proxy
     ========================= */
-    async function fetchXML(url){
-      const direct = normalizeUrl(url);
+    const PROXIES = [
+      (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+      (u) => `https://thingproxy.freeboard.io/fetch/${u}`,
+      (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`
+    ];
 
-      // 1) Jina proxy (very reliable for RSS + allows browser fetch)
-      const viaJina = `https://r.jina.ai/${direct}`;
+    async function fetchTextWithTimeout(url, ms = 12000){
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), ms);
       try{
-        const res1 = await fetch(viaJina, { cache: "no-store" });
-        if (!res1.ok) throw new Error(`Jina proxy failed (${res1.status})`);
-        const text1 = await res1.text();
-        if (text1 && text1.length > 20) return text1;
-        throw new Error("Jina empty response");
-      }catch(e){
-        // 2) AllOrigins fallback
-        const viaAllOrigins = `https://api.allorigins.win/raw?url=${encodeURIComponent(direct)}`;
-        const res2 = await fetch(viaAllOrigins, { cache: "no-store" });
-        if (!res2.ok) throw new Error(`AllOrigins failed (${res2.status})`);
-        return res2.text();
+        const res = await fetch(url, { cache: "no-store", signal: ctrl.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.text();
+      } finally {
+        clearTimeout(t);
       }
     }
 
+    function parseXmlOrThrow(text){
+      const xml = new DOMParser().parseFromString(text, "application/xml");
+      // Any parsererror means this is not valid XML
+      if (xml.querySelector("parsererror")) throw new Error("Invalid XML");
+      // Must have channel/item (RSS) or entry (Atom)
+      const hasItems = xml.querySelector("item") || xml.querySelector("entry");
+      if (!hasItems) throw new Error("No feed items");
+      return xml;
+    }
+
+    async function fetchXML(feedUrl){
+      const url = normalizeUrl(feedUrl);
+
+      let lastErr = null;
+      for (const makeProxy of PROXIES){
+        const proxied = makeProxy(url);
+        try{
+          const text = await fetchTextWithTimeout(proxied);
+          const xml = parseXmlOrThrow(text);
+          return xml;
+        }catch(e){
+          lastErr = e;
+        }
+      }
+      throw lastErr || new Error("All proxies failed");
+    }
+
+    function getFirstText(node, selectors){
+      for (const sel of selectors){
+        const v = node.querySelector(sel)?.textContent;
+        if (v && String(v).trim()) return safeText(v);
+      }
+      return "";
+    }
+
     async function loadFeed(feed){
-      const xmlText = await fetchXML(feed.url);
-      const xml = new DOMParser().parseFromString(xmlText, "application/xml");
-      const items = [...xml.querySelectorAll("item")];
+      const xml = await fetchXML(feed.url);
+
+      // RSS uses <item>, Atom uses <entry>
+      const rssItems = [...xml.querySelectorAll("item")];
+      const atomItems = rssItems.length ? [] : [...xml.querySelectorAll("entry")];
+      const items = rssItems.length ? rssItems : atomItems;
 
       return items.map(item => {
-        const title   = safeText(item.querySelector("title")?.textContent || "");
-        const link    = safeText(item.querySelector("link")?.textContent || "");
-        const pubDate = safeText(item.querySelector("pubDate")?.textContent || "");
-        const desc    = safeText(item.querySelector("description")?.textContent || "");
-        const sourceTag = safeText(item.querySelector("source")?.textContent || "");
+        // RSS fields
+        const titleRSS = getFirstText(item, ["title"]);
+        const linkRSS  = getFirstText(item, ["link"]);
+        const pubRSS   = getFirstText(item, ["pubDate", "published", "updated"]);
+        const descRSS  = getFirstText(item, ["description", "content", "content\\:encoded"]);
+        const sourceRSS= getFirstText(item, ["source"]);
+
+        // Atom link might be in href attr
+        let atomHref = "";
+        if (!linkRSS){
+          const linkEl = item.querySelector("link");
+          atomHref = linkEl?.getAttribute("href") || "";
+        }
+
+        const title = titleRSS;
+        const link  = safeText(linkRSS || atomHref || "");
+        const pubDate = pubRSS || new Date().toUTCString();
+        const desc  = descRSS;
+        const sourceTag = sourceRSS;
 
         const source = sourceTag || (title.includes(" - ") ? title.split(" - ").at(-1) : "Unknown Source");
         const cleanTitle = title.replace(/\s+-\s+[^-]+$/, "").trim() || title;
         const topic = classifyTopic(cleanTitle, desc) || feed.topic;
         const sentiment = classifySentiment(cleanTitle, desc);
-
-        const regionValue = feed.name || feed.region || "Global";
+        const regionValue = feed.name || "Global";
 
         return {
           id: `${cleanTitle}|${link}`,
           title: cleanTitle,
           link,
-          date: pubDate || new Date().toUTCString(),
+          date: pubDate,
           region: regionValue,
           topic,
           source,
@@ -957,7 +1003,7 @@
         };
       })
       .filter(x => x.title && x.link)
-      .filter(x => isFromToday(x.date)); // keep only "today" (last 24h)
+      .filter(x => isFromToday(x.date));
     }
 
     function dedupeAndSort(rows){
@@ -976,7 +1022,6 @@
         return regionOk && topicOk && queryOk;
       });
 
-      // If user is in symbol mode, show exactly 50 (as requested)
       if (state.symbol && state.symbol !== "All"){
         state.filtered = state.filtered.slice(0, 50);
       }
@@ -1051,25 +1096,21 @@
         const succeeded = settled.filter(r => r.status === "fulfilled").map(r => r.value).flat();
         const failed = settled.filter(r => r.status === "rejected").length;
 
-        // Load more in memory, then filters decide view.
-        // In symbol mode: we still load more, but display 50.
-        const maxStore = (state.symbol && state.symbol !== "All") ? 240 : 240;
-
+        const maxStore = 260;
         state.allNews = dedupeAndSort(succeeded).slice(0, maxStore);
+
         applyFilters();
 
         const now = new Date();
         const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        lastUpdated.textContent = `Updated ${timeStr}`;
 
         if (state.symbol && state.symbol !== "All"){
-          lastUpdated.textContent = `Updated ${timeStr}`;
           statusText.innerHTML = `<span>Symbol: ${state.symbol} • Showing ${state.filtered.length} (today).</span><span>${failed ? `${failed} feed(s) failed this run.` : "All feeds healthy."}</span>`;
         } else {
-          lastUpdated.textContent = `Updated ${timeStr}`;
           statusText.innerHTML = `<span>Showing ${state.filtered.length} live items.</span><span>${failed ? `${failed} feed(s) failed this run.` : "All feeds healthy."}</span>`;
         }
 
-        // If user clicked a ticker symbol, ensure they immediately see the top
         if (fromTickerClick){
           newsFeed.scrollTop = 0;
         }
@@ -1121,4 +1162,3 @@
   <script src="fynx-usercard.js"></script>
 </body>
 </html>
-```
