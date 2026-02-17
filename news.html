@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -660,17 +661,21 @@
       region: "All",
       topic: "All",
       query: "",
+      symbol: "All",
       autoRefreshMs: 120000
     };
 
     const REGIONS = ["All", "US", "Europe", "Asia", "Middle East", "Africa", "LatAm", "Global"];
     const TOPICS  = ["All", "Markets", "Macro", "Equities", "Rates", "FX", "Commodities", "Crypto", "Banking"];
 
-    const FEEDS = [
+    // ===== Base feeds (general mode) =====
+    const FEEDS_BASE = [
       { name: "US",          topic: "Markets",     url: "https://news.google.com/rss/search?q=stock+market+OR+earnings+when:1d&hl=en-US&gl=US&ceid=US:en" },
       { name: "Europe",      topic: "Macro",       url: "https://news.google.com/rss/search?q=europe+central+bank+OR+euro+zone+inflation+when:1d&hl=en-GB&gl=GB&ceid=GB:en" },
       { name: "Asia",        topic: "Markets",     url: "https://news.google.com/rss/search?q=nikkei+OR+hang+seng+OR+china+market+when:1d&hl=en-SG&gl=SG&ceid=SG:en" },
       { name: "Middle East", topic: "Commodities", url: "https://news.google.com/rss/search?q=oil+market+OPEC+when:1d&hl=en-AE&gl=AE&ceid=AE:en" },
+      { name: "Africa",      topic: "Macro",       url: "https://news.google.com/rss/search?q=africa+economy+OR+africa+markets+when:1d&hl=en-ZA&gl=ZA&ceid=ZA:en" },
+      { name: "LatAm",       topic: "Macro",       url: "https://news.google.com/rss/search?q=latin+america+economy+OR+emerging+markets+when:1d&hl=en-US&gl=US&ceid=US:en" },
       { name: "Global",      topic: "FX",          url: "https://news.google.com/rss/search?q=foreign+exchange+OR+dollar+index+when:1d&hl=en-US&gl=US&ceid=US:en" },
       { name: "Global",      topic: "Rates",       url: "https://news.google.com/rss/search?q=bond+yields+OR+treasury+when:1d&hl=en-US&gl=US&ceid=US:en" },
       { name: "Global",      topic: "Crypto",      url: "https://news.google.com/rss/search?q=bitcoin+OR+ethereum+market+when:1d&hl=en-US&gl=US&ceid=US:en" },
@@ -686,6 +691,28 @@
       { symbol: "Gold",    value: "+0.27%", positive: true  },
       { symbol: "BTC",     value: "+1.12%", positive: true  },
       { symbol: "ETH",     value: "-0.66%", positive: false }
+    ];
+
+    // ===== Symbol queries (symbol mode) =====
+    const SYMBOL_QUERY = {
+      "S&P 500": "(S&P 500 OR SPX OR \"US stocks\" OR \"US equity market\")",
+      "NASDAQ":  "(NASDAQ OR NDX OR \"tech stocks\" OR \"Nasdaq composite\")",
+      "DXY":     "(DXY OR \"dollar index\" OR \"US dollar index\")",
+      "US10Y":   "(US10Y OR \"10-year treasury\" OR \"U.S. 10-year\" OR \"Treasury yield\")",
+      "Brent":   "(Brent OR \"Brent crude\" OR \"oil prices\" OR OPEC)",
+      "Gold":    "(Gold OR XAU OR \"gold prices\" OR bullion)",
+      "BTC":     "(Bitcoin OR BTC)",
+      "ETH":     "(Ethereum OR ETH)"
+    };
+
+    // Multiple locales to make it "all around the world"
+    const SYMBOL_LOCALES = [
+      { hl:"en-US", gl:"US", ceid:"US:en", region:"US" },
+      { hl:"en-GB", gl:"GB", ceid:"GB:en", region:"Europe" },
+      { hl:"en-SG", gl:"SG", ceid:"SG:en", region:"Asia" },
+      { hl:"en-IN", gl:"IN", ceid:"IN:en", region:"Asia" },
+      { hl:"en-AE", gl:"AE", ceid:"AE:en", region:"Middle East" },
+      { hl:"en-ZA", gl:"ZA", ceid:"ZA:en", region:"Africa" }
     ];
 
     const newsFeed   = document.getElementById("newsFeed");
@@ -787,10 +814,28 @@
     function buildTicker(){
       const el = document.getElementById("ticker");
       el.innerHTML = MARKET_TICKER.map(item => `
-        <div class="ticker-item">
+        <div class="ticker-item" role="button" tabindex="0" data-symbol="${item.symbol}" title="Click to load 50 live news for ${item.symbol}" style="cursor:pointer;">
           ${item.symbol}: <span class="${item.positive ? "p" : "n"}">${item.value}</span>
         </div>
       `).join("");
+
+      // Click + keyboard activate = load 50 news for that symbol (today)
+      el.querySelectorAll(".ticker-item").forEach(node => {
+        const sym = node.dataset.symbol;
+        const activate = () => {
+          state.symbol = sym || "All";
+          // Reset query so user immediately sees symbol news
+          // (keeps region/topic selection as-is)
+          refreshNews(true);
+        };
+        node.addEventListener("click", activate);
+        node.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            activate();
+          }
+        });
+      });
     }
 
     function buildFilterButtons(containerId, values, activeValue, onPick){
@@ -812,12 +857,12 @@
     function classifyTopic(title = "", desc = ""){
       const text = `${title} ${desc}`.toLowerCase();
       if (/crypto|bitcoin|ethereum|token|blockchain/.test(text)) return "Crypto";
-      if (/oil|gas|gold|silver|copper|commodity|opec/.test(text)) return "Commodities";
-      if (/forex|currency|dollar|euro|yen|fx/.test(text)) return "FX";
+      if (/oil|gas|gold|silver|copper|commodity|opec|brent|wti/.test(text)) return "Commodities";
+      if (/forex|currency|dollar|euro|yen|fx|dxy/.test(text)) return "FX";
       if (/bond|yield|treasury|rate|fed|ecb|boj|central bank/.test(text)) return "Rates";
       if (/bank|lender|credit|loan|deposit/.test(text)) return "Banking";
       if (/inflation|gdp|jobs|macro|economy|recession/.test(text)) return "Macro";
-      if (/stock|equity|shares|ipo|earnings/.test(text)) return "Equities";
+      if (/stock|equity|shares|ipo|earnings|nasdaq|s&p/.test(text)) return "Equities";
       if (/market|index|wall street|exchange/.test(text)) return "Markets";
       return "Markets";
     }
@@ -844,14 +889,40 @@
       return `${days}d ago`;
     }
 
+    function isFromToday(dateValue){
+      const t = new Date(dateValue).getTime();
+      if (!Number.isFinite(t)) return true; // keep if date missing
+      return (Date.now() - t) <= 24 * 60 * 60 * 1000; // last 24h
+    }
+
+    function normalizeUrl(url){
+      const u = String(url || "").trim();
+      if (!u) return "";
+      return u.replace(/^http:\/\//i, "https://");
+    }
+
     /* =========================
-       FEEDS (CORS via AllOrigins)
+       FEEDS (CORS PROXY: Jina first, fallback AllOrigins)
+       - This fixes "feeds failed" in most hosting setups.
     ========================= */
     async function fetchXML(url){
-      const viaAllOrigins = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-      const res = await fetch(viaAllOrigins, { cache: "no-store" });
-      if (!res.ok) throw new Error(`Feed fetch failed (${res.status})`);
-      return res.text();
+      const direct = normalizeUrl(url);
+
+      // 1) Jina proxy (very reliable for RSS + allows browser fetch)
+      const viaJina = `https://r.jina.ai/${direct}`;
+      try{
+        const res1 = await fetch(viaJina, { cache: "no-store" });
+        if (!res1.ok) throw new Error(`Jina proxy failed (${res1.status})`);
+        const text1 = await res1.text();
+        if (text1 && text1.length > 20) return text1;
+        throw new Error("Jina empty response");
+      }catch(e){
+        // 2) AllOrigins fallback
+        const viaAllOrigins = `https://api.allorigins.win/raw?url=${encodeURIComponent(direct)}`;
+        const res2 = await fetch(viaAllOrigins, { cache: "no-store" });
+        if (!res2.ok) throw new Error(`AllOrigins failed (${res2.status})`);
+        return res2.text();
+      }
     }
 
     async function loadFeed(feed){
@@ -871,18 +942,22 @@
         const topic = classifyTopic(cleanTitle, desc) || feed.topic;
         const sentiment = classifySentiment(cleanTitle, desc);
 
+        const regionValue = feed.name || feed.region || "Global";
+
         return {
           id: `${cleanTitle}|${link}`,
           title: cleanTitle,
           link,
           date: pubDate || new Date().toUTCString(),
-          region: feed.name,
+          region: regionValue,
           topic,
           source,
           description: desc,
           sentiment
         };
-      }).filter(x => x.title && x.link);
+      })
+      .filter(x => x.title && x.link)
+      .filter(x => isFromToday(x.date)); // keep only "today" (last 24h)
     }
 
     function dedupeAndSort(rows){
@@ -901,6 +976,11 @@
         return regionOk && topicOk && queryOk;
       });
 
+      // If user is in symbol mode, show exactly 50 (as requested)
+      if (state.symbol && state.symbol !== "All"){
+        state.filtered = state.filtered.slice(0, 50);
+      }
+
       renderNews();
     }
 
@@ -909,7 +989,10 @@
       sourceCount.textContent = new Set(state.filtered.map(n => n.source)).size;
 
       if (!state.filtered.length){
-        newsFeed.innerHTML = `<div class="empty">No articles match this filter. Try changing topic/region.</div>`;
+        const hint = state.symbol !== "All"
+          ? `No live items found for ${state.symbol} with current filters. Try changing region/topic or clear search.`
+          : "No articles match this filter. Try changing topic/region.";
+        newsFeed.innerHTML = `<div class="empty">${hint}</div>`;
         return;
       }
 
@@ -941,21 +1024,55 @@
       statusText.textContent = "Loading live finance feeds...";
     }
 
-    async function refreshNews(){
+    function buildSymbolFeeds(symbol){
+      const q = SYMBOL_QUERY[symbol] || `("${symbol}")`;
+      const when = "when:1d";
+      return SYMBOL_LOCALES.map(loc => {
+        const url = `https://news.google.com/rss/search?q=${encodeURIComponent(`${q} ${when}`)}&hl=${encodeURIComponent(loc.hl)}&gl=${encodeURIComponent(loc.gl)}&ceid=${encodeURIComponent(loc.ceid)}`;
+        return { name: loc.region, topic: "Markets", url };
+      });
+    }
+
+    function getActiveFeeds(){
+      if (state.symbol && state.symbol !== "All"){
+        return buildSymbolFeeds(state.symbol);
+      }
+      return FEEDS_BASE;
+    }
+
+    async function refreshNews(fromTickerClick = false){
       renderSkeleton();
       refreshBtn.disabled = true;
 
+      const feeds = getActiveFeeds();
+
       try{
-        const settled = await Promise.allSettled(FEEDS.map(loadFeed));
+        const settled = await Promise.allSettled(feeds.map(loadFeed));
         const succeeded = settled.filter(r => r.status === "fulfilled").map(r => r.value).flat();
         const failed = settled.filter(r => r.status === "rejected").length;
 
-        state.allNews = dedupeAndSort(succeeded).slice(0, 120);
+        // Load more in memory, then filters decide view.
+        // In symbol mode: we still load more, but display 50.
+        const maxStore = (state.symbol && state.symbol !== "All") ? 240 : 240;
+
+        state.allNews = dedupeAndSort(succeeded).slice(0, maxStore);
         applyFilters();
 
         const now = new Date();
-        lastUpdated.textContent = `Updated ${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
-        statusText.innerHTML = `<span>Showing ${state.filtered.length} live items.</span><span>${failed ? `${failed} feed(s) failed this run.` : "All feeds healthy."}</span>`;
+        const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+        if (state.symbol && state.symbol !== "All"){
+          lastUpdated.textContent = `Updated ${timeStr}`;
+          statusText.innerHTML = `<span>Symbol: ${state.symbol} • Showing ${state.filtered.length} (today).</span><span>${failed ? `${failed} feed(s) failed this run.` : "All feeds healthy."}</span>`;
+        } else {
+          lastUpdated.textContent = `Updated ${timeStr}`;
+          statusText.innerHTML = `<span>Showing ${state.filtered.length} live items.</span><span>${failed ? `${failed} feed(s) failed this run.` : "All feeds healthy."}</span>`;
+        }
+
+        // If user clicked a ticker symbol, ensure they immediately see the top
+        if (fromTickerClick){
+          newsFeed.scrollTop = 0;
+        }
       }catch(err){
         newsFeed.innerHTML = `<div class="empty">Could not load live feeds. Try refresh again in a minute.</div>`;
         statusText.textContent = "Feed fetch error.";
@@ -970,7 +1087,7 @@
         applyFilters();
       });
 
-      refreshBtn.addEventListener("click", refreshNews);
+      refreshBtn.addEventListener("click", () => refreshNews(false));
 
       const onPickRegion = (value) => {
         state.region = value;
@@ -989,13 +1106,13 @@
     }
 
     function startAutoRefresh(){
-      setInterval(refreshNews, state.autoRefreshMs);
+      setInterval(() => refreshNews(false), state.autoRefreshMs);
     }
 
     (function init(){
       buildTicker();
       bindEvents();
-      refreshNews();
+      refreshNews(false);
       startAutoRefresh();
     })();
   </script>
