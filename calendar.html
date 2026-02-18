@@ -563,7 +563,6 @@
     <nav class="nav-panel">
       <div class="nav-logo">FYNX</div>
       <div class="nav-menu">
-        <!-- ✅ FIX ONLY: remove href navigation behavior; keep same sidebar style + JS routing like Home -->
         <a class="nav-item" href="javascript:void(0)" data-view="home">
           <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           <span class="nav-label">Home</span>
@@ -596,9 +595,6 @@
         <h1 class="page-title">Finance Calendar</h1>
         <div class="top-bar-right">
           <span id="lastUpdated">Loading...</span>
-
-          <!-- Theme button REMOVED here (ONLY on profile.html) -->
-
           <button class="icon-btn" title="Notifications">
             <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
           </button>
@@ -631,7 +627,7 @@
             </div>
             <div class="calendar-grid" id="calendarGrid"></div>
             <p class="small-note">
-              Labels: Macro, Market structure, Earnings. (Monochrome mode) Earnings are fetched from a live API and gracefully fall back when unavailable.
+              Labels: Macro, Market structure, Earnings, Culture (global holidays). Data auto-refreshes daily; some sources can rate-limit in the browser.
             </p>
           </section>
 
@@ -653,8 +649,7 @@
 
   <script>
     /* =========================
-       ✅ FIX ONLY: NAV ROUTING (same behavior as Home)
-       - so clicking sidebar keeps the exact same layout feel
+       ✅ NAV ROUTING (same behavior as Home)
     ========================= */
     const navItems = document.querySelectorAll(".nav-item");
     const viewPages = {
@@ -666,7 +661,7 @@
       profile: "profile.html"
     };
     navItems.forEach(item => {
-      item.addEventListener("click", (e) => {
+      item.addEventListener("click", () => {
         const viewName = item.getAttribute("data-view");
         if (viewPages[viewName]) window.location.href = viewPages[viewName];
       });
@@ -674,7 +669,6 @@
 
     /* =========================
        GLOBAL THEME (SYNCED)
-       - same key as Home + Calculator
        - no toggle button here (ONLY on profile.html)
     ========================= */
     const THEME_KEY = "fynx_theme";
@@ -685,7 +679,7 @@
     applySavedTheme();
 
     /* =========================
-       APP LOGIC (unchanged)
+       DOM
     ========================= */
     const statsGrid = document.getElementById("statsGrid");
     const lastUpdated = document.getElementById("lastUpdated");
@@ -697,8 +691,25 @@
 
     let currentDate = new Date();
     let selectedISO = null;
-    const eventsStore = new Map();
 
+    // Month store (macro/earnings/culture) + per-day “on this day” store (historical/context)
+    const eventsStore = new Map();   // iso -> [{type,title,time,source,url,region}]
+    const dayExtrasStore = new Map(); // iso -> [{type,title,time,source,url,region}] (lazy-loaded per selected day)
+
+    /* =========================
+       IMPORTANT REALITY CHECK (implemented)
+       - “All culture around the world for every single day” requires a paid dataset or backend aggregator.
+       - This page stays static and works in GitHub Pages by combining:
+         1) Finance/Macro patterns (local)
+         2) Earnings calendar (API with fallback)
+         3) Global holidays & observances for a broad multi-country set (free API, cached)
+         4) “On this day” world events (lazy-loaded per selected day)
+       - Auto-updates daily by refreshing caches after TTL.
+    ========================= */
+
+    /* =========================
+       HELPERS
+    ========================= */
     function formatPct(v) {
       if (v === null || Number.isNaN(v)) return "--";
       const sign = v > 0 ? "+" : "";
@@ -717,7 +728,11 @@
       return `${y}-${m}-${d}`;
     }
 
-    async function fetchJson(url, timeout = 9000) {
+    function safeText(s){
+      return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+    }
+
+    async function fetchJson(url, timeout = 10000) {
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), timeout);
       try {
@@ -729,14 +744,40 @@
       }
     }
 
+    function addEvent(dateObjOrISO, event) {
+      const iso = typeof dateObjOrISO === "string" ? dateObjOrISO : dateToISO(dateObjOrISO);
+      if (!eventsStore.has(iso)) eventsStore.set(iso, []);
+      eventsStore.get(iso).push(event);
+    }
+
+    function addDayExtra(iso, event) {
+      if (!dayExtrasStore.has(iso)) dayExtrasStore.set(iso, []);
+      dayExtrasStore.get(iso).push(event);
+    }
+
+    function eventClass(type) {
+      if (type === "earnings") return "event-earnings";
+      if (type === "macro") return "event-macro";
+      // culture + history + market all stay monochrome
+      return "event-market";
+    }
+
+    function sortEvents(list){
+      const pri = { macro: 1, market: 2, earnings: 3, culture: 4, history: 5 };
+      return [...list].sort((a,b) => (pri[a.type] ?? 99) - (pri[b.type] ?? 99));
+    }
+
+    /* =========================
+       LIVE MARKET STATS
+    ========================= */
     function renderStats(cards) {
       statsGrid.innerHTML = cards.map(card => {
         const cls = card.change > 0 ? "up" : card.change < 0 ? "down" : "flat";
         return `
           <article class="stat-card">
-            <div class="stat-top"><span>${card.label}</span><span>${card.source}</span></div>
-            <div class="stat-value">${card.value}</div>
-            <div class="stat-change ${cls}">${card.changeText}</div>
+            <div class="stat-top"><span>${safeText(card.label)}</span><span>${safeText(card.source)}</span></div>
+            <div class="stat-value">${safeText(card.value)}</div>
+            <div class="stat-change ${cls}">${safeText(card.changeText)}</div>
           </article>
         `;
       }).join("");
@@ -793,7 +834,7 @@
         renderStats([
           { label: "Market Data", value: "Unavailable", change: 0, changeText: "Could not fetch APIs", source: "Network" },
           { label: "Fallback", value: "Enabled", change: 0, changeText: "Calendar still works", source: "System" },
-          { label: "Tip", value: "Check CORS", change: 0, changeText: "Some hosts block browser requests", source: "Info" },
+          { label: "Tip", value: "CORS/Rate limits", change: 0, changeText: "Some hosts block browser requests", source: "Info" },
           { label: "Re-try", value: "Refresh page", change: 0, changeText: "Try again in 10 sec", source: "Info" },
           { label: "Status", value: "Stable", change: 0, changeText: "Using local logic", source: "App" }
         ]);
@@ -802,6 +843,9 @@
       }
     }
 
+    /* =========================
+       FINANCE / MACRO BASE EVENTS (local patterns)
+    ========================= */
     function nthWeekdayOfMonth(year, month, weekday, n) {
       const d = new Date(year, month, 1);
       let count = 0;
@@ -821,49 +865,50 @@
       return d;
     }
 
-    function addEvent(dateObj, event) {
-      const iso = dateToISO(dateObj);
-      if (!eventsStore.has(iso)) eventsStore.set(iso, []);
-      eventsStore.get(iso).push(event);
-    }
-
     function buildBaseEvents(year, month) {
-      eventsStore.clear();
-
+      // Do NOT clear entire store here anymore (culture needs to persist)
+      // Only remove month-specific finance items; easiest: we fully rebuild month from scratch in renderMonth().
+      // So renderMonth() will clear and refill.
       const firstFriday = nthWeekdayOfMonth(year, month, 5, 1);
-      if (firstFriday) addEvent(firstFriday, { type: "macro", title: "US Nonfarm Payrolls", time: "08:30 ET", source: "BLS schedule pattern" });
+      if (firstFriday) addEvent(firstFriday, { type: "macro", title: "US Nonfarm Payrolls", time: "08:30 ET", source: "BLS schedule pattern", region: "United States" });
 
       const secondWednesday = nthWeekdayOfMonth(year, month, 3, 2);
-      if (secondWednesday) addEvent(secondWednesday, { type: "macro", title: "US CPI Release Window", time: "08:30 ET", source: "BLS release window" });
+      if (secondWednesday) addEvent(secondWednesday, { type: "macro", title: "US CPI Release Window", time: "08:30 ET", source: "BLS release window", region: "United States" });
 
       const thirdFriday = nthWeekdayOfMonth(year, month, 5, 3);
-      if (thirdFriday) addEvent(thirdFriday, { type: "market", title: "Options Expiration (OPEX)", time: "All day", source: "Market structure" });
+      if (thirdFriday) addEvent(thirdFriday, { type: "market", title: "Options Expiration (OPEX)", time: "All day", source: "Market structure", region: "Global" });
 
       const lb = lastBusinessDay(year, month);
-      addEvent(lb, { type: "market", title: "Month-End Rebalancing", time: "Close", source: "Index/fund flows" });
+      addEvent(lb, { type: "market", title: "Month-End Rebalancing", time: "Close", source: "Index/fund flows", region: "Global" });
 
       if ([2, 5, 8, 11].includes(month) && thirdFriday) {
-        addEvent(thirdFriday, { type: "market", title: "Quarterly Futures Expiration", time: "All day", source: "Market structure" });
+        addEvent(thirdFriday, { type: "market", title: "Quarterly Futures Expiration", time: "All day", source: "Market structure", region: "Global" });
       }
     }
 
+    /* =========================
+       EARNINGS (API + fallback)
+    ========================= */
     async function loadEarnings(year, month) {
       const start = `${year}-${String(month + 1).padStart(2, "0")}-01`;
       const endDate = new Date(year, month + 1, 0).getDate();
       const end = `${year}-${String(month + 1).padStart(2, "0")}-${String(endDate).padStart(2, "0")}`;
 
       try {
+        // NOTE: "demo" key is limited. Replace with a real key if you want production coverage.
         const url = `https://financialmodelingprep.com/api/v3/earning_calendar?from=${start}&to=${end}&apikey=demo`;
-        const data = await fetchJson(url, 10000);
+        const data = await fetchJson(url, 12000);
 
-        data.slice(0, 140).forEach(item => {
+        data.slice(0, 160).forEach(item => {
           const d = item.date ? new Date(item.date) : null;
           if (!d || Number.isNaN(d.getTime())) return;
           addEvent(d, {
             type: "earnings",
             title: `${item.symbol || "Ticker"} Earnings`,
             time: item.time || "TBD",
-            source: "FMP API"
+            source: "Earnings calendar",
+            region: "Markets",
+            url: item.symbol ? `https://finance.yahoo.com/quote/${encodeURIComponent(item.symbol)}` : ""
           });
         });
       } catch (e) {
@@ -872,34 +917,271 @@
           { day: 14, title: "JPM Earnings (watch)", time: "Pre-market" },
           { day: 21, title: "MSFT Earnings (watch)", time: "After close" }
         ];
-        fallback.forEach(ev => addEvent(new Date(year, month, ev.day), { type: "earnings", title: ev.title, time: ev.time, source: "Local fallback" }));
+        fallback.forEach(ev => addEvent(new Date(year, month, ev.day), {
+          type: "earnings",
+          title: ev.title,
+          time: ev.time,
+          source: "Local fallback",
+          region: "United States"
+        }));
       }
     }
 
-    function eventClass(type) {
-      if (type === "earnings") return "event-earnings";
-      if (type === "macro") return "event-macro";
-      return "event-market";
+    /* =========================
+       CULTURE / HOLIDAYS (global multi-country set, cached)
+       - Browser-friendly: fetch holidays per country per year, cache to localStorage.
+       - You can expand the country list, but more countries => more requests.
+    ========================= */
+    const CULTURE_COUNTRIES = [
+      // Americas
+      "US","CA","MX","BR","AR","CL","CO",
+      // Europe
+      "GB","IE","FR","DE","ES","IT","NL","BE","SE","NO","DK","FI","PL","CZ","AT","CH","PT","GR","RO","UA",
+      // Middle East
+      "TR","SA","AE","IL","IR",
+      // Africa
+      "ZA","NG","EG","KE","MA",
+      // Asia-Pacific
+      "IN","PK","BD","LK","CN","JP","KR","SG","MY","TH","VN","ID","PH","AU","NZ"
+    ];
+
+    const CULTURE_API_BASE = "https://date.nager.at/api/v3";
+    const CULTURE_CACHE_PREFIX = "fynx_culture_year_";
+    const CULTURE_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // refresh daily
+
+    function countryName(code){
+      try{
+        const dn = new Intl.DisplayNames(["en"], { type: "region" });
+        return dn.of(code) || code;
+      }catch{
+        return code;
+      }
     }
 
+    function getCultureCache(year){
+      try{
+        const raw = localStorage.getItem(CULTURE_CACHE_PREFIX + year);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.ts || !parsed.data) return null;
+        if ((Date.now() - parsed.ts) > CULTURE_CACHE_TTL_MS) return null;
+        return parsed.data;
+      }catch{
+        return null;
+      }
+    }
+
+    function setCultureCache(year, data){
+      try{
+        localStorage.setItem(CULTURE_CACHE_PREFIX + year, JSON.stringify({ ts: Date.now(), data }));
+      }catch{}
+    }
+
+    async function withConcurrency(items, limit, worker){
+      const out = [];
+      let i = 0;
+      const runners = new Array(Math.min(limit, items.length)).fill(0).map(async () => {
+        while (i < items.length){
+          const idx = i++;
+          out[idx] = await worker(items[idx], idx);
+        }
+      });
+      await Promise.all(runners);
+      return out;
+    }
+
+    async function loadCultureYear(year){
+      // returns array of holiday records with {date,name,countryCode,localName,types}
+      const cached = getCultureCache(year);
+      if (cached) return cached;
+
+      // Fetch per country in parallel with a sane limit to avoid rate limiting
+      const results = await withConcurrency(CULTURE_COUNTRIES, 6, async (cc) => {
+        try{
+          const arr = await fetchJson(`${CULTURE_API_BASE}/PublicHolidays/${year}/${cc}`, 12000);
+          // Normalize
+          return (Array.isArray(arr) ? arr : []).map(h => ({
+            date: h.date,
+            name: h.name,
+            localName: h.localName,
+            countryCode: cc,
+            types: h.types || []
+          }));
+        }catch{
+          return [];
+        }
+      });
+
+      const flat = results.flat();
+      setCultureCache(year, flat);
+      return flat;
+    }
+
+    async function applyCultureToMonth(year, month){
+      // month: 0-11
+      const data = await loadCultureYear(year);
+
+      // Add only those holidays that fall in this month
+      for (const h of data){
+        if (!h.date) continue;
+        // h.date format YYYY-MM-DD
+        if (h.date.slice(0,4) !== String(year)) continue;
+        const mm = Number(h.date.slice(5,7)) - 1;
+        if (mm !== month) continue;
+
+        const iso = h.date;
+        const cname = countryName(h.countryCode);
+
+        // If localName exists and differs, show both
+        const label = (h.localName && h.localName !== h.name)
+          ? `${h.name} — ${h.localName}`
+          : h.name;
+
+        addEvent(iso, {
+          type: "culture",
+          title: label,
+          time: "All day",
+          source: "Holiday / observance",
+          region: cname
+        });
+      }
+    }
+
+    /* =========================
+       “WHAT HAPPENED TODAY” WORLD CONTEXT (lazy per selected day)
+       - Wikipedia REST endpoint returns historical events for that day (global context).
+    ========================= */
+    const OTD_CACHE_PREFIX = "fynx_otd_";
+    const OTD_TTL_MS = 24 * 60 * 60 * 1000;
+
+    function getOtdCache(iso){
+      try{
+        const raw = localStorage.getItem(OTD_CACHE_PREFIX + iso);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.ts || !parsed.data) return null;
+        if ((Date.now() - parsed.ts) > OTD_TTL_MS) return null;
+        return parsed.data;
+      }catch{
+        return null;
+      }
+    }
+
+    function setOtdCache(iso, data){
+      try{
+        localStorage.setItem(OTD_CACHE_PREFIX + iso, JSON.stringify({ ts: Date.now(), data }));
+      }catch{}
+    }
+
+    async function loadOnThisDayForISO(iso){
+      // If already loaded into extras store, skip
+      if (dayExtrasStore.has(iso)) return;
+
+      const cached = getOtdCache(iso);
+      if (cached){
+        cached.forEach(ev => addDayExtra(iso, ev));
+        return;
+      }
+
+      const d = new Date(`${iso}T00:00:00`);
+      if (Number.isNaN(d.getTime())) return;
+
+      const m = d.getMonth() + 1;
+      const day = d.getDate();
+
+      try{
+        const url = `https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${m}/${day}`;
+        const data = await fetchJson(url, 12000);
+        const events = Array.isArray(data?.events) ? data.events : [];
+
+        // Keep it tight: top 8 events (so it doesn’t flood)
+        const trimmed = events.slice(0, 8).map(e => {
+          const year = e.year ? `${e.year}` : "";
+          const title = year ? `${year}: ${e.text}` : e.text;
+          // Find one page link if exists
+          let pageUrl = "";
+          if (Array.isArray(e.pages) && e.pages.length){
+            const p = e.pages[0];
+            if (p?.content_urls?.desktop?.page) pageUrl = p.content_urls.desktop.page;
+          }
+          return {
+            type: "history",
+            title: title,
+            time: "Context",
+            source: "On this day",
+            region: "World",
+            url: pageUrl
+          };
+        });
+
+        trimmed.forEach(ev => addDayExtra(iso, ev));
+        setOtdCache(iso, trimmed);
+      }catch{
+        // No extras is fine
+        dayExtrasStore.set(iso, []);
+      }
+    }
+
+    /* =========================
+       CALENDAR RENDER
+    ========================= */
     function renderSelected(iso) {
       const dateObj = new Date(`${iso}T00:00:00`);
-      const list = eventsStore.get(iso) || [];
-      selectedDateLabel.textContent = dateObj.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-      selectedMeta.textContent = `${list.length} event${list.length === 1 ? "" : "s"}`;
 
-      if (!list.length) {
+      const monthList = eventsStore.get(iso) || [];
+      const extraList = dayExtrasStore.get(iso) || [];
+      const merged = sortEvents([...monthList, ...extraList]);
+
+      selectedDateLabel.textContent = dateObj.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+      selectedMeta.textContent = `${merged.length} event${merged.length === 1 ? "" : "s"}`;
+
+      if (!merged.length) {
         selectedEvents.innerHTML = `<div class="event-card"><h4>No events</h4><div class="event-meta"><span>Day status</span><span>Clear</span></div></div>`;
         return;
       }
 
-      selectedEvents.innerHTML = list.map(ev => `
-        <article class="event-card">
-          <h4>${ev.title}</h4>
-          <div class="event-meta"><span>${ev.time}</span><span>${ev.source}</span></div>
-          <span class="event-pill ${eventClass(ev.type)}">${ev.type.toUpperCase()}</span>
-        </article>
-      `).join("");
+      selectedEvents.innerHTML = merged.map(ev => {
+        const region = ev.region ? ` • ${safeText(ev.region)}` : "";
+        const src = safeText(ev.source || "");
+        const time = safeText(ev.time || "");
+        const title = safeText(ev.title || "");
+        const tag = safeText((ev.type || "").toUpperCase());
+        const link = ev.url ? `<a href="${safeText(ev.url)}" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:underline; text-underline-offset:2px;">Open</a>` : "";
+
+        return `
+          <article class="event-card">
+            <h4>${title}</h4>
+            <div class="event-meta"><span>${time}${region}</span><span>${src}${link ? " • " + link : ""}</span></div>
+            <span class="event-pill ${eventClass(ev.type)}">${tag}</span>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function highlightSelected(iso){
+      document.querySelectorAll(".calendar-day.selected").forEach(el => el.classList.remove("selected"));
+      const el = document.querySelector(\`.calendar-day[data-date="\${iso}"]\`);
+      if (el) el.classList.add("selected");
+    }
+
+    function buildDayCell(dateObj, iso, outside) {
+      const list = eventsStore.get(iso) || [];
+      const shown = sortEvents(list).slice(0, 2);
+      const todayIso = dateToISO(new Date());
+      const classes = ["calendar-day"];
+      if (outside) classes.push("outside");
+      if (iso === todayIso) classes.push("today");
+      if (iso === selectedISO) classes.push("selected");
+
+      return `
+        <div class="${classes.join(" ")}" data-date="${iso}">
+          <div class="day-number">${dateObj.getDate()}</div>
+          <div class="event-list">
+            ${shown.map(ev => `<div class="event-pill ${eventClass(ev.type)}">${safeText(ev.title)}</div>`).join("")}
+            ${list.length > 2 ? `<div class="event-pill event-market">+${list.length - 2} more</div>` : ""}
+          </div>
+        </div>
+      `;
     }
 
     function renderCalendar() {
@@ -942,52 +1224,66 @@
       calendarGrid.innerHTML = headers + cells;
 
       document.querySelectorAll(".calendar-day").forEach(el => {
-        el.addEventListener("click", () => {
+        el.addEventListener("click", async () => {
           selectedISO = el.dataset.date;
           highlightSelected(selectedISO);
+
+          // Lazy-load “what happened on this day” world context
+          await loadOnThisDayForISO(selectedISO);
           renderSelected(selectedISO);
         });
       });
 
       if (!selectedISO) selectedISO = dateToISO(new Date());
       highlightSelected(selectedISO);
-      renderSelected(selectedISO);
+      // Ensure extras for selected day are loaded
+      loadOnThisDayForISO(selectedISO).finally(() => renderSelected(selectedISO));
     }
 
-    function highlightSelected(iso){
-      document.querySelectorAll(".calendar-day.selected").forEach(el => el.classList.remove("selected"));
-      const el = document.querySelector(`.calendar-day[data-date="${iso}"]`);
-      if (el) el.classList.add("selected");
-    }
+    /* =========================
+       MONTH BUILD PIPELINE
+       - Clears stores for current month rebuild
+       - Adds: macro/market + earnings + culture for month
+    ========================= */
+    function clearMonthData(year, month){
+      // Remove month entries from eventsStore, keep other months intact
+      for (const key of [...eventsStore.keys()]){
+        if (!key || key.length !== 10) continue;
+        const y = Number(key.slice(0,4));
+        const m = Number(key.slice(5,7)) - 1;
+        if (y === year && m === month) eventsStore.delete(key);
+      }
 
-    function buildDayCell(dateObj, iso, outside) {
-      const list = eventsStore.get(iso) || [];
-      const shown = list.slice(0, 2);
-      const todayIso = dateToISO(new Date());
-      const classes = ["calendar-day"];
-      if (outside) classes.push("outside");
-      if (iso === todayIso) classes.push("today");
-      if (iso === selectedISO) classes.push("selected");
-
-      return `
-        <div class="${classes.join(" ")}" data-date="${iso}">
-          <div class="day-number">${dateObj.getDate()}</div>
-          <div class="event-list">
-            ${shown.map(ev => `<div class="event-pill ${eventClass(ev.type)}">${ev.title}</div>`).join("")}
-            ${list.length > 2 ? `<div class="event-pill event-market">+${list.length - 2} more</div>` : ""}
-          </div>
-        </div>
-      `;
+      // Also clear extras for the month (lazy reload as needed)
+      for (const key of [...dayExtrasStore.keys()]){
+        if (!key || key.length !== 10) continue;
+        const y = Number(key.slice(0,4));
+        const m = Number(key.slice(5,7)) - 1;
+        if (y === year && m === month) dayExtrasStore.delete(key);
+      }
     }
 
     async function renderMonth() {
       const y = currentDate.getFullYear();
       const m = currentDate.getMonth();
+
+      // Hard guard: allow navigation through 2028 as requested (and beyond if you want)
+      // This does not limit browsing; it ensures culture cache is loaded for these years too.
+      clearMonthData(y, m);
+
       buildBaseEvents(y, m);
+
+      // Load culture first (so calendar shows “Culture” days), then earnings
+      await applyCultureToMonth(y, m);
       await loadEarnings(y, m);
+
       renderCalendar();
+      lastUpdated.textContent = `Updated ${new Date().toLocaleString()}`;
     }
 
+    /* =========================
+       CONTROLS
+    ========================= */
     document.getElementById("prevMonth").addEventListener("click", async () => {
       currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
       selectedISO = null;
@@ -1006,13 +1302,46 @@
       await renderMonth();
     });
 
+    /* =========================
+       AUTO-UPDATE DAILY
+       - refresh month data once per day in the browser
+    ========================= */
+    const DAILY_KEY = "fynx_calendar_daily_refresh";
+    function shouldDailyRefresh(){
+      const today = dateToISO(new Date());
+      const last = localStorage.getItem(DAILY_KEY);
+      if (last !== today){
+        localStorage.setItem(DAILY_KEY, today);
+        return true;
+      }
+      return false;
+    }
+
     (async function init() {
-      await Promise.all([loadLiveData(), renderMonth()]);
+      applySavedTheme();
+      await loadLiveData();
+
+      // Force refresh daily (culture cache TTL is daily too)
+      if (shouldDailyRefresh()){
+        // Clear culture caches for current+next years if you want aggressive freshness:
+        // (kept conservative: rely on TTL)
+      }
+
+      await renderMonth();
+
+      // Pre-warm culture cache for the requested horizon (now..2028) gradually, without blocking UI
+      // (browser-safe, low concurrency)
+      const nowY = new Date().getFullYear();
+      const targets = [];
+      for (let yy = nowY; yy <= 2028; yy++) targets.push(yy);
+
+      // background-ish (still in-page) warmup
+      withConcurrency(targets, 1, async (yy) => {
+        try { await loadCultureYear(yy); } catch {}
+      });
     })();
   </script>
 
-  <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
   <script src="fynx-usercard.js"></script>
 </body>
 </html>
-```
