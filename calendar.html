@@ -11,7 +11,6 @@
 
   <style>
     :root{
-      /* ===== Monochrome System (Light) ===== */
       --bg:#ffffff;
       --surface:#ffffff;
       --surface-2: rgba(11,11,12,0.04);
@@ -19,13 +18,8 @@
       --muted:#5b616a;
       --line: rgba(11,11,12,0.10);
 
-      /* accents stay monochrome */
       --accent:#0b0b0c;
       --accent-soft: rgba(11,11,12,0.08);
-
-      --positive:#0b0b0c;
-      --negative:#0b0b0c;
-      --warning:#0b0b0c;
 
       --shadow: 0 18px 38px rgba(0,0,0,0.06);
       --radius: 14px;
@@ -35,7 +29,6 @@
     }
 
     body.dark-mode{
-      /* ===== Monochrome System (Dark) ===== */
       --bg:#000000;
       --surface:#0b0b0c;
       --surface-2: rgba(242,243,245,0.08);
@@ -46,12 +39,7 @@
       --accent:#f2f3f5;
       --accent-soft: rgba(242,243,245,0.10);
 
-      --positive:#f2f3f5;
-      --negative:#f2f3f5;
-      --warning:#f2f3f5;
-
       --shadow: 0 20px 44px rgba(0,0,0,0.55);
-
       --focus: 0 0 0 3px rgba(242,243,245,0.18);
     }
 
@@ -61,15 +49,12 @@
       font-family:"Manrope", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: var(--text);
       min-height:100vh;
-
-      /* Light: micro-dots */
       background:
         radial-gradient(circle at 1px 1px, rgba(0,0,0,0.06) 1px, transparent 1px) 0 0 / 18px 18px,
         linear-gradient(var(--bg), var(--bg));
     }
 
     body.dark-mode{
-      /* Dark: grid */
       background:
         linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / 26px 26px,
         linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / 26px 26px,
@@ -78,16 +63,11 @@
         linear-gradient(var(--bg), var(--bg));
     }
 
-    .dashboard-container{
-      display:flex;
-      min-height:100vh;
-      width:100%;
-    }
+    .dashboard-container{ display:flex; min-height:100vh; width:100%; }
 
-    /* ===== Sidebar ===== */
     .nav-panel{
       width: var(--nav-width);
-      background: color-mix(in oklab, var(--surface) 92%, transparent);
+      background: rgba(255,255,255,0.92);
       border-right: 1px solid var(--line);
       position: fixed;
       left:0; top:0;
@@ -98,6 +78,7 @@
       backdrop-filter: blur(10px);
       box-shadow: var(--shadow);
     }
+    body.dark-mode .nav-panel{ background: rgba(11,11,12,0.92); }
 
     .nav-logo{
       height:84px;
@@ -143,7 +124,7 @@
     .nav-item.active{
       background: var(--accent-soft);
       color: var(--text);
-      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
+      border-color: var(--line);
     }
 
     .nav-item.active::after{
@@ -170,11 +151,10 @@
       min-height:100vh;
     }
 
-    /* ===== Top Bar ===== */
     .top-bar{
       height:72px;
       border-bottom:1px solid var(--line);
-      background: color-mix(in oklab, var(--surface) 88%, transparent);
+      background: rgba(255,255,255,0.88);
       backdrop-filter: blur(10px);
       display:flex;
       align-items:center;
@@ -184,12 +164,9 @@
       top:0;
       z-index:10;
     }
+    body.dark-mode .top-bar{ background: rgba(11,11,12,0.88); }
 
-    .page-title{
-      font-size:16px;
-      font-weight:900;
-      letter-spacing:-0.2px;
-    }
+    .page-title{ font-size:16px; font-weight:900; letter-spacing:-0.2px; }
 
     .top-bar-right{
       display:flex;
@@ -215,22 +192,13 @@
 
     .icon-btn:hover{
       color: var(--text);
-      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
+      border-color: var(--line);
       transform: translateY(-1px);
     }
 
-    .icon-btn:focus-visible{
-      outline:none;
-      box-shadow: var(--focus);
-    }
+    .icon-btn:focus-visible{ outline:none; box-shadow: var(--focus); }
 
-    .icon-btn svg{
-      width:18px;
-      height:18px;
-      stroke: currentColor;
-      fill:none;
-      stroke-width:1.8;
-    }
+    .icon-btn svg{ width:18px; height:18px; stroke: currentColor; fill:none; stroke-width:1.8; }
 
     .user-avatar{
       width:34px; height:34px;
@@ -244,11 +212,7 @@
       color: var(--muted);
     }
 
-    .content-area{
-      padding:24px;
-      display:grid;
-      gap:16px;
-    }
+    .content-area{ padding:24px; display:grid; gap:16px; }
 
     .section-header h2{
       font-size:28px;
@@ -257,14 +221,8 @@
       margin-bottom:6px;
       font-weight: 900;
     }
+    .section-header p{ color: var(--muted); font-size:14px; font-weight: 800; }
 
-    .section-header p{
-      color: var(--muted);
-      font-size:14px;
-      font-weight: 800;
-    }
-
-    /* ===== Stats ===== */
     .stats-grid{
       display:grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -272,7 +230,7 @@
     }
 
     .stat-card{
-      background: color-mix(in oklab, var(--surface) 92%, transparent);
+      background: rgba(255,255,255,0.92);
       border:1px solid var(--line);
       border-radius: var(--radius);
       padding:14px;
@@ -282,6 +240,7 @@
       min-height:92px;
       backdrop-filter: blur(10px);
     }
+    body.dark-mode .stat-card{ background: rgba(11,11,12,0.92); }
 
     .stat-top{
       display:flex;
@@ -292,21 +251,9 @@
       font-weight:900;
     }
 
-    .stat-value{
-      font-size:22px;
-      font-weight:900;
-      letter-spacing:-0.6px;
-    }
+    .stat-value{ font-size:22px; font-weight:900; letter-spacing:-0.6px; }
+    .stat-change{ font-size:12px; font-weight:900; color: var(--muted); }
 
-    .stat-change{
-      font-size:12px;
-      font-weight:900;
-      color: var(--muted);
-    }
-
-    .up,.down,.flat{ color: var(--muted); }
-
-    /* ===== Panels ===== */
     .panel-grid{
       display:grid;
       grid-template-columns: 1.9fr 1fr;
@@ -315,12 +262,13 @@
     }
 
     .panel{
-      background: color-mix(in oklab, var(--surface) 92%, transparent);
+      background: rgba(255,255,255,0.92);
       border:1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
     }
+    body.dark-mode .panel{ background: rgba(11,11,12,0.92); }
 
     .panel-header{
       display:flex;
@@ -330,17 +278,8 @@
       border-bottom:1px solid var(--line);
     }
 
-    .panel-title{
-      font-size:15px;
-      font-weight:900;
-      letter-spacing:-0.2px;
-    }
-
-    .panel-sub{
-      font-size:12px;
-      color: var(--muted);
-      font-weight: 800;
-    }
+    .panel-title{ font-size:15px; font-weight:900; letter-spacing:-0.2px; }
+    .panel-sub{ font-size:12px; color: var(--muted); font-weight: 800; }
 
     .calendar-controls{ display:flex; align-items:center; gap:8px; }
 
@@ -356,17 +295,9 @@
       transition:0.18s ease;
     }
 
-    .btn:hover{
-      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
-      transform: translateY(-1px);
-    }
+    .btn:hover{ border-color: var(--line); transform: translateY(-1px); }
+    .btn:focus-visible{ outline:none; box-shadow: var(--focus); }
 
-    .btn:focus-visible{
-      outline:none;
-      box-shadow: var(--focus);
-    }
-
-    /* ===== Calendar Grid ===== */
     .calendar-grid{
       display:grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -402,33 +333,16 @@
       border:1px solid transparent;
     }
 
-    .calendar-day:hover{
-      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
-    }
-
-    .calendar-day.outside{
-      background: var(--surface-2);
-      color: var(--muted);
-    }
-
-    .calendar-day.today{
-      box-shadow: inset 0 0 0 2px var(--accent);
-    }
-
-    /* Selected day highlight */
+    .calendar-day:hover{ border-color: var(--line); }
+    .calendar-day.outside{ background: var(--surface-2); color: var(--muted); }
+    .calendar-day.today{ box-shadow: inset 0 0 0 2px var(--accent); }
     .calendar-day.selected{
       box-shadow: inset 0 0 0 2px var(--accent);
-      background: color-mix(in oklab, var(--surface) 88%, var(--surface-2));
+      background: rgba(11,11,12,0.04);
     }
+    body.dark-mode .calendar-day.selected{ background: rgba(242,243,245,0.08); }
 
-    body.dark-mode .calendar-day.selected{
-      background: color-mix(in oklab, var(--surface) 90%, rgba(242,243,245,0.08));
-    }
-
-    .day-number{
-      font-size:12px;
-      font-weight:900;
-    }
+    .day-number{ font-size:12px; font-weight:900; }
 
     .event-list{
       display:flex;
@@ -451,25 +365,12 @@
       color: var(--text);
     }
 
-    .event-earnings, .event-macro, .event-market{
-      background: var(--surface-2);
-      color: var(--text);
-      border-color: var(--line);
-    }
-
-    body.dark-mode .event-earnings,
-    body.dark-mode .event-macro,
-    body.dark-mode .event-market{
+    body.dark-mode .event-pill{
       background: rgba(242,243,245,0.10);
       border-color: rgba(242,243,245,0.14);
-      color: var(--text);
     }
 
-    .side-body{
-      padding:12px;
-      display:grid;
-      gap:10px;
-    }
+    .side-body{ padding:12px; display:grid; gap:10px; }
 
     .event-card{
       border:1px solid var(--line);
@@ -528,11 +429,7 @@
         justify-content:space-around;
         padding:6px 8px;
       }
-      .nav-item{
-        width:auto;
-        min-width:54px;
-        padding:8px;
-      }
+      .nav-item{ width:auto; min-width:54px; padding:8px; }
       .nav-item.active::after{ display:none; }
       .nav-label{ font-size:10px; }
       .main-content{
@@ -627,7 +524,7 @@
             </div>
             <div class="calendar-grid" id="calendarGrid"></div>
             <p class="small-note">
-              Labels: Macro, Market structure, Earnings, Culture (global holidays). Data auto-refreshes daily; some sources can rate-limit in the browser.
+              Labels: Macro, Market structure, Earnings, Culture (global holidays). Culture loads in background to avoid freezes.
             </p>
           </section>
 
@@ -639,7 +536,10 @@
               </div>
             </div>
             <div class="side-body" id="selectedEvents">
-              <div class="event-card"><h4>Select a day on the calendar</h4><div class="event-meta"><span>Tip</span><span>Shows all events for that date</span></div></div>
+              <div class="event-card">
+                <h4>Select a day on the calendar</h4>
+                <div class="event-meta"><span>Tip</span><span>Shows all events for that date</span></div>
+              </div>
             </div>
           </aside>
         </div>
@@ -649,7 +549,7 @@
 
   <script>
     /* =========================
-       ✅ NAV ROUTING (same behavior as Home)
+       NAV ROUTING
     ========================= */
     const navItems = document.querySelectorAll(".nav-item");
     const viewPages = {
@@ -668,8 +568,7 @@
     });
 
     /* =========================
-       GLOBAL THEME (SYNCED)
-       - no toggle button here (ONLY on profile.html)
+       THEME
     ========================= */
     const THEME_KEY = "fynx_theme";
     function applySavedTheme(){
@@ -692,24 +591,16 @@
     let currentDate = new Date();
     let selectedISO = null;
 
-    // Month store (macro/earnings/culture) + per-day “on this day” store (historical/context)
-    const eventsStore = new Map();   // iso -> [{type,title,time,source,url,region}]
-    const dayExtrasStore = new Map(); // iso -> [{type,title,time,source,url,region}] (lazy-loaded per selected day)
-
-    /* =========================
-       IMPORTANT REALITY CHECK (implemented)
-       - “All culture around the world for every single day” requires a paid dataset or backend aggregator.
-       - This page stays static and works in GitHub Pages by combining:
-         1) Finance/Macro patterns (local)
-         2) Earnings calendar (API with fallback)
-         3) Global holidays & observances for a broad multi-country set (free API, cached)
-         4) “On this day” world events (lazy-loaded per selected day)
-       - Auto-updates daily by refreshing caches after TTL.
-    ========================= */
+    const eventsStore = new Map();     // iso -> events for current rendered month
+    const dayExtrasStore = new Map();  // iso -> extra “on this day” items
 
     /* =========================
        HELPERS
     ========================= */
+    function safeText(s){
+      return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+    }
+
     function formatPct(v) {
       if (v === null || Number.isNaN(v)) return "--";
       const sign = v > 0 ? "+" : "";
@@ -726,10 +617,6 @@
       const m = String(dateObj.getMonth() + 1).padStart(2, "0");
       const d = String(dateObj.getDate()).padStart(2, "0");
       return `${y}-${m}-${d}`;
-    }
-
-    function safeText(s){
-      return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
     }
 
     async function fetchJson(url, timeout = 10000) {
@@ -758,13 +645,25 @@
     function eventClass(type) {
       if (type === "earnings") return "event-earnings";
       if (type === "macro") return "event-macro";
-      // culture + history + market all stay monochrome
       return "event-market";
     }
 
     function sortEvents(list){
       const pri = { macro: 1, market: 2, earnings: 3, culture: 4, history: 5 };
       return [...list].sort((a,b) => (pri[a.type] ?? 99) - (pri[b.type] ?? 99));
+    }
+
+    function showFatalError(err){
+      const msg = (err && err.message) ? err.message : String(err);
+      lastUpdated.textContent = "Error";
+      selectedDateLabel.textContent = "Calendar error";
+      selectedMeta.textContent = "JavaScript stopped";
+      selectedEvents.innerHTML = `
+        <div class="event-card">
+          <h4>Fix needed</h4>
+          <div class="event-meta"><span>Reason</span><span>${safeText(msg)}</span></div>
+        </div>
+      `;
     }
 
     /* =========================
@@ -786,47 +685,17 @@
     async function loadLiveData() {
       try {
         const [crypto, fx, fng] = await Promise.all([
-          fetchJson("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true"),
-          fetchJson("https://api.frankfurter.app/latest?from=USD&to=EUR,GBP,JPY"),
-          fetchJson("https://api.alternative.me/fng/?limit=1&format=json")
+          fetchJson("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true", 12000),
+          fetchJson("https://api.frankfurter.app/latest?from=USD&to=EUR,GBP,JPY", 12000),
+          fetchJson("https://api.alternative.me/fng/?limit=1&format=json", 12000)
         ]);
 
         const cards = [
-          {
-            label: "Bitcoin (USD)",
-            value: `$${formatNumber(crypto.bitcoin?.usd, 0)}`,
-            change: Number(crypto.bitcoin?.usd_24h_change ?? 0),
-            changeText: `${formatPct(Number(crypto.bitcoin?.usd_24h_change ?? 0))} (24h)`,
-            source: "CoinGecko"
-          },
-          {
-            label: "Ethereum (USD)",
-            value: `$${formatNumber(crypto.ethereum?.usd, 0)}`,
-            change: Number(crypto.ethereum?.usd_24h_change ?? 0),
-            changeText: `${formatPct(Number(crypto.ethereum?.usd_24h_change ?? 0))} (24h)`,
-            source: "CoinGecko"
-          },
-          {
-            label: "USD / EUR",
-            value: formatNumber(fx.rates?.EUR, 4),
-            change: 0,
-            changeText: "Daily FX snapshot",
-            source: "Frankfurter"
-          },
-          {
-            label: "USD / GBP",
-            value: formatNumber(fx.rates?.GBP, 4),
-            change: 0,
-            changeText: "Daily FX snapshot",
-            source: "Frankfurter"
-          },
-          {
-            label: "Fear & Greed",
-            value: `${fng.data?.[0]?.value ?? "--"} / 100`,
-            change: 0,
-            changeText: fng.data?.[0]?.value_classification ?? "Sentiment index",
-            source: "Alternative.me"
-          }
+          { label: "Bitcoin (USD)", value: `$${formatNumber(crypto.bitcoin?.usd, 0)}`, change: Number(crypto.bitcoin?.usd_24h_change ?? 0), changeText: `${formatPct(Number(crypto.bitcoin?.usd_24h_change ?? 0))} (24h)`, source: "CoinGecko" },
+          { label: "Ethereum (USD)", value: `$${formatNumber(crypto.ethereum?.usd, 0)}`, change: Number(crypto.ethereum?.usd_24h_change ?? 0), changeText: `${formatPct(Number(crypto.ethereum?.usd_24h_change ?? 0))} (24h)`, source: "CoinGecko" },
+          { label: "USD / EUR", value: formatNumber(fx.rates?.EUR, 4), change: 0, changeText: "Daily FX snapshot", source: "Frankfurter" },
+          { label: "USD / GBP", value: formatNumber(fx.rates?.GBP, 4), change: 0, changeText: "Daily FX snapshot", source: "Frankfurter" },
+          { label: "Fear & Greed", value: `${fng.data?.[0]?.value ?? "--"} / 100`, change: 0, changeText: fng.data?.[0]?.value_classification ?? "Sentiment index", source: "Alternative.me" }
         ];
 
         renderStats(cards);
@@ -838,13 +707,11 @@
           { label: "Re-try", value: "Refresh page", change: 0, changeText: "Try again in 10 sec", source: "Info" },
           { label: "Status", value: "Stable", change: 0, changeText: "Using local logic", source: "App" }
         ]);
-      } finally {
-        lastUpdated.textContent = `Updated ${new Date().toLocaleString()}`;
       }
     }
 
     /* =========================
-       FINANCE / MACRO BASE EVENTS (local patterns)
+       BASE EVENTS (local finance patterns)
     ========================= */
     function nthWeekdayOfMonth(year, month, weekday, n) {
       const d = new Date(year, month, 1);
@@ -866,9 +733,6 @@
     }
 
     function buildBaseEvents(year, month) {
-      // Do NOT clear entire store here anymore (culture needs to persist)
-      // Only remove month-specific finance items; easiest: we fully rebuild month from scratch in renderMonth().
-      // So renderMonth() will clear and refill.
       const firstFriday = nthWeekdayOfMonth(year, month, 5, 1);
       if (firstFriday) addEvent(firstFriday, { type: "macro", title: "US Nonfarm Payrolls", time: "08:30 ET", source: "BLS schedule pattern", region: "United States" });
 
@@ -895,11 +759,10 @@
       const end = `${year}-${String(month + 1).padStart(2, "0")}-${String(endDate).padStart(2, "0")}`;
 
       try {
-        // NOTE: "demo" key is limited. Replace with a real key if you want production coverage.
         const url = `https://financialmodelingprep.com/api/v3/earning_calendar?from=${start}&to=${end}&apikey=demo`;
         const data = await fetchJson(url, 12000);
 
-        data.slice(0, 160).forEach(item => {
+        (Array.isArray(data) ? data : []).slice(0, 160).forEach(item => {
           const d = item.date ? new Date(item.date) : null;
           if (!d || Number.isNaN(d.getTime())) return;
           addEvent(d, {
@@ -928,26 +791,18 @@
     }
 
     /* =========================
-       CULTURE / HOLIDAYS (global multi-country set, cached)
-       - Browser-friendly: fetch holidays per country per year, cache to localStorage.
-       - You can expand the country list, but more countries => more requests.
+       CULTURE HOLIDAYS (background; non-blocking)
     ========================= */
     const CULTURE_COUNTRIES = [
-      // Americas
       "US","CA","MX","BR","AR","CL","CO",
-      // Europe
       "GB","IE","FR","DE","ES","IT","NL","BE","SE","NO","DK","FI","PL","CZ","AT","CH","PT","GR","RO","UA",
-      // Middle East
       "TR","SA","AE","IL","IR",
-      // Africa
       "ZA","NG","EG","KE","MA",
-      // Asia-Pacific
       "IN","PK","BD","LK","CN","JP","KR","SG","MY","TH","VN","ID","PH","AU","NZ"
     ];
-
     const CULTURE_API_BASE = "https://date.nager.at/api/v3";
     const CULTURE_CACHE_PREFIX = "fynx_culture_year_";
-    const CULTURE_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // refresh daily
+    const CULTURE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
     function countryName(code){
       try{
@@ -991,21 +846,17 @@
     }
 
     async function loadCultureYear(year){
-      // returns array of holiday records with {date,name,countryCode,localName,types}
       const cached = getCultureCache(year);
       if (cached) return cached;
 
-      // Fetch per country in parallel with a sane limit to avoid rate limiting
-      const results = await withConcurrency(CULTURE_COUNTRIES, 6, async (cc) => {
+      const results = await withConcurrency(CULTURE_COUNTRIES, 4, async (cc) => {
         try{
           const arr = await fetchJson(`${CULTURE_API_BASE}/PublicHolidays/${year}/${cc}`, 12000);
-          // Normalize
           return (Array.isArray(arr) ? arr : []).map(h => ({
             date: h.date,
             name: h.name,
             localName: h.localName,
-            countryCode: cc,
-            types: h.types || []
+            countryCode: cc
           }));
         }catch{
           return [];
@@ -1017,39 +868,41 @@
       return flat;
     }
 
-    async function applyCultureToMonth(year, month){
-      // month: 0-11
-      const data = await loadCultureYear(year);
+    async function applyCultureToMonthBackground(year, month){
+      try{
+        const data = await loadCultureYear(year);
+        for (const h of data){
+          if (!h.date) continue;
+          if (h.date.slice(0,4) !== String(year)) continue;
+          const mm = Number(h.date.slice(5,7)) - 1;
+          if (mm !== month) continue;
 
-      // Add only those holidays that fall in this month
-      for (const h of data){
-        if (!h.date) continue;
-        // h.date format YYYY-MM-DD
-        if (h.date.slice(0,4) !== String(year)) continue;
-        const mm = Number(h.date.slice(5,7)) - 1;
-        if (mm !== month) continue;
+          const iso = h.date;
+          const cname = countryName(h.countryCode);
+          const label = (h.localName && h.localName !== h.name)
+            ? `${h.name} — ${h.localName}`
+            : h.name;
 
-        const iso = h.date;
-        const cname = countryName(h.countryCode);
+          addEvent(iso, {
+            type: "culture",
+            title: label,
+            time: "All day",
+            source: "Holiday / observance",
+            region: cname
+          });
+        }
 
-        // If localName exists and differs, show both
-        const label = (h.localName && h.localName !== h.name)
-          ? `${h.name} — ${h.localName}`
-          : h.name;
-
-        addEvent(iso, {
-          type: "culture",
-          title: label,
-          time: "All day",
-          source: "Holiday / observance",
-          region: cname
-        });
+        // Re-render after culture is added (no freeze)
+        renderCalendar();
+        if (selectedISO) renderSelected(selectedISO);
+        lastUpdated.textContent = `Updated ${new Date().toLocaleString()}`;
+      }catch{
+        // Ignore culture failures; finance calendar still works.
       }
     }
 
     /* =========================
-       “WHAT HAPPENED TODAY” WORLD CONTEXT (lazy per selected day)
-       - Wikipedia REST endpoint returns historical events for that day (global context).
+       ON THIS DAY (lazy)
     ========================= */
     const OTD_CACHE_PREFIX = "fynx_otd_";
     const OTD_TTL_MS = 24 * 60 * 60 * 1000;
@@ -1074,7 +927,6 @@
     }
 
     async function loadOnThisDayForISO(iso){
-      // If already loaded into extras store, skip
       if (dayExtrasStore.has(iso)) return;
 
       const cached = getOtdCache(iso);
@@ -1094,40 +946,29 @@
         const data = await fetchJson(url, 12000);
         const events = Array.isArray(data?.events) ? data.events : [];
 
-        // Keep it tight: top 8 events (so it doesn’t flood)
         const trimmed = events.slice(0, 8).map(e => {
           const year = e.year ? `${e.year}` : "";
           const title = year ? `${year}: ${e.text}` : e.text;
-          // Find one page link if exists
           let pageUrl = "";
           if (Array.isArray(e.pages) && e.pages.length){
             const p = e.pages[0];
             if (p?.content_urls?.desktop?.page) pageUrl = p.content_urls.desktop.page;
           }
-          return {
-            type: "history",
-            title: title,
-            time: "Context",
-            source: "On this day",
-            region: "World",
-            url: pageUrl
-          };
+          return { type: "history", title, time: "Context", source: "On this day", region: "World", url: pageUrl };
         });
 
         trimmed.forEach(ev => addDayExtra(iso, ev));
         setOtdCache(iso, trimmed);
       }catch{
-        // No extras is fine
         dayExtrasStore.set(iso, []);
       }
     }
 
     /* =========================
-       CALENDAR RENDER
+       RENDER
     ========================= */
     function renderSelected(iso) {
       const dateObj = new Date(`${iso}T00:00:00`);
-
       const monthList = eventsStore.get(iso) || [];
       const extraList = dayExtrasStore.get(iso) || [];
       const merged = sortEvents([...monthList, ...extraList]);
@@ -1160,7 +1001,7 @@
 
     function highlightSelected(iso){
       document.querySelectorAll(".calendar-day.selected").forEach(el => el.classList.remove("selected"));
-      const el = document.querySelector(\`.calendar-day[data-date="\${iso}"]\`);
+      const el = document.querySelector(`.calendar-day[data-date="${iso}"]`);
       if (el) el.classList.add("selected");
     }
 
@@ -1178,7 +1019,7 @@
           <div class="day-number">${dateObj.getDate()}</div>
           <div class="event-list">
             ${shown.map(ev => `<div class="event-pill ${eventClass(ev.type)}">${safeText(ev.title)}</div>`).join("")}
-            ${list.length > 2 ? `<div class="event-pill event-market">+${list.length - 2} more</div>` : ""}
+            ${list.length > 2 ? `<div class="event-pill">+${list.length - 2} more</div>` : ""}
           </div>
         </div>
       `;
@@ -1227,8 +1068,6 @@
         el.addEventListener("click", async () => {
           selectedISO = el.dataset.date;
           highlightSelected(selectedISO);
-
-          // Lazy-load “what happened on this day” world context
           await loadOnThisDayForISO(selectedISO);
           renderSelected(selectedISO);
         });
@@ -1236,48 +1075,28 @@
 
       if (!selectedISO) selectedISO = dateToISO(new Date());
       highlightSelected(selectedISO);
-      // Ensure extras for selected day are loaded
       loadOnThisDayForISO(selectedISO).finally(() => renderSelected(selectedISO));
-    }
-
-    /* =========================
-       MONTH BUILD PIPELINE
-       - Clears stores for current month rebuild
-       - Adds: macro/market + earnings + culture for month
-    ========================= */
-    function clearMonthData(year, month){
-      // Remove month entries from eventsStore, keep other months intact
-      for (const key of [...eventsStore.keys()]){
-        if (!key || key.length !== 10) continue;
-        const y = Number(key.slice(0,4));
-        const m = Number(key.slice(5,7)) - 1;
-        if (y === year && m === month) eventsStore.delete(key);
-      }
-
-      // Also clear extras for the month (lazy reload as needed)
-      for (const key of [...dayExtrasStore.keys()]){
-        if (!key || key.length !== 10) continue;
-        const y = Number(key.slice(0,4));
-        const m = Number(key.slice(5,7)) - 1;
-        if (y === year && m === month) dayExtrasStore.delete(key);
-      }
     }
 
     async function renderMonth() {
       const y = currentDate.getFullYear();
       const m = currentDate.getMonth();
 
-      // Hard guard: allow navigation through 2028 as requested (and beyond if you want)
-      // This does not limit browsing; it ensures culture cache is loaded for these years too.
-      clearMonthData(y, m);
+      eventsStore.clear();
+      // keep dayExtrasStore; it’s per day and cached
 
+      // 1) draw finance immediately
       buildBaseEvents(y, m);
 
-      // Load culture first (so calendar shows “Culture” days), then earnings
-      await applyCultureToMonth(y, m);
+      // 2) add earnings (await — but it has timeout + fallback)
       await loadEarnings(y, m);
 
+      // 3) render calendar now (NO CULTURE BLOCKING)
       renderCalendar();
+
+      // 4) culture loads in background and re-renders when ready
+      applyCultureToMonthBackground(y, m);
+
       lastUpdated.textContent = `Updated ${new Date().toLocaleString()}`;
     }
 
@@ -1303,42 +1122,15 @@
     });
 
     /* =========================
-       AUTO-UPDATE DAILY
-       - refresh month data once per day in the browser
+       INIT
     ========================= */
-    const DAILY_KEY = "fynx_calendar_daily_refresh";
-    function shouldDailyRefresh(){
-      const today = dateToISO(new Date());
-      const last = localStorage.getItem(DAILY_KEY);
-      if (last !== today){
-        localStorage.setItem(DAILY_KEY, today);
-        return true;
-      }
-      return false;
-    }
-
     (async function init() {
-      applySavedTheme();
-      await loadLiveData();
-
-      // Force refresh daily (culture cache TTL is daily too)
-      if (shouldDailyRefresh()){
-        // Clear culture caches for current+next years if you want aggressive freshness:
-        // (kept conservative: rely on TTL)
+      try{
+        lastUpdated.textContent = `Updated ${new Date().toLocaleString()}`;
+        await Promise.all([loadLiveData(), renderMonth()]);
+      }catch(err){
+        showFatalError(err);
       }
-
-      await renderMonth();
-
-      // Pre-warm culture cache for the requested horizon (now..2028) gradually, without blocking UI
-      // (browser-safe, low concurrency)
-      const nowY = new Date().getFullYear();
-      const targets = [];
-      for (let yy = nowY; yy <= 2028; yy++) targets.push(yy);
-
-      // background-ish (still in-page) warmup
-      withConcurrency(targets, 1, async (yy) => {
-        try { await loadCultureYear(yy); } catch {}
-      });
     })();
   </script>
 
