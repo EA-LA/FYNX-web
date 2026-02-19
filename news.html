@@ -7,7 +7,6 @@
 
   <style>
     :root{
-      /* ===== Monochrome System (Light) ===== */
       --bg:#ffffff;
       --panel:#ffffff;
       --panel-soft: rgba(11,11,12,0.04);
@@ -18,17 +17,12 @@
       --brand:#0b0b0c;
       --brand-soft: rgba(11,11,12,0.08);
 
-      --pos:#0b0b0c;
-      --neg:#0b0b0c;
-      --warn:#0b0b0c;
-
       --shadow: 0 18px 38px rgba(0,0,0,0.06);
       --focus: 0 0 0 3px rgba(11,11,12,0.18);
       --nav-w: 120px;
     }
 
     body.dark-mode{
-      /* ===== Monochrome System (Dark) ===== */
       --bg:#000000;
       --panel:#0b0b0c;
       --panel-soft: rgba(242,243,245,0.08);
@@ -38,10 +32,6 @@
 
       --brand:#f2f3f5;
       --brand-soft: rgba(242,243,245,0.10);
-
-      --pos:#f2f3f5;
-      --neg:#f2f3f5;
-      --warn:#f2f3f5;
 
       --shadow: 0 20px 44px rgba(0,0,0,0.55);
       --focus: 0 0 0 3px rgba(242,243,245,0.18);
@@ -54,15 +44,12 @@
       color: var(--text);
       min-height: 100vh;
       transition: background 0.25s ease, color 0.25s ease;
-
-      /* Light: micro-dots */
       background:
         radial-gradient(circle at 1px 1px, rgba(0,0,0,0.06) 1px, transparent 1px) 0 0 / 18px 18px,
         linear-gradient(var(--bg), var(--bg));
     }
 
     body.dark-mode{
-      /* Dark: grid */
       background:
         linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / 26px 26px,
         linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / 26px 26px,
@@ -73,7 +60,6 @@
 
     .dashboard-container{ display:flex; min-height:100vh; }
 
-    /* ===== NAV ===== */
     .nav-panel{
       width: var(--nav-w);
       background: color-mix(in oklab, var(--panel) 92%, transparent);
@@ -153,7 +139,6 @@
       flex-direction:column;
     }
 
-    /* ===== TOP BAR ===== */
     .top-bar{
       position:sticky;
       top:0;
@@ -182,9 +167,6 @@
       font-weight: 900;
     }
 
-    /* Theme toggle removed here (ONLY on profile.html) */
-    .theme-toggle{ display:none; }
-
     .notification-icon{
       width:34px;
       height:34px;
@@ -202,11 +184,6 @@
       color: var(--text);
       transform: translateY(-1px);
       border-color: color-mix(in oklab, var(--text) 18%, var(--line));
-    }
-
-    .notification-icon:focus-visible{
-      outline:none;
-      box-shadow: var(--focus);
     }
 
     .notification-icon svg{
@@ -228,7 +205,6 @@
       font-weight:900;
     }
 
-    /* ===== CONTENT ===== */
     .content-area{
       padding:20px;
       display:grid;
@@ -243,7 +219,6 @@
       backdrop-filter: blur(10px);
     }
 
-    /* ===== TICKER ===== */
     .ticker-wrap{ overflow:hidden; }
 
     .ticker-label{
@@ -268,9 +243,8 @@
     }
 
     .ticker-item{ font-size:13px; font-weight:900; }
-    .ticker-item .p, .ticker-item .n{ color: var(--text); } /* monochrome */
+    .ticker-item .p, .ticker-item .n{ color: var(--text); }
 
-    /* ===== LAYOUT ===== */
     .news-layout{
       display:grid;
       grid-template-columns: 320px minmax(0, 1fr);
@@ -453,12 +427,6 @@
       color: var(--muted);
     }
 
-    /* sentiment pills still exist but monochrome */
-    .pill.sent-pos, .pill.sent-neg, .pill.sent-neu{
-      color: var(--muted);
-      border-color: var(--line);
-    }
-
     .news-title{
       font-size:19px;
       line-height:1.4;
@@ -515,6 +483,16 @@
       text-align:center;
       color: var(--muted);
       font-weight: 900;
+    }
+
+    .banner{
+      border:1px solid var(--line);
+      background: var(--panel-soft);
+      border-radius:12px;
+      padding:12px 14px;
+      font-size:12px;
+      color: var(--muted);
+      font-weight:900;
     }
 
     @media (max-width:1080px){
@@ -594,9 +572,6 @@
         <h1 class="page-title">Live Finance News</h1>
         <div class="top-bar-right">
           <span class="chip" id="lastUpdated">Updating...</span>
-
-          <!-- Theme toggle REMOVED here (ONLY on profile.html) -->
-
           <button class="notification-icon" aria-label="Alerts">
             <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
           </button>
@@ -605,6 +580,8 @@
       </div>
 
       <div class="content-area">
+        <div id="proxyBanner" class="banner" style="display:none;"></div>
+
         <section class="ticker-wrap panel">
           <div class="ticker-label">Market Pulse</div>
           <div class="ticker" id="ticker"></div>
@@ -640,7 +617,7 @@
             <div class="section-header">
               <div>
                 <h2>Global Finance Wire</h2>
-                <p>Real-time market, policy, FX, rates, commodities, and crypto headlines.</p>
+                <p>Markets, macro, equities, rates, FX, commodities, crypto, banking.</p>
               </div>
               <button id="refreshBtn" class="refresh-btn">Refresh now</button>
             </div>
@@ -654,6 +631,15 @@
   </div>
 
   <script>
+    /***********************************************************
+     ✅ IMPORTANT (PERFECT FIX)
+     This page expects your own RSS proxy endpoint:
+       /rss?url=<ENCODED_RSS_URL>
+
+     That endpoint is provided below as a Cloudflare Worker.
+    ***********************************************************/
+    const RSS_PROXY_ENDPOINT = "/rss?url=";
+
     const state = {
       allNews: [],
       filtered: [],
@@ -661,26 +647,88 @@
       topic: "All",
       query: "",
       symbol: "All",
-      autoRefreshMs: 120000
+      autoRefreshMs: 5 * 60 * 1000,      // ✅ every 5 minutes
+      lastFetchAt: 0,
+      minManualRefreshMs: 15 * 1000      // prevent spam clicking
     };
 
     const REGIONS = ["All", "US", "Europe", "Asia", "Middle East", "Africa", "LatAm", "Global"];
     const TOPICS  = ["All", "Markets", "Macro", "Equities", "Rates", "FX", "Commodities", "Crypto", "Banking"];
 
-    // ===== Base feeds (general mode) =====
-    const FEEDS_BASE = [
-      { name: "US",          topic: "Markets",     url: "https://news.google.com/rss/search?q=stock+market+OR+earnings+when:1d&hl=en-US&gl=US&ceid=US:en" },
-      { name: "Europe",      topic: "Macro",       url: "https://news.google.com/rss/search?q=europe+central+bank+OR+euro+zone+inflation+when:1d&hl=en-GB&gl=GB&ceid=GB:en" },
-      { name: "Asia",        topic: "Markets",     url: "https://news.google.com/rss/search?q=nikkei+OR+hang+seng+OR+china+market+when:1d&hl=en-SG&gl=SG&ceid=SG:en" },
-      { name: "Middle East", topic: "Commodities", url: "https://news.google.com/rss/search?q=oil+market+OPEC+when:1d&hl=en-AE&gl=AE&ceid=AE:en" },
-      { name: "Africa",      topic: "Macro",       url: "https://news.google.com/rss/search?q=africa+economy+OR+africa+markets+when:1d&hl=en-ZA&gl=ZA&ceid=ZA:en" },
-      { name: "LatAm",       topic: "Macro",       url: "https://news.google.com/rss/search?q=latin+america+economy+OR+emerging+markets+when:1d&hl=en-US&gl=US&ceid=US:en" },
-      { name: "Global",      topic: "FX",          url: "https://news.google.com/rss/search?q=foreign+exchange+OR+dollar+index+when:1d&hl=en-US&gl=US&ceid=US:en" },
-      { name: "Global",      topic: "Rates",       url: "https://news.google.com/rss/search?q=bond+yields+OR+treasury+when:1d&hl=en-US&gl=US&ceid=US:en" },
-      { name: "Global",      topic: "Crypto",      url: "https://news.google.com/rss/search?q=bitcoin+OR+ethereum+market+when:1d&hl=en-US&gl=US&ceid=US:en" },
-      { name: "Global",      topic: "Banking",     url: "https://news.google.com/rss/search?q=banking+regulation+OR+credit+markets+when:1d&hl=en-US&gl=US&ceid=US:en" }
+    // ✅ more coverage (region + topic) so filters always show content
+    const FEEDS = [
+      // US
+      { region:"US", topic:"Markets",     q:"stock market OR wall street OR dow OR nasdaq OR s&p" },
+      { region:"US", topic:"Macro",       q:"fed OR CPI OR jobs report OR GDP OR inflation" },
+      { region:"US", topic:"Equities",    q:"earnings OR IPO OR shares OR equities" },
+      { region:"US", topic:"Rates",       q:"treasury yields OR bond market OR interest rates" },
+      { region:"US", topic:"FX",          q:"dollar index OR USD OR forex" },
+      { region:"US", topic:"Commodities", q:"oil prices OR WTI OR brent OR gold prices" },
+      { region:"US", topic:"Crypto",      q:"bitcoin OR ethereum OR crypto market" },
+      { region:"US", topic:"Banking",     q:"banks OR banking regulation OR credit markets" },
+
+      // Europe
+      { region:"Europe", topic:"Markets",     q:"europe markets OR stoxx OR dax OR ftse" },
+      { region:"Europe", topic:"Macro",       q:"ECB OR eurozone inflation OR eurozone GDP" },
+      { region:"Europe", topic:"Equities",    q:"europe equities OR european stocks OR earnings" },
+      { region:"Europe", topic:"Rates",       q:"europe bond yields OR gilts OR bund yields" },
+      { region:"Europe", topic:"FX",          q:"EURUSD OR euro OR pound OR GBPUSD" },
+      { region:"Europe", topic:"Commodities", q:"brent OR energy prices europe" },
+      { region:"Europe", topic:"Crypto",      q:"crypto europe OR bitcoin europe" },
+      { region:"Europe", topic:"Banking",     q:"europe banks OR banking supervision" },
+
+      // Asia
+      { region:"Asia", topic:"Markets",     q:"asia markets OR nikkei OR hang seng OR shanghai" },
+      { region:"Asia", topic:"Macro",       q:"china economy OR japan inflation OR asia GDP" },
+      { region:"Asia", topic:"Equities",    q:"asia stocks OR earnings asia" },
+      { region:"Asia", topic:"Rates",       q:"japan bond yields OR boj OR rates asia" },
+      { region:"Asia", topic:"FX",          q:"USDJPY OR yen OR yuan OR CNY" },
+      { region:"Asia", topic:"Commodities", q:"oil demand asia OR gold demand" },
+      { region:"Asia", topic:"Crypto",      q:"crypto asia OR bitcoin asia" },
+      { region:"Asia", topic:"Banking",     q:"asia banks OR bank regulation asia" },
+
+      // Middle East
+      { region:"Middle East", topic:"Markets",     q:"middle east markets OR gulf markets" },
+      { region:"Middle East", topic:"Macro",       q:"middle east economy OR inflation" },
+      { region:"Middle East", topic:"Equities",    q:"middle east stocks OR IPO" },
+      { region:"Middle East", topic:"Rates",       q:"rates OR central bank middle east" },
+      { region:"Middle East", topic:"FX",          q:"currency OR forex middle east" },
+      { region:"Middle East", topic:"Commodities", q:"OPEC OR oil market OR brent" },
+      { region:"Middle East", topic:"Crypto",      q:"crypto middle east" },
+      { region:"Middle East", topic:"Banking",     q:"banks middle east OR banking regulation" },
+
+      // Africa
+      { region:"Africa", topic:"Markets",     q:"africa markets OR african stocks" },
+      { region:"Africa", topic:"Macro",       q:"africa economy OR IMF africa OR inflation africa" },
+      { region:"Africa", topic:"Equities",    q:"africa equities OR IPO africa" },
+      { region:"Africa", topic:"Rates",       q:"interest rates africa OR central bank africa" },
+      { region:"Africa", topic:"FX",          q:"forex africa OR currency africa" },
+      { region:"Africa", topic:"Commodities", q:"gold africa OR oil africa OR commodities africa" },
+      { region:"Africa", topic:"Crypto",      q:"crypto africa OR bitcoin africa" },
+      { region:"Africa", topic:"Banking",     q:"banks africa OR banking regulation africa" },
+
+      // LatAm
+      { region:"LatAm", topic:"Markets",     q:"latin america markets OR brazil stocks OR mexico stocks" },
+      { region:"LatAm", topic:"Macro",       q:"latin america economy OR inflation brazil OR GDP mexico" },
+      { region:"LatAm", topic:"Equities",    q:"latin america equities OR earnings" },
+      { region:"LatAm", topic:"Rates",       q:"rates brazil OR central bank brazil OR bond yields" },
+      { region:"LatAm", topic:"FX",          q:"USDMXN OR USDBRL OR peso OR real currency" },
+      { region:"LatAm", topic:"Commodities", q:"oil mexico OR commodities brazil" },
+      { region:"LatAm", topic:"Crypto",      q:"crypto latin america OR bitcoin brazil" },
+      { region:"LatAm", topic:"Banking",     q:"banks latin america OR banking regulation" },
+
+      // Global
+      { region:"Global", topic:"Markets",     q:"global markets OR world stocks OR risk-on risk-off" },
+      { region:"Global", topic:"Macro",       q:"global economy OR IMF OR world inflation OR recession" },
+      { region:"Global", topic:"Equities",    q:"global stocks OR earnings season" },
+      { region:"Global", topic:"Rates",       q:"global bond yields OR interest rates" },
+      { region:"Global", topic:"FX",          q:"forex OR dollar index OR DXY OR EURUSD" },
+      { region:"Global", topic:"Commodities", q:"oil prices OR brent OR gold prices OR copper prices" },
+      { region:"Global", topic:"Crypto",      q:"bitcoin OR ethereum OR crypto regulation" },
+      { region:"Global", topic:"Banking",     q:"banking crisis OR bank regulation OR credit markets" }
     ];
 
+    // Market ticker (display only)
     const MARKET_TICKER = [
       { symbol: "S&P 500", value: "+0.41%", positive: true  },
       { symbol: "NASDAQ",  value: "+0.72%", positive: true  },
@@ -692,184 +740,80 @@
       { symbol: "ETH",     value: "-0.66%", positive: false }
     ];
 
-    // ===== Symbol queries (symbol mode) =====
     const SYMBOL_QUERY = {
-      "S&P 500": "(S&P 500 OR SPX OR \"US stocks\" OR \"US equity market\")",
-      "NASDAQ":  "(NASDAQ OR NDX OR \"tech stocks\" OR \"Nasdaq composite\")",
-      "DXY":     "(DXY OR \"dollar index\" OR \"US dollar index\")",
-      "US10Y":   "(US10Y OR \"10-year treasury\" OR \"U.S. 10-year\" OR \"Treasury yield\")",
-      "Brent":   "(Brent OR \"Brent crude\" OR \"oil prices\" OR OPEC)",
+      "S&P 500": "(S&P 500 OR SPX OR \"US equity market\")",
+      "NASDAQ":  "(NASDAQ OR NDX OR \"Nasdaq composite\")",
+      "DXY":     "(DXY OR \"dollar index\")",
+      "US10Y":   "(US10Y OR \"10-year treasury\" OR \"Treasury yield\")",
+      "Brent":   "(Brent OR \"Brent crude\" OR OPEC OR \"oil prices\")",
       "Gold":    "(Gold OR XAU OR \"gold prices\" OR bullion)",
       "BTC":     "(Bitcoin OR BTC)",
       "ETH":     "(Ethereum OR ETH)"
     };
 
-    // Multiple locales to make it "all around the world"
-    const SYMBOL_LOCALES = [
-      { hl:"en-US", gl:"US", ceid:"US:en", region:"US" },
-      { hl:"en-GB", gl:"GB", ceid:"GB:en", region:"Europe" },
-      { hl:"en-SG", gl:"SG", ceid:"SG:en", region:"Asia" },
-      { hl:"en-IN", gl:"IN", ceid:"IN:en", region:"Asia" },
-      { hl:"en-AE", gl:"AE", ceid:"AE:en", region:"Middle East" },
-      { hl:"en-ZA", gl:"ZA", ceid:"ZA:en", region:"Africa" }
-    ];
+    const newsFeed     = document.getElementById("newsFeed");
+    const statusText   = document.getElementById("statusText");
+    const lastUpdated  = document.getElementById("lastUpdated");
+    const searchInput  = document.getElementById("searchInput");
+    const refreshBtn   = document.getElementById("refreshBtn");
+    const totalCount   = document.getElementById("totalCount");
+    const sourceCount  = document.getElementById("sourceCount");
+    const proxyBanner  = document.getElementById("proxyBanner");
 
-    const newsFeed   = document.getElementById("newsFeed");
-    const statusText = document.getElementById("statusText");
-    const lastUpdated= document.getElementById("lastUpdated");
-    const searchInput= document.getElementById("searchInput");
-    const refreshBtn = document.getElementById("refreshBtn");
-    const totalCount = document.getElementById("totalCount");
-    const sourceCount= document.getElementById("sourceCount");
-
-    /* =========================
-       GLOBAL THEME (SYNCED)
-       - No toggle here (ONLY on profile.html)
-    ========================= */
+    // Theme sync (no toggle here)
     const THEME_KEY = "fynx_theme";
-    function applySavedTheme(){
+    (function applySavedTheme(){
       const saved = localStorage.getItem(THEME_KEY) || "light";
       document.body.classList.toggle("dark-mode", saved === "dark");
-    }
-    applySavedTheme();
+    })();
 
-    /* =========================
-       ✅ PROFILE AVATAR (same as Home)
-    ========================= */
-    const NAME_KEYS = [
-      "fynx_profile_name",
-      "fynx_username",
-      "username",
-      "profile_name",
-      "user_name",
-      "fynx_name",
-      "fynxUserName",
-      "displayName",
-      "name"
-    ];
-    const PROFILE_JSON_KEYS = ["fynx_profile", "profile", "fynx_user", "userProfile", "fynx_account"];
+    // Avatar sync
+    (function renderAvatar(){
+      const NAME_KEYS = ["fynx_profile_name","fynx_username","username","profile_name","user_name","fynx_name","fynxUserName","displayName","name"];
+      const PROFILE_JSON_KEYS = ["fynx_profile","profile","fynx_user","userProfile","fynx_account"];
+      const clean = (s)=>String(s||"").trim().replace(/[.!,;:]+$/g,"").trim();
+      const pickJson = (obj)=>{
+        if(!obj||typeof obj!=="object") return null;
+        return obj.username||obj.userName||obj.name||obj.displayName||obj.fullName||obj.profile?.username||obj.profile?.name||obj.profile?.displayName||null;
+      };
+      const getName=()=>{
+        for(const k of NAME_KEYS){
+          const v=localStorage.getItem(k);
+          if(v&&clean(v)) return clean(v);
+        }
+        for(const k of PROFILE_JSON_KEYS){
+          const raw=localStorage.getItem(k);
+          if(!raw) continue;
+          try{ const obj=JSON.parse(raw); const n=pickJson(obj); if(n&&clean(n)) return clean(n); }catch(e){}
+        }
+        return null;
+      };
+      const el=document.querySelector(".user-avatar");
+      const name=getName();
+      if(!el){return;}
+      if(!name){ el.textContent="FX"; return; }
+      const parts=name.split(/\s+/).filter(Boolean);
+      let initials=parts[0]?.[0]||"F";
+      if(parts.length>1) initials += parts[parts.length-1]?.[0]||"";
+      el.textContent=initials.toUpperCase();
+    })();
 
-    function pickNameFromJson(obj){
-      if (!obj || typeof obj !== "object") return null;
-      const candidates = [
-        obj.username, obj.userName, obj.name, obj.displayName, obj.fullName,
-        obj.profile?.username, obj.profile?.name, obj.profile?.displayName
-      ];
-      for (const c of candidates){
-        if (c && String(c).trim()) return String(c).trim();
-      }
-      return null;
-    }
-
-    function getProfileName(){
-      for (const k of NAME_KEYS){
-        const v = localStorage.getItem(k);
-        if (v && String(v).trim().length > 0) return String(v).trim();
-      }
-      for (const k of PROFILE_JSON_KEYS){
-        const raw = localStorage.getItem(k);
-        if (!raw) continue;
-        try{
-          const obj = JSON.parse(raw);
-          const n = pickNameFromJson(obj);
-          if (n) return n;
-        }catch(e){}
-      }
-      return null;
+    function safeText(raw=""){
+      const div=document.createElement("div");
+      div.innerHTML=raw;
+      return (div.textContent||"").trim();
     }
 
-    function cleanDisplayName(full){
-      if (!full) return null;
-      let s = String(full).trim();
-      s = s.replace(/[.!,;:]+$/g, "").trim();
-      return s || null;
-    }
-
-    function setAvatarFromName(name){
-      const el = document.querySelector(".user-avatar");
-      if (!el) return;
-
-      const n = cleanDisplayName(name || "");
-      if (!n){
-        el.textContent = "FX";
-        return;
-      }
-      const parts = n.split(/\s+/).filter(Boolean);
-      let initials = parts[0]?.[0] || "F";
-      if (parts.length > 1) initials += parts[parts.length-1]?.[0] || "";
-      el.textContent = initials.toUpperCase();
-    }
-
-    function renderAvatar(){
-      const rawName = getProfileName();
-      const displayName = cleanDisplayName(rawName);
-      setAvatarFromName(displayName);
-    }
-    renderAvatar();
-
-    /* =========================
-       UI
-    ========================= */
-    function buildTicker(){
-      const el = document.getElementById("ticker");
-      el.innerHTML = MARKET_TICKER.map(item => `
-        <div class="ticker-item" role="button" tabindex="0" data-symbol="${item.symbol}" title="Click to load 50 live news for ${item.symbol}" style="cursor:pointer;">
-          ${item.symbol}: <span class="${item.positive ? "p" : "n"}">${item.value}</span>
-        </div>
-      `).join("");
-
-      el.querySelectorAll(".ticker-item").forEach(node => {
-        const sym = node.dataset.symbol;
-        const activate = () => {
-          state.symbol = sym || "All";
-          refreshNews(true);
-        };
-        node.addEventListener("click", activate);
-        node.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            activate();
-          }
-        });
-      });
-    }
-
-    function buildFilterButtons(containerId, values, activeValue, onPick){
-      const el = document.getElementById(containerId);
-      el.innerHTML = values
-        .map(v => `<button class="filter-btn ${v === activeValue ? "active" : ""}" data-value="${v}">${v}</button>`)
-        .join("");
-      el.querySelectorAll(".filter-btn").forEach(btn => {
-        btn.addEventListener("click", () => onPick(btn.dataset.value));
-      });
-    }
-
-    function safeText(raw = ""){
-      const div = document.createElement("div");
-      div.innerHTML = raw;
-      return (div.textContent || "").trim();
-    }
-
-    function classifyTopic(title = "", desc = ""){
+    function classifyTopic(title="", desc=""){
       const text = `${title} ${desc}`.toLowerCase();
       if (/crypto|bitcoin|ethereum|token|blockchain/.test(text)) return "Crypto";
       if (/oil|gas|gold|silver|copper|commodity|opec|brent|wti/.test(text)) return "Commodities";
-      if (/forex|currency|dollar|euro|yen|fx|dxy/.test(text)) return "FX";
+      if (/forex|currency|dollar|euro|yen|fx|dxy|eurusd|usdjpy/.test(text)) return "FX";
       if (/bond|yield|treasury|rate|fed|ecb|boj|central bank/.test(text)) return "Rates";
       if (/bank|lender|credit|loan|deposit/.test(text)) return "Banking";
-      if (/inflation|gdp|jobs|macro|economy|recession/.test(text)) return "Macro";
-      if (/stock|equity|shares|ipo|earnings|nasdaq|s&p/.test(text)) return "Equities";
-      if (/market|index|wall street|exchange/.test(text)) return "Markets";
+      if (/inflation|gdp|jobs|macro|economy|recession|imf/.test(text)) return "Macro";
+      if (/stock|equity|shares|ipo|earnings|nasdaq|s&p|stoxx|ftse|dax/.test(text)) return "Equities";
       return "Markets";
-    }
-
-    function classifySentiment(title = "", desc = ""){
-      const text = `${title} ${desc}`.toLowerCase();
-      const posHits = (text.match(/surge|rally|beat|gain|growth|record|rise|optimis|upgraded|strong/g) || []).length;
-      const negHits = (text.match(/drop|fall|miss|weak|risk|downgrade|slump|crisis|cuts|decline/g) || []).length;
-      if (posHits > negHits) return "Positive";
-      if (negHits > posHits) return "Negative";
-      return "Neutral";
     }
 
     function formatRelativeTime(dateValue){
@@ -885,66 +829,97 @@
       return `${days}d ago`;
     }
 
-    function isFromToday(dateValue){
-      const t = new Date(dateValue).getTime();
-      if (!Number.isFinite(t)) return true;
-      return (Date.now() - t) <= 24 * 60 * 60 * 1000;
+    function buildTicker(){
+      const el = document.getElementById("ticker");
+      el.innerHTML = MARKET_TICKER.map(item => `
+        <div class="ticker-item" role="button" tabindex="0" data-symbol="${item.symbol}" style="cursor:pointer;">
+          ${item.symbol}: <span class="${item.positive ? "p" : "n"}">${item.value}</span>
+        </div>
+      `).join("");
+
+      el.querySelectorAll(".ticker-item").forEach(node => {
+        const sym = node.dataset.symbol;
+        const activate = () => { state.symbol = sym || "All"; refreshNews(true, true); };
+        node.addEventListener("click", activate);
+        node.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); activate(); }
+        });
+      });
     }
 
-    function normalizeUrl(url){
-      const u = String(url || "").trim();
-      if (!u) return "";
-      return u.replace(/^http:\/\//i, "https://");
+    function buildFilterButtons(containerId, values, activeValue, onPick){
+      const el = document.getElementById(containerId);
+      el.innerHTML = values.map(v => `<button class="filter-btn ${v===activeValue?"active":""}" data-value="${v}">${v}</button>`).join("");
+      el.querySelectorAll(".filter-btn").forEach(btn => btn.addEventListener("click", ()=>onPick(btn.dataset.value)));
     }
 
-    /* =========================
-       FEEDS (CORS PROXIES)
-       - Uses RAW proxies only (returns actual RSS XML)
-       - Validates XML; if parse error -> tries next proxy
-    ========================= */
-    const PROXIES = [
-      (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`,
-      (u) => `https://thingproxy.freeboard.io/fetch/${u}`,
-      (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`
-    ];
+    function renderSkeleton(){
+      newsFeed.innerHTML = Array.from({ length: 10 }).map(() => `<div class="skeleton"></div>`).join("");
+      statusText.textContent = "Loading live finance feeds...";
+    }
 
-    async function fetchTextWithTimeout(url, ms = 12000){
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), ms);
-      try{
-        const res = await fetch(url, { cache: "no-store", signal: ctrl.signal });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return await res.text();
-      } finally {
-        clearTimeout(t);
+    function renderNews(){
+      totalCount.textContent = state.filtered.length;
+      sourceCount.textContent = new Set(state.filtered.map(n => n.source)).size;
+
+      if (!state.filtered.length){
+        newsFeed.innerHTML = `<div class="empty">No articles match this filter. Try another region/topic or clear search.</div>`;
+        return;
       }
+
+      newsFeed.innerHTML = state.filtered.map(item => `
+        <article class="news-card">
+          <div class="news-meta">
+            <span class="pill">${item.topic}</span>
+            <span class="pill">${item.region}</span>
+            <span class="pill">${item.source}</span>
+            <span>${formatRelativeTime(item.date)}</span>
+          </div>
+          <h3 class="news-title">
+            <a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}</a>
+          </h3>
+          <p class="news-excerpt">${item.description || "Open article for full details."}</p>
+        </article>
+      `).join("");
+    }
+
+    function applyFilters(){
+      const query = state.query.trim().toLowerCase();
+      state.filtered = state.allNews.filter(item => {
+        const regionOk = state.region === "All" || item.region === state.region || (state.region !== "Global" && item.region === "Global");
+        const topicOk  = state.topic === "All" || item.topic === state.topic;
+        const queryOk  = !query || `${item.title} ${item.source} ${item.description}`.toLowerCase().includes(query);
+        return regionOk && topicOk && queryOk;
+      });
+
+      // If a symbol is selected, show top 50
+      if (state.symbol !== "All") state.filtered = state.filtered.slice(0, 50);
+
+      renderNews();
+    }
+
+    function makeGoogleRssUrl(query, locale){
+      // locale choice can be tuned, but keep stable
+      const hl = locale?.hl || "en-US";
+      const gl = locale?.gl || "US";
+      const ceid = locale?.ceid || "US:en";
+      const when = "when:1d";
+      return `https://news.google.com/rss/search?q=${encodeURIComponent(`${query} ${when}`)}&hl=${encodeURIComponent(hl)}&gl=${encodeURIComponent(gl)}&ceid=${encodeURIComponent(ceid)}`;
+    }
+
+    async function fetchViaYourProxy(rssUrl){
+      const url = RSS_PROXY_ENDPOINT + encodeURIComponent(rssUrl);
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`Proxy HTTP ${res.status}`);
+      return await res.text();
     }
 
     function parseXmlOrThrow(text){
       const xml = new DOMParser().parseFromString(text, "application/xml");
-      // Any parsererror means this is not valid XML
       if (xml.querySelector("parsererror")) throw new Error("Invalid XML");
-      // Must have channel/item (RSS) or entry (Atom)
       const hasItems = xml.querySelector("item") || xml.querySelector("entry");
-      if (!hasItems) throw new Error("No feed items");
+      if (!hasItems) throw new Error("No items");
       return xml;
-    }
-
-    async function fetchXML(feedUrl){
-      const url = normalizeUrl(feedUrl);
-
-      let lastErr = null;
-      for (const makeProxy of PROXIES){
-        const proxied = makeProxy(url);
-        try{
-          const text = await fetchTextWithTimeout(proxied);
-          const xml = parseXmlOrThrow(text);
-          return xml;
-        }catch(e){
-          lastErr = e;
-        }
-      }
-      throw lastErr || new Error("All proxies failed");
     }
 
     function getFirstText(node, selectors){
@@ -955,168 +930,181 @@
       return "";
     }
 
-    async function loadFeed(feed){
-      const xml = await fetchXML(feed.url);
-
-      // RSS uses <item>, Atom uses <entry>
+    function parseFeed(xml, meta){
       const rssItems = [...xml.querySelectorAll("item")];
       const atomItems = rssItems.length ? [] : [...xml.querySelectorAll("entry")];
       const items = rssItems.length ? rssItems : atomItems;
 
       return items.map(item => {
-        // RSS fields
         const titleRSS = getFirstText(item, ["title"]);
         const linkRSS  = getFirstText(item, ["link"]);
         const pubRSS   = getFirstText(item, ["pubDate", "published", "updated"]);
         const descRSS  = getFirstText(item, ["description", "content", "content\\:encoded"]);
         const sourceRSS= getFirstText(item, ["source"]);
 
-        // Atom link might be in href attr
         let atomHref = "";
         if (!linkRSS){
           const linkEl = item.querySelector("link");
           atomHref = linkEl?.getAttribute("href") || "";
         }
 
-        const title = titleRSS;
+        const title = titleRSS || "";
         const link  = safeText(linkRSS || atomHref || "");
         const pubDate = pubRSS || new Date().toUTCString();
-        const desc  = descRSS;
-        const sourceTag = sourceRSS;
-
-        const source = sourceTag || (title.includes(" - ") ? title.split(" - ").at(-1) : "Unknown Source");
+        const desc  = descRSS || "";
+        const source = sourceRSS || (title.includes(" - ") ? title.split(" - ").at(-1) : "Unknown Source");
         const cleanTitle = title.replace(/\s+-\s+[^-]+$/, "").trim() || title;
-        const topic = classifyTopic(cleanTitle, desc) || feed.topic;
-        const sentiment = classifySentiment(cleanTitle, desc);
-        const regionValue = feed.name || "Global";
 
         return {
           id: `${cleanTitle}|${link}`,
           title: cleanTitle,
           link,
           date: pubDate,
-          region: regionValue,
-          topic,
+          region: meta.region,
+          topic: classifyTopic(cleanTitle, desc) || meta.topic,
           source,
-          description: desc,
-          sentiment
+          description: desc
         };
-      })
-      .filter(x => x.title && x.link)
-      .filter(x => isFromToday(x.date));
+      }).filter(x => x.title && x.link);
     }
 
     function dedupeAndSort(rows){
       const map = new Map();
-      rows.forEach(row => { if (!map.has(row.id)) map.set(row.id, row); });
-      return [...map.values()].sort((a,b) => new Date(b.date) - new Date(a.date));
+      for (const row of rows){
+        if (!map.has(row.id)) map.set(row.id, row);
+      }
+      return [...map.values()].sort((a,b)=> new Date(b.date) - new Date(a.date));
     }
 
-    function applyFilters(){
-      const query = state.query.trim().toLowerCase();
-
-      state.filtered = state.allNews.filter(item => {
-        const regionOk = state.region === "All" || item.region === state.region || item.region === "Global";
-        const topicOk  = state.topic  === "All" || item.topic === state.topic;
-        const queryOk  = !query || `${item.title} ${item.source} ${item.description}`.toLowerCase().includes(query);
-        return regionOk && topicOk && queryOk;
-      });
-
-      if (state.symbol && state.symbol !== "All"){
-        state.filtered = state.filtered.slice(0, 50);
+    function getActiveFeedJobs(){
+      // If symbol mode, override with symbol query across Global region (fast + focused)
+      if (state.symbol !== "All"){
+        const q = SYMBOL_QUERY[state.symbol] || state.symbol;
+        return [
+          { region:"Global", topic:"Markets", rss: makeGoogleRssUrl(q, {hl:"en-US",gl:"US",ceid:"US:en"}) },
+          { region:"US",     topic:"Markets", rss: makeGoogleRssUrl(q, {hl:"en-US",gl:"US",ceid:"US:en"}) },
+          { region:"Europe", topic:"Markets", rss: makeGoogleRssUrl(q, {hl:"en-GB",gl:"GB",ceid:"GB:en"}) },
+          { region:"Asia",   topic:"Markets", rss: makeGoogleRssUrl(q, {hl:"en-SG",gl:"SG",ceid:"SG:en"}) }
+        ];
       }
 
-      renderNews();
-    }
+      // Normal mode: load a curated set (not all 56 at once, too heavy)
+      // Strategy:
+      // - Always load Global + selected region/topic combos
+      // - If user chooses a region/topic filter, prioritize those
+      const jobs = [];
 
-    function renderNews(){
-      totalCount.textContent = state.filtered.length;
-      sourceCount.textContent = new Set(state.filtered.map(n => n.source)).size;
+      const regionFocus = state.region !== "All" ? state.region : null;
+      const topicFocus  = state.topic  !== "All" ? state.topic  : null;
 
-      if (!state.filtered.length){
-        const hint = state.symbol !== "All"
-          ? `No live items found for ${state.symbol} with current filters. Try changing region/topic or clear search.`
-          : "No articles match this filter. Try changing topic/region.";
-        newsFeed.innerHTML = `<div class="empty">${hint}</div>`;
-        return;
+      const add = (r,t)=>{
+        const item = FEEDS.find(x=>x.region===r && x.topic===t);
+        if(!item) return;
+        jobs.push({ region:r, topic:t, rss: makeGoogleRssUrl(item.q) });
+      };
+
+      // always global baseline
+      add("Global","Markets");
+      add("Global","Macro");
+      add("Global","Rates");
+      add("Global","FX");
+      add("Global","Commodities");
+      add("Global","Crypto");
+      add("Global","Banking");
+
+      // focus region/topic
+      if (regionFocus){
+        add(regionFocus,"Markets");
+        add(regionFocus,"Macro");
+        add(regionFocus,"Equities");
+        add(regionFocus,"Rates");
+        add(regionFocus,"FX");
+        add(regionFocus,"Commodities");
+        add(regionFocus,"Crypto");
+        add(regionFocus,"Banking");
+      } else {
+        // spread coverage across regions
+        add("US","Markets"); add("US","Macro");
+        add("Europe","Markets"); add("Europe","Macro");
+        add("Asia","Markets"); add("Asia","Macro");
+        add("Middle East","Commodities");
+        add("LatAm","Macro");
+        add("Africa","Macro");
       }
 
-      newsFeed.innerHTML = state.filtered.map(item => {
-        const sentClass =
-          item.sentiment === "Positive" ? "sent-pos" :
-          item.sentiment === "Negative" ? "sent-neg" : "sent-neu";
-
-        return `
-          <article class="news-card">
-            <div class="news-meta">
-              <span class="pill">${item.topic}</span>
-              <span class="pill">${item.region}</span>
-              <span class="pill">${item.source}</span>
-              <span>${formatRelativeTime(item.date)}</span>
-              <span class="pill ${sentClass}">${item.sentiment}</span>
-            </div>
-            <h3 class="news-title">
-              <a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}</a>
-            </h3>
-            <p class="news-excerpt">${item.description || "Open article for full details."}</p>
-          </article>
-        `;
-      }).join("");
-    }
-
-    function renderSkeleton(){
-      newsFeed.innerHTML = Array.from({ length: 8 }).map(() => `<div class="skeleton"></div>`).join("");
-      statusText.textContent = "Loading live finance feeds...";
-    }
-
-    function buildSymbolFeeds(symbol){
-      const q = SYMBOL_QUERY[symbol] || `("${symbol}")`;
-      const when = "when:1d";
-      return SYMBOL_LOCALES.map(loc => {
-        const url = `https://news.google.com/rss/search?q=${encodeURIComponent(`${q} ${when}`)}&hl=${encodeURIComponent(loc.hl)}&gl=${encodeURIComponent(loc.gl)}&ceid=${encodeURIComponent(loc.ceid)}`;
-        return { name: loc.region, topic: "Markets", url };
-      });
-    }
-
-    function getActiveFeeds(){
-      if (state.symbol && state.symbol !== "All"){
-        return buildSymbolFeeds(state.symbol);
+      if (topicFocus){
+        // load the chosen topic for multiple regions
+        add("US", topicFocus);
+        add("Europe", topicFocus);
+        add("Asia", topicFocus);
+        add("Global", topicFocus);
       }
-      return FEEDS_BASE;
+
+      // dedupe jobs by (region|topic|rss)
+      const seen = new Set();
+      return jobs.filter(j=>{
+        const k = `${j.region}|${j.topic}|${j.rss}`;
+        if(seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      }).slice(0, 22); // keep load stable
     }
 
-    async function refreshNews(fromTickerClick = false){
+    function showProxyBannerIfNeeded(errorText){
+      proxyBanner.style.display = "block";
+      proxyBanner.textContent =
+        "NEWS SYSTEM NEEDS /rss PROXY ON YOUR DOMAIN. Right now the page cannot fetch RSS directly. " +
+        "Deploy the Cloudflare Worker code (below) and map it to /rss. " +
+        (errorText ? ` (${errorText})` : "");
+    }
+
+    async function refreshNews(fromTickerClick = false, forceManual = false){
+      const now = Date.now();
+
+      // Manual refresh guard
+      if (forceManual){
+        if ((now - state.lastFetchAt) < state.minManualRefreshMs) return;
+      }
+
+      state.lastFetchAt = now;
       renderSkeleton();
       refreshBtn.disabled = true;
+      proxyBanner.style.display = "none";
 
-      const feeds = getActiveFeeds();
+      const jobs = getActiveFeedJobs();
 
       try{
-        const settled = await Promise.allSettled(feeds.map(loadFeed));
-        const succeeded = settled.filter(r => r.status === "fulfilled").map(r => r.value).flat();
-        const failed = settled.filter(r => r.status === "rejected").length;
+        const settled = await Promise.allSettled(
+          jobs.map(async (job)=>{
+            const text = await fetchViaYourProxy(job.rss);
+            const xml = parseXmlOrThrow(text);
+            return parseFeed(xml, { region: job.region, topic: job.topic });
+          })
+        );
 
-        const maxStore = 260;
-        state.allNews = dedupeAndSort(succeeded).slice(0, maxStore);
+        const succeeded = settled.filter(r=>r.status==="fulfilled").flatMap(r=>r.value);
+        const failed = settled.filter(r=>r.status==="rejected");
 
+        state.allNews = dedupeAndSort(succeeded).slice(0, 450);
         applyFilters();
 
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        const timeStr = new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
         lastUpdated.textContent = `Updated ${timeStr}`;
 
-        if (state.symbol && state.symbol !== "All"){
-          statusText.innerHTML = `<span>Symbol: ${state.symbol} • Showing ${state.filtered.length} (today).</span><span>${failed ? `${failed} feed(s) failed this run.` : "All feeds healthy."}</span>`;
-        } else {
-          statusText.innerHTML = `<span>Showing ${state.filtered.length} live items.</span><span>${failed ? `${failed} feed(s) failed this run.` : "All feeds healthy."}</span>`;
-        }
+        statusText.innerHTML =
+          `<span>${state.filtered.length} showing • ${state.allNews.length} loaded</span>` +
+          `<span>${failed.length ? `${failed.length} feed(s) failed.` : "All feeds healthy."}</span>`;
 
-        if (fromTickerClick){
-          newsFeed.scrollTop = 0;
+        if (fromTickerClick) newsFeed.scrollTop = 0;
+
+        // If still empty, tell exactly why
+        if (!state.allNews.length && failed.length){
+          showProxyBannerIfNeeded("Proxy returned no RSS items.");
         }
       }catch(err){
-        newsFeed.innerHTML = `<div class="empty">Could not load live feeds. Try refresh again in a minute.</div>`;
-        statusText.textContent = "Feed fetch error.";
+        showProxyBannerIfNeeded(String(err?.message || err));
+        newsFeed.innerHTML = `<div class="empty">News not loading. Fix /rss proxy endpoint first.</div>`;
+        statusText.textContent = "Feed system error.";
       }finally{
         refreshBtn.disabled = false;
       }
@@ -1128,18 +1116,18 @@
         applyFilters();
       });
 
-      refreshBtn.addEventListener("click", () => refreshNews(false));
+      refreshBtn.addEventListener("click", () => refreshNews(false, true));
 
       const onPickRegion = (value) => {
         state.region = value;
         buildFilterButtons("regionFilters", REGIONS, state.region, onPickRegion);
-        applyFilters();
+        refreshNews(false, true); // reload more relevant feeds
       };
 
       const onPickTopic = (value) => {
         state.topic = value;
         buildFilterButtons("topicFilters", TOPICS, state.topic, onPickTopic);
-        applyFilters();
+        refreshNews(false, true); // reload more relevant feeds
       };
 
       buildFilterButtons("regionFilters", REGIONS, state.region, onPickRegion);
@@ -1147,13 +1135,13 @@
     }
 
     function startAutoRefresh(){
-      setInterval(() => refreshNews(false), state.autoRefreshMs);
+      setInterval(() => refreshNews(false, false), state.autoRefreshMs);
     }
 
     (function init(){
       buildTicker();
       bindEvents();
-      refreshNews(false);
+      refreshNews(false, false);
       startAutoRefresh();
     })();
   </script>
