@@ -611,7 +611,8 @@
     const emailForm      = document.getElementById("emailLoginForm");
     const loginAppBtn    = document.getElementById("loginApp");
 
-    const DASHBOARD_URL = "../dashboard.html";
+    // ✅ ONLY CHANGE: redirect to home.html instead of dashboard.html
+    const DASHBOARD_URL = "../home.html";
     const APP_STORE_URL = "https://apps.apple.com/app/id6752357210";
 
     const APP_RETURN_URL = new URL("./app-return.html", window.location.href);
