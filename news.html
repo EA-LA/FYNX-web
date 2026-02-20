@@ -493,6 +493,7 @@
       font-size:12px;
       color: var(--muted);
       font-weight:900;
+      white-space: pre-wrap;
     }
 
     @media (max-width:1080px){
@@ -632,11 +633,14 @@
 
   <script>
     /***********************************************************
-     ✅ IMPORTANT (PERFECT FIX)
-     This page expects your own RSS proxy endpoint:
-       /rss?url=<ENCODED_RSS_URL>
-
-     That endpoint is provided below as a Cloudflare Worker.
+      ✅ HIGH VERSION / PERFECT FIX
+      - Loads in TWO STAGES so it never shows empty:
+        Stage A (fast): 6 baseline feeds
+        Stage B (extra): more feeds AFTER baseline succeeds
+      - Limits parallel requests (prevents Google RSS throttling)
+      - Caches last good results in localStorage (instant UI on reload)
+      - Better error + debug messages (shows which feeds failed)
+      - Works with your Worker route: /rss?url=<encoded>
     ***********************************************************/
     const RSS_PROXY_ENDPOINT = "/rss?url=";
 
@@ -647,17 +651,21 @@
       topic: "All",
       query: "",
       symbol: "All",
-      autoRefreshMs: 5 * 60 * 1000,      // ✅ every 5 minutes
+
+      autoRefreshMs: 5 * 60 * 1000,
       lastFetchAt: 0,
-      minManualRefreshMs: 15 * 1000      // prevent spam clicking
+      minManualRefreshMs: 15 * 1000,
+
+      maxParallel: 4,       // ✅ key: reduces feed failures
+      baselineJobs: 6,      // ✅ stage A count
+      maxJobsTotal: 12,     // ✅ stage A + stage B total (stable)
+      debug: false
     };
 
     const REGIONS = ["All", "US", "Europe", "Asia", "Middle East", "Africa", "LatAm", "Global"];
     const TOPICS  = ["All", "Markets", "Macro", "Equities", "Rates", "FX", "Commodities", "Crypto", "Banking"];
 
-    // ✅ more coverage (region + topic) so filters always show content
     const FEEDS = [
-      // US
       { region:"US", topic:"Markets",     q:"stock market OR wall street OR dow OR nasdaq OR s&p" },
       { region:"US", topic:"Macro",       q:"fed OR CPI OR jobs report OR GDP OR inflation" },
       { region:"US", topic:"Equities",    q:"earnings OR IPO OR shares OR equities" },
@@ -667,7 +675,6 @@
       { region:"US", topic:"Crypto",      q:"bitcoin OR ethereum OR crypto market" },
       { region:"US", topic:"Banking",     q:"banks OR banking regulation OR credit markets" },
 
-      // Europe
       { region:"Europe", topic:"Markets",     q:"europe markets OR stoxx OR dax OR ftse" },
       { region:"Europe", topic:"Macro",       q:"ECB OR eurozone inflation OR eurozone GDP" },
       { region:"Europe", topic:"Equities",    q:"europe equities OR european stocks OR earnings" },
@@ -677,7 +684,6 @@
       { region:"Europe", topic:"Crypto",      q:"crypto europe OR bitcoin europe" },
       { region:"Europe", topic:"Banking",     q:"europe banks OR banking supervision" },
 
-      // Asia
       { region:"Asia", topic:"Markets",     q:"asia markets OR nikkei OR hang seng OR shanghai" },
       { region:"Asia", topic:"Macro",       q:"china economy OR japan inflation OR asia GDP" },
       { region:"Asia", topic:"Equities",    q:"asia stocks OR earnings asia" },
@@ -687,7 +693,6 @@
       { region:"Asia", topic:"Crypto",      q:"crypto asia OR bitcoin asia" },
       { region:"Asia", topic:"Banking",     q:"asia banks OR bank regulation asia" },
 
-      // Middle East
       { region:"Middle East", topic:"Markets",     q:"middle east markets OR gulf markets" },
       { region:"Middle East", topic:"Macro",       q:"middle east economy OR inflation" },
       { region:"Middle East", topic:"Equities",    q:"middle east stocks OR IPO" },
@@ -697,7 +702,6 @@
       { region:"Middle East", topic:"Crypto",      q:"crypto middle east" },
       { region:"Middle East", topic:"Banking",     q:"banks middle east OR banking regulation" },
 
-      // Africa
       { region:"Africa", topic:"Markets",     q:"africa markets OR african stocks" },
       { region:"Africa", topic:"Macro",       q:"africa economy OR IMF africa OR inflation africa" },
       { region:"Africa", topic:"Equities",    q:"africa equities OR IPO africa" },
@@ -707,7 +711,6 @@
       { region:"Africa", topic:"Crypto",      q:"crypto africa OR bitcoin africa" },
       { region:"Africa", topic:"Banking",     q:"banks africa OR banking regulation africa" },
 
-      // LatAm
       { region:"LatAm", topic:"Markets",     q:"latin america markets OR brazil stocks OR mexico stocks" },
       { region:"LatAm", topic:"Macro",       q:"latin america economy OR inflation brazil OR GDP mexico" },
       { region:"LatAm", topic:"Equities",    q:"latin america equities OR earnings" },
@@ -717,7 +720,6 @@
       { region:"LatAm", topic:"Crypto",      q:"crypto latin america OR bitcoin brazil" },
       { region:"LatAm", topic:"Banking",     q:"banks latin america OR banking regulation" },
 
-      // Global
       { region:"Global", topic:"Markets",     q:"global markets OR world stocks OR risk-on risk-off" },
       { region:"Global", topic:"Macro",       q:"global economy OR IMF OR world inflation OR recession" },
       { region:"Global", topic:"Equities",    q:"global stocks OR earnings season" },
@@ -728,7 +730,6 @@
       { region:"Global", topic:"Banking",     q:"banking crisis OR bank regulation OR credit markets" }
     ];
 
-    // Market ticker (display only)
     const MARKET_TICKER = [
       { symbol: "S&P 500", value: "+0.41%", positive: true  },
       { symbol: "NASDAQ",  value: "+0.72%", positive: true  },
@@ -760,14 +761,12 @@
     const sourceCount  = document.getElementById("sourceCount");
     const proxyBanner  = document.getElementById("proxyBanner");
 
-    // Theme sync (no toggle here)
     const THEME_KEY = "fynx_theme";
     (function applySavedTheme(){
       const saved = localStorage.getItem(THEME_KEY) || "light";
       document.body.classList.toggle("dark-mode", saved === "dark");
     })();
 
-    // Avatar sync
     (function renderAvatar(){
       const NAME_KEYS = ["fynx_profile_name","fynx_username","username","profile_name","user_name","fynx_name","fynxUserName","displayName","name"];
       const PROFILE_JSON_KEYS = ["fynx_profile","profile","fynx_user","userProfile","fynx_account"];
@@ -892,14 +891,11 @@
         return regionOk && topicOk && queryOk;
       });
 
-      // If a symbol is selected, show top 50
       if (state.symbol !== "All") state.filtered = state.filtered.slice(0, 50);
-
       renderNews();
     }
 
     function makeGoogleRssUrl(query, locale){
-      // locale choice can be tuned, but keep stable
       const hl = locale?.hl || "en-US";
       const gl = locale?.gl || "US";
       const ceid = locale?.ceid || "US:en";
@@ -910,15 +906,16 @@
     async function fetchViaYourProxy(rssUrl){
       const url = RSS_PROXY_ENDPOINT + encodeURIComponent(rssUrl);
       const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) throw new Error(`Proxy HTTP ${res.status}`);
-      return await res.text();
+      const text = await res.text();
+      if (!res.ok) throw new Error(`Proxy HTTP ${res.status}: ${text.slice(0, 140)}`);
+      return text;
     }
 
     function parseXmlOrThrow(text){
       const xml = new DOMParser().parseFromString(text, "application/xml");
-      if (xml.querySelector("parsererror")) throw new Error("Invalid XML");
+      if (xml.querySelector("parsererror")) throw new Error("Invalid XML (proxy returned non-XML)");
       const hasItems = xml.querySelector("item") || xml.querySelector("entry");
-      if (!hasItems) throw new Error("No items");
+      if (!hasItems) throw new Error("No items in feed");
       return xml;
     }
 
@@ -976,8 +973,17 @@
       return [...map.values()].sort((a,b)=> new Date(b.date) - new Date(a.date));
     }
 
+    function showProxyBannerIfNeeded(errorText, details=""){
+      proxyBanner.style.display = "block";
+      proxyBanner.textContent =
+        "NEWS SYSTEM: /rss proxy is required on your domain.\n" +
+        "If you see many feed failures, it is usually Google RSS throttling.\n" +
+        "This version limits parallel requests + caches results.\n" +
+        (errorText ? `\nError: ${errorText}` : "") +
+        (details ? `\n\nDetails:\n${details}` : "");
+    }
+
     function getActiveFeedJobs(){
-      // If symbol mode, override with symbol query across Global region (fast + focused)
       if (state.symbol !== "All"){
         const q = SYMBOL_QUERY[state.symbol] || state.symbol;
         return [
@@ -988,12 +994,7 @@
         ];
       }
 
-      // Normal mode: load a curated set (not all 56 at once, too heavy)
-      // Strategy:
-      // - Always load Global + selected region/topic combos
-      // - If user chooses a region/topic filter, prioritize those
       const jobs = [];
-
       const regionFocus = state.region !== "All" ? state.region : null;
       const topicFocus  = state.topic  !== "All" ? state.topic  : null;
 
@@ -1003,104 +1004,180 @@
         jobs.push({ region:r, topic:t, rss: makeGoogleRssUrl(item.q) });
       };
 
-      // always global baseline
+      // Baseline (fast)
       add("Global","Markets");
       add("Global","Macro");
       add("Global","Rates");
       add("Global","FX");
       add("Global","Commodities");
       add("Global","Crypto");
-      add("Global","Banking");
 
-      // focus region/topic
+      // Focus extras
       if (regionFocus){
         add(regionFocus,"Markets");
         add(regionFocus,"Macro");
         add(regionFocus,"Equities");
-        add(regionFocus,"Rates");
-        add(regionFocus,"FX");
-        add(regionFocus,"Commodities");
-        add(regionFocus,"Crypto");
         add(regionFocus,"Banking");
       } else {
-        // spread coverage across regions
-        add("US","Markets"); add("US","Macro");
-        add("Europe","Markets"); add("Europe","Macro");
-        add("Asia","Markets"); add("Asia","Macro");
-        add("Middle East","Commodities");
-        add("LatAm","Macro");
-        add("Africa","Macro");
+        add("US","Markets");
+        add("Europe","Markets");
+        add("Asia","Markets");
+        add("US","Macro");
+        add("Europe","Macro");
+        add("Asia","Macro");
       }
 
       if (topicFocus){
-        // load the chosen topic for multiple regions
         add("US", topicFocus);
         add("Europe", topicFocus);
         add("Asia", topicFocus);
         add("Global", topicFocus);
       }
 
-      // dedupe jobs by (region|topic|rss)
       const seen = new Set();
-      return jobs.filter(j=>{
+      const deduped = jobs.filter(j=>{
         const k = `${j.region}|${j.topic}|${j.rss}`;
         if(seen.has(k)) return false;
         seen.add(k);
         return true;
-      }).slice(0, 22); // keep load stable
+      });
+
+      return deduped.slice(0, state.maxJobsTotal);
     }
 
-    function showProxyBannerIfNeeded(errorText){
-      proxyBanner.style.display = "block";
-      proxyBanner.textContent =
-        "NEWS SYSTEM NEEDS /rss PROXY ON YOUR DOMAIN. Right now the page cannot fetch RSS directly. " +
-        "Deploy the Cloudflare Worker code (below) and map it to /rss. " +
-        (errorText ? ` (${errorText})` : "");
+    async function runPool(jobs, worker, limit){
+      const results = [];
+      let i = 0;
+      const executing = new Set();
+
+      async function enqueue(){
+        if (i >= jobs.length) return;
+        const job = jobs[i++];
+        const p = (async ()=>{
+          try{
+            const r = await worker(job);
+            results.push({ ok:true, job, value:r });
+          }catch(e){
+            results.push({ ok:false, job, error: e });
+          }
+        })();
+        executing.add(p);
+        p.finally(()=>executing.delete(p));
+        if (executing.size >= limit) await Promise.race(executing);
+        return enqueue();
+      }
+
+      await enqueue();
+      await Promise.allSettled([...executing]);
+      return results;
+    }
+
+    // Cache last good news to avoid empty UI on reload/throttle
+    const CACHE_KEY = "fynx_news_cache_v1";
+    function loadCache(){
+      try{
+        const raw = localStorage.getItem(CACHE_KEY);
+        if(!raw) return null;
+        const obj = JSON.parse(raw);
+        if(!obj || !Array.isArray(obj.items)) return null;
+        // keep cache if < 30 minutes old
+        if(Date.now() - (obj.ts||0) > 30*60*1000) return null;
+        return obj.items;
+      }catch(e){
+        return null;
+      }
+    }
+    function saveCache(items){
+      try{
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), items }));
+      }catch(e){}
     }
 
     async function refreshNews(fromTickerClick = false, forceManual = false){
       const now = Date.now();
-
-      // Manual refresh guard
       if (forceManual){
         if ((now - state.lastFetchAt) < state.minManualRefreshMs) return;
       }
-
       state.lastFetchAt = now;
-      renderSkeleton();
+
+      // Show cached data immediately while fetching fresh
+      const cached = loadCache();
+      if (cached && cached.length){
+        state.allNews = cached;
+        applyFilters();
+        statusText.innerHTML = `<span>${state.filtered.length} showing • ${state.allNews.length} cached</span><span>Refreshing…</span>`;
+      } else {
+        renderSkeleton();
+      }
+
       refreshBtn.disabled = true;
       proxyBanner.style.display = "none";
 
-      const jobs = getActiveFeedJobs();
+      const allJobs = getActiveFeedJobs();
+      const baseline = allJobs.slice(0, state.baselineJobs);
+      const extras   = allJobs.slice(state.baselineJobs);
+
+      const failedList = [];
+      const collected = [];
 
       try{
-        const settled = await Promise.allSettled(
-          jobs.map(async (job)=>{
+        // Stage A: baseline first
+        const baseRes = await runPool(baseline, async (job)=>{
+          const text = await fetchViaYourProxy(job.rss);
+          const xml = parseXmlOrThrow(text);
+          return parseFeed(xml, { region: job.region, topic: job.topic });
+        }, state.maxParallel);
+
+        for(const r of baseRes){
+          if(r.ok) collected.push(...r.value);
+          else failedList.push(`${r.job.region}/${r.job.topic}: ${String(r.error?.message || r.error)}`);
+        }
+
+        // Update UI early (fast content)
+        state.allNews = dedupeAndSort(collected).slice(0, 450);
+        if(state.allNews.length){
+          saveCache(state.allNews);
+          applyFilters();
+          if (fromTickerClick) newsFeed.scrollTop = 0;
+        }
+
+        // Stage B: extras (only if user didn't select symbol)
+        if (extras.length){
+          const extraRes = await runPool(extras, async (job)=>{
             const text = await fetchViaYourProxy(job.rss);
             const xml = parseXmlOrThrow(text);
             return parseFeed(xml, { region: job.region, topic: job.topic });
-          })
-        );
+          }, state.maxParallel);
 
-        const succeeded = settled.filter(r=>r.status==="fulfilled").flatMap(r=>r.value);
-        const failed = settled.filter(r=>r.status==="rejected");
+          for(const r of extraRes){
+            if(r.ok) collected.push(...r.value);
+            else failedList.push(`${r.job.region}/${r.job.topic}: ${String(r.error?.message || r.error)}`);
+          }
 
-        state.allNews = dedupeAndSort(succeeded).slice(0, 450);
-        applyFilters();
+          state.allNews = dedupeAndSort(collected).slice(0, 450);
+          if(state.allNews.length){
+            saveCache(state.allNews);
+          }
+          applyFilters();
+        }
 
         const timeStr = new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
         lastUpdated.textContent = `Updated ${timeStr}`;
 
         statusText.innerHTML =
           `<span>${state.filtered.length} showing • ${state.allNews.length} loaded</span>` +
-          `<span>${failed.length ? `${failed.length} feed(s) failed.` : "All feeds healthy."}</span>`;
+          `<span>${failedList.length ? `${failedList.length} feed(s) failed.` : "All feeds healthy."}</span>`;
 
-        if (fromTickerClick) newsFeed.scrollTop = 0;
-
-        // If still empty, tell exactly why
-        if (!state.allNews.length && failed.length){
-          showProxyBannerIfNeeded("Proxy returned no RSS items.");
+        if (!state.allNews.length){
+          showProxyBannerIfNeeded(
+            "No articles loaded.",
+            failedList.length ? failedList.slice(0, 10).join("\n") : "No failures reported. Check /rss proxy is returning XML."
+          );
+          newsFeed.innerHTML = `<div class="empty">News not loading. If this keeps happening, it is usually RSS throttling. This build reduces it, but your Worker must be deployed correctly.</div>`;
+        } else if (failedList.length && state.debug){
+          showProxyBannerIfNeeded("Some feeds failed (debug mode).", failedList.join("\n"));
         }
+
       }catch(err){
         showProxyBannerIfNeeded(String(err?.message || err));
         newsFeed.innerHTML = `<div class="empty">News not loading. Fix /rss proxy endpoint first.</div>`;
@@ -1120,14 +1197,16 @@
 
       const onPickRegion = (value) => {
         state.region = value;
+        state.symbol = "All"; // reset symbol mode when changing filters
         buildFilterButtons("regionFilters", REGIONS, state.region, onPickRegion);
-        refreshNews(false, true); // reload more relevant feeds
+        refreshNews(false, true);
       };
 
       const onPickTopic = (value) => {
         state.topic = value;
+        state.symbol = "All";
         buildFilterButtons("topicFilters", TOPICS, state.topic, onPickTopic);
-        refreshNews(false, true); // reload more relevant feeds
+        refreshNews(false, true);
       };
 
       buildFilterButtons("regionFilters", REGIONS, state.region, onPickRegion);
