@@ -559,25 +559,6 @@
 
   <script>
     /* =========================
-       ✅ FIX ONLY: NAV ROUTING
-    ========================= */
-    const navItems = document.querySelectorAll(".nav-item");
-    const viewPages = {
-      home: "home.html",
-      journal: "journal.html",
-      calculator: "calculator.html",
-      news: "news.html",
-      calendar: "calendar.html",
-      profile: "profile.html"
-    };
-    navItems.forEach(item => {
-      item.addEventListener("click", () => {
-        const viewName = item.getAttribute("data-view");
-        if (viewPages[viewName]) window.location.href = viewPages[viewName];
-      });
-    });
-
-    /* =========================
        THEME (SYNCED ACROSS PAGES)
        - No toggle here (ONLY on profile.html)
     ========================= */
@@ -663,6 +644,8 @@
 
     renderAvatar();
   </script>
+
+  <script src="fynx-nav.js"></script>
 
   <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
   <script src="fynx-usercard.js"></script>
