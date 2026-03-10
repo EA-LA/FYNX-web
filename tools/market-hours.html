@@ -6,6 +6,32 @@
   <title>FYNX Tools — Market Hours</title>
   <style>
     :root{
+      --bg: #f3f3f5;
+      --panel: rgba(255,255,255,0.72);
+      --panel2: rgba(255,255,255,0.88);
+      --border: rgba(0,0,0,0.10);
+      --border2: rgba(0,0,0,0.16);
+      --text: rgba(0,0,0,0.92);
+      --muted: rgba(0,0,0,0.62);
+      --muted2: rgba(0,0,0,0.52);
+      --shadow: 0 20px 60px rgba(0,0,0,0.10);
+      --radius: 18px;
+      --radius2: 14px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Roboto, Helvetica, Arial;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+
+      /* bar colors */
+      --c1: rgba(0,0,0,0.88);
+      --c2: rgba(0,0,0,0.72);
+      --c3: rgba(0,0,0,0.56);
+      --c4: rgba(0,0,0,0.42);
+
+      --ok: rgba(0,0,0,0.92);
+      --bad: rgba(0,0,0,0.92);
+      --warn: rgba(0,0,0,0.76);
+    }
+
+    body.dark-mode{
       color-scheme: dark;
       --bg: #000000;
       --panel: rgba(255,255,255,0.06);
@@ -16,12 +42,7 @@
       --muted: rgba(255,255,255,0.68);
       --muted2: rgba(255,255,255,0.55);
       --shadow: 0 20px 60px rgba(0,0,0,0.55);
-      --radius: 18px;
-      --radius2: 14px;
-      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Roboto, Helvetica, Arial;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 
-      /* bar colors (still reads as B/W product) */
       --c1: rgba(255,255,255,0.92);
       --c2: rgba(255,255,255,0.72);
       --c3: rgba(255,255,255,0.55);
@@ -44,37 +65,56 @@
     /* grok-ish background */
     .bg{
       position:fixed; inset:0; z-index:-2;
+      background:
+        radial-gradient(circle at 1px 1px, rgba(0,0,0,0.085) 1px, transparent 1px) 0 0 / 18px 18px,
+        linear-gradient(#f3f3f5, #f3f3f5);
+    }
+    body.dark-mode .bg{
       background: radial-gradient(1200px 700px at 15% 20%, rgba(255,255,255,0.10), transparent 60%),
                   radial-gradient(900px 600px at 80% 10%, rgba(255,255,255,0.08), transparent 58%),
                   radial-gradient(900px 700px at 50% 85%, rgba(255,255,255,0.06), transparent 60%),
                   #000;
     }
+
     .grid{
-      position:fixed; inset:0; z-index:-1; opacity:0.45;
+      position:fixed; inset:0; z-index:-1; opacity:0.32;
       background-image:
-        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+        linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
       background-size: 52px 52px;
       mask-image: radial-gradient(circle at 50% 30%, black 0%, black 55%, transparent 78%);
       animation: drift 22s linear infinite;
+    }
+    body.dark-mode .grid{
+      opacity:0.45;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
     }
     @keyframes drift{
       from{ transform: translate3d(0,0,0); }
       to{ transform: translate3d(52px,52px,0); }
     }
+
     .orbs{
       position:fixed; inset:0; z-index:-1; pointer-events:none;
     }
     .orb{
       position:absolute; width:520px; height:520px; border-radius:50%;
       filter: blur(34px);
-      background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.20), rgba(255,255,255,0.05) 45%, transparent 70%);
-      opacity:0.35;
+      background: radial-gradient(circle at 35% 35%, rgba(0,0,0,0.12), rgba(0,0,0,0.05) 45%, transparent 70%);
+      opacity:0.20;
       animation: float 18s ease-in-out infinite;
     }
+    body.dark-mode .orb{
+      background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.20), rgba(255,255,255,0.05) 45%, transparent 70%);
+      opacity:0.35;
+    }
     .orb:nth-child(1){ left:-180px; top:120px; animation-delay: -2s; }
-    .orb:nth-child(2){ right:-240px; top:80px; width:620px; height:620px; animation-delay:-7s; opacity:0.28;}
-    .orb:nth-child(3){ left:20%; bottom:-280px; width:700px; height:700px; animation-delay:-12s; opacity:0.22;}
+    .orb:nth-child(2){ right:-240px; top:80px; width:620px; height:620px; animation-delay:-7s; opacity:0.18;}
+    .orb:nth-child(3){ left:20%; bottom:-280px; width:700px; height:700px; animation-delay:-12s; opacity:0.15;}
+    body.dark-mode .orb:nth-child(2){ opacity:0.28; }
+    body.dark-mode .orb:nth-child(3){ opacity:0.22; }
     @keyframes float{
       0%,100%{ transform: translate3d(0,0,0) scale(1); }
       50%{ transform: translate3d(0,-22px,0) scale(1.03); }
@@ -98,8 +138,12 @@
     }
     .logo{
       width:34px; height:34px; border-radius:10px;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.35) 45%, rgba(255,255,255,0.12) 70%);
+      background: radial-gradient(circle at 30% 30%, rgba(0,0,0,0.82), rgba(0,0,0,0.28) 45%, rgba(0,0,0,0.10) 70%);
       border: 1px solid var(--border2);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+    }
+    body.dark-mode .logo{
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.35) 45%, rgba(255,255,255,0.12) 70%);
       box-shadow: 0 12px 30px rgba(0,0,0,0.55);
     }
     .brand h1{
@@ -119,10 +163,14 @@
       display:inline-flex; align-items:center; gap:10px;
       padding: 10px 12px;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,0.04);
+      background: var(--panel);
       border-radius: 999px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.40);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.08);
       backdrop-filter: blur(10px);
+    }
+    body.dark-mode .pill{
+      background: rgba(255,255,255,0.04);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.40);
     }
     .pill label{
       font-size: 12px;
@@ -130,7 +178,7 @@
       white-space:nowrap;
     }
     select{
-      background: rgba(0,0,0,0.35);
+      background: rgba(255,255,255,0.85);
       color: var(--text);
       border: 1px solid var(--border2);
       border-radius: 10px;
@@ -138,10 +186,13 @@
       outline:none;
       font-size: 12px;
     }
+    body.dark-mode select{
+      background: rgba(0,0,0,0.35);
+    }
     .clock{
       font-family: var(--mono);
       font-size: 12.5px;
-      color: rgba(255,255,255,0.88);
+      color: var(--text);
       letter-spacing: 0.4px;
       white-space:nowrap;
     }
@@ -151,26 +202,29 @@
       padding: 10px 14px;
       border-radius: 999px;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,0.05);
-      color: rgba(255,255,255,0.9);
+      background: var(--panel);
+      color: var(--text);
       font-size: 12px;
       transition: transform .12s ease, background .12s ease, border-color .12s ease;
       user-select:none;
     }
     .btn:hover{
       transform: translateY(-1px);
-      border-color: rgba(255,255,255,0.22);
-      background: rgba(255,255,255,0.07);
+      border-color: var(--border2);
+      background: var(--panel2);
     }
 
     /* main card */
     .card{
       border-radius: var(--radius);
       border: 1px solid var(--border);
-      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.04));
+      background: linear-gradient(180deg, rgba(255,255,255,0.80), rgba(255,255,255,0.68));
       box-shadow: var(--shadow);
       backdrop-filter: blur(12px);
       overflow:hidden;
+    }
+    body.dark-mode .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.04));
     }
 
     .cardHead{
@@ -195,7 +249,7 @@
     }
     .metaChip{
       border: 1px solid var(--border);
-      background: rgba(0,0,0,0.25);
+      background: rgba(255,255,255,0.70);
       padding: 8px 10px;
       border-radius: 999px;
       font-size: 12px;
@@ -203,8 +257,15 @@
       display:inline-flex; gap:8px; align-items:center;
       white-space:nowrap;
     }
+    body.dark-mode .metaChip{
+      background: rgba(0,0,0,0.25);
+    }
     .dot{
       width:8px; height:8px; border-radius:50%;
+      background: var(--text);
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
+    }
+    body.dark-mode .dot{
       background: rgba(255,255,255,0.85);
       box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
     }
@@ -220,14 +281,23 @@
       padding: 10px 14px;
       border-radius: 999px;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,0.04);
-      color: rgba(255,255,255,0.78);
+      background: rgba(255,255,255,0.72);
+      color: var(--muted);
       font-size: 12px;
       transition: transform .12s ease, background .12s ease, border-color .12s ease;
       user-select:none;
     }
-    .tab:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,0.22); }
+    body.dark-mode .tab{
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.78);
+    }
+    .tab:hover{ transform: translateY(-1px); border-color: var(--border2); }
     .tab.active{
+      background: rgba(0,0,0,0.10);
+      border-color: rgba(0,0,0,0.20);
+      color: rgba(0,0,0,0.92);
+    }
+    body.dark-mode .tab.active{
       background: rgba(255,255,255,0.10);
       border-color: rgba(255,255,255,0.25);
       color: rgba(255,255,255,0.92);
@@ -248,14 +318,17 @@
 
     .panel{
       border: 1px solid var(--border);
-      background: rgba(0,0,0,0.25);
+      background: rgba(255,255,255,0.60);
       border-radius: var(--radius2);
       padding: 14px;
+    }
+    body.dark-mode .panel{
+      background: rgba(0,0,0,0.25);
     }
     .panel h3{
       font-size: 13px;
       letter-spacing: 0.4px;
-      color: rgba(255,255,255,0.86);
+      color: var(--text);
       margin-bottom: 10px;
       display:flex; align-items:center; justify-content:space-between;
       gap: 10px;
@@ -269,10 +342,13 @@
     /* timeline */
     .timeline{
       border: 1px solid var(--border);
-      background: rgba(255,255,255,0.03);
+      background: rgba(255,255,255,0.70);
       border-radius: 14px;
       padding: 12px 12px 10px;
       overflow:hidden;
+    }
+    body.dark-mode .timeline{
+      background: rgba(255,255,255,0.03);
     }
     .axis{
       position:relative;
@@ -282,12 +358,12 @@
     .axis .tick{
       position:absolute; top:0; transform: translateX(-50%);
       font-size: 11px;
-      color: rgba(255,255,255,0.55);
+      color: var(--muted2);
       font-family: var(--mono);
     }
     .axisLine{
       height: 1px;
-      background: rgba(255,255,255,0.10);
+      background: var(--border);
       margin-top: 16px;
     }
 
@@ -295,42 +371,56 @@
       position:relative;
       height: 86px;
       border-radius: 12px;
+      background: rgba(255,255,255,0.56);
+      border: 1px solid var(--border);
+      overflow:hidden;
+    }
+    body.dark-mode .bars{
       background: rgba(0,0,0,0.18);
       border: 1px solid rgba(255,255,255,0.08);
-      overflow:hidden;
     }
     .bars .gridv{
       position:absolute; inset:0;
-      background-image: linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-image: linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px);
       background-size: calc(100% / 24) 100%;
       opacity:0.55;
       pointer-events:none;
+    }
+    body.dark-mode .bars .gridv{
+      background-image: linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
     }
     .bar{
       position:absolute;
       height: 18px;
       border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.16);
-      background: rgba(255,255,255,0.55);
-      box-shadow: 0 10px 22px rgba(0,0,0,0.35);
+      border: 1px solid rgba(0,0,0,0.16);
+      background: rgba(0,0,0,0.55);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.12);
       display:flex; align-items:center;
       padding: 0 10px;
       gap: 10px;
       overflow:hidden;
       white-space:nowrap;
     }
+    body.dark-mode .bar{
+      border: 1px solid rgba(255,255,255,0.16);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.35);
+    }
     .bar small{
       font-family: var(--mono);
       font-size: 11px;
-      color: rgba(0,0,0,0.86);
-      mix-blend-mode: screen;
-      opacity:0.9;
+      color: rgba(255,255,255,0.92);
+      opacity:0.92;
     }
     .bar .barName{
       font-size: 11px;
+      color: rgba(255,255,255,0.95);
+      opacity: 0.95;
+    }
+    body.dark-mode .bar small,
+    body.dark-mode .bar .barName{
       color: rgba(0,0,0,0.88);
       mix-blend-mode: screen;
-      opacity: 0.95;
     }
 
     .bar.c1{ background: var(--c1); }
@@ -341,9 +431,13 @@
     .nowLine{
       position:absolute; top:0; bottom:0;
       width: 2px;
+      background: var(--text);
+      box-shadow: 0 0 0 4px rgba(0,0,0,0.08);
+      z-index: 5;
+    }
+    body.dark-mode .nowLine{
       background: rgba(255,255,255,0.95);
       box-shadow: 0 0 0 4px rgba(255,255,255,0.10);
-      z-index: 5;
     }
     .nowTag{
       position:absolute;
@@ -353,11 +447,16 @@
       font-size: 11px;
       padding: 6px 8px;
       border-radius: 999px;
+      border: 1px solid var(--border2);
+      background: rgba(255,255,255,0.88);
+      color: var(--text);
+      z-index: 6;
+      white-space:nowrap;
+    }
+    body.dark-mode .nowTag{
       border: 1px solid rgba(255,255,255,0.20);
       background: rgba(0,0,0,0.55);
       color: rgba(255,255,255,0.90);
-      z-index: 6;
-      white-space:nowrap;
     }
 
     /* status list */
@@ -367,14 +466,18 @@
       gap: 10px;
     }
     .row{
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.66);
       border-radius: 14px;
       padding: 12px 12px;
       display:grid;
       grid-template-columns: 1.2fr 0.9fr;
       gap: 12px;
       align-items:start;
+    }
+    body.dark-mode .row{
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.035);
     }
     @media (max-width: 640px){
       .row{ grid-template-columns: 1fr; }
@@ -393,41 +496,53 @@
       font-size: 11px;
       padding: 6px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.16);
-      background: rgba(0,0,0,0.25);
-      color: rgba(255,255,255,0.85);
+      border: 1px solid var(--border2);
+      background: rgba(255,255,255,0.75);
+      color: var(--text);
       font-family: var(--mono);
       white-space:nowrap;
     }
-    .badge.open{ border-color: rgba(160,255,200,0.35); color: var(--ok); }
-    .badge.closed{ border-color: rgba(255,160,160,0.35); color: var(--bad); }
-    .badge.break{ border-color: rgba(255,225,160,0.35); color: var(--warn); }
+    body.dark-mode .badge{
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.25);
+      color: rgba(255,255,255,0.85);
+    }
+    .badge.open{ border-color: rgba(0,0,0,0.20); color: var(--ok); }
+    .badge.closed{ border-color: rgba(0,0,0,0.20); color: var(--bad); }
+    .badge.break{ border-color: rgba(0,0,0,0.20); color: var(--warn); }
+    body.dark-mode .badge.open{ border-color: rgba(160,255,200,0.35); }
+    body.dark-mode .badge.closed{ border-color: rgba(255,160,160,0.35); }
+    body.dark-mode .badge.break{ border-color: rgba(255,225,160,0.35); }
 
     .kv{
       display:grid;
       grid-template-columns: 110px 1fr;
       gap: 8px 10px;
       font-size: 12px;
-      color: rgba(255,255,255,0.80);
+      color: var(--text);
     }
     .kv b{
-      color: rgba(255,255,255,0.62);
+      color: var(--muted);
       font-weight: 700;
       font-family: var(--mono);
       font-size: 11.5px;
     }
     .desc{
       font-size: 12px;
-      color: rgba(255,255,255,0.62);
+      color: var(--muted);
       line-height: 1.45;
     }
 
     /* insights */
     .insight{
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.66);
       border-radius: 14px;
       padding: 12px;
+    }
+    body.dark-mode .insight{
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.035);
     }
     .insightTitle{
       display:flex; align-items:center; justify-content:space-between;
@@ -456,23 +571,28 @@
     .ico{
       width: 22px; height: 22px;
       border-radius: 9px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.72);
       display:flex; align-items:center; justify-content:center;
       font-family: var(--mono);
       font-size: 11px;
-      color: rgba(255,255,255,0.80);
+      color: var(--text);
       flex: 0 0 auto;
+    }
+    body.dark-mode .ico{
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.25);
+      color: rgba(255,255,255,0.80);
     }
     .note b{
       display:block;
       font-size: 12.5px;
       margin-bottom: 2px;
-      color: rgba(255,255,255,0.86);
+      color: var(--text);
     }
     .note p{
       font-size: 12px;
-      color: rgba(255,255,255,0.62);
+      color: var(--muted);
       line-height: 1.45;
     }
 
@@ -486,7 +606,7 @@
     .footerHint code{
       font-family: var(--mono);
       font-size: 11px;
-      color: rgba(255,255,255,0.75);
+      color: var(--text);
     }
   </style>
 </head>
@@ -587,6 +707,20 @@
   </div>
 
 <script>
+/* ---------- Theme sync ---------- */
+const THEME_KEY = "fynx_theme";
+(function applyThemeFromStorage(){
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "dark") document.body.classList.add("dark-mode");
+  else document.body.classList.remove("dark-mode");
+})();
+window.addEventListener("storage", (e) => {
+  if (e.key === THEME_KEY) {
+    if (e.newValue === "dark") document.body.classList.add("dark-mode");
+    else document.body.classList.remove("dark-mode");
+  }
+});
+
 /**
  * Market Hours — DST-aware, timezone-correct
  * - Defines sessions in exchange local timezone (IANA), then converts to chosen display timezone.
@@ -695,7 +829,6 @@ const MARKETS = {
         name:"Sydney Session",
         venue:"Sydney",
         tz:"Australia/Sydney",
-        // Typical FX session window (local): 08:00–17:00
         open:{h:8, m:0},
         close:{h:17, m:0},
         color:"c4",
@@ -806,8 +939,8 @@ const MARKETS = {
         name:"CBOE (Chicago Board Options Exchange)",
         venue:"CBOE",
         tz:"America/Chicago",
-        open:{h:8, m:30},     // 8:30 CT = 9:30 ET
-        close:{h:15, m:0},    // 15:00 CT = 16:00 ET
+        open:{h:8, m:30},
+        close:{h:15, m:0},
         color:"c1",
         blurb:"Primary US listed options session. Aligns with US equities regular trading hours."
       }
@@ -829,7 +962,7 @@ const MARKETS = {
         venue:"Crypto",
         tz:"UTC",
         open:{h:0, m:0},
-        close:{h:24, m:0}, // handled as full day
+        close:{h:24, m:0},
         color:"c2",
         blurb:"Continuous trading. Liquidity varies by region; weekends can be thinner."
       }
@@ -875,7 +1008,6 @@ const COMMON_TZ = [
 function buildTZMenu(){
   tzSelect.innerHTML = '';
   const set = new Set(COMMON_TZ);
-  // ensure user's tz included
   set.add(STATE.tz);
   const items = Array.from(set);
   items.sort((a,b)=> a.localeCompare(b));
@@ -912,42 +1044,31 @@ function renderAxis(){
 }
 
 /* ---------- Session calculations ---------- */
-function sessionIntervalsForDisplayDay(session, displayTZ, baseDate /* Date now */){
-  // display day's YMD
+function sessionIntervalsForDisplayDay(session, displayTZ, baseDate){
   const ymd = ymdInTZ(baseDate, displayTZ);
 
-  // build "today" in exchange tz (same YMD as display day, but in exchange tz)
-  // This creates a consistent "timeline day" in the user's selected timezone.
-  // Then we convert each exchange session's wall times to UTC instants anchored to that day.
   const startWall = {year: ymd.year, month: ymd.month, day: ymd.day, hour: session.open.h, minute: session.open.m, second:0};
   const endH = session.close.h;
   const endWall = {year: ymd.year, month: ymd.month, day: ymd.day, hour: (endH===24?23:endH), minute: (endH===24?59:session.close.m), second:(endH===24?59:0)};
-  // handle close=24:00 as end of day
   let startUtc = zonedWallTimeToUtcDate(startWall, session.tz);
   let endUtc;
   if(session.close.h === 24 && session.close.m === 0){
-    // full day
-    // represent as [00:00, 24:00) in display day, we'll special-case later
     endUtc = zonedWallTimeToUtcDate({year: ymd.year, month: ymd.month, day: ymd.day, hour:23, minute:59, second:59}, session.tz);
   } else {
     endUtc = zonedWallTimeToUtcDate(endWall, session.tz);
-    // if end <= start, session crosses midnight in exchange local time -> add 1 day to end
     if(endUtc.getTime() <= startUtc.getTime()){
       const y2 = addDaysYMD({year: ymd.year, month: ymd.month, day: ymd.day}, 1);
       endUtc = zonedWallTimeToUtcDate({year:y2.year, month:y2.month, day:y2.day, hour: session.close.h, minute: session.close.m, second:0}, session.tz);
     }
   }
 
-  // Now project interval onto display-day (00:00 to 24:00) boundaries in UTC instants.
   const dayStartUtc = zonedWallTimeToUtcDate({year: ymd.year, month: ymd.month, day: ymd.day, hour:0, minute:0, second:0}, displayTZ);
   const dayEndUtc   = zonedWallTimeToUtcDate({year: ymd.year, month: ymd.month, day: ymd.day, hour:23, minute:59, second:59}, displayTZ);
 
-  // Clip to [dayStart, dayEnd]
   const a = Math.max(startUtc.getTime(), dayStartUtc.getTime());
   const b = Math.min(endUtc.getTime(), dayEndUtc.getTime());
   if(b <= a) return [];
 
-  // Convert clipped UTC instants into minutes-from-midnight in display TZ
   const startMin = minutesSinceMidnightInTZ(new Date(a), displayTZ);
   const endMin = minutesSinceMidnightInTZ(new Date(b), displayTZ);
   return [{startMin, endMin, startUtc: new Date(a), endUtc: new Date(b)}];
@@ -981,11 +1102,9 @@ function isOpenNow(session, displayTZ, now){
   if(!ints.length) return {state:'closed', next: null};
   const nowMin = minutesSinceMidnightInTZ(now, displayTZ);
 
-  // check breaks (if within open interval but in break => break)
   const breaks = breakIntervalsForDisplayDay(session, displayTZ, now);
   const inOpen = ints.some(x => nowMin >= x.startMin && nowMin <= x.endMin);
   if(!inOpen){
-    // next change = next open today or tomorrow
     return {state:'closed', next: nextEventForSession(session, displayTZ, now)};
   }
   const inBreak = breaks.some(x => nowMin >= x.startMin && nowMin <= x.endMin);
@@ -996,7 +1115,6 @@ function isOpenNow(session, displayTZ, now){
 }
 
 function nextEventForSession(session, displayTZ, now){
-  // compute today's open/close/break boundaries in display TZ (as minutes)
   const todayInts = sessionIntervalsForDisplayDay(session, displayTZ, now);
   const todayBreaks = breakIntervalsForDisplayDay(session, displayTZ, now);
   const nowMin = minutesSinceMidnightInTZ(now, displayTZ);
@@ -1017,7 +1135,6 @@ function nextEventForSession(session, displayTZ, now){
     return {inDays:0, atMin: nextToday.t, kind: nextToday.kind};
   }
 
-  // else: compute tomorrow's open (next significant event)
   const tomorrow = new Date(now.getTime() + 24*60*60*1000);
   const tInts = sessionIntervalsForDisplayDay(session, displayTZ, tomorrow);
   const tBreaks = breakIntervalsForDisplayDay(session, displayTZ, tomorrow);
@@ -1046,7 +1163,6 @@ function computeNextGlobalChange(activeKey, displayTZ, now){
   }
   if(!events.length) return null;
 
-  // compare by absolute time: today minutes vs tomorrow minutes + 1440
   events.sort((a,b)=>{
     const ta = a.atMin + a.inDays*1440;
     const tb = b.atMin + b.inDays*1440;
@@ -1057,8 +1173,6 @@ function computeNextGlobalChange(activeKey, displayTZ, now){
 
 /* ---------- Rendering timeline + list ---------- */
 function clearBars(){
-  // remove all bars but keep gridv + nowline + nowtag
-  const keep = new Set(['gridv','nowLine','nowTag']);
   const children = Array.from(barsEl.children);
   for(const el of children){
     if(el.classList.contains('gridv')) continue;
@@ -1071,21 +1185,18 @@ function renderBars(activeKey, displayTZ, now){
   clearBars();
   const sessions = MARKETS[activeKey].sessions;
 
-  // now line
   const nowMin = minutesSinceMidnightInTZ(now, displayTZ);
   const nowPct = clamp(nowMin/1440*100, 0, 100);
   nowLineEl.style.left = nowPct + '%';
   nowTagEl.style.left = nowPct + '%';
   nowTagEl.textContent = fmtTime(now, displayTZ);
 
-  // lane layout
   const laneH = 20;
   const laneGap = 6;
 
   sessions.forEach((s, idx)=>{
     const intervals = sessionIntervalsForDisplayDay(s, displayTZ, now);
 
-    // if crypto full day: just draw full width
     if(s.close.h===24 && s.open.h===0){
       intervals.length = 0;
       intervals.push({startMin:0, endMin:1440});
@@ -1107,19 +1218,16 @@ function renderBars(activeKey, displayTZ, now){
       name.textContent = s.venue;
 
       const time = document.createElement('small');
-      // display open/close in display TZ for the clipped interval
       const openT = minutesToHM(it.startMin);
       const closeT = minutesToHM(it.endMin);
       time.textContent = `${openT}–${closeT}`;
 
       bar.appendChild(name);
       bar.appendChild(time);
-
       barsEl.appendChild(bar);
     }
   });
 
-  // adjust container height based on number of lanes
   const h = 10 + sessions.length*(laneH+laneGap) + 10;
   barsEl.style.height = Math.max(86, h) + 'px';
 }
@@ -1129,21 +1237,17 @@ function renderList(activeKey, displayTZ, now){
   const sessions = MARKETS[activeKey].sessions;
   const nowMin = minutesSinceMidnightInTZ(now, displayTZ);
 
-  // hint line
   statusHintEl.textContent = `Evaluated in ${displayTZ}`;
 
   for(const s of sessions){
     const status = isOpenNow(s, displayTZ, now);
 
-    // compute today's open/close in display TZ (for display)
     let openStr = '—', closeStr = '—';
     const ints = sessionIntervalsForDisplayDay(s, displayTZ, now);
     if(s.close.h===24 && s.open.h===0){
       openStr = '00:00';
       closeStr = '24:00';
     } else if(ints.length){
-      // not perfect if clipped, so compute using exchange wall times but displayed in displayTZ:
-      // build absolute instants for open/close for the timeline day then format.
       const ymd = ymdInTZ(now, displayTZ);
       const openUtc = zonedWallTimeToUtcDate({year: ymd.year, month: ymd.month, day: ymd.day, hour:s.open.h, minute:s.open.m, second:0}, s.tz);
       let closeUtc = zonedWallTimeToUtcDate({year: ymd.year, month: ymd.month, day: ymd.day, hour:s.close.h, minute:s.close.m, second:0}, s.tz);
@@ -1187,7 +1291,6 @@ function renderList(activeKey, displayTZ, now){
     addKV('LOCAL', `${openStr} → ${closeStr}`);
     addKV('EXCHANGE', `${s.tz}`);
 
-    // next
     let nextTxt = '—';
     const nx = status.next;
     if(nx){
@@ -1208,7 +1311,6 @@ function renderList(activeKey, displayTZ, now){
     left.appendChild(document.createElement('div')).style.height = '8px';
     left.appendChild(bl);
 
-    // right: if breaks exist, show them (display tz)
     const right = document.createElement('div');
     if(s.breaks && s.breaks.length){
       const brs = breakIntervalsForDisplayDay(s, displayTZ, now);
@@ -1217,7 +1319,6 @@ function renderList(activeKey, displayTZ, now){
       const title = document.createElement('b'); title.textContent = 'BREAK';
       const val = document.createElement('div');
       if(brs.length){
-        // show first break
         val.textContent = `${minutesToHM(brs[0].startMin)} → ${minutesToHM(brs[0].endMin)} (display TZ)`;
       } else {
         val.textContent = '—';
