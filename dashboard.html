@@ -591,8 +591,11 @@
     <script>
       (function () {
         try {
-          const saved = localStorage.getItem('fynx-theme');
-          if (saved === 'dark') document.body.classList.add('dark-mode');
+          // Read global theme (same key used across site)
+          const saved = localStorage.getItem('fynx_theme');
+          if (saved === 'dark') {
+            document.body.classList.add('dark-mode');
+          }
         } catch(e) {}
       })();
     </script>
@@ -805,7 +808,8 @@
         function toggleTheme() {
             const isDark = document.body.classList.toggle('dark-mode');
             try {
-                localStorage.setItem('fynx-theme', isDark ? 'dark' : 'light');
+                // Persist using the shared global key
+                localStorage.setItem('fynx_theme', isDark ? 'dark' : 'light');
             } catch(e) {}
         }
     </script>
