@@ -9,6 +9,26 @@
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     :root{
+      --bg:#f3f3f5;
+      --panel: rgba(255,255,255,.78);
+      --panel2: rgba(255,255,255,.66);
+      --border: rgba(0,0,0,.12);
+      --border2: rgba(0,0,0,.08);
+      --text:#0b0b0c;
+      --muted: rgba(0,0,0,.68);
+      --muted2: rgba(0,0,0,.50);
+      --danger:#b42318;
+      --shadow: 0 24px 70px rgba(0,0,0,.12);
+      --radius: 18px;
+      --radius2: 22px;
+      --max: 1200px;
+      --buy-bg: rgba(0,0,0,.08);
+      --buy-border: rgba(0,0,0,.16);
+      --sell-bg: rgba(0,0,0,.12);
+      --sell-border: rgba(0,0,0,.20);
+    }
+
+    body.dark-mode{
       --bg:#000;
       --panel: rgba(255,255,255,.06);
       --panel2: rgba(255,255,255,.04);
@@ -19,56 +39,79 @@
       --muted2: rgba(255,255,255,.50);
       --danger:#ff4d4d;
       --shadow: 0 24px 70px rgba(0,0,0,.55);
-      --radius: 18px;
-      --radius2: 22px;
-      --max: 1200px;
+      --buy-bg: rgba(0,255,140,.10);
+      --buy-border: rgba(0,255,140,.18);
+      --sell-bg: rgba(255,80,80,.12);
+      --sell-border: rgba(255,80,80,.20);
     }
 
     body{
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: var(--text);
-      background: var(--bg);
+      background:
+        radial-gradient(circle at 1px 1px, rgba(0,0,0,0.085) 1px, transparent 1px) 0 0 / 18px 18px,
+        linear-gradient(var(--bg), var(--bg));
       overflow-x:hidden;
       min-height:100vh;
     }
+    body.dark-mode{
+      background: var(--bg);
+    }
 
-    /* Animated calc background */
     .animated-bg{
       position:fixed; inset:0; z-index:-1;
-      background:#000; overflow:hidden;
+      background:transparent; overflow:hidden;
     }
+    body.dark-mode .animated-bg{ background:#000; }
+
     .grid-overlay{
       position:absolute; inset:0;
       background-image:
-        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+        linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.035) 1px, transparent 1px);
       background-size: 52px 52px;
       animation: gridMove 20s linear infinite;
       opacity:.75;
     }
+    body.dark-mode .grid-overlay{
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    }
+
     @keyframes gridMove{
       0%{transform:translate(0,0)}
       100%{transform:translate(52px,52px)}
     }
+
     .gradient-orb{
       position:absolute; border-radius:999px; filter: blur(80px);
-      opacity:.22;
+      opacity:.18;
       animation: floaty 18s ease-in-out infinite;
     }
-    .orb-1{ width:520px; height:520px; left:-220px; top:-220px; background: radial-gradient(circle, #fff 0%, transparent 65%); }
-    .orb-2{ width:520px; height:520px; right:-240px; bottom:-240px; background: radial-gradient(circle, #fff 0%, transparent 65%); animation-delay: 3s;}
+    .orb-1{ width:520px; height:520px; left:-220px; top:-220px; background: radial-gradient(circle, rgba(0,0,0,.16) 0%, transparent 65%); }
+    .orb-2{ width:520px; height:520px; right:-240px; bottom:-240px; background: radial-gradient(circle, rgba(0,0,0,.14) 0%, transparent 65%); animation-delay: 3s;}
+    body.dark-mode .orb-1,
+    body.dark-mode .orb-2{
+      opacity:.22;
+      background: radial-gradient(circle, #fff 0%, transparent 65%);
+    }
+
     @keyframes floaty{
       0%,100%{transform:translate(0,0) scale(1)}
       50%{transform:translate(30px,-24px) scale(.97)}
     }
 
-    /* Header */
     header{
       position:sticky; top:0; z-index:1000;
-      background: rgba(0,0,0,.78);
+      background: rgba(243,243,245,.82);
       backdrop-filter: blur(18px);
       border-bottom: 1px solid var(--border2);
     }
+    body.dark-mode header{
+      background: rgba(0,0,0,.78);
+    }
+
     .nav{
       max-width: var(--max);
       margin: 0 auto;
@@ -78,6 +121,7 @@
       justify-content:space-between;
       gap:12px;
     }
+
     .brand{
       display:flex; align-items:center; gap:10px;
       font-weight: 850;
@@ -86,12 +130,13 @@
     }
     .brand i{opacity:.92}
     .nav-actions{display:flex; align-items:center; gap:10px;}
+
     .btn{
       display:inline-flex; align-items:center; gap:10px;
       padding:10px 14px;
       border-radius: 999px;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,.05);
+      background: rgba(0,0,0,.04);
       color: var(--text);
       text-decoration:none;
       font-weight: 700;
@@ -99,25 +144,43 @@
       transition: transform .12s ease, background .12s ease, border-color .12s ease;
       white-space:nowrap;
     }
-    .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18)}
+    body.dark-mode .btn{
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+    }
+    .btn:hover{transform: translateY(-1px); background: rgba(0,0,0,.08); border-color: rgba(0,0,0,.18)}
+    body.dark-mode .btn:hover{ background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18); }
     .btn i{opacity:.9}
 
-    /* Layout */
     main{max-width: var(--max); margin:0 auto; padding: 46px 18px 70px;}
+
     .shell{
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.70));
       border: 1px solid var(--border2);
       border-radius: var(--radius2);
       box-shadow: var(--shadow);
       padding: 26px;
     }
+    body.dark-mode .shell{
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+    }
+
     .title{
       font-size: 44px;
       line-height: 1.04;
       font-weight: 950;
       letter-spacing: -1px;
       margin-bottom: 10px;
+      background: linear-gradient(135deg,#000 0%,#6c6c70 100%);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
     }
+    body.dark-mode .title{
+      background: linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+
     .subtitle{
       color: var(--muted);
       font-size: 15px;
@@ -136,15 +199,21 @@
 
     .card{
       border: 1px solid var(--border2);
-      background: rgba(0,0,0,.35);
+      background: rgba(255,255,255,.58);
       border-radius: 18px;
       padding: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.06);
     }
+    body.dark-mode .card{
+      background: rgba(0,0,0,.35);
+      box-shadow:none;
+    }
+
     .card h3{
       font-size: 16px;
       font-weight: 950;
       margin-bottom: 12px;
-      color: rgba(255,255,255,.92);
+      color: var(--text);
       text-transform: uppercase;
       letter-spacing: .6px;
     }
@@ -153,27 +222,35 @@
       display:flex; gap:8px; flex-wrap:wrap;
       margin-top: 10px;
     }
+
     .chip{
       border:none;
       cursor:pointer;
       padding: 8px 12px;
       border-radius: 999px;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.10);
-      color: rgba(255,255,255,.92);
+      background: rgba(0,0,0,.08);
+      border: 1px solid rgba(0,0,0,.10);
+      color: var(--text);
       font-weight: 950;
       font-size: 12px;
       transition: transform .12s ease, background .12s ease, border-color .12s ease;
       white-space:nowrap;
     }
-    .chip:hover{transform: translateY(-1px); background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.16)}
-    .chip.active{background: rgba(255,255,255,.20); border-color: rgba(255,255,255,.18)}
+    body.dark-mode .chip{
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(255,255,255,.92);
+    }
+    .chip:hover{transform: translateY(-1px); background: rgba(0,0,0,.12); border-color: rgba(0,0,0,.16)}
+    body.dark-mode .chip:hover{ background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.16); }
+    .chip.active{background: rgba(0,0,0,.16); border-color: rgba(0,0,0,.18)}
+    body.dark-mode .chip.active{background: rgba(255,255,255,.20); border-color: rgba(255,255,255,.18)}
 
     label{
       display:block;
       font-size: 12px;
       font-weight: 950;
-      color: rgba(255,255,255,.78);
+      color: color-mix(in srgb, var(--text) 78%, transparent);
       margin-bottom: 8px;
       text-transform: uppercase;
       letter-spacing:.4px;
@@ -190,13 +267,20 @@
       width:100%;
       border-radius: 14px;
       border: 1px solid var(--border2);
-      background: rgba(255,255,255,.04);
+      background: rgba(255,255,255,.82);
       color: var(--text);
       padding: 10px 12px;
       outline:none;
       font-weight: 900;
       font-size: 14px;
     }
+    body.dark-mode .field,
+    body.dark-mode select,
+    body.dark-mode textarea{
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+    }
+
     textarea{
       min-height: 150px;
       resize: vertical;
@@ -204,7 +288,14 @@
       font-size: 12px;
       letter-spacing:.2px;
     }
+
     .field:focus, select:focus, textarea:focus{
+      border-color: rgba(0,0,0,.22);
+      background: rgba(255,255,255,.95);
+    }
+    body.dark-mode .field:focus,
+    body.dark-mode select:focus,
+    body.dark-mode textarea:focus{
       border-color: rgba(255,255,255,.22);
       background: rgba(255,255,255,.06);
     }
@@ -217,30 +308,43 @@
       border:none; cursor:pointer;
       padding: 10px 12px;
       border-radius: 14px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      color: rgba(255,255,255,.88);
+      background: rgba(0,0,0,.06);
+      border: 1px solid rgba(0,0,0,.10);
+      color: color-mix(in srgb, var(--text) 88%, transparent);
       font-weight: 950;
       transition: transform .12s ease, background .12s ease, border-color .12s ease;
       display:inline-flex; align-items:center; gap:10px;
       white-space:nowrap;
     }
-    .seg button:hover{transform: translateY(-1px); background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.16)}
-    .seg button.active{background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.20); color:#fff}
+    body.dark-mode .seg button{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(255,255,255,.88);
+    }
+    .seg button:hover{transform: translateY(-1px); background: rgba(0,0,0,.09); border-color: rgba(0,0,0,.16)}
+    body.dark-mode .seg button:hover{ background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.16); }
+    .seg button.active{background: rgba(0,0,0,.14); border-color: rgba(0,0,0,.20); color:var(--text)}
+    body.dark-mode .seg button.active{background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.20); color:#fff}
 
     .primary{
       border-radius: 14px;
       padding: 12px 14px;
-      border: 1px solid rgba(255,255,255,.22);
-      background: rgba(255,255,255,.14);
-      color: #fff;
+      border: 1px solid rgba(0,0,0,.22);
+      background: rgba(0,0,0,.12);
+      color: var(--text);
       font-weight: 950;
       cursor:pointer;
       transition: transform .12s ease, background .12s ease, border-color .12s ease;
       display:inline-flex; align-items:center; gap:10px;
       white-space:nowrap;
     }
-    .primary:hover{transform: translateY(-1px); background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.28)}
+    body.dark-mode .primary{
+      border: 1px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.14);
+      color: #fff;
+    }
+    .primary:hover{transform: translateY(-1px); background: rgba(0,0,0,.18); border-color: rgba(0,0,0,.28)}
+    body.dark-mode .primary:hover{ background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.28); }
 
     .muted{color: var(--muted2); font-size: 12px; line-height: 1.55; font-weight: 800;}
     .danger{color: var(--danger); font-size: 12px; font-weight: 950; margin-top: 10px; display:none;}
@@ -250,27 +354,36 @@
       display:inline-flex; align-items:center;
       padding: 8px 12px;
       border-radius: 999px;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.08);
+      border: 1px solid rgba(0,0,0,.10);
       font-weight: 950;
       font-size: 12px;
-      color: rgba(255,255,255,.92);
+      color: var(--text);
       white-space:nowrap;
     }
-    .pill.buy{background: rgba(0,255,140,.10); border-color: rgba(0,255,140,.18)}
-    .pill.sell{background: rgba(255,80,80,.12); border-color: rgba(255,80,80,.20)}
+    body.dark-mode .pill{
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(255,255,255,.92);
+    }
+    .pill.buy{background: var(--buy-bg); border-color: var(--buy-border)}
+    .pill.sell{background: var(--sell-bg); border-color: var(--sell-border)}
 
     .bigBox{
       margin-top: 12px;
       padding: 14px;
       border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.74);
       display:flex;
       justify-content:space-between;
       align-items:flex-start;
       gap:12px;
       flex-wrap:wrap;
+    }
+    body.dark-mode .bigBox{
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
     }
     .bigBox .k{font-size:12px; font-weight:950; color: var(--muted2); text-transform:uppercase; letter-spacing:.4px}
     .bigBox .stop{
@@ -286,28 +399,36 @@
       font-weight: 950;
       padding: 8px 12px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(0,0,0,.14);
+      background: rgba(0,0,0,.08);
       font-variant-numeric: tabular-nums;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
     }
-    .pips.buy{background: rgba(255,80,80,.12); border-color: rgba(255,80,80,.20)}
-    .pips.sell{background: rgba(0,255,140,.10); border-color: rgba(0,255,140,.18)}
+    body.dark-mode .bigBox .pips{
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.08);
+    }
+    .pips.buy{background: var(--sell-bg); border-color: var(--sell-border)}
+    .pips.sell{background: var(--buy-bg); border-color: var(--buy-border)}
 
     .rows{margin-top: 10px; display:flex; flex-direction:column; gap:8px}
     .rowLine{
       display:flex; justify-content:space-between; gap:10px;
       padding: 10px 12px;
       border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.68);
       font-weight: 900;
       font-size: 13px;
+    }
+    body.dark-mode .rowLine{
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
     }
     .rowLine span:last-child{
       font-variant-numeric: tabular-nums;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
-      color: rgba(255,255,255,.90);
+      color: var(--text);
     }
   </style>
 </head>
@@ -352,9 +473,11 @@
             <div>
               <label for="pair">Pair</label>
               <select id="pair" class="field">
-                <option>EUR/USD</option>
-                <option>GBP/USD</option>
-                <option>USD/JPY</option>
+                <option value="EUR/USD" data-pip="0.0001" data-decimals="5">EUR/USD</option>
+                <option value="GBP/USD" data-pip="0.0001" data-decimals="5">GBP/USD</option>
+                <option value="USD/JPY" data-pip="0.01" data-decimals="3">USD/JPY</option>
+                <option value="XAU/USD" data-pip="0.1" data-decimals="2">XAU/USD</option>
+                <option value="BTC/USD" data-pip="1" data-decimals="2">BTC/USD</option>
               </select>
             </div>
             <div>
@@ -372,11 +495,20 @@
               <label for="period">ATR period</label>
               <input id="period" class="field" value="14">
             </div>
+            <div>
+              <label for="atrValue">ATR value</label>
+              <input id="atrValue" class="field" value="0.0040">
+            </div>
+            <div>
+              <label for="notes">Notes</label>
+              <input id="notes" class="field" value="Use higher multiple in volatile conditions">
+            </div>
           </div>
           <div style="margin-top:14px;">
             <label>ATR multiple</label>
             <div class="chipsRow" id="multChips"></div>
           </div>
+          <div class="danger" id="errorBox">Please enter valid numbers.</div>
         </div>
 
         <div class="card">
@@ -388,6 +520,13 @@
             </div>
             <div class="pips buy" id="pipsOut">— pips</div>
           </div>
+
+          <div class="rows">
+            <div class="rowLine"><span>ATR distance</span><span id="atrDistanceOut">—</span></div>
+            <div class="rowLine"><span>Entry price</span><span id="entryOut">—</span></div>
+            <div class="rowLine"><span>ATR multiple</span><span id="multOut">—</span></div>
+            <div class="rowLine"><span>ATR period</span><span id="periodOut">—</span></div>
+          </div>
         </div>
 
       </div>
@@ -395,11 +534,20 @@
   </main>
 
   <script>
-    /* ===== THEME SYNC (ONLY ADDITION) ===== */
-    const theme = localStorage.getItem("fynx_theme");
-    if(theme === "light"){ document.documentElement.style.filter = "invert(0)"; }
+    const THEME_KEY = "fynx_theme";
+    (function applyThemeFromStorage(){
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === "dark") document.body.classList.add("dark-mode");
+      else document.body.classList.remove("dark-mode");
+    })();
 
-    /* ===== JOURNAL SAVE (ONLY ADDITION) ===== */
+    window.addEventListener("storage", (e) => {
+      if (e.key === THEME_KEY) {
+        if (e.newValue === "dark") document.body.classList.add("dark-mode");
+        else document.body.classList.remove("dark-mode");
+      }
+    });
+
     window.FYNX = window.FYNX || {};
     FYNX.saveTrade = function(trade){
       const t = JSON.parse(localStorage.getItem("fynx_trades") || "[]");
@@ -407,8 +555,118 @@
       localStorage.setItem("fynx_trades", JSON.stringify(t));
     };
 
-    /* ===== ORIGINAL SCRIPT CONTINUES UNTOUCHED ===== */
-    // (your existing JS logic remains exactly the same below)
+    const pair = document.getElementById("pair");
+    const entry = document.getElementById("entry");
+    const period = document.getElementById("period");
+    const atrValue = document.getElementById("atrValue");
+    const pairPill = document.getElementById("pairPill");
+    const sidePill = document.getElementById("sidePill");
+    const stopHint = document.getElementById("stopHint");
+    const stopOut = document.getElementById("stopOut");
+    const pipsOut = document.getElementById("pipsOut");
+    const atrDistanceOut = document.getElementById("atrDistanceOut");
+    const entryOut = document.getElementById("entryOut");
+    const multOut = document.getElementById("multOut");
+    const periodOut = document.getElementById("periodOut");
+    const errorBox = document.getElementById("errorBox");
+    const multChips = document.getElementById("multChips");
+    const sideSeg = document.getElementById("sideSeg");
+
+    let currentSide = "buy";
+    let currentMultiple = 1.5;
+
+    const multiples = [1.0, 1.5, 2.0, 2.5, 3.0];
+
+    function buildMultipleChips(){
+      multChips.innerHTML = "";
+      multiples.forEach(m => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "chip" + (m === currentMultiple ? " active" : "");
+        btn.textContent = `${m.toFixed(1)}x ATR`;
+        btn.addEventListener("click", () => {
+          currentMultiple = m;
+          buildMultipleChips();
+          updateCalc();
+        });
+        multChips.appendChild(btn);
+      });
+    }
+
+    sideSeg.querySelectorAll("button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        sideSeg.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentSide = btn.dataset.side;
+        updateCalc();
+      });
+    });
+
+    function getSelectedPairMeta(){
+      const opt = pair.options[pair.selectedIndex];
+      return {
+        name: opt.value,
+        pip: Number(opt.dataset.pip || 0.0001),
+        decimals: Number(opt.dataset.decimals || 5)
+      };
+    }
+
+    function formatPrice(value, decimals){
+      return Number(value).toFixed(decimals);
+    }
+
+    function updateCalc(){
+      const meta = getSelectedPairMeta();
+      const entryVal = Number(entry.value);
+      const atrVal = Number(atrValue.value);
+      const periodVal = Number(period.value);
+
+      pairPill.textContent = meta.name;
+
+      if(currentSide === "buy"){
+        sidePill.textContent = "Buy setup";
+        sidePill.className = "pill buy";
+        stopHint.textContent = "Stop below entry";
+        pipsOut.className = "pips buy";
+      } else {
+        sidePill.textContent = "Sell setup";
+        sidePill.className = "pill sell";
+        stopHint.textContent = "Stop above entry";
+        pipsOut.className = "pips sell";
+      }
+
+      if(!isFinite(entryVal) || !isFinite(atrVal) || !isFinite(periodVal) || atrVal <= 0 || periodVal <= 0){
+        errorBox.style.display = "block";
+        stopOut.textContent = "—";
+        pipsOut.textContent = "— pips";
+        atrDistanceOut.textContent = "—";
+        entryOut.textContent = "—";
+        multOut.textContent = `${currentMultiple.toFixed(1)}x`;
+        periodOut.textContent = "—";
+        return;
+      }
+
+      errorBox.style.display = "none";
+
+      const atrDistance = atrVal * currentMultiple;
+      const stop = currentSide === "buy" ? (entryVal - atrDistance) : (entryVal + atrDistance);
+      const pipDistance = atrDistance / meta.pip;
+
+      stopOut.textContent = formatPrice(stop, meta.decimals);
+      pipsOut.textContent = `${pipDistance.toFixed(1)} pips`;
+      atrDistanceOut.textContent = formatPrice(atrDistance, meta.decimals);
+      entryOut.textContent = formatPrice(entryVal, meta.decimals);
+      multOut.textContent = `${currentMultiple.toFixed(1)}x`;
+      periodOut.textContent = String(periodVal);
+    }
+
+    [pair, entry, period, atrValue].forEach(el => {
+      el.addEventListener("input", updateCalc);
+      el.addEventListener("change", updateCalc);
+    });
+
+    buildMultipleChips();
+    updateCalc();
   </script>
 </body>
 </html>
