@@ -16,6 +16,26 @@
 
   <style>
     :root{
+      --bg:#f3f3f5;
+      --bg2:#ffffff;
+      --card:#ffffff;
+      --card2:#f6f7f9;
+      --stroke:rgba(0,0,0,.08);
+      --stroke2:rgba(0,0,0,.14);
+      --text:rgba(0,0,0,.92);
+      --muted:rgba(0,0,0,.60);
+      --muted2:rgba(0,0,0,.40);
+      --shadow: 0 18px 50px rgba(0,0,0,.10);
+      --r:18px;
+      --r2:14px;
+      --sidebar:88px;
+      --topbar:64px;
+      --good:#0b0b0c;
+      --bad:#0b0b0c;
+      --warn:#4d4d52;
+    }
+
+    body.dark-mode{
       --bg:#07080a;
       --bg2:#0b0d11;
       --card:#11141b;
@@ -26,10 +46,6 @@
       --muted:rgba(255,255,255,.60);
       --muted2:rgba(255,255,255,.40);
       --shadow: 0 18px 50px rgba(0,0,0,.55);
-      --r:18px;
-      --r2:14px;
-      --sidebar:88px;
-      --topbar:64px;
       --good:#46e6a6;
       --bad:#ff4d6d;
       --warn:#f7c948;
@@ -40,38 +56,56 @@
     body{
       margin:0;
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(circle at 1px 1px, rgba(0,0,0,0.085) 1px, transparent 1px) 0 0 / 18px 18px,
+        linear-gradient(var(--bg), var(--bg));
+      color:var(--text);
+      overflow-x:hidden;
+    }
+    body.dark-mode{
       background: radial-gradient(1200px 900px at 20% -10%, rgba(255,255,255,.08), transparent 60%),
                   radial-gradient(900px 700px at 90% 10%, rgba(255,255,255,.06), transparent 55%),
                   linear-gradient(180deg, var(--bg), #05060a 55%, #040509);
-      color:var(--text);
-      overflow-x:hidden;
     }
 
     .bg-grid{
       position:fixed; inset:0;
       background-image:
-        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+        linear-gradient(rgba(0,0,0,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px);
       background-size: 72px 72px;
-      opacity:.05;
+      opacity:.08;
       pointer-events:none;
       mask-image: radial-gradient(800px 500px at 50% 12%, black 10%, transparent 75%);
     }
+    body.dark-mode .bg-grid{
+      background-image:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+      opacity:.05;
+    }
+
     .bg-noise{
       position:fixed; inset:0;
       pointer-events:none;
-      opacity:.06;
+      opacity:.03;
       mix-blend-mode: overlay;
       background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
       background-size: 260px 260px;
     }
+    body.dark-mode .bg-noise{ opacity:.06; }
+
     .bg-sheen{
       position:fixed; inset:-200px -200px auto -200px;
       height:520px;
-      background: radial-gradient(closest-side at 40% 40%, rgba(255,255,255,.11), transparent 65%);
+      background: radial-gradient(closest-side at 40% 40%, rgba(0,0,0,.08), transparent 65%);
       filter: blur(10px);
       pointer-events:none;
       animation: floatSheen 9s ease-in-out infinite;
+      opacity:.45;
+    }
+    body.dark-mode .bg-sheen{
+      background: radial-gradient(closest-side at 40% 40%, rgba(255,255,255,.11), transparent 65%);
       opacity:.6;
     }
     @keyframes floatSheen{
@@ -86,32 +120,41 @@
       position:fixed;
       top:0; left:0; bottom:0;
       padding:16px 12px;
-      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+      background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.18));
       border-right:1px solid var(--stroke);
       backdrop-filter: blur(10px);
       z-index:30;
     }
+    body.dark-mode .sidebar{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+    }
+
     .brand{
       height:44px;
       display:flex;
       align-items:center;
       justify-content:center;
       border-radius:14px;
-      background: rgba(255,255,255,.05);
+      background: rgba(0,0,0,.04);
       border:1px solid var(--stroke);
       letter-spacing:.18em;
       font-weight:800;
       font-size:12px;
-      color:rgba(255,255,255,.92);
+      color:var(--text);
       user-select:none;
     }
+    body.dark-mode .brand{
+      background: rgba(255,255,255,.05);
+      color:rgba(255,255,255,.92);
+    }
+
     .nav{ margin-top:14px; display:flex; flex-direction:column; gap:10px; }
     .navbtn{
       height:52px;
       border-radius:16px;
       border:1px solid transparent;
       background: transparent;
-      color:rgba(255,255,255,.70);
+      color:var(--muted);
       display:flex;
       align-items:center;
       justify-content:center;
@@ -120,13 +163,22 @@
       position:relative;
       outline:none;
     }
-    .navbtn:hover{ background: rgba(255,255,255,.05); border-color:var(--stroke); }
+    .navbtn:hover{ background: rgba(0,0,0,.05); border-color:var(--stroke); }
+    body.dark-mode .navbtn:hover{ background: rgba(255,255,255,.05); }
+
     .navbtn.active{
+      background: rgba(0,0,0,.08);
+      border-color: rgba(0,0,0,.14);
+      color: var(--text);
+      box-shadow: 0 10px 28px rgba(0,0,0,.14);
+    }
+    body.dark-mode .navbtn.active{
       background: rgba(255,255,255,.08);
       border-color: rgba(255,255,255,.16);
       color: rgba(255,255,255,.92);
       box-shadow: 0 10px 28px rgba(0,0,0,.35);
     }
+
     .navbtn span{ font-size:18px; line-height:1; transform: translateY(-1px); }
     .navlabel{
       position:absolute;
@@ -134,14 +186,19 @@
       white-space:nowrap;
       padding:8px 10px;
       border-radius:12px;
-      background: rgba(15,18,24,.92);
+      background: rgba(255,255,255,.96);
       border:1px solid var(--stroke);
-      color: rgba(255,255,255,.86);
+      color: var(--text);
       font-size:12px;
       opacity:0;
       transform: translateX(-6px);
       pointer-events:none;
       transition:.16s ease;
+      box-shadow: 0 12px 28px rgba(0,0,0,.08);
+    }
+    body.dark-mode .navlabel{
+      background: rgba(15,18,24,.92);
+      color: rgba(255,255,255,.86);
     }
     .navbtn:hover .navlabel{opacity:1; transform: translateX(0);}
     .sidefoot{ margin-top:14px; display:flex; flex-direction:column; gap:10px; }
@@ -161,36 +218,46 @@
       align-items:center;
       gap:14px;
       padding:12px 18px;
-      background: rgba(7,8,10,.45);
+      background: rgba(243,243,245,.78);
       backdrop-filter: blur(14px);
       border-bottom:1px solid var(--stroke);
     }
+    body.dark-mode .topbar{
+      background: rgba(7,8,10,.45);
+    }
+
     .title{ display:flex; flex-direction:column; line-height:1.1; }
     .title b{font-size:14px; letter-spacing:.02em}
     .title small{font-size:12px; color:var(--muted)}
     .topbar .right{ margin-left:auto; display:flex; align-items:center; gap:10px; }
+
     .pill{
       display:flex;
       align-items:center;
       gap:8px;
       padding:10px 12px;
       border-radius:999px;
-      background: rgba(255,255,255,.05);
+      background: rgba(0,0,0,.04);
       border:1px solid var(--stroke);
-      color: rgba(255,255,255,.82);
+      color: var(--text);
       font-size:12px;
     }
+    body.dark-mode .pill{
+      background: rgba(255,255,255,.05);
+      color: rgba(255,255,255,.82);
+    }
+
     .pill input{
       border:none; outline:none;
       background: transparent;
-      color: rgba(255,255,255,.82);
+      color: inherit;
       font-size:12px;
       width: 130px;
     }
     .pill select{
       border:none; outline:none;
       background: transparent;
-      color: rgba(255,255,255,.82);
+      color: inherit;
       font-size:12px;
       appearance:none;
       cursor:pointer;
@@ -198,7 +265,7 @@
     .pill button{
       border:none; outline:none;
       background: transparent;
-      color: rgba(255,255,255,.82);
+      color: inherit;
       cursor:pointer;
       font-weight:700;
       letter-spacing:.01em;
@@ -208,16 +275,21 @@
 
     .grid{ display:grid; gap:14px; }
     .grid.cols-12{ grid-template-columns: repeat(12, minmax(0,1fr)); }
+
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      background: linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.68));
       border:1px solid var(--stroke);
       border-radius: var(--r);
       box-shadow: var(--shadow);
       overflow:hidden;
     }
+    body.dark-mode .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    }
+
     .card .hd{
       padding:14px 16px 10px 16px;
-      border-bottom:1px solid rgba(255,255,255,.06);
+      border-bottom:1px solid var(--stroke);
       display:flex;
       align-items:flex-end;
       justify-content:space-between;
@@ -233,6 +305,10 @@
       gap:6px;
       padding:14px 16px;
       border-radius: var(--r2);
+      background: rgba(255,255,255,.62);
+      border:1px solid var(--stroke);
+    }
+    body.dark-mode .stat{
       background: rgba(0,0,0,.22);
       border:1px solid rgba(255,255,255,.07);
     }
@@ -248,7 +324,7 @@
       align-items:center;
       justify-content:space-between;
       padding:10px 0;
-      border-bottom:1px dashed rgba(255,255,255,.08);
+      border-bottom:1px dashed var(--stroke);
     }
     .row:last-child{border-bottom:none}
     .row .l{ display:flex; flex-direction:column; gap:2px; min-width:0; }
@@ -256,93 +332,142 @@
     .row .l small{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
     .row .r{
       font-size:12px;
-      color:rgba(255,255,255,.84);
+      color:var(--text);
       display:flex; align-items:center; gap:10px;
     }
+
     .badge{
       font-size:11px;
       padding:6px 10px;
       border-radius:999px;
+      border:1px solid var(--stroke2);
+      background: rgba(0,0,0,.04);
+      color: var(--text);
+      white-space:nowrap;
+    }
+    body.dark-mode .badge{
       border:1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.04);
       color: rgba(255,255,255,.80);
-      white-space:nowrap;
     }
 
     .formgrid{ display:grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap:14px; }
     .field{ display:flex; flex-direction:column; gap:8px; }
     label{ font-size:12px; color: var(--muted); }
+
     input[type="text"], input[type="number"], input[type="date"], textarea, select{
       width:100%;
       padding:12px 12px;
       border-radius: 14px;
+      border:1px solid var(--stroke2);
+      background: rgba(255,255,255,.78);
+      color: var(--text);
+      outline:none;
+    }
+    body.dark-mode input[type="text"],
+    body.dark-mode input[type="number"],
+    body.dark-mode input[type="date"],
+    body.dark-mode textarea,
+    body.dark-mode select{
       border:1px solid rgba(255,255,255,.10);
       background: rgba(0,0,0,.22);
       color: rgba(255,255,255,.90);
-      outline:none;
     }
+
     textarea{ min-height: 110px; resize: vertical; }
+
     .seg{
       display:flex;
       gap:8px;
       padding:6px;
       border-radius: 16px;
+      border:1px solid var(--stroke2);
+      background: rgba(255,255,255,.72);
+    }
+    body.dark-mode .seg{
       border:1px solid rgba(255,255,255,.10);
       background: rgba(0,0,0,.22);
     }
+
     .seg button{
       flex:1;
       padding:10px 10px;
       border-radius: 12px;
       border:1px solid transparent;
       background: transparent;
-      color: rgba(255,255,255,.75);
+      color: var(--muted);
       cursor:pointer;
       font-weight:700;
       font-size:12px;
       transition:.16s ease;
     }
     .seg button.active{
+      background: rgba(0,0,0,.08);
+      border-color: var(--stroke2);
+      color: var(--text);
+    }
+    body.dark-mode .seg button{
+      color: rgba(255,255,255,.75);
+    }
+    body.dark-mode .seg button.active{
       background: rgba(255,255,255,.08);
       border-color: rgba(255,255,255,.16);
       color: rgba(255,255,255,.92);
     }
+
     .chips{ display:flex; flex-wrap:wrap; gap:8px; }
     .chip{
       padding:8px 10px;
       border-radius: 999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      color: rgba(255,255,255,.82);
+      border:1px solid var(--stroke2);
+      background: rgba(0,0,0,.04);
+      color: var(--text);
       font-size:12px;
       cursor:pointer;
       user-select:none;
       transition:.14s ease;
     }
-    .chip.on{ background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.20); }
+    body.dark-mode .chip{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.82);
+    }
+    .chip.on{ background: rgba(0,0,0,.10); border-color: rgba(0,0,0,.18); }
+    body.dark-mode .chip.on{ background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.20); }
+
     .actions{ display:flex; gap:10px; flex-wrap:wrap; }
     .btn{
       padding:12px 14px;
       border-radius: 14px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.90);
+      border:1px solid var(--stroke2);
+      background: rgba(0,0,0,.05);
+      color: var(--text);
       cursor:pointer;
       font-weight:800;
       font-size:12px;
       letter-spacing:.01em;
       transition:.16s ease;
     }
-    .btn:hover{ background: rgba(255,255,255,.10); }
-    .btn.ghost{ background: transparent; border-color: rgba(255,255,255,.12); color: rgba(255,255,255,.82); }
-    .btn.danger{ border-color: rgba(255,77,109,.35); background: rgba(255,77,109,.10); }
+    .btn:hover{ background: rgba(0,0,0,.10); }
+    body.dark-mode .btn{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.90);
+    }
+    body.dark-mode .btn:hover{ background: rgba(255,255,255,.10); }
+
+    .btn.ghost{ background: transparent; border-color: var(--stroke2); color: var(--muted); }
+    body.dark-mode .btn.ghost{ border-color: rgba(255,255,255,.12); color: rgba(255,255,255,.82); }
+
+    .btn.danger{ border-color: rgba(0,0,0,.18); background: rgba(0,0,0,.08); }
+    body.dark-mode .btn.danger{ border-color: rgba(255,77,109,.35); background: rgba(255,77,109,.10); }
 
     .heat{ display:grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap:10px; }
     .day{
       height:54px;
       border-radius: 14px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
+      border:1px solid var(--stroke2);
+      background: rgba(255,255,255,.72);
       display:flex;
       flex-direction:column;
       justify-content:space-between;
@@ -350,39 +475,54 @@
       position:relative;
       overflow:hidden;
     }
-    .day small{ color: rgba(255,255,255,.55); font-size:11px; }
+    body.dark-mode .day{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+    }
+    .day small{ color: var(--muted); font-size:11px; }
     .day b{ font-size:12px; }
-    .day.pos{ background: rgba(70,230,166,.10); border-color: rgba(70,230,166,.22); }
-    .day.neg{ background: rgba(255,77,109,.10); border-color: rgba(255,77,109,.22); }
+    .day.pos{ background: rgba(0,0,0,.08); border-color: rgba(0,0,0,.16); }
+    .day.neg{ background: rgba(0,0,0,.12); border-color: rgba(0,0,0,.18); }
+    body.dark-mode .day.pos{ background: rgba(70,230,166,.10); border-color: rgba(70,230,166,.22); }
+    body.dark-mode .day.neg{ background: rgba(255,77,109,.10); border-color: rgba(255,77,109,.22); }
+
     .legend{
       display:flex; gap:10px; flex-wrap:wrap;
       color: var(--muted);
       font-size:12px;
       align-items:center;
     }
-    .dot{width:10px; height:10px; border-radius:999px; display:inline-block; border:1px solid rgba(255,255,255,.14)}
-    .dot.pos{ background: rgba(70,230,166,.30); border-color: rgba(70,230,166,.35); }
-    .dot.neg{ background: rgba(255,77,109,.30); border-color: rgba(255,77,109,.35); }
-    .dot.neu{ background: rgba(255,255,255,.10); }
+    .dot{width:10px; height:10px; border-radius:999px; display:inline-block; border:1px solid var(--stroke2)}
+    .dot.pos{ background: rgba(0,0,0,.18); border-color: rgba(0,0,0,.22); }
+    .dot.neg{ background: rgba(0,0,0,.26); border-color: rgba(0,0,0,.26); }
+    .dot.neu{ background: rgba(0,0,0,.06); }
+    body.dark-mode .dot{ border:1px solid rgba(255,255,255,.14) }
+    body.dark-mode .dot.pos{ background: rgba(70,230,166,.30); border-color: rgba(70,230,166,.35); }
+    body.dark-mode .dot.neg{ background: rgba(255,77,109,.30); border-color: rgba(255,77,109,.35); }
+    body.dark-mode .dot.neu{ background: rgba(255,255,255,.10); }
 
     section.view{ display:none; }
     section.view.active{ display:block; }
 
-    /* Public lock banner */
     .lockbar{
       margin: 0 0 14px 0;
       padding: 12px 14px;
       border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.82);
+      border: 1px solid var(--stroke2);
+      background: rgba(255,255,255,.76);
+      color: var(--text);
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
       font-size:12px;
     }
-    .lockbar b{ color: rgba(255,255,255,.92); }
+    body.dark-mode .lockbar{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.82);
+    }
+    .lockbar b{ color: inherit; }
 
     @media (max-width: 980px){
       .grid.cols-12{ grid-template-columns: repeat(6, minmax(0,1fr)); }
@@ -655,7 +795,7 @@
                   </div>
 
                   <div style="grid-column: span 4;">
-                    <div class="card" style="background: rgba(0,0,0,.18); box-shadow:none;">
+                    <div class="card" style="background: rgba(255,255,255,.60); box-shadow:none;">
                       <div class="hd">
                         <b>Quick Stats</b>
                         <small>Auto from entry/SL/TP</small>
@@ -686,7 +826,7 @@
                         <div class="field" style="margin-top:12px;">
                           <label>Upload Screenshot</label>
                           <input id="fShot" type="file" accept="image/*" />
-                          <div id="shotPreview" style="margin-top:10px; border-radius:14px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.20); overflow:hidden; display:none;">
+                          <div id="shotPreview" style="margin-top:10px; border-radius:14px; border:1px solid var(--stroke); background:rgba(255,255,255,.58); overflow:hidden; display:none;">
                             <img id="shotImg" alt="Screenshot preview" style="width:100%; display:block;" />
                           </div>
                         </div>
@@ -799,21 +939,21 @@
               </div>
               <div class="bd">
                 <div class="grid cols-12">
-                  <div class="card" style="grid-column: span 8; background: rgba(0,0,0,.18); box-shadow:none;">
+                  <div class="card" style="grid-column: span 8; background: rgba(255,255,255,.58); box-shadow:none;">
                     <div class="hd">
                       <b>Chart Snapshot</b>
                       <small>Screenshot or placeholder</small>
                     </div>
                     <div class="bd">
-                      <div id="replayShotBox" style="border-radius:16px; border:1px solid rgba(255,255,255,.10); background:rgba(0,0,0,.22); overflow:hidden; min-height:240px; display:flex; align-items:center; justify-content:center;">
-                        <div style="text-align:center; color:rgba(255,255,255,.55); font-size:12px; padding:18px;">
+                      <div id="replayShotBox" style="border-radius:16px; border:1px solid var(--stroke); background:rgba(255,255,255,.58); overflow:hidden; min-height:240px; display:flex; align-items:center; justify-content:center;">
+                        <div style="text-align:center; color:var(--muted); font-size:12px; padding:18px;">
                           No screenshot saved for this trade.
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div class="card" style="grid-column: span 4; background: rgba(0,0,0,.18); box-shadow:none;">
+                  <div class="card" style="grid-column: span 4; background: rgba(255,255,255,.58); box-shadow:none;">
                     <div class="hd">
                       <b>Trade Summary</b>
                       <small>Key details</small>
@@ -821,7 +961,7 @@
                     <div class="bd" id="replaySummary"></div>
                   </div>
 
-                  <div class="card" style="grid-column: span 12; background: rgba(0,0,0,.18); box-shadow:none;">
+                  <div class="card" style="grid-column: span 12; background: rgba(255,255,255,.58); box-shadow:none;">
                     <div class="hd">
                       <b>Replay Notes</b>
                       <small>Write freely (demo)</small>
@@ -949,7 +1089,7 @@
 
               <div class="bd">
                 <div class="grid cols-12">
-                  <div class="card" style="grid-column: span 8; background: rgba(0,0,0,.18); box-shadow:none;">
+                  <div class="card" style="grid-column: span 8; background: rgba(255,255,255,.58); box-shadow:none;">
                     <div class="hd">
                       <b id="calTitle">Month</b>
                       <small id="calSub">Month view</small>
@@ -959,7 +1099,7 @@
                     </div>
                   </div>
 
-                  <div class="card" style="grid-column: span 4; background: rgba(0,0,0,.18); box-shadow:none;">
+                  <div class="card" style="grid-column: span 4; background: rgba(255,255,255,.58); box-shadow:none;">
                     <div class="hd">
                       <b>Monthly Summary</b>
                       <small>Totals & notes</small>
@@ -967,13 +1107,13 @@
                     <div class="bd" id="monthSummary"></div>
                   </div>
 
-                  <div class="card" style="grid-column: span 12; background: rgba(0,0,0,.18); box-shadow:none;">
+                  <div class="card" style="grid-column: span 12; background: rgba(255,255,255,.58); box-shadow:none;">
                     <div class="hd">
                       <b>Day Details</b>
                       <small>Tap a day on the calendar</small>
                     </div>
                     <div class="bd" id="dayDetails">
-                      <div style="color:rgba(255,255,255,.58); font-size:12px;">Select a day to view details.</div>
+                      <div style="color:var(--muted); font-size:12px;">Select a day to view details.</div>
                     </div>
                   </div>
 
@@ -989,6 +1129,21 @@
   </div>
 
   <script>
+    const THEME_KEY = "fynx_theme";
+    (function applyThemeFromStorage(){
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === "dark") document.body.classList.add("dark-mode");
+      else document.body.classList.remove("dark-mode");
+    })();
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === THEME_KEY) {
+        if (e.newValue === "dark") document.body.classList.add("dark-mode");
+        else document.body.classList.remove("dark-mode");
+        refreshChartsTheme();
+      }
+    });
+
     // PUBLIC MODE: show UI + demo data, force login for save/add/delete
     const LOGIN_URL = "login.html"; // change if your login file name is different
 
@@ -1031,63 +1186,132 @@
 
     document.getElementById("loginNowBtn").addEventListener("click", () => location.href = LOGIN_URL);
 
+    function chartColors(){
+      const dark = document.body.classList.contains("dark-mode");
+      return {
+        text: dark ? "rgba(255,255,255,.72)" : "rgba(0,0,0,.68)",
+        textSoft: dark ? "rgba(255,255,255,.55)" : "rgba(0,0,0,.52)",
+        grid: dark ? "rgba(255,255,255,.07)" : "rgba(0,0,0,.08)",
+        line: dark ? "rgba(255,255,255,.85)" : "rgba(0,0,0,.88)",
+        fill: dark ? "rgba(255,255,255,.08)" : "rgba(0,0,0,.08)",
+        bar: dark ? "rgba(255,255,255,.14)" : "rgba(0,0,0,.16)",
+        radarPoint: dark ? "rgba(255,255,255,.85)" : "rgba(0,0,0,.88)"
+      };
+    }
+
     // Charts
-    const mkChartDefaults = () => ({
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        legend:{ labels:{ color:"rgba(255,255,255,.72)", font:{ size:11 } } },
-        tooltip:{ enabled:true }
-      },
-      scales:{
-        x:{ ticks:{ color:"rgba(255,255,255,.55)", font:{ size:11 } }, grid:{ color:"rgba(255,255,255,.07)" } },
-        y:{ ticks:{ color:"rgba(255,255,255,.55)", font:{ size:11 } }, grid:{ color:"rgba(255,255,255,.07)" } }
-      }
-    });
+    const mkChartDefaults = () => {
+      const c = chartColors();
+      return {
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{
+          legend:{ labels:{ color:c.text, font:{ size:11 } } },
+          tooltip:{ enabled:true }
+        },
+        scales:{
+          x:{ ticks:{ color:c.textSoft, font:{ size:11 } }, grid:{ color:c.grid } },
+          y:{ ticks:{ color:c.textSoft, font:{ size:11 } }, grid:{ color:c.grid } }
+        }
+      };
+    };
 
     let equityChart, winTrendChart, sessionPLChart, emotionChart, disciplineChart;
 
     const initCharts = () => {
+      const c = chartColors();
+
       equityChart = new Chart(document.getElementById("equityChart"), {
         type:"line",
-        data:{ labels:[], datasets:[{ label:"Equity", data:[], borderColor:"rgba(255,255,255,.85)", backgroundColor:"rgba(255,255,255,.08)", fill:true, tension:.35, pointRadius:0 }]},
+        data:{ labels:[], datasets:[{ label:"Equity", data:[], borderColor:c.line, backgroundColor:c.fill, fill:true, tension:.35, pointRadius:0 }]},
         options: mkChartDefaults()
       });
 
       winTrendChart = new Chart(document.getElementById("winTrendChart"), {
         type:"line",
-        data:{ labels:[], datasets:[{ label:"Win Rate % (rolling)", data:[], borderColor:"rgba(255,255,255,.85)", backgroundColor:"rgba(255,255,255,.08)", fill:true, tension:.35, pointRadius:0 }]},
+        data:{ labels:[], datasets:[{ label:"Win Rate % (rolling)", data:[], borderColor:c.line, backgroundColor:c.fill, fill:true, tension:.35, pointRadius:0 }]},
         options: mkChartDefaults()
       });
 
       sessionPLChart = new Chart(document.getElementById("sessionPLChart"), {
         type:"bar",
-        data:{ labels:["London","New York","Asia","Overlap"], datasets:[{ label:"Net P/L", data:[0,0,0,0], borderColor:"rgba(255,255,255,.85)", backgroundColor:"rgba(255,255,255,.14)" }]},
+        data:{ labels:["London","New York","Asia","Overlap"], datasets:[{ label:"Net P/L", data:[0,0,0,0], borderColor:c.line, backgroundColor:c.bar }]},
         options: mkChartDefaults()
       });
 
       emotionChart = new Chart(document.getElementById("emotionChart"), {
         type:"line",
-        data:{ labels:[], datasets:[{ label:"Control Score (proxy)", data:[], borderColor:"rgba(255,255,255,.85)", backgroundColor:"rgba(255,255,255,.08)", fill:true, tension:.35, pointRadius:0 }]},
+        data:{ labels:[], datasets:[{ label:"Control Score (proxy)", data:[], borderColor:c.line, backgroundColor:c.fill, fill:true, tension:.35, pointRadius:0 }]},
         options: mkChartDefaults()
       });
 
       disciplineChart = new Chart(document.getElementById("disciplineChart"), {
         type:"radar",
-        data:{ labels:["Rules","Timing","Risk","Patience","Journal","Focus"], datasets:[{ label:"Discipline", data:[0,0,0,0,0,0], borderColor:"rgba(255,255,255,.85)", backgroundColor:"rgba(255,255,255,.10)", pointBackgroundColor:"rgba(255,255,255,.85)", pointRadius:2 }]},
+        data:{ labels:["Rules","Timing","Risk","Patience","Journal","Focus"], datasets:[{ label:"Discipline", data:[0,0,0,0,0,0], borderColor:c.line, backgroundColor:c.fill, pointBackgroundColor:c.radarPoint, pointRadius:2 }]},
         options:{
           responsive:true,
           maintainAspectRatio:false,
-          plugins:{ legend:{ labels:{ color:"rgba(255,255,255,.72)", font:{ size:11 } } } },
-          scales:{ r:{ grid:{ color:"rgba(255,255,255,.10)" }, angleLines:{ color:"rgba(255,255,255,.10)" }, pointLabels:{ color:"rgba(255,255,255,.70)", font:{ size:11 } }, ticks:{ display:false } } }
+          plugins:{ legend:{ labels:{ color:c.text, font:{ size:11 } } } },
+          scales:{ r:{ grid:{ color:c.grid }, angleLines:{ color:c.grid }, pointLabels:{ color:c.text, font:{ size:11 } }, ticks:{ display:false } } }
         }
       });
     };
 
+    function refreshChartsTheme(){
+      const c = chartColors();
+
+      const applyCartesian = (chart) => {
+        if(!chart) return;
+        chart.options.plugins.legend.labels.color = c.text;
+        chart.options.scales.x.ticks.color = c.textSoft;
+        chart.options.scales.y.ticks.color = c.textSoft;
+        chart.options.scales.x.grid.color = c.grid;
+        chart.options.scales.y.grid.color = c.grid;
+      };
+
+      if(equityChart){
+        equityChart.data.datasets[0].borderColor = c.line;
+        equityChart.data.datasets[0].backgroundColor = c.fill;
+        applyCartesian(equityChart);
+        equityChart.update();
+      }
+
+      if(winTrendChart){
+        winTrendChart.data.datasets[0].borderColor = c.line;
+        winTrendChart.data.datasets[0].backgroundColor = c.fill;
+        applyCartesian(winTrendChart);
+        winTrendChart.update();
+      }
+
+      if(sessionPLChart){
+        sessionPLChart.data.datasets[0].borderColor = c.line;
+        sessionPLChart.data.datasets[0].backgroundColor = c.bar;
+        applyCartesian(sessionPLChart);
+        sessionPLChart.update();
+      }
+
+      if(emotionChart){
+        emotionChart.data.datasets[0].borderColor = c.line;
+        emotionChart.data.datasets[0].backgroundColor = c.fill;
+        applyCartesian(emotionChart);
+        emotionChart.update();
+      }
+
+      if(disciplineChart){
+        disciplineChart.data.datasets[0].borderColor = c.line;
+        disciplineChart.data.datasets[0].backgroundColor = c.fill;
+        disciplineChart.data.datasets[0].pointBackgroundColor = c.radarPoint;
+        disciplineChart.options.plugins.legend.labels.color = c.text;
+        disciplineChart.options.scales.r.grid.color = c.grid;
+        disciplineChart.options.scales.r.angleLines.color = c.grid;
+        disciplineChart.options.scales.r.pointLabels.color = c.text;
+        disciplineChart.update();
+      }
+    }
+
     const updateCharts = () => {
       const trades = [...state.trades].sort((a,b) => (a.dateTsMs||0) - (b.dateTsMs||0));
 
-      // Equity
       const labels = [];
       const data = [];
       let cum = 0;
@@ -1100,7 +1324,6 @@
       equityChart.data.datasets[0].data = data;
       equityChart.update();
 
-      // Rolling win rate
       const wlabels = [];
       const wdata = [];
       const window = 10;
@@ -1116,7 +1339,6 @@
       winTrendChart.data.datasets[0].data = wdata;
       winTrendChart.update();
 
-      // Session P/L
       const sessions = { "London":0, "New York":0, "Asia":0, "Overlap":0 };
       state.trades.forEach(t => { sessions[t.session] = (sessions[t.session]||0) + (t.pl||0); });
       sessionPLChart.data.datasets[0].data = [
@@ -1124,7 +1346,6 @@
       ].map(x => Number(x.toFixed(2)));
       sessionPLChart.update();
 
-      // Emotion trend proxy
       const emoLabels = [];
       const emoData = [];
       trades.slice(-12).forEach(t => {
@@ -1137,7 +1358,6 @@
       emotionChart.data.datasets[0].data = emoData;
       emotionChart.update();
 
-      // Discipline proxy
       const total = state.trades.length || 1;
       const avgReasons = state.trades.reduce((a,t)=>a+(t.reasons||[]).length,0)/total;
       const rules = Math.min(100, Math.round(avgReasons*10));
@@ -1196,7 +1416,6 @@
     };
     [fEntry,fSL,fTP,fConf].forEach(el => el.addEventListener("input", calcStats));
 
-    // Screenshot preview (demo only)
     const fShot = document.getElementById("fShot");
     const shotPreview = document.getElementById("shotPreview");
     const shotImg = document.getElementById("shotImg");
@@ -1224,7 +1443,6 @@
     };
     document.getElementById("resetFormBtn").addEventListener("click", clearForm);
 
-    // Force login actions
     const forceLogin = () => { alert("Login required to save trades."); location.href = LOGIN_URL; };
     document.getElementById("saveTradeBtn").addEventListener("click", forceLogin);
     document.getElementById("deleteLastBtn").addEventListener("click", forceLogin);
@@ -1236,8 +1454,8 @@
 
     const refreshReplay = () => {
       if(state.trades.length === 0){
-        replaySummary.innerHTML = `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades available.</div>`;
-        replayShotBox.innerHTML = `<div style="text-align:center; color:rgba(255,255,255,.55); font-size:12px; padding:18px;">No trade selected.</div>`;
+        replaySummary.innerHTML = `<div style="color:var(--muted); font-size:12px;">No trades available.</div>`;
+        replayShotBox.innerHTML = `<div style="text-align:center; color:var(--muted); font-size:12px; padding:18px;">No trade selected.</div>`;
         replayNotes.value = "";
         return;
       }
@@ -1259,9 +1477,8 @@
 
       replayShotBox.innerHTML = t.screenshot
         ? `<img alt="Trade screenshot" src="${t.screenshot}" style="width:100%; display:block;" />`
-        : `<div style="text-align:center; color:rgba(255,255,255,.55); font-size:12px; padding:18px;">No screenshot saved for this trade.</div>`;
+        : `<div style="text-align:center; color:var(--muted); font-size:12px; padding:18px;">No screenshot saved for this trade.</div>`;
 
-      // local notes demo
       const key = "fynx_public_replay_notes_" + t.id;
       replayNotes.value = localStorage.getItem(key) || "";
       document.getElementById("saveReplayNotesBtn").onclick = () => {
@@ -1289,8 +1506,8 @@
         document.getElementById("aLoss").textContent = "-$0";
         document.getElementById("aExp").textContent = "+$0";
         document.getElementById("aQual").textContent = "—";
-        document.getElementById("setupTable").innerHTML = `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades yet.</div>`;
-        document.getElementById("mistakeList").innerHTML = `<div style="color:rgba(255,255,255,.58); font-size:12px;">No data yet.</div>`;
+        document.getElementById("setupTable").innerHTML = `<div style="color:var(--muted); font-size:12px;">No trades yet.</div>`;
+        document.getElementById("mistakeList").innerHTML = `<div style="color:var(--muted); font-size:12px;">No data yet.</div>`;
         return;
       }
 
@@ -1335,7 +1552,7 @@
         <div class="row">
           <div class="l"><b>${escapeHtml(m)}</b><small>Occurrences</small></div>
           <div class="r"><span class="badge">${c}</span></div>
-        </div>`).join("") : `<div style="color:rgba(255,255,255,.58); font-size:12px;">No mistake tags yet.</div>`;
+        </div>`).join("") : `<div style="color:var(--muted); font-size:12px;">No mistake tags yet.</div>`;
     };
 
     // Streaks
@@ -1427,7 +1644,7 @@
         cell.addEventListener("click", () => {
           const trades = state.trades.filter(t => t.date === iso);
           if(!trades.length){
-            dayDetails.innerHTML = `<div style="color:rgba(255,255,255,.58); font-size:12px;">No trades on ${escapeHtml(iso)}.</div>`;
+            dayDetails.innerHTML = `<div style="color:var(--muted); font-size:12px;">No trades on ${escapeHtml(iso)}.</div>`;
             return;
           }
           dayDetails.innerHTML = trades.map(t => {
@@ -1511,7 +1728,7 @@
             <div class="l"><b>${escapeHtml(name)}</b><small>${escapeHtml(sub)}</small></div>
             <div class="r"><span class="badge ${cls}">${val>=0?"+":"-"}$${Math.abs(val).toFixed(0)}</span></div>
           </div>`;
-      }).join("") || `<div style="color:rgba(255,255,255,.58); font-size:12px;">No data yet.</div>`;
+      }).join("") || `<div style="color:var(--muted); font-size:12px;">No data yet.</div>`;
 
       const bySetup = {};
       state.trades.forEach(t => bySetup[t.setup] = (bySetup[t.setup]||0) + (t.pl||0));
@@ -1523,7 +1740,7 @@
             <div class="l"><b>${escapeHtml(name)}</b><small>Net P/L</small></div>
             <div class="r"><span class="badge ${cls}">${val>=0?"+":"-"}$${Math.abs(val).toFixed(0)}</span></div>
           </div>`;
-      }).join("") : `<div style="color:rgba(255,255,255,.58); font-size:12px;">No setups logged yet.</div>`;
+      }).join("") : `<div style="color:var(--muted); font-size:12px;">No setups logged yet.</div>`;
 
       const bucket = {};
       state.trades.forEach(t => (t.emotions||[]).forEach(e => bucket[e] = (bucket[e]||0) + 1));
@@ -1532,7 +1749,7 @@
         <div class="row">
           <div class="l"><b>${escapeHtml(m)}</b><small>Occurrences</small></div>
           <div class="r"><span class="badge">${c}</span></div>
-        </div>`).join("") : `<div style="color:rgba(255,255,255,.58); font-size:12px;">No mistake tags yet.</div>`;
+        </div>`).join("") : `<div style="color:var(--muted); font-size:12px;">No mistake tags yet.</div>`;
     }
 
     // Export
@@ -1555,7 +1772,6 @@
       }[s]));
     }
 
-    // Boot
     clearForm();
     initCharts();
     refreshDashboard();
@@ -1564,6 +1780,7 @@
     refreshStreaks();
     refreshCalendar();
     updateCharts();
+    refreshChartsTheme();
   </script>
 </body>
 </html>
