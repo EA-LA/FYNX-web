@@ -9,66 +9,125 @@
     *{margin:0;padding:0;box-sizing:border-box}
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
-      color:#fff;background:#000;overflow-x:hidden;min-height:100vh;
+      color:#0b0b0c;
+      background:
+        radial-gradient(circle at 1px 1px, rgba(0,0,0,0.085) 1px, transparent 1px) 0 0 / 18px 18px,
+        linear-gradient(#f3f3f5, #f3f3f5);
+      overflow-x:hidden;min-height:100vh;
     }
-    .animated-bg{position:fixed;inset:0;z-index:-1;background:#000;overflow:hidden}
+    body.dark-mode{
+      color:#fff;background:#000;
+    }
+
+    .animated-bg{position:fixed;inset:0;z-index:-1;background:transparent;overflow:hidden}
+    body.dark-mode .animated-bg{background:#000}
+
     .grid-overlay{
       position:absolute;inset:0;
       background-image:
-        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+        linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.035) 1px, transparent 1px);
       background-size:50px 50px;
       animation:gridMove 20s linear infinite;
     }
+    body.dark-mode .grid-overlay{
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    }
     @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-    .gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.25;animation:float 20s ease-in-out infinite}
-    .orb-1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-220px;left:-220px}
-    .orb-2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
+
+    .gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.22;animation:float 20s ease-in-out infinite}
+    .orb-1{width:520px;height:520px;background:radial-gradient(circle,rgba(0,0,0,.14) 0%,transparent 72%);top:-220px;left:-220px}
+    .orb-2{width:420px;height:420px;background:radial-gradient(circle,rgba(0,0,0,.12) 0%,transparent 72%);bottom:-170px;right:-170px;animation-delay:6s}
+    body.dark-mode .orb-1,
+    body.dark-mode .orb-2{
+      background:radial-gradient(circle,#fff 0%,transparent 70%);
+      opacity:.25;
+    }
     @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
 
     header{
       position:sticky;top:0;z-index:1000;
-      background:rgba(0,0,0,.85);
+      background:rgba(243,243,245,.82);
       backdrop-filter:blur(20px);
-      border-bottom:1px solid rgba(255,255,255,.1);
+      border-bottom:1px solid rgba(0,0,0,.10);
       padding:1rem 0;
     }
+    body.dark-mode header{
+      background:rgba(0,0,0,.85);
+      border-bottom:1px solid rgba(255,255,255,.1);
+    }
+
     .nav{
       max-width:1200px;margin:0 auto;
       display:flex;align-items:center;justify-content:space-between;
       padding:0 1.25rem;
+      gap:1rem;
     }
     .brand{
       display:flex;align-items:center;gap:.6rem;
       font-weight:900;letter-spacing:-1px;font-size:1.25rem;
     }
     .brand i{opacity:.9}
+
     .nav a{
-      color:rgba(255,255,255,.85);
+      color:rgba(0,0,0,.82);
       text-decoration:none;font-weight:700;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.04);
+      border:1px solid rgba(0,0,0,.12);
+      background:rgba(0,0,0,.03);
       padding:.55rem .9rem;border-radius:999px;
       transition:all .25s ease;
       white-space:nowrap;
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
     }
-    .nav a:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
+    .nav a:hover{
+      color:rgba(0,0,0,.96);
+      border-color:rgba(0,0,0,.22);
+      background:rgba(0,0,0,.05);
+      transform:translateY(-1px)
+    }
+    body.dark-mode .nav a{
+      color:rgba(255,255,255,.85);
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.04);
+    }
+    body.dark-mode .nav a:hover{
+      color:#fff;
+      border-color:rgba(255,255,255,.28);
+      background:rgba(255,255,255,.08);
+    }
 
     main{max-width:1200px;margin:0 auto;padding:3.5rem 1.25rem 5rem}
     .hero{
       padding:2.25rem 1.75rem;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.03);
+      border:1px solid rgba(0,0,0,.10);
+      background:rgba(255,255,255,.68);
       border-radius:22px;
       backdrop-filter:blur(10px);
+      box-shadow:0 20px 60px rgba(0,0,0,.10);
     }
+    body.dark-mode .hero{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      box-shadow:none;
+    }
+
     h1{
       font-size:3rem;line-height:1.1;letter-spacing:-2px;
-      background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
+      background:linear-gradient(135deg,#000 0%,#6c6c70 100%);
       -webkit-background-clip:text;-webkit-text-fill-color:transparent;
       margin-bottom:.75rem;
     }
-    p{color:rgba(255,255,255,.65);font-size:1.1rem;line-height:1.8;max-width:70ch}
+    body.dark-mode h1{
+      background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    }
+
+    p{color:rgba(0,0,0,.62);font-size:1.1rem;line-height:1.8;max-width:70ch}
+    body.dark-mode p{color:rgba(255,255,255,.65)}
 
     .panel-grid{
       display:grid;
@@ -77,21 +136,30 @@
       margin-top:1.25rem;
     }
     .panel{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.55);
+      border:1px solid rgba(0,0,0,.10);
+      background:rgba(255,255,255,.75);
       border-radius:18px;
       padding:1.25rem 1.25rem 1.4rem;
       backdrop-filter:blur(10px);
       min-height:180px;
+      box-shadow:0 14px 34px rgba(0,0,0,.08);
     }
+    body.dark-mode .panel{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.55);
+      box-shadow:none;
+    }
+
     .panel h2{font-size:1.2rem;margin-bottom:.5rem}
-    .panel .muted{color:rgba(255,255,255,.6);font-size:.98rem}
+    .panel .muted{color:rgba(0,0,0,.60);font-size:.98rem}
+    body.dark-mode .panel .muted{color:rgba(255,255,255,.6)}
 
     .hint{
       margin-top:1.2rem;
-      color:rgba(255,255,255,.55);
+      color:rgba(0,0,0,.52);
       font-size:.95rem;
     }
+    body.dark-mode .hint{color:rgba(255,255,255,.55)}
   </style>
 </head>
 <body>
@@ -130,5 +198,21 @@
       <div class="hint">Tip: when you’re ready, tell me which tool you want first and I’ll write the full working calculator code for that page.</div>
     </section>
   </main>
+
+  <script>
+    const THEME_KEY = "fynx_theme";
+    (function applyThemeFromStorage(){
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === "dark") document.body.classList.add("dark-mode");
+      else document.body.classList.remove("dark-mode");
+    })();
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === THEME_KEY) {
+        if (e.newValue === "dark") document.body.classList.add("dark-mode");
+        else document.body.classList.remove("dark-mode");
+      }
+    });
+  </script>
 </body>
 </html>
