@@ -9,8 +9,17 @@
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'Inter','Segoe UI',system-ui,sans-serif;color:#fff;background:#000;overflow-x:hidden;min-height:100vh}
 
+    /* LIGHT THEME */
+    body:not(.dark-mode){
+      color:#0b0b0c;
+      background:
+        radial-gradient(circle at 1px 1px, rgba(0,0,0,0.085) 1px, transparent 1px) 0 0 / 18px 18px,
+        linear-gradient(#f3f3f5, #f3f3f5);
+    }
+
     /* Grok-ish background */
     .animated-bg{position:fixed;inset:0;z-index:-1;background:#000;overflow:hidden}
+    body:not(.dark-mode) .animated-bg{background:transparent}
     .grid-overlay{
       position:absolute;inset:0;
       background-image:
@@ -19,10 +28,21 @@
       background-size:50px 50px;
       animation:gridMove 20s linear infinite;
     }
+    body:not(.dark-mode) .grid-overlay{
+      background-image:
+        linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.035) 1px, transparent 1px);
+    }
     @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
     .orb{position:absolute;border-radius:50%;filter:blur(85px);opacity:.22;animation:float 20s ease-in-out infinite}
     .orb1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-240px;left:-240px}
     .orb2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-190px;right:-190px;animation-delay:6s}
+    body:not(.dark-mode) .orb1,
+    body:not(.dark-mode) .orb2{
+      background:radial-gradient(circle, rgba(0,0,0,.14) 0%, transparent 72%);
+      opacity:.22;
+      filter:blur(95px);
+    }
     @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
 
     /* Header */
@@ -32,6 +52,10 @@
       backdrop-filter:blur(18px);
       border-bottom:1px solid rgba(255,255,255,.10);
       padding:1rem 0;
+    }
+    body:not(.dark-mode) header{
+      background:rgba(243,243,245,.82);
+      border-bottom:1px solid rgba(0,0,0,.10);
     }
     .nav{
       max-width:1200px;margin:0 auto;
@@ -51,6 +75,16 @@
       display:inline-flex;align-items:center;gap:.45rem;
     }
     .pill:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
+    body:not(.dark-mode) .pill{
+      color:rgba(0,0,0,.80);
+      border:1px solid rgba(0,0,0,.12);
+      background:rgba(0,0,0,.03);
+    }
+    body:not(.dark-mode) .pill:hover{
+      color:rgba(0,0,0,.95);
+      border-color:rgba(0,0,0,.22);
+      background:rgba(0,0,0,.05);
+    }
 
     /* Layout */
     main{max-width:1200px;margin:0 auto;padding:2.25rem 1.25rem 4.5rem}
@@ -62,6 +96,11 @@
       box-shadow:0 30px 90px rgba(0,0,0,.55);
       padding:2rem 1.75rem;
     }
+    body:not(.dark-mode) .hero{
+      border:1px solid rgba(0,0,0,.10);
+      background:rgba(255,255,255,.62);
+      box-shadow:0 20px 60px rgba(0,0,0,.10);
+    }
     h1{
       font-size:2.7rem;line-height:1.08;letter-spacing:-2px;
       background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
@@ -69,8 +108,14 @@
       margin-bottom:.55rem;
       font-weight:300;
     }
+    body:not(.dark-mode) h1{
+      background:linear-gradient(135deg,#000 0%,#6c6c70 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    }
     .sub{color:rgba(255,255,255,.55);font-size:.95rem;letter-spacing:.04em}
     .note{margin-top:.8rem;color:rgba(255,255,255,.45);font-size:.82rem;line-height:1.65;max-width:110ch}
+    body:not(.dark-mode) .sub{color:rgba(0,0,0,.60)}
+    body:not(.dark-mode) .note{color:rgba(0,0,0,.55)}
 
     /* Next event card */
     .next{
@@ -80,6 +125,10 @@
       border-radius:16px;
       padding:1rem;
       display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;
+    }
+    body:not(.dark-mode) .next{
+      border:1px solid rgba(0,0,0,.10);
+      background:rgba(255,255,255,.70);
     }
     .next .left{display:flex;gap:.75rem;align-items:flex-start}
     .next .label{color:rgba(255,255,255,.45);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.25rem}
@@ -98,6 +147,14 @@
       font-weight:700;
       margin-top:.35rem;
     }
+    body:not(.dark-mode) .next .label,
+    body:not(.dark-mode) .next .meta{color:rgba(0,0,0,.50)}
+    body:not(.dark-mode) .next .name{color:#0b0b0c}
+    body:not(.dark-mode) .badge{
+      border:1px solid rgba(0,0,0,.14);
+      background:rgba(0,0,0,.04);
+      color:rgba(0,0,0,.80);
+    }
 
     /* Controls bar */
     .bar{
@@ -109,9 +166,14 @@
       border-radius:18px;
       padding:1rem;
     }
+    body:not(.dark-mode) .bar{
+      border:1px solid rgba(0,0,0,.10);
+      background:rgba(243,243,245,.82);
+    }
     .controls{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end}
     .group{display:flex;flex-direction:column;gap:.45rem}
     .group label{color:rgba(255,255,255,.45);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase}
+    body:not(.dark-mode) .group label{color:rgba(0,0,0,.50)}
     select,button{
       border:1px solid rgba(255,255,255,.12);
       background:rgba(255,255,255,.04);
@@ -121,13 +183,29 @@
       outline:none;
       font-weight:700;
     }
+    body:not(.dark-mode) select,
+    body:not(.dark-mode) button{
+      border:1px solid rgba(0,0,0,.12);
+      background:rgba(0,0,0,.03);
+      color:rgba(0,0,0,.82);
+    }
     select:focus,button:focus{border-color:rgba(255,255,255,.22)}
+    body:not(.dark-mode) select:focus,
+    body:not(.dark-mode) button:focus{border-color:rgba(0,0,0,.22)}
     button{cursor:pointer;transition:all .2s ease}
     button:hover{background:rgba(255,255,255,.07)}
+    body:not(.dark-mode) button:hover{background:rgba(0,0,0,.05)}
     .toggleOn{background:rgba(255,255,255,.10)!important;border-color:rgba(255,255,255,.22)!important;color:#fff!important}
+    body:not(.dark-mode) .toggleOn{
+      background:#0b0b0c!important;
+      border-color:#0b0b0c!important;
+      color:#f3f3f5!important;
+    }
     .views{margin-left:auto;display:flex;gap:.5rem;flex-wrap:wrap}
     .statline{margin-top:.75rem;color:rgba(255,255,255,.45);font-size:.8rem;display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
     .dotSep{color:rgba(255,255,255,.20)}
+    body:not(.dark-mode) .statline{color:rgba(0,0,0,.50)}
+    body:not(.dark-mode) .dotSep{color:rgba(0,0,0,.22)}
 
     /* Sections */
     .section{margin-top:1.25rem}
@@ -148,12 +226,24 @@
       overflow:hidden;
     }
     .dayCell:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.14)}
+    body:not(.dark-mode) .dayCell{
+      border:1px solid rgba(0,0,0,.10);
+      background:rgba(255,255,255,.70);
+    }
+    body:not(.dark-mode) .dayCell:hover{
+      background:rgba(255,255,255,.90);
+      border-color:rgba(0,0,0,.16);
+    }
     .dayTop{display:flex;align-items:flex-start;justify-content:space-between}
     .dayNum{color:rgba(255,255,255,.60);font-size:.85rem}
+    body:not(.dark-mode) .dayNum{color:rgba(0,0,0,.55)}
     .impactDot{width:10px;height:10px;border-radius:50%}
     .impactHigh{background:#fff}
     .impactMed{background:rgba(255,255,255,.70)}
     .impactLow{background:rgba(255,255,255,.45)}
+    body:not(.dark-mode) .impactHigh{background:#0b0b0c}
+    body:not(.dark-mode) .impactMed{background:rgba(0,0,0,.68)}
+    body:not(.dark-mode) .impactLow{background:rgba(0,0,0,.42)}
     .dayName{
       margin-top:.45rem;
       font-size:.68rem;
@@ -164,19 +254,31 @@
       -webkit-box-orient:vertical;
       overflow:hidden;
     }
+    body:not(.dark-mode) .dayName{color:rgba(0,0,0,.58)}
 
     /* Heatmap table */
     .tableWrap{overflow:auto;border:1px solid rgba(255,255,255,.10);border-radius:18px}
+    body:not(.dark-mode) .tableWrap{border:1px solid rgba(0,0,0,.10)}
     table{width:100%;min-width:900px;border-collapse:collapse}
     thead{background:rgba(255,255,255,.04)}
+    body:not(.dark-mode) thead{background:rgba(0,0,0,.03)}
     th,td{padding:.9rem .7rem;border-bottom:1px solid rgba(255,255,255,.10)}
+    body:not(.dark-mode) th,
+    body:not(.dark-mode) td{border-bottom:1px solid rgba(0,0,0,.10)}
     th{text-align:left;color:rgba(255,255,255,.50);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase}
     td{color:rgba(255,255,255,.70)}
+    body:not(.dark-mode) th{color:rgba(0,0,0,.50)}
+    body:not(.dark-mode) td{color:rgba(0,0,0,.72)}
     .hmCell{height:32px;border-radius:10px;border:1px solid rgba(255,255,255,.12)}
     .hm0{background:rgba(255,255,255,.03)}
     .hm1{background:rgba(255,255,255,.06)}
     .hm2{background:rgba(255,255,255,.10)}
     .hm3{background:rgba(255,255,255,.14)}
+    body:not(.dark-mode) .hmCell{border:1px solid rgba(0,0,0,.12)}
+    body:not(.dark-mode) .hm0{background:rgba(0,0,0,.03)}
+    body:not(.dark-mode) .hm1{background:rgba(0,0,0,.07)}
+    body:not(.dark-mode) .hm2{background:rgba(0,0,0,.12)}
+    body:not(.dark-mode) .hm3{background:rgba(0,0,0,.18)}
 
     /* List cards */
     .cards{display:flex;flex-direction:column;gap:1rem}
@@ -189,6 +291,12 @@
       transition:all .2s ease;
     }
     .card:hover{border-color:rgba(255,255,255,.16)}
+    body:not(.dark-mode) .card{
+      border:1px solid rgba(0,0,0,.10);
+      background:linear-gradient(145deg, rgba(255,255,255,.90), rgba(240,240,243,.95));
+      box-shadow:0 18px 44px rgba(0,0,0,.10);
+    }
+    body:not(.dark-mode) .card:hover{border-color:rgba(0,0,0,.16)}
     .rowTop{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.8rem}
     .hName{font-size:1.25rem;font-weight:300;color:#fff}
     .dateLine{color:rgba(255,255,255,.55);font-size:.9rem;margin-top:.25rem}
@@ -203,9 +311,18 @@
       font-size:.78rem;
       font-weight:700;
     }
+    body:not(.dark-mode) .hName{color:#0b0b0c}
+    body:not(.dark-mode) .dateLine{color:rgba(0,0,0,.58)}
+    body:not(.dark-mode) .mini{color:rgba(0,0,0,.50)}
+    body:not(.dark-mode) .chip{
+      border:1px solid rgba(0,0,0,.10);
+      background:rgba(0,0,0,.04);
+      color:rgba(0,0,0,.74);
+    }
     .impactWrap{display:flex;align-items:center;gap:.55rem}
     .impactLabel{color:rgba(255,255,255,.45);font-size:.78rem;text-transform:capitalize}
     .impactDotLg{width:12px;height:12px;border-radius:50%}
+    body:not(.dark-mode) .impactLabel{color:rgba(0,0,0,.50)}
 
     .impactBox{
       margin-top:1rem;
@@ -215,10 +332,18 @@
       padding:1rem;
       display:flex;gap:.85rem;align-items:flex-start;
     }
+    body:not(.dark-mode) .impactBox{
+      border:1px solid rgba(0,0,0,.10);
+      background:rgba(255,255,255,.72);
+    }
     .impactText h4{color:rgba(255,255,255,.45);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.4rem}
     .impactText p{color:rgba(255,255,255,.65);font-size:.92rem;line-height:1.65}
     .footerLine{margin-top:.8rem;color:rgba(255,255,255,.35);font-size:.75rem;display:flex;gap:.6rem;flex-wrap:wrap}
     .divider{color:rgba(255,255,255,.20)}
+    body:not(.dark-mode) .impactText h4{color:rgba(0,0,0,.50)}
+    body:not(.dark-mode) .impactText p{color:rgba(0,0,0,.66)}
+    body:not(.dark-mode) .footerLine{color:rgba(0,0,0,.42)}
+    body:not(.dark-mode) .divider{color:rgba(0,0,0,.20)}
 
     /* Bottom sections */
     .bigPanel{
@@ -228,13 +353,20 @@
       border-radius:18px;
       padding:1.5rem;
     }
+    body:not(.dark-mode) .bigPanel{
+      border:1px solid rgba(0,0,0,.10);
+      background:linear-gradient(145deg, rgba(255,255,255,.90), rgba(240,240,243,.95));
+    }
     .bigPanel h2{font-size:1.6rem;font-weight:300;margin-bottom:1rem}
     .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
     @media (max-width:900px){.grid3{grid-template-columns:1fr}}
     .miniCard h3{font-size:.95rem;color:rgba(255,255,255,.78);margin-bottom:.45rem}
     .miniCard p{color:rgba(255,255,255,.55);font-size:.9rem;line-height:1.65}
+    body:not(.dark-mode) .miniCard h3{color:rgba(0,0,0,.82)}
+    body:not(.dark-mode) .miniCard p{color:rgba(0,0,0,.60)}
 
     .legend{margin-top:1.75rem;border-top:1px solid rgba(255,255,255,.10);padding-top:1.25rem}
+    body:not(.dark-mode) .legend{border-top:1px solid rgba(0,0,0,.10)}
     .legendRow{display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center;justify-content:space-between}
     .legendItems{display:flex;gap:1.25rem;flex-wrap:wrap}
     .leg{display:flex;align-items:center;gap:.55rem}
@@ -244,6 +376,12 @@
     .bWarn{background:rgba(255,255,255,.06)}
     .leg span{color:rgba(255,255,255,.55);font-size:.9rem}
     .rightNote{color:rgba(255,255,255,.45);font-size:.8rem;line-height:1.65;max-width:80ch;text-align:right}
+    body:not(.dark-mode) .box{border:1px solid rgba(0,0,0,.16)}
+    body:not(.dark-mode) .bClosed{background:rgba(0,0,0,.12)}
+    body:not(.dark-mode) .bEarly{background:rgba(0,0,0,.08)}
+    body:not(.dark-mode) .bWarn{background:rgba(0,0,0,.05)}
+    body:not(.dark-mode) .leg span{color:rgba(0,0,0,.60)}
+    body:not(.dark-mode) .rightNote{color:rgba(0,0,0,.50)}
 
     /* Simple hide/show */
     .hidden{display:none!important}
@@ -278,7 +416,7 @@
 
       <div class="next" id="nextWrap" style="display:none;">
         <div class="left">
-          <div style="margin-top:.1rem;color:rgba(255,255,255,.75)"><i class="fa-regular fa-clock"></i></div>
+          <div style="margin-top:.1rem;color:inherit;opacity:.75"><i class="fa-regular fa-clock"></i></div>
           <div>
             <div class="label">Next Market Event</div>
             <div class="name" id="nextName">—</div>
@@ -347,9 +485,9 @@
       </div>
 
       <div class="statline">
-        <span>Showing <span id="count" style="color:rgba(255,255,255,.82)">0</span> events for <span id="yearTxt" style="color:rgba(255,255,255,.82)">2025</span></span>
+        <span>Showing <span id="count" style="opacity:.92">0</span> events for <span id="yearTxt" style="opacity:.92">2026</span></span>
         <span class="dotSep">•</span>
-        <span>Timezone display: <span id="tzTxt" style="color:rgba(255,255,255,.75)">—</span></span>
+        <span>Timezone display: <span id="tzTxt" style="opacity:.88">—</span></span>
       </div>
     </div>
 
@@ -368,7 +506,7 @@
         </div>
       </div>
       <div class="grid7" id="timelineGrid"></div>
-      <div style="margin-top:.8rem;color:rgba(255,255,255,.45);font-size:.8rem">
+      <div style="margin-top:.8rem;opacity:.60;font-size:.8rem">
         Tip: Use filters to isolate “Stocks” vs “Forex” warnings. Timeline shows only the filtered set.
       </div>
     </div>
@@ -376,7 +514,7 @@
     <!-- Heatmap -->
     <div class="section hidden" id="secHeatmap">
       <div style="font-size:1.6rem;font-weight:300;margin-bottom:.8rem">
-        Annual Holiday Distribution (<span id="heatYear">2025</span>)
+        Annual Holiday Distribution (<span id="heatYear">2026</span>)
       </div>
       <div class="tableWrap">
         <table>
@@ -390,7 +528,7 @@
           <tbody id="heatBody"></tbody>
         </table>
       </div>
-      <div style="margin-top:.8rem;color:rgba(255,255,255,.45);font-size:.8rem">
+      <div style="margin-top:.8rem;opacity:.60;font-size:.8rem">
         Heatmap counts all events (closed/early/warning) in the dataset for the selected year.
       </div>
     </div>
@@ -418,7 +556,7 @@
     <div class="legend">
       <div class="legendRow">
         <div>
-          <div style="color:rgba(255,255,255,.75);font-weight:700;margin-bottom:.8rem">Legend</div>
+          <div style="font-weight:700;margin-bottom:.8rem;opacity:.88">Legend</div>
           <div class="legendItems">
             <div class="leg"><div class="box bClosed"></div><span>Market Closed</span></div>
             <div class="leg"><div class="box bEarly"></div><span>Early Close</span></div>
@@ -437,6 +575,21 @@
   </main>
 
   <script>
+    /* ----------------------------- Theme sync ----------------------------- */
+    const THEME_KEY = "fynx_theme";
+    (function applyThemeFromStorage(){
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === "dark") document.body.classList.add("dark-mode");
+      else document.body.classList.remove("dark-mode");
+    })();
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === THEME_KEY) {
+        if (e.newValue === "dark") document.body.classList.add("dark-mode");
+        else document.body.classList.remove("dark-mode");
+      }
+    });
+
     /* ----------------------------- Date helpers ----------------------------- */
     const MS_DAY = 24 * 60 * 60 * 1000;
 
@@ -447,7 +600,6 @@
       return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
     }
     function observeFixedHoliday(date) {
-      // If Saturday -> observed Friday, If Sunday -> observed Monday
       const day = date.getDay();
       if (day === 6) return addDays(date, -1);
       if (day === 0) return addDays(date, 1);
@@ -466,7 +618,6 @@
       const delta = (lastDay - weekday + 7) % 7;
       return new Date(year, monthIndex, last.getDate() - delta);
     }
-    // Easter Sunday (Meeus/Jones/Butcher)
     function easterSunday(year) {
       const a = year % 19;
       const b = Math.floor(year / 100);
@@ -480,7 +631,7 @@
       const k = c % 4;
       const l = (32 + 2 * e + 2 * i - h - k) % 7;
       const m = Math.floor((a + 11 * h + 22 * l) / 451);
-      const month = Math.floor((h + l - 7 * m + 114) / 31); // 3=March,4=April
+      const month = Math.floor((h + l - 7 * m + 114) / 31);
       const day = ((h + l - 7 * m + 114) % 31) + 1;
       return new Date(year, month - 1, day);
     }
@@ -492,8 +643,6 @@
     }
 
     /* --------------------------- Market definitions -------------------------- */
-    const MARKET_TYPES = ["Stocks", "Options", "Forex", "Crypto"];
-
     function mkHoliday({ name, date, status="closed", impact="medium", regions, exchanges, markets, notes }) {
       const d = startOfDay(date);
       return {
@@ -524,6 +673,13 @@
         status:"closed", impact:"medium",
         regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
         notes:"US equities closed. Watch for reduced NY participation across risk assets."
+      }));
+      list.push(mkHoliday({
+        name:"Good Friday",
+        date:goodFriday(year),
+        status:"closed", impact:"high",
+        regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
+        notes:"US equities closed. Liquidity across global risk markets is often thinner."
       }));
       list.push(mkHoliday({
         name:"Memorial Day",
@@ -658,7 +814,7 @@
       }));
       list.push(mkHoliday({
         name:"Lunar New Year (Asia Liquidity Window)",
-        date:new Date(year,0,29),
+        date: year === 2025 ? new Date(2025,0,29) : year === 2026 ? new Date(2026,1,17) : new Date(2027,1,6),
         status:"warning", impact:"high",
         regions:["Asia"], exchanges:["HKEX"], markets:["Stocks"],
         notes:"Advisory: Lunar New Year week often reduces Asia liquidity. Exact HKEX closure dates vary by year; confirm official HKEX calendar for trading-day specifics."
@@ -692,7 +848,7 @@
       }));
       list.push(mkHoliday({
         name:"Golden Week (Japan Liquidity Window)",
-        date:new Date(year,3,29),
+        date: year === 2025 ? new Date(2025,3,29) : year === 2026 ? new Date(2026,3,29) : new Date(2027,3,29),
         status:"warning", impact:"high",
         regions:["Asia"], exchanges:["TSE"], markets:["Stocks"],
         notes:"Advisory: Golden Week reduces Japan liquidity. Exact market closure dates vary; confirm TSE calendar for the year."
@@ -788,13 +944,14 @@
 
     /* ------------------------------ App state ------------------------------ */
     const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-
     const ALL = buildHolidayDataset();
+    const currentYear = new Date().getFullYear();
+    const defaultYear = [2025, 2026, 2027].includes(currentYear) ? currentYear : 2026;
 
     const state = {
       region: "all",
       market: "all",
-      year: 2025,
+      year: defaultYear,
       highImpactOnly: false,
       view: "list",
       month: 0,
@@ -899,7 +1056,7 @@
 
       if (sorted.length === 0) {
         cards.innerHTML = `
-          <div class="card" style="color:rgba(255,255,255,.70)">
+          <div class="card" style="opacity:.72">
             No events match your filters. Try “All Markets” or disable “High Impact Only.”
           </div>
         `;
@@ -923,7 +1080,7 @@
                 <span class="badge">${statusLabel(h.status)}</span>
               </div>
               <div class="dateLine">${escapeHtml(dateText)}</div>
-              <div class="mini">Markets: <span style="color:rgba(255,255,255,.70)">${escapeHtml(h.markets.join(", "))}</span></div>
+              <div class="mini">Markets: <span style="opacity:.92">${escapeHtml(h.markets.join(", "))}</span></div>
             </div>
             <div class="impactWrap">
               <div class="impactDotLg ${dot}" title="${h.impact} impact"></div>
@@ -933,17 +1090,17 @@
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.10);padding-top:1rem">
             <div>
-              <div style="color:rgba(255,255,255,.45);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem">Affected Exchanges</div>
+              <div style="opacity:.55;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem">Affected Exchanges</div>
               <div class="chips">${chipsEx}</div>
             </div>
             <div>
-              <div style="color:rgba(255,255,255,.45);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem">Regions</div>
+              <div style="opacity:.55;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem">Regions</div>
               <div class="chips">${chipsRg}</div>
             </div>
           </div>
 
           <div class="impactBox">
-            <div style="color:rgba(255,255,255,.75)"><i class="fa-solid fa-arrow-trend-down"></i></div>
+            <div style="opacity:.78"><i class="fa-solid fa-arrow-trend-down"></i></div>
             <div class="impactText">
               <h4>Trading Impact</h4>
               <p>${escapeHtml(h.notes || "")}</p>
@@ -951,9 +1108,9 @@
           </div>
 
           <div class="footerLine">
-            <span>Impact: <span style="color:rgba(255,255,255,.60)">${h.impact}</span></span>
+            <span>Impact: <span style="opacity:.82">${h.impact}</span></span>
             <span class="divider">•</span>
-            <span>Status: <span style="color:rgba(255,255,255,.60)">${statusLabel(h.status)}</span></span>
+            <span>Status: <span style="opacity:.82">${statusLabel(h.status)}</span></span>
           </div>
         `;
         cards.appendChild(el);
@@ -963,7 +1120,6 @@
     /* ------------------------------ Render: timeline ------------------------------ */
     function renderTimeline(items) {
       timelineTitle.textContent = `${monthNames[state.month]} ${state.year}`;
-
       prevMonth.disabled = (state.month === 0);
       nextMonth.disabled = (state.month === 11);
 
@@ -993,9 +1149,9 @@
     /* ------------------------------ Render: heatmap ------------------------------ */
     function renderHeatmap() {
       heatYear.textContent = String(state.year);
-
       const regions = ["Americas","Europe","Asia"];
       heatBody.innerHTML = "";
+
       regions.forEach(r => {
         const tr = document.createElement("tr");
         const td0 = document.createElement("td");
@@ -1016,7 +1172,6 @@
           td.appendChild(box);
           tr.appendChild(td);
         }
-
         heatBody.appendChild(tr);
       });
     }
@@ -1036,13 +1191,11 @@
     /* ------------------------------ Render all ------------------------------ */
     function render() {
       const items = filtered();
-
       countEl.textContent = String(items.length);
       yearTxt.textContent = String(state.year);
       tzTxt.textContent = state.tz;
 
       renderNext();
-
       if (state.view === "list") renderList(items);
       if (state.view === "timeline") renderTimeline(items);
       if (state.view === "heatmap") renderHeatmap();
@@ -1080,8 +1233,6 @@
     /* ------------------------------ Init ------------------------------ */
     function init() {
       buildTZOptions();
-
-      // initial state from UI defaults
       regionSel.value = state.region;
       marketSel.value = state.market;
       yearSel.value = String(state.year);
