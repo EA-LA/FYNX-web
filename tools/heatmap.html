@@ -7,31 +7,80 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
+
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
-      color:#fff;background:#000;overflow-x:hidden;min-height:100vh;
+      color:var(--text);
+      background:var(--bg);
+      overflow-x:hidden;
+      min-height:100vh;
+      transition:background .3s,color .3s;
     }
-    .animated-bg{position:fixed;inset:0;z-index:-1;background:#000;overflow:hidden}
+
+    /* ── CSS Variables ── */
+    body{
+      --bg:#fff;
+      --text:#0a0a0a;
+      --text-muted:rgba(0,0,0,.55);
+      --border:rgba(0,0,0,.10);
+      --panel-bg:rgba(0,0,0,.03);
+      --header-bg:rgba(255,255,255,.85);
+      --nav-link-bg:rgba(0,0,0,.04);
+      --nav-link-border:rgba(0,0,0,.14);
+      --nav-link-hover-bg:rgba(0,0,0,.08);
+      --nav-link-hover-border:rgba(0,0,0,.25);
+      --grid-line:rgba(0,0,0,.04);
+      --orb-opacity:.10;
+      --hero-bg:rgba(0,0,0,.03);
+      --h1-from:#0a0a0a;
+      --h1-to:#555;
+    }
+    body.dark-mode{
+      --bg:#000;
+      --text:#fff;
+      --text-muted:rgba(255,255,255,.55);
+      --border:rgba(255,255,255,.10);
+      --panel-bg:rgba(0,0,0,.55);
+      --header-bg:rgba(0,0,0,.85);
+      --nav-link-bg:rgba(255,255,255,.04);
+      --nav-link-border:rgba(255,255,255,.14);
+      --nav-link-hover-bg:rgba(255,255,255,.08);
+      --nav-link-hover-border:rgba(255,255,255,.28);
+      --grid-line:rgba(255,255,255,.03);
+      --orb-opacity:.25;
+      --hero-bg:rgba(255,255,255,.03);
+      --h1-from:#fff;
+      --h1-to:#8a8a8a;
+    }
+
+    /* ── Animated Background ── */
+    .animated-bg{position:fixed;inset:0;z-index:-1;background:var(--bg);overflow:hidden;transition:background .3s}
     .grid-overlay{
       position:absolute;inset:0;
       background-image:
-        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+        linear-gradient(var(--grid-line) 1px,transparent 1px),
+        linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);
       background-size:50px 50px;
       animation:gridMove 20s linear infinite;
     }
     @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-    .gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.25;animation:float 20s ease-in-out infinite}
-    .orb-1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-220px;left:-220px}
-    .orb-2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
+    .gradient-orb{
+      position:absolute;border-radius:50%;filter:blur(80px);
+      opacity:var(--orb-opacity);
+      animation:float 20s ease-in-out infinite;
+    }
+    .orb-1{width:520px;height:520px;background:radial-gradient(circle,#888 0%,transparent 70%);top:-220px;left:-220px}
+    .orb-2{width:420px;height:420px;background:radial-gradient(circle,#888 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
     @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
 
+    /* ── Header ── */
     header{
       position:sticky;top:0;z-index:1000;
-      background:rgba(0,0,0,.85);
+      background:var(--header-bg);
       backdrop-filter:blur(20px);
-      border-bottom:1px solid rgba(255,255,255,.1);
+      border-bottom:1px solid var(--border);
       padding:1rem 0;
+      transition:background .3s,border-color .3s;
     }
     .nav{
       max-width:1200px;margin:0 auto;
@@ -41,34 +90,40 @@
     .brand{
       display:flex;align-items:center;gap:.6rem;
       font-weight:900;letter-spacing:-1px;font-size:1.25rem;
+      color:var(--text);
     }
-    .brand i{opacity:.9}
     .nav a{
-      color:rgba(255,255,255,.85);
+      color:var(--text);
       text-decoration:none;font-weight:700;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.04);
+      border:1px solid var(--nav-link-border);
+      background:var(--nav-link-bg);
       padding:.55rem .9rem;border-radius:999px;
       transition:all .25s ease;
       white-space:nowrap;
     }
-    .nav a:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
+    .nav a:hover{
+      border-color:var(--nav-link-hover-border);
+      background:var(--nav-link-hover-bg);
+      transform:translateY(-1px);
+    }
 
+    /* ── Main ── */
     main{max-width:1200px;margin:0 auto;padding:3.5rem 1.25rem 5rem}
     .hero{
       padding:2.25rem 1.75rem;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.03);
+      border:1px solid var(--border);
+      background:var(--hero-bg);
       border-radius:22px;
       backdrop-filter:blur(10px);
+      transition:background .3s,border-color .3s;
     }
     h1{
       font-size:3rem;line-height:1.1;letter-spacing:-2px;
-      background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
+      background:linear-gradient(135deg,var(--h1-from) 0%,var(--h1-to) 100%);
       -webkit-background-clip:text;-webkit-text-fill-color:transparent;
       margin-bottom:.75rem;
     }
-    p{color:rgba(255,255,255,.65);font-size:1.1rem;line-height:1.8;max-width:70ch}
+    p{color:var(--text-muted);font-size:1.1rem;line-height:1.8;max-width:70ch}
 
     .panel-grid{
       display:grid;
@@ -77,19 +132,20 @@
       margin-top:1.25rem;
     }
     .panel{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.55);
+      border:1px solid var(--border);
+      background:var(--panel-bg);
       border-radius:18px;
       padding:1.25rem 1.25rem 1.4rem;
       backdrop-filter:blur(10px);
       min-height:180px;
+      transition:background .3s,border-color .3s;
     }
-    .panel h2{font-size:1.2rem;margin-bottom:.5rem}
-    .panel .muted{color:rgba(255,255,255,.6);font-size:.98rem}
+    .panel h2{font-size:1.2rem;margin-bottom:.5rem;color:var(--text)}
+    .panel .muted{color:var(--text-muted);font-size:.98rem}
 
     .hint{
       margin-top:1.2rem;
-      color:rgba(255,255,255,.55);
+      color:var(--text-muted);
       font-size:.95rem;
     }
   </style>
@@ -127,8 +183,23 @@
         </div>
       </div>
 
-      <div class="hint">Tip: when you’re ready, tell me which tool you want first and I’ll write the full working calculator code for that page.</div>
+      <div class="hint">Tip: when you're ready, tell me which tool you want first and I'll write the full working calculator code for that page.</div>
     </section>
   </main>
+
+  <script>
+    const THEME_KEY = "fynx_theme";
+    (function applyThemeFromStorage(){
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === "dark") document.body.classList.add("dark-mode");
+      else document.body.classList.remove("dark-mode");
+    })();
+    window.addEventListener("storage", (e) => {
+      if (e.key === THEME_KEY) {
+        if (e.newValue === "dark") document.body.classList.add("dark-mode");
+        else document.body.classList.remove("dark-mode");
+      }
+    });
+  </script>
 </body>
 </html>
