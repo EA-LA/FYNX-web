@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,20 +9,86 @@
 
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
+
     :root{
-      --bg:#000;
-      --panel: rgba(255,255,255,.06);
-      --panel2: rgba(255,255,255,.04);
-      --border: rgba(255,255,255,.12);
-      --border2: rgba(255,255,255,.08);
-      --text:#fff;
-      --muted: rgba(255,255,255,.68);
-      --muted2: rgba(255,255,255,.50);
+      --bg:#f5f5f2;
+      --bg-solid:#ffffff;
+      --panel:rgba(0,0,0,.04);
+      --panel2:rgba(0,0,0,.03);
+      --border:rgba(0,0,0,.12);
+      --border2:rgba(0,0,0,.08);
+      --text:#0a0a0a;
+      --text-strong:#000000;
+      --muted:rgba(10,10,10,.68);
+      --muted2:rgba(10,10,10,.50);
+      --danger:#d92d20;
+      --shadow:0 24px 70px rgba(0,0,0,.10);
+      --radius:18px;
+      --radius2:22px;
+      --max:1200px;
+      --header-bg:rgba(255,255,255,.78);
+      --header-border:rgba(0,0,0,.08);
+      --btn-bg:rgba(0,0,0,.03);
+      --btn-bg-hover:rgba(0,0,0,.06);
+      --btn-border:rgba(0,0,0,.12);
+      --btn-border-hover:rgba(0,0,0,.18);
+      --shell-bg:linear-gradient(180deg, rgba(0,0,0,.04), rgba(0,0,0,.02));
+      --card-bg:rgba(255,255,255,.72);
+      --field-bg:rgba(0,0,0,.02);
+      --field-bg-focus:rgba(0,0,0,.04);
+      --field-border-focus:rgba(0,0,0,.18);
+      --primary-bg:rgba(0,0,0,.10);
+      --primary-bg-hover:rgba(0,0,0,.14);
+      --primary-border:rgba(0,0,0,.18);
+      --primary-border-hover:rgba(0,0,0,.28);
+      --ghost-bg:rgba(0,0,0,.03);
+      --ghost-bg-hover:rgba(0,0,0,.06);
+      --ghost-text:rgba(10,10,10,.88);
+      --kv-bg:rgba(0,0,0,.025);
+      --grid-line:rgba(0,0,0,.05);
+      --orb-core:rgba(0,0,0,.22);
+      --toast-bg:rgba(255,255,255,.9);
+      --toast-border:rgba(0,0,0,.12);
+      --toast-text:rgba(10,10,10,.92);
+    }
+
+    body.dark-mode{
+      --bg:#000000;
+      --bg-solid:#000000;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.04);
+      --border:rgba(255,255,255,.12);
+      --border2:rgba(255,255,255,.08);
+      --text:#ffffff;
+      --text-strong:#ffffff;
+      --muted:rgba(255,255,255,.68);
+      --muted2:rgba(255,255,255,.50);
       --danger:#ff4d4d;
-      --shadow: 0 24px 70px rgba(0,0,0,.55);
-      --radius: 18px;
-      --radius2: 22px;
-      --max: 1200px;
+      --shadow:0 24px 70px rgba(0,0,0,.55);
+      --header-bg:rgba(0,0,0,.78);
+      --header-border:rgba(255,255,255,.08);
+      --btn-bg:rgba(255,255,255,.05);
+      --btn-bg-hover:rgba(255,255,255,.08);
+      --btn-border:rgba(255,255,255,.12);
+      --btn-border-hover:rgba(255,255,255,.18);
+      --shell-bg:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      --card-bg:rgba(0,0,0,.35);
+      --field-bg:rgba(255,255,255,.04);
+      --field-bg-focus:rgba(255,255,255,.06);
+      --field-border-focus:rgba(255,255,255,.22);
+      --primary-bg:rgba(255,255,255,.14);
+      --primary-bg-hover:rgba(255,255,255,.18);
+      --primary-border:rgba(255,255,255,.22);
+      --primary-border-hover:rgba(255,255,255,.28);
+      --ghost-bg:rgba(255,255,255,.05);
+      --ghost-bg-hover:rgba(255,255,255,.08);
+      --ghost-text:rgba(255,255,255,.88);
+      --kv-bg:rgba(255,255,255,.04);
+      --grid-line:rgba(255,255,255,.03);
+      --orb-core:rgba(255,255,255,.92);
+      --toast-bg:rgba(0,0,0,.78);
+      --toast-border:rgba(255,255,255,.14);
+      --toast-text:rgba(255,255,255,.9);
     }
 
     body{
@@ -30,21 +97,24 @@
       background: var(--bg);
       overflow-x:hidden;
       min-height:100vh;
+      transition:background .25s ease,color .25s ease;
     }
 
     /* Background */
     .animated-bg{
       position:fixed; inset:0; z-index:-1;
-      background:#000; overflow:hidden;
+      background:var(--bg-solid); overflow:hidden;
+      transition:background .25s ease;
     }
     .grid-overlay{
       position:absolute; inset:0;
       background-image:
-        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
       background-size: 52px 52px;
       animation: gridMove 20s linear infinite;
       opacity:.75;
+      transition:background-image .25s ease;
     }
     @keyframes gridMove{
       0%{transform:translate(0,0)}
@@ -55,8 +125,8 @@
       opacity:.22;
       animation: floaty 18s ease-in-out infinite;
     }
-    .orb-1{ width:520px; height:520px; left:-220px; top:-220px; background: radial-gradient(circle, #fff 0%, transparent 65%); }
-    .orb-2{ width:520px; height:520px; right:-240px; bottom:-240px; background: radial-gradient(circle, #fff 0%, transparent 65%); animation-delay: 3s;}
+    .orb-1{ width:520px; height:520px; left:-220px; top:-220px; background: radial-gradient(circle, var(--orb-core) 0%, transparent 65%); }
+    .orb-2{ width:520px; height:520px; right:-240px; bottom:-240px; background: radial-gradient(circle, var(--orb-core) 0%, transparent 65%); animation-delay: 3s;}
     @keyframes floaty{
       0%,100%{transform:translate(0,0) scale(1)}
       50%{transform:translate(30px,-24px) scale(.97)}
@@ -65,9 +135,10 @@
     /* Header */
     header{
       position:sticky; top:0; z-index:1000;
-      background: rgba(0,0,0,.78);
+      background: var(--header-bg);
       backdrop-filter: blur(18px);
-      border-bottom: 1px solid var(--border2);
+      border-bottom: 1px solid var(--header-border);
+      transition:background .25s ease,border-color .25s ease;
     }
     .nav{
       max-width: var(--max);
@@ -83,6 +154,8 @@
       font-weight: 800;
       letter-spacing:.4px;
       user-select:none;
+      color:var(--text-strong);
+      transition:color .25s ease;
     }
     .brand i{opacity:.92}
     .nav-actions{
@@ -92,16 +165,16 @@
       display:inline-flex; align-items:center; gap:10px;
       padding:10px 14px;
       border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.05);
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
       color: var(--text);
       text-decoration:none;
       font-weight: 650;
       font-size: 14px;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
       white-space:nowrap;
     }
-    .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18)}
+    .btn:hover{transform: translateY(-1px); background: var(--btn-bg-hover); border-color: var(--btn-border-hover)}
     .btn i{opacity:.9}
 
     /* Layout */
@@ -111,11 +184,12 @@
       padding: 46px 18px 70px;
     }
     .shell{
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      background: var(--shell-bg);
       border: 1px solid var(--border2);
       border-radius: var(--radius2);
       box-shadow: var(--shadow);
       padding: 30px;
+      transition:background .25s ease,border-color .25s ease,box-shadow .25s ease;
     }
     .title{
       font-size: 44px;
@@ -123,6 +197,7 @@
       font-weight: 900;
       letter-spacing: -1px;
       margin-bottom: 10px;
+      color:var(--text-strong);
     }
     .subtitle{
       color: var(--muted);
@@ -130,6 +205,7 @@
       line-height: 1.55;
       max-width: 920px;
       margin-bottom: 22px;
+      transition:color .25s ease;
     }
     @media (max-width: 980px){
       .title{font-size: 36px}
@@ -147,24 +223,27 @@
 
     .card{
       border: 1px solid var(--border2);
-      background: rgba(0,0,0,.35);
+      background: var(--card-bg);
       border-radius: var(--radius);
       padding: 16px;
       min-height: 220px;
+      transition:background .25s ease,border-color .25s ease;
     }
     .card h3{
       font-size: 16px;
       font-weight: 900;
       margin-bottom: 10px;
-      color: rgba(255,255,255,.92);
+      color: var(--text-strong);
       text-transform: uppercase;
       letter-spacing: .6px;
+      transition:color .25s ease;
     }
     .hint{
       color: var(--muted2);
       font-size: 13px;
       margin-bottom: 14px;
       line-height: 1.5;
+      transition:color .25s ease;
     }
 
     .row{
@@ -178,23 +257,25 @@
       .row{grid-template-columns:1fr}
     }
     label{
-      color: rgba(255,255,255,.86);
+      color: var(--text);
       font-size: 13px;
       font-weight: 850;
+      transition:color .25s ease;
     }
     .field{
       width:100%;
       border-radius: 12px;
       border: 1px solid var(--border2);
-      background: rgba(255,255,255,.04);
+      background: var(--field-bg);
       color: var(--text);
       padding: 10px 12px;
       outline:none;
       font-weight: 800;
+      transition:background .25s ease,border-color .25s ease,color .25s ease;
     }
     .field:focus{
-      border-color: rgba(255,255,255,.22);
-      background: rgba(255,255,255,.06);
+      border-color: var(--field-border-focus);
+      background: var(--field-bg-focus);
     }
     .mono{
       font-variant-numeric: tabular-nums;
@@ -209,27 +290,27 @@
     .primary{
       border-radius: 14px;
       padding: 12px 14px;
-      border: 1px solid rgba(255,255,255,.22);
-      background: rgba(255,255,255,.14);
-      color: #fff;
+      border: 1px solid var(--primary-border);
+      background: var(--primary-bg);
+      color: var(--text-strong);
       font-weight: 950;
       cursor:pointer;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
       display:inline-flex; align-items:center; gap:10px;
     }
-    .primary:hover{transform: translateY(-1px); background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.28)}
+    .primary:hover{transform: translateY(-1px); background: var(--primary-bg-hover); border-color: var(--primary-border-hover)}
     .ghost{
       border-radius: 14px;
       padding: 12px 14px;
       border: 1px solid var(--border2);
-      background: rgba(255,255,255,.05);
-      color: rgba(255,255,255,.88);
+      background: var(--ghost-bg);
+      color: var(--ghost-text);
       font-weight: 900;
       cursor:pointer;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
       display:inline-flex; align-items:center; gap:10px;
     }
-    .ghost:hover{transform: translateY(-1px); background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.16)}
+    .ghost:hover{transform: translateY(-1px); background: var(--ghost-bg-hover); border-color: var(--btn-border-hover)}
 
     .msg{
       margin-top: 12px;
@@ -254,7 +335,8 @@
       padding: 12px;
       border-radius: 14px;
       border: 1px solid var(--border2);
-      background: rgba(255,255,255,.04);
+      background: var(--kv-bg);
+      transition:background .25s ease,border-color .25s ease;
     }
     .kv .k{
       color: var(--muted2);
@@ -262,16 +344,20 @@
       font-weight: 950;
       letter-spacing:.2px;
       text-transform: uppercase;
+      transition:color .25s ease;
     }
     .kv .v{
       font-size: 18px;
       font-weight: 950;
       letter-spacing:-.2px;
+      color:var(--text-strong);
+      transition:color .25s ease;
     }
     .kv small{
       color: var(--muted2);
       font-size: 12px;
       font-weight: 850;
+      transition:color .25s ease;
     }
 
     .note{
@@ -279,6 +365,7 @@
       font-size: 12px;
       line-height: 1.55;
       margin-top: 8px;
+      transition:color .25s ease;
     }
 
     /* Share */
@@ -290,17 +377,18 @@
       position:fixed;
       left:50%; bottom:22px;
       transform:translateX(-50%);
-      background: rgba(0,0,0,.78);
-      border: 1px solid rgba(255,255,255,.14);
-      color: rgba(255,255,255,.9);
+      background: var(--toast-bg);
+      border: 1px solid var(--toast-border);
+      color: var(--toast-text);
       padding: 10px 12px;
       border-radius: 999px;
       backdrop-filter: blur(14px);
-      box-shadow: 0 14px 40px rgba(0,0,0,.55);
+      box-shadow: 0 14px 40px rgba(0,0,0,.18);
       display:none;
       z-index:2000;
       font-weight: 900;
       font-size: 13px;
+      transition:background .25s ease,border-color .25s ease,color .25s ease;
     }
   </style>
 </head>
@@ -435,7 +523,6 @@
 
     function clampNumber(str){
       const filtered = String(str ?? "").replace(/[^0-9.\-]/g,"");
-      // allow one dot, one leading minus
       let s = filtered;
       const minusCount = (s.match(/\-/g) || []).length;
       if (minusCount > 1) s = s.replace(/\-/g, "");
@@ -496,7 +583,6 @@
       if (!price || price <= 0) { setError("Invalid price"); return; }
       if (!lots || lots <= 0) { setError("Invalid lots"); return; }
 
-      // Same heuristic as your Swift: >= 10 => JPY-style => 0.01 else 0.0001
       const size = price >= 10 ? 0.01 : 0.0001;
       const perLot = 100000.0 * size;
       const yourPip = perLot * lots;
@@ -533,7 +619,7 @@
       if (navigator.share){
         try{
           await navigator.share({ title: "FYNX Pip Calculator", text });
-        } catch { /* cancelled */ }
+        } catch {}
       } else {
         await copyResult();
         showToast("Share not supported — copied");
@@ -563,7 +649,6 @@
       el.price.focus();
     }
 
-    // Input filter
     [el.price, el.lots].forEach(inp => {
       inp.addEventListener("input", () => {
         const c = clampNumber(inp.value);
@@ -571,7 +656,6 @@
       });
     });
 
-    // Enter -> calculate
     [el.price, el.lots].forEach(inp => {
       inp.addEventListener("keydown", (e) => {
         if (e.key === "Enter"){
@@ -582,7 +666,6 @@
       });
     });
 
-    // Tap outside inputs to dismiss
     el.tapDismiss.addEventListener("click", (e) => {
       const t = e.target;
       const isInput = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA");
@@ -591,7 +674,6 @@
       }
     });
 
-    // Buttons
     el.calcBtn.addEventListener("click", calculate);
     el.clearBtn.addEventListener("click", clearAll);
     el.copyBtn.addEventListener("click", copyResult);
@@ -600,5 +682,23 @@
 
     resetResults();
   </script>
+
+  <script>
+    const THEME_KEY = "fynx_theme";
+
+    (function applyThemeFromStorage(){
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === "dark") document.body.classList.add("dark-mode");
+      else document.body.classList.remove("dark-mode");
+    })();
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === THEME_KEY) {
+        if (e.newValue === "dark") document.body.classList.add("dark-mode");
+        else document.body.classList.remove("dark-mode");
+      }
+    });
+  </script>
 </body>
 </html>
+```
