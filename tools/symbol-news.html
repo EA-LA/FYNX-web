@@ -8,20 +8,128 @@
 
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
+
     :root{
-      --bg:#000;
-      --panel: rgba(255,255,255,.06);
-      --panel2: rgba(255,255,255,.04);
-      --border: rgba(255,255,255,.12);
-      --border2: rgba(255,255,255,.08);
-      --text:#fff;
-      --muted: rgba(255,255,255,.68);
-      --muted2: rgba(255,255,255,.50);
+      --bg:#f5f5f2;
+      --bg-solid:#ffffff;
+      --panel:rgba(0,0,0,.04);
+      --panel2:rgba(0,0,0,.03);
+      --border:rgba(0,0,0,.12);
+      --border2:rgba(0,0,0,.08);
+      --text:#0a0a0a;
+      --text-strong:#000000;
+      --muted:rgba(10,10,10,.68);
+      --muted2:rgba(10,10,10,.50);
+      --danger:#d92d20;
+      --shadow:0 24px 70px rgba(0,0,0,.10);
+      --radius:18px;
+      --radius2:22px;
+      --max:1200px;
+      --header-bg:rgba(255,255,255,.78);
+      --header-border:rgba(0,0,0,.08);
+      --btn-bg:rgba(0,0,0,.03);
+      --btn-bg-hover:rgba(0,0,0,.06);
+      --btn-border:rgba(0,0,0,.12);
+      --btn-border-hover:rgba(0,0,0,.18);
+      --shell-bg:linear-gradient(180deg, rgba(0,0,0,.04), rgba(0,0,0,.02));
+      --search-card-bg:rgba(255,255,255,.72);
+      --search-input-bg:rgba(0,0,0,.03);
+      --search-input-border:rgba(0,0,0,.08);
+      --search-btn-bg:rgba(0,0,0,.10);
+      --search-btn-bg-hover:rgba(0,0,0,.14);
+      --search-btn-border:rgba(0,0,0,.18);
+      --search-btn-border-hover:rgba(0,0,0,.28);
+      --search-btn-text:#ffffff;
+      --chip-bg:rgba(0,0,0,.08);
+      --chip-bg-hover:rgba(0,0,0,.12);
+      --chip-border:rgba(0,0,0,.10);
+      --chip-border-hover:rgba(0,0,0,.16);
+      --chip-text:rgba(10,10,10,.92);
+      --loading-bg:rgba(0,0,0,.025);
+      --spinner-track:rgba(0,0,0,.18);
+      --spinner-head:rgba(0,0,0,.80);
+      --error-bg:rgba(217,45,32,.08);
+      --error-border:rgba(217,45,32,.25);
+      --error-text:#8f1f17;
+      --news-card-bg:rgba(255,255,255,.72);
+      --news-card-bg-hover:rgba(255,255,255,.9);
+      --news-card-border-hover:rgba(0,0,0,.14);
+      --icon-bubble-bg:rgba(0,0,0,.06);
+      --news-title:rgba(10,10,10,.94);
+      --empty-bg:rgba(0,0,0,.025);
+      --modal-overlay:rgba(0,0,0,.45);
+      --modal-bg:rgba(255,255,255,.94);
+      --modal-border:rgba(0,0,0,.14);
+      --modal-top-bg:rgba(0,0,0,.03);
+      --modal-top-border:rgba(0,0,0,.10);
+      --modal-btn-bg:rgba(0,0,0,.04);
+      --modal-btn-bg-hover:rgba(0,0,0,.07);
+      --modal-btn-border:rgba(0,0,0,.14);
+      --modal-btn-border-hover:rgba(0,0,0,.18);
+      --modal-btn-text:rgba(10,10,10,.92);
+      --iframe-bg:#ffffff;
+      --grid-line:rgba(0,0,0,.05);
+      --orb-core:rgba(0,0,0,.22);
+    }
+
+    body.dark-mode{
+      --bg:#000000;
+      --bg-solid:#000000;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.04);
+      --border:rgba(255,255,255,.12);
+      --border2:rgba(255,255,255,.08);
+      --text:#ffffff;
+      --text-strong:#ffffff;
+      --muted:rgba(255,255,255,.68);
+      --muted2:rgba(255,255,255,.50);
       --danger:#ff4d4d;
-      --shadow: 0 24px 70px rgba(0,0,0,.55);
-      --radius: 18px;
-      --radius2: 22px;
-      --max: 1200px;
+      --shadow:0 24px 70px rgba(0,0,0,.55);
+      --header-bg:rgba(0,0,0,.78);
+      --header-border:rgba(255,255,255,.08);
+      --btn-bg:rgba(255,255,255,.05);
+      --btn-bg-hover:rgba(255,255,255,.08);
+      --btn-border:rgba(255,255,255,.12);
+      --btn-border-hover:rgba(255,255,255,.18);
+      --shell-bg:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      --search-card-bg:rgba(255,255,255,.05);
+      --search-input-bg:rgba(0,0,0,.30);
+      --search-input-border:rgba(255,255,255,.08);
+      --search-btn-bg:rgba(255,255,255,.14);
+      --search-btn-bg-hover:rgba(255,255,255,.18);
+      --search-btn-border:rgba(255,255,255,.22);
+      --search-btn-border-hover:rgba(255,255,255,.28);
+      --search-btn-text:#ffffff;
+      --chip-bg:rgba(255,255,255,.10);
+      --chip-bg-hover:rgba(255,255,255,.14);
+      --chip-border:rgba(255,255,255,.10);
+      --chip-border-hover:rgba(255,255,255,.16);
+      --chip-text:rgba(255,255,255,.92);
+      --loading-bg:rgba(255,255,255,.04);
+      --spinner-track:rgba(255,255,255,.18);
+      --spinner-head:rgba(255,255,255,.80);
+      --error-bg:rgba(255,77,77,.08);
+      --error-border:rgba(255,77,77,.30);
+      --error-text:#ffd0d0;
+      --news-card-bg:rgba(255,255,255,.05);
+      --news-card-bg-hover:rgba(255,255,255,.07);
+      --news-card-border-hover:rgba(255,255,255,.14);
+      --icon-bubble-bg:rgba(255,255,255,.08);
+      --news-title:rgba(255,255,255,.94);
+      --empty-bg:rgba(255,255,255,.04);
+      --modal-overlay:rgba(0,0,0,.62);
+      --modal-bg:rgba(0,0,0,.70);
+      --modal-border:rgba(255,255,255,.14);
+      --modal-top-bg:rgba(255,255,255,.04);
+      --modal-top-border:rgba(255,255,255,.10);
+      --modal-btn-bg:rgba(255,255,255,.06);
+      --modal-btn-bg-hover:rgba(255,255,255,.09);
+      --modal-btn-border:rgba(255,255,255,.14);
+      --modal-btn-border-hover:rgba(255,255,255,.18);
+      --modal-btn-text:rgba(255,255,255,.92);
+      --iframe-bg:#000000;
+      --grid-line:rgba(255,255,255,.03);
+      --orb-core:rgba(255,255,255,.92);
     }
 
     body{
@@ -30,21 +138,24 @@
       background: var(--bg);
       overflow-x:hidden;
       min-height:100vh;
+      transition:background .25s ease,color .25s ease;
     }
 
-    /* Grok-style background (black/white) */
+    /* Grok-style background */
     .animated-bg{
       position:fixed; inset:0; z-index:-1;
-      background:#000; overflow:hidden;
+      background:var(--bg-solid); overflow:hidden;
+      transition:background .25s ease;
     }
     .grid-overlay{
       position:absolute; inset:0;
       background-image:
-        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
       background-size: 52px 52px;
       animation: gridMove 20s linear infinite;
       opacity:.75;
+      transition:background-image .25s ease;
     }
     @keyframes gridMove{
       0%{transform:translate(0,0)}
@@ -55,8 +166,8 @@
       opacity:.20;
       animation: floaty 18s ease-in-out infinite;
     }
-    .orb-1{ width:560px; height:560px; left:-260px; top:-260px; background: radial-gradient(circle, #fff 0%, transparent 65%); }
-    .orb-2{ width:560px; height:560px; right:-280px; bottom:-280px; background: radial-gradient(circle, #fff 0%, transparent 65%); animation-delay: 3s;}
+    .orb-1{ width:560px; height:560px; left:-260px; top:-260px; background: radial-gradient(circle, var(--orb-core) 0%, transparent 65%); }
+    .orb-2{ width:560px; height:560px; right:-280px; bottom:-280px; background: radial-gradient(circle, var(--orb-core) 0%, transparent 65%); animation-delay: 3s;}
     @keyframes floaty{
       0%,100%{transform:translate(0,0) scale(1)}
       50%{transform:translate(34px,-26px) scale(.97)}
@@ -65,9 +176,10 @@
     /* Header */
     header{
       position:sticky; top:0; z-index:1000;
-      background: rgba(0,0,0,.78);
+      background: var(--header-bg);
       backdrop-filter: blur(18px);
-      border-bottom: 1px solid var(--border2);
+      border-bottom: 1px solid var(--header-border);
+      transition:background .25s ease,border-color .25s ease;
     }
     .nav{
       max-width: var(--max);
@@ -83,6 +195,8 @@
       font-weight: 850;
       letter-spacing:.4px;
       user-select:none;
+      color:var(--text-strong);
+      transition:color .25s ease;
     }
     .brand i{opacity:.92}
     .nav-actions{display:flex; align-items:center; gap:10px;}
@@ -90,26 +204,27 @@
       display:inline-flex; align-items:center; gap:10px;
       padding:10px 14px;
       border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.05);
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
       color: var(--text);
       text-decoration:none;
       font-weight: 700;
       font-size: 14px;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
       white-space:nowrap;
     }
-    .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18)}
+    .btn:hover{transform: translateY(-1px); background: var(--btn-bg-hover); border-color: var(--btn-border-hover)}
     .btn i{opacity:.9}
 
     /* Layout */
     main{max-width: var(--max); margin:0 auto; padding: 46px 18px 70px;}
     .shell{
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      background: var(--shell-bg);
       border: 1px solid var(--border2);
       border-radius: var(--radius2);
       box-shadow: var(--shadow);
       padding: 26px;
+      transition:background .25s ease,border-color .25s ease,box-shadow .25s ease;
     }
     .title{
       font-size: 44px;
@@ -117,6 +232,7 @@
       font-weight: 950;
       letter-spacing: -1px;
       margin-bottom: 10px;
+      color:var(--text-strong);
     }
     .subtitle{
       color: var(--muted);
@@ -124,6 +240,7 @@
       line-height: 1.55;
       max-width: 960px;
       margin-bottom: 18px;
+      transition:color .25s ease;
     }
     @media (max-width: 980px){
       .title{font-size: 36px}
@@ -134,13 +251,15 @@
       padding: 16px;
       border-radius: var(--radius);
       border: 1px solid var(--border2);
-      background: rgba(255,255,255,.05);
+      background: var(--search-card-bg);
+      transition:background .25s ease,border-color .25s ease;
     }
     .searchLabel{
       font-size: 13px;
       font-weight: 850;
       color: var(--muted);
       margin-bottom: 10px;
+      transition:color .25s ease;
     }
     .searchRow{
       display:flex;
@@ -155,8 +274,9 @@
       gap:10px;
       padding: 10px 12px;
       border-radius: 14px;
-      border: 1px solid var(--border2);
-      background: rgba(0,0,0,.30);
+      border: 1px solid var(--search-input-border);
+      background: var(--search-input-bg);
+      transition:border-color .25s ease,background .25s ease;
     }
     .searchInput i{opacity:.85}
     input[type="text"]{
@@ -173,16 +293,16 @@
     .searchBtn{
       border-radius: 14px;
       padding: 11px 14px;
-      border: 1px solid rgba(255,255,255,.22);
-      background: rgba(255,255,255,.14);
-      color:#fff;
+      border: 1px solid var(--search-btn-border);
+      background: var(--search-btn-bg);
+      color: var(--search-btn-text);
       font-weight: 950;
       cursor:pointer;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
       display:inline-flex; align-items:center; gap:10px;
       white-space:nowrap;
     }
-    .searchBtn:hover{transform: translateY(-1px); background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.28)}
+    .searchBtn:hover{transform: translateY(-1px); background: var(--search-btn-bg-hover); border-color: var(--search-btn-border-hover)}
     .chips{
       display:flex;
       gap:8px;
@@ -195,15 +315,15 @@
       cursor:pointer;
       padding: 8px 12px;
       border-radius: 999px;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.10);
-      color: rgba(255,255,255,.92);
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-border);
+      color: var(--chip-text);
       font-weight: 900;
       font-size: 12px;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
       white-space:nowrap;
     }
-    .chip:hover{transform: translateY(-1px); background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.16)}
+    .chip:hover{transform: translateY(-1px); background: var(--chip-bg-hover); border-color: var(--chip-border-hover)}
 
     /* Status */
     .statusBar{
@@ -214,6 +334,7 @@
       color: var(--muted2);
       font-size: 12px;
       font-weight: 850;
+      transition:color .25s ease;
     }
 
     .loadingRow{
@@ -224,13 +345,14 @@
       padding: 10px 12px;
       border-radius: 14px;
       border: 1px solid var(--border2);
-      background: rgba(255,255,255,.04);
+      background: var(--loading-bg);
       width: fit-content;
+      transition:border-color .25s ease,background .25s ease;
     }
     .spinner{
       width:16px; height:16px; border-radius:999px;
-      border: 2px solid rgba(255,255,255,.18);
-      border-top-color: rgba(255,255,255,.80);
+      border: 2px solid var(--spinner-track);
+      border-top-color: var(--spinner-head);
       animation: spin 1s linear infinite;
     }
     @keyframes spin{to{transform: rotate(360deg)}}
@@ -240,13 +362,14 @@
       margin-top: 12px;
       padding: 10px 12px;
       border-radius: 14px;
-      border: 1px solid rgba(255,77,77,.30);
-      background: rgba(255,77,77,.08);
-      color: #ffd0d0;
+      border: 1px solid var(--error-border);
+      background: var(--error-bg);
+      color: var(--error-text);
       font-weight: 850;
       font-size: 13px;
       align-items:flex-start;
       gap:10px;
+      transition:border-color .25s ease,background .25s ease,color .25s ease;
     }
     .errorBox i{color: var(--danger); margin-top:2px}
 
@@ -260,7 +383,7 @@
     .newsCard{
       width:100%;
       border: 1px solid var(--border2);
-      background: rgba(255,255,255,.05);
+      background: var(--news-card-bg);
       border-radius: 16px;
       padding: 14px;
       display:flex;
@@ -269,13 +392,14 @@
       cursor:pointer;
       transition: transform .12s ease, background .12s ease, border-color .12s ease;
     }
-    .newsCard:hover{transform: translateY(-1px); background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.14)}
+    .newsCard:hover{transform: translateY(-1px); background: var(--news-card-bg-hover); border-color: var(--news-card-border-hover)}
     .iconBubble{
       width:34px; height:34px; border-radius:999px;
       display:flex; align-items:center; justify-content:center;
-      background: rgba(255,255,255,.08);
+      background: var(--icon-bubble-bg);
       flex: 0 0 auto;
       margin-top: 2px;
+      transition:background .25s ease;
     }
     .iconBubble i{opacity:.9}
     .newsBody{flex:1 1 auto; min-width:0}
@@ -283,11 +407,12 @@
       font-weight: 900;
       font-size: 14px;
       line-height: 1.35;
-      color: rgba(255,255,255,.94);
+      color: var(--news-title);
       display:-webkit-box;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow:hidden;
+      transition:color .25s ease;
     }
     .meta{
       margin-top: 6px;
@@ -297,12 +422,14 @@
       color: var(--muted2);
       font-size: 12px;
       font-weight: 800;
+      transition:color .25s ease;
     }
     .chev{
       margin-left: 6px;
       color: var(--muted2);
       margin-top: 6px;
       flex: 0 0 auto;
+      transition:color .25s ease;
     }
 
     .empty{
@@ -310,32 +437,35 @@
       padding: 14px;
       border-radius: 16px;
       border: 1px solid var(--border2);
-      background: rgba(255,255,255,.04);
+      background: var(--empty-bg);
       color: var(--muted);
       font-weight: 850;
       font-size: 13px;
+      transition:border-color .25s ease,background .25s ease,color .25s ease;
     }
 
-    /* Modal (Safari sheet-like) */
+    /* Modal */
     .modalOverlay{
       position:fixed; inset:0; z-index:2000;
-      background: rgba(0,0,0,.62);
+      background: var(--modal-overlay);
       backdrop-filter: blur(10px);
       display:none;
       align-items:center;
       justify-content:center;
       padding: 18px;
+      transition:background .25s ease;
     }
     .modal{
       width:min(1100px, 100%);
       height:min(78vh, 760px);
       border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.70);
-      box-shadow: 0 30px 90px rgba(0,0,0,.65);
+      border: 1px solid var(--modal-border);
+      background: var(--modal-bg);
+      box-shadow: 0 30px 90px rgba(0,0,0,.40);
       overflow:hidden;
       display:flex;
       flex-direction:column;
+      transition:border-color .25s ease,background .25s ease;
     }
     .modalTop{
       display:flex;
@@ -343,14 +473,16 @@
       justify-content:space-between;
       gap:10px;
       padding: 10px 12px;
-      border-bottom: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
+      border-bottom: 1px solid var(--modal-top-border);
+      background: var(--modal-top-bg);
+      transition:border-color .25s ease,background .25s ease;
     }
     .modalTop .left{
       display:flex; align-items:center; gap:10px; min-width:0;
-      color: rgba(255,255,255,.90);
+      color: var(--text-strong);
       font-weight: 900;
       font-size: 13px;
+      transition:color .25s ease;
     }
     .modalTop .left span{
       white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
@@ -360,22 +492,22 @@
     .mBtn{
       border-radius: 12px;
       padding: 8px 10px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.92);
+      border: 1px solid var(--modal-btn-border);
+      background: var(--modal-btn-bg);
+      color: var(--modal-btn-text);
       font-weight: 900;
       cursor:pointer;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
       display:inline-flex; align-items:center; gap:8px;
       font-size: 12px;
       white-space:nowrap;
     }
-    .mBtn:hover{transform: translateY(-1px); background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.18)}
+    .mBtn:hover{transform: translateY(-1px); background: var(--modal-btn-bg-hover); border-color: var(--modal-btn-border-hover)}
     iframe{
       width:100%;
       height:100%;
       border:none;
-      background:#000;
+      background:var(--iframe-bg);
     }
   </style>
 </head>
@@ -428,7 +560,7 @@
 
       <div class="loadingRow" id="loadingRow">
         <div class="spinner"></div>
-        <div style="font-weight:900; color:rgba(255,255,255,.84); font-size:13px;">Loading news…</div>
+        <div style="font-weight:900; color:var(--text-strong); font-size:13px;">Loading news…</div>
       </div>
 
       <div class="errorBox" id="errorBox">
@@ -446,7 +578,6 @@
     </div>
   </main>
 
-  <!-- Safari sheet-like modal -->
   <div class="modalOverlay" id="modalOverlay" role="dialog" aria-modal="true">
     <div class="modal">
       <div class="modalTop">
@@ -565,8 +696,6 @@
     }
 
     function formatDate(iso){
-      // Google News RSS doesn't always provide perfect dates via our parser,
-      // but if we have one, format nicely.
       const d = new Date(iso);
       if (isNaN(d.getTime())) return "";
       return d.toLocaleString(undefined, { dateStyle:"medium", timeStyle:"short" });
@@ -581,11 +710,6 @@
         .replaceAll("'","&#039;");
     }
 
-    /* ===== RSS fetch + parse =====
-       Important: direct fetch from news.google.com/rss may be blocked by CORS on GitHub Pages.
-       This implementation tries direct first; if blocked, it falls back to a public CORS proxy.
-       If you prefer your own proxy endpoint, replace CORS_PROXY with your domain.
-    */
     const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 
     async function fetchNews(query){
@@ -608,7 +732,6 @@
         if (!r.ok) throw new Error("Network error");
         xmlText = await r.text();
       } catch (e){
-        // likely CORS or blocked request
         try{
           const r2 = await fetch(CORS_PROXY + encodeURIComponent(rssUrl), { cache: "no-store" });
           if (!r2.ok) throw new Error("Proxy network error");
@@ -638,7 +761,6 @@
       const parser = new DOMParser();
       const doc = parser.parseFromString(xmlText, "text/xml");
 
-      // Basic validation
       const parseError = doc.querySelector("parsererror");
       if (parseError) throw new Error("Bad XML");
 
@@ -652,7 +774,6 @@
 
         const link = (n.querySelector("link")?.textContent || "").trim();
 
-        // pubDate is RFC822 (e.g. "Mon, 29 Dec 2025 22:10:00 GMT")
         const pub = (n.querySelector("pubDate")?.textContent || "").trim();
         const pubIso = pub ? (new Date(pub)).toISOString() : null;
 
@@ -667,7 +788,6 @@
       return items;
     }
 
-    /* ===== Modal (Safari sheet-like) ===== */
     function openArticle(url, title){
       currentOpenUrl = url;
       el.modalTitle.textContent = title || "Article";
@@ -707,12 +827,10 @@
         document.execCommand("copy");
         document.body.removeChild(ta);
       }
-      // tiny feedback
       el.copyLink.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
       setTimeout(() => el.copyLink.innerHTML = '<i class="fa-solid fa-link"></i> Copy Link', 900);
     });
 
-    /* ===== Keyboard dismiss behavior (tap outside) ===== */
     el.tapDismiss.addEventListener("click", (e) => {
       const t = e.target;
       const isInput = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA");
@@ -721,7 +839,6 @@
       }
     });
 
-    /* ===== Bind ===== */
     el.searchBtn.addEventListener("click", () => fetchNews(el.q.value));
 
     el.q.addEventListener("keydown", (e) => {
@@ -741,8 +858,24 @@
       });
     });
 
-    // Initial load like .task { if empty fetch default }
     fetchNews(el.q.value);
+  </script>
+
+  <script>
+    const THEME_KEY = "fynx_theme";
+
+    (function applyThemeFromStorage(){
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === "dark") document.body.classList.add("dark-mode");
+      else document.body.classList.remove("dark-mode");
+    })();
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === THEME_KEY) {
+        if (e.newValue === "dark") document.body.classList.add("dark-mode");
+        else document.body.classList.remove("dark-mode");
+      }
+    });
   </script>
 </body>
 </html>
