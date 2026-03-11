@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elham Amini — Founder of FYNX</title>
+
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+  <meta name="description" content="Learn about Elham Amini, founder of FYNX, and the mission behind building a modern financial ecosystem for traders, tools, education, and future financial infrastructure.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="assets/theme.css">
+  <script src="assets/theme.js" defer></script>
+
+  <style>
+    :root{
+      --fg-bg: #ffffff;
+      --fg-surface: rgba(255,255,255,0.84);
+      --fg-surface-2: rgba(255,255,255,0.68);
+      --fg-text: rgba(0,0,0,0.92);
+      --fg-muted: rgba(0,0,0,0.62);
+      --fg-line: rgba(0,0,0,0.10);
+      --fg-shadow: 0 18px 50px rgba(0,0,0,0.12);
+      --fg-radius: 22px;
+    }
+
+    body.dark-mode,
+    html.dark-mode,
+    [data-theme="dark"],
+    [data-fynx-theme="dark"]{
+      --fg-bg: #000000;
+      --fg-surface: rgba(255,255,255,0.05);
+      --fg-surface-2: rgba(255,255,255,0.04);
+      --fg-text: rgba(255,255,255,0.94);
+      --fg-muted: rgba(255,255,255,0.66);
+      --fg-line: rgba(255,255,255,0.12);
+      --fg-shadow: 0 22px 60px rgba(0,0,0,0.48);
+    }
+
+    *{ box-sizing:border-box; }
+
+    html{
+      scroll-behavior:smooth;
+    }
+
+    body{
+      margin:0;
+      font-family:"Manrope",system-ui,-apple-system,Segoe UI,sans-serif;
+      color:var(--fg-text);
+      background:
+        radial-gradient(circle at 1px 1px, rgba(127,127,127,0.12) 1px, transparent 1px) 0 0 / 18px 18px,
+        linear-gradient(var(--fg-bg), var(--fg-bg));
+    }
+
+    .founder-page{
+      position:relative;
+      z-index:1;
+    }
+
+    .founder-shell{
+      width:min(1180px, 92vw);
+      margin:0 auto;
+    }
+
+    .founder-hero{
+      padding:140px 0 72px;
+      position:relative;
+    }
+
+    .founder-hero-grid{
+      display:grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap:28px;
+      align-items:stretch;
+    }
+
+    .founder-kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--fg-line);
+      background:var(--fg-surface-2);
+      color:var(--fg-text);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      margin-bottom:18px;
+    }
+
+    .founder-title{
+      margin:0;
+      font-size: clamp(42px, 7vw, 84px);
+      line-height:0.96;
+      letter-spacing:-0.05em;
+      font-weight:900;
+      max-width:10ch;
+    }
+
+    .founder-subtitle{
+      margin:22px 0 0;
+      max-width:62ch;
+      font-size:18px;
+      line-height:1.7;
+      color:var(--fg-muted);
+      font-weight:600;
+    }
+
+    .founder-cta-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:28px;
+    }
+
+    .founder-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      text-decoration:none;
+      padding:13px 16px;
+      border-radius:14px;
+      border:1px solid var(--fg-line);
+      background:var(--fg-surface);
+      color:var(--fg-text);
+      font-weight:800;
+      transition:transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
+      box-shadow:var(--fg-shadow);
+    }
+
+    .founder-btn:hover{
+      transform:translateY(-1px);
+    }
+
+    .founder-btn--solid{
+      background:var(--fg-text);
+      color:var(--fg-bg);
+      border-color:transparent;
+      box-shadow:none;
+    }
+
+    .founder-btn--solid:hover{
+      opacity:.92;
+    }
+
+    .founder-card{
+      border:1px solid var(--fg-line);
+      background:var(--fg-surface);
+      border-radius:var(--fg-radius);
+      box-shadow:var(--fg-shadow);
+      backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
+    }
+
+    .founder-profile-card{
+      padding:24px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      min-height:100%;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .founder-profile-card::before{
+      content:"";
+      position:absolute;
+      inset:-30% auto auto -10%;
+      width:340px;
+      height:340px;
+      background:radial-gradient(circle, rgba(0,0,0,0.10), transparent 68%);
+      pointer-events:none;
+    }
+
+    body.dark-mode .founder-profile-card::before,
+    html.dark-mode .founder-profile-card::before,
+    [data-theme="dark"] .founder-profile-card::before,
+    [data-fynx-theme="dark"] .founder-profile-card::before{
+      background:radial-gradient(circle, rgba(255,255,255,0.12), transparent 68%);
+    }
+
+    .founder-avatar{
+      width:76px;
+      height:76px;
+      border-radius:20px;
+      border:1px solid var(--fg-line);
+      background:var(--fg-surface-2);
+      display:grid;
+      place-items:center;
+      font-size:26px;
+      font-weight:900;
+      margin-bottom:18px;
+      position:relative;
+      z-index:1;
+    }
+
+    .founder-profile-name{
+      font-size:28px;
+      font-weight:900;
+      letter-spacing:-0.03em;
+      margin:0 0 6px;
+      position:relative;
+      z-index:1;
+    }
+
+    .founder-profile-role{
+      font-size:14px;
+      color:var(--fg-muted);
+      font-weight:700;
+      margin-bottom:18px;
+      position:relative;
+      z-index:1;
+    }
+
+    .founder-profile-copy{
+      font-size:15px;
+      line-height:1.75;
+      color:var(--fg-muted);
+      font-weight:600;
+      position:relative;
+      z-index:1;
+    }
+
+    .founder-mini-list{
+      display:grid;
+      gap:10px;
+      margin-top:24px;
+      position:relative;
+      z-index:1;
+    }
+
+    .founder-mini-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:14px;
+      color:var(--fg-text);
+      font-weight:700;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid var(--fg-line);
+      background:var(--fg-surface-2);
+    }
+
+    .founder-section{
+      padding:20px 0 0;
+    }
+
+    .founder-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:18px;
+      margin-top:18px;
+    }
+
+    .founder-block{
+      padding:24px;
+    }
+
+    .founder-block--wide{
+      grid-column:1 / -1;
+    }
+
+    .founder-eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--fg-muted);
+      margin-bottom:14px;
+    }
+
+    .founder-heading{
+      margin:0 0 12px;
+      font-size:30px;
+      line-height:1.05;
+      letter-spacing:-0.04em;
+      font-weight:900;
+    }
+
+    .founder-text{
+      margin:0;
+      font-size:15px;
+      line-height:1.8;
+      color:var(--fg-muted);
+      font-weight:600;
+    }
+
+    .founder-stack{
+      display:grid;
+      gap:16px;
+      margin-top:18px;
+    }
+
+    .founder-product{
+      padding:18px;
+      border:1px solid var(--fg-line);
+      border-radius:18px;
+      background:var(--fg-surface-2);
+    }
+
+    .founder-product h3{
+      margin:0 0 8px;
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-0.02em;
+    }
+
+    .founder-product p{
+      margin:0;
+      font-size:14px;
+      line-height:1.7;
+      color:var(--fg-muted);
+      font-weight:600;
+    }
+
+    .founder-quote{
+      padding:28px;
+      text-align:center;
+    }
+
+    .founder-quote blockquote{
+      margin:0;
+      font-size: clamp(22px, 3.3vw, 38px);
+      line-height:1.24;
+      font-weight:900;
+      letter-spacing:-0.04em;
+    }
+
+    .founder-quote p{
+      margin:16px 0 0;
+      font-size:14px;
+      color:var(--fg-muted);
+      font-weight:700;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+
+    .founder-footer{
+      padding:24px 0 80px;
+    }
+
+    .founder-footer-card{
+      padding:24px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+    }
+
+    .founder-footer-copy h3{
+      margin:0 0 8px;
+      font-size:26px;
+      font-weight:900;
+      letter-spacing:-0.03em;
+    }
+
+    .founder-footer-copy p{
+      margin:0;
+      color:var(--fg-muted);
+      font-size:15px;
+      line-height:1.75;
+      font-weight:600;
+      max-width:60ch;
+    }
+
+    @media (max-width: 980px){
+      .founder-hero-grid,
+      .founder-grid{
+        grid-template-columns:1fr;
+      }
+
+      .founder-title{
+        max-width:none;
+      }
+
+      .founder-footer-card{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+    }
+
+    @media (max-width: 640px){
+      .founder-hero{
+        padding:118px 0 52px;
+      }
+
+      .founder-block,
+      .founder-profile-card,
+      .founder-quote,
+      .founder-footer-card{
+        padding:18px;
+      }
+
+      .founder-subtitle{
+        font-size:16px;
+      }
+
+      .founder-heading{
+        font-size:24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="animated-bg">
+    <div class="grid-overlay"></div>
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+    <div class="gradient-orb orb-3"></div>
+  </div>
+
+  <header id="header">
+    <div class="nav-container">
+      <div class="logo" onclick="location.href='index.html'">
+        <i class="fas fa-chart-line"></i>
+        <span>FYNX</span>
+      </div>
+
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="index.html#learn">Learn</a></li>
+          <li><a href="index.html#tools">Tools</a></li>
+          <li><a href="news/news.html">News</a></li>
+          <li><a href="trader-journal.html">Trader Journal</a></li>
+        </ul>
+      </nav>
+
+      <div class="fynx-top-actions" aria-label="FYNX quick actions">
+        <a class="fynx-network-btn" href="https://fynxfunded.com" target="_blank" rel="noopener" aria-label="FYNX Funded">
+          <span>Funded</span>
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        </a>
+
+        <button class="fynx-network-theme" type="button" aria-label="Toggle theme" data-fynx-theme-toggle title="Toggle black/white mode">
+          <i class="fas fa-circle-half-stroke"></i>
+        </button>
+      </div>
+
+      <button class="mobile-menu" id="mobileMenuBtn" type="button" aria-label="Open menu">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="founder-page">
+    <section class="founder-hero">
+      <div class="founder-shell">
+        <div class="founder-hero-grid">
+          <div>
+            <div class="founder-kicker">
+              <i class="fa-solid fa-user-tie"></i>
+              <span>Founder Profile</span>
+            </div>
+
+            <h1 class="founder-title">Elham Amini — Founder of FYNX</h1>
+
+            <p class="founder-subtitle">
+              Building FYNX into a modern financial ecosystem for traders, tools, education,
+              performance systems, and future finance infrastructure.
+            </p>
+
+            <div class="founder-cta-row">
+              <a class="founder-btn founder-btn--solid" href="https://fynxfunded.com" target="_blank" rel="noopener">
+                <i class="fa-solid fa-chart-simple"></i>
+                <span>Explore FYNX Funded</span>
+              </a>
+              <a class="founder-btn" href="index.html">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Back to Finance World</span>
+              </a>
+            </div>
+          </div>
+
+          <aside class="founder-card founder-profile-card">
+            <div>
+              <div class="founder-avatar">EA</div>
+              <h2 class="founder-profile-name">Elham Amini</h2>
+              <div class="founder-profile-role">Founder · Builder · Vision behind FYNX</div>
+              <p class="founder-profile-copy">
+                Elham Amini is the founder of FYNX, a growing financial technology ecosystem
+                focused on trading tools, market education, performance systems, and long-term
+                platform expansion across modern finance.
+              </p>
+            </div>
+
+            <div class="founder-mini-list">
+              <div class="founder-mini-item">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Building a multi-product FYNX ecosystem</span>
+              </div>
+              <div class="founder-mini-item">
+                <i class="fa-solid fa-calculator"></i>
+                <span>Focused on tools, discipline, and trader performance</span>
+              </div>
+              <div class="founder-mini-item">
+                <i class="fa-solid fa-building-columns"></i>
+                <span>Long-term mission: infrastructure, capital, and finance systems</span>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="founder-section">
+      <div class="founder-shell">
+        <div class="founder-grid">
+          <article class="founder-card founder-block">
+            <div class="founder-eyebrow">
+              <i class="fa-solid fa-circle-info"></i>
+              <span>About</span>
+            </div>
+            <h2 class="founder-heading">Who is Elham Amini?</h2>
+            <p class="founder-text">
+              Elham Amini is an entrepreneur and product builder focused on creating serious,
+              modern financial products under the FYNX brand. What began as trader-focused tools
+              and education is being expanded into a wider financial ecosystem designed to help
+              people think better, manage risk better, and operate with more precision.
+            </p>
+          </article>
+
+          <article class="founder-card founder-block">
+            <div class="founder-eyebrow">
+              <i class="fa-solid fa-bullseye"></i>
+              <span>Mission</span>
+            </div>
+            <h2 class="founder-heading">Building more than a single app</h2>
+            <p class="founder-text">
+              The mission behind FYNX is to build a serious financial ecosystem for the next
+              generation — combining market tools, education, structured performance systems,
+              and future infrastructure into one expanding brand. The aim is not short-term
+              noise. The aim is long-term scale, depth, and real utility.
+            </p>
+          </article>
+
+          <article class="founder-card founder-block founder-block--wide">
+            <div class="founder-eyebrow">
+              <i class="fa-solid fa-cubes-stacked"></i>
+              <span>What FYNX is building</span>
+            </div>
+            <h2 class="founder-heading">An expanding ecosystem across trading and finance</h2>
+
+            <div class="founder-stack">
+              <div class="founder-product">
+                <h3>FYNX Finance World</h3>
+                <p>
+                  A hub for trading tools, calculators, market resources, educational pathways,
+                  and trader-focused systems that help users move with more clarity and structure.
+                </p>
+              </div>
+
+              <div class="founder-product">
+                <h3>FYNX App</h3>
+                <p>
+                  A mobile trading utility experience designed to give traders fast access to
+                  calculators, journals, market support tools, and practical decision systems.
+                </p>
+              </div>
+
+              <div class="founder-product">
+                <h3>FYNX Funded</h3>
+                <p>
+                  A funded trading platform direction focused on structure, rules, performance,
+                  and a more serious environment for traders who want capital pathways and
+                  challenge-based growth.
+                </p>
+              </div>
+
+              <div class="founder-product">
+                <h3>Future Expansion</h3>
+                <p>
+                  The long-term vision extends beyond tools into broader finance infrastructure,
+                  analytics, performance systems, capital models, and a stronger institutional-grade
+                  financial brand built under one name: FYNX.
+                </p>
+              </div>
+            </div>
+          </article>
+
+          <article class="founder-card founder-block">
+            <div class="founder-eyebrow">
+              <i class="fa-solid fa-eye"></i>
+              <span>Vision</span>
+            </div>
+            <h2 class="founder-heading">A platform, not a project</h2>
+            <p class="founder-text">
+              FYNX is being built with the mindset of a platform, not a one-page tool or a
+              temporary app. The long-term vision is to grow into a recognized financial brand
+              that can serve traders, ambitious builders, and future financial systems with
+              more depth, quality, and structure.
+            </p>
+          </article>
+
+          <article class="founder-card founder-block">
+            <div class="founder-eyebrow">
+              <i class="fa-solid fa-compass-drafting"></i>
+              <span>Philosophy</span>
+            </div>
+            <h2 class="founder-heading">Precision, independence, and scale</h2>
+            <p class="founder-text">
+              At the center of Elham Amini’s work is the belief that finance should become more
+              intelligent, more accessible, and more empowering for people who want to build
+              rather than depend. FYNX is designed around precision, discipline, and long-range
+              expansion.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="founder-section">
+      <div class="founder-shell">
+        <div class="founder-card founder-quote">
+          <blockquote>
+            “I am not building for short-term attention. I am building FYNX as a long-term
+            financial ecosystem with real ambition.”
+          </blockquote>
+          <p>Elham Amini · Founder of FYNX</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="founder-footer">
+      <div class="founder-shell">
+        <div class="founder-card founder-footer-card">
+          <div class="founder-footer-copy">
+            <h3>Explore the ecosystem</h3>
+            <p>
+              Learn more about the FYNX platform, follow the broader mission, and connect the
+              founder profile with the products being built across tools, funded trading,
+              education, and future financial expansion.
+            </p>
+          </div>
+
+          <div class="founder-cta-row" style="margin-top:0;">
+            <a class="founder-btn" href="index.html">
+              <i class="fa-solid fa-house"></i>
+              <span>Finance World</span>
+            </a>
+            <a class="founder-btn" href="https://fynxfunded.com" target="_blank" rel="noopener">
+              <i class="fa-solid fa-chart-simple"></i>
+              <span>FYNX Funded</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
