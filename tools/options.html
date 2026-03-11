@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,68 +8,192 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
+
+    :root{
+      --bg:#f7f7f5;
+      --bg-solid:#ffffff;
+      --text:#0a0a0a;
+      --text-strong:#000000;
+      --text-muted:rgba(10,10,10,.65);
+      --text-soft:rgba(10,10,10,.55);
+      --border:rgba(10,10,10,.10);
+      --border-strong:rgba(10,10,10,.14);
+      --surface:rgba(255,255,255,.78);
+      --surface-2:rgba(255,255,255,.86);
+      --nav-bg:rgba(255,255,255,.85);
+      --nav-link-bg:rgba(0,0,0,.03);
+      --nav-link-bg-hover:rgba(0,0,0,.06);
+      --grid-line:rgba(0,0,0,.05);
+      --orb-core:rgba(0,0,0,.22);
+      --hero-gradient-1:#0a0a0a;
+      --hero-gradient-2:#6b6b6b;
+    }
+
+    body.dark-mode{
+      --bg:#000000;
+      --bg-solid:#000000;
+      --text:#ffffff;
+      --text-strong:#ffffff;
+      --text-muted:rgba(255,255,255,.65);
+      --text-soft:rgba(255,255,255,.55);
+      --border:rgba(255,255,255,.10);
+      --border-strong:rgba(255,255,255,.14);
+      --surface:rgba(255,255,255,.03);
+      --surface-2:rgba(0,0,0,.55);
+      --nav-bg:rgba(0,0,0,.85);
+      --nav-link-bg:rgba(255,255,255,.04);
+      --nav-link-bg-hover:rgba(255,255,255,.08);
+      --grid-line:rgba(255,255,255,.03);
+      --orb-core:rgba(255,255,255,.9);
+      --hero-gradient-1:#ffffff;
+      --hero-gradient-2:#8a8a8a;
+    }
+
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
-      color:#fff;background:#000;overflow-x:hidden;min-height:100vh;
+      color:var(--text);
+      background:var(--bg-solid);
+      overflow-x:hidden;
+      min-height:100vh;
+      transition:background .25s ease,color .25s ease;
     }
-    .animated-bg{position:fixed;inset:0;z-index:-1;background:#000;overflow:hidden}
+
+    .animated-bg{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      background:var(--bg-solid);
+      overflow:hidden;
+      transition:background .25s ease;
+    }
+
     .grid-overlay{
       position:absolute;inset:0;
       background-image:
-        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
       background-size:50px 50px;
       animation:gridMove 20s linear infinite;
+      transition:background-image .25s ease;
     }
+
     @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-    .gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.25;animation:float 20s ease-in-out infinite}
-    .orb-1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-220px;left:-220px}
-    .orb-2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
-    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
+
+    .gradient-orb{
+      position:absolute;
+      border-radius:50%;
+      filter:blur(80px);
+      opacity:.25;
+      animation:float 20s ease-in-out infinite;
+    }
+
+    .orb-1{
+      width:520px;
+      height:520px;
+      background:radial-gradient(circle,var(--orb-core) 0%,transparent 70%);
+      top:-220px;
+      left:-220px;
+    }
+
+    .orb-2{
+      width:420px;
+      height:420px;
+      background:radial-gradient(circle,var(--orb-core) 0%,transparent 70%);
+      bottom:-170px;
+      right:-170px;
+      animation-delay:6s;
+    }
+
+    @keyframes float{
+      0%,100%{transform:translate(0,0) scale(1)}
+      33%{transform:translate(50px,-50px) scale(1.08)}
+      66%{transform:translate(-50px,50px) scale(.92)}
+    }
 
     header{
-      position:sticky;top:0;z-index:1000;
-      background:rgba(0,0,0,.85);
+      position:sticky;
+      top:0;
+      z-index:1000;
+      background:var(--nav-bg);
       backdrop-filter:blur(20px);
-      border-bottom:1px solid rgba(255,255,255,.1);
+      border-bottom:1px solid var(--border);
       padding:1rem 0;
+      transition:background .25s ease,border-color .25s ease;
     }
+
     .nav{
-      max-width:1200px;margin:0 auto;
-      display:flex;align-items:center;justify-content:space-between;
+      max-width:1200px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
       padding:0 1.25rem;
     }
+
     .brand{
-      display:flex;align-items:center;gap:.6rem;
-      font-weight:900;letter-spacing:-1px;font-size:1.25rem;
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      font-weight:900;
+      letter-spacing:-1px;
+      font-size:1.25rem;
+      color:var(--text-strong);
+      transition:color .25s ease;
     }
+
     .brand i{opacity:.9}
+
     .nav a{
-      color:rgba(255,255,255,.85);
-      text-decoration:none;font-weight:700;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.04);
-      padding:.55rem .9rem;border-radius:999px;
+      color:var(--text-muted);
+      text-decoration:none;
+      font-weight:700;
+      border:1px solid var(--border-strong);
+      background:var(--nav-link-bg);
+      padding:.55rem .9rem;
+      border-radius:999px;
       transition:all .25s ease;
       white-space:nowrap;
     }
-    .nav a:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
 
-    main{max-width:1200px;margin:0 auto;padding:3.5rem 1.25rem 5rem}
+    .nav a:hover{
+      color:var(--text-strong);
+      border-color:var(--border-strong);
+      background:var(--nav-link-bg-hover);
+      transform:translateY(-1px);
+    }
+
+    main{
+      max-width:1200px;
+      margin:0 auto;
+      padding:3.5rem 1.25rem 5rem;
+    }
+
     .hero{
       padding:2.25rem 1.75rem;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.03);
+      border:1px solid var(--border);
+      background:var(--surface);
       border-radius:22px;
       backdrop-filter:blur(10px);
+      transition:background .25s ease,border-color .25s ease;
     }
+
     h1{
-      font-size:3rem;line-height:1.1;letter-spacing:-2px;
-      background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      font-size:3rem;
+      line-height:1.1;
+      letter-spacing:-2px;
+      background:linear-gradient(135deg,var(--hero-gradient-1) 0%,var(--hero-gradient-2) 100%);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
       margin-bottom:.75rem;
     }
-    p{color:rgba(255,255,255,.65);font-size:1.1rem;line-height:1.8;max-width:70ch}
+
+    p{
+      color:var(--text-muted);
+      font-size:1.1rem;
+      line-height:1.8;
+      max-width:70ch;
+      transition:color .25s ease;
+    }
 
     .panel-grid{
       display:grid;
@@ -76,21 +201,35 @@
       gap:1.25rem;
       margin-top:1.25rem;
     }
+
     .panel{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.55);
+      border:1px solid var(--border);
+      background:var(--surface-2);
       border-radius:18px;
       padding:1.25rem 1.25rem 1.4rem;
       backdrop-filter:blur(10px);
       min-height:180px;
+      transition:background .25s ease,border-color .25s ease;
     }
-    .panel h2{font-size:1.2rem;margin-bottom:.5rem}
-    .panel .muted{color:rgba(255,255,255,.6);font-size:.98rem}
+
+    .panel h2{
+      font-size:1.2rem;
+      margin-bottom:.5rem;
+      color:var(--text-strong);
+      transition:color .25s ease;
+    }
+
+    .panel .muted{
+      color:var(--text-muted);
+      font-size:.98rem;
+      transition:color .25s ease;
+    }
 
     .hint{
       margin-top:1.2rem;
-      color:rgba(255,255,255,.55);
+      color:var(--text-soft);
       font-size:.95rem;
+      transition:color .25s ease;
     }
   </style>
 </head>
@@ -130,5 +269,23 @@
       <div class="hint">Tip: when you’re ready, tell me which tool you want first and I’ll write the full working calculator code for that page.</div>
     </section>
   </main>
+
+  <script>
+    const THEME_KEY = "fynx_theme";
+
+    (function applyThemeFromStorage(){
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === "dark") document.body.classList.add("dark-mode");
+      else document.body.classList.remove("dark-mode");
+    })();
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === THEME_KEY) {
+        if (e.newValue === "dark") document.body.classList.add("dark-mode");
+        else document.body.classList.remove("dark-mode");
+      }
+    });
+  </script>
 </body>
 </html>
+```
