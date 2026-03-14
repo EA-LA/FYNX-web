@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,6 +26,14 @@
       --orb-core:rgba(0,0,0,.22);
       --hero-gradient-1:#0a0a0a;
       --hero-gradient-2:#6b6b6b;
+      --input-bg:rgba(0,0,0,.02);
+      --input-border:rgba(10,10,10,.10);
+      --btn-bg:#111111;
+      --btn-text:#ffffff;
+      --btn-hover:#000000;
+      --btn-secondary-bg:rgba(0,0,0,.03);
+      --btn-secondary-text:#111111;
+      --result-card-bg:rgba(0,0,0,.025);
     }
 
     body.dark-mode{
@@ -47,6 +54,14 @@
       --orb-core:rgba(255,255,255,.9);
       --hero-gradient-1:#ffffff;
       --hero-gradient-2:#8a8a8a;
+      --input-bg:rgba(255,255,255,.03);
+      --input-border:rgba(255,255,255,.10);
+      --btn-bg:#ffffff;
+      --btn-text:#000000;
+      --btn-hover:#ebebeb;
+      --btn-secondary-bg:rgba(255,255,255,.05);
+      --btn-secondary-text:#ffffff;
+      --result-card-bg:rgba(255,255,255,.03);
     }
 
     body{
@@ -200,6 +215,7 @@
       grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
       gap:1.25rem;
       margin-top:1.25rem;
+      align-items:start;
     }
 
     .panel{
@@ -214,7 +230,7 @@
 
     .panel h2{
       font-size:1.2rem;
-      margin-bottom:.5rem;
+      margin-bottom:.45rem;
       color:var(--text-strong);
       transition:color .25s ease;
     }
@@ -225,11 +241,145 @@
       transition:color .25s ease;
     }
 
+    .mini-tip{
+      margin-bottom:1rem;
+      color:var(--text-soft);
+      font-size:.94rem;
+      line-height:1.7;
+    }
+
+    .form-grid{
+      display:grid;
+      gap:.9rem;
+      margin-top:.9rem;
+    }
+
+    .field{
+      display:grid;
+      grid-template-columns:180px 1fr;
+      gap:1rem;
+      align-items:center;
+    }
+
+    .field label{
+      font-weight:800;
+      color:var(--text-strong);
+      font-size:1rem;
+    }
+
+    .field input{
+      width:100%;
+      border:1px solid var(--input-border);
+      background:var(--input-bg);
+      color:var(--text);
+      border-radius:14px;
+      padding:.92rem 1rem;
+      font-size:.96rem;
+      font-weight:600;
+      outline:none;
+      transition:border-color .2s ease, background .2s ease, color .2s ease, transform .2s ease;
+    }
+
+    .field input::placeholder{
+      color:var(--text-soft);
+      font-weight:600;
+    }
+
+    .field input:focus{
+      border-color:var(--border-strong);
+      transform:translateY(-1px);
+    }
+
+    .btn-row{
+      display:flex;
+      justify-content:flex-end;
+      gap:.7rem;
+      margin-top:1rem;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      border:none;
+      border-radius:14px;
+      padding:.9rem 1.15rem;
+      font-weight:800;
+      font-size:.95rem;
+      cursor:pointer;
+      transition:transform .2s ease, opacity .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+
+    .btn-primary{
+      background:var(--btn-bg);
+      color:var(--btn-text);
+    }
+
+    .btn-primary:hover{
+      background:var(--btn-hover);
+    }
+
+    .btn-secondary{
+      background:var(--btn-secondary-bg);
+      color:var(--btn-secondary-text);
+      border:1px solid var(--border);
+    }
+
+    .results-empty{
+      color:var(--text-soft);
+      font-size:.98rem;
+      line-height:1.7;
+      margin-top:.2rem;
+    }
+
+    .result-list{
+      display:grid;
+      gap:.8rem;
+      margin-top:.95rem;
+    }
+
+    .result-item{
+      border:1px solid var(--border);
+      background:var(--result-card-bg);
+      border-radius:14px;
+      padding:.9rem 1rem;
+    }
+
+    .result-label{
+      font-size:.86rem;
+      color:var(--text-soft);
+      margin-bottom:.2rem;
+      font-weight:700;
+      letter-spacing:.01em;
+    }
+
+    .result-value{
+      font-size:1.15rem;
+      font-weight:900;
+      color:var(--text-strong);
+      line-height:1.3;
+      word-break:break-word;
+    }
+
     .hint{
       margin-top:1.2rem;
       color:var(--text-soft);
       font-size:.95rem;
       transition:color .25s ease;
+    }
+
+    @media (max-width: 760px){
+      h1{font-size:2.35rem}
+      .field{
+        grid-template-columns:1fr;
+        gap:.45rem;
+      }
+      .hero{
+        padding:1.5rem 1rem;
+      }
+      .panel{
+        padding:1rem;
+      }
     }
   </style>
 </head>
@@ -252,21 +402,81 @@
 
   <main>
     <section class="hero">
-      <h1>Forex Calculator</h1>
-      <p>Dedicated page for the Forex calculator. Put your real calculator code here (inputs, outputs, formulas, UI).</p>
+      <h1>Stock Calculator</h1>
+      <p>Plan your stock trade cleanly. Enter your account size, risk percentage, entry price, and stop loss to calculate risk amount, per-share risk, position size, and capital needed.</p>
 
       <div class="panel-grid">
         <div class="panel">
-          <h2>Calculator UI</h2>
-          <div class="muted">Add inputs (pair, lot size, risk %, stop loss pips, etc.) and compute results.</div>
+          <h2>Trade Setup</h2>
+          <div class="mini-tip">Tip: use real stock prices. Entry should be above stop loss for a normal long setup.</div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="accountSize">Account Size</label>
+              <input id="accountSize" type="number" step="0.01" placeholder="e.g. 10000">
+            </div>
+
+            <div class="field">
+              <label for="riskPercent">Risk %</label>
+              <input id="riskPercent" type="number" step="0.01" placeholder="e.g. 1">
+            </div>
+
+            <div class="field">
+              <label for="entryPrice">Entry Price</label>
+              <input id="entryPrice" type="number" step="0.0001" placeholder="e.g. 150.25">
+            </div>
+
+            <div class="field">
+              <label for="stopLoss">Stop Loss</label>
+              <input id="stopLoss" type="number" step="0.0001" placeholder="e.g. 145.00">
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" id="calculateBtn"><i class="fas fa-calculator"></i> Calculate</button>
+            <button class="btn btn-secondary" id="clearBtn"><i class="fas fa-broom"></i> Clear</button>
+          </div>
         </div>
+
         <div class="panel">
-          <h2>Results</h2>
-          <div class="muted">Show position size, pip value, risk amount, margin estimate, and notes.</div>
+          <h2>Stock Result</h2>
+          <div class="results-empty" id="emptyState">Enter values and tap Calculate to see risk amount, share size, capital needed, and trade details.</div>
+
+          <div class="result-list" id="resultList" style="display:none;">
+            <div class="result-item">
+              <div class="result-label">Risk Amount</div>
+              <div class="result-value" id="riskAmountValue">$0.00</div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Risk Per Share</div>
+              <div class="result-value" id="riskPerShareValue">$0.00</div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Position Size</div>
+              <div class="result-value" id="sharesValue">0 shares</div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Capital Needed</div>
+              <div class="result-value" id="capitalNeededValue">$0.00</div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Max Loss At Stop</div>
+              <div class="result-value" id="maxLossValue">$0.00</div>
+            </div>
+
+            <div class="result-item">
+              <div class="result-label">Notes</div>
+              <div class="result-value" id="notesValue">—</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="hint">Tip: when you’re ready, tell me which tool you want first and I’ll write the full working calculator code for that page.</div>
+      <div class="hint">This version keeps your existing page style and adds a working stock position size calculator inside the same layout.</div>
     </section>
   </main>
 
@@ -285,7 +495,123 @@
         else document.body.classList.remove("dark-mode");
       }
     });
+
+    const accountSizeInput = document.getElementById("accountSize");
+    const riskPercentInput = document.getElementById("riskPercent");
+    const entryPriceInput = document.getElementById("entryPrice");
+    const stopLossInput = document.getElementById("stopLoss");
+
+    const calculateBtn = document.getElementById("calculateBtn");
+    const clearBtn = document.getElementById("clearBtn");
+
+    const emptyState = document.getElementById("emptyState");
+    const resultList = document.getElementById("resultList");
+
+    const riskAmountValue = document.getElementById("riskAmountValue");
+    const riskPerShareValue = document.getElementById("riskPerShareValue");
+    const sharesValue = document.getElementById("sharesValue");
+    const capitalNeededValue = document.getElementById("capitalNeededValue");
+    const maxLossValue = document.getElementById("maxLossValue");
+    const notesValue = document.getElementById("notesValue");
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(value);
+    }
+
+    function resetResults() {
+      emptyState.style.display = "block";
+      resultList.style.display = "none";
+      riskAmountValue.textContent = "$0.00";
+      riskPerShareValue.textContent = "$0.00";
+      sharesValue.textContent = "0 shares";
+      capitalNeededValue.textContent = "$0.00";
+      maxLossValue.textContent = "$0.00";
+      notesValue.textContent = "—";
+    }
+
+    function calculateStock() {
+      const accountSize = parseFloat(accountSizeInput.value);
+      const riskPercent = parseFloat(riskPercentInput.value);
+      const entryPrice = parseFloat(entryPriceInput.value);
+      const stopLoss = parseFloat(stopLossInput.value);
+
+      if (
+        !isFinite(accountSize) || !isFinite(riskPercent) ||
+        !isFinite(entryPrice) || !isFinite(stopLoss) ||
+        accountSize <= 0 || riskPercent <= 0 || entryPrice <= 0 || stopLoss <= 0
+      ) {
+        emptyState.style.display = "block";
+        resultList.style.display = "none";
+        emptyState.textContent = "Please enter valid positive numbers in all fields.";
+        return;
+      }
+
+      const riskPerShare = Math.abs(entryPrice - stopLoss);
+
+      if (riskPerShare === 0) {
+        emptyState.style.display = "block";
+        resultList.style.display = "none";
+        emptyState.textContent = "Entry price and stop loss cannot be the same.";
+        return;
+      }
+
+      const riskAmount = accountSize * (riskPercent / 100);
+      const shares = Math.floor(riskAmount / riskPerShare);
+      const capitalNeeded = shares * entryPrice;
+      const maxLoss = shares * riskPerShare;
+
+      let notes = [];
+      if (entryPrice > stopLoss) {
+        notes.push("Long setup detected");
+      } else {
+        notes.push("Short-style price structure detected");
+      }
+
+      if (shares < 1) {
+        notes.push("Risk is too small for even 1 share");
+      }
+
+      if (capitalNeeded > accountSize) {
+        notes.push("Capital needed is higher than account size");
+      } else {
+        notes.push("Capital fits within account size");
+      }
+
+      riskAmountValue.textContent = formatCurrency(riskAmount);
+      riskPerShareValue.textContent = formatCurrency(riskPerShare);
+      sharesValue.textContent = `${shares} ${shares === 1 ? "share" : "shares"}`;
+      capitalNeededValue.textContent = formatCurrency(capitalNeeded);
+      maxLossValue.textContent = formatCurrency(maxLoss);
+      notesValue.textContent = notes.join(" • ");
+
+      emptyState.style.display = "none";
+      resultList.style.display = "grid";
+    }
+
+    function clearStock() {
+      accountSizeInput.value = "";
+      riskPercentInput.value = "";
+      entryPriceInput.value = "";
+      stopLossInput.value = "";
+      emptyState.textContent = "Enter values and tap Calculate to see risk amount, share size, capital needed, and trade details.";
+      resetResults();
+    }
+
+    calculateBtn.addEventListener("click", calculateStock);
+    clearBtn.addEventListener("click", clearStock);
+
+    [accountSizeInput, riskPercentInput, entryPriceInput, stopLossInput].forEach(input => {
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") calculateStock();
+      });
+    });
+
+    resetResults();
   </script>
 </body>
 </html>
-```
