@@ -4,33 +4,576 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FYNX — Heat Map</title>
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Global theme -->
+  <link rel="stylesheet" href="../assets/theme.css">
+  <script src="../assets/theme.js" defer></script>
+
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Inter','Segoe UI',system-ui,sans-serif;color:#fff;background:#000;min-height:100vh;overflow-x:hidden}
-    .animated-bg{position:fixed;inset:0;z-index:-1;background:#000;overflow:hidden}
-    .grid-overlay{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);background-size:50px 50px;animation:gridMove 20s linear infinite}
-    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-    .gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.25;animation:float 20s ease-in-out infinite}
-    .orb-1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-220px;left:-220px}
-    .orb-2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
-    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
-    header{position:sticky;top:0;z-index:1000;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.1);padding:1rem 0}
-    .nav{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem;gap:1rem}
-    .brand{display:flex;align-items:center;gap:.6rem;font-weight:900;letter-spacing:-1px;font-size:1.25rem}
-    .nav a{color:rgba(255,255,255,.85);text-decoration:none;font-weight:700;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);padding:.55rem .9rem;border-radius:999px;transition:all .25s ease;white-space:nowrap}
-    .nav a:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
-    .tabs{position:sticky;top:72px;z-index:999;background:rgba(0,0,0,.72);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.1)}
-    .tabs-inner{max-width:1200px;margin:0 auto;padding:.65rem 1.25rem;display:flex;gap:.75rem;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
-    .tabs-inner::-webkit-scrollbar{height:6px}
-    .tabs-inner::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:10px}
-    .tab{display:inline-flex;align-items:center;gap:.55rem;padding:.55rem .9rem;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:rgba(255,255,255,.85);text-decoration:none;font-weight:700;white-space:nowrap;transition:all .25s ease}
-    .tab:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
-    .tab.active{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.10)}
-    main{max-width:1200px;margin:0 auto;padding:2.25rem 1.25rem 4.5rem}
-    .card{border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03);border-radius:22px;backdrop-filter:blur(10px);padding:2rem}
-    h1{font-size:2.7rem;line-height:1.1;letter-spacing:-2px;margin-bottom:.75rem;background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    p{color:rgba(255,255,255,.65);font-size:1.05rem;line-height:1.8;max-width:75ch}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #000;
+      --bg-solid: #000;
+      --text: #fff;
+      --text-strong: #fff;
+      --text-muted: rgba(255,255,255,.68);
+      --text-soft: rgba(255,255,255,.5);
+      --border: rgba(255,255,255,.10);
+      --border-strong: rgba(255,255,255,.18);
+      --surface: rgba(255,255,255,.04);
+      --surface-2: rgba(255,255,255,.07);
+      --panel: rgba(255,255,255,.04);
+      --panel-strong: rgba(255,255,255,.08);
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg, #000);
+      color: var(--text, #fff);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .animated-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background: var(--bg, #000);
+      overflow: hidden;
+    }
+
+    .grid-overlay {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border, rgba(255,255,255,.08)) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border, rgba(255,255,255,.08)) 1px, transparent 1px);
+      background-size: 44px 44px;
+      opacity: .45;
+      animation: gridMove 24s linear infinite;
+    }
+
+    .gradient-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(85px);
+      opacity: .12;
+      pointer-events: none;
+      background: radial-gradient(circle, var(--text, #fff) 0%, transparent 70%);
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 420px;
+      height: 420px;
+      top: -130px;
+      left: -120px;
+    }
+
+    .orb-2 {
+      width: 360px;
+      height: 360px;
+      right: -100px;
+      bottom: -120px;
+      animation-delay: 6s;
+    }
+
+    @keyframes gridMove {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(44px, 44px); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(36px, -32px) scale(1.04); }
+      66% { transform: translate(-28px, 24px) scale(.96); }
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: color-mix(in srgb, var(--bg, #000) 82%, transparent);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border, rgba(255,255,255,.1));
+    }
+
+    .nav {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      font-weight: 900;
+      font-size: 1.2rem;
+      letter-spacing: -.7px;
+      color: var(--text-strong, #fff);
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: var(--surface-2, rgba(255,255,255,.08));
+      border: 1px solid var(--border, rgba(255,255,255,.1));
+      box-shadow: var(--shadow);
+      flex-shrink: 0;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-btn,
+    .tab,
+    .chip,
+    .toggle-btn,
+    .panel-card,
+    .stat-card,
+    .side-card {
+      border: 1px solid var(--border, rgba(255,255,255,.10));
+      background: var(--surface, rgba(255,255,255,.04));
+      color: var(--text, #fff);
+      transition: .22s ease;
+    }
+
+    .nav-btn {
+      text-decoration: none;
+      font-weight: 700;
+      padding: .65rem 1rem;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: .55rem;
+      white-space: nowrap;
+    }
+
+    .nav-btn:hover,
+    .tab:hover,
+    .chip:hover,
+    .toggle-btn:hover {
+      transform: translateY(-1px);
+      background: var(--surface-2, rgba(255,255,255,.08));
+      border-color: var(--border-strong, rgba(255,255,255,.18));
+    }
+
+    .tabs {
+      position: sticky;
+      top: 71px;
+      z-index: 999;
+      background: color-mix(in srgb, var(--bg, #000) 78%, transparent);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border, rgba(255,255,255,.1));
+    }
+
+    .tabs-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: .75rem 1.25rem;
+      display: flex;
+      gap: .75rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tabs-inner::-webkit-scrollbar { height: 6px; }
+    .tabs-inner::-webkit-scrollbar-thumb {
+      background: var(--border-strong, rgba(255,255,255,.18));
+      border-radius: 999px;
+    }
+
+    .tab {
+      display: inline-flex;
+      align-items: center;
+      gap: .55rem;
+      text-decoration: none;
+      font-weight: 700;
+      padding: .62rem .95rem;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .tab.active {
+      background: var(--surface-2, rgba(255,255,255,.08));
+      border-color: var(--border-strong, rgba(255,255,255,.18));
+    }
+
+    main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+
+    .hero-card,
+    .panel-card,
+    .stat-card,
+    .side-card {
+      background: color-mix(in srgb, var(--bg, #000) 80%, var(--surface-2, rgba(255,255,255,.08)));
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 1.25fr .95fr;
+      gap: 1.25rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .55rem;
+      padding: .45rem .8rem;
+      border-radius: 999px;
+      background: var(--surface, rgba(255,255,255,.04));
+      border: 1px solid var(--border, rgba(255,255,255,.1));
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: .9rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      line-height: .98;
+      letter-spacing: -2.6px;
+      margin-bottom: 1rem;
+      color: var(--text-strong, #fff);
+    }
+
+    .hero-desc {
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: 1.05rem;
+      line-height: 1.8;
+      max-width: 68ch;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .7rem;
+      margin-top: 1.2rem;
+    }
+
+    .chip {
+      padding: .75rem .95rem;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: .92rem;
+    }
+
+    .hero-right {
+      display: grid;
+      gap: .9rem;
+      align-content: start;
+    }
+
+    .stat-card {
+      padding: 1rem 1.1rem;
+    }
+
+    .stat-label {
+      color: var(--text-soft, rgba(255,255,255,.5));
+      font-size: .82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: .35rem;
+    }
+
+    .stat-value {
+      color: var(--text-strong, #fff);
+      font-size: 1.55rem;
+      font-weight: 900;
+      letter-spacing: -.8px;
+    }
+
+    .stat-sub {
+      margin-top: .25rem;
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: .9rem;
+      line-height: 1.6;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin: 1.15rem 0 1.35rem;
+    }
+
+    .toggle-group {
+      display: flex;
+      gap: .65rem;
+      flex-wrap: wrap;
+    }
+
+    .toggle-btn {
+      padding: .78rem 1rem;
+      border-radius: 999px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .toggle-btn.active {
+      background: var(--text, #fff);
+      color: var(--bg, #000);
+      border-color: transparent;
+    }
+
+    .update-note {
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: .94rem;
+      font-weight: 700;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.75fr) 340px;
+      gap: 1.25rem;
+      align-items: start;
+    }
+
+    .panel-card {
+      padding: 1rem;
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .panel-head h2 {
+      color: var(--text-strong, #fff);
+      font-size: 1.2rem;
+      letter-spacing: -.5px;
+      margin-bottom: .4rem;
+    }
+
+    .panel-head p {
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: .94rem;
+      line-height: 1.7;
+      max-width: 70ch;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: .55rem;
+      flex-wrap: wrap;
+    }
+
+    .badge-pill {
+      padding: .45rem .7rem;
+      border-radius: 999px;
+      background: var(--surface, rgba(255,255,255,.04));
+      border: 1px solid var(--border, rgba(255,255,255,.10));
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-weight: 700;
+      font-size: .82rem;
+      white-space: nowrap;
+    }
+
+    .widget-shell {
+      width: 100%;
+      min-height: 680px;
+      border-radius: 20px;
+      overflow: hidden;
+      background: var(--bg, #000);
+      border: 1px solid var(--border, rgba(255,255,255,.10));
+      position: relative;
+    }
+
+    .widget-shell.small {
+      min-height: 460px;
+    }
+
+    .widget-frame-wrap {
+      width: 100%;
+      height: 100%;
+      min-height: inherit;
+      position: relative;
+    }
+
+    .widget-frame-wrap iframe,
+    .widget-frame-wrap > div,
+    .widget-frame-wrap script + div {
+      width: 100% !important;
+      min-height: inherit !important;
+    }
+
+    .tradingview-widget-container {
+      width: 100%;
+      height: 100%;
+      min-height: inherit;
+    }
+
+    .tradingview-widget-container__widget {
+      width: 100%;
+      height: 100%;
+      min-height: inherit;
+    }
+
+    .section-gap {
+      height: 1rem;
+    }
+
+    .side-column {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .side-card {
+      padding: 1.1rem;
+    }
+
+    .side-card h3 {
+      font-size: 1.02rem;
+      margin-bottom: .9rem;
+      color: var(--text-strong, #fff);
+      letter-spacing: -.4px;
+    }
+
+    .list {
+      display: grid;
+      gap: .8rem;
+    }
+
+    .list-item {
+      display: flex;
+      gap: .75rem;
+      align-items: flex-start;
+      padding: .85rem;
+      border-radius: 16px;
+      background: var(--surface, rgba(255,255,255,.04));
+      border: 1px solid var(--border, rgba(255,255,255,.10));
+    }
+
+    .list-item i {
+      margin-top: .18rem;
+      color: var(--text-strong, #fff);
+      width: 16px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .list-item strong {
+      display: block;
+      color: var(--text-strong, #fff);
+      margin-bottom: .2rem;
+      font-size: .95rem;
+    }
+
+    .list-item span {
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: .9rem;
+      line-height: 1.6;
+    }
+
+    .mini-rows {
+      display: grid;
+      gap: .75rem;
+    }
+
+    .mini-row {
+      padding: .8rem .9rem;
+      border-radius: 16px;
+      background: var(--surface, rgba(255,255,255,.04));
+      border: 1px solid var(--border, rgba(255,255,255,.10));
+    }
+
+    .mini-row strong {
+      display: block;
+      color: var(--text-strong, #fff);
+      margin-bottom: .2rem;
+      font-size: .94rem;
+    }
+
+    .mini-row span {
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: .88rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 1100px) {
+      .hero-card {
+        grid-template-columns: 1fr;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .nav {
+        padding: .85rem 1rem;
+      }
+
+      .tabs {
+        top: 67px;
+      }
+
+      main {
+        padding: 1.15rem 1rem 3rem;
+      }
+
+      .hero-card,
+      .panel-card,
+      .stat-card,
+      .side-card {
+        border-radius: 20px;
+      }
+
+      .hero-card {
+        padding: 1.2rem;
+      }
+
+      .hero-title {
+        letter-spacing: -1.5px;
+      }
+
+      .widget-shell {
+        min-height: 560px;
+      }
+
+      .widget-shell.small {
+        min-height: 420px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -42,9 +585,16 @@
 
   <header>
     <div class="nav">
-      <div class="brand"><i class="fas fa-fire"></i> Market News</div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
-        <a href="../index.html"><i class="fas fa-house"></i> Home</a>
+      <div class="brand">
+        <div class="brand-icon"><i class="fas fa-fire"></i></div>
+        <span>Market News</span>
+      </div>
+
+      <div class="nav-right">
+        <a class="nav-btn" href="../index.html">
+          <i class="fas fa-house"></i>
+          <span>Home</span>
+        </a>
       </div>
     </div>
   </header>
@@ -59,10 +609,390 @@
   </div>
 
   <main>
-    <div class="card">
-      <h1>Heat Map</h1>
-      <p>Put your heat map UI here (sectors, symbols, colors, filters).</p>
+    <section class="hero-card">
+      <div>
+        <div class="eyebrow">
+          <i class="fas fa-bolt"></i>
+          <span>Live Market Heat View</span>
+        </div>
+
+        <h1 class="hero-title">Heat Map</h1>
+
+        <p class="hero-desc">
+          See live market strength, weakness, and relative movement across stocks, crypto, forex, and ETFs.
+          This page uses embedded TradingView heatmap widgets and matches your global FYNX theme system.
+        </p>
+
+        <div class="chips">
+          <div class="chip"><i class="fas fa-building-columns"></i> Stocks</div>
+          <div class="chip"><i class="fab fa-bitcoin"></i> Crypto</div>
+          <div class="chip"><i class="fas fa-right-left"></i> Forex</div>
+          <div class="chip"><i class="fas fa-layer-group"></i> ETF</div>
+          <div class="chip"><i class="fas fa-globe"></i> Live View</div>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="stat-card">
+          <div class="stat-label">Primary View</div>
+          <div class="stat-value" id="currentViewLabel">Stocks</div>
+          <div class="stat-sub">Switch between live heatmaps without leaving the page.</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Data Mode</div>
+          <div class="stat-value">Live</div>
+          <div class="stat-sub">Widget content is loaded directly from the provider embed.</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-label">Theme Sync</div>
+          <div class="stat-value" id="themeStatus">Auto</div>
+          <div class="stat-sub">This page follows the same white / black theme system as your other pages.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="controls">
+      <div class="toggle-group" id="viewButtons">
+        <button class="toggle-btn active" data-view="stocks">Stocks</button>
+        <button class="toggle-btn" data-view="crypto">Crypto</button>
+        <button class="toggle-btn" data-view="forex">Forex</button>
+        <button class="toggle-btn" data-view="etf">ETF</button>
+      </div>
+
+      <div class="update-note">
+        Live embedded market widgets
+      </div>
+    </div>
+
+    <div class="layout">
+      <div>
+        <section class="panel-card" id="stocksPanel">
+          <div class="panel-head">
+            <div>
+              <h2>Stock Heatmap</h2>
+              <p>
+                Broad stock market heat view for sector and symbol performance. Best for seeing which parts of the market are leading or lagging.
+              </p>
+            </div>
+            <div class="badge-row">
+              <div class="badge-pill">Live widget</div>
+              <div class="badge-pill">Sector view</div>
+              <div class="badge-pill">Market strength</div>
+            </div>
+          </div>
+
+          <div class="widget-shell">
+            <div class="tradingview-widget-container" id="tv-stock-heatmap">
+              <div class="tradingview-widget-container__widget"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel-card" id="cryptoPanel" style="display:none;">
+          <div class="panel-head">
+            <div>
+              <h2>Crypto Coins Heatmap</h2>
+              <p>
+                Live crypto market heat view for coins and market groups. Useful for seeing rotation, momentum pockets, and broad risk appetite.
+              </p>
+            </div>
+            <div class="badge-row">
+              <div class="badge-pill">Live widget</div>
+              <div class="badge-pill">Crypto strength</div>
+              <div class="badge-pill">Rotation view</div>
+            </div>
+          </div>
+
+          <div class="widget-shell">
+            <div class="tradingview-widget-container" id="tv-crypto-heatmap">
+              <div class="tradingview-widget-container__widget"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel-card" id="forexPanel" style="display:none;">
+          <div class="panel-head">
+            <div>
+              <h2>Forex Cross Rates</h2>
+              <p>
+                Live forex matrix to quickly read strength and weakness across major currencies. Good for seeing broad FX pressure at a glance.
+              </p>
+            </div>
+            <div class="badge-row">
+              <div class="badge-pill">Live widget</div>
+              <div class="badge-pill">Currency matrix</div>
+              <div class="badge-pill">Major pairs</div>
+            </div>
+          </div>
+
+          <div class="widget-shell small">
+            <div class="tradingview-widget-container" id="tv-forex-cross">
+              <div class="tradingview-widget-container__widget"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel-card" id="etfPanel" style="display:none;">
+          <div class="panel-head">
+            <div>
+              <h2>ETF Heatmap</h2>
+              <p>
+                Live ETF heat view for broader asset exposure. Useful for spotting strength in themes, countries, sectors, and macro baskets.
+              </p>
+            </div>
+            <div class="badge-row">
+              <div class="badge-pill">Live widget</div>
+              <div class="badge-pill">ETF flow</div>
+              <div class="badge-pill">Theme tracking</div>
+            </div>
+          </div>
+
+          <div class="widget-shell">
+            <div class="tradingview-widget-container" id="tv-etf-heatmap">
+              <div class="tradingview-widget-container__widget"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="side-column">
+        <div class="side-card">
+          <h3>How to use heatmaps</h3>
+          <div class="list">
+            <div class="list-item">
+              <i class="fas fa-eye"></i>
+              <div>
+                <strong>Find leadership fast</strong>
+                <span>Heatmaps help you spot which sectors, coins, or currencies are strongest and weakest right now.</span>
+              </div>
+            </div>
+
+            <div class="list-item">
+              <i class="fas fa-filter"></i>
+              <div>
+                <strong>Use it as context</strong>
+                <span>Heatmaps help with filtering and direction, but entries should still come from structure and confirmation.</span>
+              </div>
+            </div>
+
+            <div class="list-item">
+              <i class="fas fa-layer-group"></i>
+              <div>
+                <strong>Compare markets</strong>
+                <span>Switch between stocks, crypto, forex, and ETFs to understand broader cross-market rotation.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h3>Best use cases</h3>
+          <div class="mini-rows">
+            <div class="mini-row">
+              <strong>Stocks</strong>
+              <span>Find hot sectors, weak sectors, and broad market breadth quickly.</span>
+            </div>
+            <div class="mini-row">
+              <strong>Crypto</strong>
+              <span>See where momentum is concentrated and where money is leaving.</span>
+            </div>
+            <div class="mini-row">
+              <strong>Forex</strong>
+              <span>Read broad currency strength before choosing which pair to focus on.</span>
+            </div>
+            <div class="mini-row">
+              <strong>ETF</strong>
+              <span>Track themes, macro baskets, and broader asset allocations.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h3>Reminder</h3>
+          <div class="list">
+            <div class="list-item">
+              <i class="fas fa-shield-halved"></i>
+              <div>
+                <strong>Do not force trades from color alone</strong>
+                <span>Green does not always mean buy and red does not always mean sell. Heatmaps are for context, not blind execution.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
     </div>
   </main>
+
+  <script>
+    const panels = {
+      stocks: document.getElementById('stocksPanel'),
+      crypto: document.getElementById('cryptoPanel'),
+      forex: document.getElementById('forexPanel'),
+      etf: document.getElementById('etfPanel')
+    };
+
+    const currentViewLabel = document.getElementById('currentViewLabel');
+    const themeStatus = document.getElementById('themeStatus');
+
+    function getSiteTheme() {
+      const htmlTheme = document.documentElement.getAttribute('data-theme');
+      const bodyTheme = document.body.getAttribute('data-theme');
+
+      if (htmlTheme === 'light' || bodyTheme === 'light') return 'light';
+      if (htmlTheme === 'dark' || bodyTheme === 'dark') return 'dark';
+
+      const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+      if (bg && bg !== '#000' && bg !== 'black' && bg !== 'rgb(0, 0, 0)') return 'light';
+
+      return 'dark';
+    }
+
+    function getTradingViewTheme() {
+      return getSiteTheme() === 'light' ? 'light' : 'dark';
+    }
+
+    function updateThemeLabel() {
+      themeStatus.textContent = getSiteTheme() === 'light' ? 'Light' : 'Dark';
+    }
+
+    function setActiveView(view) {
+      Object.keys(panels).forEach(key => {
+        panels[key].style.display = key === view ? 'block' : 'none';
+      });
+
+      document.querySelectorAll('#viewButtons .toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === view);
+      });
+
+      const labelMap = {
+        stocks: 'Stocks',
+        crypto: 'Crypto',
+        forex: 'Forex',
+        etf: 'ETF'
+      };
+
+      currentViewLabel.textContent = labelMap[view] || 'Stocks';
+    }
+
+    document.getElementById('viewButtons').addEventListener('click', (e) => {
+      const btn = e.target.closest('.toggle-btn');
+      if (!btn) return;
+      setActiveView(btn.dataset.view);
+    });
+
+    function injectTradingViewWidget(containerId, config) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      container.innerHTML = '<div class="tradingview-widget-container__widget"></div>';
+
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-' + config.widgetName + '.js';
+      script.async = true;
+
+      const tvTheme = getTradingViewTheme();
+
+      const payload = { ...config.payload, theme: tvTheme };
+      script.innerHTML = JSON.stringify(payload);
+
+      container.appendChild(script);
+    }
+
+    function buildWidgets() {
+      injectTradingViewWidget('tv-stock-heatmap', {
+        widgetName: 'stock-heatmap',
+        payload: {
+          "exchanges": [],
+          "dataSource": "SPX500",
+          "grouping": "sector",
+          "blockSize": "market_cap_basic",
+          "blockColor": "change",
+          "locale": "en",
+          "symbolUrl": "",
+          "isDataSetEnabled": false,
+          "isZoomEnabled": true,
+          "hasTopBar": false,
+          "isMonoSize": false,
+          "width": "100%",
+          "height": "680"
+        }
+      });
+
+      injectTradingViewWidget('tv-crypto-heatmap', {
+        widgetName: 'crypto-coins-heatmap',
+        payload: {
+          "dataSource": "Crypto",
+          "blockSize": "market_cap_calc",
+          "blockColor": "24h_close_change|5",
+          "grouping": "no_group",
+          "locale": "en",
+          "symbolUrl": "",
+          "isZoomEnabled": true,
+          "hasTopBar": false,
+          "isMonoSize": false,
+          "width": "100%",
+          "height": "680"
+        }
+      });
+
+      injectTradingViewWidget('tv-forex-cross', {
+        widgetName: 'forex-cross-rates',
+        payload: {
+          "width": "100%",
+          "height": "460",
+          "currencies": [
+            "EUR",
+            "USD",
+            "JPY",
+            "GBP",
+            "AUD",
+            "CAD",
+            "CHF",
+            "NZD"
+          ],
+          "isTransparent": true,
+          "locale": "en"
+        }
+      });
+
+      injectTradingViewWidget('tv-etf-heatmap', {
+        widgetName: 'etf-heatmap',
+        payload: {
+          "dataSource": "AllUSEtf",
+          "grouping": "asset_class",
+          "blockSize": "aum",
+          "blockColor": "change",
+          "locale": "en",
+          "symbolUrl": "",
+          "isZoomEnabled": true,
+          "hasTopBar": false,
+          "isMonoSize": false,
+          "width": "100%",
+          "height": "680"
+        }
+      });
+    }
+
+    const themeObserver = new MutationObserver(() => {
+      updateThemeLabel();
+    });
+
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'class']
+    });
+
+    themeObserver.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'class']
+    });
+
+    updateThemeLabel();
+    setActiveView('stocks');
+    buildWidgets();
+  </script>
 </body>
 </html>
