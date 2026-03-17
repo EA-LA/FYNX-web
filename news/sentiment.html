@@ -4,33 +4,695 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FYNX — Sentiment</title>
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Global theme files -->
+  <link rel="stylesheet" href="../assets/theme.css">
+  <script src="../assets/theme.js" defer></script>
+
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Inter','Segoe UI',system-ui,sans-serif;color:#fff;background:#000;min-height:100vh;overflow-x:hidden}
-    .animated-bg{position:fixed;inset:0;z-index:-1;background:#000;overflow:hidden}
-    .grid-overlay{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);background-size:50px 50px;animation:gridMove 20s linear infinite}
-    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-    .gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.25;animation:float 20s ease-in-out infinite}
-    .orb-1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-220px;left:-220px}
-    .orb-2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
-    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
-    header{position:sticky;top:0;z-index:1000;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.1);padding:1rem 0}
-    .nav{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem;gap:1rem}
-    .brand{display:flex;align-items:center;gap:.6rem;font-weight:900;letter-spacing:-1px;font-size:1.25rem}
-    .nav a{color:rgba(255,255,255,.85);text-decoration:none;font-weight:700;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);padding:.55rem .9rem;border-radius:999px;transition:all .25s ease;white-space:nowrap}
-    .nav a:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
-    .tabs{position:sticky;top:72px;z-index:999;background:rgba(0,0,0,.72);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.1)}
-    .tabs-inner{max-width:1200px;margin:0 auto;padding:.65rem 1.25rem;display:flex;gap:.75rem;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
-    .tabs-inner::-webkit-scrollbar{height:6px}
-    .tabs-inner::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:10px}
-    .tab{display:inline-flex;align-items:center;gap:.55rem;padding:.55rem .9rem;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:rgba(255,255,255,.85);text-decoration:none;font-weight:700;white-space:nowrap;transition:all .25s ease}
-    .tab:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
-    .tab.active{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.10)}
-    main{max-width:1200px;margin:0 auto;padding:2.25rem 1.25rem 4.5rem}
-    .card{border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03);border-radius:22px;backdrop-filter:blur(10px);padding:2rem}
-    h1{font-size:2.7rem;line-height:1.1;letter-spacing:-2px;margin-bottom:.75rem;background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    p{color:rgba(255,255,255,.65);font-size:1.05rem;line-height:1.8;max-width:75ch}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #000;
+      --bg-solid: #000;
+      --text: #fff;
+      --text-strong: #fff;
+      --text-muted: rgba(255,255,255,.68);
+      --text-soft: rgba(255,255,255,.5);
+      --border: rgba(255,255,255,.10);
+      --border-strong: rgba(255,255,255,.18);
+      --surface: rgba(255,255,255,.04);
+      --surface-2: rgba(255,255,255,.07);
+      --panel: rgba(255,255,255,.04);
+      --panel-strong: rgba(255,255,255,.08);
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg, #000);
+      color: var(--text, #fff);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .animated-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background: var(--bg, #000);
+      overflow: hidden;
+    }
+
+    .grid-overlay {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border, rgba(255,255,255,.08)) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border, rgba(255,255,255,.08)) 1px, transparent 1px);
+      background-size: 44px 44px;
+      opacity: .45;
+      animation: gridMove 24s linear infinite;
+    }
+
+    .gradient-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(85px);
+      opacity: .12;
+      pointer-events: none;
+      background: radial-gradient(circle, var(--text, #fff) 0%, transparent 70%);
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 420px;
+      height: 420px;
+      top: -130px;
+      left: -120px;
+    }
+
+    .orb-2 {
+      width: 360px;
+      height: 360px;
+      right: -100px;
+      bottom: -120px;
+      animation-delay: 6s;
+    }
+
+    @keyframes gridMove {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(44px, 44px); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(36px, -32px) scale(1.04); }
+      66% { transform: translate(-28px, 24px) scale(.96); }
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: color-mix(in srgb, var(--bg, #000) 82%, transparent);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border, rgba(255,255,255,.1));
+    }
+
+    .nav {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      font-weight: 900;
+      font-size: 1.2rem;
+      letter-spacing: -.7px;
+      color: var(--text-strong, #fff);
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: var(--surface-2, rgba(255,255,255,.08));
+      border: 1px solid var(--border, rgba(255,255,255,.1));
+      box-shadow: var(--shadow);
+      flex-shrink: 0;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-btn,
+    .tab,
+    .chip,
+    .mood-card,
+    .market-card,
+    .insight-card,
+    .side-card {
+      border: 1px solid var(--border, rgba(255,255,255,.10));
+      background: var(--surface, rgba(255,255,255,.04));
+      color: var(--text, #fff);
+      transition: .22s ease;
+    }
+
+    .nav-btn {
+      text-decoration: none;
+      font-weight: 700;
+      padding: .65rem 1rem;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: .55rem;
+      white-space: nowrap;
+    }
+
+    .nav-btn:hover,
+    .tab:hover,
+    .chip:hover {
+      transform: translateY(-1px);
+      background: var(--surface-2, rgba(255,255,255,.08));
+      border-color: var(--border-strong, rgba(255,255,255,.18));
+    }
+
+    .tabs {
+      position: sticky;
+      top: 71px;
+      z-index: 999;
+      background: color-mix(in srgb, var(--bg, #000) 78%, transparent);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border, rgba(255,255,255,.1));
+    }
+
+    .tabs-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: .75rem 1.25rem;
+      display: flex;
+      gap: .75rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tabs-inner::-webkit-scrollbar { height: 6px; }
+    .tabs-inner::-webkit-scrollbar-thumb {
+      background: var(--border-strong, rgba(255,255,255,.18));
+      border-radius: 999px;
+    }
+
+    .tab {
+      display: inline-flex;
+      align-items: center;
+      gap: .55rem;
+      text-decoration: none;
+      font-weight: 700;
+      padding: .62rem .95rem;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .tab.active {
+      background: var(--surface-2, rgba(255,255,255,.08));
+      border-color: var(--border-strong, rgba(255,255,255,.18));
+    }
+
+    main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+
+    .hero-card,
+    .mood-card,
+    .market-card,
+    .insight-card,
+    .side-card {
+      background: color-mix(in srgb, var(--bg, #000) 80%, var(--surface-2, rgba(255,255,255,.08)));
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 1.3fr .95fr;
+      gap: 1.25rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .55rem;
+      padding: .45rem .8rem;
+      border-radius: 999px;
+      background: var(--surface, rgba(255,255,255,.04));
+      border: 1px solid var(--border, rgba(255,255,255,.1));
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: .9rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .hero-title {
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      line-height: .98;
+      letter-spacing: -2.6px;
+      margin-bottom: 1rem;
+      color: var(--text-strong, #fff);
+    }
+
+    .hero-desc {
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: 1.05rem;
+      line-height: 1.8;
+      max-width: 68ch;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .7rem;
+      margin-top: 1.2rem;
+    }
+
+    .chip {
+      padding: .75rem .95rem;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: .92rem;
+    }
+
+    .hero-right {
+      display: grid;
+      gap: 1rem;
+      align-content: start;
+    }
+
+    .gauge-card {
+      padding: 1.2rem;
+      border-radius: 20px;
+      background: var(--surface, rgba(255,255,255,.04));
+      border: 1px solid var(--border, rgba(255,255,255,.10));
+    }
+
+    .gauge-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: .9rem;
+    }
+
+    .gauge-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-strong, #fff);
+      letter-spacing: -.3px;
+    }
+
+    .gauge-label {
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: .92rem;
+      font-weight: 700;
+    }
+
+    .sentiment-bar {
+      width: 100%;
+      height: 16px;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+      background: var(--surface-2, rgba(255,255,255,.08));
+      margin-bottom: .75rem;
+    }
+
+    .sentiment-fill {
+      height: 100%;
+      width: 68%;
+      border-radius: 999px;
+      background: var(--text, #fff);
+    }
+
+    .gauge-scale {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      color: var(--text-soft, rgba(255,255,255,.5));
+      font-size: .85rem;
+      font-weight: 700;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .8rem;
+    }
+
+    .mini-stat {
+      padding: 1rem;
+      border-radius: 18px;
+      background: var(--surface, rgba(255,255,255,.04));
+      border: 1px solid var(--border, rgba(255,255,255,.10));
+    }
+
+    .mini-stat-label {
+      color: var(--text-soft, rgba(255,255,255,.5));
+      font-size: .82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: .35rem;
+    }
+
+    .mini-stat-value {
+      color: var(--text-strong, #fff);
+      font-size: 1.45rem;
+      font-weight: 900;
+      letter-spacing: -.8px;
+    }
+
+    .mini-stat-sub {
+      margin-top: .25rem;
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: .88rem;
+      line-height: 1.55;
+    }
+
+    .section-title {
+      font-size: 1.15rem;
+      letter-spacing: -.5px;
+      margin-bottom: .8rem;
+      color: var(--text-strong, #fff);
+    }
+
+    .mood-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .mood-card {
+      padding: 1.1rem;
+    }
+
+    .mood-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .75rem;
+      margin-bottom: .8rem;
+    }
+
+    .mood-name {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-strong, #fff);
+    }
+
+    .mood-score {
+      font-size: 1rem;
+      font-weight: 900;
+      color: var(--text-strong, #fff);
+    }
+
+    .mood-status {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .45rem .7rem;
+      border-radius: 999px;
+      background: var(--surface, rgba(255,255,255,.04));
+      border: 1px solid var(--border, rgba(255,255,255,.10));
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: .82rem;
+      font-weight: 800;
+      margin-bottom: .8rem;
+    }
+
+    .mood-bar {
+      width: 100%;
+      height: 10px;
+      background: var(--surface-2, rgba(255,255,255,.08));
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: .7rem;
+    }
+
+    .mood-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--text, #fff);
+    }
+
+    .mood-desc {
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: .92rem;
+      line-height: 1.65;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) 340px;
+      gap: 1.25rem;
+      align-items: start;
+    }
+
+    .market-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .market-card {
+      padding: 1.15rem;
+    }
+
+    .market-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: .85rem;
+      margin-bottom: .9rem;
+    }
+
+    .market-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      padding: .4rem .7rem;
+      border-radius: 999px;
+      background: var(--surface, rgba(255,255,255,.04));
+      border: 1px solid var(--border, rgba(255,255,255,.10));
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: .82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: .7rem;
+    }
+
+    .market-title {
+      font-size: 1.15rem;
+      line-height: 1.2;
+      letter-spacing: -.7px;
+      color: var(--text-strong, #fff);
+      margin-bottom: .4rem;
+    }
+
+    .market-desc {
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: .95rem;
+      line-height: 1.7;
+    }
+
+    .score-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--surface, rgba(255,255,255,.04));
+      border: 1px solid var(--border, rgba(255,255,255,.10));
+      color: var(--text-strong, #fff);
+      font-weight: 900;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .market-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .55rem;
+      margin: 1rem 0;
+    }
+
+    .meta-pill {
+      padding: .48rem .7rem;
+      border-radius: 999px;
+      background: var(--surface, rgba(255,255,255,.04));
+      border: 1px solid var(--border, rgba(255,255,255,.10));
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-weight: 700;
+      font-size: .84rem;
+    }
+
+    .market-bar {
+      width: 100%;
+      height: 10px;
+      background: var(--surface-2, rgba(255,255,255,.08));
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: .75rem;
+    }
+
+    .market-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--text, #fff);
+    }
+
+    .market-foot {
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: .9rem;
+      font-weight: 700;
+    }
+
+    .side-column {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .side-card {
+      padding: 1.1rem;
+    }
+
+    .side-card h3 {
+      font-size: 1.02rem;
+      margin-bottom: .9rem;
+      color: var(--text-strong, #fff);
+      letter-spacing: -.4px;
+    }
+
+    .list {
+      display: grid;
+      gap: .8rem;
+    }
+
+    .list-item {
+      display: flex;
+      gap: .75rem;
+      align-items: flex-start;
+      padding: .85rem;
+      border-radius: 16px;
+      background: var(--surface, rgba(255,255,255,.04));
+      border: 1px solid var(--border, rgba(255,255,255,.10));
+    }
+
+    .list-item i {
+      margin-top: .18rem;
+      color: var(--text-strong, #fff);
+      width: 16px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .list-item strong {
+      display: block;
+      color: var(--text-strong, #fff);
+      margin-bottom: .2rem;
+      font-size: .95rem;
+    }
+
+    .list-item span {
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: .9rem;
+      line-height: 1.6;
+    }
+
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .insight-card {
+      padding: 1.1rem;
+    }
+
+    .insight-card h4 {
+      font-size: 1rem;
+      color: var(--text-strong, #fff);
+      margin-bottom: .5rem;
+      letter-spacing: -.4px;
+    }
+
+    .insight-card p {
+      color: var(--text-muted, rgba(255,255,255,.68));
+      font-size: .94rem;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 1100px) {
+      .hero-card {
+        grid-template-columns: 1fr;
+      }
+
+      .mood-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .market-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .nav {
+        padding: .85rem 1rem;
+      }
+
+      .tabs {
+        top: 67px;
+      }
+
+      main {
+        padding: 1.15rem 1rem 3rem;
+      }
+
+      .hero-card,
+      .mood-card,
+      .market-card,
+      .insight-card,
+      .side-card {
+        border-radius: 20px;
+      }
+
+      .hero-card {
+        padding: 1.2rem;
+      }
+
+      .hero-title {
+        letter-spacing: -1.5px;
+      }
+
+      .stats-grid,
+      .mood-grid,
+      .insight-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -42,9 +704,16 @@
 
   <header>
     <div class="nav">
-      <div class="brand"><i class="fas fa-face-smile"></i> Market News</div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
-        <a href="../index.html"><i class="fas fa-house"></i> Home</a>
+      <div class="brand">
+        <div class="brand-icon"><i class="fas fa-face-smile"></i></div>
+        <span>Market News</span>
+      </div>
+
+      <div class="nav-right">
+        <a class="nav-btn" href="../index.html">
+          <i class="fas fa-house"></i>
+          <span>Home</span>
+        </a>
       </div>
     </div>
   </header>
@@ -59,9 +728,322 @@
   </div>
 
   <main>
-    <div class="card">
-      <h1>Sentiment</h1>
-      <p>Put your sentiment UI here (bull/bear gauge, indices mood, crowd data, etc.).</p>
+    <section class="hero-card">
+      <div>
+        <div class="eyebrow">
+          <i class="fas fa-signal"></i>
+          <span>Market Mood Dashboard</span>
+        </div>
+
+        <h1 class="hero-title">Sentiment</h1>
+
+        <p class="hero-desc">
+          Read trader psychology across forex, crypto, stocks, futures, and options.
+          Use sentiment as context, not as blind confirmation. Strong market mood can support your bias,
+          but structure and risk management still come first.
+        </p>
+
+        <div class="chips">
+          <div class="chip"><i class="fas fa-chart-line"></i> Forex Mood</div>
+          <div class="chip"><i class="fab fa-bitcoin"></i> Crypto Crowd</div>
+          <div class="chip"><i class="fas fa-building-columns"></i> Equity Tone</div>
+          <div class="chip"><i class="fas fa-wave-square"></i> Futures Pressure</div>
+          <div class="chip"><i class="fas fa-sliders"></i> Options Flow</div>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="gauge-card">
+          <div class="gauge-head">
+            <div class="gauge-title">Overall Risk Sentiment</div>
+            <div class="gauge-label">68 / 100 Bullish</div>
+          </div>
+          <div class="sentiment-bar">
+            <div class="sentiment-fill"></div>
+          </div>
+          <div class="gauge-scale">
+            <span>Fear</span>
+            <span>Neutral</span>
+            <span>Greed</span>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="mini-stat">
+            <div class="mini-stat-label">Risk-On</div>
+            <div class="mini-stat-value">68%</div>
+            <div class="mini-stat-sub">Buyers currently have stronger momentum.</div>
+          </div>
+
+          <div class="mini-stat">
+            <div class="mini-stat-label">Volatility</div>
+            <div class="mini-stat-value">54%</div>
+            <div class="mini-stat-sub">Movement is healthy, but not extreme yet.</div>
+          </div>
+
+          <div class="mini-stat">
+            <div class="mini-stat-label">Crowd Bias</div>
+            <div class="mini-stat-value">61%</div>
+            <div class="mini-stat-sub">Public positioning leans optimistic.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <h2 class="section-title">Market Mood</h2>
+    <section class="mood-grid">
+      <article class="mood-card">
+        <div class="mood-top">
+          <div class="mood-name">Forex</div>
+          <div class="mood-score">64</div>
+        </div>
+        <div class="mood-status"><i class="fas fa-arrow-trend-up"></i> Moderately Bullish</div>
+        <div class="mood-bar"><div class="mood-fill" style="width:64%"></div></div>
+        <p class="mood-desc">Major pairs show directional interest, but traders should still respect news spikes and session timing.</p>
+      </article>
+
+      <article class="mood-card">
+        <div class="mood-top">
+          <div class="mood-name">Crypto</div>
+          <div class="mood-score">72</div>
+        </div>
+        <div class="mood-status"><i class="fas fa-arrow-trend-up"></i> Strong Bullish</div>
+        <div class="mood-bar"><div class="mood-fill" style="width:72%"></div></div>
+        <p class="mood-desc">Momentum traders are active. Breakouts can run fast, but late entries can get punished quickly.</p>
+      </article>
+
+      <article class="mood-card">
+        <div class="mood-top">
+          <div class="mood-name">Stocks</div>
+          <div class="mood-score">58</div>
+        </div>
+        <div class="mood-status"><i class="fas fa-minus"></i> Slightly Positive</div>
+        <div class="mood-bar"><div class="mood-fill" style="width:58%"></div></div>
+        <p class="mood-desc">Equities remain constructive, though leadership is selective and not every sector is participating equally.</p>
+      </article>
+
+      <article class="mood-card">
+        <div class="mood-top">
+          <div class="mood-name">Futures</div>
+          <div class="mood-score">49</div>
+        </div>
+        <div class="mood-status"><i class="fas fa-arrows-left-right"></i> Neutral</div>
+        <div class="mood-bar"><div class="mood-fill" style="width:49%"></div></div>
+        <p class="mood-desc">Order flow is balanced for now. Best trades will likely come from reaction at key levels instead of chasing.</p>
+      </article>
+    </section>
+
+    <div class="layout">
+      <div>
+        <h2 class="section-title">Sentiment by Trading Market</h2>
+
+        <div class="market-grid">
+          <article class="market-card">
+            <div class="market-head">
+              <div>
+                <div class="market-badge"><i class="fas fa-chart-line"></i> Forex</div>
+                <h3 class="market-title">FX Crowd Positioning</h3>
+                <p class="market-desc">Use retail crowd sentiment carefully. If too many traders are leaning one way, the opposite move can become more likely.</p>
+              </div>
+              <div class="score-circle">64</div>
+            </div>
+
+            <div class="market-meta">
+              <div class="meta-pill">Dollar mood: Stable</div>
+              <div class="meta-pill">Risk appetite: Healthy</div>
+              <div class="meta-pill">Session bias: London / NY</div>
+            </div>
+
+            <div class="market-bar"><div class="market-bar-fill" style="width:64%"></div></div>
+            <div class="market-foot">Pairs with trend continuation sentiment are stronger than mean-reversion setups right now.</div>
+          </article>
+
+          <article class="market-card">
+            <div class="market-head">
+              <div>
+                <div class="market-badge"><i class="fab fa-bitcoin"></i> Crypto</div>
+                <h3 class="market-title">Crypto Risk Appetite</h3>
+                <p class="market-desc">Crypto sentiment can flip fast. Strong optimism usually helps trend trades, but euphoric phases often come with liquidation traps.</p>
+              </div>
+              <div class="score-circle">72</div>
+            </div>
+
+            <div class="market-meta">
+              <div class="meta-pill">Momentum: High</div>
+              <div class="meta-pill">Crowd emotion: Excited</div>
+              <div class="meta-pill">Breakout quality: Strong</div>
+            </div>
+
+            <div class="market-bar"><div class="market-bar-fill" style="width:72%"></div></div>
+            <div class="market-foot">Best used together with volume, funding context, and key structure zones.</div>
+          </article>
+
+          <article class="market-card">
+            <div class="market-head">
+              <div>
+                <div class="market-badge"><i class="fas fa-building-columns"></i> Stocks</div>
+                <h3 class="market-title">Equity Market Tone</h3>
+                <p class="market-desc">Stocks respond heavily to earnings mood, sector rotation, and macro confidence. Sentiment can help decide whether to press or stay selective.</p>
+              </div>
+              <div class="score-circle">58</div>
+            </div>
+
+            <div class="market-meta">
+              <div class="meta-pill">Breadth: Mixed</div>
+              <div class="meta-pill">Leaders: Selective</div>
+              <div class="meta-pill">Mood: Constructive</div>
+            </div>
+
+            <div class="market-bar"><div class="market-bar-fill" style="width:58%"></div></div>
+            <div class="market-foot">A decent environment, but not broad enough to trust every breakout without confirmation.</div>
+          </article>
+
+          <article class="market-card">
+            <div class="market-head">
+              <div>
+                <div class="market-badge"><i class="fas fa-wave-square"></i> Futures</div>
+                <h3 class="market-title">Index Futures Pressure</h3>
+                <p class="market-desc">Futures sentiment often shifts around macro data, session opens, and major liquidity zones. Neutral sentiment means patience matters more.</p>
+              </div>
+              <div class="score-circle">49</div>
+            </div>
+
+            <div class="market-meta">
+              <div class="meta-pill">Flow: Two-way</div>
+              <div class="meta-pill">Trend strength: Weak</div>
+              <div class="meta-pill">Trap risk: Medium</div>
+            </div>
+
+            <div class="market-bar"><div class="market-bar-fill" style="width:49%"></div></div>
+            <div class="market-foot">Reaction-based trading may outperform prediction-based trading in this type of mood.</div>
+          </article>
+
+          <article class="market-card">
+            <div class="market-head">
+              <div>
+                <div class="market-badge"><i class="fas fa-sliders"></i> Options</div>
+                <h3 class="market-title">Options Flow Sentiment</h3>
+                <p class="market-desc">Options sentiment reflects whether traders are paying for upside, downside, or protection. It helps measure conviction under the surface.</p>
+              </div>
+              <div class="score-circle">60</div>
+            </div>
+
+            <div class="market-meta">
+              <div class="meta-pill">Call bias: Moderate</div>
+              <div class="meta-pill">Protection demand: Present</div>
+              <div class="meta-pill">Premium mood: Balanced</div>
+            </div>
+
+            <div class="market-bar"><div class="market-bar-fill" style="width:60%"></div></div>
+            <div class="market-foot">Useful for understanding whether traders are pressing upside or quietly hedging risk.</div>
+          </article>
+
+          <article class="market-card">
+            <div class="market-head">
+              <div>
+                <div class="market-badge"><i class="fas fa-layer-group"></i> Cross-Market</div>
+                <h3 class="market-title">Global Risk Composite</h3>
+                <p class="market-desc">This combines broad market confidence across asset classes to show whether traders are acting defensive or aggressive overall.</p>
+              </div>
+              <div class="score-circle">63</div>
+            </div>
+
+            <div class="market-meta">
+              <div class="meta-pill">Composite: Positive</div>
+              <div class="meta-pill">Rotation: Active</div>
+              <div class="meta-pill">Confidence: Building</div>
+            </div>
+
+            <div class="market-bar"><div class="market-bar-fill" style="width:63%"></div></div>
+            <div class="market-foot">Cross-market sentiment supports selective risk-taking, but not blind aggression.</div>
+          </article>
+        </div>
+
+        <div class="insight-grid">
+          <article class="insight-card">
+            <h4>How to use sentiment correctly</h4>
+            <p>Sentiment should support your setup, not replace it. A bullish reading does not mean buy everything. It means the environment may be more favorable for long ideas if structure also agrees.</p>
+          </article>
+
+          <article class="insight-card">
+            <h4>When sentiment becomes dangerous</h4>
+            <p>Extreme optimism or extreme fear can create traps. When everybody is leaning the same way, price can move sharply against the crowd to clear liquidity.</p>
+          </article>
+        </div>
+      </div>
+
+      <aside class="side-column">
+        <div class="side-card">
+          <h3>What Sentiment Measures</h3>
+          <div class="list">
+            <div class="list-item">
+              <i class="fas fa-brain"></i>
+              <div>
+                <strong>Trader emotion</strong>
+                <span>Shows how confident, fearful, aggressive, or defensive the market crowd is acting.</span>
+              </div>
+            </div>
+
+            <div class="list-item">
+              <i class="fas fa-users"></i>
+              <div>
+                <strong>Crowd positioning</strong>
+                <span>Helps reveal whether traders are stacked heavily on one side of the market.</span>
+              </div>
+            </div>
+
+            <div class="list-item">
+              <i class="fas fa-bolt"></i>
+              <div>
+                <strong>Momentum pressure</strong>
+                <span>Can show whether current flows support continuation or suggest exhaustion.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h3>Best Use Cases</h3>
+          <div class="list">
+            <div class="list-item">
+              <i class="fas fa-check-circle"></i>
+              <div>
+                <strong>Bias confirmation</strong>
+                <span>Use it to confirm whether your long or short idea has market participation behind it.</span>
+              </div>
+            </div>
+
+            <div class="list-item">
+              <i class="fas fa-filter"></i>
+              <div>
+                <strong>Trade filtering</strong>
+                <span>Helps avoid weak setups when the crowd mood clearly fights your direction.</span>
+              </div>
+            </div>
+
+            <div class="list-item">
+              <i class="fas fa-triangle-exclamation"></i>
+              <div>
+                <strong>Trap awareness</strong>
+                <span>Extreme readings can warn of squeeze risk, reversal risk, or exhaustion risk.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h3>Reminder</h3>
+          <div class="list">
+            <div class="list-item">
+              <i class="fas fa-shield-halved"></i>
+              <div>
+                <strong>Never trade sentiment alone</strong>
+                <span>Always combine sentiment with structure, risk management, timing, and confirmation.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
     </div>
   </main>
 </body>
