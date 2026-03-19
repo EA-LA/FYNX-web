@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX Tools — Forex Calculator</title>
+  <title>FYNX Tools — Margin Calculator</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
@@ -27,6 +27,11 @@
       --orb-core:rgba(0,0,0,.22);
       --hero-gradient-1:#0a0a0a;
       --hero-gradient-2:#6b6b6b;
+      --input-bg:#ffffff;
+      --good:#118a4e;
+      --warn:#d48b00;
+      --bad:#c8342f;
+      --chip:#f1f1ef;
     }
 
     body.dark-mode{
@@ -47,6 +52,11 @@
       --orb-core:rgba(255,255,255,.9);
       --hero-gradient-1:#ffffff;
       --hero-gradient-2:#8a8a8a;
+      --input-bg:rgba(255,255,255,.03);
+      --good:#35d07f;
+      --warn:#ffb347;
+      --bad:#ff6b61;
+      --chip:rgba(255,255,255,.05);
     }
 
     body{
@@ -128,6 +138,8 @@
       align-items:center;
       justify-content:space-between;
       padding:0 1.25rem;
+      gap:1rem;
+      flex-wrap:wrap;
     }
 
     .brand{
@@ -143,7 +155,15 @@
 
     .brand i{opacity:.9}
 
-    .nav a{
+    .nav-actions{
+      display:flex;
+      gap:.6rem;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .nav a,
+    .theme-btn{
       color:var(--text-muted);
       text-decoration:none;
       font-weight:700;
@@ -153,9 +173,15 @@
       border-radius:999px;
       transition:all .25s ease;
       white-space:nowrap;
+      cursor:pointer;
+      font:inherit;
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
     }
 
-    .nav a:hover{
+    .nav a:hover,
+    .theme-btn:hover{
       color:var(--text-strong);
       border-color:var(--border-strong);
       background:var(--nav-link-bg-hover);
@@ -165,11 +191,11 @@
     main{
       max-width:1200px;
       margin:0 auto;
-      padding:3.5rem 1.25rem 5rem;
+      padding:3rem 1.25rem 5rem;
     }
 
     .hero{
-      padding:2.25rem 1.75rem;
+      padding:2rem 1.5rem;
       border:1px solid var(--border);
       background:var(--surface);
       border-radius:22px;
@@ -189,15 +215,15 @@
 
     p{
       color:var(--text-muted);
-      font-size:1.1rem;
+      font-size:1.08rem;
       line-height:1.8;
-      max-width:70ch;
+      max-width:76ch;
       transition:color .25s ease;
     }
 
     .panel-grid{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+      grid-template-columns:1.06fr .94fr;
       gap:1.25rem;
       margin-top:1.25rem;
     }
@@ -206,30 +232,240 @@
       border:1px solid var(--border);
       background:var(--surface-2);
       border-radius:18px;
-      padding:1.25rem 1.25rem 1.4rem;
+      padding:1.2rem;
       backdrop-filter:blur(10px);
-      min-height:180px;
       transition:background .25s ease,border-color .25s ease;
     }
 
     .panel h2{
-      font-size:1.2rem;
-      margin-bottom:.5rem;
+      font-size:1.15rem;
+      margin-bottom:.9rem;
       color:var(--text-strong);
       transition:color .25s ease;
     }
 
-    .panel .muted{
-      color:var(--text-muted);
-      font-size:.98rem;
-      transition:color .25s ease;
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:.95rem;
     }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:.45rem;
+    }
+
+    .field.full{grid-column:1 / -1}
+
+    .field label{
+      color:var(--text-muted);
+      font-size:.9rem;
+      font-weight:800;
+      letter-spacing:.01em;
+    }
+
+    .field input,
+    .field select{
+      width:100%;
+      border:1px solid var(--border);
+      background:var(--input-bg);
+      color:var(--text-strong);
+      padding:.9rem .95rem;
+      border-radius:14px;
+      outline:none;
+      font:inherit;
+      transition:border-color .2s ease,background .2s ease,color .2s ease,transform .2s ease;
+    }
+
+    .field input:focus,
+    .field select:focus{
+      border-color:var(--border-strong);
+      transform:translateY(-1px);
+    }
+
+    .button-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.75rem;
+      margin-top:1rem;
+    }
+
+    .btn{
+      border:none;
+      padding:.9rem 1rem;
+      border-radius:14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:all .2s ease;
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      font:inherit;
+    }
+
+    .btn.primary{
+      background:var(--text-strong);
+      color:var(--bg-solid);
+    }
+
+    .btn.secondary{
+      background:var(--nav-link-bg);
+      color:var(--text-strong);
+      border:1px solid var(--border);
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+
+    .status-box{
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:16px;
+      padding:1rem;
+      margin-bottom:1rem;
+    }
+
+    .status-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      border:1px solid var(--border);
+      background:var(--chip);
+      padding:.45rem .7rem;
+      border-radius:999px;
+      font-size:.82rem;
+      font-weight:800;
+      margin-bottom:.7rem;
+    }
+
+    .status-title{
+      font-size:1.05rem;
+      font-weight:900;
+      color:var(--text-strong);
+      margin-bottom:.35rem;
+    }
+
+    .status-desc{
+      color:var(--text-muted);
+      line-height:1.7;
+      font-size:.96rem;
+    }
+
+    .results-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:.85rem;
+      margin-bottom:1rem;
+    }
+
+    .metric{
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:16px;
+      padding:1rem;
+      min-height:120px;
+    }
+
+    .metric-label{
+      color:var(--text-soft);
+      font-size:.78rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-bottom:.45rem;
+      font-weight:800;
+    }
+
+    .metric-value{
+      color:var(--text-strong);
+      font-size:1.28rem;
+      font-weight:900;
+      letter-spacing:-.03em;
+    }
+
+    .metric-sub{
+      margin-top:.35rem;
+      color:var(--text-muted);
+      font-size:.9rem;
+      line-height:1.5;
+    }
+
+    .good{color:var(--good)}
+    .warn{color:var(--warn)}
+    .bad{color:var(--bad)}
+
+    .details-wrap{
+      margin-top:1.25rem;
+      border:1px solid var(--border);
+      border-radius:18px;
+      overflow:auto;
+      background:var(--surface-2);
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:760px;
+    }
+
+    th,td{
+      padding:.95rem .85rem;
+      border-bottom:1px solid var(--border);
+      text-align:left;
+      font-size:.94rem;
+    }
+
+    th{
+      color:var(--text-soft);
+      font-size:.82rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      font-weight:800;
+      background:var(--surface);
+    }
+
+    tr:last-child td{border-bottom:none}
 
     .hint{
       margin-top:1.2rem;
       color:var(--text-soft);
       font-size:.95rem;
       transition:color .25s ease;
+      line-height:1.8;
+    }
+
+    .pill-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.55rem;
+      margin-top:.9rem;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      padding:.45rem .65rem;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:var(--chip);
+      color:var(--text-muted);
+      font-size:.82rem;
+      font-weight:800;
+    }
+
+    @media (max-width: 920px){
+      .panel-grid,
+      .results-grid,
+      .form-grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 720px){
+      main{padding:2rem .95rem 3rem}
+      .hero{padding:1.25rem 1rem}
+      h1{font-size:2.35rem}
+      .nav{padding:0 .9rem}
     }
   </style>
 </head>
@@ -243,7 +479,11 @@
   <header>
     <div class="nav">
       <div class="brand"><i class="fas fa-chart-line"></i> FYNX Tools</div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
+      <div class="nav-actions">
+        <button class="theme-btn" id="themeToggle" type="button">
+          <i class="fas fa-circle-half-stroke"></i>
+          <span id="themeToggleText">Theme</span>
+        </button>
         <a href="../index.html#tools"><i class="fas fa-arrow-left"></i> Back</a>
         <a href="../index.html"><i class="fas fa-house"></i> Home</a>
       </div>
@@ -252,39 +492,395 @@
 
   <main>
     <section class="hero">
-      <h1>Forex Calculator</h1>
-      <p>Dedicated page for the Forex calculator. Put your real calculator code here (inputs, outputs, formulas, UI).</p>
+      <h1>Margin Calculator</h1>
+      <p>
+        Calculate required margin, notional size, free margin, margin level, and approximate pip value for a leveraged forex trade. Use it before entering a position so you know exactly how much capital the trade consumes.
+      </p>
 
       <div class="panel-grid">
         <div class="panel">
-          <h2>Calculator UI</h2>
-          <div class="muted">Add inputs (pair, lot size, risk %, stop loss pips, etc.) and compute results.</div>
+          <h2>Trade Inputs</h2>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="pairType">Pair Type</label>
+              <select id="pairType">
+                <option value="usdQuoted" selected>USD Quoted (EURUSD, GBPUSD)</option>
+                <option value="usdBase">USD Base (USDJPY, USDCHF, USDCAD)</option>
+                <option value="cross">Cross Pair / Manual Conversion</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="accountBalance">Account Balance ($)</label>
+              <input id="accountBalance" type="number" min="0" step="0.01" value="5000" />
+            </div>
+
+            <div class="field">
+              <label for="lotSize">Lot Size</label>
+              <input id="lotSize" type="number" min="0" step="0.01" value="1.00" />
+            </div>
+
+            <div class="field">
+              <label for="contractSize">Contract Size</label>
+              <input id="contractSize" type="number" min="1" step="1" value="100000" />
+            </div>
+
+            <div class="field">
+              <label for="entryPrice">Entry Price</label>
+              <input id="entryPrice" type="number" min="0" step="0.0001" value="1.1000" />
+            </div>
+
+            <div class="field">
+              <label for="leverage">Leverage (x)</label>
+              <input id="leverage" type="number" min="1" step="1" value="30" />
+            </div>
+
+            <div class="field">
+              <label for="conversionRate">Manual USD Conversion Rate</label>
+              <input id="conversionRate" type="number" min="0" step="0.0001" value="1.0000" />
+            </div>
+
+            <div class="field">
+              <label for="pipSize">Pip Size</label>
+              <select id="pipSize">
+                <option value="0.0001" selected>0.0001</option>
+                <option value="0.01">0.01 (JPY style)</option>
+              </select>
+            </div>
+
+            <div class="field full">
+              <label for="usedMarginExisting">Existing Used Margin ($)</label>
+              <input id="usedMarginExisting" type="number" min="0" step="0.01" value="500" />
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button class="btn primary" id="calculateBtn">
+              <i class="fas fa-calculator"></i> Calculate Margin
+            </button>
+            <button class="btn secondary" id="resetBtn">
+              <i class="fas fa-rotate-left"></i> Reset
+            </button>
+          </div>
+
+          <div class="hint">
+            For most forex brokers, margin is based on notional value divided by leverage. Cross pairs may require conversion into your account currency.
+          </div>
         </div>
+
         <div class="panel">
-          <h2>Results</h2>
-          <div class="muted">Show position size, pip value, risk amount, margin estimate, and notes.</div>
+          <h2>Margin Results</h2>
+
+          <div class="status-box">
+            <div class="status-chip" id="statusChip"><i class="fas fa-circle"></i> Waiting</div>
+            <div class="status-title" id="statusTitle">No calculation yet</div>
+            <div class="status-desc" id="statusDesc">Enter your trade details to see required margin and account impact.</div>
+
+            <div class="pill-row">
+              <div class="pill" id="marginLevelPill">Margin Level: —</div>
+              <div class="pill" id="freeMarginPill">Free Margin: —</div>
+            </div>
+          </div>
+
+          <div class="results-grid">
+            <div class="metric">
+              <div class="metric-label">Required Margin</div>
+              <div class="metric-value warn" id="requiredMarginValue">—</div>
+              <div class="metric-sub">Estimated margin needed to open this trade.</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Position Notional</div>
+              <div class="metric-value" id="notionalValue">—</div>
+              <div class="metric-sub">Total controlled position size in quote value.</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Approx. Pip Value</div>
+              <div class="metric-value good" id="pipValueValue">—</div>
+              <div class="metric-sub">Approximate pip value in USD.</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Total Used Margin</div>
+              <div class="metric-value" id="totalUsedMarginValue">—</div>
+              <div class="metric-sub">Existing used margin plus this trade.</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Free Margin After Trade</div>
+              <div class="metric-value good" id="freeMarginValue">—</div>
+              <div class="metric-sub">Balance remaining available after margin is reserved.</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Margin Level</div>
+              <div class="metric-value" id="marginLevelValue">—</div>
+              <div class="metric-sub">Balance divided by used margin, shown as a percent.</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="hint">Tip: when you’re ready, tell me which tool you want first and I’ll write the full working calculator code for that page.</div>
+      <div class="details-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Value</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody id="detailsBody">
+            <tr>
+              <td colspan="3" style="text-align:center;color:var(--text-muted);padding:1.4rem;">
+                No details yet.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="hint">
+        Keep free margin healthy. Even if the broker allows the trade, using too much margin makes the account fragile and much easier to liquidate during normal volatility.
+      </div>
     </section>
   </main>
 
   <script>
     const THEME_KEY = "fynx_theme";
 
+    function applyTheme(mode){
+      if (mode === "dark") document.body.classList.add("dark-mode");
+      else document.body.classList.remove("dark-mode");
+      updateThemeButton();
+    }
+
+    function updateThemeButton(){
+      const text = document.getElementById("themeToggleText");
+      if (!text) return;
+      text.textContent = document.body.classList.contains("dark-mode") ? "Dark" : "Light";
+    }
+
     (function applyThemeFromStorage(){
       const saved = localStorage.getItem(THEME_KEY);
-      if (saved === "dark") document.body.classList.add("dark-mode");
-      else document.body.classList.remove("dark-mode");
+      applyTheme(saved === "dark" ? "dark" : "light");
     })();
+
+    document.getElementById("themeToggle").addEventListener("click", () => {
+      const next = document.body.classList.contains("dark-mode") ? "light" : "dark";
+      localStorage.setItem(THEME_KEY, next);
+      applyTheme(next);
+    });
 
     window.addEventListener("storage", (e) => {
       if (e.key === THEME_KEY) {
-        if (e.newValue === "dark") document.body.classList.add("dark-mode");
-        else document.body.classList.remove("dark-mode");
+        applyTheme(e.newValue === "dark" ? "dark" : "light");
       }
     });
+
+    function formatCurrency(value){
+      if (!Number.isFinite(value)) return "—";
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 2
+      }).format(value);
+    }
+
+    function formatNumber(value, digits = 4){
+      if (!Number.isFinite(value)) return "—";
+      return Number(value).toLocaleString("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: digits
+      });
+    }
+
+    function formatPercent(value, digits = 2){
+      if (!Number.isFinite(value)) return "—";
+      return `${value.toFixed(digits)}%`;
+    }
+
+    function setStatus(level, title, desc){
+      const chip = document.getElementById("statusChip");
+      const titleEl = document.getElementById("statusTitle");
+      const descEl = document.getElementById("statusDesc");
+
+      let icon = "fa-circle";
+      let label = "Neutral";
+      let cls = "";
+
+      if(level === "good"){
+        icon = "fa-shield";
+        label = "Healthy";
+        cls = "good";
+      } else if(level === "warn"){
+        icon = "fa-triangle-exclamation";
+        label = "Tight";
+        cls = "warn";
+      } else if(level === "bad"){
+        icon = "fa-skull-crossbones";
+        label = "Danger";
+        cls = "bad";
+      }
+
+      chip.className = `status-chip ${cls}`;
+      chip.innerHTML = `<i class="fas ${icon}"></i> ${label}`;
+      titleEl.textContent = title;
+      descEl.textContent = desc;
+    }
+
+    function resetOutput(){
+      document.getElementById("requiredMarginValue").textContent = "—";
+      document.getElementById("notionalValue").textContent = "—";
+      document.getElementById("pipValueValue").textContent = "—";
+      document.getElementById("totalUsedMarginValue").textContent = "—";
+      document.getElementById("freeMarginValue").textContent = "—";
+      document.getElementById("marginLevelValue").textContent = "—";
+      document.getElementById("marginLevelPill").textContent = "Margin Level: —";
+      document.getElementById("freeMarginPill").textContent = "Free Margin: —";
+      document.getElementById("detailsBody").innerHTML = `
+        <tr>
+          <td colspan="3" style="text-align:center;color:var(--text-muted);padding:1.4rem;">
+            No details yet.
+          </td>
+        </tr>
+      `;
+      setStatus("neutral","No calculation yet","Enter your trade details to see required margin and account impact.");
+    }
+
+    function calculateMargin(){
+      const pairType = document.getElementById("pairType").value;
+      const balance = parseFloat(document.getElementById("accountBalance").value) || 0;
+      const lotSize = parseFloat(document.getElementById("lotSize").value) || 0;
+      const contractSize = parseFloat(document.getElementById("contractSize").value) || 0;
+      const entryPrice = parseFloat(document.getElementById("entryPrice").value) || 0;
+      const leverage = parseFloat(document.getElementById("leverage").value) || 0;
+      const conversionRate = parseFloat(document.getElementById("conversionRate").value) || 0;
+      const pipSize = parseFloat(document.getElementById("pipSize").value) || 0.0001;
+      const existingUsedMargin = parseFloat(document.getElementById("usedMarginExisting").value) || 0;
+
+      if(balance <= 0 || lotSize <= 0 || contractSize <= 0 || entryPrice <= 0 || leverage <= 0 || conversionRate <= 0 || existingUsedMargin < 0){
+        resetOutput();
+        setStatus("bad","Invalid inputs","All required values must be valid positive numbers.");
+        return;
+      }
+
+      const units = lotSize * contractSize;
+      let notionalUSD = 0;
+      let pipValueUSD = 0;
+
+      if(pairType === "usdQuoted"){
+        notionalUSD = units * entryPrice;
+        pipValueUSD = units * pipSize;
+      } else if(pairType === "usdBase"){
+        notionalUSD = units;
+        pipValueUSD = (units * pipSize) / entryPrice;
+      } else {
+        notionalUSD = units * entryPrice * conversionRate;
+        pipValueUSD = units * pipSize * conversionRate;
+      }
+
+      const requiredMargin = notionalUSD / leverage;
+      const totalUsedMargin = existingUsedMargin + requiredMargin;
+      const freeMargin = balance - totalUsedMargin;
+      const marginLevel = totalUsedMargin > 0 ? (balance / totalUsedMargin) * 100 : 0;
+
+      document.getElementById("requiredMarginValue").textContent = formatCurrency(requiredMargin);
+      document.getElementById("notionalValue").textContent = formatCurrency(notionalUSD);
+      document.getElementById("pipValueValue").textContent = formatCurrency(pipValueUSD);
+      document.getElementById("totalUsedMarginValue").textContent = formatCurrency(totalUsedMargin);
+      document.getElementById("freeMarginValue").textContent = formatCurrency(freeMargin);
+      document.getElementById("marginLevelValue").textContent = formatPercent(marginLevel, 2);
+
+      document.getElementById("marginLevelPill").textContent = `Margin Level: ${formatPercent(marginLevel, 2)}`;
+      document.getElementById("freeMarginPill").textContent = `Free Margin: ${formatCurrency(freeMargin)}`;
+
+      let level = "good";
+      let title = "Healthy margin profile";
+      let desc = "This setup leaves usable breathing room in the account after margin is reserved.";
+
+      if(freeMargin < 0 || marginLevel < 100){
+        level = "bad";
+        title = "Insufficient margin";
+        desc = "This trade would overconsume account margin or push margin level into danger.";
+      } else if(freeMargin < balance * 0.2 || marginLevel < 300){
+        level = "warn";
+        title = "Tight margin";
+        desc = "The trade may still open, but the account will be more fragile under normal volatility.";
+      }
+
+      setStatus(level, title, desc);
+
+      const rows = [
+        {
+          metric: "Units Controlled",
+          value: formatNumber(units, 2),
+          meaning: "Lot size multiplied by contract size."
+        },
+        {
+          metric: "Position Notional (USD)",
+          value: formatCurrency(notionalUSD),
+          meaning: "Estimated total value controlled by the position in USD."
+        },
+        {
+          metric: "Required Margin",
+          value: formatCurrency(requiredMargin),
+          meaning: "Notional divided by leverage."
+        },
+        {
+          metric: "Existing Used Margin",
+          value: formatCurrency(existingUsedMargin),
+          meaning: "Margin already tied up in other open positions."
+        },
+        {
+          metric: "Total Used Margin",
+          value: formatCurrency(totalUsedMargin),
+          meaning: "Existing used margin plus the new trade's margin."
+        },
+        {
+          metric: "Free Margin",
+          value: formatCurrency(freeMargin),
+          meaning: "Balance left after margin is reserved."
+        },
+        {
+          metric: "Margin Level",
+          value: formatPercent(marginLevel, 2),
+          meaning: "Account balance divided by total used margin."
+        },
+        {
+          metric: "Approx. Pip Value",
+          value: formatCurrency(pipValueUSD),
+          meaning: "Approximate USD value of one pip for this position."
+        }
+      ];
+
+      document.getElementById("detailsBody").innerHTML = rows.map(row => `
+        <tr>
+          <td>${row.metric}</td>
+          <td>${row.value}</td>
+          <td>${row.meaning}</td>
+        </tr>
+      `).join("");
+    }
+
+    document.getElementById("calculateBtn").addEventListener("click", calculateMargin);
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      document.getElementById("pairType").value = "usdQuoted";
+      document.getElementById("accountBalance").value = "5000";
+      document.getElementById("lotSize").value = "1.00";
+      document.getElementById("contractSize").value = "100000";
+      document.getElementById("entryPrice").value = "1.1000";
+      document.getElementById("leverage").value = "30";
+      document.getElementById("conversionRate").value = "1.0000";
+      document.getElementById("pipSize").value = "0.0001";
+      document.getElementById("usedMarginExisting").value = "500";
+      calculateMargin();
+    });
+
+    calculateMargin();
   </script>
 </body>
 </html>
