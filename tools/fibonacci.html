@@ -1,9 +1,10 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX Tools — Forex Calculator</title>
+  <title>FYNX Tools — Fibonacci Calculator</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
@@ -26,6 +27,11 @@
       --orb-core:rgba(0,0,0,.22);
       --hero-gradient-1:#0a0a0a;
       --hero-gradient-2:#6b6b6b;
+      --input-bg:#ffffff;
+      --good:#118a4e;
+      --warn:#d48b00;
+      --bad:#c8342f;
+      --chip:#f1f1ef;
     }
 
     body.dark-mode{
@@ -46,6 +52,11 @@
       --orb-core:rgba(255,255,255,.9);
       --hero-gradient-1:#ffffff;
       --hero-gradient-2:#8a8a8a;
+      --input-bg:rgba(255,255,255,.03);
+      --good:#35d07f;
+      --warn:#ffb347;
+      --bad:#ff6b61;
+      --chip:rgba(255,255,255,.05);
     }
 
     body{
@@ -127,6 +138,8 @@
       align-items:center;
       justify-content:space-between;
       padding:0 1.25rem;
+      gap:1rem;
+      flex-wrap:wrap;
     }
 
     .brand{
@@ -142,7 +155,12 @@
 
     .brand i{opacity:.9}
 
-    .nav a{
+    .nav-actions{
+      display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end
+    }
+
+    .nav a,
+    .theme-btn{
       color:var(--text-muted);
       text-decoration:none;
       font-weight:700;
@@ -152,9 +170,15 @@
       border-radius:999px;
       transition:all .25s ease;
       white-space:nowrap;
+      cursor:pointer;
+      font:inherit;
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
     }
 
-    .nav a:hover{
+    .nav a:hover,
+    .theme-btn:hover{
       color:var(--text-strong);
       border-color:var(--border-strong);
       background:var(--nav-link-bg-hover);
@@ -164,11 +188,11 @@
     main{
       max-width:1200px;
       margin:0 auto;
-      padding:3.5rem 1.25rem 5rem;
+      padding:3rem 1.25rem 5rem;
     }
 
     .hero{
-      padding:2.25rem 1.75rem;
+      padding:2rem 1.5rem;
       border:1px solid var(--border);
       background:var(--surface);
       border-radius:22px;
@@ -188,15 +212,15 @@
 
     p{
       color:var(--text-muted);
-      font-size:1.1rem;
+      font-size:1.08rem;
       line-height:1.8;
-      max-width:70ch;
+      max-width:76ch;
       transition:color .25s ease;
     }
 
     .panel-grid{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+      grid-template-columns:1.08fr .92fr;
       gap:1.25rem;
       margin-top:1.25rem;
     }
@@ -205,23 +229,216 @@
       border:1px solid var(--border);
       background:var(--surface-2);
       border-radius:18px;
-      padding:1.25rem 1.25rem 1.4rem;
+      padding:1.2rem;
       backdrop-filter:blur(10px);
-      min-height:180px;
       transition:background .25s ease,border-color .25s ease;
     }
 
     .panel h2{
-      font-size:1.2rem;
-      margin-bottom:.5rem;
+      font-size:1.15rem;
+      margin-bottom:.9rem;
       color:var(--text-strong);
       transition:color .25s ease;
     }
 
-    .panel .muted{
+    .muted{
       color:var(--text-muted);
       font-size:.98rem;
       transition:color .25s ease;
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:.95rem;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:.45rem;
+    }
+
+    .field.full{grid-column:1 / -1}
+
+    .field label{
+      color:var(--text-muted);
+      font-size:.9rem;
+      font-weight:800;
+      letter-spacing:.01em;
+    }
+
+    .field input,
+    .field select{
+      width:100%;
+      border:1px solid var(--border);
+      background:var(--input-bg);
+      color:var(--text-strong);
+      padding:.9rem .95rem;
+      border-radius:14px;
+      outline:none;
+      font:inherit;
+      transition:border-color .2s ease,background .2s ease,color .2s ease,transform .2s ease;
+    }
+
+    .field input:focus,
+    .field select:focus{
+      border-color:var(--border-strong);
+      transform:translateY(-1px);
+    }
+
+    .button-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.75rem;
+      margin-top:1rem;
+    }
+
+    .btn{
+      border:none;
+      padding:.9rem 1rem;
+      border-radius:14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:all .2s ease;
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      font:inherit;
+    }
+
+    .btn.primary{
+      background:var(--text-strong);
+      color:var(--bg-solid);
+    }
+
+    .btn.secondary{
+      background:var(--nav-link-bg);
+      color:var(--text-strong);
+      border:1px solid var(--border);
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+
+    .results-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:.85rem;
+      margin-bottom:1rem;
+    }
+
+    .metric{
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:16px;
+      padding:1rem;
+      min-height:120px;
+    }
+
+    .metric-label{
+      color:var(--text-soft);
+      font-size:.78rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-bottom:.45rem;
+      font-weight:800;
+    }
+
+    .metric-value{
+      color:var(--text-strong);
+      font-size:1.28rem;
+      font-weight:900;
+      letter-spacing:-.03em;
+    }
+
+    .metric-sub{
+      margin-top:.35rem;
+      color:var(--text-muted);
+      font-size:.9rem;
+      line-height:1.5;
+    }
+
+    .good{color:var(--good)}
+    .warn{color:var(--warn)}
+    .bad{color:var(--bad)}
+
+    .status-box{
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:16px;
+      padding:1rem;
+      margin-bottom:1rem;
+    }
+
+    .status-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      border:1px solid var(--border);
+      background:var(--chip);
+      padding:.45rem .7rem;
+      border-radius:999px;
+      font-size:.82rem;
+      font-weight:800;
+      margin-bottom:.7rem;
+    }
+
+    .status-title{
+      font-size:1.05rem;
+      font-weight:900;
+      color:var(--text-strong);
+      margin-bottom:.35rem;
+    }
+
+    .status-desc{
+      color:var(--text-muted);
+      line-height:1.7;
+      font-size:.96rem;
+    }
+
+    .levels-wrap{
+      margin-top:1.25rem;
+      border:1px solid var(--border);
+      border-radius:18px;
+      overflow:auto;
+      background:var(--surface-2);
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:760px;
+    }
+
+    th,td{
+      padding:.95rem .85rem;
+      border-bottom:1px solid var(--border);
+      text-align:left;
+      font-size:.94rem;
+    }
+
+    th{
+      color:var(--text-soft);
+      font-size:.82rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      font-weight:800;
+      background:var(--surface);
+    }
+
+    tr:last-child td{border-bottom:none}
+
+    .level-tag{
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      padding:.35rem .6rem;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:var(--chip);
+      color:var(--text-muted);
+      font-size:.8rem;
+      font-weight:800;
     }
 
     .hint{
@@ -229,6 +446,22 @@
       color:var(--text-soft);
       font-size:.95rem;
       transition:color .25s ease;
+      line-height:1.8;
+    }
+
+    @media (max-width: 920px){
+      .panel-grid,
+      .results-grid,
+      .form-grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 720px){
+      main{padding:2rem .95rem 3rem}
+      .hero{padding:1.25rem 1rem}
+      h1{font-size:2.35rem}
+      .nav{padding:0 .9rem}
     }
   </style>
 </head>
@@ -242,7 +475,11 @@
   <header>
     <div class="nav">
       <div class="brand"><i class="fas fa-chart-line"></i> FYNX Tools</div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
+      <div class="nav-actions">
+        <button class="theme-btn" id="themeToggle" type="button">
+          <i class="fas fa-circle-half-stroke"></i>
+          <span id="themeToggleText">Theme</span>
+        </button>
         <a href="../index.html#tools"><i class="fas fa-arrow-left"></i> Back</a>
         <a href="../index.html"><i class="fas fa-house"></i> Home</a>
       </div>
@@ -251,39 +488,85 @@
 
   <main>
     <section class="hero">
-      <h1>Forex Calculator</h1>
-      <p>Dedicated page for the Forex calculator. Put your real calculator code here (inputs, outputs, formulas, UI).</p>
+      <h1>Fibonacci Calculator</h1>
+      <p>
+        Calculate Fibonacci retracement and extension levels from a swing high and swing low. Use it to map pullback zones, continuation targets, and confluence areas before placing a trade.
+      </p>
 
       <div class="panel-grid">
         <div class="panel">
-          <h2>Calculator UI</h2>
-          <div class="muted">Add inputs (pair, lot size, risk %, stop loss pips, etc.) and compute results.</div>
+          <h2>Fib Inputs</h2>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="trendDirection">Trend Direction</label>
+              <select id="trendDirection">
+                <option value="up" selected>Uptrend</option>
+                <option value="down">Downtrend</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="pricePrecision">Price Precision</label>
+              <select id="pricePrecision">
+                <option value="2">2 Decimals</option>
+                <option value="4" selected>4 Decimals</option>
+                <option value="5">5 Decimals</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="swingHigh">Swing High</label>
+              <input id="swingHigh" type="number" min="0" step="0.0001" value="1.1200" />
+            </div>
+
+            <div class="field">
+              <label for="swingLow">Swing Low</label>
+              <input id="swingLow" type="number" min="0" step="0.0001" value="1.1000" />
+            </div>
+
+            <div class="field full">
+              <label for="entryPrice">Optional Entry Price</label>
+              <input id="entryPrice" type="number" min="0" step="0.0001" value="1.1124" />
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button class="btn primary" id="calculateBtn">
+              <i class="fas fa-calculator"></i> Calculate Fib
+            </button>
+            <button class="btn secondary" id="resetBtn">
+              <i class="fas fa-rotate-left"></i> Reset
+            </button>
+          </div>
+
+          <div class="hint">
+            Standard retracements used here: 23.6%, 38.2%, 50%, 61.8%, 78.6%. Standard extensions: 127.2%, 161.8%, and 200%.
+          </div>
         </div>
+
         <div class="panel">
-          <h2>Results</h2>
-          <div class="muted">Show position size, pip value, risk amount, margin estimate, and notes.</div>
-        </div>
-      </div>
+          <h2>Fib Summary</h2>
 
-      <div class="hint">Tip: when you’re ready, tell me which tool you want first and I’ll write the full working calculator code for that page.</div>
-    </section>
-  </main>
+          <div class="status-box">
+            <div class="status-chip" id="zoneChip"><i class="fas fa-circle"></i> Waiting</div>
+            <div class="status-title" id="zoneTitle">No calculation yet</div>
+            <div class="status-desc" id="zoneDesc">Enter your swing high and swing low to calculate retracement and extension levels.</div>
+          </div>
 
-  <script>
-    const THEME_KEY = "fynx_theme";
+          <div class="results-grid">
+            <div class="metric">
+              <div class="metric-label">Range Size</div>
+              <div class="metric-value" id="rangeValue">—</div>
+              <div class="metric-sub">Distance between the swing high and swing low.</div>
+            </div>
 
-    (function applyThemeFromStorage(){
-      const saved = localStorage.getItem(THEME_KEY);
-      if (saved === "dark") document.body.classList.add("dark-mode");
-      else document.body.classList.remove("dark-mode");
-    })();
+            <div class="metric">
+              <div class="metric-label">Golden Zone</div>
+              <div class="metric-value good" id="goldenZoneValue">—</div>
+              <div class="metric-sub">Area between 61.8% and 50% / 38.2% depending on context.</div>
+            </div>
 
-    window.addEventListener("storage", (e) => {
-      if (e.key === THEME_KEY) {
-        if (e.newValue === "dark") document.body.classList.add("dark-mode");
-        else document.body.classList.remove("dark-mode");
-      }
-    });
-  </script>
-</body>
-</html>
+            <div class="metric">
+              <div class="metric-label">Nearest Fib to Entry
+```
