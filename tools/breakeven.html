@@ -1,9 +1,10 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX Tools — Forex Calculator</title>
+  <title>FYNX Tools — Break Even Calculator</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
@@ -11,221 +12,243 @@
     :root{
       --bg:#f3f3f5;
       --text:#0b0b0c;
-      --header-bg:rgba(243,243,245,.85);
-      --header-border:rgba(0,0,0,.10);
-      --nav-link:rgba(0,0,0,.82);
-      --nav-link-border:rgba(0,0,0,.12);
-      --nav-link-bg:rgba(0,0,0,.03);
-      --nav-link-hover:rgba(0,0,0,.08);
-      --hero-bg:rgba(255,255,255,.68);
-      --hero-border:rgba(0,0,0,.10);
       --panel-bg:rgba(255,255,255,.75);
       --panel-border:rgba(0,0,0,.10);
       --muted:rgba(0,0,0,.62);
-      --hint:rgba(0,0,0,.52);
       --grid-line:rgba(0,0,0,0.035);
       --orb:rgba(0,0,0,.14);
-      --shadow:0 20px 60px rgba(0,0,0,.10);
+      --good:#118a4e;
+      --warn:#d48b00;
+      --bad:#c8342f;
     }
 
     body.dark-mode{
       --bg:#000;
       --text:#fff;
-      --header-bg:rgba(0,0,0,.85);
-      --header-border:rgba(255,255,255,.10);
-      --nav-link:rgba(255,255,255,.85);
-      --nav-link-border:rgba(255,255,255,.14);
-      --nav-link-bg:rgba(255,255,255,.04);
-      --nav-link-hover:rgba(255,255,255,.08);
-      --hero-bg:rgba(255,255,255,.03);
-      --hero-border:rgba(255,255,255,.10);
       --panel-bg:rgba(0,0,0,.55);
       --panel-border:rgba(255,255,255,.10);
       --muted:rgba(255,255,255,.65);
-      --hint:rgba(255,255,255,.55);
       --grid-line:rgba(255,255,255,0.03);
       --orb:#fff;
-      --shadow:none;
+      --good:#35d07f;
+      --warn:#ffb347;
+      --bad:#ff6b61;
     }
 
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
       color:var(--text);
-      background:
-        radial-gradient(circle at 1px 1px, rgba(0,0,0,0.085) 1px, transparent 1px) 0 0 / 18px 18px,
-        linear-gradient(var(--bg), var(--bg));
-      overflow-x:hidden;
+      background:var(--bg);
       min-height:100vh;
     }
-    body.dark-mode{
-      background:var(--bg);
-    }
 
-    .animated-bg{
-      position:fixed;inset:0;z-index:-1;background:transparent;overflow:hidden
-    }
-    body.dark-mode .animated-bg{background:#000}
-
+    .animated-bg{position:fixed;inset:0;z-index:-1}
     .grid-overlay{
       position:absolute;inset:0;
       background-image:
         linear-gradient(var(--grid-line) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
       background-size:50px 50px;
-      animation:gridMove 20s linear infinite;
     }
-    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-
-    .gradient-orb{
-      position:absolute;border-radius:50%;filter:blur(80px);opacity:.22;animation:float 20s ease-in-out infinite
-    }
-    .orb-1{width:520px;height:520px;background:radial-gradient(circle,var(--orb) 0%,transparent 70%);top:-220px;left:-220px}
-    .orb-2{width:420px;height:420px;background:radial-gradient(circle,var(--orb) 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
-    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
 
     header{
-      position:sticky;top:0;z-index:1000;
-      background:var(--header-bg);
-      backdrop-filter:blur(20px);
-      border-bottom:1px solid var(--header-border);
       padding:1rem 0;
+      border-bottom:1px solid var(--panel-border);
     }
 
     .nav{
       max-width:1200px;margin:0 auto;
-      display:flex;align-items:center;justify-content:space-between;
+      display:flex;justify-content:space-between;
       padding:0 1.25rem;
-      gap:1rem;
     }
 
-    .brand{
-      display:flex;align-items:center;gap:.6rem;
-      font-weight:900;letter-spacing:-1px;font-size:1.25rem;
-    }
-    .brand i{opacity:.9}
-
-    .nav a{
-      color:var(--nav-link);
-      text-decoration:none;font-weight:700;
-      border:1px solid var(--nav-link-border);
-      background:var(--nav-link-bg);
-      padding:.55rem .9rem;border-radius:999px;
-      transition:all .25s ease;
-      white-space:nowrap;
-      display:inline-flex;
-      align-items:center;
-      gap:.45rem;
-    }
-    .nav a:hover{
-      border-color:var(--nav-link-border);
-      background:var(--nav-link-hover);
-      transform:translateY(-1px)
-    }
-
-    main{max-width:1200px;margin:0 auto;padding:3.5rem 1.25rem 5rem}
+    main{max-width:1200px;margin:0 auto;padding:3rem 1.25rem}
 
     .hero{
-      padding:2.25rem 1.75rem;
-      border:1px solid var(--hero-border);
-      background:var(--hero-bg);
-      border-radius:22px;
-      backdrop-filter:blur(10px);
-      box-shadow:var(--shadow);
+      border:1px solid var(--panel-border);
+      background:var(--panel-bg);
+      border-radius:20px;
+      padding:2rem;
     }
 
-    h1{
-      font-size:3rem;line-height:1.1;letter-spacing:-2px;
-      background:linear-gradient(135deg,#000 0%,#6c6c70 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-      margin-bottom:.75rem;
-    }
-    body.dark-mode h1{
-      background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-    }
-
-    p{color:var(--muted);font-size:1.1rem;line-height:1.8;max-width:70ch}
+    h1{font-size:2.5rem;margin-bottom:.5rem}
+    p{color:var(--muted)}
 
     .panel-grid{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-      gap:1.25rem;
-      margin-top:1.25rem;
+      grid-template-columns:1fr 1fr;
+      gap:1rem;
+      margin-top:1.5rem;
     }
 
     .panel{
       border:1px solid var(--panel-border);
       background:var(--panel-bg);
-      border-radius:18px;
-      padding:1.25rem 1.25rem 1.4rem;
-      backdrop-filter:blur(10px);
-      min-height:180px;
-      box-shadow:0 14px 34px rgba(0,0,0,.08);
+      border-radius:16px;
+      padding:1rem;
     }
-    body.dark-mode .panel{box-shadow:none}
 
-    .panel h2{font-size:1.2rem;margin-bottom:.5rem}
-    .panel .muted{color:var(--muted);font-size:.98rem}
+    input,select{
+      width:100%;
+      padding:.8rem;
+      margin-top:.4rem;
+      border-radius:10px;
+      border:1px solid var(--panel-border);
+      background:transparent;
+      color:var(--text);
+    }
 
-    .hint{
-      margin-top:1.2rem;
-      color:var(--hint);
-      font-size:.95rem;
+    button{
+      margin-top:1rem;
+      padding:.8rem;
+      border:none;
+      border-radius:10px;
+      font-weight:700;
+      cursor:pointer;
+      width:100%;
+    }
+
+    .primary{background:var(--text);color:var(--bg)}
+    .secondary{background:transparent;border:1px solid var(--panel-border)}
+
+    .metric{
+      margin-top:1rem;
+      padding:.8rem;
+      border-radius:10px;
+      border:1px solid var(--panel-border);
+    }
+
+    .good{color:var(--good)}
+    .warn{color:var(--warn)}
+    .bad{color:var(--bad)}
+
+    @media(max-width:800px){
+      .panel-grid{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
-  <div class="animated-bg">
-    <div class="grid-overlay"></div>
-    <div class="gradient-orb orb-1"></div>
-    <div class="gradient-orb orb-2"></div>
+
+<header>
+  <div class="nav">
+    <div><i class="fas fa-chart-line"></i> FYNX Tools</div>
   </div>
+</header>
 
-  <header>
-    <div class="nav">
-      <div class="brand"><i class="fas fa-chart-line"></i> FYNX Tools</div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
-        <a href="../index.html#tools"><i class="fas fa-arrow-left"></i> Back</a>
-        <a href="../index.html"><i class="fas fa-house"></i> Home</a>
+<main>
+  <section class="hero">
+    <h1>Break Even Calculator</h1>
+    <p>Calculate the exact price where your trade becomes profitable after fees, spread, and position size.</p>
+
+    <div class="panel-grid">
+
+      <!-- INPUT -->
+      <div class="panel">
+        <h3>Inputs</h3>
+
+        <label>Position Type</label>
+        <select id="type">
+          <option value="buy">Buy (Long)</option>
+          <option value="sell">Sell (Short)</option>
+        </select>
+
+        <label>Entry Price</label>
+        <input id="entry" type="number" value="1.1000">
+
+        <label>Lot Size</label>
+        <input id="lot" type="number" value="1">
+
+        <label>Spread (pips)</label>
+        <input id="spread" type="number" value="1">
+
+        <label>Commission ($)</label>
+        <input id="commission" type="number" value="7">
+
+        <button class="primary" onclick="calc()">Calculate</button>
+        <button class="secondary" onclick="resetCalc()">Reset</button>
       </div>
+
+      <!-- RESULT -->
+      <div class="panel">
+        <h3>Results</h3>
+
+        <div class="metric">
+          Break Even Price: <strong id="be">—</strong>
+        </div>
+
+        <div class="metric">
+          Total Cost: <strong id="cost">—</strong>
+        </div>
+
+        <div class="metric">
+          Pips Needed: <strong id="pips">—</strong>
+        </div>
+
+        <div class="metric" id="statusBox">
+          Status: —
+        </div>
+
+      </div>
+
     </div>
-  </header>
+  </section>
+</main>
 
-  <main>
-    <section class="hero">
-      <h1>Forex Calculator</h1>
-      <p>Dedicated page for the Forex calculator. Put your real calculator code here (inputs, outputs, formulas, UI).</p>
+<script>
+function calc(){
+  let type = document.getElementById("type").value;
+  let entry = parseFloat(document.getElementById("entry").value);
+  let lot = parseFloat(document.getElementById("lot").value);
+  let spread = parseFloat(document.getElementById("spread").value);
+  let commission = parseFloat(document.getElementById("commission").value);
 
-      <div class="panel-grid">
-        <div class="panel">
-          <h2>Calculator UI</h2>
-          <div class="muted">Add inputs (pair, lot size, risk %, stop loss pips, etc.) and compute results.</div>
-        </div>
-        <div class="panel">
-          <h2>Results</h2>
-          <div class="muted">Show position size, pip value, risk amount, margin estimate, and notes.</div>
-        </div>
-      </div>
+  if(!entry || !lot){
+    alert("Enter valid values");
+    return;
+  }
 
-      <div class="hint">Tip: when you’re ready, tell me which tool you want first and I’ll write the full working calculator code for that page.</div>
-    </section>
-  </main>
+  let pipValue = 10 * lot; // standard forex
+  let spreadCost = spread * pipValue;
+  let totalCost = spreadCost + commission;
 
-  <script>
-    const THEME_KEY = "fynx_theme";
+  let pipsNeeded = totalCost / pipValue;
 
-    (function applyThemeFromStorage(){
-      const saved = localStorage.getItem(THEME_KEY);
-      if (saved === "dark") document.body.classList.add("dark-mode");
-      else document.body.classList.remove("dark-mode");
-    })();
+  let bePrice;
 
-    window.addEventListener("storage", (e) => {
-      if (e.key === THEME_KEY) {
-        if (e.newValue === "dark") document.body.classList.add("dark-mode");
-        else document.body.classList.remove("dark-mode");
-      }
-    });
-  </script>
+  if(type === "buy"){
+    bePrice = entry + (pipsNeeded * 0.0001);
+  } else {
+    bePrice = entry - (pipsNeeded * 0.0001);
+  }
+
+  document.getElementById("be").innerText = bePrice.toFixed(5);
+  document.getElementById("cost").innerText = "$" + totalCost.toFixed(2);
+  document.getElementById("pips").innerText = pipsNeeded.toFixed(2) + " pips";
+
+  let status = document.getElementById("statusBox");
+
+  if(pipsNeeded < 2){
+    status.innerHTML = "Status: <span class='good'>Efficient Trade</span>";
+  } else if(pipsNeeded < 5){
+    status.innerHTML = "Status: <span class='warn'>Moderate Cost</span>";
+  } else {
+    status.innerHTML = "Status: <span class='bad'>Expensive Trade</span>";
+  }
+}
+
+function resetCalc(){
+  document.getElementById("entry").value = "1.1000";
+  document.getElementById("lot").value = "1";
+  document.getElementById("spread").value = "1";
+  document.getElementById("commission").value = "7";
+
+  document.getElementById("be").innerText = "—";
+  document.getElementById("cost").innerText = "—";
+  document.getElementById("pips").innerText = "—";
+  document.getElementById("statusBox").innerText = "Status: —";
+}
+</script>
+
 </body>
 </html>
+```
