@@ -1,9 +1,10 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX Tools — Forex Calculator</title>
+  <title>FYNX Tools — Calendar Alerts</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
@@ -26,6 +27,11 @@
       --grid-line:rgba(0,0,0,0.035);
       --orb:rgba(0,0,0,.14);
       --shadow:0 20px 60px rgba(0,0,0,.10);
+      --input-bg:#fff;
+      --good:#118a4e;
+      --warn:#d48b00;
+      --bad:#c8342f;
+      --chip:rgba(0,0,0,.04);
     }
 
     body.dark-mode{
@@ -46,6 +52,11 @@
       --grid-line:rgba(255,255,255,0.03);
       --orb:#fff;
       --shadow:none;
+      --input-bg:rgba(255,255,255,.03);
+      --good:#35d07f;
+      --warn:#ffb347;
+      --bad:#ff6b61;
+      --chip:rgba(255,255,255,.05);
     }
 
     body{
@@ -90,6 +101,7 @@
       display:flex;align-items:center;justify-content:space-between;
       padding:0 1.25rem;
       gap:1rem;
+      flex-wrap:wrap;
     }
 
     .brand{
@@ -98,7 +110,12 @@
     }
     .brand i{opacity:.9}
 
-    .nav a{
+    .nav-actions{
+      display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end;
+    }
+
+    .nav a,
+    .theme-btn{
       color:var(--nav-link);
       text-decoration:none;font-weight:700;
       border:1px solid var(--nav-link-border);
@@ -109,17 +126,20 @@
       display:inline-flex;
       align-items:center;
       gap:.45rem;
+      cursor:pointer;
+      font:inherit;
     }
-    .nav a:hover{
+    .nav a:hover,
+    .theme-btn:hover{
       border-color:var(--nav-link-border);
       background:var(--nav-link-hover);
       transform:translateY(-1px)
     }
 
-    main{max-width:1200px;margin:0 auto;padding:3.5rem 1.25rem 5rem}
+    main{max-width:1200px;margin:0 auto;padding:3rem 1.25rem 5rem}
 
     .hero{
-      padding:2.25rem 1.75rem;
+      padding:2rem 1.5rem;
       border:1px solid var(--hero-border);
       background:var(--hero-bg);
       border-radius:22px;
@@ -138,11 +158,11 @@
       -webkit-background-clip:text;-webkit-text-fill-color:transparent;
     }
 
-    p{color:var(--muted);font-size:1.1rem;line-height:1.8;max-width:70ch}
+    p{color:var(--muted);font-size:1.05rem;line-height:1.8;max-width:78ch}
 
     .panel-grid{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+      grid-template-columns:1.05fr .95fr;
       gap:1.25rem;
       margin-top:1.25rem;
     }
@@ -151,20 +171,269 @@
       border:1px solid var(--panel-border);
       background:var(--panel-bg);
       border-radius:18px;
-      padding:1.25rem 1.25rem 1.4rem;
+      padding:1.2rem;
       backdrop-filter:blur(10px);
       min-height:180px;
       box-shadow:0 14px 34px rgba(0,0,0,.08);
     }
     body.dark-mode .panel{box-shadow:none}
 
-    .panel h2{font-size:1.2rem;margin-bottom:.5rem}
-    .panel .muted{color:var(--muted);font-size:.98rem}
+    .panel h2{font-size:1.12rem;margin-bottom:.8rem}
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:.95rem;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:.45rem;
+    }
+
+    .field.full{grid-column:1/-1}
+
+    .field label{
+      color:var(--muted);
+      font-size:.9rem;
+      font-weight:800;
+    }
+
+    .field input,
+    .field select{
+      width:100%;
+      padding:.9rem .95rem;
+      border-radius:14px;
+      border:1px solid var(--panel-border);
+      background:var(--input-bg);
+      color:var(--text);
+      font:inherit;
+      outline:none;
+      transition:border-color .2s ease, transform .2s ease;
+    }
+
+    .field input:focus,
+    .field select:focus{
+      transform:translateY(-1px);
+      border-color:var(--nav-link-border);
+    }
+
+    .button-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.75rem;
+      margin-top:1rem;
+    }
+
+    .btn{
+      border:none;
+      padding:.9rem 1rem;
+      border-radius:14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:all .2s ease;
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      font:inherit;
+    }
+
+    .btn.primary{
+      background:var(--text);
+      color:var(--bg);
+    }
+
+    .btn.secondary{
+      background:var(--chip);
+      color:var(--text);
+      border:1px solid var(--panel-border);
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+
+    .status-box{
+      border:1px solid var(--panel-border);
+      background:var(--chip);
+      border-radius:16px;
+      padding:1rem;
+      margin-bottom:1rem;
+    }
+
+    .status-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      border:1px solid var(--panel-border);
+      background:var(--panel-bg);
+      padding:.42rem .7rem;
+      border-radius:999px;
+      font-size:.82rem;
+      font-weight:800;
+      margin-bottom:.7rem;
+    }
+
+    .status-title{
+      font-size:1.05rem;
+      font-weight:900;
+      margin-bottom:.3rem;
+    }
+
+    .status-desc{
+      color:var(--muted);
+      line-height:1.7;
+      font-size:.95rem;
+    }
+
+    .results-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:.85rem;
+      margin-bottom:1rem;
+    }
+
+    .metric{
+      border:1px solid var(--panel-border);
+      background:var(--chip);
+      border-radius:16px;
+      padding:1rem;
+      min-height:118px;
+    }
+
+    .metric-label{
+      color:var(--hint);
+      font-size:.78rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-bottom:.45rem;
+      font-weight:800;
+    }
+
+    .metric-value{
+      color:var(--text);
+      font-size:1.25rem;
+      font-weight:900;
+      letter-spacing:-.03em;
+    }
+
+    .metric-sub{
+      margin-top:.35rem;
+      color:var(--muted);
+      font-size:.9rem;
+      line-height:1.5;
+    }
+
+    .good{color:var(--good)}
+    .warn{color:var(--warn)}
+    .bad{color:var(--bad)}
+
+    .alerts-wrap{
+      margin-top:1.25rem;
+      border:1px solid var(--panel-border);
+      border-radius:18px;
+      overflow:hidden;
+      background:var(--panel-bg);
+    }
+
+    .alerts-head{
+      padding:1rem 1rem .9rem;
+      border-bottom:1px solid var(--panel-border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      flex-wrap:wrap;
+    }
+
+    .alerts-list{
+      display:grid;
+      gap:0;
+    }
+
+    .alert-row{
+      display:grid;
+      grid-template-columns:1.1fr .9fr .9fr auto;
+      gap:1rem;
+      align-items:center;
+      padding:1rem;
+      border-bottom:1px solid var(--panel-border);
+    }
+
+    .alert-row:last-child{border-bottom:none}
+
+    .alert-main{
+      display:flex;
+      flex-direction:column;
+      gap:.22rem;
+    }
+
+    .alert-title{
+      font-weight:900;
+      color:var(--text);
+    }
+
+    .alert-sub{
+      color:var(--muted);
+      font-size:.9rem;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      padding:.38rem .6rem;
+      border-radius:999px;
+      border:1px solid var(--panel-border);
+      background:var(--chip);
+      font-size:.8rem;
+      font-weight:800;
+      width:max-content;
+    }
+
+    .badge.high{color:var(--bad)}
+    .badge.medium{color:var(--warn)}
+    .badge.low{color:var(--good)}
+
+    .delete-btn{
+      border:none;
+      background:transparent;
+      color:var(--bad);
+      cursor:pointer;
+      font-size:1rem;
+      padding:.35rem;
+    }
+
+    .empty-state{
+      padding:1.3rem 1rem;
+      color:var(--muted);
+      text-align:center;
+    }
 
     .hint{
       margin-top:1.2rem;
       color:var(--hint);
       font-size:.95rem;
+      line-height:1.8;
+    }
+
+    @media (max-width: 980px){
+      .panel-grid,
+      .results-grid,
+      .form-grid{
+        grid-template-columns:1fr;
+      }
+
+      .alert-row{
+        grid-template-columns:1fr;
+        gap:.65rem;
+      }
+    }
+
+    @media (max-width: 700px){
+      main{padding:2rem .95rem 3rem}
+      .hero{padding:1.25rem 1rem}
+      h1{font-size:2.35rem}
+      .nav{padding:0 .9rem}
     }
   </style>
 </head>
@@ -177,8 +446,12 @@
 
   <header>
     <div class="nav">
-      <div class="brand"><i class="fas fa-chart-line"></i> FYNX Tools</div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
+      <div class="brand"><i class="fas fa-bell"></i> FYNX Tools</div>
+      <div class="nav-actions">
+        <button class="theme-btn" id="themeToggle" type="button">
+          <i class="fas fa-circle-half-stroke"></i>
+          <span id="themeToggleText">Theme</span>
+        </button>
         <a href="../index.html#tools"><i class="fas fa-arrow-left"></i> Back</a>
         <a href="../index.html"><i class="fas fa-house"></i> Home</a>
       </div>
@@ -187,39 +460,496 @@
 
   <main>
     <section class="hero">
-      <h1>Forex Calculator</h1>
-      <p>Dedicated page for the Forex calculator. Put your real calculator code here (inputs, outputs, formulas, UI).</p>
+      <h1>Calendar Alerts</h1>
+      <p>
+        Create alerts for high-impact economic events and important calendar times. This page helps you schedule reminders before CPI, NFP, FOMC, interest rates, GDP, speeches, and any custom event you want to track.
+      </p>
 
       <div class="panel-grid">
         <div class="panel">
-          <h2>Calculator UI</h2>
-          <div class="muted">Add inputs (pair, lot size, risk %, stop loss pips, etc.) and compute results.</div>
+          <h2>Create Alert</h2>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="eventName">Event Name</label>
+              <input id="eventName" type="text" value="US CPI" placeholder="US CPI, NFP, FOMC..." />
+            </div>
+
+            <div class="field">
+              <label for="eventImpact">Impact</label>
+              <select id="eventImpact">
+                <option value="high" selected>High Impact</option>
+                <option value="medium">Medium Impact</option>
+                <option value="low">Low Impact</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="eventDate">Event Date</label>
+              <input id="eventDate" type="date" />
+            </div>
+
+            <div class="field">
+              <label for="eventTime">Event Time</label>
+              <input id="eventTime" type="time" />
+            </div>
+
+            <div class="field">
+              <label for="reminderOffset">Alert Before Event</label>
+              <select id="reminderOffset">
+                <option value="5">5 minutes before</option>
+                <option value="15" selected>15 minutes before</option>
+                <option value="30">30 minutes before</option>
+                <option value="60">1 hour before</option>
+                <option value="120">2 hours before</option>
+                <option value="1440">1 day before</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="eventCategory">Category</label>
+              <select id="eventCategory">
+                <option value="inflation">Inflation</option>
+                <option value="employment">Employment</option>
+                <option value="rates">Interest Rates</option>
+                <option value="speech">Central Bank Speech</option>
+                <option value="growth">GDP / Growth</option>
+                <option value="custom" selected>Custom</option>
+              </select>
+            </div>
+
+            <div class="field full">
+              <label for="eventNote">Note</label>
+              <input id="eventNote" type="text" value="Watch gold, DXY, EURUSD and spreads." placeholder="Extra reminder note..." />
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button class="btn primary" id="addAlertBtn">
+              <i class="fas fa-plus"></i> Add Alert
+            </button>
+            <button class="btn secondary" id="clearAllBtn">
+              <i class="fas fa-trash"></i> Clear All
+            </button>
+          </div>
+
+          <div class="hint">
+            Alerts are stored in your browser on this device. For live notification popups, keep the page open and allow browser notifications.
+          </div>
         </div>
+
         <div class="panel">
-          <h2>Results</h2>
-          <div class="muted">Show position size, pip value, risk amount, margin estimate, and notes.</div>
+          <h2>Alert Overview</h2>
+
+          <div class="status-box">
+            <div class="status-chip" id="statusChip"><i class="fas fa-circle"></i> Ready</div>
+            <div class="status-title" id="statusTitle">No active warning yet</div>
+            <div class="status-desc" id="statusDesc">Your saved alerts will appear below and this page will warn you as an alert time gets close.</div>
+          </div>
+
+          <div class="results-grid">
+            <div class="metric">
+              <div class="metric-label">Saved Alerts</div>
+              <div class="metric-value" id="savedAlertsValue">0</div>
+              <div class="metric-sub">Total alerts currently stored in this browser.</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Next Alert</div>
+              <div class="metric-value good" id="nextAlertValue">—</div>
+              <div class="metric-sub" id="nextAlertSub">No upcoming alert yet.</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Nearest Event</div>
+              <div class="metric-value warn" id="nearestEventValue">—</div>
+              <div class="metric-sub" id="nearestEventSub">No scheduled event yet.</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Notification Status</div>
+              <div class="metric-value" id="notificationStatusValue">Unknown</div>
+              <div class="metric-sub">Browser permission for alert popups.</div>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button class="btn secondary" id="requestPermissionBtn">
+              <i class="fas fa-bell"></i> Enable Notifications
+            </button>
+            <button class="btn secondary" id="loadSampleBtn">
+              <i class="fas fa-bolt"></i> Load Samples
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="hint">Tip: when you’re ready, tell me which tool you want first and I’ll write the full working calculator code for that page.</div>
+      <div class="alerts-wrap">
+        <div class="alerts-head">
+          <div>
+            <strong style="font-size:1rem;">Saved Alerts</strong>
+            <div class="hint" style="margin-top:.25rem;">Events are checked automatically every 20 seconds while this page is open.</div>
+          </div>
+        </div>
+
+        <div class="alerts-list" id="alertsList">
+          <div class="empty-state">No alerts saved yet.</div>
+        </div>
+      </div>
+
+      <div class="hint">
+        This tool is best for pre-news discipline. Add alerts before major macro events so you do not get caught in high volatility without a plan.
+      </div>
     </section>
   </main>
 
   <script>
     const THEME_KEY = "fynx_theme";
+    const ALERTS_KEY = "fynx_calendar_alerts";
+
+    function applyTheme(mode){
+      if (mode === "dark") document.body.classList.add("dark-mode");
+      else document.body.classList.remove("dark-mode");
+      updateThemeButton();
+    }
+
+    function updateThemeButton(){
+      const text = document.getElementById("themeToggleText");
+      if (!text) return;
+      text.textContent = document.body.classList.contains("dark-mode") ? "Dark" : "Light";
+    }
 
     (function applyThemeFromStorage(){
       const saved = localStorage.getItem(THEME_KEY);
-      if (saved === "dark") document.body.classList.add("dark-mode");
-      else document.body.classList.remove("dark-mode");
+      applyTheme(saved === "dark" ? "dark" : "light");
     })();
+
+    document.getElementById("themeToggle").addEventListener("click", () => {
+      const next = document.body.classList.contains("dark-mode") ? "light" : "dark";
+      localStorage.setItem(THEME_KEY, next);
+      applyTheme(next);
+    });
 
     window.addEventListener("storage", (e) => {
       if (e.key === THEME_KEY) {
-        if (e.newValue === "dark") document.body.classList.add("dark-mode");
-        else document.body.classList.remove("dark-mode");
+        applyTheme(e.newValue === "dark" ? "dark" : "light");
+      }
+      if (e.key === ALERTS_KEY) {
+        renderAlerts();
       }
     });
+
+    function getAlerts(){
+      try{
+        return JSON.parse(localStorage.getItem(ALERTS_KEY)) || [];
+      }catch{
+        return [];
+      }
+    }
+
+    function saveAlerts(alerts){
+      localStorage.setItem(ALERTS_KEY, JSON.stringify(alerts));
+    }
+
+    function setStatus(level, title, desc){
+      const chip = document.getElementById("statusChip");
+      const titleEl = document.getElementById("statusTitle");
+      const descEl = document.getElementById("statusDesc");
+
+      chip.className = `status-chip ${level || ""}`;
+      chip.innerHTML = `<i class="fas ${level === "bad" ? "fa-triangle-exclamation" : level === "warn" ? "fa-clock" : "fa-circle"}"></i> ${level === "bad" ? "Urgent" : level === "warn" ? "Soon" : "Ready"}`;
+      titleEl.textContent = title;
+      descEl.textContent = desc;
+    }
+
+    function formatDateTime(date){
+      return date.toLocaleString([], {
+        year:"numeric",
+        month:"short",
+        day:"numeric",
+        hour:"2-digit",
+        minute:"2-digit"
+      });
+    }
+
+    function updateNotificationStatus(){
+      const el = document.getElementById("notificationStatusValue");
+      if (!("Notification" in window)) {
+        el.textContent = "Unsupported";
+        return;
+      }
+      el.textContent = Notification.permission.charAt(0).toUpperCase() + Notification.permission.slice(1);
+    }
+
+    async function requestPermission(){
+      if (!("Notification" in window)) return;
+      try{
+        await Notification.requestPermission();
+      }catch(e){}
+      updateNotificationStatus();
+    }
+
+    function notifyUser(title, body){
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification(title, { body });
+      }
+    }
+
+    function minutesUntil(date){
+      return (date.getTime() - Date.now()) / 60000;
+    }
+
+    function impactLabelClass(impact){
+      if(impact === "high") return "high";
+      if(impact === "medium") return "medium";
+      return "low";
+    }
+
+    function deleteAlert(id){
+      const alerts = getAlerts().filter(a => a.id !== id);
+      saveAlerts(alerts);
+      renderAlerts();
+    }
+
+    function clearAllAlerts(){
+      saveAlerts([]);
+      renderAlerts();
+      setStatus("","No active warning yet","All saved alerts were cleared.");
+    }
+
+    function addAlert(){
+      const eventName = document.getElementById("eventName").value.trim();
+      const eventImpact = document.getElementById("eventImpact").value;
+      const eventDate = document.getElementById("eventDate").value;
+      const eventTime = document.getElementById("eventTime").value;
+      const reminderOffset = parseInt(document.getElementById("reminderOffset").value, 10);
+      const eventCategory = document.getElementById("eventCategory").value;
+      const eventNote = document.getElementById("eventNote").value.trim();
+
+      if(!eventName || !eventDate || !eventTime){
+        setStatus("bad","Missing information","Enter an event name, date, and time before saving the alert.");
+        return;
+      }
+
+      const eventDateTime = new Date(`${eventDate}T${eventTime}`);
+      if(Number.isNaN(eventDateTime.getTime())){
+        setStatus("bad","Invalid event time","The date or time could not be understood.");
+        return;
+      }
+
+      const alerts = getAlerts();
+      alerts.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        name: eventName,
+        impact: eventImpact,
+        date: eventDate,
+        time: eventTime,
+        category: eventCategory,
+        note: eventNote,
+        reminderOffset,
+        notified: false,
+        createdAt: Date.now()
+      });
+
+      saveAlerts(alerts);
+      renderAlerts();
+      setStatus("good","Alert saved","The calendar alert was added successfully.");
+    }
+
+    function loadSamples(){
+      const now = new Date();
+      const a = new Date(now.getTime() + 45 * 60000);
+      const b = new Date(now.getTime() + 3 * 60 * 60000);
+      const c = new Date(now.getTime() + 26 * 60 * 60000);
+
+      const samples = [
+        {
+          id: "sample-1",
+          name: "US CPI",
+          impact: "high",
+          date: a.toISOString().slice(0,10),
+          time: a.toTimeString().slice(0,5),
+          category: "inflation",
+          note: "Watch gold, DXY, EURUSD.",
+          reminderOffset: 15,
+          notified: false,
+          createdAt: Date.now()
+        },
+        {
+          id: "sample-2",
+          name: "Powell Speech",
+          impact: "medium",
+          date: b.toISOString().slice(0,10),
+          time: b.toTimeString().slice(0,5),
+          category: "speech",
+          note: "Expect fast repricing if tone shifts.",
+          reminderOffset: 30,
+          notified: false,
+          createdAt: Date.now()
+        },
+        {
+          id: "sample-3",
+          name: "NFP",
+          impact: "high",
+          date: c.toISOString().slice(0,10),
+          time: c.toTimeString().slice(0,5),
+          category: "employment",
+          note: "Check spreads before execution.",
+          reminderOffset: 5,
+          notified: false,
+          createdAt: Date.now()
+        }
+      ];
+
+      saveAlerts(samples);
+      renderAlerts();
+      setStatus("good","Sample alerts loaded","Three sample macro alerts were added.");
+    }
+
+    function renderAlerts(){
+      const alerts = getAlerts()
+        .map(alert => {
+          const eventDateTime = new Date(`${alert.date}T${alert.time}`);
+          const reminderTime = new Date(eventDateTime.getTime() - alert.reminderOffset * 60000);
+          return { ...alert, eventDateTime, reminderTime };
+        })
+        .sort((a,b) => a.eventDateTime - b.eventDateTime);
+
+      const list = document.getElementById("alertsList");
+      const savedAlertsValue = document.getElementById("savedAlertsValue");
+      const nextAlertValue = document.getElementById("nextAlertValue");
+      const nextAlertSub = document.getElementById("nextAlertSub");
+      const nearestEventValue = document.getElementById("nearestEventValue");
+      const nearestEventSub = document.getElementById("nearestEventSub");
+
+      savedAlertsValue.textContent = alerts.length;
+
+      if(!alerts.length){
+        list.innerHTML = `<div class="empty-state">No alerts saved yet.</div>`;
+        nextAlertValue.textContent = "—";
+        nextAlertSub.textContent = "No upcoming alert yet.";
+        nearestEventValue.textContent = "—";
+        nearestEventSub.textContent = "No scheduled event yet.";
+        return;
+      }
+
+      const upcomingAlerts = alerts.filter(a => a.reminderTime.getTime() > Date.now());
+      const upcomingEvents = alerts.filter(a => a.eventDateTime.getTime() > Date.now());
+
+      if(upcomingAlerts.length){
+        nextAlertValue.textContent = upcomingAlerts[0].name;
+        nextAlertSub.textContent = `Reminder at ${formatDateTime(upcomingAlerts[0].reminderTime)}`;
+      } else {
+        nextAlertValue.textContent = "Passed";
+        nextAlertSub.textContent = "No future reminder time remains.";
+      }
+
+      if(upcomingEvents.length){
+        nearestEventValue.textContent = upcomingEvents[0].name;
+        nearestEventSub.textContent = `${formatDateTime(upcomingEvents[0].eventDateTime)}`;
+      } else {
+        nearestEventValue.textContent = "Passed";
+        nearestEventSub.textContent = "All saved events are in the past.";
+      }
+
+      list.innerHTML = alerts.map(alert => {
+        const minsToEvent = minutesUntil(alert.eventDateTime);
+        const minsToReminder = minutesUntil(alert.reminderTime);
+
+        let statusText = "Scheduled";
+        if(minsToEvent < 0) statusText = "Expired";
+        else if(minsToReminder <= 0 && minsToEvent > 0) statusText = "Reminder Window";
+        else statusText = `${Math.ceil(minsToEvent)} min to event`;
+
+        return `
+          <div class="alert-row">
+            <div class="alert-main">
+              <div class="alert-title">${alert.name}</div>
+              <div class="alert-sub">${formatDateTime(alert.eventDateTime)} • ${alert.category}</div>
+              <div class="alert-sub">${alert.note || "No extra note."}</div>
+            </div>
+
+            <div>
+              <div class="badge ${impactLabelClass(alert.impact)}">${alert.impact.toUpperCase()} IMPACT</div>
+            </div>
+
+            <div>
+              <div class="alert-sub">Alert: ${alert.reminderOffset} min before</div>
+              <div class="alert-sub">${statusText}</div>
+            </div>
+
+            <div>
+              <button class="delete-btn" onclick="deleteAlert('${alert.id}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function checkAlerts(){
+      const alerts = getAlerts();
+      let changed = false;
+
+      const mapped = alerts.map(alert => {
+        const eventDateTime = new Date(`${alert.date}T${alert.time}`);
+        const reminderTime = new Date(eventDateTime.getTime() - alert.reminderOffset * 60000);
+        const now = Date.now();
+
+        if(!alert.notified && now >= reminderTime.getTime() && now < eventDateTime.getTime()){
+          notifyUser(`FYNX Alert: ${alert.name}`, `${alert.reminderOffset} minutes before event. ${alert.note || ""}`.trim());
+          alert.notified = true;
+          changed = true;
+        }
+        return alert;
+      });
+
+      if(changed){
+        saveAlerts(mapped);
+        renderAlerts();
+      }
+
+      const futureEvents = mapped
+        .map(alert => ({...alert, eventDateTime:new Date(`${alert.date}T${alert.time}`)}))
+        .filter(alert => alert.eventDateTime.getTime() > Date.now())
+        .sort((a,b) => a.eventDateTime - b.eventDateTime);
+
+      if(!futureEvents.length){
+        setStatus("","No active warning yet","Your saved alerts will appear below and this page will warn you as an alert time gets close.");
+        return;
+      }
+
+      const next = futureEvents[0];
+      const mins = minutesUntil(next.eventDateTime);
+
+      if(mins <= 15){
+        setStatus("bad", `${next.name} is close`, `The next event is in about ${Math.max(0, Math.ceil(mins))} minutes. Tighten risk and watch spreads.`);
+      } else if(mins <= 60){
+        setStatus("warn", `${next.name} coming up`, `The next event is in about ${Math.ceil(mins)} minutes. Prepare your plan before volatility increases.`);
+      } else {
+        setStatus("", "No active warning yet", "Your saved alerts will appear below and this page will warn you as an alert time gets close.");
+      }
+    }
+
+    function setDefaultDateTime(){
+      const now = new Date();
+      const later = new Date(now.getTime() + 60 * 60000);
+      document.getElementById("eventDate").value = later.toISOString().slice(0,10);
+      document.getElementById("eventTime").value = later.toTimeString().slice(0,5);
+    }
+
+    document.getElementById("addAlertBtn").addEventListener("click", addAlert);
+    document.getElementById("clearAllBtn").addEventListener("click", clearAllAlerts);
+    document.getElementById("requestPermissionBtn").addEventListener("click", requestPermission);
+    document.getElementById("loadSampleBtn").addEventListener("click", loadSamples);
+
+    setDefaultDateTime();
+    updateNotificationStatus();
+    renderAlerts();
+    checkAlerts();
+    setInterval(checkAlerts, 20000);
   </script>
 </body>
 </html>
+```
