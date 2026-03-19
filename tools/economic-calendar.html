@@ -3,163 +3,574 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX Tools — Forex Calculator</title>
+  <title>FYNX Tools — Economic Calendar</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
+
+    :root{
+      --bg:#f3f3f5;
+      --bg-2:#ffffff;
+      --text:#0b0b0c;
+      --text-soft:rgba(0,0,0,.62);
+      --text-faint:rgba(0,0,0,.48);
+      --border:rgba(0,0,0,.10);
+      --border-strong:rgba(0,0,0,.16);
+      --surface:rgba(255,255,255,.74);
+      --surface-2:rgba(255,255,255,.84);
+      --surface-3:rgba(255,255,255,.92);
+      --shadow:0 20px 60px rgba(0,0,0,.10);
+      --shadow-soft:0 14px 34px rgba(0,0,0,.08);
+      --accent:#0b0b0c;
+      --green:#12a150;
+      --red:#dc3d43;
+      --orange:#ef8d24;
+      --blue:#246bff;
+    }
+
+    body.dark-mode{
+      --bg:#000;
+      --bg-2:#050505;
+      --text:#fff;
+      --text-soft:rgba(255,255,255,.68);
+      --text-faint:rgba(255,255,255,.50);
+      --border:rgba(255,255,255,.10);
+      --border-strong:rgba(255,255,255,.16);
+      --surface:rgba(255,255,255,.04);
+      --surface-2:rgba(255,255,255,.05);
+      --surface-3:rgba(255,255,255,.07);
+      --shadow:none;
+      --shadow-soft:none;
+      --accent:#fff;
+      --green:#2bd67b;
+      --red:#ff5b62;
+      --orange:#ffb347;
+      --blue:#77a9ff;
+    }
+
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
-      color:#0b0b0c;
+      color:var(--text);
       background:
         radial-gradient(circle at 1px 1px, rgba(0,0,0,0.085) 1px, transparent 1px) 0 0 / 18px 18px,
-        linear-gradient(#f3f3f5, #f3f3f5);
-      overflow-x:hidden;min-height:100vh;
-    }
-    body.dark-mode{
-      color:#fff;background:#000;
+        linear-gradient(var(--bg),var(--bg));
+      overflow-x:hidden;
+      min-height:100vh;
     }
 
-    .animated-bg{position:fixed;inset:0;z-index:-1;background:transparent;overflow:hidden}
-    body.dark-mode .animated-bg{background:#000}
+    body.dark-mode{
+      background:#000;
+    }
+
+    .animated-bg{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      background:transparent;
+      overflow:hidden;
+    }
+
+    body.dark-mode .animated-bg{
+      background:#000;
+    }
 
     .grid-overlay{
-      position:absolute;inset:0;
+      position:absolute;
+      inset:0;
       background-image:
-        linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,0,0,0.035) 1px, transparent 1px);
+        linear-gradient(rgba(0,0,0,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,.035) 1px, transparent 1px);
       background-size:50px 50px;
-      animation:gridMove 20s linear infinite;
+      animation:gridMove 22s linear infinite;
     }
+
     body.dark-mode .grid-overlay{
       background-image:
-        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+        linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
     }
-    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
 
-    .gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.22;animation:float 20s ease-in-out infinite}
-    .orb-1{width:520px;height:520px;background:radial-gradient(circle,rgba(0,0,0,.14) 0%,transparent 72%);top:-220px;left:-220px}
-    .orb-2{width:420px;height:420px;background:radial-gradient(circle,rgba(0,0,0,.12) 0%,transparent 72%);bottom:-170px;right:-170px;animation-delay:6s}
+    @keyframes gridMove{
+      0%{transform:translate(0,0)}
+      100%{transform:translate(50px,50px)}
+    }
+
+    .gradient-orb{
+      position:absolute;
+      border-radius:50%;
+      filter:blur(80px);
+      opacity:.20;
+      animation:float 20s ease-in-out infinite;
+      pointer-events:none;
+    }
+
+    .orb-1{
+      width:520px;
+      height:520px;
+      background:radial-gradient(circle,rgba(0,0,0,.13) 0%,transparent 72%);
+      top:-220px;
+      left:-220px;
+    }
+
+    .orb-2{
+      width:420px;
+      height:420px;
+      background:radial-gradient(circle,rgba(0,0,0,.11) 0%,transparent 72%);
+      bottom:-170px;
+      right:-170px;
+      animation-delay:6s;
+    }
+
     body.dark-mode .orb-1,
     body.dark-mode .orb-2{
-      background:radial-gradient(circle,#fff 0%,transparent 70%);
-      opacity:.25;
+      background:radial-gradient(circle,rgba(255,255,255,.95) 0%,transparent 70%);
+      opacity:.16;
     }
-    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
+
+    @keyframes float{
+      0%,100%{transform:translate(0,0) scale(1)}
+      33%{transform:translate(50px,-50px) scale(1.08)}
+      66%{transform:translate(-50px,50px) scale(.92)}
+    }
 
     header{
-      position:sticky;top:0;z-index:1000;
+      position:sticky;
+      top:0;
+      z-index:1000;
       background:rgba(243,243,245,.82);
       backdrop-filter:blur(20px);
-      border-bottom:1px solid rgba(0,0,0,.10);
+      border-bottom:1px solid var(--border);
       padding:1rem 0;
     }
+
     body.dark-mode header{
-      background:rgba(0,0,0,.85);
-      border-bottom:1px solid rgba(255,255,255,.1);
+      background:rgba(0,0,0,.84);
     }
 
     .nav{
-      max-width:1200px;margin:0 auto;
-      display:flex;align-items:center;justify-content:space-between;
+      max-width:1280px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
       padding:0 1.25rem;
       gap:1rem;
     }
-    .brand{
-      display:flex;align-items:center;gap:.6rem;
-      font-weight:900;letter-spacing:-1px;font-size:1.25rem;
-    }
-    .brand i{opacity:.9}
 
-    .nav a{
-      color:rgba(0,0,0,.82);
-      text-decoration:none;font-weight:700;
-      border:1px solid rgba(0,0,0,.12);
-      background:rgba(0,0,0,.03);
-      padding:.55rem .9rem;border-radius:999px;
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:.7rem;
+      font-weight:900;
+      letter-spacing:-1px;
+      font-size:1.24rem;
+    }
+
+    .brand i{opacity:.92}
+
+    .nav-actions{
+      display:flex;
+      gap:.6rem;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .nav a,
+    .theme-btn{
+      color:var(--text);
+      text-decoration:none;
+      font-weight:700;
+      border:1px solid var(--border);
+      background:var(--surface);
+      padding:.62rem .96rem;
+      border-radius:999px;
       transition:all .25s ease;
       white-space:nowrap;
       display:inline-flex;
       align-items:center;
-      gap:.45rem;
-    }
-    .nav a:hover{
-      color:rgba(0,0,0,.96);
-      border-color:rgba(0,0,0,.22);
-      background:rgba(0,0,0,.05);
-      transform:translateY(-1px)
-    }
-    body.dark-mode .nav a{
-      color:rgba(255,255,255,.85);
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.04);
-    }
-    body.dark-mode .nav a:hover{
-      color:#fff;
-      border-color:rgba(255,255,255,.28);
-      background:rgba(255,255,255,.08);
+      gap:.48rem;
+      cursor:pointer;
+      font-size:.96rem;
+      box-shadow:var(--shadow-soft);
     }
 
-    main{max-width:1200px;margin:0 auto;padding:3.5rem 1.25rem 5rem}
-    .hero{
-      padding:2.25rem 1.75rem;
-      border:1px solid rgba(0,0,0,.10);
-      background:rgba(255,255,255,.68);
-      border-radius:22px;
-      backdrop-filter:blur(10px);
-      box-shadow:0 20px 60px rgba(0,0,0,.10);
+    .nav a:hover,
+    .theme-btn:hover{
+      transform:translateY(-1px);
+      border-color:var(--border-strong);
+      background:var(--surface-2);
     }
-    body.dark-mode .hero{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.03);
-      box-shadow:none;
+
+    main{
+      max-width:1280px;
+      margin:0 auto;
+      padding:2rem 1.25rem 4.5rem;
+    }
+
+    .hero{
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:26px;
+      backdrop-filter:blur(14px);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .hero-top{
+      padding:2rem 1.7rem 1.4rem;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      justify-content:space-between;
+      gap:1rem;
+      flex-wrap:wrap;
+      align-items:flex-start;
+    }
+
+    .hero-copy{
+      max-width:760px;
     }
 
     h1{
-      font-size:3rem;line-height:1.1;letter-spacing:-2px;
+      font-size:clamp(2.25rem,4vw,3.45rem);
+      line-height:1.02;
+      letter-spacing:-2.5px;
+      margin-bottom:.8rem;
       background:linear-gradient(135deg,#000 0%,#6c6c70 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-      margin-bottom:.75rem;
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
     }
+
     body.dark-mode h1{
-      background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      background:linear-gradient(135deg,#fff 0%,#8f8f93 100%);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
     }
 
-    p{color:rgba(0,0,0,.62);font-size:1.1rem;line-height:1.8;max-width:70ch}
-    body.dark-mode p{color:rgba(255,255,255,.65)}
+    .lead{
+      color:var(--text-soft);
+      font-size:1.05rem;
+      line-height:1.85;
+      max-width:70ch;
+    }
 
-    .panel-grid{
+    .hero-badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.7rem;
+      margin-top:1rem;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      padding:.56rem .82rem;
+      border:1px solid var(--border);
+      background:var(--surface-2);
+      border-radius:999px;
+      font-size:.92rem;
+      font-weight:700;
+      color:var(--text-soft);
+    }
+
+    .live-pulse{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:var(--green);
+      box-shadow:0 0 0 0 rgba(18,161,80,.6);
+      animation:pulse 1.8s infinite;
+    }
+
+    @keyframes pulse{
+      0%{box-shadow:0 0 0 0 rgba(18,161,80,.55)}
+      70%{box-shadow:0 0 0 12px rgba(18,161,80,0)}
+      100%{box-shadow:0 0 0 0 rgba(18,161,80,0)}
+    }
+
+    .clock-wrap{
+      min-width:290px;
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-      gap:1.25rem;
-      margin-top:1.25rem;
+      grid-template-columns:1fr;
+      gap:.8rem;
     }
-    .panel{
-      border:1px solid rgba(0,0,0,.10);
-      background:rgba(255,255,255,.75);
+
+    .clock-card{
+      border:1px solid var(--border);
+      background:var(--surface-2);
       border-radius:18px;
-      padding:1.25rem 1.25rem 1.4rem;
-      backdrop-filter:blur(10px);
-      min-height:180px;
-      box-shadow:0 14px 34px rgba(0,0,0,.08);
-    }
-    body.dark-mode .panel{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.55);
-      box-shadow:none;
+      padding:1rem 1rem 1.05rem;
+      box-shadow:var(--shadow-soft);
     }
 
-    .panel h2{font-size:1.2rem;margin-bottom:.5rem}
-    .panel .muted{color:rgba(0,0,0,.60);font-size:.98rem}
-    body.dark-mode .panel .muted{color:rgba(255,255,255,.6)}
+    .clock-label{
+      font-size:.82rem;
+      color:var(--text-faint);
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-bottom:.35rem;
+      font-weight:800;
+    }
 
-    .hint{
-      margin-top:1.2rem;
-      color:rgba(0,0,0,.52);
+    .clock-value{
+      font-size:1.25rem;
+      font-weight:900;
+      letter-spacing:-.03em;
+    }
+
+    .clock-sub{
+      margin-top:.28rem;
+      color:var(--text-soft);
+      font-size:.94rem;
+    }
+
+    .content{
+      display:grid;
+      grid-template-columns:minmax(0,1.5fr) minmax(300px,.82fr);
+      gap:1.2rem;
+      padding:1.25rem;
+    }
+
+    .main-panel,
+    .side-panel{
+      border:1px solid var(--border);
+      background:var(--surface-2);
+      border-radius:22px;
+      box-shadow:var(--shadow-soft);
+      overflow:hidden;
+    }
+
+    .section-head{
+      padding:1rem 1.05rem;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      flex-wrap:wrap;
+      gap:.8rem;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .section-title{
+      display:flex;
+      align-items:center;
+      gap:.65rem;
+      font-size:1.06rem;
+      font-weight:900;
+      letter-spacing:-.03em;
+    }
+
+    .section-title i{opacity:.85}
+
+    .section-note{
+      color:var(--text-faint);
+      font-size:.9rem;
+      font-weight:600;
+    }
+
+    .widget-toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.55rem;
+      align-items:center;
+    }
+
+    .toolbar-pill{
+      border:1px solid var(--border);
+      background:var(--surface-3);
+      color:var(--text-soft);
+      border-radius:999px;
+      padding:.45rem .72rem;
+      font-size:.82rem;
+      font-weight:800;
+      letter-spacing:.01em;
+    }
+
+    .widget-wrap{
+      padding:.8rem;
+    }
+
+    .widget-shell{
+      border:1px solid var(--border);
+      background:var(--bg-2);
+      border-radius:18px;
+      overflow:hidden;
+      min-height:760px;
+      position:relative;
+    }
+
+    .widget-loading{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--text-faint);
+      font-weight:800;
+      letter-spacing:.03em;
+      background:linear-gradient(180deg, transparent, rgba(0,0,0,.02));
+      pointer-events:none;
+      z-index:1;
+    }
+
+    body.dark-mode .widget-loading{
+      background:linear-gradient(180deg, transparent, rgba(255,255,255,.01));
+    }
+
+    .tradingview-widget-container,
+    .tradingview-widget-container > div{
+      width:100%;
+      height:760px;
+    }
+
+    .sidebar-inner{
+      padding:1rem;
+      display:grid;
+      gap:1rem;
+    }
+
+    .info-card{
+      border:1px solid var(--border);
+      background:var(--surface-3);
+      border-radius:18px;
+      padding:1rem;
+    }
+
+    .info-card h3{
+      font-size:1rem;
+      margin-bottom:.75rem;
+      display:flex;
+      align-items:center;
+      gap:.55rem;
+      letter-spacing:-.02em;
+    }
+
+    .info-list{
+      display:grid;
+      gap:.7rem;
+    }
+
+    .info-item{
+      display:flex;
+      gap:.75rem;
+      align-items:flex-start;
+      color:var(--text-soft);
+      line-height:1.6;
       font-size:.95rem;
     }
-    body.dark-mode .hint{color:rgba(255,255,255,.55)}
+
+    .dot{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      margin-top:.45rem;
+      flex:0 0 auto;
+    }
+
+    .dot.red{background:var(--red)}
+    .dot.orange{background:var(--orange)}
+    .dot.green{background:var(--green)}
+    .dot.blue{background:var(--blue)}
+
+    .session-grid{
+      display:grid;
+      gap:.8rem;
+    }
+
+    .session-row{
+      display:flex;
+      justify-content:space-between;
+      gap:1rem;
+      align-items:center;
+      padding:.82rem .9rem;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:var(--surface);
+    }
+
+    .session-row strong{
+      font-size:.95rem;
+      letter-spacing:-.01em;
+    }
+
+    .session-row span{
+      color:var(--text-soft);
+      font-size:.9rem;
+      text-align:right;
+    }
+
+    .quick-links{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:.75rem;
+    }
+
+    .quick-links a{
+      text-decoration:none;
+      color:var(--text);
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:14px;
+      padding:.9rem;
+      font-weight:800;
+      transition:all .2s ease;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:.75rem;
+      min-height:58px;
+    }
+
+    .quick-links a:hover{
+      transform:translateY(-1px);
+      border-color:var(--border-strong);
+      background:var(--surface-2);
+    }
+
+    .footer-note{
+      padding:0 1.3rem 1.25rem;
+      color:var(--text-faint);
+      font-size:.88rem;
+      line-height:1.7;
+    }
+
+    .footer-note a{
+      color:inherit;
+    }
+
+    @media (max-width: 1050px){
+      .content{
+        grid-template-columns:1fr;
+      }
+      .clock-wrap{
+        width:100%;
+        grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      }
+    }
+
+    @media (max-width: 700px){
+      .hero-top{
+        padding:1.35rem 1rem 1rem;
+      }
+      .content{
+        padding:1rem;
+      }
+      .widget-wrap{
+        padding:.65rem;
+      }
+      .sidebar-inner{
+        padding:.85rem;
+      }
+      .quick-links{
+        grid-template-columns:1fr;
+      }
+      .nav{
+        padding:0 .9rem;
+      }
+      main{
+        padding:1.2rem .9rem 3.2rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -172,7 +583,12 @@
   <header>
     <div class="nav">
       <div class="brand"><i class="fas fa-chart-line"></i> FYNX Tools</div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
+
+      <div class="nav-actions">
+        <button class="theme-btn" id="themeToggle" type="button">
+          <i class="fas fa-circle-half-stroke"></i>
+          <span id="themeToggleText">Theme</span>
+        </button>
         <a href="../index.html#tools"><i class="fas fa-arrow-left"></i> Back</a>
         <a href="../index.html"><i class="fas fa-house"></i> Home</a>
       </div>
@@ -181,38 +597,252 @@
 
   <main>
     <section class="hero">
-      <h1>Forex Calculator</h1>
-      <p>Dedicated page for the Forex calculator. Put your real calculator code here (inputs, outputs, formulas, UI).</p>
+      <div class="hero-top">
+        <div class="hero-copy">
+          <h1>Economic Calendar</h1>
+          <p class="lead">
+            Track market-moving macro events in real time. Use this page before trading forex, gold, indices, and risk assets so you know exactly when high-impact releases, central bank decisions, and labor or inflation data are about to hit.
+          </p>
 
-      <div class="panel-grid">
-        <div class="panel">
-          <h2>Calculator UI</h2>
-          <div class="muted">Add inputs (pair, lot size, risk %, stop loss pips, etc.) and compute results.</div>
+          <div class="hero-badges">
+            <div class="badge"><span class="live-pulse"></span> Live macro event feed</div>
+            <div class="badge"><i class="fas fa-filter"></i> Impact and currency filters</div>
+            <div class="badge"><i class="fas fa-bolt"></i> Built for pre-trade risk checks</div>
+          </div>
         </div>
-        <div class="panel">
-          <h2>Results</h2>
-          <div class="muted">Show position size, pip value, risk amount, margin estimate, and notes.</div>
+
+        <div class="clock-wrap">
+          <div class="clock-card">
+            <div class="clock-label">Your local time</div>
+            <div class="clock-value" id="localClock">--:--:--</div>
+            <div class="clock-sub" id="localDate">Loading…</div>
+          </div>
+          <div class="clock-card">
+            <div class="clock-label">UTC / market reference</div>
+            <div class="clock-value" id="utcClock">--:--:--</div>
+            <div class="clock-sub">Use this to avoid missing releases</div>
+          </div>
         </div>
       </div>
 
-      <div class="hint">Tip: when you’re ready, tell me which tool you want first and I’ll write the full working calculator code for that page.</div>
+      <div class="content">
+        <section class="main-panel">
+          <div class="section-head">
+            <div>
+              <div class="section-title">
+                <i class="fas fa-calendar-days"></i>
+                <span>Live calendar feed</span>
+              </div>
+              <div class="section-note">Focus on high-impact events first, then check forecast vs previous vs actual.</div>
+            </div>
+
+            <div class="widget-toolbar">
+              <div class="toolbar-pill">High impact first</div>
+              <div class="toolbar-pill">Forex focused</div>
+              <div class="toolbar-pill">Theme synced</div>
+            </div>
+          </div>
+
+          <div class="widget-wrap">
+            <div class="widget-shell">
+              <div class="widget-loading" id="widgetLoading">Loading live economic calendar…</div>
+
+              <div class="tradingview-widget-container" id="tvCalendarWrap">
+                <div id="tradingview_economic_calendar"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer-note">
+            Use this page as a risk filter: avoid entering right before red-folder events, and for gold or USD pairs always check CPI, NFP, FOMC, Powell speeches, rates, unemployment, GDP, and PMIs first.
+          </div>
+        </section>
+
+        <aside class="side-panel">
+          <div class="section-head">
+            <div class="section-title">
+              <i class="fas fa-layer-group"></i>
+              <span>Trade smarter</span>
+            </div>
+          </div>
+
+          <div class="sidebar-inner">
+            <div class="info-card">
+              <h3><i class="fas fa-triangle-exclamation"></i> Impact guide</h3>
+              <div class="info-list">
+                <div class="info-item"><span class="dot red"></span><div><strong>High impact</strong><br>Can move gold, USD pairs, indices, and yields fast. Reduce risk or wait for confirmation.</div></div>
+                <div class="info-item"><span class="dot orange"></span><div><strong>Medium impact</strong><br>Still important for intraday volatility, especially during London and New York.</div></div>
+                <div class="info-item"><span class="dot green"></span><div><strong>Low impact</strong><br>Usually less violent, but still useful for context and sentiment.</div></div>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <h3><i class="fas fa-business-time"></i> Key sessions</h3>
+              <div class="session-grid">
+                <div class="session-row">
+                  <strong>Tokyo</strong>
+                  <span>00:00–09:00 UTC</span>
+                </div>
+                <div class="session-row">
+                  <strong>London</strong>
+                  <span>08:00–17:00 UTC</span>
+                </div>
+                <div class="session-row">
+                  <strong>New York</strong>
+                  <span>13:00–22:00 UTC</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <h3><i class="fas fa-crosshairs"></i> What matters most</h3>
+              <div class="info-list">
+                <div class="info-item"><span class="dot blue"></span><div><strong>USD / Gold:</strong> CPI, Core CPI, NFP, FOMC, rates, Powell, PCE, unemployment.</div></div>
+                <div class="info-item"><span class="dot blue"></span><div><strong>EUR pairs:</strong> ECB rates, CPI, PMIs, GDP, Lagarde comments.</div></div>
+                <div class="info-item"><span class="dot blue"></span><div><strong>GBP pairs:</strong> BOE rates, CPI, GDP, jobs data, Bailey comments.</div></div>
+                <div class="info-item"><span class="dot blue"></span><div><strong>JPY pairs:</strong> BOJ, inflation, intervention risk, yield headlines.</div></div>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <h3><i class="fas fa-link"></i> Quick market links</h3>
+              <div class="quick-links">
+                <a href="https://www.tradingview.com/symbols/TVC-DXY/" target="_blank" rel="noopener noreferrer">
+                  <span>DXY</span><i class="fas fa-arrow-up-right-from-square"></i>
+                </a>
+                <a href="https://www.tradingview.com/symbols/OANDA-XAUUSD/" target="_blank" rel="noopener noreferrer">
+                  <span>XAUUSD</span><i class="fas fa-arrow-up-right-from-square"></i>
+                </a>
+                <a href="https://www.tradingview.com/symbols/EURUSD/" target="_blank" rel="noopener noreferrer">
+                  <span>EURUSD</span><i class="fas fa-arrow-up-right-from-square"></i>
+                </a>
+                <a href="https://www.tradingview.com/symbols/GBPUSD/" target="_blank" rel="noopener noreferrer">
+                  <span>GBPUSD</span><i class="fas fa-arrow-up-right-from-square"></i>
+                </a>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <h3><i class="fas fa-shield-halved"></i> Execution rule</h3>
+              <div class="info-list">
+                <div class="info-item"><span class="dot red"></span><div>Do not open a fresh trade seconds before a major release unless news trading is your system.</div></div>
+                <div class="info-item"><span class="dot orange"></span><div>Wait for spread normalization and post-news structure if you are a confirmation trader.</div></div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
     </section>
   </main>
 
   <script>
     const THEME_KEY = "fynx_theme";
-    (function applyThemeFromStorage(){
-      const saved = localStorage.getItem(THEME_KEY);
-      if (saved === "dark") document.body.classList.add("dark-mode");
+
+    function applyTheme(mode){
+      if(mode === "dark") document.body.classList.add("dark-mode");
       else document.body.classList.remove("dark-mode");
+      updateThemeButton();
+    }
+
+    function getStoredTheme(){
+      return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+    }
+
+    function updateThemeButton(){
+      const isDark = document.body.classList.contains("dark-mode");
+      const text = document.getElementById("themeToggleText");
+      if(text) text.textContent = isDark ? "Dark" : "Light";
+    }
+
+    (function initTheme(){
+      applyTheme(getStoredTheme());
     })();
+
+    document.getElementById("themeToggle").addEventListener("click", () => {
+      const next = document.body.classList.contains("dark-mode") ? "light" : "dark";
+      localStorage.setItem(THEME_KEY, next);
+      applyTheme(next);
+      renderEconomicCalendar();
+    });
 
     window.addEventListener("storage", (e) => {
       if (e.key === THEME_KEY) {
-        if (e.newValue === "dark") document.body.classList.add("dark-mode");
-        else document.body.classList.remove("dark-mode");
+        applyTheme(e.newValue === "dark" ? "dark" : "light");
+        renderEconomicCalendar();
       }
     });
+
+    function updateClocks(){
+      const now = new Date();
+
+      const localTime = now.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+
+      const localDate = now.toLocaleDateString([], {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+
+      const utcTime = now.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZone: "UTC"
+      });
+
+      document.getElementById("localClock").textContent = localTime;
+      document.getElementById("localDate").textContent = localDate;
+      document.getElementById("utcClock").textContent = utcTime + " UTC";
+    }
+
+    updateClocks();
+    setInterval(updateClocks, 1000);
+
+    function renderEconomicCalendar(){
+      const wrap = document.getElementById("tvCalendarWrap");
+      const holder = document.getElementById("tradingview_economic_calendar");
+      const loading = document.getElementById("widgetLoading");
+      const isDark = document.body.classList.contains("dark-mode");
+
+      holder.innerHTML = "";
+      wrap.querySelectorAll("script[data-tv-script='economic-calendar']").forEach(el => el.remove());
+
+      loading.style.display = "flex";
+
+      const script = document.createElement("script");
+      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-events.js";
+      script.async = true;
+      script.setAttribute("data-tv-script", "economic-calendar");
+
+      script.innerHTML = JSON.stringify({
+        colorTheme: isDark ? "dark" : "light",
+        isTransparent: true,
+        width: "100%",
+        height: "760",
+        locale: "en",
+        importanceFilter: "-1,0,1",
+        currencyFilter: "USD,EUR,GBP,JPY,AUD,NZD,CAD,CHF,CNY",
+        countryFilter: "us,eu,gb,jp,au,nz,ca,ch,cn",
+        calendarDisplayMode: "day",
+        hideDateRanges: false,
+        scaleMode: "fit"
+      });
+
+      script.onload = () => {
+        setTimeout(() => {
+          loading.style.display = "none";
+        }, 900);
+      };
+
+      wrap.appendChild(script);
+    }
+
+    renderEconomicCalendar();
   </script>
 </body>
 </html>
