@@ -57,17 +57,6 @@
       --icon-bubble-bg:rgba(0,0,0,.06);
       --news-title:rgba(10,10,10,.94);
       --empty-bg:rgba(0,0,0,.025);
-      --modal-overlay:rgba(0,0,0,.45);
-      --modal-bg:rgba(255,255,255,.94);
-      --modal-border:rgba(0,0,0,.14);
-      --modal-top-bg:rgba(0,0,0,.03);
-      --modal-top-border:rgba(0,0,0,.10);
-      --modal-btn-bg:rgba(0,0,0,.04);
-      --modal-btn-bg-hover:rgba(0,0,0,.07);
-      --modal-btn-border:rgba(0,0,0,.14);
-      --modal-btn-border-hover:rgba(0,0,0,.18);
-      --modal-btn-text:rgba(10,10,10,.92);
-      --iframe-bg:#ffffff;
       --grid-line:rgba(0,0,0,.05);
       --orb-core:rgba(0,0,0,.22);
     }
@@ -117,17 +106,6 @@
       --icon-bubble-bg:rgba(255,255,255,.08);
       --news-title:rgba(255,255,255,.94);
       --empty-bg:rgba(255,255,255,.04);
-      --modal-overlay:rgba(0,0,0,.62);
-      --modal-bg:rgba(0,0,0,.70);
-      --modal-border:rgba(255,255,255,.14);
-      --modal-top-bg:rgba(255,255,255,.04);
-      --modal-top-border:rgba(255,255,255,.10);
-      --modal-btn-bg:rgba(255,255,255,.06);
-      --modal-btn-bg-hover:rgba(255,255,255,.09);
-      --modal-btn-border:rgba(255,255,255,.14);
-      --modal-btn-border-hover:rgba(255,255,255,.18);
-      --modal-btn-text:rgba(255,255,255,.92);
-      --iframe-bg:#000000;
       --grid-line:rgba(255,255,255,.03);
       --orb-core:rgba(255,255,255,.92);
     }
@@ -141,7 +119,6 @@
       transition:background .25s ease,color .25s ease;
     }
 
-    /* Grok-style background */
     .animated-bg{
       position:fixed; inset:0; z-index:-1;
       background:var(--bg-solid); overflow:hidden;
@@ -173,7 +150,6 @@
       50%{transform:translate(34px,-26px) scale(.97)}
     }
 
-    /* Header */
     header{
       position:sticky; top:0; z-index:1000;
       background: var(--header-bg);
@@ -216,7 +192,6 @@
     .btn:hover{transform: translateY(-1px); background: var(--btn-bg-hover); border-color: var(--btn-border-hover)}
     .btn i{opacity:.9}
 
-    /* Layout */
     main{max-width: var(--max); margin:0 auto; padding: 46px 18px 70px;}
     .shell{
       background: var(--shell-bg);
@@ -246,7 +221,6 @@
       .title{font-size: 36px}
     }
 
-    /* Search card */
     .searchCard{
       padding: 16px;
       border-radius: var(--radius);
@@ -309,7 +283,9 @@
       margin-top: 12px;
       overflow:auto;
       padding-bottom: 2px;
+      scrollbar-width: none;
     }
+    .chips::-webkit-scrollbar{display:none}
     .chip{
       border:none;
       cursor:pointer;
@@ -325,7 +301,6 @@
     }
     .chip:hover{transform: translateY(-1px); background: var(--chip-bg-hover); border-color: var(--chip-border-hover)}
 
-    /* Status */
     .statusBar{
       display:flex; justify-content:space-between; align-items:center;
       gap:10px;
@@ -335,6 +310,7 @@
       font-size: 12px;
       font-weight: 850;
       transition:color .25s ease;
+      flex-wrap:wrap;
     }
 
     .loadingRow{
@@ -373,7 +349,6 @@
     }
     .errorBox i{color: var(--danger); margin-top:2px}
 
-    /* List */
     .list{
       margin-top: 14px;
       display:flex;
@@ -391,6 +366,8 @@
       gap:12px;
       cursor:pointer;
       transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      text-decoration:none;
+      color:inherit;
     }
     .newsCard:hover{transform: translateY(-1px); background: var(--news-card-bg-hover); border-color: var(--news-card-border-hover)}
     .iconBubble{
@@ -443,72 +420,6 @@
       font-size: 13px;
       transition:border-color .25s ease,background .25s ease,color .25s ease;
     }
-
-    /* Modal */
-    .modalOverlay{
-      position:fixed; inset:0; z-index:2000;
-      background: var(--modal-overlay);
-      backdrop-filter: blur(10px);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding: 18px;
-      transition:background .25s ease;
-    }
-    .modal{
-      width:min(1100px, 100%);
-      height:min(78vh, 760px);
-      border-radius: 18px;
-      border: 1px solid var(--modal-border);
-      background: var(--modal-bg);
-      box-shadow: 0 30px 90px rgba(0,0,0,.40);
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-      transition:border-color .25s ease,background .25s ease;
-    }
-    .modalTop{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--modal-top-border);
-      background: var(--modal-top-bg);
-      transition:border-color .25s ease,background .25s ease;
-    }
-    .modalTop .left{
-      display:flex; align-items:center; gap:10px; min-width:0;
-      color: var(--text-strong);
-      font-weight: 900;
-      font-size: 13px;
-      transition:color .25s ease;
-    }
-    .modalTop .left span{
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-      max-width: 520px;
-    }
-    .modalTop .actions{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
-    .mBtn{
-      border-radius: 12px;
-      padding: 8px 10px;
-      border: 1px solid var(--modal-btn-border);
-      background: var(--modal-btn-bg);
-      color: var(--modal-btn-text);
-      font-weight: 900;
-      cursor:pointer;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
-      display:inline-flex; align-items:center; gap:8px;
-      font-size: 12px;
-      white-space:nowrap;
-    }
-    .mBtn:hover{transform: translateY(-1px); background: var(--modal-btn-bg-hover); border-color: var(--modal-btn-border-hover)}
-    iframe{
-      width:100%;
-      height:100%;
-      border:none;
-      background:var(--iframe-bg);
-    }
   </style>
 </head>
 
@@ -533,7 +444,7 @@
     <div class="shell" id="tapDismiss">
       <div class="title">Symbol News</div>
       <div class="subtitle">
-        Search by symbol or keyword (e.g. <b>XAUUSD</b>, <b>EURUSD</b>, <b>BTCUSD</b>). Headlines are fetched from Google News RSS.
+        Search by symbol or keyword (e.g. <b>XAUUSD</b>, <b>EURUSD</b>, <b>BTCUSD</b>). Headlines come from Google News RSS and open directly on the original source website.
       </div>
 
       <div class="searchCard">
@@ -550,12 +461,7 @@
           </button>
         </div>
 
-        <div class="chips" aria-label="Quick presets">
-          <button class="chip" data-q="XAUUSD">XAUUSD</button>
-          <button class="chip" data-q="EURUSD">EURUSD</button>
-          <button class="chip" data-q="US30">US30</button>
-          <button class="chip" data-q="BTCUSD">BTCUSD</button>
-        </div>
+        <div class="chips" id="chips" aria-label="Quick presets"></div>
       </div>
 
       <div class="loadingRow" id="loadingRow">
@@ -578,28 +484,11 @@
     </div>
   </main>
 
-  <div class="modalOverlay" id="modalOverlay" role="dialog" aria-modal="true">
-    <div class="modal">
-      <div class="modalTop">
-        <div class="left">
-          <i class="fa-solid fa-globe"></i>
-          <span id="modalTitle">Article</span>
-        </div>
-        <div class="actions">
-          <button class="mBtn" id="openNewTab"><i class="fa-solid fa-up-right-from-square"></i> Open</button>
-          <button class="mBtn" id="copyLink"><i class="fa-solid fa-link"></i> Copy Link</button>
-          <button class="mBtn" id="closeModal"><i class="fa-solid fa-xmark"></i> Close</button>
-        </div>
-      </div>
-      <iframe id="modalFrame" title="News article"></iframe>
-    </div>
-  </div>
-
   <script>
     const el = {
       q: document.getElementById("query"),
       searchBtn: document.getElementById("searchBtn"),
-      chips: Array.from(document.querySelectorAll(".chip")),
+      chipsWrap: document.getElementById("chips"),
       loadingRow: document.getElementById("loadingRow"),
       errorBox: document.getElementById("errorBox"),
       errorText: document.getElementById("errorText"),
@@ -607,16 +496,62 @@
       list: document.getElementById("list"),
       empty: document.getElementById("empty"),
       tapDismiss: document.getElementById("tapDismiss"),
-
-      modalOverlay: document.getElementById("modalOverlay"),
-      modalTitle: document.getElementById("modalTitle"),
-      modalFrame: document.getElementById("modalFrame"),
-      openNewTab: document.getElementById("openNewTab"),
-      copyLink: document.getElementById("copyLink"),
-      closeModal: document.getElementById("closeModal"),
     };
 
-    let currentOpenUrl = null;
+    const SYMBOL_QUERY_MAP = {
+      XAUUSD: "gold OR XAUUSD OR spot gold OR gold price OR gold forex",
+      XAGUSD: "silver OR XAGUSD OR spot silver OR silver price",
+      EURUSD: "EURUSD OR euro dollar OR euro usd forex",
+      GBPUSD: "GBPUSD OR pound dollar OR sterling usd forex",
+      USDJPY: "USDJPY OR dollar yen OR usd jpy forex",
+      USDCHF: "USDCHF OR dollar swiss franc forex",
+      USDCAD: "USDCAD OR dollar canadian dollar forex",
+      AUDUSD: "AUDUSD OR australian dollar usd forex",
+      NZDUSD: "NZDUSD OR new zealand dollar usd forex",
+      EURGBP: "EURGBP OR euro pound forex",
+      EURJPY: "EURJPY OR euro yen forex",
+      GBPJPY: "GBPJPY OR pound yen forex",
+      AUDJPY: "AUDJPY OR australian dollar yen forex",
+      CHFJPY: "CHFJPY OR swiss franc yen forex",
+      BTCUSD: "bitcoin OR BTCUSD OR BTC price OR bitcoin market",
+      ETHUSD: "ethereum OR ETHUSD OR ETH price OR ethereum market",
+      SOLUSD: "solana OR SOLUSD OR SOL price",
+      XRPUSD: "xrp OR XRPUSD OR ripple price",
+      BNBUSD: "binance coin OR BNBUSD OR BNB price",
+      ADAUSD: "cardano OR ADAUSD OR ADA price",
+      DOGEUSD: "dogecoin OR DOGEUSD OR DOGE price",
+      AVAXUSD: "avalanche crypto OR AVAXUSD OR AVAX price",
+      NAS100: "Nasdaq 100 OR NAS100 OR NDX OR US tech stocks",
+      US100: "Nasdaq 100 OR US100 OR NDX OR US tech stocks",
+      SPX500: "S&P 500 OR SPX500 OR SP500 OR US stock market",
+      US500: "S&P 500 OR US500 OR SP500 OR US stock market",
+      US30: "Dow Jones OR US30 OR Dow industrial average",
+      DJI: "Dow Jones OR DJI OR Dow industrial average",
+      GER40: "DAX OR GER40 OR German stock market",
+      UK100: "FTSE 100 OR UK100 OR UK stock market",
+      JP225: "Nikkei 225 OR JP225 OR Japan stock market",
+      HK50: "Hang Seng OR HK50 OR Hong Kong stocks",
+      OIL: "crude oil OR WTI OR Brent OR oil market",
+      WTI: "WTI crude oil OR crude oil price OR oil market",
+      BRENT: "Brent crude oil OR oil market",
+      NATGAS: "natural gas OR natgas OR gas market",
+      COPPER: "copper price OR copper market",
+      DXY: "US dollar index OR DXY OR dollar strength",
+      VIX: "VIX OR volatility index OR market fear index",
+      TSLA: "Tesla stock OR TSLA",
+      AAPL: "Apple stock OR AAPL",
+      NVDA: "NVIDIA stock OR NVDA",
+      META: "Meta stock OR META",
+      AMZN: "Amazon stock OR AMZN",
+      MSFT: "Microsoft stock OR MSFT"
+    };
+
+    const QUICK_PRESETS = [
+      "XAUUSD","XAGUSD","EURUSD","GBPUSD","USDJPY","USDCHF","USDCAD","AUDUSD","NZDUSD",
+      "EURJPY","GBPJPY","BTCUSD","ETHUSD","SOLUSD","XRPUSD","BNBUSD","ADAUSD","DOGEUSD",
+      "NAS100","SPX500","US30","GER40","UK100","JP225","OIL","WTI","BRENT","DXY","VIX",
+      "TSLA","AAPL","NVDA"
+    ];
 
     function setLoading(isLoading){
       el.loadingRow.style.display = isLoading ? "flex" : "none";
@@ -627,6 +562,7 @@
       el.errorText.textContent = msg || "Failed to load news.";
       el.errorBox.style.display = "flex";
     }
+
     function hideError(){
       el.errorBox.style.display = "none";
       el.errorText.textContent = "";
@@ -634,8 +570,8 @@
 
     function setStatus(count, query){
       const q = (query || "").trim().toUpperCase();
-      if (!count){
-        el.statusLeft.textContent = "No articles yet. Try searching a symbol.";
+      if (!count) {
+        el.statusLeft.textContent = q ? `No articles found for ${q}` : "No articles yet. Try searching a symbol.";
       } else {
         el.statusLeft.textContent = `${count} articles for ${q}`;
       }
@@ -646,59 +582,19 @@
       el.empty.style.display = "none";
     }
 
-    function renderItems(items, query){
-      clearList();
-      if (!items || items.length === 0){
-        el.empty.style.display = "block";
-        setStatus(0, query);
-        return;
-      }
+    function renderChips(){
+      el.chipsWrap.innerHTML = QUICK_PRESETS.map(sym =>
+        `<button class="chip" data-q="${sym}">${sym}</button>`
+      ).join("");
 
-      setStatus(items.length, query);
-
-      for (const item of items){
-        const card = document.createElement("div");
-        card.className = "newsCard";
-        card.tabIndex = 0;
-
-        const domain = (() => {
-          try { return new URL(item.link).host.replace(/^www\./,""); }
-          catch { return ""; }
-        })();
-
-        const when = item.published ? formatDate(item.published) : "";
-
-        card.innerHTML = `
-          <div class="iconBubble"><i class="fa-solid fa-newspaper"></i></div>
-          <div class="newsBody">
-            <div class="newsTitle"></div>
-            <div class="meta">
-              ${domain ? `<span>${escapeHtml(domain)}</span>` : ""}
-              ${when ? `<span>• ${escapeHtml(when)}</span>` : ""}
-            </div>
-          </div>
-          <div class="chev"><i class="fa-solid fa-chevron-right"></i></div>
-        `;
-
-        card.querySelector(".newsTitle").textContent = item.title || "Untitled";
-
-        const open = () => openArticle(item.link, item.title);
-        card.addEventListener("click", open);
-        card.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " "){
-            e.preventDefault();
-            open();
-          }
+      Array.from(el.chipsWrap.querySelectorAll(".chip")).forEach(chip => {
+        chip.addEventListener("click", () => {
+          const q = chip.getAttribute("data-q") || "";
+          el.q.value = q;
+          fetchNews(q);
+          document.activeElement.blur();
         });
-
-        el.list.appendChild(card);
-      }
-    }
-
-    function formatDate(iso){
-      const d = new Date(iso);
-      if (isNaN(d.getTime())) return "";
-      return d.toLocaleString(undefined, { dateStyle:"medium", timeStyle:"short" });
+      });
     }
 
     function escapeHtml(s){
@@ -710,11 +606,92 @@
         .replaceAll("'","&#039;");
     }
 
-    const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+    function formatDate(dateStr){
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return "";
+      return d.toLocaleString(undefined, { dateStyle:"medium", timeStyle:"short" });
+    }
 
-    async function fetchNews(query){
-      const trimmed = (query || "").trim();
-      if (!trimmed){
+    function domainFromUrl(url){
+      try {
+        return new URL(url).host.replace(/^www\./, "");
+      } catch {
+        return "";
+      }
+    }
+
+    function normalizeSearchQuery(query){
+      const raw = (query || "").trim();
+      if (!raw) return "";
+      const upper = raw.toUpperCase();
+      return SYMBOL_QUERY_MAP[upper] || raw;
+    }
+
+    function toGoogleRSSUrl(searchQuery){
+      const encoded = encodeURIComponent(searchQuery);
+      return `https://news.google.com/rss/search?q=${encoded}&hl=en-US&gl=US&ceid=US:en`;
+    }
+
+    function toRssJsonUrl(rssUrl){
+      return `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=50`;
+    }
+
+    function buildArticleCard(item){
+      const a = document.createElement("a");
+      a.className = "newsCard";
+      a.href = item.link;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+
+      const domain = domainFromUrl(item.link);
+      const when = item.pubDate ? formatDate(item.pubDate) : "";
+      const author = item.author ? String(item.author).trim() : "";
+
+      a.innerHTML = `
+        <div class="iconBubble"><i class="fa-solid fa-newspaper"></i></div>
+        <div class="newsBody">
+          <div class="newsTitle">${escapeHtml(item.title || "Untitled")}</div>
+          <div class="meta">
+            ${domain ? `<span>${escapeHtml(domain)}</span>` : ""}
+            ${when ? `<span>• ${escapeHtml(when)}</span>` : ""}
+            ${author ? `<span>• ${escapeHtml(author)}</span>` : ""}
+          </div>
+        </div>
+        <div class="chev"><i class="fa-solid fa-up-right-from-square"></i></div>
+      `;
+
+      return a;
+    }
+
+    function renderItems(items, query){
+      clearList();
+
+      if (!items || items.length === 0){
+        el.empty.style.display = "block";
+        setStatus(0, query);
+        return;
+      }
+
+      const unique = [];
+      const seen = new Set();
+
+      for (const item of items){
+        const key = `${item.title || ""}|${item.link || ""}`;
+        if (!item.link || seen.has(key)) continue;
+        seen.add(key);
+        unique.push(item);
+      }
+
+      setStatus(unique.length, query);
+
+      for (const item of unique){
+        el.list.appendChild(buildArticleCard(item));
+      }
+    }
+
+    async function fetchNews(userQuery){
+      const raw = (userQuery || "").trim();
+      if (!raw){
         clearList();
         setStatus(0, "");
         return;
@@ -723,121 +700,27 @@
       setLoading(true);
       hideError();
 
-      const q = encodeURIComponent(trimmed);
-      const rssUrl = `https://news.google.com/rss/search?q=${q}`;
-      let xmlText = null;
+      try {
+        const normalizedQuery = normalizeSearchQuery(raw);
+        const rssUrl = toGoogleRSSUrl(normalizedQuery);
+        const apiUrl = toRssJsonUrl(rssUrl);
 
-      try{
-        const r = await fetch(rssUrl, { cache: "no-store" });
-        if (!r.ok) throw new Error("Network error");
-        xmlText = await r.text();
-      } catch (e){
-        try{
-          const r2 = await fetch(CORS_PROXY + encodeURIComponent(rssUrl), { cache: "no-store" });
-          if (!r2.ok) throw new Error("Proxy network error");
-          xmlText = await r2.text();
-        } catch {
-          setLoading(false);
-          showError("Failed to load news. (CORS blocked). Use your own proxy for production.");
-          clearList();
-          setStatus(0, trimmed);
-          return;
-        }
-      }
+        const response = await fetch(apiUrl, { cache: "no-store" });
+        if (!response.ok) throw new Error("Network error");
 
-      try{
-        const items = parseRSS(xmlText);
-        renderItems(items, trimmed);
-      } catch {
-        showError("Failed to parse news.");
+        const data = await response.json();
+        if (data.status !== "ok") throw new Error(data.message || "Feed error");
+
+        renderItems(Array.isArray(data.items) ? data.items : [], raw);
+      } catch (err) {
+        console.error(err);
         clearList();
-        setStatus(0, trimmed);
+        setStatus(0, raw);
+        showError("Failed to load news right now. If this happens again, swap the RSS endpoint to your own proxy for production.");
       } finally {
         setLoading(false);
       }
     }
-
-    function parseRSS(xmlText){
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(xmlText, "text/xml");
-
-      const parseError = doc.querySelector("parsererror");
-      if (parseError) throw new Error("Bad XML");
-
-      const nodes = Array.from(doc.querySelectorAll("item"));
-      const items = [];
-
-      for (const n of nodes){
-        const title = (n.querySelector("title")?.textContent || "")
-          .replace(/\n/g," ")
-          .trim();
-
-        const link = (n.querySelector("link")?.textContent || "").trim();
-
-        const pub = (n.querySelector("pubDate")?.textContent || "").trim();
-        const pubIso = pub ? (new Date(pub)).toISOString() : null;
-
-        if (link){
-          items.push({
-            title: title || "Untitled",
-            link,
-            published: pubIso
-          });
-        }
-      }
-      return items;
-    }
-
-    function openArticle(url, title){
-      currentOpenUrl = url;
-      el.modalTitle.textContent = title || "Article";
-      el.modalFrame.src = url;
-      el.modalOverlay.style.display = "flex";
-      document.body.style.overflow = "hidden";
-    }
-
-    function closeModal(){
-      el.modalOverlay.style.display = "none";
-      el.modalFrame.src = "about:blank";
-      document.body.style.overflow = "";
-      currentOpenUrl = null;
-    }
-
-    el.closeModal.addEventListener("click", closeModal);
-    el.modalOverlay.addEventListener("click", (e) => {
-      if (e.target === el.modalOverlay) closeModal();
-    });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && el.modalOverlay.style.display === "flex") closeModal();
-    });
-
-    el.openNewTab.addEventListener("click", () => {
-      if (currentOpenUrl) window.open(currentOpenUrl, "_blank", "noopener,noreferrer");
-    });
-
-    el.copyLink.addEventListener("click", async () => {
-      if (!currentOpenUrl) return;
-      try{
-        await navigator.clipboard.writeText(currentOpenUrl);
-      } catch {
-        const ta = document.createElement("textarea");
-        ta.value = currentOpenUrl;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-      }
-      el.copyLink.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
-      setTimeout(() => el.copyLink.innerHTML = '<i class="fa-solid fa-link"></i> Copy Link', 900);
-    });
-
-    el.tapDismiss.addEventListener("click", (e) => {
-      const t = e.target;
-      const isInput = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA");
-      if (!isInput){
-        document.activeElement && document.activeElement.blur && document.activeElement.blur();
-      }
-    });
 
     el.searchBtn.addEventListener("click", () => fetchNews(el.q.value));
 
@@ -849,15 +732,15 @@
       }
     });
 
-    el.chips.forEach(chip => {
-      chip.addEventListener("click", () => {
-        const q = chip.getAttribute("data-q") || "";
-        el.q.value = q;
-        fetchNews(q);
-        document.activeElement.blur();
-      });
+    el.tapDismiss.addEventListener("click", (e) => {
+      const t = e.target;
+      const isInput = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA");
+      if (!isInput){
+        document.activeElement && document.activeElement.blur && document.activeElement.blur();
+      }
     });
 
+    renderChips();
     fetchNews(el.q.value);
   </script>
 
