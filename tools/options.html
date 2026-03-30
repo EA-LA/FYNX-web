@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX Tools — Forex Calculator</title>
+  <title>FYNX Tools — Options Calculator</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
@@ -26,6 +26,11 @@
       --orb-core:rgba(0,0,0,.22);
       --hero-gradient-1:#0a0a0a;
       --hero-gradient-2:#6b6b6b;
+      --input-bg:rgba(255,255,255,.76);
+      --btn-bg:rgba(0,0,0,.06);
+      --btn-hover:rgba(0,0,0,.1);
+      --result-bg:rgba(0,0,0,.03);
+      --accent:#111111;
     }
 
     body.dark-mode{
@@ -46,6 +51,11 @@
       --orb-core:rgba(255,255,255,.9);
       --hero-gradient-1:#ffffff;
       --hero-gradient-2:#8a8a8a;
+      --input-bg:rgba(255,255,255,.04);
+      --btn-bg:rgba(255,255,255,.08);
+      --btn-hover:rgba(255,255,255,.14);
+      --result-bg:rgba(255,255,255,.04);
+      --accent:#ffffff;
     }
 
     body{
@@ -76,7 +86,10 @@
       transition:background-image .25s ease;
     }
 
-    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
+    @keyframes gridMove{
+      0%{transform:translate(0,0)}
+      100%{transform:translate(50px,50px)}
+    }
 
     .gradient-orb{
       position:absolute;
@@ -127,6 +140,7 @@
       align-items:center;
       justify-content:space-between;
       padding:0 1.25rem;
+      gap:1rem;
     }
 
     .brand{
@@ -140,7 +154,12 @@
       transition:color .25s ease;
     }
 
-    .brand i{opacity:.9}
+    .nav-actions{
+      display:flex;
+      gap:.6rem;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
 
     .nav a{
       color:var(--text-muted);
@@ -186,17 +205,17 @@
       margin-bottom:.75rem;
     }
 
-    p{
+    .subtitle{
       color:var(--text-muted);
-      font-size:1.1rem;
+      font-size:1.08rem;
       line-height:1.8;
-      max-width:70ch;
+      max-width:76ch;
       transition:color .25s ease;
     }
 
     .panel-grid{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+      grid-template-columns:repeat(auto-fit,minmax(360px,1fr));
       gap:1.25rem;
       margin-top:1.25rem;
     }
@@ -207,28 +226,167 @@
       border-radius:18px;
       padding:1.25rem 1.25rem 1.4rem;
       backdrop-filter:blur(10px);
-      min-height:180px;
       transition:background .25s ease,border-color .25s ease;
+      min-height:260px;
     }
 
     .panel h2{
-      font-size:1.2rem;
-      margin-bottom:.5rem;
+      font-size:1.45rem;
+      margin-bottom:.45rem;
       color:var(--text-strong);
       transition:color .25s ease;
+      font-weight:900;
+      letter-spacing:-.5px;
     }
 
     .panel .muted{
       color:var(--text-muted);
-      font-size:.98rem;
+      font-size:.97rem;
+      line-height:1.6;
       transition:color .25s ease;
+      margin-bottom:1rem;
     }
 
-    .hint{
-      margin-top:1.2rem;
+    .form-grid{
+      display:grid;
+      gap:.9rem;
+    }
+
+    .field-group{
+      display:grid;
+      gap:.38rem;
+    }
+
+    .field-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:.8rem;
+    }
+
+    label{
+      font-size:.96rem;
+      font-weight:800;
+      color:var(--text-strong);
+    }
+
+    input, select{
+      width:100%;
+      border:1px solid var(--border);
+      background:var(--input-bg);
+      color:var(--text);
+      border-radius:14px;
+      padding:.92rem 1rem;
+      font-size:.97rem;
+      outline:none;
+      transition:border-color .2s ease,background .2s ease,transform .15s ease;
+    }
+
+    input:focus, select:focus{
+      border-color:var(--accent);
+      transform:translateY(-1px);
+    }
+
+    input::placeholder{
+      color:var(--text-muted);
+    }
+
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.7rem;
+      margin-top:.2rem;
+    }
+
+    button{
+      border:1px solid var(--border-strong);
+      background:var(--btn-bg);
+      color:var(--text-strong);
+      padding:.88rem 1.05rem;
+      border-radius:14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:all .2s ease;
+      font-size:.95rem;
+    }
+
+    button:hover{
+      background:var(--btn-hover);
+      transform:translateY(-1px);
+    }
+
+    .result-placeholder,
+    .result-box{
+      border:1px solid var(--border);
+      background:var(--result-bg);
+      border-radius:16px;
+      padding:1rem;
+      min-height:180px;
+    }
+
+    .result-placeholder{
+      color:var(--text-muted);
+      display:flex;
+      align-items:center;
+    }
+
+    .big-result{
+      font-size:2rem;
+      font-weight:900;
+      letter-spacing:-1px;
+      margin-bottom:.8rem;
+      color:var(--text-strong);
+      line-height:1.15;
+    }
+
+    .result-line{
+      color:var(--text-muted);
+      font-size:.98rem;
+      line-height:1.7;
+      margin-bottom:.18rem;
+    }
+
+    .pnl-boxes{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:.7rem;
+      margin-top:.9rem;
+    }
+
+    .mini-box{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:.8rem .9rem;
+      background:var(--surface);
+    }
+
+    .mini-label{
+      font-size:.83rem;
+      color:var(--text-muted);
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      margin-bottom:.2rem;
+    }
+
+    .mini-value{
+      font-size:1.05rem;
+      font-weight:900;
+      color:var(--text-strong);
+    }
+
+    .footnote{
+      margin-top:1rem;
       color:var(--text-soft);
       font-size:.95rem;
       transition:color .25s ease;
+      line-height:1.6;
+    }
+
+    @media (max-width:720px){
+      h1{font-size:2.35rem}
+      .field-row{grid-template-columns:1fr}
+      .pnl-boxes{grid-template-columns:1fr}
+      .hero{padding:1.4rem}
     }
   </style>
 </head>
@@ -242,7 +400,7 @@
   <header>
     <div class="nav">
       <div class="brand"><i class="fas fa-chart-line"></i> FYNX Tools</div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
+      <div class="nav-actions">
         <a href="../index.html#tools"><i class="fas fa-arrow-left"></i> Back</a>
         <a href="../index.html"><i class="fas fa-house"></i> Home</a>
       </div>
@@ -251,21 +409,82 @@
 
   <main>
     <section class="hero">
-      <h1>Forex Calculator</h1>
-      <p>Dedicated page for the Forex calculator. Put your real calculator code here (inputs, outputs, formulas, UI).</p>
+      <h1>Options Calculator</h1>
+      <p class="subtitle">
+        Calculate option profit and loss for calls and puts using strike price, premium, contracts, and stock price at expiration.
+        Fast, clean, and made to fit the same FYNX tool design.
+      </p>
 
       <div class="panel-grid">
         <div class="panel">
-          <h2>Calculator UI</h2>
-          <div class="muted">Add inputs (pair, lot size, risk %, stop loss pips, etc.) and compute results.</div>
+          <h2>INPUTS</h2>
+          <div class="muted">
+            Enter your option details below. This calculator uses expiration payoff logic for long and short calls and puts.
+          </div>
+
+          <div class="form-grid">
+            <div class="field-row">
+              <div class="field-group">
+                <label for="optionType">Option Type</label>
+                <select id="optionType">
+                  <option value="call">Call</option>
+                  <option value="put">Put</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="positionType">Position</label>
+                <select id="positionType">
+                  <option value="long">Long</option>
+                  <option value="short">Short</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="strikePrice">Strike Price</label>
+                <input id="strikePrice" type="number" step="any" placeholder="e.g. 100">
+              </div>
+
+              <div class="field-group">
+                <label for="premium">Premium (per share)</label>
+                <input id="premium" type="number" step="any" placeholder="e.g. 4.50">
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="stockPrice">Stock Price at Expiration</label>
+                <input id="stockPrice" type="number" step="any" placeholder="e.g. 112">
+              </div>
+
+              <div class="field-group">
+                <label for="contracts">Contracts</label>
+                <input id="contracts" type="number" step="1" min="1" placeholder="e.g. 1">
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" id="calculateBtn"><i class="fas fa-calculator"></i> Calculate</button>
+              <button type="button" id="clearBtn"><i class="fas fa-broom"></i> Clear</button>
+            </div>
+          </div>
         </div>
+
         <div class="panel">
-          <h2>Results</h2>
-          <div class="muted">Show position size, pip value, risk amount, margin estimate, and notes.</div>
+          <h2>RESULT</h2>
+          <div class="muted">Enter values and tap Calculate</div>
+
+          <div id="resultArea" class="result-placeholder">
+            Your option payoff result will appear here.
+          </div>
         </div>
       </div>
 
-      <div class="hint">Tip: when you’re ready, tell me which tool you want first and I’ll write the full working calculator code for that page.</div>
+      <div class="footnote">
+        Assumes 1 options contract = 100 shares. This calculator shows expiration payoff only, not live Greeks or implied volatility pricing.
+      </div>
     </section>
   </main>
 
@@ -283,6 +502,133 @@
         if (e.newValue === "dark") document.body.classList.add("dark-mode");
         else document.body.classList.remove("dark-mode");
       }
+    });
+
+    const optionType = document.getElementById("optionType");
+    const positionType = document.getElementById("positionType");
+    const strikePrice = document.getElementById("strikePrice");
+    const premium = document.getElementById("premium");
+    const stockPrice = document.getElementById("stockPrice");
+    const contracts = document.getElementById("contracts");
+    const calculateBtn = document.getElementById("calculateBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const resultArea = document.getElementById("resultArea");
+
+    function fmt(num) {
+      return Number(num).toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function calculateOptionPL() {
+      const type = optionType.value;
+      const position = positionType.value;
+      const strike = parseFloat(strikePrice.value);
+      const prem = parseFloat(premium.value);
+      const stock = parseFloat(stockPrice.value);
+      const contractCount = parseInt(contracts.value, 10);
+
+      if (![strike, prem, stock].every(Number.isFinite) || !Number.isFinite(contractCount) || contractCount <= 0) {
+        resultArea.className = "result-box";
+        resultArea.innerHTML = `<div class="result-line"><strong>Error:</strong> Please enter valid values in all fields.</div>`;
+        return;
+      }
+
+      if (strike < 0 || prem < 0 || stock < 0) {
+        resultArea.className = "result-box";
+        resultArea.innerHTML = `<div class="result-line"><strong>Error:</strong> Values cannot be negative.</div>`;
+        return;
+      }
+
+      const sharesPerContract = 100;
+      const totalShares = contractCount * sharesPerContract;
+
+      let intrinsicValuePerShare = 0;
+
+      if (type === "call") {
+        intrinsicValuePerShare = Math.max(stock - strike, 0);
+      } else {
+        intrinsicValuePerShare = Math.max(strike - stock, 0);
+      }
+
+      const premiumTotal = prem * totalShares;
+      const intrinsicTotal = intrinsicValuePerShare * totalShares;
+
+      let pnl = 0;
+      let breakEven = 0;
+      let maxProfitText = "";
+      let maxLossText = "";
+
+      if (type === "call" && position === "long") {
+        pnl = intrinsicTotal - premiumTotal;
+        breakEven = strike + prem;
+        maxProfitText = "Unlimited";
+        maxLossText = `$${fmt(premiumTotal)}`;
+      }
+
+      if (type === "call" && position === "short") {
+        pnl = premiumTotal - intrinsicTotal;
+        breakEven = strike + prem;
+        maxProfitText = `$${fmt(premiumTotal)}`;
+        maxLossText = "Unlimited";
+      }
+
+      if (type === "put" && position === "long") {
+        pnl = intrinsicTotal - premiumTotal;
+        breakEven = strike - prem;
+        maxProfitText = `$${fmt((strike * totalShares) - premiumTotal)}`;
+        maxLossText = `$${fmt(premiumTotal)}`;
+      }
+
+      if (type === "put" && position === "short") {
+        pnl = premiumTotal - intrinsicTotal;
+        breakEven = strike - prem;
+        maxProfitText = `$${fmt(premiumTotal)}`;
+        maxLossText = `$${fmt((strike * totalShares) - premiumTotal)}`;
+      }
+
+      const profitLossLabel = pnl >= 0 ? "Profit" : "Loss";
+
+      resultArea.className = "result-box";
+      resultArea.innerHTML = `
+        <div class="big-result">${profitLossLabel}: $${fmt(Math.abs(pnl))}</div>
+        <div class="result-line"><strong>Type:</strong> ${position.charAt(0).toUpperCase() + position.slice(1)} ${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+        <div class="result-line"><strong>Intrinsic Value / Share:</strong> $${fmt(intrinsicValuePerShare)}</div>
+        <div class="result-line"><strong>Total Premium:</strong> $${fmt(premiumTotal)}</div>
+        <div class="result-line"><strong>Break-even Price:</strong> $${fmt(breakEven)}</div>
+
+        <div class="pnl-boxes">
+          <div class="mini-box">
+            <div class="mini-label">Max Profit</div>
+            <div class="mini-value">${maxProfitText}</div>
+          </div>
+          <div class="mini-box">
+            <div class="mini-label">Max Loss</div>
+            <div class="mini-value">${maxLossText}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function clearForm() {
+      optionType.value = "call";
+      positionType.value = "long";
+      strikePrice.value = "";
+      premium.value = "";
+      stockPrice.value = "";
+      contracts.value = "";
+      resultArea.className = "result-placeholder";
+      resultArea.textContent = "Your option payoff result will appear here.";
+    }
+
+    calculateBtn.addEventListener("click", calculateOptionPL);
+    clearBtn.addEventListener("click", clearForm);
+
+    [strikePrice, premium, stockPrice, contracts].forEach(input => {
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") calculateOptionPL();
+      });
     });
   </script>
 </body>
