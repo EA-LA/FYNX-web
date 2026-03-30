@@ -3,150 +3,398 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX Tools — Forex Calculator</title>
+  <title>FYNX Tools — Currency Calculator</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body{
-      font-family:'Inter','Segoe UI',system-ui,sans-serif;
-      color:var(--text);
-      background:var(--bg);
-      overflow-x:hidden;
-      min-height:100vh;
-      transition:background .3s,color .3s;
+    body {
+      font-family: 'Inter','Segoe UI',system-ui,sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      overflow-x: hidden;
+      min-height: 100vh;
+      transition: background .3s, color .3s;
     }
 
-    /* ── CSS Variables ── */
-    body{
-      --bg:#fff;
-      --text:#0a0a0a;
-      --text-muted:rgba(0,0,0,.55);
-      --border:rgba(0,0,0,.10);
-      --panel-bg:rgba(0,0,0,.03);
-      --header-bg:rgba(255,255,255,.85);
-      --nav-link-bg:rgba(0,0,0,.04);
-      --nav-link-border:rgba(0,0,0,.14);
-      --nav-link-hover-bg:rgba(0,0,0,.08);
-      --nav-link-hover-border:rgba(0,0,0,.25);
-      --grid-line:rgba(0,0,0,.04);
-      --orb-opacity:.10;
-      --hero-bg:rgba(0,0,0,.03);
-      --h1-from:#0a0a0a;
-      --h1-to:#555;
-    }
-    body.dark-mode{
-      --bg:#000;
-      --text:#fff;
-      --text-muted:rgba(255,255,255,.55);
-      --border:rgba(255,255,255,.10);
-      --panel-bg:rgba(0,0,0,.55);
-      --header-bg:rgba(0,0,0,.85);
-      --nav-link-bg:rgba(255,255,255,.04);
-      --nav-link-border:rgba(255,255,255,.14);
-      --nav-link-hover-bg:rgba(255,255,255,.08);
-      --nav-link-hover-border:rgba(255,255,255,.28);
-      --grid-line:rgba(255,255,255,.03);
-      --orb-opacity:.25;
-      --hero-bg:rgba(255,255,255,.03);
-      --h1-from:#fff;
-      --h1-to:#8a8a8a;
+    body {
+      --bg: #fff;
+      --text: #0a0a0a;
+      --text-muted: rgba(0,0,0,.58);
+      --border: rgba(0,0,0,.10);
+      --panel-bg: rgba(0,0,0,.03);
+      --header-bg: rgba(255,255,255,.85);
+      --nav-link-bg: rgba(0,0,0,.04);
+      --nav-link-border: rgba(0,0,0,.14);
+      --nav-link-hover-bg: rgba(0,0,0,.08);
+      --nav-link-hover-border: rgba(0,0,0,.25);
+      --grid-line: rgba(0,0,0,.04);
+      --orb-opacity: .10;
+      --hero-bg: rgba(0,0,0,.03);
+      --h1-from: #0a0a0a;
+      --h1-to: #555;
+      --input-bg: rgba(255,255,255,.72);
+      --btn-bg: rgba(0,0,0,.08);
+      --btn-border: rgba(0,0,0,.16);
+      --btn-hover: rgba(0,0,0,.12);
+      --success-bg: rgba(0,0,0,.04);
     }
 
-    /* ── Animated Background ── */
-    .animated-bg{position:fixed;inset:0;z-index:-1;background:var(--bg);overflow:hidden;transition:background .3s}
-    .grid-overlay{
-      position:absolute;inset:0;
+    body.dark-mode {
+      --bg: #000;
+      --text: #fff;
+      --text-muted: rgba(255,255,255,.58);
+      --border: rgba(255,255,255,.10);
+      --panel-bg: rgba(255,255,255,.04);
+      --header-bg: rgba(0,0,0,.85);
+      --nav-link-bg: rgba(255,255,255,.04);
+      --nav-link-border: rgba(255,255,255,.14);
+      --nav-link-hover-bg: rgba(255,255,255,.08);
+      --nav-link-hover-border: rgba(255,255,255,.28);
+      --grid-line: rgba(255,255,255,.03);
+      --orb-opacity: .20;
+      --hero-bg: rgba(255,255,255,.03);
+      --h1-from: #fff;
+      --h1-to: #8a8a8a;
+      --input-bg: rgba(255,255,255,.04);
+      --btn-bg: rgba(255,255,255,.08);
+      --btn-border: rgba(255,255,255,.16);
+      --btn-hover: rgba(255,255,255,.14);
+      --success-bg: rgba(255,255,255,.05);
+    }
+
+    .animated-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: var(--bg);
+      overflow: hidden;
+      transition: background .3s;
+    }
+
+    .grid-overlay {
+      position: absolute;
+      inset: 0;
       background-image:
-        linear-gradient(var(--grid-line) 1px,transparent 1px),
-        linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);
-      background-size:50px 50px;
-      animation:gridMove 20s linear infinite;
-    }
-    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-    .gradient-orb{
-      position:absolute;border-radius:50%;filter:blur(80px);
-      opacity:var(--orb-opacity);
-      animation:float 20s ease-in-out infinite;
-    }
-    .orb-1{width:520px;height:520px;background:radial-gradient(circle,#888 0%,transparent 70%);top:-220px;left:-220px}
-    .orb-2{width:420px;height:420px;background:radial-gradient(circle,#888 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
-    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
-
-    /* ── Header ── */
-    header{
-      position:sticky;top:0;z-index:1000;
-      background:var(--header-bg);
-      backdrop-filter:blur(20px);
-      border-bottom:1px solid var(--border);
-      padding:1rem 0;
-      transition:background .3s,border-color .3s;
-    }
-    .nav{
-      max-width:1200px;margin:0 auto;
-      display:flex;align-items:center;justify-content:space-between;
-      padding:0 1.25rem;
-    }
-    .brand{
-      display:flex;align-items:center;gap:.6rem;
-      font-weight:900;letter-spacing:-1px;font-size:1.25rem;
-      color:var(--text);
-    }
-    .nav a{
-      color:var(--text);
-      text-decoration:none;font-weight:700;
-      border:1px solid var(--nav-link-border);
-      background:var(--nav-link-bg);
-      padding:.55rem .9rem;border-radius:999px;
-      transition:all .25s ease;
-      white-space:nowrap;
-    }
-    .nav a:hover{
-      border-color:var(--nav-link-hover-border);
-      background:var(--nav-link-hover-bg);
-      transform:translateY(-1px);
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 50px 50px;
+      animation: gridMove 20s linear infinite;
     }
 
-    /* ── Main ── */
-    main{max-width:1200px;margin:0 auto;padding:3.5rem 1.25rem 5rem}
-    .hero{
-      padding:2.25rem 1.75rem;
-      border:1px solid var(--border);
-      background:var(--hero-bg);
-      border-radius:22px;
-      backdrop-filter:blur(10px);
-      transition:background .3s,border-color .3s;
+    @keyframes gridMove {
+      0% { transform: translate(0,0); }
+      100% { transform: translate(50px,50px); }
     }
-    h1{
-      font-size:3rem;line-height:1.1;letter-spacing:-2px;
-      background:linear-gradient(135deg,var(--h1-from) 0%,var(--h1-to) 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-      margin-bottom:.75rem;
-    }
-    p{color:var(--text-muted);font-size:1.1rem;line-height:1.8;max-width:70ch}
 
-    .panel-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-      gap:1.25rem;
-      margin-top:1.25rem;
+    .gradient-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: var(--orb-opacity);
+      animation: float 20s ease-in-out infinite;
     }
-    .panel{
-      border:1px solid var(--border);
-      background:var(--panel-bg);
-      border-radius:18px;
-      padding:1.25rem 1.25rem 1.4rem;
-      backdrop-filter:blur(10px);
-      min-height:180px;
-      transition:background .3s,border-color .3s;
-    }
-    .panel h2{font-size:1.2rem;margin-bottom:.5rem;color:var(--text)}
-    .panel .muted{color:var(--text-muted);font-size:.98rem}
 
-    .hint{
-      margin-top:1.2rem;
-      color:var(--text-muted);
-      font-size:.95rem;
+    .orb-1 {
+      width: 520px;
+      height: 520px;
+      background: radial-gradient(circle, #888 0%, transparent 70%);
+      top: -220px;
+      left: -220px;
+    }
+
+    .orb-2 {
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, #888 0%, transparent 70%);
+      bottom: -170px;
+      right: -170px;
+      animation-delay: 6s;
+    }
+
+    @keyframes float {
+      0%,100% { transform: translate(0,0) scale(1); }
+      33% { transform: translate(50px,-50px) scale(1.08); }
+      66% { transform: translate(-50px,50px) scale(.92); }
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: var(--header-bg);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+      transition: background .3s, border-color .3s;
+    }
+
+    .nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+      font-size: 1.25rem;
+      color: var(--text);
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: .6rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+      border: 1px solid var(--nav-link-border);
+      background: var(--nav-link-bg);
+      padding: .55rem .9rem;
+      border-radius: 999px;
+      transition: all .25s ease;
+      white-space: nowrap;
+    }
+
+    .nav a:hover {
+      border-color: var(--nav-link-hover-border);
+      background: var(--nav-link-hover-bg);
+      transform: translateY(-1px);
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3.5rem 1.25rem 5rem;
+    }
+
+    .hero {
+      padding: 2.25rem 1.75rem;
+      border: 1px solid var(--border);
+      background: var(--hero-bg);
+      border-radius: 22px;
+      backdrop-filter: blur(10px);
+      transition: background .3s, border-color .3s;
+    }
+
+    h1 {
+      font-size: 3rem;
+      line-height: 1.1;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, var(--h1-from) 0%, var(--h1-to) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: .75rem;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      line-height: 1.8;
+      max-width: 75ch;
+    }
+
+    .panel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1.25rem;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      background: var(--panel-bg);
+      border-radius: 18px;
+      padding: 1rem;
+      backdrop-filter: blur(10px);
+      min-height: 320px;
+      transition: background .3s, border-color .3s;
+    }
+
+    .panel h2 {
+      font-size: 1.55rem;
+      margin-bottom: .45rem;
+      color: var(--text);
+      font-weight: 900;
+      letter-spacing: -.5px;
+    }
+
+    .panel .muted {
+      color: var(--text-muted);
+      font-size: .97rem;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: .95rem;
+      margin-top: 1rem;
+    }
+
+    .field-group {
+      display: grid;
+      gap: .4rem;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .8rem;
+    }
+
+    label {
+      font-size: .98rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: var(--text);
+      border-radius: 14px;
+      padding: .95rem 1rem;
+      font-size: .98rem;
+      outline: none;
+      transition: border-color .2s ease, background .2s ease, transform .15s ease;
+      appearance: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--text);
+      transform: translateY(-1px);
+    }
+
+    input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .select-wrap {
+      position: relative;
+    }
+
+    .select-wrap::after {
+      content: "\f078";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text-muted);
+      font-size: .8rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .7rem;
+      margin-top: .4rem;
+    }
+
+    button {
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--text);
+      padding: .9rem 1.05rem;
+      border-radius: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all .2s ease;
+      font-size: .96rem;
+    }
+
+    button:hover {
+      background: var(--btn-hover);
+      transform: translateY(-1px);
+    }
+
+    .swap-btn {
+      width: 100%;
+    }
+
+    .result-placeholder,
+    .result-box {
+      border: 1px solid var(--border);
+      background: var(--success-bg);
+      border-radius: 16px;
+      padding: 1rem;
+    }
+
+    .result-placeholder {
+      color: var(--text-muted);
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+    }
+
+    .big-result {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: .65rem;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .result-line {
+      color: var(--text-muted);
+      line-height: 1.7;
+      font-size: .98rem;
+    }
+
+    .rate-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      border: 1px solid var(--border);
+      background: var(--panel-bg);
+      padding: .6rem .85rem;
+      border-radius: 999px;
+      margin-top: .9rem;
+      font-size: .92rem;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .footnote {
+      margin-top: 1rem;
+      color: var(--text-muted);
+      font-size: .95rem;
+      line-height: 1.65;
+    }
+
+    .mini-note {
+      margin-top: .5rem;
+      color: var(--text-muted);
+      font-size: .9rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 720px) {
+      h1 { font-size: 2.35rem; }
+      .field-row { grid-template-columns: 1fr; }
+      .panel-grid { grid-template-columns: 1fr; }
+      .hero { padding: 1.4rem; }
     }
   </style>
 </head>
@@ -160,7 +408,7 @@
   <header>
     <div class="nav">
       <div class="brand"><i class="fas fa-chart-line"></i> FYNX Tools</div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
+      <div class="nav-actions">
         <a href="../index.html#tools"><i class="fas fa-arrow-left"></i> Back</a>
         <a href="../index.html"><i class="fas fa-house"></i> Home</a>
       </div>
@@ -169,37 +417,267 @@
 
   <main>
     <section class="hero">
-      <h1>Forex Calculator</h1>
-      <p>Dedicated page for the Forex calculator. Put your real calculator code here (inputs, outputs, formulas, UI).</p>
+      <h1>Currency Calculator</h1>
+      <p class="subtitle">
+        Convert currencies instantly using built-in exchange rates. Enter your amount, choose your currencies,
+        and get a clean conversion result with reverse rate details.
+      </p>
 
       <div class="panel-grid">
         <div class="panel">
-          <h2>Calculator UI</h2>
-          <div class="muted">Add inputs (pair, lot size, risk %, stop loss pips, etc.) and compute results.</div>
+          <h2>INPUTS</h2>
+          <div class="muted">
+            Enter amount, choose base and target currencies, or type a custom rate if you want manual conversion.
+          </div>
+
+          <div class="form-grid">
+            <div class="field-group">
+              <label for="amount">Amount</label>
+              <input id="amount" type="number" min="0" step="any" placeholder="e.g. 1000" />
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="fromCurrency">From</label>
+                <div class="select-wrap">
+                  <select id="fromCurrency"></select>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label for="toCurrency">To</label>
+                <div class="select-wrap">
+                  <select id="toCurrency"></select>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="swap-btn" id="swapBtn">
+              <i class="fas fa-right-left"></i> Swap Currencies
+            </button>
+
+            <div class="field-group">
+              <label for="customRate">Custom Rate (Optional)</label>
+              <input id="customRate" type="number" min="0" step="any" placeholder="Leave empty to use built-in rate" />
+              <div class="mini-note">Example: if 1 USD = 0.92 EUR, enter 0.92</div>
+            </div>
+
+            <div class="actions">
+              <button type="button" id="calculateBtn"><i class="fas fa-calculator"></i> Calculate</button>
+              <button type="button" id="clearBtn"><i class="fas fa-broom"></i> Clear</button>
+            </div>
+          </div>
         </div>
+
         <div class="panel">
-          <h2>Results</h2>
-          <div class="muted">Show position size, pip value, risk amount, margin estimate, and notes.</div>
+          <h2>RESULT</h2>
+          <div class="muted">Enter values and tap Calculate</div>
+
+          <div id="resultArea" class="result-placeholder">
+            Your converted amount will appear here.
+          </div>
         </div>
       </div>
 
-      <div class="hint">Tip: when you're ready, tell me which tool you want first and I'll write the full working calculator code for that page.</div>
+      <div class="footnote">
+        Logic: the calculator uses a built-in currency table relative to USD and supports manual override through the custom rate field.
+      </div>
     </section>
   </main>
 
   <script>
     const THEME_KEY = "fynx_theme";
-    (function applyThemeFromStorage(){
+
+    (function applyThemeFromStorage() {
       const saved = localStorage.getItem(THEME_KEY);
       if (saved === "dark") document.body.classList.add("dark-mode");
       else document.body.classList.remove("dark-mode");
     })();
+
     window.addEventListener("storage", (e) => {
       if (e.key === THEME_KEY) {
         if (e.newValue === "dark") document.body.classList.add("dark-mode");
         else document.body.classList.remove("dark-mode");
       }
     });
+
+    const currencyData = {
+      USD: { name: "US Dollar", rate: 1 },
+      EUR: { name: "Euro", rate: 0.92 },
+      GBP: { name: "British Pound", rate: 0.79 },
+      JPY: { name: "Japanese Yen", rate: 151.25 },
+      CAD: { name: "Canadian Dollar", rate: 1.35 },
+      AUD: { name: "Australian Dollar", rate: 1.52 },
+      CHF: { name: "Swiss Franc", rate: 0.88 },
+      CNY: { name: "Chinese Yuan", rate: 7.21 },
+      AED: { name: "UAE Dirham", rate: 3.6725 },
+      SAR: { name: "Saudi Riyal", rate: 3.75 },
+      INR: { name: "Indian Rupee", rate: 83.1 },
+      PKR: { name: "Pakistani Rupee", rate: 278.4 },
+      AFN: { name: "Afghan Afghani", rate: 71.3 },
+      TRY: { name: "Turkish Lira", rate: 32.1 },
+      SEK: { name: "Swedish Krona", rate: 10.45 },
+      NOK: { name: "Norwegian Krone", rate: 10.72 },
+      DKK: { name: "Danish Krone", rate: 6.86 },
+      NZD: { name: "New Zealand Dollar", rate: 1.64 },
+      SGD: { name: "Singapore Dollar", rate: 1.34 },
+      HKD: { name: "Hong Kong Dollar", rate: 7.82 }
+    };
+
+    const amountInput = document.getElementById("amount");
+    const fromCurrency = document.getElementById("fromCurrency");
+    const toCurrency = document.getElementById("toCurrency");
+    const customRateInput = document.getElementById("customRate");
+    const calculateBtn = document.getElementById("calculateBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const swapBtn = document.getElementById("swapBtn");
+    const resultArea = document.getElementById("resultArea");
+
+    function formatNumber(value, max = 6) {
+      return new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: max
+      }).format(value);
+    }
+
+    function formatMoney(value) {
+      return new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 6
+      }).format(value);
+    }
+
+    function populateCurrencies() {
+      const codes = Object.keys(currencyData);
+
+      codes.forEach(code => {
+        const option1 = document.createElement("option");
+        option1.value = code;
+        option1.textContent = `${code} — ${currencyData[code].name}`;
+
+        const option2 = document.createElement("option");
+        option2.value = code;
+        option2.textContent = `${code} — ${currencyData[code].name}`;
+
+        fromCurrency.appendChild(option1);
+        toCurrency.appendChild(option2);
+      });
+
+      fromCurrency.value = "USD";
+      toCurrency.value = "EUR";
+    }
+
+    function getBuiltInRate(from, to) {
+      const fromRate = currencyData[from]?.rate;
+      const toRate = currencyData[to]?.rate;
+
+      if (!fromRate || !toRate) return null;
+
+      return toRate / fromRate;
+    }
+
+    function renderResult(amount, from, to, rate, usedCustomRate) {
+      const converted = amount * rate;
+      const reverseRate = 1 / rate;
+
+      resultArea.className = "result-box";
+      resultArea.innerHTML = `
+        <div class="big-result">${formatMoney(amount)} ${from} = ${formatMoney(converted)} ${to}</div>
+        <div class="result-line"><strong>Rate:</strong> 1 ${from} = ${formatNumber(rate, 8)} ${to}</div>
+        <div class="result-line"><strong>Reverse:</strong> 1 ${to} = ${formatNumber(reverseRate, 8)} ${from}</div>
+        <div class="result-line"><strong>Source:</strong> ${usedCustomRate ? "Custom manual rate" : "Built-in rate table"}</div>
+        <div class="rate-badge"><i class="fas fa-coins"></i> Fast currency conversion ready</div>
+      `;
+    }
+
+    function calculateConversion() {
+      const amount = parseFloat(amountInput.value);
+      const from = fromCurrency.value;
+      const to = toCurrency.value;
+      const customRateRaw = customRateInput.value.trim();
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        resultArea.className = "result-box";
+        resultArea.innerHTML = `
+          <div class="result-line"><strong>Error:</strong> Enter a valid amount greater than 0.</div>
+        `;
+        return;
+      }
+
+      if (!from || !to) {
+        resultArea.className = "result-box";
+        resultArea.innerHTML = `
+          <div class="result-line"><strong>Error:</strong> Select both currencies.</div>
+        `;
+        return;
+      }
+
+      if (from === to) {
+        renderResult(amount, from, to, 1, false);
+        return;
+      }
+
+      let rate;
+      let usedCustomRate = false;
+
+      if (customRateRaw !== "") {
+        rate = parseFloat(customRateRaw);
+        usedCustomRate = true;
+
+        if (!Number.isFinite(rate) || rate <= 0) {
+          resultArea.className = "result-box";
+          resultArea.innerHTML = `
+            <div class="result-line"><strong>Error:</strong> Custom rate must be greater than 0.</div>
+          `;
+          return;
+        }
+      } else {
+        rate = getBuiltInRate(from, to);
+
+        if (!rate) {
+          resultArea.className = "result-box";
+          resultArea.innerHTML = `
+            <div class="result-line"><strong>Error:</strong> Could not calculate this currency pair.</div>
+          `;
+          return;
+        }
+      }
+
+      renderResult(amount, from, to, rate, usedCustomRate);
+    }
+
+    function clearForm() {
+      amountInput.value = "";
+      customRateInput.value = "";
+      fromCurrency.value = "USD";
+      toCurrency.value = "EUR";
+      resultArea.className = "result-placeholder";
+      resultArea.textContent = "Your converted amount will appear here.";
+    }
+
+    function swapCurrencies() {
+      const currentFrom = fromCurrency.value;
+      fromCurrency.value = toCurrency.value;
+      toCurrency.value = currentFrom;
+
+      if (resultArea.className === "result-box" && amountInput.value.trim() !== "") {
+        calculateConversion();
+      }
+    }
+
+    calculateBtn.addEventListener("click", calculateConversion);
+    clearBtn.addEventListener("click", clearForm);
+    swapBtn.addEventListener("click", swapCurrencies);
+
+    amountInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") calculateConversion();
+    });
+
+    customRateInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") calculateConversion();
+    });
+
+    populateCurrencies();
   </script>
 </body>
 </html>
