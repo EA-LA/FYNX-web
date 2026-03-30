@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX Tools — Forex Calculator</title>
+  <title>FYNX Tools — Crypto Calculator</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
@@ -27,6 +27,13 @@
       --orb-core:rgba(0,0,0,.22);
       --hero-gradient-1:#0a0a0a;
       --hero-gradient-2:#6b6b6b;
+      --input-bg:rgba(255,255,255,.76);
+      --btn-bg:rgba(0,0,0,.06);
+      --btn-hover:rgba(0,0,0,.1);
+      --result-bg:rgba(0,0,0,.03);
+      --accent:#111111;
+      --green:#0f9d58;
+      --red:#c62828;
     }
 
     body.dark-mode{
@@ -48,6 +55,13 @@
       --orb-core:rgba(255,255,255,.9);
       --hero-gradient-1:#ffffff;
       --hero-gradient-2:#8a8a8a;
+      --input-bg:rgba(255,255,255,.04);
+      --btn-bg:rgba(255,255,255,.08);
+      --btn-hover:rgba(255,255,255,.14);
+      --result-bg:rgba(255,255,255,.04);
+      --accent:#ffffff;
+      --green:#3ddc84;
+      --red:#ff6b6b;
     }
 
     body{
@@ -87,11 +101,13 @@
       opacity:.25;
       animation:float 20s ease-in-out infinite;
     }
+
     .orb-1{
       width:520px;height:520px;
       background:radial-gradient(circle,var(--orb-core) 0%,transparent 70%);
       top:-220px;left:-220px;
     }
+
     .orb-2{
       width:420px;height:420px;
       background:radial-gradient(circle,var(--orb-core) 0%,transparent 70%);
@@ -118,6 +134,7 @@
       max-width:1200px;margin:0 auto;
       display:flex;align-items:center;justify-content:space-between;
       padding:0 1.25rem;
+      gap:1rem;
     }
 
     .brand{
@@ -128,6 +145,13 @@
     }
 
     .brand i{opacity:.9}
+
+    .nav-actions{
+      display:flex;
+      gap:.6rem;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
 
     .nav a{
       color:var(--text-muted);
@@ -164,17 +188,17 @@
       margin-bottom:.75rem;
     }
 
-    p{
+    .subtitle{
       color:var(--text-muted);
       font-size:1.1rem;
       line-height:1.8;
-      max-width:70ch;
+      max-width:75ch;
       transition:color .25s ease;
     }
 
     .panel-grid{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+      grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
       gap:1.25rem;
       margin-top:1.25rem;
     }
@@ -185,13 +209,13 @@
       border-radius:18px;
       padding:1.25rem 1.25rem 1.4rem;
       backdrop-filter:blur(10px);
-      min-height:180px;
+      min-height:250px;
       transition:background .25s ease,border-color .25s ease;
     }
 
     .panel h2{
-      font-size:1.2rem;
-      margin-bottom:.5rem;
+      font-size:1.25rem;
+      margin-bottom:.55rem;
       color:var(--text-strong);
       transition:color .25s ease;
     }
@@ -199,7 +223,140 @@
     .panel .muted{
       color:var(--text-muted);
       font-size:.98rem;
+      line-height:1.6;
       transition:color .25s ease;
+      margin-bottom:1rem;
+    }
+
+    .form-grid{
+      display:grid;
+      gap:.9rem;
+    }
+
+    .field-group{
+      display:grid;
+      gap:.38rem;
+    }
+
+    .field-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:.8rem;
+    }
+
+    label{
+      font-size:.95rem;
+      font-weight:800;
+      color:var(--text-strong);
+    }
+
+    input, select{
+      width:100%;
+      border:1px solid var(--border);
+      background:var(--input-bg);
+      color:var(--text);
+      border-radius:14px;
+      padding:.92rem 1rem;
+      font-size:.97rem;
+      outline:none;
+      transition:border-color .2s ease,background .2s ease,transform .15s ease;
+    }
+
+    input:focus, select:focus{
+      border-color:var(--accent);
+      transform:translateY(-1px);
+    }
+
+    input::placeholder{
+      color:var(--text-muted);
+    }
+
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.7rem;
+      margin-top:.3rem;
+    }
+
+    button{
+      border:1px solid var(--border-strong);
+      background:var(--btn-bg);
+      color:var(--text-strong);
+      padding:.88rem 1.05rem;
+      border-radius:14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:all .2s ease;
+      font-size:.95rem;
+    }
+
+    button:hover{
+      background:var(--btn-hover);
+      transform:translateY(-1px);
+    }
+
+    .result-placeholder,
+    .result-box{
+      border:1px solid var(--border);
+      background:var(--result-bg);
+      border-radius:16px;
+      padding:1rem;
+      min-height:210px;
+    }
+
+    .result-placeholder{
+      color:var(--text-muted);
+      display:flex;
+      align-items:center;
+    }
+
+    .big-result{
+      font-size:2rem;
+      font-weight:900;
+      letter-spacing:-1px;
+      margin-bottom:.8rem;
+      color:var(--text-strong);
+      line-height:1.15;
+    }
+
+    .profit{color:var(--green)}
+    .loss{color:var(--red)}
+
+    .result-line{
+      color:var(--text-muted);
+      font-size:.98rem;
+      line-height:1.7;
+      margin-bottom:.15rem;
+    }
+
+    .stats-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:.7rem;
+      margin-top:.95rem;
+    }
+
+    .stat-card{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:.8rem .9rem;
+      background:var(--surface);
+    }
+
+    .stat-label{
+      font-size:.82rem;
+      color:var(--text-muted);
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      margin-bottom:.2rem;
+    }
+
+    .stat-value{
+      font-size:1.05rem;
+      font-weight:900;
+      color:var(--text-strong);
+      word-break:break-word;
     }
 
     .hint{
@@ -207,6 +364,14 @@
       color:var(--text-soft);
       font-size:.95rem;
       transition:color .25s ease;
+      line-height:1.6;
+    }
+
+    @media (max-width:720px){
+      h1{font-size:2.35rem}
+      .field-row{grid-template-columns:1fr}
+      .stats-grid{grid-template-columns:1fr}
+      .hero{padding:1.4rem}
     }
   </style>
 </head>
@@ -220,7 +385,7 @@
   <header>
     <div class="nav">
       <div class="brand"><i class="fas fa-chart-line"></i> FYNX Tools</div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end">
+      <div class="nav-actions">
         <a href="../index.html#tools"><i class="fas fa-arrow-left"></i> Back</a>
         <a href="../index.html"><i class="fas fa-house"></i> Home</a>
       </div>
@@ -229,21 +394,74 @@
 
   <main>
     <section class="hero">
-      <h1>Forex Calculator</h1>
-      <p>Dedicated page for the Forex calculator. Put your real calculator code here (inputs, outputs, formulas, UI).</p>
+      <h1>Crypto Calculator</h1>
+      <p class="subtitle">
+        Calculate crypto position size, coins received, total cost, exit value, trading fees, profit or loss, and break-even price.
+        Works for spot crypto trades and matches the same FYNX calculator design.
+      </p>
 
       <div class="panel-grid">
         <div class="panel">
           <h2>Calculator UI</h2>
-          <div class="muted">Add inputs (pair, lot size, risk %, stop loss pips, etc.) and compute results.</div>
+          <div class="muted">Enter your crypto trade details below and calculate the full trade outcome instantly.</div>
+
+          <div class="form-grid">
+            <div class="field-row">
+              <div class="field-group">
+                <label for="coin">Coin / Pair</label>
+                <input id="coin" type="text" placeholder="e.g. BTC / USDT">
+              </div>
+              <div class="field-group">
+                <label for="capital">Investment Amount ($)</label>
+                <input id="capital" type="number" step="any" min="0" placeholder="e.g. 1000">
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="entryPrice">Entry Price</label>
+                <input id="entryPrice" type="number" step="any" min="0" placeholder="e.g. 65000">
+              </div>
+              <div class="field-group">
+                <label for="exitPrice">Exit Price</label>
+                <input id="exitPrice" type="number" step="any" min="0" placeholder="e.g. 70000">
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="feePercent">Fee % (per side)</label>
+                <input id="feePercent" type="number" step="any" min="0" placeholder="e.g. 0.1">
+              </div>
+              <div class="field-group">
+                <label for="tradeType">Trade Type</label>
+                <select id="tradeType">
+                  <option value="long">Long / Buy Low → Sell High</option>
+                  <option value="short">Short / Sell High → Buy Back Lower</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" id="calculateBtn"><i class="fas fa-calculator"></i> Calculate</button>
+              <button type="button" id="clearBtn"><i class="fas fa-broom"></i> Clear</button>
+            </div>
+          </div>
         </div>
+
         <div class="panel">
           <h2>Results</h2>
-          <div class="muted">Show position size, pip value, risk amount, margin estimate, and notes.</div>
+          <div class="muted">Show position size, total fees, trade value, profit/loss, and break-even.</div>
+
+          <div id="resultArea" class="result-placeholder">
+            Your crypto trade result will appear here.
+          </div>
         </div>
       </div>
 
-      <div class="hint">Tip: when you’re ready, tell me which tool you want first and I’ll write the full working calculator code for that page.</div>
+      <div class="hint">
+        This calculator assumes spot-style fee logic on entry and exit. For long trades profit comes from price rising. For short trades profit comes from price falling.
+      </div>
     </section>
   </main>
 
@@ -261,6 +479,137 @@
         if (e.newValue === "dark") document.body.classList.add("dark-mode");
         else document.body.classList.remove("dark-mode");
       }
+    });
+
+    const coinInput = document.getElementById("coin");
+    const capitalInput = document.getElementById("capital");
+    const entryPriceInput = document.getElementById("entryPrice");
+    const exitPriceInput = document.getElementById("exitPrice");
+    const feePercentInput = document.getElementById("feePercent");
+    const tradeTypeInput = document.getElementById("tradeType");
+    const calculateBtn = document.getElementById("calculateBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const resultArea = document.getElementById("resultArea");
+
+    function fmt(num, min = 2, max = 8) {
+      return Number(num).toLocaleString("en-US", {
+        minimumFractionDigits: min,
+        maximumFractionDigits: max
+      });
+    }
+
+    function money(num) {
+      return "$" + Number(num).toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function calculateCryptoTrade() {
+      const coin = coinInput.value.trim() || "Crypto Position";
+      const capital = parseFloat(capitalInput.value);
+      const entryPrice = parseFloat(entryPriceInput.value);
+      const exitPrice = parseFloat(exitPriceInput.value);
+      const feePercent = parseFloat(feePercentInput.value || "0");
+      const tradeType = tradeTypeInput.value;
+
+      if (![capital, entryPrice, exitPrice, feePercent].every(Number.isFinite)) {
+        resultArea.className = "result-box";
+        resultArea.innerHTML = `<div class="result-line"><strong>Error:</strong> Please fill in all numeric fields with valid values.</div>`;
+        return;
+      }
+
+      if (capital <= 0 || entryPrice <= 0 || exitPrice <= 0 || feePercent < 0) {
+        resultArea.className = "result-box";
+        resultArea.innerHTML = `<div class="result-line"><strong>Error:</strong> Values must be greater than 0, and fee cannot be negative.</div>`;
+        return;
+      }
+
+      const feeRate = feePercent / 100;
+
+      const quantity = capital / entryPrice;
+      const entryValue = quantity * entryPrice;
+      const exitValue = quantity * exitPrice;
+
+      const entryFee = entryValue * feeRate;
+      const exitFee = exitValue * feeRate;
+      const totalFees = entryFee + exitFee;
+
+      let grossPnL = 0;
+      if (tradeType === "long") {
+        grossPnL = exitValue - entryValue;
+      } else {
+        grossPnL = entryValue - exitValue;
+      }
+
+      const netPnL = grossPnL - totalFees;
+      const roi = (netPnL / capital) * 100;
+
+      let breakEvenPrice;
+      if (tradeType === "long") {
+        breakEvenPrice = entryPrice * (1 + feeRate) / (1 - feeRate);
+      } else {
+        breakEvenPrice = entryPrice * (1 - feeRate) / (1 + feeRate);
+      }
+
+      const pnlClass = netPnL >= 0 ? "profit" : "loss";
+      const pnlLabel = netPnL >= 0 ? "Net Profit" : "Net Loss";
+
+      resultArea.className = "result-box";
+      resultArea.innerHTML = `
+        <div class="big-result ${pnlClass}">${pnlLabel}: ${money(Math.abs(netPnL))}</div>
+        <div class="result-line"><strong>Pair:</strong> ${coin}</div>
+        <div class="result-line"><strong>Trade Type:</strong> ${tradeType === "long" ? "Long" : "Short"}</div>
+        <div class="result-line"><strong>Coins / Units:</strong> ${fmt(quantity, 4, 10)}</div>
+        <div class="result-line"><strong>ROI:</strong> ${fmt(roi, 2, 2)}%</div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Entry Fee</div>
+            <div class="stat-value">${money(entryFee)}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Exit Fee</div>
+            <div class="stat-value">${money(exitFee)}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Fees</div>
+            <div class="stat-value">${money(totalFees)}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Break-even Price</div>
+            <div class="stat-value">${money(breakEvenPrice)}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Entry Value</div>
+            <div class="stat-value">${money(entryValue)}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Exit Value</div>
+            <div class="stat-value">${money(exitValue)}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function clearForm() {
+      coinInput.value = "";
+      capitalInput.value = "";
+      entryPriceInput.value = "";
+      exitPriceInput.value = "";
+      feePercentInput.value = "";
+      tradeTypeInput.value = "long";
+      resultArea.className = "result-placeholder";
+      resultArea.textContent = "Your crypto trade result will appear here.";
+    }
+
+    calculateBtn.addEventListener("click", calculateCryptoTrade);
+    clearBtn.addEventListener("click", clearForm);
+
+    [coinInput, capitalInput, entryPriceInput, exitPriceInput, feePercentInput].forEach(input => {
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") calculateCryptoTrade();
+      });
     });
   </script>
 </body>
