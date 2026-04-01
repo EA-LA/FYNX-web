@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FYNX Tools — Economic Indicators Heatmap</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#f5f5f6;
+      --panel:#ffffff;
+      --panel-2:#fafafa;
+      --text:#0b0b0c;
+      --muted:#666872;
+      --border:rgba(0,0,0,.08);
+      --border-strong:rgba(0,0,0,.12);
+      --good:#16a34a;
+      --mid:#f59e0b;
+      --bad:#ef4444;
+      --grid-1:rgba(0,0,0,.05);
+      --shadow:0 18px 50px rgba(0,0,0,.08);
+      --orb:.08;
+    }
+
+    body.dark-mode{
+      --bg:#020202;
+      --panel:#0a0a0a;
+      --panel-2:#111111;
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.66);
+      --border:rgba(255,255,255,.10);
+      --border-strong:rgba(255,255,255,.15);
+      --good:#22c55e;
+      --mid:#fbbf24;
+      --bad:#f87171;
+      --grid-1:rgba(255,255,255,.04);
+      --shadow:0 28px 90px rgba(0,0,0,.55);
+      --orb:.18;
+    }
+
+    body{
+      font-family:'Inter','Segoe UI',system-ui,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      overflow-x:hidden;
+      transition:background .25s ease,color .25s ease;
+    }
+
+    .bg{position:fixed;inset:0;z-index:-1;background:var(--bg);overflow:hidden}
+    .grid{
+      position:absolute;inset:0;
+      background-image:
+        linear-gradient(var(--grid-1) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-1) 1px, transparent 1px);
+      background-size:44px 44px;
+    }
+    .orb{
+      position:absolute;border-radius:50%;filter:blur(80px);opacity:var(--orb);
+      background:radial-gradient(circle,currentColor 0%,transparent 72%);color:var(--text)
+    }
+    .orb.one{width:360px;height:360px;top:-120px;left:-110px}
+    .orb.two{width:340px;height:340px;right:-110px;bottom:-120px}
+
+    header{
+      border-bottom:1px solid var(--border);
+      background:color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter:blur(16px);
+      position:sticky; top:0; z-index:10;
+    }
+
+    .nav{
+      max-width:1320px;margin:0 auto;padding:1rem 1.25rem;
+      display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+    }
+
+    .brand{
+      display:flex;align-items:center;gap:.7rem;
+      font-weight:900;font-size:1.8rem;letter-spacing:-1.5px;
+    }
+
+    .nav-actions{display:flex;gap:.7rem;flex-wrap:wrap}
+
+    .btn{
+      display:inline-flex;align-items:center;gap:.55rem;
+      border:1px solid var(--border);background:var(--panel);color:var(--text);
+      text-decoration:none;padding:.75rem 1rem;border-radius:999px;font-weight:800;transition:.2s ease;
+    }
+    .btn:hover{transform:translateY(-1px);border-color:var(--border-strong);background:var(--panel-2)}
+
+    .wrap{max-width:1320px;margin:0 auto;padding:1.8rem 1.25rem 3rem}
+
+    .hero{
+      display:grid;grid-template-columns:minmax(0,1.65fr) 280px;gap:1rem;margin-bottom:1rem;
+    }
+
+    .card{
+      background:var(--panel);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);
+    }
+
+    .hero-main{padding:1.6rem}
+
+    h1{
+      font-size:clamp(2.5rem,5vw,4rem);
+      line-height:.95;letter-spacing:-3px;margin-bottom:1rem;
+    }
+
+    .lead{
+      color:var(--muted);font-size:1.12rem;line-height:1.8;max-width:68ch;margin-bottom:1rem;
+    }
+
+    .pills{display:flex;gap:.65rem;flex-wrap:wrap;margin-top:1rem}
+    .pill{
+      display:inline-flex;align-items:center;gap:.5rem;border:1px solid var(--border);
+      background:var(--panel-2);border-radius:999px;padding:.72rem 1rem;font-weight:800;
+    }
+
+    .side-stack{display:grid;gap:1rem}
+    .mini{padding:1.2rem 1.1rem}
+    .mini .label{
+      color:var(--muted);font-size:.82rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase;margin-bottom:.4rem;
+    }
+    .mini .big{font-size:1.7rem;font-weight:900;letter-spacing:-1px}
+    .mini .sub{color:var(--muted);margin-top:.35rem;line-height:1.6}
+
+    .main-grid{
+      display:grid;grid-template-columns:minmax(0,1.6fr) minmax(320px,.9fr);gap:1rem;margin-top:1rem;
+    }
+
+    .section{padding:1.2rem}
+    .section-title{
+      display:flex;align-items:center;gap:.6rem;font-size:1.7rem;font-weight:900;letter-spacing:-1px;margin-bottom:.25rem;
+    }
+    .section-sub{color:var(--muted);line-height:1.7;margin-bottom:1rem}
+
+    .filters{display:flex;gap:.65rem;flex-wrap:wrap;margin-bottom:1rem}
+    .filter{
+      border:1px solid var(--border);background:var(--panel-2);padding:.68rem .95rem;border-radius:999px;font-weight:800;
+    }
+
+    .heatmap{
+      display:grid;
+      grid-template-columns:180px repeat(4, 1fr);
+      border:1px solid var(--border);
+      border-radius:22px;
+      overflow:hidden;
+      background:var(--panel-2);
+    }
+
+    .cell{
+      padding:1rem .9rem;
+      border-right:1px solid var(--border);
+      border-bottom:1px solid var(--border);
+      min-height:76px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      font-weight:800;
+      line-height:1.35;
+    }
+
+    .cell.head{
+      background:var(--panel);
+      font-size:.86rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+    }
+
+    .cell.rowhead{
+      justify-content:flex-start;
+      background:var(--panel);
+      font-weight:900;
+    }
+
+    .good{background:color-mix(in srgb, var(--good) 18%, var(--panel-2)); color:var(--text)}
+    .mid{background:color-mix(in srgb, var(--mid) 18%, var(--panel-2)); color:var(--text)}
+    .bad{background:color-mix(in srgb, var(--bad) 18%, var(--panel-2)); color:var(--text)}
+
+    .legend{display:grid;gap:.8rem}
+    .legend-item{
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:var(--panel-2);
+      padding:1rem;
+    }
+    .legend-item h3{font-size:1rem;margin-bottom:.45rem}
+    .legend-item p{color:var(--muted);line-height:1.7;font-size:.96rem}
+
+    .dot{
+      width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:.45rem;
+    }
+
+    @media (max-width:980px){
+      .hero{grid-template-columns:1fr}
+      .main-grid{grid-template-columns:1fr}
+      .heatmap{grid-template-columns:130px repeat(4, minmax(100px,1fr)); overflow:auto}
+    }
+  </style>
+</head>
+<body>
+  <div class="bg">
+    <div class="grid"></div>
+    <div class="orb one"></div>
+    <div class="orb two"></div>
+  </div>
+
+  <header>
+    <div class="nav">
+      <div class="brand"><i class="fas fa-chart-simple"></i> FYNX Tools</div>
+
+      <div class="nav-actions">
+        <button class="btn" id="themeToggle" type="button">
+          <i class="fas fa-circle-half-stroke"></i>
+          <span id="themeLabel">Light</span>
+        </button>
+        <a class="btn" href="../home/hub.html"><i class="fas fa-arrow-left"></i> Back</a>
+        <a class="btn" href="../index.html"><i class="fas fa-house"></i> Home</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="card hero-main">
+        <h1>Economic Indicators Heatmap</h1>
+        <p class="lead">
+          Get a fast macro overview using a heatmap of inflation, labor, growth, and sentiment.
+          This page helps you scan which economies are running strong, slowing down, or printing
+          mixed signals before major trades.
+        </p>
+
+        <div class="pills">
+          <div class="pill"><i class="fas fa-fire"></i> Surprise tracking</div>
+          <div class="pill"><i class="fas fa-filter"></i> Macro strength view</div>
+          <div class="pill"><i class="fas fa-globe"></i> Country comparison</div>
+        </div>
+      </div>
+
+      <div class="side-stack">
+        <div class="card mini">
+          <div class="label">Best use</div>
+          <div class="big">Bias first</div>
+          <div class="sub">Use it to build directional bias before drilling down to entries.</div>
+        </div>
+
+        <div class="card mini">
+          <div class="label">Watch for</div>
+          <div class="big">Surprises</div>
+          <div class="sub">Strong market moves usually come from data beating or missing expectations.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <div class="card section">
+        <div class="section-title"><i class="fas fa-table-cells-large"></i> Macro heatmap</div>
+        <div class="section-sub">Sample dashboard layout for comparing economic strength by region.</div>
+
+        <div class="filters">
+          <div class="filter">Major economies</div>
+          <div class="filter">Latest prints</div>
+          <div class="filter">Trend aware</div>
+        </div>
+
+        <div class="heatmap">
+          <div class="cell head"></div>
+          <div class="cell head">Inflation</div>
+          <div class="cell head">Labor</div>
+          <div class="cell head">Growth</div>
+          <div class="cell head">Sentiment</div>
+
+          <div class="cell rowhead">United States</div>
+          <div class="cell mid">Cooling but sticky</div>
+          <div class="cell good">Still resilient</div>
+          <div class="cell good">Moderate expansion</div>
+          <div class="cell mid">Mixed</div>
+
+          <div class="cell rowhead">Eurozone</div>
+          <div class="cell good">Cooling faster</div>
+          <div class="cell mid">Softening</div>
+          <div class="cell bad">Weak demand</div>
+          <div class="cell bad">Fragile</div>
+
+          <div class="cell rowhead">United Kingdom</div>
+          <div class="cell mid">Sticky services CPI</div>
+          <div class="cell mid">Decent jobs</div>
+          <div class="cell mid">Slow growth</div>
+          <div class="cell mid">Uncertain</div>
+
+          <div class="cell rowhead">Japan</div>
+          <div class="cell mid">Rising trend</div>
+          <div class="cell good">Stable labor</div>
+          <div class="cell mid">Uneven growth</div>
+          <div class="cell good">Improving</div>
+
+          <div class="cell rowhead">Switzerland</div>
+          <div class="cell good">Soft inflation</div>
+          <div class="cell good">Stable</div>
+          <div class="cell mid">Moderate</div>
+          <div class="cell good">Solid</div>
+        </div>
+      </div>
+
+      <aside class="card section">
+        <div class="section-title"><i class="fas fa-layer-group"></i> Heatmap guide</div>
+
+        <div class="legend">
+          <div class="legend-item">
+            <h3><span class="dot" style="background:var(--good)"></span>Green zone</h3>
+            <p>Healthy or supportive prints. Can imply relative macro strength, policy flexibility, or stable demand.</p>
+          </div>
+
+          <div class="legend-item">
+            <h3><span class="dot" style="background:var(--mid)"></span>Amber zone</h3>
+            <p>Mixed data. Usually means no clean macro edge yet and traders should wait for confirmation.</p>
+          </div>
+
+          <div class="legend-item">
+            <h3><span class="dot" style="background:var(--bad)"></span>Red zone</h3>
+            <p>Weak prints, contraction risk, or broad disappointment. Often bearish for growth-sensitive assets.</p>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="main-grid">
+      <div class="card section">
+        <div class="section-title"><i class="fas fa-magnifying-glass-chart"></i> How to read it</div>
+        <div class="legend">
+          <div class="legend-item">
+            <h3>Step 1: Find strongest and weakest regions</h3>
+            <p>Compare rows quickly. The biggest contrast often creates the cleanest FX relative-value setup.</p>
+          </div>
+          <div class="legend-item">
+            <h3>Step 2: Match with central bank bias</h3>
+            <p>Strong data plus hawkish tone can strengthen a currency. Weak data plus easing can pressure it.</p>
+          </div>
+          <div class="legend-item">
+            <h3>Step 3: Wait for catalyst</h3>
+            <p>Use the next CPI, jobs, PMI, or GDP release to confirm whether the macro direction is continuing.</p>
+          </div>
+        </div>
+      </div>
+
+      <aside class="card section">
+        <div class="section-title"><i class="fas fa-bolt"></i> Best trading uses</div>
+        <div class="legend">
+          <div class="legend-item">
+            <h3>Forex</h3>
+            <p>Compare two economies directly before trading EUR/USD, GBP/USD, USD/JPY, or CHF pairs.</p>
+          </div>
+          <div class="legend-item">
+            <h3>Indices</h3>
+            <p>Weak growth plus soft earnings outlook can weigh on stock indices and risk appetite.</p>
+          </div>
+          <div class="legend-item">
+            <h3>Bonds</h3>
+            <p>Cooling inflation and weaker activity may support bond prices if cuts become more likely.</p>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const THEME_KEY = "fynx_theme";
+
+    function applyTheme(theme){
+      document.body.classList.toggle("dark-mode", theme === "dark");
+      document.getElementById("themeLabel").textContent = theme === "dark" ? "Dark" : "Light";
+    }
+
+    function getTheme(){
+      return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+    }
+
+    function toggleTheme(){
+      const next = getTheme() === "dark" ? "light" : "dark";
+      localStorage.setItem(THEME_KEY, next);
+      applyTheme(next);
+    }
+
+    applyTheme(getTheme());
+    document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === THEME_KEY) applyTheme(getTheme());
+    });
+  </script>
+</body>
+</html>
