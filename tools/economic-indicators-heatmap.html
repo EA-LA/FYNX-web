@@ -7,196 +7,610 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     :root{
       --bg:#f5f5f6;
+      --bg-2:#ffffff;
       --panel:#ffffff;
       --panel-2:#fafafa;
+      --panel-3:#f1f1f2;
       --text:#0b0b0c;
       --muted:#666872;
+      --soft:#8d8f98;
       --border:rgba(0,0,0,.08);
-      --border-strong:rgba(0,0,0,.12);
+      --border-strong:rgba(0,0,0,.13);
       --good:#16a34a;
       --mid:#f59e0b;
       --bad:#ef4444;
+      --blue:#2563eb;
+      --purple:#7c3aed;
       --grid-1:rgba(0,0,0,.05);
-      --shadow:0 18px 50px rgba(0,0,0,.08);
+      --grid-2:rgba(0,0,0,.028);
+      --shadow:0 18px 55px rgba(0,0,0,.08);
       --orb:.08;
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --radius-md:18px;
     }
 
     body.dark-mode{
       --bg:#020202;
+      --bg-2:#080808;
       --panel:#0a0a0a;
-      --panel-2:#111111;
+      --panel-2:#101010;
+      --panel-3:#131313;
       --text:#ffffff;
-      --muted:rgba(255,255,255,.66);
+      --muted:rgba(255,255,255,.70);
+      --soft:rgba(255,255,255,.48);
       --border:rgba(255,255,255,.10);
-      --border-strong:rgba(255,255,255,.15);
+      --border-strong:rgba(255,255,255,.16);
       --good:#22c55e;
       --mid:#fbbf24;
       --bad:#f87171;
-      --grid-1:rgba(255,255,255,.04);
-      --shadow:0 28px 90px rgba(0,0,0,.55);
+      --blue:#60a5fa;
+      --purple:#a78bfa;
+      --grid-1:rgba(255,255,255,.045);
+      --grid-2:rgba(255,255,255,.025);
+      --shadow:0 28px 90px rgba(0,0,0,.58);
       --orb:.18;
     }
 
+    html { scroll-behavior: smooth; }
+
     body{
-      font-family:'Inter','Segoe UI',system-ui,sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      min-height:100vh;
-      overflow-x:hidden;
-      transition:background .25s ease,color .25s ease;
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background .25s ease, color .25s ease;
     }
 
-    .bg{position:fixed;inset:0;z-index:-1;background:var(--bg);overflow:hidden}
+    .bg{
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
     .grid{
-      position:absolute;inset:0;
+      position: absolute;
+      inset: 0;
       background-image:
         linear-gradient(var(--grid-1) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid-1) 1px, transparent 1px);
-      background-size:44px 44px;
+      background-size: 44px 44px;
     }
+
+    .grid::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image: radial-gradient(circle, var(--grid-2) 1px, transparent 1px);
+      background-size: 24px 24px;
+      opacity:.8;
+    }
+
     .orb{
-      position:absolute;border-radius:50%;filter:blur(80px);opacity:var(--orb);
-      background:radial-gradient(circle,currentColor 0%,transparent 72%);color:var(--text)
+      position:absolute;
+      border-radius:50%;
+      filter: blur(90px);
+      opacity: var(--orb);
+      background: radial-gradient(circle, currentColor 0%, transparent 72%);
+      color: var(--text);
+      animation: float 18s ease-in-out infinite;
     }
-    .orb.one{width:360px;height:360px;top:-120px;left:-110px}
-    .orb.two{width:340px;height:340px;right:-110px;bottom:-120px}
+
+    .orb.one{ width:420px; height:420px; top:-140px; left:-120px; }
+    .orb.two{ width:360px; height:360px; right:-120px; bottom:-120px; animation-delay:5s; }
+
+    @keyframes float{
+      0%,100%{ transform:translate(0,0) scale(1); }
+      33%{ transform:translate(36px,-26px) scale(1.06); }
+      66%{ transform:translate(-28px,22px) scale(.96); }
+    }
 
     header{
-      border-bottom:1px solid var(--border);
-      background:color-mix(in srgb, var(--bg) 88%, transparent);
-      backdrop-filter:blur(16px);
-      position:sticky; top:0; z-index:10;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid var(--border);
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(18px);
     }
 
     .nav{
-      max-width:1320px;margin:0 auto;padding:1rem 1.25rem;
-      display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 1rem 1.25rem;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      flex-wrap:wrap;
     }
 
     .brand{
-      display:flex;align-items:center;gap:.7rem;
-      font-weight:900;font-size:1.8rem;letter-spacing:-1.5px;
+      display:flex;
+      align-items:center;
+      gap:.75rem;
+      font-weight:900;
+      font-size:1.75rem;
+      letter-spacing:-1.3px;
     }
 
-    .nav-actions{display:flex;gap:.7rem;flex-wrap:wrap}
+    .nav-actions{
+      display:flex;
+      gap:.7rem;
+      flex-wrap:wrap;
+    }
 
     .btn{
-      display:inline-flex;align-items:center;gap:.55rem;
-      border:1px solid var(--border);background:var(--panel);color:var(--text);
-      text-decoration:none;padding:.75rem 1rem;border-radius:999px;font-weight:800;transition:.2s ease;
+      display:inline-flex;
+      align-items:center;
+      gap:.55rem;
+      border:1px solid var(--border);
+      background:var(--panel);
+      color:var(--text);
+      text-decoration:none;
+      padding:.78rem 1rem;
+      border-radius:999px;
+      font-weight:800;
+      transition:.2s ease;
+      cursor:pointer;
+      box-shadow:0 8px 24px rgba(0,0,0,.04);
     }
-    .btn:hover{transform:translateY(-1px);border-color:var(--border-strong);background:var(--panel-2)}
 
-    .wrap{max-width:1320px;margin:0 auto;padding:1.8rem 1.25rem 3rem}
+    .btn:hover{
+      transform:translateY(-1px);
+      border-color:var(--border-strong);
+      background:var(--panel-2);
+    }
+
+    .wrap{
+      max-width:1380px;
+      margin:0 auto;
+      padding:1.6rem 1.25rem 3rem;
+    }
 
     .hero{
-      display:grid;grid-template-columns:minmax(0,1.65fr) 280px;gap:1rem;margin-bottom:1rem;
+      display:grid;
+      grid-template-columns:minmax(0,1.6fr) 320px;
+      gap:1rem;
+      margin-bottom:1rem;
     }
 
     .card{
-      background:var(--panel);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadow);
     }
 
-    .hero-main{padding:1.6rem}
+    .hero-main{
+      padding:1.65rem;
+    }
 
     h1{
-      font-size:clamp(2.5rem,5vw,4rem);
-      line-height:.95;letter-spacing:-3px;margin-bottom:1rem;
+      font-size:clamp(2.7rem, 5vw, 4.25rem);
+      line-height:.95;
+      letter-spacing:-3px;
+      margin-bottom:1rem;
     }
 
     .lead{
-      color:var(--muted);font-size:1.12rem;line-height:1.8;max-width:68ch;margin-bottom:1rem;
+      color:var(--muted);
+      font-size:1.1rem;
+      line-height:1.8;
+      max-width:72ch;
     }
 
-    .pills{display:flex;gap:.65rem;flex-wrap:wrap;margin-top:1rem}
+    .pills{
+      display:flex;
+      gap:.7rem;
+      flex-wrap:wrap;
+      margin-top:1.1rem;
+    }
+
     .pill{
-      display:inline-flex;align-items:center;gap:.5rem;border:1px solid var(--border);
-      background:var(--panel-2);border-radius:999px;padding:.72rem 1rem;font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      border:1px solid var(--border);
+      background:var(--panel-2);
+      border-radius:999px;
+      padding:.74rem 1rem;
+      font-weight:800;
+      color:var(--text);
+      font-size:.95rem;
     }
 
-    .side-stack{display:grid;gap:1rem}
-    .mini{padding:1.2rem 1.1rem}
+    .side-stack{
+      display:grid;
+      gap:1rem;
+    }
+
+    .mini{
+      padding:1.2rem 1.1rem;
+    }
+
     .mini .label{
-      color:var(--muted);font-size:.82rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase;margin-bottom:.4rem;
+      color:var(--soft);
+      font-size:.8rem;
+      font-weight:900;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      margin-bottom:.45rem;
     }
-    .mini .big{font-size:1.7rem;font-weight:900;letter-spacing:-1px}
-    .mini .sub{color:var(--muted);margin-top:.35rem;line-height:1.6}
 
-    .main-grid{
-      display:grid;grid-template-columns:minmax(0,1.6fr) minmax(320px,.9fr);gap:1rem;margin-top:1rem;
+    .mini .big{
+      font-size:2rem;
+      font-weight:900;
+      letter-spacing:-1px;
     }
 
-    .section{padding:1.2rem}
+    .mini .sub{
+      color:var(--muted);
+      margin-top:.35rem;
+      line-height:1.6;
+      font-size:.96rem;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:1rem;
+      margin-bottom:1rem;
+    }
+
+    .stat{
+      padding:1.1rem;
+    }
+
+    .stat-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:.75rem;
+      margin-bottom:.85rem;
+    }
+
+    .stat-label{
+      font-size:.82rem;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color:var(--soft);
+      font-weight:900;
+    }
+
+    .stat-value{
+      font-size:2rem;
+      font-weight:900;
+      letter-spacing:-1px;
+      line-height:1;
+    }
+
+    .stat-note{
+      color:var(--muted);
+      line-height:1.6;
+      font-size:.95rem;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:minmax(0,1.55fr) minmax(340px,.95fr);
+      gap:1rem;
+      margin-bottom:1rem;
+    }
+
+    .section{
+      padding:1.2rem;
+    }
+
     .section-title{
-      display:flex;align-items:center;gap:.6rem;font-size:1.7rem;font-weight:900;letter-spacing:-1px;margin-bottom:.25rem;
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      font-size:1.55rem;
+      font-weight:900;
+      letter-spacing:-1px;
+      margin-bottom:.25rem;
     }
-    .section-sub{color:var(--muted);line-height:1.7;margin-bottom:1rem}
 
-    .filters{display:flex;gap:.65rem;flex-wrap:wrap;margin-bottom:1rem}
-    .filter{
-      border:1px solid var(--border);background:var(--panel-2);padding:.68rem .95rem;border-radius:999px;font-weight:800;
+    .section-sub{
+      color:var(--muted);
+      line-height:1.7;
+      margin-bottom:1rem;
+      font-size:.97rem;
+    }
+
+    .toolbar{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr auto;
+      gap:.75rem;
+      margin-bottom:1rem;
+    }
+
+    .select,
+    .search{
+      width:100%;
+      border:1px solid var(--border);
+      background:var(--panel-2);
+      color:var(--text);
+      padding:.9rem 1rem;
+      border-radius:16px;
+      outline:none;
+      font:inherit;
+      transition:.18s ease;
+    }
+
+    .select:focus,
+    .search:focus{
+      border-color:var(--border-strong);
+      background:var(--panel);
+    }
+
+    .ghost-btn{
+      border:1px solid var(--border);
+      background:var(--panel-2);
+      color:var(--text);
+      padding:.9rem 1rem;
+      border-radius:16px;
+      font-weight:800;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+
+    .ghost-btn:hover{
+      background:var(--panel);
+      border-color:var(--border-strong);
+    }
+
+    .heatmap-wrap{
+      border:1px solid var(--border);
+      border-radius:22px;
+      overflow:auto;
+      background:var(--panel-2);
     }
 
     .heatmap{
+      min-width:860px;
       display:grid;
-      grid-template-columns:180px repeat(4, 1fr);
-      border:1px solid var(--border);
-      border-radius:22px;
-      overflow:hidden;
-      background:var(--panel-2);
+      grid-template-columns:190px repeat(4, minmax(130px, 1fr));
     }
 
     .cell{
       padding:1rem .9rem;
       border-right:1px solid var(--border);
       border-bottom:1px solid var(--border);
-      min-height:76px;
+      min-height:82px;
       display:flex;
       align-items:center;
       justify-content:center;
       text-align:center;
       font-weight:800;
       line-height:1.35;
+      transition:.18s ease;
     }
 
     .cell.head{
       background:var(--panel);
-      font-size:.86rem;
+      font-size:.82rem;
       text-transform:uppercase;
       letter-spacing:.12em;
+      color:var(--soft);
     }
 
     .cell.rowhead{
       justify-content:flex-start;
       background:var(--panel);
       font-weight:900;
+      color:var(--text);
+      text-align:left;
     }
 
-    .good{background:color-mix(in srgb, var(--good) 18%, var(--panel-2)); color:var(--text)}
-    .mid{background:color-mix(in srgb, var(--mid) 18%, var(--panel-2)); color:var(--text)}
-    .bad{background:color-mix(in srgb, var(--bad) 18%, var(--panel-2)); color:var(--text)}
+    .cell.good{
+      background:color-mix(in srgb, var(--good) 18%, var(--panel-2));
+    }
 
-    .legend{display:grid;gap:.8rem}
+    .cell.mid{
+      background:color-mix(in srgb, var(--mid) 18%, var(--panel-2));
+    }
+
+    .cell.bad{
+      background:color-mix(in srgb, var(--bad) 18%, var(--panel-2));
+    }
+
+    .scorecard-grid{
+      display:grid;
+      gap:.8rem;
+    }
+
+    .item{
+      border:1px solid var(--border);
+      background:var(--panel-2);
+      border-radius:18px;
+      padding:1rem;
+    }
+
+    .item-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:1rem;
+      margin-bottom:.55rem;
+    }
+
+    .item h3{
+      font-size:1rem;
+      letter-spacing:-.2px;
+    }
+
+    .item p{
+      color:var(--muted);
+      line-height:1.7;
+      font-size:.95rem;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      border-radius:999px;
+      padding:.42rem .74rem;
+      font-weight:800;
+      font-size:.82rem;
+      border:1px solid var(--border);
+      background:var(--panel);
+      white-space:nowrap;
+    }
+
+    .good-badge{ color:var(--good); }
+    .mid-badge{ color:var(--mid); }
+    .bad-badge{ color:var(--bad); }
+    .info-badge{ color:var(--blue); }
+
+    .legend{
+      display:grid;
+      gap:.8rem;
+    }
+
     .legend-item{
       border:1px solid var(--border);
       border-radius:18px;
       background:var(--panel-2);
       padding:1rem;
     }
-    .legend-item h3{font-size:1rem;margin-bottom:.45rem}
-    .legend-item p{color:var(--muted);line-height:1.7;font-size:.96rem}
 
-    .dot{
-      width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:.45rem;
+    .legend-item h3{
+      font-size:1rem;
+      margin-bottom:.45rem;
     }
 
-    @media (max-width:980px){
-      .hero{grid-template-columns:1fr}
-      .main-grid{grid-template-columns:1fr}
-      .heatmap{grid-template-columns:130px repeat(4, minmax(100px,1fr)); overflow:auto}
+    .legend-item p{
+      color:var(--muted);
+      line-height:1.7;
+      font-size:.96rem;
+    }
+
+    .dot{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      display:inline-block;
+      margin-right:.45rem;
+    }
+
+    .compare-box{
+      display:grid;
+      gap:.75rem;
+    }
+
+    .compare-row{
+      border:1px solid var(--border);
+      background:var(--panel-2);
+      border-radius:18px;
+      padding:1rem;
+    }
+
+    .compare-row strong{
+      display:block;
+      margin-bottom:.35rem;
+      font-size:1rem;
+    }
+
+    .compare-row p{
+      color:var(--muted);
+      line-height:1.7;
+      font-size:.95rem;
+    }
+
+    .surprise-list{
+      display:grid;
+      gap:.8rem;
+    }
+
+    .surprise{
+      border:1px solid var(--border);
+      background:var(--panel-2);
+      border-radius:18px;
+      padding:1rem;
+    }
+
+    .surprise-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      margin-bottom:.45rem;
+    }
+
+    .surprise-title{
+      font-weight:900;
+      font-size:1rem;
+    }
+
+    .bar{
+      width:100%;
+      height:12px;
+      border-radius:999px;
+      background:var(--panel-3);
+      border:1px solid var(--border);
+      overflow:hidden;
+      margin-top:.6rem;
+    }
+
+    .fill{
+      height:100%;
+      background:linear-gradient(90deg, var(--text), transparent);
+      opacity:.9;
+    }
+
+    .macro-takeaway{
+      border:1px solid var(--border);
+      background:var(--panel-2);
+      border-radius:20px;
+      padding:1rem;
+    }
+
+    .macro-takeaway h3{
+      font-size:1rem;
+      margin-bottom:.45rem;
+    }
+
+    .macro-takeaway p{
+      color:var(--muted);
+      line-height:1.75;
+      font-size:.95rem;
+    }
+
+    .empty-state{
+      padding:1.25rem;
+      text-align:center;
+      color:var(--muted);
+      border:1px dashed var(--border);
+      border-radius:18px;
+      background:var(--panel-2);
+    }
+
+    @media (max-width:1150px){
+      .stats{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .layout{ grid-template-columns:1fr; }
+      .hero{ grid-template-columns:1fr; }
+    }
+
+    @media (max-width:860px){
+      .toolbar{ grid-template-columns:1fr; }
+    }
+
+    @media (max-width:640px){
+      .stats{ grid-template-columns:1fr; }
+      h1{ letter-spacing:-2px; }
+      .nav{ padding:.9rem 1rem; }
+      .wrap{ padding:1.2rem 1rem 2rem; }
+      .hero-main, .section, .stat{ padding:1rem; }
     }
   </style>
 </head>
@@ -209,15 +623,24 @@
 
   <header>
     <div class="nav">
-      <div class="brand"><i class="fas fa-chart-simple"></i> FYNX Tools</div>
+      <div class="brand">
+        <i class="fas fa-chart-simple"></i>
+        <span>FYNX Tools</span>
+      </div>
 
       <div class="nav-actions">
         <button class="btn" id="themeToggle" type="button">
           <i class="fas fa-circle-half-stroke"></i>
           <span id="themeLabel">Light</span>
         </button>
-        <a class="btn" href="../home/hub.html"><i class="fas fa-arrow-left"></i> Back</a>
-        <a class="btn" href="../index.html"><i class="fas fa-house"></i> Home</a>
+        <a class="btn" href="../home/hub.html">
+          <i class="fas fa-arrow-left"></i>
+          <span>Back</span>
+        </a>
+        <a class="btn" href="../index.html">
+          <i class="fas fa-house"></i>
+          <span>Home</span>
+        </a>
       </div>
     </div>
   </header>
@@ -227,138 +650,206 @@
       <div class="card hero-main">
         <h1>Economic Indicators Heatmap</h1>
         <p class="lead">
-          Get a fast macro overview using a heatmap of inflation, labor, growth, and sentiment.
-          This page helps you scan which economies are running strong, slowing down, or printing
-          mixed signals before major trades.
+          A real product-style macro dashboard for scanning inflation, labor, growth, and sentiment
+          across major economies. Filter regions, inspect strongest and weakest macro profiles, and
+          quickly understand where the cleanest relative-value setups may be building.
         </p>
 
         <div class="pills">
-          <div class="pill"><i class="fas fa-fire"></i> Surprise tracking</div>
-          <div class="pill"><i class="fas fa-filter"></i> Macro strength view</div>
-          <div class="pill"><i class="fas fa-globe"></i> Country comparison</div>
+          <div class="pill"><i class="fas fa-fire"></i> Filterable macro heatmap</div>
+          <div class="pill"><i class="fas fa-scale-balanced"></i> Relative strength comparison</div>
+          <div class="pill"><i class="fas fa-wave-square"></i> Surprise tracker</div>
         </div>
       </div>
 
       <div class="side-stack">
         <div class="card mini">
-          <div class="label">Best use</div>
-          <div class="big">Bias first</div>
-          <div class="sub">Use it to build directional bias before drilling down to entries.</div>
+          <div class="label">Strongest region now</div>
+          <div class="big" id="heroStrongest">—</div>
+          <div class="sub" id="heroStrongestText">Calculating broad macro leader from the dashboard.</div>
         </div>
 
         <div class="card mini">
-          <div class="label">Watch for</div>
-          <div class="big">Surprises</div>
-          <div class="sub">Strong market moves usually come from data beating or missing expectations.</div>
+          <div class="label">Weakest region now</div>
+          <div class="big" id="heroWeakest">—</div>
+          <div class="sub" id="heroWeakestText">Calculating broad macro laggard from the dashboard.</div>
         </div>
       </div>
     </section>
 
-    <section class="main-grid">
-      <div class="card section">
-        <div class="section-title"><i class="fas fa-table-cells-large"></i> Macro heatmap</div>
-        <div class="section-sub">Sample dashboard layout for comparing economic strength by region.</div>
+    <section class="stats">
+      <div class="card stat">
+        <div class="stat-top">
+          <div class="stat-label">Top macro score</div>
+          <i class="fas fa-arrow-trend-up"></i>
+        </div>
+        <div class="stat-value" id="statTopScore">—</div>
+        <div class="stat-note" id="statTopScoreNote">Scanning strongest economy.</div>
+      </div>
 
-        <div class="filters">
-          <div class="filter">Major economies</div>
-          <div class="filter">Latest prints</div>
-          <div class="filter">Trend aware</div>
+      <div class="card stat">
+        <div class="stat-top">
+          <div class="stat-label">Lowest macro score</div>
+          <i class="fas fa-arrow-trend-down"></i>
+        </div>
+        <div class="stat-value" id="statLowScore">—</div>
+        <div class="stat-note" id="statLowScoreNote">Scanning weakest economy.</div>
+      </div>
+
+      <div class="card stat">
+        <div class="stat-top">
+          <div class="stat-label">Green cells</div>
+          <i class="fas fa-circle-check"></i>
+        </div>
+        <div class="stat-value" id="statGreenCells">—</div>
+        <div class="stat-note">Positive or supportive indicator prints across the selected view.</div>
+      </div>
+
+      <div class="card stat">
+        <div class="stat-top">
+          <div class="stat-label">Red cells</div>
+          <i class="fas fa-triangle-exclamation"></i>
+        </div>
+        <div class="stat-value" id="statRedCells">—</div>
+        <div class="stat-note">Weak or fragile macro readings across the selected view.</div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="card section">
+        <div class="section-title">
+          <i class="fas fa-table-cells-large"></i>
+          <span>Macro heatmap dashboard</span>
+        </div>
+        <div class="section-sub">
+          Filter by region group and indicator focus, then scan relative economic strength fast.
         </div>
 
-        <div class="heatmap">
-          <div class="cell head"></div>
-          <div class="cell head">Inflation</div>
-          <div class="cell head">Labor</div>
-          <div class="cell head">Growth</div>
-          <div class="cell head">Sentiment</div>
+        <div class="toolbar">
+          <select id="regionFilter" class="select">
+            <option value="all">All regions</option>
+            <option value="developed">Developed markets</option>
+            <option value="defensive">Defensive economies</option>
+            <option value="commodity">Commodity-linked</option>
+          </select>
 
-          <div class="cell rowhead">United States</div>
-          <div class="cell mid">Cooling but sticky</div>
-          <div class="cell good">Still resilient</div>
-          <div class="cell good">Moderate expansion</div>
-          <div class="cell mid">Mixed</div>
+          <select id="indicatorFilter" class="select">
+            <option value="all">All indicators</option>
+            <option value="inflation">Inflation only</option>
+            <option value="labor">Labor only</option>
+            <option value="growth">Growth only</option>
+            <option value="sentiment">Sentiment only</option>
+          </select>
 
-          <div class="cell rowhead">Eurozone</div>
-          <div class="cell good">Cooling faster</div>
-          <div class="cell mid">Softening</div>
-          <div class="cell bad">Weak demand</div>
-          <div class="cell bad">Fragile</div>
+          <select id="sortFilter" class="select">
+            <option value="score-desc">Sort: Highest score first</option>
+            <option value="score-asc">Sort: Lowest score first</option>
+            <option value="name-asc">Sort: Region A–Z</option>
+          </select>
 
-          <div class="cell rowhead">United Kingdom</div>
-          <div class="cell mid">Sticky services CPI</div>
-          <div class="cell mid">Decent jobs</div>
-          <div class="cell mid">Slow growth</div>
-          <div class="cell mid">Uncertain</div>
+          <button id="resetFilters" class="ghost-btn" type="button">Reset</button>
+        </div>
 
-          <div class="cell rowhead">Japan</div>
-          <div class="cell mid">Rising trend</div>
-          <div class="cell good">Stable labor</div>
-          <div class="cell mid">Uneven growth</div>
-          <div class="cell good">Improving</div>
+        <div class="heatmap-wrap">
+          <div class="heatmap" id="heatmapGrid"></div>
+        </div>
 
-          <div class="cell rowhead">Switzerland</div>
-          <div class="cell good">Soft inflation</div>
-          <div class="cell good">Stable</div>
-          <div class="cell mid">Moderate</div>
-          <div class="cell good">Solid</div>
+        <div id="heatmapEmpty" class="empty-state" style="display:none; margin-top:1rem;">
+          No regions match your current filter.
         </div>
       </div>
 
       <aside class="card section">
-        <div class="section-title"><i class="fas fa-layer-group"></i> Heatmap guide</div>
+        <div class="section-title">
+          <i class="fas fa-layer-group"></i>
+          <span>Heatmap guide</span>
+        </div>
 
         <div class="legend">
           <div class="legend-item">
             <h3><span class="dot" style="background:var(--good)"></span>Green zone</h3>
-            <p>Healthy or supportive prints. Can imply relative macro strength, policy flexibility, or stable demand.</p>
+            <p>Supportive macro conditions. Usually signals healthier demand, resilient data, or a stronger policy backdrop.</p>
           </div>
 
           <div class="legend-item">
             <h3><span class="dot" style="background:var(--mid)"></span>Amber zone</h3>
-            <p>Mixed data. Usually means no clean macro edge yet and traders should wait for confirmation.</p>
+            <p>Mixed readings. No clean edge yet. Traders often need one more catalyst before taking a stronger bias.</p>
           </div>
 
           <div class="legend-item">
             <h3><span class="dot" style="background:var(--bad)"></span>Red zone</h3>
-            <p>Weak prints, contraction risk, or broad disappointment. Often bearish for growth-sensitive assets.</p>
+            <p>Weak, fragile, or disappointing data. Often bearish for growth-sensitive assets and vulnerable currencies.</p>
           </div>
         </div>
       </aside>
     </section>
 
-    <section class="main-grid">
+    <section class="layout">
       <div class="card section">
-        <div class="section-title"><i class="fas fa-magnifying-glass-chart"></i> How to read it</div>
-        <div class="legend">
-          <div class="legend-item">
-            <h3>Step 1: Find strongest and weakest regions</h3>
-            <p>Compare rows quickly. The biggest contrast often creates the cleanest FX relative-value setup.</p>
-          </div>
-          <div class="legend-item">
-            <h3>Step 2: Match with central bank bias</h3>
-            <p>Strong data plus hawkish tone can strengthen a currency. Weak data plus easing can pressure it.</p>
-          </div>
-          <div class="legend-item">
-            <h3>Step 3: Wait for catalyst</h3>
-            <p>Use the next CPI, jobs, PMI, or GDP release to confirm whether the macro direction is continuing.</p>
-          </div>
+        <div class="section-title">
+          <i class="fas fa-scale-balanced"></i>
+          <span>Strongest vs weakest comparison</span>
         </div>
+        <div class="section-sub">
+          This block turns the heatmap into a decision tool instead of just a visual.
+        </div>
+
+        <div class="compare-box" id="comparisonBox"></div>
       </div>
 
       <aside class="card section">
-        <div class="section-title"><i class="fas fa-bolt"></i> Best trading uses</div>
-        <div class="legend">
-          <div class="legend-item">
-            <h3>Forex</h3>
-            <p>Compare two economies directly before trading EUR/USD, GBP/USD, USD/JPY, or CHF pairs.</p>
+        <div class="section-title">
+          <i class="fas fa-square-poll-horizontal"></i>
+          <span>Region scorecards</span>
+        </div>
+        <div class="scorecard-grid" id="scorecardGrid"></div>
+      </aside>
+    </section>
+
+    <section class="layout">
+      <div class="card section">
+        <div class="section-title">
+          <i class="fas fa-bolt"></i>
+          <span>Data surprise tracker</span>
+        </div>
+        <div class="section-sub">
+          Quick signal view for what type of macro surprise is most likely to drive the next move.
+        </div>
+
+        <div class="surprise-list" id="surpriseList"></div>
+      </div>
+
+      <aside class="stack">
+        <div class="card section">
+          <div class="section-title">
+            <i class="fas fa-magnifying-glass-chart"></i>
+            <span>How to use it</span>
           </div>
-          <div class="legend-item">
-            <h3>Indices</h3>
-            <p>Weak growth plus soft earnings outlook can weigh on stock indices and risk appetite.</p>
+
+          <div class="legend">
+            <div class="legend-item">
+              <h3>1. Start with the largest contrast</h3>
+              <p>The biggest macro gap between two regions often creates the cleanest forex relative-value setup.</p>
+            </div>
+            <div class="legend-item">
+              <h3>2. Match macro with central-bank tone</h3>
+              <p>Strong data plus hawkish guidance can reinforce currency strength. Weak data plus easing can intensify downside.</p>
+            </div>
+            <div class="legend-item">
+              <h3>3. Wait for the next catalyst</h3>
+              <p>Use CPI, jobs, PMI, retail sales, or GDP to confirm whether the heatmap trend is continuing or breaking.</p>
+            </div>
           </div>
-          <div class="legend-item">
-            <h3>Bonds</h3>
-            <p>Cooling inflation and weaker activity may support bond prices if cuts become more likely.</p>
+        </div>
+
+        <div class="card section">
+          <div class="section-title">
+            <i class="fas fa-brain"></i>
+            <span>Macro takeaway</span>
+          </div>
+          <div class="macro-takeaway">
+            <h3 id="takeawayTitle">Scanning dashboard</h3>
+            <p id="takeawayText">The dashboard will generate a macro takeaway based on the currently visible regions and their scores.</p>
           </div>
         </div>
       </aside>
@@ -367,6 +858,93 @@
 
   <script>
     const THEME_KEY = "fynx_theme";
+
+    const heatmapData = [
+      {
+        region: "United States",
+        group: ["developed"],
+        inflation: { score: 0, label: "Cooling but sticky", tone: "mid" },
+        labor: { score: 1, label: "Still resilient", tone: "good" },
+        growth: { score: 1, label: "Moderate expansion", tone: "good" },
+        sentiment: { score: 0, label: "Mixed", tone: "mid" },
+        surprise: { title: "Labor resilience", strength: 72, note: "Employment staying firm keeps cuts sensitive to each jobs print." }
+      },
+      {
+        region: "Eurozone",
+        group: ["developed"],
+        inflation: { score: 1, label: "Cooling faster", tone: "good" },
+        labor: { score: 0, label: "Softening", tone: "mid" },
+        growth: { score: -1, label: "Weak demand", tone: "bad" },
+        sentiment: { score: -1, label: "Fragile", tone: "bad" },
+        surprise: { title: "Growth disappointment", strength: 78, note: "Weak activity data can pressure EUR and support dovish repricing." }
+      },
+      {
+        region: "United Kingdom",
+        group: ["developed"],
+        inflation: { score: 0, label: "Sticky services CPI", tone: "mid" },
+        labor: { score: 0, label: "Decent jobs", tone: "mid" },
+        growth: { score: 0, label: "Slow growth", tone: "mid" },
+        sentiment: { score: 0, label: "Uncertain", tone: "mid" },
+        surprise: { title: "Inflation persistence", strength: 63, note: "Sticky inflation can delay cuts and lift GBP expectations suddenly." }
+      },
+      {
+        region: "Japan",
+        group: ["developed", "defensive"],
+        inflation: { score: 0, label: "Rising trend", tone: "mid" },
+        labor: { score: 1, label: "Stable labor", tone: "good" },
+        growth: { score: 0, label: "Uneven growth", tone: "mid" },
+        sentiment: { score: 1, label: "Improving", tone: "good" },
+        surprise: { title: "Normalization watch", strength: 69, note: "Any upside inflation durability can reinforce JPY repricing." }
+      },
+      {
+        region: "Switzerland",
+        group: ["defensive"],
+        inflation: { score: 1, label: "Soft inflation", tone: "good" },
+        labor: { score: 1, label: "Stable", tone: "good" },
+        growth: { score: 0, label: "Moderate", tone: "mid" },
+        sentiment: { score: 1, label: "Solid", tone: "good" },
+        surprise: { title: "Defensive stability", strength: 58, note: "CHF tends to gain extra strength when stability matters more than growth." }
+      },
+      {
+        region: "Canada",
+        group: ["commodity", "developed"],
+        inflation: { score: 0, label: "Improving path", tone: "mid" },
+        labor: { score: 0, label: "Balanced", tone: "mid" },
+        growth: { score: 0, label: "Moderate", tone: "mid" },
+        sentiment: { score: 0, label: "Oil-linked", tone: "mid" },
+        surprise: { title: "Oil sensitivity", strength: 55, note: "CAD macro direction often mixes domestic data with energy-price shifts." }
+      },
+      {
+        region: "Australia",
+        group: ["commodity", "developed"],
+        inflation: { score: 0, label: "Sticky pockets", tone: "mid" },
+        labor: { score: 1, label: "Decent labor", tone: "good" },
+        growth: { score: 0, label: "Moderate", tone: "mid" },
+        sentiment: { score: 0, label: "China-linked", tone: "mid" },
+        surprise: { title: "China demand watch", strength: 61, note: "AUD reacts when domestic inflation and China growth signals line up." }
+      },
+      {
+        region: "New Zealand",
+        group: ["commodity"],
+        inflation: { score: 0, label: "Still restrictive", tone: "mid" },
+        labor: { score: 0, label: "Cooling", tone: "mid" },
+        growth: { score: -1, label: "Soft patch", tone: "bad" },
+        sentiment: { score: 0, label: "Cautious", tone: "mid" },
+        surprise: { title: "Growth softness", strength: 67, note: "NZD sensitivity rises when weak growth meets restrictive policy." }
+      }
+    ];
+
+    const allIndicators = ["inflation", "labor", "growth", "sentiment"];
+
+    const regionFilter = document.getElementById("regionFilter");
+    const indicatorFilter = document.getElementById("indicatorFilter");
+    const sortFilter = document.getElementById("sortFilter");
+    const resetFilters = document.getElementById("resetFilters");
+    const heatmapGrid = document.getElementById("heatmapGrid");
+    const heatmapEmpty = document.getElementById("heatmapEmpty");
+    const scorecardGrid = document.getElementById("scorecardGrid");
+    const comparisonBox = document.getElementById("comparisonBox");
+    const surpriseList = document.getElementById("surpriseList");
 
     function applyTheme(theme){
       document.body.classList.toggle("dark-mode", theme === "dark");
@@ -383,12 +961,312 @@
       applyTheme(next);
     }
 
-    applyTheme(getTheme());
-    document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+    function getVisibleIndicators(){
+      const selected = indicatorFilter.value;
+      return selected === "all" ? allIndicators : [selected];
+    }
 
-    window.addEventListener("storage", (e) => {
-      if (e.key === THEME_KEY) applyTheme(getTheme());
-    });
+    function getRegionScore(region, visibleIndicators){
+      return visibleIndicators.reduce((sum, key) => sum + region[key].score, 0);
+    }
+
+    function getFilteredRegions(){
+      const selectedRegionGroup = regionFilter.value;
+      const visibleIndicators = getVisibleIndicators();
+      const sortMode = sortFilter.value;
+
+      let regions = heatmapData.filter(region => {
+        if (selectedRegionGroup === "all") return true;
+        return region.group.includes(selectedRegionGroup);
+      });
+
+      regions = regions.map(region => ({
+        ...region,
+        totalScore: getRegionScore(region, visibleIndicators)
+      }));
+
+      if(sortMode === "score-desc"){
+        regions.sort((a,b) => b.totalScore - a.totalScore);
+      } else if(sortMode === "score-asc"){
+        regions.sort((a,b) => a.totalScore - b.totalScore);
+      } else {
+        regions.sort((a,b) => a.region.localeCompare(b.region));
+      }
+
+      return regions;
+    }
+
+    function renderHeatmap(){
+      const regions = getFilteredRegions();
+      const visibleIndicators = getVisibleIndicators();
+
+      heatmapGrid.innerHTML = "";
+
+      if(!regions.length){
+        heatmapEmpty.style.display = "block";
+        return;
+      }
+
+      heatmapEmpty.style.display = "none";
+      heatmapGrid.style.gridTemplateColumns = `190px repeat(${visibleIndicators.length}, minmax(130px, 1fr))`;
+
+      const topLeft = document.createElement("div");
+      topLeft.className = "cell head";
+      topLeft.textContent = "";
+      heatmapGrid.appendChild(topLeft);
+
+      visibleIndicators.forEach(indicator => {
+        const head = document.createElement("div");
+        head.className = "cell head";
+        head.textContent = indicator.charAt(0).toUpperCase() + indicator.slice(1);
+        heatmapGrid.appendChild(head);
+      });
+
+      regions.forEach(region => {
+        const rowHead = document.createElement("div");
+        rowHead.className = "cell rowhead";
+        rowHead.textContent = region.region;
+        heatmapGrid.appendChild(rowHead);
+
+        visibleIndicators.forEach(indicator => {
+          const metric = region[indicator];
+          const cell = document.createElement("div");
+          cell.className = `cell ${metric.tone}`;
+          cell.textContent = metric.label;
+          heatmapGrid.appendChild(cell);
+        });
+      });
+    }
+
+    function renderStats(){
+      const regions = getFilteredRegions();
+      const visibleIndicators = getVisibleIndicators();
+
+      if(!regions.length){
+        document.getElementById("statTopScore").textContent = "—";
+        document.getElementById("statTopScoreNote").textContent = "No visible regions.";
+        document.getElementById("statLowScore").textContent = "—";
+        document.getElementById("statLowScoreNote").textContent = "No visible regions.";
+        document.getElementById("statGreenCells").textContent = "0";
+        document.getElementById("statRedCells").textContent = "0";
+        document.getElementById("heroStrongest").textContent = "—";
+        document.getElementById("heroStrongestText").textContent = "No visible regions.";
+        document.getElementById("heroWeakest").textContent = "—";
+        document.getElementById("heroWeakestText").textContent = "No visible regions.";
+        return;
+      }
+
+      const strongest = [...regions].sort((a,b) => b.totalScore - a.totalScore)[0];
+      const weakest = [...regions].sort((a,b) => a.totalScore - b.totalScore)[0];
+
+      let greenCount = 0;
+      let redCount = 0;
+
+      regions.forEach(region => {
+        visibleIndicators.forEach(indicator => {
+          if(region[indicator].tone === "good") greenCount++;
+          if(region[indicator].tone === "bad") redCount++;
+        });
+      });
+
+      document.getElementById("statTopScore").textContent = strongest.totalScore > 0 ? `+${strongest.totalScore}` : `${strongest.totalScore}`;
+      document.getElementById("statTopScoreNote").textContent = `${strongest.region} currently leads the visible dashboard.`;
+
+      document.getElementById("statLowScore").textContent = weakest.totalScore > 0 ? `+${weakest.totalScore}` : `${weakest.totalScore}`;
+      document.getElementById("statLowScoreNote").textContent = `${weakest.region} currently lags the visible dashboard.`;
+
+      document.getElementById("statGreenCells").textContent = greenCount;
+      document.getElementById("statRedCells").textContent = redCount;
+
+      document.getElementById("heroStrongest").textContent = strongest.region;
+      document.getElementById("heroStrongestText").textContent = `Best visible macro profile with score ${strongest.totalScore > 0 ? "+" : ""}${strongest.totalScore}.`;
+
+      document.getElementById("heroWeakest").textContent = weakest.region;
+      document.getElementById("heroWeakestText").textContent = `Weakest visible macro profile with score ${weakest.totalScore > 0 ? "+" : ""}${weakest.totalScore}.`;
+    }
+
+    function toneBadgeClass(score){
+      if(score > 0) return "badge good-badge";
+      if(score < 0) return "badge bad-badge";
+      return "badge mid-badge";
+    }
+
+    function toneLabel(score){
+      if(score > 0) return "Positive";
+      if(score < 0) return "Fragile";
+      return "Mixed";
+    }
+
+    function renderScorecards(){
+      const regions = getFilteredRegions();
+      const visibleIndicators = getVisibleIndicators();
+      scorecardGrid.innerHTML = "";
+
+      if(!regions.length){
+        scorecardGrid.innerHTML = `<div class="empty-state">No scorecards available for this filter.</div>`;
+        return;
+      }
+
+      regions.forEach(region => {
+        const item = document.createElement("div");
+        item.className = "item";
+
+        const breakdown = visibleIndicators
+          .map(indicator => `${indicator.charAt(0).toUpperCase() + indicator.slice(1)}: ${region[indicator].label}`)
+          .join(" · ");
+
+        item.innerHTML = `
+          <div class="item-top">
+            <h3>${region.region}</h3>
+            <span class="${toneBadgeClass(region.totalScore)}">${toneLabel(region.totalScore)}</span>
+          </div>
+          <p><strong>Score:</strong> ${region.totalScore > 0 ? "+" : ""}${region.totalScore}</p>
+          <p>${breakdown}</p>
+        `;
+
+        scorecardGrid.appendChild(item);
+      });
+    }
+
+    function renderComparison(){
+      const regions = getFilteredRegions();
+      const visibleIndicators = getVisibleIndicators();
+      comparisonBox.innerHTML = "";
+
+      if(!regions.length){
+        comparisonBox.innerHTML = `<div class="empty-state">No regions available to compare.</div>`;
+        return;
+      }
+
+      const strongest = [...regions].sort((a,b) => b.totalScore - a.totalScore)[0];
+      const weakest = [...regions].sort((a,b) => a.totalScore - b.totalScore)[0];
+      const scoreGap = strongest.totalScore - weakest.totalScore;
+
+      const strongestRow = document.createElement("div");
+      strongestRow.className = "compare-row";
+      strongestRow.innerHTML = `
+        <strong>Strongest visible region: ${strongest.region}</strong>
+        <p>
+          Score ${strongest.totalScore > 0 ? "+" : ""}${strongest.totalScore}. This region shows the healthiest mix
+          of ${visibleIndicators.join(", ")} in the current filtered view.
+        </p>
+      `;
+
+      const weakestRow = document.createElement("div");
+      weakestRow.className = "compare-row";
+      weakestRow.innerHTML = `
+        <strong>Weakest visible region: ${weakest.region}</strong>
+        <p>
+          Score ${weakest.totalScore > 0 ? "+" : ""}${weakest.totalScore}. This region currently has the weakest
+          visible macro balance and deserves extra caution.
+        </p>
+      `;
+
+      const gapRow = document.createElement("div");
+      gapRow.className = "compare-row";
+      gapRow.innerHTML = `
+        <strong>Macro gap</strong>
+        <p>
+          The spread between ${strongest.region} and ${weakest.region} is ${scoreGap}. Larger gaps can create cleaner
+          relative-value ideas, especially in forex and cross-market rotation trades.
+        </p>
+      `;
+
+      comparisonBox.appendChild(strongestRow);
+      comparisonBox.appendChild(weakestRow);
+      comparisonBox.appendChild(gapRow);
+    }
+
+    function renderSurprises(){
+      const regions = getFilteredRegions();
+      surpriseList.innerHTML = "";
+
+      if(!regions.length){
+        surpriseList.innerHTML = `<div class="empty-state">No surprise tracker items available.</div>`;
+        return;
+      }
+
+      regions
+        .slice()
+        .sort((a,b) => b.surprise.strength - a.surprise.strength)
+        .forEach(region => {
+          const item = document.createElement("div");
+          item.className = "surprise";
+
+          const strengthClass = region.surprise.strength >= 70
+            ? "badge bad-badge"
+            : region.surprise.strength >= 60
+            ? "badge mid-badge"
+            : "badge good-badge";
+
+          item.innerHTML = `
+            <div class="surprise-top">
+              <div class="surprise-title">${region.region} — ${region.surprise.title}</div>
+              <span class="${strengthClass}">Alert ${region.surprise.strength}/100</span>
+            </div>
+            <p>${region.surprise.note}</p>
+            <div class="bar"><div class="fill" style="width:${region.surprise.strength}%"></div></div>
+          `;
+
+          surpriseList.appendChild(item);
+        });
+    }
+
+    function renderTakeaway(){
+      const regions = getFilteredRegions();
+
+      if(!regions.length){
+        document.getElementById("takeawayTitle").textContent = "No visible macro set";
+        document.getElementById("takeawayText").textContent = "Adjust your filters to see a broader macro reading and generated takeaway.";
+        return;
+      }
+
+      const strongest = [...regions].sort((a,b) => b.totalScore - a.totalScore)[0];
+      const weakest = [...regions].sort((a,b) => a.totalScore - b.totalScore)[0];
+
+      document.getElementById("takeawayTitle").textContent = `${strongest.region} vs ${weakest.region}`;
+      document.getElementById("takeawayText").textContent =
+        `${strongest.region} currently shows the strongest visible macro mix, while ${weakest.region} shows the weakest. `
+        + `That contrast can be useful for building a directional bias, but the next CPI, jobs, PMI, or GDP release should confirm whether the gap keeps widening or starts closing.`;
+    }
+
+    function rerenderAll(){
+      renderHeatmap();
+      renderStats();
+      renderScorecards();
+      renderComparison();
+      renderSurprises();
+      renderTakeaway();
+    }
+
+    function setupEvents(){
+      document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+
+      window.addEventListener("storage", (e) => {
+        if(e.key === THEME_KEY){
+          applyTheme(getTheme());
+        }
+      });
+
+      [regionFilter, indicatorFilter, sortFilter].forEach(el => {
+        el.addEventListener("change", rerenderAll);
+      });
+
+      resetFilters.addEventListener("click", () => {
+        regionFilter.value = "all";
+        indicatorFilter.value = "all";
+        sortFilter.value = "score-desc";
+        rerenderAll();
+      });
+    }
+
+    function init(){
+      applyTheme(getTheme());
+      rerenderAll();
+      setupEvents();
+    }
+
+    init();
   </script>
 </body>
 </html>
