@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FYNX Tools — Recent Topics Discussed</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#f5f5f6;
+      --panel:#ffffff;
+      --panel-2:#fafafa;
+      --text:#0b0b0c;
+      --muted:#666872;
+      --border:rgba(0,0,0,.08);
+      --border-strong:rgba(0,0,0,.12);
+      --grid-1:rgba(0,0,0,.05);
+      --shadow:0 18px 50px rgba(0,0,0,.08);
+      --orb:.08;
+    }
+
+    body.dark-mode{
+      --bg:#020202;
+      --panel:#0a0a0a;
+      --panel-2:#111111;
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.66);
+      --border:rgba(255,255,255,.10);
+      --border-strong:rgba(255,255,255,.15);
+      --grid-1:rgba(255,255,255,.04);
+      --shadow:0 28px 90px rgba(0,0,0,.55);
+      --orb:.18;
+    }
+
+    body{
+      font-family:'Inter','Segoe UI',system-ui,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      overflow-x:hidden;
+      transition:background .25s ease,color .25s ease;
+    }
+
+    .bg{position:fixed;inset:0;z-index:-1;background:var(--bg);overflow:hidden}
+    .grid{
+      position:absolute;inset:0;
+      background-image:
+        linear-gradient(var(--grid-1) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-1) 1px, transparent 1px);
+      background-size:44px 44px;
+    }
+    .orb{
+      position:absolute;border-radius:50%;filter:blur(80px);opacity:var(--orb);
+      background:radial-gradient(circle,currentColor 0%,transparent 72%);color:var(--text)
+    }
+    .orb.one{width:360px;height:360px;top:-120px;left:-110px}
+    .orb.two{width:340px;height:340px;right:-110px;bottom:-120px}
+
+    header{
+      border-bottom:1px solid var(--border);
+      background:color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter:blur(16px);
+      position:sticky; top:0; z-index:10;
+    }
+
+    .nav{
+      max-width:1320px;margin:0 auto;padding:1rem 1.25rem;
+      display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+    }
+
+    .brand{
+      display:flex;align-items:center;gap:.7rem;
+      font-weight:900;font-size:1.8rem;letter-spacing:-1.5px;
+    }
+
+    .nav-actions{display:flex;gap:.7rem;flex-wrap:wrap}
+
+    .btn{
+      display:inline-flex;align-items:center;gap:.55rem;
+      border:1px solid var(--border);background:var(--panel);color:var(--text);
+      text-decoration:none;padding:.75rem 1rem;border-radius:999px;font-weight:800;transition:.2s ease;
+    }
+    .btn:hover{transform:translateY(-1px);border-color:var(--border-strong);background:var(--panel-2)}
+
+    .wrap{max-width:1320px;margin:0 auto;padding:1.8rem 1.25rem 3rem}
+
+    .hero{
+      display:grid;grid-template-columns:minmax(0,1.65fr) 280px;gap:1rem;margin-bottom:1rem;
+    }
+
+    .card{
+      background:var(--panel);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);
+    }
+
+    .hero-main{padding:1.6rem}
+
+    h1{
+      font-size:clamp(2.5rem,5vw,4rem);
+      line-height:.95;letter-spacing:-3px;margin-bottom:1rem;
+    }
+
+    .lead{
+      color:var(--muted);font-size:1.12rem;line-height:1.8;max-width:68ch;margin-bottom:1rem;
+    }
+
+    .pills{display:flex;gap:.65rem;flex-wrap:wrap;margin-top:1rem}
+    .pill{
+      display:inline-flex;align-items:center;gap:.5rem;border:1px solid var(--border);
+      background:var(--panel-2);border-radius:999px;padding:.72rem 1rem;font-weight:800;
+    }
+
+    .side-stack{display:grid;gap:1rem}
+    .mini{padding:1.2rem 1.1rem}
+    .mini .label{
+      color:var(--muted);font-size:.82rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase;margin-bottom:.4rem;
+    }
+    .mini .big{font-size:1.7rem;font-weight:900;letter-spacing:-1px}
+    .mini .sub{color:var(--muted);margin-top:.35rem;line-height:1.6}
+
+    .main-grid{
+      display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,.9fr);gap:1rem;margin-top:1rem;
+    }
+
+    .section{padding:1.2rem}
+    .section-title{
+      display:flex;align-items:center;gap:.6rem;font-size:1.7rem;font-weight:900;letter-spacing:-1px;margin-bottom:.25rem;
+    }
+    .section-sub{color:var(--muted);line-height:1.7;margin-bottom:1rem}
+
+    .chips{display:flex;gap:.65rem;flex-wrap:wrap;margin-bottom:1rem}
+    .chip{
+      border:1px solid var(--border);background:var(--panel-2);padding:.68rem .95rem;border-radius:999px;font-weight:800;
+    }
+
+    .topic-list{display:grid;gap:1rem}
+    .topic{
+      border:1px solid var(--border);
+      background:var(--panel-2);
+      border-radius:20px;
+      padding:1rem;
+    }
+
+    .topic-top{
+      display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.6rem;
+    }
+
+    .topic h3{
+      font-size:1.05rem;
+      letter-spacing:-.3px;
+    }
+
+    .meta{
+      display:flex;gap:.55rem;flex-wrap:wrap
+    }
+
+    .badge{
+      display:inline-flex;align-items:center;gap:.35rem;
+      border-radius:999px;padding:.42rem .72rem;
+      border:1px solid var(--border);
+      background:var(--panel);
+      font-size:.82rem;
+      font-weight:800;
+    }
+
+    .topic p{
+      color:var(--muted);
+      line-height:1.75;
+      font-size:.97rem;
+      margin-bottom:.8rem;
+    }
+
+    .links{
+      display:flex;gap:.65rem;flex-wrap:wrap
+    }
+
+    .link-btn{
+      display:inline-flex;align-items:center;gap:.45rem;
+      text-decoration:none;color:var(--text);
+      border:1px solid var(--border);
+      background:var(--panel);
+      padding:.68rem .9rem;border-radius:999px;font-weight:800;
+    }
+
+    .side-list{display:grid;gap:.85rem}
+    .side-item{
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:var(--panel-2);
+      padding:1rem;
+    }
+
+    .side-item h4{font-size:1rem;margin-bottom:.35rem}
+    .side-item p{color:var(--muted);line-height:1.7;font-size:.95rem}
+
+    @media (max-width:980px){
+      .hero{grid-template-columns:1fr}
+      .main-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="bg">
+    <div class="grid"></div>
+    <div class="orb one"></div>
+    <div class="orb two"></div>
+  </div>
+
+  <header>
+    <div class="nav">
+      <div class="brand"><i class="fas fa-comments"></i> FYNX Tools</div>
+
+      <div class="nav-actions">
+        <button class="btn" id="themeToggle" type="button">
+          <i class="fas fa-circle-half-stroke"></i>
+          <span id="themeLabel">Light</span>
+        </button>
+        <a class="btn" href="../home/hub.html"><i class="fas fa-arrow-left"></i> Back</a>
+        <a class="btn" href="../index.html"><i class="fas fa-house"></i> Home</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="card hero-main">
+        <h1>Recent Topics Discussed</h1>
+        <p class="lead">
+          A clean market-theme page for tracking the latest discussion points across macro,
+          forex, crypto, equities, and trader sentiment. Use it to stay aligned with what is
+          currently moving attention, positioning, and volatility.
+        </p>
+
+        <div class="pills">
+          <div class="pill"><i class="fas fa-bolt"></i> Market themes</div>
+          <div class="pill"><i class="fas fa-newspaper"></i> Topic feed layout</div>
+          <div class="pill"><i class="fas fa-link"></i> Discussion-ready structure</div>
+        </div>
+      </div>
+
+      <div class="side-stack">
+        <div class="card mini">
+          <div class="label">Best use</div>
+          <div class="big">Context</div>
+          <div class="sub">See what traders are focused on before entering high-volatility sessions.</div>
+        </div>
+
+        <div class="card mini">
+          <div class="label">Focus</div>
+          <div class="big">Themes</div>
+          <div class="sub">Track whether flows are being driven by rates, inflation, AI, oil, or risk sentiment.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <div class="card section">
+        <div class="section-title"><i class="fas fa-stream"></i> Topic stream</div>
+        <div class="section-sub">Starter layout for a recent-discussion board.</div>
+
+        <div class="chips">
+          <div class="chip">Macro</div>
+          <div class="chip">Forex</div>
+          <div class="chip">Crypto</div>
+          <div class="chip">Equities</div>
+        </div>
+
+        <div class="topic-list">
+          <article class="topic">
+            <div class="topic-top">
+              <h3>Fed cut timing remains the main macro debate</h3>
+              <div class="meta">
+                <span class="badge">Macro</span>
+                <span class="badge">USD</span>
+                <span class="badge">High impact</span>
+              </div>
+            </div>
+            <p>
+              Traders are debating whether inflation is cooling fast enough for meaningful easing.
+              This theme affects USD, yields, gold, and broad equity sentiment.
+            </p>
+            <div class="links">
+              <a href="#" class="link-btn"><i class="fas fa-arrow-up-right-from-square"></i> Open topic</a>
+              <a href="#" class="link-btn"><i class="fas fa-bookmark"></i> Save</a>
+            </div>
+          </article>
+
+          <article class="topic">
+            <div class="topic-top">
+              <h3>JPY volatility returns as rate normalization stays in focus</h3>
+              <div class="meta">
+                <span class="badge">Forex</span>
+                <span class="badge">JPY</span>
+                <span class="badge">Medium impact</span>
+              </div>
+            </div>
+            <p>
+              Traders are watching whether Japan’s policy shift keeps strengthening the yen
+              or if yield spreads still favor USD/JPY upside on pullbacks.
+            </p>
+            <div class="links">
+              <a href="#" class="link-btn"><i class="fas fa-arrow-up-right-from-square"></i> Open topic</a>
+              <a href="#" class="link-btn"><i class="fas fa-bookmark"></i> Save</a>
+            </div>
+          </article>
+
+          <article class="topic">
+            <div class="topic-top">
+              <h3>Bitcoin flows and ETF demand continue driving attention</h3>
+              <div class="meta">
+                <span class="badge">Crypto</span>
+                <span class="badge">BTC</span>
+                <span class="badge">High interest</span>
+              </div>
+            </div>
+            <p>
+              Market participants remain focused on spot demand, positioning, and how crypto
+              momentum interacts with broader risk appetite and liquidity conditions.
+            </p>
+            <div class="links">
+              <a href="#" class="link-btn"><i class="fas fa-arrow-up-right-from-square"></i> Open topic</a>
+              <a href="#" class="link-btn"><i class="fas fa-bookmark"></i> Save</a>
+            </div>
+          </article>
+
+          <article class="topic">
+            <div class="topic-top">
+              <h3>AI trade rotation keeps reshaping equity leadership</h3>
+              <div class="meta">
+                <span class="badge">Equities</span>
+                <span class="badge">Tech</span>
+                <span class="badge">Sector flow</span>
+              </div>
+            </div>
+            <p>
+              Traders are discussing whether AI-linked momentum can keep leading or if valuation
+              pressure and earnings expectations trigger broader sector rotation.
+            </p>
+            <div class="links">
+              <a href="#" class="link-btn"><i class="fas fa-arrow-up-right-from-square"></i> Open topic</a>
+              <a href="#" class="link-btn"><i class="fas fa-bookmark"></i> Save</a>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <aside class="card section">
+        <div class="section-title"><i class="fas fa-layer-group"></i> How to use this page</div>
+
+        <div class="side-list">
+          <div class="side-item">
+            <h4>Find repeated themes</h4>
+            <p>If the same topic appears across multiple markets, it usually matters more.</p>
+          </div>
+
+          <div class="side-item">
+            <h4>Link theme to price action</h4>
+            <p>Do not just read the topic. Compare it with DXY, yields, indices, BTC, and gold.</p>
+          </div>
+
+          <div class="side-item">
+            <h4>Use before session open</h4>
+            <p>Review the topic list before London and New York so you know what can drive volatility.</p>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const THEME_KEY = "fynx_theme";
+
+    function applyTheme(theme){
+      document.body.classList.toggle("dark-mode", theme === "dark");
+      document.getElementById("themeLabel").textContent = theme === "dark" ? "Dark" : "Light";
+    }
+
+    function getTheme(){
+      return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+    }
+
+    function toggleTheme(){
+      const next = getTheme() === "dark" ? "light" : "dark";
+      localStorage.setItem(THEME_KEY, next);
+      applyTheme(next);
+    }
+
+    applyTheme(getTheme());
+    document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === THEME_KEY) applyTheme(getTheme());
+    });
+  </script>
+</body>
+</html>
