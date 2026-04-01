@@ -4,90 +4,129 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FYNX Tools — Interest Rates</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     :root{
       --bg:#f5f5f6;
       --bg-2:#ffffff;
       --panel:#ffffff;
       --panel-2:#fafafa;
+      --panel-3:#f1f1f2;
       --text:#0b0b0c;
       --muted:#666872;
+      --soft:#8d8f98;
       --border:rgba(0,0,0,.08);
-      --border-strong:rgba(0,0,0,.12);
+      --border-strong:rgba(0,0,0,.13);
+      --shadow:0 18px 55px rgba(0,0,0,.08);
       --green:#16a34a;
       --red:#ef4444;
       --amber:#f59e0b;
       --blue:#2563eb;
+      --purple:#7c3aed;
       --grid-1:rgba(0,0,0,.05);
-      --shadow:0 18px 50px rgba(0,0,0,.08);
+      --grid-2:rgba(0,0,0,.028);
       --orb:.08;
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --radius-md:18px;
+      --radius-sm:14px;
     }
 
     body.dark-mode{
       --bg:#020202;
-      --bg-2:#0a0a0a;
+      --bg-2:#080808;
       --panel:#0a0a0a;
-      --panel-2:#111111;
+      --panel-2:#101010;
+      --panel-3:#131313;
       --text:#ffffff;
-      --muted:rgba(255,255,255,.66);
+      --muted:rgba(255,255,255,.70);
+      --soft:rgba(255,255,255,.48);
       --border:rgba(255,255,255,.10);
-      --border-strong:rgba(255,255,255,.15);
+      --border-strong:rgba(255,255,255,.16);
+      --shadow:0 28px 90px rgba(0,0,0,.58);
       --green:#22c55e;
       --red:#f87171;
       --amber:#fbbf24;
       --blue:#60a5fa;
-      --grid-1:rgba(255,255,255,.04);
-      --shadow:0 28px 90px rgba(0,0,0,.55);
+      --purple:#a78bfa;
+      --grid-1:rgba(255,255,255,.045);
+      --grid-2:rgba(255,255,255,.025);
       --orb:.18;
     }
 
+    html { scroll-behavior: smooth; }
+
     body{
-      font-family:'Inter','Segoe UI',system-ui,sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      min-height:100vh;
-      overflow-x:hidden;
-      transition:background .25s ease,color .25s ease;
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background .25s ease, color .25s ease;
     }
 
     .bg{
-      position:fixed; inset:0; z-index:-1; overflow:hidden; background:var(--bg);
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+      background: var(--bg);
     }
 
     .grid{
-      position:absolute; inset:0;
+      position: absolute;
+      inset: 0;
       background-image:
         linear-gradient(var(--grid-1) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid-1) 1px, transparent 1px);
-      background-size:44px 44px;
+      background-size: 44px 44px;
+    }
+
+    .grid::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image: radial-gradient(circle, var(--grid-2) 1px, transparent 1px);
+      background-size: 24px 24px;
+      opacity:.8;
     }
 
     .orb{
-      position:absolute; border-radius:50%;
-      filter:blur(80px);
-      opacity:var(--orb);
-      background:radial-gradient(circle, currentColor 0%, transparent 72%);
-      color:var(--text);
+      position:absolute;
+      border-radius:50%;
+      filter: blur(90px);
+      opacity: var(--orb);
+      background: radial-gradient(circle, currentColor 0%, transparent 72%);
+      color: var(--text);
+      animation: float 18s ease-in-out infinite;
     }
-    .orb.one{width:360px;height:360px;top:-120px;left:-110px}
-    .orb.two{width:340px;height:340px;right:-110px;bottom:-120px}
+
+    .orb.one{ width:420px; height:420px; top:-140px; left:-120px; }
+    .orb.two{ width:360px; height:360px; right:-120px; bottom:-120px; animation-delay:5s; }
+
+    @keyframes float{
+      0%,100%{ transform:translate(0,0) scale(1); }
+      33%{ transform:translate(36px,-26px) scale(1.06); }
+      66%{ transform:translate(-28px,22px) scale(.96); }
+    }
 
     header{
-      border-bottom:1px solid var(--border);
-      background:color-mix(in srgb, var(--bg) 88%, transparent);
-      backdrop-filter:blur(16px);
-      position:sticky;
-      top:0;
-      z-index:10;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid var(--border);
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(18px);
     }
 
     .nav{
-      max-width:1320px;
-      margin:0 auto;
-      padding:1rem 1.25rem;
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 1rem 1.25rem;
       display:flex;
       align-items:center;
       justify-content:space-between;
@@ -98,10 +137,10 @@
     .brand{
       display:flex;
       align-items:center;
-      gap:.7rem;
+      gap:.75rem;
       font-weight:900;
-      font-size:1.8rem;
-      letter-spacing:-1.5px;
+      font-size:1.75rem;
+      letter-spacing:-1.3px;
     }
 
     .nav-actions{
@@ -118,10 +157,12 @@
       background:var(--panel);
       color:var(--text);
       text-decoration:none;
-      padding:.75rem 1rem;
+      padding:.78rem 1rem;
       border-radius:999px;
       font-weight:800;
       transition:.2s ease;
+      cursor:pointer;
+      box-shadow:0 8px 24px rgba(0,0,0,.04);
     }
 
     .btn:hover{
@@ -131,14 +172,14 @@
     }
 
     .wrap{
-      max-width:1320px;
+      max-width:1380px;
       margin:0 auto;
-      padding:1.8rem 1.25rem 3rem;
+      padding:1.6rem 1.25rem 3rem;
     }
 
     .hero{
       display:grid;
-      grid-template-columns:minmax(0,1.65fr) 280px;
+      grid-template-columns:minmax(0,1.6fr) 320px;
       gap:1rem;
       margin-bottom:1rem;
     }
@@ -146,16 +187,16 @@
     .card{
       background:var(--panel);
       border:1px solid var(--border);
-      border-radius:28px;
+      border-radius:var(--radius-xl);
       box-shadow:var(--shadow);
     }
 
     .hero-main{
-      padding:1.6rem;
+      padding:1.65rem;
     }
 
     h1{
-      font-size:clamp(2.6rem,5vw,4.2rem);
+      font-size:clamp(2.7rem, 5vw, 4.25rem);
       line-height:.95;
       letter-spacing:-3px;
       margin-bottom:1rem;
@@ -163,17 +204,16 @@
 
     .lead{
       color:var(--muted);
-      font-size:1.15rem;
+      font-size:1.1rem;
       line-height:1.8;
-      max-width:68ch;
-      margin-bottom:1rem;
+      max-width:72ch;
     }
 
     .pills{
       display:flex;
-      gap:.65rem;
+      gap:.7rem;
       flex-wrap:wrap;
-      margin-top:1rem;
+      margin-top:1.1rem;
     }
 
     .pill{
@@ -183,9 +223,10 @@
       border:1px solid var(--border);
       background:var(--panel-2);
       border-radius:999px;
-      padding:.72rem 1rem;
+      padding:.74rem 1rem;
       font-weight:800;
       color:var(--text);
+      font-size:.95rem;
     }
 
     .side-stack{
@@ -198,12 +239,12 @@
     }
 
     .mini .label{
-      color:var(--muted);
-      font-size:.82rem;
+      color:var(--soft);
+      font-size:.8rem;
       font-weight:900;
       letter-spacing:.16em;
       text-transform:uppercase;
-      margin-bottom:.4rem;
+      margin-bottom:.45rem;
     }
 
     .mini .big{
@@ -216,13 +257,54 @@
       color:var(--muted);
       margin-top:.35rem;
       line-height:1.6;
+      font-size:.96rem;
     }
 
-    .grid-2{
+    .stats{
       display:grid;
-      grid-template-columns:minmax(0,1.6fr) minmax(320px,.9fr);
+      grid-template-columns:repeat(4,minmax(0,1fr));
       gap:1rem;
-      margin-top:1rem;
+      margin-bottom:1rem;
+    }
+
+    .stat{
+      padding:1.1rem;
+    }
+
+    .stat-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:.75rem;
+      margin-bottom:.85rem;
+    }
+
+    .stat-label{
+      font-size:.82rem;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color:var(--soft);
+      font-weight:900;
+    }
+
+    .stat-value{
+      font-size:2rem;
+      font-weight:900;
+      letter-spacing:-1px;
+      line-height:1;
+    }
+
+    .stat-note{
+      color:var(--muted);
+      line-height:1.6;
+      font-size:.95rem;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:minmax(0,1.55fr) minmax(340px,.95fr);
+      gap:1rem;
+      margin-bottom:1rem;
     }
 
     .section{
@@ -233,7 +315,7 @@
       display:flex;
       align-items:center;
       gap:.6rem;
-      font-size:1.7rem;
+      font-size:1.55rem;
       font-weight:900;
       letter-spacing:-1px;
       margin-bottom:.25rem;
@@ -243,15 +325,63 @@
       color:var(--muted);
       line-height:1.7;
       margin-bottom:1rem;
+      font-size:.97rem;
+    }
+
+    .toolbar{
+      display:grid;
+      grid-template-columns:1.2fr .9fr .9fr auto;
+      gap:.75rem;
+      margin-bottom:1rem;
+    }
+
+    .field,
+    .select,
+    .search{
+      width:100%;
+      border:1px solid var(--border);
+      background:var(--panel-2);
+      color:var(--text);
+      padding:.9rem 1rem;
+      border-radius:16px;
+      outline:none;
+      font:inherit;
+      transition:.18s ease;
+    }
+
+    .field:focus,
+    .select:focus,
+    .search:focus{
+      border-color:var(--border-strong);
+      background:var(--panel);
+    }
+
+    .ghost-btn{
+      border:1px solid var(--border);
+      background:var(--panel-2);
+      color:var(--text);
+      padding:.9rem 1rem;
+      border-radius:16px;
+      font-weight:800;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+
+    .ghost-btn:hover{
+      background:var(--panel);
+      border-color:var(--border-strong);
+    }
+
+    .table-wrap{
+      border:1px solid var(--border);
+      border-radius:22px;
+      overflow:hidden;
+      background:var(--panel-2);
     }
 
     table{
       width:100%;
       border-collapse:collapse;
-      overflow:hidden;
-      border-radius:20px;
-      border:1px solid var(--border);
-      background:var(--panel-2);
     }
 
     th, td{
@@ -262,67 +392,175 @@
     }
 
     th{
-      font-size:.84rem;
+      font-size:.8rem;
       text-transform:uppercase;
       letter-spacing:.12em;
+      color:var(--soft);
+      background:var(--panel);
     }
 
-    tr:last-child td{border-bottom:none}
+    tr:last-child td{ border-bottom:none; }
+    tbody tr{ transition:.16s ease; }
+    tbody tr:hover{ background:color-mix(in srgb, var(--panel) 70%, transparent); }
+
+    .bank-name{
+      font-weight:900;
+      margin-bottom:.2rem;
+    }
+
+    .bank-note{
+      color:var(--muted);
+      font-size:.9rem;
+      line-height:1.55;
+    }
 
     .badge{
       display:inline-flex;
       align-items:center;
       gap:.35rem;
       border-radius:999px;
-      padding:.42rem .7rem;
+      padding:.42rem .74rem;
       font-weight:800;
-      font-size:.83rem;
+      font-size:.82rem;
       border:1px solid var(--border);
       background:var(--panel);
+      white-space:nowrap;
     }
 
-    .up{color:var(--green)}
-    .down{color:var(--red)}
-    .hold{color:var(--amber)}
+    .up{ color:var(--green); }
+    .down{ color:var(--red); }
+    .hold{ color:var(--amber); }
+    .info{ color:var(--blue); }
 
-    .list{
+    .rate-value{
+      font-weight:900;
+      font-size:1rem;
+      letter-spacing:-.3px;
+    }
+
+    .stack{
       display:grid;
-      gap:.9rem;
+      gap:1rem;
     }
 
     .item{
       border:1px solid var(--border);
-      border-radius:18px;
       background:var(--panel-2);
+      border-radius:18px;
       padding:1rem;
     }
 
     .item-top{
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content:space-between;
       gap:1rem;
-      margin-bottom:.5rem;
+      margin-bottom:.55rem;
     }
 
     .item h3{
-      font-size:1.02rem;
+      font-size:1rem;
+      letter-spacing:-.2px;
     }
 
     .item p{
       color:var(--muted);
       line-height:1.7;
-      font-size:.96rem;
+      font-size:.95rem;
+    }
+
+    .calc-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:.75rem;
+      margin-bottom:1rem;
+    }
+
+    .calc-result{
+      border:1px solid var(--border);
+      background:var(--panel-2);
+      border-radius:20px;
+      padding:1rem;
+      display:grid;
+      gap:.8rem;
+    }
+
+    .result-big{
+      font-size:2.2rem;
+      line-height:1;
+      letter-spacing:-1px;
+      font-weight:900;
+    }
+
+    .result-sub{
+      color:var(--muted);
+      line-height:1.7;
+      font-size:.95rem;
+    }
+
+    .impact-grid{
+      display:grid;
+      gap:.75rem;
+    }
+
+    .impact{
+      border:1px solid var(--border);
+      background:var(--panel-2);
+      border-radius:18px;
+      padding:1rem;
+    }
+
+    .impact strong{
+      display:block;
+      margin-bottom:.35rem;
+      font-size:1rem;
+    }
+
+    .impact p{
+      color:var(--muted);
+      line-height:1.7;
+      font-size:.95rem;
+    }
+
+    .meeting-list{
+      display:grid;
+      gap:.8rem;
+    }
+
+    .meeting{
+      border:1px solid var(--border);
+      background:var(--panel-2);
+      border-radius:18px;
+      padding:1rem;
+    }
+
+    .meeting-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+      margin-bottom:.45rem;
+    }
+
+    .meeting-title{
+      font-weight:900;
+      font-size:1rem;
+    }
+
+    .meeting p{
+      color:var(--muted);
+      line-height:1.7;
+      font-size:.95rem;
     }
 
     .bar{
       width:100%;
       height:12px;
       border-radius:999px;
-      background:var(--panel-2);
+      background:var(--panel-3);
       border:1px solid var(--border);
       overflow:hidden;
-      margin-top:.55rem;
+      margin-top:.6rem;
     }
 
     .fill{
@@ -331,9 +569,40 @@
       opacity:.9;
     }
 
-    @media (max-width:980px){
-      .hero{grid-template-columns:1fr}
-      .grid-2{grid-template-columns:1fr}
+    .footer-note{
+      margin-top:1rem;
+      color:var(--soft);
+      line-height:1.7;
+      font-size:.88rem;
+    }
+
+    .empty-state{
+      padding:1.25rem;
+      text-align:center;
+      color:var(--muted);
+      border:1px dashed var(--border);
+      border-radius:18px;
+      background:var(--panel-2);
+    }
+
+    @media (max-width:1150px){
+      .stats{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .layout{ grid-template-columns:1fr; }
+      .hero{ grid-template-columns:1fr; }
+    }
+
+    @media (max-width:860px){
+      .toolbar{ grid-template-columns:1fr; }
+      .calc-grid{ grid-template-columns:1fr; }
+    }
+
+    @media (max-width:640px){
+      .stats{ grid-template-columns:1fr; }
+      h1{ letter-spacing:-2px; }
+      .nav{ padding:.9rem 1rem; }
+      .wrap{ padding:1.2rem 1rem 2rem; }
+      .hero-main, .section, .stat{ padding:1rem; }
+      th, td{ padding:.85rem .75rem; }
     }
   </style>
 </head>
@@ -346,15 +615,24 @@
 
   <header>
     <div class="nav">
-      <div class="brand"><i class="fas fa-chart-line"></i> FYNX Tools</div>
+      <div class="brand">
+        <i class="fas fa-chart-line"></i>
+        <span>FYNX Tools</span>
+      </div>
 
       <div class="nav-actions">
         <button class="btn" id="themeToggle" type="button">
           <i class="fas fa-circle-half-stroke"></i>
           <span id="themeLabel">Light</span>
         </button>
-        <a class="btn" href="../home/hub.html"><i class="fas fa-arrow-left"></i> Back</a>
-        <a class="btn" href="../index.html"><i class="fas fa-house"></i> Home</a>
+        <a class="btn" href="../home/hub.html">
+          <i class="fas fa-arrow-left"></i>
+          <span>Back</span>
+        </a>
+        <a class="btn" href="../index.html">
+          <i class="fas fa-house"></i>
+          <span>Home</span>
+        </a>
       </div>
     </div>
   </header>
@@ -364,167 +642,231 @@
       <div class="card hero-main">
         <h1>Interest Rates</h1>
         <p class="lead">
-          Track central bank policy rates, latest decisions, and forward-looking rate expectations.
-          Use this page to understand monetary policy direction before trading forex, indices,
-          bonds, and rate-sensitive assets.
+          A real product-style interest-rate dashboard for traders. Scan central banks, compare rate
+          differentials, filter by policy bias, study upcoming meetings, and quickly understand how
+          monetary policy can affect forex, bonds, gold, and broader risk sentiment.
         </p>
 
         <div class="pills">
-          <div class="pill"><i class="fas fa-circle" style="color:var(--green)"></i> Live policy overview</div>
-          <div class="pill"><i class="fas fa-building-columns"></i> Central bank watch</div>
-          <div class="pill"><i class="fas fa-wave-square"></i> Rate direction bias</div>
+          <div class="pill"><i class="fas fa-circle" style="color:var(--green)"></i> Searchable rate dashboard</div>
+          <div class="pill"><i class="fas fa-right-left"></i> Differential calculator</div>
+          <div class="pill"><i class="fas fa-calendar-days"></i> Meeting watchlist</div>
         </div>
       </div>
 
       <div class="side-stack">
         <div class="card mini">
-          <div class="label">Next key meeting</div>
-          <div class="big">FOMC Watch</div>
-          <div class="sub">Monitor Fed tone, rate path, and market pricing for USD volatility.</div>
+          <div class="label">Fastest edge</div>
+          <div class="big" id="heroDiffValue">0.00%</div>
+          <div class="sub" id="heroDiffText">Select two currencies below to compare rate differential.</div>
         </div>
 
         <div class="card mini">
-          <div class="label">Macro usage</div>
-          <div class="big">FX / Bonds</div>
-          <div class="sub">Rates often reprice currencies, yields, and equity sentiment fast.</div>
+          <div class="label">Policy spread example</div>
+          <div class="big">USD vs JPY</div>
+          <div class="sub">Large rate spreads can strongly influence FX carry flows and longer trends.</div>
         </div>
       </div>
     </section>
 
-    <section class="grid-2">
-      <div class="card section">
-        <div class="section-title"><i class="fas fa-percent"></i> Policy rate table</div>
-        <div class="section-sub">Quick snapshot of major central banks and current policy stance.</div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Central Bank</th>
-              <th>Currency</th>
-              <th>Policy Rate</th>
-              <th>Latest Decision</th>
-              <th>Bias</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Federal Reserve</td>
-              <td>USD</td>
-              <td>5.25% - 5.50%</td>
-              <td>Held</td>
-              <td><span class="badge hold"><i class="fas fa-minus"></i> Neutral / Data Dependent</span></td>
-            </tr>
-            <tr>
-              <td>European Central Bank</td>
-              <td>EUR</td>
-              <td>4.00%</td>
-              <td>Cut</td>
-              <td><span class="badge down"><i class="fas fa-arrow-down"></i> Easing</span></td>
-            </tr>
-            <tr>
-              <td>Bank of England</td>
-              <td>GBP</td>
-              <td>5.25%</td>
-              <td>Held</td>
-              <td><span class="badge hold"><i class="fas fa-minus"></i> Cautious</span></td>
-            </tr>
-            <tr>
-              <td>Bank of Japan</td>
-              <td>JPY</td>
-              <td>0.10%</td>
-              <td>Hiked</td>
-              <td><span class="badge up"><i class="fas fa-arrow-up"></i> Tightening Shift</span></td>
-            </tr>
-            <tr>
-              <td>Swiss National Bank</td>
-              <td>CHF</td>
-              <td>1.50%</td>
-              <td>Cut</td>
-              <td><span class="badge down"><i class="fas fa-arrow-down"></i> Dovish</span></td>
-            </tr>
-          </tbody>
-        </table>
+    <section class="stats">
+      <div class="card stat">
+        <div class="stat-top">
+          <div class="stat-label">Highest policy rate</div>
+          <i class="fas fa-arrow-trend-up"></i>
+        </div>
+        <div class="stat-value" id="statHighest">—</div>
+        <div class="stat-note" id="statHighestNote">Loading highest policy rate.</div>
       </div>
 
-      <aside class="card section">
-        <div class="section-title"><i class="fas fa-layer-group"></i> Read the page fast</div>
-        <div class="list">
-          <div class="item">
-            <div class="item-top">
-              <h3>Hawkish</h3>
-              <span class="badge up">Bullish currency</span>
-            </div>
-            <p>Higher-for-longer rates or upside inflation risks can strengthen the currency and pressure risk assets.</p>
+      <div class="card stat">
+        <div class="stat-top">
+          <div class="stat-label">Lowest policy rate</div>
+          <i class="fas fa-arrow-trend-down"></i>
+        </div>
+        <div class="stat-value" id="statLowest">—</div>
+        <div class="stat-note" id="statLowestNote">Loading lowest policy rate.</div>
+      </div>
+
+      <div class="card stat">
+        <div class="stat-top">
+          <div class="stat-label">Hawkish count</div>
+          <i class="fas fa-bolt"></i>
+        </div>
+        <div class="stat-value" id="statHawkish">—</div>
+        <div class="stat-note">Banks currently tagged as tightening or hawkish leaning.</div>
+      </div>
+
+      <div class="card stat">
+        <div class="stat-top">
+          <div class="stat-label">Easing count</div>
+          <i class="fas fa-water"></i>
+        </div>
+        <div class="stat-value" id="statEasing">—</div>
+        <div class="stat-note">Banks currently tagged as dovish or easing leaning.</div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="card section">
+        <div class="section-title">
+          <i class="fas fa-percent"></i>
+          <span>Central bank dashboard</span>
+        </div>
+        <div class="section-sub">
+          Search by bank or currency, filter by bias, and sort by rate level.
+        </div>
+
+        <div class="toolbar">
+          <input id="searchInput" class="search" type="text" placeholder="Search bank, currency, region..." />
+          <select id="biasFilter" class="select">
+            <option value="all">All biases</option>
+            <option value="hawkish">Hawkish / Tightening</option>
+            <option value="neutral">Neutral / Hold</option>
+            <option value="dovish">Dovish / Easing</option>
+          </select>
+          <select id="sortFilter" class="select">
+            <option value="rate-desc">Sort: Highest rate first</option>
+            <option value="rate-asc">Sort: Lowest rate first</option>
+            <option value="name-asc">Sort: Name A–Z</option>
+          </select>
+          <button id="resetFilters" class="ghost-btn" type="button">Reset</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Central Bank</th>
+                <th>Currency</th>
+                <th>Policy Rate</th>
+                <th>Last Move</th>
+                <th>Bias</th>
+                <th>Next Meeting</th>
+              </tr>
+            </thead>
+            <tbody id="ratesTableBody"></tbody>
+          </table>
+        </div>
+
+        <div id="tableEmpty" class="empty-state" style="display:none; margin-top:1rem;">
+          No central banks match your current filter.
+        </div>
+
+        <div class="footer-note">
+          This page is structured like a real tool: users can scan, filter, compare, and translate
+          rate policy into trading context instead of just reading static text.
+        </div>
+      </div>
+
+      <aside class="stack">
+        <div class="card section">
+          <div class="section-title">
+            <i class="fas fa-right-left"></i>
+            <span>Rate differential calculator</span>
+          </div>
+          <div class="section-sub">
+            Compare two currencies to estimate policy-rate spread.
           </div>
 
-          <div class="item">
-            <div class="item-top">
-              <h3>Dovish</h3>
-              <span class="badge down">Weaker currency</span>
-            </div>
-            <p>Rate cuts, softer guidance, or recession concerns can weaken the currency and support risk assets.</p>
+          <div class="calc-grid">
+            <select id="baseCurrency" class="select"></select>
+            <select id="quoteCurrency" class="select"></select>
           </div>
 
-          <div class="item">
-            <div class="item-top">
-              <h3>Neutral</h3>
-              <span class="badge hold">Wait for data</span>
+          <div class="calc-result">
+            <div>
+              <div class="stat-label">Rate differential</div>
+              <div class="result-big" id="diffValue">0.00%</div>
             </div>
-            <p>When central banks pause, CPI, jobs, GDP, and speeches become the next major catalysts.</p>
+            <div class="result-sub" id="diffExplanation">
+              Choose two currencies to calculate the policy spread and see the broad directional implication.
+            </div>
           </div>
+        </div>
+
+        <div class="card section">
+          <div class="section-title">
+            <i class="fas fa-layer-group"></i>
+            <span>Bias implication</span>
+          </div>
+          <div class="impact-grid" id="impactCards"></div>
         </div>
       </aside>
     </section>
 
-    <section class="grid-2">
+    <section class="layout">
       <div class="card section">
-        <div class="section-title"><i class="fas fa-microchip"></i> Market-implied rate path</div>
-        <div class="section-sub">Simple visual guide for how markets are leaning by region.</div>
-
-        <div class="list">
-          <div class="item">
-            <div class="item-top">
-              <h3>United States</h3>
-              <span class="badge">Cuts priced gradually</span>
-            </div>
-            <p>USD traders should compare inflation and labor data against this implied easing path.</p>
-            <div class="bar"><div class="fill" style="width:62%"></div></div>
-          </div>
-
-          <div class="item">
-            <div class="item-top">
-              <h3>Eurozone</h3>
-              <span class="badge">More dovish</span>
-            </div>
-            <p>EUR sensitivity stays high when growth slows and inflation cools faster than expected.</p>
-            <div class="bar"><div class="fill" style="width:74%"></div></div>
-          </div>
-
-          <div class="item">
-            <div class="item-top">
-              <h3>United Kingdom</h3>
-              <span class="badge">Careful easing</span>
-            </div>
-            <p>GBP often reacts sharply when wage inflation keeps the Bank of England from cutting fast.</p>
-            <div class="bar"><div class="fill" style="width:51%"></div></div>
-          </div>
+        <div class="section-title">
+          <i class="fas fa-calendar-days"></i>
+          <span>Upcoming meeting watchlist</span>
         </div>
+        <div class="section-sub">
+          A product-ready watch area for the next policy decisions and why they matter.
+        </div>
+
+        <div class="meeting-list" id="meetingList"></div>
       </div>
 
-      <aside class="card section">
-        <div class="section-title"><i class="fas fa-bolt"></i> Trading checklist</div>
-        <div class="list">
-          <div class="item">
-            <h3>Before decision day</h3>
-            <p>Mark meeting time, statement release, press conference, and current market pricing.</p>
+      <aside class="stack">
+        <div class="card section">
+          <div class="section-title">
+            <i class="fas fa-wave-square"></i>
+            <span>Market-implied path</span>
           </div>
-          <div class="item">
-            <h3>Compare reality vs expectation</h3>
-            <p>The move usually comes from the surprise, not just the headline rate itself.</p>
+          <div class="section-sub">
+            Simple directional guide for where rate expectations are leaning.
           </div>
-          <div class="item">
-            <h3>Watch correlated assets</h3>
-            <p>Yields, DXY, gold, indices, and bond futures often confirm the real direction.</p>
+
+          <div class="stack">
+            <div class="item">
+              <div class="item-top">
+                <h3>United States</h3>
+                <span class="badge info">Gradual cuts priced</span>
+              </div>
+              <p>USD reacts sharply when inflation or labor data force repricing of the expected easing path.</p>
+              <div class="bar"><div class="fill" style="width:62%"></div></div>
+            </div>
+
+            <div class="item">
+              <div class="item-top">
+                <h3>Eurozone</h3>
+                <span class="badge down">More dovish</span>
+              </div>
+              <p>EUR sensitivity rises when growth weakens and inflation cools faster than expected.</p>
+              <div class="bar"><div class="fill" style="width:74%"></div></div>
+            </div>
+
+            <div class="item">
+              <div class="item-top">
+                <h3>Japan</h3>
+                <span class="badge up">Normalization watch</span>
+              </div>
+              <p>JPY can move aggressively if rate normalization accelerates or yield spreads compress.</p>
+              <div class="bar"><div class="fill" style="width:46%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card section">
+          <div class="section-title">
+            <i class="fas fa-bolt"></i>
+            <span>Trading checklist</span>
+          </div>
+
+          <div class="stack">
+            <div class="item">
+              <h3>1. Price the expectation first</h3>
+              <p>The move usually comes from the surprise versus what markets already priced in.</p>
+            </div>
+            <div class="item">
+              <h3>2. Watch correlated assets</h3>
+              <p>Yields, DXY, gold, equity indices, and bond futures help confirm the real reaction.</p>
+            </div>
+            <div class="item">
+              <h3>3. Focus on guidance, not only the rate</h3>
+              <p>Forward guidance and press-conference tone can matter more than the headline decision.</p>
+            </div>
           </div>
         </div>
       </aside>
@@ -533,6 +875,130 @@
 
   <script>
     const THEME_KEY = "fynx_theme";
+
+    const centralBanks = [
+      {
+        bank: "Federal Reserve",
+        region: "United States",
+        currency: "USD",
+        rateLabel: "5.25% - 5.50%",
+        rateMid: 5.375,
+        lastMove: "Held",
+        bias: "neutral",
+        biasLabel: "Neutral / Data Dependent",
+        nextMeeting: "2026-05-06",
+        focus: "Inflation, labor market, financial conditions",
+        implication: "USD can stay firm when cuts are delayed or repriced higher."
+      },
+      {
+        bank: "European Central Bank",
+        region: "Eurozone",
+        currency: "EUR",
+        rateLabel: "4.00%",
+        rateMid: 4.00,
+        lastMove: "Cut",
+        bias: "dovish",
+        biasLabel: "Easing",
+        nextMeeting: "2026-04-17",
+        focus: "Growth slowdown, inflation cooling, lending conditions",
+        implication: "EUR may weaken if easing continues faster than peers."
+      },
+      {
+        bank: "Bank of England",
+        region: "United Kingdom",
+        currency: "GBP",
+        rateLabel: "5.25%",
+        rateMid: 5.25,
+        lastMove: "Held",
+        bias: "neutral",
+        biasLabel: "Cautious Hold",
+        nextMeeting: "2026-05-08",
+        focus: "Wage growth, services inflation, recession risk",
+        implication: "GBP reacts sharply when inflation blocks expected cuts."
+      },
+      {
+        bank: "Bank of Japan",
+        region: "Japan",
+        currency: "JPY",
+        rateLabel: "0.10%",
+        rateMid: 0.10,
+        lastMove: "Hiked",
+        bias: "hawkish",
+        biasLabel: "Normalization / Tightening Shift",
+        nextMeeting: "2026-04-26",
+        focus: "Wages, inflation durability, yield normalization",
+        implication: "JPY can strengthen if normalization continues or spread narrows."
+      },
+      {
+        bank: "Swiss National Bank",
+        region: "Switzerland",
+        currency: "CHF",
+        rateLabel: "1.50%",
+        rateMid: 1.50,
+        lastMove: "Cut",
+        bias: "dovish",
+        biasLabel: "Dovish",
+        nextMeeting: "2026-06-20",
+        focus: "Imported inflation, currency strength, domestic growth",
+        implication: "CHF can soften if the SNB keeps easing faster than expected."
+      },
+      {
+        bank: "Bank of Canada",
+        region: "Canada",
+        currency: "CAD",
+        rateLabel: "5.00%",
+        rateMid: 5.00,
+        lastMove: "Held",
+        bias: "neutral",
+        biasLabel: "Neutral",
+        nextMeeting: "2026-04-24",
+        focus: "Growth, inflation trend, housing sensitivity",
+        implication: "CAD often reacts with oil and North America rate repricing together."
+      },
+      {
+        bank: "Reserve Bank of Australia",
+        region: "Australia",
+        currency: "AUD",
+        rateLabel: "4.35%",
+        rateMid: 4.35,
+        lastMove: "Held",
+        bias: "neutral",
+        biasLabel: "Neutral",
+        nextMeeting: "2026-05-20",
+        focus: "Services inflation, employment, China demand",
+        implication: "AUD benefits when inflation stays sticky and global growth stabilizes."
+      },
+      {
+        bank: "Reserve Bank of New Zealand",
+        region: "New Zealand",
+        currency: "NZD",
+        rateLabel: "5.50%",
+        rateMid: 5.50,
+        lastMove: "Held",
+        bias: "hawkish",
+        biasLabel: "Restrictive / Hawkish",
+        nextMeeting: "2026-05-28",
+        focus: "Inflation persistence, growth softness, policy lag",
+        implication: "NZD can gain when markets push back aggressive cut expectations."
+      }
+    ];
+
+    const searchInput = document.getElementById("searchInput");
+    const biasFilter = document.getElementById("biasFilter");
+    const sortFilter = document.getElementById("sortFilter");
+    const resetFilters = document.getElementById("resetFilters");
+    const ratesTableBody = document.getElementById("ratesTableBody");
+    const tableEmpty = document.getElementById("tableEmpty");
+
+    const baseCurrency = document.getElementById("baseCurrency");
+    const quoteCurrency = document.getElementById("quoteCurrency");
+    const diffValue = document.getElementById("diffValue");
+    const diffExplanation = document.getElementById("diffExplanation");
+    const heroDiffValue = document.getElementById("heroDiffValue");
+    const heroDiffText = document.getElementById("heroDiffText");
+
+    const impactCards = document.getElementById("impactCards");
+    const meetingList = document.getElementById("meetingList");
 
     function applyTheme(theme){
       document.body.classList.toggle("dark-mode", theme === "dark");
@@ -549,12 +1015,299 @@
       applyTheme(next);
     }
 
-    applyTheme(getTheme());
-    document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+    function getBiasBadgeClass(bias){
+      if(bias === "hawkish") return "badge up";
+      if(bias === "dovish") return "badge down";
+      return "badge hold";
+    }
 
-    window.addEventListener("storage", (e) => {
-      if (e.key === THEME_KEY) applyTheme(getTheme());
-    });
+    function getBiasIcon(bias){
+      if(bias === "hawkish") return "fa-arrow-up";
+      if(bias === "dovish") return "fa-arrow-down";
+      return "fa-minus";
+    }
+
+    function populateCurrencySelectors(){
+      const options = centralBanks
+        .map(bank => ({ currency: bank.currency, label: `${bank.currency} — ${bank.bank}` }))
+        .sort((a,b) => a.currency.localeCompare(b.currency));
+
+      baseCurrency.innerHTML = "";
+      quoteCurrency.innerHTML = "";
+
+      options.forEach(option => {
+        const baseOpt = document.createElement("option");
+        baseOpt.value = option.currency;
+        baseOpt.textContent = option.label;
+        baseCurrency.appendChild(baseOpt);
+
+        const quoteOpt = document.createElement("option");
+        quoteOpt.value = option.currency;
+        quoteOpt.textContent = option.label;
+        quoteCurrency.appendChild(quoteOpt);
+      });
+
+      baseCurrency.value = "USD";
+      quoteCurrency.value = "JPY";
+    }
+
+    function renderStats(){
+      const sortedByRate = [...centralBanks].sort((a,b) => b.rateMid - a.rateMid);
+      const highest = sortedByRate[0];
+      const lowest = sortedByRate[sortedByRate.length - 1];
+      const hawkishCount = centralBanks.filter(bank => bank.bias === "hawkish").length;
+      const easingCount = centralBanks.filter(bank => bank.bias === "dovish").length;
+
+      document.getElementById("statHighest").textContent = highest.currency;
+      document.getElementById("statHighestNote").textContent = `${highest.bank} at ${highest.rateLabel}`;
+
+      document.getElementById("statLowest").textContent = lowest.currency;
+      document.getElementById("statLowestNote").textContent = `${lowest.bank} at ${lowest.rateLabel}`;
+
+      document.getElementById("statHawkish").textContent = hawkishCount;
+      document.getElementById("statEasing").textContent = easingCount;
+    }
+
+    function getFilteredBanks(){
+      const term = searchInput.value.trim().toLowerCase();
+      const bias = biasFilter.value;
+      const sort = sortFilter.value;
+
+      let result = centralBanks.filter(bank => {
+        const matchesSearch =
+          bank.bank.toLowerCase().includes(term) ||
+          bank.currency.toLowerCase().includes(term) ||
+          bank.region.toLowerCase().includes(term) ||
+          bank.biasLabel.toLowerCase().includes(term);
+
+        const matchesBias = bias === "all" ? true : bank.bias === bias;
+        return matchesSearch && matchesBias;
+      });
+
+      if(sort === "rate-desc"){
+        result.sort((a,b) => b.rateMid - a.rateMid);
+      } else if(sort === "rate-asc"){
+        result.sort((a,b) => a.rateMid - b.rateMid);
+      } else if(sort === "name-asc"){
+        result.sort((a,b) => a.bank.localeCompare(b.bank));
+      }
+
+      return result;
+    }
+
+    function renderTable(){
+      const banks = getFilteredBanks();
+      ratesTableBody.innerHTML = "";
+
+      if(!banks.length){
+        tableEmpty.style.display = "block";
+        return;
+      }
+
+      tableEmpty.style.display = "none";
+
+      banks.forEach(bank => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>
+            <div class="bank-name">${bank.bank}</div>
+            <div class="bank-note">${bank.region}</div>
+          </td>
+          <td>
+            <div class="rate-value">${bank.currency}</div>
+            <div class="bank-note">${bank.focus}</div>
+          </td>
+          <td>
+            <div class="rate-value">${bank.rateLabel}</div>
+          </td>
+          <td>
+            <span class="badge">${bank.lastMove}</span>
+          </td>
+          <td>
+            <span class="${getBiasBadgeClass(bank.bias)}">
+              <i class="fas ${getBiasIcon(bank.bias)}"></i>
+              ${bank.biasLabel}
+            </span>
+          </td>
+          <td>
+            <div class="rate-value">${formatMeetingDate(bank.nextMeeting)}</div>
+            <div class="bank-note">${daysUntilText(bank.nextMeeting)}</div>
+          </td>
+        `;
+        ratesTableBody.appendChild(tr);
+      });
+    }
+
+    function formatMeetingDate(dateStr){
+      const date = new Date(`${dateStr}T12:00:00`);
+      return date.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+      });
+    }
+
+    function daysUntilText(dateStr){
+      const now = new Date();
+      const meeting = new Date(`${dateStr}T12:00:00`);
+      const diffMs = meeting - now;
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+      if(diffDays < 0) return "Meeting date passed";
+      if(diffDays === 0) return "Today";
+      if(diffDays === 1) return "In 1 day";
+      return `In ${diffDays} days`;
+    }
+
+    function getBankByCurrency(currency){
+      return centralBanks.find(bank => bank.currency === currency);
+    }
+
+    function updateDifferential(){
+      const base = getBankByCurrency(baseCurrency.value);
+      const quote = getBankByCurrency(quoteCurrency.value);
+
+      if(!base || !quote){
+        diffValue.textContent = "0.00%";
+        diffExplanation.textContent = "Choose two currencies to compare the policy spread.";
+        heroDiffValue.textContent = "0.00%";
+        heroDiffText.textContent = "Select two currencies below to compare rate differential.";
+        return;
+      }
+
+      const diff = base.rateMid - quote.rateMid;
+      const absDiff = Math.abs(diff).toFixed(2);
+
+      diffValue.textContent = `${diff >= 0 ? "+" : "-"}${absDiff}%`;
+      heroDiffValue.textContent = `${diff >= 0 ? "+" : "-"}${absDiff}%`;
+
+      let explanation = "";
+      if(base.currency === quote.currency){
+        explanation = "Same currency selected. Choose two different currencies to see a meaningful spread.";
+      } else if(diff > 0){
+        explanation = `${base.currency} has a higher policy rate than ${quote.currency}. This can support carry appeal for ${base.currency} if market risk conditions stay stable.`;
+      } else if(diff < 0){
+        explanation = `${quote.currency} has a higher policy rate than ${base.currency}. This can reduce carry appeal for ${base.currency} unless strong growth or risk flows offset the spread.`;
+      } else {
+        explanation = `${base.currency} and ${quote.currency} currently show the same policy midpoint in this dashboard. Focus on future guidance and surprise data instead.`;
+      }
+
+      diffExplanation.textContent = explanation;
+      heroDiffText.textContent = `${base.currency} vs ${quote.currency} policy-rate spread based on the selected central banks.`;
+
+      renderImpactCards(base, quote, diff);
+    }
+
+    function renderImpactCards(base, quote, diff){
+      impactCards.innerHTML = "";
+
+      const baseCard = document.createElement("div");
+      baseCard.className = "impact";
+      baseCard.innerHTML = `
+        <strong>${base.currency} policy bias</strong>
+        <p>${base.bank}: ${base.biasLabel}. ${base.implication}</p>
+      `;
+
+      const quoteCard = document.createElement("div");
+      quoteCard.className = "impact";
+      quoteCard.innerHTML = `
+        <strong>${quote.currency} policy bias</strong>
+        <p>${quote.bank}: ${quote.biasLabel}. ${quote.implication}</p>
+      `;
+
+      const pairCard = document.createElement("div");
+      pairCard.className = "impact";
+      pairCard.innerHTML = `
+        <strong>Pair implication</strong>
+        <p>${buildPairImplication(base, quote, diff)}</p>
+      `;
+
+      impactCards.appendChild(baseCard);
+      impactCards.appendChild(quoteCard);
+      impactCards.appendChild(pairCard);
+    }
+
+    function buildPairImplication(base, quote, diff){
+      if(base.currency === quote.currency){
+        return "The same currency is selected on both sides, so there is no tradable policy-rate comparison yet.";
+      }
+
+      if(diff > 1.5){
+        return `${base.currency}/${quote.currency} has a strong positive rate spread in favor of ${base.currency}. Watch whether inflation and central-bank tone keep that spread supported.`;
+      }
+
+      if(diff > 0){
+        return `${base.currency}/${quote.currency} has a moderate positive spread in favor of ${base.currency}. The pair can stay supported if guidance does not turn softer.`;
+      }
+
+      if(diff < -1.5){
+        return `${base.currency}/${quote.currency} has a strong negative spread against ${base.currency}. ${quote.currency} keeps the policy-rate advantage unless markets heavily reprice future cuts.`;
+      }
+
+      return `${base.currency}/${quote.currency} shows only a small spread difference. In this case, forward guidance, inflation surprises, and sentiment may matter more than the current rate level.`;
+    }
+
+    function renderMeetings(){
+      const sorted = [...centralBanks].sort((a,b) => new Date(a.nextMeeting) - new Date(b.nextMeeting));
+      meetingList.innerHTML = "";
+
+      sorted.forEach(bank => {
+        const item = document.createElement("div");
+        item.className = "meeting";
+
+        item.innerHTML = `
+          <div class="meeting-top">
+            <div class="meeting-title">${bank.bank} (${bank.currency})</div>
+            <span class="${getBiasBadgeClass(bank.bias)}">
+              <i class="fas ${getBiasIcon(bank.bias)}"></i>
+              ${bank.biasLabel}
+            </span>
+          </div>
+          <p><strong>Date:</strong> ${formatMeetingDate(bank.nextMeeting)} · ${daysUntilText(bank.nextMeeting)}</p>
+          <p><strong>Focus:</strong> ${bank.focus}</p>
+          <p><strong>Why it matters:</strong> ${bank.implication}</p>
+        `;
+
+        meetingList.appendChild(item);
+      });
+    }
+
+    function setupEvents(){
+      document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+
+      window.addEventListener("storage", (e) => {
+        if(e.key === THEME_KEY){
+          applyTheme(getTheme());
+        }
+      });
+
+      [searchInput, biasFilter, sortFilter].forEach(el => {
+        el.addEventListener("input", renderTable);
+        el.addEventListener("change", renderTable);
+      });
+
+      resetFilters.addEventListener("click", () => {
+        searchInput.value = "";
+        biasFilter.value = "all";
+        sortFilter.value = "rate-desc";
+        renderTable();
+      });
+
+      baseCurrency.addEventListener("change", updateDifferential);
+      quoteCurrency.addEventListener("change", updateDifferential);
+    }
+
+    function init(){
+      applyTheme(getTheme());
+      populateCurrencySelectors();
+      renderStats();
+      renderTable();
+      renderMeetings();
+      updateDifferential();
+      setupEvents();
+    }
+
+    init();
   </script>
 </body>
 </html>
