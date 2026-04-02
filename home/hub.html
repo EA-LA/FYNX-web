@@ -8,6 +8,7 @@
 
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
+
     :root{
       --bg:#ffffff;
       --bg-soft:#f6f6f7;
@@ -39,6 +40,7 @@
     }
 
     html{scroll-behavior:smooth}
+
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
       background:var(--bg);
@@ -149,6 +151,7 @@
       font-weight:800;
       transition:.22s ease;
       box-shadow:0 8px 20px rgba(0,0,0,.04);
+      cursor:pointer;
     }
 
     .btn:hover{
@@ -211,6 +214,17 @@
       border-radius:20px;
       background:var(--panel-2);
       padding:1.1rem 1rem;
+      text-decoration:none;
+      color:var(--text);
+      display:block;
+      transition:.22s ease;
+      box-shadow:0 8px 22px rgba(0,0,0,.03);
+    }
+
+    .mini:hover{
+      transform:translateY(-2px);
+      border-color:var(--border-strong);
+      background:var(--panel);
     }
 
     .mini h3{
@@ -248,6 +262,7 @@
           <i class="fas fa-circle-half-stroke"></i>
           <span id="themeLabel">Theme</span>
         </button>
+
         <a class="btn" href="../index.html">
           <i class="fas fa-arrow-left"></i> Back
         </a>
@@ -265,20 +280,20 @@
       </p>
 
       <div class="mini-grid">
-        <div class="mini">
+        <a class="mini" href="../tools/interest-rates.html">
           <h3>Interest Rates</h3>
           <p>Dedicated page for central bank policy rates, latest decisions, and rate outlook.</p>
-        </div>
+        </a>
 
-        <div class="mini">
+        <a class="mini" href="../tools/heatmap.html">
           <h3>Economic Indicators Heatmap</h3>
           <p>Dedicated page for indicator strength, surprises, and macro trend direction.</p>
-        </div>
+        </a>
 
-        <div class="mini">
+        <a class="mini" href="../tools/recent-topics-discussed.html">
           <h3>Recent Topics Discussed</h3>
           <p>Dedicated page for live market themes, discussion cards, and trading context.</p>
-        </div>
+        </a>
       </div>
     </div>
   </main>
