@@ -93,65 +93,76 @@
       color:var(--text);
     }
 
-    .orb1{width:520px;height:520px;top:-220px;left:-220px}
-    .orb2{width:420px;height:420px;bottom:-170px;right:-170px;animation-delay:6s}
+    .orb1{
+      width:360px;
+      height:360px;
+      top:-120px;
+      left:-100px;
+    }
+
+    .orb2{
+      width:320px;
+      height:320px;
+      right:-90px;
+      bottom:-90px;
+      animation-delay:8s;
+    }
 
     @keyframes float{
       0%,100%{transform:translate(0,0) scale(1)}
-      33%{transform:translate(50px,-50px) scale(1.08)}
-      66%{transform:translate(-50px,50px) scale(.92)}
+      50%{transform:translate(35px,-25px) scale(1.08)}
     }
 
     header{
       position:sticky;
       top:0;
-      z-index:1000;
-      backdrop-filter:blur(20px);
-      background:color-mix(in srgb, var(--bg) 82%, transparent);
+      z-index:20;
       border-bottom:1px solid var(--border);
-      padding:1rem 0;
+      background:color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter:blur(14px);
     }
 
     .nav{
-      max-width:1200px;
+      max-width:1320px;
       margin:0 auto;
-      padding:0 1.25rem;
+      padding:1rem 1.25rem;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:1rem;
+      flex-wrap:wrap;
     }
 
     .brand{
       display:flex;
       align-items:center;
-      gap:.6rem;
+      gap:.7rem;
+      font-size:1.85rem;
       font-weight:900;
-      letter-spacing:-1px;
-      font-size:1.15rem;
+      letter-spacing:-1.5px;
     }
 
     .actions{
       display:flex;
-      gap:.65rem;
+      align-items:center;
+      gap:.75rem;
       flex-wrap:wrap;
-      justify-content:flex-end;
     }
 
     .btn{
       display:inline-flex;
       align-items:center;
-      gap:.5rem;
-      text-decoration:none;
-      color:var(--text);
+      gap:.55rem;
       border:1px solid var(--border);
       background:var(--panel);
-      padding:.72rem 1rem;
+      color:var(--text);
+      text-decoration:none;
+      padding:.8rem 1rem;
       border-radius:999px;
       font-weight:800;
-      transition:.22s ease;
-      box-shadow:0 8px 20px rgba(0,0,0,.04);
+      transition:.2s ease;
       cursor:pointer;
+      box-shadow:0 8px 24px rgba(0,0,0,.05);
     }
 
     .btn:hover{
@@ -161,64 +172,64 @@
     }
 
     main{
-      max-width:1200px;
+      width:min(100%, 1320px);
       margin:0 auto;
-      padding:3.25rem 1.25rem 5rem;
+      padding:3rem 1.25rem 4rem;
     }
 
     .card{
+      width:min(100%, 1040px);
+      margin:0 auto;
+      background:color-mix(in srgb, var(--panel) 94%, transparent);
       border:1px solid var(--border);
-      background:var(--panel);
-      border-radius:28px;
-      padding:2.25rem;
-      backdrop-filter:blur(10px);
+      border-radius:34px;
       box-shadow:var(--shadow);
+      padding:2rem;
+      backdrop-filter:blur(18px);
     }
 
     .eyebrow{
       display:inline-flex;
       align-items:center;
-      gap:.55rem;
+      gap:.5rem;
       font-size:.92rem;
-      font-weight:900;
-      letter-spacing:.08em;
+      letter-spacing:.14em;
       text-transform:uppercase;
       color:var(--muted);
+      font-weight:900;
       margin-bottom:1rem;
     }
 
     h1{
-      font-size:clamp(2.4rem, 5vw, 4.15rem);
-      line-height:.98;
-      letter-spacing:-2.5px;
-      margin-bottom:.9rem;
+      font-size:clamp(2.5rem, 5vw, 5rem);
+      line-height:.95;
+      letter-spacing:-3px;
+      margin-bottom:1rem;
     }
 
     .desc{
+      max-width:760px;
       color:var(--muted);
-      font-size:1.08rem;
-      line-height:1.8;
-      max-width:70ch;
+      font-size:1.1rem;
+      line-height:1.7;
       margin-bottom:1.6rem;
     }
 
     .mini-grid{
       display:grid;
-      grid-template-columns:repeat(3, minmax(0,1fr));
+      grid-template-columns:repeat(3,minmax(0,1fr));
       gap:1rem;
-      margin-top:1.5rem;
     }
 
     .mini{
-      border:1px solid var(--border);
-      border-radius:20px;
-      background:var(--panel-2);
-      padding:1.1rem 1rem;
+      display:block;
       text-decoration:none;
       color:var(--text);
-      display:block;
-      transition:.22s ease;
-      box-shadow:0 8px 22px rgba(0,0,0,.03);
+      background:var(--panel-2);
+      border:1px solid var(--border);
+      border-radius:22px;
+      padding:1.2rem;
+      transition:.2s ease;
     }
 
     .mini:hover{
