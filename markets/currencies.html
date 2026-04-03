@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FYNX — Currencies</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#ffffff;
+      --bg-soft:#f6f6f7;
+      --panel:#ffffff;
+      --panel-2:#fafafa;
+      --text:#0a0a0a;
+      --muted:#5f5f66;
+      --border:rgba(0,0,0,.08);
+      --border-strong:rgba(0,0,0,.12);
+      --shadow:0 20px 60px rgba(0,0,0,.08);
+      --grid-1:rgba(0,0,0,.05);
+      --grid-2:rgba(0,0,0,.03);
+      --orb:.10;
+      --accent:#111111;
+    }
+    body.dark-mode{
+      --bg:#000000;
+      --bg-soft:#090909;
+      --panel:rgba(255,255,255,.03);
+      --panel-2:rgba(255,255,255,.04);
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.68);
+      --border:rgba(255,255,255,.10);
+      --border-strong:rgba(255,255,255,.16);
+      --shadow:0 30px 90px rgba(0,0,0,.55);
+      --grid-1:rgba(255,255,255,.04);
+      --grid-2:rgba(255,255,255,.025);
+      --orb:.22;
+      --accent:#ffffff;
+    }
+    html{scroll-behavior:smooth}
+    body{
+      font-family:'Inter','Segoe UI',system-ui,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      overflow-x:hidden;
+      transition:background .25s ease,color .25s ease;
+    }
+    .animated-bg{
+      position:fixed; inset:0; z-index:-1; background:var(--bg); overflow:hidden;
+    }
+    .grid-overlay{
+      position:absolute; inset:0;
+      background-image:
+        linear-gradient(var(--grid-1) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-1) 1px, transparent 1px);
+      background-size:46px 46px;
+      animation:gridMove 20s linear infinite;
+    }
+    .grid-overlay::after{
+      content:""; position:absolute; inset:0;
+      background-image:radial-gradient(circle at center, var(--grid-2) 1px, transparent 1px);
+      background-size:24px 24px; opacity:.65;
+    }
+    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(46px,46px)}}
+    .orb{
+      position:absolute; border-radius:50%; filter:blur(85px); opacity:var(--orb);
+      animation:float 20s ease-in-out infinite;
+      background:radial-gradient(circle, currentColor 0%, transparent 70%);
+      color:var(--text);
+    }
+    .orb1{width:360px;height:360px;top:-120px;left:-100px}
+    .orb2{width:320px;height:320px;right:-90px;bottom:-90px;animation-delay:8s}
+    @keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(35px,-25px) scale(1.08)}}
+
+    header{
+      position:sticky; top:0; z-index:50;
+      border-bottom:1px solid var(--border);
+      background:color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter:blur(14px);
+    }
+    .nav{
+      max-width:1400px; margin:0 auto; padding:1rem 1.25rem;
+      display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+    }
+    .brand{
+      display:flex; align-items:center; gap:.7rem; font-size:1.45rem; font-weight:900; letter-spacing:-1px;
+    }
+    .actions,.tabbar{display:flex; align-items:center; gap:.75rem; flex-wrap:wrap}
+    .btn,.tab{
+      display:inline-flex; align-items:center; gap:.55rem;
+      border:1px solid var(--border); background:var(--panel); color:var(--text);
+      text-decoration:none; padding:.8rem 1rem; border-radius:999px; font-weight:800;
+      transition:.2s ease; cursor:pointer; box-shadow:0 8px 24px rgba(0,0,0,.05);
+    }
+    .btn:hover,.tab:hover{transform:translateY(-1px); border-color:var(--border-strong); background:var(--panel-2)}
+    .tab.active{background:var(--text); color:var(--bg); border-color:transparent}
+    main{width:min(100%,1400px); margin:0 auto; padding:2rem 1.25rem 4rem}
+    .hero{
+      display:grid; grid-template-columns:1.2fr .8fr; gap:1rem; margin-bottom:1rem;
+    }
+    .card{
+      background:color-mix(in srgb, var(--panel) 94%, transparent);
+      border:1px solid var(--border); border-radius:28px; box-shadow:var(--shadow);
+      padding:1.25rem; backdrop-filter:blur(18px);
+    }
+    .eyebrow{
+      display:inline-flex; align-items:center; gap:.5rem; font-size:.85rem; letter-spacing:.14em;
+      text-transform:uppercase; color:var(--muted); font-weight:900; margin-bottom:.85rem;
+    }
+    h1{font-size:clamp(2.2rem,5vw,4.4rem); line-height:.95; letter-spacing:-2px; margin-bottom:.8rem}
+    .desc{color:var(--muted); line-height:1.7; font-size:1rem}
+    .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:.8rem; margin-top:1rem}
+    .stat{padding:1rem; border:1px solid var(--border); border-radius:20px; background:var(--panel-2)}
+    .stat small{display:block; color:var(--muted); margin-bottom:.3rem}
+    .stat strong{font-size:1.25rem}
+    .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1rem}
+    .section-title{font-size:1.15rem; margin-bottom:.9rem}
+    .widget{min-height:420px; border:1px solid var(--border); border-radius:20px; overflow:hidden; background:var(--panel-2)}
+    .table{display:grid; gap:.7rem}
+    .row{
+      display:grid; grid-template-columns:1.1fr .9fr .8fr .8fr; gap:.75rem;
+      padding:.95rem 1rem; border:1px solid var(--border); border-radius:18px; background:var(--panel-2);
+      align-items:center;
+    }
+    .row.head{font-weight:800; color:var(--muted)}
+    .pill{
+      display:inline-flex; align-items:center; justify-content:center; padding:.3rem .65rem;
+      border-radius:999px; border:1px solid var(--border); background:var(--panel); font-size:.78rem; font-weight:800;
+    }
+    .tool{
+      display:grid; grid-template-columns:1fr 1fr auto; gap:.8rem; margin-top:1rem;
+    }
+    .input,select{
+      width:100%; padding:.95rem 1rem; border-radius:16px; border:1px solid var(--border);
+      background:var(--panel-2); color:var(--text); outline:none;
+    }
+    .result{
+      margin-top:1rem; padding:1rem; border-radius:18px; border:1px solid var(--border); background:var(--panel-2); font-weight:800;
+    }
+    @media (max-width:1050px){
+      .hero,.grid-2{grid-template-columns:1fr}
+      .stats{grid-template-columns:1fr}
+      .row{grid-template-columns:1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="animated-bg">
+    <div class="grid-overlay"></div>
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+  </div>
+
+  <header>
+    <div class="nav">
+      <div class="brand"><i class="fas fa-dollar-sign"></i> Currencies</div>
+
+      <div class="tabbar">
+        <a class="tab active" href="currencies.html">Currencies</a>
+        <a class="tab" href="crypto.html">Crypto</a>
+        <a class="tab" href="indicators.html">Indicators</a>
+        <a class="tab" href="patterns.html">Patterns</a>
+        <a class="tab" href="volatility.html">Volatility</a>
+        <a class="tab" href="correlation.html">Correlation</a>
+        <a class="tab" href="cot.html">COT</a>
+        <a class="tab" href="liquidity.html">Liquidity</a>
+        <a class="tab" href="historical-data.html">Historical Data</a>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="themeToggle" type="button"><i class="fas fa-circle-half-stroke"></i> <span id="themeLabel">Theme</span></button>
+        <a class="btn" href="../index.html"><i class="fas fa-arrow-left"></i> Home</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="card">
+        <div class="eyebrow"><i class="fas fa-globe"></i> FX Dashboard</div>
+        <h1>Track major, minor, and cross pairs.</h1>
+        <p class="desc">Use this page to monitor forex markets, compare crosses, and calculate live-style conversions with a clean trader workflow.</p>
+
+        <div class="stats">
+          <div class="stat"><small>Focus</small><strong>Forex majors</strong></div>
+          <div class="stat"><small>Usage</small><strong>Cross-rate view</strong></div>
+          <div class="stat"><small>Tools</small><strong>Converter + chart</strong></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Quick FX Converter</div>
+        <div class="tool">
+          <input class="input" id="amount" type="number" value="1000" placeholder="Amount">
+          <select id="pair">
+            <option value="EURUSD">EUR/USD</option>
+            <option value="GBPUSD">GBP/USD</option>
+            <option value="USDJPY">USD/JPY</option>
+            <option value="USDCHF">USD/CHF</option>
+            <option value="AUDUSD">AUD/USD</option>
+            <option value="USDCAD">USD/CAD</option>
+            <option value="NZDUSD">NZD/USD</option>
+            <option value="EURJPY">EUR/JPY</option>
+          </select>
+          <button class="btn" onclick="convertFx()">Calculate</button>
+        </div>
+        <div class="result" id="fxResult">Result: 1000 EUR ≈ 1080.00 USD</div>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="card">
+        <div class="section-title">Major Pairs Snapshot</div>
+        <div class="table">
+          <div class="row head"><div>Pair</div><div>Type</div><div>Session</div><div>Status</div></div>
+          <div class="row"><div>EUR/USD</div><div>Major</div><div>London / NY</div><div><span class="pill">Most traded</span></div></div>
+          <div class="row"><div>GBP/USD</div><div>Major</div><div>London / NY</div><div><span class="pill">Volatile</span></div></div>
+          <div class="row"><div>USD/JPY</div><div>Major</div><div>Tokyo / NY</div><div><span class="pill">Fast session flow</span></div></div>
+          <div class="row"><div>AUD/USD</div><div>Major</div><div>Sydney / NY</div><div><span class="pill">Commodity linked</span></div></div>
+          <div class="row"><div>USD/CHF</div><div>Major</div><div>London / NY</div><div><span class="pill">Risk-off flow</span></div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">Live-style Market Widget</div>
+        <div id="fxWidget" class="widget"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const THEME_KEY = "fynx_theme";
+
+    function applyTheme(theme){
+      document.body.classList.toggle("dark-mode", theme === "dark");
+      const label = document.getElementById("themeLabel");
+      if(label) label.textContent = theme === "dark" ? "Dark" : "Light";
+      renderWidget();
+    }
+    function getTheme(){
+      return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+    }
+    function toggleTheme(){
+      const next = getTheme() === "dark" ? "light" : "dark";
+      localStorage.setItem(THEME_KEY, next);
+      applyTheme(next);
+    }
+
+    const fxRates = {
+      EURUSD: 1.08,
+      GBPUSD: 1.27,
+      USDJPY: 151.2,
+      USDCHF: 0.89,
+      AUDUSD: 0.66,
+      USDCAD: 1.35,
+      NZDUSD: 0.61,
+      EURJPY: 163.8
+    };
+
+    function convertFx(){
+      const amount = parseFloat(document.getElementById("amount").value || 0);
+      const pair = document.getElementById("pair").value;
+      const rate = fxRates[pair] || 1;
+      const base = pair.slice(0,3);
+      const quote = pair.slice(3,6);
+      document.getElementById("fxResult").textContent =
+        `Result: ${amount.toFixed(2)} ${base} ≈ ${(amount * rate).toFixed(2)} ${quote}`;
+    }
+
+    function renderWidget(){
+      const wrap = document.getElementById("fxWidget");
+      wrap.innerHTML = `
+        <div class="tradingview-widget-container" style="height:100%;width:100%">
+          <div id="tradingview_fx"></div>
+          <div class="tradingview-widget-copyright"></div>
+        </div>
+      `;
+      const script = document.createElement("script");
+      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js";
+      script.async = true;
+      script.innerHTML = JSON.stringify({
+        width: "100%",
+        height: "100%",
+        symbolsGroups: [
+          {
+            name: "Forex",
+            symbols: [
+              {name: "FX:EURUSD", displayName: "EUR/USD"},
+              {name: "FX:GBPUSD", displayName: "GBP/USD"},
+              {name: "FX:USDJPY", displayName: "USD/JPY"},
+              {name: "FX:USDCHF", displayName: "USD/CHF"},
+              {name: "FX:AUDUSD", displayName: "AUD/USD"},
+              {name: "FX:USDCAD", displayName: "USD/CAD"}
+            ]
+          }
+        ],
+        showSymbolLogo: true,
+        colorTheme: getTheme() === "dark" ? "dark" : "light",
+        isTransparent: true,
+        locale: "en"
+      });
+      wrap.appendChild(script);
+    }
+
+    applyTheme(getTheme());
+    convertFx();
+    document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+    window.addEventListener("storage", (e) => { if(e.key === THEME_KEY) applyTheme(getTheme()); });
+  </script>
+</body>
+</html>
