@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FYNX — Crypto</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#fff;--panel:#fff;--panel-2:#fafafa;--text:#0a0a0a;--muted:#5f5f66;--border:rgba(0,0,0,.08);--border-strong:rgba(0,0,0,.12);--shadow:0 20px 60px rgba(0,0,0,.08);--grid-1:rgba(0,0,0,.05);--grid-2:rgba(0,0,0,.03);--orb:.10}
+    body.dark-mode{--bg:#000;--panel:rgba(255,255,255,.03);--panel-2:rgba(255,255,255,.04);--text:#fff;--muted:rgba(255,255,255,.68);--border:rgba(255,255,255,.10);--border-strong:rgba(255,255,255,.16);--shadow:0 30px 90px rgba(0,0,0,.55);--grid-1:rgba(255,255,255,.04);--grid-2:rgba(255,255,255,.025);--orb:.22}
+    body{font-family:Inter,Segoe UI,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:.25s}
+    .animated-bg{position:fixed;inset:0;z-index:-1;background:var(--bg);overflow:hidden}
+    .grid-overlay{position:absolute;inset:0;background-image:linear-gradient(var(--grid-1) 1px,transparent 1px),linear-gradient(90deg,var(--grid-1) 1px,transparent 1px);background-size:46px 46px}
+    .grid-overlay::after{content:"";position:absolute;inset:0;background-image:radial-gradient(circle at center,var(--grid-2) 1px,transparent 1px);background-size:24px 24px;opacity:.65}
+    .orb{position:absolute;border-radius:50%;filter:blur(85px);opacity:var(--orb);background:radial-gradient(circle,currentColor 0%,transparent 70%);color:var(--text)}
+    .orb1{width:360px;height:360px;top:-120px;left:-100px}.orb2{width:320px;height:320px;right:-90px;bottom:-90px}
+    header{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px)}
+    .nav{max-width:1400px;margin:0 auto;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+    .brand{display:flex;align-items:center;gap:.7rem;font-size:1.45rem;font-weight:900}
+    .tabbar,.actions{display:flex;gap:.75rem;flex-wrap:wrap}
+    .btn,.tab{display:inline-flex;align-items:center;gap:.55rem;border:1px solid var(--border);background:var(--panel);color:var(--text);text-decoration:none;padding:.8rem 1rem;border-radius:999px;font-weight:800;transition:.2s;cursor:pointer}
+    .btn:hover,.tab:hover{transform:translateY(-1px);border-color:var(--border-strong);background:var(--panel-2)}
+    .tab.active{background:var(--text);color:var(--bg);border-color:transparent}
+    main{width:min(100%,1400px);margin:0 auto;padding:2rem 1.25rem 4rem}
+    .hero,.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .card{background:color-mix(in srgb,var(--panel) 94%,transparent);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);padding:1.25rem;backdrop-filter:blur(18px)}
+    .eyebrow{display:inline-flex;gap:.5rem;font-size:.85rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:900;margin-bottom:.85rem}
+    h1{font-size:clamp(2.2rem,5vw,4.4rem);line-height:.95;letter-spacing:-2px;margin-bottom:.8rem}
+    .desc{color:var(--muted);line-height:1.7}
+    .coins{display:grid;grid-template-columns:repeat(2,1fr);gap:.8rem;margin-top:1rem}
+    .coin{padding:1rem;border:1px solid var(--border);border-radius:20px;background:var(--panel-2)}
+    .coin strong{display:block;font-size:1.1rem;margin-bottom:.35rem}
+    .coin span{color:var(--muted);font-size:.92rem}
+    .widget{min-height:460px;border:1px solid var(--border);border-radius:20px;overflow:hidden;background:var(--panel-2)}
+    @media (max-width:1050px){.hero,.grid-2,.coins{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="animated-bg"><div class="grid-overlay"></div><div class="orb orb1"></div><div class="orb orb2"></div></div>
+  <header>
+    <div class="nav">
+      <div class="brand"><i class="fab fa-bitcoin"></i> Crypto</div>
+      <div class="tabbar">
+        <a class="tab" href="currencies.html">Currencies</a>
+        <a class="tab active" href="crypto.html">Crypto</a>
+        <a class="tab" href="indicators.html">Indicators</a>
+        <a class="tab" href="patterns.html">Patterns</a>
+        <a class="tab" href="volatility.html">Volatility</a>
+        <a class="tab" href="correlation.html">Correlation</a>
+        <a class="tab" href="cot.html">COT</a>
+        <a class="tab" href="liquidity.html">Liquidity</a>
+        <a class="tab" href="historical-data.html">Historical Data</a>
+      </div>
+      <div class="actions">
+        <button class="btn" id="themeToggle" type="button"><i class="fas fa-circle-half-stroke"></i> <span id="themeLabel">Theme</span></button>
+        <a class="btn" href="../index.html"><i class="fas fa-arrow-left"></i> Home</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="card">
+        <div class="eyebrow"><i class="fas fa-coins"></i> Crypto Dashboard</div>
+        <h1>Monitor major crypto assets fast.</h1>
+        <p class="desc">Use this page to watch BTC, ETH, SOL, XRP and the broader crypto market in one clean workspace.</p>
+        <div class="coins">
+          <div class="coin"><strong>Bitcoin</strong><span>Store of value / market leader</span></div>
+          <div class="coin"><strong>Ethereum</strong><span>Smart contracts / ecosystem leader</span></div>
+          <div class="coin"><strong>Solana</strong><span>High-speed ecosystem</span></div>
+          <div class="coin"><strong>XRP</strong><span>Payments / large-cap watchlist</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="widget" id="cryptoScreener"></div>
+      </div>
+    </section>
+
+    <section class="grid-2" style="margin-top:1rem">
+      <div class="card">
+        <h2 style="margin-bottom:1rem">BTC Chart</h2>
+        <div class="widget" id="btcChart"></div>
+      </div>
+      <div class="card">
+        <h2 style="margin-bottom:1rem">ETH Chart</h2>
+        <div class="widget" id="ethChart"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const THEME_KEY = "fynx_theme";
+    function getTheme(){ return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light"; }
+    function applyTheme(theme){
+      document.body.classList.toggle("dark-mode", theme === "dark");
+      document.getElementById("themeLabel").textContent = theme === "dark" ? "Dark" : "Light";
+      renderWidgets();
+    }
+    function toggleTheme(){
+      const next = getTheme() === "dark" ? "light" : "dark";
+      localStorage.setItem(THEME_KEY, next);
+      applyTheme(next);
+    }
+    function tvScript(containerId, config){
+      const wrap = document.getElementById(containerId);
+      wrap.innerHTML = '<div class="tradingview-widget-container" style="height:100%;width:100%"><div id="'+containerId+'_inner" style="height:100%;width:100%"></div></div>';
+      const s = document.createElement("script");
+      s.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+      s.async = true;
+      s.innerHTML = JSON.stringify(config);
+      wrap.appendChild(s);
+    }
+    function renderWidgets(){
+      const theme = getTheme() === "dark" ? "dark" : "light";
+
+      const screener = document.getElementById("cryptoScreener");
+      screener.innerHTML = '<div class="tradingview-widget-container" style="height:100%;width:100%"><div id="crypto_screener_inner"></div></div>';
+      const s1 = document.createElement("script");
+      s1.src = "https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js";
+      s1.async = true;
+      s1.innerHTML = JSON.stringify({
+        width:"100%",
+        height:"100%",
+        symbolsGroups:[{
+          name:"Crypto",
+          symbols:[
+            {name:"BINANCE:BTCUSDT",displayName:"BTC"},
+            {name:"BINANCE:ETHUSDT",displayName:"ETH"},
+            {name:"BINANCE:SOLUSDT",displayName:"SOL"},
+            {name:"BINANCE:XRPUSDT",displayName:"XRP"},
+            {name:"BINANCE:BNBUSDT",displayName:"BNB"},
+            {name:"BINANCE:ADAUSDT",displayName:"ADA"}
+          ]
+        }],
+        showSymbolLogo:true,
+        colorTheme:theme,
+        isTransparent:true,
+        locale:"en"
+      });
+      screener.appendChild(s1);
+
+      tvScript("btcChart", {
+        autosize:true, symbol:"BINANCE:BTCUSDT", interval:"240", timezone:"Etc/UTC",
+        theme:theme, style:"1", locale:"en", enable_publishing:false, hide_top_toolbar:false,
+        hide_legend:false, save_image:false, calendar:false, support_host:"https://www.tradingview.com"
+      });
+
+      tvScript("ethChart", {
+        autosize:true, symbol:"BINANCE:ETHUSDT", interval:"240", timezone:"Etc/UTC",
+        theme:theme, style:"1", locale:"en", enable_publishing:false, hide_top_toolbar:false,
+        hide_legend:false, save_image:false, calendar:false, support_host:"https://www.tradingview.com"
+      });
+    }
+
+    applyTheme(getTheme());
+    document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+    window.addEventListener("storage", e => { if(e.key === THEME_KEY) applyTheme(getTheme()); });
+  </script>
+</body>
+</html>
