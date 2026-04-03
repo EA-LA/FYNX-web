@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FYNX — Historical Data</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#fff;--panel:#fff;--panel-2:#fafafa;--text:#0a0a0a;--muted:#5f5f66;--border:rgba(0,0,0,.08);--shadow:0 20px 60px rgba(0,0,0,.08)}
+    body.dark-mode{--bg:#000;--panel:rgba(255,255,255,.03);--panel-2:rgba(255,255,255,.04);--text:#fff;--muted:rgba(255,255,255,.68);--border:rgba(255,255,255,.10);--shadow:0 30px 90px rgba(0,0,0,.55)}
+    body{font-family:Inter,Segoe UI,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    header{position:sticky;top:0;z-index:40;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px)}
+    .nav{max-width:1400px;margin:0 auto;padding:1rem 1.25rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+    .brand{font-weight:900;font-size:1.45rem;display:flex;gap:.7rem;align-items:center}
+    .tabbar,.actions{display:flex;gap:.75rem;flex-wrap:wrap}
+    .btn,.tab{display:inline-flex;align-items:center;gap:.55rem;border:1px solid var(--border);background:var(--panel);color:var(--text);text-decoration:none;padding:.8rem 1rem;border-radius:999px;font-weight:800;cursor:pointer}
+    .tab.active{background:var(--text);color:var(--bg);border-color:transparent}
+    main{width:min(100%,1400px);margin:0 auto;padding:2rem 1.25rem 4rem}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);padding:1.25rem}
+    h1{font-size:clamp(2rem,5vw,4rem);line-height:.95;letter-spacing:-2px;margin-bottom:1rem}
+    .desc{color:var(--muted);line-height:1.7;margin-bottom:1rem}
+    .input,select{width:100%;padding:.95rem 1rem;border-radius:16px;border:1px solid var(--border);background:var(--panel-2);color:var(--text);outline:none}
+    .tool{display:grid;grid-template-columns:1fr 1fr auto;gap:.8rem}
+    .result{margin-top:1rem;padding:1rem;border:1px solid var(--border);border-radius:18px;background:var(--panel-2)}
+    @media (max-width:1050px){.grid,.tool{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="nav">
+    <div class="brand"><i class="fas fa-database"></i> Historical Data</div>
+    <div class="tabbar">
+      <a class="tab" href="currencies.html">Currencies</a>
+      <a class="tab" href="crypto.html">Crypto</a>
+      <a class="tab" href="indicators.html">Indicators</a>
+      <a class="tab" href="patterns.html">Patterns</a>
+      <a class="tab" href="volatility.html">Volatility</a>
+      <a class="tab" href="correlation.html">Correlation</a>
+      <a class="tab" href="cot.html">COT</a>
+      <a class="tab" href="liquidity.html">Liquidity</a>
+      <a class="tab active" href="historical-data.html">Historical Data</a>
+    </div>
+    <div class="actions">
+      <button class="btn" id="themeToggle"><i class="fas fa-circle-half-stroke"></i> <span id="themeLabel">Theme</span></button>
+      <a class="btn" href="../index.html"><i class="fas fa-arrow-left"></i> Home</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="grid">
+    <div class="card">
+      <h1>Search-style historical price lookup.</h1>
+      <p class="desc">This gives your users a real utility page now. Later you can replace the sample data with API data.</p>
+
+      <div class="tool">
+        <select id="asset">
+          <option>EUR/USD</option>
+          <option>BTC/USD</option>
+          <option>Gold</option>
+          <option>S&P 500</option>
+        </select>
+        <select id="period">
+          <option>1 Week</option>
+          <option>1 Month</option>
+          <option>3 Months</option>
+          <option>1 Year</option>
+        </select>
+        <button class="btn" onclick="lookup()">Search</button>
+      </div>
+
+      <div class="result" id="histResult">Choose an asset and period, then click Search.</div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom:1rem">Historical Chart</h2>
+      <div style="min-height:500px;border:1px solid var(--border);border-radius:20px;overflow:hidden;background:var(--panel-2)" id="histWidget"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+const THEME_KEY="fynx_theme";
+function getTheme(){return localStorage.getItem(THEME_KEY)==="dark"?"dark":"light";}
+function applyTheme(theme){
+  document.body.classList.toggle("dark-mode",theme==="dark");
+  document.getElementById("themeLabel").textContent=theme==="dark"?"Dark":"Light";
+  renderWidget();
+}
+function toggleTheme(){const next=getTheme()==="dark"?"light":"dark";localStorage.setItem(THEME_KEY,next);applyTheme(next);}
+function lookup(){
+  const asset=document.getElementById("asset").value;
+  const period=document.getElementById("period").value;
+  document.getElementById("histResult").textContent=`Showing ${period} view for ${asset}. This block is ready for API data later.`;
+}
+function renderWidget(){
+  const wrap=document.getElementById("histWidget");
+  wrap.innerHTML='<div class="tradingview-widget-container" style="height:100%;width:100%"><div id="hist_inner"></div></div>';
+  const s=document.createElement("script");
+  s.src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+  s.async=true;
+  s.innerHTML=JSON.stringify({
+    autosize:true,symbol:"FX:EURUSD",interval:"D",timezone:"Etc/UTC",
+    theme:getTheme(),style:"1",locale:"en",enable_publishing:false,hide_legend:false,save_image:false,support_host:"https://www.tradingview.com"
+  });
+  wrap.appendChild(s);
+}
+applyTheme(getTheme());
+lookup();
+document.getElementById("themeToggle").addEventListener("click",toggleTheme);
+window.addEventListener("storage",e=>{if(e.key===THEME_KEY)applyTheme(getTheme());});
+</script>
+</body>
+</html>
