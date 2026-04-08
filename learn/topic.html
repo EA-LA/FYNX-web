@@ -7,77 +7,73 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="../assets/theme.js" defer></script>
   <style>
+    :root{
+      --bg:#06080c;
+      --text:#ffffff;
+      --text-muted:rgba(255,255,255,.72);
+      --panel:#0c1018;
+      --panel-soft:rgba(255,255,255,.04);
+      --border:rgba(255,255,255,.14);
+      --chip:rgba(255,255,255,.05);
+      --chip-hover:rgba(255,255,255,.10);
+      --accent:#9ec5ff;
+    }
+    html[data-theme="light"]{
+      --bg:#f7f9ff;
+      --text:#14171f;
+      --text-muted:rgba(20,23,31,.74);
+      --panel:#ffffff;
+      --panel-soft:#f3f6ff;
+      --border:rgba(20,23,31,.14);
+      --chip:#ffffff;
+      --chip-hover:#eef3ff;
+      --accent:#2659d9;
+    }
+
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Inter','Segoe UI',system-ui,sans-serif;color:#fff;background:#000;overflow-x:hidden;min-height:100vh}
-    .animated-bg{position:fixed;inset:0;z-index:-1;background:#000;overflow:hidden}
+    body{font-family:'Inter','Segoe UI',system-ui,sans-serif;color:var(--text);background:var(--bg);overflow-x:hidden;min-height:100vh}
+    .animated-bg{position:fixed;inset:0;z-index:-1;overflow:hidden}
     .grid-overlay{
       position:absolute;inset:0;
       background-image:
-        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+        linear-gradient(color-mix(in oklab, var(--text) 7%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in oklab, var(--text) 7%, transparent) 1px, transparent 1px);
       background-size:50px 50px;
       animation:gridMove 20s linear infinite;
+      opacity:.4;
     }
     @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-    .gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.25;animation:float 20s ease-in-out infinite}
-    .orb-1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-220px;left:-220px}
-    .orb-2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
+    .gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.16;animation:float 20s ease-in-out infinite}
+    .orb-1{width:520px;height:520px;background:radial-gradient(circle,var(--accent) 0%,transparent 70%);top:-220px;left:-220px}
+    .orb-2{width:420px;height:420px;background:radial-gradient(circle,var(--accent) 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
     @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
 
-    header{
-      position:sticky;top:0;z-index:1000;
-      background:rgba(0,0,0,.85);
-      backdrop-filter:blur(20px);
-      border-bottom:1px solid rgba(255,255,255,.1);
-      padding:1rem 0;
-    }
-    .nav{
-      max-width:1200px;margin:0 auto;
-      display:flex;align-items:center;justify-content:space-between;
-      padding:0 1.25rem;
-    }
+    header{position:sticky;top:0;z-index:1000;background:color-mix(in oklab, var(--bg) 86%, transparent);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:.9rem 0}
+    .nav{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem;gap:1rem}
     .brand{display:flex;align-items:center;gap:.6rem;font-weight:900;letter-spacing:-1px;font-size:1.25rem}
-    .nav a{
-      color:rgba(255,255,255,.85);
-      text-decoration:none;font-weight:700;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.04);
-      padding:.55rem .9rem;border-radius:999px;
-      transition:all .25s ease;white-space:nowrap;
-    }
-    .nav a:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
+    .nav a,.chip{color:var(--text);text-decoration:none;font-weight:700;border:1px solid var(--border);background:var(--chip);padding:.55rem .9rem;border-radius:999px;transition:all .25s ease;white-space:nowrap}
+    .nav a:hover,.chip:hover{border-color:color-mix(in oklab, var(--text) 28%, transparent);background:var(--chip-hover);transform:translateY(-1px)}
 
-    main{max-width:1200px;margin:0 auto;padding:3.5rem 1.25rem 5rem}
-    .hero{
-      padding:2.25rem 1.75rem;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.03);
-      border-radius:22px;
-      backdrop-filter:blur(10px);
-    }
-    h1{
-      font-size:3rem;line-height:1.1;letter-spacing:-2px;
-      background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-      margin-bottom:.75rem;
-    }
-    p{color:rgba(255,255,255,.65);font-size:1.1rem;line-height:1.8;max-width:70ch}
-    .panel{margin-top:1.25rem;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.55);border-radius:18px;padding:1.25rem;backdrop-filter:blur(10px)}
-    .panel h2{font-size:1.2rem;margin-bottom:.5rem}
-    .muted{color:rgba(255,255,255,.6);font-size:.98rem}
+    main{max-width:1200px;margin:0 auto;padding:2rem 1.25rem 4rem}
+    .hero{padding:2rem 1.4rem;border:1px solid var(--border);background:var(--panel-soft);border-radius:22px;backdrop-filter:blur(10px)}
+    h1{font-size:clamp(2rem,6vw,3rem);line-height:1.1;letter-spacing:-1.7px;margin-bottom:.75rem}
+    p{color:var(--text-muted);font-size:1.05rem;line-height:1.7;max-width:75ch}
 
     .chips{margin-top:1rem;display:flex;gap:.6rem;flex-wrap:wrap}
-    .chip{
-      display:inline-flex;align-items:center;gap:.5rem;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.04);
-      padding:.55rem .9rem;border-radius:999px;
-      color:rgba(255,255,255,.85);
-      font-weight:700;text-decoration:none;
-      transition:all .25s ease;
-    }
-    .chip:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.08);transform:translateY(-1px)}
-    .chip.active{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.10);color:#fff}
+    .chip{display:inline-flex;align-items:center;gap:.5rem}
+    .chip.active{border-color:color-mix(in oklab, var(--text) 35%, transparent);background:color-mix(in oklab, var(--chip) 50%, var(--accent) 20%)}
+
+    .content-grid{margin-top:1.1rem;display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+    .panel{border:1px solid var(--border);background:var(--panel);border-radius:18px;padding:1rem}
+    .panel h2{font-size:1.1rem;margin-bottom:.5rem}
+    .panel h3{font-size:.98rem;margin:.85rem 0 .45rem}
+    .muted{color:var(--text-muted);font-size:.96rem}
+    ul{padding-left:1.1rem;display:grid;gap:.5rem;color:var(--text-muted)}
+    li strong{color:var(--text)}
+    .quiz-item{padding:.65rem;border:1px solid var(--border);border-radius:12px;background:var(--panel-soft);margin-bottom:.6rem}
+    .quiz-item:last-child{margin-bottom:0}
+    .kpi{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.5rem}
+    .kpi span{padding:.34rem .58rem;border:1px solid var(--border);border-radius:999px;background:var(--chip);font-size:.78rem;font-weight:700;color:var(--text-muted)}
   </style>
 </head>
 <body>
@@ -101,16 +97,15 @@
       <h1 id="pageTitle">Learn</h1>
       <p id="pageDesc">This page changes based on the topic + section you clicked.</p>
 
+      <div class="chips" id="topicChips"></div>
+
       <div class="chips">
         <a class="chip" id="chipHowto" href="#"><i class="fas fa-play"></i> How to Trade</a>
         <a class="chip" id="chipQuizzes" href="#"><i class="fas fa-circle-question"></i> Trading Quizzes</a>
         <a class="chip" id="chipGlossary" href="#"><i class="fas fa-book"></i> Glossary</a>
       </div>
 
-      <div class="panel">
-        <h2 id="panelTitle">Placeholder</h2>
-        <div class="muted" id="panelText">Add your content here.</div>
-      </div>
+      <div class="content-grid" id="contentGrid"></div>
     </section>
   </main>
 
@@ -120,40 +115,189 @@
     const section = (params.get('section') || 'howto').toLowerCase();
 
     const labels = {
-      stocks: "Stocks",
-      funds: "Funds",
-      futures: "Futures",
-      forex: "Forex",
-      crypto: "Crypto",
-      indices: "Indices",
-      bonds: "Bonds",
-      economy: "Economy",
-      options: "Options"
+      stocks: 'Stocks', funds: 'Funds', futures: 'Futures', forex: 'Forex', crypto: 'Crypto',
+      indices: 'Indices', bonds: 'Bonds', economy: 'Economy', options: 'Options'
     };
 
-    const sectionLabels = {
-      howto: "How to Trade",
-      quizzes: "Trading Quizzes",
-      glossary: "Glossary"
+    const icons = {
+      stocks: 'fa-chart-line', funds: 'fa-coins', futures: 'fa-bolt', forex: 'fa-dollar-sign', crypto: 'fa-bitcoin',
+      indices: 'fa-layer-group', bonds: 'fa-landmark', economy: 'fa-earth-americas', options: 'fa-table-cells-large'
     };
+
+    const lessonData = {
+      stocks: {
+        howto: {
+          desc: 'Build stock-trading skills with structure, risk limits, and a repeatable routine.',
+          cards: [
+            { title: 'How to Trade Stocks', bullets: ['Market hours, order types, and liquidity basics.', 'Top-down analysis: index trend -> sector strength -> stock setup.', 'Risk per trade: 0.5% to 1% with pre-defined stop loss.'] },
+            { title: 'Execution Checklist', bullets: ['Catalyst identified (earnings, guidance, news).', 'Entry trigger + invalidation level written before entry.', 'Take-profit plan: partial at 1R, trail remaining size.'] },
+            { title: 'Beginner Roadmap', bullets: ['Week 1: chart structure + support/resistance.', 'Week 2: trend continuation + pullback entries.', 'Week 3: journaling and post-trade review process.'] }
+          ]
+        },
+        quizzes: {
+          desc: 'Test whether your stock process is rule-based and consistent.',
+          quiz: [
+            { q: 'What should be decided before entering a stock trade?', a: 'Entry, stop loss, and position size based on risk.' },
+            { q: 'Why is average daily volume important?', a: 'It impacts slippage and execution quality.' },
+            { q: 'What does 2R mean?', a: 'Potential reward is two times the amount risked.' }
+          ]
+        },
+        glossary: {
+          desc: 'Core stock terms every trader should know.',
+          terms: [
+            ['Float', 'Shares available for public trading.'], ['Gap', 'Price jump between sessions.'], ['ATR', 'Average True Range, a volatility measure.'], ['VWAP', 'Volume-Weighted Average Price benchmark.']
+          ]
+        }
+      },
+      funds: {
+        howto: { desc: 'Learn ETFs and mutual fund mechanics for active and long-term strategies.', cards: [
+          { title: 'How to Trade Funds', bullets: ['ETF vs mutual fund: pricing, liquidity, and fees.', 'Use sector and theme ETFs for broad exposure.', 'Combine trend filters with rebalance rules.'] },
+          { title: 'Portfolio Structure', bullets: ['Core-satellite setup: broad index + tactical funds.', 'Set max allocation per fund to avoid concentration risk.', 'Review expense ratio and tracking error quarterly.'] },
+          { title: 'Risk Control', bullets: ['Use drawdown limits per strategy sleeve.', 'Avoid over-trading low-volume funds.', 'Re-enter only when setup criteria reappear.'] }
+        ] },
+        quizzes: { desc: 'Check your understanding of fund selection and risk.', quiz: [
+          { q: 'What is tracking error?', a: 'Difference between fund return and benchmark return.' },
+          { q: 'Why do expense ratios matter?', a: 'Higher fees reduce net long-term returns.' },
+          { q: 'What is core-satellite allocation?', a: 'Core broad holdings plus smaller tactical positions.' }
+        ] },
+        glossary: { desc: 'Fund and ETF terms used in portfolio planning.', terms: [
+          ['Expense Ratio', 'Annual management fee percentage.'], ['AUM', 'Assets under management.'], ['NAV', 'Net asset value per share.'], ['Tracking Difference', 'Return gap vs benchmark.']
+        ] }
+      },
+      futures: {
+        howto: { desc: 'Master leveraged futures with strict margin and volatility rules.', cards: [
+          { title: 'How to Trade Futures', bullets: ['Contract specs: tick size, tick value, and expiry.', 'Use session profiles and key levels.', 'Always calculate dollar risk per contract first.'] },
+          { title: 'Execution', bullets: ['Trade during liquid hours for tight spreads.', 'Use stop-market for risk control in fast moves.', 'Scale out systematically to lock gains.'] },
+          { title: 'Discipline', bullets: ['Daily max loss and stop-trading rule.', 'No revenge trading after consecutive losses.', 'End-day review with screenshots and notes.'] }
+        ] },
+        quizzes: { desc: 'Validate contract knowledge and leverage awareness.', quiz: [
+          { q: 'Why are futures considered high risk?', a: 'Leverage magnifies both gains and losses.' },
+          { q: 'What is a tick?', a: 'Minimum price increment for a contract.' },
+          { q: 'What should be checked before holding overnight?', a: 'Margin requirements and event risk.' }
+        ] },
+        glossary: { desc: 'Essential futures terminology.', terms: [
+          ['Initial Margin', 'Capital required to open a position.'], ['Maintenance Margin', 'Minimum equity to keep a position open.'], ['Rollover', 'Move position to next contract month.'], ['Contango', 'Future prices above spot prices.']
+        ] }
+      },
+      forex: {
+        howto: { desc: 'Build a complete FX playbook from session timing to risk management.', cards: [
+          { title: 'How to Trade Forex', bullets: ['Choose pairs by volatility and spread quality.', 'Trade around London/New York overlap for liquidity.', 'Use top-down bias: D1 trend -> H1 setup -> M15 trigger.'] },
+          { title: 'Forex Setup Framework', bullets: ['Mark higher-timeframe support/resistance zones.', 'Wait for structure break + retest confirmation.', 'Risk fixed % per trade and avoid over-leverage.'] },
+          { title: 'Performance Routine', bullets: ['Pre-session plan with two priority pairs.', 'Post-trade journal: setup grade, emotion, execution.', 'Weekly review to remove low-quality patterns.'] }
+        ] },
+        quizzes: { desc: 'Test your understanding of pair behavior and risk.', quiz: [
+          { q: 'What does spread represent?', a: 'Difference between bid and ask prices.' },
+          { q: 'Why avoid trading major news without a plan?', a: 'Volatility spikes can cause slippage and stop-outs.' },
+          { q: 'What is position sizing based on?', a: 'Stop distance and fixed account risk percentage.' }
+        ] },
+        glossary: { desc: 'Forex terms for day and swing traders.', terms: [
+          ['Pip', 'Standard unit of FX price movement.'], ['Lot', 'Trade size in FX markets.'], ['Swap', 'Overnight financing adjustment.'], ['DXY', 'US Dollar Index benchmark.']
+        ] }
+      },
+      crypto: {
+        howto: { desc: 'Trade digital assets with volatility filters and risk-first execution.', cards: [
+          { title: 'How to Trade Crypto', bullets: ['Use market structure with volume confirmation.', 'Focus on liquid pairs and avoid random alt spikes.', 'Account for 24/7 market and weekend volatility.'] },
+          { title: 'Risk Management', bullets: ['Hard stop per trade and daily risk cap.', 'Reduce size during high funding extremes.', 'Store long-term holdings securely off exchange.'] },
+          { title: 'Planning', bullets: ['Track macro drivers: rates, BTC dominance, ETF flows.', 'Build watchlists by sector narratives.', 'Use alerts to avoid impulsive entries.'] }
+        ] },
+        quizzes: { desc: 'Check your crypto strategy and execution discipline.', quiz: [
+          { q: 'What is funding rate in perpetual futures?', a: 'Periodic payment between longs and shorts.' },
+          { q: 'Why prioritize high-liquidity pairs?', a: 'Lower slippage and cleaner execution.' },
+          { q: 'What is a common risk in 24/7 markets?', a: 'Overtrading due to no market close.' }
+        ] },
+        glossary: { desc: 'Crypto market terms every trader should know.', terms: [
+          ['On-chain', 'Blockchain transaction and wallet activity data.'], ['Dominance', 'Share of total market cap for a coin.'], ['Perps', 'Perpetual futures contracts without expiry.'], ['Whale', 'Large holder capable of moving markets.']
+        ] }
+      },
+      indices: {
+        howto: { desc: 'Learn index trading with macro context and disciplined entries.', cards: [
+          { title: 'How to Trade Indices', bullets: ['Track index trend and sector rotation.', 'Use opening range and session highs/lows.', 'Align with macro news calendar and earnings season.'] },
+          { title: 'Setup Quality', bullets: ['Trend day vs range day identification first.', 'Confirm entries with breadth and momentum.', 'Use trailing stop once trade reaches 1R+.'] },
+          { title: 'Daily Process', bullets: ['Pre-market bias with key levels mapped.', 'Execute only A+ setups in first 2 hours.', 'Review mistakes by category each week.'] }
+        ] },
+        quizzes: { desc: 'Assess index behavior and trade management knowledge.', quiz: [
+          { q: 'What is market breadth?', a: 'How many stocks are participating in a move.' },
+          { q: 'Why do index traders watch economic releases?', a: 'Macro data can shift broad risk sentiment quickly.' },
+          { q: 'What defines a trend day?', a: 'Sustained directional move with shallow pullbacks.' }
+        ] },
+        glossary: { desc: 'Index trading terms and measurements.', terms: [
+          ['Breadth', 'Participation across advancing/declining stocks.'], ['Beta', 'Sensitivity to overall market moves.'], ['Opening Range', 'Initial session high-low zone.'], ['VIX', 'Implied volatility index for S&P 500 options.']
+        ] }
+      },
+      bonds: {
+        howto: { desc: 'Understand bond pricing, yield moves, and macro-linked setups.', cards: [
+          { title: 'How to Trade Bonds', bullets: ['Yield up usually means bond price down.', 'Track central bank signals and inflation data.', 'Use duration awareness to gauge sensitivity.'] },
+          { title: 'Macro Focus', bullets: ['Monitor CPI, employment, and policy meetings.', 'Understand curve steepening vs flattening effects.', 'Use scenario planning for surprise outcomes.'] },
+          { title: 'Execution Rules', bullets: ['Avoid oversized risk during data releases.', 'Set stop loss by volatility regime.', 'Review slippage and fill quality in fast markets.'] }
+        ] },
+        quizzes: { desc: 'Test core fixed-income concepts and trading logic.', quiz: [
+          { q: 'What is inverse price-yield relationship?', a: 'When yields rise, bond prices typically fall.' },
+          { q: 'What does duration measure?', a: 'Price sensitivity to interest-rate changes.' },
+          { q: 'Why monitor central bank guidance?', a: 'Policy expectations drive bond repricing.' }
+        ] },
+        glossary: { desc: 'Bond and rate-market vocabulary.', terms: [
+          ['Yield Curve', 'Plot of yields across maturities.'], ['Duration', 'Rate sensitivity measure of bond price.'], ['Coupon', 'Periodic interest paid by a bond.'], ['Spread', 'Yield difference between two debt instruments.']
+        ] }
+      },
+      economy: {
+        howto: { desc: 'Use macro data to build trade bias across all asset classes.', cards: [
+          { title: 'How to Trade the Economy', bullets: ['Follow inflation, growth, and labor indicators.', 'Map data surprise scenarios before release.', 'Connect macro trends to sectors and currencies.'] },
+          { title: 'Data Workflow', bullets: ['Track calendar: CPI, NFP, GDP, PMIs.', 'Compare actual vs consensus and prior readings.', 'Wait for confirmation instead of first reaction chase.'] },
+          { title: 'Macro Risk', bullets: ['Policy shifts can invalidate short-term setups.', 'Size down around major announcements.', 'Diversify thesis across timeframes and assets.'] }
+        ] },
+        quizzes: { desc: 'Evaluate your macro interpretation and decision process.', quiz: [
+          { q: 'Why compare actual data to consensus?', a: 'Markets move more on surprises than raw numbers.' },
+          { q: 'What can sticky inflation imply?', a: 'Potentially tighter policy for longer.' },
+          { q: 'Why use scenario planning?', a: 'It prepares actions before volatility begins.' }
+        ] },
+        glossary: { desc: 'Economic terms used by traders and investors.', terms: [
+          ['CPI', 'Consumer Price Index inflation gauge.'], ['NFP', 'US Non-Farm Payrolls employment report.'], ['PMI', 'Purchasing Managers Index for business activity.'], ['GDP', 'Gross Domestic Product economic output measure.']
+        ] }
+      },
+      options: {
+        howto: { desc: 'Trade options with defined risk and clear probability thinking.', cards: [
+          { title: 'How to Trade Options', bullets: ['Start with defined-risk spreads.', 'Choose expiration based on expected move timing.', 'Understand volatility before entering any strategy.'] },
+          { title: 'Strategy Selection', bullets: ['Directional: calls/puts, debit spreads.', 'Neutral: iron condors and calendars in ranges.', 'Protective: hedges for long portfolios.'] },
+          { title: 'Risk Rules', bullets: ['Cap risk per position and total portfolio delta.', 'Exit losers early when thesis breaks.', 'Manage winners before expiration gamma risk.'] }
+        ] },
+        quizzes: { desc: 'Check your knowledge of options pricing and risk.', quiz: [
+          { q: 'What does implied volatility affect?', a: 'Option premiums and expected move assumptions.' },
+          { q: 'Why use defined-risk spreads?', a: 'Maximum loss is known in advance.' },
+          { q: 'What is theta?', a: 'Time decay in option value.' }
+        ] },
+        glossary: { desc: 'Key options trading definitions.', terms: [
+          ['Delta', 'Sensitivity to underlying price change.'], ['Theta', 'Time decay of option value.'], ['IV Rank', 'Current implied volatility vs historical range.'], ['Credit Spread', 'Strategy receiving premium with capped risk.']
+        ] }
+      }
+    };
+
+    const sectionLabels = { howto: 'How to Trade', quizzes: 'Trading Quizzes', glossary: 'Glossary' };
 
     const brandTitle = document.getElementById('brandTitle');
     const pageTitle = document.getElementById('pageTitle');
     const pageDesc = document.getElementById('pageDesc');
-    const panelTitle = document.getElementById('panelTitle');
-    const panelText = document.getElementById('panelText');
+    const contentGrid = document.getElementById('contentGrid');
+    const topicChips = document.getElementById('topicChips');
 
     const chipHowto = document.getElementById('chipHowto');
     const chipQuizzes = document.getElementById('chipQuizzes');
     const chipGlossary = document.getElementById('chipGlossary');
 
-    function buildLink(sec){
-      return 'topic.html?topic=' + encodeURIComponent(topic) + '&section=' + encodeURIComponent(sec);
+    function buildLink(nextTopic, sec) {
+      return 'topic.html?topic=' + encodeURIComponent(nextTopic) + '&section=' + encodeURIComponent(sec);
     }
 
-    chipHowto.href = buildLink('howto');
-    chipQuizzes.href = buildLink('quizzes');
-    chipGlossary.href = buildLink('glossary');
+    Object.keys(labels).forEach((key) => {
+      const a = document.createElement('a');
+      a.className = 'chip' + (key === topic ? ' active' : '');
+      a.href = buildLink(key, section);
+      a.innerHTML = `<i class="fas ${icons[key] || 'fa-book'}"></i> ${labels[key]}`;
+      topicChips.appendChild(a);
+    });
+
+    chipHowto.href = buildLink(topic, 'howto');
+    chipQuizzes.href = buildLink(topic, 'quizzes');
+    chipGlossary.href = buildLink(topic, 'glossary');
 
     chipHowto.classList.toggle('active', section === 'howto');
     chipQuizzes.classList.toggle('active', section === 'quizzes');
@@ -161,22 +305,24 @@
 
     const topicName = labels[topic] || 'Market';
     const sectionName = sectionLabels[section] || 'Learn';
+    const data = (lessonData[topic] || lessonData.forex)[section] || lessonData.forex.howto;
 
-    brandTitle.innerHTML = '<i class="fas fa-graduation-cap"></i> ' + topicName;
-    pageTitle.textContent = topicName + ' — ' + sectionName;
+    brandTitle.innerHTML = `<i class="fas ${icons[topic] || 'fa-graduation-cap'}"></i> ${topicName}`;
+    pageTitle.textContent = `${topicName} — ${sectionName}`;
+    pageDesc.textContent = data.desc;
+
+    function card(title, body) {
+      return `<article class="panel"><h2>${title}</h2>${body}</article>`;
+    }
 
     if (section === 'howto') {
-      pageDesc.textContent = 'How to trade ' + topicName + '. Put step-by-step lessons here.';
-      panelTitle.textContent = 'How to Trade ' + topicName;
-      panelText.textContent = 'Add your full “how to trade” guide for ' + topicName + ' here.';
+      contentGrid.innerHTML = data.cards.map(item => card(item.title, `<ul>${item.bullets.map(b => `<li>${b}</li>`).join('')}</ul>`)).join('');
     } else if (section === 'quizzes') {
-      pageDesc.textContent = 'Quizzes for ' + topicName + '. Put your questions + answers here.';
-      panelTitle.textContent = topicName + ' Trading Quizzes';
-      panelText.textContent = 'Add quiz UI, multiple choice, scoring, etc. for ' + topicName + ' here.';
-    } else if (section === 'glossary') {
-      pageDesc.textContent = 'Glossary for ' + topicName + '. Put terms + definitions here.';
-      panelTitle.textContent = topicName + ' Glossary';
-      panelText.textContent = 'Add glossary terms (A–Z) for ' + topicName + ' here.';
+      contentGrid.innerHTML = card(`${topicName} Trading Quizzes`, data.quiz.map((q, i) => `<div class="quiz-item"><h3>Q${i + 1}. ${q.q}</h3><p class="muted"><strong>Answer:</strong> ${q.a}</p></div>`).join('')) +
+        card('How to Use These Quizzes', '<ul><li>Answer first without looking at the explanation.</li><li>Track your score each week and repeat weak topics.</li><li>Only increase size after consistent quiz + live execution results.</li></ul>');
+    } else {
+      contentGrid.innerHTML = card(`${topicName} Glossary`, `<ul>${data.terms.map(([term, def]) => `<li><strong>${term}:</strong> ${def}</li>`).join('')}</ul>`) +
+        card('Study Method', '<ul><li>Review 5 terms per day and use each in a trade journal note.</li><li>Connect each term to a real chart or market example.</li><li>Revisit terms before major market sessions.</li></ul><div class="kpi"><span>Daily review</span><span>Weekly recall</span><span>Journal integration</span></div>');
     }
   </script>
 </body>
