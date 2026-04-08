@@ -65,7 +65,7 @@
     const currentView = detectCurrentView();
     const title = getPageTitle(currentView);
 
-    const oldContainer = document.querySelector('.dashboard-container');
+    const oldContainer = document.querySelector('.app-shell-host, [data-app-shell-host]');
     const oldContent = document.querySelector('.content-area');
     if (!oldContainer || !oldContent) return;
 

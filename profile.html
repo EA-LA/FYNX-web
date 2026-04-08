@@ -69,10 +69,10 @@
         linear-gradient(var(--bg), var(--bg));
     }
 
-    .dashboard-container{ display:flex; min-height:100vh; width:100%; }
+    .app-shell-host{ display:flex; min-height:100vh; width:100%; }
 
     /* ===== Sidebar ===== */
-    .nav-panel{
+    .legacy-nav-panel{
       width: var(--nav-width);
       background: color-mix(in oklab, var(--surface) 92%, transparent);
       border-right: 1px solid var(--line);
@@ -86,7 +86,7 @@
       box-shadow: var(--shadow);
     }
 
-    .nav-logo{
+    .legacy-nav-logo{
       height:84px;
       border-bottom:1px solid var(--line);
       display:grid;
@@ -96,7 +96,7 @@
       letter-spacing:-0.7px;
     }
 
-    .nav-menu{
+    .legacy-nav-menu{
       padding:16px 0;
       display:flex;
       flex-direction:column;
@@ -104,7 +104,7 @@
       align-items:center;
     }
 
-    .nav-item{
+    .legacy-nav-item{
       width:82px;
       border-radius:12px;
       padding:12px 4px;
@@ -120,20 +120,20 @@
       text-decoration:none;
     }
 
-    .nav-item:hover{
+    .legacy-nav-item:hover{
       background: var(--surface-2);
       color: var(--text);
       border-color: var(--line);
       transform: translateY(-1px);
     }
 
-    .nav-item.active{
+    .legacy-nav-item.active{
       background: var(--accent-soft);
       color: var(--text);
       border-color: color-mix(in oklab, var(--text) 18%, var(--line));
     }
 
-    .nav-item.active::after{
+    .legacy-nav-item.active::after{
       content:"";
       position:absolute;
       left:-13px;
@@ -149,7 +149,7 @@
     .nav-icon{ width:20px; height:20px; stroke:currentColor; stroke-width:1.8; fill:none; }
     .nav-label{ font-size:11px; font-weight:800; }
 
-    .main-content{
+    .legacy-main-content{
       margin-left: var(--nav-width);
       width: calc(100% - var(--nav-width));
       display:flex;
@@ -158,7 +158,7 @@
     }
 
     /* ===== Top Bar ===== */
-    .top-bar{
+    .legacy-top-bar{
       height:72px;
       border-bottom:1px solid var(--line);
       background: color-mix(in oklab, var(--surface) 88%, transparent);
@@ -178,7 +178,7 @@
       letter-spacing:-0.2px;
     }
 
-    .top-bar-right{
+    .legacy-legacy-top-bar-right{
       display:flex;
       align-items:center;
       gap:12px;
@@ -571,7 +571,7 @@
     @media (max-width:900px){
       :root{ --nav-width: 0px; }
 
-      .nav-panel{
+      .legacy-nav-panel{
         position:fixed;
         bottom:0;
         top:auto;
@@ -584,28 +584,28 @@
         padding-bottom: env(safe-area-inset-bottom);
         box-shadow: 0 -12px 28px rgba(0,0,0,0.14);
       }
-      .nav-logo{ display:none; }
-      .nav-menu{
+      .legacy-nav-logo{ display:none; }
+      .legacy-nav-menu{
         flex-direction:row;
         width:100%;
         justify-content:space-around;
         padding:6px 8px;
       }
-      .nav-item{
+      .legacy-nav-item{
         width:auto;
         min-width:54px;
         padding:8px;
       }
-      .nav-item.active::after{ display:none; }
+      .legacy-nav-item.active::after{ display:none; }
       .nav-label{ font-size:10px; }
 
-      .main-content{
+      .legacy-main-content{
         margin-left:0;
         width:100%;
         padding-bottom: calc(80px + env(safe-area-inset-bottom));
       }
 
-      .top-bar{ padding:0 14px; }
+      .legacy-top-bar{ padding:0 14px; }
       .content-area{ padding:14px; }
 
       /* ✅ FIX 2: iPhone box a bit big -> tiny reduce only on mobile */
@@ -625,12 +625,12 @@
 </head>
 
 <body>
-  <div class="dashboard-container">
-    <nav class="nav-panel">
-      <div class="nav-logo">FYNX</div>
+  <div class="app-shell-host">
+    <nav class="legacy-nav-panel">
+      <div class="legacy-nav-logo">FYNX</div>
 
-      <div class="nav-menu">
-        <a class="nav-item" href="home.html" data-view="home">
+      <div class="legacy-nav-menu">
+        <a class="legacy-nav-item" href="home.html" data-view="home">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
@@ -638,7 +638,7 @@
           <span class="nav-label">Home</span>
         </a>
 
-        <a class="nav-item" href="journal.html" data-view="journal">
+        <a class="legacy-nav-item" href="journal.html" data-view="journal">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
@@ -646,7 +646,7 @@
           <span class="nav-label">Journal</span>
         </a>
 
-        <a class="nav-item" href="calculator.html" data-view="calculator">
+        <a class="legacy-nav-item" href="calculator.html" data-view="calculator">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <rect x="4" y="2" width="16" height="20" rx="2"></rect>
             <line x1="8" y1="6" x2="16" y2="6"></line>
@@ -657,7 +657,7 @@
           <span class="nav-label">Calculator</span>
         </a>
 
-        <a class="nav-item" href="news.html" data-view="news">
+        <a class="legacy-nav-item" href="news.html" data-view="news">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
             <line x1="12" y1="11" x2="18" y2="11"></line>
@@ -666,7 +666,7 @@
           <span class="nav-label">News</span>
         </a>
 
-        <a class="nav-item" href="calendar.html" data-view="calendar">
+        <a class="legacy-nav-item" href="calendar.html" data-view="calendar">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
             <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -676,7 +676,7 @@
           <span class="nav-label">Calendar</span>
         </a>
 
-        <a class="nav-item active" href="profile.html" data-view="profile">
+        <a class="legacy-nav-item active" href="profile.html" data-view="profile">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
@@ -686,11 +686,11 @@
       </div>
     </nav>
 
-    <main class="main-content">
-      <div class="top-bar">
+    <main class="legacy-main-content">
+      <div class="legacy-top-bar">
         <h1 class="page-title">Profile</h1>
 
-        <div class="top-bar-right">
+        <div class="legacy-legacy-top-bar-right">
           <button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">
             <svg viewBox="0 0 24 24">
               <path d="M12 3v2M12 19v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M3 12h2M19 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>

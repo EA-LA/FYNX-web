@@ -63,9 +63,9 @@
         linear-gradient(var(--bg), var(--bg));
     }
 
-    .dashboard-container{ display:flex; min-height:100vh; width:100%; }
+    .app-shell-host{ display:flex; min-height:100vh; width:100%; }
 
-    .nav-panel{
+    .legacy-nav-panel{
       width: var(--nav-width);
       background: rgba(255,255,255,0.92);
       border-right: 1px solid var(--line);
@@ -78,9 +78,9 @@
       backdrop-filter: blur(10px);
       box-shadow: var(--shadow);
     }
-    body.dark-mode .nav-panel{ background: rgba(11,11,12,0.92); }
+    body.dark-mode .legacy-nav-panel{ background: rgba(11,11,12,0.92); }
 
-    .nav-logo{
+    .legacy-nav-logo{
       height:84px;
       border-bottom:1px solid var(--line);
       display:grid;
@@ -90,7 +90,7 @@
       letter-spacing:-0.7px;
     }
 
-    .nav-menu{
+    .legacy-nav-menu{
       padding:16px 0;
       display:flex;
       flex-direction:column;
@@ -98,7 +98,7 @@
       align-items:center;
     }
 
-    .nav-item{
+    .legacy-nav-item{
       width:82px;
       border-radius:12px;
       padding:12px 4px;
@@ -114,20 +114,20 @@
       text-decoration:none;
     }
 
-    .nav-item:hover{
+    .legacy-nav-item:hover{
       background: var(--surface-2);
       color: var(--text);
       border-color: var(--line);
       transform: translateY(-1px);
     }
 
-    .nav-item.active{
+    .legacy-nav-item.active{
       background: var(--accent-soft);
       color: var(--text);
       border-color: var(--line);
     }
 
-    .nav-item.active::after{
+    .legacy-nav-item.active::after{
       content:"";
       position:absolute;
       left:-13px;
@@ -143,7 +143,7 @@
     .nav-icon{ width:20px; height:20px; stroke:currentColor; stroke-width:1.8; fill:none; }
     .nav-label{ font-size:11px; font-weight:800; }
 
-    .main-content{
+    .legacy-main-content{
       margin-left: var(--nav-width);
       width: calc(100% - var(--nav-width));
       display:flex;
@@ -151,7 +151,7 @@
       min-height:100vh;
     }
 
-    .top-bar{
+    .legacy-top-bar{
       height:72px;
       border-bottom:1px solid var(--line);
       background: rgba(255,255,255,0.88);
@@ -164,11 +164,11 @@
       top:0;
       z-index:10;
     }
-    body.dark-mode .top-bar{ background: rgba(11,11,12,0.88); }
+    body.dark-mode .legacy-top-bar{ background: rgba(11,11,12,0.88); }
 
     .page-title{ font-size:16px; font-weight:900; letter-spacing:-0.2px; }
 
-    .top-bar-right{
+    .legacy-legacy-top-bar-right{
       display:flex;
       align-items:center;
       gap:14px;
@@ -409,7 +409,7 @@
 
     @media (max-width:900px){
       :root{ --nav-width: 0px; }
-      .nav-panel{
+      .legacy-nav-panel{
         position:fixed;
         bottom:0;
         top:auto;
@@ -422,22 +422,22 @@
         padding-bottom: env(safe-area-inset-bottom);
         box-shadow: 0 -12px 28px rgba(0,0,0,0.14);
       }
-      .nav-logo{ display:none; }
-      .nav-menu{
+      .legacy-nav-logo{ display:none; }
+      .legacy-nav-menu{
         flex-direction:row;
         width:100%;
         justify-content:space-around;
         padding:6px 8px;
       }
-      .nav-item{ width:auto; min-width:54px; padding:8px; }
-      .nav-item.active::after{ display:none; }
+      .legacy-nav-item{ width:auto; min-width:54px; padding:8px; }
+      .legacy-nav-item.active::after{ display:none; }
       .nav-label{ font-size:10px; }
-      .main-content{
+      .legacy-main-content{
         margin-left:0;
         width:100%;
         padding-bottom: calc(80px + env(safe-area-inset-bottom));
       }
-      .top-bar{ padding:0 14px; }
+      .legacy-top-bar{ padding:0 14px; }
       .content-area{ padding:14px; }
       .stats-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .calendar-day{ min-height:90px; }
@@ -457,41 +457,41 @@
 </head>
 
 <body>
-  <div class="dashboard-container">
-    <nav class="nav-panel">
-      <div class="nav-logo">FYNX</div>
-      <div class="nav-menu">
-        <a class="nav-item" href="javascript:void(0)" data-view="home">
+  <div class="app-shell-host">
+    <nav class="legacy-nav-panel">
+      <div class="legacy-nav-logo">FYNX</div>
+      <div class="legacy-nav-menu">
+        <a class="legacy-nav-item" href="javascript:void(0)" data-view="home">
           <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           <span class="nav-label">Home</span>
         </a>
-        <a class="nav-item" href="javascript:void(0)" data-view="journal">
+        <a class="legacy-nav-item" href="javascript:void(0)" data-view="journal">
           <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
           <span class="nav-label">Journal</span>
         </a>
-        <a class="nav-item" href="javascript:void(0)" data-view="calculator">
+        <a class="legacy-nav-item" href="javascript:void(0)" data-view="calculator">
           <svg class="nav-icon" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="16" y2="14"></line><line x1="8" y1="18" x2="16" y2="18"></line></svg>
           <span class="nav-label">Calculator</span>
         </a>
-        <a class="nav-item" href="javascript:void(0)" data-view="news">
+        <a class="legacy-nav-item" href="javascript:void(0)" data-view="news">
           <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><line x1="12" y1="11" x2="18" y2="11"></line><line x1="12" y1="7" x2="18" y2="7"></line></svg>
           <span class="nav-label">News</span>
         </a>
-        <a class="nav-item active" href="javascript:void(0)" data-view="calendar">
+        <a class="legacy-nav-item active" href="javascript:void(0)" data-view="calendar">
           <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           <span class="nav-label">Calendar</span>
         </a>
-        <a class="nav-item" href="javascript:void(0)" data-view="profile">
+        <a class="legacy-nav-item" href="javascript:void(0)" data-view="profile">
           <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           <span class="nav-label">Profile</span>
         </a>
       </div>
     </nav>
 
-    <main class="main-content">
-      <div class="top-bar">
+    <main class="legacy-main-content">
+      <div class="legacy-top-bar">
         <h1 class="page-title">Finance Calendar</h1>
-        <div class="top-bar-right">
+        <div class="legacy-legacy-top-bar-right">
           <span id="lastUpdated">Loading...</span>
           <button class="icon-btn" title="Notifications">
             <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
