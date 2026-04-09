@@ -1,0 +1,104 @@
+/* Global iPhone/mobile responsiveness guardrails */
+@media (max-width: 768px){
+  html,
+  body{
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important;
+  }
+
+  *,
+  *::before,
+  *::after{
+    min-width: 0;
+  }
+
+  img,
+  video,
+  canvas,
+  iframe,
+  svg{
+    max-width: 100%;
+    height: auto;
+  }
+
+  table{
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  [class*="container"],
+  [class*="wrapper"],
+  [class*="content"],
+  main,
+  section,
+  article{
+    max-width: 100%;
+  }
+
+  [style*="width:100vw"],
+  [style*="width: 100vw"]{
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  [style*="left:"],
+  [style*="right:"]{
+    max-width: 100%;
+  }
+
+  .grid,
+  [class*="grid"]{
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .row,
+  [class*="row"],
+  .top-bar,
+  .top-bar-right,
+  nav,
+  .nav,
+  .nav-container,
+  .cta-buttons,
+  .button-row,
+  .actions{
+    flex-wrap: wrap;
+  }
+
+  .top-bar-right > *{
+    max-width: 100%;
+  }
+
+  input,
+  select,
+  textarea,
+  button,
+  .btn,
+  .button,
+  .calc-btn,
+  .action-btn,
+  .form-btn{
+    max-width: 100%;
+  }
+
+  pre,
+  code{
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  h1{ font-size: clamp(1.7rem, 8vw, 2.4rem); }
+  h2{ font-size: clamp(1.35rem, 6vw, 1.9rem); }
+  h3{ font-size: clamp(1.1rem, 5vw, 1.5rem); }
+
+  p,
+  li,
+  label,
+  .text,
+  .description{
+    overflow-wrap: anywhere;
+  }
+}
