@@ -80,13 +80,13 @@
       </nav>
       <main class="app-shell-main">
         <header class="app-shell-header">
-          <h1 class="app-shell-title page-title">${title}</h1>
+          <h1 class="app-shell-title">${title}</h1>
           <div class="app-shell-header-right">
-            <span class="app-shell-chip chip" id="dateChip">Loading...</span>
-            <button class="app-shell-icon-btn icon-btn" title="Notifications" aria-label="Notifications">
+            <span class="app-shell-chip" id="dateChip">Loading...</span>
+            <button class="app-shell-icon-btn" title="Notifications" aria-label="Notifications">
               <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             </button>
-            <div class="app-shell-avatar user-avatar" id="avatarInitials">FX</div>
+            <div class="app-shell-avatar" id="avatarInitials">FX</div>
           </div>
         </header>
         <section class="app-shell-content content-area"></section>
