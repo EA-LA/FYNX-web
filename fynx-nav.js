@@ -38,6 +38,61 @@
     profile: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>',
   };
 
+
+
+  function isDemoMode() {
+    return localStorage.getItem('mode') === 'demo';
+  }
+
+  function ensureDemoStyles() {
+    if (document.getElementById('fynxDemoStyles')) return;
+    const style = document.createElement('style');
+    style.id = 'fynxDemoStyles';
+    style.textContent = `
+      .demo-banner {
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        margin-bottom:10px;
+        padding:10px 12px;
+        border:1px solid var(--line, rgba(255,255,255,.12));
+        border-radius:12px;
+        background: color-mix(in oklab, var(--panel, #111) 88%, transparent);
+      }
+      .demo-banner-title { font-size:13px; font-weight:900; }
+      .demo-banner-sub { font-size:11px; opacity:.75; margin-top:2px; }
+      .demo-banner-actions { display:flex; gap:8px; flex-wrap:wrap; }
+      .demo-banner-btn {
+        border:1px solid var(--line, rgba(255,255,255,.2));
+        background:transparent;
+        color:inherit;
+        border-radius:999px;
+        font-size:11px;
+        font-weight:800;
+        padding:6px 10px;
+        text-decoration:none;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function demoBannerMarkup() {
+    if (!isDemoMode()) return '';
+    return `
+      <div class="demo-banner" role="status" aria-live="polite">
+        <div>
+          <div class="demo-banner-title">Demo Mode</div>
+          <div class="demo-banner-sub">You are viewing demo data — Sign up to unlock real account</div>
+        </div>
+        <div class="demo-banner-actions">
+          <a class="demo-banner-btn" href="auth/signup.html">Sign Up</a>
+          <a class="demo-banner-btn" href="auth/login.html">Log In</a>
+        </div>
+      </div>
+    `;
+  }
+
   function detectCurrentView() {
     let file = window.location.pathname.split('/').pop() || 'home.html';
     if (!file.includes('.html')) file = 'home.html';
@@ -68,7 +123,9 @@
 
     navPanel.innerHTML = `<div class="nav-logo"><h1>FYNX</h1></div><div class="nav-menu">${navMarkup(currentView)}</div>`;
 
+    ensureDemoStyles();
     topBar.innerHTML = `
+      ${demoBannerMarkup()}
       <h1 class="page-title">${existingTitle}</h1>
       <div class="top-bar-right">
         <span class="chip" id="dateChip">Loading...</span>
@@ -90,7 +147,9 @@
 
     const initialsEl = document.getElementById('avatarInitials');
     if (initialsEl) {
-      const userName = localStorage.getItem('fynxUserName') || localStorage.getItem('fynx_user_name') || 'FYNX';
+      const userName = isDemoMode()
+        ? 'Demo User'
+        : (localStorage.getItem('fynxUserName') || localStorage.getItem('fynx_user_name') || 'FYNX');
       const initials = userName
         .split(/\s+/)
         .filter(Boolean)

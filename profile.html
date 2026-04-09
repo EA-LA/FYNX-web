@@ -858,6 +858,7 @@
     </div>
   </div>
 
+  <script src="demo-mode.js"></script>
   <script>
     /* =========================
        GLOBAL THEME (SYNCED)
@@ -865,6 +866,14 @@
     ========================= */
     const THEME_KEY = "fynx_theme";
     const themeBtn = document.getElementById("themeBtn");
+
+    function isDemoMode(){
+      return window.FynxDemoMode?.isDemoMode?.() || localStorage.getItem("mode") === "demo";
+    }
+
+    function showDemoBlocked(){
+      alert("Create an account to use this feature");
+    }
 
     function applySavedTheme(){
       const saved = localStorage.getItem(THEME_KEY) || "light";
@@ -897,13 +906,21 @@
     }
 
     function getAuthEmail(){
+      if (isDemoMode()) return "demo@fynx.app";
       const v = (localStorage.getItem(AUTH_EMAIL_KEY) || "").trim();
       return v || "";
     }
 
     function getProfile(){
+      if (isDemoMode()) {
+        return {
+          ...DEFAULT_PROFILE,
+          name: "Demo User",
+          description: "You are viewing demo data — Sign up to unlock real account",
+          memberSince: "Apr 2026"
+        };
+      }
       const p = safeJSONParse(localStorage.getItem("fynx_profile"), null);
-      // ✅ never store email in profile (always from AUTH key)
       const merged = { ...DEFAULT_PROFILE, ...(p || {}) };
       delete merged.email;
       return merged;
@@ -936,7 +953,9 @@
     }
 
     function loadMetrics(){
-      // ✅ FIX 1: ONLY localStorage fynx_metrics OR fynx_trades. No other "demo" source.
+      if (isDemoMode()) {
+        return { total: 18, winRate: 61.1, avgReturn: 3.4, memberSince: "Apr 2026" };
+      }
       const metrics = safeJSONParse(localStorage.getItem("fynx_metrics"), null);
       if (metrics && typeof metrics === "object") return metrics;
 
@@ -1034,6 +1053,10 @@
     // ---------- Settings links ----------
     document.querySelectorAll(".settings-item").forEach(item => {
       item.addEventListener("click", () => {
+        if (isDemoMode()) {
+          showDemoBlocked();
+          return;
+        }
         const link = item.getAttribute("data-link");
         if (link) window.location.href = link;
       });
@@ -1054,6 +1077,10 @@
     let pendingAvatarDataUrl = "";
 
     function openModal(){
+      if (isDemoMode()) {
+        showDemoBlocked();
+        return;
+      }
       const p = getProfile();
       nameInput.value = p.name || "";
       descInput.value = p.description || "";
@@ -1089,6 +1116,10 @@
     });
 
     saveBtn.addEventListener("click", () => {
+      if (isDemoMode()) {
+        showDemoBlocked();
+        return;
+      }
       const p = getProfile();
       const next = {
         ...p,
