@@ -546,9 +546,60 @@
     background: rgba(255,255,255,0.08);
   }
 
+  .mobile-header-actions{
+    display:none;
+    align-items:center;
+    gap:8px;
+    margin-left:auto;
+    position:relative;
+  }
+
+  .mobile-resources-menu{ position:relative; }
+
+  .mobile-resources-btn{
+    height:44px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,0.12);
+    background:rgba(255,255,255,0.04);
+    color:#fff;
+    font-weight:700;
+    padding:0 12px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+  }
+
+  .mobile-resources-btn:hover{
+    border-color:rgba(255,255,255,0.22);
+    background:rgba(255,255,255,0.06);
+  }
+
+  .mobile-resources-panel{
+    top:calc(100% + 10px);
+    right:0;
+    left:auto;
+    width:min(280px, calc(100vw - 24px));
+    max-height:min(70vh, 460px);
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  body:not(.dark-mode) .mobile-resources-btn{
+    border:1px solid rgba(0,0,0,0.12);
+    background:rgba(0,0,0,0.03);
+    color:rgba(0,0,0,0.86);
+  }
+
+  body:not(.dark-mode) .mobile-resources-btn:hover{
+    border-color:rgba(0,0,0,0.20);
+    background:rgba(0,0,0,0.05);
+  }
+
   /* Keep header clean on small screens (mobile drawer already exists) */
-  @media (max-width: 820px){
+  @media (max-width: 768px){
     .fynx-top-actions{ display:none; }
+    .mobile-header-actions{ display:flex; }
   }
 
   /* ==============================================
@@ -864,6 +915,7 @@
     .fynx-grow__card--journal{ left: 8%; }
   }
   </style>
+  <link rel="stylesheet" href="assets/css/mobile-fixes.css">
 </head>
 <body>
   <!-- Animated Background -->
@@ -932,10 +984,20 @@
         </button>
       </div>
 
-      <!-- Mobile Hamburger -->
-      <button class="mobile-menu" id="mobileMenuBtn" type="button" aria-label="Open menu" aria-controls="mobileDrawer" aria-expanded="false">
-        <i class="fas fa-bars"></i>
-      </button>
+      <div class="mobile-header-actions" aria-label="Mobile quick actions">
+        <div class="mobile-resources-menu fynx-menu" id="mobileResourcesMenu">
+          <button class="mobile-resources-btn" id="mobileResourcesToggle" type="button" aria-expanded="false" aria-controls="mobileResourcesPanel">
+            <span>Resources</span>
+            <i class="fa-solid fa-chevron-down" style="font-size:12px;opacity:.8;"></i>
+          </button>
+          <div class="fynx-menu-panel mobile-resources-panel" id="mobileResourcesPanel" role="menu" aria-hidden="true"></div>
+        </div>
+
+        <!-- Mobile Hamburger -->
+        <button class="mobile-menu" id="mobileMenuBtn" type="button" aria-label="Open menu" aria-controls="mobileDrawer" aria-expanded="false">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -1597,46 +1659,64 @@
   <!-- ✅ NEW: Resources dropdown interaction -->
   <script>
   (function(){
-    const menu = document.getElementById('resourcesMenu');
-    const toggle = document.getElementById('resourcesToggle');
-    const panel = document.getElementById('resourcesPanel');
-    if(!menu || !toggle || !panel) return;
+    const desktopPanel = document.getElementById('resourcesPanel');
+    const mobilePanel = document.getElementById('mobileResourcesPanel');
+    if (desktopPanel && mobilePanel && !mobilePanel.children.length) {
+      mobilePanel.innerHTML = desktopPanel.innerHTML;
+    }
 
-    let closeTimer = null;
     const canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const menus = [];
 
-    function openMenu(){
-      clearTimeout(closeTimer);
-      menu.classList.add('open');
-      toggle.setAttribute('aria-expanded', 'true');
-      panel.setAttribute('aria-hidden', 'false');
-    }
+    function setupMenu(menuId, toggleId, panelId, allowHover){
+      const menu = document.getElementById(menuId);
+      const toggle = document.getElementById(toggleId);
+      const panel = document.getElementById(panelId);
+      if(!menu || !toggle || !panel) return;
 
-    function closeMenu(){
-      menu.classList.remove('open');
-      toggle.setAttribute('aria-expanded', 'false');
-      panel.setAttribute('aria-hidden', 'true');
-    }
+      let closeTimer = null;
 
-    toggle.addEventListener('click', function(e){
-      e.preventDefault();
-      if(menu.classList.contains('open')) closeMenu();
-      else openMenu();
-    });
+      function openMenu(){
+        clearTimeout(closeTimer);
+        menus.forEach(item => item.close());
+        menu.classList.add('open');
+        toggle.setAttribute('aria-expanded', 'true');
+        panel.setAttribute('aria-hidden', 'false');
+      }
 
-    if(canHover){
-      menu.addEventListener('mouseenter', openMenu);
-      menu.addEventListener('mouseleave', function(){
-        closeTimer = setTimeout(closeMenu, 120);
+      function closeMenu(){
+        menu.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+        panel.setAttribute('aria-hidden', 'true');
+      }
+
+      toggle.addEventListener('click', function(e){
+        e.preventDefault();
+        if(menu.classList.contains('open')) closeMenu();
+        else openMenu();
       });
+
+      if(canHover && allowHover){
+        menu.addEventListener('mouseenter', openMenu);
+        menu.addEventListener('mouseleave', function(){
+          closeTimer = setTimeout(closeMenu, 120);
+        });
+      }
+
+      menus.push({ menu, close: closeMenu });
     }
+
+    setupMenu('resourcesMenu', 'resourcesToggle', 'resourcesPanel', true);
+    setupMenu('mobileResourcesMenu', 'mobileResourcesToggle', 'mobileResourcesPanel', false);
 
     document.addEventListener('click', function(e){
-      if(!menu.contains(e.target)) closeMenu();
+      menus.forEach(item => {
+        if(!item.menu.contains(e.target)) item.close();
+      });
     });
 
     document.addEventListener('keydown', function(e){
-      if(e.key === 'Escape') closeMenu();
+      if(e.key === 'Escape') menus.forEach(item => item.close());
     });
   })();
   </script>
