@@ -1575,11 +1575,22 @@ body:not(.dark-mode) .fynx-pill{
 /* Responsive */
 @media (max-width: 768px){
   nav ul{ display:none; }
-  .mobile-menu{ display:flex; }
+  .mobile-menu{
+    display:flex;
+    color: #ffffff !important;
+  }
+  .mobile-menu i,
+  .mobile-menu svg,
+  .mobile-menu svg *{
+    color:#ffffff !important;
+    stroke:#ffffff !important;
+  }
+  .nav-container{ padding: 0 1rem; }
   .hero h1{ font-size:2.5rem; letter-spacing:-1px; }
   .hero p{ font-size:1.1rem; }
   .section-title{ font-size:2.5rem; }
   .cta-buttons{ flex-direction:column; }
+  .cta-buttons .btn{ width:100%; justify-content:center; }
   .feature-grid, .course-grid, .tools-grid{ grid-template-columns:1fr; }
   .tools-subnav-inner{ padding: .65rem 1rem; }
   .news-subnav-inner{ padding: .65rem 1rem; }
