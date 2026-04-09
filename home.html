@@ -1341,6 +1341,7 @@
     </main>
   </div>
 
+  <script src="demo-mode.js"></script>
   <script>
     // =========================
     // THEME (APPLY ONLY) — synced across pages via ONE key: fynx_theme
@@ -1351,6 +1352,36 @@
       if (saved === "dark") document.body.classList.add("dark-mode");
       else document.body.classList.remove("dark-mode");
     })();
+
+
+
+    function isDemoMode(){
+      return window.FynxDemoMode?.isDemoMode?.() || localStorage.getItem("mode") === "demo";
+    }
+
+    function injectDemoSnapshot(){
+      if (!isDemoMode()) return;
+      const heroLeft = document.querySelector(".hero-left");
+      if (!heroLeft || document.getElementById("demoSnapshot")) return;
+
+      const box = document.createElement("div");
+      box.id = "demoSnapshot";
+      box.style.marginTop = "14px";
+      box.style.padding = "12px";
+      box.style.border = "1px solid var(--line)";
+      box.style.borderRadius = "12px";
+      box.style.background = "color-mix(in oklab, var(--surface) 92%, transparent)";
+      box.innerHTML = `
+        <div style="font-size:11px;opacity:.7;font-weight:800;">DEMO ACCOUNT</div>
+        <div style="font-size:24px;font-weight:900;margin-top:4px;">$24,680.00</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:12px;">
+          <span>Profit: <b>+$2,140</b></span>
+          <span>Trades: <b>18</b></span>
+          <span>Win Rate: <b>61.1%</b></span>
+        </div>
+      `;
+      heroLeft.appendChild(box);
+    }
 
     // =========================
     // DATE CHIP
@@ -2090,6 +2121,7 @@
     // =============================================================================
     function initHome(){
       renderGreeting();
+      injectDemoSnapshot();
       setDailyLine();
       updateMarketHours();
 
