@@ -521,6 +521,7 @@
         <div class="actions">
           <button class="btn" id="loginGoogle" type="button">Login with Google</button>
           <button class="btn" id="loginApple" type="button">Login with Apple</button>
+          <button class="btn" id="continueDemo" type="button">Continue as Demo</button>
         </div>
 
         <form class="form" id="emailLoginForm" autocomplete="on">
@@ -611,9 +612,14 @@
     const loginAppleBtn  = document.getElementById("loginApple");
     const emailForm      = document.getElementById("emailLoginForm");
     const loginAppBtn    = document.getElementById("loginApp");
+    const continueDemoBtn = document.getElementById("continueDemo");
 
     // ✅ ONLY CHANGE: redirect to home.html instead of dashboard.html
     const DASHBOARD_URL = "../home.html";
+
+    function setMode(mode){
+      localStorage.setItem("mode", mode);
+    }
     const APP_STORE_URL = "https://apps.apple.com/app/id6752357210";
 
     const APP_RETURN_URL = new URL("./app-return.html", window.location.href);
@@ -652,6 +658,8 @@
         showStatus("Signing in…", "Connecting with Google.");
         const provider = new GoogleAuthProvider();
         await signInWithPopup(auth, provider);
+        setMode("live");
+        localStorage.setItem("fynx_auth_email", auth.currentUser?.email || "");
         window.location.href = DASHBOARD_URL;
       }catch(e){ showErr(e); }
     });
@@ -661,6 +669,8 @@
         showStatus("Signing in…", "Connecting with Apple.");
         const provider = new OAuthProvider("apple.com");
         await signInWithPopup(auth, provider);
+        setMode("live");
+        localStorage.setItem("fynx_auth_email", auth.currentUser?.email || "");
         window.location.href = DASHBOARD_URL;
       }catch(e){ showErr(e); }
     });
@@ -672,8 +682,22 @@
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
         await signInWithEmailAndPassword(auth, email, password);
+        setMode("live");
+        localStorage.setItem("fynx_auth_email", auth.currentUser?.email || email || "");
         window.location.href = DASHBOARD_URL;
       }catch(err){ showErr(err); }
+    });
+
+
+    continueDemoBtn.addEventListener("click", () => {
+      setMode("demo");
+      localStorage.setItem("fynx_profile", JSON.stringify({
+        name: "Demo User",
+        description: "You are previewing the app with sample data.",
+        memberSince: "Apr 2026"
+      }));
+      localStorage.setItem("fynx_auth_email", "demo@fynx.app");
+      window.location.href = DASHBOARD_URL;
     });
 
     loginAppBtn.addEventListener("click", () => {
