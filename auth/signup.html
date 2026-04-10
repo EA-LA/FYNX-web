@@ -404,6 +404,7 @@
         <div class="actions">
           <button class="btn" id="signupGoogle" type="button">Sign up with Google</button>
           <button class="btn" id="signupApple" type="button">Sign up with Apple</button>
+          <button class="btn" id="viewDemo" type="button">View Demo</button>
         </div>
 
         <form class="form" id="emailSignupForm" autocomplete="on">
@@ -487,6 +488,11 @@
     const googleBtn = document.getElementById("signupGoogle");
     const appleBtn  = document.getElementById("signupApple");
     const form      = document.getElementById("emailSignupForm");
+    const viewDemoBtn = document.getElementById("viewDemo");
+
+    function setMode(mode){
+      localStorage.setItem("mode", mode);
+    }
 
     function showErr(e){
       console.error(e);
@@ -497,7 +503,9 @@
       try{
         const provider = new GoogleAuthProvider();
         await signInWithPopup(auth, provider);
-        window.location.href = "./login.html";
+        setMode("live");
+        localStorage.setItem("fynx_auth_email", auth.currentUser?.email || "");
+        window.location.href = "../home.html";
       }catch(e){ showErr(e); }
     });
 
@@ -505,8 +513,22 @@
       try{
         const provider = new OAuthProvider("apple.com");
         await signInWithPopup(auth, provider);
-        window.location.href = "./login.html";
+        setMode("live");
+        localStorage.setItem("fynx_auth_email", auth.currentUser?.email || "");
+        window.location.href = "../home.html";
       }catch(e){ showErr(e); }
+    });
+
+
+    viewDemoBtn.addEventListener("click", () => {
+      setMode("demo");
+      localStorage.setItem("fynx_profile", JSON.stringify({
+        name: "Demo User",
+        description: "You are previewing the app with sample data.",
+        memberSince: "Apr 2026"
+      }));
+      localStorage.setItem("fynx_auth_email", "demo@fynx.app");
+      window.location.href = "../home.html";
     });
 
     form.addEventListener("submit", async (e) => {
@@ -527,7 +549,9 @@
         if(displayName){
           await updateProfile(cred.user, { displayName });
         }
-        window.location.href = "./login.html";
+        setMode("live");
+        localStorage.setItem("fynx_auth_email", email);
+        window.location.href = "../home.html";
       }catch(err){ showErr(err); }
     });
   </script>

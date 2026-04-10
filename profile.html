@@ -252,6 +252,31 @@
       font-size:14px;
       font-weight:800;
     }
+    .demo-auth-cta{
+      display:none;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background: var(--surface-2);
+      padding:12px;
+      margin-top:8px;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .demo-auth-copy{ display:grid; gap:2px; }
+    .demo-auth-copy strong{ font-size:13px; font-weight:900; }
+    .demo-auth-copy span{ font-size:12px; color:var(--muted); font-weight:800; }
+    .demo-auth-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+    .demo-auth-btn{
+      border:1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      padding:8px 12px;
+      border-radius:10px;
+      text-decoration:none;
+      font-size:12px;
+      font-weight:900;
+    }
 
     /* ===== Panels ===== */
     .panel{
@@ -382,7 +407,7 @@
       font-size:15px;
       font-weight:900;
       letter-spacing:-0.2px;
-      margin: 10px 0 2px;
+      margin: 14px 0 4px;
     }
 
     .settings-list{ display:flex; flex-direction:column; gap:10px; }
@@ -618,6 +643,7 @@
       .profile-name-row{ flex-direction:column; align-items:flex-start; }
       .edit-profile-btn{ width:100%; }
       .profile-stats{ grid-template-columns: 1fr; }
+      .demo-auth-cta{ flex-direction:column; align-items:flex-start; }
       .form-col{ min-width: 100%; }
     }
   </style>
@@ -714,6 +740,16 @@
         <div class="section-header">
           <h2>Profile</h2>
           <p>Manage your account and settings</p>
+          <div class="demo-auth-cta" id="demoAuthCta">
+            <div class="demo-auth-copy">
+              <strong>Ready to unlock your real account?</strong>
+              <span>Sign in or sign up to save journal data and settings.</span>
+            </div>
+            <div class="demo-auth-actions">
+              <a class="demo-auth-btn" href="auth/signup.html">Sign Up</a>
+              <a class="demo-auth-btn" href="auth/login.html">Sign In</a>
+            </div>
+          </div>
         </div>
 
         <section class="panel">
@@ -858,6 +894,7 @@
     </div>
   </div>
 
+  <script src="demo-mode.js"></script>
   <script>
     /* =========================
        GLOBAL THEME (SYNCED)
@@ -865,6 +902,22 @@
     ========================= */
     const THEME_KEY = "fynx_theme";
     const themeBtn = document.getElementById("themeBtn");
+
+    function isDemoMode(){
+      return window.FynxDemoMode?.isDemoMode?.() || localStorage.getItem("mode") === "demo";
+    }
+
+    function showDemoBlocked(){
+      alert("Create an account to use this feature");
+    }
+
+    function isDemoUser(){
+      return isDemoMode();
+    }
+
+    function isDemoUnsignedUser(){
+      return isDemoUser() && getAuthEmail() === "demo@fynx.app";
+    }
 
     function applySavedTheme(){
       const saved = localStorage.getItem(THEME_KEY) || "light";
@@ -897,13 +950,21 @@
     }
 
     function getAuthEmail(){
+      if (isDemoMode()) return "demo@fynx.app";
       const v = (localStorage.getItem(AUTH_EMAIL_KEY) || "").trim();
       return v || "";
     }
 
     function getProfile(){
+      if (isDemoMode()) {
+        return {
+          ...DEFAULT_PROFILE,
+          name: "Demo User",
+          description: "You are viewing demo data — Sign up to unlock real account",
+          memberSince: "Apr 2026"
+        };
+      }
       const p = safeJSONParse(localStorage.getItem("fynx_profile"), null);
-      // ✅ never store email in profile (always from AUTH key)
       const merged = { ...DEFAULT_PROFILE, ...(p || {}) };
       delete merged.email;
       return merged;
@@ -936,7 +997,9 @@
     }
 
     function loadMetrics(){
-      // ✅ FIX 1: ONLY localStorage fynx_metrics OR fynx_trades. No other "demo" source.
+      if (isDemoMode()) {
+        return { total: 18, winRate: 61.1, avgReturn: 3.4, memberSince: "Apr 2026" };
+      }
       const metrics = safeJSONParse(localStorage.getItem("fynx_metrics"), null);
       if (metrics && typeof metrics === "object") return metrics;
 
@@ -999,6 +1062,10 @@
 
     function renderProfile(){
       const profile = getProfile();
+      const demoAuthCta = document.getElementById("demoAuthCta");
+      if (demoAuthCta){
+        demoAuthCta.style.display = isDemoUnsignedUser() ? "flex" : "none";
+      }
 
       // ✅ FIX 3: name persists forever via localStorage fynx_profile
       document.getElementById("profileName").textContent = profile.name || DEFAULT_PROFILE.name;
@@ -1034,6 +1101,10 @@
     // ---------- Settings links ----------
     document.querySelectorAll(".settings-item").forEach(item => {
       item.addEventListener("click", () => {
+        if (isDemoMode()) {
+          showDemoBlocked();
+          return;
+        }
         const link = item.getAttribute("data-link");
         if (link) window.location.href = link;
       });
@@ -1054,6 +1125,10 @@
     let pendingAvatarDataUrl = "";
 
     function openModal(){
+      if (isDemoMode()) {
+        showDemoBlocked();
+        return;
+      }
       const p = getProfile();
       nameInput.value = p.name || "";
       descInput.value = p.description || "";
@@ -1089,6 +1164,10 @@
     });
 
     saveBtn.addEventListener("click", () => {
+      if (isDemoMode()) {
+        showDemoBlocked();
+        return;
+      }
       const p = getProfile();
       const next = {
         ...p,

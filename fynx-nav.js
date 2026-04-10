@@ -38,6 +38,12 @@
     profile: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>',
   };
 
+
+
+  function isDemoMode() {
+    return localStorage.getItem('mode') === 'demo';
+  }
+
   function detectCurrentView() {
     let file = window.location.pathname.split('/').pop() || 'home.html';
     if (!file.includes('.html')) file = 'home.html';
@@ -90,7 +96,9 @@
 
     const initialsEl = document.getElementById('avatarInitials');
     if (initialsEl) {
-      const userName = localStorage.getItem('fynxUserName') || localStorage.getItem('fynx_user_name') || 'FYNX';
+      const userName = isDemoMode()
+        ? 'Demo User'
+        : (localStorage.getItem('fynxUserName') || localStorage.getItem('fynx_user_name') || 'FYNX');
       const initials = userName
         .split(/\s+/)
         .filter(Boolean)

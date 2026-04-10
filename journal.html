@@ -932,6 +932,7 @@
   <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore-compat.js"></script>
+  <script src="demo-mode.js"></script>
 
   <script>
     /* =========================
@@ -1056,6 +1057,10 @@
     const loginNote = document.getElementById("loginNote");
     const avatar = document.getElementById("avatar");
 
+    function isDemoMode(){
+      return window.FynxDemoMode?.isDemoMode?.() || localStorage.getItem("mode") === "demo";
+    }
+
     // inner nav
     const jBtns = [...document.querySelectorAll(".jbtn[data-view]")];
     const views = {
@@ -1089,9 +1094,9 @@
 
     // Demo trades for guest view
     const demoTrades = [
-      { id:"d1", date:"2026-01-29", symbol:"XAUUSD", session:"New York", pl: 120 },
-      { id:"d2", date:"2026-01-28", symbol:"EURUSD", session:"London", pl: -55 },
-      { id:"d3", date:"2026-01-27", symbol:"BTCUSD", session:"Asia", pl: 80 }
+      { id:"d1", date:"2026-01-29", symbol:"EURUSD", session:"London", pl: 120 },
+      { id:"d2", date:"2026-01-28", symbol:"BTCUSD", session:"Asia", pl: -45 },
+      { id:"d3", date:"2026-01-27", symbol:"XAUUSD", session:"New York", pl: 90 }
     ];
 
     // Charts
@@ -1385,9 +1390,13 @@
     }
 
     document.getElementById("saveTradeBtn").addEventListener("click", async () => {
+      if(isDemoMode()){
+        alert("Create an account to use this feature");
+        return;
+      }
       if(!currentUid){
         loginNote.style.display = "block";
-        setTimeout(()=> location.href = "login.html", 600);
+        setTimeout(()=> location.href = "auth/login.html", 600);
         return;
       }
       try{
@@ -1419,9 +1428,19 @@
 
     // AUTH: guest shows demo; logged-in shows live
     auth.onAuthStateChanged((user) => {
+      if(isDemoMode()){
+        currentUid = null;
+        renderWelcome();
+        modeText.textContent = "Demo mode — sample data only";
+        loginNote.style.display = "none";
+        state.trades = demoTrades;
+        refreshDashboard(); refreshAnalytics(); refreshReplay(); refreshStreaks(); refreshCalendar();
+        updateCharts();
+        return;
+      }
+
       if(!user){
         currentUid = null;
-        // keep name/initials from profile (if exists)
         renderWelcome();
         modeText.textContent = "Guest mode (view only) — login to save";
         loginNote.style.display = "none";
@@ -1431,7 +1450,6 @@
         return;
       }
       currentUid = user.uid;
-      // keep name/initials from profile (if exists)
       renderWelcome();
       modeText.textContent = "Live mode — saving to Firestore";
       attachTradesListener();
