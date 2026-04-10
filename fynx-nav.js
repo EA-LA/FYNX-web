@@ -39,12 +39,11 @@
   };
 
 
+function isDemoMode() {
+  return localStorage.getItem('mode') === 'demo';
+}
 
-  function isDemoMode() {
-    return localStorage.getItem('mode') === 'demo';
-  }
-
-  function ensureDemoStyles() {
+function ensureDemoStyles() {
   if (document.getElementById('fynxDemoStyles')) return;
   const style = document.createElement('style');
   style.id = 'fynxDemoStyles';
@@ -68,68 +67,27 @@
       font-weight:900;
     }
 
-    .demo-banner {
-      display:flex;
-      align-items:center;
-        justify-content:space-between;
-        gap:12px;
-        margin-bottom:10px;
-        padding:10px 12px;
-        border:1px solid var(--line, rgba(255,255,255,.12));
-        border-radius:12px;
-        background: color-mix(in oklab, var(--panel, #111) 88%, transparent);
-      }
-      .demo-banner-title { font-size:13px; font-weight:900; }
-      .demo-banner-sub { font-size:11px; opacity:.75; margin-top:2px; }
-      .demo-banner-actions { display:flex; gap:8px; flex-wrap:wrap; }
-      .demo-banner-btn {
-     border:1px solid var(--line, rgba(255,255,255,.2));
-background:transparent;
-color:inherit;
-border-radius:999px;
-font-size:11px;
-font-weight:800;
-padding:6px 10px;
-text-decoration:none;
+    @media (min-width: 901px){
+      body.sidebar-collapsed .nav-panel{ width:72px !important; }
+      body.sidebar-collapsed .main-content{ margin-left:72px !important; width:calc(100% - 72px) !important; }
+      body.sidebar-collapsed .nav-item{ width:56px !important; padding:12px 0 !important; }
+      body.sidebar-collapsed .nav-label{ display:none !important; }
+      body.sidebar-collapsed .nav-logo{ font-size:18px; }
+    }
+
+    @media (max-width: 900px){
+      .sidebar-toggle{ display:none; }
+    }
+  `;
+
+  document.head.appendChild(style);
 }
 
-@media (min-width: 901px){
-  body.sidebar-collapsed .nav-panel{ width:72px !important; }
-  body.sidebar-collapsed .main-content{ margin-left:72px !important; width:calc(100% - 72px) !important; }
-  body.sidebar-collapsed .nav-item{ width:56px !important; padding:12px 0 !important; }
-  body.sidebar-collapsed .nav-label{ display:none !important; }
-  body.sidebar-collapsed .nav-logo{ font-size:18px; }
+function detectCurrentView() {
+  let file = window.location.pathname.split('/').pop() || 'home.html';
+  if (!file.includes('.html')) file = 'home.html';
+  return FILE_TO_VIEW[file] || 'home';
 }
-
-@media (max-width: 900px){
-  .sidebar-toggle{ display:none; }
-}
-`;
-
-document.head.appendChild(style);
-  }
-
-  function demoBannerMarkup() {
-    if (!isDemoMode()) return '';
-    return `
-      <div class="demo-banner" role="status" aria-live="polite">
-        <div>
-          <div class="demo-banner-title">Demo Mode</div>
-          <div class="demo-banner-sub">You are viewing demo data — Sign up to unlock real account</div>
-        </div>
-        <div class="demo-banner-actions">
-          <a class="demo-banner-btn" href="auth/signup.html">Sign Up</a>
-          <a class="demo-banner-btn" href="auth/login.html">Log In</a>
-        </div>
-      </div>
-    `;
-  }
-
-  function detectCurrentView() {
-    let file = window.location.pathname.split('/').pop() || 'home.html';
-    if (!file.includes('.html')) file = 'home.html';
-    return FILE_TO_VIEW[file] || 'home';
-  }
 
   function navMarkup(currentView) {
     return Object.keys(VIEW_PAGES)
