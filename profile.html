@@ -911,8 +911,12 @@
       alert("Create an account to use this feature");
     }
 
+    function isDemoUser(){
+      return isDemoMode();
+    }
+
     function isDemoUnsignedUser(){
-      return isDemoMode() && getAuthEmail() === "demo@fynx.app";
+      return isDemoUser() && getAuthEmail() === "demo@fynx.app";
     }
 
     function applySavedTheme(){
