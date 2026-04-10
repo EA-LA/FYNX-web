@@ -907,22 +907,22 @@
       return window.FynxDemoMode?.isDemoMode?.() || localStorage.getItem("mode") === "demo";
     }
 
-    function showDemoBlocked(){
-      alert("Create an account to use this feature");
-    }
+ function showDemoBlocked(){
+  alert("Create an account to use this feature");
+}
 
-    function isDemoUser(){
-      return isDemoMode();
-    }
+function isDemoUser(){
+  return isDemoMode();
+}
 
-    function isDemoUnsignedUser(){
-      return isDemoUser() && getAuthEmail() === "demo@fynx.app";
-    }
+function isDemoUnsignedUser(){
+  return isDemoUser() && getAuthEmail() === "demo@fynx.app";
+}
 
-    function applySavedTheme(){
-      const saved = localStorage.getItem(THEME_KEY) || "light";
-      document.body.classList.toggle("dark-mode", saved === "dark");
-    }
+function applySavedTheme(){
+  const saved = localStorage.getItem(THEME_KEY) || "light";
+  document.body.classList.toggle("dark-mode", saved === "dark");
+}
     applySavedTheme();
 
     if (themeBtn) {

@@ -45,20 +45,32 @@
   }
 
   function ensureDemoStyles() {
-    if (document.getElementById('fynxDemoStyles')) return;
-    const style = document.createElement('style');
-    style.id = 'fynxDemoStyles';
-    style.textContent = `
-      .top-bar-left{ display:flex; align-items:center; gap:10px; min-width:0; }
-      .sidebar-toggle{
-        width:32px; height:32px; border-radius:10px;
-        border:1px solid var(--line, rgba(255,255,255,.2));
-        background:transparent; color:inherit; cursor:pointer;
-        font-size:14px; font-weight:900;
-      }
-      .demo-banner {
-        display:flex;
-        align-items:center;
+  if (document.getElementById('fynxDemoStyles')) return;
+  const style = document.createElement('style');
+  style.id = 'fynxDemoStyles';
+  style.textContent = `
+    .top-bar-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .sidebar-toggle{
+      width:32px;
+      height:32px;
+      border-radius:10px;
+      border:1px solid var(--line, rgba(255,255,255,.2));
+      background:transparent;
+      color:inherit;
+      cursor:pointer;
+      font-size:14px;
+      font-weight:900;
+    }
+
+    .demo-banner {
+      display:flex;
+      align-items:center;
         justify-content:space-between;
         gap:12px;
         margin-bottom:10px;
@@ -71,27 +83,30 @@
       .demo-banner-sub { font-size:11px; opacity:.75; margin-top:2px; }
       .demo-banner-actions { display:flex; gap:8px; flex-wrap:wrap; }
       .demo-banner-btn {
-        border:1px solid var(--line, rgba(255,255,255,.2));
-        background:transparent;
-        color:inherit;
-        border-radius:999px;
-        font-size:11px;
-        font-weight:800;
-        padding:6px 10px;
-        text-decoration:none;
-      }
-      @media (min-width: 901px){
-        body.sidebar-collapsed .nav-panel{ width:72px !important; }
-        body.sidebar-collapsed .main-content{ margin-left:72px !important; width:calc(100% - 72px) !important; }
-        body.sidebar-collapsed .nav-item{ width:56px !important; padding:12px 0 !important; }
-        body.sidebar-collapsed .nav-label{ display:none !important; }
-        body.sidebar-collapsed .nav-logo{ font-size:18px; }
-      }
-      @media (max-width: 900px){
-        .sidebar-toggle{ display:none; }
-      }
-    `;
-    document.head.appendChild(style);
+     border:1px solid var(--line, rgba(255,255,255,.2));
+background:transparent;
+color:inherit;
+border-radius:999px;
+font-size:11px;
+font-weight:800;
+padding:6px 10px;
+text-decoration:none;
+}
+
+@media (min-width: 901px){
+  body.sidebar-collapsed .nav-panel{ width:72px !important; }
+  body.sidebar-collapsed .main-content{ margin-left:72px !important; width:calc(100% - 72px) !important; }
+  body.sidebar-collapsed .nav-item{ width:56px !important; padding:12px 0 !important; }
+  body.sidebar-collapsed .nav-label{ display:none !important; }
+  body.sidebar-collapsed .nav-logo{ font-size:18px; }
+}
+
+@media (max-width: 900px){
+  .sidebar-toggle{ display:none; }
+}
+`;
+
+document.head.appendChild(style);
   }
 
   function demoBannerMarkup() {
@@ -140,21 +155,26 @@
 
     navPanel.innerHTML = `<div class="nav-logo"><h1>FYNX</h1></div><div class="nav-menu">${navMarkup(currentView)}</div>`;
 
-    ensureDemoStyles();
-    topBar.innerHTML = `
-      ${demoBannerMarkup()}
-      <div class="top-bar-left">
-        <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Collapse sidebar"><</button>
-        <h1 class="page-title">${existingTitle}</h1>
-      </div>
-      <div class="top-bar-right">
-        <span class="chip" id="dateChip">Loading...</span>
-        <button class="icon-btn" title="Notifications" aria-label="Notifications">
-          <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-        </button>
-        <div class="user-avatar" id="avatarInitials">FX</div>
-      </div>
-    `;
+   ensureDemoStyles();
+topBar.innerHTML = `
+  ${demoBannerMarkup()}
+
+  <div class="top-bar-left">
+    <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Collapse sidebar">&lt;</button>
+    <h1 class="page-title">${existingTitle}</h1>
+  </div>
+
+  <div class="top-bar-right">
+    <span class="chip" id="dateChip">Loading...</span>
+    <button class="icon-btn" title="Notifications" aria-label="Notifications">
+      <svg viewBox="0 0 24 24">
+        <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </svg>
+    </button>
+    <div class="user-avatar" id="avatarInitials">FX</div>
+  </div>
+`;
 
     const chip = document.getElementById('dateChip');
     if (chip) {
