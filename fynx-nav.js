@@ -39,16 +39,55 @@
   };
 
 
+function isDemoMode() {
+  return localStorage.getItem('mode') === 'demo';
+}
 
-  function isDemoMode() {
-    return localStorage.getItem('mode') === 'demo';
-  }
+function ensureDemoStyles() {
+  if (document.getElementById('fynxDemoStyles')) return;
+  const style = document.createElement('style');
+  style.id = 'fynxDemoStyles';
+  style.textContent = `
+    .top-bar-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
 
-  function detectCurrentView() {
-    let file = window.location.pathname.split('/').pop() || 'home.html';
-    if (!file.includes('.html')) file = 'home.html';
-    return FILE_TO_VIEW[file] || 'home';
-  }
+    .sidebar-toggle{
+      width:32px;
+      height:32px;
+      border-radius:10px;
+      border:1px solid var(--line, rgba(255,255,255,.2));
+      background:transparent;
+      color:inherit;
+      cursor:pointer;
+      font-size:14px;
+      font-weight:900;
+    }
+
+    @media (min-width: 901px){
+      body.sidebar-collapsed .nav-panel{ width:72px !important; }
+      body.sidebar-collapsed .main-content{ margin-left:72px !important; width:calc(100% - 72px) !important; }
+      body.sidebar-collapsed .nav-item{ width:56px !important; padding:12px 0 !important; }
+      body.sidebar-collapsed .nav-label{ display:none !important; }
+      body.sidebar-collapsed .nav-logo{ font-size:18px; }
+    }
+
+    @media (max-width: 900px){
+      .sidebar-toggle{ display:none; }
+    }
+  `;
+
+  document.head.appendChild(style);
+}
+
+function detectCurrentView() {
+  let file = window.location.pathname.split('/').pop() || 'home.html';
+  if (!file.includes('.html')) file = 'home.html';
+  return FILE_TO_VIEW[file] || 'home';
+}
 
   function navMarkup(currentView) {
     return Object.keys(VIEW_PAGES)
@@ -74,16 +113,26 @@
 
     navPanel.innerHTML = `<div class="nav-logo"><h1>FYNX</h1></div><div class="nav-menu">${navMarkup(currentView)}</div>`;
 
-    topBar.innerHTML = `
-      <h1 class="page-title">${existingTitle}</h1>
-      <div class="top-bar-right">
-        <span class="chip" id="dateChip">Loading...</span>
-        <button class="icon-btn" title="Notifications" aria-label="Notifications">
-          <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-        </button>
-        <div class="user-avatar" id="avatarInitials">FX</div>
-      </div>
-    `;
+   ensureDemoStyles();
+topBar.innerHTML = `
+  ${demoBannerMarkup()}
+
+  <div class="top-bar-left">
+    <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Collapse sidebar">&lt;</button>
+    <h1 class="page-title">${existingTitle}</h1>
+  </div>
+
+  <div class="top-bar-right">
+    <span class="chip" id="dateChip">Loading...</span>
+    <button class="icon-btn" title="Notifications" aria-label="Notifications">
+      <svg viewBox="0 0 24 24">
+        <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </svg>
+    </button>
+    <div class="user-avatar" id="avatarInitials">FX</div>
+  </div>
+`;
 
     const chip = document.getElementById('dateChip');
     if (chip) {
@@ -93,6 +142,24 @@
 
   function initNav() {
     renderShell();
+    const sidebarKey = 'fynx_sidebar_collapsed';
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const applySidebarState = (collapsed) => {
+      document.body.classList.toggle('sidebar-collapsed', collapsed);
+      if (toggleBtn) {
+        toggleBtn.textContent = collapsed ? '>' : '<';
+        toggleBtn.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+      }
+      localStorage.setItem(sidebarKey, collapsed ? '1' : '0');
+    };
+    if (window.matchMedia('(min-width: 901px)').matches) {
+      applySidebarState(localStorage.getItem(sidebarKey) === '1');
+    }
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        applySidebarState(!document.body.classList.contains('sidebar-collapsed'));
+      });
+    }
 
     const initialsEl = document.getElementById('avatarInitials');
     if (initialsEl) {

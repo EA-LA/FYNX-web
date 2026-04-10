@@ -639,6 +639,33 @@
       el.textContent = initials.toUpperCase();
     }
 
+    function isDemoMode(){
+      return window.FynxDemoMode?.isDemoMode?.() || localStorage.getItem("mode") === "demo";
+    }
+
+    function injectDemoBanner(){
+      if (!isDemoMode()) return;
+      const topBar = document.querySelector(".top-bar");
+      if (!topBar || document.getElementById("demoCalcBanner")) return;
+      const banner = document.createElement("div");
+     banner.id = "demoCalcBanner";
+banner.style.display = "flex";
+banner.style.alignItems = "center";
+banner.style.gap = "10px";
+banner.style.flexWrap = "wrap";
+banner.style.marginRight = "12px";
+banner.style.marginBottom = "6px";
+
+banner.innerHTML = `
+  <span style="font-size:11px;font-weight:900;border:1px solid var(--line);padding:6px 10px;border-radius:999px;">Demo Mode</span>
+  <span style="font-size:11px;opacity:.75;">You are viewing demo data — Sign up to unlock real account</span>
+  <a href="auth/signup.html" style="font-size:11px;font-weight:800;border:1px solid var(--line);padding:6px 10px;border-radius:999px;text-decoration:none;color:inherit;">Sign Up</a>
+  <a href="auth/login.html" style="font-size:11px;font-weight:800;border:1px solid var(--line);padding:6px 10px;border-radius:999px;text-decoration:none;color:inherit;">Log In</a>
+`;
+
+topBar.prepend(banner);
+    }
+
     function renderAvatar(){
       const rawName = getProfileName();
       const displayName = cleanDisplayName(rawName);
@@ -711,6 +738,7 @@
     });
 
     renderTools(tools);
+    injectDemoBanner();
 
     /* =========================
        MINI CALCULATOR
