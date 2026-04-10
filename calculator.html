@@ -202,14 +202,14 @@
       letter-spacing: -0.2px;
     }
 
-    .content-area{ padding: 24px; }
+    .content-area{ padding: 24px; display:grid; gap:14px; }
 
     /* ===== Hero Row ===== */
     .hero{
       display:grid;
       grid-template-columns: 1.2fr 1fr;
       gap: 16px;
-      margin-bottom: 18px;
+      margin-bottom: 8px;
     }
 
     .hero-card, .quick-calc{
@@ -260,7 +260,7 @@
     }
 
     /* ===== Quick Calc ===== */
-    .quick-calc{ padding: 16px; }
+    .quick-calc{ padding: 18px; }
 
     .calc-display{
       border: 1px solid var(--line);
@@ -323,12 +323,12 @@
 
     .search{
       width: 100%;
-      max-width: 420px;
+      max-width: 440px;
       border: 1px solid var(--line);
       border-radius: 12px;
       background: color-mix(in oklab, var(--panel) 92%, transparent);
       color: var(--text);
-      padding: 11px 12px;
+      padding: 12px 13px;
       font-family: inherit;
       font-weight: 800;
       backdrop-filter: blur(10px);
@@ -361,12 +361,12 @@
       background: color-mix(in oklab, var(--panel) 92%, transparent);
       border: 1px solid var(--line);
       border-radius: var(--radius-md);
-      padding: 14px;
+      padding: 15px;
       box-shadow: var(--shadow);
       transition: 0.18s ease;
       display:flex;
       flex-direction:column;
-      gap: 10px;
+      gap: 11px;
       backdrop-filter: blur(10px);
     }
 
@@ -648,19 +648,22 @@
       const topBar = document.querySelector(".top-bar");
       if (!topBar || document.getElementById("demoCalcBanner")) return;
       const banner = document.createElement("div");
-      banner.id = "demoCalcBanner";
-      banner.style.display = "flex";
-      banner.style.alignItems = "center";
-      banner.style.gap = "10px";
-      banner.style.flexWrap = "wrap";
-      banner.style.marginRight = "12px";
-      banner.innerHTML = `
-        <span style="font-size:11px;font-weight:900;border:1px solid var(--line);padding:6px 10px;border-radius:999px;">Demo Mode</span>
-        <span style="font-size:11px;opacity:.75;">You are viewing demo data — Sign up to unlock real account</span>
-        <a href="auth/signup.html" style="font-size:11px;font-weight:800;border:1px solid var(--line);padding:6px 10px;border-radius:999px;text-decoration:none;color:inherit;">Sign Up</a>
-        <a href="auth/login.html" style="font-size:11px;font-weight:800;border:1px solid var(--line);padding:6px 10px;border-radius:999px;text-decoration:none;color:inherit;">Log In</a>
-      `;
-      topBar.prepend(banner);
+     banner.id = "demoCalcBanner";
+banner.style.display = "flex";
+banner.style.alignItems = "center";
+banner.style.gap = "10px";
+banner.style.flexWrap = "wrap";
+banner.style.marginRight = "12px";
+banner.style.marginBottom = "6px";
+
+banner.innerHTML = `
+  <span style="font-size:11px;font-weight:900;border:1px solid var(--line);padding:6px 10px;border-radius:999px;">Demo Mode</span>
+  <span style="font-size:11px;opacity:.75;">You are viewing demo data — Sign up to unlock real account</span>
+  <a href="auth/signup.html" style="font-size:11px;font-weight:800;border:1px solid var(--line);padding:6px 10px;border-radius:999px;text-decoration:none;color:inherit;">Sign Up</a>
+  <a href="auth/login.html" style="font-size:11px;font-weight:800;border:1px solid var(--line);padding:6px 10px;border-radius:999px;text-decoration:none;color:inherit;">Log In</a>
+`;
+
+topBar.prepend(banner);
     }
 
     function renderAvatar(){
