@@ -457,7 +457,9 @@
     section.view{display:none}
     section.view.active{display:block}
 
-    /* MOBILE (iPhone perfect fit) */
+    /* =========================
+       MOBILE (iPhone perfect fit)
+    ========================= */
     @media (max-width: 980px){
       .jnav{width: 190px}
       .grid.cols-12{grid-template-columns:repeat(6,minmax(0,1fr))}
@@ -933,7 +935,10 @@
   <script src="demo-mode.js"></script>
 
   <script>
-    /* THEME (apply saved only; toggle lives on profile.html) */
+    /* =========================
+       THEME (apply saved only)
+       (Toggle button lives ONLY on profile.html)
+    ========================= */
     const THEME_KEY = "fynx_theme";
     function applySavedTheme(){
       const t = localStorage.getItem(THEME_KEY) || "light";
@@ -941,7 +946,9 @@
     }
     applySavedTheme();
 
-    /* PROFILE NAME + AVATAR (same as Home) */
+    /* =========================
+       ✅ PROFILE NAME + AVATAR (same as Home)
+    ========================= */
     const NAME_KEYS = [
       "fynx_profile_name",
       "fynx_username",
@@ -1028,7 +1035,9 @@
     // run once immediately
     renderWelcome();
 
-    /* JOURNAL APP (guest + live) */
+    /* =========================
+       JOURNAL APP (guest + live)
+    ========================= */
     const firebaseConfig = {
       apiKey: "AIzaSyDGSYIB_YIpbWyUMJ1d-v00-xADnvaWckk",
       authDomain: "fynx-c7a28.firebaseapp.com",
