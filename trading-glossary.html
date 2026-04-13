@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trading Glossary | FYNX</title>
+  <meta
+    name="description"
+    content="Trading glossary by FYNX covering forex, crypto, stocks, futures, options, risk, psychology, and market analysis terms in one clean page."
+  />
+  <style>
+    :root{
+      --bg:#f5f5f7;
+      --bg-soft:#ffffff;
+      --panel:rgba(255,255,255,0.82);
+      --panel-strong:#ffffff;
+      --text:#0d0d12;
+      --text-soft:#5d6069;
+      --muted:#8c909b;
+      --line:rgba(13,13,18,0.10);
+      --line-strong:rgba(13,13,18,0.16);
+      --shadow:0 20px 60px rgba(0,0,0,0.08);
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --radius-md:16px;
+      --max:1280px;
+      --glow:rgba(255,255,255,0.65);
+    }
+
+    body.dark-mode{
+      --bg:#03050b;
+      --bg-soft:#070b15;
+      --panel:rgba(10,14,28,0.80);
+      --panel-strong:#090d18;
+      --text:#f5f7fb;
+      --text-soft:#b7becc;
+      --muted:#8791a7;
+      --line:rgba(255,255,255,0.08);
+      --line-strong:rgba(255,255,255,0.13);
+      --shadow:0 30px 80px rgba(0,0,0,0.45);
+      --glow:rgba(120,140,255,0.08);
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    html{
+      scroll-behavior:smooth;
+    }
+
+    body{
+      margin:0;
+      font-family:Inter, Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, var(--glow), transparent 28%),
+        radial-gradient(circle at 100% 20%, rgba(110,120,180,0.08), transparent 24%),
+        var(--bg);
+      color:var(--text);
+      line-height:1.55;
+      transition:background .25s ease, color .25s ease;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background-image:radial-gradient(var(--line) 1px, transparent 1px);
+      background-size:18px 18px;
+      opacity:.9;
+      mask-image:linear-gradient(to bottom, rgba(0,0,0,.75), rgba(0,0,0,.28));
+      z-index:-1;
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    .page{
+      width:min(100%, var(--max));
+      margin:0 auto;
+      padding:24px 18px 80px;
+    }
+
+    .hero{
+      position:relative;
+      overflow:hidden;
+      padding:28px;
+      border-radius:34px;
+      border:1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
+        var(--panel);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      margin-top:10px;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      inset:auto -100px -100px auto;
+      width:240px;
+      height:240px;
+      background:radial-gradient(circle, rgba(140,150,255,0.14), transparent 65%);
+      pointer-events:none;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      font-size:12px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:16px;
+    }
+
+    .eyebrow::before{
+      content:"";
+      width:28px;
+      height:1px;
+      background:var(--line-strong);
+    }
+
+    h1{
+      margin:0 0 12px;
+      font-size:clamp(2.2rem, 6vw, 4.7rem);
+      line-height:.96;
+      letter-spacing:-0.05em;
+    }
+
+    .hero p{
+      max-width:860px;
+      font-size:clamp(1rem, 2.7vw, 1.12rem);
+      color:var(--text-soft);
+      margin:0 0 26px;
+    }
+
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-bottom:22px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:48px;
+      padding:0 18px;
+      border-radius:999px;
+      border:1px solid var(--line-strong);
+      transition:.2s ease;
+      font-weight:600;
+      font-size:.95rem;
+    }
+
+    .btn.primary{
+      background:var(--text);
+      color:var(--bg);
+      border-color:transparent;
+    }
+
+    .btn.secondary{
+      background:transparent;
+      color:var(--text);
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+    }
+
+    .hero-stats{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0,1fr));
+      gap:12px;
+    }
+
+    .stat{
+      padding:16px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.03);
+    }
+
+    .stat strong{
+      display:block;
+      font-size:1.18rem;
+      letter-spacing:-0.03em;
+      margin-bottom:6px;
+    }
+
+    .stat span{
+      color:var(--text-soft);
+      font-size:.92rem;
+    }
+
+    .alpha-nav{
+      margin-top:22px;
+      padding:18px;
+      border-radius:24px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      box-shadow:var(--shadow);
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .alpha-link{
+      width:44px;
+      height:44px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:var(--panel-strong);
+      color:var(--text-soft);
+      font-weight:700;
+      transition:.2s ease;
+    }
+
+    .alpha-link:hover{
+      color:var(--text);
+      border-color:var(--line-strong);
+      transform:translateY(-1px);
+    }
+
+    .section{
+      margin-top:22px;
+      padding:22px;
+      border-radius:28px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
+    }
+
+    .section-title{
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:18px;
+    }
+
+    .section-title h2{
+      margin:0;
+      font-size:clamp(1.45rem, 4vw, 2.2rem);
+      letter-spacing:-0.04em;
+    }
+
+    .section-title p{
+      margin:0;
+      max-width:640px;
+      color:var(--text-soft);
+      font-size:.98rem;
+    }
+
+    .glossary-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:14px;
+    }
+
+    .term-card{
+      padding:18px;
+      border-radius:20px;
+      border:1px solid var(--line);
+      background:var(--panel-strong);
+      height:100%;
+    }
+
+    .term-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+
+    .term-card h3{
+      margin:0;
+      font-size:1.08rem;
+      letter-spacing:-0.03em;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-size:.72rem;
+      text-transform:uppercase;
+      letter-spacing:.11em;
+      white-space:nowrap;
+    }
+
+    .term-card p{
+      margin:0;
+      color:var(--text-soft);
+      font-size:.95rem;
+    }
+
+    .footer-cta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+      padding:22px;
+      border-radius:26px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      box-shadow:var(--shadow);
+      margin-top:26px;
+    }
+
+    .footer-cta h2{
+      margin:0 0 8px;
+      font-size:clamp(1.4rem, 4vw, 2rem);
+      letter-spacing:-0.04em;
+    }
+
+    .footer-cta p{
+      margin:0;
+      color:var(--text-soft);
+      max-width:680px;
+    }
+
+    .tiny{
+      font-size:.88rem;
+      color:var(--muted);
+      margin-top:8px;
+    }
+
+    @media (max-width: 980px){
+      .hero-stats,
+      .glossary-grid{
+        grid-template-columns:1fr 1fr;
+      }
+    }
+
+    @media (max-width: 760px){
+      .page{
+        padding:16px 14px 60px;
+      }
+
+      .hero,
+      .section,
+      .footer-cta,
+      .alpha-nav{
+        border-radius:24px;
+      }
+
+      .hero{
+        padding:22px 18px;
+      }
+
+      .section{
+        padding:18px;
+      }
+
+      .hero-stats,
+      .glossary-grid{
+        grid-template-columns:1fr;
+      }
+
+      .section-title{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+
+      .alpha-link{
+        width:40px;
+        height:40px;
+      }
+
+      .term-header{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">FYNX Learning Module</div>
+      <h1>Trading Glossary</h1>
+      <p>
+        A clean FYNX glossary for the language of trading. Learn the core terms used in forex, crypto,
+        stocks, futures, options, technical analysis, psychology, and risk management so you can read
+        the market with more clarity and confidence.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn primary" href="#letter-a">Start Reading</a>
+        <a class="btn secondary" href="#letter-r">Risk Terms</a>
+        <a class="btn secondary" href="#letter-t">Technical Terms</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat">
+          <strong>Forex</strong>
+          <span>Pairs, pips, spreads, leverage</span>
+        </div>
+        <div class="stat">
+          <strong>Crypto</strong>
+          <span>Volatility, liquidity, market cap</span>
+        </div>
+        <div class="stat">
+          <strong>Stocks</strong>
+          <span>Shares, sectors, earnings, gaps</span>
+        </div>
+        <div class="stat">
+          <strong>Risk</strong>
+          <span>Drawdown, exposure, R:R, sizing</span>
+        </div>
+      </div>
+    </section>
+
+    <nav class="alpha-nav">
+      <a class="alpha-link" href="#letter-a">A</a>
+      <a class="alpha-link" href="#letter-b">B</a>
+      <a class="alpha-link" href="#letter-c">C</a>
+      <a class="alpha-link" href="#letter-d">D</a>
+      <a class="alpha-link" href="#letter-e">E</a>
+      <a class="alpha-link" href="#letter-f">F</a>
+      <a class="alpha-link" href="#letter-g">G</a>
+      <a class="alpha-link" href="#letter-h">H</a>
+      <a class="alpha-link" href="#letter-i">I</a>
+      <a class="alpha-link" href="#letter-l">L</a>
+      <a class="alpha-link" href="#letter-m">M</a>
+      <a class="alpha-link" href="#letter-o">O</a>
+      <a class="alpha-link" href="#letter-p">P</a>
+      <a class="alpha-link" href="#letter-r">R</a>
+      <a class="alpha-link" href="#letter-s">S</a>
+      <a class="alpha-link" href="#letter-t">T</a>
+      <a class="alpha-link" href="#letter-v">V</a>
+    </nav>
+
+    <section id="letter-a" class="section">
+      <div class="section-title">
+        <h2>A</h2>
+        <p>Core terms starting with A.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Ask Price</h3>
+            <span class="badge">Forex</span>
+          </div>
+          <p>The price at which a seller is willing to sell an asset. In trading platforms, this is usually the price you buy at.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>ATR</h3>
+            <span class="badge">Technical</span>
+          </div>
+          <p>Average True Range. A volatility indicator that shows how much price typically moves over a chosen period.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="letter-b" class="section">
+      <div class="section-title">
+        <h2>B</h2>
+        <p>Price movement, order flow, and directional terms.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Bearish</h3>
+            <span class="badge">Market Bias</span>
+          </div>
+          <p>A view that price is likely to move lower. A bearish trader expects weakness or downside continuation.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Bid Price</h3>
+            <span class="badge">Forex</span>
+          </div>
+          <p>The price a buyer is willing to pay for an asset. In many platforms, this is the price you sell at.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Breakout</h3>
+            <span class="badge">Technical</span>
+          </div>
+          <p>When price moves beyond a key support, resistance, range, or pattern boundary with momentum.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Bullish</h3>
+            <span class="badge">Market Bias</span>
+          </div>
+          <p>A view that price is likely to move higher. A bullish trader expects strength or upside continuation.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="letter-c" class="section">
+      <div class="section-title">
+        <h2>C</h2>
+        <p>Structure, charting, and market flow terms.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Candlestick</h3>
+            <span class="badge">Charting</span>
+          </div>
+          <p>A price bar showing open, high, low, and close for a time period. Candles help traders read momentum and structure.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Confluence</h3>
+            <span class="badge">Strategy</span>
+          </div>
+          <p>When multiple reasons support the same trade idea, such as structure, trend, session, and indicator agreement.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Correction</h3>
+            <span class="badge">Price Action</span>
+          </div>
+          <p>A temporary move against the main trend before possible continuation in the original direction.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Correlation</h3>
+            <span class="badge">Risk</span>
+          </div>
+          <p>A relationship between two assets that tend to move together or against each other. Correlation matters for exposure control.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="letter-d" class="section">
+      <div class="section-title">
+        <h2>D</h2>
+        <p>Risk and performance terms starting with D.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Drawdown</h3>
+            <span class="badge">Risk</span>
+          </div>
+          <p>The decline from an account peak to a lower point. It measures how much the account has fallen during a losing period.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Divergence</h3>
+            <span class="badge">Technical</span>
+          </div>
+          <p>When price and an indicator move differently, sometimes hinting at weakening momentum.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="letter-e" class="section">
+      <div class="section-title">
+        <h2>E</h2>
+        <p>Execution and market event terms.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Entry</h3>
+            <span class="badge">Execution</span>
+          </div>
+          <p>The exact point where a trader opens a position in the market.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Earnings</h3>
+            <span class="badge">Stocks</span>
+          </div>
+          <p>A company’s financial report period. Earnings releases can create major volatility in stock prices.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Exposure</h3>
+            <span class="badge">Risk</span>
+          </div>
+          <p>The total amount of market risk currently open in one or multiple positions.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="letter-f" class="section">
+      <div class="section-title">
+        <h2>F</h2>
+        <p>Fast-moving concepts used daily by traders.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>FOMO</h3>
+            <span class="badge">Psychology</span>
+          </div>
+          <p>Fear of Missing Out. Emotional pressure to chase a move because it already started without you.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Fundamental Analysis</h3>
+            <span class="badge">Macro</span>
+          </div>
+          <p>Analyzing markets using economic data, company performance, rates, inflation, and broader financial conditions.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Futures</h3>
+            <span class="badge">Markets</span>
+          </div>
+          <p>Contracts that allow traders to speculate on or hedge the future price of an asset such as indices, oil, or gold.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="letter-g" class="section">
+      <div class="section-title">
+        <h2>G</h2>
+        <p>Gap and growth related terms.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Gap</h3>
+            <span class="badge">Stocks</span>
+          </div>
+          <p>When price opens significantly above or below the previous close, often after news or earnings.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="letter-h" class="section">
+      <div class="section-title">
+        <h2>H</h2>
+        <p>Structure and protection terms.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Hedging</h3>
+            <span class="badge">Risk</span>
+          </div>
+          <p>Taking another position to reduce or offset existing market risk.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Higher High</h3>
+            <span class="badge">Structure</span>
+          </div>
+          <p>A price high that is above the previous high, often used to confirm upward trend structure.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="letter-i" class="section">
+      <div class="section-title">
+        <h2>I</h2>
+        <p>Invalidation and indicator language.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Indicator</h3>
+            <span class="badge">Technical</span>
+          </div>
+          <p>A mathematical tool placed on a chart to help analyze momentum, trend, volatility, or conditions.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Invalidation</h3>
+            <span class="badge">Risk</span>
+          </div>
+          <p>The price point or condition that proves a trade idea is wrong.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="letter-l" class="section">
+      <div class="section-title">
+        <h2>L</h2>
+        <p>Liquidity, leverage, and downside terms.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Leverage</h3>
+            <span class="badge">Risk</span>
+          </div>
+          <p>Borrowed buying power that allows a trader to control a larger position with less capital. It increases both opportunity and danger.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Liquidity</h3>
+            <span class="badge">Market Flow</span>
+          </div>
+          <p>How easily an asset can be bought or sold without causing large price movement.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Lot Size</h3>
+            <span class="badge">Forex</span>
+          </div>
+          <p>The unit size used in forex trading to define position volume.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Lower Low</h3>
+            <span class="badge">Structure</span>
+          </div>
+          <p>A price low that is below the previous low, often used to confirm downward trend structure.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="letter-m" class="section">
+      <div class="section-title">
+        <h2>M</h2>
+        <p>Broad terms used across all markets.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Margin</h3>
+            <span class="badge">Risk</span>
+          </div>
+          <p>The amount of capital required to open and maintain a leveraged trade.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Market Cap</h3>
+            <span class="badge">Stocks/Crypto</span>
+          </div>
+          <p>Total market value of a company or cryptocurrency, usually calculated by price multiplied by supply or shares outstanding.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Moving Average</h3>
+            <span class="badge">Technical</span>
+          </div>
+          <p>An indicator that smooths price over time to help identify trend direction.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="letter-o" class="section">
+      <div class="section-title">
+        <h2>O</h2>
+        <p>Options and order terms.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Options</h3>
+            <span class="badge">Markets</span>
+          </div>
+          <p>Contracts that give the right, but not the obligation, to buy or sell an asset at a set price before expiration.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Order Block</h3>
+            <span class="badge">Price Action</span>
+          </div>
+          <p>A price area some traders view as a zone of institutional activity or strong historical reaction.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="letter-p" class="section">
+      <div class="section-title">
+        <h2>P</h2>
+        <p>Execution and measurement terms.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Pip</h3>
+            <span class="badge">Forex</span>
+          </div>
+          <p>A standard unit of price movement in forex pairs.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Position Size</h3>
+            <span class="badge">Risk</span>
+          </div>
+          <p>The amount of an asset you trade, based on account size, stop loss distance, and accepted risk.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Pullback</h3>
+            <span class="badge">Price Action</span>
+          </div>
+          <p>A temporary move against the current short-term trend before potential continuation.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Profit Target</h3>
+            <span class="badge">Execution</span>
+          </div>
+          <p>A planned price level where a trader expects to take profit.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="letter-r" class="section">
+      <div class="section-title">
+        <h2>R</h2>
+        <p>Risk and reward terms every trader should know.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Resistance</h3>
+            <span class="badge">Technical</span>
+          </div>
+          <p>A price area where selling pressure has historically been strong enough to slow or reject price.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Retracement</h3>
+            <span class="badge">Price Action</span>
+          </div>
+          <p>A temporary move against the main trend that does not necessarily change the overall direction.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Revenge Trading</h3>
+            <span class="badge">Psychology</span>
+          </div>
+          <p>Emotional trading after a loss, usually driven by the desire to win money back immediately.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Risk-to-Reward Ratio</h3>
+            <span class="badge">Risk</span>
+          </div>
+          <p>The comparison between how much you are risking and how much you aim to make on a trade.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="letter-s" class="section">
+      <div class="section-title">
+        <h2>S</h2>
+        <p>Structure, spreads, and protection terms.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Scalping</h3>
+            <span class="badge">Style</span>
+          </div>
+          <p>A fast trading style focused on small price moves and short holding times.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Slippage</h3>
+            <span class="badge">Execution</span>
+          </div>
+          <p>The difference between the expected trade price and the actual filled price.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Spread</h3>
+            <span class="badge">Forex</span>
+          </div>
+          <p>The difference between the bid price and ask price.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Stop Loss</h3>
+            <span class="badge">Risk</span>
+          </div>
+          <p>A protective order or predefined level where the trade is closed to limit loss.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Support</h3>
+            <span class="badge">Technical</span>
+          </div>
+          <p>A price area where buying pressure has historically been strong enough to slow or reject downside movement.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Swing Trading</h3>
+            <span class="badge">Style</span>
+          </div>
+          <p>A trading style focused on multi-day to multi-week price moves.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="letter-t" class="section">
+      <div class="section-title">
+        <h2>T</h2>
+        <p>Trend, technical, and timing terms.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Take Profit</h3>
+            <span class="badge">Execution</span>
+          </div>
+          <p>A target order used to close a trade in profit at a planned level.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Technical Analysis</h3>
+            <span class="badge">Technical</span>
+          </div>
+          <p>Analyzing charts, patterns, structure, and indicators to make trading decisions.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Trend</h3>
+            <span class="badge">Structure</span>
+          </div>
+          <p>The overall direction of price movement over time, such as bullish, bearish, or ranging.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Trendline</h3>
+            <span class="badge">Charting</span>
+          </div>
+          <p>A line drawn on a chart to connect key highs or lows and visualize direction or structure.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="letter-v" class="section">
+      <div class="section-title">
+        <h2>V</h2>
+        <p>Volatility and volume terms.</p>
+      </div>
+      <div class="glossary-grid">
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Volatility</h3>
+            <span class="badge">Market Condition</span>
+          </div>
+          <p>The speed and size of price movement. Higher volatility means price is moving more aggressively.</p>
+        </article>
+        <article class="term-card">
+          <div class="term-header">
+            <h3>Volume</h3>
+            <span class="badge">Technical</span>
+          </div>
+          <p>The amount of trading activity over a period. It can help confirm strength or weakness behind price movement.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="footer-cta">
+      <div>
+        <h2>Know the language. Read the market better.</h2>
+        <p>
+          A trader who understands the language of the market makes better decisions, reads setups faster,
+          and avoids confusion during execution.
+        </p>
+        <div class="tiny">FYNX • Trading Glossary Module</div>
+      </div>
+      <div class="hero-actions" style="margin-bottom:0">
+        <a class="btn primary" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'}); return false;">Back to Top</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const THEME_KEY = "fynx_theme";
+
+    function applySavedTheme() {
+      const saved = localStorage.getItem(THEME_KEY) || "light";
+      document.body.classList.toggle("dark-mode", saved === "dark");
+    }
+
+    applySavedTheme();
+
+    window.addEventListener("storage", (event) => {
+      if (event.key === THEME_KEY) applySavedTheme();
+    });
+
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => {
+      if (!localStorage.getItem(THEME_KEY)) applySavedTheme();
+    });
+  </script>
+</body>
+</html>
