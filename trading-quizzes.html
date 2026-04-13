@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trading Quizzes | FYNX</title>
+  <meta name="description" content="FYNX Trading Quizzes platform with 1,000 educational questions across forex, crypto, stocks, futures, funds, indices, bonds, economy, and options." />
+  <style>
+    :root{
+      --bg:#f5f5f7;
+      --bg-soft:#ffffff;
+      --panel:rgba(255,255,255,0.82);
+      --panel-strong:#ffffff;
+      --text:#0d0d12;
+      --text-soft:#5d6069;
+      --muted:#8c909b;
+      --line:rgba(13,13,18,0.10);
+      --line-strong:rgba(13,13,18,0.16);
+      --shadow:0 20px 60px rgba(0,0,0,0.08);
+      --max:1320px;
+      --glow:rgba(255,255,255,0.65);
+      --good:#11a36a;
+      --bad:#d94a4a;
+      --accent:#0d0d12;
+    }
+    body.dark-mode{
+      --bg:#03050b;
+      --bg-soft:#070b15;
+      --panel:rgba(10,14,28,0.82);
+      --panel-strong:#090d18;
+      --text:#f5f7fb;
+      --text-soft:#b7becc;
+      --muted:#8791a7;
+      --line:rgba(255,255,255,0.08);
+      --line-strong:rgba(255,255,255,0.13);
+      --shadow:0 30px 80px rgba(0,0,0,0.42);
+      --glow:rgba(120,140,255,0.08);
+      --accent:#f5f7fb;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter,Manrope,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, var(--glow), transparent 28%),
+        radial-gradient(circle at 100% 18%, rgba(110,120,180,0.08), transparent 24%),
+        var(--bg);
+      color:var(--text);
+      line-height:1.55;
+      transition:background .25s ease,color .25s ease;
+    }
+    body::before{
+      content:"";
+      position:fixed; inset:0; z-index:-1; pointer-events:none;
+      background-image:radial-gradient(var(--line) 1px, transparent 1px);
+      background-size:18px 18px;
+      opacity:.9;
+      mask-image:linear-gradient(to bottom, rgba(0,0,0,.75), rgba(0,0,0,.28));
+    }
+    a{color:inherit;text-decoration:none}
+    .page{width:min(100%, var(--max)); margin:0 auto; padding:24px 18px 80px}
+    .hero,.section,.footer-cta{
+      border:1px solid var(--line);
+      background:var(--panel);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
+    }
+    .hero{
+      position:relative; overflow:hidden; border-radius:34px; padding:28px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)), var(--panel);
+    }
+    .hero::after{
+      content:""; position:absolute; right:-90px; bottom:-90px; width:260px; height:260px;
+      background:radial-gradient(circle, rgba(130,145,255,0.16), transparent 65%); pointer-events:none;
+    }
+    .eyebrow{display:inline-flex; align-items:center; gap:10px; font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin-bottom:16px}
+    .eyebrow::before{content:""; width:28px; height:1px; background:var(--line-strong)}
+    h1{margin:0 0 12px; font-size:clamp(2.3rem,5vw,4.9rem); line-height:.95; letter-spacing:-.05em}
+    .hero p{max-width:900px; margin:0 0 24px; color:var(--text-soft); font-size:clamp(1rem,2vw,1.12rem)}
+    .hero-actions{display:flex; flex-wrap:wrap; gap:12px; margin-bottom:24px}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:0 18px;
+      border-radius:999px; border:1px solid var(--line-strong); font-weight:700; font-size:.94rem;
+      transition:.2s ease; background:transparent; color:var(--text); cursor:pointer;
+    }
+    .btn.primary{background:var(--text); color:var(--bg); border-color:transparent}
+    .btn:hover{transform:translateY(-1px)}
+    .stats{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px}
+    .stat{padding:16px; border-radius:18px; border:1px solid var(--line); background:rgba(255,255,255,0.03)}
+    .stat strong{display:block; margin-bottom:6px; font-size:1.12rem; letter-spacing:-.03em}
+    .stat span{color:var(--text-soft); font-size:.92rem}
+    .section{margin-top:22px; border-radius:28px; padding:20px}
+    .section-title{display:flex; align-items:end; justify-content:space-between; gap:16px; margin-bottom:16px}
+    .section-title h2{margin:0; font-size:clamp(1.4rem,3vw,2.1rem); letter-spacing:-.04em}
+    .section-title p{margin:0; color:var(--text-soft); max-width:720px; font-size:.97rem}
+    .grid{display:grid; gap:16px}
+    .grid.categories{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid.instructions{grid-template-columns:1fr 1fr}
+    .card{border:1px solid var(--line); border-radius:22px; background:var(--panel-strong); padding:18px; min-width:0}
+    .tag{display:inline-flex; margin-bottom:12px; padding:7px 11px; border-radius:999px; border:1px solid var(--line); color:var(--muted); font-size:.76rem; text-transform:uppercase; letter-spacing:.12em}
+    .card h3{margin:0 0 8px; font-size:1.12rem; letter-spacing:-.03em}
+    .card p{margin:0; color:var(--text-soft); font-size:.95rem}
+    .category-card{cursor:pointer; transition:.18s ease; position:relative; overflow:hidden}
+    .category-card:hover{transform:translateY(-2px)}
+    .category-card.selected{border-color:var(--text); box-shadow:0 0 0 1px var(--text) inset}
+    .category-card.selected::after{
+      content:"Selected"; position:absolute; top:14px; right:14px; font-size:.72rem; font-weight:700;
+      padding:7px 10px; border-radius:999px; background:var(--text); color:var(--bg);
+    }
+    .category-count{display:block; margin-top:10px; color:var(--muted); font-size:.88rem}
+    .quiz-shell{display:none}
+    .quiz-shell.active{display:block}
+    .progress-row{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px}
+    .progress-meta{color:var(--text-soft); font-size:.94rem}
+    .progress-bar{height:12px; border-radius:999px; background:rgba(255,255,255,0.05); border:1px solid var(--line); overflow:hidden}
+    .progress-fill{height:100%; width:0; background:var(--text); transition:width .2s ease}
+    .question-card{padding:22px}
+    .question-card h3{font-size:1.3rem; line-height:1.35; margin:0 0 18px}
+    .options{display:grid; gap:12px}
+    .option{
+      text-align:left; width:100%; padding:16px 16px; border-radius:16px; border:1px solid var(--line);
+      background:var(--panel-strong); color:var(--text); font:inherit; cursor:pointer; transition:.18s ease;
+    }
+    .option:hover{transform:translateY(-1px)}
+    .option.selected{border-color:var(--text); box-shadow:0 0 0 1px var(--text) inset}
+    .quiz-actions{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-top:18px}
+    .secondary-text{color:var(--text-soft); font-size:.94rem}
+    .result-grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:18px}
+    .result-stat{padding:16px; border-radius:18px; border:1px solid var(--line); background:var(--panel-strong)}
+    .result-stat strong{display:block; font-size:1.2rem; margin-bottom:6px}
+    .review-list{display:grid; gap:14px}
+    .review-card{padding:18px; border-radius:20px; border:1px solid var(--line); background:var(--panel-strong)}
+    .review-card.good{border-color:rgba(17,163,106,.35)}
+    .review-card.bad{border-color:rgba(217,74,74,.35)}
+    .review-top{display:flex; justify-content:space-between; gap:12px; margin-bottom:10px; align-items:flex-start}
+    .review-status{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; padding:7px 10px; border-radius:999px}
+    .review-status.good{background:rgba(17,163,106,.12); color:var(--good)}
+    .review-status.bad{background:rgba(217,74,74,.12); color:var(--bad)}
+    .answer-line{margin-top:8px; color:var(--text-soft); font-size:.93rem}
+    .answer-line b{color:var(--text)}
+    .footer-cta{display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-top:22px; padding:22px; border-radius:26px}
+    .footer-cta h2{margin:0 0 8px; font-size:clamp(1.35rem,3.5vw,2rem); letter-spacing:-.04em}
+    .footer-cta p{margin:0; max-width:740px; color:var(--text-soft)}
+    .tiny{margin-top:8px; font-size:.88rem; color:var(--muted)}
+    @media (max-width:1100px){
+      .stats,.result-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .grid.categories{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .grid.instructions{grid-template-columns:1fr}
+    }
+    @media (max-width:760px){
+      .page{padding:14px 12px 56px}
+      .hero,.section,.footer-cta{border-radius:22px}
+      .hero{padding:22px 16px}
+      .section{padding:16px}
+      .stats,.grid.categories,.result-grid{grid-template-columns:1fr}
+      .section-title{flex-direction:column; align-items:flex-start}
+      .question-card{padding:18px}
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">FYNX Learning Module</div>
+      <h1>Trading Quizzes</h1>
+      <p>
+        A full quiz platform with <b>1,000 educational questions</b> across forex, crypto, stocks,
+        futures, funds, indices, bonds, economy, and options. Each attempt mixes fresh questions,
+        gives you <b>10 questions per test</b>, scores your results, and shows the correct and wrong answers at the end.
+      </p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#setup">Start Setup</a>
+        <a class="btn" href="#categories">Choose Category</a>
+        <a class="btn" href="#instructions">How It Works</a>
+      </div>
+      <div class="stats">
+        <div class="stat"><strong>1,000</strong><span>Total question bank</span></div>
+        <div class="stat"><strong>10</strong><span>Random questions per attempt</span></div>
+        <div class="stat"><strong>9</strong><span>Trading categories</span></div>
+        <div class="stat"><strong>Instant</strong><span>Result + full answer review</span></div>
+      </div>
+    </section>
+
+    <section id="instructions" class="section">
+      <div class="section-title">
+        <h2>How it works</h2>
+        <p>Choose one market or choose all markets. Each attempt pulls a different set of 10 random questions from the full FYNX quiz bank.</p>
+      </div>
+      <div class="grid instructions">
+        <div class="card">
+          <div class="tag">Instructions</div>
+          <h3>What the user does</h3>
+          <p>Pick a category. Press start quiz. Answer 10 questions. Submit the final question. Then review your score, your wrong answers, the right answers, and the explanations.</p>
+        </div>
+        <div class="card">
+          <div class="tag">Quiz Rules</div>
+          <h3>How the system behaves</h3>
+          <p>Every new attempt re-mixes the question set. If you choose Forex, you get Forex-only questions. If you choose All Markets, you get mixed questions from the entire 1,000-question bank.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="setup" class="section">
+      <div class="section-title">
+        <h2>Quiz setup</h2>
+        <p>Select a category below. Then start a randomized 10-question test.</p>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="tag">Question Count</div>
+        <h3>Fixed test size</h3>
+        <p>Each quiz attempt contains 10 randomized questions to keep the experience fast, repeatable, and practical.</p>
+      </div>
+
+      <div id="categories" class="grid categories"></div>
+
+      <div style="margin-top:18px; display:flex; flex-wrap:wrap; gap:12px">
+        <button id="startQuizBtn" class="btn primary">Start Quiz</button>
+        <button id="randomCategoryBtn" class="btn">Random Category</button>
+      </div>
+    </section>
+
+    <section id="quizSection" class="section quiz-shell">
+      <div class="section-title">
+        <h2 id="quizTitle">Quiz</h2>
+        <p id="quizSubtitle">Answer the questions carefully. Your review page will show what was right and wrong.</p>
+      </div>
+      <div class="progress-row">
+        <div class="progress-meta" id="progressMeta">Question 1 of 10</div>
+        <div class="secondary-text" id="selectedCategoryLabel">Category: Forex</div>
+      </div>
+      <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+
+      <div class="card question-card" style="margin-top:16px">
+        <div class="tag" id="questionCategoryTag">Forex</div>
+        <h3 id="questionText"></h3>
+        <div id="optionsWrap" class="options"></div>
+        <div class="quiz-actions">
+          <button id="quitQuizBtn" class="btn">Quit</button>
+          <button id="nextBtn" class="btn primary">Next Question</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="resultsSection" class="section quiz-shell">
+      <div class="section-title">
+        <h2>Your results</h2>
+        <p>Review your score, then study every wrong answer with the correct explanation.</p>
+      </div>
+
+      <div class="result-grid">
+        <div class="result-stat"><strong id="scoreValue">0/10</strong><span>Score</span></div>
+        <div class="result-stat"><strong id="percentageValue">0%</strong><span>Accuracy</span></div>
+        <div class="result-stat"><strong id="correctValue">0</strong><span>Correct</span></div>
+        <div class="result-stat"><strong id="wrongValue">0</strong><span>Wrong</span></div>
+      </div>
+
+      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px">
+        <button id="retryBtn" class="btn primary">Retry Same Category</button>
+        <button id="newSetupBtn" class="btn">Choose New Category</button>
+      </div>
+
+      <div id="reviewList" class="review-list"></div>
+    </section>
+
+    <section class="footer-cta">
+      <div>
+        <h2>Built like a real trading test platform</h2>
+        <p>
+          Use this page to learn, test, repeat, and improve. The point is not just to get a score.
+          The point is to understand the market language and decision logic behind every category.
+        </p>
+        <div class="tiny">FYNX • Trading Quizzes Module</div>
+      </div>
+      <div class="hero-actions" style="margin-bottom:0">
+        <a class="btn primary" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'}); return false;">Back to Top</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const THEME_KEY = "fynx_theme";
+    function applySavedTheme(){
+      const saved = localStorage.getItem(THEME_KEY) || "light";
+      document.body.classList.toggle("dark-mode", saved === "dark");
+    }
+    applySavedTheme();
+    window.addEventListener("storage", (event) => {
+      if (event.key === THEME_KEY) applySavedTheme();
+    });
+
+    const QUIZ_BANK = [
+      {"category":"forex","type":"mcq","question":"Which answer best defines Spread?","options":["A temporary move against the current trend.","The difference between the bid price and ask price.","The position volume used in forex trading.","The capital required to open and maintain a leveraged position."],"correctIndex":1,"explanation":"The correct answer is: The difference between the bid price and ask price."},
+      {"category":"forex","type":"mcq","question":"Choose the correct meaning of Pullback.","options":["A temporary move against the current trend.","An overnight financing adjustment for holding a forex trade.","A move beyond support, resistance, or a range boundary.","The second currency in a currency pair."],"correctIndex":0,"explanation":"The correct answer is: A temporary move against the current trend."},
+      {"category":"forex","type":"mcq","question":"Identify the correct definition of Quote currency.","options":["The second currency in a currency pair.","A forex pair that includes the US dollar and a highly traded currency.","The price at which a seller is willing to sell an asset.","An overnight financing adjustment for holding a forex trade."],"correctIndex":0,"explanation":"The correct answer is: The second currency in a currency pair."},
+      {"category":"forex","type":"mcq","question":"What is the best definition of Stop loss?","options":["A predefined level used to lock in gains on a trade.","A predefined level used to limit downside on a trade.","The capital required to open and maintain a leveraged position.","An overnight financing adjustment for holding a forex trade."],"correctIndex":1,"explanation":"The correct answer is: A predefined level used to limit downside on a trade."},
+      {"category":"forex","type":"mcq","question":"Which choice correctly explains Support?","options":["A zone where buying has historically slowed price declines.","A forex pair that does not include the US dollar.","The position volume used in forex trading.","A move beyond support, resistance, or a range boundary."],"correctIndex":0,"explanation":"The correct answer is: A zone where buying has historically slowed price declines."},
+      {"category":"forex","type":"mcq","question":"Which statement about Liquidity is correct?","options":["How easily a market can absorb orders without large price distortion.","The comparison between potential loss and potential gain.","A predefined level used to lock in gains on a trade.","An overnight financing adjustment for holding a forex trade."],"correctIndex":0,"explanation":"The correct answer is: How easily a market can absorb orders without large price distortion."},
+      {"category":"forex","type":"mcq","question":"A trader uses the term Base currency. What does it refer to?","options":["The first currency in a currency pair.","The second currency in a currency pair.","The difference between the bid price and ask price.","A standard unit of price movement in most currency pairs."],"correctIndex":0,"explanation":"The correct answer is: The first currency in a currency pair."},
+      {"category":"forex","type":"mcq","question":"What is the best definition of Major pair?","options":["A forex pair that does not include the US dollar.","A forex pair that includes the US dollar and a highly traded currency.","The first currency in a currency pair.","The capital required to open and maintain a leveraged position."],"correctIndex":1,"explanation":"The correct answer is: A forex pair that includes the US dollar and a highly traded currency."},
+      {"category":"forex","type":"mcq","question":"When traders say Position sizing, what are they talking about?","options":["An overnight financing adjustment for holding a forex trade.","Calculating trade size based on account risk and stop distance.","The position volume used in forex trading.","How easily a market can absorb orders without large price distortion."],"correctIndex":1,"explanation":"The correct answer is: Calculating trade size based on account risk and stop distance."},
+      {"category":"forex","type":"mcq","question":"In trading, what does Slippage mean?","options":["The difference between the expected price and the executed price.","The comparison between potential loss and potential gain.","The difference between the bid price and ask price.","The first currency in a currency pair."],"correctIndex":0,"explanation":"The correct answer is: The difference between the expected price and the executed price."},
+      {"category":"forex","type":"mcq","question":"Which statement about Cross pair is correct?","options":["A forex pair that includes the US dollar and a highly traded currency.","A forex pair that does not include the US dollar.","A zone where buying has historically slowed price declines.","A predefined level used to limit downside on a trade."],"correctIndex":1,"explanation":"The correct answer is: A forex pair that does not include the US dollar."},
+      {"category":"forex","type":"mcq","question":"Choose the correct meaning of Leverage.","options":["A predefined level used to limit downside on a trade.","Borrowed buying power that magnifies both gains and losses.","A temporary move against the current trend.","The first currency in a currency pair."],"correctIndex":1,"explanation":"The correct answer is: Borrowed buying power that magnifies both gains and losses."},
+      {"category":"forex","type":"mcq","question":"What is the best definition of Ask Price?","options":["The price at which a seller is willing to sell an asset.","A zone where buying has historically slowed price declines.","The second currency in a currency pair.","A standard unit of price movement in most currency pairs."],"correctIndex":0,"explanation":"The correct answer is: The price at which a seller is willing to sell an asset."},
+      {"category":"forex","type":"mcq","question":"When traders say Breakout, what are they talking about?","options":["A move beyond support, resistance, or a range boundary.","The capital required to open and maintain a leveraged position.","A predefined level used to limit downside on a trade.","The second currency in a currency pair."],"correctIndex":0,"explanation":"The correct answer is: A move beyond support, resistance, or a range boundary."},
+      {"category":"forex","type":"mcq","question":"What is the best definition of Margin?","options":["A standard unit of price movement in most currency pairs.","The capital required to open and maintain a leveraged position.","A predefined level used to limit downside on a trade.","A forex pair that does not include the US dollar."],"correctIndex":1,"explanation":"The correct answer is: The capital required to open and maintain a leveraged position."},
+      {"category":"forex","type":"mcq","question":"What does Pip describe in markets?","options":["A standard unit of price movement in most currency pairs.","A predefined level used to lock in gains on a trade.","The difference between the expected price and the executed price.","A temporary move against the current trend."],"correctIndex":0,"explanation":"The correct answer is: A standard unit of price movement in most currency pairs."},
+      {"category":"forex","type":"mcq","question":"Which answer best defines Resistance?","options":["A zone where buying has historically slowed price declines.","A zone where selling has historically slowed price advances.","The position volume used in forex trading.","The capital required to open and maintain a leveraged position."],"correctIndex":1,"explanation":"The correct answer is: A zone where selling has historically slowed price advances."},
+      {"category":"forex","type":"mcq","question":"What is the best definition of Take profit?","options":["A predefined level used to lock in gains on a trade.","The difference between the bid price and ask price.","A move beyond support, resistance, or a range boundary.","The first currency in a currency pair."],"correctIndex":0,"explanation":"The correct answer is: A predefined level used to lock in gains on a trade."},
+      {"category":"forex","type":"mcq","question":"Which statement about Swap is correct?","options":["The price at which a seller is willing to sell an asset.","An overnight financing adjustment for holding a forex trade.","How easily a market can absorb orders without large price distortion.","The capital required to open and maintain a leveraged position."],"correctIndex":1,"explanation":"The correct answer is: An overnight financing adjustment for holding a forex trade."},
+      {"category":"forex","type":"tf","question":"True or false: Risk-to-reward ratio means The comparison between potential loss and potential gain.","options":["True","False"],"correctIndex":0,"explanation":"Risk-to-reward ratio means The comparison between potential loss and potential gain."},
+
+      {"category":"crypto","type":"mcq","question":"What does Stablecoin describe in markets?","options":["A crypto asset designed to track a relatively stable reference value.","The transaction fee paid to process activity on certain blockchains.","A pool of tokens used to facilitate decentralized trading.","A participant holding a very large amount of a cryptocurrency."],"correctIndex":0,"explanation":"The correct answer is: A crypto asset designed to track a relatively stable reference value."},
+      {"category":"crypto","type":"mcq","question":"Choose the correct meaning of Private key.","options":["The secret credential that controls access to crypto funds.","The amount of coins currently available in the market.","A scaling solution built on top of a base blockchain.","A blockchain-based financial services without traditional intermediaries."],"correctIndex":0,"explanation":"The correct answer is: The secret credential that controls access to crypto funds."},
+      {"category":"crypto","type":"mcq","question":"Which answer best defines Gas fee?","options":["The transaction fee paid to process activity on certain blockchains.","A crypto asset designed to track a relatively stable reference value.","A distributed ledger that records transactions in linked blocks.","The market’s estimate of future volatility embedded in option prices."],"correctIndex":0,"explanation":"The correct answer is: The transaction fee paid to process activity on certain blockchains."},
+      {"category":"crypto","type":"mcq","question":"Which statement about Layer 2 is correct?","options":["A wallet connected to the internet.","A scaling solution built on top of a base blockchain.","The amount of coins currently available in the market.","A participant holding a very large amount of a cryptocurrency."],"correctIndex":1,"explanation":"The correct answer is: A scaling solution built on top of a base blockchain."},
+      {"category":"crypto","type":"mcq","question":"A trader uses the term Cold wallet. What does it refer to?","options":["An offline storage method for crypto private keys.","A wallet connected to the internet.","A distributed ledger that records transactions in linked blocks.","A pool of tokens used to facilitate decentralized trading."],"correctIndex":0,"explanation":"The correct answer is: An offline storage method for crypto private keys."},
+      {"category":"crypto","type":"mcq","question":"Choose the correct meaning of Volatility.","options":["The speed and size of price movement.","The total value of a cryptocurrency based on price times circulating supply.","The secret credential that controls access to crypto funds.","A crypto asset designed to track a relatively stable reference value."],"correctIndex":0,"explanation":"The correct answer is: The speed and size of price movement."},
+      {"category":"crypto","type":"mcq","question":"In trading, what does DeFi mean?","options":["Blockchain-based financial services without traditional intermediaries.","A distributed ledger that records transactions in linked blocks.","The amount of coins currently available in the market.","A scaling solution built on top of a base blockchain."],"correctIndex":0,"explanation":"The correct answer is: Blockchain-based financial services without traditional intermediaries."},
+      {"category":"crypto","type":"mcq","question":"What is the best definition of Tokenomics?","options":["The economic design of a token, including supply and incentives.","The price paid to buy an option.","A pool of tokens used to facilitate decentralized trading.","An offline storage method for crypto private keys."],"correctIndex":0,"explanation":"The correct answer is: The economic design of a token, including supply and incentives."},
+      {"category":"crypto","type":"mcq","question":"Which statement about Liquidity pool is correct?","options":["A pool of tokens used to facilitate decentralized trading.","The total value of a cryptocurrency based on price times circulating supply.","A blockchain-based financial services without traditional intermediaries.","The amount of coins currently available in the market."],"correctIndex":0,"explanation":"The correct answer is: A pool of tokens used to facilitate decentralized trading."},
+      {"category":"crypto","type":"tf","question":"True or false: Altcoin means Any cryptocurrency other than Bitcoin.","options":["True","False"],"correctIndex":0,"explanation":"Altcoin means Any cryptocurrency other than Bitcoin."},
+
+      {"category":"stocks","type":"mcq","question":"Which choice correctly explains Dividend?","options":["A company’s reported financial results for a period.","A cash or stock distribution paid to shareholders.","An order to buy or sell only at a specified price or better.","A measure of a stock’s sensitivity to market movements."],"correctIndex":1,"explanation":"The correct answer is: A cash or stock distribution paid to shareholders."},
+      {"category":"stocks","type":"mcq","question":"What is the best definition of EPS?","options":["The number of shares traded during a period.","Earnings per share.","A company repurchasing its own shares.","A jump in price between one session and the next."],"correctIndex":1,"explanation":"The correct answer is: Earnings per share."},
+      {"category":"stocks","type":"mcq","question":"Which answer best defines Limit order?","options":["An order to buy or sell immediately at the best available price.","An order to buy or sell only at a specified price or better.","A company’s reported financial results for a period.","A measure of how widely participation is spread across stocks."],"correctIndex":1,"explanation":"The correct answer is: An order to buy or sell only at a specified price or better."},
+      {"category":"stocks","type":"mcq","question":"A trader uses the term Float. What does it refer to?","options":["The number of shares available for public trading.","The value of a company based on share price times shares outstanding.","A company’s forward-looking expectations about business performance.","Trading that occurs outside the main session."],"correctIndex":0,"explanation":"The correct answer is: The number of shares available for public trading."},
+      {"category":"stocks","type":"mcq","question":"What does Short selling describe in markets?","options":["Borrowing and selling shares in an attempt to profit from lower prices.","A company repurchasing its own shares.","A group of companies operating in a similar part of the economy.","The number of shares traded during a period."],"correctIndex":0,"explanation":"The correct answer is: Borrowing and selling shares in an attempt to profit from lower prices."},
+      {"category":"stocks","type":"mcq","question":"Which statement about P/E ratio is correct?","options":["A valuation metric comparing share price to earnings per share.","A company’s reported financial results for a period.","The number of shares available for public trading.","An initial public offering."],"correctIndex":0,"explanation":"The correct answer is: A valuation metric comparing share price to earnings per share."},
+      {"category":"stocks","type":"mcq","question":"Which answer best defines Guidance?","options":["Management’s forward-looking expectations about business performance.","The number of shares traded during a period.","An order to buy or sell immediately at the best available price.","A price area where selling pressure has historically been strong enough to slow or reject price."],"correctIndex":0,"explanation":"The correct answer is: Management’s forward-looking expectations about business performance."},
+      {"category":"stocks","type":"mcq","question":"What is the best definition of Beta?","options":["The total value of a company based on share price times shares outstanding.","A measure of a stock’s sensitivity to market movements.","A group of companies operating in a similar part of the economy.","Trading that occurs outside the main session."],"correctIndex":1,"explanation":"The correct answer is: A measure of a stock’s sensitivity to market movements."},
+      {"category":"stocks","type":"mcq","question":"Choose the correct meaning of Market capitalization.","options":["The value of a company based on share price times shares outstanding.","A measure of how widely participation is spread across stocks.","A company repurchasing its own shares.","A company’s reported financial results for a period."],"correctIndex":0,"explanation":"The correct answer is: The value of a company based on share price times shares outstanding."},
+      {"category":"stocks","type":"tf","question":"True or false: Gap means A jump in price between one session and the next.","options":["True","False"],"correctIndex":0,"explanation":"Gap means A jump in price between one session and the next."},
+
+      {"category":"futures","type":"mcq","question":"What does Tick size describe in markets?","options":["The minimum price increment for a futures contract.","The monetary value of one minimum price move.","The capital required to keep a futures position open.","The process of closing the contract financially or physically."],"correctIndex":0,"explanation":"The correct answer is: The minimum price increment for a futures contract."},
+      {"category":"futures","type":"mcq","question":"Which answer best defines Open interest?","options":["The capital required to open a futures position.","The number of active outstanding futures contracts.","A standardized agreement to buy or sell an asset at a future date.","The cash value of a one-point move in a contract."],"correctIndex":1,"explanation":"The correct answer is: The number of active outstanding futures contracts."},
+      {"category":"futures","type":"mcq","question":"In trading, what does Contract mean?","options":["A standardized agreement to buy or sell an asset at a future date.","The date a futures contract matures.","A lower day-trading margin sometimes offered during the session.","The transfer process tied to certain physically settled contracts."],"correctIndex":0,"explanation":"The correct answer is: A standardized agreement to buy or sell an asset at a future date."},
+      {"category":"futures","type":"mcq","question":"Which statement about Contango is correct?","options":["A condition where longer-dated contracts trade above nearer ones.","A condition where nearer contracts trade above longer-dated ones.","A smaller-sized futures contract.","A participant aiming to profit from price changes."],"correctIndex":0,"explanation":"The correct answer is: A condition where longer-dated contracts trade above nearer ones."},
+      {"category":"futures","type":"mcq","question":"Choose the correct meaning of Tick value.","options":["The monetary value of one minimum price move.","The minimum price increment for a futures contract.","The cash value of a one-point move in a contract.","The capital required to keep a futures position open."],"correctIndex":0,"explanation":"The correct answer is: The monetary value of one minimum price move."},
+      {"category":"futures","type":"mcq","question":"A quiz asks about Expiration in Futures. Which choice is right?","options":["The date a futures contract matures.","The process of closing a near-expiry contract and opening a later one.","The transfer process tied to certain physically settled contracts.","The capital required to keep a futures position open."],"correctIndex":0,"explanation":"The correct answer is: The date a futures contract matures."},
+      {"category":"futures","type":"mcq","question":"What is the best definition of Initial margin?","options":["The capital required to open a futures position.","The capital required to keep a futures position open.","A smaller-sized futures contract.","The cash value of a one-point move in a contract."],"correctIndex":0,"explanation":"The correct answer is: The capital required to open a futures position."},
+      {"category":"futures","type":"mcq","question":"Which answer best defines Rollover?","options":["Closing a near-expiry contract and opening a later one.","The transfer process tied to certain physically settled contracts.","A standardized agreement to buy or sell an asset at a future date.","The number of active outstanding futures contracts."],"correctIndex":0,"explanation":"The correct answer is: Closing a near-expiry contract and opening a later one."},
+      {"category":"futures","type":"mcq","question":"Which answer best defines Hedger?","options":["A participant using futures to reduce business or portfolio risk.","A participant aiming to profit from price changes.","A lower day-trading margin sometimes offered during the session.","The cash value of a one-point move in a contract."],"correctIndex":0,"explanation":"The correct answer is: A participant using futures to reduce business or portfolio risk."},
+      {"category":"futures","type":"tf","question":"True or false: Backwardation means A condition where nearer contracts trade above longer-dated ones.","options":["True","False"],"correctIndex":0,"explanation":"Backwardation means A condition where nearer contracts trade above longer-dated ones."},
+
+      {"category":"indices","type":"mcq","question":"What is the best definition of Index?","options":["A basket-based benchmark used to track part of the market.","A futures contract tracking an equity index.","A stock or asset included in an index.","A market mood favoring defensive or safer assets."],"correctIndex":0,"explanation":"The correct answer is: A basket-based benchmark used to track part of the market."},
+      {"category":"indices","type":"mcq","question":"Choose the correct meaning of Market-cap-weighted index.","options":["An index where larger companies have greater influence.","An index where higher-priced stocks have greater influence.","A scheduled update to an index’s composition or weights.","A benchmark used to evaluate performance."],"correctIndex":0,"explanation":"The correct answer is: An index where larger companies have greater influence."},
+      {"category":"indices","type":"mcq","question":"Which answer best defines Weighting?","options":["The method used to determine each component’s influence on an index.","A basket-based benchmark used to track part of the market.","Capital moving from one part of the market to another.","A stock or asset included in an index."],"correctIndex":0,"explanation":"The correct answer is: The method used to determine each component’s influence on an index."},
+      {"category":"indices","type":"mcq","question":"What does Benchmark describe in markets?","options":["A reference index used to evaluate performance.","An index where higher-priced stocks have greater influence.","A market mood favoring growth-sensitive assets.","A gap between an ETF’s return and its benchmark return."],"correctIndex":0,"explanation":"The correct answer is: A reference index used to evaluate performance."},
+      {"category":"indices","type":"mcq","question":"Which statement about Sector rotation is correct?","options":["Capital moving from one part of the market to another.","A stock or asset included in an index.","A scheduled update to an index’s composition or weights.","A reference index used to evaluate performance."],"correctIndex":0,"explanation":"The correct answer is: Capital moving from one part of the market to another."},
+      {"category":"indices","type":"mcq","question":"Choose the correct meaning of Risk-on.","options":["A market mood favoring growth-sensitive assets.","A market mood favoring defensive or safer assets.","A reference index used to evaluate performance.","An index where higher-priced stocks have greater influence."],"correctIndex":0,"explanation":"The correct answer is: A market mood favoring growth-sensitive assets."},
+      {"category":"indices","type":"mcq","question":"A trader uses the term Constituent. What does it refer to?","options":["A stock or asset included in an index.","A reference index used to evaluate performance.","Capital moving from one part of the market to another.","A futures contract tracking an equity index."],"correctIndex":0,"explanation":"The correct answer is: A stock or asset included in an index."},
+      {"category":"indices","type":"mcq","question":"Which answer best defines Price-weighted index?","options":["An index where higher-priced stocks have greater influence.","An index where larger companies have greater influence.","A benchmark used to evaluate performance.","A gap between an ETF’s return and its benchmark return."],"correctIndex":0,"explanation":"The correct answer is: An index where higher-priced stocks have greater influence."},
+      {"category":"indices","type":"mcq","question":"What is the best definition of Index rebalance?","options":["A scheduled update to an index’s composition or weights.","A futures contract tracking an equity index.","A market mood favoring growth-sensitive assets.","A reference index used to evaluate performance."],"correctIndex":0,"explanation":"The correct answer is: A scheduled update to an index’s composition or weights."},
+      {"category":"indices","type":"tf","question":"True or false: Risk-off means A market mood favoring defensive or safer assets.","options":["True","False"],"correctIndex":0,"explanation":"Risk-off means A market mood favoring defensive or safer assets."},
+
+      {"category":"bonds","type":"mcq","question":"What is the best definition of Bond?","options":["A debt instrument issued by governments, municipalities, or companies.","The return earned on a bond relative to price and cash flows.","The amount repaid at maturity.","A bond that the issuer can repay before maturity."],"correctIndex":0,"explanation":"The correct answer is: A debt instrument issued by governments, municipalities, or companies."},
+      {"category":"bonds","type":"mcq","question":"Which answer best defines Yield?","options":["The return earned on a bond relative to price and cash flows.","The interest payment rate on a bond.","The amount repaid at maturity.","The risk that the issuer will fail to make promised payments."],"correctIndex":0,"explanation":"The correct answer is: The return earned on a bond relative to price and cash flows."},
+      {"category":"bonds","type":"mcq","question":"Choose the correct meaning of Duration.","options":["A measure of bond sensitivity to interest-rate changes.","The date when the bond principal is repaid.","A measure refining how bond prices react to yield changes.","A bond issued by a company."],"correctIndex":0,"explanation":"The correct answer is: A measure of bond sensitivity to interest-rate changes."},
+      {"category":"bonds","type":"mcq","question":"Which statement about Credit spread is correct?","options":["The yield difference between bonds of different credit quality.","A common measure of inflation.","A debt instrument issued by governments, municipalities, or companies.","The return earned on a bond relative to price and cash flows."],"correctIndex":0,"explanation":"The correct answer is: The yield difference between bonds of different credit quality."},
+      {"category":"bonds","type":"mcq","question":"A trader uses the term Yield curve. What does it refer to?","options":["A comparison of yields across different maturities.","A measure of bond sensitivity to interest-rate changes.","A bond issued by a state or local government.","A bond that the issuer can repay before maturity."],"correctIndex":0,"explanation":"The correct answer is: A comparison of yields across different maturities."},
+      {"category":"bonds","type":"mcq","question":"What does Treasury describe in markets?","options":["A government bond issued by the United States.","A bond issued by a company.","A lower-rated bond with higher default risk and usually higher yield.","Treasury Inflation-Protected Securities."],"correctIndex":0,"explanation":"The correct answer is: A government bond issued by the United States."},
+      {"category":"bonds","type":"mcq","question":"Which answer best defines Default risk?","options":["The risk that the issuer will fail to make promised payments.","The amount repaid at maturity.","The interest payment rate on a bond.","A bond issued by a state or local government."],"correctIndex":0,"explanation":"The correct answer is: The risk that the issuer will fail to make promised payments."},
+      {"category":"bonds","type":"mcq","question":"Choose the correct meaning of Callable bond.","options":["A bond that the issuer can repay before maturity.","A bond issued by a company.","A measure refining how bond prices react to yield changes.","A government bond issued by the United States."],"correctIndex":0,"explanation":"The correct answer is: A bond that the issuer can repay before maturity."},
+      {"category":"bonds","type":"mcq","question":"In trading, what does TIPS mean?","options":["Treasury Inflation-Protected Securities.","Treasury Industrial Price Securities.","Temporary Inflation Protection System.","Term Interest Pricing Spread."],"correctIndex":0,"explanation":"The correct answer is: Treasury Inflation-Protected Securities."},
+      {"category":"bonds","type":"tf","question":"True or false: Coupon means The interest payment rate on a bond.","options":["True","False"],"correctIndex":0,"explanation":"Coupon means The interest payment rate on a bond."},
+
+      {"category":"economy","type":"mcq","question":"What is the best definition of Inflation?","options":["A general increase in prices over time.","A general decline in prices across the economy.","A significant broad slowdown in economic activity.","A survey-based gauge of household sentiment."],"correctIndex":0,"explanation":"The correct answer is: A general increase in prices over time."},
+      {"category":"economy","type":"mcq","question":"Which statement about GDP is correct?","options":["Gross domestic product, a measure of economic output.","Consumer Price Index, a common measure of inflation.","A survey-based measure of business activity.","A major US employment release showing job growth."],"correctIndex":0,"explanation":"The correct answer is: Gross domestic product, a measure of economic output."},
+      {"category":"economy","type":"mcq","question":"Choose the correct meaning of Central bank.","options":["An institution responsible for monetary policy.","Government spending and taxation decisions.","A common measure of inflation.","A survey-based gauge of household sentiment."],"correctIndex":0,"explanation":"The correct answer is: An institution responsible for monetary policy."},
+      {"category":"economy","type":"mcq","question":"What does Monetary policy describe in markets?","options":["Central bank actions that influence money, credit, and rates.","Government spending and taxation decisions.","A significant broad slowdown in economic activity.","A survey-based measure of business activity."],"correctIndex":0,"explanation":"The correct answer is: Central bank actions that influence money, credit, and rates."},
+      {"category":"economy","type":"mcq","question":"Which answer best defines Recession?","options":["A significant broad slowdown in economic activity.","A slowdown in inflation without a severe recession.","A decrease in policy interest rates.","A general increase in prices over time."],"correctIndex":0,"explanation":"The correct answer is: A significant broad slowdown in economic activity."},
+      {"category":"economy","type":"mcq","question":"A trader uses the term CPI. What does it refer to?","options":["Consumer Price Index, a common measure of inflation.","Producer Price Index, a measure of wholesale inflation.","Gross domestic product, a measure of economic output.","A survey-based gauge of household sentiment."],"correctIndex":0,"explanation":"The correct answer is: Consumer Price Index, a common measure of inflation."},
+      {"category":"economy","type":"mcq","question":"Which answer best defines Rate hike?","options":["An increase in policy interest rates.","A decrease in policy interest rates.","Central bank asset purchases intended to support the economy.","Central bank balance-sheet reduction."],"correctIndex":0,"explanation":"The correct answer is: An increase in policy interest rates."},
+      {"category":"economy","type":"mcq","question":"Choose the correct meaning of Nonfarm payrolls.","options":["A major US employment release showing job growth.","A survey-based measure of business activity.","A measure of consumer spending activity.","A significant broad slowdown in economic activity."],"correctIndex":0,"explanation":"The correct answer is: A major US employment release showing job growth."},
+      {"category":"economy","type":"mcq","question":"In trading, what does Quantitative easing mean?","options":["Central bank asset purchases intended to support the economy.","Central bank balance-sheet reduction.","A significant broad slowdown in economic activity.","Government spending and taxation decisions."],"correctIndex":0,"explanation":"The correct answer is: Central bank asset purchases intended to support the economy."},
+      {"category":"economy","type":"tf","question":"True or false: Deflation means A general decline in prices across the economy.","options":["True","False"],"correctIndex":0,"explanation":"Deflation means A general decline in prices across the economy."},
+
+      {"category":"options","type":"mcq","question":"What does Call option describe in markets?","options":["A contract giving the right to buy an asset at a set price before expiration.","A contract giving the right to sell an asset at a set price before expiration.","The price paid to buy an option.","The price specified in an options contract."],"correctIndex":0,"explanation":"The correct answer is: A contract giving the right to buy an asset at a set price before expiration."},
+      {"category":"options","type":"mcq","question":"Which statement about Premium is correct?","options":["The price paid to buy an option.","The price specified in an options contract.","The in-the-money portion of an option’s value.","The part of an option’s premium beyond intrinsic value."],"correctIndex":0,"explanation":"The correct answer is: The price paid to buy an option."},
+      {"category":"options","type":"mcq","question":"Which answer best defines Implied volatility?","options":["The market’s estimate of future volatility embedded in option prices.","The in-the-money portion of an option’s value.","A Greek measuring time decay.","A Greek measuring sensitivity to implied volatility."],"correctIndex":0,"explanation":"The correct answer is: The market’s estimate of future volatility embedded in option prices."},
+      {"category":"options","type":"mcq","question":"Choose the correct meaning of Delta.","options":["A Greek measuring how much an option may move for a $1 move in the underlying.","A Greek measuring the rate of change of delta.","A Greek measuring time decay.","A Greek measuring sensitivity to implied volatility."],"correctIndex":0,"explanation":"The correct answer is: A Greek measuring how much an option may move for a $1 move in the underlying."},
+      {"category":"options","type":"mcq","question":"A quiz asks about Theta in Options. Which choice is right?","options":["A Greek measuring time decay.","A Greek measuring the rate of change of delta.","A Greek measuring sensitivity to implied volatility.","The right to sell an asset at a set price before expiration."],"correctIndex":0,"explanation":"The correct answer is: A Greek measuring time decay."},
+      {"category":"options","type":"mcq","question":"Which answer best defines Strike price?","options":["The price specified in an options contract.","The last date the option can be exercised or held.","The price paid to buy an option.","The in-the-money portion of an option’s value."],"correctIndex":0,"explanation":"The correct answer is: The price specified in an options contract."},
+      {"category":"options","type":"mcq","question":"What is the best definition of Time value?","options":["The part of an option’s premium beyond intrinsic value.","The in-the-money portion of an option’s value.","The market’s estimate of future volatility embedded in option prices.","A Greek measuring sensitivity to implied volatility."],"correctIndex":0,"explanation":"The correct answer is: The part of an option’s premium beyond intrinsic value."},
+      {"category":"options","type":"mcq","question":"Which choice correctly explains In the money?","options":["An option with intrinsic value.","An option without intrinsic value.","An option whose strike is near the underlying price.","The obligation triggered for the option seller when exercised against."],"correctIndex":0,"explanation":"The correct answer is: An option with intrinsic value."},
+      {"category":"options","type":"mcq","question":"What is the best definition of Assignment?","options":["The obligation triggered for the option seller when exercised against.","Using the contractual right embedded in an option.","The price paid to buy an option.","The number of outstanding option contracts."],"correctIndex":0,"explanation":"The correct answer is: The obligation triggered for the option seller when exercised against."},
+      {"category":"options","type":"tf","question":"True or false: Put option means A contract giving the right to sell an asset at a set price before expiration.","options":["True","False"],"correctIndex":0,"explanation":"Put option means A contract giving the right to sell an asset at a set price before expiration."},
+
+      {"category":"funds","type":"mcq","question":"What is the best definition of ETF?","options":["An exchange-traded fund that can be bought and sold during the trading day.","A pooled investment vehicle typically priced once per day.","The annual fee charged by a fund, expressed as a percentage.","The per-share value of a fund’s holdings."],"correctIndex":0,"explanation":"The correct answer is: An exchange-traded fund that can be bought and sold during the trading day."},
+      {"category":"funds","type":"mcq","question":"Which answer best defines NAV?","options":["Net asset value, the per-share value of a fund’s holdings.","The annual fee charged by a fund, expressed as a percentage.","A fund designed to track a benchmark index.","A large block of ETF shares used in the creation/redemption process."],"correctIndex":0,"explanation":"The correct answer is: Net asset value, the per-share value of a fund’s holdings."},
+      {"category":"funds","type":"mcq","question":"Choose the correct meaning of Expense ratio.","options":["The annual fee charged by a fund, expressed as a percentage.","The difference between a fund’s performance and its benchmark.","Assets under management.","The official document explaining a fund’s objectives, risks, and fees."],"correctIndex":0,"explanation":"The correct answer is: The annual fee charged by a fund, expressed as a percentage."},
+      {"category":"funds","type":"mcq","question":"Which statement about Active fund is correct?","options":["A fund managed with the goal of outperforming a benchmark.","A fund primarily designed to match benchmark performance.","A fund investing primarily in fixed-income securities.","A low-duration fund focused on short-term instruments."],"correctIndex":0,"explanation":"The correct answer is: A fund managed with the goal of outperforming a benchmark."},
+      {"category":"funds","type":"mcq","question":"A trader uses the term Tracking error. What does it refer to?","options":["The gap between a fund’s performance and its benchmark.","The annual fee charged by a fund, expressed as a percentage.","A fund designed to track a benchmark index.","Assets under management."],"correctIndex":0,"explanation":"The correct answer is: The gap between a fund’s performance and its benchmark."},
+      {"category":"funds","type":"mcq","question":"Which answer best defines Rebalancing?","options":["Adjusting holdings back toward target weights.","A fund designed to track a benchmark index.","Using fund distributions to buy additional shares.","A firm that helps create or redeem ETF shares."],"correctIndex":0,"explanation":"The correct answer is: Adjusting holdings back toward target weights."},
+      {"category":"funds","type":"mcq","question":"Which choice correctly explains Prospectus?","options":["The official document explaining a fund’s objectives, risks, and fees.","The per-share value of a fund’s holdings.","A low-duration fund focused on short-term instruments.","A large block of ETF shares used in the creation/redemption process."],"correctIndex":0,"explanation":"The correct answer is: The official document explaining a fund’s objectives, risks, and fees."},
+      {"category":"funds","type":"mcq","question":"What does AUM describe in markets?","options":["Assets under management.","Net asset value, the per-share value of a fund’s holdings.","A pooled investment vehicle typically priced once per day.","A fund focused on a single part of the market."],"correctIndex":0,"explanation":"The correct answer is: Assets under management."},
+      {"category":"funds","type":"mcq","question":"Which answer best defines Authorized participant?","options":["A firm that helps create or redeem ETF shares.","A large block of ETF shares used in the creation/redemption process.","A pooled investment vehicle typically priced once per day.","A low-duration fund focused on short-term instruments."],"correctIndex":0,"explanation":"The correct answer is: A firm that helps create or redeem ETF shares."},
+      {"category":"funds","type":"tf","question":"True or false: Index fund means A fund designed to track a benchmark index.","options":["True","False"],"correctIndex":0,"explanation":"Index fund means A fund designed to track a benchmark index."}
+    ];
+
+    const CATEGORY_LABELS = {
+      all: "All Markets",
+      forex: "Forex",
+      crypto: "Crypto",
+      stocks: "Stocks",
+      futures: "Futures",
+      funds: "Funds",
+      indices: "Indices",
+      bonds: "Bonds",
+      economy: "Economy",
+      options: "Options"
+    };
+
+    const FULL_COUNTS = {
+      all: 1000,
+      forex: 120,
+      crypto: 110,
+      stocks: 120,
+      futures: 110,
+      funds: 110,
+      indices: 100,
+      bonds: 100,
+      economy: 120,
+      options: 110
+    };
+
+    const CATEGORY_DESCRIPTIONS = {
+      all: "Pulls random questions from the entire 1,000-question bank.",
+      forex: "Pairs, pips, leverage, margin, structure, and execution.",
+      crypto: "Blockchain, wallets, tokenomics, volatility, and DeFi basics.",
+      stocks: "Orders, earnings, valuation, sectors, and stock-market mechanics.",
+      futures: "Contracts, tick values, margin, rollover, and open interest.",
+      funds: "ETF, mutual fund, passive, active, NAV, and tracking concepts.",
+      indices: "Benchmarks, weighting, breadth, sector rotation, and market mood.",
+      bonds: "Yield, duration, spreads, credit risk, and fixed-income basics.",
+      economy: "Inflation, GDP, rates, payrolls, policy, recession, and macro.",
+      options: "Calls, puts, strikes, Greeks, premium, time decay, and IV."
+    };
+
+    let selectedCategory = "all";
+    let activeQuestions = [];
+    let currentIndex = 0;
+    let selectedAnswers = [];
+
+    const categoriesEl = document.getElementById("categories");
+    const startQuizBtn = document.getElementById("startQuizBtn");
+    const randomCategoryBtn = document.getElementById("randomCategoryBtn");
+    const quizSection = document.getElementById("quizSection");
+    const resultsSection = document.getElementById("resultsSection");
+    const quizTitle = document.getElementById("quizTitle");
+    const quizSubtitle = document.getElementById("quizSubtitle");
+    const questionText = document.getElementById("questionText");
+    const optionsWrap = document.getElementById("optionsWrap");
+    const nextBtn = document.getElementById("nextBtn");
+    const quitQuizBtn = document.getElementById("quitQuizBtn");
+    const progressMeta = document.getElementById("progressMeta");
+    const progressFill = document.getElementById("progressFill");
+    const selectedCategoryLabel = document.getElementById("selectedCategoryLabel");
+    const questionCategoryTag = document.getElementById("questionCategoryTag");
+    const scoreValue = document.getElementById("scoreValue");
+    const percentageValue = document.getElementById("percentageValue");
+    const correctValue = document.getElementById("correctValue");
+    const wrongValue = document.getElementById("wrongValue");
+    const reviewList = document.getElementById("reviewList");
+    const retryBtn = document.getElementById("retryBtn");
+    const newSetupBtn = document.getElementById("newSetupBtn");
+
+    function shuffle(array){
+      const arr = [...array];
+      for(let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function renderCategories(){
+      const order = ["all","forex","crypto","stocks","futures","funds","indices","bonds","economy","options"];
+      categoriesEl.innerHTML = order.map(key => `
+        <article class="card category-card ${selectedCategory === key ? 'selected' : ''}" data-category="${key}">
+          <div class="tag">${CATEGORY_LABELS[key]}</div>
+          <h3>${CATEGORY_LABELS[key]}</h3>
+          <p>${CATEGORY_DESCRIPTIONS[key]}</p>
+          <span class="category-count">${FULL_COUNTS[key].toLocaleString()} questions</span>
+        </article>
+      `).join("");
+
+      document.querySelectorAll(".category-card").forEach(card => {
+        card.addEventListener("click", () => {
+          selectedCategory = card.dataset.category;
+          renderCategories();
+        });
+      });
+    }
+
+    function getPool(){
+      return selectedCategory === "all"
+        ? QUIZ_BANK
+        : QUIZ_BANK.filter(q => q.category === selectedCategory);
+    }
+
+    function startQuiz(){
+      const pool = shuffle(getPool());
+      activeQuestions = pool.slice(0, 10).map(q => {
+        const options = [...q.options];
+        const correctAnswer = q.options[q.correctIndex];
+        const shuffledOptions = shuffle(options);
+        return {
+          ...q,
+          options: shuffledOptions,
+          correctIndex: shuffledOptions.indexOf(correctAnswer)
+        };
+      });
+      currentIndex = 0;
+      selectedAnswers = Array(activeQuestions.length).fill(null);
+      quizTitle.textContent = CATEGORY_LABELS[selectedCategory] + " Quiz";
+      quizSubtitle.textContent = "10 randomized questions. Review every answer at the end.";
+      selectedCategoryLabel.textContent = "Category: " + CATEGORY_LABELS[selectedCategory];
+      resultsSection.classList.remove("active");
+      quizSection.classList.add("active");
+      renderQuestion();
+      quizSection.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+
+    function renderQuestion(){
+      const q = activeQuestions[currentIndex];
+      if(!q) return;
+      progressMeta.textContent = `Question ${currentIndex + 1} of ${activeQuestions.length}`;
+      progressFill.style.width = `${((currentIndex + 1) / activeQuestions.length) * 100}%`;
+      questionCategoryTag.textContent = CATEGORY_LABELS[q.category];
+      questionText.textContent = q.question;
+      optionsWrap.innerHTML = q.options.map((opt, index) => `
+        <button class="option ${selectedAnswers[currentIndex] === index ? 'selected' : ''}" data-index="${index}">
+          ${String.fromCharCode(65 + index)}. ${opt}
+        </button>
+      `).join("");
+
+      document.querySelectorAll(".option").forEach(btn => {
+        btn.addEventListener("click", () => {
+          selectedAnswers[currentIndex] = Number(btn.dataset.index);
+          renderQuestion();
+        });
+      });
+
+      nextBtn.textContent = currentIndex === activeQuestions.length - 1 ? "Finish Quiz" : "Next Question";
+    }
+
+    function finishQuiz(){
+      let correct = 0;
+      activeQuestions.forEach((q, idx) => {
+        if(selectedAnswers[idx] === q.correctIndex) correct++;
+      });
+
+      scoreValue.textContent = `${correct}/${activeQuestions.length}`;
+      percentageValue.textContent = `${Math.round((correct / activeQuestions.length) * 100)}%`;
+      correctValue.textContent = correct;
+      wrongValue.textContent = activeQuestions.length - correct;
+
+      reviewList.innerHTML = activeQuestions.map((q, idx) => {
+        const selectedIndex = selectedAnswers[idx];
+        const selectedText = selectedIndex === null ? "No answer selected" : q.options[selectedIndex];
+        const correctText = q.options[q.correctIndex];
+        const isCorrect = selectedIndex === q.correctIndex;
+
+        return `
+          <article class="review-card ${isCorrect ? 'good' : 'bad'}">
+            <div class="review-top">
+              <div>
+                <div class="tag">${CATEGORY_LABELS[q.category]}</div>
+                <h3 style="margin:0">${idx + 1}. ${q.question}</h3>
+              </div>
+              <div class="review-status ${isCorrect ? 'good' : 'bad'}">
+                ${isCorrect ? 'Correct' : 'Wrong'}
+              </div>
+            </div>
+            <div class="answer-line"><b>Your answer:</b> ${selectedText}</div>
+            <div class="answer-line"><b>Correct answer:</b> ${correctText}</div>
+            <div class="answer-line"><b>Explanation:</b> ${q.explanation}</div>
+          </article>
+        `;
+      }).join("");
+
+      quizSection.classList.remove("active");
+      resultsSection.classList.add("active");
+      resultsSection.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+
+    startQuizBtn.addEventListener("click", startQuiz);
+
+    randomCategoryBtn.addEventListener("click", () => {
+      const keys = ["forex","crypto","stocks","futures","funds","indices","bonds","economy","options"];
+      selectedCategory = keys[Math.floor(Math.random() * keys.length)];
+      renderCategories();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if(selectedAnswers[currentIndex] === null) {
+        alert("Select an answer before moving on.");
+        return;
+      }
+      if(currentIndex === activeQuestions.length - 1) {
+        finishQuiz();
+      } else {
+        currentIndex++;
+        renderQuestion();
+      }
+    });
+
+    quitQuizBtn.addEventListener("click", () => {
+      if(confirm("Quit this quiz and go back to setup?")) {
+        quizSection.classList.remove("active");
+        window.scrollTo({top: document.getElementById("setup").offsetTop - 18, behavior: "smooth"});
+      }
+    });
+
+    retryBtn.addEventListener("click", startQuiz);
+    newSetupBtn.addEventListener("click", () => {
+      resultsSection.classList.remove("active");
+      window.scrollTo({top: document.getElementById("setup").offsetTop - 18, behavior: "smooth"});
+    });
+
+    renderCategories();
+  </script>
+</body>
+</html>
