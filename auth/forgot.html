@@ -14,26 +14,26 @@
   <style>
     :root{
       --bg:#000;
-      --card: rgba(255,255,255,.06);
-      --stroke: rgba(255,255,255,.12);
-      --stroke2: rgba(255,255,255,.18);
+      --card: rgba(255, 255, 255, .06);
+      --stroke: rgba(255, 255, 255, .12);
+      --stroke2: rgba(255, 255, 255, .18);
       --text:#fff;
-      --muted: rgba(255,255,255,.72);
-      --muted2: rgba(255,255,255,.55);
-      --shadow: 0 18px 60px rgba(0,0,0,.65);
+      --muted: rgba(255, 255, 255, .72);
+      --muted2: rgba(255, 255, 255, .55);
+      --shadow: 0 18px 60px rgba(0, 0, 0, .65);
       --r: 22px;
-      --focus: 0 0 0 3px rgba(255,255,255,.18);
+      --focus: 0 0 0 3px rgba(255, 255, 255, .18);
 
       /* Light-mode tokens */
       --bgL: var(--bg-light, #fbfbfb);
       --textL: var(--text-light, #0b0b0b);
-      --cardL: rgba(255,255,255,.78);
-      --strokeL: rgba(0,0,0,.10);
-      --strokeL2: rgba(0,0,0,.16);
-      --mutedL: rgba(0,0,0,.62);
-      --mutedL2: rgba(0,0,0,.48);
-      --shadowL: 0 18px 60px rgba(0,0,0,.18);
-      --focusL: 0 0 0 3px rgba(0,0,0,.14);
+      --cardL: rgba(255, 255, 255, .78);
+      --strokeL: rgba(0, 0, 0, .10);
+      --strokeL2: rgba(0, 0, 0, .16);
+      --mutedL: rgba(0, 0, 0, .62);
+      --mutedL2: rgba(0, 0, 0, .48);
+      --shadowL: 0 18px 60px rgba(0, 0, 0, .18);
+      --focusL: 0 0 0 3px rgba(0, 0, 0, .14);
     }
 
     *{ box-sizing:border-box; }
@@ -49,19 +49,19 @@
     .bg{
       position:fixed; inset:0; z-index:-1; overflow:hidden;
       background:
-        radial-gradient(1100px 800px at 20% 25%, rgba(255,255,255,.10), transparent 55%),
-        radial-gradient(900px 650px at 85% 35%, rgba(255,255,255,.08), transparent 55%),
+        radial-gradient(1100px 800px at 20% 25%, rgba(255, 255, 255, .10), transparent 55%),
+        radial-gradient(900px 650px at 85% 35%, rgba(255, 255, 255, .08), transparent 55%),
         #000;
     }
     .bg::before{
       content:"";
       position:absolute; inset:-2px;
       background:
-        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+        linear-gradient(rgba(255, 255, 255, .06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .06) 1px, transparent 1px);
       background-size: 64px 64px;
       opacity:.18;
-      mask-image: radial-gradient(closest-side, rgba(0,0,0,.1), rgba(0,0,0,1));
+      mask-image: radial-gradient(closest-side, rgba(0, 0, 0, .1), rgba(0, 0, 0, 1));
       animation: gridFloat 10s ease-in-out infinite;
     }
     @keyframes gridFloat{
@@ -104,17 +104,17 @@
 
     a.top{
       display:inline-flex; align-items:center; gap:8px;
-      color: rgba(255,255,255,.78);
+      color: rgba(255, 255, 255, .78);
       text-decoration:none;
       font-size: 12px;
       padding: 7px 10px; /* slightly smaller fit */
-      border: 1px solid rgba(255,255,255,.12);
+      border: 1px solid rgba(255, 255, 255, .12);
       border-radius: 999px;
-      background: rgba(0,0,0,.25);
+      background: rgba(0, 0, 0, .25);
       backdrop-filter: blur(8px);
       white-space: nowrap;
     }
-    a.top:hover{ color:#fff; border-color: rgba(255,255,255,.22); }
+    a.top:hover{ color:#fff; border-color: rgba(255, 255, 255, .22); }
 
     h1{
       margin: 34px 0 8px; /* space for topbar */
@@ -139,26 +139,26 @@
       padding: 12px 14px;
       border-radius: 14px;
       border: 1px solid var(--stroke2);
-      background: rgba(0,0,0,.35);
+      background: rgba(0, 0, 0, .35);
       color:#fff;
       outline:none;
       transition: box-shadow .12s ease, border-color .12s ease, background .12s ease;
     }
-    input:focus{ box-shadow: var(--focus); border-color: rgba(255,255,255,.32); }
+    input:focus{ box-shadow: var(--focus); border-color: rgba(255, 255, 255, .32); }
 
     .btn{
       width:100%;
       margin-top: 12px;
       padding: 12px 14px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.92);
-      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(255, 255, 255, .92);
+      background: rgba(255, 255, 255, .92);
       color:#000;
       font-weight: 800;
       cursor:pointer;
       transition: background .12s ease, border-color .12s ease, color .12s ease;
     }
-    .btn:hover{ background: rgba(255,255,255,.98); }
+    .btn:hover{ background: rgba(255, 255, 255, .98); }
 
     .mini{
       display:flex;
@@ -168,11 +168,11 @@
       font-size: 12px;
     }
     .mini a{
-      color: rgba(255,255,255,.75);
+      color: rgba(255, 255, 255, .75);
       text-decoration:none;
-      border-bottom:1px solid rgba(255,255,255,.18);
+      border-bottom:1px solid rgba(255, 255, 255, .18);
     }
-    .mini a:hover{ color:#fff; border-bottom-color: rgba(255,255,255,.55); }
+    .mini a:hover{ color:#fff; border-bottom-color: rgba(255, 255, 255, .55); }
 
     /* =====================================================================
        ✅ LIGHT MODE OVERRIDES (same behavior as login/signup)
@@ -196,39 +196,39 @@
     body.light-mode label{ color: var(--mutedL2); }
 
     body.light-mode input{
-      background: rgba(255,255,255,.86);
-      color: rgba(0,0,0,.92);
+      background: rgba(255, 255, 255, .86);
+      color: rgba(0, 0, 0, .92);
       border-color: var(--strokeL2);
     }
-    body.light-mode input::placeholder{ color: rgba(0,0,0,.40); }
+    body.light-mode input::placeholder{ color: rgba(0, 0, 0, .40); }
     body.light-mode input:focus{
       box-shadow: var(--focusL);
-      border-color: rgba(0,0,0,.22);
+      border-color: rgba(0, 0, 0, .22);
     }
 
     body.light-mode .btn{
-      background: rgba(0,0,0,.92);
-      border-color: rgba(0,0,0,.92);
+      background: rgba(0, 0, 0, .92);
+      border-color: rgba(0, 0, 0, .92);
       color:#fff;
     }
-    body.light-mode .btn:hover{ background: rgba(0,0,0,.96); }
+    body.light-mode .btn:hover{ background: rgba(0, 0, 0, .96); }
 
     body.light-mode .mini a{
-      color: rgba(0,0,0,.70);
-      border-bottom-color: rgba(0,0,0,.18);
+      color: rgba(0, 0, 0, .70);
+      border-bottom-color: rgba(0, 0, 0, .18);
     }
     body.light-mode .mini a:hover{
-      color: rgba(0,0,0,.92);
-      border-bottom-color: rgba(0,0,0,.45);
+      color: rgba(0, 0, 0, .92);
+      border-bottom-color: rgba(0, 0, 0, .45);
     }
 
     body.light-mode a.top{
-      color: rgba(0,0,0,.72);
+      color: rgba(0, 0, 0, .72);
       border-color: var(--strokeL);
-      background: rgba(255,255,255,.72);
+      background: rgba(255, 255, 255, .72);
     }
     body.light-mode a.top:hover{
-      color: rgba(0,0,0,.92);
+      color: rgba(0, 0, 0, .92);
       border-color: var(--strokeL2);
     }
   </style>

@@ -10,35 +10,35 @@
   />
   <style>
     :root{
-      --bg:#f5f5f7;
+      --bg:#f5f5f5;
       --bg-soft:#ffffff;
-      --panel:rgba(255,255,255,0.84);
+      --panel:rgba(255, 255, 255, 0.84);
       --panel-strong:#ffffff;
-      --text:#0d0d12;
-      --text-soft:#5d6069;
-      --muted:#8c909b;
-      --line:rgba(13,13,18,0.10);
-      --line-strong:rgba(13,13,18,0.16);
-      --shadow:0 20px 60px rgba(0,0,0,0.08);
+      --text:#0e0e0e;
+      --text-soft:#606060;
+      --muted:#909090;
+      --line:rgba(14, 14, 14, 0.10);
+      --line-strong:rgba(14, 14, 14, 0.16);
+      --shadow:0 20px 60px rgba(0, 0, 0, 0.08);
       --radius-xl:30px;
       --radius-lg:24px;
       --radius-md:18px;
       --max:1380px;
-      --hero-glow:rgba(255,255,255,0.70);
+      --hero-glow:rgba(255, 255, 255, 0.70);
     }
 
     body.dark-mode{
-      --bg:#03050b;
-      --bg-soft:#070b15;
-      --panel:rgba(10,14,28,0.82);
-      --panel-strong:#090d18;
-      --text:#f5f7fb;
-      --text-soft:#b7becc;
-      --muted:#8791a7;
-      --line:rgba(255,255,255,0.08);
-      --line-strong:rgba(255,255,255,0.13);
-      --shadow:0 30px 80px rgba(0,0,0,0.42);
-      --hero-glow:rgba(120,140,255,0.08);
+      --bg:#050505;
+      --bg-soft:#0b0b0b;
+      --panel:rgba(14, 14, 14, 0.82);
+      --panel-strong:#0d0d0d;
+      --text:#f7f7f7;
+      --text-soft:#bebebe;
+      --muted:#919191;
+      --line:rgba(255, 255, 255, 0.08);
+      --line-strong:rgba(255, 255, 255, 0.13);
+      --shadow:0 30px 80px rgba(0, 0, 0, 0.42);
+      --hero-glow:rgba(147, 147, 147, 0.08);
     }
 
     *{
@@ -54,7 +54,7 @@
       font-family:Inter, Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
         radial-gradient(circle at 20% 0%, var(--hero-glow), transparent 28%),
-        radial-gradient(circle at 100% 12%, rgba(120,130,180,0.10), transparent 22%),
+        radial-gradient(circle at 100% 12%, rgba(133, 133, 133, 0.10), transparent 22%),
         var(--bg);
       color:var(--text);
       line-height:1.55;
@@ -69,7 +69,7 @@
       background-image:radial-gradient(var(--line) 1px, transparent 1px);
       background-size:18px 18px;
       opacity:.9;
-      mask-image:linear-gradient(to bottom, rgba(0,0,0,.75), rgba(0,0,0,.25));
+      mask-image:linear-gradient(to bottom, rgba(0, 0, 0, .75), rgba(0, 0, 0, .25));
       z-index:-1;
     }
 
@@ -91,7 +91,7 @@
       border-radius:34px;
       padding:28px;
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
         var(--panel);
       box-shadow:var(--shadow);
       backdrop-filter:blur(18px);
@@ -105,7 +105,7 @@
       bottom:-90px;
       width:260px;
       height:260px;
-      background:radial-gradient(circle, rgba(130,145,255,0.16), transparent 65%);
+      background:radial-gradient(circle, rgba(153, 153, 153, 0.16), transparent 65%);
       pointer-events:none;
     }
 
@@ -186,7 +186,7 @@
       padding:16px;
       border-radius:18px;
       border:1px solid var(--line);
-      background:rgba(255,255,255,0.03);
+      background:rgba(255, 255, 255, 0.03);
     }
 
     .stat strong{
@@ -329,7 +329,7 @@
       padding:14px;
       border:1px solid var(--line);
       border-radius:16px;
-      background:rgba(255,255,255,0.02);
+      background:rgba(255, 255, 255, 0.02);
     }
 
     .mini strong{
@@ -772,15 +772,15 @@
           largeChartUrl: "",
           isTransparent: true,
           showSymbolLogo: true,
-          plotLineColorGrowing: "rgba(41, 98, 255, 1)",
-          plotLineColorFalling: "rgba(41, 98, 255, 1)",
-          gridLineColor: "rgba(240, 243, 250, 0.00)",
-          scaleFontColor: "rgba(120, 123, 134, 1)",
-          belowLineFillColorGrowing: "rgba(41, 98, 255, 0.12)",
-          belowLineFillColorFalling: "rgba(41, 98, 255, 0.12)",
-          belowLineFillColorGrowingBottom: "rgba(41, 98, 255, 0)",
-          belowLineFillColorFallingBottom: "rgba(41, 98, 255, 0)",
-          symbolActiveColor: "rgba(41, 98, 255, 0.12)",
+          plotLineColorGrowing: "rgba(99, 99, 99, 1)",
+          plotLineColorFalling: "rgba(99, 99, 99, 1)",
+          gridLineColor: "rgba(243, 243, 243, 0.00)",
+          scaleFontColor: "rgba(123, 123, 123, 1)",
+          belowLineFillColorGrowing: "rgba(99, 99, 99, 0.12)",
+          belowLineFillColorFalling: "rgba(99, 99, 99, 0.12)",
+          belowLineFillColorGrowingBottom: "rgba(99, 99, 99, 0)",
+          belowLineFillColorFallingBottom: "rgba(99, 99, 99, 0)",
+          symbolActiveColor: "rgba(99, 99, 99, 0.12)",
           tabs: [
             {
               title: "Indices",

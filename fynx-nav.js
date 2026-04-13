@@ -59,7 +59,7 @@ function ensureDemoStyles() {
       width:32px;
       height:32px;
       border-radius:10px;
-      border:1px solid var(--line, rgba(255,255,255,.2));
+      border:1px solid var(--line, rgba(255, 255, 255, .2));
       background:transparent;
       color:inherit;
       cursor:pointer;
