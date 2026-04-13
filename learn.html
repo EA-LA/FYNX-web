@@ -4,175 +4,195 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>FYNX Finance World - Learn</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="assets/css/app-shell.css" />
+  <link rel="stylesheet" href="assets/css/mobile-fixes.css">
+
   <style>
     :root{
-      --bg:#fff;
-      --surface:#fff;
-      --surface-2:rgba(11,11,11,.04);
-      --text:#0b0b0b;
-      --muted:#606060;
-      --line:rgba(11,11,11,.10);
-      --accent:#0b0b0b;
-      --accent-soft:rgba(11,11,11,.08);
-      --shadow:0 18px 38px rgba(0,0,0,.06);
-      --nav-width:108px;
+      --bg:#ffffff;
+      --surface:#ffffff;
+      --surface-2:#f7f7f7;
+      --text:#0f0f0f;
+      --muted:#727272;
+      --line:#e7e7e7;
+      --chip:#f4f4f4;
+      --chip-line:#e7e7e7;
+      --hero-dot: rgba(0, 0, 0, 0.06);
       --radius:14px;
     }
+
     body.dark-mode{
-      --bg:#000;
-      --surface:#0b0b0b;
-      --surface-2:rgba(243,243,243,.08);
-      --text:#f3f3f3;
-      --muted:#afafaf;
-      --line:rgba(243,243,243,.12);
-      --accent:#f3f3f3;
-      --accent-soft:rgba(243,243,243,.10);
-      --shadow:0 20px 44px rgba(0,0,0,.55);
+      --bg:#000000;
+      --surface:#000000;
+      --surface-2:rgba(255, 255, 255, 0.04);
+      --text:#ffffff;
+      --muted:rgba(255, 255, 255, 0.55);
+      --line:rgba(255, 255, 255, 0.10);
+      --chip:rgba(255, 255, 255, 0.06);
+      --chip-line:rgba(255, 255, 255, 0.10);
+      --hero-dot: rgba(255, 255, 255, 0.08);
     }
-    *{box-sizing:border-box;margin:0;padding:0}
+
+    *{margin:0;padding:0;box-sizing:border-box}
+
     body{
-      font-family:"Manrope",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      font-family:"Manrope", system-ui, -apple-system, Segoe UI, sans-serif;
+      background:
+        radial-gradient(circle at 1px 1px, var(--hero-dot) 1px, transparent 1px) 0 0 / 18px 18px,
+        linear-gradient(var(--bg), var(--bg));
       color:var(--text);
       min-height:100vh;
-      background:
-        radial-gradient(circle at 1px 1px, rgba(0,0,0,.06) 1px, transparent 1px) 0 0 / 18px 18px,
-        linear-gradient(var(--bg), var(--bg));
     }
-    body.dark-mode{
-      background:
-        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px) 0 0 / 26px 26px,
-        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px) 0 0 / 26px 26px,
-        radial-gradient(circle at 40% 10%, rgba(255,255,255,.06) 0%, transparent 45%),
-        radial-gradient(circle at 70% 0%, rgba(255,255,255,.04) 0%, transparent 40%),
-        linear-gradient(var(--bg), var(--bg));
-    }
-    .dashboard-container{display:flex;min-height:100vh;width:100%}
-    .nav-panel{width:var(--nav-width);position:fixed;left:0;top:0;height:100vh}
-    .main-content{margin-left:var(--nav-width);width:calc(100% - var(--nav-width));display:flex;flex-direction:column;min-height:100vh}
-    .top-bar{height:72px}
 
-    .learn-wrap{padding:20px 22px 26px;display:grid;gap:14px}
+    .learn-wrap{padding:20px;display:grid;gap:14px}
+
     .panel{
-      background:rgba(255,255,255,.92);
       border:1px solid var(--line);
       border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(10px);
+      background:var(--surface);
     }
-    body.dark-mode .panel{background:rgba(11,11,11,.92)}
 
-    .learn-header{padding:16px 16px 14px;display:grid;gap:12px}
-    .learn-header h2{font-size:18px;font-weight:800;letter-spacing:-.2px}
+    .learn-header{padding:16px;display:grid;gap:12px}
+    .learn-header h2{font-size:18px;font-weight:800}
     .learn-header p{color:var(--muted);font-size:13px}
 
     .chip-row{display:flex;flex-wrap:wrap;gap:8px}
+
     .chip{
-      border:1px solid var(--line);
+      border:1px solid var(--chip-line);
+      background:var(--chip);
       border-radius:999px;
       padding:8px 12px;
-      background:var(--surface);
-      color:var(--text);
-      text-decoration:none;
       font-size:12px;
       font-weight:800;
       cursor:pointer;
-      transition:.18s ease;
     }
-    .chip:hover{transform:translateY(-1px);background:var(--surface-2)}
-    .chip.active{background:var(--accent-soft)}
 
-    .learn-frame-shell{padding:0;height:calc(100vh - 220px);min-height:540px;overflow:hidden}
-    .learn-frame{width:100%;height:100%;border:none;background:#050505}
+    .chip.active{
+      background:var(--surface-2);
+      border-color:var(--line);
+    }
+
+    .learn-frame-shell{
+      height:calc(100vh - 220px);
+      min-height:500px;
+      overflow:hidden;
+    }
+
+    .learn-frame{
+      width:100%;
+      height:100%;
+      border:none;
+    }
 
     @media (max-width:900px){
-      .nav-panel{display:none}
-      .main-content{margin-left:0;width:100%}
       .learn-wrap{padding:14px}
-      .learn-frame-shell{height:calc(100vh - 250px);min-height:460px}
+      .learn-frame-shell{height:calc(100vh - 250px)}
     }
   </style>
 </head>
+
 <body>
   <div class="dashboard-container">
     <nav class="nav-panel"></nav>
+
     <main class="main-content">
-      <div class="top-bar"></div>
+      <div class="top-bar">
+        <h1 class="page-title">Learn</h1>
+      </div>
 
       <section class="learn-wrap">
         <div class="panel learn-header">
           <h2>Learn Markets</h2>
-          <p>Full FYNX learning center inside your dashboard: all market categories, modules, glossary access, and trading quizzes.</p>
+          <p>Full FYNX learning center inside your dashboard.</p>
 
           <div class="chip-row" id="topicRow"></div>
-          <div class="chip-row" id="sectionRow">
-            <button class="chip" data-section="howto" type="button">How to Trade</button>
-            <button class="chip" data-section="quizzes" type="button">Trading Quizzes</button>
-            <button class="chip" data-section="glossary" type="button">Glossary</button>
+
+          <div class="chip-row">
+            <button class="chip" data-section="howto">How to Trade</button>
+            <button class="chip" data-section="quizzes">Trading Quizzes</button>
+            <button class="chip" data-section="glossary">Glossary</button>
           </div>
         </div>
 
         <div class="panel learn-frame-shell">
-          <iframe id="learnFrame" class="learn-frame" src="learn/topic.html?topic=stocks&section=howto" title="FYNX Learn Center"></iframe>
+          <iframe id="learnFrame"
+            class="learn-frame"
+            src="learn/topic.html?topic=stocks&section=howto">
+          </iframe>
         </div>
       </section>
     </main>
   </div>
 
   <script>
-    (function initTheme(){
-      const saved = localStorage.getItem('theme');
-      document.body.classList.toggle('dark-mode', saved === 'dark');
-    })();
+    const THEME_KEY = "fynx_theme";
+    document.body.classList.toggle(
+      "dark-mode",
+      localStorage.getItem(THEME_KEY) === "dark"
+    );
 
     const topics = ['stocks','funds','futures','forex','crypto','indices','bonds','economy','options'];
+
     const labels = {
-      stocks:'Stocks', funds:'Funds', futures:'Futures', forex:'Forex', crypto:'Crypto',
-      indices:'Indices', bonds:'Bonds', economy:'Economy', options:'Options'
+      stocks:'Stocks',
+      funds:'Funds',
+      futures:'Futures',
+      forex:'Forex',
+      crypto:'Crypto',
+      indices:'Indices',
+      bonds:'Bonds',
+      economy:'Economy',
+      options:'Options'
     };
 
     let state = { topic:'stocks', section:'howto' };
+
     const topicRow = document.getElementById('topicRow');
-    const sectionButtons = Array.from(document.querySelectorAll('[data-section]'));
+    const sectionButtons = document.querySelectorAll('[data-section]');
     const frame = document.getElementById('learnFrame');
 
-    function buildTopicButtons(){
-      topicRow.innerHTML = topics.map((topic) =>
-        `<button class="chip" data-topic="${topic}" type="button">${labels[topic]}</button>`
+    function buildTopics(){
+      topicRow.innerHTML = topics.map(t =>
+        `<button class="chip" data-topic="${t}">${labels[t]}</button>`
       ).join('');
 
-      topicRow.querySelectorAll('[data-topic]').forEach((button) => {
-        button.addEventListener('click', () => {
-          state.topic = button.getAttribute('data-topic');
+      topicRow.querySelectorAll('[data-topic]').forEach(btn => {
+        btn.onclick = () => {
+          state.topic = btn.dataset.topic;
           sync();
-        });
+        };
       });
     }
 
     function sync(){
-      topicRow.querySelectorAll('[data-topic]').forEach((button) => {
-        button.classList.toggle('active', button.getAttribute('data-topic') === state.topic);
+      document.querySelectorAll('[data-topic]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.topic === state.topic);
       });
 
-      sectionButtons.forEach((button) => {
-        button.classList.toggle('active', button.getAttribute('data-section') === state.section);
+      sectionButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.section === state.section);
       });
 
-      frame.src = `learn/topic.html?topic=${encodeURIComponent(state.topic)}&section=${encodeURIComponent(state.section)}`;
+      frame.src = `learn/topic.html?topic=${state.topic}&section=${state.section}`;
     }
 
-    sectionButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        state.section = button.getAttribute('data-section');
+    sectionButtons.forEach(btn => {
+      btn.onclick = () => {
+        state.section = btn.dataset.section;
         sync();
-      });
+      };
     });
 
-    buildTopicButtons();
+    buildTopics();
     sync();
   </script>
+
   <script src="fynx-nav.js"></script>
   <script src="fynx-usercard.js"></script>
 </body>

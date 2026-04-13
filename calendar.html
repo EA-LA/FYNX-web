@@ -633,7 +633,10 @@
        DOM
     ========================= */
     const statsGrid = document.getElementById("statsGrid");
-    const lastUpdated = document.getElementById("lastUpdated");
+    function setLastUpdated(value){
+      const el = document.getElementById("lastUpdated") || document.getElementById("dateChip");
+      if (el) el.textContent = value;
+    }
     const calendarGrid = document.getElementById("calendarGrid");
     const calendarTitle = document.getElementById("calendarTitle");
     const selectedDateLabel = document.getElementById("selectedDateLabel");
@@ -707,7 +710,7 @@
 
     function showFatalError(err){
       const msg = (err && err.message) ? err.message : String(err);
-      lastUpdated.textContent = "Error";
+      setLastUpdated("Error");
       selectedDateLabel.textContent = "Calendar error";
       selectedMeta.textContent = "JavaScript stopped";
       selectedEvents.innerHTML = `
@@ -947,7 +950,7 @@
         // Re-render after culture is added (no freeze)
         renderCalendar();
         if (selectedISO) renderSelected(selectedISO);
-        lastUpdated.textContent = `Updated ${new Date().toLocaleString()}`;
+        setLastUpdated(`Updated ${new Date().toLocaleString()}`);
       }catch{
         // Ignore culture failures; finance calendar still works.
       }
@@ -1149,7 +1152,7 @@
       // 4) culture loads in background and re-renders when ready
       applyCultureToMonthBackground(y, m);
 
-      lastUpdated.textContent = `Updated ${new Date().toLocaleString()}`;
+      setLastUpdated(`Updated ${new Date().toLocaleString()}`);
     }
 
     /* =========================
@@ -1199,7 +1202,7 @@
           toggle.addEventListener("click", () => applySidebar(!document.body.classList.contains("sidebar-collapsed")));
         }
 
-        lastUpdated.textContent = `Updated ${new Date().toLocaleString()}`;
+        setLastUpdated(`Updated ${new Date().toLocaleString()}`);
         await Promise.all([loadLiveData(), renderMonth()]);
       }catch(err){
         showFatalError(err);
@@ -1207,6 +1210,7 @@
     })();
   </script>
 
+  <script src="fynx-nav.js"></script>
   <script src="fynx-usercard.js"></script>
 </body>
 </html>
