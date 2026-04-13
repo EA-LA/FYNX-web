@@ -23,12 +23,12 @@
   <style>
     :root{
       --fg-bg: #ffffff;
-      --fg-surface: rgba(255,255,255,0.84);
-      --fg-surface-2: rgba(255,255,255,0.68);
-      --fg-text: rgba(0,0,0,0.92);
-      --fg-muted: rgba(0,0,0,0.62);
-      --fg-line: rgba(0,0,0,0.10);
-      --fg-shadow: 0 18px 50px rgba(0,0,0,0.12);
+      --fg-surface: rgba(255, 255, 255, 0.84);
+      --fg-surface-2: rgba(255, 255, 255, 0.68);
+      --fg-text: rgba(0, 0, 0, 0.92);
+      --fg-muted: rgba(0, 0, 0, 0.62);
+      --fg-line: rgba(0, 0, 0, 0.10);
+      --fg-shadow: 0 18px 50px rgba(0, 0, 0, 0.12);
       --fg-radius: 22px;
     }
 
@@ -37,12 +37,12 @@
     [data-theme="dark"],
     [data-fynx-theme="dark"]{
       --fg-bg: #000000;
-      --fg-surface: rgba(255,255,255,0.05);
-      --fg-surface-2: rgba(255,255,255,0.04);
-      --fg-text: rgba(255,255,255,0.94);
-      --fg-muted: rgba(255,255,255,0.66);
-      --fg-line: rgba(255,255,255,0.12);
-      --fg-shadow: 0 22px 60px rgba(0,0,0,0.48);
+      --fg-surface: rgba(255, 255, 255, 0.05);
+      --fg-surface-2: rgba(255, 255, 255, 0.04);
+      --fg-text: rgba(255, 255, 255, 0.94);
+      --fg-muted: rgba(255, 255, 255, 0.66);
+      --fg-line: rgba(255, 255, 255, 0.12);
+      --fg-shadow: 0 22px 60px rgba(0, 0, 0, 0.48);
     }
 
     *{ box-sizing:border-box; }
@@ -56,7 +56,7 @@
       font-family:"Manrope",system-ui,-apple-system,Segoe UI,sans-serif;
       color:var(--fg-text);
       background:
-        radial-gradient(circle at 1px 1px, rgba(127,127,127,0.12) 1px, transparent 1px) 0 0 / 18px 18px,
+        radial-gradient(circle at 1px 1px, rgba(127, 127, 127, 0.12) 1px, transparent 1px) 0 0 / 18px 18px,
         linear-gradient(var(--fg-bg), var(--fg-bg));
     }
 
@@ -178,7 +178,7 @@
       inset:-30% auto auto -10%;
       width:340px;
       height:340px;
-      background:radial-gradient(circle, rgba(0,0,0,0.10), transparent 68%);
+      background:radial-gradient(circle, rgba(0, 0, 0, 0.10), transparent 68%);
       pointer-events:none;
     }
 
@@ -186,7 +186,7 @@
     html.dark-mode .founder-profile-card::before,
     [data-theme="dark"] .founder-profile-card::before,
     [data-fynx-theme="dark"] .founder-profile-card::before{
-      background:radial-gradient(circle, rgba(255,255,255,0.12), transparent 68%);
+      background:radial-gradient(circle, rgba(255, 255, 255, 0.12), transparent 68%);
     }
 
     .founder-avatar{

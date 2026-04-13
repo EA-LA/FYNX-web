@@ -93,9 +93,9 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity .14s ease, transform .14s ease;
-  box-shadow: 0 18px 60px rgba(0,0,0,.18);
-  border: 1px solid var(--border, rgba(0,0,0,.12));
-  background: var(--panel, rgba(255,255,255,.92));
+  box-shadow: 0 18px 60px rgba(0, 0, 0, .18);
+  border: 1px solid var(--border, rgba(0, 0, 0, .12));
+  background: var(--panel, rgba(255, 255, 255, .92));
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: var(--text, #111);
@@ -103,10 +103,10 @@
 }
 body.dark-mode .fynx-usercard-popover,
 body.dark .fynx-usercard-popover{
-  border: 1px solid var(--border, rgba(255,255,255,.14));
-  background: var(--panel, rgba(18,18,18,.72));
+  border: 1px solid var(--border, rgba(255, 255, 255, .14));
+  background: var(--panel, rgba(18, 18, 18, .72));
   color: var(--text, #fff);
-  box-shadow: 0 18px 70px rgba(0,0,0,.45);
+  box-shadow: 0 18px 70px rgba(0, 0, 0, .45);
 }
 
 .fynx-usercard-popover.is-open{
@@ -120,11 +120,11 @@ body.dark .fynx-usercard-popover{
   align-items:center;
   gap: 12px;
   padding: 14px 14px 10px 14px;
-  border-bottom: 1px solid var(--border2, rgba(0,0,0,.08));
+  border-bottom: 1px solid var(--border2, rgba(0, 0, 0, .08));
 }
 body.dark-mode .fynx-usercard-header,
 body.dark .fynx-usercard-header{
-  border-bottom: 1px solid var(--border2, rgba(255,255,255,.10));
+  border-bottom: 1px solid var(--border2, rgba(255, 255, 255, .10));
 }
 .fynx-usercard-avatar{
   width: 40px;
@@ -135,13 +135,13 @@ body.dark .fynx-usercard-header{
   justify-content:center;
   font-weight: 800;
   letter-spacing: .4px;
-  border: 1px solid var(--border, rgba(0,0,0,.12));
-  background: rgba(0,0,0,.04);
+  border: 1px solid var(--border, rgba(0, 0, 0, .12));
+  background: rgba(0, 0, 0, .04);
 }
 body.dark-mode .fynx-usercard-avatar,
 body.dark .fynx-usercard-avatar{
-  background: rgba(255,255,255,.06);
-  border: 1px solid var(--border, rgba(255,255,255,.14));
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid var(--border, rgba(255, 255, 255, .14));
 }
 .fynx-usercard-titlewrap{ flex:1; min-width:0; }
 .fynx-usercard-name{
@@ -171,15 +171,15 @@ body.dark .fynx-usercard-avatar{
   margin-bottom: 10px;
 }
 .fynx-usercard-metric{
-  border: 1px solid var(--border2, rgba(0,0,0,.08));
+  border: 1px solid var(--border2, rgba(0, 0, 0, .08));
   border-radius: 12px;
   padding: 10px 10px;
-  background: rgba(0,0,0,.02);
+  background: rgba(0, 0, 0, .02);
 }
 body.dark-mode .fynx-usercard-metric,
 body.dark .fynx-usercard-metric{
-  border: 1px solid var(--border2, rgba(255,255,255,.10));
-  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border2, rgba(255, 255, 255, .10));
+  background: rgba(255, 255, 255, .04);
 }
 .fynx-usercard-label{
   font-size: 11px;
@@ -192,18 +192,18 @@ body.dark .fynx-usercard-metric{
 }
 
 .fynx-usercard-bio{
-  border: 1px solid var(--border2, rgba(0,0,0,.08));
+  border: 1px solid var(--border2, rgba(0, 0, 0, .08));
   border-radius: 12px;
   padding: 10px 10px;
-  background: rgba(0,0,0,.02);
+  background: rgba(0, 0, 0, .02);
   font-size: 12px;
   line-height: 1.35;
   opacity: .92;
 }
 body.dark-mode .fynx-usercard-bio,
 body.dark .fynx-usercard-bio{
-  border: 1px solid var(--border2, rgba(255,255,255,.10));
-  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border2, rgba(255, 255, 255, .10));
+  background: rgba(255, 255, 255, .04);
 }
 
 .fynx-usercard-actions{
@@ -213,7 +213,7 @@ body.dark .fynx-usercard-bio{
 }
 .fynx-usercard-btn{
   flex:1;
-  border: 1px solid var(--border, rgba(0,0,0,.12));
+  border: 1px solid var(--border, rgba(0, 0, 0, .12));
   background: transparent;
   color: inherit;
   border-radius: 12px;
@@ -224,14 +224,14 @@ body.dark .fynx-usercard-bio{
 }
 body.dark-mode .fynx-usercard-btn,
 body.dark .fynx-usercard-btn{
-  border: 1px solid var(--border, rgba(255,255,255,.14));
+  border: 1px solid var(--border, rgba(255, 255, 255, .14));
 }
 .fynx-usercard-btn:hover{
-  background: rgba(0,0,0,.04);
+  background: rgba(0, 0, 0, .04);
 }
 body.dark-mode .fynx-usercard-btn:hover,
 body.dark .fynx-usercard-btn:hover{
-  background: rgba(255,255,255,.06);
+  background: rgba(255, 255, 255, .06);
 }
 `;
     document.head.appendChild(style);
@@ -303,7 +303,7 @@ body.dark .fynx-usercard-btn:hover{
       .replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+      .replaceAll("'", "&#222;");
   }
 
   function computeInitials(name) {

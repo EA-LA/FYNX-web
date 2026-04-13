@@ -10,50 +10,50 @@
     *{margin:0;padding:0;box-sizing:border-box}
 
     :root{
-      --bg:#f3f3f5;
+      --bg:#f3f3f3;
       --bg-2:#ffffff;
-      --text:#0b0b0c;
-      --text-soft:rgba(0,0,0,.62);
-      --text-faint:rgba(0,0,0,.48);
-      --border:rgba(0,0,0,.10);
-      --border-strong:rgba(0,0,0,.16);
-      --surface:rgba(255,255,255,.74);
-      --surface-2:rgba(255,255,255,.84);
-      --surface-3:rgba(255,255,255,.92);
-      --shadow:0 20px 60px rgba(0,0,0,.10);
-      --shadow-soft:0 14px 34px rgba(0,0,0,.08);
-      --accent:#0b0b0c;
-      --green:#12a150;
-      --red:#dc3d43;
-      --orange:#ef8d24;
-      --blue:#246bff;
+      --text:#0b0b0b;
+      --text-soft:rgba(0, 0, 0, .62);
+      --text-faint:rgba(0, 0, 0, .48);
+      --border:rgba(0, 0, 0, .10);
+      --border-strong:rgba(0, 0, 0, .16);
+      --surface:rgba(255, 255, 255, .74);
+      --surface-2:rgba(255, 255, 255, .84);
+      --surface-3:rgba(255, 255, 255, .92);
+      --shadow:0 20px 60px rgba(0, 0, 0, .10);
+      --shadow-soft:0 14px 34px rgba(0, 0, 0, .08);
+      --accent:#0b0b0b;
+      --green:#6d6d6d;
+      --red:#6d6d6d;
+      --orange:#9e9e9e;
+      --blue:#676767;
     }
 
     body.dark-mode{
       --bg:#000;
       --bg-2:#050505;
       --text:#fff;
-      --text-soft:rgba(255,255,255,.68);
-      --text-faint:rgba(255,255,255,.50);
-      --border:rgba(255,255,255,.10);
-      --border-strong:rgba(255,255,255,.16);
-      --surface:rgba(255,255,255,.04);
-      --surface-2:rgba(255,255,255,.05);
-      --surface-3:rgba(255,255,255,.07);
+      --text-soft:rgba(255, 255, 255, .68);
+      --text-faint:rgba(255, 255, 255, .50);
+      --border:rgba(255, 255, 255, .10);
+      --border-strong:rgba(255, 255, 255, .16);
+      --surface:rgba(255, 255, 255, .04);
+      --surface-2:rgba(255, 255, 255, .05);
+      --surface-3:rgba(255, 255, 255, .07);
       --shadow:none;
       --shadow-soft:none;
       --accent:#fff;
-      --green:#2bd67b;
-      --red:#ff5b62;
-      --orange:#ffb347;
-      --blue:#77a9ff;
+      --green:#989898;
+      --red:#8d8d8d;
+      --orange:#bdbdbd;
+      --blue:#a4a4a4;
     }
 
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
       color:var(--text);
       background:
-        radial-gradient(circle at 1px 1px, rgba(0,0,0,0.085) 1px, transparent 1px) 0 0 / 18px 18px,
+        radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.085) 1px, transparent 1px) 0 0 / 18px 18px,
         linear-gradient(var(--bg),var(--bg));
       overflow-x:hidden;
       min-height:100vh;
@@ -79,16 +79,16 @@
       position:absolute;
       inset:0;
       background-image:
-        linear-gradient(rgba(0,0,0,.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,0,0,.035) 1px, transparent 1px);
+        linear-gradient(rgba(0, 0, 0, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, .035) 1px, transparent 1px);
       background-size:50px 50px;
       animation:gridMove 22s linear infinite;
     }
 
     body.dark-mode .grid-overlay{
       background-image:
-        linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+        linear-gradient(rgba(255, 255, 255, .03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .03) 1px, transparent 1px);
     }
 
     @keyframes gridMove{
@@ -108,7 +108,7 @@
     .orb-1{
       width:520px;
       height:520px;
-      background:radial-gradient(circle,rgba(0,0,0,.13) 0%,transparent 72%);
+      background:radial-gradient(circle,rgba(0, 0, 0, .13) 0%,transparent 72%);
       top:-220px;
       left:-220px;
     }
@@ -116,7 +116,7 @@
     .orb-2{
       width:420px;
       height:420px;
-      background:radial-gradient(circle,rgba(0,0,0,.11) 0%,transparent 72%);
+      background:radial-gradient(circle,rgba(0, 0, 0, .11) 0%,transparent 72%);
       bottom:-170px;
       right:-170px;
       animation-delay:6s;
@@ -124,7 +124,7 @@
 
     body.dark-mode .orb-1,
     body.dark-mode .orb-2{
-      background:radial-gradient(circle,rgba(255,255,255,.95) 0%,transparent 70%);
+      background:radial-gradient(circle,rgba(255, 255, 255, .95) 0%,transparent 70%);
       opacity:.16;
     }
 
@@ -138,14 +138,14 @@
       position:sticky;
       top:0;
       z-index:1000;
-      background:rgba(243,243,245,.82);
+      background:rgba(243, 243, 243, .82);
       backdrop-filter:blur(20px);
       border-bottom:1px solid var(--border);
       padding:1rem 0;
     }
 
     body.dark-mode header{
-      background:rgba(0,0,0,.84);
+      background:rgba(0, 0, 0, .84);
     }
 
     .nav{
@@ -236,13 +236,13 @@
       line-height:1.02;
       letter-spacing:-2.5px;
       margin-bottom:.8rem;
-      background:linear-gradient(135deg,#000 0%,#6c6c70 100%);
+      background:linear-gradient(135deg,#000 0%,#6c6c6c 100%);
       -webkit-background-clip:text;
       -webkit-text-fill-color:transparent;
     }
 
     body.dark-mode h1{
-      background:linear-gradient(135deg,#fff 0%,#8f8f93 100%);
+      background:linear-gradient(135deg,#fff 0%,#8f8f8f 100%);
       -webkit-background-clip:text;
       -webkit-text-fill-color:transparent;
     }
@@ -279,14 +279,14 @@
       height:10px;
       border-radius:50%;
       background:var(--green);
-      box-shadow:0 0 0 0 rgba(18,161,80,.6);
+      box-shadow:0 0 0 0 rgba(109, 109, 109, .6);
       animation:pulse 1.8s infinite;
     }
 
     @keyframes pulse{
-      0%{box-shadow:0 0 0 0 rgba(18,161,80,.55)}
-      70%{box-shadow:0 0 0 12px rgba(18,161,80,0)}
-      100%{box-shadow:0 0 0 0 rgba(18,161,80,0)}
+      0%{box-shadow:0 0 0 0 rgba(109, 109, 109, .55)}
+      70%{box-shadow:0 0 0 12px rgba(109, 109, 109, 0)}
+      100%{box-shadow:0 0 0 0 rgba(109, 109, 109, 0)}
     }
 
     .clock-wrap{
@@ -408,13 +408,13 @@
       color:var(--text-faint);
       font-weight:800;
       letter-spacing:.03em;
-      background:linear-gradient(180deg, transparent, rgba(0,0,0,.02));
+      background:linear-gradient(180deg, transparent, rgba(0, 0, 0, .02));
       pointer-events:none;
       z-index:1;
     }
 
     body.dark-mode .widget-loading{
-      background:linear-gradient(180deg, transparent, rgba(255,255,255,.01));
+      background:linear-gradient(180deg, transparent, rgba(255, 255, 255, .01));
     }
 
     .tradingview-widget-container,
@@ -824,7 +824,7 @@
         colorTheme: isDark ? "dark" : "light",
         isTransparent: true,
         width: "100%",
-        height: "760",
+        height: "100%",
         locale: "en",
         importanceFilter: "-1,0,1",
         currencyFilter: "USD,EUR,GBP,JPY,AUD,NZD,CAD,CHF,CNY",
@@ -840,10 +840,11 @@
         }, 900);
       };
 
-      wrap.appendChild(script);
+      holder.appendChild(script);
     }
 
     renderEconomicCalendar();
   </script>
+  <script src="../assets/js/tradingview-fit.js"></script>
 </body>
 </html>

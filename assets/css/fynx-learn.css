@@ -13,9 +13,9 @@
   --text-muted: #707070;
   --border-color: #2a2a2a;
   --accent: #ffffff;
-  --success: #00ff88;
-  --warning: #ffaa00;
-  --error: #ff4444;
+  --success: #a5a5a5;
+  --warning: #b0b0b0;
+  --error: #7c7c7c;
   --radius: 12px;
   --radius-sm: 8px;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -389,7 +389,7 @@ body {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--success) 0%, #00cc70 100%);
+  background: linear-gradient(90deg, var(--success) 0%, #858585 100%);
   transition: width 0.5s ease;
 }
 
@@ -500,13 +500,13 @@ body {
 }
 
 .status-badge.completed {
-  background: rgba(0, 255, 136, 0.1);
+  background: rgba(165, 165, 165, 0.1);
   color: var(--success);
   border: 1px solid var(--success);
 }
 
 .status-badge.in-progress {
-  background: rgba(255, 170, 0, 0.1);
+  background: rgba(176, 176, 176, 0.1);
   color: var(--warning);
   border: 1px solid var(--warning);
 }
@@ -579,8 +579,8 @@ body {
 }
 
 .lesson-mistakes {
-  background: rgba(255, 68, 68, 0.05);
-  border: 1px solid rgba(255, 68, 68, 0.2);
+  background: rgba(124, 124, 124, 0.05);
+  border: 1px solid rgba(124, 124, 124, 0.2);
   border-radius: var(--radius-sm);
   padding: 1.5rem;
   margin: 1.5rem 0;
@@ -616,8 +616,8 @@ body {
 }
 
 .lesson-checklist {
-  background: rgba(0, 255, 136, 0.05);
-  border: 1px solid rgba(0, 255, 136, 0.2);
+  background: rgba(165, 165, 165, 0.05);
+  border: 1px solid rgba(165, 165, 165, 0.2);
   border-radius: var(--radius-sm);
   padding: 1.5rem;
   margin: 1.5rem 0;
@@ -778,13 +778,13 @@ body {
 }
 
 .question-difficulty.beginner {
-  background: rgba(0, 255, 136, 0.1);
+  background: rgba(165, 165, 165, 0.1);
   color: var(--success);
   border: 1px solid var(--success);
 }
 
 .question-difficulty.intermediate {
-  background: rgba(255, 170, 0, 0.1);
+  background: rgba(176, 176, 176, 0.1);
   color: var(--warning);
   border: 1px solid var(--warning);
 }
@@ -838,12 +838,12 @@ body {
 
 .option.correct {
   border-color: var(--success);
-  background: rgba(0, 255, 136, 0.1);
+  background: rgba(165, 165, 165, 0.1);
 }
 
 .option.incorrect {
   border-color: var(--error);
-  background: rgba(255, 68, 68, 0.1);
+  background: rgba(124, 124, 124, 0.1);
 }
 
 .option.correct .option-letter {
