@@ -83,7 +83,7 @@ function applyTheme(theme){
 function toggleTheme(){const next=getTheme()==="dark"?"light":"dark";localStorage.setItem(THEME_KEY,next);applyTheme(next);}
 function renderWidget(){
   const wrap=document.getElementById("volWidget");
-  wrap.innerHTML='<div class="tradingview-widget-container" style="height:100%;width:100%"><div id="vol_inner"></div></div>';
+  wrap.innerHTML='<div class="tradingview-widget-container" style="height:100%;width:100%"><div id="vol_inner" style="height:100%;width:100%"></div></div>';
   const s=document.createElement("script");
   s.src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
   s.async=true;
@@ -91,7 +91,7 @@ function renderWidget(){
     autosize:true,symbol:"CBOE:VIX",interval:"D",timezone:"Etc/UTC",
     theme:getTheme(),style:"1",locale:"en",enable_publishing:false,hide_legend:false,save_image:false,support_host:"https://www.tradingview.com"
   });
-  wrap.appendChild(s);
+  wrap.querySelector('.tradingview-widget-container').appendChild(s);
 }
 applyTheme(getTheme());
 document.getElementById("themeToggle").addEventListener("click",toggleTheme);

@@ -86,7 +86,7 @@
     function toggleTheme(){const next=getTheme()==="dark"?"light":"dark";localStorage.setItem(THEME_KEY,next);applyTheme(next);}
     function renderWidget(){
       const wrap=document.getElementById("techWidget");
-      wrap.innerHTML='<div class="tradingview-widget-container" style="height:100%;width:100%"><div id="technical-analysis"></div></div>';
+      wrap.innerHTML='<div class="tradingview-widget-container" style="height:100%;width:100%"><div id="technical-analysis" style="height:100%;width:100%"></div></div>';
       const s=document.createElement("script");
       s.src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js";
       s.async=true;
@@ -101,7 +101,7 @@
         colorTheme:getTheme(),
         isTransparent:true
       });
-      wrap.appendChild(s);
+      wrap.querySelector('.tradingview-widget-container').appendChild(s);
     }
     applyTheme(getTheme());
     document.getElementById("themeToggle").addEventListener("click",toggleTheme);

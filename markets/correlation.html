@@ -83,7 +83,7 @@ function applyTheme(theme){
 function toggleTheme(){const next=getTheme()==="dark"?"light":"dark";localStorage.setItem(THEME_KEY,next);applyTheme(next);}
 function renderWidget(){
   const wrap=document.getElementById("corrWidget");
-  wrap.innerHTML='<div class="tradingview-widget-container" style="height:100%;width:100%"><div id="corr_inner"></div></div>';
+  wrap.innerHTML='<div class="tradingview-widget-container" style="height:100%;width:100%"><div id="corr_inner" style="height:100%;width:100%"></div></div>';
   const s=document.createElement("script");
   s.src="https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js";
   s.async=true;
@@ -112,7 +112,7 @@ function renderWidget(){
     changeMode:"price-and-percent",
     chartType:"line"
   });
-  wrap.appendChild(s);
+  wrap.querySelector('.tradingview-widget-container').appendChild(s);
 }
 applyTheme(getTheme());
 document.getElementById("themeToggle").addEventListener("click",toggleTheme);

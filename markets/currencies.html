@@ -273,7 +273,7 @@
       const wrap = document.getElementById("fxWidget");
       wrap.innerHTML = `
         <div class="tradingview-widget-container" style="height:100%;width:100%">
-          <div id="tradingview_fx"></div>
+          <div id="tradingview_fx" style="height:100%;width:100%"></div>
           <div class="tradingview-widget-copyright"></div>
         </div>
       `;
@@ -301,7 +301,7 @@
         isTransparent: true,
         locale: "en"
       });
-      wrap.appendChild(script);
+      wrap.querySelector('.tradingview-widget-container').appendChild(script);
     }
 
     applyTheme(getTheme());
