@@ -59,6 +59,7 @@
 
   function stretchTradingViewWidgets() {
     ensureLiveStyles();
+
     document.querySelectorAll('.tradingview-widget-container').forEach((container) => {
       container.style.width = '100%';
       container.style.height = '100%';
