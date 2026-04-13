@@ -6,6 +6,7 @@
     calculator: 'calculator.html',
     news: 'news.html',
     calendar: 'calendar.html',
+    learn: 'learn.html',
     profile: 'profile.html',
   };
 
@@ -15,6 +16,7 @@
     calculator: 'Calculator',
     news: 'News',
     calendar: 'Calendar',
+    learn: 'Learn',
     profile: 'Profile',
   };
 
@@ -26,6 +28,7 @@
     'calculator.html': 'calculator',
     'news.html': 'news',
     'calendar.html': 'calendar',
+    'learn.html': 'learn',
     'profile.html': 'profile',
   };
 
@@ -35,6 +38,7 @@
     calculator: '<rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="16" y2="14"></line><line x1="8" y1="18" x2="16" y2="18"></line>',
     news: '<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><line x1="12" y1="11" x2="18" y2="11"></line><line x1="12" y1="7" x2="18" y2="7"></line>',
     calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>',
+    learn: '<path d="M2 7l10-4 10 4-10 4-10-4z"></path><path d="M6 10v5c0 2.2 2.7 4 6 4s6-1.8 6-4v-5"></path><path d="M22 10v6"></path>',
     profile: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>',
   };
 
