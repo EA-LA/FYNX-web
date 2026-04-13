@@ -10,19 +10,19 @@
   />
   <style>
     :root{
-      --bg: #f5f5f7;
+      --bg: #f5f5f5;
       --bg-soft: #ffffff;
-      --panel: rgba(255,255,255,0.82);
+      --panel: rgba(255, 255, 255, 0.82);
       --panel-strong: #ffffff;
-      --text: #0d0d12;
-      --text-soft: #5d6069;
-      --muted: #8c909b;
-      --line: rgba(13,13,18,0.10);
-      --line-strong: rgba(13,13,18,0.16);
-      --accent: #0d0d12;
-      --accent-2: #1b1e29;
-      --glow: rgba(255,255,255,0.65);
-      --shadow: 0 20px 60px rgba(0,0,0,0.08);
+      --text: #0e0e0e;
+      --text-soft: #606060;
+      --muted: #909090;
+      --line: rgba(14, 14, 14, 0.10);
+      --line-strong: rgba(14, 14, 14, 0.16);
+      --accent: #0e0e0e;
+      --accent-2: #1e1e1e;
+      --glow: rgba(255, 255, 255, 0.65);
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
       --radius-xl: 28px;
       --radius-lg: 22px;
       --radius-md: 16px;
@@ -30,19 +30,19 @@
     }
 
     body.dark-mode{
-      --bg: #03050b;
-      --bg-soft: #070b15;
-      --panel: rgba(10,14,28,0.80);
-      --panel-strong: #090d18;
-      --text: #f5f7fb;
-      --text-soft: #b7becc;
-      --muted: #8791a7;
-      --line: rgba(255,255,255,0.08);
-      --line-strong: rgba(255,255,255,0.13);
-      --accent: #f5f7fb;
-      --accent-2: #d9e2ff;
-      --glow: rgba(120,140,255,0.08);
-      --shadow: 0 30px 80px rgba(0,0,0,0.45);
+      --bg: #050505;
+      --bg-soft: #0b0b0b;
+      --panel: rgba(14, 14, 14, 0.80);
+      --panel-strong: #0d0d0d;
+      --text: #f7f7f7;
+      --text-soft: #bebebe;
+      --muted: #919191;
+      --line: rgba(255, 255, 255, 0.08);
+      --line-strong: rgba(255, 255, 255, 0.13);
+      --accent: #f7f7f7;
+      --accent-2: #e3e3e3;
+      --glow: rgba(147, 147, 147, 0.08);
+      --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
     }
 
     *{
@@ -58,7 +58,7 @@
       font-family: Inter, Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
         radial-gradient(circle at 20% 0%, var(--glow), transparent 28%),
-        radial-gradient(circle at 100% 20%, rgba(110,120,180,0.08), transparent 24%),
+        radial-gradient(circle at 100% 20%, rgba(124, 124, 124, 0.08), transparent 24%),
         var(--bg);
       color: var(--text);
       line-height: 1.55;
@@ -73,7 +73,7 @@
       background-image: radial-gradient(var(--line) 1px, transparent 1px);
       background-size: 18px 18px;
       opacity: .9;
-      mask-image: linear-gradient(to bottom, rgba(0,0,0,.75), rgba(0,0,0,.28));
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, .75), rgba(0, 0, 0, .28));
       z-index: -1;
     }
 
@@ -95,7 +95,7 @@
       border-radius: 34px;
       border: 1px solid var(--line);
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
         var(--panel);
       box-shadow: var(--shadow);
       backdrop-filter: blur(18px);
@@ -109,7 +109,7 @@
       inset: auto -100px -100px auto;
       width: 240px;
       height: 240px;
-      background: radial-gradient(circle, rgba(140,150,255,0.14), transparent 65%);
+      background: radial-gradient(circle, rgba(159, 159, 159, 0.14), transparent 65%);
       pointer-events: none;
     }
 
@@ -190,7 +190,7 @@
       padding: 16px;
       border-radius: 18px;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,0.03);
+      background: rgba(255, 255, 255, 0.03);
     }
 
     .stat strong{
@@ -297,7 +297,7 @@
       padding: 12px 14px;
       border-radius: 14px;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,0.02);
+      background: rgba(255, 255, 255, 0.02);
       color: var(--text-soft);
     }
 
@@ -324,7 +324,7 @@
       padding: 13px 14px;
       border-radius: 14px;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,0.02);
+      background: rgba(255, 255, 255, 0.02);
       color: var(--text-soft);
     }
 
@@ -337,7 +337,7 @@
       border-radius: 24px;
       border: 1px solid var(--line);
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
         var(--panel-strong);
       font-size: clamp(1.1rem, 2.5vw, 1.45rem);
       letter-spacing: -0.03em;
@@ -417,7 +417,7 @@
       padding: 12px;
       border-radius: 14px;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,0.02);
+      background: rgba(255, 255, 255, 0.02);
       color: var(--text-soft);
       font-size: .92rem;
     }
