@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Market Analysis | FYNX</title>
+  <meta
+    name="description"
+    content="Real-time market analysis page for FYNX with TradingView charts, market overview, technicals, heatmaps, forex, crypto, stocks, futures, news, and economic calendar."
+  />
+  <style>
+    :root{
+      --bg:#f5f5f7;
+      --bg-soft:#ffffff;
+      --panel:rgba(255,255,255,0.84);
+      --panel-strong:#ffffff;
+      --text:#0d0d12;
+      --text-soft:#5d6069;
+      --muted:#8c909b;
+      --line:rgba(13,13,18,0.10);
+      --line-strong:rgba(13,13,18,0.16);
+      --shadow:0 20px 60px rgba(0,0,0,0.08);
+      --radius-xl:30px;
+      --radius-lg:24px;
+      --radius-md:18px;
+      --max:1380px;
+      --hero-glow:rgba(255,255,255,0.70);
+    }
+
+    body.dark-mode{
+      --bg:#03050b;
+      --bg-soft:#070b15;
+      --panel:rgba(10,14,28,0.82);
+      --panel-strong:#090d18;
+      --text:#f5f7fb;
+      --text-soft:#b7becc;
+      --muted:#8791a7;
+      --line:rgba(255,255,255,0.08);
+      --line-strong:rgba(255,255,255,0.13);
+      --shadow:0 30px 80px rgba(0,0,0,0.42);
+      --hero-glow:rgba(120,140,255,0.08);
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    html{
+      scroll-behavior:smooth;
+    }
+
+    body{
+      margin:0;
+      font-family:Inter, Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, var(--hero-glow), transparent 28%),
+        radial-gradient(circle at 100% 12%, rgba(120,130,180,0.10), transparent 22%),
+        var(--bg);
+      color:var(--text);
+      line-height:1.55;
+      transition:background .25s ease, color .25s ease;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background-image:radial-gradient(var(--line) 1px, transparent 1px);
+      background-size:18px 18px;
+      opacity:.9;
+      mask-image:linear-gradient(to bottom, rgba(0,0,0,.75), rgba(0,0,0,.25));
+      z-index:-1;
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    .page{
+      width:min(100%, var(--max));
+      margin:0 auto;
+      padding:22px 16px 70px;
+    }
+
+    .hero{
+      position:relative;
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius:34px;
+      padding:28px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
+        var(--panel);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      right:-90px;
+      bottom:-90px;
+      width:260px;
+      height:260px;
+      background:radial-gradient(circle, rgba(130,145,255,0.16), transparent 65%);
+      pointer-events:none;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.18em;
+      font-size:12px;
+      margin-bottom:14px;
+    }
+
+    .eyebrow::before{
+      content:"";
+      width:28px;
+      height:1px;
+      background:var(--line-strong);
+    }
+
+    h1{
+      margin:0 0 12px;
+      font-size:clamp(2.3rem, 5vw, 4.9rem);
+      line-height:.95;
+      letter-spacing:-0.05em;
+    }
+
+    .hero p{
+      max-width:900px;
+      margin:0 0 22px;
+      color:var(--text-soft);
+      font-size:clamp(1rem, 2vw, 1.12rem);
+    }
+
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-bottom:24px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:48px;
+      padding:0 18px;
+      border-radius:999px;
+      border:1px solid var(--line-strong);
+      font-weight:700;
+      font-size:.94rem;
+      transition:.2s ease;
+    }
+
+    .btn.primary{
+      background:var(--text);
+      color:var(--bg);
+      border-color:transparent;
+    }
+
+    .btn.secondary{
+      background:transparent;
+      color:var(--text);
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+    }
+
+    .hero-stats{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0,1fr));
+      gap:12px;
+    }
+
+    .stat{
+      padding:16px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.03);
+    }
+
+    .stat strong{
+      display:block;
+      margin-bottom:6px;
+      font-size:1.1rem;
+      letter-spacing:-0.03em;
+    }
+
+    .stat span{
+      color:var(--text-soft);
+      font-size:.92rem;
+    }
+
+    .section{
+      margin-top:22px;
+      border:1px solid var(--line);
+      border-radius:28px;
+      background:var(--panel);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
+      padding:20px;
+    }
+
+    .section-title{
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:16px;
+    }
+
+    .section-title h2{
+      margin:0;
+      font-size:clamp(1.4rem, 3vw, 2.1rem);
+      letter-spacing:-0.04em;
+    }
+
+    .section-title p{
+      margin:0;
+      color:var(--text-soft);
+      max-width:700px;
+      font-size:.97rem;
+    }
+
+    .grid{
+      display:grid;
+      gap:16px;
+    }
+
+    .grid.two{
+      grid-template-columns:1.2fr .8fr;
+    }
+
+    .grid.equal-2{
+      grid-template-columns:repeat(2, minmax(0,1fr));
+    }
+
+    .grid.three{
+      grid-template-columns:repeat(3, minmax(0,1fr));
+    }
+
+    .card{
+      border:1px solid var(--line);
+      border-radius:22px;
+      background:var(--panel-strong);
+      overflow:hidden;
+      min-width:0;
+    }
+
+    .card-pad{
+      padding:18px;
+    }
+
+    .card h3{
+      margin:0 0 8px;
+      font-size:1.12rem;
+      letter-spacing:-0.03em;
+    }
+
+    .card p{
+      margin:0;
+      color:var(--text-soft);
+      font-size:.95rem;
+    }
+
+    .tag{
+      display:inline-flex;
+      margin-bottom:12px;
+      padding:7px 11px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-size:.76rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+    }
+
+    .widget-wrap{
+      position:relative;
+      min-height:120px;
+      background:transparent;
+    }
+
+    .widget-tall{
+      min-height:540px;
+    }
+
+    .widget-medium{
+      min-height:430px;
+    }
+
+    .widget-short{
+      min-height:330px;
+    }
+
+    .widget-heatmap{
+      min-height:520px;
+    }
+
+    .widget-news{
+      min-height:700px;
+    }
+
+    .widget-econ{
+      min-height:680px;
+    }
+
+    .widget-market{
+      min-height:520px;
+    }
+
+    .split-info{
+      display:grid;
+      gap:12px;
+    }
+
+    .mini{
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:rgba(255,255,255,0.02);
+    }
+
+    .mini strong{
+      display:block;
+      font-size:.96rem;
+      margin-bottom:4px;
+    }
+
+    .mini span{
+      color:var(--text-soft);
+      font-size:.9rem;
+    }
+
+    .footer-cta{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      flex-wrap:wrap;
+      margin-top:22px;
+      padding:22px;
+      border:1px solid var(--line);
+      border-radius:26px;
+      background:var(--panel);
+      box-shadow:var(--shadow);
+    }
+
+    .footer-cta h2{
+      margin:0 0 8px;
+      font-size:clamp(1.35rem, 3.5vw, 2rem);
+      letter-spacing:-0.04em;
+    }
+
+    .footer-cta p{
+      margin:0;
+      max-width:740px;
+      color:var(--text-soft);
+    }
+
+    .tiny{
+      margin-top:8px;
+      font-size:.88rem;
+      color:var(--muted);
+    }
+
+    .tv-widget-copyright{
+      display:none !important;
+    }
+
+    @media (max-width: 1100px){
+      .hero-stats,
+      .grid.three{
+        grid-template-columns:repeat(2, minmax(0,1fr));
+      }
+
+      .grid.two,
+      .grid.equal-2{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 760px){
+      .page{
+        padding:14px 12px 56px;
+      }
+
+      .hero,
+      .section,
+      .footer-cta{
+        border-radius:22px;
+      }
+
+      .hero{
+        padding:22px 16px;
+      }
+
+      .section{
+        padding:16px;
+      }
+
+      .hero-stats,
+      .grid.three{
+        grid-template-columns:1fr;
+      }
+
+      .section-title{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+
+      .widget-news{
+        min-height:760px;
+      }
+
+      .widget-econ{
+        min-height:760px;
+      }
+
+      .widget-market{
+        min-height:620px;
+      }
+
+      .widget-heatmap{
+        min-height:620px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">FYNX Live Market Intelligence</div>
+      <h1>Market Analysis</h1>
+      <p>
+        Real market data. Real charts. Real technicals. Real watchlists. This page is built for traders
+        who want live analysis across forex, crypto, stocks, indices, commodities, futures, and macro events
+        in one clean FYNX dashboard.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn primary" href="#live-chart">Open Live Chart</a>
+        <a class="btn secondary" href="#market-news">View News</a>
+        <a class="btn secondary" href="#economic-calendar">Economic Calendar</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat">
+          <strong>Live Charts</strong>
+          <span>Interactive TradingView data</span>
+        </div>
+        <div class="stat">
+          <strong>Real News</strong>
+          <span>Market headlines and updates</span>
+        </div>
+        <div class="stat">
+          <strong>Heatmaps</strong>
+          <span>See strength and weakness fast</span>
+        </div>
+        <div class="stat">
+          <strong>Technicals</strong>
+          <span>Multi-market sentiment tools</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="live-chart" class="section">
+      <div class="section-title">
+        <h2>Live chart workspace</h2>
+        <p>
+          Full interactive TradingView chart for technical analysis, structure, indicators, drawing tools, and symbol switching.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="widget-wrap widget-tall">
+          <div class="tradingview-widget-container" style="height:100%;width:100%">
+            <div id="tradingview_fynx_chart" style="height:100%;width:100%"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Market pulse</h2>
+        <p>
+          Fast view of major markets, sectors, movers, and price action across global assets.
+        </p>
+      </div>
+
+      <div class="grid two">
+        <div class="card">
+          <div class="widget-wrap widget-market">
+            <div class="tradingview-widget-container" style="height:100%;width:100%">
+              <div class="tradingview-widget-container__widget"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="split-info">
+          <div class="card card-pad">
+            <div class="tag">What this section gives you</div>
+            <h3>Instant broad-market scan</h3>
+            <p>
+              Use this block to check equities, indices, forex, futures, bonds, and crypto without opening separate tabs.
+            </p>
+          </div>
+          <div class="mini">
+            <strong>Best use</strong>
+            <span>Start here before going deep into one specific chart.</span>
+          </div>
+          <div class="mini">
+            <strong>Look for</strong>
+            <span>Risk-on, risk-off behavior, broad momentum, sector leadership, and volatility shifts.</span>
+          </div>
+          <div class="mini">
+            <strong>Why it matters</strong>
+            <span>Good trades get stronger when they align with wider market conditions.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Technical summary</h2>
+        <p>
+          Quick technical outlook for key instruments. Useful for a fast top-down check before deeper execution.
+        </p>
+      </div>
+
+      <div class="grid equal-2">
+        <div class="card">
+          <div class="widget-wrap widget-medium">
+            <div class="tradingview-widget-container" style="height:100%;width:100%">
+              <div class="tradingview-widget-container__widget"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="widget-wrap widget-medium">
+            <div class="tradingview-widget-container" style="height:100%;width:100%">
+              <div class="tradingview-widget-container__widget"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Forex, crypto, stocks, futures</h2>
+        <p>
+          Track multiple groups at once and rotate through the markets that matter most to you.
+        </p>
+      </div>
+
+      <div class="grid three">
+        <div class="card">
+          <div class="card-pad">
+            <div class="tag">Forex Watch</div>
+            <h3>Major FX pairs</h3>
+            <p>Monitor dollar strength, yen behavior, euro structure, and session-driven movement.</p>
+          </div>
+          <div class="widget-wrap widget-short">
+            <div class="tradingview-widget-container" style="height:100%;width:100%">
+              <div class="tradingview-widget-container__widget"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-pad">
+            <div class="tag">Crypto Watch</div>
+            <h3>Crypto leaders</h3>
+            <p>Watch Bitcoin, Ethereum, Solana, and broader momentum in digital assets.</p>
+          </div>
+          <div class="widget-wrap widget-short">
+            <div class="tradingview-widget-container" style="height:100%;width:100%">
+              <div class="tradingview-widget-container__widget"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-pad">
+            <div class="tag">Equities & Futures</div>
+            <h3>Index and commodity watch</h3>
+            <p>Follow S&P 500, Nasdaq, gold, oil, and futures-linked momentum.</p>
+          </div>
+          <div class="widget-wrap widget-short">
+            <div class="tradingview-widget-container" style="height:100%;width:100%">
+              <div class="tradingview-widget-container__widget"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Heatmaps</h2>
+        <p>
+          See strength, weakness, and capital rotation visually across stocks and crypto.
+        </p>
+      </div>
+
+      <div class="grid equal-2">
+        <div class="card">
+          <div class="card-pad">
+            <div class="tag">Stocks</div>
+            <h3>US market heatmap</h3>
+            <p>Sector and stock-level performance in one visual grid.</p>
+          </div>
+          <div class="widget-wrap widget-heatmap">
+            <div class="tradingview-widget-container" style="height:100%;width:100%">
+              <div class="tradingview-widget-container__widget"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-pad">
+            <div class="tag">Crypto</div>
+            <h3>Crypto market heatmap</h3>
+            <p>Quick visual view of coin strength and weakness.</p>
+          </div>
+          <div class="widget-wrap widget-heatmap">
+            <div class="tradingview-widget-container" style="height:100%;width:100%">
+              <div class="tradingview-widget-container__widget"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="market-news" class="section">
+      <div class="section-title">
+        <h2>Market news</h2>
+        <p>
+          Live financial headlines and updates directly inside the page. This is real market coverage, not placeholder text.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="widget-wrap widget-news">
+          <div class="tradingview-widget-container" style="height:100%;width:100%">
+            <div class="tradingview-widget-container__widget"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="economic-calendar" class="section">
+      <div class="section-title">
+        <h2>Economic calendar</h2>
+        <p>
+          Real macro events for traders watching interest rates, inflation, employment, GDP, and central bank risk.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="widget-wrap widget-econ">
+          <div class="tradingview-widget-container" style="height:100%;width:100%">
+            <div class="tradingview-widget-container__widget"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="footer-cta">
+      <div>
+        <h2>Built for real market work</h2>
+        <p>
+          This page is designed to be used daily: scan the market, read the news, review technicals, watch events,
+          and then move into execution with context.
+        </p>
+        <div class="tiny">FYNX • Market Analysis Module</div>
+      </div>
+      <div class="hero-actions" style="margin-bottom:0">
+        <a class="btn primary" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'}); return false;">Back to Top</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const THEME_KEY = "fynx_theme";
+
+    function getThemeMode() {
+      const saved = localStorage.getItem(THEME_KEY) || "light";
+      return saved === "dark" ? "dark" : "light";
+    }
+
+    function applySavedTheme() {
+      document.body.classList.toggle("dark-mode", getThemeMode() === "dark");
+    }
+
+    applySavedTheme();
+
+    window.addEventListener("storage", (event) => {
+      if (event.key === THEME_KEY) {
+        applySavedTheme();
+        setTimeout(() => location.reload(), 120);
+      }
+    });
+
+    const tvTheme = getThemeMode() === "dark" ? "dark" : "light";
+
+    function loadScript(src, onload) {
+      const s = document.createElement("script");
+      s.src = src;
+      s.async = true;
+      if (onload) s.onload = onload;
+      document.body.appendChild(s);
+    }
+
+    loadScript("https://s3.tradingview.com/tv.js", () => {
+      new TradingView.widget({
+        autosize: true,
+        symbol: "OANDA:XAUUSD",
+        interval: "60",
+        timezone: "Etc/UTC",
+        theme: tvTheme,
+        style: "1",
+        locale: "en",
+        enable_publishing: false,
+        hide_top_toolbar: false,
+        hide_legend: false,
+        save_image: false,
+        container_id: "tradingview_fynx_chart",
+        studies: [
+          "RSI@tv-basicstudies",
+          "MACD@tv-basicstudies",
+          "MASimple@tv-basicstudies"
+        ]
+      });
+    });
+
+    function injectWidget(container, config) {
+      const script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-" + config.widget + ".js";
+      script.async = true;
+      const payload = { ...config.options, colorTheme: tvTheme };
+      script.innerHTML = JSON.stringify(payload);
+      container.appendChild(script);
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const widgets = document.querySelectorAll(".tradingview-widget-container__widget");
+
+      injectWidget(widgets[0], {
+        widget: "market-overview",
+        options: {
+          width: "100%",
+          height: "100%",
+          showChart: true,
+          locale: "en",
+          largeChartUrl: "",
+          isTransparent: true,
+          showSymbolLogo: true,
+          plotLineColorGrowing: "rgba(41, 98, 255, 1)",
+          plotLineColorFalling: "rgba(41, 98, 255, 1)",
+          gridLineColor: "rgba(240, 243, 250, 0.00)",
+          scaleFontColor: "rgba(120, 123, 134, 1)",
+          belowLineFillColorGrowing: "rgba(41, 98, 255, 0.12)",
+          belowLineFillColorFalling: "rgba(41, 98, 255, 0.12)",
+          belowLineFillColorGrowingBottom: "rgba(41, 98, 255, 0)",
+          belowLineFillColorFallingBottom: "rgba(41, 98, 255, 0)",
+          symbolActiveColor: "rgba(41, 98, 255, 0.12)",
+          tabs: [
+            {
+              title: "Indices",
+              symbols: [
+                { s: "FOREXCOM:SPXUSD", d: "S&P 500" },
+                { s: "FOREXCOM:NSXUSD", d: "US 100" },
+                { s: "FOREXCOM:DJI", d: "Dow 30" },
+                { s: "INDEX:DEU40", d: "DAX" },
+                { s: "INDEX:UKX", d: "FTSE 100" }
+              ]
+            },
+            {
+              title: "Forex",
+              symbols: [
+                { s: "FX:EURUSD" },
+                { s: "FX:GBPUSD" },
+                { s: "FX:USDJPY" },
+                { s: "FX:USDCHF" },
+                { s: "FX:AUDUSD" }
+              ]
+            },
+            {
+              title: "Crypto",
+              symbols: [
+                { s: "BINANCE:BTCUSDT" },
+                { s: "BINANCE:ETHUSDT" },
+                { s: "BINANCE:SOLUSDT" },
+                { s: "BINANCE:BNBUSDT" },
+                { s: "BINANCE:XRPUSDT" }
+              ]
+            },
+            {
+              title: "Commodities",
+              symbols: [
+                { s: "TVC:GOLD", d: "Gold" },
+                { s: "TVC:SILVER", d: "Silver" },
+                { s: "TVC:USOIL", d: "WTI Oil" },
+                { s: "TVC:UKOIL", d: "Brent Oil" },
+                { s: "CBOT:ZC1!", d: "Corn" }
+              ]
+            }
+          ]
+        }
+      });
+
+      injectWidget(widgets[1], {
+        widget: "technical-analysis",
+        options: {
+          interval: "1h",
+          width: "100%",
+          height: "100%",
+          symbol: "OANDA:EURUSD",
+          showIntervalTabs: true,
+          locale: "en",
+          isTransparent: true
+        }
+      });
+
+      injectWidget(widgets[2], {
+        widget: "technical-analysis",
+        options: {
+          interval: "1h",
+          width: "100%",
+          height: "100%",
+          symbol: "BINANCE:BTCUSDT",
+          showIntervalTabs: true,
+          locale: "en",
+          isTransparent: true
+        }
+      });
+
+      injectWidget(widgets[3], {
+        widget: "market-quotes",
+        options: {
+          width: "100%",
+          height: "100%",
+          symbolsGroups: [
+            {
+              name: "Forex",
+              symbols: [
+                { name: "FX:EURUSD" },
+                { name: "FX:GBPUSD" },
+                { name: "FX:USDJPY" },
+                { name: "FX:USDCHF" },
+                { name: "FX:AUDUSD" },
+                { name: "FX:USDCAD" }
+              ]
+            }
+          ],
+          showSymbolLogo: true,
+          isTransparent: true,
+          locale: "en"
+        }
+      });
+
+      injectWidget(widgets[4], {
+        widget: "market-quotes",
+        options: {
+          width: "100%",
+          height: "100%",
+          symbolsGroups: [
+            {
+              name: "Crypto",
+              symbols: [
+                { name: "BINANCE:BTCUSDT" },
+                { name: "BINANCE:ETHUSDT" },
+                { name: "BINANCE:SOLUSDT" },
+                { name: "BINANCE:XRPUSDT" },
+                { name: "BINANCE:ADAUSDT" },
+                { name: "BINANCE:BNBUSDT" }
+              ]
+            }
+          ],
+          showSymbolLogo: true,
+          isTransparent: true,
+          locale: "en"
+        }
+      });
+
+      injectWidget(widgets[5], {
+        widget: "market-quotes",
+        options: {
+          width: "100%",
+          height: "100%",
+          symbolsGroups: [
+            {
+              name: "Indices + Commodities",
+              symbols: [
+                { name: "FOREXCOM:SPXUSD", displayName: "S&P 500" },
+                { name: "FOREXCOM:NSXUSD", displayName: "Nasdaq 100" },
+                { name: "TVC:GOLD", displayName: "Gold" },
+                { name: "TVC:USOIL", displayName: "WTI Oil" },
+                { name: "CBOT_MINI:YM1!", displayName: "Dow Futures" },
+                { name: "CME_MINI:NQ1!", displayName: "Nasdaq Futures" }
+              ]
+            }
+          ],
+          showSymbolLogo: true,
+          isTransparent: true,
+          locale: "en"
+        }
+      });
+
+      injectWidget(widgets[6], {
+        widget: "stock-heatmap",
+        options: {
+          width: "100%",
+          height: "100%",
+          exchanges: [],
+          dataSource: "SPX500",
+          grouping: "sector",
+          blockSize: "market_cap_basic",
+          blockColor: "change",
+          locale: "en",
+          symbolUrl: "",
+          isTransparent: true,
+          hasTopBar: false
+        }
+      });
+
+      injectWidget(widgets[7], {
+        widget: "crypto-coins-heatmap",
+        options: {
+          width: "100%",
+          height: "100%",
+          dataSource: "Crypto",
+          blockSize: "market_cap_calc",
+          blockColor: "24h_close_change|5",
+          locale: "en",
+          symbolUrl: "",
+          isTransparent: true,
+          hasTopBar: false
+        }
+      });
+
+      injectWidget(widgets[8], {
+        widget: "timeline",
+        options: {
+          feedMode: "all_symbols",
+          market: "forex,crypto,stock",
+          colorTheme: tvTheme,
+          isTransparent: true,
+          displayMode: "regular",
+          width: "100%",
+          height: "100%",
+          locale: "en"
+        }
+      });
+
+      injectWidget(widgets[9], {
+        widget: "events",
+        options: {
+          width: "100%",
+          height: "100%",
+          colorTheme: tvTheme,
+          isTransparent: true,
+          locale: "en",
+          importanceFilter: "-1,0,1"
+        }
+      });
+    });
+  </script>
+</body>
+</html>
