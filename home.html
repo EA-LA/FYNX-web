@@ -13,69 +13,69 @@
     :root{
       --bg:#ffffff;
       --surface:#ffffff;
-      --surface-2:#f6f7f9;
-      --text:#0b0f17;
-      --muted:#6b7280;
-      --line:#e5e7eb;
+      --surface-2:#f7f7f7;
+      --text:#0f0f0f;
+      --muted:#727272;
+      --line:#e7e7e7;
 
-      --shadow:0 16px 42px rgba(11,37,84,0.08);
-      --shadow-2:0 10px 30px rgba(15,23,42,0.08);
+      --shadow:0 16px 42px rgba(35, 35, 35, 0.08);
+      --shadow-2:0 10px 30px rgba(23, 23, 23, 0.08);
       --radius:14px;
 
       --nav-width:120px;
 
-      --chip:#f3f4f6;
-      --chip-line:#e5e7eb;
+      --chip:#f4f4f4;
+      --chip-line:#e7e7e7;
 
       /* STRICT black/white only */
-      --pos:#111827;
-      --neg:#111827;
+      --pos:#181818;
+      --neg:#181818;
 
-      --hero-dot: rgba(0,0,0,0.06);
+      --hero-dot: rgba(0, 0, 0, 0.06);
 
       /* ✅ FIX #1: Buttons follow theme strictly:
          Light mode => fully white button (black text)
          Dark mode  => fully black button (white text)
       */
       --btn-bg:#ffffff;
-      --btn-text:#0b0f17;
-      --btn-border:#0b0f17;
+      --btn-text:#0f0f0f;
+      --btn-border:#0f0f0f;
 
       --card-bg:#fafafa;
       --card-hover:#f5f5f5;
 
-      --ring: rgba(0,0,0,0.12);
-      --glow: rgba(0,0,0,0.08);
-      --alive: rgba(0,0,0,0.06);
+      --ring: rgba(0, 0, 0, 0.12);
+      --glow: rgba(0, 0, 0, 0.08);
+      --alive: rgba(0, 0, 0, 0.06);
     }
 
     body.dark-mode{
       --bg:#000000;
       --surface:#000000;
-      --surface-2:rgba(255,255,255,0.04);
+      --surface-2:rgba(255, 255, 255, 0.04);
       --text:#ffffff;
-      --muted:rgba(255,255,255,0.55);
-      --line:rgba(255,255,255,0.10);
+      --muted:rgba(255, 255, 255, 0.55);
+      --line:rgba(255, 255, 255, 0.10);
 
-      --shadow:0 16px 42px rgba(0,0,0,0.45);
-      --shadow-2:0 12px 34px rgba(0,0,0,0.55);
+      --shadow:0 16px 42px rgba(0, 0, 0, 0.45);
+      --shadow-2:0 12px 34px rgba(0, 0, 0, 0.55);
 
-      --chip:rgba(255,255,255,0.06);
-      --chip-line:rgba(255,255,255,0.10);
+      --chip:rgba(255, 255, 255, 0.06);
+      --chip-line:rgba(255, 255, 255, 0.10);
 
-      --hero-dot: rgba(255,255,255,0.08);
+      --hero-dot: rgba(255, 255, 255, 0.08);
 
       /* ✅ FIX #1: dark mode primary button = fully black */
       --btn-bg:#000000;
       --btn-text:#ffffff;
       --btn-border:#ffffff;
 
-      --card-bg:rgba(255,255,255,0.03);
-      --card-hover:rgba(255,255,255,0.05);
+      --card-bg:rgba(255, 255, 255, 0.03);
+      --card-hover:rgba(255, 255, 255, 0.05);
 
-      --ring: rgba(255,255,255,0.14);
-      --glow: rgba(255,255,255,0.10);
-      --alive: rgba(255,255,255,0.08);
+      --ring: rgba(255, 255, 255, 0.14);
+      --glow: rgba(255, 255, 255, 0.10);
+      --alive: rgba(255, 255, 255, 0.08);
     }
 
     *{ margin:0; padding:0; box-sizing:border-box; }
@@ -95,15 +95,15 @@
       position:fixed; inset:0;
       pointer-events:none;
       background:
-        linear-gradient(to right, transparent 0%, transparent 45%, rgba(0,0,0,0.04) 50%, transparent 55%, transparent 100%),
-        linear-gradient(to bottom, transparent 0%, transparent 45%, rgba(0,0,0,0.04) 50%, transparent 55%, transparent 100%);
+        linear-gradient(to right, transparent 0%, transparent 45%, rgba(0, 0, 0, 0.04) 50%, transparent 55%, transparent 100%),
+        linear-gradient(to bottom, transparent 0%, transparent 45%, rgba(0, 0, 0, 0.04) 50%, transparent 55%, transparent 100%);
       opacity:0.45;
       mix-blend-mode:normal;
     }
     body.dark-mode .bg-grid{
       background:
-        linear-gradient(to right, transparent 0%, transparent 45%, rgba(255,255,255,0.06) 50%, transparent 55%, transparent 100%),
-        linear-gradient(to bottom, transparent 0%, transparent 45%, rgba(255,255,255,0.06) 50%, transparent 55%, transparent 100%);
+        linear-gradient(to right, transparent 0%, transparent 45%, rgba(255, 255, 255, 0.06) 50%, transparent 55%, transparent 100%),
+        linear-gradient(to bottom, transparent 0%, transparent 45%, rgba(255, 255, 255, 0.06) 50%, transparent 55%, transparent 100%);
       opacity:0.35;
     }
 
@@ -338,14 +338,14 @@
       content:"";
       position:absolute; inset:-2px;
       background:
-        radial-gradient(900px 320px at 18% 0%, rgba(0,0,0,0.06) 0%, transparent 60%),
-        radial-gradient(700px 260px at 92% 0%, rgba(0,0,0,0.05) 0%, transparent 60%);
+        radial-gradient(900px 320px at 18% 0%, rgba(0, 0, 0, 0.06) 0%, transparent 60%),
+        radial-gradient(700px 260px at 92% 0%, rgba(0, 0, 0, 0.05) 0%, transparent 60%);
       pointer-events:none;
     }
     body.dark-mode .hero::before{
       background:
-        radial-gradient(900px 320px at 18% 0%, rgba(255,255,255,0.08) 0%, transparent 60%),
-        radial-gradient(700px 260px at 92% 0%, rgba(255,255,255,0.06) 0%, transparent 60%);
+        radial-gradient(900px 320px at 18% 0%, rgba(255, 255, 255, 0.08) 0%, transparent 60%),
+        radial-gradient(700px 260px at 92% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 60%);
     }
 
     .hero::after{
@@ -360,7 +360,7 @@
       animation: shimmerLine 6.5s ease-in-out infinite;
     }
     body.dark-mode .hero::after{
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
       opacity:.12;
     }
 
@@ -473,7 +473,7 @@
       animation: scan 4.8s ease-in-out infinite;
     }
     body.dark-mode .market-hours::after{
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
       opacity:.12;
     }
 
@@ -536,8 +536,8 @@
     }
     body.dark-mode .mh-card.open::before{
       background:
-        radial-gradient(260px 110px at 20% 0%, rgba(255,255,255,0.12), transparent 60%),
-        radial-gradient(260px 110px at 80% 0%, rgba(255,255,255,0.10), transparent 60%);
+        radial-gradient(260px 110px at 20% 0%, rgba(255, 255, 255, 0.12), transparent 60%),
+        radial-gradient(260px 110px at 80% 0%, rgba(255, 255, 255, 0.10), transparent 60%);
       opacity:.55;
     }
 
@@ -577,8 +577,8 @@
       background: color-mix(in oklab, var(--surface) 92%, transparent);
     }
     body.dark-mode .mh-badge.open{
-      border-color: rgba(255,255,255,0.28);
-      background: rgba(255,255,255,0.06);
+      border-color: rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.06);
       color:#ffffff;
     }
 
@@ -2177,6 +2177,7 @@
 
   <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
   <script src="fynx-usercard.js"></script>
+  <script src="assets/js/tradingview-fit.js"></script>
 </body>
 </html>
 ```

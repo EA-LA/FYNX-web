@@ -23,13 +23,13 @@
       --card:#ffffff;
       --cardStroke:#ededed;
 
-      --j-bg:#07080a;
-      --j-text:rgba(255,255,255,.92);
-      --j-muted:rgba(255,255,255,.60);
-      --j-stroke:rgba(255,255,255,.10);
-      --j-card:rgba(0,0,0,.22);
-      --j-good:#46e6a6;
-      --j-bad:#ff4d6d;
+      --j-bg:#080808;
+      --j-text:rgba(255, 255, 255, .92);
+      --j-muted:rgba(255, 255, 255, .60);
+      --j-stroke:rgba(255, 255, 255, .10);
+      --j-card:rgba(0, 0, 0, .22);
+      --j-good:#afafaf;
+      --j-bad:#868686;
     }
 
     body{
@@ -43,11 +43,11 @@
     body.dark-mode{
       --bg:#000;
       --text:#fff;
-      --muted:rgba(255,255,255,.55);
-      --stroke:rgba(255,255,255,.08);
+      --muted:rgba(255, 255, 255, .55);
+      --stroke:rgba(255, 255, 255, .08);
       --panel:#000;
-      --card:rgba(255,255,255,.03);
-      --cardStroke:rgba(255,255,255,.10);
+      --card:rgba(255, 255, 255, .03);
+      --cardStroke:rgba(255, 255, 255, .10);
     }
 
     .dashboard-container{display:flex;height:100vh;width:100vw}
@@ -100,11 +100,11 @@
       position:relative;
       border-radius:14px;
     }
-    .nav-item:hover{background:rgba(0,0,0,.05)}
-    body.dark-mode .nav-item:hover{background:rgba(255,255,255,.05)}
+    .nav-item:hover{background:rgba(0, 0, 0, .05)}
+    body.dark-mode .nav-item:hover{background:rgba(255, 255, 255, .05)}
 
-    .nav-item.active{background:rgba(0,0,0,.03)}
-    body.dark-mode .nav-item.active{background:rgba(255,255,255,.08)}
+    .nav-item.active{background:rgba(0, 0, 0, .03)}
+    body.dark-mode .nav-item.active{background:rgba(255, 255, 255, .08)}
 
     .nav-item.active::after{
       content:'';
@@ -120,12 +120,12 @@
 
     .nav-icon{
       width:22px;height:22px;
-      stroke:rgba(0,0,0,.55);
+      stroke:rgba(0, 0, 0, .55);
       stroke-width:1.7;
       fill:none;
       transition:stroke .18s ease;
     }
-    body.dark-mode .nav-icon{stroke:rgba(255,255,255,.55)}
+    body.dark-mode .nav-icon{stroke:rgba(255, 255, 255, .55)}
     .nav-item.active .nav-icon,
     .nav-item:hover .nav-icon{stroke:var(--text)}
 
@@ -133,11 +133,11 @@
       font-size:11px;
       font-weight:600;
       letter-spacing:.01em;
-      color:rgba(0,0,0,.48);
+      color:rgba(0, 0, 0, .48);
       transition:color .18s ease;
       user-select:none;
     }
-    body.dark-mode .nav-label{color:rgba(255,255,255,.55)}
+    body.dark-mode .nav-label{color:rgba(255, 255, 255, .55)}
     .nav-item.active .nav-label,
     .nav-item:hover .nav-label{color:var(--text)}
 
@@ -184,18 +184,18 @@
     .user-avatar{
       width:34px;height:34px;
       border-radius:999px;
-      background:rgba(0,0,0,.06);
-      border:1px solid rgba(0,0,0,.08);
+      background:rgba(0, 0, 0, .06);
+      border:1px solid rgba(0, 0, 0, .08);
       display:flex;align-items:center;justify-content:center;
-      font-size:12px;font-weight:800;color:rgba(0,0,0,.55);
+      font-size:12px;font-weight:800;color:rgba(0, 0, 0, .55);
       cursor:pointer;
       transition:transform .18s ease,border-color .18s ease;
       user-select:none;
     }
     body.dark-mode .user-avatar{
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      color:rgba(255,255,255,.75);
+      background:rgba(255, 255, 255, .06);
+      border:1px solid rgba(255, 255, 255, .12);
+      color:rgba(255, 255, 255, .75);
     }
     .user-avatar:hover{transform:scale(1.05);}
 
@@ -211,14 +211,14 @@
     .journal-shell{
       border:1px solid var(--cardStroke);
       border-radius:18px;
-      background: linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.01));
+      background: linear-gradient(180deg, rgba(0, 0, 0, .02), rgba(0, 0, 0, .01));
       overflow:hidden;
     }
     body.dark-mode .journal-shell{
-      background: radial-gradient(1200px 900px at 20% -10%, rgba(255,255,255,.08), transparent 60%),
-                  radial-gradient(900px 700px at 90% 10%, rgba(255,255,255,.06), transparent 55%),
-                  linear-gradient(180deg, var(--j-bg), #05060a 55%, #040509);
-      border-color: rgba(255,255,255,.10);
+      background: radial-gradient(1200px 900px at 20% -10%, rgba(255, 255, 255, .08), transparent 60%),
+                  radial-gradient(900px 700px at 90% 10%, rgba(255, 255, 255, .06), transparent 55%),
+                  linear-gradient(180deg, var(--j-bg), #060606 55%, #050505);
+      border-color: rgba(255, 255, 255, .10);
     }
 
     .journal-top{
@@ -228,12 +228,12 @@
       gap:12px;
       padding:16px 18px;
       border-bottom:1px solid var(--cardStroke);
-      background: rgba(255,255,255,.70);
+      background: rgba(255, 255, 255, .70);
       backdrop-filter: blur(10px);
     }
     body.dark-mode .journal-top{
-      background: rgba(7,8,10,.35);
-      border-bottom:1px solid rgba(255,255,255,.10);
+      background: rgba(8, 8, 8, .35);
+      border-bottom:1px solid rgba(255, 255, 255, .10);
     }
 
     .jt-title{
@@ -260,15 +260,15 @@
       gap:8px;
       padding:10px 12px;
       border-radius:999px;
-      background: rgba(0,0,0,.04);
-      border:1px solid rgba(0,0,0,.08);
-      color: rgba(0,0,0,.70);
+      background: rgba(0, 0, 0, .04);
+      border:1px solid rgba(0, 0, 0, .08);
+      color: rgba(0, 0, 0, .70);
       font-size:12px;
     }
     body.dark-mode .pill{
-      background: rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.10);
-      color: rgba(255,255,255,.82);
+      background: rgba(255, 255, 255, .05);
+      border:1px solid rgba(255, 255, 255, .10);
+      color: rgba(255, 255, 255, .82);
     }
     .pill input, .pill select{
       border:none; outline:none;
@@ -295,11 +295,11 @@
       width: 220px;
       border-right:1px solid var(--cardStroke);
       padding:14px;
-      background: rgba(255,255,255,.55);
+      background: rgba(255, 255, 255, .55);
     }
     body.dark-mode .jnav{
-      background: rgba(0,0,0,.22);
-      border-right:1px solid rgba(255,255,255,.10);
+      background: rgba(0, 0, 0, .22);
+      border-right:1px solid rgba(255, 255, 255, .10);
     }
 
     .jbtn{
@@ -313,24 +313,24 @@
       background: transparent;
       cursor:pointer;
       transition:.16s ease;
-      color: rgba(0,0,0,.72);
+      color: rgba(0, 0, 0, .72);
       font-weight:800;
       font-size:12px;
       text-align:left;
     }
-    body.dark-mode .jbtn{ color: rgba(255,255,255,.78); }
-    .jbtn:hover{ background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.08); }
-    body.dark-mode .jbtn:hover{ background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); }
+    body.dark-mode .jbtn{ color: rgba(255, 255, 255, .78); }
+    .jbtn:hover{ background: rgba(0, 0, 0, .04); border-color: rgba(0, 0, 0, .08); }
+    body.dark-mode .jbtn:hover{ background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .12); }
 
     .jbtn.active{
-      background: rgba(0,0,0,.06);
-      border-color: rgba(0,0,0,.12);
-      color: rgba(0,0,0,.88);
+      background: rgba(0, 0, 0, .06);
+      border-color: rgba(0, 0, 0, .12);
+      color: rgba(0, 0, 0, .88);
     }
     body.dark-mode .jbtn.active{
-      background: rgba(255,255,255,.08);
-      border-color: rgba(255,255,255,.16);
-      color: rgba(255,255,255,.92);
+      background: rgba(255, 255, 255, .08);
+      border-color: rgba(255, 255, 255, .16);
+      color: rgba(255, 255, 255, .92);
     }
 
     .jico{width:18px;height:18px;stroke:currentColor;stroke-width:1.8;fill:none;opacity:.9}
@@ -349,15 +349,15 @@
       overflow:hidden;
     }
     body.dark-mode .card{
-      background: rgba(0,0,0,.22);
-      border-color: rgba(255,255,255,.10);
+      background: rgba(0, 0, 0, .22);
+      border-color: rgba(255, 255, 255, .10);
     }
     .hd{
       padding:14px 16px 10px 16px;
-      border-bottom:1px solid rgba(0,0,0,.06);
+      border-bottom:1px solid rgba(0, 0, 0, .06);
       display:flex;align-items:flex-end;justify-content:space-between;gap:10px
     }
-    body.dark-mode .hd{border-bottom:1px solid rgba(255,255,255,.08)}
+    body.dark-mode .hd{border-bottom:1px solid rgba(255, 255, 255, .08)}
     .hd b{font-size:13px}
     .hd small{font-size:12px;color:var(--muted)}
     body.dark-mode .hd b{color:var(--j-text)}
@@ -367,13 +367,13 @@
     .stat{
       padding:14px 16px;
       border-radius:14px;
-      border:1px solid rgba(0,0,0,.06);
-      background: rgba(0,0,0,.02);
+      border:1px solid rgba(0, 0, 0, .06);
+      background: rgba(0, 0, 0, .02);
       display:flex;flex-direction:column;gap:6px
     }
     body.dark-mode .stat{
-      border-color: rgba(255,255,255,.08);
-      background: rgba(0,0,0,.18);
+      border-color: rgba(255, 255, 255, .08);
+      background: rgba(0, 0, 0, .18);
     }
     .stat small{font-size:12px;color:var(--muted)}
     .stat b{font-size:22px}
@@ -384,67 +384,67 @@
 
     .row{
       display:flex;align-items:center;justify-content:space-between;
-      gap:10px;padding:10px 0;border-bottom:1px dashed rgba(0,0,0,.10)
+      gap:10px;padding:10px 0;border-bottom:1px dashed rgba(0, 0, 0, .10)
     }
-    body.dark-mode .row{border-bottom:1px dashed rgba(255,255,255,.10)}
+    body.dark-mode .row{border-bottom:1px dashed rgba(255, 255, 255, .10)}
     .row:last-child{border-bottom:none}
     .row .l{display:flex;flex-direction:column;gap:2px;min-width:0}
     .row .l b{font-size:12px}
     .row .l small{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    body.dark-mode .row .l b{color:rgba(255,255,255,.90)}
-    body.dark-mode .row .l small{color:rgba(255,255,255,.60)}
+    body.dark-mode .row .l b{color:rgba(255, 255, 255, .90)}
+    body.dark-mode .row .l small{color:rgba(255, 255, 255, .60)}
     .badge{
       font-size:11px;
       padding:6px 10px;
       border-radius:999px;
-      border:1px solid rgba(0,0,0,.10);
-      background: rgba(0,0,0,.03);
-      color: rgba(0,0,0,.70);
+      border:1px solid rgba(0, 0, 0, .10);
+      background: rgba(0, 0, 0, .03);
+      color: rgba(0, 0, 0, .70);
       white-space:nowrap;
     }
     body.dark-mode .badge{
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      color: rgba(255,255,255,.82);
+      border:1px solid rgba(255, 255, 255, .12);
+      background: rgba(255, 255, 255, .04);
+      color: rgba(255, 255, 255, .82);
     }
 
     /* form */
     label{font-size:12px;color:var(--muted)}
-    body.dark-mode label{color:rgba(255,255,255,.60)}
+    body.dark-mode label{color:rgba(255, 255, 255, .60)}
     input[type="text"], input[type="number"], input[type="date"], textarea, select{
       width:100%;
       padding:12px 12px;
       border-radius:14px;
-      border:1px solid rgba(0,0,0,.10);
-      background: rgba(0,0,0,.03);
-      color: rgba(0,0,0,.88);
+      border:1px solid rgba(0, 0, 0, .10);
+      background: rgba(0, 0, 0, .03);
+      color: rgba(0, 0, 0, .88);
       outline:none;
     }
     body.dark-mode input, body.dark-mode textarea, body.dark-mode select{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.22);
-      color: rgba(255,255,255,.90);
+      border:1px solid rgba(255, 255, 255, .10);
+      background: rgba(0, 0, 0, .22);
+      color: rgba(255, 255, 255, .90);
     }
     textarea{min-height:110px;resize:vertical}
 
     .btn{
       padding:12px 14px;
       border-radius: 14px;
-      border:1px solid rgba(0,0,0,.12);
-      background: rgba(0,0,0,.04);
-      color: rgba(0,0,0,.85);
+      border:1px solid rgba(0, 0, 0, .12);
+      background: rgba(0, 0, 0, .04);
+      color: rgba(0, 0, 0, .85);
       cursor:pointer;
       font-weight:900;
       font-size:12px;
       transition:.16s ease;
     }
     body.dark-mode .btn{
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.90);
+      border:1px solid rgba(255, 255, 255, .14);
+      background: rgba(255, 255, 255, .06);
+      color: rgba(255, 255, 255, .90);
     }
-    .btn:hover{background: rgba(0,0,0,.06)}
-    body.dark-mode .btn:hover{background: rgba(255,255,255,.10)}
+    .btn:hover{background: rgba(0, 0, 0, .06)}
+    body.dark-mode .btn:hover{background: rgba(255, 255, 255, .10)}
     .btn.ghost{background:transparent}
 
     .note{
@@ -452,7 +452,7 @@
       color: var(--muted);
       margin-top:10px;
     }
-    body.dark-mode .note{color: rgba(255,255,255,.55)}
+    body.dark-mode .note{color: rgba(255, 255, 255, .55)}
 
     section.view{display:none}
     section.view.active{display:block}
@@ -479,7 +479,7 @@
         -webkit-overflow-scrolling:touch;
         padding-bottom:10px;
       }
-      body.dark-mode .jnav{border-bottom:1px solid rgba(255,255,255,.10)}
+      body.dark-mode .jnav{border-bottom:1px solid rgba(255, 255, 255, .10)}
       .jbtn{min-width: 210px}
     }
 
@@ -1104,10 +1104,10 @@
 
     function mkChartDefaults(){
       const dark = document.body.classList.contains("dark-mode");
-      const tick = dark ? "rgba(255,255,255,.55)" : "rgba(0,0,0,.45)";
-      const grid = dark ? "rgba(255,255,255,.10)" : "rgba(0,0,0,.08)";
-      const line = dark ? "rgba(255,255,255,.85)" : "rgba(0,0,0,.75)";
-      const fill = dark ? "rgba(255,255,255,.08)" : "rgba(0,0,0,.06)";
+      const tick = dark ? "rgba(255, 255, 255, .55)" : "rgba(0, 0, 0, .45)";
+      const grid = dark ? "rgba(255, 255, 255, .10)" : "rgba(0, 0, 0, .08)";
+      const line = dark ? "rgba(255, 255, 255, .85)" : "rgba(0, 0, 0, .75)";
+      const fill = dark ? "rgba(255, 255, 255, .08)" : "rgba(0, 0, 0, .06)";
       return { tick, grid, line, fill };
     }
 

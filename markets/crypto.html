@@ -7,8 +7,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    :root{--bg:#fff;--panel:#fff;--panel-2:#fafafa;--text:#0a0a0a;--muted:#5f5f66;--border:rgba(0,0,0,.08);--border-strong:rgba(0,0,0,.12);--shadow:0 20px 60px rgba(0,0,0,.08);--grid-1:rgba(0,0,0,.05);--grid-2:rgba(0,0,0,.03);--orb:.10}
-    body.dark-mode{--bg:#000;--panel:rgba(255,255,255,.03);--panel-2:rgba(255,255,255,.04);--text:#fff;--muted:rgba(255,255,255,.68);--border:rgba(255,255,255,.10);--border-strong:rgba(255,255,255,.16);--shadow:0 30px 90px rgba(0,0,0,.55);--grid-1:rgba(255,255,255,.04);--grid-2:rgba(255,255,255,.025);--orb:.22}
+    :root{--bg:#fff;--panel:#fff;--panel-2:#fafafa;--text:#0a0a0a;--muted:#606060;--border:rgba(0, 0, 0, .08);--border-strong:rgba(0, 0, 0, .12);--shadow:0 20px 60px rgba(0, 0, 0, .08);--grid-1:rgba(0, 0, 0, .05);--grid-2:rgba(0, 0, 0, .03);--orb:.10}
+    body.dark-mode{--bg:#000;--panel:rgba(255, 255, 255, .03);--panel-2:rgba(255, 255, 255, .04);--text:#fff;--muted:rgba(255, 255, 255, .68);--border:rgba(255, 255, 255, .10);--border-strong:rgba(255, 255, 255, .16);--shadow:0 30px 90px rgba(0, 0, 0, .55);--grid-1:rgba(255, 255, 255, .04);--grid-2:rgba(255, 255, 255, .025);--orb:.22}
     body{font-family:Inter,Segoe UI,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:.25s}
     .animated-bg{position:fixed;inset:0;z-index:-1;background:var(--bg);overflow:hidden}
     .grid-overlay{position:absolute;inset:0;background-image:linear-gradient(var(--grid-1) 1px,transparent 1px),linear-gradient(90deg,var(--grid-1) 1px,transparent 1px);background-size:46px 46px}
@@ -158,5 +158,6 @@
     document.getElementById("themeToggle").addEventListener("click", toggleTheme);
     window.addEventListener("storage", e => { if(e.key === THEME_KEY) applyTheme(getTheme()); });
   </script>
+  <script src="../assets/js/tradingview-fit.js"></script>
 </body>
 </html>

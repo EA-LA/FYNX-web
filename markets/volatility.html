@@ -6,8 +6,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    :root{--bg:#fff;--panel:#fff;--panel-2:#fafafa;--text:#0a0a0a;--muted:#5f5f66;--border:rgba(0,0,0,.08);--shadow:0 20px 60px rgba(0,0,0,.08)}
-    body.dark-mode{--bg:#000;--panel:rgba(255,255,255,.03);--panel-2:rgba(255,255,255,.04);--text:#fff;--muted:rgba(255,255,255,.68);--border:rgba(255,255,255,.10);--shadow:0 30px 90px rgba(0,0,0,.55)}
+    :root{--bg:#fff;--panel:#fff;--panel-2:#fafafa;--text:#0a0a0a;--muted:#606060;--border:rgba(0, 0, 0, .08);--shadow:0 20px 60px rgba(0, 0, 0, .08)}
+    body.dark-mode{--bg:#000;--panel:rgba(255, 255, 255, .03);--panel-2:rgba(255, 255, 255, .04);--text:#fff;--muted:rgba(255, 255, 255, .68);--border:rgba(255, 255, 255, .10);--shadow:0 30px 90px rgba(0, 0, 0, .55)}
     body{font-family:Inter,Segoe UI,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
     header{position:sticky;top:0;z-index:40;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px)}
     .nav{max-width:1400px;margin:0 auto;padding:1rem 1.25rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
@@ -97,5 +97,6 @@ applyTheme(getTheme());
 document.getElementById("themeToggle").addEventListener("click",toggleTheme);
 window.addEventListener("storage",e=>{if(e.key===THEME_KEY)applyTheme(getTheme());});
 </script>
+  <script src="../assets/js/tradingview-fit.js"></script>
 </body>
 </html>
