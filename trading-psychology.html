@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trading Psychology | FYNX</title>
+  <meta
+    name="description"
+    content="Master trading psychology across forex, crypto, stocks, futures, and options with FYNX. Build discipline, emotional control, consistency, and execution habits."
+  />
+  <style>
+    :root{
+      --bg: #f5f5f7;
+      --bg-soft: #ffffff;
+      --panel: rgba(255,255,255,0.82);
+      --panel-strong: #ffffff;
+      --text: #0d0d12;
+      --text-soft: #5d6069;
+      --muted: #8c909b;
+      --line: rgba(13,13,18,0.10);
+      --line-strong: rgba(13,13,18,0.16);
+      --accent: #0d0d12;
+      --accent-2: #1b1e29;
+      --glow: rgba(255,255,255,0.65);
+      --shadow: 0 20px 60px rgba(0,0,0,0.08);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --max: 1180px;
+    }
+
+    body.dark-mode{
+      --bg: #03050b;
+      --bg-soft: #070b15;
+      --panel: rgba(10,14,28,0.80);
+      --panel-strong: #090d18;
+      --text: #f5f7fb;
+      --text-soft: #b7becc;
+      --muted: #8791a7;
+      --line: rgba(255,255,255,0.08);
+      --line-strong: rgba(255,255,255,0.13);
+      --accent: #f5f7fb;
+      --accent-2: #d9e2ff;
+      --glow: rgba(120,140,255,0.08);
+      --shadow: 0 30px 80px rgba(0,0,0,0.45);
+    }
+
+    *{
+      box-sizing: border-box;
+    }
+
+    html{
+      scroll-behavior: smooth;
+    }
+
+    body{
+      margin: 0;
+      font-family: Inter, Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, var(--glow), transparent 28%),
+        radial-gradient(circle at 100% 20%, rgba(110,120,180,0.08), transparent 24%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      transition: background .25s ease, color .25s ease;
+    }
+
+    body::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: radial-gradient(var(--line) 1px, transparent 1px);
+      background-size: 18px 18px;
+      opacity: .9;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.75), rgba(0,0,0,.28));
+      z-index: -1;
+    }
+
+    a{
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page{
+      width: min(100%, var(--max));
+      margin: 0 auto;
+      padding: 24px 18px 80px;
+    }
+
+    .hero{
+      position: relative;
+      overflow: hidden;
+      padding: 28px;
+      border-radius: 34px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
+        var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      margin-top: 10px;
+    }
+
+    .hero::after{
+      content:"";
+      position: absolute;
+      inset: auto -100px -100px auto;
+      width: 240px;
+      height: 240px;
+      background: radial-gradient(circle, rgba(140,150,255,0.14), transparent 65%);
+      pointer-events: none;
+    }
+
+    .eyebrow{
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .eyebrow::before{
+      content:"";
+      width: 28px;
+      height: 1px;
+      background: var(--line-strong);
+    }
+
+    h1{
+      margin: 0 0 12px;
+      font-size: clamp(2.2rem, 6vw, 4.8rem);
+      line-height: .96;
+      letter-spacing: -0.05em;
+    }
+
+    .hero p{
+      max-width: 780px;
+      font-size: clamp(1rem, 2.7vw, 1.15rem);
+      color: var(--text-soft);
+      margin: 0 0 26px;
+    }
+
+    .hero-actions{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 26px;
+    }
+
+    .btn{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 999px;
+      border: 1px solid var(--line-strong);
+      transition: .2s ease;
+      font-weight: 600;
+      font-size: .95rem;
+    }
+
+    .btn.primary{
+      background: var(--text);
+      color: var(--bg);
+      border-color: transparent;
+    }
+
+    .btn.secondary{
+      background: transparent;
+      color: var(--text);
+    }
+
+    .btn:hover{
+      transform: translateY(-1px);
+    }
+
+    .hero-stats{
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 12px;
+    }
+
+    .stat{
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .stat strong{
+      display: block;
+      font-size: 1.3rem;
+      letter-spacing: -0.03em;
+      margin-bottom: 6px;
+    }
+
+    .stat span{
+      color: var(--text-soft);
+      font-size: .92rem;
+    }
+
+    .section{
+      margin-top: 26px;
+      padding: 22px;
+      border-radius: 28px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .section-title{
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .section-title h2{
+      margin: 0;
+      font-size: clamp(1.45rem, 4vw, 2.2rem);
+      letter-spacing: -0.04em;
+    }
+
+    .section-title p{
+      margin: 0;
+      max-width: 640px;
+      color: var(--text-soft);
+      font-size: .98rem;
+    }
+
+    .grid{
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid.two{
+      grid-template-columns: repeat(2, minmax(0,1fr));
+    }
+
+    .grid.three{
+      grid-template-columns: repeat(3, minmax(0,1fr));
+    }
+
+    .card{
+      height: 100%;
+      padding: 20px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card h3{
+      margin: 0 0 10px;
+      font-size: 1.18rem;
+      letter-spacing: -0.03em;
+    }
+
+    .card p{
+      margin: 0;
+      color: var(--text-soft);
+      font-size: .95rem;
+    }
+
+    .tag{
+      display: inline-flex;
+      margin-bottom: 12px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+    }
+
+    .list{
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .list div{
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+      color: var(--text-soft);
+    }
+
+    .list div strong{
+      color: var(--text);
+      min-width: 24px;
+    }
+
+    .framework{
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 16px;
+    }
+
+    .checklist{
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .checklist li{
+      padding: 13px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+      color: var(--text-soft);
+    }
+
+    .checklist li b{
+      color: var(--text);
+    }
+
+    .quote{
+      padding: 22px;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)),
+        var(--panel-strong);
+      font-size: clamp(1.1rem, 2.5vw, 1.45rem);
+      letter-spacing: -0.03em;
+      line-height: 1.4;
+    }
+
+    .quote span{
+      display: block;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: .92rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .accordion{
+      display: grid;
+      gap: 12px;
+    }
+
+    details{
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    summary{
+      list-style: none;
+      cursor: pointer;
+      padding: 18px 20px;
+      font-weight: 700;
+      font-size: 1rem;
+      position: relative;
+    }
+
+    summary::-webkit-details-marker{
+      display: none;
+    }
+
+    summary::after{
+      content:"+";
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.4rem;
+      color: var(--muted);
+      transition: .2s ease;
+    }
+
+    details[open] summary::after{
+      content:"–";
+    }
+
+    .details-body{
+      padding: 0 20px 18px;
+      color: var(--text-soft);
+    }
+
+    .details-body p{
+      margin: 0 0 12px;
+    }
+
+    .details-body p:last-child{
+      margin-bottom: 0;
+    }
+
+    .mini-grid{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .mini-item{
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+      color: var(--text-soft);
+      font-size: .92rem;
+    }
+
+    .journal-box{
+      padding: 22px;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+    }
+
+    .journal-box h3{
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 1.2rem;
+    }
+
+    .journal-prompts{
+      margin: 0;
+      padding-left: 18px;
+      color: var(--text-soft);
+      display: grid;
+      gap: 10px;
+    }
+
+    .footer-cta{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 22px;
+      border-radius: 26px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      margin-top: 26px;
+    }
+
+    .footer-cta h2{
+      margin: 0 0 8px;
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      letter-spacing: -0.04em;
+    }
+
+    .footer-cta p{
+      margin: 0;
+      color: var(--text-soft);
+      max-width: 680px;
+    }
+
+    .tiny{
+      font-size: .88rem;
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px){
+      .hero-stats,
+      .grid.three,
+      .grid.two,
+      .framework{
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 760px){
+      .page{
+        padding: 16px 14px 60px;
+      }
+
+      .hero,
+      .section,
+      .footer-cta{
+        border-radius: 24px;
+      }
+
+      .hero{
+        padding: 22px 18px;
+      }
+
+      .section{
+        padding: 18px;
+      }
+
+      .hero-stats,
+      .grid.three,
+      .grid.two,
+      .framework,
+      .mini-grid{
+        grid-template-columns: 1fr;
+      }
+
+      .section-title{
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      summary{
+        padding-right: 54px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">FYNX Learning Module</div>
+      <h1>Trading Psychology</h1>
+      <p>
+        Learn the mental side of trading across forex, crypto, stocks, futures, options, and indices.
+        This page is built to improve discipline, reduce emotional errors, strengthen execution, and help
+        traders perform with consistency under pressure.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn primary" href="#core-framework">Start Learning</a>
+        <a class="btn secondary" href="#journal">Journal Prompts</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat">
+          <strong>Discipline</strong>
+          <span>Follow process over impulse</span>
+        </div>
+        <div class="stat">
+          <strong>Consistency</strong>
+          <span>Repeat the same quality behavior</span>
+        </div>
+        <div class="stat">
+          <strong>Control</strong>
+          <span>Stay neutral in wins and losses</span>
+        </div>
+        <div class="stat">
+          <strong>Execution</strong>
+          <span>Act only when your edge is present</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>What trading psychology really is</h2>
+        <p>
+          Trading psychology is the internal system behind your decisions. It shapes how you react to risk,
+          uncertainty, profit, loss, waiting, boredom, pressure, and missed opportunities.
+        </p>
+      </div>
+
+      <div class="grid three">
+        <div class="card">
+          <div class="tag">Emotion</div>
+          <h3>Emotional regulation</h3>
+          <p>
+            Fear, greed, revenge, excitement, frustration, hesitation, and overconfidence can all damage
+            execution if not managed with rules.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="tag">Behavior</div>
+          <h3>Decision quality</h3>
+          <p>
+            A good trader does not judge every trade by outcome. They judge it by whether the setup,
+            risk, timing, and execution matched the plan.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="tag">Identity</div>
+          <h3>Professional mindset</h3>
+          <p>
+            Strong psychology means acting like a risk manager first. Capital protection comes before
+            excitement, prediction, and ego.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="core-framework" class="section">
+      <div class="section-title">
+        <h2>Core framework</h2>
+        <p>
+          Good psychology is built through structure. Use this framework before, during, and after every session.
+        </p>
+      </div>
+
+      <div class="framework">
+        <div class="card">
+          <div class="tag">Execution Cycle</div>
+          <h3>The 4-part process</h3>
+          <div class="list">
+            <div><strong>01</strong><span><b>Prepare:</b> define your session, market, bias, risk, conditions, and invalidation before entry.</span></div>
+            <div><strong>02</strong><span><b>Wait:</b> avoid forcing trades. Patience is part of the edge.</span></div>
+            <div><strong>03</strong><span><b>Execute:</b> enter only when your checklist is satisfied. No emotional improvisation.</span></div>
+            <div><strong>04</strong><span><b>Review:</b> journal the trade, the emotion, the decision quality, and the lesson.</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tag">Golden Rule</div>
+          <div class="quote">
+            Your biggest enemy is not the market. It is the version of you that trades without process.
+            <span>FYNX Trading Principle</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Main psychological problems traders face</h2>
+        <p>
+          These problems appear in every market. Forex, crypto, stocks, futures, and options all trigger the same human weaknesses.
+        </p>
+      </div>
+
+      <div class="grid two">
+        <div class="card">
+          <div class="tag">Fear</div>
+          <h3>Fear-based mistakes</h3>
+          <div class="list">
+            <div><strong>•</strong><span>Exiting winners too early</span></div>
+            <div><strong>•</strong><span>Skipping valid setups after a loss</span></div>
+            <div><strong>•</strong><span>Using position sizes that feel too large emotionally</span></div>
+            <div><strong>•</strong><span>Moving stop losses to avoid taking a clean loss</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tag">Greed</div>
+          <h3>Greed-based mistakes</h3>
+          <div class="list">
+            <div><strong>•</strong><span>Oversizing after a winning streak</span></div>
+            <div><strong>•</strong><span>Taking random extra trades outside the plan</span></div>
+            <div><strong>•</strong><span>Refusing to lock in profits when the plan says to scale</span></div>
+            <div><strong>•</strong><span>Chasing momentum because of FOMO</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tag">Ego</div>
+          <h3>Ego-based mistakes</h3>
+          <div class="list">
+            <div><strong>•</strong><span>Needing to be right instead of managing risk</span></div>
+            <div><strong>•</strong><span>Refusing to admit invalidation</span></div>
+            <div><strong>•</strong><span>Taking losses personally</span></div>
+            <div><strong>•</strong><span>Trading to prove intelligence or status</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tag">Revenge</div>
+          <h3>Revenge-based mistakes</h3>
+          <div class="list">
+            <div><strong>•</strong><span>Immediately re-entering after a stop loss</span></div>
+            <div><strong>•</strong><span>Breaking size rules to win money back fast</span></div>
+            <div><strong>•</strong><span>Switching strategy mid-session</span></div>
+            <div><strong>•</strong><span>Trading in anger, frustration, or panic</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Cognitive biases that destroy performance</h2>
+        <p>
+          The mind often distorts information under pressure. Recognizing these biases is critical.
+        </p>
+      </div>
+
+      <div class="grid three">
+        <div class="card">
+          <h3>Confirmation bias</h3>
+          <p>
+            Only looking for information that supports your current trade idea while ignoring evidence against it.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Recency bias</h3>
+          <p>
+            Letting the last one or two trades distort your confidence in the strategy.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Loss aversion</h3>
+          <p>
+            Feeling the pain of losses more strongly than the logic of probabilities.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Overconfidence</h3>
+          <p>
+            Believing recent success means risk rules are no longer necessary.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Anchoring</h3>
+          <p>
+            Fixating on one price level, one idea, or one narrative even when conditions change.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Outcome bias</h3>
+          <p>
+            Judging the quality of a trade only by profit or loss, instead of by process.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Pre-trade checklist</h2>
+        <p>
+          This is where psychology becomes practical. A checklist removes emotion from the moment of action.
+        </p>
+      </div>
+
+      <div class="grid two">
+        <div class="card">
+          <div class="tag">Before Entry</div>
+          <ul class="checklist">
+            <li><b>Market selected:</b> I know exactly what I am trading.</li>
+            <li><b>Context clear:</b> I understand trend, structure, volatility, and session.</li>
+            <li><b>Edge present:</b> This setup matches my system.</li>
+            <li><b>Risk fixed:</b> My size is pre-calculated and acceptable.</li>
+            <li><b>Invalidation known:</b> I know where the trade is wrong.</li>
+            <li><b>Emotion checked:</b> I am not trading from boredom, fear, greed, or revenge.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="tag">Mental Filter</div>
+          <ul class="checklist">
+            <li><b>Would I take this exact trade again tomorrow?</b></li>
+            <li><b>Am I forcing a trade because I want action?</b></li>
+            <li><b>Would I still take this if the last trade had been a winner?</b></li>
+            <li><b>Would I still take this if the last trade had been a loss?</b></li>
+            <li><b>Does this follow my rules or my emotions?</b></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>During the trade</h2>
+        <p>
+          Most traders do the hard analysis first, then destroy the trade by interfering emotionally.
+        </p>
+      </div>
+
+      <div class="grid three">
+        <div class="card">
+          <h3>Do not babysit every candle</h3>
+          <p>
+            Watching every tick increases anxiety and makes you manage the trade emotionally instead of systematically.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Respect the original plan</h3>
+          <p>
+            If nothing in the setup has changed, random changes to stop loss or target usually come from fear.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>Stay neutral</h3>
+          <p>
+            One trade does not define you, your strategy, or your future. It is only one sample in a large series.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>After a win and after a loss</h2>
+        <p>
+          Strong psychology handles both extremes. A win can make you reckless. A loss can make you irrational.
+        </p>
+      </div>
+
+      <div class="accordion">
+        <details open>
+          <summary>After a winning trade</summary>
+          <div class="details-body">
+            <p>
+              Do not become careless. Winning creates overconfidence very fast. Stay process-based and keep size disciplined.
+            </p>
+            <div class="mini-grid">
+              <div class="mini-item">Review whether the trade was actually high quality or just a lucky outcome.</div>
+              <div class="mini-item">Avoid doubling risk immediately after a win.</div>
+              <div class="mini-item">Do not chase a second trade just because confidence is high.</div>
+              <div class="mini-item">Stay mechanically consistent with the next setup.</div>
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>After a losing trade</summary>
+          <div class="details-body">
+            <p>
+              A clean loss is part of the business. If the process was valid, the loss is not a personal failure.
+            </p>
+            <div class="mini-grid">
+              <div class="mini-item">Take a short pause before entering again.</div>
+              <div class="mini-item">Log the loss before opening a new chart.</div>
+              <div class="mini-item">Do not increase size to recover money quickly.</div>
+              <div class="mini-item">Only continue if the next setup is objectively valid.</div>
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>After multiple losses in a row</summary>
+          <div class="details-body">
+            <p>
+              A losing streak is dangerous because it attacks confidence and discipline at the same time.
+            </p>
+            <div class="mini-grid">
+              <div class="mini-item">Reduce size or stop trading for the session.</div>
+              <div class="mini-item">Check whether market conditions changed.</div>
+              <div class="mini-item">Review screenshots, notes, and execution quality.</div>
+              <div class="mini-item">Reset mentally before returning to normal size.</div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section id="journal" class="section">
+      <div class="section-title">
+        <h2>Trading psychology journal</h2>
+        <p>
+          Journaling turns vague emotion into measurable feedback. That is how a trader improves.
+        </p>
+      </div>
+
+      <div class="grid two">
+        <div class="journal-box">
+          <h3>Questions to answer after every trade</h3>
+          <ol class="journal-prompts">
+            <li>What was my exact setup and why did I take it?</li>
+            <li>What was my emotional state before entry?</li>
+            <li>Did I follow my rules fully?</li>
+            <li>Did I hesitate, force, chase, or interfere?</li>
+            <li>Was the outcome caused by quality process or random market movement?</li>
+            <li>What is one behavior I need to repeat or remove tomorrow?</li>
+          </ol>
+        </div>
+
+        <div class="journal-box">
+          <h3>Track these metrics weekly</h3>
+          <ol class="journal-prompts">
+            <li>Rule-following percentage</li>
+            <li>Number of impulsive trades</li>
+            <li>Number of revenge trades</li>
+            <li>Average risk per trade</li>
+            <li>Best mental state during the week</li>
+            <li>Most repeated psychological mistake</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Habits of psychologically strong traders</h2>
+        <p>
+          Elite psychology is not built from motivation. It is built from repeated habits.
+        </p>
+      </div>
+
+      <div class="grid three">
+        <div class="card">
+          <h3>They accept uncertainty</h3>
+          <p>
+            They know no setup is guaranteed. Their confidence comes from edge plus risk management, not prediction.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>They think in probabilities</h3>
+          <p>
+            They stop needing every trade to win. They focus on the long series, not one result.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>They respect capital</h3>
+          <p>
+            They know survival matters. Protecting the account keeps opportunity alive.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>They pause when emotional</h3>
+          <p>
+            They do not trade through anger, exhaustion, euphoria, or emotional chaos.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>They keep routines</h3>
+          <p>
+            Same wake-up, same prep, same checklist, same review. Stability builds consistency.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>They review honestly</h3>
+          <p>
+            They do not hide mistakes from themselves. Brutal clarity creates growth.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Psychology across different markets</h2>
+        <p>
+          The instruments change. Human behavior does not.
+        </p>
+      </div>
+
+      <div class="grid two">
+        <div class="card">
+          <div class="tag">Forex</div>
+          <h3>Session pressure and overtrading</h3>
+          <p>
+            Fast session changes, macro events, and leverage often cause impulsive entries and revenge trading.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="tag">Crypto</div>
+          <h3>24/7 emotional fatigue</h3>
+          <p>
+            Constant market access increases FOMO, burnout, and late-night low-quality decision making.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="tag">Stocks</div>
+          <h3>News and narrative traps</h3>
+          <p>
+            Headlines, hype, and crowd sentiment can push traders into emotional chasing and poor timing.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="tag">Futures & Options</div>
+          <h3>Speed, leverage, and pressure</h3>
+          <p>
+            These markets punish hesitation and emotional mistakes quickly. Precision and calm execution matter even more.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="footer-cta">
+      <div>
+        <h2>Psychology is the edge behind the edge</h2>
+        <p>
+          Strategy finds opportunity. Psychology decides whether you execute it correctly. Build both.
+        </p>
+        <div class="tiny">FYNX • Trading Psychology Module</div>
+      </div>
+      <div class="hero-actions">
+        <a class="btn primary" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'}); return false;">Back to Top</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const THEME_KEY = "fynx_theme";
+
+    function applySavedTheme() {
+      const saved = localStorage.getItem(THEME_KEY) || "light";
+      document.body.classList.toggle("dark-mode", saved === "dark");
+    }
+
+    applySavedTheme();
+
+    window.addEventListener("storage", (event) => {
+      if (event.key === THEME_KEY) applySavedTheme();
+    });
+
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => {
+      if (!localStorage.getItem(THEME_KEY)) applySavedTheme();
+    });
+  </script>
+</body>
+</html>
