@@ -82,6 +82,47 @@
       .learn-wrap{padding:14px}
       .learn-frame-shell{height:calc(100vh - 118px)}
     }
+
+    .learn-mode-toggle{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px;
+      border:1px solid var(--chip-line);
+      border-radius:999px;
+      background:var(--chip);
+      margin-bottom:14px;
+    }
+
+    .learn-mode-btn{
+      border:1px solid transparent;
+      background:transparent;
+      color:var(--muted);
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      padding:8px 14px;
+      cursor:pointer;
+      transition:.18s ease;
+      font-family:inherit;
+    }
+
+    .learn-mode-btn.active{
+      background:color-mix(in oklab, var(--surface) 96%, transparent);
+      color:var(--text);
+      border-color:var(--line);
+    }
+
+    .mode-content{
+      display:none;
+      opacity:0;
+      transition:opacity .18s ease;
+    }
+
+    .mode-content.active{
+      display:block;
+      opacity:1;
+    }
   </style>
 </head>
 
@@ -95,11 +136,27 @@
       </div>
 
       <section class="content-area learn-wrap">
-        <div class="panel learn-frame-shell">
-          <iframe id="learnFrame"
-            class="learn-frame"
-            src="learn/topic.html?topic=stocks&section=howto">
-          </iframe>
+        <div class="learn-mode-toggle" role="tablist" aria-label="Learn mode toggle">
+          <button id="learning-toggle" class="learn-mode-btn active" type="button" role="tab" aria-selected="true">Learning</button>
+          <button id="quizzes-toggle" class="learn-mode-btn" type="button" role="tab" aria-selected="false">Quizzes</button>
+        </div>
+
+        <div id="learn-content" class="mode-content active">
+          <div class="panel learn-frame-shell">
+            <iframe id="learnFrame"
+              class="learn-frame"
+              src="learn/topic.html?topic=stocks&section=howto">
+            </iframe>
+          </div>
+        </div>
+
+        <div id="quiz-content" class="mode-content" aria-hidden="true">
+          <div class="panel learn-frame-shell">
+            <iframe id="quizFrame"
+              class="learn-frame"
+              src="trading-quizzes.html">
+            </iframe>
+          </div>
         </div>
       </section>
     </main>
@@ -111,6 +168,26 @@
       "dark-mode",
       localStorage.getItem(THEME_KEY) === "dark"
     );
+
+    const learningToggle = document.getElementById("learning-toggle");
+    const quizzesToggle = document.getElementById("quizzes-toggle");
+    const learnContent = document.getElementById("learn-content");
+    const quizContent = document.getElementById("quiz-content");
+
+    function setLearnMode(mode) {
+      const isLearning = mode === "learning";
+      learningToggle.classList.toggle("active", isLearning);
+      quizzesToggle.classList.toggle("active", !isLearning);
+      learningToggle.setAttribute("aria-selected", isLearning ? "true" : "false");
+      quizzesToggle.setAttribute("aria-selected", isLearning ? "false" : "true");
+      learnContent.classList.toggle("active", isLearning);
+      quizContent.classList.toggle("active", !isLearning);
+      quizContent.setAttribute("aria-hidden", isLearning ? "true" : "false");
+      learnContent.setAttribute("aria-hidden", isLearning ? "false" : "true");
+    }
+
+    learningToggle.addEventListener("click", () => setLearnMode("learning"));
+    quizzesToggle.addEventListener("click", () => setLearnMode("quizzes"));
 
   </script>
 
