@@ -1211,6 +1211,25 @@
         });
 
         refreshNote.textContent = `Live feeds refreshed • next update in 5 minutes`;
+
+        const cachedPayload = {
+          updatedAt: new Date().toISOString(),
+          cadenceMs: REFRESH_MS,
+          items: allNews.slice(0, 30).map((item) => ({
+            title: item.title,
+            source: item.source,
+            label: item.label,
+            description: item.description,
+            link: item.link,
+            pubDate: item.pubDate,
+            dedupeKey: item.link || `${item.title}-${item.pubDate}`
+          }))
+        };
+
+        localStorage.setItem("fynx_news_latest_payload", JSON.stringify(cachedPayload));
+        localStorage.setItem("fynx_news_last_refresh", cachedPayload.updatedAt);
+        window.dispatchEvent(new CustomEvent("fynx:news-updated", { detail: cachedPayload }));
+
         renderNews();
       } catch (error) {
         console.error(error);

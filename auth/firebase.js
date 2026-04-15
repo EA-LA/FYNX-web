@@ -11,6 +11,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyDGSYIB_YIpbWyUMJ1d-v00-xADnvaWckk",
   authDomain: "fynx-c7a28.firebaseapp.com",
   projectId: "fynx-c7a28",
+  storageBucket: "fynx-c7a28.appspot.com",
   appId: "1:1011050657868:web:2c5ad5a1b275e669b05ce9"
 };
 
