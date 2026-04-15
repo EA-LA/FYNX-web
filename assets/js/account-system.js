@@ -5,17 +5,14 @@ import {
   getDoc,
   setDoc,
   updateDoc,
-  onSnapshot,
   collection,
   query,
   orderBy,
   limit,
   where,
   getDocs,
-  addDoc,
   serverTimestamp,
   writeBatch,
-  deleteDoc,
   enableIndexedDbPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import {
@@ -32,9 +29,15 @@ import {
   EmailAuthProvider,
   signOut
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  PRIORITY,
+  createNotificationEngine
+} from "./notifications/engine.js";
 
 const db = getFirestore(app);
 const storage = getStorage(app);
+const notificationEngine = createNotificationEngine();
 
 try {
   await enableIndexedDbPersistence(db);
@@ -82,18 +85,6 @@ const DEFAULT_PREFERENCES = {
   createdAt: null
 };
 
-const DEFAULT_NOTIFICATION_PREFERENCES = {
-  breakingNews: true,
-  highImpactEconomic: true,
-  calendarReminders: true,
-  platformUpdates: true,
-  accountSecurity: true,
-  billingChallenges: false,
-  browserEnabled: false,
-  updatedAt: null,
-  createdAt: null
-};
-
 const DEFAULT_SECURITY_SETTINGS = {
   loginAlerts: true,
   twoFactor: {
@@ -101,17 +92,33 @@ const DEFAULT_SECURITY_SETTINGS = {
     enrolledAt: null,
     method: null
   },
+  verificationAlertSentAt: null,
   updatedAt: null,
   createdAt: null
 };
 
-const MODEL_VERSION = 1;
+const MODEL_VERSION = 2;
 
 function userRoot(uid) {
   return doc(db, "users", uid);
 }
 function userDoc(uid, key) {
   return doc(db, "users", uid, "account", key);
+}
+
+async function maybeEmitVerificationCompleted(user) {
+  if (!user?.uid || !user.emailVerified) return;
+  const security = await getSecuritySettings(user.uid);
+  if (security.verificationAlertSentAt) return;
+  await notificationEngine.rulesEngine.emitSecurity(user.uid, {
+    type: "security.email_verified",
+    title: "Email verified",
+    message: "Your email verification was completed successfully.",
+    dedupeKey: `security:email_verified:${user.uid}`,
+    metadata: { email: user.email || null },
+    priority: PRIORITY.HIGH
+  });
+  await saveSecuritySettings(user.uid, { verificationAlertSentAt: serverTimestamp() });
 }
 
 async function ensureUserSeed(user) {
@@ -154,6 +161,7 @@ async function ensureUserSeed(user) {
   );
 
   await upsertSessionMetadata(user, { status: "active" });
+  await maybeEmitVerificationCompleted(user);
 }
 
 export async function bootstrapAccount(user) {
@@ -174,7 +182,7 @@ async function getMergedDoc(uid, key, defaults) {
 
 export const getUserProfile = (uid) => getMergedDoc(uid, "profile", DEFAULT_PROFILE);
 export const getUserPreferences = (uid) => getMergedDoc(uid, "preferences", DEFAULT_PREFERENCES);
-export const getNotificationPreferences = (uid) => getMergedDoc(uid, "notificationPreferences", DEFAULT_NOTIFICATION_PREFERENCES);
+export const getNotificationPreferences = (uid) => notificationEngine.preferenceManager.get(uid);
 export const getSecuritySettings = (uid) => getMergedDoc(uid, "security", DEFAULT_SECURITY_SETTINGS);
 
 export async function saveUserProfile(uid, payload) {
@@ -193,7 +201,7 @@ export async function saveUserPreferences(uid, payload) {
 }
 
 export async function saveNotificationPreferences(uid, payload) {
-  await setDoc(userDoc(uid, "notificationPreferences"), { ...payload, updatedAt: serverTimestamp() }, { merge: true });
+  await notificationEngine.preferenceManager.save(uid, payload);
 }
 
 export async function saveSecuritySettings(uid, payload) {
@@ -212,92 +220,61 @@ export async function updateAuthProfile(payload) {
   await updateProfile(auth.currentUser, payload);
 }
 
-function mapNotification(docSnap) {
-  const data = docSnap.data() || {};
-  return {
-    id: docSnap.id,
-    title: data.title || "Notification",
-    source: data.source || "FYNX",
-    type: data.type || "platform_updates",
-    body: data.body || "",
-    link: data.link || "",
-    read: Boolean(data.read),
-    createdAt: data.createdAt?.toDate?.()?.toISOString?.() || data.createdAt || new Date().toISOString(),
-    dedupeKey: data.dedupeKey || ""
-  };
-}
-
-export function listenNotifications(uid, callback, max = 30) {
-  const ref = collection(db, "users", uid, "notifications");
-  const q = query(ref, orderBy("createdAt", "desc"), limit(max));
-  return onSnapshot(q, (snap) => {
-    callback(snap.docs.map(mapNotification));
-  });
+export function listenNotifications(uid, callback, max = 100) {
+  return notificationEngine.repository.listen(uid, callback, max);
 }
 
 export async function addNotification(uid, payload) {
-  const ref = collection(db, "users", uid, "notifications");
-  await addDoc(ref, {
-    title: payload.title,
-    source: payload.source || "FYNX",
-    type: payload.type || "platform_updates",
-    body: payload.body || "",
-    link: payload.link || "",
-    read: false,
-    dedupeKey: payload.dedupeKey || null,
-    createdAt: serverTimestamp()
-  });
+  return notificationEngine.rulesEngine.emit(uid, payload);
 }
 
 export async function markNotificationRead(uid, id, read = true) {
-  await updateDoc(doc(db, "users", uid, "notifications", id), { read, readAt: read ? serverTimestamp() : null });
+  await notificationEngine.repository.markRead(uid, id, read);
 }
 
 export async function markAllNotificationsRead(uid) {
-  const ref = collection(db, "users", uid, "notifications");
-  const q = query(ref, where("read", "==", false));
-  const snap = await getDocs(q);
-  const batch = writeBatch(db);
-  snap.docs.forEach((d) => {
-    batch.update(d.ref, { read: true, readAt: serverTimestamp() });
-  });
-  await batch.commit();
+  await notificationEngine.repository.markAllRead(uid);
 }
 
-export async function removeNotification(uid, id) {
-  await deleteDoc(doc(db, "users", uid, "notifications", id));
+export async function dismissNotification(uid, id) {
+  await notificationEngine.repository.dismiss(uid, id);
 }
 
 export async function ingestNewsNotifications(uid, items = []) {
   if (!items.length) return { created: 0 };
-  const ref = collection(db, "users", uid, "notifications");
-
-  const existing = await getDocs(query(ref, where("type", "==", "breaking_market_news"), orderBy("createdAt", "desc"), limit(80)));
-  const existingKeys = new Set(existing.docs.map((snap) => snap.data().dedupeKey).filter(Boolean));
-
   const now = Date.now();
   let created = 0;
-  for (const item of items.slice(0, 5)) {
-    const publishedAt = new Date(item.pubDate || item.createdAt || now).getTime();
-    if (!Number.isFinite(publishedAt) || now - publishedAt > 24 * 60 * 60 * 1000) continue;
-    const dedupeKey = item.dedupeKey || item.link || item.title;
-    if (!dedupeKey || existingKeys.has(dedupeKey)) continue;
 
-    await addDoc(ref, {
-      title: item.title || "Market headline",
-      source: item.source || item.label || "Market feed",
-      type: "breaking_market_news",
-      body: item.description || "Fresh market story detected in your feed.",
-      link: item.link || "news.html",
-      read: false,
-      dedupeKey,
-      createdAt: serverTimestamp()
+  for (const item of items.slice(0, 20)) {
+    const publishedAt = new Date(item.pubDate || item.createdAt || now).getTime();
+    if (!Number.isFinite(publishedAt) || now - publishedAt > 48 * 60 * 60 * 1000) continue;
+    const res = await notificationEngine.rulesEngine.emitNews(uid, {
+      ...item,
+      isBreaking: Boolean(item.breaking || item.isBreaking || item.importance === "high")
     });
-    existingKeys.add(dedupeKey);
-    created += 1;
+    if (res.created) created += 1;
   }
 
   return { created };
+}
+
+export async function ingestEconomicCalendarNotifications(uid, events = []) {
+  let created = 0;
+  for (const event of events) {
+    if ((event.impact || "").toLowerCase() !== "high") continue;
+    const phase = event.phase || "upcoming";
+    const result = await notificationEngine.rulesEngine.emitCalendar(uid, event, phase);
+    if (result.created) created += 1;
+  }
+  return { created };
+}
+
+export async function emitSecurityNotification(uid, alert) {
+  return notificationEngine.rulesEngine.emitSecurity(uid, alert);
+}
+
+export async function emitPlatformNotification(uid, payload) {
+  return notificationEngine.rulesEngine.emitPlatform(uid, payload);
 }
 
 export async function updatePasswordWithReauth(currentPassword, newPassword) {
@@ -306,6 +283,14 @@ export async function updatePasswordWithReauth(currentPassword, newPassword) {
   const credential = EmailAuthProvider.credential(user.email, currentPassword);
   await reauthenticateWithCredential(user, credential);
   await updatePassword(user, newPassword);
+  await notificationEngine.rulesEngine.emitSecurity(user.uid, {
+    type: "security.password_changed",
+    title: "Password changed",
+    message: "Your account password was changed successfully.",
+    dedupeKey: `security:password_changed:${user.uid}:${new Date().toISOString().slice(0, 13)}`,
+    priority: PRIORITY.CRITICAL,
+    metadata: { email: user.email }
+  });
 }
 
 export async function resendVerificationEmail() {
@@ -316,8 +301,11 @@ export async function resendVerificationEmail() {
 export async function upsertSessionMetadata(user, payload = {}) {
   if (!user?.uid) return;
   const sessionId = `${user.uid}-${navigator.userAgent.slice(0, 24)}-${Intl.DateTimeFormat().resolvedOptions().timeZone}`;
+  const sessionRef = doc(db, "users", user.uid, "sessions", sessionId);
+  const existing = await getDoc(sessionRef);
+
   await setDoc(
-    doc(db, "users", user.uid, "sessions", sessionId),
+    sessionRef,
     {
       sessionId,
       userAgent: navigator.userAgent,
@@ -331,6 +319,21 @@ export async function upsertSessionMetadata(user, payload = {}) {
     },
     { merge: true }
   );
+
+  if (!existing.exists()) {
+    await notificationEngine.rulesEngine.emitSecurity(user.uid, {
+      type: "security.new_login",
+      title: "New login detected",
+      message: `A new session was started on ${navigator.platform || "this device"}.`,
+      dedupeKey: `security:new_login:${sessionId}`,
+      metadata: {
+        sessionId,
+        platform: navigator.platform || "unknown",
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"
+      },
+      priority: PRIORITY.CRITICAL
+    });
+  }
 }
 
 export async function getSessionMetadata(uid) {
@@ -360,32 +363,15 @@ export async function logoutCurrentSession(redirectTo = "auth/login.html") {
 }
 
 export function requestBrowserNotificationPermission() {
-  if (!("Notification" in window)) {
-    return Promise.resolve({ supported: false, permission: "denied" });
-  }
-
-  return Notification.requestPermission().then((permission) => ({ supported: true, permission }));
+  return notificationEngine.browserAdapter.requestPermission();
 }
 
 export function showBrowserNotification(payload) {
-  if (!("Notification" in window)) return false;
-  if (Notification.permission !== "granted") return false;
-  const notif = new Notification(payload.title || "FYNX", {
-    body: payload.body || "",
-    tag: payload.tag || `fynx-${Date.now()}`,
-    data: { link: payload.link || "notifications.html" }
-  });
-
-  notif.onclick = () => {
-    if (payload.link) {
-      window.open(payload.link, "_blank", "noopener");
-    }
-  };
-  return true;
+  return notificationEngine.browserAdapter.send(payload);
 }
 
 export function countUnread(notifications = []) {
-  return notifications.reduce((acc, item) => acc + (item.read ? 0 : 1), 0);
+  return notificationEngine.unreadCountManager.count(notifications);
 }
 
 export { db, auth };
