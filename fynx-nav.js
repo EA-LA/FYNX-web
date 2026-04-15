@@ -32,6 +32,11 @@
     'profile.html': 'profile',
   };
 
+  function demoBannerMarkup() {
+    if (!isDemoMode()) return '';
+    return `<div style="padding:8px 14px;border-radius:12px;border:1px solid var(--line, rgba(255,255,255,.18));font-size:12px;font-weight:700;letter-spacing:.02em;opacity:.88;">DEMO MODE · SIMULATED DATA</div>`;
+  }
+
   const NAV_ICONS = {
     home: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>',
     journal: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>',
