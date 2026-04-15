@@ -9,1205 +9,174 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
+  <link rel="stylesheet" href="assets/css/app-shell.css" />
+  <link rel="stylesheet" href="assets/css/mobile-fixes.css" />
+
   <style>
     :root{
       --bg:#ffffff;
       --surface:#ffffff;
-      --surface-2: rgba(11, 11, 11, 0.04);
-      --text:#0b0b0b;
-      --muted:#606060;
-      --line: rgba(11, 11, 11, 0.10);
-
-      --accent:#0b0b0b;
-      --accent-soft: rgba(11, 11, 11, 0.08);
-
-      --shadow: 0 18px 38px rgba(0, 0, 0, 0.06);
-      --radius: 14px;
-      --nav-width: 108px;
-
-      --focus: 0 0 0 3px rgba(11, 11, 11, 0.18);
+      --surface-2:#f7f7f7;
+      --text:#0f0f0f;
+      --muted:#727272;
+      --line:#e7e7e7;
+      --chip:#f4f4f4;
+      --chip-line:#e7e7e7;
+      --hero-dot: rgba(0, 0, 0, 0.06);
+      --radius:14px;
     }
 
     body.dark-mode{
       --bg:#000000;
-      --surface:#0b0b0b;
-      --surface-2: rgba(243, 243, 243, 0.08);
-      --text:#f3f3f3;
-      --muted:#afafaf;
-      --line: rgba(243, 243, 243, 0.12);
-
-      --accent:#f3f3f3;
-      --accent-soft: rgba(243, 243, 243, 0.10);
-
-      --shadow: 0 20px 44px rgba(0, 0, 0, 0.55);
-      --focus: 0 0 0 3px rgba(243, 243, 243, 0.18);
+      --surface:#000000;
+      --surface-2:rgba(255, 255, 255, 0.04);
+      --text:#ffffff;
+      --muted:rgba(255, 255, 255, 0.55);
+      --line:rgba(255, 255, 255, 0.10);
+      --chip:rgba(255, 255, 255, 0.06);
+      --chip-line:rgba(255, 255, 255, 0.10);
+      --hero-dot: rgba(255, 255, 255, 0.08);
     }
 
-    *{ box-sizing:border-box; margin:0; padding:0; }
+    *{margin:0;padding:0;box-sizing:border-box}
 
     body{
-      font-family:"Manrope", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color: var(--text);
+      font-family:"Manrope", system-ui, -apple-system, Segoe UI, sans-serif;
+      background:
+        radial-gradient(circle at 1px 1px, var(--hero-dot) 1px, transparent 1px) 0 0 / 18px 18px,
+        linear-gradient(var(--bg), var(--bg));
+      color:var(--text);
       min-height:100vh;
-      background:
-        radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.06) 1px, transparent 1px) 0 0 / 18px 18px,
-        linear-gradient(var(--bg), var(--bg));
     }
 
-    body.dark-mode{
-      background:
-        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 26px 26px,
-        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 26px 26px,
-        radial-gradient(circle at 40% 10%, rgba(255, 255, 255, 0.06) 0%, transparent 45%),
-        radial-gradient(circle at 70% 0%, rgba(255, 255, 255, 0.04) 0%, transparent 40%),
-        linear-gradient(var(--bg), var(--bg));
-    }
-
-    .dashboard-container{ display:flex; min-height:100vh; width:100%; }
-
-    .nav-panel{
-      width: var(--nav-width);
-      background: rgba(255, 255, 255, 0.92);
-      border-right: 1px solid var(--line);
-      position: fixed;
-      left:0; top:0;
-      height:100vh;
-      z-index:100;
-      display:flex;
-      flex-direction:column;
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-    }
-    body.dark-mode .nav-panel{ background: rgba(11, 11, 11, 0.92); }
-
-    .nav-logo{
-      height:84px;
-      border-bottom:1px solid var(--line);
+    .calendar-wrap{
       display:grid;
-      place-items:center;
-      font-size:24px;
-      font-weight:900;
-      letter-spacing:-0.7px;
+      gap:0;
+      align-content:start;
+      max-width:1280px;
+      width:100%;
+      margin:0 auto;
     }
 
-    .nav-menu{
-      padding:16px 0;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
+    .calendar-mode-toggle{
+      display:inline-flex;
       align-items:center;
-    }
-
-    .nav-item{
-      width:82px;
-      border-radius:12px;
-      padding:12px 4px;
-      display:grid;
       gap:6px;
-      place-items:center;
-      cursor:pointer;
-      color: var(--muted);
+      padding:4px;
+      border:1px solid var(--chip-line);
+      border-radius:999px;
+      background:var(--chip);
+      margin-bottom:14px;
+      overflow-x:auto;
+      max-width:100%;
+    }
+
+    .calendar-mode-btn{
       border:1px solid transparent;
-      transition:0.18s ease;
-      position:relative;
-      user-select:none;
-      text-decoration:none;
-    }
-
-    .nav-item:hover{
-      background: var(--surface-2);
-      color: var(--text);
-      border-color: var(--line);
-      transform: translateY(-1px);
-    }
-
-    .nav-item.active{
-      background: var(--accent-soft);
-      color: var(--text);
-      border-color: var(--line);
-    }
-
-    .nav-item.active::after{
-      content:"";
-      position:absolute;
-      left:-13px;
-      top:50%;
-      transform:translateY(-50%);
-      width:4px;
-      height:30px;
+      background:transparent;
+      color:var(--muted);
       border-radius:999px;
-      background: var(--accent);
-      opacity: 0.9;
-    }
-
-    .nav-icon{ width:20px; height:20px; stroke:currentColor; stroke-width:1.8; fill:none; }
-    .nav-label{ font-size:11px; font-weight:800; }
-
-    .main-content{
-      margin-left: var(--nav-width);
-      width: calc(100% - var(--nav-width));
-      display:flex;
-      flex-direction:column;
-      min-height:100vh;
-    }
-
-    .top-bar{
-      height:72px;
-      border-bottom:1px solid var(--line);
-      background: rgba(255, 255, 255, 0.88);
-      backdrop-filter: blur(10px);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 24px;
-      position:sticky;
-      top:0;
-      z-index:10;
-    }
- body.dark-mode .top-bar{ background: rgba(11, 11, 11, 0.88); }
-
-.top-bar-left{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.sidebar-toggle{
-  width:32px;
-  height:32px;
-  border-radius:10px;
-  border:1px solid var(--line);
-  background: var(--surface);
-  color: var(--text);
-  font-size:14px;
-  font-weight:900;
-  cursor:pointer;
-}
-
-.page-title{
-  font-size:16px;
-  font-weight:900;
-  letter-spacing:-0.2px;
-}
-
-.top-bar-right{
-  display:flex;
-      align-items:center;
-      gap:14px;
-      color: var(--muted);
-      font-size:13px;
-      font-weight:800;
-    }
-
-    .icon-btn{
-      width:34px;
-      height:34px;
-      border-radius:10px;
-      border:1px solid var(--line);
-      background: var(--surface);
-      display:grid;
-      place-items:center;
+      font-size:12px;
+      font-weight:700;
+      padding:8px 14px;
       cursor:pointer;
-      color: var(--muted);
-      transition:0.18s ease;
+      transition:.18s ease;
+      font-family:inherit;
+      white-space:nowrap;
     }
 
-    .icon-btn:hover{
-      color: var(--text);
-      border-color: var(--line);
-      transform: translateY(-1px);
+    .calendar-mode-btn.active{
+      background:color-mix(in oklab, var(--surface) 96%, transparent);
+      color:var(--text);
+      border-color:var(--line);
     }
 
-    .icon-btn:focus-visible{ outline:none; box-shadow: var(--focus); }
-
-    .icon-btn svg{ width:18px; height:18px; stroke: currentColor; fill:none; stroke-width:1.8; }
-
-    .user-avatar{
-      width:34px; height:34px;
-      border-radius:999px;
-      background: var(--surface-2);
-      border:1px solid var(--line);
-      display:grid;
-      place-items:center;
-      font-size:12px;
-      font-weight:900;
-      color: var(--muted);
-    }
-
-    .content-area{ padding:24px; display:grid; gap:16px; }
-    .demo-banner{
-      display:none;
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:10px 12px;
-      background: var(--surface-2);
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
-      margin: 0 24px 0;
-    }
-    .demo-banner-copy{ font-size:12px; font-weight:800; color:var(--muted); }
-    .demo-banner-copy b{ color:var(--text); }
-    .demo-banner-actions{ display:flex; gap:8px; }
-    .demo-banner-actions a{
-      border:1px solid var(--line);
-      border-radius:999px;
-      padding:6px 10px;
-      text-decoration:none;
-      font-size:11px;
-      font-weight:900;
-      color: var(--text);
-      background: var(--surface);
-    }
-
-    .section-header h2{
-      font-size:28px;
-      line-height:1.1;
-      letter-spacing:-0.8px;
-      margin-bottom:6px;
-      font-weight: 900;
-    }
-    .section-header p{ color: var(--muted); font-size:14px; font-weight: 800; }
-
-    .stats-grid{
-      display:grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap:12px;
-    }
-
-    .stat-card{
-      background: rgba(255, 255, 255, 0.92);
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      padding:14px;
-      box-shadow: var(--shadow);
-      display:grid;
-      gap:8px;
-      min-height:92px;
-      backdrop-filter: blur(10px);
-    }
-    body.dark-mode .stat-card{ background: rgba(11, 11, 11, 0.92); }
-
-    .stat-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      color: var(--muted);
-      font-size:12px;
-      font-weight:900;
-    }
-
-    .stat-value{ font-size:22px; font-weight:900; letter-spacing:-0.6px; }
-    .stat-change{ font-size:12px; font-weight:900; color: var(--muted); }
-
-    .panel-grid{
-      display:grid;
-      grid-template-columns: 1.9fr 1fr;
-      gap:16px;
-      align-items:start;
-    }
+    .mode-content{ display:none; }
+    .mode-content.active{ display:block; }
 
     .panel{
-      background: rgba(255, 255, 255, 0.92);
       border:1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-    }
-    body.dark-mode .panel{ background: rgba(11, 11, 11, 0.92); }
-
-    .panel-header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:14px 16px;
-      border-bottom:1px solid var(--line);
+      border-radius:var(--radius);
+      background:color-mix(in oklab, var(--surface) 92%, transparent);
+      box-shadow:0 10px 30px rgba(23, 23, 23, 0.08);
+      backdrop-filter:blur(10px);
     }
 
-    .panel-title{ font-size:15px; font-weight:900; letter-spacing:-0.2px; }
-    .panel-sub{ font-size:12px; color: var(--muted); font-weight: 800; }
-
-    .calendar-controls{ display:flex; align-items:center; gap:8px; }
-
-    .btn{
-      border:1px solid var(--line);
-      background: var(--surface);
-      color: var(--text);
-      padding:7px 10px;
-      border-radius:10px;
-      cursor:pointer;
-      font-size:12px;
-      font-weight:900;
-      transition:0.18s ease;
-    }
-
-    .btn:hover{ border-color: var(--line); transform: translateY(-1px); }
-    .btn:focus-visible{ outline:none; box-shadow: var(--focus); }
-
-    .calendar-grid{
-      display:grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap:1px;
-      background: var(--line);
-      border-radius:12px;
-      overflow:hidden;
-      margin:14px;
-      border:1px solid var(--line);
-    }
-
-    .calendar-day-header{
-      background: var(--surface-2);
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.7px;
-      font-size: 11px;
-      font-weight: 900;
-      min-height: 36px;
-      display:grid;
-      place-items:center;
-    }
-
-    .calendar-day{
-      background: var(--surface);
-      min-height:110px;
-      padding:8px;
-      display:grid;
-      grid-template-rows:auto 1fr;
-      gap:6px;
-      cursor:pointer;
-      transition:0.15s ease;
-      border:1px solid transparent;
-    }
-
-    .calendar-day:hover{ border-color: var(--line); }
-    .calendar-day.outside{ background: var(--surface-2); color: var(--muted); }
-    .calendar-day.today{ box-shadow: inset 0 0 0 2px var(--accent); }
-    .calendar-day.selected{
-      box-shadow: inset 0 0 0 2px var(--accent);
-      background: rgba(11, 11, 11, 0.04);
-    }
-    body.dark-mode .calendar-day.selected{ background: rgba(243, 243, 243, 0.08); }
-
-    .day-number{ font-size:12px; font-weight:900; }
-
-    .event-list{
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-      align-content:start;
-      overflow:hidden;
-    }
-
-    .event-pill{
-      font-size:10px;
-      font-weight:900;
-      padding:4px 6px;
-      border-radius:999px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      border:1px solid var(--line);
-      background: var(--surface-2);
-      color: var(--text);
-    }
-
-    body.dark-mode .event-pill{
-      background: rgba(243, 243, 243, 0.10);
-      border-color: rgba(243, 243, 243, 0.14);
-    }
-
-    .side-body{ padding:12px; display:grid; gap:10px; }
-
-    .event-card{
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:10px;
-      background: var(--surface-2);
-      display:grid;
-      gap:6px;
-    }
-
-    .event-card h4{ font-size:13px; font-weight:900; }
-
-    .event-meta{
-      font-size:11px;
-      color: var(--muted);
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      font-weight:800;
-    }
-
-    .small-note{
-      color: var(--muted);
-      font-size:11px;
-      padding: 0 16px 14px;
-      line-height:1.4;
-      font-weight:800;
-    }
-
-    .loading{ color: var(--muted); font-size:12px; font-weight:800; }
-
-    @media (max-width:1200px){
-      .stats-grid{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .panel-grid{ grid-template-columns: 1fr; }
+    .module-frame{
+      width:100%;
+      min-height:calc(100vh - 210px);
+      border:none;
+      border-radius:var(--radius);
+      background:var(--surface);
     }
 
     @media (max-width:900px){
-      :root{ --nav-width: 0px; }
-      .nav-panel{
-        position:fixed;
-        bottom:0;
-        top:auto;
-        width:100%;
-        height:70px;
-        border-right:none;
-        border-top:1px solid var(--line);
-        flex-direction:row;
-        justify-content:center;
-        padding-bottom: env(safe-area-inset-bottom);
-        box-shadow: 0 -12px 28px rgba(0, 0, 0, 0.14);
-      }
-      .nav-logo{ display:none; }
-      .nav-menu{
-        flex-direction:row;
-        width:100%;
-        justify-content:space-around;
-        padding:6px 8px;
-      }
-      .nav-item{ width:auto; min-width:54px; padding:8px; }
-      .nav-item.active::after{ display:none; }
-      .nav-label{ font-size:10px; }
-      .main-content{
-        margin-left:0;
-        width:100%;
-        padding-bottom: calc(80px + env(safe-area-inset-bottom));
-      }
-      .top-bar{ padding:0 14px; }
-      .sidebar-toggle{ display:none; }
-      .demo-banner{ margin: 0 14px; }
-      .content-area{ padding:14px; }
-      .stats-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .calendar-day{ min-height:90px; }
-      .event-pill{ font-size:9px; }
-    }
-
-    @media (max-width:520px){
-      .stats-grid{ grid-template-columns: 1fr; }
-      .section-header h2{ font-size:22px; }
-      .calendar-day{ min-height:82px; padding:6px; }
-      .calendar-day-header{ font-size:9px; }
-      .event-list{ gap:2px; }
-      .event-pill{ padding:3px 5px; }
-    }
-    @media (min-width: 901px){
-      body.sidebar-collapsed .nav-panel{ width:72px; }
-      body.sidebar-collapsed .nav-item{ width:56px; padding:12px 0; }
-      body.sidebar-collapsed .nav-label{ display:none; }
-      body.sidebar-collapsed .main-content{ margin-left:72px; width:calc(100% - 72px); }
+      .module-frame{ min-height:calc(100vh - 270px); }
     }
   </style>
-  <link rel="stylesheet" href="assets/css/app-shell.css" />
-  <link rel="stylesheet" href="assets/css/mobile-fixes.css">
 </head>
 
-<body data-disable-sidebar-toggle="true">
+<body>
   <div class="dashboard-container">
-    <nav class="nav-panel">
-      <div class="nav-logo">FYNX</div>
-      <div class="nav-menu">
-        <a class="nav-item" href="home.html" data-view="home">
-          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-          <span class="nav-label">Home</span>
-        </a>
-        <a class="nav-item" href="journal.html" data-view="journal">
-          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-          <span class="nav-label">Journal</span>
-        </a>
-        <a class="nav-item" href="calculator.html" data-view="calculator">
-          <svg class="nav-icon" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="16" y2="14"></line><line x1="8" y1="18" x2="16" y2="18"></line></svg>
-          <span class="nav-label">Calculator</span>
-        </a>
-        <a class="nav-item" href="news.html" data-view="news">
-          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><line x1="12" y1="11" x2="18" y2="11"></line><line x1="12" y1="7" x2="18" y2="7"></line></svg>
-          <span class="nav-label">News</span>
-        </a>
-        <a class="nav-item active" href="calendar.html" data-view="calendar">
-          <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-          <span class="nav-label">Calendar</span>
-        </a>
-        <a class="nav-item" href="learn.html" data-view="learn">
-          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M2 7l10-4 10 4-10 4-10-4z"></path><path d="M6 10v5c0 2.2 2.7 4 6 4s6-1.8 6-4v-5"></path><path d="M22 10v6"></path></svg>
-          <span class="nav-label">Learn</span>
-        </a>
-        <a class="nav-item" href="profile.html" data-view="profile">
-          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          <span class="nav-label">Profile</span>
-        </a>
-      </div>
-    </nav>
+    <nav class="nav-panel"></nav>
 
     <main class="main-content">
       <div class="top-bar">
-        <div class="top-bar-left">
-          <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Collapse sidebar"><</button>
-          <h1 class="page-title">Finance Calendar</h1>
-        </div>
-        <div class="top-bar-right">
-          <span id="lastUpdated">Loading...</span>
-          <button class="icon-btn" title="Notifications">
-            <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-          </button>
-          <div class="user-avatar">FX</div>
-        </div>
-      </div>
-      <div class="demo-banner" id="demoBanner">
-        <div class="demo-banner-copy"><b>Demo Mode</b> — You are viewing demo data — Sign up to unlock real account</div>
-        <div class="demo-banner-actions">
-          <a href="auth/signup.html">Sign Up</a>
-          <a href="auth/login.html">Log In</a>
-        </div>
+        <h1 class="page-title">Calendar</h1>
       </div>
 
-      <div class="content-area">
-        <div class="section-header">
-          <h2>Calendar + Live Markets</h2>
-          <p>Live data + macro rhythm + earnings calendar in one place.</p>
+      <section class="content-area calendar-wrap">
+        <div class="calendar-mode-toggle" role="tablist" aria-label="Calendar modules">
+          <button class="calendar-mode-btn active" type="button" role="tab" aria-selected="true" data-calendar-tab="economic">Economic Calendar</button>
+          <button class="calendar-mode-btn" type="button" role="tab" aria-selected="false" data-calendar-tab="holidays">Market Holidays</button>
+          <button class="calendar-mode-btn" type="button" role="tab" aria-selected="false" data-calendar-tab="hours">Market Hours</button>
         </div>
 
-        <div class="stats-grid" id="statsGrid">
-          <div class="stat-card"><div class="loading">Loading market data...</div></div>
+        <div class="mode-content active" data-calendar-panel="economic">
+          <div class="panel">
+            <iframe class="module-frame" title="Economic Calendar" src="tools/economic-calendar.html" loading="lazy"></iframe>
+          </div>
         </div>
 
-        <div class="panel-grid">
-          <section class="panel">
-            <div class="panel-header">
-              <div>
-                <div class="panel-title" id="calendarTitle">Month Year</div>
-                <div class="panel-sub">Click a day to inspect events</div>
-              </div>
-              <div class="calendar-controls">
-                <button class="btn" id="prevMonth">&larr; Prev</button>
-                <button class="btn" id="todayBtn">Today</button>
-                <button class="btn" id="nextMonth">Next &rarr;</button>
-              </div>
-            </div>
-            <div class="calendar-grid" id="calendarGrid"></div>
-            <p class="small-note">
-              Labels: Macro, Market structure, Earnings, Culture (global holidays). Culture loads in background to avoid freezes.
-            </p>
-          </section>
-
-          <aside class="panel">
-            <div class="panel-header">
-              <div>
-                <div class="panel-title" id="selectedDateLabel">Selected day</div>
-                <div class="panel-sub" id="selectedMeta">No events selected</div>
-              </div>
-            </div>
-            <div class="side-body" id="selectedEvents">
-              <div class="event-card">
-                <h4>Select a day on the calendar</h4>
-                <div class="event-meta"><span>Tip</span><span>Shows all events for that date</span></div>
-              </div>
-            </div>
-          </aside>
+        <div class="mode-content" data-calendar-panel="holidays" aria-hidden="true">
+          <div class="panel">
+            <iframe class="module-frame" title="Market Holidays" src="tools/market-holidays.html" loading="lazy"></iframe>
+          </div>
         </div>
-      </div>
+
+        <div class="mode-content" data-calendar-panel="hours" aria-hidden="true">
+          <div class="panel">
+            <iframe class="module-frame" title="Market Hours" src="tools/market-hours.html" loading="lazy"></iframe>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
   <script>
-    /* =========================
-       THEME
-    ========================= */
-    const THEME_KEY = "fynx_theme";
-    function applySavedTheme(){
-      const saved = localStorage.getItem(THEME_KEY) || "light";
-      document.body.classList.toggle("dark-mode", saved === "dark");
-    }
-    applySavedTheme();
+    const THEME_KEY = 'fynx_theme';
+    document.body.classList.toggle('dark-mode', localStorage.getItem(THEME_KEY) === 'dark');
 
-    /* =========================
-       DOM
-    ========================= */
-    const statsGrid = document.getElementById("statsGrid");
-    function setLastUpdated(value){
-      const el = document.getElementById("lastUpdated") || document.getElementById("dateChip");
-      if (el) el.textContent = value;
-    }
-    const calendarGrid = document.getElementById("calendarGrid");
-    const calendarTitle = document.getElementById("calendarTitle");
-    const selectedDateLabel = document.getElementById("selectedDateLabel");
-    const selectedMeta = document.getElementById("selectedMeta");
-    const selectedEvents = document.getElementById("selectedEvents");
+    const calendarTabs = Array.from(document.querySelectorAll('[data-calendar-tab]'));
+    const calendarPanels = Array.from(document.querySelectorAll('[data-calendar-panel]'));
 
-    let currentDate = new Date();
-    let selectedISO = null;
-
-    const eventsStore = new Map();     // iso -> events for current rendered month
-    const dayExtrasStore = new Map();  // iso -> extra “on this day” items
-
-    /* =========================
-       HELPERS
-    ========================= */
-    function safeText(s){
-      return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-    }
-
-    function formatPct(v) {
-      if (v === null || Number.isNaN(v)) return "--";
-      const sign = v > 0 ? "+" : "";
-      return `${sign}${v.toFixed(2)}%`;
-    }
-
-    function formatNumber(v, digits = 2) {
-      if (v === null || Number.isNaN(v)) return "--";
-      return new Intl.NumberFormat("en-US", { maximumFractionDigits: digits }).format(v);
-    }
-
-    function dateToISO(dateObj) {
-      const y = dateObj.getFullYear();
-      const m = String(dateObj.getMonth() + 1).padStart(2, "0");
-      const d = String(dateObj.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
-    }
-
-    async function fetchJson(url, timeout = 10000) {
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), timeout);
-      try {
-        const res = await fetch(url, { signal: ctrl.signal });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return await res.json();
-      } finally {
-        clearTimeout(t);
-      }
-    }
-
-    function addEvent(dateObjOrISO, event) {
-      const iso = typeof dateObjOrISO === "string" ? dateObjOrISO : dateToISO(dateObjOrISO);
-      if (!eventsStore.has(iso)) eventsStore.set(iso, []);
-      eventsStore.get(iso).push(event);
-    }
-
-    function addDayExtra(iso, event) {
-      if (!dayExtrasStore.has(iso)) dayExtrasStore.set(iso, []);
-      dayExtrasStore.get(iso).push(event);
-    }
-
-    function eventClass(type) {
-      if (type === "earnings") return "event-earnings";
-      if (type === "macro") return "event-macro";
-      return "event-market";
-    }
-
-    function sortEvents(list){
-      const pri = { macro: 1, market: 2, earnings: 3, culture: 4, history: 5 };
-      return [...list].sort((a,b) => (pri[a.type] ?? 99) - (pri[b.type] ?? 99));
-    }
-
-    function showFatalError(err){
-      const msg = (err && err.message) ? err.message : String(err);
-      setLastUpdated("Error");
-      selectedDateLabel.textContent = "Calendar error";
-      selectedMeta.textContent = "JavaScript stopped";
-      selectedEvents.innerHTML = `
-        <div class="event-card">
-          <h4>Fix needed</h4>
-          <div class="event-meta"><span>Reason</span><span>${safeText(msg)}</span></div>
-        </div>
-      `;
-    }
-
-    /* =========================
-       LIVE MARKET STATS
-    ========================= */
-    function renderStats(cards) {
-      statsGrid.innerHTML = cards.map(card => {
-        const cls = card.change > 0 ? "up" : card.change < 0 ? "down" : "flat";
-        return `
-          <article class="stat-card">
-            <div class="stat-top"><span>${safeText(card.label)}</span><span>${safeText(card.source)}</span></div>
-            <div class="stat-value">${safeText(card.value)}</div>
-            <div class="stat-change ${cls}">${safeText(card.changeText)}</div>
-          </article>
-        `;
-      }).join("");
-    }
-
-    async function loadLiveData() {
-      try {
-        const [crypto, fx, fng] = await Promise.all([
-          fetchJson("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true", 12000),
-          fetchJson("https://api.frankfurter.app/latest?from=USD&to=EUR,GBP,JPY", 12000),
-          fetchJson("https://api.alternative.me/fng/?limit=1&format=json", 12000)
-        ]);
-
-        const cards = [
-          { label: "Bitcoin (USD)", value: `$${formatNumber(crypto.bitcoin?.usd, 0)}`, change: Number(crypto.bitcoin?.usd_24h_change ?? 0), changeText: `${formatPct(Number(crypto.bitcoin?.usd_24h_change ?? 0))} (24h)`, source: "CoinGecko" },
-          { label: "Ethereum (USD)", value: `$${formatNumber(crypto.ethereum?.usd, 0)}`, change: Number(crypto.ethereum?.usd_24h_change ?? 0), changeText: `${formatPct(Number(crypto.ethereum?.usd_24h_change ?? 0))} (24h)`, source: "CoinGecko" },
-          { label: "USD / EUR", value: formatNumber(fx.rates?.EUR, 4), change: 0, changeText: "Daily FX snapshot", source: "Frankfurter" },
-          { label: "USD / GBP", value: formatNumber(fx.rates?.GBP, 4), change: 0, changeText: "Daily FX snapshot", source: "Frankfurter" },
-          { label: "Fear & Greed", value: `${fng.data?.[0]?.value ?? "--"} / 100`, change: 0, changeText: fng.data?.[0]?.value_classification ?? "Sentiment index", source: "Alternative.me" }
-        ];
-
-        renderStats(cards);
-      } catch (err) {
-        renderStats([
-          { label: "Market Data", value: "Unavailable", change: 0, changeText: "Could not fetch APIs", source: "Network" },
-          { label: "Fallback", value: "Enabled", change: 0, changeText: "Calendar still works", source: "System" },
-          { label: "Tip", value: "CORS/Rate limits", change: 0, changeText: "Some hosts block browser requests", source: "Info" },
-          { label: "Re-try", value: "Refresh page", change: 0, changeText: "Try again in 10 sec", source: "Info" },
-          { label: "Status", value: "Stable", change: 0, changeText: "Using local logic", source: "App" }
-        ]);
-      }
-    }
-
-    /* =========================
-       BASE EVENTS (local finance patterns)
-    ========================= */
-    function nthWeekdayOfMonth(year, month, weekday, n) {
-      const d = new Date(year, month, 1);
-      let count = 0;
-      while (d.getMonth() === month) {
-        if (d.getDay() === weekday) {
-          count++;
-          if (count === n) return new Date(d);
-        }
-        d.setDate(d.getDate() + 1);
-      }
-      return null;
-    }
-
-    function lastBusinessDay(year, month) {
-      const d = new Date(year, month + 1, 0);
-      while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() - 1);
-      return d;
-    }
-
-    function buildBaseEvents(year, month) {
-      const firstFriday = nthWeekdayOfMonth(year, month, 5, 1);
-      if (firstFriday) addEvent(firstFriday, { type: "macro", title: "US Nonfarm Payrolls", time: "08:30 ET", source: "BLS schedule pattern", region: "United States" });
-
-      const secondWednesday = nthWeekdayOfMonth(year, month, 3, 2);
-      if (secondWednesday) addEvent(secondWednesday, { type: "macro", title: "US CPI Release Window", time: "08:30 ET", source: "BLS release window", region: "United States" });
-
-      const thirdFriday = nthWeekdayOfMonth(year, month, 5, 3);
-      if (thirdFriday) addEvent(thirdFriday, { type: "market", title: "Options Expiration (OPEX)", time: "All day", source: "Market structure", region: "Global" });
-
-      const lb = lastBusinessDay(year, month);
-      addEvent(lb, { type: "market", title: "Month-End Rebalancing", time: "Close", source: "Index/fund flows", region: "Global" });
-
-      if ([2, 5, 8, 11].includes(month) && thirdFriday) {
-        addEvent(thirdFriday, { type: "market", title: "Quarterly Futures Expiration", time: "All day", source: "Market structure", region: "Global" });
-      }
-    }
-
-    /* =========================
-       EARNINGS (API + fallback)
-    ========================= */
-    async function loadEarnings(year, month) {
-      const start = `${year}-${String(month + 1).padStart(2, "0")}-01`;
-      const endDate = new Date(year, month + 1, 0).getDate();
-      const end = `${year}-${String(month + 1).padStart(2, "0")}-${String(endDate).padStart(2, "0")}`;
-
-      try {
-        const url = `https://financialmodelingprep.com/api/v3/earning_calendar?from=${start}&to=${end}&apikey=demo`;
-        const data = await fetchJson(url, 12000);
-
-        (Array.isArray(data) ? data : []).slice(0, 160).forEach(item => {
-          const d = item.date ? new Date(item.date) : null;
-          if (!d || Number.isNaN(d.getTime())) return;
-          addEvent(d, {
-            type: "earnings",
-            title: `${item.symbol || "Ticker"} Earnings`,
-            time: item.time || "TBD",
-            source: "Earnings calendar",
-            region: "Markets",
-            url: item.symbol ? `https://finance.yahoo.com/quote/${encodeURIComponent(item.symbol)}` : ""
-          });
-        });
-      } catch (e) {
-        const fallback = [
-          { day: 7, title: "AAPL Earnings (watch)", time: "After close" },
-          { day: 14, title: "JPM Earnings (watch)", time: "Pre-market" },
-          { day: 21, title: "MSFT Earnings (watch)", time: "After close" }
-        ];
-        fallback.forEach(ev => addEvent(new Date(year, month, ev.day), {
-          type: "earnings",
-          title: ev.title,
-          time: ev.time,
-          source: "Local fallback",
-          region: "United States"
-        }));
-      }
-    }
-
-    /* =========================
-       CULTURE HOLIDAYS (background; non-blocking)
-    ========================= */
-    const CULTURE_COUNTRIES = [
-      "US","CA","MX","BR","AR","CL","CO",
-      "GB","IE","FR","DE","ES","IT","NL","BE","SE","NO","DK","FI","PL","CZ","AT","CH","PT","GR","RO","UA",
-      "TR","SA","AE","IL","IR",
-      "ZA","NG","EG","KE","MA",
-      "IN","PK","BD","LK","CN","JP","KR","SG","MY","TH","VN","ID","PH","AU","NZ"
-    ];
-    const CULTURE_API_BASE = "https://date.nager.at/api/v3";
-    const CULTURE_CACHE_PREFIX = "fynx_culture_year_";
-    const CULTURE_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-
-    function countryName(code){
-      try{
-        const dn = new Intl.DisplayNames(["en"], { type: "region" });
-        return dn.of(code) || code;
-      }catch{
-        return code;
-      }
-    }
-
-    function getCultureCache(year){
-      try{
-        const raw = localStorage.getItem(CULTURE_CACHE_PREFIX + year);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (!parsed || !parsed.ts || !parsed.data) return null;
-        if ((Date.now() - parsed.ts) > CULTURE_CACHE_TTL_MS) return null;
-        return parsed.data;
-      }catch{
-        return null;
-      }
-    }
-
-    function setCultureCache(year, data){
-      try{
-        localStorage.setItem(CULTURE_CACHE_PREFIX + year, JSON.stringify({ ts: Date.now(), data }));
-      }catch{}
-    }
-
-    async function withConcurrency(items, limit, worker){
-      const out = [];
-      let i = 0;
-      const runners = new Array(Math.min(limit, items.length)).fill(0).map(async () => {
-        while (i < items.length){
-          const idx = i++;
-          out[idx] = await worker(items[idx], idx);
-        }
-      });
-      await Promise.all(runners);
-      return out;
-    }
-
-    async function loadCultureYear(year){
-      const cached = getCultureCache(year);
-      if (cached) return cached;
-
-      const results = await withConcurrency(CULTURE_COUNTRIES, 4, async (cc) => {
-        try{
-          const arr = await fetchJson(`${CULTURE_API_BASE}/PublicHolidays/${year}/${cc}`, 12000);
-          return (Array.isArray(arr) ? arr : []).map(h => ({
-            date: h.date,
-            name: h.name,
-            localName: h.localName,
-            countryCode: cc
-          }));
-        }catch{
-          return [];
-        }
+    function setCalendarTab(nextTab) {
+      calendarTabs.forEach((tab) => {
+        const isActive = tab.dataset.calendarTab === nextTab;
+        tab.classList.toggle('active', isActive);
+        tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
       });
 
-      const flat = results.flat();
-      setCultureCache(year, flat);
-      return flat;
-    }
-
-    async function applyCultureToMonthBackground(year, month){
-      try{
-        const data = await loadCultureYear(year);
-        for (const h of data){
-          if (!h.date) continue;
-          if (h.date.slice(0,4) !== String(year)) continue;
-          const mm = Number(h.date.slice(5,7)) - 1;
-          if (mm !== month) continue;
-
-          const iso = h.date;
-          const cname = countryName(h.countryCode);
-          const label = (h.localName && h.localName !== h.name)
-            ? `${h.name} — ${h.localName}`
-            : h.name;
-
-          addEvent(iso, {
-            type: "culture",
-            title: label,
-            time: "All day",
-            source: "Holiday / observance",
-            region: cname
-          });
-        }
-
-        // Re-render after culture is added (no freeze)
-        renderCalendar();
-        if (selectedISO) renderSelected(selectedISO);
-        setLastUpdated(`Updated ${new Date().toLocaleString()}`);
-      }catch{
-        // Ignore culture failures; finance calendar still works.
-      }
-    }
-
-    /* =========================
-       ON THIS DAY (lazy)
-    ========================= */
-    const OTD_CACHE_PREFIX = "fynx_otd_";
-    const OTD_TTL_MS = 24 * 60 * 60 * 1000;
-
-    function getOtdCache(iso){
-      try{
-        const raw = localStorage.getItem(OTD_CACHE_PREFIX + iso);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (!parsed || !parsed.ts || !parsed.data) return null;
-        if ((Date.now() - parsed.ts) > OTD_TTL_MS) return null;
-        return parsed.data;
-      }catch{
-        return null;
-      }
-    }
-
-    function setOtdCache(iso, data){
-      try{
-        localStorage.setItem(OTD_CACHE_PREFIX + iso, JSON.stringify({ ts: Date.now(), data }));
-      }catch{}
-    }
-
-    async function loadOnThisDayForISO(iso){
-      if (dayExtrasStore.has(iso)) return;
-
-      const cached = getOtdCache(iso);
-      if (cached){
-        cached.forEach(ev => addDayExtra(iso, ev));
-        return;
-      }
-
-      const d = new Date(`${iso}T00:00:00`);
-      if (Number.isNaN(d.getTime())) return;
-
-      const m = d.getMonth() + 1;
-      const day = d.getDate();
-
-      try{
-        const url = `https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${m}/${day}`;
-        const data = await fetchJson(url, 12000);
-        const events = Array.isArray(data?.events) ? data.events : [];
-
-        const trimmed = events.slice(0, 8).map(e => {
-          const year = e.year ? `${e.year}` : "";
-          const title = year ? `${year}: ${e.text}` : e.text;
-          let pageUrl = "";
-          if (Array.isArray(e.pages) && e.pages.length){
-            const p = e.pages[0];
-            if (p?.content_urls?.desktop?.page) pageUrl = p.content_urls.desktop.page;
-          }
-          return { type: "history", title, time: "Context", source: "On this day", region: "World", url: pageUrl };
-        });
-
-        trimmed.forEach(ev => addDayExtra(iso, ev));
-        setOtdCache(iso, trimmed);
-      }catch{
-        dayExtrasStore.set(iso, []);
-      }
-    }
-
-    /* =========================
-       RENDER
-    ========================= */
-    function renderSelected(iso) {
-      const dateObj = new Date(`${iso}T00:00:00`);
-      const monthList = eventsStore.get(iso) || [];
-      const extraList = dayExtrasStore.get(iso) || [];
-      const merged = sortEvents([...monthList, ...extraList]);
-
-      selectedDateLabel.textContent = dateObj.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-      selectedMeta.textContent = `${merged.length} event${merged.length === 1 ? "" : "s"}`;
-
-      if (!merged.length) {
-        selectedEvents.innerHTML = `<div class="event-card"><h4>No events</h4><div class="event-meta"><span>Day status</span><span>Clear</span></div></div>`;
-        return;
-      }
-
-      selectedEvents.innerHTML = merged.map(ev => {
-        const region = ev.region ? ` • ${safeText(ev.region)}` : "";
-        const src = safeText(ev.source || "");
-        const time = safeText(ev.time || "");
-        const title = safeText(ev.title || "");
-        const tag = safeText((ev.type || "").toUpperCase());
-        const link = ev.url ? `<a href="${safeText(ev.url)}" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:underline; text-underline-offset:2px;">Open</a>` : "";
-
-        return `
-          <article class="event-card">
-            <h4>${title}</h4>
-            <div class="event-meta"><span>${time}${region}</span><span>${src}${link ? " • " + link : ""}</span></div>
-            <span class="event-pill ${eventClass(ev.type)}">${tag}</span>
-          </article>
-        `;
-      }).join("");
-    }
-
-    function highlightSelected(iso){
-      document.querySelectorAll(".calendar-day.selected").forEach(el => el.classList.remove("selected"));
-      const el = document.querySelector(`.calendar-day[data-date="${iso}"]`);
-      if (el) el.classList.add("selected");
-    }
-
-    function buildDayCell(dateObj, iso, outside) {
-      const list = eventsStore.get(iso) || [];
-      const shown = sortEvents(list).slice(0, 2);
-      const todayIso = dateToISO(new Date());
-      const classes = ["calendar-day"];
-      if (outside) classes.push("outside");
-      if (iso === todayIso) classes.push("today");
-      if (iso === selectedISO) classes.push("selected");
-
-      return `
-        <div class="${classes.join(" ")}" data-date="${iso}">
-          <div class="day-number">${dateObj.getDate()}</div>
-          <div class="event-list">
-            ${shown.map(ev => `<div class="event-pill ${eventClass(ev.type)}">${safeText(ev.title)}</div>`).join("")}
-            ${list.length > 2 ? `<div class="event-pill">+${list.length - 2} more</div>` : ""}
-          </div>
-        </div>
-      `;
-    }
-
-    function renderCalendar() {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
-
-      calendarTitle.textContent = currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-
-      const headers = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-        .map(d => `<div class="calendar-day-header">${d}</div>`).join("");
-
-      const firstDay = new Date(year, month, 1);
-      const startWeekday = firstDay.getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const daysInPrevMonth = new Date(year, month, 0).getDate();
-
-      let cells = "";
-
-      for (let i = startWeekday - 1; i >= 0; i--) {
-        const day = daysInPrevMonth - i;
-        const dateObj = new Date(year, month - 1, day);
-        const iso = dateToISO(dateObj);
-        cells += buildDayCell(dateObj, iso, true);
-      }
-
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dateObj = new Date(year, month, day);
-        const iso = dateToISO(dateObj);
-        cells += buildDayCell(dateObj, iso, false);
-      }
-
-      const currentCells = startWeekday + daysInMonth;
-      const rest = (7 - (currentCells % 7)) % 7;
-      for (let day = 1; day <= rest; day++) {
-        const dateObj = new Date(year, month + 1, day);
-        const iso = dateToISO(dateObj);
-        cells += buildDayCell(dateObj, iso, true);
-      }
-
-      calendarGrid.innerHTML = headers + cells;
-
-      document.querySelectorAll(".calendar-day").forEach(el => {
-        el.addEventListener("click", async () => {
-          selectedISO = el.dataset.date;
-          highlightSelected(selectedISO);
-          await loadOnThisDayForISO(selectedISO);
-          renderSelected(selectedISO);
-        });
+      calendarPanels.forEach((panel) => {
+        const isActive = panel.dataset.calendarPanel === nextTab;
+        panel.classList.toggle('active', isActive);
+        panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
       });
-
-      if (!selectedISO) selectedISO = dateToISO(new Date());
-      highlightSelected(selectedISO);
-      loadOnThisDayForISO(selectedISO).finally(() => renderSelected(selectedISO));
     }
 
-    async function renderMonth() {
-      const y = currentDate.getFullYear();
-      const m = currentDate.getMonth();
-
-      eventsStore.clear();
-      // keep dayExtrasStore; it’s per day and cached
-
-      // 1) draw finance immediately
-      buildBaseEvents(y, m);
-
-      // 2) add earnings (await — but it has timeout + fallback)
-      await loadEarnings(y, m);
-
-      // 3) render calendar now (NO CULTURE BLOCKING)
-      renderCalendar();
-
-      // 4) culture loads in background and re-renders when ready
-      applyCultureToMonthBackground(y, m);
-
-      setLastUpdated(`Updated ${new Date().toLocaleString()}`);
-    }
-
-    /* =========================
-       CONTROLS
-    ========================= */
-    document.getElementById("prevMonth").addEventListener("click", async () => {
-      currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-      selectedISO = null;
-      await renderMonth();
+    calendarTabs.forEach((tab) => {
+      tab.addEventListener('click', () => setCalendarTab(tab.dataset.calendarTab));
     });
-
-    document.getElementById("nextMonth").addEventListener("click", async () => {
-      currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-      selectedISO = null;
-      await renderMonth();
-    });
-
-    document.getElementById("todayBtn").addEventListener("click", async () => {
-      currentDate = new Date();
-      selectedISO = dateToISO(new Date());
-      await renderMonth();
-    });
-
-    /* =========================
-       INIT
-    ========================= */
-    (async function init() {
-      try{
-        const isDemo = localStorage.getItem("mode") === "demo";
-        const demoBanner = document.getElementById("demoBanner");
-        if (demoBanner) demoBanner.style.display = isDemo ? "flex" : "none";
-
-        const sidebarKey = "fynx_sidebar_collapsed";
-        const toggle = document.getElementById("sidebarToggle");
-        const applySidebar = (collapsed) => {
-          document.body.classList.toggle("sidebar-collapsed", collapsed);
-          if (toggle){
-            toggle.textContent = collapsed ? ">" : "<";
-            toggle.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
-          }
-          localStorage.setItem(sidebarKey, collapsed ? "1" : "0");
-        };
-        if (window.matchMedia("(min-width: 901px)").matches) {
-          applySidebar(localStorage.getItem(sidebarKey) === "1");
-        }
-        if (toggle){
-          toggle.addEventListener("click", () => applySidebar(!document.body.classList.contains("sidebar-collapsed")));
-        }
-
-        setLastUpdated(`Updated ${new Date().toLocaleString()}`);
-        await Promise.all([loadLiveData(), renderMonth()]);
-      }catch(err){
-        showFatalError(err);
-      }
-    })();
   </script>
 
   <script src="fynx-nav.js"></script>

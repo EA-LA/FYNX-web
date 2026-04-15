@@ -4,108 +4,138 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>FYNX Finance World - News</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/app-shell.css" />
   <link rel="stylesheet" href="assets/css/mobile-fixes.css" />
+
   <style>
     :root{
       --bg:#ffffff;
-      --panel:#ffffff;
-      --panel-soft: rgba(11, 11, 11, 0.04);
-      --surface-2: rgba(11, 11, 11, 0.08);
-      --text:#0b0b0b;
-      --muted:#606060;
-      --line: rgba(11, 11, 11, 0.10);
-      --shadow: 0 18px 38px rgba(0, 0, 0, 0.06);
+      --surface:#ffffff;
+      --surface-2:#f7f7f7;
+      --text:#0f0f0f;
+      --muted:#727272;
+      --line:#e7e7e7;
+      --chip:#f4f4f4;
+      --chip-line:#e7e7e7;
+      --hero-dot: rgba(0, 0, 0, 0.06);
+      --radius:14px;
     }
 
     body.dark-mode{
       --bg:#000000;
-      --panel:#0b0b0b;
-      --panel-soft: rgba(243, 243, 243, 0.08);
-      --surface-2: rgba(243, 243, 243, 0.10);
-      --text:#f3f3f3;
-      --muted:#afafaf;
-      --line: rgba(243, 243, 243, 0.12);
-      --shadow: 0 20px 44px rgba(0, 0, 0, 0.55);
+      --surface:#000000;
+      --surface-2:rgba(255, 255, 255, 0.04);
+      --text:#ffffff;
+      --muted:rgba(255, 255, 255, 0.55);
+      --line:rgba(255, 255, 255, 0.10);
+      --chip:rgba(255, 255, 255, 0.06);
+      --chip-line:rgba(255, 255, 255, 0.10);
+      --hero-dot: rgba(255, 255, 255, 0.08);
     }
 
-    *{ box-sizing:border-box; margin:0; padding:0; }
+    *{margin:0;padding:0;box-sizing:border-box}
 
     body{
-      font-family:"Segoe UI", -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
-      color: var(--text);
+      font-family:"Manrope", system-ui, -apple-system, Segoe UI, sans-serif;
+      background:
+        radial-gradient(circle at 1px 1px, var(--hero-dot) 1px, transparent 1px) 0 0 / 18px 18px,
+        linear-gradient(var(--bg), var(--bg));
+      color:var(--text);
       min-height:100vh;
-      background:
-        radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.06) 1px, transparent 1px) 0 0 / 18px 18px,
-        linear-gradient(var(--bg), var(--bg));
     }
 
-    body.dark-mode{
-      background:
-        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 26px 26px,
-        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 26px 26px,
-        radial-gradient(circle at 40% 10%, rgba(255, 255, 255, 0.06) 0%, transparent 45%),
-        radial-gradient(circle at 70% 0%, rgba(255, 255, 255, 0.04) 0%, transparent 40%),
-        linear-gradient(var(--bg), var(--bg));
+    .news-wrap{
+      display:grid;
+      gap:0;
+      align-content:start;
+      max-width:1280px;
+      width:100%;
+      margin:0 auto;
     }
 
-    .dashboard-container{ display:flex; min-height:100vh; }
-
-    .nav-panel{
-      width: 112px;
-      background: color-mix(in oklab, var(--panel) 92%, transparent);
-      border-right: 1px solid var(--line);
-      position: fixed;
-      left:0; top:0; bottom:0;
-      z-index: 10;
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-    }
-
-    .main-content{ margin-left:112px; width:calc(100% - 112px); }
-
-    .top-bar{
-      position:sticky;
-      top:0;
-      z-index:9;
-      height:72px;
-      border-bottom:1px solid var(--line);
+    .news-mode-toggle{
       display:flex;
       align-items:center;
-      justify-content:space-between;
-      padding:0 22px;
-      background: color-mix(in oklab, var(--panel) 88%, transparent);
-      backdrop-filter: blur(10px);
+      gap:6px;
+      padding:4px;
+      border:1px solid var(--chip-line);
+      border-radius:999px;
+      background:var(--chip);
+      margin-bottom:14px;
+      overflow-x:auto;
+      width:fit-content;
+      max-width:100%;
     }
 
-    .page-title{ font-size:18px; font-weight:900; letter-spacing:-0.2px; }
+    .news-mode-btn{
+      border:1px solid transparent;
+      background:transparent;
+      color:var(--muted);
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      padding:8px 14px;
+      cursor:pointer;
+      transition:.18s ease;
+      font-family:inherit;
+      white-space:nowrap;
+    }
 
-    .content-area{ padding:20px; display:grid; gap:0; }
+    .news-mode-btn.active{
+      background:color-mix(in oklab, var(--surface) 96%, transparent);
+      color:var(--text);
+      border-color:var(--line);
+    }
 
-    .panel{
-      background: color-mix(in oklab, var(--panel) 92%, transparent);
+    .mode-content{ display:none; }
+    .mode-content.active{ display:block; }
+
+    .module-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:14px;
+      align-items:start;
+    }
+
+    .module-grid.single{ grid-template-columns:minmax(0, 1fr); }
+
+    .module-card{
       border:1px solid var(--line);
-      border-radius:14px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
+      border-radius:var(--radius);
+      background:color-mix(in oklab, var(--surface) 92%, transparent);
+      box-shadow:0 10px 30px rgba(23, 23, 23, 0.08);
+      backdrop-filter:blur(10px);
+      padding:10px;
+      display:grid;
+      gap:10px;
     }
 
-    .module-shell{ padding:8px; }
+    .module-title{
+      font-size:13px;
+      font-weight:800;
+      color:var(--muted);
+      letter-spacing:0.2px;
+      padding:2px 2px 0;
+    }
 
     .module-frame{
       width:100%;
-      min-height:calc(100vh - 128px);
-      border:0;
+      border:none;
       border-radius:12px;
-      background:var(--panel);
+      background:var(--surface);
+      min-height:430px;
     }
 
-    @media (max-width: 900px){
-      .nav-panel{ width:100%; height:74px; top:auto; border-right:0; border-top:1px solid var(--line); }
-      .main-content{ margin-left:0; width:100%; padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
-      .content-area{ padding:12px; }
-      .top-bar{ padding:0 12px; }
-      .module-frame{ min-height:calc(100vh - 188px); }
+    .module-frame.news-feed{
+      min-height:calc(100vh - 220px);
+    }
+
+    @media (max-width:1080px){
+      .module-grid{ grid-template-columns:minmax(0, 1fr); }
+      .module-frame.news-feed{ min-height:calc(100vh - 260px); }
     }
   </style>
 </head>
@@ -119,25 +149,122 @@
         <h1 class="page-title">News</h1>
       </div>
 
-      <div class="content-area">
-        <section class="panel module-shell">
-          <iframe
-            id="newsModuleFrame"
-            class="module-frame"
-            title="News Module"
-            src="news/news.html"
-            loading="lazy"
-            referrerpolicy="no-referrer"
-          ></iframe>
-        </section>
-      </div>
+      <section class="content-area news-wrap">
+        <div class="news-mode-toggle" role="tablist" aria-label="News modules">
+          <button class="news-mode-btn active" type="button" role="tab" aria-selected="true" data-news-tab="feed">News Feed</button>
+          <button class="news-mode-btn" type="button" role="tab" aria-selected="false" data-news-tab="macro">Macro</button>
+          <button class="news-mode-btn" type="button" role="tab" aria-selected="false" data-news-tab="markets">Markets</button>
+          <button class="news-mode-btn" type="button" role="tab" aria-selected="false" data-news-tab="analysis">Analysis</button>
+          <button class="news-mode-btn" type="button" role="tab" aria-selected="false" data-news-tab="positioning">Positioning</button>
+        </div>
+
+        <div class="mode-content active" data-news-panel="feed">
+          <div class="module-grid single">
+            <article class="module-card">
+              <iframe class="module-frame news-feed" title="News Feed" src="news/news.html" loading="lazy"></iframe>
+            </article>
+          </div>
+        </div>
+
+        <div class="mode-content" data-news-panel="macro" aria-hidden="true">
+          <div class="module-grid">
+            <article class="module-card">
+              <h2 class="module-title">Interest Rates</h2>
+              <iframe class="module-frame" title="Interest Rates" src="tools/interest-rates.html" loading="lazy"></iframe>
+            </article>
+            <article class="module-card">
+              <h2 class="module-title">Economic Indicators Heatmap</h2>
+              <iframe class="module-frame" title="Economic Indicators Heatmap" src="tools/heatmap.html" loading="lazy"></iframe>
+            </article>
+          </div>
+        </div>
+
+        <div class="mode-content" data-news-panel="markets" aria-hidden="true">
+          <div class="module-grid">
+            <article class="module-card">
+              <h2 class="module-title">Markets</h2>
+              <iframe class="module-frame" title="Markets" src="markets/index.html" loading="lazy"></iframe>
+            </article>
+            <article class="module-card">
+              <h2 class="module-title">Currencies</h2>
+              <iframe class="module-frame" title="Currencies" src="markets/currencies.html" loading="lazy"></iframe>
+            </article>
+            <article class="module-card">
+              <h2 class="module-title">Crypto</h2>
+              <iframe class="module-frame" title="Crypto" src="markets/crypto.html" loading="lazy"></iframe>
+            </article>
+          </div>
+        </div>
+
+        <div class="mode-content" data-news-panel="analysis" aria-hidden="true">
+          <div class="module-grid">
+            <article class="module-card">
+              <h2 class="module-title">Indicators</h2>
+              <iframe class="module-frame" title="Indicators" src="markets/indicators.html" loading="lazy"></iframe>
+            </article>
+            <article class="module-card">
+              <h2 class="module-title">Patterns</h2>
+              <iframe class="module-frame" title="Patterns" src="markets/patterns.html" loading="lazy"></iframe>
+            </article>
+            <article class="module-card">
+              <h2 class="module-title">Volatility</h2>
+              <iframe class="module-frame" title="Volatility" src="markets/volatility.html" loading="lazy"></iframe>
+            </article>
+            <article class="module-card">
+              <h2 class="module-title">Correlation</h2>
+              <iframe class="module-frame" title="Correlation" src="markets/correlation.html" loading="lazy"></iframe>
+            </article>
+            <article class="module-card">
+              <h2 class="module-title">Liquidity</h2>
+              <iframe class="module-frame" title="Liquidity" src="markets/liquidity.html" loading="lazy"></iframe>
+            </article>
+            <article class="module-card">
+              <h2 class="module-title">Historical Data</h2>
+              <iframe class="module-frame" title="Historical Data" src="markets/historical-data.html" loading="lazy"></iframe>
+            </article>
+          </div>
+        </div>
+
+        <div class="mode-content" data-news-panel="positioning" aria-hidden="true">
+          <div class="module-grid">
+            <article class="module-card">
+              <h2 class="module-title">Commitments of Traders</h2>
+              <iframe class="module-frame" title="Commitments of Traders" src="markets/cot.html" loading="lazy"></iframe>
+            </article>
+            <article class="module-card">
+              <h2 class="module-title">Recent Topics Discussed</h2>
+              <iframe class="module-frame" title="Recent Topics Discussed" src="tools/recent-topics-discussed.html" loading="lazy"></iframe>
+            </article>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
   <script>
     const THEME_KEY = 'fynx_theme';
-    const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
-    document.body.classList.toggle('dark-mode', savedTheme === 'dark');
+    document.body.classList.toggle('dark-mode', localStorage.getItem(THEME_KEY) === 'dark');
+
+    const newsTabs = Array.from(document.querySelectorAll('[data-news-tab]'));
+    const newsPanels = Array.from(document.querySelectorAll('[data-news-panel]'));
+
+    function setNewsTab(nextTab) {
+      newsTabs.forEach((tab) => {
+        const isActive = tab.dataset.newsTab === nextTab;
+        tab.classList.toggle('active', isActive);
+        tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+
+      newsPanels.forEach((panel) => {
+        const isActive = panel.dataset.newsPanel === nextTab;
+        panel.classList.toggle('active', isActive);
+        panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      });
+    }
+
+    newsTabs.forEach((tab) => {
+      tab.addEventListener('click', () => setNewsTab(tab.dataset.newsTab));
+    });
   </script>
 
   <script src="fynx-nav.js"></script>
