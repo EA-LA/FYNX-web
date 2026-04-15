@@ -87,6 +87,33 @@ function ensureDemoStyles() {
   document.head.appendChild(style);
 }
 
+function ensureNavConsistencyStyles() {
+  if (document.getElementById('fynxNavConsistencyStyles')) return;
+  const style = document.createElement('style');
+  style.id = 'fynxNavConsistencyStyles';
+  style.textContent = `
+    .nav-item.active{
+      background: var(--surface-2, #f7f7f7) !important;
+      color: var(--text, #0f0f0f) !important;
+      border-color: transparent !important;
+      box-shadow: var(--shadow-2, 0 10px 30px rgba(23, 23, 23, 0.08)) !important;
+    }
+    .nav-item.active::after{
+      content:"";
+      position:absolute;
+      left:-1px;
+      top:50%;
+      transform:translateY(-50%);
+      width:3px;
+      height:26px;
+      background:var(--text, #0f0f0f);
+      border-radius:0 3px 3px 0;
+      opacity:.9;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 function detectCurrentView() {
   let file = window.location.pathname.split('/').pop() || 'home.html';
   if (!file.includes('.html')) file = 'home.html';
@@ -118,11 +145,13 @@ function detectCurrentView() {
     navPanel.innerHTML = `<div class="nav-logo"><h1>FYNX</h1></div><div class="nav-menu">${navMarkup(currentView)}</div>`;
 
    ensureDemoStyles();
+    ensureNavConsistencyStyles();
+    const disableSidebarToggle = document.body.hasAttribute('data-disable-sidebar-toggle');
 topBar.innerHTML = `
   ${demoBannerMarkup()}
 
   <div class="top-bar-left">
-    <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Collapse sidebar">&lt;</button>
+    ${disableSidebarToggle ? '' : '<button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Collapse sidebar">&lt;</button>'}
     <h1 class="page-title">${existingTitle}</h1>
   </div>
 
@@ -148,6 +177,7 @@ topBar.innerHTML = `
     renderShell();
     const sidebarKey = 'fynx_sidebar_collapsed';
     const toggleBtn = document.getElementById('sidebarToggle');
+    const disableSidebarToggle = document.body.hasAttribute('data-disable-sidebar-toggle');
     const applySidebarState = (collapsed) => {
       document.body.classList.toggle('sidebar-collapsed', collapsed);
       if (toggleBtn) {
@@ -156,7 +186,10 @@ topBar.innerHTML = `
       }
       localStorage.setItem(sidebarKey, collapsed ? '1' : '0');
     };
-    if (window.matchMedia('(min-width: 901px)').matches) {
+    if (disableSidebarToggle) {
+      document.body.classList.remove('sidebar-collapsed');
+      localStorage.setItem(sidebarKey, '0');
+    } else if (window.matchMedia('(min-width: 901px)').matches) {
       applySidebarState(localStorage.getItem(sidebarKey) === '1');
     }
     if (toggleBtn) {
