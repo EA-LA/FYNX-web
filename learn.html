@@ -49,15 +49,24 @@
       min-height:100vh;
     }
 
-    .learn-wrap{padding:20px;display:grid;gap:14px}
+    .learn-wrap{
+      display:grid;
+      gap:16px;
+      align-content:start;
+      max-width:1280px;
+      width:100%;
+      margin:0 auto;
+    }
 
     .panel{
       border:1px solid var(--line);
       border-radius:var(--radius);
-      background:var(--surface);
+      background:color-mix(in oklab, var(--surface) 92%, transparent);
+      box-shadow:0 10px 30px rgba(23, 23, 23, 0.08);
+      backdrop-filter:blur(10px);
     }
 
-    .learn-header{padding:16px;display:grid;gap:12px}
+    .learn-header{padding:18px;display:grid;gap:12px}
     .learn-header h2{font-size:18px;font-weight:800}
     .learn-header p{color:var(--muted);font-size:13px}
 
@@ -79,7 +88,7 @@
     }
 
     .learn-frame-shell{
-      height:calc(100vh - 220px);
+      height:calc(100vh - 235px);
       min-height:500px;
       overflow:hidden;
     }
@@ -106,7 +115,7 @@
         <h1 class="page-title">Learn</h1>
       </div>
 
-      <section class="learn-wrap">
+      <section class="content-area learn-wrap">
         <div class="panel learn-header">
           <h2>Learn Markets</h2>
           <p>Full FYNX learning center inside your dashboard.</p>
