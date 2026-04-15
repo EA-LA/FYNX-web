@@ -32,6 +32,13 @@
     } catch (e) {}
   }
 
+
+
+  window.addEventListener("storage", (event) => {
+    if (event.key !== STORAGE_KEY) return;
+    applyTheme(event.newValue === "light" ? "light" : "dark");
+  });
+
   document.addEventListener("DOMContentLoaded", () => {
     // Apply saved theme on every page load
     applyTheme(getSavedTheme());
