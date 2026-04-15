@@ -215,6 +215,20 @@ topBar.innerHTML = `
         .map((chunk) => chunk.charAt(0).toUpperCase())
         .join('') || 'FX';
       initialsEl.textContent = initials;
+      initialsEl.title = isDemoMode() ? 'Demo mode' : 'Log out';
+      initialsEl.style.cursor = isDemoMode() ? 'default' : 'pointer';
+      initialsEl.addEventListener('click', async () => {
+        if (isDemoMode()) return;
+        const ok = window.confirm('Log out from this browser?');
+        if (!ok) return;
+        try {
+          if (window.FynxSession?.logout) {
+            await window.FynxSession.logout('manual', 'auth/login.html');
+          }
+        } finally {
+          window.location.href = 'auth/login.html';
+        }
+      });
     }
   }
 

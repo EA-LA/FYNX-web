@@ -583,30 +583,14 @@
   <script src="../assets/theme.js"></script>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
-      getAuth,
       signInWithPopup,
       GoogleAuthProvider,
       OAuthProvider,
-      signInWithEmailAndPassword,
-      onAuthStateChanged
+      signInWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-    import {
-      getFunctions,
-      httpsCallable
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDGSYIB_YIpbWyUMJ1d-v00-xADnvaWckk",
-      authDomain: "fynx-c7a28.firebaseapp.com",
-      projectId: "fynx-c7a28",
-      appId: "1:1011050657868:web:2c5ad5a1b275e669b05ce9"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const functions = getFunctions(app);
+    import { auth } from "./firebase.js";
+    import { bootstrapSession, sessionState } from "../assets/js/session-manager.js";
 
     const loginGoogleBtn = document.getElementById("loginGoogle");
     const loginAppleBtn  = document.getElementById("loginApple");
@@ -647,10 +631,11 @@
       hideStatus();
     }
 
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // window.location.href = DASHBOARD_URL;
-      }
+    await bootstrapSession({
+      auth,
+      protectedPage: false,
+      loginPage: true,
+      loginRedirect: DASHBOARD_URL
     });
 
     loginGoogleBtn.addEventListener("click", async () => {
@@ -660,6 +645,7 @@
         await signInWithPopup(auth, provider);
         setMode("live");
         localStorage.setItem("fynx_auth_email", auth.currentUser?.email || "");
+        sessionState.trackActivity("login-google");
         window.location.href = DASHBOARD_URL;
       }catch(e){ showErr(e); }
     });
@@ -671,6 +657,7 @@
         await signInWithPopup(auth, provider);
         setMode("live");
         localStorage.setItem("fynx_auth_email", auth.currentUser?.email || "");
+        sessionState.trackActivity("login-apple");
         window.location.href = DASHBOARD_URL;
       }catch(e){ showErr(e); }
     });
@@ -684,6 +671,7 @@
         await signInWithEmailAndPassword(auth, email, password);
         setMode("live");
         localStorage.setItem("fynx_auth_email", auth.currentUser?.email || email || "");
+        sessionState.trackActivity("login-email");
         window.location.href = DASHBOARD_URL;
       }catch(err){ showErr(err); }
     });
@@ -697,6 +685,7 @@
         memberSince: "Apr 2026"
       }));
       localStorage.setItem("fynx_auth_email", "demo@fynx.app");
+      sessionState.trackActivity("demo-login");
       window.location.href = DASHBOARD_URL;
     });
 

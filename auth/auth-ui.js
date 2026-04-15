@@ -1,15 +1,13 @@
-import { auth } from "./firebase.js";
+import { auth, authPersistenceReady } from "./firebase.js";
 import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  setPersistence,
-  browserLocalPersistence
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-await setPersistence(auth, browserLocalPersistence);
+await authPersistenceReady;
 
 export async function loginWithGoogle() {
   const provider = new GoogleAuthProvider();
