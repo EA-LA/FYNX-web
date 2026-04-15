@@ -8,7 +8,6 @@ import {
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 let unsubscribeNotifications = null;
-let latestNotifications = [];
 
 function formatTime(value) {
   if (!value) return "Now";
@@ -24,10 +23,11 @@ function ensureBellStyles() {
   style.textContent = `
     .bell-wrap{ position:relative; }
     .bell-badge{ position:absolute; top:4px; right:4px; min-width:16px; height:16px; border-radius:999px; background:#cc1f1f; color:#fff; font-size:10px; font-weight:800; display:none; align-items:center; justify-content:center; padding:0 4px; }
-    .bell-dropdown{ position:absolute; right:0; top:42px; width:min(360px, 82vw); border-radius:12px; border:1px solid var(--line, rgba(255,255,255,.12)); background:var(--surface, #fff); box-shadow:0 20px 45px rgba(0,0,0,.22); display:none; z-index:80; overflow:hidden; }
+    .bell-dropdown{ position:absolute; right:0; top:42px; width:min(380px, 84vw); border-radius:12px; border:1px solid var(--line, rgba(255,255,255,.12)); background:var(--surface, #fff); box-shadow:0 20px 45px rgba(0,0,0,.22); display:none; z-index:80; overflow:hidden; }
     .bell-dropdown.open{ display:block; }
     .bell-head{ padding:12px; border-bottom:1px solid var(--line, rgba(255,255,255,.12)); display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:800; }
     .bell-list{ max-height:340px; overflow:auto; }
+    .bell-sub{ padding:8px 12px; font-size:10px; font-weight:800; opacity:.66; border-top:1px solid var(--line, rgba(255,255,255,.08)); }
     .bell-item{ padding:10px 12px; border-bottom:1px solid var(--line, rgba(255,255,255,.08)); cursor:pointer; }
     .bell-item strong{ display:block; font-size:12px; margin-bottom:2px; }
     .bell-item small{ opacity:.7; font-size:11px; }
@@ -65,44 +65,62 @@ function ensureBellDom(button) {
   return { badge, drop };
 }
 
+function bindItemClicks(list) {
+  list.querySelectorAll(".bell-item[data-id]").forEach((node) => {
+    node.addEventListener("click", async () => {
+      const id = node.dataset.id;
+      const link = node.dataset.link;
+      if (!auth.currentUser) return;
+      if (id) await markNotificationRead(auth.currentUser.uid, id, true);
+      if (link) window.location.href = link;
+    });
+  });
+}
+
 function renderBell(drop, badge, notifications) {
+  const active = notifications.filter((item) => !item.archived);
   const list = drop.querySelector("#bellList");
-  const unread = countUnread(notifications);
+  const unread = countUnread(active);
   const unreadLabel = drop.querySelector("#bellUnreadLabel");
   unreadLabel.textContent = `${unread} unread`;
 
   badge.style.display = unread > 0 ? "inline-flex" : "none";
   badge.textContent = unread > 99 ? "99+" : String(unread);
 
-  if (!notifications.length) {
+  if (!active.length) {
     list.innerHTML = `<div class="bell-item"><strong>No alerts yet</strong><small>Market and account alerts appear here.</small></div>`;
     return;
   }
 
-  list.innerHTML = notifications.slice(0, 8).map((item) => `
-    <div class="bell-item ${item.read ? "" : "unread"}" data-id="${item.id}" data-link="${item.link || "notifications.html"}">
-      <strong>${item.title}</strong>
-      <small>${item.source} • ${formatTime(item.createdAt)}</small>
-    </div>
-  `).join("");
+  const unreadItems = active.filter((i) => !i.read).slice(0, 5);
+  const readItems = active.filter((i) => i.read).slice(0, 3);
 
-  list.querySelectorAll(".bell-item[data-id]").forEach((node) => {
-    node.addEventListener("click", async () => {
-      const id = node.dataset.id;
-      const link = node.dataset.link;
-      if (!auth.currentUser) return;
-      if (id) {
-        await markNotificationRead(auth.currentUser.uid, id, true);
-      }
-      if (link) {
-        window.location.href = link;
-      }
-    });
-  });
+  list.innerHTML = `
+    ${unreadItems.length ? '<div class="bell-sub">UNREAD</div>' : ''}
+    ${unreadItems.map((item) => `
+      <div class="bell-item unread" data-id="${item.id}" data-link="${item.sourceUrl || "notifications.html"}">
+        <strong>${item.title}</strong>
+        <small>${item.source} • ${formatTime(item.timestamp)}</small>
+      </div>
+    `).join("")}
+    ${readItems.length ? '<div class="bell-sub">RECENT READ</div>' : ''}
+    ${readItems.map((item) => `
+      <div class="bell-item" data-id="${item.id}" data-link="${item.sourceUrl || "notifications.html"}">
+        <strong>${item.title}</strong>
+        <small>${item.source} • ${formatTime(item.timestamp)}</small>
+      </div>
+    `).join("")}
+  `;
+
+  bindItemClicks(list);
+}
+
+function findBellButton() {
+  return document.querySelector('.top-bar-right .icon-btn[title="Notifications"], .top-bar .icon-btn[title="Notifications"]');
 }
 
 export async function mountNotificationBell() {
-  const bellButton = document.querySelector('.top-bar-right .icon-btn[title="Notifications"]');
+  const bellButton = findBellButton();
   if (!bellButton) return;
 
   ensureBellStyles();
@@ -126,8 +144,7 @@ export async function mountNotificationBell() {
     await bootstrapAccount(user);
     if (unsubscribeNotifications) unsubscribeNotifications();
     unsubscribeNotifications = listenNotifications(user.uid, (items) => {
-      latestNotifications = items;
-      renderBell(dom.drop, dom.badge, latestNotifications);
+      renderBell(dom.drop, dom.badge, items);
     }, 20);
   });
 }
