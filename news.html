@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>FYNX Finance World - Live News</title>
-
+  <title>FYNX Finance World - News</title>
+  <link rel="stylesheet" href="assets/css/app-shell.css" />
+  <link rel="stylesheet" href="assets/css/mobile-fixes.css" />
   <style>
     :root{
       --bg:#ffffff;
@@ -13,13 +14,7 @@
       --text:#0b0b0b;
       --muted:#606060;
       --line: rgba(11, 11, 11, 0.10);
-
-      --brand:#0b0b0b;
-      --brand-soft: rgba(11, 11, 11, 0.08);
-
       --shadow: 0 18px 38px rgba(0, 0, 0, 0.06);
-      --focus: 0 0 0 3px rgba(11, 11, 11, 0.18);
-      --nav-w: 120px;
     }
 
     body.dark-mode{
@@ -29,21 +24,15 @@
       --text:#f3f3f3;
       --muted:#afafaf;
       --line: rgba(243, 243, 243, 0.12);
-
-      --brand:#f3f3f3;
-      --brand-soft: rgba(243, 243, 243, 0.10);
-
       --shadow: 0 20px 44px rgba(0, 0, 0, 0.55);
-      --focus: 0 0 0 3px rgba(243, 243, 243, 0.18);
     }
 
     *{ box-sizing:border-box; margin:0; padding:0; }
 
     body{
-      font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
+      font-family:"Segoe UI", -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
       color: var(--text);
-      min-height: 100vh;
-      transition: background 0.25s ease, color 0.25s ease;
+      min-height:100vh;
       background:
         radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.06) 1px, transparent 1px) 0 0 / 18px 18px,
         linear-gradient(var(--bg), var(--bg));
@@ -61,863 +50,172 @@
     .dashboard-container{ display:flex; min-height:100vh; }
 
     .nav-panel{
-      width: var(--nav-w);
+      width: 112px;
       background: color-mix(in oklab, var(--panel) 92%, transparent);
       border-right: 1px solid var(--line);
-      display:flex;
-      flex-direction:column;
-      position:fixed;
-      left:0; top:0;
-      height:100vh;
-      z-index:10;
+      position: fixed;
+      left:0; top:0; bottom:0;
+      z-index: 10;
       backdrop-filter: blur(10px);
       box-shadow: var(--shadow);
     }
 
-    .nav-logo{
-      padding: 28px 0;
-      text-align:center;
-      border-bottom: 1px solid var(--line);
-      background: linear-gradient(145deg, transparent, rgba(0, 0, 0, 0.04));
-    }
-    body.dark-mode .nav-logo{
-      background: linear-gradient(145deg, transparent, rgba(255, 255, 255, 0.03));
-    }
-
-    .nav-logo h1{
-      font-size:20px;
-      font-weight:900;
-      letter-spacing:0.6px;
-    }
-
-    .nav-menu{
-      flex:1;
-      padding:24px 0;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:8px;
-    }
-
-    .nav-item{
-      width:80px;
-      padding:14px 0;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      border-radius:10px;
-      cursor:pointer;
-      color: var(--muted);
-      transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
-      text-decoration:none;
-      border: 1px solid transparent;
-      user-select:none;
-    }
-
-    .nav-item:hover{
-      background: var(--panel-soft);
-      color: var(--text);
-      border-color: var(--line);
-      transform: translateY(-1px);
-    }
-
-    .nav-item.active{
-      background: var(--brand-soft);
-      color: var(--text);
-      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
-    }
-
-    .nav-icon{ width:20px; height:20px; stroke: currentColor; stroke-width:1.7; fill:none; }
-    .nav-label{ font-size:11px; font-weight:800; }
-
-    .main-content{
-      margin-left: var(--nav-w);
-      width: calc(100% - var(--nav-w));
-      display:flex;
-      flex-direction:column;
-    }
+    .main-content{ margin-left:112px; width:calc(100% - 112px); }
 
     .top-bar{
       position:sticky;
       top:0;
-      z-index:8;
-      height:68px;
-      border-bottom: 1px solid var(--line);
+      z-index:9;
+      height:72px;
+      border-bottom:1px solid var(--line);
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding: 0 22px;
+      padding:0 22px;
       background: color-mix(in oklab, var(--panel) 88%, transparent);
       backdrop-filter: blur(10px);
     }
 
-    .page-title{ font-size:16px; font-weight:900; letter-spacing:-0.2px; }
+    .page-title{ font-size:18px; font-weight:900; letter-spacing:-0.2px; }
 
-    .top-bar-right{ display:flex; align-items:center; gap:12px; }
-
-    .chip{
-      border: 1px solid var(--line);
-      background: var(--panel-soft);
-      color: var(--muted);
-      border-radius: 999px;
-      font-size: 12px;
-      padding: 8px 12px;
-      font-weight: 900;
-    }
-
-    .notification-icon{
-      width:34px;
-      height:34px;
-      border-radius:10px;
-      border: 1px solid var(--line);
-      background: var(--panel);
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-      color: var(--muted);
-      transition: 0.18s ease;
-    }
-
-    .notification-icon:hover{
-      color: var(--text);
-      transform: translateY(-1px);
-      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
-    }
-
-    .notification-icon svg{
-      width:18px; height:18px;
-      stroke: currentColor;
-      fill:none;
-      stroke-width:1.8;
-    }
-
-    .user-avatar{
-      width:34px; height:34px;
-      border-radius:999px;
-      background: var(--brand-soft);
-      color: var(--text);
-      border: 1px solid var(--line);
-      display:grid;
-      place-items:center;
-      font-size:12px;
-      font-weight:900;
-    }
-
-    .content-area{
-      padding:20px;
-      display:grid;
-      gap:16px;
-    }
+    .content-area{ padding:20px; display:grid; gap:16px; }
 
     .panel{
       background: color-mix(in oklab, var(--panel) 92%, transparent);
-      border: 1px solid var(--line);
+      border:1px solid var(--line);
       border-radius:14px;
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
     }
 
-    .ticker-wrap{ overflow:hidden; }
+    .news-header{ padding:18px; display:grid; gap:14px; }
 
-    .ticker-label{
-      font-size:11px;
-      font-weight:900;
-      letter-spacing:0.7px;
-      text-transform:uppercase;
-      color: var(--muted);
-      border-bottom: 1px solid var(--line);
-      padding: 8px 12px;
-      background: var(--panel-soft);
-    }
+    .news-header h2{ font-size:20px; font-weight:900; }
+    .news-header p{ color:var(--muted); font-size:13px; }
 
-    .ticker{
+    .news-subnav{
       display:flex;
-      gap:26px;
-      padding: 10px 14px;
-      white-space:nowrap;
-      overflow-x:auto;
-      scrollbar-width: thin;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .ticker-item{ font-size:13px; font-weight:900; }
-    .ticker-item .p, .ticker-item .n{ color: var(--text); }
-
-    .news-layout{
-      display:grid;
-      grid-template-columns: 320px minmax(0, 1fr);
-      gap:16px;
-    }
-
-    .filters{
-      padding:16px;
-      display:grid;
-      gap:12px;
-      align-content:start;
-      position: sticky;
-      top: 84px;
-      max-height: calc(100vh - 104px);
-      overflow:auto;
-    }
-
-    .section-title{
-      font-size:13px;
-      font-weight:900;
-      color: var(--muted);
-      text-transform:uppercase;
-      letter-spacing:0.7px;
-    }
-
-    .search{
-      width:100%;
-      padding:10px 12px;
-      border: 1px solid var(--line);
-      background: var(--panel-soft);
-      color: var(--text);
-      border-radius:10px;
-      font-size:14px;
-      outline:none;
-    }
-
-    .search:focus{
-      box-shadow: var(--focus);
-      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
-    }
-
-    .btn-row{ display:flex; flex-wrap:wrap; gap:8px; }
-
-    .filter-btn{
-      border: 1px solid var(--line);
-      background: var(--panel-soft);
-      color: var(--muted);
-      border-radius:999px;
-      padding: 8px 11px;
-      font-size:12px;
-      font-weight:900;
-      cursor:pointer;
-      transition: 0.18s ease;
-    }
-
-    .filter-btn:hover{
-      color: var(--text);
-      transform: translateY(-1px);
-      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
-    }
-
-    .filter-btn.active{
-      background: var(--brand-soft);
-      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
-      color: var(--text);
-    }
-
-    .stats{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:8px;
-    }
-
-    .stat{
-      background: var(--panel-soft);
-      border: 1px solid var(--line);
-      border-radius:10px;
-      padding:10px;
-    }
-
-    .stat-value{ font-size:18px; font-weight:900; }
-    .stat-label{
-      font-size:11px;
-      font-weight:900;
-      color: var(--muted);
-      text-transform:uppercase;
-      letter-spacing:0.6px;
-    }
-
-    .news-panel{ padding:12px; }
-
-    .section-header{
-      padding: 8px 8px 16px;
-      display:flex;
-      align-items:start;
-      justify-content:space-between;
-      gap:12px;
-      border-bottom: 1px solid var(--line);
-      margin-bottom:10px;
-    }
-
-    .section-header h2{
-      font-size:26px;
-      line-height:1.1;
-      font-weight: 900;
-      letter-spacing:-0.7px;
-    }
-
-    .section-header p{
-      color: var(--muted);
-      font-size:13px;
-      margin-top:4px;
-      font-weight: 800;
-    }
-
-    .refresh-btn{
-      border: 1px solid var(--line);
-      background: var(--panel-soft);
-      color: var(--text);
-      border-radius:10px;
-      padding: 9px 12px;
-      font-size:12px;
-      font-weight:900;
-      cursor:pointer;
-      white-space:nowrap;
-      transition: 0.18s ease;
-    }
-
-    .refresh-btn:hover{
-      transform: translateY(-1px);
-      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
-    }
-
-    .refresh-btn:disabled{
-      opacity:0.6;
-      cursor:not-allowed;
-      transform:none;
-    }
-
-    .news-feed{
-      display:grid;
+      flex-wrap:wrap;
       gap:10px;
-      max-height: calc(100vh - 236px);
-      overflow:auto;
-      padding-right:4px;
-      -webkit-overflow-scrolling: touch;
     }
 
-    .news-card{
-      border: 1px solid var(--line);
-      border-radius:12px;
-      background: var(--panel-soft);
-      padding:14px;
-      transition: transform 0.18s ease, border-color 0.18s ease;
-    }
-
-    .news-card:hover{
-      transform: translateY(-1px);
-      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
-    }
-
-    .news-meta{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      align-items:center;
-      font-size:11px;
-      margin-bottom:9px;
-      color: var(--muted);
-      text-transform:uppercase;
-      letter-spacing:0.6px;
-      font-weight:900;
-    }
-
-    .pill{
-      border: 1px solid var(--line);
-      border-radius:999px;
-      padding: 3px 7px;
-      background: var(--panel);
-      color: var(--muted);
-    }
-
-    .news-title{
-      font-size:19px;
-      line-height:1.4;
-      margin-bottom:8px;
-      font-weight: 900;
-      letter-spacing:-0.2px;
-    }
-
-    .news-title a{ color: inherit; text-decoration:none; }
-    .news-title a:hover{ text-decoration: underline; }
-
-    .news-excerpt{
-      font-size:14px;
-      color: var(--muted);
-      line-height:1.55;
-      display:-webkit-box;
-      -webkit-line-clamp:2;
-      -webkit-box-orient: vertical;
-      overflow:hidden;
-      font-weight: 700;
-    }
-
-    .status-row{
-      margin-top:8px;
-      font-size:12px;
-      color: var(--muted);
-      display:flex;
-      justify-content:space-between;
-      gap:8px;
-      flex-wrap:wrap;
-      font-weight: 800;
-    }
-
-    .skeleton{
-      border: 1px solid var(--line);
-      border-radius:10px;
-      background: linear-gradient(
-        90deg,
-        var(--panel-soft),
-        color-mix(in oklab, var(--panel-soft) 80%, var(--line)),
-        var(--panel-soft)
-      );
-      background-size: 200% 100%;
-      animation: shimmer 1.4s linear infinite;
-      height:108px;
-    }
-
-    @keyframes shimmer{ from{ background-position:200% 0; } to{ background-position:-200% 0; } }
-
-    .empty{
-      border: 1px dashed var(--line);
-      border-radius:12px;
-      padding:22px;
-      text-align:center;
-      color: var(--muted);
-      font-weight: 900;
-    }
-
-    .banner{
+    .subnav-btn{
       border:1px solid var(--line);
-      background: var(--panel-soft);
+      background:var(--panel-soft);
+      color:var(--muted);
+      border-radius:999px;
+      font-size:13px;
+      font-weight:800;
+      padding:10px 14px;
+      cursor:pointer;
+      transition: all .18s ease;
+    }
+
+    .subnav-btn:hover{ color:var(--text); transform:translateY(-1px); }
+    .subnav-btn.active{
+      color:var(--text);
+      border-color: color-mix(in oklab, var(--text) 18%, var(--line));
+      background: color-mix(in oklab, var(--panel-soft) 55%, transparent);
+    }
+
+    .module-shell{ padding:8px; }
+
+    .module-frame{
+      width:100%;
+      min-height:74vh;
+      border:0;
       border-radius:12px;
-      padding:12px 14px;
-      font-size:12px;
-      color: var(--muted);
-      font-weight:900;
-      white-space: pre-wrap;
+      background:var(--panel);
     }
 
-    @media (max-width:1080px){
-      .news-layout{ grid-template-columns: 1fr; }
-      .filters{ position: static; max-height:none; }
-      .news-feed{ max-height:none; }
-    }
-
-    @media (max-width:720px){
-      .nav-panel{
-        width:100%;
-        height:74px;
-        top:auto;
-        bottom:0;
-        left:0;
-        right:0;
-        border-right:0;
-        border-top: 1px solid var(--line);
-        flex-direction: row;
-        padding-bottom: env(safe-area-inset-bottom);
-      }
-      .nav-logo{ display:none; }
-      .nav-menu{
-        width:100%;
-        flex-direction: row;
-        justify-content: space-around;
-        padding:8px;
-      }
-      .nav-item{ width:auto; padding:8px 10px; }
-      .main-content{
-        margin-left:0;
-        width:100%;
-        padding-bottom: calc(88px + env(safe-area-inset-bottom));
-      }
-      .top-bar{ padding:0 12px; }
-      .section-header h2{ font-size:23px; }
+    @media (max-width: 900px){
+      .nav-panel{ width:100%; height:74px; top:auto; border-right:0; border-top:1px solid var(--line); }
+      .main-content{ margin-left:0; width:100%; padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
       .content-area{ padding:12px; }
-      .filters{ top:auto; }
+      .top-bar{ padding:0 12px; }
+      .module-frame{ min-height:68vh; }
     }
   </style>
-  <link rel="stylesheet" href="assets/css/app-shell.css" />
-  <link rel="stylesheet" href="assets/css/mobile-fixes.css">
 </head>
 
-<body>
+<body data-view="news">
   <div class="dashboard-container">
-    <nav class="nav-panel">
-      <div class="nav-logo"><h1>FYNX</h1></div>
-      <div class="nav-menu">
-        <a class="nav-item" href="home.html" data-view="home">
-          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-          <span class="nav-label">Home</span>
-        </a>
-        <a class="nav-item" href="journal.html" data-view="journal">
-          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-          <span class="nav-label">Journal</span>
-        </a>
-        <a class="nav-item" href="calculator.html" data-view="calculator">
-          <svg class="nav-icon" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="16" y2="14"></line><line x1="8" y1="18" x2="16" y2="18"></line></svg>
-          <span class="nav-label">Calculator</span>
-        </a>
-        <a class="nav-item active" href="news.html" data-view="news">
-          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><line x1="12" y1="11" x2="18" y2="11"></line><line x1="12" y1="7" x2="18" y2="7"></line></svg>
-          <span class="nav-label">News</span>
-        </a>
-        <a class="nav-item" href="calendar.html" data-view="calendar">
-          <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-          <span class="nav-label">Calendar</span>
-        </a>
-        <a class="nav-item" href="profile.html" data-view="profile">
-          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          <span class="nav-label">Profile</span>
-        </a>
-      </div>
-    </nav>
+    <nav class="nav-panel"></nav>
 
     <main class="main-content">
       <div class="top-bar">
-        <h1 class="page-title">Live Finance News</h1>
-        <div class="top-bar-right">
-          <span class="chip" id="lastUpdated">Updating...</span>
-          <button class="notification-icon" aria-label="Alerts">
-            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-          </button>
-          <div class="user-avatar">FX</div>
-        </div>
+        <h1 class="page-title">News</h1>
       </div>
 
       <div class="content-area">
-        <div id="proxyBanner" class="banner" style="display:none;"></div>
-
-        <section class="ticker-wrap panel">
-          <div class="ticker-label">Market Pulse</div>
-          <div class="ticker" id="ticker"></div>
+        <section class="panel news-header">
+          <div>
+            <h2>Market Intelligence</h2>
+            <p>Use the same live tools available on the public News pages, now surfaced directly in your dashboard workflow.</p>
+          </div>
+          <div class="news-subnav" role="tablist" aria-label="News tools">
+            <button class="subnav-btn active" data-module="news" type="button">News</button>
+            <button class="subnav-btn" data-module="heatmap" type="button">Heat Map</button>
+            <button class="subnav-btn" data-module="sentiment" type="button">Sentiment</button>
+            <button class="subnav-btn" data-module="challenges" type="button">Challenges</button>
+          </div>
         </section>
 
-        <section class="news-layout">
-          <aside class="panel filters">
-            <div>
-              <div class="section-title">Search</div>
-              <input id="searchInput" class="search" placeholder="Search topic, source, region..." />
-            </div>
-
-            <div>
-              <div class="section-title">Region</div>
-              <div class="btn-row" id="regionFilters"></div>
-            </div>
-
-            <div>
-              <div class="section-title">Topic</div>
-              <div class="btn-row" id="topicFilters"></div>
-            </div>
-
-            <div>
-              <div class="section-title">Live Stats</div>
-              <div class="stats">
-                <div class="stat"><div class="stat-value" id="totalCount">0</div><div class="stat-label">Articles</div></div>
-                <div class="stat"><div class="stat-value" id="sourceCount">0</div><div class="stat-label">Sources</div></div>
-              </div>
-            </div>
-          </aside>
-
-          <div class="panel news-panel">
-            <div class="section-header">
-              <div>
-                <h2>Global Finance Wire</h2>
-                <p>Markets, macro, equities, rates, FX, commodities, crypto, banking.</p>
-              </div>
-              <button id="refreshBtn" class="refresh-btn">Refresh now</button>
-            </div>
-
-            <div id="newsFeed" class="news-feed"></div>
-            <div id="statusText" class="status-row"></div>
-          </div>
+        <section class="panel module-shell">
+          <iframe
+            id="newsModuleFrame"
+            class="module-frame"
+            title="News Module"
+            src="news/news.html"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+          ></iframe>
         </section>
       </div>
     </main>
   </div>
 
   <script>
-    const state = {
-      allNews: [],
-      filtered: [],
-      region: "All",
-      topic: "All",
-      query: "",
-      autoRefreshMs: 5 * 60 * 1000,
-      lastFetchAt: 0,
-      minManualRefreshMs: 10 * 1000
+    const THEME_KEY = 'fynx_theme';
+    const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
+    document.body.classList.toggle('dark-mode', savedTheme === 'dark');
+
+    const modules = {
+      news: 'news/news.html',
+      heatmap: 'news/heatmap.html',
+      sentiment: 'news/sentiment.html',
+      challenges: 'news/challenges.html'
     };
 
-    const REGIONS = ["All", "US", "Europe", "Asia", "Global"];
-    const TOPICS  = ["All", "Markets", "Macro", "Equities", "Rates", "FX", "Commodities", "Crypto"];
+    const frame = document.getElementById('newsModuleFrame');
+    const buttons = Array.from(document.querySelectorAll('.subnav-btn'));
 
-    const NEWS_SOURCES = [
-      { source: "Reuters", region: "Global", topic: "Markets", rss: "https://feeds.reuters.com/reuters/businessNews" },
-      { source: "CNBC", region: "US", topic: "Markets", rss: "https://www.cnbc.com/id/100003114/device/rss/rss.html" },
-      { source: "MarketWatch", region: "US", topic: "Equities", rss: "https://feeds.marketwatch.com/marketwatch/topstories/" },
-      { source: "Financial Times", region: "Europe", topic: "Macro", rss: "https://www.ft.com/rss/home" },
-      { source: "Investing.com", region: "Global", topic: "Markets", rss: "https://www.investing.com/rss/news_25.rss" },
-      { source: "Yahoo Finance", region: "Global", topic: "Markets", rss: "https://finance.yahoo.com/news/rssindex" },
-      { source: "CoinDesk", region: "Global", topic: "Crypto", rss: "https://www.coindesk.com/arc/outboundfeeds/rss/" },
-      { source: "The Economist", region: "Global", topic: "Macro", rss: "https://www.economist.com/finance-and-economics/rss.xml" }
-    ];
-
-    const MARKET_TICKER = [
-      { symbol: "S&P 500", value: "+0.41%", positive: true  },
-      { symbol: "NASDAQ",  value: "+0.72%", positive: true  },
-      { symbol: "DXY",     value: "-0.19%", positive: false },
-      { symbol: "US10Y",   value: "+0.03",  positive: true  },
-      { symbol: "Brent",   value: "-0.48%", positive: false },
-      { symbol: "Gold",    value: "+0.27%", positive: true  },
-      { symbol: "BTC",     value: "+1.12%", positive: true  },
-      { symbol: "ETH",     value: "-0.66%", positive: false }
-    ];
-
-    const newsFeed     = document.getElementById("newsFeed");
-    const statusText   = document.getElementById("statusText");
-    const lastUpdated  = document.getElementById("lastUpdated");
-    const searchInput  = document.getElementById("searchInput");
-    const refreshBtn   = document.getElementById("refreshBtn");
-    const totalCount   = document.getElementById("totalCount");
-    const sourceCount  = document.getElementById("sourceCount");
-    const proxyBanner  = document.getElementById("proxyBanner");
-
-    const THEME_KEY = "fynx_theme";
-    (function applySavedTheme(){
-      const saved = localStorage.getItem(THEME_KEY) || "light";
-      document.body.classList.toggle("dark-mode", saved === "dark");
-    })();
-
-    (function renderAvatar(){
-      const NAME_KEYS = ["fynx_profile_name","fynx_username","username","profile_name","user_name","fynx_name","fynxUserName","displayName","name"];
-      const PROFILE_JSON_KEYS = ["fynx_profile","profile","fynx_user","userProfile","fynx_account"];
-      const clean = (s)=>String(s||"").trim().replace(/[.!,;:]+$/g,"").trim();
-      const pickJson = (obj)=> obj?.username||obj?.userName||obj?.name||obj?.displayName||obj?.fullName||obj?.profile?.username||obj?.profile?.name||obj?.profile?.displayName||null;
-      const getName=()=>{
-        for(const k of NAME_KEYS){ const v=localStorage.getItem(k); if(v&&clean(v)) return clean(v); }
-        for(const k of PROFILE_JSON_KEYS){
-          const raw=localStorage.getItem(k); if(!raw) continue;
-          try{ const n=pickJson(JSON.parse(raw)); if(n&&clean(n)) return clean(n); }catch(e){}
-        }
-        return null;
-      };
-      const el=document.querySelector(".user-avatar");
-      const name=getName();
-      if(!el){return;}
-      if(!name){ el.textContent="FX"; return; }
-      const parts=name.split(/\s+/).filter(Boolean);
-      let initials=parts[0]?.[0]||"F";
-      if(parts.length>1) initials += parts[parts.length-1]?.[0]||"";
-      el.textContent=initials.toUpperCase();
-    })();
-
-    function safeText(raw=""){
-      const div=document.createElement("div");
-      div.innerHTML=raw;
-      return (div.textContent||"").trim();
-    }
-
-    function classifyTopic(title="", desc=""){
-      const text = `${title} ${desc}`.toLowerCase();
-      if (/crypto|bitcoin|ethereum|token|blockchain/.test(text)) return "Crypto";
-      if (/oil|gas|gold|silver|copper|commodity|opec|brent|wti/.test(text)) return "Commodities";
-      if (/forex|currency|dollar|euro|yen|fx|dxy|eurusd|usdjpy/.test(text)) return "FX";
-      if (/bond|yield|treasury|rate|fed|ecb|boj|central bank/.test(text)) return "Rates";
-      if (/inflation|gdp|jobs|macro|economy|recession|imf/.test(text)) return "Macro";
-      if (/stock|equity|shares|ipo|earnings|nasdaq|s&p|stoxx|ftse|dax/.test(text)) return "Equities";
-      return "Markets";
-    }
-
-    function formatRelativeTime(dateValue){
-      const t = new Date(dateValue).getTime();
-      if (!Number.isFinite(t)) return "recent";
-      const diff = Date.now() - t;
-      const mins = Math.floor(diff / 60000);
-      if (mins < 1) return "just now";
-      if (mins < 60) return `${mins}m ago`;
-      const hrs = Math.floor(mins / 60);
-      if (hrs < 24) return `${hrs}h ago`;
-      return `${Math.floor(hrs / 24)}d ago`;
-    }
-
-    function buildTicker(){
-      document.getElementById("ticker").innerHTML = MARKET_TICKER.map(item => `
-        <div class="ticker-item">${item.symbol}: <span class="${item.positive ? "p" : "n"}">${item.value}</span></div>
-      `).join("");
-    }
-
-    function buildFilterButtons(containerId, values, activeValue, onPick){
-      const el = document.getElementById(containerId);
-      el.innerHTML = values.map(v => `<button class="filter-btn ${v===activeValue?"active":""}" data-value="${v}">${v}</button>`).join("");
-      el.querySelectorAll(".filter-btn").forEach(btn => btn.addEventListener("click", ()=>onPick(btn.dataset.value)));
-    }
-
-    function renderSkeleton(){
-      newsFeed.innerHTML = Array.from({ length: 8 }).map(() => `<div class="skeleton"></div>`).join("");
-      statusText.textContent = "Loading live finance headlines...";
-    }
-
-    function renderNews(){
-      totalCount.textContent = state.filtered.length;
-      sourceCount.textContent = new Set(state.filtered.map(n => n.source)).size;
-
-      if (!state.filtered.length){
-        newsFeed.innerHTML = `<div class="empty">No articles match your current filters. Try another region, topic, or search keyword.</div>`;
-        return;
+    function setActiveModule(moduleKey) {
+      const nextSrc = modules[moduleKey] || modules.news;
+      if (frame.getAttribute('src') !== nextSrc) {
+        frame.setAttribute('src', nextSrc);
       }
 
-      newsFeed.innerHTML = state.filtered.map(item => `
-        <article class="news-card">
-          <div class="news-meta">
-            <span class="pill">${item.topic}</span>
-            <span class="pill">${item.region}</span>
-            <span class="pill">${item.source}</span>
-            <span>${formatRelativeTime(item.date)}</span>
-          </div>
-          <h3 class="news-title"><a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}</a></h3>
-          <p class="news-excerpt">${item.description || "Open article for full details on the source website."}</p>
-        </article>
-      `).join("");
-    }
-
-    function applyFilters(){
-      const query = state.query.trim().toLowerCase();
-      state.filtered = state.allNews.filter(item => {
-        const regionOk = state.region === "All" || item.region === state.region || item.region === "Global";
-        const topicOk  = state.topic === "All" || item.topic === state.topic;
-        const queryOk  = !query || `${item.title} ${item.source} ${item.description}`.toLowerCase().includes(query);
-        return regionOk && topicOk && queryOk;
+      buttons.forEach((btn) => {
+        const isActive = btn.dataset.module === moduleKey;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', String(isActive));
       });
-      renderNews();
+
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set('tool', moduleKey);
+      window.history.replaceState({}, '', nextUrl.toString());
     }
 
-    function parseXml(xmlText, sourceMeta){
-      const xml = new DOMParser().parseFromString(xmlText, "application/xml");
-      const rssItems = [...xml.querySelectorAll("item")];
-      const atomItems = rssItems.length ? [] : [...xml.querySelectorAll("entry")];
-      const items = rssItems.length ? rssItems : atomItems;
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => setActiveModule(btn.dataset.module));
+    });
 
-      return items.map(item => {
-        const title = safeText(item.querySelector("title")?.textContent || "");
-        const desc = safeText(item.querySelector("description, summary, content")?.textContent || "");
-        const link = safeText(item.querySelector("link")?.textContent || item.querySelector("link")?.getAttribute("href") || "");
-        const date = safeText(item.querySelector("pubDate, published, updated")?.textContent || new Date().toISOString());
-        const source = sourceMeta.source;
-        return {
-          id: `${title}|${link}`,
-          title,
-          link,
-          date,
-          source,
-          topic: classifyTopic(title, desc) || sourceMeta.topic,
-          region: sourceMeta.region,
-          description: desc
-        };
-      }).filter(i => i.title && i.link && /^https?:\/\//.test(i.link));
-    }
-
-    async function fetchFeed(sourceMeta){
-      const encoded = encodeURIComponent(sourceMeta.rss);
-      const rss2json = `https://api.rss2json.com/v1/api.json?rss_url=${encoded}`;
-      const allOrigins = `https://api.allorigins.win/raw?url=${encoded}`;
-
-      try{
-        const r = await fetch(rss2json, { cache: "no-store" });
-        if (r.ok){
-          const data = await r.json();
-          if (data?.status === "ok" && Array.isArray(data.items)){
-            return data.items.map(item => ({
-              id: `${safeText(item.title)}|${item.link}`,
-              title: safeText(item.title),
-              link: item.link,
-              date: item.pubDate || item.isoDate || new Date().toISOString(),
-              source: sourceMeta.source,
-              topic: classifyTopic(item.title, item.description) || sourceMeta.topic,
-              region: sourceMeta.region,
-              description: safeText(item.description || item.contentSnippet || "")
-            })).filter(i => i.title && i.link && /^https?:\/\//.test(i.link));
-          }
-        }
-      }catch(e){}
-
-      const fallback = await fetch(allOrigins, { cache: "no-store" });
-      if (!fallback.ok) throw new Error("Feed unavailable");
-      const xmlText = await fallback.text();
-      return parseXml(xmlText, sourceMeta);
-    }
-
-    function dedupeAndSort(rows){
-      const map = new Map();
-      for (const row of rows){ if (!map.has(row.id)) map.set(row.id, row); }
-      return [...map.values()].sort((a,b)=> new Date(b.date) - new Date(a.date));
-    }
-
-    async function refreshNews(forceManual = false){
-      const now = Date.now();
-      if (forceManual && (now - state.lastFetchAt) < state.minManualRefreshMs) return;
-      state.lastFetchAt = now;
-
-      proxyBanner.style.display = "none";
-      renderSkeleton();
-      refreshBtn.disabled = true;
-
-      try{
-        const settled = await Promise.allSettled(NEWS_SOURCES.map(fetchFeed));
-        const articles = [];
-        let failed = 0;
-
-        for (const result of settled){
-          if (result.status === "fulfilled") articles.push(...result.value);
-          else failed += 1;
-        }
-
-        state.allNews = dedupeAndSort(articles).slice(0, 180);
-        applyFilters();
-
-        if (!state.allNews.length){
-          newsFeed.innerHTML = `<div class="empty">We could not load finance headlines right now. Please try again in a moment.</div>`;
-          statusText.textContent = "No articles available right now.";
-        } else {
-          const timeStr = new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
-          lastUpdated.textContent = `Updated ${timeStr}`;
-          statusText.innerHTML = `<span>${state.filtered.length} showing • ${state.allNews.length} loaded</span><span>${failed ? `${failed} source(s) temporarily unavailable.` : "All sources connected."}</span>`;
-        }
-      }catch(e){
-        newsFeed.innerHTML = `<div class="empty">We could not load finance headlines right now. Please try again in a moment.</div>`;
-        statusText.textContent = "Unable to refresh feeds.";
-      } finally {
-        refreshBtn.disabled = false;
-      }
-    }
-
-    function bindEvents(){
-      searchInput.addEventListener("input", (e) => { state.query = e.target.value; applyFilters(); });
-      refreshBtn.addEventListener("click", () => refreshNews(true));
-
-      const onPickRegion = (value) => {
-        state.region = value;
-        buildFilterButtons("regionFilters", REGIONS, state.region, onPickRegion);
-        applyFilters();
-      };
-
-      const onPickTopic = (value) => {
-        state.topic = value;
-        buildFilterButtons("topicFilters", TOPICS, state.topic, onPickTopic);
-        applyFilters();
-      };
-
-      buildFilterButtons("regionFilters", REGIONS, state.region, onPickRegion);
-      buildFilterButtons("topicFilters", TOPICS, state.topic, onPickTopic);
-    }
-
-    (function init(){
-      buildTicker();
-      bindEvents();
-      refreshNews(false);
-      setInterval(() => refreshNews(false), state.autoRefreshMs);
-    })();
+    const urlModule = new URLSearchParams(window.location.search).get('tool');
+    setActiveModule(urlModule && modules[urlModule] ? urlModule : 'news');
   </script>
 
   <script src="fynx-nav.js"></script>
-
-  <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
   <script src="fynx-usercard.js"></script>
 </body>
 </html>
