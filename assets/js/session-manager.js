@@ -17,7 +17,7 @@ const KEYS = {
   offlineAt: `${KEY_PREFIX}session:offlineAt`,
   routeScroll: `${KEY_PREFIX}route:scroll`,
   pageState: `${KEY_PREFIX}state:page`,
-  bootReady: `${KEY_PREFIX}session:boot-ready`
+  bootReady: `${KEY_PREFIX}session:ready`
 };
 
 const SAFE_GLOBAL_KEYS = ["fynx_theme", "mode"];
@@ -343,11 +343,11 @@ export async function bootstrapSession({ auth, protectedPage = false, loginPage 
       unsub();
 
       if (user && !readLastActiveAt()) {
-        trackActivity("restore");
+        trackActivity("resume");
       }
 
       if (user) {
-        const timeoutStatus = await validateSessionTimeout("auth-restore");
+        const timeoutStatus = await validateSessionTimeout("auth-state");
         if (timeoutStatus.expired) {
           resolve({ user: null, expired: true });
           return;

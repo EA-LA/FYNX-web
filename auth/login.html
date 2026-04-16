@@ -590,7 +590,7 @@
       signInWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import { auth } from "./firebase.js";
-    import { bootstrapSession, sessionState } from "../assets/js/session-manager.js";
+    import { sessionState } from "../assets/js/session-manager.js";
 
     const loginGoogleBtn = document.getElementById("loginGoogle");
     const loginAppleBtn  = document.getElementById("loginApple");
@@ -616,13 +616,6 @@
       console.error(e);
       alert(e?.message || String(e));
     }
-
-    bootstrapSession({
-      auth,
-      protectedPage: false,
-      loginPage: true,
-      loginRedirect: DASHBOARD_URL
-    });
 
     loginGoogleBtn.addEventListener("click", async () => {
       try{
