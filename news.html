@@ -9,9 +9,30 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/app-shell.css" />
   <link rel="stylesheet" href="assets/css/mobile-fixes.css" />
+  <script>
+    (function(){
+      const t = localStorage.getItem('fynx_theme') === 'light' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = t;
+      document.documentElement.style.backgroundColor = t === 'light' ? '#fbfbfb' : '#000';
+      if (t === 'dark') document.documentElement.classList.add('dark-mode');
+    })();
+  </script>
 
   <style>
     :root{
+      --bg:#000000;
+      --surface:#000000;
+      --surface-2:rgba(255, 255, 255, 0.04);
+      --text:#ffffff;
+      --muted:rgba(255, 255, 255, 0.62);
+      --line:rgba(255, 255, 255, 0.10);
+      --chip:rgba(255, 255, 255, 0.06);
+      --chip-line:rgba(255, 255, 255, 0.10);
+      --hero-dot: rgba(255, 255, 255, 0.08);
+      --radius:14px;
+    }
+
+    body.light-mode{
       --bg:#ffffff;
       --surface:#ffffff;
       --surface-2:#f7f7f7;
@@ -21,19 +42,6 @@
       --chip:#f4f4f4;
       --chip-line:#e7e7e7;
       --hero-dot: rgba(0, 0, 0, 0.06);
-      --radius:14px;
-    }
-
-    body.dark-mode{
-      --bg:#000000;
-      --surface:#000000;
-      --surface-2:rgba(255, 255, 255, 0.04);
-      --text:#ffffff;
-      --muted:rgba(255, 255, 255, 0.55);
-      --line:rgba(255, 255, 255, 0.10);
-      --chip:rgba(255, 255, 255, 0.06);
-      --chip-line:rgba(255, 255, 255, 0.10);
-      --hero-dot: rgba(255, 255, 255, 0.08);
     }
 
     *{margin:0;padding:0;box-sizing:border-box}
@@ -96,9 +104,11 @@
     .module-grid{
       display:grid;
       grid-template-columns:repeat(2, minmax(0, 1fr));
-      gap:14px;
+      gap:16px;
       align-items:start;
     }
+
+    .module-grid.triple{ grid-template-columns:repeat(3, minmax(0, 1fr)); }
 
     .module-grid.single{ grid-template-columns:minmax(0, 1fr); }
 
@@ -108,9 +118,9 @@
       background:color-mix(in oklab, var(--surface) 92%, transparent);
       box-shadow:0 10px 30px rgba(23, 23, 23, 0.08);
       backdrop-filter:blur(10px);
-      padding:10px;
+      padding:12px;
       display:grid;
-      gap:10px;
+      gap:12px;
     }
 
     .module-title{
@@ -126,16 +136,34 @@
       border:none;
       border-radius:12px;
       background:var(--surface);
-      min-height:430px;
+      min-height:500px;
     }
 
     .module-frame.news-feed{
       min-height:calc(100vh - 220px);
     }
 
+    .mode-content[data-news-panel="macro"] .module-frame,
+    .mode-content[data-news-panel="positioning"] .module-frame{
+      min-height:560px;
+    }
+
+    .mode-content[data-news-panel="markets"] .module-frame,
+    .mode-content[data-news-panel="analysis"] .module-frame{
+      min-height:460px;
+    }
+
+    .mode-content[data-news-panel="analysis"] .module-grid,
+    .mode-content[data-news-panel="markets"] .module-grid{
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+    }
+
     @media (max-width:1080px){
-      .module-grid{ grid-template-columns:minmax(0, 1fr); }
+      .module-grid,
+      .mode-content[data-news-panel="analysis"] .module-grid,
+      .mode-content[data-news-panel="markets"] .module-grid{ grid-template-columns:minmax(0, 1fr); }
       .module-frame.news-feed{ min-height:calc(100vh - 260px); }
+      .module-frame{ min-height:520px; }
     }
   </style>
   <script type="module" src="assets/js/session-bootstrap.js"></script>
@@ -244,7 +272,9 @@
 
   <script>
     const THEME_KEY = 'fynx_theme';
-    document.body.classList.toggle('dark-mode', localStorage.getItem(THEME_KEY) === 'dark');
+    const isLightTheme = localStorage.getItem(THEME_KEY) === 'light';
+    document.body.classList.toggle('light-mode', isLightTheme);
+    document.body.classList.toggle('dark-mode', !isLightTheme);
 
     const newsTabs = Array.from(document.querySelectorAll('[data-news-tab]'));
     const newsPanels = Array.from(document.querySelectorAll('[data-news-panel]'));
