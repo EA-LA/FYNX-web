@@ -579,14 +579,6 @@
     </section>
   </main>
 
-  <!-- status modal -->
-  <div class="statusModal" id="statusModal" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="statusCard">
-      <p class="statusTitle" id="statusTitle"><span class="spinner"></span>Working…</p>
-      <p class="statusText" id="statusText">Please wait.</p>
-    </div>
-  </div>
-
   <!-- ✅ Theme persistence (must exist at ../assets/theme.js) -->
   <script src="../assets/theme.js"></script>
 
@@ -620,26 +612,12 @@
     const OPEN_APP_URL = new URL("./open-app.html", window.location.href);
     OPEN_APP_URL.searchParams.set("returnTo", APP_RETURN_URL.toString());
 
-    function showStatus(title, text){
-      document.getElementById("statusTitle").innerHTML = `<span class="spinner"></span>${title}`;
-      document.getElementById("statusText").textContent = text;
-      const m = document.getElementById("statusModal");
-      m.style.display = "flex";
-      m.setAttribute("aria-hidden","false");
-    }
-    function hideStatus(){
-      const m = document.getElementById("statusModal");
-      m.style.display = "none";
-      m.setAttribute("aria-hidden","true");
-    }
-
     function showErr(e){
       console.error(e);
       alert(e?.message || String(e));
-      hideStatus();
     }
 
-    await bootstrapSession({
+    bootstrapSession({
       auth,
       protectedPage: false,
       loginPage: true,
@@ -648,7 +626,6 @@
 
     loginGoogleBtn.addEventListener("click", async () => {
       try{
-        showStatus("Signing in…", "Connecting with Google.");
         const provider = new GoogleAuthProvider();
         await signInWithPopup(auth, provider);
         setMode("live");
@@ -660,7 +637,6 @@
 
     loginAppleBtn.addEventListener("click", async () => {
       try{
-        showStatus("Signing in…", "Connecting with Apple.");
         const provider = new OAuthProvider("apple.com");
         await signInWithPopup(auth, provider);
         setMode("live");
@@ -673,7 +649,6 @@
     emailForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       try{
-        showStatus("Signing in…", "Checking your email and password.");
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
         await signInWithEmailAndPassword(auth, email, password);
@@ -698,7 +673,6 @@
     });
 
     loginAppBtn.addEventListener("click", () => {
-      showStatus("Opening FYNX…", "Confirm the login inside the app.");
       window.location.href = OPEN_APP_URL.toString();
     });
   </script>

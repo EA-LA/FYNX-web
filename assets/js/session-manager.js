@@ -26,7 +26,6 @@ let activityThrottleUntil = 0;
 let currentAuth = null;
 let hasBoundListeners = false;
 let bootResolved = false;
-let bootUiTimer = null;
 
 function now() {
   return Date.now();
@@ -143,70 +142,6 @@ function isExpired() {
   const last = readLastActiveAt();
   if (!last) return false;
   return now() - last > INACTIVITY_TIMEOUT_MS;
-}
-
-function applyBootingState(isBooting) {
-  document.documentElement.classList.toggle("fynx-session-booting", Boolean(isBooting));
-}
-
-function ensureBootStyles() {
-  if (document.getElementById("fynxSessionBootStyles")) return;
-  const style = document.createElement("style");
-  style.id = "fynxSessionBootStyles";
-  style.textContent = `
-    #fynxSessionBoot {
-      position: fixed;
-      inset: 0;
-      z-index: 99999;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      background: transparent;
-    }
-    #fynxSessionBoot::before {
-      content: "";
-      width: 20px;
-      height: 20px;
-      border-radius: 999px;
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      border-top-color: rgba(255, 255, 255, 0.9);
-      animation: fynxSpin .8s linear infinite;
-      box-shadow: 0 0 0 6px rgba(0, 0, 0, 0.35);
-      display: inline-block;
-    }
-    @keyframes fynxSpin {
-      to { transform: rotate(360deg); }
-    }
-  `;
-  document.head.appendChild(style);
-
-  if (!document.getElementById("fynxSessionBoot")) {
-    const boot = document.createElement("div");
-    boot.id = "fynxSessionBoot";
-    boot.setAttribute("aria-hidden", "true");
-    document.documentElement.appendChild(boot);
-  }
-}
-
-function scheduleBootUi() {
-  const boot = document.getElementById("fynxSessionBoot");
-  if (!boot) return;
-  if (bootUiTimer) window.clearTimeout(bootUiTimer);
-  bootUiTimer = window.setTimeout(() => {
-    if (document.documentElement.classList.contains("fynx-session-booting")) {
-      boot.style.display = "flex";
-    }
-  }, 220);
-}
-
-function clearBootUi() {
-  if (bootUiTimer) {
-    window.clearTimeout(bootUiTimer);
-    bootUiTimer = null;
-  }
-  const boot = document.getElementById("fynxSessionBoot");
-  if (boot) boot.remove();
 }
 
 function clearUserScopedState() {
@@ -391,74 +326,67 @@ async function validateSessionTimeout(source = "manual") {
   return { expired: false };
 }
 
-async function awaitAuthRestore(auth) {
-  return new Promise((resolve) => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      unsub();
-      resolve(user);
-    });
-  });
-}
-
 export async function bootstrapSession({ auth, protectedPage = false, loginPage = false, loginRedirect = "home.html" } = {}) {
   currentAuth = auth;
-  ensureBootStyles();
-  applyBootingState(true);
-  scheduleBootUi();
   bindPresenceListeners();
   bindPageStateTracking();
 
-  await setPersistence(auth, browserLocalPersistence);
-
-  const user = await awaitAuthRestore(auth);
+  setPersistence(auth, browserLocalPersistence).catch(() => {
+    // no-op
+  });
 
   const isDemo = localStorage.getItem("mode") === "demo";
   const redirectTo = `auth/login.html?returnTo=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`;
 
-  if (user && !readLastActiveAt()) {
-    trackActivity("restore");
-  }
+  return new Promise((resolve) => {
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      unsub();
 
-  if (user) {
-    const timeoutStatus = await validateSessionTimeout("auth-restore");
-    if (timeoutStatus.expired) {
-      applyBootingState(false);
-      clearBootUi();
-      return { user: null, expired: true };
-    }
-
-    safeSetItem(KEYS.sessionEvent, JSON.stringify({
-      type: "login",
-      at: now(),
-      uid: user.uid
-    }));
-
-    const lastRoute = safeGetItem(KEYS.lastRoute);
-    if (loginPage) {
-      const fallback = lastRoute || loginRedirect;
-      const target = getReturnToTarget(fallback);
-      if (!samePath(target)) {
-        window.location.replace(target);
-        return { user, redirected: true };
+      if (user && !readLastActiveAt()) {
+        trackActivity("restore");
       }
-    }
-  }
 
-  if (!user && protectedPage && !isDemo) {
-    window.location.replace(redirectTo);
-    return { user: null, redirected: true };
-  }
+      if (user) {
+        const timeoutStatus = await validateSessionTimeout("auth-restore");
+        if (timeoutStatus.expired) {
+          resolve({ user: null, expired: true });
+          return;
+        }
 
-  dispatchSessionEvent({ type: "ready", user: user ? { uid: user.uid, email: user.email || "" } : null, protectedPage, loginPage });
+        safeSetItem(KEYS.sessionEvent, JSON.stringify({
+          type: "login",
+          at: now(),
+          uid: user.uid
+        }));
 
-  if (!bootResolved) {
-    bootResolved = true;
-    safeSetItem(KEYS.bootReady, String(now()));
-  }
+        const lastRoute = safeGetItem(KEYS.lastRoute);
+        if (loginPage) {
+          const fallback = lastRoute || loginRedirect;
+          const target = getReturnToTarget(fallback);
+          if (!samePath(target)) {
+            window.location.replace(target);
+            resolve({ user, redirected: true });
+            return;
+          }
+        }
+      }
 
-  applyBootingState(false);
-  clearBootUi();
-  return { user, redirected: false };
+      if (!user && protectedPage && !isDemo) {
+        window.location.replace(redirectTo);
+        resolve({ user: null, redirected: true });
+        return;
+      }
+
+      dispatchSessionEvent({ type: "ready", user: user ? { uid: user.uid, email: user.email || "" } : null, protectedPage, loginPage });
+
+      if (!bootResolved) {
+        bootResolved = true;
+        safeSetItem(KEYS.bootReady, String(now()));
+      }
+
+      resolve({ user, redirected: false });
+    });
+  });
 }
 
 export const sessionState = {
