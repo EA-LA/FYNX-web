@@ -10,7 +10,4 @@ bootstrapSession({
   loginRedirect: "home.html"
 }).catch((error) => {
   console.error("Session bootstrap failed", error);
-  document.documentElement.classList.remove("fynx-session-booting");
-  const boot = document.getElementById("fynxSessionBoot");
-  if (boot) boot.remove();
 });
