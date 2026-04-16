@@ -7,17 +7,6 @@
 (function () {
   const STORAGE_KEY = "fynx_theme"; // "dark" | "light"
 
-  function applyTheme(theme) {
-    const isLight = theme === "light";
-
-    // Body classes (your system)
-    document.body.classList.toggle("light-mode", isLight);
-    document.body.classList.toggle("dark-mode", !isLight);
-
-    // Optional: dataset for CSS hooks if you want it
-    document.documentElement.dataset.theme = isLight ? "light" : "dark";
-  }
-
   function getSavedTheme() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -26,11 +15,32 @@
     return "dark"; // default
   }
 
+  function applyRootTheme(theme) {
+    const isLight = theme === "light";
+    document.documentElement.dataset.theme = isLight ? "light" : "dark";
+    document.documentElement.style.backgroundColor = isLight ? "#fbfbfb" : "#000000";
+  }
+
+  function applyTheme(theme) {
+    const isLight = theme === "light";
+
+    applyRootTheme(theme);
+
+    if (!document.body) return;
+
+    // Body classes (your system)
+    document.body.classList.toggle("light-mode", isLight);
+    document.body.classList.toggle("dark-mode", !isLight);
+  }
+
   function setSavedTheme(theme) {
     try {
       localStorage.setItem(STORAGE_KEY, theme);
     } catch (e) {}
   }
+
+  // Apply as early as possible to avoid theme/background flash on hard loads.
+  applyRootTheme(getSavedTheme());
 
 
 

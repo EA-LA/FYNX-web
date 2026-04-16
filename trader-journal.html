@@ -1404,7 +1404,9 @@ const firebaseConfig = {
         await saveTradeLive();
       }catch(err){
         console.error(err);
-        alert("Save failed. This is almost always Firestore Rules. See the rules I sent you.");
+        const code = (err && err.code) ? String(err.code) : "";
+        const blocked = code.includes("permission") || code.includes("unauth");
+        alert(blocked ? "Unable to save right now. Your local journal is still available." : "Save failed. Please try again.");
       }
     });
 
@@ -1419,7 +1421,19 @@ const firebaseConfig = {
         updateCharts();
       }, (err) => {
         console.error(err);
-        alert("Firestore sync failed. This is rules/permissions. Fix rules (below).");
+        const code = (err && err.code) ? String(err.code) : "";
+        const blocked = code.includes("permission") || code.includes("unauth");
+        if (blocked) {
+          if (unsubTrades) unsubTrades();
+          currentUid = null;
+          modeText.textContent = "Sync unavailable right now — showing local demo data.";
+          loginNote.style.display = "none";
+          state.trades = demoTrades;
+          refreshDashboard(); refreshAnalytics(); refreshReplay(); refreshStreaks(); refreshCalendar();
+          updateCharts();
+          return;
+        }
+        modeText.textContent = "Connection issue — retrying in background.";
       });
     }
 

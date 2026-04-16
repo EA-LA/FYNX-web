@@ -26,6 +26,7 @@ let activityThrottleUntil = 0;
 let currentAuth = null;
 let hasBoundListeners = false;
 let bootResolved = false;
+let bootUiTimer = null;
 
 function now() {
   return Date.now();
@@ -80,9 +81,23 @@ function getReturnToTarget(defaultTarget = "home.html") {
   try {
     const parsed = new URL(returnTo, window.location.origin);
     if (parsed.origin !== window.location.origin) return defaultTarget;
-    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    const target = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    const lower = parsed.pathname.toLowerCase();
+    if (lower.endsWith("/auth/login.html") || lower === "/auth/login.html") {
+      return defaultTarget;
+    }
+    return target;
   } catch (error) {
     return defaultTarget;
+  }
+}
+
+function samePath(target) {
+  try {
+    const parsed = new URL(target, window.location.origin);
+    return parsed.pathname === window.location.pathname && parsed.search === window.location.search;
+  } catch (error) {
+    return false;
   }
 }
 
@@ -139,18 +154,30 @@ function ensureBootStyles() {
   const style = document.createElement("style");
   style.id = "fynxSessionBootStyles";
   style.textContent = `
-    html.fynx-session-booting body { opacity: 0; }
     #fynxSessionBoot {
       position: fixed;
-      inset: 0;
       z-index: 99999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--bg, #050505);
-      color: var(--text, #ffffff);
-      font: 600 13px/1.3 Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      letter-spacing: .03em;
+      display: none;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 28px;
+      height: 28px;
+      pointer-events: none;
+      background: transparent;
+    }
+    #fynxSessionBoot::before {
+      content: "";
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 999px;
+      border: 2px solid rgba(255, 255, 255, 0.24);
+      border-top-color: rgba(255, 255, 255, 0.88);
+      animation: fynxSpin .8s linear infinite;
+    }
+    @keyframes fynxSpin {
+      to { transform: rotate(360deg); }
     }
   `;
   document.head.appendChild(style);
@@ -158,12 +185,27 @@ function ensureBootStyles() {
   if (!document.getElementById("fynxSessionBoot")) {
     const boot = document.createElement("div");
     boot.id = "fynxSessionBoot";
-    boot.textContent = "Restoring your session…";
+    boot.setAttribute("aria-hidden", "true");
     document.documentElement.appendChild(boot);
   }
 }
 
+function scheduleBootUi() {
+  const boot = document.getElementById("fynxSessionBoot");
+  if (!boot) return;
+  if (bootUiTimer) window.clearTimeout(bootUiTimer);
+  bootUiTimer = window.setTimeout(() => {
+    if (document.documentElement.classList.contains("fynx-session-booting")) {
+      boot.style.display = "flex";
+    }
+  }, 220);
+}
+
 function clearBootUi() {
+  if (bootUiTimer) {
+    window.clearTimeout(bootUiTimer);
+    bootUiTimer = null;
+  }
   const boot = document.getElementById("fynxSessionBoot");
   if (boot) boot.remove();
 }
@@ -363,6 +405,7 @@ export async function bootstrapSession({ auth, protectedPage = false, loginPage 
   currentAuth = auth;
   ensureBootStyles();
   applyBootingState(true);
+  scheduleBootUi();
   bindPresenceListeners();
   bindPageStateTracking();
 
@@ -394,8 +437,11 @@ export async function bootstrapSession({ auth, protectedPage = false, loginPage 
     const lastRoute = safeGetItem(KEYS.lastRoute);
     if (loginPage) {
       const fallback = lastRoute || loginRedirect;
-      window.location.replace(getReturnToTarget(fallback));
-      return { user, redirected: true };
+      const target = getReturnToTarget(fallback);
+      if (!samePath(target)) {
+        window.location.replace(target);
+        return { user, redirected: true };
+      }
     }
   }
 

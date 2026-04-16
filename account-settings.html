@@ -4,47 +4,62 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FYNX - Account Settings</title>
+  <script>
+    (function(){
+      const t = localStorage.getItem('fynx_theme') === 'light' ? 'light' : 'dark';
+      document.documentElement.style.backgroundColor = t === 'light' ? '#fbfbfb' : '#000';
+      document.documentElement.dataset.theme = t;
+    })();
+  </script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;background:#fff;color:#000;overflow:hidden;height:100vh}
-    body.dark-mode{background:#000;color:#fff}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;background:#000;color:#fff;overflow:hidden;height:100vh}
+    body.light-mode{background:#fff;color:#000}
     .dashboard-container{display:flex;height:100vh;width:100vw}
-    .nav-panel{width:120px;background:#fafafa;border-right:1px solid #e5e5e5;display:flex;flex-direction:column;position:fixed;left:0;top:0;height:100vh;z-index:100}
-    body.dark-mode .nav-panel{background:#000;border-right:1px solid rgba(255, 255, 255, .08)}
+    .nav-panel{width:120px;background:#000;border-right:1px solid rgba(255, 255, 255, .08);display:flex;flex-direction:column;position:fixed;left:0;top:0;height:100vh;z-index:100}
+    body.light-mode .nav-panel{background:#fafafa;border-right:1px solid #e5e5e5}
     .main-content{margin-left:120px;flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
-    .top-bar{height:64px;border-bottom:1px solid #e5e5e5;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:#fff}
-    body.dark-mode .top-bar{border-bottom:1px solid rgba(255, 255, 255, .08);background:#000}
-    .page-title{font-size:15px;font-weight:600;color:#666}
-    body.dark-mode .page-title{color:rgba(255, 255, 255, .5)}
+    .top-bar{height:64px;border-bottom:1px solid rgba(255, 255, 255, .08);display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:#000}
+    body.light-mode .top-bar{border-bottom:1px solid #e5e5e5;background:#fff}
+    .page-title{font-size:15px;font-weight:600;color:rgba(255, 255, 255, .68)}
+    body.light-mode .page-title{color:#666}
     .top-bar-right{display:flex;align-items:center;gap:12px}
-    .icon-btn{width:34px;height:34px;border-radius:10px;border:1px solid #e5e5e5;background:#fff;display:grid;place-items:center;cursor:pointer}
-    .icon-btn svg{width:18px;height:18px;stroke:#000;stroke-width:1.5;fill:none}
-    body.dark-mode .icon-btn{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.04)}
-    body.dark-mode .icon-btn svg{stroke:#fff}
-    .content-area{flex:1;overflow-y:auto;padding:36px;background:#fff;display:grid;gap:14px}
-    body.dark-mode .content-area{background:#000}
-    .section-header h2{font-size:28px;font-weight:700;letter-spacing:-.5px;color:#000}
-    body.dark-mode .section-header h2{color:#fff}
-    .section-header p{font-size:13px;color:#888;margin-top:5px}
-    .card{background:#fafafa;border:1px solid #e5e5e5;border-radius:12px;padding:18px}
-    body.dark-mode .card{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.08)}
-    .card h3{font-size:14px;font-weight:800;margin-bottom:14px}
+    .icon-btn{width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);display:grid;place-items:center;cursor:pointer}
+    .icon-btn svg{width:18px;height:18px;stroke:#fff;stroke-width:1.5;fill:none}
+    body.light-mode .icon-btn{border-color:#e5e5e5;background:#fff}
+    body.light-mode .icon-btn svg{stroke:#000}
+    .content-area{flex:1;overflow-y:auto;padding:36px;background:#000;display:grid;gap:14px}
+    body.light-mode .content-area{background:#fff}
+    .section-header h2{font-size:28px;font-weight:700;letter-spacing:-.5px;color:#fff}
+    body.light-mode .section-header h2{color:#000}
+    .section-header p{font-size:13px;color:rgba(255,255,255,.7);margin-top:5px}
+    body.light-mode .section-header p{color:#666}
+    .card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:18px}
+    body.light-mode .card{background:#fafafa;border-color:#e5e5e5}
+    .card h3{font-size:14px;font-weight:800;margin-bottom:14px;color:inherit}
     .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
     .field{display:grid;gap:6px}
-    .field label{font-size:12px;font-weight:700;color:#777}
-    .field input,.field select,.field textarea{height:40px;border:1px solid #ddd;border-radius:10px;padding:0 12px;background:#fff;font-size:13px}
+    .field label{font-size:12px;font-weight:700;color:rgba(255,255,255,.78)}
+    body.light-mode .field label{color:#555}
+    .field input,.field select,.field textarea{height:40px;border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:0 12px;background:rgba(255,255,255,.06);font-size:13px;color:#fff}
     .field textarea{height:86px;padding:10px 12px;resize:vertical}
-    body.dark-mode .field input,body.dark-mode .field select,body.dark-mode .field textarea{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12);color:#fff}
+    .field input::placeholder,.field textarea::placeholder{color:rgba(255,255,255,.5)}
+    body.light-mode .field input,body.light-mode .field select,body.light-mode .field textarea{background:#fff;border-color:#ddd;color:#000}
+    body.light-mode .field input::placeholder,body.light-mode .field textarea::placeholder{color:#888}
     .pill-row{display:flex;gap:8px;flex-wrap:wrap}
-    .market-pill{padding:7px 10px;border:1px solid #ddd;border-radius:999px;font-size:12px;cursor:pointer;font-weight:700}
-    .market-pill.on{background:#000;color:#fff;border-color:#000}
-    body.dark-mode .market-pill{border-color:rgba(255,255,255,.2);color:#fff}
-    body.dark-mode .market-pill.on{background:#fff;color:#000;border-color:#fff}
+    .market-pill{padding:7px 10px;border:1px solid rgba(255,255,255,.26);border-radius:999px;font-size:12px;cursor:pointer;font-weight:700;color:#fff;background:transparent}
+    .market-pill.on{background:#fff;color:#000;border-color:#fff}
+    body.light-mode .market-pill{border-color:#ddd;color:#111}
+    body.light-mode .market-pill.on{background:#000;color:#fff;border-color:#000}
     .actions{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
-    .btn{height:40px;padding:0 14px;border-radius:10px;border:1px solid #e5e5e5;background:#fff;font-size:13px;font-weight:800;cursor:pointer;text-decoration:none;color:inherit;display:inline-flex;align-items:center}
-    .btn.primary{background:#000;color:#fff;border-color:#000}
-    .status{font-size:12px;color:#777}
-    .avatar{width:56px;height:56px;border-radius:999px;object-fit:cover;border:1px solid #ddd;background:#fff}
+    .btn{height:40px;padding:0 14px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);font-size:13px;font-weight:800;cursor:pointer;text-decoration:none;color:#fff;display:inline-flex;align-items:center}
+    .btn.primary{background:#fff;color:#000;border-color:#fff}
+    body.light-mode .btn{border-color:#e5e5e5;background:#fff;color:#111}
+    body.light-mode .btn.primary{background:#000;color:#fff;border-color:#000}
+    .status{font-size:12px;color:rgba(255,255,255,.72);font-weight:600}
+    body.light-mode .status{color:#555}
+    .avatar{width:56px;height:56px;border-radius:999px;object-fit:cover;border:1px solid rgba(255,255,255,.2);background:#111}
+    body.light-mode .avatar{border-color:#ddd;background:#fff}
     @media(max-width:900px){.grid{grid-template-columns:1fr}.content-area{padding:20px}}
   </style>
   <link rel="stylesheet" href="assets/css/mobile-fixes.css">
@@ -121,8 +136,17 @@
     const photoStatus = document.getElementById('photoStatus');
     const profilePreview = document.getElementById('profilePreview');
 
-    function applyTheme(){ const t=localStorage.getItem('fynx_theme'); document.body.classList.toggle('dark-mode', t==='dark'); }
-    document.getElementById('themeBtn').addEventListener('click',()=>{const d=!document.body.classList.contains('dark-mode');document.body.classList.toggle('dark-mode',d);localStorage.setItem('fynx_theme',d?'dark':'light');});
+    function applyTheme(){
+      const t=localStorage.getItem('fynx_theme') === 'light' ? 'light' : 'dark';
+      document.body.classList.toggle('dark-mode', t==='dark');
+      document.body.classList.toggle('light-mode', t==='light');
+      document.documentElement.dataset.theme = t;
+    }
+    document.getElementById('themeBtn').addEventListener('click',()=>{
+      const light = document.body.classList.contains('light-mode');
+      localStorage.setItem('fynx_theme',light?'dark':'light');
+      applyTheme();
+    });
     applyTheme();
 
     markets.forEach((m)=>{const b=document.createElement('button');b.type='button';b.className='market-pill';b.dataset.market=m;b.textContent=m.toUpperCase();b.onclick=()=>{b.classList.toggle('on');b.classList.contains('on')?selectedMarkets.add(m):selectedMarkets.delete(m)};marketPills.appendChild(b);});

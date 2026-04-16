@@ -7,6 +7,11 @@
   --app-nav-item-radius:12px;
 }
 
+html,body{
+  background:#000;
+  color:#fff;
+}
+
 .dashboard-container{display:flex;height:100vh;width:100vw;}
 
 .nav-panel{
