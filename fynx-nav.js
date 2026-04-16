@@ -231,23 +231,6 @@ topBar.innerHTML = `
       });
     }
 
-    document.addEventListener('click', (event) => {
-      const anchor = event.target.closest('a[href]');
-      if (!anchor) return;
-      const href = anchor.getAttribute('href') || '';
-      if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) return;
-      if (anchor.target && anchor.target !== '_self') return;
-      if (href === window.location.pathname.split('/').pop()) return;
-
-      let shell = document.getElementById('fynxPageShell');
-      if (!shell) {
-        shell = document.createElement('div');
-        shell.id = 'fynxPageShell';
-        shell.style.cssText = 'position:fixed;inset:0;background:#000;z-index:99998;opacity:0;pointer-events:none;transition:opacity .12s ease;';
-        document.body.appendChild(shell);
-      }
-      requestAnimationFrame(() => { shell.style.opacity = '1'; });
-    }, { capture: true });
   }
 
   if (document.readyState === 'loading') {
