@@ -154,13 +154,6 @@ function ensureBootStyles() {
   const style = document.createElement("style");
   style.id = "fynxSessionBootStyles";
   style.textContent = `
-    html.fynx-session-booting,
-    html.fynx-session-booting body {
-      background: #000 !important;
-    }
-    html.fynx-session-booting body > *:not(#fynxSessionBoot) {
-      visibility: hidden;
-    }
     #fynxSessionBoot {
       position: fixed;
       inset: 0;
@@ -168,22 +161,19 @@ function ensureBootStyles() {
       display: none;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.035), transparent 52%), #000;
-      color: rgba(255, 255, 255, 0.82);
-      font: 600 13px/1.3 Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      letter-spacing: .03em;
+      pointer-events: none;
+      background: transparent;
     }
     #fynxSessionBoot::before {
       content: "";
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       border-radius: 999px;
-      border: 2px solid rgba(255, 255, 255, 0.24);
-      border-top-color: rgba(255, 255, 255, 0.88);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-top-color: rgba(255, 255, 255, 0.9);
       animation: fynxSpin .8s linear infinite;
-      margin-right: 10px;
+      box-shadow: 0 0 0 6px rgba(0, 0, 0, 0.35);
       display: inline-block;
-      vertical-align: middle;
     }
     @keyframes fynxSpin {
       to { transform: rotate(360deg); }
@@ -194,7 +184,7 @@ function ensureBootStyles() {
   if (!document.getElementById("fynxSessionBoot")) {
     const boot = document.createElement("div");
     boot.id = "fynxSessionBoot";
-    boot.textContent = "Restoring session";
+    boot.setAttribute("aria-hidden", "true");
     document.documentElement.appendChild(boot);
   }
 }
