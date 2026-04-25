@@ -10,6 +10,8 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="assets/theme.css">
+  <script src="assets/theme.js" defer></script>
   <style>
     .legal-page{max-width:980px;margin:0 auto;padding:130px 1.5rem 80px;}
     .legal-hero h1{font-size:clamp(2rem,4vw,3.2rem);margin-bottom:.8rem;}
@@ -23,12 +25,28 @@
     body:not(.dark-mode) .content-card strong{color:#000;}
   </style>
 </head>
-<body class="dark-mode">
+<body>
+  <script>
+    (function () {
+      var key = "fynx_theme";
+      var saved = "dark";
+      try {
+        var value = localStorage.getItem(key);
+        if (value === "light" || value === "dark") saved = value;
+      } catch (e) {}
+      document.documentElement.dataset.theme = saved === "light" ? "light" : "dark";
+      document.documentElement.style.backgroundColor = saved === "light" ? "#fbfbfb" : "#000000";
+      document.body.classList.add(saved === "light" ? "light-mode" : "dark-mode");
+    })();
+  </script>
   <div class="animated-bg"><div class="grid-overlay"></div><div class="gradient-orb orb-1"></div><div class="gradient-orb orb-2"></div></div>
   <header>
     <div class="nav-container">
       <div class="logo" onclick="location.href='index.html'"><i class="fas fa-chart-line"></i><span>FYNX</span></div>
       <nav><ul><li><a href="index.html">Home</a></li><li><a href="calculator.html">Tools</a></li><li><a href="news.html">News</a></li><li><a href="partners.html">Partners</a></li></ul></nav>
+      <button class="fynx-theme-toggle" type="button" aria-label="Toggle theme" data-fynx-theme-toggle title="Toggle black/white mode">
+        <i class="fas fa-circle-half-stroke"></i>
+      </button>
     </div>
   </header>
 
