@@ -1684,3 +1684,303 @@ body:not(.dark-mode) .faq-answer{
   max-height: 300px;
   padding: 24px;
 }
+
+/* ==============================================
+   FYNX Premium Fintech UI Polish
+   Frontend-only refinements for the public site.
+============================================== */
+:root{
+  --fynx-ink:#f8fafc;
+  --fynx-muted:rgba(226,232,240,.72);
+  --fynx-line:rgba(148,163,184,.18);
+  --fynx-panel:rgba(15,23,42,.58);
+  --fynx-panel-strong:rgba(2,6,23,.78);
+  --fynx-accent:#22d3ee;
+  --fynx-accent-2:#34d399;
+  --fynx-warn:#f59e0b;
+  --fynx-shadow:0 24px 80px rgba(0,0,0,.36);
+  --fynx-radius:24px;
+}
+
+body{
+  font-feature-settings:"cv02","cv03","cv04","cv11";
+  letter-spacing:-.01em;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(34,211,238,.16), transparent 34%),
+    radial-gradient(circle at 85% 12%, rgba(52,211,153,.12), transparent 30%),
+    linear-gradient(180deg, #020617 0%, #030712 48%, #020617 100%);
+}
+body:not(.dark-mode){
+  background:
+    radial-gradient(circle at 15% 0%, rgba(14,165,233,.12), transparent 34%),
+    radial-gradient(circle at 85% 10%, rgba(16,185,129,.10), transparent 30%),
+    linear-gradient(180deg, #f8fafc 0%, #eef2f7 48%, #f8fafc 100%);
+}
+
+.animated-bg::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(115deg, transparent 0 58%, rgba(34,211,238,.08) 58.1% 58.45%, transparent 58.55%),
+    repeating-linear-gradient(0deg, transparent 0 58px, rgba(148,163,184,.045) 59px 60px),
+    repeating-linear-gradient(90deg, transparent 0 58px, rgba(148,163,184,.045) 59px 60px);
+  mask-image:linear-gradient(180deg, #000, transparent 82%);
+}
+.grid-overlay{ background-size:42px 42px; opacity:.75; }
+.orb-1{ background:radial-gradient(circle, rgba(34,211,238,.45) 0%, transparent 68%); }
+.orb-2{ background:radial-gradient(circle, rgba(52,211,153,.34) 0%, transparent 70%); }
+.orb-3{ background:radial-gradient(circle, rgba(245,158,11,.18) 0%, transparent 72%); }
+
+header{
+  padding:.78rem 0;
+  background:rgba(2,6,23,.72);
+  border-bottom:1px solid var(--fynx-line);
+  box-shadow:0 10px 40px rgba(0,0,0,.18);
+}
+header.scrolled{
+  background:rgba(2,6,23,.88);
+  box-shadow:0 18px 50px rgba(0,0,0,.30);
+}
+body:not(.dark-mode) header{
+  background:rgba(248,250,252,.82);
+  border-bottom:1px solid rgba(15,23,42,.10);
+}
+.nav-container{ max-width:1480px; }
+.logo{
+  padding:.45rem .7rem;
+  border:1px solid var(--fynx-line);
+  border-radius:16px;
+  background:linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.025));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+.logo i{ color:var(--fynx-accent-2); filter:drop-shadow(0 0 12px rgba(52,211,153,.42)); }
+nav ul{ gap:.45rem; align-items:center; }
+nav a{
+  padding:.72rem .95rem;
+  border-radius:999px;
+  font-size:.94rem;
+  font-weight:750;
+  letter-spacing:.01em;
+}
+nav a::after{ display:none; }
+nav a:hover{
+  background:rgba(255,255,255,.075);
+  color:#fff;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.10);
+}
+body:not(.dark-mode) nav a:hover{ background:rgba(15,23,42,.06); color:#0f172a; }
+.fynx-menu-btn,.fynx-network-btn,.fynx-network-theme,.mobile-resources-btn{
+  border-radius:999px !important;
+  box-shadow:0 10px 28px rgba(0,0,0,.16);
+}
+
+.hero{
+  min-height:calc(100vh - var(--header-h));
+  align-items:center;
+  text-align:left;
+  padding:clamp(5rem, 9vw, 8rem) 2rem 4rem;
+  overflow:hidden;
+}
+.hero::before{
+  content:"";
+  position:absolute;
+  inset:9% max(2rem, calc((100vw - 1320px)/2)) auto auto;
+  width:min(520px, 42vw);
+  height:min(520px, 42vw);
+  border:1px solid rgba(148,163,184,.16);
+  border-radius:32px;
+  background:
+    linear-gradient(135deg, rgba(15,23,42,.72), rgba(15,23,42,.28)),
+    repeating-linear-gradient(0deg, transparent 0 38px, rgba(148,163,184,.08) 39px 40px),
+    repeating-linear-gradient(90deg, transparent 0 38px, rgba(148,163,184,.08) 39px 40px);
+  box-shadow:var(--fynx-shadow), inset 0 1px 0 rgba(255,255,255,.08);
+  transform:perspective(900px) rotateY(-10deg) rotateX(4deg);
+  opacity:.92;
+}
+.hero::after{
+  content:"BTC +2.8%   SPY +0.4%   EUR/USD 1.0842   VIX -3.1%";
+  position:absolute;
+  right:max(2rem, calc((100vw - 1320px)/2 + 36px));
+  top:calc(50% + 165px);
+  width:min(450px, 36vw);
+  padding:1rem 1.1rem;
+  border:1px solid rgba(52,211,153,.24);
+  border-radius:18px;
+  color:rgba(209,250,229,.92);
+  background:rgba(2,6,23,.72);
+  box-shadow:0 20px 60px rgba(0,0,0,.24);
+  font-size:.82rem;
+  font-weight:850;
+  letter-spacing:.08em;
+  white-space:normal;
+}
+.hero-content{
+  width:min(720px, 100%);
+  max-width:none;
+  margin:0 auto 0 max(0px, calc((100vw - 1320px)/2));
+  position:relative;
+  z-index:2;
+}
+.hero-content::before{
+  content:"FINTECH TRADING WORKSPACE";
+  display:inline-flex;
+  margin-bottom:1.2rem;
+  padding:.48rem .8rem;
+  border:1px solid rgba(34,211,238,.26);
+  border-radius:999px;
+  background:rgba(8,47,73,.34);
+  color:#a5f3fc;
+  font-size:.76rem;
+  font-weight:900;
+  letter-spacing:.16em;
+}
+.hero h1{
+  font-size:clamp(3.2rem, 7vw, 6.7rem);
+  line-height:.94;
+  letter-spacing:-.065em;
+  margin-bottom:1.35rem;
+  background:linear-gradient(135deg, #fff 0%, #dbeafe 38%, #67e8f9 70%, #86efac 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+}
+.hero p{
+  max-width:650px;
+  font-size:clamp(1.08rem, 1.6vw, 1.35rem);
+  color:var(--fynx-muted);
+  opacity:1;
+  margin-bottom:2.2rem;
+}
+body:not(.dark-mode) .hero-content::before{ background:rgba(236,254,255,.82); color:#0369a1; border-color:rgba(14,165,233,.22); }
+body:not(.dark-mode) .hero h1{ background:linear-gradient(135deg, #020617 0%, #0f172a 48%, #0284c7 78%, #059669 100%); -webkit-background-clip:text; background-clip:text; }
+body:not(.dark-mode) .hero::before{ background:linear-gradient(135deg, rgba(255,255,255,.86), rgba(255,255,255,.46)), repeating-linear-gradient(0deg, transparent 0 38px, rgba(15,23,42,.07) 39px 40px), repeating-linear-gradient(90deg, transparent 0 38px, rgba(15,23,42,.07) 39px 40px); }
+body:not(.dark-mode) .hero::after{ background:rgba(255,255,255,.80); color:#047857; border-color:rgba(16,185,129,.22); }
+
+.btn,.fynx-grow__cta,.home-pill,.tools-pill,.news-pill,.learn-pill,.learn-detail-pill,.home-detail-pill{
+  min-height:46px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:.55rem;
+  border-radius:999px;
+  transform:translateZ(0);
+}
+.btn{ padding:1rem 1.7rem; border:1px solid transparent; }
+.btn-primary{
+  background:linear-gradient(135deg, #f8fafc, #cbd5e1);
+  color:#020617;
+  box-shadow:0 16px 38px rgba(34,211,238,.16), 0 0 0 1px rgba(255,255,255,.20) inset;
+}
+.btn-secondary{
+  color:#e2e8f0;
+  border:1px solid rgba(148,163,184,.28);
+  background:rgba(15,23,42,.42);
+  backdrop-filter:blur(14px);
+}
+.btn:hover{ transform:translateY(-3px); }
+.btn-secondary:hover{ background:rgba(255,255,255,.10); color:#fff; border-color:rgba(34,211,238,.34); }
+body:not(.dark-mode) .btn-primary{ background:linear-gradient(135deg, #0f172a, #020617); color:#fff; }
+body:not(.dark-mode) .btn-secondary{ background:rgba(255,255,255,.62); color:#0f172a; border-color:rgba(15,23,42,.16); }
+
+.features,.tools-section,.learning-section,.fynx-faq{ padding-block:clamp(5rem, 9vw, 8.5rem); }
+.section-title,.fynx-faq__title{
+  font-size:clamp(2.4rem, 5vw, 4.2rem);
+  letter-spacing:-.055em;
+  line-height:.96;
+}
+.section-title::after{
+  content:"";
+  display:block;
+  width:90px;
+  height:3px;
+  margin:1.1rem auto 0;
+  border-radius:999px;
+  background:linear-gradient(90deg, transparent, var(--fynx-accent), var(--fynx-accent-2), transparent);
+}
+.feature-grid,.course-grid,.tools-grid{ gap:clamp(1rem, 2vw, 1.6rem); }
+.feature-card,.course-card,.tool-item,.faq-item,.fynx-faq__item,.fynx-grow__card{
+  border-radius:var(--fynx-radius);
+  border:1px solid var(--fynx-line);
+  background:linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.028));
+  box-shadow:0 18px 55px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.08);
+}
+.feature-card,.tool-item{ text-align:left; padding:clamp(1.5rem, 3vw, 2.35rem); }
+.feature-card::after,.course-card::after,.tool-item::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(circle at 18% 0%, rgba(34,211,238,.12), transparent 36%);
+}
+.feature-icon,.tool-item i,.course-image i{ color:#67e8f9; text-shadow:0 0 24px rgba(34,211,238,.28); }
+.feature-card h3,.tool-item h3,.course-content h3{ letter-spacing:-.035em; }
+.feature-card:hover,.course-card:hover,.tool-item:hover{
+  transform:translateY(-8px);
+  border-color:rgba(34,211,238,.28);
+  box-shadow:0 28px 90px rgba(2,6,23,.32), 0 0 0 1px rgba(34,211,238,.06) inset;
+}
+body:not(.dark-mode) .feature-card,
+body:not(.dark-mode) .course-card,
+body:not(.dark-mode) .tool-item,
+body:not(.dark-mode) .faq-item,
+body:not(.dark-mode) .fynx-faq__item{
+  background:linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.58));
+  border-color:rgba(15,23,42,.10);
+  box-shadow:0 18px 55px rgba(15,23,42,.10), inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.fynx-grow{
+  position:relative;
+  padding:clamp(5rem, 9vw, 8rem) 2rem;
+  background:linear-gradient(180deg, rgba(15,23,42,.16), rgba(2,6,23,.04));
+  overflow:hidden;
+}
+.fynx-grow::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg, transparent, rgba(34,211,238,.08), transparent);
+  opacity:.7;
+}
+.fynx-grow__wrap{ max-width:1320px; margin:0 auto; position:relative; z-index:1; }
+.fynx-grow__title{ letter-spacing:-.055em; }
+.fynx-grow__card img{ filter:saturate(1.08) contrast(1.02); }
+
+footer{
+  position:relative;
+  background:linear-gradient(180deg, rgba(2,6,23,.86), rgba(2,6,23,.96));
+  border-top:1px solid rgba(34,211,238,.14);
+}
+footer::before{
+  content:"";
+  position:absolute;
+  inset:0 0 auto;
+  height:1px;
+  background:linear-gradient(90deg, transparent, rgba(34,211,238,.72), rgba(52,211,153,.52), transparent);
+}
+.footer-container{ gap:clamp(1.5rem, 4vw, 4rem); }
+.footer-section h3{ letter-spacing:-.025em; color:#f8fafc; }
+.footer-section a{ border-radius:10px; padding:.38rem .2rem; }
+body:not(.dark-mode) footer{ background:linear-gradient(180deg, rgba(248,250,252,.92), rgba(241,245,249,.98)); }
+body:not(.dark-mode) .footer-section h3{ color:#0f172a; }
+
+@media (max-width: 1020px){
+  .hero{ text-align:center; padding-top:5rem; }
+  .hero-content{ margin-inline:auto; }
+  .hero p{ margin-inline:auto; }
+  .hero::before{ position:relative; display:block; inset:auto; width:min(680px, 88vw); height:260px; margin:3rem auto 0; transform:none; order:2; }
+  .hero::after{ display:none; }
+  .cta-buttons{ justify-content:center; }
+}
+@media (max-width: 768px){
+  header{ padding:.62rem 0; }
+  .logo{ font-size:1.35rem; }
+  .hero{ min-height:auto; padding:4.4rem 1rem 3rem; }
+  .hero::before{ height:210px; border-radius:24px; }
+  .hero h1{ font-size:clamp(2.65rem, 14vw, 4.15rem); }
+  .cta-buttons{ flex-direction:column; gap:.8rem; }
+  .cta-buttons .btn{ width:100%; }
+  .features,.tools-section,.learning-section,.fynx-faq,.fynx-grow{ padding:4.5rem 1rem; }
+  .feature-card,.tool-item{ text-align:center; }
+  .footer-container{ grid-template-columns:1fr; }
+}
