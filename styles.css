@@ -1984,3 +1984,14 @@ body:not(.dark-mode) .footer-section h3{ color:#0f172a; }
   .feature-card,.tool-item{ text-align:center; }
   .footer-container{ grid-template-columns:1fr; }
 }
+
+/* Waitlist mode polish */
+.launch-status-badge{
+  display:inline-flex;align-items:center;gap:.5rem;margin-bottom:1.1rem;padding:.55rem .8rem;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:rgba(255,255,255,.86);font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 14px 35px rgba(0,0,0,.18);
+}
+body:not(.dark-mode) .launch-status-badge{background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.12);color:rgba(0,0,0,.72)}
+.hero::before{content:"Private beta preview\A Market workspace • Risk tools • Journal analytics";white-space:pre-line;display:grid;place-items:center;text-align:center;font-weight:900;line-height:1.45;color:rgba(255,255,255,.86)}
+body:not(.dark-mode) .hero::before{color:rgba(0,0,0,.76)}
+.owner-mode .admin-only{display:initial!important}
+.locked-note{font-size:.88rem;color:rgba(255,255,255,.6);margin-top:.7rem}
+.owner-dev-links{display:none;align-items:center;gap:8px}.owner-mode .owner-dev-links{display:flex!important}.owner-dev-links .fynx-network-btn{height:34px;font-size:12px;padding:0 10px}

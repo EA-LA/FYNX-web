@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Join the FYNX Early-Access Waitlist</title>
+  <meta name="description" content="FYNX is in private development. Join the early-access waitlist for professional trading tools, market analysis, risk management, education, and performance tracking." />
+  <meta property="og:title" content="Professional Trading Tools Are Coming | FYNX" />
+  <meta property="og:description" content="Join the FYNX early-access waitlist for launch updates and private beta invitations." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="favicon-32x32.png" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body{min-height:100vh;display:grid;place-items:center;padding:24px;background:#050505;color:#fff;font-family:Inter,system-ui,sans-serif}.waitlist-shell{width:min(1080px,100%);display:grid;grid-template-columns:1fr .9fr;gap:22px}.waitlist-card,.preview-card{border:1px solid rgba(255,255,255,.14);background:linear-gradient(145deg,rgba(255,255,255,.11),rgba(255,255,255,.035));box-shadow:0 30px 90px rgba(0,0,0,.55);backdrop-filter:blur(20px);border-radius:28px;padding:clamp(24px,4vw,46px)}.brand{display:flex;align-items:center;gap:12px;font-weight:900;font-size:1.35rem}.brand-mark{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:#fff;color:#000}.badge{display:inline-flex;margin:28px 0 16px;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.78);font-size:.82rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.waitlist-card h1{font-size:clamp(2.5rem,7vw,5.7rem);line-height:.88;letter-spacing:-.07em;margin:0 0 18px}.waitlist-card p{color:rgba(255,255,255,.72);font-size:1.05rem;line-height:1.7}.waitlist-form{display:grid;gap:12px;margin-top:24px}.waitlist-form input{width:100%;border:1px solid rgba(255,255,255,.16);border-radius:15px;background:rgba(0,0,0,.32);color:#fff;padding:15px 16px;font:inherit;outline:none}.waitlist-form input:focus{border-color:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.12)}.waitlist-form button{border:0;border-radius:15px;background:#fff;color:#000;padding:15px 18px;font-weight:900;cursor:pointer}.waitlist-form button[disabled]{opacity:.7;cursor:wait}.privacy,.status{font-size:.9rem;color:rgba(255,255,255,.58)}.status.success{color:#b7f7cc}.status.error{color:#ffc0c0}.owner-link{display:inline-block;margin-top:18px;color:rgba(255,255,255,.56);font-size:.9rem}.preview-card{display:flex;flex-direction:column;justify-content:space-between;min-height:520px}.mock{border:1px solid rgba(255,255,255,.13);border-radius:24px;background:#070707;padding:18px;overflow:hidden}.mock-row{display:grid;grid-template-columns:1fr auto;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08)}.mock-row:last-child{border:0}.spark{height:110px;border-radius:18px;background:linear-gradient(135deg,rgba(255,255,255,.2),transparent),repeating-linear-gradient(90deg,rgba(255,255,255,.12) 0 1px,transparent 1px 32px);position:relative}.spark:after{content:"";position:absolute;inset:35% 5% 20%;border-top:2px solid #fff;transform:skewY(-9deg)}@media(max-width:860px){.waitlist-shell{grid-template-columns:1fr}.preview-card{min-height:auto}}body:not(.dark-mode){background:#f4f4f4;color:#050505}.waitlist-card,.preview-card{color:#fff}
+  </style>
+</head>
+<body>
+  <main class="waitlist-shell">
+    <section class="waitlist-card" aria-labelledby="waitlist-title">
+      <div class="brand"><span class="brand-mark">↗</span><span>FYNX</span></div>
+      <span class="badge">Private Beta — Early Access Opening Soon</span>
+      <h1 id="waitlist-title">Professional Trading Tools Are Coming</h1>
+      <p>FYNX is building a professional workspace for market analysis, risk management, trading education, and performance tracking. Join the waitlist for early access and launch updates.</p>
+      <form class="waitlist-form" id="waitlistForm" novalidate>
+        <input id="firstName" name="firstName" autocomplete="given-name" placeholder="First name (optional)" />
+        <input id="email" name="email" type="email" autocomplete="email" required placeholder="Email address" />
+        <button id="submitBtn" type="submit">Join the Early-Access Waitlist</button>
+        <div class="privacy">No spam. Only important FYNX launch and early-access updates.</div>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+      </form>
+      <a class="owner-link" href="auth/login.html?owner=1">Owner Login</a>
+    </section>
+    <aside class="preview-card" aria-label="Private beta product preview">
+      <div><div class="badge">Product Preview</div><h2>Market dashboard mockup</h2><p class="privacy">Private development build with tools locked for public visitors.</p></div>
+      <div class="mock"><div class="spark"></div><div class="mock-row"><span>Risk Workspace</span><strong>Beta</strong></div><div class="mock-row"><span>Journal Analytics</span><strong>Locked</strong></div><div class="mock-row"><span>Market Context</span><strong>Soon</strong></div></div>
+    </aside>
+  </main>
+  <script type="module">
+    import { joinWaitlist } from './assets/js/waitlist-mode.js';
+    const form = document.getElementById('waitlistForm'), status = document.getElementById('status'), btn = document.getElementById('submitBtn');
+    form.addEventListener('submit', async (e)=>{ e.preventDefault(); status.className='status'; status.textContent='Saving your spot...'; btn.disabled=true; try{ const res = await joinWaitlist({ email: email.value, firstName: firstName.value }); status.className='status success'; status.textContent = res.duplicate ? 'You are already on the FYNX waitlist. We will send important launch updates soon.' : 'You are on the list. Welcome to the FYNX early-access waitlist.'; form.reset(); } catch(err){ status.className='status error'; status.textContent = err.message || 'We could not save your request. Please try again.'; } finally{ btn.disabled=false; }});
+  </script>
+</body>
+</html>
