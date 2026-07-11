@@ -11,6 +11,14 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="assets/theme.css">
+  <script>
+    (function(){
+      const t = localStorage.getItem('fynx_theme') === 'light' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = t;
+      document.documentElement.style.backgroundColor = t === 'light' ? '#fbfbfb' : '#000000';
+      if (t === 'dark') document.documentElement.classList.add('dark-mode');
+    })();
+  </script>
   <script src="assets/theme.js" defer></script>
   <style>
     .contact-page{max-width:920px;margin:0 auto;padding:130px 1.5rem 80px;}
@@ -23,18 +31,12 @@
     body:not(.dark-mode) .contact-card{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.16);} body:not(.dark-mode) .email-link{color:#000;}
   </style>
 </head>
-<body>
+<body class="dark-mode">
   <script>
-    (function () {
-      var key = "fynx_theme";
-      var saved = "dark";
-      try {
-        var value = localStorage.getItem(key);
-        if (value === "light" || value === "dark") saved = value;
-      } catch (e) {}
-      document.documentElement.dataset.theme = saved === "light" ? "light" : "dark";
-      document.documentElement.style.backgroundColor = saved === "light" ? "#fbfbfb" : "#000000";
-      document.body.classList.add(saved === "light" ? "light-mode" : "dark-mode");
+    (function(){
+      const t = localStorage.getItem('fynx_theme') === 'light' ? 'light' : 'dark';
+      document.body.classList.toggle('dark-mode', t === 'dark');
+      document.body.classList.toggle('light-mode', t === 'light');
     })();
   </script>
   <div class="animated-bg"><div class="grid-overlay"></div><div class="gradient-orb orb-1"></div><div class="gradient-orb orb-2"></div></div>
@@ -42,9 +44,6 @@
     <div class="nav-container">
       <div class="logo" onclick="location.href='index.html'"><i class="fas fa-chart-line"></i><span>FYNX</span></div>
       <nav><ul><li><a href="index.html">Home</a></li><li><a href="calculator.html">Tools</a></li><li><a href="news.html">News</a></li><li><a href="partners.html">Partners</a></li></ul></nav>
-      <button class="fynx-theme-toggle" type="button" aria-label="Toggle theme" data-fynx-theme-toggle title="Toggle black/white mode">
-        <i class="fas fa-circle-half-stroke"></i>
-      </button>
     </div>
   </header>
 
@@ -64,8 +63,8 @@
 
   <footer>
     <div class="footer-container">
-      <div class="footer-section"><h3>Resources</h3><ul><li><a href="/partners.html">Partners</a></li><li><a href="/risk-disclosure.html">Risk Disclosure</a></li><li><a href="/affiliate-disclosure.html">Affiliate Disclosure</a></li></ul></div>
-      <div class="footer-section"><h3>Company</h3><ul><li><a href="/contact.html">Contact</a></li><li><a href="https://site.fynxfinanceworld.com/privacy.html" target="_blank" rel="noopener">Privacy Policy</a></li><li><a href="https://site.fynxfinanceworld.com/terms.html" target="_blank" rel="noopener">Terms of Service</a></li></ul></div>
+      <div class="footer-section"><h3>Resources</h3><ul><li><a href="partners.html">Partners</a></li><li><a href="risk-disclosure.html">Risk Disclosure</a></li><li><a href="affiliate-disclosure.html">Affiliate Disclosure</a></li></ul></div>
+      <div class="footer-section"><h3>Company</h3><ul><li><a href="contact.html">Contact</a></li><li><a href="https://site.fynxfinanceworld.com/privacy.html" target="_blank" rel="noopener">Privacy Policy</a></li><li><a href="https://site.fynxfinanceworld.com/terms.html" target="_blank" rel="noopener">Terms of Service</a></li></ul></div>
     </div>
     <div class="copyright">© 2026 FYNX Finance World. All rights reserved.</div>
   </footer>
