@@ -38,7 +38,7 @@
     </aside>
   </main>
   <script type="module">
-    import { joinWaitlist } from './assets/js/waitlist-mode.js';
+    import { joinWaitlist } from './assets/js/waitlist-mode.js?v=6ae3ec38a7f0';
     const form = document.getElementById('waitlistForm'), status = document.getElementById('status'), btn = document.getElementById('submitBtn');
     form.addEventListener('submit', async (e)=>{ e.preventDefault(); status.className='status'; status.textContent='Saving your spot...'; btn.disabled=true; try{ const res = await joinWaitlist({ email: email.value, firstName: firstName.value }); status.className='status success'; status.textContent = res.duplicate ? 'You are already on the FYNX waitlist. We will send important launch updates soon.' : 'You are on the list. Welcome to the FYNX early-access waitlist.'; form.reset(); } catch(err){ status.className='status error'; status.textContent = err.message || 'We could not save your request. Please try again.'; } finally{ btn.disabled=false; }});
   </script>

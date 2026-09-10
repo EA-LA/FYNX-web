@@ -3,7 +3,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/f
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const db = getFirestore(app);
-const OWNER_EMAILS = ["owner@fynxfinanceworld.com", "admin@fynxfinanceworld.com"];
+const OWNER_EMAILS = ["owner@fynxfinanceworld.com", "admin@fynxfinanceworld.com", "ha6876122@gmail.com"];
 const PUBLIC_PATHS = new Set(["/", "/index.html", "/news.html", "/partners.html", "/risk-disclosure.html", "/affiliate-disclosure.html", "/contact.html", "/founder.html", "/trading-psychology.html", "/risk-management.html", "/trading-quizzes.html"]);
 const PUBLIC_PREFIXES = ["/learn/", "/resources/"];
 const AUTH_PATHS = new Set(["/auth/login.html", "/auth/signup.html"]);

@@ -498,7 +498,7 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js"></script>
+  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=29224ab9aed2">
   <script src="/assets/js/journal-theme.js?v=014aa6fc47f8" defer></script>
 </head>
@@ -593,7 +593,7 @@
       signInWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import { auth } from "./firebase.js";
-    import { getOwnerAccess } from "../assets/js/waitlist-mode.js";
+    import { getOwnerAccess } from "../assets/js/waitlist-mode.js?v=6ae3ec38a7f0";
     async function enterWorkspace(){
       if (!(await getOwnerAccess(auth.currentUser))) {
         document.getElementById("ownerLoginStatus").textContent = "This account does not have owner access. Please use your authorized owner account.";
