@@ -499,7 +499,8 @@
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js"></script>
-  <link rel="stylesheet" href="/assets/funded-system.css?v=20260908">
+  <link rel="stylesheet" href="/assets/funded-system.css?v=29224ab9aed2">
+  <script src="/assets/js/journal-theme.js?v=811cd04e5746" defer></script>
 </head>
 
 <body class="dark-mode">
@@ -524,14 +525,14 @@
         </div>
 
         <div>
-          <h1>Log in to your account</h1>
-          <p class="sub">Access your tools, news, and trader journal. Black-and-white. Clean. Fast.</p>
+          <h1>Welcome to your workspace.</h1><p id="ownerLoginStatus" role="status" aria-live="polite"></p>
+          <p class="sub">Sign in with your authorized owner account to access the private beta dashboard.</p>
         </div>
 
         <div class="actions">
           <button class="btn" id="loginGoogle" type="button">Login with Google</button>
           <button class="btn" id="loginApple" type="button">Login with Apple</button>
-          <button class="btn" id="continueDemo" type="button">Continue as Demo</button>
+          <button class="btn" id="continueDemo" type="button" hidden>Continue as Demo</button>
         </div>
 
         <form class="form" id="emailLoginForm" autocomplete="on">
@@ -556,9 +557,9 @@
 
           <p class="foot">
             By continuing, you agree to FYNX
-            <a href="https://elhamamini.cc/FYNX-Site/terms.html">Terms of Service</a>
+            <a href="https://ea-la.github.io/FYNX-Site/terms.html">Terms of Service</a>
             and
-            <a href="https://elhamamini.cc/FYNX-Site/privacy.html">Privacy Policy</a>.
+            <a href="https://ea-la.github.io/FYNX-Site/privacy.html">Privacy Policy</a>.
           </p>
         </form>
       </div>
@@ -592,6 +593,14 @@
       signInWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import { auth } from "./firebase.js";
+    import { getOwnerAccess } from "../assets/js/waitlist-mode.js";
+    async function enterWorkspace(){
+      if (!(await getOwnerAccess(auth.currentUser))) {
+        document.getElementById("ownerLoginStatus").textContent = "This account does not have owner access. Please use your authorized owner account.";
+        return;
+      }
+      window.location.href = DASHBOARD_URL;
+    }
     import { sessionState } from "../assets/js/session-manager.js";
 
     const loginGoogleBtn = document.getElementById("loginGoogle");
@@ -608,10 +617,10 @@
     }
     const APP_STORE_URL = "https://apps.apple.com/app/id6752357210";
 
-    const APP_RETURN_URL = new URL("./app-return.html", window.location.href);
+    const APP_RETURN_URL = new URL("../app-return.html", window.location.href);
     APP_RETURN_URL.searchParams.set("returnTo", DASHBOARD_URL);
 
-    const OPEN_APP_URL = new URL("./open-app.html", window.location.href);
+    const OPEN_APP_URL = new URL("../open-app.html", window.location.href);
     OPEN_APP_URL.searchParams.set("returnTo", APP_RETURN_URL.toString());
 
     function showErr(e){
@@ -626,7 +635,7 @@
         setMode("live");
         localStorage.setItem("fynx_auth_email", auth.currentUser?.email || "");
         sessionState.trackActivity("login-google");
-        window.location.href = DASHBOARD_URL;
+        await enterWorkspace();
       }catch(e){ showErr(e); }
     });
 
@@ -637,7 +646,7 @@
         setMode("live");
         localStorage.setItem("fynx_auth_email", auth.currentUser?.email || "");
         sessionState.trackActivity("login-apple");
-        window.location.href = DASHBOARD_URL;
+        await enterWorkspace();
       }catch(e){ showErr(e); }
     });
 
@@ -650,7 +659,7 @@
         setMode("live");
         localStorage.setItem("fynx_auth_email", auth.currentUser?.email || email || "");
         sessionState.trackActivity("login-email");
-        window.location.href = DASHBOARD_URL;
+        await enterWorkspace();
       }catch(err){ showErr(err); }
     });
 
@@ -671,6 +680,6 @@
       window.location.href = OPEN_APP_URL.toString();
     });
   </script>
-  <script src="/assets/js/live-site.js" defer></script>
+
 </body>
 </html>

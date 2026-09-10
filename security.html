@@ -13,7 +13,8 @@ body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,25
 .btn{height:38px;padding:0 12px;border-radius:10px;border:1px solid #ddd;background:#fff;font-size:12px;font-weight:800;cursor:pointer}.btn.primary{background:#000;color:#fff;border-color:#000}.btn.danger{background:#000;color:#fff;border-color:#000}
 .icon-btn{width:34px;height:34px;border-radius:10px;border:1px solid #ddd;background:#fff;display:grid;place-items:center;cursor:pointer}.icon-btn svg{width:18px;height:18px;stroke:#000;stroke-width:1.5;fill:none} body.dark-mode .icon-btn{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.04)} body.dark-mode .icon-btn svg{stroke:#fff}
 </style>  <script type="module" src="./assets/js/protect-route.js"></script>
-  <link rel="stylesheet" href="/assets/funded-system.css?v=20260908">
+  <link rel="stylesheet" href="/assets/funded-system.css?v=29224ab9aed2">
+  <script src="/assets/js/journal-theme.js?v=811cd04e5746" defer></script>
 </head>
 <body data-protected-page="true"><div class="dashboard-container"><nav class="nav-panel"></nav><main class="main-content">
 <div class="top-bar"><h1>Security</h1><div style="display:flex;gap:12px"><button class="icon-btn" id="themeBtn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line></svg></button><button class="icon-btn" title="Notifications"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button></div></div>
@@ -52,5 +53,5 @@ logoutAllBtn.onclick = async()=>{ if(!auth.currentUser) return; await revokeAllS
 onAuthStateChanged(auth, async(user)=>{ if(!user) return; const seeded = await bootstrapAccount(user); verifyStatus.textContent = user.emailVerified ? 'Verified' : 'Not verified'; loginAlertsSwitch.classList.toggle('on', seeded.security?.loginAlerts !== false); const sessions = await getSessionMetadata(user.uid); const list = sessions.map((s)=>`<div style="padding:8px 0;border-bottom:1px solid rgba(0,0,0,.08)"><strong>${s.platform||'Device'}</strong> • ${s.timezone||'UTC'} • ${s.status||'active'}</div>`).join('') || 'No session metadata yet'; sessionList.innerHTML=list; sessionId = sessions[0]?.sessionId || null;});
 
 mountNotificationBell();
-</script><script src="/assets/js/live-site.js" defer></script>
+</script>
 </body></html>
