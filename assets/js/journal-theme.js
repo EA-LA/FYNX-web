@@ -4,6 +4,7 @@
   function saved() { try { return localStorage.getItem(key) === 'light' ? 'light' : 'dark'; } catch { return 'dark'; } }
   function apply(theme) {
     document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.fynxTheme = theme;
     document.documentElement.style.backgroundColor = theme === 'light' ? '#f6f8f7' : '#0b0d0c';
     if (!document.body) return;
     document.body.classList.toggle('dark-mode', theme === 'dark');
@@ -13,7 +14,7 @@
       button.setAttribute('aria-pressed', String(theme === 'light'));
     });
   }
-  const selector = '[data-journal-theme], [data-fynx-theme-toggle], #themeToggle, #theme-toggle, .theme-toggle, .fynx-network-theme';
+  const selector = '[data-journal-theme], [data-fynx-theme-toggle], #themeToggle, #themeBtn, #theme-toggle, .theme-toggle, .fynx-network-theme';
   apply(saved());
   document.addEventListener('click', event => {
     const button = event.target.closest(selector);
