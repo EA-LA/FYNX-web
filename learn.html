@@ -135,18 +135,21 @@
   <script type="module" src="assets/js/session-bootstrap.js"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=29224ab9aed2">
   <script src="/assets/js/journal-theme.js?v=014aa6fc47f8" defer></script>
+  <link rel="stylesheet" href="/assets/editorial-pages.css?v=20260915">
 </head>
 
-<body>
+<body class="editorial-page editorial-learn-hub">
   <div class="dashboard-container">
     <nav class="nav-panel"></nav>
 
     <main class="main-content">
       <div class="top-bar">
-        <h1 class="page-title">Learn</h1>
+        <h1 class="page-title">Learning center</h1>
       </div>
 
       <section class="content-area learn-wrap">
+        <div class="editorial-label">BUILD YOUR MARKET KNOWLEDGE</div>
+        <p class="hub-intro">Explore the markets. Develop your process. Test what you know.</p>
         <div class="learn-mode-toggle" role="tablist" aria-label="Learn mode toggle">
           <button id="learning-toggle" class="learn-mode-btn active" type="button" role="tab" aria-selected="true">Learning</button>
           <button id="quizzes-toggle" class="learn-mode-btn" type="button" role="tab" aria-selected="false">Quizzes</button>
@@ -155,7 +158,7 @@
         <div id="learn-content" class="mode-content active">
           <div class="panel learn-frame-shell">
             <iframe id="learnFrame"
-              class="learn-frame"
+              title="FYNX learning content" class="learn-frame"
               src="learn/topic.html?topic=stocks&section=howto">
             </iframe>
           </div>
@@ -164,7 +167,7 @@
         <div id="quiz-content" class="mode-content" aria-hidden="true">
           <div class="panel learn-frame-shell">
             <iframe id="quizFrame"
-              class="learn-frame"
+              title="FYNX learning content" class="learn-frame"
               src="trading-quizzes.html">
             </iframe>
           </div>

@@ -576,8 +576,9 @@
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=29224ab9aed2">
   <script src="/assets/js/journal-theme.js?v=014aa6fc47f8" defer></script>
+  <link rel="stylesheet" href="/assets/editorial-pages.css?v=20260915">
 </head>
-<body>
+<body class="editorial-page editorial-calendar">
   <div class="animated-bg">
     <div class="grid-overlay"></div>
     <div class="gradient-orb orb-1"></div>
@@ -603,9 +604,9 @@
     <section class="hero">
       <div class="hero-top">
         <div class="hero-copy">
-          <h1>Economic Calendar</h1>
+          <div class="editorial-label">FYNX / MARKET INTELLIGENCE</div><h1>Economic Calendar</h1>
           <p class="lead">
-            Track market-moving macro events in real time. Use this page before trading forex, gold, indices, and risk assets so you know exactly when high-impact releases, central bank decisions, and labor or inflation data are about to hit.
+            Stay ahead of market-moving events. Follow economic releases, central bank decisions, and inflation data in one place.
           </p>
 
           <div class="hero-badges">
@@ -749,7 +750,7 @@
     }
 
     function getStoredTheme(){
-      return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+      try { return localStorage.getItem(THEME_KEY) === "light" ? "light" : "dark"; } catch { return "dark"; }
     }
 
     function updateThemeButton(){
@@ -809,7 +810,10 @@
 
     function renderEconomicCalendar(){
       const wrap = document.getElementById("tvCalendarWrap");
-      const holder = document.getElementById("tradingview_economic_calendar");
+      wrap.replaceChildren();
+      const holder = document.createElement("div");
+      holder.id = "tradingview_economic_calendar";
+      wrap.appendChild(holder);
       const loading = document.getElementById("widgetLoading");
       const isDark = document.body.classList.contains("dark-mode");
 
@@ -843,9 +847,11 @@
         }, 900);
       };
 
+      script.onerror = () => { loading.textContent = "Calendar unavailable. Please refresh to try again."; };
       holder.appendChild(script);
     }
 
+    window.addEventListener("fynx-theme-change", () => { updateThemeButton(); renderEconomicCalendar(); });
     renderEconomicCalendar();
   </script>
   <script src="../assets/js/tradingview-fit.js"></script>
