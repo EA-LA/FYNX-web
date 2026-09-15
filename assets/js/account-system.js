@@ -59,10 +59,10 @@ const DEFAULT_PROFILE = {
   supportEmail: "support@fynxfinanceworld.com",
   appStoreUrl: "https://apps.apple.com/us/app/fynx-finance-world/id6752357210",
   legal: {
-    termsUrl: "https://fynxfinanceworld.com/terms",
-    privacyUrl: "https://fynxfinanceworld.com/privacy",
-    riskDisclosureUrl: "https://fynxfinanceworld.com/risk-disclosure",
-    contactUrl: "https://fynxfinanceworld.com/contact"
+    termsUrl: "https://site.fynxfinanceworld.com/terms.html",
+    privacyUrl: "https://site.fynxfinanceworld.com/privacy.html",
+    riskDisclosureUrl: "https://www.fynxfinanceworld.com/risk-disclosure.html",
+    contactUrl: "https://www.fynxfinanceworld.com/contact.html"
   },
   updatedAt: null,
   createdAt: null

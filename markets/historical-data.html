@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FYNX — Historical Data</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -27,10 +28,11 @@
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
-  <link rel="stylesheet" href="/assets/funded-system.css?v=29224ab9aed2">
-  <script src="/assets/js/journal-theme.js?v=014aa6fc47f8" defer></script>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-global">
 </head>
-<body>
+<body data-fynx-layout="standalone" data-fynx-section="MARKETS">
 <header>
   <div class="nav">
     <div class="brand"><i class="fas fa-database"></i> Historical Data</div>
@@ -115,7 +117,7 @@ lookup();
 document.getElementById("themeToggle").addEventListener("click",toggleTheme);
 window.addEventListener("storage",e=>{if(e.key===THEME_KEY)applyTheme(getTheme());});
 </script>
-  <script src="../assets/js/tradingview-fit.js"></script>
+  <script src="../assets/js/tradingview-fit.js?v=20260915-global"></script>
 
 </body>
 </html>

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FYNX — Heat Map</title>
@@ -767,10 +768,11 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <link rel="stylesheet" href="/assets/funded-system.css?v=29224ab9aed2">
-  <script src="/assets/js/journal-theme.js?v=014aa6fc47f8" defer></script>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-global">
 </head>
-<body>
+<body data-fynx-layout="standalone" data-fynx-section="NEWS">
   <div class="animated-bg">
     <div class="grid-overlay"></div>
     <div class="gradient-orb orb-1"></div>
@@ -1090,19 +1092,14 @@
     function injectTradingViewWidget(containerId, config) {
       const container = document.getElementById(containerId);
       if (!container) return;
-
-      container.innerHTML = '<div class="tradingview-widget-container__widget"></div>';
-
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-' + config.widgetName + '.js';
-      script.async = true;
-
-      const tvTheme = getTradingViewTheme();
-      const payload = { ...config.payload, theme: tvTheme };
-
-      script.innerHTML = JSON.stringify(payload);
-      container.appendChild(script);
+      const theme = getTradingViewTheme();
+      const payload = JSON.stringify({ ...config.payload, theme, colorTheme: theme });
+      const frame = document.createElement('iframe');
+      frame.title = config.widgetName.replaceAll('-', ' ') + ' — external market data';
+      frame.style.cssText = 'width:100%;height:100%;border:0;display:block';
+      // Each embed owns its document, so a theme change cannot orphan an executing script.
+      frame.srcdoc = '<!doctype html><html><head><style>html,body{margin:0;width:100%;height:100%;background:' + (theme === 'dark' ? '#101212' : '#fff') + ';}.tradingview-widget-container{height:100%;width:100%}</style></head><body><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div><scr' + 'ipt async src="https://s3.tradingview.com/external-embedding/embed-widget-' + config.widgetName + '.js">' + payload + '</scr' + 'ipt></div></body></html>';
+      container.replaceChildren(frame);
     }
 
     function buildWidgets() {
@@ -1181,8 +1178,16 @@
       });
     }
 
+    let pendingRebuild;
+    let renderedTheme = getTradingViewTheme();
     function rebuildWidgets() {
-      buildWidgets();
+      clearTimeout(pendingRebuild);
+      pendingRebuild = setTimeout(() => {
+        const theme = getTradingViewTheme();
+        if (theme === renderedTheme) return;
+        renderedTheme = theme;
+        buildWidgets();
+      }, 150);
     }
 
     const themeObserver = new MutationObserver(() => {
@@ -1199,7 +1204,7 @@
     setActiveView('stocks');
     buildWidgets();
   </script>
-  <script src="../assets/js/tradingview-fit.js"></script>
+  <script src="../assets/js/tradingview-fit.js?v=20260915-global"></script>
 
 </body>
 </html>

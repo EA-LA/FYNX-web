@@ -53,7 +53,7 @@
     if (host.querySelector(':scope > .fynx-live-badge')) return;
     const badge = document.createElement('span');
     badge.className = 'fynx-live-badge';
-    badge.innerHTML = '<span class="fynx-live-dot"></span>Live';
+    badge.innerHTML = '<span class="fynx-live-dot"></span>External data';
     host.appendChild(badge);
   }
 
@@ -67,7 +67,7 @@
       container.style.overflow = 'hidden';
 
       Array.from(container.children).forEach((child) => {
-        if (child.tagName !== 'SCRIPT') {
+        if (['DIV', 'IFRAME'].includes(child.tagName) && !child.classList.contains('tradingview-widget-copyright')) {
           child.style.width = '100%';
           child.style.height = '100%';
           child.style.minHeight = '100%';

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <script>
@@ -1039,11 +1040,12 @@
   </style>
   <script type="module" src="assets/js/session-bootstrap.js"></script>
   <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
-  <link rel="stylesheet" href="/assets/funded-system.css?v=29224ab9aed2">
-  <script src="/assets/js/journal-theme.js?v=014aa6fc47f8" defer></script>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-global">
 </head>
 
-<body>
+<body data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD">
   <div class="bg-grid"></div>
 
   <div class="dashboard-container">
@@ -1879,18 +1881,18 @@
 
     // ✅ Always-present fallback lists (so UI never looks "in progress")
     const FALLBACK_NEWS = [
-      { title:"Markets: Major headlines update throughout the day", link:"https://news.google.com/topstories?hl=en-US&gl=US&ceid=US:en", source:"News", pubDate: new Date() },
-      { title:"Stocks & Macro: Check today’s market-moving stories", link:"https://www.cnbc.com/world/?region=world", source:"CNBC", pubDate: new Date() },
-      { title:"Rates & Central Banks: Watch Fed/ECB/BOE/BOJ updates", link:"https://www.reuters.com/markets/", source:"Reuters", pubDate: new Date() },
-      { title:"Crypto: Bitcoin & risk assets headlines", link:"https://www.coindesk.com/", source:"CoinDesk", pubDate: new Date() },
-      { title:"FX: Live forex headlines", link:"https://www.forexlive.com/", source:"ForexLive", pubDate: new Date() },
-      { title:"Commodities: Oil and gold market updates", link:"https://www.investing.com/commodities/", source:"Investing", pubDate: new Date() }
+      { title:"Markets: Major headlines update throughout the day", link:"https://news.google.com/topstories?hl=en-US&gl=US&ceid=US:en", source:"News", pubDate: null, reference: true },
+      { title:"Stocks & Macro: Check today’s market-moving stories", link:"https://www.cnbc.com/world/?region=world", source:"CNBC", pubDate: null, reference: true },
+      { title:"Rates & Central Banks: Watch Fed/ECB/BOE/BOJ updates", link:"https://www.reuters.com/markets/", source:"Reuters", pubDate: null, reference: true },
+      { title:"Crypto: Bitcoin & risk assets headlines", link:"https://www.coindesk.com/", source:"CoinDesk", pubDate: null, reference: true },
+      { title:"FX: Live forex headlines", link:"https://www.forexlive.com/", source:"ForexLive", pubDate: null, reference: true },
+      { title:"Commodities: Oil and gold market updates", link:"https://www.investing.com/commodities/", source:"Investing", pubDate: null, reference: true }
     ];
 
     const FALLBACK_X = [
-      { title:"X Finance: Live posts update throughout the day", link:"https://x.com/search?q=finance%20breaking&src=typed_query", source:"X", pubDate: new Date() },
-      { title:"X: Market news stream", link:"https://x.com/search?q=FOMC%20OR%20CPI%20OR%20NFP&src=typed_query", source:"X", pubDate: new Date() },
-      { title:"X: Crypto + macro updates", link:"https://x.com/search?q=bitcoin%20macro&src=typed_query", source:"X", pubDate: new Date() }
+      { title:"X Finance: Live posts update throughout the day", link:"https://x.com/search?q=finance%20breaking&src=typed_query", source:"X", pubDate: null, reference: true },
+      { title:"X: Market news stream", link:"https://x.com/search?q=FOMC%20OR%20CPI%20OR%20NFP&src=typed_query", source:"X", pubDate: null, reference: true },
+      { title:"X: Crypto + macro updates", link:"https://x.com/search?q=bitcoin%20macro&src=typed_query", source:"X", pubDate: null, reference: true }
     ];
 
     function fmtTimeAgo(date){
@@ -1905,6 +1907,8 @@
       return `${d}d ago`;
     }
 
+    function escapeNews(value) { return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+    function safeNewsUrl(value) { try { const url = new URL(value); return ["https:","http:"].includes(url.protocol) ? url.href : "#"; } catch { return "#"; } }
     function safeText(s){
       return String(s || "").replace(/\s+/g, " ").trim();
     }
@@ -1918,7 +1922,7 @@
 
     async function fetchRssXml(url){
       const proxied = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-      const res = await fetch(proxied, { cache: "no-store" });
+      const res = await fetch(proxied, { cache: "no-store", signal: AbortSignal.timeout(10000) });
       if (!res.ok) throw new Error("Failed to fetch feed");
       return await res.text();
     }
@@ -1933,10 +1937,10 @@
       }
 
       list.innerHTML = items.map(it => {
-        const title = safeText(it.title);
-        const link = safeText(it.link);
-        const source = safeText(it.source || "News");
-        const ago = it.pubDate ? fmtTimeAgo(it.pubDate) : "";
+        const title = escapeNews(safeText(it.title));
+        const link = escapeNews(safeNewsUrl(it.link));
+        const source = escapeNews(safeText(it.source || "News"));
+        const ago = it.reference ? "Publisher link" : (it.pubDate ? fmtTimeAgo(it.pubDate) : "");
 
         return `
           <a class="news-item" href="${link}" target="_blank" rel="noopener">
@@ -2015,8 +2019,7 @@
     let manualNewsNonce = 0;
 
     async function refreshMarketNews(force = false){
-      setUpdated("newsUpdated");
-      setUpdated("liveUpdated");
+      document.getElementById("newsUpdated").textContent = "Refreshing…";
 
       const now = new Date();
 
@@ -2055,9 +2058,12 @@
         // Fill to 15: today first, then most recent, then fallback links
         const finalItems = fillToCount(todayItems, recentItems.concat(FALLBACK_NEWS), NEWS_MAX_ITEMS);
 
+        setUpdated("newsUpdated");
+        setUpdated("liveUpdated");
         cacheSet(CACHE_NEWS_KEY, finalItems);
         renderNews("newsList", finalItems, "No finance headlines right now.");
       }catch(e){
+        document.getElementById("newsUpdated").textContent = "Feed unavailable · cached stories / publisher links";
         const cached = cacheGet(CACHE_NEWS_KEY);
         const finalItems = fillToCount(cached || [], FALLBACK_NEWS, NEWS_MAX_ITEMS);
         renderNews("newsList", finalItems, "No finance headlines right now.");
@@ -2065,7 +2071,7 @@
     }
 
     async function refreshXFeed(force = false){
-      setUpdated("xUpdated");
+      document.getElementById("xUpdated").textContent = "Refreshing…";
 
       try{
         const allItems = [];
@@ -2119,9 +2125,11 @@
 
         const finalItems = fillToCount(todayItems, deduped.concat(FALLBACK_X), X_MAX_ITEMS);
 
+        setUpdated("xUpdated");
         cacheSet(CACHE_X_KEY, finalItems);
         renderNews("xList", finalItems, "No X finance posts right now.");
       }catch(e){
+        document.getElementById("xUpdated").textContent = "Feed unavailable · cached stories / publisher links";
         const cached = cacheGet(CACHE_X_KEY);
         const finalItems = fillToCount(cached || [], FALLBACK_X, X_MAX_ITEMS);
         renderNews("xList", finalItems, "No X finance posts right now.");
@@ -2185,11 +2193,11 @@
     initHome();
   </script>
 
-  <script src="fynx-nav.js"></script>
+  <script src="fynx-nav.js?v=20260915-global"></script>
 
   <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
   <script src="fynx-usercard.js"></script>
-  <script src="assets/js/tradingview-fit.js"></script>
+  <script src="assets/js/tradingview-fit.js?v=20260915-global"></script>
 
 </body>
 </html>

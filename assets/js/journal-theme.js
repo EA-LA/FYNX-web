@@ -5,13 +5,15 @@
   function apply(theme) {
     document.documentElement.dataset.theme = theme;
     document.documentElement.dataset.fynxTheme = theme;
-    document.documentElement.style.backgroundColor = theme === 'light' ? '#f6f8f7' : '#0b0d0c';
+    document.documentElement.style.backgroundColor = theme === 'light' ? '#ffffff' : '#0b0c0c';
     if (!document.body) return;
     document.body.classList.toggle('dark-mode', theme === 'dark');
     document.body.classList.toggle('light-mode', theme === 'light');
-    document.querySelectorAll('[data-journal-theme], [data-fynx-theme-toggle]').forEach(button => {
+    document.querySelectorAll(selector).forEach(button => {
       button.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`);
       button.setAttribute('aria-pressed', String(theme === 'light'));
+      const label = button.querySelector('#themeLabel, #themeToggleText');
+      if (label) label.textContent = theme === 'light' ? 'Light' : 'Dark';
     });
   }
   const selector = '[data-journal-theme], [data-fynx-theme-toggle], #themeToggle, #themeBtn, #theme-toggle, .theme-toggle, .fynx-network-theme';
@@ -24,6 +26,8 @@
     const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
     try { localStorage.setItem(key, next); } catch {}
     apply(next);
+    // Notify legacy page widgets that already subscribe to storage changes.
+    window.dispatchEvent(new StorageEvent('storage', { key, newValue: next }));
     window.dispatchEvent(new CustomEvent('fynx-theme-change', { detail: next }));
   }, true);
   function initialize() {
@@ -34,7 +38,8 @@
       button.className = 'theme-utility fynx-theme-toggle';
       button.dataset.journalTheme = '';
       button.textContent = '◐';
-      document.body.append(button);
+      const host = document.querySelector('.nav-actions, .nav-right, .top-actions, header .actions, header .nav, header .nav-container, .topbar, .site-resource-header nav');
+      (host || document.body).append(button);
       apply(saved());
     }
   }

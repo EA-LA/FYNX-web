@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>FYNX — Journal</title>
@@ -580,11 +581,12 @@
   <link rel="stylesheet" href="assets/css/mobile-fixes.css">
   <script type="module" src="assets/js/session-bootstrap.js"></script>
   <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
-  <link rel="stylesheet" href="/assets/funded-system.css?v=29224ab9aed2">
-  <script src="/assets/js/journal-theme.js?v=014aa6fc47f8" defer></script>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-global">
 </head>
 
-<body>
+<body data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD">
   <div class="dashboard-container">
     <!-- Outer Sidebar -->
     <nav class="nav-panel">
@@ -841,6 +843,10 @@
                         <input id="fTP" type="number" step="0.00001" placeholder="0.00000" />
                       </div>
                       <div style="grid-column: span 12;">
+                        <label for="fRealizedPL">Realized P/L (account currency)</label>
+                        <input id="fRealizedPL" type="number" step="0.01" placeholder="Enter the actual closed-trade result" />
+                        <label for="fSession">Session</label>
+                        <select id="fSession"><option>London</option><option>New York</option><option>Asia</option><option>Other</option></select>
                         <label>Notes</label>
                         <textarea id="fNotes" placeholder="Plan, execution, mistakes, next improvement..."></textarea>
                       </div>
@@ -1344,6 +1350,7 @@
       fEntry.value = "";
       fSL.value = "";
       fTP.value = "";
+      document.getElementById("fRealizedPL").value = "";
       document.getElementById("fNotes").value = "";
       calcStats();
     }
@@ -1368,13 +1375,13 @@
       const tp = document.getElementById("fTP").value;
       const notes = document.getElementById("fNotes").value.trim();
 
-      // simple proxy P/L so you see charts moving
-      const e = parseFloat(entry), S = parseFloat(sl), T = parseFloat(tp);
-      let pl = 0;
-      if(isFinite(e) && isFinite(S) && isFinite(T)){
-        const reward = Math.abs(T - e);
-        const risk = Math.abs(e - S);
-        pl = (reward - risk*0.4);
+      const realized = document.getElementById("fRealizedPL").value.trim();
+      const pl = Number(realized);
+      if (!document.getElementById("fSymbol").value.trim() || !realized || !Number.isFinite(pl)) {
+        throw new Error("Enter a symbol and the actual realized P/L before saving.");
+      }
+      if (![entry, sl, tp].every(value => value.trim() && Number.isFinite(Number(value)) && Number(value) > 0)) {
+        throw new Error("Enter valid positive entry, stop loss, and take profit prices.");
       }
 
       const tradeId = crypto.randomUUID();
@@ -1383,10 +1390,11 @@
       await tradesCol().doc(tradeId).set({
         id: tradeId,
         symbol, date,
-        session: "New York",
+        session: document.getElementById("fSession").value,
         entry, sl, tp,
         notes,
-        pl: Number.isFinite(pl) ? pl : 0,
+        pl,
+        pnlSource: "user-reported",
         dateTs,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
@@ -1411,7 +1419,7 @@
         console.error(err);
         const code = (err && err.code) ? String(err.code) : "";
         const blocked = code.includes("permission") || code.includes("unauth");
-        alert(blocked ? "Unable to save right now. Your local journal is still available." : "Save failed. Please try again.");
+        alert(blocked ? "Your trade was not saved. Check your account permissions and try again." : (err.message || "Save failed. Please try again."));
       }
     });
 
@@ -1431,9 +1439,9 @@
         if (blocked) {
           if (unsubTrades) unsubTrades();
           currentUid = null;
-          modeText.textContent = "Sync unavailable right now — showing local demo data.";
+          modeText.textContent = "Journal sync unavailable. Sample trades are not shown in your account.";
           loginNote.style.display = "none";
-          state.trades = demoTrades;
+          state.trades = [];
           refreshDashboard(); refreshAnalytics(); refreshReplay(); refreshStreaks(); refreshCalendar();
           updateCharts();
           return;
@@ -1462,7 +1470,7 @@
       if(!user){
         currentUid = null;
         renderWelcome();
-        modeText.textContent = "Guest mode (view only) — login to save";
+        modeText.textContent = "Sample trades — guest preview only. Sign in to view your journal.";
         loginNote.style.display = "none";
         state.trades = demoTrades;
         refreshDashboard(); refreshAnalytics(); refreshReplay(); refreshStreaks(); refreshCalendar();
@@ -1476,7 +1484,7 @@
     });
   </script>
 
-  <script src="fynx-nav.js"></script>
+  <script src="fynx-nav.js?v=20260915-global"></script>
 
   <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
   <script src="fynx-usercard.js"></script>

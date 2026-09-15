@@ -1,0 +1,397 @@
+[
+  {
+    "page": "account-settings.html",
+    "layout": "workspace",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "affiliate-disclosure.html",
+    "layout": "standalone",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "app-return.html",
+    "layout": "utility",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "auth/forgot.html",
+    "layout": "auth",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "auth/login.html",
+    "layout": "auth",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "auth/signup.html",
+    "layout": "auth",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "calculator.html",
+    "layout": "workspace",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "calendar.html",
+    "layout": "workspace",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "contact.html",
+    "layout": "standalone",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "dashboard.html",
+    "layout": "workspace",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "founder.html",
+    "layout": "standalone",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "home/hub.html",
+    "layout": "standalone",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "home.html",
+    "layout": "workspace",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "index.html",
+    "layout": "landing",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "journal.html",
+    "layout": "workspace",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "learn/risk-management.html",
+    "layout": "resource",
+    "section": "LEARNING"
+  },
+  {
+    "page": "learn/topic.html",
+    "layout": "standalone",
+    "section": "LEARNING"
+  },
+  {
+    "page": "learn/trading-psychology.html",
+    "layout": "resource",
+    "section": "LEARNING"
+  },
+  {
+    "page": "learn.html",
+    "layout": "workspace",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "market-analysis.html",
+    "layout": "standalone",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "markets/correlation.html",
+    "layout": "standalone",
+    "section": "MARKETS"
+  },
+  {
+    "page": "markets/cot.html",
+    "layout": "standalone",
+    "section": "MARKETS"
+  },
+  {
+    "page": "markets/crypto.html",
+    "layout": "standalone",
+    "section": "MARKETS"
+  },
+  {
+    "page": "markets/currencies.html",
+    "layout": "standalone",
+    "section": "MARKETS"
+  },
+  {
+    "page": "markets/historical-data.html",
+    "layout": "standalone",
+    "section": "MARKETS"
+  },
+  {
+    "page": "markets/index.html",
+    "layout": "standalone",
+    "section": "MARKETS"
+  },
+  {
+    "page": "markets/indicators.html",
+    "layout": "standalone",
+    "section": "MARKETS"
+  },
+  {
+    "page": "markets/liquidity.html",
+    "layout": "standalone",
+    "section": "MARKETS"
+  },
+  {
+    "page": "markets/patterns.html",
+    "layout": "standalone",
+    "section": "MARKETS"
+  },
+  {
+    "page": "markets/volatility.html",
+    "layout": "standalone",
+    "section": "MARKETS"
+  },
+  {
+    "page": "news/challenges.html",
+    "layout": "standalone",
+    "section": "NEWS"
+  },
+  {
+    "page": "news/heatmap.html",
+    "layout": "standalone",
+    "section": "NEWS"
+  },
+  {
+    "page": "news/news.html",
+    "layout": "standalone",
+    "section": "NEWS"
+  },
+  {
+    "page": "news/sentiment.html",
+    "layout": "standalone",
+    "section": "NEWS"
+  },
+  {
+    "page": "news.html",
+    "layout": "workspace",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "notifications.html",
+    "layout": "workspace",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "open-app.html",
+    "layout": "utility",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "owner.html",
+    "layout": "utility",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "partners.html",
+    "layout": "standalone",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "preferences.html",
+    "layout": "workspace",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "profile.html",
+    "layout": "workspace",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "resources/market-analysis.html",
+    "layout": "resource",
+    "section": "LEARNING"
+  },
+  {
+    "page": "resources/quizzes.html",
+    "layout": "resource",
+    "section": "LEARNING"
+  },
+  {
+    "page": "resources/trading-glossary.html",
+    "layout": "resource",
+    "section": "LEARNING"
+  },
+  {
+    "page": "risk-disclosure.html",
+    "layout": "standalone",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "risk-management.html",
+    "layout": "standalone",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "security.html",
+    "layout": "workspace",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "tools/atr-stop.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/breakeven.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/calendar-alerts.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/compound.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/correlation.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/crypto.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/currency.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/economic-calendar.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/economic-indicators-heatmap.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/fibonacci.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/forex.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/heatmap.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/interest-rates.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/liquidation-guard.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/margin.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/market-holidays.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/market-hours.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/options-payoff.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/options.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/pip.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/pivot.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/position-size.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/profit-loss.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/recent-topics-discussed.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/risk-reward.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/stock.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "tools/symbol-news.html",
+    "layout": "standalone",
+    "section": "TOOLS"
+  },
+  {
+    "page": "trader-journal.html",
+    "layout": "workspace",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "trading-glossary.html",
+    "layout": "standalone",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "trading-psychology.html",
+    "layout": "standalone",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "trading-quizzes.html",
+    "layout": "standalone",
+    "section": "FINANCE WORLD"
+  },
+  {
+    "page": "waitlist.html",
+    "layout": "utility",
+    "section": "FINANCE WORLD"
+  }
+]

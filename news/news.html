@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FYNX — Market News</title>
@@ -890,10 +891,11 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <link rel="stylesheet" href="/assets/funded-system.css?v=29224ab9aed2">
-  <script src="/assets/js/journal-theme.js?v=014aa6fc47f8" defer></script>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-global">
 </head>
-<body>
+<body data-fynx-layout="standalone" data-fynx-section="NEWS">
   <div class="animated-bg">
     <div class="grid-overlay"></div>
     <div class="gradient-orb orb-1"></div>
@@ -1169,10 +1171,11 @@
 
     async function fetchFeed(feed) {
       const endpoint = RSS_TO_JSON + encodeURIComponent(feed.url);
-      const res = await fetch(endpoint);
+      const res = await fetch(endpoint, { signal: AbortSignal.timeout(10000) });
       if (!res.ok) throw new Error('Feed request failed');
 
       const data = await res.json();
+      if (data.status && data.status !== 'ok') throw new Error('News provider rejected the request');
       const items = Array.isArray(data.items) ? data.items : [];
 
       return items.slice(0, 10).map(item => ({
@@ -1204,6 +1207,9 @@
           }
         });
 
+        if (!results.some(result => result.status === "fulfilled")) {
+          throw new Error("All news sources are unavailable.");
+        }
         allNews = uniqueByLink(combined).sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
 
         storyCount.textContent = allNews.length;
@@ -1224,7 +1230,7 @@
             description: item.description,
             link: item.link,
             pubDate: item.pubDate,
-            dedupeKey: item.link || `${item.title}-${item.pubDate}`
+            dedupeKey: item.link || `${escapeNews(item.title)}-${item.pubDate}`
           }))
         };
 
@@ -1249,6 +1255,8 @@
       return allNews.filter(item => item.category === currentFilter);
     }
 
+    function escapeNews(value) { return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+    function safeNewsUrl(value) { try { const url = new URL(value); return ["https:","http:"].includes(url.protocol) ? url.href : "#"; } catch { return "#"; } }
     function renderFeatured(items) {
       if (!items.length) {
         featuredCard.classList.remove('show');
@@ -1259,16 +1267,16 @@
       const top = items[0];
 
       featuredCard.innerHTML = `
-        <a href="${top.link}" target="_blank" rel="noopener noreferrer">
+        <a href="${escapeNews(safeNewsUrl(top.link))}" target="_blank" rel="noopener noreferrer">
           <div class="featured-label">
             <i class="fas ${top.icon}"></i>
-            <span>Featured ${top.label}</span>
+            <span>Featured ${escapeNews(top.label)}</span>
           </div>
-          <h2 class="featured-title">${top.title}</h2>
-          <p class="featured-desc">${top.description || 'Open the article to read full market coverage.'}</p>
+          <h2 class="featured-title">${escapeNews(top.title)}</h2>
+          <p class="featured-desc">${escapeNews(top.description || 'Open the article to read full market coverage.')}</p>
           <div class="featured-meta">
-            <div class="meta-pill">${top.label}</div>
-            <div class="meta-pill">${top.source}</div>
+            <div class="meta-pill">${escapeNews(top.label)}</div>
+            <div class="meta-pill">${escapeNews(top.source)}</div>
             <div class="meta-pill">${formatTime(top.pubDate)}</div>
           </div>
         </a>
@@ -1295,24 +1303,24 @@
       rest.forEach(item => {
         const card = document.createElement('a');
         card.className = 'news-card';
-        card.href = item.link;
+        card.href = safeNewsUrl(item.link);
         card.target = '_blank';
         card.rel = 'noopener noreferrer';
 
         card.innerHTML = `
           <div class="news-source">
             <i class="fas ${item.icon}"></i>
-            <span>${item.label}</span>
+            <span>${escapeNews(item.label)}</span>
           </div>
 
-          <div class="news-title">${item.title}</div>
+          <div class="news-title">${escapeNews(item.title)}</div>
 
           <div class="news-desc">
-            ${item.description || 'Open article for full details.'}
+            ${escapeNews(item.description || 'Open article for full details.')}
           </div>
 
           <div class="news-foot">
-            <div class="news-time">${item.source} • ${formatTime(item.pubDate)}</div>
+            <div class="news-time">${escapeNews(item.source)} • ${formatTime(item.pubDate)}</div>
             <div class="news-open">Open article <i class="fas fa-arrow-up-right-from-square"></i></div>
           </div>
         `;

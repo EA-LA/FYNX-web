@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "build": "node scripts/build-static.js"
+    "build": "node scripts/build-static.js",
+    "test": "node scripts/test-journal-record.js"
   },
   "devDependencies": {}
 }

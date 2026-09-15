@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FYNX — Currencies</title>
@@ -146,10 +147,11 @@
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
-  <link rel="stylesheet" href="/assets/funded-system.css?v=29224ab9aed2">
-  <script src="/assets/js/journal-theme.js?v=014aa6fc47f8" defer></script>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-global">
 </head>
-<body>
+<body data-fynx-layout="standalone" data-fynx-section="MARKETS">
   <div class="animated-bg">
     <div class="grid-overlay"></div>
     <div class="orb orb1"></div>
@@ -194,7 +196,7 @@
       </div>
 
       <div class="card">
-        <div class="section-title">Quick FX Converter</div>
+        <div class="section-title">Example FX Converter · fixed sample rates</div>
         <div class="tool">
           <input class="input" id="amount" type="number" value="1000" placeholder="Amount">
           <select id="pair">
@@ -227,7 +229,7 @@
       </div>
 
       <div class="card">
-        <div class="section-title">Live-style Market Widget</div>
+        <div class="section-title">External Market Quotes</div>
         <div id="fxWidget" class="widget"></div>
       </div>
     </section>
@@ -312,7 +314,7 @@
     document.getElementById("themeToggle").addEventListener("click", toggleTheme);
     window.addEventListener("storage", (e) => { if(e.key === THEME_KEY) applyTheme(getTheme()); });
   </script>
-  <script src="../assets/js/tradingview-fit.js"></script>
+  <script src="../assets/js/tradingview-fit.js?v=20260915-global"></script>
 
 </body>
 </html>

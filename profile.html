@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <script>
@@ -659,11 +660,12 @@
   </style>
   <script type="module" src="assets/js/session-bootstrap.js"></script>
   <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
-  <link rel="stylesheet" href="/assets/funded-system.css?v=29224ab9aed2">
-  <script src="/assets/js/journal-theme.js?v=014aa6fc47f8" defer></script>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-global">
 </head>
 
-<body>
+<body data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD">
   <div class="dashboard-container">
     <nav class="nav-panel">
       <div class="nav-logo">FYNX</div>
@@ -801,9 +803,7 @@
           </div>
 
           <div class="hint">
-            Stats load from your real data if you store it in <b>localStorage</b>:
-            <br>- <b>fynx_trades</b> (array of trades)
-            <br>- or <b>fynx_metrics</b> (precomputed stats)
+            <span id="profileSyncStatus" role="status">Connecting to your account and journal…</span>
           </div>
         </section>
 
@@ -967,7 +967,7 @@ function applySavedTheme(){
       name: "FYNX User",
       avatarDataUrl: "",
       description: "",
-      memberSince: "Jan 2024"
+      memberSince: "—"
     };
 
     function safeJSONParse(v, fallback){
@@ -976,7 +976,7 @@ function applySavedTheme(){
 
     function getAuthEmail(){
       if (isDemoMode()) return "demo@fynx.app";
-      const v = (localStorage.getItem(AUTH_EMAIL_KEY) || "").trim();
+      const v = window.FynxProfileState?.email || "";
       return v || "";
     }
 
@@ -989,7 +989,7 @@ function applySavedTheme(){
           memberSince: "Apr 2026"
         };
       }
-      const p = safeJSONParse(localStorage.getItem("fynx_profile"), null);
+      const p = window.FynxProfileState?.profile || null;
       const merged = { ...DEFAULT_PROFILE, ...(p || {}) };
       delete merged.email;
       return merged;
@@ -1010,6 +1010,7 @@ function applySavedTheme(){
     }
 
     function renderAvatar(el, profile){
+      if (!el) return;
       el.innerHTML = "";
       if (profile.avatarDataUrl){
         const img = document.createElement("img");
@@ -1025,45 +1026,7 @@ function applySavedTheme(){
       if (isDemoMode()) {
         return { total: 18, winRate: 61.1, avgReturn: 3.4, memberSince: "Apr 2026" };
       }
-      const metrics = safeJSONParse(localStorage.getItem("fynx_metrics"), null);
-      if (metrics && typeof metrics === "object") return metrics;
-
-      const trades = safeJSONParse(localStorage.getItem("fynx_trades"), []);
-      const total = Array.isArray(trades) ? trades.length : 0;
-
-      let wins = 0;
-      let sumReturn = 0;
-      let returnCount = 0;
-
-      if (Array.isArray(trades)){
-        trades.forEach(t => {
-          const pnl = Number(t?.pnl);
-          const isWin = (String(t?.result || "").toLowerCase() === "win") || (!Number.isNaN(pnl) && pnl > 0);
-          if (isWin) wins++;
-
-          const rp = Number(t?.returnPct ?? t?.pnlPct ?? t?.return);
-          if (!Number.isNaN(rp)){
-            sumReturn += rp;
-            returnCount++;
-          }
-        });
-      }
-
-      const winRate = total ? (wins / total) * 100 : null;
-      const avgReturn = returnCount ? (sumReturn / returnCount) : null;
-
-      let memberSince = null;
-      const dates = (Array.isArray(trades) ? trades : [])
-        .map(t => new Date(t?.date || t?.createdAt || t?.timestamp || ""))
-        .filter(d => !isNaN(d.getTime()))
-        .sort((a,b)=>a-b);
-
-      if (dates.length){
-        const d = dates[0];
-        memberSince = d.toLocaleString(undefined, { month: "short", year: "numeric" });
-      }
-
-      return { total, winRate, avgReturn, memberSince };
+      return window.FynxProfileState?.metrics || { total: null, winRate: null, avgReturn: null, memberSince: "—" };
     }
 
     function fmtNumber(n){
@@ -1154,6 +1117,8 @@ function applySavedTheme(){
         showDemoBlocked();
         return;
       }
+      location.href = "account-settings.html";
+      return;
       const p = getProfile();
       nameInput.value = p.name || "";
       descInput.value = p.description || "";
@@ -1210,12 +1175,13 @@ function applySavedTheme(){
     });
   </script>
 
-  <script src="fynx-nav.js"></script>
+  <script src="fynx-nav.js?v=20260915-global"></script>
 
   <script type="module">
     import { mountNotificationBell } from "./assets/js/account-ui.js";
     mountNotificationBell();
   </script>
 
+  <script type="module" src="assets/js/profile-sync.js?v=20260915"></script>
 </body>
 </html>

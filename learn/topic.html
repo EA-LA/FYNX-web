@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FYNX — Learn</title>
@@ -134,11 +135,12 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <link rel="stylesheet" href="/assets/funded-system.css?v=29224ab9aed2">
-  <script src="/assets/js/journal-theme.js?v=014aa6fc47f8" defer></script>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
   <link rel="stylesheet" href="/assets/editorial-pages.css?v=20260915">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-global">
 </head>
-<body class="editorial-page editorial-learning">
+<body class="editorial-page editorial-learning" data-fynx-layout="standalone" data-fynx-section="LEARNING">
   <div class="animated-bg">
     <div class="grid-overlay"></div>
     <div class="orb orb-1"></div>
@@ -171,8 +173,10 @@
 
   <script>
     const params = new URLSearchParams(location.search);
-    const topic = (params.get('topic') || 'forex').toLowerCase();
-    const section = (params.get('section') || 'howto').toLowerCase();
+    const requestedTopic = (params.get('topic') || 'forex').toLowerCase();
+    const topic = ['stocks','funds','futures','forex','crypto','indices','bonds','economy','options'].includes(requestedTopic) ? requestedTopic : 'forex';
+    const requestedSection = (params.get('section') || 'howto').toLowerCase();
+    const section = ['howto','quizzes','glossary'].includes(requestedSection) ? requestedSection : 'howto';
 
     const labels = {
       stocks:'Stocks', funds:'Funds', futures:'Futures', forex:'Forex', crypto:'Crypto',
@@ -363,9 +367,9 @@
       document.getElementById('kpis').innerHTML = [
         ['Focus', meta.focus],
         ['Level', meta.level],
-        ['Learning Modules', String(meta.modules)],
-        ['Quiz Questions', String(meta.quizzes)],
-        ['Glossary Terms', String(meta.terms)]
+        ['Lesson outlines', String(lessonLibrary[topic].length)],
+        ['Study questions', String(quizBank[topic].length)],
+        ['Glossary terms', String(glossaryBank[topic].length)]
       ].map(([label,value]) => `<div class="kpi"><div class="label">${label}</div><div class="value">${value}</div></div>`).join('');
     }
 
@@ -424,7 +428,7 @@
 
       root.innerHTML = `
         <div class="panel">
-          <h2>${labels[topic]} — Assessment Center</h2>
+          <h2>${labels[topic]} — Study questions</h2><p><a class="btn" href="../trading-quizzes.html">Take a scored quiz ↗</a></p><h2>Review the answers</h2>
           <p>This is a product-style assessment format: scenario, multiple choice, and explanation for reinforcement. Use these as weekly checks to verify strategy understanding and risk discipline.</p>
           <div class="grid">
             <div class="card"><h3>Quiz Mode</h3><ul><li>Attempt all questions without viewing answers first.</li><li>Mark confidence level (high/medium/low) per question.</li><li>Review wrong answers and update your trading playbook.</li></ul></div>
@@ -473,7 +477,7 @@
 
       document.getElementById('brandTitle').innerHTML = `<i class="fas ${icons[safeTopic] || 'fa-graduation-cap'}"></i> ${labels[safeTopic]}`;
       document.getElementById('pageTitle').textContent = `${labels[safeTopic]} — ${sectionLabels[safeSection]}`;
-      document.getElementById('pageDesc').textContent = `Comprehensive ${sectionLabels[safeSection].toLowerCase()} content for ${labels[safeTopic]} with a full-platform learning structure.`;
+      document.getElementById('pageDesc').textContent = `Explore ${labels[safeTopic]} through lesson outlines, study questions, and a practical glossary.`;
 
       document.getElementById('chipHowto').href = linkFor(safeTopic, 'howto');
       document.getElementById('chipQuizzes').href = linkFor(safeTopic, 'quizzes');

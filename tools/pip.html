@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FYNX Tools — Pip Calculator</title>
@@ -392,11 +393,12 @@
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
-  <link rel="stylesheet" href="/assets/funded-system.css?v=29224ab9aed2">
-  <script src="/assets/js/journal-theme.js?v=014aa6fc47f8" defer></script>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-global">
 </head>
 
-<body>
+<body data-fynx-layout="standalone" data-fynx-section="TOOLS">
   <div class="animated-bg">
     <div class="grid-overlay"></div>
     <div class="gradient-orb orb-1"></div>
@@ -415,10 +417,10 @@
 
   <main>
     <div class="shell" id="tapDismiss">
-      <div class="title">Pip Calculator</div>
+      <h1 class="title">Pip Calculator</h1>
       <div class="subtitle">
         Assumes standard lot = <b>100,000</b> units. Pip size is <b>0.0001</b> for most pairs and <b>0.01</b> for JPY quotes.
-        Enter current price and your lot size to calculate <b>$ per pip</b>.
+        Choose the pip size, enter lots, and supply the quote-to-account conversion rate. Results are in your account currency.
       </div>
 
       <div class="grid">
@@ -426,13 +428,13 @@
         <div class="card">
           <h3>Inputs</h3>
           <div class="hint">
-            Current Price examples: <span class="mono">1.0850</span> (non-JPY) or <span class="mono">157.25</span> (JPY).
+            Conversion rate: account-currency units per 1 quote-currency unit. Use 1 when they match.
             Lots examples: <span class="mono">1</span>, <span class="mono">0.1</span>, <span class="mono">0.01</span>.
           </div>
 
           <div class="row">
-            <label for="price">Current Price</label>
-            <input id="price" class="field mono" type="text" inputmode="decimal" placeholder="e.g. 1.0850 or 157.25" />
+            <label for="price">Quote-to-account rate</label>
+            <input id="price" class="field mono" type="text" inputmode="decimal" value="1" placeholder="e.g. 1 for USD to USD" />
           </div>
 
           <div class="row">
@@ -440,6 +442,7 @@
             <input id="lots" class="field mono" type="text" inputmode="decimal" value="1" placeholder="e.g. 1, 0.1, 0.01" />
           </div>
 
+          <div class="row"><label for="pipIncrement">Pip size</label><select id="pipIncrement" class="field"><option value="0.0001">0.0001 · most forex pairs</option><option value="0.01">0.01 · JPY-quoted pairs</option></select></div>
           <div class="actions">
             <button id="calcBtn" class="primary"><i class="fa-solid fa-calculator"></i> Calculate</button>
             <button id="clearBtn" class="ghost"><i class="fa-solid fa-eraser"></i> Clear</button>
@@ -490,7 +493,7 @@
       </div>
 
       <div class="note" style="margin-top:14px;">
-        Logic matches your iOS version: pipSize = (price ≥ 10 ? 0.01 : 0.0001), perLot = 100,000 × pipSize, yourPip = perLot × lots.
+        Pip value = 100,000 × lots × pip size × quote-to-account conversion rate. Verify the contract size and conversion rate with your broker.
       </div>
     </div>
   </main>
@@ -544,7 +547,7 @@
     function money(x){
       const n = Number(x);
       if (!Number.isFinite(n)) return "—";
-      return "$" + n.toFixed(2);
+      return n.toFixed(2) + " account units";
     }
 
     function setError(msg){
@@ -569,7 +572,7 @@
 
     function shareText(){
       const header = "FYNX • Pip Calculator";
-      const inputs = `Price: ${el.price.value.trim() || "—"}\nLots: ${el.lots.value.trim() || "—"}`;
+      const inputs = `Quote-to-account rate: ${el.price.value.trim() || "—"}\nLots: ${el.lots.value.trim() || "—"}`;
       const result = (el.resultsBox.style.display === "none")
         ? "No result yet — tap Calculate."
         : `Pip size: ${el.pipSizeOut.textContent}\nPip value (per 1.00 lot): ${el.perLotOut.textContent}\nPip value (your lots): ${el.yourOut.textContent}`;
@@ -583,11 +586,11 @@
       const price = parseNum(el.price.value);
       const lots = parseNum(el.lots.value);
 
-      if (!price || price <= 0) { setError("Invalid price"); return; }
+      if (!price || price <= 0) { setError("Enter a positive quote-to-account conversion rate"); return; }
       if (!lots || lots <= 0) { setError("Invalid lots"); return; }
 
-      const size = price >= 10 ? 0.01 : 0.0001;
-      const perLot = 100000.0 * size;
+      const size = Number(document.getElementById("pipIncrement").value);
+      const perLot = 100000.0 * size * price;
       const yourPip = perLot * lots;
 
       el.emptyHint.style.display = "none";
@@ -598,7 +601,7 @@
       el.yourOut.textContent = money(yourPip);
 
       el.noteOut.textContent =
-        `Assumption: standard lot = 100,000 units. Pip size chosen by price heuristic (price ≥ 10 ⇒ 0.01).`;
+        `Standard lot = 100,000 base units. Results use your supplied conversion rate; no live rate is fetched.`;
     }
 
     async function copyResult(){
@@ -645,7 +648,7 @@
     }
 
     function clearAll(){
-      el.price.value = "";
+      el.price.value = "1";
       el.lots.value = "1";
       setError("");
       resetResults();

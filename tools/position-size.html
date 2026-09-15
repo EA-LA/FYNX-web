@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FYNX Tools — Forex Calculator</title>
@@ -456,11 +457,12 @@
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
-  <link rel="stylesheet" href="/assets/funded-system.css?v=29224ab9aed2">
-  <script src="/assets/js/journal-theme.js?v=014aa6fc47f8" defer></script>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-global">
 </head>
 
-<body>
+<body data-fynx-layout="standalone" data-fynx-section="TOOLS">
   <div class="animated-bg">
     <div class="grid-overlay"></div>
     <div class="gradient-orb orb-1"></div>
@@ -479,9 +481,9 @@
 
   <main>
     <div class="shell">
-      <div class="title">Forex Calculator</div>
+      <h1 class="title">Forex Calculator</h1>
       <div class="subtitle">
-        Position sizing with live FX price (auto-fetch) and pip value computation. Black/white “FYNX” style.
+        Position sizing from your risk budget and stop distance. Use manual prices when the external rate service is unavailable.
         For XAU/USD (gold), price is manual (most free FX endpoints do not provide metals reliably).
       </div>
 
@@ -497,18 +499,20 @@
           </div>
 
           <div class="row">
-            <label>Live Price</label>
+            <label>Price source</label>
             <div class="pill">
               <span id="priceStatus">—</span>
               <strong class="mono" id="priceValue">—</strong>
             </div>
           </div>
 
+          <button class="btn" type="button" id="manualModeBtn">Use manual price</button>
           <div class="row" id="manualPriceRow" style="display:none;">
             <label for="manualPrice">Manual Price</label>
             <input id="manualPrice" class="field mono" type="text" inputmode="decimal" placeholder="e.g. 2042.50" />
           </div>
 
+          <div class="row"><label for="quoteUsdRate">Quote currency → USD rate</label><input class="field" id="quoteUsdRate" type="number" min="0" step="any" placeholder="For cross pairs: USD per 1 quote unit" /></div>
           <div class="divider"></div>
 
           <div class="row">
@@ -661,6 +665,7 @@
 
     // State
     let usePercentRisk = true;
+    let manualMode = false;
     let currentPrice = 0;
     let isLoading = false;
     let timer = null;
@@ -704,7 +709,7 @@
       isLoading = loading;
       els.calcBtn.classList.toggle("disabled", loading);
       els.refreshBtn.classList.toggle("disabled", loading);
-      els.priceStatus.textContent = loading ? "Loading..." : (currentPrice>0 ? "Live" : "—");
+      els.priceStatus.textContent = loading ? "Loading..." : (currentPrice>0 ? (els.manualPriceRow.style.display !== "none" ? "Manual" : "External rate") : "—");
     }
 
     function baseQuote(pair){
@@ -734,7 +739,7 @@
     ========================== */
     async function fxConvert(from, to){
       const url = `https://api.exchangerate.host/convert?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
-      const res = await fetch(url, { cache: "no-store" });
+      const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(8000) });
       if (!res.ok) throw new Error("Network error");
       const data = await res.json();
       const val = data && (data.result ?? data.info?.rate);
@@ -747,7 +752,7 @@
       setMessage("");
       const pair = els.pair.value;
 
-      if (isGoldPair(pair)){
+      if (manualMode || isGoldPair(pair)){
         setLoading(false);
         els.manualPriceRow.style.display = "grid";
         els.priceStatus.textContent = "Manual";
@@ -762,14 +767,18 @@
       try{
         const { base, quote } = baseQuote(pair);
         const price = await fxConvert(base, quote);
+        if (manualMode || pair !== els.pair.value) return;
         currentPrice = price;
         els.priceValue.textContent = displayedPrice(pair, currentPrice);
-        els.priceStatus.textContent = "Live";
+        els.priceStatus.textContent = "External rate";
       } catch (e){
-        currentPrice = 0;
-        els.priceValue.textContent = "—";
-        els.priceStatus.textContent = "—";
-        setMessage("Live price not available. If you're on file://, deploy on GitHub Pages and reload.");
+        manualMode = true;
+        stopAutoUpdates();
+        els.manualPriceRow.style.display = "grid";
+        currentPrice = parseFloat(els.manualPrice.value) || 0;
+        els.priceValue.textContent = displayedPrice(pair, currentPrice);
+        els.priceStatus.textContent = "Manual";
+        setMessage("External rates unavailable. Enter a current manual price; cross pairs also need a quote-to-USD rate.");
       } finally{
         setLoading(false);
       }
@@ -779,7 +788,7 @@
       stopAutoUpdates();
       refreshPrice();
       timer = setInterval(() => {
-        if (!isGoldPair(els.pair.value)) refreshPrice();
+        if (!manualMode && !isGoldPair(els.pair.value)) refreshPrice();
       }, 10000);
     }
     function stopAutoUpdates(){
@@ -791,7 +800,7 @@
        PIP VALUE (USD)
     ========================== */
     async function pipValuePerLotUSD(pair, price){
-      const { quote } = baseQuote(pair);
+      const { base, quote } = baseQuote(pair);
       const pipSize = pipSizeForPair(pair);
       const contract = contractSizeForPair(pair);
 
@@ -799,7 +808,9 @@
 
       if (quote === "USD") return pipValueQuote;
 
-      const qToUsd = await fxConvert(quote, "USD");
+      if (base === "USD") return pipValueQuote / price;
+      const manualRate = Number(document.getElementById("quoteUsdRate").value);
+      const qToUsd = manualRate > 0 ? manualRate : await fxConvert(quote, "USD");
       return pipValueQuote * qToUsd;
     }
 
@@ -826,7 +837,7 @@
       const rd = parseFloat(els.riskDollars.value) || 0;
       const stopPips = parseFloat(els.stopPips.value) || 0;
 
-      if (isGoldPair(pair)){
+      if (isGoldPair(pair) || els.manualPriceRow.style.display !== "none"){
         currentPrice = parseFloat(els.manualPrice.value) || 0;
         els.priceValue.textContent = displayedPrice(pair, currentPrice);
         els.priceStatus.textContent = "Manual";
@@ -839,7 +850,7 @@
         if (rd <= 0) return setMessage("Risk must be greater than 0.");
       }
       if (stopPips <= 0) return setMessage("Stop pips must be greater than 0.");
-      if (!currentPrice || currentPrice <= 0) return setMessage("Live price not available. Please try again.");
+      if (!currentPrice || currentPrice <= 0) return setMessage("Enter a positive manual price or refresh the external rate.");
 
       const riskUSD = computeAccountRiskUSD();
 
@@ -956,7 +967,7 @@
       setMessage("");
       const presets = loadPresets();
       if (presets.length >= MAX_FREE_PRESETS){
-        return setMessage("Free preset limit reached (3). Add Pro later if you want unlimited presets.");
+        return setMessage("You can save up to 3 presets on this device.");
       }
 
       const cur = getCurrentInputs();
@@ -1053,13 +1064,19 @@
       });
 
       els.manualPrice.addEventListener("input", () => {
-        if (isGoldPair(els.pair.value)){
+        if (els.manualPriceRow.style.display !== "none"){
           currentPrice = parseFloat(els.manualPrice.value) || 0;
           els.priceValue.textContent = displayedPrice(els.pair.value, currentPrice);
         }
       });
 
-      els.refreshBtn.addEventListener("click", refreshPrice);
+      document.getElementById("manualModeBtn").addEventListener("click", () => {
+        manualMode = true; stopAutoUpdates(); setLoading(false);
+        els.manualPriceRow.style.display = "grid";
+        els.priceStatus.textContent = "Manual";
+        setMessage("Use your broker’s current price. Cross pairs also require a quote-to-USD rate.");
+      });
+      els.refreshBtn.addEventListener("click", () => { manualMode = false; refreshPrice(); });
       els.calcBtn.addEventListener("click", calculate);
 
       els.savePresetBtn.addEventListener("click", savePreset);
