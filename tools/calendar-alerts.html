@@ -531,10 +531,10 @@
 
           <div class="button-row">
             <button class="btn primary" id="addAlertBtn">
-              <i class="fas fa-plus"></i> Add Alert
+              <i class="fas fa-plus"></i> Save browser alert
             </button>
             <button class="btn secondary" id="clearAllBtn">
-              <i class="fas fa-trash"></i> Clear All
+              <i class="fas fa-trash"></i> Clear browser alerts
             </button>
           </div>
 
@@ -592,7 +592,7 @@
       <div class="alerts-wrap">
         <div class="alerts-head">
           <div>
-            <strong style="font-size:1rem;">Saved Alerts</strong>
+            <strong style="font-size:1rem;">Browser alerts</strong>
             <div class="hint" style="margin-top:.25rem;">Events are checked automatically every 20 seconds while this page is open.</div>
           </div>
         </div>
@@ -956,5 +956,6 @@
     setInterval(checkAlerts, 20000);
   </script>
 
+<script type="module" src="/assets/js/cloud-reminders.js?v=20260915-cloud"></script>
 </body>
 </html>

@@ -88,7 +88,7 @@ const DEFAULT_PREFERENCES = {
 const DEFAULT_SECURITY_SETTINGS = {
   loginAlerts: true,
   twoFactor: {
-    status: "coming_soon",
+    status: "activation_pending",
     enrolledAt: null,
     method: null
   },

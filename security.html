@@ -26,7 +26,7 @@ body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,25
 <div class="card"><h3 style="font-size:14px;margin-bottom:8px">Verification & Controls</h3>
 <div class="row"><span>Email verification</span><div style="display:flex;gap:8px;align-items:center"><span id="verifyStatus" style="font-size:12px">Checking...</span><button class="btn" id="resendBtn" type="button">Resend email</button></div></div>
 <div class="row"><span>Login alerts</span><button class="switch" id="loginAlertsSwitch" type="button"><span class="knob"></span></button></div>
-<div class="row"><span>Two-factor authentication</span><span style="font-size:12px;color:#777">Coming later (structure ready)</span></div>
+<div id="mfaSettings" style="padding:16px 0"><h3>Two-factor authentication</h3><p role="status" style="margin:12px 0">Checking authenticator protection…</p><button class="btn" type="button" disabled>Set up authenticator</button></div>
 </div>
 <div class="card"><h3 style="font-size:14px;margin-bottom:8px">Active Sessions</h3><div id="sessionList" style="font-size:12px;color:#777">Loading sessions...</div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" id="logoutCurrentBtn" type="button">Log out current session</button><button class="btn danger" id="logoutAllBtn" type="button">Log out all devices</button></div></div>
 </div></main></div>
@@ -56,4 +56,5 @@ onAuthStateChanged(auth, async(user)=>{ if(!user) return; const seeded = await b
 
 mountNotificationBell();
 </script>
+<script type="module" src="/assets/js/mfa.js?v=20260915-cloud"></script>
 </body></html>

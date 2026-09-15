@@ -595,6 +595,7 @@
       signInWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import { auth } from "./firebase.js";
+    import { withMfa } from "../assets/js/mfa.js?v=20260915-cloud";
     import { getOwnerAccess } from "../assets/js/waitlist-mode.js?v=6ae3ec38a7f0";
     async function enterWorkspace(){
       if (!(await getOwnerAccess(auth.currentUser))) {
@@ -633,7 +634,7 @@
     loginGoogleBtn.addEventListener("click", async () => {
       try{
         const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
+        await withMfa(() => signInWithPopup(auth, provider));
         setMode("live");
         localStorage.setItem("fynx_auth_email", auth.currentUser?.email || "");
         sessionState.trackActivity("login-google");
@@ -644,7 +645,7 @@
     loginAppleBtn.addEventListener("click", async () => {
       try{
         const provider = new OAuthProvider("apple.com");
-        await signInWithPopup(auth, provider);
+        await withMfa(() => signInWithPopup(auth, provider));
         setMode("live");
         localStorage.setItem("fynx_auth_email", auth.currentUser?.email || "");
         sessionState.trackActivity("login-apple");
@@ -657,7 +658,7 @@
       try{
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
-        await signInWithEmailAndPassword(auth, email, password);
+        await withMfa(() => signInWithEmailAndPassword(auth, email, password));
         setMode("live");
         localStorage.setItem("fynx_auth_email", auth.currentUser?.email || email || "");
         sessionState.trackActivity("login-email");

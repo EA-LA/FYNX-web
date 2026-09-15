@@ -1,3 +1,4 @@
+import { withMfa } from "../assets/js/mfa.js?v=20260915-cloud";
 import { auth, authPersistenceReady } from "./firebase.js";
 import {
   GoogleAuthProvider,
@@ -12,11 +13,11 @@ await authPersistenceReady;
 export async function loginWithGoogle() {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
-  return signInWithPopup(auth, provider);
+  return withMfa(() => signInWithPopup(auth, provider));
 }
 
 export async function loginWithEmail(email, password) {
-  return signInWithEmailAndPassword(auth, email, password);
+  return withMfa(() => signInWithEmailAndPassword(auth, email, password));
 }
 
 export async function signupWithEmail(email, password) {

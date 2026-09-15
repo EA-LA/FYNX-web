@@ -2,6 +2,20 @@
 
 Audit date: September 15, 2026. Scope: all 79 HTML pages and their local JavaScript, stylesheets, links, embedded modules, and data paths in the FYNX-web repository.
 
+## September 15 follow-up: Mailgun, reminders and cloud learning
+
+- [x] Connected the existing Mailgun secret to server-side email reminders using the owner-approved `notifications@mail.fynxfunded.com` sender.
+- [x] Mailgun accepted a test-mode request; no email was delivered during testing.
+- [x] Deployed cloud reminder create/list/cancel and a scheduler running every minute, independent of an open browser tab.
+- [x] Enforced verified account email, per-reminder consent, ownership, future dates and request limits.
+- [x] Added account-backed outline review progress and recent quiz history. These track existing outline content, not a new full course curriculum.
+- [x] Production integration tests passed for save/read, cross-user isolation, quiz history and reminder cancellation. Temporary QA accounts and records were removed.
+- [x] Implemented authenticator enrollment/removal and login challenge screens.
+- [ ] **Two-factor activation remains pending at the owner's request.** Firebase requires an Identity Platform upgrade; the project remains unupgraded with MFA disabled. Enrollment is disabled in the UI.
+- [ ] Verify real inbox delivery. Provider acceptance in test mode does not prove inbox arrival. Add delivery/bounce webhooks if inbox-level reporting is needed.
+
+Background delivery added here is email, not browser push. Full implementation and deployment notes: [backend/README.md](backend/README.md).
+
 ## What is complete
 
 - [x] Applied one roadmap-inspired visual system to every HTML route, including workspace, tools, markets, learning, account and authentication screens.
@@ -58,8 +72,8 @@ A passing calculation example is not a full financial-model certification. Broke
 | Journal | Guest samples labeled; authenticated Firestore path; explicit actual P/L; regression checks | Signed-in create/reload/read test; permissions/index verification; review older records created with synthetic P/L |
 | Calculators | Search/directory; local math; tested pip, R:R and manual position sizing | Exhaustive pair/contract/fee edge cases; authenticated market-rate provider for automatic rates |
 | News | Module tabs; external RSS integration; safe failed-feed state | Stable production proxy/provider, rate-limit handling and source freshness monitoring |
-| Calendar | Module tabs; economic widget theme sync; clocks; local reminders | Authoritative exchange holidays; server reminders/background push if required |
-| Learn | Topic navigation, real content counts, glossary/study cards; scored 10-question quiz | Full lesson content beyond outlines; progress persistence and completion tracking |
+| Calendar | Module tabs; economic widget theme sync; clocks; local reminders | Authoritative exchange holidays; server email reminders added; browser push remains optional |
+| Learn | Topic navigation, real content counts, glossary/study cards; scored 10-question quiz | Full lesson content beyond outlines; cloud outline reviews and quiz history now implemented |
 | Profile | Canonical profile/trade reads; empty/error states; Settings edit flow | Signed-in profile edit/reload and cross-device test; photo upload and Storage rules |
 | Account/security | Firebase integration and preferences/security interfaces | OAuth/email reset/verification round trips; two-factor implementation; account lifecycle policy |
 
@@ -76,9 +90,9 @@ A passing calculation example is not a full financial-model certification. Broke
 
 ### Product capabilities still missing or limited
 
-- [ ] Complete two-factor authentication; current security model explicitly marks it `coming_soon`.
-- [ ] Add cloud learning progress, completed lessons and assessment history if cross-device learning is expected.
-- [ ] Add a server-side reminder/push pipeline if alerts must fire when the page is closed. Current calendar alerts are browser-local.
+- [ ] Activate and test two-factor authentication after the owner authorizes Identity Platform. Implementation exists; activation is explicitly pending.
+- [x] Added and tested cloud outline review progress and quiz history. Full lesson content remains separate work.
+- [x] Added server-side email reminders for closed-page delivery. Browser push remains separate work.
 - [ ] Verify actual outbound email delivery separately from in-app notification records and preference switches.
 - [ ] Audit generated holiday coverage against each exchange, including one-off closures, early closes and dates beyond 2027.
 - [ ] Replace static correlation/COT/liquidity descriptions with real data ingestion if these are intended to be live analytical products.
@@ -130,7 +144,7 @@ A passing calculation example is not a full financial-model certification. Broke
 | [learn/risk-management.html](learn/risk-management.html) | Educational link page | Static introduction linking to its full learning or resource destination. |
 | [learn/topic.html](learn/topic.html) | Local educational content | Actual counts displayed. Lesson outlines, study answers and glossary; links to scored quiz. |
 | [learn/trading-psychology.html](learn/trading-psychology.html) | Educational link page | Static introduction linking to its full learning or resource destination. |
-| [learn.html](learn.html) | Local education hub | Learning and quiz tabs work. No verified cloud course-progress tracking. |
+| [learn.html](learn.html) | Local education hub | Learning and quiz tabs work. Cloud outline review progress and quiz history added and API-tested. |
 | [market-analysis.html](market-analysis.html) | External widgets + education | TradingView charts/news/technicals; third-party coverage and entitlements apply. |
 | [markets/correlation.html](markets/correlation.html) | Mixed external/reference | Qualitative pair examples plus external comparison widget; static text is not a measured correlation matrix. |
 | [markets/cot.html](markets/cot.html) | Reference/external | COT interface; not a verified automated CFTC positions ingestion pipeline. |
@@ -158,10 +172,10 @@ A passing calculation example is not a full financial-model certification. Broke
 | [resources/trading-glossary.html](resources/trading-glossary.html) | Educational link page | Static introduction linking to its full learning or resource destination. |
 | [risk-disclosure.html](risk-disclosure.html) | Static policy content | Styled disclosure and trading risk information. |
 | [risk-management.html](risk-management.html) | Local educational content | Educational page; examples are not a connected account risk engine. |
-| [security.html](security.html) | Partially implemented | Password/verification controls exist; two-factor authentication is marked coming soon. |
+| [security.html](security.html) | Partially implemented | Password/verification controls exist; authenticator UI implemented, Identity Platform activation pending by owner choice. |
 | [tools/atr-stop.html](tools/atr-stop.html) | Local calculation | User-entered ATR, entry and multiplier; does not fetch ATR from charts. |
 | [tools/breakeven.html](tools/breakeven.html) | Local calculation | Spread/commission estimate; confirm pair/contract assumptions before using beyond supported inputs. |
-| [tools/calendar-alerts.html](tools/calendar-alerts.html) | Device-local reminders — tested | Add/reload persistence passes. Notifications require permission and the page to remain open; no server scheduler. |
+| [tools/calendar-alerts.html](tools/calendar-alerts.html) | Device-local reminders — tested | Local reminders require an open page. New verified-email reminders run on the server every minute; save/cancel tested. |
 | [tools/compound.html](tools/compound.html) | Local projection | Assumed return and deposits; projected balance is not investment performance. |
 | [tools/correlation.html](tools/correlation.html) | Local calculation | Pearson correlation from supplied series; not an automatic live correlation feed. |
 | [tools/crypto.html](tools/crypto.html) | Local calculation | User-supplied crypto trade inputs; not exchange-connected execution or balances. |
