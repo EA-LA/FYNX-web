@@ -36,8 +36,8 @@
   </style>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
-  <link rel="stylesheet" href="/assets/editorial-pages.css?v=20260915">
-  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-global">
+  <link rel="stylesheet" href="/assets/editorial-pages.css?v=20260915-smooth">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-smooth">
 </head>
 <body class="editorial-page editorial-partners" data-fynx-layout="standalone" data-fynx-section="FINANCE WORLD">
   <script>
@@ -73,7 +73,11 @@
     <div class="disclosure-strip">Disclosure: FYNX may earn commissions from partner links. Always review each platform’s terms, rules, and risk disclosures before signing up.</div>
 
     <div class="network-overview"><div><span class="network-arrow">↗</span> Explore the network.<br><strong>Find the right fit for your process.</strong></div><div><strong>08</strong><small>Listed platforms</small></div><div><strong>03</strong><small>Categories</small></div><a href="affiliate-disclosure.html">How partnerships work ↗</a></div>
-    <div class="network-layout"><aside class="network-index"><div class="editorial-label">EXPLORE THE NETWORK</div><a href="#funded">01 <span>Funded platforms</span> ↗</a><a href="#brokers">02 <span>Brokers</span> ↗</a><a href="#trading-tools">03 <span>Trading tools</span> ↗</a><p>Choose with clarity.<br>Review each platform’s terms, costs, and risks before getting started.</p><a href="risk-disclosure.html">Read risk disclosure ↗</a></aside><div class="network-sections">
+    <div class="partner-toolbar">
+      <div class="partner-search"><label for="partnerSearch">Find a platform</label><input id="partnerSearch" type="search" placeholder="Search platforms…" autocomplete="off" /><button type="button" id="clearPartnerSearch" hidden>Clear</button></div>
+      <p id="partnerResultCount" role="status" aria-live="polite">8 platforms</p>
+    </div>
+    <div class="network-layout"><aside class="network-index"><div class="editorial-label">EXPLORE THE NETWORK</div><a href="#all" data-partner-category="all"><span>All platforms</span> 08</a><a href="#funded" data-partner-category="funded">01 <span>Funded platforms</span> ↗</a><a href="#brokers" data-partner-category="brokers">02 <span>Brokers</span> ↗</a><a href="#trading-tools" data-partner-category="trading-tools">03 <span>Trading tools</span> ↗</a><p>Choose with clarity.<br>Review each platform’s terms, costs, and risks before getting started.</p><a href="risk-disclosure.html">Read risk disclosure ↗</a></aside><div class="network-sections">
     <section class="partner-section" id="funded">
       <h2>Funded Platforms</h2>
       <div class="partners-grid">
@@ -84,7 +88,8 @@
     </section>
 
     <section class="partner-section" id="brokers">
-      <h2>Brokers</h2>
+      <div class="broker-heading"><div class="editorial-label">02 / BROKER DIRECTORY</div><h2>Find your market connection.</h2><p>Explore the listed brokers and visit their official websites to review account types, market access, and platform details.</p></div>
+      <details class="broker-guide"><summary>What to compare before choosing a broker <span aria-hidden="true">+</span></summary><div class="broker-guide-grid"><div><strong>Account &amp; eligibility</strong><p>Check the legal entity, regulator, and availability in your country.</p></div><div><strong>Trading costs</strong><p>Review spreads, commissions, financing, and withdrawal charges.</p></div><div><strong>Platform &amp; execution</strong><p>Check supported instruments, order types, and available trading platforms.</p></div></div></details>
       <div class="partners-grid">
         <article class="partner-card"><div class="partner-top"><h3>IC Markets</h3><span class="partner-badge">Partner</span></div><div class="partner-category">Broker</div><p>Multi-asset brokerage platform with forex, indices, and CFD market access.</p><div class="affiliate-chip">FYNX may earn a commission from some partner links.</div><a class="partner-cta" href="https://www.icmarkets.com" target="_blank" rel="noopener noreferrer">View Broker</a></article>
         <article class="partner-card"><div class="partner-top"><h3>Pepperstone</h3><span class="partner-badge">Partner</span></div><div class="partner-category">Broker</div><p>Online broker offering access to trading platforms, pricing models, and risk tools.</p><div class="affiliate-chip">FYNX may earn a commission from some partner links.</div><a class="partner-cta" href="https://pepperstone.com" target="_blank" rel="noopener noreferrer">View Broker</a></article>
@@ -100,6 +105,7 @@
       </div>
     </section>
 
+    <div class="partner-empty" id="partnerEmpty" hidden><h2>No platforms found.</h2><p>Try another name or browse all categories.</p><button type="button" id="resetPartnerFilters">Show all platforms</button></div>
     </div></div>
     <div class="bottom-disclaimer">FYNX Finance World is not a broker, investment adviser, exchange, or financial adviser. Partner listings are for informational purposes only and do not guarantee results, profits, account approval, or payouts.</div>
   </main>
@@ -111,5 +117,6 @@
     </div>
     <div class="copyright">© 2026 FYNX Finance World. All rights reserved.</div>
   </footer>
+  <script src="/assets/js/partners-directory.js?v=20260915-smooth" defer></script>
 </body>
 </html>

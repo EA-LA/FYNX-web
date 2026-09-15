@@ -170,7 +170,8 @@
   <script type="module" src="assets/js/session-bootstrap.js"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-global">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-smooth">
+  <script src="/assets/js/module-loader.js?v=20260915-smooth" defer></script>
 </head>
 
 <body data-view="news" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD">
@@ -194,7 +195,7 @@
         <div class="mode-content active" data-news-panel="feed">
           <div class="module-grid single">
             <article class="module-card">
-              <iframe class="module-frame news-feed" title="News Feed" src="news/news.html" loading="lazy"></iframe>
+              <iframe class="module-frame news-feed" title="News Feed" data-src="news/news.html" loading="lazy"></iframe>
             </article>
           </div>
         </div>
@@ -203,11 +204,11 @@
           <div class="module-grid">
             <article class="module-card">
               <h2 class="module-title">Interest Rates</h2>
-              <iframe class="module-frame" title="Interest Rates" src="tools/interest-rates.html" loading="lazy"></iframe>
+              <iframe class="module-frame" title="Interest Rates" data-src="tools/interest-rates.html" loading="lazy"></iframe>
             </article>
             <article class="module-card">
               <h2 class="module-title">Economic Indicators Heatmap</h2>
-              <iframe class="module-frame" title="Economic Indicators Heatmap" src="tools/heatmap.html" loading="lazy"></iframe>
+              <iframe class="module-frame" title="Economic Indicators Heatmap" data-src="tools/economic-indicators-heatmap.html" loading="lazy"></iframe>
             </article>
           </div>
         </div>
@@ -216,15 +217,15 @@
           <div class="module-grid">
             <article class="module-card">
               <h2 class="module-title">Markets</h2>
-              <iframe class="module-frame" title="Markets" src="markets/index.html" loading="lazy"></iframe>
+              <iframe class="module-frame" title="Markets" data-src="markets/index.html" loading="lazy"></iframe>
             </article>
             <article class="module-card">
               <h2 class="module-title">Currencies</h2>
-              <iframe class="module-frame" title="Currencies" src="markets/currencies.html" loading="lazy"></iframe>
+              <iframe class="module-frame" title="Currencies" data-src="markets/currencies.html" loading="lazy"></iframe>
             </article>
             <article class="module-card">
               <h2 class="module-title">Crypto</h2>
-              <iframe class="module-frame" title="Crypto" src="markets/crypto.html" loading="lazy"></iframe>
+              <iframe class="module-frame" title="Crypto" data-src="markets/crypto.html" loading="lazy"></iframe>
             </article>
           </div>
         </div>
@@ -233,27 +234,27 @@
           <div class="module-grid">
             <article class="module-card">
               <h2 class="module-title">Indicators</h2>
-              <iframe class="module-frame" title="Indicators" src="markets/indicators.html" loading="lazy"></iframe>
+              <iframe class="module-frame" title="Indicators" data-src="markets/indicators.html" loading="lazy"></iframe>
             </article>
             <article class="module-card">
               <h2 class="module-title">Patterns</h2>
-              <iframe class="module-frame" title="Patterns" src="markets/patterns.html" loading="lazy"></iframe>
+              <iframe class="module-frame" title="Patterns" data-src="markets/patterns.html" loading="lazy"></iframe>
             </article>
             <article class="module-card">
               <h2 class="module-title">Volatility</h2>
-              <iframe class="module-frame" title="Volatility" src="markets/volatility.html" loading="lazy"></iframe>
+              <iframe class="module-frame" title="Volatility" data-src="markets/volatility.html" loading="lazy"></iframe>
             </article>
             <article class="module-card">
               <h2 class="module-title">Correlation</h2>
-              <iframe class="module-frame" title="Correlation" src="markets/correlation.html" loading="lazy"></iframe>
+              <iframe class="module-frame" title="Correlation" data-src="markets/correlation.html" loading="lazy"></iframe>
             </article>
             <article class="module-card">
               <h2 class="module-title">Liquidity</h2>
-              <iframe class="module-frame" title="Liquidity" src="markets/liquidity.html" loading="lazy"></iframe>
+              <iframe class="module-frame" title="Liquidity" data-src="markets/liquidity.html" loading="lazy"></iframe>
             </article>
             <article class="module-card">
               <h2 class="module-title">Historical Data</h2>
-              <iframe class="module-frame" title="Historical Data" src="markets/historical-data.html" loading="lazy"></iframe>
+              <iframe class="module-frame" title="Historical Data" data-src="markets/historical-data.html" loading="lazy"></iframe>
             </article>
           </div>
         </div>
@@ -262,11 +263,11 @@
           <div class="module-grid">
             <article class="module-card">
               <h2 class="module-title">Commitments of Traders</h2>
-              <iframe class="module-frame" title="Commitments of Traders" src="markets/cot.html" loading="lazy"></iframe>
+              <iframe class="module-frame" title="Commitments of Traders" data-src="markets/cot.html" loading="lazy"></iframe>
             </article>
             <article class="module-card">
               <h2 class="module-title">Recent Topics Discussed</h2>
-              <iframe class="module-frame" title="Recent Topics Discussed" src="tools/recent-topics-discussed.html" loading="lazy"></iframe>
+              <iframe class="module-frame" title="Recent Topics Discussed" data-src="tools/recent-topics-discussed.html" loading="lazy"></iframe>
             </article>
           </div>
         </div>

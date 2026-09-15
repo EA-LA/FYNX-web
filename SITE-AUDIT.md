@@ -29,6 +29,21 @@ Audit date: September 15, 2026. Scope: all 79 HTML pages and their local JavaScr
 - [x] Home fallback publisher links are labeled and failed refreshes do not receive a false success timestamp.
 - [x] Retired the unused synthetic active-user/update counter script.
 
+## Follow-up: Brokers and smoother module loading
+
+- [x] Added a dedicated Brokers category view with a direct `partners.html#brokers` link.
+- [x] Added local instant search, category selection, result counts, clear/reset, and an accessible empty state.
+- [x] Added a collapsible broker-comparison guide without inventing ratings or partner terms.
+- [x] Tested Brokers filter (3 listings), Pepperstone search (1 listing), no-match state, and reset (8 listings).
+- [x] Checked the updated directory at 390px: no document overflow.
+- [x] Deferred inactive News, Calendar and Learn frames until their tabs are opened; already-loaded frames retain state.
+- [x] Verified News initially configures 1 frame instead of all 14; Calendar 1 instead of 3; Learn 1 instead of 2. This is a resource-loading improvement, not a measured page-speed score.
+- [x] Added Arrow keys/Home/End keyboard navigation for module tabs and verified tab activation.
+- [x] Corrected the News Macro tab's Economic Indicators link, which previously opened the simulated trading heatmap.
+- [x] Made the page canvas color consistent below the initial viewport, avoiding different black/white bands on long pages.
+
+Remaining broker work requires business/source verification: actual partner agreements, regional eligibility, fees and current regulatory entities. The directory links to existing official destinations; it does not claim verified pricing, rankings or universal availability.
+
 ## Verification limits
 
 Browser layout checks used local-only interception of the existing session-bootstrap and protect-route modules to inspect private templates. Production access rules were not changed. This verifies rendering, not authorization. Calculator/UI examples used an isolated browser; no production trades, accounts, password emails or waitlist entries were created. Cloud write/read round trips, OAuth provider configuration, Storage permissions and background delivery remain unverified.

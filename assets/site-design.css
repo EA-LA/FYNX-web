@@ -65,3 +65,7 @@ html body[data-fynx-layout=workspace] .hero{height:auto;flex-shrink:0}
 html body[data-fynx-layout] .tradingview-widget-container>style{display:none!important}
 html body[data-fynx-layout] .top-bar-right [data-journal-theme]{display:inline-grid;place-items:center}
 html body[data-fynx-layout] .site-data-notice{max-width:850px!important;border-left:2px solid var(--fynx-accent);background:var(--fynx-panel-2);padding:14px 18px!important;font-size:13px!important;line-height:1.7!important;margin:18px 0 24px!important;color:var(--fynx-muted)!important}
+/* Keep the canvas continuous when a long page scrolls beyond the initial viewport. */
+html[data-theme=dark]{background:#0b0c0c!important}
+html[data-theme=light]{background:#fff!important}
+html body[data-fynx-layout=standalone],html body[data-fynx-layout=resource]{height:auto;min-height:100vh}

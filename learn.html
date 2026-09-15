@@ -137,7 +137,8 @@
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
   <link rel="stylesheet" href="/assets/editorial-pages.css?v=20260915">
-  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-global">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-smooth">
+  <script src="/assets/js/module-loader.js?v=20260915-smooth" defer></script>
 </head>
 
 <body class="editorial-page editorial-learn-hub" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD">
@@ -161,7 +162,7 @@
           <div class="panel learn-frame-shell">
             <iframe id="learnFrame"
               title="FYNX learning content" class="learn-frame"
-              src="learn/topic.html?topic=stocks&section=howto">
+              data-src="learn/topic.html?topic=stocks&section=howto">
             </iframe>
           </div>
         </div>
@@ -170,7 +171,7 @@
           <div class="panel learn-frame-shell">
             <iframe id="quizFrame"
               title="FYNX learning content" class="learn-frame"
-              src="trading-quizzes.html">
+              data-src="trading-quizzes.html">
             </iframe>
           </div>
         </div>
