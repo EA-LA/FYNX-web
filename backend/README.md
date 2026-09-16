@@ -49,3 +49,17 @@ Provider documentation: https://firebase.google.com/docs/auth/web/totp-mfa
 - Mobile checks at 390px: no overflow or page errors on the new reminder, learning and security controls.
 
 Remaining: owner activation decision for MFA; then real MFA round-trip tests. Real inbox delivery and optional Mailgun delivery/bounce webhooks remain to be checked. Browser push while the page is closed is not included; background reminders here are email.
+
+## Maintained macroeconomic data
+
+`webMacroData` is a public GET endpoint (`?kind=rates` or `?kind=indicators`). It fetches BIS policy rates and World Bank WDI annual observations, with a six-hour Firestore cache and a five-minute HTTP cache. The cache preserves source observation dates and successful retrieval time. A refresh failure labels retained data stale; without a previous retrieval it returns HTTP 503. Provider requests are bounded by a 20-second timeout. There is no hard-coded numerical fallback.
+
+`macro-data.js` is copied into the existing backend, whose index exports `require('./macro-data').webMacroData`. Deploy with `firebase deploy --only functions:webMacroData --project fynx-c7a28`.
+
+Sources:
+- BIS: https://data.bis.org/topics/CBPOL — daily observations published weekly; the series' policy instrument may differ by economy.
+- World Bank: https://datahelpdesk.worldbank.org/knowledgebase/articles/898581 — most recent non-empty annual values for GDP growth, CPI inflation and modeled ILO unemployment. Each cell retains its own observation year.
+
+Official meeting-calendar links replace fixed meeting dates. No local forward calendar, inferred policy bias, economic strength ranking or surprise score is generated.
+
+Verified: 8 BIS rows and 24 World Bank rows from both providers; public production endpoint; six parser/validation tests; search and mobile/desktop theme layout; provider failure state. Inbox/mail features described above are independent of this endpoint.

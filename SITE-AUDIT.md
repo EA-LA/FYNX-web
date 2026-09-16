@@ -16,6 +16,18 @@ Audit date: September 15, 2026. Scope: all 79 HTML pages and their local JavaScr
 
 Background delivery added here is email, not browser push. Full implementation and deployment notes: [backend/README.md](backend/README.md).
 
+## Maintained economic data follow-up
+
+- [x] Public backend retrieves BIS policy rates and World Bank indicator data automatically after a six-hour cache expires.
+- [x] Every rate includes its observation date; each annual indicator includes its own year. Fetch time is shown separately.
+- [x] Official central-bank calendars replace hard-coded future meeting dates.
+- [x] Removed fixed policy biases, synthetic economic scores, surprise strengths and generated trading conclusions.
+- [x] Corrected homepage and Home hub indicator links that still opened the simulated heatmap.
+- [x] Tested live provider payloads (8 rates, 24 indicator observations), parser handling of zero/missing data, filters, dark/light themes, 390px/1440px layouts and unavailable-provider behavior.
+- [x] Failure states show either unavailable data or clearly labeled previous retrievals; no estimates fill gaps.
+
+World Bank indicators are annual context, not intraday releases. Official meeting dates remain on the banks' maintained calendars instead of a copied local schedule.
+
 ## What is complete
 
 - [x] Applied one roadmap-inspired visual system to every HTML route, including workspace, tools, markets, learning, account and authentication screens.
@@ -86,7 +98,7 @@ A passing calculation example is not a full financial-model certification. Broke
 - [ ] Run signed-in Journal save → reload → Profile statistics → second-device verification. New saves use actual P/L; historical synthetic records were not modified and need user review.
 - [ ] Confirm the correct Firebase Storage bucket. Configuration files contain both legacy `appspot.com` and `firebasestorage.app` names; no upload was made to determine the active bucket.
 - [ ] Connect an authenticated market-rate service or deliberately retain manual inputs. The existing exchangerate.host request returned `missing_access_key` during this audit. Do not put a private API key in public HTML.
-- [ ] Replace stale hard-coded central-bank rates/meeting dates and illustrative indicator scores with maintained sources before advertising them as current market intelligence.
+- [x] Replaced fixed central-bank rates with maintained BIS observations, stale meeting dates with official calendar links, and illustrative scores with published World Bank annual indicator values. Observation dates/years and source freshness are displayed; these are not advertised as real-time intelligence.
 
 ### Product capabilities still missing or limited
 
@@ -181,11 +193,11 @@ A passing calculation example is not a full financial-model certification. Broke
 | [tools/crypto.html](tools/crypto.html) | Local calculation | User-supplied crypto trade inputs; not exchange-connected execution or balances. |
 | [tools/currency.html](tools/currency.html) | Fixed examples + manual rates | Built-in currency rates are static; the interface now states this explicitly. |
 | [tools/economic-calendar.html](tools/economic-calendar.html) | External widget | TradingView events; theme re-render fixed, feed remains dependent on the provider. |
-| [tools/economic-indicators-heatmap.html](tools/economic-indicators-heatmap.html) | Illustrative/static | Hard-coded economic indicator scores; now labeled, not current measured data. |
+| [tools/economic-indicators-heatmap.html](tools/economic-indicators-heatmap.html) | Maintained World Bank annual data | 24 published GDP growth, CPI inflation and unemployment observations across 8 economies. Individual reference years shown; no invented scores, surprises or live-data claim. |
 | [tools/fibonacci.html](tools/fibonacci.html) | Local calculation | Retracement levels from supplied highs/lows. |
 | [tools/forex.html](tools/forex.html) | Working tool directory | Former empty implementation placeholder now links to working position-size and pip tools. |
 | [tools/heatmap.html](tools/heatmap.html) | Simulated demo | Sample values/random variation; prominent DEMO label added. |
-| [tools/interest-rates.html](tools/interest-rates.html) | Stale reference snapshot | Hard-coded rates and spring/summer 2026 meeting dates; now explicitly disclosed, not current policy data. |
+| [tools/interest-rates.html](tools/interest-rates.html) | Maintained BIS observations | 8 policy-rate series, original observation dates, official meeting-calendar links, and source-aware comparison. Six-hour cache; BIS publishes daily observations weekly. |
 | [tools/liquidation-guard.html](tools/liquidation-guard.html) | Local estimate | User-input leverage/liquidation estimate; venue-specific margin rules are not connected. |
 | [tools/margin.html](tools/margin.html) | Local estimate | User-input required-margin calculation; contract and broker rules need validation. |
 | [tools/market-holidays.html](tools/market-holidays.html) | Rule-generated/partial reference | 2025–2027 local date rules, not an authoritative complete exchange calendar. |
