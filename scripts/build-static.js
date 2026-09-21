@@ -27,3 +27,6 @@ for (const { page, layout } of inventory) {
   if (!html.includes(`data-fynx-layout="${layout}"`)) throw new Error(`${page}: missing design layout`);
 }
 console.log(`Shared design verified on all ${inventory.length} HTML pages.`);
+
+require('./build-search-metadata.cjs');
+require('./build-learning.cjs');

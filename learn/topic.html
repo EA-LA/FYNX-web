@@ -4,7 +4,7 @@
   <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX — Learn</title>
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="../assets/theme.js" defer></script>
   <style>
@@ -139,6 +139,14 @@
   <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
   <link rel="stylesheet" href="/assets/editorial-pages.css?v=20260915">
   <link rel="stylesheet" href="/assets/site-design.css?v=20260915-smooth">
+
+<title>Learn — Topic | FYNX Finance World</title>
+<meta name="description" content="Learn — Topic. Explore this resource from FYNX Finance World.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://www.fynxfinanceworld.com/learn/topic.html">
+<meta property="og:title" content="Learn — Topic | FYNX Finance World">
+<meta property="og:description" content="Learn — Topic. Explore this resource from FYNX Finance World.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/learn/topic.html">
 </head>
 <body class="editorial-page editorial-learning" data-fynx-layout="standalone" data-fynx-section="LEARNING">
   <div class="animated-bg">
@@ -173,9 +181,9 @@
 
   <script>
     const params = new URLSearchParams(location.search);
-    const requestedTopic = (params.get('topic') || 'forex').toLowerCase();
+    const requestedTopic = (params.get('topic') || document.body.dataset.learningTopic || 'forex').toLowerCase();
     const topic = ['stocks','funds','futures','forex','crypto','indices','bonds','economy','options'].includes(requestedTopic) ? requestedTopic : 'forex';
-    const requestedSection = (params.get('section') || 'howto').toLowerCase();
+    const requestedSection = (params.get('section') || document.body.dataset.learningSection || 'howto').toLowerCase();
     const section = ['howto','quizzes','glossary'].includes(requestedSection) ? requestedSection : 'howto';
 
     const labels = {
@@ -347,7 +355,7 @@
     };
 
     function linkFor(nextTopic, sec){
-      return 'topic.html?topic=' + encodeURIComponent(nextTopic) + '&section=' + encodeURIComponent(sec);
+      return '/learn/' + encodeURIComponent(nextTopic) + '-' + encodeURIComponent(sec) + '.html';
     }
 
     function renderTopicChips(){
@@ -477,7 +485,7 @@
 
       document.getElementById('brandTitle').innerHTML = `<i class="fas ${icons[safeTopic] || 'fa-graduation-cap'}"></i> ${labels[safeTopic]}`;
       document.getElementById('pageTitle').textContent = `${labels[safeTopic]} — ${sectionLabels[safeSection]}`;
-      document.getElementById('pageDesc').textContent = `Explore ${labels[safeTopic]} through lesson outlines, study questions, and a practical glossary.`;
+      document.getElementById('pageDesc').textContent = ({howto: `Study ${labels[safeTopic]} trading with lesson outlines covering market concepts, execution and risk management.`, quizzes: `Test your ${labels[safeTopic]} knowledge with study questions and explanations. Review concepts and practice before trading.`, glossary: `Learn ${labels[safeTopic]} terminology with a practical glossary of market concepts and trading definitions.`})[safeSection];
 
       document.getElementById('chipHowto').href = linkFor(safeTopic, 'howto');
       document.getElementById('chipQuizzes').href = linkFor(safeTopic, 'quizzes');
@@ -487,6 +495,9 @@
       document.getElementById('chipQuizzes').classList.toggle('active', safeSection === 'quizzes');
       document.getElementById('chipGlossary').classList.toggle('active', safeSection === 'glossary');
 
+      document.title = `${labels[safeTopic]} — ${sectionLabels[safeSection]} | FYNX Finance World`;
+      document.querySelector('link[rel=canonical]').href = 'https://www.fynxfinanceworld.com' + linkFor(safeTopic, safeSection);
+      document.querySelector('meta[name=description]').content = document.getElementById('pageDesc').textContent;
       renderTopicChips();
       renderKpis();
 

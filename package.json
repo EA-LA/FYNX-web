@@ -3,5 +3,7 @@
     "build": "node scripts/build-static.js",
     "test": "node scripts/test-journal-record.js"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "jsdom": "^20.0.3"
+  }
 }

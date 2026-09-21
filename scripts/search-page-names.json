@@ -1,0 +1,218 @@
+{
+  "calculator.html": {
+    "title": "Trading Calculators: Forex, Stocks, Risk & Options | FYNX",
+    "description": "Explore trading calculators for position size, pip value, margin, risk-reward, options and compounding. Plan trades using your own inputs."
+  },
+  "calendar.html": {
+    "title": "Economic Calendar & Market Event Tools | FYNX",
+    "description": "Browse economic calendar tools, event reminders, market hours and holiday references to prepare for scheduled market events."
+  },
+  "home.html": {
+    "title": "Market Overview: Trading Tools, News & Learning | FYNX",
+    "description": "Explore the FYNX market overview with trading tools, financial news and links to finance learning resources."
+  },
+  "home/hub.html": {
+    "title": "Macro Research Hub: Rates, Indicators & Topics | FYNX",
+    "description": "Find central bank rate comparisons, economic indicators and curated macro research topics in the FYNX research hub."
+  },
+  "market-analysis.html": {
+    "title": "Market Analysis: Charts, Technicals & Watchlists | FYNX",
+    "description": "Explore market charts, technical indicators and watchlists covering forex, crypto, stocks and indices in one analysis workspace."
+  },
+  "markets/correlation.html": {
+    "title": "Market Correlation & Portfolio Exposure Guide | FYNX",
+    "description": "Explore relationships between markets and learn how correlated positions can increase exposure to the same market risk."
+  },
+  "markets/cot.html": {
+    "title": "Commitments of Traders: Positioning Reference | FYNX",
+    "description": "Explore a reference view of trader positioning and Commitments of Traders concepts. Verify current positions against official CFTC reports."
+  },
+  "markets/crypto.html": {
+    "title": "Crypto Market Overview: Bitcoin, Ethereum & Altcoins | FYNX",
+    "description": "Explore Bitcoin, Ethereum and other cryptocurrency markets with charts and market context for your research."
+  },
+  "markets/currencies.html": {
+    "title": "Forex Markets: Currency Pairs & Crosses | FYNX",
+    "description": "Explore forex currency pairs, compare crosses and review currency market context before planning a trade."
+  },
+  "markets/historical-data.html": {
+    "title": "Historical Market Data: Sample Dataset Explorer | FYNX",
+    "description": "Explore sample historical market data to practice reviewing price movements. This reference page is not a live historical-data feed."
+  },
+  "markets/index.html": {
+    "title": "Financial Markets: Forex, Crypto & Market Research | FYNX",
+    "description": "Browse forex and crypto market views, technical indicators, volatility, correlations and market research references."
+  },
+  "markets/indicators.html": {
+    "title": "Technical Indicators: Trend & Momentum Research | FYNX",
+    "description": "Review technical indicator concepts for trend strength, momentum and market conditions before evaluating a trade."
+  },
+  "markets/liquidity.html": {
+    "title": "Market Liquidity: Sessions, Sweeps & Trading Context | FYNX",
+    "description": "Learn how trading sessions and liquidity conditions influence market movement, price sweeps and execution."
+  },
+  "markets/patterns.html": {
+    "title": "Trading Chart Patterns: Reference Guide | FYNX",
+    "description": "Browse chart pattern references to study market structure and trading setups. Use patterns alongside risk management and market context."
+  },
+  "markets/volatility.html": {
+    "title": "Market Volatility: ATR & Trading Risk Context | FYNX",
+    "description": "Explore volatility and ATR concepts to understand market movement, stop placement and changing trading risk."
+  },
+  "news/challenges.html": {
+    "title": "Trading Practice Challenges & Progress | FYNX",
+    "description": "Explore trading practice challenges across forex, crypto, stocks, futures and options to build a consistent learning routine."
+  },
+  "news/heatmap.html": {
+    "title": "Stock, Crypto & Forex Market Heatmaps | FYNX",
+    "description": "Compare relative strength and weakness across stock, crypto and forex markets with embedded market heatmaps."
+  },
+  "news/news.html": {
+    "title": "Financial Market Headlines: Forex, Crypto & Stocks | FYNX",
+    "description": "Browse financial and world headlines covering forex, crypto, stocks, commodities and macroeconomic developments."
+  },
+  "news/sentiment.html": {
+    "title": "Trading Sentiment: Market Mood & Psychology | FYNX",
+    "description": "Explore market sentiment and trading psychology across forex, crypto, stocks, futures and options as context for research."
+  },
+  "news.html": {
+    "title": "Financial News Hub: Headlines, Heatmaps & Sentiment | FYNX",
+    "description": "Find financial headlines, market heatmaps, sentiment resources and trading practice challenges in the FYNX news hub."
+  },
+  "learn/risk-management.html": {
+    "title": "Risk Management Learning Resources | FYNX",
+    "description": "Start learning position sizing and trading risk controls, with links to the FYNX risk management guide."
+  },
+  "learn/trading-psychology.html": {
+    "title": "Trading Psychology Learning Resources | FYNX",
+    "description": "Find learning resources for emotional discipline, consistent execution and trading psychology."
+  },
+  "resources/market-analysis.html": {
+    "title": "Market Analysis Resource Directory | FYNX",
+    "description": "Find the FYNX market analysis workspace for charts, macro context and technical market research."
+  },
+  "resources/quizzes.html": {
+    "title": "Finance Quiz Resources & Trading Knowledge Tests | FYNX",
+    "description": "Find finance and trading knowledge tests, including forex study questions and explanations in the learning center."
+  },
+  "resources/trading-glossary.html": {
+    "title": "Trading Glossary Resources & Definitions | FYNX",
+    "description": "Find the FYNX trading glossary and browse definitions of financial market terms used in trading research."
+  },
+  "risk-management.html": {
+    "title": "Trading Risk Management: Position Sizing & Drawdown | FYNX",
+    "description": "Learn trading risk management concepts including position sizing, drawdown control, volatility and protecting trading capital."
+  },
+  "trading-glossary.html": {
+    "title": "Finance & Trading Glossary: Market Terms Explained | FYNX",
+    "description": "Learn financial market terminology covering forex, crypto, stocks, futures, options, technical analysis and trading psychology."
+  },
+  "trading-psychology.html": {
+    "title": "Trading Psychology: Discipline, Emotions & Habits | FYNX",
+    "description": "Study trading psychology, emotional discipline and consistent execution habits across forex, stocks, crypto and other markets."
+  },
+  "tools/atr-stop.html": {
+    "title": "ATR Stop-Loss Calculator | FYNX",
+    "description": "Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade."
+  },
+  "tools/breakeven.html": {
+    "title": "Trading Break-Even Price Calculator | FYNX",
+    "description": "Calculate a trade's estimated break-even price using position size, fees and spread assumptions."
+  },
+  "tools/calendar-alerts.html": {
+    "title": "Economic Event Reminder Planner | FYNX",
+    "description": "Plan reminders for economic events such as inflation releases, employment reports and central bank decisions."
+  },
+  "tools/compound.html": {
+    "title": "Compound Growth & Savings Calculator | FYNX",
+    "description": "Estimate compound growth using starting capital, return assumptions and recurring deposits for savings or investing scenarios."
+  },
+  "tools/correlation.html": {
+    "title": "Market Returns Correlation Calculator | FYNX",
+    "description": "Calculate the correlation between two return series to compare market behavior and potential overlapping exposure."
+  },
+  "tools/crypto.html": {
+    "title": "Crypto Position Size & Profit Calculator | FYNX",
+    "description": "Estimate crypto position size, trading costs, exit value, profit or loss and break-even price using your own assumptions."
+  },
+  "tools/currency.html": {
+    "title": "Currency Conversion Calculator: Manual Rates | FYNX",
+    "description": "Convert currencies using a manually entered exchange rate or fixed example rates. The calculator does not provide live exchange rates."
+  },
+  "tools/economic-calendar.html": {
+    "title": "Economic Calendar: Releases & Central Bank Events | FYNX",
+    "description": "Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar."
+  },
+  "tools/economic-indicators-heatmap.html": {
+    "title": "GDP, Inflation & Unemployment Indicators | FYNX",
+    "description": "Compare published World Bank GDP growth, inflation and unemployment observations. Review dates and source information with each indicator."
+  },
+  "tools/fibonacci.html": {
+    "title": "Fibonacci Retracement & Extension Calculator | FYNX",
+    "description": "Calculate Fibonacci retracement and extension levels from a swing high and low to study potential price levels."
+  },
+  "tools/forex.html": {
+    "title": "Forex Trade Planning Calculators | FYNX",
+    "description": "Plan a forex trade with links to position sizing and pip value calculators using your account and risk inputs."
+  },
+  "tools/heatmap.html": {
+    "title": "Cross-Market Strength & Weakness Heatmap | FYNX",
+    "description": "Explore relative market movements across forex pairs and macro assets with the FYNX cross-market heatmap."
+  },
+  "tools/interest-rates.html": {
+    "title": "Central Bank Policy Rate Comparison | FYNX",
+    "description": "Compare published central bank policy-rate observations from the Bank for International Settlements, with dates and source context."
+  },
+  "tools/liquidation-guard.html": {
+    "title": "Liquidation Risk & Leverage Calculator | FYNX",
+    "description": "Estimate liquidation price and distance for a leveraged trade using your inputs. Compare risk before choosing a position size."
+  },
+  "tools/margin.html": {
+    "title": "Forex Margin & Leverage Calculator | FYNX",
+    "description": "Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade."
+  },
+  "tools/market-holidays.html": {
+    "title": "Market Holiday Planning Reference | FYNX",
+    "description": "Review a partial market holiday planning reference for 2025\u20132027. Confirm closures and early closing times with the relevant exchange."
+  },
+  "tools/market-hours.html": {
+    "title": "Forex Trading Sessions & Market Hours | FYNX",
+    "description": "Review market session timing and trading hours to plan when to research and monitor financial markets."
+  },
+  "tools/options-payoff.html": {
+    "title": "Debt Payoff & Interest Calculator | FYNX",
+    "description": "Estimate how long debt repayment takes, total interest and the effect of changing a monthly payment."
+  },
+  "tools/options.html": {
+    "title": "Options Profit & Loss Calculator | FYNX",
+    "description": "Estimate call and put option profit or loss at expiration using strike price, premium, contract count and underlying price."
+  },
+  "tools/pip.html": {
+    "title": "Forex Pip Value Calculator | FYNX",
+    "description": "Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning."
+  },
+  "tools/pivot.html": {
+    "title": "Pivot Point Support & Resistance Calculator | FYNX",
+    "description": "Calculate classic pivot points and support and resistance levels from the previous period's high, low and closing price."
+  },
+  "tools/position-size.html": {
+    "title": "Forex Position Size & Risk Calculator | FYNX",
+    "description": "Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade."
+  },
+  "tools/profit-loss.html": {
+    "title": "Stock Trade Risk & Position Calculator | FYNX",
+    "description": "Estimate stock position size, risk amount and per-share risk using account balance, entry price and stop-loss inputs."
+  },
+  "tools/recent-topics-discussed.html": {
+    "title": "Curated Macro & Trading Research Topics | FYNX",
+    "description": "Browse curated economic and trading research topics for further study. This editorial reference is not a live news or discussion feed."
+  },
+  "tools/risk-reward.html": {
+    "title": "Risk-to-Reward Ratio Calculator | FYNX",
+    "description": "Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position."
+  },
+  "tools/stock.html": {
+    "title": "Stock Position Sizing Calculator | FYNX",
+    "description": "Calculate a stock trade's position size and risk from account size, risk percentage, entry price and stop price."
+  }
+}

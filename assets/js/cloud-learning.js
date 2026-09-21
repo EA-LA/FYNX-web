@@ -1,6 +1,6 @@
 import { cloudCall, auth } from './cloud-client.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
-const topic = new URLSearchParams(location.search).get('topic') || 'general';
+const topic = new URLSearchParams(location.search).get('topic') || document.body.dataset.learningTopic || 'general';
 const safeTopic = /^[a-z]{1,20}$/.test(topic) ? topic : 'general';
 let generation=0;
 const status=document.createElement('p');status.setAttribute('role','status');status.style.cssText='margin:16px 0;color:var(--text-muted);font-size:14px';
