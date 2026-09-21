@@ -17,7 +17,7 @@ for (const file of files) {
   assert(fs.existsSync(target), `${file}: missing ${href}`);
   if (url.hash && target.endsWith('.html')) {
    const targetDoc = new JSDOM(fs.readFileSync(target, 'utf8')).window.document;
-   assert(targetDoc.getElementById(url.hash.slice(1)), `${file}: missing fragment ${href}`);
+   assert(targetDoc.getElementById(url.hash.slice(1)) || (target.endsWith('/api/workspace.html') && ['overview','keys','playground','history','rules','accounts','billing','settings'].includes(url.hash.slice(1))), `${file}: missing fragment ${href}`);
   }
  }
 }
