@@ -1,7 +1,8 @@
 {
   "scripts": {
     "build": "node scripts/build-static.js",
-    "test": "node scripts/test-journal-record.js"
+    "test": "node scripts/test-journal-record.js",
+    "test:api": "node scripts/test-api-pages.cjs"
   },
   "devDependencies": {
     "jsdom": "^20.0.3"
