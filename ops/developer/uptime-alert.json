@@ -1,0 +1,39 @@
+{
+  "combiner": "OR",
+  "enabled": true,
+  "notificationChannels": [
+    "projects/fynx-c7a28/notificationChannels/13193237577260677372"
+  ],
+  "alertStrategy": {
+    "autoClose": "1800s"
+  },
+  "documentation": {
+    "content": "Inspect Cloud Logging using jsonPayload.service=\"fynx_api\". Use docs/developer-operations.md for incident triage and recovery. Never paste keys or customer payloads into incident messages.",
+    "mimeType": "text/markdown"
+  },
+  "displayName": "FYNX API: engine unavailable",
+  "conditions": [
+    {
+      "displayName": "Health check failing in two regions",
+      "conditionThreshold": {
+        "filter": "metric.type=\"monitoring.googleapis.com/uptime_check/check_passed\" AND metric.label.check_id=\"fynx-api-engine-health-jyfWozt8Kmw\" AND resource.type=\"uptime_url\"",
+        "comparison": "COMPARISON_GT",
+        "thresholdValue": 1,
+        "duration": "300s",
+        "trigger": {
+          "count": 1
+        },
+        "aggregations": [
+          {
+            "alignmentPeriod": "300s",
+            "perSeriesAligner": "ALIGN_NEXT_OLDER",
+            "crossSeriesReducer": "REDUCE_COUNT_FALSE",
+            "groupByFields": [
+              "resource.label.host"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

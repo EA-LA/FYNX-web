@@ -1,0 +1,36 @@
+{
+  "combiner": "OR",
+  "enabled": true,
+  "notificationChannels": [
+    "projects/fynx-c7a28/notificationChannels/13193237577260677372"
+  ],
+  "alertStrategy": {
+    "autoClose": "1800s"
+  },
+  "documentation": {
+    "content": "Inspect Cloud Logging using jsonPayload.service=\"fynx_api\". Use docs/developer-operations.md for incident triage and recovery. Never paste keys or customer payloads into incident messages.",
+    "mimeType": "text/markdown"
+  },
+  "displayName": "FYNX API: server or backup failures",
+  "conditions": [
+    {
+      "displayName": "Server failures in five minutes",
+      "conditionThreshold": {
+        "filter": "metric.type=\"logging.googleapis.com/user/fynx_api_server_failures\" AND resource.type=\"cloud_function\"",
+        "comparison": "COMPARISON_GT",
+        "thresholdValue": 0,
+        "duration": "0s",
+        "trigger": {
+          "count": 1
+        },
+        "aggregations": [
+          {
+            "alignmentPeriod": "300s",
+            "perSeriesAligner": "ALIGN_SUM",
+            "crossSeriesReducer": "REDUCE_SUM"
+          }
+        ]
+      }
+    }
+  ]
+}

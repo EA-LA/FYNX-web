@@ -1,6 +1,6 @@
 'use strict';
 const Decimal = require('decimal.js');
-Decimal.set({precision:60,rounding:Decimal.ROUND_HALF_UP});
+Decimal.set({precision:256,rounding:Decimal.ROUND_HALF_UP});
 class InputError extends Error { constructor(message,code='invalid_input'){super(message);this.code=code;} }
 const invalid=(s,c)=>{throw new InputError(s,c);};
 function dec(v,name,positive=false){if(typeof v!=='string'||!/^[-+]?\d{1,18}(\.\d{1,12})?$/.test(v))invalid(`${name} must be a decimal string (up to 18 integer and 12 fractional digits).`);const d=new Decimal(v);if(positive&&!d.gt(0))invalid(`${name} must be positive.`);return d;}
@@ -54,22 +54,31 @@ function account(r,timestamp){return {balance:r.starting_balance,equity:r.starti
 function event(a,r,x,now=Date.now()){
  if(!Number.isSafeInteger(x.sequence)||x.sequence!==a.sequence+1)invalid('Sequence must be the next account sequence.','event_order_conflict');
  if(typeof x.timestamp!=='string'||!Number.isFinite(Date.parse(x.timestamp))||!/(Z|[+-]\d\d:\d\d)$/.test(x.timestamp)||Date.parse(x.timestamp)<Date.parse(a.last_timestamp)||Date.parse(x.timestamp)>now+60000)invalid('Timestamp must be ordered, timezone-qualified and not in the future.','event_order_conflict');
- if(!['closed_trade','equity_mark'].includes(x.event_type))invalid('Use closed_trade or equity_mark.');
+ if(!['closed_trade','equity_mark','boundary_snapshot'].includes(x.event_type))invalid('Use closed_trade, equity_mark or boundary_snapshot.');
+ if(x.event_type!=='closed_trade'&&x.realized_pnl!==undefined&&!dec(x.realized_pnl,'realized_pnl').eq(0))invalid('Only closed_trade may change realized P&L.');
  if(!Number.isInteger(x.open_position_count)||x.open_position_count<0||x.open_position_count>100000)invalid('Provide open_position_count.');
  const delta=x.event_type==='closed_trade'?dec(x.realized_pnl,'realized_pnl'):new Decimal(0),u=dec(x.unrealized_pnl_after,'unrealized_pnl_after');
  if(x.open_position_count===0&&!u.eq(0))invalid('A flat account must have zero unrealized P&L.');
  const next=JSON.parse(JSON.stringify(a)),today=day(x.timestamp,r.reset_hour_utc);
- if(today!==a.day){if(a.open_positions>0)invalid('Open exposure crossed a reset. Supply reconciled boundary data through support before continuing.','boundary_snapshot_required');next.daily_start=a.balance;next.day=today;}
+ if(x.event_type==='boundary_snapshot'){
+  const boundary=Date.parse(a.day+'T00:00:00Z')+86400000+r.reset_hour_utc*3600000;
+  if(Date.parse(x.timestamp)!==boundary)invalid('Boundary snapshot must be at the next reset instant.','boundary_snapshot_required');
+  if(x.open_position_count!==a.open_positions)invalid('Boundary snapshot must preserve open position count. Submit closes separately.');
+ }else if(today!==a.day&&a.open_positions>0)invalid('Submit a boundary_snapshot at the next reset instant before later events.','boundary_snapshot_required');
+ // Check the closing equity against the old daily floor before the reset can lower it.
+ const boundaryEquity=new Decimal(a.balance).plus(u),oldDailyFloor=new Decimal(a.daily_start).mul(new Decimal(1).minus(new Decimal(r.daily_loss_percent).div(100)));
+ const closingDailyBreach=today!==a.day&&x.event_type==='boundary_snapshot'&&(r.breach_on_touch?boundaryEquity.lte(oldDailyFloor):boundaryEquity.lt(oldDailyFloor));
+ if(today!==a.day){next.daily_start=a.balance;next.day=today;}
  const balance=new Decimal(a.balance).plus(delta),equity=balance.plus(u),hwm=Decimal.max(a.hwm,equity),initial=new Decimal(r.starting_balance),maxAmount=initial.mul(r.max_loss_percent).div(100),dailyAmount=new Decimal(next.daily_start).mul(r.daily_loss_percent).div(100);
  if(dailyAmount.lte(0))invalid('Nonpositive boundary balance requires review.');
  const maxFloor=r.max_loss_type==='static'?initial.minus(maxAmount):r.max_loss_type==='trailing_locked'?Decimal.min(hwm.minus(maxAmount),initial):hwm.minus(maxAmount),dailyFloor=new Decimal(next.daily_start).minus(dailyAmount);
  const breached=floor=>r.breach_on_touch?equity.lte(floor):equity.lt(floor);
- const reasons=[];if(breached(dailyFloor))reasons.push('daily_loss');if(breached(maxFloor))reasons.push('maximum_loss');
+ const reasons=[];if(breached(dailyFloor)||closingDailyBreach)reasons.push('daily_loss');if(breached(maxFloor))reasons.push('maximum_loss');
  next.balance=str(balance);next.equity=str(equity);next.hwm=str(hwm);next.sequence=x.sequence;next.last_timestamp=x.timestamp;next.open_positions=x.open_position_count;
  if(x.event_type==='closed_trade'){next.daily_profits[today]=str(new Decimal(next.daily_profits[today]||0).plus(delta));if(!next.trading_days.includes(today))next.trading_days.push(today);}
  if(next.trading_days.length>366)invalid('This beta supports at most 366 trading days per phase.');
  const profit=balance.minus(initial),best=Decimal.max(0,...Object.values(next.daily_profits)),share=profit.gt(0)?best.div(profit).mul(100):null,consistent=r.consistency_percent===null||(share!==null&&share.lte(r.consistency_percent));
- next.eligible=profit.gte(initial.mul(r.profit_target_percent).div(100))&&consistent&&next.trading_days.length>=r.min_trading_days&&next.open_positions===0;
+ next.eligible=!next.breach&&reasons.length===0&&profit.gte(initial.mul(r.profit_target_percent).div(100))&&consistent&&next.trading_days.length>=r.min_trading_days&&next.open_positions===0;
  if(!next.breach&&reasons.length)next.breach={reasons,timestamp:x.timestamp};
  next.status=next.breach?'breached':next.eligible?'eligible':'active';
  next.metrics={daily_floor:str(dailyFloor),daily_remaining:str(equity.minus(dailyFloor)),daily_used_percent:str(Decimal.max(0,new Decimal(next.daily_start).minus(equity)).div(dailyAmount).mul(100)),max_floor:str(maxFloor),max_remaining:str(equity.minus(maxFloor)),max_used_percent:str(Decimal.max(0,new Decimal(1).minus(equity.minus(maxFloor).div(maxAmount))).mul(100)),profit:str(profit),consistency_share_percent:share?str(share):null,consistency_met:consistent,trading_days:next.trading_days.length};

@@ -1,0 +1,42 @@
+// Opt-in integration test: creates and deletes its own temporary Firebase users/data.
+'use strict';
+if(!process.argv.includes('--run-production')){console.error('Explicit --run-production required; authenticate with Application Default Credentials.');process.exit(1);}
+const admin=require('firebase-admin'),assert=require('node:assert/strict'),{randomBytes}=require('node:crypto');
+admin.initializeApp({projectId:'fynx-c7a28',credential:admin.credential.applicationDefault()});
+const key='AIzaSyDGSYIB_YIpbWyUMJ1d-v00-xADnvaWckk',base='https://us-central1-fynx-c7a28.cloudfunctions.net/';
+const users=[],keys=[];
+async function create(){const email='fynx-api-qa-'+Date.now()+'-'+users.length+'@example.com',password=randomBytes(25).toString('hex');const u=await admin.auth().createUser({email,password,emailVerified:true});users.push(u.uid);const s=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+key,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password,returnSecureToken:true})});const d=await s.json();assert(d.idToken,'QA sign in failed');return {uid:u.uid,token:d.idToken};}
+async function call(u,action,data={},name='developerWorkspace'){const r=await fetch(base+name,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+u.token},body:JSON.stringify({data:{action,environment:'test',...data}})});const d=await r.json();if(d.error)throw Object.assign(new Error(d.error.message),{code:d.error.status});return d.result;}
+async function gateway(k,body){const r=await fetch(base+'developerGateway/v1/risk/position-size',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+k},body:JSON.stringify(body)});return {status:r.status,body:await r.json()};}
+(async()=>{try{
+ const a=await create(),b=await create();await call(a,'bootstrap');await call(b,'bootstrap');
+ const k=await call(a,'createKey',{label:'QA key'});keys.push(k.key);const input={instrument_type:'forex',symbol:'EURUSD',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1',lot_step:'0.01',minimum_lot:'0.01',account_balance:'10000',risk_percent:'1',entry_price:'1.0850',stop_loss_price:'1.0820',direction:'long'};
+ let res=await gateway(k.key,input);assert.equal(res.status,200);assert.equal(res.body.result.position_size,'0.33');
+ await assert.rejects(call(b,'revokeKey',{id:k.id}));
+ const rotated=await call(a,'rotateKey',{id:k.id});keys.push(rotated.key);assert.equal((await gateway(k.key,input)).status,401);assert.equal((await gateway(rotated.key,input)).status,200);await call(a,'revokeKey',{id:rotated.id});assert.equal((await gateway(rotated.key,input)).status,401);
+ const r=await call(a,'run',{route:'/v1/propfirm/rule-sets',input:{name:'QA',starting_balance:'100000',daily_loss_percent:'5',max_loss_percent:'10',profit_target_percent:'8',consistency_percent:'40',min_trading_days:5,reset_hour_utc:22,max_loss_type:'static'}});assert.equal(r.status,200);
+ await assert.rejects(call(a,'run',{environment:'live',route:'/v1/propfirm/accounts',input:{name:'wrong env',rule_set_id:r.result.rule_set_id}}));
+ const ac=await call(a,'run',{route:'/v1/propfirm/accounts',input:{name:'QA account',rule_set_id:r.result.rule_set_id}});assert.equal(ac.status,200);
+ const ev={idempotency_key:'qa-event',source_event_id:'qa-source',sequence:1,event_type:'closed_trade',timestamp:new Date().toISOString(),realized_pnl:'-150',unrealized_pnl_after:'0',open_position_count:0};const route='/v1/propfirm/accounts/'+ac.result.account_id+'/events';
+ const first=await call(a,'run',{route,input:ev}),retry=await call(a,'run',{route,input:ev});assert.equal(first.result.balance,'99850');assert.equal(retry.duplicate,true);
+ await assert.rejects(call(a,'run',{route,input:{...ev,realized_pnl:'-151'}}));
+ const state=await call(a,'bootstrap');assert.equal(state.accounts.length,1);assert.equal((await call(b,'bootstrap')).accounts.length,0);assert.equal((await call(a,'bootstrap',{environment:'live'})).accounts.length,0);
+ await call(a,'settings',{name:'QA renamed',requestCap:20});assert.equal((await call(a,'bootstrap')).profile.name,'QA renamed');
+ const history=await call(a,'history');assert(history.items.length>=4);const invalid=await call(a,'run',{route:'/v1/risk/position-size',input:{...input,risk_percent:1}});assert.equal(invalid.status,422);
+ const billing=await call(a,'summary',{},'developerBilling');assert(billing.invoices.length===0);assert.equal(billing.billing_mode,'test','This smoke test requires Stripe test mode.');
+ const waitlist=await call(a,'checkout',{},'developerBilling');assert.equal(waitlist.waitlist,true);assert.equal((await call(a,'bootstrap')).profile.proWaitlist,true);assert.equal((await call(a,'summary',{},'developerBilling')).billing_mode,'test');console.log('PASS: Pro waitlist persists; test mode does not grant paid entitlement.');
+ const reader=await call(a,'createKey',{label:'QA reader'});const rr=await fetch(base+'developerGateway/v1/propfirm/accounts/'+ac.result.account_id+'/status',{headers:{Authorization:'Bearer '+reader.key}});assert.equal(rr.status,200);assert.equal((await rr.json()).result.balance,'99850');
+ const ev2={...ev,idempotency_key:'qa-event-2',source_event_id:'qa-source-2',sequence:2,realized_pnl:'0'};const concurrent=await Promise.all([call(a,'run',{route,input:ev2}),call(a,'run',{route,input:ev2})]);assert.equal(concurrent.filter(v=>v.duplicate).length,1);
+ await assert.rejects(call(b,'run',{route,input:ev2}));
+ const reordered=Object.fromEntries(Object.entries(ev2).reverse());assert.equal((await call(a,'run',{route,input:reordered})).duplicate,true);
+ const eventHistory=await call(a,'history',{accountId:ac.result.account_id});const chained=eventHistory.items.find(v=>v.request.sequence===2);assert.equal(chained.engine_version,2);const expectedState={...chained.result};delete expectedState.account_id;delete expectedState.last_event_hash;const {payloadHash}=require('../developer-core.cjs');assert.equal(chained.event_hash,payloadHash({previous_event_hash:chained.previous_event_hash,request:chained.request,state:expectedState}));
+ const audit=await call(a,'history',{audit:true});assert(audit.items.some(v=>v.action==='rotateKey'));assert(audit.items.some(v=>v.action==='settings'));
+ const ticket=await call(a,'support',{subject:'QA delivery',message:'Synthetic QA support ticket; no response required.'});assert((await admin.firestore().collection('fynxDevelopers').doc(a.uid).collection('support').doc(ticket.ticket_id).get()).exists);
+ await assert.rejects(call(a,'portal',{},'developerBilling'));await assert.rejects(call(a,'unknown',{},'developerBilling'));
+ const beforeQuota=(await call(a,'bootstrap')).usage.calls;await call(a,'settings',{name:'QA cap',requestCap:beforeQuota+1});
+ const competing=await Promise.allSettled([call(a,'run',{route:'/v1/risk/position-size',input}),call(a,'run',{route:'/v1/risk/position-size',input}),call(a,'run',{route:'/v1/risk/position-size',input})]);assert.equal(competing.filter(v=>v.status==='fulfilled').length,1);assert.equal((await call(a,'bootstrap')).usage.calls,beforeQuota+1);assert.equal((await call(a,'run',{route,input:ev2})).duplicate,true);
+ console.log('PASS: canonical retries, chained event audit, settings/key audit, support persistence, disabled test portal, atomic concurrent quotas and replay at exhausted quota.');
+ console.log('PASS: signup/auth, persistence, test/live isolation, key rotation/revocation, external gateway, account events, idempotency, settings and validation history.');
+ // Direct Firestore access must not allow a user to change their entitlement.
+ const fr=await fetch('https://firestore.googleapis.com/v1/projects/fynx-c7a28/databases/(default)/documents/fynxDevelopers/'+a.uid,{method:'PATCH',headers:{Authorization:'Bearer '+a.token,'Content-Type':'application/json'},body:JSON.stringify({fields:{plan:{stringValue:'pro'}}})});assert.equal(fr.status,403);console.log('PASS: direct client entitlement writes denied.');
+ }finally{for(const uid of users){const snap=await admin.firestore().collection('fynxDeveloperKeys').where('uid','==',uid).get();for(const d of snap.docs)await d.ref.delete();await admin.firestore().recursiveDelete(admin.firestore().collection('fynxDevelopers').doc(uid));await admin.auth().deleteUser(uid);}console.log('Temporary QA users and developer records removed.');}})().catch(e=>{console.error(e.code||'',e.message);process.exitCode=1;});
