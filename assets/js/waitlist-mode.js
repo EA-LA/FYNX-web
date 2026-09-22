@@ -1,3 +1,4 @@
+import { canUseApiPilot } from "./api-pilot-access.js";
 import { auth, app, authPersistenceReady } from "../../auth/firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
@@ -42,6 +43,9 @@ export async function protectCurrentRoute(){
   if (AUTH_PATHS.has(path) && new URLSearchParams(location.search).get("owner") === "1") return;
   if (AUTH_PATHS.has(path)) return redirectToWaitlist();
   onAuthStateChanged(auth, async (user)=>{
+    if(user && path === '/tools/risk-reward.html'){
+      try { const token=await user.getIdTokenResult(true); if(canUseApiPilot(path,token.claims)){document.documentElement.dataset.apiPilotAccess='true';return;} } catch (_) {}
+    }
     if (!(await getOwnerAccess(user))) redirectToWaitlist();
     else document.documentElement.dataset.ownerAccess = "true";
   });

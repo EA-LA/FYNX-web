@@ -499,6 +499,9 @@
           </div>
 
           <div class="msg" id="error"></div>
+          <div class="actions"><button id="api-check" class="ghost" type="button">Check with FYNX Risk API</button><a href="/api/workspace.html">Developer sign in</a></div>
+          <p class="hint">Optional verification uses one call from your free test allowance. Your local result remains available.</p>
+          <p class="hint" id="api-check-result" role="status" aria-live="polite"></p>
         </div>
 
         <!-- Results -->
@@ -697,8 +700,8 @@
       const sl = toDouble(el.sl.value);
       const tp = toDouble(el.tp.value);
 
-      if (!(entry > 0 && sl > 0 && tp > 0) || entry === sl){
-        setError("Enter valid prices (entry ≠ stop).");
+      if (!(entry > 0 && sl > 0 && tp > 0) || !((sl < entry && tp > entry) || (sl > entry && tp < entry))){
+        setError("Use positive prices with stop and target on opposite sides of entry.");
         resetResults();
         return;
       }
@@ -823,5 +826,6 @@
     });
   </script>
 
+<script type="module" src="/assets/js/api-calculator-pilot.js"></script>
 </body>
 </html>

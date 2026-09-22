@@ -577,7 +577,7 @@
         <!-- Results -->
         <div class="card">
           <h3>Results</h3>
-          <div class="hint">Outputs: lots, units, pip value per lot, and notes.</div>
+          <div class="hint">Lot results round down to 0.01. Confirm your broker’s minimum and lot step. Units use the same rounded quantity.</div>
 
           <div class="resultsBox">
             <div class="kv">
@@ -628,6 +628,7 @@
     </div>
   </main>
 
+  <script src="/assets/vendor/decimal.js"></script>
   <script>
     /* =========================
        CONFIG / PAIRS
@@ -824,7 +825,8 @@
 
     function positionSizeLots(riskUSD, stopPips, pipValueUSD){
       if (riskUSD <= 0 || stopPips <= 0 || pipValueUSD <= 0) return null;
-      return riskUSD / (stopPips * pipValueUSD);
+      const D = Decimal.clone({precision:256});
+      return new D(String(riskUSD)).div(new D(String(stopPips)).mul(String(pipValueUSD))).div('0.01').floor().mul('0.01').toNumber();
     }
 
     function positionSizeUnits(lots, pair){
@@ -853,7 +855,7 @@
 
       if (bal <= 0) return setMessage("Balance must be greater than 0.");
       if (usePercentRisk){
-        if (rp <= 0) return setMessage("Risk must be greater than 0.");
+        if (rp <= 0 || rp > 100) return setMessage("Risk must be greater than 0 and no more than 100%.");
       } else {
         if (rd <= 0) return setMessage("Risk must be greater than 0.");
       }
@@ -868,8 +870,9 @@
         if (!pvUSD || pvUSD <= 0) return setMessage(`Could not compute pip value for ${pair}.`);
 
         const lots = positionSizeLots(riskUSD, stopPips, pvUSD);
-        if (!lots || !Number.isFinite(lots) || lots <= 0) return setMessage("Could not calculate position size.");
+        if (lots === null || !Number.isFinite(lots) || lots < 0) return setMessage("Could not calculate position size.");
 
+        if (lots === 0) setMessage('This budget is below 0.01 lot at the supplied stop. No position fits this display increment.');
         const units = positionSizeUnits(lots, pair);
 
         els.lotsOut.textContent = fmt(lots, 2);

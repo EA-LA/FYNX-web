@@ -649,7 +649,7 @@
         pipsOut.className = "pips sell";
       }
 
-      if(!isFinite(entryVal) || !isFinite(atrVal) || !isFinite(periodVal) || atrVal <= 0 || periodVal <= 0){
+      if(!isFinite(entryVal) || !isFinite(atrVal) || !isFinite(periodVal) || entryVal <= 0 || atrVal <= 0 || periodVal <= 0 || (currentSide === "buy" && entryVal - atrVal * currentMultiple <= 0)){
         errorBox.style.display = "block";
         stopOut.textContent = "—";
         pipsOut.textContent = "— pips";

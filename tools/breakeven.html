@@ -174,7 +174,7 @@
         <label>Spread (pips)</label>
         <input id="spread" type="number" value="1">
 
-        <label>Commission ($)</label>
+        <label>Round-trip commission for this position ($)</label>
         <input id="commission" type="number" value="7">
 
         <button class="primary" onclick="calc()">Calculate</button>
@@ -215,7 +215,7 @@ function calc(){
   let spread = parseFloat(document.getElementById("spread").value);
   let commission = parseFloat(document.getElementById("commission").value);
 
-  if(!entry || !lot){
+  if(!Number.isFinite(entry) || !Number.isFinite(lot) || !Number.isFinite(spread) || !Number.isFinite(commission) || entry <= 0 || lot <= 0 || spread < 0 || commission < 0){
     alert("Enter valid values");
     return;
   }
@@ -234,6 +234,7 @@ function calc(){
     bePrice = entry - (pipsNeeded * 0.0001);
   }
 
+  if(bePrice <= 0){ alert("Calculated break-even price must be positive."); return; }
   document.getElementById("be").innerText = bePrice.toFixed(5);
   document.getElementById("cost").innerText = "$" + totalCost.toFixed(2);
   document.getElementById("pips").innerText = pipsNeeded.toFixed(2) + " pips";
