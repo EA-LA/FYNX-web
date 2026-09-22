@@ -139,6 +139,7 @@
 <meta property="og:title" content="Trading Break-Even Price Calculator | FYNX">
 <meta property="og:description" content="Calculate a trade's estimated break-even price using position size, fees and spread assumptions.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/breakeven.html">
+<link rel="stylesheet" href="/assets/css/api-calculator-pilot.css">
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
 
@@ -205,8 +206,10 @@
 
     </div>
   </section>
+<section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Uses this calculator’s USD-quoted Forex model: 100,000 units per lot and 0.0001 pip size. Position commission is converted to per-lot commission, rounded to 12 decimals.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
 </main>
 
+<script src="/assets/vendor/decimal.js"></script>
 <script>
 function calc(){
   let type = document.getElementById("type").value;
@@ -261,8 +264,19 @@ function resetCalc(){
   document.getElementById("pips").innerText = "—";
   document.getElementById("statusBox").innerText = "Status: —";
 }
+
+// Opt-in first-party adapter; all network access stays in the shared controller.
+window.fynxRiskPilot=async()=>{
+ const value=id=>document.getElementById(id).value.trim();
+ const number=(raw,digits)=>{const cleaned=String(raw).replace(/[^0-9.+-]/g,'');if(!cleaned||!Number.isFinite(Number(cleaned)))throw new Error('Calculate valid inputs first.');return Number(cleaned).toFixed(digits);};
+ const meta={instrument_type:'forex',symbol:'FOREX.MODEL',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1'};
+if(['entry','lot'].some(id=>!(Number(value(id))>0))||['spread','commission'].some(id=>!value(id)||!Number.isFinite(Number(value(id)))||Number(value(id))<0))throw new Error('Correct the break-even inputs first.');
+ calc();
+ return {endpoint:'break-even',input:{...meta,entry_price:value('entry'),direction:value('type')==='buy'?'long':'short',pip_size:'0.0001',spread_pips:value('spread'),round_trip_commission_per_lot:new Decimal(value('commission')).div(value('lot')).toFixed(12),entry_basis:'spread_excluded'},resultKey:'break_even_price',precision:5,local:number(document.getElementById('be').innerText,5)};
+};
 </script>
 
 
+<script type="module" src="/assets/js/api-calculator-pilot.js"></script>
 </body>
 </html>

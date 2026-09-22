@@ -26,7 +26,7 @@ Use three to five real external developers. For each, record an alias and runtim
 1. Read the public docs without a private walkthrough. Record doc gaps before helping.
 2. Create a workspace, verify email, create a test key, and run the downloaded quickstart with Node.js 22+ and FYNX_API_KEY set locally. It checks the expected 0.33 lot result and a 422 response for a wrong-side stop.
 3. Verify request history, test/live separation, key rotation and old-key rejection. Never publish keys or screenshots containing them.
-4. Create a synthetic rule set and account. Submit an ordered event, retry its exact payload and confirm no extra successful-call usage. Change the same event key’s payload and confirm rejection. Try the next sequence and examine the account's event history.
+4. Download `https://www.fynxfinanceworld.com/api/examples/prop-firm-quickstart.mjs` and run `node prop-firm-quickstart.mjs` with your test key in a quiet workspace. The script uses six successful test calls, retains one synthetic account/rule set, and prints their IDs. Then inspect those records in the workspace. Create a synthetic rule set and account manually if testing another language. Submit an ordered event, retry its exact payload and confirm no extra successful-call usage. Change the same event key’s payload and confirm rejection. Try the next sequence and examine the account's event history.
 5. Lower the request cap and confirm rejection at the cap, then restore it. Confirm the Pro action saves waitlist interest without taking payment.
 6. Submit a support ticket with request IDs and friction points. Fix documentation/integration defects, then have the participant repeat the failed step from the updated docs.
 

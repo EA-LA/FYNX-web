@@ -1,1 +1,13 @@
-{"riskRewardEnabled":true,"mode":"explicit_authenticated_test_calls","automaticFundedDecisionsEnabled":false}
+{
+  "riskRewardEnabled": true,
+  "enabledCalculators": [
+    "risk-reward",
+    "pip-value",
+    "atr-stop",
+    "margin",
+    "break-even",
+    "position-size"
+  ],
+  "mode": "explicit_authenticated_test_calls",
+  "automaticFundedDecisionsEnabled": false
+}

@@ -445,6 +445,7 @@
 <meta property="og:title" content="Risk-to-Reward Ratio Calculator | FYNX">
 <meta property="og:description" content="Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/risk-reward.html">
+<link rel="stylesheet" href="/assets/css/api-calculator-pilot.css">
 </head>
 
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
@@ -499,9 +500,7 @@
           </div>
 
           <div class="msg" id="error"></div>
-          <div class="actions"><button id="api-check" class="ghost" type="button">Check with FYNX Risk API</button><a href="/api/workspace.html">Developer sign in</a></div>
-          <p class="hint">Optional verification uses one call from your free test allowance. Your local result remains available.</p>
-          <p class="hint" id="api-check-result" role="status" aria-live="polite"></p>
+
         </div>
 
         <!-- Results -->
@@ -573,14 +572,16 @@
         This web version matches your iOS logic: risk = |entry − stop|, reward = |take − entry|, R:R = reward / risk.
       </div>
     </div>
-  </main>
+  <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Compares the ratio for your supplied prices.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
+</main>
 
   <div class="toast" id="toast">Copied</div>
 
   <!-- html2canvas for snapshot download -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-  <script>
+  <script src="/assets/vendor/decimal.js"></script>
+<script>
     const el = {
       entry: document.getElementById("entry"),
       sl: document.getElementById("sl"),
@@ -807,7 +808,16 @@
     });
 
     resetResults();
-  </script>
+
+// Opt-in first-party adapter; all network access stays in the shared controller.
+window.fynxRiskPilot=async()=>{
+ const value=id=>document.getElementById(id).value.trim();
+ const number=(raw,digits)=>{const cleaned=String(raw).replace(/[^0-9.+-]/g,'');if(!cleaned||!Number.isFinite(Number(cleaned)))throw new Error('Calculate valid inputs first.');return Number(cleaned).toFixed(digits);};
+ const meta={instrument_type:'forex',symbol:'FOREX.MODEL',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1'};
+calculate();if(el.error.textContent)throw new Error(el.error.textContent);
+ return {endpoint:'risk-reward',input:{entry_price:value('entry'),stop_loss_price:value('sl'),take_profit_price:value('tp'),direction:Number(value('sl'))<Number(value('entry'))?'long':'short'},resultKey:'rr_ratio',precision:2,local:number(el.rrOut.textContent,2)};
+};
+</script>
 
   <script>
     const THEME_KEY = "fynx_theme";
@@ -825,6 +835,7 @@
       }
     });
   </script>
+
 
 <script type="module" src="/assets/js/api-calculator-pilot.js"></script>
 </body>

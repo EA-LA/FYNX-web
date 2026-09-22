@@ -1,4 +1,5 @@
-// Narrow first-party pilot access; never grants owner or administrator privileges.
+// Only these calculator routes are part of the first-party pilot.
+const calculatorPaths=new Set(['/tools/risk-reward.html','/tools/pip.html','/tools/margin.html','/tools/breakeven.html','/tools/atr-stop.html','/tools/position-size.html']);
 export function canUseApiPilot(path,claims={}){
- return path==='/tools/risk-reward.html'&&claims.apiPilot===true;
+ return calculatorPaths.has(path)&&claims.apiPilot===true;
 }

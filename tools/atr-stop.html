@@ -445,6 +445,7 @@
 <meta property="og:title" content="ATR Stop-Loss Calculator | FYNX">
 <meta property="og:description" content="Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/atr-stop.html">
+<link rel="stylesheet" href="/assets/css/api-calculator-pilot.css">
 </head>
 
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
@@ -545,9 +546,11 @@
 
       </div>
     </div>
-  </main>
+  <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Compares the theoretical Forex stop at the displayed precision. Gold and crypto verification are outside this rollout.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
+</main>
 
-  <script>
+  <script src="/assets/vendor/decimal.js"></script>
+<script>
     const THEME_KEY = "fynx_theme";
     (function applyThemeFromStorage(){
       const saved = localStorage.getItem(THEME_KEY);
@@ -681,7 +684,19 @@
 
     buildMultipleChips();
     updateCalc();
-  </script>
 
+// Opt-in first-party adapter; all network access stays in the shared controller.
+window.fynxRiskPilot=async()=>{
+ const value=id=>document.getElementById(id).value.trim();
+ const number=(raw,digits)=>{const cleaned=String(raw).replace(/[^0-9.+-]/g,'');if(!cleaned||!Number.isFinite(Number(cleaned)))throw new Error('Calculate valid inputs first.');return Number(cleaned).toFixed(digits);};
+ const meta={instrument_type:'forex',symbol:'FOREX.MODEL',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1'};
+updateCalc();if(errorBox.style.display==='block')throw new Error('Enter valid entry and ATR values.');
+ if(!['EUR/USD','GBP/USD','USD/JPY'].includes(pair.value))throw new Error('This first-party verification supports the listed Forex pairs only.');
+ const precision=getSelectedPairMeta().decimals;
+ return {endpoint:'atr-stop',input:{entry_price:value('entry'),atr_value:value('atrValue'),multiplier:String(currentMultiple),direction:currentSide==='buy'?'long':'short'},resultKey:'stop_loss_price',precision,local:number(stopOut.textContent,precision)};
+};
+</script>
+
+<script type="module" src="/assets/js/api-calculator-pilot.js"></script>
 </body>
 </html>

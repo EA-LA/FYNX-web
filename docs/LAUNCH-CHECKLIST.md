@@ -5,10 +5,10 @@ This records verified engineering work separately from production rollout and ex
 | Step | Finished | Remaining |
 | --- | --- | --- |
 | 1. Product scope | Two products; six Forex Risk calculations using caller-supplied metadata; submitted-event USD Prop Firm Rules beta; available/later boundary now explicit in public docs. Formula and event-state regression tests pass. | Broker-authoritative instrument specifications; applicable Funded account terms; reconciliation of the five existing policy differences. |
-| 2. Public pages | Overview, Risk, Prop Firm Rules, Pricing, Docs, Access and workspace entry. Corrected stale planned-feature wording and the incomplete position-size example. | Published and verified live. |
+| 2. Public pages | Overview, Risk, Prop Firm Rules, Pricing, Docs, Access and workspace entry. Corrected stale planned-feature wording and the incomplete position-size example. | None for the public-page engineering scope. |
 | 3. Developer workspace | Existing free workspace, keys, environments, playground, histories, rules/accounts, support and billing waitlist implementation. | Live Stripe configuration and payment verification; paid activation remains deferred. |
-| 4. Engine | 25 backend tests pass. Existing operations/recovery work is documented in developer-operations.md. | Fresh live smoke checks passed using the existing Firebase CLI credential file explicitly. |
-| 5. First-party proof | All 16 local and deployed HTTP calculator comparisons match; invalid-input and pilot-access checks pass; nine synthetic Funded scenarios rerun. | Real histories; all five policy differences; at least seven days of representative shadow results; 3–5 external beta participants and at least three completed integrations. |
+| 4. Engine | 25 backend tests pass. Existing operations/recovery work is documented in developer-operations.md. | Continue operational monitoring; no new engine blocker found. |
+| 5. First-party proof | All six first-party Risk calculators integrated as optional authenticated test calls. All 16 adapter inputs match the deployed HTTP API. Both Risk and Prop Firm Rules quickstarts verified internally. Invalid-input and pilot-access checks pass; nine synthetic Funded scenarios rerun. | Real histories; all five policy differences; at least seven days of representative shadow results; 3–5 external beta participants and at least three completed integrations. |
 | 6. Entry points and launch | Finance World already has landing-page desktop/mobile/footer API links. Added a shared authenticated-header API link. Added Funded desktop/mobile API links and footer links to API, documentation and pricing. Seven API routes checked at 390px and 1440px without horizontal overflow. Funded desktop/mobile navigation checked visually. | Reviewed API terms and external docs-only signup/email-verification integration before declaring full launch. Public routes, workspace sign-in screen and live authenticated API operations are verified. |
 
 ## Verification performed this session
@@ -38,3 +38,11 @@ Finance World changes are published on main (`5cfed9a`, `e5ae2d0`) and its Verce
 Funded navigation is published (`1e44994`, `dc83d0b`). The first Git-triggered deployment briefly restored the old waitlist because the prior production deployment included uncommitted browse-access/payment-hold changes. The previous deployment was rolled back immediately. Those already-tested frontend changes were then committed, the corrected build succeeded and was promoted. The live public platform and new API footer links were verified. Existing server payment-hold source remains untouched and was not redeployed.
 
 The developer release remains a beta. Paid subscriptions, broker verification, historical reconciliation and external beta evidence remain outstanding.
+
+## Follow-up completion — September 22
+
+Completed the supported six-calculator first-party Risk rollout and runnable Prop Firm Rules beta integration tooling. This finishes the engineering portion of the gradual Risk integration; Funded production decisions remain gated on real-history reconciliation. New proof: `docs/proof/live-pilot-parity.json`. Both public Node examples pass internally; no external testers are claimed. Full details, model boundaries and pause controls are in `STEP-5-PROOF.md`.
+
+Still required: verified broker specifications; actual account terms and trading records to resolve five Funded differences; seven days of representative parallel results; 3–5 external testers with at least three completed docs-only integrations; dedicated live billing configuration and payment verification; reviewed API terms/privacy/retention; final full-launch review.
+
+Live billing metadata was checked again: `FYNX_API_STRIPE_SECRET_KEY` does not exist in the project. No secret values were read or changed. Paid activation remains blocked on that setup.

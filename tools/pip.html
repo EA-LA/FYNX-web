@@ -404,6 +404,7 @@
 <meta property="og:title" content="Forex Pip Value Calculator | FYNX">
 <meta property="og:description" content="Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/pip.html">
+<link rel="stylesheet" href="/assets/css/api-calculator-pilot.css">
 </head>
 
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
@@ -504,13 +505,15 @@
         Pip value = 100,000 × lots × pip size × quote-to-account conversion rate. Verify the contract size and conversion rate with your broker.
       </div>
     </div>
-  </main>
+  <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Uses this calculator’s 100,000-unit Forex lot, USD account and supplied conversion rate. The model label is not a verified broker symbol.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
+</main>
 
   <div class="toast" id="toast">Copied</div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-  <script>
+  <script src="/assets/vendor/decimal.js"></script>
+<script>
     const el = {
       price: document.getElementById("price"),
       lots: document.getElementById("lots"),
@@ -695,7 +698,16 @@
     el.downloadBtn.addEventListener("click", downloadPNG);
 
     resetResults();
-  </script>
+
+// Opt-in first-party adapter; all network access stays in the shared controller.
+window.fynxRiskPilot=async()=>{
+ const value=id=>document.getElementById(id).value.trim();
+ const number=(raw,digits)=>{const cleaned=String(raw).replace(/[^0-9.+-]/g,'');if(!cleaned||!Number.isFinite(Number(cleaned)))throw new Error('Calculate valid inputs first.');return Number(cleaned).toFixed(digits);};
+ const meta={instrument_type:'forex',symbol:'FOREX.MODEL',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1'};
+calculate();if(el.error.textContent)throw new Error(el.error.textContent);
+ return {endpoint:'pip-value',input:{...meta,pip_size:value('pipIncrement'),lot_size:value('lots'),quote_to_account_rate:value('price')},resultKey:'pip_value',precision:2,local:number(el.yourOut.textContent,2)};
+};
+</script>
 
   <script>
     const THEME_KEY = "fynx_theme";
@@ -714,5 +726,6 @@
     });
   </script>
 
+<script type="module" src="/assets/js/api-calculator-pilot.js"></script>
 </body>
 </html>

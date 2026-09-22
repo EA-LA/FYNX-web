@@ -19,7 +19,7 @@ async function browserResult(f){
  const script=[...w.document.querySelectorAll('script:not([src])')].map(x=>x.textContent).find(s=>s.includes(f.marker));if(!script)throw new Error('Calculator script missing: '+f.file);
  w.eval(script+'\nwindow.__proof=async()=>{'+f.invoke+';};');
  for(const [id,value]of Object.entries(f.fields)){const el=w.document.getElementById(id);if(!el)throw new Error('Missing field '+id);el.value=value;}
- await w.__proof();const node=w.document.getElementById(f.output),value=f.mode==='visible_error'?node.style.display==='block':f.mode==='alert'?!!w.__alert:f.mode==='error_text'?!!node.textContent.trim():numeric(f.innerText?node.innerText:node.textContent);w.close();return value;
+ await w.__proof();const node=w.document.getElementById(f.output),value=f.mode==='pilot'?await w.fynxRiskPilot():f.mode==='visible_error'?node.style.display==='block':f.mode==='alert'?!!w.__alert:f.mode==='error_text'?!!node.textContent.trim():numeric(f.innerText?node.innerText:node.textContent);w.close();return value;
 }
 async function run(){const rows=[];for(const f of fixtures){const browser=await browserResult(f),api=engine.risk(f.endpoint,f.input),expected=Number(Number(api[f.result]).toFixed(f.digits));rows.push({case:f.name,browser,api:expected,match:browser===expected});}return rows;}
 module.exports={run,fixtures,browserResult};

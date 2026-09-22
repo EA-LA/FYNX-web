@@ -468,6 +468,7 @@
 <meta property="og:title" content="Forex Position Size &amp; Risk Calculator | FYNX">
 <meta property="og:description" content="Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/position-size.html">
+<link rel="stylesheet" href="/assets/css/api-calculator-pilot.css">
 </head>
 
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
@@ -626,7 +627,8 @@
         Tip: This page will auto-refresh price every 10 seconds for FX pairs (not gold).
       </div>
     </div>
-  </main>
+  <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Uses the calculator’s Forex contract model and 0.01-lot increment. The stop is modeled below entry by your stop distance. Supply an explicit cross-currency conversion rate. Broker specifications remain unverified.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
+</main>
 
   <script src="/assets/vendor/decimal.js"></script>
   <script>
@@ -1100,7 +1102,23 @@
     }
 
     init();
-  </script>
+
+// Opt-in first-party adapter; all network access stays in the shared controller.
+window.fynxRiskPilot=async()=>{
+ const value=id=>document.getElementById(id).value.trim();
+ const number=(raw,digits)=>{const cleaned=String(raw).replace(/[^0-9.+-]/g,'');if(!cleaned||!Number.isFinite(Number(cleaned)))throw new Error('Calculate valid inputs first.');return Number(cleaned).toFixed(digits);};
+ const meta={instrument_type:'forex',symbol:'FOREX.MODEL',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1'};
+const selected=els.pair.value;if(isGoldPair(selected))throw new Error('Gold contract verification is outside this Forex beta.');
+ const {base,quote}=baseQuote(selected);
+ if(base!=='USD'&&quote!=='USD'&&!(Number(value('quoteUsdRate'))>0))throw new Error('Enter an explicit quote-to-USD rate before API verification.');
+ if(!(Number(els.balance.value)>0)||!(Number(els.stopPips.value)>0)||!(Number(usePercentRisk?els.riskPercent.value:els.riskDollars.value)>0)||(usePercentRisk&&Number(els.riskPercent.value)>100))throw new Error('Correct the balance, risk and stop inputs first.');
+ await calculate();if(!(currentPrice>0))throw new Error('Enter a valid price first.');
+ const price=String(currentPrice),stop=new Decimal(price).minus(new Decimal(value('stopPips')).mul(String(pipSizeForPair(selected))));
+ if(!stop.gt(0))throw new Error('The modeled stop must remain above zero for API verification.');
+ const rate=quote==='USD'?'1':base==='USD'?new Decimal(1).div(price).toFixed(12):value('quoteUsdRate');
+ return {endpoint:'position-size',input:{...meta,symbol:selected.replace('/',''),contract_size:String(contractSizeForPair(selected)),quote_to_account_rate:rate,entry_price:price,stop_loss_price:stop.toFixed(),direction:'long',lot_step:'0.01',minimum_lot:'0.01',...(usePercentRisk?{account_balance:value('balance'),risk_percent:value('riskPercent')}:{risk_amount:value('riskDollars')})},resultKey:'position_size',precision:2,local:number(els.lotsOut.textContent,2)};
+};
+</script>
 
   <script>
     const THEME_KEY = "fynx_theme";
@@ -1119,5 +1137,6 @@
     });
   </script>
 
+<script type="module" src="/assets/js/api-calculator-pilot.js"></script>
 </body>
 </html>

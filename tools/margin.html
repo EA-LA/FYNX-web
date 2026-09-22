@@ -481,6 +481,7 @@
 <meta property="og:title" content="Forex Margin &amp; Leverage Calculator | FYNX">
 <meta property="og:description" content="Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/margin.html">
+<link rel="stylesheet" href="/assets/css/api-calculator-pilot.css">
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
   <div class="animated-bg">
@@ -659,9 +660,11 @@
         Keep free margin healthy. Even if the broker allows the trade, using too much margin makes the account fragile and much easier to liquidate during normal volatility.
       </div>
     </section>
-  </main>
+  <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Uses the displayed USD notional/leverage model and your selected conversion basis. Inverse conversion is rounded to 12 decimals; differences are shown for review.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
+</main>
 
-  <script>
+  <script src="/assets/vendor/decimal.js"></script>
+<script>
     const THEME_KEY = "fynx_theme";
 
     function applyTheme(mode){
@@ -894,7 +897,20 @@
     });
 
     calculateMargin();
-  </script>
 
+// Opt-in first-party adapter; all network access stays in the shared controller.
+window.fynxRiskPilot=async()=>{
+ const value=id=>document.getElementById(id).value.trim();
+ const number=(raw,digits)=>{const cleaned=String(raw).replace(/[^0-9.+-]/g,'');if(!cleaned||!Number.isFinite(Number(cleaned)))throw new Error('Calculate valid inputs first.');return Number(cleaned).toFixed(digits);};
+ const meta={instrument_type:'forex',symbol:'FOREX.MODEL',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1'};
+calculateMargin();
+ const type=value('pairType'),price=value('entryPrice');
+ if(['lotSize','contractSize','entryPrice','leverage','conversionRate','accountBalance'].some(id=>!(Number(value(id))>0))||Number(value('usedMarginExisting'))<0)throw new Error('Correct the margin inputs first.');
+ const rate=type==='usdQuoted'?'1':type==='usdBase'?new Decimal(1).div(price).toFixed(12):value('conversionRate');
+ return {endpoint:'margin',input:{...meta,contract_size:value('contractSize'),entry_price:price,leverage:value('leverage'),lot_size:value('lotSize'),quote_to_account_rate:rate},resultKey:'required_margin',precision:2,local:number(document.getElementById('requiredMarginValue').textContent,2)};
+};
+</script>
+
+<script type="module" src="/assets/js/api-calculator-pilot.js"></script>
 </body>
 </html>
