@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -236,15 +236,15 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 
 <title>Reset Password — FYNX</title>
-<meta name="description" content="Reset Password — FYNX. Enter your email and we’ll send a reset link. (We’ll connect this to Firebase in the next step.)">
+<meta name="description" content="Reset Password — FYNX. Enter your email and we’ll send a reset link.">
 <meta name="robots" content="noindex, follow">
 <link rel="canonical" href="https://www.fynxfinanceworld.com/auth/forgot.html">
 <meta property="og:title" content="Reset Password — FYNX">
-<meta property="og:description" content="Reset Password — FYNX. Enter your email and we’ll send a reset link. (We’ll connect this to Firebase in the next step.)">
+<meta property="og:description" content="Reset Password — FYNX. Enter your email and we’ll send a reset link.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/auth/forgot.html">
 </head>
 
@@ -264,13 +264,14 @@
       </div>
 
       <h1>Reset your password</h1>
-      <p>Enter your email and we’ll send a reset link. (We’ll connect this to Firebase in the next step.)</p>
+      <p>Enter your email and we’ll send a reset link.</p>
 
       <form id="resetForm">
         <label for="email">Email</label>
-        <input id="email" type="email" required placeholder="you@domain.com" />
+        <input id="email" name="email" autocomplete="email" type="email" required placeholder="you@domain.com" />
         <button class="btn" type="submit">Send reset link</button>
       </form>
+      <p id="resetStatus" role="status" aria-live="polite" style="margin-top:16px"></p>
 
       <div class="mini">
         <a href="./signup.html">Create account</a>
@@ -280,12 +281,33 @@
   </main>
 
   <!-- ✅ Theme persistence -->
-  <script src="../assets/theme.js"></script>
+  <script src="../assets/theme.js?v=20260922-routing"></script>
 
-  <script>
-    document.getElementById('resetForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      alert('Password reset will be connected to Firebase later.');
+  <script type="module">
+    import { auth } from './firebase.js';
+    import { sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
+    const form = document.getElementById('resetForm');
+    const status = document.getElementById('resetStatus');
+    const button = form.querySelector('button');
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (button.disabled || !form.reportValidity()) return;
+      button.disabled = true;
+      button.textContent = 'Sending…';
+      status.textContent = '';
+      try {
+        await sendPasswordResetEmail(auth, form.elements.email.value.trim());
+        status.textContent = 'If an account exists for this email, you’ll receive a password reset link. Check your inbox and spam folder.';
+      } catch (error) {
+        status.textContent = error.code === 'auth/user-not-found'
+          ? 'If an account exists for this email, you’ll receive a password reset link. Check your inbox and spam folder.'
+          : error.code === 'auth/too-many-requests'
+            ? 'Too many requests. Please wait a few minutes and try again.'
+            : 'We couldn’t send the reset link. Check your connection and try again.';
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Send reset link';
+      }
     });
   </script>
 

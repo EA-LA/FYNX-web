@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -425,7 +425,7 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 
 <title>FYNX Tools — Symbol News</title>
@@ -467,7 +467,7 @@
         <div class="searchRow">
           <div class="searchInput">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input id="query" type="text" value="XAUUSD" placeholder="Symbol or keyword (e.g. EURUSD)" />
+            <input id="query" aria-label="Symbol or company news search" type="text" value="XAUUSD" placeholder="Symbol or keyword (e.g. EURUSD)" />
           </div>
 
           <button id="searchBtn" class="searchBtn">
@@ -647,7 +647,7 @@
     }
 
     function toRssJsonUrl(rssUrl){
-      return `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}&count=50`;
+      return `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
     }
 
     function buildArticleCard(item){
@@ -719,7 +719,7 @@
         const rssUrl = toGoogleRSSUrl(normalizedQuery);
         const apiUrl = toRssJsonUrl(rssUrl);
 
-        const response = await fetch(apiUrl, { cache: "no-store" });
+        const response = await fetch(apiUrl, { cache: "no-store", signal: AbortSignal.timeout(15000) });
         if (!response.ok) throw new Error("Network error");
 
         const data = await response.json();
@@ -730,7 +730,8 @@
         console.error(err);
         clearList();
         setStatus(0, raw);
-        showError("Failed to load news right now. If this happens again, swap the RSS endpoint to your own proxy for production.");
+        showError("The embedded feed is unavailable. Search the publisher results below or try again shortly.");
+        const fallback=document.createElement('a');fallback.href='https://news.google.com/search?q='+encodeURIComponent(normalizeSearchQuery(raw));fallback.target='_blank';fallback.rel='noopener noreferrer';fallback.className='newsCard';fallback.textContent='Search Google News for '+raw+' ↗';el.list.appendChild(fallback);
       } finally {
         setLoading(false);
       }

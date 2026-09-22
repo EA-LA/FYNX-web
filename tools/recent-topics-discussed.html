@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -203,7 +203,7 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 
 <title>Curated Macro &amp; Trading Research Topics | FYNX</title>
@@ -280,10 +280,10 @@
           <div class="chip">Equities</div>
         </div>
 
-        <div class="topic-list">
+        <p>Curated research prompts, not a real-time discussion feed. Open the linked resource for market data and context. Saved topics stay in this browser.</p><div class="topic-list">
           <article class="topic">
             <div class="topic-top">
-              <h3>Fed cut timing remains the main macro debate</h3>
+              <h3>How policy rates shape market expectations</h3>
               <div class="meta">
                 <span class="badge">Macro</span>
                 <span class="badge">USD</span>
@@ -295,14 +295,14 @@
               This theme affects USD, yields, gold, and broad equity sentiment.
             </p>
             <div class="links">
-              <a href="#" class="link-btn"><i class="fas fa-arrow-up-right-from-square"></i> Open topic</a>
-              <a href="#" class="link-btn"><i class="fas fa-bookmark"></i> Save</a>
+              <a href="interest-rates.html" class="link-btn"><i class="fas fa-arrow-up-right-from-square"></i> Open topic</a>
+              <button type="button" class="link-btn" data-save-topic="topic-0" aria-pressed="false">Save topic</button>
             </div>
           </article>
 
           <article class="topic">
             <div class="topic-top">
-              <h3>JPY volatility returns as rate normalization stays in focus</h3>
+              <h3>Currency policy and yen volatility</h3>
               <div class="meta">
                 <span class="badge">Forex</span>
                 <span class="badge">JPY</span>
@@ -314,14 +314,14 @@
               or if yield spreads still favor USD/JPY upside on pullbacks.
             </p>
             <div class="links">
-              <a href="#" class="link-btn"><i class="fas fa-arrow-up-right-from-square"></i> Open topic</a>
-              <a href="#" class="link-btn"><i class="fas fa-bookmark"></i> Save</a>
+              <a href="../markets/currencies.html" class="link-btn"><i class="fas fa-arrow-up-right-from-square"></i> Open topic</a>
+              <button type="button" class="link-btn" data-save-topic="topic-1" aria-pressed="false">Save topic</button>
             </div>
           </article>
 
           <article class="topic">
             <div class="topic-top">
-              <h3>Bitcoin flows and ETF demand continue driving attention</h3>
+              <h3>Bitcoin demand and market participation</h3>
               <div class="meta">
                 <span class="badge">Crypto</span>
                 <span class="badge">BTC</span>
@@ -333,14 +333,14 @@
               momentum interacts with broader risk appetite and liquidity conditions.
             </p>
             <div class="links">
-              <a href="#" class="link-btn"><i class="fas fa-arrow-up-right-from-square"></i> Open topic</a>
-              <a href="#" class="link-btn"><i class="fas fa-bookmark"></i> Save</a>
+              <a href="../markets/crypto.html" class="link-btn"><i class="fas fa-arrow-up-right-from-square"></i> Open topic</a>
+              <button type="button" class="link-btn" data-save-topic="topic-2" aria-pressed="false">Save topic</button>
             </div>
           </article>
 
           <article class="topic">
             <div class="topic-top">
-              <h3>AI trade rotation keeps reshaping equity leadership</h3>
+              <h3>Equity leadership and sector rotation</h3>
               <div class="meta">
                 <span class="badge">Equities</span>
                 <span class="badge">Tech</span>
@@ -352,8 +352,8 @@
               pressure and earnings expectations trigger broader sector rotation.
             </p>
             <div class="links">
-              <a href="#" class="link-btn"><i class="fas fa-arrow-up-right-from-square"></i> Open topic</a>
-              <a href="#" class="link-btn"><i class="fas fa-bookmark"></i> Save</a>
+              <a href="../news/heatmap.html" class="link-btn"><i class="fas fa-arrow-up-right-from-square"></i> Open topic</a>
+              <button type="button" class="link-btn" data-save-topic="topic-3" aria-pressed="false">Save topic</button>
             </div>
           </article>
         </div>
@@ -408,5 +408,7 @@
     });
   </script>
 
-</body>
+<script>
+ document.querySelectorAll('[data-save-topic]').forEach(button=>{const key='fynx_saved_'+button.dataset.saveTopic;function show(saved){button.setAttribute('aria-pressed',String(saved));button.textContent=saved?'Saved ✓':'Save topic';}try{show(localStorage.getItem(key)==='true');}catch{}button.addEventListener('click',()=>{try{const saved=button.getAttribute('aria-pressed')!=='true';localStorage.setItem(key,String(saved));show(saved);}catch{button.textContent='Saving unavailable';}});});
+</script></body>
 </html>

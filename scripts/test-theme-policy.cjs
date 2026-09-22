@@ -7,3 +7,10 @@ w.document.querySelector('[data-theme-control]').click();assert.equal(w.localSto
 w.localStorage.setItem('fynx_theme','light');w.dispatchEvent(new w.StorageEvent('storage',{key:'fynx_theme',newValue:'light'}));assert.equal(w.document.documentElement.dataset.theme,'light');
 w.document.querySelector('[data-theme-control]').remove();w.document.dispatchEvent(new w.Event('DOMContentLoaded'));assert.equal(w.document.querySelectorAll('[data-theme-control]').length,0);assert.equal(w.document.querySelectorAll('.theme-utility').length,0);
 console.log('Theme policy: persisted preference, one-toggle behavior, legacy controls hidden, cross-tab sync, no injected controls passed.');
+for(const initial of [null,'dark']){
+ const fresh=new JSDOM('<html><head></head><body></body></html>',{url:'https://www.fynxfinanceworld.com/',runScripts:'outside-only'});
+ if(initial)fresh.window.localStorage.setItem('fynx_theme',initial);
+ fresh.window.eval(init);fresh.window.eval(adapter);
+ assert.equal(fresh.window.document.documentElement.dataset.theme,initial||'light');
+}
+console.log('First visit defaults to white; an explicit saved dark preference is preserved.');

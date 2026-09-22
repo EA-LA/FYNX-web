@@ -1,6 +1,14 @@
 /* A single, full-width reading surface per category. */
 (() => {
   const panels = [...document.querySelectorAll('.mode-content')];
+  let restoring = false;
+  function routeFor(panel, frame) {
+    if (restoring) return;
+    const url = new URL(location.href);
+    url.searchParams.set('section', panel.dataset.newsPanel || panel.dataset.calendarPanel || '');
+    url.searchParams.set('tool', new URL(frame.dataset.src || frame.getAttribute('src'), location.href).pathname);
+    if(url.href !== location.href) history.pushState(null, '', url);
+  }
   function prepare(panel) {
     const frames = [...panel.querySelectorAll('iframe')];
     if (!frames.length) return;
@@ -10,7 +18,7 @@
     const open = document.createElement('a');
     open.className = 'module-open';
     open.textContent = 'Open full page ↗';
-    function select(frame) {
+    function select(frame, navigate = false) {
       frames.forEach((item, index) => {
         const card = item.closest('.module-card') || item.parentElement;
         card.hidden = item !== frame;
@@ -18,11 +26,13 @@
       });
       if (frame.dataset.src) { frame.src = frame.dataset.src; delete frame.dataset.src; }
       open.href = frame.getAttribute('src');
+      panel._selected = frame;
+      if(navigate) routeFor(panel, frame);
     }
     frames.forEach(frame => {
       const button = document.createElement('button');
       button.type = 'button'; button.textContent = frame.title;
-      button.addEventListener('click', () => select(frame)); toolbar.append(button);
+      button.addEventListener('click', () => select(frame, true)); toolbar.append(button);
       frame.addEventListener('load', () => {
         try {
           const doc = frame.contentDocument;
@@ -41,6 +51,7 @@
       });
     });
     toolbar.append(open); panel.prepend(toolbar);
+    panel._frames = frames; panel._select = select;
     panel._activate = () => { if(!frames.some(f => f.hasAttribute('src'))) select(frames[0]); };
     frames.forEach((frame, index) => { (frame.closest('.module-card') || frame.parentElement).hidden = index > 0; });
   }
@@ -58,5 +69,22 @@
     const index = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
     tabs[index].focus(); tabs[index].click();
   }));
-  loadActive();
+  function restoreRoute() {
+    restoring = true;
+    const params = new URLSearchParams(location.search);
+    const category = params.get('section');
+    const tab = [...document.querySelectorAll('[data-news-tab],[data-calendar-tab]')].find(t => (t.dataset.newsTab || t.dataset.calendarTab) === category) || document.querySelector('[data-news-tab],[data-calendar-tab]');
+    if(tab) tab.click();
+    const panel = panels.find(p=>p.classList.contains('active'));
+    const frame = panel?._frames?.find(f => new URL(f.dataset.src || f.getAttribute('src'),location.href).pathname === params.get('tool'));
+    if(panel?._frames?.length) panel._select(frame || panel._frames[0]);
+    restoring = false;
+    loadActive();
+  }
+  document.querySelectorAll('[data-news-tab],[data-calendar-tab]').forEach(tab=>tab.addEventListener('click',()=>{
+    loadActive(); const panel=panels.find(p=>p.classList.contains('active'));
+    if(panel?._selected)routeFor(panel,panel._selected);
+  }));
+  window.addEventListener('popstate',restoreRoute);
+  restoreRoute();
 })();

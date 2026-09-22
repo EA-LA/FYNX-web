@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <link rel="stylesheet" href="assets/css/mobile-fixes.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box} body{font-family:'Inter',sans-serif;background:#fff;color:#000;height:100vh;overflow:hidden} body.dark-mode{background:#000;color:#fff}
@@ -19,7 +19,7 @@ small.dim{font-size:11px;color:#777} .filters{display:flex;gap:8px;flex-wrap:wra
 @media(max-width:900px){.content-area{padding:20px}}
 </style>  <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 
 <title>FYNX - Notifications</title>
@@ -36,7 +36,7 @@ small.dim{font-size:11px;color:#777} .filters{display:flex;gap:8px;flex-wrap:wra
 <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><div><strong id="unreadLabel">0 unread</strong><div style="font-size:12px;color:#777">Includes market, calendar, platform, and security activity.</div></div><div style="display:flex;gap:8px"><button class="btn" id="markAllBtn">Mark all read</button><button class="btn" id="refreshNewsBtn">Pull latest news alerts</button></div></div></div>
 <div class="card">
   <div class="filters">
-    <select id="categoryFilter" class="btn"><option value="all">All categories</option><option value="market_news">Market news</option><option value="breaking_news">Breaking news</option><option value="economic_calendar">Economic calendar</option><option value="account_security">Account/security</option><option value="platform_updates">Platform updates</option><option value="billing_challenges">Billing/challenges</option></select>
+    <select id="categoryFilter" aria-label="Notification category" class="btn"><option value="all">All categories</option><option value="market_news">Market news</option><option value="breaking_news">Breaking news</option><option value="economic_calendar">Economic calendar</option><option value="account_security">Account/security</option><option value="platform_updates">Platform updates</option><option value="billing_challenges">Billing/challenges</option></select>
     <button class="btn" id="unreadOnlyBtn">Unread only: Off</button>
   </div>
   <h3 style="font-size:14px;margin:10px 0 8px">Recent Activity</h3><div id="feed"></div>
@@ -55,7 +55,7 @@ small.dim{font-size:11px;color:#777} .filters{display:flex;gap:8px;flex-wrap:wra
 <div style="margin-top:8px;font-size:12px;color:#777" id="permStatus">Permission: unknown</div>
 </div>
 </div></main></div>
-<script type="module" src="assets/js/session-bootstrap.js"></script>
+<script type="module" src="assets/js/session-bootstrap.js?v=20260922-routing"></script>
 <script>
   (function(){
     const nav=document.querySelector('.nav-panel');

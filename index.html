@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FYNX Finance World — Your Trading Workspace</title>
@@ -15,11 +15,11 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css?v=20260922-theme">
+  <link rel="stylesheet" href="styles.css?v=20260922-routing">
 
   <!-- ✅ NEW: Global Theme (Light micro-dots + Dark grid) -->
   <link rel="stylesheet" href="assets/theme.css">
-  <script src="assets/theme.js" defer></script>
+  <script src="assets/theme.js?v=20260922-routing" defer></script>
 
   <!-- ✅ FIX: FAQ CSS (KAST-style) — ONLY affects .fynx-faq -->
   <style>
@@ -921,7 +921,7 @@
   </style>
   <link rel="stylesheet" href="assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 <meta name="description" content="FYNX brings together professional market analysis, risk management, trading education, and performance tracking tools. Explore your trading workspace.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -1361,7 +1361,7 @@
       <p>Your professional workspace for market analysis, risk management, trading education, and performance tracking. Explore the tools and build your trading routine.</p>
       <div class="cta-buttons">
         <a href="home.html" class="btn btn-primary"><span>Open Your Workspace</span></a>
-        <a href="#learn" class="btn btn-secondary"><span>Explore Resources</span></a>
+        <a href="learn.html" class="btn btn-secondary"><span>Explore Resources</span></a>
       </div>
     </div>
     <aside class="workspace-guide" aria-label="Explore the FYNX ecosystem"><div class="workspace-guide-header"><span>THE FYNX ECOSYSTEM</span><h2>Start with what you need.</h2></div><a class="workspace-resource" href="https://blog.fynxfinanceworld.com/"><span>01</span><div><strong>Read the FYNX Journal</strong><small>Product updates, evaluation preparation and trading routines.</small></div><span>↗</span></a><a class="workspace-resource" href="risk-management.html"><span>02</span><div><strong>Build your knowledge</strong><small>Explore risk management, trading psychology and market concepts.</small></div><span>→</span></a><a class="workspace-resource" href="https://fynxfunded.com"><span>03</span><div><strong>Explore FYNX Funded</strong><small>Review evaluation options and the rules behind each program.</small></div><span>↗</span></a></aside>
@@ -1458,7 +1458,7 @@
       <div class="footer-section">
         <h3>Resources</h3>
         <ul>
-          <li><a href="home.html">Trading Tools</a></li>
+          <li><a href="calculator.html">Trading Tools</a></li>
           <li><a href="market-analysis.html">Market Analysis</a></li>
           <li><a href="tools/economic-calendar.html">Economic Calendar</a></li>
           <li><a href="trading-glossary.html">Trading Glossary</a></li>
@@ -1471,16 +1471,16 @@
       <div class="footer-section">
         <h3>Community</h3>
         <ul>
-          <li><a href="#">Forums</a></li>
-          <li><a href="#">Trading Ideas</a></li>
-          <li><a href="#">Success Stories</a></li>
+          <li><a href="learn.html">Learning Center</a></li>
+          <li><a href="news.html">Market News</a></li>
+          <li><a href="journal.html">Trading Journal</a></li>
           <li><a href="https://blog.fynxfinanceworld.com/" target="_blank" rel="noopener">Blog</a></li>
         </ul>
       </div>
      <div class="footer-section">
   <h3>Company</h3>
   <ul>
-    <li><a href="https://www.fynxfinanceworld.com/" target="_blank" rel="noopener">About Us</a></li>
+    <li><a href="founder.html">About FYNX</a></li>
     <li><a href="founder.html">Founder</a></li>
     <li><a href="https://fynxfunded.com" target="_blank" rel="noopener">FYNX Funded</a></li>
     <li><a href="/api/">FYNX API</a></li>
@@ -1492,7 +1492,7 @@
 </div>
     </div>
     <div class="copyright">
-      © 2025 FYNX. All rights reserved.
+      © 2026 FYNX. All rights reserved.
     </div>
   </footer>
 
@@ -1518,7 +1518,7 @@
 
   <!-- QR library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="script.js?v=20260922-theme"></script>
+  <script src="script.js?v=20260922-routing"></script>
   <script type="module">
     import { getOwnerAccess } from './assets/js/waitlist-mode.js?v=6ae3ec38a7f0';
     import { auth } from './auth/firebase.js';
@@ -1644,151 +1644,6 @@
   })();
   </script>
 
-  <!-- ✅ FIX: Desktop hover subnavs (REAL FIX) -->
-  <script>
-  (function(){
-    // Only on desktop hover devices. Mobile keeps your click behavior.
-    const canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    if(!canHover) return;
-
-    const homeToggle = document.getElementById('homeToggle');
-    const learnToggle = document.getElementById('learnToggle');
-    const toolsToggle = document.getElementById('toolsToggle');
-    const newsToggle = document.getElementById('newsToggle');
-
-    const homeSubnav = document.getElementById('homeSubnav');
-    const learnSubnav = document.getElementById('learnSubnav');
-    const toolsSubnav = document.getElementById('toolsSubnav');
-    const newsSubnav = document.getElementById('newsSubnav');
-
-    const marketsToggle = document.getElementById('marketsToggle');
-    const homeMarketsSubnav = document.getElementById('homeMarketsSubnav');
-
-    const panels = [homeSubnav, learnSubnav, toolsSubnav, newsSubnav, homeMarketsSubnav].filter(Boolean);
-
-    function show(el){
-      if(!el) return;
-      el.style.display = 'block';
-      el.style.opacity = '1';
-      el.style.visibility = 'visible';
-      el.style.pointerEvents = 'auto';
-      el.setAttribute('aria-hidden', 'false');
-    }
-
-    function hide(el){
-      if(!el) return;
-      el.style.opacity = '';
-      el.style.visibility = '';
-      el.style.pointerEvents = '';
-      el.style.display = '';
-      el.setAttribute('aria-hidden', 'true');
-    }
-
-    function hideAll(except){
-      panels.forEach(p => {
-        if(p && p !== except) hide(p);
-      });
-    }
-
-    // Small delay so the user can move mouse from link -> panel without it closing.
-    function hoverPair(triggerEl, panelEl, onOpen){
-      if(!triggerEl || !panelEl) return;
-
-      let t = null;
-      const OPEN_DELAY = 0;
-      const CLOSE_DELAY = 140;
-
-      const open = () => {
-        clearTimeout(t);
-        t = setTimeout(() => {
-          hideAll(panelEl);
-          show(panelEl);
-          if(typeof onOpen === 'function') onOpen();
-        }, OPEN_DELAY);
-      };
-
-      const close = () => {
-        clearTimeout(t);
-        t = setTimeout(() => {
-          // Only close if mouse is not over trigger or panel
-          hide(panelEl);
-        }, CLOSE_DELAY);
-      };
-
-      triggerEl.addEventListener('mouseenter', open);
-      triggerEl.addEventListener('mouseleave', close);
-
-      panelEl.addEventListener('mouseenter', () => {
-        clearTimeout(t);
-        show(panelEl);
-      });
-      panelEl.addEventListener('mouseleave', close);
-    }
-
-    // Prevent jump to #hash when hovering (but allow normal click nav)
-    function preventHashOnHover(a){
-      if(!a) return;
-      a.addEventListener('mouseenter', (e) => {
-        // nothing needed here; just keeping behavior stable
-      });
-    }
-
-    preventHashOnHover(homeToggle);
-    preventHashOnHover(learnToggle);
-    preventHashOnHover(toolsToggle);
-    preventHashOnHover(newsToggle);
-
-    hoverPair(homeToggle, homeSubnav, () => { hide(homeMarketsSubnav); });
-    hoverPair(learnToggle, learnSubnav, () => { hide(homeMarketsSubnav); });
-    hoverPair(toolsToggle, toolsSubnav, () => { hide(homeMarketsSubnav); });
-    hoverPair(newsToggle, newsSubnav, () => { hide(homeMarketsSubnav); });
-
-    // Markets submenu inside Home
-    if(marketsToggle && homeMarketsSubnav){
-      let t2 = null;
-      const CLOSE_DELAY = 140;
-
-      const openMarkets = () => {
-        clearTimeout(t2);
-        show(homeSubnav);      // keep Home open
-        show(homeMarketsSubnav);
-      };
-
-      const closeMarkets = () => {
-        clearTimeout(t2);
-        t2 = setTimeout(() => {
-          hide(homeMarketsSubnav);
-        }, CLOSE_DELAY);
-      };
-
-      marketsToggle.addEventListener('mouseenter', openMarkets);
-      marketsToggle.addEventListener('mouseleave', closeMarkets);
-
-      homeMarketsSubnav.addEventListener('mouseenter', () => {
-        clearTimeout(t2);
-        show(homeSubnav);
-        show(homeMarketsSubnav);
-      });
-      homeMarketsSubnav.addEventListener('mouseleave', closeMarkets);
-    }
-
-    // If you hover anywhere else on the page, close all
-    document.addEventListener('mousemove', (e) => {
-      const withinHeader = e.target.closest && e.target.closest('#header');
-      const withinPanels = e.target.closest && (
-        e.target.closest('#homeSubnav') ||
-        e.target.closest('#learnSubnav') ||
-        e.target.closest('#toolsSubnav') ||
-        e.target.closest('#newsSubnav') ||
-        e.target.closest('#homeMarketsSubnav')
-      );
-      if(!withinHeader && !withinPanels){
-        hideAll(null);
-      }
-    });
-  })();
-  </script>
 
 </body>
 </html>
-```

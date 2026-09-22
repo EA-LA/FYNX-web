@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script>
@@ -384,7 +384,7 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 
 <title>Sign Up — FYNX</title>
@@ -483,7 +483,7 @@
   </main>
 
   <!-- ✅ Theme persistence (must exist at ../assets/theme.js) -->
-  <script src="../assets/theme.js"></script>
+  <script src="../assets/theme.js?v=20260922-routing"></script>
 
   <script type="module">
     import {
@@ -495,6 +495,9 @@
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
     import { app, auth } from "./firebase.js";
+    import { safeReturnTo } from "../assets/js/route-utils.js?v=20260922-routing";
+    const requestedPage = new URLSearchParams(location.search).get('returnTo');
+    if(requestedPage) document.querySelectorAll('a[href="./login.html"],a[href="./signup.html"]').forEach(link=>{const url=new URL(link.href);url.searchParams.set('returnTo',safeReturnTo(requestedPage));link.href=url;});
 
     const googleBtn = document.getElementById("signupGoogle");
     const appleBtn  = document.getElementById("signupApple");
@@ -516,7 +519,7 @@
         await signInWithPopup(auth, provider);
         setMode("live");
         localStorage.setItem("fynx_auth_email", auth.currentUser?.email || "");
-        window.location.href = "../home.html";
+        window.location.href = safeReturnTo(new URLSearchParams(location.search).get("returnTo"));
       }catch(e){ showErr(e); }
     });
 
@@ -526,7 +529,7 @@
         await signInWithPopup(auth, provider);
         setMode("live");
         localStorage.setItem("fynx_auth_email", auth.currentUser?.email || "");
-        window.location.href = "../home.html";
+        window.location.href = safeReturnTo(new URLSearchParams(location.search).get("returnTo"));
       }catch(e){ showErr(e); }
     });
 
@@ -539,7 +542,7 @@
         memberSince: "Apr 2026"
       }));
       localStorage.setItem("fynx_auth_email", "demo@fynx.app");
-      window.location.href = "../home.html";
+      window.location.href = safeReturnTo(new URLSearchParams(location.search).get("returnTo"));
     });
 
     form.addEventListener("submit", async (e) => {
@@ -562,7 +565,7 @@
         }
         setMode("live");
         localStorage.setItem("fynx_auth_email", email);
-        window.location.href = "../home.html";
+        window.location.href = safeReturnTo(new URLSearchParams(location.search).get("returnTo"));
       }catch(err){ showErr(err); }
     });
   </script>

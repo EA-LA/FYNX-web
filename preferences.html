@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
 <link rel="stylesheet" href="assets/css/mobile-fixes.css">
@@ -20,7 +20,7 @@ body.dark-mode .icon-btn{border-color:rgba(255,255,255,.12);background:rgba(255,
 @media(max-width:900px){.grid{grid-template-columns:1fr}.content-area{padding:20px}}
 </style>  <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 
 <title>FYNX - Preferences</title>
@@ -36,14 +36,14 @@ body.dark-mode .icon-btn{border-color:rgba(255,255,255,.12);background:rgba(255,
 <div class="content-area">
 <div><h2 style="font-size:28px">Preferences</h2><p style="color:#888;font-size:13px;margin-top:4px">Platform behavior defaults for tools, alerts, and market workflow.</p></div>
 <form class="card" id="prefForm"><div class="grid">
-<div class="field" hidden><label>Theme mode</label><select id="themeMode"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
-<div class="field"><label>Timezone</label><input id="timezone"></div>
-<div class="field"><label>Currency</label><select id="currency"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option></select></div>
-<div class="field"><label>Date/time format</label><select id="dateTimeFormat"><option value="MMM d, yyyy HH:mm">MMM d, yyyy HH:mm</option><option value="MM/dd/yyyy hh:mm a">MM/dd/yyyy hh:mm a</option><option value="dd/MM/yyyy HH:mm">dd/MM/yyyy HH:mm</option></select></div>
-<div class="field"><label>Default risk %</label><input type="number" min="0.1" max="10" step="0.1" id="defaultRiskPercent"></div>
-<div class="field"><label>Default lot size</label><input type="number" min="0.01" max="100" step="0.01" id="defaultLotSize"></div>
-<div class="field"><label>Default RR</label><input type="number" min="0.1" max="20" step="0.1" id="defaultRR"></div>
-<div class="field"><label>Preferred market focus</label><select id="preferredMarketFocus"><option value="forex">Forex</option><option value="crypto">Crypto</option><option value="stocks">Stocks</option><option value="indices">Indices</option><option value="commodities">Commodities</option></select></div>
+<div class="field" hidden><label>Theme mode</label><select id="themeMode" aria-label="Theme mode"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
+<div class="field"><label>Timezone</label><input id="timezone" aria-label="Timezone"></div>
+<div class="field"><label>Currency</label><select id="currency" aria-label="Currency"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option></select></div>
+<div class="field"><label>Date/time format</label><select id="dateTimeFormat" aria-label="Date time format"><option value="MMM d, yyyy HH:mm">MMM d, yyyy HH:mm</option><option value="MM/dd/yyyy hh:mm a">MM/dd/yyyy hh:mm a</option><option value="dd/MM/yyyy HH:mm">dd/MM/yyyy HH:mm</option></select></div>
+<div class="field"><label>Default risk %</label><input type="number" min="0.1" max="10" step="0.1" id="defaultRiskPercent" aria-label="Default risk percent"></div>
+<div class="field"><label>Default lot size</label><input type="number" min="0.01" max="100" step="0.01" id="defaultLotSize" aria-label="Default lot size"></div>
+<div class="field"><label>Default RR</label><input type="number" min="0.1" max="20" step="0.1" id="defaultRR" aria-label="Default rr"></div>
+<div class="field"><label>Preferred market focus</label><select id="preferredMarketFocus" aria-label="Preferred market focus"><option value="forex">Forex</option><option value="crypto">Crypto</option><option value="stocks">Stocks</option><option value="indices">Indices</option><option value="commodities">Commodities</option></select></div>
 </div>
 <div class="card" style="margin-top:12px">
 <div class="row"><span>Email alerts</span><button class="switch" data-switch="emailAlerts" type="button"><span class="knob"></span></button></div>
@@ -53,7 +53,7 @@ body.dark-mode .icon-btn{border-color:rgba(255,255,255,.12);background:rgba(255,
 </div>
 <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center"><small id="saveStatus" style="color:#777">Ready</small><button class="btn primary" type="submit">Save preferences</button></div>
 </form></div></main></div>
-<script type="module" src="assets/js/session-bootstrap.js"></script>
+<script type="module" src="assets/js/session-bootstrap.js?v=20260922-routing"></script>
 <script>
   (function(){
     const nav=document.querySelector('.nav-panel');

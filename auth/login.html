@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script>
@@ -501,7 +501,7 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 <meta name="description" content="Log in to your FYNX account.">
 <meta name="robots" content="noindex, follow">
@@ -591,7 +591,7 @@
   </main>
 
   <!-- ✅ Theme persistence (must exist at ../assets/theme.js) -->
-  <script src="../assets/theme.js"></script>
+  <script src="../assets/theme.js?v=20260922-routing"></script>
 
   <script type="module">
     import {
@@ -601,13 +601,16 @@
       signInWithEmailAndPassword
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import { auth } from "./firebase.js";
+    import { safeReturnTo } from "../assets/js/route-utils.js?v=20260922-routing";
+    const requestedPage = new URLSearchParams(location.search).get('returnTo');
+    if(requestedPage) document.querySelectorAll('a[href="./login.html"],a[href="./signup.html"]').forEach(link=>{const url=new URL(link.href);url.searchParams.set('returnTo',safeReturnTo(requestedPage));link.href=url;});
     import { withMfa } from "../assets/js/mfa.js?v=20260915-cloud";
     import { getOwnerAccess } from "../assets/js/waitlist-mode.js?v=6ae3ec38a7f0";
     async function enterWorkspace(){
 
       window.location.href = DASHBOARD_URL;
     }
-    import { sessionState } from "../assets/js/session-manager.js";
+    import { sessionState } from "../assets/js/session-manager.js?v=20260922-routing";
 
     const loginGoogleBtn = document.getElementById("loginGoogle");
     const loginAppleBtn  = document.getElementById("loginApple");
@@ -616,7 +619,7 @@
     const continueDemoBtn = document.getElementById("continueDemo");
 
     // ✅ ONLY CHANGE: redirect to home.html instead of dashboard.html
-    const DASHBOARD_URL = "../home.html";
+    const DASHBOARD_URL = safeReturnTo(new URLSearchParams(location.search).get("returnTo"));
 
     function setMode(mode){
       localStorage.setItem("mode", mode);

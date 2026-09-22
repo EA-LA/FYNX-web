@@ -1,5 +1,5 @@
 import { auth } from "../../auth/firebase.js";
-import { bootstrapSession } from "./session-manager.js";
+import { bootstrapSession } from "./session-manager.js?v=20260922-routing";
 
 const protectedPage = document.body?.dataset?.protectedPage !== "false";
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -390,7 +390,7 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 
 <title>Market Holiday Planning Reference | FYNX</title>
@@ -448,7 +448,7 @@
       <div class="controls">
         <div class="group">
           <label>Region</label>
-          <select id="regionSel">
+          <select id="regionSel" aria-label="Market region">
             <option value="all">All Regions</option>
             <option value="Americas">Americas</option>
             <option value="Europe">Europe</option>
@@ -458,7 +458,7 @@
 
         <div class="group">
           <label>Market Type</label>
-          <select id="marketSel">
+          <select id="marketSel" aria-label="Market">
             <option value="all">All Markets</option>
             <option value="Stocks">Stocks</option>
             <option value="Options">Options</option>
@@ -469,7 +469,7 @@
 
         <div class="group">
           <label>Year</label>
-          <select id="yearSel">
+          <select id="yearSel" aria-label="Year">
             <option value="2025">2025</option>
             <option value="2026">2026</option>
             <option value="2027">2027</option>
@@ -483,7 +483,7 @@
 
         <div class="group" style="min-width:260px">
           <label>Timezone</label>
-          <select id="tzSel"></select>
+          <select id="tzSel" aria-label="Timezone"></select>
         </div>
 
         <div class="views">

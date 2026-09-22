@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <script>
@@ -517,10 +517,10 @@
       .count{ text-align:left; }
     }
   </style>
-  <script type="module" src="assets/js/session-bootstrap.js"></script>
+  <script type="module" src="assets/js/session-bootstrap.js?v=20260922-routing"></script>
   <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 <meta name="description" content="Explore trading calculators for position size, pip value, margin, risk-reward, options and compounding. Plan trades using your own inputs.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -530,7 +530,7 @@
 <meta property="og:url" content="https://www.fynxfinanceworld.com/calculator.html">
 </head>
 
-<body data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD">
+<body data-protected-page="false" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD">
   <div class="dashboard-container">
     <nav class="nav-panel">
       <div class="nav-logo">FYNX</div>
@@ -572,7 +572,7 @@
         </div>
 
         <div class="filters">
-          <input id="searchInput" class="search" type="text" placeholder="Search calculators..." />
+          <input id="searchInput" aria-label="Search calculators" class="search" type="text" placeholder="Search calculators..." />
           <div class="count" id="countText">0 tools</div>
         </div>
 
@@ -697,7 +697,7 @@ topBar.prepend(banner);
     renderAvatar();
   </script>
 
-  <script src="fynx-nav.js?v=20260922-theme"></script>
+  <script src="fynx-nav.js?v=20260922-routing"></script>
 
   <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
   <script src="fynx-usercard.js"></script>

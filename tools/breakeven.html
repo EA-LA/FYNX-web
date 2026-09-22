@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -129,7 +129,7 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 
 <title>Trading Break-Even Price Calculator | FYNX</title>
@@ -161,22 +161,22 @@
         <h3>Inputs</h3>
 
         <label>Position Type</label>
-        <select id="type">
+        <select id="type" aria-label="Trade direction">
           <option value="buy">Buy (Long)</option>
           <option value="sell">Sell (Short)</option>
         </select>
 
         <label>Entry Price</label>
-        <input id="entry" type="number" value="1.1000">
+        <input id="entry" aria-label="Entry price" type="number" value="1.1000">
 
         <label>Lot Size</label>
-        <input id="lot" type="number" value="1">
+        <input id="lot" aria-label="Lot size" type="number" value="1">
 
         <label>Spread (pips)</label>
-        <input id="spread" type="number" value="1">
+        <input id="spread" aria-label="Spread in pips" type="number" value="1">
 
         <label>Round-trip commission for this position ($)</label>
-        <input id="commission" type="number" value="7">
+        <input id="commission" aria-label="Commission" type="number" value="7">
 
         <button class="primary" onclick="calc()">Calculate</button>
         <button class="secondary" onclick="resetCalc()">Reset</button>

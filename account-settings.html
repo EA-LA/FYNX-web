@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -66,7 +66,7 @@
   <link rel="stylesheet" href="assets/css/mobile-fixes.css">
   <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 
 <title>FYNX - Account Settings</title>
@@ -95,20 +95,20 @@
         <form class="card" id="accountForm">
           <h3>Identity</h3>
           <div class="grid">
-            <div class="field"><label>Display name</label><input id="displayName" required></div>
-            <div class="field"><label>Username / handle</label><input id="username" placeholder="fynxtrader"></div>
-            <div class="field" style="grid-column:1/-1"><label>Short bio</label><textarea id="bio" maxlength="280"></textarea></div>
-            <div class="field"><label>Country / region</label><input id="country"></div>
-            <div class="field"><label>Timezone</label><input id="timezone"></div>
-            <div class="field"><label>Preferred currency</label><select id="preferredCurrency"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option><option>AUD</option></select></div>
-            <div class="field"><label>Profile photo upload</label><input type="file" id="profilePhoto" accept="image/*"></div>
+            <div class="field"><label>Display name</label><input id="displayName" aria-label="Display name" required></div>
+            <div class="field"><label>Username / handle</label><input id="username" aria-label="Username" placeholder="fynxtrader"></div>
+            <div class="field" style="grid-column:1/-1"><label>Short bio</label><textarea id="bio" aria-label="Bio" maxlength="280"></textarea></div>
+            <div class="field"><label>Country / region</label><input id="country" aria-label="Country"></div>
+            <div class="field"><label>Timezone</label><input id="timezone" aria-label="Timezone"></div>
+            <div class="field"><label>Preferred currency</label><select id="preferredCurrency" aria-label="Preferred currency"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option><option>AUD</option></select></div>
+            <div class="field"><label>Profile photo upload</label><input type="file" id="profilePhoto" aria-label="Profile photo" accept="image/*"></div>
           </div>
           <div style="margin:10px 0;display:flex;align-items:center;gap:10px"><img id="profilePreview" class="avatar" alt="Profile preview"><span class="status" id="photoStatus">No upload in progress.</span></div>
 
           <h3 style="margin-top:6px">Trading Profile</h3>
           <div class="grid">
-            <div class="field"><label>Experience level</label><select id="experienceLevel"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option><option value="pro">Professional</option></select></div>
-            <div class="field"><label>Risk profile</label><select id="riskProfile"><option value="conservative">Conservative</option><option value="moderate">Moderate</option><option value="aggressive">Aggressive</option></select></div>
+            <div class="field"><label>Experience level</label><select id="experienceLevel" aria-label="Experience level"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option><option value="pro">Professional</option></select></div>
+            <div class="field"><label>Risk profile</label><select id="riskProfile" aria-label="Risk profile"><option value="conservative">Conservative</option><option value="moderate">Moderate</option><option value="aggressive">Aggressive</option></select></div>
             <div class="field" style="grid-column:1/-1"><label>Preferred markets</label><div class="pill-row" id="marketPills"></div></div>
           </div>
 
@@ -117,8 +117,8 @@
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <a class="btn" href="https://apps.apple.com/us/app/fynx-finance-world/id6752357210" target="_blank" rel="noopener">Download App</a>
               <a class="btn" href="mailto:support@fynxfinanceworld.com">Contact Support</a>
-              <a class="btn" href="https://fynxfinanceworld.com/terms" target="_blank" rel="noopener">Terms</a>
-              <a class="btn" href="https://fynxfinanceworld.com/privacy" target="_blank" rel="noopener">Privacy</a>
+              <a class="btn" href="https://site.fynxfinanceworld.com/terms.html" target="_blank" rel="noopener">Terms</a>
+              <a class="btn" href="https://site.fynxfinanceworld.com/privacy.html" target="_blank" rel="noopener">Privacy</a>
               <a class="btn" href="https://fynxfinanceworld.com/risk-disclosure" target="_blank" rel="noopener">Risk Disclosure</a>
             </div>
             <div style="display:flex;gap:8px;align-items:center"><span id="saveStatus" class="status">Ready</span><button class="btn primary" type="submit">Save changes</button></div>
@@ -128,7 +128,7 @@
     </main>
   </div>
 
-  <script type="module" src="assets/js/session-bootstrap.js"></script>
+  <script type="module" src="assets/js/session-bootstrap.js?v=20260922-routing"></script>
 <script>
   (function(){
     const nav=document.querySelector('.nav-panel');

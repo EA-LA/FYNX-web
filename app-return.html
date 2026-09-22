@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="assets/css/mobile-fixes.css">
   <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 
 <title>Signing you in…</title>
@@ -57,11 +57,12 @@
     import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
 
     import { app, auth } from "./auth/firebase.js";
+    import { safeReturnTo } from "./assets/js/route-utils.js?v=20260922-routing";
     const functions = getFunctions(app);
 
     const url = new URL(window.location.href);
     const ticket = url.searchParams.get("ticket");
-    const returnTo = url.searchParams.get("returnTo") || "../dashboard.html";
+    const returnTo = safeReturnTo(url.searchParams.get("returnTo"));
 
     const msg = document.getElementById("msg");
 

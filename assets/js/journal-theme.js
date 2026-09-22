@@ -1,7 +1,7 @@
 /* Shared theme adapter for public pages, tools and the owner workspace. */
 (() => {
   const key = 'fynx_theme';
-  function saved() { try { return localStorage.getItem(key) === 'light' ? 'light' : 'dark'; } catch { return 'dark'; } }
+  function saved() { try { return localStorage.getItem(key) === 'dark' ? 'dark' : 'light'; } catch { return 'light'; } }
   function apply(theme) {
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;

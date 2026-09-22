@@ -113,6 +113,7 @@ function recordLastRoute() {
 }
 
 function restoreScrollPosition() {
+  if (window.location.hash) return;
   const pageKey = getCurrentPageKey();
   const raw = safeGetItem(`${KEYS.routeScroll}:${pageKey}`);
   const value = Number(raw);
@@ -289,7 +290,7 @@ function bindPresenceListeners() {
 
       if (payload.type === "logout") {
         dispatchSessionEvent(payload);
-        window.location.href = payload.redirectTo || "auth/login.html";
+        window.location.href = payload.redirectTo || "/auth/login.html";
       }
 
       if (payload.type === "login") {
@@ -299,7 +300,7 @@ function bindPresenceListeners() {
   });
 }
 
-async function broadcastAndSignOut(reason = "manual", redirectTo = "auth/login.html") {
+async function broadcastAndSignOut(reason = "manual", redirectTo = "/auth/login.html") {
   if (!currentAuth) return;
 
   safeSetItem(KEYS.sessionEvent, JSON.stringify({
@@ -336,7 +337,7 @@ export async function bootstrapSession({ auth, protectedPage = false, loginPage 
   });
 
   const isDemo = localStorage.getItem("mode") === "demo";
-  const redirectTo = `auth/login.html?returnTo=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`;
+  const redirectTo = `/auth/login.html?returnTo=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`;
 
   return new Promise((resolve) => {
     const unsub = onAuthStateChanged(auth, async (user) => {
