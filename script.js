@@ -146,9 +146,9 @@ function setActiveTopic(topic) {
   document.body.classList.add('learn-detail-open');
   learnDetailSubnav.setAttribute('aria-hidden', 'false');
   learnDetailCaption.innerHTML = '<i class="fas fa-layer-group"></i> ' + (topicLabel[topic] || 'Topic');
-  learnHowTo.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=howto';
-  learnQuizzes.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=quizzes';
-  learnGlossary.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=glossary';
+  learnHowTo.href = 'learn/' + encodeURIComponent(topic) + '-howto.html';
+  learnQuizzes.href = 'learn/' + encodeURIComponent(topic) + '-quizzes.html';
+  learnGlossary.href = 'learn/' + encodeURIComponent(topic) + '-glossary.html';
 }
 learnTopicButtons.forEach(btn => {
   btn.addEventListener('click', () => {
@@ -296,3 +296,11 @@ document.querySelectorAll('.mobile-drawer a').forEach(a => {
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", applyInitialState);
 })();
+
+// Size nested menus from their actual content, including wrapped laptop layouts.
+for (const [element, variable] of [[homeSubnav, '--home-menu-height'], [learnSubnav, '--learn-menu-height']]) {
+  if (element) new ResizeObserver(() => document.documentElement.style.setProperty(variable, element.getBoundingClientRect().height + 'px')).observe(element);
+}
+new MutationObserver(() => {
+  for (const name of ['home','learn','news','tools']) document.getElementById(name+'Toggle')?.setAttribute('aria-expanded', String(document.body.classList.contains(name+'-open')));
+}).observe(document.body, {attributes:true,attributeFilter:['class']});

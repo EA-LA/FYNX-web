@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head>
-  <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
 <link rel="stylesheet" href="assets/css/mobile-fixes.css">
@@ -20,7 +20,7 @@ body.dark-mode .icon-btn{border-color:rgba(255,255,255,.12);background:rgba(255,
 @media(max-width:900px){.grid{grid-template-columns:1fr}.content-area{padding:20px}}
 </style>  <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 
 <title>FYNX - Preferences</title>
@@ -36,7 +36,7 @@ body.dark-mode .icon-btn{border-color:rgba(255,255,255,.12);background:rgba(255,
 <div class="content-area">
 <div><h2 style="font-size:28px">Preferences</h2><p style="color:#888;font-size:13px;margin-top:4px">Platform behavior defaults for tools, alerts, and market workflow.</p></div>
 <form class="card" id="prefForm"><div class="grid">
-<div class="field"><label>Theme mode</label><select id="themeMode"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
+<div class="field" hidden><label>Theme mode</label><select id="themeMode"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
 <div class="field"><label>Timezone</label><input id="timezone"></div>
 <div class="field"><label>Currency</label><select id="currency"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option></select></div>
 <div class="field"><label>Date/time format</label><select id="dateTimeFormat"><option value="MMM d, yyyy HH:mm">MMM d, yyyy HH:mm</option><option value="MM/dd/yyyy hh:mm a">MM/dd/yyyy hh:mm a</option><option value="dd/MM/yyyy HH:mm">dd/MM/yyyy HH:mm</option></select></div>
@@ -71,7 +71,7 @@ document.getElementById('themeBtn').onclick=()=>{const d=!document.body.classLis
 document.querySelectorAll('.switch').forEach((s)=>s.onclick=()=>{const k=s.dataset.switch;bools[k]=!bools[k];s.classList.toggle('on',bools[k]);});
 function fill(pref){['themeMode','timezone','currency','dateTimeFormat','defaultRiskPercent','defaultLotSize','defaultRR','preferredMarketFocus'].forEach((id)=>document.getElementById(id).value=pref[id] ?? '');Object.keys(bools).forEach((k)=>{bools[k]=Boolean(pref[k]);document.querySelector(`.switch[data-switch="${k}"]`).classList.toggle('on',bools[k]);});}
 onAuthStateChanged(auth, async (user)=>{if(!user) return; const seeded=await bootstrapAccount(user); fill(seeded.preferences);});
-document.getElementById('prefForm').addEventListener('submit', async(e)=>{e.preventDefault();const user=auth.currentUser;if(!user)return;const payload={themeMode:themeMode.value,timezone:timezone.value.trim(),currency:currency.value,dateTimeFormat:dateTimeFormat.value,defaultRiskPercent:Number(defaultRiskPercent.value||1),defaultLotSize:Number(defaultLotSize.value||0.1),defaultRR:Number(defaultRR.value||2),preferredMarketFocus:preferredMarketFocus.value,...bools};saveStatus.textContent='Saving...';await saveUserPreferences(user.uid,payload);localStorage.setItem('fynx_preferences',JSON.stringify(payload));if(payload.themeMode==='dark'||payload.themeMode==='light'){localStorage.setItem('fynx_theme',payload.themeMode);applyTheme();}saveStatus.textContent='Saved';});
+document.getElementById('prefForm').addEventListener('submit', async(e)=>{e.preventDefault();const user=auth.currentUser;if(!user)return;const payload={themeMode:localStorage.getItem("fynx_theme") || "dark",timezone:timezone.value.trim(),currency:currency.value,dateTimeFormat:dateTimeFormat.value,defaultRiskPercent:Number(defaultRiskPercent.value||1),defaultLotSize:Number(defaultLotSize.value||0.1),defaultRR:Number(defaultRR.value||2),preferredMarketFocus:preferredMarketFocus.value,...bools};saveStatus.textContent='Saving...';await saveUserPreferences(user.uid,payload);localStorage.setItem('fynx_preferences',JSON.stringify(payload));if(payload.themeMode==='dark'||payload.themeMode==='light'){localStorage.setItem('fynx_theme',payload.themeMode);applyTheme();}saveStatus.textContent='Saved';});
 mountNotificationBell();
 </script>
 

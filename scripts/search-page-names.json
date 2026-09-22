@@ -36,8 +36,8 @@
     "description": "Explore forex currency pairs, compare crosses and review currency market context before planning a trade."
   },
   "markets/historical-data.html": {
-    "title": "Historical Market Data: Sample Dataset Explorer | FYNX",
-    "description": "Explore sample historical market data to practice reviewing price movements. This reference page is not a live historical-data feed."
+    "title": "Historical Market Charts: Forex, Bitcoin, Gold & Indices | FYNX",
+    "description": "Explore historical forex, Bitcoin, gold and S&P 500 charts by market and timeframe with TradingView charts."
   },
   "markets/index.html": {
     "title": "Financial Markets: Forex, Crypto & Market Research | FYNX",
@@ -72,8 +72,8 @@
     "description": "Browse financial and world headlines covering forex, crypto, stocks, commodities and macroeconomic developments."
   },
   "news/sentiment.html": {
-    "title": "Trading Sentiment: Market Mood & Psychology | FYNX",
-    "description": "Explore market sentiment and trading psychology across forex, crypto, stocks, futures and options as context for research."
+    "title": "Bitcoin Fear & Greed and Market Sentiment | FYNX",
+    "description": "Track the dated daily Bitcoin Fear & Greed index from Alternative.me and explore weekly CFTC positioning and market volatility."
   },
   "news.html": {
     "title": "Financial News Hub: Headlines, Heatmaps & Sentiment | FYNX",

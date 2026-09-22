@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -29,15 +29,15 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 
-<title>Historical Market Data: Sample Dataset Explorer | FYNX</title>
-<meta name="description" content="Explore sample historical market data to practice reviewing price movements. This reference page is not a live historical-data feed.">
+<title>Historical Market Charts: Forex, Bitcoin, Gold &amp; Indices | FYNX</title>
+<meta name="description" content="Explore historical forex, Bitcoin, gold and S&amp;P 500 charts by market and timeframe with TradingView charts.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.fynxfinanceworld.com/markets/historical-data.html">
-<meta property="og:title" content="Historical Market Data: Sample Dataset Explorer | FYNX">
-<meta property="og:description" content="Explore sample historical market data to practice reviewing price movements. This reference page is not a live historical-data feed.">
+<meta property="og:title" content="Historical Market Charts: Forex, Bitcoin, Gold &amp; Indices | FYNX">
+<meta property="og:description" content="Explore historical forex, Bitcoin, gold and S&amp;P 500 charts by market and timeframe with TradingView charts.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/markets/historical-data.html">
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="MARKETS">
@@ -65,8 +65,8 @@
 <main>
   <div class="grid">
     <div class="card">
-      <h1>Search-style historical price lookup.</h1>
-      <p class="desc">This gives your users a real utility page now. Later you can replace the sample data with API data.</p>
+      <h1>Historical market charts.</h1>
+      <p class="desc">Explore price history by market and timeframe. Charts are supplied by TradingView; exchange data may be delayed.</p>
 
       <div class="tool">
         <select id="asset">
@@ -81,7 +81,7 @@
           <option>3 Months</option>
           <option>1 Year</option>
         </select>
-        <button class="btn" onclick="lookup()">Search</button>
+        <button class="btn" onclick="lookup()">Show chart</button>
       </div>
 
       <div class="result" id="histResult">Choose an asset and period, then click Search.</div>
@@ -89,7 +89,7 @@
 
     <div class="card">
       <h2 style="margin-bottom:1rem">Historical Chart</h2>
-      <div style="min-height:500px;border:1px solid var(--border);border-radius:20px;overflow:hidden;background:var(--panel-2)" id="histWidget"></div>
+      <div style="height:560px;border:1px solid var(--border);border-radius:20px;overflow:hidden;background:var(--panel-2)" id="histWidget"></div>
     </div>
   </div>
 </main>
@@ -106,22 +106,24 @@ function toggleTheme(){const next=getTheme()==="dark"?"light":"dark";localStorag
 function lookup(){
   const asset=document.getElementById("asset").value;
   const period=document.getElementById("period").value;
-  document.getElementById("histResult").textContent=`Showing ${period} view for ${asset}. This block is ready for API data later.`;
+  document.getElementById("histResult").textContent=`Showing ${period} view for ${asset}. Chart data provided by TradingView.`;
+  renderWidget();
 }
 function renderWidget(){
+  const symbols={"EUR/USD":"FX:EURUSD","BTC/USD":"BITSTAMP:BTCUSD","Gold":"OANDA:XAUUSD","S&P 500":"FOREXCOM:SPXUSD"};
+  const ranges={"1 Week":"5D","1 Month":"1M","3 Months":"3M","1 Year":"12M"};
   const wrap=document.getElementById("histWidget");
   wrap.innerHTML='<div class="tradingview-widget-container" style="height:100%;width:100%"><div id="hist_inner" style="height:100%;width:100%"></div></div>';
   const s=document.createElement("script");
   s.src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
   s.async=true;
   s.innerHTML=JSON.stringify({
-    autosize:true,symbol:"FX:EURUSD",interval:"D",timezone:"Etc/UTC",
+    autosize:true,symbol:symbols[document.getElementById("asset").value],range:ranges[document.getElementById("period").value],interval:"D",timezone:"Etc/UTC",
     theme:getTheme(),style:"1",locale:"en",enable_publishing:false,hide_legend:false,save_image:false,support_host:"https://www.tradingview.com"
   });
   wrap.querySelector('.tradingview-widget-container').appendChild(s);
 }
 applyTheme(getTheme());
-lookup();
 document.getElementById("themeToggle").addEventListener("click",toggleTheme);
 window.addEventListener("storage",e=>{if(e.key===THEME_KEY)applyTheme(getTheme());});
 </script>

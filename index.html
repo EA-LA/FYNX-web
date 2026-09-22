@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FYNX Finance World — Your Trading Workspace</title>
@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20260922-theme">
 
   <!-- ✅ NEW: Global Theme (Light micro-dots + Dark grid) -->
   <link rel="stylesheet" href="assets/theme.css">
@@ -921,7 +921,7 @@
   </style>
   <link rel="stylesheet" href="assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 <meta name="description" content="FYNX brings together professional market analysis, risk management, trading education, and performance tracking tools. Explore your trading workspace.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -951,7 +951,7 @@
         <ul>
           <li><a href="#home" id="homeToggle">Home <span style="opacity:.7;">▾</span></a></li>
           <li><a href="#learn" id="learnToggle">Learn <span style="opacity:.7;">▾</span></a></li>
-          <li><a href="home.html">Tools</a></li>
+          <li><a href="#tools" id="toolsToggle" aria-controls="toolsSubnav" aria-expanded="false">Tools ▾</a></li>
           <li><a href="#news" id="newsToggle">News <span style="opacity:.7;">▾</span></a></li>
           <li><a href="/api/">API</a></li>
         </ul>
@@ -1008,11 +1008,12 @@
           <a class="fynx-network-btn" href="dashboard.html">Dashboard</a>
           <a class="fynx-network-btn" href="auth/login.html?owner=1">Login</a>
         </div>
-        <button class="fynx-network-theme" type="button" aria-label="Toggle theme" data-fynx-theme-toggle title="Toggle black/white mode">
-          <i class="fas fa-circle-half-stroke"></i>
-        </button>
+
       </div>
 
+              <button class="fynx-network-theme" data-theme-control type="button" aria-label="Toggle theme" data-fynx-theme-toggle title="Toggle black/white mode">
+          <i class="fas fa-circle-half-stroke"></i>
+        </button>
       <div class="mobile-header-actions" aria-label="Mobile quick actions">
         <div class="mobile-resources-menu fynx-menu" id="mobileResourcesMenu">
           <button class="mobile-resources-btn" id="mobileResourcesToggle" type="button" aria-expanded="false" aria-controls="mobileResourcesPanel">
@@ -1084,15 +1085,15 @@
               </button>
               <div class="m-acc-panel">
                 <div class="m-links">
-                  <a class="m-link" href="markets/index.html?section=currencies"><span class="left"><i class="fas fa-dollar-sign"></i><span>Currencies</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=crypto"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=indicators"><span class="left"><i class="fas fa-chart-line"></i><span>Indicators</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=patterns"><span class="left"><i class="fas fa-shapes"></i><span>Patterns</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=volatility"><span class="left"><i class="fas fa-wave-square"></i><span>Volatility</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=correlation"><span class="left"><i class="fas fa-chart-area"></i><span>Correlation</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=cot"><span class="left"><i class="fas fa-clipboard-list"></i><span>Commitments of Traders</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=liquidity"><span class="left"><i class="fas fa-water"></i><span>Liquidity</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=historical-data"><span class="left"><i class="fas fa-database"></i><span>Historical Data</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/currencies.html"><span class="left"><i class="fas fa-dollar-sign"></i><span>Currencies</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/crypto.html"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/indicators.html"><span class="left"><i class="fas fa-chart-line"></i><span>Indicators</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/patterns.html"><span class="left"><i class="fas fa-shapes"></i><span>Patterns</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/volatility.html"><span class="left"><i class="fas fa-wave-square"></i><span>Volatility</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/correlation.html"><span class="left"><i class="fas fa-chart-area"></i><span>Correlation</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/cot.html"><span class="left"><i class="fas fa-clipboard-list"></i><span>Commitments of Traders</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/liquidity.html"><span class="left"><i class="fas fa-water"></i><span>Liquidity</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/historical-data.html"><span class="left"><i class="fas fa-database"></i><span>Historical Data</span></span><i class="fas fa-arrow-right"></i></a>
                 </div>
               </div>
             </div>
@@ -1140,7 +1141,7 @@
             <a class="m-link" href="tools/risk-reward.html"><span class="left"><i class="fas fa-scale-balanced"></i><span>Risk/Reward</span></span><i class="fas fa-arrow-right"></i></a>
             <a class="m-link" href="tools/market-hours.html"><span class="left"><i class="fas fa-clock"></i><span>Market Hours</span></span><i class="fas fa-arrow-right"></i></a>
             <a class="m-link" href="tools/economic-calendar.html"><span class="left"><i class="fas fa-calendar-alt"></i><span>Economic Calendar</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="tools/profit-loss.html"><span class="left"><i class="fas fa-dollar-sign"></i><span>Profit/Loss (Pro)</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/profit-loss.html"><span class="left"><i class="fas fa-dollar-sign"></i><span>Stock Risk</span></span><i class="fas fa-arrow-right"></i></a>
             <a class="m-link" href="tools/calendar-alerts.html"><span class="left"><i class="fas fa-calendar-check"></i><span>Calendar Alerts (Pro)</span></span><i class="fas fa-arrow-right"></i></a>
             <a class="m-link" href="tools/heatmap.html"><span class="left"><i class="fas fa-fire"></i><span>Heat Map (Pro)</span></span><i class="fas fa-arrow-right"></i></a>
           </div>
@@ -1278,7 +1279,7 @@
     </a>
 
     <a class="tools-pill" href="tools/profit-loss.html">
-      <i class="fas fa-dollar-sign"></i> Profit/Loss
+      <i class="fas fa-dollar-sign"></i> Stock Risk
     </a>
 
     <a class="tools-pill" href="tools/calendar-alerts.html">
@@ -1311,7 +1312,7 @@
     </a>
 
     <a class="tools-pill" href="tools/options-payoff.html">
-      <i class="fas fa-diagram-project"></i> Options Payoff
+      <i class="fas fa-diagram-project"></i> Debt Payoff
     </a>
 
     <a class="tools-pill" href="tools/risk-reward.html">
@@ -1643,7 +1644,7 @@
 
   <!-- QR library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="script.js"></script>
+  <script src="script.js?v=20260922-theme"></script>
   <script type="module">
     import { getOwnerAccess } from './assets/js/waitlist-mode.js?v=6ae3ec38a7f0';
     import { auth } from './auth/firebase.js';

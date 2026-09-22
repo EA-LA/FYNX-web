@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 
 <title>Commitments of Traders: Positioning Reference | FYNX</title>
@@ -63,17 +63,14 @@
 
 <main>
   <div class="card">
-    <h1>Institutional positioning view.</h1>
-    <p class="desc">This page gives your users a real place to read positioning bias. You can replace these rows later with parsed CFTC data if you want.</p>
-
-    <div class="table">
-      <div class="row head"><div>Market</div><div>Large Specs</div><div>Commercials</div><div>Bias Note</div></div>
-      <div class="row"><div>EUR</div><div>Net Long</div><div>Net Short</div><div>Speculators favor upside</div></div>
-      <div class="row"><div>JPY</div><div>Net Short</div><div>Net Long</div><div>Bearish speculative pressure</div></div>
-      <div class="row"><div>Gold</div><div>Net Long</div><div>Net Short</div><div>Risk and inflation sensitivity</div></div>
-      <div class="row"><div>S&P 500</div><div>Moderate Long</div><div>Hedged</div><div>Positioning still constructive</div></div>
-      <div class="row"><div>Oil</div><div>Mixed</div><div>Mixed</div><div>Watch macro and supply headlines</div></div>
-    </div>
+    <h1>Commitments of Traders</h1>
+    <p class="desc">Compare reported futures positions across markets. CFTC observations are weekly, not intraday trading signals.</p>
+    <div class="actions"><label for="cotSearch">Find a contract <input id="cotSearch" type="search" placeholder="Euro, gold, S&P…"></label><button class="btn" id="cotRefresh" type="button">Refresh report</button></div>
+    <p id="cotStatus" role="status">Loading the latest published report…</p>
+    <p><a href="https://publicreporting.cftc.gov/stories/s/Legacy-Futures-Only/yjak-hhbj/" target="_blank" rel="noopener">Open official CFTC report ↗</a></p>
+    <div style="overflow:auto;max-height:640px"><table style="width:100%;border-collapse:collapse"><thead><tr><th>Contract / exchange</th><th>Non-commercial net</th><th>Commercial net</th><th>Open interest</th></tr></thead><tbody id="cotRows"></tbody></table></div>
+    <style>#cotRows td,main th{padding:14px;text-align:left;border-bottom:1px solid var(--border)}#cotSearch{padding:10px;background:var(--panel);color:var(--text);border:1px solid var(--border);max-width:100%}#cotStatus{margin:20px 0}</style>
+    <script src="../assets/js/cot-feed.js" defer></script>
   </div>
 </main>
 

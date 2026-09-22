@@ -1,5 +1,9 @@
 /* Run before page-specific scripts so the first render uses the saved theme. */
 (() => {
+  // Legacy controls remain inert for scripts that retain references to their IDs.
+  const policy = document.createElement('style');
+  policy.textContent = `:is([data-journal-theme],[data-fynx-theme-toggle],#themeToggle,#themeBtn,#theme-toggle,.theme-toggle,.theme-btn,.fynx-network-theme,.fynx-theme-toggle):not([data-theme-control]){display:none!important}`;
+  document.head.appendChild(policy);
   let theme = 'dark';
   try {
     const saved = localStorage.getItem('fynx_theme');

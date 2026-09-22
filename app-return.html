@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="assets/css/mobile-fixes.css">
   <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 
 <title>Signing you in…</title>
@@ -53,19 +53,10 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import { getAuth, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
     import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDGSYIB_YIpbWyUMJ1d-v00-xADnvaWckk",
-      authDomain: "fynx-c7a28.firebaseapp.com",
-      projectId: "fynx-c7a28",
-      appId: "1:1011050657868:web:2c5ad5a1b275e669b05ce9"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    import { app, auth } from "./auth/firebase.js";
     const functions = getFunctions(app);
 
     const url = new URL(window.location.href);
@@ -76,7 +67,7 @@
 
     function fail(text){
       msg.textContent = text;
-      setTimeout(() => { window.location.href = "./login.html"; }, 2000);
+      setTimeout(() => { window.location.href = "./auth/login.html"; }, 2000);
     }
 
     if (!ticket){

@@ -1995,3 +1995,13 @@ body:not(.dark-mode) .hero::before{color:rgba(0,0,0,.76)}
 .owner-mode .admin-only{display:initial!important}
 .locked-note{font-size:.88rem;color:rgba(255,255,255,.6);margin-top:.7rem}
 .owner-dev-links{display:none;align-items:center;gap:8px}.owner-mode .owner-dev-links{display:flex!important}.owner-dev-links .fynx-network-btn{height:34px;font-size:12px;padding:0 10px}
+
+/* Menus fit their content without stacked horizontal scrollbars. */
+:is(.tools-subnav-inner,.news-subnav-inner,.learn-subnav-inner,.home-subnav-inner,.home-detail-inner,.learn-detail-inner){flex-wrap:wrap;overflow-x:visible;gap:8px;padding:12px 5%;}
+:is(.tools-subnav,.news-subnav,.learn-subnav,.home-subnav){max-height:55vh;overflow-y:auto;}
+.home-detail-subnav{top:calc(var(--header-h) + var(--home-menu-height,54px));max-height:35vh;overflow-y:auto;}
+.learn-detail-subnav{top:calc(var(--header-h) + var(--learn-menu-height,54px));max-height:35vh;overflow-y:auto;}
+:is(.tools-subnav,.news-subnav,.learn-subnav,.home-subnav,.home-detail-subnav,.learn-detail-subnav)[aria-hidden="true"]{visibility:hidden;}
+
+#header .nav-container > [data-theme-control]{display:inline-flex!important;flex-shrink:0;}
+@media(max-width:768px){#header .nav-container{gap:10px;}#header .nav-container > [data-theme-control]{margin-left:auto;width:40px;height:40px}.mobile-header-actions{margin-left:0!important;}}

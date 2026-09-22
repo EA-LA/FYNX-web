@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-theme"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -148,7 +148,7 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
+  <script src="/assets/js/journal-theme.js?v=20260922-theme" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 
 <title>Forex Markets: Currency Pairs &amp; Crosses | FYNX</title>
@@ -194,7 +194,7 @@
       <div class="card">
         <div class="eyebrow"><i class="fas fa-globe"></i> FX Dashboard</div>
         <h1>Track major, minor, and cross pairs.</h1>
-        <p class="desc">Use this page to monitor forex markets, compare crosses, and calculate live-style conversions with a clean trader workflow.</p>
+        <p class="desc">Use this page to monitor forex markets, compare crosses, and review currency pairs alongside provider market quotes.</p>
 
         <div class="stats">
           <div class="stat"><small>Focus</small><strong>Forex majors</strong></div>
@@ -204,10 +204,10 @@
       </div>
 
       <div class="card">
-        <div class="section-title">Example FX Converter · fixed sample rates</div>
+        <div class="section-title">Currency converter · daily reference rates</div>
         <div class="tool">
-          <input class="input" id="amount" type="number" value="1000" placeholder="Amount">
-          <select id="pair">
+          <input aria-label="Amount to convert" min="0" class="input" id="amount" type="number" value="1000" placeholder="Amount">
+          <select id="pair" aria-label="Currency pair">
             <option value="EURUSD">EUR/USD</option>
             <option value="GBPUSD">GBP/USD</option>
             <option value="USDJPY">USD/JPY</option>
@@ -217,9 +217,9 @@
             <option value="NZDUSD">NZD/USD</option>
             <option value="EURJPY">EUR/JPY</option>
           </select>
-          <button class="btn" onclick="convertFx()">Calculate</button>
+          <button class="btn" id="convertFxButton" onclick="convertFx()">Calculate</button>
         </div>
-        <div class="result" id="fxResult">Result: 1000 EUR ≈ 1080.00 USD</div>
+        <div class="result" id="fxResult" role="status">Choose an amount and pair.</div><p>Source: <a href="https://frankfurter.dev/" target="_blank" rel="noopener">Frankfurter / ECB reference rates ↗</a>. Daily observations, not executable trading quotes.</p>
       </div>
     </section>
 
@@ -261,26 +261,22 @@
       applyTheme(next);
     }
 
-    const fxRates = {
-      EURUSD: 1.08,
-      GBPUSD: 1.27,
-      USDJPY: 151.2,
-      USDCHF: 0.89,
-      AUDUSD: 0.66,
-      USDCAD: 1.35,
-      NZDUSD: 0.61,
-      EURJPY: 163.8
-    };
-
-    function convertFx(){
-      const amount = parseFloat(document.getElementById("amount").value || 0);
-      const pair = document.getElementById("pair").value;
-      const rate = fxRates[pair] || 1;
-      const base = pair.slice(0,3);
-      const quote = pair.slice(3,6);
-      document.getElementById("fxResult").textContent =
-        `Result: ${amount.toFixed(2)} ${base} ≈ ${(amount * rate).toFixed(2)} ${quote}`;
+    let conversionRequest=0;
+    async function convertFx(){
+      const request=++conversionRequest;
+      const raw=document.getElementById("amount").value;
+      const amount=Number(raw),pair=document.getElementById("pair").value,base=pair.slice(0,3),quote=pair.slice(3,6),result=document.getElementById("fxResult");
+      if(!raw||!Number.isFinite(amount)||amount<0){result.textContent="Enter a valid non-negative amount.";return;}
+      result.textContent="Loading the latest daily reference rate…";
+      try{
+        const response=await fetch(`https://api.frankfurter.dev/v2/providers/ecb/rate/${base.toLowerCase()}/${quote.toLowerCase()}`,{signal:AbortSignal.timeout(15000)});
+        if(!response.ok)throw Error('Rate unavailable');const data=await response.json();if(!Number.isFinite(data.rate)||data.rate<=0||!data.date)throw Error('Invalid rate');
+        if(request!==conversionRequest)return;
+        result.textContent=`${amount.toLocaleString()} ${base} ≈ ${(amount*data.rate).toLocaleString(undefined,{maximumFractionDigits:2})} ${quote} · Rate ${data.rate} · Observation ${data.date}`;
+      }catch{if(request===conversionRequest)result.textContent="Reference rate unavailable. Try again or use the official source. No sample rate is substituted.";}
     }
+    document.getElementById("pair").addEventListener('change',convertFx);
+    document.getElementById("amount").addEventListener('input',()=>{conversionRequest++;document.getElementById("fxResult").textContent='Press Calculate to convert this amount.';});
 
     function renderWidget(){
       const wrap = document.getElementById("fxWidget");

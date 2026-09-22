@@ -1,0 +1,2273 @@
+{
+  "scope": "Local browser route checks, not authenticated write tests",
+  "notes": [
+    "Initial mobile duplicate-Firebase errors on signup/app-return repaired and retested without errors.",
+    "Entrance mobile theme control moved out of hidden desktop container and retested visible.",
+    "Later desktop sweep includes those fixes.",
+    "New data feeds and affected pages additionally checked after the sweep."
+  ],
+  "visits": [
+    {
+      "viewport": 390,
+      "route": "account-settings.html",
+      "status": 200,
+      "errors": [],
+      "title": "FYNX - Account Settings",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "affiliate-disclosure.html",
+      "status": 200,
+      "errors": [],
+      "title": "Affiliate Disclosure | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "api/access.html",
+      "status": 200,
+      "errors": [],
+      "title": "Get API access | FYNX API",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "api/docs.html",
+      "status": 200,
+      "errors": [],
+      "title": "API documentation preview | FYNX API",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "api/index.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading infrastructure for developers | FYNX API",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "api/pricing.html",
+      "status": 200,
+      "errors": [],
+      "title": "API pricing and launch plans | FYNX API",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "api/prop-firm.html",
+      "status": 200,
+      "errors": [],
+      "title": "Prop Firm Rules API | FYNX API",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "api/risk.html",
+      "status": 200,
+      "errors": [],
+      "title": "Risk API | FYNX API",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "api/workspace.html",
+      "status": 200,
+      "errors": [],
+      "title": "Developer workspace | FYNX API",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "app-return.html",
+      "status": 200,
+      "errors": [
+        "Firebase: Firebase App named '[DEFAULT]' already exists with different options or config (app/duplicate-app)."
+      ],
+      "title": "Signing you in\u2026",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "auth/forgot.html",
+      "status": 200,
+      "errors": [],
+      "title": "Reset Password \u2014 FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "auth/login.html",
+      "status": 200,
+      "errors": [],
+      "title": "Login \u2014 FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "auth/signup.html",
+      "status": 200,
+      "errors": [
+        "Firebase: Firebase App named '[DEFAULT]' already exists with different options or config (app/duplicate-app)."
+      ],
+      "title": "Sign Up \u2014 FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "calculator.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Calculators: Forex, Stocks, Risk & Options | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "calendar.html",
+      "status": 200,
+      "errors": [],
+      "title": "Economic Calendar & Market Event Tools | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "contact.html",
+      "status": 200,
+      "errors": [],
+      "title": "Contact | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "dashboard.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Overview: Trading Tools, News & Learning | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "founder.html",
+      "status": 200,
+      "errors": [],
+      "title": "Elham Amini \u2014 Founder of FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "home/hub.html",
+      "status": 200,
+      "errors": [],
+      "title": "Macro Research Hub: Rates, Indicators & Topics | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "home.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Overview: Trading Tools, News & Learning | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "index.html",
+      "status": 200,
+      "errors": [],
+      "title": "FYNX Finance World \u2014 Your Trading Workspace",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "journal.html",
+      "status": 200,
+      "errors": [],
+      "title": "",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/bonds-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Bonds \u2014 Glossary | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/bonds-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Bonds \u2014 How to Trade | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/bonds-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Bonds \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/crypto-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Crypto \u2014 Glossary | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/crypto-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Crypto \u2014 How to Trade | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/crypto-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Crypto \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/economy-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Economy \u2014 Glossary | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/economy-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Economy \u2014 How to Trade | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/economy-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Economy \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/forex-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex \u2014 Glossary | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/forex-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex \u2014 How to Trade | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/forex-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/funds-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Funds \u2014 Glossary | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/funds-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Funds \u2014 How to Trade | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/funds-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Funds \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/futures-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Futures \u2014 Glossary | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/futures-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Futures \u2014 How to Trade | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/futures-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Futures \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/indices-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Indices \u2014 Glossary | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/indices-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Indices \u2014 How to Trade | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/indices-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Indices \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/options-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Options \u2014 Glossary | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/options-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Options \u2014 How to Trade | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/options-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Options \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/risk-management.html",
+      "status": 200,
+      "errors": [],
+      "title": "Risk Management Learning Resources | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/stocks-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Stocks \u2014 Glossary | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/stocks-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Stocks \u2014 How to Trade | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/stocks-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Stocks \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/topic.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex \u2014 How to Trade | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn/trading-psychology.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Psychology Learning Resources | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "learn.html",
+      "status": 200,
+      "errors": [],
+      "title": "Finance Learning: Forex, Stocks & Trading Study Guides | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "market-analysis.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Analysis: Charts, Technicals & Watchlists | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "markets/correlation.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Correlation & Portfolio Exposure Guide | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "markets/cot.html",
+      "status": 200,
+      "errors": [],
+      "title": "Commitments of Traders: Positioning Reference | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "markets/crypto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Crypto Market Overview: Bitcoin, Ethereum & Altcoins | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "markets/currencies.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex Markets: Currency Pairs & Crosses | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "markets/historical-data.html",
+      "status": 200,
+      "errors": [],
+      "title": "Historical Market Data: Sample Dataset Explorer | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "markets/index.html",
+      "status": 200,
+      "errors": [],
+      "title": "Financial Markets: Forex, Crypto & Market Research | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "markets/indicators.html",
+      "status": 200,
+      "errors": [],
+      "title": "Technical Indicators: Trend & Momentum Research | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "markets/liquidity.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Liquidity: Sessions, Sweeps & Trading Context | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "markets/patterns.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Chart Patterns: Reference Guide | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "markets/volatility.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Volatility: ATR & Trading Risk Context | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "news/challenges.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Practice Challenges & Progress | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "news/heatmap.html",
+      "status": 200,
+      "errors": [],
+      "title": "Stock, Crypto & Forex Market Heatmaps | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "news/news.html",
+      "status": 200,
+      "errors": [],
+      "title": "Financial Market Headlines: Forex, Crypto & Stocks | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "news/sentiment.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Sentiment: Market Mood & Psychology | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "news.html",
+      "status": 200,
+      "errors": [],
+      "title": "Financial News Hub: Headlines, Heatmaps & Sentiment | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "notifications.html",
+      "status": 200,
+      "errors": [],
+      "title": "FYNX - Notifications",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "open-app.html",
+      "status": 200,
+      "errors": [],
+      "title": "\u200eFYNX Finance World App - App Store",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "owner.html",
+      "status": 200,
+      "errors": [],
+      "title": "FYNX \u2014 Owner workspace",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "partners.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trusted Trading Partners | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "preferences.html",
+      "status": 200,
+      "errors": [],
+      "title": "FYNX - Preferences",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "profile.html",
+      "status": 200,
+      "errors": [],
+      "title": "FYNX Finance World - Profile",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 1
+    },
+    {
+      "viewport": 390,
+      "route": "resources/market-analysis.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Analysis Resource Directory | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "resources/quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Finance Quiz Resources & Trading Knowledge Tests | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "resources/trading-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Glossary Resources & Definitions | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "risk-disclosure.html",
+      "status": 200,
+      "errors": [],
+      "title": "Risk Disclosure | FYNX Finance World",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "risk-management.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Risk Management: Position Sizing & Drawdown | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "security.html",
+      "status": 200,
+      "errors": [],
+      "title": "FYNX - Security",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/atr-stop.html",
+      "status": 200,
+      "errors": [],
+      "title": "ATR Stop-Loss Calculator | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/breakeven.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Break-Even Price Calculator | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/calendar-alerts.html",
+      "status": 200,
+      "errors": [],
+      "title": "Economic Event Reminder Planner | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/compound.html",
+      "status": 200,
+      "errors": [],
+      "title": "Compound Growth & Savings Calculator | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/correlation.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Returns Correlation Calculator | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/crypto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Crypto Position Size & Profit Calculator | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/currency.html",
+      "status": 200,
+      "errors": [],
+      "title": "Currency Conversion Calculator: Manual Rates | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/economic-calendar.html",
+      "status": 200,
+      "errors": [],
+      "title": "Economic Calendar: Releases & Central Bank Events | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/economic-indicators-heatmap.html",
+      "status": 200,
+      "errors": [],
+      "title": "GDP, Inflation & Unemployment Indicators | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/fibonacci.html",
+      "status": 200,
+      "errors": [],
+      "title": "Fibonacci Retracement & Extension Calculator | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/forex.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex Trade Planning Calculators | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/heatmap.html",
+      "status": 200,
+      "errors": [],
+      "title": "Cross-Market Strength & Weakness Heatmap | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/interest-rates.html",
+      "status": 200,
+      "errors": [],
+      "title": "Central Bank Policy Rate Comparison | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/liquidation-guard.html",
+      "status": 200,
+      "errors": [],
+      "title": "Liquidation Risk & Leverage Calculator | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/margin.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex Margin & Leverage Calculator | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/market-holidays.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Holiday Planning Reference | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/market-hours.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex Trading Sessions & Market Hours | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/options-payoff.html",
+      "status": 200,
+      "errors": [],
+      "title": "Debt Payoff & Interest Calculator | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/options.html",
+      "status": 200,
+      "errors": [],
+      "title": "Options Profit & Loss Calculator | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/pip.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex Pip Value Calculator | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/pivot.html",
+      "status": 200,
+      "errors": [],
+      "title": "Pivot Point Support & Resistance Calculator | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/position-size.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex Position Size & Risk Calculator | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/profit-loss.html",
+      "status": 200,
+      "errors": [],
+      "title": "Stock Trade Risk & Position Calculator | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/recent-topics-discussed.html",
+      "status": 200,
+      "errors": [],
+      "title": "Curated Macro & Trading Research Topics | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/risk-reward.html",
+      "status": 200,
+      "errors": [],
+      "title": "Risk-to-Reward Ratio Calculator | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/stock.html",
+      "status": 200,
+      "errors": [],
+      "title": "Stock Position Sizing Calculator | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "tools/symbol-news.html",
+      "status": 200,
+      "errors": [],
+      "title": "FYNX Tools \u2014 Symbol News",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "trader-journal.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trader Journal: Trade Review & Statistics | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "trading-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Finance & Trading Glossary: Market Terms Explained | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "trading-psychology.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Psychology: Discipline, Emotions & Habits | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "trading-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Finance & Forex Trading Quizzes and Knowledge Tests | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 390,
+      "route": "waitlist.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Overview: Trading Tools, News & Learning | FYNX",
+      "theme": "dark",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "account-settings.html",
+      "status": 200,
+      "errors": [],
+      "title": "FYNX - Account Settings",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "affiliate-disclosure.html",
+      "status": 200,
+      "errors": [],
+      "title": "Affiliate Disclosure | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "api/access.html",
+      "status": 200,
+      "errors": [],
+      "title": "Get API access | FYNX API",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "api/docs.html",
+      "status": 200,
+      "errors": [],
+      "title": "API documentation preview | FYNX API",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "api/index.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading infrastructure for developers | FYNX API",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "api/pricing.html",
+      "status": 200,
+      "errors": [],
+      "title": "API pricing and launch plans | FYNX API",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "api/prop-firm.html",
+      "status": 200,
+      "errors": [],
+      "title": "Prop Firm Rules API | FYNX API",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "api/risk.html",
+      "status": 200,
+      "errors": [],
+      "title": "Risk API | FYNX API",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "api/workspace.html",
+      "status": 200,
+      "errors": [],
+      "title": "Developer workspace | FYNX API",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "app-return.html",
+      "status": 200,
+      "errors": [],
+      "title": "Signing you in\u2026",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "auth/forgot.html",
+      "status": 200,
+      "errors": [],
+      "title": "Reset Password \u2014 FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "auth/login.html",
+      "status": 200,
+      "errors": [],
+      "title": "Login \u2014 FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "auth/signup.html",
+      "status": 200,
+      "errors": [],
+      "title": "Sign Up \u2014 FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "calculator.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Calculators: Forex, Stocks, Risk & Options | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "calendar.html",
+      "status": 200,
+      "errors": [],
+      "title": "Economic Calendar & Market Event Tools | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "contact.html",
+      "status": 200,
+      "errors": [],
+      "title": "Contact | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "dashboard.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Overview: Trading Tools, News & Learning | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "founder.html",
+      "status": 200,
+      "errors": [],
+      "title": "Elham Amini \u2014 Founder of FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "home/hub.html",
+      "status": 200,
+      "errors": [],
+      "title": "Macro Research Hub: Rates, Indicators & Topics | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "home.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Overview: Trading Tools, News & Learning | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "index.html",
+      "status": 200,
+      "errors": [],
+      "title": "FYNX Finance World \u2014 Your Trading Workspace",
+      "theme": "light",
+      "overflow": false,
+      "controls": 1
+    },
+    {
+      "viewport": 1440,
+      "route": "journal.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Journal & Performance Analytics | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/bonds-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Bonds \u2014 Glossary | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/bonds-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Bonds \u2014 How to Trade | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/bonds-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Bonds \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/crypto-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Crypto \u2014 Glossary | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/crypto-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Crypto \u2014 How to Trade | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/crypto-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Crypto \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/economy-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Economy \u2014 Glossary | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/economy-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Economy \u2014 How to Trade | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/economy-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Economy \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/forex-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex \u2014 Glossary | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/forex-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex \u2014 How to Trade | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/forex-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/funds-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Funds \u2014 Glossary | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/funds-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Funds \u2014 How to Trade | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/funds-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Funds \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/futures-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Futures \u2014 Glossary | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/futures-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Futures \u2014 How to Trade | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/futures-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Futures \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/indices-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Indices \u2014 Glossary | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/indices-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Indices \u2014 How to Trade | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/indices-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Indices \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/options-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Options \u2014 Glossary | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/options-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Options \u2014 How to Trade | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/options-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Options \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/risk-management.html",
+      "status": 200,
+      "errors": [],
+      "title": "Risk Management Learning Resources | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/stocks-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Stocks \u2014 Glossary | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/stocks-howto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Stocks \u2014 How to Trade | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/stocks-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Stocks \u2014 Trading Quizzes | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/topic.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex \u2014 How to Trade | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn/trading-psychology.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Psychology Learning Resources | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "learn.html",
+      "status": 200,
+      "errors": [],
+      "title": "Finance Learning: Forex, Stocks & Trading Study Guides | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "market-analysis.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Analysis: Charts, Technicals & Watchlists | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "markets/correlation.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Correlation & Portfolio Exposure Guide | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "markets/cot.html",
+      "status": 200,
+      "errors": [],
+      "title": "Commitments of Traders: Positioning Reference | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "markets/crypto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Crypto Market Overview: Bitcoin, Ethereum & Altcoins | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "markets/currencies.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex Markets: Currency Pairs & Crosses | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "markets/historical-data.html",
+      "status": 200,
+      "errors": [],
+      "title": "Historical Market Charts: Forex, Bitcoin, Gold & Indices | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "markets/index.html",
+      "status": 200,
+      "errors": [],
+      "title": "Financial Markets: Forex, Crypto & Market Research | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "markets/indicators.html",
+      "status": 200,
+      "errors": [],
+      "title": "Technical Indicators: Trend & Momentum Research | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "markets/liquidity.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Liquidity: Sessions, Sweeps & Trading Context | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "markets/patterns.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Chart Patterns: Reference Guide | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "markets/volatility.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Volatility: ATR & Trading Risk Context | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "news/challenges.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Practice Challenges & Progress | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "news/heatmap.html",
+      "status": 200,
+      "errors": [],
+      "title": "Stock, Crypto & Forex Market Heatmaps | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "news/news.html",
+      "status": 200,
+      "errors": [],
+      "title": "Financial Market Headlines: Forex, Crypto & Stocks | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "news/sentiment.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Sentiment: Market Mood & Psychology | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "news.html",
+      "status": 200,
+      "errors": [],
+      "title": "Financial News Hub: Headlines, Heatmaps & Sentiment | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "notifications.html",
+      "status": 200,
+      "errors": [],
+      "title": "FYNX - Notifications",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "open-app.html",
+      "status": 200,
+      "errors": [],
+      "title": "\u200eFYNX Finance World App - App Store",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "owner.html",
+      "status": 200,
+      "errors": [],
+      "title": "FYNX \u2014 Owner workspace",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "partners.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trusted Trading Partners | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "preferences.html",
+      "status": 200,
+      "errors": [],
+      "title": "FYNX - Preferences",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "profile.html",
+      "status": 200,
+      "errors": [],
+      "title": "FYNX Finance World - Profile",
+      "theme": "light",
+      "overflow": false,
+      "controls": 1
+    },
+    {
+      "viewport": 1440,
+      "route": "resources/market-analysis.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Analysis Resource Directory | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "resources/quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Finance Quiz Resources & Trading Knowledge Tests | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "resources/trading-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Glossary Resources & Definitions | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "risk-disclosure.html",
+      "status": 200,
+      "errors": [],
+      "title": "Risk Disclosure | FYNX Finance World",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "risk-management.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Risk Management: Position Sizing & Drawdown | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "security.html",
+      "status": 200,
+      "errors": [],
+      "title": "FYNX - Security",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/atr-stop.html",
+      "status": 200,
+      "errors": [],
+      "title": "ATR Stop-Loss Calculator | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/breakeven.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Break-Even Price Calculator | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/calendar-alerts.html",
+      "status": 200,
+      "errors": [],
+      "title": "Economic Event Reminder Planner | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/compound.html",
+      "status": 200,
+      "errors": [],
+      "title": "Compound Growth & Savings Calculator | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/correlation.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Returns Correlation Calculator | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/crypto.html",
+      "status": 200,
+      "errors": [],
+      "title": "Crypto Position Size & Profit Calculator | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/currency.html",
+      "status": 200,
+      "errors": [],
+      "title": "Currency Conversion Calculator: Manual Rates | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/economic-calendar.html",
+      "status": 200,
+      "errors": [],
+      "title": "Economic Calendar: Releases & Central Bank Events | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/economic-indicators-heatmap.html",
+      "status": 200,
+      "errors": [],
+      "title": "GDP, Inflation & Unemployment Indicators | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/fibonacci.html",
+      "status": 200,
+      "errors": [],
+      "title": "Fibonacci Retracement & Extension Calculator | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/forex.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex Trade Planning Calculators | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/heatmap.html",
+      "status": 200,
+      "errors": [],
+      "title": "Cross-Market Strength & Weakness Heatmap | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/interest-rates.html",
+      "status": 200,
+      "errors": [],
+      "title": "Central Bank Policy Rate Comparison | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/liquidation-guard.html",
+      "status": 200,
+      "errors": [],
+      "title": "Liquidation Risk & Leverage Calculator | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/margin.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex Margin & Leverage Calculator | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/market-holidays.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Holiday Planning Reference | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/market-hours.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex Trading Sessions & Market Hours | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/options-payoff.html",
+      "status": 200,
+      "errors": [],
+      "title": "Debt Payoff & Interest Calculator | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/options.html",
+      "status": 200,
+      "errors": [],
+      "title": "Options Profit & Loss Calculator | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/pip.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex Pip Value Calculator | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/pivot.html",
+      "status": 200,
+      "errors": [],
+      "title": "Pivot Point Support & Resistance Calculator | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/position-size.html",
+      "status": 200,
+      "errors": [],
+      "title": "Forex Position Size & Risk Calculator | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/profit-loss.html",
+      "status": 200,
+      "errors": [],
+      "title": "Stock Trade Risk & Position Calculator | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/recent-topics-discussed.html",
+      "status": 200,
+      "errors": [],
+      "title": "Curated Macro & Trading Research Topics | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/risk-reward.html",
+      "status": 200,
+      "errors": [],
+      "title": "Risk-to-Reward Ratio Calculator | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/stock.html",
+      "status": 200,
+      "errors": [],
+      "title": "Stock Position Sizing Calculator | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "tools/symbol-news.html",
+      "status": 200,
+      "errors": [],
+      "title": "FYNX Tools \u2014 Symbol News",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "trader-journal.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trader Journal: Trade Review & Statistics | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "trading-glossary.html",
+      "status": 200,
+      "errors": [],
+      "title": "Finance & Trading Glossary: Market Terms Explained | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "trading-psychology.html",
+      "status": 200,
+      "errors": [],
+      "title": "Trading Psychology: Discipline, Emotions & Habits | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "trading-quizzes.html",
+      "status": 200,
+      "errors": [],
+      "title": "Finance & Forex Trading Quizzes and Knowledge Tests | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    },
+    {
+      "viewport": 1440,
+      "route": "waitlist.html",
+      "status": 200,
+      "errors": [],
+      "title": "Market Overview: Trading Tools, News & Learning | FYNX",
+      "theme": "light",
+      "overflow": false,
+      "controls": 0
+    }
+  ]
+}

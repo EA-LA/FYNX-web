@@ -7,7 +7,7 @@ const urls = [...fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8').matchAl
 const titles = new Set();
 for (const url of urls) {
   const pathname = new URL(url).pathname;
-  const file = path.join(root, pathname === '/' ? 'index.html' : pathname);
+  const file = path.join(root, pathname.endsWith('/') ? pathname + 'index.html' : pathname);
   const dom = new JSDOM(fs.readFileSync(file, 'utf8'), { url, runScripts: 'outside-only' });
   const doc = dom.window.document;
   if (titles.has(doc.title)) throw new Error(`${file}: duplicate public page title`);
