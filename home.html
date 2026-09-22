@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <script>
@@ -1935,8 +1935,9 @@
         const data=await response.json();
         const items=data.items.map(item=>({...item,pubDate:new Date(item.pubDate)}));
         renderNews('newsList',items);cacheSet(CACHE_NEWS_KEY,items);
-        status.textContent=(data.stale?'Cached · ':'Updated ')+new Date(data.fetchedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+        status.textContent=(data.stale?'Stale cache · retrieved ':'Retrieved ')+new Date(data.fetchedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
       }catch(error){
+        window.FynxMonitor?.report('feed','feed-load',error);
         const items=cacheGet(CACHE_NEWS_KEY)||[];
         renderNews('newsList',items, 'News is temporarily unavailable. Please refresh or open the News page.');
         status.textContent=items.length?'Offline · cached headlines':'Feed unavailable · retry';

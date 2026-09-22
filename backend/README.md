@@ -69,3 +69,21 @@ Verified: 8 BIS rows and 24 World Bank rows from both providers; public producti
 `market-feed.js` exports `webMarketFeed`, a public read-only endpoint with fixed category inputs. It fetches publisher RSS server-side, rejects invalid links and stories older than seven days, deduplicates, and keeps a five-minute instance cache. Source failure may retain a prior result for up to one hour, explicitly marked stale. There is no arbitrary URL proxy. Categories: all, forex, crypto, stocks, macro, commodities, world. Direct publisher feeds provide fallback when the aggregator is unavailable.
 
 Add `exports.webMarketFeed = require('./market-feed').webMarketFeed;` to the existing Firebase functions entry point and deploy only `functions:webMarketFeed` to `fynx-c7a28`. It has been deployed from an isolated copy of the existing functions source. Keep this export when preparing future deployments. X timelines use the official client embed and remain subject to X rate limits; direct publisher profile links are always available.
+
+## Analytics and operational monitoring (September 22 follow-up)
+
+`webMarketAnalytics` accepts only `kind=correlation` with `window=30|60|90`, or `kind=liquidity` with `product=BTC-USD|ETH-USD`. Provider destinations are fixed, so it cannot act as an arbitrary URL proxy. FX observations are aligned before computing daily simple returns and Pearson coefficients; missing/flat series never become invented correlations. Coinbase level-one size is already aggregated and is not multiplied by order count. Auction, crossed, invalid and old books are rejected.
+
+Responses preserve provider observation dates/times and server retrieval time separately. FX has a six-hour cache, with a labeled stale fallback bounded to 24 hours after retrieval; observations older than seven days are marked stale. Order books cache for ten seconds and can fall back only while their source timestamp is under a minute old, explicitly marked stale. No synthetic numerical fallback is used.
+
+`operations.js` supplies an allowlisted browser error receiver and scheduled feed-health probes. The browser sender is now loaded by the shared theme initializer on production domains only. Existing Cloud Monitoring website failure policies and notification channels are preserved. To investigate, filter Cloud Logging by `jsonPayload.monitor="fynx-web"` (failures) or `jsonPayload.monitor="fynx-web-health"` (probes). Provider probes include the actual `webMarketFeed` endpoint, replacing the old RSS converter probe.
+
+For future deployments, copy `market-analytics.js`, `analytics-core.cjs`, and `operations.js` into the existing functions source and retain:
+
+```
+exports.webMarketAnalytics = require('./market-analytics').webMarketAnalytics;
+exports.webOperationalEvent = require('./operations').webOperationalEvent;
+exports.webFeedHealth = require('./operations').webFeedHealth;
+```
+
+Deploy only `functions:webMarketAnalytics,functions:webOperationalEvent,functions:webFeedHealth`. These functions were deployed in this release from an isolated copy preserving the existing exports. Learning/reminder/auth/billing services were not redeployed. The Identity Platform upgrade remains pending by explicit owner choice.

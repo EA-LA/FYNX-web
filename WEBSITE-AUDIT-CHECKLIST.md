@@ -4,6 +4,8 @@ Audit date: September 22, 2026. Scope: the 114 local HTML routes, navigation and
 
 This audit distinguishes verified repairs from remaining defects and checks that require a real account or device. A page loading successfully does not prove every account action or external provider will always work.
 
+For the latest status of cloud learning, reminders, monitoring, analytics and holiday fixes, see [the service backlog update](docs/SERVICE-BACKLOG-STATUS.md).
+
 ## Completed in this release
 
 - [x] First-time visitors start in the white/light theme. A visitor’s saved dark preference is respected on later visits.
@@ -31,7 +33,7 @@ Priority meanings: P1 = important functional dependency; P2 = product quality/ma
 | P1 | Symbol News | Its third-party RSS conversion request returned HTTP 422. The fallback opens publisher search, but the inline symbol feed is not dependable. | Implement a server-side symbol/search news endpoint with caching, timeout handling, and accurate freshness status. | Open; fallback repaired |
 | P1 | Two-factor authentication | Enrollment is explicitly disabled in `assets/js/mfa.js` pending Identity Platform configuration. | Complete Firebase/Identity Platform setup, validate enrollment and recovery using a test account, then enable enrollment. | Requires project configuration |
 | P2 | X Finance timeline | Official X embeds can be rate-limited or blocked; a 429 response was observed during earlier checks. | Keep official timelines and working source links as requested; monitor availability. An authorized X API is an optional later improvement for a custom dependable feed. | Provider limitation |
-| P2 | Market holidays | The holiday generator covers 2025–2027 with manually maintained rules. | Validate against exchange calendars, clearly identify covered venues, and add an annual update process before 2028. | Open |
+| P2 | Market holidays | Published Asia and LSE dates and US exceptions have now been repaired; NYSE/LSE extend into 2028. | Continue annual/exception maintenance and extend other exchanges only against official notices. | Partly completed; see service update |
 | P2 | Journal maintenance | `journal.html` and `trader-journal.html` duplicate the journal implementation. | Consolidate to one implementation while preserving existing URLs and account data behavior. | Open |
 | P2 | Legacy calculator URLs | `options-payoff.html` contains debt-payoff functionality; `profit-loss.html` serves a stock-risk tool. Visible titles are clearer than the historical filenames. | Introduce accurate canonical URLs with backward-compatible redirects; update all links and sitemap together. | Open |
 | P2 | Demo consistency | Demo Profile statistics differ from the demo Home/Journal fixtures. | Use one demo dataset across pages so examples agree. | Open |

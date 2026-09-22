@@ -11,7 +11,7 @@ const source = html.match(/<script type="module">([\s\S]*?)<\/script>/)[1].repla
     const form = dom.window.document.getElementById('resetForm');
     form.elements.email.value = 'test@example.com';
     form.addEventListener = (_, callback) => handler = callback;
-    vm.runInNewContext(source, { document: dom.window.document, auth: {}, sendPasswordResetEmail: async (_, email) => { received = email; if(errorCode) throw {code:errorCode}; } });
+    vm.runInNewContext(source, { window: dom.window, document: dom.window.document, auth: {}, sendPasswordResetEmail: async (_, email) => { received = email; if(errorCode) throw {code:errorCode}; } });
     await handler({preventDefault(){}});
     assert.equal(received, 'test@example.com');
     assert.equal(form.querySelector('button').disabled, false);

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -394,11 +394,11 @@
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 
 <title>Market Holiday Planning Reference | FYNX</title>
-<meta name="description" content="Review a partial market holiday planning reference for 2025–2027. Confirm closures and early closing times with the relevant exchange.">
+<meta name="description" content="Review a partial market holiday planning reference for 2025–2028. Confirm closures and early closing times with the relevant exchange.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.fynxfinanceworld.com/tools/market-holidays.html">
 <meta property="og:title" content="Market Holiday Planning Reference | FYNX">
-<meta property="og:description" content="Review a partial market holiday planning reference for 2025–2027. Confirm closures and early closing times with the relevant exchange.">
+<meta property="og:description" content="Review a partial market holiday planning reference for 2025–2028. Confirm closures and early closing times with the relevant exchange.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/market-holidays.html">
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
@@ -420,8 +420,8 @@
 
   <main>
     <div class="hero">
-      <h1>Market Holidays</h1><p class="site-data-notice">Planning reference · Dates are generated from local rules for 2025–2027. Coverage is partial; confirm closures and early closes with your exchange.</p>
-      <div class="sub">2025–2027 · Market closures, early closes, and liquidity-impact days</div>
+      <h1>Market Holidays</h1><p class="site-data-notice">Planning reference · Published exchange schedules and US holiday rules for 2025–2028. Coverage is partial; confirm closures and early closes with your exchange.</p>
+      <div class="sub">2025–2028 · Market closures, early closes, and liquidity-impact days</div>
       <div class="note">
         Forex is generally open 24/5 and Crypto is 24/7. “Liquidity Warning” entries represent periods where participation
         often drops and spreads/slippage risk rises. For exchange-perfect calendars, always confirm official notices.
@@ -444,6 +444,7 @@
       </div>
     </div>
 
+    <p style="padding:12px 0;font-size:14px">Coverage varies by exchange and year. LSE coverage starts August 31, 2026. See the source and coverage notes below; missing entries do not indicate an open market.</p>
     <div class="bar">
       <div class="controls">
         <div class="group">
@@ -473,6 +474,7 @@
             <option value="2025">2025</option>
             <option value="2026">2026</option>
             <option value="2027">2027</option>
+            <option value="2028">2028</option>
           </select>
         </div>
 
@@ -581,13 +583,14 @@
           </div>
         </div>
         <div class="rightNote">
-          This dashboard generates a robust 2025–2027 schedule for US + UK closures (observed), plus global liquidity warnings (FX/Crypto) and Asia windows.
-          If you want exchange-perfect HKEX/TSE closure days, you must plug in official calendars (CSV/API) because they vary year-to-year.
+          Coverage reviewed September 22, 2026: NYSE 2025–2028; Nasdaq 2025–2026; HKEX securities 2026–2027; TSE cash equities 2026–2027. LSE from August 31, 2026 through 2028. Unlisted dates or years do not mean a market is open. Weekends, emergency notices and product-specific sessions must also be checked.
+          <p><a href="https://www.nyse.com/trade/hours-calendars" target="_blank" rel="noopener">NYSE</a> · <a href="https://www.nasdaq.com/market-activity/stock-market-holiday-schedule" target="_blank" rel="noopener">Nasdaq</a> · <a href="https://www.londonstockexchange.com/trade/trading-access/business-days" target="_blank" rel="noopener">LSE</a> · <a href="https://www.hkex.com.hk/News/HKEX-Calendar?sc_lang=en" target="_blank" rel="noopener">HKEX</a> · <a href="https://www.jpx.co.jp/english/corporate/about-jpx/calendar/" target="_blank" rel="noopener">JPX</a></p>
         </div>
       </div>
     </div>
   </main>
 
+  <script src="/assets/js/exchange-holidays.js?v=20260922-services"></script>
   <script>
     /* ----------------------------- Theme sync ----------------------------- */
     const THEME_KEY = "fynx_theme";
@@ -667,7 +670,7 @@
 
     function buildUSHolidays(year) {
       const list = [];
-      list.push(mkHoliday({
+      if(new Date(year,0,1).getDay()!==6) list.push(mkHoliday({
         name:"New Year’s Day",
         date: observeFixedHoliday(new Date(year,0,1)),
         status:"closed", impact:"high",
@@ -736,14 +739,14 @@
         date:addDays(thanksgiving,1),
         status:"early", impact:"low",
         regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
-        notes:"US equities typically close early. Reduced volume; false breakouts more likely."
+        notes:"Cash equities close at 13:00 America/New_York; eligible options can differ."
       }));
-      list.push(mkHoliday({
+      if([2025,2026].includes(year)) list.push(mkHoliday({
         name:"Christmas Eve (Early Close)",
         date:new Date(year,11,24),
         status:"early", impact:"medium",
         regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
-        notes:"US equities often close early. Year-end positioning dominates flows."
+        notes:"Cash equities close at 13:00 America/New_York; eligible options can differ."
       }));
       list.push(mkHoliday({
         name:"Christmas Day",
@@ -752,123 +755,20 @@
         regions:["Americas"], exchanges:["NYSE","NASDAQ"], markets:["Stocks","Options"],
         notes:"US equities closed. Global liquidity very low; avoid oversized risk."
       }));
+      if([2025,2028].includes(year)) list.push(mkHoliday({name:'Pre-Independence Day (Early Close)',date:new Date(year,6,3),status:'early',impact:'medium',regions:['Americas'],exchanges:['NYSE',...(year===2025?['NASDAQ']:[])],markets:['Stocks','Options'],notes:'Cash equities close at 13:00 America/New_York; eligible options may close at 13:15.'}));
+      if(year===2025)list.push(mkHoliday({name:'National Day of Mourning — Jimmy Carter',date:new Date(2025,0,9),status:'closed',impact:'high',regions:['Americas'],exchanges:['NYSE','NASDAQ'],markets:['Stocks','Options'],notes:'One-off US market closure on January 9, 2025.'}));
+      if(year>=2027)list.forEach(h=>{h.exchanges=h.exchanges.filter(e=>e!=='NASDAQ');});
       return list;
     }
 
-    function buildUKHolidays(year) {
-      const list = [];
-      list.push(mkHoliday({
-        name:"UK New Year’s Day",
-        date: observeFixedHoliday(new Date(year,0,1)),
-        status:"closed", impact:"medium",
-        regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
-        notes:"UK equities closed. London FX desks may be lighter depending on broader Europe participation."
-      }));
-      const gf = goodFriday(year);
-      list.push(mkHoliday({
-        name:"Good Friday",
-        date:gf,
-        status:"closed", impact:"high",
-        regions:["Europe","Americas","Asia"], exchanges:["LSE"], markets:["Stocks"],
-        notes:"European market closures reduce global liquidity; watch erratic moves and wider spreads."
-      }));
-      list.push(mkHoliday({
-        name:"Easter Monday",
-        date:addDays(gf,3),
-        status:"closed", impact:"high",
-        regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
-        notes:"UK equities closed. London liquidity reduced; FX still open but thinner."
-      }));
-      list.push(mkHoliday({
-        name:"Early May Bank Holiday",
-        date:nthWeekdayOfMonth(year,4,1,1),
-        status:"closed", impact:"medium",
-        regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
-        notes:"UK equities closed. London participation reduced across Europe hours."
-      }));
-      list.push(mkHoliday({
-        name:"Spring Bank Holiday",
-        date:lastWeekdayOfMonth(year,4,1),
-        status:"closed", impact:"medium",
-        regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
-        notes:"UK equities closed. London liquidity reduced."
-      }));
-      list.push(mkHoliday({
-        name:"Summer Bank Holiday (UK)",
-        date:lastWeekdayOfMonth(year,7,1),
-        status:"closed", impact:"medium",
-        regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
-        notes:"UK equities closed. Summer liquidity can be thin; manage size."
-      }));
-      list.push(mkHoliday({
-        name:"Christmas Day (UK)",
-        date: observeFixedHoliday(new Date(year,11,25)),
-        status:"closed", impact:"high",
-        regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
-        notes:"UK equities closed. Global risk liquidity very low."
-      }));
-      list.push(mkHoliday({
-        name:"Boxing Day (UK)",
-        date: observeFixedHoliday(new Date(year,11,26)),
-        status:"closed", impact:"high",
-        regions:["Europe"], exchanges:["LSE"], markets:["Stocks"],
-        notes:"UK equities closed. London desks minimal; FX can be thin."
-      }));
-      return list;
-    }
+    function buildUKHolidays(year){return publishedExchangeHolidays('LSE',year);}
 
-    function buildHKHolidays(year) {
-      const list = [];
-      list.push(mkHoliday({
-        name:"Hong Kong New Year’s Day",
-        date: observeFixedHoliday(new Date(year,0,1)),
-        status:"closed", impact:"medium",
-        regions:["Asia"], exchanges:["HKEX"], markets:["Stocks"],
-        notes:"HK equities closed. Asia risk participation reduced early in the year."
-      }));
-      list.push(mkHoliday({
-        name:"Lunar New Year (Asia Liquidity Window)",
-        date: year === 2025 ? new Date(2025,0,29) : year === 2026 ? new Date(2026,1,17) : new Date(2027,1,6),
-        status:"warning", impact:"high",
-        regions:["Asia"], exchanges:["HKEX"], markets:["Stocks"],
-        notes:"Advisory: Lunar New Year week often reduces Asia liquidity. Exact HKEX closure dates vary by year; confirm official HKEX calendar for trading-day specifics."
-      }));
-      const gf = goodFriday(year);
-      list.push(mkHoliday({
-        name:"Good Friday (Asia Liquidity Watch)",
-        date:gf,
-        status:"warning", impact:"medium",
-        regions:["Asia","Europe"], exchanges:["HKEX"], markets:["Stocks"],
-        notes:"Advisory: Global holiday cluster can reduce participation. Check HKEX official schedule for exact closures."
-      }));
-      list.push(mkHoliday({
-        name:"Christmas Day (Hong Kong)",
-        date:new Date(year,11,25),
-        status:"warning", impact:"medium",
-        regions:["Asia"], exchanges:["HKEX"], markets:["Stocks"],
-        notes:"Advisory: Many global desks are offline; Asia liquidity can be thin even if local markets partially operate."
-      }));
-      return list;
+    function publishedExchangeHolidays(exchange,year) {
+      const data=window.FynxExchangeHolidays[exchange]?.[year];if(!data)return [];
+      return ['closed','early'].flatMap(status=>(data[status]||[]).map(day=>mkHoliday({name:`${exchange} ${status==='early'?'Half-Day Session':'Market Holiday'}`,date:new Date(`${year}-${day}T12:00:00`),status,impact:status==='closed'?'medium':'low',regions:[exchange==='LSE'?'Europe':'Asia'],exchanges:[exchange],markets:['Stocks'],notes:`Published cash-equity calendar: ${data.source}. ${status==='early'?(exchange==='LSE'?'Closing process starts at 12:30 Europe/London. ':'No afternoon securities session. '):''}Derivatives and settlement schedules may differ. Reviewed 2026-09-22.`})));
     }
-
-    function buildJPHolidays(year) {
-      const list = [];
-      list.push(mkHoliday({
-        name:"Japan New Year Liquidity Window",
-        date:new Date(year,0,2),
-        status:"warning", impact:"high",
-        regions:["Asia"], exchanges:["TSE"], markets:["Stocks"],
-        notes:"Advisory: Early January often sees reduced Japan participation. Confirm TSE calendar for exact closure days."
-      }));
-      list.push(mkHoliday({
-        name:"Golden Week (Japan Liquidity Window)",
-        date: year === 2025 ? new Date(2025,3,29) : year === 2026 ? new Date(2026,3,29) : new Date(2027,3,29),
-        status:"warning", impact:"high",
-        regions:["Asia"], exchanges:["TSE"], markets:["Stocks"],
-        notes:"Advisory: Golden Week reduces Japan liquidity. Exact market closure dates vary; confirm TSE calendar for the year."
-      }));
-      return list;
-    }
+    function buildHKHolidays(year){return publishedExchangeHolidays('HKEX',year);}
+    function buildJPHolidays(year){return publishedExchangeHolidays('TSE',year);}
 
     function buildFXLiquidityHolidays(year) {
       const list = [];
@@ -924,7 +824,7 @@
     }
 
     function buildHolidayDataset() {
-      const years = [2025, 2026, 2027];
+      const years = [2025, 2026, 2027, 2028];
       const all = [];
       for (const y of years) {
         all.push(...buildUSHolidays(y));
@@ -960,7 +860,7 @@
     const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
     const ALL = buildHolidayDataset();
     const currentYear = new Date().getFullYear();
-    const defaultYear = [2025, 2026, 2027].includes(currentYear) ? currentYear : 2026;
+    const defaultYear = [2025, 2026, 2027, 2028].includes(currentYear) ? currentYear : 2026;
 
     const state = {
       region: "all",

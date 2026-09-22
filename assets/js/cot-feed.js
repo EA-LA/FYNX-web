@@ -19,6 +19,6 @@
   const result=await request({'$where':`report_date_as_yyyy_mm_dd='${date}'`,'$limit':'1000','$order':'market_and_exchange_names','$select':'market_and_exchange_names,noncomm_positions_long_all,noncomm_positions_short_all,comm_positions_long_all,comm_positions_short_all,open_interest_all'});
   rows=result.filter(r=>typeof r.market_and_exchange_names==='string'&&['noncomm_positions_long_all','noncomm_positions_short_all','comm_positions_long_all','comm_positions_short_all','open_interest_all'].every(k=>r[k]!==undefined&&Number.isFinite(Number(r[k]))));
   if(!rows.length)throw Error('Invalid positions');render();status.textContent=`Positions as of ${date.slice(0,10)} · ${rows.length} contracts · Weekly CFTC report. Net positions = long minus short contracts.`;
- }catch(e){status.textContent=rows.length?'Refresh unavailable. Previously loaded observations remain below. Check the official report.':'CFTC data is unavailable right now. Open the official report below or retry. No estimated positions are shown.';}finally{refresh.disabled=false;}}
+ }catch(e){window.FynxMonitor?.report('feed','feed-load',e);status.textContent=rows.length?'Refresh unavailable. Previously loaded observations remain below. Check the official report.':'CFTC data is unavailable right now. Open the official report below or retry. No estimated positions are shown.';}finally{refresh.disabled=false;}}
  search.addEventListener('input',render);refresh.addEventListener('click',load);load();
 })();

@@ -4,6 +4,7 @@ const functions = getFunctions(app, 'us-central1');
 export async function cloudCall(name, data) {
   await auth.authStateReady();
   if (!auth.currentUser) throw new Error('Sign in to use cloud sync.');
-  return (await httpsCallable(functions, name, {timeout:30000})(data)).data;
+  try { return (await httpsCallable(functions, name, {timeout:30000})(data)).data; }
+  catch(error) { window.FynxMonitor?.report('save','cloud-save',error); throw error; }
 }
 export { auth };

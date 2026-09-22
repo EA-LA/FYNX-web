@@ -186,6 +186,7 @@ export const getNotificationPreferences = (uid) => notificationEngine.preference
 export const getSecuritySettings = (uid) => getMergedDoc(uid, "security", DEFAULT_SECURITY_SETTINGS);
 
 export async function saveUserProfile(uid, payload) {
+  try {
   await setDoc(
     userDoc(uid, "profile"),
     {
@@ -194,30 +195,41 @@ export async function saveUserProfile(uid, payload) {
     },
     { merge: true }
   );
+  } catch(error) { window.FynxMonitor?.report("save","profile-save",error); throw error; }
 }
 
 export async function saveUserPreferences(uid, payload) {
+  try {
   await setDoc(userDoc(uid, "preferences"), { ...payload, updatedAt: serverTimestamp() }, { merge: true });
+  } catch(error) { window.FynxMonitor?.report("save","preferences-save",error); throw error; }
 }
 
 export async function saveNotificationPreferences(uid, payload) {
+  try {
   await notificationEngine.preferenceManager.save(uid, payload);
+  } catch(error) { window.FynxMonitor?.report("save","notifications-save",error); throw error; }
 }
 
 export async function saveSecuritySettings(uid, payload) {
+  try {
   await setDoc(userDoc(uid, "security"), { ...payload, updatedAt: serverTimestamp() }, { merge: true });
+  } catch(error) { window.FynxMonitor?.report("save","security-save",error); throw error; }
 }
 
 export async function uploadProfilePhoto(uid, file) {
+  try {
   if (!file) return "";
   const fileRef = ref(storage, `users/${uid}/profile/${Date.now()}-${file.name}`);
   await uploadBytes(fileRef, file, { contentType: file.type || "image/jpeg" });
-  return getDownloadURL(fileRef);
+  return await getDownloadURL(fileRef);
+  } catch(error) { window.FynxMonitor?.report("upload","photo-upload",error); throw error; }
 }
 
 export async function updateAuthProfile(payload) {
+  try {
   if (!auth.currentUser) throw new Error("No authenticated user");
   await updateProfile(auth.currentUser, payload);
+  } catch(error) { window.FynxMonitor?.report("save","profile-save",error); throw error; }
 }
 
 export function listenNotifications(uid, callback, max = 100) {

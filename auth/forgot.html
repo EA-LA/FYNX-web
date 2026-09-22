@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -298,7 +298,7 @@
       try {
         await sendPasswordResetEmail(auth, form.elements.email.value.trim());
         status.textContent = 'If an account exists for this email, you’ll receive a password reset link. Check your inbox and spam folder.';
-      } catch (error) {
+      } catch (error) { window.FynxMonitor?.report('auth','auth-reset',error);
         status.textContent = error.code === 'auth/user-not-found'
           ? 'If an account exists for this email, you’ll receive a password reset link. Check your inbox and spam folder.'
           : error.code === 'auth/too-many-requests'

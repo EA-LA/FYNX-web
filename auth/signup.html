@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script>
@@ -508,7 +508,7 @@
       localStorage.setItem("mode", mode);
     }
 
-    function showErr(e){
+    function showErr(e){ window.FynxMonitor?.report('auth','auth-signup',e);
       console.error(e);
       alert(e?.message || String(e));
     }

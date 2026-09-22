@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Financial Market Headlines: Forex, Crypto &amp; Stocks | FYNX</title>
@@ -1183,7 +1183,7 @@
       if(!res.ok) throw new Error('Feed request failed');
       const data=await res.json();
       const items=Array.isArray(data.items)?data.items:[];
-      return items.slice(0, 10).map(item => ({
+      return {fetchedAt:data.fetchedAt,stale:data.stale===true,items:items.slice(0, 10).map(item => ({
         category: feed.category,
         label: feed.label,
         icon: feed.icon,
@@ -1192,7 +1192,7 @@
         description: shortText(item.description || item.contentSnippet || item.content || ''),
         pubDate: item.pubDate || null,
         source: item.source || item.author || feed.label
-      }));
+      }))};
     }
 
     async function loadNews() {
@@ -1208,7 +1208,7 @@
 
         results.forEach(result => {
           if (result.status === 'fulfilled') {
-            combined.push(...result.value);
+            combined.push(...result.value.items);
           } else { window.FynxMonitor?.report('feed','feed-load',result.reason); }
         });
 
@@ -1223,10 +1223,17 @@
         lastUpdated.textContent = providerPublishedAt ? formatTime(providerPublishedAt) : 'Unavailable';
         refreshNote.textContent = `Checked ${new Date().toLocaleTimeString()} • ${results.filter(r=>r.status==='rejected').length} sources unavailable • next check in 5 minutes`;
 
+        const successful=results.filter(r=>r.status==='fulfilled').map(r=>r.value);
+        const upstreamTimes=successful.map(r=>Date.parse(r.fetchedAt)).filter(Number.isFinite);
+        const retrievedAt=upstreamTimes.length?new Date(Math.min(...upstreamTimes)).toISOString():null;
+        const stale=successful.some(r=>r.stale);
+        if(stale) refreshNote.textContent='Stale source cache · '+refreshNote.textContent;
         const cachedPayload = {
           updatedAt: providerPublishedAt,
           providerPublishedAt,
-          fetchedAt: new Date().toISOString(),
+          fetchedAt: retrievedAt,
+          checkedAt: new Date().toISOString(),
+          stale,
           cadenceMs: REFRESH_MS,
           items: allNews.slice(0, 30).map((item) => ({
             title: item.title,
@@ -1239,8 +1246,8 @@
           }))
         };
 
-        localStorage.setItem("fynx_news_latest_payload", JSON.stringify(cachedPayload));
-        localStorage.setItem("fynx_news_last_refresh", cachedPayload.fetchedAt);
+        try { localStorage.setItem("fynx_news_latest_payload", JSON.stringify(cachedPayload));
+        if(cachedPayload.fetchedAt) localStorage.setItem("fynx_news_last_refresh", cachedPayload.fetchedAt); } catch {}
         window.dispatchEvent(new CustomEvent("fynx:news-updated", { detail: cachedPayload }));
 
         renderNews();

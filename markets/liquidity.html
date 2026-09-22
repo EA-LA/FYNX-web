@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-routing"></script>
+  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -62,27 +62,12 @@
   </div>
 </header>
 
-<main>
-  <div class="card">
-    <h1>Session liquidity and market behavior.</h1>
-    <p class="desc">Use this page to explain where liquidity usually enters the market and when sweeps or expansions are most likely.</p>
-
-    <div class="grid">
-      <div class="session">
-        <h3>Asia Session</h3>
-        <p>Often builds early range and internal liquidity. Good for setting up later London sweeps.</p>
-      </div>
-      <div class="session">
-        <h3>London Session</h3>
-        <p>Usually strongest FX liquidity. Frequent breakouts, reversals, and stop runs around prior session highs/lows.</p>
-      </div>
-      <div class="session">
-        <h3>New York Session</h3>
-        <p>Continuation or reversal depending on London move, US data, and dollar-related flows.</p>
-      </div>
-    </div>
-  </div>
-</main>
+<main><div class="card" data-market-analysis="liquidity"><h1>Market liquidity snapshot</h1>
+<p class="desc">Best bid, ask, spread and displayed size from Coinbase Exchange. A snapshot of one crypto venue, not total market depth or global FX liquidity. Refreshes every 15 seconds while this page is visible.</p>
+<div class="analysis-controls"><label for="analysisProduct">Market <select id="analysisProduct"><option value="BTC-USD">BTC / USD</option><option value="ETH-USD">ETH / USD</option></select></label><button type="button" class="btn">Refresh data</button></div>
+<p role="status">Loading source observations…</p><div data-analysis-output></div>
+<p>Displayed size is the aggregate quantity at the best price. It can change or disappear before execution; it does not estimate slippage for larger orders. Auction and invalid snapshots are excluded.</p>
+<p><a href="https://www.coinbase.com/advanced-trade/spot/BTC-USD" target="_blank" rel="noopener">Open Coinbase market ↗</a></p></div><style>.analysis-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:20px 0}.analysis-controls select{padding:10px;max-width:100%;background:var(--panel);color:var(--text);border:1px solid var(--border)}[data-analysis-output]{overflow-x:auto;max-width:100%;margin:20px 0}[data-analysis-output] table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}[data-analysis-output] th,[data-analysis-output] td{padding:12px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap}[data-analysis-output] th:first-child{text-align:left}[data-analysis-output] caption{text-align:left;padding:12px 0;font-size:14px}[data-market-analysis]{min-width:0}[data-market-analysis] [role=status]{font-size:14px;line-height:1.6}</style></main><script src="/assets/js/market-analytics.js?v=20260922-services" defer></script>
 
 <script>
 const THEME_KEY="fynx_theme";

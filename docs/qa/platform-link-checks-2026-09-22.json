@@ -1,0 +1,42 @@
+[
+  {
+    "url": "https://ftmo.com",
+    "result": "200 https://ftmo.com/en/",
+    "curlExit": 0
+  },
+  {
+    "url": "https://fundednext.com",
+    "result": "200 https://fundednext.com/usa",
+    "curlExit": 0
+  },
+  {
+    "url": "https://the5ers.com",
+    "result": "200 https://the5ers.com/",
+    "curlExit": 0
+  },
+  {
+    "url": "https://www.icmarkets.com",
+    "result": "200 https://www.ic.com/en/",
+    "curlExit": 0
+  },
+  {
+    "url": "https://pepperstone.com",
+    "result": "200 https://pepperstone.com/en-au",
+    "curlExit": 0
+  },
+  {
+    "url": "https://www.xm.com",
+    "result": "403 https://www.xm.com/",
+    "curlExit": 0
+  },
+  {
+    "url": "https://tradezella.com",
+    "result": "200 https://www.tradezella.com/",
+    "curlExit": 0
+  },
+  {
+    "url": "https://www.babypips.com/learn/forex/what-is-marketmilk",
+    "result": "403 https://www.babypips.com/learn/forex/what-is-marketmilk",
+    "curlExit": 0
+  }
+]

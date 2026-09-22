@@ -56,7 +56,7 @@
    status.classList.toggle('macro-warning',data.cacheStatus==='stale');
    const details=document.getElementById('sourceDetails');details.replaceChildren(link(kind==='rates'?'Bank for International Settlements':'World Bank — World Development Indicators',kind==='rates'?'https://data.bis.org/topics/CBPOL':'https://data.worldbank.org/'));
    details.append(document.createTextNode(kind==='rates'?'. Daily observations published weekly; values are percentages per year.':`. Annual observations. Source dataset updated ${data.sourceUpdatedAt||'date unavailable'}. Values are percentages.`));
-  }catch{
+  }catch(error){window.FynxMonitor?.report('feed','macro-load',error);
    status.textContent=dataset?`Refresh failed. Previously retrieved data from ${new Date(dataset.fetchedAt).toLocaleString()} remains displayed. Check the official source.`:'Published data is temporarily unavailable. No estimated values are displayed. Use the official source links or try again.';
    status.classList.add('macro-warning');
    if(!dataset){rows.replaceChildren();rows.append(el('p','Data unavailable','macro-empty'));}
