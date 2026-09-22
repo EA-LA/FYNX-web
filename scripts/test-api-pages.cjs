@@ -46,3 +46,12 @@ for (const file of files) {
  w.close();
  console.log(`${files.length} API pages: local links, fragments, metadata, mobile-menu state, language switching, copy control and JS example passed.`);
 })();
+
+// Execute the copyable product example, so missing contract metadata cannot
+// silently make a public first request fail while the docs example still works.
+const riskPage = new JSDOM(fs.readFileSync(path.join(root, 'api/risk.html'), 'utf8'));
+const sizingInput = JSON.parse(riskPage.window.document.querySelector('pre code').textContent);
+const sizing = require('../backend/developer-engine.cjs').risk('position-size', sizingInput);
+assert.equal(sizing.position_size, '0.33');
+assert.equal(sizing.actual_risk_amount, '99.00');
+riskPage.window.close();

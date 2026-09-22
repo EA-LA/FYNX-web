@@ -1,4 +1,6 @@
-# Public API pages — release notes
+# Public API pages — original Step 2 release notes
+
+> Historical snapshot: the preview-only boundaries below were superseded by the implemented developer beta. For current status, see [LAUNCH-CHECKLIST.md](LAUNCH-CHECKLIST.md), [developer-workspace.md](developer-workspace.md), and [developer-operations.md](developer-operations.md).
 
 Step 2 implements a public developer preview in `/api/`, with dedicated Overview, Risk API, Prop Firm Rules API, Pricing, Documentation and Access pages. The home-page desktop navigation, mobile drawer and footer link to it. Each page is server-independent static HTML; reading requires no authentication or JavaScript.
 

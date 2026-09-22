@@ -161,6 +161,7 @@ topBar.innerHTML = `
   </div>
 
   <div class="top-bar-right">
+    <a class="chip" href="/api/" aria-label="FYNX API developer workspace">API</a>
     <button class="icon-btn" type="button" data-journal-theme aria-label="Switch theme">◐</button>
     <span class="chip" id="dateChip">Loading...</span>
     <button class="icon-btn" title="Notifications" aria-label="Notifications">
