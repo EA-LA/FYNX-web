@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta http-equiv="refresh" content="0;url=/home.html">
   <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <title>Open Your FYNX Workspace</title>
 
 
 
@@ -16,41 +17,14 @@
   </style>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-smooth">
-
-<title>Join the FYNX Early-Access Waitlist</title>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 <meta name="description" content="FYNX is in private development. Join the early-access waitlist for professional trading tools, market analysis, risk management, education, and performance tracking.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.fynxfinanceworld.com/waitlist.html">
-<meta property="og:title" content="Join the FYNX Early-Access Waitlist">
+<meta property="og:title" content="Open Your FYNX Workspace">
 <meta property="og:description" content="FYNX is in private development. Join the early-access waitlist for professional trading tools, market analysis, risk management, education, and performance tracking.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/waitlist.html">
 </head>
 <body data-fynx-layout="utility" data-fynx-section="FINANCE WORLD">
-  <main class="waitlist-shell">
-    <section class="waitlist-card" aria-labelledby="waitlist-title">
-      <div class="brand"><span class="brand-mark">↗</span><span>FYNX</span></div>
-      <span class="badge">Private Beta — Early Access Opening Soon</span>
-      <h1 id="waitlist-title">Professional Trading Tools Are Coming</h1>
-      <p>FYNX is building a professional workspace for market analysis, risk management, trading education, and performance tracking. Join the waitlist for early access and launch updates.</p>
-      <form class="waitlist-form" id="waitlistForm" novalidate>
-        <label for="firstName">First name (optional)</label><input id="firstName" name="firstName" autocomplete="given-name" placeholder="First name (optional)" />
-        <label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" required placeholder="Email address" />
-        <button id="submitBtn" type="submit">Join the Early-Access Waitlist</button>
-        <div class="privacy">No spam. Only important FYNX launch and early-access updates.</div>
-        <div class="status" id="status" role="status" aria-live="polite"></div>
-      </form>
-      <a class="owner-link" href="owner.html">Owner Login</a>
-    </section>
-    <aside class="preview-card" aria-label="Private beta product preview">
-      <div><div class="badge">Product Preview</div><h2>Market dashboard mockup</h2><p class="privacy">Private development build with tools locked for public visitors.</p></div>
-      <div class="mock"><div class="spark"></div><div class="mock-row"><span>Risk Workspace</span><strong>Beta</strong></div><div class="mock-row"><span>Journal Analytics</span><strong>Locked</strong></div><div class="mock-row"><span>Market Context</span><strong>Soon</strong></div></div>
-    </aside>
-  </main>
-  <script type="module">
-    import { joinWaitlist } from './assets/js/waitlist-mode.js?v=6ae3ec38a7f0';
-    const form = document.getElementById('waitlistForm'), status = document.getElementById('status'), btn = document.getElementById('submitBtn');
-    form.addEventListener('submit', async (e)=>{ e.preventDefault(); status.className='status'; status.textContent='Saving your spot...'; btn.disabled=true; try{ const res = await joinWaitlist({ email: email.value, firstName: firstName.value }); status.className='status success'; status.textContent = res.duplicate ? 'You are already on the FYNX waitlist. We will send important launch updates soon.' : 'You are on the list. Welcome to the FYNX early-access waitlist.'; form.reset(); } catch(err){ status.className='status error'; status.textContent = err.message || 'We could not save your request. Please try again.'; } finally{ btn.disabled=false; }});
-  </script>
-</body>
+<main><h1>Your workspace is open</h1><a href="/home.html">Continue to FYNX →</a></main></body>
 </html>

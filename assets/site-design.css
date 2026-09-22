@@ -69,3 +69,52 @@ html body[data-fynx-layout] .site-data-notice{max-width:850px!important;border-l
 html[data-theme=dark]{background:#0b0c0c!important}
 html[data-theme=light]{background:#fff!important}
 html body[data-fynx-layout=standalone],html body[data-fynx-layout=resource]{height:auto;min-height:100vh}
+
+/* Product workspace: consistent type, compact chrome and content-sized panels. */
+html body[data-fynx-layout=workspace]{--app-top-height:72px;--app-content-pad:28px;line-height:1.55}
+html body[data-fynx-layout=workspace] .top-bar{min-height:72px!important;height:72px!important}
+html body[data-fynx-layout=workspace] .top-bar .page-title{font-size:16px!important;line-height:1.3!important;margin:0!important;letter-spacing:-.02em!important}
+html body[data-fynx-layout=workspace] .nav-logo h1{font-size:20px!important;margin:0!important;line-height:1.2!important}
+html body[data-fynx-layout=workspace] .nav-item{position:relative}
+html body[data-fynx-layout=workspace] .nav-item.active::after{display:none}
+html body[data-fynx-layout=workspace] :is(.news-wrap.content-area,.calendar-wrap,.learn-wrap){max-width:none!important;width:100%;margin:0;min-width:0}
+html body[data-fynx-layout=workspace] :is(.module-grid,.module-grid.single){display:block}
+html body[data-fynx-layout=workspace] .module-frame{display:block;width:100%;height:900px;min-height:0!important;border:0}
+html body[data-fynx-layout=workspace] [hidden]{display:none!important}
+.module-title{display:none}.module-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.module-toolbar button,.module-open,.learning-card a{font:600 13px inherit;color:var(--fynx-text);background:var(--fynx-panel);border:1px solid var(--fynx-line);padding:10px 14px;border-radius:8px;text-decoration:none;cursor:pointer}
+.module-toolbar button[aria-pressed=true]{background:var(--fynx-accent);color:var(--fynx-on-accent);border-color:var(--fynx-accent)}.module-open{margin-left:auto}
+html body[data-fynx-layout=workspace] .hero-inner{gap:24px;align-items:flex-start}
+html body[data-fynx-layout=workspace] .hero-left{flex:0 0 240px}
+html body[data-fynx-layout=workspace] .hero h1{font-size:32px!important;letter-spacing:-.04em!important}
+html body[data-fynx-layout=workspace] .hero{padding:4px 0 20px!important}
+html body[data-fynx-layout=workspace] #tvTapeWrap{height:78px!important;min-height:0!important;padding:0!important}
+html body[data-fynx-layout=workspace] #tvTapeWrap :is(.tradingview-widget-container,.tradingview-widget-container__widget,iframe){height:78px!important;min-height:0!important}
+html body[data-fynx-layout=workspace] :is(.news-head,.live-head){flex-wrap:wrap}
+html body[data-fynx-layout=workspace] :is(.live-updated,.news-updated){white-space:normal;font-weight:500;font-size:12px}
+html body[data-fynx-layout=workspace] .news-item{padding:16px;line-height:1.6}
+.learning-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.learning-card{border:1px solid var(--fynx-line);border-radius:12px;padding:24px;background:var(--fynx-panel)}.learning-card h2{font-size:23px;margin:0 0 12px}.learning-card p{color:var(--fynx-muted);margin:0 0 24px}.learning-card>a{display:inline-block}.learning-links{display:flex;gap:12px;margin-top:18px}.learning-links a{border:0;padding:0;color:var(--fynx-accent)}.hub-intro{font-size:18px;margin:8px 0 24px}.editorial-label{font-size:11px;letter-spacing:.12em;color:var(--fynx-muted)}
+html body[data-fynx-layout=workspace] .tools-grid{grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+html body[data-fynx-layout=workspace] .tool-card{display:flex;flex-direction:column;padding:22px;border-radius:12px!important}
+html body[data-fynx-layout=workspace] .tool-desc{flex:1;font-weight:400;line-height:1.6}
+html body[data-fynx-layout=workspace] .tool-link{margin-top:18px;min-height:44px}
+html body[data-fynx-layout=workspace] .hero-card{padding:24px;border-radius:12px!important}
+html body[data-fynx-layout=workspace] .quick-calc{padding:20px;border-radius:12px}
+html body[data-fynx-layout=workspace] .calc-grid button{min-height:44px}
+html body[data-fynx-layout=workspace]>.theme-utility{display:none}
+html body[data-fynx-layout] :focus-visible{outline:2px solid var(--fynx-accent);outline-offset:3px}
+.journal-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}.journal-day{border:1px solid var(--fynx-line);border-radius:8px;padding:10px;font-size:12px}.journal-day strong{display:block;margin-top:6px}.journal-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}.journal-metrics>div{padding:16px;border:1px solid var(--fynx-line);border-radius:8px}.journal-metrics b{display:block;font-size:22px;margin-top:8px}
+@media(max-width:1000px){.learning-grid{grid-template-columns:repeat(2,minmax(0,1fr))}html body[data-fynx-layout=workspace] .hero-left{flex:auto}}
+@media(max-width:600px){html body[data-fynx-layout=workspace]{--app-content-pad:16px}html body[data-fynx-layout=workspace] .top-bar{min-height:60px!important;height:60px!important}.learning-grid{grid-template-columns:1fr}.module-open{margin-left:0}.module-toolbar button{min-height:44px}.journal-days{gap:4px}.journal-day{padding:6px;font-size:10px}html body[data-fynx-layout=workspace] .hero-inner{display:block}html body[data-fynx-layout=workspace] .hero-right{margin-top:20px}html body[data-fynx-layout=workspace] .news-item{gap:8px}html body[data-fynx-layout=workspace] .news-time{font-size:10px}html body[data-fynx-layout=workspace] :is(.news-mode-toggle,.calendar-mode-toggle){max-width:100%;flex-wrap:wrap;border-radius:10px}}
+.x-source-links{display:flex;flex-wrap:wrap;gap:10px;padding:16px}.x-source-links a{border:1px solid var(--fynx-line);border-radius:8px;padding:10px 14px;text-decoration:none;color:var(--fynx-accent);font-size:13px}.twitter-timeline{display:block;padding:18px;color:var(--fynx-accent)}
+.workspace-shortcuts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.workspace-shortcuts a{padding:12px 16px;border:1px solid var(--fynx-line);border-radius:8px;font-size:13px;color:var(--fynx-accent);text-decoration:none}.dashboard-card>a{display:inline-block;margin-top:18px;font-size:13px;color:var(--fynx-accent);text-decoration:none}
+@media(max-width:960px){html body[data-fynx-layout=workspace] .nav-menu{gap:0!important;padding:6px 2px!important;overflow:visible}html body[data-fynx-layout=workspace] .nav-item{min-width:0!important;width:14.285%!important;padding:10px 0!important;gap:6px}.nav-label{font-size:9px!important}html body[data-fynx-layout=workspace] .demo-banner{display:none}html body[data-fynx-layout=workspace] .top-bar{flex-wrap:nowrap!important}html body[data-fynx-layout=workspace] .jnav{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;padding:12px;width:100%;overflow:visible}html body[data-fynx-layout=workspace] .jbtn{min-width:0;flex:1 1 140px;padding:10px;font-size:12px;min-height:44px}html body[data-fynx-layout=workspace] .jnav>.note{display:none}}
+@media(max-width:600px){html body[data-fynx-layout=workspace] #dateChip{display:none}html body[data-fynx-layout=workspace] .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}html body[data-fynx-layout=workspace] .jt-right .pill{padding:8px}.hero-card p{font-size:15px!important;font-weight:400!important}}
+html body[data-fynx-layout=workspace] .jt-right a{color:var(--fynx-accent);text-decoration:none;font-size:12px}html body[data-fynx-layout=workspace] .stat .row{display:none}
+@media(max-width:600px){html body[data-fynx-layout=workspace] .grid.cols-12:has(>.stat){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}html body[data-fynx-layout=workspace] .grid.cols-12>.stat{grid-column:span 1!important;padding:14px}html body[data-fynx-layout=workspace] .grid.cols-12:has(>.stat)>.card{grid-column:span 2!important}}
+
+/* Keep navigation legible in both themes and profile details compact on phones. */
+html body[data-fynx-layout=workspace] .nav-item{color:var(--fynx-muted)!important}
+html body[data-fynx-layout=workspace] .nav-item.active{color:var(--fynx-accent)!important}
+html body[data-fynx-layout=workspace] .icon-btn{background:var(--fynx-panel)!important;color:var(--fynx-text)!important}
+@media(max-width:600px){html body[data-fynx-layout=workspace] .profile-header{flex-direction:column;align-items:flex-start;padding:20px;gap:16px}html body[data-fynx-layout=workspace] .profile-info{width:100%}html body[data-fynx-layout=workspace] .profile-avatar-large{width:56px;height:56px;font-size:20px}html body[data-fynx-layout=workspace] .profile-stats{grid-template-columns:repeat(2,minmax(0,1fr))}html body[data-fynx-layout=workspace] .profile-stat-item{padding:12px}html body[data-fynx-layout=workspace] .profile-stat-item h4{font-size:10px}}

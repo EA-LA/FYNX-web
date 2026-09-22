@@ -36,20 +36,8 @@ export async function getOwnerAccess(user){
   return isOwnerUser(user);
 }
 export function redirectToWaitlist(){ window.location.replace(waitlistUrl()); }
-export async function protectCurrentRoute(){
-  await authPersistenceReady;
-  const path = normalizedPath();
-  if (isPublicPath(path)) return;
-  if (AUTH_PATHS.has(path) && new URLSearchParams(location.search).get("owner") === "1") return;
-  if (AUTH_PATHS.has(path)) return redirectToWaitlist();
-  onAuthStateChanged(auth, async (user)=>{
-    if(user && path === '/tools/risk-reward.html'){
-      try { const token=await user.getIdTokenResult(true); if(canUseApiPilot(path,token.claims)){document.documentElement.dataset.apiPilotAccess='true';return;} } catch (_) {}
-    }
-    if (!(await getOwnerAccess(user))) redirectToWaitlist();
-    else document.documentElement.dataset.ownerAccess = "true";
-  });
-}
+// Public launch: account authentication remains in the session manager.
+export async function protectCurrentRoute(){ return; }
 export async function joinWaitlist({ email, firstName = "", referralSource = "" }){
   const normalizedEmail = String(email || "").trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) throw new Error("Please enter a valid email address.");

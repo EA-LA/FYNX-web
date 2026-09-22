@@ -63,3 +63,9 @@ Sources:
 Official meeting-calendar links replace fixed meeting dates. No local forward calendar, inferred policy bias, economic strength ranking or surprise score is generated.
 
 Verified: 8 BIS rows and 24 World Bank rows from both providers; public production endpoint; six parser/validation tests; search and mobile/desktop theme layout; provider failure state. Inbox/mail features described above are independent of this endpoint.
+
+## Website market headlines (September 22, 2026)
+
+`market-feed.js` exports `webMarketFeed`, a public read-only endpoint with fixed category inputs. It fetches publisher RSS server-side, rejects invalid links and stories older than seven days, deduplicates, and keeps a five-minute instance cache. Source failure may retain a prior result for up to one hour, explicitly marked stale. There is no arbitrary URL proxy. Categories: all, forex, crypto, stocks, macro, commodities, world. Direct publisher feeds provide fallback when the aggregator is unavailable.
+
+Add `exports.webMarketFeed = require('./market-feed').webMarketFeed;` to the existing Firebase functions entry point and deploy only `functions:webMarketFeed` to `fynx-c7a28`. It has been deployed from an isolated copy of the existing functions source. Keep this export when preparing future deployments. X timelines use the official client embed and remain subject to X rate limits; direct publisher profile links are always available.

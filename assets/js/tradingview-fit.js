@@ -61,6 +61,7 @@
     ensureLiveStyles();
 
     document.querySelectorAll('.tradingview-widget-container').forEach((container) => {
+      if (container.closest('#tvTapeWrap')) return;
       container.style.width = '100%';
       container.style.height = '100%';
       container.style.minHeight = '100%';
@@ -88,6 +89,7 @@
     });
 
     document.querySelectorAll('.tradingview-widget-container__widget').forEach((widget) => {
+      if (widget.closest('#tvTapeWrap')) return;
       widget.style.width = '100%';
       widget.style.height = '100%';
       widget.style.minHeight = '100%';

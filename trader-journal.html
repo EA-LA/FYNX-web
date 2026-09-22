@@ -580,9 +580,7 @@ section.view.active{display:block}
   <script type="module" src="assets/js/session-bootstrap.js"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-smooth">
-
-<title>FYNX — Journal</title>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 <meta name="description" content="FYNX — Journal. Explore this resource from FYNX Finance World.">
 <meta name="robots" content="noindex, follow">
 <link rel="canonical" href="https://www.fynxfinanceworld.com/trader-journal.html">
@@ -680,18 +678,11 @@ section.view.active{display:block}
             </div>
 
             <div class="jt-right">
-              <div class="pill" title="Date range (visual only)">
+              <div class="pill" title="Filter recorded trades">
                 <span style="opacity:.85;">🗓</span>
-                <input type="text" value="Last 30 days" aria-label="Date range" />
+                <select id="journalRange" aria-label="Date range"><option value="all">All time</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last year</option></select>
               </div>
-              <div class="pill" title="Account">
-                <span style="opacity:.85;">◎</span>
-                <select aria-label="Account">
-                  <option>Live</option>
-                  <option>Demo</option>
-                  <option>Prop</option>
-                </select>
-              </div>
+              <div class="pill"><a href="profile.html">Account settings →</a></div>
               <div class="pill">
                 <button id="quickAddBtn" type="button">Quick Add</button>
               </div>
@@ -732,7 +723,7 @@ section.view.active{display:block}
               </button>
 
               <div class="note">
-                Export removed (it was just a JSON backup download).
+                Review your process. Track what works.
               </div>
             </aside>
 
@@ -747,7 +738,7 @@ section.view.active{display:block}
                         <b id="welcomeTitle">Welcome back, Trader</b>
                         <small>Here’s your performance snapshot</small>
                       </div>
-                      <div class="badge">Journal v1</div>
+                      <div class="badge">Performance</div>
                     </div>
 
                     <div class="bd">
@@ -1207,7 +1198,7 @@ const firebaseConfig = {
     window.__updateCharts = rebuildChartsTheme;
 
     function updateCharts(){
-      const trades = [...state.trades].sort((a,b) => String(a.date||"").localeCompare(String(b.date||"")));
+      const trades = [...visibleTrades()].sort((a,b) => String(a.date||"").localeCompare(String(b.date||"")));
       let cum = 0;
       const labels = [];
       const data = [];
@@ -1246,21 +1237,35 @@ const firebaseConfig = {
       sessionPLChart.update();
     }
 
+    function visibleTrades(){
+      const days = document.getElementById('journalRange')?.value || 'all';
+      if(days === 'all') return state.trades;
+      const cutoff = new Date(); cutoff.setHours(0,0,0,0); cutoff.setDate(cutoff.getDate() - Number(days) + 1);
+      return state.trades.filter(t => new Date(String(t.date).slice(0,10) + 'T12:00:00') >= cutoff);
+    }
+    document.getElementById('journalRange')?.addEventListener('change', () => {
+      refreshDashboard(); refreshAnalytics(); refreshReplay(); refreshStreaks(); refreshCalendar(); updateCharts();
+    });
+    function dailyTotals(){
+      const days = new Map();
+      visibleTrades().forEach(t => { if(/^\d{4}-\d{2}-\d{2}$/.test(t.date)) days.set(t.date, (days.get(t.date)||0) + Number(t.pl||0)); });
+      return [...days].sort((a,b)=>a[0].localeCompare(b[0]));
+    }
     function refreshDashboard(){
-      const total = state.trades.length;
+      const total = visibleTrades().length;
       document.getElementById("kpiTrades").textContent = String(total);
 
-      const wins = state.trades.filter(t => (t.pl||0) > 0).length;
+      const wins = visibleTrades().filter(t => (t.pl||0) > 0).length;
       const wr = total ? (wins/total)*100 : 0;
       document.getElementById("kpiWin").textContent = `${wr.toFixed(1)}%`;
 
-      const totalPL = state.trades.reduce((a,t)=>a+(t.pl||0),0);
+      const totalPL = visibleTrades().reduce((a,t)=>a+(t.pl||0),0);
       const kpiPL = document.getElementById("kpiPL");
       kpiPL.textContent = `${totalPL>=0?"+":"-"}$${Math.abs(totalPL).toFixed(0)}`;
       kpiPL.className = totalPL >= 0 ? "good" : "bad";
 
       // streak (simple consecutive days)
-      const dates = [...new Set(state.trades.map(t => t.date).filter(Boolean))].sort();
+      const dates = [...new Set(visibleTrades().map(t => t.date).filter(Boolean))].sort();
       let streak = 0;
       if(dates.length){
         const today = new Date(); today.setHours(0,0,0,0);
@@ -1268,7 +1273,7 @@ const firebaseConfig = {
         while(true){
           const d = new Date(today);
           d.setDate(d.getDate() - streak);
-          const iso = d.toISOString().slice(0,10);
+          const iso = [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
           if(set.has(iso)) streak++;
           else break;
         }
@@ -1277,7 +1282,7 @@ const firebaseConfig = {
 
       // session list
       const bySession = {};
-      state.trades.forEach(t => bySession[t.session] = (bySession[t.session]||0) + (t.pl||0));
+      visibleTrades().forEach(t => bySession[t.session] = (bySession[t.session]||0) + (t.pl||0));
       const order = ["London","New York","Asia","Overlap"];
       document.getElementById("sessionList").innerHTML = order.map(name => {
         const val = bySession[name] || 0;
@@ -1291,17 +1296,17 @@ const firebaseConfig = {
     }
 
     function refreshAnalytics(){
-      document.getElementById("tradeCountBadge").textContent = `Trades: ${state.trades.length}`;
+      document.getElementById("tradeCountBadge").textContent = `Trades: ${visibleTrades().length}`;
     }
 
     function refreshReplay(){
       const box = document.getElementById("replaySummary");
-      if(state.trades.length === 0){
+      if(visibleTrades().length === 0){
         box.innerHTML = `<div class="note">No trades yet.</div>`;
         return;
       }
-      replayIndex = Math.max(0, Math.min(replayIndex, state.trades.length - 1));
-      const t = state.trades[replayIndex];
+      replayIndex = Math.max(0, Math.min(replayIndex, visibleTrades().length - 1));
+      const t = visibleTrades()[replayIndex];
       const pl = t.pl || 0;
       const cls = pl >= 0 ? "good" : "bad";
       box.innerHTML = `
@@ -1309,17 +1314,23 @@ const firebaseConfig = {
           <div class="l"><b>${t.symbol || "—"}</b><small>${t.date || "—"} · ${t.session || "—"}</small></div>
           <div class="r"><span class="badge ${cls}">${pl>=0?"+":"-"}$${Math.abs(pl).toFixed(0)}</span></div>
         </div>
-        <div class="note">This is a simplified replay box. If you want, I’ll bring back the full replay UI with screenshot + notes.</div>
+        <div class="note">Review the entry, risk and outcome before your next session.</div>
       `;
     }
 
     function refreshStreaks(){
-      document.getElementById("sBadge").textContent = `${new Set(state.trades.map(t=>t.date)).size} days logged`;
-      document.getElementById("streakBox").innerHTML = `<div class="note">Streaks UI can be expanded next (heatmap + discipline score).</div>`;
+      const days = dailyTotals();
+      document.getElementById('sBadge').textContent = `${days.length} days logged`;
+      const pnl = visibleTrades().map(t=>Number(t.pl)||0);
+      const grossWin=pnl.filter(n=>n>0).reduce((a,b)=>a+b,0), grossLoss=-pnl.filter(n=>n<0).reduce((a,b)=>a+b,0);
+      let peak=0,equity=0,drawdown=0;
+      [...visibleTrades()].sort((a,b)=>String(a.date).localeCompare(String(b.date))).forEach(t=>{equity+=Number(t.pl)||0;peak=Math.max(peak,equity);drawdown=Math.max(drawdown,peak-equity);});
+      const money=n=>n.toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2});
+      document.getElementById('streakBox').innerHTML = `<div class="journal-metrics"><div>Profit factor<b>${grossLoss?(grossWin/grossLoss).toFixed(2):grossWin?'No losses':'—'}</b></div><div>Average trade<b>${pnl.length?money((grossWin-grossLoss)/pnl.length):'—'}</b></div><div>Maximum drawdown<b>${money(drawdown)}</b></div><div>Profitable days<b>${days.filter(d=>d[1]>0).length} / ${days.length}</b></div></div><p class="note">Based on recorded realized P/L in the selected period. Review losing sessions and repeat the setups you executed consistently.</p>`;
     }
-
     function refreshCalendar(){
-      document.getElementById("calendarBox").innerHTML = `<div class="note">Calendar UI can be expanded next (monthly heatmap like your Grok design).</div>`;
+      const days=dailyTotals();
+      document.getElementById('calendarBox').innerHTML=days.length?`<div class="journal-days">${days.map(([date,pnl])=>`<div class="journal-day"><time>${date}</time><strong class="${pnl>=0?'good':'bad'}">${pnl.toLocaleString('en-US',{style:'currency',currency:'USD'})}</strong></div>`).join('')}</div>`:'<p class="note">Log a trade to see your daily realized results here.</p>';
     }
 
     // Entry form helpers
@@ -1362,13 +1373,13 @@ const firebaseConfig = {
     document.getElementById("resetFormBtn").addEventListener("click", clearForm);
 
     document.getElementById("prevTradeBtn").addEventListener("click", () => {
-      if(state.trades.length === 0) return;
+      if(visibleTrades().length === 0) return;
       replayIndex = Math.max(0, replayIndex - 1);
       refreshReplay();
     });
     document.getElementById("nextTradeBtn").addEventListener("click", () => {
-      if(state.trades.length === 0) return;
-      replayIndex = Math.min(state.trades.length - 1, replayIndex + 1);
+      if(visibleTrades().length === 0) return;
+      replayIndex = Math.min(visibleTrades().length - 1, replayIndex + 1);
       refreshReplay();
     });
 
@@ -1423,6 +1434,7 @@ const firebaseConfig = {
       }catch(err){
         console.error(err);
         const code = (err && err.code) ? String(err.code) : "";
+        if(code) window.FynxMonitor?.report("save","journal-save",err);
         const blocked = code.includes("permission") || code.includes("unauth");
         alert(blocked ? "Your trade was not saved. Check your account permissions and try again." : (err.message || "Save failed. Please try again."));
       }
@@ -1434,12 +1446,13 @@ const firebaseConfig = {
         const trades = [];
         snap.forEach(doc => trades.push(doc.data() || {}));
         state.trades = trades;
-        replayIndex = Math.max(0, state.trades.length - 1);
+        replayIndex = Math.max(0, visibleTrades().length - 1);
         refreshDashboard(); refreshAnalytics(); refreshReplay(); refreshStreaks(); refreshCalendar();
         updateCharts();
       }, (err) => {
         console.error(err);
         const code = (err && err.code) ? String(err.code) : "";
+        if(code) window.FynxMonitor?.report("save","journal-save",err);
         const blocked = code.includes("permission") || code.includes("unauth");
         if (blocked) {
           if (unsubTrades) unsubTrades();
@@ -1484,12 +1497,12 @@ const firebaseConfig = {
       }
       currentUid = user.uid;
       renderWelcome();
-      modeText.textContent = "Live mode — saving to Firestore";
+      modeText.textContent = "Cloud sync enabled";
       attachTradesListener();
     });
   </script>
 
-  <script src="fynx-nav.js?v=20260915-global"></script>
+  <script src="fynx-nav.js?v=20260922-workspace"></script>
 
   <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
   <script src="fynx-usercard.js"></script>

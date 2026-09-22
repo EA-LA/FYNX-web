@@ -34,7 +34,7 @@
 
   function demoBannerMarkup() {
     if (!isDemoMode()) return '';
-    return `<div style="padding:8px 14px;border-radius:12px;border:1px solid var(--line, rgba(255,255,255,.18));font-size:12px;font-weight:700;letter-spacing:.02em;opacity:.88;">DEMO MODE · SIMULATED DATA</div>`;
+    return `<div class="demo-banner" style="padding:8px 14px;border-radius:12px;border:1px solid var(--line, rgba(255,255,255,.18));font-size:12px;font-weight:700;letter-spacing:.02em;opacity:.88;">DEMO MODE · SIMULATED DATA</div>`;
   }
 
   const NAV_ICONS = {
@@ -151,7 +151,7 @@ function detectCurrentView() {
 
    ensureDemoStyles();
     ensureNavConsistencyStyles();
-    const disableSidebarToggle = document.body.hasAttribute('data-disable-sidebar-toggle');
+    const disableSidebarToggle = true;
 topBar.innerHTML = `
   ${demoBannerMarkup()}
 
@@ -184,7 +184,7 @@ topBar.innerHTML = `
     renderShell();
     const sidebarKey = 'fynx_sidebar_collapsed';
     const toggleBtn = document.getElementById('sidebarToggle');
-    const disableSidebarToggle = document.body.hasAttribute('data-disable-sidebar-toggle');
+    const disableSidebarToggle = true;
     const applySidebarState = (collapsed) => {
       document.body.classList.toggle('sidebar-collapsed', collapsed);
       if (toggleBtn) {
@@ -217,20 +217,13 @@ topBar.innerHTML = `
         .map((chunk) => chunk.charAt(0).toUpperCase())
         .join('') || 'FX';
       initialsEl.textContent = initials;
-      initialsEl.title = isDemoMode() ? 'Demo mode' : 'Log out';
+      initialsEl.title = 'Open profile';
       initialsEl.style.cursor = isDemoMode() ? 'default' : 'pointer';
-      initialsEl.addEventListener('click', async () => {
-        if (isDemoMode()) return;
-        const ok = window.confirm('Log out from this browser?');
-        if (!ok) return;
-        try {
-          if (window.FynxSession?.logout) {
-            await window.FynxSession.logout('manual', 'auth/login.html');
-          }
-        } finally {
-          window.location.href = 'auth/login.html';
-        }
-      });
+      initialsEl.setAttribute('role', 'link');
+      initialsEl.tabIndex = 0;
+      initialsEl.addEventListener('click', () => { location.href = 'profile.html'; });
+      initialsEl.addEventListener('keydown', event => { if(event.key === 'Enter') location.href = 'profile.html'; });
+
     }
 
   }

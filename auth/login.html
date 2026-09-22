@@ -12,7 +12,7 @@
     })();
   </script>
 
-
+  <title>Login — FYNX</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -502,9 +502,7 @@
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-smooth">
-
-<title>Login — FYNX</title>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 <meta name="description" content="Log in to your FYNX account.">
 <meta name="robots" content="noindex, follow">
 <link rel="canonical" href="https://www.fynxfinanceworld.com/auth/login.html">
@@ -536,7 +534,7 @@
 
         <div>
           <h1>Welcome to your workspace.</h1><p id="ownerLoginStatus" role="status" aria-live="polite"></p>
-          <p class="sub">Sign in with your authorized owner account to access the private beta dashboard.</p>
+          <p class="sub">Sign in to sync your journal, learning progress, and account preferences.</p>
         </div>
 
         <div class="actions">
@@ -606,10 +604,7 @@
     import { withMfa } from "../assets/js/mfa.js?v=20260915-cloud";
     import { getOwnerAccess } from "../assets/js/waitlist-mode.js?v=6ae3ec38a7f0";
     async function enterWorkspace(){
-      if (!(await getOwnerAccess(auth.currentUser))) {
-        document.getElementById("ownerLoginStatus").textContent = "This account does not have owner access. Please use your authorized owner account.";
-        return;
-      }
+
       window.location.href = DASHBOARD_URL;
     }
     import { sessionState } from "../assets/js/session-manager.js";
@@ -635,6 +630,7 @@
     OPEN_APP_URL.searchParams.set("returnTo", APP_RETURN_URL.toString());
 
     function showErr(e){
+      window.FynxMonitor?.report("auth","auth-login",e);
       console.error(e);
       alert(e?.message || String(e));
     }

@@ -4,7 +4,7 @@
   <script src="/assets/js/site-theme-init.js?v=20260915-global"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <title>Financial Market Headlines: Forex, Crypto &amp; Stocks | FYNX</title>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -893,16 +893,14 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260915-global" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20260915-smooth">
-
-<title>Financial Market Headlines: Forex, Crypto &amp; Stocks | FYNX</title>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 <meta name="description" content="Browse financial and world headlines covering forex, crypto, stocks, commodities and macroeconomic developments.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.fynxfinanceworld.com/news/news.html">
 <meta property="og:title" content="Financial Market Headlines: Forex, Crypto &amp; Stocks | FYNX">
 <meta property="og:description" content="Browse financial and world headlines covering forex, crypto, stocks, commodities and macroeconomic developments.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/news/news.html">
-</head>
+<style>body>main{padding-top:24px!important}body .hero-card{padding:0 0 20px!important}body .hero-title{font-size:32px!important}body .hero-right,body .quick-tags{display:none!important}body .hero-desc{font-size:15px!important;line-height:1.6!important}body .hero-card{display:block!important}body .layout{grid-template-columns:minmax(0,1fr)!important}body .layout>aside{display:none!important}body .hero-card .pill-row{display:none!important}</style></head>
 <body data-fynx-layout="standalone" data-fynx-section="NEWS">
   <div class="animated-bg">
     <div class="grid-overlay"></div>
@@ -974,7 +972,7 @@
         </div>
 
         <div class="mini-stat">
-          <div class="mini-stat-label">Last Updated</div>
+          <div class="mini-stat-label">Latest publication</div>
           <div class="mini-stat-value" id="lastUpdated">--:--</div>
           <div class="mini-stat-sub">Time updates after each successful refresh.</div>
         </div>
@@ -1151,9 +1149,11 @@
     const refreshNote = document.getElementById('refreshNote');
 
     function formatTime(dateString) {
+      if (!dateString) return "Publication time unavailable";
       const date = new Date(dateString);
       if (Number.isNaN(date.getTime())) return 'Unknown time';
       return date.toLocaleString([], {
+        year: 'numeric',
         month: 'short',
         day: 'numeric',
         hour: 'numeric',
@@ -1178,14 +1178,11 @@
     }
 
     async function fetchFeed(feed) {
-      const endpoint = RSS_TO_JSON + encodeURIComponent(feed.url);
-      const res = await fetch(endpoint, { signal: AbortSignal.timeout(10000) });
-      if (!res.ok) throw new Error('Feed request failed');
-
-      const data = await res.json();
-      if (data.status && data.status !== 'ok') throw new Error('News provider rejected the request');
-      const items = Array.isArray(data.items) ? data.items : [];
-
+      const endpoint = 'https://us-central1-fynx-c7a28.cloudfunctions.net/webMarketFeed?category=' + encodeURIComponent(feed.category);
+      const res = await fetch(endpoint, {signal:AbortSignal.timeout(15000)});
+      if(!res.ok) throw new Error('Feed request failed');
+      const data=await res.json();
+      const items=Array.isArray(data.items)?data.items:[];
       return items.slice(0, 10).map(item => ({
         category: feed.category,
         label: feed.label,
@@ -1193,8 +1190,8 @@
         title: item.title || 'Untitled',
         link: item.link || '#',
         description: shortText(item.description || item.contentSnippet || item.content || ''),
-        pubDate: item.pubDate || new Date().toISOString(),
-        source: item.author || data.feed?.title || feed.label
+        pubDate: item.pubDate || null,
+        source: item.source || item.author || feed.label
       }));
     }
 
@@ -1212,7 +1209,7 @@
         results.forEach(result => {
           if (result.status === 'fulfilled') {
             combined.push(...result.value);
-          }
+          } else { window.FynxMonitor?.report('feed','feed-load',result.reason); }
         });
 
         if (!results.some(result => result.status === "fulfilled")) {
@@ -1221,15 +1218,15 @@
         allNews = uniqueByLink(combined).sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
 
         storyCount.textContent = allNews.length;
-        lastUpdated.textContent = new Date().toLocaleTimeString([], {
-          hour: 'numeric',
-          minute: '2-digit'
-        });
-
-        refreshNote.textContent = `Live feeds refreshed • next update in 5 minutes`;
+        const dated = allNews.map(item => Date.parse(item.pubDate || '')).filter(Number.isFinite);
+        const providerPublishedAt = dated.length ? new Date(Math.max(...dated)).toISOString() : null;
+        lastUpdated.textContent = providerPublishedAt ? formatTime(providerPublishedAt) : 'Unavailable';
+        refreshNote.textContent = `Checked ${new Date().toLocaleTimeString()} • ${results.filter(r=>r.status==='rejected').length} sources unavailable • next check in 5 minutes`;
 
         const cachedPayload = {
-          updatedAt: new Date().toISOString(),
+          updatedAt: providerPublishedAt,
+          providerPublishedAt,
+          fetchedAt: new Date().toISOString(),
           cadenceMs: REFRESH_MS,
           items: allNews.slice(0, 30).map((item) => ({
             title: item.title,
@@ -1243,7 +1240,7 @@
         };
 
         localStorage.setItem("fynx_news_latest_payload", JSON.stringify(cachedPayload));
-        localStorage.setItem("fynx_news_last_refresh", cachedPayload.updatedAt);
+        localStorage.setItem("fynx_news_last_refresh", cachedPayload.fetchedAt);
         window.dispatchEvent(new CustomEvent("fynx:news-updated", { detail: cachedPayload }));
 
         renderNews();
