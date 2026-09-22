@@ -3,7 +3,8 @@
     "build": "node scripts/build-static.js",
     "test": "node scripts/test-journal-record.js",
     "test:api": "node scripts/test-api-pages.cjs",
-    "test:proof": "node scripts/proof/calculator-parity.cjs && node scripts/proof/calculator-validation.cjs && node scripts/proof/funded-scenarios.cjs && node scripts/proof/pilot-access.cjs"
+    "test:proof": "node scripts/proof/calculator-parity.cjs && node scripts/proof/calculator-validation.cjs && node scripts/proof/funded-scenarios.cjs && node scripts/proof/pilot-access.cjs",
+    "vercel-build": "npm run build && node scripts/package-static.cjs"
   },
   "devDependencies": {
     "jsdom": "^20.0.3"
