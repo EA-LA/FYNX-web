@@ -590,7 +590,7 @@ section.view.active{display:block}
 <meta property="og:url" content="https://www.fynxfinanceworld.com/trader-journal.html">
 </head>
 
-<body data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD">
+<body data-protected-page="false" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD">
   <div class="dashboard-container">
     <!-- Outer Sidebar -->
     <nav class="nav-panel">
@@ -855,7 +855,7 @@ section.view.active{display:block}
                       </div>
 
                       <div class="note" id="loginNote" style="grid-column: span 12; display:none;">
-                        You’re in guest mode. To save trades, you must login. Redirecting to login when you click “Save”.
+                        You’re browsing as a guest. <a href="auth/login.html?returnTo=%2Fjournal.html">Sign in to save trades across devices</a>, or continue exploring for free.
                       </div>
                     </div>
                   </div>
@@ -1415,7 +1415,7 @@ const db = getFirestore(app);
       }
       if(!currentUid){
         loginNote.style.display = "block";
-        setTimeout(()=> location.href = "auth/login.html", 600);
+        loginNote.scrollIntoView({block: "nearest"});
         return;
       }
       try{

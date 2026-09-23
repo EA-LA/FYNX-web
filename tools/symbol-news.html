@@ -760,6 +760,8 @@
     });
 
     renderChips();
+    const requestedSymbol = new URLSearchParams(location.search).get("q");
+    if (requestedSymbol) el.q.value = requestedSymbol.slice(0,120);
     fetchNews(el.q.value);
   </script>
 

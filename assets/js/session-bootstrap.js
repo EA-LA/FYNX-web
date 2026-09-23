@@ -1,7 +1,9 @@
 import { auth } from "../../auth/firebase.js";
 import { bootstrapSession } from "./session-manager.js?v=20260922-routing";
 
-const protectedPage = document.body?.dataset?.protectedPage !== "false";
+// Public browsing is the default. Only personal account screens require a session.
+const privatePages = new Set(["account-settings.html", "security.html", "notifications.html", "preferences.html"]);
+const protectedPage = privatePages.has(location.pathname.split("/").pop());
 
 function removeLegacyRestoreUi() {
   const selectors = [
