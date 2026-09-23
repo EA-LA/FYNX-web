@@ -26,9 +26,10 @@
     .head{font-weight:800;color:var(--muted)}
     .good,.warn,.bad{font-weight:800}
     .good{color:#6f6f6f}.warn{color:#909090}.bad{color:#656565}
-    .widget{min-height:500px;border:1px solid var(--border);border-radius:20px;overflow:hidden;background:var(--panel-2)}
+    .widget{min-height:400px;border:1px solid var(--border);border-radius:20px;overflow:hidden;background:var(--panel-2)}
     @media (max-width:1050px){.grid,.row{grid-template-columns:1fr}}
-  </style>
+  .grid,.grid-2{align-items:start}
+</style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
@@ -71,8 +72,8 @@
         <h1>Macro and market indicators in one place.</h1>
         <p class="desc">Use this page to review trend strength, momentum, risk conditions, and asset behavior before entering a trade.</p>
 
-        <div class="table">
-          <div class="row head"><div>Indicator</div><div>Asset</div><div>Bias</div><div>Meaning</div></div>
+        <h2>Indicator reference</h2><p class="desc">Illustrative readings below explain the terms. Current EUR/USD analysis appears in the TradingView panel.</p><div class="table">
+          <div class="row head"><div>Indicator</div><div>Example asset</div><div>Example reading</div><div>Meaning</div></div>
           <div class="row"><div>RSI</div><div>EUR/USD</div><div class="warn">Neutral</div><div>No clear extreme</div></div>
           <div class="row"><div>MACD</div><div>BTC</div><div class="good">Bullish</div><div>Momentum rising</div></div>
           <div class="row"><div>ATR</div><div>Gold</div><div class="good">High</div><div>Wide movement</div></div>
@@ -120,7 +121,7 @@
     document.getElementById("themeToggle").addEventListener("click",toggleTheme);
     window.addEventListener("storage",e=>{if(e.key===THEME_KEY)applyTheme(getTheme());});
   </script>
-  <script src="../assets/js/tradingview-fit.js?v=20260922-workspace"></script>
+  <script src="../assets/js/tradingview-fit.js?v=20260922-fit2"></script>
 
 </body>
 </html>

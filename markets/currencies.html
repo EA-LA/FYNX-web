@@ -117,7 +117,7 @@
     .stat strong{font-size:1.25rem}
     .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1rem}
     .section-title{font-size:1.15rem; margin-bottom:.9rem}
-    .widget{min-height:420px; border:1px solid var(--border); border-radius:20px; overflow:hidden; background:var(--panel-2)}
+    .widget{min-height:330px; border:1px solid var(--border); border-radius:20px; overflow:hidden; background:var(--panel-2)}
     .table{display:grid; gap:.7rem}
     .row{
       display:grid; grid-template-columns:1.1fr .9fr .8fr .8fr; gap:.75rem;
@@ -144,7 +144,8 @@
       .stats{grid-template-columns:1fr}
       .row{grid-template-columns:1fr 1fr}
     }
-  </style>
+  .grid,.grid-2{align-items:start}
+</style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
@@ -318,7 +319,7 @@
     document.getElementById("themeToggle").addEventListener("click", toggleTheme);
     window.addEventListener("storage", (e) => { if(e.key === THEME_KEY) applyTheme(getTheme()); });
   </script>
-  <script src="../assets/js/tradingview-fit.js?v=20260922-workspace"></script>
+  <script src="../assets/js/tradingview-fit.js?v=20260922-fit2"></script>
 
 </body>
 </html>

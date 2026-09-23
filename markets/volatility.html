@@ -27,7 +27,8 @@
     .item strong{display:block;margin-bottom:.3rem}
     .item span{color:var(--muted)}
     @media (max-width:1050px){.grid{grid-template-columns:1fr}}
-  </style>
+  .grid,.grid-2{align-items:start}
+</style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
@@ -79,8 +80,9 @@
     </div>
 
     <div class="card">
-      <h2 style="margin-bottom:1rem">VIX / Volatility Widget</h2>
-      <div class="widget" id="volWidget"></div>
+      <h2 style="margin-bottom:1rem">VIX · Daily closing values</h2>
+      <div id="volWidget" aria-live="polite"><p>Loading Cboe observations…</p></div>
+      <p class="desc">Daily closing observations, not an intraday quote. <a href="https://www.cboe.com/tradable_products/vix/vix_historical_data/" target="_blank" rel="noopener">Source: Cboe VIX history ↗</a></p><button class="btn" id="retryVix">Refresh</button>
     </div>
   </div>
 </main>
@@ -94,23 +96,13 @@ function applyTheme(theme){
   renderWidget();
 }
 function toggleTheme(){const next=getTheme()==="dark"?"light":"dark";localStorage.setItem(THEME_KEY,next);applyTheme(next);}
-function renderWidget(){
-  const wrap=document.getElementById("volWidget");
-  wrap.innerHTML='<div class="tradingview-widget-container" style="height:100%;width:100%"><div id="vol_inner" style="height:100%;width:100%"></div></div>';
-  const s=document.createElement("script");
-  s.src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
-  s.async=true;
-  s.innerHTML=JSON.stringify({
-    autosize:true,symbol:"CBOE:VIX",interval:"D",timezone:"Etc/UTC",
-    theme:getTheme(),style:"1",locale:"en",enable_publishing:false,hide_legend:false,save_image:false,support_host:"https://www.tradingview.com"
-  });
-  wrap.querySelector('.tradingview-widget-container').appendChild(s);
-}
+function renderWidget(){ window.FynxVix?.load(); }
+
 applyTheme(getTheme());
 document.getElementById("themeToggle").addEventListener("click",toggleTheme);
 window.addEventListener("storage",e=>{if(e.key===THEME_KEY)applyTheme(getTheme());});
 </script>
-  <script src="../assets/js/tradingview-fit.js?v=20260922-workspace"></script>
+  <script src="../assets/js/vix-chart.js"></script>
 
 </body>
 </html>

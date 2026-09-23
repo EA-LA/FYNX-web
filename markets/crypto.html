@@ -35,7 +35,8 @@
     .coin span{color:var(--muted);font-size:.92rem}
     .widget{min-height:460px;border:1px solid var(--border);border-radius:20px;overflow:hidden;background:var(--panel-2)}
     @media (max-width:1050px){.hero,.grid-2,.coins{grid-template-columns:1fr}}
-  </style>
+  #cryptoScreener{min-height:330px}
+</style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
@@ -171,7 +172,7 @@
     document.getElementById("themeToggle").addEventListener("click", toggleTheme);
     window.addEventListener("storage", e => { if(e.key === THEME_KEY) applyTheme(getTheme()); });
   </script>
-  <script src="../assets/js/tradingview-fit.js?v=20260922-workspace"></script>
+  <script src="../assets/js/tradingview-fit.js?v=20260922-fit2"></script>
 
 </body>
 </html>

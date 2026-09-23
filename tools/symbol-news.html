@@ -703,7 +703,9 @@
       }
     }
 
+    let searchSequence=0;
     async function fetchNews(userQuery){
+      const sequence=++searchSequence;
       const raw = (userQuery || "").trim();
       if (!raw){
         clearList();
@@ -717,23 +719,25 @@
       try {
         const normalizedQuery = normalizeSearchQuery(raw);
         const rssUrl = toGoogleRSSUrl(normalizedQuery);
-        const apiUrl = toRssJsonUrl(rssUrl);
+        const apiUrl = 'https://us-central1-fynx-c7a28.cloudfunctions.net/webSymbolNews?q='+encodeURIComponent(raw);
 
         const response = await fetch(apiUrl, { cache: "no-store", signal: AbortSignal.timeout(15000) });
         if (!response.ok) throw new Error("Network error");
 
         const data = await response.json();
-        if (data.status !== "ok") throw new Error(data.message || "Feed error");
+        if (sequence !== searchSequence) return;
+        if (data.error) throw new Error(data.error);
 
         renderItems(Array.isArray(data.items) ? data.items : [], raw);
       } catch (err) {
+        if (sequence !== searchSequence) return;
         console.error(err);
         clearList();
         setStatus(0, raw);
         showError("The embedded feed is unavailable. Search the publisher results below or try again shortly.");
         const fallback=document.createElement('a');fallback.href='https://news.google.com/search?q='+encodeURIComponent(normalizeSearchQuery(raw));fallback.target='_blank';fallback.rel='noopener noreferrer';fallback.className='newsCard';fallback.textContent='Search Google News for '+raw+' ↗';el.list.appendChild(fallback);
       } finally {
-        setLoading(false);
+        if (sequence === searchSequence) setLoading(false);
       }
     }
 

@@ -20,3 +20,6 @@ assert(context.buildUKHolidays(2027).some(h=>date(h)==='2027-12-27'));
 console.log('Holiday coverage: exception closure, weekend substitutes, mutually exclusive early/full closures and published Asia dates passed.');
 
 assert(context.buildUKHolidays(2028).some(h=>date(h)==='2028-12-22'&&h.status==='early'));
+assert.equal(context.publishedExchangeHolidays('TSX',2026).length,11);
+assert(context.publishedExchangeHolidays('TSXV',2026).some(h=>date(h)==='2026-12-24'&&h.status==='early'&&h.regions.includes('Americas')));
+assert.equal(context.publishedExchangeHolidays('TSX',2027).length,0);

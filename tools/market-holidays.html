@@ -412,7 +412,7 @@
     <div class="nav">
       <div class="brand"><i class="fas fa-calendar-days"></i> Market Holidays</div>
       <div class="right">
-        <a class="pill" href="../home/hub.html"><i class="fas fa-house"></i> Home Hub</a>
+        <a class="pill" href="../home/hub.html"><i class="fas fa-house"></i> Macro Research</a>
         <a class="pill" href="../index.html"><i class="fas fa-arrow-left"></i> Back</a>
       </div>
     </div>
@@ -583,12 +583,20 @@
           </div>
         </div>
         <div class="rightNote">
-          Coverage reviewed September 22, 2026: NYSE 2025–2028; Nasdaq 2025–2026; HKEX securities 2026–2027; TSE cash equities 2026–2027. LSE from August 31, 2026 through 2028. Unlisted dates or years do not mean a market is open. Weekends, emergency notices and product-specific sessions must also be checked.
+          Coverage reviewed September 22, 2026: TSX and TSXV 2025–2026; NYSE 2025–2028; Nasdaq 2025–2026; HKEX securities 2026–2027; TSE cash equities 2026–2027. LSE from August 31, 2026 through 2028. Unlisted dates or years do not mean a market is open. Weekends, emergency notices and product-specific sessions must also be checked.
           <p><a href="https://www.nyse.com/trade/hours-calendars" target="_blank" rel="noopener">NYSE</a> · <a href="https://www.nasdaq.com/market-activity/stock-market-holiday-schedule" target="_blank" rel="noopener">Nasdaq</a> · <a href="https://www.londonstockexchange.com/trade/trading-access/business-days" target="_blank" rel="noopener">LSE</a> · <a href="https://www.hkex.com.hk/News/HKEX-Calendar?sc_lang=en" target="_blank" rel="noopener">HKEX</a> · <a href="https://www.jpx.co.jp/english/corporate/about-jpx/calendar/" target="_blank" rel="noopener">JPX</a></p>
         </div>
       </div>
     </div>
-  </main>
+  <section class="section" style="max-width:1400px;margin:24px auto;padding:24px;border:1px solid var(--border);border-radius:16px">
+<h2>Future holiday notices</h2><p style="line-height:1.7;margin:12px 0">Check exchange notices before planning a session. Newly announced closures and early closes may change the published calendar. Coverage ends at the last verified year for each exchange; future dates are added only after publication.</p>
+<div style="display:flex;gap:16px;flex-wrap:wrap">
+<a href="https://www.tsx.com/en/trading/calendars-and-trading-hours/calendar" target="_blank" rel="noopener">TSX / TSXV calendar ↗</a>
+<a href="https://www.tsx.com/en/trading/toronto-stock-exchange/trading-notices" target="_blank" rel="noopener">TMX trading notices ↗</a>
+<a href="https://www.nyse.com/markets/nyse/notices" target="_blank" rel="noopener">NYSE notices ↗</a>
+<a href="https://www.hkex.com.hk/Services/Circulars-and-Notices?sc_lang=en" target="_blank" rel="noopener">HKEX circulars ↗</a>
+<a href="https://www.jpx.co.jp/english/corporate/about-jpx/calendar/" target="_blank" rel="noopener">JPX calendar ↗</a>
+</div></section></main>
 
   <script src="/assets/js/exchange-holidays.js?v=20260922-services"></script>
   <script>
@@ -765,7 +773,7 @@
 
     function publishedExchangeHolidays(exchange,year) {
       const data=window.FynxExchangeHolidays[exchange]?.[year];if(!data)return [];
-      return ['closed','early'].flatMap(status=>(data[status]||[]).map(day=>mkHoliday({name:`${exchange} ${status==='early'?'Half-Day Session':'Market Holiday'}`,date:new Date(`${year}-${day}T12:00:00`),status,impact:status==='closed'?'medium':'low',regions:[exchange==='LSE'?'Europe':'Asia'],exchanges:[exchange],markets:['Stocks'],notes:`Published cash-equity calendar: ${data.source}. ${status==='early'?(exchange==='LSE'?'Closing process starts at 12:30 Europe/London. ':'No afternoon securities session. '):''}Derivatives and settlement schedules may differ. Reviewed 2026-09-22.`})));
+      return ['closed','early'].flatMap(status=>(data[status]||[]).map(day=>mkHoliday({name:`${exchange} ${status==='early'?'Half-Day Session':'Market Holiday'}`,date:new Date(`${year}-${day}T12:00:00`),status,impact:status==='closed'?'medium':'low',regions:[['TSX','TSXV'].includes(exchange)?'Americas':exchange==='LSE'?'Europe':'Asia'],exchanges:[exchange],markets:['Stocks'],notes:`Published cash-equity calendar: ${data.source}. ${status==='early'?(['TSX','TSXV'].includes(exchange)?'Cash equities close at 13:00 America/Toronto. ':exchange==='LSE'?'Closing process starts at 12:30 Europe/London. ':'No afternoon securities session. '):''}Derivatives and settlement schedules may differ. Reviewed 2026-09-22.`})));
     }
     function buildHKHolidays(year){return publishedExchangeHolidays('HKEX',year);}
     function buildJPHolidays(year){return publishedExchangeHolidays('TSE',year);}
@@ -831,6 +839,7 @@
         all.push(...buildUKHolidays(y));
         all.push(...buildHKHolidays(y));
         all.push(...buildJPHolidays(y));
+        all.push(...publishedExchangeHolidays('TSX',y),...publishedExchangeHolidays('TSXV',y));
         all.push(...buildFXLiquidityHolidays(y));
         all.push(...buildCryptoHolidays(y));
       }
