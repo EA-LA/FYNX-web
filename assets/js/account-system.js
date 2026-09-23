@@ -219,6 +219,7 @@ export async function saveSecuritySettings(uid, payload) {
 export async function uploadProfilePhoto(uid, file) {
   try {
   if (!file) return "";
+  if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type) || file.size >= 5 * 1024 * 1024) throw new Error("Choose a JPEG, PNG, WebP or GIF image smaller than 5 MB.");
   const fileRef = ref(storage, `users/${uid}/profile/${Date.now()}-${file.name}`);
   await uploadBytes(fileRef, file, { contentType: file.type || "image/jpeg" });
   return await getDownloadURL(fileRef);

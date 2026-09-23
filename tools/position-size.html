@@ -492,7 +492,7 @@
     <div class="shell">
       <h1 class="title">Forex Calculator</h1>
       <div class="subtitle">
-        Position sizing from your risk budget and stop distance. Use manual prices when the external rate service is unavailable.
+        Position sizing from your risk budget and stop distance. Daily reference rates come from Frankfurter / ECB; use your broker’s current execution price for a live trade.
         For XAU/USD (gold), price is manual (most free FX endpoints do not provide metals reliably).
       </div>
 
@@ -617,14 +617,14 @@
               Notes:
               <br/>• Pip size = 0.0001 (most FX), 0.01 (JPY pairs), 0.1 (XAU/USD).
               <br/>• Contract size = 100,000 for FX; 100 oz for XAU/USD.
-              <br/>• Pip value converted to USD using live FX conversion when needed.
+              <br/>• Pip value converted to USD using daily FX reference rates when needed.
             </div>
           </div>
         </div>
       </div>
 
       <div class="note" style="margin-top:14px;">
-        Tip: This page will auto-refresh price every 10 seconds for FX pairs (not gold).
+        Rates are daily reference observations, not live bid/ask quotes. Use Manual Price for current broker prices.
       </div>
     </div>
   <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Uses the calculator’s Forex contract model and 0.01-lot increment. The stop is modeled below entry by your stop distance. Supply an explicit cross-currency conversion rate. Broker specifications remain unverified.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
@@ -720,7 +720,7 @@
       isLoading = loading;
       els.calcBtn.classList.toggle("disabled", loading);
       els.refreshBtn.classList.toggle("disabled", loading);
-      els.priceStatus.textContent = loading ? "Loading..." : (currentPrice>0 ? (els.manualPriceRow.style.display !== "none" ? "Manual" : "External rate") : "—");
+      els.priceStatus.textContent = loading ? "Loading..." : (currentPrice>0 ? (els.manualPriceRow.style.display !== "none" ? "Manual" : "Daily reference") : "—");
     }
 
     function baseQuote(pair){
@@ -746,16 +746,18 @@
     }
 
     /* =========================
-       PRICE FETCH (FX only)
+       DAILY REFERENCE RATE (FX only)
     ========================== */
     async function fxConvert(from, to){
-      const url = `https://api.exchangerate.host/convert?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+      if (from === to) return 1;
+      const url = `https://api.frankfurter.dev/v1/latest?base=${encodeURIComponent(from)}&symbols=${encodeURIComponent(to)}`;
       const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(8000) });
       if (!res.ok) throw new Error("Network error");
       const data = await res.json();
-      const val = data && (data.result ?? data.info?.rate);
+      const val = data && (data.rates?.[to]);
       const num = Number(val);
       if (!Number.isFinite(num) || num <= 0) throw new Error("Bad rate");
+      if (els.priceStatus) els.priceStatus.title = "Frankfurter / ECB observation: " + data.date;
       return num;
     }
 
@@ -781,7 +783,7 @@
         if (manualMode || pair !== els.pair.value) return;
         currentPrice = price;
         els.priceValue.textContent = displayedPrice(pair, currentPrice);
-        els.priceStatus.textContent = "External rate";
+        els.priceStatus.textContent = "Daily reference";
       } catch (e){
         manualMode = true;
         stopAutoUpdates();
@@ -800,7 +802,7 @@
       refreshPrice();
       timer = setInterval(() => {
         if (!manualMode && !isGoldPair(els.pair.value)) refreshPrice();
-      }, 10000);
+      }, 300000);
     }
     function stopAutoUpdates(){
       if (timer) clearInterval(timer);

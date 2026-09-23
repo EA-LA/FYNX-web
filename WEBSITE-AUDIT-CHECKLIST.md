@@ -1,80 +1,39 @@
-# FYNX website audit and release checklist
+# FYNX website checklist — September 22, 2026
 
-Audit date: September 22, 2026. Scope: the 114 local HTML routes, navigation and search metadata, responsive layout, shared theme, selected interactions, calculator logic, and priority external links.
+This replaces the earlier checklist. Completed means implemented with the evidence below; pending acceptance tests are not automatically defects.
 
-This audit distinguishes verified repairs from remaining defects and checks that require a real account or device. A page loading successfully does not prove every account action or external provider will always work.
+## Completed
 
-For the latest status of cloud learning, reminders, monitoring, analytics and holiday fixes, see [the service backlog update](docs/SERVICE-BACKLOG-STATUS.md).
+- [x] Cloud learning progress and assessment history service implemented and previously tested for save/read and account isolation.
+- [x] Server-side email reminder pipeline works when the page is closed. Browser push is a separate optional feature.
+- [x] Actual outbound email delivered: the owner confirmed receipt of “Reminder: FYNX email delivery test.”
+- [x] Correlation, COT and crypto liquidity use real provider data with observation timestamps and availability states.
+- [x] Misleading PRO badges removed. No consumer subscription is represented as active.
+- [x] Operational failure reporting and scheduled feed checks installed.
+- [x] Website Firestore rules repaired and deployed with explicit owner approval. Own Journal save/reload and profile save succeeded; other-user reads/writes and anonymous reads were denied in production.
+- [x] Website profile image rules deployed: owner only, supported images under 5 MB. Production owner upload and deletion succeeded; another user’s upload was denied.
+- [x] Active Firebase Storage bucket confirmed as `fynx-c7a28.firebasestorage.app`; legacy web configuration corrected.
+- [x] Position-size calculator’s unauthenticated exchangerate.host request replaced with daily Frankfurter/ECB reference rates. Manual prices remain available; daily observations are labelled accordingly.
+- [x] News request concurrency reduced and overly restrictive queries repaired. All seven categories returned HTTP 200 with articles in the post-deploy check.
+- [x] Daily official holiday-source change detection installed in the existing scheduled monitor. Changes remain flagged for review, including after a temporary source failure. Source failures also trigger operational reporting.
+- [x] Public waitlist gating already removed; the earlier private-beta access statement is obsolete.
 
-## Completed in this release
+## Remaining from the supplied checklist
 
-- [x] First-time visitors start in the white/light theme. A visitor’s saved dark preference is respected on later visits.
-- [x] Theme selection remains available on the landing page and Profile; other pages inherit the shared preference.
-- [x] Removed the trailing markdown characters at the bottom of the website.
-- [x] Removed competing landing-page menu handlers; menus use a consistent click, outside-click, and Escape interaction.
-- [x] News and Calendar selections now have shareable URLs and restore after reload and browser Back/Forward.
-- [x] Login and signup preserve safe, same-origin return destinations; external redirect targets and authentication loops are rejected.
-- [x] Fixed nested-page sign-in paths. Home, News, Calendar, Calculators, and Learn allow public browsing; private account pages retain protection.
-- [x] Added a useful custom 404 recovery page.
-- [x] Replaced placeholder footer destinations with real pages and repaired broken privacy/terms links.
-- [x] Fixed missing back-to-top anchors and added accessible names to unlabeled form controls found in the static scan.
-- [x] Recent Topics links now lead to relevant resources. Save buttons persist selections locally and clearly identify the content as curated research prompts.
-- [x] Connected the password-reset form to Firebase instead of its old placeholder alert. Tested success and error states with mocks; no reset emails were sent during this audit.
-- [x] Symbol News now offers a usable Google News search fallback when its upstream feed fails.
-- [x] Replaced the old animated landing cards with restrained motion, consistent line icons, useful links, and an interactive Research/Plan/Review preview. Includes pause and reduced-motion support.
-- [x] Verified unique search metadata for 97 public pages. Account/private pages retain appropriate indexing restrictions.
+- [ ] **MFA:** Identity Platform upgrade and enrollment/recovery tests remain pending at the owner’s request.
+- [ ] **Holiday coverage:** future unpublished dates, emergency closures, early-close changes and additional exchange years require official publication and review. Existing coverage is explicitly partial. Six official sources were readable; LSE required browser/manual review. Monitoring detects changes; it does not certify dates or automatically publish closures.
+- [ ] **Partner agreements:** owner must confirm contracts and approved affiliate destinations. HTTP reachability does not establish an agreement.
+- [ ] **Production sign-in acceptance:** complete Google/Apple interactive sign-in, verification-link and password-reset-link tests on the production domain. Disposable email/password authentication worked through Firebase’s production API; that does not establish every browser provider flow.
+- [ ] **Journal end-to-end acceptance:** signed-in browser save → reload → Profile statistics → second physical device. Production Journal storage and isolation passed; the complete UI/device chain is still unverified. Historical synthetic entries still require owner review.
+- [ ] **Shared legacy Storage security:** existing mobile `chat_media` and `user_avatars` rules still allow broad authenticated access. Only the website `users/{uid}/profile` namespace was tightened in this approved release. Mobile-compatible owner/membership rules require a separate review before changing those shared paths.
+- [ ] **Required-index acceptance:** no index failure appeared in the route scan, but all authenticated Journal query/filter combinations were not exercised against production.
+- [ ] **Provider availability:** news, TradingView and official X embeds still depend on third parties. Latest news probes passed; sustained uptime cannot be guaranteed. Continue monitoring failures and freshness.
+- [ ] **Optional only:** browser push notifications and a consumer paid plan are not implemented. Email reminders already work; neither feature is necessary to claim the current free website works.
 
-## Confirmed issues and maintenance work
+## Evidence and limits
 
-Priority meanings: P1 = important functional dependency; P2 = product quality/maintenance; P3 = further polish.
-
-| Priority | Area | Finding | Work needed | Status |
-| --- | --- | --- | --- | --- |
-| P1 | Symbol News | Its third-party RSS conversion request returned HTTP 422. The fallback opens publisher search, but the inline symbol feed is not dependable. | Implement a server-side symbol/search news endpoint with caching, timeout handling, and accurate freshness status. | Open; fallback repaired |
-| P1 | Two-factor authentication | Enrollment is explicitly disabled in `assets/js/mfa.js` pending Identity Platform configuration. | Complete Firebase/Identity Platform setup, validate enrollment and recovery using a test account, then enable enrollment. | Requires project configuration |
-| P2 | X Finance timeline | Official X embeds can be rate-limited or blocked; a 429 response was observed during earlier checks. | Keep official timelines and working source links as requested; monitor availability. An authorized X API is an optional later improvement for a custom dependable feed. | Provider limitation |
-| P2 | Market holidays | Published Asia and LSE dates and US exceptions have now been repaired; NYSE/LSE extend into 2028. | Continue annual/exception maintenance and extend other exchanges only against official notices. | Partly completed; see service update |
-| P2 | Journal maintenance | `journal.html` and `trader-journal.html` duplicate the journal implementation. | Consolidate to one implementation while preserving existing URLs and account data behavior. | Open |
-| P2 | Legacy calculator URLs | `options-payoff.html` contains debt-payoff functionality; `profit-loss.html` serves a stock-risk tool. Visible titles are clearer than the historical filenames. | Introduce accurate canonical URLs with backward-compatible redirects; update all links and sitemap together. | Open |
-| P2 | Demo consistency | Demo Profile statistics differ from the demo Home/Journal fixtures. | Use one demo dataset across pages so examples agree. | Open |
-| P2 | Performance maintenance | Large inline styles and overlapping legacy/shared styles remain. No Core Web Vitals regression is established by this audit. | Remove unused assets, measure LCP/INP/CLS on production, and reduce unnecessary provider work based on measured results. | Measurement and cleanup needed |
-| P3 | Accessibility depth | Form names and selected keyboard controls were checked; this is not a full WCAG audit. | Test screen-reader order, contrast, zoom, focus visibility, embedded tools, and keyboard-only completion of each major workflow. | Further audit needed |
-
-## Account and backend acceptance checklist — not verified, not necessarily broken
-
-These require a designated test account and, in some cases, provider configuration. No real emails, account deletions, billing changes, or trading actions were executed for this scan.
-
-- [ ] Test new account creation, email verification delivery, and returning to the requested page.
-- [ ] Test email/password sign-in and Google/Apple sign-in on the production domain, including cancelled and rejected sign-in.
-- [ ] Verify an actual password-reset email arrives and its link completes a reset.
-- [ ] Test expired sessions, sign-out on multiple tabs, and session invalidation.
-- [ ] Test profile edits and avatar uploads against production storage rules.
-- [ ] Test journal create/edit/delete, filtering, analytics, refresh persistence, and cross-device sync with a test account.
-- [ ] Verify preferences persist at the intended browser/account scope.
-- [ ] Verify notification preferences and actual notification delivery, including permissions denied.
-- [ ] Finish and test two-factor enrollment, verification, recovery, and removal after project activation.
-- [ ] Test account deletion and recovery policy only with a disposable account.
-- [ ] Test API key creation/revocation, authorization, quotas, and rate limits in an isolated test environment.
-- [ ] Verify paid-plan/billing flows in sandbox mode without real charges.
-
-## Production, data, device, and search checklist
-
-- [ ] Run sustained news/quote/calendar checks through provider outages; verify stale data never claims to be live.
-- [ ] Confirm market-data delay labels and exchange coverage match provider entitlements.
-- [ ] Verify the calendar around DST changes, market closures, and the next year boundary.
-- [ ] Test actual macOS Safari and iPhone Safari, including touch menus, keyboard appearance, landscape, and installed-web-app behavior. Desktop Chromium at mobile dimensions is not an iPhone hardware test.
-- [ ] Test slow/offline networking, blocked third-party embeds, disabled storage, and private browsing.
-- [ ] Confirm Search Console ownership, sitemap processing, indexing/canonical reports, and search snippets. Metadata fixes do not guarantee rankings or immediate indexing.
-- [ ] Verify monitoring alerts, error reporting, backup ownership, and a documented restore procedure. Their operational readiness was not established by this code scan.
-- [ ] Review older educational and curated market commentary for accuracy and freshness; distinguish evergreen guides from current news.
-
-## Verification evidence
-
-- Static local asset/link scan: 114 HTML routes; no missing local file targets. Client-rendered API/partner fragment routes were reviewed separately.
-- Browser layout sweep: 114 routes at 390px and 1440px; report stored in `scripts/qa/2026-09-22-launch-audit.json`. Checks cover page loading, titles, uncaught page errors, horizontal overflow, and visible theme-control policy. Protected pages used demo mode.
-- Search metadata/runtime checks: 97 public pages passed.
-- Build, routing, shared-theme, mocked password-reset, journal logic, API-page checks, 16 calculator parity cases, and invalid-input calculator checks passed.
-- Priority external destinations checked: FYNX ecosystem, app-store and legal links; broken naked `/privacy` and `/terms` paths were replaced with the working legal-site URLs.
-- The broader historical `test:proof` chain requires a sibling funded-project TypeScript dependency absent from this workspace; the relevant calculator checks were run directly. No funded-project changes are included.
-
-Use the open checkboxes as the next implementation and acceptance backlog; do not treat them all as confirmed defects.
+- 114 local HTML pages: no missing local link targets.
+- Desktop 1440px and mobile 390px browser sweep: no horizontal overflow or uncaught page exceptions. Signed-out Profile redirects to login as expected. Native iPhone/Safari and every signed-in workflow were not covered.
+- 34 Firebase test-only rule cases passed before deployment; 10 production account/storage checks passed afterward, and disposable users, documents and image were removed.
+- Build, Journal calculation checks, backend tests, search metadata (97 public pages), routing, theme, holiday coverage and monitoring checks passed.
+- External feeds were checked at a point in time, not certified for uninterrupted service.

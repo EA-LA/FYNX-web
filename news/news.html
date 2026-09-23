@@ -1203,7 +1203,9 @@
       refreshNote.textContent = 'Refreshing live feeds...';
 
       try {
-        const results = await Promise.allSettled(FEEDS.map(fetchFeed));
+        const results = [];
+        // Bound concurrency so a page refresh cannot exhaust the feed service.
+        for (let i=0;i<FEEDS.length;i+=2) results.push(...await Promise.allSettled(FEEDS.slice(i,i+2).map(fetchFeed)));
         const combined = [];
 
         results.forEach(result => {

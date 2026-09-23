@@ -1,7 +1,7 @@
 'use strict';
 const functions = require('firebase-functions/v1');
 const {XMLParser} = require('fast-xml-parser');
-const queries = {all:'financial markets stocks forex economy',forex:'forex currency central bank',crypto:'bitcoin ethereum crypto',stocks:'stock market earnings',macro:'inflation central bank economy',commodities:'gold oil commodities',world:'global economy markets'};
+const queries = {all:'markets OR stocks OR economy',forex:'forex OR EURUSD OR USDJPY OR sterling',crypto:'bitcoin OR ethereum OR crypto',stocks:'stocks OR earnings OR Nasdaq',macro:'inflation OR central bank OR economy',commodities:'gold OR oil OR silver',world:'global economy OR world trade OR international markets'};
 const cache = new Map(), pending = new Map();
 function parseFeed(xml, now=Date.now()) {
   const parsed = new XMLParser({ignoreAttributes:false}).parse(xml);
@@ -39,7 +39,7 @@ async function load(category){
     finally{pending.delete(category);}
   })();pending.set(category,task);return task;
 }
-exports.webMarketFeed=functions.runWith({timeoutSeconds:30,memory:'256MB',maxInstances:2}).https.onRequest(async(req,res)=>{
+exports.webMarketFeed=functions.runWith({timeoutSeconds:30,memory:'256MB',maxInstances:4}).https.onRequest(async(req,res)=>{
   res.set('Access-Control-Allow-Origin','*');
   if(req.method==='OPTIONS'){res.set('Access-Control-Allow-Methods','GET');return res.status(204).send('');}
   if(req.method!=='GET')return res.status(405).json({error:'Use GET'});
