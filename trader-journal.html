@@ -938,12 +938,13 @@ section.view.active{display:block}
   </div>
 
   <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore-compat.js"></script>
  <script src="demo-mode.js"></script>
 
-<script>
+<script type="module">
+    import { app, auth, authPersistenceReady } from "./auth/firebase.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, query, orderBy, onSnapshot, Timestamp, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+    await authPersistenceReady;
   /* =========================
      THEME (apply saved only)
      (Toggle button lives ONLY on profile.html)
@@ -1047,20 +1048,7 @@ renderWelcome();
 /* =========================
    JOURNAL APP (guest + live)
 ========================= */
-const firebaseConfig = {
-  apiKey: "AIzaSyDGSYIB_YIpbWyUMJ1d-v00-xADnvaWckk",
-  authDomain: "fynx-c7a28.firebaseapp.com",
-  databaseURL: "https://fynx-c7a28-default-rtdb.firebaseio.com",
-  projectId: "fynx-c7a28",
-  storageBucket: "fynx-c7a28.firebasestorage.app",
-  messagingSenderId: "1011050657868",
-  appId: "1:1011050657868:web:2c5ad5a1b275e669b05ce9",
-  measurementId: "G-SDW6273VYJ"
-};
-
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+const db = getFirestore(app);
 
     const modeText = document.getElementById("modeText");
     const loginNote = document.getElementById("loginNote");
@@ -1099,7 +1087,7 @@ const firebaseConfig = {
     let state = { trades: [] };
     let replayIndex = 0;
 
-    const tradesCol = () => db.collection("users").doc(currentUid).collection("trades");
+    const tradesCol = () => collection(db, "users", currentUid, "trades");
 
     // Demo trades for guest view
     const demoTrades = [
@@ -1402,9 +1390,9 @@ const firebaseConfig = {
       }
 
       const tradeId = crypto.randomUUID();
-      const dateTs = firebase.firestore.Timestamp.fromDate(new Date(date + "T00:00:00"));
+      const dateTs = Timestamp.fromDate(new Date(date + "T00:00:00"));
 
-      await tradesCol().doc(tradeId).set({
+      await setDoc(doc(tradesCol(), tradeId), {
         id: tradeId,
         symbol, date,
         session: document.getElementById("fSession").value,
@@ -1413,7 +1401,7 @@ const firebaseConfig = {
         pl,
         pnlSource: "user-reported",
         dateTs,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: serverTimestamp()
       });
 
       clearForm();
@@ -1443,7 +1431,7 @@ const firebaseConfig = {
 
     function attachTradesListener(){
       if(unsubTrades) unsubTrades();
-      unsubTrades = tradesCol().orderBy("dateTs","asc").onSnapshot((snap) => {
+      unsubTrades = onSnapshot(query(tradesCol(), orderBy("dateTs","asc")), (snap) => {
         const trades = [];
         snap.forEach(doc => trades.push(doc.data() || {}));
         state.trades = trades;
@@ -1474,7 +1462,7 @@ const firebaseConfig = {
     initCharts();
 
     // AUTH: guest shows demo; logged-in shows live
-    auth.onAuthStateChanged((user) => {
+    onAuthStateChanged(auth, (user) => {
       if(isDemoMode()){
         currentUid = null;
         renderWelcome();

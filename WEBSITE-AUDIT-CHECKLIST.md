@@ -1,4 +1,4 @@
-# FYNX website checklist — September 22, 2026
+# FYNX website checklist — September 23, 2026
 
 This replaces the earlier checklist. Completed means implemented with the evidence below; pending acceptance tests are not automatically defects.
 
@@ -18,15 +18,26 @@ This replaces the earlier checklist. Completed means implemented with the eviden
 - [x] Daily official holiday-source change detection installed in the existing scheduled monitor. Changes remain flagged for review, including after a temporary source failure. Source failures also trigger operational reporting.
 - [x] Public waitlist gating already removed; the earlier private-beta access statement is obsolete.
 
+## Completed in the September 23 follow-up
+
+- [x] Journal and legacy Journal now share the same Firebase app/authentication implementation as Login and Profile. Real browser save → reload → Profile passed with one test trade (+25 P/L, 100% win rate).
+- [x] A second independent browser session at 390px loaded the same cloud Profile statistics without horizontal overflow. This is not a physical iPhone test.
+- [x] Production email/password sign-in passed in both browser sessions.
+- [x] Actual ordered Journal (`dateTs`) and session (`updatedAt`) queries returned HTTP 200. Current date filters run client-side; no missing composite index was found for these queries.
+- [x] Session IDs now encode browser/timezone slashes so they remain one Firestore document segment. Regression checks cover common timezone names.
+- [x] LSE calendar manually reviewed against its official JavaScript-rendered business-days page on September 23. Existing dates from August 2026 through 2028 match, including 12:30 London-time closing-process notices. Source: https://www.londonstockexchange.com/equities-trading/business-days
+- [x] Scheduled monitoring extended to all seven news categories.
+- [x] Firebase built-in email handler passed real verification and password-reset browser tests using a disposable account; no test email was sent.
+
 ## Remaining from the supplied checklist
 
 - [ ] **MFA:** Identity Platform upgrade and enrollment/recovery tests remain pending at the owner’s request.
-- [ ] **Holiday coverage:** future unpublished dates, emergency closures, early-close changes and additional exchange years require official publication and review. Existing coverage is explicitly partial. Six official sources were readable; LSE required browser/manual review. Monitoring detects changes; it does not certify dates or automatically publish closures.
+- [ ] **Holiday coverage:** future unpublished dates, emergency closures, early-close changes and additional exchange years require official publication and review. Existing coverage is explicitly partial. LSE manual review is complete for current published coverage; its server-side page still requires browser review. Monitoring detects changes; it does not certify dates or automatically publish closures.
 - [ ] **Partner agreements:** owner must confirm contracts and approved affiliate destinations. HTTP reachability does not establish an agreement.
-- [ ] **Production sign-in acceptance:** complete Google/Apple interactive sign-in, verification-link and password-reset-link tests on the production domain. Disposable email/password authentication worked through Firebase’s production API; that does not establish every browser provider flow.
-- [ ] **Journal end-to-end acceptance:** signed-in browser save → reload → Profile statistics → second physical device. Production Journal storage and isolation passed; the complete UI/device chain is still unverified. Historical synthetic entries still require owner review.
+- [ ] **Google/Apple:** complete interactive sign-in with provider test accounts. Email/password browser sign-in passed.
+- [ ] **Shared email-link configuration:** current Firebase callback sends verifyEmail actions to a Funded password-reset-only page. The tested built-in replacement works; changing the shared callback is awaiting owner approval. Previously sent links retain their old destination.
+- [ ] **Physical-device acceptance:** repeat the now-passing Journal/Profile browser workflow on an actual iPhone/Safari. Two independent browser sessions passed. Historical synthetic entries still require owner review.
 - [ ] **Shared legacy Storage security:** existing mobile `chat_media` and `user_avatars` rules still allow broad authenticated access. Only the website `users/{uid}/profile` namespace was tightened in this approved release. Mobile-compatible owner/membership rules require a separate review before changing those shared paths.
-- [ ] **Required-index acceptance:** no index failure appeared in the route scan, but all authenticated Journal query/filter combinations were not exercised against production.
 - [ ] **Provider availability:** news, TradingView and official X embeds still depend on third parties. Latest news probes passed; sustained uptime cannot be guaranteed. Continue monitoring failures and freshness.
 - [ ] **Optional only:** browser push notifications and a consumer paid plan are not implemented. Email reminders already work; neither feature is necessary to claim the current free website works.
 

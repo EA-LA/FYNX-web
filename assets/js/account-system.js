@@ -313,7 +313,7 @@ export async function resendVerificationEmail() {
 
 export async function upsertSessionMetadata(user, payload = {}) {
   if (!user?.uid) return;
-  const sessionId = `${user.uid}-${navigator.userAgent.slice(0, 24)}-${Intl.DateTimeFormat().resolvedOptions().timeZone}`;
+  const sessionId = encodeURIComponent(`${user.uid}-${navigator.userAgent.slice(0, 24)}-${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
   const sessionRef = doc(db, "users", user.uid, "sessions", sessionId);
   const existing = await getDoc(sessionRef);
 
