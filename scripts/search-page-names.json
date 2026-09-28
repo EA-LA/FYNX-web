@@ -20,12 +20,12 @@
     "description": "Explore market charts, technical indicators and watchlists covering forex, crypto, stocks and indices in one analysis workspace."
   },
   "markets/correlation.html": {
-    "title": "Market Correlation & Portfolio Exposure Guide | FYNX",
-    "description": "Explore relationships between markets and learn how correlated positions can increase exposure to the same market risk."
+    "title": "FX Correlation Matrix: ECB Daily Returns | FYNX",
+    "description": "Compare six FX pairs using 30, 60 or 90 aligned daily returns from ECB reference rates, with source dates and refresh status."
   },
   "markets/cot.html": {
-    "title": "Commitments of Traders: Positioning Reference | FYNX",
-    "description": "Explore a reference view of trader positioning and Commitments of Traders concepts. Verify current positions against official CFTC reports."
+    "title": "CFTC Commitments of Traders: Weekly Positions | FYNX",
+    "description": "Explore the latest published CFTC Legacy Futures Only positions, including net commercial and non-commercial positions and open interest."
   },
   "markets/crypto.html": {
     "title": "Crypto Market Overview: Bitcoin, Ethereum & Altcoins | FYNX",
@@ -48,8 +48,8 @@
     "description": "Review technical indicator concepts for trend strength, momentum and market conditions before evaluating a trade."
   },
   "markets/liquidity.html": {
-    "title": "Market Liquidity: Sessions, Sweeps & Trading Context | FYNX",
-    "description": "Learn how trading sessions and liquidity conditions influence market movement, price sweeps and execution."
+    "title": "Crypto Liquidity: Coinbase Bid, Ask & Spread | FYNX",
+    "description": "View Coinbase BTC/USD and ETH/USD best bid, ask, spread and displayed size, refreshed every 15 seconds while visible."
   },
   "markets/patterns.html": {
     "title": "Trading Chart Patterns: Reference Guide | FYNX",
@@ -173,7 +173,7 @@
   },
   "tools/market-holidays.html": {
     "title": "Market Holiday Planning Reference | FYNX",
-    "description": "Review a partial market holiday planning reference for 2025\u20132028. Confirm closures and early closing times with the relevant exchange."
+    "description": "Review a partial market holiday planning reference for 2025–2028. Confirm closures and early closing times with the relevant exchange."
   },
   "tools/market-hours.html": {
     "title": "Forex Trading Sessions & Market Hours | FYNX",

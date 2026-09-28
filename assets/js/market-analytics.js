@@ -15,6 +15,8 @@
    for(const values of [['Best bid',`$${number(data.bid,2)}`],['Best ask',`$${number(data.ask,2)}`],['Spread',`$${number(data.spread,2)} · ${number(data.spreadBps,3)} bps`],['Size at best bid',`${number(data.bidSize,8)} ${unit}`],['Size at best ask',`${number(data.askSize,8)} ${unit}`]])row(values,body);
   }
   output.append(table);
+  if(kind==='liquidity'){const link=root.querySelector('[data-market-source]');if(link)link.href='https://www.coinbase.com/advanced-trade/spot/'+data.product;}
+
  }
  function updateStatus(){if(!last)return;const stale=last.stale||(kind==='liquidity'?Date.now()-Date.parse(last.observationTime)>60000:Date.now()-Date.parse(last.observationDate)>7*86400000);
  status.textContent=`${stale?'Stale data — ':''}${last.source} · ${kind==='liquidity'?'Source time '+new Date(last.observationTime).toLocaleString():'Observation window '+last.startDate+' to '+last.observationDate} · Retrieved ${new Date(last.fetchedAt).toLocaleString()}.`;}
@@ -24,5 +26,5 @@
  finally{busy=false;button.disabled=false;select.disabled=false;}}
  select.addEventListener('change',()=>{last=null;output.replaceChildren();load();});button.addEventListener('click',load);
  function schedule(){clearInterval(timer);if(!document.hidden)timer=setInterval(()=>{updateStatus();load();},kind==='liquidity'?15000:300000);}
- document.addEventListener('visibilitychange',()=>{schedule();if(!document.hidden){updateStatus();load();}});window.addEventListener('pagehide',()=>clearInterval(timer));schedule();load();
+ document.addEventListener('visibilitychange',()=>{schedule();if(!document.hidden){updateStatus();load();}});window.addEventListener('pagehide',()=>clearInterval(timer));window.addEventListener('pageshow',event=>{if(event.persisted){schedule();updateStatus();load();}});schedule();load();
 })();
