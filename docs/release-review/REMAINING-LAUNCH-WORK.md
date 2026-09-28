@@ -4,14 +4,14 @@
 
 # Launch work remaining — 2026-09-28
 
-The launch is **not approved**. Changes below are local/source changes until deployed and verified. Older September 22 review documents remain historical evidence; this document records the current work.
+The launch is **not approved**. Deployment status is stated separately for each item; source-only controls are not treated as production controls. Older September 22 review documents remain historical evidence; this document records the current work.
 
 ## Implemented in this pass
 
 - Funded history rejects invalid/missing P&L, invalid or timezone-free close timestamps, open-time fallbacks, duplicate trade IDs, non-closed records, invalid phases, mixed-challenge fallback histories and numeric overflow. Nonzero costs require explicit net values or signed gross-cost mapping; net costs are not deducted twice.
 - Recorded failures persist through reevaluation. A Firestore transaction rechecks the latest failure/configuration and atomically writes the decision and audit records. Manual results carry `requiresHumanReview` because the closed-trade evaluator cannot establish floating-loss coverage.
 - Automatic enablement and legacy automatic triggers fail closed pending a verified equity-event integration. Invalid/empty histories cannot enable automatic mode or replace decisions. This is a safeguard, **not completion of production automatic progression**.
-- API billing, workspace and gateway declare the dedicated `FYNX_API_STRIPE_SECRET_KEY` binding; shared-key fallback removed. Checkout also requires `FYNX_API_PAID_ACCESS_ENABLED=true`. Disabling new checkout preserves existing subscription management/cancellation.
+- The reviewed API branch billing, workspace and gateway declare the dedicated `FYNX_API_STRIPE_SECRET_KEY` binding; shared-key fallback removed. Checkout also requires `FYNX_API_PAID_ACCESS_ENABLED=true`. Disabling new checkout preserves existing subscription management/cancellation. A newer independent production billing deployment permits live checkout; this branch's hold/publication controls must not be assumed active there.
 - Added offline broker-event reconciliation with per-event balance/equity/day/status/breach comparison, source identity checks and a reproducible input hash. It cannot manufacture real-history or seven-day evidence.
 - Added an operator-only workspace JSON export with tenant scoping, nested-record traversal, private key digest exclusion, bounded traversal and private output file permissions. It has not been run on real customer data.
 - Added regression tests and CI integration for the Funded patch and functions build.
@@ -40,8 +40,8 @@ The launch is **not approved**. Changes below are local/source changes until dep
 | 17 | Publish legal/version acceptance | Immutable server acceptance, recurring consent and reviewed-publication controls implemented/tested. Actual legal review, publication and integration with the newer production billing implementation remain pending; drafts remain unpublished. |
 | 18 | External beta | Recruit 3–5 testers; retain evidence of at least three independent docs-only integrations. Internal checks do not qualify. |
 | 19 | Desktop/mobile complete journey | Responsive unauthenticated entry checks done. Still run actual signup, real email verification, key creation, successful request and usage verification on both sizes after deployment. |
-| 20 | Commit/push/remote CI | **COMPLETE for delivered changes.** API release CI passed for `ba967ac`; Funded publication CI passed for `f04239d`. Latest follow-up delivery and CI evidence is recorded below. |
-| 21 | Operational readiness | Fresh verification: PITR enabled, seven READY backups, 28-day daily/84-day weekly retention, healthy scheduled backup check, health endpoint HTTP 200 and enabled monitoring policies. Progression functions upgraded to Node.js 22. Alert recipient differs from owner-confirmed support email; confirm recipient/delivery and operational owners. Isolated recovery-drill evidence tracked separately. |
+| 20 | Commit/push/remote CI | **COMPLETE for delivered changes.** API release CI passed for `1d64805` (run 36378046902); Funded publication CI passed for `f04239d` (run 36377232395). |
+| 21 | Operational readiness | Fresh verification: PITR enabled, seven READY backups, 28-day daily/84-day weekly retention, healthy scheduled backup check, health endpoint HTTP 200 and enabled monitoring policies. Progression functions upgraded to Node.js 22. Alert recipient differs from owner-confirmed support email; confirm recipient/delivery and operational owners. Real backup restored into an isolated database and read back successfully (2 developer workspaces, 0 top-level developer keys, 5 challenges). Temporary database cleanup completed successfully. See [recovery evidence](recovery-drill-20260928.json). Semantic account reconciliation and deletion suppression are separate incomplete checks. |
 | 22 | Final launch review | Owner sign-off still required. A newer separate billing deployment supports live checkout despite unfinished legal/testing gates. Owner decision to preserve it or restore a hold is pending; this session has not changed that billing deployment. |
 
 ## Running the new tools
@@ -61,7 +61,7 @@ Export requires authorized Google Application Default Credentials and an explici
 
 The Funded source fix is also saved as `patches/funded-progression-safety.patch` in this API repository so CI can apply it to the reviewed baseline. It is already applied locally in `../fynxfunded`; do not apply it there twice. An unrelated pre-existing Funded checkout edit remains untouched. Deploying Funded is a separate release from deploying the API.
 
-Before API deployment, provision the dedicated secret and bind it to developerBilling/developerWorkspace/developerGateway. Deploy the updated billing and API modules together. Leave the paid-access flag absent/false until all paid gates pass. Test-mode integration now reads the dedicated secret as well.
+The dedicated live secret and all three bindings are already verified. Before another API deployment, reconcile the newer independent production billing changes with this branch's acceptance/publication controls; do not overwrite that work with older modules. An owner decision on restoring a new-checkout hold is pending. Test-mode integration in this branch reads the dedicated secret as well.
 
 For rollback, retain previous source and runtime/secret-version configuration. Disable new paid checkout while preserving portal cancellation. Keep automatic progression paused; reverting to permissive legacy history evaluation is not a safe recovery. Preserve audit/event data, investigate differences, and use a reviewed forward correction. Never overwrite customer state merely to make a test pass.
 
@@ -74,3 +74,5 @@ Current operations recheck: existing Firebase CLI authorization enabled fresh ba
 ## September 28 completion pass
 
 Public rules deployed as Funded `f04239d`, verified in Vercel and on the live rules page; all 21 Funded tests, lint and build passed. Both progression safeguards redeployed on Node.js 22 and verified ACTIVE. API dedicated live-key bindings verified without logging values. Export production proof used only disposable synthetic records and cleaned them up. Local release verification: 28 Funded tests, 77 backend tests, calculator/pilot and API page/consent proofs passed. Production billing has newer independent changes; those were preserved pending owner direction.
+
+Final code CI: [API run 36378046902](https://github.com/EA-LA/FYNX-web/actions/runs/36378046902) passed for `1d64805`; [Funded run 36377232395](https://github.com/EA-LA/fynxfunded/actions/runs/36377232395) passed for `f04239d`. Recovery evidence records a real managed backup restore and aggregate readback, without modifying the default production database.

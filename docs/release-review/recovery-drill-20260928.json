@@ -1,0 +1,29 @@
+{
+  "started_at": "2026-09-28T04:25:58.578Z",
+  "database_id": "fynx-api-recovery-1790569554821",
+  "backup": {
+    "name": "projects/fynx-c7a28/locations/nam5/backups/325302df-90c7-4846-b0f9-00f9d82a9505",
+    "state": "READY",
+    "snapshotTime": "2026-09-27T08:12:48.445163Z",
+    "expireTime": "2026-10-25T08:12:48.445163Z"
+  },
+  "operation": "projects/fynx-c7a28/databases/fynx-api-recovery-1790569554821/operations/udYXEFXgrLlkS9NIGe9qhBAqNW1hbgQiChAaGg",
+  "restore_completed_at": "2026-09-28T04:37:38.473Z",
+  "counts": {
+    "fynxDevelopers": 2,
+    "fynxDeveloperKeys": 0,
+    "challenges": 5
+  },
+  "readback_at": "2026-09-28T04:37:51.726Z",
+  "cleanup_operation": "projects/fynx-c7a28/databases/fynx-api-recovery-1790569554821/operations/ApvzlogQBtXn4NsIDBoHEAHK2NKIEAbV59jWCAwKHho",
+  "cleanup_requested_at": "2026-09-28T04:38:07.672Z",
+  "production_database_modified": false,
+  "method": "Managed backup restored into a newly created isolated Firestore database; aggregate readback only.",
+  "limitations": [
+    "No production cutover performed.",
+    "Readback proves restored database readability, not account/event semantic reconciliation.",
+    "Customer deletion suppression after restore was not tested."
+  ],
+  "cleanup_completed_at": "2026-09-28T04:43:44.776Z",
+  "result": "PASS: managed restore, aggregate readback and isolated database cleanup completed"
+}
