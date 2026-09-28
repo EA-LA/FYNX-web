@@ -2,7 +2,7 @@
 
 # Versioned Funded/API rule alignment
 
-Status: **owner-approved for NEW accounts; implemented and tested. Existing purchased-agreement evidence remains pending. Not deployed or assigned to real accounts.**
+Status: **Checklist item 1 COMPLETE: owner-approved for NEW accounts, implemented and tested. No further trading-rule decision is pending.** Production deployment and real-account assignment are separate launch gates. Historical purchased-agreement reconciliation is not applicable based on the owner’s confirmation of zero paid customers; this is not an independent payment-record audit.
 
 Version: `fynx-funded-v1`. Owner requested rule approval/alignment on September 27, 2026; the owner explicitly selected “Adopt these rules for new accounts” for the precise interpretation below. This is owner policy approval for new accounts, not customer acceptance, existing-account migration approval or legal sign-off.
 
@@ -33,18 +33,18 @@ The actual Funded server evaluator selects the new path only when `rulePolicyVer
 
 The Funded client exports `evaluateVersionedRules` using the same generated policy. Existing callers of the legacy evaluator are preserved until their account agreements are reviewed and explicitly migrated. This is deliberate compatibility, not a claim that all customer accounts now use the new policy.
 
-## Purchased agreements: evidence gap
+## Historical purchased-agreement investigation (superseded by owner declaration)
 
-Inspected local purchase source:
+Before purchase capture was implemented, the inspected local source showed:
 
 - `functions/src/stripe/createCheckoutSession.ts`: order records have program/size/currency/style/payment identifiers but no accepted rule snapshot/version.
 - `functions/src/stripe/webhook.ts`: derives challenge data from checkout metadata; no historical signed rule snapshot found.
 - `src/services/types.ts`: existing Order/Challenge types contain no purchased rule snapshot.
 - `src/pages/Terms.tsx`: a current general terms page is not proof of the version accepted on an earlier purchase date.
 
-No accepted customer agreement files or authoritative purchase export were supplied. Live customer records were not verified. The previously documented deployment credential directory is absent here; do not infer that there were no purchases.
+No accepted customer agreement files or authoritative purchase export were supplied, and live customer records were not verified. The owner subsequently explicitly confirmed there were no paid Funded or API customers. This closes the historical reconciliation item for that declared population; it does not create historical acceptance records.
 
-For each existing account, obtain the actual accepted document/order confirmation, acceptance timestamp, program/phase/size/currency and account/order reference. A reviewer must compare the five interpretations against that evidence. If they differ or are ambiguous, retain the original policy and resolve that account separately; do not assign v1 by default.
+If an earlier paid account is later discovered, obtain the actual accepted document/order confirmation, acceptance timestamp, program/phase/size/currency and account/order reference. A reviewer must compare the five interpretations against that evidence. If they differ or are ambiguous, retain the original policy and resolve that account separately; do not assign v1 by default.
 
 The binding requires an agreement reference, SHA-256 of the preserved agreement bytes, acceptance/review timestamps, reviewer identity, policy version and exact immutable rule snapshot. The code validates this binding's structure and consistency. It cannot prove that a person read/accepted a document or that an operator's `verified` assertion is truthful; the review and source evidence remain necessary.
 
@@ -61,4 +61,4 @@ CI applies the tracked Funded patch to its pinned baseline, generates identical 
 
 ## Future checkout acceptance
 
-The checkout UI and server remain on their existing payment hold. Before opening purchases, checkout must display the approved version, record affirmative customer acceptance and preserve the exact snapshot/hash on the order. The payment webhook must bind that server-recorded snapshot to the new challenge rather than guessing rules from metadata. This purchase capture is not yet implemented; the numerical evaluator therefore refuses versioned evaluation without the reviewed binding. No old acceptance or timestamp has been invented. The Funded rules page source now describes the approved new-account schedule and its existing-account scope explicitly.
+The checkout UI and server remain on their existing payment hold. Before opening purchases, checkout must display the approved version, record affirmative customer acceptance and preserve the exact snapshot/hash on the order. Server-side purchase capture and webhook binding are implemented and tested: the order preserves the accepted numerical-rule snapshot and its hash, and the webhook binds that record without resetting existing challenges. The customer-facing purchase form and complete Funded legal acceptance remain prerequisites for reopening purchases. The numerical evaluator refuses versioned evaluation without the required binding. No old acceptance or timestamp has been invented. The Funded rules page source now describes the approved new-account schedule and its existing-account scope explicitly.

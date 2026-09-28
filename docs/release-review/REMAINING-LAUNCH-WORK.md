@@ -21,7 +21,7 @@ The launch is **not approved**. Changes below are local/source changes until dep
 
 | # | Checklist item | Remaining work |
 |---|---|---|
-| 1 | Final trading rules | DONE for new accounts: owner explicitly approved v1. See RULE-ALIGNMENT.md. Owner reports no paid customers; see the legal/purchase update. |
+| 1 | Final trading rules | **COMPLETE.** Owner approved `fynx-funded-v1` for new accounts: static maximum loss; reset-balance daily loss; 40% consistency; 22:00 UTC year-round reset; touching a limit is allowed. Program daily/max limits: 4%/8%, 5%/10%, 5%/12%. Implemented and tested; no further rule decision is pending. Production deployment remains under #9. See [approved rules](RULE-ALIGNMENT.md). |
 | 2 | Purchased rules and five differences | Historical purchased agreements: N/A based on owner confirmation of zero paid customers. All five differences are resolved/tested for opt-in v1. Future server purchase snapshots added; legacy/test accounts remain unchanged. |
 | 3 | Pairs and broker specifications | Broker-authoritative symbol/contract/lot/leverage/cost/session catalog and effective versions. |
 | 4 | Public rule inconsistencies | Update Funded public rules/currencies/crypto/weekend claims after #1–3; generic public terms have not been silently rewritten. API beta pages already disclose USD ledger, caller-supplied Forex inputs and unverified broker catalog. |
