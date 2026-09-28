@@ -1,0 +1,10 @@
+--- a/functions/src/challengeProgression.ts
++++ b/functions/src/challengeProgression.ts
+@@ -55,6 +55,7 @@
+   const db = admin.firestore(), ref = db.collection("challenges").doc(challengeId);
+   const policy = challenge.rulePolicy;
+   if (!policy || policy.policy_version !== challenge.rulePolicyVersion || policy.program !== challenge.phase || policy.phase !== (challenge.currentPhase ?? 1) || policy.starting_balance !== String(challenge.accountSize) || policy.currency !== challenge.currency) throw new HttpsError("failed-precondition", "Challenge and purchased policy binding do not match.");
++  if (!challenge.brokerAccountId || policy.coverage?.account_id !== challenge.brokerAccountId) throw new HttpsError("failed-precondition", "History coverage does not match the connected broker account.");
+   const history = await db.collection("rule_events").where("challengeId", "==", challengeId).get();
+   const events = history.docs.map(doc => doc.data()).sort((a, b) => a.sequence - b.sequence);
+   return db.runTransaction(async tx => {

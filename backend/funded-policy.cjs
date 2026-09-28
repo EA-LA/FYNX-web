@@ -23,16 +23,33 @@ function validateBinding(context){
  if(!timestamp(context.start_timestamp)||Date.parse(context.start_timestamp)<Date.parse(a.accepted_at))fail('Phase start must be timezone-qualified and not precede acceptance.');
  return rule;
 }
+// A review attestation is required in addition to structural checks; it is not created here.
+function validateCoverage(context,events){
+ const c=context.coverage;
+ if(!c||c.complete!==true||c.pagination_complete!==true||c.equity_complete!==true||!c.source_reference||!c.adapter_version||!c.reviewed_by||!timestamp(c.reviewed_at)||Date.parse(c.reviewed_at)>Date.now()||!/^([a-f0-9]{64})$/.test(c.source_sha256||''))fail('Reviewed complete broker export, equity coverage and adapter version are required.');
+ if(c.from!==context.start_timestamp||c.through!==events.at(-1)?.timestamp||c.event_count!==events.length||!Number.isSafeInteger(c.source_sequence_start)||c.source_sequence_start<0||c.source_sequence_end!==c.source_sequence_start+events.length-1)fail('Coverage interval, event count or source watermark does not match history.');
+ if(typeof c.account_id!=='string'||!c.account_id.trim()||c.phase_reference!==context.agreement.reference+':phase:'+context.phase)fail('Coverage must identify the broker account and exact purchased phase.');
+ for(const [i,e] of events.entries()){
+  if(e.account_id!==c.account_id||e.phase_reference!==c.phase_reference||e.source_sequence!==c.source_sequence_start+i)fail('Mixed-account, mixed-phase or gapped source history.');
+  if(e.event_type==='closed_trade'&&e.pnl_basis!=='net_after_all_costs')fail('Closed events require explicit net-after-all-costs mapping.');
+ }
+}
+function decimalText(value){
+ if(typeof value!=='string'||!/^[-+]?\d{1,18}(\.\d{1,12})?$/.test(value))fail('Independent broker balance and equity decimal strings are required.');
+ const negative=value[0]==='-',parts=value.replace(/^[-+]/,'').split('.');
+ const whole=parts[0].replace(/^0+(?=\d)/,''),fraction=(parts[1]||'').replace(/0+$/,'');
+ const number=whole+(fraction?'.'+fraction:'');return negative&&number!=='0'?'-'+number:number;
+}
 function evaluate(context,events){
  const rule=validateBinding(context);
  if(!Array.isArray(events)||!events.length)fail('Complete ordered equity-event history is required.');
- const coverage=context.coverage;
- if(!coverage||coverage.complete!==true||!coverage.source_reference||coverage.from!==context.start_timestamp||coverage.through!==events.at(-1)?.timestamp)fail('Phase-scoped broker completeness evidence must cover the entire submitted interval.');
+ validateCoverage(context,events);
  const identities=new Set();let state=engine.account(rule,context.start_timestamp);
  for(const e of events){
   if(typeof e.source_event_id!=='string'||!e.source_event_id.trim()||identities.has(e.source_event_id))fail('Each broker event must have a unique source identity.');
   if(!timestamp(e.timestamp))fail('Invalid event calendar date or timezone.');
   identities.add(e.source_event_id);state=engine.event(state,rule,e);
+  if(decimalText(e.broker_balance)!==decimalText(state.balance)||decimalText(e.broker_equity)!==decimalText(state.equity))fail('Broker balance/equity does not reconcile with net event history.');
  }
  if(context.recorded_breach){
   if(!Array.isArray(context.recorded_breach.reasons)||!context.recorded_breach.reasons.length||!timestamp(context.recorded_breach.timestamp))fail('Invalid persisted breach evidence.');

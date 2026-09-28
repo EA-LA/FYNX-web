@@ -25,6 +25,7 @@ jobs:
           git apply ../api-source/patches/funded-progression-safety.patch
           git apply ../api-source/patches/funded-purchase-records.patch
           git apply ../api-source/patches/funded-public-rules.patch
+          git apply ../api-source/patches/funded-history-coverage.patch
         working-directory: fynxfunded
       - uses: actions/setup-node@v4
         with:

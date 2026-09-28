@@ -20,3 +20,21 @@ test('floating marks breach, flat exposure is required, equality allowed and rec
  const e=events([200,200,200,200,200]);e.at(-1).open_position_count=1;assert.equal(policy.evaluate(context(e),e).state.status,'active');
  const c=context(e);c.recorded_breach={reasons:['daily_loss'],timestamp:e[0].timestamp};assert.equal(policy.evaluate(c,e).state.status,'breached');
 });
+test('coverage rejects pagination gaps, missing equity attestation and altered source scope',()=>{
+ for(const change of [c=>c.coverage.pagination_complete=false,c=>c.coverage.equity_complete=false,c=>c.coverage.event_count++,c=>c.coverage.source_sequence_end++,c=>c.coverage.phase_reference='other',c=>c.coverage.source_sha256='bad',c=>delete c.coverage.adapter_version]){const e=events([100,100]),c=context(e);change(c);assert.throws(()=>policy.evaluate(c,e));}
+});
+test('mixed account/phase events, source gaps and unspecified cost basis fail closed',()=>{
+ for(const change of [e=>e[1].account_id='other',e=>e[1].phase_reference='other',e=>e[1].source_sequence=3,e=>delete e[1].pnl_basis,e=>e[1].pnl_basis='gross']){const e=events([100,100]),c=context(e);change(e);assert.throws(()=>policy.evaluate(c,e));}
+});
+test('independent broker balances and floating equity must reconcile exactly',()=>{
+ for(const change of [e=>e[0].broker_balance='10101',e=>e[0].broker_equity='9999',e=>delete e[0].broker_equity]){const e=events([100]),c=context(e);change(e);assert.throws(()=>policy.evaluate(c,e));}
+ const e=events([100]),c=context(e);e[0].broker_balance='+0010100.00';e[0].broker_equity='10100.000';assert.equal(policy.evaluate(c,e).state.balance,'10100');
+});
+test('overnight exposure requires exact boundary marks and cannot erase a boundary loss',()=>{
+ const opening={sequence:1,source_event_id:'open',event_type:'equity_mark',timestamp:'2026-09-01T21:00:00Z',unrealized_pnl_after:'0',open_position_count:1};
+ const closing={sequence:3,source_event_id:'close',event_type:'closed_trade',timestamp:'2026-09-02T10:00:00Z',realized_pnl:'100',unrealized_pnl_after:'0',open_position_count:0};
+ const missing=[{...opening},{...closing,sequence:2}];assert.throws(()=>policy.evaluate(context(missing),missing),/boundary_snapshot/);
+ const boundary={sequence:2,source_event_id:'boundary',event_type:'boundary_snapshot',timestamp:'2026-09-01T22:00:00Z',unrealized_pnl_after:'-501',open_position_count:1};
+ const complete=[{...opening},boundary,{...closing}];assert.equal(policy.evaluate(context(complete),complete).state.status,'breached');
+ const wrong=complete.map(e=>({...e}));wrong[1].timestamp='2026-09-01T22:00:01Z';assert.throws(()=>policy.evaluate(context(wrong),wrong),/reset instant/);
+});

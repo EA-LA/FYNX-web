@@ -81,10 +81,10 @@ test('phase configuration changed during evaluation aborts without writes',async
 test('actual Funded entry point uses the shared versioned policy and preserves human approval',async()=>{
  const {context,events}=require('./funded-policy-fixtures.cjs'),policy=require('../../backend/funded-policy.cjs');
  const ev=events([200,200,200,200,200]),ctx=context(ev);
- const h=harness({challenge:{phase:'2-phase',accountSize:10000,currentPhase:1,currency:'USD',rulePolicyVersion:policy.VERSION,rulePolicy:ctx},trades:ev});
+ const h=harness({challenge:{phase:'2-phase',accountSize:10000,currentPhase:1,currency:'USD',brokerAccountId:'broker',rulePolicyVersion:policy.VERSION,rulePolicy:ctx},trades:ev});
  const r=await h.evaluateChallenge('qa','test');assert.equal(r.evaluation.state.status,'eligible');assert.equal(r.evaluation.authorizes_phase_transition,false);assert.equal(h.writes[0].value.status,undefined);assert.equal(h.writes[0].value.requiresHumanReview,true);assert.equal(h.commits(),1);
 });
 test('versioned account with no verified agreement cannot write a decision',async()=>{
  const {context,events}=require('./funded-policy-fixtures.cjs'),policy=require('../../backend/funded-policy.cjs');const ev=events([100]),ctx=context(ev);delete ctx.agreement;
- const h=harness({challenge:{phase:'2-phase',accountSize:10000,currentPhase:1,currency:'USD',rulePolicyVersion:policy.VERSION,rulePolicy:ctx},trades:ev});await assert.rejects(h.evaluateChallenge('qa','test'),{code:'failed-precondition'});assert.equal(h.writes.length,0);
+ const h=harness({challenge:{phase:'2-phase',accountSize:10000,currentPhase:1,currency:'USD',brokerAccountId:'broker',rulePolicyVersion:policy.VERSION,rulePolicy:ctx},trades:ev});await assert.rejects(h.evaluateChallenge('qa','test'),{code:'failed-precondition'});assert.equal(h.writes.length,0);
 });
