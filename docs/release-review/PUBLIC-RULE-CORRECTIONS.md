@@ -1,6 +1,6 @@
 # Public rule corrections — item 4
 
-Source changes complete; live Funded publication has not been performed or verified. These changes are included in `patches/funded-public-rules.patch`, applied after the safety and purchase patches. They are also applied to the local Funded source.
+Published and verified live at https://www.fynxfunded.com/rules in Funded commit `f04239d`. Vercel reports Ready and GitHub checks passed. See `public-rules-deployment.json`. These changes are included in `patches/funded-public-rules.patch`, applied after the safety and purchase patches. They are also applied to the local Funded source.
 
 Changes:
 
@@ -14,4 +14,4 @@ Changes:
 
 General Terms, Privacy and RefundPolicy legal text was not amended or treated as reviewed. The new numerical policy remains new-account-only. Production deployment, broker approval and effective legal publication are tracked separately; this source correction does not close those gates.
 
-Validation: existing Funded suite (21 tests) and production build passed. Applying all three patches sequentially to the pinned Funded baseline reproduced all eight changed public files exactly. CI now applies the same sequence and runs the Funded suite/build. No live-site verification is claimed.
+Validation: existing Funded suite (21 tests) and production build passed. Applying all three patches sequentially to the pinned Funded baseline reproduced all eight changed public files exactly. CI now applies the same sequence and runs the Funded suite/build. The live rules table and availability notice were verified after production deployment; authenticated checkout still requires separate journey testing.

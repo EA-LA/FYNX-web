@@ -1,0 +1,30 @@
+--- a/firebase.json
++++ b/firebase.json
+@@ -1,4 +1,4 @@
+ {
+-  "functions": { "source": "functions", "runtime": "nodejs20", "predeploy": ["npm --prefix functions run build"] },
++  "functions": { "source": "functions", "runtime": "nodejs22", "predeploy": ["npm --prefix functions run build"] },
+   "firestore": { "rules": "firestore.rules" }
+ }
+--- a/functions/package.json
++++ b/functions/package.json
+@@ -8,7 +8,7 @@
+     "deploy": "firebase deploy --only functions"
+   },
+   "engines": {
+-    "node": "20"
++    "node": "22"
+   },
+   "dependencies": {
+     "decimal.js": "10.6.0",
+--- a/functions/package-lock.json
++++ b/functions/package-lock.json
+@@ -15,7 +15,7 @@
+         "typescript": "^5.3.0"
+       },
+       "engines": {
+-        "node": "20"
++        "node": "22"
+       }
+     },
+     "node_modules/@fastify/busboy": {

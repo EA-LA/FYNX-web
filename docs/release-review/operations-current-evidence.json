@@ -1,0 +1,226 @@
+{
+  "checked_at": "2026-09-28T04:15:59.399Z",
+  "project": "fynx-c7a28",
+  "database": {
+    "pitr": "POINT_IN_TIME_RECOVERY_ENABLED",
+    "earliestVersionTime": "2026-09-21T15:48:00Z",
+    "locationId": "nam5"
+  },
+  "backups": {
+    "backups": [
+      {
+        "name": "projects/fynx-c7a28/locations/nam5/backups/14078003-ef74-430c-bcaf-a130f16d823a",
+        "state": "READY",
+        "snapshotTime": "2026-09-24T07:43:43.018456Z",
+        "expireTime": "2026-10-22T07:43:43.018456Z"
+      },
+      {
+        "name": "projects/fynx-c7a28/locations/nam5/backups/325302df-90c7-4846-b0f9-00f9d82a9505",
+        "state": "READY",
+        "snapshotTime": "2026-09-27T08:12:48.445163Z",
+        "expireTime": "2026-10-25T08:12:48.445163Z"
+      },
+      {
+        "name": "projects/fynx-c7a28/locations/nam5/backups/38d8abc5-d6af-4941-ab73-a3e5ab7e9d45",
+        "state": "READY",
+        "snapshotTime": "2026-09-23T07:37:29.331323Z",
+        "expireTime": "2026-10-21T07:37:29.331323Z"
+      },
+      {
+        "name": "projects/fynx-c7a28/locations/nam5/backups/bda0358d-67bc-4c66-8ca5-bb678c723769",
+        "state": "READY",
+        "snapshotTime": "2026-09-27T08:12:48.445163Z",
+        "expireTime": "2026-12-20T08:12:48.445163Z"
+      },
+      {
+        "name": "projects/fynx-c7a28/locations/nam5/backups/cc37c7de-b63a-4a2e-99e6-eeacc68ee730",
+        "state": "READY",
+        "snapshotTime": "2026-09-26T08:05:59.693772Z",
+        "expireTime": "2026-10-24T08:05:59.693772Z"
+      },
+      {
+        "name": "projects/fynx-c7a28/locations/nam5/backups/d4be2816-e81d-4f72-8c61-66d9b407b648",
+        "state": "READY",
+        "snapshotTime": "2026-09-25T07:54:04.266484Z",
+        "expireTime": "2026-10-23T07:54:04.266484Z"
+      },
+      {
+        "name": "projects/fynx-c7a28/locations/nam5/backups/e9f3d544-e005-47c2-a726-5985a1571e90",
+        "state": "READY",
+        "snapshotTime": "2026-09-22T07:27:03.339860Z",
+        "expireTime": "2026-10-20T07:27:03.339860Z"
+      }
+    ],
+    "nextPageToken": null
+  },
+  "schedules": {
+    "backupSchedules": [
+      {
+        "name": "projects/fynx-c7a28/databases/(default)/backupSchedules/0b1e3b94-2145-483c-a006-923e35fb66ed",
+        "createTime": "2026-09-21T16:47:59.419588Z",
+        "retention": "7257600s",
+        "weeklyRecurrence": {
+          "day": "SUNDAY"
+        },
+        "updateTime": "2026-09-21T16:47:59.419588Z"
+      },
+      {
+        "name": "projects/fynx-c7a28/databases/(default)/backupSchedules/2e07c35e-359a-419c-96ff-76fb84599db1",
+        "createTime": "2026-09-21T16:47:58.709986Z",
+        "retention": "2419200s",
+        "dailyRecurrence": {},
+        "updateTime": "2026-09-21T16:47:58.709986Z"
+      }
+    ]
+  },
+  "alerts": {
+    "policies": [
+      {
+        "name": "projects/fynx-c7a28/alertPolicies/10845423957176619757",
+        "displayName": "FYNX website: save failures (server)",
+        "enabled": true,
+        "notificationChannels": [
+          "projects/fynx-c7a28/notificationChannels/13193237577260677372"
+        ]
+      },
+      {
+        "name": "projects/fynx-c7a28/alertPolicies/11641067733028156407",
+        "displayName": "FYNX API: engine unavailable",
+        "enabled": true,
+        "notificationChannels": [
+          "projects/fynx-c7a28/notificationChannels/13193237577260677372"
+        ]
+      },
+      {
+        "name": "projects/fynx-c7a28/alertPolicies/11898988124529380578",
+        "displayName": "FYNX API: server or backup failures",
+        "enabled": true,
+        "notificationChannels": [
+          "projects/fynx-c7a28/notificationChannels/13193237577260677372"
+        ]
+      },
+      {
+        "name": "projects/fynx-c7a28/alertPolicies/12850901863229449404",
+        "displayName": "FYNX website: feed failures (browser)",
+        "enabled": true,
+        "notificationChannels": [
+          "projects/fynx-c7a28/notificationChannels/13193237577260677372"
+        ]
+      },
+      {
+        "name": "projects/fynx-c7a28/alertPolicies/13742399645720738865",
+        "displayName": "FYNX API: backup inspection missing",
+        "enabled": true,
+        "notificationChannels": [
+          "projects/fynx-c7a28/notificationChannels/13193237577260677372"
+        ]
+      },
+      {
+        "name": "projects/fynx-c7a28/alertPolicies/14501843657263797948",
+        "displayName": "FYNX website: upload failures (browser)",
+        "enabled": true,
+        "notificationChannels": [
+          "projects/fynx-c7a28/notificationChannels/13193237577260677372"
+        ]
+      },
+      {
+        "name": "projects/fynx-c7a28/alertPolicies/14821295618903515178",
+        "displayName": "FYNX website: feed failures (probe)",
+        "enabled": true,
+        "notificationChannels": [
+          "projects/fynx-c7a28/notificationChannels/13193237577260677372"
+        ]
+      },
+      {
+        "name": "projects/fynx-c7a28/alertPolicies/17145251455529189761",
+        "displayName": "FYNX website: runtime failures (browser)",
+        "enabled": true,
+        "notificationChannels": [
+          "projects/fynx-c7a28/notificationChannels/13193237577260677372"
+        ]
+      },
+      {
+        "name": "projects/fynx-c7a28/alertPolicies/18002633360733610838",
+        "displayName": "FYNX website: auth failures (browser)",
+        "enabled": true,
+        "notificationChannels": [
+          "projects/fynx-c7a28/notificationChannels/13193237577260677372"
+        ]
+      },
+      {
+        "name": "projects/fynx-c7a28/alertPolicies/2188494303786065580",
+        "displayName": "FYNX website: save failures (browser)",
+        "enabled": true,
+        "notificationChannels": [
+          "projects/fynx-c7a28/notificationChannels/13193237577260677372"
+        ]
+      }
+    ],
+    "nextPageToken": null
+  },
+  "channels": {
+    "channels": [
+      {
+        "name": "projects/fynx-c7a28/notificationChannels/13193237577260677372",
+        "type": "email",
+        "enabled": true
+      }
+    ],
+    "nextPageToken": null
+  },
+  "secret": {
+    "exists": true,
+    "name": "projects/1011050657868/secrets/FYNX_API_STRIPE_SECRET_KEY",
+    "createTime": "2026-09-28T00:25:09.983318Z"
+  },
+  "dedicated_stripe": {
+    "checked_at": "2026-09-28T04:20:14.147Z",
+    "secret": "FYNX_API_STRIPE_SECRET_KEY",
+    "version": "1",
+    "live_key": true,
+    "value_logged": false,
+    "bindings": [
+      {
+        "function": "developerBilling",
+        "state": "ACTIVE",
+        "runtime": "nodejs22",
+        "secrets": [
+          {
+            "key": "FYNX_API_STRIPE_SECRET_KEY",
+            "projectId": "1011050657868",
+            "secret": "FYNX_API_STRIPE_SECRET_KEY",
+            "version": "1"
+          }
+        ]
+      },
+      {
+        "function": "developerGateway",
+        "state": "ACTIVE",
+        "runtime": "nodejs22",
+        "secrets": [
+          {
+            "key": "FYNX_API_STRIPE_SECRET_KEY",
+            "projectId": "1011050657868",
+            "secret": "FYNX_API_STRIPE_SECRET_KEY",
+            "version": "1"
+          }
+        ]
+      },
+      {
+        "function": "developerWorkspace",
+        "state": "ACTIVE",
+        "runtime": "nodejs22",
+        "secrets": [
+          {
+            "key": "FYNX_API_STRIPE_SECRET_KEY",
+            "projectId": "1011050657868",
+            "secret": "FYNX_API_STRIPE_SECRET_KEY",
+            "version": "1"
+          }
+        ]
+      }
+    ]
+  },
+  "alert_delivery_tested": false,
+  "live_billing_conflict": "A newer separate billing implementation permits live checkout; owner choice to preserve it or restore launch hold is pending. Existing source legal gate must not be assumed deployed."
+}

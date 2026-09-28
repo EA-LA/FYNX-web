@@ -1,0 +1,32 @@
+{
+  "checked_at": "2026-09-28T04:28:59.853Z",
+  "notification_channel": {
+    "enabled": true,
+    "recipient_matches_owner_support": false,
+    "delivery_confirmed": false
+  },
+  "scheduled_backup_check": {
+    "healthy": {
+      "booleanValue": true
+    },
+    "pitr": {
+      "stringValue": "POINT_IN_TIME_RECOVERY_ENABLED"
+    },
+    "awaitingFirstScheduledBackup": {
+      "booleanValue": false
+    },
+    "latestSnapshotAt": {
+      "integerValue": "1790496768445"
+    },
+    "checkedAt": {
+      "integerValue": "1790549612854"
+    }
+  },
+  "health": {
+    "http_status": 200,
+    "result": {
+      "status": "ok",
+      "engine_version": 2
+    }
+  }
+}

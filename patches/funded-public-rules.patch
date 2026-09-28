@@ -1,6 +1,12 @@
 --- a/src/lib/challengeConfig.ts
 +++ b/src/lib/challengeConfig.ts
-@@ -20,71 +20,67 @@
+@@ -1,3 +1,5 @@
++export const RULE_POLICY_VERSION = "fynx-funded-v1";
++
+ export interface ChallengeConfig {
+   accountSize: number;
+   label: string;
+@@ -20,71 +22,67 @@
      accountSize: 5000,
      label: "$5K",
      phases: {
@@ -275,11 +281,13 @@
  
 --- a/src/pages/Rules.tsx
 +++ b/src/pages/Rules.tsx
-@@ -1,3 +1,4 @@
+@@ -1,4 +1,5 @@
+-import { VERSION } from "@/services/funded-policy";
 +import RuleAvailabilityNotice from "@/components/RuleAvailabilityNotice";
- import { VERSION } from "@/services/funded-policy";
++import { RULE_POLICY_VERSION as VERSION } from "@/lib/challengeConfig";
  import MarketingLayout from "@/components/MarketingLayout";
  import {
+   AlertTriangle,
 @@ -33,7 +34,7 @@
    {
      icon: Clock,

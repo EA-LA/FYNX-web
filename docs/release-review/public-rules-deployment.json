@@ -1,0 +1,24 @@
+{
+  "verified_at": "2026-09-28T04:27:00.119434+00:00",
+  "repository": "EA-LA/fynxfunded",
+  "commit": "f04239db35aa5e79eda64a45ad8f06f864485c9d",
+  "production_url": "https://www.fynxfunded.com/rules",
+  "deployment": "https://vercel.com/elhams-projects-9aed9c12/fynxfunded/FPRvuDyASuGKKcWAfnLKxXQCeZec",
+  "status": "Ready",
+  "github_checks": "https://github.com/EA-LA/fynxfunded/actions/runs/36377232395",
+  "checks": [
+    "Live approved program table",
+    "USD ledger, 22:00 UTC, 40% consistency and below-only breach",
+    "Pending broker pairs/leverage and unavailable crypto",
+    "Purchases closed disclosure"
+  ],
+  "limitations": [
+    "Authenticated checkout redirected to login; currency and payment hold were covered by local source/tests.",
+    "No general legal document was published or approved."
+  ],
+  "mobile_check": {
+    "viewport_width": 390,
+    "document_scroll_width": 384,
+    "all_three_program_rows_present": true
+  }
+}
