@@ -8,7 +8,7 @@ This replaces the earlier checklist. Completed means implemented with the eviden
 - [x] Server-side email reminder pipeline works when the page is closed. Browser push is a separate optional feature.
 - [x] Actual outbound email delivered: the owner confirmed receipt of “Reminder: FYNX email delivery test.”
 - [x] Correlation, COT and crypto liquidity use real provider data with observation timestamps and availability states.
-- [x] Misleading PRO badges removed. No consumer subscription is represented as active.
+- [x] Free calculator badges do not imply payment. Optional consumer memberships have live Stripe billing and server-enforced access; see [verification](docs/pro-membership-verification-2026-09-28.md).
 - [x] Operational failure reporting and scheduled feed checks installed.
 - [x] Website Firestore rules repaired and deployed with explicit owner approval. Own Journal save/reload and profile save succeeded; other-user reads/writes and anonymous reads were denied in production.
 - [x] Website profile image rules deployed: owner only, supported images under 5 MB. Production owner upload and deletion succeeded; another user’s upload was denied.
@@ -39,7 +39,7 @@ This replaces the earlier checklist. Completed means implemented with the eviden
 - [ ] **Physical-device acceptance:** repeat the now-passing Journal/Profile browser workflow on an actual iPhone/Safari. Two independent browser sessions passed. Historical synthetic entries still require owner review.
 - [ ] **Shared legacy Storage security:** existing mobile `chat_media` and `user_avatars` rules still allow broad authenticated access. Only the website `users/{uid}/profile` namespace was tightened in this approved release. Mobile-compatible owner/membership rules require a separate review before changing those shared paths.
 - [ ] **Provider availability:** news, TradingView and official X embeds still depend on third parties. Latest news probes passed; sustained uptime cannot be guaranteed. Continue monitoring failures and freshness.
-- [ ] **Optional only:** browser push notifications and a consumer paid plan are not implemented. Email reminders already work; neither feature is necessary to claim the current free website works.
+- [ ] Browser push enrollment remains blocked on the separately requested invocation permission. Consumer paid memberships are implemented and verified independently; email reminders also work.
 
 ## Evidence and limits
 

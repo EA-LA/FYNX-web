@@ -108,7 +108,7 @@ A passing calculation example is not a full financial-model certification. Broke
 - [ ] Verify actual outbound email delivery separately from in-app notification records and preference switches.
 - [ ] Audit generated holiday coverage against each exchange, including one-off closures, early closes and dates beyond 2027.
 - [ ] Replace static correlation/COT/liquidity descriptions with real data ingestion if these are intended to be live analytical products.
-- [ ] Decide whether PRO badges represent a real plan. A badge alone is not billing, subscription or entitlement enforcement.
+- [x] PRO meaning resolved: optional consumer memberships use live Stripe billing and server-enforced access. Standard calculators remain free. See [verified plan scope](docs/pro-membership-verification-2026-09-28.md).
 - [ ] Confirm partner agreements and destination/affiliate URLs. This audit preserved existing partner listings rather than certifying them.
 - [ ] Add operational monitoring for failed feeds, auth errors, uploads and saves; maintain provider timestamps rather than browser-refresh timestamps.
 
@@ -144,7 +144,7 @@ A passing calculation example is not a full financial-model certification. Broke
 | [auth/forgot.html](auth/forgot.html) | Authentication integration | Firebase password reset; no real reset email was sent during this audit. |
 | [auth/login.html](auth/login.html) | Authentication integration | Firebase email/Google/Apple/app pathways; normal visitors currently encounter private-beta/waitlist gates. |
 | [auth/signup.html](auth/signup.html) | Authentication integration | Firebase signup/private-beta flow; account creation not exercised against production. |
-| [calculator.html](calculator.html) | Working local directory | 24 tool cards, search and basic calculator; PRO badges do not establish paid access. |
+| [calculator.html](calculator.html) | Working local directory | 24 tool cards, search and basic calculator remain free; paid workspace tiers are separately enforced on the server. |
 | [calendar.html](calendar.html) | Module hub | Economic calendar, market holidays and market hours tabs work; their data sources differ. |
 | [contact.html](contact.html) | Static contact links | Mailto links; no contact-submission backend. |
 | [dashboard.html](dashboard.html) | Redirect | Routes to Home; does not maintain a separate dashboard. |
