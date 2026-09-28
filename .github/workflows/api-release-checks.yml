@@ -1,0 +1,45 @@
+name: API release regression checks
+on:
+  pull_request:
+  push:
+    branches: [main, codex/fynx-first-proof]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: api-source
+      - uses: actions/checkout@v4
+        with:
+          repository: EA-LA/fynxfunded
+          # Reviewed Funded baseline. Update deliberately after reviewing policy changes.
+          ref: dc83d0b3b30a40790b84e18f7fda52ac0495f62c
+          path: fynxfunded
+      - name: Apply reviewed Funded safety changes
+        run: git apply ../api-source/patches/funded-progression-safety.patch
+        working-directory: fynxfunded
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+        working-directory: api-source
+      - run: npm ci
+        working-directory: api-source/backend
+      - run: npm ci
+        working-directory: fynxfunded
+      - run: npm ci
+        working-directory: fynxfunded/functions
+      - run: npm run build
+        working-directory: fynxfunded/functions
+      - run: npm run test:release
+        working-directory: api-source
+        env:
+          FYNX_FUNDED_REPO: ${{ github.workspace }}/fynxfunded
+      # No credentials or production/Stripe integration calls in CI.
+      - run: npm test && npm run build && npm run check --prefix backend
+        working-directory: api-source

@@ -1,0 +1,48 @@
+{
+  "checked_at": "2026-09-22T16:08:15.121Z",
+  "mode": "test",
+  "checks": [
+    "Actual billing checkout parameters accepted in Stripe TEST mode",
+    "Checkout idempotency reuses session",
+    "Checkout price is USD 49.00 monthly",
+    "Test Visa subscription activates",
+    "Test subscription invoice is paid for USD 49.00",
+    "Invoice history includes test payment",
+    "Actual billing entitlement logic recognizes active subscription shape",
+    "Test billing portal session created",
+    "Period-end cancellation retains active service until period end",
+    "Immediate test cancellation succeeds",
+    "Actual billing logic removes canceled entitlement",
+    "Declined TEST card is rejected",
+    "TEST mode never grants paid entitlement",
+    "TEST checkout remains waitlist-only"
+  ],
+  "cleanup": [
+    {
+      "name": "expire own test checkout",
+      "ok": true
+    },
+    {
+      "name": "deactivate own test portal configuration",
+      "ok": true
+    },
+    {
+      "name": "deactivate own test price",
+      "ok": true
+    },
+    {
+      "name": "deactivate own test product",
+      "ok": true
+    },
+    {
+      "name": "delete own test customer",
+      "ok": true
+    }
+  ],
+  "limitations": [
+    "Hosted checkout UI and subscription renewal timing are not exercised.",
+    "Production paid upgrades remain on the waitlist.",
+    "No real payments or paid entitlement changes."
+  ],
+  "complete": true
+}

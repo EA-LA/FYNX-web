@@ -86,3 +86,7 @@ node backend/scripts/developer-smoke.cjs --run-production
 ```
 
 It creates only its own temporary QA users, cleans them up in finally, and does not submit a payment. Do not put administrator credential files in the repository.
+
+## September 28 source changes — deployment pending
+
+Billing, workspace and gateway now require the dedicated `FYNX_API_STRIPE_SECRET_KEY` binding; they no longer fall back to the shared Stripe key. Provision and bind the dedicated secret before deploying. New checkout requires `FYNX_API_PAID_ACCESS_ENABLED=true`; keep it false until the paid launch gates pass. Existing subscribers retain portal access. See [remaining launch work](release-review/REMAINING-LAUNCH-WORK.md) for reconciliation/export tools, verification and rollout limits.

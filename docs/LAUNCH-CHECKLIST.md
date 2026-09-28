@@ -1,5 +1,7 @@
 # FYNX API completion checklist — 2026-09-22
 
+**Latest review:** [September 22 rules, tests, Stripe test-mode and legal draft package](release-review/README.md). See its technical checklist for the current unresolved launch gates.
+
 This records verified engineering work separately from production rollout and external evidence. The current release is a developer beta, not a verified broker integration or an unrestricted commercial launch.
 
 | Step | Finished | Remaining |
@@ -46,3 +48,13 @@ Completed the supported six-calculator first-party Risk rollout and runnable Pro
 Still required: verified broker specifications; actual account terms and trading records to resolve five Funded differences; seven days of representative parallel results; 3–5 external testers with at least three completed docs-only integrations; dedicated live billing configuration and payment verification; reviewed API terms/privacy/retention; final full-launch review.
 
 Live billing metadata was checked again: `FYNX_API_STRIPE_SECRET_KEY` does not exist in the project. No secret values were read or changed. Paid activation remains blocked on that setup.
+
+## Proposed rules, test automation and legal drafts — completed follow-up
+
+- Completed source-level policy comparison and a concrete proposed trading specification, including all five reproduced differences and additional public-copy/history-quality findings. Proposed rules were not applied to customer accounts.
+- Added 11 Funded server/cross-engine test groups and 11 billing test groups; the backend suite now has 36 passing tests. `npm run test:release` passes. Added a local GitHub Actions workflow configuration; it has not been pushed/run remotely.
+- Passed 14 real Stripe TEST API checks for checkout parameters, idempotency, pricing, subscription payment/invoice, portal creation, cancellation, decline and isolated entitlement logic. Removed/deactivated this run's test resources. Hosted checkout UI and time-advanced renewals remain separate checks.
+- Reran deployed API smoke checks successfully: test-mode waitlist, denied paid portal, authentication, isolation, keys, event replay/audit, quotas and client-write protection. Temporary QA users/data removed.
+- Prepared API terms, privacy and processing-addendum drafts, plus the technical launch checklist. Operator/jurisdiction, retention, commercial clauses and legal approval remain outstanding. Drafts are local review artifacts, not published effective terms.
+
+Details and evidence: [release review package](release-review/README.md). Earlier statements about completed engine implementation do not resolve the additional Funded history-validation/automatic-progression findings documented in this review.

@@ -1,5 +1,6 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),{createHash}=require('node:crypto');
+const assert=require('node:assert/strict');
 const engine=require('../../backend/developer-engine.cjs'),funded=process.env.FYNX_FUNDED_REPO||path.resolve(__dirname,'../../../fynxfunded');
 const ts=require(path.join(funded,'node_modules/typescript'));
 const policy={name:'FYNX 2-phase phase 1 baseline',starting_balance:'10000',daily_loss_percent:'5',max_loss_percent:'10',profit_target_percent:'8',max_loss_type:'static',consistency_percent:'40',min_trading_days:5,reset_hour_utc:22,breach_on_touch:false};
@@ -23,15 +24,26 @@ async function run(){
   let balance=10000;const equity=trades.map(t=>({timestamp:t.closeTime,balance:balance+=t.pnl,equity:balance}));
   const oldClient=await client.api.evaluateRules('fixture',{accountSize:10000,profitTargetPct:8,dailyLossPct:5,maxLossPct:10,minTradingDays:5},{getTrades:async()=>trades,getEquityTimeline:async()=>equity});
   const docs=trades.map((t,i)=>({id:'fixture-'+i,data:()=>t}));const store={collection:name=>({doc:()=>({get:async()=>({exists:true,data:()=>({phase:'2-phase',accountSize:10000,currentPhase:1})})}),where:()=>({get:async()=>({empty:false,docs})})}),batch:()=>({set:()=>{},commit:async()=>{}})};
+  store.runTransaction=async fn=>fn({get:r=>r.get(),set:()=>{}});
   const oldServer=load('functions/src/challengeProgression.ts',{'firebase-admin':{firestore:Object.assign(()=>store,{Timestamp:class{},FieldValue:{serverTimestamp:()=>0}})},'firebase-functions/v2/firestore':{onDocumentWritten:()=>null},'firebase-functions/v2/https':{onCall:()=>null,HttpsError:Error}},'\nexport { evaluateChallenge };');
   const old=await oldServer.api.evaluateChallenge('fixture','proof');const rule=engine.rules(policy);let a=engine.account(rule,'2026-09-01T00:00:00Z');
   for(const t of trades)a=engine.event(a,rule,{sequence:a.sequence+1,event_type:'closed_trade',timestamp:t.closeTime,realized_pnl:String(t.pnl),unrealized_pnl_after:'0',open_position_count:0});
   if(a.status!==scenario.expected)throw new Error(scenario.name+' unexpected API result '+a.status);
   const normalized=x=>({passed:'eligible',failed:'breached',active:'active'}[x]);
+  const expectedLegacy={
+   'existing/pass-target-and-days':['passed',5], 'existing/incomplete':['active',2], 'existing/daily-breach':['failed',1],
+   'policy/static-vs-trailing':['failed',8], 'policy/consistency':['passed',5], 'policy/intraday-breach-recovery':['passed',5],
+   'policy/daily-balance-reference':['failed',6], 'policy/reset-hour':['active',1], 'policy/touch-daily-limit':['active',1]
+  }[scenario.name];
+  assert.equal(old.status,expectedLegacy[0],scenario.name+' server behavior changed; review policy');
+  assert.equal(oldClient.status,expectedLegacy[0],scenario.name+' client behavior changed; review policy');
+  assert.equal(old.metrics.tradingDays,expectedLegacy[1]);
+  assert.equal(oldClient.tradingDays,expectedLegacy[1]);
+  assert.equal(a.metrics.trading_days,scenario.name==='policy/reset-hour'?2:expectedLegacy[1]);
   const match=normalized(old.status)===a.status&&old.metrics.tradingDays===a.metrics.trading_days;
   rows.push({scenario:scenario.name,kind:'synthetic_regression_not_customer_history',legacy_client:oldClient.status,legacy_server:old.status,api:a.status,legacy_days:old.metrics.tradingDays,api_days:a.metrics.trading_days,match,explanation:scenario.reason||'Equivalent under these fixture inputs.'});
  }
  return {sources:{client_sha256:client.sha256,server_sha256:createHash('sha256').update(fs.readFileSync(path.join(funded,'functions/src/challengeProgression.ts'))).digest('hex')},rows,excluded_existing_fixtures:[{name:'maximum drawdown breach',reason:'Standalone equity values have no linked realized/open-position event stream; cannot claim a historical replay.'},{name:'exact configured limits',reason:'Trade loss -500 and equity/balance 9000 cannot be reconciled without missing position or adjustment data.'}]};
 }
-module.exports={run,scenarios,policy};
+module.exports={run,scenarios,policy,load};
 if(require.main===module)run().then(x=>console.log(JSON.stringify(x,null,2))).catch(e=>{console.error(e);process.exitCode=1;});

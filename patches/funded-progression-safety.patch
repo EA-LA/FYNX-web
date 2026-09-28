@@ -1,0 +1,161 @@
+diff --git a/functions/src/challengeProgression.ts b/functions/src/challengeProgression.ts
+index d1b93bb..5294738 100644
+--- a/functions/src/challengeProgression.ts
++++ b/functions/src/challengeProgression.ts
+@@ -11,37 +11,46 @@ const RULES: Record<string, { targets: number[]; dailyLoss: number; maxLoss: num
+ 
+ type ProgressionAction = "evaluate" | "set_automatic" | "set_manual" | "pass" | "fail" | "fund";
+ 
+-function number(value: unknown): number {
+-  const parsed = Number(value);
+-  return Number.isFinite(parsed) ? parsed : 0;
++function invalidHistory(message: string): never {
++  throw new HttpsError("failed-precondition", `Invalid broker history: ${message}`);
+ }
+ 
+-function iso(value: unknown): string | null {
+-  if (!value) return null;
+-  if (value instanceof admin.firestore.Timestamp) return value.toDate().toISOString();
+-  const parsed = new Date(String(value));
+-  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
++function strictNumber(value: unknown, field: string): number {
++  if ((typeof value !== "number" && typeof value !== "string") || String(value).trim() === "" || !Number.isFinite(Number(value))) invalidHistory(`${field} must be finite.`);
++  return Number(value);
+ }
+ 
+-function tradePnl(trade: FirebaseFirestore.DocumentData): number {
+-  return number(trade.pnl ?? trade.profit ?? trade.netProfit ?? trade.realizedPnl);
++function tradeTime(trade: FirebaseFirestore.DocumentData): string {
++  const value = trade.closeTime ?? trade.closedAt ?? trade.exitTime;
++  if (value instanceof admin.firestore.Timestamp) return value.toDate().toISOString();
++  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(value)) invalidHistory("a timezone-qualified close timestamp is required.");
++  const parsed = new Date(value);
++  const date = value.slice(0, 10);
++  if (!Number.isFinite(parsed.getTime()) || new Date(date + "T00:00:00Z").toISOString().slice(0, 10) !== date) invalidHistory("invalid close timestamp.");
++  return parsed.toISOString();
+ }
+ 
+-function tradeTime(trade: FirebaseFirestore.DocumentData): string | null {
+-  return iso(trade.closeTime ?? trade.closedAt ?? trade.exitTime ?? trade.updatedAt ?? trade.openTime ?? trade.openedAt);
++function tradePnl(trade: FirebaseFirestore.DocumentData): number {
++  const value = strictNumber(trade.netProfit ?? trade.pnl ?? trade.profit ?? trade.realizedPnl, "P&L");
++  const costs = ["commission", "swap", "fees"].map(key => trade[key] == null ? 0 : strictNumber(trade[key], key));
++  if (trade.netProfit != null || trade.pnlBasis === "net") return value;
++  if (trade.pnlBasis === "gross_signed_costs") return value + costs.reduce((sum, cost) => sum + cost, 0);
++  if (costs.some(cost => cost !== 0)) invalidHistory("nonzero costs require net P&L or pnlBasis gross_signed_costs; costs are signed credits/debits.");
++  return value;
+ }
+ 
+ async function tradesFor(challengeId: string, challenge: FirebaseFirestore.DocumentData) {
+   const db = admin.firestore();
+   const byChallenge = await db.collection("trades").where("challengeId", "==", challengeId).get();
+-  if (!byChallenge.empty) return byChallenge.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
++  if (!byChallenge.empty) return byChallenge.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+   const accountId = challenge.brokerAccountId || challenge.accountId;
+   if (!accountId) return [];
+   const byAccount = await db.collection("trades").where("accountId", "==", String(accountId)).get();
+-  return byAccount.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
++  if (byAccount.docs.some(doc => doc.data().challengeId && doc.data().challengeId !== challengeId)) invalidHistory("account history includes another challenge; an explicit phase-scoped import is required.");
++  return byAccount.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+ }
+ 
+-async function evaluateChallenge(challengeId: string, source: string, requireData = true) {
++async function evaluateChallenge(challengeId: string, source: string, enableAutomatic = false) {
+   const db = admin.firestore();
+   const ref = db.collection("challenges").doc(challengeId);
+   const snapshot = await ref.get();
+@@ -49,17 +58,25 @@ async function evaluateChallenge(challengeId: string, source: string, requireDat
+   const challenge = snapshot.data() || {};
+   const phase = String(challenge.phase || "").toLowerCase();
+   const rules = RULES[phase];
+-  const accountSize = number(challenge.accountSize);
++  const accountSize = strictNumber(challenge.accountSize, "account size");
+   if (!rules || accountSize <= 0) throw new HttpsError("failed-precondition", "This challenge is missing a valid account size or phase configuration.");
+ 
+   const trades = await tradesFor(challengeId, challenge);
+-  if (!trades.length && requireData) throw new HttpsError("failed-precondition", "No verified broker trades are available for this challenge yet.");
++  if (!trades.length) throw new HttpsError("failed-precondition", "No verified broker trades are available for this challenge yet.");
+ 
+-  const ordered = trades
+-    .map((trade) => ({ ...trade, normalizedTime: tradeTime(trade), normalizedPnl: tradePnl(trade) }))
+-    .filter((trade) => trade.normalizedTime)
+-    .sort((a, b) => String(a.normalizedTime).localeCompare(String(b.normalizedTime)));
+-  if (!ordered.length && requireData) throw new HttpsError("failed-precondition", "Broker trades were found, but none contain a valid close time.");
++  const seen = new Map<string, string>();
++  const ordered = trades.map((trade: FirebaseFirestore.DocumentData) => {
++    if (trade.status && !["closed", "CLOSED"].includes(trade.status)) invalidHistory("only closed trades can be evaluated.");
++    const normalizedTime = tradeTime(trade), normalizedPnl = tradePnl(trade);
++    const identity = String(trade.tradeId ?? trade.id);
++    const fingerprint = JSON.stringify([normalizedTime, normalizedPnl]);
++    if (seen.has(identity)) invalidHistory(`duplicate trade identity ${identity}; reconcile duplicates before evaluation.`);
++    seen.set(identity, fingerprint);
++    return { normalizedTime, normalizedPnl };
++  }).sort((a, b) => a.normalizedTime.localeCompare(b.normalizedTime));
++  // Closed trades cannot prove floating losses or complete intraday coverage.
++  // Do not enable autonomous decisions on this legacy evaluator.
++  if (enableAutomatic) throw new HttpsError("failed-precondition", "Automatic progression requires approved rules and a verified equity-event integration. Use manual review.");
+ 
+   const daily = new Map<string, number>();
+   let totalPnl = 0;
+@@ -69,6 +86,7 @@ async function evaluateChallenge(challengeId: string, source: string, requireDat
+   for (const trade of ordered) {
+     totalPnl += trade.normalizedPnl;
+     equity += trade.normalizedPnl;
++    if (!Number.isFinite(equity) || !Number.isFinite(totalPnl)) invalidHistory("aggregate P&L overflow.");
+     peak = Math.max(peak, equity);
+     maxDrawdownPct = Math.max(maxDrawdownPct, ((peak - equity) / accountSize) * 100);
+     const day = String(trade.normalizedTime).slice(0, 10);
+@@ -76,19 +94,24 @@ async function evaluateChallenge(challengeId: string, source: string, requireDat
+   }
+   const dailyDrawdownPct = Math.max(0, ...Array.from(daily.values(), (pnl) => Math.abs(Math.min(0, pnl)) / accountSize * 100));
+   const profitPct = totalPnl / accountSize * 100;
+-  const currentPhase = Math.max(1, Math.min(rules.targets.length, number(challenge.currentPhase) || 1));
++  const currentPhase = challenge.currentPhase == null ? 1 : Number(challenge.currentPhase);
++  if (!Number.isInteger(currentPhase) || currentPhase < 1 || currentPhase > rules.targets.length) throw new HttpsError("failed-precondition", "Invalid current phase.");
+   const targetPct = rules.targets[currentPhase - 1];
+-  const breached = dailyDrawdownPct > rules.dailyLoss || maxDrawdownPct > rules.maxLoss;
+-  const passed = !breached && daily.size >= rules.minDays && profitPct >= targetPct;
+-  const status = breached ? "failed" : passed ? "passed" : "active";
++  const computedBreach = dailyDrawdownPct > rules.dailyLoss || maxDrawdownPct > rules.maxLoss;
+   const metrics = { tradeCount: ordered.length, tradingDays: daily.size, totalPnl, profitPct, dailyDrawdownPct, maxDrawdownPct, targetPct };
+-  const now = admin.firestore.FieldValue.serverTimestamp();
+-  const batch = db.batch();
+-  batch.set(ref, { status, ruleStatus: status, ruleMetrics: metrics, lastRuleEvaluationAt: now, lastRuleEvaluationSource: source }, { merge: true });
+-  batch.set(db.collection("rule_evaluations").doc(), { challengeId, accountId: challenge.brokerAccountId || challenge.accountId || challengeId, status, source, metrics, createdAt: now });
+-  batch.set(db.collection("audit_logs").doc(), { challengeId, accountId: challenge.brokerAccountId || challenge.accountId || challengeId, action: "rules_evaluation", result: status, source, details: metrics, createdAt: now });
+-  await batch.commit();
+-  return { status, metrics };
++  return db.runTransaction(async tx => {
++    const latest = await tx.get(ref);
++    const current = latest.data() || {};
++    if (!latest.exists || current.phase !== challenge.phase || current.accountSize !== challenge.accountSize || current.currentPhase !== challenge.currentPhase) throw new HttpsError("aborted", "Challenge changed during evaluation; retry.");
++    const breached = computedBreach || current.ruleStatus === "failed" || current.status === "failed" || current.breachRecorded === true;
++    const passed = !breached && daily.size >= rules.minDays && profitPct >= targetPct;
++    const status = breached ? "failed" : passed ? "passed" : "active";
++    const now = admin.firestore.FieldValue.serverTimestamp();
++    tx.set(ref, { status, ruleStatus: status, breachRecorded: breached, requiresHumanReview: true, ruleMetrics: metrics, lastRuleEvaluationAt: now, lastRuleEvaluationSource: source }, { merge: true });
++    tx.set(db.collection("rule_evaluations").doc(), { challengeId, accountId: challenge.brokerAccountId || challenge.accountId || challengeId, status, source, metrics, createdAt: now });
++    tx.set(db.collection("audit_logs").doc(), { challengeId, accountId: challenge.brokerAccountId || challenge.accountId || challengeId, action: "rules_evaluation", result: status, source, details: metrics, createdAt: now });
++    return { status, metrics };
++  });
+ }
+ 
+ export const adminChallengeProgression = onCall(async (request) => {
+@@ -105,8 +128,7 @@ export const adminChallengeProgression = onCall(async (request) => {
+   if (action === "evaluate" || action === "set_automatic") {
+     const challenge = snapshot.data() || {};
+     if (!challenge.brokerAccountId && !challenge.accountId) throw new HttpsError("failed-precondition", "Connect a broker account before enabling automatic progression.");
+-    if (action === "set_automatic") await ref.set({ progressionMode: "automatic", updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+-    return { ok: true, mode: action === "set_automatic" ? "automatic" : challenge.progressionMode || "manual", ...(await evaluateChallenge(challengeId, `admin_${action}`)) };
++    return { ok: true, mode: action === "set_automatic" ? "automatic" : challenge.progressionMode || "manual", ...(await evaluateChallenge(challengeId, `admin_${action}`, action === "set_automatic")) };
+   }
+ 
+   const status = action === "pass" ? "passed" : action === "fail" ? "failed" : action === "fund" ? "funded" : undefined;
+@@ -131,5 +153,6 @@ export const evaluateAutomaticProgressionOnTrade = onDocumentWritten("trades/{tr
+   if (!challengeId) return;
+   const challenge = await admin.firestore().collection("challenges").doc(challengeId).get();
+   if (!challenge.exists || challenge.data()?.progressionMode !== "automatic") return;
+-  await evaluateChallenge(challengeId, "broker_trade_trigger", false);
++  // Fail closed until the complete equity-event integration and policy migration are approved.
++  throw new HttpsError("failed-precondition", "Automatic progression is paused pending verified history and approved integration.");
+ });

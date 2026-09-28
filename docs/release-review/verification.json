@@ -1,0 +1,20 @@
+{
+  "checked_at": "2026-09-22T16:14:06.379728+00:00",
+  "local_aggregate": "npm run test:release",
+  "local_result": "passed",
+  "funded_test_groups": 11,
+  "backend_tests": 36,
+  "new_billing_test_groups": 11,
+  "cross_engine_scenarios": 9,
+  "known_policy_differences": 5,
+  "stripe_test_checks": 14,
+  "deployed_smoke": "passed; temporary QA users and records removed",
+  "github_workflow": "configured locally; remote run not performed",
+  "production_runtime_changed": false,
+  "source_sha256": {
+    "backend/developer-billing.cjs": "4465c4bda08d596a5bbea2fb67aabaaa1cd657d8b02a12f86245883f4c5625d2",
+    "backend/developer-engine.cjs": "60bd257923c28917e94a653e58e13b69d81d395b82d002939efe428b88bad81d",
+    "../fynxfunded/functions/src/challengeProgression.ts": "fb43774259bf33f543a676b4042e701310e37c8c8cf66ba0b4bb63c31459223c",
+    "../fynxfunded/src/services/rules-engine.ts": "b8e54a0d4a5cf3ce5c50bddbff9f5d55fdad1a6cd90299b4f1f1e39b603166f0"
+  }
+}

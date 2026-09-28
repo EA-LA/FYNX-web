@@ -4,7 +4,9 @@
     "test": "node scripts/test-journal-record.js",
     "test:api": "node scripts/test-api-pages.cjs",
     "test:proof": "node scripts/proof/calculator-parity.cjs && node scripts/proof/calculator-validation.cjs && node scripts/proof/funded-scenarios.cjs && node scripts/proof/pilot-access.cjs && node scripts/proof/pilot-calculators.cjs && node scripts/proof/pilot-controller.cjs",
-    "vercel-build": "npm run build && node scripts/package-static.cjs"
+    "vercel-build": "npm run build && node scripts/package-static.cjs",
+    "test:funded": "node --test scripts/proof/funded-server.test.cjs",
+    "test:release": "npm run test:funded && npm test --prefix backend && npm run test:proof && npm run test:api"
   },
   "devDependencies": {
     "jsdom": "^20.0.3"
