@@ -516,7 +516,10 @@
         : QUIZ_BANK.filter(q => q.category === selectedCategory);
     }
 
+    let activeAttempt = null;
     function startQuiz(){
+      activeAttempt = {attempt:crypto.randomUUID(),topic:selectedCategory==='all'?'general':selectedCategory};
+      window.dispatchEvent(new CustomEvent('fynx:quiz-started',{detail:activeAttempt}));
       const pool = shuffle(getPool());
       activeQuestions = pool.slice(0, 10).map(q => {
         const options = [...q.options];
@@ -569,7 +572,7 @@
       });
 
       scoreValue.textContent = `${correct}/${activeQuestions.length}`;
-      window.dispatchEvent(new CustomEvent("fynx:quiz-completed", {detail:{attempt:crypto.randomUUID(),correct,total:activeQuestions.length}}));
+      window.dispatchEvent(new CustomEvent("fynx:quiz-completed", {detail:{...activeAttempt,correct,total:activeQuestions.length}}));
       percentageValue.textContent = `${Math.round((correct / activeQuestions.length) * 100)}%`;
       correctValue.textContent = correct;
       wrongValue.textContent = activeQuestions.length - correct;
@@ -640,6 +643,6 @@
     renderCategories();
   </script>
 
-<script type="module" src="/assets/js/cloud-learning.js?v=20260915-cloud"></script>
+<script type="module" src="/assets/js/cloud-learning.js?v=20260928-learning"></script>
 </body>
 </html>

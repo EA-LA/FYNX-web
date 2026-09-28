@@ -43,9 +43,19 @@ exports.webLearning = runtime.https.onCall(async (data, context) => {
     const attempt = id(data.attempt);
     const correct = data.correct, total = data.total;
     if (!Number.isInteger(correct) || !Number.isInteger(total) || total < 1 || total > 100 || correct < 0 || correct > total) fail('invalid-argument', 'Invalid quiz score.');
+    // A retry is the same assessment, not a new score or a changed completion date.
     // Study history is self-reported; never use it to award a verified certificate.
-    await ref.collection('attempts').doc(attempt).set({ correct, total, completedAt: Date.now(), source: 'self-reported' });
-    await ref.set({ lastQuiz: { correct, total, completedAt: Date.now() }, updatedAt: Date.now() }, { merge: true });
+    await db().runTransaction(async tx => {
+      const attemptRef = ref.collection('attempts').doc(attempt);
+      const existing = await tx.get(attemptRef);
+      if (existing.exists) {
+        if (existing.data().correct !== correct || existing.data().total !== total) fail('already-exists', 'This assessment has already been saved with a different score.');
+        return;
+      }
+      const completedAt = Date.now();
+      tx.create(attemptRef, { correct, total, completedAt, source: 'self-reported' });
+      tx.set(ref, { lastQuiz: { correct, total, completedAt }, updatedAt: completedAt }, { merge: true });
+    });
   } else fail('invalid-argument', 'Unknown learning action.');
   return { saved: true };
 });
