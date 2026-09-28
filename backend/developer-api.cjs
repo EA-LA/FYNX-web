@@ -6,7 +6,7 @@ const engine=require('./developer-engine.cjs');
 const {payloadHash:canonicalHash,validateInput,entitlement,effectiveCap}=require('./developer-core.cjs');
 const logger=require('firebase-functions/logger');
 const db=()=>admin.firestore();
-const runtime=functions.runWith({secrets:['STRIPE_SECRET_KEY'],timeoutSeconds:60,memory:'256MB',maxInstances:10});
+const runtime=functions.runWith({secrets:['FYNX_API_STRIPE_SECRET_KEY'],timeoutSeconds:60,memory:'256MB',maxInstances:10});
 const root=uid=>db().collection('fynxDevelopers').doc(uid);
 const envRef=(uid,env)=>root(uid).collection('environments').doc(env);
 const error=(code,message)=>{throw new functions.https.HttpsError(code,message);};
@@ -60,10 +60,10 @@ async function workspace(data,context){
  const user=await actor(context),uid=user.uid;await throttle(uid);const env=environment(data?.environment||'test'),er=envRef(uid,env),action=data?.action;
  try{
  if(action==='bootstrap'){
-  const ref=root(uid);await db().runTransaction(async tx=>{const s=await tx.get(ref);if(!s.exists)tx.create(ref,{name:clean(user.displayName||'My API workspace'),email:user.email||'',createdAt:Date.now(),plan:'free',requestCap:1000});});
+  const ref=root(uid);await db().runTransaction(async tx=>{const s=await tx.get(ref);if(!s.exists)tx.create(ref,{name:clean(user.displayName||'My API workspace'),email:user.email||'',createdAt:Date.now(),plan:'free',requestCap:null});});
   await require('./developer-billing.cjs').refresh(uid);
   const [p,u,k,r,a,q]=await Promise.all([ref.get(),er.collection('usage').doc(month()).get(),er.collection('keys').orderBy('createdAt','desc').limit(50).get(),er.collection('rules').limit(100).get(),er.collection('accounts').limit(100).get(),er.collection('requests').orderBy('at','desc').orderBy(admin.firestore.FieldPath.documentId(),'desc').limit(25).get()]);
-  return {profile:p.data(),usage:u.data()||{calls:0},limits:entitlement(p.data(),env),keys:rows(k),rules:rows(r),accounts:rows(a),requests:rows(q),month:month(),billing_mode:String(process.env.FYNX_API_STRIPE_SECRET_KEY||process.env.STRIPE_SECRET_KEY||'').startsWith('sk_live_')?'live':'test',emailVerified:user.emailVerified,apiBase:'https://us-central1-fynx-c7a28.cloudfunctions.net/developerGateway'};
+  return {profile:p.data(),usage:u.data()||{calls:0},limits:entitlement(p.data(),env),keys:rows(k),rules:rows(r),accounts:rows(a),requests:rows(q),month:month(),billing_mode:'live',emailVerified:user.emailVerified,apiBase:'https://us-central1-fynx-c7a28.cloudfunctions.net/developerGateway'};
  }
  if(['createKey','rotateKey','revokeKey'].includes(action)){
   if(!user.emailVerified)error('failed-precondition','Verify your email before creating or changing API keys.');
@@ -79,7 +79,7 @@ async function workspace(data,context){
  }
  if(action==='run'){await require('./developer-billing.cjs').refresh(uid);try{return await runOperation(uid,env,String(data.route||''),data.input||{});}catch(e){const request_id=await recordFailure(uid,env,data.route,e);if(!(e instanceof engine.InputError))throw e;return {request_id,status:422,error:{code:e.code,message:e.message}};}}
  if(action==='history'){const limit=25;let q=data.audit?er.collection('audit'):data.accountId?er.collection('accounts').doc(ident(data.accountId)).collection('events'):er.collection('requests');q=q.orderBy('at','desc').orderBy(admin.firestore.FieldPath.documentId(),'desc');if(data.before!==undefined){if(!Number.isSafeInteger(data.before))error('invalid-argument','Invalid history cursor.');q=q.startAfter(data.before,ident(data.beforeId));}return {items:rows(await q.limit(limit).get())};}
- if(action==='settings'){const name=clean(data.name),cap=Number(data.requestCap);if(!name||!Number.isInteger(cap)||cap<1||cap>50000)error('invalid-argument','Name and request cap (1–50,000) are required.');const batch=db().batch();batch.set(root(uid),{name,requestCap:cap,updatedAt:Date.now()},{merge:true});batch.create(er.collection('audit').doc(),{at:Date.now(),action:'settings',name,requestCap:cap});await batch.commit();return {saved:true};}
+ if(action==='settings'){const name=clean(data.name),cap=Number(data.requestCap);if(!name||!Number.isInteger(cap)||cap<1||cap>50000)error('invalid-argument','Name and request cap (1–50,000) are required.');const batch=db().batch();batch.set(root(uid),{name,requestCap:cap,requestCapExplicit:true,updatedAt:Date.now()},{merge:true});batch.create(er.collection('audit').doc(),{at:Date.now(),action:'settings',name,requestCap:cap});await batch.commit();return {saved:true};}
  if(action==='support'){const subject=clean(data.subject),message=String(data.message||'').trim();if(!subject||message.length<10||message.length>4000)error('invalid-argument','Add a subject and a message between 10 and 4,000 characters.');const ref=root(uid).collection('support').doc();await ref.set({subject,message,createdAt:Date.now(),status:'open',email:user.email||''});return {ticket_id:ref.id};}
  error('invalid-argument','Unknown workspace action.');
  }catch(e){if(e instanceof engine.InputError)error(e.code==='event_order_conflict'?'failed-precondition':'invalid-argument',e.message);throw e;}

@@ -1,15 +1,15 @@
 # FYNX API engine — operations and recovery
 
-Project: `fynx-c7a28`; region: `us-central1`; Firestore: `(default)` in `nam5`. Source lives in the existing FYNX-web repository. This document covers the caller-supplied Forex Risk API and submitted-event Prop Firm Rules API beta. Paid subscriptions remain deferred by the owner: test Stripe configuration saves Pro waitlist interest and never grants paid entitlement.
+Project: `fynx-c7a28`; region: `us-central1`; Firestore: `(default)` in `nam5`. Source lives in the existing FYNX-web repository. This document covers the caller-supplied Forex Risk API and submitted-event Prop Firm Rules API beta. API Pro live subscriptions were enabled on 2026-09-27; see developer-workspace.md for entitlement rules and dedicated secrets.
 
 ## Runtime and deployment
 
-Functions: `developerWorkspace`, `developerGateway`, `developerBilling`, `developerHealth`, `developerBackupCheck`. The first three handle authenticated operations; health is a minimal public read of Firestore and a deterministic engine self-check. Backup inspection runs every six hours. Function instance limits bound concurrency; they are not a monthly cloud spending guarantee.
+Functions: `developerWorkspace`, `developerGateway`, `developerBilling`, `developerBillingWebhook`, `developerHealth`, `developerBackupCheck`. The first three handle authenticated operations; health is a minimal public read of Firestore and a deterministic engine self-check. Backup inspection runs every six hours. Function instance limits bound concurrency; they are not a monthly cloud spending guarantee.
 
-Versioned files: `backend/developer-{api,core,engine,billing,operations}.cjs`. Deployment directory: `/Users/h/Desktop/fynx-functions/functions/`. Copy these five source files there and preserve all existing exports. Its index exports the five named functions from their modules. Dependencies: firebase-admin, firebase-functions, decimal.js and stripe. Run backend tests, syntax checks and the public-page checks before deploying only these functions:
+Versioned files: `backend/developer-{api,core,engine,billing,billing-policy,billing-events,operations}.cjs`. Deployment directory: `/Users/h/Desktop/fynx-functions/functions/`. Copy the required source files there and preserve all existing exports. Export the billing webhook from developer-billing-events.cjs. Dependencies: firebase-admin, firebase-functions, decimal.js and stripe. Run backend tests, syntax checks and the public-page checks before deploying only these functions:
 
 ```sh
-firebase deploy --only functions:developerWorkspace,functions:developerGateway,functions:developerBilling,functions:developerHealth,functions:developerBackupCheck --project fynx-c7a28 --non-interactive
+firebase deploy --only functions:developerWorkspace,functions:developerGateway,functions:developerBilling,functions:developerBillingWebhook,functions:developerHealth,functions:developerBackupCheck --project fynx-c7a28 --non-interactive
 ```
 
 Use the existing deploy directory for that command. Never deploy the other products as part of an API-only release. The website publishes from the existing repository's main branch.
@@ -79,10 +79,17 @@ Official procedures: [Firestore backups](https://firebase.google.com/docs/firest
 
 A synthetic recovery record was exported to `gs://fynx-c7a28-api-recovery/drill-20260921`, imported into `fynx-api-recovery-20260921`, and read back with balance `99850` and sequence `2`. The isolated database and original synthetic record were deleted afterward. This proves the storage/import route and permissions; it is not a full-customer disaster simulation.
 
-Opt-in repeatable backend smoke test (requires administrator Application Default Credentials and test billing):
+Opt-in repeatable backend smoke test (requires administrator Application Default Credentials):
 
 ```sh
 node backend/scripts/developer-smoke.cjs --run-production
 ```
 
 It creates only its own temporary QA users, cleans them up in finally, and does not submit a payment. Do not put administrator credential files in the repository.
+
+
+## Live billing verification — 2026-09-27
+
+Run `node ops/api-live-smoke.cjs` with an authorized Firebase CLI account for a disposable live checkout, portal, signed webhook, API-key, Risk API, Prop Firm Rules API and quota check. It creates no charge and removes its QA customer, user and records. Backend tests cover paid activation, exact-price ownership, duplicate prevention, payment failure/cancellation and concurrent webhook invalidation; UI tests are in `scripts/test-api-live-billing-ui.cjs`.
+
+Webhook endpoint: `https://us-central1-fynx-c7a28.cloudfunctions.net/developerBillingWebhook`. Configured events: checkout.session.completed, invoice.paid, invoice.payment_failed and customer.subscription.created/updated/deleted. Stripe retries failures. Webhook failures use the existing fynx_api monitoring log format. Do not manually grant Pro from a checkout redirect or an old restored plan.

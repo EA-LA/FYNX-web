@@ -14,15 +14,15 @@ Entry: `/api/workspace.html`. Firebase project: `fynx-c7a28`.
 
 ## Pricing selected by delegated owner decision
 
-Free: 1,000 successful calls per UTC calendar month per environment, 10 requests/second. Pro: $49/month, 50,000 live calls per UTC calendar month, 30 requests/second; test remains free-tier usage. No automatic overage purchases. Requests stop at the lower of the customer's saved cap and plan allowance. Caps are independent counters in test/live with one workspace-level chosen ceiling. Subscriptions renew on the purchase anniversary; call allowances reset on calendar-month boundaries. Existing customer caps are preserved after an upgrade and may need raising in Settings.
+Free: 1,000 successful calls per UTC calendar month per environment, 10 requests/second. Pro: $49/month, 50,000 live calls per UTC calendar month, 30 requests/second; test remains free-tier usage. No automatic overage purchases. Requests stop at the lower of the customer's saved cap and plan allowance. Caps are independent counters in test/live with one workspace-level chosen ceiling. Subscriptions renew on the purchase anniversary; call allowances reset on calendar-month boundaries. Explicit customer caps are preserved after an upgrade and may need raising in Settings.
 
-## Blocking live billing detail
+## Live billing — 2026-09-27
 
-The existing `STRIPE_SECRET_KEY` was verified to be a **test** secret. QA successfully created Stripe test checkout and portal sessions, then expired those sessions and removed QA Stripe customers. No payment was made.
+API Pro uses live monthly USD $49 price `price_1UKSHKKF1DV2t1wM2GFMJvnp`. Dedicated secrets `FYNX_API_STRIPE_SECRET_KEY` and `FYNX_API_STRIPE_WEBHOOK_SECRET` leave other products' credentials untouched. Live customers use `stripeLiveCustomer`; legacy test customers never grant access.
 
-The backend must NOT grant live Pro limits from a Stripe test subscription. The browser explicitly shows test billing status. To enable real subscriptions, the owner must supply `FYNX_API_STRIPE_SECRET_KEY` as a new Secret Manager secret in project `fynx-c7a28`; do not overwrite the existing secret used by other products. Replace runtime secret bindings in developer-api.cjs and developer-billing.cjs with the new secret, then deploy only the developer functions listed in developer-operations.md. The code reads the dedicated secret preferentially. The owner explicitly chose to defer live billing and use a Pro waitlist until a real key is supplied. Step 3 therefore ships free developer operations, saved Pro waitlist interest, and a tested billing integration kept in test mode. Live paid activation is a separately deferred launch task. Customer upgrade clicks save waitlist interest instead of opening test checkout.
+Only an active, unpaused subscription with the exact price, customer and developer identity and a paid live latest invoice grants Pro. Signed `developerBillingWebhook` events reconcile current Stripe state on checkout, invoices and subscription changes; duplicates are safe. Server checks refresh after at most 60 seconds and fail closed on Stripe errors. Redirects never grant access. Checkout reuse and idempotency prevent duplicate sessions; existing unsettled subscriptions direct customers to billing management.
 
-Stripe subscription state is retrieved server-side when stale (60 seconds), and every API operation checks current entitlement. If Stripe cannot be reached after expiry, operations fail closed rather than granting stale Pro access. No success redirect grants a plan. Only an active subscription from the live configuration enables Pro. Signed webhooks and scheduled reconciliation are future resilience improvements; they are not falsely claimed as implemented.
+An untouched historical default cap of 1,000 is removed on upgrade so the customer receives 50,000 live calls. Explicitly saved lower caps remain in effect. Existing API keys continue working. After checkout, the workspace selects Live and confirms access from the server. Customers can create a live key under API keys and manage cancellation/payment methods through the billing portal.
 
 ## Model boundaries
 
@@ -34,7 +34,7 @@ Request histories retain successful operations and authenticated validation fail
 
 ## Deployment
 
-Version-controlled sources are `backend/developer-api.cjs`, `backend/developer-engine.cjs`, and `backend/developer-billing.cjs`. The existing backend deployment source is `/Users/h/Desktop/fynx-functions/functions/`. Its index exports developerWorkspace, developerGateway and developerBilling; decimal.js and stripe are added dependencies. Deploy only these functions, preserving existing jobs.
+Version-controlled sources are `backend/developer-{api,core,engine,billing,billing-policy,billing-events}.cjs`. Export `developerWorkspace`, `developerGateway`, `developerBilling`, and `developerBillingWebhook` from their modules, initializing Firebase Admin once. Deploy only these four functions for billing changes, preserving unrelated jobs. Dependencies are locked in `backend/package-lock.json`; runtime is Node.js 22. See developer-operations.md.
 
 Gateway base: `https://us-central1-fynx-c7a28.cloudfunctions.net/developerGateway`.
 
@@ -46,6 +46,6 @@ Gateway base: `https://us-central1-fynx-c7a28.cloudfunctions.net/developerGatewa
 - Stripe test Checkout and portal created; no charge. Test customers, sessions and QA account records cleaned up.
 - Browser signup verified with temporary account. Browser functional and mobile checks recorded during delivery.
 
-Real money movement and invoice payment have not been tested. No real paid plan is advertised as active while Stripe uses test credentials.
+Live checkout and portal are covered by `ops/api-live-smoke.cjs`; payment entitlement, cancellation and failures are covered by backend tests. Real card payment and bank payout still require a first actual purchase; no charge is made by the smoke script.
 
 Step 4 operations and recovery evidence: [developer-operations.md](developer-operations.md).
