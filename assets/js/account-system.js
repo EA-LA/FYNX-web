@@ -160,11 +160,24 @@ async function ensureUserSeed(user) {
     })
   );
 
-  await upsertSessionMetadata(user, { status: "active" });
-  await maybeEmitVerificationCompleted(user);
+  // Notification delivery must not prevent profile/settings initialization.
+  try {
+    await upsertSessionMetadata(user, { status: "active" });
+    await maybeEmitVerificationCompleted(user);
+  } catch (error) {
+    window.FynxMonitor?.report("account", "session-notification", error);
+  }
 }
 
-export async function bootstrapAccount(user) {
+const pendingBootstraps = new Map();
+export function bootstrapAccount(user) {
+  if (!user?.uid) return Promise.reject(new Error("Sign in to load your account."));
+  if (!pendingBootstraps.has(user.uid)) {
+    pendingBootstraps.set(user.uid, loadAccount(user).finally(() => pendingBootstraps.delete(user.uid)));
+  }
+  return pendingBootstraps.get(user.uid);
+}
+async function loadAccount(user) {
   await ensureUserSeed(user);
   return {
     profile: await getUserProfile(user.uid),

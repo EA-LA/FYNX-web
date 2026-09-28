@@ -4,13 +4,7 @@
   <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script>
-    (function(){
-      const t = localStorage.getItem("fynx_theme") === "light" ? "light" : "dark";
-      document.documentElement.dataset.theme = t;
-      document.documentElement.style.backgroundColor = t === "light" ? "#fbfbfb" : "#000000";
-    })();
-  </script>
+
 
   <title>Login — FYNX</title>
 
@@ -509,6 +503,7 @@
 <meta property="og:title" content="Login — FYNX">
 <meta property="og:description" content="Log in to your FYNX account.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/auth/login.html">
+  <link rel="stylesheet" href="./auth-form.css?v=20260928">
 </head>
 
 <body class="dark-mode" data-fynx-layout="auth" data-fynx-section="FINANCE WORLD">
@@ -522,7 +517,7 @@
           <a class="toplink" href="../index.html">← Back to FYNX</a>
 
           <!-- ✅ Theme toggle (persists via assets/theme.js) -->
-          <button class="fynx-theme-toggle" type="button" data-fynx-theme-toggle aria-label="Toggle theme" title="Toggle theme">
+          <button class="fynx-theme-toggle" type="button" data-fynx-theme-toggle data-theme-control aria-label="Toggle theme" title="Toggle theme">
             ◐
           </button>
         </div>
@@ -546,12 +541,12 @@
         <form class="form" id="emailLoginForm" autocomplete="on">
           <div class="field">
             <label for="email">Email</label>
-            <input id="email" name="email" type="email" placeholder="you@domain.com" required />
+            <input id="email" autocomplete="email" name="email" type="email" placeholder="you@domain.com" required />
           </div>
 
           <div class="field">
             <label for="password">Password</label>
-            <input id="password" name="password" type="password" placeholder="••••••••" required />
+            <input id="password" autocomplete="current-password" name="password" type="password" placeholder="••••••••" required />
           </div>
 
           <div class="row">
@@ -593,103 +588,7 @@
   <!-- ✅ Theme persistence (must exist at ../assets/theme.js) -->
   <script src="../assets/theme.js?v=20260922-routing"></script>
 
-  <script type="module">
-    import {
-      signInWithPopup,
-      GoogleAuthProvider,
-      OAuthProvider,
-      signInWithEmailAndPassword
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-    import { auth } from "./firebase.js";
-    import { safeReturnTo } from "../assets/js/route-utils.js?v=20260922-routing";
-    const requestedPage = new URLSearchParams(location.search).get('returnTo');
-    if(requestedPage) document.querySelectorAll('a[href="./login.html"],a[href="./signup.html"]').forEach(link=>{const url=new URL(link.href);url.searchParams.set('returnTo',safeReturnTo(requestedPage));link.href=url;});
-    import { withMfa } from "../assets/js/mfa.js?v=20260915-cloud";
-    import { getOwnerAccess } from "../assets/js/waitlist-mode.js?v=6ae3ec38a7f0";
-    async function enterWorkspace(){
-
-      window.location.href = DASHBOARD_URL;
-    }
-    import { sessionState } from "../assets/js/session-manager.js?v=20260922-routing";
-
-    const loginGoogleBtn = document.getElementById("loginGoogle");
-    const loginAppleBtn  = document.getElementById("loginApple");
-    const emailForm      = document.getElementById("emailLoginForm");
-    const loginAppBtn    = document.getElementById("loginApp");
-    const continueDemoBtn = document.getElementById("continueDemo");
-
-    // ✅ ONLY CHANGE: redirect to home.html instead of dashboard.html
-    const DASHBOARD_URL = safeReturnTo(new URLSearchParams(location.search).get("returnTo"));
-
-    function setMode(mode){
-      localStorage.setItem("mode", mode);
-    }
-    const APP_STORE_URL = "https://apps.apple.com/app/id6752357210";
-
-    const APP_RETURN_URL = new URL("../app-return.html", window.location.href);
-    APP_RETURN_URL.searchParams.set("returnTo", DASHBOARD_URL);
-
-    const OPEN_APP_URL = new URL("../open-app.html", window.location.href);
-    OPEN_APP_URL.searchParams.set("returnTo", APP_RETURN_URL.toString());
-
-    function showErr(e){
-      window.FynxMonitor?.report("auth","auth-login",e);
-      console.error(e);
-      alert(e?.message || String(e));
-    }
-
-    loginGoogleBtn.addEventListener("click", async () => {
-      try{
-        const provider = new GoogleAuthProvider();
-        await withMfa(() => signInWithPopup(auth, provider));
-        setMode("live");
-        localStorage.setItem("fynx_auth_email", auth.currentUser?.email || "");
-        sessionState.trackActivity("login-google");
-        await enterWorkspace();
-      }catch(e){ showErr(e); }
-    });
-
-    loginAppleBtn.addEventListener("click", async () => {
-      try{
-        const provider = new OAuthProvider("apple.com");
-        await withMfa(() => signInWithPopup(auth, provider));
-        setMode("live");
-        localStorage.setItem("fynx_auth_email", auth.currentUser?.email || "");
-        sessionState.trackActivity("login-apple");
-        await enterWorkspace();
-      }catch(e){ showErr(e); }
-    });
-
-    emailForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      try{
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value;
-        await withMfa(() => signInWithEmailAndPassword(auth, email, password));
-        setMode("live");
-        localStorage.setItem("fynx_auth_email", auth.currentUser?.email || email || "");
-        sessionState.trackActivity("login-email");
-        await enterWorkspace();
-      }catch(err){ showErr(err); }
-    });
-
-
-    continueDemoBtn.addEventListener("click", () => {
-      setMode("demo");
-      localStorage.setItem("fynx_profile", JSON.stringify({
-        name: "Demo User",
-        description: "You are previewing the app with sample data.",
-        memberSince: "Apr 2026"
-      }));
-      localStorage.setItem("fynx_auth_email", "demo@fynx.app");
-      sessionState.trackActivity("demo-login");
-      window.location.href = DASHBOARD_URL;
-    });
-
-    loginAppBtn.addEventListener("click", () => {
-      window.location.href = OPEN_APP_URL.toString();
-    });
-  </script>
+  <script src="./auth-form.js?v=20260928" defer></script>
 
 </body>
 </html>

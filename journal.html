@@ -1112,6 +1112,7 @@
     }
 
     function initCharts(){
+      if (typeof Chart === "undefined") return;
       const c = mkChartDefaults();
 
       equityChart = new Chart(document.getElementById("equityChart"), {
@@ -1190,6 +1191,7 @@
     window.__updateCharts = rebuildChartsTheme;
 
     function updateCharts(){
+      if (!equityChart || !winTrendChart || !sessionPLChart) return;
       const trades = [...visibleTrades()].sort((a,b) => String(a.date||"").localeCompare(String(b.date||"")));
       let cum = 0;
       const labels = [];
@@ -1354,7 +1356,8 @@
 
     function clearForm(){
       document.getElementById("fSymbol").value = "";
-      document.getElementById("fDate").valueAsDate = new Date();
+      const today = new Date();
+      document.getElementById("fDate").value = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0,10);
       fEntry.value = "";
       fSL.value = "";
       fTP.value = "";
@@ -1377,7 +1380,7 @@
 
     async function saveTradeLive(){
       const symbol = document.getElementById("fSymbol").value.trim() || "—";
-      const date = document.getElementById("fDate").value || new Date().toISOString().slice(0,10);
+      const date = document.getElementById("fDate").value;
       const entry = document.getElementById("fEntry").value;
       const sl = document.getElementById("fSL").value;
       const tp = document.getElementById("fTP").value;
@@ -1392,6 +1395,7 @@
         throw new Error("Enter valid positive entry, stop loss, and take profit prices.");
       }
 
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date + "T00:00:00"))) throw new Error("Choose a valid trade date.");
       const tradeId = crypto.randomUUID();
       const dateTs = Timestamp.fromDate(new Date(date + "T00:00:00"));
 
@@ -1411,24 +1415,42 @@
       setActiveView("replay");
     }
 
-    document.getElementById("saveTradeBtn").addEventListener("click", async () => {
-      if(isDemoMode()){
-        alert("Create an account to use this feature");
-        return;
-      }
-      if(!currentUid){
+    const saveTradeButton = document.getElementById("saveTradeBtn");
+    const tradeStatus = document.createElement("p");
+    tradeStatus.id = "tradeSaveStatus";
+    tradeStatus.setAttribute("role", "status");
+    tradeStatus.setAttribute("aria-live", "polite");
+    saveTradeButton.parentElement.after(tradeStatus);
+    saveTradeButton.addEventListener("click", async () => {
+      if (saveTradeButton.disabled) return;
+      if (isDemoMode() || !currentUid) {
+        tradeStatus.textContent = "Sign in to save your trades across devices.";
         loginNote.style.display = "block";
-        loginNote.scrollIntoView({block: "nearest"});
         return;
       }
-      try{
+      if (!navigator.onLine) {
+        tradeStatus.textContent = "You’re offline. Your entries are still here. Reconnect before saving.";
+        return;
+      }
+      document.querySelectorAll("#view-entry input, #view-entry textarea, #view-entry select").forEach(field => field.disabled = true);
+      saveTradeButton.disabled = true;
+      document.getElementById("resetFormBtn").disabled = true;
+      saveTradeButton.textContent = "Saving…";
+      tradeStatus.textContent = "Saving your trade. Please keep this page open.";
+      try {
         await saveTradeLive();
-      }catch(err){
-        console.error(err);
-        const code = (err && err.code) ? String(err.code) : "";
-        if(code) window.FynxMonitor?.report("save","journal-save",err);
-        const blocked = code.includes("permission") || code.includes("unauth");
-        alert(blocked ? "Your trade was not saved. Check your account permissions and try again." : (err.message || "Save failed. Please try again."));
+        tradeStatus.textContent = "Trade saved.";
+      } catch (err) {
+        const code = String(err?.code || "");
+        if (code) window.FynxMonitor?.report("save", "journal-save", err);
+        tradeStatus.textContent = code
+          ? "Your trade could not be saved. Check your connection and sign-in, then try again. Your entries are still here."
+          : err.message || "Could not save. Please try again.";
+      } finally {
+        document.querySelectorAll("#view-entry input, #view-entry textarea, #view-entry select").forEach(field => field.disabled = false);
+        saveTradeButton.disabled = false;
+        document.getElementById("resetFormBtn").disabled = false;
+        saveTradeButton.textContent = "Save Trade";
       }
     });
 
@@ -1466,6 +1488,8 @@
 
     // AUTH: guest shows demo; logged-in shows live
     onAuthStateChanged(auth, (user) => {
+      if (unsubTrades) { unsubTrades(); unsubTrades = null; }
+      state.trades = [];
       if(isDemoMode()){
         currentUid = null;
         renderWelcome();

@@ -1006,12 +1006,7 @@
 
         <a class="fynx-network-btn" href="pro.html">Plans &amp; Pro tools</a>
         <a class="fynx-network-btn" href="auth/login.html?returnTo=%2Fhome.html">Sign in (optional)</a>
-        <div class="owner-dev-links admin-only" hidden>
-          <a class="fynx-network-btn" href="calculator.html">Tools</a>
-          <a class="fynx-network-btn" href="journal.html">Trader Journal</a>
-          <a class="fynx-network-btn" href="dashboard.html">Dashboard</a>
-          <a class="fynx-network-btn" href="auth/login.html?owner=1">Login</a>
-        </div>
+
 
       </div>
 
@@ -1522,15 +1517,14 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="script.js?v=20260922-routing"></script>
   <script type="module">
-    import { getOwnerAccess } from './assets/js/waitlist-mode.js?v=6ae3ec38a7f0';
     import { auth } from './auth/firebase.js';
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
-    document.addEventListener('click', (event) => {
-      const trigger = event.target.closest('[data-waitlist-trigger]');
-      if (trigger) return;
-    });
-    onAuthStateChanged(auth, async (user) => {
-      if (await getOwnerAccess(user)) { document.body.classList.add('owner-mode'); document.querySelectorAll('.admin-only').forEach((el)=>el.hidden=false); }
+    const accountLinks = [...document.querySelectorAll('a[href="auth/login.html?returnTo=%2Fhome.html"]')];
+    onAuthStateChanged(auth, user => {
+      accountLinks.forEach(link => {
+        link.textContent = user ? 'Your profile' : 'Sign in';
+        link.href = user ? 'profile.html' : 'auth/login.html?returnTo=%2Fhome.html';
+      });
     });
   </script>
 

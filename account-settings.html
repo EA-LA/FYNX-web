@@ -121,7 +121,7 @@
               <a class="btn" href="https://site.fynxfinanceworld.com/privacy.html" target="_blank" rel="noopener">Privacy</a>
               <a class="btn" href="https://fynxfinanceworld.com/risk-disclosure" target="_blank" rel="noopener">Risk Disclosure</a>
             </div>
-            <div style="display:flex;gap:8px;align-items:center"><span id="saveStatus" class="status">Ready</span><button class="btn primary" type="submit">Save changes</button></div>
+            <div style="display:flex;gap:8px;align-items:center"><span id="saveStatus" role="status" aria-live="polite" class="status">Ready</span><button class="btn primary" type="submit">Save changes</button></div>
           </div>
         </form>
       </div>
@@ -148,6 +148,8 @@
     const saveStatus = document.getElementById('saveStatus');
     const photoStatus = document.getElementById('photoStatus');
     const profilePreview = document.getElementById('profilePreview');
+    form.querySelector('button[type=submit]').disabled = true;
+    saveStatus.textContent = 'Loading profile…';
 
     function applyTheme(){
       const t=localStorage.getItem('fynx_theme') === 'light' ? 'light' : 'dark';
@@ -166,6 +168,7 @@
 
     function setForm(profile){
       ['displayName','username','bio','country','timezone','preferredCurrency','experienceLevel','riskProfile'].forEach((id)=>{if(profile[id]!=null)document.getElementById(id).value=profile[id];});
+      profilePreview.dataset.photoUrl = profile.photoURL || '';
       profilePreview.src = profile.photoURL || 'https://dummyimage.com/112x112/eeeeee/666666&text=FX';
       selectedMarkets.clear();
       (profile.preferredMarkets || []).forEach((m)=>selectedMarkets.add(m));
@@ -174,20 +177,27 @@
 
     onAuthStateChanged(auth, async (user)=>{
       if(!user) return;
-      const seeded = await bootstrapAccount(user);
+      try { const seeded = await bootstrapAccount(user);
       setForm({ ...seeded.profile, displayName: seeded.profile.displayName || user.displayName || '' });
+      form.querySelector('button[type=submit]').disabled = false; saveStatus.textContent = 'Ready';
+      } catch { saveStatus.textContent = 'Could not load your profile. Check your connection and reload before editing.'; form.querySelector('button[type=submit]').disabled = true; }
     });
 
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const user = auth.currentUser;
-      if(!user) return;
+      const button = form.querySelector('button[type=submit]');
+      if (button.disabled) return;
+      if (!user) { saveStatus.textContent = 'Sign in again to save your profile.'; return; }
+      if (!navigator.onLine) { saveStatus.textContent = 'You’re offline. Reconnect to save. Your changes are still here.'; return; }
+      button.disabled = true;
       saveStatus.textContent = 'Saving...';
-      let photoURL = profilePreview.src;
+      try {
+      let photoURL = profilePreview.dataset.photoUrl || '';
       const file = document.getElementById('profilePhoto').files?.[0];
       if(file){
         try { photoStatus.textContent = 'Uploading photo...'; photoURL = await uploadProfilePhoto(user.uid, file); photoStatus.textContent = 'Photo uploaded.'; }
-        catch(err){ photoStatus.textContent = 'Upload failed. Check Firebase Storage rules.'; }
+        catch(err){ photoStatus.textContent = 'Photo upload failed. Choose an image under 5 MB and try again.'; throw err; }
       }
       const payload = {
         displayName: document.getElementById('displayName').value.trim(),
@@ -203,8 +213,13 @@
       };
       await saveUserProfile(user.uid, payload);
       await updateAuthProfile({ displayName: payload.displayName, photoURL: payload.photoURL || null });
-      localStorage.setItem('fynxUserName', payload.displayName || 'FYNX User');
+      profilePreview.dataset.photoUrl = payload.photoURL;
+      if(payload.photoURL) profilePreview.src = payload.photoURL;
+      try { localStorage.setItem('fynxUserName', payload.displayName || 'FYNX User'); } catch {}
       saveStatus.textContent = 'Saved';
+      document.getElementById('profilePhoto').value = '';
+      } catch (error) { saveStatus.textContent = 'Could not finish saving. Your changes are still here. Check your connection and try again.'; }
+      finally { button.disabled = false; }
     });
 
     mountNotificationBell();

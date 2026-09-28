@@ -6,7 +6,7 @@ const path = require('node:path');
   for (const name of ['journal.html', 'trader-journal.html']) {
     const html = fs.readFileSync(path.join(__dirname, '..', name), 'utf8');
     const start = html.indexOf('    async function saveTradeLive(){');
-    const end = html.indexOf('    document.getElementById("saveTradeBtn")', start);
+    const end = html.indexOf('    const saveTradeButton', start);
     assert(start >= 0 && end > start, `${name}: journal save function exists`);
     const fields = {fSymbol:'EURUSD',fDate:'2026-09-15',fEntry:'1.1',fSL:'1.09',fTP:'1.12',fNotes:'Regression check',fRealizedPL:'-50',fSession:'London'};
     let saved;

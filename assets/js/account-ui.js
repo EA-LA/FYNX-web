@@ -140,9 +140,11 @@ export async function mountNotificationBell() {
   });
 
   onAuthStateChanged(auth, async (user) => {
-    if (!user) return;
-    await bootstrapAccount(user);
-    if (unsubscribeNotifications) unsubscribeNotifications();
+    if (unsubscribeNotifications) { unsubscribeNotifications(); unsubscribeNotifications = null; }
+    if (!user) { renderBell(dom.drop, dom.badge, []); return; }
+    try { await bootstrapAccount(user); }
+    catch { dom.drop.textContent = 'Notifications unavailable. Check your connection and reload.'; return; }
+    if (auth.currentUser?.uid !== user.uid) return;
     unsubscribeNotifications = listenNotifications(user.uid, (items) => {
       renderBell(dom.drop, dom.badge, items);
     }, 20);

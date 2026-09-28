@@ -246,6 +246,7 @@
 <meta property="og:title" content="Reset Password — FYNX">
 <meta property="og:description" content="Reset Password — FYNX. Enter your email and we’ll send a reset link.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/auth/forgot.html">
+  <link rel="stylesheet" href="./auth-form.css?v=20260928">
 </head>
 
 <body class="dark-mode" data-fynx-layout="auth" data-fynx-section="FINANCE WORLD">
@@ -258,7 +259,7 @@
         <a class="top" href="./login.html">← Back to Login</a>
 
         <!-- ✅ Theme toggle (same as other pages) -->
-        <button class="fynx-theme-toggle" type="button" data-fynx-theme-toggle aria-label="Toggle theme" title="Toggle theme">
+        <button class="fynx-theme-toggle" type="button" data-fynx-theme-toggle data-theme-control aria-label="Toggle theme" title="Toggle theme">
           ◐
         </button>
       </div>
@@ -283,33 +284,7 @@
   <!-- ✅ Theme persistence -->
   <script src="../assets/theme.js?v=20260922-routing"></script>
 
-  <script type="module">
-    import { auth } from './firebase.js';
-    import { sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
-    const form = document.getElementById('resetForm');
-    const status = document.getElementById('resetStatus');
-    const button = form.querySelector('button');
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      if (button.disabled || !form.reportValidity()) return;
-      button.disabled = true;
-      button.textContent = 'Sending…';
-      status.textContent = '';
-      try {
-        await sendPasswordResetEmail(auth, form.elements.email.value.trim());
-        status.textContent = 'If an account exists for this email, you’ll receive a password reset link. Check your inbox and spam folder.';
-      } catch (error) { window.FynxMonitor?.report('auth','auth-reset',error);
-        status.textContent = error.code === 'auth/user-not-found'
-          ? 'If an account exists for this email, you’ll receive a password reset link. Check your inbox and spam folder.'
-          : error.code === 'auth/too-many-requests'
-            ? 'Too many requests. Please wait a few minutes and try again.'
-            : 'We couldn’t send the reset link. Check your connection and try again.';
-      } finally {
-        button.disabled = false;
-        button.textContent = 'Send reset link';
-      }
-    });
-  </script>
+  <script src="./auth-form.js?v=20260928" defer></script>
 
 </body>
 </html>

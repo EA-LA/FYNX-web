@@ -69,6 +69,24 @@ import { auth, bootstrapAccount, saveNotificationPreferences, listenNotification
 import { mountNotificationBell } from './assets/js/account-ui.js';
 
 const prefs = {};
+const actionStatus = document.createElement('p');
+actionStatus.setAttribute('role','status');
+document.querySelector('main').prepend(actionStatus);
+function guardActions(root=document) {
+  root.querySelectorAll('button, .switch, .feed-item').forEach(element => {
+    const action=element.onclick;
+    if(!action || element.dataset.guarded) return;
+    element.dataset.guarded='true';
+    let pending=false;
+    element.onclick=async event=>{
+      if(pending)return;
+      pending=true;
+      try { await action.call(element,event); }
+      catch { actionStatus.textContent='Could not complete this update. Check your connection and try again.'; }
+      finally { pending=false; }
+    };
+  });
+}
 let current = [];
 let unsub = null;
 let unreadOnly = false;
@@ -76,7 +94,7 @@ let unreadOnly = false;
 function applyTheme(){const t=localStorage.getItem('fynx_theme');document.body.classList.toggle('dark-mode',t==='dark');} applyTheme();
 document.getElementById('themeBtn').onclick=()=>{const d=!document.body.classList.contains('dark-mode');document.body.classList.toggle('dark-mode',d);localStorage.setItem('fynx_theme',d?'dark':'light');};
 
-document.querySelectorAll('.switch[data-pref]').forEach((s)=>s.onclick=async()=>{const k=s.dataset.pref;prefs[k]=!prefs[k];s.classList.toggle('on',prefs[k]);if(auth.currentUser){await saveNotificationPreferences(auth.currentUser.uid,prefs);} });
+document.querySelectorAll('.switch[data-pref]').forEach((s)=>s.onclick=async()=>{const k=s.dataset.pref;prefs[k]=!prefs[k];s.classList.toggle('on',prefs[k]);if(auth.currentUser){try { await saveNotificationPreferences(auth.currentUser.uid,prefs); } catch(error) { prefs[k]=!prefs[k];s.classList.toggle('on',prefs[k]);throw error; }} });
 
 requestPermissionBtn.onclick=async()=>{const result = await requestBrowserNotificationPermission();permStatus.textContent = `Permission: ${result.permission}${result.supported?'':' (unsupported browser)'}`;prefs.browserEnabled = result.permission==='granted';document.querySelector('.switch[data-pref="browserEnabled"]').classList.toggle('on', prefs.browserEnabled);if(auth.currentUser){await saveNotificationPreferences(auth.currentUser.uid,prefs);} };
 
@@ -101,6 +119,7 @@ function renderFeed(items){
     if(openBtn){openBtn.onclick=(ev)=>{ev.stopPropagation();window.open(el.dataset.link,'_blank','noopener');};}
     el.onclick=async()=>{if(auth.currentUser){await markNotificationRead(auth.currentUser.uid,el.dataset.id,true);} if(el.dataset.link){window.open(el.dataset.link,'_blank','noopener');}};
   });
+  guardActions(feed);
 }
 
 function setPrefs(data){Object.assign(prefs,data||{});Object.keys(prefs).forEach((k)=>{const sw=document.querySelector(`.switch[data-pref="${k}"]`);if(sw)sw.classList.toggle('on',Boolean(prefs[k]));});permStatus.textContent = `Permission: ${('Notification' in window)?Notification.permission:'unsupported'}`;}
@@ -122,12 +141,15 @@ refreshNewsBtn.onclick=async()=>{
 
 onAuthStateChanged(auth, async (user)=>{
   if(!user) return;
+  try {
   const seeded = await bootstrapAccount(user);
   setPrefs(seeded.notificationPreferences);
   if(unsub) unsub();
   unsub = listenNotifications(user.uid, (items)=>{ current = items; renderFeed(items); });
+  } catch { actionStatus.textContent='Could not load notifications. Check your connection and reload.'; }
 });
 
+guardActions();
 mountNotificationBell();
 </script>
 </body></html>

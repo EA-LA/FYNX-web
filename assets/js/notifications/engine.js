@@ -155,7 +155,7 @@ export class NotificationRepository {
   async hasRecentByDedupeKey(uid, dedupeKey, windowMs, category = null) {
     if (!dedupeKey) return false;
     const cutoffMs = Date.now() - windowMs;
-    const snap = await getDocs(query(notificationCollection(uid), where("dedupeKey", "==", dedupeKey), orderBy("timestamp", "desc"), limit(10)));
+    const snap = await getDocs(query(notificationCollection(uid), where("dedupeKey", "==", dedupeKey)));
     return snap.docs.some((item) => {
       const data = item.data() || {};
       const ts = data.timestamp?.toDate?.()?.getTime?.() || new Date(data.timestamp || 0).getTime();
