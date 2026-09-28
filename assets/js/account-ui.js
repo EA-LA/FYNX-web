@@ -1,11 +1,11 @@
-import { safeNotificationUrl } from './safe-content.js?v=20260928-audit';
+import { safeNotificationUrl } from './safe-content.js?v=20260928-audit2';
 import {
   auth,
   bootstrapAccount,
   listenNotifications,
   countUnread,
   markNotificationRead
-} from "./account-system.js?v=20260928-audit";
+} from "./account-system.js?v=20260928-audit2";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 let unsubscribeNotifications = null;

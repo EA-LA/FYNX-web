@@ -219,7 +219,7 @@ topBar.innerHTML = `
       }
       updateIdentity();
       window.addEventListener('fynx:identity', updateIdentity);
-      import('/assets/js/account-identity.js?v=20260928-audit').catch(() => {});
+      import('/assets/js/account-identity.js?v=20260928-audit2').catch(() => {});
       initialsEl.title = 'Open profile';
       initialsEl.style.cursor = isDemoMode() ? 'default' : 'pointer';
       initialsEl.setAttribute('role', 'link');
