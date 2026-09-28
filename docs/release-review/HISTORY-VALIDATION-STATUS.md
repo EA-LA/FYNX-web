@@ -29,4 +29,4 @@ Connect an authorized broker adapter, preserve all export pages/checkpoints, map
 
 28 Funded tests and 73 backend tests passed, including new rejection cases for source gaps, mixed scopes, absent cost mapping and balance/equity discrepancies, plus overnight missing/wrong boundary marks and breach recovery. Calculator/pilot/API page proofs passed. Funded functions compile passed. CI generates the same client/server policy modules and applies `funded-history-coverage.patch` after the earlier Funded patches.
 
-Deployment is pending; production accounts and histories have not been modified.
+The evaluator safeguards were deployed with item 6 to `adminChallengeProgression` and `evaluateAutomaticProgressionOnTrade` in `fynx-c7a28`, us-central1. See `progression-deployment-evidence.json`. Production account/history records were not edited to verify the deployment; real broker coverage remains unverified.

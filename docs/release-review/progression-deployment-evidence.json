@@ -1,0 +1,48 @@
+{
+  "verified_at": "2026-09-28T04:07:16.178Z",
+  "project": "fynx-c7a28",
+  "scope": [
+    "adminChallengeProgression",
+    "evaluateAutomaticProgressionOnTrade"
+  ],
+  "functions": [
+    {
+      "id": "adminChallengeProgression",
+      "region": "us-central1",
+      "state": "ACTIVE",
+      "previous_hash": "e4fbc833fdea962bbb4ad3dba5d0797b96e8bb75",
+      "deployed_hash": "17c9c53e027c6ad3ebc8534f0c1c28716ec904e9",
+      "source_generation": "1790568341249211"
+    },
+    {
+      "id": "evaluateAutomaticProgressionOnTrade",
+      "region": "us-central1",
+      "state": "ACTIVE",
+      "previous_hash": "e4fbc833fdea962bbb4ad3dba5d0797b96e8bb75",
+      "deployed_hash": "17c9c53e027c6ad3ebc8534f0c1c28716ec904e9",
+      "source_generation": "1790568380280778"
+    }
+  ],
+  "changed_functions": [
+    "adminChallengeProgression",
+    "evaluateAutomaticProgressionOnTrade"
+  ],
+  "source_sha256": {
+    "challengeProgression.ts": "94f4bca3e24d8cde0472a193aa16c38cb3746f8facd119ecc5a3ff0e28aacada",
+    "fundedPolicy.ts": "2089d4bf709ecebf2170545ca69eab5364275fa18de9978da80681761c5f77a9",
+    "apiRuleEngine.ts": "6427407f5dd74eee1ce4447147b12f3b694301be884665f34cb477438bf8c78a"
+  },
+  "local_tests": 28,
+  "unauthenticated_smoke": {
+    "error": {
+      "message": "Only FYNX owner admins can control challenge progression.",
+      "status": "PERMISSION_DENIED"
+    }
+  },
+  "automatic_progression": "blocked_pending_approved_complete_event_integration",
+  "limitations": [
+    "No customer records were mutated for verification.",
+    "Authenticated owner and real broker-event production tests were not performed.",
+    "Deployment includes history validation code but does not certify broker evidence."
+  ]
+}
