@@ -48,7 +48,10 @@
     return sdkPromise;
   }
   // Begin loading without allowing a rejected import to become an unhandled error.
-  loadSdk().catch(() => report('Sign-in couldn’t load. Check your connection, then try again or reload this page.'));
+  loadSdk().catch(error => {
+    window.FynxMonitor?.report('auth', 'session-bootstrap', error);
+    report('Sign-in couldn’t load. Check your connection, then try again or reload this page.');
+  });
   const returnTo = new URLSearchParams(location.search).get('returnTo');
   document.querySelectorAll('a[href="./login.html"], a[href="./signup.html"], a[href="./forgot.html"]').forEach(link => {
     if (returnTo) { const url = new URL(link.href); url.searchParams.set('returnTo', returnTo); link.href = url; }

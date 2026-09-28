@@ -110,7 +110,7 @@ A passing calculation example is not a full financial-model certification. Broke
 - [ ] Replace static correlation/COT/liquidity descriptions with real data ingestion if these are intended to be live analytical products.
 - [x] PRO meaning resolved: optional consumer memberships use live Stripe billing and server-enforced access. Standard calculators remain free. See [verified plan scope](docs/pro-membership-verification-2026-09-28.md).
 - [ ] Confirm partner agreements and destination/affiliate URLs. This audit preserved existing partner listings rather than certifying them.
-- [ ] Add operational monitoring for failed feeds, auth errors, uploads and saves; maintain provider timestamps rather than browser-refresh timestamps.
+- [x] Operational monitoring verified for feeds, auth, uploads and saves; provider observation/publication timestamps remain separate from retrieval/check times. Startup and long-lived-page gaps repaired. See [verification](docs/operational-monitoring-2026-09-28.md).
 
 ## Functional test evidence
 

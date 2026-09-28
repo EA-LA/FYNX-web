@@ -19,5 +19,6 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
 export const authPersistenceReady = setPersistence(auth, browserLocalPersistence).catch((error) => {
+  window.FynxMonitor?.report('auth', 'session-bootstrap', error);
   console.error("Failed to set Firebase auth persistence to LOCAL.", error);
 });

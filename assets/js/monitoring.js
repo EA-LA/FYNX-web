@@ -1,9 +1,10 @@
 /* Codes only: never transmit messages, form values, identities or query strings. */
 (()=>{
  const CODES=new Set(['unknown','network','timeout','permission-denied','unauthenticated','unavailable','resource-exhausted','invalid-argument','auth/invalid-credential','auth/wrong-password','auth/user-not-found','auth/too-many-requests','auth/network-request-failed','auth/popup-blocked','auth/popup-closed-by-user','auth/operation-not-allowed','auth/invalid-verification-code','storage/unauthorized','storage/retry-limit-exceeded','storage/quota-exceeded','storage/unknown','storage/canceled']);
- const seen=new Map();let count=0;
+ const seen=new Map();let count=0,windowStart=Date.now();
  function report(category,operation,error){
   if(!['www.fynxfinanceworld.com','fynxfinanceworld.com'].includes(location.hostname))return;
+  if(Date.now()-windowStart>=60000){count=0;windowStart=Date.now();seen.clear();}
   const raw=typeof error?.code==='string'?error.code.replace(/^functions\//,''):error?.name==='TimeoutError'?'timeout':error instanceof TypeError?'network':'unknown';
   const code=CODES.has(raw)?raw:'unknown',key=`${category}:${operation}:${code}`;
   if(count>=12||Date.now()-(seen.get(key)||0)<60000)return;seen.set(key,Date.now());count++;

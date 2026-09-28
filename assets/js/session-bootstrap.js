@@ -34,6 +34,7 @@ function runSessionBootstrap() {
     loginPage: false,
     loginRedirect: "home.html"
   }).catch((error) => {
+    window.FynxMonitor?.report('auth', 'session-bootstrap', error);
     console.error("Session bootstrap failed", error);
   });
 }
