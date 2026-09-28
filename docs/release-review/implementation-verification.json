@@ -1,0 +1,28 @@
+{
+  "date": "2026-09-28",
+  "scope": "local verification; not launch approval",
+  "funded_tests": 18,
+  "backend_tests": 43,
+  "other_passed": [
+    "calculator/pilot proofs",
+    "seven public API page checks",
+    "journal regression checks",
+    "Funded TypeScript build",
+    "static site build",
+    "pinned-baseline patch reconstruction"
+  ],
+  "browser": {
+    "mobile_width": 390,
+    "desktop_width": 1440,
+    "checked": [
+      "landing/menu",
+      "workspace sign-in entry",
+      "documentation"
+    ],
+    "full_authenticated_journey": false
+  },
+  "production_deployed": false,
+  "remote_ci_verified": false,
+  "operations_recheck": "Blocked: no Google Application Default Credentials",
+  "funded_source_sha256": "7fcbb16b45bb90ac16cc93c3453978872be88a6a6cc63a1baae287a7f1e37477"
+}

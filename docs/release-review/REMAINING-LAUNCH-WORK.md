@@ -63,6 +63,6 @@ For rollback, retain previous source and runtime/secret-version configuration. D
 
 ## Delivery status
 
-Local verification: 18 Funded tests, 43 backend tests, calculator/pilot proofs, seven API page checks, journal checks, Funded TypeScript build and static site build. GitHub publication and remote result will be recorded here after the delivery attempt.
+Local verification: 18 Funded tests, 43 backend tests, calculator/pilot proofs, seven API page checks, journal checks, Funded TypeScript build and static site build. Implementation commit: `53bb7f1` on `codex/fynx-first-proof`. Automatic approval review rejected the full push (source, tests, CI and launch/legal documents) pending explicit approval for that payload to `EA-LA/FYNX-web`. Nothing was pushed; remote CI remains unverified. The Funded patch was applied to the pinned baseline in a temporary directory and reproduced the tested source exactly.
 
 Current operations recheck: this session has no Google Application Default Credentials, so current backup health and alert delivery could not be verified. Prior operations evidence is retained, not presented as a fresh pass.
