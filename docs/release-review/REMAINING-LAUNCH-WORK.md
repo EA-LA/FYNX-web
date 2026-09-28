@@ -1,3 +1,5 @@
+> Latest legal/purchase update: [owner-confirmed pre-sales status and implemented consent controls](LEGAL-AND-PURCHASE-STATUS.md).
+
 > Latest: [versioned rule alignment and agreement evidence gap](RULE-ALIGNMENT.md). The initial package was pushed after explicit owner approval, and its GitHub Actions run passed.
 
 # Launch work remaining — 2026-09-28
@@ -19,8 +21,8 @@ The launch is **not approved**. Changes below are local/source changes until dep
 
 | # | Checklist item | Remaining work |
 |---|---|---|
-| 1 | Final trading rules | DONE for new accounts: owner explicitly approved v1. See RULE-ALIGNMENT.md. Existing-account scope remains gated on actual purchased terms. |
-| 2 | Purchased rules and five differences | Supply actual sold agreements per account/program. All five differences are resolved/tested for the opt-in v1 path. Existing legacy accounts are not migrated: supply actual sold agreements and verify each binding. |
+| 1 | Final trading rules | DONE for new accounts: owner explicitly approved v1. See RULE-ALIGNMENT.md. Owner reports no paid customers; see the legal/purchase update. |
+| 2 | Purchased rules and five differences | Historical purchased agreements: N/A based on owner confirmation of zero paid customers. All five differences are resolved/tested for opt-in v1. Future server purchase snapshots added; legacy/test accounts remain unchanged. |
 | 3 | Pairs and broker specifications | Broker-authoritative symbol/contract/lot/leverage/cost/session catalog and effective versions. |
 | 4 | Public rule inconsistencies | Update Funded public rules/currencies/crypto/weekend claims after #1–3; generic public terms have not been silently rewritten. API beta pages already disclose USD ledger, caller-supplied Forex inputs and unverified broker catalog. |
 | 5 | Funded history validation | Parsing/cost/duplicate safeguards implemented. Still need verified adapter, phase-scoped completeness, equity marks and boundary coverage; closed-trade-only results require human review. |
@@ -32,10 +34,10 @@ The launch is **not approved**. Changes below are local/source changes until dep
 | 11 | Dedicated live credentials | Create/confirm dedicated secret in Secret Manager and deploy all three bound services. Source binding is done; deployed binding/live key not verified. Keep paid-access flag off. |
 | 12 | Billing policies | Merchant confirms taxes, refunds, recurring consent, cancellation, invoice identity and permitted markets. |
 | 13 | Authorized live payment | Owner-authorized payment amount/customer and cancellation test after staging passes. No live payment was made. |
-| 14 | Complete legal drafts | Legal entity, registered address, jurisdiction, privacy contact, regions/providers and policy details remain unconfirmed. |
+| 14 | Complete legal drafts | Seller FYNX LLC, Boise, Idaho, USA and privacy/support contact confirmed. Private address will not be published. Reviewer must finalize public contact requirements, provider/region disclosures and remaining policy details. |
 | 15 | Legal review | Qualified reviewer approves terms, privacy disclosures and applicable DPA. |
 | 16 | Retention/export/deletion | Export code/test is ready; operator verification and full real-data exercise remain. Approve retention schedules/legal holds; implement and test deletion, backup expiry/restoration suppression and incident handling. No deletion was executed. |
-| 17 | Publish legal/version acceptance | Publish only reviewed effective documents; implement server-recorded immutable acceptance version/hash/time and require reacceptance where appropriate. Drafts remain unpublished. |
+| 17 | Publish legal/version acceptance | Immutable server acceptance, recurring consent and reviewed-publication controls implemented/tested. Actual legal review and publication remain pending; drafts remain unpublished. |
 | 18 | External beta | Recruit 3–5 testers; retain evidence of at least three independent docs-only integrations. Internal checks do not qualify. |
 | 19 | Desktop/mobile complete journey | Responsive unauthenticated entry checks done. Still run actual signup, real email verification, key creation, successful request and usage verification on both sizes after deployment. |
 | 20 | Commit/push/remote CI | See delivery status below. Local checks alone do not establish remote success. |

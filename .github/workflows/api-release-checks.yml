@@ -21,7 +21,7 @@ jobs:
           ref: dc83d0b3b30a40790b84e18f7fda52ac0495f62c
           path: fynxfunded
       - name: Apply reviewed Funded safety changes
-        run: git apply ../api-source/patches/funded-progression-safety.patch
+        run: git apply ../api-source/patches/funded-progression-safety.patch ../api-source/patches/funded-purchase-records.patch
         working-directory: fynxfunded
       - uses: actions/setup-node@v4
         with:

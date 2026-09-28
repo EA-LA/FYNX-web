@@ -2,7 +2,7 @@
 
 **Incomplete legal draft; not executed or effective.** Use only if the verified processing relationship requires a processor agreement. Complete parties, schedules and legal review before signing.
 
-Parties: [Customer/controller legal entity] and [FYNX/processor legal entity]. Service agreement: [version/date]. Term: [service term plus approved deletion/return period].
+Parties: [Customer/controller legal entity] and FYNX LLC — Boise, Idaho, USA [business mailing address pending]. Service agreement: [version/date]. Term: [service term plus approved deletion/return period].
 
 FYNX will process Customer personal data only on documented instructions to provide and secure the contracted API service, including lawful instructions concerning international transfers. If a legal requirement compels other processing, FYNX will notify Customer where legally permitted. Customer is responsible for lawful instructions and required notices. Instructions that appear unlawful must be escalated for review.
 

@@ -4,7 +4,7 @@
 
 ## 1. Parties and service
 
-These terms would govern the API service provided by **[full legal entity, registration number and business address]** (“FYNX”) to the person or business accepting them (“Customer”), effective **[date]**. The accepting person must have authority to bind Customer and meet applicable legal capacity requirements. Service and privacy contact: support@fynxfunded.com, subject to confirmation that this inbox handles API requests.
+These terms would govern the API service provided by **FYNX LLC — Boise, Idaho, USA; [business mailing address to confirm]** (“FYNX”) to the person or business accepting them (“Customer”), effective **[date]**. The accepting person must have authority to bind Customer and meet applicable legal capacity requirements. Service and privacy contact: fynxteam5@gmail.com, confirmed by the owner for API support and privacy requests.
 
 FYNX API provides Risk calculations and a Prop Firm Rules service that evaluates submitted events against a selected rule set. The current service is a developer beta. It does not supply live market data, execute trades, hold trading funds, guarantee a broker's specifications, grant funded accounts or authorize payouts. Customer must independently verify inputs and suitability for its use. Outputs are calculations and rule evaluations, not personalized investment advice.
 

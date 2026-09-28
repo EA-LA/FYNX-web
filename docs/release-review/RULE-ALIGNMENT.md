@@ -1,3 +1,5 @@
+> Update: owner confirms no paid Funded or API customers. Historical purchase reconciliation is N/A on that declaration; see [current status](LEGAL-AND-PURCHASE-STATUS.md). Earlier evidence-gap discussion below is historical.
+
 # Versioned Funded/API rule alignment
 
 Status: **owner-approved for NEW accounts; implemented and tested. Existing purchased-agreement evidence remains pending. Not deployed or assigned to real accounts.**

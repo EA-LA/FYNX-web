@@ -5,6 +5,7 @@ const {randomBytes,randomUUID,createHash}=require('node:crypto');
 const engine=require('./developer-engine.cjs');
 const {payloadHash:canonicalHash,validateInput,entitlement,effectiveCap}=require('./developer-core.cjs');
 const logger=require('firebase-functions/logger');
+const legal=require('./developer-legal.cjs');
 const db=()=>admin.firestore();
 const runtime=functions.runWith({secrets:['FYNX_API_STRIPE_SECRET_KEY'],timeoutSeconds:60,memory:'256MB',maxInstances:10});
 const root=uid=>db().collection('fynxDevelopers').doc(uid);
@@ -67,6 +68,7 @@ async function workspace(data,context){
  }
  if(['createKey','rotateKey','revokeKey'].includes(action)){
   if(!user.emailVerified)error('failed-precondition','Verify your email before creating or changing API keys.');
+  if(action!=='revokeKey'&&legal.describe().available)await legal.requireAccepted(db(),uid);
   const token='fynx_'+env+'_'+randomBytes(32).toString('hex'),digest=hash(token),keyId=randomUUID(),label=clean(data.label)||'API key',newRef=db().collection('fynxDeveloperKeys').doc(digest),listing=er.collection('keys').doc(keyId);
   await db().runTransaction(async tx=>{
    const p=await tx.get(root(uid));if(!p.exists)error('failed-precondition','Open the workspace first.');

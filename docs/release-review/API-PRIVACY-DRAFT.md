@@ -4,7 +4,7 @@
 
 ## Operator and scope
 
-**[Legal entity and address]** is responsible for the FYNX API workspace account and service-administration data described here. Privacy contact: **[confirm support@fynxfunded.com or designate a privacy contact]**. **[Identify representative/data protection officer if required.]**
+**FYNX LLC — Boise, Idaho, USA; [business mailing address to confirm]** is responsible for the FYNX API workspace account and service-administration data described here. Privacy contact: **fynxteam5@gmail.com (owner-confirmed privacy/support contact)**. **[Identify representative/data protection officer if required.]**
 
 For trader/account data submitted by a business customer, roles depend on the agreement and actual use: Customer may be the controller and FYNX a processor. A separate data-processing agreement is required where applicable. This API notice does not describe every activity of FYNX Funded, its challenge purchases or identity-verification vendors.
 
@@ -45,4 +45,4 @@ The API uses authenticated access, workspace/environment isolation and key revoc
 
 ## Review reference
 
-For GDPR-covered processing, check notice content, retention principles, processor terms, security and transfers against [Regulation (EU) 2016/679](https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng), particularly Articles 5, 13–14, 28, 32–34 and Chapter V. Applicability has not been determined for the unidentified operator and customer markets.
+For GDPR-covered processing, check notice content, retention principles, processor terms, security and transfers against [Regulation (EU) 2016/679](https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng), particularly Articles 5, 13–14, 28, 32–34 and Chapter V. Applicability has not been determined for the confirmed operator and intended customer markets.

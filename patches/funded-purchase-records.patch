@@ -1,0 +1,56 @@
+--- a/functions/src/stripe/createCheckoutSession.ts
++++ b/functions/src/stripe/createCheckoutSession.ts
+@@ -4,2 +4,3 @@
+ import Stripe from "stripe";
++import { build as buildPurchasedRules } from "../purchasedAgreement";
+ import { getPlan } from "./priceMap";
+@@ -37,2 +38,3 @@
+     if (!user?.uid || !user.email) { res.status(401).json({ error: "Authentication required" }); return; }
++    if (process.env.FYNX_FUNDED_PURCHASES_APPROVED !== "true") { res.status(503).json({ error: "Purchases remain closed pending legal and launch approval." }); return; }
+     const plan = getPlan(req.body?.accountSize, req.body?.phase);
+@@ -42,2 +44,3 @@
+     try {
++      const purchasedRules = buildPurchasedRules({ uid: user.uid, program: `${plan.phase}-phase`, starting_balance: String(plan.accountSize), accepted_version: req.body?.rulePolicyVersion, accepted: req.body?.acceptRules });
+       const stripe = new Stripe(stripeSecretKey.value(), { apiVersion: "2023-10-16" });
+@@ -48,3 +51,3 @@
+         line_items: [{ quantity: 1, price_data: { currency: "usd", unit_amount: plan.amountCents, product_data: { name: plan.label } } }],
+-        metadata: { userId: user.uid, accountSize: String(plan.accountSize), phase: plan.phase, style, currency: "USD" },
++        metadata: { userId: user.uid, accountSize: String(plan.accountSize), phase: plan.phase, style, currency: "USD", rule_policy_version: purchasedRules.document.policy_version, rule_document_sha256: purchasedRules.document_sha256 },
+         payment_method_types: ["card"],
+@@ -55,2 +58,3 @@
+         userId: user.uid,
++        purchasedRules,
+         customerEmail: user.email,
+--- a/functions/src/stripe/webhook.ts
++++ b/functions/src/stripe/webhook.ts
+@@ -1 +1,2 @@
++import { bind as bindPurchasedRules } from "../purchasedAgreement";
+ import { defineSecret } from "firebase-functions/params";
+@@ -73,2 +74,8 @@
+ 
++    const orderSnapshot = await transaction.get(orderRef);
++    const challengeSnapshot = await transaction.get(challengeRef);
++    const recordedOrder = orderSnapshot.data() || {};
++    const rulePolicy = session.metadata?.rule_policy_version
++      ? bindPurchasedRules(recordedOrder.purchasedRules, { uid: userId, order_id: session.id, program: phaseLabel, starting_balance: String(accountSize), start_timestamp: new Date().toISOString(), expected_hash: session.metadata.rule_document_sha256 })
++      : null;
+     transaction.set(orderRef, {
+@@ -81,3 +88,3 @@
+       status: "paid",
+-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
++      createdAt: recordedOrder.createdAt || admin.firestore.FieldValue.serverTimestamp(),
+       paidAt: admin.firestore.FieldValue.serverTimestamp(),
+@@ -91,3 +98,3 @@
+ 
+-    transaction.set(challengeRef, {
++    if (!challengeSnapshot.exists) transaction.create(challengeRef, {
+       userId,
+@@ -95,2 +102,3 @@
+       orderId: orderRef.id,
++      ...(rulePolicy ? { rulePolicyVersion: rulePolicy.policy_version, rulePolicy, currentPhase: 1, progressionMode: "manual" } : {}),
+       name: challengeName,
+@@ -103,3 +111,3 @@
+       currency: (session.currency || "usd").toUpperCase(),
+-    }, { merge: true });
++    });
+ 
