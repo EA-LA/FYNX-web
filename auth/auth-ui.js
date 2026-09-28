@@ -25,5 +25,5 @@ export async function signupWithEmail(email, password) {
 }
 
 export async function resetPassword(email) {
-  return sendPasswordResetEmail(auth, email);
+  return sendPasswordResetEmail(auth, email, { url: 'https://www.fynxfinanceworld.com/auth/login.html' });
 }

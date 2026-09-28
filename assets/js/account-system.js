@@ -321,7 +321,7 @@ export async function updatePasswordWithReauth(currentPassword, newPassword) {
 
 export async function resendVerificationEmail() {
   if (!auth.currentUser) throw new Error("No authenticated user");
-  await sendEmailVerification(auth.currentUser);
+  await sendEmailVerification(auth.currentUser, { url: 'https://www.fynxfinanceworld.com/auth/login.html' });
 }
 
 export async function upsertSessionMetadata(user, payload = {}) {

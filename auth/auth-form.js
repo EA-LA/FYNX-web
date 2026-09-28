@@ -85,7 +85,7 @@
     if (signup && password !== form.elements.confirm.value) { report('Your passwords don’t match. Please re-enter them.'); form.elements.confirm.focus(); return; }
     run(form.querySelector('[type=submit]'), async sdk => {
       if (reset) {
-        try { await sdk.api.sendPasswordResetEmail(sdk.auth, email); }
+        try { await sdk.api.sendPasswordResetEmail(sdk.auth, email, { url: 'https://www.fynxfinanceworld.com/auth/login.html' }); }
         catch (error) { if (error.code !== 'auth/user-not-found') throw error; }
         report('If an account exists for this email, you’ll receive a reset link. Check your inbox and spam folder.', true);
         return;
