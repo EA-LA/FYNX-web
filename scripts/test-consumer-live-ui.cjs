@@ -1,0 +1,13 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),{JSDOM}=require('jsdom');
+const {PLANS}=require('../backend/consumer-core.cjs');
+async function load(options={}){
+ const dom=new JSDOM(fs.readFileSync('pro.html','utf8'),{url:'https://www.fynxfinanceworld.com/pro.html'}),calls=[],location={href:'',search:''};let ready;
+ const context={document:dom.window.document,location,URL,URLSearchParams,Blob,console,setTimeout,matchMedia:()=>({matches:true}),app:{},auth:{},authPersistenceReady:Promise.resolve(),getFunctions:()=>({}),onAuthStateChanged:(_,fn)=>{ready=fn(options.user?{uid:'owner'}:null);},httpsCallable:(_,name)=>{assert.equal(name,'consumerLiveWorkspace');return async data=>{calls.push(data);if(data.action==='status')return {data:{mode:'live',tier:options.tier||null,hasBillingAccount:!!options.billing,plans:PLANS}};if(data.action==='list')return {data:{items:[],limit:25}};return {data:{url:'https://checkout.stripe.com/c/pay/qa'}};}}};
+ const source=fs.readFileSync('assets/js/pro-workspace.js','utf8').replace(/^import .*\n/gm,'');
+ await vm.runInNewContext('(async()=>{'+source+'})()',context);await ready;return {document:dom.window.document,location,calls};
+}
+test('all three membership buttons are live and guests must sign in',async()=>{const h=await load();assert.equal(h.document.querySelectorAll('[data-plan]').length,3);assert.equal(h.document.querySelectorAll('#productCards button').length,8);assert.doesNotMatch(h.document.body.textContent,/test plan|test mode|TEST CHECKOUT|no real charges/i);await h.document.querySelector('[data-plan="starter"]').onclick();assert.match(h.location.href,/auth\/login/);assert.equal(h.calls.length,0);});
+test('member subscription click sends selected tier to live backend',async()=>{const h=await load({user:true});await h.document.querySelector('[data-plan="plus"]').onclick();assert.equal(h.calls.find(c=>c.action==='checkout').tier,'plus');assert.match(h.location.href,/checkout.stripe.com/);});
+test('paid membership renders access and payment management',async()=>{const h=await load({user:true,tier:'plus',billing:true});assert.match(h.document.getElementById('membershipTitle').textContent,/Plus membership/);assert.equal(h.document.getElementById('manageBilling').hidden,false);assert.match(h.document.getElementById('accessMessage').textContent,/Included/);});
+test('customer with failed payment can still manage billing',async()=>{const h=await load({user:true,billing:true});assert.equal(h.document.getElementById('manageBilling').hidden,false);assert.match(h.document.getElementById('accessMessage').textContent,/monthly membership/);});
