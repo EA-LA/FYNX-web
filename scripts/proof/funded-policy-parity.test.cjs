@@ -8,6 +8,8 @@ const client=load('src/services/funded-policy.ts',{'./api-rule-engine':clientEng
 const server=load('functions/src/fundedPolicy.ts',{'./apiRuleEngine':serverEngine}).api;
 for(const c of cases)test('Funded client/server/API parity: '+c.name,()=>{
  const ctx=context(c.events),expected=policy.evaluate(ctx,c.events);
+ assert.equal(expected.state.status,c.status,c.name+': approved policy outcome');
+ assert.equal(expected.state.metrics.trading_days,c.days,c.name+': approved trading-day count');
  assert.deepEqual(JSON.parse(JSON.stringify(client.evaluate(ctx,c.events))),expected);
  assert.deepEqual(JSON.parse(JSON.stringify(server.evaluate(ctx,c.events))),expected);
 });

@@ -25,7 +25,19 @@ Program targets/minimum days remain 10%/3 days; 8% then 5%/5 days; and 6%, 5%, 4
 
 ## Five differences resolved in the new version
 
-All five named scenarios now produce identical complete results in the API module and generated Funded client/server modules. The old five-difference suite stays as historical/legacy compatibility coverage. It must not be relabeled as parity for legacy customer accounts.
+**Checklist item 2 is complete for the owner-declared pre-sales population and approved v1.** There are no historical paid agreements to reconcile on that declaration.
+
+All five named scenarios now produce identical complete results in the API module and generated Funded client/server modules. Tests also assert the approved expected status and trading-day count, so shared implementation drift cannot pass simply because all three modules agree.
+
+| Resolved difference | Approved outcome |
+|---|---|
+| Static versus trailing maximum loss | Maximum-loss floor stays tied to the initial phase balance |
+| Consistency | Profit target alone cannot pass an account exceeding 40% consistency |
+| Intraday breach followed by recovery | Recorded breach remains effective after recovery |
+| Daily-loss reference | Daily loss uses reset-boundary balance |
+| Trading-day reset | 22:00 UTC separates trading days year-round |
+
+Future server checkout snapshots and webhook binding are implemented/tested; customer-facing acceptance and production deployment remain separate launch work. The old five-difference suite stays as historical/legacy compatibility coverage. It must not be relabeled as parity for legacy customer accounts.
 
 There is one arithmetic implementation: `backend/developer-engine.cjs`. `backend/funded-policy.cjs` constructs the versioned Funded rule snapshot and validates the purchased-agreement binding. `scripts/proof/sync-funded-policy.cjs` generates Funded TypeScript modules from those sources; `--check` prevents drift. Decimal.js is pinned at 10.6.0 in both Funded packages.
 
