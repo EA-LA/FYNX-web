@@ -33,7 +33,7 @@ import {
   DEFAULT_NOTIFICATION_PREFERENCES,
   PRIORITY,
   createNotificationEngine
-} from "./notifications/engine.js?v=20260928-account";
+} from "./notifications/engine.js?v=20260928-audit";
 
 const db = getFirestore(app);
 const storage = getStorage(app);
@@ -165,7 +165,7 @@ async function ensureUserSeed(user) {
     await upsertSessionMetadata(user, { status: "active" });
     await maybeEmitVerificationCompleted(user);
   } catch (error) {
-    window.FynxMonitor?.report("account", "session-notification", error);
+    window.FynxMonitor?.report("save", "notifications-save", error);
   }
 }
 
@@ -246,8 +246,8 @@ export async function updateAuthProfile(payload) {
   } catch(error) { window.FynxMonitor?.report("save","profile-save",error); throw error; }
 }
 
-export function listenNotifications(uid, callback, max = 100) {
-  return notificationEngine.repository.listen(uid, callback, max);
+export function listenNotifications(uid, callback, max = 100, onError) {
+  return notificationEngine.repository.listen(uid, callback, max, onError);
 }
 
 export async function addNotification(uid, payload) {

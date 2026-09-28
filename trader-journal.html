@@ -578,7 +578,7 @@ section.view.active{display:block}
   </style>
   <link rel="stylesheet" href="assets/css/app-shell.css" />
   <link rel="stylesheet" href="assets/css/mobile-fixes.css">
-  <script type="module" src="assets/js/session-bootstrap.js?v=20260922-routing"></script>
+  <script type="module" src="assets/js/session-bootstrap.js?v=20260928-audit"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
@@ -943,6 +943,7 @@ section.view.active{display:block}
 <script type="module">
     import { app, auth, authPersistenceReady } from "./auth/firebase.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { escapeHTML } from "./assets/js/safe-content.js?v=20260928-audit";
     import { getFirestore, collection, doc, setDoc, query, orderBy, onSnapshot, Timestamp, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
     await authPersistenceReady;
   /* =========================
@@ -959,47 +960,11 @@ section.view.active{display:block}
   /* =========================
      PROFILE NAME + AVATAR (same as Home)
   ========================= */
-  const NAME_KEYS = [
-    "fynx_profile_name",
-    "fynx_username",
-      "username",
-      "profile_name",
-      "user_name",
-      "fynx_name",
-      "fynxUserName",
-      "displayName",
-      "name"
-    ];
-    const PROFILE_JSON_KEYS = ["fynx_profile", "profile", "fynx_user", "userProfile", "fynx_account"];
-
-    function pickNameFromJson(obj){
-      if (!obj || typeof obj !== "object") return null;
-      const candidates = [
-        obj.username, obj.userName, obj.name, obj.displayName, obj.fullName,
-        obj.profile?.username, obj.profile?.name, obj.profile?.displayName
-      ];
-      for (const c of candidates){
-        if (c && String(c).trim()) return String(c).trim();
-      }
-      return null;
+  function getProfileName() {
+      if (window.FynxDemoMode?.isDemoMode?.()) return 'Demo User';
+      return window.FynxIdentity?.displayName || null;
     }
-
-    function getProfileName(){
-      for (const k of NAME_KEYS){
-        const v = localStorage.getItem(k);
-        if (v && String(v).trim().length > 0) return String(v).trim();
-      }
-      for (const k of PROFILE_JSON_KEYS){
-        const raw = localStorage.getItem(k);
-        if (!raw) continue;
-        try{
-          const obj = JSON.parse(raw);
-          const n = pickNameFromJson(obj);
-          if (n) return n;
-        }catch(e){}
-      }
-      return null;
-    }
+    window.addEventListener('fynx:identity', renderWelcome);
 
     function cleanDisplayName(full){
       if (!full) return null;
@@ -1302,7 +1267,7 @@ const db = getFirestore(app);
       const cls = pl >= 0 ? "good" : "bad";
       box.innerHTML = `
         <div class="row">
-          <div class="l"><b>${t.symbol || "—"}</b><small>${t.date || "—"} · ${t.session || "—"}</small></div>
+          <div class="l"><b>${escapeHTML(t.symbol || "—")}</b><small>${escapeHTML(t.date || "—")} · ${escapeHTML(t.session || "—")}</small></div>
           <div class="r"><span class="badge ${cls}">${pl>=0?"+":"-"}$${Math.abs(pl).toFixed(0)}</span></div>
         </div>
         <div class="note">Review the entry, risk and outcome before your next session.</div>
@@ -1321,7 +1286,7 @@ const db = getFirestore(app);
     }
     function refreshCalendar(){
       const days=dailyTotals();
-      document.getElementById('calendarBox').innerHTML=days.length?`<div class="journal-days">${days.map(([date,pnl])=>`<div class="journal-day"><time>${date}</time><strong class="${pnl>=0?'good':'bad'}">${pnl.toLocaleString('en-US',{style:'currency',currency:'USD'})}</strong></div>`).join('')}</div>`:'<p class="note">Log a trade to see your daily realized results here.</p>';
+      document.getElementById('calendarBox').innerHTML=days.length?`<div class="journal-days">${days.map(([date,pnl])=>`<div class="journal-day"><time>${escapeHTML(date)}</time><strong class="${pnl>=0?'good':'bad'}">${pnl.toLocaleString('en-US',{style:'currency',currency:'USD'})}</strong></div>`).join('')}</div>`:'<p class="note">Log a trade to see your daily realized results here.</p>';
     }
 
     // Entry form helpers
@@ -1515,10 +1480,10 @@ const db = getFirestore(app);
     });
   </script>
 
-  <script src="fynx-nav.js?v=20260922-routing"></script>
+  <script src="fynx-nav.js?v=20260928-audit"></script>
 
   <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
-  <script src="fynx-usercard.js"></script>
+  <script src="fynx-usercard.js?v=20260928-audit"></script>
 
 </body>
 </html>

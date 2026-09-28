@@ -1,23 +1,22 @@
-const fs = require('fs');
-const vm = require('vm');
+const fs = require('node:fs');
 const assert = require('node:assert/strict');
 const { JSDOM } = require('jsdom');
-const html = fs.readFileSync('auth/forgot.html', 'utf8');
-const source = html.match(/<script type="module">([\s\S]*?)<\/script>/)[1].replace(/^\s*import .*;$/gm, '');
+const source = fs.readFileSync('auth/auth-form.js', 'utf8').replaceAll('import(', 'loadTestModule(');
 (async () => {
   for (const errorCode of [null, 'auth/user-not-found', 'auth/too-many-requests', 'auth/network-request-failed']) {
-    const dom = new JSDOM(html);
-    let handler, received;
-    const form = dom.window.document.getElementById('resetForm');
-    form.elements.email.value = 'test@example.com';
-    form.addEventListener = (_, callback) => handler = callback;
-    vm.runInNewContext(source, { window: dom.window, document: dom.window.document, auth: {}, sendPasswordResetEmail: async (_, email) => { received = email; if(errorCode) throw {code:errorCode}; } });
-    await handler({preventDefault(){}});
-    assert.equal(received, 'test@example.com');
-    assert.equal(form.querySelector('button').disabled, false);
-    const status = dom.window.document.getElementById('resetStatus').textContent;
-    assert.match(status, errorCode === 'auth/too-many-requests' ? /Too many/ : errorCode === 'auth/network-request-failed' ? /couldn’t/ : /If an account exists/);
-    dom.window.close();
+    const dom = new JSDOM(fs.readFileSync('auth/forgot.html','utf8'), {url:'https://example.com/auth/forgot.html',runScripts:'outside-only'});
+    const w=dom.window;
+    let received;
+    w.loadTestModule=async url=>url.includes('firebase-auth')?{sendPasswordResetEmail:async(_,email)=>{received=email;if(errorCode)throw {code:errorCode};}}:url.includes('firebase.js')?{auth:{},authPersistenceReady:Promise.resolve()}:{};
+    w.eval(source);
+    const form=w.document.getElementById('resetForm');
+    form.elements.email.value='test@example.com';
+    form.dispatchEvent(new w.Event('submit',{cancelable:true}));
+    await new Promise(resolve=>setTimeout(resolve,10));
+    assert.equal(received,'test@example.com');
+    assert.equal(form.querySelector('button').disabled,false);
+    assert.match(w.document.getElementById('authStatus').textContent,errorCode==='auth/too-many-requests'?/Too many/:errorCode==='auth/network-request-failed'?/couldn’t/:/If an account exists/);
+    w.close();
   }
-  console.log('Password reset: mocked success, unknown account, rate limit, and network failure passed. No emails sent.');
-})();
+  console.log('Password-reset success, unknown account, rate limit and network failure passed; no emails sent.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

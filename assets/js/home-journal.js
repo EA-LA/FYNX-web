@@ -10,8 +10,9 @@ function render(trades){
 }
 let stop;
 onAuthStateChanged(auth,user=>{
- stop?.();
+ stop?.(); stop=null;
+ render([]);
  if(localStorage.getItem('mode')==='demo'){render([{pl:120},{pl:-45},{pl:90}]);status.textContent='Sample results · demo mode';return;}
  if(!user){status.textContent='Sign in to load your results.';return;}
- stop=onSnapshot(collection(getFirestore(app),'users',user.uid,'trades'),snapshot=>{render(snapshot.docs.map(d=>d.data()));status.textContent=snapshot.empty?'Record your first trade in Journal.':'Synced with your saved journal';},()=>{status.textContent='Journal sync unavailable. Please try again.';});
+ stop=onSnapshot(collection(getFirestore(app),'users',user.uid,'trades'),snapshot=>{render(snapshot.docs.map(d=>d.data()));status.textContent=snapshot.empty?'Record your first trade in Journal.':'Synced with your saved journal';},()=>{render([]);status.textContent='Journal sync unavailable. Please try again.';});
 });

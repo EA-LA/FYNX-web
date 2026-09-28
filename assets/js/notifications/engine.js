@@ -1,3 +1,4 @@
+import { safeNotificationUrl } from '../safe-content.js?v=20260928-audit';
 import { app } from "../../../auth/firebase.js";
 import {
   addDoc,
@@ -108,9 +109,9 @@ export class NotificationPreferenceManager {
 }
 
 export class NotificationRepository {
-  listen(uid, callback, max = 100) {
+  listen(uid, callback, max = 100, onError = () => {}) {
     const q = query(notificationCollection(uid), orderBy("timestamp", "desc"), limit(max));
-    return onSnapshot(q, (snap) => callback(snap.docs.map(mapNotification)));
+    return onSnapshot(q, (snap) => callback(snap.docs.map(mapNotification)), onError);
   }
 
   async create(uid, payload) {
@@ -191,7 +192,7 @@ export class BrowserNotificationAdapter {
       data: { sourceUrl: payload.sourceUrl || "notifications.html" }
     });
     notif.onclick = () => {
-      const link = payload.sourceUrl || "notifications.html";
+      const link = safeNotificationUrl(payload.sourceUrl) || new URL("notifications.html", location.href).href;
       window.open(link, "_blank", "noopener");
     };
     return true;

@@ -128,7 +128,7 @@
     </main>
   </div>
 
-  <script type="module" src="assets/js/session-bootstrap.js?v=20260922-routing"></script>
+  <script type="module" src="assets/js/session-bootstrap.js?v=20260928-audit"></script>
 <script>
   (function(){
     const nav=document.querySelector('.nav-panel');
@@ -138,9 +138,9 @@
   })();
 </script>
     <script type="module">
-    import { auth, bootstrapAccount, saveUserProfile, uploadProfilePhoto, updateAuthProfile } from './assets/js/account-system.js?v=20260928-account';
+    import { auth, bootstrapAccount, saveUserProfile, uploadProfilePhoto, updateAuthProfile } from './assets/js/account-system.js?v=20260928-audit';
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
-    import { mountNotificationBell } from './assets/js/account-ui.js?v=20260928-account';
+    import { mountNotificationBell } from './assets/js/account-ui.js?v=20260928-audit';
     const markets = ['forex','crypto','stocks','indices','commodities','futures'];
     const marketPills = document.getElementById('marketPills');
     const selectedMarkets = new Set();

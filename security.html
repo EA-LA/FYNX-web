@@ -38,7 +38,7 @@ body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,25
 </div>
 <div class="card"><h3 style="font-size:14px;margin-bottom:8px">Active Sessions</h3><div id="sessionList" style="font-size:12px;color:#777">Loading sessions...</div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" id="logoutCurrentBtn" type="button">Log out current session</button><button class="btn danger" id="logoutAllBtn" type="button">Log out all devices</button></div></div>
 </div></main></div>
-<script type="module" src="assets/js/session-bootstrap.js?v=20260922-routing"></script>
+<script type="module" src="assets/js/session-bootstrap.js?v=20260928-audit"></script>
 <script>
   (function(){
     const nav=document.querySelector('.nav-panel');
@@ -48,8 +48,8 @@ body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,25
   })();
 </script><script type="module">
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
-import { auth, bootstrapAccount, updatePasswordWithReauth, resendVerificationEmail, saveSecuritySettings, getSessionMetadata, revokeAllSessions, logoutCurrentSession } from './assets/js/account-system.js?v=20260928-account';
-import { mountNotificationBell } from './assets/js/account-ui.js?v=20260928-account';
+import { auth, bootstrapAccount, updatePasswordWithReauth, resendVerificationEmail, saveSecuritySettings, getSessionMetadata, revokeAllSessions, logoutCurrentSession } from './assets/js/account-system.js?v=20260928-audit';
+import { mountNotificationBell } from './assets/js/account-ui.js?v=20260928-audit';
 let sessionId = null;
 function applyTheme(){const t=localStorage.getItem('fynx_theme');document.body.classList.toggle('dark-mode',t==='dark');} applyTheme();
 document.getElementById('themeBtn').onclick=()=>{const d=!document.body.classList.contains('dark-mode');document.body.classList.toggle('dark-mode',d);localStorage.setItem('fynx_theme',d?'dark':'light');};

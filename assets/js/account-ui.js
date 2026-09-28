@@ -1,10 +1,11 @@
+import { safeNotificationUrl } from './safe-content.js?v=20260928-audit';
 import {
   auth,
   bootstrapAccount,
   listenNotifications,
   countUnread,
   markNotificationRead
-} from "./account-system.js?v=20260928-account";
+} from "./account-system.js?v=20260928-audit";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 let unsubscribeNotifications = null;
@@ -71,8 +72,13 @@ function bindItemClicks(list) {
       const id = node.dataset.id;
       const link = node.dataset.link;
       if (!auth.currentUser) return;
-      if (id) await markNotificationRead(auth.currentUser.uid, id, true);
-      if (link) window.location.href = link;
+      try {
+        if (id) await markNotificationRead(auth.currentUser.uid, id, true);
+        const destination = safeNotificationUrl(link);
+        if (destination) window.location.href = destination;
+      } catch {
+        node.querySelector('small').textContent = 'Could not update this alert. Check your connection and try again.';
+      }
     });
   });
 }
@@ -95,22 +101,22 @@ function renderBell(drop, badge, notifications) {
   const unreadItems = active.filter((i) => !i.read).slice(0, 5);
   const readItems = active.filter((i) => i.read).slice(0, 3);
 
-  list.innerHTML = `
-    ${unreadItems.length ? '<div class="bell-sub">UNREAD</div>' : ''}
-    ${unreadItems.map((item) => `
-      <div class="bell-item unread" data-id="${item.id}" data-link="${item.sourceUrl || "notifications.html"}">
-        <strong>${item.title}</strong>
-        <small>${item.source} • ${formatTime(item.timestamp)}</small>
-      </div>
-    `).join("")}
-    ${readItems.length ? '<div class="bell-sub">RECENT READ</div>' : ''}
-    ${readItems.map((item) => `
-      <div class="bell-item" data-id="${item.id}" data-link="${item.sourceUrl || "notifications.html"}">
-        <strong>${item.title}</strong>
-        <small>${item.source} • ${formatTime(item.timestamp)}</small>
-      </div>
-    `).join("")}
-  `;
+  list.replaceChildren();
+  for (const [label, items] of [['UNREAD', unreadItems], ['RECENT READ', readItems]]) {
+    if (!items.length) continue;
+    const heading = document.createElement('div');
+    heading.className = 'bell-sub'; heading.textContent = label; list.append(heading);
+    for (const item of items) {
+      const row = document.createElement('div');
+      row.className = 'bell-item' + (item.read ? '' : ' unread');
+      row.dataset.id = String(item.id);
+      row.dataset.link = safeNotificationUrl(item.sourceUrl) || new URL('notifications.html', location.href).href;
+      const title = document.createElement('strong'), detail = document.createElement('small');
+      title.textContent = String(item.title || 'Notification');
+      detail.textContent = `${item.source || 'FYNX'} • ${formatTime(item.timestamp)}`;
+      row.append(title, detail); list.append(row);
+    }
+  }
 
   bindItemClicks(list);
 }
@@ -121,7 +127,8 @@ function findBellButton() {
 
 export async function mountNotificationBell() {
   const bellButton = findBellButton();
-  if (!bellButton) return;
+  if (!bellButton || bellButton.dataset.notificationsMounted) return;
+  bellButton.dataset.notificationsMounted = 'true';
 
   ensureBellStyles();
   const dom = ensureBellDom(bellButton);
@@ -141,12 +148,13 @@ export async function mountNotificationBell() {
 
   onAuthStateChanged(auth, async (user) => {
     if (unsubscribeNotifications) { unsubscribeNotifications(); unsubscribeNotifications = null; }
-    if (!user) { renderBell(dom.drop, dom.badge, []); return; }
+    renderBell(dom.drop, dom.badge, []);
+    if (!user) return;
     try { await bootstrapAccount(user); }
-    catch { dom.drop.textContent = 'Notifications unavailable. Check your connection and reload.'; return; }
+    catch { if (auth.currentUser?.uid === user.uid) dom.drop.querySelector('#bellList').textContent = 'Notifications unavailable. Check your connection and reload.'; return; }
     if (auth.currentUser?.uid !== user.uid) return;
     unsubscribeNotifications = listenNotifications(user.uid, (items) => {
-      renderBell(dom.drop, dom.badge, items);
-    }, 20);
+      if (auth.currentUser?.uid === user.uid) renderBell(dom.drop, dom.badge, items);
+    }, 20, () => { dom.drop.querySelector('#bellList').textContent = 'Notifications unavailable. Check your connection and reload.'; });
   });
 }

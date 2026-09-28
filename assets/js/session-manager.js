@@ -26,6 +26,8 @@ let activityThrottleUntil = 0;
 let currentAuth = null;
 let hasBoundListeners = false;
 let bootResolved = false;
+let pageStateOwner = null;
+let pageStateBound = false;
 
 function now() {
   return Date.now();
@@ -65,7 +67,7 @@ function safeRemoveItem(key) {
 }
 
 function buildStateKey(pageKey) {
-  return `${KEYS.pageState}:${pageKey}`;
+  return `${KEYS.pageState}:${pageStateOwner || "unresolved"}:${pageKey}`;
 }
 
 function getCurrentPageKey() {
@@ -170,7 +172,16 @@ function clearUserScopedState() {
   }
 }
 
+function canAccessDraft() {
+  return pageStateOwner !== null && pageStateOwner === (currentAuth?.currentUser?.uid || "guest");
+}
+
+function isSensitiveField(field) {
+  return field.type === "password" || /(?:password|one-time-code)/i.test(field.autocomplete || "");
+}
+
 function savePageDraftState() {
+  if (!canAccessDraft()) return;
   const pageKey = getCurrentPageKey();
   const payload = { values: {}, updatedAt: now() };
 
@@ -180,7 +191,7 @@ function savePageDraftState() {
     if (!key) return;
     const tag = field.tagName.toLowerCase();
     const type = (field.type || "").toLowerCase();
-    const isSensitive = type === "password" || field.autocomplete === "one-time-code";
+    const isSensitive = isSensitiveField(field);
     if (isSensitive) return;
     if (type === "checkbox" || type === "radio") {
       payload.values[key] = Boolean(field.checked);
@@ -195,6 +206,7 @@ function savePageDraftState() {
 }
 
 function restorePageDraftState() {
+  if (!canAccessDraft()) return;
   const pageKey = getCurrentPageKey();
   const saved = safeJsonParse(safeGetItem(buildStateKey(pageKey)), null);
   if (!saved || !saved.values) return;
@@ -204,7 +216,7 @@ function restorePageDraftState() {
     if (!field) return;
 
     const type = (field.type || "").toLowerCase();
-    if (type === "password") return;
+    if (isSensitiveField(field)) return;
     if (type === "checkbox" || type === "radio") {
       field.checked = Boolean(value);
       return;
@@ -216,6 +228,8 @@ function restorePageDraftState() {
 }
 
 function bindPageStateTracking() {
+  if (pageStateBound) return;
+  pageStateBound = true;
   const handler = () => {
     savePageDraftState();
     saveScrollPosition();
@@ -330,7 +344,6 @@ async function validateSessionTimeout(source = "manual") {
 export async function bootstrapSession({ auth, protectedPage = false, loginPage = false, loginRedirect = "home.html" } = {}) {
   currentAuth = auth;
   bindPresenceListeners();
-  bindPageStateTracking();
 
   setPersistence(auth, browserLocalPersistence).catch(() => {
     // no-op
@@ -378,6 +391,9 @@ export async function bootstrapSession({ auth, protectedPage = false, loginPage 
         return;
       }
 
+      pageStateOwner = user?.uid || "guest";
+      bindPageStateTracking();
+
       dispatchSessionEvent({ type: "ready", user: user ? { uid: user.uid, email: user.email || "" } : null, protectedPage, loginPage });
 
       if (!bootResolved) {
@@ -402,9 +418,11 @@ export const sessionState = {
   savePageState: savePageDraftState,
   restorePageState: restorePageDraftState,
   getPageState(pageKey) {
+    if (!canAccessDraft()) return null;
     return safeJsonParse(safeGetItem(buildStateKey(pageKey || getCurrentPageKey())), null);
   },
   setPageState(pageKey, value) {
+    if (!canAccessDraft()) return;
     safeSetItem(buildStateKey(pageKey || getCurrentPageKey()), JSON.stringify(value || {}));
   }
 };

@@ -53,7 +53,7 @@ body.dark-mode .icon-btn{border-color:rgba(255,255,255,.12);background:rgba(255,
 </div>
 <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center"><small id="saveStatus" style="color:#777">Ready</small><button class="btn primary" type="submit">Save preferences</button></div>
 </form></div></main></div>
-<script type="module" src="assets/js/session-bootstrap.js?v=20260922-routing"></script>
+<script type="module" src="assets/js/session-bootstrap.js?v=20260928-audit"></script>
 <script>
   (function(){
     const nav=document.querySelector('.nav-panel');
@@ -62,8 +62,8 @@ body.dark-mode .icon-btn{border-color:rgba(255,255,255,.12);background:rgba(255,
     nav.innerHTML=`<div style="padding:32px 0;text-align:center;border-bottom:1px solid #e5e5e5;font-weight:800">FYNX</div><div style="padding:24px 0;display:flex;flex-direction:column;align-items:center;gap:8px">${items.map(([k,href,svg])=>`<a href="${href}" style="width:80px;padding:14px 0;display:flex;flex-direction:column;align-items:center;gap:7px;text-decoration:none;color:#666;border-radius:8px"><svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5">${svg}</svg><span style="font-size:11px;font-weight:600">${k[0].toUpperCase()+k.slice(1)}</span></a>`).join('')}</div>`;
   })();
 </script><script type="module">
-import { auth, bootstrapAccount, saveUserPreferences } from './assets/js/account-system.js?v=20260928-account';
-import { mountNotificationBell } from './assets/js/account-ui.js?v=20260928-account';
+import { auth, bootstrapAccount, saveUserPreferences } from './assets/js/account-system.js?v=20260928-audit';
+import { mountNotificationBell } from './assets/js/account-ui.js?v=20260928-audit';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
 document.querySelector('#prefForm button[type=submit]').disabled=true;
 saveStatus.textContent='Loading preferences…';

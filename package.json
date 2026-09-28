@@ -1,7 +1,7 @@
 {
   "scripts": {
     "build": "node scripts/build-static.js",
-    "test": "node scripts/test-journal-record.js && node scripts/test-auth-form.cjs",
+    "test": "node scripts/test-journal-record.js && node scripts/test-auth-form.cjs && node scripts/test-password-reset.cjs && node scripts/test-shared-account-ui.cjs && node scripts/test-session-drafts.cjs",
     "test:api": "node scripts/test-api-pages.cjs",
     "test:proof": "node scripts/proof/calculator-parity.cjs && node scripts/proof/calculator-validation.cjs && node scripts/proof/funded-scenarios.cjs && node scripts/proof/pilot-access.cjs && node scripts/proof/pilot-calculators.cjs && node scripts/proof/pilot-controller.cjs",
     "vercel-build": "npm run build && node scripts/package-static.cjs"

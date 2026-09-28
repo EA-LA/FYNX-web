@@ -1,0 +1,27 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),{JSDOM}=require('jsdom');
+const strip=source=>source.replace(/import\s+[\s\S]*?from\s+['"][^'"]+['"];?/g,'').replace(/export /g,'');
+const tick=()=>new Promise(resolve=>setImmediate(resolve));
+(async()=>{
+ const helpers=await import('data:text/javascript;base64,'+Buffer.from(fs.readFileSync('assets/js/safe-content.js','utf8')).toString('base64'));
+ const url=value=>helpers.safeNotificationUrl(value,'https://example.com/notifications.html');
+ for(const bad of ['javascript:alert(1)','data:text/html,test','vbscript:test'])assert.equal(url(bad),'');
+ assert.equal(url('profile.html'),'https://example.com/profile.html');
+ const hostile='<img src=x onerror="window.injected=true">';
+ const item={id:'quote"id',title:hostile,message:hostile,source:hostile,category:'market_news',sourceUrl:'javascript:alert(1)',timestamp:Date.now(),read:false};
+ const bell=new JSDOM('<div class="top-bar"><div class="top-bar-right"><button class="icon-btn" title="Notifications"></button></div></div>',{url:'https://example.com/home.html',runScripts:'outside-only'}),w=bell.window;
+ let onAuth, failRead=false;
+ Object.assign(w,{safeNotificationUrl:url,auth:{currentUser:{uid:'A'}},bootstrapAccount:async()=>{if(failRead)throw Error('offline');},listenNotifications:(_,callback)=>{callback([item]);return()=>{};},countUnread:rows=>rows.filter(r=>!r.read).length,markNotificationRead:async()=>{throw Error('offline');},onAuthStateChanged:(_,callback)=>onAuth=callback});
+ w.eval(strip(fs.readFileSync('assets/js/account-ui.js','utf8')));await w.mountNotificationBell();await onAuth({uid:'A'});
+ assert.equal(w.document.querySelectorAll('#bellList img').length,0);assert.equal(w.document.querySelector('#bellList strong').textContent,hostile);assert.equal(w.document.querySelector('.bell-item').dataset.link,'https://example.com/notifications.html');
+ w.document.querySelector('.bell-item').click();await tick();assert.match(w.document.querySelector('.bell-item small').textContent,/Could not update/);
+ failRead=true;await onAuth({uid:'A'});assert(w.document.querySelector('#bellList'));await onAuth(null);assert.match(w.document.querySelector('#bellList').textContent,/No alerts/);w.close();
+ const dom=new JSDOM(fs.readFileSync('notifications.html','utf8'),{url:'https://example.com/notifications.html',runScripts:'outside-only'}),n=dom.window;
+ Object.assign(n,{safeNotificationUrl:url,auth:{currentUser:null},mountNotificationBell(){},onAuthStateChanged(){},countUnread:rows=>rows.filter(r=>!r.read).length});
+ const source=[...fs.readFileSync('notifications.html','utf8').matchAll(/<script type="module">([\s\S]*?)<\/script>/g)].at(-1)[1];n.eval(strip(source));n.renderFeed([item]);assert.equal(n.document.querySelectorAll('#feed img').length,0);assert.equal(n.document.querySelector('.feed-title').textContent,hostile);assert.equal(n.document.querySelector('.feed-item').dataset.link,'');assert.equal(n.document.querySelector('.js-open'),null);n.close();
+ let authChanged,callbacks=[],stops=0;const identity={window:{dispatchEvent(){}},CustomEvent:class{},auth:{},app:{},onAuthStateChanged:(_,callback)=>authChanged=callback,getFirestore:()=>({}),doc:(_,__,uid)=>uid,onSnapshot:(_,callback)=>{callbacks.push(callback);return()=>stops++;}};
+ vm.runInNewContext(strip(fs.readFileSync('assets/js/account-identity.js','utf8')),identity);
+ authChanged({uid:'A',displayName:'Alice'});callbacks[0]({data:()=>({displayName:'Alice Saved'})});assert.equal(identity.window.FynxIdentity.displayName,'Alice Saved');authChanged({uid:'B',displayName:'Bob'});callbacks[0]({data:()=>({displayName:'Stale Alice'})});assert.equal(identity.window.FynxIdentity.displayName,'Bob');authChanged(null);assert.equal(identity.window.FynxIdentity.uid,null);assert.equal(identity.window.FynxIdentity.displayName,'');assert.equal(stops,2);
+ const home=new JSDOM('<p id="homeStatsStatus"></p><b id="homePnl"></b><b id="homeTrades"></b><b id="homeWinRate"></b>',{url:'https://example.com/home.html'});let homeAuth,homeSnapshot;
+ vm.runInNewContext(strip(fs.readFileSync('assets/js/home-journal.js','utf8')),{document:home.window.document,localStorage:home.window.localStorage,auth:{},app:{},onAuthStateChanged:(_,callback)=>homeAuth=callback,getFirestore:()=>({}),collection:()=>({}),onSnapshot:(_,callback)=>{homeSnapshot=callback;return()=>{};}});homeAuth({uid:'A'});homeSnapshot({docs:[{data:()=>({pl:500})}],empty:false});assert.equal(home.window.document.getElementById('homeTrades').textContent,'1');homeAuth(null);assert.equal(home.window.document.getElementById('homeTrades').textContent,'0');assert.equal(home.window.document.getElementById('homePnl').textContent,'$0.00');home.window.close();
+ console.log('Safe notification content/links, recovery after failed reads, account-switch isolation and cleared signed-out statistics passed.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

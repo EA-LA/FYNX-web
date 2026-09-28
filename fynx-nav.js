@@ -208,16 +208,18 @@ topBar.innerHTML = `
 
     const initialsEl = document.getElementById('avatarInitials');
     if (initialsEl) {
-      const userName = isDemoMode()
-        ? 'Demo User'
-        : (localStorage.getItem('fynxUserName') || localStorage.getItem('fynx_user_name') || 'FYNX');
-      const initials = userName
-        .split(/\s+/)
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((chunk) => chunk.charAt(0).toUpperCase())
-        .join('') || 'FX';
-      initialsEl.textContent = initials;
+      function updateIdentity() {
+        const userName = isDemoMode() ? 'Demo User' : (window.FynxIdentity?.displayName || '');
+        initialsEl.textContent = userName.split(/\s+/).filter(Boolean).slice(0, 2).map(chunk => chunk[0].toUpperCase()).join('') || 'FX';
+        const account = document.querySelector('#publicAccountLinks a:last-child');
+        if (account) {
+          account.textContent = window.FynxIdentity?.uid ? 'Profile' : 'Sign in';
+          account.href = window.FynxIdentity?.uid ? '/profile.html' : '/auth/login.html?returnTo=' + encodeURIComponent(location.pathname);
+        }
+      }
+      updateIdentity();
+      window.addEventListener('fynx:identity', updateIdentity);
+      import('/assets/js/account-identity.js?v=20260928-audit').catch(() => {});
       initialsEl.title = 'Open profile';
       initialsEl.style.cursor = isDemoMode() ? 'default' : 'pointer';
       initialsEl.setAttribute('role', 'link');

@@ -55,7 +55,7 @@ small.dim{font-size:11px;color:#777} .filters{display:flex;gap:8px;flex-wrap:wra
 <div style="margin-top:8px;font-size:12px;color:#777" id="permStatus">Permission: unknown</div>
 </div>
 </div></main></div>
-<script type="module" src="assets/js/session-bootstrap.js?v=20260922-routing"></script>
+<script type="module" src="assets/js/session-bootstrap.js?v=20260928-audit"></script>
 <script>
   (function(){
     const nav=document.querySelector('.nav-panel');
@@ -64,9 +64,10 @@ small.dim{font-size:11px;color:#777} .filters{display:flex;gap:8px;flex-wrap:wra
     nav.innerHTML=`<div style="padding:32px 0;text-align:center;border-bottom:1px solid #e5e5e5;font-weight:800">FYNX</div><div style="padding:24px 0;display:flex;flex-direction:column;align-items:center;gap:8px">${items.map(([k,href,svg])=>`<a href="${href}" style="width:80px;padding:14px 0;display:flex;flex-direction:column;align-items:center;gap:7px;text-decoration:none;color:#666;border-radius:8px"><svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5">${svg}</svg><span style="font-size:11px;font-weight:600">${k[0].toUpperCase()+k.slice(1)}</span></a>`).join('')}</div>`;
   })();
 </script><script type="module">
+import { safeNotificationUrl } from './assets/js/safe-content.js?v=20260928-audit';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
-import { auth, bootstrapAccount, saveNotificationPreferences, listenNotifications, markNotificationRead, markAllNotificationsRead, dismissNotification, requestBrowserNotificationPermission, showBrowserNotification, ingestNewsNotifications, countUnread } from './assets/js/account-system.js?v=20260928-account';
-import { mountNotificationBell } from './assets/js/account-ui.js?v=20260928-account';
+import { auth, bootstrapAccount, saveNotificationPreferences, listenNotifications, markNotificationRead, markAllNotificationsRead, dismissNotification, requestBrowserNotificationPermission, showBrowserNotification, ingestNewsNotifications, countUnread } from './assets/js/account-system.js?v=20260928-audit';
+import { mountNotificationBell } from './assets/js/account-ui.js?v=20260928-audit';
 
 const prefs = {};
 const actionStatus = document.createElement('p');
@@ -111,7 +112,24 @@ function renderFeed(items){
   const clean = filteredItems(items);
   unreadLabel.textContent = `${countUnread(items)} unread`;
   if(!clean.length){feed.innerHTML='<div style="font-size:12px;color:#777">No notifications in this filter.</div>';return;}
-  feed.innerHTML = clean.map(item=>`<article class="feed-item ${item.read?'':'unread'}" data-id="${item.id}" data-link="${item.sourceUrl||''}"><div class="feed-top"><span class="badge">${item.category.replaceAll('_',' ')}</span><span>${new Date(item.timestamp).toLocaleString()}</span></div><div class="feed-title">${item.title}</div><div class="feed-body">${item.source}${item.message?` • ${item.message}`:''}</div><div class="feed-actions"><button class="btn js-read">${item.read?'Mark unread':'Mark read'}</button><button class="btn js-dismiss">Dismiss</button>${item.sourceUrl?'<button class="btn js-open">Open</button>':''}</div></article>`).join('');
+  feed.replaceChildren();
+  for (const item of clean) {
+    const article = document.createElement('article');
+    article.className = 'feed-item' + (item.read ? '' : ' unread');
+    article.dataset.id = String(item.id);
+    article.dataset.link = safeNotificationUrl(item.sourceUrl);
+    article.innerHTML = '<div class="feed-top"><span class="badge"></span><span class="feed-time"></span></div><div class="feed-title"></div><div class="feed-body"></div><div class="feed-actions"><button class="btn js-read"></button><button class="btn js-dismiss">Dismiss</button></div>';
+    article.querySelector('.badge').textContent = String(item.category || 'general').replaceAll('_', ' ');
+    article.querySelector('.feed-time').textContent = new Date(item.timestamp).toLocaleString();
+    article.querySelector('.feed-title').textContent = String(item.title || 'Notification');
+    article.querySelector('.feed-body').textContent = `${item.source || 'FYNX'}${item.message ? ' • ' + item.message : ''}`;
+    article.querySelector('.js-read').textContent = item.read ? 'Mark unread' : 'Mark read';
+    if (article.dataset.link) {
+      const open = document.createElement('button');open.className = 'btn js-open';open.textContent = 'Open';
+      article.querySelector('.feed-actions').append(open);
+    }
+    feed.append(article);
+  }
   feed.querySelectorAll('.feed-item').forEach((el)=>{
     el.querySelector('.js-read').onclick=async(ev)=>{ev.stopPropagation();if(auth.currentUser){await markNotificationRead(auth.currentUser.uid,el.dataset.id,el.classList.contains('unread')?true:false);}};
     el.querySelector('.js-dismiss').onclick=async(ev)=>{ev.stopPropagation();if(auth.currentUser){await dismissNotification(auth.currentUser.uid,el.dataset.id);}};
@@ -140,12 +158,15 @@ refreshNewsBtn.onclick=async()=>{
 };
 
 onAuthStateChanged(auth, async (user)=>{
+  if(unsub) { unsub(); unsub=null; }
+  current=[]; renderFeed(current);
   if(!user) return;
   try {
   const seeded = await bootstrapAccount(user);
+  if(auth.currentUser?.uid!==user.uid)return;
   setPrefs(seeded.notificationPreferences);
   if(unsub) unsub();
-  unsub = listenNotifications(user.uid, (items)=>{ current = items; renderFeed(items); });
+  unsub = listenNotifications(user.uid, (items)=>{ current = items; renderFeed(items); }, 100, () => { actionStatus.textContent='Notifications unavailable. Check your connection and reload.'; });
   } catch { actionStatus.textContent='Could not load notifications. Check your connection and reload.'; }
 });
 

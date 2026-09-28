@@ -61,7 +61,7 @@
     status.textContent = '';
     try { await operation(await loadSdk()); }
     catch (error) {
-      window.FynxMonitor?.report('auth', 'auth-form', error);
+      window.FynxMonitor?.report('auth', reset ? 'auth-reset' : signup ? 'auth-signup' : 'auth-login', error);
       report(messages[error?.code] || 'We couldn’t complete this request. Check your connection and try again.');
     } finally {
       busy = false; buttons.forEach(item => { item.disabled = false; item.textContent = labels.get(item); });
