@@ -9,7 +9,7 @@ function harness({challenge={phase:'2-phase',accountSize:10000,currentPhase:1,br
  const db={collection:name=>({doc:id=>name==='challenges'?ref:{collection:name,id},where:(field,op,value)=>({get:async()=>{queries.push({field,value});return {empty:!trades.length,docs:trades.map((data,i)=>({id:String(i),data:()=>data}))};}})}),batch:()=>({set:(r,value)=>writes.push({collection:r===ref?'challenges':r.collection,value}),commit:async()=>{if(commitError)throw Error('storage unavailable');commits++;}})};
  db.runTransaction=async fn=>{const pending=[];const result=await fn({get:r=>r.get(),set:(r,value)=>pending.push({collection:r===ref?'challenges':r.collection,value})});if(commitError)throw Error('storage unavailable');writes.push(...pending);commits++;return result;};
  class HttpsError extends Error{constructor(code,message){super(message);this.code=code;}}
- const source=load('functions/src/challengeProgression.ts',{'firebase-admin':{firestore:Object.assign(()=>db,{Timestamp:class{},FieldValue:{serverTimestamp:()=>123}})},'firebase-functions/v2/firestore':{onDocumentWritten:(_path,fn)=>fn},'firebase-functions/v2/https':{onCall:fn=>fn,HttpsError}},'\nexport { evaluateChallenge };');
+ const source=load('functions/src/challengeProgression.ts',{'./fundedPolicy':require('../../backend/funded-policy.cjs'),'firebase-admin':{firestore:Object.assign(()=>db,{Timestamp:class{},FieldValue:{serverTimestamp:()=>123}})},'firebase-functions/v2/firestore':{onDocumentWritten:(_path,fn)=>fn},'firebase-functions/v2/https':{onCall:fn=>fn,HttpsError}},'\nexport { evaluateChallenge };');
  return {...source.api,writes,queries,commits:()=>commits};
 }
 const trades=(pnl=200,n=5)=>Array.from({length:n},(_,i)=>({closeTime:`2026-09-${String(i+1).padStart(2,'0')}T16:00:00Z`,pnl}));
@@ -77,4 +77,14 @@ test('transaction observes a failure recorded after initial history read',async(
 });
 test('phase configuration changed during evaluation aborts without writes',async()=>{
  const h=harness({trades:trades(),concurrentChallenge:{currentPhase:2}});await assert.rejects(h.evaluateChallenge('qa','test'),{code:'aborted'});assert.equal(h.writes.length,0);
+});
+test('actual Funded entry point uses the shared versioned policy and preserves human approval',async()=>{
+ const {context,events}=require('./funded-policy-fixtures.cjs'),policy=require('../../backend/funded-policy.cjs');
+ const ev=events([200,200,200,200,200]),ctx=context(ev);
+ const h=harness({challenge:{phase:'2-phase',accountSize:10000,currentPhase:1,currency:'USD',rulePolicyVersion:policy.VERSION,rulePolicy:ctx},trades:ev});
+ const r=await h.evaluateChallenge('qa','test');assert.equal(r.evaluation.state.status,'eligible');assert.equal(r.evaluation.authorizes_phase_transition,false);assert.equal(h.writes[0].value.status,undefined);assert.equal(h.writes[0].value.requiresHumanReview,true);assert.equal(h.commits(),1);
+});
+test('versioned account with no verified agreement cannot write a decision',async()=>{
+ const {context,events}=require('./funded-policy-fixtures.cjs'),policy=require('../../backend/funded-policy.cjs');const ev=events([100]),ctx=context(ev);delete ctx.agreement;
+ const h=harness({challenge:{phase:'2-phase',accountSize:10000,currentPhase:1,currency:'USD',rulePolicyVersion:policy.VERSION,rulePolicy:ctx},trades:ev});await assert.rejects(h.evaluateChallenge('qa','test'),{code:'failed-precondition'});assert.equal(h.writes.length,0);
 });

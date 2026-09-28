@@ -1,8 +1,60 @@
+diff --git a/functions/package-lock.json b/functions/package-lock.json
+index 7b8e875..58c0e91 100644
+--- a/functions/package-lock.json
++++ b/functions/package-lock.json
+@@ -6,6 +6,7 @@
+     "": {
+       "name": "fynx-functions",
+       "dependencies": {
++        "decimal.js": "10.6.0",
+         "firebase-admin": "^12.0.0",
+         "firebase-functions": "^5.0.0",
+         "stripe": "^14.0.0"
+@@ -14,7 +15,7 @@
+         "typescript": "^5.3.0"
+       },
+       "engines": {
+-        "node": "18"
++        "node": "20"
+       }
+     },
+     "node_modules/@fastify/busboy": {
+@@ -802,6 +803,12 @@
+         "ms": "2.0.0"
+       }
+     },
++    "node_modules/decimal.js": {
++      "version": "10.6.0",
++      "resolved": "https://registry.npmjs.org/decimal.js/-/decimal.js-10.6.0.tgz",
++      "integrity": "sha512-YpgQiITW3JXGntzdUmyUR1V812Hn8T1YVXhCu+wO3OpS4eU9l4YdD3qjyiKdV6mvV29zapkMeD390UVEf2lkUg==",
++      "license": "MIT"
++    },
+     "node_modules/delayed-stream": {
+       "version": "1.0.0",
+       "resolved": "https://registry.npmjs.org/delayed-stream/-/delayed-stream-1.0.0.tgz",
+diff --git a/functions/package.json b/functions/package.json
+index 8e2941c..d8216d2 100644
+--- a/functions/package.json
++++ b/functions/package.json
+@@ -11,6 +11,7 @@
+     "node": "20"
+   },
+   "dependencies": {
++    "decimal.js": "10.6.0",
+     "firebase-admin": "^12.0.0",
+     "firebase-functions": "^5.0.0",
+     "stripe": "^14.0.0"
 diff --git a/functions/src/challengeProgression.ts b/functions/src/challengeProgression.ts
-index d1b93bb..5294738 100644
+index d1b93bb..f03305e 100644
 --- a/functions/src/challengeProgression.ts
 +++ b/functions/src/challengeProgression.ts
-@@ -11,37 +11,46 @@ const RULES: Record<string, { targets: number[]; dailyLoss: number; maxLoss: num
+@@ -1,4 +1,5 @@
+ import * as admin from "firebase-admin";
++import { evaluate as evaluateVersionedPolicy } from "./fundedPolicy";
+ import { onDocumentWritten } from "firebase-functions/v2/firestore";
+ import { HttpsError, onCall } from "firebase-functions/v2/https";
+ 
+@@ -11,55 +12,100 @@ const RULES: Record<string, { targets: number[]; dailyLoss: number; maxLoss: num
  
  type ProgressionAction = "evaluate" | "set_automatic" | "set_manual" | "pass" | "fail" | "fund";
  
@@ -60,12 +112,40 @@ index d1b93bb..5294738 100644
  }
  
 -async function evaluateChallenge(challengeId: string, source: string, requireData = true) {
++async function evaluatePolicyChallenge(challengeId: string, challenge: FirebaseFirestore.DocumentData, source: string) {
++  const db = admin.firestore(), ref = db.collection("challenges").doc(challengeId);
++  const policy = challenge.rulePolicy;
++  if (!policy || policy.policy_version !== challenge.rulePolicyVersion || policy.program !== challenge.phase || policy.phase !== (challenge.currentPhase ?? 1) || policy.starting_balance !== String(challenge.accountSize) || policy.currency !== challenge.currency) throw new HttpsError("failed-precondition", "Challenge and purchased policy binding do not match.");
++  const history = await db.collection("rule_events").where("challengeId", "==", challengeId).get();
++  const events = history.docs.map(doc => doc.data()).sort((a, b) => a.sequence - b.sequence);
++  return db.runTransaction(async tx => {
++    const snapshot = await tx.get(ref), current = snapshot.data() || {};
++    if (!snapshot.exists || JSON.stringify(current.rulePolicy) !== JSON.stringify(policy) || current.rulePolicyVersion !== challenge.rulePolicyVersion || current.phase !== challenge.phase || current.currentPhase !== challenge.currentPhase || current.accountSize !== challenge.accountSize || current.currency !== challenge.currency) throw new HttpsError("aborted", "Purchased policy changed during evaluation; retry.");
++    const recordedBreach = current.rulePolicyEvaluation?.state?.breach || current.recordedBreach;
++    if ((current.status === "failed" || current.ruleStatus === "failed" || current.breachRecorded) && !recordedBreach) throw new HttpsError("failed-precondition", "Existing failure requires its original breach evidence; it cannot be cleared by migration.");
++    let result;
++    try { result = evaluateVersionedPolicy({ ...policy, recorded_breach: recordedBreach }, events); }
++    catch (error) { throw new HttpsError("failed-precondition", error instanceof Error ? error.message : "Invalid policy history."); }
++    const status = result.state.status === "breached" ? "failed" : result.state.status === "eligible" ? "passed" : "active";
++    const now = admin.firestore.FieldValue.serverTimestamp();
++    // This is an evaluation for human review, never a phase transition or payout.
++    tx.set(ref, { ruleStatus: status, rulePolicyEvaluation: result, breachRecorded: result.state.status === "breached", requiresHumanReview: true, lastRuleEvaluationAt: now, lastRuleEvaluationSource: source }, { merge: true });
++    tx.set(db.collection("rule_evaluations").doc(), { challengeId, source, status, policyVersion: result.policy_version, evaluation: result, createdAt: now });
++    tx.set(db.collection("audit_logs").doc(), { challengeId, source, action: "versioned_rules_evaluation", result: status, policyVersion: result.policy_version, agreementReference: result.agreement_reference, createdAt: now });
++    return { status, metrics: result.state.metrics, evaluation: result };
++  });
++}
++
 +async function evaluateChallenge(challengeId: string, source: string, enableAutomatic = false) {
    const db = admin.firestore();
    const ref = db.collection("challenges").doc(challengeId);
    const snapshot = await ref.get();
-@@ -49,17 +58,25 @@ async function evaluateChallenge(challengeId: string, source: string, requireDat
+   if (!snapshot.exists) throw new HttpsError("not-found", "Challenge not found.");
    const challenge = snapshot.data() || {};
++  if (challenge.rulePolicyVersion !== undefined || challenge.rulePolicy !== undefined) {
++    if (enableAutomatic) throw new HttpsError("failed-precondition", "Automatic progression remains paused pending production integration approval.");
++    return evaluatePolicyChallenge(challengeId, challenge, source);
++  }
    const phase = String(challenge.phase || "").toLowerCase();
    const rules = RULES[phase];
 -  const accountSize = number(challenge.accountSize);
@@ -97,7 +177,7 @@ index d1b93bb..5294738 100644
  
    const daily = new Map<string, number>();
    let totalPnl = 0;
-@@ -69,6 +86,7 @@ async function evaluateChallenge(challengeId: string, source: string, requireDat
+@@ -69,6 +115,7 @@ async function evaluateChallenge(challengeId: string, source: string, requireDat
    for (const trade of ordered) {
      totalPnl += trade.normalizedPnl;
      equity += trade.normalizedPnl;
@@ -105,7 +185,7 @@ index d1b93bb..5294738 100644
      peak = Math.max(peak, equity);
      maxDrawdownPct = Math.max(maxDrawdownPct, ((peak - equity) / accountSize) * 100);
      const day = String(trade.normalizedTime).slice(0, 10);
-@@ -76,19 +94,24 @@ async function evaluateChallenge(challengeId: string, source: string, requireDat
+@@ -76,19 +123,24 @@ async function evaluateChallenge(challengeId: string, source: string, requireDat
    }
    const dailyDrawdownPct = Math.max(0, ...Array.from(daily.values(), (pnl) => Math.abs(Math.min(0, pnl)) / accountSize * 100));
    const profitPct = totalPnl / accountSize * 100;
@@ -141,7 +221,7 @@ index d1b93bb..5294738 100644
  }
  
  export const adminChallengeProgression = onCall(async (request) => {
-@@ -105,8 +128,7 @@ export const adminChallengeProgression = onCall(async (request) => {
+@@ -105,8 +157,7 @@ export const adminChallengeProgression = onCall(async (request) => {
    if (action === "evaluate" || action === "set_automatic") {
      const challenge = snapshot.data() || {};
      if (!challenge.brokerAccountId && !challenge.accountId) throw new HttpsError("failed-precondition", "Connect a broker account before enabling automatic progression.");
@@ -151,7 +231,7 @@ index d1b93bb..5294738 100644
    }
  
    const status = action === "pass" ? "passed" : action === "fail" ? "failed" : action === "fund" ? "funded" : undefined;
-@@ -131,5 +153,6 @@ export const evaluateAutomaticProgressionOnTrade = onDocumentWritten("trades/{tr
+@@ -131,5 +182,6 @@ export const evaluateAutomaticProgressionOnTrade = onDocumentWritten("trades/{tr
    if (!challengeId) return;
    const challenge = await admin.firestore().collection("challenges").doc(challengeId).get();
    if (!challenge.exists || challenge.data()?.progressionMode !== "automatic") return;
@@ -159,3 +239,120 @@ index d1b93bb..5294738 100644
 +  // Fail closed until the complete equity-event integration and policy migration are approved.
 +  throw new HttpsError("failed-precondition", "Automatic progression is paused pending verified history and approved integration.");
  });
+diff --git a/package-lock.json b/package-lock.json
+index 0e6fa39..9282d29 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -41,6 +41,7 @@
+         "clsx": "^2.1.1",
+         "cmdk": "^1.1.1",
+         "date-fns": "^3.6.0",
++        "decimal.js": "10.6.0",
+         "embla-carousel-react": "^8.6.0",
+         "firebase": "^12.9.0",
+         "input-otp": "^1.4.2",
+@@ -5177,7 +5178,6 @@
+       "version": "10.6.0",
+       "resolved": "https://registry.npmjs.org/decimal.js/-/decimal.js-10.6.0.tgz",
+       "integrity": "sha512-YpgQiITW3JXGntzdUmyUR1V812Hn8T1YVXhCu+wO3OpS4eU9l4YdD3qjyiKdV6mvV29zapkMeD390UVEf2lkUg==",
+-      "dev": true,
+       "license": "MIT"
+     },
+     "node_modules/decimal.js-light": {
+diff --git a/package.json b/package.json
+index c403754..7bc547d 100644
+--- a/package.json
++++ b/package.json
+@@ -46,6 +46,7 @@
+     "clsx": "^2.1.1",
+     "cmdk": "^1.1.1",
+     "date-fns": "^3.6.0",
++    "decimal.js": "10.6.0",
+     "embla-carousel-react": "^8.6.0",
+     "firebase": "^12.9.0",
+     "input-otp": "^1.4.2",
+diff --git a/src/pages/Rules.tsx b/src/pages/Rules.tsx
+index aaf313e..d4e7a32 100644
+--- a/src/pages/Rules.tsx
++++ b/src/pages/Rules.tsx
+@@ -1,3 +1,4 @@
++import { VERSION } from "@/services/funded-policy";
+ import MarketingLayout from "@/components/MarketingLayout";
+ import {
+   AlertTriangle,
+@@ -14,14 +15,14 @@ const rules = [
+   {
+     icon: TrendingDown,
+     title: "Daily Loss Limit",
+-    desc: "Your equity cannot drop more than 5% from the previous day's closing balance within a single trading day.",
+-    tip: "Calculated at server EOD (5 PM EST). Includes floating P/L.",
++    desc: "For new accounts under the versioned schedule: daily loss is 4% for 1-phase and 5% for 2-phase or 3-phase programs, measured from the balance at the daily reset.",
++    tip: "Reset is 22:00 UTC year-round. Equity includes floating P/L. Touching the floor is allowed; falling below it records a breach.",
+   },
+   {
+     icon: AlertTriangle,
+     title: "Maximum Loss Limit",
+-    desc: "Your equity cannot drop more than 10% from your initial account balance at any point.",
+-    tip: "This is a hard limit. Breaching this results in immediate account termination.",
++    desc: "The static maximum loss is 8% for 1-phase, 10% for 2-phase and 12% for 3-phase programs, measured from the initial phase balance.",
++    tip: "Profits do not raise this floor. A recorded breach remains after recovery and requires review.",
+   },
+   {
+     icon: Newspaper,
+@@ -32,8 +33,8 @@ const rules = [
+   {
+     icon: Clock,
+     title: "Weekend Holding",
+-    desc: "Holding positions over the weekend is allowed on most instruments. Crypto positions may remain open.",
+-    tip: "Be mindful of gap risk on Monday opens.",
++    desc: "Overnight and weekend permissions depend on the purchased agreement and verified broker instrument schedule. The new numerical API schedule supports USD phase accounts and caller-supplied Forex data.",
++    tip: "No crypto or universal weekend permission is promised by this schedule. Broker specifications must be verified before trading.",
+   },
+   {
+     icon: Copy,
+@@ -44,7 +45,7 @@ const rules = [
+   {
+     icon: ShieldAlert,
+     title: "Consistency Rule",
+-    desc: "No single trading day should account for more than 40% of total profits. This ensures consistent performance.",
++    desc: "The best positive trading day must represent no more than 40% of total net phase profit. A nonpositive total or a larger share delays eligibility; it is not a loss breach.",
+     tip: "Aim for steady, repeatable results across multiple sessions.",
+   },
+   {
+@@ -68,10 +69,23 @@ export default function RulesPage() {
+         <div className="max-w-2xl mb-16">
+           <h1 className="text-4xl md:text-5xl font-bold tracking-tight animate-fade-up">Trading Rules</h1>
+           <p className="mt-4 text-lg text-muted-foreground animate-fade-up delay-200">
+-            Clear, fair, and fully transparent. Know exactly what's expected.
++            Approved numerical schedule for new accounts once purchases open. Existing accounts retain the terms accepted at purchase; this page does not migrate them.
+           </p>
+         </div>
+ 
++        <div className="premium-card mb-8 overflow-x-auto">
++          <h2 className="text-lg font-semibold mb-3">New-account schedule · {VERSION}</h2>
++          <table className="w-full text-sm text-left">
++            <thead><tr><th className="p-2">Program</th><th className="p-2">Phase targets</th><th className="p-2">Daily / maximum loss</th><th className="p-2">Minimum days per phase</th></tr></thead>
++            <tbody>
++              <tr><td className="p-2">1-phase</td><td className="p-2">10%</td><td className="p-2">4% / 8%</td><td className="p-2">3</td></tr>
++              <tr><td className="p-2">2-phase</td><td className="p-2">8% → 5%</td><td className="p-2">5% / 10%</td><td className="p-2">5</td></tr>
++              <tr><td className="p-2">3-phase</td><td className="p-2">6% → 5% → 4%</td><td className="p-2">5% / 12%</td><td className="p-2">5</td></tr>
++            </tbody>
++          </table>
++          <p className="mt-4 text-sm text-muted-foreground">Net profit includes trading charges. Eligibility also requires no recorded breach and no open positions. Evaluation is subject to human review and does not automatically advance a phase or authorize a payout. Your purchase must record this version before it applies to your account.</p>
++        </div>
++
+         <div className="grid md:grid-cols-2 gap-6">
+           {rules.map((rule, i) => (
+             <div key={rule.title} className={`premium-card hover-lift animate-fade-up delay-${(i + 1) * 100}`}>
+diff --git a/src/services/rules-engine.ts b/src/services/rules-engine.ts
+index 677fe80..2ed0acb 100644
+--- a/src/services/rules-engine.ts
++++ b/src/services/rules-engine.ts
+@@ -198,3 +198,7 @@ export async function evaluateRules(
+     maxDrawdownPct: maxDrawdown,
+   };
+ }
++
++// Versioned evaluations use exactly the API policy implementation. Legacy callers
++// retain their existing contract until their purchased agreement is reviewed.
++export { evaluate as evaluateVersionedRules } from "./funded-policy";

@@ -18,14 +18,14 @@ const scenarios=[
 ];
 function load(file,stubs,append=''){const source=fs.readFileSync(path.join(funded,file),'utf8'),compiled=ts.transpileModule(source+append,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;const module={exports:{}};vm.runInNewContext(compiled,{module,exports:module.exports,require:name=>{if(!(name in stubs))throw new Error('Unexpected import '+name);return stubs[name];},console},{filename:file});return {api:module.exports,sha256:createHash('sha256').update(source).digest('hex')};}
 async function run(){
- const client=load('src/services/rules-engine.ts',{'./database':{dataService:{addAuditLog:async()=>{}}}}),rows=[];
+ const client=load('src/services/rules-engine.ts',{'./funded-policy':require('../../backend/funded-policy.cjs'),'./database':{dataService:{addAuditLog:async()=>{}}}}),rows=[];
  for(const scenario of scenarios){
   const trades=scenario.trades.map((t,i)=>({tradeId:'fixture-'+i,closeTime:t.timestamp,openTime:t.timestamp,pnl:t.pnl,commission:0,symbol:'EURUSD',type:'buy',lots:1}));
   let balance=10000;const equity=trades.map(t=>({timestamp:t.closeTime,balance:balance+=t.pnl,equity:balance}));
   const oldClient=await client.api.evaluateRules('fixture',{accountSize:10000,profitTargetPct:8,dailyLossPct:5,maxLossPct:10,minTradingDays:5},{getTrades:async()=>trades,getEquityTimeline:async()=>equity});
   const docs=trades.map((t,i)=>({id:'fixture-'+i,data:()=>t}));const store={collection:name=>({doc:()=>({get:async()=>({exists:true,data:()=>({phase:'2-phase',accountSize:10000,currentPhase:1})})}),where:()=>({get:async()=>({empty:false,docs})})}),batch:()=>({set:()=>{},commit:async()=>{}})};
   store.runTransaction=async fn=>fn({get:r=>r.get(),set:()=>{}});
-  const oldServer=load('functions/src/challengeProgression.ts',{'firebase-admin':{firestore:Object.assign(()=>store,{Timestamp:class{},FieldValue:{serverTimestamp:()=>0}})},'firebase-functions/v2/firestore':{onDocumentWritten:()=>null},'firebase-functions/v2/https':{onCall:()=>null,HttpsError:Error}},'\nexport { evaluateChallenge };');
+  const oldServer=load('functions/src/challengeProgression.ts',{'./fundedPolicy':require('../../backend/funded-policy.cjs'),'firebase-admin':{firestore:Object.assign(()=>store,{Timestamp:class{},FieldValue:{serverTimestamp:()=>0}})},'firebase-functions/v2/firestore':{onDocumentWritten:()=>null},'firebase-functions/v2/https':{onCall:()=>null,HttpsError:Error}},'\nexport { evaluateChallenge };');
   const old=await oldServer.api.evaluateChallenge('fixture','proof');const rule=engine.rules(policy);let a=engine.account(rule,'2026-09-01T00:00:00Z');
   for(const t of trades)a=engine.event(a,rule,{sequence:a.sequence+1,event_type:'closed_trade',timestamp:t.closeTime,realized_pnl:String(t.pnl),unrealized_pnl_after:'0',open_position_count:0});
   if(a.status!==scenario.expected)throw new Error(scenario.name+' unexpected API result '+a.status);

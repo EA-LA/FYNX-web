@@ -1,0 +1,16 @@
+{
+  "date": "2026-09-28",
+  "owner_approval": "Adopt these rules for new accounts",
+  "policy_version": "fynx-funded-v1",
+  "scope": "new accounts only; no existing customer migration",
+  "five_policy_differences": "zero differences on all five regression fixtures across API/generated client/generated server",
+  "funded_tests": 25,
+  "backend_tests": 52,
+  "functions_build": "passed",
+  "client_build": "passed",
+  "existing_customer_agreements_verified": false,
+  "reason": "No accepted agreement files or authoritative historical export supplied",
+  "production_deployed": false,
+  "first_push_ci": "https://github.com/EA-LA/FYNX-web/actions/runs/36371896915",
+  "policy_sha256": "205aad5bdcec8a3c76119039567993bf2269fdb1f2c5ea7040e238d97bc0b49b"
+}

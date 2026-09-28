@@ -1,3 +1,5 @@
+> Owner approved this numerical interpretation for NEW accounts on September 27, 2026. See [implementation and exact scope](RULE-ALIGNMENT.md). Existing customers are not migrated. The original proposal below is retained as the decision record.
+
 # Proposed trading rules and specification — review draft
 
 Version: proposal-2026-09-22. Status: **proposed; not approved account terms and not deployed as Funded decision policy**.

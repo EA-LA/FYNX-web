@@ -1,3 +1,5 @@
+> The opt-in v1 implementation now resolves all five differences: [rule alignment](RULE-ALIGNMENT.md). This historical table still describes legacy accounts.
+
 > Current follow-up: [September 28 implementation and remaining work](REMAINING-LAUNCH-WORK.md). The September 22 results below are historical.
 
 # Funded policy comparison and consistency review

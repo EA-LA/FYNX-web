@@ -26,6 +26,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Generate canonical Funded policy modules
+        run: node scripts/proof/sync-funded-policy.cjs
+        working-directory: api-source
+        env:
+          FYNX_FUNDED_REPO: ${{ github.workspace }}/fynxfunded
       - run: npm ci
         working-directory: api-source
       - run: npm ci
@@ -36,6 +41,8 @@ jobs:
         working-directory: fynxfunded/functions
       - run: npm run build
         working-directory: fynxfunded/functions
+      - run: npm test && npm run build
+        working-directory: fynxfunded
       - run: npm run test:release
         working-directory: api-source
         env:

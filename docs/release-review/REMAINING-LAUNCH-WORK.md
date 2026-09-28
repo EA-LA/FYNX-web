@@ -1,3 +1,5 @@
+> Latest: [versioned rule alignment and agreement evidence gap](RULE-ALIGNMENT.md). The initial package was pushed after explicit owner approval, and its GitHub Actions run passed.
+
 # Launch work remaining — 2026-09-28
 
 The launch is **not approved**. Changes below are local/source changes until deployed and verified. Older September 22 review documents remain historical evidence; this document records the current work.
@@ -17,8 +19,8 @@ The launch is **not approved**. Changes below are local/source changes until dep
 
 | # | Checklist item | Remaining work |
 |---|---|---|
-| 1 | Final trading rules | Owner approves daily basis, static/trailing maximum, consistency, timezone/reset, breach equality and versioned scope. See PROPOSED-RULES.md. |
-| 2 | Purchased rules and five differences | Supply actual sold agreements per account/program. All five differences remain deliberately visible; choosing the API proposal without those agreements would change customer rules. |
+| 1 | Final trading rules | DONE for new accounts: owner explicitly approved v1. See RULE-ALIGNMENT.md. Existing-account scope remains gated on actual purchased terms. |
+| 2 | Purchased rules and five differences | Supply actual sold agreements per account/program. All five differences are resolved/tested for the opt-in v1 path. Existing legacy accounts are not migrated: supply actual sold agreements and verify each binding. |
 | 3 | Pairs and broker specifications | Broker-authoritative symbol/contract/lot/leverage/cost/session catalog and effective versions. |
 | 4 | Public rule inconsistencies | Update Funded public rules/currencies/crypto/weekend claims after #1–3; generic public terms have not been silently rewritten. API beta pages already disclose USD ledger, caller-supplied Forex inputs and unverified broker catalog. |
 | 5 | Funded history validation | Parsing/cost/duplicate safeguards implemented. Still need verified adapter, phase-scoped completeness, equity marks and boundary coverage; closed-trade-only results require human review. |
@@ -63,6 +65,6 @@ For rollback, retain previous source and runtime/secret-version configuration. D
 
 ## Delivery status
 
-Local verification: 18 Funded tests, 43 backend tests, calculator/pilot proofs, seven API page checks, journal checks, Funded TypeScript build and static site build. Implementation commit: `53bb7f1` on `codex/fynx-first-proof`. Automatic approval review rejected the full push (source, tests, CI and launch/legal documents) pending explicit approval for that payload to `EA-LA/FYNX-web`. Nothing was pushed; remote CI remains unverified. The Funded patch was applied to the pinned baseline in a temporary directory and reproduced the tested source exactly.
+Local verification: 18 Funded tests, 43 backend tests, calculator/pilot proofs, seven API page checks, journal checks, Funded TypeScript build and static site build. Implementation commit: `53bb7f1` on `codex/fynx-first-proof`. Owner explicitly approved the full push; it succeeded. GitHub Actions run 36371896915 passed for commit 1dba084. Later rule-alignment changes require their own CI result. The Funded patch was applied to the pinned baseline in a temporary directory and reproduced the tested source exactly.
 
 Current operations recheck: this session has no Google Application Default Credentials, so current backup health and alert delivery could not be verified. Prior operations evidence is retained, not presented as a fresh pass.
