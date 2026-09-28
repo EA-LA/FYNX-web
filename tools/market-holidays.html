@@ -420,8 +420,8 @@
 
   <main>
     <div class="hero">
-      <h1>Market Holidays</h1><p class="site-data-notice">Planning reference · Published exchange schedules and US holiday rules for 2025–2028. Coverage is partial; confirm closures and early closes with your exchange.</p>
-      <div class="sub">2025–2028 · Market closures, early closes, and liquidity-impact days</div>
+      <h1>Market Holidays</h1><p class="site-data-notice">Planning reference · Published exchange schedules and US holiday rules for 2025–2029 (partial). Coverage is partial; confirm closures and early closes with your exchange.</p>
+      <div class="sub">2025–2029 (partial) · Market closures, early closes, and liquidity-impact days</div>
       <div class="note">
         Forex is generally open 24/5 and Crypto is 24/7. “Liquidity Warning” entries represent periods where participation
         often drops and spreads/slippage risk rises. For exchange-perfect calendars, always confirm official notices.
@@ -444,6 +444,7 @@
       </div>
     </div>
 
+    <p id="coverageStatus" role="status" style="padding:12px 0;font-size:14px"></p>
     <p style="padding:12px 0;font-size:14px">Coverage varies by exchange and year. LSE coverage starts August 31, 2026. See the source and coverage notes below; missing entries do not indicate an open market.</p>
     <div class="bar">
       <div class="controls">
@@ -475,6 +476,7 @@
             <option value="2026">2026</option>
             <option value="2027">2027</option>
             <option value="2028">2028</option>
+            <option value="2029">2029 — partial</option>
           </select>
         </div>
 
@@ -483,10 +485,7 @@
           <button id="impactBtn" type="button">High Impact Only</button>
         </div>
 
-        <div class="group" style="min-width:260px">
-          <label>Timezone</label>
-          <select id="tzSel" aria-label="Timezone"></select>
-        </div>
+
 
         <div class="views">
           <div class="group">
@@ -503,7 +502,7 @@
       <div class="statline">
         <span>Showing <span id="count" style="opacity:.92">0</span> events for <span id="yearTxt" style="opacity:.92">2026</span></span>
         <span class="dotSep">•</span>
-        <span>Timezone display: <span id="tzTxt" style="opacity:.88">—</span></span>
+        <span>Dates use the exchange calendar; closing times use the named exchange timezone.</span>
       </div>
     </div>
 
@@ -583,7 +582,7 @@
           </div>
         </div>
         <div class="rightNote">
-          Coverage reviewed September 22, 2026: TSX and TSXV 2025–2026; NYSE 2025–2028; Nasdaq 2025–2026; HKEX securities 2026–2027; TSE cash equities 2026–2027. LSE from August 31, 2026 through 2028. Unlisted dates or years do not mean a market is open. Weekends, emergency notices and product-specific sessions must also be checked.
+          Coverage reviewed September 28, 2026: TSX and TSXV 2025–2026; NYSE 2025–2029 (partial); Nasdaq 2025–2026; HKEX securities 2026–2027; TSE cash equities 2026–2027. LSE from August 31, 2026 through 2028, plus January 1, 2029 only. Unlisted dates or years do not mean a market is open. Weekends, emergency notices and product-specific sessions must also be checked.
           <p><a href="https://www.nyse.com/trade/hours-calendars" target="_blank" rel="noopener">NYSE</a> · <a href="https://www.nasdaq.com/market-activity/stock-market-holiday-schedule" target="_blank" rel="noopener">Nasdaq</a> · <a href="https://www.londonstockexchange.com/trade/trading-access/business-days" target="_blank" rel="noopener">LSE</a> · <a href="https://www.hkex.com.hk/News/HKEX-Calendar?sc_lang=en" target="_blank" rel="noopener">HKEX</a> · <a href="https://www.jpx.co.jp/english/corporate/about-jpx/calendar/" target="_blank" rel="noopener">JPX</a></p>
         </div>
       </div>
@@ -598,7 +597,7 @@
 <a href="https://www.jpx.co.jp/english/corporate/about-jpx/calendar/" target="_blank" rel="noopener">JPX calendar ↗</a>
 </div></section></main>
 
-  <script src="/assets/js/exchange-holidays.js?v=20260922-services"></script>
+  <script src="/assets/js/exchange-holidays.js?v=20260928-audit"></script>
   <script>
     /* ----------------------------- Theme sync ----------------------------- */
     const THEME_KEY = "fynx_theme";
@@ -663,8 +662,10 @@
     function goodFriday(year) {
       return addDays(easterSunday(year), -2);
     }
-    function formatInTZ(date, timeZone, opts) {
-      return new Intl.DateTimeFormat("en-US", { timeZone, ...opts }).format(date);
+    function formatExchangeDate(date, opts) {
+      // Holidays are exchange civil dates, not midnight instants to convert.
+      const civil = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      return new Intl.DateTimeFormat("en-US", { ...opts, timeZone:"UTC" }).format(civil);
     }
 
     /* --------------------------- Market definitions -------------------------- */
@@ -677,6 +678,7 @@
     }
 
     function buildUSHolidays(year) {
+      if (!Number.isInteger(year) || year < 2025 || year > 2028) return [];
       const list = [];
       if(new Date(year,0,1).getDay()!==6) list.push(mkHoliday({
         name:"New Year’s Day",
@@ -773,7 +775,7 @@
 
     function publishedExchangeHolidays(exchange,year) {
       const data=window.FynxExchangeHolidays[exchange]?.[year];if(!data)return [];
-      return ['closed','early'].flatMap(status=>(data[status]||[]).map(day=>mkHoliday({name:`${exchange} ${status==='early'?'Half-Day Session':'Market Holiday'}`,date:new Date(`${year}-${day}T12:00:00`),status,impact:status==='closed'?'medium':'low',regions:[['TSX','TSXV'].includes(exchange)?'Americas':exchange==='LSE'?'Europe':'Asia'],exchanges:[exchange],markets:['Stocks'],notes:`Published cash-equity calendar: ${data.source}. ${status==='early'?(['TSX','TSXV'].includes(exchange)?'Cash equities close at 13:00 America/Toronto. ':exchange==='LSE'?'Closing process starts at 12:30 Europe/London. ':'No afternoon securities session. '):''}Derivatives and settlement schedules may differ. Reviewed 2026-09-22.`})));
+      return ['closed','early'].flatMap(status=>(data[status]||[]).map(day=>mkHoliday({name:`${exchange} ${status==='early'?'Half-Day Session':'Market Holiday'}`,date:new Date(`${year}-${day}T12:00:00`),status,impact:status==='closed'?'medium':'low',regions:[['TSX','TSXV'].includes(exchange)?'Americas':exchange==='LSE'?'Europe':'Asia'],exchanges:[exchange],markets:['Stocks'],notes:`Published cash-equity calendar: ${data.source}. ${status==='early'?(['TSX','TSXV'].includes(exchange)?'Cash equities close at 13:00 America/Toronto. ':exchange==='LSE'?'Closing process starts at 12:30 Europe/London. ':'No afternoon securities session. '):''}Derivatives and settlement schedules may differ. Reviewed 2026-09-28.`})));
     }
     function buildHKHolidays(year){return publishedExchangeHolidays('HKEX',year);}
     function buildJPHolidays(year){return publishedExchangeHolidays('TSE',year);}
@@ -832,7 +834,7 @@
     }
 
     function buildHolidayDataset() {
-      const years = [2025, 2026, 2027, 2028];
+      const years = [2025, 2026, 2027, 2028, 2029];
       const all = [];
       for (const y of years) {
         all.push(...buildUSHolidays(y));
@@ -840,8 +842,8 @@
         all.push(...buildHKHolidays(y));
         all.push(...buildJPHolidays(y));
         all.push(...publishedExchangeHolidays('TSX',y),...publishedExchangeHolidays('TSXV',y));
-        all.push(...buildFXLiquidityHolidays(y));
-        all.push(...buildCryptoHolidays(y));
+        if(y<=2028) all.push(...buildFXLiquidityHolidays(y));
+        if(y<=2028) all.push(...buildCryptoHolidays(y));
       }
       const map = new Map();
       for (const h of all) map.set(h.id, h);
@@ -869,7 +871,7 @@
     const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
     const ALL = buildHolidayDataset();
     const currentYear = new Date().getFullYear();
-    const defaultYear = [2025, 2026, 2027, 2028].includes(currentYear) ? currentYear : 2026;
+    const defaultYear = [2025, 2026, 2027, 2028, 2029].includes(currentYear) ? currentYear : 2029;
 
     const state = {
       region: "all",
@@ -878,7 +880,6 @@
       highImpactOnly: false,
       view: "list",
       month: 0,
-      tz: (Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Boise"),
       now: new Date()
     };
 
@@ -887,7 +888,6 @@
     const marketSel = document.getElementById("marketSel");
     const yearSel = document.getElementById("yearSel");
     const impactBtn = document.getElementById("impactBtn");
-    const tzSel = document.getElementById("tzSel");
 
     const viewList = document.getElementById("viewList");
     const viewTimeline = document.getElementById("viewTimeline");
@@ -900,7 +900,6 @@
     const cards = document.getElementById("cards");
     const countEl = document.getElementById("count");
     const yearTxt = document.getElementById("yearTxt");
-    const tzTxt = document.getElementById("tzTxt");
 
     const nextWrap = document.getElementById("nextWrap");
     const nextName = document.getElementById("nextName");
@@ -915,30 +914,6 @@
 
     const heatYear = document.getElementById("heatYear");
     const heatBody = document.getElementById("heatBody");
-
-    /* ------------------------------ Timezone list ------------------------------ */
-    const tzList = [
-      "America/Boise",
-      "America/Los_Angeles",
-      "America/Denver",
-      "America/Chicago",
-      "America/New_York",
-      "Europe/London",
-      "Europe/Paris",
-      "Asia/Tokyo",
-      "Asia/Hong_Kong",
-      "Asia/Dubai",
-      "UTC"
-    ];
-    function buildTZOptions() {
-      tzSel.innerHTML = "";
-      tzList.forEach(tz => {
-        const o = document.createElement("option");
-        o.value = tz; o.textContent = tz;
-        tzSel.appendChild(o);
-      });
-      tzSel.value = state.tz;
-    }
 
     /* ------------------------------ Filtering ------------------------------ */
     function filtered() {
@@ -966,7 +941,7 @@
       nextWrap.style.display = "flex";
       nextName.textContent = n.name;
       nextMeta.textContent = `${n.exchanges.join(", ")} · ${n.markets.join(", ")}`;
-      nextDate.textContent = formatInTZ(n.date, state.tz, { month:"short", day:"numeric" });
+      nextDate.textContent = formatExchangeDate(n.date, { month:"short", day:"numeric" });
       nextBadge.textContent = statusLabel(n.status);
     }
 
@@ -988,7 +963,7 @@
 
       cards.innerHTML = "";
       sorted.forEach(h => {
-        const dateText = formatInTZ(h.date, state.tz, { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+        const dateText = formatExchangeDate(h.date, { weekday:"long", year:"numeric", month:"long", day:"numeric" });
         const dot = impactClass(h.impact);
         const chipsEx = h.exchanges.map(x => `<span class="chip">${x}</span>`).join("");
         const chipsRg = h.regions.map(x => `<span class="chip">${x}</span>`).join("");
@@ -1116,7 +1091,12 @@
       const items = filtered();
       countEl.textContent = String(items.length);
       yearTxt.textContent = String(state.year);
-      tzTxt.textContent = state.tz;
+      document.getElementById('coverageStatus').textContent = 'Published coverage for '+state.year+': '+Object.entries(window.FynxHolidayCoverage).map(([exchange,range])=>{
+        const start=state.year+'-01-01',end=state.year+'-12-31';
+        if(range.end<start||range.start>end)return exchange+' — not verified';
+        if(range.start<=start&&range.end>=end)return exchange+' — full year';
+        return exchange+' — partial ('+(range.start>start?range.start:start)+' to '+(range.end<end?range.end:end)+')';
+      }).join('; ')+'. Missing entries do not mean open. Future emergency changes require exchange notices.';
 
       renderNext();
       if (state.view === "list") renderList(items);
@@ -1134,7 +1114,6 @@
       render();
     });
 
-    tzSel.addEventListener("change", () => { state.tz = tzSel.value; render(); });
 
     viewList.addEventListener("click", () => { setView("list"); render(); });
     viewTimeline.addEventListener("click", () => { setView("timeline"); render(); });
@@ -1155,12 +1134,10 @@
 
     /* ------------------------------ Init ------------------------------ */
     function init() {
-      buildTZOptions();
       regionSel.value = state.region;
       marketSel.value = state.market;
       yearSel.value = String(state.year);
       impactBtn.classList.toggle("toggleOn", state.highImpactOnly);
-      tzSel.value = state.tz;
 
       setView("list");
       render();

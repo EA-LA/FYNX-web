@@ -1,4 +1,4 @@
-/* Published cash-equity calendars reviewed 2026-09-22. Weekends excluded. */
+/* Published cash-equity calendars reviewed 2026-09-28. Weekends excluded. */
 window.FynxExchangeHolidays={
  TSX:{2025:{closed:['01-01','02-17','04-18','05-19','07-01','08-04','09-01','10-13','12-25','12-26'],early:['12-24'],source:'TMX cash-equity trading calendar'},2026:{closed:['01-01','02-16','04-03','05-18','07-01','08-03','09-07','10-12','12-25','12-28'],early:['12-24'],source:'TMX cash-equity trading calendar'}},
  LSE:{2026:{closed:['08-31','12-25','12-28'],early:['12-24','12-31'],source:'LSE business days (coverage from August 31)'},2027:{closed:['01-01','03-26','03-29','05-03','05-31','08-30','12-27','12-28'],early:['12-24','12-31'],source:'LSE business days'},2028:{closed:['01-03','04-14','04-17','05-01','05-29','08-28','12-25','12-26'],early:['12-22','12-29'],source:'LSE business days'}},
@@ -7,3 +7,15 @@ window.FynxExchangeHolidays={
 };
 
 window.FynxExchangeHolidays.TSXV=window.FynxExchangeHolidays.TSX;
+
+// Only the published New Year entry is available for LSE 2029.
+window.FynxExchangeHolidays.LSE[2029]={closed:['01-01'],early:[],source:'LSE business days (January 1 only)'};
+window.FynxHolidayCoverage={
+ NYSE:{start:'2025-01-01',end:'2028-12-31'},
+ NASDAQ:{start:'2025-01-01',end:'2026-12-31'},
+ TSX:{start:'2025-01-01',end:'2026-12-31'},
+ TSXV:{start:'2025-01-01',end:'2026-12-31'},
+ LSE:{start:'2026-08-31',end:'2029-01-01'},
+ HKEX:{start:'2026-01-01',end:'2027-12-31'},
+ TSE:{start:'2026-01-01',end:'2027-12-31'}
+};
