@@ -65,8 +65,8 @@ small.dim{font-size:11px;color:#777} .filters{display:flex;gap:8px;flex-wrap:wra
   })();
 </script><script type="module">
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
-import { auth, bootstrapAccount, saveNotificationPreferences, listenNotifications, markNotificationRead, markAllNotificationsRead, dismissNotification, requestBrowserNotificationPermission, showBrowserNotification, ingestNewsNotifications, countUnread } from './assets/js/account-system.js';
-import { mountNotificationBell } from './assets/js/account-ui.js';
+import { auth, bootstrapAccount, saveNotificationPreferences, listenNotifications, markNotificationRead, markAllNotificationsRead, dismissNotification, requestBrowserNotificationPermission, showBrowserNotification, ingestNewsNotifications, countUnread } from './assets/js/account-system.js?v=20260928-account';
+import { mountNotificationBell } from './assets/js/account-ui.js?v=20260928-account';
 
 const prefs = {};
 const actionStatus = document.createElement('p');

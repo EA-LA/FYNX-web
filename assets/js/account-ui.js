@@ -4,7 +4,7 @@ import {
   listenNotifications,
   countUnread,
   markNotificationRead
-} from "./account-system.js";
+} from "./account-system.js?v=20260928-account";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 let unsubscribeNotifications = null;

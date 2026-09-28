@@ -33,7 +33,7 @@ import {
   DEFAULT_NOTIFICATION_PREFERENCES,
   PRIORITY,
   createNotificationEngine
-} from "./notifications/engine.js";
+} from "./notifications/engine.js?v=20260928-account";
 
 const db = getFirestore(app);
 const storage = getStorage(app);
