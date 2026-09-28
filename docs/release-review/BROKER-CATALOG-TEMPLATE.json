@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "version": null,
+  "broker": null,
+  "platform": null,
+  "server": null,
+  "account_type": null,
+  "account_currency": null,
+  "effective_from": null,
+  "effective_until": null,
+  "sources": [
+    {
+      "id": null,
+      "issuer": null,
+      "reference": null,
+      "sha256": null,
+      "retrieved_at": null
+    }
+  ],
+  "symbols": [
+    {
+      "symbol": null,
+      "base_currency": null,
+      "quote_currency": null,
+      "contract_size": null,
+      "price_digits": null,
+      "tick_size": null,
+      "pip_size": null,
+      "minimum_lot": null,
+      "maximum_lot": null,
+      "lot_step": null,
+      "source_ids": [],
+      "tick_value_and_conversion": {
+        "description": null,
+        "source_ids": []
+      },
+      "margin_and_leverage": {
+        "description": null,
+        "source_ids": []
+      },
+      "commission": {
+        "description": null,
+        "source_ids": []
+      },
+      "swaps": {
+        "description": null,
+        "source_ids": []
+      },
+      "other_fees": {
+        "description": null,
+        "source_ids": []
+      },
+      "trading_sessions": {
+        "description": null,
+        "source_ids": []
+      },
+      "holidays_and_dst": {
+        "description": null,
+        "source_ids": []
+      },
+      "execution_restrictions": {
+        "description": null,
+        "source_ids": []
+      }
+    }
+  ]
+}
