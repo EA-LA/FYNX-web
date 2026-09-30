@@ -5,3 +5,8 @@ test('holiday monitor ignores executable content but notices closure text change
  assert.notEqual(fingerprint(calendar),fingerprint(calendar.replace('13:00','12:00')));
  assert.throws(()=>fingerprint('<h1>Access denied</h1>'));
 });
+test('uses current LSE source and distinguishes a browser-only calendar from an HTTP outage',()=>{
+ const {sources}=require('./holiday-notices')._test;
+ assert.equal(sources.lse,'https://www.londonstockexchange.com/trade/trading-access/business-days');
+ assert.throws(()=>fingerprint('<main>London Stock Exchange</main><script>loadCalendar()</script>'),e=>e.code==='calendar-browser-review');
+});
