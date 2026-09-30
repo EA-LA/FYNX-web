@@ -38,7 +38,7 @@
       sdkPromise = Promise.race([Promise.all([
       import('./firebase.js'),
       import('https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js'),
-      import('../assets/js/mfa.js?v=20260915-cloud'),
+      import('../assets/js/mfa.js?v=20260930-errors'),
       import('../assets/js/route-utils.js?v=20260922-routing')
     ]).then(async ([config, api, mfa, routes]) => {
       await config.authPersistenceReady;

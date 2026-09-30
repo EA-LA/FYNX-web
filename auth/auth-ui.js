@@ -1,4 +1,4 @@
-import { withMfa } from "../assets/js/mfa.js?v=20260915-cloud";
+import { withMfa } from "../assets/js/mfa.js?v=20260930-errors";
 import { auth, authPersistenceReady } from "./firebase.js";
 import {
   GoogleAuthProvider,

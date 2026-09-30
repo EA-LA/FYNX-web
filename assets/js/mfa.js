@@ -1,5 +1,20 @@
 import { auth } from '../../auth/firebase.js';
 import { multiFactor, TotpMultiFactorGenerator, getMultiFactorResolver, EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup, GoogleAuthProvider, OAuthProvider, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
+function mfaErrorMessage(error){
+  const messages={
+    'auth/cancelled':'Authentication cancelled. You can try again when ready.',
+    'auth/invalid-verification-code':'That code is invalid or expired. Try the current code.',
+    'auth/code-expired':'That code has expired. Try the current code.',
+    'auth/invalid-credential':'The password is incorrect. Please try again.',
+    'auth/wrong-password':'The password is incorrect. Please try again.',
+    'auth/network-request-failed':'We couldn’t connect. Check your connection and try again.',
+    'auth/too-many-requests':'Too many attempts. Wait a few minutes and try again.',
+    'auth/requires-recent-login':'Sign in again before changing two-factor authentication.',
+    'auth/unverified-email':'Verify your email before setting up two-factor authentication.',
+    'auth/invalid-multi-factor-session':'This setup session expired. Close it and start again.'
+  };
+  return messages[error?.code] || 'Could not complete authentication. Please close this dialog and try again.';
+}
 function dialog(title,description,fields,submitLabel,action){
   return new Promise((resolve,reject)=>{
     const modal=document.createElement('dialog');modal.style.cssText='width:min(440px,calc(100vw - 32px));margin:auto;padding:28px;border:1px solid #777;border-radius:8px;background:var(--panel,#111);color:var(--text,#eee)';
@@ -11,9 +26,9 @@ function dialog(title,description,fields,submitLabel,action){
     const submit=document.createElement('button');submit.textContent=submitLabel;submit.type='submit';submit.className='btn';
     const cancel=document.createElement('button');cancel.textContent='Cancel';cancel.type='button';cancel.className='btn';cancel.style.marginLeft='12px';
     const close=()=>{modal.close();modal.remove();};
-    const abort=()=>{close();reject(new Error('Authentication cancelled.'));};
+    const abort=()=>{close();const error=new Error('Authentication cancelled.');error.code='auth/cancelled';reject(error);};
     cancel.onclick=abort;modal.addEventListener('cancel',e=>{e.preventDefault();abort();});
-    form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;status.textContent='Verifying…';try{const values=Object.fromEntries(Object.entries(inputs).map(([key,input])=>[key,input.value]));const result=await action(values);close();resolve(result);}catch(error){status.textContent=error.code==='auth/invalid-verification-code'?'That code is invalid or expired. Try the current code.':error.message;submit.disabled=false;}};
+    form.onsubmit=async e=>{e.preventDefault();submit.disabled=true;status.textContent='Verifying…';try{const values=Object.fromEntries(Object.entries(inputs).map(([key,input])=>[key,input.value]));const result=await action(values);close();resolve(result);}catch(error){status.textContent=mfaErrorMessage(error);submit.disabled=false;}};
     form.append(status,submit,cancel);modal.append(heading,paragraph,form);document.body.append(modal);modal.showModal();
   });
 }
@@ -48,11 +63,11 @@ if(section){
       await reauthenticate();const user=auth.currentUser;await user.reload();
       const factor=multiFactor(user).enrolledFactors.find(f=>f.factorId==='totp');
       if(factor){await dialog('Remove authenticator','Removing this factor reduces your sign-in protection. You can add it again later.',[],'Remove',()=>multiFactor(user).unenroll(factor));render();return;}
-      if(!user.emailVerified)throw new Error('Verify your email address before setting up two-factor authentication.');
+      if(!user.emailVerified)throw Object.assign(new Error('Verify your email address before setting up two-factor authentication.'),{code:'auth/unverified-email'});
       const secret=await TotpMultiFactorGenerator.generateSecret(await multiFactor(user).getSession());
       await dialog('Set up your authenticator',`Add a time-based account named FYNX in your authenticator app with this setup key: ${secret.secretKey}. Then enter its six-digit code. Keep your authenticator backed up; you will need it to sign in.`,[{name:'code',label:'Authenticator code',code:true}],'Enable protection',v=>multiFactor(user).enroll(TotpMultiFactorGenerator.assertionForEnrollment(secret,v.code),'FYNX authenticator'));
       render();
-    }catch(e){status.textContent=['auth/operation-not-allowed','auth/unsupported-first-factor'].includes(e.code)?'Authenticator setup requires the Identity Platform upgrade to be activated for this project.':e.message;}
-    finally{button.disabled=!auth.currentUser;}
+    }catch(e){status.textContent=['auth/operation-not-allowed','auth/unsupported-first-factor'].includes(e.code)?'Authenticator setup requires the Identity Platform upgrade to be activated for this project.':mfaErrorMessage(e);}
+    finally{const enrolled=auth.currentUser&&multiFactor(auth.currentUser).enrolledFactors.some(f=>f.factorId==='totp');button.disabled=!auth.currentUser||(!enrolled&&!enrollmentActivated);}
   };
 }
