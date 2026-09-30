@@ -17,6 +17,8 @@ Added CNBC's dedicated energy RSS to the existing commodity sources. Broad marke
 
 The [Nasdaq official calendar](https://www.nasdaq.com/market-activity/stock-market-holiday-schedule) still publishes its 2026 US schedule. The existing beyond-2027 coverage limits in `docs/holiday-coverage-audit-2026-09-28.md` remain applicable; missing years were not generated or copied from another exchange.
 
+The browser-rendered [LSE business-day table](https://www.londonstockexchange.com/trade/trading-access/business-days) was also checked directly. Its published range still runs from August 31, 2026 through January 1, 2029, matching the existing audited coverage and partial-2029 warning. No extra dates were added.
+
 The pending [TMX September 30 notice](https://www.tsx.com/en/trading/toronto-stock-exchange/trading-notices?id=1187), notice 2026-039, was read directly. It states that September 30 is a banking/non-clearing/non-settlement holiday only and that TSX, TSXV and the Alpha markets remain open for trading. It does not justify adding a trading closure. Calendar data was not changed.
 
 ## MFA prerequisite
