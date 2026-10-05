@@ -30,3 +30,5 @@ console.log(`Shared design verified on all ${inventory.length} HTML pages.`);
 
 require('./build-search-metadata.cjs');
 require('./build-learning.cjs');
+
+require('./build-advertising.cjs');

@@ -1,0 +1,8 @@
+{
+  "enabled": false,
+  "publisherId": "",
+  "slotId": "",
+  "siteApproved": false,
+  "privacyAndConsentReady": false,
+  "pages": ["index.html", "learn.html", "news/news.html", "market-analysis.html"]
+}

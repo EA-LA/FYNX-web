@@ -8,7 +8,7 @@ fs.mkdirSync(out, { recursive: true });
 const directories = ['api', 'assets', 'auth', 'home', 'learn', 'markets', 'news', 'resources', 'tools'];
 for (const dir of directories) fs.cpSync(path.join(root, dir), path.join(out, dir), { recursive: true });
 for (const file of fs.readdirSync(root, { withFileTypes: true })) {
-  if (file.isFile() && (/\.(html|css|js|png|ico|svg|xml)$/.test(file.name) || file.name === 'robots.txt')) {
+  if (file.isFile() && (/\.(html|css|js|png|ico|svg|xml)$/.test(file.name) || ['robots.txt', 'ads.txt'].includes(file.name))) {
     fs.copyFileSync(path.join(root, file.name), path.join(out, file.name));
   }
 }

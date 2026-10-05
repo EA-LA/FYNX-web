@@ -25,15 +25,16 @@ async function load(category){
       const url='https://news.google.com/rss/search?'+new URLSearchParams({q:queries[category]+' when:2d',hl:'en-US',gl:'US',ceid:'US:en'});
       const urls=[url,'https://www.cnbc.com/id/10000664/device/rss/rss.html'];
       // Broad market feeds can contain no commodity stories even when publishers are healthy.
+      if(category==='crypto')urls.push('https://www.coindesk.com/arc/outboundfeeds/rss/');
       if(category==='commodities')urls.push('https://www.cnbc.com/id/19836768/device/rss/rss.html');
       if(['forex','commodities','macro'].includes(category))urls.push('https://www.fxstreet.com/rss/news');
       const results=await Promise.allSettled(urls.map(async source=>{
         const response=await fetch(source,{signal:AbortSignal.timeout(9000),headers:{'User-Agent':'FYNX-News/1.0','Accept':'application/rss+xml, application/xml, text/xml'}});
         if(!response.ok)throw new Error('Publisher HTTP '+response.status);
         let rows=parseFeed(await response.text());
-        rows=rows.map(item=>({...item,source:source.includes('cnbc.com')?'CNBC':source.includes('fxstreet.com')?'FXStreet':item.source}));
+        rows=rows.map(item=>({...item,source:source.includes('cnbc.com')?'CNBC':source.includes('fxstreet.com')?'FXStreet':source.includes('coindesk.com')?'CoinDesk':item.source}));
         if((!source.includes('news.google.com') || category==='commodities') && !['all','stocks'].includes(category)) {
-          const words={forex:/currency|forex|dollar|yen|euro|sterling|usd|eur|gbp|jpy|aud|cad/i,crypto:/crypto|bitcoin|ethereum|token/i,macro:/inflation|fed|rate|econom|jobs/i,commodities:/\b(gold|oil|commodit\w*|silver|energy|copper|natural gas|crude|bullion|wheat|metals?)\b/i,world:/global|world|china|europe|asia|trade/i};
+          const words={forex:/\b(currency|currencies|forex|dollars?|yen|euros?|sterling|usd|eur|gbp|jpy|aud|cad|eurusd|usdjpy|gbpusd|audusd|usdcad)\b/i,crypto:/crypto|bitcoin|ethereum|token/i,macro:/inflation|fed|rate|econom|jobs/i,commodities:/\b(gold|oil|commodit\w*|silver|energy|copper|natural gas|crude|bullion|wheat|metals?)\b/i,world:/global|world|china|europe|asia|trade/i};
           rows=rows.filter(item=>words[category].test(item.title));
         }
         return rows;
@@ -41,7 +42,8 @@ async function load(category){
       const feeds=results.filter(result=>result.status==='fulfilled');
       if(!feeds.length)throw new AggregateError(results.map(result=>result.reason),'All publishers unavailable');
       const items=mergeFeeds(feeds.map(result=>result.value));
-      const data={items,fetchedAt:new Date().toISOString(),stale:false};cache.set(category,data);return data;
+      const publishedAt=items[0]?.pubDate||null;
+      const data={items,publishedAt,fetchedAt:new Date().toISOString(),stale:!!publishedAt&&Date.now()-Date.parse(publishedAt)>72*3600000};cache.set(category,data);return data;
     }catch(error){console.warn('Market feed unavailable',category,error.errors?.map(e=>e.message)||error.message);if(old && Date.now()-Date.parse(old.fetchedAt)<3600000)return {...old,stale:true};throw error;}
     finally{pending.delete(category);}
   })();pending.set(category,task);return task;

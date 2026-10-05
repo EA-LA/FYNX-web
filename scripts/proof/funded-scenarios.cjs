@@ -15,7 +15,20 @@ const scenarios=[
  {name:'policy/reset-hour',trades:[{timestamp:'2026-09-01T21:30:00Z',pnl:100},{timestamp:'2026-09-01T22:30:00Z',pnl:100}],expected:'active',reason:'UTC calendar dates differ from the selected 22:00 UTC trading-day reset.'},
  {name:'policy/touch-daily-limit',trades:sequence([-500]),expected:'active'},
 ];
-function load(file,stubs,append=''){const source=fs.readFileSync(path.join(funded,file),'utf8'),compiled=ts.transpileModule(source+append,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;const module={exports:{}};vm.runInNewContext(compiled,{module,exports:module.exports,require:name=>{if(!(name in stubs))throw new Error('Unexpected import '+name);return stubs[name];},console},{filename:file});return {api:module.exports,sha256:createHash('sha256').update(source).digest('hex')};}
+function load(file,stubs,append=''){
+ const absolute=path.resolve(funded,file);
+ if(!absolute.startsWith(path.resolve(funded)+path.sep))throw Error('Import escapes Funded repository');
+ const source=fs.readFileSync(absolute,'utf8');
+ const compiled=ts.transpileModule(source+append,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText;
+ const module={exports:{}};
+ vm.runInNewContext(compiled,{module,exports:module.exports,require:name=>{
+   if(Object.hasOwn(stubs,name))return stubs[name];
+   if(name==='decimal.js')return require(path.join(funded,'node_modules/decimal.js'));
+   if(name.startsWith('./'))return load(path.relative(funded,path.resolve(path.dirname(absolute),name+'.ts')),stubs).api;
+   throw new Error('Unexpected import '+name);
+ },console},{filename:file});
+ return {api:module.exports,sha256:createHash('sha256').update(source).digest('hex')};
+}
 async function run(){
  const client=load('src/services/rules-engine.ts',{'./database':{dataService:{addAuditLog:async()=>{}}}}),rows=[];
  for(const scenario of scenarios){

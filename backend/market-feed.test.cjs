@@ -25,3 +25,17 @@ test('dedicated energy feed supplies commodities when search is unavailable and 
   const data=await api.load('commodities');assert.equal(data.items.length,1);assert.equal(data.items[0].source,'CNBC');assert.equal(data.items[0].title,'Crude oil exports recover');assert.equal(data.stale,false);
  }finally{global.fetch=old;api.cache.clear();}
 });
+test('forex excludes Europe substring matches and old publisher dates remain stale',async()=>{
+ const api=require('./market-feed')._test,old=global.fetch;api.cache.clear();
+ const date=new Date(Date.now()-4*86400000).toUTCString();
+ const xml='<rss><channel>'+['Europe imposes trade curbs','Euro falls against dollar'].map((title,i)=>`<item><title>${title}</title><link>https://example.com/${i}</link><pubDate>${date}</pubDate></item>`).join('')+'</channel></rss>';
+ try{global.fetch=async url=>{if(url.includes('news.google'))throw Error('offline');return{ok:true,text:async()=>xml};};
+ const data=await api.load('forex');assert.equal(data.items.length,1);assert.equal(data.items[0].title,'Euro falls against dollar');assert.equal(data.publishedAt,new Date(date).toISOString());assert.equal(data.stale,true);
+ }finally{global.fetch=old;api.cache.clear();}
+});
+test('dedicated crypto publisher survives unavailable search and empty broad feeds',async()=>{
+ const api=require('./market-feed')._test,old=global.fetch;api.cache.clear();
+ try{global.fetch=async url=>{if(url.includes('news.google'))throw Error('offline');return{ok:true,text:async()=>url.includes('coindesk')?`<rss><channel><item><title>Bitcoin market update</title><link>https://www.coindesk.com/test</link><pubDate>${new Date().toUTCString()}</pubDate></item></channel></rss>`:'<rss><channel/></rss>'};};
+ const data=await api.load('crypto');assert.equal(data.items.length,1);assert.equal(data.items[0].source,'CoinDesk');assert.equal(data.stale,false);
+ }finally{global.fetch=old;api.cache.clear();}
+});
