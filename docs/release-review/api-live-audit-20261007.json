@@ -1,0 +1,143 @@
+{
+  "checked_at": "2026-10-07T16:59:49.285Z",
+  "scope": "All public API HTML routes and their same-origin links/assets; not authenticated UI or the entire Finance World site",
+  "pages": [
+    {
+      "path": "/api/",
+      "status": 200,
+      "title": "Trading infrastructure for developers | FYNX API",
+      "h1": 1,
+      "bytes": 7189
+    },
+    {
+      "path": "/api/index.html",
+      "status": 200,
+      "title": "Trading infrastructure for developers | FYNX API",
+      "h1": 1,
+      "bytes": 7189
+    },
+    {
+      "path": "/api/risk.html",
+      "status": 200,
+      "title": "Risk API | FYNX API",
+      "h1": 1,
+      "bytes": 7481
+    },
+    {
+      "path": "/api/prop-firm.html",
+      "status": 200,
+      "title": "Prop Firm Rules API | FYNX API",
+      "h1": 1,
+      "bytes": 7009
+    },
+    {
+      "path": "/api/pricing.html",
+      "status": 200,
+      "title": "API pricing and launch plans | FYNX API",
+      "h1": 1,
+      "bytes": 7001
+    },
+    {
+      "path": "/api/docs.html",
+      "status": 200,
+      "title": "API documentation preview | FYNX API",
+      "h1": 1,
+      "bytes": 19016
+    },
+    {
+      "path": "/api/access.html",
+      "status": 200,
+      "title": "Get API access | FYNX API",
+      "h1": 1,
+      "bytes": 4010
+    },
+    {
+      "path": "/api/workspace.html",
+      "status": 200,
+      "title": "Developer workspace | FYNX API",
+      "h1": 1,
+      "bytes": 3195
+    }
+  ],
+  "links": [
+    {
+      "url": "https://www.fynxfinanceworld.com/",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/api/",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/api/api.css?v=20260922-routing",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/api/api.js",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/api/docs.html",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/api/examples/prop-firm-quickstart.mjs",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/api/examples/quickstart.mjs",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/api/index.html",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/api/pricing.html",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/api/prop-firm.html",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/api/risk.html",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/api/workspace.css?v=20260922-routing",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/api/workspace.html",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/api/workspace.js?v=live-billing-20260927",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/assets/js/journal-theme.js?v=20260922-routing",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/assets/js/site-theme-init.js?v=20260922-services",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js",
+      "status": 200
+    },
+    {
+      "url": "https://www.fynxfinanceworld.com/contact.html",
+      "status": 200
+    }
+  ],
+  "excluded": [
+    {
+      "url": "https://www.fynxfinanceworld.com/cdn-cgi/l/email-protection",
+      "reason": "Cloudflare client-decoded email link; bare proxy URL is not a page destination."
+    }
+  ],
+  "complete": true
+}

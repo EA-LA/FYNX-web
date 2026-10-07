@@ -1,6 +1,6 @@
 # API data lifecycle and incident procedure
 
-Status: operating procedure prepared; policy approval and end-to-end deletion implementation remain pending. No automatic primary-data retention period is approved by this document.
+Status: operator export/deletion and isolated-restore suppression tools are implemented; retention-policy approval and operational adoption remain pending. No automatic primary-data retention period is approved by this document.
 
 ## Export
 
@@ -17,7 +17,31 @@ The actual exporter was exercised against disposable Firestore records using a R
 5. Verify primary-data removal and access denial. Record any required retained billing/legal records and their expiry criteria. Do not tell a customer all copies are gone while backups still contain data.
 6. Apply the deletion ledger to any restored database before production access resumes. Revoke restored API keys and suppress deleted workspaces. Test this workflow before publishing a deletion commitment.
 
-Steps 3–6 require a dedicated tested operator implementation; a runbook alone does not complete them. No customer data was deleted during this task.
+Operator implementation: `backend/developer-data-lifecycle.cjs` and `backend/scripts/manage-developer-deletion.cjs`. Nine tests cover nested/missing-parent records, global-key scope, tenant isolation, approval freshness, held/changed data, disabled identity, partial failure and isolated-restore suppression. No real customer data was deleted.
+
+The tool refuses to disable shared Authentication itself. The shared identity must already be disabled under a reviewed request, with at least 90 seconds of write quiescence (longer than the API's 60-second request timeout). This affects other FYNX products and must be explicitly reviewed. Keep it disabled after deletion; re-enabling it can permit a new workspace to be created by the current deployed bootstrap. An API-only self-service deletion flow is not claimed.
+
+Preview command (read-only):
+
+```sh
+GOOGLE_CLOUD_PROJECT=fynx-c7a28 node backend/scripts/manage-developer-deletion.cjs preview FIREBASE_UID /private/path/inventory.json
+```
+
+Create a private approval JSON with `uid`, `inventory_sha256` from that exact preview, `request_reference`, `reviewer`, `retention_decision`, `billing_review_reference`, `identity_verified: true`, `legal_holds_resolved: true`, `shared_identity_disable_approved: true`, `writes_quiesced_at` and `approved_at` (timezone-qualified timestamps). The reviewer must substantiate those statements; the tool cannot decide legal holds or inspect Stripe invoices itself. Approval must be less than 24 hours old. Review real customer requests separately before executing:
+
+```sh
+GOOGLE_CLOUD_PROJECT=fynx-c7a28 node backend/scripts/manage-developer-deletion.cjs apply FIREBASE_UID /private/path/approval.json --apply-reviewed-deletion
+```
+
+The tool records a minimal deletion marker, checks each chunk against the approved content hashes transactionally, deletes only workspace descendants and owned global API keys, and verifies absence. Shared Authentication, Funded records and Stripe are not deleted. Errors leave a pending marker and disabled identity; re-inventory and re-approve before retrying. Do not erase the marker to hide partial failure.
+
+For an isolated recovered database, before connecting traffic:
+
+```sh
+GOOGLE_CLOUD_PROJECT=fynx-c7a28 node backend/scripts/manage-developer-deletion.cjs suppress-restore FIREBASE_UID /private/path/report.json --apply-reviewed-deletion ISOLATED_DATABASE_ID
+```
+
+This reads the authoritative deletion ledger from the current default database, never the restored backup, and refuses a default-database target. Preserve the current ledger independently during disaster recovery. Inventory all deletion markers before restoring service; this command handles one verified UID at a time. Backup copies expire according to the reviewed schedule; this tool does not purge backups or invent a primary retention period.
 
 ## Backups
 

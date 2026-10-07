@@ -1,3 +1,5 @@
+> Latest: [October 7 rescan, fixes, test results and remaining launch gates](OCTOBER-7-COMPLETION.md).
+
 > Current follow-up: [September 28 implementation and remaining work](REMAINING-LAUNCH-WORK.md). The September 22 results below are historical.
 
 # Completed review package — September 22, 2026

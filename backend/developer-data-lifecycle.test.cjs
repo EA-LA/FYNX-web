@@ -1,0 +1,30 @@
+'use strict';
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const {inventory,deleteWorkspace,suppressRestoredWorkspace,ledgerId}=require('./developer-data-lifecycle.cjs');
+function database(){
+ const records=new Map([['fynxDevelopers/alice',{name:'Alice'}],['fynxDevelopers/alice/environments/test/keys/key',{digest:'PRIVATE'}],['fynxDevelopers/alice/environments/test/accounts/a/events/e',{sequence:1}],['fynxDevelopers/alice/private/rate',{count:2}],['fynxDeveloperKeys/alicekey',{uid:'alice'}],['fynxDeveloperKeys/bobkey',{uid:'bob'}],['fynxDevelopers/bob',{name:'Bob'}],['challenges/alice',{status:'active'}]]);
+ const ref=path=>({path,id:path.split('/').at(-1),get:async()=>({exists:records.has(path),data:()=>records.get(path)}),set:async(data)=>records.set(path,{...records.get(path),...data}),listCollections:async()=>[...new Set([...records.keys()].filter(k=>k.startsWith(path+'/')).map(k=>k.slice(path.length+1).split('/')[0]))].map(id=>({id,listDocuments:async()=>[...new Set([...records.keys()].filter(k=>k.startsWith(path+'/'+id+'/')).map(k=>k.slice(0,(path+'/'+id+'/').length)+k.slice((path+'/'+id+'/').length).split('/')[0]))].map(ref)}))});
+ const db={records,doc:ref};
+ db.collection=function(name){
+  return {doc:id=>ref(name+'/'+id),where:function(_field,_op,uid){
+   return {limit:function(limit){return {get:async function(){
+    const docs=[...records].filter(([p,d])=>p.startsWith(name+'/')&&d.uid===uid).slice(0,limit).map(([p,d])=>({ref:ref(p),data:()=>d}));
+    return {docs};
+   }};}};
+  }};
+ };
+ db.runTransaction=async fn=>{const pending=[];await fn({get:r=>r.get(),delete:r=>pending.push(r.path)});pending.forEach(p=>records.delete(p));};
+ db.batch=()=>{const pending=[];return {delete:r=>pending.push(r.path),commit:async()=>pending.forEach(p=>records.delete(p))};};
+ return db;
+}
+const auth={getUser:async()=>({disabled:true})};
+async function approval(db){const plan=await inventory(db,'alice');return {uid:'alice',inventory_sha256:plan.sha256,request_reference:'qa-delete',reviewer:'QA reviewer',retention_decision:'QA disposable data; no retention required',billing_review_reference:'QA has no subscriptions',identity_verified:true,legal_holds_resolved:true,shared_identity_disable_approved:true,writes_quiesced_at:new Date(Date.now()-120000).toISOString(),approved_at:new Date().toISOString()};}
+test('deletion inventory includes private descendants and only owned global keys, even with missing parents',async()=>{const db=database(),p=await inventory(db,'alice');assert.equal(p.documents.length,5);assert(p.documents.some(d=>d.path.endsWith('/events/e')));assert(p.documents.some(d=>d.path.includes('/private/')));assert(!JSON.stringify(p).includes('PRIVATE'));assert(!p.documents.some(d=>d.path.includes('bob')||d.path.startsWith('challenges/')));});
+test('reviewed deletion removes API scope, preserves other tenants/shared product and writes a minimal ledger',async()=>{const db=database(),a=await approval(db);const result=await deleteWorkspace({db,auth,uid:'alice',approval:a});assert.equal(result.deleted_documents,5);assert.equal((await inventory(db,'alice')).documents.length,0);assert(db.records.has('challenges/alice'));assert(db.records.has('fynxDevelopers/bob'));assert(db.records.has('fynxDeveloperKeys/bobkey'));assert.equal(db.records.get('fynxApiDeletionLedger/'+ledgerId('alice')).state,'complete');assert.equal(result.backup_copies_removed,false);});
+test('enabled shared identity cannot be deleted',async()=>{const db=database();await assert.rejects(deleteWorkspace({db,auth:{getUser:async()=>({disabled:false})},uid:'alice',approval:await approval(db)}),/disabled/);assert.equal(db.records.size,8);});
+test('changed inventory and mismatched identity fail before any mutation',async()=>{for(const change of [a=>a.uid='bob',a=>a.inventory_sha256='different']){const db=database(),a=await approval(db);change(a);await assert.rejects(deleteWorkspace({db,auth,uid:'alice',approval:a}),/match/);assert.equal(db.records.size,8);}});
+test('unresolved holds, missing billing review, insufficient quiescence and stale approval fail closed',async()=>{for(const change of [a=>a.legal_holds_resolved=false,a=>a.billing_review_reference='',a=>a.shared_identity_disable_approved=false,a=>a.writes_quiesced_at=new Date().toISOString(),a=>a.approved_at='2020-01-01T00:00:00Z']){const db=database(),a=await approval(db);change(a);await assert.rejects(deleteWorkspace({db,auth,uid:'alice',approval:a}));assert.equal(db.records.size,8);}});
+test('write racing approved deletion leaves pending ledger and requires re-review',async()=>{const db=database(),a=await approval(db),run=db.runTransaction;db.runTransaction=async fn=>{db.records.set('fynxDevelopers/alice',{name:'changed'});return run(fn);};await assert.rejects(deleteWorkspace({db,auth,uid:'alice',approval:a}),/changed/);assert.equal(db.records.get('fynxApiDeletionLedger/'+ledgerId('alice')).state,'pending');assert(db.records.has('fynxDeveloperKeys/alicekey'));});
+test('restore suppression reads current ledger and removes only deleted tenant from an isolated restore',async()=>{const sourceDb=database(),restoredDb=database();await deleteWorkspace({db:sourceDb,auth,uid:'alice',approval:await approval(sourceDb)});const r=await suppressRestoredWorkspace({restoredDb,sourceDb,auth,uid:'alice',targetDatabase:'qa-restore'});assert.equal(r.documents,5);assert.equal((await inventory(restoredDb,'alice')).documents.length,0);assert(restoredDb.records.has('fynxDevelopers/bob'));});
+test('restore suppression refuses default database, enabled identity or missing authoritative ledger',async()=>{for(const option of [{targetDatabase:'(default)'},{targetDatabase:'qa-restore'},{targetDatabase:'qa-restore',auth:{getUser:async()=>({disabled:false})}}]){const db=database();await assert.rejects(suppressRestoredWorkspace({restoredDb:db,sourceDb:database(),auth,uid:'alice',...option}));assert.equal(db.records.size,8);}});
+test('invalid scope and oversized inventory are rejected',async()=>{await assert.rejects(inventory(database(),'alice/../bob'));await assert.rejects(inventory(database(),'alice',{maxDocuments:2}),/bound/);});

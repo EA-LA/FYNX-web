@@ -9,7 +9,7 @@ function harness({challenge={phase:'2-phase',accountSize:10000,currentPhase:1,br
  const db={collection:name=>({doc:id=>name==='challenges'?ref:{collection:name,id},where:(field,op,value)=>({get:async()=>{queries.push({field,value});return {empty:!trades.length,docs:trades.map((data,i)=>({id:String(i),data:()=>data}))};}})}),batch:()=>({set:(r,value)=>writes.push({collection:r===ref?'challenges':r.collection,value}),commit:async()=>{if(commitError)throw Error('storage unavailable');commits++;}})};
  db.runTransaction=async fn=>{const pending=[];const result=await fn({get:r=>r.get(),set:(r,value)=>pending.push({collection:r===ref?'challenges':r.collection,value})});if(commitError)throw Error('storage unavailable');writes.push(...pending);commits++;return result;};
  class HttpsError extends Error{constructor(code,message){super(message);this.code=code;}}
- const source=load('functions/src/challengeProgression.ts',{'./fundedPolicy':require('../../backend/funded-policy.cjs'),'firebase-admin':{firestore:Object.assign(()=>db,{Timestamp:class{},FieldValue:{serverTimestamp:()=>123}})},'firebase-functions/v2/firestore':{onDocumentWritten:(_path,fn)=>fn},'firebase-functions/v2/https':{onCall:fn=>fn,HttpsError}},'\nexport { evaluateChallenge };');
+ const source=load('functions/src/challengeProgression.ts',{'./fundedMfa':{requireFundedMfa:async()=>{}},'./fundedPolicy':require('../../backend/funded-policy.cjs'),'firebase-admin':{firestore:Object.assign(()=>db,{Timestamp:class{},FieldValue:{serverTimestamp:()=>123}})},'firebase-functions/v2/firestore':{onDocumentWritten:(_path,fn)=>fn},'firebase-functions/v2/https':{onCall:fn=>fn,HttpsError}},'\nexport { evaluateChallenge };');
  return {...source.api,writes,queries,commits:()=>commits};
 }
 const trades=(pnl=200,n=5)=>Array.from({length:n},(_,i)=>({closeTime:`2026-09-${String(i+1).padStart(2,'0')}T16:00:00Z`,pnl}));
@@ -65,7 +65,7 @@ test('recorded failure persists after profitable history recovery',async()=>{
 });
 test('automatic enablement never writes mode or decisions before approved equity integration',async()=>{
  for(const ps of [[],trades(),[{closeTime:'bad',pnl:100}]]){
- const h=harness({trades:ps});await assert.rejects(h.adminChallengeProgression({auth:{uid:'owner',token:{email:'fynxteam5@gmail.com'}},data:{challengeId:'qa',action:'set_automatic'}}),{code:'failed-precondition'});assert.equal(h.writes.length,0);
+ const h=harness({trades:ps});await assert.rejects(h.adminChallengeProgression({auth:{uid:'owner',token:{email:'fynxteam5@gmail.com',email_verified:true}},data:{challengeId:'qa',action:'set_automatic'}}),{code:'failed-precondition'});assert.equal(h.writes.length,0);
  }
 });
 test('automatic triggers with empty or recovered history never overwrite decisions',async()=>{

@@ -1,0 +1,83 @@
+{
+  "checked_at": "2026-10-07T16:55:11.869Z",
+  "database": {
+    "pitr": "POINT_IN_TIME_RECOVERY_ENABLED",
+    "location": "nam5"
+  },
+  "backups": {
+    "ready": 18,
+    "newest": "2026-10-07T09:42:51.802783Z",
+    "paginated": false
+  },
+  "alerts": [
+    {
+      "name": "FYNX API: engine unavailable",
+      "enabled": true,
+      "channels": 1
+    },
+    {
+      "name": "FYNX API: server or backup failures",
+      "enabled": true,
+      "channels": 1
+    },
+    {
+      "name": "FYNX API: backup inspection missing",
+      "enabled": true,
+      "channels": 1
+    }
+  ],
+  "functions": [
+    {
+      "name": "developerBilling",
+      "status": "ACTIVE",
+      "runtime": "nodejs22",
+      "updated": "2026-09-28T00:27:07.080Z",
+      "secrets": [
+        {
+          "key": "FYNX_API_STRIPE_SECRET_KEY",
+          "version": "1"
+        }
+      ]
+    },
+    {
+      "name": "developerWorkspace",
+      "status": "ACTIVE",
+      "runtime": "nodejs22",
+      "updated": "2026-09-28T00:27:07.558Z",
+      "secrets": [
+        {
+          "key": "FYNX_API_STRIPE_SECRET_KEY",
+          "version": "1"
+        }
+      ]
+    },
+    {
+      "name": "developerHealth",
+      "status": "ACTIVE",
+      "runtime": "nodejs22",
+      "updated": "2026-09-21T17:19:21.877Z",
+      "secrets": []
+    },
+    {
+      "name": "developerGateway",
+      "status": "ACTIVE",
+      "runtime": "nodejs22",
+      "updated": "2026-09-28T00:27:05.234Z",
+      "secrets": [
+        {
+          "key": "FYNX_API_STRIPE_SECRET_KEY",
+          "version": "1"
+        }
+      ]
+    }
+  ],
+  "test_credentials": {
+    "FYNX_API_STRIPE_TEST_SECRET_KEY": {
+      "error": 404
+    },
+    "STRIPE_SECRET_KEY": {
+      "test_key": true,
+      "live_key": false
+    }
+  }
+}

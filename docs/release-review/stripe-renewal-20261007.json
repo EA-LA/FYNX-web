@@ -1,0 +1,32 @@
+{
+  "checked_at": "2026-10-07T16:56:49.853Z",
+  "qa_run": "fynx-renewal-24d3e7ec-2e00-4cf3-9725-025c0710fa5c",
+  "mode": "test",
+  "checks": [
+    "Initial simulated subscription paid USD 49",
+    "Clock-driven monthly renewal creates and pays a new invoice",
+    "Failed renewal leaves invoice unpaid and subscription past due",
+    "Valid replacement method recovers the unpaid renewal",
+    "Cancellation retains active access through paid period",
+    "Subscription cancels at the scheduled period end"
+  ],
+  "cleanup": [
+    {
+      "name": "delete test clock and associated customers/subscriptions",
+      "ok": true
+    },
+    {
+      "name": "deactivate test price",
+      "ok": true
+    },
+    {
+      "name": "deactivate test product",
+      "ok": true
+    }
+  ],
+  "limitations": [
+    "Hosted checkout and portal UI are not exercised.",
+    "No production webhook or customer entitlement writes are exercised."
+  ],
+  "complete": true
+}
