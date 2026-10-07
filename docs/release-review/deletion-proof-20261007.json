@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-07T17:03:02.422Z",
+  "result": {
+    "state": "complete",
+    "deleted_documents": 4,
+    "shared_auth_deleted": false,
+    "stripe_changed": false,
+    "backup_copies_removed": false
+  },
+  "real_customer_data_deleted": false,
+  "fixture_cleanup_complete": true,
+  "restore_suppression": "isolated unit tests only"
+}

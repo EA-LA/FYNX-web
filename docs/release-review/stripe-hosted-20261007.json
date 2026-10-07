@@ -1,0 +1,16 @@
+{
+  "checked_at": "2026-10-07T19:53:09.034Z",
+  "mode": "test",
+  "checks": [
+    "Hosted TEST checkout completed and paid; subscription active",
+    "Hosted TEST portal cancellation verified by Stripe"
+  ],
+  "cleanup_complete": true,
+  "browser_observation": "Sandbox portal displayed Cancels Nov 7 and service ends November 7, 2026.",
+  "initial_portal_attempt": "Expired; a fresh session successfully completed cancellation.",
+  "limitations": [
+    "Standalone sandbox checkout and portal using the production-style monthly/card flow.",
+    "Does not verify deployed webhook delivery or production Firebase entitlement updates.",
+    "No live charge, real customer change or legal approval."
+  ]
+}
