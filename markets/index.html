@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'Inter','Segoe UI',system-ui,sans-serif;color:#fff;background:#000;overflow-x:hidden;min-height:100vh}
@@ -23,7 +22,6 @@
     .orb1{width:520px;height:520px;background:radial-gradient(circle,#fff 0%,transparent 70%);top:-220px;left:-220px}
     .orb2{width:420px;height:420px;background:radial-gradient(circle,#fff 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
     @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
-
     header{
       position:sticky;top:0;z-index:1000;
       background:rgba(0, 0, 0, .85);
@@ -47,7 +45,6 @@
       transition:all .25s ease;white-space:nowrap;
     }
     .nav a:hover{color:#fff;border-color:rgba(255, 255, 255, .28);background:rgba(255, 255, 255, .08);transform:translateY(-1px)}
-
     main{max-width:1200px;margin:0 auto;padding:3.5rem 1.25rem 5rem}
     .card{
       padding:2.25rem 1.75rem;
@@ -66,7 +63,6 @@
     .panel{margin-top:1.25rem;border:1px solid rgba(255, 255, 255, .10);background:rgba(0, 0, 0, .55);border-radius:18px;padding:1.25rem;backdrop-filter:blur(10px)}
     .panel h2{font-size:1.2rem;margin-bottom:.5rem}
     .muted{color:rgba(255, 255, 255, .6);font-size:.98rem}
-
     .chips{margin-top:1rem;display:flex;gap:.6rem;flex-wrap:wrap}
     .chip{
       display:inline-flex;align-items:center;gap:.5rem;
@@ -82,11 +78,9 @@
     .chip.active{border-color:rgba(255, 255, 255, .28);background:rgba(255, 255, 255, .10);color:#fff}
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Financial Markets: Forex, Crypto &amp; Market Research | FYNX</title>
 <meta name="description" content="Browse forex and crypto market views, technical indicators, volatility, correlations and market research references.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -94,6 +88,12 @@
 <meta property="og:title" content="Financial Markets: Forex, Crypto &amp; Market Research | FYNX">
 <meta property="og:description" content="Browse forex and crypto market views, technical indicators, volatility, correlations and market research references.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/markets/index.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Markets","item":"https://www.fynxfinanceworld.com/explore.html?category=Markets"},{"@type":"ListItem","position":3,"name":"Financial Markets: Forex, Crypto & Market Research","item":"https://www.fynxfinanceworld.com/markets/index.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="MARKETS">
   <div class="animated-bg">
@@ -112,7 +112,8 @@
   </header>
 
   <main>
-    <div class="card">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Markets">Markets</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<div class="card">
       <h1 id="title">Markets</h1>
       <p id="desc">Choose a market section.</p>
 
@@ -123,7 +124,8 @@
         <div class="muted" id="panelText">Add your real content here.</div>
       </div>
     </div>
-  </main>
+  <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/markets/cot.html"><strong>CFTC Commitments of Traders: Weekly Positions</strong><span>Explore the latest published CFTC Legacy Futures Only positions, including net commercial and non-commercial positions and open interest.</span></a><a href="/markets/liquidity.html"><strong>Crypto Liquidity: Coinbase Bid, Ask &amp; Spread</strong><span>View Coinbase BTC/USD and ETH/USD best bid, ask, spread and displayed size, refreshed every 15 seconds while visible.</span></a><a href="/markets/crypto.html"><strong>Crypto Market Overview: Bitcoin, Ethereum &amp; Altcoins</strong><span>Explore Bitcoin, Ethereum and other cryptocurrency markets with charts and market context for your research.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const params = new URLSearchParams(location.search);

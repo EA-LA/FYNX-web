@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-
     :root{
       --bg:#f7f7f7;
       --bg-solid:#ffffff;
@@ -36,7 +34,6 @@
       --btn-secondary-text:#111111;
       --result-card-bg:rgba(0, 0, 0, .025);
     }
-
     body.dark-mode{
       --bg:#000000;
       --bg-solid:#000000;
@@ -64,7 +61,6 @@
       --btn-secondary-text:#ffffff;
       --result-card-bg:rgba(255, 255, 255, .03);
     }
-
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
       color:var(--text);
@@ -73,7 +69,6 @@
       min-height:100vh;
       transition:background .25s ease,color .25s ease;
     }
-
     .animated-bg{
       position:fixed;
       inset:0;
@@ -82,7 +77,6 @@
       overflow:hidden;
       transition:background .25s ease;
     }
-
     .grid-overlay{
       position:absolute;inset:0;
       background-image:
@@ -92,9 +86,7 @@
       animation:gridMove 20s linear infinite;
       transition:background-image .25s ease;
     }
-
     @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-
     .gradient-orb{
       position:absolute;
       border-radius:50%;
@@ -102,7 +94,6 @@
       opacity:.25;
       animation:float 20s ease-in-out infinite;
     }
-
     .orb-1{
       width:520px;
       height:520px;
@@ -110,7 +101,6 @@
       top:-220px;
       left:-220px;
     }
-
     .orb-2{
       width:420px;
       height:420px;
@@ -119,13 +109,11 @@
       right:-170px;
       animation-delay:6s;
     }
-
     @keyframes float{
       0%,100%{transform:translate(0,0) scale(1)}
       33%{transform:translate(50px,-50px) scale(1.08)}
       66%{transform:translate(-50px,50px) scale(.92)}
     }
-
     header{
       position:sticky;
       top:0;
@@ -136,7 +124,6 @@
       padding:1rem 0;
       transition:background .25s ease,border-color .25s ease;
     }
-
     .nav{
       max-width:1200px;
       margin:0 auto;
@@ -145,7 +132,6 @@
       justify-content:space-between;
       padding:0 1.25rem;
     }
-
     .brand{
       display:flex;
       align-items:center;
@@ -156,9 +142,7 @@
       color:var(--text-strong);
       transition:color .25s ease;
     }
-
     .brand i{opacity:.9}
-
     .nav a{
       color:var(--text-muted);
       text-decoration:none;
@@ -170,20 +154,17 @@
       transition:all .25s ease;
       white-space:nowrap;
     }
-
     .nav a:hover{
       color:var(--text-strong);
       border-color:var(--border-strong);
       background:var(--nav-link-bg-hover);
       transform:translateY(-1px);
     }
-
     main{
       max-width:1200px;
       margin:0 auto;
       padding:3.5rem 1.25rem 5rem;
     }
-
     .hero{
       padding:2.25rem 1.75rem;
       border:1px solid var(--border);
@@ -192,7 +173,6 @@
       backdrop-filter:blur(10px);
       transition:background .25s ease,border-color .25s ease;
     }
-
     h1{
       font-size:3rem;
       line-height:1.1;
@@ -202,7 +182,6 @@
       -webkit-text-fill-color:transparent;
       margin-bottom:.75rem;
     }
-
     p{
       color:var(--text-muted);
       font-size:1.1rem;
@@ -210,7 +189,6 @@
       max-width:70ch;
       transition:color .25s ease;
     }
-
     .panel-grid{
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
@@ -218,7 +196,6 @@
       margin-top:1.25rem;
       align-items:start;
     }
-
     .panel{
       border:1px solid var(--border);
       background:var(--surface-2);
@@ -228,46 +205,39 @@
       min-height:180px;
       transition:background .25s ease,border-color .25s ease;
     }
-
     .panel h2{
       font-size:1.2rem;
       margin-bottom:.45rem;
       color:var(--text-strong);
       transition:color .25s ease;
     }
-
     .panel .muted{
       color:var(--text-muted);
       font-size:.98rem;
       transition:color .25s ease;
     }
-
     .mini-tip{
       margin-bottom:1rem;
       color:var(--text-soft);
       font-size:.94rem;
       line-height:1.7;
     }
-
     .form-grid{
       display:grid;
       gap:.9rem;
       margin-top:.9rem;
     }
-
     .field{
       display:grid;
       grid-template-columns:180px 1fr;
       gap:1rem;
       align-items:center;
     }
-
     .field label{
       font-weight:800;
       color:var(--text-strong);
       font-size:1rem;
     }
-
     .field input{
       width:100%;
       border:1px solid var(--input-border);
@@ -280,17 +250,14 @@
       outline:none;
       transition:border-color .2s ease, background .2s ease, color .2s ease, transform .2s ease;
     }
-
     .field input::placeholder{
       color:var(--text-soft);
       font-weight:600;
     }
-
     .field input:focus{
       border-color:var(--border-strong);
       transform:translateY(-1px);
     }
-
     .btn-row{
       display:flex;
       justify-content:flex-end;
@@ -298,7 +265,6 @@
       margin-top:1rem;
       flex-wrap:wrap;
     }
-
     .btn{
       border:none;
       border-radius:14px;
@@ -308,44 +274,36 @@
       cursor:pointer;
       transition:transform .2s ease, opacity .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
     }
-
     .btn:hover{transform:translateY(-1px)}
-
     .btn-primary{
       background:var(--btn-bg);
       color:var(--btn-text);
     }
-
     .btn-primary:hover{
       background:var(--btn-hover);
     }
-
     .btn-secondary{
       background:var(--btn-secondary-bg);
       color:var(--btn-secondary-text);
       border:1px solid var(--border);
     }
-
     .results-empty{
       color:var(--text-soft);
       font-size:.98rem;
       line-height:1.7;
       margin-top:.2rem;
     }
-
     .result-list{
       display:grid;
       gap:.8rem;
       margin-top:.95rem;
     }
-
     .result-item{
       border:1px solid var(--border);
       background:var(--result-card-bg);
       border-radius:14px;
       padding:.9rem 1rem;
     }
-
     .result-label{
       font-size:.86rem;
       color:var(--text-soft);
@@ -353,7 +311,6 @@
       font-weight:700;
       letter-spacing:.01em;
     }
-
     .result-value{
       font-size:1.15rem;
       font-weight:900;
@@ -361,14 +318,12 @@
       line-height:1.3;
       word-break:break-word;
     }
-
     .hint{
       margin-top:1.2rem;
       color:var(--text-soft);
       font-size:.95rem;
       transition:color .25s ease;
     }
-
     @media (max-width: 760px){
       h1{font-size:2.35rem}
       .field{
@@ -384,18 +339,22 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Stock Position Sizing Calculator | FYNX</title>
 <meta name="description" content="Calculate a stock trade's position size and risk from account size, risk percentage, entry price and stop price.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.fynxfinanceworld.com/tools/stock.html">
 <meta property="og:title" content="Stock Position Sizing Calculator | FYNX">
-<meta property="og:description" content="Calculate a stock trade's position size and risk from account size, risk percentage, entry price and stop price.">
+<meta property="og:description" content="Calculate a stock trade&#39;s position size and risk from account size, risk percentage, entry price and stop price.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/stock.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Stock Position Sizing Calculator","item":"https://www.fynxfinanceworld.com/tools/stock.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
   <div class="animated-bg">
@@ -415,7 +374,8 @@
   </header>
 
   <main>
-    <section class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
       <h1>Stock Calculator</h1>
       <p>Plan your stock trade cleanly. Enter your account size, risk percentage, entry price, and stop loss to calculate risk amount, per-share risk, position size, and capital needed.</p>
 
@@ -492,13 +452,15 @@
 
       <div class="hint">This version keeps your existing page style and adds a working stock position size calculator inside the same layout.</div>
     </section>
-  </main>
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Work out a share quantity before entering</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Use the actual entry and stop assumptions for the same ticker. Compare cash requirements as well as the loss budget.</p><h3>The calculation or concept</h3><p>Shares from risk budget = risk amount ÷ absolute entry-to-stop distance; round down to whole shares when required.</p></div><div class="tool-example"><h3>Worked example</h3><p>With a hypothetical $75 risk budget and a $1.50 entry-to-stop distance, the arithmetic gives 50 shares. At a $40 entry those shares require $2,000 before costs.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Fractional-share availability, broker margin and costs vary. A price gap through the stop can make the realized loss larger.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/risk-reward.html"><strong>Risk-to-Reward Ratio Calculator</strong><span>Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const THEME_KEY = "fynx_theme";
 
     (function applyThemeFromStorage(){
-      const saved = localStorage.getItem(THEME_KEY);
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
       if (saved === "dark") document.body.classList.add("dark-mode");
       else document.body.classList.remove("dark-mode");
     })();

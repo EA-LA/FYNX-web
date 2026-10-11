@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       font-family: 'Inter','Segoe UI',system-ui,sans-serif;
       color: var(--text);
@@ -18,7 +15,6 @@
       min-height: 100vh;
       transition: background .3s, color .3s;
     }
-
     body {
       --bg: #fff;
       --text: #0a0a0a;
@@ -41,7 +37,6 @@
       --btn-hover: rgba(0, 0, 0, .12);
       --success-bg: rgba(0, 0, 0, .04);
     }
-
     body.dark-mode {
       --bg: #000;
       --text: #fff;
@@ -64,7 +59,6 @@
       --btn-hover: rgba(255, 255, 255, .14);
       --success-bg: rgba(255, 255, 255, .05);
     }
-
     .animated-bg {
       position: fixed;
       inset: 0;
@@ -73,7 +67,6 @@
       overflow: hidden;
       transition: background .3s;
     }
-
     .grid-overlay {
       position: absolute;
       inset: 0;
@@ -83,12 +76,10 @@
       background-size: 50px 50px;
       animation: gridMove 20s linear infinite;
     }
-
     @keyframes gridMove {
       0% { transform: translate(0,0); }
       100% { transform: translate(50px,50px); }
     }
-
     .gradient-orb {
       position: absolute;
       border-radius: 50%;
@@ -96,7 +87,6 @@
       opacity: var(--orb-opacity);
       animation: float 20s ease-in-out infinite;
     }
-
     .orb-1 {
       width: 520px;
       height: 520px;
@@ -104,7 +94,6 @@
       top: -220px;
       left: -220px;
     }
-
     .orb-2 {
       width: 420px;
       height: 420px;
@@ -113,13 +102,11 @@
       right: -170px;
       animation-delay: 6s;
     }
-
     @keyframes float {
       0%,100% { transform: translate(0,0) scale(1); }
       33% { transform: translate(50px,-50px) scale(1.08); }
       66% { transform: translate(-50px,50px) scale(.92); }
     }
-
     header {
       position: sticky;
       top: 0;
@@ -130,7 +117,6 @@
       padding: 1rem 0;
       transition: background .3s, border-color .3s;
     }
-
     .nav {
       max-width: 1200px;
       margin: 0 auto;
@@ -140,7 +126,6 @@
       padding: 0 1.25rem;
       gap: 1rem;
     }
-
     .brand {
       display: flex;
       align-items: center;
@@ -150,14 +135,12 @@
       font-size: 1.25rem;
       color: var(--text);
     }
-
     .nav-actions {
       display: flex;
       gap: .6rem;
       flex-wrap: wrap;
       justify-content: flex-end;
     }
-
     .nav a {
       color: var(--text);
       text-decoration: none;
@@ -169,19 +152,16 @@
       transition: all .25s ease;
       white-space: nowrap;
     }
-
     .nav a:hover {
       border-color: var(--nav-link-hover-border);
       background: var(--nav-link-hover-bg);
       transform: translateY(-1px);
     }
-
     main {
       max-width: 1200px;
       margin: 0 auto;
       padding: 3.5rem 1.25rem 5rem;
     }
-
     .hero {
       padding: 2.25rem 1.75rem;
       border: 1px solid var(--border);
@@ -190,7 +170,6 @@
       backdrop-filter: blur(10px);
       transition: background .3s, border-color .3s;
     }
-
     h1 {
       font-size: 3rem;
       line-height: 1.1;
@@ -200,21 +179,18 @@
       -webkit-text-fill-color: transparent;
       margin-bottom: .75rem;
     }
-
     .subtitle {
       color: var(--text-muted);
       font-size: 1.1rem;
       line-height: 1.8;
       max-width: 75ch;
     }
-
     .panel-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
       gap: 1.25rem;
       margin-top: 1.25rem;
     }
-
     .panel {
       border: 1px solid var(--border);
       background: var(--panel-bg);
@@ -224,7 +200,6 @@
       min-height: 320px;
       transition: background .3s, border-color .3s;
     }
-
     .panel h2 {
       font-size: 1.55rem;
       margin-bottom: .45rem;
@@ -232,37 +207,31 @@
       font-weight: 900;
       letter-spacing: -.5px;
     }
-
     .panel .muted {
       color: var(--text-muted);
       font-size: .97rem;
       line-height: 1.6;
       margin-bottom: 1rem;
     }
-
     .form-grid {
       display: grid;
       gap: .95rem;
       margin-top: 1rem;
     }
-
     .field-group {
       display: grid;
       gap: .4rem;
     }
-
     .field-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: .8rem;
     }
-
     label {
       font-size: .98rem;
       font-weight: 800;
       color: var(--text);
     }
-
     input,
     select {
       width: 100%;
@@ -276,21 +245,17 @@
       transition: border-color .2s ease, background .2s ease, transform .15s ease;
       appearance: none;
     }
-
     input:focus,
     select:focus {
       border-color: var(--text);
       transform: translateY(-1px);
     }
-
     input::placeholder {
       color: var(--text-muted);
     }
-
     .select-wrap {
       position: relative;
     }
-
     .select-wrap::after {
       content: "\f078";
       font-family: "Font Awesome 6 Free";
@@ -303,14 +268,12 @@
       color: var(--text-muted);
       font-size: .8rem;
     }
-
     .actions {
       display: flex;
       flex-wrap: wrap;
       gap: .7rem;
       margin-top: .4rem;
     }
-
     button {
       border: 1px solid var(--btn-border);
       background: var(--btn-bg);
@@ -322,16 +285,13 @@
       transition: all .2s ease;
       font-size: .96rem;
     }
-
     button:hover {
       background: var(--btn-hover);
       transform: translateY(-1px);
     }
-
     .swap-btn {
       width: 100%;
     }
-
     .result-placeholder,
     .result-box {
       border: 1px solid var(--border);
@@ -339,14 +299,12 @@
       border-radius: 16px;
       padding: 1rem;
     }
-
     .result-placeholder {
       color: var(--text-muted);
       min-height: 120px;
       display: flex;
       align-items: center;
     }
-
     .big-result {
       font-size: 2rem;
       font-weight: 900;
@@ -356,13 +314,11 @@
       color: var(--text);
       word-break: break-word;
     }
-
     .result-line {
       color: var(--text-muted);
       line-height: 1.7;
       font-size: .98rem;
     }
-
     .rate-badge {
       display: inline-flex;
       align-items: center;
@@ -376,21 +332,18 @@
       color: var(--text);
       font-weight: 700;
     }
-
     .footnote {
       margin-top: 1rem;
       color: var(--text-muted);
       font-size: .95rem;
       line-height: 1.65;
     }
-
     .mini-note {
       margin-top: .5rem;
       color: var(--text-muted);
       font-size: .9rem;
       line-height: 1.5;
     }
-
     @media (max-width: 720px) {
       h1 { font-size: 2.35rem; }
       .field-row { grid-template-columns: 1fr; }
@@ -399,11 +352,9 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Currency Conversion Calculator: Manual Rates | FYNX</title>
 <meta name="description" content="Convert currencies using a manually entered exchange rate or fixed example rates. The calculator does not provide live exchange rates.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -411,6 +362,12 @@
 <meta property="og:title" content="Currency Conversion Calculator: Manual Rates | FYNX">
 <meta property="og:description" content="Convert currencies using a manually entered exchange rate or fixed example rates. The calculator does not provide live exchange rates.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/currency.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Currency Conversion Calculator: Manual Rates","item":"https://www.fynxfinanceworld.com/tools/currency.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
   <div class="animated-bg">
@@ -430,7 +387,8 @@
   </header>
 
   <main>
-    <section class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
       <h1>Currency Calculator</h1><p class="site-data-notice">Conversion estimate · Built-in rates are fixed examples. Enter a current manual rate for your calculation; no live exchange-rate feed is connected.</p>
       <p class="subtitle">
         Convert currencies instantly using built-in exchange rates. Enter your amount, choose your currencies,
@@ -497,13 +455,15 @@
         Logic: the calculator uses a built-in currency table relative to USD and supports manual override through the custom rate field.
       </div>
     </section>
-  </main>
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Convert with a rate you can verify</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter a manual rate from your chosen provider and verify its direction. Fixed examples in this tool are not current quotes.</p><h3>The calculation or concept</h3><p>Converted amount = source amount × exchange rate when the rate is expressed as destination currency per source unit.</p></div><div class="tool-example"><h3>Worked example</h3><p>At an illustrative rate of 1.10 USD per EUR, €250 converts to $275 before provider fees. The inverse rate is needed to convert in the opposite direction.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Banks and brokers may apply spreads, fees and different execution rates. Recheck the rate and timestamp before making a real conversion.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/pip.html"><strong>Forex Pip Value Calculator</strong><span>Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.</span></a><a href="/tools/forex.html"><strong>Forex Trade Planning Calculators</strong><span>Plan a forex trade with links to position sizing and pip value calculators using your account and risk inputs.</span></a><a href="/tools/margin.html"><strong>Forex Margin &amp; Leverage Calculator</strong><span>Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const THEME_KEY = "fynx_theme";
 
     (function applyThemeFromStorage() {
-      const saved = localStorage.getItem(THEME_KEY);
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
       if (saved === "dark") document.body.classList.add("dark-mode");
       else document.body.classList.remove("dark-mode");
     })();

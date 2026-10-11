@@ -1,25 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <script>
     (function(){
-      const t = localStorage.getItem("fynx_theme") === "dark" ? "dark" : "light";
+      const t = window.FynxPreferences?.getItem("fynx_theme") === "dark" ? "dark" : "light";
       document.documentElement.dataset.theme = t;
       document.documentElement.style.backgroundColor = t === "light" ? "#fbfbfb" : "#000000";
     })();
   </script>
-
   <title>Market Overview: Trading Tools, News &amp; Learning | FYNX</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/app-shell.css" />
   <link rel="stylesheet" href="assets/css/mobile-fixes.css">
-
   <style>
     :root{
       --bg:#ffffff;
@@ -28,22 +25,16 @@
       --text:#0f0f0f;
       --muted:#727272;
       --line:#e7e7e7;
-
       --shadow:0 16px 42px rgba(35, 35, 35, 0.08);
       --shadow-2:0 10px 30px rgba(23, 23, 23, 0.08);
       --radius:14px;
-
       --nav-width:120px;
-
       --chip:#f4f4f4;
       --chip-line:#e7e7e7;
-
       /* STRICT black/white only */
       --pos:#181818;
       --neg:#181818;
-
       --hero-dot: rgba(0, 0, 0, 0.06);
-
       /* ✅ FIX #1: Buttons follow theme strictly:
          Light mode => fully white button (black text)
          Dark mode  => fully black button (white text)
@@ -51,15 +42,12 @@
       --btn-bg:#ffffff;
       --btn-text:#0f0f0f;
       --btn-border:#0f0f0f;
-
       --card-bg:#fafafa;
       --card-hover:#f5f5f5;
-
       --ring: rgba(0, 0, 0, 0.12);
       --glow: rgba(0, 0, 0, 0.08);
       --alive: rgba(0, 0, 0, 0.06);
     }
-
     body.dark-mode{
       --bg:#000000;
       --surface:#000000;
@@ -67,30 +55,22 @@
       --text:#ffffff;
       --muted:rgba(255, 255, 255, 0.55);
       --line:rgba(255, 255, 255, 0.10);
-
       --shadow:0 16px 42px rgba(0, 0, 0, 0.45);
       --shadow-2:0 12px 34px rgba(0, 0, 0, 0.55);
-
       --chip:rgba(255, 255, 255, 0.06);
       --chip-line:rgba(255, 255, 255, 0.10);
-
       --hero-dot: rgba(255, 255, 255, 0.08);
-
       /* ✅ FIX #1: dark mode primary button = fully black */
       --btn-bg:#000000;
       --btn-text:#ffffff;
       --btn-border:#ffffff;
-
       --card-bg:rgba(255, 255, 255, 0.03);
       --card-hover:rgba(255, 255, 255, 0.05);
-
       --ring: rgba(255, 255, 255, 0.14);
       --glow: rgba(255, 255, 255, 0.10);
       --alive: rgba(255, 255, 255, 0.08);
     }
-
     *{ margin:0; padding:0; box-sizing:border-box; }
-
     body{
       font-family:"Manrope", system-ui, -apple-system, Segoe UI, sans-serif;
       background:
@@ -100,7 +80,6 @@
       height:100vh;
       overflow:hidden;
     }
-
     /* Subtle grid fade */
     .bg-grid{
       position:fixed; inset:0;
@@ -117,7 +96,6 @@
         linear-gradient(to bottom, transparent 0%, transparent 45%, rgba(255, 255, 255, 0.06) 50%, transparent 55%, transparent 100%);
       opacity:0.35;
     }
-
     /* Micro-animations (clean + alive) */
     @keyframes riseIn {
       from { transform: translateY(10px); opacity: 0; }
@@ -137,9 +115,7 @@
       30% { opacity: .95; }
       100% { transform: translateX(130%); opacity: 0; }
     }
-
     .dashboard-container{ display:flex; height:100vh; width:100vw; }
-
     /* NAV */
     .nav-panel{
       width:var(--nav-width);
@@ -153,20 +129,17 @@
       flex-direction:column;
       backdrop-filter: blur(10px);
     }
-
     .nav-logo{
       padding:30px 0;
       text-align:center;
       border-bottom:1px solid var(--line);
     }
-
     .nav-logo h1{
       font-size:18px;
       font-weight:800;
       letter-spacing:-0.6px;
       color:var(--text);
     }
-
     .nav-menu{
       flex:1;
       padding:18px 0;
@@ -175,7 +148,6 @@
       align-items:center;
       gap:8px;
     }
-
     .nav-item{
       width:86px;
       padding:14px 0;
@@ -192,21 +164,18 @@
       border:1px solid transparent;
       user-select:none;
     }
-
     .nav-item:hover{
       background:var(--surface-2);
       color:var(--text);
       border-color:var(--line);
       transform:translateY(-1px);
     }
-
     .nav-item.active{
       background:var(--surface-2);
       color:var(--text);
       border-color:transparent;
       box-shadow:var(--shadow-2);
     }
-
     .nav-item.active::after{
       content:"";
       position:absolute;
@@ -220,7 +189,6 @@
       opacity:0.9;
     }
     body.dark-mode .nav-item.active::after{ background:#ffffff; opacity:0.9; }
-
     .nav-icon{
       width:22px; height:22px;
       stroke:currentColor;
@@ -228,13 +196,11 @@
       fill:none;
       opacity:0.9;
     }
-
     .nav-label{
       font-size:11px;
       font-weight:700;
       letter-spacing:0.2px;
     }
-
     /* MAIN */
     .main-content{
       margin-left:var(--nav-width);
@@ -244,7 +210,6 @@
       display:flex;
       flex-direction:column;
     }
-
     /* TOP BAR */
     .top-bar{
       height:72px;
@@ -259,20 +224,17 @@
       top:0;
       z-index:20;
     }
-
     .page-title{
       font-size:14px;
       font-weight:700;
       color:var(--muted);
       letter-spacing:0.2px;
     }
-
     .top-bar-right{
       display:flex;
       align-items:center;
       gap:12px;
     }
-
     .chip{
       border:1px solid var(--chip-line);
       background:var(--chip);
@@ -282,7 +244,6 @@
       padding:8px 12px;
       font-weight:700;
     }
-
     .icon-btn{
       width:34px;
       height:34px;
@@ -301,7 +262,6 @@
       transform:translateY(-1px);
     }
     .icon-btn svg{ width:18px; height:18px; stroke:currentColor; stroke-width:1.7; fill:none; }
-
     .user-avatar{
       width:34px; height:34px;
       border-radius:999px;
@@ -320,19 +280,16 @@
       border-color:color-mix(in oklab, var(--text) 28%, var(--line));
       color:var(--text);
     }
-
     /* CONTENT */
     .content-area{
       flex:1;
       overflow-y:auto;
       padding:24px 28px 28px;
     }
-
     .content-area::-webkit-scrollbar{ width:6px; }
     .content-area::-webkit-scrollbar-track{ background:transparent; }
     .content-area::-webkit-scrollbar-thumb{ background:color-mix(in oklab, var(--muted) 22%, transparent); border-radius:6px; }
     .content-area::-webkit-scrollbar-thumb:hover{ background:color-mix(in oklab, var(--muted) 35%, transparent); }
-
     /* HERO */
     .hero{
       border:1px solid var(--line);
@@ -344,7 +301,6 @@
       margin-bottom:16px;
       animation: riseIn .38s ease both;
     }
-
     .hero::before{
       content:"";
       position:absolute; inset:-2px;
@@ -358,7 +314,6 @@
         radial-gradient(900px 320px at 18% 0%, rgba(255, 255, 255, 0.08) 0%, transparent 60%),
         radial-gradient(700px 260px at 92% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 60%);
     }
-
     .hero::after{
       content:"";
       position:absolute;
@@ -374,7 +329,6 @@
       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
       opacity:.12;
     }
-
     .hero-inner{
       display:flex;
       align-items:flex-start;
@@ -384,7 +338,6 @@
       position:relative;
       z-index:1;
     }
-
     /* Greeting block */
     .greeting{
       display:grid;
@@ -423,7 +376,6 @@
       margin-right:6px;
       letter-spacing:0.2px;
     }
-
     /* Primary button (kept in code but not used on Home now) */
     .btn{
       border-radius:999px;
@@ -446,7 +398,6 @@
       border-color:var(--btn-border);
     }
     .btn.primary:hover{ opacity:0.92; }
-
     /* ✅ Market Hours (more alive like example) */
     .market-hours{
       width:100%;
@@ -460,7 +411,6 @@
       overflow:hidden;
       margin-top:10px;
     }
-
     /* Alive background + scan */
     .market-hours::before{
       content:"";
@@ -487,7 +437,6 @@
       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
       opacity:.12;
     }
-
     .mh-top{
       display:flex;
       justify-content:space-between;
@@ -508,7 +457,6 @@
       font-weight:900;
       color:var(--muted);
     }
-
     .mh-grid{
       display:grid;
       grid-template-columns:1fr 1fr;
@@ -516,7 +464,6 @@
       position:relative;
       z-index:1;
     }
-
     .mh-card{
       border:1px solid var(--line);
       border-radius:14px;
@@ -534,7 +481,6 @@
       border-color:color-mix(in oklab, var(--text) 18%, var(--line));
       background:color-mix(in oklab, var(--surface-2) 90%, transparent);
     }
-
     /* Animated inner glow on open */
     .mh-card.open::before{
       content:"";
@@ -551,7 +497,6 @@
         radial-gradient(260px 110px at 80% 0%, rgba(255, 255, 255, 0.10), transparent 60%);
       opacity:.55;
     }
-
     .mh-head{
       display:flex;
       align-items:center;
@@ -560,7 +505,6 @@
       position:relative;
       z-index:1;
     }
-
     .mh-name{
       font-size:11px;
       font-weight:1000;
@@ -569,7 +513,6 @@
       color:var(--text);
       opacity:0.95;
     }
-
     .mh-badge{
       font-size:10px;
       font-weight:1000;
@@ -592,7 +535,6 @@
       background: rgba(255, 255, 255, 0.06);
       color:#ffffff;
     }
-
     .mh-time{
       font-size:12px;
       font-weight:900;
@@ -601,7 +543,6 @@
       position:relative;
       z-index:1;
     }
-
     /* Open dot */
     .mh-dotrow{
       display:flex;
@@ -620,7 +561,6 @@
       opacity:0.95;
       animation: softPulse 2.2s ease-in-out infinite;
     }
-
     /* Progress bar */
     .mh-bar{
       height:8px;
@@ -642,7 +582,6 @@
       background:#ffffff;
       opacity:0.18;
     }
-
     /* Existing pulse (unchanged style) */
     .mini-pulse{
       width:100%;
@@ -654,7 +593,6 @@
       gap:8px;
       margin-top:12px;
     }
-
     .pulse-row{
       display:flex;
       justify-content:space-between;
@@ -665,14 +603,12 @@
       font-weight:800;
       letter-spacing:0.2px;
     }
-
     .pulse-values{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:10px;
       margin-top:2px;
     }
-
     .pulse-card{
       border:1px solid var(--line);
       border-radius:12px;
@@ -681,7 +617,6 @@
       display:grid;
       gap:6px;
     }
-
     .pulse-card .k{
       font-size:11px;
       color:var(--muted);
@@ -689,20 +624,17 @@
       letter-spacing:0.6px;
       text-transform:uppercase;
     }
-
     .pulse-card .v{
       font-size:16px;
       font-weight:900;
       color:var(--text);
       letter-spacing:-0.3px;
     }
-
     .pulse-card .c{
       font-size:12px;
       font-weight:900;
       color: var(--muted);
     }
-
     /* GRID CARDS */
     .card-grid{
       display:grid;
@@ -710,7 +642,6 @@
       gap:16px;
       margin-bottom:16px;
     }
-
     .dashboard-card{
       background:var(--card-bg);
       border:1px solid var(--line);
@@ -722,20 +653,17 @@
       overflow:hidden;
       animation: riseIn .42s ease both;
     }
-
     .dashboard-card:hover{
       background:var(--card-hover);
       border-color:color-mix(in oklab, var(--text) 14%, var(--line));
       transform:translateY(-2px);
     }
-
     .card-header{
       display:flex;
       justify-content:space-between;
       align-items:center;
       margin-bottom:12px;
     }
-
     .card-title{
       font-size:11px;
       font-weight:900;
@@ -743,14 +671,12 @@
       text-transform:uppercase;
       color:var(--muted);
     }
-
     .card-icon{
       width:16px; height:16px;
       stroke:color-mix(in oklab, var(--muted) 70%, transparent);
       stroke-width:1.7;
       fill:none;
     }
-
     .card-value{
       font-size:30px;
       font-weight:900;
@@ -758,13 +684,11 @@
       margin-bottom:6px;
       color:var(--text);
     }
-
     .card-subtitle{
       font-size:13px;
       color:var(--muted);
       font-weight:700;
     }
-
     .card-meta{
       display:flex;
       gap:16px;
@@ -772,16 +696,13 @@
       padding-top:14px;
       border-top:1px solid var(--line);
     }
-
     .card-meta-item{ display:flex; flex-direction:column; gap:4px; }
     .card-meta-label{ font-size:11px; color:var(--muted); font-weight:800; }
     .card-meta-value{ font-size:13px; font-weight:900; color:var(--text); }
-
     .card-large{
       grid-column:span 3;
       padding:18px;
     }
-
     .card-section-title{
       font-size:11px;
       font-weight:900;
@@ -789,27 +710,23 @@
       text-transform:uppercase;
       color:var(--muted);
     }
-
     /* ✅ NEW: Live Activity + News (black/white, same style) */
     .live-stack{
       display:grid;
       gap:12px;
     }
-
     .live-toprow{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
     }
-
     .live-left{
       display:flex;
       align-items:center;
       gap:10px;
       min-width:0;
     }
-
     .live-title{
       font-size:12px;
       font-weight:1000;
@@ -818,7 +735,6 @@
       color:var(--muted);
       white-space:nowrap;
     }
-
     .live-pill{
       display:flex;
       align-items:center;
@@ -834,7 +750,6 @@
       color:var(--muted);
       white-space:nowrap;
     }
-
     .live-dot{
       width:8px; height:8px;
       border-radius:999px;
@@ -842,28 +757,24 @@
       opacity:0.95;
       animation: softPulse 2.2s ease-in-out infinite;
     }
-
     .live-updated{
       font-size:12px;
       font-weight:900;
       color:var(--muted);
       white-space:nowrap;
     }
-
     .tv-wrap{
       border:1px solid var(--line);
       border-radius:14px;
       overflow:hidden;
       background: var(--surface);
     }
-
     .news-wrap{
       border:1px solid var(--line);
       border-radius:14px;
       background: color-mix(in oklab, var(--surface-2) 94%, transparent);
       overflow:hidden;
     }
-
     .news-head{
       display:flex;
       align-items:center;
@@ -873,14 +784,12 @@
       border-bottom:1px solid var(--line);
       background: color-mix(in oklab, var(--surface) 92%, transparent);
     }
-
     .news-head .label{
       display:flex;
       align-items:center;
       gap:10px;
       min-width:0;
     }
-
     .news-head .label strong{
       font-size:12px;
       font-weight:1000;
@@ -889,14 +798,12 @@
       color:var(--muted);
       white-space:nowrap;
     }
-
     .news-sub{
       font-size:12px;
       font-weight:900;
       color:var(--muted);
       white-space:nowrap;
     }
-
     .news-list{
       display:grid;
       gap:0;
@@ -907,7 +814,6 @@
     .news-list::-webkit-scrollbar-track{ background:transparent; }
     .news-list::-webkit-scrollbar-thumb{ background:color-mix(in oklab, var(--muted) 22%, transparent); border-radius:6px; }
     .news-list::-webkit-scrollbar-thumb:hover{ background:color-mix(in oklab, var(--muted) 35%, transparent); }
-
     .news-item{
       display:flex;
       align-items:flex-start;
@@ -923,13 +829,11 @@
       background: color-mix(in oklab, var(--surface) 90%, transparent);
       transform: translateY(-1px);
     }
-
     .news-main{
       display:grid;
       gap:6px;
       min-width:0;
     }
-
     .news-source{
       display:flex;
       align-items:center;
@@ -940,7 +844,6 @@
       letter-spacing:0.3px;
       min-width:0;
     }
-
     .news-source .badge{
       font-size:10px;
       font-weight:1000;
@@ -953,7 +856,6 @@
       color: var(--muted);
       white-space:nowrap;
     }
-
     .news-title{
       font-size:13px;
       font-weight:900;
@@ -964,7 +866,6 @@
       -webkit-line-clamp:2;
       -webkit-box-orient:vertical;
     }
-
     .news-time{
       font-size:11px;
       font-weight:900;
@@ -972,14 +873,12 @@
       white-space:nowrap;
       margin-top:2px;
     }
-
     .news-empty{
       padding:14px 12px;
       font-size:13px;
       font-weight:900;
       color:var(--muted);
     }
-
     /* ✅ Refresh buttons (news + x) — minimal, same styling */
     .news-actions{
       display:flex;
@@ -992,7 +891,6 @@
       height:34px;
       border-radius:10px;
     }
-
     /* Mobile */
     @media (max-width: 980px){
       .hero-inner{ flex-direction:column; align-items:flex-start; }
@@ -1003,7 +901,6 @@
       .content-area{ padding:16px; }
       .top-bar{ padding:0 16px; }
     }
-
     @media (max-width: 720px){
       .nav-panel{
         width:100%;
@@ -1029,7 +926,6 @@
       }
       .nav-item{ width:auto; min-width:56px; padding:10px 10px; }
       .nav-item.active::after{ display:none; }
-
       .main-content{
         margin-left:0;
         width:100%;
@@ -1044,11 +940,12 @@
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 <meta name="description" content="Explore the FYNX market overview with trading tools, financial news and links to finance learning resources.">
-<meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://www.fynxfinanceworld.com/home.html">
 <meta property="og:title" content="Market Overview: Trading Tools, News &amp; Learning | FYNX">
 <meta property="og:description" content="Explore the FYNX market overview with trading tools, financial news and links to finance learning resources.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/home.html">
+<link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script>
+<meta name="robots" content="noindex,follow">
 </head>
 
 <body data-protected-page="false" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD">
@@ -1203,6 +1100,7 @@
           </div>
         </section>
 
+<section class="workspace-library" aria-labelledby="workspace-library-title"><div class="workspace-library-heading"><div><div class="discovery-kicker">YOUR NEXT STEP</div><h2 id="workspace-library-title">What are you working on?</h2><p>Search the library, pick up a recent page, or return to a saved resource.</p></div><a href="/explore.html">Explore all resources ↗</a></div><form class="discovery-search" action="/explore.html" role="search"><label for="resource-query">Find a tool, lesson or market topic</label><div><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="resource-query" name="q" type="search" placeholder="Try margin, position size, bonds…"><button type="submit">Search</button></div></form><h3>Quick access</h3><div class="workspace-resource-list"><a href="/tools/position-size.html">Position size</a><a href="/tools/margin.html">Margin</a><a href="/tools/risk-reward.html">Risk / reward</a><a href="/tools/economic-calendar.html">Economic calendar</a><a href="/learn.html">Learning paths</a></div><h3>Saved in this browser</h3><div class="workspace-resource-list" data-workspace-saved><p>Save tools and lessons from the resource library to keep them here.</p></div><h3>Recently opened</h3><div class="workspace-resource-list" data-workspace-recent><p>Your recently opened resources will appear here.</p></div></section>
 <section class="card-grid" aria-label="Journal performance">
 <div class="dashboard-card"><div class="card-header"><span class="card-title">Net realized P/L</span></div><div class="card-value" id="homePnl">—</div><p class="card-subtitle">From your recorded trades</p><a href="journal.html">Review performance →</a></div>
 <div class="dashboard-card"><div class="card-header"><span class="card-title">Recorded trades</span></div><div class="card-value" id="homeTrades">—</div><p class="card-subtitle">All time · synced with your journal</p><a href="journal.html">Open journal →</a></div>
@@ -1283,7 +1181,7 @@
     // =========================
     const THEME_KEY = "fynx_theme";
     (function applyThemeFromStorage(){
-      const saved = localStorage.getItem(THEME_KEY);
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
       if (saved === "dark") document.body.classList.add("dark-mode");
       else document.body.classList.remove("dark-mode");
     })();
@@ -1291,7 +1189,7 @@
 
 
     function isDemoMode(){
-      return window.FynxDemoMode?.isDemoMode?.() || localStorage.getItem("mode") === "demo";
+      return window.FynxDemoMode?.isDemoMode?.() || window.FynxPreferences?.getItem("mode") === "demo";
     }
 
     function injectDemoSnapshot(){
@@ -1973,7 +1871,7 @@
     initHome();
   </script>
 
-  <script src="fynx-nav.js?v=20260928-audit2"></script>
+  <script src="fynx-nav.js?v=20261011-discovery"></script>
 
   <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
   <script src="fynx-usercard.js?v=20260928-audit2"></script>

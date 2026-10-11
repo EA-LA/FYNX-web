@@ -7,6 +7,7 @@
     news: 'news.html',
     calendar: 'calendar.html',
     learn: 'learn.html',
+    explore: 'explore.html',
     profile: 'profile.html',
   };
 
@@ -17,6 +18,7 @@
     news: 'News',
     calendar: 'Calendar',
     learn: 'Learn',
+    explore: 'Explore',
     profile: 'Profile',
   };
 
@@ -44,12 +46,13 @@
     news: '<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><line x1="12" y1="11" x2="18" y2="11"></line><line x1="12" y1="7" x2="18" y2="7"></line>',
     calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>',
     learn: '<path d="M2 7l10-4 10 4-10 4-10-4z"></path><path d="M6 10v5c0 2.2 2.7 4 6 4s6-1.8 6-4v-5"></path><path d="M22 10v6"></path>',
+    explore: '<circle cx="10" cy="10" r="6"></circle><path d="m15 15 6 6"></path>',
     profile: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>',
   };
 
 
 function isDemoMode() {
-  return localStorage.getItem('mode') === 'demo';
+  try { return localStorage.getItem('mode') === 'demo'; } catch { return false; }
 }
 
 function ensureDemoStyles() {
@@ -192,13 +195,13 @@ topBar.innerHTML = `
         toggleBtn.textContent = collapsed ? '>' : '<';
         toggleBtn.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
       }
-      localStorage.setItem(sidebarKey, collapsed ? '1' : '0');
+      try { localStorage.setItem(sidebarKey, collapsed ? '1' : '0'); } catch {}
     };
     if (disableSidebarToggle) {
       document.body.classList.remove('sidebar-collapsed');
-      localStorage.setItem(sidebarKey, '0');
+      try { localStorage.setItem(sidebarKey, '0'); } catch {}
     } else if (window.matchMedia('(min-width: 901px)').matches) {
-      applySidebarState(localStorage.getItem(sidebarKey) === '1');
+      try { applySidebarState(localStorage.getItem(sidebarKey) === '1'); } catch { applySidebarState(false); }
     }
     if (toggleBtn) {
       toggleBtn.addEventListener('click', () => {

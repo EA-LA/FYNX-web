@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-
     :root{
       --bg:#f7f7f7;
       --bg-solid:#ffffff;
@@ -33,7 +31,6 @@
       --bad:#606060;
       --chip:#f1f1f1;
     }
-
     body.dark-mode{
       --bg:#000000;
       --bg-solid:#000000;
@@ -58,7 +55,6 @@
       --bad:#969696;
       --chip:rgba(255, 255, 255, .05);
     }
-
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
       color:var(--text);
@@ -67,7 +63,6 @@
       min-height:100vh;
       transition:background .25s ease,color .25s ease;
     }
-
     .animated-bg{
       position:fixed;
       inset:0;
@@ -76,7 +71,6 @@
       overflow:hidden;
       transition:background .25s ease;
     }
-
     .grid-overlay{
       position:absolute;inset:0;
       background-image:
@@ -86,9 +80,7 @@
       animation:gridMove 20s linear infinite;
       transition:background-image .25s ease;
     }
-
     @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-
     .gradient-orb{
       position:absolute;
       border-radius:50%;
@@ -96,7 +88,6 @@
       opacity:.25;
       animation:float 20s ease-in-out infinite;
     }
-
     .orb-1{
       width:520px;
       height:520px;
@@ -104,7 +95,6 @@
       top:-220px;
       left:-220px;
     }
-
     .orb-2{
       width:420px;
       height:420px;
@@ -113,13 +103,11 @@
       right:-170px;
       animation-delay:6s;
     }
-
     @keyframes float{
       0%,100%{transform:translate(0,0) scale(1)}
       33%{transform:translate(50px,-50px) scale(1.08)}
       66%{transform:translate(-50px,50px) scale(.92)}
     }
-
     header{
       position:sticky;
       top:0;
@@ -130,7 +118,6 @@
       padding:1rem 0;
       transition:background .25s ease,border-color .25s ease;
     }
-
     .nav{
       max-width:1200px;
       margin:0 auto;
@@ -141,7 +128,6 @@
       gap:1rem;
       flex-wrap:wrap;
     }
-
     .brand{
       display:flex;
       align-items:center;
@@ -152,16 +138,13 @@
       color:var(--text-strong);
       transition:color .25s ease;
     }
-
     .brand i{opacity:.9}
-
     .nav-actions{
       display:flex;
       gap:.6rem;
       flex-wrap:wrap;
       justify-content:flex-end;
     }
-
     .nav a,
     .theme-btn{
       color:var(--text-muted);
@@ -179,7 +162,6 @@
       align-items:center;
       gap:.45rem;
     }
-
     .nav a:hover,
     .theme-btn:hover{
       color:var(--text-strong);
@@ -187,13 +169,11 @@
       background:var(--nav-link-bg-hover);
       transform:translateY(-1px);
     }
-
     main{
       max-width:1200px;
       margin:0 auto;
       padding:3rem 1.25rem 5rem;
     }
-
     .hero{
       padding:2rem 1.5rem;
       border:1px solid var(--border);
@@ -202,7 +182,6 @@
       backdrop-filter:blur(10px);
       transition:background .25s ease,border-color .25s ease;
     }
-
     h1{
       font-size:3rem;
       line-height:1.1;
@@ -212,7 +191,6 @@
       -webkit-text-fill-color:transparent;
       margin-bottom:.75rem;
     }
-
     p{
       color:var(--text-muted);
       font-size:1.08rem;
@@ -220,14 +198,12 @@
       max-width:76ch;
       transition:color .25s ease;
     }
-
     .panel-grid{
       display:grid;
       grid-template-columns:1.06fr .94fr;
       gap:1.25rem;
       margin-top:1.25rem;
     }
-
     .panel{
       border:1px solid var(--border);
       background:var(--surface-2);
@@ -236,35 +212,29 @@
       backdrop-filter:blur(10px);
       transition:background .25s ease,border-color .25s ease;
     }
-
     .panel h2{
       font-size:1.15rem;
       margin-bottom:.9rem;
       color:var(--text-strong);
       transition:color .25s ease;
     }
-
     .form-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:.95rem;
     }
-
     .field{
       display:flex;
       flex-direction:column;
       gap:.45rem;
     }
-
     .field.full{grid-column:1 / -1}
-
     .field label{
       color:var(--text-muted);
       font-size:.9rem;
       font-weight:800;
       letter-spacing:.01em;
     }
-
     .field input,
     .field select{
       width:100%;
@@ -277,20 +247,17 @@
       font:inherit;
       transition:border-color .2s ease,background .2s ease,color .2s ease,transform .2s ease;
     }
-
     .field input:focus,
     .field select:focus{
       border-color:var(--border-strong);
       transform:translateY(-1px);
     }
-
     .button-row{
       display:flex;
       flex-wrap:wrap;
       gap:.75rem;
       margin-top:1rem;
     }
-
     .btn{
       border:none;
       padding:.9rem 1rem;
@@ -303,20 +270,16 @@
       gap:.5rem;
       font:inherit;
     }
-
     .btn.primary{
       background:var(--text-strong);
       color:var(--bg-solid);
     }
-
     .btn.secondary{
       background:var(--nav-link-bg);
       color:var(--text-strong);
       border:1px solid var(--border);
     }
-
     .btn:hover{transform:translateY(-1px)}
-
     .status-box{
       border:1px solid var(--border);
       background:var(--surface);
@@ -324,7 +287,6 @@
       padding:1rem;
       margin-bottom:1rem;
     }
-
     .status-chip{
       display:inline-flex;
       align-items:center;
@@ -337,27 +299,23 @@
       font-weight:800;
       margin-bottom:.7rem;
     }
-
     .status-title{
       font-size:1.05rem;
       font-weight:900;
       color:var(--text-strong);
       margin-bottom:.35rem;
     }
-
     .status-desc{
       color:var(--text-muted);
       line-height:1.7;
       font-size:.96rem;
     }
-
     .results-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:.85rem;
       margin-bottom:1rem;
     }
-
     .metric{
       border:1px solid var(--border);
       background:var(--surface);
@@ -365,7 +323,6 @@
       padding:1rem;
       min-height:120px;
     }
-
     .metric-label{
       color:var(--text-soft);
       font-size:.78rem;
@@ -374,25 +331,21 @@
       margin-bottom:.45rem;
       font-weight:800;
     }
-
     .metric-value{
       color:var(--text-strong);
       font-size:1.28rem;
       font-weight:900;
       letter-spacing:-.03em;
     }
-
     .metric-sub{
       margin-top:.35rem;
       color:var(--text-muted);
       font-size:.9rem;
       line-height:1.5;
     }
-
     .good{color:var(--good)}
     .warn{color:var(--warn)}
     .bad{color:var(--bad)}
-
     .details-wrap{
       margin-top:1.25rem;
       border:1px solid var(--border);
@@ -400,20 +353,17 @@
       overflow:auto;
       background:var(--surface-2);
     }
-
     table{
       width:100%;
       border-collapse:collapse;
       min-width:760px;
     }
-
     th,td{
       padding:.95rem .85rem;
       border-bottom:1px solid var(--border);
       text-align:left;
       font-size:.94rem;
     }
-
     th{
       color:var(--text-soft);
       font-size:.82rem;
@@ -422,9 +372,7 @@
       font-weight:800;
       background:var(--surface);
     }
-
     tr:last-child td{border-bottom:none}
-
     .hint{
       margin-top:1.2rem;
       color:var(--text-soft);
@@ -432,14 +380,12 @@
       transition:color .25s ease;
       line-height:1.8;
     }
-
     .pill-row{
       display:flex;
       flex-wrap:wrap;
       gap:.55rem;
       margin-top:.9rem;
     }
-
     .pill{
       display:inline-flex;
       align-items:center;
@@ -452,7 +398,6 @@
       font-size:.82rem;
       font-weight:800;
     }
-
     @media (max-width: 920px){
       .panel-grid,
       .results-grid,
@@ -460,7 +405,6 @@
         grid-template-columns:1fr;
       }
     }
-
     @media (max-width: 720px){
       main{padding:2rem .95rem 3rem}
       .hero{padding:1.25rem 1rem}
@@ -469,19 +413,23 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Forex Margin &amp; Leverage Calculator | FYNX</title>
 <meta name="description" content="Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.">
 <meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="stylesheet" href="/assets/css/api-calculator-pilot.css">
 <link rel="canonical" href="https://www.fynxfinanceworld.com/tools/margin.html">
 <meta property="og:title" content="Forex Margin &amp; Leverage Calculator | FYNX">
 <meta property="og:description" content="Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/margin.html">
-<link rel="stylesheet" href="/assets/css/api-calculator-pilot.css">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Forex Margin & Leverage Calculator","item":"https://www.fynxfinanceworld.com/tools/margin.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
   <div class="animated-bg">
@@ -505,7 +453,8 @@
   </header>
 
   <main>
-    <section class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
       <h1>Margin Calculator</h1>
       <p>
         Calculate required margin, notional size, free margin, margin level, and approximate pip value for a leveraged forex trade. Use it before entering a position so you know exactly how much capital the trade consumes.
@@ -661,6 +610,8 @@
       </div>
     </section>
   <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Uses the displayed USD notional/leverage model and your selected conversion basis. Inverse conversion is rounded to 12 decimals; differences are shown for review.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
+<!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Understand your margin before opening a trade</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter the lot size, contract size, price and conversion basis for your pair. Include existing used margin, then compare the requirement with your available equity.</p><h3>The calculation or concept</h3><p>Required margin = position notional in account currency ÷ leverage.</p></div><div class="tool-example"><h3>Worked example</h3><p>A $10,000 notional position at 20:1 leverage needs $500 of margin in this simplified model. With $2,000 equity and no other positions, $1,500 remains before fees and price changes.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Margin is collateral, not your maximum loss. This calculator uses the entered balance as the equity estimate; floating profit or loss, broker tiers and liquidation rules can change the result.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/pip.html"><strong>Forex Pip Value Calculator</strong><span>Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.</span></a><a href="/tools/liquidation-guard.html"><strong>Liquidation Risk &amp; Leverage Calculator</strong><span>Estimate liquidation price and distance for a leveraged trade using your inputs. Compare risk before choosing a position size.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
 
   <script src="/assets/vendor/decimal.js"></script>
@@ -680,13 +631,13 @@
     }
 
     (function applyThemeFromStorage(){
-      const saved = localStorage.getItem(THEME_KEY);
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
       applyTheme(saved === "dark" ? "dark" : "light");
     })();
 
     document.getElementById("themeToggle").addEventListener("click", () => {
       const next = document.body.classList.contains("dark-mode") ? "light" : "dark";
-      localStorage.setItem(THEME_KEY, next);
+      window.FynxPreferences?.setItem(THEME_KEY, next);
       applyTheme(next);
     });
 

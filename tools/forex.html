@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-
     :root{
       --bg:#f7f7f7;
       --bg-solid:#ffffff;
@@ -28,7 +26,6 @@
       --hero-gradient-1:#0a0a0a;
       --hero-gradient-2:#6b6b6b;
     }
-
     body.dark-mode{
       --bg:#000000;
       --bg-solid:#000000;
@@ -48,7 +45,6 @@
       --hero-gradient-1:#ffffff;
       --hero-gradient-2:#8a8a8a;
     }
-
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
       color:var(--text);
@@ -57,7 +53,6 @@
       min-height:100vh;
       transition:background .25s ease,color .25s ease;
     }
-
     .animated-bg{
       position:fixed;
       inset:0;
@@ -66,7 +61,6 @@
       overflow:hidden;
       transition:background .25s ease;
     }
-
     .grid-overlay{
       position:absolute;inset:0;
       background-image:
@@ -76,9 +70,7 @@
       animation:gridMove 20s linear infinite;
       transition:background-image .25s ease;
     }
-
     @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-
     .gradient-orb{
       position:absolute;
       border-radius:50%;
@@ -86,7 +78,6 @@
       opacity:.25;
       animation:float 20s ease-in-out infinite;
     }
-
     .orb-1{
       width:520px;
       height:520px;
@@ -94,7 +85,6 @@
       top:-220px;
       left:-220px;
     }
-
     .orb-2{
       width:420px;
       height:420px;
@@ -103,13 +93,11 @@
       right:-170px;
       animation-delay:6s;
     }
-
     @keyframes float{
       0%,100%{transform:translate(0,0) scale(1)}
       33%{transform:translate(50px,-50px) scale(1.08)}
       66%{transform:translate(-50px,50px) scale(.92)}
     }
-
     header{
       position:sticky;
       top:0;
@@ -120,7 +108,6 @@
       padding:1rem 0;
       transition:background .25s ease,border-color .25s ease;
     }
-
     .nav{
       max-width:1200px;
       margin:0 auto;
@@ -129,7 +116,6 @@
       justify-content:space-between;
       padding:0 1.25rem;
     }
-
     .brand{
       display:flex;
       align-items:center;
@@ -140,9 +126,7 @@
       color:var(--text-strong);
       transition:color .25s ease;
     }
-
     .brand i{opacity:.9}
-
     .nav a{
       color:var(--text-muted);
       text-decoration:none;
@@ -154,20 +138,17 @@
       transition:all .25s ease;
       white-space:nowrap;
     }
-
     .nav a:hover{
       color:var(--text-strong);
       border-color:var(--border-strong);
       background:var(--nav-link-bg-hover);
       transform:translateY(-1px);
     }
-
     main{
       max-width:1200px;
       margin:0 auto;
       padding:3.5rem 1.25rem 5rem;
     }
-
     .hero{
       padding:2.25rem 1.75rem;
       border:1px solid var(--border);
@@ -176,7 +157,6 @@
       backdrop-filter:blur(10px);
       transition:background .25s ease,border-color .25s ease;
     }
-
     h1{
       font-size:3rem;
       line-height:1.1;
@@ -186,7 +166,6 @@
       -webkit-text-fill-color:transparent;
       margin-bottom:.75rem;
     }
-
     p{
       color:var(--text-muted);
       font-size:1.1rem;
@@ -194,14 +173,12 @@
       max-width:70ch;
       transition:color .25s ease;
     }
-
     .panel-grid{
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
       gap:1.25rem;
       margin-top:1.25rem;
     }
-
     .panel{
       border:1px solid var(--border);
       background:var(--surface-2);
@@ -211,20 +188,17 @@
       min-height:180px;
       transition:background .25s ease,border-color .25s ease;
     }
-
     .panel h2{
       font-size:1.2rem;
       margin-bottom:.5rem;
       color:var(--text-strong);
       transition:color .25s ease;
     }
-
     .panel .muted{
       color:var(--text-muted);
       font-size:.98rem;
       transition:color .25s ease;
     }
-
     .hint{
       margin-top:1.2rem;
       color:var(--text-soft);
@@ -233,11 +207,9 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Forex Trade Planning Calculators | FYNX</title>
 <meta name="description" content="Plan a forex trade with links to position sizing and pip value calculators using your account and risk inputs.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -245,6 +217,12 @@
 <meta property="og:title" content="Forex Trade Planning Calculators | FYNX">
 <meta property="og:description" content="Plan a forex trade with links to position sizing and pip value calculators using your account and risk inputs.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/forex.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Forex Trade Planning Calculators","item":"https://www.fynxfinanceworld.com/tools/forex.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
   <div class="animated-bg">
@@ -264,7 +242,8 @@
   </header>
 
   <main>
-    <section class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
       <h1>Forex Calculator</h1>
       <p>Plan your forex trade with the position size and pip calculators.</p>
 
@@ -281,13 +260,15 @@
 
       <div class="hint">Use the contract specifications and account currency provided by your broker.</div>
     </section>
-  </main>
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Build a forex plan in a useful order</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Begin with the pair and account currency. Calculate pip value, choose a stop from your plan, size the position, and then verify margin.</p><h3>The calculation or concept</h3><p>A complete forex plan separates pip value, stop distance, position size and margin collateral.</p></div><div class="tool-example"><h3>Worked example</h3><p>If a position has a $1 pip value and a 30-pip stop, the planned price risk is $30 before costs. Its margin requirement is a separate calculation.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Available leverage is not a target position size. Spreads can widen around announcements and rollover.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/pip.html"><strong>Forex Pip Value Calculator</strong><span>Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.</span></a><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/margin.html"><strong>Forex Margin &amp; Leverage Calculator</strong><span>Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const THEME_KEY = "fynx_theme";
 
     (function applyThemeFromStorage(){
-      const saved = localStorage.getItem(THEME_KEY);
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
       if (saved === "dark") document.body.classList.add("dark-mode");
       else document.body.classList.remove("dark-mode");
     })();

@@ -243,9 +243,13 @@ document.querySelectorAll('.mobile-drawer a').forEach(a => {
   const qrHost = document.getElementById("fynxQr");
   if (!widget || !closeBtn || !qrHost) return;
 
+  let downloadDismissed = false;
+  try { downloadDismissed = sessionStorage.getItem('fynx.download-dismissed') === '1'; } catch {}
   closeBtn.addEventListener("click", function(e){
     e.preventDefault();
     e.stopPropagation();
+    downloadDismissed = true;
+    try { sessionStorage.setItem('fynx.download-dismissed', '1'); } catch {}
     widget.classList.add("is-hidden");
   });
 
@@ -271,6 +275,7 @@ document.querySelectorAll('.mobile-drawer a').forEach(a => {
   const isMobile = () => window.matchMedia("(max-width: 768px)").matches;
 
   function applyInitialState(){
+    if (downloadDismissed) { widget.classList.add("is-hidden"); return; }
     if (!isMobile()) {
       widget.classList.remove("is-hidden");
       return;
@@ -279,7 +284,7 @@ document.querySelectorAll('.mobile-drawer a').forEach(a => {
   }
 
   function onScroll(){
-    if (!isMobile()) return;
+    if (downloadDismissed || !isMobile()) return;
     const y = window.scrollY || 0;
     const goingDown = y > lastY;
     if (y < 80) {

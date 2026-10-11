@@ -14,6 +14,7 @@ for (const topic of topics) for (const section of sections) {
   const dom = new JSDOM(template, {url: `${base}/learn/topic.html?topic=${topic}&section=${section}`, runScripts: 'outside-only'});
   const {document} = dom.window;
   document.body.dataset.learningTopic = topic;
+  document.querySelector('meta[name="robots"]').content = 'index,follow,max-image-preview:large';
   document.body.dataset.learningSection = section;
   for (const script of document.querySelectorAll('script:not([src])')) {
     if (!script.type || script.type === 'text/javascript') dom.window.eval(script.textContent);

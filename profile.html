@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <script>
     (function(){
-      const t = localStorage.getItem("fynx_theme") === "light" ? "light" : "dark";
+      const t = window.FynxPreferences?.getItem("fynx_theme") === "light" ? "light" : "dark";
       document.documentElement.dataset.theme = t;
       document.documentElement.style.backgroundColor = t === "light" ? "#fbfbfb" : "#000000";
     })();
@@ -941,7 +941,7 @@ function isDemoUnsignedUser(){
 }
 
 function applySavedTheme(){
-  const saved = localStorage.getItem(THEME_KEY) || "light";
+  const saved = window.FynxPreferences?.getItem(THEME_KEY) || "light";
   document.body.classList.toggle("dark-mode", saved === "dark");
 }
 
@@ -954,7 +954,7 @@ function isDemoUnsignedUser(){
 }
 
 function applySavedTheme(){
-  const saved = localStorage.getItem(THEME_KEY) || "light";
+  const saved = window.FynxPreferences?.getItem(THEME_KEY) || "light";
   document.body.classList.toggle("dark-mode", saved === "dark");
 }
     applySavedTheme();
@@ -963,7 +963,7 @@ function applySavedTheme(){
       themeBtn.addEventListener("click", () => {
         const isDarkNow = !document.body.classList.contains("dark-mode");
         document.body.classList.toggle("dark-mode", isDarkNow);
-        localStorage.setItem(THEME_KEY, isDarkNow ? "dark" : "light");
+        window.FynxPreferences?.setItem(THEME_KEY, isDarkNow ? "dark" : "light");
       });
     }
 
@@ -1184,7 +1184,7 @@ function applySavedTheme(){
     });
   </script>
 
-  <script src="fynx-nav.js?v=20260928-audit2"></script>
+  <script src="fynx-nav.js?v=20261011-discovery"></script>
 
   <script type="module">
     import { mountNotificationBell } from "./assets/js/account-ui.js?v=20260928-audit2";

@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-
   <style>
     :root{
       --bg:#f5f5f5;
@@ -24,7 +22,6 @@
       --max:1380px;
       --hero-glow:rgba(255, 255, 255, 0.70);
     }
-
     body.dark-mode{
       --bg:#050505;
       --bg-soft:#0b0b0b;
@@ -38,15 +35,12 @@
       --shadow:0 30px 80px rgba(0, 0, 0, 0.42);
       --hero-glow:rgba(147, 147, 147, 0.08);
     }
-
     *{
       box-sizing:border-box;
     }
-
     html{
       scroll-behavior:smooth;
     }
-
     body{
       margin:0;
       font-family:Inter, Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -58,7 +52,6 @@
       line-height:1.55;
       transition:background .25s ease, color .25s ease;
     }
-
     body::before{
       content:"";
       position:fixed;
@@ -70,18 +63,15 @@
       mask-image:linear-gradient(to bottom, rgba(0, 0, 0, .75), rgba(0, 0, 0, .25));
       z-index:-1;
     }
-
     a{
       color:inherit;
       text-decoration:none;
     }
-
     .page{
       width:min(100%, var(--max));
       margin:0 auto;
       padding:22px 16px 70px;
     }
-
     .hero{
       position:relative;
       overflow:hidden;
@@ -95,7 +85,6 @@
       backdrop-filter:blur(18px);
       -webkit-backdrop-filter:blur(18px);
     }
-
     .hero::after{
       content:"";
       position:absolute;
@@ -106,7 +95,6 @@
       background:radial-gradient(circle, rgba(153, 153, 153, 0.16), transparent 65%);
       pointer-events:none;
     }
-
     .eyebrow{
       display:inline-flex;
       align-items:center;
@@ -117,35 +105,30 @@
       font-size:12px;
       margin-bottom:14px;
     }
-
     .eyebrow::before{
       content:"";
       width:28px;
       height:1px;
       background:var(--line-strong);
     }
-
     h1{
       margin:0 0 12px;
       font-size:clamp(2.3rem, 5vw, 4.9rem);
       line-height:.95;
       letter-spacing:-0.05em;
     }
-
     .hero p{
       max-width:900px;
       margin:0 0 22px;
       color:var(--text-soft);
       font-size:clamp(1rem, 2vw, 1.12rem);
     }
-
     .hero-actions{
       display:flex;
       flex-wrap:wrap;
       gap:12px;
       margin-bottom:24px;
     }
-
     .btn{
       display:inline-flex;
       align-items:center;
@@ -158,47 +141,39 @@
       font-size:.94rem;
       transition:.2s ease;
     }
-
     .btn.primary{
       background:var(--text);
       color:var(--bg);
       border-color:transparent;
     }
-
     .btn.secondary{
       background:transparent;
       color:var(--text);
     }
-
     .btn:hover{
       transform:translateY(-1px);
     }
-
     .hero-stats{
       display:grid;
       grid-template-columns:repeat(4, minmax(0,1fr));
       gap:12px;
     }
-
     .stat{
       padding:16px;
       border-radius:18px;
       border:1px solid var(--line);
       background:rgba(255, 255, 255, 0.03);
     }
-
     .stat strong{
       display:block;
       margin-bottom:6px;
       font-size:1.1rem;
       letter-spacing:-0.03em;
     }
-
     .stat span{
       color:var(--text-soft);
       font-size:.92rem;
     }
-
     .section{
       margin-top:22px;
       border:1px solid var(--line);
@@ -209,7 +184,6 @@
       -webkit-backdrop-filter:blur(14px);
       padding:20px;
     }
-
     .section-title{
       display:flex;
       align-items:end;
@@ -217,37 +191,30 @@
       gap:16px;
       margin-bottom:16px;
     }
-
     .section-title h2{
       margin:0;
       font-size:clamp(1.4rem, 3vw, 2.1rem);
       letter-spacing:-0.04em;
     }
-
     .section-title p{
       margin:0;
       color:var(--text-soft);
       max-width:700px;
       font-size:.97rem;
     }
-
     .grid{
       display:grid;
       gap:16px;
     }
-
     .grid.two{
       grid-template-columns:1.2fr .8fr;
     }
-
     .grid.equal-2{
       grid-template-columns:repeat(2, minmax(0,1fr));
     }
-
     .grid.three{
       grid-template-columns:repeat(3, minmax(0,1fr));
     }
-
     .card{
       border:1px solid var(--line);
       border-radius:22px;
@@ -255,23 +222,19 @@
       overflow:hidden;
       min-width:0;
     }
-
     .card-pad{
       padding:18px;
     }
-
     .card h3{
       margin:0 0 8px;
       font-size:1.12rem;
       letter-spacing:-0.03em;
     }
-
     .card p{
       margin:0;
       color:var(--text-soft);
       font-size:.95rem;
     }
-
     .tag{
       display:inline-flex;
       margin-bottom:12px;
@@ -283,64 +246,51 @@
       text-transform:uppercase;
       letter-spacing:.12em;
     }
-
     .widget-wrap{
       position:relative;
       min-height:120px;
       background:transparent;
     }
-
     .widget-tall{
       min-height:540px;
     }
-
     .widget-medium{
       min-height:430px;
     }
-
     .widget-short{
       min-height:330px;
     }
-
     .widget-heatmap{
       min-height:520px;
     }
-
     .widget-news{
       min-height:700px;
     }
-
     .widget-econ{
       min-height:680px;
     }
-
     .widget-market{
       min-height:520px;
     }
-
     .split-info{
       display:grid;
       gap:12px;
     }
-
     .mini{
       padding:14px;
       border:1px solid var(--line);
       border-radius:16px;
       background:rgba(255, 255, 255, 0.02);
     }
-
     .mini strong{
       display:block;
       font-size:.96rem;
       margin-bottom:4px;
     }
-
     .mini span{
       color:var(--text-soft);
       font-size:.9rem;
     }
-
     .footer-cta{
       display:flex;
       justify-content:space-between;
@@ -354,82 +304,66 @@
       background:var(--panel);
       box-shadow:var(--shadow);
     }
-
     .footer-cta h2{
       margin:0 0 8px;
       font-size:clamp(1.35rem, 3.5vw, 2rem);
       letter-spacing:-0.04em;
     }
-
     .footer-cta p{
       margin:0;
       max-width:740px;
       color:var(--text-soft);
     }
-
     .tiny{
       margin-top:8px;
       font-size:.88rem;
       color:var(--muted);
     }
-
     .tv-widget-copyright{
       display:none !important;
     }
-
     @media (max-width: 1100px){
       .hero-stats,
       .grid.three{
         grid-template-columns:repeat(2, minmax(0,1fr));
       }
-
       .grid.two,
       .grid.equal-2{
         grid-template-columns:1fr;
       }
     }
-
     @media (max-width: 760px){
       .page{
         padding:14px 12px 56px;
       }
-
       .hero,
       .section,
       .footer-cta{
         border-radius:22px;
       }
-
       .hero{
         padding:22px 16px;
       }
-
       .section{
         padding:16px;
       }
-
       .hero-stats,
       .grid.three{
         grid-template-columns:1fr;
       }
-
       .section-title{
         flex-direction:column;
         align-items:flex-start;
       }
-
       .widget-news{
         min-height:760px;
       }
-
       .widget-econ{
         min-height:760px;
       }
-
       .widget-market{
         min-height:620px;
       }
-
       .widget-heatmap{
         min-height:620px;
       }
@@ -438,7 +372,6 @@
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Market Analysis: Charts, Technicals &amp; Watchlists | FYNX</title>
 <meta name="description" content="Explore market charts, technical indicators and watchlists covering forex, crypto, stocks and indices in one analysis workspace.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -446,11 +379,18 @@
 <meta property="og:title" content="Market Analysis: Charts, Technicals &amp; Watchlists | FYNX">
 <meta property="og:description" content="Explore market charts, technical indicators and watchlists covering forex, crypto, stocks and indices in one analysis workspace.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/market-analysis.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Markets","item":"https://www.fynxfinanceworld.com/explore.html?category=Markets"},{"@type":"ListItem","position":3,"name":"Market Analysis: Charts, Technicals & Watchlists","item":"https://www.fynxfinanceworld.com/market-analysis.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body id="top" data-fynx-layout="standalone" data-fynx-section="FINANCE WORLD">
 <header class="site-resource-header"><a class="site-wordmark" href="/index.html">↗ FYNX</a><nav aria-label="Resource navigation"><a href="/calculator.html">Tools</a><a href="/learn.html">Learn</a><a href="/partners.html">Partners</a><button type="button" data-journal-theme aria-label="Switch theme">◐</button></nav></header>
   <main class="page">
-    <section class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Markets">Markets</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
       <div class="eyebrow">FYNX Live Market Intelligence</div>
       <h1>Market Analysis</h1>
       <p>
@@ -704,13 +644,15 @@
         <a class="btn primary" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'}); return false;">Back to Top</a>
       </div>
     </section>
-  </main>
+  <!-- discovery-network:start --><details class="network-help"><summary>Chart or live data unavailable?</summary><p>Some networks restrict embedded providers. You can still use <a href="/explore.html?category=Tools">local calculators</a>, read <a href="/learn.html">learning guides</a>, or open the <a href="/directory.html">lightweight directory</a>. For release times, check the <a href="https://www.bls.gov/schedule/">BLS</a> and <a href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm">Federal Reserve</a> calendars. <a href="/accessibility.html">Connection help →</a></p></details><!-- discovery-network:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/markets/cot.html"><strong>CFTC Commitments of Traders: Weekly Positions</strong><span>Explore the latest published CFTC Legacy Futures Only positions, including net commercial and non-commercial positions and open interest.</span></a><a href="/markets/liquidity.html"><strong>Crypto Liquidity: Coinbase Bid, Ask &amp; Spread</strong><span>View Coinbase BTC/USD and ETH/USD best bid, ask, spread and displayed size, refreshed every 15 seconds while visible.</span></a><a href="/markets/crypto.html"><strong>Crypto Market Overview: Bitcoin, Ethereum &amp; Altcoins</strong><span>Explore Bitcoin, Ethereum and other cryptocurrency markets with charts and market context for your research.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const THEME_KEY = "fynx_theme";
 
     function getThemeMode() {
-      const saved = localStorage.getItem(THEME_KEY) || "light";
+      const saved = window.FynxPreferences?.getItem(THEME_KEY) || "light";
       return saved === "dark" ? "dark" : "light";
     }
 

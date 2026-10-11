@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-
     :root{
       --bg:#ffffff;
       --bg-soft:#f6f6f6;
@@ -24,7 +21,6 @@
       --grid-2:rgba(0, 0, 0, .03);
       --orb:.10;
     }
-
     body.dark-mode{
       --bg:#000000;
       --bg-soft:#090909;
@@ -39,9 +35,7 @@
       --grid-2:rgba(255, 255, 255, .025);
       --orb:.22;
     }
-
     html{scroll-behavior:smooth}
-
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
       background:var(--bg);
@@ -50,7 +44,6 @@
       overflow-x:hidden;
       transition:background .25s ease,color .25s ease;
     }
-
     .animated-bg{
       position:fixed;
       inset:0;
@@ -58,7 +51,6 @@
       background:var(--bg);
       overflow:hidden;
     }
-
     .grid-overlay{
       position:absolute;
       inset:0;
@@ -68,7 +60,6 @@
       background-size:46px 46px;
       animation:gridMove 20s linear infinite;
     }
-
     .grid-overlay::after{
       content:"";
       position:absolute;
@@ -78,12 +69,10 @@
       background-size:24px 24px;
       opacity:.65;
     }
-
     @keyframes gridMove{
       0%{transform:translate(0,0)}
       100%{transform:translate(46px,46px)}
     }
-
     .orb{
       position:absolute;
       border-radius:50%;
@@ -93,14 +82,12 @@
       background:radial-gradient(circle, currentColor 0%, transparent 70%);
       color:var(--text);
     }
-
     .orb1{
       width:360px;
       height:360px;
       top:-120px;
       left:-100px;
     }
-
     .orb2{
       width:320px;
       height:320px;
@@ -108,12 +95,10 @@
       bottom:-90px;
       animation-delay:8s;
     }
-
     @keyframes float{
       0%,100%{transform:translate(0,0) scale(1)}
       50%{transform:translate(35px,-25px) scale(1.08)}
     }
-
     header{
       position:sticky;
       top:0;
@@ -122,7 +107,6 @@
       background:color-mix(in srgb, var(--bg) 88%, transparent);
       backdrop-filter:blur(14px);
     }
-
     .nav{
       max-width:1320px;
       margin:0 auto;
@@ -133,7 +117,6 @@
       gap:1rem;
       flex-wrap:wrap;
     }
-
     .brand{
       display:flex;
       align-items:center;
@@ -142,14 +125,12 @@
       font-weight:900;
       letter-spacing:-1.5px;
     }
-
     .actions{
       display:flex;
       align-items:center;
       gap:.75rem;
       flex-wrap:wrap;
     }
-
     .btn{
       display:inline-flex;
       align-items:center;
@@ -165,19 +146,16 @@
       cursor:pointer;
       box-shadow:0 8px 24px rgba(0, 0, 0, .05);
     }
-
     .btn:hover{
       transform:translateY(-1px);
       border-color:var(--border-strong);
       background:var(--panel-2);
     }
-
     main{
       width:min(100%, 1320px);
       margin:0 auto;
       padding:3rem 1.25rem 4rem;
     }
-
     .card{
       width:min(100%, 1040px);
       margin:0 auto;
@@ -188,7 +166,6 @@
       padding:2rem;
       backdrop-filter:blur(18px);
     }
-
     .eyebrow{
       display:inline-flex;
       align-items:center;
@@ -200,14 +177,12 @@
       font-weight:900;
       margin-bottom:1rem;
     }
-
     h1{
       font-size:clamp(2.5rem, 5vw, 5rem);
       line-height:.95;
       letter-spacing:-3px;
       margin-bottom:1rem;
     }
-
     .desc{
       max-width:760px;
       color:var(--muted);
@@ -215,13 +190,11 @@
       line-height:1.7;
       margin-bottom:1.6rem;
     }
-
     .mini-grid{
       display:grid;
       grid-template-columns:repeat(3,minmax(0,1fr));
       gap:1rem;
     }
-
     .mini{
       display:block;
       text-decoration:none;
@@ -232,24 +205,20 @@
       padding:1.2rem;
       transition:.2s ease;
     }
-
     .mini:hover{
       transform:translateY(-2px);
       border-color:var(--border-strong);
       background:var(--panel);
     }
-
     .mini h3{
       font-size:1rem;
       margin-bottom:.45rem;
     }
-
     .mini p{
       color:var(--muted);
       font-size:.95rem;
       line-height:1.7;
     }
-
     @media (max-width:900px){
       .mini-grid{grid-template-columns:1fr}
       .card{padding:1.4rem}
@@ -261,7 +230,6 @@
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Macro Research Hub: Rates, Indicators &amp; Topics | FYNX</title>
 <meta name="description" content="Find central bank rate comparisons, economic indicators and curated macro research topics in the FYNX research hub.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -269,6 +237,12 @@
 <meta property="og:title" content="Macro Research Hub: Rates, Indicators &amp; Topics | FYNX">
 <meta property="og:description" content="Find central bank rate comparisons, economic indicators and curated macro research topics in the FYNX research hub.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/home/hub.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"News & events","item":"https://www.fynxfinanceworld.com/explore.html?category=News%20%26%20events"},{"@type":"ListItem","position":3,"name":"Macro Research Hub: Rates, Indicators & Topics","item":"https://www.fynxfinanceworld.com/home/hub.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="FINANCE WORLD">
   <div class="animated-bg">
@@ -295,7 +269,8 @@
   </header>
 
   <main>
-    <div class="card">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=News%20%26%20events">News &amp; events</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<div class="card">
       <div class="eyebrow"><i class="fas fa-sparkles"></i> FYNX Research</div>
       <h1>Macro Research</h1>
       <p class="desc">
@@ -319,7 +294,8 @@
         </a>
       </div>
     </div>
-  </main>
+  <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/news/sentiment.html"><strong>Bitcoin Fear &amp; Greed and Market Sentiment</strong><span>Track the dated daily Bitcoin Fear &amp; Greed index from Alternative.me and explore weekly CFTC positioning and market volatility.</span></a><a href="/calendar.html"><strong>Economic Calendar &amp; Market Event Tools</strong><span>Browse economic calendar tools, event reminders, market hours and holiday references to prepare for scheduled market events.</span></a><a href="/news/news.html"><strong>Financial Market Headlines: Forex, Crypto &amp; Stocks</strong><span>Browse financial and world headlines covering forex, crypto, stocks, commodities and macroeconomic developments.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const THEME_KEY = "fynx_theme";

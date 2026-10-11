@@ -1,0 +1,11 @@
+const assert = require('node:assert/strict');
+const { calculate } = require('../assets/js/fibonacci-calculator.js');
+const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-9, `${actual} != ${expected}`);
+const up = calculate({ high: 120, low: 100, entry: 112.4 });
+near(up.range, 20); near(up.retracements[1].price, 112.36); near(up.retracements[3].price, 107.64);
+near(up.extensions[1].price, 132.36); assert.equal(up.nearest.ratio, 0.382);
+const down = calculate({ high: 120, low: 100, direction: 'down' });
+near(down.retracements[3].price, 112.36); near(down.extensions[1].price, 87.64); assert.equal(down.nearest, null);
+near(calculate({ high: 1.12, low: 1.10 }).retracements[1].price, 1.11236);
+for (const args of [{high:100,low:100},{high:99,low:100},{high:100,low:0},{high:NaN,low:10},{high:Infinity,low:10},{high:100,low:10,entry:-1},{high:100,low:10,entry:Infinity},{high:100,low:10,direction:'invalid'}]) assert.throws(() => calculate(args));
+console.log('Fibonacci: up/down arithmetic, decimal precision, nearest level and invalid input checks passed.');

@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-
     :root{
       --bg:#f7f7f7;
       --bg-solid:#ffffff;
@@ -33,7 +31,6 @@
       --result-bg:rgba(0, 0, 0, .03);
       --accent:#111111;
     }
-
     body.dark-mode{
       --bg:#000000;
       --bg-solid:#000000;
@@ -58,7 +55,6 @@
       --result-bg:rgba(255, 255, 255, .04);
       --accent:#ffffff;
     }
-
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
       color:var(--text);
@@ -67,7 +63,6 @@
       min-height:100vh;
       transition:background .25s ease,color .25s ease;
     }
-
     .animated-bg{
       position:fixed;
       inset:0;
@@ -76,7 +71,6 @@
       overflow:hidden;
       transition:background .25s ease;
     }
-
     .grid-overlay{
       position:absolute;inset:0;
       background-image:
@@ -86,12 +80,10 @@
       animation:gridMove 20s linear infinite;
       transition:background-image .25s ease;
     }
-
     @keyframes gridMove{
       0%{transform:translate(0,0)}
       100%{transform:translate(50px,50px)}
     }
-
     .gradient-orb{
       position:absolute;
       border-radius:50%;
@@ -99,7 +91,6 @@
       opacity:.25;
       animation:float 20s ease-in-out infinite;
     }
-
     .orb-1{
       width:520px;
       height:520px;
@@ -107,7 +98,6 @@
       top:-220px;
       left:-220px;
     }
-
     .orb-2{
       width:420px;
       height:420px;
@@ -116,13 +106,11 @@
       right:-170px;
       animation-delay:6s;
     }
-
     @keyframes float{
       0%,100%{transform:translate(0,0) scale(1)}
       33%{transform:translate(50px,-50px) scale(1.08)}
       66%{transform:translate(-50px,50px) scale(.92)}
     }
-
     header{
       position:sticky;
       top:0;
@@ -133,7 +121,6 @@
       padding:1rem 0;
       transition:background .25s ease,border-color .25s ease;
     }
-
     .nav{
       max-width:1200px;
       margin:0 auto;
@@ -143,7 +130,6 @@
       padding:0 1.25rem;
       gap:1rem;
     }
-
     .brand{
       display:flex;
       align-items:center;
@@ -154,14 +140,12 @@
       color:var(--text-strong);
       transition:color .25s ease;
     }
-
     .nav-actions{
       display:flex;
       gap:.6rem;
       flex-wrap:wrap;
       justify-content:flex-end;
     }
-
     .nav a{
       color:var(--text-muted);
       text-decoration:none;
@@ -173,20 +157,17 @@
       transition:all .25s ease;
       white-space:nowrap;
     }
-
     .nav a:hover{
       color:var(--text-strong);
       border-color:var(--border-strong);
       background:var(--nav-link-bg-hover);
       transform:translateY(-1px);
     }
-
     main{
       max-width:1200px;
       margin:0 auto;
       padding:3.5rem 1.25rem 5rem;
     }
-
     .hero{
       padding:2.25rem 1.75rem;
       border:1px solid var(--border);
@@ -195,7 +176,6 @@
       backdrop-filter:blur(10px);
       transition:background .25s ease,border-color .25s ease;
     }
-
     h1{
       font-size:3rem;
       line-height:1.1;
@@ -205,7 +185,6 @@
       -webkit-text-fill-color:transparent;
       margin-bottom:.75rem;
     }
-
     .subtitle{
       color:var(--text-muted);
       font-size:1.08rem;
@@ -213,14 +192,12 @@
       max-width:76ch;
       transition:color .25s ease;
     }
-
     .panel-grid{
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(360px,1fr));
       gap:1.25rem;
       margin-top:1.25rem;
     }
-
     .panel{
       border:1px solid var(--border);
       background:var(--surface-2);
@@ -230,7 +207,6 @@
       transition:background .25s ease,border-color .25s ease;
       min-height:260px;
     }
-
     .panel h2{
       font-size:1.45rem;
       margin-bottom:.45rem;
@@ -239,7 +215,6 @@
       font-weight:900;
       letter-spacing:-.5px;
     }
-
     .panel .muted{
       color:var(--text-muted);
       font-size:.97rem;
@@ -247,29 +222,24 @@
       transition:color .25s ease;
       margin-bottom:1rem;
     }
-
     .form-grid{
       display:grid;
       gap:.9rem;
     }
-
     .field-group{
       display:grid;
       gap:.38rem;
     }
-
     .field-row{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:.8rem;
     }
-
     label{
       font-size:.96rem;
       font-weight:800;
       color:var(--text-strong);
     }
-
     input, select{
       width:100%;
       border:1px solid var(--border);
@@ -281,23 +251,19 @@
       outline:none;
       transition:border-color .2s ease,background .2s ease,transform .15s ease;
     }
-
     input:focus, select:focus{
       border-color:var(--accent);
       transform:translateY(-1px);
     }
-
     input::placeholder{
       color:var(--text-muted);
     }
-
     .actions{
       display:flex;
       flex-wrap:wrap;
       gap:.7rem;
       margin-top:.2rem;
     }
-
     button{
       border:1px solid var(--border-strong);
       background:var(--btn-bg);
@@ -309,12 +275,10 @@
       transition:all .2s ease;
       font-size:.95rem;
     }
-
     button:hover{
       background:var(--btn-hover);
       transform:translateY(-1px);
     }
-
     .result-placeholder,
     .result-box{
       border:1px solid var(--border);
@@ -323,13 +287,11 @@
       padding:1rem;
       min-height:180px;
     }
-
     .result-placeholder{
       color:var(--text-muted);
       display:flex;
       align-items:center;
     }
-
     .big-result{
       font-size:2rem;
       font-weight:900;
@@ -338,28 +300,24 @@
       color:var(--text-strong);
       line-height:1.15;
     }
-
     .result-line{
       color:var(--text-muted);
       font-size:.98rem;
       line-height:1.7;
       margin-bottom:.18rem;
     }
-
     .pnl-boxes{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:.7rem;
       margin-top:.9rem;
     }
-
     .mini-box{
       border:1px solid var(--border);
       border-radius:14px;
       padding:.8rem .9rem;
       background:var(--surface);
     }
-
     .mini-label{
       font-size:.83rem;
       color:var(--text-muted);
@@ -368,13 +326,11 @@
       letter-spacing:.06em;
       margin-bottom:.2rem;
     }
-
     .mini-value{
       font-size:1.05rem;
       font-weight:900;
       color:var(--text-strong);
     }
-
     .footnote{
       margin-top:1rem;
       color:var(--text-soft);
@@ -382,7 +338,6 @@
       transition:color .25s ease;
       line-height:1.6;
     }
-
     @media (max-width:720px){
       h1{font-size:2.35rem}
       .field-row{grid-template-columns:1fr}
@@ -391,11 +346,9 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Options Profit &amp; Loss Calculator | FYNX</title>
 <meta name="description" content="Estimate call and put option profit or loss at expiration using strike price, premium, contract count and underlying price.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -403,6 +356,12 @@
 <meta property="og:title" content="Options Profit &amp; Loss Calculator | FYNX">
 <meta property="og:description" content="Estimate call and put option profit or loss at expiration using strike price, premium, contract count and underlying price.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/options.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Options Profit & Loss Calculator","item":"https://www.fynxfinanceworld.com/tools/options.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
   <div class="animated-bg">
@@ -422,7 +381,8 @@
   </header>
 
   <main>
-    <section class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
       <h1>Options Calculator</h1>
       <p class="subtitle">
         Calculate option profit and loss for calls and puts using strike price, premium, contracts, and stock price at expiration.
@@ -500,13 +460,15 @@
         Assumes 1 options contract = 100 shares. This calculator shows expiration payoff only, not live Greeks or implied volatility pricing.
       </div>
     </section>
-  </main>
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Understand an option payoff at expiration</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Select the contract type and position, then enter strike, premium and contract quantity. Check the tool’s 100-unit contract assumption. Distinguish expiration payoff from today’s market value.</p><h3>The calculation or concept</h3><p>Long-call expiration P/L per unit = max(underlying price − strike, 0) − premium. Multiply by the contract multiplier.</p></div><div class="tool-example"><h3>Worked example</h3><p>A call with a 100 strike and a 3 premium breaks even at 103 at expiration before fees. If the underlying ends at 110, profit is 7 per unit, or $700 for a 100-unit contract.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Before expiration, implied volatility, time value and other factors affect price. Exercise, assignment and settlement can introduce obligations beyond a simple payoff diagram.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/risk-reward.html"><strong>Risk-to-Reward Ratio Calculator</strong><span>Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</span></a><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/breakeven.html"><strong>Trading Break-Even Price Calculator</strong><span>Calculate a trade&#39;s estimated break-even price using position size, fees and spread assumptions.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const THEME_KEY = "fynx_theme";
 
     (function applyThemeFromStorage(){
-      const saved = localStorage.getItem(THEME_KEY);
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
       if (saved === "dark") document.body.classList.add("dark-mode");
       else document.body.classList.remove("dark-mode");
     })();

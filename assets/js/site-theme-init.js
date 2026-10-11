@@ -1,5 +1,9 @@
 /* Run before page-specific scripts so the first render uses the saved theme. */
 (() => {
+  window.FynxPreferences = {
+    getItem(key) { try { return localStorage.getItem(key); } catch { return null; } },
+    setItem(key, value) { try { localStorage.setItem(key, value); } catch {} }
+  };
   // Legacy controls remain inert for scripts that retain references to their IDs.
   const policy = document.createElement('style');
   policy.textContent = `:is([data-journal-theme],[data-fynx-theme-toggle],#themeToggle,#themeBtn,#theme-toggle,.theme-toggle,.theme-btn,.fynx-network-theme,.fynx-theme-toggle):not([data-theme-control]){display:none!important}`;

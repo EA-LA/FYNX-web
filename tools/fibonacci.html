@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-
     :root{
       --bg:#f7f7f7;
       --bg-solid:#ffffff;
@@ -33,7 +31,6 @@
       --bad:#606060;
       --chip:#f1f1f1;
     }
-
     body.dark-mode{
       --bg:#000000;
       --bg-solid:#000000;
@@ -58,7 +55,6 @@
       --bad:#969696;
       --chip:rgba(255, 255, 255, .05);
     }
-
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
       color:var(--text);
@@ -67,7 +63,6 @@
       min-height:100vh;
       transition:background .25s ease,color .25s ease;
     }
-
     .animated-bg{
       position:fixed;
       inset:0;
@@ -76,7 +71,6 @@
       overflow:hidden;
       transition:background .25s ease;
     }
-
     .grid-overlay{
       position:absolute;inset:0;
       background-image:
@@ -86,9 +80,7 @@
       animation:gridMove 20s linear infinite;
       transition:background-image .25s ease;
     }
-
     @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-
     .gradient-orb{
       position:absolute;
       border-radius:50%;
@@ -96,7 +88,6 @@
       opacity:.25;
       animation:float 20s ease-in-out infinite;
     }
-
     .orb-1{
       width:520px;
       height:520px;
@@ -104,7 +95,6 @@
       top:-220px;
       left:-220px;
     }
-
     .orb-2{
       width:420px;
       height:420px;
@@ -113,13 +103,11 @@
       right:-170px;
       animation-delay:6s;
     }
-
     @keyframes float{
       0%,100%{transform:translate(0,0) scale(1)}
       33%{transform:translate(50px,-50px) scale(1.08)}
       66%{transform:translate(-50px,50px) scale(.92)}
     }
-
     header{
       position:sticky;
       top:0;
@@ -130,7 +118,6 @@
       padding:1rem 0;
       transition:background .25s ease,border-color .25s ease;
     }
-
     .nav{
       max-width:1200px;
       margin:0 auto;
@@ -141,7 +128,6 @@
       gap:1rem;
       flex-wrap:wrap;
     }
-
     .brand{
       display:flex;
       align-items:center;
@@ -152,13 +138,10 @@
       color:var(--text-strong);
       transition:color .25s ease;
     }
-
     .brand i{opacity:.9}
-
     .nav-actions{
       display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end
     }
-
     .nav a,
     .theme-btn{
       color:var(--text-muted);
@@ -176,7 +159,6 @@
       align-items:center;
       gap:.45rem;
     }
-
     .nav a:hover,
     .theme-btn:hover{
       color:var(--text-strong);
@@ -184,13 +166,11 @@
       background:var(--nav-link-bg-hover);
       transform:translateY(-1px);
     }
-
     main{
       max-width:1200px;
       margin:0 auto;
       padding:3rem 1.25rem 5rem;
     }
-
     .hero{
       padding:2rem 1.5rem;
       border:1px solid var(--border);
@@ -199,7 +179,6 @@
       backdrop-filter:blur(10px);
       transition:background .25s ease,border-color .25s ease;
     }
-
     h1{
       font-size:3rem;
       line-height:1.1;
@@ -209,7 +188,6 @@
       -webkit-text-fill-color:transparent;
       margin-bottom:.75rem;
     }
-
     p{
       color:var(--text-muted);
       font-size:1.08rem;
@@ -217,14 +195,12 @@
       max-width:76ch;
       transition:color .25s ease;
     }
-
     .panel-grid{
       display:grid;
       grid-template-columns:1.08fr .92fr;
       gap:1.25rem;
       margin-top:1.25rem;
     }
-
     .panel{
       border:1px solid var(--border);
       background:var(--surface-2);
@@ -233,41 +209,34 @@
       backdrop-filter:blur(10px);
       transition:background .25s ease,border-color .25s ease;
     }
-
     .panel h2{
       font-size:1.15rem;
       margin-bottom:.9rem;
       color:var(--text-strong);
       transition:color .25s ease;
     }
-
     .muted{
       color:var(--text-muted);
       font-size:.98rem;
       transition:color .25s ease;
     }
-
     .form-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:.95rem;
     }
-
     .field{
       display:flex;
       flex-direction:column;
       gap:.45rem;
     }
-
     .field.full{grid-column:1 / -1}
-
     .field label{
       color:var(--text-muted);
       font-size:.9rem;
       font-weight:800;
       letter-spacing:.01em;
     }
-
     .field input,
     .field select{
       width:100%;
@@ -280,20 +249,17 @@
       font:inherit;
       transition:border-color .2s ease,background .2s ease,color .2s ease,transform .2s ease;
     }
-
     .field input:focus,
     .field select:focus{
       border-color:var(--border-strong);
       transform:translateY(-1px);
     }
-
     .button-row{
       display:flex;
       flex-wrap:wrap;
       gap:.75rem;
       margin-top:1rem;
     }
-
     .btn{
       border:none;
       padding:.9rem 1rem;
@@ -306,27 +272,22 @@
       gap:.5rem;
       font:inherit;
     }
-
     .btn.primary{
       background:var(--text-strong);
       color:var(--bg-solid);
     }
-
     .btn.secondary{
       background:var(--nav-link-bg);
       color:var(--text-strong);
       border:1px solid var(--border);
     }
-
     .btn:hover{transform:translateY(-1px)}
-
     .results-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:.85rem;
       margin-bottom:1rem;
     }
-
     .metric{
       border:1px solid var(--border);
       background:var(--surface);
@@ -334,7 +295,6 @@
       padding:1rem;
       min-height:120px;
     }
-
     .metric-label{
       color:var(--text-soft);
       font-size:.78rem;
@@ -343,25 +303,21 @@
       margin-bottom:.45rem;
       font-weight:800;
     }
-
     .metric-value{
       color:var(--text-strong);
       font-size:1.28rem;
       font-weight:900;
       letter-spacing:-.03em;
     }
-
     .metric-sub{
       margin-top:.35rem;
       color:var(--text-muted);
       font-size:.9rem;
       line-height:1.5;
     }
-
     .good{color:var(--good)}
     .warn{color:var(--warn)}
     .bad{color:var(--bad)}
-
     .status-box{
       border:1px solid var(--border);
       background:var(--surface);
@@ -369,7 +325,6 @@
       padding:1rem;
       margin-bottom:1rem;
     }
-
     .status-chip{
       display:inline-flex;
       align-items:center;
@@ -382,20 +337,17 @@
       font-weight:800;
       margin-bottom:.7rem;
     }
-
     .status-title{
       font-size:1.05rem;
       font-weight:900;
       color:var(--text-strong);
       margin-bottom:.35rem;
     }
-
     .status-desc{
       color:var(--text-muted);
       line-height:1.7;
       font-size:.96rem;
     }
-
     .levels-wrap{
       margin-top:1.25rem;
       border:1px solid var(--border);
@@ -403,20 +355,17 @@
       overflow:auto;
       background:var(--surface-2);
     }
-
     table{
       width:100%;
       border-collapse:collapse;
       min-width:760px;
     }
-
     th,td{
       padding:.95rem .85rem;
       border-bottom:1px solid var(--border);
       text-align:left;
       font-size:.94rem;
     }
-
     th{
       color:var(--text-soft);
       font-size:.82rem;
@@ -425,9 +374,7 @@
       font-weight:800;
       background:var(--surface);
     }
-
     tr:last-child td{border-bottom:none}
-
     .level-tag{
       display:inline-flex;
       align-items:center;
@@ -440,7 +387,6 @@
       font-size:.8rem;
       font-weight:800;
     }
-
     .hint{
       margin-top:1.2rem;
       color:var(--text-soft);
@@ -448,7 +394,6 @@
       transition:color .25s ease;
       line-height:1.8;
     }
-
     @media (max-width: 920px){
       .panel-grid,
       .results-grid,
@@ -456,7 +401,6 @@
         grid-template-columns:1fr;
       }
     }
-
     @media (max-width: 720px){
       main{padding:2rem .95rem 3rem}
       .hero{padding:1.25rem 1rem}
@@ -465,11 +409,8 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
-  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Fibonacci Retracement &amp; Extension Calculator | FYNX</title>
 <meta name="description" content="Calculate Fibonacci retracement and extension levels from a swing high and low to study potential price levels.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -477,6 +418,12 @@
 <meta property="og:title" content="Fibonacci Retracement &amp; Extension Calculator | FYNX">
 <meta property="og:description" content="Calculate Fibonacci retracement and extension levels from a swing high and low to study potential price levels.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/fibonacci.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Fibonacci Retracement & Extension Calculator","item":"https://www.fynxfinanceworld.com/tools/fibonacci.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
   <div class="animated-bg">
@@ -489,7 +436,7 @@
     <div class="nav">
       <div class="brand"><i class="fas fa-chart-line"></i> FYNX Tools</div>
       <div class="nav-actions">
-        <button class="theme-btn" id="themeToggle" type="button">
+        <button class="theme-btn" id="themeToggle" type="button" data-theme-control>
           <i class="fas fa-circle-half-stroke"></i>
           <span id="themeToggleText">Theme</span>
         </button>
@@ -500,7 +447,8 @@
   </header>
 
   <main>
-    <section class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
       <h1>Fibonacci Calculator</h1>
       <p>
         Calculate Fibonacci retracement and extension levels from a swing high and swing low. Use it to map pullback zones, continuation targets, and confluence areas before placing a trade.
@@ -561,7 +509,7 @@
         <div class="panel">
           <h2>Fib Summary</h2>
 
-          <div class="status-box">
+          <div class="status-box" role="status" aria-live="polite">
             <div class="status-chip" id="zoneChip"><i class="fas fa-circle"></i> Waiting</div>
             <div class="status-title" id="zoneTitle">No calculation yet</div>
             <div class="status-desc" id="zoneDesc">Enter your swing high and swing low to calculate retracement and extension levels.</div>
@@ -577,8 +525,28 @@
             <div class="metric">
               <div class="metric-label">Golden Zone</div>
               <div class="metric-value good" id="goldenZoneValue">—</div>
-              <div class="metric-sub">Area between 61.8% and 50% / 38.2% depending on context.</div>
+              <div class="metric-sub">The interval between the 50% and 61.8% retracement levels.</div>
             </div>
 
             <div class="metric">
-              <div class="metric-label">Nearest Fib to Entry
+              <div class="metric-label">Nearest Fib to Entry</div>
+              <div class="metric-value" id="nearestValue">—</div>
+              <div class="metric-sub">Closest displayed retracement to the optional entry.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p id="fibError" role="alert" class="hint" hidden></p>
+      <div class="levels-wrap" tabindex="0" role="region" aria-label="Fibonacci levels; scroll horizontally on small screens">
+        <table style="min-width:480px"><caption style="text-align:left;padding:16px;font-weight:700">Calculated price levels</caption><thead><tr><th scope="col">Type</th><th scope="col">Ratio</th><th scope="col">Price</th></tr></thead><tbody id="fibLevels"></tbody></table>
+      </div>
+      <p class="hint">Retracements measure a pullback from the end of the selected swing. Extensions here project from the beginning of that same swing; this is a two-point calculation, not a three-point projection. The 50% midpoint is included by convention. Levels are reference prices, not predictions or trade recommendations.</p>
+      <noscript><p>This calculator needs JavaScript for interactive results. The formula and worked example below remain available.</p></noscript>
+    </section>
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Map retracement levels from a defined swing</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Choose a completed swing high and low, set the direction, and compare the generated levels with other market structure.</p><h3>The calculation or concept</h3><p>For an upward swing, retracement price = swing high − (swing high − swing low) × retracement fraction.</p></div><div class="tool-example"><h3>Worked example</h3><p>A move from 100 to 120 has a range of 20. A 50% retracement is 110; a 61.8% retracement is 107.64.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Changing the swing changes every level. Fibonacci levels are reference points, not evidence that price must reverse there.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/pivot.html"><strong>Pivot Point Support &amp; Resistance Calculator</strong><span>Calculate classic pivot points and support and resistance levels from the previous period&#39;s high, low and closing price.</span></a><a href="/tools/risk-reward.html"><strong>Risk-to-Reward Ratio Calculator</strong><span>Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</span></a><a href="/tools/atr-stop.html"><strong>ATR Stop-Loss Calculator</strong><span>Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
+  <script src="/assets/js/fibonacci-calculator.js" defer></script>
+<script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+</body>
+</html>

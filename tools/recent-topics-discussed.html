@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     :root{
@@ -21,7 +19,6 @@
       --shadow:0 18px 50px rgba(0, 0, 0, .08);
       --orb:.08;
     }
-
     body.dark-mode{
       --bg:#020202;
       --panel:#0a0a0a;
@@ -34,7 +31,6 @@
       --shadow:0 28px 90px rgba(0, 0, 0, .55);
       --orb:.18;
     }
-
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
       background:var(--bg);
@@ -43,7 +39,6 @@
       overflow-x:hidden;
       transition:background .25s ease,color .25s ease;
     }
-
     .bg{position:fixed;inset:0;z-index:-1;background:var(--bg);overflow:hidden}
     .grid{
       position:absolute;inset:0;
@@ -58,60 +53,47 @@
     }
     .orb.one{width:360px;height:360px;top:-120px;left:-110px}
     .orb.two{width:340px;height:340px;right:-110px;bottom:-120px}
-
     header{
       border-bottom:1px solid var(--border);
       background:color-mix(in srgb, var(--bg) 88%, transparent);
       backdrop-filter:blur(16px);
       position:sticky; top:0; z-index:10;
     }
-
     .nav{
       max-width:1320px;margin:0 auto;padding:1rem 1.25rem;
       display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
     }
-
     .brand{
       display:flex;align-items:center;gap:.7rem;
       font-weight:900;font-size:1.8rem;letter-spacing:-1.5px;
     }
-
     .nav-actions{display:flex;gap:.7rem;flex-wrap:wrap}
-
     .btn{
       display:inline-flex;align-items:center;gap:.55rem;
       border:1px solid var(--border);background:var(--panel);color:var(--text);
       text-decoration:none;padding:.75rem 1rem;border-radius:999px;font-weight:800;transition:.2s ease;
     }
     .btn:hover{transform:translateY(-1px);border-color:var(--border-strong);background:var(--panel-2)}
-
     .wrap{max-width:1320px;margin:0 auto;padding:1.8rem 1.25rem 3rem}
-
     .hero{
       display:grid;grid-template-columns:minmax(0,1.65fr) 280px;gap:1rem;margin-bottom:1rem;
     }
-
     .card{
       background:var(--panel);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);
     }
-
     .hero-main{padding:1.6rem}
-
     h1{
       font-size:clamp(2.5rem,5vw,4rem);
       line-height:.95;letter-spacing:-3px;margin-bottom:1rem;
     }
-
     .lead{
       color:var(--muted);font-size:1.12rem;line-height:1.8;max-width:68ch;margin-bottom:1rem;
     }
-
     .pills{display:flex;gap:.65rem;flex-wrap:wrap;margin-top:1rem}
     .pill{
       display:inline-flex;align-items:center;gap:.5rem;border:1px solid var(--border);
       background:var(--panel-2);border-radius:999px;padding:.72rem 1rem;font-weight:800;
     }
-
     .side-stack{display:grid;gap:1rem}
     .mini{padding:1.2rem 1.1rem}
     .mini .label{
@@ -119,22 +101,18 @@
     }
     .mini .big{font-size:1.7rem;font-weight:900;letter-spacing:-1px}
     .mini .sub{color:var(--muted);margin-top:.35rem;line-height:1.6}
-
     .main-grid{
       display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,.9fr);gap:1rem;margin-top:1rem;
     }
-
     .section{padding:1.2rem}
     .section-title{
       display:flex;align-items:center;gap:.6rem;font-size:1.7rem;font-weight:900;letter-spacing:-1px;margin-bottom:.25rem;
     }
     .section-sub{color:var(--muted);line-height:1.7;margin-bottom:1rem}
-
     .chips{display:flex;gap:.65rem;flex-wrap:wrap;margin-bottom:1rem}
     .chip{
       border:1px solid var(--border);background:var(--panel-2);padding:.68rem .95rem;border-radius:999px;font-weight:800;
     }
-
     .topic-list{display:grid;gap:1rem}
     .topic{
       border:1px solid var(--border);
@@ -142,20 +120,16 @@
       border-radius:20px;
       padding:1rem;
     }
-
     .topic-top{
       display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:.6rem;
     }
-
     .topic h3{
       font-size:1.05rem;
       letter-spacing:-.3px;
     }
-
     .meta{
       display:flex;gap:.55rem;flex-wrap:wrap
     }
-
     .badge{
       display:inline-flex;align-items:center;gap:.35rem;
       border-radius:999px;padding:.42rem .72rem;
@@ -164,18 +138,15 @@
       font-size:.82rem;
       font-weight:800;
     }
-
     .topic p{
       color:var(--muted);
       line-height:1.75;
       font-size:.97rem;
       margin-bottom:.8rem;
     }
-
     .links{
       display:flex;gap:.65rem;flex-wrap:wrap
     }
-
     .link-btn{
       display:inline-flex;align-items:center;gap:.45rem;
       text-decoration:none;color:var(--text);
@@ -183,7 +154,6 @@
       background:var(--panel);
       padding:.68rem .9rem;border-radius:999px;font-weight:800;
     }
-
     .side-list{display:grid;gap:.85rem}
     .side-item{
       border:1px solid var(--border);
@@ -191,21 +161,17 @@
       background:var(--panel-2);
       padding:1rem;
     }
-
     .side-item h4{font-size:1rem;margin-bottom:.35rem}
     .side-item p{color:var(--muted);line-height:1.7;font-size:.95rem}
-
     @media (max-width:980px){
       .hero{grid-template-columns:1fr}
       .main-grid{grid-template-columns:1fr}
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Curated Macro &amp; Trading Research Topics | FYNX</title>
 <meta name="description" content="Browse curated economic and trading research topics for further study. This editorial reference is not a live news or discussion feed.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -213,6 +179,12 @@
 <meta property="og:title" content="Curated Macro &amp; Trading Research Topics | FYNX">
 <meta property="og:description" content="Browse curated economic and trading research topics for further study. This editorial reference is not a live news or discussion feed.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/recent-topics-discussed.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Curated Macro & Trading Research Topics","item":"https://www.fynxfinanceworld.com/tools/recent-topics-discussed.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
   <div class="bg">
@@ -237,7 +209,8 @@
   </header>
 
   <main class="wrap">
-    <section class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
       <div class="card hero-main">
         <h1>Recent Topics Discussed</h1><p class="site-data-notice">Editorial reference · These topics are curated static content, not a live discussion or news feed.</p>
         <p class="lead">
@@ -380,7 +353,9 @@
         </div>
       </aside>
     </section>
-  </main>
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Turn a macro topic into a research question</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Start with a topic, inspect the source, and compare it with related data or the event calendar.</p><h3>The calculation or concept</h3><p>A useful research note separates reported facts, the source date, interpretation and possible outcomes.</p></div><div class="tool-example"><h3>Worked example</h3><p>For an inflation story, record the release period and revision, then write separate scenarios for policy expectations rather than assuming one market reaction.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Headlines can be stale or incomplete. A curated topic is a prompt for research, not a recommendation to trade.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/economic-calendar.html"><strong>Economic Calendar: Releases &amp; Central Bank Events</strong><span>Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.</span></a><a href="/tools/interest-rates.html"><strong>Central Bank Policy Rate Comparison</strong><span>Compare published central bank policy-rate observations from the Bank for International Settlements, with dates and source context.</span></a><a href="/tools/symbol-news.html"><strong>FYNX Tools — Symbol News</strong><span>FYNX Tools — Symbol News. Explore this resource from FYNX Finance World.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const THEME_KEY = "fynx_theme";
@@ -391,12 +366,12 @@
     }
 
     function getTheme(){
-      return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+      return window.FynxPreferences?.getItem(THEME_KEY) === "dark" ? "dark" : "light";
     }
 
     function toggleTheme(){
       const next = getTheme() === "dark" ? "light" : "dark";
-      localStorage.setItem(THEME_KEY, next);
+      window.FynxPreferences?.setItem(THEME_KEY, next);
       applyTheme(next);
     }
 

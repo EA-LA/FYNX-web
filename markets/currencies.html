@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     :root{
@@ -73,7 +72,6 @@
     .orb1{width:360px;height:360px;top:-120px;left:-100px}
     .orb2{width:320px;height:320px;right:-90px;bottom:-90px;animation-delay:8s}
     @keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(35px,-25px) scale(1.08)}}
-
     header{
       position:sticky; top:0; z-index:50;
       border-bottom:1px solid var(--border);
@@ -147,11 +145,9 @@
   .grid,.grid-2{align-items:start}
 </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Forex Markets: Currency Pairs &amp; Crosses | FYNX</title>
 <meta name="description" content="Explore forex currency pairs, compare crosses and review currency market context before planning a trade.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -159,6 +155,12 @@
 <meta property="og:title" content="Forex Markets: Currency Pairs &amp; Crosses | FYNX">
 <meta property="og:description" content="Explore forex currency pairs, compare crosses and review currency market context before planning a trade.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/markets/currencies.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Markets","item":"https://www.fynxfinanceworld.com/explore.html?category=Markets"},{"@type":"ListItem","position":3,"name":"Forex Markets: Currency Pairs & Crosses","item":"https://www.fynxfinanceworld.com/markets/currencies.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="MARKETS">
   <div class="animated-bg">
@@ -191,7 +193,8 @@
   </header>
 
   <main>
-    <section class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Markets">Markets</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
       <div class="card">
         <div class="eyebrow"><i class="fas fa-globe"></i> FX Dashboard</div>
         <h1>Track major, minor, and cross pairs.</h1>
@@ -242,7 +245,9 @@
         <div id="fxWidget" class="widget"></div>
       </div>
     </section>
-  </main>
+  <!-- discovery-network:start --><details class="network-help"><summary>Chart or live data unavailable?</summary><p>Some networks restrict embedded providers. You can still use <a href="/explore.html?category=Tools">local calculators</a>, read <a href="/learn.html">learning guides</a>, or open the <a href="/directory.html">lightweight directory</a>. For release times, check the <a href="https://www.bls.gov/schedule/">BLS</a> and <a href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm">Federal Reserve</a> calendars. <a href="/accessibility.html">Connection help →</a></p></details><!-- discovery-network:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/markets/cot.html"><strong>CFTC Commitments of Traders: Weekly Positions</strong><span>Explore the latest published CFTC Legacy Futures Only positions, including net commercial and non-commercial positions and open interest.</span></a><a href="/markets/liquidity.html"><strong>Crypto Liquidity: Coinbase Bid, Ask &amp; Spread</strong><span>View Coinbase BTC/USD and ETH/USD best bid, ask, spread and displayed size, refreshed every 15 seconds while visible.</span></a><a href="/markets/crypto.html"><strong>Crypto Market Overview: Bitcoin, Ethereum &amp; Altcoins</strong><span>Explore Bitcoin, Ethereum and other cryptocurrency markets with charts and market context for your research.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const THEME_KEY = "fynx_theme";
@@ -254,11 +259,11 @@
       renderWidget();
     }
     function getTheme(){
-      return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+      return window.FynxPreferences?.getItem(THEME_KEY) === "dark" ? "dark" : "light";
     }
     function toggleTheme(){
       const next = getTheme() === "dark" ? "light" : "dark";
-      localStorage.setItem(THEME_KEY, next);
+      window.FynxPreferences?.setItem(THEME_KEY, next);
       applyTheme(next);
     }
 

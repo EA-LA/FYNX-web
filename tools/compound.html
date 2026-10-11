@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-
     :root{
       --bg:#f3f3f3;
       --bg-2:#ffffff;
@@ -40,7 +37,6 @@
       --blue:#696969;
       --orange:#a4a4a4;
     }
-
     body.dark-mode{
       --bg:#000;
       --bg-2:#050505;
@@ -71,7 +67,6 @@
       --blue:#a4a4a4;
       --orange:#bdbdbd;
     }
-
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
       color:var(--text);
@@ -81,14 +76,11 @@
       overflow-x:hidden;
       min-height:100vh;
     }
-
     body.dark-mode{ background:var(--bg); }
-
     .animated-bg{
       position:fixed;inset:0;z-index:-1;background:transparent;overflow:hidden;
     }
     body.dark-mode .animated-bg{background:#000}
-
     .grid-overlay{
       position:absolute;inset:0;
       background-image:
@@ -98,7 +90,6 @@
       animation:gridMove 20s linear infinite;
     }
     @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-
     .gradient-orb{
       position:absolute;border-radius:50%;filter:blur(80px);opacity:.22;animation:float 20s ease-in-out infinite;
     }
@@ -117,7 +108,6 @@
       33%{transform:translate(50px,-50px) scale(1.08)}
       66%{transform:translate(-50px,50px) scale(.92)}
     }
-
     header{
       position:sticky;top:0;z-index:1000;
       background:var(--header-bg);
@@ -125,24 +115,20 @@
       border-bottom:1px solid var(--header-border);
       padding:1rem 0;
     }
-
     .nav{
       max-width:1200px;margin:0 auto;
       display:flex;align-items:center;justify-content:space-between;
       padding:0 1.25rem;
       gap:1rem;
     }
-
     .brand{
       display:flex;align-items:center;gap:.6rem;
       font-weight:900;letter-spacing:-1px;font-size:1.25rem;
     }
     .brand i{opacity:.9}
-
     .nav-right{
       display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end;
     }
-
     .nav a,
     .theme-btn{
       color:var(--nav-link);
@@ -158,16 +144,13 @@
       cursor:pointer;
       font:inherit;
     }
-
     .nav a:hover,
     .theme-btn:hover{
       border-color:var(--nav-link-border);
       background:var(--nav-link-hover);
       transform:translateY(-1px)
     }
-
     main{max-width:1200px;margin:0 auto;padding:2.5rem 1.25rem 5rem}
-
     .hero{
       padding:2rem 1.5rem;
       border:1px solid var(--hero-border);
@@ -176,7 +159,6 @@
       backdrop-filter:blur(10px);
       box-shadow:var(--shadow);
     }
-
     h1{
       font-size:clamp(2.2rem,4vw,3.2rem);
       line-height:1.08;
@@ -186,27 +168,23 @@
       -webkit-text-fill-color:transparent;
       margin-bottom:.75rem;
     }
-
     body.dark-mode h1{
       background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
       -webkit-background-clip:text;
       -webkit-text-fill-color:transparent;
     }
-
     .lead{
       color:var(--muted);
       font-size:1.05rem;
       line-height:1.8;
       max-width:72ch;
     }
-
     .panel-grid{
       display:grid;
       grid-template-columns:1.1fr .9fr;
       gap:1.25rem;
       margin-top:1.5rem;
     }
-
     .panel{
       border:1px solid var(--panel-border);
       background:var(--panel-bg);
@@ -215,35 +193,28 @@
       backdrop-filter:blur(10px);
       box-shadow:var(--shadow-soft);
     }
-
     body.dark-mode .panel{box-shadow:none}
-
     .panel h2{
       font-size:1.15rem;
       margin-bottom:.95rem;
       letter-spacing:-.02em;
     }
-
     .form-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:.95rem;
     }
-
     .field{
       display:flex;
       flex-direction:column;
       gap:.45rem;
     }
-
     .field.full{grid-column:1 / -1}
-
     .field label{
       font-size:.9rem;
       font-weight:800;
       color:var(--muted);
     }
-
     .field input,
     .field select{
       width:100%;
@@ -256,20 +227,17 @@
       font:inherit;
       transition:border-color .2s ease, transform .2s ease;
     }
-
     .field input:focus,
     .field select:focus{
       border-color:var(--input-focus);
       transform:translateY(-1px);
     }
-
     .button-row{
       display:flex;
       flex-wrap:wrap;
       gap:.75rem;
       margin-top:1.1rem;
     }
-
     .btn{
       border:none;
       background:var(--btn);
@@ -283,27 +251,23 @@
       gap:.5rem;
       transition:transform .2s ease, opacity .2s ease;
     }
-
     .btn:hover{transform:translateY(-1px)}
     .btn.secondary{
       background:var(--panel-bg-2);
       color:var(--text);
       border:1px solid var(--panel-border);
     }
-
     .results-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:.9rem;
     }
-
     .metric{
       border:1px solid var(--panel-border);
       background:var(--panel-bg-2);
       border-radius:16px;
       padding:1rem;
     }
-
     .metric-label{
       color:var(--hint);
       font-size:.8rem;
@@ -312,31 +276,26 @@
       margin-bottom:.4rem;
       font-weight:800;
     }
-
     .metric-value{
       font-size:1.45rem;
       font-weight:900;
       letter-spacing:-.04em;
     }
-
     .metric-sub{
       margin-top:.35rem;
       color:var(--muted);
       font-size:.92rem;
       line-height:1.5;
     }
-
     .green{color:var(--green)}
     .blue{color:var(--blue)}
     .orange{color:var(--orange)}
-
     .hint{
       margin-top:1rem;
       color:var(--hint);
       font-size:.95rem;
       line-height:1.7;
     }
-
     .table-wrap{
       margin-top:1.2rem;
       border:1px solid var(--panel-border);
@@ -344,20 +303,17 @@
       overflow:auto;
       background:var(--panel-bg-2);
     }
-
     table{
       width:100%;
       border-collapse:collapse;
       min-width:760px;
     }
-
     th,td{
       padding:.9rem .85rem;
       border-bottom:1px solid var(--panel-border);
       text-align:left;
       font-size:.94rem;
     }
-
     th{
       color:var(--hint);
       font-size:.82rem;
@@ -366,11 +322,9 @@
       font-weight:800;
       background:var(--panel-bg);
     }
-
     td strong{
       font-weight:900;
     }
-
     .pill{
       display:inline-flex;
       align-items:center;
@@ -382,38 +336,31 @@
       border:1px solid var(--panel-border);
       background:var(--panel-bg);
     }
-
     @media (max-width: 960px){
       .panel-grid{
         grid-template-columns:1fr;
       }
     }
-
     @media (max-width: 720px){
       .form-grid,
       .results-grid{
         grid-template-columns:1fr;
       }
-
       main{
         padding:1.5rem .95rem 3rem;
       }
-
       .hero{
         padding:1.2rem;
       }
-
       .nav{
         padding:0 .9rem;
       }
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Compound Growth &amp; Savings Calculator | FYNX</title>
 <meta name="description" content="Estimate compound growth using starting capital, return assumptions and recurring deposits for savings or investing scenarios.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -421,6 +368,12 @@
 <meta property="og:title" content="Compound Growth &amp; Savings Calculator | FYNX">
 <meta property="og:description" content="Estimate compound growth using starting capital, return assumptions and recurring deposits for savings or investing scenarios.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/compound.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Compound Growth & Savings Calculator","item":"https://www.fynxfinanceworld.com/tools/compound.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
   <div class="animated-bg">
@@ -445,7 +398,8 @@
   </header>
 
   <main>
-    <section class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
       <h1>Compound Calculator</h1>
       <p class="lead">
         Calculate how capital grows over time with compounding and recurring deposits. Use it for trading, investing, savings targets, and long-term wealth planning.
@@ -567,7 +521,9 @@
         </table>
       </div>
     </section>
-  </main>
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Explore compounding under your own assumptions</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Set starting capital, a periodic rate, duration and contributions. Compare a lower-rate scenario as well as your original assumption.</p><h3>The calculation or concept</h3><p>Growth compounds each period; recurring deposits add to the balance according to the contribution timing used by the model.</p></div><div class="tool-example"><h3>Worked example</h3><p>$1,000 growing by a hypothetical 5% per year becomes $1,102.50 after two years without deposits, fees or tax. This is an arithmetic scenario, not an expected return.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Trading returns are uneven and losses interrupt compounding. Fixed growth illustrations omit market uncertainty and may not include inflation or tax.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/risk-reward.html"><strong>Risk-to-Reward Ratio Calculator</strong><span>Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</span></a><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/options-payoff.html"><strong>Debt Payoff &amp; Interest Calculator</strong><span>Estimate how long debt repayment takes, total interest and the effect of changing a monthly payment.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const THEME_KEY = "fynx_theme";
@@ -585,13 +541,13 @@
     }
 
     (function applyThemeFromStorage(){
-      const saved = localStorage.getItem(THEME_KEY);
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
       applyTheme(saved === "dark" ? "dark" : "light");
     })();
 
     document.getElementById("themeToggle").addEventListener("click", () => {
       const next = document.body.classList.contains("dark-mode") ? "light" : "dark";
-      localStorage.setItem(THEME_KEY, next);
+      window.FynxPreferences?.setItem(THEME_KEY, next);
       applyTheme(next);
     });
 

@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-
     :root{
       --bg:#f5f5f5;
       --bg-solid:#ffffff;
@@ -61,7 +58,6 @@
       --grid-line:rgba(0, 0, 0, .05);
       --orb-core:rgba(0, 0, 0, .22);
     }
-
     body.dark-mode{
       --bg:#000000;
       --bg-solid:#000000;
@@ -110,7 +106,6 @@
       --grid-line:rgba(255, 255, 255, .03);
       --orb-core:rgba(255, 255, 255, .92);
     }
-
     body{
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: var(--text);
@@ -119,7 +114,6 @@
       min-height:100vh;
       transition:background .25s ease,color .25s ease;
     }
-
     .animated-bg{
       position:fixed; inset:0; z-index:-1;
       background:var(--bg-solid); overflow:hidden;
@@ -150,7 +144,6 @@
       0%,100%{transform:translate(0,0) scale(1)}
       50%{transform:translate(34px,-26px) scale(.97)}
     }
-
     header{
       position:sticky; top:0; z-index:1000;
       background: var(--header-bg);
@@ -192,7 +185,6 @@
     }
     .btn:hover{transform: translateY(-1px); background: var(--btn-bg-hover); border-color: var(--btn-border-hover)}
     .btn i{opacity:.9}
-
     main{max-width: var(--max); margin:0 auto; padding: 46px 18px 70px;}
     .shell{
       background: var(--shell-bg);
@@ -221,7 +213,6 @@
     @media (max-width: 980px){
       .title{font-size: 36px}
     }
-
     .searchCard{
       padding: 16px;
       border-radius: var(--radius);
@@ -301,7 +292,6 @@
       white-space:nowrap;
     }
     .chip:hover{transform: translateY(-1px); background: var(--chip-bg-hover); border-color: var(--chip-border-hover)}
-
     .statusBar{
       display:flex; justify-content:space-between; align-items:center;
       gap:10px;
@@ -313,7 +303,6 @@
       transition:color .25s ease;
       flex-wrap:wrap;
     }
-
     .loadingRow{
       display:none;
       gap:10px;
@@ -333,7 +322,6 @@
       animation: spin 1s linear infinite;
     }
     @keyframes spin{to{transform: rotate(360deg)}}
-
     .errorBox{
       display:none;
       margin-top: 12px;
@@ -349,7 +337,6 @@
       transition:border-color .25s ease,background .25s ease,color .25s ease;
     }
     .errorBox i{color: var(--danger); margin-top:2px}
-
     .list{
       margin-top: 14px;
       display:flex;
@@ -409,7 +396,6 @@
       flex: 0 0 auto;
       transition:color .25s ease;
     }
-
     .empty{
       margin-top: 12px;
       padding: 14px;
@@ -423,11 +409,9 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>FYNX Tools — Symbol News</title>
 <meta name="description" content="FYNX Tools — Symbol News. Explore this resource from FYNX Finance World.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -435,6 +419,12 @@
 <meta property="og:title" content="FYNX Tools — Symbol News">
 <meta property="og:description" content="FYNX Tools — Symbol News. Explore this resource from FYNX Finance World.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/symbol-news.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"FYNX Tools — Symbol News","item":"https://www.fynxfinanceworld.com/tools/symbol-news.html"}]}</script><!-- discovery-schema:end -->
 </head>
 
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
@@ -455,7 +445,8 @@
   </header>
 
   <main>
-    <div class="shell" id="tapDismiss">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<div class="shell" id="tapDismiss">
       <h1 class="title">Symbol News</h1>
       <div class="subtitle">
         Search by symbol or keyword (e.g. <b>XAUUSD</b>, <b>EURUSD</b>, <b>BTCUSD</b>). Headlines come from Google News RSS and open directly on the original source website.
@@ -496,7 +487,9 @@
       <div class="list" id="list"></div>
       <div class="empty" id="empty" style="display:none;">No articles yet. Try searching a symbol.</div>
     </div>
-  </main>
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Find context for a specific instrument</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter a supported symbol, review the returned source and timestamp, and open the publisher’s article when more detail is needed.</p><h3>The calculation or concept</h3><p>A ticker can refer to different instruments across venues; verify that the headline concerns your intended asset.</p></div><div class="tool-example"><h3>Worked example</h3><p>A currency headline about the US dollar may affect several pairs differently. Match the story’s subject and publication time to the instrument you are researching.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>News feeds can be delayed or blocked on managed networks. A missing result does not mean there is no material news.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/economic-calendar.html"><strong>Economic Calendar: Releases &amp; Central Bank Events</strong><span>Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.</span></a><a href="/tools/heatmap.html"><strong>Cross-Market Strength &amp; Weakness Heatmap</strong><span>Explore relative market movements across forex pairs and macro assets with the FYNX cross-market heatmap.</span></a><a href="/tools/recent-topics-discussed.html"><strong>Curated Macro &amp; Trading Research Topics</strong><span>Browse curated economic and trading research topics for further study. This editorial reference is not a live news or discussion feed.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const el = {
@@ -769,7 +762,7 @@
     const THEME_KEY = "fynx_theme";
 
     (function applyThemeFromStorage(){
-      const saved = localStorage.getItem(THEME_KEY);
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
       if (saved === "dark") document.body.classList.add("dark-mode");
       else document.body.classList.remove("dark-mode");
     })();

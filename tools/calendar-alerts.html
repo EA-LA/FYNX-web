@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-
     :root{
       --bg:#f3f3f3;
       --text:#0b0b0b;
@@ -33,7 +31,6 @@
       --bad:#606060;
       --chip:rgba(0, 0, 0, .04);
     }
-
     body.dark-mode{
       --bg:#000;
       --text:#fff;
@@ -58,7 +55,6 @@
       --bad:#969696;
       --chip:rgba(255, 255, 255, .05);
     }
-
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
       color:var(--text);
@@ -69,10 +65,8 @@
       min-height:100vh;
     }
     body.dark-mode{ background:var(--bg); }
-
     .animated-bg{position:fixed;inset:0;z-index:-1;background:transparent;overflow:hidden}
     body.dark-mode .animated-bg{background:#000}
-
     .grid-overlay{
       position:absolute;inset:0;
       background-image:
@@ -82,12 +76,10 @@
       animation:gridMove 20s linear infinite;
     }
     @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
-
     .gradient-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.22;animation:float 20s ease-in-out infinite}
     .orb-1{width:520px;height:520px;background:radial-gradient(circle,var(--orb) 0%,transparent 70%);top:-220px;left:-220px}
     .orb-2{width:420px;height:420px;background:radial-gradient(circle,var(--orb) 0%,transparent 70%);bottom:-170px;right:-170px;animation-delay:6s}
     @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-50px) scale(1.08)}66%{transform:translate(-50px,50px) scale(.92)}}
-
     header{
       position:sticky;top:0;z-index:1000;
       background:var(--header-bg);
@@ -95,7 +87,6 @@
       border-bottom:1px solid var(--header-border);
       padding:1rem 0;
     }
-
     .nav{
       max-width:1200px;margin:0 auto;
       display:flex;align-items:center;justify-content:space-between;
@@ -103,17 +94,14 @@
       gap:1rem;
       flex-wrap:wrap;
     }
-
     .brand{
       display:flex;align-items:center;gap:.6rem;
       font-weight:900;letter-spacing:-1px;font-size:1.25rem;
     }
     .brand i{opacity:.9}
-
     .nav-actions{
       display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end;
     }
-
     .nav a,
     .theme-btn{
       color:var(--nav-link);
@@ -135,9 +123,7 @@
       background:var(--nav-link-hover);
       transform:translateY(-1px)
     }
-
     main{max-width:1200px;margin:0 auto;padding:3rem 1.25rem 5rem}
-
     .hero{
       padding:2rem 1.5rem;
       border:1px solid var(--hero-border);
@@ -146,7 +132,6 @@
       backdrop-filter:blur(10px);
       box-shadow:var(--shadow);
     }
-
     h1{
       font-size:3rem;line-height:1.1;letter-spacing:-2px;
       background:linear-gradient(135deg,#000 0%,#6c6c6c 100%);
@@ -157,16 +142,13 @@
       background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
       -webkit-background-clip:text;-webkit-text-fill-color:transparent;
     }
-
     p{color:var(--muted);font-size:1.05rem;line-height:1.8;max-width:78ch}
-
     .panel-grid{
       display:grid;
       grid-template-columns:1.05fr .95fr;
       gap:1.25rem;
       margin-top:1.25rem;
     }
-
     .panel{
       border:1px solid var(--panel-border);
       background:var(--panel-bg);
@@ -177,29 +159,23 @@
       box-shadow:0 14px 34px rgba(0, 0, 0, .08);
     }
     body.dark-mode .panel{box-shadow:none}
-
     .panel h2{font-size:1.12rem;margin-bottom:.8rem}
-
     .form-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:.95rem;
     }
-
     .field{
       display:flex;
       flex-direction:column;
       gap:.45rem;
     }
-
     .field.full{grid-column:1/-1}
-
     .field label{
       color:var(--muted);
       font-size:.9rem;
       font-weight:800;
     }
-
     .field input,
     .field select{
       width:100%;
@@ -212,20 +188,17 @@
       outline:none;
       transition:border-color .2s ease, transform .2s ease;
     }
-
     .field input:focus,
     .field select:focus{
       transform:translateY(-1px);
       border-color:var(--nav-link-border);
     }
-
     .button-row{
       display:flex;
       flex-wrap:wrap;
       gap:.75rem;
       margin-top:1rem;
     }
-
     .btn{
       border:none;
       padding:.9rem 1rem;
@@ -238,20 +211,16 @@
       gap:.5rem;
       font:inherit;
     }
-
     .btn.primary{
       background:var(--text);
       color:var(--bg);
     }
-
     .btn.secondary{
       background:var(--chip);
       color:var(--text);
       border:1px solid var(--panel-border);
     }
-
     .btn:hover{transform:translateY(-1px)}
-
     .status-box{
       border:1px solid var(--panel-border);
       background:var(--chip);
@@ -259,7 +228,6 @@
       padding:1rem;
       margin-bottom:1rem;
     }
-
     .status-chip{
       display:inline-flex;
       align-items:center;
@@ -272,26 +240,22 @@
       font-weight:800;
       margin-bottom:.7rem;
     }
-
     .status-title{
       font-size:1.05rem;
       font-weight:900;
       margin-bottom:.3rem;
     }
-
     .status-desc{
       color:var(--muted);
       line-height:1.7;
       font-size:.95rem;
     }
-
     .results-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:.85rem;
       margin-bottom:1rem;
     }
-
     .metric{
       border:1px solid var(--panel-border);
       background:var(--chip);
@@ -299,7 +263,6 @@
       padding:1rem;
       min-height:118px;
     }
-
     .metric-label{
       color:var(--hint);
       font-size:.78rem;
@@ -308,25 +271,21 @@
       margin-bottom:.45rem;
       font-weight:800;
     }
-
     .metric-value{
       color:var(--text);
       font-size:1.25rem;
       font-weight:900;
       letter-spacing:-.03em;
     }
-
     .metric-sub{
       margin-top:.35rem;
       color:var(--muted);
       font-size:.9rem;
       line-height:1.5;
     }
-
     .good{color:var(--good)}
     .warn{color:var(--warn)}
     .bad{color:var(--bad)}
-
     .alerts-wrap{
       margin-top:1.25rem;
       border:1px solid var(--panel-border);
@@ -334,7 +293,6 @@
       overflow:hidden;
       background:var(--panel-bg);
     }
-
     .alerts-head{
       padding:1rem 1rem .9rem;
       border-bottom:1px solid var(--panel-border);
@@ -344,12 +302,10 @@
       gap:1rem;
       flex-wrap:wrap;
     }
-
     .alerts-list{
       display:grid;
       gap:0;
     }
-
     .alert-row{
       display:grid;
       grid-template-columns:1.1fr .9fr .9fr auto;
@@ -358,25 +314,20 @@
       padding:1rem;
       border-bottom:1px solid var(--panel-border);
     }
-
     .alert-row:last-child{border-bottom:none}
-
     .alert-main{
       display:flex;
       flex-direction:column;
       gap:.22rem;
     }
-
     .alert-title{
       font-weight:900;
       color:var(--text);
     }
-
     .alert-sub{
       color:var(--muted);
       font-size:.9rem;
     }
-
     .badge{
       display:inline-flex;
       align-items:center;
@@ -389,11 +340,9 @@
       font-weight:800;
       width:max-content;
     }
-
     .badge.high{color:var(--bad)}
     .badge.medium{color:var(--warn)}
     .badge.low{color:var(--good)}
-
     .delete-btn{
       border:none;
       background:transparent;
@@ -402,33 +351,28 @@
       font-size:1rem;
       padding:.35rem;
     }
-
     .empty-state{
       padding:1.3rem 1rem;
       color:var(--muted);
       text-align:center;
     }
-
     .hint{
       margin-top:1.2rem;
       color:var(--hint);
       font-size:.95rem;
       line-height:1.8;
     }
-
     @media (max-width: 980px){
       .panel-grid,
       .results-grid,
       .form-grid{
         grid-template-columns:1fr;
       }
-
       .alert-row{
         grid-template-columns:1fr;
         gap:.65rem;
       }
     }
-
     @media (max-width: 700px){
       main{padding:2rem .95rem 3rem}
       .hero{padding:1.25rem 1rem}
@@ -437,11 +381,9 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Economic Event Reminder Planner | FYNX</title>
 <meta name="description" content="Plan reminders for economic events such as inflation releases, employment reports and central bank decisions.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -449,6 +391,12 @@
 <meta property="og:title" content="Economic Event Reminder Planner | FYNX">
 <meta property="og:description" content="Plan reminders for economic events such as inflation releases, employment reports and central bank decisions.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/calendar-alerts.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Economic Event Reminder Planner","item":"https://www.fynxfinanceworld.com/tools/calendar-alerts.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
   <div class="animated-bg">
@@ -472,7 +420,8 @@
   </header>
 
   <main>
-    <section class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
       <h1>Calendar Alerts</h1>
       <p>
         Create alerts for high-impact economic events and important calendar times. This page helps you schedule reminders before CPI, NFP, FOMC, interest rates, GDP, speeches, and any custom event you want to track.
@@ -614,7 +563,9 @@
         This tool is best for pre-news discipline. Add alerts before major macro events so you do not get caught in high volatility without a plan.
       </div>
     </section>
-  </main>
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Prepare a reminder for an economic release</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Choose a dated event and a lead time that leaves room for preparation. Review notification permissions and your device timezone.</p><h3>The calculation or concept</h3><p>Use the event’s publisher, date and timezone as the source of truth for the reminder.</p></div><div class="tool-example"><h3>Worked example</h3><p>An 08:30 New York release occurs at different local clock times around daylight-saving changes. Check the displayed timezone before saving a reminder.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Schedules can change and notifications can arrive late. A reminder is a planning aid, not a guarantee of delivery or a trading signal.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/economic-calendar.html"><strong>Economic Calendar: Releases &amp; Central Bank Events</strong><span>Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.</span></a><a href="/tools/market-hours.html"><strong>Forex Trading Sessions &amp; Market Hours</strong><span>Review market session timing and trading hours to plan when to research and monitor financial markets.</span></a><a href="/tools/market-holidays.html"><strong>Market Holiday Planning Reference</strong><span>Review a partial market holiday planning reference for 2025–2028. Confirm closures and early closing times with the relevant exchange.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const THEME_KEY = "fynx_theme";
@@ -633,13 +584,13 @@
     }
 
     (function applyThemeFromStorage(){
-      const saved = localStorage.getItem(THEME_KEY);
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
       applyTheme(saved === "dark" ? "dark" : "light");
     })();
 
     document.getElementById("themeToggle").addEventListener("click", () => {
       const next = document.body.classList.contains("dark-mode") ? "light" : "dark";
-      localStorage.setItem(THEME_KEY, next);
+      window.FynxPreferences?.setItem(THEME_KEY, next);
       applyTheme(next);
     });
 

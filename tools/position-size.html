@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-
     :root{
       --bg:#f5f5f5;
       --bg-solid:#ffffff;
@@ -61,7 +58,6 @@
       --grid-line:rgba(0, 0, 0, .05);
       --orb-core:rgba(0, 0, 0, .22);
     }
-
     body.dark-mode{
       --bg:#000000;
       --bg-solid:#000000;
@@ -110,7 +106,6 @@
       --grid-line:rgba(255, 255, 255, .03);
       --orb-core:rgba(255, 255, 255, .92);
     }
-
     body{
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: var(--text);
@@ -119,7 +114,6 @@
       min-height:100vh;
       transition:background .25s ease,color .25s ease;
     }
-
     /* Background */
     .animated-bg{
       position:fixed; inset:0; z-index:-1;
@@ -151,7 +145,6 @@
       0%,100%{transform:translate(0,0) scale(1)}
       50%{transform:translate(30px,-24px) scale(.97)}
     }
-
     /* Header */
     header{
       position:sticky; top:0; z-index:1000;
@@ -196,7 +189,6 @@
     }
     .btn:hover{transform: translateY(-1px); background: var(--btn-bg-hover); border-color: var(--btn-border-hover)}
     .btn i{opacity:.9}
-
     /* Layout */
     main{
       max-width: var(--max);
@@ -211,7 +203,6 @@
       padding: 30px;
       transition:background .25s ease,border-color .25s ease,box-shadow .25s ease;
     }
-
     .title{
       font-size: 44px;
       line-height: 1.04;
@@ -228,7 +219,6 @@
       margin-bottom: 22px;
       transition:color .25s ease;
     }
-
     .grid{
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -239,7 +229,6 @@
       .title{font-size: 36px}
       .grid{grid-template-columns:1fr}
     }
-
     .card{
       border: 1px solid var(--border2);
       background: var(--card-bg);
@@ -262,7 +251,6 @@
       line-height: 1.5;
       transition:color .25s ease;
     }
-
     .row{
       display:grid;
       grid-template-columns: 1.2fr 1fr;
@@ -294,7 +282,6 @@
       border-color: var(--field-border-focus);
       background: var(--field-bg-focus);
     }
-
     .split{
       display:flex; gap:10px; align-items:center;
     }
@@ -311,7 +298,6 @@
     .pill span{color: var(--muted); font-size: 12px; font-weight: 750; transition:color .25s ease;}
     .pill strong{color:var(--text-strong); transition:color .25s ease;}
     .mono{font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
-
     .toggle{
       display:flex; align-items:center; justify-content:space-between;
       padding: 10px 12px;
@@ -345,7 +331,6 @@
       border-color: var(--switch-on-border);
     }
     .switch.on::after{ left:25px; }
-
     .actions{
       display:flex; gap:10px; flex-wrap:wrap;
       margin-top: 12px;
@@ -373,7 +358,6 @@
     }
     .ghost:hover{transform: translateY(-1px); background: var(--ghost-bg-hover); border-color: var(--btn-border-hover)}
     .disabled{opacity:.55; cursor:not-allowed; pointer-events:none;}
-
     .msg{
       margin-top: 12px;
       color: var(--danger);
@@ -381,7 +365,6 @@
       font-size: 13px;
       min-height: 18px;
     }
-
     /* Results */
     .resultsBox{
       display:flex;
@@ -427,13 +410,11 @@
       margin-top: 8px;
       transition:color .25s ease;
     }
-
     .divider{
       height:1px; background: var(--divider);
       margin: 10px 0;
       transition:background .25s ease;
     }
-
     /* Presets */
     .presetRow{
       display:flex; gap:10px; flex-wrap:wrap;
@@ -456,19 +437,23 @@
     .chip i{opacity:.85}
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Forex Position Size &amp; Risk Calculator | FYNX</title>
 <meta name="description" content="Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.">
 <meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="stylesheet" href="/assets/css/api-calculator-pilot.css">
 <link rel="canonical" href="https://www.fynxfinanceworld.com/tools/position-size.html">
 <meta property="og:title" content="Forex Position Size &amp; Risk Calculator | FYNX">
 <meta property="og:description" content="Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/position-size.html">
-<link rel="stylesheet" href="/assets/css/api-calculator-pilot.css">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Forex Position Size & Risk Calculator","item":"https://www.fynxfinanceworld.com/tools/position-size.html"}]}</script><!-- discovery-schema:end -->
 </head>
 
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
@@ -489,7 +474,8 @@
   </header>
 
   <main>
-    <div class="shell">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<div class="shell">
       <h1 class="title">Forex Calculator</h1>
       <div class="subtitle">
         Position sizing from your risk budget and stop distance. Daily reference rates come from Frankfurter / ECB; use your broker’s current execution price for a live trade.
@@ -628,6 +614,8 @@
       </div>
     </div>
   <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Uses the calculator’s Forex contract model and 0.01-lot increment. The stop is modeled below entry by your stop distance. Supply an explicit cross-currency conversion rate. Broker specifications remain unverified.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
+<!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Size a position from the loss you can plan for</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Choose the currency pair or gold contract, enter your account value and risk budget, then enter the stop distance in pips. Check the price and account-currency conversion; a manual-price mode is available.</p><h3>The calculation or concept</h3><p>Risk budget = account equity × risk percentage. Units = risk budget ÷ loss per unit at the stop.</p></div><div class="tool-example"><h3>Worked example</h3><p>A hypothetical $10,000 account with a 1% risk budget allows $100 of planned risk. For a USD-quoted forex pair with a $10 pip value per standard lot and a 20-pip stop, that budget gives 0.5 standard lots before costs.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Stops can slip or gap. Round down to a tradable size and allow for commissions, spread and other positions; a calculated size is not a guaranteed loss cap.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/margin.html"><strong>Forex Margin &amp; Leverage Calculator</strong><span>Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.</span></a><a href="/tools/risk-reward.html"><strong>Risk-to-Reward Ratio Calculator</strong><span>Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</span></a><a href="/tools/atr-stop.html"><strong>ATR Stop-Loss Calculator</strong><span>Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
 
   <script src="/assets/vendor/decimal.js"></script>
@@ -1126,7 +1114,7 @@ const selected=els.pair.value;if(isGoldPair(selected))throw new Error('Gold cont
     const THEME_KEY = "fynx_theme";
 
     (function applyThemeFromStorage(){
-      const saved = localStorage.getItem(THEME_KEY);
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
       if (saved === "dark") document.body.classList.add("dark-mode");
       else document.body.classList.remove("dark-mode");
     })();

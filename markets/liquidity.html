@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     :root{--bg:#fff;--panel:#fff;--panel-2:#fafafa;--text:#0a0a0a;--muted:#606060;--border:rgba(0, 0, 0, .08);--shadow:0 20px 60px rgba(0, 0, 0, .08)}
@@ -27,11 +26,9 @@
     @media (max-width:1050px){.grid{grid-template-columns:1fr}}
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Crypto Liquidity: Coinbase Bid, Ask &amp; Spread | FYNX</title>
 <meta name="description" content="View Coinbase BTC/USD and ETH/USD best bid, ask, spread and displayed size, refreshed every 15 seconds while visible.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -39,6 +36,12 @@
 <meta property="og:title" content="Crypto Liquidity: Coinbase Bid, Ask &amp; Spread | FYNX">
 <meta property="og:description" content="View Coinbase BTC/USD and ETH/USD best bid, ask, spread and displayed size, refreshed every 15 seconds while visible.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/markets/liquidity.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Markets","item":"https://www.fynxfinanceworld.com/explore.html?category=Markets"},{"@type":"ListItem","position":3,"name":"Crypto Liquidity: Coinbase Bid, Ask & Spread","item":"https://www.fynxfinanceworld.com/markets/liquidity.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="MARKETS">
 <header>
@@ -62,18 +65,21 @@
   </div>
 </header>
 
-<main><div class="card" data-market-analysis="liquidity"><h1>Market liquidity snapshot</h1>
+<main>
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Markets">Markets</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<div class="card" data-market-analysis="liquidity"><h1>Market liquidity snapshot</h1>
 <p class="desc">Best bid, ask, spread and displayed size from Coinbase Exchange. A snapshot of one crypto venue, not total market depth or global FX liquidity. Refreshes every 15 seconds while this page is visible.</p>
 <div class="analysis-controls"><label for="analysisProduct">Market <select id="analysisProduct"><option value="BTC-USD">BTC / USD</option><option value="ETH-USD">ETH / USD</option></select></label><button type="button" class="btn">Refresh data</button></div>
 <p role="status">Loading source observations…</p><div data-analysis-output></div>
 <p>Displayed size is the aggregate quantity at the best price. It can change or disappear before execution; it does not estimate slippage for larger orders. Auction and invalid snapshots are excluded.</p>
-<p><a data-market-source href="https://www.coinbase.com/advanced-trade/spot/BTC-USD" target="_blank" rel="noopener">Open Coinbase market ↗</a></p></div><style>.analysis-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:20px 0}.analysis-controls select{padding:10px;max-width:100%;background:var(--panel);color:var(--text);border:1px solid var(--border)}[data-analysis-output]{overflow-x:auto;max-width:100%;margin:20px 0}[data-analysis-output] table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}[data-analysis-output] th,[data-analysis-output] td{padding:12px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap}[data-analysis-output] th:first-child{text-align:left}[data-analysis-output] caption{text-align:left;padding:12px 0;font-size:14px}[data-market-analysis]{min-width:0}[data-market-analysis] [role=status]{font-size:14px;line-height:1.6}</style></main><script src="/assets/js/market-analytics.js?v=20260928-ingestion" defer></script>
+<p><a data-market-source href="https://www.coinbase.com/advanced-trade/spot/BTC-USD" target="_blank" rel="noopener">Open Coinbase market ↗</a></p></div><style>.analysis-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:20px 0}.analysis-controls select{padding:10px;max-width:100%;background:var(--panel);color:var(--text);border:1px solid var(--border)}[data-analysis-output]{overflow-x:auto;max-width:100%;margin:20px 0}[data-analysis-output] table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}[data-analysis-output] th,[data-analysis-output] td{padding:12px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap}[data-analysis-output] th:first-child{text-align:left}[data-analysis-output] caption{text-align:left;padding:12px 0;font-size:14px}[data-market-analysis]{min-width:0}[data-market-analysis] [role=status]{font-size:14px;line-height:1.6}</style><!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/markets/cot.html"><strong>CFTC Commitments of Traders: Weekly Positions</strong><span>Explore the latest published CFTC Legacy Futures Only positions, including net commercial and non-commercial positions and open interest.</span></a><a href="/markets/crypto.html"><strong>Crypto Market Overview: Bitcoin, Ethereum &amp; Altcoins</strong><span>Explore Bitcoin, Ethereum and other cryptocurrency markets with charts and market context for your research.</span></a><a href="/markets/index.html"><strong>Financial Markets: Forex, Crypto &amp; Market Research</strong><span>Browse forex and crypto market views, technical indicators, volatility, correlations and market research references.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main><script src="/assets/js/market-analytics.js?v=20260928-ingestion" defer></script>
 
 <script>
 const THEME_KEY="fynx_theme";
-function getTheme(){return localStorage.getItem(THEME_KEY)==="dark"?"dark":"light";}
+function getTheme(){return window.FynxPreferences?.getItem(THEME_KEY)==="dark"?"dark":"light";}
 function applyTheme(theme){document.body.classList.toggle("dark-mode",theme==="dark");document.getElementById("themeLabel").textContent=theme==="dark"?"Dark":"Light";}
-function toggleTheme(){const next=getTheme()==="dark"?"light":"dark";localStorage.setItem(THEME_KEY,next);applyTheme(next);}
+function toggleTheme(){const next=getTheme()==="dark"?"light":"dark";window.FynxPreferences?.setItem(THEME_KEY,next);applyTheme(next);}
 applyTheme(getTheme());
 document.getElementById("themeToggle").addEventListener("click",toggleTheme);
 window.addEventListener("storage",e=>{if(e.key===THEME_KEY)applyTheme(getTheme());});

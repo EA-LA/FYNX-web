@@ -1,25 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <script>
     (function(){
-      const t = localStorage.getItem("fynx_theme") === "dark" ? "dark" : "light";
+      const t = window.FynxPreferences?.getItem("fynx_theme") === "dark" ? "dark" : "light";
       document.documentElement.dataset.theme = t;
       document.documentElement.style.backgroundColor = t === "light" ? "#fbfbfb" : "#000000";
     })();
   </script>
-
   <title>Trading Calculators: Forex, Stocks, Risk &amp; Options | FYNX</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/app-shell.css" />
   <link rel="stylesheet" href="assets/css/mobile-fixes.css">
-
   <style>
     :root{
       /* ===== Monochrome System ===== */
@@ -31,16 +28,12 @@
       --chip: rgba(11, 11, 11, 0.05);
       --chip-strong: rgba(11, 11, 11, 0.08);
       --surface-2: rgba(11, 11, 11, 0.08);
-
       --shadow: 0 18px 38px rgba(0, 0, 0, 0.06);
-
       --radius-lg: 18px;
       --radius-md: 14px;
       --radius-sm: 12px;
-
       --focus: 0 0 0 3px rgba(11, 11, 11, 0.18);
     }
-
     body.dark-mode{
       --bg: #000000;
       --panel: #0b0b0b;
@@ -50,25 +43,19 @@
       --chip: rgba(243, 243, 243, 0.08);
       --chip-strong: rgba(243, 243, 243, 0.12);
       --surface-2: rgba(243, 243, 243, 0.10);
-
       --shadow: 0 20px 44px rgba(0, 0, 0, 0.55);
-
       --focus: 0 0 0 3px rgba(243, 243, 243, 0.18);
     }
-
     *{ margin:0; padding:0; box-sizing:border-box; }
-
     body{
       font-family:"Manrope", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: var(--text);
       min-height:100vh;
-
       /* Light: micro-dots (monochrome) */
       background:
         radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.06) 1px, transparent 1px) 0 0 / 18px 18px,
         linear-gradient(var(--bg), var(--bg));
     }
-
     body.dark-mode{
       /* Dark: subtle grid (monochrome) */
       background:
@@ -78,9 +65,7 @@
         radial-gradient(circle at 70% 0%, rgba(255, 255, 255, 0.04) 0%, transparent 40%),
         linear-gradient(var(--bg), var(--bg));
     }
-
     .dashboard-container{ display:flex; min-height:100vh; }
-
     /* ===== Sidebar ===== */
     .nav-panel{
       width: 112px;
@@ -91,7 +76,6 @@
       z-index: 10;
       backdrop-filter: blur(10px);
     }
-
     .nav-logo{
       height: 88px;
       display:grid;
@@ -102,7 +86,6 @@
       letter-spacing: -1px;
       color: var(--text);
     }
-
     .nav-menu{
       padding: 16px 10px;
       display:flex;
@@ -110,7 +93,6 @@
       gap: 10px;
       align-items:center;
     }
-
     .nav-item{
       width: 90px;
       text-align:center;
@@ -122,7 +104,6 @@
       border: 1px solid transparent;
       transition: 0.18s ease;
       font-weight: 800;
-
       /* ✅ FIX: lock layout so items never jump (no wrapping / no height changes) */
       height: 48px;
       display: flex;
@@ -133,25 +114,21 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     .nav-item:hover{
       background: var(--chip);
       color: var(--text);
       border-color: var(--line);
       transform: translateY(-1px);
     }
-
     .nav-item.active{
       background: var(--chip-strong);
       color: var(--text);
       border-color: color-mix(in oklab, var(--text) 18%, var(--line));
     }
-
     .main-content{
       margin-left: 112px;
       width: calc(100% - 112px);
     }
-
     /* ===== Top Bar ===== */
     .top-bar{
       height: 76px;
@@ -166,7 +143,6 @@
       justify-content:space-between;
       padding: 0 24px;
     }
-
     .title-wrap h1{
       font-size: 20px;
       font-weight: 800;
@@ -178,12 +154,9 @@
       margin-top: 2px;
       font-weight: 700;
     }
-
     .top-actions{ display:flex; align-items:center; gap:12px; }
-
     /* Theme button removed here (ONLY on profile.html) */
     .theme-btn{ display:none; }
-
     .avatar{
       border: 1px solid var(--line);
       background: var(--panel);
@@ -196,17 +169,14 @@
       cursor:pointer;
       transition: 0.18s ease;
     }
-
     .avatar:hover{
       transform: translateY(-1px);
       border-color: color-mix(in oklab, var(--text) 18%, var(--line));
     }
-
     .avatar:focus-visible{
       outline: none;
       box-shadow: var(--focus);
     }
-
     .avatar{
       display:grid;
       place-items:center;
@@ -214,9 +184,7 @@
       padding:0;
       letter-spacing: -0.2px;
     }
-
     .content-area{ padding: 24px; display:grid; gap:14px; }
-
     /* ===== Hero Row ===== */
     .hero{
       display:grid;
@@ -224,7 +192,6 @@
       gap: 16px;
       margin-bottom: 8px;
     }
-
     .hero-card, .quick-calc{
       background: color-mix(in oklab, var(--panel) 92%, transparent);
       border: 1px solid var(--line);
@@ -232,9 +199,7 @@
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
     }
-
     .hero-card{ padding: 20px; }
-
     .hero-badge{
       display:inline-flex;
       align-items:center;
@@ -244,20 +209,17 @@
       font-weight: 900;
       padding: 7px 10px;
       margin-bottom: 12px;
-
       /* monochrome badge */
       background: var(--text);
       color: var(--bg);
       border: 1px solid color-mix(in oklab, var(--text) 70%, transparent);
       letter-spacing: 0.4px;
     }
-
     body.dark-mode .hero-badge{
       background: var(--panel);
       color: var(--text);
       border: 1px solid rgba(243, 243, 243, 0.22);
     }
-
     .hero h2{
       font-size: 28px;
       line-height: 1.08;
@@ -265,16 +227,13 @@
       margin-bottom: 8px;
       font-weight: 900;
     }
-
     .hero p{
       color: var(--muted);
       max-width: 62ch;
       font-weight: 700;
     }
-
     /* ===== Quick Calc ===== */
     .quick-calc{ padding: 18px; }
-
     .calc-display{
       border: 1px solid var(--line);
       background: var(--chip);
@@ -287,13 +246,11 @@
       min-height: 64px;
       letter-spacing: -0.6px;
     }
-
     .calc-grid{
       display:grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
     }
-
     .calc-btn{
       border: 1px solid var(--line);
       background: var(--panel);
@@ -304,27 +261,21 @@
       cursor:pointer;
       transition: 0.16s ease;
     }
-
     .calc-btn:hover{ transform: translateY(-1px); border-color: color-mix(in oklab, var(--text) 18%, var(--line)); }
-
     .calc-btn:focus-visible{ outline:none; box-shadow: var(--focus); }
-
     .calc-btn.op{
       background: var(--chip);
     }
-
     .calc-btn.eq{
       background: var(--text);
       color: var(--bg);
       border-color: color-mix(in oklab, var(--text) 60%, transparent);
     }
-
     body.dark-mode .calc-btn.eq{
       background: #f3f3f3;
       color: #0b0b0b;
       border-color: rgba(243, 243, 243, 0.40);
     }
-
     /* ===== Filters ===== */
     .filters{
       display:flex;
@@ -333,7 +284,6 @@
       gap: 12px;
       margin-bottom: 14px;
     }
-
     .search{
       width: 100%;
       max-width: 440px;
@@ -347,29 +297,24 @@
       backdrop-filter: blur(10px);
       transition: 0.18s ease;
     }
-
     .search::placeholder{ color: color-mix(in oklab, var(--muted) 80%, transparent); }
-
     .search:focus{
       outline: none;
       box-shadow: var(--focus);
       border-color: color-mix(in oklab, var(--text) 18%, var(--line));
     }
-
     .count{
       color: var(--muted);
       font-size: 13px;
       font-weight: 800;
       white-space: nowrap;
     }
-
     /* ===== Tools Grid ===== */
     .tools-grid{
       display:grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 14px;
     }
-
     .tool-card{
       background: color-mix(in oklab, var(--panel) 92%, transparent);
       border: 1px solid var(--line);
@@ -382,25 +327,21 @@
       gap: 11px;
       backdrop-filter: blur(10px);
     }
-
     .tool-card:hover{
       transform: translateY(-3px);
       border-color: color-mix(in oklab, var(--text) 18%, var(--line));
     }
-
     .tool-head{
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap: 8px;
     }
-
     .tool-title{
       font-size: 16px;
       font-weight: 900;
       letter-spacing: -0.2px;
     }
-
     .tool-chip{
       font-size: 11px;
       font-weight: 900;
@@ -411,14 +352,12 @@
       padding: 4px 8px;
       letter-spacing: 0.35px;
     }
-
     .tool-desc{
       font-size: 13px;
       color: var(--muted);
       min-height: 34px;
       font-weight: 700;
     }
-
     .tool-link{
       margin-top:auto;
       text-decoration:none;
@@ -432,23 +371,19 @@
       font-weight: 900;
       transition: 0.18s ease;
     }
-
     .tool-link:hover{
       transform: translateY(-1px);
       filter: brightness(1.03);
     }
-
     body.dark-mode .tool-link{
       background: #f3f3f3;
       color: #0b0b0b;
       border-color: rgba(243, 243, 243, 0.45);
     }
-
     /* ===== Responsive ===== */
     @media (max-width: 980px){
       .hero{ grid-template-columns: 1fr; }
     }
-
     @media (max-width: 760px){
       .nav-panel{ width: 82px; }
       .main-content{ margin-left: 82px; width: calc(100% - 82px); }
@@ -456,7 +391,6 @@
       .content-area{ padding: 14px; }
       .hero h2{ font-size: 24px; }
     }
-
     /* iPhone: make outer nav a bottom bar */
     @media (max-width: 720px){
       .nav-panel{
@@ -483,7 +417,6 @@
         min-width:56px;
         padding:10px 10px;
         border-radius:12px;
-
         /* ✅ keep iPhone behavior exactly as-is */
         height: auto;
         line-height: normal;
@@ -491,23 +424,18 @@
         overflow: visible;
         text-overflow: clip;
       }
-
       .main-content{
         margin-left:0;
         width:100%;
         padding-bottom: calc(88px + env(safe-area-inset-bottom));
       }
-
       .top-bar{
         padding: 0 14px;
         height: 72px;
       }
-
       .content-area{ padding: 14px; }
-
       .hero-card{ padding: 16px; }
       .hero h2{ font-size: 22px; }
-
       .filters{
         flex-direction:column;
         align-items:stretch;
@@ -518,7 +446,6 @@
     }
   </style>
   <script type="module" src="assets/js/session-bootstrap.js?v=20260928-audit2"></script>
-  <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
@@ -528,6 +455,12 @@
 <meta property="og:title" content="Trading Calculators: Forex, Stocks, Risk &amp; Options | FYNX">
 <meta property="og:description" content="Explore trading calculators for position size, pip value, margin, risk-reward, options and compounding. Plan trades using your own inputs.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/calculator.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Trading Calculators: Forex, Stocks, Risk & Options","item":"https://www.fynxfinanceworld.com/calculator.html"}]}</script><!-- discovery-schema:end -->
 </head>
 
 <body data-protected-page="false" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD">
@@ -558,7 +491,8 @@
       </header>
 
       <section class="content-area">
-        <div class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<div class="hero">
           <div class="hero-card">
             <span class="hero-badge">FYNX TRADING TOOLS</span>
             <h2>Plan your next trade</h2>
@@ -577,7 +511,9 @@
         </div>
 
         <div class="tools-grid" id="toolsGrid"></div>
-      </section>
+      <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/atr-stop.html"><strong>ATR Stop-Loss Calculator</strong><span>Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.</span></a><a href="/tools/interest-rates.html"><strong>Central Bank Policy Rate Comparison</strong><span>Compare published central bank policy-rate observations from the Bank for International Settlements, with dates and source context.</span></a><a href="/tools/compound.html"><strong>Compound Growth &amp; Savings Calculator</strong><span>Estimate compound growth using starting capital, return assumptions and recurring deposits for savings or investing scenarios.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+<!-- discovery-hub:start --><section class="hub-directory"><h2>Open a calculator</h2><p>Open any resource directly. Each page has its own link, explanation and related tools.</p><div class="hub-directory-links"><a href="/tools/atr-stop.html"><strong>ATR Stop-Loss Calculator</strong><span>Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.</span></a><a href="/tools/interest-rates.html"><strong>Central Bank Policy Rate Comparison</strong><span>Compare published central bank policy-rate observations from the Bank for International Settlements, with dates and source context.</span></a><a href="/tools/compound.html"><strong>Compound Growth &amp; Savings Calculator</strong><span>Estimate compound growth using starting capital, return assumptions and recurring deposits for savings or investing scenarios.</span></a><a href="/tools/heatmap.html"><strong>Cross-Market Strength &amp; Weakness Heatmap</strong><span>Explore relative market movements across forex pairs and macro assets with the FYNX cross-market heatmap.</span></a><a href="/tools/crypto.html"><strong>Crypto Position Size &amp; Profit Calculator</strong><span>Estimate crypto position size, trading costs, exit value, profit or loss and break-even price using your own assumptions.</span></a><a href="/tools/recent-topics-discussed.html"><strong>Curated Macro &amp; Trading Research Topics</strong><span>Browse curated economic and trading research topics for further study. This editorial reference is not a live news or discussion feed.</span></a><a href="/tools/currency.html"><strong>Currency Conversion Calculator: Manual Rates</strong><span>Convert currencies using a manually entered exchange rate or fixed example rates. The calculator does not provide live exchange rates.</span></a><a href="/tools/options-payoff.html"><strong>Debt Payoff &amp; Interest Calculator</strong><span>Estimate how long debt repayment takes, total interest and the effect of changing a monthly payment.</span></a><a href="/tools/economic-calendar.html"><strong>Economic Calendar: Releases &amp; Central Bank Events</strong><span>Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.</span></a><a href="/tools/calendar-alerts.html"><strong>Economic Event Reminder Planner</strong><span>Plan reminders for economic events such as inflation releases, employment reports and central bank decisions.</span></a><a href="/tools/fibonacci.html"><strong>Fibonacci Retracement &amp; Extension Calculator</strong><span>Calculate Fibonacci retracement and extension levels from a swing high and low to study potential price levels.</span></a><a href="/tools/margin.html"><strong>Forex Margin &amp; Leverage Calculator</strong><span>Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.</span></a><a href="/tools/pip.html"><strong>Forex Pip Value Calculator</strong><span>Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.</span></a><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/forex.html"><strong>Forex Trade Planning Calculators</strong><span>Plan a forex trade with links to position sizing and pip value calculators using your account and risk inputs.</span></a><a href="/tools/market-hours.html"><strong>Forex Trading Sessions &amp; Market Hours</strong><span>Review market session timing and trading hours to plan when to research and monitor financial markets.</span></a><a href="/tools/symbol-news.html"><strong>FYNX Tools — Symbol News</strong><span>FYNX Tools — Symbol News. Explore this resource from FYNX Finance World.</span></a><a href="/tools/economic-indicators-heatmap.html"><strong>GDP, Inflation &amp; Unemployment Indicators</strong><span>Compare published World Bank GDP growth, inflation and unemployment observations. Review dates and source information with each indicator.</span></a><a href="/tools/liquidation-guard.html"><strong>Liquidation Risk &amp; Leverage Calculator</strong><span>Estimate liquidation price and distance for a leveraged trade using your inputs. Compare risk before choosing a position size.</span></a><a href="/tools/market-holidays.html"><strong>Market Holiday Planning Reference</strong><span>Review a partial market holiday planning reference for 2025–2028. Confirm closures and early closing times with the relevant exchange.</span></a><a href="/tools/correlation.html"><strong>Market Returns Correlation Calculator</strong><span>Calculate the correlation between two return series to compare market behavior and potential overlapping exposure.</span></a><a href="/tools/options.html"><strong>Options Profit &amp; Loss Calculator</strong><span>Estimate call and put option profit or loss at expiration using strike price, premium, contract count and underlying price.</span></a><a href="/tools/pivot.html"><strong>Pivot Point Support &amp; Resistance Calculator</strong><span>Calculate classic pivot points and support and resistance levels from the previous period&#39;s high, low and closing price.</span></a><a href="/tools/risk-reward.html"><strong>Risk-to-Reward Ratio Calculator</strong><span>Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</span></a><a href="/tools/stock.html"><strong>Stock Position Sizing Calculator</strong><span>Calculate a stock trade&#39;s position size and risk from account size, risk percentage, entry price and stop price.</span></a><a href="/tools/breakeven.html"><strong>Trading Break-Even Price Calculator</strong><span>Calculate a trade&#39;s estimated break-even price using position size, fees and spread assumptions.</span></a></div></section><!-- discovery-hub:end -->
+</section>
     </main>
   </div>
 
@@ -589,7 +525,7 @@
     ========================= */
     const THEME_KEY = "fynx_theme"; // "dark" or "light"
     function applySavedTheme() {
-      const saved = localStorage.getItem(THEME_KEY) || "light";
+      const saved = window.FynxPreferences?.getItem(THEME_KEY) || "light";
       document.body.classList.toggle("dark-mode", saved === "dark");
     }
     applySavedTheme();
@@ -626,7 +562,7 @@
     }
 
     function isDemoMode(){
-      return window.FynxDemoMode?.isDemoMode?.() || localStorage.getItem("mode") === "demo";
+      return window.FynxDemoMode?.isDemoMode?.() || window.FynxPreferences?.getItem("mode") === "demo";
     }
 
     function injectDemoBanner(){
@@ -661,7 +597,7 @@ topBar.prepend(banner);
     renderAvatar();
   </script>
 
-  <script src="fynx-nav.js?v=20260928-audit2"></script>
+  <script src="fynx-nav.js?v=20261011-discovery"></script>
 
   <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
   <script src="fynx-usercard.js?v=20260928-audit2"></script>

@@ -10,6 +10,7 @@ for (const url of urls) {
   const file = path.join(root, pathname.endsWith('/') ? pathname + 'index.html' : pathname);
   const dom = new JSDOM(fs.readFileSync(file, 'utf8'), { url, runScripts: 'outside-only' });
   const doc = dom.window.document;
+  dom.window.FynxPreferences = {getItem: () => 'light', setItem: () => {}};
   if (titles.has(doc.title)) throw new Error(`${file}: duplicate public page title`);
   titles.add(doc.title);
   for (const script of doc.querySelectorAll("script:not([src])")) {

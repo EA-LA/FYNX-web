@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-
     :root{
       --bg:#f5f5f5;
       --bg-solid:#ffffff;
@@ -59,7 +56,6 @@
       --grid-line:rgba(0, 0, 0, .05);
       --orb-core:rgba(0, 0, 0, .22);
     }
-
     body.dark-mode{
       --bg:#000000;
       --bg-solid:#000000;
@@ -106,7 +102,6 @@
       --grid-line:rgba(255, 255, 255, .03);
       --orb-core:rgba(255, 255, 255, .92);
     }
-
     body{
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: var(--text);
@@ -115,7 +110,6 @@
       min-height:100vh;
       transition:background .25s ease,color .25s ease;
     }
-
     /* Background */
     .animated-bg{
       position:fixed; inset:0; z-index:-1;
@@ -147,7 +141,6 @@
       0%,100%{transform:translate(0,0) scale(1)}
       50%{transform:translate(30px,-24px) scale(.97)}
     }
-
     /* Header */
     header{
       position:sticky; top:0; z-index:1000;
@@ -192,7 +185,6 @@
     }
     .btn:hover{transform: translateY(-1px); background: var(--btn-bg-hover); border-color: var(--btn-border-hover)}
     .btn i{opacity:.9}
-
     /* Layout */
     main{
       max-width: var(--max);
@@ -207,7 +199,6 @@
       padding: 30px;
       transition:background .25s ease,border-color .25s ease,box-shadow .25s ease;
     }
-
     .title{
       font-size: 44px;
       line-height: 1.04;
@@ -224,7 +215,6 @@
       margin-bottom: 22px;
       transition:color .25s ease;
     }
-
     .grid{
       display:grid;
       grid-template-columns: 1.1fr .9fr;
@@ -235,7 +225,6 @@
       .title{font-size: 36px}
       .grid{grid-template-columns:1fr}
     }
-
     .card{
       border: 1px solid var(--border2);
       background: var(--card-bg);
@@ -258,7 +247,6 @@
       line-height: 1.5;
       transition:color .25s ease;
     }
-
     .row{
       display:grid;
       grid-template-columns: 1.1fr 1fr;
@@ -294,13 +282,11 @@
       font-variant-numeric: tabular-nums;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
-
     .divider{
       height:1px; background: var(--divider);
       margin: 10px 0;
       transition:background .25s ease;
     }
-
     .actions{
       display:flex; gap:10px; flex-wrap:wrap;
       margin-top: 12px;
@@ -330,7 +316,6 @@
       display:inline-flex; align-items:center; gap:10px;
     }
     .ghost:hover{transform: translateY(-1px); background: var(--ghost-bg-hover); border-color: var(--btn-border-hover)}
-
     .msg{
       margin-top: 12px;
       color: var(--danger);
@@ -338,7 +323,6 @@
       font-size: 13px;
       min-height: 18px;
     }
-
     /* Results */
     .resultsBox{
       display:flex;
@@ -378,7 +362,6 @@
       font-weight: 800;
       transition:color .25s ease;
     }
-
     .rrHighlight{
       display:flex;
       justify-content:space-between;
@@ -400,7 +383,6 @@
       color:var(--text-strong);
       transition:border-color .25s ease,background .25s ease,color .25s ease;
     }
-
     .note{
       color: var(--muted2);
       font-size: 12px;
@@ -408,7 +390,6 @@
       margin-top: 8px;
       transition:color .25s ease;
     }
-
     /* Share */
     .shareRow{
       display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px;
@@ -433,19 +414,23 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Risk-to-Reward Ratio Calculator | FYNX</title>
 <meta name="description" content="Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.">
 <meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="stylesheet" href="/assets/css/api-calculator-pilot.css">
 <link rel="canonical" href="https://www.fynxfinanceworld.com/tools/risk-reward.html">
 <meta property="og:title" content="Risk-to-Reward Ratio Calculator | FYNX">
 <meta property="og:description" content="Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/risk-reward.html">
-<link rel="stylesheet" href="/assets/css/api-calculator-pilot.css">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Risk-to-Reward Ratio Calculator","item":"https://www.fynxfinanceworld.com/tools/risk-reward.html"}]}</script><!-- discovery-schema:end -->
 </head>
 
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
@@ -466,7 +451,8 @@
   </header>
 
   <main>
-    <div class="shell" id="tapDismiss">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<div class="shell" id="tapDismiss">
       <h1 class="title">Risk/Reward</h1>
       <div class="subtitle">
         Turn any setup into a clean R:R. Enter your <b>entry</b>, <b>stop-loss</b>, and <b>take-profit</b> to see
@@ -573,6 +559,8 @@
       </div>
     </div>
   <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Compares the ratio for your supplied prices.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
+<!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Compare a target with the planned downside</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Select long or short, then enter entry, stop and target on the correct side of the trade. Compare several scenarios without moving your stop simply to improve the ratio.</p><h3>The calculation or concept</h3><p>Reward-to-risk ratio = distance to target ÷ distance to stop, for the chosen direction.</p></div><div class="tool-example"><h3>Worked example</h3><p>A long entry at $100 with a $98 stop and $106 target has $2 of price risk and $6 of potential reward per unit: 3:1 before costs.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>A large ratio does not make a setup profitable. Win rate, execution costs and the frequency of reaching the target also matter.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/breakeven.html"><strong>Trading Break-Even Price Calculator</strong><span>Calculate a trade&#39;s estimated break-even price using position size, fees and spread assumptions.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
 
   <div class="toast" id="toast">Copied</div>
@@ -823,7 +811,7 @@ calculate();if(el.error.textContent)throw new Error(el.error.textContent);
     const THEME_KEY = "fynx_theme";
 
     (function applyThemeFromStorage(){
-      const saved = localStorage.getItem(THEME_KEY);
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
       if (saved === "dark") document.body.classList.add("dark-mode");
       else document.body.classList.remove("dark-mode");
     })();

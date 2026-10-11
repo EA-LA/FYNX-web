@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-
     :root{
       --bg:#f3f3f3;
       --bg-2:#ffffff;
@@ -41,7 +38,6 @@
       --blue:#696969;
       --pill:#111;
     }
-
     body.dark-mode{
       --bg:#000;
       --bg-2:#050505;
@@ -73,7 +69,6 @@
       --blue:#a4a4a4;
       --pill:#fff;
     }
-
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
       color:var(--text);
@@ -83,15 +78,11 @@
       overflow-x:hidden;
       min-height:100vh;
     }
-
     body.dark-mode{ background:var(--bg); }
-
     .animated-bg{
       position:fixed;inset:0;z-index:-1;background:transparent;overflow:hidden;
     }
-
     body.dark-mode .animated-bg{background:#000}
-
     .grid-overlay{
       position:absolute;inset:0;
       background-image:
@@ -100,35 +91,29 @@
       background-size:50px 50px;
       animation:gridMove 20s linear infinite;
     }
-
     @keyframes gridMove{
       0%{transform:translate(0,0)}
       100%{transform:translate(50px,50px)}
     }
-
     .gradient-orb{
       position:absolute;border-radius:50%;filter:blur(80px);opacity:.22;animation:float 20s ease-in-out infinite;
     }
-
     .orb-1{
       width:520px;height:520px;
       background:radial-gradient(circle,var(--orb) 0%,transparent 70%);
       top:-220px;left:-220px;
     }
-
     .orb-2{
       width:420px;height:420px;
       background:radial-gradient(circle,var(--orb) 0%,transparent 70%);
       bottom:-170px;right:-170px;
       animation-delay:6s;
     }
-
     @keyframes float{
       0%,100%{transform:translate(0,0) scale(1)}
       33%{transform:translate(50px,-50px) scale(1.08)}
       66%{transform:translate(-50px,50px) scale(.92)}
     }
-
     header{
       position:sticky;top:0;z-index:1000;
       background:var(--header-bg);
@@ -136,7 +121,6 @@
       border-bottom:1px solid var(--header-border);
       padding:1rem 0;
     }
-
     .nav{
       max-width:1280px;
       margin:0 auto;
@@ -146,21 +130,17 @@
       padding:0 1.25rem;
       gap:1rem;
     }
-
     .brand{
       display:flex;align-items:center;gap:.6rem;
       font-weight:900;letter-spacing:-1px;font-size:1.25rem;
     }
-
     .brand i{opacity:.9}
-
     .nav-actions{
       display:flex;
       gap:.6rem;
       flex-wrap:wrap;
       justify-content:flex-end;
     }
-
     .nav a,
     .theme-btn{
       color:var(--nav-link);
@@ -179,19 +159,16 @@
       font-size:.96rem;
       box-shadow:var(--shadow-soft);
     }
-
     .nav a:hover,
     .theme-btn:hover{
       background:var(--nav-link-hover);
       transform:translateY(-1px);
     }
-
     main{
       max-width:1280px;
       margin:0 auto;
       padding:2rem 1.25rem 4rem;
     }
-
     .hero{
       border:1px solid var(--hero-border);
       background:var(--hero-bg);
@@ -200,7 +177,6 @@
       box-shadow:var(--shadow);
       overflow:hidden;
     }
-
     .hero-top{
       padding:2rem 1.5rem 1.3rem;
       border-bottom:1px solid var(--panel-border);
@@ -210,9 +186,7 @@
       gap:1rem;
       align-items:flex-start;
     }
-
     .hero-copy{max-width:760px}
-
     h1{
       font-size:clamp(2.3rem,4vw,3.35rem);
       line-height:1.05;
@@ -222,27 +196,23 @@
       -webkit-text-fill-color:transparent;
       margin-bottom:.8rem;
     }
-
     body.dark-mode h1{
       background:linear-gradient(135deg,#fff 0%,#8a8a8a 100%);
       -webkit-background-clip:text;
       -webkit-text-fill-color:transparent;
     }
-
     .lead{
       color:var(--text-soft);
       font-size:1.05rem;
       line-height:1.8;
       max-width:72ch;
     }
-
     .hero-badges{
       display:flex;
       flex-wrap:wrap;
       gap:.7rem;
       margin-top:1rem;
     }
-
     .badge{
       display:inline-flex;
       align-items:center;
@@ -255,26 +225,22 @@
       font-weight:800;
       color:var(--text-soft);
     }
-
     .live-pulse{
       width:10px;height:10px;border-radius:50%;
       background:var(--green);
       box-shadow:0 0 0 0 rgba(116, 116, 116, .55);
       animation:pulse 1.8s infinite;
     }
-
     @keyframes pulse{
       0%{box-shadow:0 0 0 0 rgba(116, 116, 116, .55)}
       70%{box-shadow:0 0 0 12px rgba(116, 116, 116, 0)}
       100%{box-shadow:0 0 0 0 rgba(116, 116, 116, 0)}
     }
-
     .clock-wrap{
       min-width:290px;
       display:grid;
       gap:.8rem;
     }
-
     .clock-card{
       border:1px solid var(--panel-border);
       background:var(--panel-bg);
@@ -282,7 +248,6 @@
       padding:1rem;
       box-shadow:var(--shadow-soft);
     }
-
     .clock-label{
       font-size:.8rem;
       color:var(--text-faint);
@@ -291,26 +256,22 @@
       margin-bottom:.35rem;
       font-weight:800;
     }
-
     .clock-value{
       font-size:1.2rem;
       font-weight:900;
       letter-spacing:-.03em;
     }
-
     .clock-sub{
       margin-top:.25rem;
       color:var(--text-soft);
       font-size:.92rem;
     }
-
     .content{
       display:grid;
       grid-template-columns:minmax(0,1.45fr) minmax(300px,.8fr);
       gap:1.2rem;
       padding:1.2rem;
     }
-
     .main-panel,
     .side-panel{
       border:1px solid var(--panel-border);
@@ -319,7 +280,6 @@
       overflow:hidden;
       box-shadow:var(--shadow-soft);
     }
-
     .section-head{
       padding:1rem 1rem;
       border-bottom:1px solid var(--panel-border);
@@ -329,7 +289,6 @@
       justify-content:space-between;
       gap:.75rem;
     }
-
     .section-title{
       display:flex;
       align-items:center;
@@ -338,35 +297,29 @@
       font-weight:900;
       letter-spacing:-.02em;
     }
-
     .section-note{
       color:var(--text-faint);
       font-size:.9rem;
       font-weight:600;
     }
-
     .section-body{
       padding:1rem;
     }
-
     .controls-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:1rem;
       margin-bottom:1rem;
     }
-
     .input-group{
       display:grid;
       gap:.45rem;
     }
-
     .input-group label{
       font-size:.88rem;
       font-weight:800;
       color:var(--text-soft);
     }
-
     .input-group input,
     .input-group textarea,
     .input-group select{
@@ -380,29 +333,24 @@
       outline:none;
       transition:border-color .2s ease, background .2s ease, transform .2s ease;
     }
-
     .input-group textarea{
       min-height:160px;
       resize:vertical;
       line-height:1.6;
     }
-
     .input-group input:focus,
     .input-group textarea:focus,
     .input-group select:focus{
       border-color:var(--input-focus);
       transform:translateY(-1px);
     }
-
     .full-span{grid-column:1/-1}
-
     .btn-row{
       display:flex;
       flex-wrap:wrap;
       gap:.7rem;
       margin-top:.2rem;
     }
-
     .btn{
       border:none;
       cursor:pointer;
@@ -416,7 +364,6 @@
       transition:transform .2s ease, opacity .2s ease, box-shadow .2s ease;
       box-shadow:var(--shadow-soft);
     }
-
     .btn:hover{transform:translateY(-1px)}
     .btn.primary{background:var(--pill);color:var(--bg)}
     .btn.secondary{
@@ -424,14 +371,12 @@
       color:var(--text);
       border:1px solid var(--panel-border);
     }
-
     .presets{
       display:grid;
       grid-template-columns:repeat(3,minmax(0,1fr));
       gap:.7rem;
       margin-top:1rem;
     }
-
     .preset-btn{
       border:1px solid var(--panel-border);
       background:var(--panel-bg-2);
@@ -444,12 +389,10 @@
       transition:all .2s ease;
       min-height:68px;
     }
-
     .preset-btn:hover{
       transform:translateY(-1px);
       background:var(--panel-bg);
     }
-
     .preset-btn span{
       display:block;
       color:var(--text-faint);
@@ -457,21 +400,18 @@
       margin-top:.22rem;
       font-weight:700;
     }
-
     .results-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:.9rem;
       margin-bottom:1rem;
     }
-
     .metric{
       border:1px solid var(--panel-border);
       background:var(--panel-bg-2);
       border-radius:16px;
       padding:1rem;
     }
-
     .metric-label{
       color:var(--text-faint);
       font-size:.82rem;
@@ -480,25 +420,21 @@
       font-weight:800;
       margin-bottom:.45rem;
     }
-
     .metric-value{
       font-size:1.45rem;
       font-weight:900;
       letter-spacing:-.04em;
     }
-
     .metric-sub{
       margin-top:.35rem;
       color:var(--text-soft);
       font-size:.92rem;
       line-height:1.55;
     }
-
     .green{color:var(--green)}
     .red{color:var(--red)}
     .orange{color:var(--orange)}
     .blue{color:var(--blue)}
-
     .table-wrap{
       border:1px solid var(--panel-border);
       background:var(--panel-bg-2);
@@ -506,20 +442,17 @@
       overflow:auto;
       margin-top:1rem;
     }
-
     table{
       width:100%;
       border-collapse:collapse;
       min-width:640px;
     }
-
     th,td{
       padding:.9rem .85rem;
       border-bottom:1px solid var(--panel-border);
       text-align:center;
       font-size:.94rem;
     }
-
     th{
       background:var(--panel-bg);
       position:sticky;
@@ -530,12 +463,10 @@
       text-transform:uppercase;
       color:var(--text-soft);
     }
-
     td:first-child, th:first-child{
       text-align:left;
       font-weight:800;
     }
-
     .corr-cell{
       font-weight:900;
       border-radius:10px;
@@ -543,13 +474,11 @@
       display:inline-block;
       min-width:68px;
     }
-
     .corr-pos-strong{background:rgba(116, 116, 116, .18);color:var(--green)}
     .corr-pos-mid{background:rgba(105, 105, 105, .16);color:var(--blue)}
     .corr-flat{background:rgba(164, 164, 164, .16);color:var(--orange)}
     .corr-neg-mid{background:rgba(117, 117, 117, .14);color:var(--red)}
     .corr-neg-strong{background:rgba(117, 117, 117, .22);color:var(--red)}
-
     .info-card{
       border:1px solid var(--panel-border);
       background:var(--panel-bg-2);
@@ -558,9 +487,7 @@
       margin:1rem;
       margin-top:0;
     }
-
     .info-card:first-child{margin-top:1rem}
-
     .info-card h3{
       font-size:1rem;
       margin-bottom:.75rem;
@@ -569,12 +496,10 @@
       gap:.55rem;
       letter-spacing:-.02em;
     }
-
     .info-list{
       display:grid;
       gap:.75rem;
     }
-
     .info-item{
       display:flex;
       gap:.72rem;
@@ -583,21 +508,17 @@
       line-height:1.6;
       font-size:.95rem;
     }
-
     .dot{
       width:10px;height:10px;border-radius:50%;margin-top:.42rem;flex:0 0 auto;
     }
-
     .dot.red{background:var(--red)}
     .dot.orange{background:var(--orange)}
     .dot.green{background:var(--green)}
     .dot.blue{background:var(--blue)}
-
     .mini-grid{
       display:grid;
       gap:.7rem;
     }
-
     .mini-row{
       display:flex;
       justify-content:space-between;
@@ -608,30 +529,25 @@
       border-radius:14px;
       background:var(--panel-bg);
     }
-
     .mini-row strong{
       font-size:.94rem;
       letter-spacing:-.01em;
     }
-
     .mini-row span{
       color:var(--text-soft);
       font-size:.88rem;
       text-align:right;
     }
-
     .footer-note{
       padding:0 1rem 1rem;
       color:var(--hint);
       font-size:.9rem;
       line-height:1.7;
     }
-
     @media (max-width:1080px){
       .content{grid-template-columns:1fr}
       .clock-wrap{width:100%}
     }
-
     @media (max-width:820px){
       .controls-grid,
       .results-grid,
@@ -639,7 +555,6 @@
         grid-template-columns:1fr;
       }
     }
-
     @media (max-width:700px){
       main{padding:1.15rem .9rem 3rem}
       .hero-top{padding:1.35rem 1rem 1rem}
@@ -649,11 +564,9 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Market Returns Correlation Calculator | FYNX</title>
 <meta name="description" content="Calculate the correlation between two return series to compare market behavior and potential overlapping exposure.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -661,6 +574,12 @@
 <meta property="og:title" content="Market Returns Correlation Calculator | FYNX">
 <meta property="og:description" content="Calculate the correlation between two return series to compare market behavior and potential overlapping exposure.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/correlation.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Market Returns Correlation Calculator","item":"https://www.fynxfinanceworld.com/tools/correlation.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
   <div class="animated-bg">
@@ -685,7 +604,8 @@
   </header>
 
   <main>
-    <section class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
       <div class="hero-top">
         <div class="hero-copy">
           <h1>Correlation Calculator</h1>
@@ -883,7 +803,9 @@
         </aside>
       </div>
     </section>
-  </main>
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Measure how two return series move together</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Use returns from matching dates, frequency and currency conventions. Review the number of observations and the effect of outliers.</p><h3>The calculation or concept</h3><p>Pearson correlation ranges from −1 to +1 and requires paired observations with variation in both series.</p></div><div class="tool-example"><h3>Worked example</h3><p>If two instruments have the same sequence of nonconstant daily returns, their correlation is +1. Reversing every return gives −1 in that simplified example.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Correlation changes over time and does not establish causation. Similar price levels are not the same as correlated returns; a constant series has undefined correlation.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/risk-reward.html"><strong>Risk-to-Reward Ratio Calculator</strong><span>Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</span></a><a href="/tools/heatmap.html"><strong>Cross-Market Strength &amp; Weakness Heatmap</strong><span>Explore relative market movements across forex pairs and macro assets with the FYNX cross-market heatmap.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const THEME_KEY = "fynx_theme";
@@ -895,7 +817,7 @@
     }
 
     function getStoredTheme(){
-      return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+      return window.FynxPreferences?.getItem(THEME_KEY) === "dark" ? "dark" : "light";
     }
 
     function updateThemeButton(){
@@ -910,7 +832,7 @@
 
     document.getElementById("themeToggle").addEventListener("click", () => {
       const next = document.body.classList.contains("dark-mode") ? "light" : "dark";
-      localStorage.setItem(THEME_KEY, next);
+      window.FynxPreferences?.setItem(THEME_KEY, next);
       applyTheme(next);
     });
 

@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     :root{--bg:#fff;--panel:#fff;--panel-2:#fafafa;--text:#0a0a0a;--muted:#606060;--border:rgba(0, 0, 0, .08);--shadow:0 20px 60px rgba(0, 0, 0, .08)}
@@ -30,11 +29,9 @@
   .grid,.grid-2{align-items:start}
 </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
-  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Market Volatility: ATR &amp; Trading Risk Context | FYNX</title>
 <meta name="description" content="Explore volatility and ATR concepts to understand market movement, stop placement and changing trading risk.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -42,6 +39,12 @@
 <meta property="og:title" content="Market Volatility: ATR &amp; Trading Risk Context | FYNX">
 <meta property="og:description" content="Explore volatility and ATR concepts to understand market movement, stop placement and changing trading risk.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/markets/volatility.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Markets","item":"https://www.fynxfinanceworld.com/explore.html?category=Markets"},{"@type":"ListItem","position":3,"name":"Market Volatility: ATR & Trading Risk Context","item":"https://www.fynxfinanceworld.com/markets/volatility.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="MARKETS">
 <header>
@@ -66,7 +69,8 @@
 </header>
 
 <main>
-  <div class="grid">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Markets">Markets</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<div class="grid">
     <div class="card">
       <h1>Understand when the market is quiet or explosive.</h1>
       <p class="desc">This page is for ATR-style market movement, risk conditions, and volatility awareness before entries and during trade management.</p>
@@ -85,17 +89,18 @@
       <p class="desc">Daily closing observations, not an intraday quote. <a href="https://www.cboe.com/tradable_products/vix/vix_historical_data/" target="_blank" rel="noopener">Source: Cboe VIX history ↗</a></p><button class="btn" id="retryVix">Refresh</button>
     </div>
   </div>
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/markets/cot.html"><strong>CFTC Commitments of Traders: Weekly Positions</strong><span>Explore the latest published CFTC Legacy Futures Only positions, including net commercial and non-commercial positions and open interest.</span></a><a href="/markets/liquidity.html"><strong>Crypto Liquidity: Coinbase Bid, Ask &amp; Spread</strong><span>View Coinbase BTC/USD and ETH/USD best bid, ask, spread and displayed size, refreshed every 15 seconds while visible.</span></a><a href="/markets/crypto.html"><strong>Crypto Market Overview: Bitcoin, Ethereum &amp; Altcoins</strong><span>Explore Bitcoin, Ethereum and other cryptocurrency markets with charts and market context for your research.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
 
 <script>
 const THEME_KEY="fynx_theme";
-function getTheme(){return localStorage.getItem(THEME_KEY)==="dark"?"dark":"light";}
+function getTheme(){return window.FynxPreferences?.getItem(THEME_KEY)==="dark"?"dark":"light";}
 function applyTheme(theme){
   document.body.classList.toggle("dark-mode",theme==="dark");
   document.getElementById("themeLabel").textContent=theme==="dark"?"Dark":"Light";
   renderWidget();
 }
-function toggleTheme(){const next=getTheme()==="dark"?"light":"dark";localStorage.setItem(THEME_KEY,next);applyTheme(next);}
+function toggleTheme(){const next=getTheme()==="dark"?"light":"dark";window.FynxPreferences?.setItem(THEME_KEY,next);applyTheme(next);}
 function renderWidget(){ window.FynxVix?.load(); }
 
 applyTheme(getTheme());

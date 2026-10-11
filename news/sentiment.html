@@ -1,20 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <!-- Global theme files -->
   <link rel="stylesheet" href="../assets/theme.css">
   <script src="../assets/theme.js?v=20260922-routing" defer></script>
-
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     :root {
       --bg: #000;
       --bg-solid: #000;
@@ -33,9 +28,7 @@
       --radius-lg: 18px;
       --radius-md: 14px;
     }
-
     html { scroll-behavior: smooth; }
-
     body {
       font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
       background: var(--bg, #000);
@@ -43,7 +36,6 @@
       min-height: 100vh;
       overflow-x: hidden;
     }
-
     /* LIGHT THEME */
     body:not(.dark-mode){
       color:#0b0b0b;
@@ -51,7 +43,6 @@
         radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.085) 1px, transparent 1px) 0 0 / 18px 18px,
         linear-gradient(#f3f3f3, #f3f3f3);
     }
-
     .animated-bg {
       position: fixed;
       inset: 0;
@@ -59,11 +50,9 @@
       background: var(--bg, #000);
       overflow: hidden;
     }
-
     body:not(.dark-mode) .animated-bg {
       background: transparent;
     }
-
     .grid-overlay {
       position: absolute;
       inset: 0;
@@ -74,14 +63,12 @@
       opacity: .45;
       animation: gridMove 24s linear infinite;
     }
-
     body:not(.dark-mode) .grid-overlay{
       background-image:
         linear-gradient(rgba(0, 0, 0, 0.035) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
       opacity: .6;
     }
-
     .gradient-orb {
       position: absolute;
       border-radius: 50%;
@@ -91,20 +78,17 @@
       background: radial-gradient(circle, var(--text, #fff) 0%, transparent 70%);
       animation: float 20s ease-in-out infinite;
     }
-
     body:not(.dark-mode) .gradient-orb{
       background: radial-gradient(circle, rgba(0, 0, 0, .14) 0%, transparent 72%);
       opacity: .22;
       filter: blur(95px);
     }
-
     .orb-1 {
       width: 420px;
       height: 420px;
       top: -130px;
       left: -120px;
     }
-
     .orb-2 {
       width: 360px;
       height: 360px;
@@ -112,18 +96,15 @@
       bottom: -120px;
       animation-delay: 6s;
     }
-
     @keyframes gridMove {
       0% { transform: translate(0, 0); }
       100% { transform: translate(44px, 44px); }
     }
-
     @keyframes float {
       0%, 100% { transform: translate(0, 0) scale(1); }
       33% { transform: translate(36px, -32px) scale(1.04); }
       66% { transform: translate(-28px, 24px) scale(.96); }
     }
-
     header {
       position: sticky;
       top: 0;
@@ -132,12 +113,10 @@
       backdrop-filter: blur(18px);
       border-bottom: 1px solid rgba(255, 255, 255, .10);
     }
-
     body:not(.dark-mode) header{
       background: rgba(243, 243, 243, .82);
       border-bottom: 1px solid rgba(0, 0, 0, .10);
     }
-
     .nav {
       max-width: 1240px;
       margin: 0 auto;
@@ -147,7 +126,6 @@
       justify-content: space-between;
       gap: 1rem;
     }
-
     .brand {
       display: flex;
       align-items: center;
@@ -157,11 +135,9 @@
       letter-spacing: -.7px;
       color: var(--text-strong, #fff);
     }
-
     body:not(.dark-mode) .brand{
       color:#0b0b0b;
     }
-
     .brand-icon {
       width: 38px;
       height: 38px;
@@ -173,13 +149,11 @@
       box-shadow: var(--shadow);
       flex-shrink: 0;
     }
-
     body:not(.dark-mode) .brand-icon{
       background: rgba(0, 0, 0, .03);
       border: 1px solid rgba(0, 0, 0, .10);
       box-shadow: 0 12px 30px rgba(0, 0, 0, .08);
     }
-
     .nav-right {
       display: flex;
       align-items: center;
@@ -187,7 +161,6 @@
       flex-wrap: wrap;
       justify-content: flex-end;
     }
-
     .nav-btn,
     .tab,
     .chip,
@@ -200,7 +173,6 @@
       color: var(--text, #fff);
       transition: .22s ease;
     }
-
     body:not(.dark-mode) .nav-btn,
     body:not(.dark-mode) .tab,
     body:not(.dark-mode) .chip,
@@ -212,7 +184,6 @@
       background:rgba(255, 255, 255, .72);
       color:#0b0b0b;
     }
-
     .nav-btn {
       text-decoration: none;
       font-weight: 700;
@@ -223,7 +194,6 @@
       gap: .55rem;
       white-space: nowrap;
     }
-
     .nav-btn:hover,
     .tab:hover,
     .chip:hover {
@@ -231,14 +201,12 @@
       background: var(--surface-2, rgba(255, 255, 255, .08));
       border-color: var(--border-strong, rgba(255, 255, 255, .18));
     }
-
     body:not(.dark-mode) .nav-btn:hover,
     body:not(.dark-mode) .tab:hover,
     body:not(.dark-mode) .chip:hover{
       background: rgba(0, 0, 0, .05);
       border-color: rgba(0, 0, 0, .20);
     }
-
     .tabs {
       position: sticky;
       top: 71px;
@@ -247,12 +215,10 @@
       backdrop-filter: blur(16px);
       border-bottom: 1px solid rgba(255, 255, 255, .1);
     }
-
     body:not(.dark-mode) .tabs{
       background: rgba(243, 243, 243, .82);
       border-bottom: 1px solid rgba(0, 0, 0, .10);
     }
-
     .tabs-inner {
       max-width: 1240px;
       margin: 0 auto;
@@ -262,17 +228,14 @@
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
     }
-
     .tabs-inner::-webkit-scrollbar { height: 6px; }
     .tabs-inner::-webkit-scrollbar-thumb {
       background: var(--border-strong, rgba(255, 255, 255, .18));
       border-radius: 999px;
     }
-
     body:not(.dark-mode) .tabs-inner::-webkit-scrollbar-thumb{
       background: rgba(0, 0, 0, .18);
     }
-
     .tab {
       display: inline-flex;
       align-items: center;
@@ -284,24 +247,20 @@
       white-space: nowrap;
       flex-shrink: 0;
     }
-
     .tab.active {
       background: var(--surface-2, rgba(255, 255, 255, .08));
       border-color: var(--border-strong, rgba(255, 255, 255, .18));
     }
-
     body:not(.dark-mode) .tab.active{
       background:#0b0b0b;
       color:#f3f3f3;
       border-color:#0b0b0b;
     }
-
     main {
       max-width: 1240px;
       margin: 0 auto;
       padding: 2rem 1.25rem 4rem;
     }
-
     .hero-card,
     .mood-card,
     .market-card,
@@ -311,7 +270,6 @@
       border-radius: var(--radius-xl);
       box-shadow: var(--shadow);
     }
-
     body:not(.dark-mode) .hero-card,
     body:not(.dark-mode) .mood-card,
     body:not(.dark-mode) .market-card,
@@ -321,7 +279,6 @@
       border: 1px solid rgba(0, 0, 0, .10);
       box-shadow: 0 20px 60px rgba(0, 0, 0, .10);
     }
-
     .hero-card {
       padding: 2rem;
       display: grid;
@@ -329,7 +286,6 @@
       gap: 1.25rem;
       margin-bottom: 1.2rem;
     }
-
     .eyebrow {
       display: inline-flex;
       align-items: center;
@@ -343,13 +299,11 @@
       font-weight: 700;
       margin-bottom: 1rem;
     }
-
     body:not(.dark-mode) .eyebrow{
       background: rgba(0, 0, 0, .03);
       border: 1px solid rgba(0, 0, 0, .10);
       color: rgba(0, 0, 0, .62);
     }
-
     .hero-title {
       font-size: clamp(2.2rem, 5vw, 4rem);
       line-height: .98;
@@ -357,29 +311,24 @@
       margin-bottom: 1rem;
       color: var(--text-strong, #fff);
     }
-
     body:not(.dark-mode) .hero-title{
       color:#0b0b0b;
     }
-
     .hero-desc {
       color: var(--text-muted, rgba(255, 255, 255, .68));
       font-size: 1.05rem;
       line-height: 1.8;
       max-width: 68ch;
     }
-
     body:not(.dark-mode) .hero-desc{
       color: rgba(0, 0, 0, .62);
     }
-
     .chips {
       display: flex;
       flex-wrap: wrap;
       gap: .7rem;
       margin-top: 1.2rem;
     }
-
     .chip {
       padding: .75rem .95rem;
       border-radius: 999px;
@@ -389,31 +338,26 @@
       border: 1px solid var(--border, rgba(255, 255, 255, .10));
       color: var(--text, #fff);
     }
-
     body:not(.dark-mode) .chip{
       background: rgba(0, 0, 0, .03);
       border: 1px solid rgba(0, 0, 0, .10);
       color: rgba(0, 0, 0, .82);
     }
-
     .hero-right {
       display: grid;
       gap: 1rem;
       align-content: start;
     }
-
     .gauge-card {
       padding: 1.2rem;
       border-radius: 20px;
       background: var(--surface, rgba(255, 255, 255, .04));
       border: 1px solid var(--border, rgba(255, 255, 255, .10));
     }
-
     body:not(.dark-mode) .gauge-card{
       background: rgba(255, 255, 255, .70);
       border: 1px solid rgba(0, 0, 0, .10);
     }
-
     .gauge-head {
       display: flex;
       justify-content: space-between;
@@ -421,28 +365,23 @@
       align-items: center;
       margin-bottom: .9rem;
     }
-
     .gauge-title {
       font-size: 1rem;
       font-weight: 800;
       color: var(--text-strong, #fff);
       letter-spacing: -.3px;
     }
-
     body:not(.dark-mode) .gauge-title{
       color:#0b0b0b;
     }
-
     .gauge-label {
       color: var(--text-muted, rgba(255, 255, 255, .68));
       font-size: .92rem;
       font-weight: 700;
     }
-
     body:not(.dark-mode) .gauge-label{
       color: rgba(0, 0, 0, .60);
     }
-
     .sentiment-bar {
       width: 100%;
       height: 16px;
@@ -452,22 +391,18 @@
       background: var(--surface-2, rgba(255, 255, 255, .08));
       margin-bottom: .75rem;
     }
-
     body:not(.dark-mode) .sentiment-bar{
       background: rgba(0, 0, 0, .08);
     }
-
     .sentiment-fill {
       height: 100%;
       width: 68%;
       border-radius: 999px;
       background: var(--text, #fff);
     }
-
     body:not(.dark-mode) .sentiment-fill{
       background:#0b0b0b;
     }
-
     .gauge-scale {
       display: flex;
       justify-content: space-between;
@@ -476,29 +411,24 @@
       font-size: .85rem;
       font-weight: 700;
     }
-
     body:not(.dark-mode) .gauge-scale{
       color: rgba(0, 0, 0, .50);
     }
-
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: .8rem;
     }
-
     .mini-stat {
       padding: 1rem;
       border-radius: 18px;
       background: var(--surface, rgba(255, 255, 255, .04));
       border: 1px solid var(--border, rgba(255, 255, 255, .10));
     }
-
     body:not(.dark-mode) .mini-stat{
       background: rgba(255, 255, 255, .70);
       border: 1px solid rgba(0, 0, 0, .10);
     }
-
     .mini-stat-label {
       color: var(--text-soft, rgba(255, 255, 255, .5));
       font-size: .82rem;
@@ -507,55 +437,45 @@
       letter-spacing: .08em;
       margin-bottom: .35rem;
     }
-
     body:not(.dark-mode) .mini-stat-label{
       color: rgba(0, 0, 0, .48);
     }
-
     .mini-stat-value {
       color: var(--text-strong, #fff);
       font-size: 1.45rem;
       font-weight: 900;
       letter-spacing: -.8px;
     }
-
     body:not(.dark-mode) .mini-stat-value{
       color:#0b0b0b;
     }
-
     .mini-stat-sub {
       margin-top: .25rem;
       color: var(--text-muted, rgba(255, 255, 255, .68));
       font-size: .88rem;
       line-height: 1.55;
     }
-
     body:not(.dark-mode) .mini-stat-sub{
       color: rgba(0, 0, 0, .58);
     }
-
     .section-title {
       font-size: 1.15rem;
       letter-spacing: -.5px;
       margin-bottom: .8rem;
       color: var(--text-strong, #fff);
     }
-
     body:not(.dark-mode) .section-title{
       color:#0b0b0b;
     }
-
     .mood-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 1rem;
       margin-bottom: 1.25rem;
     }
-
     .mood-card {
       padding: 1.1rem;
     }
-
     .mood-top {
       display: flex;
       align-items: center;
@@ -563,27 +483,22 @@
       gap: .75rem;
       margin-bottom: .8rem;
     }
-
     .mood-name {
       font-size: 1rem;
       font-weight: 800;
       color: var(--text-strong, #fff);
     }
-
     body:not(.dark-mode) .mood-name{
       color:#0b0b0b;
     }
-
     .mood-score {
       font-size: 1rem;
       font-weight: 900;
       color: var(--text-strong, #fff);
     }
-
     body:not(.dark-mode) .mood-score{
       color:#0b0b0b;
     }
-
     .mood-status {
       display: inline-flex;
       align-items: center;
@@ -597,13 +512,11 @@
       font-weight: 800;
       margin-bottom: .8rem;
     }
-
     body:not(.dark-mode) .mood-status{
       background: rgba(0, 0, 0, .03);
       border: 1px solid rgba(0, 0, 0, .10);
       color: rgba(0, 0, 0, .62);
     }
-
     .mood-bar {
       width: 100%;
       height: 10px;
@@ -612,48 +525,39 @@
       overflow: hidden;
       margin-bottom: .7rem;
     }
-
     body:not(.dark-mode) .mood-bar{
       background: rgba(0, 0, 0, .08);
     }
-
     .mood-fill {
       height: 100%;
       border-radius: 999px;
       background: var(--text, #fff);
     }
-
     body:not(.dark-mode) .mood-fill{
       background:#0b0b0b;
     }
-
     .mood-desc {
       color: var(--text-muted, rgba(255, 255, 255, .68));
       font-size: .92rem;
       line-height: 1.65;
     }
-
     body:not(.dark-mode) .mood-desc{
       color: rgba(0, 0, 0, .60);
     }
-
     .layout {
       display: grid;
       grid-template-columns: minmax(0, 1.7fr) 340px;
       gap: 1.25rem;
       align-items: start;
     }
-
     .market-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 1rem;
     }
-
     .market-card {
       padding: 1.15rem;
     }
-
     .market-head {
       display: flex;
       align-items: flex-start;
@@ -661,7 +565,6 @@
       gap: .85rem;
       margin-bottom: .9rem;
     }
-
     .market-badge {
       display: inline-flex;
       align-items: center;
@@ -677,13 +580,11 @@
       letter-spacing: .08em;
       margin-bottom: .7rem;
     }
-
     body:not(.dark-mode) .market-badge{
       background: rgba(0, 0, 0, .03);
       border: 1px solid rgba(0, 0, 0, .10);
       color: rgba(0, 0, 0, .62);
     }
-
     .market-title {
       font-size: 1.15rem;
       line-height: 1.2;
@@ -691,21 +592,17 @@
       color: var(--text-strong, #fff);
       margin-bottom: .4rem;
     }
-
     body:not(.dark-mode) .market-title{
       color:#0b0b0b;
     }
-
     .market-desc {
       color: var(--text-muted, rgba(255, 255, 255, .68));
       font-size: .95rem;
       line-height: 1.7;
     }
-
     body:not(.dark-mode) .market-desc{
       color: rgba(0, 0, 0, .60);
     }
-
     .score-circle {
       width: 60px;
       height: 60px;
@@ -719,20 +616,17 @@
       font-size: 1rem;
       flex-shrink: 0;
     }
-
     body:not(.dark-mode) .score-circle{
       background: rgba(0, 0, 0, .03);
       border: 1px solid rgba(0, 0, 0, .10);
       color: #0b0b0b;
     }
-
     .market-meta {
       display: flex;
       flex-wrap: wrap;
       gap: .55rem;
       margin: 1rem 0;
     }
-
     .meta-pill {
       padding: .48rem .7rem;
       border-radius: 999px;
@@ -742,13 +636,11 @@
       font-weight: 700;
       font-size: .84rem;
     }
-
     body:not(.dark-mode) .meta-pill{
       background: rgba(0, 0, 0, .03);
       border: 1px solid rgba(0, 0, 0, .10);
       color: rgba(0, 0, 0, .62);
     }
-
     .market-bar {
       width: 100%;
       height: 10px;
@@ -757,56 +649,45 @@
       overflow: hidden;
       margin-bottom: .75rem;
     }
-
     body:not(.dark-mode) .market-bar{
       background: rgba(0, 0, 0, .08);
     }
-
     .market-bar-fill {
       height: 100%;
       border-radius: 999px;
       background: var(--text, #fff);
     }
-
     body:not(.dark-mode) .market-bar-fill{
       background:#0b0b0b;
     }
-
     .market-foot {
       color: var(--text-muted, rgba(255, 255, 255, .68));
       font-size: .9rem;
       font-weight: 700;
     }
-
     body:not(.dark-mode) .market-foot{
       color: rgba(0, 0, 0, .60);
     }
-
     .side-column {
       display: grid;
       gap: 1rem;
     }
-
     .side-card {
       padding: 1.1rem;
     }
-
     .side-card h3 {
       font-size: 1.02rem;
       margin-bottom: .9rem;
       color: var(--text-strong, #fff);
       letter-spacing: -.4px;
     }
-
     body:not(.dark-mode) .side-card h3{
       color:#0b0b0b;
     }
-
     .list {
       display: grid;
       gap: .8rem;
     }
-
     .list-item {
       display: flex;
       gap: .75rem;
@@ -816,12 +697,10 @@
       background: var(--surface, rgba(255, 255, 255, .04));
       border: 1px solid var(--border, rgba(255, 255, 255, .10));
     }
-
     body:not(.dark-mode) .list-item{
       background: rgba(255, 255, 255, .70);
       border: 1px solid rgba(0, 0, 0, .10);
     }
-
     .list-item i {
       margin-top: .18rem;
       color: var(--text-strong, #fff);
@@ -829,95 +708,76 @@
       text-align: center;
       flex-shrink: 0;
     }
-
     body:not(.dark-mode) .list-item i{
       color:#0b0b0b;
     }
-
     .list-item strong {
       display: block;
       color: var(--text-strong, #fff);
       margin-bottom: .2rem;
       font-size: .95rem;
     }
-
     body:not(.dark-mode) .list-item strong{
       color:#0b0b0b;
     }
-
     .list-item span {
       color: var(--text-muted, rgba(255, 255, 255, .68));
       font-size: .9rem;
       line-height: 1.6;
     }
-
     body:not(.dark-mode) .list-item span{
       color: rgba(0, 0, 0, .60);
     }
-
     .insight-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 1rem;
       margin-top: 1rem;
     }
-
     .insight-card {
       padding: 1.1rem;
     }
-
     .insight-card h4 {
       font-size: 1rem;
       color: var(--text-strong, #fff);
       margin-bottom: .5rem;
       letter-spacing: -.4px;
     }
-
     body:not(.dark-mode) .insight-card h4{
       color:#0b0b0b;
     }
-
     .insight-card p {
       color: var(--text-muted, rgba(255, 255, 255, .68));
       font-size: .94rem;
       line-height: 1.7;
     }
-
     body:not(.dark-mode) .insight-card p{
       color: rgba(0, 0, 0, .60);
     }
-
     @media (max-width: 1100px) {
       .hero-card {
         grid-template-columns: 1fr;
       }
-
       .mood-grid {
         grid-template-columns: repeat(2, 1fr);
       }
-
       .layout {
         grid-template-columns: 1fr;
       }
-
       .market-grid {
         grid-template-columns: 1fr;
       }
     }
-
     @media (max-width: 700px) {
       .nav {
         padding: .85rem 1rem;
       }
-
       .tabs {
         top: 67px;
       }
-
       main {
         padding: 1.15rem 1rem 3rem;
       }
-
       .hero-card,
       .mood-card,
       .market-card,
@@ -925,15 +785,12 @@
       .side-card {
         border-radius: 20px;
       }
-
       .hero-card {
         padding: 1.2rem;
       }
-
       .hero-title {
         letter-spacing: -1.5px;
       }
-
       .stats-grid,
       .mood-grid,
       .insight-grid {
@@ -945,7 +802,6 @@
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Bitcoin Fear &amp; Greed and Market Sentiment | FYNX</title>
 <meta name="description" content="Track the dated daily Bitcoin Fear &amp; Greed index from Alternative.me and explore weekly CFTC positioning and market volatility.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -953,6 +809,12 @@
 <meta property="og:title" content="Bitcoin Fear &amp; Greed and Market Sentiment | FYNX">
 <meta property="og:description" content="Track the dated daily Bitcoin Fear &amp; Greed index from Alternative.me and explore weekly CFTC positioning and market volatility.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/news/sentiment.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"News & events","item":"https://www.fynxfinanceworld.com/explore.html?category=News%20%26%20events"},{"@type":"ListItem","position":3,"name":"Bitcoin Fear & Greed and Market Sentiment","item":"https://www.fynxfinanceworld.com/news/sentiment.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="NEWS">
   <div class="animated-bg">
@@ -987,11 +849,13 @@
   </div>
 
   <main>
-    <section class="hero-card"><div><div class="eyebrow">MARKET CONTEXT</div><h1 class="hero-title">Market sentiment</h1><p class="hero-desc">Follow published sentiment and positioning observations with their dates and sources. Each measure covers a different part of the market.</p></div><div class="gauge-card"><h2>Bitcoin Fear &amp; Greed</h2><strong id="sentimentValue" style="font-size:36px">—</strong><p id="sentimentClass"></p><meter id="sentimentMeter" min="0" max="100" style="width:100%;height:24px" aria-label="Bitcoin Fear and Greed index"></meter><p id="sentimentStatus" role="status">Loading daily index…</p><p>Source: <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener">Alternative.me Fear &amp; Greed Index ↗</a></p><button class="nav-btn" type="button" id="sentimentRefresh">Refresh observation</button></div></section>
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=News%20%26%20events">News &amp; events</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero-card"><div><div class="eyebrow">MARKET CONTEXT</div><h1 class="hero-title">Market sentiment</h1><p class="hero-desc">Follow published sentiment and positioning observations with their dates and sources. Each measure covers a different part of the market.</p></div><div class="gauge-card"><h2>Bitcoin Fear &amp; Greed</h2><strong id="sentimentValue" style="font-size:36px">—</strong><p id="sentimentClass"></p><meter id="sentimentMeter" min="0" max="100" style="width:100%;height:24px" aria-label="Bitcoin Fear and Greed index"></meter><p id="sentimentStatus" role="status">Loading daily index…</p><p>Source: <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener">Alternative.me Fear &amp; Greed Index ↗</a></p><button class="nav-btn" type="button" id="sentimentRefresh">Refresh observation</button></div></section>
     <div class="content-grid"><section class="side-card"><h2>Last seven observations</h2><div style="overflow:auto"><table style="width:100%;text-align:left"><thead><tr><th>Date</th><th>Index</th><th>Classification</th></tr></thead><tbody id="sentimentHistory"></tbody></table></div></section><aside class="side-card"><h2>Broader market context</h2><div class="list"><a href="../markets/cot.html">Weekly CFTC positioning →</a><a href="../markets/volatility.html">Equity volatility chart →</a><a href="heatmap.html">Market heatmaps →</a></div><p style="margin-top:24px">The Bitcoin index is not a score for stocks, forex or options. Use the relevant market observations alongside your own trade plan.</p></aside></div>
     <style>#sentimentHistory td,main th{padding:14px 8px;border-bottom:1px solid var(--border)}.list a{padding:12px 0;display:block}meter:not([value]){visibility:hidden}</style>
     <script src="../assets/js/sentiment-feed.js" defer></script>
-  </main>
+  <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/calendar.html"><strong>Economic Calendar &amp; Market Event Tools</strong><span>Browse economic calendar tools, event reminders, market hours and holiday references to prepare for scheduled market events.</span></a><a href="/news/news.html"><strong>Financial Market Headlines: Forex, Crypto &amp; Stocks</strong><span>Browse financial and world headlines covering forex, crypto, stocks, commodities and macroeconomic developments.</span></a><a href="/news.html"><strong>Financial News Hub: Headlines, Heatmaps &amp; Sentiment</strong><span>Find financial headlines, market heatmaps, sentiment resources and trading practice challenges in the FYNX news hub.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
 <footer></footer></body>
 </html>

@@ -1,26 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-
-
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="styles.css?v=20260922-routing">
   <link rel="stylesheet" href="assets/theme.css">
   <script src="assets/theme.js?v=20260922-routing" defer></script>
-
   <style>
     :root{
       --fg-bg: #ffffff;
@@ -32,7 +25,6 @@
       --fg-shadow: 0 18px 50px rgba(0, 0, 0, 0.12);
       --fg-radius: 22px;
     }
-
     body.dark-mode,
     html.dark-mode,
     [data-theme="dark"],
@@ -45,13 +37,10 @@
       --fg-line: rgba(255, 255, 255, 0.12);
       --fg-shadow: 0 22px 60px rgba(0, 0, 0, 0.48);
     }
-
     *{ box-sizing:border-box; }
-
     html{
       scroll-behavior:smooth;
     }
-
     body{
       margin:0;
       font-family:"Manrope",system-ui,-apple-system,Segoe UI,sans-serif;
@@ -60,29 +49,24 @@
         radial-gradient(circle at 1px 1px, rgba(127, 127, 127, 0.12) 1px, transparent 1px) 0 0 / 18px 18px,
         linear-gradient(var(--fg-bg), var(--fg-bg));
     }
-
     .founder-page{
       position:relative;
       z-index:1;
     }
-
     .founder-shell{
       width:min(1180px, 92vw);
       margin:0 auto;
     }
-
     .founder-hero{
       padding:140px 0 72px;
       position:relative;
     }
-
     .founder-hero-grid{
       display:grid;
       grid-template-columns: 1.1fr 0.9fr;
       gap:28px;
       align-items:stretch;
     }
-
     .founder-kicker{
       display:inline-flex;
       align-items:center;
@@ -98,7 +82,6 @@
       text-transform:uppercase;
       margin-bottom:18px;
     }
-
     .founder-title{
       margin:0;
       font-size: clamp(42px, 7vw, 84px);
@@ -107,7 +90,6 @@
       font-weight:900;
       max-width:10ch;
     }
-
     .founder-subtitle{
       margin:22px 0 0;
       max-width:62ch;
@@ -116,14 +98,12 @@
       color:var(--fg-muted);
       font-weight:600;
     }
-
     .founder-cta-row{
       display:flex;
       flex-wrap:wrap;
       gap:12px;
       margin-top:28px;
     }
-
     .founder-btn{
       display:inline-flex;
       align-items:center;
@@ -138,22 +118,18 @@
       transition:transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
       box-shadow:var(--fg-shadow);
     }
-
     .founder-btn:hover{
       transform:translateY(-1px);
     }
-
     .founder-btn--solid{
       background:var(--fg-text);
       color:var(--fg-bg);
       border-color:transparent;
       box-shadow:none;
     }
-
     .founder-btn--solid:hover{
       opacity:.92;
     }
-
     .founder-card{
       border:1px solid var(--fg-line);
       background:var(--fg-surface);
@@ -162,7 +138,6 @@
       backdrop-filter:blur(14px);
       -webkit-backdrop-filter:blur(14px);
     }
-
     .founder-profile-card{
       padding:24px;
       display:flex;
@@ -172,7 +147,6 @@
       position:relative;
       overflow:hidden;
     }
-
     .founder-profile-card::before{
       content:"";
       position:absolute;
@@ -182,14 +156,12 @@
       background:radial-gradient(circle, rgba(0, 0, 0, 0.10), transparent 68%);
       pointer-events:none;
     }
-
     body.dark-mode .founder-profile-card::before,
     html.dark-mode .founder-profile-card::before,
     [data-theme="dark"] .founder-profile-card::before,
     [data-fynx-theme="dark"] .founder-profile-card::before{
       background:radial-gradient(circle, rgba(255, 255, 255, 0.12), transparent 68%);
     }
-
     .founder-avatar{
       width:76px;
       height:76px;
@@ -204,7 +176,6 @@
       position:relative;
       z-index:1;
     }
-
     .founder-profile-name{
       font-size:28px;
       font-weight:900;
@@ -213,7 +184,6 @@
       position:relative;
       z-index:1;
     }
-
     .founder-profile-role{
       font-size:14px;
       color:var(--fg-muted);
@@ -222,7 +192,6 @@
       position:relative;
       z-index:1;
     }
-
     .founder-profile-copy{
       font-size:15px;
       line-height:1.75;
@@ -231,7 +200,6 @@
       position:relative;
       z-index:1;
     }
-
     .founder-mini-list{
       display:grid;
       gap:10px;
@@ -239,7 +207,6 @@
       position:relative;
       z-index:1;
     }
-
     .founder-mini-item{
       display:flex;
       align-items:center;
@@ -252,26 +219,21 @@
       border:1px solid var(--fg-line);
       background:var(--fg-surface-2);
     }
-
     .founder-section{
       padding:20px 0 0;
     }
-
     .founder-grid{
       display:grid;
       grid-template-columns:repeat(2, minmax(0,1fr));
       gap:18px;
       margin-top:18px;
     }
-
     .founder-block{
       padding:24px;
     }
-
     .founder-block--wide{
       grid-column:1 / -1;
     }
-
     .founder-eyebrow{
       display:inline-flex;
       align-items:center;
@@ -283,7 +245,6 @@
       color:var(--fg-muted);
       margin-bottom:14px;
     }
-
     .founder-heading{
       margin:0 0 12px;
       font-size:30px;
@@ -291,7 +252,6 @@
       letter-spacing:-0.04em;
       font-weight:900;
     }
-
     .founder-text{
       margin:0;
       font-size:15px;
@@ -299,27 +259,23 @@
       color:var(--fg-muted);
       font-weight:600;
     }
-
     .founder-stack{
       display:grid;
       gap:16px;
       margin-top:18px;
     }
-
     .founder-product{
       padding:18px;
       border:1px solid var(--fg-line);
       border-radius:18px;
       background:var(--fg-surface-2);
     }
-
     .founder-product h3{
       margin:0 0 8px;
       font-size:18px;
       font-weight:900;
       letter-spacing:-0.02em;
     }
-
     .founder-product p{
       margin:0;
       font-size:14px;
@@ -327,12 +283,10 @@
       color:var(--fg-muted);
       font-weight:600;
     }
-
     .founder-quote{
       padding:28px;
       text-align:center;
     }
-
     .founder-quote blockquote{
       margin:0;
       font-size: clamp(22px, 3.3vw, 38px);
@@ -340,7 +294,6 @@
       font-weight:900;
       letter-spacing:-0.04em;
     }
-
     .founder-quote p{
       margin:16px 0 0;
       font-size:14px;
@@ -349,11 +302,9 @@
       letter-spacing:.06em;
       text-transform:uppercase;
     }
-
     .founder-footer{
       padding:24px 0 80px;
     }
-
     .founder-footer-card{
       padding:24px;
       display:flex;
@@ -361,14 +312,12 @@
       justify-content:space-between;
       gap:18px;
     }
-
     .founder-footer-copy h3{
       margin:0 0 8px;
       font-size:26px;
       font-weight:900;
       letter-spacing:-0.03em;
     }
-
     .founder-footer-copy p{
       margin:0;
       color:var(--fg-muted);
@@ -377,39 +326,32 @@
       font-weight:600;
       max-width:60ch;
     }
-
     @media (max-width: 980px){
       .founder-hero-grid,
       .founder-grid{
         grid-template-columns:1fr;
       }
-
       .founder-title{
         max-width:none;
       }
-
       .founder-footer-card{
         flex-direction:column;
         align-items:flex-start;
       }
     }
-
     @media (max-width: 640px){
       .founder-hero{
         padding:118px 0 52px;
       }
-
       .founder-block,
       .founder-profile-card,
       .founder-quote,
       .founder-footer-card{
         padding:18px;
       }
-
       .founder-subtitle{
         font-size:16px;
       }
-
       .founder-heading{
         font-size:24px;
       }
@@ -419,7 +361,6 @@
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Elham Amini — Founder of FYNX</title>
 <meta name="description" content="Learn about Elham Amini, founder of FYNX, and the mission behind building a modern financial ecosystem for traders, tools, education, and future financial infrastructure.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -427,6 +368,12 @@
 <meta property="og:title" content="Elham Amini — Founder of FYNX">
 <meta property="og:description" content="Learn about Elham Amini, founder of FYNX, and the mission behind building a modern financial ecosystem for traders, tools, education, and future financial infrastructure.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/founder.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Resources","item":"https://www.fynxfinanceworld.com/explore.html?category=Resources"},{"@type":"ListItem","position":3,"name":"Elham Amini — Founder of FYNX","item":"https://www.fynxfinanceworld.com/founder.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="FINANCE WORLD">
   <div class="animated-bg">
@@ -471,7 +418,8 @@
   </header>
 
   <main class="founder-page">
-    <section class="founder-hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Resources">Resources</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="founder-hero">
       <div class="founder-shell">
         <div class="founder-hero-grid">
           <div>
@@ -673,7 +621,8 @@
         </div>
       </div>
     </section>
-  </main>
+  <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/affiliate-disclosure.html"><strong>Affiliate Disclosure</strong><span>Affiliate disclosure for FYNX Finance World including commissions, sponsored placements, and partner relationship transparency.</span></a><a href="/contact.html"><strong>Contact</strong><span>Contact FYNX Finance World for support and business or partnership inquiries.</span></a><a href="/pro.html"><strong>FYNX Pro — Trading Research &amp; Risk Workspaces</strong><span>Explore optional FYNX advanced trading tools. Essential $5.99, Plus $10.99 and Professional $30.99 per month. Choose a monthly membership and manage billing online.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
 <footer></footer></body>
 </html>

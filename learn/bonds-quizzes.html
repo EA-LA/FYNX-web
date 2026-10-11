@@ -1,9 +1,8 @@
 <!DOCTYPE html><html lang="en"><head>
-  <script src="/assets/js/site-theme-init.js?v=20260922-services"></script>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <script src="../assets/theme.js?v=20260922-routing" defer=""></script>
   <style>
     :root{
@@ -23,7 +22,6 @@
       --warn:#cdcdcd;
       --danger:#9e9e9e;
     }
-
     html[data-theme="light"], body.light-mode {
       --bg:#f7f7f7;
       --bg-soft:#f1f1f1;
@@ -41,10 +39,8 @@
       --warn:#7f7f7f;
       --danger:#616161;
     }
-
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'Inter','Segoe UI',system-ui,sans-serif;color:var(--text);background:var(--bg);min-height:100vh;overflow-x:hidden}
-
     .animated-bg{position:fixed;inset:0;z-index:-1;overflow:hidden}
     .grid-overlay{
       position:absolute;inset:0;
@@ -56,12 +52,10 @@
       animation:gridMove 22s linear infinite;
     }
     @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(44px,44px)}}
-
     .orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.2;animation:float 18s ease-in-out infinite}
     .orb-1{width:540px;height:540px;background:radial-gradient(circle,var(--accent) 0%,transparent 70%);left:-220px;top:-260px}
     .orb-2{width:420px;height:420px;background:radial-gradient(circle,var(--accent) 0%,transparent 70%);right:-180px;bottom:-160px;animation-delay:5s}
     @keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-40px)}}
-
     header{position:sticky;top:0;z-index:10;background:color-mix(in oklab, var(--bg) 88%, transparent);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
     .nav{max-width:1280px;margin:0 auto;padding:.9rem 1.2rem;display:flex;justify-content:space-between;align-items:center;gap:1rem}
     .brand{display:flex;align-items:center;gap:.55rem;font-size:1.24rem;font-weight:900;letter-spacing:-.9px}
@@ -73,33 +67,27 @@
     }
     .btn:hover,.chip:hover{background:var(--chip-hover);transform:translateY(-1px)}
     .chip.active{background:var(--accent-soft);border-color:color-mix(in oklab, var(--accent) 55%, var(--border));}
-
     main{max-width:1280px;margin:0 auto;padding:1.5rem 1.2rem 3rem}
     .hero{padding:1.4rem;border:1px solid var(--border);background:var(--panel-soft);border-radius:20px}
     h1{font-size:clamp(1.9rem,5.2vw,3rem);line-height:1.1;letter-spacing:-1.5px}
     .sub{margin-top:.55rem;max-width:80ch;color:var(--text-muted);line-height:1.65}
-
     .chips{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:1rem}
-
     .kpis{margin-top:1rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.7rem}
     .kpi{border:1px solid var(--border);background:var(--panel);border-radius:14px;padding:.8rem}
     .kpi .label{color:var(--text-soft);font-size:.82rem}
     .kpi .value{margin-top:.22rem;font-size:1.05rem;font-weight:800}
-
     .panel{margin-top:1rem;border:1px solid var(--border);background:var(--panel);border-radius:16px;padding:1rem}
     .panel h2{font-size:1.1rem;letter-spacing:-.2px}
     .panel p{color:var(--text-muted);line-height:1.65;margin-top:.5rem}
     .panel h3{margin:.85rem 0 .45rem;font-size:1rem}
     ul{display:grid;gap:.45rem;padding-left:1.1rem;color:var(--text-muted)}
     li strong{color:var(--text)}
-
     .grid{margin-top:1rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.8rem}
     .card{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:1rem}
     .card h3{font-size:1.04rem;letter-spacing:-.2px}
     .card .muted{margin-top:.4rem;color:var(--text-muted);line-height:1.6}
     .meta{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.75rem}
     .tag{padding:.26rem .55rem;border-radius:999px;border:1px solid var(--border);background:var(--chip);font-size:.72rem;font-weight:700;color:var(--text-soft)}
-
     .lesson-cards{margin-top:1rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.8rem}
     .lesson-card{border:1px solid var(--border);border-radius:14px;background:var(--panel);overflow:hidden}
     .lesson-head{height:78px;display:flex;align-items:flex-end;padding:.85rem;background:linear-gradient(120deg,var(--accent-soft),transparent)}
@@ -107,7 +95,6 @@
     .lesson-body{padding:.95rem}
     .lesson-title{font-size:1.12rem;line-height:1.28;letter-spacing:-.25px}
     .lesson-desc{margin-top:.5rem;color:var(--text-muted);line-height:1.6}
-
     .quiz-wrap{margin-top:1rem;display:grid;gap:.8rem}
     .quiz-card{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:1rem}
     .quiz-card h3{font-size:1rem;line-height:1.45}
@@ -115,17 +102,14 @@
     .opt{display:flex;gap:.55rem;align-items:flex-start;border:1px solid var(--border);background:var(--panel-soft);border-radius:10px;padding:.56rem .62rem}
     .opt-letter{display:inline-flex;align-items:center;justify-content:center;width:1.3rem;height:1.3rem;border-radius:50%;background:var(--chip);font-size:.72rem;font-weight:800}
     .answer{margin-top:.68rem;border-left:3px solid var(--ok);padding:.38rem .6rem;background:color-mix(in oklab, var(--ok) 13%, transparent);border-radius:8px;color:var(--text-muted);line-height:1.55}
-
     .rubric{margin-top:1rem;border:1px dashed var(--border);background:var(--panel-soft);border-radius:12px;padding:.9rem}
     .rubric h3{font-size:.95rem}
     .rubric-grid{margin-top:.6rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.55rem}
     .rubric-item{border:1px solid var(--border);border-radius:10px;padding:.62rem;background:var(--panel)}
-
     .glossary{margin-top:1rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.7rem}
     .term{border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:.8rem}
     .term strong{display:block;margin-bottom:.3rem}
     .term p{color:var(--text-muted);line-height:1.58}
-
     @media (max-width:640px){
       .nav{padding:.72rem .8rem}
       main{padding:1rem .82rem 2rem}
@@ -137,14 +121,19 @@
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer=""></script>
   <link rel="stylesheet" href="/assets/editorial-pages.css?v=20260915">
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-
 <title>Bonds — Trading Quizzes | FYNX Finance World</title>
 <meta name="description" content="Test your Bonds knowledge with study questions and explanations. Review concepts and practice before trading.">
-<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="https://www.fynxfinanceworld.com/learn/bonds-quizzes.html">
 <meta property="og:title" content="Bonds — Trading Quizzes | FYNX Finance World">
 <meta property="og:description" content="Test your Bonds knowledge with study questions and explanations. Review concepts and practice before trading.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/learn/bonds-quizzes.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Learning","item":"https://www.fynxfinanceworld.com/explore.html?category=Learning"},{"@type":"ListItem","position":3,"name":"Bonds — Trading Quizzes","item":"https://www.fynxfinanceworld.com/learn/bonds-quizzes.html"}]}</script><!-- discovery-schema:end -->
 </head>
 <body class="editorial-page editorial-learning" data-fynx-layout="standalone" data-fynx-section="LEARNING" data-learning-topic="bonds" data-learning-section="quizzes">
   <div class="animated-bg">
@@ -161,7 +150,8 @@
   </header>
 
   <main>
-    <section class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Learning">Learning</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
       <div class="editorial-label">FYNX / LEARNING CENTER</div><h1 id="pageTitle">Bonds — Trading Quizzes</h1>
       <p class="sub" id="pageDesc">Test your Bonds knowledge with study questions and explanations. Review concepts and practice before trading.</p>
 
@@ -236,13 +226,14 @@
         </div>
       </div>
     </section>
-  </main>
+  <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/learn/lessons/bonds/bond-prices-and-yields-explained.html"><strong>Bond Prices and Yields Explained</strong><span>The inverse relationship and practical trading implications.</span></a><a href="/learn/bonds-glossary.html"><strong>Bonds — Glossary</strong><span>Learn Bonds terminology with a practical glossary of market concepts and trading definitions.</span></a><a href="/learn/bonds-howto.html"><strong>Bonds — How to Trade</strong><span>Study Bonds trading with lesson outlines covering market concepts, execution and risk management.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const params = new URLSearchParams(location.search);
-    const requestedTopic = (params.get('topic') || document.body.dataset.learningTopic || 'forex').toLowerCase();
+    const requestedTopic = (document.body.dataset.learningTopic || params.get('topic') || 'forex').toLowerCase();
     const topic = ['stocks','funds','futures','forex','crypto','indices','bonds','economy','options'].includes(requestedTopic) ? requestedTopic : 'forex';
-    const requestedSection = (params.get('section') || document.body.dataset.learningSection || 'howto').toLowerCase();
+    const requestedSection = (document.body.dataset.learningSection || params.get('section') || 'howto').toLowerCase();
     const section = ['howto','quizzes','glossary'].includes(requestedSection) ? requestedSection : 'howto';
 
     const labels = {
@@ -256,15 +247,15 @@
     };
 
     const topicMeta = {
-      stocks:{ focus:'Earnings + momentum + risk', level:'Beginner to Advanced', modules:22, quizzes:48, terms:62 },
-      funds:{ focus:'ETF rotation + allocation', level:'Beginner to Intermediate', modules:18, quizzes:40, terms:51 },
-      futures:{ focus:'Leverage + session structure', level:'Intermediate to Advanced', modules:24, quizzes:56, terms:67 },
-      forex:{ focus:'Pairs + macro + execution', level:'Beginner to Advanced', modules:27, quizzes:64, terms:70 },
-      crypto:{ focus:'Volatility + on-chain context', level:'Beginner to Advanced', modules:23, quizzes:52, terms:58 },
-      indices:{ focus:'Macro risk + breadth', level:'Intermediate', modules:19, quizzes:45, terms:50 },
-      bonds:{ focus:'Rates + duration + inflation', level:'Intermediate', modules:17, quizzes:39, terms:49 },
-      economy:{ focus:'Data releases + scenarios', level:'Beginner to Advanced', modules:21, quizzes:47, terms:55 },
-      options:{ focus:'Greeks + strategy design', level:'Intermediate to Advanced', modules:29, quizzes:71, terms:78 }
+      stocks:{ focus:'Earnings + momentum + risk', level:'Beginner to Advanced' },
+      funds:{ focus:'ETF rotation + allocation', level:'Beginner to Intermediate' },
+      futures:{ focus:'Leverage + session structure', level:'Intermediate to Advanced' },
+      forex:{ focus:'Pairs + macro + execution', level:'Beginner to Advanced' },
+      crypto:{ focus:'Volatility + on-chain context', level:'Beginner to Advanced' },
+      indices:{ focus:'Macro risk + breadth', level:'Intermediate' },
+      bonds:{ focus:'Rates + duration + inflation', level:'Intermediate' },
+      economy:{ focus:'Data releases + scenarios', level:'Beginner to Advanced' },
+      options:{ focus:'Greeks + strategy design', level:'Intermediate to Advanced' }
     };
 
     const sectionLabels = { howto:'How to Trade', quizzes:'Trading Quizzes', glossary:'Glossary' };
@@ -440,6 +431,8 @@
       ].map(([label,value]) => `<div class="kpi"><div class="label">${label}</div><div class="value">${value}</div></div>`).join('');
     }
 
+    function lessonLink(item){ return '/learn/lessons/' + topic + '/' + item.title.toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.html'; }
+
     function renderHowTo(){
       const lib = lessonLibrary[topic] || lessonLibrary.forex;
       const root = document.getElementById('contentRoot');
@@ -447,7 +440,7 @@
       root.innerHTML = `
         <div class="panel">
           <h2>Trading Framework — ${labels[topic] || 'Market'}</h2>
-          <p>Each path below is designed like a full platform curriculum. Start with beginner modules, complete intermediate execution modules, then move to advanced portfolio-level decision making.</p>
+          <p>Open a guide for a focused explanation, a worked example and a practice exercise. Start with the basics, then compare execution and portfolio risk concepts.</p>
           <div class="grid">
             <div class="card"><h3>1) Market Context</h3><ul><li>Identify regime (trend/range/high-volatility/event risk).</li><li>Map key levels from higher timeframes.</li><li>Define directional bias and invalidation.</li></ul></div>
             <div class="card"><h3>2) Setup & Entry</h3><ul><li>Wait for confirmation trigger, not anticipation.</li><li>Record exact entry, stop, target before execution.</li><li>Keep risk fixed to prevent emotional sizing.</li></ul></div>
@@ -460,7 +453,7 @@
             <article class="lesson-card">
               <div class="lesson-head"><span class="difficulty"><i class="fas fa-lightbulb"></i> ${item.level}</span></div>
               <div class="lesson-body">
-                <h3 class="lesson-title">${item.title}</h3>
+                <h3 class="lesson-title"><a href="${lessonLink(item)}">${item.title} →</a></h3>
                 <p class="lesson-desc">${item.desc}</p>
                 <div class="meta">${item.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
               </div>
