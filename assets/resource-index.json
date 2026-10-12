@@ -7,6 +7,13 @@
     "topic": ""
   },
   {
+    "url": "/tools/basic-calculator.html",
+    "title": "Basic Calculator: Arithmetic, Percentages & Parentheses",
+    "description": "Calculate arithmetic and percentages locally with a keyboard-friendly calculator. Supports decimals, parentheses and standard order of operations.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
     "url": "/tools/interest-rates.html",
     "title": "Central Bank Policy Rate Comparison",
     "description": "Compare published central bank policy-rate observations from the Bank for International Settlements, with dates and source context.",
@@ -49,7 +56,7 @@
     "topic": ""
   },
   {
-    "url": "/tools/options-payoff.html",
+    "url": "/tools/debt-payoff.html",
     "title": "Debt Payoff & Interest Calculator",
     "description": "Estimate how long debt repayment takes, total interest and the effect of changing a monthly payment.",
     "category": "Tools",
@@ -112,10 +119,11 @@
     "topic": ""
   },
   {
-    "url": "/tools/symbol-news.html",
-    "title": "FYNX Tools — Symbol News",
-    "description": "FYNX Tools — Symbol News. Explore this resource from FYNX Finance World.",
+    "url": "/tools/trading-journal.html",
+    "title": "Free Trading Journal: Record Trades & Review Realized Results",
+    "description": "Keep your plan, actual realized result and review notes together. A free FYNX account lets you save trades and return to your history across signed-in sessions.",
     "category": "Tools",
+    "access": "Free account",
     "topic": ""
   },
   {
@@ -161,6 +169,22 @@
     "topic": ""
   },
   {
+    "url": "/tools/portfolio-stress-test.html",
+    "title": "Portfolio Stress Test: Exposure, Leverage & Price Shocks",
+    "description": "Estimate the effect of one parallel price shock on a set of signed position values. Compare gross exposure, net exposure and the resulting account equity.",
+    "category": "Tools",
+    "access": "Plus or higher",
+    "topic": ""
+  },
+  {
+    "url": "/tools/position-risk-planner.html",
+    "title": "Position Risk Planner: Contract Size, Stop Risk & Reward",
+    "description": "Turn an explicit loss budget into position units using your entry, stop, target, contract multiplier and currency conversion assumptions.",
+    "category": "Tools",
+    "access": "Essential or higher",
+    "topic": ""
+  },
+  {
     "url": "/tools/risk-reward.html",
     "title": "Risk-to-Reward Ratio Calculator",
     "description": "Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.",
@@ -171,6 +195,13 @@
     "url": "/tools/stock.html",
     "title": "Stock Position Sizing Calculator",
     "description": "Calculate a stock trade's position size and risk from account size, risk percentage, entry price and stop price.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/symbol-news.html",
+    "title": "Symbol News Search: Stocks, Forex & Crypto Headlines",
+    "description": "Search financial headlines for a ticker or market symbol. Review the source and publication time, then open the original report for context.",
     "category": "Tools",
     "topic": ""
   },
@@ -186,6 +217,54 @@
     "title": "Trading Calculators: Forex, Stocks, Risk & Options",
     "description": "Explore trading calculators for position size, pip value, margin, risk-reward, options and compounding. Plan trades using your own inputs.",
     "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/drawdown-simulator.html",
+    "title": "Trading Drawdown Simulator: 500 Hypothetical Equity Paths",
+    "description": "Explore how repeated wins and losses could affect equity under fixed assumptions. Compare simulated ending balances and drawdown across 500 paths.",
+    "category": "Tools",
+    "access": "Professional or higher",
+    "topic": ""
+  },
+  {
+    "url": "/tools/journal-analytics.html",
+    "title": "Trading Journal Analytics: Expectancy, Profit Factor & Drawdown",
+    "description": "Understand what your recorded trades say about your process. Journal intelligence summarizes realized results from your own saved trading history.",
+    "category": "Tools",
+    "access": "Essential or higher",
+    "topic": ""
+  },
+  {
+    "url": "/tools/journal-export.html",
+    "title": "Trading Journal CSV Export for Spreadsheet Analysis",
+    "description": "Download dated Journal records as a CSV file for your own spreadsheet review. Keep a portable copy of the values you recorded in FYNX.",
+    "category": "Tools",
+    "access": "Essential or higher",
+    "topic": ""
+  },
+  {
+    "url": "/tools/trading-process-review.html",
+    "title": "Trading Process Review: Plan, Risk, Execution & Lessons",
+    "description": "Keep a written trade thesis and review five observable parts of your process. Save the reasoning alongside a checklist you can revisit later.",
+    "category": "Tools",
+    "access": "Essential or higher",
+    "topic": ""
+  },
+  {
+    "url": "/tools/research-watchlists.html",
+    "title": "Trading Research Watchlists: Symbols, Notes & News Links",
+    "description": "Save a focused list of symbols with research notes. Return to the same questions and open symbol-specific news from each result.",
+    "category": "Tools",
+    "access": "Essential or higher",
+    "topic": ""
+  },
+  {
+    "url": "/tools/scenario-comparison.html",
+    "title": "Trading Risk Scenario Comparison: Four Position Budgets",
+    "description": "Compare four position sizes while keeping the same entry, stop, target and contract assumptions. See how changing the risk budget changes both modeled loss and reward.",
+    "category": "Tools",
+    "access": "Essential or higher",
     "topic": ""
   },
   {

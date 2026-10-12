@@ -451,6 +451,7 @@
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
 <meta name="description" content="Explore trading calculators for position size, pip value, margin, risk-reward, options and compounding. Plan trades using your own inputs.">
 <meta name="robots" content="index, follow, max-image-preview:large">
+<script src="/assets/js/basic-calculator.js?v=20261012" defer></script>
 <link rel="canonical" href="https://www.fynxfinanceworld.com/calculator.html">
 <meta property="og:title" content="Trading Calculators: Forex, Stocks, Risk &amp; Options | FYNX">
 <meta property="og:description" content="Explore trading calculators for position size, pip value, margin, risk-reward, options and compounding. Plan trades using your own inputs.">
@@ -459,7 +460,7 @@
 <meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
 <meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
 <meta name="twitter:card" content="summary_large_image">
-<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script><!-- discovery-assets:end -->
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261012" defer></script><!-- discovery-assets:end -->
 <!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Trading Calculators: Forex, Stocks, Risk & Options","item":"https://www.fynxfinanceworld.com/calculator.html"}]}</script><!-- discovery-schema:end -->
 </head>
 
@@ -499,20 +500,19 @@
             <p>Size your position, understand your risk, and compare outcomes before you enter.</p>
           </div>
 
-          <div class="quick-calc">
-            <div class="calc-display" id="display">0</div>
-            <div class="calc-grid" id="calcGrid"></div>
+          <div class="quick-calc" data-basic-calculator tabindex="0" role="group" aria-label="Basic calculator">
+            <div class="calc-display" id="display" data-calc-display role="status" aria-live="polite">0</div>
+            <div class="calc-grid" id="calcGrid" data-calc-grid></div>
           </div>
         </div>
 
         <div class="filters">
           <input id="searchInput" aria-label="Search calculators" class="search" type="text" placeholder="Search calculators..." />
-          <div class="count" id="countText">0 tools</div>
+          <div class="count" id="countText">36 tools</div>
         </div>
 
-        <div class="tools-grid" id="toolsGrid"></div>
-      <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/atr-stop.html"><strong>ATR Stop-Loss Calculator</strong><span>Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.</span></a><a href="/tools/interest-rates.html"><strong>Central Bank Policy Rate Comparison</strong><span>Compare published central bank policy-rate observations from the Bank for International Settlements, with dates and source context.</span></a><a href="/tools/compound.html"><strong>Compound Growth &amp; Savings Calculator</strong><span>Estimate compound growth using starting capital, return assumptions and recurring deposits for savings or investing scenarios.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
-<!-- discovery-hub:start --><section class="hub-directory"><h2>Open a calculator</h2><p>Open any resource directly. Each page has its own link, explanation and related tools.</p><div class="hub-directory-links"><a href="/tools/atr-stop.html"><strong>ATR Stop-Loss Calculator</strong><span>Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.</span></a><a href="/tools/interest-rates.html"><strong>Central Bank Policy Rate Comparison</strong><span>Compare published central bank policy-rate observations from the Bank for International Settlements, with dates and source context.</span></a><a href="/tools/compound.html"><strong>Compound Growth &amp; Savings Calculator</strong><span>Estimate compound growth using starting capital, return assumptions and recurring deposits for savings or investing scenarios.</span></a><a href="/tools/heatmap.html"><strong>Cross-Market Strength &amp; Weakness Heatmap</strong><span>Explore relative market movements across forex pairs and macro assets with the FYNX cross-market heatmap.</span></a><a href="/tools/crypto.html"><strong>Crypto Position Size &amp; Profit Calculator</strong><span>Estimate crypto position size, trading costs, exit value, profit or loss and break-even price using your own assumptions.</span></a><a href="/tools/recent-topics-discussed.html"><strong>Curated Macro &amp; Trading Research Topics</strong><span>Browse curated economic and trading research topics for further study. This editorial reference is not a live news or discussion feed.</span></a><a href="/tools/currency.html"><strong>Currency Conversion Calculator: Manual Rates</strong><span>Convert currencies using a manually entered exchange rate or fixed example rates. The calculator does not provide live exchange rates.</span></a><a href="/tools/options-payoff.html"><strong>Debt Payoff &amp; Interest Calculator</strong><span>Estimate how long debt repayment takes, total interest and the effect of changing a monthly payment.</span></a><a href="/tools/economic-calendar.html"><strong>Economic Calendar: Releases &amp; Central Bank Events</strong><span>Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.</span></a><a href="/tools/calendar-alerts.html"><strong>Economic Event Reminder Planner</strong><span>Plan reminders for economic events such as inflation releases, employment reports and central bank decisions.</span></a><a href="/tools/fibonacci.html"><strong>Fibonacci Retracement &amp; Extension Calculator</strong><span>Calculate Fibonacci retracement and extension levels from a swing high and low to study potential price levels.</span></a><a href="/tools/margin.html"><strong>Forex Margin &amp; Leverage Calculator</strong><span>Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.</span></a><a href="/tools/pip.html"><strong>Forex Pip Value Calculator</strong><span>Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.</span></a><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/forex.html"><strong>Forex Trade Planning Calculators</strong><span>Plan a forex trade with links to position sizing and pip value calculators using your account and risk inputs.</span></a><a href="/tools/market-hours.html"><strong>Forex Trading Sessions &amp; Market Hours</strong><span>Review market session timing and trading hours to plan when to research and monitor financial markets.</span></a><a href="/tools/symbol-news.html"><strong>FYNX Tools — Symbol News</strong><span>FYNX Tools — Symbol News. Explore this resource from FYNX Finance World.</span></a><a href="/tools/economic-indicators-heatmap.html"><strong>GDP, Inflation &amp; Unemployment Indicators</strong><span>Compare published World Bank GDP growth, inflation and unemployment observations. Review dates and source information with each indicator.</span></a><a href="/tools/liquidation-guard.html"><strong>Liquidation Risk &amp; Leverage Calculator</strong><span>Estimate liquidation price and distance for a leveraged trade using your inputs. Compare risk before choosing a position size.</span></a><a href="/tools/market-holidays.html"><strong>Market Holiday Planning Reference</strong><span>Review a partial market holiday planning reference for 2025–2028. Confirm closures and early closing times with the relevant exchange.</span></a><a href="/tools/correlation.html"><strong>Market Returns Correlation Calculator</strong><span>Calculate the correlation between two return series to compare market behavior and potential overlapping exposure.</span></a><a href="/tools/options.html"><strong>Options Profit &amp; Loss Calculator</strong><span>Estimate call and put option profit or loss at expiration using strike price, premium, contract count and underlying price.</span></a><a href="/tools/pivot.html"><strong>Pivot Point Support &amp; Resistance Calculator</strong><span>Calculate classic pivot points and support and resistance levels from the previous period&#39;s high, low and closing price.</span></a><a href="/tools/risk-reward.html"><strong>Risk-to-Reward Ratio Calculator</strong><span>Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</span></a><a href="/tools/stock.html"><strong>Stock Position Sizing Calculator</strong><span>Calculate a stock trade&#39;s position size and risk from account size, risk percentage, entry price and stop price.</span></a><a href="/tools/breakeven.html"><strong>Trading Break-Even Price Calculator</strong><span>Calculate a trade&#39;s estimated break-even price using position size, fees and spread assumptions.</span></a></div></section><!-- discovery-hub:end -->
+        <div class="tools-grid" id="toolsGrid"><article class="tool-card"><div class="tool-head"><h3 class="tool-title">ATR Stop-Loss Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.</p><a class="tool-link" href="/tools/atr-stop.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Basic Calculator: Arithmetic, Percentages &amp; Parentheses</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Calculate arithmetic and percentages locally with a keyboard-friendly calculator. Supports decimals, parentheses and standard order of operations.</p><a class="tool-link" href="/tools/basic-calculator.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Central Bank Policy Rate Comparison</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Compare published central bank policy-rate observations from the Bank for International Settlements, with dates and source context.</p><a class="tool-link" href="/tools/interest-rates.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Compound Growth &amp; Savings Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Estimate compound growth using starting capital, return assumptions and recurring deposits for savings or investing scenarios.</p><a class="tool-link" href="/tools/compound.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Cross-Market Strength &amp; Weakness Heatmap</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Explore relative market movements across forex pairs and macro assets with the FYNX cross-market heatmap.</p><a class="tool-link" href="/tools/heatmap.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Crypto Position Size &amp; Profit Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Estimate crypto position size, trading costs, exit value, profit or loss and break-even price using your own assumptions.</p><a class="tool-link" href="/tools/crypto.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Curated Macro &amp; Trading Research Topics</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Browse curated economic and trading research topics for further study. This editorial reference is not a live news or discussion feed.</p><a class="tool-link" href="/tools/recent-topics-discussed.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Currency Conversion Calculator: Manual Rates</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Convert currencies using a manually entered exchange rate or fixed example rates. The calculator does not provide live exchange rates.</p><a class="tool-link" href="/tools/currency.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Debt Payoff &amp; Interest Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Estimate how long debt repayment takes, total interest and the effect of changing a monthly payment.</p><a class="tool-link" href="/tools/debt-payoff.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Economic Calendar: Releases &amp; Central Bank Events</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.</p><a class="tool-link" href="/tools/economic-calendar.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Economic Event Reminder Planner</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Plan reminders for economic events such as inflation releases, employment reports and central bank decisions.</p><a class="tool-link" href="/tools/calendar-alerts.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Fibonacci Retracement &amp; Extension Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Calculate Fibonacci retracement and extension levels from a swing high and low to study potential price levels.</p><a class="tool-link" href="/tools/fibonacci.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Forex Margin &amp; Leverage Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.</p><a class="tool-link" href="/tools/margin.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Forex Pip Value Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.</p><a class="tool-link" href="/tools/pip.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Forex Position Size &amp; Risk Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</p><a class="tool-link" href="/tools/position-size.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Forex Trade Planning Calculators</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Plan a forex trade with links to position sizing and pip value calculators using your account and risk inputs.</p><a class="tool-link" href="/tools/forex.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Forex Trading Sessions &amp; Market Hours</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Review market session timing and trading hours to plan when to research and monitor financial markets.</p><a class="tool-link" href="/tools/market-hours.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Free Trading Journal: Record Trades &amp; Review Realized Results</h3><span class="tool-chip">Free account</span></div><p class="tool-desc">Keep your plan, actual realized result and review notes together. A free FYNX account lets you save trades and return to your history across signed-in sessions.</p><a class="tool-link" href="/tools/trading-journal.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">GDP, Inflation &amp; Unemployment Indicators</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Compare published World Bank GDP growth, inflation and unemployment observations. Review dates and source information with each indicator.</p><a class="tool-link" href="/tools/economic-indicators-heatmap.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Liquidation Risk &amp; Leverage Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Estimate liquidation price and distance for a leveraged trade using your inputs. Compare risk before choosing a position size.</p><a class="tool-link" href="/tools/liquidation-guard.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Market Holiday Planning Reference</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Review a partial market holiday planning reference for 2025–2028. Confirm closures and early closing times with the relevant exchange.</p><a class="tool-link" href="/tools/market-holidays.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Market Returns Correlation Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Calculate the correlation between two return series to compare market behavior and potential overlapping exposure.</p><a class="tool-link" href="/tools/correlation.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Options Profit &amp; Loss Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Estimate call and put option profit or loss at expiration using strike price, premium, contract count and underlying price.</p><a class="tool-link" href="/tools/options.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Pivot Point Support &amp; Resistance Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Calculate classic pivot points and support and resistance levels from the previous period&#39;s high, low and closing price.</p><a class="tool-link" href="/tools/pivot.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Portfolio Stress Test: Exposure, Leverage &amp; Price Shocks</h3><span class="tool-chip">Plus or higher</span></div><p class="tool-desc">Estimate the effect of one parallel price shock on a set of signed position values. Compare gross exposure, net exposure and the resulting account equity.</p><a class="tool-link" href="/tools/portfolio-stress-test.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Position Risk Planner: Contract Size, Stop Risk &amp; Reward</h3><span class="tool-chip">Essential or higher</span></div><p class="tool-desc">Turn an explicit loss budget into position units using your entry, stop, target, contract multiplier and currency conversion assumptions.</p><a class="tool-link" href="/tools/position-risk-planner.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Risk-to-Reward Ratio Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</p><a class="tool-link" href="/tools/risk-reward.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Stock Position Sizing Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Calculate a stock trade&#39;s position size and risk from account size, risk percentage, entry price and stop price.</p><a class="tool-link" href="/tools/stock.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Symbol News Search: Stocks, Forex &amp; Crypto Headlines</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Search financial headlines for a ticker or market symbol. Review the source and publication time, then open the original report for context.</p><a class="tool-link" href="/tools/symbol-news.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Trading Break-Even Price Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Calculate a trade&#39;s estimated break-even price using position size, fees and spread assumptions.</p><a class="tool-link" href="/tools/breakeven.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Trading Drawdown Simulator: 500 Hypothetical Equity Paths</h3><span class="tool-chip">Professional or higher</span></div><p class="tool-desc">Explore how repeated wins and losses could affect equity under fixed assumptions. Compare simulated ending balances and drawdown across 500 paths.</p><a class="tool-link" href="/tools/drawdown-simulator.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Trading Journal Analytics: Expectancy, Profit Factor &amp; Drawdown</h3><span class="tool-chip">Essential or higher</span></div><p class="tool-desc">Understand what your recorded trades say about your process. Journal intelligence summarizes realized results from your own saved trading history.</p><a class="tool-link" href="/tools/journal-analytics.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Trading Journal CSV Export for Spreadsheet Analysis</h3><span class="tool-chip">Essential or higher</span></div><p class="tool-desc">Download dated Journal records as a CSV file for your own spreadsheet review. Keep a portable copy of the values you recorded in FYNX.</p><a class="tool-link" href="/tools/journal-export.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Trading Process Review: Plan, Risk, Execution &amp; Lessons</h3><span class="tool-chip">Essential or higher</span></div><p class="tool-desc">Keep a written trade thesis and review five observable parts of your process. Save the reasoning alongside a checklist you can revisit later.</p><a class="tool-link" href="/tools/trading-process-review.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Trading Research Watchlists: Symbols, Notes &amp; News Links</h3><span class="tool-chip">Essential or higher</span></div><p class="tool-desc">Save a focused list of symbols with research notes. Return to the same questions and open symbol-specific news from each result.</p><a class="tool-link" href="/tools/research-watchlists.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Trading Risk Scenario Comparison: Four Position Budgets</h3><span class="tool-chip">Essential or higher</span></div><p class="tool-desc">Compare four position sizes while keeping the same entry, stop, target and contract assumptions. See how changing the risk budget changes both modeled loss and reward.</p><a class="tool-link" href="/tools/scenario-comparison.html">Open tool →</a></article></div>
+      <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/atr-stop.html"><strong>ATR Stop-Loss Calculator</strong><span>Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.</span></a><a href="/tools/basic-calculator.html"><strong>Basic Calculator: Arithmetic, Percentages &amp; Parentheses</strong><span>Calculate arithmetic and percentages locally with a keyboard-friendly calculator. Supports decimals, parentheses and standard order of operations.</span></a><a href="/tools/interest-rates.html"><strong>Central Bank Policy Rate Comparison</strong><span>Compare published central bank policy-rate observations from the Bank for International Settlements, with dates and source context.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </section>
     </main>
   </div>
@@ -607,31 +607,223 @@ topBar.prepend(banner);
        TOOLS
     ========================= */
     const tools = [
-      { name: "ATR Stop", file: "tools/atr-stop.html", desc: "Volatility-based stop loss levels." },
-      { name: "Breakeven", file: "tools/breakeven.html", desc: "Find exact breakeven price quickly." },
-      { name: "Calendar Alerts", file: "tools/calendar-alerts.html", desc: "Important event alert timing." },
-      { name: "Compound", file: "tools/compound.html", desc: "Compound growth and return planner." },
-      { name: "Correlation", file: "tools/correlation.html", desc: "Asset relationship and correlation check." },
-      { name: "Crypto", file: "tools/crypto.html", desc: "Crypto sizing and trade utility set." },
-      { name: "Currency", file: "tools/currency.html", desc: "FX conversion and quote helper." },
-      { name: "Economic Calendar", file: "tools/economic-calendar.html", desc: "Macro events by date and impact." },
-      { name: "Fibonacci", file: "tools/fibonacci.html", desc: "Fib retracement and extension levels." },
-      { name: "Forex", file: "tools/forex.html", desc: "Forex trade planning calculator." },
-      { name: "Heatmap", file: "tools/heatmap.html", desc: "Visual market strength overview." },
-      { name: "Liquidation Guard", file: "tools/liquidation-guard.html", desc: "Liquidation risk checker." },
-      { name: "Margin", file: "tools/margin.html", desc: "Required margin and leverage math." },
-      { name: "Market Holidays", file: "tools/market-holidays.html", desc: "Exchange holiday calendar lookup." },
-      { name: "Market Hours", file: "tools/market-hours.html", desc: "Open/close sessions across regions." },
-      { name: "Debt Payoff", file: "tools/options-payoff.html", desc: "Loan payoff timing and total interest." },
-      { name: "Options", file: "tools/options.html", desc: "Options pricing and quick metrics." },
-      { name: "Pip", file: "tools/pip.html", desc: "Pip value and move calculator." },
-      { name: "Pivot", file: "tools/pivot.html", desc: "Pivot point support/resistance levels." },
-      { name: "Position Size", file: "tools/position-size.html", desc: "Risk-based position sizing tool." },
-      { name: "Stock Risk", file: "tools/profit-loss.html", desc: "Size a stock position from your stop and risk budget." },
-      { name: "Risk Reward", file: "tools/risk-reward.html", desc: "Risk to reward ratio calculator." },
-      { name: "Stock", file: "tools/stock.html", desc: "Stock return and position utility." },
-      { name: "Symbol News", file: "tools/symbol-news.html", desc: "Company/symbol focused news module." }
-    ];
+      {
+            "name": "ATR Stop-Loss Calculator",
+            "file": "/tools/atr-stop.html",
+            "desc": "Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Basic Calculator: Arithmetic, Percentages & Parentheses",
+            "file": "/tools/basic-calculator.html",
+            "desc": "Calculate arithmetic and percentages locally with a keyboard-friendly calculator. Supports decimals, parentheses and standard order of operations.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Central Bank Policy Rate Comparison",
+            "file": "/tools/interest-rates.html",
+            "desc": "Compare published central bank policy-rate observations from the Bank for International Settlements, with dates and source context.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Compound Growth & Savings Calculator",
+            "file": "/tools/compound.html",
+            "desc": "Estimate compound growth using starting capital, return assumptions and recurring deposits for savings or investing scenarios.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Cross-Market Strength & Weakness Heatmap",
+            "file": "/tools/heatmap.html",
+            "desc": "Explore relative market movements across forex pairs and macro assets with the FYNX cross-market heatmap.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Crypto Position Size & Profit Calculator",
+            "file": "/tools/crypto.html",
+            "desc": "Estimate crypto position size, trading costs, exit value, profit or loss and break-even price using your own assumptions.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Curated Macro & Trading Research Topics",
+            "file": "/tools/recent-topics-discussed.html",
+            "desc": "Browse curated economic and trading research topics for further study. This editorial reference is not a live news or discussion feed.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Currency Conversion Calculator: Manual Rates",
+            "file": "/tools/currency.html",
+            "desc": "Convert currencies using a manually entered exchange rate or fixed example rates. The calculator does not provide live exchange rates.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Debt Payoff & Interest Calculator",
+            "file": "/tools/debt-payoff.html",
+            "desc": "Estimate how long debt repayment takes, total interest and the effect of changing a monthly payment.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Economic Calendar: Releases & Central Bank Events",
+            "file": "/tools/economic-calendar.html",
+            "desc": "Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Economic Event Reminder Planner",
+            "file": "/tools/calendar-alerts.html",
+            "desc": "Plan reminders for economic events such as inflation releases, employment reports and central bank decisions.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Fibonacci Retracement & Extension Calculator",
+            "file": "/tools/fibonacci.html",
+            "desc": "Calculate Fibonacci retracement and extension levels from a swing high and low to study potential price levels.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Forex Margin & Leverage Calculator",
+            "file": "/tools/margin.html",
+            "desc": "Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Forex Pip Value Calculator",
+            "file": "/tools/pip.html",
+            "desc": "Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Forex Position Size & Risk Calculator",
+            "file": "/tools/position-size.html",
+            "desc": "Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Forex Trade Planning Calculators",
+            "file": "/tools/forex.html",
+            "desc": "Plan a forex trade with links to position sizing and pip value calculators using your account and risk inputs.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Forex Trading Sessions & Market Hours",
+            "file": "/tools/market-hours.html",
+            "desc": "Review market session timing and trading hours to plan when to research and monitor financial markets.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Free Trading Journal: Record Trades & Review Realized Results",
+            "file": "/tools/trading-journal.html",
+            "desc": "Keep your plan, actual realized result and review notes together. A free FYNX account lets you save trades and return to your history across signed-in sessions.",
+            "access": "Free account"
+      },
+      {
+            "name": "GDP, Inflation & Unemployment Indicators",
+            "file": "/tools/economic-indicators-heatmap.html",
+            "desc": "Compare published World Bank GDP growth, inflation and unemployment observations. Review dates and source information with each indicator.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Liquidation Risk & Leverage Calculator",
+            "file": "/tools/liquidation-guard.html",
+            "desc": "Estimate liquidation price and distance for a leveraged trade using your inputs. Compare risk before choosing a position size.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Market Holiday Planning Reference",
+            "file": "/tools/market-holidays.html",
+            "desc": "Review a partial market holiday planning reference for 2025–2028. Confirm closures and early closing times with the relevant exchange.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Market Returns Correlation Calculator",
+            "file": "/tools/correlation.html",
+            "desc": "Calculate the correlation between two return series to compare market behavior and potential overlapping exposure.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Options Profit & Loss Calculator",
+            "file": "/tools/options.html",
+            "desc": "Estimate call and put option profit or loss at expiration using strike price, premium, contract count and underlying price.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Pivot Point Support & Resistance Calculator",
+            "file": "/tools/pivot.html",
+            "desc": "Calculate classic pivot points and support and resistance levels from the previous period's high, low and closing price.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Portfolio Stress Test: Exposure, Leverage & Price Shocks",
+            "file": "/tools/portfolio-stress-test.html",
+            "desc": "Estimate the effect of one parallel price shock on a set of signed position values. Compare gross exposure, net exposure and the resulting account equity.",
+            "access": "Plus or higher"
+      },
+      {
+            "name": "Position Risk Planner: Contract Size, Stop Risk & Reward",
+            "file": "/tools/position-risk-planner.html",
+            "desc": "Turn an explicit loss budget into position units using your entry, stop, target, contract multiplier and currency conversion assumptions.",
+            "access": "Essential or higher"
+      },
+      {
+            "name": "Risk-to-Reward Ratio Calculator",
+            "file": "/tools/risk-reward.html",
+            "desc": "Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Stock Position Sizing Calculator",
+            "file": "/tools/stock.html",
+            "desc": "Calculate a stock trade's position size and risk from account size, risk percentage, entry price and stop price.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Symbol News Search: Stocks, Forex & Crypto Headlines",
+            "file": "/tools/symbol-news.html",
+            "desc": "Search financial headlines for a ticker or market symbol. Review the source and publication time, then open the original report for context.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Trading Break-Even Price Calculator",
+            "file": "/tools/breakeven.html",
+            "desc": "Calculate a trade's estimated break-even price using position size, fees and spread assumptions.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Trading Drawdown Simulator: 500 Hypothetical Equity Paths",
+            "file": "/tools/drawdown-simulator.html",
+            "desc": "Explore how repeated wins and losses could affect equity under fixed assumptions. Compare simulated ending balances and drawdown across 500 paths.",
+            "access": "Professional or higher"
+      },
+      {
+            "name": "Trading Journal Analytics: Expectancy, Profit Factor & Drawdown",
+            "file": "/tools/journal-analytics.html",
+            "desc": "Understand what your recorded trades say about your process. Journal intelligence summarizes realized results from your own saved trading history.",
+            "access": "Essential or higher"
+      },
+      {
+            "name": "Trading Journal CSV Export for Spreadsheet Analysis",
+            "file": "/tools/journal-export.html",
+            "desc": "Download dated Journal records as a CSV file for your own spreadsheet review. Keep a portable copy of the values you recorded in FYNX.",
+            "access": "Essential or higher"
+      },
+      {
+            "name": "Trading Process Review: Plan, Risk, Execution & Lessons",
+            "file": "/tools/trading-process-review.html",
+            "desc": "Keep a written trade thesis and review five observable parts of your process. Save the reasoning alongside a checklist you can revisit later.",
+            "access": "Essential or higher"
+      },
+      {
+            "name": "Trading Research Watchlists: Symbols, Notes & News Links",
+            "file": "/tools/research-watchlists.html",
+            "desc": "Save a focused list of symbols with research notes. Return to the same questions and open symbol-specific news from each result.",
+            "access": "Essential or higher"
+      },
+      {
+            "name": "Trading Risk Scenario Comparison: Four Position Budgets",
+            "file": "/tools/scenario-comparison.html",
+            "desc": "Compare four position sizes while keeping the same entry, stop, target and contract assumptions. See how changing the risk budget changes both modeled loss and reward.",
+            "access": "Essential or higher"
+      }
+];
 
     const toolsGrid = document.getElementById("toolsGrid");
     const searchInput = document.getElementById("searchInput");
@@ -642,7 +834,7 @@ topBar.prepend(banner);
         <article class="tool-card">
           <div class="tool-head">
             <h3 class="tool-title">${tool.name}</h3>
-            <span class="tool-chip">TOOL</span>
+            <span class="tool-chip">${tool.access}</span>
           </div>
           <p class="tool-desc">${tool.desc}</p>
           <a class="tool-link" href="${tool.file}">Open Tool</a>
@@ -662,50 +854,6 @@ topBar.prepend(banner);
     renderTools(tools);
     injectDemoBanner();
 
-    /* =========================
-       MINI CALCULATOR
-    ========================= */
-    const calcButtons = ["C", "⌫", "%", "÷", "7", "8", "9", "×", "4", "5", "6", "-", "1", "2", "3", "+", "0", ".", "="];
-    const calcGrid = document.getElementById("calcGrid");
-    const display = document.getElementById("display");
-    let expression = "";
-
-    calcButtons.forEach(btn => {
-      const button = document.createElement("button");
-      const isOp = ["÷","×","-","+","%"].includes(btn);
-      const isEq = btn === "=";
-      button.className = "calc-btn " + (isOp ? "op" : "") + (isEq ? " eq" : "");
-      button.textContent = btn;
-      button.onclick = () => onCalc(btn);
-      calcGrid.appendChild(button);
-    });
-
-    function onCalc(value) {
-      if (value === "C") {
-        expression = "";
-        display.textContent = "0";
-        return;
-      }
-      if (value === "⌫") {
-        expression = expression.slice(0, -1);
-        display.textContent = expression || "0";
-        return;
-      }
-      if (value === "=") {
-        try {
-          const jsExpr = expression.replaceAll("÷", "/").replaceAll("×", "*");
-          const result = eval(jsExpr || "0");
-          expression = String(result);
-          display.textContent = expression;
-        } catch {
-          display.textContent = "Error";
-          expression = "";
-        }
-        return;
-      }
-      expression += value;
-      display.textContent = expression;
-    }
   </script>
 
 <footer></footer></body>

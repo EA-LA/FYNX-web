@@ -2,13 +2,14 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://www.fynxfinanceworld.com/</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/atr-stop.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/basic-calculator.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/interest-rates.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/compound.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/heatmap.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/crypto.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/recent-topics-discussed.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/currency.html</loc></url>
-  <url><loc>https://www.fynxfinanceworld.com/tools/options-payoff.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/debt-payoff.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/economic-calendar.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/calendar-alerts.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/fibonacci.html</loc></url>
@@ -17,17 +18,26 @@
   <url><loc>https://www.fynxfinanceworld.com/tools/position-size.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/forex.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/market-hours.html</loc></url>
-  <url><loc>https://www.fynxfinanceworld.com/tools/symbol-news.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/trading-journal.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/economic-indicators-heatmap.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/liquidation-guard.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/market-holidays.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/correlation.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/options.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/pivot.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/portfolio-stress-test.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/position-risk-planner.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/risk-reward.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/stock.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/symbol-news.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/breakeven.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/calculator.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/drawdown-simulator.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/journal-analytics.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/journal-export.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/trading-process-review.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/research-watchlists.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/scenario-comparison.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/learn/lessons/stocks/a-beginners-guide-to-stock-market-structure.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/learn/lessons/bonds/bond-prices-and-yields-explained.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/learn/bonds-glossary.html</loc></url>

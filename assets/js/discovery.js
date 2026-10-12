@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const savedKey='fynx.saved-resources.v1', recentKey='fynx.recent-resources.v1';
-  const read=key=>{try{const data=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(data)?data.filter(x=>typeof x==='string'&&/^\/(?:[a-z0-9-]+\/)*(?:[a-z0-9-]+\.html)?$/.test(x)).slice(0,100):[];}catch{return [];}};
+  const read=key=>{try{const data=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(data)?data.filter(x=>typeof x==='string'&&/^\/(?:[a-z0-9-]+\/)*(?:[a-z0-9-]+\.html)?$/.test(x)).map(url=>url==='/tools/options-payoff.html'?'/tools/debt-payoff.html':url).slice(0,100):[];}catch{return [];}};
   let saved=new Set(read(savedKey));
   let indexPromise;
   const index=()=>indexPromise ||= fetch('/assets/resource-index.json').then(r=>{if(!r.ok)throw Error('index');return r.json();}).then(rows=>Array.isArray(rows)?rows:[]).catch(()=>{indexPromise=null;return [];});

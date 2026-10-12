@@ -14,10 +14,11 @@ const labels = {stocks:'Stocks',funds:'Funds & ETFs',futures:'Futures',forex:'Fo
 const urlFor = (topic,item) => `/learn/lessons/${topic}/${slug(item.title)}.html`;
 const write = (file, text) => { fs.mkdirSync(path.dirname(path.join(root,file)), {recursive:true}); fs.writeFileSync(path.join(root,file),text.replace(/^[ \t]+$/gm,'')); };
 const json = value => JSON.stringify(value).replace(/</g,'\\u003c');
-const headAssets = '<link rel="stylesheet" href="/assets/discovery.css?v=20261011"><script src="/assets/js/discovery.js?v=20261011" defer></script>';
+const headAssets = '<link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261012" defer></script>';
 function page({title,description,body,layout='standalone',extra=''}) {
  return `<!DOCTYPE html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(title)}</title><meta name="description" content="${escape(description)}"><meta name="robots" content="index,follow,max-image-preview:large"><script src="/assets/js/site-theme-init.js?v=20261011"></script><link rel="icon" href="/favicon-32x32.png"><link rel="stylesheet" href="/assets/funded-system.css"><link rel="stylesheet" href="/assets/site-design.css?v=20261011">${headAssets}${extra}<script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script></head><body data-fynx-layout="${layout}" class="discovery-page"><a class="discovery-skip" href="#main">Skip to content</a><header class="discovery-header"><a class="discovery-brand" href="/" aria-label="FYNX Finance World home">↗ FYNX<span>FINANCE WORLD</span></a><nav aria-label="Main navigation"><a href="/explore.html">Explore</a><a href="/learn.html">Learn</a><a href="/home.html" class="discovery-button">Open workspace <span aria-hidden="true">↗</span></a></nav></header><main id="main">${body}</main><footer class="discovery-footer"><a href="/explore.html">All resources</a><a href="/accessibility.html">Connection help &amp; light browsing</a><a href="/contact.html">Contact</a><a href="/risk-disclosure.html">Risk disclosure</a><span>FYNX Finance World · Tools for your own research.</span></footer></body></html>\n`;
 }
+const publicProducts=require('./build-product-pages.cjs')({page,write,escape});
 let lessonPaths=[];
 for (const [topic, items] of Object.entries(outlines)) {
  if (lessons[topic]?.length !== items.length) throw Error(`Missing lesson content: ${topic}`);
@@ -29,7 +30,7 @@ for (const [topic, items] of Object.entries(outlines)) {
  });
 }
 // Legacy views remain usable, but only their substantive destination is in discovery and the sitemap.
-const aliases = {'learn/risk-management.html':'risk-management.html','learn/trading-psychology.html':'trading-psychology.html','resources/market-analysis.html':'market-analysis.html','resources/quizzes.html':'trading-quizzes.html','resources/trading-glossary.html':'trading-glossary.html','tools/profit-loss.html':'tools/stock.html','waitlist.html':'home.html'};
+const aliases = {'learn/risk-management.html':'risk-management.html','learn/trading-psychology.html':'trading-psychology.html','resources/market-analysis.html':'market-analysis.html','resources/quizzes.html':'trading-quizzes.html','resources/trading-glossary.html':'trading-glossary.html','tools/profit-loss.html':'tools/stock.html','tools/options-payoff.html':'tools/debt-payoff.html','waitlist.html':'home.html'};
 const privateFiles = new Set(['home.html','learn/topic.html','waitlist.html']);
 function allHTML(dir='') {
  return fs.readdirSync(path.join(root,dir),{withFileTypes:true}).flatMap(e=>{
@@ -89,7 +90,7 @@ for(const file of allHTML()) {
  if(!title||!description)throw Error(`Missing page metadata: ${file}`);
  const name=title.replace(/\s*(?:\||—|-)\s*FYNX(?: Finance World)?.*$/i,'').trim();
  const group=category(file);
- entries.push({url:route,title:name,description,category:group,topic:file.startsWith('learn/lessons/')?file.split('/')[2]:file.startsWith('learn/')?file.slice(6).split('-')[0]:'',keywords:[...doc.querySelectorAll('h1,h2,h3')].map(n=>n.textContent.trim()).slice(0,18).join(' ')});
+ entries.push({url:route,title:name,description,category:group,...(publicProducts[route]?{access:publicProducts[route].access}:{}),topic:file.startsWith('learn/lessons/')?file.split('/')[2]:file.startsWith('learn/')?file.slice(6).split('-')[0]:'',keywords:[...doc.querySelectorAll('h1,h2,h3')].map(n=>n.textContent.trim()).slice(0,18).join(' ')});
  html=setHead(html,/<link\b[^>]*rel=["']canonical["'][^>]*>/gi,base+route,v=>`<link rel="canonical" href="${v}">`);
  for (const [property,value] of [['og:title',title],['og:description',description],['og:url',base+route],['og:type',file.startsWith('learn/lessons/')?'article':'website'],['og:image',base+'/assets/social/fynx-resources.png'],['og:image:alt','FYNX trading calculators, finance lessons and market research']]) html=setHead(html,new RegExp(`<meta\\b[^>]*property=["']${property}["'][^>]*>`,'gi'),value,v=>`<meta property="${property}" content="${escape(v)}">`);
  html=setHead(html,/<meta\b[^>]*name=["']twitter:card["'][^>]*>/gi,'summary_large_image',v=>`<meta name="twitter:card" content="${v}">`);
@@ -113,7 +114,7 @@ for(const file of allHTML()) {
 }
 const categories=['Tools','Learning','Markets','News & events','Developers','Resources'];
 entries=entries.filter(e=>e.url!=='/').sort((a,b)=>categories.indexOf(a.category)-categories.indexOf(b.category)||a.title.localeCompare(b.title));
-function card(e) {return `<article class="discovery-card" data-resource-url="${e.url}" data-category="${escape(e.category)}" data-search="${escape([e.title,e.description,e.keywords,e.topic].join(' ').toLowerCase())}"><div class="discovery-card-top"><span>${escape(e.category)}${e.topic?' / '+escape(labels[e.topic]||e.topic):''}</span><button type="button" data-save-resource="${e.url}" aria-label="Save ${escape(e.title)}" aria-pressed="false">＋</button></div><h2><a href="${e.url}">${escape(e.title)}<span aria-hidden="true">↗</span></a></h2><p>${escape(e.description)}</p></article>`;}
+function card(e) {return `<article class="discovery-card" data-resource-url="${e.url}" data-category="${escape(e.category)}" data-search="${escape([e.title,e.description,e.keywords,e.topic].join(' ').toLowerCase())}"><div class="discovery-card-top"><span>${escape(e.category)}${e.access?' / '+escape(e.access):''}${e.topic?' / '+escape(labels[e.topic]||e.topic):''}</span><button type="button" data-save-resource="${e.url}" aria-label="Save ${escape(e.title)}" aria-pressed="false">＋</button></div><h2><a href="${e.url}">${escape(e.title)}<span aria-hidden="true">↗</span></a></h2><p>${escape(e.description)}</p></article>`;}
 const filters=['All',...categories,'Saved'];
 const form=`<form class="discovery-search" action="/explore.html" role="search"><label for="resource-query">Find a tool, lesson or market topic</label><div><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="resource-query" name="q" type="search" placeholder="Try margin, position size, bonds…" autocomplete="off"><button type="submit">Search</button></div></form>`;
 write('explore.html',page({title:'Trading Tools, Calculators & Finance Learning Library | FYNX',description:'Find FYNX trading calculators, finance lessons, quizzes, market research and economic calendars. Search by topic and save useful resources.',body:`<section class="discovery-hero"><div class="discovery-kicker">THE FYNX RESOURCE LIBRARY</div><h1>A question.<br><em>A place to start.</em></h1><p class="discovery-lead">Find the right calculation, understand the concept, and bring it into your process.</p>${form}<div class="discovery-popular"><span>Popular</span><a href="/tools/margin.html">Margin calculator ↗</a><a href="/tools/position-size.html">Position size ↗</a><a href="/tools/economic-calendar.html">Economic calendar ↗</a></div></section><section aria-label="Resource library" data-discovery-library><div class="discovery-filterbar"><div class="discovery-filters" aria-label="Filter by resource type">${filters.map((f,i)=>`<button type="button" data-filter="${escape(f)}" aria-pressed="${i===0}">${escape(f)}</button>`).join('')}</div><p id="discovery-count" role="status" aria-live="polite">${entries.length} resources</p></div><noscript><p>Every resource is linked below. Use your browser’s Find command, or open the <a href="/directory.html">lightweight directory</a>.</p></noscript><div class="discovery-empty" id="discovery-empty" hidden><h2>No resources match yet.</h2><p>Try a broader term, choose another category, or reset the filters.</p><button type="button" data-discovery-reset>Show all resources</button></div><div class="discovery-grid">${entries.map(card).join('\n')}</div></section>`}));
@@ -123,7 +124,8 @@ write('accessibility.html',page({title:'Connection Help & Lightweight Browsing |
 for(const e of entries){
  const file=e.url==='/api/'?'api/index.html':e.url.slice(1);let html=fs.readFileSync(path.join(root,file),'utf8');
  const guide=guides[path.basename(file,'.html')];
- let related=(file.startsWith('tools/')&&guide?guide[5].map(s=>entries.find(x=>x.url===`/tools/${s}.html`)).filter(Boolean):entries.filter(x=>x.url!==e.url&&x.category===e.category&&(!e.topic||x.topic===e.topic)).slice(0,3));
+ let related=(publicProducts[e.url]?publicProducts[e.url].related.map(s=>entries.find(x=>x.url==='/'+(aliases[`tools/${s}.html`]||`tools/${s}.html`))).filter(Boolean):file.startsWith('tools/')&&guide?guide[5].map(s=>entries.find(x=>x.url==='/'+(aliases[`tools/${s}.html`]||`tools/${s}.html`))).filter(Boolean):entries.filter(x=>x.url!==e.url&&x.category===e.category&&(!e.topic||x.topic===e.topic)).slice(0,3));
+ related=related.filter((item,index,list)=>item.url!==e.url&&list.findIndex(other=>other.url===item.url)===index);
  const block=`<section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links">${related.map(x=>`<a href="${x.url}"><strong>${escape(x.title)}</strong><span>${escape(x.description)}</span></a>`).join('')}<a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section>`;
  html=replaceBlock(html,'discovery-related',block);write(file,html);
 }
@@ -134,9 +136,28 @@ for(const [file,group,selection] of [['calculator.html','Tools',e=>e.category===
 }
 const publicExtras=['/explore.html','/accessibility.html'];
 for (const url of publicExtras){let file=url.slice(1),html=fs.readFileSync(path.join(root,file),'utf8');const dom=new JSDOM(html),doc=dom.window.document;html=html.replace('</head>',`<link rel="canonical" href="${base+url}"><meta property="og:url" content="${base+url}"><meta property="og:title" content="${escape(doc.title)}"><meta property="og:description" content="${escape(doc.querySelector('meta[name=description]').content)}"><meta property="og:type" content="website"><meta property="og:image" content="${base}/assets/social/fynx-resources.png"><meta name="twitter:card" content="summary_large_image">\n</head>`);dom.window.close();write(file,html);}
+// Every calculator directory view uses this inventory, including without JavaScript.
+{
+ const file='calculator.html';let html=fs.readFileSync(path.join(root,file),'utf8');
+ const tools=entries.filter(e=>e.category==='Tools'&&e.url!=='/calculator.html').map(e=>({name:e.title,file:e.url,desc:e.description,access:e.access||'Free tool'}));
+ html=html.replace(/const tools = \[[\s\S]*?\n\s*\];/,`const tools = ${JSON.stringify(tools,null,6)};`);
+ const dom=new JSDOM(html,{includeNodeLocations:true});const grid=dom.window.document.getElementById('toolsGrid'),loc=dom.nodeLocation(grid);dom.window.close();
+ if(!loc?.endTag)throw Error('Missing calculator directory');
+ const cards=tools.map(t=>`<article class="tool-card"><div class="tool-head"><h3 class="tool-title">${escape(t.name)}</h3><span class="tool-chip">${escape(t.access)}</span></div><p class="tool-desc">${escape(t.desc)}</p><a class="tool-link" href="${t.file}">Open tool →</a></article>`).join('');
+ html=html.slice(0,loc.startTag.endOffset)+cards+html.slice(loc.endTag.startOffset);
+ html=html.replace(/(<[^>]+id="countText"[^>]*>)[^<]*(<\/[^>]+>)/,`$1${tools.length} tools$2`);
+ // The populated grid is the public directory; avoid a second copy beneath it.
+ html=replaceBlock(html,'discovery-hub','');write(file,html);
+}
+{
+ const catalog=require('../assets/js/pro-catalog.js');let html=fs.readFileSync(path.join(root,'pro.html'),'utf8');
+ const dom=new JSDOM(html,{includeNodeLocations:true}),grid=dom.window.document.getElementById('productCards'),loc=dom.nodeLocation(grid);dom.window.close();
+ const cards=Object.entries(catalog).map(([key,[name,tier,description,url]])=>`<article class="product"><span>${escape(tier.toUpperCase())}</span><h3><a href="${url}">${escape(name)} ↗</a></h3><p>${escape(description)}</p><button type="button" data-key="${key}" aria-pressed="false">Open in workspace</button></article>`).join('');
+ html=html.slice(0,loc.startTag.endOffset)+cards+html.slice(loc.endTag.startOffset);write('pro.html',html);
+}
 const allURLs=['/',...entries.map(e=>e.url),...publicExtras];
 write('sitemap.xml',`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${allURLs.map(url=>`  <url><loc>${base+escape(url)}</loc></url>`).join('\n')}\n</urlset>\n`);
 write('assets/resource-index.json',JSON.stringify(entries.map(({keywords,...e})=>e),null,2)+'\n');
 write('robots.txt',`User-agent: *\nAllow: /\nSitemap: ${base}/sitemap.xml\n`);
-fs.mkdirSync(path.join(root,'output'),{recursive:true});write('output/search-audit.json',JSON.stringify({htmlPages:allHTML().length,publicURLs:allURLs.length,lessonURLs:lessonPaths.length,resources:entries.length,aliases,privateFiles:[...privateFiles]},null,2)+'\n');
+fs.mkdirSync(path.join(root,'output'),{recursive:true});write('output/search-audit.json',JSON.stringify({htmlPages:allHTML().length,publicURLs:allURLs.length,lessonURLs:lessonPaths.length,resources:entries.length,aliases,privateFiles:[...privateFiles],publicTools:entries.filter(e=>e.category==='Tools'&&e.url!=='/calculator.html').length,productPages:publicProducts},null,2)+'\n');
 console.log(`Discovery built: ${allURLs.length} canonical public URLs, ${lessonPaths.length} substantive lessons and ${entries.length} searchable resources.`);

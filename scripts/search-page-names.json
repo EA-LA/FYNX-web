@@ -179,7 +179,7 @@
     "title": "Forex Trading Sessions & Market Hours | FYNX",
     "description": "Review market session timing and trading hours to plan when to research and monitor financial markets."
   },
-  "tools/options-payoff.html": {
+  "tools/debt-payoff.html": {
     "title": "Debt Payoff & Interest Calculator | FYNX",
     "description": "Estimate how long debt repayment takes, total interest and the effect of changing a monthly payment."
   },
@@ -218,5 +218,9 @@
   "index.html": {
     "title": "Free Trading Calculators & Finance Learning | FYNX Finance World",
     "description": "Calculate margin, position size, pip value and trading risk. Explore FYNX finance lessons, economic calendars and market research in one workspace."
+  },
+  "tools/symbol-news.html": {
+    "title": "Symbol News Search: Stocks, Forex & Crypto Headlines | FYNX",
+    "description": "Search financial headlines for a ticker or market symbol. Review the source and publication time, then open the original report for context."
   }
 }

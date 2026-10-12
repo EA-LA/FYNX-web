@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#f7f7f7;
+      --bg-solid:#ffffff;
+      --text:#0a0a0a;
+      --text-strong:#000000;
+      --text-muted:rgba(10, 10, 10, .65);
+      --text-soft:rgba(10, 10, 10, .55);
+      --border:rgba(10, 10, 10, .10);
+      --border-strong:rgba(10, 10, 10, .14);
+      --surface:rgba(255, 255, 255, .78);
+      --surface-2:rgba(255, 255, 255, .86);
+      --nav-bg:rgba(255, 255, 255, .85);
+      --nav-link-bg:rgba(0, 0, 0, .03);
+      --nav-link-bg-hover:rgba(0, 0, 0, .06);
+      --grid-line:rgba(0, 0, 0, .05);
+      --orb-core:rgba(0, 0, 0, .22);
+      --hero-gradient-1:#0a0a0a;
+      --hero-gradient-2:#6b6b6b;
+      --success:#6b6b6b;
+      --danger:#616161;
+      --warning:#a2a2a2;
+    }
+    body.dark-mode{
+      --bg:#000000;
+      --bg-solid:#000000;
+      --text:#ffffff;
+      --text-strong:#ffffff;
+      --text-muted:rgba(255, 255, 255, .65);
+      --text-soft:rgba(255, 255, 255, .55);
+      --border:rgba(255, 255, 255, .10);
+      --border-strong:rgba(255, 255, 255, .14);
+      --surface:rgba(255, 255, 255, .03);
+      --surface-2:rgba(0, 0, 0, .55);
+      --nav-bg:rgba(0, 0, 0, .85);
+      --nav-link-bg:rgba(255, 255, 255, .04);
+      --nav-link-bg-hover:rgba(255, 255, 255, .08);
+      --grid-line:rgba(255, 255, 255, .03);
+      --orb-core:rgba(255, 255, 255, .9);
+      --hero-gradient-1:#ffffff;
+      --hero-gradient-2:#8a8a8a;
+      --success:#989898;
+      --danger:#969696;
+      --warning:#c0c0c0;
+    }
+    body{
+      font-family:'Inter','Segoe UI',system-ui,sans-serif;
+      color:var(--text);
+      background:var(--bg-solid);
+      overflow-x:hidden;
+      min-height:100vh;
+      transition:background .25s ease,color .25s ease;
+    }
+    .animated-bg{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      background:var(--bg-solid);
+      overflow:hidden;
+      transition:background .25s ease;
+    }
+    .grid-overlay{
+      position:absolute;inset:0;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size:50px 50px;
+      animation:gridMove 20s linear infinite;
+      transition:background-image .25s ease;
+    }
+    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
+    .gradient-orb{
+      position:absolute;
+      border-radius:50%;
+      filter:blur(80px);
+      opacity:.25;
+      animation:float 20s ease-in-out infinite;
+    }
+    .orb-1{
+      width:520px;
+      height:520px;
+      background:radial-gradient(circle,var(--orb-core) 0%,transparent 70%);
+      top:-220px;
+      left:-220px;
+    }
+    .orb-2{
+      width:420px;
+      height:420px;
+      background:radial-gradient(circle,var(--orb-core) 0%,transparent 70%);
+      bottom:-170px;
+      right:-170px;
+      animation-delay:6s;
+    }
+    @keyframes float{
+      0%,100%{transform:translate(0,0) scale(1)}
+      33%{transform:translate(50px,-50px) scale(1.08)}
+      66%{transform:translate(-50px,50px) scale(.92)}
+    }
+    header{
+      position:sticky;
+      top:0;
+      z-index:1000;
+      background:var(--nav-bg);
+      backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--border);
+      padding:1rem 0;
+      transition:background .25s ease,border-color .25s ease;
+    }
+    .nav{
+      max-width:1200px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 1.25rem;
+      gap:1rem;
+      flex-wrap:wrap;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      font-weight:900;
+      letter-spacing:-1px;
+      font-size:1.25rem;
+      color:var(--text-strong);
+      transition:color .25s ease;
+    }
+    .brand i{opacity:.9}
+    .nav-actions{
+      display:flex;
+      gap:.6rem;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .nav a,
+    .theme-btn{
+      color:var(--text-muted);
+      text-decoration:none;
+      font-weight:700;
+      border:1px solid var(--border-strong);
+      background:var(--nav-link-bg);
+      padding:.55rem .9rem;
+      border-radius:999px;
+      transition:all .25s ease;
+      white-space:nowrap;
+      cursor:pointer;
+      font:inherit;
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+    }
+    .nav a:hover,
+    .theme-btn:hover{
+      color:var(--text-strong);
+      border-color:var(--border-strong);
+      background:var(--nav-link-bg-hover);
+      transform:translateY(-1px);
+    }
+    main{
+      max-width:1200px;
+      margin:0 auto;
+      padding:3.5rem 1.25rem 5rem;
+    }
+    .hero{
+      padding:2.25rem 1.75rem;
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:22px;
+      backdrop-filter:blur(10px);
+      transition:background .25s ease,border-color .25s ease;
+    }
+    h1{
+      font-size:3rem;
+      line-height:1.1;
+      letter-spacing:-2px;
+      background:linear-gradient(135deg,var(--hero-gradient-1) 0%,var(--hero-gradient-2) 100%);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      margin-bottom:.75rem;
+    }
+    p{
+      color:var(--text-muted);
+      font-size:1.1rem;
+      line-height:1.8;
+      max-width:70ch;
+      transition:color .25s ease;
+    }
+    .panel-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(360px,1fr));
+      gap:1.25rem;
+      margin-top:1.25rem;
+    }
+    .panel{
+      border:1px solid var(--border);
+      background:var(--surface-2);
+      border-radius:18px;
+      padding:1.25rem 1.25rem 1.4rem;
+      backdrop-filter:blur(10px);
+      min-height:180px;
+      transition:background .25s ease,border-color .25s ease;
+    }
+    .panel h2{
+      font-size:1.2rem;
+      margin-bottom:.9rem;
+      color:var(--text-strong);
+      transition:color .25s ease;
+    }
+    .panel .muted{
+      color:var(--text-muted);
+      font-size:.98rem;
+      transition:color .25s ease;
+    }
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:.9rem;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:.45rem;
+    }
+    .field.full{
+      grid-column:1 / -1;
+    }
+    .field label{
+      color:var(--text-muted);
+      font-size:.9rem;
+      font-weight:800;
+    }
+    .field input{
+      width:100%;
+      border:1px solid var(--border);
+      background:var(--bg-solid);
+      color:var(--text-strong);
+      padding:.88rem .95rem;
+      border-radius:14px;
+      outline:none;
+      font:inherit;
+      transition:border-color .2s ease, background .2s ease, color .2s ease, transform .2s ease;
+    }
+    .field input:focus{
+      border-color:var(--border-strong);
+      transform:translateY(-1px);
+    }
+    .button-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.75rem;
+      margin-top:1rem;
+    }
+    .btn{
+      border:none;
+      padding:.9rem 1rem;
+      border-radius:14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:all .2s ease;
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      font:inherit;
+    }
+    .btn.primary{
+      background:var(--text-strong);
+      color:var(--bg-solid);
+    }
+    .btn.secondary{
+      background:var(--nav-link-bg);
+      color:var(--text-strong);
+      border:1px solid var(--border);
+    }
+    .btn:hover{
+      transform:translateY(-1px);
+    }
+    .result-status{
+      padding:.9rem 1rem;
+      border-radius:14px;
+      font-weight:700;
+      margin-bottom:1rem;
+      border:1px solid var(--border);
+      background:var(--nav-link-bg);
+      color:var(--text-strong);
+    }
+    .result-status.error{
+      color:var(--danger);
+      border-color:rgba(97, 97, 97, .25);
+      background:rgba(97, 97, 97, .08);
+    }
+    .result-status.success{
+      color:var(--success);
+      border-color:rgba(107, 107, 107, .25);
+      background:rgba(107, 107, 107, .08);
+    }
+    .results-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:.85rem;
+      margin-bottom:1rem;
+    }
+    .metric{
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:16px;
+      padding:1rem;
+    }
+    .metric-label{
+      color:var(--text-soft);
+      font-size:.8rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-bottom:.45rem;
+      font-weight:800;
+    }
+    .metric-value{
+      color:var(--text-strong);
+      font-size:1.35rem;
+      font-weight:900;
+      letter-spacing:-.03em;
+    }
+    .metric-sub{
+      margin-top:.35rem;
+      color:var(--text-muted);
+      font-size:.9rem;
+      line-height:1.5;
+    }
+    .summary-box{
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:16px;
+      padding:1rem;
+    }
+    .summary-box h3{
+      margin-bottom:.55rem;
+      font-size:1rem;
+      color:var(--text-strong);
+    }
+    .summary-box p{
+      font-size:.98rem;
+      max-width:none;
+    }
+    .table-wrap{
+      margin-top:1.25rem;
+      border:1px solid var(--border);
+      border-radius:18px;
+      overflow:auto;
+      background:var(--surface-2);
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:760px;
+    }
+    th,td{
+      padding:.95rem .85rem;
+      border-bottom:1px solid var(--border);
+      text-align:left;
+      font-size:.94rem;
+    }
+    th{
+      color:var(--text-soft);
+      font-size:.82rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      font-weight:800;
+      background:var(--surface);
+    }
+    tr:last-child td{
+      border-bottom:none;
+    }
+    .hint{
+      margin-top:1.2rem;
+      color:var(--text-soft);
+      font-size:.95rem;
+      transition:color .25s ease;
+    }
+    .success{color:var(--success)}
+    .danger{color:var(--danger)}
+    .warning{color:var(--warning)}
+    @media (max-width: 900px){
+      .form-grid,
+      .results-grid{
+        grid-template-columns:1fr;
+      }
+    }
+    @media (max-width: 720px){
+      main{
+        padding:2rem .95rem 3rem;
+      }
+      .hero{
+        padding:1.35rem 1rem;
+      }
+      h1{
+        font-size:2.35rem;
+      }
+      .nav{
+        padding:0 .9rem;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
+<title>Debt Payoff &amp; Interest Calculator | FYNX</title>
+<meta name="description" content="Estimate how long debt repayment takes, total interest and the effect of changing a monthly payment.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://www.fynxfinanceworld.com/tools/debt-payoff.html">
+<meta property="og:title" content="Debt Payoff &amp; Interest Calculator | FYNX">
+<meta property="og:description" content="Estimate how long debt repayment takes, total interest and the effect of changing a monthly payment.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/tools/debt-payoff.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261012" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Debt Payoff & Interest Calculator","item":"https://www.fynxfinanceworld.com/tools/debt-payoff.html"}]}</script><!-- discovery-schema:end -->
+</head>
+<body data-fynx-layout="standalone" data-fynx-section="TOOLS">
+  <div class="animated-bg">
+    <div class="grid-overlay"></div>
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+  </div>
+
+  <header>
+    <div class="nav">
+      <div class="brand"><i class="fas fa-chart-line"></i> FYNX Tools</div>
+      <div class="nav-actions">
+        <button class="theme-btn" id="themeToggle" type="button">
+          <i class="fas fa-circle-half-stroke"></i>
+          <span id="themeToggleText">Theme</span>
+        </button>
+        <a href="../index.html#tools"><i class="fas fa-arrow-left"></i> Back</a>
+        <a href="../index.html"><i class="fas fa-house"></i> Home</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
+      <h1>Payoff Calculator</h1>
+      <p>Calculate how long it takes to pay off debt, how much interest you will pay, and how your monthly payment changes the payoff speed.</p>
+
+      <div class="panel-grid">
+        <div class="panel">
+          <h2>Calculator Inputs</h2>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="loanAmount">Loan Amount ($)</label>
+              <input id="loanAmount" type="number" min="0" step="0.01" value="10000" />
+            </div>
+
+            <div class="field">
+              <label for="interestRate">Annual Interest Rate (%)</label>
+              <input id="interestRate" type="number" min="0" step="0.01" value="10" />
+            </div>
+
+            <div class="field full">
+              <label for="monthlyPayment">Monthly Payment ($)</label>
+              <input id="monthlyPayment" type="number" min="0" step="0.01" value="300" />
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button class="btn primary" id="calculateBtn">
+              <i class="fas fa-calculator"></i> Calculate Payoff
+            </button>
+            <button class="btn secondary" id="resetBtn">
+              <i class="fas fa-rotate-left"></i> Reset
+            </button>
+          </div>
+
+          <div class="hint">
+            Tip: if your payment is too low to cover monthly interest, the balance will never be paid off.
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Results</h2>
+
+          <div id="resultStatus" class="result-status">
+            Enter your numbers and calculate.
+          </div>
+
+          <div class="results-grid">
+            <div class="metric">
+              <div class="metric-label">Time to Pay Off</div>
+              <div class="metric-value" id="monthsValue">—</div>
+              <div class="metric-sub" id="yearsValue">—</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Total Interest</div>
+              <div class="metric-value danger" id="interestValue">$0.00</div>
+              <div class="metric-sub">Interest paid over the life of the debt.</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Total Paid</div>
+              <div class="metric-value" id="totalPaidValue">$0.00</div>
+              <div class="metric-sub">Principal plus interest combined.</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Monthly Interest First Month</div>
+              <div class="metric-value warning" id="firstInterestValue">$0.00</div>
+              <div class="metric-sub">Useful for checking whether payment is high enough.</div>
+            </div>
+          </div>
+
+          <div class="summary-box">
+            <h3>Summary</h3>
+            <p id="summaryText">No calculation yet.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Starting Balance</th>
+              <th>Interest</th>
+              <th>Payment</th>
+              <th>Principal Paid</th>
+              <th>Ending Balance</th>
+            </tr>
+          </thead>
+          <tbody id="scheduleBody">
+            <tr>
+              <td colspan="6" style="text-align:center;color:var(--text-muted);padding:1.4rem;">
+                No payoff schedule yet.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="hint">
+        This calculator assumes fixed monthly payments and a fixed annual interest rate.
+      </div>
+    </section>
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Estimate a debt payoff schedule</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter your balance, annual rate and recurring payment. Compare the time and interest under an additional-payment scenario.</p><h3>The calculation or concept</h3><p>Each modeled period adds interest and subtracts the payment. Payoff requires the payment to exceed the accrued interest.</p></div><div class="tool-example"><h3>Worked example</h3><p>A $1,000 balance at a nominal 12% annual rate accrues about $10 during the first month under a monthly model. A $100 payment reduces principal by about $90.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Actual lenders may use daily interest, fees and variable rates, so confirm your lender’s schedule.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/compound.html"><strong>Compound Growth &amp; Savings Calculator</strong><span>Estimate compound growth using starting capital, return assumptions and recurring deposits for savings or investing scenarios.</span></a><a href="/tools/currency.html"><strong>Currency Conversion Calculator: Manual Rates</strong><span>Convert currencies using a manually entered exchange rate or fixed example rates. The calculator does not provide live exchange rates.</span></a><a href="/tools/breakeven.html"><strong>Trading Break-Even Price Calculator</strong><span>Calculate a trade&#39;s estimated break-even price using position size, fees and spread assumptions.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
+
+  <script>
+    const THEME_KEY = "fynx_theme";
+
+    function applyTheme(mode){
+      if (mode === "dark") document.body.classList.add("dark-mode");
+      else document.body.classList.remove("dark-mode");
+      updateThemeButton();
+    }
+
+    function updateThemeButton(){
+      const text = document.getElementById("themeToggleText");
+      if (!text) return;
+      text.textContent = document.body.classList.contains("dark-mode") ? "Dark" : "Light";
+    }
+
+    (function applyThemeFromStorage(){
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
+      applyTheme(saved === "dark" ? "dark" : "light");
+    })();
+
+    document.getElementById("themeToggle").addEventListener("click", () => {
+      const next = document.body.classList.contains("dark-mode") ? "light" : "dark";
+      window.FynxPreferences?.setItem(THEME_KEY, next);
+      applyTheme(next);
+    });
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === THEME_KEY) {
+        applyTheme(e.newValue === "dark" ? "dark" : "light");
+      }
+    });
+
+    function formatCurrency(value){
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 2
+      }).format(value);
+    }
+
+    function resetOutput(){
+      document.getElementById("resultStatus").className = "result-status";
+      document.getElementById("resultStatus").textContent = "Enter your numbers and calculate.";
+      document.getElementById("monthsValue").textContent = "—";
+      document.getElementById("yearsValue").textContent = "—";
+      document.getElementById("interestValue").textContent = "$0.00";
+      document.getElementById("totalPaidValue").textContent = "$0.00";
+      document.getElementById("firstInterestValue").textContent = "$0.00";
+      document.getElementById("summaryText").textContent = "No calculation yet.";
+      document.getElementById("scheduleBody").innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align:center;color:var(--text-muted);padding:1.4rem;">
+            No payoff schedule yet.
+          </td>
+        </tr>
+      `;
+    }
+
+    function calculatePayoff(){
+      const originalLoan = parseFloat(document.getElementById("loanAmount").value) || 0;
+      const annualRate = parseFloat(document.getElementById("interestRate").value) || 0;
+      const monthlyPaymentInput = parseFloat(document.getElementById("monthlyPayment").value) || 0;
+
+      const statusEl = document.getElementById("resultStatus");
+      const monthsEl = document.getElementById("monthsValue");
+      const yearsEl = document.getElementById("yearsValue");
+      const interestEl = document.getElementById("interestValue");
+      const totalPaidEl = document.getElementById("totalPaidValue");
+      const firstInterestEl = document.getElementById("firstInterestValue");
+      const summaryEl = document.getElementById("summaryText");
+      const scheduleBody = document.getElementById("scheduleBody");
+
+      if (originalLoan <= 0 || monthlyPaymentInput <= 0 || annualRate < 0) {
+        statusEl.className = "result-status error";
+        statusEl.textContent = "Please enter valid positive values.";
+        resetOutput();
+        statusEl.className = "result-status error";
+        statusEl.textContent = "Please enter valid positive values.";
+        return;
+      }
+
+      const monthlyRate = annualRate / 100 / 12;
+      const firstMonthInterest = originalLoan * monthlyRate;
+
+      if (monthlyPaymentInput <= firstMonthInterest && monthlyRate > 0) {
+        resetOutput();
+        statusEl.className = "result-status error";
+        statusEl.textContent = "Payment is too low. It does not cover the monthly interest, so the debt will not be paid off.";
+        firstInterestEl.textContent = formatCurrency(firstMonthInterest);
+        summaryEl.textContent = `Your first month interest is ${formatCurrency(firstMonthInterest)}, so your payment must be higher than that to reduce the balance.`;
+        return;
+      }
+
+      let balance = originalLoan;
+      let month = 0;
+      let totalInterest = 0;
+      let totalPaid = 0;
+      let rows = "";
+      const maxMonths = 1200;
+
+      while (balance > 0.005 && month < maxMonths) {
+        month++;
+        const startingBalance = balance;
+        const interest = balance * monthlyRate;
+        totalInterest += interest;
+
+        let payment = monthlyPaymentInput;
+        if (startingBalance + interest < payment) {
+          payment = startingBalance + interest;
+        }
+
+        const principalPaid = payment - interest;
+        balance = startingBalance + interest - payment;
+        totalPaid += payment;
+
+        rows += `
+          <tr>
+            <td>${month}</td>
+            <td>${formatCurrency(startingBalance)}</td>
+            <td class="danger">${formatCurrency(interest)}</td>
+            <td>${formatCurrency(payment)}</td>
+            <td class="success">${formatCurrency(principalPaid)}</td>
+            <td>${formatCurrency(Math.max(0, balance))}</td>
+          </tr>
+        `;
+      }
+
+      if (month >= maxMonths) {
+        resetOutput();
+        statusEl.className = "result-status error";
+        statusEl.textContent = "Calculation exceeded the allowed range. Please increase the payment.";
+        return;
+      }
+
+      const years = month / 12;
+      const yearsRounded = years.toFixed(1);
+
+      statusEl.className = "result-status success";
+      statusEl.textContent = "Payoff calculation completed.";
+
+      monthsEl.textContent = `${month} months`;
+      yearsEl.textContent = `${yearsRounded} years`;
+      interestEl.textContent = formatCurrency(totalInterest);
+      totalPaidEl.textContent = formatCurrency(totalPaid);
+      firstInterestEl.textContent = formatCurrency(firstMonthInterest);
+
+      summaryEl.textContent = `A ${formatCurrency(originalLoan)} debt at ${annualRate.toFixed(2)}% interest with monthly payments of ${formatCurrency(monthlyPaymentInput)} will be paid off in ${month} months (${yearsRounded} years). You will pay ${formatCurrency(totalInterest)} in interest and ${formatCurrency(totalPaid)} in total.`;
+
+      scheduleBody.innerHTML = rows;
+    }
+
+    document.getElementById("calculateBtn").addEventListener("click", calculatePayoff);
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      document.getElementById("loanAmount").value = 10000;
+      document.getElementById("interestRate").value = 10;
+      document.getElementById("monthlyPayment").value = 300;
+      resetOutput();
+    });
+
+    calculatePayoff();
+  </script>
+
+<footer></footer></body>
+</html>
