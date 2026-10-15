@@ -5,11 +5,14 @@ import {refreshHeatmap} from './markets.js';
 import {renderAssistant,checkAI} from './assistant.js';
 import './strategy.js';
 import {renderPortfolio,refreshPortfolio,renderAlerts,checkAlerts} from './personal.js';
+import {currentRoute,updatePageIdentity,enableRouteNavigation} from './navigation.js';
 const names=['financials','screener','heatmap','assistant','strategy','portfolio','alerts'];let active=null;
+let lastPath=null;
 function navigate(){
-  const fallback=names.includes(document.body.dataset.researchPanel)?document.body.dataset.researchPanel:'financials';
+  const route=currentRoute();
+  const fallback=location.hash==='#sources'&&lastPath===location.pathname&&active?active:route.panel;
   const name=names.includes(location.hash.slice(1))?location.hash.slice(1):fallback;
-  if(location.hash==='#sources'&&active)return;
+  lastPath=location.pathname;updatePageIdentity(route);
   for(const panel of document.querySelectorAll('.desk-panel'))panel.hidden=panel.id!=='panel-'+name;
   for(const link of document.querySelectorAll('#desk-nav a')){if(link.dataset.panel===name)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');}
   const changed=active!==name;active=name;
@@ -21,6 +24,6 @@ function navigate(){
   if(name==='alerts'){renderAlerts();checkAlerts(true);}
 }
 addEventListener('hashchange',navigate);
-$('#desk-nav').addEventListener('click',event=>{if(event.target.closest('a'))requestAnimationFrame(()=>{const panel=$('#research-panel');panel.focus({preventScroll:true});if(panel.getBoundingClientRect().top<0)panel.scrollIntoView({block:'start'});});});
+enableRouteNavigation(navigate);
 store.initialize().catch(()=>toast('Your local workspace could not open. Public research tools remain available.'));
 initializeFinancials();renderPortfolio();renderAlerts();renderAssistant();navigate();
