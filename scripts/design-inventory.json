@@ -393,5 +393,10 @@
     "page": "waitlist.html",
     "layout": "utility",
     "section": "FINANCE WORLD"
+  },
+  {
+    "page": "tools/research-desk.html",
+    "layout": "standalone",
+    "section": "TOOLS"
   }
 ]
