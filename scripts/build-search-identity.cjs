@@ -3,7 +3,7 @@ const path = require('node:path');
 const { JSDOM } = require('jsdom');
 const root = path.resolve(__dirname, '..');
 const base = 'https://www.fynxfinanceworld.com';
-const person = {'@type':'Person','@id':'https://elhamamini.cc/#person',name:'Elham Amini',url:'https://elhamamini.cc/',jobTitle:'Founder of FYNX',sameAs:['https://www.linkedin.com/in/elham-amini-745560302/','https://www.instagram.com/___elham_amini___/'],worksFor:{'@id':base+'/#organization'}};
+const person = {'@type':'Person','@id':'https://ea-la.github.io/#person',name:'Elham Amini',url:'https://ea-la.github.io/',jobTitle:'Founder of FYNX',sameAs:['https://www.linkedin.com/in/elham-amini-745560302/','https://www.instagram.com/___elham_amini___/'],worksFor:{'@id':base+'/#organization'}};
 const organization = {'@type':'Organization','@id':base+'/#organization',name:'FYNX',alternateName:'FYNX Finance World',url:base+'/',founder:{'@id':person['@id']},sameAs:['https://www.fynxfunded.com/','https://site.fynxfinanceworld.com/','https://blog.fynxfinanceworld.com/','https://roadmap.fynxfinanceworld.com/']};
 const urls = [...fs.readFileSync(path.join(root,'sitemap.xml'),'utf8').matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
 for (const url of urls) {
