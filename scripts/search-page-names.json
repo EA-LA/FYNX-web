@@ -222,5 +222,29 @@
   "tools/symbol-news.html": {
     "title": "Symbol News Search: Stocks, Forex & Crypto Headlines | FYNX",
     "description": "Search financial headlines for a ticker or market symbol. Review the source and publication time, then open the original report for context."
+  },
+  "api/index.html": {
+    "title": "FYNX API: Forex Risk Calculations & Prop Firm Rules | FYNX",
+    "description": "Build with FYNX forex risk calculations and prop firm rule evaluation. Explore documented request inputs, API access, pricing and developer resources."
+  },
+  "api/risk.html": {
+    "title": "Forex Risk Calculation API for Trading Applications | FYNX",
+    "description": "Integrate caller-supplied forex risk calculations into trading software. Explore FYNX Risk API inputs, supported calculations and integration limits."
+  },
+  "api/prop-firm.html": {
+    "title": "Prop Firm Rules & Evaluation API | FYNX",
+    "description": "Evaluate USD prop firm phases using explicit rules, account events and limits. Explore FYNX API eligibility checks, history and integration documentation."
+  },
+  "api/docs.html": {
+    "title": "FYNX API Documentation: Requests, Authentication & Examples | FYNX",
+    "description": "Read FYNX API authentication, request examples and endpoint documentation for forex risk calculations and prop firm rule evaluation."
+  },
+  "api/pricing.html": {
+    "title": "FYNX API Pricing & Usage Limits | FYNX",
+    "description": "Compare FYNX API access, monthly usage allowances and request limits for developers building trading and evaluation applications."
+  },
+  "api/access.html": {
+    "title": "Get FYNX API Access & Developer Credentials | FYNX",
+    "description": "Set up FYNX API access and review the developer workspace for forex calculations and prop firm evaluation integrations."
   }
 }

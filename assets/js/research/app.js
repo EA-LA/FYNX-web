@@ -7,8 +7,9 @@ import './strategy.js';
 import {renderPortfolio,refreshPortfolio,renderAlerts,checkAlerts} from './personal.js';
 const names=['financials','screener','heatmap','assistant','strategy','portfolio','alerts'];let active=null;
 function navigate(){
-  const name=names.includes(location.hash.slice(1))?location.hash.slice(1):'financials';
-  if(location.hash==='#sources')return;
+  const fallback=names.includes(document.body.dataset.researchPanel)?document.body.dataset.researchPanel:'financials';
+  const name=names.includes(location.hash.slice(1))?location.hash.slice(1):fallback;
+  if(location.hash==='#sources'&&active)return;
   for(const panel of document.querySelectorAll('.desk-panel'))panel.hidden=panel.id!=='panel-'+name;
   for(const link of document.querySelectorAll('#desk-nav a')){if(link.dataset.panel===name)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');}
   const changed=active!==name;active=name;

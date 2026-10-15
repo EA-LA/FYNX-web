@@ -14,9 +14,37 @@
     "topic": ""
   },
   {
+    "url": "/tools/price-alerts.html",
+    "title": "Browser Price Alerts & Percentage Crossing Alerts",
+    "description": "Set one-time price or percentage crossing alerts for your watchlist while the FYNX page is open and visible. Review timestamps and browser notification options.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
     "url": "/tools/interest-rates.html",
     "title": "Central Bank Policy Rate Comparison",
     "description": "Compare published central bank policy-rate observations from the Bank for International Settlements, with dates and source context.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/company-financials.html",
+    "title": "Company Financial Statements & SEC Research",
+    "description": "Read annual company revenue, net income and cash flow from SEC EDGAR filings. Compare up to ten annual periods with links to the original filings.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/financial-research-assistant.html",
+    "title": "Company Research Assistant & Sourced Financial Briefs",
+    "description": "Create a sourced company research brief from SEC financial facts, with optional on-device AI when supported by your browser.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/company-screener.html",
+    "title": "Company Screener: Revenue, Profit & Cash Flow",
+    "description": "Filter up to 30 companies you select by annual revenue, net margin, positive net income and operating cash flow using SEC company facts.",
     "category": "Tools",
     "topic": ""
   },
@@ -148,6 +176,20 @@
     "topic": ""
   },
   {
+    "url": "/tools/portfolio-tracker.html",
+    "title": "Manual Portfolio Tracker & Position Valuation",
+    "description": "Track manually entered USD positions and cash with public indicative prices. Portfolio records are stored in your browser, with import and export controls.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/research-heatmap.html",
+    "title": "Market Heatmap: Stocks, ETFs, Crypto & Forex",
+    "description": "Compare percentage changes across stocks, ETFs, crypto, forex and your watchlist with equal-size tiles and timestamps for each public quote.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
     "url": "/tools/market-holidays.html",
     "title": "Market Holiday Planning Reference",
     "description": "Review a partial market holiday planning reference for 2025–2028. Confirm closures and early closing times with the relevant exchange.",
@@ -158,6 +200,13 @@
     "url": "/tools/correlation.html",
     "title": "Market Returns Correlation Calculator",
     "description": "Calculate the correlation between two return series to compare market behavior and potential overlapping exposure.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/strategy-backtester.html",
+    "title": "Moving Average Strategy Backtester",
+    "description": "Backtest a long-only moving average crossover with historical daily prices or your CSV. Set commission, slippage and fast and slow moving averages.",
     "category": "Tools",
     "topic": ""
   },
@@ -940,44 +989,44 @@
     "topic": ""
   },
   {
+    "url": "/api/risk.html",
+    "title": "Forex Risk Calculation API for Trading Applications",
+    "description": "Integrate caller-supplied forex risk calculations into trading software. Explore FYNX Risk API inputs, supported calculations and integration limits.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
     "url": "/api/docs.html",
-    "title": "API documentation preview",
-    "description": "Public quickstart, authentication design, draft endpoint reference and curl, Python and JavaScript examples.",
+    "title": "FYNX API Documentation: Requests, Authentication & Examples",
+    "description": "Read FYNX API authentication, request examples and endpoint documentation for forex risk calculations and prop firm rule evaluation.",
     "category": "Developers",
     "topic": ""
   },
   {
     "url": "/api/pricing.html",
-    "title": "API pricing and launch plans",
-    "description": "Compare the free API allowance and $49 monthly Pro subscription, with clear usage limits and no automatic overages.",
-    "category": "Developers",
-    "topic": ""
-  },
-  {
-    "url": "/api/access.html",
-    "title": "Get API access",
-    "description": "Create a free FYNX API workspace, verify your email and create a test key. Existing FYNX accounts can sign in.",
-    "category": "Developers",
-    "topic": ""
-  },
-  {
-    "url": "/api/prop-firm.html",
-    "title": "Prop Firm Rules API",
-    "description": "Preview account monitoring, drawdown rules, evaluation eligibility and event audit history.",
-    "category": "Developers",
-    "topic": ""
-  },
-  {
-    "url": "/api/risk.html",
-    "title": "Risk API",
-    "description": "Explore six planned risk calculations with transparent inputs, decimal values and worked examples.",
+    "title": "FYNX API Pricing & Usage Limits",
+    "description": "Compare FYNX API access, monthly usage allowances and request limits for developers building trading and evaluation applications.",
     "category": "Developers",
     "topic": ""
   },
   {
     "url": "/api/",
-    "title": "Trading infrastructure for developers",
-    "description": "Explore the FYNX Risk API and Prop Firm Rules API beta. Public documentation, integration examples and a free developer workspace.",
+    "title": "FYNX API: Forex Risk Calculations & Prop Firm Rules",
+    "description": "Build with FYNX forex risk calculations and prop firm rule evaluation. Explore documented request inputs, API access, pricing and developer resources.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
+    "url": "/api/access.html",
+    "title": "Get FYNX API Access & Developer Credentials",
+    "description": "Set up FYNX API access and review the developer workspace for forex calculations and prop firm evaluation integrations.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
+    "url": "/api/prop-firm.html",
+    "title": "Prop Firm Rules & Evaluation API",
+    "description": "Evaluate USD prop firm phases using explicit rules, account events and limits. Explore FYNX API eligibility checks, history and integration documentation.",
     "category": "Developers",
     "topic": ""
   },

@@ -18,7 +18,7 @@ export function renderAssistant(){
   }else $('#assistant-answer').innerHTML=`<p class="eyebrow">RESEARCH CONCEPT</p><h3>${explain[topic].title}</h3><p>${explain[topic].body}</p><p><a href="https://www.sec.gov/about/reports-publications/investorpubsbegfinstmtguide" target="_blank" rel="noopener">SEC guide to financial statements ↗</a>${currentReport?' · '+sources(currentReport):''}</p>`;
 }
 function destroyModel(){++aiGeneration;requestAbort?.abort();modelAbort?.abort();try{model?.destroy();}catch{}model=null;$('#ai-form').hidden=true;$('#cancel-ai').hidden=true;$('#ai-answer').textContent='';}
-addEventListener('research-company',()=>{destroyModel();renderAssistant();if(location.hash==='#assistant')checkAI();});
+addEventListener('research-company',()=>{destroyModel();renderAssistant();if(!document.getElementById('panel-assistant').hidden)checkAI();});
 $('#assistant-prompts').addEventListener('click',event=>{const t=event.target.closest('[data-topic]')?.dataset.topic;if(t){topic=t;renderAssistant();}});
 export async function checkAI(){
   const status=$('#ai-status'),button=$('#enable-ai');button.hidden=true;

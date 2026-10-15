@@ -3,7 +3,11 @@
   <url><loc>https://www.fynxfinanceworld.com/</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/atr-stop.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/basic-calculator.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/price-alerts.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/interest-rates.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/company-financials.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/financial-research-assistant.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/company-screener.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/compound.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/heatmap.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/crypto.html</loc></url>
@@ -22,8 +26,11 @@
   <url><loc>https://www.fynxfinanceworld.com/tools/trading-journal.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/economic-indicators-heatmap.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/liquidation-guard.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/portfolio-tracker.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/research-heatmap.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/market-holidays.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/correlation.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/tools/strategy-backtester.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/options.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/pivot.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/portfolio-stress-test.html</loc></url>
@@ -134,12 +141,12 @@
   <url><loc>https://www.fynxfinanceworld.com/home/hub.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/news/heatmap.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/news/challenges.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/api/risk.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/api/docs.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/api/pricing.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/api/</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/api/access.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/api/prop-firm.html</loc></url>
-  <url><loc>https://www.fynxfinanceworld.com/api/risk.html</loc></url>
-  <url><loc>https://www.fynxfinanceworld.com/api/</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/about.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/affiliate-disclosure.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/contact.html</loc></url>
