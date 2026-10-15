@@ -28,6 +28,8 @@ for (const { page, layout } of inventory) {
 }
 console.log(`Shared design verified on all ${inventory.length} HTML pages.`);
 
+// Keep browser and server research calculations identical.
+fs.copyFileSync(path.join(root, 'backend/research-core.cjs'), path.join(root, 'assets/js/research/core.js'));
 require('./build-search-metadata.cjs');
 require('./build-learning.cjs');
 require('./build-discovery.cjs');

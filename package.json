@@ -6,7 +6,9 @@
     "test:proof": "node scripts/proof/calculator-parity.cjs && node scripts/proof/calculator-validation.cjs && node scripts/proof/funded-scenarios.cjs && node scripts/proof/pilot-access.cjs && node scripts/proof/pilot-calculators.cjs && node scripts/proof/pilot-controller.cjs",
     "vercel-build": "npm run build && node scripts/package-static.cjs",
     "test:discovery": "node scripts/verify-discovery.cjs && node scripts/verify-search.cjs && node scripts/test-fibonacci.cjs",
-    "test:tools": "node scripts/verify-tool-coverage.cjs && node scripts/test-basic-calculator.cjs && node scripts/test-pro-routing.cjs"
+    "test:tools": "node scripts/verify-tool-coverage.cjs && node scripts/test-basic-calculator.cjs && node scripts/test-pro-routing.cjs",
+    "test:research": "node --test backend/research.test.cjs",
+    "dev:research": "node scripts/research-dev-server.cjs"
   },
   "devDependencies": {
     "jsdom": "^20.0.3"
