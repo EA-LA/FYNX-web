@@ -50,6 +50,11 @@
     "section": "FINANCE WORLD"
   },
   {
+    "page": "about.html",
+    "layout": "standalone",
+    "section": "FINANCE WORLD"
+  },
+  {
     "page": "founder.html",
     "layout": "standalone",
     "section": "FINANCE WORLD"
