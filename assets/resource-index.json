@@ -982,6 +982,13 @@
     "topic": ""
   },
   {
+    "url": "/about.html",
+    "title": "About FYNX — Our Story, Mission & Roadmap",
+    "description": "FYNX started with a purpose: help retail traders. Explore our story, the tools and products we are building, and the long-term plan for the FYNX ecosystem.",
+    "category": "Resources",
+    "topic": ""
+  },
+  {
     "url": "/affiliate-disclosure.html",
     "title": "Affiliate Disclosure",
     "description": "Affiliate disclosure for FYNX Finance World including commissions, sponsored placements, and partner relationship transparency.",
@@ -997,8 +1004,8 @@
   },
   {
     "url": "/founder.html",
-    "title": "Elham Amini — Founder of FYNX",
-    "description": "Learn about Elham Amini, founder of FYNX, and the mission behind building a modern financial ecosystem for traders, tools, education, and future financial infrastructure.",
+    "title": "Elham Amini — The Founder Behind FYNX",
+    "description": "Meet Elham Amini, founder of FYNX. The story, motivation, and long-term thinking behind a financial ecosystem created to help retail traders.",
     "category": "Resources",
     "topic": ""
   },
