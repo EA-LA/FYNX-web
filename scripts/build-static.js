@@ -37,3 +37,4 @@ require('./build-discovery.cjs');
 require('./build-search-identity.cjs');
 
 require('./build-advertising.cjs');
+require('./build-adsense-verification.cjs').build();
