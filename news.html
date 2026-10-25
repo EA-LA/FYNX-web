@@ -9,151 +9,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/app-shell.css" />
   <link rel="stylesheet" href="assets/css/mobile-fixes.css" />
-  <script>
-    (function(){
-      const t = window.FynxPreferences?.getItem('fynx_theme') === 'light' ? 'light' : 'dark';
-      document.documentElement.dataset.theme = t;
-      document.documentElement.style.backgroundColor = t === 'light' ? '#fbfbfb' : '#000';
-      if (t === 'dark') document.documentElement.classList.add('dark-mode');
-    })();
-  </script>
-  <style>
-    :root{
-      --bg:#000000;
-      --surface:#000000;
-      --surface-2:rgba(255, 255, 255, 0.04);
-      --text:#ffffff;
-      --muted:rgba(255, 255, 255, 0.62);
-      --line:rgba(255, 255, 255, 0.10);
-      --chip:rgba(255, 255, 255, 0.06);
-      --chip-line:rgba(255, 255, 255, 0.10);
-      --hero-dot: rgba(255, 255, 255, 0.08);
-      --radius:14px;
-    }
-    body.light-mode{
-      --bg:#ffffff;
-      --surface:#ffffff;
-      --surface-2:#f7f7f7;
-      --text:#0f0f0f;
-      --muted:#727272;
-      --line:#e7e7e7;
-      --chip:#f4f4f4;
-      --chip-line:#e7e7e7;
-      --hero-dot: rgba(0, 0, 0, 0.06);
-    }
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{
-      font-family:"Manrope", system-ui, -apple-system, Segoe UI, sans-serif;
-      background:
-        radial-gradient(circle at 1px 1px, var(--hero-dot) 1px, transparent 1px) 0 0 / 18px 18px,
-        linear-gradient(var(--bg), var(--bg));
-      color:var(--text);
-      min-height:100vh;
-    }
-    .news-wrap{
-      display:grid;
-      gap:0;
-      align-content:start;
-      max-width:1280px;
-      width:100%;
-      margin:0 auto;
-    }
-    .news-mode-toggle{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      padding:4px;
-      border:1px solid var(--chip-line);
-      border-radius:999px;
-      background:var(--chip);
-      margin-bottom:14px;
-      overflow-x:auto;
-      width:fit-content;
-      max-width:100%;
-    }
-    .news-mode-btn{
-      border:1px solid transparent;
-      background:transparent;
-      color:var(--muted);
-      border-radius:999px;
-      font-size:12px;
-      font-weight:700;
-      padding:8px 14px;
-      cursor:pointer;
-      transition:.18s ease;
-      font-family:inherit;
-      white-space:nowrap;
-    }
-    .news-mode-btn.active{
-      background:color-mix(in oklab, var(--surface) 96%, transparent);
-      color:var(--text);
-      border-color:var(--line);
-    }
-    .mode-content{ display:none; }
-    .mode-content.active{ display:block; }
-    .module-grid{
-      display:grid;
-      grid-template-columns:repeat(2, minmax(0, 1fr));
-      gap:16px;
-      align-items:start;
-    }
-    .module-grid.triple{ grid-template-columns:repeat(3, minmax(0, 1fr)); }
-    .module-grid.single{ grid-template-columns:minmax(0, 1fr); }
-    .module-card{
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      background:color-mix(in oklab, var(--surface) 92%, transparent);
-      box-shadow:0 10px 30px rgba(23, 23, 23, 0.08);
-      backdrop-filter:blur(10px);
-      padding:12px;
-      display:grid;
-      gap:12px;
-    }
-    .module-title{
-      font-size:13px;
-      font-weight:800;
-      color:var(--muted);
-      letter-spacing:0.2px;
-      padding:2px 2px 0;
-    }
-    .module-frame{
-      width:100%;
-      border:none;
-      border-radius:12px;
-      background:var(--surface);
-      min-height:500px;
-    }
-    .module-frame.news-feed{
-      min-height:calc(100vh - 220px);
-    }
-    .mode-content[data-news-panel="macro"] .module-frame,
-    .mode-content[data-news-panel="positioning"] .module-frame{
-      min-height:560px;
-    }
-    .mode-content[data-news-panel="markets"] .module-frame,
-    .mode-content[data-news-panel="analysis"] .module-frame{
-      min-height:460px;
-    }
-    .mode-content[data-news-panel="analysis"] .module-grid,
-    .mode-content[data-news-panel="markets"] .module-grid{
-      grid-template-columns:repeat(3, minmax(0, 1fr));
-    }
-    @media (max-width:1080px){
-      .module-grid,
-      .mode-content[data-news-panel="analysis"] .module-grid,
-      .mode-content[data-news-panel="markets"] .module-grid{ grid-template-columns:minmax(0, 1fr); }
-      .module-frame.news-feed{ min-height:calc(100vh - 260px); }
-      .module-frame{ min-height:520px; }
-    }
-  </style>
   <script type="module" src="assets/js/session-bootstrap.js?v=20260928-audit2"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
-  <script src="/assets/js/module-loader.js?v=20260922-routing" defer></script>
+  <script src="/assets/js/module-loader.js?v=20261025-news" defer></script>
 <title>Financial News Hub: Headlines, Heatmaps &amp; Sentiment | FYNX</title>
 <meta name="description" content="Find financial headlines, market heatmaps, sentiment resources and trading practice challenges in the FYNX news hub.">
 <meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="stylesheet" href="/assets/css/news-intelligence.css?v=20261025">
+<link rel="stylesheet" href="/assets/css/news-membership.css?v=20261025">
+<script src="/assets/js/market-intelligence-data.js?v=20261025" defer></script>
+<script src="/assets/js/news-membership.js?v=20261025" defer></script>
+<script src="/assets/js/news-intelligence.js?v=20261025" defer></script>
 <link rel="canonical" href="https://www.fynxfinanceworld.com/news.html">
 <meta property="og:title" content="Financial News Hub: Headlines, Heatmaps &amp; Sentiment | FYNX">
 <meta property="og:description" content="Find financial headlines, market heatmaps, sentiment resources and trading practice challenges in the FYNX news hub.">
@@ -181,7 +49,7 @@
         <h1 class="page-title">News</h1>
       </div>
 
-      <section class="content-area news-wrap">
+      <section class="content-area news-wrap fn-news-page">
 <!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=News%20%26%20events">News &amp; events</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
 <div class="news-mode-toggle" role="tablist" aria-label="News modules">
           <button class="news-mode-btn active" type="button" role="tab" aria-selected="true" data-news-tab="feed">News Feed</button>
@@ -192,11 +60,35 @@
         </div>
 
         <div class="mode-content active" data-news-panel="feed">
-          <div class="module-grid single">
-            <article class="module-card">
-              <iframe class="module-frame news-feed" title="News Feed" data-src="news/news.html" loading="lazy"></iframe>
-            </article>
-          </div>
+<!-- news-intelligence:start -->
+<div class="fn-app" data-news-intelligence>
+  <header class="fn-heading">
+    <div><p class="fn-kicker">FYNX INTELLIGENCE <span>Free to explore</span></p><h2>A wider view.<br>A clearer next move.</h2><p class="fn-intro">Follow the story, check the original source, and build your own perspective.</p></div>
+    <div class="fn-heading-note"><span class="fn-status-dot"></span><span>Headlines. Policy. Perspective.<small>Original sources, clearly attributed.</small></span></div>
+  </header>
+  <nav class="fn-jump" aria-label="Inside News"><a href="#headlines">Headlines</a><a href="#watch-listen">Watch &amp; listen</a><a href="#official-sources">Official sources</a><div class="fn-jump-tools"><a href="/news/heatmap.html">Heat Map ↗</a><a href="/news/sentiment.html">Sentiment ↗</a><a href="/news/challenges.html">Challenges ↗</a></div></nav>
+  <section id="headlines" class="fn-section" aria-labelledby="fn-headline-title">
+    <div class="fn-section-heading"><div><p class="fn-kicker">THE MARKET BRIEFING</p><h2 id="fn-headline-title">What’s moving the conversation.</h2></div><button type="button" class="fn-refresh" data-news-refresh aria-label="Refresh headlines">↻ <span>Refresh</span></button></div>
+    <div class="fn-filter-bar"><div class="fn-categories" role="group" aria-label="Headline category"><button type="button" data-news-category="all" aria-pressed="true">All markets</button><button type="button" data-news-category="forex" aria-pressed="false">Forex</button><button type="button" data-news-category="crypto" aria-pressed="false">Crypto</button><button type="button" data-news-category="stocks" aria-pressed="false">Stocks</button><button type="button" data-news-category="macro" aria-pressed="false">Macro</button><button type="button" data-news-category="commodities" aria-pressed="false">Commodities</button><button type="button" data-news-category="world" aria-pressed="false">World</button></div><label class="fn-search"><span aria-hidden="true">⌕</span><input type="search" data-news-search placeholder="Search this briefing" aria-label="Search headlines"></label></div>
+    <div class="fn-feed-meta"><p data-news-status role="status" aria-live="polite">Checking the latest coverage…</p><span data-news-count></span></div>
+    <div class="fn-news-layout"><div><div data-news-stories class="fn-stories" aria-busy="true"><div class="fn-loading"><span class="fn-loading-line"></span><span class="fn-loading-line"></span><span class="fn-loading-line"></span><p>Headlines are on their way. Explore the source libraries below while we check.</p></div></div><button type="button" class="fn-more" data-news-more hidden>Show more headlines</button><p class="fn-source-note">Headline links open the publisher or its original aggregation link. Publication dates and retrieval times are different; saved coverage is labelled.</p></div>
+      <aside class="fn-sidebar" aria-label="Research next steps"><section class="fn-pro-card"><span class="fn-pro-label">FYNX PRO</span><h3>Make your next idea<br>worth coming back to.</h3><p>Keep the source, your notes and the tickers that matter together in a research watchlist.</p><ul><li>Save a source with your own thesis</li><li>Return to your research across devices</li><li>Connect research with Journal and risk tools</li></ul><button type="button" data-news-plan>Explore Pro plans <span aria-hidden="true">↗</span></button><small>Public news and publisher libraries stay free. Publisher subscriptions are separate.</small></section><section class="fn-research-links"><p class="fn-kicker">PUT IT IN CONTEXT</p><a href="/tools/research-desk.html"><span>Research desk<small>Charts, financials &amp; asset context</small></span><b aria-hidden="true">↗</b></a><a href="/calendar.html"><span>Economic calendar<small>Prepare for scheduled releases</small></span><b aria-hidden="true">↗</b></a><a href="/pro.html?tool=watchlist#workbench"><span>Saved research <em>PRO</em><small>Your watchlists, sources &amp; notes</small></span><b aria-hidden="true">↗</b></a><a href="/pro.html?tool=analytics#workbench"><span>Journal intelligence <em>PRO</em><small>Learn from your own trading history</small></span><b aria-hidden="true">↗</b></a><a href="/pro.html?tool=portfolio#workbench"><span>Portfolio stress test <em>PLUS</em><small>Explore the effect of a scenario</small></span><b aria-hidden="true">↗</b></a></section></aside>
+    </div>
+  </section>
+  <section id="watch-listen" class="fn-section fn-media" aria-labelledby="fn-media-title"><div class="fn-section-heading"><div><p class="fn-kicker">FYNX TV &amp; AUDIO</p><h2 id="fn-media-title">The voices behind the markets.</h2><p>Interviews, broadcasts and podcasts from established publishers.</p></div><span class="fn-access-label">No FYNX membership required</span></div>
+    <div class="fn-media-toolbar"><div class="fn-media-categories" role="group" aria-label="Media type"><button type="button" data-media-category="videos" aria-pressed="true">▷ Videos</button><button type="button" data-media-category="live" aria-pressed="false">◉ Live coverage</button><button type="button" data-media-category="podcasts" aria-pressed="false">♫ Podcasts</button></div><div class="fn-selects"><label>Publisher<select data-media-publisher aria-label="Filter media by publisher"><option value="all">All publishers</option></select></label><label>Topic<select data-media-topic aria-label="Filter media by topic"><option value="all">All topics</option></select></label></div></div>
+    <div data-media-grid class="fn-media-grid"><div class="fn-empty"><h3>Explore the original publishers.</h3><p><a href="https://www.cnbc.com/latest-video/" target="_blank" rel="noopener noreferrer">CNBC videos ↗</a> · <a href="https://www.bloomberg.com/live" target="_blank" rel="noopener noreferrer">Bloomberg broadcasts ↗</a> · <a href="https://www.ft.com/podcasts" target="_blank" rel="noopener noreferrer">Financial Times podcasts ↗</a></p><p>Publisher access terms apply.</p></div></div><p class="fn-source-note" data-media-note>Open official libraries and players at the source. Some publishers require their own subscription. Broadcast availability and schedules are set by the publisher.</p>
+    <noscript><p>Browse <a href="https://www.cnbc.com/latest-video/">CNBC videos</a>, <a href="https://www.bloomberg.com/live">Bloomberg broadcasts</a> and <a href="https://www.bloomberg.com/podcasts">Bloomberg podcasts</a> directly.</p></noscript>
+  </section>
+  <section id="official-sources" class="fn-section" aria-labelledby="fn-sources-title"><div class="fn-section-heading"><div><p class="fn-kicker">GO TO THE ORIGINAL SOURCE</p><h2 id="fn-sources-title">Policy moves. Context matters.</h2><p>Official institutions, release calendars and dated economic announcements.</p></div><a class="fn-text-link" href="/calendar.html">Open economic calendar ↗</a></div>
+    <div class="fn-official-layout"><div class="fn-world-panel"><div class="fn-region-controls" role="group" aria-label="Institution region"><button type="button" data-region="all" aria-pressed="true">All sources</button><button type="button" data-region="us" aria-pressed="false">United States</button><button type="button" data-region="europe" aria-pressed="false">Europe</button><button type="button" data-region="japan" aria-pressed="false">Japan</button></div><div class="fn-map" aria-label="Official institutions grouped by source region"><div class="fn-map-grid"></div><span class="fn-map-continent fn-map-americas">AMERICAS</span><span class="fn-map-continent fn-map-europe">EUROPE</span><span class="fn-map-continent fn-map-asia">ASIA</span><button type="button" class="fn-map-pin fn-pin-us" data-region="us" aria-label="Explore three United States institutions"><b>3</b><span>Washington area</span></button><button type="button" class="fn-map-pin fn-pin-europe" data-region="europe" aria-label="Explore two European institutions"><b>2</b><span>London · Frankfurt</span></button><button type="button" class="fn-map-pin fn-pin-japan" data-region="japan" aria-label="Explore Bank of Japan"><b>1</b><span>Tokyo</span></button></div><p class="fn-source-note">A regional source guide. Locations represent institutions, not breaking-news events or trade signals.</p></div><div data-institution-list class="fn-institutions"><a href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm" target="_blank" rel="noopener noreferrer">Federal Reserve policy calendar ↗</a><a href="https://www.ecb.europa.eu/press/html/index.en.html" target="_blank" rel="noopener noreferrer">European Central Bank releases ↗</a><a href="https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm" target="_blank" rel="noopener noreferrer">Bank of Japan policy calendar ↗</a></div></div>
+    <div class="fn-release-heading"><h3>Latest official releases</h3><button type="button" class="fn-refresh" data-release-refresh aria-label="Refresh official releases">↻ Refresh</button></div><p data-release-status class="fn-feed-meta" role="status">Checking Federal Reserve, BEA and ECB releases…</p><div data-release-list class="fn-release-list"></div><p class="fn-source-note">Original release titles and dates, with a link to the institution’s full publication. These sources remain free to access.</p>
+  </section>
+  <section class="fn-next"><div><p class="fn-kicker">FROM READING TO RESEARCH</p><h2>Bring your own perspective.</h2><p>Save an idea, write down what could change it, and return with a clearer plan.</p></div><button type="button" data-news-plan>Discover FYNX Pro ↗</button></section>
+  <div data-news-announcement class="fn-announcement" role="status" aria-live="polite"></div>
+</div>
+
+<!-- news-intelligence:end -->
         </div>
 
         <div class="mode-content" data-news-panel="macro" aria-hidden="true">
@@ -278,8 +170,7 @@
   </div>
 
   <script>
-    const THEME_KEY = 'fynx_theme';
-    const isLightTheme = window.FynxPreferences?.getItem(THEME_KEY) === 'light';
+    const isLightTheme = document.documentElement.dataset.theme !== 'dark';
     document.body.classList.toggle('light-mode', isLightTheme);
     document.body.classList.toggle('dark-mode', !isLightTheme);
 

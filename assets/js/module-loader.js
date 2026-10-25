@@ -6,7 +6,8 @@
     if (restoring) return;
     const url = new URL(location.href);
     url.searchParams.set('section', panel.dataset.newsPanel || panel.dataset.calendarPanel || '');
-    url.searchParams.set('tool', new URL(frame.dataset.src || frame.getAttribute('src'), location.href).pathname);
+    if(frame) url.searchParams.set('tool', new URL(frame.dataset.src || frame.getAttribute('src'), location.href).pathname);
+    else url.searchParams.delete('tool');
     if(url.href !== location.href) history.pushState(null, '', url);
   }
   function prepare(panel) {
@@ -83,7 +84,7 @@
   }
   document.querySelectorAll('[data-news-tab],[data-calendar-tab]').forEach(tab=>tab.addEventListener('click',()=>{
     loadActive(); const panel=panels.find(p=>p.classList.contains('active'));
-    if(panel?._selected)routeFor(panel,panel._selected);
+    if(panel && (panel._selected || panel.querySelector('[data-news-intelligence]')))routeFor(panel,panel._selected);
   }));
   window.addEventListener('popstate',restoreRoute);
   restoreRoute();

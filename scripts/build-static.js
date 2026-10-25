@@ -33,6 +33,7 @@ fs.copyFileSync(path.join(root, 'backend/research-core.cjs'), path.join(root, 'a
 require('./build-search-metadata.cjs');
 require('./build-learning.cjs');
 require('./build-research-pages.cjs');
+require('./build-news-intelligence.cjs');
 require('./build-discovery.cjs');
 require('./build-search-identity.cjs');
 

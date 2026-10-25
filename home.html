@@ -939,6 +939,7 @@
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/site-design.css?v=20260922-workspace">
+  <link rel="stylesheet" href="/assets/css/home-finance-voices.css?v=20261024">
 <meta name="description" content="Explore the FYNX market overview with trading tools, financial news and links to finance learning resources.">
 <link rel="canonical" href="https://www.fynxfinanceworld.com/home.html">
 <meta property="og:title" content="Market Overview: Trading Tools, News &amp; Learning | FYNX">
@@ -1143,27 +1144,43 @@
                 </div>
               </div>
 
-              <!-- ✅ NEW: X Finance Feed (updates every 5 min, links clickable) -->
-              <div class="news-wrap" aria-label="X finance feed" style="margin-top:12px;">
+              <!-- Reliable source access replaces the unavailable third-party X timeline. -->
+              <div class="news-wrap" id="financeVoices" aria-label="Finance voices and X sources" style="margin-top:12px;">
                 <div class="news-head">
                   <div class="label">
-                    <strong>X Finance Feed</strong>
-                    <span class="live-pill">External feed</span>
+                    <strong>Finance voices</strong>
+                    <span class="live-pill">Official sources</span>
                   </div>
-
-                  <!-- ✅ Refresh button + Updated label -->
                   <div class="news-actions">
-                    <div class="news-sub" id="xUpdated">Updating…</div>
-                    <button class="icon-btn news-refresh-btn" id="xRefreshBtn" title="Refresh X feed" aria-label="Refresh X feed">
-                      <svg viewBox="0 0 24 24">
-                        <path d="M21 12a9 9 0 1 1-3-6.7"></path>
-                        <polyline points="21 3 21 9 15 9"></polyline>
-                      </svg>
-                    </button>
+                    <div class="news-sub" id="xUpdated">3 sources · direct access</div>
+                    <a class="icon-btn news-refresh-btn" href="news.html" title="Explore the News desk" aria-label="Explore the News desk">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"></path></svg>
+                    </a>
                   </div>
                 </div>
-                <div class="news-list" id="xList">
-                  <div class="news-empty">Loading X posts…</div>
+                <div class="news-list finance-voices-content" id="xList">
+                  <p class="finance-voices-intro">Follow the people covering your markets. Read their coverage or continue to their profiles on X.</p>
+                  <div class="finance-voices-grid">
+                    <article class="finance-voice">
+                      <span class="finance-voice-topic">Macro &amp; economic news</span>
+                      <h3>FinancialJuice</h3>
+                      <p>Rates, economic releases and market-moving headlines.</p>
+                      <div class="finance-voice-links"><a href="https://www.financialjuice.com/home" target="_blank" rel="noopener noreferrer">Read coverage <span aria-hidden="true">↗</span></a><a href="https://x.com/financialjuice" target="_blank" rel="noopener noreferrer" aria-label="Open FinancialJuice on X">Open on X <span aria-hidden="true">↗</span></a></div>
+                    </article>
+                    <article class="finance-voice">
+                      <span class="finance-voice-topic">Stocks &amp; options</span>
+                      <h3>Unusual Whales</h3>
+                      <p>Options-flow tools, stock-market data and commentary.</p>
+                      <div class="finance-voice-links"><a href="https://unusualwhales.com/" target="_blank" rel="noopener noreferrer">Explore source <span aria-hidden="true">↗</span></a><a href="https://x.com/unusual_whales" target="_blank" rel="noopener noreferrer" aria-label="Open Unusual Whales on X">Open on X <span aria-hidden="true">↗</span></a></div>
+                    </article>
+                    <article class="finance-voice">
+                      <span class="finance-voice-topic">Currencies &amp; global markets</span>
+                      <h3>investingLive <small>formerly ForexLive</small></h3>
+                      <p>Currency, macro and cross-market news from the ForexLive team.</p>
+                      <div class="finance-voice-links"><a href="https://investinglive.com/" target="_blank" rel="noopener noreferrer">Read coverage <span aria-hidden="true">↗</span></a><a href="https://x.com/ForexLive" target="_blank" rel="noopener noreferrer" aria-label="Open the ForexLive profile on X">Open on X <span aria-hidden="true">↗</span></a></div>
+                    </article>
+                  </div>
+                  <p class="finance-voices-note">These are source links, not a live post feed. X may require sign-in. Publisher subscriptions are separate from FYNX.</p>
                 </div>
               </div>
 
@@ -1616,17 +1633,15 @@
     }
 
     // =============================================================================
-    // ✅ LIVE NEWS (ALWAYS 15) + ✅ X FEED (ALWAYS 15)
+    // Market headlines refresh independently of the static finance-source directory.
     // ✅ FIX: never shows "in progress" / "loading..." as the only content
     // ✅ FIX: prefers TODAY first (fills remainder with most recent if today items < 15)
     // ✅ FIX: refresh buttons fetch immediately on click
     // =============================================================================
     const NEWS_REFRESH_MS = 5 * 60 * 1000;
     const NEWS_MAX_ITEMS = 15;
-    const X_MAX_ITEMS = 15;
 
     const CACHE_NEWS_KEY = "fynx_cache_market_news_v1";
-    const CACHE_X_KEY    = "fynx_cache_x_finance_v1";
 
     // Rotating finance-only Google News RSS queries (keeps it fresh)
     const NEWS_QUERIES = [
@@ -1642,13 +1657,6 @@
       return `https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en`;
     }
 
-    // X feed via RSSHub (public). If RSSHub ever goes down, cached content still shows.
-    const X_RSS_SOURCES = [
-      { label: "X", url: "https://rsshub.app/twitter/user/FinancialJuice" },
-      { label: "X", url: "https://rsshub.app/twitter/user/unusual_whales" },
-      { label: "X", url: "https://rsshub.app/twitter/user/ForexLive" }
-    ];
-
     // ✅ Always-present fallback lists (so UI never looks "in progress")
     const FALLBACK_NEWS = [
       { title:"Markets: Major headlines update throughout the day", link:"https://news.google.com/topstories?hl=en-US&gl=US&ceid=US:en", source:"News", pubDate: null, reference: true },
@@ -1657,12 +1665,6 @@
       { title:"Crypto: Bitcoin & risk assets headlines", link:"https://www.coindesk.com/", source:"CoinDesk", pubDate: null, reference: true },
       { title:"FX: Live forex headlines", link:"https://www.forexlive.com/", source:"ForexLive", pubDate: null, reference: true },
       { title:"Commodities: Oil and gold market updates", link:"https://www.investing.com/commodities/", source:"Investing", pubDate: null, reference: true }
-    ];
-
-    const FALLBACK_X = [
-      { title:"X Finance: Live posts update throughout the day", link:"https://x.com/search?q=finance%20breaking&src=typed_query", source:"X", pubDate: null, reference: true },
-      { title:"X: Market news stream", link:"https://x.com/search?q=FOMC%20OR%20CPI%20OR%20NFP&src=typed_query", source:"X", pubDate: null, reference: true },
-      { title:"X: Crypto + macro updates", link:"https://x.com/search?q=bitcoin%20macro&src=typed_query", source:"X", pubDate: null, reference: true }
     ];
 
     function fmtTimeAgo(date){
@@ -1804,16 +1806,6 @@
       }
     }
 
-    async function refreshXFeed(){
-      const list=document.getElementById('xList'), status=document.getElementById('xUpdated');
-      list.replaceChildren();status.textContent='Official X timeline · provider availability applies';
-      const link=document.createElement('a');link.className='twitter-timeline';link.href='https://twitter.com/financialjuice';link.dataset.height='460';link.dataset.theme=tvTheme();link.textContent='View FinancialJuice on X ↗';list.append(link);
-      const sources=document.createElement('div');sources.className='x-source-links';
-      for(const [name,url] of [['FinancialJuice','https://x.com/financialjuice'],['Unusual Whales','https://x.com/unusual_whales'],['ForexLive','https://x.com/ForexLive']]){const a=document.createElement('a');a.textContent=name+' ↗';a.href=url;a.target='_blank';a.rel='noopener noreferrer';sources.append(a);}list.append(sources);
-      if(window.twttr?.widgets)window.twttr.widgets.load(list);
-      else if(!document.getElementById('x-widgets')){const script=document.createElement('script');script.id='x-widgets';script.src='https://platform.twitter.com/widgets.js';script.async=true;script.onerror=()=>{status.textContent='X embed unavailable · open a source below';};document.head.append(script);}
-    }
-
     // =============================================================================
     // INIT + LIVE UPDATE
     // =============================================================================
@@ -1830,21 +1822,13 @@
       const cachedNews = cacheGet(CACHE_NEWS_KEY);
       renderNews("newsList", fillToCount(cachedNews || [], FALLBACK_NEWS, NEWS_MAX_ITEMS), "No finance headlines right now.");
 
-      const cachedX = cacheGet(CACHE_X_KEY);
-      renderNews("xList", fillToCount(cachedX || [], FALLBACK_X, X_MAX_ITEMS), "No X finance posts right now.");
-
       // Fetch fresh right away
       refreshMarketNews(true);
-      refreshXFeed(true);
 
       // ✅ Refresh buttons
       const newsBtn = document.getElementById("newsRefreshBtn");
       if (newsBtn){
         newsBtn.addEventListener("click", () => refreshMarketNews(true));
-      }
-      const xBtn = document.getElementById("xRefreshBtn");
-      if (xBtn){
-        xBtn.addEventListener("click", () => refreshXFeed(true));
       }
 
       // "alive" updates (clock/session)
@@ -1857,7 +1841,6 @@
       setInterval(() => {
         mountTickerTape();
         refreshMarketNews(false);
-        refreshXFeed(false);
       }, NEWS_REFRESH_MS);
 
       // if user toggles theme on another page and comes back, re-mount ticker on visibility

@@ -375,6 +375,25 @@
     place-items: center;
     cursor: pointer;
   }
+  /* The shared header uses flex; center the theme glyph within its own box. */
+  #header .nav-container > .fynx-network-theme{
+    display:inline-flex !important;
+    align-items:center;
+    justify-content:center;
+    padding:0 !important;
+    flex-shrink:0;
+    box-sizing:border-box;
+    line-height:1;
+  }
+  #header .nav-container > .fynx-network-theme > i{
+    display:block;
+    width:1em;
+    height:1em;
+    margin:0;
+    font-size:16px;
+    line-height:1;
+    text-align:center;
+  }
   .fynx-menu-btn{
     cursor: pointer;
   }

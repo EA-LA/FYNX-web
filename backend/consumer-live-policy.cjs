@@ -11,7 +11,8 @@ function planForSubscription(sub,uid,customer){
  const tier=sub.metadata.tier,item=sub.items?.data?.[0],invoice=sub.latest_invoice;
  if(sub.items?.data?.length!==1||item.quantity!==1||!priceMatches(item.price,tier))return null;
  // Read expanded invoice data from Stripe; browser return URLs never confer access.
- if(!invoice||typeof invoice!=='object'||invoice.livemode!==true||invoice.customer!==customer||invoice.status!=='paid'||invoice.paid!==true)return null;
+ // Basil removed the legacy paid boolean; paid status remains authoritative.
+ if(!invoice||typeof invoice!=='object'||invoice.livemode!==true||invoice.customer!==customer||invoice.status!=='paid'||(invoice.paid!==undefined&&invoice.paid!==true))return null;
  return tier;
 }
 module.exports={PRODUCT,PRICES,priceMatches,planForSubscription};

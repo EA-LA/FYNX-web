@@ -3,6 +3,7 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const {PLANS}=require('./consumer-core.cjs');
 const {PRODUCT,PRICES,priceMatches,planForSubscription}=require('./consumer-live-policy.cjs');
 function subscription(tier='starter'){return {customer:'cus_owner',status:'active',livemode:true,metadata:{product:PRODUCT,fynx_uid:'owner',tier},items:{data:[{quantity:1,price:{id:PRICES[tier],active:true,type:'recurring',livemode:true,currency:'usd',unit_amount:PLANS[tier].cents,recurring:{interval:'month',interval_count:1,usage_type:'licensed'}}}]},latest_invoice:{livemode:true,customer:'cus_owner',status:'paid',paid:true}};}
+test('Basil paid invoices grant each tier without the removed paid boolean',()=>{for(const tier of Object.keys(PRICES)){const s=subscription(tier);delete s.latest_invoice.paid;assert.equal(planForSubscription(s,'owner','cus_owner'),tier);s.latest_invoice.status='open';assert.equal(planForSubscription(s,'owner','cus_owner'),null);}});
 for(const tier of Object.keys(PRICES))test(tier+' grants the exact purchased live tier only after payment',()=>{assert.equal(planForSubscription(subscription(tier),'owner','cus_owner'),tier);});
 const cases={
  'test subscription':s=>s.livemode=false,

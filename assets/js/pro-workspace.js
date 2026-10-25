@@ -3,8 +3,11 @@ const $=id=>document.getElementById(id);
 const catalog=window.FynxProCatalog;
 const riskFields=[['balance','Account balance','10000'],['riskPct','Risk per trade (%)','1'],['entry','Entry price','100'],['stop','Stop price','98'],['target','Target price','104'],['multiplier','Contract multiplier','1'],['rate','Quote → account conversion rate','1']];
 const definitions={analytics:[],export:[],risk:riskFields,scenarios:riskFields,review:[['notes','Trade thesis and review','','textarea'],['plan','Entry plan defined',false,'checkbox'],['risk','Risk budget checked',false,'checkbox'],['event','Scheduled events checked',false,'checkbox'],['execution','Execution followed the plan',false,'checkbox'],['review','Outcome and lesson recorded',false,'checkbox']],watchlist:[['symbols','Symbols, separated by commas','AAPL, MSFT, BTCUSD','text'],['notes','Research notes','','textarea']],portfolio:[['balance','Account equity','10000'],['shock','Price shock (%)','-5'],['positions','Positions: SYMBOL, signed value in account currency (one per line)','AAPL, 6000\nMSFT, 4000\nSPY, -2000','textarea']],simulation:[['balance','Starting equity','10000'],['riskPct','Risk per trade (%)','1'],['winRate','Assumed win rate (%)','45'],['rewardRisk','Assumed reward/risk','2'],['trades','Trades per path (1–500)','100']]};
-let state={tier:null,plans:{}},selected='analytics',busy=false,user=null;
-const requestedTool=()=>{const key=new URLSearchParams(location.search).get('tool');return Object.hasOwn(catalog,key)?key:'analytics';};
+let state={tier:null,plans:{}},selected='analytics',busy=false,user=null,authEpoch=0;
+const checkoutToolKey='fynxProCheckoutTool';
+const checkoutOutcome=()=>new URLSearchParams(location.search).get('checkout');
+function rememberTool(){try{sessionStorage.setItem(checkoutToolKey,selected);}catch{}}
+const requestedTool=()=>{let key=new URLSearchParams(location.search).get('tool');if(['complete','cancelled'].includes(checkoutOutcome())){try{const saved=sessionStorage.getItem(checkoutToolKey);if(Object.hasOwn(catalog,saved))key=saved;}catch{}}return Object.hasOwn(catalog,key)?key:'analytics';};
 const returnPath=()=>'/pro.html?tool='+selected+'#workbench';
 const signInPath=()=>'/auth/login.html?returnTo='+encodeURIComponent(returnPath());
 const title=k=>k.replace(/([a-z])([A-Z])/g,'$1 $2').replace(/^./,c=>c.toUpperCase()).replace(/PL/g,'P/L');
@@ -12,7 +15,19 @@ const fmt=v=>typeof v==='number'?v.toLocaleString(undefined,{maximumFractionDigi
 function node(tag,text,className){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(className)e.className=className;return e;}
 function status(s){$('status').textContent=s;}
 function entitled(){return state.plans[state.tier]?.products.includes(selected);}
-function updateAccess(){const plan=state.plans[state.tier];$('membershipTitle').textContent=plan?plan.name+' membership':user?'Free account':'Free to explore';$('membershipText').textContent=plan?`${plan.products.length} advanced tools · ${plan.saved} saved workspaces. ${state.subscription?.cancelAtPeriodEnd?'Cancels at period end.':'Monthly subscription active.'}`:'Free dashboard, news, learning and standard tools. Pro remains optional.';$('manageBilling').hidden=!state.hasBillingAccount;$('signIn').textContent=user?'Profile':'Sign in';$('signIn').href=user?'/profile.html':signInPath();$('accessMessage').replaceChildren();if(!user){$('accessMessage').append(node('span','Browsing is free. '));const a=node('a','Sign in to save work or choose a membership.');a.href=signInPath();$('accessMessage').append(a);}else if(!entitled()){$('accessMessage').textContent=`${catalog[selected][1]} or higher unlocks this tool. Choose a monthly membership above.`;}else $('accessMessage').textContent='Included in your membership.';}
+function updateNewsDraftLink(){
+ $('newsDraftReturn')?.remove();
+ if(!authEpoch)return;
+ try{
+  const key='fynx.news.researchDraft.v1',draft=JSON.parse(sessionStorage.getItem(key));
+  if(!draft||!Number.isFinite(draft.createdAt)||draft.createdAt>Date.now()||Date.now()-draft.createdAt>7200000||!['/news.html','/news/news.html','/market-analysis.html'].includes(draft.returnPath))return;
+  if(draft.ownerUid&&draft.ownerUid!==user?.uid){sessionStorage.removeItem(key);return;}
+  if(!draft.ownerUid){if(!draft.claimOnSignIn)return;if(user){draft.ownerUid=user.uid;draft.claimOnSignIn=false;sessionStorage.setItem(key,JSON.stringify(draft));}}
+  const note=node('p','Your news research draft is kept in this tab for up to two hours. ');note.id='newsDraftReturn';
+  const link=node('a','Return to your research note');link.href=draft.returnPath+'?resumeResearch=1';note.append(link);$('accessMessage').after(note);
+ }catch{}
+}
+function updateAccess(){const plan=state.plans[state.tier];$('membershipTitle').textContent=plan?plan.name+' membership':state.billingUnavailable?'Membership unavailable':user?'Free account':'Free to explore';$('membershipText').textContent=plan?`${plan.products.length} advanced tools · ${plan.saved} saved workspaces. ${state.subscription?.cancelAtPeriodEnd?'Cancels at period end.':'Monthly subscription active.'}`:state.billingUnavailable?'We could not verify your membership. Refresh to try again; Manage subscription remains available for payment details and cancellation.':'Free dashboard, news, learning and standard tools. Pro remains optional.';$('manageBilling').hidden=!state.hasBillingAccount;$('signIn').textContent=user?'Profile':'Sign in';$('signIn').href=user?'/profile.html':signInPath();$('accessMessage').replaceChildren();if(!user){$('accessMessage').append(node('span','Browsing is free. '));const a=node('a','Sign in to save work or choose a membership.');a.href=signInPath();$('accessMessage').append(a);}else if(state.billingUnavailable){$('accessMessage').textContent='Membership verification is temporarily unavailable. Refresh before using a paid tool.';}else if(!entitled()){$('accessMessage').textContent=`${catalog[selected][1]} or higher unlocks this tool. Choose a monthly membership above.`;}else $('accessMessage').textContent='Included in your membership.';updateNewsDraftLink();}
 function selectTool(key,input){if(!Object.hasOwn(catalog,key))return;selected=key;const url=new URL(location.href);url.searchParams.set('tool',key);history.replaceState(null,'',url);$('toolGuide').href=catalog[key][3];for(const b of $('productCards').querySelectorAll('button[data-key]'))b.setAttribute('aria-pressed',String(b.dataset.key===key));$('toolTitle').textContent=catalog[key][0];$('toolTier').textContent=catalog[key][1].toUpperCase();$('toolDescription').textContent=catalog[key][2];$('fields').replaceChildren();for(const [name,label,value,type='number'] of definitions[key]){const wrap=node('div',undefined,type==='textarea'?'wide':'');const l=node('label',label);l.htmlFor='tool-'+name;const e=document.createElement(type==='textarea'?'textarea':'input');e.id='tool-'+name;e.name=name;if(type!=='textarea')e.type=type;if(type==='number')e.step='any';if(type==='checkbox'){wrap.className='check';e.checked=input?.[name]??value;wrap.append(e,l);}else{e.value=input?.[name]??value;e.required=name!=='notes';wrap.append(l,e);}$('fields').append(wrap);}if(!definitions[key].length)$('fields').append(node('p','Uses up to 1,000 of your dated, saved Journal trades. No sample account results are substituted.','wide'));$('saveTool').hidden=key==='export';$('result').replaceChildren(node('p','Run this tool to see your result.'));status('');updateAccess();}
 function inputs(){const d={};for(const [name,,,type='number'] of definitions[selected]){const e=$('tool-'+name);d[name]=type==='checkbox'?e.checked:e.value;}if(selected==='watchlist')d.symbols=d.symbols.split(',').map(x=>x.trim()).filter(Boolean);if(selected==='portfolio')d.positions=d.positions.split('\n').filter(x=>x.trim()).map(line=>{const parts=line.split(',');if(parts.length!==2)throw Error('Use one SYMBOL, signed value pair per line.');return {symbol:parts[0].trim(),value:parts[1].trim()};});return d;}
 function render(result){const area=$('result');area.replaceChildren();if(result.csv!==undefined){const a=node('a',`Download ${result.rows} journal entries (.csv)`,'primary');const url=URL.createObjectURL(new Blob([result.csv],{type:'text/csv;charset=utf-8'}));a.href=url;a.download='fynx-journal.csv';a.addEventListener('click',()=>setTimeout(()=>URL.revokeObjectURL(url),60000),{once:true});area.append(a);return;}
@@ -21,7 +36,7 @@ function render(result){const area=$('result');area.replaceChildren();if(result.
  for(const key of ['rows','scenarios'])if(result[key]?.length){const wrap=node('div',undefined,'table-wrap'),table=node('table'),head=node('tr');const cols=Object.keys(result[key][0]).filter(k=>k!=='notice');cols.forEach(k=>head.append(node('th',title(k))));table.append(head);result[key].forEach(row=>{const tr=node('tr');cols.forEach(k=>tr.append(node('td',fmt(row[k]))));table.append(tr);});wrap.append(table);area.append(wrap);}
  if(result.symbols){const list=node('ul');result.symbols.forEach(symbol=>{const li=node('li'),a=node('a',symbol+' — research news ↗');a.href='/tools/symbol-news.html?q='+encodeURIComponent(symbol);li.append(a);list.append(li);});area.append(list);}
  for(const key of ['completed','missing'])if(result[key])area.append(node('p',`${title(key)}: ${result[key].join(', ')||'None'}`));if(result.notes)area.append(node('p',result.notes));if(result.notice)area.append(node('p',result.notice));}
-async function perform(fn){if(busy)return;busy=true;document.querySelectorAll('button').forEach(b=>b.disabled=true);status('Working…');try{await fn();}catch(e){status(e.message||'Unable to complete the request. Please retry.');}finally{busy=false;document.querySelectorAll('button').forEach(b=>b.disabled=false);}}
+async function perform(fn){if(busy)return;const epoch=authEpoch;busy=true;document.querySelectorAll('button').forEach(b=>b.disabled=true);status('Working…');try{await fn();}catch(e){if(epoch===authEpoch)status(e.message||'Unable to complete the request. Please retry.');}finally{busy=false;document.querySelectorAll('button').forEach(b=>b.disabled=false);}}
 async function refresh(){if(!user){state={tier:null,plans:{}};updateAccess();return;}state=(await call({action:'status'})).data;updateAccess();}
 async function loadSaved(){if(!user||!state.tier){$('savedItems').replaceChildren(node('p','Sign in and activate a membership to save your work.'));return;}const d=(await call({action:'list'})).data;$('savedItems').replaceChildren(node('p',`${d.items.length} / ${d.limit} saved`));for(const item of d.items){const el=node('article');el.append(node('strong',item.name),node('p',catalog[item.product]?.[0]||item.product));const open=node('button','Open'),remove=node('button','Delete');open.onclick=()=>{const i={...item.input};if(Array.isArray(i.symbols))i.symbols=i.symbols.join(', ');if(Array.isArray(i.positions))i.positions=i.positions.map(p=>p.symbol+', '+p.value).join('\n');selectTool(item.product,i);$('workspaceName').value=item.name;render(item.result);};remove.onclick=()=>perform(async()=>{await call({action:'delete',id:item.id});await loadSaved();status('Workspace deleted.');});el.append(open,remove);$('savedItems').append(el);}}
 for(const b of $('productCards').querySelectorAll('button[data-key]')){b.onclick=()=>{selectTool(b.dataset.key);$('workbench').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});};}
@@ -29,8 +44,14 @@ window.addEventListener('popstate',()=>selectTool(requestedTool()));
 $('toolForm').onsubmit=e=>{e.preventDefault();perform(async()=>{if(!user)throw Error('Sign in to use an advanced tool. You can continue browsing for free.');if(!entitled())throw Error('Choose the required plan above to unlock this tool.');const d=(await call({action:'run',product:selected,input:inputs()})).data;render(d.result);status('Analysis complete.');});};
 $('saveTool').onclick=()=>perform(async()=>{if(!entitled())throw Error('Sign in and choose the required plan first.');if(!$('toolForm').reportValidity())throw Error('Complete the required inputs.');const d=(await call({action:'save',product:selected,name:$('workspaceName').value,input:inputs()})).data;render(d.result);await loadSaved();status('Workspace saved to your account.');});
 function navigateStripe(url){const u=new URL(url);if(u.protocol!=='https:'||!['checkout.stripe.com','billing.stripe.com'].includes(u.hostname))throw Error('Invalid checkout destination.');location.href=u.href;}
-document.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>perform(async()=>{if(!user){location.href=signInPath();return;}const d=(await call({action:'checkout',tier:b.dataset.plan})).data;navigateStripe(d.url);}));
-$('manageBilling').onclick=()=>perform(async()=>{navigateStripe((await call({action:'portal'})).data.url);});$('loadSaved').onclick=()=>perform(async()=>{await refresh();await loadSaved();status('Saved workspaces refreshed.');});
+document.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>perform(async()=>{if(!user){location.href=signInPath();return;}rememberTool();const d=(await call({action:'checkout',tier:b.dataset.plan,tool:selected})).data;navigateStripe(d.url);}));
+$('manageBilling').onclick=()=>perform(async()=>{navigateStripe((await call({action:'portal',tool:selected})).data.url);});$('loadSaved').textContent='Refresh membership and saved workspaces';$('loadSaved').onclick=()=>perform(async()=>{await refresh();await loadSaved();showMembershipStatus('Membership and saved workspaces refreshed.');});
+function showMembershipStatus(fallback){
+ if(state.billingUnavailable){status('Membership verification is temporarily unavailable. You can still open Manage subscription. Refresh to try again.');return;}
+ if(checkoutOutcome()==='complete'){status(state.tier?'Payment confirmed. Your tools are unlocked.':'Payment has not been confirmed yet. Refresh membership to check again, or contact support if you were charged.');return;}
+ if(checkoutOutcome()==='cancelled'){status('You returned from checkout without completing it. Choose a plan when you are ready, or use Manage subscription to review an existing membership.');return;}
+ status(fallback);
+}
 selectTool(requestedTool());
 try {
  const [config, authSDK, functionsSDK]=await Promise.all([
@@ -38,9 +59,20 @@ try {
   import('https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js'),
   import('https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js')
  ]);
- call=functionsSDK.httpsCallable(functionsSDK.getFunctions(config.app,'us-central1'),'consumerLiveWorkspace');
- await config.authPersistenceReady;authSDK.onAuthStateChanged(config.auth,async u=>{user=u;try{await refresh();await loadSaved();if(new URLSearchParams(location.search).get('checkout')==='complete'){
- for(let attempt=0;user&&!state.tier&&attempt<3;attempt++){status('Confirming your payment…');await new Promise(resolve=>setTimeout(resolve,2000));await refresh();}
- if(state.tier){await loadSaved();status('Payment confirmed. Your tools are unlocked.');}else status('Payment has not been confirmed yet. Use Refresh saved workspaces to check again, or contact support if you were charged.');
- }}catch(e){updateAccess();status(e.message||'Could not load your plan.');}});
+ const request=functionsSDK.httpsCallable(functionsSDK.getFunctions(config.app,'us-central1'),'consumerLiveWorkspace');
+ call=async data=>{const epoch=authEpoch,result=await request(data);if(epoch!==authEpoch)throw Error('Account changed. Please retry.');return result;};
+ await config.authPersistenceReady;authSDK.onAuthStateChanged(config.auth,async u=>{
+  const epoch=++authEpoch;user=u;state={tier:null,plans:{}};
+  $('workspaceName').value='';$('savedItems').replaceChildren();selectTool(selected);
+  try{
+   await refresh();await loadSaved();
+   if(checkoutOutcome()==='complete'){
+    for(let attempt=0;user&&!state.tier&&!state.billingUnavailable&&attempt<3;attempt++){
+     status('Confirming your payment…');await new Promise(resolve=>setTimeout(resolve,2000));if(epoch!==authEpoch)return;await refresh();
+    }
+    if(state.tier)await loadSaved();
+   }
+   if(epoch===authEpoch)showMembershipStatus('');
+  }catch(e){if(epoch===authEpoch){updateAccess();status(e.message||'Could not load your plan.');}}
+ });
 } catch { status('Account services are unavailable. You can read every public tool guide, or retry on a connection that allows sign-in.'); }

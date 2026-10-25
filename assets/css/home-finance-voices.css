@@ -1,0 +1,17 @@
+/* Scoped to the existing Home finance-feed panel. No external embed is needed. */
+#financeVoices .finance-voices-content{display:block;max-height:320px;padding:18px;overscroll-behavior:contain}
+#financeVoices .finance-voices-intro{margin:0 0 16px;font-size:13px;line-height:1.6;color:var(--fynx-muted)}
+#financeVoices .finance-voices-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+#financeVoices .finance-voice{min-width:0;padding:18px;border:1px solid var(--fynx-line);border-radius:10px;background:var(--fynx-panel);display:flex;flex-direction:column;align-items:flex-start}
+#financeVoices .finance-voice-topic{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--fynx-accent);line-height:1.6}
+#financeVoices .finance-voice h3{font-size:17px;line-height:1.4;margin:9px 0 7px;letter-spacing:-.02em}
+#financeVoices .finance-voice h3 small{display:block;font-size:11px;font-weight:500;color:var(--fynx-muted);letter-spacing:0}
+#financeVoices .finance-voice p{font-size:12px;line-height:1.6;margin:0 0 12px;flex:1;color:var(--fynx-muted)}
+#financeVoices .finance-voice-links{display:flex;align-items:center;flex-wrap:wrap;gap:4px 16px;margin-top:auto}
+#financeVoices .finance-voice-links a{display:inline-flex;align-items:center;gap:5px;min-height:44px;font-size:12px;font-weight:650;color:var(--fynx-accent);text-decoration:underline;text-underline-offset:3px;line-height:1.4}
+#financeVoices .finance-voice-links a:hover{text-decoration-thickness:2px}
+#financeVoices .finance-voices-note{font-size:11px;line-height:1.6;color:var(--fynx-muted);margin:14px 0 0}
+#financeVoices .news-head .label{flex-wrap:wrap}
+#financeVoices .news-actions{min-width:0}
+#financeVoices .news-sub{white-space:normal}
+@media(max-width:700px){#financeVoices .finance-voices-grid{grid-template-columns:1fr}#financeVoices .finance-voice{padding:16px}#financeVoices .finance-voices-content{padding:14px}#financeVoices .finance-voice-links{gap:6px 24px}#financeVoices .news-sub{font-size:11px}}
