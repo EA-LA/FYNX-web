@@ -1,0 +1,95 @@
+name: Deploy FYNX API backend
+
+# Deploys only the developer API functions (gateway, workspace, health) to Firebase.
+# Other Firebase functions (news, reminders, billing webhooks, etc.) are never touched:
+# `firebase deploy --only` updates the named functions and deletes nothing.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/developer-*.cjs'
+      - 'backend/package.json'
+      - 'backend/package-lock.json'
+      - '.github/workflows/deploy-api-backend.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-api-backend
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      PROJECT_ID: fynx-c7a28
+      FUNCTIONS: functions:developerGateway,functions:developerWorkspace,functions:developerHealth
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Check the deploy key is configured
+        env:
+          KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::Add the FIREBASE_SERVICE_ACCOUNT secret (Settings > Secrets and variables > Actions) before this workflow can deploy."
+            exit 1
+          fi
+
+      - name: Install and test backend
+        working-directory: backend
+        run: |
+          npm ci
+          npm test
+
+      - name: Assemble deploy package
+        run: |
+          mkdir -p deploy/functions
+          cp backend/*.cjs backend/*.js backend/*.json deploy/functions/
+          rm -f deploy/functions/*.test.cjs
+          cat > deploy/functions/index.js <<'JS'
+          'use strict';
+          const admin = require('firebase-admin');
+          if (!admin.apps.length) admin.initializeApp();
+          const api = require('./developer-api.cjs');
+          exports.developerGateway = api.developerGateway;
+          exports.developerWorkspace = api.developerWorkspace;
+          exports.developerHealth = api.developerHealth;
+          JS
+          node -e "const p=require('./deploy/functions/package.json');p.main='index.js';require('fs').writeFileSync('deploy/functions/package.json',JSON.stringify(p,null,2))"
+          echo '{"functions":[{"source":"functions","codebase":"default","runtime":"nodejs22"}]}' > deploy/firebase.json
+          (cd deploy/functions && npm ci --omit=dev)
+          node -e "const f=require('./deploy/functions/index.js');for(const n of ['developerGateway','developerWorkspace','developerHealth'])if(!f[n])throw new Error(n+' missing');console.log('Entry point exports OK')"
+
+      - name: Deploy to Firebase
+        working-directory: deploy
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          npx --yes firebase-tools@14 deploy --only "$FUNCTIONS" --project "$PROJECT_ID" --non-interactive
+          rm -f "$RUNNER_TEMP/sa.json"
+
+      - name: Smoke test live API
+        run: |
+          base="https://us-central1-${PROJECT_ID}.cloudfunctions.net"
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -s -o health.json -w '%{http_code}' "$base/developerHealth") && [ "$code" = 200 ] && break
+            sleep 10
+          done
+          cat health.json; echo
+          [ "$code" = 200 ] || { echo "::error::developerHealth returned $code"; exit 1; }
+          # A request without a key must be rejected (401), proving the gateway is up and still enforcing keys.
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d '{}' "$base/developerGateway/v1/markets/exchanges")
+          echo "Unauthenticated gateway request -> $code"
+          [ "$code" = 401 ] || { echo "::error::Expected 401 from gateway without a key, got $code"; exit 1; }
