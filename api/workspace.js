@@ -18,12 +18,23 @@ const field=(name,label,value='',type='text')=>`<label>${escape(label)}<input na
 const select=(name,label,opts)=>`<label>${label}<select name="${name}">${opts.map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select></label>`;
 const formData=f=>Object.fromEntries(new FormData(f));
 const presets={
- 'position-size':{instrument_type:'forex',symbol:'EURUSD',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1',lot_step:'0.01',minimum_lot:'0.01',account_balance:'10000',risk_percent:'1',entry_price:'1.0850',stop_loss_price:'1.0820',direction:'long'},
- 'risk-reward':{entry_price:'1.0850',stop_loss_price:'1.0820',take_profit_price:'1.0940',direction:'long',estimated_win_rate:'0.40'},
- 'pip-value':{instrument_type:'forex',symbol:'EURUSD',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1',pip_size:'0.0001',lot_size:'1'},
- 'margin':{instrument_type:'forex',symbol:'EURUSD',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1',lot_size:'1',entry_price:'1.0850',leverage:'30'},
- 'break-even':{instrument_type:'forex',symbol:'EURUSD',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1',pip_size:'0.0001',entry_price:'1.0850',direction:'long',entry_basis:'spread_excluded',spread_pips:'1.2',round_trip_commission_per_lot:'7'},
- 'atr-stop':{entry_price:'1.0850',atr_value:'0.0045',multiplier:'2',direction:'long'}
+ 'risk/position-size':{instrument_type:'forex',symbol:'EURUSD',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1',lot_step:'0.01',minimum_lot:'0.01',account_balance:'10000',risk_percent:'1',entry_price:'1.0850',stop_loss_price:'1.0820',direction:'long'},
+ 'risk/risk-reward':{entry_price:'1.0850',stop_loss_price:'1.0820',take_profit_price:'1.0940',direction:'long',estimated_win_rate:'0.40'},
+ 'risk/pip-value':{instrument_type:'forex',symbol:'EURUSD',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1',pip_size:'0.0001',lot_size:'1'},
+ 'risk/margin':{instrument_type:'forex',symbol:'EURUSD',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1',lot_size:'1',entry_price:'1.0850',leverage:'30'},
+ 'risk/break-even':{instrument_type:'forex',symbol:'EURUSD',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1',pip_size:'0.0001',entry_price:'1.0850',direction:'long',entry_basis:'spread_excluded',spread_pips:'1.2',round_trip_commission_per_lot:'7'},
+ 'risk/atr-stop':{entry_price:'1.0850',atr_value:'0.0045',multiplier:'2',direction:'long'},
+ 'indicators/rsi':{values:['1.0812','1.0820','1.0835','1.0829','1.0861','1.0858','1.0874','1.0869','1.0881','1.0877','1.0890','1.0902','1.0895','1.0910','1.0921','1.0915'],period:14,decimals:2},
+ 'indicators/macd':{values:['100','101.2','100.8','102.5','103.1','102.4','104','105.2','104.8','106','107.1','106.5','108','109.2','108.7','110','111.4','110.9','112','113.1','112.6','114','115.2','114.8','116','117.3','116.9','118','119.1','118.6','120','121.2','120.8','122','123.1'],fast_period:12,slow_period:26,signal_period:9,decimals:4},
+ 'indicators/bollinger':{values:['2','4','4','4','5','5','7','9'],period:8,std_dev:'2'},
+ 'indicators/atr':{candles:[{high:'1.0850',low:'1.0810',close:'1.0832'},{high:'1.0871',low:'1.0825',close:'1.0866'},{high:'1.0880',low:'1.0848',close:'1.0851'},{high:'1.0862',low:'1.0815',close:'1.0820'}],period:3,decimals:5},
+ 'indicators/screen':{series:[{symbol:'EURUSD',values:['1.0812','1.0820','1.0835','1.0829','1.0861']},{symbol:'GBPUSD',values:['1.2710','1.2702','1.2695','1.2688','1.2680']}],conditions:[{left:{indicator:'close'},operator:'>',right:{indicator:'sma',period:3}}],match:'all'},
+ 'markets/status':{exchanges:['NYSE','LSE','HKEX','TSE']},
+ 'markets/holidays':{exchange:'NYSE',year:2026},
+ 'markets/sessions':{},
+ 'portfolio/performance':{trades:[{pnl:'250',r_multiple:'2'},{pnl:'-125',r_multiple:'-1'},{pnl:'310',r_multiple:'2.5'},{pnl:'-125',r_multiple:'-1'}],starting_balance:'10000'},
+ 'portfolio/drawdown':{equity:['10000','10250','10125','10435','10310','10600'],periods_per_year:252},
+ 'portfolio/exposure':{account_equity:'50000',account_currency:'USD',positions:[{symbol:'EURUSD',side:'long',quantity:'1',contract_size:'100000',price:'1.08',asset_class:'forex'},{symbol:'AAPL',side:'long',quantity:'100',price:'200',asset_class:'stock'}]}
 };
 async function load(){if(!auth.currentUser)return;const version=++loadVersion,uid=auth.currentUser.uid,requestedEnv=env;const next=await call('bootstrap');if(version!==loadVersion||uid!==auth.currentUser?.uid||requestedEnv!==env)return;state=next;$('#auth-panel').hidden=true;$('#app').hidden=false;$('#signout').hidden=false;$('#verification').hidden=state.emailVerified;notice('');render();}
 function render(){
@@ -39,7 +50,7 @@ function render(){
  }else if(page==='playground'){
  panel.innerHTML+='<p>Runs a real server-side calculation and records the request in this environment. Successful calls count toward its allowance.</p><form id="run-form">'+select('endpoint','Calculation',Object.keys(presets).map(x=>[x,x]))+'<label>JSON input<textarea id="request-input" spellcheck="false"></textarea></label><button class="button primary">Run request</button></form><p class="help">Examples use caller-supplied metadata. The engine does not fetch prices or guarantee execution outcomes.</p><div id="response" aria-live="polite"></div>';
  const picker=$('#run-form select');const fill=()=>{$('#request-input').value=JSON.stringify(presets[picker.value],null,2);};fill();picker.onchange=fill;
- $('#run-form').onsubmit=e=>{e.preventDefault();task(async()=>{const result=await call('run',{route:'/v1/risk/'+picker.value,input:JSON.parse($('#request-input').value)});$('#response').innerHTML='<h2>Response · '+result.status+'</h2>'+json(result);});};
+ $('#run-form').onsubmit=e=>{e.preventDefault();task(async()=>{const result=await call('run',{route:'/v1/'+picker.value,input:JSON.parse($('#request-input').value)});$('#response').innerHTML='<h2>Response · '+result.status+'</h2>'+json(result);});};
  }else if(page==='history'){
  panel.innerHTML+='<p>Successful operations and validation failures. Authenticated rejections are recorded with an explanation. Unidentified requests return errors directly to the caller.</p><div id="history-list">'+historyMarkup(state.requests)+'</div><button id="older">Load older requests</button><h2>Workspace audit</h2><p>Key changes and settings changes in this environment.</p><div id="audit-list"></div><button id="audit-load">Load audit records</button>';
  let auditLast;$('#audit-load').onclick=()=>task(async()=>{const r=await call('history',{audit:true,...(auditLast?{before:auditLast.at,beforeId:auditLast.id}:{})});$('#audit-list').insertAdjacentHTML('beforeend',r.items.map(a=>'<details><summary>'+escape(date(a.at))+' · '+escape(a.action)+'</summary>'+json(a)+'</details>').join('')||empty('No more audit records.'));auditLast=r.items.at(-1);if(!auditLast)$('#audit-load').hidden=true;});
