@@ -176,6 +176,8 @@ async function uploadAndPatch(t,zipPath,label){
 }
 async function deploy(){
  const b=load('bundle.json'),cmp=load('compare.json'),inv=load('inventory.json');
+ if(process.env.PAYPAL_SECRET_ROTATED!=='true')throw new Error('Deployment requires the owner to confirm the exposed PayPal secret was rotated (workflow input paypal_secret_rotated).');
+ const ready=load('readiness.json');if(!ready?.ok)throw new Error('Readiness checks did not pass; refusing to deploy.');
  if(!b)throw new Error('Run bundle first.');if(!cmp?.ok)throw new Error('Source comparison did not pass; refusing to deploy.');
  for(const t of TARGETS){const s=inv?.targets?.[t];if(!s||s.missing||s.unreadable||s.status!=='ACTIVE')throw new Error(`${t} is not an existing ACTIVE function; this workflow only updates existing functions.`);}
  const done=[];
@@ -188,21 +190,85 @@ async function rollback(){
  save('rollback.json',out);console.log(JSON.stringify(out));if(out.failed.length)process.exitCode=1;
 }
 
+// ---- Endpoint tests: every new route, compared with the engine in Git plus independent known answers ----
+function localEngine(){const dir=path.join(WORK,'bundle');return {analytics:require(path.join(dir,'developer-analytics.cjs')),markets:require(path.join(dir,'developer-markets.cjs')),engine:require(path.join(dir,'developer-engine.cjs'))};}
+const RSI_SERIES=[44.34,44.09,44.15,43.61,44.33,44.83,45.10,45.42,45.84,46.08,45.89,46.03,45.61,46.28,46.28,46.00,46.03,46.41,46.22,45.64];
+const WAVE=Array.from({length:60},(_,i)=>String((100+Math.sin(i/4)*5+i*0.1).toFixed(4)));
+const CANDLES=[{high:10,low:8,close:9,volume:100},{high:12,low:9.5,close:11,volume:300},{high:11.5,low:10,close:10.5,volume:200},{high:13,low:10.4,close:12,volume:250}];
+const ENDPOINT_CASES=[
+ ['indicators','sma',{values:[1,2,3,4,5],period:3},r=>JSON.stringify(r.values)==='[null,null,"2","3","4"]'],
+ ['indicators','ema',{values:['1','2','3','4','5','6'],period:3},r=>JSON.stringify(r.values)==='[null,null,"2","3","4","5"]'],
+ ['indicators','rsi',{values:RSI_SERIES,period:14,decimals:2},r=>r.values[14]==='70.46'&&r.latest.values==='57.92'],
+ ['indicators','macd',{values:WAVE,decimals:10},r=>r.macd[24]===null&&r.signal[33]!==null&&Math.abs(Number(r.latest.histogram)-(Number(r.latest.macd)-Number(r.latest.signal)))<1e-9],
+ ['indicators','bollinger',{values:[2,4,4,4,5,5,7,9],period:8},r=>r.latest.middle==='5'&&r.latest.upper==='9'&&r.latest.lower==='1'],
+ ['indicators','atr',{candles:CANDLES,period:2},r=>JSON.stringify(r.values)==='[null,"2.5","2","2.3"]'],
+ ['indicators','stochastic',{candles:CANDLES,k_period:2,d_period:2},r=>r.k.length===4&&r.d[0]===null],
+ ['indicators','vwap',{candles:[{high:11,low:9,close:10,volume:100},{high:13,low:11,close:12,volume:300}]},r=>JSON.stringify(r.values)==='["10","11.5"]'],
+ ['indicators','screen',{series:[{symbol:'AAA',values:[10,10,10,10,10,9,8,7,6,12]},{symbol:'BBB',values:[1,2,3,4,5,6,7,8,9,10]}],conditions:[{left:{indicator:'close'},operator:'crosses_above',right:{indicator:'sma',period:3}}]},r=>JSON.stringify(r.matches)==='["AAA"]'],
+ ['markets','status',{at:'2026-11-02T14:30:00Z',exchanges:['NYSE','HKEX','LSE']},r=>r.exchanges[0].status==='open'&&r.exchanges[0].next_close==='2026-11-02T21:00:00Z'&&r.exchanges[1].status==='closed'],
+ ['markets','holidays',{exchange:'NYSE',year:2026},r=>r.coverage_status==='full_year'&&r.days.some(d=>d.date==='2026-11-26'&&d.type==='holiday')],
+ ['markets','sessions',{at:'2026-11-02T13:30:00Z'},r=>r.fx_market==='open'&&r.overlap==='London + New York'],
+ ['markets','exchanges',{},r=>r.exchanges.length===7],
+ ['portfolio','performance',{trades:[{pnl:100,r_multiple:2},{pnl:-50,r_multiple:-1},{pnl:200},{pnl:-50},{pnl:0}],starting_balance:'10000'},r=>r.profit_factor==='3'&&r.win_rate_percent==='40'&&r.return_percent==='2'],
+ ['portfolio','drawdown',{equity:[100,120,90,130,110]},r=>r.max_drawdown_percent==='25'&&r.max_drawdown_recovered_at===3],
+ ['portfolio','exposure',{account_equity:'50000',account_currency:'USD',positions:[{symbol:'EURUSD',side:'long',quantity:'1',contract_size:'100000',price:'1.08',asset_class:'forex'},{symbol:'AAPL',side:'long',quantity:'100',price:'200',asset_class:'stock'}]},r=>r.gross_exposure==='128000'&&r.currency_legs.EUR==='100000'],
+ ['risk','risk-reward',{entry_price:'100',stop_loss_price:'90',take_profit_price:'130',direction:'long'},r=>r.rr_ratio==='3']
+];
 async function smoke(){
  const key=process.env.SMOKE_API_KEY,base=process.env.SMOKE_BASE||`https://${REGION}-${PROJECT}.cloudfunctions.net/developerGateway`,checks=[];
  const call=async(route,body,headers={})=>{const r=await fetch(base+route,{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify(body)});let j=null;try{j=await r.json();}catch{}return {status:r.status,json:j};};
  const anon=await call('/v1/markets/exchanges',{});checks.push({check:'request without key is rejected',expected:401,got:anon.status,pass:anon.status===401});
- if(!key){checks.push({check:'authenticated route checks',skipped:'Optional FYNX_API_SMOKE_KEY secret not set'});return checks;}
+ if(!key){checks.push({check:'endpoint tests',skipped:'FYNX_API_SMOKE_KEY secret not set'});return checks;}
+ let local=null;try{local=localEngine();}catch(e){checks.push({check:'load Git engine for comparison',pass:false,got:e.message});}
  const auth={Authorization:`Bearer ${key}`};
- const cases=[
-  ['/v1/markets/exchanges',{},j=>j?.result?.exchanges?.length===7],
-  ['/v1/indicators/sma',{values:[1,2,3,4,5],period:3},j=>JSON.stringify(j?.result?.values)===JSON.stringify([null,null,'2','3','4'])],
-  ['/v1/portfolio/drawdown',{equity:[100,120,90,130,110]},j=>j?.result?.max_drawdown_percent==='25'],
-  ['/v1/markets/holidays',{exchange:'NYSE',year:2026},j=>j?.result?.days?.some(d=>d.date==='2026-11-26')],
-  ['/v1/risk/risk-reward',{entry_price:'100',stop_loss_price:'90',take_profit_price:'130',direction:'long'},j=>j?.result?.rr_ratio==='3']
- ];
- for(const [route,body,ok] of cases){const r=await call(route,body,auth);const good=r.status===200&&!!ok(r.json);checks.push({check:`POST ${route}`,expected:'200 with the known result',got:r.status===200&&!good?'200 with an unexpected result':r.status,pass:good});}
+ for(const [group,name,body,known] of ENDPOINT_CASES){
+  await new Promise(r=>setTimeout(r,250)); // stay well under the 10 requests/second test limit
+  const route=`/v1/${group}/${name}`,r=await call(route,body,auth),result=r.json?.result;
+  if(r.status===403&&/permission/i.test(r.json?.error?.code||'')){checks.push({check:`POST ${route}`,scope:true,got:'403: test key lacks this scope',pass:null});continue;}
+  let expected=null;try{expected=group==='risk'?local.engine.risk(name,body):group==='markets'?local.markets.markets(name,body):group==='portfolio'?local.analytics.portfolio(name,body):local.analytics.indicator(name,body);}catch(e){expected={error:e.message};}
+  const matches=r.status===200&&result&&JSON.stringify(result)===JSON.stringify(expected),knownOk=r.status===200&&!!result&&(()=>{try{return !!known(result);}catch{return false;}})();
+  checks.push({check:`POST ${route}`,expected:'200, equal to Git engine, known answer',got:r.status!==200?`${r.status} ${r.json?.error?.code||''} ${r.json?.error?.message||''}`.trim():!matches?'200 but differs from Git engine':!knownOk?'200 but known answer wrong':'200 ✓',pass:matches&&knownOk});
+ }
  return checks;
+}
+async function endpointTests(){const checks=await smoke();const failed=checks.filter(c=>c.pass===false),scoped=checks.filter(c=>c.scope);save('endpoints.json',{checks,ok:!failed.length&&!scoped.length&&!checks.some(c=>c.skipped)});console.log(JSON.stringify(checks,null,1));if(failed.length||checks.some(c=>c.skipped))process.exitCode=1;}
+
+// ---- Readiness: permissions, credential scan, rollback, secret exposure map ----
+const CREDENTIAL_PATTERNS=[['Stripe secret key',/\b[sr]k_(live|test)_[0-9A-Za-z]{10,}/],['Stripe webhook secret',/\bwhsec_[0-9A-Za-z]{10,}/],['Private key block',/-----BEGIN [A-Z ]*PRIVATE KEY-----/],['Google API key',/\bAIza[0-9A-Za-z_-]{35}\b/],['AWS access key',/\bAKIA[0-9A-Z]{16}\b/],['GitHub token',/\bgh[pousr]_[0-9A-Za-z]{30,}/],['Mailgun key',/\bkey-[0-9a-f]{32}\b/],['Hard-coded secret assignment',/(client_secret|clientSecret|api_secret|password)\s*[:=]\s*['"][^'"\s]{8,}['"]/i],['PayPal credentials',/paypal[^\n]{0,40}(secret|client_id)\s*[:=]\s*['"][^'"]{8,}/i]];
+function scanTree(dir){
+ const hits=[],walk=d=>{for(const f of fs.readdirSync(d)){if(f==='node_modules')continue;const p=path.join(d,f),rel=path.relative(dir,p);if(fs.statSync(p).isDirectory()){walk(p);continue;}
+  if(f.startsWith('.'))hits.push({file:rel,finding:'hidden file (e.g. .runtimeconfig.json or .env) in package'});
+  const text=fs.readFileSync(p,'utf8');for(const [name,re] of CREDENTIAL_PATTERNS)if(re.test(text))hits.push({file:rel,finding:name});}};
+ walk(dir);return hits;
+}
+async function readiness(){
+ const inv=load('inventory.json'),cmp=load('compare.json'),src=load('sources.json'),b=load('bundle.json'),out={checks:[],exposure:null};
+ const add=(check,pass,detail)=>out.checks.push({check,pass,detail});
+ const sas=[...new Set(TARGETS.map(t=>inv?.targets?.[t]?.serviceAccountEmail).filter(Boolean))];
+ for(const sa of sas){try{const r=await gcf('POST',`${process.env.IAM_API_BASE||'https://iam.googleapis.com'}/v1/projects/${PROJECT}/serviceAccounts/${encodeURIComponent(sa)}:testIamPermissions`,{permissions:['iam.serviceAccounts.actAs']});add(`github-deploy can act as runtime account ${sa}`,(r.permissions||[]).includes('iam.serviceAccounts.actAs'),(r.permissions||[]).join(', ')||'not granted');}catch(e){add(`github-deploy can act as runtime account ${sa}`,false,e.message);}}
+ if(!sas.length)add('runtime service account identified',false,'inventory has no service account');
+ const need=['cloudfunctions.functions.get','cloudfunctions.functions.sourceCodeGet','cloudfunctions.functions.sourceCodeSet','cloudfunctions.functions.update'];
+ for(const t of TARGETS){try{const r=await gcf('POST',`/v1/${fnName(t)}:testIamPermissions`,{permissions:need});const missing=need.filter(p=>!(r.permissions||[]).includes(p));add(`deploy permissions on ${t}`,!missing.length,missing.length?`missing ${missing.join(', ')}`:'get, sourceCodeGet, sourceCodeSet, update');}catch(e){add(`deploy permissions on ${t}`,false,e.message);}}
+ const hits=b?scanTree(path.join(WORK,'bundle')):[{file:'-',finding:'bundle missing'}];
+ add('no credentials or hidden files in deploy package',!hits.length,hits.length?hits.map(h=>`${h.file}: ${h.finding}`).join('; '):`${Object.keys(b.files).length} files scanned (node_modules excluded; installed from the lockfile at build time)`);
+ const rollbackReady=!!cmp?.ok&&TARGETS.every(t=>src?.sources?.[t]?.zip&&fs.existsSync(src.sources[t].zip));
+ add('rollback ready',rollbackReady,rollbackReady?`pre-deploy source of both functions downloaded; live API files match commit(s) in Git (${[...new Set(Object.values(cmp.targets).flatMap(c=>Object.values(c.files||{})).filter(v=>v.startsWith('older_commit')||v==='same_as_main'))].join(', ')})`:'pre-deploy source missing or live code not in Git');
+ add('endpoint test key configured (FYNX_API_SMOKE_KEY)',!!process.env.SMOKE_API_KEY,process.env.SMOKE_API_KEY?'set':'not set: authenticated endpoint tests will be skipped');
+ out.exposure=await exposureMap(inv);
+ out.ok=out.checks.every(c=>c.pass||c.check.startsWith('endpoint test key'));
+ save('readiness.json',out);console.log(JSON.stringify(out,null,1));
+}
+// Which 1st-gen functions ship a .runtimeconfig.json with PayPal keys, and which code reads it. Names only, never values.
+async function exposureMap(inv){
+ const rows=[],dir=path.join(WORK,'exposure');
+ for(const f of inv?.all||[]){const name=f.name.split('/').pop(),region=f.name.split('/')[0],d=path.join(dir,name);
+  try{const {downloadUrl}=await gcf('POST',`/v1/projects/${PROJECT}/locations/${region}/functions/${name}:generateDownloadUrl`,{});const r=await fetch(downloadUrl);const zp=path.join(dir,`${name}.zip`);fs.mkdirSync(d,{recursive:true});fs.writeFileSync(zp,Buffer.from(await r.arrayBuffer()));execFileSync('unzip',['-q','-o',zp,'-d',d]);
+   const rc=path.join(d,'.runtimeconfig.json');let keys=[];if(fs.existsSync(rc)){try{const walk=(x,p)=>x&&typeof x==='object'?Object.entries(x).forEach(([k,v])=>walk(v,p?`${p}.${k}`:k)):keys.push(p);walk(JSON.parse(fs.readFileSync(rc,'utf8')),'');}catch{keys=['(unparseable)'];}}
+   const readers=[];const walk=p=>{for(const e of fs.readdirSync(p)){if(e==='node_modules'||e.startsWith('.'))continue;const q=path.join(p,e);if(fs.statSync(q).isDirectory())walk(q);else if(/\.(c?js|mjs|ts)$/.test(e)){const t=fs.readFileSync(q,'utf8');if(/functions\.config\(\)|runtimeconfig|\bpaypal\b/i.test(t))readers.push(path.relative(d,q));}}};walk(d);
+   rows.push({function:name,has_runtimeconfig:fs.existsSync(rc),paypal_keys:keys.filter(k=>/paypal/i.test(k)),code_mentioning_paypal_or_config:readers});
+  }catch(e){rows.push({function:name,error:e.message.slice(0,160)});}
+  fs.rmSync(d,{recursive:true,force:true});fs.rmSync(path.join(dir,`${name}.zip`),{force:true});}
+ return {functions_scanned:rows.length,exposed:rows.filter(r=>r.paypal_keys?.length).map(r=>r.function),readers:rows.filter(r=>r.code_mentioning_paypal_or_config?.length).map(r=>({function:r.function,files:r.code_mentioning_paypal_or_config})),errors:rows.filter(r=>r.error).map(r=>r.function)};
 }
 async function verify(){
  const pre=load('inventory.json'),b=load('bundle.json'),post=await inventory('inventory-after.json'),problems=[],notes=[];
@@ -225,7 +291,7 @@ async function verify(){
  const before=new Map(pre.all.map(f=>[f.name,f])),after=new Map(post.all.map(f=>[f.name,f])),mine=new Set(TARGETS.map(t=>`${REGION}/functions/${t}`));
  for(const [n,f] of before){if(mine.has(n))continue;const g=after.get(n);if(!g)problems.push(`${n} disappeared`);else if(g.versionId!==f.versionId||g.updateTime!==f.updateTime)problems.push(`${n} changed during this deployment`);}
  for(const n of after.keys())if(!before.has(n))problems.push(`${n} appeared during this deployment`);
- const checks=await smoke();for(const c of checks)if(c.pass===false)problems.push(`Smoke check failed: ${c.check} (got ${c.got})`);
+ const checks=await smoke();for(const c of checks)if(c.pass===false)problems.push(`Endpoint check failed: ${c.check} (got ${c.got})`);for(const c of checks)if(c.scope)notes.push(`${c.check}: test key lacks this scope (create a new test key after deploy; new keys get every scope)`);
  const out={ok:problems.length===0,problems,notes,smoke:checks,preserved_functions:post.all.length-TARGETS.length};
  save('verify.json',out);console.log(JSON.stringify(out,null,1));if(!out.ok)process.exitCode=1;
 }
@@ -246,12 +312,24 @@ async function report(){
   if(cmp.sealed){line('');line('<details><summary>Sealed production files (encrypted to the operator key; unreadable without it)</summary>');line('');line('```json');line(JSON.stringify(cmp.sealed));line('```');line('</details>');}
   line(cmp.ok?'Result: **no uncommitted production changes**.':`Result: **BLOCKED** — ${cmp.drift.length?`uncommitted changes in ${cmp.drift.join(', ')}`:cmp.missing_modules?.length?`live code needs ${cmp.missing_modules.join(', ')}`:'deployed source not available'}.`);line('');}
  if(b)line(`### Bundle\n${Object.keys(b.files).length} files, ${b.bytes} bytes, sha256 \`${b.sha256.slice(0,16)}…\`\n`);
+ const rd=load('readiness.json'),ep=load('endpoints.json');
+ if(rd){line(`### Readiness: ${rd.ok?'PASSED':'NOT READY'}`);for(const c of rd.checks)line(`- ${c.pass?'✅':c.check.startsWith('endpoint test key')?'⚠️':'❌'} ${c.check} — ${c.detail}`);
+  const x=rd.exposure;if(x){line('');line(`**PayPal secret exposure** (${x.functions_scanned} 1st-gen functions scanned, names only):`);line(`- Functions whose deployed source contains PayPal keys in .runtimeconfig.json: ${x.exposed.length?x.exposed.join(', '):'none'}`);line(`- Code that mentions PayPal or functions.config(): ${x.readers.length?x.readers.map(r=>`${r.function} (${r.files.join(', ')})`).join('; '):'none'}`);if(x.errors.length)line(`- Could not scan: ${x.errors.join(', ')}`);}line('');}
  if(d)line(`### Deployment\nUpdated: ${d.deployed.join(', ')||'none'}\n`);
+ if(ep){line(`### Endpoint tests: ${ep.ok?'ALL PASSED':'NOT ALL PASSED'}`);for(const c of ep.checks)line(`- ${c.skipped?'⏭️':c.scope?'🔒':c.pass?'✅':'❌'} ${c.check}${c.skipped?` — ${c.skipped}`:` — ${c.got}`}`);line('');}
  if(v){line(`### Verification: ${v.ok?'PASSED':'FAILED'}`);for(const p of v.problems)line(`- ❌ ${p}`);for(const n of v.notes)line(`- ⚠️ ${n}`);for(const c of v.smoke||[])line(`- ${c.skipped?'⏭️':c.pass?'✅':'❌'} ${c.check}${c.skipped?` — ${c.skipped}`:` (expected ${c.expected}, got ${c.got})`}`);line(`- Other functions preserved: ${v.preserved_functions}`);line('');}
  if(rb)line(`### Rollback\nRestored: ${rb.rolled_back.join(', ')||'none'}${rb.failed.length?` · FAILED: ${rb.failed.map(f=>f.target).join(', ')}`:''}\n`);
  const failed=process.env.JOB_STATUS&&process.env.JOB_STATUS!=='success';
- const conclusion=failed||perms.length||(cmp&&!cmp.ok)||(v&&!v.ok)?(mode==='inventory'&&!failed?'neutral':'failure'):'success';
- const title=mode==='inventory'?(perms.length?`Inventory incomplete: ${perms.length} permission gap(s)`:cmp&&!cmp.ok?'Inventory: production source drift found':'Inventory complete'):v?.ok?'Deployed and verified':rb?.rolled_back?.length?`Deployment failed verification and was rolled back${rb.failed.length?' (ROLLBACK INCOMPLETE)':''}`:cmp&&!cmp.ok?'Deployment blocked: production source has changes not in Git':perms.length?`Deployment blocked: ${perms.length} permission gap(s)`:'Deployment did not complete; production unchanged';
+ const bad=perms.length||(cmp&&!cmp.ok)||(v&&!v.ok)||(rd&&!rd.ok)||(ep&&!ep.ok);
+ const conclusion=failed?'failure':bad?(mode==='inventory'?'neutral':'failure'):'success';
+ let title;
+ if(mode==='test')title=ep?.ok?'Endpoint tests: all passed':'Endpoint tests: not all passed';
+ else if(mode==='inventory')title=perms.length?`Inventory incomplete: ${perms.length} permission gap(s)`:cmp&&!cmp.ok?'Inventory: production source drift found':rd&&!rd.ok?'Inventory complete: NOT ready to deploy':rd?'Inventory complete: ready to deploy':'Inventory complete';
+ else if(v?.ok)title=ep&&!ep.ok?'Deployed and verified; some endpoint tests not run':'Deployed and verified';
+ else if(rb?.rolled_back?.length)title=`Deployment failed verification and was rolled back${rb.failed.length?' (ROLLBACK INCOMPLETE)':''}`;
+ else if(cmp&&!cmp.ok)title='Deployment blocked: production source has changes not in Git';
+ else if(perms.length)title=`Deployment blocked: ${perms.length} permission gap(s)`;
+ else title='Deployment did not run; production unchanged';
  const text=L.join('\n').slice(0,65000);fs.writeFileSync(path.join(WORK,'report.md'),`## ${title}\n\n${text}`);
  if(process.env.GITHUB_STEP_SUMMARY)fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,`## ${title}\n\n${text}\n`);
  if(process.env.GITHUB_TOKEN&&process.env.GITHUB_REPOSITORY){
@@ -260,7 +338,7 @@ async function report(){
  }
 }
 
-const commands={inventory:()=>inventory(),fetch:fetchSources,compare,bundle,deploy,verify,rollback,report};
+const commands={inventory:()=>inventory(),fetch:fetchSources,compare,bundle,readiness,deploy,verify,rollback,endpoints:endpointTests,report};
 const cmd=process.argv[2];
 if(!commands[cmd]){console.error(`Usage: node fynx-api-deploy.cjs ${Object.keys(commands).join('|')}`);process.exit(2);}
 Promise.resolve(commands[cmd]()).catch(e=>{console.error(`::error::${e.message}`);process.exit(1);});
