@@ -13,10 +13,14 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'inventory = read-only check; deploy = update the API functions'
+        description: 'inventory = read-only checks; deploy = update the API functions; test = run endpoint tests against the live API'
         type: choice
-        options: [inventory, deploy]
+        options: [inventory, deploy, test]
         default: inventory
+      paypal_secret_rotated:
+        description: 'Owner confirms the PayPal secret found in production .runtimeconfig.json has been rotated (required for deploy)'
+        type: boolean
+        default: false
       drift_public_key:
         description: 'Optional base64 RSA public key (3072+ bits). If live source has changes not in Git, those files are encrypted to it in the report.'
         type: string
@@ -106,11 +110,19 @@ jobs:
       - name: Build and validate deploy package
         run: node .github/scripts/fynx-api-deploy.cjs bundle
 
+      - name: Readiness checks (permissions, credential scan, rollback, secret exposure)
+        continue-on-error: ${{ inputs.mode != 'deploy' }}
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          SMOKE_API_KEY: ${{ secrets.FYNX_API_SMOKE_KEY }}
+        run: node .github/scripts/fynx-api-deploy.cjs readiness
+
       - name: Deploy (source only)
         id: deploy
         if: inputs.mode == 'deploy'
         env:
           ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          PAYPAL_SECRET_ROTATED: ${{ inputs.paypal_secret_rotated }}
         run: node .github/scripts/fynx-api-deploy.cjs deploy
 
       - name: Verify live functions
@@ -120,6 +132,12 @@ jobs:
           ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
           SMOKE_API_KEY: ${{ secrets.FYNX_API_SMOKE_KEY }}
         run: node .github/scripts/fynx-api-deploy.cjs verify
+
+      - name: Endpoint tests against the live API
+        if: inputs.mode == 'test'
+        env:
+          SMOKE_API_KEY: ${{ secrets.FYNX_API_SMOKE_KEY }}
+        run: node .github/scripts/fynx-api-deploy.cjs endpoints
 
       - name: Roll back on failure
         if: failure() && inputs.mode == 'deploy' && steps.deploy.outcome != 'skipped'
