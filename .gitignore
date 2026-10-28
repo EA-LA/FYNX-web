@@ -8,3 +8,4 @@ output/playwright/
 output/
 .playwright-cli/
 firebase-debug.log
+.deploy-work/

@@ -21,7 +21,7 @@ npm run build
 npm test
 ```
 
-Backend deployment currently uses the existing `/Users/h/Desktop/fynx-functions` Firebase project. `backend/web-services.js` is the version-controlled source; copy it to that project's `functions/web-services.js`. Its existing initialized Admin app and index explicitly export the three `web*` functions. Deploy only these named functions; preserve unrelated scheduled news jobs:
+The developer API functions (`developerGateway`, `developerWorkspace`) deploy from GitHub Actions without keys; see `docs/firebase-github-oidc-setup.md`. Other backend deployment currently uses the existing `/Users/h/Desktop/fynx-functions` Firebase project. `backend/web-services.js` is the version-controlled source; copy it to that project's `functions/web-services.js`. Its existing initialized Admin app and index explicitly export the three `web*` functions. Deploy only these named functions; preserve unrelated scheduled news jobs:
 
 ```
 firebase deploy --only functions:webLearning,functions:webReminders,functions:webReminderDelivery --project fynx-c7a28
