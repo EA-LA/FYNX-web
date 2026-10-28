@@ -4,6 +4,14 @@ const admin=require('firebase-admin');
 const {randomBytes,randomUUID,createHash}=require('node:crypto');
 const engine=require('./developer-engine.cjs');
 const access=require('./developer-access.cjs');
+const analytics=require('./developer-analytics.cjs');
+const marketHours=require('./developer-markets.cjs');
+// Stateless calculation routes (APIs 6, 7 and 8). They read only the request body and are metered like Risk calls.
+function statelessRoute(route){
+ const m=route.match(/^\/v1\/(indicators|portfolio|markets)\/([a-z-]+)$/);if(!m)return null;
+ const [,group,name]=m,fn=group==='indicators'?analytics.indicator:group==='portfolio'?analytics.portfolio:marketHours.markets;
+ return {group,name,run:input=>fn(name,input)};
+}
 const {payloadHash:canonicalHash,validateInput,entitlement,effectiveCap}=require('./developer-core.cjs');
 const logger=require('firebase-functions/logger');
 const db=()=>admin.firestore();
@@ -32,7 +40,7 @@ async function runOperation(uid,env,route,input,keyHash=null){
  if(!validateInput(input))error('invalid-argument','Send a JSON object under 20KB.');
  await reserveRate(uid,env);
  const er=envRef(uid,env),reqId=randomUUID(),at=Date.now(),requestRef=er.collection('requests').doc(reqId),usageRef=er.collection('usage').doc(month());
- const parsed=route.match(/^\/v1\/risk\/([a-z-]+)$/);
+ const parsed=route.match(/^\/v1\/risk\/([a-z-]+)$/),stateless=statelessRoute(route);
  return db().runTransaction(async tx=>{
   const profileSnap=await tx.get(root(uid)),usageSnap=await tx.get(usageRef);
   if(keyHash){const key=await tx.get(db().collection('fynxDeveloperKeys').doc(keyHash));if(!key.exists||key.data().revokedAt)error('unauthenticated','Key was revoked.');if(key.data().uid!==uid||key.data().environment!==env||!access.permits(key.data(),route))error('permission-denied','This key does not allow the requested operation.');}
@@ -41,6 +49,7 @@ async function runOperation(uid,env,route,input,keyHash=null){
   let result,duplicate=false;
   if(route.startsWith('GET ')){const m=route.match(/^GET \/v1\/propfirm\/accounts\/([-a-zA-Z0-9_]+)\/(status|events)$/);if(!m)error('not-found','Read endpoint not found.');const ar=er.collection('accounts').doc(m[1]),a=await tx.get(ar);if(!a.exists)error('not-found','Account not found.');if(m[2]==='status')result={account_id:a.id,...a.data()};else{let q=ar.collection('events').orderBy('at','desc').orderBy(admin.firestore.FieldPath.documentId(),'desc');if(input.before){if(!Number.isSafeInteger(Number(input.before)))error('invalid-argument','Invalid cursor');q=q.startAfter(Number(input.before),ident(input.beforeId));}result={items:rows(await tx.get(q.limit(25)))};}}
   else if(parsed)result=engine.risk(parsed[1],input);
+  else if(stateless)result=stateless.run(input);
   else if(route==='/v1/propfirm/rule-sets'){
    const r=engine.rules(input),ref=er.collection('rules').doc();const existing=await tx.get(er.collection('rules').limit(101));if(existing.size>=100)error('resource-exhausted','Maximum 100 rule sets per environment.');tx.create(ref,{...r,createdAt:at});result={rule_set_id:ref.id,...r};
   }else if(route==='/v1/propfirm/accounts'){
@@ -104,4 +113,4 @@ exports.developerHealth=functions.runWith({timeoutSeconds:15,memory:'256MB',maxI
  res.set('Cache-Control','no-store');if(req.method!=='GET')return res.status(405).end();
  const started=Date.now();try{await db().collection('fynxDeveloperOperations').doc('health').get();const result=engine.risk('risk-reward',{entry_price:'100',stop_loss_price:'90',take_profit_price:'130',direction:'long'});if(result.rr_ratio!=='3')throw new Error('Calculation self-check failed');res.status(200).json({status:'ok',engine_version:2});}catch(e){telemetry('health',503,started);res.status(503).json({status:'unavailable'});}
 });
-exports._test={entitlement,hash};
+exports._test={entitlement,hash,statelessRoute};
