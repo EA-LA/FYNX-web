@@ -33,6 +33,12 @@ Workflow: **Actions → Deploy FYNX API backend (keyless) → Run workflow** (`.
 - **Report:** a check run named `FYNX API <mode> report` on the commit. It never contains secret values or file contents.
 - **Package:** only the 8 `backend/developer-*.cjs` files the API loads, `package.json`, `package-lock.json` and a generated `index.js` exporting exactly the two targets. Dependencies install from the lockfile.
 
+### Rollback
+
+- **Automatic:** if any verification check fails, the same run re-uploads the source it downloaded before deploying, to every function it updated, and reports the result.
+- **Manual:** production code is always a committed Git version (the deploy is refused otherwise). To roll back later, revert the merge on `main` and run the workflow with `mode: deploy`. The previous version passes the drift check because it is in Git history.
+- **Production-only files:** `.runtimeconfig.json` (legacy config with a PayPal secret) and the old shared `index.js` are not shipped. The API code does not read either.
+
 ### Minimum Google Cloud permissions for `github-deploy`
 
 1. A custom project role with exactly these six permissions (no create, delete, IAM or invoke rights):
