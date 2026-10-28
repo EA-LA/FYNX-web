@@ -1,0 +1,61 @@
+name: Firebase API preflight (no production deployment)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'scripts/**'
+      - '.github/workflows/firebase-api-preflight.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install website dependencies
+        run: npm ci
+      - name: Install backend dependencies
+        run: npm ci --prefix backend
+      - name: Run backend tests
+        run: npm test --prefix backend
+      - name: Run website API page tests
+        run: npm run test:api
+      - name: Check tracked API source syntax
+        run: |
+          node --check backend/web-services.js
+          node --check backend/macro-data.js
+
+  google-auth-check:
+    if: github.event_name == 'workflow_dispatch'
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: firebase-api-deploy
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Verify OIDC configuration
+        env:
+          PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          test -n "$PROVIDER" || { echo "::error::Set GCP_WORKLOAD_IDENTITY_PROVIDER repository variable"; exit 1; }
+          test -n "$SERVICE_ACCOUNT" || { echo "::error::Set GCP_DEPLOY_SERVICE_ACCOUNT repository variable"; exit 1; }
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+          token_format: access_token
+      - name: Verify authentication only (does not deploy)
+        run: test -n "${{ steps.auth.outputs.access_token }}" && echo 'Google Cloud OIDC authentication succeeded.'
