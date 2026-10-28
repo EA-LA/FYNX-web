@@ -17,6 +17,11 @@ on:
         type: choice
         options: [inventory, deploy]
         default: inventory
+      drift_public_key:
+        description: 'Optional base64 RSA public key (3072+ bits). If live source has changes not in Git, those files are encrypted to it in the report.'
+        type: string
+        required: false
+        default: ''
 
 concurrency:
   group: fynx-api-production
@@ -94,6 +99,8 @@ jobs:
       - name: Compare deployed source with Git history
         id: compare
         continue-on-error: ${{ inputs.mode == 'inventory' }}
+        env:
+          DRIFT_PUBLIC_KEY_B64: ${{ inputs.drift_public_key }}
         run: node .github/scripts/fynx-api-deploy.cjs compare
 
       - name: Build and validate deploy package

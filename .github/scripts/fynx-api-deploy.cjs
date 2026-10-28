@@ -82,6 +82,34 @@ function history(file){
  for(const c of commits){try{const b=execFileSync('git',['show',`${c}:${rel}`],{cwd:ROOT,maxBuffer:32*1024*1024});if(!hashes.has(sha(b)))hashes.set(sha(b),c.slice(0,7));}catch{/* file deleted in that commit */}}
  return {hashes,head:fs.existsSync(path.join(ROOT,rel))?sha(fs.readFileSync(path.join(ROOT,rel))):null};
 }
+// Describes drift WITHOUT revealing code (the repository and its check runs are public):
+// closest committed version, changed line counts, whitespace-only check and export names.
+function driftSummary(file,deployed){
+ const rel=`backend/${file}`,tmp=path.join(WORK,'drift-tmp');fs.mkdirSync(tmp,{recursive:true});
+ const live=path.join(tmp,'live');fs.writeFileSync(live,deployed);
+ const squash=b=>b.toString('utf8').replace(/\s+/g,'');
+ const commits=execFileSync('git',['log','--format=%H %cs','--',rel],{cwd:ROOT,encoding:'utf8'}).trim().split('\n').filter(Boolean);
+ let best=null;
+ for(const row of commits){const [c,date]=row.split(' ');let b;try{b=execFileSync('git',['show',`${c}:${rel}`],{cwd:ROOT,maxBuffer:32*1024*1024});}catch{continue;}
+  const ref=path.join(tmp,'ref');fs.writeFileSync(ref,b);let d='';try{d=execFileSync('diff',['--unified=0',ref,live],{encoding:'utf8'});}catch(e){d=e.stdout||'';}
+  const added=(d.match(/^\+(?!\+\+)/gm)||[]).length,removed=(d.match(/^-(?!--)/gm)||[]).length,hunks=(d.match(/^@@/gm)||[]).length;
+  if(!best||added+removed<best.added+best.removed)best={commit:c.slice(0,7),date,added,removed,hunks,whitespace_only:squash(b)===squash(deployed)};}
+ const names=b=>[...b.toString('utf8').matchAll(/exports\.([A-Za-z0-9_]+)\s*=/g)].map(m=>m[1]).sort();
+ const head=fs.existsSync(path.join(ROOT,rel))?fs.readFileSync(path.join(ROOT,rel)):Buffer.alloc(0);
+ return {closest:best,deployed_lines:deployed.toString('utf8').split('\n').length,deployed_exports:names(deployed),main_exports:names(head)};
+}
+// Optional: encrypt drifted production files to a one-time RSA public key supplied by the operator,
+// so they can be reconciled without publishing production code. Only the private-key holder can read them.
+function sealDrift(out){
+ const pem=process.env.DRIFT_PUBLIC_KEY_B64?Buffer.from(process.env.DRIFT_PUBLIC_KEY_B64,'base64').toString('utf8'):'';
+ if(!pem||!out.drift.length)return;
+ const pub=crypto.createPublicKey(pem);if(pub.asymmetricKeyType!=='rsa'||pub.asymmetricKeyDetails.modulusLength<3072)throw new Error('DRIFT_PUBLIC_KEY_B64 must be an RSA key of at least 3072 bits.');
+ const seen=new Map();out.sealed={};
+ for(const item of out.drift){const [t,f]=item.split('/');const data=fs.readFileSync(path.join(WORK,'previous',t,f));const h=sha(data);
+  if(seen.has(h)){out.sealed[item]={same_as:seen.get(h)};continue;}seen.set(h,item);
+  const key=crypto.randomBytes(32),iv=crypto.randomBytes(12),c=crypto.createCipheriv('aes-256-gcm',key,iv),enc=Buffer.concat([c.update(data),c.final()]);
+  out.sealed[item]={alg:'RSA-OAEP-256+A256GCM',sha256:h,key:crypto.publicEncrypt({key:pub,oaepHash:'sha256',padding:crypto.constants.RSA_PKCS1_OAEP_PADDING},key).toString('base64'),iv:iv.toString('base64'),tag:c.getAuthTag().toString('base64'),data:enc.toString('base64')};}
+}
 function compare(){
  const src=load('sources.json',{sources:{}}),out={targets:{},drift:[],ok:true};
  for(const t of TARGETS){
@@ -91,14 +119,14 @@ function compare(){
    const p=path.join(dir,f);if(!fs.existsSync(p)){files[f]='not_in_deployed_source';continue;}
    const h=sha(fs.readFileSync(p)),{hashes,head}=history(f);
    files[f]=h===head?'same_as_main':hashes.has(h)?`older_commit_${hashes.get(h)}`:'UNCOMMITTED_CHANGES';
-   if(files[f]==='UNCOMMITTED_CHANGES'){out.drift.push(`${t}/${f}`);out.ok=false;}
+   if(files[f]==='UNCOMMITTED_CHANGES'){out.drift.push(`${t}/${f}`);out.ok=false;(out.drift_detail||(out.drift_detail={}))[`${t}/${f}`]=driftSummary(f,fs.readFileSync(p));}
   }
   const index=['index.js','index.cjs'].map(f=>path.join(dir,f)).find(fs.existsSync);
   const exportsList=index?[...fs.readFileSync(index,'utf8').matchAll(/exports\.([A-Za-z0-9_]+)\s*=/g)].map(m=>m[1]):[];
   const other=fs.readdirSync(dir).filter(f=>!BUNDLE_FILES.includes(f)&&f!=='node_modules'&&!/^index\.c?js$/.test(f));
   out.targets[t]={files,deployed_entry_exports:exportsList.length,deployed_other_files:other.length,archive_sha256:src.sources?.[t]?.sha256};
  }
- save('compare.json',out);console.log(JSON.stringify(out,null,1));
+ sealDrift(out);save('compare.json',out);const {sealed,...shown}=out;console.log(JSON.stringify(shown,null,1));
  if(!out.ok)process.exitCode=1;return out;
 }
 
@@ -197,7 +225,9 @@ async function report(){
   for(const t of TARGETS){const s=inv.targets[t]||{};line(s.missing?`| ${t} | NOT FOUND |||||||||||`:s.unreadable?`| ${t} | unreadable (permission) |||||||||||`:`| ${t} | ${s.status} | ${s.runtime} | ${s.entryPoint} | ${s.availableMemoryMb} | ${s.timeout} | ${s.maxInstances??'-'} | ${s.serviceAccountEmail} | ${s.secrets.map(x=>`${x.key}@${x.version}`).join(' ')||'-'} | ${s.envVarNames.join(' ')||'-'} | ${s.versionId} |`);}
   line('');line(`All 1st-gen functions in project: **${inv.all.length}**${inv.gen2?` · 2nd-gen: **${inv.gen2.length}**`:''}`);line('');
   if(inv.all.length){line('<details><summary>Function inventory</summary>');line('');for(const f of inv.all)line(`- ${f.name} · ${f.status} · ${f.runtime} · v${f.versionId} · ${f.updateTime}`);line('');line('</details>');line('');}}
- if(cmp){line('### Deployed source vs Git history');for(const [t,c] of Object.entries(cmp.targets)){line(`**${t}**${c.skipped?` — ${c.skipped}`:` — deployed entry exports ${c.deployed_entry_exports}, other files ${c.deployed_other_files}`}`);if(c.files)for(const [f,s] of Object.entries(c.files))line(`- ${f}: ${s}`);}line(cmp.ok?'Result: **no uncommitted production changes**.':`Result: **BLOCKED** — ${cmp.drift.length?`uncommitted changes in ${cmp.drift.join(', ')}`:'deployed source not available'}.`);line('');}
+ if(cmp){line('### Deployed source vs Git history');for(const [t,c] of Object.entries(cmp.targets)){line(`**${t}**${c.skipped?` — ${c.skipped}`:` — deployed entry exports ${c.deployed_entry_exports}, other files ${c.deployed_other_files}`}`);if(c.files)for(const [f,s] of Object.entries(c.files))line(`- ${f}: ${s}`);}if(cmp.drift_detail){line('');line('**Drift summary** (no code shown):');for(const [k,d] of Object.entries(cmp.drift_detail)){const c=d.closest;line(`- ${k}: closest committed version \`${c?.commit}\` (${c?.date}) — ${c?.added} line(s) added, ${c?.removed} removed in ${c?.hunks} place(s)${c?.whitespace_only?' — WHITESPACE ONLY':''}; deployed exports: ${d.deployed_exports.join(', ')||'none'}; main exports: ${d.main_exports.join(', ')||'none'}`);}}
+  if(cmp.sealed){line('');line('<details><summary>Sealed production files (encrypted to the operator key; unreadable without it)</summary>');line('');line('```json');line(JSON.stringify(cmp.sealed));line('```');line('</details>');}
+  line(cmp.ok?'Result: **no uncommitted production changes**.':`Result: **BLOCKED** — ${cmp.drift.length?`uncommitted changes in ${cmp.drift.join(', ')}`:'deployed source not available'}.`);line('');}
  if(b)line(`### Bundle\n${Object.keys(b.files).length} files, ${b.bytes} bytes, sha256 \`${b.sha256.slice(0,16)}…\`\n`);
  if(d)line(`### Deployment\nUpdated: ${d.deployed.join(', ')||'none'}\n`);
  if(v){line(`### Verification: ${v.ok?'PASSED':'FAILED'}`);for(const p of v.problems)line(`- ❌ ${p}`);for(const n of v.notes)line(`- ⚠️ ${n}`);for(const c of v.smoke||[])line(`- ${c.skipped?'⏭️':c.pass?'✅':'❌'} ${c.check}${c.skipped?` — ${c.skipped}`:` (expected ${c.expected}, got ${c.got})`}`);line(`- Other functions preserved: ${v.preserved_functions}`);line('');}
