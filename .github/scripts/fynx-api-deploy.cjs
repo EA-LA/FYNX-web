@@ -258,6 +258,16 @@ async function readiness(){
  out.ok=out.checks.every(c=>c.pass||c.check.startsWith('endpoint test key'));
  save('readiness.json',out);console.log(JSON.stringify(out,null,1));
 }
+// Describes how a file uses PayPal without revealing code: API calls, credential names it reads, credential-like literals.
+function paypalUsage(t){
+ const mentions=(t.match(/paypal/gi)||[]).length,calls=/api(-m)?(\.sandbox)?\.paypal\.com/i.test(t);
+ const envNames=[...new Set([...t.matchAll(/process\.env\.([A-Z0-9_]+)/g)].map(m=>m[1]).filter(n=>/paypal/i.test(n)))];
+ const secretNames=[...new Set([...t.matchAll(/defineSecret\(\s*['"]([A-Za-z0-9_]+)['"]/g)].map(m=>m[1]).filter(n=>/paypal/i.test(n)))];
+ const lines=t.split('\n').filter(l=>/paypal/i.test(l));
+ const literal=lines.filter(l=>/['"][A-Za-z0-9_\-]{30,}['"]/.test(l)).length;
+ const shapes=[...new Set(lines.map(l=>/['"]paypal['"]/i.test(l)?'string label "paypal"':/paypal\s*[:=]/i.test(l)?'object key':/\/\/|\*/.test(l.trim().slice(0,2))?'comment':'other'))];
+ return `{mentions ${mentions}; calls PayPal API: ${calls?'YES':'no'}; env vars read: ${envNames.join('/')||'none'}; secrets read: ${secretNames.join('/')||'none'}; credential-like literals: ${literal}; mention types: ${shapes.join(', ')}}`;
+}
 // Which 1st-gen functions ship a .runtimeconfig.json with PayPal keys, and which code reads it. Names only, never values.
 async function exposureMap(inv){
  const rows=[],dir=path.join(WORK,'exposure');
@@ -278,7 +288,7 @@ async function exposureMap(inv){
   if(f.environment==='GEN_1'){row.skipped='1st gen (scanned above)';g2.push(row);continue;}
   try{const dl=await gcf('POST',`/v2/${f.name}:generateDownloadUrl`,{});const downloadUri=dl.downloadUri||dl.downloadUrl;if(!downloadUri)throw new Error(`no download URL (source: ${row.source}; response keys: ${Object.keys(dl).join(',')||'none'})`);const r=await fetch(downloadUri);if(!r.ok)throw new Error(`download HTTP ${r.status} (source: ${row.source})`);const zp=d+'.zip';fs.mkdirSync(d,{recursive:true});fs.writeFileSync(zp,Buffer.from(await r.arrayBuffer()));execFileSync('unzip',['-q','-o',zp,'-d',d]);
    if(fs.existsSync(path.join(d,'.runtimeconfig.json'))&&/paypal/i.test(fs.readFileSync(path.join(d,'.runtimeconfig.json'),'utf8')))row.runtimeconfig_paypal=true;
-   const walk=p=>{for(const e of fs.readdirSync(p)){if(e==='node_modules'||e.startsWith('.'))continue;const q=path.join(p,e);if(fs.statSync(q).isDirectory())walk(q);else if(/\.(c?js|mjs|ts)$/.test(e)&&/\bpaypal\b/i.test(fs.readFileSync(q,'utf8')))row.code.push(path.relative(d,q));}};walk(d);
+   const walk=p=>{for(const e of fs.readdirSync(p)){if(e==='node_modules'||e.startsWith('.'))continue;const q=path.join(p,e);if(fs.statSync(q).isDirectory())walk(q);else if(/\.(c?js|mjs|ts)$/.test(e)){const t=fs.readFileSync(q,'utf8');if(/\bpaypal\b/i.test(t))row.code.push(path.relative(d,q)+' '+paypalUsage(t));}}};walk(d);
   }catch(e){row.error=e.message.slice(0,160);}
   fs.rmSync(d,{recursive:true,force:true});fs.rmSync(d+'.zip',{force:true});g2.push(row);}
  const g2hit=g2.filter(r=>r.plain_env_paypal.length||r.secret_refs_paypal.length||r.code.length||r.runtimeconfig_paypal);
