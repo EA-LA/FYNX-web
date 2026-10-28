@@ -268,7 +268,20 @@ async function exposureMap(inv){
    rows.push({function:name,has_runtimeconfig:fs.existsSync(rc),paypal_keys:keys.filter(k=>/paypal/i.test(k)),code_mentioning_paypal_or_config:readers});
   }catch(e){rows.push({function:name,error:e.message.slice(0,160)});}
   fs.rmSync(d,{recursive:true,force:true});fs.rmSync(path.join(dir,`${name}.zip`),{force:true});}
- return {functions_scanned:rows.length,exposed:rows.filter(r=>r.paypal_keys?.length).map(r=>r.function),readers:rows.filter(r=>r.code_mentioning_paypal_or_config?.length).map(r=>({function:r.function,files:r.code_mentioning_paypal_or_config})),errors:rows.filter(r=>r.error).map(r=>r.function)};
+ // 2nd gen: configuration names (plain env vars vs Secret Manager references) and code that mentions PayPal.
+ const gen2=[];let page='';
+ try{do{const r=await gcf('GET',`/v2/projects/${PROJECT}/locations/-/functions?pageSize=500${page?`&pageToken=${page}`:''}`);for(const f of r.functions||[])gen2.push(f);page=r.nextPageToken||'';}while(page);}catch(e){rows.push({function:'(2nd-gen list)',error:e.message.slice(0,160)});}
+ const g2=[];
+ for(const f of gen2){const name=f.name.split('/').pop(),sc=f.serviceConfig||{},d=path.join(dir,'g2-'+name);
+  const row={function:name,plain_env_paypal:Object.keys(sc.environmentVariables||{}).filter(k=>/paypal/i.test(k)),secret_refs_paypal:(sc.secretEnvironmentVariables||[]).filter(x=>/paypal/i.test(x.key+' '+x.secret)).map(x=>`${x.key}<-${x.secret}@${x.version}`),code:[]};
+  try{const {downloadUri}=await gcf('POST',`/v2/${f.name}:generateDownloadUrl`,{});const r=await fetch(downloadUri);const zp=d+'.zip';fs.mkdirSync(d,{recursive:true});fs.writeFileSync(zp,Buffer.from(await r.arrayBuffer()));execFileSync('unzip',['-q','-o',zp,'-d',d]);
+   if(fs.existsSync(path.join(d,'.runtimeconfig.json'))&&/paypal/i.test(fs.readFileSync(path.join(d,'.runtimeconfig.json'),'utf8')))row.runtimeconfig_paypal=true;
+   const walk=p=>{for(const e of fs.readdirSync(p)){if(e==='node_modules'||e.startsWith('.'))continue;const q=path.join(p,e);if(fs.statSync(q).isDirectory())walk(q);else if(/\.(c?js|mjs|ts)$/.test(e)&&/\bpaypal\b/i.test(fs.readFileSync(q,'utf8')))row.code.push(path.relative(d,q));}};walk(d);
+  }catch(e){row.error=e.message.slice(0,160);}
+  fs.rmSync(d,{recursive:true,force:true});fs.rmSync(d+'.zip',{force:true});g2.push(row);}
+ const g2hit=g2.filter(r=>r.plain_env_paypal.length||r.secret_refs_paypal.length||r.code.length||r.runtimeconfig_paypal);
+ return {functions_scanned:rows.length,exposed:rows.filter(r=>r.paypal_keys?.length).map(r=>r.function),readers:rows.filter(r=>r.code_mentioning_paypal_or_config?.length).map(r=>({function:r.function,files:r.code_mentioning_paypal_or_config})),errors:rows.filter(r=>r.error).map(r=>r.function),
+  gen2_scanned:g2.length,gen2_paypal:g2hit,gen2_errors:g2.filter(r=>r.error).map(r=>`${r.function}: ${r.error}`)};
 }
 async function verify(){
  const pre=load('inventory.json'),b=load('bundle.json'),post=await inventory('inventory-after.json'),problems=[],notes=[];
@@ -314,7 +327,8 @@ async function report(){
  if(b)line(`### Bundle\n${Object.keys(b.files).length} files, ${b.bytes} bytes, sha256 \`${b.sha256.slice(0,16)}…\`\n`);
  const rd=load('readiness.json'),ep=load('endpoints.json');
  if(rd){line(`### Readiness: ${rd.ok?'PASSED':'NOT READY'}`);for(const c of rd.checks)line(`- ${c.pass?'✅':c.check.startsWith('endpoint test key')?'⚠️':'❌'} ${c.check} — ${c.detail}`);
-  const x=rd.exposure;if(x){line('');line(`**PayPal secret exposure** (${x.functions_scanned} 1st-gen functions scanned, names only):`);line(`- Functions whose deployed source contains PayPal keys in .runtimeconfig.json: ${x.exposed.length?x.exposed.join(', '):'none'}`);line(`- Code that mentions PayPal or functions.config(): ${x.readers.length?x.readers.map(r=>`${r.function} (${r.files.join(', ')})`).join('; '):'none'}`);if(x.errors.length)line(`- Could not scan: ${x.errors.join(', ')}`);}line('');}
+  const x=rd.exposure;if(x){line('');line(`**PayPal secret exposure** (${x.functions_scanned} 1st-gen functions scanned, names only):`);line(`- Functions whose deployed source contains PayPal keys in .runtimeconfig.json: ${x.exposed.length?x.exposed.join(', '):'none'}`);line(`- Code that mentions PayPal or functions.config(): ${x.readers.length?x.readers.map(r=>`${r.function} (${r.files.join(', ')})`).join('; '):'none'}`);if(x.errors.length)line(`- Could not scan: ${x.errors.join(', ')}`);
+  if(x.gen2_scanned!==undefined){line(`- 2nd-gen functions scanned: ${x.gen2_scanned}`);if(!x.gen2_paypal.length)line('- 2nd gen: no PayPal env vars, Secret Manager references, runtime config or code');for(const r of x.gen2_paypal)line(`- 2nd gen ${r.function}: plain env vars [${r.plain_env_paypal.join(', ')||'-'}] · Secret Manager refs [${r.secret_refs_paypal.join(', ')||'-'}] · runtimeconfig ${r.runtimeconfig_paypal?'YES':'no'} · code [${r.code.join(', ')||'-'}]`);if(x.gen2_errors.length)line(`- 2nd gen could not scan: ${x.gen2_errors.slice(0,10).join('; ')}`);}}line('');}
  if(d)line(`### Deployment\nUpdated: ${d.deployed.join(', ')||'none'}\n`);
  if(ep){line(`### Endpoint tests: ${ep.ok?'ALL PASSED':'NOT ALL PASSED'}`);for(const c of ep.checks)line(`- ${c.skipped?'⏭️':c.scope?'🔒':c.pass?'✅':'❌'} ${c.check}${c.skipped?` — ${c.skipped}`:` — ${c.got}`}`);line('');}
  if(v){line(`### Verification: ${v.ok?'PASSED':'FAILED'}`);for(const p of v.problems)line(`- ❌ ${p}`);for(const n of v.notes)line(`- ⚠️ ${n}`);for(const c of v.smoke||[])line(`- ${c.skipped?'⏭️':c.pass?'✅':'❌'} ${c.check}${c.skipped?` — ${c.skipped}`:` (expected ${c.expected}, got ${c.got})`}`);line(`- Other functions preserved: ${v.preserved_functions}`);line('');}
