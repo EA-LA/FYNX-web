@@ -16,7 +16,15 @@ const PROJECT=process.env.PROJECT_ID||'fynx-c7a28',REGION=process.env.REGION||'u
 const TARGETS=(process.env.TARGETS||'developerGateway,developerWorkspace').split(',').map(s=>s.trim()).filter(Boolean);
 const WORK=path.resolve(process.env.WORK_DIR||'.deploy-work'),ROOT=path.resolve(__dirname,'../..');
 // Exactly the files the API functions load. Anything else in backend/ is deliberately excluded.
-const BUNDLE_FILES=['developer-api.cjs','developer-core.cjs','developer-engine.cjs','developer-billing.cjs','developer-billing-policy.cjs','developer-analytics.cjs','developer-markets.cjs','developer-markets-data.cjs','package.json','package-lock.json'];
+// The package contains developer-api.cjs plus every module it loads (followed through relative
+// require() calls), package.json and package-lock.json. Nothing else from backend/ is shipped.
+function requiresOf(code){return [...code.matchAll(/require\(\s*['"]\.\/([^'"]+)['"]\s*\)/g)].map(m=>m[1]);}
+function closure(dir,entry='developer-api.cjs'){
+ const seen=new Set(),missing=new Set(),stack=[entry];
+ while(stack.length){const f=stack.pop();if(seen.has(f))continue;const p=path.join(dir,f);if(!fs.existsSync(p)){missing.add(f);continue;}seen.add(f);for(const r of requiresOf(fs.readFileSync(p,'utf8')))stack.push(r);}
+ return {files:[...seen].sort(),missing:[...missing].sort()};
+}
+const BUNDLE_FILES=[...closure(path.resolve(__dirname,'../../backend')).files,'package.json','package-lock.json'];
 // Settings that a source-only update must never change.
 const LOCKED=['runtime','entryPoint','availableMemoryMb','timeout','maxInstances','minInstances','serviceAccountEmail','ingressSettings','vpcConnector','dockerRegistry','kmsKeyName'];
 const API=process.env.GCF_API_BASE||'https://cloudfunctions.googleapis.com'; // override only for local tests
@@ -102,10 +110,15 @@ function driftSummary(file,deployed){
 // so they can be reconciled without publishing production code. Only the private-key holder can read them.
 function sealDrift(out){
  const pem=process.env.DRIFT_PUBLIC_KEY_B64?Buffer.from(process.env.DRIFT_PUBLIC_KEY_B64,'base64').toString('utf8'):'';
- if(!pem||!out.drift.length)return;
+ const items=[...out.drift];
+ for(const t of TARGETS){const dir=path.join(WORK,'previous',t);if(!fs.existsSync(dir))continue;
+  for(const f of fs.readdirSync(dir)){if(f==='node_modules'||BUNDLE_FILES.includes(f)||!fs.statSync(path.join(dir,f)).isFile())continue;
+   const {hashes}=history(f);if(!hashes.has(sha(fs.readFileSync(path.join(dir,f)))))items.push(`${t}/${f}`);}}
+ out.not_in_git=items.filter(i=>!out.drift.includes(i));
+ if(!pem||!items.length)return;
  const pub=crypto.createPublicKey(pem);if(pub.asymmetricKeyType!=='rsa'||pub.asymmetricKeyDetails.modulusLength<3072)throw new Error('DRIFT_PUBLIC_KEY_B64 must be an RSA key of at least 3072 bits.');
  const seen=new Map();out.sealed={};
- for(const item of out.drift){const [t,f]=item.split('/');const data=fs.readFileSync(path.join(WORK,'previous',t,f));const h=sha(data);
+ for(const item of items){const [t,f]=item.split('/');const data=fs.readFileSync(path.join(WORK,'previous',t,f));const h=sha(data);
   if(seen.has(h)){out.sealed[item]={same_as:seen.get(h)};continue;}seen.set(h,item);
   const key=crypto.randomBytes(32),iv=crypto.randomBytes(12),c=crypto.createCipheriv('aes-256-gcm',key,iv),enc=Buffer.concat([c.update(data),c.final()]);
   out.sealed[item]={alg:'RSA-OAEP-256+A256GCM',sha256:h,key:crypto.publicEncrypt({key:pub,oaepHash:'sha256',padding:crypto.constants.RSA_PKCS1_OAEP_PADDING},key).toString('base64'),iv:iv.toString('base64'),tag:c.getAuthTag().toString('base64'),data:enc.toString('base64')};}
@@ -121,10 +134,12 @@ function compare(){
    files[f]=h===head?'same_as_main':hashes.has(h)?`older_commit_${hashes.get(h)}`:'UNCOMMITTED_CHANGES';
    if(files[f]==='UNCOMMITTED_CHANGES'){out.drift.push(`${t}/${f}`);out.ok=false;(out.drift_detail||(out.drift_detail={}))[`${t}/${f}`]=driftSummary(f,fs.readFileSync(p));}
   }
+  const live=closure(dir),absent=live.files.filter(f=>!BUNDLE_FILES.includes(f));
+  if(absent.length){out.ok=false;out.missing_modules=[...new Set([...(out.missing_modules||[]),...absent])];}
   const index=['index.js','index.cjs'].map(f=>path.join(dir,f)).find(fs.existsSync);
   const exportsList=index?[...fs.readFileSync(index,'utf8').matchAll(/exports\.([A-Za-z0-9_]+)\s*=/g)].map(m=>m[1]):[];
   const other=fs.readdirSync(dir).filter(f=>!BUNDLE_FILES.includes(f)&&f!=='node_modules'&&!/^index\.c?js$/.test(f));
-  out.targets[t]={files,deployed_entry_exports:exportsList.length,deployed_other_files:other.length,archive_sha256:src.sources?.[t]?.sha256};
+  out.targets[t]={files,live_modules_missing_from_package:absent,deployed_entry_exports:exportsList.length,deployed_other_files:other.length,archive_sha256:src.sources?.[t]?.sha256};
  }
  sealDrift(out);save('compare.json',out);const {sealed,...shown}=out;console.log(JSON.stringify(shown,null,1));
  if(!out.ok)process.exitCode=1;return out;
@@ -226,8 +241,10 @@ async function report(){
   line('');line(`All 1st-gen functions in project: **${inv.all.length}**${inv.gen2?` · 2nd-gen: **${inv.gen2.length}**`:''}`);line('');
   if(inv.all.length){line('<details><summary>Function inventory</summary>');line('');for(const f of inv.all)line(`- ${f.name} · ${f.status} · ${f.runtime} · v${f.versionId} · ${f.updateTime}`);line('');line('</details>');line('');}}
  if(cmp){line('### Deployed source vs Git history');for(const [t,c] of Object.entries(cmp.targets)){line(`**${t}**${c.skipped?` — ${c.skipped}`:` — deployed entry exports ${c.deployed_entry_exports}, other files ${c.deployed_other_files}`}`);if(c.files)for(const [f,s] of Object.entries(c.files))line(`- ${f}: ${s}`);}if(cmp.drift_detail){line('');line('**Drift summary** (no code shown):');for(const [k,d] of Object.entries(cmp.drift_detail)){const c=d.closest;line(`- ${k}: closest committed version \`${c?.commit}\` (${c?.date}) — ${c?.added} line(s) added, ${c?.removed} removed in ${c?.hunks} place(s)${c?.whitespace_only?' — WHITESPACE ONLY':''}; deployed exports: ${d.deployed_exports.join(', ')||'none'}; main exports: ${d.main_exports.join(', ')||'none'}`);}}
+  if(cmp.missing_modules?.length)line(`- ❌ Live code loads modules that are not in the deploy package: ${cmp.missing_modules.join(', ')}`);
+  if(cmp.not_in_git?.length)line(`- Live files with no committed version: ${cmp.not_in_git.join(', ')}`);
   if(cmp.sealed){line('');line('<details><summary>Sealed production files (encrypted to the operator key; unreadable without it)</summary>');line('');line('```json');line(JSON.stringify(cmp.sealed));line('```');line('</details>');}
-  line(cmp.ok?'Result: **no uncommitted production changes**.':`Result: **BLOCKED** — ${cmp.drift.length?`uncommitted changes in ${cmp.drift.join(', ')}`:'deployed source not available'}.`);line('');}
+  line(cmp.ok?'Result: **no uncommitted production changes**.':`Result: **BLOCKED** — ${cmp.drift.length?`uncommitted changes in ${cmp.drift.join(', ')}`:cmp.missing_modules?.length?`live code needs ${cmp.missing_modules.join(', ')}`:'deployed source not available'}.`);line('');}
  if(b)line(`### Bundle\n${Object.keys(b.files).length} files, ${b.bytes} bytes, sha256 \`${b.sha256.slice(0,16)}…\`\n`);
  if(d)line(`### Deployment\nUpdated: ${d.deployed.join(', ')||'none'}\n`);
  if(v){line(`### Verification: ${v.ok?'PASSED':'FAILED'}`);for(const p of v.problems)line(`- ❌ ${p}`);for(const n of v.notes)line(`- ⚠️ ${n}`);for(const c of v.smoke||[])line(`- ${c.skipped?'⏭️':c.pass?'✅':'❌'} ${c.check}${c.skipped?` — ${c.skipped}`:` (expected ${c.expected}, got ${c.got})`}`);line(`- Other functions preserved: ${v.preserved_functions}`);line('');}
