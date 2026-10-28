@@ -3,14 +3,7 @@ const functions=require('firebase-functions/v1');
 const admin=require('firebase-admin');
 const {randomBytes,randomUUID,createHash}=require('node:crypto');
 const engine=require('./developer-engine.cjs');
-const analytics=require('./developer-analytics.cjs');
-const marketHours=require('./developer-markets.cjs');
-// Stateless calculation routes (APIs 6, 7 and 8). They read only the request body and are metered like Risk calls.
-function statelessRoute(route){
- const m=route.match(/^\/v1\/(indicators|portfolio|markets)\/([a-z-]+)$/);if(!m)return null;
- const [,group,name]=m,fn=group==='indicators'?analytics.indicator:group==='portfolio'?analytics.portfolio:marketHours.markets;
- return {group,name,run:input=>fn(name,input)};
-}
+const access=require('./developer-access.cjs');
 const {payloadHash:canonicalHash,validateInput,entitlement,effectiveCap}=require('./developer-core.cjs');
 const logger=require('firebase-functions/logger');
 const db=()=>admin.firestore();
@@ -39,16 +32,15 @@ async function runOperation(uid,env,route,input,keyHash=null){
  if(!validateInput(input))error('invalid-argument','Send a JSON object under 20KB.');
  await reserveRate(uid,env);
  const er=envRef(uid,env),reqId=randomUUID(),at=Date.now(),requestRef=er.collection('requests').doc(reqId),usageRef=er.collection('usage').doc(month());
- const parsed=route.match(/^\/v1\/risk\/([a-z-]+)$/),stateless=statelessRoute(route);
+ const parsed=route.match(/^\/v1\/risk\/([a-z-]+)$/);
  return db().runTransaction(async tx=>{
   const profileSnap=await tx.get(root(uid)),usageSnap=await tx.get(usageRef);
-  if(keyHash){const key=await tx.get(db().collection('fynxDeveloperKeys').doc(keyHash));if(!key.exists||key.data().revokedAt)error('unauthenticated','Key was revoked.');}
+  if(keyHash){const key=await tx.get(db().collection('fynxDeveloperKeys').doc(keyHash));if(!key.exists||key.data().revokedAt)error('unauthenticated','Key was revoked.');if(key.data().uid!==uid||key.data().environment!==env||!access.permits(key.data(),route))error('permission-denied','This key does not allow the requested operation.');}
   const profile=profileSnap.data()||{},usage=usageSnap.data()||{},limits=entitlement(profile,env);
   const cap=effectiveCap(profile,limits);
   let result,duplicate=false;
   if(route.startsWith('GET ')){const m=route.match(/^GET \/v1\/propfirm\/accounts\/([-a-zA-Z0-9_]+)\/(status|events)$/);if(!m)error('not-found','Read endpoint not found.');const ar=er.collection('accounts').doc(m[1]),a=await tx.get(ar);if(!a.exists)error('not-found','Account not found.');if(m[2]==='status')result={account_id:a.id,...a.data()};else{let q=ar.collection('events').orderBy('at','desc').orderBy(admin.firestore.FieldPath.documentId(),'desc');if(input.before){if(!Number.isSafeInteger(Number(input.before)))error('invalid-argument','Invalid cursor');q=q.startAfter(Number(input.before),ident(input.beforeId));}result={items:rows(await tx.get(q.limit(25)))};}}
   else if(parsed)result=engine.risk(parsed[1],input);
-  else if(stateless)result=stateless.run(input);
   else if(route==='/v1/propfirm/rule-sets'){
    const r=engine.rules(input),ref=er.collection('rules').doc();const existing=await tx.get(er.collection('rules').limit(101));if(existing.size>=100)error('resource-exhausted','Maximum 100 rule sets per environment.');tx.create(ref,{...r,createdAt:at});result={rule_set_id:ref.id,...r};
   }else if(route==='/v1/propfirm/accounts'){
@@ -82,7 +74,7 @@ async function workspace(data,context){
    const existing=await tx.get(er.collection('keys'));if(action!=='revokeKey'&&existing.docs.filter(s=>!s.data().revokedAt).length>=10&&action!=='rotateKey')error('resource-exhausted','Maximum 10 active keys per environment.');
    let oldRef,old;if(action!=='createKey'){oldRef=er.collection('keys').doc(ident(data.id));old=await tx.get(oldRef);if(!old.exists||old.data().revokedAt)error('not-found','Active key not found.');}
    if(old){tx.update(db().collection('fynxDeveloperKeys').doc(old.data().digest),{revokedAt:Date.now()});tx.update(oldRef,{revokedAt:Date.now()});}
-   if(action!=='revokeKey'){tx.create(newRef,{uid,environment:env,keyId,createdAt:Date.now(),revokedAt:null});tx.create(listing,{label,prefix:token.slice(0,15)+'…'+token.slice(-4),digest,createdAt:Date.now(),revokedAt:null});}
+   if(action!=='revokeKey'){let scopes;try{scopes=access.scopes(data.scopes===undefined&&old?old.data().scopes:data.scopes);}catch(e){error('invalid-argument',e.message);}tx.create(newRef,{uid,environment:env,keyId,scopes,createdAt:Date.now(),revokedAt:null});tx.create(listing,{label,scopes,prefix:token.slice(0,15)+'…'+token.slice(-4),digest,createdAt:Date.now(),revokedAt:null});}
    tx.create(er.collection('audit').doc(),{at:Date.now(),action,key_id:action==='revokeKey'?data.id:keyId,previous_key_id:action==='rotateKey'?data.id:null});
   });return action==='revokeKey'?{revoked:true}:{key:token,id:keyId,shown_once:true};
  }
@@ -101,14 +93,15 @@ exports.developerGateway=runtime.https.onRequest(async(req,res)=>{
   if(req.method==='POST'&&(!req.is('application/json')||!validateInput(req.body)))return res.status(400).json({error:{code:'invalid_request',message:'Send a JSON body under 20KB.'}});
   const token=(req.get('Authorization')||'').replace(/^Bearer /,'');if(!/^fynx_(test|live)_[a-f0-9]{64}$/.test(token))error('unauthenticated','Invalid API key.');
   const digest=hash(token),key=await db().collection('fynxDeveloperKeys').doc(digest).get();if(!key.exists||key.data().revokedAt)error('unauthenticated','Invalid or revoked API key.');
+  const route=(req.method==='GET'?'GET ':'')+req.path.replace(/\/$/,'');if(!access.permits(key.data(),route))error('permission-denied','This key does not allow the requested operation.');
   const {uid,environment:env}=key.data(),user=await admin.auth().getUser(uid);if(user.disabled||!user.emailVerified)error('permission-denied','Owner account is not eligible for API access.');
   owner=uid;ownerEnv=env;await throttle(uid,1800,'gatewayRate');
   await require('./developer-billing.cjs').refresh(uid);
-  const route=(req.method==='GET'?'GET ':'')+req.path.replace(/\/$/,'');const output=await runOperation(uid,env,route,req.method==='GET'?req.query:req.body,digest);res.set('X-Request-Id',output.request_id);if(output.limit){res.set('X-RateLimit-Limit',String(output.limit));res.set('X-RateLimit-Remaining',String(output.remaining));}return res.status(output.status).json(output);
+  const output=await runOperation(uid,env,route,req.method==='GET'?req.query:req.body,digest);res.set('X-Request-Id',output.request_id);if(output.limit){res.set('X-RateLimit-Limit',String(output.limit));res.set('X-RateLimit-Remaining',String(output.remaining));}return res.status(output.status).json(output);
  }catch(e){const status=errorStatus(e);if(owner){await recordFailure(owner,ownerEnv,req.path,e,requestId).catch(()=>{});}if(status===429)res.set('Retry-After','60');return res.status(status).json({error:{code:e.code||'internal',message:status===500?'Temporary service error. Retry with the same event identifier.':e.message}});}
 });
 exports.developerHealth=functions.runWith({timeoutSeconds:15,memory:'256MB',maxInstances:2}).https.onRequest(async(req,res)=>{
  res.set('Cache-Control','no-store');if(req.method!=='GET')return res.status(405).end();
  const started=Date.now();try{await db().collection('fynxDeveloperOperations').doc('health').get();const result=engine.risk('risk-reward',{entry_price:'100',stop_loss_price:'90',take_profit_price:'130',direction:'long'});if(result.rr_ratio!=='3')throw new Error('Calculation self-check failed');res.status(200).json({status:'ok',engine_version:2});}catch(e){telemetry('health',503,started);res.status(503).json({status:'unavailable'});}
 });
-exports._test={entitlement,hash,statelessRoute};
+exports._test={entitlement,hash};
