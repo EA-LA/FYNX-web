@@ -39,3 +39,4 @@ require('./build-search-identity.cjs');
 
 require('./build-advertising.cjs');
 require('./build-adsense-verification.cjs').build();
+require('./build-terminal-design.cjs');
