@@ -34,9 +34,12 @@ require('./build-search-metadata.cjs');
 require('./build-learning.cjs');
 require('./build-research-pages.cjs');
 require('./build-news-intelligence.cjs');
+require('./build-newsroom.cjs');
 require('./build-discovery.cjs');
 require('./build-search-identity.cjs');
 
 require('./build-advertising.cjs');
 require('./build-adsense-verification.cjs').build();
 require('./build-terminal-design.cjs');
+// Cache identities must be finalized after every HTML generator.
+require('./build-release-assets.cjs').build(root);

@@ -934,7 +934,7 @@
       .news-list{ max-height:360px; }
     }
   </style>
-  <script type="module" src="assets/js/session-bootstrap.js?v=20260928-audit2"></script>
+  <script type="module" src="assets/js/session-bootstrap.js?v=20261030-r1"></script>
   <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
@@ -950,13 +950,15 @@
 <!-- terminal-design:start -->
 <link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
 <link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
-<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261029-r2">
-<script src="/assets/js/market-intelligence-data.js?v=20261029-r2" defer></script>
-<script src="/assets/js/terminal-market-data.js?v=20261029-r2" defer></script>
-<script src="/assets/js/terminal-header.js?v=20261029-r2" defer></script>
-<script src="/assets/js/terminal-market-ui.js?v=20261029-r2" defer></script>
-<link rel="stylesheet" href="/assets/css/terminal-home.css?v=20261029-r2">
-<script src="/assets/js/terminal-home.js?v=20261029-r2" defer></script>
+<script src="/assets/js/newsroom-editions.js?v=20261030-r1" defer></script>
+<script src="/assets/js/newsroom-media.js?v=20261030-r1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261030-r1">
+<script src="/assets/js/market-intelligence-data.js?v=20261030-r1" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261030-r1" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261030-r1" defer></script>
+<script src="/assets/js/terminal-market-ui.js?v=20261030-r1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-home.css?v=20261030-r1">
+<script src="/assets/js/terminal-home.js?v=20261030-r1" defer></script>
 <!-- terminal-design:end -->
 </head>
 
@@ -1050,13 +1052,13 @@
         <div class="nr-daily-bar"><div><span id="greetingText" class="nr-greeting">Welcome to your workspace.</span><span id="greetingMeta" class="nr-sr-only">Local time</span><div id="dailyLine" class="nr-daily"><span>Daily</span> Build a considered trading routine.</div></div><form action="/explore.html" class="nr-search" role="search"><label class="nr-sr-only" for="resource-query">Find a tool, lesson or market topic</label><input id="resource-query" name="q" type="search" placeholder="Try margin, position size, bonds…"><button type="submit">Search</button></form></div>
         <div class="nr-front">
           <section class="nr-lead" aria-labelledby="briefing-title">
-            <div class="nr-eyebrow"><span class="nr-red-label">Briefing</span><span id="briefingSource">FYNX · Market intelligence</span></div>
-            <figure class="nr-chart" aria-label="SPY adjusted daily market history"><div class="nr-chart-top"><span>MARKET CONTEXT · SPY</span><span id="homeChartValue">—</span></div><div id="homeHistoryChart" class="nr-chart-canvas"><p>Loading adjusted daily prices…</p></div><figcaption id="homeChartSource">S&amp;P 500 ETF · historical daily closes</figcaption></figure>
+            <div class="nr-eyebrow"><span class="nr-red-label">Briefing</span><span id="briefingSource">FYNX · Market intelligence</span></div><p class="nr-edition" id="homeEditionStatus" data-edition-label>Selected edition</p>
             <div id="homeLeadStory" aria-busy="true"><h2 id="briefing-title">Your market briefing.</h2><p class="nr-empty">Checking published headlines and official releases.</p><a href="/news.html">Explore the News desk →</a></div>
             <div id="homeSecondaryStories" class="nr-secondary"></div>
           </section>
           <section class="nr-latest" aria-labelledby="latest-title"><div class="nr-section-head"><h2 id="latest-title">Latest</h2><a href="/news.html">All coverage →</a></div><div id="homeLatestStories" aria-busy="true"><p class="nr-empty">Connecting to the original sources…</p></div><div class="nr-feed-status"><p id="homeBriefingStatus" role="status">Checking coverage.</p><button type="button" id="homeBriefingRefresh">↻ Refresh</button></div></section>
           <aside class="nr-side" aria-label="Market overview"><section><div class="nr-section-head"><h2>Markets</h2><a href="/tools/research-heatmap.html">Heat map →</a></div><table class="nr-market-table"><thead><tr><th scope="col">Instrument</th><th scope="col">Last</th><th scope="col">Change</th></tr></thead><tbody id="homeQuoteRows"><tr><td colspan="3">Loading indicative quotes…</td></tr></tbody></table><p id="homeQuoteStatus" class="nr-source-note">Source timestamps appear with each quote.</p></section>
+            <figure class="nr-chart" aria-label="SPY adjusted daily market history"><div class="nr-chart-top"><span>MARKET CONTEXT · SPY</span><span id="homeChartValue">—</span></div><div id="homeHistoryChart" class="nr-chart-canvas"><p>Loading adjusted daily prices…</p></div><figcaption id="homeChartSource">S&amp;P 500 ETF · historical daily closes</figcaption></figure>
             <section class="nr-sessions"><div class="nr-section-head"><h2>Trading sessions</h2><a href="/tools/market-hours.html">Hours →</a></div><div class="mh-grid">
                   <div class="mh-card" id="cardLondon">
                     <div class="mh-head">
@@ -1097,9 +1099,10 @@
           </aside>
         </div>
         <div class="nr-middle">
-          <section class="nr-calendar"><div class="nr-section-head"><h2>Economic calendar</h2><a href="/calendar.html">Full calendar →</a></div><div id="homeEconomicCalendar" class="nr-calendar-widget"></div><p class="nr-source-note">Calendar supplied by TradingView. If the provider is unavailable, <a href="/tools/economic-calendar.html">open the full calendar</a> or <a href="https://www.bls.gov/schedule/news_release/" target="_blank" rel="noopener noreferrer">the official BLS schedule ↗</a>.</p></section>
+          <section class="nr-calendar"><div class="nr-section-head"><h2>Economic calendar</h2><a href="/calendar.html">Full calendar →</a></div><div id="homeEconomicCalendar" class="nr-calendar-widget"></div><p class="nr-source-note"><span id="homeCalendarScope">Calendar supplied by TradingView.</span> If the provider is unavailable, <a href="/tools/economic-calendar.html">open the full calendar</a> or <a href="/news.html#official-sources">review official releases</a>.</p></section>
           <section class="nr-journal"><div class="nr-section-head"><h2>Your journal</h2><a href="/journal.html">Open journal →</a></div><div class="nr-journal-grid"><div><span>Recorded trades</span><strong id="homeTrades">—</strong></div><div><span>Win rate</span><strong id="homeWinRate">—</strong></div><div class="nr-journal-pnl"><span>Net realized P/L</span><strong id="homePnl">—</strong></div></div><p id="homeStatsStatus" class="nr-source-note">Sign in to load your results.</p><div class="nr-actions"><a class="nr-primary" href="/journal.html">Review your journal</a><a href="/calculator.html">Plan a position</a></div><div class="nr-process"><span>YOUR NEXT STEP</span><h3>Research. Plan. Review.</h3><p>Keep the source, define your risk, and return to your own trading record.</p><a href="/pro.html">Explore Pro tools &amp; plans →</a></div></section>
         </div>
+        <section class="nr-topic-coverage" aria-labelledby="homeTopicsTitle"><div class="nr-section-head"><h2 id="homeTopicsTitle">Across the newsroom</h2><span data-edition-label>Selected edition</span></div><p class="nr-source-note">Recent reporting by topic, with original sources and publication times. Context photographs identify the subject of each desk.</p><div id="homeTopicSections" class="nr-topic-grid" aria-busy="true"><p class="nr-empty">Checking the latest topic coverage…</p></div></section>
         <div class="nr-resources">
           <section><div class="nr-section-head"><h2>Quick access</h2><a href="/tools/research-desk.html">Research Desk · 7 free tools →</a></div><div class="nr-quick-links"><a href="/tools/position-size.html">Position size <span>→</span></a><a href="/tools/margin.html">Margin <span>→</span></a><a href="/tools/risk-reward.html">Risk / reward <span>→</span></a><a href="/tools/economic-calendar.html">Economic calendar <span>→</span></a><a href="/learn.html">Learning paths <span>→</span></a><a href="/tools/research-desk.html">Research Desk <span>→</span></a></div><details class="nr-saved"><summary>Saved in this browser</summary><div class="workspace-resource-list" data-workspace-saved><p>Save tools and lessons from the resource library to keep them here.</p></div></details></section>
           <section><div class="nr-section-head"><h2>Recently opened</h2><a href="/explore.html">Explore resources →</a></div><div class="workspace-resource-list nr-recent" data-workspace-recent><p>Your recently opened resources will appear here.</p></div></section>
@@ -1129,7 +1132,7 @@
     </main>
   </div>
 
-  <script src="demo-mode.js"></script>
+  <script src="demo-mode.js?v=20261030-r1"></script>
   <script>
     // =========================
     // THEME (APPLY ONLY) — synced across pages via ONE key: fynx_theme
@@ -1142,34 +1145,6 @@
     })();
 
 
-
-    function isDemoMode(){
-      return window.FynxDemoMode?.isDemoMode?.() || window.FynxPreferences?.getItem("mode") === "demo";
-    }
-
-    function injectDemoSnapshot(){
-      if (!isDemoMode()) return;
-      const heroLeft = document.querySelector(".hero-left");
-      if (!heroLeft || document.getElementById("demoSnapshot")) return;
-
-      const box = document.createElement("div");
-      box.id = "demoSnapshot";
-      box.style.marginTop = "14px";
-      box.style.padding = "12px";
-      box.style.border = "1px solid var(--line)";
-      box.style.borderRadius = "12px";
-      box.style.background = "color-mix(in oklab, var(--surface) 92%, transparent)";
-      box.innerHTML = `
-        <div style="font-size:11px;opacity:.7;font-weight:800;">DEMO ACCOUNT</div>
-        <div style="font-size:24px;font-weight:900;margin-top:4px;">$24,680.00</div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:12px;">
-          <span>Profit: <b>+$2,140</b></span>
-          <span>Trades: <b>18</b></span>
-          <span>Win Rate: <b>61.1%</b></span>
-        </div>
-      `;
-      heroLeft.appendChild(box);
-    }
 
     // =========================
     // DATE CHIP
@@ -1187,7 +1162,6 @@
     // We read common keys + JSON profile objects used by profile pages.
     // =============================================================================
     function getProfileName() {
-      if (window.FynxDemoMode?.isDemoMode?.()) return 'Demo User';
       return window.FynxIdentity?.displayName || null;
     }
     window.addEventListener('fynx:identity', renderGreeting);
@@ -1533,12 +1507,12 @@
     initHome();
   </script>
 
-  <script src="fynx-nav.js?v=20261011-discovery"></script>
+  <script src="fynx-nav.js?v=20261030-r1"></script>
 
   <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
   <script src="fynx-usercard.js?v=20260928-audit2"></script>
   <script src="assets/js/tradingview-fit.js?v=20260922-fit2"></script>
 
-<script type="module" src="assets/js/home-journal.js?v=20260928-audit2"></script>
+<script type="module" src="assets/js/home-journal.js?v=20261030-r1"></script>
 <footer></footer></body>
 </html>

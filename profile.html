@@ -658,7 +658,7 @@
       .form-col{ min-width: 100%; }
     }
   </style>
-  <script type="module" src="assets/js/session-bootstrap.js?v=20260928-audit2"></script>
+  <script type="module" src="assets/js/session-bootstrap.js?v=20261030-r1"></script>
   <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
@@ -674,13 +674,15 @@
 <!-- terminal-design:start -->
 <link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
 <link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
-<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261029-r2">
-<script src="/assets/js/market-intelligence-data.js?v=20261029-r2" defer></script>
-<script src="/assets/js/terminal-market-data.js?v=20261029-r2" defer></script>
-<script src="/assets/js/terminal-header.js?v=20261029-r2" defer></script>
-<script src="/assets/js/terminal-market-ui.js?v=20261029-r2" defer></script>
-<link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261029-r2">
-<script src="/assets/js/terminal-pages.js?v=20261029-r2" defer></script>
+<script src="/assets/js/newsroom-editions.js?v=20261030-r1" defer></script>
+<script src="/assets/js/newsroom-media.js?v=20261030-r1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261030-r1">
+<script src="/assets/js/market-intelligence-data.js?v=20261030-r1" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261030-r1" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261030-r1" defer></script>
+<script src="/assets/js/terminal-market-ui.js?v=20261030-r1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261030-r1">
+<script src="/assets/js/terminal-pages.js?v=20261030-r1" defer></script>
 <!-- terminal-design:end -->
 </head>
 
@@ -775,7 +777,7 @@
           <p>Manage your account and settings</p>
           <div class="demo-auth-cta" id="demoAuthCta">
             <div class="demo-auth-copy">
-              <strong>Ready to unlock your real account?</strong>
+              <strong>Your account and journal</strong>
               <span>Sign in or sign up to save journal data and settings.</span>
             </div>
             <div class="demo-auth-actions">
@@ -926,7 +928,7 @@
     </div>
   </div>
 
-  <script src="demo-mode.js"></script>
+  <script src="demo-mode.js?v=20261030-r1"></script>
   <script>
     /* =========================
        GLOBAL THEME (SYNCED)
@@ -935,39 +937,10 @@
     const THEME_KEY = "fynx_theme";
     const themeBtn = document.getElementById("themeBtn");
 
-  function isDemoMode(){
-  return window.FynxDemoMode?.isDemoMode?.() || localStorage.getItem("mode") === "demo";
-}
-
-function showDemoBlocked(){
-  alert("Create an account to use this feature");
-}
-
-function isDemoUser(){
-  return isDemoMode();
-}
-
-function isDemoUnsignedUser(){
-  return isDemoUser() && getAuthEmail() === "demo@fynx.app";
-}
-
-function applySavedTheme(){
-  const saved = window.FynxPreferences?.getItem(THEME_KEY) || "light";
-  document.body.classList.toggle("dark-mode", saved === "dark");
-}
-
-function isDemoUser(){
-  return isDemoMode();
-}
-
-function isDemoUnsignedUser(){
-  return isDemoUser() && getAuthEmail() === "demo@fynx.app";
-}
-
-function applySavedTheme(){
-  const saved = window.FynxPreferences?.getItem(THEME_KEY) || "light";
-  document.body.classList.toggle("dark-mode", saved === "dark");
-}
+    function applySavedTheme(){
+      const saved = window.FynxPreferences?.getItem(THEME_KEY) || "light";
+      document.body.classList.toggle("dark-mode", saved === "dark");
+    }
     applySavedTheme();
 
     if (themeBtn) {
@@ -978,10 +951,7 @@ function applySavedTheme(){
       });
     }
 
-    // ---------- Profile + Stats (LocalStorage only) ----------
-    // ✅ Email comes from login storage (you must set this when user logs in):
-    // localStorage.setItem("fynx_auth_email", userEmail)
-    const AUTH_EMAIL_KEY = "fynx_auth_email";
+    // Profile identity and statistics come from the signed-in account reader.
 
     const DEFAULT_PROFILE = {
       name: "FYNX User",
@@ -995,22 +965,13 @@ function applySavedTheme(){
     }
 
     function getAuthEmail(){
-      if (isDemoMode()) return "demo@fynx.app";
       const v = window.FynxProfileState?.email || "";
       return v || "";
     }
 
     function getProfile(){
-      if (isDemoMode()) {
-        return {
-          ...DEFAULT_PROFILE,
-          name: "Demo User",
-          description: "You are viewing demo data — Sign up to unlock real account",
-          memberSince: "Apr 2026"
-        };
-      }
       const p = window.FynxProfileState?.profile || null;
-      const merged = { ...DEFAULT_PROFILE, ...(p || {}) };
+      const merged = { ...DEFAULT_PROFILE, name: window.FynxProfileState?.uid ? "FYNX User" : "Guest", ...(p || {}) };
       delete merged.email;
       return merged;
     }
@@ -1043,10 +1004,7 @@ function applySavedTheme(){
     }
 
     function loadMetrics(){
-      if (isDemoMode()) {
-        return { total: 18, winRate: 61.1, avgReturn: 3.4, memberSince: "Apr 2026" };
-      }
-      return window.FynxProfileState?.metrics || { total: null, winRate: null, avgReturn: null, memberSince: "—" };
+      return window.FynxProfileState?.metrics || { total: 0, winRate: null, avgReturn: null, memberSince: "—" };
     }
 
     function fmtNumber(n){
@@ -1072,7 +1030,7 @@ function applySavedTheme(){
       const profile = getProfile();
       const demoAuthCta = document.getElementById("demoAuthCta");
       if (demoAuthCta){
-        demoAuthCta.style.display = isDemoUnsignedUser() ? "flex" : "none";
+        demoAuthCta.style.display = !window.FynxProfileState?.uid ? "flex" : "none";
       }
 
       // ✅ FIX 3: name persists forever via localStorage fynx_profile
@@ -1109,10 +1067,6 @@ function applySavedTheme(){
     // ---------- Settings links ----------
     document.querySelectorAll(".settings-item").forEach(item => {
       item.addEventListener("click", () => {
-        if (isDemoMode()) {
-          showDemoBlocked();
-          return;
-        }
         const link = item.getAttribute("data-link");
         if (link) window.location.href = link;
       });
@@ -1133,10 +1087,6 @@ function applySavedTheme(){
     let pendingAvatarDataUrl = "";
 
     function openModal(){
-      if (isDemoMode()) {
-        showDemoBlocked();
-        return;
-      }
       location.href = "account-settings.html";
       return;
       const p = getProfile();
@@ -1174,10 +1124,6 @@ function applySavedTheme(){
     });
 
     saveBtn.addEventListener("click", () => {
-      if (isDemoMode()) {
-        showDemoBlocked();
-        return;
-      }
       const p = getProfile();
       const next = {
         ...p,
@@ -1195,13 +1141,13 @@ function applySavedTheme(){
     });
   </script>
 
-  <script src="fynx-nav.js?v=20261011-discovery"></script>
+  <script src="fynx-nav.js?v=20261030-r1"></script>
 
   <script type="module">
     import { mountNotificationBell } from "./assets/js/account-ui.js?v=20260928-audit2";
     mountNotificationBell();
   </script>
 
-  <script type="module" src="assets/js/profile-sync.js?v=20260915"></script>
+  <script type="module" src="assets/js/profile-sync.js?v=20261030-r1"></script>
 </body>
 </html>

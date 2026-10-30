@@ -672,6 +672,8 @@
     let usePercentRisk = true;
     let manualMode = false;
     let currentPrice = 0;
+    let referenceDate = "";
+    let priceRequest = 0;
     let isLoading = false;
     let timer = null;
 
@@ -714,7 +716,7 @@
       isLoading = loading;
       els.calcBtn.classList.toggle("disabled", loading);
       els.refreshBtn.classList.toggle("disabled", loading);
-      els.priceStatus.textContent = loading ? "Loading..." : (currentPrice>0 ? (els.manualPriceRow.style.display !== "none" ? "Manual" : "Daily reference") : "—");
+      els.priceStatus.textContent = loading ? "Loading..." : (currentPrice>0 ? (els.manualPriceRow.style.display !== "none" ? "Manual" : "Daily reference · " + referenceDate) : "—");
     }
 
     function baseQuote(pair){
@@ -742,7 +744,7 @@
     /* =========================
        DAILY REFERENCE RATE (FX only)
     ========================== */
-    async function fxConvert(from, to){
+    async function fxConvert(from, to, onDate){
       if (from === to) return 1;
       const url = `https://api.frankfurter.dev/v1/latest?base=${encodeURIComponent(from)}&symbols=${encodeURIComponent(to)}`;
       const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(8000) });
@@ -751,13 +753,20 @@
       const val = data && (data.rates?.[to]);
       const num = Number(val);
       if (!Number.isFinite(num) || num <= 0) throw new Error("Bad rate");
-      if (els.priceStatus) els.priceStatus.title = "Frankfurter / ECB observation: " + data.date;
+      const observed = typeof data.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(data.date) ? Date.parse(data.date + "T00:00:00Z") : NaN;
+      if (!Number.isFinite(observed) || Date.now() - observed > 7 * 86400000 || observed > Date.now() + 86400000 || (data.base && data.base !== from)) throw new Error("Invalid or old reference observation");
+      if (onDate) onDate(data.date);
       return num;
     }
 
     async function refreshPrice(){
       setMessage("");
       const pair = els.pair.value;
+      const request = ++priceRequest;
+      referenceDate = "";
+      currentPrice = 0;
+      els.priceValue.textContent = "—";
+      els.priceStatus.title = "";
 
       if (manualMode || isGoldPair(pair)){
         setLoading(false);
@@ -773,12 +782,16 @@
 
       try{
         const { base, quote } = baseQuote(pair);
-        const price = await fxConvert(base, quote);
-        if (manualMode || pair !== els.pair.value) return;
+        const price = await fxConvert(base, quote, date => {
+          if (request === priceRequest && pair === els.pair.value && !manualMode) referenceDate = date;
+        });
+        if (request !== priceRequest || manualMode || pair !== els.pair.value) return;
         currentPrice = price;
         els.priceValue.textContent = displayedPrice(pair, currentPrice);
-        els.priceStatus.textContent = "Daily reference";
+        els.priceStatus.textContent = "Daily reference · " + referenceDate;
+        els.priceStatus.title = "Frankfurter / ECB observation: " + referenceDate;
       } catch (e){
+        if (request !== priceRequest || pair !== els.pair.value || manualMode) return;
         manualMode = true;
         stopAutoUpdates();
         els.manualPriceRow.style.display = "grid";
@@ -787,7 +800,7 @@
         els.priceStatus.textContent = "Manual";
         setMessage("External rates unavailable. Enter a current manual price; cross pairs also need a quote-to-USD rate.");
       } finally{
-        setLoading(false);
+        if (request === priceRequest) setLoading(false);
       }
     }
 
@@ -858,13 +871,16 @@
         if (rd <= 0) return setMessage("Risk must be greater than 0.");
       }
       if (stopPips <= 0) return setMessage("Stop pips must be greater than 0.");
-      if (!currentPrice || currentPrice <= 0) return setMessage("Enter a positive manual price or refresh the external rate.");
+      if (!Number.isFinite(currentPrice) || currentPrice <= 0) return setMessage("Enter a positive manual price or refresh the external rate.");
 
       const riskUSD = computeAccountRiskUSD();
+      const usedPrice = currentPrice;
+      const request = priceRequest;
 
       setLoading(true);
       try{
-        const pvUSD = await pipValuePerLotUSD(pair, currentPrice);
+        const pvUSD = await pipValuePerLotUSD(pair, usedPrice);
+        if (request !== priceRequest || pair !== els.pair.value || usedPrice !== currentPrice) return;
         if (!pvUSD || pvUSD <= 0) return setMessage(`Could not compute pip value for ${pair}.`);
 
         const lots = positionSizeLots(riskUSD, stopPips, pvUSD);
@@ -883,11 +899,11 @@
         }
 
         els.pipOut.textContent = fmt(pvUSD, 2);
-        els.usedPriceOut.textContent = displayedPrice(pair, currentPrice);
+        els.usedPriceOut.textContent = displayedPrice(pair, usedPrice);
       } catch (e){
-        setMessage("Could not compute pip value (conversion failed).");
+        if (request === priceRequest && pair === els.pair.value) setMessage("Could not compute pip value (conversion failed).");
       } finally{
-        setLoading(false);
+        if (request === priceRequest) setLoading(false);
       }
     }
 
@@ -958,7 +974,8 @@
       els.riskDollars.value = p.riskDollars ?? els.riskDollars.value;
 
       els.stopPips.value = p.stopPips ?? els.stopPips.value;
-      els.manualPrice.value = p.manualPrice ?? els.manualPrice.value;
+      els.manualPrice.value = p.manualPrice ?? "";
+      document.getElementById("quoteUsdRate").value = "";
 
       computeAccountRiskUSD();
       startAutoUpdates();
@@ -1057,6 +1074,8 @@
       });
 
       els.pair.addEventListener("change", () => {
+        els.manualPrice.value = "";
+        document.getElementById("quoteUsdRate").value = "";
         setMessage("");
         setStopPipsDecimals();
         els.lotsOut.textContent = "—";
@@ -1080,7 +1099,10 @@
       });
 
       document.getElementById("manualModeBtn").addEventListener("click", () => {
-        manualMode = true; stopAutoUpdates(); setLoading(false);
+        manualMode = true; stopAutoUpdates();
+        ++priceRequest; referenceDate = ""; currentPrice = parseFloat(els.manualPrice.value) || 0;
+        els.priceValue.textContent = displayedPrice(els.pair.value, currentPrice);
+        els.priceStatus.title = ""; setLoading(false);
         els.manualPriceRow.style.display = "grid";
         els.priceStatus.textContent = "Manual";
         setMessage("Use your broker’s current price. Cross pairs also require a quote-to-USD rate.");

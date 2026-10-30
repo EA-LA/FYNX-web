@@ -115,7 +115,7 @@ module.exports = {
     inputs: [['Trade context', 'Symbol, date and trading session'], ['Plan', 'Entry, stop and target prices'], ['Outcome', 'Actual realized P/L and review notes']],
     example: 'Suppose a planned long entry is 100 with a stop at 98 and target at 104. The planned price ratio is 2:1. If the actual closed trade returned $75 after your chosen accounting treatment, record $75 as realized P/L rather than substituting the hypothetical target profit.',
     outputs: [['Trade record', 'Plan, actual result and notes'], ['Review', 'History, calendar and session summaries'], ['Account access', 'Free account for saving and sync']],
-    limitations: 'The Journal relies on what you enter. It does not execute trades or automatically reconcile broker statements. Sample results shown in demo mode are examples, not your performance.',
+    limitations: 'The Journal relies on what you enter. It does not execute trades or automatically reconcile broker statements. Guests see an empty journal. Performance uses only your saved, realized trade results.',
     related: ['journal-analytics', 'journal-export', 'trading-process-review']
   }
 };

@@ -56,13 +56,6 @@
     "topic": ""
   },
   {
-    "url": "/tools/heatmap.html",
-    "title": "Cross-Market Strength & Weakness Heatmap",
-    "description": "Explore relative market movements across forex pairs and macro assets with the FYNX cross-market heatmap.",
-    "category": "Tools",
-    "topic": ""
-  },
-  {
     "url": "/tools/crypto.html",
     "title": "Crypto Position Size & Profit Calculator",
     "description": "Estimate crypto position size, trading costs, exit value, profit or loss and break-even price using your own assumptions.",
@@ -79,7 +72,7 @@
   {
     "url": "/tools/currency.html",
     "title": "Currency Conversion Calculator: Manual Rates",
-    "description": "Convert currencies using a manually entered exchange rate or fixed example rates. The calculator does not provide live exchange rates.",
+    "description": "Convert currencies using a verified exchange rate you enter. The calculator does not provide live exchange rates.",
     "category": "Tools",
     "topic": ""
   },
@@ -954,6 +947,27 @@
     "topic": ""
   },
   {
+    "url": "/news/economics.html",
+    "title": "Economics News & Research",
+    "description": "Growth, inflation, jobs and central banks. Read the release, check the revision and keep the timeline in view.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/energy.html",
+    "title": "Energy News & Research",
+    "description": "Oil, gas, power and the energy transition. Connect supply, demand, infrastructure and policy with their original data.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/finance.html",
+    "title": "Finance News & Research",
+    "description": "Banking, capital markets and the business of money. Connect the reporting with balance sheets, disclosures and policy.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
     "url": "/news/news.html",
     "title": "Financial Market Headlines: Forex, Crypto & Stocks",
     "description": "Browse financial and world headlines covering forex, crypto, stocks, commodities and macroeconomic developments.",
@@ -968,9 +982,30 @@
     "topic": ""
   },
   {
+    "url": "/news/industries.html",
+    "title": "Industries News & Research",
+    "description": "Companies, supply chains and the real economy. Follow how sector developments connect to reported business performance.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
     "url": "/home/hub.html",
     "title": "Macro Research Hub: Rates, Indicators & Topics",
     "description": "Find central bank rate comparisons, economic indicators and curated macro research topics in the FYNX research hub.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/markets.html",
+    "title": "Markets News & Research",
+    "description": "Stocks, currencies and the forces moving capital. Follow current reporting, then examine the data behind the move.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/politics.html",
+    "title": "Politics & Policy News & Research",
+    "description": "Government decisions, trade and regulation through an economic lens. Follow what is proposed, what is adopted and when it takes effect.",
     "category": "News & events",
     "topic": ""
   },
@@ -982,9 +1017,23 @@
     "topic": ""
   },
   {
+    "url": "/news/technology.html",
+    "title": "Technology News & Research",
+    "description": "Artificial intelligence, chips, software and the digital economy. Follow the companies, research and policy shaping what comes next.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
     "url": "/news/challenges.html",
     "title": "Trading Practice Challenges & Progress",
     "description": "Explore trading practice challenges across forex, crypto, stocks, futures and options to build a consistent learning routine.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/world.html",
+    "title": "World News & Research",
+    "description": "Global developments with economic consequences. Connect regional reporting, trade and institutions without losing the local context.",
     "category": "News & events",
     "topic": ""
   },

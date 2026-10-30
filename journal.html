@@ -580,7 +580,7 @@
   </style>
   <link rel="stylesheet" href="assets/css/app-shell.css" />
   <link rel="stylesheet" href="assets/css/mobile-fixes.css">
-  <script type="module" src="assets/js/session-bootstrap.js?v=20260928-audit2"></script>
+  <script type="module" src="assets/js/session-bootstrap.js?v=20261030-r1"></script>
   <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
@@ -594,13 +594,15 @@
 <!-- terminal-design:start -->
 <link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
 <link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
-<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261029-r2">
-<script src="/assets/js/market-intelligence-data.js?v=20261029-r2" defer></script>
-<script src="/assets/js/terminal-market-data.js?v=20261029-r2" defer></script>
-<script src="/assets/js/terminal-header.js?v=20261029-r2" defer></script>
-<script src="/assets/js/terminal-market-ui.js?v=20261029-r2" defer></script>
-<link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261029-r2">
-<script src="/assets/js/terminal-pages.js?v=20261029-r2" defer></script>
+<script src="/assets/js/newsroom-editions.js?v=20261030-r1" defer></script>
+<script src="/assets/js/newsroom-media.js?v=20261030-r1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261030-r1">
+<script src="/assets/js/market-intelligence-data.js?v=20261030-r1" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261030-r1" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261030-r1" defer></script>
+<script src="/assets/js/terminal-market-ui.js?v=20261030-r1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261030-r1">
+<script src="/assets/js/terminal-pages.js?v=20261030-r1" defer></script>
 <!-- terminal-design:end -->
 </head>
 
@@ -689,7 +691,7 @@
           <div class="journal-top">
             <div class="jt-title">
               <b>Trader Journal</b>
-              <small id="modeText">Guest mode (view only) — login to save</small>
+              <small id="modeText">Sign in to load your saved journal.</small>
             </div>
 
             <div class="jt-right">
@@ -769,7 +771,7 @@
 
                         <div class="stat" style="grid-column: span 3;">
                           <small>Win Rate</small>
-                          <b id="kpiWin">0.0%</b>
+                          <b id="kpiWin">—</b>
                           <div class="row" style="border-bottom:none;padding:8px 0 0 0;">
                             <div class="l"><small>improvement</small></div>
                             <div class="r"><span class="badge" id="kpiWinDelta">—</span></div>
@@ -778,7 +780,7 @@
 
                         <div class="stat" style="grid-column: span 3;">
                           <small>Total P/L</small>
-                          <b id="kpiPL">+$0</b>
+                          <b id="kpiPL">—</b>
                           <div class="row" style="border-bottom:none;padding:8px 0 0 0;">
                             <div class="l"><small>realized</small></div>
                             <div class="r"><span class="badge" id="kpiPLDelta">—</span></div>
@@ -952,7 +954,7 @@
   </div>
 
   <!-- Firebase -->
-  <script src="demo-mode.js"></script>
+  <script src="demo-mode.js?v=20261030-r1"></script>
 
   <script type="module">
     import { app, auth, authPersistenceReady } from "./auth/firebase.js";
@@ -975,7 +977,6 @@
        ✅ PROFILE NAME + AVATAR (same as Home)
     ========================= */
     function getProfileName() {
-      if (window.FynxDemoMode?.isDemoMode?.()) return 'Demo User';
       return window.FynxIdentity?.displayName || null;
     }
     window.addEventListener('fynx:identity', renderWelcome);
@@ -1033,10 +1034,6 @@
     const loginNote = document.getElementById("loginNote");
     const avatar = document.getElementById("avatar");
 
-    function isDemoMode(){
-      return window.FynxDemoMode?.isDemoMode?.() || localStorage.getItem("mode") === "demo";
-    }
-
     // inner nav
     const jBtns = [...document.querySelectorAll(".jbtn[data-view]")];
     const views = {
@@ -1065,15 +1062,14 @@
     let unsubTrades = null;
     let state = { trades: [] };
     let replayIndex = 0;
+    let journalReady = false;
+    let journalEpoch = 0;
 
     const tradesCol = () => collection(db, "users", currentUid, "trades");
 
-    // Demo trades for guest view
-    const demoTrades = [
-      { id:"d1", date:"2026-01-29", symbol:"EURUSD", session:"London", pl: 120 },
-      { id:"d2", date:"2026-01-28", symbol:"BTCUSD", session:"Asia", pl: -45 },
-      { id:"d3", date:"2026-01-27", symbol:"XAUUSD", session:"New York", pl: 90 }
-    ];
+    function hasRecordedResults(){
+      return journalReady && visibleTrades().every(trade => typeof trade.pl === 'number' && Number.isFinite(trade.pl));
+    }
 
     // Charts
     let equityChart, winTrendChart, sessionPLChart;
@@ -1133,7 +1129,7 @@
         type:"bar",
         data:{ labels:["London","New York","Asia","Overlap"], datasets:[{
           label:"Net P/L",
-          data:[0,0,0,0],
+          data:[],
           borderColor:c.line,
           backgroundColor:c.fill
         }]},
@@ -1168,6 +1164,14 @@
 
     function updateCharts(){
       if (!equityChart || !winTrendChart || !sessionPLChart) return;
+      if (!hasRecordedResults() || !visibleTrades().length) {
+        [equityChart, winTrendChart, sessionPLChart].forEach(chart => {
+          chart.data.labels = [];
+          chart.data.datasets[0].data = [];
+          chart.update();
+        });
+        return;
+      }
       const trades = [...visibleTrades()].sort((a,b) => String(a.date||"").localeCompare(String(b.date||"")));
       let cum = 0;
       const labels = [];
@@ -1198,6 +1202,7 @@
       // session PL
       const sessions = { "London":0, "New York":0, "Asia":0, "Overlap":0 };
       trades.forEach(t => { sessions[t.session] = (sessions[t.session]||0) + (t.pl||0); });
+      sessionPLChart.data.labels = ["London","New York","Asia","Overlap"];
       sessionPLChart.data.datasets[0].data = [
         sessions["London"]||0,
         sessions["New York"]||0,
@@ -1218,7 +1223,7 @@
     });
     function dailyTotals(){
       const days = new Map();
-      visibleTrades().forEach(t => { if(/^\d{4}-\d{2}-\d{2}$/.test(t.date)) days.set(t.date, (days.get(t.date)||0) + Number(t.pl||0)); });
+      visibleTrades().forEach(t => { if(typeof t.pl === 'number' && Number.isFinite(t.pl) && /^\d{4}-\d{2}-\d{2}$/.test(t.date)) days.set(t.date, (days.get(t.date)||0) + t.pl); });
       return [...days].sort((a,b)=>a[0].localeCompare(b[0]));
     }
     function refreshDashboard(){
@@ -1227,12 +1232,12 @@
 
       const wins = visibleTrades().filter(t => (t.pl||0) > 0).length;
       const wr = total ? (wins/total)*100 : 0;
-      document.getElementById("kpiWin").textContent = `${wr.toFixed(1)}%`;
+      document.getElementById("kpiWin").textContent = hasRecordedResults() && total ? `${wr.toFixed(1)}%` : '—';
 
       const totalPL = visibleTrades().reduce((a,t)=>a+(t.pl||0),0);
       const kpiPL = document.getElementById("kpiPL");
-      kpiPL.textContent = `${totalPL>=0?"+":"-"}$${Math.abs(totalPL).toFixed(0)}`;
-      kpiPL.className = totalPL >= 0 ? "good" : "bad";
+      kpiPL.textContent = hasRecordedResults() ? `${totalPL>=0?"+":"-"}$${Math.abs(totalPL).toFixed(0)}` : '—';
+      kpiPL.className = !hasRecordedResults() ? '' : totalPL >= 0 ? "good" : "bad";
 
       // streak (simple consecutive days)
       const dates = [...new Set(visibleTrades().map(t => t.date).filter(Boolean))].sort();
@@ -1251,6 +1256,10 @@
       document.getElementById("kpiStreak").textContent = String(streak);
 
       // session list
+      if (!hasRecordedResults() || !total) {
+        document.getElementById("sessionList").innerHTML = '<p class="note">' + (!currentUid ? 'Sign in to view your recorded session results.' : !journalReady ? 'Your saved session results are not available yet.' : !total ? 'No recorded trades in this period.' : 'Some trades have no recorded realized P/L.') + '</p>';
+        return;
+      }
       const bySession = {};
       visibleTrades().forEach(t => bySession[t.session] = (bySession[t.session]||0) + (t.pl||0));
       const order = ["London","New York","Asia","Overlap"];
@@ -1272,17 +1281,17 @@
     function refreshReplay(){
       const box = document.getElementById("replaySummary");
       if(visibleTrades().length === 0){
-        box.innerHTML = `<div class="note">No trades yet.</div>`;
+        box.innerHTML = `<div class="note">${currentUid ? 'No recorded trades in this period.' : 'Sign in to review your recorded trades.'}</div>`;
         return;
       }
       replayIndex = Math.max(0, Math.min(replayIndex, visibleTrades().length - 1));
       const t = visibleTrades()[replayIndex];
-      const pl = t.pl || 0;
+      const pl = t.pl;
       const cls = pl >= 0 ? "good" : "bad";
       box.innerHTML = `
         <div class="row">
           <div class="l"><b>${escapeHTML(t.symbol || "—")}</b><small>${escapeHTML(t.date || "—")} · ${escapeHTML(t.session || "—")}</small></div>
-          <div class="r"><span class="badge ${cls}">${pl>=0?"+":"-"}$${Math.abs(pl).toFixed(0)}</span></div>
+          <div class="r"><span class="badge ${typeof pl === 'number' ? cls : ''}">${typeof pl === 'number' ? `${pl>=0?"+":"-"}$${Math.abs(pl).toFixed(0)}` : 'Realized P/L unavailable'}</span></div>
         </div>
         <div class="note">Review the entry, risk and outcome before your next session.</div>
       `;
@@ -1291,6 +1300,10 @@
     function refreshStreaks(){
       const days = dailyTotals();
       document.getElementById('sBadge').textContent = `${days.length} days logged`;
+      if (!hasRecordedResults() || !visibleTrades().length) {
+        document.getElementById('streakBox').innerHTML = '<p class="note">' + (!currentUid ? 'Sign in to review your recorded performance.' : !journalReady ? 'Your saved results are not available yet.' : !visibleTrades().length ? 'Record a trade to see performance metrics.' : 'Complete the missing realized P/L values to view performance metrics.') + '</p>';
+        return;
+      }
       const pnl = visibleTrades().map(t=>Number(t.pl)||0);
       const grossWin=pnl.filter(n=>n>0).reduce((a,b)=>a+b,0), grossLoss=-pnl.filter(n=>n<0).reduce((a,b)=>a+b,0);
       let peak=0,equity=0,drawdown=0;
@@ -1399,7 +1412,7 @@
     saveTradeButton.parentElement.after(tradeStatus);
     saveTradeButton.addEventListener("click", async () => {
       if (saveTradeButton.disabled) return;
-      if (isDemoMode() || !currentUid) {
+      if (!currentUid) {
         tradeStatus.textContent = "Sign in to save your trades across devices.";
         loginNote.style.display = "block";
         return;
@@ -1432,14 +1445,25 @@
 
     function attachTradesListener(){
       if(unsubTrades) unsubTrades();
+      const request = journalEpoch;
+      const owner = currentUid;
       unsubTrades = onSnapshot(query(tradesCol(), orderBy("dateTs","asc")), (snap) => {
+        if (request !== journalEpoch || owner !== currentUid) return;
         const trades = [];
-        snap.forEach(doc => trades.push(doc.data() || {}));
+        snap.forEach(doc => {
+          const trade = doc.data() || {};
+          const value = trade.pl ?? trade.pnl;
+          const recorded = (typeof value === 'number' || typeof value === 'string' && value.trim() !== '') && Number.isFinite(Number(value));
+          trades.push({...trade, pl: recorded ? Number(value) : null});
+        });
         state.trades = trades;
+        journalReady = true;
+        modeText.textContent = hasRecordedResults() ? (trades.length ? 'Synced with your saved journal' : 'Record your first trade to start your journal.') : 'Some trades have no recorded realized P/L. Complete those records to view your results.';
         replayIndex = Math.max(0, visibleTrades().length - 1);
         refreshDashboard(); refreshAnalytics(); refreshReplay(); refreshStreaks(); refreshCalendar();
         updateCharts();
       }, (err) => {
+        if (request !== journalEpoch || owner !== currentUid) return;
         console.error(err);
         const code = (err && err.code) ? String(err.code) : "";
         if(code) window.FynxMonitor?.report("save","journal-save",err);
@@ -1447,7 +1471,8 @@
         if (blocked) {
           if (unsubTrades) unsubTrades();
           currentUid = null;
-          modeText.textContent = "Journal sync unavailable. Sample trades are not shown in your account.";
+          journalReady = false;
+          modeText.textContent = "Journal sync unavailable. Check your connection and sign-in.";
           loginNote.style.display = "none";
           state.trades = [];
           refreshDashboard(); refreshAnalytics(); refreshReplay(); refreshStreaks(); refreshCalendar();
@@ -1462,39 +1487,29 @@
     clearForm();
     initCharts();
 
-    // AUTH: guest shows demo; logged-in shows live
+    // Account results come only from this user's saved journal.
     onAuthStateChanged(auth, (user) => {
+      journalEpoch++;
       if (unsubTrades) { unsubTrades(); unsubTrades = null; }
       state.trades = [];
-      if(isDemoMode()){
-        currentUid = null;
-        renderWelcome();
-        modeText.textContent = "Demo mode — sample data only";
-        loginNote.style.display = "none";
-        state.trades = demoTrades;
-        refreshDashboard(); refreshAnalytics(); refreshReplay(); refreshStreaks(); refreshCalendar();
-        updateCharts();
-        return;
-      }
-
+      journalReady = false;
+      currentUid = user?.uid || null;
+      refreshDashboard(); refreshAnalytics(); refreshReplay(); refreshStreaks(); refreshCalendar();
+      updateCharts();
       if(!user){
-        currentUid = null;
         renderWelcome();
-        modeText.textContent = "Sample trades — guest preview only. Sign in to view your journal.";
-        loginNote.style.display = "none";
-        state.trades = demoTrades;
-        refreshDashboard(); refreshAnalytics(); refreshReplay(); refreshStreaks(); refreshCalendar();
-        updateCharts();
+        modeText.textContent = "Sign in to load your saved journal.";
+        loginNote.style.display = "block";
         return;
       }
-      currentUid = user.uid;
       renderWelcome();
-      modeText.textContent = "Cloud sync enabled";
+      loginNote.style.display = "none";
+      modeText.textContent = "Loading your saved journal…";
       attachTradesListener();
     });
   </script>
 
-  <script src="fynx-nav.js?v=20261011-discovery"></script>
+  <script src="fynx-nav.js?v=20261030-r1"></script>
 
   <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
   <script src="fynx-usercard.js?v=20260928-audit2"></script>

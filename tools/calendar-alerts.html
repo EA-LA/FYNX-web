@@ -545,9 +545,6 @@
             <button class="btn secondary" id="requestPermissionBtn">
               <i class="fas fa-bell"></i> Enable Notifications
             </button>
-            <button class="btn secondary" id="loadSampleBtn">
-              <i class="fas fa-bolt"></i> Load Samples
-            </button>
           </div>
         </div>
       </div>
@@ -619,6 +616,11 @@
 
     function saveAlerts(alerts){
       localStorage.setItem(ALERTS_KEY, JSON.stringify(alerts));
+    }
+
+    function isRetiredExample(alert){
+      const generated = { 'sample-1': 'US CPI', 'sample-2': 'Powell Speech', 'sample-3': 'NFP' };
+      return generated[alert.id] === alert.name;
     }
 
     function setStatus(level, title, desc){
@@ -726,58 +728,9 @@
       setStatus("good","Alert saved","The calendar alert was added successfully.");
     }
 
-    function loadSamples(){
-      const now = new Date();
-      const a = new Date(now.getTime() + 45 * 60000);
-      const b = new Date(now.getTime() + 3 * 60 * 60000);
-      const c = new Date(now.getTime() + 26 * 60 * 60000);
-
-      const samples = [
-        {
-          id: "sample-1",
-          name: "US CPI",
-          impact: "high",
-          date: a.toISOString().slice(0,10),
-          time: a.toTimeString().slice(0,5),
-          category: "inflation",
-          note: "Watch gold, DXY, EURUSD.",
-          reminderOffset: 15,
-          notified: false,
-          createdAt: Date.now()
-        },
-        {
-          id: "sample-2",
-          name: "Powell Speech",
-          impact: "medium",
-          date: b.toISOString().slice(0,10),
-          time: b.toTimeString().slice(0,5),
-          category: "speech",
-          note: "Expect fast repricing if tone shifts.",
-          reminderOffset: 30,
-          notified: false,
-          createdAt: Date.now()
-        },
-        {
-          id: "sample-3",
-          name: "NFP",
-          impact: "high",
-          date: c.toISOString().slice(0,10),
-          time: c.toTimeString().slice(0,5),
-          category: "employment",
-          note: "Check spreads before execution.",
-          reminderOffset: 5,
-          notified: false,
-          createdAt: Date.now()
-        }
-      ];
-
-      saveAlerts(samples);
-      renderAlerts();
-      setStatus("good","Sample alerts loaded","Three sample macro alerts were added.");
-    }
-
     function renderAlerts(){
       const alerts = getAlerts()
+        .filter(alert => !isRetiredExample(alert))
         .map(alert => {
           const eventDateTime = new Date(`${alert.date}T${alert.time}`);
           const reminderTime = new Date(eventDateTime.getTime() - alert.reminderOffset * 60000);
@@ -863,6 +816,7 @@
       let changed = false;
 
       const mapped = alerts.map(alert => {
+        if (isRetiredExample(alert)) return alert;
         const eventDateTime = new Date(`${alert.date}T${alert.time}`);
         const reminderTime = new Date(eventDateTime.getTime() - alert.reminderOffset * 60000);
         const now = Date.now();
@@ -881,6 +835,7 @@
       }
 
       const futureEvents = mapped
+        .filter(alert => !isRetiredExample(alert))
         .map(alert => ({...alert, eventDateTime:new Date(`${alert.date}T${alert.time}`)}))
         .filter(alert => alert.eventDateTime.getTime() > Date.now())
         .sort((a,b) => a.eventDateTime - b.eventDateTime);
@@ -912,7 +867,6 @@
     document.getElementById("addAlertBtn").addEventListener("click", addAlert);
     document.getElementById("clearAllBtn").addEventListener("click", clearAllAlerts);
     document.getElementById("requestPermissionBtn").addEventListener("click", requestPermission);
-    document.getElementById("loadSampleBtn").addEventListener("click", loadSamples);
 
     setDefaultDateTime();
     updateNotificationStatus();

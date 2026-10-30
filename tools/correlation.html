@@ -648,7 +648,7 @@
                 <i class="fas fa-wave-square"></i>
                 <span>Correlation engine</span>
               </div>
-              <div class="section-note">Paste equal-length return series or use presets below.</div>
+              <div class="section-note">Manual data · Paste your own returns from matching dates. No market observations are supplied.</div>
             </div>
           </div>
 
@@ -656,22 +656,22 @@
             <div class="controls-grid">
               <div class="input-group">
                 <label for="seriesALabel">Series A Label</label>
-                <input id="seriesALabel" type="text" value="EURUSD" />
+                <input id="seriesALabel" type="text" placeholder="Series A name" />
               </div>
 
               <div class="input-group">
                 <label for="seriesBLabel">Series B Label</label>
-                <input id="seriesBLabel" type="text" value="GBPUSD" />
+                <input id="seriesBLabel" type="text" placeholder="Series B name" />
               </div>
 
               <div class="input-group full-span">
                 <label for="seriesA">Series A Data</label>
-                <textarea id="seriesA" placeholder="Example: 0.20, -0.10, 0.35, 0.50, -0.22">0.12,0.18,-0.06,0.24,0.31,-0.09,0.14,0.22,-0.04,0.19</textarea>
+                <textarea id="seriesA" placeholder="Example: 0.20, -0.10, 0.35, 0.50, -0.22"></textarea>
               </div>
 
               <div class="input-group full-span">
                 <label for="seriesB">Series B Data</label>
-                <textarea id="seriesB" placeholder="Example: 0.18, -0.07, 0.29, 0.42, -0.19">0.10,0.16,-0.02,0.19,0.28,-0.05,0.12,0.17,-0.01,0.14</textarea>
+                <textarea id="seriesB" placeholder="Example: 0.18, -0.07, 0.29, 0.42, -0.19"></textarea>
               </div>
             </div>
 
@@ -687,31 +687,16 @@
               </button>
             </div>
 
-            <div class="presets">
-              <button class="preset-btn" data-preset="eurusd-gbpusd">
-                EURUSD vs GBPUSD
-                <span>Usually positive</span>
-              </button>
-              <button class="preset-btn" data-preset="xauusd-dxy">
-                XAUUSD vs DXY
-                <span>Usually inverse</span>
-              </button>
-              <button class="preset-btn" data-preset="audusd-nzdusd">
-                AUDUSD vs NZDUSD
-                <span>Usually strong positive</span>
-              </button>
-            </div>
-
             <div class="results-grid" style="margin-top:1rem;">
               <div class="metric">
                 <div class="metric-label">Correlation</div>
-                <div class="metric-value" id="corrValue">0.00</div>
+                <div class="metric-value" id="corrValue">—</div>
                 <div class="metric-sub" id="corrDesc">Enter two equal-length datasets and calculate.</div>
               </div>
 
               <div class="metric">
                 <div class="metric-label">Relationship</div>
-                <div class="metric-value" id="relationshipValue">Neutral</div>
+                <div class="metric-value" id="relationshipValue">—</div>
                 <div class="metric-sub" id="relationshipDesc">No result yet.</div>
               </div>
 
@@ -733,20 +718,20 @@
                 <thead>
                   <tr>
                     <th>Pair / Asset</th>
-                    <th id="headA">EURUSD</th>
-                    <th id="headB">GBPUSD</th>
+                    <th id="headA">Series A</th>
+                    <th id="headB">Series B</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td id="rowA">EURUSD</td>
-                    <td><span class="corr-cell corr-pos-strong">1.00</span></td>
-                    <td id="matrixAB"><span class="corr-cell corr-flat">0.00</span></td>
+                    <td id="rowA">Series A</td>
+                    <td class="matrix-diagonal"><span class="corr-cell corr-flat">—</span></td>
+                    <td id="matrixAB"><span class="corr-cell corr-flat">—</span></td>
                   </tr>
                   <tr>
-                    <td id="rowB">GBPUSD</td>
-                    <td id="matrixBA"><span class="corr-cell corr-flat">0.00</span></td>
-                    <td><span class="corr-cell corr-pos-strong">1.00</span></td>
+                    <td id="rowB">Series B</td>
+                    <td id="matrixBA"><span class="corr-cell corr-flat">—</span></td>
+                    <td class="matrix-diagonal"><span class="corr-cell corr-flat">—</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -810,7 +795,7 @@
       </div>
     </section>
   <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Measure how two return series move together</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Use returns from matching dates, frequency and currency conventions. Review the number of observations and the effect of outliers.</p><h3>The calculation or concept</h3><p>Pearson correlation ranges from −1 to +1 and requires paired observations with variation in both series.</p></div><div class="tool-example"><h3>Worked example</h3><p>If two instruments have the same sequence of nonconstant daily returns, their correlation is +1. Reversing every return gives −1 in that simplified example.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Correlation changes over time and does not establish causation. Similar price levels are not the same as correlated returns; a constant series has undefined correlation.</p></details></section><!-- tool-guide:end -->
-<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/risk-reward.html"><strong>Risk-to-Reward Ratio Calculator</strong><span>Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</span></a><a href="/tools/heatmap.html"><strong>Cross-Market Strength &amp; Weakness Heatmap</strong><span>Explore relative market movements across forex pairs and macro assets with the FYNX cross-market heatmap.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/risk-reward.html"><strong>Risk-to-Reward Ratio Calculator</strong><span>Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</span></a><a href="/tools/research-heatmap.html"><strong>Market Heatmap: Stocks, ETFs, Crypto &amp; Forex</strong><span>Compare percentage changes across stocks, ETFs, crypto, forex and your watchlist with equal-size tiles and timestamps for each public quote.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
 
   <script>
@@ -876,8 +861,7 @@
         .split(/[\s,;\n\t]+/)
         .map(v => v.trim())
         .filter(v => v !== "")
-        .map(Number)
-        .filter(v => Number.isFinite(v));
+        .map(Number);
     }
 
     function pearsonCorrelation(x, y){
@@ -958,8 +942,12 @@
       document.getElementById("rowA").textContent = labelA || "Series A";
       document.getElementById("rowB").textContent = labelB || "Series B";
 
-      const cellClass = getCellClass(corr);
-      const html = `<span class="corr-cell ${cellClass}">${corr.toFixed(2)}</span>`;
+      const valid = Number.isFinite(corr);
+      const cellClass = valid ? getCellClass(corr) : "corr-flat";
+      const html = `<span class="corr-cell ${cellClass}">${valid ? corr.toFixed(2) : "—"}</span>`;
+      document.querySelectorAll(".matrix-diagonal").forEach(cell => {
+        cell.innerHTML = valid ? '<span class="corr-cell corr-pos-strong">1.00</span>' : '<span class="corr-cell corr-flat">—</span>';
+      });
       document.getElementById("matrixAB").innerHTML = html;
       document.getElementById("matrixBA").innerHTML = html;
     }
@@ -978,22 +966,22 @@
       const tradeReadEl = document.getElementById("tradeRead");
       const tradeReadDescEl = document.getElementById("tradeReadDesc");
 
-      if(seriesA.length !== seriesB.length || seriesA.length < 2){
+      if(seriesA.length !== seriesB.length || seriesA.length < 2 || !seriesA.every(Number.isFinite) || !seriesB.every(Number.isFinite)){
         corrValueEl.textContent = "Error";
         corrValueEl.className = "metric-value red";
-        corrDescEl.textContent = "Both datasets must contain the same number of values, with at least 2 points each.";
+        corrDescEl.textContent = "Both datasets must contain the same number of valid numeric values, with at least 2 points each.";
         relationshipValueEl.textContent = "Invalid";
         relationshipDescEl.textContent = "Fix the input lengths and try again.";
         sampleSizeEl.textContent = `${seriesA.length} / ${seriesB.length}`;
         tradeReadEl.textContent = "—";
         tradeReadDescEl.textContent = "No valid result.";
-        updateMatrix(labelA, labelB, 0);
+        updateMatrix(labelA, labelB, null);
         return;
       }
 
       const corr = pearsonCorrelation(seriesA, seriesB);
 
-      if(corr === null || Number.isNaN(corr)){
+      if(!Number.isFinite(corr)){
         corrValueEl.textContent = "Error";
         corrValueEl.className = "metric-value red";
         corrDescEl.textContent = "Could not calculate correlation. Make sure both series vary and are valid numbers.";
@@ -1002,7 +990,7 @@
         sampleSizeEl.textContent = seriesA.length;
         tradeReadEl.textContent = "—";
         tradeReadDescEl.textContent = "No valid result.";
-        updateMatrix(labelA, labelB, 0);
+        updateMatrix(labelA, labelB, null);
         return;
       }
 
@@ -1012,7 +1000,7 @@
 
       corrValueEl.textContent = corr.toFixed(4);
       corrValueEl.className = `metric-value ${corr > 0.29 ? "green" : corr < -0.29 ? "red" : "orange"}`;
-      corrDescEl.textContent = `${strength} ${relationship.toLowerCase()} correlation between ${labelA} and ${labelB}.`;
+      corrDescEl.textContent = `${strength} ${relationship.toLowerCase()} correlation between your entered ${labelA} and ${labelB} observations.`;
 
       relationshipValueEl.textContent = `${strength} ${relationship}`;
       relationshipValueEl.className = `metric-value ${relationship === "Positive" ? "green" : relationship === "Negative" ? "red" : "orange"}`;
@@ -1043,52 +1031,18 @@
       document.getElementById("seriesBLabel").value = "";
       document.getElementById("seriesA").value = "";
       document.getElementById("seriesB").value = "";
-      document.getElementById("corrValue").textContent = "0.00";
+      document.getElementById("corrValue").textContent = "—";
       document.getElementById("corrValue").className = "metric-value";
       document.getElementById("corrDesc").textContent = "Enter two equal-length datasets and calculate.";
-      document.getElementById("relationshipValue").textContent = "Neutral";
+      document.getElementById("relationshipValue").textContent = "—";
       document.getElementById("relationshipValue").className = "metric-value";
       document.getElementById("relationshipDesc").textContent = "No result yet.";
       document.getElementById("sampleSize").textContent = "0";
       document.getElementById("tradeRead").textContent = "—";
       document.getElementById("tradeReadDesc").textContent = "No signal yet.";
-      updateMatrix("Series A", "Series B", 0);
+      updateMatrix("Series A", "Series B", null);
     });
 
-    const presets = {
-      "eurusd-gbpusd": {
-        aLabel: "EURUSD",
-        bLabel: "GBPUSD",
-        a: "0.12,0.18,-0.06,0.24,0.31,-0.09,0.14,0.22,-0.04,0.19",
-        b: "0.10,0.16,-0.02,0.19,0.28,-0.05,0.12,0.17,-0.01,0.14"
-      },
-      "xauusd-dxy": {
-        aLabel: "XAUUSD",
-        bLabel: "DXY",
-        a: "0.35,-0.18,0.42,-0.27,0.31,-0.22,0.29,-0.15,0.38,-0.19",
-        b: "-0.22,0.13,-0.29,0.18,-0.24,0.16,-0.21,0.10,-0.27,0.14"
-      },
-      "audusd-nzdusd": {
-        aLabel: "AUDUSD",
-        bLabel: "NZDUSD",
-        a: "0.08,0.11,-0.04,0.15,0.13,-0.05,0.09,0.12,-0.03,0.10",
-        b: "0.07,0.10,-0.03,0.14,0.11,-0.04,0.08,0.11,-0.02,0.09"
-      }
-    };
-
-    document.querySelectorAll(".preset-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const p = presets[btn.dataset.preset];
-        if(!p) return;
-        document.getElementById("seriesALabel").value = p.aLabel;
-        document.getElementById("seriesBLabel").value = p.bLabel;
-        document.getElementById("seriesA").value = p.a;
-        document.getElementById("seriesB").value = p.b;
-        calculateCorrelation();
-      });
-    });
-
-    calculateCorrelation();
   </script>
 
 <footer></footer></body>

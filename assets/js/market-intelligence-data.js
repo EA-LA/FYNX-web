@@ -2,9 +2,12 @@
  * Official destinations retain their own access terms; no stream or episode is invented. */
 (function(root){
   'use strict';
-  const ENDPOINT='https://us-central1-fynx-c7a28.cloudfunctions.net/webMarketFeed';
-  const FRESH_MS=300000, MAX_WAIT_MS=6500, HEADLINE_CACHE_MS=86400000, RELEASE_CACHE_MS=7*86400000;
-  const categories=['all','forex','crypto','stocks','macro','commodities','world'];
+  const ENDPOINT=/^(localhost|127\.0\.0\.1)$/.test(root.location?.hostname||'')?'/api/market-feed':'https://us-central1-fynx-c7a28.cloudfunctions.net/webMarketFeed';
+  const FRESH_MS=600000, MAX_WAIT_MS=6500, HEADLINE_CACHE_MS=86400000, RELEASE_CACHE_MS=7*86400000;
+  const categories=['all','forex','crypto','stocks','macro','commodities','world','finance','economics','technology','politics','industries','energy','analysis'];
+  const editionCodes=['global','us','uk','canada','europe','asia','india','middle-east','africa','latin-america','japan','australia'];
+  function editionID(value){const id=value||root.FynxEdition?.get()||'us';if(!editionCodes.includes(id))throw new Error('Unknown edition');return id;}
+  const retention=category=>category==='analysis'?168:48;
   const topics=['All topics','Markets','Economy','Business','Global affairs'];
   const pending=new Map();
   const publisher=(id,name,summary,topicList,links)=>({id,name,summary,topics:topicList,destinations:links.map(([category,url,access])=>({id:id+'.'+category,publisherID:id,publisher:name,category,url,access,categoryLabel:category==='live'?'Broadcast destination':category==='podcasts'?'Podcast directory':'Video directory'}))});
@@ -31,10 +34,15 @@
       ['videos','https://finance.yahoo.com/videos/','Publisher access rules and regional availability apply.']])
   ];
   const officialSources=[
-    {id:'fed',name:'Federal Reserve',url:'https://www.federalreserve.gov/feeds/press_monetary.xml',website:'https://www.federalreserve.gov/newsevents/pressreleases.htm',hosts:['www.federalreserve.gov','federalreserve.gov']},
-    {id:'bea',name:'U.S. Bureau of Economic Analysis',url:'https://apps.bea.gov/rss/rss.xml',website:'https://www.bea.gov/news',hosts:['www.bea.gov','bea.gov','apps.bea.gov']},
-    {id:'ecb',name:'European Central Bank',url:'https://www.ecb.europa.eu/rss/press.html',website:'https://www.ecb.europa.eu/press/html/index.en.html',hosts:['www.ecb.europa.eu','ecb.europa.eu']}
+    {id:'fed',name:'Federal Reserve',website:'https://www.federalreserve.gov/newsevents/pressreleases.htm',hosts:['www.federalreserve.gov','federalreserve.gov'],editions:['us']},
+    {id:'bea',name:'U.S. Bureau of Economic Analysis',website:'https://www.bea.gov/news',hosts:['www.bea.gov','bea.gov','apps.bea.gov'],editions:['us']},
+    {id:'ecb',name:'European Central Bank',website:'https://www.ecb.europa.eu/press/html/index.en.html',hosts:['www.ecb.europa.eu','ecb.europa.eu'],editions:['europe']},
+    {id:'boe',name:'Bank of England',website:'https://www.bankofengland.co.uk/news',hosts:['www.bankofengland.co.uk','bankofengland.co.uk'],editions:['uk']},
+    {id:'boc',name:'Bank of Canada',website:'https://www.bankofcanada.ca/press/',hosts:['www.bankofcanada.ca','bankofcanada.ca'],editions:['canada']},
+    {id:'boj',name:'Bank of Japan',website:'https://www.boj.or.jp/en/',hosts:['www.boj.or.jp','boj.or.jp'],editions:['japan','asia']},
+    {id:'rba',name:'Reserve Bank of Australia',website:'https://www.rba.gov.au/media-releases/',hosts:['www.rba.gov.au','rba.gov.au'],editions:['australia']}
   ];
+  const sourcesFor=edition=>officialSources.filter(source=>edition==='global'||source.editions.includes(edition));
   const institutions=[
     {id:'fed',name:'Federal Reserve',region:'United States',location:'Washington, DC · approximate city location',latitude:38.9072,longitude:-77.0369,url:'https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm',summary:'Policy meetings, official announcements and Federal Reserve events.'},
     {id:'ecb',name:'European Central Bank',region:'Europe',location:'Frankfurt · approximate city location',latitude:50.1109,longitude:8.6821,url:'https://www.ecb.europa.eu/press/html/index.en.html',summary:'Monetary policy decisions and euro area announcements.'},
@@ -67,31 +75,44 @@
     return result.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,' ').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,1200);
   }
   function validTime(value,now=Date.now()){const date=Date.parse(value);return Number.isFinite(date)&&date<=now+300000?new Date(date).toISOString():null;}
-  function article(row,official,category,now){
+  function normalizeImage(image){
+    if(!image||typeof image!=='object')return null;
+    const url=safeURL(image.url),sourceURL=safeURL(image.sourceURL),rawLicenseURL=safeURL(image.licenseURL),credit=clean(image.credit);
+    const approved=rawLicenseURL?.match(/^https:\/\/(?:www\.)?creativecommons\.org\/(?:licenses\/(by|by-sa)\/4\.0|publicdomain\/zero\/1\.0)\/?$/);
+    if(!url||!sourceURL||!credit||!approved)return null;
+    // The feed supplies a license URL, not a display label. Derive the label
+    // from that exact approved license so every renderer receives one contract.
+    const license=approved[1]==='by'?'CC BY 4.0':approved[1]==='by-sa'?'CC BY-SA 4.0':'CC0';
+    const licenseURL=rawLicenseURL.replace('https://www.creativecommons.org/','https://creativecommons.org/').replace(/\/?$/,'/');
+    return {url,sourceURL,licenseURL,credit,license,source:clean(image.source),alt:clean(image.alt)||'Source-provided image'};
+  }
+  function article(row,official,category,now,edition){
     if(!row||typeof row!=='object')return null;
     const feed=official?officialSources.find(source=>source.id===row.sourceId):null;
-    if(official&&!feed)return null;
+    if(official&&(!feed||!sourcesFor(edition).includes(feed)))return null;
+    if(row.edition&&row.edition!==edition)return null;
     const title=clean(row.title),url=safeURL(row.link||row.url,feed?.hosts),time=Date.parse(row.pubDate||row.publishedAt);
-    if(!title||!url||!Number.isFinite(time)||time>now+(official?86400000:300000)||(!official&&now-time>8*86400000))return null;
+    if(!title||!url||!Number.isFinite(time)||time>now+300000||now-time>(official?720:retention(category))*3600000)return null;
     const publishedAt=new Date(time).toISOString(),source=feed?.name||clean(row.source)||'Market news';
-    return {id:(feed?.id||'headline')+'|'+url,title,url,link:url,publishedAt,pubDate:publishedAt,source,sourceId:feed?.id||clean(row.sourceId),category:official?'official':category,via:row.via==='Google News'||new URL(url).hostname==='news.google.com'?'Google News':null,description:''};
+    return {id:(feed?.id||'headline')+'|'+url,title,url,link:url,publishedAt,pubDate:publishedAt,source,sourceId:feed?.id||clean(row.sourceId),edition,category:official?'official':category,kind:official?'official-release':category==='analysis'?'analysis':'headline',image:normalizeImage(row.image),via:row.via==='Google News'||new URL(url).hostname==='news.google.com'?'Google News':null,description:''};
   }
-  function normalize(data,official,category,now=Date.now()){
+  function normalize(data,official,category,now=Date.now(),edition=editionID()){
     if(!data||typeof data!=='object'||!Array.isArray(data.items)||data.items.length>500)throw new Error('Invalid feed response');
+    if((data.edition&&data.edition!==edition)||(!data.edition&&edition!=='us')||(data.category&&data.category!==(official?'all':category)))throw new Error('Feed edition or category mismatch');
     if(official&&data.kind!=='official-releases')throw new Error('Official release service unavailable');
     const fetchedAt=validTime(data.fetchedAt,now);
-    if(!official&&!fetchedAt)throw new Error('Missing retrieval date');
+    if((!official||data.items.length)&&!fetchedAt)throw new Error('Missing retrieval date');
     const maxAge=official?RELEASE_CACHE_MS:HEADLINE_CACHE_MS;
     if(fetchedAt&&now-Date.parse(fetchedAt)>maxAge)throw new Error('Feed cache expired');
-    const seen=new Set(),items=data.items.flatMap(row=>{const item=article(row,official,category,now);if(!item||seen.has(item.id))return [];seen.add(item.id);return [item];}).sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt)).slice(0,official?150:60);
+    const seen=new Set(),items=data.items.flatMap(row=>{const item=article(row,official,category,now,edition);if(!item||seen.has(item.id))return [];seen.add(item.id);return [item];}).sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt)).slice(0,official?150:60);
     if(data.items.length&&!items.length)throw new Error('No valid feed records');
     const rawSources=Array.isArray(data.sources)?data.sources:[];
-    const sourceState=(raw,id,name)=>({id,name,status:['fresh','cached','unavailable'].includes(raw?.status)?raw.status:'unavailable',fetchedAt:validTime(raw?.fetchedAt,now),message:clean(raw?.message)});
-    const sources=official?officialSources.map(feed=>sourceState(rawSources.find(source=>source.id===feed.id),feed.id,feed.name)):rawSources.slice(0,12).map(source=>sourceState(source,clean(source.id),clean(source.name)));
+    const sourceState=(raw,id,name)=>({id,name,status:['fresh','cached','unavailable'].includes(raw?.status)?raw.status:'unavailable',fetchedAt:validTime(raw?.fetchedAt,now)&&now-Date.parse(raw.fetchedAt)<=maxAge?validTime(raw.fetchedAt,now):null,message:clean(raw?.message)});
+    const sources=official?sourcesFor(edition).map(feed=>sourceState(rawSources.find(source=>source.id===feed.id),feed.id,feed.name)):rawSources.slice(0,12).map(source=>sourceState(source,clean(source.id),clean(source.name)));
     if(official&&items.some(item=>!sources.some(source=>source.id===item.sourceId&&source.status!=='unavailable'&&source.fetchedAt)))throw new Error('Official source retrieval state missing');
     const available=official?sources.some(source=>source.status!=='unavailable'&&source.fetchedAt):true;
     const stale=data.stale===true||sources.some(source=>source.status!=='fresh');
-    return {kind:official?'official-releases':'headlines',items,fetchedAt,publishedAt:items[0]?.publishedAt||null,status:available?'fresh':'unavailable',stale,sources,message:available?(stale?'Some sources could not be refreshed; publication dates and saved states are shown.':'Updated from the sources below.'):'Official feeds are unavailable. Open their source websites below.'};
+    return {edition,category:official?'all':category,retentionHours:official?720:retention(category),kind:official?'official-releases':'headlines',items,fetchedAt,publishedAt:items[0]?.publishedAt||null,status:available?'fresh':'unavailable',stale,sources,message:available?(stale?'Some sources could not be refreshed; publication dates and saved states are shown.':'Updated from the sources below.'):'Official feeds are unavailable. Open their source websites below.'};
   }
   function mergeOfficialCache(value,cached){
     if(!cached)return value;
@@ -105,25 +126,20 @@
     const available=states.filter(source=>source.status!=='unavailable'&&source.fetchedAt);
     return {...value,items,sources:states,status:available.length?(states.every(source=>source.status!=='fresh')?'cached':'fresh'):'unavailable',stale:states.some(source=>source.status!=='fresh'),fetchedAt:available.length?new Date(Math.min(...available.map(source=>Date.parse(source.fetchedAt)))).toISOString():null,publishedAt:items[0]?.publishedAt||null,message:states.some(source=>source.status==='cached')?'Some official sources could not be refreshed. Dated saved releases remain available.':value.message};
   }
-  const cacheKey=(official,category)=>'fynx_market_intelligence_v1_'+(official?'official':category);
-  function readCache(official,category){
+  const cacheKey=(official,category,edition)=>'fynx_market_intelligence_v2_'+edition+'_'+(official?'official':category);
+  function readCache(official,category,edition=editionID()){
     try{
-      let raw=root.localStorage.getItem(cacheKey(official,category));
-      // Preserve the old News cache during the redesign without calling it live.
-      if(!raw&&!official&&category==='all')raw=root.localStorage.getItem('fynx_news_latest_payload');
+      const raw=root.localStorage.getItem(cacheKey(official,category,edition));
       if(!raw||raw.length>1500000)return null;
-      const value=normalize(JSON.parse(raw),official,category),date=Date.parse(value.fetchedAt);
-      if(!Number.isFinite(date)||Date.now()-date>(official?RELEASE_CACHE_MS:HEADLINE_CACHE_MS))return null;
-      return {...value,status:'cached',stale:true,message:'Showing saved '+(official?'official releases':'headlines')+' while sources refresh.',sources:value.sources.map(source=>({...source,status:source.status==='unavailable'?'unavailable':'cached'}))};
+      const value=normalize(JSON.parse(raw),official,category,Date.now(),edition),age=Date.now()-Date.parse(value.fetchedAt);
+      if(!Number.isFinite(age)||age>(official?RELEASE_CACHE_MS:HEADLINE_CACHE_MS))return null;
+      if(age<FRESH_MS&&!value.stale)return value;
+      return {...value,status:'cached',stale:true,message:'Showing dated saved coverage while sources refresh.',sources:value.sources.map(source=>({...source,status:source.status==='unavailable'?'unavailable':'cached'}))};
     }catch{return null;}
   }
-  function saveCache(value,official,category){
-    try{root.localStorage.setItem(cacheKey(official,category),JSON.stringify(value));}catch{}
-    if(!official&&category==='all'){
-      const payload={...value,updatedAt:value.publishedAt,providerPublishedAt:value.publishedAt,checkedAt:new Date().toISOString(),cadenceMs:FRESH_MS};
-      try{root.localStorage.setItem('fynx_news_latest_payload',JSON.stringify(payload));if(value.fetchedAt)root.localStorage.setItem('fynx_news_last_refresh',value.fetchedAt);}catch{}
-      try{root.dispatchEvent(new root.CustomEvent('fynx:news-updated',{detail:payload}));}catch{}
-    }
+  function saveCache(value,official,category,edition){
+    try{root.localStorage.setItem(cacheKey(official,category,edition),JSON.stringify(value));}catch{}
+    if(!official&&category==='all')try{root.dispatchEvent(new root.CustomEvent('fynx:news-updated',{detail:value}));}catch{}
   }
   async function request(url,timeoutMs){
     const controller=new AbortController();let timer;
@@ -136,24 +152,25 @@
   }
   async function load(official,category,options={}){
     if(!categories.includes(category))throw new Error('Unknown news category');
-    const key=cacheKey(official,category),cached=readCache(official,category);
+    const edition=editionID(options.edition),key=cacheKey(official,category,edition),cached=readCache(official,category,edition);
     if(!options.force&&cached&&Date.now()-Date.parse(cached.fetchedAt)<FRESH_MS)return cached;
     if(pending.has(key))return pending.get(key);
     const timeoutMs=Number.isFinite(options.timeoutMs)?Math.max(100,Math.min(MAX_WAIT_MS,options.timeoutMs)):MAX_WAIT_MS;
     const task=(async()=>{
-      try{const url=ENDPOINT+(official?'?kind=releases':'?category='+encodeURIComponent(category));let value=normalize(await request(url,timeoutMs),official,category);
+      try{const url=ENDPOINT+'?'+new URLSearchParams({edition,category:official?'all':category,...(official?{kind:'releases'}:{})});let value=normalize(await request(url,timeoutMs),official,category,Date.now(),edition);
         if(official)value=mergeOfficialCache(value,cached);
         if(official&&value.status==='unavailable'&&cached)return {...cached,message:'Official feeds could not be refreshed. Showing dated saved releases.'};
-        if(value.fetchedAt)saveCache(value,official,category);return value;
+        if(value.fetchedAt)saveCache(value,official,category,edition);return value;
       }catch{
-        if(cached)return {...cached,message:'Refresh unavailable. Showing dated saved '+(official?'releases':'headlines')+'.'};
-        return {kind:official?'official-releases':'headlines',items:[],fetchedAt:null,publishedAt:null,status:'unavailable',stale:true,message:official?'Official feeds are temporarily unavailable. Their original websites remain available below.':'Headlines could not be refreshed. Try again or open an official publisher below.',sources:official?officialSources.map(source=>({id:source.id,name:source.name,status:'unavailable',fetchedAt:null,message:'Open the official source'})):[]};
+        if(cached)return {...cached,status:'cached',stale:true,sources:cached.sources.map(source=>({...source,status:source.status==='unavailable'?'unavailable':'cached'})),message:'Refresh unavailable. Showing dated saved '+(official?'releases':'headlines')+'.'};
+        return {edition,category:official?'all':category,kind:official?'official-releases':'headlines',items:[],fetchedAt:null,publishedAt:null,status:'unavailable',stale:true,message:official?'Official feeds are temporarily unavailable. Their original websites remain available below.':'Headlines could not be refreshed. Try again or open an official publisher below.',sources:official?sourcesFor(edition).map(source=>({id:source.id,name:source.name,status:'unavailable',fetchedAt:null,message:'Open the official source'})):[]};
       }finally{pending.delete(key);}
     })();pending.set(key,task);return task;
   }
   root.FYNXMarketIntelligenceData=Object.freeze({publishers,institutions,officialSources,topics,categories,
-    getCachedHeadlines:(category='all')=>categories.includes(category)?readCache(false,category):null,
-    getCachedOfficialReleases:()=>readCache(true,'all'),
+    getCachedHeadlines:(category='all',options={})=>categories.includes(category)?readCache(false,category,editionID(options.edition)):null,
+    getCachedOfficialReleases:(options={})=>readCache(true,'all',editionID(options.edition)),
+    sourcesForEdition:(edition)=>sourcesFor(editionID(edition)),
     loadHeadlines:(category='all',options)=>load(false,category,options),
     loadOfficialReleases:options=>load(true,'all',options),
     safeURL
