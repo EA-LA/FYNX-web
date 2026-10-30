@@ -58,22 +58,41 @@ function catalog() {
 function harness(t, options = {}) {
   const dom = new JSDOM(`<!doctype html><body>${fragment}</body>`, { url: 'https://www.fynxfinanceworld.com/news.html', runScripts: 'outside-only' });
   t.after(() => dom.window.close());
-  const win = dom.window, doc = win.document, calls = { headlines: [], releases: [], saved: [], plans: 0, intervals: [], network: 0 };
+  const win = dom.window, doc = win.document;
+  let now = options.now || Date.parse('2026-10-20T10:10:00Z');
+  win.Date.now = () => now;
+  const calls = { headlines: [], releases: [], saved: [], plans: 0, intervals: [], network: 0, cachedHeadlines: [], cachedReleases: [] };
   win.fetch = () => { calls.network++; throw new Error('The controller must use the injected public data service.'); };
   win.setInterval = (callback, ms) => { calls.intervals.push({ callback, ms }); return calls.intervals.length; };
   const D = {
     ...catalog(),
     safeURL(value) { try { const u = new URL(value); return u.protocol === 'https:' && !u.username && !u.password ? u.href : null; } catch { return null; } },
-    getCachedHeadlines: category => options.cached?.[category] || null,
-    getCachedOfficialReleases: () => options.cachedReleases || null,
+    getCachedHeadlines(category, settings) { calls.cachedHeadlines.push({category,...settings}); return options.cachedHeadlines ? options.cachedHeadlines(category,settings) : options.cached?.[category] || null; },
+    getCachedOfficialReleases(settings) { calls.cachedReleases.push(settings); return typeof options.cachedReleases === 'function' ? options.cachedReleases(settings) : options.cachedReleases || null; },
     loadHeadlines(category, settings) { calls.headlines.push({ category, ...settings }); return options.headlines ? options.headlines(category, settings) : Promise.resolve(result([story('a')])); },
     loadOfficialReleases(settings) { calls.releases.push(settings); return options.releases ? options.releases(settings) : Promise.resolve(releases()); }
   };
+  if (options.edition) {
+    let selected = options.edition;
+    D.officialSources = [
+      {id:'fed',name:'Federal Reserve',website:'https://www.federalreserve.gov/',editions:['us']},
+      {id:'bea',name:'BEA',website:'https://www.bea.gov/news',editions:['us']},
+      {id:'ecb',name:'ECB',website:'https://www.ecb.europa.eu/',editions:['europe']},
+      {id:'boe',name:'Bank of England',website:'https://www.bankofengland.co.uk/news',editions:['uk']},
+      {id:'boc',name:'Bank of Canada',website:'https://www.bankofcanada.ca/press/',editions:['canada']},
+      {id:'boj',name:'Bank of Japan',website:'https://www.boj.or.jp/en/',editions:['japan','asia']},
+      {id:'rba',name:'Reserve Bank of Australia',website:'https://www.rba.gov.au/media-releases/',editions:['australia']}
+    ];
+    D.sourcesForEdition = code => D.officialSources.filter(source => code === 'global' || source.editions.includes(code));
+    win.FynxEdition = {get:()=>selected,set(code){ const previous=selected;selected=code;doc.dispatchEvent(new win.CustomEvent('fynx:edition-change',{detail:{edition:code,previous}})); }};
+  }
+  if (options.terminal) doc.body.setAttribute('data-fynx-terminal','');
+  if (options.media) win.eval(fs.readFileSync(path.join(root,'assets/js/newsroom-media.js'),'utf8'));
   if (!options.missingData) win.FYNXMarketIntelligenceData = D;
   if (!options.missingMembership) win.FYNXNewsMembership = { saveResearch: item => calls.saved.push(item), openPlans: () => calls.plans++ };
   win.eval(controller);
   const query = selector => doc.querySelector(selector), all = selector => [...doc.querySelectorAll(selector)];
-  return { win, doc, D, calls, query, all,
+  return { win, doc, D, calls, query, all, setNow(value) { now = value; },
     click(selector) { const target = query(selector); assert(target, `Missing click target ${selector}`); target.click(); },
     input(selector, value) { const target = query(selector); target.value = value; target.dispatchEvent(new win.Event(target.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true })); }
   };
@@ -88,7 +107,7 @@ test('source libraries and institutions render synchronously while both public f
   assert.equal(h.calls.headlines.length, 1); assert.equal(h.calls.releases.length, 1);
   assert.equal(h.calls.headlines[0].timeoutMs, 6500); assert.equal(h.calls.releases[0].timeoutMs, 6500);
   assert.equal(h.calls.network, 0); assert.equal(h.calls.saved.length, 0); assert.equal(h.calls.plans, 0);
-  assert.equal(h.calls.intervals[0].ms, 300000);
+  assert.equal(h.calls.intervals[0].ms, 600000);
 });
 
 test('headlines show original source/date and search source names or titles without another request', async t => {
@@ -173,7 +192,7 @@ test('official release refresh uses the bounded public service and retains sourc
   const h = harness(t, { releases: () => Promise.resolve(releases()) }); await tick();
   assert.match(h.query('.fn-release-sources').textContent, /Refreshed/);
   assert.equal(h.query('.fn-release time').dateTime, publishedAt);
-  h.click('[data-release-refresh]'); await tick(); assert.deepEqual({ ...h.calls.releases.at(-1) }, { force: true, timeoutMs: 6500 });
+  h.click('[data-release-refresh]'); await tick(); assert.deepEqual({ ...h.calls.releases.at(-1) }, { force: true, edition: 'us', timeoutMs: 6500 });
   assert.equal(h.query('[data-news-intelligence]').dataset.releasesReady, 'fresh');
 });
 
@@ -284,4 +303,94 @@ test('native News Feed clears the prior module URL and browser Back restores the
   assert.equal(doc.querySelector('[data-news-tab="analysis"]').getAttribute('aria-selected'), 'true');
   assert.equal(doc.querySelector('[data-news-tab="analysis"]').tabIndex, 0);
   assert.equal(win.history.length, length, 'Restoring history must not push another entry');
+});
+
+test('edition changes clear both lists immediately, send explicit selectors and reject late headline and release responses', async t => {
+  const headlines=new Map(),official=new Map();
+  const h=harness(t,{edition:'us',terminal:true,headlines:(_category,settings)=>{const d=deferred();headlines.set(settings.edition,d);return d.promise;},releases:settings=>{const d=deferred();official.set(settings.edition,d);return d.promise;}});
+  h.win.FynxEdition.set('uk');
+  assert.equal(h.all('.fn-story').length,0);assert.equal(h.all('.fn-release').length,0);
+  assert.match(h.query('[data-release-status]').textContent,/UK/);
+  assert.match(h.query('.fn-terminal-sources').textContent,/Bank of England/);
+  assert.doesNotMatch(h.query('.fn-terminal-sources').textContent,/Federal Reserve|BEA/);
+  assert.deepEqual({...h.calls.cachedHeadlines.at(-1)},{category:'all',edition:'uk'});
+  assert.deepEqual({...h.calls.cachedReleases.at(-1)},{edition:'uk'});
+  headlines.get('uk').resolve(result([{...story('uk','UK market report'),edition:'uk'}],{edition:'uk'}));
+  official.get('uk').resolve(result([{...story('boe','UK policy release','Bank of England'),sourceId:'boe',kind:'official-release',edition:'uk',url:'https://www.bankofengland.co.uk/news/policy'}],{edition:'uk'}));await tick();
+  headlines.get('us').resolve(result([story('old','US late market report')],{edition:'us'}));
+  official.get('us').resolve({...releases(),edition:'us'});await tick();
+  assert.match(h.query('[data-news-stories]').textContent,/UK market report/);assert.doesNotMatch(h.query('[data-news-stories]').textContent,/US late/);
+  assert.match(h.query('[data-release-list]').textContent,/UK policy release/);assert.doesNotMatch(h.query('[data-release-list]').textContent,/Federal Reserve announcement|Economic accounts/);
+  assert.equal(h.query('[data-news-intelligence]').dataset.feedEdition,'uk');assert.equal(h.query('[data-news-intelligence]').dataset.releasesEdition,'uk');
+  assert.equal(h.query('[data-news-refresh]').disabled,false);assert.equal(h.query('[data-release-refresh]').disabled,false);
+});
+
+test('empty regional headline feeds use only that edition’s dated official releases and retain honest classification', async t => {
+  const h=harness(t,{edition:'uk',headlines:()=>Promise.resolve(result([],{edition:'uk'})),releases:()=>Promise.resolve(result([
+    {...story('boe','UK official policy'),sourceId:'boe',kind:'official-release',edition:'uk',url:'https://www.bankofengland.co.uk/news/policy'},
+    {...story('fed','Unrelated US policy'),sourceId:'fed',kind:'official-release',edition:'us',url:'https://www.federalreserve.gov/policy'}
+  ],{edition:'uk'}))});await tick();
+  assert.equal(h.calls.releases.length,1,'headline fallback shares the in-flight official request');
+  assert.equal(h.all('.fn-story').length,1);assert.match(h.query('.fn-lead-flag').textContent,/OFFICIAL RELEASE/);assert.equal(h.query('.fn-story').dataset.storyKind,'official-release');
+  assert.match(h.query('[data-news-status]').textContent,/Official releases/);assert.doesNotMatch(h.query('[data-news-stories]').textContent,/Unrelated US/);
+  h.click('[data-news-category="crypto"]');await tick();assert.equal(h.all('.fn-story').length,0);assert.equal(h.calls.headlines.at(-1).edition,'uk');
+});
+
+test('regional publisher filters and official source links rebuild without retaining US default destinations', async t => {
+  const h=harness(t,{edition:'us',terminal:true,headlines:(_category,settings)=>Promise.resolve(result([story('headline')],{edition:settings.edition})),releases:settings=>Promise.resolve(result([],{edition:settings.edition}))});await tick();
+  h.input('[data-media-publisher]','cnbc');assert.match(h.query('.fn-media-card').textContent,/CNBC/);
+  h.win.FynxEdition.set('uk');await tick();
+  assert.equal(h.query('[data-media-publisher]').value,'all');assert.doesNotMatch(h.query('[data-media-grid]').textContent,/CNBC/);assert.match(h.query('.fn-media-edition').textContent,/UK edition · Global publisher libraries/);
+  assert.deepEqual(h.all('.fn-institution h3').map(el=>el.textContent),['Bank of England']);assert.deepEqual(h.all('.fn-release-sources a').map(el=>el.textContent),['Bank of England ↗']);
+  h.click('[data-region="us"]');assert.equal(h.all('.fn-release-sources a').length,0);assert.equal(h.all('.fn-institution').length,0);
+  h.win.FynxEdition.set('canada');await tick();assert.match(h.query('.fn-terminal-sources').textContent,/Bank of Canada/);assert.match(h.query('.fn-institution').textContent,/Bank of Canada/);assert.equal(h.query('[data-region="all"]').getAttribute('aria-pressed'),'true');
+});
+
+test('mismatched edition responses never render even when a faulty data service returns them', async t => {
+  const h=harness(t,{edition:'uk',headlines:()=>Promise.resolve(result([story('us','Unexpected US report')],{edition:'us'})),releases:()=>Promise.resolve({...releases(),edition:'us'})});await tick();
+  assert.equal(h.all('.fn-story').length,0);assert.equal(h.all('.fn-release').length,0);assert.match(h.query('[data-news-status]').textContent,/could not be refreshed/);
+});
+
+test('visible refresh runs at ten minutes, pauses while hidden and catches up once on return', async t => {
+  const h=harness(t);await tick();const start=Date.parse('2026-10-20T10:10:00Z');let visibility='visible';
+  Object.defineProperty(h.doc,'visibilityState',{get:()=>visibility,configurable:true});
+  const refresh=h.calls.intervals.find(timer=>timer.ms===600000).callback;
+  h.setNow(start+599999);refresh();await tick();assert.equal(h.calls.headlines.length,1);assert.equal(h.calls.releases.length,1);
+  visibility='hidden';h.setNow(start+600000);refresh();await tick();assert.equal(h.calls.headlines.length,1);
+  visibility='visible';h.doc.dispatchEvent(new h.win.Event('visibilitychange'));await tick();assert.equal(h.calls.headlines.length,2);assert.equal(h.calls.releases.length,2);
+  h.doc.dispatchEvent(new h.win.Event('visibilitychange'));refresh();await tick();assert.equal(h.calls.headlines.length,2);assert.equal(h.calls.releases.length,2);
+});
+
+test('open pages prune expired 48-hour headlines, seven-day analysis and thirty-day releases without waiting for a provider', async t => {
+  const now=Date.parse('2026-10-30T12:00:00Z'),hours=h=>new Date(now-h*3600000).toISOString();
+  const h=harness(t,{now,headlines:()=>Promise.resolve(result([
+    {...story('fresh','Fresh story'),publishedAt:hours(1)},
+    {...story('near','Expiring headline'),publishedAt:hours(48)+''},
+    {...story('analysis','Expiring analysis'),publishedAt:hours(168),kind:'analysis',category:'analysis'},
+    {...story('old','Already expired'),publishedAt:hours(49)}
+  ])),releases:()=>Promise.resolve(result([{...story('release','Expiring official release'),sourceId:'fed',kind:'official-release',publishedAt:hours(720),url:'https://www.federalreserve.gov/policy'}]))});await tick();
+  Object.defineProperty(h.doc,'visibilityState',{value:'visible',configurable:true});
+  assert.equal(h.all('.fn-story').length,3);assert.equal(h.all('.fn-release').length,1);
+  h.setNow(now+60000);h.calls.intervals.find(timer=>timer.ms===60000).callback();
+  assert.equal(h.all('.fn-story').length,1);assert.match(h.query('.fn-story').textContent,/Fresh story/);assert.equal(h.all('.fn-release').length,0);
+  assert.equal(h.calls.headlines.length,1);assert.equal(h.calls.releases.length,1);
+});
+
+test('licensed source images preserve attribution and alt text and are removed if unavailable', async t => {
+  const item={...story('image','Source image headline'),image:{url:'https://images.publisher.example/report.jpg',sourceURL:'https://publisher.example/report',credit:'Source photographer',source:'Publisher',license:'CC BY 4.0',licenseURL:'https://creativecommons.org/licenses/by/4.0/',alt:'A shipping crane beside a container terminal'}};
+  const h=harness(t,{headlines:()=>Promise.resolve(result([item])),media:true});await tick();
+  const figure=h.query('.fn-source-image');assert(figure);assert.equal(figure.querySelector('img').alt,item.image.alt);assert.equal(figure.querySelector('img').getAttribute('src'),item.image.url);
+  assert.match(figure.querySelector('figcaption').textContent,/Source image · Source photographer · CC BY 4.0/);assert.equal(h.all('.newsroom-context-image').length,0);
+  figure.querySelector('img').dispatchEvent(new h.win.Event('error'));assert.equal(h.all('.fn-lead-image').length,0);
+});
+
+test('context images stay visibly labeled and avoid geographic false associations for non-US editions', async t => {
+  const h=harness(t,{edition:'japan',media:true,headlines:()=>Promise.resolve(result([{...story('japan','Nikkei market report'),edition:'japan'}],{edition:'japan'})),releases:()=>Promise.resolve(result([],{edition:'japan'}))});await tick();
+  const figure=h.query('.newsroom-context-image');assert(figure);assert.equal(figure.dataset.contextImage,'world');assert.match(figure.querySelector('figcaption').textContent,/Context:/);assert.match(figure.querySelector('img').alt,/Earth/);assert.doesNotMatch(figure.querySelector('img').alt,/Nikkei market report|New York/);
+});
+
+test('unsafe and noncommercial source images fall back to labeled context rather than executable markup', async t => {
+  const item={...story('bad-image'),image:{url:'javascript:alert(1)',sourceURL:'https://publisher.example/story',credit:'<img onerror=alert(2)>',license:'CC BY-NC 4.0',licenseURL:'https://creativecommons.org/licenses/by-nc/4.0/'}};
+  const h=harness(t,{media:true,headlines:()=>Promise.resolve(result([item]))});await tick();
+  assert.equal(h.all('.fn-source-image').length,0);assert.equal(h.all('.newsroom-context-image').length,1);assert.equal(h.all('[onerror]').length,0);assert.match(h.query('.fn-lead-image figcaption').textContent,/Context:/);
 });

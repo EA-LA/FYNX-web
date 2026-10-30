@@ -150,6 +150,7 @@ test('deferred header waits for actual fynx-nav at interactive, preserves accoun
   try {
     let state = 'loading';
     Object.defineProperty(w.document, 'readyState', { configurable: true, get: () => state });
+    w.eval(read('assets/js/newsroom-editions.js'));
     w.eval(read('fynx-nav.js'));
     state = 'interactive';
     w.eval(read('assets/js/terminal-header.js'));
@@ -166,6 +167,17 @@ test('deferred header waits for actual fynx-nav at interactive, preserves accoun
     assert.equal(w.document.getElementById('avatarInitials'), originalAvatar);
     assert.equal(w.document.querySelector('.icon-btn[aria-label="Notifications"]'), originalBell);
     originalBell.click(); assert.equal(bellClicks, 1);
+    const editionSelect = w.document.querySelector('[data-edition-select]');
+    assert(editionSelect); assert.equal(editionSelect.getAttribute('aria-label'), 'News edition');
+    assert.equal(editionSelect.options.length, w.FynxEdition.editions.length);
+    assert.equal(w.document.querySelectorAll('.terminal-topic-nav').length, 1);
+    for (const section of w.FynxEdition.sections) assert(w.document.querySelector('.terminal-topic-nav a[href="' + section.href + '"]'), section.id);
+    assert(w.document.querySelector('.terminal-topic-more summary'));
+    editionSelect.value = 'uk'; editionSelect.dispatchEvent(new w.Event('change', { bubbles: true }));
+    assert.equal(w.FynxEdition.get(), 'uk');
+    assert.equal(w.document.getElementById('avatarInitials'), originalAvatar);
+    assert.equal(w.document.querySelector('.icon-btn[aria-label="Notifications"]'), originalBell);
+    originalBell.click(); assert.equal(bellClicks, 2);
     w.FynxIdentity = { uid: 'fixture-user', displayName: 'Test Trader' };
     w.dispatchEvent(new w.Event('fynx:identity'));
     assert.equal(originalAvatar.textContent, 'TT');
@@ -176,6 +188,8 @@ test('deferred header waits for actual fynx-nav at interactive, preserves accoun
     assert.equal(w.document.querySelectorAll('.terminal-utility').length, 1);
     assert.equal(w.document.querySelectorAll('[data-terminal-ticker]').length, 1);
     assert.equal(w.document.querySelectorAll('.terminal-header-search').length, 1);
+    assert.equal(w.document.querySelectorAll('.terminal-topic-nav').length, 1);
+    assert.equal(w.document.querySelectorAll('[data-edition-select]').length, 1);
     assert.deepEqual(errors, []);
   } finally { dom.window.close(); }
 });
@@ -194,13 +208,15 @@ test('Home preserves journal selectors and real account updates after its layout
     assert.equal(w.document.getElementById('homeWinRate').textContent, '50.0%');
     authChange(null);
     assert.equal(w.document.getElementById('homeTrades').textContent, '0');
-    assert.equal(w.document.getElementById('homePnl').textContent, '$0.00');
+    assert.equal(w.document.getElementById('homePnl').textContent, '—');
   } finally { dom.window.close(); }
 });
 
 test('Home and ticker render validated links, dated official fallback, unavailable quotes, and a sourced history chart', async () => {
   const { dom, window: w, errors } = await domFor('home.html');
   try {
+    w.Date.now = () => NOW;
+    w.eval(read('assets/js/newsroom-editions.js'));
     const malicious = story({ id: 'bad', url: 'javascript:alert(1)', title: 'Unsafe story' });
     w.FynxTerminalData = createTerminalData({ location: w.location, fetch: async url => response(new URL(url).searchParams.get('action') === 'history' ? historyPayload() : quotePayload()), FYNXMarketIntelligenceData: { loadHeadlines: async () => { throw Error('Offline'); }, loadOfficialReleases: async () => feed([story({ title: '<img src=x onerror=alert(1)> Official fixture release' }), malicious]) } }, { now: () => NOW });
     w.eval(read('fynx-nav.js'));
@@ -233,6 +249,8 @@ test('Home and ticker render validated links, dated official fallback, unavailab
 test('a complete upstream outage renders explicit unavailable states without invented prices, chart points, or stories', async () => {
   const { dom, window: w, errors } = await domFor('home.html');
   try {
+    w.Date.now = () => NOW;
+    w.eval(read('assets/js/newsroom-editions.js'));
     const offline = async () => { throw Error('Offline'); };
     w.FynxTerminalData = createTerminalData({ location: w.location, fetch: offline, FYNXMarketIntelligenceData: { loadHeadlines: offline, loadOfficialReleases: offline } }, { now: () => NOW });
     w.eval(read('fynx-nav.js'));
@@ -240,7 +258,7 @@ test('a complete upstream outage renders explicit unavailable states without inv
     w.eval(read('assets/js/terminal-market-ui.js'));
     w.eval(read('assets/js/terminal-home.js'));
     await tick(); await tick();
-    assert.match(w.document.getElementById('homeLeadStory').textContent, /Coverage is temporarily unavailable/);
+    assert.match(w.document.getElementById('homeLeadStory').textContent, /No recent verified coverage is available for the US edition/);
     assert.equal(w.document.querySelector('#homeLeadStory a').pathname, '/news.html');
     assert.equal(w.document.querySelectorAll('#homeLatestStories article, #homeSecondaryStories article').length, 0);
     assert.equal(w.document.querySelectorAll('#homeHistoryChart polyline, #homeHistoryChart path').length, 0);
@@ -267,4 +285,27 @@ test('new terminal scripts and retained Home inline scripts parse without syntax
     } else assert.doesNotThrow(() => new vm.Script(script.textContent, { filename: 'home.html inline ' + index }));
   }
   document.defaultView.close();
+});
+
+test('ticker, Home and landing preserve four-decimal EUR/USD and GBP/USD reference quotes', async () => {
+  const fx=instruments.filter(item=>['EURUSD=X','GBPUSD=X','JPY=X'].includes(item.symbol));
+  const quotes={...quotePayload(),quotes:{'EURUSD=X':quote('EURUSD=X',{price:1.09}),'GBPUSD=X':quote('GBPUSD=X',{price:1.23456}),'JPY=X':quote('JPY=X',{price:152.345,currency:'JPY'})},status:'fresh',stale:false};
+  for(const file of ['home.html','index.html']){
+    const {dom,window:w,errors}=await domFor(file);
+    try{
+      w.Date.now=()=>NOW;
+      w.FynxTerminalData={instruments:fx,loadQuotes:async()=>quotes,loadBriefing:async()=>({items:[],edition:'us',status:'unavailable'}),loadHistory:async()=>({bars:[],message:'Unavailable'})};
+      w.FynxEdition={get:()=> 'us',editions:[{id:'us',label:'US'}]};
+      const ticker=w.document.createElement('div');ticker.setAttribute('data-terminal-ticker','');w.document.body.append(ticker);
+      w.eval(read('assets/js/terminal-market-ui.js'));
+      w.eval(read(file==='home.html'?'assets/js/terminal-home.js':'assets/js/terminal-landing-live.js'));
+      await tick();await tick();
+      const expected={'EUR/USD':'1.0900','GBP/USD':'1.2346','USD/JPY':'152.35'};
+      for(const item of w.document.querySelectorAll('.terminal-ticker-item'))assert.equal(item.querySelector('span').textContent,expected[item.querySelector('strong').textContent]);
+      const table=w.document.getElementById(file==='home.html'?'homeQuoteRows':'landingQuoteRows');
+      assert.equal(table.querySelectorAll('tr').length,3);
+      for(const row of table.querySelectorAll('tr'))assert.equal(row.querySelector('td:nth-child(2) a').textContent,expected[row.querySelector('strong').textContent]);
+      assert.deepEqual(errors,[]);
+    }finally{dom.window.close();}
+  }
 });

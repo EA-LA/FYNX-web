@@ -349,7 +349,6 @@ export async function bootstrapSession({ auth, protectedPage = false, loginPage 
     // no-op
   });
 
-  const isDemo = localStorage.getItem("mode") === "demo";
   const redirectTo = `/auth/login.html?returnTo=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`;
 
   return new Promise((resolve) => {
@@ -385,7 +384,7 @@ export async function bootstrapSession({ auth, protectedPage = false, loginPage 
         }
       }
 
-      if (!user && protectedPage && !isDemo) {
+      if (!user && protectedPage) {
         window.location.replace(redirectTo);
         resolve({ user: null, redirected: true });
         return;

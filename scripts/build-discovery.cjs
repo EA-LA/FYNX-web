@@ -30,7 +30,7 @@ for (const [topic, items] of Object.entries(outlines)) {
  });
 }
 // Legacy views remain usable, but only their substantive destination is in discovery and the sitemap.
-const aliases = {'learn/risk-management.html':'risk-management.html','learn/trading-psychology.html':'trading-psychology.html','resources/market-analysis.html':'market-analysis.html','resources/quizzes.html':'trading-quizzes.html','resources/trading-glossary.html':'trading-glossary.html','tools/profit-loss.html':'tools/stock.html','tools/options-payoff.html':'tools/debt-payoff.html','waitlist.html':'home.html'};
+const aliases = {'tools/heatmap.html':'tools/research-heatmap.html','learn/risk-management.html':'risk-management.html','learn/trading-psychology.html':'trading-psychology.html','resources/market-analysis.html':'market-analysis.html','resources/quizzes.html':'trading-quizzes.html','resources/trading-glossary.html':'trading-glossary.html','tools/profit-loss.html':'tools/stock.html','tools/options-payoff.html':'tools/debt-payoff.html','waitlist.html':'home.html'};
 // Company pages retain their editorial navigation and curated onward links.
 const companyFiles = new Set(['about.html', 'founder.html']);
 const privateFiles = new Set(['home.html','learn/topic.html','waitlist.html']);

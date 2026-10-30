@@ -137,7 +137,7 @@
   },
   "tools/currency.html": {
     "title": "Currency Conversion Calculator: Manual Rates | FYNX",
-    "description": "Convert currencies using a manually entered exchange rate or fixed example rates. The calculator does not provide live exchange rates."
+    "description": "Convert currencies using a verified exchange rate you enter. The calculator does not provide live exchange rates."
   },
   "tools/economic-calendar.html": {
     "title": "Economic Calendar: Releases & Central Bank Events | FYNX",

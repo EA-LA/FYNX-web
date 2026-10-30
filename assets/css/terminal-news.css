@@ -138,3 +138,16 @@ html body[data-fynx-terminal] .fn-next button { border-radius: 0; }
   html body[data-fynx-terminal] .fn-media-grid { grid-template-columns: minmax(0,1fr); }
   html body[data-fynx-terminal] .fn-section-heading { flex-wrap: wrap; }
 }
+
+/* Captions distinguish licensed source imagery from reusable section context. */
+html body[data-fynx-terminal] .fn-lead-image { margin: 0 0 16px; min-width: 0; }
+html body[data-fynx-terminal] .fn-lead-image img { display: block; width: 100%; height: auto; max-height: 340px; object-fit: contain; background: #f3f3ef; }
+html body[data-fynx-terminal] .fn-lead-image figcaption { padding: 7px 0 5px; font: 10px/1.5 Arial, Helvetica, sans-serif; color: var(--terminal-muted); overflow-wrap: anywhere; }
+html body[data-fynx-terminal] .fn-lead-image figcaption strong { font-weight: 400; }
+html body[data-fynx-terminal] .fn-lead-image figcaption a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+html body[data-fynx-terminal] .fn-media-edition { margin: 0 0 12px; }
+html body[data-fynx-terminal] .fn-terminal-sources > .fn-source-note { margin-block: 5px 8px; }
+@media (max-width: 760px) {
+  html body[data-fynx-terminal] .fn-lead-image img { max-height: 270px; }
+  html body[data-fynx-terminal] .fn-lead-image figcaption { font-size: 10px; }
+}

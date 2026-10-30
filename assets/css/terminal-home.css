@@ -129,3 +129,64 @@ html body[data-fynx-terminal] .nr-recent a { border: 0 !important; border-bottom
  .nr-voices .finance-voice { border-right: 0; border-bottom: 1px solid var(--terminal-line); }
  .nr-feed-status button { min-height: 40px; }
 }
+
+/* Edition-aware reporting and clearly attributed context photography. */
+.nr-edition { margin: -2px 0 13px; color: var(--terminal-muted); font: 10px/1.5 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .06em; }
+.nr-story-image,.nr-lead .newsroom-context-image { margin: 0 0 15px; }
+.nr-story-image img,.nr-lead .newsroom-context-image img { width: 100%; height: auto; max-height: 290px; object-fit: contain; display: block; background: var(--terminal-panel); }
+.nr-story-image figcaption,.nr-lead .newsroom-context-image figcaption { font-size: 10px; line-height: 1.5; color: var(--terminal-muted); padding-top: 7px; }
+.nr-story-image figcaption a,.nr-lead .newsroom-context-image figcaption a { text-decoration: underline; text-underline-offset: 2px; }
+.nr-side > .nr-chart { margin: 0; }
+.nr-side > .nr-chart .nr-chart-canvas { height: 138px; }
+.nr-topic-coverage { margin-top: 32px; }
+.nr-topic-coverage > .nr-section-head > span { color: var(--terminal-green); font-size: 11px; }
+.nr-topic-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 28px 25px; margin-top: 20px; }
+.nr-topic-section { min-width: 0; }
+.nr-topic-section .nr-section-head { margin-bottom: 12px; }
+html body[data-fynx-terminal] .nr-topic-section .nr-section-head h3 { font-size: 19px; line-height: 1.2; letter-spacing: -.025em; margin: 0; }
+.nr-topic-section .newsroom-context-image { margin: 0 0 12px; }
+.nr-topic-section .newsroom-context-image img { display: block; width: 100%; height: 175px; object-fit: contain; background: var(--terminal-panel); }
+.nr-topic-section .newsroom-context-image figcaption { margin-top: 6px; font-size: 9px; line-height: 1.5; color: var(--terminal-muted); }
+.nr-topic-section .newsroom-context-image figcaption a { text-decoration: underline; text-underline-offset: 2px; }
+.nr-topic-stories article { padding: 11px 0; border-bottom: 1px solid var(--terminal-line); }
+html body[data-fynx-terminal] .nr-topic-stories h3 { font-size: 16px; line-height: 1.2; letter-spacing: -.02em; margin: 5px 0 7px; }
+.nr-topic-stories .nr-kind { font-size: 9px; }
+.nr-topic-stories .nr-published { font-size: 10px; }
+.nr-topic-stories .nr-empty { margin: 0; }
+.nr-topic-section > .nr-source-note { margin-top: 10px; font-size: 9px; }
+
+/* The landing carousel retains its native tabs and keyboard controls. */
+html body[data-fynx-terminal] .fw-live-terminal .fw-stage { min-height: 510px; padding: 20px; }
+html body[data-fynx-terminal] .fw-live-terminal .fw-panel-heading { margin-bottom: 16px; }
+.fw-live-terminal .fw-panel-heading .fw-chip { white-space: nowrap; text-decoration: none; }
+.fw-live-news { min-width: 0; }
+.fw-live-news .newsroom-context-image { margin: 0 0 14px; }
+.fw-live-news .newsroom-context-image img { display: block; width: 100%; height: 190px; object-fit: contain; background: var(--fw-soft); }
+.fw-live-news .newsroom-context-image figcaption { margin-top: 7px; font-size: 9px; line-height: 1.45; color: var(--fw-muted); }
+.fw-live-news .newsroom-context-image figcaption a { text-decoration: underline; text-underline-offset: 2px; }
+.fw-live-story { padding: 11px 0; border-bottom: 1px solid var(--fw-line); }
+html body[data-fynx-terminal] .fw-live-story h4 { font-size: 18px; line-height: 1.2; letter-spacing: -.03em; margin: 5px 0 7px; }
+.fw-live-story h4 a { color: var(--fw-text); }
+.fw-live-source { color: var(--fw-accent); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.fw-live-story time { color: var(--fw-muted); font: 10px/1.5 ui-monospace, monospace; }
+.fw-live-terminal .fw-live-status { font-size: 10px; line-height: 1.6; color: var(--fw-muted); margin: 12px 0 0; }
+.fw-live-quotes { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12px; }
+.fw-live-quotes th { font-size: 9px; text-transform: uppercase; color: var(--fw-muted); text-align: left; padding: 7px 0; border-bottom: 1px solid var(--fw-text); }
+.fw-live-quotes th:first-child { width: 29%; }
+.fw-live-quotes th:last-child { width: 23%; }
+.fw-live-quotes th:not(:first-child),.fw-live-quotes td:not(:first-child) { text-align: right; }
+.fw-live-quotes td { padding: 10px 0; border-bottom: 1px solid var(--fw-line); vertical-align: top; overflow-wrap: anywhere; }
+.fw-live-quotes td:last-child { font: 11px ui-monospace, monospace; }
+.fw-live-quotes td>a { color: var(--fw-text); font: 13px ui-monospace, monospace; }
+.fw-live-quotes small,.fw-live-quotes time { display: block; color: var(--fw-muted); font-size: 9px; line-height: 1.5; margin-top: 3px; }
+.fw-live-tools { display: grid; }
+.fw-live-tools>a { display: grid; grid-template-columns: 25px minmax(0,1fr) 15px; align-items: start; gap: 12px; padding: 23px 0; border-top: 1px solid var(--fw-line); color: var(--fw-text); }
+.fw-live-tools>a>span { font: 11px ui-monospace, monospace; color: var(--fw-muted); }
+.fw-live-tools strong { font-size: 16px; letter-spacing: -.02em; }
+.fw-live-tools small { display: block; font-size: 12px; line-height: 1.6; color: var(--fw-muted); margin-top: 7px; }
+.fw-live-terminal .fw-terminal-foot { font-size: 9px; line-height: 1.5; }
+@media(max-width:1100px) { .nr-side > .nr-chart { grid-column: 2; grid-row: 2; }.nr-side > .nr-sessions { grid-column: 2; grid-row: 1; }.nr-topic-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:700px) { .nr-side > .nr-chart,.nr-side > .nr-sessions { grid-column: auto; grid-row: auto; }.nr-topic-grid { grid-template-columns: minmax(0,1fr); gap: 25px; }.nr-topic-section .newsroom-context-image img { height: auto; max-height: 240px; } html body[data-fynx-terminal] .fw-live-terminal .fw-stage { min-height: 0; padding: 16px; }.fw-live-terminal .fw-panel-heading { flex-wrap: wrap; }.fw-live-news .newsroom-context-image img { height: auto; max-height: 210px; }.fw-live-terminal .fw-terminal-foot { align-items: start; }.fw-live-terminal .fw-terminal-foot button { flex-shrink: 0; } }
+
+html body[data-fynx-terminal] .fw-live-terminal .fw-live-quotes strong,
+html body[data-fynx-terminal] .fw-live-terminal .fw-live-tools strong { color:var(--fw-text) !important; }

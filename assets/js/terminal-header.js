@@ -92,9 +92,29 @@
     sessions.dataset.terminalSessions = '';
     const actions = element('div', 'terminal-utility-actions');
     actions.append(link('API', '/api/'), link('Pro tools & plans', '/pro.html'));
+    if (window.FynxEdition) {
+      const label = element('label','terminal-edition');
+      const select = element('select'); select.dataset.editionSelect = '';
+      select.setAttribute('aria-label','News edition');
+      window.FynxEdition.editions.forEach(function (edition) {const option=element('option','',edition.label+' edition');option.value=edition.id;select.append(option);});
+      select.value=window.FynxEdition.get();label.append(select);actions.append(label);
+    }
     inner.append(clock, sessions, actions);
     bar.append(inner);
     return { bar, actions };
+  }
+
+  function mountTopics(body) {
+    if (!window.FynxEdition || body.querySelector('.terminal-topic-nav')) return;
+    const original=body.querySelector('.dashboard-container .nav-menu, :scope > .terminal-navigation');
+    if (!original) return;
+    const nav=element('nav','terminal-topic-nav'), inner=element('div','terminal-topic-inner');nav.setAttribute('aria-label','News sections');
+    inner.append(link('Newsroom','/news.html','terminal-topic-home'));
+    window.FynxEdition.sections.slice(0,6).forEach(function(section){const a=link(section.label,section.href);if(location.pathname===section.href)a.setAttribute('aria-current','page');inner.append(a);});
+    const more=element('details','terminal-topic-more');more.append(element('summary','','More'));
+    const menu=element('div','terminal-topic-menu');
+    window.FynxEdition.sections.slice(6).forEach(section=>menu.append(link(section.label,section.href)));
+    menu.append(link('Watch & listen','/news.html#watch-listen'),link('Official sources','/news.html#official-sources'));more.append(menu);inner.append(more);nav.append(inner);original.before(nav);
   }
 
   function updateClock() {
@@ -127,7 +147,7 @@
     const accountLinks = topBar.querySelector('#publicAccountLinks');
     if (accountLinks) {
       const pro = accountLinks.querySelector('a[href="/pro.html"]');
-      if (pro) utility.actions.lastElementChild.replaceWith(pro);
+      if (pro) utility.actions.querySelector('a[href="/pro.html"]').replaceWith(pro);
       right.append(accountLinks);
     }
 
@@ -216,6 +236,7 @@
     const ready = workspaceHeader ? enhanceWorkspace(body, workspaceHeader) : publicHeader ? enhancePublic(body, publicHeader) : false;
     if (!ready) return;
     body.classList.add('terminal-masthead-ready');
+    mountTopics(body);
     mountTicker(body);
     startClock();
     document.addEventListener('visibilitychange', updateClock);

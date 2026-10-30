@@ -36,10 +36,6 @@
     'profile.html': 'profile',
   };
 
-  function demoBannerMarkup() {
-    if (!isDemoMode()) return '';
-    return `<div class="demo-banner" style="padding:8px 14px;border-radius:12px;border:1px solid var(--line, rgba(255,255,255,.18));font-size:12px;font-weight:700;letter-spacing:.02em;opacity:.88;">DEMO MODE · SIMULATED DATA</div>`;
-  }
 
   const NAV_ICONS = {
     home: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>',
@@ -54,9 +50,6 @@
   };
 
 
-function isDemoMode() {
-  try { return localStorage.getItem('mode') === 'demo'; } catch { return false; }
-}
 
 function ensureDemoStyles() {
   if (document.getElementById('fynxDemoStyles')) return;
@@ -159,7 +152,6 @@ function detectCurrentView() {
     ensureNavConsistencyStyles();
     const disableSidebarToggle = true;
 topBar.innerHTML = `
-  ${demoBannerMarkup()}
 
   <div class="top-bar-left">
     ${disableSidebarToggle ? '' : '<button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Collapse sidebar">&lt;</button>'}
@@ -215,7 +207,7 @@ topBar.innerHTML = `
     const initialsEl = document.getElementById('avatarInitials');
     if (initialsEl) {
       function updateIdentity() {
-        const userName = isDemoMode() ? 'Demo User' : (window.FynxIdentity?.displayName || '');
+        const userName = window.FynxIdentity?.displayName || '';
         initialsEl.textContent = userName.split(/\s+/).filter(Boolean).slice(0, 2).map(chunk => chunk[0].toUpperCase()).join('') || 'FX';
         const account = document.querySelector('#publicAccountLinks a:last-child');
         if (account) {
@@ -227,7 +219,7 @@ topBar.innerHTML = `
       window.addEventListener('fynx:identity', updateIdentity);
       import('/assets/js/account-identity.js?v=20260928-audit2').catch(() => {});
       initialsEl.title = 'Open profile';
-      initialsEl.style.cursor = isDemoMode() ? 'default' : 'pointer';
+      initialsEl.style.cursor = 'pointer';
       initialsEl.setAttribute('role', 'link');
       initialsEl.tabIndex = 0;
       initialsEl.addEventListener('click', () => { location.href = 'profile.html'; });

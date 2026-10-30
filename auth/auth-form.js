@@ -110,10 +110,6 @@
     if (returnTo) destination.searchParams.set('returnTo', returnTo);
     const open = new URL('../open-app.html', location.href); open.searchParams.set('returnTo', destination.href); location.assign(open);
   });
-  document.getElementById('viewDemo')?.addEventListener('click', () => {
-    try { localStorage.setItem('mode', 'demo'); } catch {}
-    location.assign('../home.html');
-  });
   for (const input of form.querySelectorAll('input[type=password]')) {
     const toggle = document.createElement('button'); toggle.type = 'button'; toggle.className = 'password-toggle';
     toggle.textContent = 'Show'; toggle.setAttribute('aria-label', 'Show ' + (input.id === 'confirm' ? 'confirmation password' : 'password'));

@@ -12,7 +12,10 @@
     Object.freeze({symbol:'QQQ', name:'Nasdaq 100 ETF', shortName:'QQQ', group:'ETF'}),
     Object.freeze({symbol:'DIA', name:'Dow Jones ETF', shortName:'DIA', group:'ETF'}),
     Object.freeze({symbol:'BTC-USD', name:'Bitcoin', shortName:'BTC', group:'Crypto'}),
-    Object.freeze({symbol:'EURUSD=X', name:'Euro / US dollar', shortName:'EUR/USD', group:'FX'})
+    Object.freeze({symbol:'EURUSD=X', name:'Euro / US dollar', shortName:'EUR/USD', group:'FX'}),
+    Object.freeze({symbol:'ETH-USD', name:'Ethereum', shortName:'ETH', group:'Crypto'}),
+    Object.freeze({symbol:'GBPUSD=X', name:'Pound / US dollar', shortName:'GBP/USD', group:'FX'}),
+    Object.freeze({symbol:'JPY=X', name:'US dollar / yen', shortName:'USD/JPY', group:'FX'})
   ]);
   const finite = value => typeof value === 'number' && Number.isFinite(value);
   const text = value => typeof value === 'string' ? value.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,1200) : '';
@@ -75,11 +78,11 @@
       const feed = {kind, fetchedAt, status, stale:status !== 'fresh' || value?.stale === true, sources, message:text(value?.message), count:0};
       if (status !== 'unavailable' && Array.isArray(value?.items)) for (const row of value.items.slice(0,150)) {
         const url = safeURL(row.url || row.link), title = text(row.title), source = text(row.source);
-        const publishedAt = timestamp(row.publishedAt || row.pubDate, now, kind === 'headline' ? 8 * DAY : Infinity, kind === 'headline' ? 300000 : DAY);
+        const publishedAt = timestamp(row.publishedAt || row.pubDate, now, kind === 'headline' ? 2 * DAY : 30 * DAY, 300000);
         if (!url || !title || !source || !publishedAt) continue;
         all.push({id:text(row.id) || kind + '|' + url, title, url, link:url, publishedAt, pubDate:publishedAt,
           source, sourceId:text(row.sourceId), category:kind === 'official-release' ? 'official' : text(row.category) || 'all', kind,
-          via:row.via === 'Google News' ? 'Google News' : null, description:'', fetchedAt, stale:feed.stale, status:feed.status});
+          edition:text(row.edition),image:row.image || null,via:row.via === 'Google News' ? 'Google News' : null, description:'', fetchedAt, stale:feed.stale, status:feed.status});
         feed.count++;
       }
       feeds[key] = feed;
@@ -120,14 +123,21 @@
       } finally { clearTimeout(timer); }
     }
     function unavailable(key) {
-      if (key === 'briefing') return normalizeBriefing(null,null,now());
+      if (key.startsWith('briefing')) return normalizeBriefing(null,null,now());
       if (key === 'quotes') return {kind:'quotes',quotes:{},errors:Object.fromEntries(instruments.map(({symbol}) => [symbol,'Quote unavailable. Please refresh to retry.'])),fetchedAt:null,status:'unavailable',stale:true,partial:true,message:'Market quotes are temporarily unavailable.'};
       return {kind:'history',symbol:'SPY',name:'S&P 500 ETF',currency:'USD',bars:[],adjusted:true,source:null,sourceURL:null,fetchedAt:null,status:'unavailable',stale:true,message:'Daily price history is temporarily unavailable.'};
+    }
+    function revalidate(value,key) {
+      if(!key.startsWith('briefing')||!value.items)return value;
+      const items=value.items.filter(item=>now()-Date.parse(item.publishedAt)<=(item.kind==='official-release'?30:2)*DAY&&Date.parse(item.publishedAt)<=now()+300000);
+      if(items.length===value.items.length)return value;
+      const headlineCount=items.filter(item=>item.kind==='headline').length,releaseCount=items.length-headlineCount;
+      return frozen({...value,items,headlineCount,releaseCount,status:items.length?value.status:'unavailable',coverage:headlineCount&&releaseCount?'mixed':headlineCount?'headlines':releaseCount?'official-releases':'unavailable',message:items.length?value.message:'No current coverage is available. Expired stories have been removed.'});
     }
     function load(key, settings, freshMs, staleMs, fetcher) {
       if (pending.has(key)) return pending.get(key);
       const old = cache.get(key);
-      if (!settings?.force && old && now() - old.at < freshMs) return Promise.resolve(old.value);
+      if (!settings?.force && old && now() - old.at < freshMs) return Promise.resolve(revalidate(old.value,key));
       const task = (async () => {
         try {
           const value = await fetcher();
@@ -135,13 +145,13 @@
           const result = frozen(value); cache.set(key,{at:now(),value:result}); return result;
         } catch {
           if (old && now() - old.at < staleMs) {
-            const value = {...old.value,status:'cached',stale:true,message:'Refresh unavailable. Showing dated saved ' + (key === 'briefing' ? 'coverage' : key === 'quotes' ? 'quotes' : 'daily prices') + '.'};
-            if (key === 'briefing') {
+            const value = {...old.value,status:'cached',stale:true,message:'Refresh unavailable. Showing dated saved ' + (key.startsWith('briefing') ? 'coverage' : key === 'quotes' ? 'quotes' : 'daily prices') + '.'};
+            if (key.startsWith('briefing')) {
               value.items = value.items.map(item => ({...item,status:'cached',stale:true}));
               value.feeds = Object.fromEntries(Object.entries(value.feeds).map(([name,feed]) => [name,{...feed,status:feed.count ? 'cached' : feed.status,stale:true,sources:feed.sources.map(source => ({...source,status:source.status === 'unavailable' ? 'unavailable' : 'cached'}))}]));
               value.sources = value.sources.map(source => ({...source,status:source.status === 'unavailable' ? 'unavailable' : 'cached'}));
             }
-            return frozen(value);
+            return revalidate(frozen(value),key);
           }
           return frozen(unavailable(key));
         } finally { pending.delete(key); }
@@ -149,12 +159,21 @@
       pending.set(key,task); return task;
     }
     return Object.freeze({instruments,
-      loadBriefing:settings => load('briefing',settings,300000,DAY,async () => {
-        const D = environment.FYNXMarketIntelligenceData;
-        if (!D) throw new Error('Coverage service is unavailable.');
-        const results = await Promise.allSettled([D.loadHeadlines('all',{force:settings?.force === true,timeoutMs:6500}),D.loadOfficialReleases({force:settings?.force === true,timeoutMs:6500})]);
-        return normalizeBriefing(results[0].status === 'fulfilled' ? results[0].value : null,results[1].status === 'fulfilled' ? results[1].value : null,now());
-      }),
+      loadBriefing:(settings={}) => {
+        const edition=settings.edition || environment.FynxEdition?.get() || 'us';
+        return load('briefing:'+edition,settings,600000,DAY,async () => {
+          const D = environment.FYNXMarketIntelligenceData;
+          if (!D) throw new Error('Coverage service is unavailable.');
+          const results = await Promise.allSettled([D.loadHeadlines('all',{edition,force:settings.force === true,timeoutMs:6500}),D.loadOfficialReleases({edition,force:settings.force === true,timeoutMs:6500})]);
+          const matching=result=>{
+            if(result.status!=='fulfilled')return null;
+            const value=result.value;if(value.edition!==edition&&!(edition==='us'&&!value.edition))return null;
+            return {...value,items:(value.items||[]).filter(item=>item.edition===edition||(edition==='us'&&!item.edition))};
+          };
+          const result=normalizeBriefing(matching(results[0]),matching(results[1]),now());
+          return {...result,edition};
+        });
+      },
       loadQuotes:settings => load('quotes',settings,60000,900000,async () => normalizeQuotes(await request({action:'quotes',symbols:instruments.map(item => item.symbol).join(',')}),now())),
       loadHistory:settings => load('history',settings,3600000,DAY,async () => normalizeHistory(await request({action:'history',symbol:'SPY'}),now()))
     });
