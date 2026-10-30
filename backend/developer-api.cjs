@@ -24,6 +24,9 @@ const ident=x=>{if(typeof x!=='string'||!/^[-a-zA-Z0-9_]{1,100}$/.test(x))error(
 const environment=x=>{if(!['test','live'].includes(x))error('invalid-argument','Choose test or live.');return x;};
 const hash=x=>createHash('sha256').update(x).digest('hex');
 const month=()=>new Date().toISOString().slice(0,7);
+// Retention (see /api/data-security.html). Firestore TTL policies on these fields delete records automatically.
+const REQUEST_RETENTION_DAYS=90,AUDIT_RETENTION_DAYS=400;
+const expires=(days,from=Date.now())=>new Date(from+days*86400000);
 const rows=s=>s.docs.map(d=>({id:d.id,...d.data()}));
 const clean=s=>String(s||'').trim().slice(0,120);
 async function actor(context){if(!context.auth)error('unauthenticated','Sign in to your developer account.');const user=await admin.auth().getUser(context.auth.uid);if(user.disabled)error('permission-denied','Account disabled.');return user;}
@@ -35,7 +38,7 @@ async function reserveRate(uid,env){
 function telemetry(kind,status,started,extra={}){const data={service:'fynx_api',kind,status,duration_ms:Date.now()-started,...extra};if(status>=500)logger.error('FYNX API request failed',data);else logger.info('FYNX API request',data);}
 const errorStatus=e=>e instanceof engine.InputError?422:({'unauthenticated':401,'permission-denied':403,'not-found':404,'already-exists':409,'failed-precondition':409,'resource-exhausted':429,'invalid-argument':422}[e.code]||500);
 async function recordFailure(uid,env,route,e,requestId=randomUUID()){
- const status=errorStatus(e);await envRef(uid,env).collection('requests').doc(requestId).set({route:String(route).slice(0,200),at:Date.now(),status,error:{code:status===500?'internal':e.code||'invalid_input',message:status===500?'Temporary service error. Retry with the same event identifier.':e.message}});return requestId;
+ const status=errorStatus(e);await envRef(uid,env).collection('requests').doc(requestId).set({route:String(route).slice(0,200),at:Date.now(),expireAt:expires(REQUEST_RETENTION_DAYS),status,error:{code:status===500?'internal':e.code||'invalid_input',message:status===500?'Temporary service error. Retry with the same event identifier.':e.message}});return requestId;
 }
 async function runOperation(uid,env,route,input,keyHash=null){
  if(!validateInput(input))error('invalid-argument','Send a JSON object under 20KB.');
@@ -67,7 +70,7 @@ async function runOperation(uid,env,route,input,keyHash=null){
   if(!duplicate){const calls=(usage.calls||0)+1,block=env==='live'&&limits.overage?plans.overageBlock(calls,limits.monthlyCalls):0,newBlock=block>(usage.overageBlocks||0);
    tx.set(usageRef,{calls,updatedAt:at,...(newBlock?{overageBlocks:block}:{})},{merge:true});
    // One Stripe meter event per started block of 1,000 extra calls; queued atomically with the usage counter.
-   if(newBlock){if(!profile.stripeLiveCustomer)error('failed-precondition','Billing account missing; extra calls cannot be metered.');tx.create(er.collection('meterQueue').doc(`${month()}-${block}`),{month:month(),block,plan:limits.plan,customer:profile.stripeLiveCustomer,at,status:'pending',attempts:0});meterPending=true;}tx.create(requestRef,{route,at,status:200,duration_ms:Date.now()-at,result,source:keyHash?'api_key':'playground'});}
+   if(newBlock){if(!profile.stripeLiveCustomer)error('failed-precondition','Billing account missing; extra calls cannot be metered.');tx.create(er.collection('meterQueue').doc(`${month()}-${block}`),{month:month(),block,plan:limits.plan,customer:profile.stripeLiveCustomer,at,status:'pending',attempts:0});meterPending=true;}tx.create(requestRef,{route,at,expireAt:expires(REQUEST_RETENTION_DAYS,at),status:200,duration_ms:Date.now()-at,result,source:keyHash?'api_key':'playground'});}
   return {request_id:reqId,status:200,result,duplicate,limit:cap,remaining:Math.max(0,cap-(usage.calls||0)-(duplicate?0:1))};
  });
  // Report the new block to Stripe. Failures never fail the customer's request; pending blocks are retried later.
@@ -92,12 +95,12 @@ async function workspace(data,context){
    let oldRef,old;if(action!=='createKey'){oldRef=er.collection('keys').doc(ident(data.id));old=await tx.get(oldRef);if(!old.exists||old.data().revokedAt)error('not-found','Active key not found.');}
    if(old){tx.update(db().collection('fynxDeveloperKeys').doc(old.data().digest),{revokedAt:Date.now()});tx.update(oldRef,{revokedAt:Date.now()});}
    if(action!=='revokeKey'){let scopes;try{scopes=access.scopes(data.scopes===undefined&&old?old.data().scopes:data.scopes);}catch(e){error('invalid-argument',e.message);}tx.create(newRef,{uid,environment:env,keyId,scopes,createdAt:Date.now(),revokedAt:null});tx.create(listing,{label,scopes,prefix:token.slice(0,15)+'…'+token.slice(-4),digest,createdAt:Date.now(),revokedAt:null});}
-   tx.create(er.collection('audit').doc(),{at:Date.now(),action,key_id:action==='revokeKey'?data.id:keyId,previous_key_id:action==='rotateKey'?data.id:null});
+   tx.create(er.collection('audit').doc(),{at:Date.now(),expireAt:expires(AUDIT_RETENTION_DAYS),action,key_id:action==='revokeKey'?data.id:keyId,previous_key_id:action==='rotateKey'?data.id:null});
   });return action==='revokeKey'?{revoked:true}:{key:token,id:keyId,shown_once:true};
  }
  if(action==='run'){await require('./developer-billing.cjs').refresh(uid);try{return await runOperation(uid,env,String(data.route||''),data.input||{});}catch(e){const request_id=await recordFailure(uid,env,data.route,e);if(!(e instanceof engine.InputError))throw e;return {request_id,status:422,error:{code:e.code,message:e.message}};}}
  if(action==='history'){const limit=25;let q=data.audit?er.collection('audit'):data.accountId?er.collection('accounts').doc(ident(data.accountId)).collection('events'):er.collection('requests');q=q.orderBy('at','desc').orderBy(admin.firestore.FieldPath.documentId(),'desc');if(data.before!==undefined){if(!Number.isSafeInteger(data.before))error('invalid-argument','Invalid history cursor.');q=q.startAfter(data.before,ident(data.beforeId));}return {items:rows(await q.limit(limit).get())};}
- if(action==='settings'){const name=clean(data.name),cap=Number(data.requestCap),ceiling=plans.capCeiling(entitlement((await root(uid).get()).data()||{},'live'));if(!name||!Number.isInteger(cap)||cap<1||cap>ceiling)error('invalid-argument',`Name and a monthly request cap from 1 to ${ceiling.toLocaleString('en-US')} are required.`);const batch=db().batch();batch.set(root(uid),{name,requestCap:cap,requestCapExplicit:true,updatedAt:Date.now()},{merge:true});batch.create(er.collection('audit').doc(),{at:Date.now(),action:'settings',name,requestCap:cap});await batch.commit();return {saved:true};}
+ if(action==='settings'){const name=clean(data.name),cap=Number(data.requestCap),ceiling=plans.capCeiling(entitlement((await root(uid).get()).data()||{},'live'));if(!name||!Number.isInteger(cap)||cap<1||cap>ceiling)error('invalid-argument',`Name and a monthly request cap from 1 to ${ceiling.toLocaleString('en-US')} are required.`);const batch=db().batch();batch.set(root(uid),{name,requestCap:cap,requestCapExplicit:true,updatedAt:Date.now()},{merge:true});batch.create(er.collection('audit').doc(),{at:Date.now(),expireAt:expires(AUDIT_RETENTION_DAYS),action:'settings',name,requestCap:cap});await batch.commit();return {saved:true};}
  if(action==='support'){const subject=clean(data.subject),message=String(data.message||'').trim();if(!subject||message.length<10||message.length>4000)error('invalid-argument','Add a subject and a message between 10 and 4,000 characters.');const ref=root(uid).collection('support').doc();await ref.set({subject,message,createdAt:Date.now(),status:'open',email:user.email||''});return {ticket_id:ref.id};}
  error('invalid-argument','Unknown workspace action.');
  }catch(e){if(e instanceof engine.InputError)error(e.code==='event_order_conflict'?'failed-precondition':'invalid-argument',e.message);throw e;}
@@ -111,7 +114,7 @@ exports.developerGateway=runtime.https.onRequest(async(req,res)=>{
   const token=(req.get('Authorization')||'').replace(/^Bearer /,'');if(!/^fynx_(test|live)_[a-f0-9]{64}$/.test(token))error('unauthenticated','Invalid API key.');
   const digest=hash(token),key=await db().collection('fynxDeveloperKeys').doc(digest).get();if(!key.exists||key.data().revokedAt)error('unauthenticated','Invalid or revoked API key.');
   const route=(req.method==='GET'?'GET ':'')+req.path.replace(/\/$/,'');if(!access.permits(key.data(),route))error('permission-denied','This key does not allow the requested operation.');
-  const {uid,environment:env}=key.data(),user=await admin.auth().getUser(uid);if(user.disabled||!user.emailVerified)error('permission-denied','Owner account is not eligible for API access.');
+  const {uid,environment:env}=key.data();if(!['test','live'].includes(env)||!token.startsWith(`fynx_${env}_`))error('unauthenticated','Invalid or revoked API key.');const user=await admin.auth().getUser(uid);if(user.disabled||!user.emailVerified)error('permission-denied','Owner account is not eligible for API access.');
   owner=uid;ownerEnv=env;await throttle(uid,1800,'gatewayRate');
   await require('./developer-billing.cjs').refresh(uid);
   const output=await runOperation(uid,env,route,req.method==='GET'?req.query:req.body,digest);res.set('X-Request-Id',output.request_id);if(output.limit){res.set('X-RateLimit-Limit',String(output.limit));res.set('X-RateLimit-Remaining',String(output.remaining));}return res.status(output.status).json(output);

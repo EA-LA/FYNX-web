@@ -1,0 +1,74 @@
+name: FYNX API status monitor
+
+# Public status data for /api/status.html (checklist item 47).
+# Every 15 min: health self-check + gateway rejects keyless requests (no API quota used).
+# Twice a day: one known-answer call per product with the FYNX_API_SMOKE_KEY test key.
+# Results live on the status-data branch (single commit, force-pushed). Failures open a GitHub issue
+# labelled api-incident and update incidents.xml (Atom feed); recovery closes the issue.
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+    - cron: '7 */12 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [probe, deep]
+        default: probe
+
+concurrency:
+  group: api-status
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  probe:
+    if: github.event.schedule == '*/15 * * * *' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'probe')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Load status data
+        run: .github/scripts/status-branch.sh pull
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Probe
+        run: node .github/scripts/api-status.cjs probe
+        env:
+          STATUS_DIR: status
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Publish status data
+        run: .github/scripts/status-branch.sh push
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  deep:
+    if: github.event.schedule == '7 */12 * * *' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'deep')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: firebase-api-deploy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Load status data
+        run: .github/scripts/status-branch.sh pull
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Product checks
+        run: node .github/scripts/api-status.cjs deep
+        env:
+          STATUS_DIR: status
+          GITHUB_TOKEN: ${{ github.token }}
+          SMOKE_API_KEY: ${{ secrets.FYNX_API_SMOKE_KEY }}
+      - name: Publish status data
+        run: .github/scripts/status-branch.sh push
+        env:
+          GH_TOKEN: ${{ github.token }}
