@@ -12,7 +12,7 @@ for (const file of fs.readdirSync(root, { withFileTypes: true })) {
     fs.copyFileSync(path.join(root, file.name), path.join(out, file.name));
   }
 }
-for (const file of ['index.html', 'api/index.html', 'api/api.js', 'api/api.css', 'api/workspace.js', 'api/examples/quickstart.mjs']) {
+for (const file of ['index.html', 'api/index.html', 'api/api.js', 'api/api.css', 'api/workspace.js', 'api/examples/quickstart.mjs', 'api/openapi.json', 'api/sdk/fynx.mjs', 'api/sdk/fynx.py']) {
   if (!fs.existsSync(path.join(out, file))) throw new Error(`Missing published asset: ${file}`);
 }
 for (const privatePath of ['backend', 'docs', 'ops', 'scripts', 'node_modules', '.git']) {
