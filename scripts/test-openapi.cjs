@@ -19,6 +19,10 @@ assert.doesNotThrow(()=>engine.rules(PROP[0][5]),'rule-set example');
 // 4. The workspace scope picker offers exactly the backend scopes.
 const ws=fs.readFileSync(path.join(root,'api/workspace.js'),'utf8'),picker=[...ws.match(/const SCOPES=\[(.*?)\];/)[1].matchAll(/\['([a-z]+:[a-z]+)'/g)].map(m=>m[1]);
 assert.deepEqual(picker.sort(),[...access.SCOPES].sort(),'workspace scopes must match backend scopes');
+// 4b. The workspace plan cards match the backend plan catalog.
+const plans=be('developer-plans.cjs'),cards=eval(ws.match(/const PLANS=(\[.*?\]);/)[1]);
+for(const [k,,price,calls,rps,over] of cards){const p=plans.PLANS[k];assert.deepEqual([price,calls,rps,over],[p.monthlyPrice,p.monthlyCalls,p.rps,p.overageBlockCents===null?null:p.overageBlockCents/100],`workspace plan ${k}`);}
+const page=fs.readFileSync(path.join(root,'api/pricing.html'),'utf8');for(const k of ['free','developer','business'])assert(page.includes(`$${plans.PLANS[k].monthlyPrice}<`)&&page.includes(plans.PLANS[k].monthlyCalls.toLocaleString('en-US')),`pricing page plan ${k}`);
 // 5. SDKs cover every route group.
 for(const f of ['api/sdk/fynx.mjs','api/sdk/fynx.py']){const t=fs.readFileSync(path.join(root,f),'utf8');for(const g of ['risk','indicators','markets','portfolio','propfirm'])assert(t.includes(g),`${f} missing ${g}`);}
 console.log(`OpenAPI: ${Object.keys(spec.paths).length} paths in sync with engine, scopes, examples, workspace picker and SDKs.`);
