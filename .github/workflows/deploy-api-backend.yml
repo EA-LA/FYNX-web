@@ -1,7 +1,7 @@
 name: Deploy FYNX API backend (keyless)
 
 # Updates ONLY the source code of the existing developer API functions
-# (developerGateway, developerWorkspace) in Cloud Functions 1st gen.
+# (developerGateway, developerWorkspace, developerBilling, developerBillingWebhook) in Cloud Functions 1st gen.
 # - Authenticates with Workload Identity Federation; no JSON key exists or is used.
 # - Default mode is a read-only inventory. Deployment requires choosing mode=deploy.
 # - PATCHes each function with updateMask=sourceUploadUrl, so memory, timeout,
@@ -62,7 +62,7 @@ jobs:
     env:
       PROJECT_ID: fynx-c7a28
       REGION: us-central1
-      TARGETS: developerGateway,developerWorkspace
+      TARGETS: developerGateway,developerWorkspace,developerBilling,developerBillingWebhook
       MODE: ${{ inputs.mode }}
       WORK_DIR: .deploy-work
     steps:
