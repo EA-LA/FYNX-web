@@ -4,6 +4,7 @@ const admin=require('firebase-admin');
 const {randomBytes,randomUUID,createHash}=require('node:crypto');
 const engine=require('./developer-engine.cjs');
 const access=require('./developer-access.cjs');
+const plans=require('./developer-plans.cjs');
 const analytics=require('./developer-analytics.cjs');
 const marketHours=require('./developer-markets.cjs');
 // Stateless calculation routes (APIs 6, 7 and 8). They read only the request body and are metered like Risk calls.
@@ -41,7 +42,8 @@ async function runOperation(uid,env,route,input,keyHash=null){
  await reserveRate(uid,env);
  const er=envRef(uid,env),reqId=randomUUID(),at=Date.now(),requestRef=er.collection('requests').doc(reqId),usageRef=er.collection('usage').doc(month());
  const parsed=route.match(/^\/v1\/risk\/([a-z-]+)$/),stateless=statelessRoute(route);
- return db().runTransaction(async tx=>{
+ let meterPending=false;
+ const output=await db().runTransaction(async tx=>{meterPending=false;
   const profileSnap=await tx.get(root(uid)),usageSnap=await tx.get(usageRef);
   if(keyHash){const key=await tx.get(db().collection('fynxDeveloperKeys').doc(keyHash));if(!key.exists||key.data().revokedAt)error('unauthenticated','Key was revoked.');if(key.data().uid!==uid||key.data().environment!==env||!access.permits(key.data(),route))error('permission-denied','This key does not allow the requested operation.');}
   const profile=profileSnap.data()||{},usage=usageSnap.data()||{},limits=entitlement(profile,env);
@@ -61,10 +63,16 @@ async function runOperation(uid,env,route,input,keyHash=null){
    if(old.exists){if(old.data().payloadHash!==(old.data().hashVersion===2?payloadHash:hash(JSON.stringify(input))))error('already-exists','Idempotency key was used for a different payload.');result=old.data().result;duplicate=true;}
    else{if(sourceSnap.exists)error('already-exists','Source event already recorded.');const a=as.data(),next=engine.event(a,a.rule,input,at);delete next.last_event_hash;const previous_event_hash=a.last_event_hash||null,event_hash=canonicalHash({previous_event_hash,request:input,state:next});next.last_event_hash=event_hash;result={account_id:ar.id,...next};tx.update(ar,next);tx.create(ev,{at,payloadHash,hashVersion:2,engine_version:2,previous_event_hash,event_hash,source_event_id:source,request:input,result});tx.create(sourceRef,{event_id:id});}
   }
-  if(!duplicate&&(usage.calls||0)>=Math.min(cap,limits.monthlyCalls))error('resource-exhausted','Monthly allowance or your saved request cap reached. No overage charges apply.');
-  if(!duplicate){tx.set(usageRef,{calls:(usage.calls||0)+1,updatedAt:at});tx.create(requestRef,{route,at,status:200,duration_ms:Date.now()-at,result,source:keyHash?'api_key':'playground'});}
+  if(!duplicate&&(usage.calls||0)>=cap)error('resource-exhausted',limits.overage&&cap<=limits.monthlyCalls?'Included monthly calls used. Raise your monthly request cap in Settings to allow billed extra calls, or wait for the monthly reset.':'Monthly allowance or your saved request cap reached.');
+  if(!duplicate){const calls=(usage.calls||0)+1,block=env==='live'&&limits.overage?plans.overageBlock(calls,limits.monthlyCalls):0,newBlock=block>(usage.overageBlocks||0);
+   tx.set(usageRef,{calls,updatedAt:at,...(newBlock?{overageBlocks:block}:{})},{merge:true});
+   // One Stripe meter event per started block of 1,000 extra calls; queued atomically with the usage counter.
+   if(newBlock){if(!profile.stripeLiveCustomer)error('failed-precondition','Billing account missing; extra calls cannot be metered.');tx.create(er.collection('meterQueue').doc(`${month()}-${block}`),{month:month(),block,plan:limits.plan,customer:profile.stripeLiveCustomer,at,status:'pending',attempts:0});meterPending=true;}tx.create(requestRef,{route,at,status:200,duration_ms:Date.now()-at,result,source:keyHash?'api_key':'playground'});}
   return {request_id:reqId,status:200,result,duplicate,limit:cap,remaining:Math.max(0,cap-(usage.calls||0)-(duplicate?0:1))};
  });
+ // Report the new block to Stripe. Failures never fail the customer's request; pending blocks are retried later.
+ if(meterPending)await require('./developer-billing.cjs').flushMeter(uid).catch(e=>logger.error('FYNX API meter flush failed',{service:'fynx_api',kind:'meter',message:String(e?.message||e).slice(0,200)}));
+ return output;
 }
 async function workspace(data,context){
  const user=await actor(context),uid=user.uid;await throttle(uid);const env=environment(data?.environment||'test'),er=envRef(uid,env),action=data?.action;
@@ -89,7 +97,7 @@ async function workspace(data,context){
  }
  if(action==='run'){await require('./developer-billing.cjs').refresh(uid);try{return await runOperation(uid,env,String(data.route||''),data.input||{});}catch(e){const request_id=await recordFailure(uid,env,data.route,e);if(!(e instanceof engine.InputError))throw e;return {request_id,status:422,error:{code:e.code,message:e.message}};}}
  if(action==='history'){const limit=25;let q=data.audit?er.collection('audit'):data.accountId?er.collection('accounts').doc(ident(data.accountId)).collection('events'):er.collection('requests');q=q.orderBy('at','desc').orderBy(admin.firestore.FieldPath.documentId(),'desc');if(data.before!==undefined){if(!Number.isSafeInteger(data.before))error('invalid-argument','Invalid history cursor.');q=q.startAfter(data.before,ident(data.beforeId));}return {items:rows(await q.limit(limit).get())};}
- if(action==='settings'){const name=clean(data.name),cap=Number(data.requestCap);if(!name||!Number.isInteger(cap)||cap<1||cap>50000)error('invalid-argument','Name and request cap (1–50,000) are required.');const batch=db().batch();batch.set(root(uid),{name,requestCap:cap,requestCapExplicit:true,updatedAt:Date.now()},{merge:true});batch.create(er.collection('audit').doc(),{at:Date.now(),action:'settings',name,requestCap:cap});await batch.commit();return {saved:true};}
+ if(action==='settings'){const name=clean(data.name),cap=Number(data.requestCap),ceiling=plans.capCeiling(entitlement((await root(uid).get()).data()||{},'live'));if(!name||!Number.isInteger(cap)||cap<1||cap>ceiling)error('invalid-argument',`Name and a monthly request cap from 1 to ${ceiling.toLocaleString('en-US')} are required.`);const batch=db().batch();batch.set(root(uid),{name,requestCap:cap,requestCapExplicit:true,updatedAt:Date.now()},{merge:true});batch.create(er.collection('audit').doc(),{at:Date.now(),action:'settings',name,requestCap:cap});await batch.commit();return {saved:true};}
  if(action==='support'){const subject=clean(data.subject),message=String(data.message||'').trim();if(!subject||message.length<10||message.length>4000)error('invalid-argument','Add a subject and a message between 10 and 4,000 characters.');const ref=root(uid).collection('support').doc();await ref.set({subject,message,createdAt:Date.now(),status:'open',email:user.email||''});return {ticket_id:ref.id};}
  error('invalid-argument','Unknown workspace action.');
  }catch(e){if(e instanceof engine.InputError)error(e.code==='event_order_conflict'?'failed-precondition':'invalid-argument',e.message);throw e;}
@@ -113,4 +121,4 @@ exports.developerHealth=functions.runWith({timeoutSeconds:15,memory:'256MB',maxI
  res.set('Cache-Control','no-store');if(req.method!=='GET')return res.status(405).end();
  const started=Date.now();try{await db().collection('fynxDeveloperOperations').doc('health').get();const result=engine.risk('risk-reward',{entry_price:'100',stop_loss_price:'90',take_profit_price:'130',direction:'long'});if(result.rr_ratio!=='3')throw new Error('Calculation self-check failed');res.status(200).json({status:'ok',engine_version:2});}catch(e){telemetry('health',503,started);res.status(503).json({status:'unavailable'});}
 });
-exports._test={entitlement,hash,statelessRoute};
+exports._test={entitlement,hash,statelessRoute,runOperation};
