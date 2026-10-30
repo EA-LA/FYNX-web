@@ -1,0 +1,140 @@
+/* Newsroom presentation. Existing news, media, source and membership controls stay active. */
+html body[data-fynx-terminal] .fn-news-page { font-family: Arial, Helvetica, sans-serif; }
+html body[data-fynx-terminal] .fn-app { font-family: inherit; font-size: 13px; }
+html body[data-fynx-terminal] .fn-app .fn-heading { align-items: end; padding: 0 0 22px; gap: 30px; }
+html body[data-fynx-terminal] .fn-app .fn-heading h2 { font-size: clamp(34px, 3.4vw, 46px) !important; font-weight: 800 !important; line-height: 1.02; letter-spacing: -.055em; margin: 0 0 13px; }
+html body[data-fynx-terminal] .fn-app .fn-kicker { font-size: 9px; margin-bottom: 8px; letter-spacing: .08em; }
+html body[data-fynx-terminal] .fn-app .fn-intro { max-width: 540px; font-size: 12px; line-height: 1.6; }
+html body[data-fynx-terminal] .fn-heading-note { display: flex; min-width: 0; max-width: 225px; padding: 0 0 4px 20px; border-left: 1px solid var(--terminal-rule); font-size: 11px; line-height: 1.5; }
+html body[data-fynx-terminal] .fn-heading-note small { font-size: 10px; }
+/* Main News keeps its existing heading above the module tabs. */
+html body[data-fynx-terminal] .fn-news-page > .fn-heading { display: grid; grid-template-columns: minmax(0,1fr) minmax(220px,340px); grid-template-rows: auto auto; align-items: start; gap: 6px 32px; padding: 0 0 16px; margin: 0; }
+html body[data-fynx-terminal] .fn-news-page > .fn-heading > div:first-child { display: contents; }
+html body[data-fynx-terminal] .fn-news-page > .fn-heading .fn-kicker { display: flex; align-items: center; grid-column: 1; grid-row: 1; gap: 10px; margin: 0; font-size: 9px; font-weight: 750; line-height: 1.5; letter-spacing: .08em; color: var(--terminal-green); }
+html body[data-fynx-terminal] .fn-news-page > .fn-heading h2 { grid-column: 1; grid-row: 2; margin: 0; font-size: 36px !important; font-weight: 800 !important; line-height: 1.02; letter-spacing: -.055em; color: var(--terminal-ink); }
+html body[data-fynx-terminal] .fn-news-page > .fn-heading .fn-intro { grid-column: 2; grid-row: 2; align-self: end; max-width: 340px; margin: 0; font-size: 11px; line-height: 1.6; color: var(--terminal-muted); }
+html body[data-fynx-terminal] .fn-news-page > .fn-heading .fn-heading-note { grid-column: 2; grid-row: 1; max-width: none; padding: 0; border: 0; font-size: 10px; line-height: 1.4; }
+html body[data-fynx-terminal] .fn-news-page > .fn-heading .fn-heading-note small { margin-top: 3px; font-size: 9px; }
+html body[data-fynx-terminal] .fn-news-page > .news-mode-toggle { margin-bottom: 4px; }
+html body[data-fynx-terminal] .fn-news-page > .news-mode-toggle .news-mode-btn { min-height: 36px; padding: 9px 15px; font-size: 11px; }
+html body[data-fynx-terminal] .fn-jump { gap: 24px; border-top: 0; border-bottom: 1px solid var(--terminal-ink); padding: 0; min-height: 30px; font-size: 10px; }
+html body[data-fynx-terminal] .fn-jump > a { min-height: 30px; display: inline-flex; align-items: center; }
+html body[data-fynx-terminal] .fn-jump-tools { font-size: 10px; gap: 14px; }
+html body[data-fynx-terminal] .fn-app .fn-section { padding: 22px 0 28px; }
+html body[data-fynx-terminal] .fn-section-heading { gap: 15px; margin-bottom: 14px; }
+html body[data-fynx-terminal] .fn-app #headlines { padding-top: 12px; }
+html body[data-fynx-terminal] #headlines > .fn-section-heading { align-items: center; margin-bottom: 8px; }
+html body[data-fynx-terminal] #headlines > .fn-section-heading > div { display: flex; align-items: center; flex-wrap: wrap; gap: 5px 12px; }
+html body[data-fynx-terminal] #headlines > .fn-section-heading .fn-kicker { margin: 0; font-size: 9px; }
+html body[data-fynx-terminal] #headlines > .fn-section-heading h2 { font-size: 12px !important; line-height: 1.3; letter-spacing: -.01em; }
+html body[data-fynx-terminal] :is(.fn-refresh,.fn-categories button,.fn-media-categories button,.fn-region-controls button) { min-height: 34px; padding: 7px 11px; border-radius: 0; font-size: 10px !important; line-height: 1.4; }
+html body[data-fynx-terminal] .fn-filter-bar { gap: 10px 18px; padding-block: 9px; border-top: 1px solid var(--terminal-rule); border-bottom: 1px solid var(--terminal-rule); }
+html body[data-fynx-terminal] .fn-categories { gap: 4px; }
+html body[data-fynx-terminal] .fn-categories button { border: 1px solid var(--terminal-rule); padding-inline: 10px; color: var(--terminal-ink); }
+html body[data-fynx-terminal] .fn-categories button[aria-pressed="true"] { background: var(--terminal-ink); color: var(--terminal-paper); border-color: var(--terminal-ink); }
+html body[data-fynx-terminal] .fn-search { flex-basis: 220px; border-radius: 0; padding-inline: 10px; }
+html body[data-fynx-terminal] .fn-search input { min-height: 32px; font-size: 11px; }
+html body[data-fynx-terminal] .fn-feed-meta { align-items: start; margin: 10px 0 15px; font: 10px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; gap: 12px 20px; }
+html body[data-fynx-terminal] .fn-feed-meta > [data-news-status] { min-width: 0; max-width: 900px; overflow-wrap: anywhere; }
+html body[data-fynx-terminal] .fn-feed-meta > [data-news-count] { flex-shrink: 0; }
+html body[data-fynx-terminal] .fn-news-layout { grid-template-columns: minmax(0, 1fr) 280px; gap: 32px; }
+html body[data-fynx-terminal] .fn-news-layout > div { min-width: 0; }
+html body[data-fynx-terminal] .fn-story { grid-template-columns: minmax(0, 1fr) 30px; gap: 14px; border-radius: 0; padding: 13px 0 15px; }
+html body[data-fynx-terminal] .fn-story-content { min-width: 0; }
+html body[data-fynx-terminal] .fn-app .fn-story h3 { font-size: 17px; font-weight: 750; letter-spacing: -.025em; line-height: 1.25; margin: 0 0 7px; }
+html body[data-fynx-terminal] .fn-story-topline { margin-bottom: 6px; gap: 7px; font-size: 9px; }
+html body[data-fynx-terminal] .fn-story-source { font-weight: 750; letter-spacing: .05em; }
+html body[data-fynx-terminal] .fn-story .fn-story-category { font-size: 9px; padding-left: 7px; line-height: 1.25; }
+html body[data-fynx-terminal] .fn-story .fn-story-link { overflow-wrap: break-word; }
+html body[data-fynx-terminal] .fn-story-link > span { font-size: .6em; white-space: nowrap; vertical-align: .08em; color: var(--terminal-green); }
+html body[data-fynx-terminal] .fn-story-date { gap: 5px 10px; font: 10px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; }
+html body[data-fynx-terminal] .fn-story-saved { color: var(--terminal-muted); border-left: 1px solid var(--terminal-rule); padding-left: 9px; }
+html body[data-fynx-terminal] .fn-story.fn-lead { min-height: 0; align-content: start; padding: 13px 0 20px; margin-bottom: 0; border: 0; border-top: 2px solid var(--terminal-ink); border-bottom: 1px solid var(--terminal-rule); border-radius: 0; background: transparent; }
+html body[data-fynx-terminal] .fn-app .fn-story.fn-lead h3 { font-size: 36px; font-weight: 800; line-height: 1.04; letter-spacing: -.05em; margin: 7px 0 12px; }
+html body[data-fynx-terminal] .fn-lead-flag { padding: 3px 6px; background: #d91520; color: #fff; font: 750 9px/1.25 Arial, Helvetica, sans-serif; letter-spacing: .025em; white-space: nowrap; }
+html body[data-fynx-terminal] .fn-following-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 0 0; font-size: 10px; line-height: 1.4; font-weight: 750; text-transform: uppercase; }
+html body[data-fynx-terminal] .fn-following-heading > span:last-child { font: 9px/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; color: var(--terminal-muted); text-transform: none; font-weight: 400; }
+html body[data-fynx-terminal] .fn-save { width: 30px; height: 30px; border-radius: 0; background: transparent; }
+html body[data-fynx-terminal] .fn-save svg { width: 13px; height: 13px; }
+html body[data-fynx-terminal] .fn-pro-card { padding: 20px; background: #103c2e; border-radius: 0; }
+html body[data-fynx-terminal] .fn-pro-label { display: inline-block; padding: 3px 5px; font-size: 8px; border-radius: 0; }
+html body[data-fynx-terminal] .fn-app .fn-pro-card h3 { font-size: 24px; font-weight: 800; letter-spacing: -.045em; line-height: 1.05; margin: 14px 0 12px; }
+html body[data-fynx-terminal] .fn-pro-card :is(p,li) { font-size: 11px; line-height: 1.5; }
+html body[data-fynx-terminal] .fn-pro-card ul { margin: 14px 0 17px; }
+html body[data-fynx-terminal] .fn-pro-card li { padding-block: 5px; }
+html body[data-fynx-terminal] .fn-pro-card button { border-radius: 0; min-height: 38px; padding: 9px 11px; font-size: 11px; background: #fff; color: #103c2e; }
+html body[data-fynx-terminal] .fn-pro-card small { margin-top: 12px; font-size: 9px; line-height: 1.5; }
+html body[data-fynx-terminal] .fn-terminal-sources { margin-top: 22px; border-top: 2px solid var(--terminal-ink); }
+html body[data-fynx-terminal] .fn-terminal-sources-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding-block: 10px 5px; }
+html body[data-fynx-terminal] .fn-terminal-sources-heading h3 { margin: 0; font-size: 10px; font-weight: 750; text-transform: uppercase; }
+html body[data-fynx-terminal] .fn-terminal-sources-heading a { font-size: 9px; color: var(--terminal-green); text-decoration: none; white-space: nowrap; }
+html body[data-fynx-terminal] .fn-terminal-sources > a { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; font-size: 11px; text-decoration: none; border-bottom: 1px solid var(--terminal-rule); }
+html body[data-fynx-terminal] .fn-terminal-sources > a > span:last-child { color: var(--terminal-green); }
+html body[data-fynx-terminal] .fn-research-links { border-top: 2px solid var(--terminal-ink); margin-top: 22px; padding-top: 11px; }
+html body[data-fynx-terminal] .fn-research-links > a { padding: 10px 0; font-size: 11px; line-height: 1.4; }
+html body[data-fynx-terminal] .fn-research-links small { font-size: 10px; line-height: 1.5; }
+html body[data-fynx-terminal] .fn-app .fn-empty { border-style: solid; border-radius: 0; padding: 22px 18px; border-top: 2px solid var(--terminal-ink); }
+html body[data-fynx-terminal] .fn-empty h3 { font-size: 21px; font-weight: 750; letter-spacing: -.035em; margin-top: 0; line-height: 1.15; }
+html body[data-fynx-terminal] .fn-empty p { font-size: 12px; }
+html body[data-fynx-terminal] .fn-source-note { font-size: 10px !important; line-height: 1.65; }
+html body[data-fynx-terminal] .fn-more { border-radius: 0; margin-top: 12px; font-size: 11px !important; padding: 10px; }
+html body[data-fynx-terminal] .fn-app :is(.fn-media,#official-sources) { border-top: 2px solid var(--terminal-ink); }
+html body[data-fynx-terminal] .fn-media-grid { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 0; }
+html body[data-fynx-terminal] .fn-media-card { padding: 18px; border-radius: 0; }
+html body[data-fynx-terminal] .fn-media-brand { margin-bottom: 13px; }
+html body[data-fynx-terminal] .fn-media-monogram { border-radius: 0; width: 32px; height: 32px; font-size: 11px; }
+html body[data-fynx-terminal] .fn-media-card p { font-size: 11px; }
+html body[data-fynx-terminal] .fn-media-access { font-size: 10px !important; }
+html body[data-fynx-terminal] .fn-media-action { font-size: 11px; font-weight: 700; text-decoration: none; color: var(--terminal-green); }
+html body[data-fynx-terminal] :is(.fn-selects select,.fn-access-label,.fn-world-panel,.fn-map,.fn-next) { border-radius: 0; }
+html body[data-fynx-terminal] .fn-world-panel { padding: 16px; }
+html body[data-fynx-terminal] .fn-app .fn-release-heading h3 { font-size: 19px; font-weight: 750; }
+html body[data-fynx-terminal] .fn-release { padding-block: 13px; }
+html body[data-fynx-terminal] .fn-release h4 { font-size: 14px; font-weight: 700; line-height: 1.3; letter-spacing: -.02em; }
+html body[data-fynx-terminal] .fn-next { padding: 22px; }
+html body[data-fynx-terminal] .fn-app .fn-next h2 { font-size: 27px; font-weight: 800; line-height: 1.1; }
+html body[data-fynx-terminal] .fn-next button { border-radius: 0; }
+
+@media (max-width: 1050px) {
+  html body[data-fynx-terminal] .fn-news-layout { grid-template-columns: minmax(0,1fr) 245px; gap: 22px; }
+  html body[data-fynx-terminal] .fn-heading-note { max-width: 200px; }
+  html body[data-fynx-terminal] .fn-pro-card { padding: 17px; }
+  html body[data-fynx-terminal] .fn-app .fn-pro-card h3 { font-size: 23px; }
+  html body[data-fynx-terminal] .fn-media-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 760px) {
+  html body[data-fynx-terminal] .fn-news-page > .fn-heading { grid-template-columns: minmax(0,1fr); gap: 7px; padding-bottom: 15px; }
+  html body[data-fynx-terminal] .fn-news-page > .fn-heading h2 { font-size: 32px !important; }
+  html body[data-fynx-terminal] .fn-news-page > .fn-heading .fn-intro { grid-column: 1; grid-row: 3; max-width: 480px; font-size: 11px; }
+  html body[data-fynx-terminal] .fn-news-page > .fn-heading .fn-heading-note { display: none; }
+  html body[data-fynx-terminal] .fn-news-page > .news-mode-toggle .news-mode-btn { min-height: 44px; }
+  html body[data-fynx-terminal] .fn-jump > a { min-height: 44px; }
+  html body[data-fynx-terminal] .fn-app .fn-heading { gap: 12px; padding-bottom: 19px; }
+  html body[data-fynx-terminal] .fn-heading-note { display: none; }
+  html body[data-fynx-terminal] .fn-news-layout { grid-template-columns: minmax(0,1fr); gap: 26px; }
+  html body[data-fynx-terminal] .fn-sidebar { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 20px; }
+  html body[data-fynx-terminal] .fn-pro-card { grid-row: span 2; align-self: start; }
+  html body[data-fynx-terminal] .fn-sidebar :is(.fn-terminal-sources,.fn-research-links) { margin-top: 0; }
+  html body[data-fynx-terminal] .fn-app .fn-story.fn-lead h3 { font-size: 33px; }
+  html body[data-fynx-terminal] .fn-filter-bar { align-items: stretch; }
+  html body[data-fynx-terminal] .fn-search { flex-basis: 100%; }
+  html body[data-fynx-terminal] .fn-search input { font-size: 16px; min-height: 40px; }
+  html body[data-fynx-terminal] .fn-feed-meta { flex-wrap: wrap; font-size: 9px; gap: 4px; }
+  html body[data-fynx-terminal] .fn-feed-meta > [data-news-count] { margin-left: auto; }
+  html body[data-fynx-terminal] :is(.fn-refresh,.fn-categories button,.fn-media-categories button,.fn-region-controls button,.fn-save) { min-height: 44px; }
+  html body[data-fynx-terminal] .fn-save { width: 36px; }
+  html body[data-fynx-terminal] .fn-story { grid-template-columns: minmax(0,1fr) 36px; }
+  html body[data-fynx-terminal] .fn-jump { gap: 16px; }
+  html body[data-fynx-terminal] .fn-jump-tools { padding-bottom: 8px; }
+  html body[data-fynx-terminal] .fn-app .fn-section { padding-block: 20px 25px; }
+}
+@media (max-width: 480px) {
+  html body[data-fynx-terminal] .fn-sidebar { grid-template-columns: minmax(0,1fr); gap: 22px; }
+  html body[data-fynx-terminal] .fn-pro-card { grid-row: auto; padding: 22px; }
+  html body[data-fynx-terminal] .fn-app .fn-story.fn-lead h3 { font-size: 30px; }
+  html body[data-fynx-terminal] .fn-app .fn-story h3 { font-size: 16px; }
+  html body[data-fynx-terminal] .fn-story { gap: 9px; }
+  html body[data-fynx-terminal] .fn-following-heading > span:last-child { font-size: 8px; }
+  html body[data-fynx-terminal] .fn-media-grid { grid-template-columns: minmax(0,1fr); }
+  html body[data-fynx-terminal] .fn-section-heading { flex-wrap: wrap; }
+}

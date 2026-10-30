@@ -25,7 +25,13 @@ for (const page of pages) {
   html = html.replace(/<body\b([^>]*)>/, (tag, attrs) =>
     /\bdata-fynx-terminal(?:[\s=>]|$)/.test(attrs) ? tag : `<body${attrs} data-fynx-terminal>`);
   const component = page === 'index.html' ? 'terminal-landing' : 'terminal-workspace';
-  const assets = `<!-- terminal-design:start -->\n<link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">\n<link rel="stylesheet" href="/assets/css/${component}.css?v=20261028">\n<!-- terminal-design:end -->\n`;
+  const hasHeader = !/data-fynx-section="TOOLS"/.test(html);
+  const sourceData = /src=["'][^"']*market-intelligence-data\.js/.test(html) ? '' : '<script src="/assets/js/market-intelligence-data.js?v=20261029-r2" defer></script>\n';
+  const shared = hasHeader ? `<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261029-r2">\n${sourceData}<script src="/assets/js/terminal-market-data.js?v=20261029-r2" defer></script>\n<script src="/assets/js/terminal-header.js?v=20261029-r2" defer></script>\n<script src="/assets/js/terminal-market-ui.js?v=20261029-r2" defer></script>\n` : '';
+  const home = page === 'home.html' ? '<link rel="stylesheet" href="/assets/css/terminal-home.css?v=20261029-r2">\n<script src="/assets/js/terminal-home.js?v=20261029-r2" defer></script>\n' : '';
+  const refinements = hasHeader && page !== 'home.html' ? '<link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261029-r2">\n<script src="/assets/js/terminal-pages.js?v=20261029-r2" defer></script>\n' : '';
+  const news = page === 'news.html' ? '<link rel="stylesheet" href="/assets/css/terminal-news.css?v=20261029-r2">\n' : '';
+  const assets = `<!-- terminal-design:start -->\n<link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">\n<link rel="stylesheet" href="/assets/css/${component}.css?v=20261028">\n${shared}${home}${refinements}${news}<!-- terminal-design:end -->\n`;
   html = html.replace('</head>', assets + '</head>');
   if (!/data-fynx-layout="workspace"/.test(html) && !/data-fynx-section="TOOLS"/.test(html)) {
     const active = page.startsWith('tools/') ? '/tools/research-desk.html' : `/${page}`;

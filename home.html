@@ -950,6 +950,13 @@
 <!-- terminal-design:start -->
 <link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
 <link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
+<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261029-r2">
+<script src="/assets/js/market-intelligence-data.js?v=20261029-r2" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261029-r2" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261029-r2" defer></script>
+<script src="/assets/js/terminal-market-ui.js?v=20261029-r2" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-home.css?v=20261029-r2">
+<script src="/assets/js/terminal-home.js?v=20261029-r2" defer></script>
 <!-- terminal-design:end -->
 </head>
 
@@ -1038,30 +1045,19 @@
       </div>
 
       <!-- CONTENT -->
-      <div class="content-area">
-        <section class="hero">
-          <div class="hero-inner">
-            <div class="hero-left">
-              <!-- Greeting + daily message -->
-              <div class="greeting">
-                <div class="hello" id="greetingText">Good evening, Trader.</div>
-                <div class="meta" id="greetingMeta">Local time —</div>
-                <div class="daily" id="dailyLine"><span>Daily:</span> Loading message…</div>
-              </div>
-
-              <!-- ✅ Remove the long paragraph + remove Open Tools/Open Journal (per request) -->
-              <h2 style="font-size:34px; font-weight:1000; letter-spacing:-1px; margin-top:10px;">Dashboard</h2>
-            </div>
-
-            <div class="hero-right" style="width:100%; min-width:0; align-items:stretch;">
-              <!-- Market Hours (alive) -->
-              <div class="market-hours" aria-label="Market Hours">
-                <div class="mh-top">
-                  <span class="mh-title">FX session hours</span>
-                  <span class="mh-updated" id="mhUpdated">—</span>
-                </div>
-
-                <div class="mh-grid">
+      <div class="content-area newsroom-content">
+        <h1 class="nr-sr-only">FYNX market briefing</h1>
+        <div class="nr-daily-bar"><div><span id="greetingText" class="nr-greeting">Welcome to your workspace.</span><span id="greetingMeta" class="nr-sr-only">Local time</span><div id="dailyLine" class="nr-daily"><span>Daily</span> Build a considered trading routine.</div></div><form action="/explore.html" class="nr-search" role="search"><label class="nr-sr-only" for="resource-query">Find a tool, lesson or market topic</label><input id="resource-query" name="q" type="search" placeholder="Try margin, position size, bonds…"><button type="submit">Search</button></form></div>
+        <div class="nr-front">
+          <section class="nr-lead" aria-labelledby="briefing-title">
+            <div class="nr-eyebrow"><span class="nr-red-label">Briefing</span><span id="briefingSource">FYNX · Market intelligence</span></div>
+            <figure class="nr-chart" aria-label="SPY adjusted daily market history"><div class="nr-chart-top"><span>MARKET CONTEXT · SPY</span><span id="homeChartValue">—</span></div><div id="homeHistoryChart" class="nr-chart-canvas"><p>Loading adjusted daily prices…</p></div><figcaption id="homeChartSource">S&amp;P 500 ETF · historical daily closes</figcaption></figure>
+            <div id="homeLeadStory" aria-busy="true"><h2 id="briefing-title">Your market briefing.</h2><p class="nr-empty">Checking published headlines and official releases.</p><a href="/news.html">Explore the News desk →</a></div>
+            <div id="homeSecondaryStories" class="nr-secondary"></div>
+          </section>
+          <section class="nr-latest" aria-labelledby="latest-title"><div class="nr-section-head"><h2 id="latest-title">Latest</h2><a href="/news.html">All coverage →</a></div><div id="homeLatestStories" aria-busy="true"><p class="nr-empty">Connecting to the original sources…</p></div><div class="nr-feed-status"><p id="homeBriefingStatus" role="status">Checking coverage.</p><button type="button" id="homeBriefingRefresh">↻ Refresh</button></div></section>
+          <aside class="nr-side" aria-label="Market overview"><section><div class="nr-section-head"><h2>Markets</h2><a href="/tools/research-heatmap.html">Heat map →</a></div><table class="nr-market-table"><thead><tr><th scope="col">Instrument</th><th scope="col">Last</th><th scope="col">Change</th></tr></thead><tbody id="homeQuoteRows"><tr><td colspan="3">Loading indicative quotes…</td></tr></tbody></table><p id="homeQuoteStatus" class="nr-source-note">Source timestamps appear with each quote.</p></section>
+            <section class="nr-sessions"><div class="nr-section-head"><h2>Trading sessions</h2><a href="/tools/market-hours.html">Hours →</a></div><div class="mh-grid">
                   <div class="mh-card" id="cardLondon">
                     <div class="mh-head">
                       <div class="mh-name">London</div>
@@ -1097,74 +1093,19 @@
                     <div class="mh-dotrow"><span class="dot" id="dotAsia"></span><span class="mh-time" id="timeAsia">—</span></div>
                     <div class="mh-bar"><div class="mh-fill" id="fillAsia"></div></div>
                   </div>
-                </div>
-              </div>
-
-<div class="workspace-shortcuts"><a href="journal.html">Review your journal →</a><a href="calculator.html">Plan a position →</a><a href="calendar.html">Check economic events →</a></div>
-            </div>
-          </div>
-        </section>
-
-<section class="workspace-library" aria-labelledby="workspace-library-title"><div class="workspace-library-heading"><div><div class="discovery-kicker">YOUR NEXT STEP</div><h2 id="workspace-library-title">What are you working on?</h2><p>Search the library, pick up a recent page, or return to a saved resource.</p></div><a href="/explore.html">Explore all resources ↗</a></div><form class="discovery-search" action="/explore.html" role="search"><label for="resource-query">Find a tool, lesson or market topic</label><div><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="resource-query" name="q" type="search" placeholder="Try margin, position size, bonds…"><button type="submit">Search</button></div></form><h3>Quick access</h3><div class="workspace-resource-list"><a href="/tools/research-desk.html">Research Desk · 7 free tools</a><a href="/tools/position-size.html">Position size</a><a href="/tools/margin.html">Margin</a><a href="/tools/risk-reward.html">Risk / reward</a><a href="/tools/economic-calendar.html">Economic calendar</a><a href="/learn.html">Learning paths</a></div><h3>Saved in this browser</h3><div class="workspace-resource-list" data-workspace-saved><p>Save tools and lessons from the resource library to keep them here.</p></div><h3>Recently opened</h3><div class="workspace-resource-list" data-workspace-recent><p>Your recently opened resources will appear here.</p></div></section>
-<section class="card-grid" aria-label="Journal performance">
-<div class="dashboard-card"><div class="card-header"><span class="card-title">Net realized P/L</span></div><div class="card-value" id="homePnl">—</div><p class="card-subtitle">From your recorded trades</p><a href="journal.html">Review performance →</a></div>
-<div class="dashboard-card"><div class="card-header"><span class="card-title">Recorded trades</span></div><div class="card-value" id="homeTrades">—</div><p class="card-subtitle">All time · synced with your journal</p><a href="journal.html">Open journal →</a></div>
-<div class="dashboard-card"><div class="card-header"><span class="card-title">Win rate</span></div><div class="card-value" id="homeWinRate">—</div><p class="card-subtitle" id="homeStatsStatus">Sign in to load your results.</p><a href="calculator.html">Plan your risk →</a></div>
-          <!-- ✅ REPLACED: Portfolio Overview removed. Added Live Activity + News (updates every 5 min, links clickable) -->
-          <div class="dashboard-card card-large">
-            <div class="live-stack">
-              <div class="live-toprow">
-                <div class="live-left">
-                  <span class="live-title">Live Activity</span>
-                  <span class="live-pill">External feed</span>
-                </div>
-                <span class="live-updated" id="liveUpdated">—</span>
-              </div>
-
-              <!-- Real market moving strip (TradingView ticker tape) -->
-              <div class="tv-wrap" id="tvTapeWrap" aria-label="Market moving strip"></div>
-
-              <!-- News (updates every 5 min) -->
-              <div class="news-wrap" aria-label="Market-moving news">
-                <div class="news-head">
-                  <div class="label">
-                    <strong>Latest Market News</strong>
-                    <span class="live-pill">External feed</span>
-                  </div>
-
-                  <!-- ✅ Refresh button + Updated label -->
-                  <div class="news-actions">
-                    <div class="news-sub" id="newsUpdated">Updating…</div>
-                    <button class="icon-btn news-refresh-btn" id="newsRefreshBtn" title="Refresh news" aria-label="Refresh news">
-                      <svg viewBox="0 0 24 24">
-                        <path d="M21 12a9 9 0 1 1-3-6.7"></path>
-                        <polyline points="21 3 21 9 15 9"></polyline>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                <div class="news-list" id="newsList">
-                  <div class="news-empty">Loading headlines…</div>
-                </div>
-              </div>
-
-              <!-- Reliable source access replaces the unavailable third-party X timeline. -->
-              <div class="news-wrap" id="financeVoices" aria-label="Finance voices and X sources" style="margin-top:12px;">
-                <div class="news-head">
-                  <div class="label">
-                    <strong>Finance voices</strong>
-                    <span class="live-pill">Official sources</span>
-                  </div>
-                  <div class="news-actions">
-                    <div class="news-sub" id="xUpdated">3 sources · direct access</div>
-                    <a class="icon-btn news-refresh-btn" href="news.html" title="Explore the News desk" aria-label="Explore the News desk">
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"></path></svg>
-                    </a>
-                  </div>
-                </div>
-                <div class="news-list finance-voices-content" id="xList">
-                  <p class="finance-voices-intro">Follow the people covering your markets. Read their coverage or continue to their profiles on X.</p>
-                  <div class="finance-voices-grid">
+                </div><p class="nr-source-note"><span id="mhUpdated">—</span> · Indicative weekday FX sessions. Local holidays may vary.</p></section>
+          </aside>
+        </div>
+        <div class="nr-middle">
+          <section class="nr-calendar"><div class="nr-section-head"><h2>Economic calendar</h2><a href="/calendar.html">Full calendar →</a></div><div id="homeEconomicCalendar" class="nr-calendar-widget"></div><p class="nr-source-note">Calendar supplied by TradingView. If the provider is unavailable, <a href="/tools/economic-calendar.html">open the full calendar</a> or <a href="https://www.bls.gov/schedule/news_release/" target="_blank" rel="noopener noreferrer">the official BLS schedule ↗</a>.</p></section>
+          <section class="nr-journal"><div class="nr-section-head"><h2>Your journal</h2><a href="/journal.html">Open journal →</a></div><div class="nr-journal-grid"><div><span>Recorded trades</span><strong id="homeTrades">—</strong></div><div><span>Win rate</span><strong id="homeWinRate">—</strong></div><div class="nr-journal-pnl"><span>Net realized P/L</span><strong id="homePnl">—</strong></div></div><p id="homeStatsStatus" class="nr-source-note">Sign in to load your results.</p><div class="nr-actions"><a class="nr-primary" href="/journal.html">Review your journal</a><a href="/calculator.html">Plan a position</a></div><div class="nr-process"><span>YOUR NEXT STEP</span><h3>Research. Plan. Review.</h3><p>Keep the source, define your risk, and return to your own trading record.</p><a href="/pro.html">Explore Pro tools &amp; plans →</a></div></section>
+        </div>
+        <div class="nr-resources">
+          <section><div class="nr-section-head"><h2>Quick access</h2><a href="/tools/research-desk.html">Research Desk · 7 free tools →</a></div><div class="nr-quick-links"><a href="/tools/position-size.html">Position size <span>→</span></a><a href="/tools/margin.html">Margin <span>→</span></a><a href="/tools/risk-reward.html">Risk / reward <span>→</span></a><a href="/tools/economic-calendar.html">Economic calendar <span>→</span></a><a href="/learn.html">Learning paths <span>→</span></a><a href="/tools/research-desk.html">Research Desk <span>→</span></a></div><details class="nr-saved"><summary>Saved in this browser</summary><div class="workspace-resource-list" data-workspace-saved><p>Save tools and lessons from the resource library to keep them here.</p></div></details></section>
+          <section><div class="nr-section-head"><h2>Recently opened</h2><a href="/explore.html">Explore resources →</a></div><div class="workspace-resource-list nr-recent" data-workspace-recent><p>Your recently opened resources will appear here.</p></div></section>
+        </div>
+        <section class="nr-learning"><div class="nr-section-head"><h2>Build your market knowledge</h2><a href="/learn.html">Learning center →</a></div><div class="nr-learning-grid"><a href="/learn/forex-howto.html"><span>01</span><h3>Forex</h3><p>Currencies, pips and position sizing</p><b>Start learning ↗</b></a><a href="/learn/stocks-howto.html"><span>02</span><h3>Stocks</h3><p>Shares, valuation and market structure</p><b>Start learning ↗</b></a><a href="/learn/crypto-howto.html"><span>03</span><h3>Crypto</h3><p>Digital assets, custody and volatility</p><b>Start learning ↗</b></a><a href="/learn/funds-howto.html"><span>04</span><h3>Funds</h3><p>Diversification, ETFs and fund costs</p><b>Start learning ↗</b></a><a href="/learn/futures-howto.html"><span>05</span><h3>Futures</h3><p>Contracts, margin and expiration</p><b>Start learning ↗</b></a><a href="/learn/indices-howto.html"><span>06</span><h3>Indices</h3><p>Benchmarks and market exposure</p><b>Start learning ↗</b></a></div></section>
+        <section class="nr-voices" aria-label="Finance voices"><div class="nr-section-head"><h2>Finance voices</h2><a href="/news.html#watch-listen">Watch &amp; listen →</a></div><div class="finance-voices-grid">
                     <article class="finance-voice">
                       <span class="finance-voice-topic">Macro &amp; economic news</span>
                       <h3>FinancialJuice</h3>
@@ -1183,14 +1124,7 @@
                       <p>Currency, macro and cross-market news from the ForexLive team.</p>
                       <div class="finance-voice-links"><a href="https://investinglive.com/" target="_blank" rel="noopener noreferrer">Read coverage <span aria-hidden="true">↗</span></a><a href="https://x.com/ForexLive" target="_blank" rel="noopener noreferrer" aria-label="Open the ForexLive profile on X">Open on X <span aria-hidden="true">↗</span></a></div>
                     </article>
-                  </div>
-                  <p class="finance-voices-note">These are source links, not a live post feed. X may require sign-in. Publisher subscriptions are separate from FYNX.</p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-</section>
+                  </div><p class="nr-source-note">Direct links to established sources. Publisher subscriptions and availability are separate from FYNX.</p></section>
       </div>
     </main>
   </div>
@@ -1590,271 +1524,12 @@
       })();
     }
 
-    // =============================================================================
-    // ✅ LIVE MARKET MOVING STRIP (Real data) — TradingView (refresh every 5 min)
-    // =============================================================================
-    function tvTheme(){
-      return document.body.classList.contains("dark-mode") ? "dark" : "light";
-    }
-
-    function mountTickerTape(){
-      const wrap = document.getElementById("tvTapeWrap");
-      if (!wrap) return;
-
-      wrap.innerHTML = "";
-
-      const holder = document.createElement("div");
-      holder.className = "tradingview-widget-container";
-      const widgetDiv = document.createElement("div");
-      widgetDiv.className = "tradingview-widget-container__widget";
-      holder.appendChild(widgetDiv);
-
-      const script = document.createElement("script");
-      script.type = "text/javascript";
-      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
-      script.async = true;
-
-      script.innerHTML = JSON.stringify({
-        symbols: [
-          { proName: "FOREXCOM:SPXUSD", title: "S&P 500" },
-          { proName: "FOREXCOM:DJI", title: "Dow" },
-          { proName: "FOREXCOM:NSXUSD", title: "Nasdaq 100" },
-          { proName: "FX_IDC:EURUSD", title: "EUR/USD" },
-          { proName: "FX_IDC:GBPUSD", title: "GBP/USD" },
-          { proName: "FX_IDC:USDJPY", title: "USD/JPY" },
-          { proName: "OANDA:XAUUSD", title: "Gold" },
-          { proName: "BINANCE:BTCUSDT", title: "BTC" }
-        ],
-        showSymbolLogo: false,
-        isTransparent: true,
-        displayMode: "adaptive",
-        colorTheme: tvTheme(),
-        locale: "en"
-      });
-
-      holder.appendChild(script);
-      wrap.appendChild(holder);
-    }
-
-    // =============================================================================
-    // Market headlines refresh independently of the static finance-source directory.
-    // ✅ FIX: never shows "in progress" / "loading..." as the only content
-    // ✅ FIX: prefers TODAY first (fills remainder with most recent if today items < 15)
-    // ✅ FIX: refresh buttons fetch immediately on click
-    // =============================================================================
-    const NEWS_REFRESH_MS = 5 * 60 * 1000;
-    const NEWS_MAX_ITEMS = 15;
-
-    const CACHE_NEWS_KEY = "fynx_cache_market_news_v1";
-
-    // Rotating finance-only Google News RSS queries (keeps it fresh)
-    const NEWS_QUERIES = [
-      `((forex OR fx OR "interest rates" OR bonds OR yields OR CPI OR inflation OR Fed OR FOMC OR ECB OR BOE OR BOJ OR "jobs report" OR NFP OR earnings OR "S&P 500" OR Nasdaq OR Dow OR oil OR crude OR gold OR bitcoin OR crypto OR "risk-off" OR "risk-on") AND (markets OR trading OR "breaking news"))`,
-      `(("Federal Reserve" OR FOMC OR Powell OR ECB OR Lagarde OR BOE OR BOJ OR "rate cut" OR "rate hike" OR inflation OR CPI OR PPI OR GDP OR recession OR "bond yields") AND (markets OR stocks OR forex))`,
-      `((earnings OR guidance OR "beat expectations" OR "miss expectations" OR "market selloff" OR rally OR "S&P 500" OR Nasdaq OR "Dow Jones") AND (stocks OR market OR trading))`,
-      `((bitcoin OR BTC OR ethereum OR ETH OR crypto OR "spot ETF" OR "on-chain" OR "risk assets") AND (markets OR trading OR liquidity))`
-    ];
-
-    function googleNewsRssUrl(query){
-      const sources = `(site:cnbc.com OR site:bloomberg.com OR site:reuters.com OR site:wsj.com OR site:ft.com OR site:marketwatch.com OR site:barrons.com OR site:investing.com OR site:coindesk.com OR site:cointelegraph.com OR site:theblock.co OR site:fxstreet.com OR site:forexlive.com OR site:tradingview.com)`;
-      const q = encodeURIComponent(`${query} ${sources}`);
-      return `https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en`;
-    }
-
-    // ✅ Always-present fallback lists (so UI never looks "in progress")
-    const FALLBACK_NEWS = [
-      { title:"Markets: Major headlines update throughout the day", link:"https://news.google.com/topstories?hl=en-US&gl=US&ceid=US:en", source:"News", pubDate: null, reference: true },
-      { title:"Stocks & Macro: Check today’s market-moving stories", link:"https://www.cnbc.com/world/?region=world", source:"CNBC", pubDate: null, reference: true },
-      { title:"Rates & Central Banks: Watch Fed/ECB/BOE/BOJ updates", link:"https://www.reuters.com/markets/", source:"Reuters", pubDate: null, reference: true },
-      { title:"Crypto: Bitcoin & risk assets headlines", link:"https://www.coindesk.com/", source:"CoinDesk", pubDate: null, reference: true },
-      { title:"FX: Live forex headlines", link:"https://www.forexlive.com/", source:"ForexLive", pubDate: null, reference: true },
-      { title:"Commodities: Oil and gold market updates", link:"https://www.investing.com/commodities/", source:"Investing", pubDate: null, reference: true }
-    ];
-
-    function fmtTimeAgo(date){
-      if (!(date instanceof Date) || isNaN(date.getTime())) return "";
-      const diff = Date.now() - date.getTime();
-      const m = Math.floor(diff / 60000);
-      if (m < 1) return "now";
-      if (m < 60) return `${m}m ago`;
-      const h = Math.floor(m / 60);
-      if (h < 24) return `${h}h ago`;
-      const d = Math.floor(h / 24);
-      return `${d}d ago`;
-    }
-
-    function escapeNews(value) { return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
-    function safeNewsUrl(value) { try { const url = new URL(value); return ["https:","http:"].includes(url.protocol) ? url.href : "#"; } catch { return "#"; } }
-    function safeText(s){
-      return String(s || "").replace(/\s+/g, " ").trim();
-    }
-
-    function parseGoogleNewsSource(titleText){
-      const t = safeText(titleText);
-      const parts = t.split(" - ");
-      if (parts.length >= 2) return safeText(parts[parts.length - 1]);
-      return "News";
-    }
-
-    async function fetchRssXml(url){
-      const proxied = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-      const res = await fetch(proxied, { cache: "no-store", signal: AbortSignal.timeout(10000) });
-      if (!res.ok) throw new Error("Failed to fetch feed");
-      return await res.text();
-    }
-
-    function renderNews(targetListId, items, emptyMsg){
-      const list = document.getElementById(targetListId);
-      if (!list) return;
-
-      if (!items || !items.length){
-        list.innerHTML = `<div class="news-empty">${emptyMsg || "No headlines right now."}</div>`;
-        return;
-      }
-
-      list.innerHTML = items.map(it => {
-        const title = escapeNews(safeText(it.title));
-        const link = escapeNews(safeNewsUrl(it.link));
-        const source = escapeNews(safeText(it.source || "News"));
-        const ago = it.reference ? "Publisher link" : (it.pubDate ? fmtTimeAgo(it.pubDate) : "");
-
-        return `
-          <a class="news-item" href="${link}" target="_blank" rel="noopener">
-            <div class="news-main">
-              <div class="news-source">
-                <span class="badge">${source}</span>
-              </div>
-              <div class="news-title">${title}</div>
-            </div>
-            <div class="news-time">${ago}</div>
-          </a>
-        `;
-      }).join("");
-    }
-
-    function cacheSet(key, items){
-      try{
-        localStorage.setItem(key, JSON.stringify({ t: Date.now(), items: items || [] }));
-      }catch(e){}
-    }
-
-    function cacheGet(key){
-      try{
-        const raw = localStorage.getItem(key);
-        if (!raw) return null;
-        const obj = JSON.parse(raw);
-        if (!obj || !Array.isArray(obj.items) || Date.now()-obj.t>3600000) return null;
-        return obj.items.map(it => {
-          // revive pubDate
-          const d = it.pubDate ? new Date(it.pubDate) : null;
-          return { ...it, pubDate: d && !isNaN(d.getTime()) ? d : null };
-        }).filter(it => it.pubDate && Date.now()-it.pubDate.getTime()<7*86400000);
-      }catch(e){
-        return null;
-      }
-    }
-
-    function setUpdated(elId, items){
-      const el = document.getElementById(elId); if(!el)return;
-      const dates=(items||[]).filter(it=>!it.reference&&it.pubDate).map(it=>new Date(it.pubDate).getTime()).filter(Number.isFinite);
-      el.textContent=dates.length?`Latest publication ${new Date(Math.max(...dates)).toLocaleString()}`:'Publication time unavailable · reference links';
-    }
-
-    function isSameLocalDay(a, b){
-      if (!(a instanceof Date) || !(b instanceof Date)) return false;
-      return a.getFullYear() === b.getFullYear() &&
-             a.getMonth() === b.getMonth() &&
-             a.getDate() === b.getDate();
-    }
-
-    function fillToCount(preferred, fallback, count){
-      const out = [];
-      const seen = new Set();
-      function add(it){
-        const key = (it.link || "") + "||" + (it.title || "");
-        if (!it.title || !it.link) return;
-        if (seen.has(key)) return;
-        seen.add(key);
-        out.push(it);
-      }
-      (preferred || []).forEach(add);
-      (fallback || []).forEach(add);
-      // If still short, repeat safe fallbacks (dedupe blocks repeats; so add synthetic variants)
-      let i = 0;
-      while (out.length < count && i < 50){
-        const base = (fallback && fallback.length) ? fallback[i % fallback.length] : null;
-        if (!base) break;
-        add({ ...base, title: base.title, link: base.link, source: base.source, pubDate: null, reference: true });
-        i++;
-      }
-      return out.slice(0, count);
-    }
-
-    // Manual refresh nonce to force query rotation on click
-    let manualNewsNonce = 0;
-
-    async function refreshMarketNews(){
-      const status=document.getElementById('newsUpdated'); status.textContent='Refreshing…';
-      try{
-        const response=await fetch('https://us-central1-fynx-c7a28.cloudfunctions.net/webMarketFeed?category=all',{signal:AbortSignal.timeout(15000)});
-        if(!response.ok) throw new Error('News unavailable');
-        const data=await response.json();
-        const items=data.items.map(item=>({...item,pubDate:new Date(item.pubDate)}));
-        renderNews('newsList',items);cacheSet(CACHE_NEWS_KEY,items);
-        status.textContent=(data.stale?'Stale cache · retrieved ':'Retrieved ')+new Date(data.fetchedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-      }catch(error){
-        window.FynxMonitor?.report('feed','feed-load',error);
-        const items=cacheGet(CACHE_NEWS_KEY)||[];
-        renderNews('newsList',items, 'News is temporarily unavailable. Please refresh or open the News page.');
-        status.textContent=items.length?'Offline · cached headlines':'Feed unavailable · retry';
-      }
-    }
-
-    // =============================================================================
-    // INIT + LIVE UPDATE
-    // =============================================================================
     function initHome(){
       renderGreeting();
-
       setDailyLine();
       updateMarketHours();
-
-      // mount real market tape
-      mountTickerTape();
-
-      // ✅ Show something immediately (cache -> fallback), then fetch fresh
-      const cachedNews = cacheGet(CACHE_NEWS_KEY);
-      renderNews("newsList", fillToCount(cachedNews || [], FALLBACK_NEWS, NEWS_MAX_ITEMS), "No finance headlines right now.");
-
-      // Fetch fresh right away
-      refreshMarketNews(true);
-
-      // ✅ Refresh buttons
-      const newsBtn = document.getElementById("newsRefreshBtn");
-      if (newsBtn){
-        newsBtn.addEventListener("click", () => refreshMarketNews(true));
-      }
-
-      // "alive" updates (clock/session)
-      setInterval(() => {
-        renderGreeting();
-        updateMarketHours();
-      }, 20 * 1000);
-
-      // refresh ticker/news every 5 minutes
-      setInterval(() => {
-        mountTickerTape();
-        refreshMarketNews(false);
-      }, NEWS_REFRESH_MS);
-
-      // if user toggles theme on another page and comes back, re-mount ticker on visibility
-      document.addEventListener("visibilitychange", () => {
-        if (!document.hidden){
-          mountTickerTape();
-        }
-      });
+      setInterval(() => { if (!document.hidden) { renderGreeting(); updateMarketHours(); } }, 20000);
     }
-
     initHome();
   </script>
 
