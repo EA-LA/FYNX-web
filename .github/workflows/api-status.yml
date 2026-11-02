@@ -1,13 +1,13 @@
 name: FYNX API status monitor
 
 # Public status data for /api/status.html (checklist item 47).
-# Every 15 min: health self-check + gateway rejects keyless requests (no API quota used).
+# Hourly (GitHub may delay scheduled runs): health self-check + gateway rejects keyless requests (no API quota used).
 # Twice a day: one known-answer call per product with the FYNX_API_SMOKE_KEY test key.
 # Results live on the status-data branch (single commit, force-pushed). Failures open a GitHub issue
 # labelled api-incident and update incidents.xml (Atom feed); recovery closes the issue.
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '23 * * * *'
     - cron: '7 */12 * * *'
   workflow_dispatch:
     inputs:
@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   probe:
-    if: github.event.schedule == '*/15 * * * *' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'probe')
+    if: github.event.schedule == '23 * * * *' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'probe')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

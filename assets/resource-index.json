@@ -1045,6 +1045,13 @@
     "topic": ""
   },
   {
+    "url": "/api/data-security.html",
+    "title": "FYNX API Data & Security | Retention, Keys & Isolation",
+    "description": "How the FYNX API stores keys, isolates customer data, prevents abuse and retains request history.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
     "url": "/api/docs.html",
     "title": "FYNX API Documentation: Requests, Authentication & Examples",
     "description": "Read FYNX API authentication, request examples and endpoint documentation for forex risk calculations and prop firm rule evaluation.",
@@ -1055,6 +1062,13 @@
     "url": "/api/pricing.html",
     "title": "FYNX API Pricing & Usage Limits",
     "description": "Compare FYNX API access, monthly usage allowances and request limits for developers building trading and evaluation applications.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
+    "url": "/api/status.html",
+    "title": "FYNX API Status | Uptime & Incidents",
+    "description": "Live status, uptime, response times and incident history for the FYNX API gateway and products.",
     "category": "Developers",
     "topic": ""
   },
@@ -1073,9 +1087,30 @@
     "topic": ""
   },
   {
+    "url": "/api/markets.html",
+    "title": "Market Hours & Holidays API",
+    "description": "Exchange open/closed status, next open and close, published holidays and forex sessions for NYSE, Nasdaq, LSE, TSX, HKEX and TSE.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
+    "url": "/api/portfolio.html",
+    "title": "Portfolio Analytics API: Performance, Drawdown & Exposure",
+    "description": "Win rate, profit factor, drawdown, Sharpe, Sortino, exposure, leverage and currency legs from your trades and positions.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
     "url": "/api/prop-firm.html",
     "title": "Prop Firm Rules & Evaluation API",
     "description": "Evaluate USD prop firm phases using explicit rules, account events and limits. Explore FYNX API eligibility checks, history and integration documentation.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
+    "url": "/api/indicators.html",
+    "title": "Technical Indicators & Screening API",
+    "description": "SMA, EMA, RSI, MACD, Bollinger Bands, ATR, Stochastic, VWAP and multi-symbol screening on your own price data.",
     "category": "Developers",
     "topic": ""
   },

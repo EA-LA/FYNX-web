@@ -1,13 +1,13 @@
 'use strict';
 // FYNX API status monitor (checklist item 47). Runs in GitHub Actions; no Google Cloud permissions.
-//   node api-status.cjs probe   every 15 min: health self-check + gateway rejects keyless requests (no quota used)
+//   node api-status.cjs probe   hourly: health self-check + gateway rejects keyless requests (no quota used)
 //   node api-status.cjs deep    twice a day: one known-answer call per product with the test key
 // Writes to STATUS_DIR (a checkout of the status-data branch): api-status.json, api-status-deep.json, incidents.xml.
 // Opens a GitHub issue (label api-incident) when a component fails twice in a row within a run, and closes it on recovery.
 const fs=require('node:fs'),path=require('node:path');
 const BASE=process.env.API_BASE||'https://us-central1-fynx-c7a28.cloudfunctions.net';
 const DIR=path.resolve(process.env.STATUS_DIR||'status'),MODE=process.argv[2];
-const TARGET=99.5,RECENT=96,DAYS=90,INCIDENTS=50;
+const TARGET=99.5,RECENT=48,DAYS=90,INCIDENTS=50;
 const SITE='https://www.fynxfinanceworld.com/api/status.html';
 const load=(f,fb)=>{try{return JSON.parse(fs.readFileSync(path.join(DIR,f),'utf8'));}catch{return fb;}};
 const save=(f,v)=>fs.writeFileSync(path.join(DIR,f),typeof v==='string'?v:JSON.stringify(v,null,1)+'\n');
