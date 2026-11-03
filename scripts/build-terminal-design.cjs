@@ -8,13 +8,14 @@ const pages = [
   'index.html', 'home.html', 'journal.html', 'calculator.html', 'news.html',
   'calendar.html', 'learn.html', 'profile.html', 'pro.html', 'explore.html', 'quant-analyst.html',
   'tools/research-desk.html',
+  'edge-radar/index.html', ...require('../backend/quant/engine.cjs').SYMBOLS.map(s=>`edge-radar/${s.id.toLowerCase()}/index.html`),
   ...researchPages.map(([, slug]) => `tools/${slug}.html`),
   'tools/economic-calendar.html', 'tools/market-holidays.html', 'tools/market-hours.html',
 ];
 const navigation = [
   ['Home', '/home.html'], ['Journal', '/journal.html'], ['Calculator', '/calculator.html'],
   ['News', '/news.html'], ['Calendar', '/calendar.html'], ['Learn', '/learn.html'],
-  ['Explore', '/explore.html'], ['Research', '/tools/research-desk.html'], ['Quant Analyst', '/quant-analyst.html'], ['Profile', '/profile.html'],
+  ['Explore', '/explore.html'], ['Research', '/tools/research-desk.html'], ['Quant Analyst', '/quant-analyst.html'], ['Edge Radar', '/edge-radar/'], ['Profile', '/profile.html'],
 ];
 
 for (const page of pages) {
@@ -34,10 +35,10 @@ for (const page of pages) {
   const refinements = hasHeader && page !== 'home.html' ? '<link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261030-r1">\n<script src="/assets/js/terminal-pages.js?v=20261030-r1" defer></script>\n' : '';
   const news = page === 'news.html' ? '<link rel="stylesheet" href="/assets/css/terminal-news.css?v=20261030-r1">\n' : '';
   const assets = `<!-- terminal-design:start -->\n<link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">\n<link rel="stylesheet" href="/assets/css/${component}.css?v=20261028">\n${shared}${home}${refinements}${news}<!-- terminal-design:end -->\n`;
-  html = html.replace('</head>', assets + (page === 'quant-analyst.html' ? '<link rel="stylesheet" href="/assets/css/quant-analyst.css">\n' : '') + '</head>');
+  html = html.replace('</head>', assets + (page.startsWith('edge-radar/') ? '<link rel="stylesheet" href="/assets/css/edge-radar.css">\n' : page === 'quant-analyst.html' ? '<link rel="stylesheet" href="/assets/css/quant-analyst.css">\n' : '') + '</head>');
   if (!/data-fynx-layout="workspace"/.test(html) && !/data-fynx-section="TOOLS"/.test(html)) {
-    const active = page.startsWith('tools/') ? '/tools/research-desk.html' : `/${page}`;
-    const links = navigation.map(([label, href]) => `<a href="${href}"${href === active ? ' aria-current="page"' : ''}>${label}${label === 'Quant Analyst' ? '<span class="quant-new-badge">NEW</span>' : ''}</a>`).join('');
+    const active = page.startsWith('edge-radar/') ? '/edge-radar/' : page.startsWith('tools/') ? '/tools/research-desk.html' : `/${page}`;
+    const links = navigation.map(([label, href]) => `<a href="${href}"${href === active ? ' aria-current="page"' : ''}>${label}${['Quant Analyst','Edge Radar'].includes(label) ? '<span class="quant-new-badge">NEW</span>' : ''}</a>`).join('');
     const nav = `\n<!-- terminal-navigation:start -->\n<nav class="terminal-navigation" aria-label="Workspace navigation">${links}</nav>\n<!-- terminal-navigation:end -->\n`;
     html = html.replace('</header>', '</header>' + nav);
   }

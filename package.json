@@ -13,7 +13,10 @@
     "test:quant": "tsx --test tests/quant/*.test.ts tests/quant/*.test.cjs",
     "dev:quant": "node scripts/quant-dev-server.cjs",
     "quant:history": "node scripts/quant-history.cjs",
-    "quant:nightly": "node scripts/quant-nightly.cjs"
+    "quant:nightly": "node scripts/quant-nightly.cjs",
+    "build:edge": "node scripts/build-edge.cjs",
+    "dev:edge": "node scripts/quant-dev-server.cjs",
+    "test:edge": "tsx --test tests/edge/*.test.ts tests/edge/*.test.cjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",

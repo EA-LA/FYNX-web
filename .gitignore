@@ -16,3 +16,6 @@ firebase-debug.log
 .env.*
 !.env.example
 !.env.quant.example
+
+# Private Edge Radar snapshots and account reporting
+.edge-data/

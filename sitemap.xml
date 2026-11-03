@@ -2,8 +2,10 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://www.fynxfinanceworld.com/</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/atr-stop.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/audusd/</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/basic-calculator.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/price-alerts.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/btcusd/</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/interest-rates.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/company-financials.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/financial-research-assistant.html</loc></url>
@@ -15,6 +17,11 @@
   <url><loc>https://www.fynxfinanceworld.com/tools/debt-payoff.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/economic-calendar.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/calendar-alerts.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/ethusd/</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/eurgbp/</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/eurjpy/</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/eurusd/</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/fibonacci.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/margin.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/pip.html</loc></url>
@@ -23,6 +30,8 @@
   <url><loc>https://www.fynxfinanceworld.com/tools/market-hours.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/research-desk.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/trading-journal.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/gbpjpy/</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/gbpusd/</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/economic-indicators-heatmap.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/liquidation-guard.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/portfolio-tracker.html</loc></url>
@@ -30,12 +39,15 @@
   <url><loc>https://www.fynxfinanceworld.com/tools/market-holidays.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/correlation.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/strategy-backtester.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/nas100/</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/nzdusd/</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/options.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/pivot.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/portfolio-stress-test.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/position-risk-planner.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/quant-analyst.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/risk-reward.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/spx500/</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/stock.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/symbol-news.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/breakeven.html</loc></url>
@@ -46,6 +58,12 @@
   <url><loc>https://www.fynxfinanceworld.com/tools/trading-process-review.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/research-watchlists.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/tools/scenario-comparison.html</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/us30/</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/usdcad/</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/usdchf/</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/usdjpy/</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/xagusd/</loc></url>
+  <url><loc>https://www.fynxfinanceworld.com/edge-radar/xauusd/</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/learn/lessons/stocks/a-beginners-guide-to-stock-market-structure.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/learn/lessons/bonds/bond-prices-and-yields-explained.html</loc></url>
   <url><loc>https://www.fynxfinanceworld.com/learn/bonds-glossary.html</loc></url>

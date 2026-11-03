@@ -7,6 +7,13 @@
     "topic": ""
   },
   {
+    "url": "/edge-radar/audusd/",
+    "title": "AUD/USD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
     "url": "/tools/basic-calculator.html",
     "title": "Basic Calculator: Arithmetic, Percentages & Parentheses",
     "description": "Calculate arithmetic and percentages locally with a keyboard-friendly calculator. Supports decimals, parentheses and standard order of operations.",
@@ -17,6 +24,13 @@
     "url": "/tools/price-alerts.html",
     "title": "Browser Price Alerts & Percentage Crossing Alerts",
     "description": "Set one-time price or percentage crossing alerts for your watchlist while the FYNX page is open and visible. Review timestamps and browser notification options.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/btcusd/",
+    "title": "BTC/USD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
     "category": "Tools",
     "topic": ""
   },
@@ -98,6 +112,41 @@
     "topic": ""
   },
   {
+    "url": "/edge-radar/",
+    "title": "Edge Radar: Market Regimes & Strategy Fit",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/ethusd/",
+    "title": "ETH/USD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/eurgbp/",
+    "title": "EUR/GBP Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/eurjpy/",
+    "title": "EUR/JPY Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/eurusd/",
+    "title": "EUR/USD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
     "url": "/tools/fibonacci.html",
     "title": "Fibonacci Retracement & Extension Calculator",
     "description": "Calculate Fibonacci retracement and extension levels from a swing high and low to study potential price levels.",
@@ -155,6 +204,20 @@
     "topic": ""
   },
   {
+    "url": "/edge-radar/gbpjpy/",
+    "title": "GBP/JPY Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/gbpusd/",
+    "title": "GBP/USD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
     "url": "/tools/economic-indicators-heatmap.html",
     "title": "GDP, Inflation & Unemployment Indicators",
     "description": "Compare published World Bank GDP growth, inflation and unemployment observations. Review dates and source information with each indicator.",
@@ -204,6 +267,20 @@
     "topic": ""
   },
   {
+    "url": "/edge-radar/nas100/",
+    "title": "NAS100 Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/nzdusd/",
+    "title": "NZD/USD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
     "url": "/tools/options.html",
     "title": "Options Profit & Loss Calculator",
     "description": "Estimate call and put option profit or loss at expiration using strike price, premium, contract count and underlying price.",
@@ -244,6 +321,13 @@
     "url": "/tools/risk-reward.html",
     "title": "Risk-to-Reward Ratio Calculator",
     "description": "Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/spx500/",
+    "title": "SPX500 Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
     "category": "Tools",
     "topic": ""
   },
@@ -321,6 +405,48 @@
     "description": "Compare four position sizes while keeping the same entry, stop, target and contract assumptions. See how changing the risk budget changes both modeled loss and reward.",
     "category": "Tools",
     "access": "Essential or higher",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/us30/",
+    "title": "US30 Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/usdcad/",
+    "title": "USD/CAD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/usdchf/",
+    "title": "USD/CHF Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/usdjpy/",
+    "title": "USD/JPY Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/xagusd/",
+    "title": "XAG/USD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/xauusd/",
+    "title": "XAU/USD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
     "topic": ""
   },
   {

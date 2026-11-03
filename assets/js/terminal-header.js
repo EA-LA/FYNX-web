@@ -241,6 +241,10 @@
       const research = workspaceNav.querySelector('a[href="/tools/research-desk.html"]');
       if (research) { const quant = link('Quant Analyst', '/quant-analyst.html', research.className.replace(/active/g, '').trim()); quant.append(element('span', 'quant-new-badge', 'NEW')); if (/^\/quant-analyst(?:\.html)?\/?$/.test(location.pathname)) quant.setAttribute('aria-current','page'); research.after(quant); }
     }
+    if (workspaceNav && !workspaceNav.querySelector('a[href="/edge-radar/"]')) {
+      const quant=workspaceNav.querySelector('a[href="/quant-analyst.html"]');
+      if(quant){const edge=link('Edge Radar','/edge-radar/',quant.className.replace(/active/g,'').trim());edge.append(element('span','quant-new-badge','NEW'));if(location.pathname.startsWith('/edge-radar'))edge.setAttribute('aria-current','page');quant.after(edge);}
+    }
     mountTopics(body);
     mountTicker(body);
     startClock();
