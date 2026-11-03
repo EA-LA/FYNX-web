@@ -10,3 +10,4 @@ export * from './commands';
 export * from './imports';
 export * from './ea';
 export * from './stream';
+export { DEFAULT_STRATEGIES as EDGE_DEFAULT_STRATEGIES } from '../edge/config';

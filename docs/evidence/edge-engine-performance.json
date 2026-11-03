@@ -1,0 +1,26 @@
+{
+  "generatedAt": "2026-11-03T21:04:05.487Z",
+  "scope": "Local pure-engine benchmark; not provider, endpoint, browser or production latency evidence",
+  "synthetic": true,
+  "sourceHash": "68194c3ce80da0aa9ee30aa0b042459c2116ba70664759d3068d92fd542f933b",
+  "runtime": "v24.13.0",
+  "workload": {
+    "markets": 8,
+    "dailyBarsPerMarket": 2520,
+    "strategies": 3,
+    "backtestsPerRun": 16,
+    "newsUnavailableWithoutCalendar": true,
+    "pointInTimeCOTUnavailable": true
+  },
+  "milliseconds": {
+    "cold": 525.9970000000001,
+    "warm": [
+      405.29920900000013,
+      441.4827499999999,
+      409.4219169999999
+    ],
+    "warmMean": 418.7346253333333
+  },
+  "snapshotBytes": 1215930,
+  "marketResults": 8
+}

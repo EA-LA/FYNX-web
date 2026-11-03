@@ -12,7 +12,7 @@ import type { BacktestResult, Bar, EconomicEvent, QuantParams, ReturnPoint, Tick
 export function createBacktestStream(input: Partial<QuantParams> = {}) {
   const p=normalizeParams({...input,mode:'tick'});
   if(input.mode&&input.mode!=='tick')throw new Error('Streaming execution requires tick-backed M1 bars.');
-  const start=Math.max(p.startIndex||0,p.lookback+p.atrPeriod+1),commission=p.costPips*p.pipSize/2,slip=p.slippagePips*p.pipSize;
+  const start=Math.max(p.startIndex||0,Math.max(p.lookback,p.strategy==='mean-reversion'?p.meanLookback!:0)+p.atrPeriod+1),commission=p.costPips*p.pipSize/2,slip=p.slippagePips*p.pipSize;
   const formatter=new Intl.DateTimeFormat('en-CA',{timeZone:p.dayTimezone,year:'numeric',month:'2-digit',day:'2-digit'});
   const dayKey=(t:string|number)=>p.dayTimezone==='UTC'?new Date(timeMs(t)).toISOString().slice(0,10):formatter.format(timeMs(t));
   let pendingBar:Bar|null=null,previousTime=-Infinity,previousClose=NaN,index=-1,atr=NaN,atrSum=0;
@@ -82,15 +82,17 @@ export function createBacktestStream(input: Partial<QuantParams> = {}) {
       if(state.position&&(index-state.position.entryIndex+1>=p.maxHold||last))exit(closingPrice(),last?'last':'time',lastTick.time);
       equity=state.position?mark(closingPrice()):balance;day.minEquity=Math.min(day.minEquity,equity);
       const justExited=trades.length&&trades[trades.length-1].exitIndex===index;
-      if(p.strategy==='breakout'&&!last&&!state.position&&!state.pending&&!justExited&&equity>0&&atr>0&&history.length>=p.lookback){
-        const range=history.slice(-p.lookback),high=Math.max(...range),low=Math.min(...range),side=bar.close>high+p.entryK*atr?1:bar.close<low-p.entryK*atr?-1:0;
+      if(p.strategy!=='news'&&!last&&!state.position&&!state.pending&&!justExited&&equity>0&&atr>0&&history.length>=p.lookback){
+        const range=history.slice(-(p.strategy==='mean-reversion'?p.meanLookback!:p.lookback)),high=Math.max(...range),low=Math.min(...range);
+        const average=range.reduce((s,v)=>s+v,0)/range.length,sd=Math.sqrt(range.reduce((s,v)=>s+(v-average)**2,0)/Math.max(1,range.length-1));
+        const side=p.strategy==='mean-reversion'?(sd>0?(bar.close<average-p.meanEntryZ!*sd?1:bar.close>average+p.meanEntryZ!*sd?-1:0):0):(bar.close>high+p.entryK*atr?1:bar.close<low-p.entryK*atr?-1:0);
         if(side)state.pending={side,atr};
       }
       if(!Number.isFinite(equity)||equity<0){equity=0;balance=0;state.position=null;state.pending=null;}
       day.endEquity=equity;day.endBalance=balance;day.flat=!state.position;day.minEquity=Math.min(day.minEquity,equity);
       capture.record(date,timeMs(lastTick.time),equity,balance,!state.position);capture.cover(date,timeMs(bar.time)+60000,day.complete);
     }else {for(const tick of bar.ticks!){ticksProcessed++;observeNews(tick,bar,previousATR,false);}}
-    history.push(bar.close);if(history.length>p.lookback)history.shift();
+    history.push(bar.close);if(history.length>Math.max(p.lookback,p.meanLookback!))history.shift();
   };
   return {
     push(bars:Bar[]){

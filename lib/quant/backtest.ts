@@ -14,7 +14,8 @@ export function normalizeParams(input: Partial<QuantParams> = {}): QuantParams {
   finite(p.spreadPips,'Spread',0,10000);finite(p.slippagePips,'Slippage',0,10000);
   integer(p.newsWindowMinutes,'News window',1,1440);finite(p.initialEquity,'Initial equity',1,1e12);
   if(!['close','ohlc','tick'].includes(p.mode))throw new Error('Choose close, ohlc or tick execution.');
-  if(!['breakout','news'].includes(p.strategy))throw new Error('Choose breakout or news strategy.');
+  if(!['breakout','mean-reversion','news'].includes(p.strategy))throw new Error('Choose breakout, mean-reversion or news strategy.');
+  p.meanLookback=integer(p.meanLookback??20,'Mean-reversion lookback',2,500);p.meanEntryZ=finite(p.meanEntryZ??1.5,'Mean-reversion entry Z',.1,10);
   if(p.captureIntraday!==undefined&&typeof p.captureIntraday!=='boolean')throw new Error('captureIntraday must be boolean.');
   if(p.maxIntradayMarks!==undefined)integer(p.maxIntradayMarks,'Intraday capture budget',100,50000);
   if(p.captureAfterDays!==undefined)integer(p.captureAfterDays,'Intraday capture warmup days',0,3660);
@@ -45,6 +46,13 @@ export function breakoutSignal(bars:Bar[],i:number,atr:number,p:Pick<QuantParams
   if(i<p.lookback||!Number.isFinite(atr)||atr<=0)return 0;let high=-Infinity,low=Infinity;
   for(let j=i-p.lookback;j<i;j++){high=Math.max(high,bars[j].close);low=Math.min(low,bars[j].close);}
   return bars[i].close>high+p.entryK*atr?1:bars[i].close<low-p.entryK*atr?-1:0;
+}
+/** Fade deviation from the PRECEDING closes; current bar never enters its own baseline. */
+export function meanReversionSignal(bars:Bar[],i:number,p:Pick<QuantParams,'meanLookback'|'meanEntryZ'>):number{
+  const n=p.meanLookback??20,z=p.meanEntryZ??1.5;if(i<n)return 0;
+  let sum=0;for(let j=i-n;j<i;j++)sum+=bars[j].close;const average=sum/n;
+  let ss=0;for(let j=i-n;j<i;j++)ss+=(bars[j].close-average)**2;const sd=Math.sqrt(ss/(n-1));
+  if(!(sd>0))return 0;return bars[i].close<average-z*sd?1:bars[i].close>average+z*sd?-1:0;
 }
 function relevantEvents(events:EconomicEvent[]|undefined,eventType?:string):EconomicEvent[]{
   if(!events?.length)throw new Error('News strategies require actual high-impact economic-calendar events. Configure a calendar provider first.');
@@ -102,7 +110,7 @@ export function lowerBound(values:number[],target:number):number{let a=0,b=value
 type Position={side:number;entry:number;stop:number;target:number;units:number;risk:number;atr:number;entryIndex:number;entryDate:string;entryCommission:number;};
 type Day={date:string;startEquity:number;startBalance:number;minEquity:number;endEquity:number;endBalance:number;traded:boolean;flat:boolean;complete:boolean;};
 export function backtest(bars:Bar[],input:Partial<QuantParams>={}):BacktestResult{
-  const p=normalizeParams(input);validateBars(bars,p.mode);const start=Math.max(p.startIndex||0,p.lookback+p.atrPeriod+1);
+  const p=normalizeParams(input);validateBars(bars,p.mode);const start=Math.max(p.startIndex||0,Math.max(p.lookback,p.strategy==='mean-reversion'?p.meanLookback!:0)+p.atrPeriod+1);
   if(start>=bars.length-1)throw new Error(`Not enough history: at least ${start+2} bars are needed for these settings.`);
   const atr=p.mode==='close'?closeATR(bars.map(b=>b.close),p.atrPeriod):wilderATR(bars,p.atrPeriod);
   const events=p.strategy==='news'&&p.mode!=='tick'?newsSignals(bars,atr,p):new Map<number,number>();
@@ -153,7 +161,7 @@ export function backtest(bars:Bar[],input:Partial<QuantParams>={}):BacktestResul
     if(position.current&&(i-position.current.entryIndex+(p.mode==='close'?0:1)>=p.maxHold||i===bars.length-1))exit(marketPrice(b,position.current.side,false),i,i===bars.length-1?'last':'time',p.mode==='tick'?b.ticks![b.ticks!.length-1].time:undefined);
     equity=position.current?mark(marketPrice(b,position.current.side,false)):balance;day.minEquity=Math.min(day.minEquity,equity);
     const justExited=trades.length&&trades[trades.length-1].exitIndex===i;
-    if(!position.current&&!pending&&!justExited&&i<bars.length-1&&equity>0){const side=p.strategy==='news'?(p.mode==='tick'?0:(events.get(i)||0)):breakoutSignal(bars,i,atr[i],p);if(side){if(p.mode==='close'){enter(side,atr[i],i,false);equity=position.current?mark(marketPrice(b,side,false)):balance;}else pending={side,atr:atr[i]};}}
+    if(!position.current&&!pending&&!justExited&&i<bars.length-1&&equity>0){const side=p.strategy==='news'?(p.mode==='tick'?0:(events.get(i)||0)):p.strategy==='mean-reversion'?meanReversionSignal(bars,i,p):breakoutSignal(bars,i,atr[i],p);if(side){if(p.mode==='close'){enter(side,atr[i],i,false);equity=position.current?mark(marketPrice(b,side,false)):balance;}else pending={side,atr:atr[i]};}}
     if(!Number.isFinite(equity)||equity<0){equity=0;balance=0;position.current=null;pending=null;}
     day.endEquity=equity;day.endBalance=balance;day.flat=!position.current;day.minEquity=Math.min(day.minEquity,equity);
     if(p.mode==='tick'){capture.record(date,timeMs(b.ticks![b.ticks!.length-1].time),equity,balance,!position.current);capture.cover(date,timeMs(b.time)+interval,day.complete);}

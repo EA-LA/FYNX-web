@@ -25,7 +25,7 @@ export type QuantParams = {
   lookback: number; atrPeriod: number; entryK: number; stopS: number; targetTP: number;
   maxHold: number; costPips: number; riskPct: number; pipSize: number;
   spreadPips: number; slippagePips: number; mode: 'close' | 'ohlc' | 'tick';
-  strategy: 'breakout' | 'news'; newsWindowMinutes: number; events?: EconomicEvent[];
+  strategy: 'breakout' | 'mean-reversion' | 'news'; meanLookback?: number; meanEntryZ?: number; newsWindowMinutes: number; events?: EconomicEvent[];
   eventType?: string; initialEquity: number; startIndex?: number; captureIntraday?: boolean; maxIntradayMarks?: number; captureAfterDays?: number; dayTimezone?: 'UTC' | 'Europe/Prague';
 };
 export type Trade = {

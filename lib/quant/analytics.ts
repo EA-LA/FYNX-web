@@ -4,6 +4,7 @@ import { correlation, equityFromReturns, finite, integer, mean, statistics, time
 import type { Bar, EconomicEvent, Progress, QuantParams, ReturnPoint, Sleeve, Stats } from './types';
 export type OptimizeOptions={metric?:'sharpe'|'profitFactor'|'totalReturn'|'returnMaxDD';entryValues?:number[];stopValues?:number[];minTrades?:number;trainFraction?:number};
 export function optimize(bars:Bar[],params:Partial<QuantParams>={},options:OptimizeOptions={},onProgress?:Progress){
+  if(params.strategy==='mean-reversion')throw new Error('Mean-reversion optimization requires a Z-score grid; the entry-ATR grid does not apply.');
   const p=normalizeParams(params),metric=options.metric||'sharpe',minTrades=integer(options.minTrades??10,'Minimum trades',1,10000),fraction=finite(options.trainFraction??.7,'Train fraction',.5,.9);
   if(!['sharpe','profitFactor','totalReturn','returnMaxDD'].includes(metric))throw new Error('Unsupported optimization metric.');
   const entryValues=options.entryValues||Array.from({length:9},(_,i)=>i*.25),stopValues=options.stopValues||Array.from({length:8},(_,i)=>(i+1)*.5);
