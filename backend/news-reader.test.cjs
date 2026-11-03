@@ -114,10 +114,10 @@ test('index and model numerals are not reported financial facts and election con
  assert(!brief.keyPoints.some(p=>/^what to know|^here is what/i.test(p.text)));
 });
 test('five-minute expiry refreshes source text, while the publication time remains the actual publisher time',async()=>{
- const previous=global.fetch,originalNow=Date.now;let clock=Date.now(),calls=0;const initialClock=clock;api.cache.clear();api.articleRecords.clear();R.articleCache.clear();
- try{Date.now=()=>clock;global.fetch=async url=>{calls++;return{ok:true,text:async()=>url.includes('news.google.com')?rss([]):rss([item({description:clock===initialClock?item().description:'The central bank has revised its inflation projection to 3.1 percent after receiving additional monthly data.'})])};};
- const first=await api.load('economics','us'),count=calls;clock+=299000;await api.load('economics','us');assert.equal(calls,count);
- clock+=1001;const updated=await api.load('economics','us');assert(calls>count);assert.notEqual(first.items[0].reader.summary,updated.items[0].reader.summary);assert.equal(updated.items[0].pubDate,item().pubDate);
+ const previous=global.fetch,originalNow=Date.now;let clock=Date.now(),calls=0;const initialClock=clock,publication=new Date(clock-3600000).toISOString();api.cache.clear();api.articleRecords.clear();R.articleCache.clear();
+ try{Date.now=()=>clock;global.fetch=async url=>{calls++;return{ok:true,text:async()=>url.includes('news.google.com')?rss([]):rss([item({pubDate:publication,description:clock===initialClock?item().description:'The central bank has revised its inflation projection to 3.1 percent after receiving additional monthly data.'})])};};
+ const first=await api.load('economics','us'),count=calls;clock=Date.parse(first.fetchedAt)+299000;await api.load('economics','us');assert.equal(calls,count);
+ clock=Date.parse(first.fetchedAt)+300001;const updated=await api.load('economics','us');assert(calls>count);assert.notEqual(first.items[0].reader.summary,updated.items[0].reader.summary);assert.equal(updated.items[0].pubDate,publication);
  }finally{Date.now=originalNow;global.fetch=previous;api.cache.clear();api.articleRecords.clear();R.articleCache.clear();}
 });
 test('CNBC public Key Points are readable while clipped or subscription body text is never extracted',()=>{
