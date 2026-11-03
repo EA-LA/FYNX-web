@@ -9,6 +9,7 @@
     learn: 'learn.html',
     explore: 'explore.html',
     research: '/tools/research-desk.html',
+    quant: '/quant-analyst.html',
     profile: 'profile.html',
   };
 
@@ -21,6 +22,7 @@
     learn: 'Learn',
     explore: 'Explore',
     research: 'Research',
+    quant: 'Quant Analyst',
     profile: 'Profile',
   };
 
@@ -34,6 +36,8 @@
     'calendar.html': 'calendar',
     'learn.html': 'learn',
     'profile.html': 'profile',
+    'quant-analyst.html': 'quant',
+    'quant-analyst': 'quant',
   };
 
 
@@ -44,6 +48,7 @@
     news: '<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><line x1="12" y1="11" x2="18" y2="11"></line><line x1="12" y1="7" x2="18" y2="7"></line>',
     calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>',
     learn: '<path d="M2 7l10-4 10 4-10 4-10-4z"></path><path d="M6 10v5c0 2.2 2.7 4 6 4s6-1.8 6-4v-5"></path><path d="M22 10v6"></path>',
+    quant: '<path d="M3 18l5-7 4 3 9-11M3 21h18"></path>',
     research: '<path d="M4 3h16v18H4zM8 8h8M8 12h8M8 16h5"></path>',
     explore: '<circle cx="10" cy="10" r="6"></circle><path d="m15 15 6 6"></path>',
     profile: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>',
@@ -120,7 +125,7 @@ function ensureNavConsistencyStyles() {
 
 function detectCurrentView() {
   let file = window.location.pathname.split('/').pop() || 'home.html';
-  if (!file.includes('.html')) file = 'home.html';
+  if (!file.includes('.html') && file !== 'quant-analyst') file = 'home.html';
   return FILE_TO_VIEW[file] || 'home';
 }
 
@@ -129,9 +134,9 @@ function detectCurrentView() {
       .map((view) => {
         const active = view === currentView ? ' active' : '';
         return `
-          <a class="nav-item${active}" href="${VIEW_PAGES[view]}" data-view="${view}">
+          <a class="nav-item${active}" href="${VIEW_PAGES[view]}" data-view="${view}"${active ? ' aria-current="page"' : ''}>
             <svg class="nav-icon" viewBox="0 0 24 24">${NAV_ICONS[view]}</svg>
-            <span class="nav-label">${VIEW_LABELS[view]}</span>
+            <span class="nav-label">${VIEW_LABELS[view]}</span>${view === 'quant' ? '<span class="quant-new-badge">NEW</span>' : ''}
           </a>
         `;
       })

@@ -8,9 +8,22 @@
     "test:discovery": "node scripts/verify-discovery.cjs && node scripts/verify-search.cjs && node scripts/test-fibonacci.cjs",
     "test:tools": "node scripts/verify-tool-coverage.cjs && node scripts/test-basic-calculator.cjs && node scripts/test-pro-routing.cjs",
     "test:research": "node --test backend/research.test.cjs",
-    "dev:research": "node scripts/research-dev-server.cjs"
+    "dev:research": "node scripts/research-dev-server.cjs",
+    "build:quant": "node scripts/build-quant.cjs",
+    "test:quant": "tsx --test tests/quant/*.test.ts tests/quant/*.test.cjs",
+    "dev:quant": "node scripts/quant-dev-server.cjs",
+    "quant:history": "node scripts/quant-history.cjs",
+    "quant:nightly": "node scripts/quant-nightly.cjs"
   },
   "devDependencies": {
-    "jsdom": "^20.0.3"
+    "esbuild": "^0.28.2",
+    "jsdom": "^20.0.3",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "dukascopy-node": "^1.51.1",
+    "firebase-admin": "^13.10.0",
+    "plotly.js-dist-min": "^4.2.0"
   }
 }

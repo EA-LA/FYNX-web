@@ -236,6 +236,11 @@
     const ready = workspaceHeader ? enhanceWorkspace(body, workspaceHeader) : publicHeader ? enhancePublic(body, publicHeader) : false;
     if (!ready) return;
     body.classList.add('terminal-masthead-ready');
+    const workspaceNav = body.querySelector('.dashboard-container .nav-menu, :scope > .terminal-navigation');
+    if (workspaceNav && !workspaceNav.querySelector('a[href="/quant-analyst.html"]')) {
+      const research = workspaceNav.querySelector('a[href="/tools/research-desk.html"]');
+      if (research) { const quant = link('Quant Analyst', '/quant-analyst.html', research.className.replace(/active/g, '').trim()); quant.append(element('span', 'quant-new-badge', 'NEW')); if (/^\/quant-analyst(?:\.html)?\/?$/.test(location.pathname)) quant.setAttribute('aria-current','page'); research.after(quant); }
+    }
     mountTopics(body);
     mountTicker(body);
     startClock();

@@ -42,7 +42,7 @@ function allHTML(dir='') {
  });
 }
 function category(file) {
- if(file.startsWith('tools/')||file==='calculator.html')return 'Tools';
+ if(file.startsWith('tools/')||['calculator.html','quant-analyst.html'].includes(file))return 'Tools';
  if(file.startsWith('learn/')||['learn.html','risk-management.html','trading-psychology.html','trading-glossary.html','trading-quizzes.html'].includes(file))return 'Learning';
  if(file.startsWith('markets/')||file==='market-analysis.html')return 'Markets';
  if(file.startsWith('news/')||['news.html','calendar.html','home/hub.html'].includes(file))return 'News & events';

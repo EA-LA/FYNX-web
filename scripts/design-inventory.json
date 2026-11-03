@@ -403,5 +403,10 @@
     "page": "tools/research-desk.html",
     "layout": "standalone",
     "section": "TOOLS"
+  },
+  {
+    "page": "quant-analyst.html",
+    "layout": "standalone",
+    "section": "FINANCE WORLD"
   }
 ]

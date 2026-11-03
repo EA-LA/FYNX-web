@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quant Analyst: Backtests, Portfolio & Monte Carlo | FYNX</title>
+<meta name="description" content="Research ATR breakout and news strategies using attributed historical data, walk-forward optimization, portfolio analysis and reproducible risk simulations.">
+<link rel="icon" href="/favicon-32x32.png"><script src="/assets/js/site-theme-init.js?v=20261011"></script>
+<link rel="stylesheet" href="/assets/funded-system.css"><link rel="stylesheet" href="/assets/site-design.css"><link rel="stylesheet" href="/assets/discovery.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="/assets/js/journal-theme.js" defer></script><script type="module" src="/assets/js/session-bootstrap.js?v=20261102-r1"></script>
+<script src="/assets/js/quant/engine.js" defer></script><script src="/assets/js/quant/app.js" defer></script>
+<link rel="canonical" href="https://www.fynxfinanceworld.com/quant-analyst.html">
+<meta property="og:title" content="Quant Analyst: Backtests, Portfolio &amp; Monte Carlo | FYNX">
+<meta property="og:description" content="Research ATR breakout and news strategies using attributed historical data, walk-forward optimization, portfolio analysis and reproducible risk simulations.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/quant-analyst.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Quant Analyst: Backtests, Portfolio & Monte Carlo","item":"https://www.fynxfinanceworld.com/quant-analyst.html"}]}</script><!-- discovery-schema:end -->
+<!-- search-identity:start --><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.fynxfinanceworld.com/#organization","name":"FYNX","alternateName":"FYNX Finance World","url":"https://www.fynxfinanceworld.com/","founder":{"@id":"https://ea-la.github.io/#person"},"sameAs":["https://www.fynxfunded.com/","https://site.fynxfinanceworld.com/","https://blog.fynxfinanceworld.com/","https://roadmap.fynxfinanceworld.com/"]},{"@type":"Person","@id":"https://ea-la.github.io/#person","name":"Elham Amini","url":"https://ea-la.github.io/","jobTitle":"Founder of FYNX","sameAs":["https://www.linkedin.com/in/elham-amini-745560302/","https://www.instagram.com/___elham_amini___/"],"worksFor":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebSite","@id":"https://www.fynxfinanceworld.com/#website","url":"https://www.fynxfinanceworld.com/","name":"FYNX Finance World","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebPage","@id":"https://www.fynxfinanceworld.com/quant-analyst.html#webpage","url":"https://www.fynxfinanceworld.com/quant-analyst.html","name":"Quant Analyst: Backtests, Portfolio & Monte Carlo | FYNX","description":"Research ATR breakout and news strategies using attributed historical data, walk-forward optimization, portfolio analysis and reproducible risk simulations.","inLanguage":"en","isPartOf":{"@id":"https://www.fynxfinanceworld.com/#website"},"publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}}]}</script><!-- search-identity:end -->
+<!-- FYNX ADSENSE VERIFICATION START -->
+<script>(window.adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 1;</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
+     crossorigin="anonymous"></script>
+<!-- FYNX ADSENSE VERIFICATION END -->
+<!-- terminal-design:start -->
+<link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
+<link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
+<script src="/assets/js/news-reader-links.js?v=20261102-r1" defer></script>
+<script src="/assets/js/newsroom-editions.js?v=20261102-r1" defer></script>
+<script src="/assets/js/newsroom-media.js?v=20261102-r1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261102-r1">
+<script src="/assets/js/market-intelligence-data.js?v=20261102-r1" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261102-r1" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261102-r1" defer></script>
+<script src="/assets/js/terminal-market-ui.js?v=20261102-r1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261030-r1">
+<script src="/assets/js/terminal-pages.js?v=20261030-r1" defer></script>
+<!-- terminal-design:end -->
+<link rel="stylesheet" href="/assets/css/quant-analyst.css">
+</head><body data-fynx-layout="standalone" class="discovery-page quant-page" data-fynx-terminal>
+<a class="discovery-skip" href="#quant-main">Skip to Quant Analyst</a><header class="discovery-header"><a class="discovery-brand" href="/" aria-label="FYNX Finance World home">↗ FYNX<span>FINANCE WORLD</span></a><nav aria-label="Main navigation"><a href="/explore.html">Explore</a><a href="/home.html">Workspace ↗</a><button type="button" id="theme-toggle" data-theme-control aria-label="Switch color theme">◐ <span>Theme</span></button></nav></header>
+<!-- terminal-navigation:start -->
+<nav class="terminal-navigation" aria-label="Workspace navigation"><a href="/home.html">Home</a><a href="/journal.html">Journal</a><a href="/calculator.html">Calculator</a><a href="/news.html">News</a><a href="/calendar.html">Calendar</a><a href="/learn.html">Learn</a><a href="/explore.html">Explore</a><a href="/tools/research-desk.html">Research</a><a href="/quant-analyst.html" aria-current="page">Quant Analyst<span class="quant-new-badge">NEW</span></a><a href="/profile.html">Profile</a></nav>
+<!-- terminal-navigation:end -->
+
+<main class="quant-workspace" id="quant-main">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+  <section class="hero">
+    <div>
+      <div class="kicker">Research · Quant Analyst</div>
+      <h1>Quant Analyst<br> workspace.</h1>
+      <p class="lead">Backtest a strategy on a market or a news event, optimize its entry and stop, combine it into a portfolio, stress it with 2,000 Monte Carlo paths and check it against FTMO 10k 2-step rules.</p>
+      <form class="ask" id="askForm"><input aria-label="Research command" id="ask" placeholder="e.g. Backtest ATR breakout on EUR/USD, optimize stop and entry, run Monte Carlo"><button class="btn">Run</button></form>
+      <div class="chips"><button type="button" data-q="Backtest ATR breakout on GBP/USD">Backtest GBP/USD</button><button type="button" data-q="Optimize entry and stop">Optimize surface</button><button type="button" data-q="Run 2000 Monte Carlo paths on the portfolio">Monte Carlo</button><button type="button" data-q="Would it pass FTMO 10k 2-step">FTMO check</button></div>
+      <div class="log" id="log" role="status" aria-live="polite"></div><p id="commandSummary" class="note"></p><div id="jobProgress" hidden><progress id="progressBar" max="100" value="0" aria-label="Calculation progress"></progress><button type="button" class="btn ghost" id="cancelJob">Cancel</button></div>
+    </div>
+    <div>
+      <span class="pill" id="dataPill">Checking historical data…</span>
+      <p class="note" id="dataNote">Research on attributed historical prices. Data coverage and last update are shown for each request. Results appear only after data loads.</p>
+      <div class="params data-controls"><label>Timeframe<select id="timeframe"><option value="D1">Daily · OHLC</option><option value="H4">4 hours</option><option value="H1">1 hour</option><option value="M5">5 minutes</option><option value="M1">1 minute</option><option value="tick">Ticks · server job</option></select></label><label>History (years)<input id="historyYears" type="number" min="1" max="30" value="10"></label><label>From<input id="historyFrom" type="date"></label><label>Through<input id="historyTo" type="date"></label></div>
+      <button type="button" class="btn ghost" id="loadData">Refresh data</button>
+      <p class="note" id="quoteStatus">Live quote: checking provider…</p>
+    </div>
+  </section>
+
+  <section class="grid">
+    <aside class="side">
+      <h4>Markets</h4>
+      <div id="mkts"></div>
+      <h4 style="margin-top:20px">News events</h4>
+      <label class="note">Event type<select id="eventType"><option value="all">All high-impact events</option><option value="NFP">NFP / employment</option><option value="CPI">CPI / inflation</option><option value="FOMC">FOMC</option><option value="GDP">GDP</option><option value="RATES">Central-bank rates</option></select></label>
+      <button class="mkt" id="newsMkt" type="button">News strategy <small>release data</small></button>
+      <button class="mkt" id="studyEvents" type="button">Event study <small>compare moves</small></button>
+      <div id="calendarStatus" class="note">Loading economic calendar…</div><div id="upcomingEvents"></div>
+      <h4 style="margin-top:24px">Market headlines</h4><div id="headlines" class="note">Loading FYNX News…</div>
+    </aside>
+
+    <div>
+      <div class="steps" id="steps" role="tablist" aria-label="Quant workflow">
+        <button class="on" data-p="bt" role="tab" id="tab-bt" aria-controls="p-bt" aria-selected="true" tabindex="0"><i>01</i> Backtest</button>
+        <button data-p="opt" role="tab" id="tab-opt" aria-controls="p-opt" aria-selected="false" tabindex="-1"><i>02</i> Optimize</button>
+        <button data-p="port" role="tab" id="tab-port" aria-controls="p-port" aria-selected="false" tabindex="-1"><i>03</i> Portfolio</button>
+        <button data-p="mc" role="tab" id="tab-mc" aria-controls="p-mc" aria-selected="false" tabindex="-1"><i>04</i> Monte Carlo</button>
+        <button data-p="ftmo" role="tab" id="tab-ftmo" aria-controls="p-ftmo" aria-selected="false" tabindex="-1"><i>05</i> FTMO 10k</button>
+        <button data-p="dep" role="tab" id="tab-dep" aria-controls="p-dep" aria-selected="false" tabindex="-1"><i>06</i> Deploy</button>
+      </div>
+
+      <!-- 01 -->
+      <div class="panel on" id="p-bt" role="tabpanel" aria-labelledby="tab-bt">
+        <div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 style="margin:0;font-size:26px;letter-spacing:-.02em" id="btTitle">ATR breakout</h2><span class="pill" id="btRange"></span></div>
+        <div class="params strategy-params">
+          <label>Breakout lookback (bars)<input id="N" type="number" value="20" min="5" max="120"></label>
+          <label>ATR period<input id="AP" type="number" value="14" min="5" max="60"></label>
+          <label>Entry: ATR beyond range<input id="K" type="number" value="0.25" step="0.25" min="0" max="3"></label>
+          <label>Stop (× ATR)<input id="S" type="number" value="2" step="0.5" min="0.5" max="6"></label>
+          <label>Target (× ATR)<input id="TP" type="number" value="4" step="0.5" min="0.5" max="12"></label>
+          <label>Max hold (bars)<input id="H" type="number" value="20" min="1" max="120"></label>
+          <label>Cost per trade (pips)<input id="C" type="number" value="1.5" step="0.1" min="0"></label>
+          <label>Risk per trade (%)<input id="R" type="number" value="0.5" step="0.1" min="0.1" max="3"></label>
+        </div>
+        <div class="params"><label>Spread (pips)<input id="spread" type="number" value="0" min="0" step="0.1"></label><label>Slippage per side (pips)<input id="slippage" type="number" value="0" min="0" step="0.1"></label><label>News reaction (minutes)<input id="newsWindow" type="number" min="1" max="240" value="15"></label></div><div class="row"><button class="btn" id="runBt">Run backtest</button><button class="btn ghost" id="saveStrategy">Save strategy</button><label class="note">Strategy name<input id="strategyName" maxlength="100" placeholder="My ATR breakout"></label></div>
+        <div class="stats" id="btStats"></div>
+        <div class="chart" id="btEq"></div>
+        <div class="table-scroll"><table id="btTrades"><caption>Run a backtest to inspect the last trades.</caption></table></div><div id="eventStudy"></div>
+        <p class="note" id="fillNotes">OHLC signals use completed bars, with next-open entries, Wilder ATR, conservative stop-first exits, and explicit costs. Daily equity includes open positions. Close-only data uses the disclosed daily-close model.</p>
+      </div>
+
+      <!-- 02 -->
+      <div class="panel" id="p-opt" role="tabpanel" aria-labelledby="tab-opt" hidden>
+        <h2 style="margin:0 0 6px;font-size:26px;letter-spacing:-.02em">Entry × stop surface</h2>
+        <p class="note">72 backtests: entry threshold 0–2 ATR × stop 0.5–4 ATR. Optimized on the first 70% of history, then checked on the last 30% it never saw.</p>
+        <div class="row" style="margin:12px 0"><label class="note">Metric <select id="metric" style="padding:6px"><option value="sharpe">Sharpe</option><option value="profitFactor">Profit factor</option><option value="totalReturn">Total return %</option><option value="returnMaxDD">Return / max DD</option></select></label><button class="btn" id="runOpt">Build surface</button><button class="btn ghost" id="applyBest" disabled>Apply best to backtest</button></div>
+        <div class="params"><label>Entry K values<input id="entryValues" value="0,0.25,0.5,0.75,1,1.25,1.5,1.75,2"></label><label>Stop S values<input id="stopValues" value="0.5,1,1.5,2,2.5,3,3.5,4"></label><label>View<select id="surfaceView"><option value="surface">3D surface</option><option value="heatmap">2D heatmap</option></select></label></div><div id="splitStats" class="row"></div><div class="chart" id="surf" style="min-height:460px"></div>
+        <div class="verdict" id="optVerdict" style="display:none"></div>
+      </div>
+
+      <!-- 03 -->
+      <div class="panel" id="p-port" role="tabpanel" aria-labelledby="tab-port" hidden>
+        <h2 style="margin:0 0 6px;font-size:26px;letter-spacing:-.02em">Portfolio</h2>
+        <p class="note">Choose markets and saved strategies. Only sleeves with real, overlapping returns can enter the portfolio. News sleeves require actual calendar history.</p>
+        <div class="row"><label>Weighting<select id="weighting"><option value="equal-risk">Equal risk</option><option value="equal-weight">Equal weight</option><option value="inverse-volatility">Inverse volatility</option></select></label><button class="btn ghost" id="loadSaved">My strategies (0)</button><button class="btn ghost" id="savePortfolio">Save portfolio</button></div><div class="row"><label>Saved portfolios<select id="savedPortfolio"><option value="">Choose a saved portfolio</option></select></label><button class="btn ghost" id="loadPortfolio" disabled>Load portfolio</button></div><p class="note" id="storageStatus">Guest workspace · saved on this device.</p><div class="sleeves" id="sleeves"></div><div class="row"><label class="note">Trade CSV initial equity<input id="csvEquity" type="number" min="1" step="0.01" placeholder="Required for P&amp;L files"></label><button class="btn ghost" id="exportWorkspace">Export JSON</button><label class="btn ghost">Import JSON<input id="importWorkspace" type="file" accept=".json" hidden></label></div>
+        <div class="row" style="margin-bottom:12px"><button class="btn" id="runPort">Build portfolio</button><label class="btn ghost" style="font-size:14px">Import strategy CSV<input type="file" id="csv" accept=".csv,.txt" hidden></label><span class="note" id="csvNote"></span></div>
+        <div class="stats" id="portStats"></div>
+        <div class="chart" id="portEq"></div>
+        <div class="chart" id="corr" style="min-height:380px"></div>
+      </div>
+
+      <!-- 04 -->
+      <div class="panel" id="p-mc" role="tabpanel" aria-labelledby="tab-mc" hidden>
+        <h2 style="margin:0 0 6px;font-size:26px;letter-spacing:-.02em">2,000 Monte Carlo paths</h2>
+        <p class="note">Block bootstrap of the portfolio's real daily returns (10-day blocks keep volatility clusters), one year ahead.</p>
+        <div class="row" style="margin:12px 0"><label class="note">Paths <input id="paths" type="number" value="2000" min="1" max="10000" style="width:90px;padding:6px"></label><label class="note">Days <input id="mcDays" type="number" value="252" min="1" max="2520" style="width:80px;padding:6px"></label><label class="note">Seed <input id="seed" type="number" value="42" min="0" max="4294967295" style="width:100px"></label><button class="btn" id="runMc">Run Monte Carlo</button></div>
+        <div class="stats" id="mcStats"></div>
+        <div class="chart" id="mcFan"></div>
+        <div class="chart" id="mcDD"></div>
+      </div>
+
+      <!-- 05 -->
+      <div class="panel" id="p-ftmo" role="tabpanel" aria-labelledby="tab-ftmo" hidden>
+        <h2 style="margin:0 0 6px;font-size:26px;letter-spacing:-.02em">FTMO 10k · 2-step check</h2>
+        <p class="note" id="ftmoRules">2-Step: targets 10% / 5%, 5% daily loss, 10% static maximum loss, four trading days per phase. Daily-return estimates cannot observe intraday breaches; the buffer tightens the daily limit.</p><p class="note">Simulated from past returns. An estimate, not a promise. Confirm current rules on <a href="https://ftmo.com/en/trading-objectives/" target="_blank" rel="noopener">ftmo.com</a>.</p><div class="params"><label>Account size<select id="accountSize"><option value="10000">$10,000</option><option value="25000">$25,000</option><option value="50000">$50,000</option><option value="100000">$100,000</option><option value="200000">$200,000</option></select></label><label>Challenge rules<select id="ruleId"><option value="2-step">2-Step</option><option value="1-step">1-Step · current consistency</option><option value="1-step-legacy">1-Step · legacy best day</option></select></label><label>Attempts<input id="attempts" type="number" min="1" max="10000" value="2000"></label></div>
+        <div class="params" style="margin-top:12px">
+          <label>Risk scale (× portfolio)<input id="fScale" type="number" value="1" step="0.25" min="0.25" max="5"></label>
+          <label>Intraday buffer (%)<input id="fBuf" type="number" value="1" step="0.5" min="0"></label>
+          <label>Max days per phase<input id="fDays" type="number" value="120" min="4" max="1000"></label>
+        </div>
+        <button class="btn" id="runFtmo">Simulate challenge (2,000 paths)</button>
+        <div class="verdict" id="ftmoVerdict" style="display:none"></div>
+        <div class="stats" id="ftmoStats"></div>
+        <div class="chart" id="ftmoScan"></div>
+      </div>
+
+      <!-- 06 -->
+      <div class="panel" id="p-dep" role="tabpanel" aria-labelledby="tab-dep" hidden>
+        <h2>Export your tested strategy</h2><p class="lead">Generate trading-platform source from your latest completed backtest settings. This website does not connect to a broker or place trades.</p><div class="params"><label>Platform<select id="eaPlatform"><option value="mt5">MetaTrader 5 · .mq5</option><option value="mt4">MetaTrader 4 · .mq4</option><option value="ctrader">cTrader · C# cBot</option></select></label><label>Daily equity guard (%)<input id="eaDailyGuard" type="number" value="4" min="0.1" max="5" step="0.1"></label><label>Maximum equity guard (%)<input id="eaMaxGuard" type="number" value="9" min="0.1" max="10" step="0.1"></label></div><div class="row"><button class="btn" id="genEa">Generate source</button><button class="btn ghost" id="downloadEa" disabled>Download file</button><button class="btn ghost" id="copyEa" disabled>Copy code</button></div><p class="note" id="eaNotes"></p><pre id="ea" hidden></pre><div class="guide"><h3>Set up in MetaTrader 5</h3><ol><li>Open MT5 and sign in to your challenge or demo account in MT5.</li><li>Choose File › Open Data Folder › MQL5 › Experts and save the .mq5 file there.</li><li>Open it in MetaEditor, compile, and review any compiler messages.</li><li>Test in the Strategy Tester and on a demo/free trial first.</li><li>Attach to the tested symbol and timeframe and enable Algo Trading.</li></ol><p class="note">For MT4 use MQL4/Experts. For cTrader create a cBot in Automate and paste the generated C#. Platform source must be compiled and validated in that platform. Broker feeds, spread, execution and session boundaries can differ from this research data.</p></div>
+      </div>
+    </div>
+  </section>
+<footer class="quant-disclaimer">Educational research tool. Past and simulated performance do not guarantee future results. Not financial advice.</footer><!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/atr-stop.html"><strong>ATR Stop-Loss Calculator</strong><span>Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.</span></a><a href="/tools/basic-calculator.html"><strong>Basic Calculator: Arithmetic, Percentages &amp; Parentheses</strong><span>Calculate arithmetic and percentages locally with a keyboard-friendly calculator. Supports decimals, parentheses and standard order of operations.</span></a><a href="/tools/price-alerts.html"><strong>Browser Price Alerts &amp; Percentage Crossing Alerts</strong><span>Set one-time price or percentage crossing alerts for your watchlist while the FYNX page is open and visible. Review timestamps and browser notification options.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main><noscript><p>JavaScript is required for calculations. Read the risk disclosure and data sources before using these tools.</p></noscript></body></html>

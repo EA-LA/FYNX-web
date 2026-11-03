@@ -234,6 +234,13 @@
     "topic": ""
   },
   {
+    "url": "/quant-analyst.html",
+    "title": "Quant Analyst: Backtests, Portfolio & Monte Carlo",
+    "description": "Research ATR breakout and news strategies using attributed historical data, walk-forward optimization, portfolio analysis and reproducible risk simulations.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
     "url": "/tools/risk-reward.html",
     "title": "Risk-to-Reward Ratio Calculator",
     "description": "Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.",

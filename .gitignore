@@ -9,3 +9,10 @@ output/
 .playwright-cli/
 firebase-debug.log
 .deploy-work/
+
+# Private Quant provider cache, saved user records and credentials
+.quant-data/
+.env
+.env.*
+!.env.example
+!.env.quant.example
