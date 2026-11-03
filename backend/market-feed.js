@@ -2,6 +2,7 @@
 const functions = require('firebase-functions/v1');
 const {XMLParser, XMLValidator} = require('fast-xml-parser');
 const Reader = require('./news-reader.cjs');
+const ReaderStore = require('./news-reader-store.cjs');
 const HOUR_MS = 3600000;
 const FRESH_MS = 5 * 60000, HEADLINE_CACHE_MS = 24 * HOUR_MS, RELEASE_CACHE_MS = 7 * 24 * HOUR_MS;
 const MAX_XML_BYTES = 2000000, PROVIDER_TIMEOUT_MS = 4200, MAX_CACHE_ENTRIES = 256;
@@ -165,7 +166,10 @@ function parseFeed(xml, now = Date.now(), options = {}) {
 }
 function mergeFeeds(feeds, limit = 30) {
   const result = new Map();
-  for (const item of feeds.flat().sort((a,b) => Date.parse(b.pubDate) - Date.parse(a.pubDate))) if (!result.has(item.link)) result.set(item.link, item);
+  for (const item of feeds.flat().sort((a,b) => Date.parse(b.pubDate) - Date.parse(a.pubDate))) {
+    const id=Reader.articleId(item.link),previous=result.get(id);
+    if (!previous || (!previous.description && item.description)) result.set(id,item);
+  }
   return [...result.values()].slice(0, limit);
 }
 function newsSources(category, edition = 'us') {
@@ -269,10 +273,11 @@ function publicRows(items, edition, category, kind, now) {
     return {...decorated,description:''};
   });
 }
-function envelope(kind, edition, category, data, now = Date.now()) {
+async function envelope(kind, edition, category, data, now = Date.now()) {
   const hours = retentionHours(category, kind === 'official-releases');
   const retained = trimItems(data.items, now, hours);
   const items = publicRows(retained,edition,category,kind,now);
+  await ReaderStore.persistRows(items,now);
   return {...data,kind,edition,category,language:'en',freshForMs:FRESH_MS,retentionHours:hours,cutoffAt:new Date(now - hours * HOUR_MS).toISOString(),items,publishedAt:items[0]?.pubDate || null,...(kind === 'headlines' ? {ranking:'Editorial source, recency and related coverage; not a popularity measure'} : {})};
 }
 async function load(category = 'all', edition = 'us') {
@@ -326,7 +331,7 @@ async function loadOfficialReleases(edition = 'us', category = 'all') {
 async function loadSymbol(raw) {
   const data = await require('./symbol-news')._test.search(raw);
   const items = Reader.rankHeadlines(data.items.map(item => ({...item,source:item.source || item.author,edition:'us',category:'stocks',symbol:data.query,kind:'headline'})));
-  return {...envelope('symbol','us','stocks',{...data,items,stale:false}),query:data.query};
+  return {...await envelope('symbol','us','stocks',{...data,items,stale:false}),query:data.query};
 }
 async function loadArticle(id, edition, category, symbol) {
   if (typeof id !== 'string' || !/^[a-f0-9]{64}$/.test(id)) throw Object.assign(new Error('Invalid article identifier'),{status:400});
@@ -338,9 +343,14 @@ async function loadArticle(id, edition, category, symbol) {
   }
   const key = [edition,category,symbol || '',id].join(':');
   let record = articleRecords.get(key);
-  // An issued article link remains readable for seven days in this instance,
-  // even after it leaves the 24-hour current-news rail. It is labelled archived.
-  if (!record || Date.now() - record.seenAt > 7 * 24 * HOUR_MS) {
+  // Verify an issued link through shared durable storage before refetching a
+  // changing top-news list. Another function instance may serve this request.
+  if (!record || Date.now() - record.seenAt > 7 * 24 * HOUR_MS || (record.expiresAt || Date.parse(record.item.pubDate)+(category==='official'?30:7)*24*HOUR_MS)<=Date.now()) {
+    articleRecords.delete(key);record=null;
+    const saved = await ReaderStore.read(id,{edition,category,symbol:symbol || ''});
+    if (saved) {record=saved;articleRecords.set(key,saved);Reader.restoreVerified(saved.item,saved.brief);}
+  }
+  if (!record) {
     articleRecords.delete(key);
     if (symbol) await loadSymbol(symbol);
     else if (category === 'official') await loadOfficialReleases(edition,'all');
@@ -371,6 +381,7 @@ async function handler(req, res) {
     const age = Date.now() - Date.parse(data.fetchedAt), remaining = Number.isFinite(age) ? Math.max(0,Math.floor((FRESH_MS - age) / 1000)) : 0;
     res.set('Cache-Control',data.stale || !remaining ? 'no-store' : 'public,max-age=' + Math.min(60,remaining)); return res.json(data);
   } catch (error) {
+    if(error.newsStoreStage)console.warn('FYNX verified news store unavailable',{stage:error.newsStoreStage,kind,edition,category});
     res.set('Cache-Control','no-store');
     return res.status(error.status || 503).json({error:error.status ? error.message : 'News is temporarily unavailable. Please try again.',edition,category,language:'en'});
   }
