@@ -1,5 +1,5 @@
 import { auth } from "../../auth/firebase.js";
-import { bootstrapSession } from "./session-manager.js?v=20261102-r1";
+import { bootstrapSession } from "./session-manager.js?v=20261103-r1";
 
 // Public browsing is the default. Only personal account screens require a session.
 const privatePages = new Set(["account-settings.html", "security.html", "notifications.html", "preferences.html"]);

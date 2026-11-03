@@ -161,3 +161,7 @@ html body.newsroom-page .newsroom-footer { display: flex; justify-content: space
   .newsroom-footer nav { gap: 16px; }
 }
 @media (prefers-reduced-motion: reduce) { .newsroom-page * { scroll-behavior: auto !important; } }
+
+.newsroom-toolbar-actions {display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;}
+.newsroom-toolbar button[data-newsroom-follow][aria-pressed=true] {background:var(--terminal-text);color:var(--terminal-bg);}
+@media(max-width:600px) {.newsroom-toolbar-actions {flex:0 0 112px;}.newsroom-toolbar-actions button {width:100%;max-width:none;}}

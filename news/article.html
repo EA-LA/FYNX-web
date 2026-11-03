@@ -9,25 +9,29 @@
 <script src="/assets/js/site-theme-init.js"></script>
 <link rel="stylesheet" href="/assets/discovery.css?v=20261012">
 <link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
-<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261102-r1">
-<link rel="stylesheet" href="/assets/css/news-reader.css?v=20261102-r1">
-<script src="/assets/js/newsroom-editions.js?v=20261102-r1" defer></script>
-<script src="/assets/js/market-intelligence-data.js?v=20261102-r1" defer></script>
-<script src="/assets/js/terminal-market-data.js?v=20261102-r1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261103-r1">
+<link rel="stylesheet" href="/assets/css/news-reader.css?v=20261103-r1">
+<script src="/assets/js/newsroom-editions.js?v=20261103-r1" defer></script>
+<script src="/assets/js/market-intelligence-data.js?v=20261103-r1" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261103-r1" defer></script>
 <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
-<script src="/assets/js/terminal-header.js?v=20261102-r1" defer></script>
-<script src="/assets/js/terminal-market-ui.js?v=20261102-r1" defer></script>
-<script src="/assets/js/newsroom-media.js?v=20261102-r1" defer></script>
-<script src="/assets/js/news-reader-links.js?v=20261102-r1" defer></script>
-<script src="/assets/js/news-reader.js?v=20261102-r1" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261103-r1" defer></script>
+<script src="/assets/js/terminal-market-ui.js?v=20261103-r1" defer></script>
+<script src="/assets/js/newsroom-media.js?v=20261103-r1" defer></script>
+<script src="/assets/js/news-reader-links.js?v=20261103-r1" defer></script>
+<script src="/assets/js/news-preferences.js?v=20261103-r1" defer></script>
+<script src="/assets/js/news-reader.js?v=20261103-r1" defer></script>
 </head>
 <body data-fynx-layout="standalone" data-fynx-terminal class="fynx-reader-page">
 <a class="reader-skip" href="#reader-main">Skip to the story</a>
 <header class="discovery-header"><a class="discovery-brand" href="/" aria-label="FYNX Finance World home">FYNX<span>FINANCE WORLD</span></a><nav aria-label="Account and appearance"><a href="/profile.html">Account</a><button type="button" data-theme-control data-journal-theme><span data-theme-label>Dark theme</span> ◐</button></nav></header>
 <nav class="terminal-navigation" aria-label="Workspace navigation"><a href="/home.html">Home</a><a href="/journal.html">Journal</a><a href="/calculator.html">Calculator</a><a href="/news.html" aria-current="page">News</a><a href="/calendar.html">Calendar</a><a href="/learn.html">Learn</a><a href="/explore.html">Explore</a><a href="/tools/research-desk.html">Research</a><a href="/profile.html">Profile</a></nav>
 <main id="reader-main" class="reader-main" data-news-reader>
-<div class="reader-wayfinding"><a href="/news.html" data-reader-back><span aria-hidden="true">←</span> Back to the newsroom</a><span>FYNX / READ &amp; UNDERSTAND</span></div>
-<div class="reader-statusbar"><p data-reader-status role="status" aria-live="polite">Preparing the source brief…</p><div><button type="button" data-reader-copy>Copy link</button><button type="button" data-reader-refresh>Check for updates <span aria-hidden="true">↻</span></button></div></div>
+<div class="reader-wayfinding"><a href="/news.html" data-reader-back><span aria-hidden="true">←</span> Back to the newsroom</a><a class="reader-your-news" href="/news/your-news.html">Your News <span aria-hidden="true">→</span></a><span>FYNX / READ &amp; UNDERSTAND</span></div>
+<div class="reader-statusbar"><p data-reader-status role="status" aria-live="polite">Preparing the source brief…</p><div><button type="button" data-reader-share disabled>Share story</button><button type="button" data-reader-copy disabled>Copy link</button><button type="button" data-reader-refresh>Check for updates <span aria-hidden="true">↻</span></button></div></div>
+<div class="reader-reading-controls" aria-label="Reading preferences"><label for="reader-text-size">Text size <select id="reader-text-size" data-reader-text-size><option value="standard">Standard</option><option value="large">Large</option><option value="larger">Extra large</option></select></label><button type="button" data-reader-focus aria-pressed="false">Focus view</button><span data-reader-preferences-note>Reading preferences stay in this browser.</span></div>
+<p class="reader-action-status" data-reader-action-status role="status" aria-live="polite"></p>
+<div class="reader-share-fallback" data-reader-share-fallback hidden><label for="reader-share-url">Story link — select and copy</label><input id="reader-share-url" data-reader-share-url type="url" readonly><button type="button" data-reader-share-close>Close</button></div>
 <div data-reader-error class="reader-error" hidden></div>
 <article class="reader-article" data-reader-content aria-busy="true">
 <header class="reader-heading"><p class="reader-kicker">FYNX NEWS READER</p><h1 data-reader-title>Opening the story.</h1><p class="reader-deck" data-reader-deck>Publication dates, source access and available reporting will appear here.</p><div class="reader-meta" data-reader-meta></div></header>
