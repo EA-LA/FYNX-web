@@ -1,0 +1,10 @@
+'use strict';
+const { ingest } = require('../backend/quant/ingest.cjs');
+const { TradingEconomicsCalendar } = require('../backend/quant/providers.cjs');
+function argumentsFor(argv) { const args = {}; for (let i = 0; i < argv.length; i++) { const key = argv[i]; if (['--calendar', '--help'].includes(key)) args[key.slice(2)] = true; else if (['--symbol', '--tf', '--from', '--to', '--max-gb', '--max-chunks'].includes(key) && argv[i + 1] && !argv[i + 1].startsWith('--')) args[key.slice(2)] = argv[++i]; else throw new Error('Unknown or incomplete importer option. Use --help.'); } return args; }
+async function main() { const args = argumentsFor(process.argv.slice(2)); if (args.help) { console.log('Usage: node scripts/quant-history.cjs --symbol XAUUSD --tf tick --from 2016-11-03 --to 2026-11-03 --max-gb 2 [--max-chunks 48]\nCalendar: node scripts/quant-history.cjs --calendar --from 2016-11-03 --to 2026-11-03\nDates are UTC; to is exclusive. Rerun with identical arguments to resume.'); return; }
+  if (!args.from || !args.to) throw new Error('Explicit --from and --to dates are required.'); const maxGB = Number(args['max-gb'] || 2), maxChunks = Number(args['max-chunks'] || 100000); if (!(maxGB > 0 && maxGB <= 1000) || !Number.isInteger(maxChunks) || maxChunks < 1) throw new Error('Download limits must be positive.');
+  const result = await ingest({ symbol: args.symbol || 'XAUUSD', tf: args.tf || 'tick', from: args.from, to: args.to, maxBytes: maxGB * 1024 ** 3, maxChunks, calendar: !!args.calendar, ...(args.calendar ? { provider: new TradingEconomicsCalendar() } : {}), progress: p => console.log(JSON.stringify({ through: p.coveredThrough, chunks: p.chunksDownloaded, records: p.recordsDownloaded, compressedBytes: p.compressedBytes })) }); console.log(JSON.stringify(result, null, 2)); if (!result.complete) process.exitCode = 2;
+}
+if (require.main === module) main().catch(e => { console.error(e.code ? e.message : 'Import could not start: ' + e.message); process.exitCode = 1; });
+module.exports = { argumentsFor };
