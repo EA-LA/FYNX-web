@@ -1,12 +1,53 @@
+/* Rotate the public workspace overview automatically without a play/stop control. */
 (() => {
- const terminal=document.querySelector('.fw-terminal');if(!terminal)return;
- const tabs=[...terminal.querySelectorAll('[data-fw-tab]')],panels=[...terminal.querySelectorAll('.fw-panel')],control=document.getElementById('fw-motion'),motion=matchMedia('(prefers-reduced-motion: reduce)');
- let index=0,paused=motion.matches,visible=false,timer;
- function sync(){clearInterval(timer);terminal.classList.toggle('fw-paused',paused||!visible||document.hidden);control.setAttribute('aria-pressed',String(paused));control.textContent=paused?'Play motion ▷':'Pause motion Ⅱ';if(!paused&&visible&&!document.hidden)timer=setInterval(()=>show((index+1)%tabs.length),7000);}
- function show(next){index=next;tabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;panels[i].hidden=i!==index;});const bar=terminal.querySelector('.fw-progress>span');bar.style.animation='none';void bar.offsetWidth;bar.style.animation='';}
- tabs.forEach((tab,i)=>{tab.addEventListener('click',()=>{show(i);paused=true;sync();});tab.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?2:(i+(event.key==='ArrowRight'?1:2))%3;show(next);paused=true;sync();tabs[next].focus();});});
- control.addEventListener('click',()=>{paused=!paused;show(index);sync();});
- new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;sync();},{threshold:.25}).observe(terminal);
- terminal.addEventListener('focusin',event=>{if(event.target!==control){paused=true;sync();}});
- document.addEventListener('visibilitychange',sync);motion.addEventListener('change',()=>{paused=motion.matches;sync();});sync();
+  'use strict';
+  const terminal = document.querySelector('.fw-terminal');
+  if (!terminal) return;
+  const tabs = [...terminal.querySelectorAll('[data-fw-tab]')];
+  const panels = [...terminal.querySelectorAll('.fw-panel')];
+  if (!tabs.length || tabs.length !== panels.length) return;
+  const motion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+  let index = Math.max(0, tabs.findIndex(tab => tab.getAttribute('aria-selected') === 'true'));
+  let visible = !('IntersectionObserver' in window), timer = null, suspended = false;
+
+  function sync() {
+    clearInterval(timer);
+    timer = null;
+    // Never hide a focused link or override the reader's reduced-motion preference.
+    const paused = suspended || motion?.matches || !visible || document.hidden || terminal.contains(document.activeElement);
+    terminal.classList.toggle('fw-paused', Boolean(paused));
+    if (!paused) timer = setInterval(() => show((index + 1) % tabs.length), 7000);
+  }
+  function show(next) {
+    index = next;
+    tabs.forEach((tab, i) => {
+      tab.setAttribute('aria-selected', String(i === index));
+      tab.tabIndex = i === index ? 0 : -1;
+      panels[i].hidden = i !== index;
+    });
+    const bar = terminal.querySelector('.fw-progress>span');
+    if (bar) { bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = ''; }
+  }
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => { show(i); sync(); });
+    tab.addEventListener('keydown', event => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (i + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length;
+      show(next);
+      tabs[next].focus();
+      sync();
+    });
+  });
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(entries => { visible = entries[0].isIntersecting; sync(); }, { threshold: .25 }).observe(terminal);
+  }
+  terminal.addEventListener('focusin', sync);
+  terminal.addEventListener('focusout', () => queueMicrotask(sync));
+  document.addEventListener('visibilitychange', sync);
+  motion?.addEventListener?.('change', sync);
+  window.addEventListener('pagehide', () => { suspended = true; sync(); });
+  window.addEventListener('pageshow', () => { suspended = false; sync(); });
+  show(index);
+  sync();
 })();

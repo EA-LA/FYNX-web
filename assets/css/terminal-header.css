@@ -435,3 +435,20 @@ html body[data-fynx-terminal] .terminal-price-changed { animation:terminal-quote
 /* Keep the public theme control legible against the newsroom masthead. */
 html body[data-fynx-terminal] .terminal-masthead [data-theme-control] { background:#202820 !important; color:#f5f7f5 !important; border:1px solid #667168 !important; border-radius:0; padding:8px 10px; font-size:11px; cursor:pointer; }
 html body[data-fynx-terminal] .terminal-masthead [data-theme-control]:focus-visible { outline:2px solid #9fd8b9; outline-offset:3px; }
+
+/* Personal news stays discoverable on every terminal page and on small screens. */
+html body[data-fynx-terminal] .terminal-masthead a.terminal-your-news {
+  display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto;
+  min-height:34px; padding:7px 12px; border:1px solid #87b39a;
+  background:#182b20; color:#e4f6eb !important; text-decoration:none;
+  font:700 12px/1.4 Arial,Helvetica,sans-serif; white-space:nowrap; border-radius:0;
+}
+html body[data-fynx-terminal] .terminal-masthead a.terminal-your-news:hover {background:#244332;}
+html body[data-fynx-terminal] .terminal-topic-inner > .terminal-topic-personal {display:none;}
+@media(max-width:1100px) {
+  html body[data-fynx-terminal] .terminal-topic-inner > .terminal-topic-personal {display:flex;color:#b6e4ca !important;}
+  html body[data-fynx-terminal] .terminal-masthead a.terminal-your-news {display:none;}
+}
+@media(max-width:600px) {
+  html body[data-fynx-terminal] .terminal-topic-inner > .terminal-topic-personal {grid-column:2;grid-row:1;}
+}
