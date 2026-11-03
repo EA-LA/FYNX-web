@@ -16,7 +16,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 const response = payload => ({ ok: true, text: async () => JSON.stringify(payload) });
 const quote = (symbol = 'SPY', overrides = {}) => ({ symbol, price: 123.45, currency: 'USD', asOf: iso(-60000), fetchedAt: iso(0), changePercent: 1.25, source: 'Fixture source', sourceURL: 'https://finance.yahoo.com/quote/SPY/', basis: 'Previous close', delayed: true, ...overrides });
 const quotePayload = overrides => ({ fetchedAt: iso(0), quotes: { SPY: quote() }, ...overrides });
-const story = overrides => ({ id: 'release-1', title: 'Published economic release', url: 'https://www.bea.gov/news/2026/fixture', source: 'BEA', sourceId: 'bea', publishedAt: iso(-3600000), ...overrides });
+const story = overrides => ({ id: 'release-1', articleId:'a'.repeat(64), title: 'Published economic release', url: 'https://www.bea.gov/news/2026/fixture', source: 'BEA', sourceId: 'bea', publishedAt: iso(-3600000), ...overrides });
 const feed = (items, overrides = {}) => ({ status: 'fresh', stale: false, fetchedAt: iso(0), items, sources: [{ id: 'bea', name: 'BEA', status: 'fresh', fetchedAt: iso(0) }], ...overrides });
 const historyPayload = overrides => ({ symbol: 'SPY', currency: 'USD', adjusted: true, fetchedAt: iso(0), source: 'Fixture source', sourceURL: 'https://finance.yahoo.com/quote/SPY/history/', bars: [{ date: '2026-10-27', open: 122, high: 126, low: 121, close: 124 }, { date: '2026-10-28', open: 124, high: 128, low: 123, close: 127 }], ...overrides });
 
@@ -51,6 +51,16 @@ test('briefings reject unsafe links, missing or implausible dates, and duplicate
   assert.equal(noContent.items.length, 0);
   assert.equal(noContent.status, 'unavailable');
   assert.equal(noContent.publishedAt, null);
+});
+
+test('Home briefing preserves source ranking and excludes old official releases from current news', () => {
+  const important=story({id:'important',articleId:'a'.repeat(64),url:'https://www.reuters.com/important',title:'Priority fixture report',rank:1,priorityScore:90,publishedAt:iso(-12*3600000)});
+  const recent=story({id:'recent',articleId:'b'.repeat(64),url:'https://www.reuters.com/recent',title:'Recent fixture update',rank:2,priorityScore:40,publishedAt:iso(-60000)});
+  const old=story({id:'old-official',url:'https://www.bea.gov/news/old-fixture',publishedAt:iso(-2*DAY)});
+  const value=normalizeBriefing(feed([recent,important]),feed([old]),NOW);
+  assert.deepEqual(value.items.map(row=>row.id),['important','recent']);
+  assert.equal(value.items[0].articleId,important.articleId);assert.equal(value.releaseCount,0);
+  assert.equal(normalizeBriefing(null,feed([old]),NOW).items.length,0);
 });
 
 test('quotes retain ETF labels and real values, while invalid prices and timestamps remain unavailable', () => {
@@ -222,6 +232,7 @@ test('Home and ticker render validated links, dated official fallback, unavailab
     w.eval(read('fynx-nav.js'));
     w.eval(read('assets/js/terminal-header.js'));
     w.eval(read('assets/js/terminal-market-ui.js'));
+    w.FYNXNewsReaderData = {href:item=>'/news/article.html?'+new URLSearchParams({id:item.articleId,edition:'us',category:item.kind==='official-release'?'official':'all'}),prefetch:()=>{}};
     w.eval(read('assets/js/terminal-home.js'));
     await tick(); await tick();
     const lead = w.document.getElementById('homeLeadStory');
@@ -240,7 +251,8 @@ test('Home and ticker render validated links, dated official fallback, unavailab
     for (const anchor of w.document.querySelectorAll('#homeLeadStory a, #homeSecondaryStories a, #homeLatestStories a, #homeQuoteRows a, #homeChartSource a')) {
       const url = new URL(anchor.href);
       assert.equal(url.protocol, 'https:'); assert.equal(url.username, ''); assert.equal(url.password, '');
-      assert.equal(anchor.rel, 'noopener noreferrer');
+      if (url.pathname === '/news/article.html') { assert.equal(url.origin,w.location.origin); assert.equal(anchor.target,''); assert.match(url.searchParams.get('id'),/^[a-f0-9]{64}$/); }
+      else assert.equal(anchor.rel, 'noopener noreferrer');
     }
     assert.deepEqual(errors, []);
   } finally { dom.window.close(); }

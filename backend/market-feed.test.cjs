@@ -42,7 +42,7 @@ test('dedicated energy feed supplies commodities when search is unavailable and 
 });
 test('forex excludes Europe substring matches without discarding fresh currency coverage',async()=>{
  const api=require('./market-feed')._test,old=global.fetch;api.cache.clear();
- const date=new Date(Date.now()-86400000).toUTCString();
+ const date=new Date(Date.now()-12*3600000).toUTCString();
  const xml='<rss><channel>'+['Europe imposes trade curbs','Euro falls against dollar'].map((title,i)=>`<item><title>${title}</title><link>https://example.com/${i}</link><pubDate>${date}</pubDate></item>`).join('')+'</channel></rss>';
  try{global.fetch=async url=>{if(url.includes('news.google'))throw Error('offline');return{ok:true,text:async()=>xml};};
  const data=await api.load('forex');assert.equal(data.items.length,1);assert.equal(data.items[0].title,'Euro falls against dollar');assert.equal(data.publishedAt,new Date(date).toISOString());assert.equal(data.stale,false);
@@ -122,7 +122,7 @@ const rss=(...items)=>'<rss xmlns:media="http://search.yahoo.com/mrss/" xmlns:cc
 const okXML=xml=>({ok:true,text:async()=>xml});
 const response=()=>({code:200,headers:{},set(k,v){this.headers[k]=v;return this;},status(n){this.code=n;return this;},json(body){this.body=body;return this;},send(body){this.body=body;return this;}});
 
-test('every configured edition has English locale and a distinct regional search, without US publisher substitution',()=>{
+test('every configured edition has English locale and a distinct regional search, with scoped publisher supplementation',()=>{
  assert.deepEqual(Object.keys(api.editions),['global','us','uk','canada','europe','asia','india','middle-east','africa','latin-america','japan','australia']);
  for(const edition of Object.keys(api.editions)){
   for(const category of Object.keys(api.queries)){
@@ -130,8 +130,8 @@ test('every configured edition has English locale and a distinct regional search
    assert.equal(url.searchParams.get('hl'),locale.hl);assert.match(url.searchParams.get('hl'),/^en/);
    assert.equal(url.searchParams.get('gl'),locale.gl);assert.equal(url.searchParams.get('ceid'),locale.ceid);
    assert(url.searchParams.get('q').includes('('+locale.query+')'));assert(url.searchParams.get('q').includes('('+api.queries[category]+')'));
-   assert.match(url.searchParams.get('q'),category==='analysis'?/when:7d$/:/when:2d$/);
-   if(edition!=='us')assert.equal(sources.length,1,edition+':'+category);
+   assert.match(url.searchParams.get('q'),/when:1d$/);
+   assert(sources.some(source=>source.id==='cnbc'),edition+':'+category);
   }
  }
 });
@@ -153,17 +153,17 @@ test('parallel editions and categories keep requests, pending work, metadata and
   global.fetch=async url=>{
    const params=new URL(url).searchParams;calls.push(url);
    await new Promise(resolve=>setTimeout(resolve,8));
-   const q=params.get('q');
+   const q=params.get('q');if(!q)return okXML(rss());
    return okXML(rss(rssItem((q.includes('Britain')?'UK ': 'Japan ')+(q.includes('technology')?'Technology update':'Market update'),'https://publisher.example/'+encodeURIComponent(q),new Date().toUTCString())));
   };
   const [uk,ukAgain,japan,japanTech]=await Promise.all([api.load('all','uk'),api.load('all','uk'),api.load('all','japan'),api.load('technology','japan')]);
-  assert.equal(calls.length,3);assert.deepEqual(uk,ukAgain);
+  assert.equal(calls.filter(url=>url.includes('news.google.com')).length,3);const initialCalls=calls.length;assert.deepEqual(uk,ukAgain);
   for(const [data,edition,category] of [[uk,'uk','all'],[japan,'japan','all'],[japanTech,'japan','technology']]){
-   assert.equal(data.edition,edition);assert.equal(data.category,category);assert.equal(data.language,'en');assert.equal(data.freshForMs,600000);
+   assert.equal(data.edition,edition);assert.equal(data.category,category);assert.equal(data.language,'en');assert.equal(data.freshForMs,300000);
    assert(data.items.every(item=>item.edition===edition&&item.category===category&&item.kind==='headline'));
   }
   assert.notEqual(uk.items[0].link,japan.items[0].link);assert.notEqual(japan.items[0].link,japanTech.items[0].link);
-  await api.load('all','uk');assert.equal(calls.length,3);assert.equal(api.pending.size,0);
+  await api.load('all','uk');assert.equal(calls.length,initialCalls);assert.equal(api.pending.size,0);
  }finally{global.fetch=old;api.cache.clear();}
 });
 
@@ -173,18 +173,18 @@ test('no-param HTTP requests preserve the US all-headlines default and cache con
   global.fetch=async()=>okXML(rss(rssItem('Stocks rise','https://publisher.example/us',new Date().toUTCString())));
   const res=response();await api.handler({method:'GET',query:{}},res);
   assert.equal(res.code,200);assert.equal(res.body.edition,'us');assert.equal(res.body.category,'all');assert.equal(res.body.kind,'headlines');
-  assert.equal(res.body.retentionHours,48);assert.equal(res.headers['Cache-Control'],'public,max-age=120');
-  const saved=api.cache.get('headlines:us:all');saved.fetchedAt=new Date(Date.now()-590000).toISOString();
+  assert.equal(res.body.retentionHours,24);assert.equal(res.headers['Cache-Control'],'public,max-age=60');
+  const saved=api.cache.get('headlines:us:all');saved.fetchedAt=new Date(Date.now()-290000).toISOString();
   const again=response();await api.handler({method:'GET',query:{}},again);assert.match(again.headers['Cache-Control'],/^public,max-age=(?:[0-9]|10)$/);
  }finally{global.fetch=old;api.cache.clear();}
 });
 
-test('48-hour headline, seven-day analysis and thirty-day official retention reject expired publications',()=>{
+test('24-hour current news and analysis with thirty-day official archive retention reject expired publications',()=>{
  const now=Date.parse('2026-10-30T12:00:00Z'),at=hours=>new Date(now-hours*HOUR).toISOString();
- const xml=rss(...[1,47,49,167,169,719,721].map(hours=>rssItem('Analysis '+hours,'https://publisher.example/'+hours,at(hours))));
- assert.deepEqual(api.parseFeed(xml,now).map(item=>item.title),['Analysis 1','Analysis 47']);
- assert.deepEqual(api.parseFeed(xml,now,{category:'analysis'}).map(item=>item.title),['Analysis 1','Analysis 47','Analysis 49','Analysis 167']);
- assert.deepEqual(api.parseFeed(xml,now,{official:true}).map(item=>item.title),['Analysis 1','Analysis 47','Analysis 49','Analysis 167','Analysis 169','Analysis 719']);
+ const xml=rss(...[1,23,25,167,169,719,721].map(hours=>rssItem('Analysis '+hours,'https://publisher.example/'+hours,at(hours))));
+ assert.deepEqual(api.parseFeed(xml,now).map(item=>item.title),['Analysis 1','Analysis 23']);
+ assert.deepEqual(api.parseFeed(xml,now,{category:'analysis'}).map(item=>item.title),['Analysis 1','Analysis 23']);
+ assert.deepEqual(api.parseFeed(xml,now,{official:true}).map(item=>item.title),['Analysis 1','Analysis 23','Analysis 25','Analysis 167','Analysis 169','Analysis 719']);
  assert.deepEqual(api.parseFeed(rss(rssItem('Expired release','https://publisher.example/old',at(721))),now,{official:true}),[]);
 });
 
@@ -214,7 +214,7 @@ test('fresh and outage cached responses both evict publications crossing their r
   Date.now=()=>now;global.fetch=async()=>{throw Error('offline');};
   for(const age of [1000,700000]){
    const fetchedAt=new Date(now-age).toISOString();api.cache.set('headlines:uk:all',{items:[recent,expired],fetchedAt,sources:[{id:'google',name:'Google News',fetchedAt,status:'fresh'}]});
-   const data=await api.load('all','uk');assert.deepEqual(data.items,[recent]);assert.equal(data.fetchedAt,fetchedAt);assert.equal(data.stale,age>600000?true:undefined);assert.equal(data.publishedAt,recent.pubDate);
+   const data=await api.load('all','uk');assert.deepEqual(data.items.map(({title,link,pubDate})=>({title,link,pubDate})),[recent]);assert.equal(data.fetchedAt,fetchedAt);assert.equal(data.stale,age>300000?true:undefined);assert.equal(data.publishedAt,recent.pubDate);
   }
   const fetchedAt=new Date(now-700000).toISOString();api.cache.set('official-releases:uk:all:boe',{items:[{...expired,pubDate:new Date(now-721*HOUR).toISOString()}],fetchedAt});
   const official=await api.loadOfficialReleases('uk');assert.deepEqual(official.items,[]);assert.equal(official.fetchedAt,fetchedAt);assert.equal(official.sources[0].status,'cached');
@@ -244,8 +244,8 @@ test('official sources match the requested edition and category; unsupported edi
 test('analysis is a distinct bounded category and does not relabel a plain breaking headline',async()=>{
  const old=global.fetch;api.cache.clear();
  try{
-  const date=new Date(Date.now()-6*24*HOUR).toUTCString();global.fetch=async()=>okXML(rss(rssItem('Markets fall','https://publisher.example/breaking',date),rssItem('UK economic analysis: inflation','https://publisher.example/analysis',date)));
-  const data=await api.load('analysis','uk');assert.equal(data.items.length,1);assert.equal(data.items[0].kind,'analysis');assert.equal(data.retentionHours,168);
+  const date=new Date(Date.now()-12*HOUR).toUTCString();global.fetch=async()=>okXML(rss(rssItem('Markets fall','https://publisher.example/breaking',date),rssItem('UK economic analysis: inflation','https://publisher.example/analysis',date)));
+  const data=await api.load('analysis','uk');assert.equal(data.items.length,1);assert.equal(data.items[0].kind,'analysis');assert.equal(data.retentionHours,24);
  }finally{global.fetch=old;api.cache.clear();}
 });
 
@@ -253,7 +253,7 @@ test('only explicitly reusable, credited RSS media metadata supplies an image wi
  const now=Date.parse('2026-10-30'),license='<media:license href="https://creativecommons.org/licenses/by/4.0/"/>';
  const extra='<media:content url="https://images.publisher.example/report.jpg" type="image/jpeg" width="1200" height="800">'+license+'<media:credit>Publisher photographer</media:credit></media:content>';
  const data=api.parseFeed(rss(rssItem('Report','https://publisher.example/report','2026-10-29',extra)),now)[0];
- assert.deepEqual(data.image,{url:'https://images.publisher.example/report.jpg',source:'Publisher',sourceURL:'https://publisher.example/report',credit:'Publisher photographer',origin:'media:content',width:1200,height:800,licenseURL:'https://creativecommons.org/licenses/by/4.0/'});
+ assert.deepEqual(data.image,{url:'https://images.publisher.example/report.jpg',source:'Publisher',sourceURL:'https://publisher.example/report',credit:'Publisher photographer',origin:'media:content',width:1200,height:800,license:'CC BY 4.0',licenseURL:'https://creativecommons.org/licenses/by/4.0/'});
  assert.equal(data.description,'');
 });
 
@@ -289,7 +289,7 @@ test('regional editions reject generic US/global search matches even when the pr
    rssItem('Brazil economy grows','https://publisher.example/brazil',date),
    rssItem('Mexico central bank cuts rates','https://publisher.example/mexico',date)
   ));
-  const data=await api.load('all','latin-america');assert.deepEqual(data.items.map(item=>item.link),['https://publisher.example/brazil','https://publisher.example/mexico']);assert(data.sources.every(source=>source.id==='google'));
+  const data=await api.load('all','latin-america');assert.deepEqual(data.items.map(item=>item.link).sort(),['https://publisher.example/brazil','https://publisher.example/mexico']);assert(data.sources.some(source=>source.id==='google'));assert(data.sources.some(source=>source.id==='cnbc-top'));
  }finally{global.fetch=old;api.cache.clear();}
 });
 
@@ -326,7 +326,7 @@ test('Google technology results require topic evidence and never fill the UK des
   ));
   const data=await api.load('technology','uk');
   assert.deepEqual(data.items.map(item=>item.link),['https://publisher.example/ai','https://publisher.example/centres','https://publisher.example/center','https://publisher.example/robotics']);
-  assert(data.sources.every(source=>source.id==='google'));
+  assert(data.sources.some(source=>source.id==='google'));assert(data.sources.some(source=>source.id==='cnbc-top'));
  }finally{global.fetch=old;api.cache.clear();}
 });
 

@@ -3,7 +3,7 @@ const {queryFor,parse}=require('./symbol-news')._test;
 const {parseVix}=require('./vix-data.cjs');
 test('symbol aliases accept chart notation and reject oversized or URL queries',()=>{
  assert.match(queryFor('XAU/USD').query,/gold/);assert.match(queryFor('NASDAQ:NVDA').query,/NVIDIA/);
- assert.throws(()=>queryFor('https://example.com?a=b'));assert.throws(()=>queryFor('x'.repeat(81)));
+ assert.throws(()=>queryFor('https://example.com?a=b'));assert.throws(()=>queryFor('https://example.com/private'));assert.throws(()=>queryFor('//example.com/private'));assert.throws(()=>queryFor('ftp://example.com/private'));assert.equal(queryFor('BRK.B').input,'BRK.B');assert.equal(queryFor('EUR/USD').input,'EUR/USD');assert.throws(()=>queryFor('x'.repeat(81)));
 });
 test('publisher parser excludes unsafe links, future and old dates',()=>{
  const item=(title,link,date)=>`<item><title>${title}</title><link>${link}</link><pubDate>${date}</pubDate></item>`;

@@ -8,7 +8,7 @@ for(const route of ['news.html','news/news.html']){
  next=next.replace(/news-intelligence\.js\?v=[^"']*/g,'news-intelligence.js?v=20261030-r1');
  if(route==='news/news.html'&&!next.includes('src="/assets/js/terminal-market-data.js'))next=next.replace('</head>','<script src="/assets/js/terminal-market-data.js?v=20261030-r1" defer></script>\n</head>');
  next=next.replace(/<!-- newsroom-foundation:start -->[\s\S]*?<!-- newsroom-foundation:end -->\s*/g,'');
- const foundation='<!-- newsroom-foundation:start -->\n<script src="/assets/js/newsroom-editions.js?v=20261030-r1" defer></script>\n<script src="/assets/js/newsroom-media.js?v=20261030-r1" defer></script>\n<link rel="stylesheet" href="/assets/css/newsroom.css?v=20261030-r1">\n<!-- newsroom-foundation:end -->\n';
+ const foundation='<!-- newsroom-foundation:start -->\n<script src="/assets/js/news-reader-links.js?v=20261102-r1" defer></script>\n<script src="/assets/js/newsroom-editions.js?v=20261030-r1" defer></script>\n<script src="/assets/js/newsroom-media.js?v=20261030-r1" defer></script>\n<link rel="stylesheet" href="/assets/css/newsroom.css?v=20261030-r1">\n<!-- newsroom-foundation:end -->\n';
  next=next.replace(/<script[^>]*src=["'][^"']*market-intelligence-data\.js[^>]*>/,tag=>foundation+tag);
  fs.writeFileSync(file,next);
 }

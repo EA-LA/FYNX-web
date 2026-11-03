@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const $ = id => document.getElementById(id);
-  const cadence = 600000, day = 86400000;
+  const cadence = 300000, day = 86400000;
   let request = 0, pending = '', activeEdition = '', lastAttempt = 0, briefing = null, visibleStories = '';
   const node = (tag, text, className) => {const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(className)el.className=className;return el;};
   const edition = () => window.FynxEdition?.get() || 'global';
@@ -13,22 +13,23 @@
     const seen=new Set(),titles=new Set();
     return (briefing?.items || []).filter(item=>{
       const at=Date.parse(item.publishedAt), key=String(item.title || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
-      if(!url(item.url)||!key||!item.source||!Number.isFinite(at)||at>Date.now()+300000||Date.now()-at>(item.kind==='official-release'?30:2)*day||(item.edition&&item.edition!==activeEdition)||seen.has(item.url)||titles.has(key))return false;
+      if(!url(item.url)||!key||!item.source||!Number.isFinite(at)||at>Date.now()+300000||Date.now()-at>day||(item.edition&&item.edition!==activeEdition)||seen.has(item.url)||titles.has(key))return false;
       seen.add(item.url);titles.add(key);return true;
     }).slice(0,2);
   }
   function renderNews() {
     const target=$('landingLiveNews'), items=recent();target.replaceChildren();target.setAttribute('aria-busy','false');visibleStories=items.map(item=>item.url).join('|');
+    window.FYNXNewsReaderData?.prefetch(items);
     const photo=window.FYNXNewsroomMedia?.createFigure(activeEdition==='uk'?'finance':activeEdition==='us'?'markets':'world');if(photo)target.append(photo);
     if(!items.length){target.append(node('p','Recent verified coverage is unavailable for the '+label(activeEdition)+' edition.','fw-live-status'));const a=node('a','Explore original sources at the News desk →');a.href='/news.html';target.append(a);}
     for(const item of items){
       const article=node('article',undefined,'fw-live-story'), a=node('a',item.title), title=node('h4'), time=node('time',date(item.publishedAt));
-      a.href=item.url;a.target='_blank';a.rel='noopener noreferrer';title.append(a);time.dateTime=item.publishedAt;
+      a.href=window.FYNXNewsReaderData?.href(item)||'/news/article.html';title.append(a);time.dateTime=item.publishedAt;
       article.append(node('span',item.source+(item.kind==='official-release'?' · Official release':''),'fw-live-source'),title,time);
       if(item.stale || item.status==='cached')article.append(node('span',' · Saved coverage','fw-live-source'));
       target.append(article);
     }
-    $('landingNewsStatus').textContent=label(activeEdition)+' edition · '+(briefing?.message || 'Coverage could not be refreshed.')+(briefing?.fetchedAt?' Retrieved '+date(briefing.fetchedAt)+'.':'')+' Headlines: past 48 hours. Official releases: past 30 days.';
+    $('landingNewsStatus').textContent=label(activeEdition)+' edition · '+(briefing?.message || 'Coverage could not be refreshed.')+(briefing?.fetchedAt?' Retrieved '+date(briefing.fetchedAt)+'.':'')+' Fresh reporting: past 24 hours. Checked every 5 minutes.';
   }
   async function refresh(force=false) {
     const code=edition();if(pending===code)return;pending=code;lastAttempt=Date.now();const serial=++request;

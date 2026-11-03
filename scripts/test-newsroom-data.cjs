@@ -91,10 +91,10 @@ test('official source hosts and dated retrieval state are required; unsafe artic
   assert.equal(result.items[0].publishedAt,iso(-HOUR));
 });
 
-test('headline publication retention is 48 hours, analysis seven days, and official releases 30 days',async t=>{
+test('headline and analysis publication retention is 24 hours; dedicated official releases retain 30 days',async t=>{
   const h=harness(t,{fetcher:request=>{
     if(request.url.searchParams.get('kind')==='releases')return response(official('us',['fed'],{items:[release('fed','us',{pubDate:iso(-30*DAY+1)}),release('fed','us',{link:'https://www.federalreserve.gov/expired',pubDate:iso(-30*DAY-1)})]}));
-    const category=request.url.searchParams.get('category'),boundary=category==='analysis'?7*DAY:2*DAY;
+    const category=request.url.searchParams.get('category'),boundary=DAY;
     return response(headlines('us',category,{items:[headline('us',{pubDate:iso(-boundary+1)}),headline('us',{link:'https://www.reuters.com/expired',pubDate:iso(-boundary-1)})]}));
   }});
   for(const category of ['all','analysis'])assert.equal((await h.D.loadHeadlines(category)).items.length,1,category);
@@ -103,15 +103,15 @@ test('headline publication retention is 48 hours, analysis seven days, and offic
   assert.equal(h.D.getCachedHeadlines('all'),null);assert.equal(h.D.getCachedHeadlines('analysis'),null);assert.equal(h.D.getCachedOfficialReleases(),null);
 });
 
-test('ten-minute cache freshness refreshes at expiry, with dated stale fallback and bounded retrieval age',async t=>{
+test('five-minute cache freshness refreshes at expiry, with dated stale fallback and bounded retrieval age',async t=>{
   let offline=false,h;
   h=harness(t,{fetcher:()=>offline?Promise.reject(Error('Offline')):response(headlines('us','all',{fetchedAt:new Date(h.now).toISOString(),sources:states(['reuters'],{fetchedAt:new Date(h.now).toISOString()})}))});
-  await h.D.loadHeadlines();h.setNow(NOW+599999);await h.D.loadHeadlines();assert.equal(h.calls.length,1);
-  h.setNow(NOW+600000);await h.D.loadHeadlines();assert.equal(h.calls.length,2);
-  offline=true;h.setNow(NOW+1200000);
-  const saved=await h.D.loadHeadlines();assert.equal(saved.status,'cached');assert.equal(saved.stale,true);assert.equal(saved.fetchedAt,iso(600000));
+  await h.D.loadHeadlines();h.setNow(NOW+299999);await h.D.loadHeadlines();assert.equal(h.calls.length,1);
+  h.setNow(NOW+300000);await h.D.loadHeadlines();assert.equal(h.calls.length,2);
+  offline=true;h.setNow(NOW+600000);
+  const saved=await h.D.loadHeadlines();assert.equal(saved.status,'cached');assert.equal(saved.stale,true);assert.equal(saved.fetchedAt,iso(300000));
   assert.equal(saved.items[0].publishedAt,iso(-HOUR));assert.equal(saved.sources[0].status,'cached');
-  h.setNow(NOW+DAY+600001);const expired=await h.D.loadHeadlines();assert.equal(expired.status,'unavailable');assert.equal(expired.items.length,0);
+  h.setNow(NOW+DAY+300001);const expired=await h.D.loadHeadlines();assert.equal(expired.status,'unavailable');assert.equal(expired.items.length,0);
 });
 
 test('a forced refresh failure marks a still-young browser cache as saved, never fresh',async t=>{
@@ -124,7 +124,7 @@ test('a forced refresh failure marks a still-young browser cache as saved, never
 
 const terminalFeed=(edition,items,extra={})=>({edition,items,status:'fresh',stale:false,fetchedAt:iso(0),sources:states([edition==='uk'?'boe':'fed']),...extra});
 const terminalStory=(edition,extra={})=>({edition,title:edition+' terminal fixture',url:'https://www.reuters.com/'+edition+'-terminal',source:'Reuters',sourceId:'reuters',publishedAt:iso(-HOUR),...extra});
-test('terminal pending and ten-minute memory caches stay separate across edition switches',async()=>{
+test('terminal pending and five-minute memory caches stay separate across edition switches',async()=>{
   const waits=new Map(),calls=[];let edition='us',clock=NOW;
   const D={loadHeadlines(category,options){calls.push(['headlines',options.edition]);const wait=deferred();waits.set(options.edition,wait);return wait.promise;},loadOfficialReleases:async options=>terminalFeed(options.edition,[])};
   const data=createTerminalData({FynxEdition:{get:()=>edition},FYNXMarketIntelligenceData:D},{now:()=>clock});
@@ -133,8 +133,8 @@ test('terminal pending and ten-minute memory caches stay separate across edition
   waits.get('uk').resolve(terminalFeed('uk',[terminalStory('uk')]));const ukResult=await uk;
   waits.get('us').resolve(terminalFeed('us',[terminalStory('us')]));const usResult=await us;
   assert.equal(ukResult.edition,'uk');assert.equal(usResult.edition,'us');assert.equal(ukResult.items[0].edition,'uk');
-  clock=NOW+599999;assert.equal(await data.loadBriefing(),ukResult);assert.equal(calls.length,2);
-  clock=NOW+600000;const refreshed=data.loadBriefing();assert.equal(calls.length,3);waits.get('uk').resolve(terminalFeed('uk',[terminalStory('uk')],{fetchedAt:iso(600000)}));await refreshed;
+  clock=NOW+299999;assert.equal(await data.loadBriefing(),ukResult);assert.equal(calls.length,2);
+  clock=NOW+300000;const refreshed=data.loadBriefing();assert.equal(calls.length,3);waits.get('uk').resolve(terminalFeed('uk',[terminalStory('uk')],{fetchedAt:iso(300000)}));await refreshed;
 });
 
 test('terminal refuses a wrong-edition feed and a wrong-edition record in the requested edition',async()=>{
@@ -146,7 +146,7 @@ test('terminal refuses a wrong-edition feed and a wrong-edition record in the re
 
 test('terminal memory cache rechecks publication expiry both while fresh and during outage fallback',async()=>{
   for(const force of [false,true])for(const kind of ['headline','official']){
-    let clock=NOW,offline=false;const boundary=kind==='headline'?2*DAY:30*DAY;
+    let clock=NOW,offline=false;const boundary=DAY;
     const entry=terminalStory('us',{publishedAt:iso(-boundary+60000),url:kind==='official'?'https://www.federalreserve.gov/fixture':'https://www.reuters.com/us-terminal',source:kind==='official'?'Federal Reserve':'Reuters',sourceId:kind==='official'?'fed':'reuters'});
     const get=type=>async()=>{if(offline)throw Error('Offline');return terminalFeed('us',type===kind?[entry]:[]);};
     const data=createTerminalData({FYNXMarketIntelligenceData:{loadHeadlines:get('headline'),loadOfficialReleases:get('official')}},{now:()=>clock});
@@ -240,4 +240,25 @@ test('the actual topic page outage state never invents a retrieval date and keep
   assert.equal(w.document.querySelector('[data-newsroom-page]').dataset.feedState,'unavailable');
   assert.equal(w.document.querySelector('[data-newsroom-refresh]').disabled,false);
   assert.equal(w.document.querySelector('[data-newsroom-stories]').getAttribute('aria-busy'),'false');
+});
+
+test('topic pages retain ranked leads, open verified internal readers, expire old coverage and refresh after five minutes',async t=>{
+  const dom=new JSDOM(read('news/markets.html'),{url:'https://www.fynxfinanceworld.com/news/markets.html',runScripts:'outside-only',virtualConsole:new VirtualConsole()});
+  t.after(()=>dom.window.close());const w=dom.window,intervals=[],calls=[];let clock=NOW;
+  w.Date.now=()=>clock;w.setInterval=(callback,ms)=>{intervals.push({callback,ms});return intervals.length;};
+  Object.defineProperty(w.document,'hidden',{get:()=>false,configurable:true});
+  w.FynxEdition={get:()=> 'us',editions:[{id:'us',label:'US'}]};
+  const lead=terminalStory('us',{articleId:'a'.repeat(64),rank:1,priorityScore:90,title:'Priority fixture report',publishedAt:iso(-DAY+30000)});
+  const recent=terminalStory('us',{articleId:'b'.repeat(64),rank:2,priorityScore:40,title:'Recent fixture update',url:'https://www.reuters.com/recent-fixture'});
+  w.FYNXMarketIntelligenceData={loadHeadlines:async(category,options)=>{calls.push({category,...options});return terminalFeed('us',[recent,lead]);}};
+  w.FYNXNewsReaderData={href:item=>'/news/article.html?'+new URLSearchParams({id:item.articleId,edition:'us',category:'stocks'}),prefetch:()=>{}};
+  w.eval(read('assets/js/newsroom-page.js'));await tick();
+  const first=w.document.querySelector('.newsroom-story-lead h2 a');
+  assert.match(first.textContent,/Priority fixture report/);assert.equal(first.pathname,'/news/article.html');
+  assert.equal(first.origin,w.location.origin);assert.equal(first.target,'');assert.equal(new URL(first.href).searchParams.get('id'),lead.articleId);
+  clock=NOW+60000;intervals[0].callback();
+  assert.match(w.document.querySelector('.newsroom-story-lead h2 a').textContent,/Recent fixture update/);
+  assert.equal(w.document.querySelector('.newsroom-story-secondary'),null);assert.equal(calls.length,1);
+  clock=NOW+300000;intervals[0].callback();await tick();assert.equal(calls.length,2);
+  assert.equal(calls[1].edition,'us');assert.match(w.document.querySelector('[data-newsroom-status]').textContent,/Past 24 hours.*every 5 minutes/);
 });

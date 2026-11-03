@@ -1,10 +1,11 @@
 'use strict';
 const functions = require('firebase-functions/v1');
 const {XMLParser, XMLValidator} = require('fast-xml-parser');
+const Reader = require('./news-reader.cjs');
 const HOUR_MS = 3600000;
-const FRESH_MS = 10 * 60000, HEADLINE_CACHE_MS = 24 * HOUR_MS, RELEASE_CACHE_MS = 7 * 24 * HOUR_MS;
+const FRESH_MS = 5 * 60000, HEADLINE_CACHE_MS = 24 * HOUR_MS, RELEASE_CACHE_MS = 7 * 24 * HOUR_MS;
 const MAX_XML_BYTES = 2000000, PROVIDER_TIMEOUT_MS = 4200, MAX_CACHE_ENTRIES = 256;
-const cache = new Map(), pending = new Map();
+const cache = new Map(), pending = new Map(), articleRecords = new Map();
 const queries = Object.freeze({
   all: 'markets OR stocks OR economy', forex: 'forex OR currencies OR EURUSD OR USDJPY OR sterling',
   crypto: 'bitcoin OR ethereum OR crypto', stocks: 'stocks OR equities OR earnings OR stock exchange',
@@ -36,7 +37,8 @@ const editions = Object.freeze({
   australia: {hl:'en-AU', gl:'AU', ceid:'AU:en', query:'Australia OR Australian OR Sydney OR ASX OR "Reserve Bank of Australia"'}
 });
 // Feed URLs verified against the publishers' own RSS directories. Only headings,
-// links and dates are used; full articles and HTML images are never scraped.
+// links, dates and bounded publisher excerpts are used. Reader access follows
+// explicit public-source checks; unlicensed HTML images are never extracted.
 const officialSources = [
   {id:'fed',name:'Federal Reserve',url:'https://www.federalreserve.gov/feeds/press_monetary.xml',website:'https://www.federalreserve.gov/newsevents/pressreleases.htm',hosts:['www.federalreserve.gov','federalreserve.gov'],editions:['us']},
   {id:'bea',name:'U.S. Bureau of Economic Analysis',url:'https://apps.bea.gov/rss/rss.xml',website:'https://www.bea.gov/news',hosts:['www.bea.gov','bea.gov','apps.bea.gov'],editions:['us']},
@@ -48,6 +50,9 @@ const officialSources = [
 ];
 const directSources = Object.freeze({
   cnbc:{id:'cnbc',name:'CNBC',url:'https://www.cnbc.com/id/10000664/device/rss/rss.html'},
+  top:{id:'cnbc-top',name:'CNBC',url:'https://www.cnbc.com/id/100003114/device/rss/rss.html'},
+  world:{id:'cnbc-world',name:'CNBC',url:'https://www.cnbc.com/id/100727362/device/rss/rss.html'},
+  technology:{id:'cnbc-technology',name:'CNBC',url:'https://www.cnbc.com/id/19854910/device/rss/rss.html'},
   coindesk:{id:'coindesk',name:'CoinDesk',url:'https://www.coindesk.com/arc/outboundfeeds/rss/'},
   energy:{id:'cnbc-energy',name:'CNBC',url:'https://www.cnbc.com/id/19836768/device/rss/rss.html'},
   fxstreet:{id:'fxstreet',name:'FXStreet',url:'https://www.fxstreet.com/rss/news'}
@@ -87,7 +92,7 @@ function publicationTime(value) {
   if (year < 1900 || month < 1 || month > 12 || check.getUTCMonth() !== month - 1 || check.getUTCDate() !== day) return NaN;
   return Date.parse(input);
 }
-function retentionHours(category, official = false) { return official ? 720 : category === 'analysis' ? 168 : 48; }
+function retentionHours(category, official = false) { return official ? 720 : 24; }
 function validDate(pubDate, now, hours) {
   const date = publicationTime(pubDate);
   return Number.isFinite(date) && date <= now + 300000 && date >= now - hours * HOUR_MS;
@@ -122,7 +127,7 @@ function feedImage(item, article) {
         const credit = text(node['media:credit'] || node['media:copyright']);
         if (!credit && !licenseURL.includes('/zero/')) continue;
         const dimension = value => Number.isInteger(Number(value)) && Number(value) >= 1 && Number(value) <= 10000 ? Number(value) : null;
-        return {url,source:article.source,sourceURL:article.link,credit:credit || article.source,origin,width:dimension(node['@_width']),height:dimension(node['@_height']),licenseURL};
+        return {url,source:article.source,sourceURL:article.link,credit:credit || article.source,origin,width:dimension(node['@_width']),height:dimension(node['@_height']),license:licenseURL.includes('/zero/')?'CC0':licenseURL.includes('/by-sa/')?'CC BY-SA 4.0':'CC BY 4.0',licenseURL};
       }
     }
   }
@@ -148,7 +153,7 @@ function parseFeed(xml, now = Date.now(), options = {}) {
     if (!title || !link || !Number.isFinite(date) || date > now + 300000) return [];
     validRows++;
     if (date < now - hours * HOUR_MS) return [];
-    const article = {title,link,pubDate:new Date(date).toISOString(),source:options.source || text(item.source) || 'Market news',description:''};
+    const article = {title,link,pubDate:new Date(date).toISOString(),source:options.source || text(item.source) || 'Market news',description:options.via ? '' : text(item.description ?? item.summary ?? item['content:encoded'] ?? '')};
     const image = feedImage(item, article);
     if (image) article.image = image;
     return [article];
@@ -166,12 +171,15 @@ function mergeFeeds(feeds, limit = 30) {
 function newsSources(category, edition = 'us') {
   validateSelectors(category, edition);
   const locale = editions[edition];
-  const q = '(' + queries[category] + ') (' + locale.query + ') when:' + (category === 'analysis' ? '7d' : '2d');
+  const q = '(' + queries[category] + ') (' + locale.query + ') when:' + '1d';
   const sources = [{id:'google',name:'Google News aggregation',url:'https://news.google.com/rss/search?' + new URLSearchParams({q,hl:locale.hl,gl:locale.gl,ceid:locale.ceid}),via:'Google News'}];
-  // Preserve established US fallback feeds. These broad publishers cannot stand
-  // in for another country's selected edition, nor an unrelated category.
-  if (edition === 'us' && category !== 'analysis') {
-    sources.push(directSources.cnbc);
+  // Established publishers supplement aggregation in every edition. Their
+  // records still must match BOTH the selected region and the selected desk.
+  // No unrelated US story is substituted for an unavailable regional feed.
+  {
+    sources.push(directSources.cnbc,directSources.top);
+    if (edition !== 'us' || category === 'world') sources.push(directSources.world);
+    if (category === 'technology') sources.push(directSources.technology);
     if (category === 'crypto') sources.push(directSources.coindesk);
     if (['commodities','energy'].includes(category)) sources.push(directSources.energy);
     if (['forex','commodities','macro'].includes(category)) sources.push(directSources.fxstreet);
@@ -183,6 +191,12 @@ const allowedFeedURLs = new Set([
   ...Object.keys(editions).flatMap(edition => Object.keys(queries).flatMap(category => newsSources(category, edition).map(source => source.url)))
 ]);
 async function fetchXML(url, timeoutMs = PROVIDER_TIMEOUT_MS) {
+  const key = 'publisher-request:' + url;
+  if (pending.has(key)) return pending.get(key);
+  const task = fetchXMLRequest(url,timeoutMs).finally(() => pending.delete(key));
+  pending.set(key,task);return task;
+}
+async function fetchXMLRequest(url, timeoutMs = PROVIDER_TIMEOUT_MS) {
   if (!allowedFeedURLs.has(url)) throw new Error('Unconfigured publisher URL');
   const controller = new AbortController(); let timer;
   const timeout = new Promise((_,reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error('Publisher timed out')); }, timeoutMs); });
@@ -241,10 +255,25 @@ function setCache(key, value) {
   cache.delete(key); cache.set(key, value);
   while (cache.size > MAX_CACHE_ENTRIES) cache.delete(cache.keys().next().value);
 }
+function recordKey(item) { return [item.edition || 'us',item.kind === 'official-release' ? 'official' : item.category || 'all',item.symbol || '',Reader.articleId(item.link)].join(':'); }
+function publicRows(items, edition, category, kind, now) {
+  const pool = items.map(item => ({...item,edition,category,kind:kind === 'official-releases' ? 'official-release' : item.kind || 'headline'}));
+  for (const item of pool) {
+    const key = recordKey(item); articleRecords.delete(key); articleRecords.set(key,{item,seenAt:now});
+  }
+  while (articleRecords.size > 1800) articleRecords.delete(articleRecords.keys().next().value);
+  return pool.map(item => {
+    const decorated = Reader.decorate(item,pool,now);
+    // Raw publisher text stays in the process cache. Public responses carry
+    // only the explicitly bounded, attributed brief and its evidence snippets.
+    return {...decorated,description:''};
+  });
+}
 function envelope(kind, edition, category, data, now = Date.now()) {
   const hours = retentionHours(category, kind === 'official-releases');
-  const items = trimItems(data.items, now, hours);
-  return {...data,kind,edition,category,language:'en',freshForMs:FRESH_MS,retentionHours:hours,cutoffAt:new Date(now - hours * HOUR_MS).toISOString(),items,publishedAt:items[0]?.pubDate || null};
+  const retained = trimItems(data.items, now, hours);
+  const items = publicRows(retained,edition,category,kind,now);
+  return {...data,kind,edition,category,language:'en',freshForMs:FRESH_MS,retentionHours:hours,cutoffAt:new Date(now - hours * HOUR_MS).toISOString(),items,publishedAt:items[0]?.pubDate || null,...(kind === 'headlines' ? {ranking:'Editorial source, recency and related coverage; not a popularity measure'} : {})};
 }
 async function load(category = 'all', edition = 'us') {
   validateSelectors(category, edition);
@@ -255,14 +284,14 @@ async function load(category = 'all', edition = 'us') {
     try {
       const sources = newsSources(category, edition);
       const results = await Promise.allSettled(sources.map(async source => {
-        const rows = parseFeed(await fetchXML(source.url), Date.now(), {category,source:source.via ? undefined : source.name});
+        const rows = parseFeed(await fetchXML(source.url), Date.now(), {category,via:source.via,source:source.via ? undefined : source.name});
         return rows.filter(item => matchesCategory(item, category) && matchesEdition(item, edition)).map(item => ({...item,sourceId:source.id,via:source.via || null,edition,category,kind:category === 'analysis' ? 'analysis' : 'headline'}));
       }));
       if (!results.some(result => result.status === 'fulfilled')) throw new Error('All publishers unavailable');
-      const items = mergeFeeds(results.flatMap(result => result.status === 'fulfilled' ? [result.value] : []));
+      const items = Reader.rankHeadlines(mergeFeeds(results.flatMap(result => result.status === 'fulfilled' ? [result.value] : []),300));
       const fetchedAt = new Date().toISOString();
-      const data = envelope('headlines', edition, category, {items,fetchedAt,stale:false,sources:sources.map((source,i) => ({id:source.id,name:source.name,website:source.url,status:results[i].status === 'fulfilled' ? 'fresh' : 'unavailable',fetchedAt:results[i].status === 'fulfilled' ? fetchedAt : null,message:results[i].status === 'fulfilled' ? 'Updated from source' : 'Source could not be refreshed'}))});
-      setCache(key, data); return data;
+      const raw = {items,fetchedAt,stale:false,sources:sources.map((source,i) => ({id:source.id,name:source.name,website:source.url,status:results[i].status === 'fulfilled' ? 'fresh' : 'unavailable',fetchedAt:results[i].status === 'fulfilled' ? fetchedAt : null,message:results[i].status === 'fulfilled' ? 'Updated from source' : 'Source could not be refreshed'}))};
+      setCache(key, raw); return envelope('headlines',edition,category,raw);
     } catch (error) {
       if (old && Date.now() - Date.parse(old.fetchedAt) < HEADLINE_CACHE_MS) return envelope('headlines', edition, category, {...old,stale:true,sources:(old.sources || []).map(source => source.fetchedAt ? {...source,status:'cached',message:'Refresh unavailable; showing a saved feed'} : source)});
       throw error;
@@ -294,20 +323,57 @@ async function loadOfficialReleases(edition = 'us', category = 'all') {
     } finally { pending.delete(key); }
   })(); pending.set(key, task); return task;
 }
+async function loadSymbol(raw) {
+  const data = await require('./symbol-news')._test.search(raw);
+  const items = Reader.rankHeadlines(data.items.map(item => ({...item,source:item.source || item.author,edition:'us',category:'stocks',symbol:data.query,kind:'headline'})));
+  return {...envelope('symbol','us','stocks',{...data,items,stale:false}),query:data.query};
+}
+async function loadArticle(id, edition, category, symbol) {
+  if (typeof id !== 'string' || !/^[a-f0-9]{64}$/.test(id)) throw Object.assign(new Error('Invalid article identifier'),{status:400});
+  validateSelectors(category === 'official' ? 'all' : category,edition);
+  if (symbol !== undefined) {
+    require('./symbol-news')._test.queryFor(symbol);
+    if (edition !== 'us' || category !== 'stocks') throw Object.assign(new Error('Invalid symbol reader selection'),{status:400});
+    symbol = symbol.trim();
+  }
+  const key = [edition,category,symbol || '',id].join(':');
+  let record = articleRecords.get(key);
+  // An issued article link remains readable for seven days in this instance,
+  // even after it leaves the 24-hour current-news rail. It is labelled archived.
+  if (!record || Date.now() - record.seenAt > 7 * 24 * HOUR_MS) {
+    articleRecords.delete(key);
+    if (symbol) await loadSymbol(symbol);
+    else if (category === 'official') await loadOfficialReleases(edition,'all');
+    else await load(category,edition);
+    record = articleRecords.get(key);
+  }
+  if (!record) throw Object.assign(new Error('This article is no longer available in the selected feed. Open the latest news to choose a current story.'),{status:404});
+  const pool = [...articleRecords.values()].map(value => value.item).filter(item => item.edition === edition && (category === 'official' ? item.kind === 'official-release' : item.category === category) && (!symbol || item.symbol === symbol) && validDate(item.pubDate,Date.now(),category === 'official' ? 720 : 24));
+  const article = await Reader.enhance(record.item,pool);
+  return {kind:'article',article,fetchedAt:article.updatedAt,freshForMs:FRESH_MS};
+}
 async function handler(req, res) {
   res.set('Access-Control-Allow-Origin','*'); res.set('X-Content-Type-Options','nosniff');
   if (req.method === 'OPTIONS') { res.set('Access-Control-Allow-Methods','GET'); return res.status(204).send(''); }
   if (req.method !== 'GET') return res.status(405).json({error:'Use GET'});
   const query = req.query || {}, kind = query.kind === undefined ? 'headlines' : query.kind;
   const category = query.category === undefined ? 'all' : query.category, edition = query.edition === undefined ? 'us' : query.edition;
-  try { if (typeof kind !== 'string' || !['headlines','releases'].includes(kind)) throw new Error('Unknown kind'); validateSelectors(category,edition); }
-  catch { return res.status(400).json({error:'Unknown feed selector'}); }
   try {
-    const data = kind === 'releases' ? await loadOfficialReleases(edition,category) : await load(category,edition);
-    // Instance cache and HTTP cache together never extend freshness past 10 min.
+    if (typeof kind !== 'string' || !['headlines','releases','article','symbol'].includes(kind)) throw new Error('Unknown kind');
+    validateSelectors(kind === 'article' && category === 'official' ? 'all' : category,edition);
+    if (kind === 'symbol') require('./symbol-news')._test.queryFor(query.q);
+    if (kind === 'article' && (typeof query.id !== 'string' || !/^[a-f0-9]{64}$/.test(query.id))) throw new Error('Invalid article identifier');
+    if (kind === 'article' && query.symbol !== undefined) require('./symbol-news')._test.queryFor(query.symbol);
+  } catch { return res.status(400).json({error:'Unknown feed selector or article identifier'}); }
+  try {
+    const data = kind === 'article' ? await loadArticle(query.id,edition,category,query.symbol) : kind === 'symbol' ? await loadSymbol(query.q) : kind === 'releases' ? await loadOfficialReleases(edition,category) : await load(category,edition);
+    // Instance cache and HTTP cache together never extend freshness past 5 min.
     const age = Date.now() - Date.parse(data.fetchedAt), remaining = Number.isFinite(age) ? Math.max(0,Math.floor((FRESH_MS - age) / 1000)) : 0;
-    res.set('Cache-Control',data.stale || !remaining ? 'no-store' : 'public,max-age=' + Math.min(120,remaining)); return res.json(data);
-  } catch { res.set('Cache-Control','no-store'); return res.status(503).json({error:'News is temporarily unavailable. Please try again.',edition,category,language:'en'}); }
+    res.set('Cache-Control',data.stale || !remaining ? 'no-store' : 'public,max-age=' + Math.min(60,remaining)); return res.json(data);
+  } catch (error) {
+    res.set('Cache-Control','no-store');
+    return res.status(error.status || 503).json({error:error.status ? error.message : 'News is temporarily unavailable. Please try again.',edition,category,language:'en'});
+  }
 }
 exports.webMarketFeed = functions.runWith({timeoutSeconds:15,memory:'256MB',maxInstances:4}).https.onRequest(handler);
-exports._test = {parseFeed,mergeFeeds,load,loadOfficialReleases,cache,pending,safeURL,fetchXML,officialSources,handler,newsSources,editions,queries,publicationTime,feedImage,retentionHours,PROVIDER_TIMEOUT_MS,FRESH_MS,MAX_CACHE_ENTRIES};
+exports._test = {parseFeed,mergeFeeds,load,loadOfficialReleases,loadSymbol,loadArticle,articleRecords,cache,pending,safeURL,fetchXML,officialSources,handler,newsSources,editions,queries,publicationTime,feedImage,retentionHours,PROVIDER_TIMEOUT_MS,FRESH_MS,MAX_CACHE_ENTRIES};
