@@ -20,6 +20,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var index_exports = {};
 __export(index_exports, {
   DEFAULT_PARAMS: () => DEFAULT_PARAMS,
+  EDGE_DEFAULT_STRATEGIES: () => DEFAULT_STRATEGIES,
   FTMO_ACCOUNT_SIZES: () => FTMO_ACCOUNT_SIZES,
   FTMO_RULES: () => FTMO_RULES,
   QUANT_STEPS: () => QUANT_STEPS,
@@ -45,6 +46,7 @@ __export(index_exports, {
   keywordParser: () => keywordParser,
   lowerBound: () => lowerBound,
   mean: () => mean,
+  meanReversionSignal: () => meanReversionSignal,
   monteCarlo: () => monteCarlo,
   mulberry32: () => mulberry32,
   normalizeParams: () => normalizeParams,
@@ -304,7 +306,9 @@ function normalizeParams(input = {}) {
   integer(p.newsWindowMinutes, "News window", 1, 1440);
   finite(p.initialEquity, "Initial equity", 1, 1e12);
   if (!["close", "ohlc", "tick"].includes(p.mode)) throw new Error("Choose close, ohlc or tick execution.");
-  if (!["breakout", "news"].includes(p.strategy)) throw new Error("Choose breakout or news strategy.");
+  if (!["breakout", "mean-reversion", "news"].includes(p.strategy)) throw new Error("Choose breakout, mean-reversion or news strategy.");
+  p.meanLookback = integer(p.meanLookback ?? 20, "Mean-reversion lookback", 2, 500);
+  p.meanEntryZ = finite(p.meanEntryZ ?? 1.5, "Mean-reversion entry Z", 0.1, 10);
   if (p.captureIntraday !== void 0 && typeof p.captureIntraday !== "boolean") throw new Error("captureIntraday must be boolean.");
   if (p.maxIntradayMarks !== void 0) integer(p.maxIntradayMarks, "Intraday capture budget", 100, 5e4);
   if (p.captureAfterDays !== void 0) integer(p.captureAfterDays, "Intraday capture warmup days", 0, 3660);
@@ -370,6 +374,18 @@ function breakoutSignal(bars, i, atr, p) {
     low = Math.min(low, bars[j].close);
   }
   return bars[i].close > high + p.entryK * atr ? 1 : bars[i].close < low - p.entryK * atr ? -1 : 0;
+}
+function meanReversionSignal(bars, i, p) {
+  const n = p.meanLookback ?? 20, z = p.meanEntryZ ?? 1.5;
+  if (i < n) return 0;
+  let sum = 0;
+  for (let j = i - n; j < i; j++) sum += bars[j].close;
+  const average = sum / n;
+  let ss = 0;
+  for (let j = i - n; j < i; j++) ss += (bars[j].close - average) ** 2;
+  const sd = Math.sqrt(ss / (n - 1));
+  if (!(sd > 0)) return 0;
+  return bars[i].close < average - z * sd ? 1 : bars[i].close > average + z * sd ? -1 : 0;
 }
 function relevantEvents(events, eventType) {
   if (!events?.length) throw new Error("News strategies require actual high-impact economic-calendar events. Configure a calendar provider first.");
@@ -452,7 +468,7 @@ function lowerBound(values, target) {
 function backtest(bars, input = {}) {
   const p = normalizeParams(input);
   validateBars(bars, p.mode);
-  const start = Math.max(p.startIndex || 0, p.lookback + p.atrPeriod + 1);
+  const start = Math.max(p.startIndex || 0, Math.max(p.lookback, p.strategy === "mean-reversion" ? p.meanLookback : 0) + p.atrPeriod + 1);
   if (start >= bars.length - 1) throw new Error(`Not enough history: at least ${start + 2} bars are needed for these settings.`);
   const atr = p.mode === "close" ? closeATR(bars.map((b) => b.close), p.atrPeriod) : wilderATR(bars, p.atrPeriod);
   const events = p.strategy === "news" && p.mode !== "tick" ? newsSignals(bars, atr, p) : /* @__PURE__ */ new Map();
@@ -544,7 +560,7 @@ function backtest(bars, input = {}) {
     day.minEquity = Math.min(day.minEquity, equity);
     const justExited = trades.length && trades[trades.length - 1].exitIndex === i;
     if (!position.current && !pending && !justExited && i < bars.length - 1 && equity > 0) {
-      const side = p.strategy === "news" ? p.mode === "tick" ? 0 : events.get(i) || 0 : breakoutSignal(bars, i, atr[i], p);
+      const side = p.strategy === "news" ? p.mode === "tick" ? 0 : events.get(i) || 0 : p.strategy === "mean-reversion" ? meanReversionSignal(bars, i, p) : breakoutSignal(bars, i, atr[i], p);
       if (side) {
         if (p.mode === "close") {
           enter(side, atr[i], i, false);
@@ -623,6 +639,7 @@ function referenceBacktest(bars, input = {}) {
 
 // lib/quant/analytics.ts
 function optimize(bars, params = {}, options = {}, onProgress) {
+  if (params.strategy === "mean-reversion") throw new Error("Mean-reversion optimization requires a Z-score grid; the entry-ATR grid does not apply.");
   const p = normalizeParams(params), metric = options.metric || "sharpe", minTrades = integer(options.minTrades ?? 10, "Minimum trades", 1, 1e4), fraction = finite(options.trainFraction ?? 0.7, "Train fraction", 0.5, 0.9);
   if (!["sharpe", "profitFactor", "totalReturn", "returnMaxDD"].includes(metric)) throw new Error("Unsupported optimization metric.");
   const entryValues = options.entryValues || Array.from({ length: 9 }, (_, i) => i * 0.25), stopValues = options.stopValues || Array.from({ length: 8 }, (_, i) => (i + 1) * 0.5);
@@ -1092,13 +1109,13 @@ function validateStrategy(input) {
   if (typeof x.id === "string" && /^[a-zA-Z0-9_-]{1,100}$/.test(x.id)) out.id = x.id;
   if (x.params !== void 0) {
     if (!x.params || typeof x.params !== "object" || Array.isArray(x.params)) throw new Error("Strategy parameters must be an object.");
-    const allowed = ["lookback", "atrPeriod", "entryK", "stopS", "targetTP", "maxHold", "costPips", "riskPct", "pipSize", "spreadPips", "slippagePips", "mode", "strategy", "newsWindowMinutes", "initialEquity", "eventType"];
+    const allowed = ["lookback", "atrPeriod", "entryK", "stopS", "targetTP", "maxHold", "costPips", "riskPct", "pipSize", "spreadPips", "slippagePips", "mode", "strategy", "newsWindowMinutes", "initialEquity", "eventType", "meanLookback", "meanEntryZ"];
     out.params = {};
     for (const [key, v] of Object.entries(x.params)) {
       if (!allowed.includes(key)) throw new Error(`Unsupported strategy parameter: ${key}`);
       if (typeof v === "number") out.params[key] = finite2(v, key);
       else if (key === "eventType" && typeof v === "string" && /^[A-Za-z0-9 _-]{0,80}$/.test(v)) out.params[key] = v;
-      else if (key === "mode" && ["close", "ohlc", "tick"].includes(String(v)) || key === "strategy" && ["breakout", "news"].includes(String(v))) out.params[key] = String(v);
+      else if (key === "mode" && ["close", "ohlc", "tick"].includes(String(v)) || key === "strategy" && ["breakout", "news", "mean-reversion"].includes(String(v))) out.params[key] = String(v);
       else throw new Error(`Invalid strategy parameter: ${key}`);
     }
   }
@@ -1161,7 +1178,11 @@ function normalize(input) {
     close: p.mode === void 0 || p.mode === "close",
     daily: bounded(input.dailyLossPct, 4, 0.1, 20, "daily guard"),
     max: bounded(input.maxLossPct, 9, 0.1, 50, "maximum guard"),
-    balance: bounded(input.initialBalance, 1e4, 1, 1e8, "initial balance")
+    balance: bounded(input.initialBalance, 1e4, 1, 1e8, "initial balance"),
+    ruleId: input.ruleId === void 0 ? "2-step" : ["2-step", "1-step", "1-step-legacy"].includes(input.ruleId) ? input.ruleId : (() => {
+      throw new Error("Invalid FTMO rule version.");
+    })(),
+    phase: bounded(input.phase, 1, 1, input.ruleId === "2-step" || !input.ruleId ? 2 : 1, "phase", true)
   };
 }
 var notes = [
@@ -1173,7 +1194,7 @@ var notes = [
 ];
 function generateEA(input) {
   const p = normalize(input), ext = p.platform === "mt5" ? "mq5" : p.platform === "mt4" ? "mq4" : "cs";
-  return { filename: `FynxQuant_${p.symbol}_${p.tf}.${ext}`, mime: "text/plain;charset=utf-8", source: p.platform === "ctrader" ? csharp(p) : mql(p), notes: [...notes] };
+  return { filename: `FynxQuant_${p.symbol}_${p.tf}.${ext}`, mime: "text/plain;charset=utf-8", source: p.platform === "ctrader" ? csharp(p) : mql(p), notes: [...notes, ...p.platform === "mt5" ? ["Optional Edge heartbeat is disabled by default. Create a token in Profile, enter it only in MT5 EA inputs, and allow https://fynxfinanceworld.com in Expert Advisors WebRequest settings. All account positions are reported. Never share a .set file containing your token."] : []] };
 }
 function mql(p) {
   const five = p.platform === "mt5";
@@ -1204,6 +1225,7 @@ input int InpMagic = 770101;
 input int InpTesterServerUtcOffset = 0;
 datetime lastBar=0; string guardKey=""; double dayStartEq=0; int dayId=0;
 bool dailyLocked=false, maxLocked=false, waitingForDay=false;
+${five ? heartbeatMql(p) : ""}
 double Equity(){return ${five ? "AccountInfoDouble(ACCOUNT_EQUITY)" : "AccountEquity()"};}
 double Balance(){return ${five ? "AccountInfoDouble(ACCOUNT_BALANCE)" : "AccountBalance()"};}
 int PragueDay(){
@@ -1290,7 +1312,8 @@ double LotsFor(double stopDistance){
   double minimum=${five ? "SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MIN)" : "MarketInfo(_Symbol,MODE_MINLOT)"};
   double maximum=${five ? "SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MAX)" : "MarketInfo(_Symbol,MODE_MAXLOT)"};
   if(tickSize<=0||tickValue<=0||step<=0||stopDistance<=0)return 0;
-  double lots=MathFloor((Equity()*InpRiskPct/100.0)/(stopDistance/tickSize*tickValue)/step)*step;
+  double rawLots=(Equity()*InpRiskPct/100.0)/(stopDistance/tickSize*tickValue);
+  double lots=MathFloor((MathMin(rawLots,maximum)+1e-10)/step)*step;
   // Never round UP to minimum volume; that could exceed the tested risk budget.
   if(lots<minimum)return 0;
   return NormalizeDouble(MathMin(lots,maximum),8);
@@ -1304,12 +1327,12 @@ ${five ? "  trade.SetExpertMagicNumber(InpMagic);trade.SetDeviationInPoints(InpS
   if(GlobalVariableCheck(guardKey+"day")&&(int)GlobalVariableGet(guardKey+"day")==dayId){
     dayStartEq=GlobalVariableGet(guardKey+"eq");dailyLocked=GlobalVariableGet(guardKey+"daily")>0;waitingForDay=GlobalVariableGet(guardKey+"wait")>0;
   }else{dayStartEq=InpFirstDayEquity;waitingForDay=InpFirstDayEquity<=0;dailyLocked=false;}
-  SaveGuards();lastBar=iTime(_Symbol,InpTimeframe,0);EventSetTimer(1);
+  SaveGuards();${five ? "EdgeInitialize();" : ""}lastBar=iTime(_Symbol,InpTimeframe,0);EventSetTimer(1);
   if(waitingForDay)Print("Waiting for next Prague trading day: first-day starting equity was not supplied.");
   return INIT_SUCCEEDED;
 }
 void OnDeinit(const int reason){SaveGuards();EventKillTimer();}
-void OnTimer(){Guard();}
+void OnTimer(){Guard();${five ? "EdgeHeartbeat();" : ""}}
 void OnTick(){
   if(!Guard())return;
   datetime bar=iTime(_Symbol,InpTimeframe,0);if(bar<=0||bar==lastBar)return;lastBar=bar;
@@ -1321,10 +1344,14 @@ void OnTick(){
   int direction=close>high+InpEntryAtr*atr?1:(close<low-InpEntryAtr*atr?-1:0);if(direction==0)return;
   double stop=InpStopAtr*atr,target=InpTargetAtr*atr,lots=LotsFor(stop);if(lots<=0)return;
   double minStop=${five ? "(double)SymbolInfoInteger(_Symbol,SYMBOL_TRADE_STOPS_LEVEL)*_Point" : "MarketInfo(_Symbol,MODE_STOPLEVEL)*Point"};
-  if(stop<minStop||target<minStop){Print("Broker stop-distance restriction: skipped.");return;}
+${five ? "" : '  if(stop<minStop||target<minStop){Print("Broker stop-distance restriction: skipped.");return;}'}
 ${five ? `  MqlTick quote;if(!SymbolInfoTick(_Symbol,quote))return;
   double price=direction>0?quote.ask:quote.bid;
-  double sl=NormalizeDouble(price-direction*stop,_Digits),tp=NormalizeDouble(price+direction*target,_Digits);
+  double tickSize=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE);if(tickSize<=0)return;
+  double sl=NormalizeDouble((direction>0?MathFloor((price-stop+1e-10)/tickSize):MathCeil((price+stop-1e-10)/tickSize))*tickSize,_Digits);
+  double tp=NormalizeDouble((direction>0?MathCeil((price+target-1e-10)/tickSize):MathFloor((price-target+1e-10)/tickSize))*tickSize,_Digits);
+  if(MathAbs(price-sl)<minStop||MathAbs(tp-price)<minStop){Print("Broker stop-distance restriction: skipped.");return;}
+  lots=LotsFor(MathAbs(price-sl));if(lots<=0)return;
   bool ok=direction>0?trade.Buy(lots,_Symbol,0,sl,tp,"FynxQuant"):trade.Sell(lots,_Symbol,0,sl,tp,"FynxQuant");
   if(!ok)Print("Entry failed: ",trade.ResultRetcodeDescription());` : `  RefreshRates();double price=direction>0?Ask:Bid;
   double sl=NormalizeDouble(price-direction*stop,Digits),tp=NormalizeDouble(price+direction*target,Digits);
@@ -1332,6 +1359,61 @@ ${five ? `  MqlTick quote;if(!SymbolInfoTick(_Symbol,quote))return;
   if(AccountFreeMarginCheck(_Symbol,type,lots)<=0){Print("Insufficient free margin: skipped.");return;}
   int ticket=OrderSend(_Symbol,type,lots,price,InpSlippagePoints,sl,tp,"FynxQuant",InpMagic,0,clrNONE);
   if(ticket<0)Print("Entry failed: ",GetLastError());`}
+}
+`;
+}
+function heartbeatMql(p) {
+  return String.raw`// Edge Radar: reporting is optional; trading never depends on an HTTP response.
+input bool InpEdgeEnabled = false;
+input string InpEdgeToken = ""; // Paste Profile's shown-once token here; do not share a .set file.
+input string InpEdgeRule = "${p.ruleId}";
+input int InpEdgePhase = ${p.phase};
+input double InpEdgeDayStartBalance = 0; // Verified balance at Prague midnight; 0 = unknown.
+input double InpEdgeHighWaterBalance = 0; // Highest historical end-of-day balance; 0 = unknown.
+datetime edgeLastSend=0,edgeLastObserved=0;
+int edgeDay=0;double edgeDayBalance=0,edgeHighBalance=0,edgePreviousBalance=0;
+string EdgeNumber(double value){return MathIsValidNumber(value)?DoubleToString(value,10):"null";}
+string EdgePositive(double value){return value>0?EdgeNumber(value):"null";}
+string EdgeString(string value){StringReplace(value,"\\","\\\\");StringReplace(value,"\"","\\\"");StringReplace(value,"\r"," ");StringReplace(value,"\n"," ");StringReplace(value,"\t"," ");return "\""+value+"\"";}
+string EdgeSymbol(string name){return name==_Symbol?"${p.symbol}":name;}
+string EdgeDayString(int day){return StringFormat("%04d-%02d-%02d",day/10000,(day/100)%100,day%100);}
+void EdgeInitialize(){
+  edgeDay=PragueDay();edgeDayBalance=InpEdgeDayStartBalance;edgeHighBalance=InpEdgeHighWaterBalance;edgePreviousBalance=Balance();
+  if(GlobalVariableCheck(guardKey+"edgeDay")&&(int)GlobalVariableGet(guardKey+"edgeDay")==edgeDay)edgeDayBalance=GlobalVariableGet(guardKey+"edgeBalance");
+  if(GlobalVariableCheck(guardKey+"edgeHigh"))edgeHighBalance=MathMax(edgeHighBalance,GlobalVariableGet(guardKey+"edgeHigh"));
+  edgeLastObserved=TimeGMT();
+}
+void EdgeHeartbeat(){
+  if(!InpEdgeEnabled||StringLen(InpEdgeToken)==0||MQLInfoInteger(MQL_TESTER)||!TerminalInfoInteger(TERMINAL_CONNECTED))return;
+  datetime now=TimeGMT();int today=PragueDay();
+  if(today!=edgeDay){edgeDay=today;edgeDayBalance=now-edgeLastObserved<=60?Balance():0;if(edgeHighBalance>0&&now-edgeLastObserved<=60)edgeHighBalance=MathMax(edgeHighBalance,edgePreviousBalance);}
+  edgeLastObserved=now;edgePreviousBalance=Balance();
+  GlobalVariableSet(guardKey+"edgeDay",edgeDay);GlobalVariableSet(guardKey+"edgeBalance",edgeDayBalance);GlobalVariableSet(guardKey+"edgeHigh",edgeHighBalance);
+  if(now-edgeLastSend<60)return;edgeLastSend=now;
+  string positions="[";int reported=0;
+  for(int i=0;i<PositionsTotal();i++){
+    ulong ticket=PositionGetTicket(i);if(ticket==0)continue;
+    string name=PositionGetString(POSITION_SYMBOL);bool buy=PositionGetInteger(POSITION_TYPE)==POSITION_TYPE_BUY;
+    double volume=PositionGetDouble(POSITION_VOLUME),entry=PositionGetDouble(POSITION_PRICE_OPEN),price=PositionGetDouble(POSITION_PRICE_CURRENT),sl=PositionGetDouble(POSITION_SL),tp=PositionGetDouble(POSITION_TP),profit=0;
+    string risk="null";if(sl>0&&OrderCalcProfit(buy?ORDER_TYPE_BUY:ORDER_TYPE_SELL,name,volume,price,sl,profit))risk=EdgeNumber(MathMax(0,-profit));
+    string currencies="[",base=SymbolInfoString(name,SYMBOL_CURRENCY_BASE),quote=SymbolInfoString(name,SYMBOL_CURRENCY_PROFIT);if(StringLen(base)>=3&&StringLen(base)<=8)currencies+=EdgeString(base);if(StringLen(quote)>=3&&StringLen(quote)<=8&&quote!=base){if(StringLen(currencies)>1)currencies+=",";currencies+=EdgeString(quote);}currencies+="]";
+    if(reported++>0)positions+=",";
+    positions+="{\"id\":"+EdgeString(IntegerToString(ticket))+",\"symbol\":"+EdgeString(EdgeSymbol(name))+",\"side\":"+EdgeString(buy?"buy":"sell")+",\"volume\":"+EdgeNumber(volume)+",\"entry\":"+EdgeNumber(entry)+",\"price\":"+EdgeNumber(price)+",\"sl\":"+EdgePositive(sl)+",\"tp\":"+EdgePositive(tp)+",\"riskToStop\":"+risk+",\"currencies\":"+currencies+"}";
+  }positions+="]";
+  string currency=AccountInfoString(ACCOUNT_CURRENCY),instruments="[]";MqlTick quote;
+  if(SymbolInfoTick(_Symbol,quote)){
+    double tickSize=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE),tickValue=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE_LOSS),vmin=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MIN),vmax=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MAX),step=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_STEP);
+    datetime tickUtc=quote.time-(TimeTradeServer()-TimeGMT());
+    if(tickSize>0&&tickValue>0&&vmin>0&&vmax>=vmin&&step>0&&quote.bid>0&&quote.ask>=quote.bid&&now-tickUtc<=180&&tickUtc<=now+5)
+      instruments="[{\"symbol\":\"${p.symbol}\",\"brokerSymbol\":"+EdgeString(_Symbol)+",\"tickSize\":"+EdgeNumber(tickSize)+",\"tickValueLoss\":"+EdgeNumber(tickValue)+",\"volumeMin\":"+EdgeNumber(vmin)+",\"volumeMax\":"+EdgeNumber(vmax)+",\"volumeStep\":"+EdgeNumber(step)+",\"digits\":"+IntegerToString(_Digits)+",\"stopLevel\":"+IntegerToString(SymbolInfoInteger(_Symbol,SYMBOL_TRADE_STOPS_LEVEL))+",\"accountCurrency\":"+EdgeString(currency)+",\"asOf\":"+IntegerToString(tickUtc)+",\"bid\":"+EdgeNumber(quote.bid)+",\"ask\":"+EdgeNumber(quote.ask)+"}]";
+  }
+  string account=AccountInfoString(ACCOUNT_SERVER)+":"+IntegerToString(AccountInfoInteger(ACCOUNT_LOGIN));
+  string body="{\"version\":1,\"sentAt\":"+IntegerToString(now)+",\"accountRef\":"+EdgeString(account)+",\"currency\":"+EdgeString(currency)+",\"balance\":"+EdgeNumber(Balance())+",\"equity\":"+EdgeNumber(Equity())+",\"dayStartEquity\":"+(waitingForDay?"null":EdgePositive(dayStartEq))+",\"dayStartBalance\":"+EdgePositive(edgeDayBalance)+",\"dayStartDate\":"+EdgeString(EdgeDayString(edgeDay))+",\"initialBalance\":"+EdgeNumber(InpInitBal)+",\"ruleId\":"+EdgeString(InpEdgeRule)+",\"phase\":"+IntegerToString(InpEdgePhase)+",\"safetyDailyPct\":"+EdgeNumber(InpDailyStop)+",\"highWaterBalance\":"+EdgePositive(edgeHighBalance)+",\"positions\":"+positions+",\"instruments\":"+instruments+"}";
+  uchar encoded[];StringToCharArray(body,encoded,0,WHOLE_ARRAY,CP_UTF8);char data[],result[];int size=ArraySize(encoded)-1;ArrayResize(data,size);for(int i=0;i<size;i++)data[i]=(char)encoded[i];
+  string responseHeaders,headers="Content-Type: application/json\r\nAuthorization: Bearer "+InpEdgeToken+"\r\n";
+  int status=WebRequest("POST","https://fynxfinanceworld.com/api/edge/heartbeat",headers,1500,data,result,responseHeaders);
+  // Never log headers, token, body or provider response. A status code is sufficient.
+  if(status!=202)Print("Edge heartbeat unavailable (HTTP status ",status,"). Check Profile and WebRequest settings.");
 }
 `;
 }
@@ -1451,7 +1533,7 @@ namespace cAlgo.Robots
 function createBacktestStream(input = {}) {
   const p = normalizeParams({ ...input, mode: "tick" });
   if (input.mode && input.mode !== "tick") throw new Error("Streaming execution requires tick-backed M1 bars.");
-  const start = Math.max(p.startIndex || 0, p.lookback + p.atrPeriod + 1), commission = p.costPips * p.pipSize / 2, slip = p.slippagePips * p.pipSize;
+  const start = Math.max(p.startIndex || 0, Math.max(p.lookback, p.strategy === "mean-reversion" ? p.meanLookback : 0) + p.atrPeriod + 1), commission = p.costPips * p.pipSize / 2, slip = p.slippagePips * p.pipSize;
   const formatter = new Intl.DateTimeFormat("en-CA", { timeZone: p.dayTimezone, year: "numeric", month: "2-digit", day: "2-digit" });
   const dayKey = (t) => p.dayTimezone === "UTC" ? new Date(timeMs(t)).toISOString().slice(0, 10) : formatter.format(timeMs(t));
   let pendingBar = null, previousTime = -Infinity, previousClose = NaN, index = -1, atr = NaN, atrSum = 0;
@@ -1553,8 +1635,10 @@ function createBacktestStream(input = {}) {
       equity = state.position ? mark(closingPrice()) : balance;
       day.minEquity = Math.min(day.minEquity, equity);
       const justExited = trades.length && trades[trades.length - 1].exitIndex === index;
-      if (p.strategy === "breakout" && !last && !state.position && !state.pending && !justExited && equity > 0 && atr > 0 && history.length >= p.lookback) {
-        const range = history.slice(-p.lookback), high = Math.max(...range), low = Math.min(...range), side = bar.close > high + p.entryK * atr ? 1 : bar.close < low - p.entryK * atr ? -1 : 0;
+      if (p.strategy !== "news" && !last && !state.position && !state.pending && !justExited && equity > 0 && atr > 0 && history.length >= p.lookback) {
+        const range = history.slice(-(p.strategy === "mean-reversion" ? p.meanLookback : p.lookback)), high = Math.max(...range), low = Math.min(...range);
+        const average = range.reduce((s, v) => s + v, 0) / range.length, sd = Math.sqrt(range.reduce((s, v) => s + (v - average) ** 2, 0) / Math.max(1, range.length - 1));
+        const side = p.strategy === "mean-reversion" ? sd > 0 ? bar.close < average - p.meanEntryZ * sd ? 1 : bar.close > average + p.meanEntryZ * sd ? -1 : 0 : 0 : bar.close > high + p.entryK * atr ? 1 : bar.close < low - p.entryK * atr ? -1 : 0;
         if (side) state.pending = { side, atr };
       }
       if (!Number.isFinite(equity) || equity < 0) {
@@ -1576,7 +1660,7 @@ function createBacktestStream(input = {}) {
       }
     }
     history.push(bar.close);
-    if (history.length > p.lookback) history.shift();
+    if (history.length > Math.max(p.lookback, p.meanLookback)) history.shift();
   };
   return {
     push(bars) {
@@ -1611,9 +1695,42 @@ async function backtestStreaming(source, params = {}) {
   for await (const batch of source) stream.push(batch);
   return stream.finish();
 }
+
+// lib/edge/config.ts
+var EDGE_CONFIG = {
+  erPeriod: 20,
+  adxPeriod: 14,
+  atrPeriod: 14,
+  volatilityWindow: 252,
+  regimes: { strong: { er: 0.45, adx: 30 }, trend: { er: 0.3, adx: 22 }, weakER: 0.2, rangeVolatility: 50 },
+  volatilityBuckets: { low: 33, high: 66 },
+  cotHistoryYears: 3,
+  cotMinimumReports: 104,
+  crowdingQuantile: 0.85,
+  similarDesired: 30,
+  similarMinimum: 15,
+  shrinkagePriorTrades: 30,
+  minimumBucketTrades: 10,
+  weights: { regime: 40, volatility: 25, record: 20, positioningPositive: 15, positioningNegative: 10, eventPenalty: 20 },
+  recordMapping: { zeroAtAvgR: -0.25, fullAtAvgR: 0.5 },
+  fitThreshold: 70,
+  maybeThreshold: 45,
+  mood: { riskOffVix: 25, riskOnVix: 15, threshold: 0.25, minimumMoveParts: 4 },
+  dailyFreshnessMs: 4 * 864e5,
+  correlationWindow: 20,
+  correlationWarning: 0.8,
+  brokerFreshnessMs: 18e4,
+  quoteFreshnessMs: 9e5
+};
+var DEFAULT_STRATEGIES = [
+  { id: "builtin-atr-breakout", name: "ATR breakout", kind: "breakout", params: { strategy: "breakout", lookback: 20, atrPeriod: 14, entryK: 0.25, stopS: 2, targetTP: 4, maxHold: 20, riskPct: 0.5, costPips: 1.5, mode: "ohlc" }, description: "Completed close breaks the prior 20 closes by 0.25 ATR; next-bar entry, 2 ATR stop, 4 ATR target, 20-bar hold." },
+  { id: "builtin-mean-reversion", name: "Mean reversion", kind: "mean-reversion", params: { strategy: "mean-reversion", meanLookback: 20, meanEntryZ: 1.5, lookback: 20, atrPeriod: 14, entryK: 0, stopS: 2, targetTP: 2, maxHold: 10, riskPct: 0.5, costPips: 1.5, mode: "ohlc" }, description: "Fade a completed close more than 1.5 sample standard deviations from the preceding 20 closes; next-bar entry, 2 ATR stop/target, 10-bar hold." },
+  { id: "builtin-news-drift", name: "News drift", kind: "news", params: { strategy: "news", lookback: 20, atrPeriod: 14, entryK: 0.25, stopS: 2, targetTP: 4, maxHold: 5, riskPct: 0.5, costPips: 1.5, mode: "close", newsWindowMinutes: 60 }, description: "Follow the recorded high-impact release day close-to-close move beyond 0.25 ATR; daily proxy, not a 60-minute fill. Requires actual calendar history." }
+];
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   DEFAULT_PARAMS,
+  EDGE_DEFAULT_STRATEGIES,
   FTMO_ACCOUNT_SIZES,
   FTMO_RULES,
   QUANT_STEPS,
@@ -1639,6 +1756,7 @@ async function backtestStreaming(source, params = {}) {
   keywordParser,
   lowerBound,
   mean,
+  meanReversionSignal,
   monteCarlo,
   mulberry32,
   normalizeParams,

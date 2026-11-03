@@ -39,7 +39,7 @@ for (const page of pages) {
   if (!/data-fynx-layout="workspace"/.test(html) && !/data-fynx-section="TOOLS"/.test(html)) {
     const active = page.startsWith('edge-radar/') ? '/edge-radar/' : page.startsWith('tools/') ? '/tools/research-desk.html' : `/${page}`;
     const links = navigation.map(([label, href]) => `<a href="${href}"${href === active ? ' aria-current="page"' : ''}>${label}${['Quant Analyst','Edge Radar'].includes(label) ? '<span class="quant-new-badge">NEW</span>' : ''}</a>`).join('');
-    const nav = `\n<!-- terminal-navigation:start -->\n<nav class="terminal-navigation" aria-label="Workspace navigation">${links}</nav>\n<!-- terminal-navigation:end -->\n`;
+    const nav = `\n<!-- terminal-navigation:start -->\n<nav class="terminal-navigation" aria-label="Workspace navigation">${links}</nav>${page.startsWith('edge-radar/')?'<div class="terminal-ticker-host" data-terminal-ticker role="region" aria-label="Market snapshot"><span class="edge-ticker-loading">Market quotes · loading attributed data…</span></div>':''}\n<!-- terminal-navigation:end -->\n`;
     html = html.replace('</header>', '</header>' + nav);
   }
   fs.writeFileSync(file, html);

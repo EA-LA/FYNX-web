@@ -43,7 +43,7 @@
 
   function quickAdd() {
     const action = link('+ Quick Add', '/journal.html#quick-add', 'terminal-quick-add');
-    action.setAttribute('aria-label', 'Add a trade in your journal');
+    action.setAttribute('aria-label', 'Quick Add: add a trade in your journal');
     action.addEventListener('click', function (event) {
       const nativeAction = document.getElementById('quickAddBtn');
       if (!nativeAction) return;
@@ -81,6 +81,7 @@
 
   function utilityBar(dateChip) {
     const bar = element('div', 'terminal-utility');
+    bar.setAttribute('role','region');bar.setAttribute('aria-label','Site information');
     const inner = element('div', 'terminal-header-inner');
     const clock = element('div', 'terminal-header-clock');
     const date = dateChip || element('span');
@@ -195,6 +196,7 @@
         if (event.key === 'Enter') brand.click();
       });
     }
+    if(body.classList.contains('edge-page')){const wordmark=brand.querySelector('strong');if(wordmark&&!wordmark.textContent.endsWith(' '))wordmark.append(document.createTextNode(' '));}
     brand.after(searchForm());
 
     // The landing page's original category dropdowns remain available in the
@@ -247,6 +249,7 @@
     }
     mountTopics(body);
     mountTicker(body);
+    if(body.classList.contains('edge-page')&&window.matchMedia('(max-width:639px)').matches){const current=workspaceNav?.querySelector('[aria-current="page"]');if(current)workspaceNav.scrollLeft=current.offsetLeft-workspaceNav.offsetLeft-workspaceNav.clientWidth/2+current.clientWidth/2;}
     startClock();
     document.addEventListener('visibilitychange', updateClock);
     window.addEventListener('pagehide', function () { window.clearInterval(clockInterval); clockInterval = null; window.clearTimeout(quickAddTimer); });

@@ -16,7 +16,10 @@
     "quant:nightly": "node scripts/quant-nightly.cjs",
     "build:edge": "node scripts/build-edge.cjs",
     "dev:edge": "node scripts/quant-dev-server.cjs",
-    "test:edge": "tsx --test tests/edge/*.test.ts tests/edge/*.test.cjs"
+    "test:edge": "node --test tests/edge/*.test.cjs",
+    "lint:edge:setup": "npm ci --prefix scripts/edge-lint",
+    "lint:edge": "node scripts/edge-lint/node_modules/eslint/bin/eslint.js --config eslint.edge.config.mjs lib/edge assets/js/edge backend/edge scripts/edge-*.cjs",
+    "typecheck:edge": "tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --strict --skipLibCheck lib/edge/index.ts lib/quant/index.ts"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",

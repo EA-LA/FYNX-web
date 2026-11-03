@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-03T21:04:05.487Z",
+  "generatedAt": "2026-11-03T21:10:48.803Z",
   "scope": "Local pure-engine benchmark; not provider, endpoint, browser or production latency evidence",
   "synthetic": true,
-  "sourceHash": "68194c3ce80da0aa9ee30aa0b042459c2116ba70664759d3068d92fd542f933b",
+  "sourceHash": "3fa83728b990a7f796602b68c904c1a583c4dfc1aa6dcee4bf2f649658ddb1e7",
   "runtime": "v24.13.0",
   "workload": {
     "markets": 8,
@@ -13,14 +13,14 @@
     "pointInTimeCOTUnavailable": true
   },
   "milliseconds": {
-    "cold": 525.9970000000001,
+    "cold": 502.568542,
     "warm": [
-      405.29920900000013,
-      441.4827499999999,
-      409.4219169999999
+      391.6190419999999,
+      405.99249999999995,
+      396.7984580000002
     ],
-    "warmMean": 418.7346253333333
+    "warmMean": 398.1366666666667
   },
-  "snapshotBytes": 1215930,
+  "snapshotBytes": 1215954,
   "marketResults": 8
 }

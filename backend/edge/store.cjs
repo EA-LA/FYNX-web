@@ -4,7 +4,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { Store } = require('../quant/store.cjs');
 const { hash, fail } = require('../quant/common.cjs');
-const TABLES = new Set(['edge_snapshots','market_state_daily','cot_weekly','event_moves','strategy_trade_tags','alerts','ea_tokens','ea_heartbeats','user_preferences','notifications','delivery_claims','provider_status','fred_vix','snapshot_jobs']);
+const TABLES = new Set(['edge_snapshots','market_state_daily','cot_weekly','event_moves','strategy_trade_tags','alerts','ea_tokens','ea_heartbeats','user_preferences','notifications','delivery_claims','provider_status','fred_vix','snapshot_jobs','plan_inputs']);
 class EdgeStore extends Store {
   constructor(root = path.resolve(process.env.EDGE_DATA_DIR || path.join(__dirname, '../../.edge-data'))) { super(root); }
   key(table, id) { if (!TABLES.has(table) || typeof id !== 'string' || !id || id.length > 1000) throw fail('Invalid Edge storage key.'); return `${table}/${hash(id)}`; }
@@ -19,6 +19,7 @@ class EdgeStore extends Store {
     if(!acquired)throw fail('Edge storage is busy. Retry shortly.',503,'STORE_BUSY');
     try{const value=await change(await this.get(table,id));await this.put(table,id,value);return value;}finally{await fs.rmdir(lock).catch(()=>{});}
   }
+  async pruneComputationCache({now=Date.now(),days=30}={}) { if(!Number.isInteger(days)||days<1||days>365)throw fail('Cache retention must be 1–365 days.');let removed=0;for(const key of await this.list('strategy_trade_tags')){const record=await this.read(key);if(!record)continue;let created=Date.parse(record.value?.createdAt||'');if(!Number.isFinite(created)){try{created=(await fs.stat(this.file(key))).mtimeMs;}catch(e){if(e.code==='ENOENT')continue;throw e;}}if(created<now-days*86400000){await this.delete('strategy_trade_tags',record.id);removed++;}}return removed;}
   async claim(id,{leaseMs=30*60000,now=Date.now(),metadata={}}={}) { const token=crypto.randomUUID();let claimed=false;const record=await this.mutate('delivery_claims',id,old=>{if(old?.status==='complete'||old?.status==='running'&&old.leaseUntil>now)return old;claimed=true;return {...metadata,id,token,status:'running',claimedAt:new Date(now).toISOString(),leaseUntil:now+leaseMs};});return {claimed,token:claimed?token:null,record}; }
   async completeClaim(id,token,{status='complete',result=null,now=Date.now()}={}) {return this.mutate('delivery_claims',id,old=>{if(old?.token!==token)throw fail('Scheduled claim no longer belongs to this runner.',409,'CLAIM_CHANGED');return {...old,status,finishedAt:new Date(now).toISOString(),result,leaseUntil:0};});}
 }

@@ -115,3 +115,13 @@ test('mood excludes old sessions and trade plan cannot validate stale candles wi
   const assets=['USDJPY','USDCHF','XAUUSD','AUDUSD','SPX500'].map(symbol=>({symbol,state:{atr:value(1),close:value(100)},returns:[{date:iso(1).slice(0,10),return:.01}]}));assert.equal(e.marketMood(assets,[{date:iso(19),close:20,availableAt:iso(20)}],iso(21)).value,null);
   const source=bars(60),result=e.computeTradePlan({symbol:'EURUSD',asOf:iso(70),state:e.computeRegime(source,iso(70)),bars:source,strategy,accountEquity:10000});assert.match(result.reason,/stale/);
 });
+test('live correlation warnings reuse only matching 20-session cached coefficients and preserve direction',()=>{
+  const returns=Array.from({length:20},(_,i)=>({date:iso(i).slice(0,10),return:Math.sin(i)*.01})),positions=[{id:'a',symbol:'EURUSD',side:'buy',riskToStop:100},{id:'b',symbol:'USDCHF',side:'sell',riskToStop:150}],a={symbol:'EURUSD',returns,correlations:[{symbol:'USDCHF',value:-.9,observations:20}]},b={symbol:'USDCHF',returns,correlations:[]};
+  const cached=e.correlationRisk(positions,[a,b]);assert.equal(cached.length,1);near(cached[0].signedCorrelation,.9);assert.equal(cached[0].observations,20);
+  assert.equal(e.correlationRisk(positions,[{...a,correlations:[{symbol:'USDCHF',value:-.9,observations:60}]},b]).length,0);
+  const same=e.correlationRisk([{id:'a',symbol:'EURUSD',side:'buy',riskToStop:100},{id:'b',symbol:'EURUSD',side:'buy',riskToStop:100}],[a]);assert.equal(same.length,1);near(same[0].signedCorrelation,1);
+  assert.equal(e.correlationRisk(positions.map(p=>({...p,symbol:'EURUSD',side:'buy'})),[{...a,returns:returns.map(r=>({...r,return:0}))}]).length,0);
+});
+test('imported return-only strategies never inherit a fictitious executable breakout plan',()=>{
+  const source=bars(60),asOf=iso(60),plan=e.computeTradePlan({symbol:'EURUSD',asOf,state:e.computeRegime(source,asOf),bars:source,strategy:{id:'imported',name:'Imported returns',kind:'breakout',params:{},returns:[{date:iso(1),return:.01}]},accountEquity:10000});assert.equal(plan.available,false);assert.equal(plan.model,null);assert.equal(plan.riskPct,null);assert.equal(plan.riskAmount,null);assert.equal(plan.stopDistance,null);assert.equal(plan.entry,null);assert.match(plan.reason,/return-only/);
+});

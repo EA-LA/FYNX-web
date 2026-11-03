@@ -15,3 +15,51 @@ body.edge-page .edge-workspace h1{font-size:clamp(44px,5.3vw,72px)!important;fon
 body.edge-page .edge-workspace .edge-deck{color:#17191c!important;font-size:24px!important;line-height:1.4!important}
 body.edge-page .edge-workspace .edge-hero-copy{background:transparent!important}
 @media(max-width:639px){body.edge-page .edge-workspace h1{font-size:44px!important}body.edge-page .edge-workspace .edge-deck{font-size:20px!important}}
+html body.edge-page #edge-main h1{font-size:clamp(44px,5.3vw,72px)!important;line-height:1.02!important}
+html body.edge-page #edge-main .edge-primary,html body.edge-page .edge-dialog .edge-primary{color:#fff!important;-webkit-text-fill-color:#fff!important}
+html body.edge-page #edge-main .edge-guard :is(h2,p,strong){color:#fff!important;-webkit-text-fill-color:#fff!important}
+html body.edge-page #edge-main .edge-guard :is(small,.edge-eyebrow){color:#c6cbc3!important;-webkit-text-fill-color:#c6cbc3!important}
+html body.edge-page #edge-main .edge-guard .edge-button{color:#17191c!important;-webkit-text-fill-color:#17191c!important}
+@media(max-width:639px){
+ html body.edge-page #edge-main h1{font-size:44px!important}
+ html body.edge-page[data-fynx-terminal].terminal-masthead-ready>.terminal-topic-nav{display:none!important}
+ html body.edge-page[data-fynx-terminal].terminal-masthead-ready .terminal-public-masthead{grid-template-columns:1fr auto!important;gap:8px!important;padding:10px 16px!important;min-height:62px!important}
+ html body.edge-page[data-fynx-terminal].terminal-masthead-ready .terminal-public-masthead>.terminal-header-search{display:none!important}
+ html body.edge-page[data-fynx-terminal].terminal-masthead-ready .terminal-public-masthead>nav{grid-column:2!important;grid-row:1!important;gap:6px!important}
+ html body.edge-page[data-fynx-terminal].terminal-masthead-ready .terminal-public-masthead>nav>a{display:none!important}
+ html body.edge-page[data-fynx-terminal] .terminal-edition select{min-height:44px!important}
+ html body.edge-page[data-fynx-terminal] .terminal-header-inner{min-height:46px!important}
+ html body.edge-page[data-fynx-terminal] .terminal-ticker-controls button{min-width:44px!important;min-height:44px!important}
+ html body.edge-page[data-fynx-terminal] .terminal-ticker-inner a{min-height:44px!important}
+ html body.edge-page #edge-main .edge-cot-row a,html body.edge-page #edge-main .edge-footer a{display:inline-flex;align-items:center;min-height:44px}
+}
+html body.edge-page .terminal-ticker-host{min-height:36px}
+html body.edge-page #edge-main .edge-summary{min-height:150px}
+html body.edge-page:not([data-edge-symbol=""]) #edge-main .edge-back{display:inline-flex}
+html body.edge-page[data-edge-symbol=""] #edge-main .edge-deck{min-height:68px}
+@media(max-width:639px){
+ html body.edge-page .terminal-ticker-host{min-height:46px}
+ html body.edge-page #edge-main .edge-status{min-height:64px}
+ html body.edge-page #edge-main .edge-summary{min-height:159px}
+ html body.edge-page:not([data-edge-symbol=""]) #edge-main .edge-summary{min-height:272px}
+ html body.edge-page[data-edge-symbol=""] #edge-main .edge-deck{min-height:84px}
+}
+@media(max-width:639px){
+ html body.edge-page>.terminal-ticker-host{display:flex!important;min-height:46px;height:46px;overflow:hidden}
+ html body.edge-page>.discovery-header{height:68px!important;min-height:68px!important;box-sizing:border-box!important}
+ html body.edge-page:not(.terminal-masthead-ready)>.discovery-header{margin-top:46px!important;overflow:hidden}
+ html body.edge-page:not(.terminal-masthead-ready)>.discovery-header>*{visibility:hidden}
+ html body.edge-page>.terminal-utility{height:46px;min-height:46px}
+ html body.edge-page>.terminal-navigation{height:46px!important;min-height:46px!important}
+ html body.edge-page #edge-updated{min-height:32px}
+}
+.edge-mobile-title{display:none}
+@media(max-width:639px){.edge-desktop-title{display:none}.edge-mobile-title{display:inline}}
+@media(max-width:639px){
+ html body.edge-page[data-fynx-terminal] .terminal-brand{min-height:44px!important}
+ html body.edge-page[data-fynx-terminal] #theme-toggle{min-height:44px!important}
+ html body.edge-page #edge-main .edge-fit-row>a{display:inline-flex;align-items:center;min-height:44px}
+}
+html body.edge-page>.terminal-ticker-host{display:flex!important;min-height:36px;height:36px;overflow:hidden}
+.edge-ticker-loading{font:11px/1.4 'IBM Plex Mono',monospace;color:#595d5b;padding:10px 24px}
+@media(max-width:639px){html body.edge-page>.terminal-ticker-host{min-height:46px;height:46px}.edge-ticker-loading{padding:14px 16px}}

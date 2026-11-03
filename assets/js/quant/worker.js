@@ -238,7 +238,9 @@
     integer(p.newsWindowMinutes, "News window", 1, 1440);
     finite(p.initialEquity, "Initial equity", 1, 1e12);
     if (!["close", "ohlc", "tick"].includes(p.mode)) throw new Error("Choose close, ohlc or tick execution.");
-    if (!["breakout", "news"].includes(p.strategy)) throw new Error("Choose breakout or news strategy.");
+    if (!["breakout", "mean-reversion", "news"].includes(p.strategy)) throw new Error("Choose breakout, mean-reversion or news strategy.");
+    p.meanLookback = integer(p.meanLookback ?? 20, "Mean-reversion lookback", 2, 500);
+    p.meanEntryZ = finite(p.meanEntryZ ?? 1.5, "Mean-reversion entry Z", 0.1, 10);
     if (p.captureIntraday !== void 0 && typeof p.captureIntraday !== "boolean") throw new Error("captureIntraday must be boolean.");
     if (p.maxIntradayMarks !== void 0) integer(p.maxIntradayMarks, "Intraday capture budget", 100, 5e4);
     if (p.captureAfterDays !== void 0) integer(p.captureAfterDays, "Intraday capture warmup days", 0, 3660);
@@ -304,6 +306,18 @@
       low = Math.min(low, bars[j].close);
     }
     return bars[i].close > high + p.entryK * atr ? 1 : bars[i].close < low - p.entryK * atr ? -1 : 0;
+  }
+  function meanReversionSignal(bars, i, p) {
+    const n = p.meanLookback ?? 20, z = p.meanEntryZ ?? 1.5;
+    if (i < n) return 0;
+    let sum = 0;
+    for (let j = i - n; j < i; j++) sum += bars[j].close;
+    const average = sum / n;
+    let ss = 0;
+    for (let j = i - n; j < i; j++) ss += (bars[j].close - average) ** 2;
+    const sd = Math.sqrt(ss / (n - 1));
+    if (!(sd > 0)) return 0;
+    return bars[i].close < average - z * sd ? 1 : bars[i].close > average + z * sd ? -1 : 0;
   }
   function relevantEvents(events, eventType) {
     if (!events?.length) throw new Error("News strategies require actual high-impact economic-calendar events. Configure a calendar provider first.");
@@ -386,7 +400,7 @@
   function backtest(bars, input = {}) {
     const p = normalizeParams(input);
     validateBars(bars, p.mode);
-    const start = Math.max(p.startIndex || 0, p.lookback + p.atrPeriod + 1);
+    const start = Math.max(p.startIndex || 0, Math.max(p.lookback, p.strategy === "mean-reversion" ? p.meanLookback : 0) + p.atrPeriod + 1);
     if (start >= bars.length - 1) throw new Error(`Not enough history: at least ${start + 2} bars are needed for these settings.`);
     const atr = p.mode === "close" ? closeATR(bars.map((b) => b.close), p.atrPeriod) : wilderATR(bars, p.atrPeriod);
     const events = p.strategy === "news" && p.mode !== "tick" ? newsSignals(bars, atr, p) : /* @__PURE__ */ new Map();
@@ -478,7 +492,7 @@
       day.minEquity = Math.min(day.minEquity, equity);
       const justExited = trades.length && trades[trades.length - 1].exitIndex === i;
       if (!position.current && !pending && !justExited && i < bars.length - 1 && equity > 0) {
-        const side = p.strategy === "news" ? p.mode === "tick" ? 0 : events.get(i) || 0 : breakoutSignal(bars, i, atr[i], p);
+        const side = p.strategy === "news" ? p.mode === "tick" ? 0 : events.get(i) || 0 : p.strategy === "mean-reversion" ? meanReversionSignal(bars, i, p) : breakoutSignal(bars, i, atr[i], p);
         if (side) {
           if (p.mode === "close") {
             enter(side, atr[i], i, false);
@@ -515,6 +529,7 @@
 
   // lib/quant/analytics.ts
   function optimize(bars, params = {}, options = {}, onProgress) {
+    if (params.strategy === "mean-reversion") throw new Error("Mean-reversion optimization requires a Z-score grid; the entry-ATR grid does not apply.");
     const p = normalizeParams(params), metric = options.metric || "sharpe", minTrades = integer(options.minTrades ?? 10, "Minimum trades", 1, 1e4), fraction = finite(options.trainFraction ?? 0.7, "Train fraction", 0.5, 0.9);
     if (!["sharpe", "profitFactor", "totalReturn", "returnMaxDD"].includes(metric)) throw new Error("Unsupported optimization metric.");
     const entryValues = options.entryValues || Array.from({ length: 9 }, (_, i) => i * 0.25), stopValues = options.stopValues || Array.from({ length: 8 }, (_, i) => (i + 1) * 0.5);
@@ -792,6 +807,33 @@
     const verdict = stats.bothPassRate >= 0.7 ? "Most simulated attempts passed at this risk scale; historical resampling cannot establish future reliability." : stats.bothPassRate >= 0.3 ? "Results are mixed. Loss-limit breaches and timeouts remain material." : "Most simulated attempts did not pass. Review losses and timeouts before increasing risk.";
     return { stats, riskScan, verdict, rules, seed: options.seed, attempts: options.attempts, horizon: options.horizon, accountSize: options.accountSize, riskScale: options.riskScale, intradayBufferPct: options.intradayBufferPct, notes: ["Simulated from past returns. An estimate, not a promise. Confirm current rules on ftmo.com.", "Minimum days count days with positions opened, when that metadata is available. Imported return-only series infer a trading day from a nonzero return.", "Each phase starts with the original account balance. The horizon is a simulation cap, not an FTMO time limit.", source.every((r) => r.intradayComplete && r.intradayMin !== void 0 && r.dayTimezone === "Europe/Prague") ? "Recorded intraday equity minima are checked and no daily buffer is applied. Validate that day boundaries match Europe/Prague." : `Daily-only paths use a ${options.intradayBufferPct}% initial-balance buffer; daily-close returns cannot prove intraday compliance.`, "Bootstrap transitions may splice different open-position states; pass rates are statistical estimates rather than broker-rule certification."] };
   }
+
+  // lib/edge/config.ts
+  var EDGE_CONFIG = {
+    erPeriod: 20,
+    adxPeriod: 14,
+    atrPeriod: 14,
+    volatilityWindow: 252,
+    regimes: { strong: { er: 0.45, adx: 30 }, trend: { er: 0.3, adx: 22 }, weakER: 0.2, rangeVolatility: 50 },
+    volatilityBuckets: { low: 33, high: 66 },
+    cotHistoryYears: 3,
+    cotMinimumReports: 104,
+    crowdingQuantile: 0.85,
+    similarDesired: 30,
+    similarMinimum: 15,
+    shrinkagePriorTrades: 30,
+    minimumBucketTrades: 10,
+    weights: { regime: 40, volatility: 25, record: 20, positioningPositive: 15, positioningNegative: 10, eventPenalty: 20 },
+    recordMapping: { zeroAtAvgR: -0.25, fullAtAvgR: 0.5 },
+    fitThreshold: 70,
+    maybeThreshold: 45,
+    mood: { riskOffVix: 25, riskOnVix: 15, threshold: 0.25, minimumMoveParts: 4 },
+    dailyFreshnessMs: 4 * 864e5,
+    correlationWindow: 20,
+    correlationWarning: 0.8,
+    brokerFreshnessMs: 18e4,
+    quoteFreshnessMs: 9e5
+  };
 
   // lib/quant/worker.ts
   self.onmessage = ({ data }) => {

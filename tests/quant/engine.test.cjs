@@ -9,6 +9,7 @@ const date=i=>new Date(Date.UTC(2020,0,1+i)).toISOString();
 const rows=values=>values.map((r,i)=>({date:date(i).slice(0,10),return:r,traded:r!==0,flat:true}));
 const close=(actual,expected,tolerance=1e-9)=>assert.ok(Math.abs(actual-expected)<tolerance,`${actual} differs from ${expected}`);
 const params={lookback:2,atrPeriod:2,entryK:0,stopS:1,targetTP:2,maxHold:4,costPips:0,riskPct:1,pipSize:.01};
+test('entry-ATR optimization rejects mean reversion before scoring a meaningless grid',()=>{let progress=false;assert.throws(()=>q.optimize(realBars,{strategy:'mean-reversion'},{entryValues:[0,.25],stopValues:[1,2]},()=>progress=true),/Z-score grid/);assert.equal(progress,false);});
 function ohlc(){return [100,101,100,101,100,104,104,104,104,104,104,104].map((c,i)=>({time:date(i),open:c,high:c+.5,low:c-.5,close:c}));}
 
 test('absolute daily ATR uses only trailing close changes',()=>{
