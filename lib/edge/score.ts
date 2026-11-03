@@ -13,7 +13,7 @@ function relativePoints(tags:TradeTag[],field:'regime'|'volatilityBucket',value:
 /** Integer contributions are adjusted at the clipping boundary, retaining raw points for disclosure. */
 export function clipScoreParts(parts:ScorePart[]):{score:number|null;parts:ScorePart[]}{
   if(parts.some(p=>p.rawPoints===null))return {score:null,parts:parts.map(p=>({...p,points:p.rawPoints===null?null:Math.round(p.rawPoints)}))};
-  const displayed=parts.map(p=>({...p,points:Math.round(p.rawPoints!)}));let sum=displayed.reduce((s,p)=>s+p.points!,0),target=clamp(sum,0,100),change=target-sum;
+  const displayed=parts.map(p=>({...p,points:Math.round(p.rawPoints!)}));const sum=displayed.reduce((s,p)=>s+p.points!,0),target=clamp(sum,0,100);let change=target-sum;
   for(const part of [...displayed].reverse()){if(change===0)break;const adjustment=change>0?Math.min(change,Math.max(0,-part.points!)):-Math.min(-change,Math.max(0,part.points!));part.points!+=adjustment;change-=adjustment;if(adjustment)part.reason=(part.reason||'')+' Displayed contribution adjusted at the 0–100 score boundary; raw points remain available.';}
   return {score:target,parts:displayed};
 }
