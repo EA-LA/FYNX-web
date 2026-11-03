@@ -45,12 +45,12 @@ function normalizeEvent(raw) {
 }
 class TradingEconomicsCalendar {
   constructor({ key = process.env.QUANT_CALENDAR_API_KEY, fetcher } = {}) { this.key = key; this.fetcher = fetcher; this.name = 'Trading Economics'; }
-  async calendar({ from, to }) {
+  async calendar({ from, to, impact = 'high' }) {
     if (!this.key) throw fail('Economic calendar needs QUANT_CALENDAR_API_KEY and historical-calendar access. No event dates are approximated.', 503, 'CALENDAR_NOT_CONFIGURED');
-    const url = new URL(`https://api.tradingeconomics.com/calendar/country/All/${from.slice(0, 10)}/${to.slice(0, 10)}`); url.searchParams.set('c', this.key); url.searchParams.set('f', 'json'); url.searchParams.set('importance', '3');
+    const url = new URL(`https://api.tradingeconomics.com/calendar/country/All/${from.slice(0, 10)}/${to.slice(0, 10)}`); url.searchParams.set('c', this.key); url.searchParams.set('f', 'json'); if (!['high','medium-high'].includes(impact)) throw fail('Choose high or medium-high calendar impact.'); if (impact === 'high') url.searchParams.set('importance', '3');
     const rows = await fetchJSON(url, { fetcher: this.fetcher, limit: 15000000, provider: this.name });
     if (!Array.isArray(rows)) throw fail('Historical calendar access is unavailable for this subscription.', 503, 'CALENDAR_UNAVAILABLE');
-    return rows.map(normalizeEvent).filter(Boolean).filter(e => Date.parse(e.time) >= Date.parse(from) && Date.parse(e.time) <= Date.parse(to)).sort((a, b) => a.time.localeCompare(b.time));
+    return rows.map(normalizeEvent).filter(Boolean).filter(e => impact === 'high' ? e.impact === 'high' : ['high','medium'].includes(e.impact)).filter(e => Date.parse(e.time) >= Date.parse(from) && Date.parse(e.time) <= Date.parse(to)).sort((a, b) => a.time.localeCompare(b.time));
   }
 }
 function aggregate(rows, timeframe, { tick = false, includeTicks = false } = {}) {

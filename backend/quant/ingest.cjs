@@ -4,9 +4,10 @@ const path = require('node:path');
 const { Store } = require('./store.cjs');
 const { DukascopyProvider, TradingEconomicsCalendar, aggregate } = require('./providers.cjs');
 const { symbol, timeframe, range, hash, fail, TF } = require('./common.cjs');
-async function ingest({ symbol: id = 'XAUUSD', tf = 'TICK', from, to, maxBytes = 2 * 1024 ** 3, maxChunks = 100000, store = new Store(), provider = new DukascopyProvider(), progress = () => {}, calendar = false } = {}) {
+async function ingest({ symbol: id = 'XAUUSD', tf = 'TICK', from, to, maxBytes = 2 * 1024 ** 3, maxChunks = 100000, store = new Store(), provider = new DukascopyProvider(), progress = () => {}, calendar = false, impact = 'high' } = {}) {
+  if (calendar && !['high','medium-high'].includes(impact)) throw fail('Choose high or medium-high calendar impact.');
   const market = calendar ? null : symbol(id); const frame = calendar ? 'CALENDAR' : timeframe(tf); const dates = range(from, to, { now: Date.now() + (calendar ? 31 : 0) * 86400000, maxDays: 40000 });
-  const base = calendar ? 'calendar' : `history/${market.id}/${frame}`; const stepMs = calendar ? 30 * 86400000 : frame === 'TICK' ? 3600000 : frame === 'M1' || frame === 'M5' ? 86400000 : 30 * 86400000;
+  const base = calendar ? (impact === 'high' ? 'calendar' : 'calendar-medium-high') : `history/${market.id}/${frame}`; const stepMs = calendar ? 30 * 86400000 : frame === 'TICK' ? 3600000 : frame === 'M1' || frame === 'M5' ? 86400000 : 30 * 86400000;
   const manifestKey = base + '/manifest'; await fs.mkdir(store.root, { recursive: true, mode: 0o700 }); const lockPath = path.join(store.root, `${hash(base)}.lock`); let lock;
   try { lock = await fs.open(lockPath, 'wx', 0o600); await lock.writeFile(String(process.pid)); } catch (e) { if (e.code === 'EEXIST') throw fail('An importer for this symbol/timeframe is already running. Remove its lock only after confirming that process has stopped.', 409, 'IMPORT_LOCKED'); throw e; }
   const receipt = { symbol: market?.id || null, timeframe: frame, requestedFrom: dates.from, requestedTo: dates.to, source: calendar ? 'Trading Economics' : 'Dukascopy', startedAt: new Date().toISOString(), chunksDownloaded: 0, chunksReused: 0, recordsDownloaded: 0, compressedBytes: 0, stoppedReason: null, complete: false };
@@ -17,7 +18,7 @@ async function ingest({ symbol: id = 'XAUUSD', tf = 'TICK', from, to, maxBytes =
       if (existing.has(key) && await store.read(key)) { receipt.chunksReused++; receipt.coveredThrough = end; continue; }
       if (receipt.compressedBytes >= maxBytes || receipt.chunksDownloaded >= maxChunks) { receipt.stoppedReason = 'Configured download budget reached; rerun the identical command to resume.'; break; }
       try { await store.diskGuard(); } catch (e) { if (e.code !== 'DISK_RESERVE') throw e; receipt.stoppedReason = e.message; break; }
-      const rows = calendar ? await provider.calendar({ from: start, to: end }) : await provider.history({ symbol: market, timeframe: frame, from: start, to: end });
+      const rows = calendar ? await provider.calendar({ from: start, to: end, impact }) : await provider.history({ symbol: market, timeframe: frame, from: start, to: end });
       const updatedAt = new Date().toISOString(); const data = { source: receipt.source, from: start, to: end, updatedAt, ...(calendar ? { events: rows } : { rows }) }; const bytes = await store.write(key, data);
       const chunk = { key, from: start, to: end, rows: rows.length, bytes, updatedAt }; existing.set(key, chunk);
       await store.update(manifestKey, old => ({ schemaVersion: 1, source: receipt.source, symbol: market?.id || null, timeframe: frame, updatedAt, chunks: [...new Map([...(old?.chunks || []).map(c => [c.key, c]), [key, chunk]]).values()].sort((a, b) => a.from.localeCompare(b.from)) }));
