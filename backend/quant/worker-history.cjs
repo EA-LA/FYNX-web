@@ -31,6 +31,7 @@ async function historyBacktest(engine, payload, progress) {
   const result = runner.finish(), snapshot = runner.snapshot(); result.provenance = provenance(ctx, snapshot.ticksProcessed); return result;
 }
 async function historyOptimize(engine, payload, progress) {
+  if (payload.params?.strategy === 'mean-reversion') throw new Error('Mean-reversion optimization requires a Z-score grid; the entry-ATR grid does not apply.');
   if (!engine.createBacktestStream) throw new Error('Build the streaming Quant engine before submitting stored tick history.');
   const ctx = await context(payload.history), params = engine.normalizeParams({ ...payload.params, mode: 'tick' }), options = payload.options || {};
   const metric = options.metric || 'sharpe', minTrades = options.minTrades ?? 10, fraction = options.trainFraction ?? .7;

@@ -4,6 +4,9 @@
   const Q = window.FynxQuant, $ = id => document.getElementById(id);
   if (!Q || !$('quant-main')) return;
   const state = { symbol:'EURUSD', news:false, bars:null, metadata:null, backtest:null, tested:null, optimized:null, portfolio:null, sleeves:[], saved:[], savedPortfolios:[], events:[], busy:false, cancelled:false, worker:null, reject:null, seq:0, ea:null, auth:null, uid:null };
+  const strategyControls=document.createElement('div');strategyControls.className='params';strategyControls.innerHTML='<label>Strategy model<select id="strategyModel"><option value="breakout">ATR breakout</option><option value="mean-reversion">Mean reversion</option><option value="news">News drift</option></select></label><label>Candle execution model<select id="executionMode"><option value="auto">Use available OHLC / close data</option><option value="close">Daily close proxy</option><option value="ohlc">OHLC next-open execution</option></select></label><label id="meanLookbackLabel" hidden>Mean lookback<input id="meanLookback" type="number" value="20" min="2" max="500"></label><label id="meanEntryZLabel" hidden>Mean entry standard deviations<input id="meanEntryZ" type="number" value="1.5" min="0.1" max="10" step="0.1"></label>';$('N').closest('.params').before(strategyControls);
+  const strategyLabel=()=>({breakout:'ATR breakout','mean-reversion':'Mean reversion',news:'News drift'}[$('strategyModel').value]);
+  function selectStrategyModel(model){$('strategyModel').value=model;state.news=model==='news';$('meanLookbackLabel').hidden=$('meanEntryZLabel').hidden=model!=='mean-reversion';}
   const marketChanges = new Map(),marketQuotes=new Map(),quoteFailures=new Map();
   let quoteRequest=null,quoteAttemptAt=0,quoteRefreshTimer,quotesUnconfigured=false;
   let portfolioSelectionTouched=false;
@@ -98,7 +101,7 @@
     clearResults(['btStats','btEq','eventStudy']);$('btTrades').innerHTML='<caption>Run the backtest for these settings.</caption>';
   }
   function parameters() {
-    return {lookback:value('N'),atrPeriod:value('AP'),entryK:value('K'),stopS:value('S'),targetTP:value('TP'),maxHold:value('H'),costPips:value('C'),riskPct:value('R'),pipSize:symbol().pipSize,spreadPips:value('spread'),slippagePips:value('slippage'),mode:$('timeframe').value==='tick'?'tick':state.bars?.every(b=>b.high!==undefined&&b.low!==undefined)?'ohlc':'close',strategy:state.news?'news':'breakout',events:state.events,eventType:$('eventType').value,newsWindowMinutes:value('newsWindow')};
+    return {lookback:value('N'),atrPeriod:value('AP'),entryK:value('K'),stopS:value('S'),targetTP:value('TP'),maxHold:value('H'),costPips:value('C'),riskPct:value('R'),pipSize:symbol().pipSize,spreadPips:value('spread'),slippagePips:value('slippage'),mode:$('timeframe').value==='tick'?'tick':$('executionMode').value!=='auto'?$('executionMode').value:state.bars?.every(b=>b.high!==undefined&&b.low!==undefined)?'ohlc':'close',strategy:$('strategyModel').value,meanLookback:value('meanLookback'),meanEntryZ:value('meanEntryZ'),events:state.events,eventType:$('eventType').value,newsWindowMinutes:value('newsWindow')};
   }
   function updateRange() {const date=new Date();date.setUTCFullYear(date.getUTCFullYear()-value('historyYears'));$('historyFrom').value=date.toISOString().slice(0,10);$('historyTo').value=today();}
   function rangeQuery(id=state.symbol,tf=$('timeframe').value) {if(!$('historyFrom').value||!$('historyTo').value)throw new Error('Choose both the start and end dates for the research range.');return new URLSearchParams({symbol:id,tf,from:$('historyFrom').value,to:$('historyTo').value}).toString();}
@@ -113,14 +116,14 @@
     invalidate();state.bars=null;state.metadata=null;
     try {
     $('dataPill').textContent=`Loading ${symbol().label} · ${$('timeframe').value}`;log('Requesting real historical prices…');
-    if($('timeframe').value==='tick'){const data=await api(`/history?${rangeQuery()}`);if(state.cancelled)throw new Error('Cancelled.');state.bars=[];state.metadata=data;$('dataPill').textContent=`${symbol().label} · stored tick coverage`;$('dataNote').textContent=`${data.source} · ${data.from} → ${data.to} · updated ${data.updatedAt}. ${data.granularityNote}`;$('btRange').textContent='Stored ticks · M1 signals';$('btTitle').textContent=`${state.news?'News reaction':'ATR breakout'} · ${symbol().label}`;log('Tick archive coverage verified. The server will stream recorded quotes when you run the test.');return;}
+    if($('timeframe').value==='tick'){const data=await api(`/history?${rangeQuery()}`);if(state.cancelled)throw new Error('Cancelled.');state.bars=[];state.metadata=data;$('dataPill').textContent=`${symbol().label} · stored tick coverage`;$('dataNote').textContent=`${data.source} · ${data.from} → ${data.to} · updated ${data.updatedAt}. ${data.granularityNote}`;$('btRange').textContent='Stored ticks · M1 signals';$('btTitle').textContent=`${strategyLabel()} · ${symbol().label}`;log('Tick archive coverage verified. The server will stream recorded quotes when you run the test.');return;}
     const data=await api(`/bars?${rangeQuery()}`);
     if(!Array.isArray(data.bars)||data.bars.length<40)throw new Error('Too little price history for this research. Choose a longer available period.');
     if(state.cancelled)throw new Error('Cancelled.');state.bars=data.bars;state.metadata=data;
     const first=String(data.bars[0].time).slice(0,10),last=String(data.bars.at(-1).time).slice(0,10);
     $('dataPill').textContent=`${symbol().label} · ${first} → ${last}`;
     $('dataNote').textContent=`${data.source||'Dukascopy'} · ${number(data.bars.length,0)} ${data.timeframe||$('timeframe').value} bars. Last fetched ${data.updatedAt?new Date(data.updatedAt).toLocaleString():'not supplied'}. ${data.granularityNote||''} ${data.warning||''}`;
-    $('btRange').textContent=`${first} — ${last}`;$('btTitle').textContent=`${state.news?'News reaction':'ATR breakout'} · ${symbol().label}`;
+    $('btRange').textContent=`${first} — ${last}`;$('btTitle').textContent=`${strategyLabel()} · ${symbol().label}`;
     if($('timeframe').value==='D1')annualChange(state.symbol,state.bars);
     log(`Loaded ${number(data.bars.length,0)} bars from ${data.source||'Dukascopy'}. Ready to test.`);
     } catch(error){state.bars=null;state.metadata=null;$('dataPill').textContent='Requested data unavailable';$('dataNote').textContent=error.message;throw error;}
@@ -149,6 +152,7 @@
     await plot('surf',[trace],{height:440,title:{text:'In-sample · '+$('metric').selectedOptions[0].text},xaxis:{title:'Entry K'},yaxis:{title:'Stop S'},scene:{xaxis:{title:{text:'Entry K'}},yaxis:{title:{text:'Stop S'}},zaxis:{title:{text:$('metric').selectedOptions[0].text}}}});
   }
   async function runOptimize() {
+    if($('strategyModel').value==='mean-reversion')throw new Error('This optimization grid varies entry ATR and stop ATR. Mean reversion requires a Z-score grid, which is not available yet. Its backtest and portfolio remain available.');
     showPanel('opt');await ensureData();log('Optimizing the training period; the final 30% is held out…');
     const r=await calculate('optimize',{...($('timeframe').value==='tick'?{symbol:state.symbol,tf:'tick',from:$('historyFrom').value,to:$('historyTo').value}:{bars:state.bars}),params:parameters(),options:{metric:$('metric').value,entryValues:gridValues('entryValues'),stopValues:gridValues('stopValues'),minTrades:10,trainFraction:.7}});if(state.cancelled)throw new Error('Cancelled.');state.optimized=r;
     await renderSurface();const verdict=$('optVerdict');verdict.style.display='block';verdict.className='verdict '+(r.verdict==='green'?'good':r.verdict==='red'?'bad':'mid');
@@ -392,13 +396,13 @@
   function download(name,text,mime='application/json') {const url=URL.createObjectURL(new Blob([text],{type:mime}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}
   async function generateEA() {
     showPanel('dep');if(!state.tested)throw new Error('Run a backtest first. Exports use the settings of a completed test.');
-    state.ea=Q.generateEA({platform:$('eaPlatform').value,...state.tested,dailyLossPct:value('eaDailyGuard'),maxLossPct:value('eaMaxGuard'),initialBalance:value('accountSize')});
+    state.ea=Q.generateEA({platform:$('eaPlatform').value,...state.tested,dailyLossPct:value('eaDailyGuard'),maxLossPct:value('eaMaxGuard'),initialBalance:value('accountSize'),ruleId:$('ruleId').value});
     $('ea').textContent=state.ea.source;$('ea').hidden=false;$('eaNotes').textContent=state.ea.notes.join(' ');log('Source generated from the completed backtest. Compile and validate it in your trading platform.');
   }
   const actions={backtest:runBacktest,optimize:runOptimize,portfolio:runPortfolio,montecarlo:runMonteCarlo,ftmo:runFtmo,deploy:generateEA};
   async function ask(text) {
     const command=Q.parseAsk(text,{symbol:state.symbol,timeframe:$('timeframe').value,years:value('historyYears')});
-    state.symbol=command.symbol;state.news=/\b(news|nfp|cpi|fomc|gdp)\b/i.test(text);$('timeframe').value=command.timeframe;$('historyYears').value=command.years;if(command.paths)$('paths').value=command.paths;
+    state.symbol=command.symbol;selectStrategyModel(/\b(news|nfp|cpi|fomc|gdp)\b/i.test(text)?'news':'breakout');$('timeframe').value=command.timeframe;$('historyYears').value=command.years;if(command.paths)$('paths').value=command.paths;
     updateRange();state.bars=null;invalidate();renderMarkets();renderSleeves();refreshContext();log(command.warnings.join(' '));
     for(const step of command.steps){if(state.cancelled)break;showPanel(steps[step]);await actions[step]();}
   }
@@ -411,18 +415,19 @@
     const next=async()=>{while(queue.length){const id=queue.shift();if(marketChanges.has(id))continue;try{const data=await api('/bars?'+new URLSearchParams({symbol:id,tf:'D1',from:from.toISOString().slice(0,10),to:today()}));annualChange(id,data.bars);}catch{} }};
     await Promise.allSettled([next(),next()]);
   }
-  $('mkts').addEventListener('click',event=>{const b=event.target.closest('[data-market]');if(!b||state.busy)return;work(async()=>{state.symbol=b.dataset.market;state.news=false;renderMarkets();renderSleeves();refreshContext();await loadData();showPanel('bt');});});
+  $('mkts').addEventListener('click',event=>{const b=event.target.closest('[data-market]');if(!b||state.busy)return;work(async()=>{state.symbol=b.dataset.market;selectStrategyModel('breakout');renderMarkets();renderSleeves();refreshContext();await loadData();showPanel('bt');});});
   document.querySelectorAll('#steps button').forEach(b=>{b.addEventListener('click',()=>{if(!b.disabled)showPanel(b.dataset.p);});b.addEventListener('keydown',e=>{if(b.disabled)return;if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const tabs=[...document.querySelectorAll('#steps button')];const index=tabs.indexOf(b);const next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(index+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;showPanel(tabs[next].dataset.p);tabs[next].focus();});});
   for(const [id,action] of [['runBt',runBacktest],['runOpt',runOptimize],['runPort',runPortfolio],['runMc',runMonteCarlo],['runFtmo',runFtmo],['genEa',generateEA],['loadData',loadData],['saveStrategy',saveStrategy],['loadSaved',loadSaved]])$(id).onclick=()=>work(action);
   $('cancelJob').onclick=()=>{const job=state.serverJob;state.cancelled=true;state.jobAbort?.abort();state.worker?.terminate();state.reject?.(new Error('Calculation cancelled.'));state.worker=null;state.reject=null;if(job)api('/jobs/'+encodeURIComponent(job),{method:'DELETE',signal:AbortSignal.timeout(10000)}).catch(()=>{});invalidate();log('Cancellation requested.');};
   $('applyBest').onclick=()=>{if(!state.optimized?.best)return;const best=state.optimized.best;$('K').value=best.entryK;$('S').value=best.stopS;invalidate();showPanel('bt');log('Best training settings applied. Run a fresh backtest.');};
   $('surfaceView').onchange=()=>work(renderSurface);
   $('askForm').onsubmit=e=>{e.preventDefault();work(()=>ask($('ask').value));};document.querySelectorAll('.chips [data-q]').forEach(b=>b.onclick=()=>{$('ask').value=b.dataset.q;work(()=>ask(b.dataset.q));});
-  $('newsMkt').onclick=()=>work(async()=>{state.news=true;state.events=[];invalidate();showPanel('bt');await runBacktest();});
+  $('newsMkt').onclick=()=>work(async()=>{selectStrategyModel('news');state.events=[];invalidate();showPanel('bt');await runBacktest();});
   $('studyEvents').onclick=()=>work(async()=>{showPanel('bt');await ensureData();await loadCalendar(true);const result=await calculate('eventstudy',{bars:state.bars,events:state.events,options:{mode:$('timeframe').value==='D1'?'daily':'intraday',currencies:symbol().currencies,eventType:$('eventType').value,windowMinutes:value('newsWindow')}});$('eventStudy').innerHTML='<h3>Event study · absolute moves</h3><p class="note">'+esc(result.notes.join(' '))+'</p><div class="table-scroll"><table><thead><tr><th>Event type</th><th>Observations</th><th>Mean absolute move</th></tr></thead><tbody><tr><td>All event days</td><td>'+result.eventDays+'</td><td>'+pct(result.averageEventMove)+'</td></tr><tr><td>Normal days</td><td>'+result.normalDays+'</td><td>'+pct(result.averageNormalMove)+'</td></tr>'+result.byType.map(r=>'<tr><td>'+esc(r.type)+'</td><td>'+r.count+'</td><td>'+pct(r.averageAbsoluteMove)+'</td></tr>').join('')+'</tbody></table></div>';log('Event study computed from verified release timestamps.');});
   $('historyYears').onchange=()=>{try{updateRange();state.bars=null;state.events=[];invalidate();$('dataPill').textContent='Range changed · refresh data';log('History changed. Refresh data before running new research.');}catch(e){log(e.message,true);}};
   ['timeframe','historyFrom','historyTo'].forEach(id=>$(id).onchange=()=>{state.bars=null;state.events=[];invalidate();$('dataPill').textContent='Range changed · refresh data';log('History changed. Results from the previous range were cleared.');});
-  ['N','AP','K','S','TP','H','C','R','spread','slippage','newsWindow','eventType'].forEach(id=>{for(const event of ['input','change'])$(id).addEventListener(event,()=>{invalidate();log('Strategy settings changed. Run a new backtest.');});});
+  ['N','AP','K','S','TP','H','C','R','spread','slippage','newsWindow','eventType','meanLookback','meanEntryZ','executionMode'].forEach(id=>{for(const event of ['input','change'])$(id).addEventListener(event,()=>{invalidate();log('Strategy settings changed. Run a new backtest.');});});
+  $('strategyModel').onchange=()=>{selectStrategyModel($('strategyModel').value);invalidate();log('Strategy model changed. Run a new backtest.');};
   ['metric','entryValues','stopValues'].forEach(id=>{for(const event of ['input','change'])$(id).addEventListener(event,()=>{invalidateOptimization();log('Optimization settings changed. Build a new surface.');});});
   $('sleeves').onchange=()=>{portfolioSelectionTouched=true;invalidatePortfolio();};$('weighting').onchange=invalidatePortfolio;
   ['paths','mcDays'].forEach(id=>{for(const event of ['input','change'])$(id).addEventListener(event,invalidateMonteCarlo);});
@@ -434,7 +439,7 @@
     $('p-ftmo').querySelector('h2').textContent=`FTMO ${size}k · ${$('ruleId').value==='2-step'?'2-Step':'1-Step'} check`;
     $('tab-ftmo').innerHTML=`<i>05</i>FTMO ${size}k`;invalidateFtmo();
   }
-  $('ruleId').onchange=updateRuleSummary;$('accountSize').onchange=()=>{updateRuleSummary();invalidateEA();};
+  $('ruleId').onchange=()=>{updateRuleSummary();invalidateEA();};$('accountSize').onchange=()=>{updateRuleSummary();invalidateEA();};
   $('csv').onchange=()=>work(async()=>{
     const owner=await workspaceOwner(),file=$('csv').files[0];if(!file)return;if(file.size>5*1024*1024)throw new Error('CSV files must be under 5 MB.');
     const text=await file.text();assertOwner(owner);
@@ -472,7 +477,10 @@
   ['eaPlatform','eaDailyGuard','eaMaxGuard'].forEach(id=>{for(const event of ['input','change'])$(id).addEventListener(event,invalidateEA);});
   window.addEventListener('pagehide',()=>{state.worker?.terminate();window.clearTimeout(quoteRefreshTimer);});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!state.busy)refreshMarketQuotes();});
+  const deepLink=new URLSearchParams(location.search),deepSymbol=(deepLink.get('symbol')||'').toUpperCase().replace('/','');if(Q.SYMBOLS.some(s=>s.id===deepSymbol))state.symbol=deepSymbol;
+  async function preloadStrategy(){const id=deepLink.get('strategy');if(!id)return;if(!/^[A-Za-z0-9_-]{1,80}$/.test(id))throw new Error('The linked strategy ID is invalid.');await identityTask;const item=state.saved.find(s=>s.id===id)||(Q.EDGE_DEFAULT_STRATEGIES||[]).find(s=>s.id===id);if(!item)throw new Error('The linked strategy is not in this account’s saved workspace. Sign in to its owner account.');if(!item.params)throw new Error('This saved return series has no executable strategy parameters. Open it from My strategies in Portfolio.');const p=item.params;selectStrategyModel(p.strategy||item.kind||'breakout');if(!deepSymbol&&item.symbol)state.symbol=item.symbol;$('timeframe').value=item.timeframe||'D1';$('executionMode').value=['close','ohlc'].includes(p.mode)?p.mode:'auto';$('strategyName').value=item.name;
+    const fields={lookback:'N',atrPeriod:'AP',entryK:'K',stopS:'S',targetTP:'TP',maxHold:'H',costPips:'C',riskPct:'R',spreadPips:'spread',slippagePips:'slippage',eventType:'eventType',newsWindowMinutes:'newsWindow',meanLookback:'meanLookback',meanEntryZ:'meanEntryZ'};for(const [key,id]of Object.entries(fields))if(p[key]!==undefined)$(id).value=p[key];renderMarkets();renderSleeves();refreshContext();}
   updateRange();renderMarkets();renderSleeves();if(matchMedia('(max-width:700px)').matches)$('surfaceView').value='heatmap';
   initializeIdentity();refreshContext();
-  work(async()=>{try{await loadData();loadMarketChanges();}catch(error){$('dataPill').textContent='Historical data unavailable';$('dataNote').textContent=error.message;throw error;}});
+  work(async()=>{try{if(deepLink.has('symbol')&&!Q.SYMBOLS.some(s=>s.id===deepSymbol))throw new Error('The linked market is unsupported.');await preloadStrategy();await loadData();loadMarketChanges();if(deepLink.has('strategy'))log('Linked strategy settings loaded. Run a fresh backtest to calculate this market.');if(location.hash==='#dep')showPanel('dep');}catch(error){$('dataPill').textContent='Requested research unavailable';$('dataNote').textContent=error.message;throw error;}});
 })();

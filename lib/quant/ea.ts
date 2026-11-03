@@ -2,7 +2,7 @@ export type EAPlatform = 'mt5' | 'mt4' | 'ctrader';
 export interface EASettings {
   platform: EAPlatform; symbol: string; timeframe: string;
   params: { lookback?:number; atrPeriod?:number; entryK?:number; stopS?:number; targetTP?:number; maxHold?:number; riskPct?:number; mode?:string; strategy?:string; costPips?:number; slippagePips?:number; [key:string]:unknown };
-  dailyLossPct?:number; maxLossPct?:number; initialBalance?:number;
+  dailyLossPct?:number; maxLossPct?:number; initialBalance?:number; ruleId?:string; phase?:number;
 }
 export interface GeneratedEA { filename:string; mime:string; source:string; notes:string[] }
 function bounded(v:unknown,fallback:number,min:number,max:number,label:string,integer=false):number {
@@ -23,7 +23,8 @@ function normalize(input:EASettings) {
     k:bounded(p.entryK,.25,0,10,'entry ATR'),s:bounded(p.stopS,2,.05,20,'stop ATR'),tp:bounded(p.targetTP,4,.05,40,'target ATR'),
     h:bounded(p.maxHold,20,1,10000,'max hold',true),risk:bounded(p.riskPct,.5,.001,10,'risk percentage'),
     close:p.mode===undefined||p.mode==='close',daily:bounded(input.dailyLossPct,4,.1,20,'daily guard'),max:bounded(input.maxLossPct,9,.1,50,'maximum guard'),
-    balance:bounded(input.initialBalance,10000,1,100000000,'initial balance')};
+    balance:bounded(input.initialBalance,10000,1,100000000,'initial balance'),
+    ruleId:input.ruleId===undefined?'2-step':['2-step','1-step','1-step-legacy'].includes(input.ruleId)?input.ruleId:(()=>{throw new Error('Invalid FTMO rule version.');})(),phase:bounded(input.phase,1,1,input.ruleId==='2-step'||!input.ruleId?2:1,'phase',true)};
 }
 type Settings=ReturnType<typeof normalize>;
 const notes=[
@@ -35,7 +36,7 @@ const notes=[
 ];
 export function generateEA(input:EASettings):GeneratedEA {
   const p=normalize(input),ext=p.platform==='mt5'?'mq5':p.platform==='mt4'?'mq4':'cs';
-  return {filename:`FynxQuant_${p.symbol}_${p.tf}.${ext}`,mime:'text/plain;charset=utf-8',source:p.platform==='ctrader'?csharp(p):mql(p),notes:[...notes]};
+  return {filename:`FynxQuant_${p.symbol}_${p.tf}.${ext}`,mime:'text/plain;charset=utf-8',source:p.platform==='ctrader'?csharp(p):mql(p),notes:[...notes,...(p.platform==='mt5'?['Optional Edge heartbeat is disabled by default. Create a token in Profile, enter it only in MT5 EA inputs, and allow https://fynxfinanceworld.com in Expert Advisors WebRequest settings. All account positions are reported. Never share a .set file containing your token.']:[])]};
 }
 
 function mql(p:Settings):string {
@@ -67,6 +68,7 @@ input int InpMagic = 770101;
 input int InpTesterServerUtcOffset = 0;
 datetime lastBar=0; string guardKey=""; double dayStartEq=0; int dayId=0;
 bool dailyLocked=false, maxLocked=false, waitingForDay=false;
+${five?heartbeatMql(p):''}
 double Equity(){return ${five?'AccountInfoDouble(ACCOUNT_EQUITY)':'AccountEquity()'};}
 double Balance(){return ${five?'AccountInfoDouble(ACCOUNT_BALANCE)':'AccountBalance()'};}
 int PragueDay(){
@@ -153,7 +155,8 @@ double LotsFor(double stopDistance){
   double minimum=${five?'SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MIN)':'MarketInfo(_Symbol,MODE_MINLOT)'};
   double maximum=${five?'SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MAX)':'MarketInfo(_Symbol,MODE_MAXLOT)'};
   if(tickSize<=0||tickValue<=0||step<=0||stopDistance<=0)return 0;
-  double lots=MathFloor((Equity()*InpRiskPct/100.0)/(stopDistance/tickSize*tickValue)/step)*step;
+  double rawLots=(Equity()*InpRiskPct/100.0)/(stopDistance/tickSize*tickValue);
+  double lots=MathFloor((MathMin(rawLots,maximum)+1e-10)/step)*step;
   // Never round UP to minimum volume; that could exceed the tested risk budget.
   if(lots<minimum)return 0;
   return NormalizeDouble(MathMin(lots,maximum),8);
@@ -167,12 +170,12 @@ ${five?'  trade.SetExpertMagicNumber(InpMagic);trade.SetDeviationInPoints(InpSli
   if(GlobalVariableCheck(guardKey+"day")&&(int)GlobalVariableGet(guardKey+"day")==dayId){
     dayStartEq=GlobalVariableGet(guardKey+"eq");dailyLocked=GlobalVariableGet(guardKey+"daily")>0;waitingForDay=GlobalVariableGet(guardKey+"wait")>0;
   }else{dayStartEq=InpFirstDayEquity;waitingForDay=InpFirstDayEquity<=0;dailyLocked=false;}
-  SaveGuards();lastBar=iTime(_Symbol,InpTimeframe,0);EventSetTimer(1);
+  SaveGuards();${five?'EdgeInitialize();':''}lastBar=iTime(_Symbol,InpTimeframe,0);EventSetTimer(1);
   if(waitingForDay)Print("Waiting for next Prague trading day: first-day starting equity was not supplied.");
   return INIT_SUCCEEDED;
 }
 void OnDeinit(const int reason){SaveGuards();EventKillTimer();}
-void OnTimer(){Guard();}
+void OnTimer(){Guard();${five?'EdgeHeartbeat();':''}}
 void OnTick(){
   if(!Guard())return;
   datetime bar=iTime(_Symbol,InpTimeframe,0);if(bar<=0||bar==lastBar)return;lastBar=bar;
@@ -184,10 +187,14 @@ void OnTick(){
   int direction=close>high+InpEntryAtr*atr?1:(close<low-InpEntryAtr*atr?-1:0);if(direction==0)return;
   double stop=InpStopAtr*atr,target=InpTargetAtr*atr,lots=LotsFor(stop);if(lots<=0)return;
   double minStop=${five?'(double)SymbolInfoInteger(_Symbol,SYMBOL_TRADE_STOPS_LEVEL)*_Point':'MarketInfo(_Symbol,MODE_STOPLEVEL)*Point'};
-  if(stop<minStop||target<minStop){Print("Broker stop-distance restriction: skipped.");return;}
+${five?'':'  if(stop<minStop||target<minStop){Print("Broker stop-distance restriction: skipped.");return;}'}
 ${five?`  MqlTick quote;if(!SymbolInfoTick(_Symbol,quote))return;
   double price=direction>0?quote.ask:quote.bid;
-  double sl=NormalizeDouble(price-direction*stop,_Digits),tp=NormalizeDouble(price+direction*target,_Digits);
+  double tickSize=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE);if(tickSize<=0)return;
+  double sl=NormalizeDouble((direction>0?MathFloor((price-stop+1e-10)/tickSize):MathCeil((price+stop-1e-10)/tickSize))*tickSize,_Digits);
+  double tp=NormalizeDouble((direction>0?MathCeil((price+target-1e-10)/tickSize):MathFloor((price-target+1e-10)/tickSize))*tickSize,_Digits);
+  if(MathAbs(price-sl)<minStop||MathAbs(tp-price)<minStop){Print("Broker stop-distance restriction: skipped.");return;}
+  lots=LotsFor(MathAbs(price-sl));if(lots<=0)return;
   bool ok=direction>0?trade.Buy(lots,_Symbol,0,sl,tp,"FynxQuant"):trade.Sell(lots,_Symbol,0,sl,tp,"FynxQuant");
   if(!ok)Print("Entry failed: ",trade.ResultRetcodeDescription());`:`  RefreshRates();double price=direction>0?Ask:Bid;
   double sl=NormalizeDouble(price-direction*stop,Digits),tp=NormalizeDouble(price+direction*target,Digits);
@@ -195,6 +202,62 @@ ${five?`  MqlTick quote;if(!SymbolInfoTick(_Symbol,quote))return;
   if(AccountFreeMarginCheck(_Symbol,type,lots)<=0){Print("Insufficient free margin: skipped.");return;}
   int ticket=OrderSend(_Symbol,type,lots,price,InpSlippagePoints,sl,tp,"FynxQuant",InpMagic,0,clrNONE);
   if(ticket<0)Print("Entry failed: ",GetLastError());`}
+}
+`;
+}
+
+function heartbeatMql(p:Settings):string {
+  return String.raw`// Edge Radar: reporting is optional; trading never depends on an HTTP response.
+input bool InpEdgeEnabled = false;
+input string InpEdgeToken = ""; // Paste Profile's shown-once token here; do not share a .set file.
+input string InpEdgeRule = "${p.ruleId}";
+input int InpEdgePhase = ${p.phase};
+input double InpEdgeDayStartBalance = 0; // Verified balance at Prague midnight; 0 = unknown.
+input double InpEdgeHighWaterBalance = 0; // Highest historical end-of-day balance; 0 = unknown.
+datetime edgeLastSend=0,edgeLastObserved=0;
+int edgeDay=0;double edgeDayBalance=0,edgeHighBalance=0,edgePreviousBalance=0;
+string EdgeNumber(double value){return MathIsValidNumber(value)?DoubleToString(value,10):"null";}
+string EdgePositive(double value){return value>0?EdgeNumber(value):"null";}
+string EdgeString(string value){StringReplace(value,"\\","\\\\");StringReplace(value,"\"","\\\"");StringReplace(value,"\r"," ");StringReplace(value,"\n"," ");StringReplace(value,"\t"," ");return "\""+value+"\"";}
+string EdgeSymbol(string name){return name==_Symbol?"${p.symbol}":name;}
+string EdgeDayString(int day){return StringFormat("%04d-%02d-%02d",day/10000,(day/100)%100,day%100);}
+void EdgeInitialize(){
+  edgeDay=PragueDay();edgeDayBalance=InpEdgeDayStartBalance;edgeHighBalance=InpEdgeHighWaterBalance;edgePreviousBalance=Balance();
+  if(GlobalVariableCheck(guardKey+"edgeDay")&&(int)GlobalVariableGet(guardKey+"edgeDay")==edgeDay)edgeDayBalance=GlobalVariableGet(guardKey+"edgeBalance");
+  if(GlobalVariableCheck(guardKey+"edgeHigh"))edgeHighBalance=MathMax(edgeHighBalance,GlobalVariableGet(guardKey+"edgeHigh"));
+  edgeLastObserved=TimeGMT();
+}
+void EdgeHeartbeat(){
+  if(!InpEdgeEnabled||StringLen(InpEdgeToken)==0||MQLInfoInteger(MQL_TESTER)||!TerminalInfoInteger(TERMINAL_CONNECTED))return;
+  datetime now=TimeGMT();int today=PragueDay();
+  if(today!=edgeDay){edgeDay=today;edgeDayBalance=now-edgeLastObserved<=60?Balance():0;if(edgeHighBalance>0&&now-edgeLastObserved<=60)edgeHighBalance=MathMax(edgeHighBalance,edgePreviousBalance);}
+  edgeLastObserved=now;edgePreviousBalance=Balance();
+  GlobalVariableSet(guardKey+"edgeDay",edgeDay);GlobalVariableSet(guardKey+"edgeBalance",edgeDayBalance);GlobalVariableSet(guardKey+"edgeHigh",edgeHighBalance);
+  if(now-edgeLastSend<60)return;edgeLastSend=now;
+  string positions="[";int reported=0;
+  for(int i=0;i<PositionsTotal();i++){
+    ulong ticket=PositionGetTicket(i);if(ticket==0)continue;
+    string name=PositionGetString(POSITION_SYMBOL);bool buy=PositionGetInteger(POSITION_TYPE)==POSITION_TYPE_BUY;
+    double volume=PositionGetDouble(POSITION_VOLUME),entry=PositionGetDouble(POSITION_PRICE_OPEN),price=PositionGetDouble(POSITION_PRICE_CURRENT),sl=PositionGetDouble(POSITION_SL),tp=PositionGetDouble(POSITION_TP),profit=0;
+    string risk="null";if(sl>0&&OrderCalcProfit(buy?ORDER_TYPE_BUY:ORDER_TYPE_SELL,name,volume,price,sl,profit))risk=EdgeNumber(MathMax(0,-profit));
+    string currencies="[",base=SymbolInfoString(name,SYMBOL_CURRENCY_BASE),quote=SymbolInfoString(name,SYMBOL_CURRENCY_PROFIT);if(StringLen(base)>=3&&StringLen(base)<=8)currencies+=EdgeString(base);if(StringLen(quote)>=3&&StringLen(quote)<=8&&quote!=base){if(StringLen(currencies)>1)currencies+=",";currencies+=EdgeString(quote);}currencies+="]";
+    if(reported++>0)positions+=",";
+    positions+="{\"id\":"+EdgeString(IntegerToString(ticket))+",\"symbol\":"+EdgeString(EdgeSymbol(name))+",\"side\":"+EdgeString(buy?"buy":"sell")+",\"volume\":"+EdgeNumber(volume)+",\"entry\":"+EdgeNumber(entry)+",\"price\":"+EdgeNumber(price)+",\"sl\":"+EdgePositive(sl)+",\"tp\":"+EdgePositive(tp)+",\"riskToStop\":"+risk+",\"currencies\":"+currencies+"}";
+  }positions+="]";
+  string currency=AccountInfoString(ACCOUNT_CURRENCY),instruments="[]";MqlTick quote;
+  if(SymbolInfoTick(_Symbol,quote)){
+    double tickSize=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE),tickValue=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE_LOSS),vmin=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MIN),vmax=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MAX),step=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_STEP);
+    datetime tickUtc=quote.time-(TimeTradeServer()-TimeGMT());
+    if(tickSize>0&&tickValue>0&&vmin>0&&vmax>=vmin&&step>0&&quote.bid>0&&quote.ask>=quote.bid&&now-tickUtc<=180&&tickUtc<=now+5)
+      instruments="[{\"symbol\":\"${p.symbol}\",\"brokerSymbol\":"+EdgeString(_Symbol)+",\"tickSize\":"+EdgeNumber(tickSize)+",\"tickValueLoss\":"+EdgeNumber(tickValue)+",\"volumeMin\":"+EdgeNumber(vmin)+",\"volumeMax\":"+EdgeNumber(vmax)+",\"volumeStep\":"+EdgeNumber(step)+",\"digits\":"+IntegerToString(_Digits)+",\"stopLevel\":"+IntegerToString(SymbolInfoInteger(_Symbol,SYMBOL_TRADE_STOPS_LEVEL))+",\"accountCurrency\":"+EdgeString(currency)+",\"asOf\":"+IntegerToString(tickUtc)+",\"bid\":"+EdgeNumber(quote.bid)+",\"ask\":"+EdgeNumber(quote.ask)+"}]";
+  }
+  string account=AccountInfoString(ACCOUNT_SERVER)+":"+IntegerToString(AccountInfoInteger(ACCOUNT_LOGIN));
+  string body="{\"version\":1,\"sentAt\":"+IntegerToString(now)+",\"accountRef\":"+EdgeString(account)+",\"currency\":"+EdgeString(currency)+",\"balance\":"+EdgeNumber(Balance())+",\"equity\":"+EdgeNumber(Equity())+",\"dayStartEquity\":"+(waitingForDay?"null":EdgePositive(dayStartEq))+",\"dayStartBalance\":"+EdgePositive(edgeDayBalance)+",\"dayStartDate\":"+EdgeString(EdgeDayString(edgeDay))+",\"initialBalance\":"+EdgeNumber(InpInitBal)+",\"ruleId\":"+EdgeString(InpEdgeRule)+",\"phase\":"+IntegerToString(InpEdgePhase)+",\"safetyDailyPct\":"+EdgeNumber(InpDailyStop)+",\"highWaterBalance\":"+EdgePositive(edgeHighBalance)+",\"positions\":"+positions+",\"instruments\":"+instruments+"}";
+  uchar encoded[];StringToCharArray(body,encoded,0,WHOLE_ARRAY,CP_UTF8);char data[],result[];int size=ArraySize(encoded)-1;ArrayResize(data,size);for(int i=0;i<size;i++)data[i]=(char)encoded[i];
+  string responseHeaders,headers="Content-Type: application/json\r\nAuthorization: Bearer "+InpEdgeToken+"\r\n";
+  int status=WebRequest("POST","https://fynxfinanceworld.com/api/edge/heartbeat",headers,1500,data,result,responseHeaders);
+  // Never log headers, token, body or provider response. A status code is sufficient.
+  if(status!=202)Print("Edge heartbeat unavailable (HTTP status ",status,"). Check Profile and WebRequest settings.");
 }
 `;
 }

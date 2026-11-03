@@ -97,13 +97,13 @@ export function validateStrategy(input: unknown): PortableStrategy {
   if(typeof x.id==='string' && /^[a-zA-Z0-9_-]{1,100}$/.test(x.id))out.id=x.id;
   if(x.params!==undefined) {
     if(!x.params||typeof x.params!=='object'||Array.isArray(x.params))throw new Error('Strategy parameters must be an object.');
-    const allowed=['lookback','atrPeriod','entryK','stopS','targetTP','maxHold','costPips','riskPct','pipSize','spreadPips','slippagePips','mode','strategy','newsWindowMinutes','initialEquity','eventType'];
+    const allowed=['lookback','atrPeriod','entryK','stopS','targetTP','maxHold','costPips','riskPct','pipSize','spreadPips','slippagePips','mode','strategy','newsWindowMinutes','initialEquity','eventType','meanLookback','meanEntryZ'];
     out.params={};
     for(const [key,v] of Object.entries(x.params)) {
       if(!allowed.includes(key))throw new Error(`Unsupported strategy parameter: ${key}`);
       if(typeof v==='number')out.params[key]=finite(v,key);
       else if(key==='eventType'&&typeof v==='string'&&/^[A-Za-z0-9 _-]{0,80}$/.test(v))out.params[key]=v;
-      else if((key==='mode'&&['close','ohlc','tick'].includes(String(v)))||(key==='strategy'&&['breakout','news'].includes(String(v))))out.params[key]=String(v);
+      else if((key==='mode'&&['close','ohlc','tick'].includes(String(v)))||(key==='strategy'&&['breakout','news','mean-reversion'].includes(String(v))))out.params[key]=String(v);
       else throw new Error(`Invalid strategy parameter: ${key}`);
     }
   }
