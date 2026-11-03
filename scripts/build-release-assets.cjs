@@ -3,10 +3,11 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
-const VERSION = '20261030-r1';
+const VERSION = '20261102-r1';
 const ASSETS = Object.freeze([
   'fynx-nav.js', 'demo-mode.js', 'auth/auth-form.js',
   'assets/js/home-journal.js', 'assets/js/profile-sync.js', 'assets/js/session-manager.js',
+  'assets/js/news-reader-links.js', 'assets/js/news-reader.js', 'assets/css/news-reader.css',
   'assets/js/market-intelligence-data.js', 'assets/js/news-intelligence.js',
   'assets/js/terminal-header.js', 'assets/js/terminal-home.js',
   'assets/js/terminal-market-data.js', 'assets/js/terminal-market-ui.js',

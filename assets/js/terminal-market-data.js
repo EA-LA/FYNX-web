@@ -78,17 +78,17 @@
       const feed = {kind, fetchedAt, status, stale:status !== 'fresh' || value?.stale === true, sources, message:text(value?.message), count:0};
       if (status !== 'unavailable' && Array.isArray(value?.items)) for (const row of value.items.slice(0,150)) {
         const url = safeURL(row.url || row.link), title = text(row.title), source = text(row.source);
-        const publishedAt = timestamp(row.publishedAt || row.pubDate, now, kind === 'headline' ? 2 * DAY : 30 * DAY, 300000);
+        const publishedAt = timestamp(row.publishedAt || row.pubDate, now, DAY, 300000);
         if (!url || !title || !source || !publishedAt) continue;
         all.push({id:text(row.id) || kind + '|' + url, title, url, link:url, publishedAt, pubDate:publishedAt,
           source, sourceId:text(row.sourceId), category:kind === 'official-release' ? 'official' : text(row.category) || 'all', kind,
-          edition:text(row.edition),image:row.image || null,via:row.via === 'Google News' ? 'Google News' : null, description:'', fetchedAt, stale:feed.stale, status:feed.status});
+          edition:text(row.edition),articleId:row.articleId||null,readerUrl:row.readerUrl||null,reader:row.reader||null,priorityScore:row.priorityScore||0,rank:row.rank||1000,image:row.image || null,via:row.via === 'Google News' ? 'Google News' : null, description:'', fetchedAt, stale:feed.stale, status:feed.status});
         feed.count++;
       }
       feeds[key] = feed;
     }
     const seen = new Set();
-    const items = all.sort((a,b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).filter(item => {
+    const items = all.sort((a,b) => a.rank-b.rank || b.priorityScore-a.priorityScore || Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).filter(item => {
       if (seen.has(item.url)) return false;
       seen.add(item.url); return true;
     }).slice(0,60);
@@ -102,7 +102,7 @@
       stale:status === 'cached' || usedFeeds.some(feed => feed.stale), partial, coverage, headlineCount, releaseCount, feeds,
       sources:Object.values(feeds).flatMap(feed => feed.sources.map(source => ({...source,kind:feed.kind}))),
       message:!items.length ? 'Coverage is temporarily unavailable. Open the News page for original source links.' :
-        !headlineCount ? 'Official releases are available. Publisher headlines could not be retrieved; source and publication dates are shown.' :
+        !headlineCount ? 'Current official releases are available. Publisher headlines could not be retrieved; only releases from the past 24 hours are shown.' :
         status === 'cached' ? 'Showing dated saved coverage while sources are unavailable.' :
         partial ? 'Some sources could not be refreshed. Available coverage retains its source and publication date.' : 'Headlines and official releases. Publication dates are shown on each item.'};
   }
@@ -129,7 +129,7 @@
     }
     function revalidate(value,key) {
       if(!key.startsWith('briefing')||!value.items)return value;
-      const items=value.items.filter(item=>now()-Date.parse(item.publishedAt)<=(item.kind==='official-release'?30:2)*DAY&&Date.parse(item.publishedAt)<=now()+300000);
+      const items=value.items.filter(item=>now()-Date.parse(item.publishedAt)<=DAY&&Date.parse(item.publishedAt)<=now()+300000);
       if(items.length===value.items.length)return value;
       const headlineCount=items.filter(item=>item.kind==='headline').length,releaseCount=items.length-headlineCount;
       return frozen({...value,items,headlineCount,releaseCount,status:items.length?value.status:'unavailable',coverage:headlineCount&&releaseCount?'mixed':headlineCount?'headlines':releaseCount?'official-releases':'unavailable',message:items.length?value.message:'No current coverage is available. Expired stories have been removed.'});
@@ -142,7 +142,7 @@
         try {
           const value = await fetcher();
           if (value.status === 'unavailable') throw new Error('No valid records.');
-          const result = frozen(value); cache.set(key,{at:now(),value:result}); return result;
+          const result = frozen(value); cache.set(key,{at:key.startsWith('briefing') ? Math.min(now(),Date.parse(result.fetchedAt) || now()) : now(),value:result}); return result;
         } catch {
           if (old && now() - old.at < staleMs) {
             const value = {...old.value,status:'cached',stale:true,message:'Refresh unavailable. Showing dated saved ' + (key.startsWith('briefing') ? 'coverage' : key === 'quotes' ? 'quotes' : 'daily prices') + '.'};
@@ -161,7 +161,7 @@
     return Object.freeze({instruments,
       loadBriefing:(settings={}) => {
         const edition=settings.edition || environment.FynxEdition?.get() || 'us';
-        return load('briefing:'+edition,settings,600000,DAY,async () => {
+        return load('briefing:'+edition,settings,300000,DAY,async () => {
           const D = environment.FYNXMarketIntelligenceData;
           if (!D) throw new Error('Coverage service is unavailable.');
           const results = await Promise.allSettled([D.loadHeadlines('all',{edition,force:settings.force === true,timeoutMs:6500}),D.loadOfficialReleases({edition,force:settings.force === true,timeoutMs:6500})]);

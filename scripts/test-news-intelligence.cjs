@@ -4,6 +4,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const {createHash} = require('node:crypto');
+const articleId = value => createHash('sha256').update(String(value)).digest('hex');
 const { JSDOM } = require('jsdom');
 
 const root = path.join(__dirname, '..');
@@ -14,7 +16,7 @@ const fetchedAt = '2026-10-20T10:05:00Z';
 const tick = () => new Promise(resolve => setImmediate(resolve));
 function deferred() { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; }
 function story(id, title = `Market story ${id}`, source = 'CNBC') {
-  return { id, title, source, url: `https://www.cnbc.com/story-${id}`, publishedAt };
+  return { id, articleId:articleId(id), title, source, url: `https://www.cnbc.com/story-${id}`, publishedAt };
 }
 function result(items, overrides = {}) { return { items, status: 'fresh', stale: false, fetchedAt, message: '', sources: [], ...overrides }; }
 function releases() {
@@ -57,13 +59,18 @@ function catalog() {
 }
 function harness(t, options = {}) {
   const dom = new JSDOM(`<!doctype html><body>${fragment}</body>`, { url: 'https://www.fynxfinanceworld.com/news.html', runScripts: 'outside-only' });
-  t.after(() => dom.window.close());
+  t.after(() => {dom.window.dispatchEvent(new dom.window.Event('pagehide'));dom.window.close();});
   const win = dom.window, doc = win.document;
   let now = options.now || Date.parse('2026-10-20T10:10:00Z');
   win.Date.now = () => now;
+  let visibility = 'visible', timerId = 0;
+  const timeouts = new Map();
+  Object.defineProperty(doc,'visibilityState',{get:()=>visibility,configurable:true});
   const calls = { headlines: [], releases: [], saved: [], plans: 0, intervals: [], network: 0, cachedHeadlines: [], cachedReleases: [] };
   win.fetch = () => { calls.network++; throw new Error('The controller must use the injected public data service.'); };
   win.setInterval = (callback, ms) => { calls.intervals.push({ callback, ms }); return calls.intervals.length; };
+  win.setTimeout = (callback, ms) => {const id=++timerId;timeouts.set(id,{callback,at:now+ms,ms});return id;};
+  win.clearTimeout = id => timeouts.delete(id);
   const D = {
     ...catalog(),
     safeURL(value) { try { const u = new URL(value); return u.protocol === 'https:' && !u.username && !u.password ? u.href : null; } catch { return null; } },
@@ -90,9 +97,24 @@ function harness(t, options = {}) {
   if (options.media) win.eval(fs.readFileSync(path.join(root,'assets/js/newsroom-media.js'),'utf8'));
   if (!options.missingData) win.FYNXMarketIntelligenceData = D;
   if (!options.missingMembership) win.FYNXNewsMembership = { saveResearch: item => calls.saved.push(item), openPlans: () => calls.plans++ };
+  win.FYNXNewsReaderData = {
+    href:item => '/news/article.html?' + new URLSearchParams({id:item.articleId,edition:item.edition || win.FynxEdition?.get() || 'us',category:item.kind==='official-release' || item.category==='official' ? 'official' : item.category || 'all'}),
+    prefetch:() => {}, remember:() => {}
+  };
   win.eval(controller);
   const query = selector => doc.querySelector(selector), all = selector => [...doc.querySelectorAll(selector)];
-  return { win, doc, D, calls, query, all, setNow(value) { now = value; },
+  return { win, doc, D, calls, query, all, timeouts, setNow(value) { now = value; },
+    setVisibility(value) {visibility=value;doc.dispatchEvent(new win.Event('visibilitychange'));},
+    async advanceTo(value) {
+      let iterations=0;
+      while(true){
+        const next=[...timeouts].filter(([,timer])=>timer.at<=value).sort((a,b)=>a[1].at-b[1].at)[0];
+        if(!next)break;
+        assert(++iterations<100,'Refresh scheduler must not spin');
+        now=next[1].at;timeouts.delete(next[0]);next[1].callback();await tick();
+      }
+      now=value;await tick();
+    },
     click(selector) { const target = query(selector); assert(target, `Missing click target ${selector}`); target.click(); },
     input(selector, value) { const target = query(selector); target.value = value; target.dispatchEvent(new win.Event(target.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true })); }
   };
@@ -107,7 +129,8 @@ test('source libraries and institutions render synchronously while both public f
   assert.equal(h.calls.headlines.length, 1); assert.equal(h.calls.releases.length, 1);
   assert.equal(h.calls.headlines[0].timeoutMs, 6500); assert.equal(h.calls.releases[0].timeoutMs, 6500);
   assert.equal(h.calls.network, 0); assert.equal(h.calls.saved.length, 0); assert.equal(h.calls.plans, 0);
-  assert.equal(h.calls.intervals[0].ms, 600000);
+  assert.equal(h.calls.intervals[0].ms, 60000); // Expiry pruning only; requests use precise deadlines.
+  assert.equal(h.timeouts.size,0); // Both feeds are pending, so no duplicate request is scheduled.
 });
 
 test('headlines show original source/date and search source names or titles without another request', async t => {
@@ -127,6 +150,15 @@ test('headline pagination adds ten rows and searching resets the visible limit',
   h.click('[data-news-more]'); assert.equal(h.all('.fn-story').length, 20);
   h.click('[data-news-more]'); assert.equal(h.all('.fn-story').length, 23); assert.equal(h.query('[data-news-more]').hidden, true);
   h.input('[data-news-search]', 'Market story'); assert.equal(h.all('.fn-story').length, 10);
+});
+
+test('top-story order survives rendering and each story opens its own internal reader', async t => {
+  const now=Date.parse('2026-10-20T10:10:00Z');
+  const lead={...story('lead','Priority fixture report'),rank:1,priorityScore:90,publishedAt:new Date(now-12*3600000).toISOString()};
+  const latest={...story('latest','Recent fixture update'),rank:2,priorityScore:40};
+  const h=harness(t,{headlines:()=>Promise.resolve(result([lead,latest]))});await tick();
+  assert.deepEqual(h.all('.fn-story h3').map(node=>node.textContent.replace(/ →$/, '')),[lead.title,latest.title]);
+  assert.deepEqual(h.all('.fn-story-link').map(anchor=>new URL(anchor.href).searchParams.get('id')),[lead.articleId,latest.articleId]);
 });
 
 test('rapid category changes keep only the latest response and current category controls', async t => {
@@ -205,7 +237,7 @@ test('untrusted title/source markup is displayed as text in headlines, releases 
   assert.equal(h.win.injected, undefined); assert.match(h.query('.fn-story-link').textContent, /<img src=x/);
   assert.equal(h.query('.fn-story [data-save-source]').getAttribute('aria-label'), `Save source: ${hostile}`);
   assert.equal(h.all('[onclick], [onerror]').length, 0);
-  for (const anchor of h.all('.fn-story a, .fn-release a')) { assert.equal(anchor.protocol, 'https:'); assert.equal(anchor.rel, 'noopener noreferrer'); }
+  for (const anchor of h.all('.fn-story a, .fn-release a')) { assert.equal(anchor.protocol, 'https:'); assert.equal(anchor.origin, h.win.location.origin); assert.equal(anchor.pathname, '/news/article.html'); assert.equal(anchor.target, ''); assert.match(new URL(anchor.href).searchParams.get('id'), /^[a-f0-9]{64}$/); }
 });
 
 test('headline and release save controls delegate the original source object only after activation', async t => {
@@ -219,7 +251,7 @@ test('headline and release save controls delegate the original source object onl
 
 test('unavailable membership does not block reading and announces save recovery', async t => {
   const h = harness(t, { missingMembership: true }); await tick(); h.click('.fn-story [data-save-source]');
-  assert.match(h.query('[data-news-announcement]').textContent, /temporarily unavailable/); assert.equal(h.query('.fn-story-link').href, 'https://www.cnbc.com/story-a');
+  assert.match(h.query('[data-news-announcement]').textContent, /temporarily unavailable/); assert.equal(h.query('.fn-story-link').pathname, '/news/article.html'); assert.equal(new URL(h.query('.fn-story-link').href).searchParams.get('id'), articleId('a'));
 });
 
 test('a rejected source save is announced without breaking the public reading surface', async t => {
@@ -227,7 +259,7 @@ test('a rejected source save is announced without breaking the public reading su
   h.win.FYNXNewsMembership.saveResearch = async () => { throw new Error('This source could not be saved. Please retry.'); };
   h.click('.fn-story [data-save-source]'); await tick();
   assert.match(h.query('[data-news-announcement]').textContent, /could not be saved/);
-  assert.equal(h.query('.fn-story-link').href, 'https://www.cnbc.com/story-a');
+  assert.equal(h.query('.fn-story-link').pathname, '/news/article.html'); assert.equal(new URL(h.query('.fn-story-link').href).searchParams.get('id'), articleId('a'));
 });
 
 test('missing data script provides a retry explanation instead of leaving a loading spinner', t => {
@@ -325,14 +357,14 @@ test('edition changes clear both lists immediately, send explicit selectors and 
   assert.equal(h.query('[data-news-refresh]').disabled,false);assert.equal(h.query('[data-release-refresh]').disabled,false);
 });
 
-test('empty regional headline feeds use only that edition’s dated official releases and retain honest classification', async t => {
+test('empty regional headline feeds keep official releases in their own panel rather than replacing top news', async t => {
   const h=harness(t,{edition:'uk',headlines:()=>Promise.resolve(result([],{edition:'uk'})),releases:()=>Promise.resolve(result([
     {...story('boe','UK official policy'),sourceId:'boe',kind:'official-release',edition:'uk',url:'https://www.bankofengland.co.uk/news/policy'},
     {...story('fed','Unrelated US policy'),sourceId:'fed',kind:'official-release',edition:'us',url:'https://www.federalreserve.gov/policy'}
   ],{edition:'uk'}))});await tick();
-  assert.equal(h.calls.releases.length,1,'headline fallback shares the in-flight official request');
-  assert.equal(h.all('.fn-story').length,1);assert.match(h.query('.fn-lead-flag').textContent,/OFFICIAL RELEASE/);assert.equal(h.query('.fn-story').dataset.storyKind,'official-release');
-  assert.match(h.query('[data-news-status]').textContent,/Official releases/);assert.doesNotMatch(h.query('[data-news-stories]').textContent,/Unrelated US/);
+  assert.equal(h.calls.releases.length,1,'official releases are independently requested once');
+  assert.equal(h.all('.fn-story').length,0);assert.equal(h.all('.fn-release').length,1);assert.match(h.query('[data-release-list]').textContent,/UK official policy/);
+  assert.doesNotMatch(h.query('[data-news-stories]').textContent,/UK official policy|Unrelated US/);
   h.click('[data-news-category="crypto"]');await tick();assert.equal(h.all('.fn-story').length,0);assert.equal(h.calls.headlines.at(-1).edition,'uk');
 });
 
@@ -351,23 +383,52 @@ test('mismatched edition responses never render even when a faulty data service 
   assert.equal(h.all('.fn-story').length,0);assert.equal(h.all('.fn-release').length,0);assert.match(h.query('[data-news-status]').textContent,/could not be refreshed/);
 });
 
-test('visible refresh runs at ten minutes, pauses while hidden and catches up once on return', async t => {
-  const h=harness(t);await tick();const start=Date.parse('2026-10-20T10:10:00Z');let visibility='visible';
-  Object.defineProperty(h.doc,'visibilityState',{get:()=>visibility,configurable:true});
-  const refresh=h.calls.intervals.find(timer=>timer.ms===600000).callback;
-  h.setNow(start+599999);refresh();await tick();assert.equal(h.calls.headlines.length,1);assert.equal(h.calls.releases.length,1);
-  visibility='hidden';h.setNow(start+600000);refresh();await tick();assert.equal(h.calls.headlines.length,1);
-  visibility='visible';h.doc.dispatchEvent(new h.win.Event('visibilitychange'));await tick();assert.equal(h.calls.headlines.length,2);assert.equal(h.calls.releases.length,2);
-  h.doc.dispatchEvent(new h.win.Event('visibilitychange'));refresh();await tick();assert.equal(h.calls.headlines.length,2);assert.equal(h.calls.releases.length,2);
+test('visible refresh runs at five minutes, pauses while hidden and catches up once on return', async t => {
+  const h=harness(t);await tick();const start=Date.parse('2026-10-20T10:10:00Z');
+  assert.equal([...h.timeouts.values()][0].at,start+300000);
+  await h.advanceTo(start+299999);assert.equal(h.calls.headlines.length,1);assert.equal(h.calls.releases.length,1);
+  h.setVisibility('hidden');assert.equal(h.timeouts.size,0);
+  await h.advanceTo(start+420000);assert.equal(h.calls.headlines.length,1);
+  h.setVisibility('visible');await tick();assert.equal(h.calls.headlines.length,2);assert.equal(h.calls.releases.length,2);
+  h.doc.dispatchEvent(new h.win.Event('visibilitychange'));await tick();assert.equal(h.calls.headlines.length,2);assert.equal(h.calls.releases.length,2);
+  assert.equal([...h.timeouts.values()][0].at,start+720000);
 });
 
-test('open pages prune expired 48-hour headlines, seven-day analysis and thirty-day releases without waiting for a provider', async t => {
+test('a category changed at minute two refreshes at minute seven, independently of release deadlines',async t=>{
+  const h=harness(t);await tick();const start=Date.parse('2026-10-20T10:10:00Z');
+  await h.advanceTo(start+120000);h.click('[data-news-category="stocks"]');await tick();
+  assert.equal(h.calls.headlines.length,2);assert.equal(h.calls.headlines.at(-1).category,'stocks');
+  await h.advanceTo(start+300000);assert.equal(h.calls.headlines.length,2);assert.equal(h.calls.releases.length,2);
+  await h.advanceTo(start+419999);assert.equal(h.calls.headlines.length,2);
+  await h.advanceTo(start+420000);assert.equal(h.calls.headlines.length,3);assert.equal(h.calls.headlines.at(-1).category,'stocks');
+  assert.equal(h.calls.releases.length,2);
+});
+
+test('an edition changed at minute two gives both selected feeds a minute-seven deadline',async t=>{
+  const h=harness(t,{edition:'us'});await tick();const start=Date.parse('2026-10-20T10:10:00Z');
+  await h.advanceTo(start+120000);h.win.FynxEdition.set('uk');await tick();
+  await h.advanceTo(start+419999);assert.equal(h.calls.headlines.length,2);assert.equal(h.calls.releases.length,2);
+  await h.advanceTo(start+420000);assert.equal(h.calls.headlines.length,3);assert.equal(h.calls.releases.length,3);
+  assert.equal(h.calls.headlines.at(-1).edition,'uk');assert.equal(h.calls.releases.at(-1).edition,'uk');
+});
+
+test('page suspension cancels the request timer and restoring catches up without duplicating in-flight feeds',async t=>{
+  const next=deferred();let count=0;
+  const h=harness(t,{headlines:()=>++count===1?Promise.resolve(result([story('a')])):next.promise});await tick();
+  const start=Date.parse('2026-10-20T10:10:00Z');h.win.dispatchEvent(new h.win.Event('pagehide'));assert.equal(h.timeouts.size,0);
+  await h.advanceTo(start+420000);assert.equal(h.calls.headlines.length,1);
+  h.win.dispatchEvent(new h.win.Event('pageshow'));await tick();assert.equal(h.calls.headlines.length,2);
+  h.doc.dispatchEvent(new h.win.Event('visibilitychange'));await tick();assert.equal(h.calls.headlines.length,2);
+  next.resolve(result([story('b')]));await tick();assert.equal([...h.timeouts.values()][0].at,start+720000);
+});
+
+test('open pages prune expired 24-hour headlines and analysis, plus thirty-day official releases without waiting for a provider', async t => {
   const now=Date.parse('2026-10-30T12:00:00Z'),hours=h=>new Date(now-h*3600000).toISOString();
   const h=harness(t,{now,headlines:()=>Promise.resolve(result([
     {...story('fresh','Fresh story'),publishedAt:hours(1)},
-    {...story('near','Expiring headline'),publishedAt:hours(48)+''},
-    {...story('analysis','Expiring analysis'),publishedAt:hours(168),kind:'analysis',category:'analysis'},
-    {...story('old','Already expired'),publishedAt:hours(49)}
+    {...story('near','Expiring headline'),publishedAt:hours(24)+''},
+    {...story('analysis','Expiring analysis'),publishedAt:hours(24),kind:'analysis',category:'analysis'},
+    {...story('old','Already expired'),publishedAt:hours(25)}
   ])),releases:()=>Promise.resolve(result([{...story('release','Expiring official release'),sourceId:'fed',kind:'official-release',publishedAt:hours(720),url:'https://www.federalreserve.gov/policy'}]))});await tick();
   Object.defineProperty(h.doc,'visibilityState',{value:'visible',configurable:true});
   assert.equal(h.all('.fn-story').length,3);assert.equal(h.all('.fn-release').length,1);

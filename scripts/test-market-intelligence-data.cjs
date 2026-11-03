@@ -27,7 +27,7 @@ test('existing headline and official caches decode entities and strip encoded un
  const title='Board&amp;#39;s &amp;lt;img src=x onerror=&amp;quot;alert(1)&amp;quot;&amp;gt; &lt;script&gt;alert(2)&lt;/script&gt; &lt;b&gt;decision&lt;/b&gt;';
  const old=new Date(Date.now()-601000).toISOString();
  const official=releases({fetchedAt:old});official.items[0].title=title;
- const h=harness(undefined,{fynx_market_intelligence_v2_us_all:JSON.stringify(news({fetchedAt:old,items:[headline({title})]})),fynx_market_intelligence_v2_us_official:JSON.stringify(official)});
+ const h=harness(undefined,{fynx_market_intelligence_v3_us_all:JSON.stringify(news({fetchedAt:old,items:[headline({title})]})),fynx_market_intelligence_v3_us_official:JSON.stringify(official)});
  for(const data of [h.api.getCachedHeadlines(),h.api.getCachedOfficialReleases()]){assert.equal(data.status,'cached');assert.equal(data.items[0].title,"Board's decision");assert.doesNotMatch(data.items[0].title,/<|>|onerror|alert/);}
  assert.equal(h.calls.length,0);
 });
@@ -49,7 +49,7 @@ test('untrusted article URLs, future records and duplicate stories are rejected'
  const data=await h.api.loadHeadlines();assert.equal(data.items.length,1);
 });
 test('a refresh failure preserves valid cache and its original retrieval date',async()=>{
- const old=new Date(Date.now()-600000).toISOString(),saved=news({fetchedAt:old});const h=harness(undefined,{fynx_market_intelligence_v2_us_all:JSON.stringify(saved)});const immediate=h.api.getCachedHeadlines();assert.equal(immediate.status,'cached');const data=await h.api.loadHeadlines('all',{force:true});assert.equal(data.status,'cached');assert.equal(data.fetchedAt,old);assert.equal(data.items.length,1);
+ const old=new Date(Date.now()-600000).toISOString(),saved=news({fetchedAt:old});const h=harness(undefined,{fynx_market_intelligence_v3_us_all:JSON.stringify(saved)});const immediate=h.api.getCachedHeadlines();assert.equal(immediate.status,'cached');const data=await h.api.loadHeadlines('all',{force:true});assert.equal(data.status,'cached');assert.equal(data.fetchedAt,old);assert.equal(data.items.length,1);
 });
 test('unscoped legacy News caches remain untouched but cannot masquerade as an edition feed',async()=>{
  const raw=JSON.stringify(news()),seed={fynx_news_latest_payload:raw,fynx_market_intelligence_v1_all:raw};
@@ -58,7 +58,7 @@ test('unscoped legacy News caches remain untouched but cannot masquerade as an e
  for(const [key,value] of Object.entries(seed))assert.equal(h.cache.get(key),value);
 });
 test('expired or malformed browser caches are ignored',()=>{
- for(const raw of ['not json',JSON.stringify(news({fetchedAt:new Date(Date.now()-2*86400000).toISOString()})),JSON.stringify(news({items:[headline({link:'https://user:password@example.com/a'})]}))]){const h=harness(undefined,{fynx_market_intelligence_v2_us_all:raw});assert.equal(h.api.getCachedHeadlines(),null);}
+ for(const raw of ['not json',JSON.stringify(news({fetchedAt:new Date(Date.now()-2*86400000).toISOString()})),JSON.stringify(news({items:[headline({link:'https://user:password@example.com/a'})]}))]){const h=harness(undefined,{fynx_market_intelligence_v3_us_all:raw});assert.equal(h.api.getCachedHeadlines(),null);}
 });
 test('storage failure cannot prevent a successful public feed load',async()=>{
  const h=harness(async()=>json(news()));h.window.localStorage={getItem(){throw Error('storage denied');},setItem(){throw Error('storage denied');}};const data=await h.api.loadHeadlines('all',{force:true});assert.equal(data.items.length,1);
@@ -77,20 +77,41 @@ test('official partial outage keeps the failed-source browser cache while refres
  const old=new Date(Date.now()-600000).toISOString();
  const saved=releases({fetchedAt:old,items:[{...headline({title:'GDP release',link:'https://www.bea.gov/news/gdp'}),sourceId:'bea',source:'BEA'}],sources:[{id:'fed',status:'unavailable',fetchedAt:null},{id:'bea',status:'fresh',fetchedAt:old},{id:'ecb',status:'unavailable',fetchedAt:null}]});
  const current=releases({sources:[{id:'fed',status:'fresh',fetchedAt:new Date().toISOString()},{id:'bea',status:'unavailable',fetchedAt:null},{id:'ecb',status:'unavailable',fetchedAt:null}],stale:true});
- const h=harness(async()=>json(current),{fynx_market_intelligence_v2_us_official:JSON.stringify(saved)});const data=await h.api.loadOfficialReleases({force:true});assert.equal(data.items.length,2);assert.equal(data.sources.find(s=>s.id==='bea').status,'cached');assert.equal(data.sources.find(s=>s.id==='bea').fetchedAt,old);assert.equal(data.sources.find(s=>s.id==='fed').status,'fresh');
+ const h=harness(async()=>json(current),{fynx_market_intelligence_v3_us_official:JSON.stringify(saved)});const data=await h.api.loadOfficialReleases({force:true});assert.equal(data.items.length,2);assert.equal(data.sources.find(s=>s.id==='bea').status,'cached');assert.equal(data.sources.find(s=>s.id==='bea').fetchedAt,old);assert.equal(data.sources.find(s=>s.id==='fed').status,'fresh');
 });
 test('cache update events identify the edition and only fire for the all-headlines view',async()=>{
  const h=harness(async url=>{const params=new URL(url).searchParams,edition=params.get('edition');return json(news({edition,category:params.get('category'),items:[headline({edition})]}));});
  await h.api.loadHeadlines('crypto');assert.equal(h.events.length,0);
  await h.api.loadHeadlines('all',{edition:'uk'});assert.equal(h.events.length,1);assert.equal(h.events[0].type,'fynx:news-updated');assert.equal(h.events[0].detail.edition,'uk');
- assert(h.cache.has('fynx_market_intelligence_v2_uk_all'));assert(!h.cache.has('fynx_news_latest_payload'));
+ assert(h.cache.has('fynx_market_intelligence_v3_uk_all'));assert(!h.cache.has('fynx_news_latest_payload'));
 });
 test('bad categories do not reach the public endpoint',async()=>{const h=harness();await assert.rejects(h.api.loadHeadlines('__proto__'),/Unknown/);assert.equal(h.calls.length,0);});
+
+test('top-story ranking survives normalization and browser caching with its verified reader identity',async()=>{
+ const id='a'.repeat(64),readerUrl='/news/article.html?id='+id+'&edition=us&category=all';
+ const lead=headline({title:'Important fixture report',link:'https://www.cnbc.com/important-fixture',pubDate:new Date(Date.now()-12*3600000).toISOString(),rank:1,priorityScore:90,articleId:id,readerUrl});
+ const newer=headline({title:'More recent fixture update',rank:2,priorityScore:40});
+ const h=harness(async()=>json(news({items:[newer,lead]})));
+ const data=await h.api.loadHeadlines();
+ for(const value of [data,h.api.getCachedHeadlines()]){
+  assert.deepEqual(Array.from(value.items,item=>item.title),[lead.title,newer.title]);
+  assert.equal(value.items[0].articleId,id);assert.equal(value.items[0].readerUrl,readerUrl);
+  assert.equal(value.items[0].rank,1);assert.equal(value.items[0].priorityScore,90);
+ }
+});
+
+test('v2 feeds from the former retention policy cannot reintroduce expired coverage',async()=>{
+ const raw=JSON.stringify(news({items:[headline({pubDate:new Date(Date.now()-30*3600000).toISOString()})]}));
+ const h=harness(undefined,{fynx_market_intelligence_v2_us_all:raw});
+ assert.equal(h.api.getCachedHeadlines(),null);
+ const data=await h.api.loadHeadlines();assert.equal(data.status,'unavailable');assert.equal(data.items.length,0);
+ assert.equal(h.cache.get('fynx_market_intelligence_v2_us_all'),raw);
+});
 
 test('all twelve supported editions reach the backend explicitly and have isolated cache identities',async()=>{
  const editions=['global','us','uk','canada','europe','asia','india','middle-east','africa','latin-america','japan','australia'];
  const h=harness(async url=>{const params=new URL(url).searchParams,edition=params.get('edition');return json(news({edition,items:[headline({edition})]}));});
- for(const edition of editions){const data=await h.api.loadHeadlines('all',{edition});assert.equal(data.edition,edition);assert.equal(data.items[0].edition,edition);assert(h.cache.has('fynx_market_intelligence_v2_'+edition+'_all'));}
+ for(const edition of editions){const data=await h.api.loadHeadlines('all',{edition});assert.equal(data.edition,edition);assert.equal(data.items[0].edition,edition);assert(h.cache.has('fynx_market_intelligence_v3_'+edition+'_all'));}
  assert.equal(h.calls.length,editions.length);
  await assert.rejects(h.api.loadHeadlines('all',{edition:'unknown'}),/Unknown edition/);
  assert.equal(h.calls.length,editions.length);

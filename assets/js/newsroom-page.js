@@ -9,7 +9,7 @@
   if (!config?.category || !config?.title) return;
   app.dataset.newsroomReady = 'true';
   const $ = selector => app.querySelector(selector);
-  const cadence = 10 * 60 * 1000;
+  const cadence = 5 * 60 * 1000;
   let requestNumber = 0, lastAttempt = 0, timer, rows = [], visibleLatest = 8, activeEdition = '', lastResult = null;
 
   function node(tag, className, text) {
@@ -48,10 +48,10 @@
       if (!item || typeof item !== 'object') return [];
       const url = safeURL(item.url || item.link), title = plain(item.title, 500), source = plain(item.source, 160);
       const published = Date.parse(item.publishedAt || item.pubDate);
-      if (!url || !title || !source || seen.has(url) || !Number.isFinite(published) || published > Date.now() + 300000 || Date.now() - published > 48 * 60 * 60 * 1000 || (item.edition && item.edition !== activeEdition)) return [];
+      if (!url || !title || !source || seen.has(url) || !Number.isFinite(published) || published > Date.now() + 300000 || Date.now() - published > 24 * 60 * 60 * 1000 || (item.edition && item.edition !== activeEdition)) return [];
       seen.add(url);
       return [{ ...item, url, title, source, publishedAt: new Date(published).toISOString() }];
-    }).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 60);
+    }).sort((a, b) => (a.rank||1000)-(b.rank||1000) || (b.priorityScore||0)-(a.priorityScore||0) || Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 60);
   }
   function imageFor(item) {
     const metadata = item.image;
@@ -85,8 +85,8 @@
     if (kind === 'lead') source.prepend(node('span', 'newsroom-lead-label', 'LATEST LEAD'), document.createTextNode(' '));
     const title = node(kind === 'lead' ? 'h2' : 'h3');
     const link = node('a', '', item.title);
-    link.href = item.url; link.target = '_blank'; link.rel = 'noopener noreferrer';
-    const arrow = node('span', 'newsroom-story-arrow', '↗'); arrow.setAttribute('aria-hidden', 'true'); link.append(document.createTextNode(' '), arrow);
+    link.href = window.FYNXNewsReaderData?.href(item) || '/news/article.html';
+    const arrow = node('span', 'newsroom-story-arrow', '→'); arrow.setAttribute('aria-hidden', 'true'); link.append(document.createTextNode(' '), arrow);
     title.append(link);
     const meta = node('div', 'newsroom-story-meta');
     const published = node('time', '', date(item.publishedAt)); published.dateTime = item.publishedAt;
@@ -95,7 +95,7 @@
     if (item.status === 'cached' || item.stale === true) meta.append(node('span', 'newsroom-saved-label', 'Saved coverage'));
     if (kind === 'lead') { const image = imageFor(item) || contextFigure(); if (image) article.append(image); }
     article.append(source, title, meta);
-    if (kind === 'lead') article.append(node('p', 'newsroom-story-access', 'Read the full report at the source. Publisher access terms apply.'));
+    if (kind === 'lead') article.append(node('p', 'newsroom-story-access', 'Read the FYNX brief: key facts, context and the original source.'));
     return article;
   }
   function message(title, detail) {
@@ -108,6 +108,7 @@
     return box;
   }
   function render() {
+    window.FYNXNewsReaderData?.prefetch(rows.slice(0,6));
     $('[data-newsroom-lead]').replaceChildren(story(rows[0], 'lead'));
     const secondary = $('[data-newsroom-secondary]');
     secondary.replaceChildren(...rows.slice(1, 4).map(item => story(item, 'secondary')));
@@ -127,7 +128,7 @@
     const label = saved ? 'Saved coverage' : unavailable ? 'Sources unavailable' : partial ? 'Partly refreshed' : 'Coverage updated';
     $('[data-newsroom-status-label]').textContent = label;
     const retrieved = date(result.fetchedAt);
-    $('[data-newsroom-status]').textContent = [editionInfo(activeEdition).label + ' edition', retrieved ? 'Retrieved ' + retrieved : '', rows.length + (rows.length === 1 ? ' report' : ' reports'), saved || unavailable || partial ? plain(result.message, 400) : 'Publication times appear on every report.'].filter(Boolean).join(' · ');
+    $('[data-newsroom-status]').textContent = [editionInfo(activeEdition).label + ' edition', retrieved ? 'Retrieved ' + retrieved : '', rows.length + (rows.length === 1 ? ' report' : ' reports'), saved || unavailable || partial ? plain(result.message, 400) : 'Past 24 hours · Checks every 5 minutes · Publication times shown.'].filter(Boolean).join(' · ');
     app.dataset.feedState = saved ? 'cached' : unavailable ? 'unavailable' : partial ? 'partial' : 'fresh';
   }
   function pruneCoverage() {
@@ -138,7 +139,7 @@
     else {
       $('[data-newsroom-secondary]').hidden = true;
       $('[data-newsroom-latest-section]').hidden = true;
-      $('[data-newsroom-lead]').replaceChildren(message('No recent reports in this edition.', 'Reports older than 48 hours have been removed. The source directory and FYNX reading guide remain available while fresh coverage is checked.'));
+      $('[data-newsroom-lead]').replaceChildren(message('No recent reports in this edition.', 'Reports older than 24 hours have been removed. The source directory and FYNX reading guide remain available while fresh coverage is checked.'));
     }
     if (lastResult) setStatus(lastResult);
   }

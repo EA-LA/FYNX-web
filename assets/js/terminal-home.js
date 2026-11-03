@@ -2,7 +2,7 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const node = (tag, text, className) => {const el = document.createElement(tag); if (text !== undefined) el.textContent = text; if (className) el.className = className; return el;};
-  const cadence = 600000, day = 86400000;
+  const cadence = 300000, day = 86400000;
   let briefingRequest = 0, topicRequest = 0, briefingPending = '', topicPending = '', lastAttempt = 0, activeEdition = '', briefing = null, topicResults = [], calendarCleanup = () => {}, briefingSignature = '', topicSignature = '';
   const topics = [ ['finance','Finance'], ['economics','Economics'], ['technology','Technology'], ['politics','Politics & Policy'], ['industries','Industries'], ['energy','Energy'] ];
   const edition = () => window.FynxEdition?.get() || 'global';
@@ -12,9 +12,9 @@
     const seen = new Set(), titles = new Set(), now = Date.now();
     return (Array.isArray(items) ? items : []).filter(item => {
       const published = Date.parse(item?.publishedAt), url = safeURL(item?.url), title = typeof item?.title === 'string' ? item.title.trim() : '', key = title.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
-      if (!url || !title || !item.source || !Number.isFinite(published) || published > now + 300000 || now - published > (item.kind === 'official-release' ? 30 : 2) * day || (item.edition && item.edition !== code) || seen.has(url) || titles.has(key)) return false;
+      if (!url || !title || !item.source || !Number.isFinite(published) || published > now + 300000 || now - published > day || (item.edition && item.edition !== code) || seen.has(url) || titles.has(key)) return false;
       seen.add(url); titles.add(key); return true;
-    }).sort((a,b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+    }).sort((a,b) => (a.rank||1000)-(b.rank||1000) || (b.priorityScore||0)-(a.priorityScore||0) || Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
   }
   function leadImage(item) {
     const meta = item?.image, context = () => window.FYNXNewsroomMedia?.createFigure(activeEdition === 'us' ? 'markets' : activeEdition === 'uk' ? 'finance' : 'world', {loading:'eager'});
@@ -27,7 +27,7 @@
     img.addEventListener('error',()=>{const fallback=context();if(fallback)figure.replaceWith(fallback);else figure.remove();},{once:true});figure.append(img,caption);return figure;
   }
   const date = value => new Date(value).toLocaleString([], {month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
-  function sourceLink(item) {const a = node('a', item.title); a.href = item.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; return a;}
+  function sourceLink(item) {const a = node('a', item.title); a.href = window.FYNXNewsReaderData?.href(item) || '/news/article.html'; return a;}
   function kind(item) {return item.source + ' · ' + (item.kind === 'official-release' ? 'Official release' : 'Market news');}
   function time(item) {const el = node('time', date(item.publishedAt) + (item.stale ? ' · Saved coverage' : ''), 'nr-published'); el.dateTime = item.publishedAt; return el;}
   function miniStory(item) {const a = node('article'), title = node('h3'); title.append(sourceLink(item)); a.append(node('span', kind(item), 'nr-kind'), title, time(item)); return a;}
@@ -36,6 +36,7 @@
     lead.replaceChildren(); latest.replaceChildren(); secondary.replaceChildren();
     lead.setAttribute('aria-busy','false'); latest.setAttribute('aria-busy','false');
     const items = recent(result.items, activeEdition), first = items[0];
+    window.FYNXNewsReaderData?.prefetch(items.slice(0,6));
     briefingSignature = items.map(item=>item.url).join('|');
     const photograph = leadImage(first); if (photograph) lead.append(photograph);
     if (!first) {
@@ -56,7 +57,7 @@
       });
       if (items.length <= 3) latest.append(node('p','You’re up to date with the available coverage.','nr-empty'));
     }
-    $('homeBriefingStatus').textContent = editionLabel(activeEdition)+' edition · '+(result.message || (items.length ? 'Dated source coverage.' : 'Coverage is temporarily unavailable.'))+(result.fetchedAt?' Retrieved '+date(result.fetchedAt)+'.':'')+' Headlines: past 48 hours. Official releases: past 30 days.';
+    $('homeBriefingStatus').textContent = editionLabel(activeEdition)+' edition · '+(result.message || (items.length ? 'Dated source coverage.' : 'Coverage is temporarily unavailable.'))+(result.fetchedAt?' Retrieved '+date(result.fetchedAt)+'.':'')+' Fresh reporting: past 24 hours. Checked every 5 minutes.';
     $('homeEditionStatus').textContent = editionLabel(activeEdition)+' edition';
   }
   async function refreshBriefing(force = false) {
@@ -90,6 +91,7 @@
       const photo = window.FYNXNewsroomMedia?.createFigure(contextId); if(photo) section.append(photo);
       const list = node('div',undefined,'nr-topic-stories');
       const rows = recent(result?.items,activeEdition).filter(item => !seen.has(item.url)).slice(0,3);
+      window.FYNXNewsReaderData?.prefetch(rows.slice(0,1));
       rows.forEach(item => {seen.add(item.url);list.append(miniStory(item));});
       if (!rows.length) list.append(node('p', result ? 'No additional recent reporting is available for this edition. Explore the desk’s source guide.' : 'Checking recent reporting…', 'nr-empty'));
       section.append(list,node('p',result ? (result.stale || result.status==='cached' ? 'Saved coverage · ' : '')+editionLabel(activeEdition)+' edition'+(result.fetchedAt?' · Retrieved '+date(result.fetchedAt):' · Source temporarily unavailable') : editionLabel(activeEdition)+' edition', 'nr-source-note'));

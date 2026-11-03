@@ -455,7 +455,7 @@
 <div class="shell" id="tapDismiss">
       <h1 class="title">Symbol News</h1>
       <div class="subtitle">
-        Search by symbol or keyword (e.g. <b>XAUUSD</b>, <b>EURUSD</b>, <b>BTCUSD</b>). Headlines come from Google News RSS and open directly on the original source website.
+        Search by symbol or keyword (e.g. <b>XAUUSD</b>, <b>EURUSD</b>, <b>BTCUSD</b>). Read reporting published within the last 24 hours in a FYNX brief, with the original source available at the end. Results refresh every 5 minutes while this page is open.
       </div>
 
       <div class="searchCard">
@@ -486,17 +486,18 @@
       </div>
 
       <div class="statusBar">
-        <div id="statusLeft">No articles yet. Try searching a symbol.</div>
-        <div id="statusRight">Source: Google News RSS</div>
+        <div id="statusLeft" aria-live="polite">No articles yet. Try searching a symbol.</div>
+        <div id="statusRight">Published in the last 24 hours · Refreshes every 5 minutes</div>
       </div>
 
       <div class="list" id="list"></div>
       <div class="empty" id="empty" style="display:none;">No articles yet. Try searching a symbol.</div>
     </div>
-  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Find context for a specific instrument</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter a supported symbol, review the returned source and timestamp, and open the publisher’s article when more detail is needed.</p><h3>The calculation or concept</h3><p>A ticker can refer to different instruments across venues; verify that the headline concerns your intended asset.</p></div><div class="tool-example"><h3>Worked example</h3><p>A currency headline about the US dollar may affect several pairs differently. Match the story’s subject and publication time to the instrument you are researching.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>News feeds can be delayed or blocked on managed networks. A missing result does not mean there is no material news.</p></details></section><!-- tool-guide:end -->
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Find context for a specific instrument</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter a supported symbol, review the returned source and timestamp, and open the FYNX brief for a clear overview and the original source when more detail is needed.</p><h3>The calculation or concept</h3><p>A ticker can refer to different instruments across venues; verify that the headline concerns your intended asset.</p></div><div class="tool-example"><h3>Worked example</h3><p>A currency headline about the US dollar may affect several pairs differently. Match the story’s subject and publication time to the instrument you are researching.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>News feeds can be delayed or blocked on managed networks. A missing result does not mean there is no material news.</p></details></section><!-- tool-guide:end -->
 <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/economic-calendar.html"><strong>Economic Calendar: Releases &amp; Central Bank Events</strong><span>Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.</span></a><a href="/tools/research-heatmap.html"><strong>Market Heatmap: Stocks, ETFs, Crypto &amp; Forex</strong><span>Compare percentage changes across stocks, ETFs, crypto, forex and your watchlist with equal-size tiles and timestamps for each public quote.</span></a><a href="/tools/recent-topics-discussed.html"><strong>Curated Macro &amp; Trading Research Topics</strong><span>Browse curated economic and trading research topics for further study. This editorial reference is not a live news or discussion feed.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
 
+  <script src="/assets/js/news-reader-links.js?v=20261102-r1"></script>
   <script>
     const el = {
       q: document.getElementById("query"),
@@ -506,58 +507,19 @@
       errorBox: document.getElementById("errorBox"),
       errorText: document.getElementById("errorText"),
       statusLeft: document.getElementById("statusLeft"),
+      statusRight: document.getElementById("statusRight"),
       list: document.getElementById("list"),
       empty: document.getElementById("empty"),
       tapDismiss: document.getElementById("tapDismiss"),
     };
 
-    const SYMBOL_QUERY_MAP = {
-      XAUUSD: "gold OR XAUUSD OR spot gold OR gold price OR gold forex",
-      XAGUSD: "silver OR XAGUSD OR spot silver OR silver price",
-      EURUSD: "EURUSD OR euro dollar OR euro usd forex",
-      GBPUSD: "GBPUSD OR pound dollar OR sterling usd forex",
-      USDJPY: "USDJPY OR dollar yen OR usd jpy forex",
-      USDCHF: "USDCHF OR dollar swiss franc forex",
-      USDCAD: "USDCAD OR dollar canadian dollar forex",
-      AUDUSD: "AUDUSD OR australian dollar usd forex",
-      NZDUSD: "NZDUSD OR new zealand dollar usd forex",
-      EURGBP: "EURGBP OR euro pound forex",
-      EURJPY: "EURJPY OR euro yen forex",
-      GBPJPY: "GBPJPY OR pound yen forex",
-      AUDJPY: "AUDJPY OR australian dollar yen forex",
-      CHFJPY: "CHFJPY OR swiss franc yen forex",
-      BTCUSD: "bitcoin OR BTCUSD OR BTC price OR bitcoin market",
-      ETHUSD: "ethereum OR ETHUSD OR ETH price OR ethereum market",
-      SOLUSD: "solana OR SOLUSD OR SOL price",
-      XRPUSD: "xrp OR XRPUSD OR ripple price",
-      BNBUSD: "binance coin OR BNBUSD OR BNB price",
-      ADAUSD: "cardano OR ADAUSD OR ADA price",
-      DOGEUSD: "dogecoin OR DOGEUSD OR DOGE price",
-      AVAXUSD: "avalanche crypto OR AVAXUSD OR AVAX price",
-      NAS100: "Nasdaq 100 OR NAS100 OR NDX OR US tech stocks",
-      US100: "Nasdaq 100 OR US100 OR NDX OR US tech stocks",
-      SPX500: "S&P 500 OR SPX500 OR SP500 OR US stock market",
-      US500: "S&P 500 OR US500 OR SP500 OR US stock market",
-      US30: "Dow Jones OR US30 OR Dow industrial average",
-      DJI: "Dow Jones OR DJI OR Dow industrial average",
-      GER40: "DAX OR GER40 OR German stock market",
-      UK100: "FTSE 100 OR UK100 OR UK stock market",
-      JP225: "Nikkei 225 OR JP225 OR Japan stock market",
-      HK50: "Hang Seng OR HK50 OR Hong Kong stocks",
-      OIL: "crude oil OR WTI OR Brent OR oil market",
-      WTI: "WTI crude oil OR crude oil price OR oil market",
-      BRENT: "Brent crude oil OR oil market",
-      NATGAS: "natural gas OR natgas OR gas market",
-      COPPER: "copper price OR copper market",
-      DXY: "US dollar index OR DXY OR dollar strength",
-      VIX: "VIX OR volatility index OR market fear index",
-      TSLA: "Tesla stock OR TSLA",
-      AAPL: "Apple stock OR AAPL",
-      NVDA: "NVIDIA stock OR NVDA",
-      META: "Meta stock OR META",
-      AMZN: "Amazon stock OR AMZN",
-      MSFT: "Microsoft stock OR MSFT"
-    };
+    const REFRESH_MS = 5 * 60 * 1000;
+    const MAX_AGE_MS = 24 * 60 * 60 * 1000;
+    const FEED_URL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname)
+      ? "/api/market-feed"
+      : "https://us-central1-fynx-c7a28.cloudfunctions.net/webMarketFeed";
+    let searchSequence = 0, activeQuery = "", renderedItems = [], fetchedAt = "";
+    let lastAttempt = 0, requestController = null, refreshUnavailable = false;
 
     const QUICK_PRESETS = [
       "XAUUSD","XAGUSD","EURUSD","GBPUSD","USDJPY","USDCHF","USDCAD","AUDUSD","NZDUSD",
@@ -568,6 +530,7 @@
 
     function setLoading(isLoading){
       el.loadingRow.style.display = isLoading ? "flex" : "none";
+      el.list.setAttribute("aria-busy", String(isLoading));
       if (isLoading) hideError();
     }
 
@@ -583,11 +546,10 @@
 
     function setStatus(count, query){
       const q = (query || "").trim().toUpperCase();
-      if (!count) {
-        el.statusLeft.textContent = q ? `No articles found for ${q}` : "No articles yet. Try searching a symbol.";
-      } else {
-        el.statusLeft.textContent = `${count} articles for ${q}`;
-      }
+      el.statusLeft.textContent = count
+        ? `${count} current ${count === 1 ? "article" : "articles"} for ${q}`
+        : q ? `No articles published in the last 24 hours for ${q}` : "Search a symbol to find current reporting.";
+      el.statusRight.textContent = `${refreshUnavailable ? "Refresh unavailable · " : ""}${fetchedAt ? "Feed checked " + formatDate(fetchedAt) + " · " : ""}Published within 24 hours · Refreshes every 5 minutes`;
     }
 
     function clearList(){
@@ -616,7 +578,7 @@
         .replaceAll("<","&lt;")
         .replaceAll(">","&gt;")
         .replaceAll('"',"&quot;")
-        .replaceAll("'","&#222;");
+        .replaceAll("'","&#39;");
     }
 
     function formatDate(dateStr){
@@ -633,112 +595,123 @@
       }
     }
 
-    function normalizeSearchQuery(query){
-      const raw = (query || "").trim();
-      if (!raw) return "";
-      const upper = raw.toUpperCase();
-      return SYMBOL_QUERY_MAP[upper] || raw;
+    function readerHref(item){
+      const candidate = window.FYNXNewsReaderData?.href(item) || item.readerUrl;
+      try {
+        const url = new URL(candidate, location.origin);
+        if (url.origin !== location.origin || url.pathname !== "/news/article.html" ||
+            url.searchParams.get("id") !== item.articleId ||
+            url.searchParams.get("symbol") !== item.symbol) return null;
+        return url.pathname + url.search;
+      } catch { return null; }
     }
 
-    function toGoogleRSSUrl(searchQuery){
-      const encoded = encodeURIComponent(searchQuery);
-      return `https://news.google.com/rss/search?q=${encoded}&hl=en-US&gl=US&ceid=US:en`;
-    }
-
-    function toRssJsonUrl(rssUrl){
-      return `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+    function currentItems(items, query){
+      const now = Date.now(), seen = new Set(), output = [];
+      for (const raw of Array.isArray(items) ? items : []){
+        const at = Date.parse(raw?.pubDate), id = raw?.articleId;
+        if (!Number.isFinite(at) || at < now - MAX_AGE_MS || at > now + REFRESH_MS ||
+            !/^[a-f0-9]{64}$/.test(id || "") || !String(raw.title || "").trim() || seen.has(id)) continue;
+        try {
+          const source = new URL(raw.link);
+          if (source.protocol !== "https:" || source.username || source.password) continue;
+        } catch { continue; }
+        const item = {...raw, edition: "us", category: "stocks", symbol: query, pubDate: new Date(at).toISOString()};
+        if (!readerHref(item)) continue;
+        seen.add(id); output.push(item);
+      }
+      return output;
     }
 
     function buildArticleCard(item){
       const a = document.createElement("a");
       a.className = "newsCard";
-      a.href = item.link;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-
-      const domain = domainFromUrl(item.link);
-      const when = item.pubDate ? formatDate(item.pubDate) : "";
-      const author = item.author ? String(item.author).trim() : "";
-
+      a.href = readerHref(item);
+      const source = item.source || domainFromUrl(item.link);
       a.innerHTML = `
-        <div class="iconBubble"><i class="fa-solid fa-newspaper"></i></div>
+        <div class="iconBubble" aria-hidden="true"><i class="fa-solid fa-newspaper"></i></div>
         <div class="newsBody">
-          <div class="newsTitle">${escapeHtml(item.title || "Untitled")}</div>
+          <div class="newsTitle">${escapeHtml(item.title)}</div>
           <div class="meta">
-            ${domain ? `<span>${escapeHtml(domain)}</span>` : ""}
-            ${when ? `<span>• ${escapeHtml(when)}</span>` : ""}
-            ${author ? `<span>• ${escapeHtml(author)}</span>` : ""}
+            <span>${escapeHtml(source)}</span>
+            <time datetime="${escapeHtml(item.pubDate)}">• ${escapeHtml(formatDate(item.pubDate))}</time>
+            <span>• Read FYNX brief</span>
           </div>
         </div>
-        <div class="chev"><i class="fa-solid fa-up-right-from-square"></i></div>
+        <div class="chev" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></div>
       `;
-
       return a;
     }
 
     function renderItems(items, query){
+      renderedItems = currentItems(items, query);
       clearList();
-
-      if (!items || items.length === 0){
+      setStatus(renderedItems.length, query);
+      if (!renderedItems.length){
+        el.empty.textContent = "No current reporting was returned for this search. Try another instrument or return shortly; older stories are not substituted.";
         el.empty.style.display = "block";
-        setStatus(0, query);
         return;
       }
-
-      const unique = [];
-      const seen = new Set();
-
-      for (const item of items){
-        const key = `${item.title || ""}|${item.link || ""}`;
-        if (!item.link || seen.has(key)) continue;
-        seen.add(key);
-        unique.push(item);
-      }
-
-      setStatus(unique.length, query);
-
-      for (const item of unique){
-        el.list.appendChild(buildArticleCard(item));
-      }
+      for (const item of renderedItems) el.list.appendChild(buildArticleCard(item));
+      window.FYNXNewsReaderData?.remember(renderedItems);
+      window.FYNXNewsReaderData?.prefetch(renderedItems);
     }
 
-    let searchSequence=0;
     async function fetchNews(userQuery){
-      const sequence=++searchSequence;
-      const raw = (userQuery || "").trim();
-      if (!raw){
+      const sequence = ++searchSequence;
+      const raw = String(userQuery || "").trim().slice(0, 80);
+      requestController?.abort();
+      requestController = null;
+      if (raw.toUpperCase() !== activeQuery.toUpperCase()){
+        renderedItems = []; fetchedAt = ""; refreshUnavailable = false;
         clearList();
-        setStatus(0, "");
+      }
+      activeQuery = raw;
+      if (!raw){
+        renderedItems = []; fetchedAt = ""; refreshUnavailable = false;
+        clearList(); setStatus(0, ""); hideError(); setLoading(false);
         return;
       }
-
       setLoading(true);
       hideError();
-
+      lastAttempt = Date.now();
+      const controller = new AbortController(); requestController = controller;
+      const timeout = setTimeout(() => controller.abort(), 15000);
       try {
-        const normalizedQuery = normalizeSearchQuery(raw);
-        const rssUrl = toGoogleRSSUrl(normalizedQuery);
-        const apiUrl = 'https://us-central1-fynx-c7a28.cloudfunctions.net/webSymbolNews?q='+encodeURIComponent(raw);
-
-        const response = await fetch(apiUrl, { cache: "no-store", signal: AbortSignal.timeout(15000) });
-        if (!response.ok) throw new Error("Network error");
-
+        const params = new URLSearchParams({kind: "symbol", q: raw});
+        const response = await fetch(FEED_URL + "?" + params, {
+          cache: "no-store", credentials: "omit", referrerPolicy: "no-referrer",
+          headers: {Accept: "application/json"}, signal: controller.signal
+        });
+        if (!response.ok) throw new Error("Feed unavailable");
         const data = await response.json();
         if (sequence !== searchSequence) return;
-        if (data.error) throw new Error(data.error);
-
-        renderItems(Array.isArray(data.items) ? data.items : [], raw);
+        if (data.error || data.kind !== "symbol" || !Array.isArray(data.items) ||
+            String(data.query || "").trim().toUpperCase() !== raw.toUpperCase()) throw new Error("Unexpected feed result");
+        const checked = Date.parse(data.fetchedAt);
+        fetchedAt = Number.isFinite(checked) && checked <= Date.now() + REFRESH_MS ? new Date(checked).toISOString() : "";
+        refreshUnavailable = data.stale === true || data.freshness === "stale";
+        renderItems(data.items, raw);
+        if (refreshUnavailable) showError("The source could not be refreshed. Only articles still within the last 24 hours are shown, with their original publication times.");
       } catch (err) {
         if (sequence !== searchSequence) return;
-        console.error(err);
-        clearList();
-        setStatus(0, raw);
-        showError("The embedded feed is unavailable. Search the publisher results below or try again shortly.");
-        const fallback=document.createElement('a');fallback.href='https://news.google.com/search?q='+encodeURIComponent(normalizeSearchQuery(raw));fallback.target='_blank';fallback.rel='noopener noreferrer';fallback.className='newsCard';fallback.textContent='Search Google News for '+raw+' ↗';el.list.appendChild(fallback);
+        refreshUnavailable = true;
+        renderItems(renderedItems, raw);
+        showError("The news source could not be checked just now. Any stories shown are still within the last 24 hours. Retry with Search, or leave this page open for the next automatic check.");
       } finally {
-        if (sequence === searchSequence) setLoading(false);
+        clearTimeout(timeout);
+        if (sequence === searchSequence){ requestController = null; setLoading(false); }
       }
     }
+
+    function checkFreshness(){
+      if (document.hidden || !activeQuery) return;
+      const current = currentItems(renderedItems, activeQuery);
+      if (current.length !== renderedItems.length) renderItems(current, activeQuery);
+      if (!requestController && Date.now() - lastAttempt >= REFRESH_MS) fetchNews(activeQuery);
+    }
+    setInterval(checkFreshness, 60 * 1000);
+    document.addEventListener("visibilitychange", checkFreshness);
 
     el.searchBtn.addEventListener("click", () => fetchNews(el.q.value));
 
