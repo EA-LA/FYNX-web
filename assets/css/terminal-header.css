@@ -462,3 +462,10 @@ html body[data-fynx-terminal] .terminal-topic-inner > .terminal-topic-personal {
 
 /* [site-qa] Keep the header "edition" picker dark on every page; the shared form-field style was turning it into a light box on Calculator, Journal and other tool pages. */
 html body[data-fynx-terminal] .terminal-edition select { background:#171a17 !important; color:#fff !important; }
+
+/* [site-qa] iPhone: Safari draws its own white dropdown style unless appearance is reset; keep the dark picker with a drawn arrow. */
+html body[data-fynx-terminal] .terminal-edition select { -webkit-appearance:none !important; appearance:none !important; background:#171a17 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23fff' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 8px center !important; color:#fff !important; border-radius:0 !important; }
+/* [site-qa] iPhone: the "More" topics menu opened off the left edge of the screen; open it from the left and keep it inside the screen. */
+@media(max-width:850px){
+  html body[data-fynx-terminal] .terminal-topic-menu { left:0; right:auto; width:min(240px, calc(100vw - 32px)); max-height:min(70vh, 480px); overflow-y:auto; z-index:60; }
+}

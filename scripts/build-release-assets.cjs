@@ -3,7 +3,7 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
-const VERSION = '20261103-r1';
+const VERSION = '20261104-qa1';
 const ASSETS = Object.freeze([
   'fynx-nav.js', 'demo-mode.js', 'auth/auth-form.js',
   'assets/js/home-journal.js', 'assets/js/profile-sync.js', 'assets/js/session-manager.js',
@@ -16,7 +16,8 @@ const ASSETS = Object.freeze([
   'assets/js/terminal-landing-live.js', 'assets/js/newsroom-editions.js',
   'assets/js/newsroom-media.js', 'assets/js/newsroom-page.js',
   'assets/css/terminal-header.css', 'assets/css/terminal-home.css',
-  'assets/css/terminal-news.css', 'assets/css/newsroom.css'
+  'assets/css/terminal-news.css', 'assets/css/newsroom.css',
+  'assets/css/terminal-landing.css', 'styles.css', 'assets/site-design.css'
 ]);
 const SKIP = new Set(['node_modules', 'output', 'dist', 'scripts', 'backend', 'docs', 'ops', 'functions']);
 const ORIGIN = 'https://release-assets.invalid';

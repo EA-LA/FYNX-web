@@ -2005,3 +2005,7 @@ body:not(.dark-mode) .hero::before{color:rgba(0,0,0,.76)}
 
 #header .nav-container > [data-theme-control]{display:inline-flex!important;flex-shrink:0;}
 @media(max-width:768px){#header .nav-container{gap:10px;}#header .nav-container > [data-theme-control]{margin-left:auto;width:40px;height:40px}.mobile-header-actions{margin-left:0!important;}}
+
+/* [site-qa] iPhone: fully hide the closed slide-out menu (so Safari can't pan sideways into it) and size it to the visible screen above Safari's toolbar. */
+.mobile-drawer{ visibility:hidden; height:100dvh; transition:transform .25s ease, visibility 0s linear .25s; padding-bottom:max(1rem, env(safe-area-inset-bottom)); }
+body.mobile-menu-open .mobile-drawer{ visibility:visible; transition:transform .25s ease, visibility 0s; }

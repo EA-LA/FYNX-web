@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-04 05:30 UTC — [site-qa] iPhone menus fit the screen
+- iPhone: the "More" news menu (Energy, World, Watch & listen, Official sources) opened off the left edge and was cut off. It now opens fully on screen. https://www.fynxfinanceworld.com/home.html
+- iPhone: the "US edition" picker in the header showed as a white box. It's now dark with its own arrow, matching the header.
+- iPhone: the slide-out menu on the homepage is fully hidden when closed, so the page can't be dragged sideways, and it now fits above Safari's bottom toolbar.
+- Phones now get the newest page styles straight away instead of an old saved copy.
+
 ## 2026-11-04 04:40 UTC — [site-qa] iPhone fixes and readability fixes
 - iPhone: tapping a search box or calculator field no longer zooms the whole page in (every page).
 - iPhone: Symbol News quick symbol buttons are full size and scroll sideways instead of being squashed. https://www.fynxfinanceworld.com/tools/symbol-news.html
