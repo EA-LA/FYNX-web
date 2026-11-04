@@ -23,6 +23,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [ ] Tap targets still under 44px: breadcrumb links (Home/Tools), "Save resource" (33px), header edition select (25px, 10px font), ticker items (35px), `<summary>` disclosures (23px).
 
 ## Bugs found and fixed
+- [x] 2026-11-04 (run 4): tools/position-size.html: floating-point rounding dropped a full 0.01 lot on exact answers (USD/JPY @150, $100 risk, 25 pips gave 0.59, exact is 0.60). Fixed with a tiny tolerance before rounding down. Hand-checked EUR/USD (0.40), USD/JPY (0.60), GBP/JPY with manual rate (0.59), XAU/USD (0.40 lots/40 oz).
 - [x] 2026-11-04: Homepage "Your News →" button: dark text on dark green, unreadable. Now white.
 - [x] 2026-11-04: Homepage footer copyright: nearly invisible (dark grey on black). Now legible.
 - [x] 2026-11-04: Symbol News "Search" button: white text on a light button, invisible.
@@ -42,5 +43,6 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [ ] Check live news feeds load on the live site (not testable locally).
 
 ## Page coverage (last full audit)
+- 2026-11-04 run 4: Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max + desktop on 12 key pages: no overflow, no JS errors. Only sub-16px field is the header edition select (10px, still open). Position Size math verified; pip, margin, risk-reward, break-even, compound math still pending. Main CI/pages deploy green at fc6859e.
 - 2026-11-04 run 3: Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max + desktop on index, calculator, position-size, correlation, margin, pip, risk-reward, journal, news, learn, explore: no horizontal overflow, no JS errors, Correlation clocks fit. Main CI green at 831b40a. `npm test` passes after `npm ci` (adsense test now passes). Calculator math verification still pending.
 - 2026-11-04: all 200 public HTML pages scanned automatically (overflow, field size, contrast, errors) on iPhone SE / iPhone 14 / desktop. Visually reviewed: index, calculator, tools/position-size, tools/symbol-news, tools/margin, journal, news, news/economics, learn, learn/risk-management, markets/patterns, pro.

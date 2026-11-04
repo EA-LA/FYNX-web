@@ -839,7 +839,7 @@
     function positionSizeLots(riskUSD, stopPips, pipValueUSD){
       if (riskUSD <= 0 || stopPips <= 0 || pipValueUSD <= 0) return null;
       const D = Decimal.clone({precision:256});
-      return new D(String(riskUSD)).div(new D(String(stopPips)).mul(String(pipValueUSD))).div('0.01').floor().mul('0.01').toNumber();
+      return new D(String(riskUSD)).div(new D(String(stopPips)).mul(String(pipValueUSD))).div('0.01').plus('1e-9').floor().mul('0.01').toNumber();
     }
 
     function positionSizeUnits(lots, pair){

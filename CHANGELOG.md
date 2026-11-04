@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-04 (night) — [site-qa] Position Size lot rounding fix
+- Position Size calculator: some exact answers were rounded one step too low (e.g. USD/JPY at 150, $100 risk, 25-pip stop showed 0.59 lots instead of 0.60). Fixed. https://www.fynxfinanceworld.com/tools/position-size.html
+
 ## 2026-11-04 (evening) — [site-qa] Easier tapping on iPhone
 - iPhone: the news topic row in the header (Newsroom, Markets, Economics…) and the "More" menu now have full-size tap areas, and "Politics & Policy" no longer runs into "Industries". https://www.fynxfinanceworld.com/calculator.html
 - iPhone: Back, Home, Calculate and Clear buttons on calculators are larger and easier to hit. https://www.fynxfinanceworld.com/tools/pip.html
