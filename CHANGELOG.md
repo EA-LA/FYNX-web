@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-04 — [site-qa] Correlation clocks fit small iPhones; clearer Position Size heading
+- iPhone SE: the time/range cards on Correlation stuck out past the screen edge; they now fit. https://www.fynxfinanceworld.com/tools/correlation.html
+- Position Size calculator: the card heading "Calculator UI" is now "Position size calculator" with plain instructions. https://www.fynxfinanceworld.com/tools/position-size.html
+
 ## 2026-11-04 05:30 UTC — [site-qa] iPhone menus fit the screen
 - iPhone: the "More" news menu (Energy, World, Watch & listen, Official sources) opened off the left edge and was cut off. It now opens fully on screen. https://www.fynxfinanceworld.com/home.html
 - iPhone: the "US edition" picker in the header showed as a white box. It's now dark with its own arrow, matching the header.

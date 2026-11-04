@@ -18,7 +18,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [x] 2026-11-04: Tapping any text box (search, calculators, journal, news search) zoomed the whole page on iPhone because field text was under 16px. Now 16px on touch phones, sitewide (`assets/site-design.css`, `assets/css/terminal-header.css`).
 - [x] 2026-11-04: Symbol News: the quick symbol buttons (XAUUSD, EURUSD…) were squashed into unreadable slivers on iPhone. They now keep full width and scroll sideways.
 - [x] 2026-11-04: Homepage FAQ: question text and the +/× icon touched and were clipped by the rounded card edges.
-- [ ] tools/correlation.html: session clock cards run past the edge on the smallest iPhone (320px wide).
+- [x] 2026-11-04: tools/correlation.html: clock cards were 326px wide on a 320px iPhone SE (min-width 290px). Now fit (284px).
 - [ ] Tap targets under 44px: audit header sub-nav links and calculator preset chips.
 
 ## Bugs found and fixed
@@ -33,7 +33,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [ ] FAQ: only 3 questions; add accurate answers for common questions (data sources, is it free, iOS app, Pro).
 - [ ] Hero buttons "Open Your Workspace" / "Explore Resources" have mismatched widths on iPhone.
 ### Tools
-- [ ] tools/position-size.html: the card heading says "Calculator UI" with a developer-style description. Rename it in plain words.
+- [x] 2026-11-04: tools/position-size.html: heading renamed "Position size calculator" with a plain description.
 - [ ] Verify every calculator's math against hand-worked examples (position size, pip, margin, risk/reward, break-even, compound, debt payoff, options, liquidation).
 ### Learn / Resources
 - [ ] The short redirect-style pages (learn/risk-management, resources/*) are thin. Consider merging them into their full guides.
