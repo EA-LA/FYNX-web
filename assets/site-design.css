@@ -121,3 +121,10 @@ html body[data-fynx-layout=workspace] .icon-btn{background:var(--fynx-panel)!imp
 
 /* Hidden UI must not be exposed by component display rules. */
 html body[data-fynx-layout] [hidden]{display:none!important}
+
+/* [site-qa] iPhone: Safari zooms the whole page when a form field's text is under 16px, which leaves pages zoomed and misaligned after typing. Keep fields at 16px on touch phones only. */
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  html body :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]):not([type=hidden]), textarea){ font-size:16px !important; }
+  html body select{ font-size:16px !important; }
+  html body[data-fynx-terminal] .terminal-edition select{ font-size:10px !important; }
+}

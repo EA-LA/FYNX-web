@@ -58,3 +58,6 @@ html body[data-fynx-layout="landing"] .fw-front-news a:hover { text-decoration:u
   .fw-headline-grid { grid-template-columns:1fr; }
   .fw-headline:nth-child(n) { padding:17px 0; border-left:0; }
 }
+/* [site-qa] Readability: keep the "Your News" button label and footer copyright legible (global light-mode link/copyright rules were overriding them). */
+html body[data-fynx-layout="landing"] .fw-front-news-heading .fw-your-news-link { color:var(--landing-panel) !important; }
+html body[data-fynx-layout="landing"] > footer .copyright { color:#a8b3ab !important; }

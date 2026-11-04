@@ -452,3 +452,13 @@ html body[data-fynx-terminal] .terminal-topic-inner > .terminal-topic-personal {
 @media(max-width:600px) {
   html body[data-fynx-terminal] .terminal-topic-inner > .terminal-topic-personal {grid-column:2;grid-row:1;}
 }
+
+/* [site-qa] iPhone: Safari zooms the whole page when a form field's text is under 16px, which leaves pages zoomed and misaligned after typing. Keep fields at 16px on touch phones only. */
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  html body :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]):not([type=hidden]), textarea){ font-size:16px !important; }
+  html body select{ font-size:16px !important; }
+  html body[data-fynx-terminal] .terminal-edition select{ font-size:10px !important; }
+}
+
+/* [site-qa] Keep the header "edition" picker dark on every page; the shared form-field style was turning it into a light box on Calculator, Journal and other tool pages. */
+html body[data-fynx-terminal] .terminal-edition select { background:#171a17 !important; color:#fff !important; }
