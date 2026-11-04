@@ -4,8 +4,9 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { publicSiteFiles } = require('./public-site-files.cjs');
-const VERSION = '20261103-features-1';
+const VERSION = '20261103-products-1';
 const ASSETS = Object.freeze([
+  'assets/css/company-products.css', 'assets/js/company-products.js', 'assets/js/company-products-data.js',
   'fynx-nav.js', 'demo-mode.js', 'auth/auth-form.js',
   'assets/js/home-journal.js', 'assets/js/profile-sync.js', 'assets/js/session-manager.js',
   'assets/js/news-reader-links.js', 'assets/js/news-reader.js', 'assets/css/news-reader.css',
