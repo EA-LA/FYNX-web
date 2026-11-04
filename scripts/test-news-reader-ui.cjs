@@ -12,7 +12,7 @@ const id='a'.repeat(64), now=Date.parse('2026-11-02T18:00:00Z');
 const iso=offset=>new Date(now+offset).toISOString();
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const article=(extra={})=>({id,title:'Fixture company reports quarterly results',source:'Fixture Publisher',sourceUrl:'https://publisher.example/news/quarterly-results',publishedAt:iso(-3600000),edition:'us',category:'finance',coverageLevel:'source-text',coverageNote:'Available public source text was reviewed.',preparedAt:iso(-60000),updatedAt:iso(-60000),summary:'The fixture company reported higher quarterly revenue and left its annual outlook unchanged.',keyPoints:[{text:'Revenue rose in the reported quarter.',evidence:'Quarterly revenue increased from the previous year.'}],numbers:[{value:'12%',context:'The company’s reported year-over-year revenue increase.'}],context:[{title:'Revenue and profit measure different things.',text:'Revenue measures sales before costs. Profit also reflects expenses, so revenue growth alone does not establish an increase in profit.'}],questions:['Did the original report change the annual outlook?'],terms:[{term:'Outlook',definition:'A company’s expectations for a future period, rather than a completed result.'}],related:[],sources:[],method:'source-backed-extractive',isCurrent:true,...extra});
-function harness(t,{cached=null,load=async()=>article(),query='?id='+id+'&edition=us&category=finance'}={}){
+function harness(t,{cached=null,load=async()=>article(),query='?id='+id+'&edition=us&category=finance',setup=()=>{}}={}){
  const dom=new JSDOM(html,{url:'https://www.fynxfinanceworld.com/news/article.html'+query,runScripts:'outside-only',virtualConsole:new VirtualConsole()});
  t.after(()=>dom.window.close());const w=dom.window;w.Date.now=()=>now;let edition='us';const calls=[],intervals=[];
  w.setInterval=(fn,ms)=>{intervals.push({fn,ms});return intervals.length;};w.clearInterval=()=>{};
@@ -20,7 +20,7 @@ function harness(t,{cached=null,load=async()=>article(),query='?id='+id+'&editio
  w.FynxEdition={get:()=>edition,editions:[{id:'us',label:'US'},{id:'uk',label:'UK'}]};
  w.FYNXNewsReaderData={getCachedArticle:()=>cached,loadArticle:async options=>{calls.push(options);return load(options);},href:row=>row.readerUrl||'/news/article.html?id='+row.articleId+'&edition=us&category=finance'};
  w.FYNXNewsroomMedia={createFigure:category=>{const figure=w.document.createElement('figure');figure.dataset.contextImage=category;figure.textContent='Context photograph: '+category;return figure;}};
- w.eval(script);return {w,doc:w.document,calls,intervals,setEdition:value=>{edition=value;},q:selector=>w.document.querySelector(selector)};
+ setup(w);w.eval(script);return {w,doc:w.document,calls,intervals,setEdition:value=>{edition=value;},q:selector=>w.document.querySelector(selector)};
 }
 
 test('reader renders source facts, general context and original source in distinct sections',async t=>{
@@ -126,4 +126,55 @@ test('broad-desk image inference uses source details but never generic FYNX cont
  assert.equal(source.q('[data-reader-image] figure').dataset.contextImage,'technology');
  const unreported=harness(t,{load:async()=>article({category:'all',title:'A new announcement draws attention',summary:'Only the headline is available.',keyPoints:[],context:[{title:'Technology',text:'Artificial intelligence, software and semiconductor markets are general topics.'}]})});await tick();
  assert.equal(unreported.q('[data-reader-image] figure').dataset.contextImage,'world');
+});
+
+test('reading size and focus preferences persist and focus can be exited with Escape',async t=>{
+ const h=harness(t,{setup:w=>w.localStorage.setItem('fynx:reader-preferences:v1',JSON.stringify({size:'large',focus:true}))});await tick();
+ assert.equal(h.q('[data-news-reader]').dataset.readerSize,'large');assert.equal(h.doc.body.classList.contains('reader-focus-view'),true);
+ assert.equal(h.q('[data-reader-focus]').getAttribute('aria-pressed'),'true');
+ assert.equal(h.q('[data-reader-sources] a').href,article().sourceUrl);
+ const select=h.q('[data-reader-text-size]');select.value='larger';select.dispatchEvent(new h.w.Event('change'));
+ assert.equal(JSON.parse(h.w.localStorage.getItem('fynx:reader-preferences:v1')).size,'larger');
+ h.doc.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Escape'}));
+ assert.equal(h.doc.body.classList.contains('reader-focus-view'),false);assert.equal(h.doc.activeElement,h.q('[data-reader-focus]'));
+ assert.equal(JSON.parse(h.w.localStorage.getItem('fynx:reader-preferences:v1')).focus,false);
+});
+
+test('invalid preferences and unavailable browser storage do not break the reader',async t=>{
+ const invalid=harness(t,{setup:w=>w.localStorage.setItem('fynx:reader-preferences:v1',JSON.stringify({size:'injected',focus:'true'}))});await tick();
+ assert.equal(invalid.q('[data-news-reader]').dataset.readerSize,'standard');assert.equal(invalid.doc.body.classList.contains('reader-focus-view'),false);
+ const blocked=harness(t,{setup:w=>Object.defineProperty(w,'localStorage',{get(){throw new Error('blocked');}})});await tick();
+ blocked.q('[data-reader-focus]').click();assert.equal(blocked.doc.body.classList.contains('reader-focus-view'),true);
+ assert.match(blocked.q('[data-reader-preferences-note]').textContent,/storage is unavailable/);assert.equal(blocked.q('[data-reader-title]').textContent,article().title);
+});
+
+test('sharing keeps the verified internal route and excludes unrelated query strings',async t=>{
+ const shared=[],h=harness(t,{query:'?id='+id+'&edition=us&category=finance&tracking=private#reader-brief',setup:w=>{w.navigator.share=async data=>shared.push(data);}});await tick();
+ h.q('[data-reader-share]').click();await tick();
+ assert.equal(shared.length,1);assert.equal(shared[0].title,article().title);
+ assert.equal(shared[0].url,'https://www.fynxfinanceworld.com/news/article.html?id='+id+'&edition=us&category=finance');
+ assert.match(h.q('[data-reader-action-status]').textContent,/Story shared/);assert.equal(h.q('[data-reader-share]').disabled,false);
+});
+
+test('share cancellation does not copy without user intent, and clipboard failure exposes a selectable link',async t=>{
+ let copies=0;const h=harness(t,{setup:w=>{w.navigator.share=async()=>{const error=new Error('cancelled');error.name='AbortError';throw error;};w.navigator.clipboard={writeText:async()=>{copies++;throw new Error('blocked');}};}});await tick();
+ h.q('[data-reader-share]').click();await tick();assert.equal(copies,0);assert.match(h.q('[data-reader-action-status]').textContent,/cancelled/);
+ h.q('[data-reader-copy]').click();await tick();assert.equal(copies,1);assert.equal(h.q('[data-reader-share-fallback]').hidden,false);
+ assert.equal(h.doc.activeElement,h.q('[data-reader-share-url]'));assert.match(h.q('[data-reader-share-url]').value,/news\/article\.html\?id=/);
+ h.q('[data-reader-share-close]').click();assert.equal(h.q('[data-reader-share-fallback]').hidden,true);assert.equal(h.doc.activeElement,h.q('[data-reader-copy]'));
+});
+
+test('share falls back to clipboard and success preserves source freshness status',async t=>{
+ const copied=[],h=harness(t,{setup:w=>{w.navigator.clipboard={writeText:async value=>copied.push(value)};}});await tick();
+ const before=h.q('[data-reader-status]').textContent;h.q('[data-reader-share]').click();await tick();
+ assert.equal(copied.length,1);assert.match(h.q('[data-reader-action-status]').textContent,/link copied/);assert.equal(h.q('[data-reader-status]').textContent,before);
+});
+
+test('only verified displayed stories enter local opening history, once per reader visit',async t=>{
+ const opened=[],h=harness(t,{setup:w=>{w.FYNXYourNews={markOpened:value=>opened.push(value)};}});await tick();
+ assert.equal(opened.length,1);assert.equal(opened[0].id,id);assert.equal(opened[0].sourceUrl,article().sourceUrl);
+ await h.intervals[0].fn();await tick();assert.equal(opened.length,1);
+ const rejected=[];const bad=harness(t,{load:async()=>article({id:'b'.repeat(64)}),setup:w=>{w.FYNXYourNews={markOpened:value=>rejected.push(value)};}});await tick();
+ assert.equal(rejected.length,0);assert.equal(bad.q('[data-reader-share]').disabled,true);assert.equal(bad.q('[data-reader-copy]').disabled,true);
+ assert.equal(h.q('.reader-your-news').getAttribute('href'),'/news/your-news.html');
 });

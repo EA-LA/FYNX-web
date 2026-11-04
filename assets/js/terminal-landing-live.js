@@ -15,11 +15,12 @@
       const at=Date.parse(item.publishedAt), key=String(item.title || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
       if(!url(item.url)||!key||!item.source||!Number.isFinite(at)||at>Date.now()+300000||Date.now()-at>day||(item.edition&&item.edition!==activeEdition)||seen.has(item.url)||titles.has(key))return false;
       seen.add(item.url);titles.add(key);return true;
-    }).slice(0,2);
+    }).slice(0,6);
   }
   function renderNews() {
-    const target=$('landingLiveNews'), items=recent();target.replaceChildren();target.setAttribute('aria-busy','false');visibleStories=items.map(item=>item.url).join('|');
-    window.FYNXNewsReaderData?.prefetch(items);
+    const target=$('landingLiveNews'), allItems=recent(), items=allItems.slice(0,2);target.replaceChildren();target.setAttribute('aria-busy','false');visibleStories=allItems.map(item=>item.url).join('|');
+    window.FYNXNewsReaderData?.prefetch(allItems);
+    renderHeadlines(allItems);
     const photo=window.FYNXNewsroomMedia?.createFigure(activeEdition==='uk'?'finance':activeEdition==='us'?'markets':'world');if(photo)target.append(photo);
     if(!items.length){target.append(node('p','Recent verified coverage is unavailable for the '+label(activeEdition)+' edition.','fw-live-status'));const a=node('a','Explore original sources at the News desk →');a.href='/news.html';target.append(a);}
     for(const item of items){
@@ -31,6 +32,19 @@
     }
     $('landingNewsStatus').textContent=label(activeEdition)+' edition · '+(briefing?.message || 'Coverage could not be refreshed.')+(briefing?.fetchedAt?' Retrieved '+date(briefing.fetchedAt)+'.':'')+' Fresh reporting: past 24 hours. Checked every 5 minutes.';
   }
+  function renderHeadlines(items) {
+    const grid=$('landingHeadlineGrid'),status=$('landingHeadlineStatus');if(!grid)return;
+    const articles=items.map(item=>{
+      const article=node('article',undefined,'fw-headline'),title=node('h3'),link=node('a',item.title),time=node('time',date(item.publishedAt));
+      link.href=window.FYNXNewsReaderData?.href(item)||'/news/article.html';title.append(link);time.dateTime=item.publishedAt;
+      article.append(node('p',item.source,'fw-headline-source'),title,time);
+      if(item.stale||item.status==='cached')article.append(node('span','Saved coverage','fw-headline-saved'));
+      return article;
+    });
+    if(!articles.length)articles.push(node('p','No recent verified reporting is available for the '+label(activeEdition)+' edition. Explore the Newsroom sources or choose another edition.','fw-headline-empty'));
+    grid.replaceChildren(...articles);grid.setAttribute('aria-busy','false');
+    if(status)status.textContent=label(activeEdition)+' edition · Past 24 hours · Checks every 5 minutes'+(briefing?.fetchedAt?' · Retrieved '+date(briefing.fetchedAt):'')+(briefing?.stale||briefing?.status==='cached'?' · Saved coverage':briefing?.status==='unavailable'?' · Sources unavailable':briefing?.partial?' · Partly refreshed':'')+'.';
+  }
   async function refresh(force=false) {
     const code=edition();if(pending===code)return;pending=code;lastAttempt=Date.now();const serial=++request;
     try{
@@ -39,7 +53,7 @@
       briefing=result.edition&&result.edition!==code?{items:[],message:'The selected edition could not be loaded.'}:result;renderNews();
     }catch{
       if(serial!==request||code!==edition())return;
-      briefing=briefing?{...briefing,message:'Refresh unavailable. Dated saved coverage is shown.'}:{items:[],message:'Coverage could not be refreshed.'};renderNews();
+      briefing=briefing?{...briefing,status:'cached',stale:true,message:'Refresh unavailable. Dated saved coverage is shown.'}:{items:[],message:'Coverage could not be refreshed.'};renderNews();
     }finally{if(serial===request)pending='';}
   }
   function renderQuotes(data) {
@@ -62,7 +76,7 @@
     activeEdition=edition();refresh();
     const quotes=()=>window.FynxTerminalData.loadQuotes().then(renderQuotes).catch(()=>{$('landingQuoteStatus').textContent='Global quote sources are temporarily unavailable. Open the research heat map to check again.';});quotes();
     document.addEventListener('fynx:terminal-quotes',event=>renderQuotes(event.detail));
-    document.addEventListener('fynx:edition-change',()=>{activeEdition=edition();++request;pending='';briefing=null;visibleStories='';$('landingLiveNews').replaceChildren(node('p','Checking '+label(activeEdition)+' reporting…'));$('landingLiveNews').setAttribute('aria-busy','true');$('landingNewsStatus').textContent='Checking published sources for the selected edition.';refresh();});
+    document.addEventListener('fynx:edition-change',()=>{activeEdition=edition();++request;pending='';briefing=null;visibleStories='';$('landingLiveNews').replaceChildren(node('p','Checking '+label(activeEdition)+' reporting…'));$('landingLiveNews').setAttribute('aria-busy','true');$('landingNewsStatus').textContent='Checking published sources for the selected edition.';const grid=$('landingHeadlineGrid');if(grid){grid.replaceChildren(node('p','Checking '+label(activeEdition)+' reporting…','fw-headline-empty'));grid.setAttribute('aria-busy','true');}if($('landingHeadlineStatus'))$('landingHeadlineStatus').textContent='Checking published sources for the '+label(activeEdition)+' edition.';refresh();});
     function check(){if(document.hidden)return;if(briefing&&recent().map(item=>item.url).join('|')!==visibleStories)renderNews();if(Date.now()-lastAttempt>=cadence)refresh();quotes();}
     setInterval(check,60000);document.addEventListener('visibilitychange',check);
   }

@@ -38,6 +38,7 @@ require('./build-learning.cjs');
 require('./build-research-pages.cjs');
 require('./build-news-intelligence.cjs');
 require('./build-newsroom.cjs');
+require('./build-your-news.cjs');
 require('./build-discovery.cjs');
 require('./build-search-identity.cjs');
 

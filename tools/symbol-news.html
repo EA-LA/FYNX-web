@@ -37,7 +37,7 @@
       --search-btn-bg-hover:rgba(0, 0, 0, .14);
       --search-btn-border:rgba(0, 0, 0, .18);
       --search-btn-border-hover:rgba(0, 0, 0, .28);
-      --search-btn-text:#ffffff;
+      --search-btn-text:rgba(10, 10, 10, .92);
       --chip-bg:rgba(0, 0, 0, .08);
       --chip-bg-hover:rgba(0, 0, 0, .12);
       --chip-border:rgba(0, 0, 0, .10);
@@ -290,6 +290,7 @@
       font-size: 12px;
       transition: transform .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
       white-space:nowrap;
+      flex:0 0 auto;
     }
     .chip:hover{transform: translateY(-1px); background: var(--chip-bg-hover); border-color: var(--chip-border-hover)}
     .statusBar{
@@ -497,7 +498,7 @@
 <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/economic-calendar.html"><strong>Economic Calendar: Releases &amp; Central Bank Events</strong><span>Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.</span></a><a href="/tools/research-heatmap.html"><strong>Market Heatmap: Stocks, ETFs, Crypto &amp; Forex</strong><span>Compare percentage changes across stocks, ETFs, crypto, forex and your watchlist with equal-size tiles and timestamps for each public quote.</span></a><a href="/tools/recent-topics-discussed.html"><strong>Curated Macro &amp; Trading Research Topics</strong><span>Browse curated economic and trading research topics for further study. This editorial reference is not a live news or discussion feed.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
 
-  <script src="/assets/js/news-reader-links.js?v=20261102-r1"></script>
+  <script src="/assets/js/news-reader-links.js?v=20261103-r1"></script>
   <script>
     const el = {
       q: document.getElementById("query"),
