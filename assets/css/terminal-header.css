@@ -471,3 +471,14 @@ html body[data-fynx-terminal] .terminal-edition select { -webkit-appearance:none
 }
 
 .quant-new-badge{display:inline-block;background:#8fd1ad;color:#0c0d0f;font:800 10px Inter,Helvetica,sans-serif;padding:2px 5px;margin-left:6px;border-radius:3px;vertical-align:2px}
+
+/* [site-qa] 2026-11-04: 44px minimum tap targets on touch phones (header topic row, More menu summary). */
+@media (max-width:600px) and (pointer:coarse) {
+  html body[data-fynx-terminal] .terminal-topic-inner { padding-block:0; }
+  html body[data-fynx-terminal] .terminal-topic-inner > a,
+  html body[data-fynx-terminal] .terminal-topic-more > summary { min-height:44px; }
+  html body[data-fynx-terminal] .terminal-topic-menu a { min-height:44px; display:flex; align-items:center; }
+}
+@media (max-width:600px) {
+  html body[data-fynx-terminal] .terminal-topic-inner > a { white-space:normal; line-height:1.2; padding-right:6px; }
+}

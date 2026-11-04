@@ -19,7 +19,8 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [x] 2026-11-04: Symbol News: the quick symbol buttons (XAUUSD, EURUSD…) were squashed into unreadable slivers on iPhone. They now keep full width and scroll sideways.
 - [x] 2026-11-04: Homepage FAQ: question text and the +/× icon touched and were clipped by the rounded card edges.
 - [x] 2026-11-04: tools/correlation.html: clock cards were 326px wide on a 320px iPhone SE (min-width 290px). Now fit (284px).
-- [ ] Tap targets under 44px: audit header sub-nav links and calculator preset chips.
+- [x] 2026-11-04 (run 3): header topic links, "More" menu items and tool-page Back/Home/Calculate/Clear buttons now 44px on touch phones; "Politics & Policy" no longer overlaps "Industries" in the header grid (`terminal-header.css`, `site-design.css`).
+- [ ] Tap targets still under 44px: breadcrumb links (Home/Tools), "Save resource" (33px), header edition select (25px, 10px font), ticker items (35px), `<summary>` disclosures (23px).
 
 ## Bugs found and fixed
 - [x] 2026-11-04: Homepage "Your News →" button: dark text on dark green, unreadable. Now white.
@@ -41,4 +42,5 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [ ] Check live news feeds load on the live site (not testable locally).
 
 ## Page coverage (last full audit)
+- 2026-11-04 run 3: Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max + desktop on index, calculator, position-size, correlation, margin, pip, risk-reward, journal, news, learn, explore: no horizontal overflow, no JS errors, Correlation clocks fit. Main CI green at 831b40a. `npm test` passes after `npm ci` (adsense test now passes). Calculator math verification still pending.
 - 2026-11-04: all 200 public HTML pages scanned automatically (overflow, field size, contrast, errors) on iPhone SE / iPhone 14 / desktop. Visually reviewed: index, calculator, tools/position-size, tools/symbol-news, tools/margin, journal, news, news/economics, learn, learn/risk-management, markets/patterns, pro.

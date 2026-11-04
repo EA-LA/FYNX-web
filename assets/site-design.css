@@ -128,3 +128,9 @@ html body[data-fynx-layout] [hidden]{display:none!important}
   html body select{ font-size:16px !important; }
   html body[data-fynx-terminal] .terminal-edition select{ font-size:10px !important; }
 }
+
+/* [site-qa] 2026-11-04: 44px minimum tap targets for tool-page buttons on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  body .nav-actions a.btn,body .nav-actions button.btn,body .actions :is(button,.primary,.ghost,a.btn){min-height:44px}
+  body .nav-actions a.btn{justify-content:center}
+}

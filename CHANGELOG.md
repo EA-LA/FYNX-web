@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-04 (evening) — [site-qa] Easier tapping on iPhone
+- iPhone: the news topic row in the header (Newsroom, Markets, Economics…) and the "More" menu now have full-size tap areas, and "Politics & Policy" no longer runs into "Industries". https://www.fynxfinanceworld.com/calculator.html
+- iPhone: Back, Home, Calculate and Clear buttons on calculators are larger and easier to hit. https://www.fynxfinanceworld.com/tools/pip.html
+
 ## 2026-11-04 — [site-qa] Correlation clocks fit small iPhones; clearer Position Size heading
 - iPhone SE: the time/range cards on Correlation stuck out past the screen edge; they now fit. https://www.fynxfinanceworld.com/tools/correlation.html
 - Position Size calculator: the card heading "Calculator UI" is now "Position size calculator" with plain instructions. https://www.fynxfinanceworld.com/tools/position-size.html
