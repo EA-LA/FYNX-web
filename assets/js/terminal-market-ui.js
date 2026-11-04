@@ -1,7 +1,7 @@
 /* Five-second strip movement; actual prices refresh at the source/cache cadence. */
 (function () {
   'use strict';
-  let latest, rendered, refresh, motion, paused=false;
+  let latest, rendered, refresh, motion;
   const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)');
   const format=q=>q.price.toLocaleString('en-US',{minimumFractionDigits:['EURUSD=X','GBPUSD=X'].includes(q.symbol)?4:2,maximumFractionDigits:['EURUSD=X','GBPUSD=X'].includes(q.symbol)?4:2});
   const change=q=>q.changePercent===null?'—':`${q.changePercent>0?'▲ ':q.changePercent<0?'▼ ':''}${Math.abs(q.changePercent).toFixed(2)}%`;
@@ -31,14 +31,14 @@
     const status=document.createElement('small');status.className='terminal-ticker-status';status.textContent=data.status==='unavailable'?'Quotes unavailable':`${data.stale?'Saved':'Indicative / may be delayed'} · ${data.fetchedAt?new Date(data.fetchedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):''} · Checks every minute`;
     inner.append(status);track.append(inner);
     const controls=document.createElement('div');controls.className='terminal-ticker-controls';
-    for(const [text,label,action] of [['‹','Previous market quotes',()=>move(-1)],['Ⅱ','Pause market strip',null],['›','Next market quotes',()=>move(1)]]){
+    for(const [text,label,action] of [['‹','Previous market quotes',()=>move(-1)],['›','Next market quotes',()=>move(1)]]){
       const button=document.createElement('button');button.type='button';button.textContent=text;button.setAttribute('aria-label',label);
-      if(action)button.addEventListener('click',action);else{button.textContent=paused||reduced?.matches?'▶':'Ⅱ';button.setAttribute('aria-label',paused||reduced?.matches?'Resume market strip':'Pause market strip');button.setAttribute('aria-pressed',String(paused));button.addEventListener('click',()=>{paused=!paused;button.textContent=paused?'▶':'Ⅱ';button.setAttribute('aria-pressed',String(paused));button.setAttribute('aria-label',paused?'Resume market strip':'Pause market strip');});}controls.append(button);
+      button.addEventListener('click',action);controls.append(button);
     }
     const left=host.querySelector('.terminal-ticker-track')?.scrollLeft||0;host.replaceChildren(track,controls);track.scrollLeft=left;
   }
-  function start(){if(document.hidden||!window.FynxTerminalData||!document.body.hasAttribute('data-fynx-terminal'))return;window.FynxTerminalData.loadQuotes().then(data=>{latest=data;render(data);document.dispatchEvent(new CustomEvent('fynx:terminal-quotes',{detail:data}));});}
-  function timers(){if(!refresh)refresh=setInterval(start,60000);if(!motion)motion=setInterval(()=>{const host=document.querySelector('[data-terminal-ticker]');if(!document.hidden&&!paused&&!reduced?.matches&&host&&!host.matches(':hover')&&!host.contains(document.activeElement))move();},5000);}
+  function start(){if(document.hidden||!window.FynxTerminalData||!document.body.hasAttribute('data-fynx-terminal'))return;window.FynxTerminalData.loadQuotes().then(data=>{latest=data;render(data);document.dispatchEvent(new CustomEvent('fynx:terminal-quotes',{detail:data}));}).catch(()=>{const status=document.querySelector('.terminal-ticker-status');if(status)status.textContent='Quote refresh unavailable · Previous source times still apply';});}
+  function timers(){if(!refresh)refresh=setInterval(start,60000);if(!motion)motion=setInterval(()=>{const host=document.querySelector('[data-terminal-ticker]');if(!document.hidden&&!reduced?.matches&&host&&!host.contains(document.activeElement))move();},5000);}
   document.addEventListener('fynx:terminal-header',()=>{if(latest)render(latest);});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)start();});
   window.addEventListener('pagehide',()=>{clearInterval(refresh);clearInterval(motion);refresh=motion=null;});

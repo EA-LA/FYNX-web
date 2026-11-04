@@ -1,0 +1,87 @@
+{
+  "baseline": "263d4b12c91804e9c31c3540c70a8d6c5b40328d",
+  "files": [
+    {
+      "path": "home.html",
+      "identical": true,
+      "sha256": "2cb7ee333a1bf07cd195423e71e0ba60a595840fb2e3cbf5a357267d6cb11f4d"
+    },
+    {
+      "path": "assets/site-design.css",
+      "identical": true,
+      "sha256": "7868caa8e0c16decf5c6272a0152ff668d1061ee0735dcf33ebba12a372aa4ee"
+    },
+    {
+      "path": "assets/css/terminal-home.css",
+      "identical": true,
+      "sha256": "b41937d1ad7556fc96688d0b3f45a489645a992f6cd44a8ac0a53c3a7ef4eabb"
+    },
+    {
+      "path": "assets/js/terminal-home.js",
+      "identical": true,
+      "sha256": "d9fb8812cb84d1a88c4ac0b59ce4fbbfdffc7f5348b09e7510df43e8048ae128"
+    },
+    {
+      "path": "assets/css/terminal-news.css",
+      "identical": true,
+      "sha256": "5834035619be2cf46937eeece6b9b77a2ffc843bd32783e68602eda750e23ac4"
+    },
+    {
+      "path": "assets/css/newsroom.css",
+      "identical": true,
+      "sha256": "593c3fd1992f8b93fd19308af86255ced2f5084ba5470064f8570d7e31c1ff1a"
+    },
+    {
+      "path": "assets/js/news-intelligence.js",
+      "identical": true,
+      "sha256": "0912a45afc0b23f5293ad416f2eda74c57e2de02ed0142fb4288ae6534f0c045"
+    },
+    {
+      "path": "assets/js/news-reader.js",
+      "identical": true,
+      "sha256": "730e86e4e8292660c23d4ed0c889e4f5a55557b8881699a1ac55bccc2660dcc2"
+    },
+    {
+      "path": "assets/css/news-reader.css",
+      "identical": true,
+      "sha256": "1a440026d11fac167549d71fb6b7cbdb70ceab8e65cfcfb351ca4e2405975059"
+    },
+    {
+      "path": "assets/js/news-reader-links.js",
+      "identical": true,
+      "sha256": "dabfea50be1dee4b10419a916ea0d69631a4b9c53a2045045efabf63eb30b076"
+    },
+    {
+      "path": "assets/js/your-news.js",
+      "identical": true,
+      "sha256": "3597f708a849aea4b8e29ca50b30d67e5593c4aaca5878089a4a4eec780dded0"
+    },
+    {
+      "path": "assets/css/your-news.css",
+      "identical": true,
+      "sha256": "ed5f3746e14b9e83db2af857f3ddb9c71cc63ece42c713335b660557111b5080"
+    },
+    {
+      "path": "assets/js/terminal-market-data.js",
+      "identical": true,
+      "sha256": "2d9964aa815d46de57f0b53e30448eb71967ce12cd533cc96539fd10e6cad2e8"
+    },
+    {
+      "path": "assets/js/terminal-market-ui.js",
+      "identical": true,
+      "sha256": "ae98ce1c4a026561cd2a5ceb564db7cb465444d79928b186ed6ca9bd37e82e5c"
+    },
+    {
+      "path": "assets/landing-workspace.css",
+      "identical": true,
+      "sha256": "27e53e506852162de6b8c1af4f7df85011f58eeecf20f3bf31ded27e56a67eb1"
+    },
+    {
+      "path": "assets/js/landing-workspace.js",
+      "identical": true,
+      "sha256": "72f90dde1d4de4fdddf95c8afef7210a7005cfabe95ff79de4a61c05ea8deed2"
+    }
+  ],
+  "headerCSS": "Original current-main CSS retained in full; only feature badge CSS appended",
+  "sharedNavigation": "Quant Analyst and Edge Radar appended; Profile opens My Accounts"
+}

@@ -564,3 +564,8 @@ html body[data-fynx-layout="landing"] .fynx-download .fynx-card { border-radius:
 @media (prefers-reduced-motion: reduce) {
   html body[data-fynx-layout="landing"] :is(.fw-benefit, .fw-tool, .fw-link > span, .fynx-faq__icon, .fynx-faq__a) { transition: none; }
 }
+
+/* [site-qa] FAQ: give questions and answers inner spacing so text and the +/× icon no longer touch or get clipped by the rounded card edges (iPhone + desktop). */
+html body[data-fynx-layout="landing"] .fynx-faq__item { overflow:hidden; margin-bottom:10px; }
+html body[data-fynx-layout="landing"] .fynx-faq__q { padding:12px 16px 12px 20px; }
+html body[data-fynx-layout="landing"] .fynx-faq__a p { padding:0 52px 18px 20px; }

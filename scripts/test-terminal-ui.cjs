@@ -181,6 +181,7 @@ test('deferred header waits for actual fynx-nav at interactive, preserves accoun
     assert(editionSelect); assert.equal(editionSelect.getAttribute('aria-label'), 'News edition');
     assert.equal(editionSelect.options.length, w.FynxEdition.editions.length);
     assert.equal(w.document.querySelectorAll('.terminal-topic-nav').length, 1);
+    assert(w.document.querySelector('.top-bar a.terminal-your-news[href="/news/your-news.html"]'));
     for (const section of w.FynxEdition.sections) assert(w.document.querySelector('.terminal-topic-nav a[href="' + section.href + '"]'), section.id);
     assert(w.document.querySelector('.terminal-topic-more summary'));
     editionSelect.value = 'uk'; editionSelect.dispatchEvent(new w.Event('change', { bubbles: true }));
@@ -191,7 +192,9 @@ test('deferred header waits for actual fynx-nav at interactive, preserves accoun
     w.FynxIdentity = { uid: 'fixture-user', displayName: 'Test Trader' };
     w.dispatchEvent(new w.Event('fynx:identity'));
     assert.equal(originalAvatar.textContent, 'TT');
-    assert.equal(w.document.querySelector('#publicAccountLinks a:last-child').pathname, '/profile.html');
+    assert.equal(w.document.querySelector('#publicAccountLinks a:last-child').pathname, '/profile/accounts');
+    assert.equal(w.document.querySelectorAll('.nav-item[href="/quant-analyst.html"]').length, 1);
+    assert.equal(w.document.querySelectorAll('.nav-item[href="/edge-radar/"]').length, 1);
     assert.equal(w.document.querySelector('.terminal-header-search').action, 'https://www.fynxfinanceworld.com/explore.html');
     assert.equal(w.document.querySelector('.nav-item[aria-current="page"]').dataset.view, 'home');
     state = 'complete'; w.dispatchEvent(new w.Event('load')); await tick();
@@ -320,4 +323,28 @@ test('ticker, Home and landing preserve four-decimal EUR/USD and GBP/USD referen
       assert.deepEqual(errors,[]);
     }finally{dom.window.close();}
   }
+});
+
+// Motion is automatic; accessibility preferences do not alter the price feed.
+test('market strip advances every five seconds without a play control and preserves reduced-motion preference', async () => {
+  const { dom, window: w } = await domFor('home.html');
+  try {
+    const callbacks = new Map(); let reduced = false;
+    w.matchMedia = () => ({ get matches() { return reduced; } });
+    w.setInterval = (callback, delay) => { callbacks.set(delay, callback); return delay; };
+    w.FynxTerminalData = { instruments, loadQuotes: async () => ({quotes:{SPY:quote()},status:'fresh',fetchedAt:iso(0)}) };
+    const host = w.document.createElement('div');host.dataset.terminalTicker='';w.document.body.append(host);
+    w.eval(read('assets/js/terminal-market-ui.js'));await tick();await tick();
+    assert.equal(host.querySelectorAll('button').length,2);
+    assert(!host.querySelector('button[aria-label*="Pause"],button[aria-label*="Resume"]'));
+    const track=host.querySelector('.terminal-ticker-track'),positions=[];
+    Object.defineProperty(track,'scrollWidth',{value:1500});Object.defineProperty(track,'clientWidth',{value:400});
+    track.scrollTo=options=>{positions.push(options);track.scrollLeft=options.left;};
+    callbacks.get(5000)();assert.equal(positions.at(-1).left,185);assert.equal(positions.at(-1).behavior,'smooth');
+    callbacks.get(5000)();assert.equal(positions.at(-1).left,370);
+    reduced=true;callbacks.get(5000)();assert.equal(positions.length,2);
+    host.querySelector('button[aria-label="Next market quotes"]').click();assert.equal(positions.at(-1).behavior,'auto');
+    reduced=false;track.focus();callbacks.get(5000)();assert.equal(positions.length,3);
+    track.blur();callbacks.get(5000)();assert.equal(positions.length,4);
+  } finally { dom.window.close(); }
 });

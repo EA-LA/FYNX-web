@@ -191,6 +191,25 @@
   function schedule() { clearInterval(timer); timer = window.setInterval(checkCoverage, 60000); }
   const sources = app.querySelector('.newsroom-source-list');
   if (sources) sources.id = 'newsroom-sources';
+  const follow = $('[data-newsroom-follow]');
+  function syncFollow() {
+    if (!follow) return;
+    const preferences = window.FYNXYourNews;
+    follow.hidden = !preferences;
+    const following = preferences?.getTopics().includes(config.category);
+    follow.setAttribute('aria-pressed', String(!!following));
+    follow.textContent = following ? 'Following ' + config.title + ' ✓' : 'Follow ' + config.title;
+    follow.title = 'Personalize Your News in this browser';
+  }
+  follow?.addEventListener('click', () => {
+    const preferences = window.FYNXYourNews;
+    if (!preferences) return;
+    const topics = preferences.getTopics();
+    preferences.setTopics(topics.includes(config.category) ? topics.filter(id => id !== config.category) : [...topics, config.category]);
+    syncFollow();
+  });
+  document.addEventListener('fynx:news-preferences-change', syncFollow);
+  syncFollow();
   $('[data-newsroom-refresh]').addEventListener('click', () => refresh(true));
   $('[data-newsroom-more]').addEventListener('click', () => { visibleLatest += 8; if (rows.length) render(); });
   document.addEventListener('fynx:edition-change', () => refresh(true));

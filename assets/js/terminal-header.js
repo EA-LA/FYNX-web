@@ -53,6 +53,13 @@
     return action;
   }
 
+  function yourNews() {
+    const action = link('Your News', '/news/your-news.html', 'terminal-your-news');
+    action.setAttribute('aria-label', 'Your News: followed topics and reading history');
+    if (location.pathname === '/news/your-news.html') action.setAttribute('aria-current', 'page');
+    return action;
+  }
+
   function requestQuickAdd() {
     const button = document.getElementById('quickAddBtn');
     const entry = document.getElementById('view-entry');
@@ -111,6 +118,7 @@
     if (!original) return;
     const nav=element('nav','terminal-topic-nav'), inner=element('div','terminal-topic-inner');nav.setAttribute('aria-label','News sections');
     inner.append(link('Newsroom','/news.html','terminal-topic-home'));
+    const personal = yourNews(); personal.classList.add('terminal-topic-personal'); inner.append(personal);
     window.FynxEdition.sections.slice(0,6).forEach(function(section){const a=link(section.label,section.href);if(location.pathname===section.href)a.setAttribute('aria-current','page');inner.append(a);});
     const more=element('details','terminal-topic-more');more.append(element('summary','','More'));
     const menu=element('div','terminal-topic-menu');
@@ -164,6 +172,7 @@
     brand.append(element('span', 'terminal-brand-subtitle', 'FINANCE WORLD'));
     logo.append(brand);
     topBar.prepend(logo);
+    right.prepend(yourNews());
     right.insertBefore(quickAdd(), right.querySelector('#avatarInitials') || accountLinks || null);
     topBar.classList.add('terminal-masthead');
     body.querySelectorAll('.nav-item.active').forEach(function (item) { item.setAttribute('aria-current', 'page'); });
@@ -206,6 +215,8 @@
       if (categories) {
         categories.classList.add('terminal-category-links');
         utility.actions.prepend(categories);
+        // The utility row already provides API; keep one visible destination.
+        categories.querySelectorAll('a[href="/api/"], a[href="api/"], a[href="api/index.html"]').forEach(action => { const item = action.closest('li'); if (item) item.remove(); else action.remove(); });
       }
       const quickActions = container.querySelector('.fynx-top-actions');
       if (quickActions) {
@@ -216,7 +227,7 @@
             utility.actions.append(action);
           }
         });
-        quickActions.insertBefore(quickAdd(), quickActions.firstChild);
+        quickActions.prepend(yourNews(), quickAdd());
       }
       const refreshMenuPosition = function () {
         document.documentElement.style.setProperty('--header-h', header.getBoundingClientRect().height + 'px');
@@ -225,7 +236,7 @@
       if (typeof ResizeObserver === 'function') new ResizeObserver(refreshMenuPosition).observe(header);
     } else {
       const actions = container.querySelector(':scope > nav');
-      if (actions) actions.prepend(quickAdd());
+      if (actions) actions.prepend(yourNews(), quickAdd());
     }
     return true;
   }

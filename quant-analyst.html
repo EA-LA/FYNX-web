@@ -5,7 +5,7 @@
 <link rel="icon" href="/favicon-32x32.png"><script src="/assets/js/site-theme-init.js?v=20261011"></script>
 <link rel="stylesheet" href="/assets/funded-system.css"><link rel="stylesheet" href="/assets/site-design.css"><link rel="stylesheet" href="/assets/discovery.css">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="/assets/js/journal-theme.js" defer></script><script type="module" src="/assets/js/session-bootstrap.js?v=20261102-r1"></script>
+<script src="/assets/js/journal-theme.js" defer></script><script type="module" src="/assets/js/session-bootstrap.js?v=20261103-r1"></script>
 <script src="/assets/js/quant/engine.js" defer></script><script src="/assets/js/quant/app.js" defer></script>
 <link rel="canonical" href="https://www.fynxfinanceworld.com/quant-analyst.html">
 <meta property="og:title" content="Quant Analyst: Backtests, Portfolio &amp; Monte Carlo | FYNX">
@@ -25,14 +25,15 @@
 <!-- terminal-design:start -->
 <link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
 <link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
-<script src="/assets/js/news-reader-links.js?v=20261102-r1" defer></script>
-<script src="/assets/js/newsroom-editions.js?v=20261102-r1" defer></script>
-<script src="/assets/js/newsroom-media.js?v=20261102-r1" defer></script>
-<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261102-r1">
-<script src="/assets/js/market-intelligence-data.js?v=20261102-r1" defer></script>
-<script src="/assets/js/terminal-market-data.js?v=20261102-r1" defer></script>
-<script src="/assets/js/terminal-header.js?v=20261102-r1" defer></script>
-<script src="/assets/js/terminal-market-ui.js?v=20261102-r1" defer></script>
+<script src="/assets/js/news-reader-links.js?v=20261103-r1" defer></script>
+<script src="/assets/js/newsroom-editions.js?v=20261103-r1" defer></script>
+<script src="/assets/js/news-preferences.js?v=20261103-r1" defer></script>
+<script src="/assets/js/newsroom-media.js?v=20261103-r1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261103-r1">
+<script src="/assets/js/market-intelligence-data.js?v=20261103-r1" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261103-r1" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261103-r1" defer></script>
+<script src="/assets/js/terminal-market-ui.js?v=20261103-r1" defer></script>
 <link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261030-r1">
 <script src="/assets/js/terminal-pages.js?v=20261030-r1" defer></script>
 <!-- terminal-design:end -->
@@ -40,7 +41,7 @@
 </head><body data-fynx-layout="standalone" class="discovery-page quant-page" data-fynx-terminal>
 <a class="discovery-skip" href="#quant-main">Skip to Quant Analyst</a><header class="discovery-header"><a class="discovery-brand" href="/" aria-label="FYNX Finance World home">↗ FYNX<span>FINANCE WORLD</span></a><nav aria-label="Main navigation"><a href="/explore.html">Explore</a><a href="/home.html">Workspace ↗</a><button type="button" id="theme-toggle" data-theme-control aria-label="Switch color theme">◐ <span>Theme</span></button></nav></header>
 <!-- terminal-navigation:start -->
-<nav class="terminal-navigation" aria-label="Workspace navigation"><a href="/home.html">Home</a><a href="/journal.html">Journal</a><a href="/calculator.html">Calculator</a><a href="/news.html">News</a><a href="/calendar.html">Calendar</a><a href="/learn.html">Learn</a><a href="/explore.html">Explore</a><a href="/tools/research-desk.html">Research</a><a href="/quant-analyst.html" aria-current="page">Quant Analyst<span class="quant-new-badge">NEW</span></a><a href="/edge-radar/">Edge Radar<span class="quant-new-badge">NEW</span></a><a href="/profile.html">Profile</a></nav>
+<nav class="terminal-navigation" aria-label="Workspace navigation"><a href="/home.html">Home</a><a href="/journal.html">Journal</a><a href="/calculator.html">Calculator</a><a href="/news.html">News</a><a href="/calendar.html">Calendar</a><a href="/learn.html">Learn</a><a href="/explore.html">Explore</a><a href="/tools/research-desk.html">Research</a><a href="/quant-analyst.html" aria-current="page">Quant Analyst<span class="quant-new-badge">NEW</span></a><a href="/edge-radar/">Edge Radar<span class="quant-new-badge">NEW</span></a><a href="/profile/accounts">Profile</a></nav>
 <!-- terminal-navigation:end -->
 
 <main class="quant-workspace" id="quant-main">
@@ -152,7 +153,7 @@
 
       <!-- 06 -->
       <div class="panel" id="p-dep" role="tabpanel" aria-labelledby="tab-dep" hidden>
-        <h2>Export your tested strategy</h2><p class="lead">Generate trading-platform source from your latest completed backtest settings. This website does not connect to a broker or place trades.</p><div class="params"><label>Platform<select id="eaPlatform"><option value="mt5">MetaTrader 5 · .mq5</option><option value="mt4">MetaTrader 4 · .mq4</option><option value="ctrader">cTrader · C# cBot</option></select></label><label>Daily equity guard (%)<input id="eaDailyGuard" type="number" value="4" min="0.1" max="5" step="0.1"></label><label>Maximum equity guard (%)<input id="eaMaxGuard" type="number" value="9" min="0.1" max="10" step="0.1"></label></div><div class="row"><button class="btn" id="genEa">Generate source</button><button class="btn ghost" id="downloadEa" disabled>Download file</button><button class="btn ghost" id="copyEa" disabled>Copy code</button></div><p class="note" id="eaNotes"></p><pre id="ea" hidden></pre><div class="guide"><h3>Set up in MetaTrader 5</h3><ol><li>Open MT5 and sign in to your challenge or demo account in MT5.</li><li>Choose File › Open Data Folder › MQL5 › Experts and save the .mq5 file there.</li><li>Open it in MetaEditor, compile, and review any compiler messages.</li><li>Test in the Strategy Tester and on a demo/free trial first.</li><li>Attach to the tested symbol and timeframe and enable Algo Trading.</li></ol><p class="note">For MT4 use MQL4/Experts. For cTrader create a cBot in Automate and paste the generated C#. Platform source must be compiled and validated in that platform. Broker feeds, spread, execution and session boundaries can differ from this research data.</p></div>
+        <h2>Export your tested strategy</h2><p><a class="btn ghost" href="/profile/accounts/connect">Connect an account for read-only monitoring →</a></p><p class="lead">Generate trading-platform source from your latest completed backtest settings. Fynx Accounts can connect supported accounts read-only. This website does not place trades.</p><div class="params"><label>Platform<select id="eaPlatform"><option value="mt5">MetaTrader 5 · .mq5</option><option value="mt4">MetaTrader 4 · .mq4</option><option value="ctrader">cTrader · C# cBot</option></select></label><label>Daily equity guard (%)<input id="eaDailyGuard" type="number" value="4" min="0.1" max="5" step="0.1"></label><label>Maximum equity guard (%)<input id="eaMaxGuard" type="number" value="9" min="0.1" max="10" step="0.1"></label></div><div class="row"><button class="btn" id="genEa">Generate source</button><button class="btn ghost" id="downloadEa" disabled>Download file</button><button class="btn ghost" id="copyEa" disabled>Copy code</button></div><p class="note" id="eaNotes"></p><pre id="ea" hidden></pre><div class="guide"><h3>Set up in MetaTrader 5</h3><ol><li>Open MT5 and sign in to your challenge or demo account in MT5.</li><li>Choose File › Open Data Folder › MQL5 › Experts and save the .mq5 file there.</li><li>Open it in MetaEditor, compile, and review any compiler messages.</li><li>Test in the Strategy Tester and on a demo/free trial first.</li><li>Attach to the tested symbol and timeframe and enable Algo Trading.</li></ol><p class="note">For MT4 use MQL4/Experts. For cTrader create a cBot in Automate and paste the generated C#. Platform source must be compiled and validated in that platform. Broker feeds, spread, execution and session boundaries can differ from this research data.</p></div>
       </div>
     </div>
   </section>
