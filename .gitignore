@@ -19,3 +19,6 @@ firebase-debug.log
 
 # Private Edge Radar snapshots and account reporting
 .edge-data/
+
+# Private trading-account database and credentials
+.accounts-data/

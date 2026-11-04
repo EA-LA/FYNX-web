@@ -19,6 +19,7 @@ console.log('Static build check passed: FYNX public assets are ready for deploym
 
 require('./build-quant.cjs').build();
 require('./build-edge.cjs').build();
+require('./build-accounts.cjs').build();
 
 // Every route must load the shared design and use an explicit layout family.
 const inventory = JSON.parse(fs.readFileSync(path.join(root, 'scripts/design-inventory.json'), 'utf8'));

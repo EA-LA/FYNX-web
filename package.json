@@ -19,7 +19,12 @@
     "test:edge": "node --test tests/edge/*.test.cjs",
     "lint:edge:setup": "npm ci --prefix scripts/edge-lint",
     "lint:edge": "node scripts/edge-lint/node_modules/eslint/bin/eslint.js --config eslint.edge.config.mjs lib/edge assets/js/edge backend/edge scripts/edge-*.cjs",
-    "typecheck:edge": "tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --strict --skipLibCheck lib/edge/index.ts lib/quant/index.ts"
+    "typecheck:edge": "tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --strict --skipLibCheck lib/edge/index.ts lib/quant/index.ts",
+    "build:accounts": "node scripts/build-accounts.cjs",
+    "dev:accounts": "node scripts/quant-dev-server.cjs",
+    "test:accounts": "tsx --test tests/accounts/*.test.ts tests/accounts/*.test.cjs",
+    "typecheck:accounts": "tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --strict --skipLibCheck --resolveJsonModule lib/accounts/index.ts",
+    "lint:accounts": "node scripts/edge-lint/node_modules/eslint/bin/eslint.js --config eslint.accounts.config.mjs lib/accounts assets/js/accounts backend/accounts scripts/accounts-*.cjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
@@ -30,6 +35,8 @@
   "dependencies": {
     "dukascopy-node": "^1.51.1",
     "firebase-admin": "^13.10.0",
-    "plotly.js-dist-min": "^4.2.0"
+    "parse5": "^7.3.0",
+    "plotly.js-dist-min": "^4.2.0",
+    "zod": "^4.6.7"
   }
 }
