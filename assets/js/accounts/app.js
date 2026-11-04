@@ -10,19 +10,23 @@ const status=message=>{$('accounts-status').textContent=message||'';};
 function setContent(html){content.innerHTML=html;} // Templates escape every external text and constrain all URLs.
 function stop(){state.source?.close();state.source=null;clearInterval(state.activity);clearTimeout(state.refresh);state.abort?.abort();}
 function resetPrivate(){stop();state.epoch++;state.request++;state.data=null;state.catalog=null;state.session=null;dialog.close();$('accounts-dialog-body').replaceChildren();setContent(view.loading());status('');}
+const unavailableError=()=>Object.assign(new Error('Account connections are not available on this host yet.'),{code:'ACCOUNTS_UNAVAILABLE'});
+function showUnavailable(){resetPrivate();setContent(view.serviceUnavailable());}
 async function api(path,options={}){
  const epoch=state.epoch,headers={'Content-Type':'application/json',...options.headers};
  if(options.method&&options.method!=='GET'&&state.session?.csrfToken)headers['X-CSRF-Token']=state.session.csrfToken;
  const response=await fetch('/api/accounts/'+path,{credentials:'same-origin',cache:'no-store',...options,headers,signal:options.signal||AbortSignal.timeout(20000)});
  if(epoch!==state.epoch)throw Object.assign(new Error('Account changed.'),{code:'ACCOUNT_CHANGED'});
+ if(response.status===404&&path==='session')throw unavailableError();
  if(options.download){if(!response.ok)throw new Error('Export is unavailable. Sign in again if your recent-login window expired.');return response;}
- let body;try{body=await response.json();}catch{throw new Error('The Accounts service is unavailable on this host.');}
+ if(!response.headers.get('content-type')?.includes('application/json'))throw unavailableError();
+ let body;try{body=await response.json();}catch{throw unavailableError();}
  if(epoch!==state.epoch)throw Object.assign(new Error('Account changed.'),{code:'ACCOUNT_CHANGED'});
  if(!response.ok)throw Object.assign(new Error(body.error?.message||body.error||'The request could not be completed.'),{code:body.error?.code||body.code,status:response.status});
  return body;
 }
 function showDialog(html){$('accounts-dialog-body').innerHTML=html;dialog.showModal();dialog.querySelector('button,input,select')?.focus();}
-function report(error){if(error.code==='ACCOUNT_CHANGED')return;status(error.message||'This action could not be completed.');if(['RECENT_LOGIN_REQUIRED','RECENT_AUTH_REQUIRED','AUTH_RECENT_REQUIRED'].includes(error.code))showDialog(`<h2 id="accounts-dialog-title">Sign in again to continue.</h2><p>Connecting, exporting and deleting account data require a recent sign-in. Your saved data remains private.</p><div class="ac-actions"><a class="ac-button ac-primary" href="/auth/login.html?returnTo=${encodeURIComponent(location.pathname)}">Sign in securely</a><button class="ac-button" data-close>Cancel</button></div>`);}
+function report(error){if(error.code==='ACCOUNT_CHANGED')return;if(error.code==='ACCOUNTS_UNAVAILABLE'){showUnavailable();return;}status(error.message||'This action could not be completed.');if(['RECENT_LOGIN_REQUIRED','RECENT_AUTH_REQUIRED','AUTH_RECENT_REQUIRED'].includes(error.code))showDialog(`<h2 id="accounts-dialog-title">Sign in again to continue.</h2><p>Connecting, exporting and deleting account data require a recent sign-in. Your saved data remains private.</p><div class="ac-actions"><a class="ac-button ac-primary" href="/auth/login.html?returnTo=${encodeURIComponent(location.pathname)}">Sign in securely</a><button class="ac-button" data-close>Cancel</button></div>`);}
 async function busy(fn){const epoch=state.epoch,buttons=[...document.querySelectorAll('#accounts-main button,#accounts-dialog button')].filter(b=>!b.disabled);buttons.forEach(b=>b.disabled=true);try{return await fn();}catch(e){if(epoch===state.epoch)report(e);}finally{if(epoch===state.epoch)buttons.filter(b=>b.isConnected).forEach(b=>b.disabled=false);}}
 async function catalog(){if(state.catalog)return state.catalog;const [providers,rules]=await Promise.all([api('providers'),api('rules')]);state.catalog={...rules,...providers,rules:(rules.rules||[]).sort((a,b)=>(a.id.includes('ftmo-2-step')?-2:a.effectiveUntil?1:0)-(b.id.includes('ftmo-2-step')?-2:b.effectiveUntil?1:0)),providers:(providers.providers||[]).map(p=>({...p,helpUrl:p.helpUrl||p.helpURL}))};return state.catalog;}
 async function load(){const epoch=state.epoch,request=++state.request;try{
@@ -63,7 +67,7 @@ function credentialDialog(connectionId){const connection=(state.data.connections
 function confirmation(kind,id){const all=kind==='delete-all';showDialog(`<h2 id="accounts-dialog-title">${all?'Delete all account data?':'Delete this account’s data?'}</h2><p>This permanently removes ${all?'your My Accounts connections, trades and observations':'this account’s connection, trades and observations'}. Your Fynx login and billing records are preserved.</p><form id="accounts-delete-form" data-account-id="${view.esc(id||'')}" data-all="${all}"><label class="ac-field">Type DELETE to confirm<input name="confirmation" required pattern="DELETE" autocomplete="off"></label><div class="ac-actions"><button class="ac-button ac-danger" type="submit">Delete permanently</button><button class="ac-button" type="button" data-close>Cancel</button></div></form>`);}
 async function assignDialog(tradeId){const result=await api('strategies');showDialog(`<h2 id="accounts-dialog-title">Match a saved strategy</h2><p>Choose only a strategy that this trade actually followed. Fynx does not infer an exact strategy from its symbol alone.</p><form id="accounts-assignment-form" data-trade-id="${view.esc(tradeId)}"><label class="ac-field">Saved strategy<select name="strategyId" required><option value="">Choose a strategy</option>${(result.strategies||[]).map(s=>`<option value="${view.esc(s.id)}">${view.esc(s.name)} · ${view.esc(s.symbol)} ${view.esc(s.timeframe)}</option>`).join('')}</select></label><div class="ac-actions"><button class="ac-button ac-primary" type="submit" ${result.strategies?.length?'':'disabled'}>Assign strategy</button><button class="ac-button" type="button" data-close>Cancel</button></div></form>`);}
 document.addEventListener('click',e=>{const target=e.target.closest('button,[data-action]');if(!target)return;if(target.hasAttribute('data-close')){dialog.close();$('accounts-dialog-body').replaceChildren();return;}if(target.dataset.firm){state.selectedFirm=target.dataset.firm;load();return;}if(target.dataset.range){state.range=target.dataset.range;load();return;}if(target.dataset.eaToken){$('accounts-connect-form').elements.tokenId.value=target.dataset.eaToken;return;}const action=target.dataset.action;if(!action||action==='submit-connect')return;
- if(action==='retry')return load();if(action==='clear-firm'){state.selectedFirm='';return load();}
+ if(action==='retry')return load();if(action==='retry-service')return onIdentity(state.user);if(action==='clear-firm'){state.selectedFirm='';return load();}
  if(action==='replace-credential')return credentialDialog(target.dataset.connectionId);
  if(action==='settings')return showDialog(settingsView());
  if(action==='request-platform')return showDialog('<h2 id="accounts-dialog-title">Which platform should come next?</h2><p>Your request is saved to your account. It does not send a message to the platform.</p><form id="accounts-request-form"><label class="ac-field">Platform name<input name="platform" maxlength="80" required></label><div class="ac-actions"><button class="ac-button ac-primary" type="submit">Save request</button><button class="ac-button" type="button" data-close>Cancel</button></div></form>');
@@ -100,7 +104,7 @@ function onIdentity(user){
  // Serialize cookie mutations: a late response for A must finish before B replaces it.
  identityWork=identityWork.catch(()=>{}).then(async()=>{
   if(epoch!==state.epoch)return;
-  if(!user){try{const old=await api('session');identityCurrent(epoch);state.session=old;await api('session',{method:'DELETE',body:'{}'});}catch(error){if(error.code==='ACCOUNT_CHANGED')return;}if(epoch!==state.epoch)return;state.session=null;setContent(view.signIn());return;}
+  if(!user){try{const old=await api('session');identityCurrent(epoch);state.session=old;await api('session',{method:'DELETE',body:'{}'});}catch(error){if(error.code==='ACCOUNT_CHANGED')return;if(error.code==='ACCOUNTS_UNAVAILABLE'){if(epoch===state.epoch)showUnavailable();return;}}if(epoch!==state.epoch)return;state.session=null;setContent(view.signIn());return;}
   try{
    let session;try{session=await api('session');}catch(error){if(error.code==='ACCOUNT_CHANGED')throw error;if(error.status!==401&&error.status!==404)throw error;}
    identityCurrent(epoch);

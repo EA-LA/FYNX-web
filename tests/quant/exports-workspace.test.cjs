@@ -9,7 +9,7 @@ const fragment=fs.readFileSync(path.join(root,'content/quant-analyst.fragment'),
 const guestKey='fynx.quant.workspace.v1.guest',userKey=uid=>'fynx.quant.workspace.v1.user.'+uid;
 const sampleReturns=Array.from({length:25},(_,i)=>({date:new Date(Date.UTC(2025,0,1+i)).toISOString().slice(0,10),return:i%2?.002:-.001,traded:true}));
 const strategy=(name='Saved')=>({id:'one',name,symbol:'EURUSD',timeframe:'D1',returns:sampleReturns});
-function fixture({user=null,local={},cloud={},deferPost=false,identityDelay=0,priceBars=null,firstPriceDelay=0,workerHold=false,calendarEvents=[],headlines=[],quotePayload={quotes:[]},serverBacktestResult=null,url='http://localhost/quant-analyst.html'}={}) {
+function fixture({user=null,local={},cloud={},deferPost=false,identityDelay=0,priceBars=null,firstPriceDelay=0,workerHold=false,calendarEvents=[],headlines=[],quotePayload={quotes:[]},serverBacktestResult=null,apiAvailable=true,url='http://localhost/quant-analyst.html'}={}) {
  const dom=new JSDOM('<!doctype html><html><body>'+fragment+'</body></html>',{url,runScripts:'outside-only'}),w=dom.window;
  const requests=[],downloads=[],plots=[],workers=[];let listener,resolvePost,priceRequests=0;const auth={currentUser:user?{uid:user,getIdToken:async()=>user+'token'}:null,authStateReady:async()=>{}};
  w.FynxQuant=Q;w.matchMedia=()=>({matches:false});w.requestAnimationFrame=fn=>w.setTimeout(fn,0);w.AbortSignal=AbortSignal;w.AbortController=AbortController;
@@ -20,6 +20,7 @@ function fixture({user=null,local={},cloud={},deferPost=false,identityDelay=0,pr
  w.Worker=class {constructor(){workers.push(this);}terminate(){this.terminated=true;}postMessage({id,action,payload}){this.message={id,action,payload};if(workerHold)return;setTimeout(()=>{if(this.terminated)return;try{const result=action==='portfolio'?Q.portfolio(payload.sleeves,payload.options):action==='backtest'?Q.backtest(payload.bars,payload.params):action==='optimize'?Q.optimize(payload.bars,payload.params,payload.options):action==='montecarlo'?Q.monteCarlo(payload.returns,payload.options):action==='ftmo'?Q.ftmo(payload.returns,payload.options):null;this.onmessage?.({data:{id,result}});}catch(error){this.onmessage?.({data:{id,error:error.message}});}},0);}};
  w.fetch=async(url,options={})=>{
    const route=String(url).split('?')[0],method=options.method||'GET';requests.push({url:String(url),route,method,body:options.body,headers:options.headers});
+   if(!apiAvailable)return {ok:false,status:404,headers:{get:()=> 'text/html'},json:async()=>{throw new Error('HTML is not JSON');}};
    if(deferPost&&method==='POST')await new Promise(resolve=>{resolvePost=resolve;});
    let data={};if(route.endsWith('/bars')){if(++priceRequests===1&&firstPriceDelay)await new Promise(r=>setTimeout(r,firstPriceDelay));data={bars:priceBars||[],source:'Test-only history adapter',updatedAt:'2025-02-01T00:00:00Z'};}
    else if(route.endsWith('/strategies'))data=method==='GET'?{strategies:cloud[auth.currentUser?.uid]?.strategies||[]}:{item:JSON.parse(options.body)};
@@ -34,6 +35,17 @@ function fixture({user=null,local={},cloud={},deferPost=false,identityDelay=0,pr
 async function settle(){await new Promise(resolve=>setTimeout(resolve,25));}
 async function upload(f,id,text,name='test.json') {const input=f.w.document.getElementById(id);Object.defineProperty(input,'files',{configurable:true,value:[{name,size:Buffer.byteLength(text),text:async()=>text}]});await input.onchange();await settle();}
 const workspace=(strategies=[],portfolios=[])=>({version:1,strategies,portfolios});
+
+test('static publication explains missing research data while guest return imports still work',async()=>{
+ const f=fixture({apiAvailable:false});try{await settle();const d=f.w.document;
+ assert.match(d.getElementById('dataNote').textContent,/research data is not available on this site yet/);
+ assert.doesNotMatch(d.getElementById('dataNote').textContent,/Start the Quant API|configure.*route/);
+ assert.match(d.getElementById('quoteStatus').textContent,/Historical data has not been loaded/);
+ assert.equal(d.querySelectorAll('[data-market-quote] b').length,0);
+ await upload(f,'csv','date,return_pct\n2025-01-01,1\n2025-01-02,-.5','actual-return-import.csv');
+ const saved=JSON.parse(f.w.localStorage.getItem(guestKey));assert.equal(saved.strategies.length,1);assert.equal(saved.strategies[0].returns.length,2);assert.equal(f.requests.filter(r=>r.method==='POST').length,0);
+ }finally{f.dom.window.close();}
+});
 
 test('guest CSV records include server-compatible metadata and round-trip through workspace JSON',async()=>{
  const f=fixture();try{await settle();await upload(f,'csv','date,return_pct\n2025-01-01,1\n2025-01-02,-.5','sample.csv');

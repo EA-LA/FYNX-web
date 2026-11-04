@@ -11,7 +11,7 @@
     research: '/tools/research-desk.html',
     quant: '/quant-analyst.html',
     edge: '/edge-radar/',
-    profile: '/profile/accounts',
+    profile: '/profile.html',
   };
 
   const VIEW_LABELS = {
@@ -189,7 +189,7 @@ topBar.innerHTML = `
   function initNav() {
     renderShell();
     const actions = document.querySelector('.top-bar') || document.querySelector('.topbar');
-    if(actions && !document.getElementById('publicAccountLinks')) { const links=document.createElement('div');links.id='publicAccountLinks';links.style.cssText='display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px';links.innerHTML='<a href="/pro.html">Pro tools &amp; plans</a><a href="/auth/login.html?returnTo=%2Fhome.html">Sign in</a>';links.querySelectorAll('a').forEach(a=>a.style.cssText='color:inherit;text-decoration:none;font-weight:600;padding:7px 3px;white-space:nowrap'); actions.append(links); window.addEventListener('fynx:session', event => { if(event.detail.type !== 'ready') return; const account=links.lastElementChild;account.textContent=event.detail.user?'Profile':'Sign in';account.href=event.detail.user?'/profile/accounts':'/auth/login.html?returnTo=%2Fhome.html'; }); }
+    if(actions && !document.getElementById('publicAccountLinks')) { const links=document.createElement('div');links.id='publicAccountLinks';links.style.cssText='display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px';links.innerHTML='<a href="/pro.html">Pro tools &amp; plans</a><a href="/auth/login.html?returnTo=%2Fhome.html">Sign in</a>';links.querySelectorAll('a').forEach(a=>a.style.cssText='color:inherit;text-decoration:none;font-weight:600;padding:7px 3px;white-space:nowrap'); actions.append(links); window.addEventListener('fynx:session', event => { if(event.detail.type !== 'ready') return; const account=links.lastElementChild;account.textContent=event.detail.user?'Profile':'Sign in';account.href=event.detail.user?'/profile.html':'/auth/login.html?returnTo=%2Fhome.html'; }); }
     const sidebarKey = 'fynx_sidebar_collapsed';
     const toggleBtn = document.getElementById('sidebarToggle');
     const disableSidebarToggle = true;
@@ -221,7 +221,7 @@ topBar.innerHTML = `
         const account = document.querySelector('#publicAccountLinks a:last-child');
         if (account) {
           account.textContent = window.FynxIdentity?.uid ? 'Profile' : 'Sign in';
-          account.href = window.FynxIdentity?.uid ? '/profile/accounts' : '/auth/login.html?returnTo=' + encodeURIComponent(location.pathname);
+          account.href = window.FynxIdentity?.uid ? '/profile.html' : '/auth/login.html?returnTo=' + encodeURIComponent(location.pathname);
         }
       }
       updateIdentity();

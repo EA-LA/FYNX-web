@@ -53,7 +53,7 @@
   async function api(path, options={}) {
     const response=await fetch(`/api/quant${path}`,{...options,headers:{'Content-Type':'application/json',...options.headers},signal:options.signal || AbortSignal.any([AbortSignal.timeout(120000),...(state.jobAbort?[state.jobAbort.signal]:[])])});
     const type=response.headers.get('content-type')||'';
-    if(!type.includes('application/json')) throw new Error('Quant data service is unavailable. Start the Quant API or configure this site’s API route.');
+    if(!type.includes('application/json')) throw new Error('Quant research data is not available on this site yet. Your saved device workspace remains available; calculations need verified historical data.');
     const data=await response.json();
     if(!response.ok) throw new Error(data.error?.message || data.error || data.message || `Data service returned ${response.status}.`);
     return data;
@@ -250,7 +250,7 @@
       }else{const code=quoteFailures.get(market.id);cell.textContent=code==='QUOTE_BUDGET'?'Quote queued · provider budget':quoteAttemptAt?'Quote unavailable':'Quote pending';}
     }
     const current=marketQuotes.get(state.symbol);
-    $('quoteStatus').textContent=current?`${current.source} · ${number(current.price,5)} · ${new Date(current.asOf).toLocaleString()} · ${current.status||'indicative'}`:'Live quote unavailable. Historical research remains available.';
+    $('quoteStatus').textContent=current?`${current.source} · ${number(current.price,5)} · ${new Date(current.asOf).toLocaleString()} · ${current.status||'indicative'}`:state.bars?.length?'Live quote unavailable. Loaded historical data remains available.':'Live quote unavailable. Historical data has not been loaded.';
   }
   function scheduleQuoteRefresh(delay=65000) {
     window.clearTimeout(quoteRefreshTimer);if(quotesUnconfigured)return;
