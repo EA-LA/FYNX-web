@@ -469,3 +469,5 @@ html body[data-fynx-terminal] .terminal-edition select { -webkit-appearance:none
 @media(max-width:850px){
   html body[data-fynx-terminal] .terminal-topic-menu { left:0; right:auto; width:min(240px, calc(100vw - 32px)); max-height:min(70vh, 480px); overflow-y:auto; z-index:60; }
 }
+
+.quant-new-badge{display:inline-block;background:#8fd1ad;color:#0c0d0f;font:800 10px Inter,Helvetica,sans-serif;padding:2px 5px;margin-left:6px;border-radius:3px;vertical-align:2px}

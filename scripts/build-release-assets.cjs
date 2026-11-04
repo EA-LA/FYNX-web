@@ -3,7 +3,8 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
-const VERSION = '20261104-qa1';
+const { publicSiteFiles } = require('./public-site-files.cjs');
+const VERSION = '20261103-features-1';
 const ASSETS = Object.freeze([
   'fynx-nav.js', 'demo-mode.js', 'auth/auth-form.js',
   'assets/js/home-journal.js', 'assets/js/profile-sync.js', 'assets/js/session-manager.js',
@@ -19,15 +20,9 @@ const ASSETS = Object.freeze([
   'assets/css/terminal-news.css', 'assets/css/newsroom.css',
   'assets/css/terminal-landing.css', 'styles.css', 'assets/site-design.css'
 ]);
-const SKIP = new Set(['node_modules', 'output', 'dist', 'scripts', 'backend', 'docs', 'ops', 'functions']);
 const ORIGIN = 'https://release-assets.invalid';
-function filesIn(root, directory = '') {
-  return fs.readdirSync(path.join(root, directory), {withFileTypes:true}).flatMap(entry => {
-    const relative = path.posix.join(directory, entry.name);
-    if (entry.name.startsWith('.') || SKIP.has(entry.name) || relative === 'assets/vendor') return [];
-    if (entry.isDirectory()) return filesIn(root, relative);
-    return entry.isFile() && /\.(html|js)$/.test(entry.name) ? [relative] : [];
-  });
+function filesIn(root) {
+  return publicSiteFiles(root, {extensions:['.html', '.js'], exclude:['assets/vendor']});
 }
 function rewriteReferences(source, file, assets) {
   return source.replace(/(["'])([^"'\\\s<>]+)\1/g, (original, quote, value) => {

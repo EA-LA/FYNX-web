@@ -8,7 +8,7 @@ const organization = {'@type':'Organization','@id':base+'/#organization',name:'F
 const urls = [...fs.readFileSync(path.join(root,'sitemap.xml'),'utf8').matchAll(/<loc>([^<]+)<\/loc>/g)].map(m=>m[1]);
 for (const url of urls) {
   const route = new URL(url).pathname;
-  const file = path.join(root, route==='/'?'index.html':route==='/api/'?'api/index.html':route.slice(1));
+  const file = path.join(root, route.endsWith('/')?route.slice(1)+'index.html':route.slice(1));
   let html = fs.readFileSync(file,'utf8').replace(/<!-- search-identity:start -->[\s\S]*?<!-- search-identity:end -->\s*/g,'');
   // Replace the earlier standalone company entities with the connected graph below.
   if (['/about.html','/founder.html'].includes(route)) html = html.replace(/<script type="application\/ld\+json">([^<]+)<\/script>/g,(all,data)=>['AboutPage','ProfilePage'].includes(JSON.parse(data)['@type'])?'':all);

@@ -1,3 +1,4 @@
+import { endAccountsSession } from './accounts/logout.js';
 import {
   browserLocalPersistence,
   onAuthStateChanged,
@@ -317,6 +318,7 @@ function bindPresenceListeners() {
 async function broadcastAndSignOut(reason = "manual", redirectTo = "/auth/login.html") {
   if (!currentAuth) return;
 
+  await endAccountsSession();
   safeSetItem(KEYS.sessionEvent, JSON.stringify({
     type: "logout",
     at: now(),

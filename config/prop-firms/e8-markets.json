@@ -1,0 +1,32 @@
+{
+  "id": "e8-markets-unverified",
+  "firmId": "e8-markets",
+  "firmName": "E8 Markets",
+  "platforms": [],
+  "label": "E8 Markets \u00b7 rules not verified",
+  "version": "unverified",
+  "verified": false,
+  "sourceUrls": [],
+  "verifiedOn": null,
+  "effectiveFrom": null,
+  "effectiveUntil": null,
+  "effectiveDateEvidence": "unknown",
+  "applicability": {
+    "plan": null,
+    "accountType": null,
+    "orderFrom": null,
+    "orderBefore": null
+  },
+  "phases": [],
+  "reset": null,
+  "dailyLoss": null,
+  "maximumLoss": null,
+  "consistency": null,
+  "restrictions": {
+    "news": null,
+    "weekend": null,
+    "notes": [
+      "Rules not verified yet: enter a clearly labeled custom version or wait for administrator source verification."
+    ]
+  }
+}

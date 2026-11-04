@@ -43,7 +43,7 @@
 
   function quickAdd() {
     const action = link('+ Quick Add', '/journal.html#quick-add', 'terminal-quick-add');
-    action.setAttribute('aria-label', 'Add a trade in your journal');
+    action.setAttribute('aria-label', 'Quick Add: add a trade in your journal');
     action.addEventListener('click', function (event) {
       const nativeAction = document.getElementById('quickAddBtn');
       if (!nativeAction) return;
@@ -88,6 +88,7 @@
 
   function utilityBar(dateChip) {
     const bar = element('div', 'terminal-utility');
+    bar.setAttribute('role','region');bar.setAttribute('aria-label','Site information');
     const inner = element('div', 'terminal-header-inner');
     const clock = element('div', 'terminal-header-clock');
     const date = dateChip || element('span');
@@ -204,6 +205,7 @@
         if (event.key === 'Enter') brand.click();
       });
     }
+    if(body.classList.contains('edge-page')){const wordmark=brand.querySelector('strong');if(wordmark&&!wordmark.textContent.endsWith(' '))wordmark.append(document.createTextNode(' '));}
     brand.after(searchForm());
 
     // The landing page's original category dropdowns remain available in the
@@ -247,8 +249,18 @@
     const ready = workspaceHeader ? enhanceWorkspace(body, workspaceHeader) : publicHeader ? enhancePublic(body, publicHeader) : false;
     if (!ready) return;
     body.classList.add('terminal-masthead-ready');
+    const workspaceNav = body.querySelector('.dashboard-container .nav-menu, :scope > .terminal-navigation');
+    if (workspaceNav && !workspaceNav.querySelector('a[href="/quant-analyst.html"]')) {
+      const research = workspaceNav.querySelector('a[href="/tools/research-desk.html"]');
+      if (research) { const quant = link('Quant Analyst', '/quant-analyst.html', research.className.replace(/active/g, '').trim()); quant.append(element('span', 'quant-new-badge', 'NEW')); if (/^\/quant-analyst(?:\.html)?\/?$/.test(location.pathname)) quant.setAttribute('aria-current','page'); research.after(quant); }
+    }
+    if (workspaceNav && !workspaceNav.querySelector('a[href="/edge-radar/"]')) {
+      const quant=workspaceNav.querySelector('a[href="/quant-analyst.html"]');
+      if(quant){const edge=link('Edge Radar','/edge-radar/',quant.className.replace(/active/g,'').trim());edge.append(element('span','quant-new-badge','NEW'));if(location.pathname.startsWith('/edge-radar'))edge.setAttribute('aria-current','page');quant.after(edge);}
+    }
     mountTopics(body);
     mountTicker(body);
+    if(body.classList.contains('edge-page')&&window.matchMedia('(max-width:639px)').matches){const current=workspaceNav?.querySelector('[aria-current="page"]');if(current)workspaceNav.scrollLeft=current.offsetLeft-workspaceNav.offsetLeft-workspaceNav.clientWidth/2+current.clientWidth/2;}
     startClock();
     document.addEventListener('visibilitychange', updateClock);
     window.addEventListener('pagehide', function () { window.clearInterval(clockInterval); clockInterval = null; window.clearTimeout(quickAddTimer); });

@@ -193,6 +193,8 @@ test('deferred header waits for actual fynx-nav at interactive, preserves accoun
     w.dispatchEvent(new w.Event('fynx:identity'));
     assert.equal(originalAvatar.textContent, 'TT');
     assert.equal(w.document.querySelector('#publicAccountLinks a:last-child').pathname, '/profile.html');
+    assert.equal(w.document.querySelectorAll('.nav-item[href="/quant-analyst.html"]').length, 1);
+    assert.equal(w.document.querySelectorAll('.nav-item[href="/edge-radar/"]').length, 1);
     assert.equal(w.document.querySelector('.terminal-header-search').action, 'https://www.fynxfinanceworld.com/explore.html');
     assert.equal(w.document.querySelector('.nav-item[aria-current="page"]').dataset.view, 'home');
     state = 'complete'; w.dispatchEvent(new w.Event('load')); await tick();

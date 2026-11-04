@@ -1,0 +1,16 @@
+'use strict';
+const {Worker}=require('node:worker_threads');
+const crypto=require('node:crypto');
+const path=require('node:path');
+const {fail}=require('../quant/common.cjs');
+class EdgeJobs{
+  constructor({workers=Number(process.env.EDGE_SNAPSHOT_WORKERS||2),timeout=Number(process.env.EDGE_SNAPSHOT_TIMEOUT_MS||180000),now=()=>Date.now()}={}){if(!Number.isInteger(workers)||workers<1||workers>4)throw new Error('EDGE_SNAPSHOT_WORKERS must be 1–4.');if(!Number.isInteger(timeout)||timeout<1000||timeout>3600000)throw new Error('EDGE_SNAPSHOT_TIMEOUT_MS must be 1000–3600000.');this.workers=workers;this.timeout=timeout;this.now=now;this.jobs=new Map();this.pending=new Map();this.queue=[];this.active=0;this.closed=false;this.workerHandles=new Set();}
+  public(job){return {jobId:job.id,status:job.status,progress:job.progress,createdAt:new Date(job.createdAt).toISOString(),...(job.error?{error:job.error}:{}),...(job.status==='complete'?{snapshotAt:job.snapshotAt}: {})};}
+  submit(key,owner,run){this.cleanup();const previous=this.pending.get(key);if(previous)return this.public(previous);if(this.queue.length>=12||this.jobs.size>=100)throw fail('Edge snapshot queue is busy. Retry shortly.',429,'EDGE_BUSY');const job={id:crypto.randomBytes(24).toString('base64url'),key,owner,run,status:'queued',progress:0,createdAt:this.now()};this.jobs.set(job.id,job);this.pending.set(key,job);this.queue.push(job);this.pump();return this.public(job);}
+  get(id,owner){const j=this.jobs.get(id);if(!j||j.owner!==owner)throw fail('Snapshot job not found.',404,'EDGE_JOB_NOT_FOUND');return this.public(j);}
+  cleanup(){for(const[id,j]of this.jobs)if(['complete','failed'].includes(j.status)&&this.now()-(j.finishedAt||j.createdAt)>15*60000)this.jobs.delete(id);}
+  pump(){while(!this.closed&&this.active<this.workers&&this.queue.length){const job=this.queue.shift();this.active++;job.status='running';Promise.resolve().then(()=>job.run(v=>{job.progress=Math.max(job.progress,Math.min(99,v));})).then(result=>{job.status='complete';job.progress=100;job.snapshotAt=result.asOf||null;}).catch(e=>{job.status='failed';job.error=e.code?e.message:'Snapshot computation failed. Please retry.';}).finally(()=>{delete job.run;job.finishedAt=this.now();this.active--;this.pending.delete(job.key);this.pump();});}}
+  compute(payload){if(Buffer.byteLength(JSON.stringify(payload))>24000000)throw fail('Snapshot inputs exceed24MB. Reduce the watchlist or strategy count.',413);return new Promise((resolve,reject)=>{const worker=new Worker(path.join(__dirname,'worker.cjs'),{workerData:payload,resourceLimits:{maxOldGenerationSizeMb:512,stackSizeMb:8}});this.workerHandles.add(worker);const timer=setTimeout(()=>worker.terminate(),this.timeout);let done=false;worker.on('message',message=>{if(message.error){done=true;reject(fail(message.error,503,'EDGE_COMPUTE_FAILED'));}else if(message.result){done=true;resolve(message.result);}});worker.on('error',()=>{done=true;reject(fail('Snapshot worker failed.',503,'EDGE_COMPUTE_FAILED'));});worker.on('exit',()=>{this.workerHandles.delete(worker);clearTimeout(timer);if(!done)reject(fail('Snapshot worker exceeded its limit.',503,'EDGE_COMPUTE_TIMEOUT'));});});}
+  async close(){this.closed=true;this.queue.length=0;await Promise.all([...this.workerHandles].map(worker=>worker.terminate()));}
+}
+module.exports={EdgeJobs};

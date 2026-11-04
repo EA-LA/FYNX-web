@@ -2,6 +2,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
+const { publicSiteFiles } = require('./public-site-files.cjs');
 const root = path.resolve(__dirname, '..');
 const base = 'https://www.fynxfinanceworld.com';
 const outlines = require('../content/lesson-outlines.json');
@@ -35,14 +36,10 @@ const aliases = {'tools/heatmap.html':'tools/research-heatmap.html','learn/risk-
 const companyFiles = new Set(['about.html', 'founder.html']);
 const privateFiles = new Set(['home.html','learn/topic.html','waitlist.html']);
 function allHTML(dir='') {
- return fs.readdirSync(path.join(root,dir),{withFileTypes:true}).flatMap(e=>{
-  const f=path.posix.join(dir,e.name);
-  if(e.isDirectory())return ['.git','node_modules','output','dist','backend','docs','ops','scripts'].includes(e.name)?[]:allHTML(f);
-  return e.name.endsWith('.html')?[f]:[];
- });
+ return publicSiteFiles(root).filter(file=>!dir||file.startsWith(dir+'/'));
 }
 function category(file) {
- if(file.startsWith('tools/')||file==='calculator.html')return 'Tools';
+ if(file.startsWith('edge-radar/')||file.startsWith('tools/')||['calculator.html','quant-analyst.html'].includes(file))return 'Tools';
  if(file.startsWith('learn/')||['learn.html','risk-management.html','trading-psychology.html','trading-glossary.html','trading-quizzes.html'].includes(file))return 'Learning';
  if(file.startsWith('markets/')||file==='market-analysis.html')return 'Markets';
  if(file.startsWith('news/')||['news.html','calendar.html','home/hub.html'].includes(file))return 'News & events';
@@ -87,7 +84,7 @@ for(const file of allHTML()) {
  // Legacy public protection imported Firebase just to call an empty function.
  html=html.replace(/<script\b[^>]*src=["'][^"']*assets\/js\/protect-route\.js[^"']*["'][^>]*>\s*<\/script>/g,'');
  if(/tradingview|s3\.tradingview|widget\.myfxbook/i.test(html))html=replaceBlock(html,'discovery-network',`<details class="network-help"><summary>Chart or live data unavailable?</summary><p>Some networks restrict embedded providers. You can still use <a href="/explore.html?category=Tools">local calculators</a>, read <a href="/learn.html">learning guides</a>, or open the <a href="/directory.html">lightweight directory</a>. For release times, check the <a href="https://www.bls.gov/schedule/">BLS</a> and <a href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm">Federal Reserve</a> calendars. <a href="/accessibility.html">Connection help →</a></p></details>`);
- const route=file==='index.html'?'/':file==='api/index.html'?'/api/':'/'+file;
+ const route=file==='index.html'?'/':file==='api/index.html'?'/api/':file.startsWith('edge-radar/')?'/'+file.replace(/index\.html$/,''):'/'+file;
  const title=doc.title, description=doc.querySelector('meta[name="description"]')?.content;
  if(!title||!description)throw Error(`Missing page metadata: ${file}`);
  const name=title.replace(/\s*(?:\||—|-)\s*FYNX(?: Finance World)?.*$/i,'').trim();
@@ -124,7 +121,7 @@ write('directory.html',`<!DOCTYPE html><html lang="en"><head><meta charset="utf-
 write('accessibility.html',page({title:'Connection Help & Lightweight Browsing | FYNX Finance World',description:'Get help opening FYNX on school, work or managed networks. Browse a lightweight directory and understand which features need external services.',body:`<article class="connection-guide"><div class="discovery-kicker">ACCESS & CONNECTION HELP</div><h1>A simpler way to browse.</h1><p class="discovery-lead">Read public lessons and use local calculations without an account. If an embedded service is unavailable, you can still explore the rest of FYNX.</p><a class="discovery-button" href="/directory.html">Open the lightweight directory →</a><section><h2>If the whole website is blocked</h2><p>Check that the address is <a href="${base}/">www.fynxfinanceworld.com</a> and uses HTTPS. If your school or organization shows a blocked-category message, share this address and the message with its IT administrator. Access policies are controlled by the organization.</p><p>FYNX offers educational finance material and calculation tools. It does not execute brokerage trades. An administrator can review the site and decide whether it fits the network’s policy.</p></section><section><h2>If charts or sign-in do not load</h2><p>Some features use external services. Firebase handles accounts and cloud data; TradingView supplies selected embedded charts and calendars. A managed network may allow this site while restricting those providers. Public lessons, the directory and local calculators do not require you to sign in.</p><p>Use the text links beside embedded content to open a standalone resource or the data publisher. Saved resource shortcuts are kept in this browser; if browser storage is disabled, browsing still works but saves may not persist.</p></section><section><h2>If you see a connection or certificate error</h2><p>Check the address, your device’s date and time, and whether the network has a sign-in page. Do not ignore a certificate warning. Share the exact error, browser and affected address with your administrator or <a href="/contact.html">FYNX support</a>.</p></section><section><h2>Keyboard and low-bandwidth access</h2><p>Use Tab to move through links and controls, Enter to activate them and Escape to close open menus. The resource library has labeled search and category controls. The lightweight directory works without JavaScript; lesson text and links are delivered in the initial page.</p></section><section><h2>Official economic calendars</h2><p><a href="https://www.bls.gov/schedule/">US Bureau of Labor Statistics release schedule ↗</a></p><p><a href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm">Federal Reserve FOMC calendar ↗</a></p></section></article>`}));
 // Related links are generated from the same canonical inventory as search and sitemap.
 for(const e of entries){
- const file=e.url==='/api/'?'api/index.html':e.url.slice(1);if(companyFiles.has(file))continue;let html=fs.readFileSync(path.join(root,file),'utf8');
+ const file=e.url.endsWith('/')?e.url.slice(1)+'index.html':e.url.slice(1);if(companyFiles.has(file))continue;let html=fs.readFileSync(path.join(root,file),'utf8');
  const guide=guides[path.basename(file,'.html')];
  let related=(publicProducts[e.url]?publicProducts[e.url].related.map(s=>entries.find(x=>x.url==='/'+(aliases[`tools/${s}.html`]||`tools/${s}.html`))).filter(Boolean):file.startsWith('tools/')&&guide?guide[5].map(s=>entries.find(x=>x.url==='/'+(aliases[`tools/${s}.html`]||`tools/${s}.html`))).filter(Boolean):entries.filter(x=>x.url!==e.url&&x.category===e.category&&(!e.topic||x.topic===e.topic)).slice(0,3));
  related=related.filter((item,index,list)=>item.url!==e.url&&list.findIndex(other=>other.url===item.url)===index);

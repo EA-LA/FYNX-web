@@ -1,0 +1,64 @@
+{
+  "generatedAt": "2026-11-03T20:35:39.515Z",
+  "environment": {
+    "node": "v24.13.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M2"
+  },
+  "execution": "Node worker_thread, one warmup + three measured repetitions per operation",
+  "engineSha256": "3c172042c32a025fa45638be06555797f2fa97878668defaca0f2c879cadf322",
+  "measurements": {
+    "backtest": {
+      "medianMs": 3.5791249999999764,
+      "minMs": 3.3516250000000127,
+      "maxMs": 4.966458999999986,
+      "repetitions": 3
+    },
+    "optimize": {
+      "medianMs": 135.68945799999995,
+      "minMs": 135.31,
+      "maxMs": 139.43975,
+      "repetitions": 3
+    },
+    "montecarlo": {
+      "medianMs": 39.73312499999986,
+      "minMs": 38.60258299999998,
+      "maxMs": 48.443665999999894,
+      "repetitions": 3
+    },
+    "ftmo": {
+      "medianMs": 167.63712499999997,
+      "minMs": 167.30629199999998,
+      "maxMs": 179.87141600000018,
+      "repetitions": 3
+    }
+  },
+  "fixture": {
+    "bars": 2496,
+    "from": "2016-11-01",
+    "to": "2026-10-30",
+    "source": "User supplied quant-analyst-reference.html, Fed H10 daily FX closes"
+  },
+  "golden": {
+    "totalReturn": -0.04349522146848228,
+    "cagr": -0.00450288587113834,
+    "sharpe": -0.10840135745232604,
+    "maxDrawdown": 0.13921945960562165,
+    "trades": 162,
+    "winRate": 0.38271604938271603,
+    "profitFactor": 0.9330005627747094,
+    "averageR": -0.04693706566567899,
+    "returnMaxDD": -0.3124219961181774
+  },
+  "acceptance": {
+    "dailyBacktestUnder100ms": true,
+    "heavyOperationsUnder3000ms": true,
+    "phoneWebWorkerVerified": false
+  },
+  "limitations": [
+    "Desktop local measurements do not establish performance on a phone or browser Web Worker.",
+    "The FTMO measurement includes 2,000 attempts at the selected scale and 2,000 attempts at each of 20 risk-scan scales.",
+    "Golden statistics use real historical data extracted from the user-provided reference HTML; these are not live quotes."
+  ]
+}

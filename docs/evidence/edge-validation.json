@@ -1,0 +1,390 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-11-03T21:17:47.072426+00:00",
+  "environment": "Local checkout and CUA Chromium; not a production release",
+  "commands": [
+    {
+      "command": "npm run build",
+      "status": "passed"
+    },
+    {
+      "command": "npm test",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/package-static.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:edge",
+      "status": "passed",
+      "tests": 73
+    },
+    {
+      "command": "npm run test:quant",
+      "status": "passed",
+      "tests": 113
+    },
+    {
+      "command": "npm run lint:edge",
+      "status": "passed"
+    },
+    {
+      "command": "npm run typecheck:edge",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:discovery",
+      "status": "passed",
+      "searchableResources": 184,
+      "publicPages": 187
+    },
+    {
+      "command": "node scripts/test-terminal-ui.cjs",
+      "status": "passed",
+      "tests": 13
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    }
+  ],
+  "finalCorrection": {
+    "change": "Deduplicate the stale broker sizing note on repeated main/detail plan protection.",
+    "validation": "All 15 backend tests passed after the correction, lint and diff checks passed, and the browser displayed one copy. Detail screenshots were refreshed."
+  },
+  "realData": {
+    "historyMarkets": 17,
+    "lastCompletedDay": "2026-11-02",
+    "cotRecords": 8886,
+    "latestCOTReport": "2026-10-27",
+    "receipt": "edge-data-validation.json"
+  },
+  "cachedHTTP": {
+    "samples": 50,
+    "authorization": "none",
+    "measurement": "Loopback HTTP fetch + complete JSON parse, same service process after snapshot refresh.",
+    "firstMs": 62.78,
+    "p50Ms": 24.434,
+    "p95Ms": 37.605,
+    "maxMs": 62.78,
+    "within300ms": true
+  },
+  "browserReceipt": "edge-browser-validation.json",
+  "audits": [
+    {
+      "name": "edge-main-desktop",
+      "report": "edge-main-desktop-audit.json",
+      "capturedAt": "2026-11-03T21:14:26.366Z",
+      "accessibility": {
+        "inapplicable": 41,
+        "incomplete": [
+          {
+            "help": "Elements must only use permitted ARIA attributes",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/aria-prohibited-attr?application=axeAPI",
+            "id": "aria-prohibited-attr",
+            "impact": "serious",
+            "nodes": [
+              {
+                "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on \"div\" elements with no valid role attribute.",
+                "html": "<div class=\"edge-filters\" aria-label=\"Market category\">",
+                "target": [
+                  ".edge-filters"
+                ]
+              }
+            ]
+          },
+          {
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+            "id": "color-contrast",
+            "impact": "serious",
+            "nodes": [
+              {
+                "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters",
+                "html": "<button type=\"button\" id=\"theme-toggle\" data-theme-control=\"\" aria-label=\"Switch to dark theme\" aria-pressed=\"true\">\u25d0 <span>Theme</span></button>",
+                "target": [
+                  "#theme-toggle"
+                ]
+              }
+            ]
+          }
+        ],
+        "passes": 50,
+        "violations": []
+      },
+      "noHorizontalOverflow": true
+    },
+    {
+      "name": "edge-main-390",
+      "report": "edge-main-390-audit.json",
+      "capturedAt": "2026-11-03T21:14:28.367Z",
+      "accessibility": {
+        "inapplicable": 49,
+        "incomplete": [
+          {
+            "help": "Elements must only use permitted ARIA attributes",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/aria-prohibited-attr?application=axeAPI",
+            "id": "aria-prohibited-attr",
+            "impact": "serious",
+            "nodes": [
+              {
+                "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on \"div\" elements with no valid role attribute.",
+                "html": "<div class=\"terminal-ticker-track\" tabindex=\"0\" aria-label=\"Global market quotes. Scroll to see more.\">",
+                "target": [
+                  ".terminal-ticker-track"
+                ]
+              },
+              {
+                "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on \"div\" elements with no valid role attribute.",
+                "html": "<div class=\"edge-filters\" aria-label=\"Market category\">",
+                "target": [
+                  ".edge-filters"
+                ]
+              }
+            ]
+          },
+          {
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+            "id": "color-contrast",
+            "impact": "serious",
+            "nodes": [
+              {
+                "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters",
+                "html": "<button type=\"button\" id=\"theme-toggle\" data-theme-control=\"\" aria-label=\"Switch to dark theme\" aria-pressed=\"true\">\u25d0 <span>Theme</span></button>",
+                "target": [
+                  "#theme-toggle"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element",
+                "html": "<a href=\"/tools/research-desk.html\">Research</a>",
+                "target": [
+                  "a[href$=\"research-desk.html\"]"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters",
+                "html": "<button type=\"button\" aria-label=\"Pause market strip\" aria-pressed=\"false\">\u2161</button>",
+                "target": [
+                  "button[aria-label=\"Pause market strip\"]"
+                ]
+              }
+            ]
+          },
+          {
+            "help": "Elements must have their visible text as part of their accessible name",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/label-content-name-mismatch?application=axeAPI",
+            "id": "label-content-name-mismatch",
+            "impact": "serious",
+            "nodes": [
+              {
+                "failureSummary": "Fix any of the following:\n  Unable to determine if the visible text is part of the accessible name",
+                "html": "<button type=\"button\" aria-label=\"Previous market quotes\">\u2039</button>",
+                "target": [
+                  "button[aria-label=\"Previous market quotes\"]"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Unable to determine if the visible text is part of the accessible name",
+                "html": "<button type=\"button\" aria-label=\"Pause market strip\" aria-pressed=\"false\">\u2161</button>",
+                "target": [
+                  "button[aria-label=\"Pause market strip\"]"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Unable to determine if the visible text is part of the accessible name",
+                "html": "<button type=\"button\" aria-label=\"Next market quotes\">\u203a</button>",
+                "target": [
+                  "button[aria-label=\"Next market quotes\"]"
+                ]
+              }
+            ]
+          }
+        ],
+        "passes": 42,
+        "violations": []
+      },
+      "noHorizontalOverflow": true
+    },
+    {
+      "name": "edge-detail-desktop",
+      "report": "edge-detail-desktop-audit.json",
+      "capturedAt": "2026-11-03T21:14:30.365Z",
+      "accessibility": {
+        "inapplicable": 43,
+        "incomplete": [
+          {
+            "help": "Elements must only use permitted ARIA attributes",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/aria-prohibited-attr?application=axeAPI",
+            "id": "aria-prohibited-attr",
+            "impact": "serious",
+            "nodes": [
+              {
+                "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on \"div\" elements with no valid role attribute.",
+                "html": "<div class=\"terminal-ticker-track\" tabindex=\"0\" aria-label=\"Global market quotes. Scroll to see more.\">",
+                "target": [
+                  ".terminal-ticker-track"
+                ]
+              }
+            ]
+          },
+          {
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+            "id": "color-contrast",
+            "impact": "serious",
+            "nodes": [
+              {
+                "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters",
+                "html": "<button type=\"button\" id=\"theme-toggle\" data-theme-control=\"\" aria-label=\"Switch to dark theme\" aria-pressed=\"true\">\u25d0 <span>Theme</span></button>",
+                "target": [
+                  "#theme-toggle"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters",
+                "html": "<button type=\"button\" aria-label=\"Pause market strip\" aria-pressed=\"false\">\u2161</button>",
+                "target": [
+                  "button[aria-label=\"Pause market strip\"]"
+                ]
+              }
+            ]
+          },
+          {
+            "help": "Elements must have their visible text as part of their accessible name",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/label-content-name-mismatch?application=axeAPI",
+            "id": "label-content-name-mismatch",
+            "impact": "serious",
+            "nodes": [
+              {
+                "failureSummary": "Fix any of the following:\n  Unable to determine if the visible text is part of the accessible name",
+                "html": "<button type=\"button\" aria-label=\"Previous market quotes\">\u2039</button>",
+                "target": [
+                  "button[aria-label=\"Previous market quotes\"]"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Unable to determine if the visible text is part of the accessible name",
+                "html": "<button type=\"button\" aria-label=\"Pause market strip\" aria-pressed=\"false\">\u2161</button>",
+                "target": [
+                  "button[aria-label=\"Pause market strip\"]"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Unable to determine if the visible text is part of the accessible name",
+                "html": "<button type=\"button\" aria-label=\"Next market quotes\">\u203a</button>",
+                "target": [
+                  "button[aria-label=\"Next market quotes\"]"
+                ]
+              }
+            ]
+          }
+        ],
+        "passes": 48,
+        "violations": []
+      },
+      "noHorizontalOverflow": true
+    },
+    {
+      "name": "edge-detail-390",
+      "report": "edge-detail-390-audit.json",
+      "capturedAt": "2026-11-03T21:14:32.313Z",
+      "accessibility": {
+        "inapplicable": 46,
+        "incomplete": [
+          {
+            "help": "Elements must only use permitted ARIA attributes",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/aria-prohibited-attr?application=axeAPI",
+            "id": "aria-prohibited-attr",
+            "impact": "serious",
+            "nodes": [
+              {
+                "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on \"div\" elements with no valid role attribute.",
+                "html": "<div class=\"terminal-ticker-track\" tabindex=\"0\" aria-label=\"Global market quotes. Scroll to see more.\">",
+                "target": [
+                  ".terminal-ticker-track"
+                ]
+              }
+            ]
+          },
+          {
+            "help": "Elements must meet minimum color contrast ratio thresholds",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+            "id": "color-contrast",
+            "impact": "serious",
+            "nodes": [
+              {
+                "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters",
+                "html": "<button type=\"button\" id=\"theme-toggle\" data-theme-control=\"\" aria-label=\"Switch to dark theme\" aria-pressed=\"true\">\u25d0 <span>Theme</span></button>",
+                "target": [
+                  "#theme-toggle"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element",
+                "html": "<a href=\"/tools/research-desk.html\">Research</a>",
+                "target": [
+                  "a[href$=\"research-desk.html\"]"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters",
+                "html": "<button type=\"button\" aria-label=\"Pause market strip\" aria-pressed=\"false\">\u2161</button>",
+                "target": [
+                  "button[aria-label=\"Pause market strip\"]"
+                ]
+              }
+            ]
+          },
+          {
+            "help": "Elements must have their visible text as part of their accessible name",
+            "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/label-content-name-mismatch?application=axeAPI",
+            "id": "label-content-name-mismatch",
+            "impact": "serious",
+            "nodes": [
+              {
+                "failureSummary": "Fix any of the following:\n  Unable to determine if the visible text is part of the accessible name",
+                "html": "<button type=\"button\" aria-label=\"Previous market quotes\">\u2039</button>",
+                "target": [
+                  "button[aria-label=\"Previous market quotes\"]"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Unable to determine if the visible text is part of the accessible name",
+                "html": "<button type=\"button\" aria-label=\"Pause market strip\" aria-pressed=\"false\">\u2161</button>",
+                "target": [
+                  "button[aria-label=\"Pause market strip\"]"
+                ]
+              },
+              {
+                "failureSummary": "Fix any of the following:\n  Unable to determine if the visible text is part of the accessible name",
+                "html": "<button type=\"button\" aria-label=\"Next market quotes\">\u203a</button>",
+                "target": [
+                  "button[aria-label=\"Next market quotes\"]"
+                ]
+              }
+            ]
+          }
+        ],
+        "passes": 45,
+        "violations": []
+      },
+      "noHorizontalOverflow": true
+    }
+  ],
+  "screenshots": [
+    "screenshots/edge-main-desktop.png",
+    "screenshots/edge-main-390.png",
+    "screenshots/edge-detail-desktop.png",
+    "screenshots/edge-detail-390.png"
+  ],
+  "releaseGates": [
+    "Configure FRED, quote and historical-calendar provider credentials and validate their entitlements.",
+    "Deploy the persistent Node API, private data volume, same-origin routes and host scheduler after owner approval.",
+    "Validate actual authenticated Firebase browser operation, opted-in email delivery and native MT5 compilation/heartbeat.",
+    "Run physical iPhone/Safari testing and the requested Lighthouse mobile navigation audit; no Lighthouse score is claimed."
+  ],
+  "dependencyNote": "Isolated lint development tools have a documented transitive minimatch advisory; see scripts/edge-lint/README.md. They are excluded from public output."
+}
