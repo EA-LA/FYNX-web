@@ -25,6 +25,7 @@ for (const section of sections) {
 <link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261030-r1">
 <link rel="stylesheet" href="/assets/css/newsroom.css?v=20261030-r1">
 <script src="/assets/js/newsroom-editions.js?v=20261030-r1" defer></script>
+<script src="/assets/js/news-preferences.js?v=20261103-r1" defer></script>
 <script src="/assets/js/news-reader-links.js?v=20261102-r1" defer></script>
 <script src="/assets/js/market-intelligence-data.js?v=20261030-r1" defer></script>
 <script src="/assets/js/terminal-market-data.js?v=20261030-r1" defer></script>
@@ -43,7 +44,7 @@ for (const section of sections) {
 <nav class="newsroom-breadcrumb" aria-label="Breadcrumb"><a href="/news.html">News</a><span aria-hidden="true">/</span><span aria-current="page">${esc(section.title)}</span></nav>
 <header class="newsroom-heading"><div><p class="newsroom-kicker">FYNX / ${esc(section.title.toUpperCase())}</p><h1>${esc(section.title)}</h1><p class="newsroom-deck">${esc(section.description)}</p></div><div class="newsroom-edition-context"><span data-newsroom-edition>Global edition</span><p>Source-attributed reporting.<br>Context for your own research.</p></div></header>
 <div class="newsroom-focus" aria-label="Coverage focus"><span>In focus</span>${section.focus.map(topic => `<span>${esc(topic)}</span>`).join('')}</div>
-<div class="newsroom-toolbar"><div><span class="newsroom-status-label" data-newsroom-status-label>Checking sources</span><p data-newsroom-status role="status" aria-live="polite">Loading current ${esc(section.title.toLowerCase())} reporting.</p></div><button type="button" data-newsroom-refresh>Refresh coverage <span aria-hidden="true">↻</span></button></div>
+<div class="newsroom-toolbar"><div><span class="newsroom-status-label" data-newsroom-status-label>Checking sources</span><p data-newsroom-status role="status" aria-live="polite">Loading current ${esc(section.title.toLowerCase())} reporting.</p></div><div class="newsroom-toolbar-actions"><button type="button" data-newsroom-follow aria-pressed="false">Follow ${esc(section.title)}</button><button type="button" data-newsroom-refresh>Refresh coverage <span aria-hidden="true">↻</span></button></div></div>
 <div class="newsroom-layout">
 <div class="newsroom-reporting" data-newsroom-stories aria-busy="true">
 <section aria-label="Featured coverage" class="newsroom-featured"><div data-newsroom-lead>${contextImage(section.contextImage)}<div class="newsroom-feed-message"><h2>Checking the latest coverage.</h2><p>Publication dates and publishers appear with every report.</p></div></div><div class="newsroom-secondary" data-newsroom-secondary hidden></div></section>

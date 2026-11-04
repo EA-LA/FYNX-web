@@ -11,6 +11,9 @@
   const options = {id:params.get('id') || '', edition:originalEdition, category:params.get('category') || 'all'};
   if (params.get('symbol')) options.symbol = params.get('symbol');
   let current = null, pendingUpdate = null, request = 0, loading = false, timer = null, lastCheck = 0, lastAttempt = 0, refreshUnavailable = false;
+  let sharing = false, markedOpened = false;
+  const preferenceKey = 'fynx:reader-preferences:v1';
+  let preferences = {size:'standard',focus:false};
   const labels = {all:'News',stocks:'Markets',forex:'Currencies',crypto:'Digital assets',macro:'Economics',commodities:'Commodities',finance:'Finance',economics:'Economics',technology:'Technology',politics:'Politics & Policy',industries:'Industries',energy:'Energy',world:'World',analysis:'Analysis',official:'Official sources'};
   const sections = {stocks:'markets',finance:'finance',economics:'economics',macro:'economics',technology:'technology',politics:'politics',industries:'industries',energy:'energy',world:'world'};
   const coverageLabels = {'source-text':'Source text reviewed','publisher-excerpt':'Publisher excerpt reviewed','headline-only':'Headline only'};
@@ -36,6 +39,42 @@
   function fingerprint(article) {return JSON.stringify([article.id,article.title,article.sourceUrl,article.publishedAt,article.coverageLevel,article.coverageNote,article.summary,article.keyPoints,article.numbers,article.context,article.questions,article.terms,article.image,article.related]);}
   function currentStory(article) {const age=Date.now()-Date.parse(article.publishedAt);return article.isCurrent!==false&&age>=-300000&&age<=24*HOUR;}
   function status(message) { $('[data-reader-status]').textContent=message; }
+  function actionStatus(message) { $('[data-reader-action-status]').textContent=message; }
+  function readingPreferences(save=false) {
+    root.dataset.readerSize=preferences.size;
+    document.body.classList.toggle('reader-focus-view',preferences.focus);
+    $('[data-reader-text-size]').value=preferences.size;
+    const button=$('[data-reader-focus]');button.setAttribute('aria-pressed',String(preferences.focus));button.textContent=preferences.focus?'Exit focus view':'Focus view';
+    if(save)try{localStorage.setItem(preferenceKey,JSON.stringify(preferences));}catch{ $('[data-reader-preferences-note]').textContent='Preferences apply for this visit. Browser storage is unavailable.'; }
+  }
+  function storyURL() {
+    const url=new URL('/news/article.html',location.origin);
+    url.searchParams.set('id',options.id);url.searchParams.set('edition',originalEdition);url.searchParams.set('category',options.category);
+    if(options.symbol)url.searchParams.set('symbol',options.symbol);
+    return url.href;
+  }
+  function fallbackLink() {
+    $('[data-reader-share-fallback]').hidden=false;
+    const input=$('[data-reader-share-url]');input.value=storyURL();input.focus();input.select();
+    actionStatus('Automatic copying is unavailable. The story link is selected below; copy it using your browser or keyboard.');
+  }
+  async function copyLink() {
+    try {
+      if(!navigator.clipboard?.writeText)throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(storyURL());
+      $('[data-reader-share-fallback]').hidden=true;actionStatus('FYNX story link copied.');
+    }catch{fallbackLink();}
+  }
+  async function shareStory() {
+    if(!current||sharing)return;
+    sharing=true;const button=$('[data-reader-share]');button.disabled=true;
+    try {
+      if(typeof navigator.share==='function'){
+        try{await navigator.share({title:text(current.title,600),url:storyURL()});actionStatus('Story shared.');}
+        catch(error){if(error?.name==='AbortError')actionStatus('Sharing cancelled.');else await copyLink();}
+      }else await copyLink();
+    }finally{sharing=false;button.disabled=!current;}
+  }
   function updateStatus(note) {
     if(note){status(note);return;}
     if(!current)return;
@@ -147,13 +186,15 @@
     $('[data-reader-error]').hidden=true;$('[data-reader-content]').hidden=false;$('[data-reader-content]').setAttribute('aria-busy','false');$('[data-reader-loading]').hidden=true;$('[data-reader-loaded]').hidden=false;
     $('[data-reader-title]').textContent=text(article.title,600);document.title=text(article.title,150)+' | FYNX Reader';
     $('[data-reader-copy]').disabled=false;
+    $('[data-reader-share]').disabled=sharing;
     metadata(article);photograph(article);summary(article);points(article);context(article);rail(article);sources(article);related(article);syncBackLinks();updateStatus();
+    if(!markedOpened)try{window.FYNXYourNews?.markOpened({...article,edition:originalEdition,category:options.category,...(options.symbol?{symbol:options.symbol}:{})});markedOpened=!!window.FYNXYourNews;}catch{}
   }
   function fail(message) {
     if(current){refreshUnavailable=true;updateStatus();return;}
     const host=$('[data-reader-error]');host.hidden=false;host.replaceChildren(node('h1','This brief is not available right now.'),node('p',message || 'The source item may have left the current news window or the news service could not retrieve it. Choose a current story from the newsroom.'));
     const back=node('a','Browse the latest reporting →');back.href=deskURL(window.FynxEdition?.get()||originalEdition);host.append(back);
-    $('[data-reader-content]').hidden=true;$('[data-reader-copy]').disabled=true;status('No unverified article information is displayed.');
+    $('[data-reader-content]').hidden=true;$('[data-reader-copy]').disabled=true;$('[data-reader-share]').disabled=true;status('No unverified article information is displayed.');
   }
   async function refresh(force=false) {
     if(loading)return;loading=true;lastAttempt=Date.now();const serial=++request, button=$('[data-reader-refresh]');
@@ -184,10 +225,15 @@
     refresh();schedule();
   }
   $('[data-reader-refresh]').addEventListener('click',()=>{if(pendingUpdate){render(pendingUpdate);$('[data-reader-refresh]').textContent='Check for updates ↻';}else refresh(true);});
-  $('[data-reader-copy]').addEventListener('click',async()=>{
-    const button=$('[data-reader-copy]'), url=new URL(location.href);url.search='';url.searchParams.set('id',options.id);url.searchParams.set('edition',originalEdition);url.searchParams.set('category',options.category);if(options.symbol)url.searchParams.set('symbol',options.symbol);url.hash='';
-    try{await navigator.clipboard.writeText(url.href);button.textContent='Link copied';window.setTimeout(()=>{button.textContent='Copy link';},2000);}catch{status('Copy the page address from your browser to share this story.');}
-  });
+  $('[data-reader-copy]').addEventListener('click',()=>{if(current)copyLink();});
+  $('[data-reader-share]').addEventListener('click',shareStory);
+  $('[data-reader-share-close]').addEventListener('click',()=>{$('[data-reader-share-fallback]').hidden=true;$('[data-reader-copy]').focus();});
+  $('[data-reader-share-url]').addEventListener('click',event=>event.target.select());
+  try{const saved=JSON.parse(localStorage.getItem(preferenceKey));if(saved&&['standard','large','larger'].includes(saved.size))preferences.size=saved.size;if(typeof saved?.focus==='boolean')preferences.focus=saved.focus;}catch{}
+  readingPreferences();
+  $('[data-reader-text-size]').addEventListener('change',event=>{const value=event.target.value;if(['standard','large','larger'].includes(value)){preferences.size=value;readingPreferences(true);}});
+  $('[data-reader-focus]').addEventListener('click',()=>{preferences.focus=!preferences.focus;readingPreferences(true);actionStatus(preferences.focus?'Focus view on. Navigation is hidden; source details remain below the brief. Press Escape to exit.':'Focus view off.');});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&preferences.focus){preferences.focus=false;readingPreferences(true);$('[data-reader-focus]').focus();actionStatus('Focus view off.');}});
   document.addEventListener('fynx:edition-change',()=>{
     syncBackLinks();
     // Keep a shared story tied to the edition that retrieved it. The preference
