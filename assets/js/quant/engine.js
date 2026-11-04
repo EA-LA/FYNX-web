@@ -40,6 +40,7 @@ var FynxQuant = (() => {
     exportStrategiesJSON: () => exportStrategiesJSON,
     finite: () => finite,
     ftmo: () => ftmo,
+    generateAccountMonitorEA: () => generateAccountMonitorEA,
     generateEA: () => generateEA,
     importReturnsCSV: () => importReturnsCSV,
     importStrategiesJSON: () => importStrategiesJSON,
@@ -1194,7 +1195,43 @@ var FynxQuant = (() => {
   ];
   function generateEA(input) {
     const p = normalize(input), ext = p.platform === "mt5" ? "mq5" : p.platform === "mt4" ? "mq4" : "cs";
-    return { filename: `FynxQuant_${p.symbol}_${p.tf}.${ext}`, mime: "text/plain;charset=utf-8", source: p.platform === "ctrader" ? csharp(p) : mql(p), notes: [...notes, ...p.platform === "mt5" ? ["Optional Edge heartbeat is disabled by default. Create a token in Profile, enter it only in MT5 EA inputs, and allow https://fynxfinanceworld.com in Expert Advisors WebRequest settings. All account positions are reported. Never share a .set file containing your token."] : []] };
+    return { filename: `FynxQuant_${p.symbol}_${p.tf}.${ext}`, mime: "text/plain;charset=utf-8", source: p.platform === "ctrader" ? csharp(p) : mql(p), notes: [...notes, ...p.platform === "mt5" ? ["Optional Edge heartbeat is disabled by default. Create a token in Profile, enter it only in MT5 EA inputs, and allow https://fynxfinanceworld.com in Expert Advisors WebRequest settings. All account positions are reported. Never share a .set file containing your token.", "Edge day-start balance/equity and end-of-day high-water are unavailable unless you supply verified values with the current Prague date. A later observation is never substituted for midnight; these facts expire at the next date rollover."] : []] };
+  }
+  function generateAccountMonitorEA() {
+    const p = normalize({ platform: "mt5", symbol: "EURUSD", timeframe: "D1", params: { mode: "ohlc" } });
+    const source = `// FYNX My Accounts - MT5 reporting only. This EA cannot place, modify or close a trade.
+// Compile in MetaEditor and verify on a demo. No native compilation is claimed by FYNX.
+#property strict
+input double InpInitBal = 0; // Enter the actual initial account balance; zero refuses initialization.
+input double InpDailyStop = 4; // Reporting preference only; this monitor never liquidates positions.
+string guardKey="";double dayStartEq=0;bool waitingForDay=true;
+double Balance(){return AccountInfoDouble(ACCOUNT_BALANCE);}
+double Equity(){return AccountInfoDouble(ACCOUNT_EQUITY);}
+int PragueDay(){
+  datetime utc=TimeGMT();MqlDateTime d;TimeToStruct(utc,d);
+  MqlDateTime end;ZeroMemory(end);end.year=d.year;end.mon=3;end.day=31;end.hour=1;
+  datetime march=StructToTime(end);TimeToStruct(march,end);march-=end.day_of_week*86400;
+  ZeroMemory(end);end.year=d.year;end.mon=10;end.day=31;end.hour=1;
+  datetime october=StructToTime(end);TimeToStruct(october,end);october-=end.day_of_week*86400;
+  TimeToStruct(utc+((utc>=march&&utc<october)?7200:3600),d);return d.year*10000+d.mon*100+d.day;
+}
+${heartbeatMql(p, false)}
+int OnInit(){
+  if(MQLInfoInteger(MQL_TESTER)||InpInitBal<=0||InpDailyStop<=0||InpDailyStop>20)return INIT_PARAMETERS_INCORRECT;
+  guardKey="FynxMonitor_"+IntegerToString(AccountInfoInteger(ACCOUNT_LOGIN))+"_";
+  EdgeInitialize();EventSetTimer(1);return INIT_SUCCEEDED;
+}
+void OnTimer(){EdgeHeartbeat();}
+void OnDeinit(const int reason){EventKillTimer();GlobalVariablesFlush();}
+`;
+    return { filename: "FynxAccountMonitor.mq5", mime: "text/plain;charset=utf-8", source, notes: [
+      "This standalone MT5 monitor contains reporting and account-history reads only; it cannot place, modify or close trades.",
+      "Create an Edge token, enter it only in MT5 inputs, enable InpEdgeEnabled and allow https://fynxfinanceworld.com in WebRequest settings. Enter the actual initial balance.",
+      "After the first report, link that token in My Accounts. Then enable InpAccountsHistoryEnabled and enter the broker-confirmed IANA timezone. Never guess UTC or reuse the current server offset for old deals.",
+      "Reset facts require verified InpEdgeBaselineDate and day-start/high-water inputs for the current Prague date. Near-midnight samples and local trading-guard baselines are never reported as exact reset facts; values expire at rollover.",
+      "History sends at most 100 deals per acknowledged minute. Restarting the EA replays the configured broker history window for server-side deduplication. Records predating that window or missing at the broker remain unavailable.",
+      "The website receives account telemetry; it cannot prove a modified local EA reports truthful data. Reports retain that provenance. Native compilation and terminal delivery require separate demo validation."
+    ] };
   }
   function mql(p) {
     const five = p.platform === "mt5";
@@ -1362,33 +1399,74 @@ ${five ? `  MqlTick quote;if(!SymbolInfoTick(_Symbol,quote))return;
 }
 `;
   }
-  function heartbeatMql(p) {
+  function heartbeatMql(p, canonicalSymbol = true) {
     return String.raw`// Edge Radar: reporting is optional; trading never depends on an HTTP response.
 input bool InpEdgeEnabled = false;
 input string InpEdgeToken = ""; // Paste Profile's shown-once token here; do not share a .set file.
+input bool InpAccountsHistoryEnabled = false; // Enable only after linking this EA token in My Accounts.
+input string InpAccountsBrokerTimezone = ""; // Broker-confirmed IANA zone, e.g. Europe/Helsinki; never guess.
+input int InpAccountsHistoryDays = 30; // 1..366; broker-retained history only, 100 deals per acknowledged batch.
 input string InpEdgeRule = "${p.ruleId}";
 input int InpEdgePhase = ${p.phase};
-input double InpEdgeDayStartBalance = 0; // Verified balance at Prague midnight; 0 = unknown.
-input double InpEdgeHighWaterBalance = 0; // Highest historical end-of-day balance; 0 = unknown.
-datetime edgeLastSend=0,edgeLastObserved=0;
-int edgeDay=0;double edgeDayBalance=0,edgeHighBalance=0,edgePreviousBalance=0;
+input string InpEdgeBaselineDate = ""; // YYYY-MM-DD Prague date of verified reset inputs; blank = unknown.
+input double InpEdgeDayStartBalance = 0; // Verified balance at that Prague midnight; 0 = unknown.
+input double InpEdgeDayStartEquity = 0; // Verified equity at that Prague midnight; never a later trading-guard sample.
+input double InpEdgeHighWaterBalance = 0; // Verified highest completed EOD balance through that midnight; 0 = unknown.
+datetime edgeLastSend=0;
+int edgeDay=0;double edgeDayBalance=0,edgeDayEquity=0,edgeHighBalance=0;
+long accountsCursorMsc=0,accountsPendingMsc=0;ulong accountsCursorTicket=0,accountsPendingTicket=0;
 string EdgeNumber(double value){return MathIsValidNumber(value)?DoubleToString(value,10):"null";}
 string EdgePositive(double value){return value>0?EdgeNumber(value):"null";}
 string EdgeString(string value){StringReplace(value,"\\","\\\\");StringReplace(value,"\"","\\\"");StringReplace(value,"\r"," ");StringReplace(value,"\n"," ");StringReplace(value,"\t"," ");return "\""+value+"\"";}
-string EdgeSymbol(string name){return name==_Symbol?"${p.symbol}":name;}
+string EdgeSymbol(string name){return ${canonicalSymbol ? `name==_Symbol?"${p.symbol}":name` : "name"};}
 string EdgeDayString(int day){return StringFormat("%04d-%02d-%02d",day/10000,(day/100)%100,day%100);}
+string AccountsBrokerTime(long msc){string value=TimeToString((datetime)(msc/1000),TIME_DATE|TIME_SECONDS);StringReplace(value,".","-");return value+StringFormat(".%03d",(int)(msc%1000));}
+bool AccountsEnabled(){return InpAccountsHistoryEnabled&&StringLen(InpAccountsBrokerTimezone)>0&&InpAccountsHistoryDays>=1&&InpAccountsHistoryDays<=366;}
+string AccountsHistory(){
+  datetime end=TimeTradeServer(),start=end-InpAccountsHistoryDays*86400;
+  bool selected=HistorySelect(start,end);int total=selected?HistoryDealsTotal():0;
+  ulong tickets[100];long times[100];int count=0,remaining=0;
+  accountsPendingMsc=accountsCursorMsc;accountsPendingTicket=accountsCursorTicket;
+  // Select the oldest unsent 100 by (time,ticket), regardless of terminal array ordering.
+  if(selected&&total<=100000)for(int i=0;i<total;i++){
+    ulong ticket=HistoryDealGetTicket(i);if(ticket==0)continue;long msc=HistoryDealGetInteger(ticket,DEAL_TIME_MSC);
+    if(msc<accountsCursorMsc||(msc==accountsCursorMsc&&ticket<=accountsCursorTicket))continue;
+    remaining++;int at=count;while(at>0&&(times[at-1]>msc||(times[at-1]==msc&&tickets[at-1]>ticket)))at--;
+    if(at>=100)continue;for(int j=MathMin(count,99);j>at;j--){tickets[j]=tickets[j-1];times[j]=times[j-1];}tickets[at]=ticket;times[at]=msc;if(count<100)count++;
+  }
+  string deals="[";
+  for(int i=0;i<count;i++){
+    ulong ticket=tickets[i];long type=HistoryDealGetInteger(ticket,DEAL_TYPE),entry=HistoryDealGetInteger(ticket,DEAL_ENTRY);
+    bool trade=type==DEAL_TYPE_BUY||type==DEAL_TYPE_SELL;
+    string kind=type==DEAL_TYPE_BUY?"buy":type==DEAL_TYPE_SELL?"sell":type==DEAL_TYPE_BALANCE?"balance":type==DEAL_TYPE_CREDIT?"credit":type==DEAL_TYPE_CHARGE||type==DEAL_TYPE_COMMISSION||type==DEAL_TYPE_COMMISSION_DAILY||type==DEAL_TYPE_COMMISSION_MONTHLY||type==DEAL_TYPE_COMMISSION_AGENT_DAILY||type==DEAL_TYPE_COMMISSION_AGENT_MONTHLY||type==DEAL_TAX?"fee":"adjustment";
+    string entryType=entry==DEAL_ENTRY_IN?"in":entry==DEAL_ENTRY_OUT?"out":entry==DEAL_ENTRY_INOUT?"inout":"out-by";
+    if(i>0)deals+=",";
+    deals+="{\"id\":"+EdgeString(IntegerToString(ticket))+",\"positionId\":"+EdgeString(IntegerToString(HistoryDealGetInteger(ticket,DEAL_POSITION_ID)))+",\"orderId\":"+EdgeString(IntegerToString(HistoryDealGetInteger(ticket,DEAL_ORDER)))+",\"brokerTime\":"+EdgeString(AccountsBrokerTime(times[i]))+",\"type\":"+EdgeString(kind)+",\"entryType\":"+(trade?EdgeString(entryType):"null")+",\"rawSymbol\":"+(trade?EdgeString(HistoryDealGetString(ticket,DEAL_SYMBOL)):"null")+",\"volume\":"+EdgeNumber(HistoryDealGetDouble(ticket,DEAL_VOLUME))+",\"price\":"+EdgeNumber(HistoryDealGetDouble(ticket,DEAL_PRICE))+",\"profit\":"+EdgeNumber(HistoryDealGetDouble(ticket,DEAL_PROFIT))+",\"commission\":"+EdgeNumber(HistoryDealGetDouble(ticket,DEAL_COMMISSION))+",\"swap\":"+EdgeNumber(HistoryDealGetDouble(ticket,DEAL_SWAP))+",\"fee\":"+EdgeNumber(HistoryDealGetDouble(ticket,DEAL_FEE))+",\"sl\":"+EdgePositive(HistoryDealGetDouble(ticket,DEAL_SL))+",\"tp\":"+EdgePositive(HistoryDealGetDouble(ticket,DEAL_TP))+",\"magic\":"+EdgeString(IntegerToString(HistoryDealGetInteger(ticket,DEAL_MAGIC)))+"}";
+    accountsPendingMsc=times[i];accountsPendingTicket=ticket;
+  }deals+="]";
+  bool complete=selected&&total<=100000&&remaining<=100;
+  return "{\"brokerTimezone\":"+EdgeString(InpAccountsBrokerTimezone)+",\"fromBrokerTime\":"+EdgeString(AccountsBrokerTime((long)start*1000))+",\"toBrokerTime\":"+EdgeString(AccountsBrokerTime((long)end*1000+999))+",\"complete\":"+(complete?"true":"false")+",\"deals\":"+deals+"}";
+}
+void EdgeSaveBaseline(){
+  GlobalVariableSet(guardKey+"edgeBasisVersion",0);
+  GlobalVariableSet(guardKey+"edgeDay",edgeDay);GlobalVariableSet(guardKey+"edgeBalance",edgeDayBalance);GlobalVariableSet(guardKey+"edgeEquity",edgeDayEquity);GlobalVariableSet(guardKey+"edgeHigh",edgeHighBalance);
+  GlobalVariableSet(guardKey+"edgeBasisVersion",2);GlobalVariablesFlush();
+}
 void EdgeInitialize(){
-  edgeDay=PragueDay();edgeDayBalance=InpEdgeDayStartBalance;edgeHighBalance=InpEdgeHighWaterBalance;edgePreviousBalance=Balance();
-  if(GlobalVariableCheck(guardKey+"edgeDay")&&(int)GlobalVariableGet(guardKey+"edgeDay")==edgeDay)edgeDayBalance=GlobalVariableGet(guardKey+"edgeBalance");
-  if(GlobalVariableCheck(guardKey+"edgeHigh"))edgeHighBalance=MathMax(edgeHighBalance,GlobalVariableGet(guardKey+"edgeHigh"));
-  edgeLastObserved=TimeGMT();
+  edgeDay=PragueDay();edgeDayBalance=0;edgeDayEquity=0;edgeHighBalance=0;
+  // Version 1 used near-midnight samples. Never restore those as exact reset facts.
+  if(GlobalVariableCheck(guardKey+"edgeBasisVersion")&&GlobalVariableGet(guardKey+"edgeBasisVersion")==2&&GlobalVariableCheck(guardKey+"edgeDay")&&(int)GlobalVariableGet(guardKey+"edgeDay")==edgeDay){edgeDayBalance=GlobalVariableGet(guardKey+"edgeBalance");edgeDayEquity=GlobalVariableGet(guardKey+"edgeEquity");edgeHighBalance=GlobalVariableGet(guardKey+"edgeHigh");}
+  if(InpEdgeBaselineDate==EdgeDayString(edgeDay)){edgeDayBalance=InpEdgeDayStartBalance;edgeDayEquity=InpEdgeDayStartEquity;edgeHighBalance=InpEdgeHighWaterBalance;}
+  EdgeSaveBaseline();
+}
+void EdgeAdvanceDay(int today){
+  // A close/deposit can occur between midnight and this callback. Without exact
+  // reset reconstruction, all three reset facts become unknown at rollover.
+  if(today!=edgeDay){edgeDay=today;edgeDayBalance=0;edgeDayEquity=0;edgeHighBalance=0;EdgeSaveBaseline();}
 }
 void EdgeHeartbeat(){
   if(!InpEdgeEnabled||StringLen(InpEdgeToken)==0||MQLInfoInteger(MQL_TESTER)||!TerminalInfoInteger(TERMINAL_CONNECTED))return;
-  datetime now=TimeGMT();int today=PragueDay();
-  if(today!=edgeDay){edgeDay=today;edgeDayBalance=now-edgeLastObserved<=60?Balance():0;if(edgeHighBalance>0&&now-edgeLastObserved<=60)edgeHighBalance=MathMax(edgeHighBalance,edgePreviousBalance);}
-  edgeLastObserved=now;edgePreviousBalance=Balance();
-  GlobalVariableSet(guardKey+"edgeDay",edgeDay);GlobalVariableSet(guardKey+"edgeBalance",edgeDayBalance);GlobalVariableSet(guardKey+"edgeHigh",edgeHighBalance);
+  datetime now=TimeGMT();EdgeAdvanceDay(PragueDay());
   if(now-edgeLastSend<60)return;edgeLastSend=now;
   string positions="[";int reported=0;
   for(int i=0;i<PositionsTotal();i++){
@@ -1398,20 +1476,23 @@ void EdgeHeartbeat(){
     string risk="null";if(sl>0&&OrderCalcProfit(buy?ORDER_TYPE_BUY:ORDER_TYPE_SELL,name,volume,price,sl,profit))risk=EdgeNumber(MathMax(0,-profit));
     string currencies="[",base=SymbolInfoString(name,SYMBOL_CURRENCY_BASE),quote=SymbolInfoString(name,SYMBOL_CURRENCY_PROFIT);if(StringLen(base)>=3&&StringLen(base)<=8)currencies+=EdgeString(base);if(StringLen(quote)>=3&&StringLen(quote)<=8&&quote!=base){if(StringLen(currencies)>1)currencies+=",";currencies+=EdgeString(quote);}currencies+="]";
     if(reported++>0)positions+=",";
-    positions+="{\"id\":"+EdgeString(IntegerToString(ticket))+",\"symbol\":"+EdgeString(EdgeSymbol(name))+",\"side\":"+EdgeString(buy?"buy":"sell")+",\"volume\":"+EdgeNumber(volume)+",\"entry\":"+EdgeNumber(entry)+",\"price\":"+EdgeNumber(price)+",\"sl\":"+EdgePositive(sl)+",\"tp\":"+EdgePositive(tp)+",\"riskToStop\":"+risk+",\"currencies\":"+currencies+"}";
+    string details="";if(AccountsEnabled())details=",\"floatingPL\":"+EdgeNumber(PositionGetDouble(POSITION_PROFIT)+PositionGetDouble(POSITION_SWAP))+",\"magic\":"+EdgeString(IntegerToString(PositionGetInteger(POSITION_MAGIC)))+",\"positionId\":"+EdgeString(IntegerToString(PositionGetInteger(POSITION_IDENTIFIER)))+",\"openedAtBroker\":"+EdgeString(AccountsBrokerTime(PositionGetInteger(POSITION_TIME_MSC)));
+    positions+="{\"id\":"+EdgeString(IntegerToString(ticket))+",\"symbol\":"+EdgeString(EdgeSymbol(name))+",\"side\":"+EdgeString(buy?"buy":"sell")+",\"volume\":"+EdgeNumber(volume)+",\"entry\":"+EdgeNumber(entry)+",\"price\":"+EdgeNumber(price)+",\"sl\":"+EdgePositive(sl)+",\"tp\":"+EdgePositive(tp)+",\"riskToStop\":"+risk+",\"currencies\":"+currencies+details+"}";
   }positions+="]";
   string currency=AccountInfoString(ACCOUNT_CURRENCY),instruments="[]";MqlTick quote;
-  if(SymbolInfoTick(_Symbol,quote)){
+  if(${canonicalSymbol ? "" : "false&&"}SymbolInfoTick(_Symbol,quote)){
     double tickSize=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_SIZE),tickValue=SymbolInfoDouble(_Symbol,SYMBOL_TRADE_TICK_VALUE_LOSS),vmin=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MIN),vmax=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_MAX),step=SymbolInfoDouble(_Symbol,SYMBOL_VOLUME_STEP);
     datetime tickUtc=quote.time-(TimeTradeServer()-TimeGMT());
     if(tickSize>0&&tickValue>0&&vmin>0&&vmax>=vmin&&step>0&&quote.bid>0&&quote.ask>=quote.bid&&now-tickUtc<=180&&tickUtc<=now+5)
       instruments="[{\"symbol\":\"${p.symbol}\",\"brokerSymbol\":"+EdgeString(_Symbol)+",\"tickSize\":"+EdgeNumber(tickSize)+",\"tickValueLoss\":"+EdgeNumber(tickValue)+",\"volumeMin\":"+EdgeNumber(vmin)+",\"volumeMax\":"+EdgeNumber(vmax)+",\"volumeStep\":"+EdgeNumber(step)+",\"digits\":"+IntegerToString(_Digits)+",\"stopLevel\":"+IntegerToString(SymbolInfoInteger(_Symbol,SYMBOL_TRADE_STOPS_LEVEL))+",\"accountCurrency\":"+EdgeString(currency)+",\"asOf\":"+IntegerToString(tickUtc)+",\"bid\":"+EdgeNumber(quote.bid)+",\"ask\":"+EdgeNumber(quote.ask)+"}]";
   }
   string account=AccountInfoString(ACCOUNT_SERVER)+":"+IntegerToString(AccountInfoInteger(ACCOUNT_LOGIN));
-  string body="{\"version\":1,\"sentAt\":"+IntegerToString(now)+",\"accountRef\":"+EdgeString(account)+",\"currency\":"+EdgeString(currency)+",\"balance\":"+EdgeNumber(Balance())+",\"equity\":"+EdgeNumber(Equity())+",\"dayStartEquity\":"+(waitingForDay?"null":EdgePositive(dayStartEq))+",\"dayStartBalance\":"+EdgePositive(edgeDayBalance)+",\"dayStartDate\":"+EdgeString(EdgeDayString(edgeDay))+",\"initialBalance\":"+EdgeNumber(InpInitBal)+",\"ruleId\":"+EdgeString(InpEdgeRule)+",\"phase\":"+IntegerToString(InpEdgePhase)+",\"safetyDailyPct\":"+EdgeNumber(InpDailyStop)+",\"highWaterBalance\":"+EdgePositive(edgeHighBalance)+",\"positions\":"+positions+",\"instruments\":"+instruments+"}";
+  string extra="";if(AccountsEnabled())extra=",\"accountHistory\":"+AccountsHistory()+",\"accountMetadata\":{\"margin\":"+EdgeNumber(AccountInfoDouble(ACCOUNT_MARGIN))+",\"freeMargin\":"+EdgeNumber(AccountInfoDouble(ACCOUNT_MARGIN_FREE))+",\"leverage\":"+IntegerToString(AccountInfoInteger(ACCOUNT_LEVERAGE))+",\"accountMode\":"+EdgeString(AccountInfoInteger(ACCOUNT_MARGIN_MODE)==ACCOUNT_MARGIN_MODE_RETAIL_HEDGING?"hedging":"netting")+"}";
+  string body="{\"version\":"+(AccountsEnabled()?"2":"1")+",\"sentAt\":"+IntegerToString(now)+",\"accountRef\":"+EdgeString(account)+",\"currency\":"+EdgeString(currency)+",\"balance\":"+EdgeNumber(Balance())+",\"equity\":"+EdgeNumber(Equity())+",\"dayStartEquity\":"+EdgePositive(edgeDayEquity)+",\"dayStartBalance\":"+EdgePositive(edgeDayBalance)+",\"dayStartDate\":"+EdgeString(EdgeDayString(edgeDay))+",\"initialBalance\":"+EdgeNumber(InpInitBal)+",\"ruleId\":"+EdgeString(InpEdgeRule)+",\"phase\":"+IntegerToString(InpEdgePhase)+",\"safetyDailyPct\":"+EdgeNumber(InpDailyStop)+",\"highWaterBalance\":"+EdgePositive(edgeHighBalance)+",\"positions\":"+positions+",\"instruments\":"+instruments+extra+"}";
   uchar encoded[];StringToCharArray(body,encoded,0,WHOLE_ARRAY,CP_UTF8);char data[],result[];int size=ArraySize(encoded)-1;ArrayResize(data,size);for(int i=0;i<size;i++)data[i]=(char)encoded[i];
   string responseHeaders,headers="Content-Type: application/json\r\nAuthorization: Bearer "+InpEdgeToken+"\r\n";
   int status=WebRequest("POST","https://fynxfinanceworld.com/api/edge/heartbeat",headers,1500,data,result,responseHeaders);
+  if(status==202&&AccountsEnabled()){accountsCursorMsc=accountsPendingMsc;accountsCursorTicket=accountsPendingTicket;}
   // Never log headers, token, body or provider response. A status code is sufficient.
   if(status!=202)Print("Edge heartbeat unavailable (HTTP status ",status,"). Check Profile and WebRequest settings.");
 }

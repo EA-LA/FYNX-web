@@ -22,9 +22,10 @@
     "typecheck:edge": "tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --strict --skipLibCheck lib/edge/index.ts lib/quant/index.ts",
     "build:accounts": "node scripts/build-accounts.cjs",
     "dev:accounts": "node scripts/quant-dev-server.cjs",
-    "test:accounts": "tsx --test tests/accounts/*.test.ts tests/accounts/*.test.cjs",
+    "test:accounts": "npm run build:accounts && node --test tests/accounts/*.test.cjs",
     "typecheck:accounts": "tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --strict --skipLibCheck --resolveJsonModule lib/accounts/index.ts",
-    "lint:accounts": "node scripts/edge-lint/node_modules/eslint/bin/eslint.js --config eslint.accounts.config.mjs lib/accounts assets/js/accounts backend/accounts scripts/accounts-*.cjs"
+    "lint:accounts": "node scripts/edge-lint/node_modules/eslint/bin/eslint.js --config eslint.accounts.config.mjs lib/accounts assets/js/accounts backend/accounts scripts/build-accounts.cjs",
+    "dev:accounts:qa": "node tests/accounts/browser-server.cjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",

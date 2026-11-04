@@ -3,6 +3,29 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path'),vm=require('node:vm');
 const {build,VERSION}=require('./build-release-assets.cjs');
+const {publicSiteFiles,isPublicSitePath,PUBLIC_DIRECTORIES}=require('./public-site-files.cjs');
+
+test('public traversal includes published routes and excludes test, private, hidden and unrecognized source directories',()=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'fynx-public-traversal-'));
+  const canary='<script src="/fynx-nav.js?v=fixture-original"></script>';
+  const publicFiles=['index.html','api/index.html','edge-radar/eurusd/index.html','profile/accounts/index.html','profile/accounts/connect/file/index.html','auth/login.html','learn/lessons/forex/example.html','assets/js/example.js'];
+  const privateFiles=['tests/accounts/fixtures/mt4-statement.html','tests/accounts/example.js','backend/private.html','lib/source.js','content/template.html','config/private.html','docs/guide.html','scripts/example.html','functions/source.js','new-private-service/example.html','.accounts-data/records.html','.edge-data/private.html','.quant-data/private.html','.git/private.html','node_modules/example/index.html','dist/index.html','output/preview.html','tools/fixtures/statement.html','assets/__tests__/example.js','assets/.private/example.js','assets/vendor/example.js'];
+  try {
+    for(const file of [...publicFiles,...privateFiles]){fs.mkdirSync(path.dirname(path.join(root,file)),{recursive:true});fs.writeFileSync(path.join(root,file),canary);}
+    fs.symlinkSync(path.join(root,'tests/accounts/fixtures/mt4-statement.html'),path.join(root,'tools/linked.html'));
+    fs.symlinkSync(path.join(root,'tests/accounts'),path.join(root,'tools/linked-directory'));
+    const expectedHTML=publicFiles.filter(file=>file.endsWith('.html')).sort();
+    assert.deepEqual(publicSiteFiles(root).sort(),expectedHTML);
+    assert(isPublicSitePath('profile/accounts/connect/ea/index.html'));
+    for(const file of ['../private.html','/tests/private.html','tools/../../private.html','tools\\private.html','tests/accounts/fixtures/mt4-statement.html','assets/.private/example.js'])assert.equal(isPublicSitePath(file),false,file);
+    const packagedDirectories=fs.readFileSync(path.join(__dirname,'package-static.cjs'),'utf8').match(/const directories = (\[[^;]+\]);/)[1];
+    assert.deepEqual(vm.runInNewContext(packagedDirectories).join(','),PUBLIC_DIRECTORIES.join(','),'Traversal must match the public packaging roots');
+    const result=build(root);
+    assert.deepEqual(result.changed.sort(),publicFiles.slice().sort());
+    for(const file of privateFiles)assert.equal(fs.readFileSync(path.join(root,file),'utf8'),canary,'Build mutated non-public source: '+file);
+    assert.equal(fs.readFileSync(path.join(root,'tools/linked.html'),'utf8'),canary,'Build followed a private symlink');
+  } finally {fs.rmSync(root,{recursive:true,force:true});}
+});
 
 test('cache versioning reaches module importers without touching runtime expressions, selectors or external paths',()=>{
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'fynx-release-assets-'));

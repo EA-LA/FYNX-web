@@ -1,8 +1,10 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const {JSDOM}=require('jsdom');
+const {isPublicSitePath}=require('./public-site-files.cjs');
 const root=path.resolve(__dirname,'..'),base='https://www.fynxfinanceworld.com';
 const inventory=JSON.parse(fs.readFileSync(path.join(root,'assets/resource-index.json'),'utf8'));
 const sitemap=new Set([...fs.readFileSync(path.join(root,'sitemap.xml'),'utf8').matchAll(/<loc>(.*?)<\/loc>/g)].map(x=>x[1]));
+for(const url of sitemap){const pathname=new URL(url).pathname;assert(isPublicSitePath(pathname.slice(1)+(pathname.endsWith('/')?'index.html':'')),'Non-public source or fixture in sitemap: '+pathname);}
 const library=new JSDOM(fs.readFileSync(path.join(root,'explore.html'),'utf8'),{url:base+'/explore.html'});
 const directory=new JSDOM(fs.readFileSync(path.join(root,'directory.html'),'utf8'),{url:base+'/directory.html'});
 assert.equal(new Set(inventory.map(e=>e.url)).size,inventory.length,'Duplicate resource URL');

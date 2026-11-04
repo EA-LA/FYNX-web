@@ -24,6 +24,8 @@ html body.accounts-page{background:#f6f6f3!important;color:#17191c!important;fon
 
 .ac-small{font-size:11px}.ac-calendar-note{font-size:11px;margin-top:14px}.ac-progress svg{width:100%;height:7px;display:block}.ac-progress rect{fill:#416c4b}.ac-progress.bad rect{fill:#963b32}.ac-progress.warn rect{fill:#947026}
 
+/* Keep tabular values readable inside their own horizontal scroller. */
+.ac-table{min-width:620px;overflow-wrap:normal}.ac-table .ac-button{white-space:nowrap}
 /* Grid children must shrink below table intrinsic widths on narrow phones. */
 .ac-columns > *{min-width:0}
 @media(max-width:760px){.ac-columns{grid-template-columns:minmax(0,1fr)}}

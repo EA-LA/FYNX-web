@@ -1,10 +1,10 @@
 'use strict';
-// Test-only auth/network adapters execute the shipped controller and renderer in JSDOM.
+// Test-only auth, network and navigation adapters execute the shipped controller and renderer in JSDOM.
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{JSDOM}=require('jsdom'),esbuild=require('esbuild');
 const repo=path.resolve(__dirname,'../..'),accountId='11111111-1111-4111-8111-111111111111',stamp='2026-11-03T15:00:00.000Z',v=value=>({value,reason:null});
 let appCode,view;
 test.before(async()=>{
- const result=await esbuild.build({entryPoints:[path.join(repo,'assets/js/accounts/app.js')],bundle:true,format:'iife',platform:'browser',write:false,plugins:[{name:'test-identity-only',setup(build){build.onResolve({filter:/^\.\/identity\.js$/},()=>({path:'test-identity',namespace:'test-identity'}));build.onLoad({filter:/.*/,namespace:'test-identity'},()=>({contents:'export async function watchIdentity(callback){globalThis.__accountsIdentity=callback;return ()=>{};}',loader:'js'}));}}]});appCode=result.outputFiles[0].text;
+ const result=await esbuild.build({entryPoints:[path.join(repo,'assets/js/accounts/app.js')],bundle:true,format:'iife',platform:'browser',write:false,define:{location:'globalThis.__accountsLocation'},plugins:[{name:'test-identity-only',setup(build){build.onResolve({filter:/^\.\/identity\.js$/},()=>({path:'test-identity',namespace:'test-identity'}));build.onLoad({filter:/.*/,namespace:'test-identity'},()=>({contents:'export async function watchIdentity(callback){globalThis.__accountsIdentity=callback;return ()=>{};}',loader:'js'}));}}]});appCode=result.outputFiles[0].text;
  const rendered=esbuild.buildSync({entryPoints:[path.join(repo,'assets/js/accounts/render.mjs')],bundle:true,format:'cjs',platform:'node',write:false}),module={exports:{}};new Function('module','exports',rendered.outputFiles[0].text)(module,module.exports);view=module.exports;
 });
 const response=(body,status=200)=>({ok:status>=200&&status<300,status,json:async()=>structuredClone(body)}),deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
@@ -15,13 +15,14 @@ function data(label='TEST_ACCOUNT'){
 }
 const providers={providers:[{id:'file',name:'Statement file',kind:'file',enabled:true},{id:'mt5',name:'MetaTrader 5',kind:'login',enabled:true,helpUrl:'https://www.metatrader5.com/en/terminal/help'},{id:'ea',name:'Fynx EA',kind:'ea',enabled:true}]};
 async function mount(handler=()=>undefined,{route='/profile/accounts'}={}){
- const dom=new JSDOM('<!doctype html><body>'+fs.readFileSync(path.join(repo,'content/accounts.fragment'),'utf8')+'</body>',{url:'https://example.test'+route,runScripts:'outside-only'}),w=dom.window,calls=[],timers=new Map(),sources=[],downloads=[],urls=[],ctx={uid:null};let timerId=1;
+ const dom=new JSDOM('<!doctype html><body>'+fs.readFileSync(path.join(repo,'content/accounts.fragment'),'utf8')+'</body>',{url:'https://example.test'+route,runScripts:'outside-only'}),w=dom.window,calls=[],timers=new Map(),sources=[],downloads=[],urls=[],navigations=[],ctx={uid:null};let timerId=1;
+ w.__accountsLocation={pathname:w.location.pathname,search:w.location.search,assign:destination=>navigations.push(destination),reload:()=>navigations.push(w.location.pathname)};
  Object.defineProperty(w.document,'hidden',{value:false});w.AbortSignal.timeout=()=>new w.AbortController().signal;w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};w.HTMLElement.prototype.scrollIntoView=()=>{};
  w.URL.createObjectURL=blob=>{urls.push(blob);return 'blob:accounts-test';};w.URL.revokeObjectURL=()=>{};w.HTMLAnchorElement.prototype.click=function(){downloads.push({href:this.href,download:this.download});};
  class Events{constructor(url,options){this.url=url;this.options=options;this.listeners={};this.closed=false;sources.push(this);}addEventListener(type,fn){this.listeners[type]=fn;}emit(type){this.listeners[type]?.({data:'{}'});}close(){this.closed=true;}}w.EventSource=Events;
  w.setTimeout=(callback,ms)=>{const id=timerId++;timers.set(id,{callback,ms,interval:false});return id;};w.clearTimeout=id=>timers.delete(id);w.setInterval=(callback,ms)=>{const id=timerId++;timers.set(id,{callback,ms,interval:true});return id;};w.clearInterval=id=>timers.delete(id);
  w.fetch=async(url,options={})=>{calls.push({url:String(url),options});const supplied=await handler(String(url),options,ctx);if(supplied!==undefined)return supplied;if(url==='/api/accounts/session')return options.method==='DELETE'?response({revoked:true}):ctx.uid?response(session(ctx.uid)):response({error:{code:'AUTH_REQUIRED',message:'Sign in required'}},401);if(String(url).includes('/dashboard?'))return response(data('TEST_'+ctx.uid));if(String(url).endsWith('/providers'))return response(providers);if(String(url).endsWith('/rules'))return response({firms:[],rules:[]});if(String(url).endsWith('/activity'))return response({active:true});throw new Error('Unexpected test request '+url);};
- w.eval(appCode);await settle();return {dom,w,doc:w.document,calls,timers,sources,downloads,urls,ctx,async identity(uid,getIdToken){ctx.uid=uid;w.__accountsIdentity(uid?{uid,getIdToken:getIdToken||(async()=>`TOKEN_${uid}`)} :null);await settle();},async tick(ms){const entry=[...timers].find(([,t])=>t.ms===ms&&!t.interval);assert.ok(entry,`No ${ms}ms timer`);timers.delete(entry[0]);await entry[1].callback();await settle();},close(){w.dispatchEvent(new w.Event('pagehide'));dom.window.close();}};
+ w.eval(appCode);await settle();return {dom,w,doc:w.document,calls,timers,sources,downloads,urls,navigations,ctx,async identity(uid,getIdToken){ctx.uid=uid;w.__accountsIdentity(uid?{uid,getIdToken:getIdToken||(async()=>`TOKEN_${uid}`)} :null);await settle();},async tick(ms){const entry=[...timers].find(([,t])=>t.ms===ms&&!t.interval);assert.ok(entry,`No ${ms}ms timer`);timers.delete(entry[0]);await entry[1].callback();await settle();},close(){w.dispatchEvent(new w.Event('pagehide'));dom.window.close();}};
 }
 const click=(p,selector)=>{const el=p.doc.querySelector(selector);assert.ok(el,'Missing '+selector);el.click();};
 const submit=(p,form)=>form.dispatchEvent(new p.w.Event('submit',{bubbles:true,cancelable:true}));
@@ -43,6 +44,22 @@ test('same-identity fresh token notification preserves the current private UI an
 });
 test('named SSE update and invalidate events debounce an actual dashboard refresh',async()=>{
  let loads=0;const p=await mount(url=>url.includes('/dashboard?')?response(data('UPDATE_'+(++loads))):undefined);try{await p.identity('a');assert.equal(p.sources.length,1);p.sources[0].emit('update');p.sources[0].emit('invalidate');assert.equal([...p.timers.values()].filter(t=>t.ms===500).length,1);await p.tick(500);assert.equal(loads,2);assert.match(p.doc.body.textContent,/UPDATE_2/);p.sources[0].onerror();assert.match(p.doc.querySelector('#accounts-status').textContent,/reconnecting/);}finally{p.close();}
+});
+test('deletion in another tab clears an open detail page and returns to My Accounts',async()=>{
+ let deleted=false;const p=await mount(url=>deleted&&url.includes('/dashboard?')?response({error:{code:'NOT_FOUND',message:'Account not found.'}},404):undefined,{route:'/profile/accounts/'+accountId});try{
+  await p.identity('a');assert.match(p.doc.body.textContent,/TEST_a/);deleted=true;p.sources[0].emit('update');await p.tick(500);
+  assert.deepEqual(p.navigations,['/profile/accounts']);assert.ok(p.sources[0].closed);assert.doesNotMatch(p.doc.body.textContent,/TEST_a|Account not found/);assert.match(p.doc.body.textContent,/Loading/);
+ }finally{p.close();}
+});
+test('the Security delete control waits for completion and refreshes its remaining accounts',async()=>{
+ let deleted=false,securityLoads=0;const p=await mount((url,options)=>{
+  if(url.endsWith('/security')){securityLoads++;return response({connections:deleted?[]:[{id:accountId,connectionId:'22222222-2222-4222-8222-222222222222',nickname:'DELETE_THIS_ACCOUNT',provider:'file',status:'imported'}],sessions:[],audit:[],preferences:{},deletionReceipts:[]});}
+  if(url.endsWith('/accounts/'+accountId+'/data')&&options.method==='DELETE'){assert.deepEqual(JSON.parse(options.body),{confirm:'DELETE'});return response({job:{id:'delete-job'}});}
+  if(url.endsWith('/jobs/delete-job')){deleted=true;return response({status:'complete',result:{localDeletionComplete:true}});}
+ },{route:'/profile/security'});try{
+  await p.identity('a');click(p,'[data-action="delete-account"]');const form=p.doc.querySelector('#accounts-delete-form');form.elements.confirmation.value='DELETE';submit(p,form);await settle();
+  assert.equal(securityLoads,2);assert.deepEqual(p.navigations,[]);assert.doesNotMatch(p.doc.body.textContent,/DELETE_THIS_ACCOUNT/);assert.match(p.doc.querySelector('#accounts-status').textContent,/deletion completed/);
+ }finally{p.close();}
 });
 test('pagehide clears current private markup, form fields, sources and late dashboard data',async()=>{
  const pending=deferred();let loads=0;const p=await mount(url=>url.includes('/dashboard?')&&++loads===2?pending.promise:undefined);try{await p.identity('a');click(p,'[data-action="settings"]');assert.ok(p.doc.querySelector('#accounts-dialog').open);p.sources[0].emit('update');p.doc.querySelector('#accounts-dialog').close();const scheduled=p.tick(500);await settle();p.w.dispatchEvent(new p.w.Event('pagehide'));assert.equal(p.doc.querySelector('#accounts-dialog-body').children.length,0);assert.doesNotMatch(p.doc.body.textContent,/TEST_a/);assert.ok(p.sources[0].closed);pending.resolve(response(data('PRIVATE_AFTER_HIDE')));await scheduled;assert.doesNotMatch(p.doc.body.textContent,/PRIVATE_AFTER_HIDE/);}finally{p.close();}

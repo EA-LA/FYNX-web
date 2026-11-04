@@ -2,6 +2,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
+const { publicSiteFiles } = require('./public-site-files.cjs');
 const root = path.resolve(__dirname, '..');
 const base = 'https://www.fynxfinanceworld.com';
 const outlines = require('../content/lesson-outlines.json');
@@ -35,11 +36,7 @@ const aliases = {'tools/heatmap.html':'tools/research-heatmap.html','learn/risk-
 const companyFiles = new Set(['about.html', 'founder.html']);
 const privateFiles = new Set(['home.html','learn/topic.html','waitlist.html']);
 function allHTML(dir='') {
- return fs.readdirSync(path.join(root,dir),{withFileTypes:true}).flatMap(e=>{
-  const f=path.posix.join(dir,e.name);
-  if(e.isDirectory())return ['.git','node_modules','output','dist','backend','docs','ops','scripts'].includes(e.name)?[]:allHTML(f);
-  return e.name.endsWith('.html')?[f]:[];
- });
+ return publicSiteFiles(root).filter(file=>!dir||file.startsWith(dir+'/'));
 }
 function category(file) {
  if(file.startsWith('edge-radar/')||file.startsWith('tools/')||['calculator.html','quant-analyst.html'].includes(file))return 'Tools';

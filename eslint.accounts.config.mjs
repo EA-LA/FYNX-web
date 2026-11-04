@@ -9,7 +9,7 @@ const globals = require('globals');
 export default [
   { ignores: ['backend/accounts/engine.cjs', 'scripts/edge-lint/**', 'node_modules/**'] },
   {
-    files: ['assets/js/accounts/*.{js,mjs}', 'backend/accounts/**/*.cjs', 'scripts/accounts-*.cjs'],
+    files: ['assets/js/accounts/*.{js,mjs}', 'backend/accounts/**/*.cjs', 'scripts/accounts-*.cjs', 'scripts/build-accounts.cjs'],
     ...js.configs.recommended,
     languageOptions: { ecmaVersion: 'latest', globals: globals.es2022 },
     rules: {
@@ -20,7 +20,7 @@ export default [
     },
   },
   { files: ['assets/js/accounts/*.{js,mjs}'], languageOptions: { globals: globals.browser } },
-  { files: ['backend/accounts/**/*.cjs', 'scripts/accounts-*.cjs'], languageOptions: { globals: globals.node } },
+  { files: ['backend/accounts/**/*.cjs', 'scripts/accounts-*.cjs', 'scripts/build-accounts.cjs'], languageOptions: { globals: globals.node } },
   ...tseslint.configs.recommended.map(config => ({
     ...config,
     files: ['lib/accounts/**/*.ts'],

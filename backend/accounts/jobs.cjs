@@ -2,7 +2,50 @@
 const {Worker}=require('node:worker_threads'),path=require('node:path');
 const {id,iso,parse,fail}=require('./errors.cjs');
 const ALLOWED_KINDS=new Set(['connect','sync','preview','commit','recompute','export','delete','cleanup','notify']);
-function jobView(row){return{id:row.id,jobId:row.id,status:row.state==='done'?'complete':row.state,kind:row.kind,state:row.state,stage:row.stage,progress:row.progress,accountId:row.account_id,attempts:row.attempts,nextAttemptAt:row.state==='queued'?iso(row.available_at):null,result:parse(row.result_json,null),error:row.error_code?{code:row.error_code,message:'This account operation needs attention. Your last successful data is preserved.'}:null,createdAt:row.created_at,updatedAt:row.updated_at};}
+// Only application-owned text is returned. Provider response bodies and Error.message
+// are deliberately excluded, including when an adapter reports an unknown code.
+const JOB_ERROR_MESSAGES=Object.freeze({
+ PROVIDER_AUTH:'The provider refused access. Check the exact broker server and investor password, or replace the read-only API key. Never use a trading password.',
+ PROVIDER_INPUT:'Check the account number, exact broker server, and supported connection fields, then try again.',
+ READ_ONLY_REQUIRED:'Read-only access could not be verified. Use an investor password or an API key with trading, transfers and withdrawals disabled.',
+ PROVIDER_DISABLED:'This provider is not enabled or configured. Use a statement import or your own EA while access is unavailable.',
+ PROVIDER_PENDING:'The provider has not finished setup, or a previous remote connection is still being removed. Check the connection status before starting another connection.',
+ PROVIDER_RATE_LIMIT:'The provider request allowance was reached. Check the scheduled retry time and wait before requesting more data.',
+ PROVIDER_UNAVAILABLE:'The provider is temporarily unavailable. Check the connection status later; previously saved observations remain available.',
+ PROVIDER_SCHEMA:'The provider returned data that FYNX could not verify. Check the connection status later or import a statement; unverified values were not accepted.',
+ ENDPOINT_DENIED:'The connector blocked an unsupported provider operation. Contact FYNX support or use a statement import.',
+ HISTORY_INCOMPLETE:'The requested history did not finish within the provider limits. Import a statement covering the missing period.',
+ HISTORY_LIMIT:'This account history exceeds the local processing limit. Import a smaller statement or contact FYNX support about a larger history export.',
+ CREDENTIAL_MISSING:'No saved read-only credential is available. Replace the credential in Security to reconnect.',
+ CREDENTIAL_STORAGE_UNAVAILABLE:'The saved credential could not be opened safely. Contact FYNX support to check secure storage before replacing your read-only credential.',
+ ENCRYPTION_NOT_CONFIGURED:'Secure credential storage is not configured. Use a statement import or your own EA until it is available.',
+ KMS_UNAVAILABLE:'Secure credential storage is temporarily unavailable. Try again later; do not send your credential to support.',
+ FIRM_PERMISSION_REQUIRED:'This firm has not approved third-party credential access. Use a statement import or your own EA.',
+ CONNECTION_LIMIT:'Your account has reached its cloud connection allowance. Wait for remote cleanup to finish, or use a statement import or your own EA.',
+ CONNECTION_CANCELLED:'This connection was changed or disconnected before the operation finished. Refresh My Accounts to see its current status.',
+ DELETION_IN_PROGRESS:'Account deletion changed this request. Wait for deletion to finish before adding or changing records.',
+ STATE_CHANGED:'Account settings or observations changed during calculation. Refresh My Accounts to check the latest analysis.',
+ IMPORT_INVALID:'The statement could not be parsed. Check its format, column mapping, currency and broker timezone, then upload it again.',
+ IMPORT_EXPIRED:'This statement preview expired. Upload the file again and confirm the new preview.',
+ IMPORT_NOT_READY:'The statement preview is not ready to save. Review its errors before confirming the import.',
+ IMPORT_TOO_LARGE:'The statement exceeds the 5 MB limit. Export a smaller date range from your broker and upload it again.',
+ EXPORT_TOO_LARGE:'This export exceeds the local history or file-size limit. Try exporting one account, or contact FYNX support for a larger export.',
+ EXPORT_EXPIRED:'This export expired. Create a new export from My Accounts.',
+ CLEANUP_PENDING:'Remote connection removal has not been confirmed. Check Security for cleanup progress and any provider action required.',
+ EA_LINK_REQUIRED:'Link the EA token to My Accounts before enabling deal-history upload, then restart the monitor to resend the selected history window.',
+ RECIPIENT_UNVERIFIED:'The email recipient could not be verified. Verify your FYNX email address before enabling delivery.',
+ EMAIL_NOT_CONFIGURED:'Email delivery is not configured. Read the alert or deletion receipt in Security.',
+ ENGINE_NOT_BUILT:'The account analysis service is not ready. Try again after FYNX service configuration is complete.',
+ WORKER_REQUIRES_FILE:'The account worker storage is not configured. Contact FYNX support; this operation has not been completed.',
+ WORKER_FAILED:'The background worker stopped before completing this operation. Check its retry status, then retry the action if it remains failed.',
+ WORKER_EXPIRED:'The background operation stopped after its retry limit. Check Security and try the action again.',
+ SQLITE_BUSY:'Account storage is temporarily busy. Wait for the scheduled retry or try again shortly.',
+ QUEUE_FULL:'The account worker queue is full. Wait for current operations to finish before trying again.',
+ JOB_FAILED:'This account operation could not finish. Check Security for its current status and try the action again.'
+});
+function jobError(code){const known=Object.hasOwn(JOB_ERROR_MESSAGES,code);return{code:known?code:'JOB_FAILED',message:JOB_ERROR_MESSAGES[known?code:'JOB_FAILED']};}
+
+function jobView(row){return{id:row.id,jobId:row.id,status:row.state==='done'?'complete':row.state,kind:row.kind,state:row.state,stage:row.stage,progress:row.progress,accountId:row.account_id,attempts:row.attempts,nextAttemptAt:row.state==='queued'?iso(row.available_at):null,result:parse(row.result_json,null),error:row.error_code?jobError(row.error_code):null,createdAt:row.created_at,updatedAt:row.updated_at};}
 class DurableJobs{
  constructor({db,env=process.env,now=()=>Date.now(),concurrency=2,inlineHandler=null,start=true}={}){Object.assign(this,{db,env,now,inlineHandler});this.concurrency=Math.max(1,Math.min(4,Number(concurrency)||2));this.autoRun=start;this.owner=id();this.slots=new Set();this.closed=false;this.pumping=false;if(start){this.timer=setInterval(()=>this.pump(),1000);this.timer.unref();}}
  enqueue(uid,kind,{connectionId=null,accountId=null,generation=null,payload={},dedupeKey=null,delayMs=0,maxAttempts=3}={}){if(!ALLOWED_KINDS.has(kind))throw fail('INVALID_JOB','Unsupported account operation.',400);for(const [key,value]of Object.entries(payload)){if(!/^(importId|exportId|deletionId|cleanupId|notificationId)$/.test(key)||typeof value!=='string'||value.length>80)throw new Error('Account jobs accept record IDs only.');}const at=iso(this.now()),jobId=id();const row=this.db.transaction(()=>{if(dedupeKey){const prior=this.db.get("SELECT * FROM provider_jobs WHERE uid=? AND dedupe_key=? AND state IN ('queued','running')",uid,dedupeKey);if(prior)return prior;this.db.run('UPDATE provider_jobs SET dedupe_key=NULL WHERE uid=? AND dedupe_key=?',uid,dedupeKey);}const cleanup=['delete','cleanup'].includes(kind);if(this.db.get("SELECT COUNT(*) n FROM provider_jobs WHERE uid=? AND state IN ('queued','running')",uid).n>=(cleanup?50:20)||this.db.get("SELECT COUNT(*) n FROM provider_jobs WHERE state IN ('queued','running')").n>=(cleanup?400:200))throw fail('QUEUE_FULL','The account worker queue is full. Try again shortly.',429);this.db.run('INSERT INTO provider_jobs(id,uid,kind,connection_id,account_id,generation,state,stage,payload_json,max_attempts,available_at,dedupe_key,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',jobId,uid,kind,connectionId,accountId,generation,'queued','queued',JSON.stringify(payload),maxAttempts,this.now()+delayMs,dedupeKey,at,at);return this.db.get('SELECT * FROM provider_jobs WHERE id=?',jobId);});if(this.autoRun)queueMicrotask(()=>this.pump());return jobView(row);}
