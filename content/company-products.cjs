@@ -1,0 +1,68 @@
+/* Public FYNX ecosystem. Availability describes the destination, not a launch claim.
+ * Verified public routes: 2026-11-03. Keep names/URLs shared by menu and directory. */
+'use strict';
+const item = (name, href, description, status) => ({name, href, description, ...(status ? {status} : {})});
+module.exports = [
+  {id:'company',title:'The company',items:[
+    item('About FYNX','/about.html','Our story, purpose and the ecosystem we are building.'),
+    item('Meet the founder','/founder.html','The person and thinking behind FYNX.'),
+    item('Public roadmap','https://roadmap.fynxfinanceworld.com/','Follow what is being built and what comes next.'),
+    item('Contact & support','/contact.html','Get in touch with the FYNX team.'),
+  ]},
+  {id:'products',title:'FYNX products',items:[
+    item('Finance World','/home.html','Your workspace for finance, markets and trading research.'),
+    item('FYNX Mobile','https://site.fynxfinanceworld.com/','Explore FYNX on iPhone and discover the app.'),
+    item('FYNX Funded','https://www.fynxfunded.com/','Simulated trading evaluations and account tools. New purchases are paused.','Purchases paused'),
+    item('FYNX Wallet','https://ea-la.github.io/FYNX-Wallet/','Follow wallet development and join the public waitlist.','Waitlist'),
+    item('Fynx Money','https://ea-la.github.io/fynx-finance-world/','Explore the early money-management preview. Real bank connections are not available.','Early access'),
+    item('FYNX Pro','/pro.html','Explore advanced tools, membership features and plans.'),
+    item('My accounts','/profile/accounts/','Trading account analytics and statement imports. Connections await the account service.','Connections pending'),
+  ]},
+  {id:'research',title:'Markets & research',items:[
+    item('Edge Radar','/edge-radar/','Market regimes and strategy-fit research. The live data service is not connected yet.','Data pending'),
+    item('Quant Analyst','/quant-analyst.html','Backtests, optimization, portfolio research and Monte Carlo. Historical data service pending.','Data pending'),
+    item('Research Desk','/tools/research-desk.html','Open the collection of market research tools.'),
+    item('Market heatmap','/tools/research-heatmap.html','Compare attributed market performance.'),
+    item('Economic calendar','/tools/economic-calendar.html','Review upcoming releases and economic events.'),
+    item('Market hours & holidays','/tools/market-hours.html','Check trading sessions and exchange schedules.'),
+    item('Symbol news','/tools/symbol-news.html','Find reporting related to a market symbol.'),
+    item('Return correlation','/tools/correlation.html','Compare how return series move together.'),
+  ]},
+  {id:'tools',title:'Trading & finance tools',items:[
+    item('All calculators & tools','/calculator.html','Browse the full collection of calculators and trading tools.'),
+    item('Trading Journal','/journal.html','Record trades, add notes and review your process.'),
+    item('Position size','/tools/position-size.html','Calculate a position from your risk budget.'),
+    item('Margin & leverage','/tools/margin.html','Estimate margin from your own contract inputs.'),
+    item('Pip value','/tools/pip.html','Understand the value of a price movement.'),
+    item('Risk / reward','/tools/risk-reward.html','Compare potential gains with planned risk.'),
+    item('ATR stop distance','/tools/atr-stop.html','Plan stop distance using volatility assumptions.'),
+    item('Crypto profit & loss','/tools/crypto.html','Estimate a crypto trade’s profit, loss and fees.'),
+    item('Stock position size','/tools/stock.html','Plan share quantity and capital at risk.'),
+    item('Options payoff','/tools/options.html','Explore option payoff assumptions.'),
+    item('Compound growth','/tools/compound.html','Calculate growth over time using your assumptions.'),
+    item('Currency conversion','/tools/currency.html','Convert currency values and inspect the rate source.'),
+    item('Fibonacci levels','/tools/fibonacci.html','Calculate retracement and extension levels.'),
+    item('Break-even price','/tools/breakeven.html','Estimate the price needed to cover costs.'),
+    item('Debt payoff','/tools/debt-payoff.html','Compare repayment plans from your inputs.'),
+  ]},
+  {id:'intelligence',title:'Advanced workspaces',items:Object.values(require('../assets/js/pro-catalog.js')).map(([name,tier,description,href])=>item(name,href,description,tier+' plan'))},
+  {id:'media',title:'News & learning',items:[
+    item('FYNX Newsroom','/news.html','Browse attributed reporting and market context.'),
+    item('Your News','/news/your-news.html','Follow topics and return to your reading history.'),
+    item('FYNX Journal · publication','https://blog.fynxfinanceworld.com/','Read product updates, company stories and trading routines.'),
+    item('Learning center','/learn.html','Study markets with lessons, glossaries and quizzes.'),
+    item('Risk management','/risk-management.html','Build a considered approach to trading risk.'),
+    item('Trading psychology','/trading-psychology.html','Explore the habits behind trading decisions.'),
+  ]},
+  {id:'business',title:'Developers & business',items:[
+    item('FYNX API','/api/','Explore APIs for risk, indicators, market hours, portfolios and prop-firm rules.','Developer preview'),
+    item('Risk API','/api/risk.html','Position sizing and risk calculation endpoints.','Developer preview'),
+    item('Indicators & Screening API','/api/indicators.html','Technical indicators and screening endpoints.','Developer preview'),
+    item('Market Hours & Holidays API','/api/markets.html','Trading sessions and market schedules.','Developer preview'),
+    item('Portfolio Analytics API','/api/portfolio.html','Portfolio calculations and analytics endpoints.','Developer preview'),
+    item('Prop Firm Rules API','/api/prop-firm.html','Rules and evaluation calculation endpoints.','Developer preview'),
+    item('API documentation','/api/docs.html','Read endpoint documentation and integration guidance.'),
+    item('FYNX Docs','https://ea-la.github.io/fynx-docs/','Product documentation and help across FYNX.'),
+    item('Advertising & partnerships','/contact.html?topic=partnerships','Contact FYNX about business, sponsorship and advertising inquiries.'),
+  ]},
+];

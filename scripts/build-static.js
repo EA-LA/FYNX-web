@@ -40,11 +40,13 @@ require('./build-research-pages.cjs');
 require('./build-news-intelligence.cjs');
 require('./build-newsroom.cjs');
 require('./build-your-news.cjs');
+require('./build-company-products.cjs').buildPage(root);
 require('./build-discovery.cjs');
 require('./build-search-identity.cjs');
 
 require('./build-advertising.cjs');
 require('./build-adsense-verification.cjs').build();
 require('./build-terminal-design.cjs');
+require('./build-company-products.cjs').inject(root);
 // Cache identities must be finalized after every HTML generator.
 require('./build-release-assets.cjs').build(root);
