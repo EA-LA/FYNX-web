@@ -6,9 +6,10 @@
   const search=scope.querySelector('[data-company-products-search]');if(!search)return;
   const items=Array.from(scope.querySelectorAll('[data-product-item]'));
   const groups=Array.from(scope.querySelectorAll('[data-product-group]'));
+  const columns=Array.from(scope.querySelectorAll('.fp-menu-column'));
   const count=scope.querySelector('[data-company-products-count]');
   const empty=scope.querySelector('[data-product-empty]');
-  function filter(){const query=search.value.trim().toLocaleLowerCase();let matches=0;items.forEach(item=>{item.hidden=!item.textContent.toLocaleLowerCase().includes(query);if(!item.hidden)matches++;});groups.forEach(group=>{group.hidden=!Array.from(group.querySelectorAll('[data-product-item]')).some(item=>!item.hidden);});count.textContent=matches+' of '+items.length+' products & resources';if(empty)empty.hidden=matches>0;}
+  function filter(){const query=search.value.trim().toLocaleLowerCase();let matches=0;items.forEach(item=>{item.hidden=!item.textContent.toLocaleLowerCase().includes(query);if(!item.hidden)matches++;});groups.forEach(group=>{group.hidden=!Array.from(group.querySelectorAll('[data-product-item]')).some(item=>!item.hidden);});columns.forEach(column=>{column.hidden=!Array.from(column.querySelectorAll('[data-product-group]')).some(group=>!group.hidden);});count.textContent=matches+' of '+items.length+' products & resources';if(empty)empty.hidden=matches>0;}
   search.addEventListener('input',filter);filter();
   const wrapper=scope.querySelector('[data-product-filter]');if(wrapper)wrapper.hidden=false;
  }
@@ -23,22 +24,25 @@
   const dialog=element('dialog','fp-dialog');dialog.id='fynx-products-dialog';dialog.setAttribute('aria-labelledby','fp-menu-title');
   const shell=element('div','fp-shell');
   const top=element('div','fp-menu-top');
-  const heading=element('h2','','FYNX · The Company & Its Products');heading.id='fp-menu-title';
+  const heading=element('h2','','The company & its products');heading.id='fp-menu-title';
   const close=element('button','fp-close','×');close.type='button';close.dataset.companyProductsClose='';close.setAttribute('aria-label','Close Company & Products');
-  top.append(heading,close);
-  const layout=element('div','fp-menu-layout');const intro=element('aside','fp-menu-intro');
-  intro.append(element('p','fp-eyebrow','THE FYNX ECOSYSTEM'),element('h3','','A world of tools.\nOne place to start.'),element('p','','Explore our products, research, learning and services. Find what fits the way you work.'));
-  const directory=element('a','fp-directory-link','View the full directory ↗');directory.href='/products.html';intro.append(directory);
+  const searchWrap=element('div','fp-menu-search');
   const label=element('label','fp-search-label','Find a product or tool');label.htmlFor='fp-menu-search';
-  const search=element('input','fp-search');search.type='search';search.id='fp-menu-search';search.dataset.companyProductsSearch='';search.placeholder='Try Wallet, risk or API…';
-  const count=element('p','fp-count');count.dataset.companyProductsCount='';count.setAttribute('role','status');count.setAttribute('aria-live','polite');intro.append(label,search,count);
-  const content=element('div','fp-menu-content');const columns=element('div','fp-menu-groups');
-  window.FynxCompanyProducts.forEach(group=>{const section=element('section','fp-group');section.dataset.productGroup='';section.append(element('h3','',group.title));const list=element('ul');group.items.forEach(item=>{const li=element('li');li.dataset.productItem='';const a=element('a');a.href=item.href;const title=element('span','fp-item-title',item.name);title.append(element('span','fp-arrow',item.href.startsWith('https:')?'↗':'→'));a.append(title);if(item.status)a.append(element('span','fp-status',item.status));const desc=element('span','fp-description',item.description);a.append(desc);li.append(a);list.append(li);});section.append(list);columns.append(section);});
-  const empty=element('p','fp-empty','No matches. Try a different product, topic or tool.');empty.dataset.productEmpty='';empty.hidden=true;content.append(empty,columns);layout.append(intro,content);shell.append(top,layout);dialog.append(shell);document.body.append(dialog);setupFilter(dialog);
+  const search=element('input','fp-search');search.type='search';search.id='fp-menu-search';search.dataset.companyProductsSearch='';search.placeholder='Find a product…';
+  searchWrap.append(label,search);top.append(heading,searchWrap,close);
+  const layout=element('div','fp-menu-layout');const columns=element('div','fp-menu-groups');
+  const ordered=[['company','products'],['research','intelligence'],['tools'],['media','business']];
+  ordered.forEach(ids=>{const column=element('div','fp-menu-column');ids.forEach(id=>{const group=window.FynxCompanyProducts.find(value=>value.id===id);if(!group)return;const section=element('section','fp-group');section.dataset.productGroup='';section.append(element('h3','',group.title));const list=element('ul');group.items.forEach(item=>{const li=element('li');li.dataset.productItem='';const a=element('a');a.href=item.href;const title=element('span','fp-item-title',item.name);a.append(title);if(item.status)a.append(element('span','fp-status',item.status));const desc=element('span','fp-description',item.description);a.append(desc);li.append(a);list.append(li);});section.append(list);column.append(section);});columns.append(column);});
+  const empty=element('p','fp-empty','No matches. Try a different product, topic or tool.');empty.dataset.productEmpty='';empty.hidden=true;layout.append(empty,columns);
+  const footer=element('div','fp-menu-footer');const directory=element('a','fp-directory-link','All products & details →');directory.href='/products.html';
+  const count=element('p','fp-count');count.dataset.companyProductsCount='';count.setAttribute('role','status');count.setAttribute('aria-live','polite');footer.append(directory,count);
+  shell.append(top,layout,footer);dialog.append(shell);document.body.append(dialog);setupFilter(dialog);
+  function positionMenu(){const header=document.querySelector('#header, .terminal-masthead, .company-header, .discovery-header, .accounts-header, .fp-directory-header');const utility=document.querySelector('.terminal-utility')||launch;const anchor=window.innerWidth<=700?utility:header||utility;const bottom=anchor?anchor.getBoundingClientRect().bottom:0;dialog.style.setProperty('--fp-menu-top',Math.max(0,Math.min(bottom,window.innerWidth<=700?60:160))+'px');}
+  window.addEventListener('resize',()=>{if(dialog.open)positionMenu();});
   trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-controls',dialog.id);trigger.setAttribute('aria-expanded','false');
   function finish(){trigger.setAttribute('aria-expanded','false');document.documentElement.classList.remove('fp-menu-open');trigger.focus({preventScroll:true});}
   function hide(){if(dialog.open)dialog.close();}
-  trigger.addEventListener('click',event=>{if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;event.preventDefault();if(dialog.open){hide();return;}if(typeof window.closeAllBars==='function')window.closeAllBars();if(typeof window.closeMobileMenu==='function')window.closeMobileMenu();document.querySelectorAll('.fynx-menu.open').forEach(menu=>menu.classList.remove('open'));document.querySelectorAll('.terminal-topic-more[open]').forEach(menu=>menu.removeAttribute('open'));dialog.showModal();trigger.setAttribute('aria-expanded','true');document.documentElement.classList.add('fp-menu-open');search.focus({preventScroll:true});});
+  trigger.addEventListener('click',event=>{if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;event.preventDefault();if(dialog.open){hide();return;}if(typeof window.closeAllBars==='function')window.closeAllBars();if(typeof window.closeMobileMenu==='function')window.closeMobileMenu();document.querySelectorAll('.fynx-menu.open').forEach(menu=>menu.classList.remove('open'));document.querySelectorAll('.terminal-topic-more[open]').forEach(menu=>menu.removeAttribute('open'));positionMenu();dialog.showModal();trigger.setAttribute('aria-expanded','true');document.documentElement.classList.add('fp-menu-open');search.focus({preventScroll:true});});
   close.addEventListener('click',hide);dialog.addEventListener('close',finish);dialog.addEventListener('cancel',event=>{event.preventDefault();hide();});dialog.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();hide();}});
   dialog.addEventListener('click',event=>{if(event.target===dialog)hide();});
   dialog.addEventListener('click',event=>{if(event.target.closest('a'))hide();});

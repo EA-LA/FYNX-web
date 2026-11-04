@@ -24,7 +24,7 @@ function inject(base=root) {
   html=html.replace(/<!-- company-products:assets:start -->[\s\S]*?<!-- company-products:assets:end -->\s*/g,'').replace(/\s*<!-- company-products:launch:start -->[\s\S]*?<!-- company-products:launch:end -->\s*/g,'');
   if(!eligible(file,html))continue;
   const assets='<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css"><script src="/assets/js/company-products-data.js" defer></script><script src="/assets/js/company-products.js" defer></script><!-- company-products:assets:end -->\n';
-  const launch='\n<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-mark" aria-hidden="true">▦</span><span class="fp-trigger-full">FYNX · Company & Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->\n';
+  const launch='\n<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->\n';
   html=html.replace('</head>',assets+'</head>').replace(/<body\b[^>]*>/,match=>match+launch);
   fs.writeFileSync(full,html);count++;
  }
