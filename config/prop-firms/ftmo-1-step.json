@@ -1,0 +1,89 @@
+{
+  "firmId": "ftmo",
+  "firmName": "FTMO",
+  "platforms": [],
+  "version": "2026-11-03",
+  "verified": true,
+  "sourceUrls": [
+    "https://ftmo.com/en/trading-objectives/",
+    "https://ftmo.com/en/faq/can-i-trade-news/",
+    "https://ftmo.com/en/faq/can-i-hold-positions-overnight-or-over-the-weekend/"
+  ],
+  "verifiedOn": "2026-11-03",
+  "effectiveFrom": "2026-10-12",
+  "effectiveUntil": null,
+  "effectiveDateEvidence": "source-stated",
+  "reset": {
+    "timezone": "Europe/Prague",
+    "localTime": "00:00"
+  },
+  "id": "ftmo-1-step-2026-11-03",
+  "label": "FTMO 1-Step",
+  "applicability": {
+    "plan": "1-step",
+    "accountType": "standard",
+    "orderFrom": "2026-10-12",
+    "orderBefore": null
+  },
+  "phases": [
+    {
+      "id": "challenge",
+      "label": "Challenge",
+      "profitTargetFraction": 0.1,
+      "minimumTradingDays": 0,
+      "timeLimitDays": null
+    },
+    {
+      "id": "funded",
+      "label": "Funded account",
+      "profitTargetFraction": null,
+      "minimumTradingDays": 0,
+      "timeLimitDays": null
+    }
+  ],
+  "dailyLoss": {
+    "fraction": 0.03,
+    "amountBasis": "initial-capital",
+    "baseline": "day-start-balance",
+    "measured": "equity",
+    "breachComparison": "below"
+  },
+  "maximumLoss": {
+    "fraction": 0.1,
+    "amountBasis": "initial-capital",
+    "mode": "end-of-day-balance-trailing",
+    "measured": "equity",
+    "lockAtInitialBalance": false,
+    "resetOnReward": true,
+    "breachComparison": "below"
+  },
+  "consistency": {
+    "limit": 0.5,
+    "basis": "net-profit",
+    "appliesTo": [
+      "challenge",
+      "funded"
+    ],
+    "violationIsBreach": false
+  },
+  "restrictions": {
+    "news": {
+      "minutesBefore": 2,
+      "minutesAfter": 2,
+      "appliesTo": [
+        "funded"
+      ],
+      "scope": "specified-releases"
+    },
+    "weekend": {
+      "marketBreakHours": 2,
+      "appliesTo": [
+        "funded"
+      ]
+    },
+    "notes": [
+      "Restricted selected-news executions and market breaks apply to standard funded accounts, not evaluation phases. Swing accounts are exempt. This config does not infer restricted-event membership or exchange session hours.",
+      "Public rules verification does not establish permission for third-party credential access. User-owned file/EA access and commercial integrations remain separate provider/terms gates."
+    ]
+  }
+}
