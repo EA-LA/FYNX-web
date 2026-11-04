@@ -9,6 +9,12 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - Known existing check failures (not caused by autopilot, owner decision needed): `npm test` → `test-adsense-verification.cjs` expects no `ads.txt` but the repo has one; `npm run test:proof` needs a sibling `fynxfunded` checkout.
 
 ## iPhone/mobile issues: found and fixed
+- [x] 2026-11-04 (owner screenshot): header "More" topics menu opened off the left edge on iPhone. Now left-anchored and limited to the screen width (`assets/css/terminal-header.css`).
+- [x] 2026-11-04 (owner screenshot): header "US edition" picker rendered as a white native iOS control. Appearance reset, dark background, drawn arrow.
+- [x] 2026-11-04: closed homepage slide-out drawer was parked off-screen right (iOS sideways pan risk). Now hidden when closed, uses 100dvh plus a safe-area bottom.
+- [x] 2026-11-04: bumped the shared release cache version (`scripts/build-release-assets.cjs`) and added styles.css, site-design.css and terminal-landing.css to it so phones pick up CSS fixes immediately.
+- Check added: every run opens every <details> menu and every aria-expanded button on all pages at iPhone size and flags anything outside the screen.
+- Known: the header edition picker is kept at 10px (iOS may zoom slightly when tapped); revisit with a larger header row.
 - [x] 2026-11-04: Tapping any text box (search, calculators, journal, news search) zoomed the whole page on iPhone because field text was under 16px. Now 16px on touch phones, sitewide (`assets/site-design.css`, `assets/css/terminal-header.css`).
 - [x] 2026-11-04: Symbol News: the quick symbol buttons (XAUUSD, EURUSD…) were squashed into unreadable slivers on iPhone. They now keep full width and scroll sideways.
 - [x] 2026-11-04: Homepage FAQ: question text and the +/× icon touched and were clipped by the rounded card edges.

@@ -4,7 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { publicSiteFiles } = require('./public-site-files.cjs');
-const VERSION = '20261103-r2';
+const VERSION = '20261103-features-1';
 const ASSETS = Object.freeze([
   'fynx-nav.js', 'demo-mode.js', 'auth/auth-form.js',
   'assets/js/home-journal.js', 'assets/js/profile-sync.js', 'assets/js/session-manager.js',
@@ -17,7 +17,8 @@ const ASSETS = Object.freeze([
   'assets/js/terminal-landing-live.js', 'assets/js/newsroom-editions.js',
   'assets/js/newsroom-media.js', 'assets/js/newsroom-page.js',
   'assets/css/terminal-header.css', 'assets/css/terminal-home.css',
-  'assets/css/terminal-news.css', 'assets/css/newsroom.css'
+  'assets/css/terminal-news.css', 'assets/css/newsroom.css',
+  'assets/css/terminal-landing.css', 'styles.css', 'assets/site-design.css'
 ]);
 const ORIGIN = 'https://release-assets.invalid';
 function filesIn(root) {
