@@ -1,3 +1,4 @@
+import { endAccountsSession } from './accounts/logout.js';
 import { auth, app } from "../../auth/firebase.js";
 import {
   getFirestore,
@@ -385,6 +386,7 @@ export async function logoutCurrentSession(redirectTo = "auth/login.html") {
     await window.FynxSession.logout("manual", redirectTo);
     return;
   }
+  await endAccountsSession();
   await signOut(auth);
 }
 
