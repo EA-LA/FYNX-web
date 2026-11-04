@@ -36,13 +36,15 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [ ] Hero buttons "Open Your Workspace" / "Explore Resources" have mismatched widths on iPhone.
 ### Tools
 - [x] 2026-11-04: tools/position-size.html: heading renamed "Position size calculator" with a plain description.
-- [ ] Verify every calculator's math against hand-worked examples (position size, pip, margin, risk/reward, break-even, compound, debt payoff, options, liquidation).
+- [x] 2026-11-04 run 5: hand-verified math, all correct: position size, pip ($10/lot), margin ($3,666.67 / 120% level), risk/reward (3.00), break-even (1.10017 / 1.09983, $17 cost), compound ($49,308.12 after 10y).
+- [ ] Still to hand-verify: debt payoff, options payoff, liquidation guard.
 ### Learn / Resources
 - [ ] The short redirect-style pages (learn/risk-management, resources/*) are thin. Consider merging them into their full guides.
 ### News
 - [ ] Check live news feeds load on the live site (not testable locally).
 
 ## Page coverage (last full audit)
+- 2026-11-04 run 5: main CI/pages deploy green at 8db97f8. Calculator math batch verified (no defects). No UI changes this run; iPhone tap-target backlog above still open.
 - 2026-11-04 run 4: Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max + desktop on 12 key pages: no overflow, no JS errors. Only sub-16px field is the header edition select (10px, still open). Position Size math verified; pip, margin, risk-reward, break-even, compound math still pending. Main CI/pages deploy green at fc6859e.
 - 2026-11-04 run 3: Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max + desktop on index, calculator, position-size, correlation, margin, pip, risk-reward, journal, news, learn, explore: no horizontal overflow, no JS errors, Correlation clocks fit. Main CI green at 831b40a. `npm test` passes after `npm ci` (adsense test now passes). Calculator math verification still pending.
 - 2026-11-04: all 200 public HTML pages scanned automatically (overflow, field size, contrast, errors) on iPhone SE / iPhone 14 / desktop. Visually reviewed: index, calculator, tools/position-size, tools/symbol-news, tools/margin, journal, news, news/economics, learn, learn/risk-management, markets/patterns, pro.
