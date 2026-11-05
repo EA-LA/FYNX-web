@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-05 (run 14) — [site-qa] Easier tapping on the Trader Journal header
+- iPhone: the API, Pro tools & plans, Sign in links and "Account settings" on the Trader Journal page are now full-size tap targets. https://www.fynxfinanceworld.com/trader-journal.html
+- Checked all 30 Learn pages (how-to, glossary, quizzes, topic) plus Symbol News on iPhone SE and 15 Pro Max: no overflow, no problems.
+
 ## 2026-11-05 (run 13) — [site-qa] Easier tapping on the Learn hub
 - iPhone: the Start learning, Quiz, Glossary and Open quizzes links on the Learn page are now full-size tap targets. https://www.fynxfinanceworld.com/learn.html
 - Checked Margin, Risk/Reward, Break-even, Compound, Quizzes and Risk Management pages on iPhone SE and 15 Pro Max: no overflow, no problems.

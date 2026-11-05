@@ -206,3 +206,8 @@ html body[data-fynx-layout] [hidden]{display:none!important}
   html body[data-fynx-terminal] .learning-card>a,html body[data-fynx-terminal] .learning-links a,html body .learning-card>a,html body .learning-links a,html body a.terminal-solid-link{display:inline-flex;align-items:center;min-height:44px!important;box-sizing:border-box}
   html body .learning-links{gap:8px 18px;flex-wrap:wrap}
 }
+
+/* [site-qa] 2026-11-05 run 14: Trader Journal header chips (API, Pro tools & plans, Sign in) and Account settings reach 44px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  html body .top-bar-right a.chip,html body .top-bar a,html body .jt-right .pill>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
