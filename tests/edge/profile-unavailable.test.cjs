@@ -16,7 +16,7 @@ function fixture(fetchResponse){
   w.AbortSignal=AbortSignal;w.__authModule=async()=>({auth:{authStateReady:async()=>{}}});
   w.__listenAuth=(_,fn)=>{change=fn;fn({uid:'alice',emailVerified:true,getIdToken:async()=> 'test-id'});};
   w.fetch=async(url,options)=>{requests.push({url,options});return fetchResponse(url,options);};
-  w.eval(source);
+  w.eval(fs.readFileSync(path.join(__dirname,'../../assets/js/research-service.js'),'utf8'));w.eval(source);
   return {dom,w,requests,change:uid=>change(uid?{uid,emailVerified:true,getIdToken:async()=> 'test-id'}:null)};
 }
 function assertUnavailable(f){const d=f.w.document;assert.equal(d.getElementById('edgePrivateControls').hidden,true);assert([...d.querySelectorAll('#edge-settings input,#edge-settings button')].every(c=>c.disabled));assert.equal(d.getElementById('edgeRawToken').value,'');assert.equal(d.getElementById('edgeTokenOnce').hidden,true);assert.equal(d.getElementById('existing-setting').disabled,false);assert.equal(d.getElementById('other-section').textContent,'Existing account section');}

@@ -9,7 +9,7 @@ const fragment=fs.readFileSync(path.join(root,'content/quant-analyst.fragment'),
 const guestKey='fynx.quant.workspace.v1.guest',userKey=uid=>'fynx.quant.workspace.v1.user.'+uid;
 const sampleReturns=Array.from({length:25},(_,i)=>({date:new Date(Date.UTC(2025,0,1+i)).toISOString().slice(0,10),return:i%2?.002:-.001,traded:true}));
 const strategy=(name='Saved')=>({id:'one',name,symbol:'EURUSD',timeframe:'D1',returns:sampleReturns});
-function fixture({user=null,local={},cloud={},deferPost=false,identityDelay=0,priceBars=null,firstPriceDelay=0,workerHold=false,calendarEvents=[],headlines=[],quotePayload={quotes:[]},serverBacktestResult=null,apiAvailable=true,url='http://localhost/quant-analyst.html'}={}) {
+function fixture({user=null,local={},cloud={},deferPost=false,identityDelay=0,priceBars=null,firstPriceDelay=0,workerHold=false,archives={},calendarEvents=[],calendarStatus=null,headlines=[],quotePayload={quotes:[]},serverBacktestResult=null,serverJobId=null,apiAvailable=true,url='http://localhost/quant-analyst.html'}={}) {
  const dom=new JSDOM('<!doctype html><html><body>'+fragment+'</body></html>',{url,runScripts:'outside-only'}),w=dom.window;
  const requests=[],downloads=[],plots=[],workers=[];let listener,resolvePost,priceRequests=0;const auth={currentUser:user?{uid:user,getIdToken:async()=>user+'token'}:null,authStateReady:async()=>{}};
  w.FynxQuant=Q;w.matchMedia=()=>({matches:false});w.requestAnimationFrame=fn=>w.setTimeout(fn,0);w.AbortSignal=AbortSignal;w.AbortController=AbortController;
@@ -19,16 +19,21 @@ function fixture({user=null,local={},cloud={},deferPost=false,identityDelay=0,pr
  w.Plotly={newPlot:async(el,traces,layout)=>{plots.push({id:el.id,visible:!el.closest('[role=tabpanel]').hidden,layout});el.classList.add('js-plotly-plot');el.textContent='Rendered chart';layout.xaxis._mutatedForTest=true;},purge:el=>el.classList.remove('js-plotly-plot'),Plots:{resize:()=>{}}};
  w.Worker=class {constructor(){workers.push(this);}terminate(){this.terminated=true;}postMessage({id,action,payload}){this.message={id,action,payload};if(workerHold)return;setTimeout(()=>{if(this.terminated)return;try{const result=action==='portfolio'?Q.portfolio(payload.sleeves,payload.options):action==='backtest'?Q.backtest(payload.bars,payload.params):action==='optimize'?Q.optimize(payload.bars,payload.params,payload.options):action==='montecarlo'?Q.monteCarlo(payload.returns,payload.options):action==='ftmo'?Q.ftmo(payload.returns,payload.options):null;this.onmessage?.({data:{id,result}});}catch(error){this.onmessage?.({data:{id,error:error.message}});}},0);}};
  w.fetch=async(url,options={})=>{
-   const route=String(url).split('?')[0],method=options.method||'GET';requests.push({url:String(url),route,method,body:options.body,headers:options.headers});
+   const route=String(url).split('?')[0],method=options.method||'GET';requests.push({url:String(url),route,method,body:options.body,headers:options.headers,credentials:options.credentials});
+   const archiveFile=String(url).split('/assets/data/research/')[1];if(archiveFile){
+     const value=archives[archiveFile];
+     return {ok:!!value,status:value?200:404,headers:{get:()=> 'application/json'},json:async()=>value};
+   }
    if(!apiAvailable)return {ok:false,status:404,headers:{get:()=> 'text/html'},json:async()=>{throw new Error('HTML is not JSON');}};
    if(deferPost&&method==='POST')await new Promise(resolve=>{resolvePost=resolve;});
    let data={};if(route.endsWith('/bars')){if(++priceRequests===1&&firstPriceDelay)await new Promise(r=>setTimeout(r,firstPriceDelay));data={bars:priceBars||[],source:'Test-only history adapter',updatedAt:'2025-02-01T00:00:00Z'};}
    else if(route.endsWith('/strategies'))data=method==='GET'?{strategies:cloud[auth.currentUser?.uid]?.strategies||[]}:{item:JSON.parse(options.body)};
    else if(route.endsWith('/portfolios'))data=method==='GET'?{portfolios:cloud[auth.currentUser?.uid]?.portfolios||[]}:{item:JSON.parse(options.body)};
-   else if(route.endsWith('/calendar'))data={events:calendarEvents};else if(route.endsWith('/headlines'))data={headlines};else if(route.endsWith('/quotes'))data=quotePayload;else if(route.endsWith('/backtest')&&serverBacktestResult)data={result:serverBacktestResult};
+   else if(route.endsWith('/calendar'))data={events:calendarEvents,status:calendarStatus};else if(route.endsWith('/headlines'))data={headlines};else if(route.endsWith('/quotes'))data=quotePayload;else if(route.endsWith('/backtest')&&serverBacktestResult)data=serverJobId?{jobId:serverJobId,status:'complete',result:serverBacktestResult}:{result:serverBacktestResult};
    return {ok:true,status:200,headers:{get:()=> 'application/json'},json:async()=>data};
  };
  for(const [key,value]of Object.entries(local))w.localStorage.setItem(key,JSON.stringify(value));
+ for(const script of ['assets/js/research-service.js','assets/js/quant/public-history.js'])w.eval(fs.readFileSync(path.join(root,script),'utf8'));
  w.eval(source);
  return {dom,w,requests,downloads,plots,workers,auth,change:async uid=>{auth.currentUser=uid?{uid,getIdToken:async()=>uid+'token'}:null;listener?.(auth.currentUser);await settle();},finishPost:()=>resolvePost?.()};
 }
@@ -38,13 +43,48 @@ const workspace=(strategies=[],portfolios=[])=>({version:1,strategies,portfolios
 
 test('static publication explains missing research data while guest return imports still work',async()=>{
  const f=fixture({apiAvailable:false});try{await settle();const d=f.w.document;
- assert.match(d.getElementById('dataNote').textContent,/research data is not available on this site yet/);
+ assert.match(d.getElementById('dataNote').textContent,/Daily history could not be loaded/);
  assert.doesNotMatch(d.getElementById('dataNote').textContent,/Start the Quant API|configure.*route/);
  assert.match(d.getElementById('quoteStatus').textContent,/Historical data has not been loaded/);
  assert.equal(d.querySelectorAll('[data-market-quote] b').length,0);
  await upload(f,'csv','date,return_pct\n2025-01-01,1\n2025-01-02,-.5','actual-return-import.csv');
  const saved=JSON.parse(f.w.localStorage.getItem(guestKey));assert.equal(saved.strategies.length,1);assert.equal(saved.strategies[0].returns.length,2);assert.equal(f.requests.filter(r=>r.method==='POST').length,0);
  }finally{f.dom.window.close();}
+});
+
+function archiveFixture(id='EURUSD'){
+ const day=86400000,todayStart=Math.floor(Date.now()/day)*day;
+ const bars=Array.from({length:180},(_,i)=>{const mid=1+i*.002+Math.sin(i/2)*.006;return {time:new Date(todayStart-(180-i)*day).toISOString(),open:mid,low:mid-.003,high:mid+.004,close:mid+.002};});
+ const updatedAt=new Date(todayStart).toISOString(),source='Historical test provider';
+ const series={symbol:id,timeframe:'D1',completeBarsOnly:true,requestedFrom:bars[0].time,requestedTo:updatedAt,source,updatedAt,bars};
+ const entry={symbol:id,timeframe:'D1',asOf:updatedAt,price:bars.at(-1).close,source,yearChangePct:null};
+ return {'bars/EURUSD-D1.json':series,'manifest.json':{version:1,generatedAt:updatedAt,markets:[entry]}};
+}
+test('published daily bars power a real worker backtest when the service is down; archive requests never carry a user token',async()=>{
+ const archives=archiveFixture(),f=fixture({archives,user:'alice',apiAvailable:false,url:'https://www.fynxfinanceworld.com/quant-analyst.html'});try{
+   await settle();const d=f.w.document,rows=archives['bars/EURUSD-D1.json'].bars;
+   assert.match(d.getElementById('dataNote').textContent,/180 D1 bars/);
+   assert.match(d.getElementById('quoteStatus').textContent,/historical daily close/);
+   d.getElementById('historyFrom').value=rows[50].time.slice(0,10);d.getElementById('historyTo').value=rows[150].time.slice(0,10);
+   await d.getElementById('loadData').onclick();await d.getElementById('runBt').onclick();
+   const run=f.workers.find(w=>w.message.action==='backtest');
+   assert.equal(run.message.payload.bars.length,100);assert.equal(run.message.payload.bars[0].time,rows[50].time);assert.equal(run.message.payload.bars.at(-1).time,rows[149].time);
+   assert.match(d.getElementById('btStats').textContent,/Sharpe/);
+   const archiveCalls=f.requests.filter(r=>r.url.includes('/assets/data/research/'));assert(archiveCalls.length>0);assert(archiveCalls.every(r=>r.credentials==='omit'&&!r.headers?.Authorization));
+   assert(f.requests.some(r=>r.url.startsWith('https://us-central1-fynx-c7a28.cloudfunctions.net/webTradingResearch/api/quant/strategies')&&r.headers.Authorization==='Bearer alicetoken'));
+   d.getElementById('timeframe').value='H1';d.getElementById('timeframe').dispatchEvent(new f.w.Event('change'));await d.getElementById('loadData').onclick();
+   assert.match(d.getElementById('dataPill').textContent,/unavailable/);assert.equal(d.getElementById('btStats').textContent,'');assert(!new RegExp('180 D1 bars').test(d.getElementById('dataNote').textContent));
+ }finally{f.dom.window.close();}
+});
+test('a wrong-market or corrupt archive cannot enter a calculation',async()=>{
+ for(const reason of ['market','invalid OHLC','incomplete']){
+   const archives=archiveFixture(reason==='market'?'GBPUSD':'EURUSD'),series=archives['bars/EURUSD-D1.json'];
+   if(reason==='invalid OHLC')series.bars[0].high=0;if(reason==='incomplete')series.bars.at(-1).time=new Date().toISOString();
+   const f=fixture({archives,apiAvailable:false,url:'https://fynxfinanceworld.com/quant-analyst.html'});try{
+     await settle();const d=f.w.document;await d.getElementById('runBt').onclick();
+     assert.equal(f.workers.length,0);assert.match(d.getElementById('dataPill').textContent,/unavailable/);
+   }finally{f.dom.window.close();}
+ }
 });
 
 test('guest CSV records include server-compatible metadata and round-trip through workspace JSON',async()=>{
@@ -139,6 +179,13 @@ test('default market portfolio adds news only after confirmed coverage and repor
  const f=fixture({priceBars:priceFixture,calendarEvents:events});try{await settle();const d=f.w.document;d.getElementById('weighting').value='equal-weight';await d.getElementById('runPort').onclick();const runs=f.workers.filter(w=>w.message?.action==='backtest');assert.equal(runs.length,available?2:1);assert.equal(d.querySelector('#sleeves input[value="news"]').checked,available);assert.match(d.getElementById('newsSleeveStatus').textContent,available?/included/:/omitted/);assert.match(d.getElementById('log').textContent,/Portfolio complete/);
  }finally{f.dom.window.close();}}
 });
+test('published schedules, future, estimated and low-impact times do not become historical news evidence',async()=>{
+ const confirmed={time:new Date(Date.now()-10*86400000).toISOString(),name:'Recorded high-impact release',currency:'USD',impact:'high',timing:'confirmed'};
+ for(const [status,events] of [['scheduled',[confirmed]],['historical',[{...confirmed,time:new Date(Date.now()+86400000).toISOString()},{...confirmed,timing:'estimated'},{...confirmed,impact:'low'},{...confirmed,currency:'JPY'}]]]){
+   const f=fixture({priceBars:priceFixture,calendarEvents:events,calendarStatus:status});try{await settle();const d=f.w.document;await d.getElementById('studyEvents').onclick();assert.equal(f.workers.filter(w=>w.message.action==='eventstudy').length,0);assert.match(d.getElementById('log').textContent,/schedule cannot|No verified high-impact/);}
+   finally{f.dom.window.close();}
+ }
+});
 test('headline metadata shows attributed publication time and preserves the internal reader route',async()=>{
  const f=fixture({headlines:[{title:'Test source release',source:'Fixture publisher',pubDate:'2025-01-02T13:30:00Z',readerUrl:'/news/article.html?id=fixture'}]});try{await settle();const a=f.w.document.querySelector('#headlines a');assert.match(a.querySelector('small').textContent,/Fixture publisher/);assert.equal(a.querySelector('time').dateTime,'2025-01-02T13:30:00.000Z');assert.equal(a.getAttribute('href'),'/news/article.html?id=fixture');}finally{f.dom.window.close();}
 });
@@ -162,6 +209,13 @@ test('rate decision selector uses the provider and engine event type identifier'
 test('saved tick portfolio requests bounded raw paths and skips risk-weight calibration days',async()=>{
  const f=fixture({serverBacktestResult:{dailyReturns:sampleReturns}});try{await settle();const records=['EURUSD','GBPUSD'].map(symbol=>({id:symbol,name:symbol+' tick',symbol,timeframe:'tick',params:{mode:'tick',strategy:'breakout'}}));await upload(f,'importWorkspace',JSON.stringify(workspace(records)));const d=f.w.document;d.querySelectorAll('#sleeves input').forEach(x=>x.checked=x.value.startsWith('custom-'));await d.getElementById('runPort').onclick();
  const runs=f.requests.filter(r=>r.route.endsWith('/backtest')).map(r=>JSON.parse(r.body));assert.equal(runs.length,2);for(const run of runs){assert.equal(run.tf,'tick');assert.equal(run.params.captureIntraday,true);assert.equal(run.params.maxIntradayMarks,30000);assert.equal(run.params.captureAfterDays,60);}assert.equal(f.requests.some(r=>r.url.includes('/bars?')&&r.url.includes('tf=tick')),false);
+ }finally{f.dom.window.close();}
+});
+test('a completed cloud worker result is used immediately without polling an expired instance job',async()=>{
+ const f=fixture({serverBacktestResult:{dailyReturns:sampleReturns},serverJobId:'x'.repeat(32)});try{
+   await settle();await upload(f,'importWorkspace',JSON.stringify(workspace([{id:'ticks',name:'Saved tick strategy',symbol:'EURUSD',timeframe:'tick',params:{mode:'tick',strategy:'breakout'}}])));
+   const d=f.w.document;d.querySelectorAll('#sleeves input').forEach(x=>x.checked=x.value==='custom-0');d.getElementById('weighting').value='equal-weight';await d.getElementById('runPort').onclick();
+   assert.match(d.getElementById('log').textContent,/Portfolio complete/);assert.equal(f.requests.filter(r=>r.route.includes('/jobs/')).length,0);
  }finally{f.dom.window.close();}
 });
 test('Edge deep link preloads the shared mean-reversion settings and requested market before history loads',async()=>{

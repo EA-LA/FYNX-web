@@ -1,6 +1,8 @@
 # Quant data service
 
-The production website is static. The Quant feature adds a Node 22+ service in `backend/quant/` and the runnable adapter `scripts/quant-dev-server.cjs`. It has not been deployed merely by building the site. Run the API behind the same-origin `/api/quant/*` reverse proxy on an existing Node host, with HTTPS, a persistent private volume and normal process supervision. Static publication alone cannot enable data, jobs or account sync. The reference dataset is never a production fallback.
+The production website is static. On the canonical Finance World hosts, the browser maps `/api/quant/*` to the FYNX Firebase `webTradingResearch` HTTPS function. The local Node adapter is `scripts/quant-dev-server.cjs`. Building HTML does not deploy that function.
+
+Daily backtests can load the published research archive independently of the API. The browser checks the maintained `research-data` branch on production and otherwise uses the site’s bundled `/assets/data/research/` snapshot. Each requested market must match its archive, report completed daily OHLC bars with positive, ordered prices, and carry real provenance. Selection uses the specified UTC dates; partial coverage, stale refresh dates and actual first/last observations stay visible. The manifest’s historical close is shown only as a dated daily close. A weekly scheduled calendar can fill the upcoming-release panel, but never serves as historic recorded release evidence. Account credentials and private strategies are not sent to the archive. The reference/test dataset is never a production fallback.
 
 ## Local setup
 

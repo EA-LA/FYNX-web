@@ -14,7 +14,7 @@ function buildPage() {
 <link rel="stylesheet" href="/assets/funded-system.css"><link rel="stylesheet" href="/assets/site-design.css"><link rel="stylesheet" href="/assets/discovery.css">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="/assets/js/journal-theme.js" defer></script><script type="module" src="/assets/js/session-bootstrap.js"></script>
-<script src="/assets/js/quant/engine.js" defer></script><script src="/assets/js/quant/app.js" defer></script>
+<script src="/assets/js/research-service.js?v=20261104-research" defer></script><script src="/assets/js/quant/engine.js" defer></script><script src="/assets/js/quant/public-history.js?v=20261104-research" defer></script><script src="/assets/js/quant/app.js?v=20261104-research" defer></script>
 </head><body data-fynx-layout="standalone" class="discovery-page quant-page" data-fynx-terminal>
 <a class="discovery-skip" href="#quant-main">Skip to Quant Analyst</a>${header}
 ${content}<noscript><p>JavaScript is required for calculations. Read the risk disclosure and data sources before using these tools.</p></noscript></body></html>`);

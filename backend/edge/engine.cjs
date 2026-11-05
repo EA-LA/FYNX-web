@@ -766,8 +766,8 @@ function eventStudy(bars, events, options = {}) {
 
 // lib/edge/events.ts
 var kind = (e) => e.type || e.name;
-function eventMoves(symbol2, bars, intraday, events, asOf) {
-  const cutoff = timeMs(asOf), history = (events || []).filter((e) => e.timing !== "estimated" && timeMs(e.time) + 36e5 <= cutoff), types = [...new Set(history.map(kind))];
+function eventMoves(symbol2, bars, intraday, events, asOf, releaseDays = []) {
+  const cutoff = timeMs(asOf), history = (events || []).filter((e) => e.timing !== "estimated" && timeMs(e.time) + 36e5 <= cutoff), eligibleDays = releaseDays.filter((d) => timeMs(d.availableAt) <= cutoff && timeMs(d.date) + DAY <= cutoff), types = [.../* @__PURE__ */ new Set([...history.map(kind), ...eligibleDays.map((d) => d.type)])];
   const interval = intraday && intraday.length > 1 ? barIntervalMs(intraday) : null, intradayHistory = interval === null ? [] : (intraday || []).filter((b) => timeMs(b.time) + interval <= cutoff), closes = new Map(intradayHistory.map((b) => [timeMs(b.time) + interval, b.close]));
   return types.map((eventType) => {
     const selected = history.filter((e) => kind(e) === eventType).map((e) => ({ ...e, impact: "high" }));
@@ -785,6 +785,7 @@ function eventMoves(symbol2, bars, intraday, events, asOf) {
     }
     if (value === null && bars.length >= 3) {
       const completed = selected.filter((e) => Math.floor(timeMs(e.time) / DAY) * DAY + DAY <= cutoff);
+      for (const day of eligibleDays.filter((day2) => day2.type === eventType)) completed.push({ time: day.date, name: eventType, type: eventType, currency: day.currency, impact: "high" });
       if (completed.length) {
         const r = eventStudy(bars, completed, { mode: "daily", eventType });
         sampleSize = r.eventDays;
@@ -1135,7 +1136,7 @@ function computeMarket(symbol2, input, strategies = DEFAULT_STRATEGIES, asOf) {
   const info = SYMBOLS.find((s) => s.id === symbol2);
   if (!info) throw new Error(`Unknown Edge market ${symbol2}.`);
   const bars = completedDailyBars(input.bars || [], asOf), states = stateSeries(bars), state = states.at(-1) || emptyState(), cot = positioning(symbol2, input.cot, asOf);
-  const relevantEvents2 = (input.events || []).filter((e) => info.currencies.includes(e.currency)), moves = eventMoves(symbol2, bars, input.intradayBars, relevantEvents2, asOf), events = computeEventRisk(relevantEvents2, info.currencies, asOf, moves, input.calendarAvailable, input.calendarAsOf);
+  const relevantEvents2 = (input.events || []).filter((e) => info.currencies.includes(e.currency)), moves = eventMoves(symbol2, bars, input.intradayBars, relevantEvents2, asOf, input.releaseDays?.filter((day) => info.currencies.includes(day.currency))), events = computeEventRisk(relevantEvents2, info.currencies, asOf, moves, input.calendarAvailable, input.calendarAsOf);
   const positionCache = /* @__PURE__ */ new Map(), notes = [], fits = strategies.map((strategy) => {
     const cache = input.backtests?.[strategy.id], computed = cache ? { result: null, reason: null } : runStrategyBacktest(symbol2, input, strategy, asOf), trades = cache?.trades || computed.result?.trades || [];
     const timeframe = (strategy.timeframe || "D1").toUpperCase(), executionBars = (timeframe === "D1" ? bars : input.strategyBars?.[timeframe] || []).filter((b) => timeMs(b.time) + (TF[timeframe] || DAY) <= timeMs(asOf)), signalATR = strategyATR(executionBars, strategy), stopDistance = signalATR === null ? null : signalATR * (strategy.params.stopS ?? 2);
