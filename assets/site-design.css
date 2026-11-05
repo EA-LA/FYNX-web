@@ -219,3 +219,15 @@ html body[data-fynx-layout] [hidden]{display:none!important}
   html body .company-theme{min-width:44px;justify-content:center}
   html body .company-shell a[href^="#"]{display:inline-flex;align-items:center;min-height:44px}
 }
+
+/* [site-qa] 2026-11-05 run 17: standalone arrow/credit/email links on Pro, Dashboard, Contact and homepage reach 44px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  html body :is(.hero-links,.nr-section-head,.nr-actions,.nr-process,.finance-voice-links,.fw-live-news,.contact-item,.work-title,.free-note,.nr-source-note) a,
+  html body :is(h3,th,figcaption)>a,
+  html body a.email-link,
+  html body figcaption a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body #briefing-title~a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body :is(.nr-quick-links) a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-05 (run 17) — [site-qa] Easier tapping on Pro, Dashboard, Contact and the homepage
+- iPhone: the Pro tool links, "Explore the tools", the Dashboard section links (All coverage, Heat map, Full calendar, quick calculator links, photo credits), the contact email links and the homepage photo-credit and "Explore original sources" links are now full-size tap targets. https://www.fynxfinanceworld.com/pro.html https://www.fynxfinanceworld.com/dashboard.html https://www.fynxfinanceworld.com/contact.html https://www.fynxfinanceworld.com/
+- Checked Pro, Dashboard, Contact, Homepage, Learn and Journal on iPhone SE and 15 Pro Max: no overflow, no errors, zero links under 44px.
+
 ## 2026-11-05 (run 16) — [site-qa] Easier tapping across the News pages
 - iPhone: on the News section pages (Markets, Economics, Finance, Your News, article reader) the ticker arrows, Account and theme buttons, breadcrumbs, Save resource, Share/Copy buttons and Your News topic buttons are now full-size tap targets, and the header edition picker no longer zooms the page when tapped. The COT search box is also bigger. https://www.fynxfinanceworld.com/news/economics.html https://www.fynxfinanceworld.com/news/your-news.html https://www.fynxfinanceworld.com/markets/cot.html
 - Checked all Markets and News pages on iPhone SE and 15 Pro Max: no sideways overflow, no errors.
