@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-05 (run 12) — [site-qa] Easier tapping on the homepage and glossary
+- iPhone: the homepage buttons (Open Your Workspace, Explore Resources), the Your News / All reporting / All calculators links, the theme button, and the Trading Glossary header and A–Z letters are now full-size tap targets. https://www.fynxfinanceworld.com/ https://www.fynxfinanceworld.com/trading-glossary.html
+
 ## 2026-11-05 (run 11) — [site-qa] Easier tapping on News and the homepage
 - iPhone: News search, publisher/topic pickers, jump links and source links, plus the homepage tabs, search and footer links are now full-size tap targets. https://www.fynxfinanceworld.com/news.html https://www.fynxfinanceworld.com/
 

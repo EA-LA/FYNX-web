@@ -26,7 +26,8 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [x] 2026-11-05 run 9: market ticker items and ‹ › arrows, Explore search/filter buttons and card save buttons now 44px on touch phones.
 - [x] 2026-11-05 run 10: header search field/button, bell icon button, Sign in, edition picker, Explore card title links and journal Quick Add now 44px on touch phones (verified journal/explore: header targets all >=44px).
 - [x] 2026-11-05 run 11: News page jump links, search box, publisher/topic selects, Pro button, source links and homepage tabs, chips, search and footer links now 44px tall on touch phones.
-- [ ] Tap targets still under 44px (remaining after run 11: a few inline text links in news paragraphs, homepage hero buttons at 42px, Refresh/world-clock buttons 36-40px wide, theme button 32px; originally): inline text links on news (Heat Map/Sentiment/Challenges, source links), news select/search (40px), Explore footer links, homepage chips/theme button (32px).
+- [x] 2026-11-05 run 12: homepage hero buttons, Your News/All reporting/All calculators links, theme button, and resource-page header + glossary A–Z links now 44px on touch phones.
+- [ ] Tap targets still under 44px (remaining after run 12: inline text links in paragraphs, photo-credit links, ticker tab 'Markets' width; earlier list after run 11: a few inline text links in news paragraphs, homepage hero buttons at 42px, Refresh/world-clock buttons 36-40px wide, theme button 32px; originally): inline text links on news (Heat Map/Sentiment/Challenges, source links), news select/search (40px), Explore footer links, homepage chips/theme button (32px).
 
 ## Bugs found and fixed
 - [x] 2026-11-04 (run 4): tools/position-size.html: floating-point rounding dropped a full 0.01 lot on exact answers (USD/JPY @150, $100 risk, 25 pips gave 0.59, exact is 0.60). Fixed with a tiny tolerance before rounding down. Hand-checked EUR/USD (0.40), USD/JPY (0.60), GBP/JPY with manual rate (0.59), XAU/USD (0.40 lots/40 oz).
@@ -51,6 +52,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [ ] Check live news feeds load on the live site (not testable locally).
 
 ## Page coverage (last full audit)
+- 2026-11-05 run 12: main pages deploy green at e409b00. Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max on index, calendar, trading-glossary: no overflow, no JS errors. Fixed hero/glossary targets; `npm test` passes after `npm ci`. Next: ticker tabs, photo-credit links, learn pages batch.
 - 2026-11-05 run 11: main pages deploy green at a4321e2. Chromium (WebKit unavailable) iPhone SE/15 Pro Max + desktop on news, index: no overflow, no JS errors. Fixed news/home targets. `npm test` passes. Next: hero buttons, news inline links, world-clock buttons.
 - 2026-11-05 run 10: main pages deploy green at f500bfe. Chromium (WebKit unavailable) iPhone SE/15 Pro Max + desktop on journal, explore, news: no overflow, no JS errors. Fixed shared header targets. `npm test` passes after `npm ci`. Next: news inline links/selects, homepage chips.
 - 2026-11-05 run 9: main green (pages deploy success at 535ec27). Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max + desktop on explore, journal, news: no overflow, no JS errors. Fixed ticker/explore targets. `npm test` result below in commit. Next: header search/Sign in, Explore card links, news links.

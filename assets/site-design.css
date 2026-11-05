@@ -193,3 +193,11 @@ html body[data-fynx-layout] [hidden]{display:none!important}
   html body .fn-jump-tools a,html body .fw-chip,html body a.btn,html body .hero a[href]{min-height:44px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
   html body .fn-terminal-sources a,html body .fn-section-heading a{min-height:44px;display:inline-flex;align-items:center}
 }
+/* [site-qa] 2026-11-05 run 12: 44px tap targets for homepage hero/newsroom links, theme button and resource-page header/A-Z links on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  html body[data-fynx-layout=landing] .hero .btn,html body .fw-front-news-heading nav a,html body a.fw-primary{min-height:44px!important;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
+  html body .fynx-network-theme,html body a.fw-link{min-width:44px!important;min-height:44px!important;box-sizing:border-box}html body a.fw-link{display:inline-flex;align-items:center}
+  html body .site-resource-header .site-wordmark,html body .site-resource-header nav a,html body .site-resource-header button{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body .site-resource-header nav{gap:12px}
+  html body .alpha-link{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;box-sizing:border-box}
+}
