@@ -1,3 +1,5 @@
+// Clickjacking guard: GitHub Pages cannot send frame-ancestors, so refuse to render API key controls inside a frame.
+if(window.top!==window.self){document.documentElement.style.display='none';try{window.top.location.replace(window.location.href);}catch(e){}throw new Error('FYNX workspace cannot run inside a frame.');}
 import {withMfa} from '/assets/js/mfa.js';
 import {app,auth,authPersistenceReady} from '/auth/firebase.js';
 import {onAuthStateChanged,GoogleAuthProvider,OAuthProvider,signInWithPopup,signInWithEmailAndPassword,createUserWithEmailAndPassword,sendEmailVerification,sendPasswordResetEmail,signOut,reload} from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
@@ -20,7 +22,7 @@ const field=(name,label,value='',type='text')=>`<label>${escape(label)}<input na
 const select=(name,label,opts)=>`<label>${label}<select name="${name}">${opts.map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select></label>`;
 const formData=f=>Object.fromEntries(new FormData(f));
 // API key scopes. Must match backend/developer-access.cjs (checked by scripts/test-openapi.cjs).
-const SCOPES=[['risk:calculate','Risk calculations'],['indicators:calculate','Indicators & screening'],['markets:read','Market hours & holidays'],['portfolio:calculate','Portfolio analytics'],['propfirm:read','Prop firm: read accounts'],['propfirm:write','Prop firm: create & update']];
+const SCOPES=[['risk:calculate','Risk calculations'],['indicators:calculate','Indicators & screening'],['markets:read','Market hours & holidays'],['portfolio:calculate','Portfolio analytics'],['finance:calculate','Finance tools'],['propfirm:read','Prop firm: read accounts'],['propfirm:write','Prop firm: create & update']];
 const scopeLabel=k=>Array.isArray(k.scopes)?(k.scopes.length===SCOPES.length?'All products':k.scopes.map(s=>escape(s)).join('<br>')):'All products (legacy key)';
 function chosenScopes(form){const picked=[...form.querySelectorAll('input[name=scope]:checked')].map(i=>i.value);return picked.length===SCOPES.length?undefined:picked;}
 const presets={
@@ -40,7 +42,14 @@ const presets={
  'markets/sessions':{},
  'portfolio/performance':{trades:[{pnl:'250',r_multiple:'2'},{pnl:'-125',r_multiple:'-1'},{pnl:'310',r_multiple:'2.5'},{pnl:'-125',r_multiple:'-1'}],starting_balance:'10000'},
  'portfolio/drawdown':{equity:['10000','10250','10125','10435','10310','10600'],periods_per_year:252},
- 'portfolio/exposure':{account_equity:'50000',account_currency:'USD',positions:[{symbol:'EURUSD',side:'long',quantity:'1',contract_size:'100000',price:'1.08',asset_class:'forex'},{symbol:'AAPL',side:'long',quantity:'100',price:'200',asset_class:'stock'}]}
+ 'portfolio/exposure':{account_equity:'50000',account_currency:'USD',positions:[{symbol:'EURUSD',side:'long',quantity:'1',contract_size:'100000',price:'1.08',asset_class:'forex'},{symbol:'AAPL',side:'long',quantity:'100',price:'200',asset_class:'stock'}]},
+ 'finance/compound-growth':{principal:'10000',annual_rate_percent:'7',years:10,compounds_per_year:12,contribution_per_period:'200',include_schedule:false},
+ 'finance/loan-payment':{principal:'25000',annual_rate_percent:'6.5',term_months:60},
+ 'finance/cagr':{start_value:'10000',end_value:'18500',years:'5'},
+ 'finance/kelly':{win_rate_percent:'45',payoff_ratio:'2',kelly_fraction:'0.5',account_balance:'10000'},
+ 'finance/drawdown-recovery':{drawdown_percent:'20',peak_balance:'100000',monthly_return_percent:'2'},
+ 'finance/trade-pnl':{direction:'long',entry_price:'1.0850',exit_price:'1.0910',quantity:'1',contract_size:'100000',fees:'7',risk_amount:'300'},
+ 'finance/real-return':{nominal_return_percent:'8',inflation_percent:'3',amount:'10000'}
 };
 async function load(){if(!auth.currentUser)return;const version=++loadVersion,uid=auth.currentUser.uid,requestedEnv=env;const next=await call('bootstrap');if(version!==loadVersion||uid!==auth.currentUser?.uid||requestedEnv!==env)return;state=next;$('#auth-panel').hidden=true;$('#app').hidden=false;$('#signout').hidden=false;$('#verification').hidden=state.emailVerified;notice('');render();}
 function render(){
@@ -74,7 +83,7 @@ function render(){
  if(state.billing_mode==='live'){$('#portal').hidden=!state.profile.stripeLiveCustomer;const plan=state.profile.plan||'free';$('#legacy-pro').hidden=plan!=='pro';document.querySelectorAll('.plan-cards [data-plan]').forEach(c=>c.classList.toggle('current',c.dataset.plan===plan));
  // Ask the server which plans are on sale now; only those get a buy button.
  bill('summary').then(r=>{const offered=r.pricing?.purchasable||[];if(plan!=='free')return;document.querySelectorAll('[data-buy]').forEach(b=>{b.hidden=!offered.includes(b.dataset.buy);b.onclick=()=>task(async()=>{const p=PLANS.find(x=>x[0]===b.dataset.buy);if(!confirm(`Continue to Stripe Checkout for ${p[1]} at $${p[2]}/month? Extra calls are only billed if you raise your monthly cap. No charge is made until you complete Checkout.`))return;navigateBilling((await bill('checkout',{plan:b.dataset.buy})).url);});});$('#upgrade').hidden=!offered.includes('pro');}).catch(()=>{});panel.insertAdjacentHTML('beforeend','<p>After payment, choose the Live environment and create or use a live API key in API keys. Your existing live keys share the upgraded allowance.</p>');}
- $('#billing-refresh').onclick=()=>task(async()=>{const r=await bill('summary');await load();$('#billing-data').innerHTML='<h2>Subscription</h2>'+json({plan:r.plan,subscription:r.subscription,metering:r.metering})+'<h2>Invoices</h2>'+(r.invoices.length?table(['Invoice','Status','Amount','Download'],r.invoices.map(i=>[escape(i.number||i.id),escape(i.status),escape((i.amount_due/100).toFixed(2)+' '+i.currency),i.url?`<a href="${escape(i.url)}" target="_blank" rel="noopener">View invoice ↗</a>`:'Pending'])):empty('No invoices. You have not been charged through this workspace.'));});
+ $('#billing-refresh').onclick=()=>task(async()=>{const r=await bill('summary');await load();$('#billing-data').innerHTML='<h2>Subscription</h2>'+json({plan:r.plan,subscription:r.subscription,metering:r.metering})+'<h2>Invoices</h2>'+(r.invoices.length?table(['Invoice','Status','Amount','Download'],r.invoices.map(i=>[escape(i.number||i.id),escape(i.status),escape((i.amount_due/100).toFixed(2)+' '+i.currency),/^https:\/\//.test(String(i.url||''))?`<a href="${escape(i.url)}" target="_blank" rel="noopener">View invoice ↗</a>`:'Pending'])):empty('No invoices. You have not been charged through this workspace.'));});
  $('#upgrade').onclick=()=>task(async()=>{if(state.billing_mode==='live'&&!confirm('Continue to Stripe Checkout for a $49/month subscription? No charge is made until you complete Checkout.'))return;const r=await bill('checkout',{plan:'pro'});if(r.waitlist){await load();notice(r.message);}else navigateBilling(r.url);});
  $('#portal').onclick=()=>task(async()=>{const r=await bill('portal');navigateBilling(r.url);});
  }else if(page==='settings'){

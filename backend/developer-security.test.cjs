@@ -98,3 +98,18 @@ test('retention: request records expire after 90 days',async()=>{
  const recs=[...w.docs.entries()].filter(([k])=>k.startsWith('fynxDevelopers/alice/environments/live/requests/'));
  assert.equal(recs.length,1);const r=recs[0][1];assert.equal(r.expireAt.getTime()-r.at,90*86400000);
 });
+test('finance tools: legacy and finance-scoped keys reach the engine; other scoped keys are refused',async()=>{
+ const w=seeded();w.addKey(KEY('7'),'alice','live',{scopes:['finance:calculate']});
+ const body={start_value:'10000',end_value:'18500',years:'5'};
+ const legacy=await w.call('POST','/v1/finance/cagr',{token:KEY('a'),body});assert.equal(legacy.code,200);assert.equal(legacy.body.result.cagr_percent,'13.09');
+ const scoped=await w.call('POST','/v1/finance/cagr',{token:KEY('7'),body});assert.equal(scoped.code,200);
+ assert.equal((await w.call('POST','/v1/finance/cagr',{token:KEY('d'),body})).code,403,'markets-only key');
+ assert.equal((await w.call('POST','/v1/risk/margin',{token:KEY('7'),body})).code,403,'finance-only key cannot call risk');
+ assert.equal((await w.call('GET','/v1/finance/cagr',{token:KEY('a')})).code,403,'finance routes are POST only');
+ const bad=await w.call('POST','/v1/finance/cagr',{token:KEY('7'),body:{start_value:'x'}});assert.equal(bad.code,422);
+ const unknown=await w.call('POST','/v1/finance/nope',{token:KEY('7'),body});assert.equal(unknown.code,422);assert.equal(unknown.body.error.code,'not_found');
+});
+test('gateway responses carry defensive headers',async()=>{
+ const w=seeded();for(const token of [KEY('a'),undefined]){const r=await w.call('POST','/v1/markets/exchanges',{token});
+  assert.equal(r.headers['X-Content-Type-Options'],'nosniff');assert.match(r.headers['Content-Security-Policy'],/frame-ancestors 'none'/);assert.equal(r.headers['Cache-Control'],'no-store');}
+});
