@@ -21,7 +21,8 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [x] 2026-11-04: tools/correlation.html: clock cards were 326px wide on a 320px iPhone SE (min-width 290px). Now fit (284px).
 - [x] 2026-11-04 (run 3): header topic links, "More" menu items and tool-page Back/Home/Calculate/Clear buttons now 44px on touch phones; "Politics & Policy" no longer overlaps "Industries" in the header grid (`terminal-header.css`, `site-design.css`).
 - [x] 2026-11-05: "Save resource" and ATR Stop Buy/Sell/ATR-multiplier buttons now 44px on touch phones.
-- [ ] Tap targets still under 44px: breadcrumb links (Home/Tools), header edition select (25px, 10px font), ticker items (35px), `<summary>` disclosures (23px).
+- [x] 2026-11-05 run 7: Back/Home links, Fibonacci theme toggle, discovery header links (Drawdown Simulator etc.) and ATR Stop text fields now 44px on touch phones.
+- [ ] Tap targets still under 44px (also footer/breadcrumb links at 17px on tool pages): breadcrumb links (Home/Tools), header edition select (25px, 10px font), ticker items (35px), `<summary>` disclosures (23px).
 
 ## Bugs found and fixed
 - [x] 2026-11-04 (run 4): tools/position-size.html: floating-point rounding dropped a full 0.01 lot on exact answers (USD/JPY @150, $100 risk, 25 pips gave 0.59, exact is 0.60). Fixed with a tiny tolerance before rounding down. Hand-checked EUR/USD (0.40), USD/JPY (0.60), GBP/JPY with manual rate (0.59), XAU/USD (0.40 lots/40 oz).
@@ -38,13 +39,15 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 ### Tools
 - [x] 2026-11-04: tools/position-size.html: heading renamed "Position size calculator" with a plain description.
 - [x] 2026-11-04 run 5: hand-verified math, all correct: position size, pip ($10/lot), margin ($3,666.67 / 120% level), risk/reward (3.00), break-even (1.10017 / 1.09983, $17 cost), compound ($49,308.12 after 10y).
-- [x] 2026-11-05 run 6: debt payoff ($10k, 10%, $300: 40 months, interest $1,764.16, total $11,764.16) and liquidation guard (long, 100 entry, 10x, 0.5% maint: liq 90.5, 9.50%) match hand math. Still to verify: options (tools/options.html), ATR stop, profit/loss, pivot.
+- [x] 2026-11-05 run 6: debt payoff ($10k, 10%, $300: 40 months, interest $1,764.16, total $11,764.16) and liquidation guard (long, 100 entry, 10x, 0.5% maint: liq 90.5, 9.50%) match hand math. 
+- [x] 2026-11-05 run 7: pivot (PP 105, R1 110, S1 100, R3 120, S3 90), options (long call 100 strike, 3 premium, 110: $700, BE 103), profit-loss (10k, 1%, 100→98: 50 shares) and ATR stop (100, ATR 2, 1.5x: 97) hand-checked, all correct.
 ### Learn / Resources
 - [ ] The short redirect-style pages (learn/risk-management, resources/*) are thin. Consider merging them into their full guides.
 ### News
 - [ ] Check live news feeds load on the live site (not testable locally).
 
 ## Page coverage (last full audit)
+- 2026-11-05 run 7: main deploy green at 333455f. Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max + desktop on options, atr-stop, profit-loss, pivot, breakeven, fibonacci, drawdown-simulator, compound: no overflow, no JS errors, inputs >=16px. Fixed 38-42px targets. `npm test` passes.
 - 2026-11-05 run 6: main CI/pages deploy green at 5742d53. Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max + desktop on debt-payoff, liquidation-guard, options, atr-stop, profit-loss, pivot: no overflow, no JS errors. Fixed remaining 33-38px buttons. `npm test` passes.
 - 2026-11-04 run 5: main CI/pages deploy green at 8db97f8. Calculator math batch verified (no defects). No UI changes this run; iPhone tap-target backlog above still open.
 - 2026-11-04 run 4: Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max + desktop on 12 key pages: no overflow, no JS errors. Only sub-16px field is the header edition select (10px, still open). Position Size math verified; pip, margin, risk-reward, break-even, compound math still pending. Main CI/pages deploy green at fc6859e.

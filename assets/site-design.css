@@ -140,3 +140,9 @@ html body[data-fynx-layout] [hidden]{display:none!important}
   body [data-save-resource]:not(.discovery-card [data-save-resource]){min-height:44px}
   body .seg button,body .chipsRow .chip{min-height:44px}
 }
+
+/* [site-qa] 2026-11-05 run 7: 44px tap targets for Back/Home links, theme toggle, discovery header links and ATR Stop fields on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  body .nav-actions a:not(.btn),body .theme-btn,body .discovery-header .discovery-brand,body .discovery-header .discovery-button{min-height:44px;display:inline-flex;align-items:center}
+  body input.field,body select.field{min-height:44px}
+}

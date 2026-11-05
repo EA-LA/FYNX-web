@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-05 (run 7) — [site-qa] More tap-friendly tool pages on iPhone
+- iPhone: Back and Home links, the Fibonacci theme button, the Drawdown Simulator header links and the ATR Stop input boxes are now full-size tap targets. https://www.fynxfinanceworld.com/tools/atr-stop.html https://www.fynxfinanceworld.com/tools/fibonacci.html https://www.fynxfinanceworld.com/tools/drawdown-simulator.html
+- Checked Pivot, Options, Profit/Loss and ATR Stop against hand-worked examples: all correct. https://www.fynxfinanceworld.com/tools/pivot.html
+
 ## 2026-11-05 — [site-qa] Bigger tap targets for Save resource and ATR Stop buttons
 - iPhone: the "Save resource" button on tool pages and the Buy/Sell and ATR multiplier buttons on the ATR Stop calculator are now full-size and easier to tap. https://www.fynxfinanceworld.com/tools/atr-stop.html
 - Checked the Debt Payoff and Liquidation Guard calculators against hand-worked examples: all correct. https://www.fynxfinanceworld.com/tools/debt-payoff.html
