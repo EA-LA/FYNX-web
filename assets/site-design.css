@@ -201,3 +201,8 @@ html body[data-fynx-layout] [hidden]{display:none!important}
   html body .site-resource-header nav{gap:12px}
   html body .alpha-link{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;box-sizing:border-box}
 }
+/* [site-qa] 2026-11-05 run 13: Learn hub card links (Start learning, Quiz, Glossary, Open quizzes) reach 44px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  html body[data-fynx-terminal] .learning-card>a,html body[data-fynx-terminal] .learning-links a,html body .learning-card>a,html body .learning-links a,html body a.terminal-solid-link{display:inline-flex;align-items:center;min-height:44px!important;box-sizing:border-box}
+  html body .learning-links{gap:8px 18px;flex-wrap:wrap}
+}

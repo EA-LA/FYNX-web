@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-05 (run 13) — [site-qa] Easier tapping on the Learn hub
+- iPhone: the Start learning, Quiz, Glossary and Open quizzes links on the Learn page are now full-size tap targets. https://www.fynxfinanceworld.com/learn.html
+- Checked Margin, Risk/Reward, Break-even, Compound, Quizzes and Risk Management pages on iPhone SE and 15 Pro Max: no overflow, no problems.
+
 ## 2026-11-05 (run 12) — [site-qa] Easier tapping on the homepage and glossary
 - iPhone: the homepage buttons (Open Your Workspace, Explore Resources), the Your News / All reporting / All calculators links, the theme button, and the Trading Glossary header and A–Z letters are now full-size tap targets. https://www.fynxfinanceworld.com/ https://www.fynxfinanceworld.com/trading-glossary.html
 
