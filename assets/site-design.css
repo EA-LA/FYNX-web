@@ -155,3 +155,16 @@ html body[data-fynx-layout] [hidden]{display:none!important}
   body .fynx-api-check a{display:inline-flex;align-items:center;min-height:44px}
   body button.btn,body button.ghost{min-height:44px}
 }
+
+/* [site-qa] 2026-11-05 run 9: 44px tap targets for Explore search/filters/save buttons and the market ticker arrows on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  body .discovery-search input{min-height:44px}
+  body .discovery-search button,body .discovery-filters button,body .discovery-empty button{min-height:44px}
+  body .discovery-card button[data-save-resource]{width:44px;height:44px}
+  body .discovery-popular a{display:inline-flex;align-items:center;min-height:44px}
+  body .terminal-ticker-controls button{min-width:44px;min-height:44px}
+  body .terminal-ticker-item,body .terminal-ticker-label{min-height:44px;box-sizing:border-box}
+}
+@media (max-width:600px) and (pointer:coarse){
+  body .discovery-filters button{min-width:44px}
+}

@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-05 (run 9) — [site-qa] Easier tapping on Explore and the market ticker
+- iPhone: the Explore search and filter buttons, the save buttons on resource cards and the market ticker arrows are now full-size tap targets. https://www.fynxfinanceworld.com/explore.html https://www.fynxfinanceworld.com/journal.html
+
 ## 2026-11-05 (run 8) — [site-qa] More tap-friendly links on tool pages
 - iPhone: the Home / Tools / Find a resource links at the top of calculators, the "Assumptions" disclosures, the "Developer sign in" link and Position Size's "Use manual price" and Save buttons are now full-size tap targets. https://www.fynxfinanceworld.com/tools/position-size.html https://www.fynxfinanceworld.com/tools/correlation.html https://www.fynxfinanceworld.com/tools/pip.html
 
