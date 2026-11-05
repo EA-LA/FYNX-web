@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-05 — [site-qa] Bigger tap targets for Save resource and ATR Stop buttons
+- iPhone: the "Save resource" button on tool pages and the Buy/Sell and ATR multiplier buttons on the ATR Stop calculator are now full-size and easier to tap. https://www.fynxfinanceworld.com/tools/atr-stop.html
+- Checked the Debt Payoff and Liquidation Guard calculators against hand-worked examples: all correct. https://www.fynxfinanceworld.com/tools/debt-payoff.html
+
 ## 2026-11-04 (night) — [site-qa] Position Size lot rounding fix
 - Position Size calculator: some exact answers were rounded one step too low (e.g. USD/JPY at 150, $100 risk, 25-pip stop showed 0.59 lots instead of 0.60). Fixed. https://www.fynxfinanceworld.com/tools/position-size.html
 
