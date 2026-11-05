@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-05 (run 15) — [site-qa] Easier tapping on About and Pro
+- iPhone: the logo, Menu and theme buttons, and footer links on the About page, plus the Pro page header links, are now full-size tap targets. https://www.fynxfinanceworld.com/about.html https://www.fynxfinanceworld.com/pro.html
+- Checked Patterns, Pro, About, Contact, Dashboard, Calendar, Risk Management and Trading Psychology on iPhone SE and 15 Pro Max: no overflow, no problems.
+
 ## 2026-11-05 (run 14) — [site-qa] Easier tapping on the Trader Journal header
 - iPhone: the API, Pro tools & plans, Sign in links and "Account settings" on the Trader Journal page are now full-size tap targets. https://www.fynxfinanceworld.com/trader-journal.html
 - Checked all 30 Learn pages (how-to, glossary, quizzes, topic) plus Symbol News on iPhone SE and 15 Pro Max: no overflow, no problems.
