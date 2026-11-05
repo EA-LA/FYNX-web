@@ -146,3 +146,12 @@ html body[data-fynx-layout] [hidden]{display:none!important}
   body .nav-actions a:not(.btn),body .theme-btn,body .discovery-header .discovery-brand,body .discovery-header .discovery-button{min-height:44px;display:inline-flex;align-items:center}
   body input.field,body select.field{min-height:44px}
 }
+
+/* [site-qa] 2026-11-05 run 8: 44px tap targets for breadcrumbs, disclosures, API sign-in link, Position Size buttons and carousel arrows on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  body .resource-wayfinding nav a,body .resource-wayfinding div a{display:inline-flex;align-items:center;min-height:44px;padding:0 4px}
+  body .resource-wayfinding button[data-save-resource]{min-height:44px}
+  body details>summary{min-height:44px;display:flex;align-items:center}
+  body .fynx-api-check a{display:inline-flex;align-items:center;min-height:44px}
+  body button.btn,body button.ghost{min-height:44px}
+}

@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-05 (run 8) — [site-qa] More tap-friendly links on tool pages
+- iPhone: the Home / Tools / Find a resource links at the top of calculators, the "Assumptions" disclosures, the "Developer sign in" link and Position Size's "Use manual price" and Save buttons are now full-size tap targets. https://www.fynxfinanceworld.com/tools/position-size.html https://www.fynxfinanceworld.com/tools/correlation.html https://www.fynxfinanceworld.com/tools/pip.html
+
 ## 2026-11-05 (run 7) — [site-qa] More tap-friendly tool pages on iPhone
 - iPhone: Back and Home links, the Fibonacci theme button, the Drawdown Simulator header links and the ATR Stop input boxes are now full-size tap targets. https://www.fynxfinanceworld.com/tools/atr-stop.html https://www.fynxfinanceworld.com/tools/fibonacci.html https://www.fynxfinanceworld.com/tools/drawdown-simulator.html
 - Checked Pivot, Options, Profit/Loss and ATR Stop against hand-worked examples: all correct. https://www.fynxfinanceworld.com/tools/pivot.html

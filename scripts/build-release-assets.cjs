@@ -4,7 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { publicSiteFiles } = require('./public-site-files.cjs');
-const VERSION = '20261105-tap-targets-2';
+const VERSION = '20261105-tap-targets-3';
 const ASSETS = Object.freeze([
   'assets/css/company-products.css', 'assets/js/company-products.js', 'assets/js/company-products-data.js',
   'fynx-nav.js', 'demo-mode.js', 'auth/auth-form.js',

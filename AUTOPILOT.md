@@ -22,7 +22,8 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [x] 2026-11-04 (run 3): header topic links, "More" menu items and tool-page Back/Home/Calculate/Clear buttons now 44px on touch phones; "Politics & Policy" no longer overlaps "Industries" in the header grid (`terminal-header.css`, `site-design.css`).
 - [x] 2026-11-05: "Save resource" and ATR Stop Buy/Sell/ATR-multiplier buttons now 44px on touch phones.
 - [x] 2026-11-05 run 7: Back/Home links, Fibonacci theme toggle, discovery header links (Drawdown Simulator etc.) and ATR Stop text fields now 44px on touch phones.
-- [ ] Tap targets still under 44px (also footer/breadcrumb links at 17px on tool pages): breadcrumb links (Home/Tools), header edition select (25px, 10px font), ticker items (35px), `<summary>` disclosures (23px).
+- [x] 2026-11-05 run 8: tool-page breadcrumb links, `<summary>` disclosures, "Developer sign in", Position Size "Use manual price"/Save buttons now 44px on touch phones (verified Correlation, Position Size, Pip: zero targets under 44px).
+- [ ] Tap targets still under 44px: header edition select (25px, 10px font), ticker items (35px), carousel ‹ › buttons on journal/learn/news (28px), explore.html search/filter controls and links (36-38px).
 
 ## Bugs found and fixed
 - [x] 2026-11-04 (run 4): tools/position-size.html: floating-point rounding dropped a full 0.01 lot on exact answers (USD/JPY @150, $100 risk, 25 pips gave 0.59, exact is 0.60). Fixed with a tiny tolerance before rounding down. Hand-checked EUR/USD (0.40), USD/JPY (0.60), GBP/JPY with manual rate (0.59), XAU/USD (0.40 lots/40 oz).
@@ -47,6 +48,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [ ] Check live news feeds load on the live site (not testable locally).
 
 ## Page coverage (last full audit)
+- 2026-11-05 run 8: main pages deploy green at a24dffa. Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max + desktop on journal, explore, learn, news, correlation, position-size, pip: no overflow, no JS errors. Fixed tool-page small targets; the Correlation clock and Position Size heading backlog items re-checked and fine. `npm test` passes. Next: ticker items, carousel arrows, explore controls.
 - 2026-11-05 run 7: main deploy green at 333455f. Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max + desktop on options, atr-stop, profit-loss, pivot, breakeven, fibonacci, drawdown-simulator, compound: no overflow, no JS errors, inputs >=16px. Fixed 38-42px targets. `npm test` passes.
 - 2026-11-05 run 6: main CI/pages deploy green at 5742d53. Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max + desktop on debt-payoff, liquidation-guard, options, atr-stop, profit-loss, pivot: no overflow, no JS errors. Fixed remaining 33-38px buttons. `npm test` passes.
 - 2026-11-04 run 5: main CI/pages deploy green at 8db97f8. Calculator math batch verified (no defects). No UI changes this run; iPhone tap-target backlog above still open.
