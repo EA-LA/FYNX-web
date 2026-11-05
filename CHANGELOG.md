@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-05 (run 11) — [site-qa] Easier tapping on News and the homepage
+- iPhone: News search, publisher/topic pickers, jump links and source links, plus the homepage tabs, search and footer links are now full-size tap targets. https://www.fynxfinanceworld.com/news.html https://www.fynxfinanceworld.com/
+
 ## 2026-11-05 (run 10) — [site-qa] Easier tapping in the header on iPhone
 - iPhone: the search box, notification bell, Sign in button and edition picker in the header, the card titles on Explore and Quick Add in the Journal are now full-size tap targets. https://www.fynxfinanceworld.com/journal.html https://www.fynxfinanceworld.com/explore.html
 

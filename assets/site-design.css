@@ -177,3 +177,19 @@ html body[data-fynx-layout] [hidden]{display:none!important}
 @media (max-width:600px) and (pointer:coarse){
   body #quickAddBtn{min-height:44px;padding-inline:14px}
 }
+
+/* [site-qa] 2026-11-05 run 11: News page controls/links and homepage tabs, chips and footer links reach 44px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  body .fn-jump-tools a,body .fn-empty a,body .fn-terminal-sources-heading a,body .fn-terminal-sources a,body .fn-text-link,body .fn-media-action{display:inline-flex;align-items:center;min-height:44px}
+  body .fn-search input,body .fn-pro-card button{min-height:44px}
+  body select{min-height:44px}
+  body .fn-terminal-sources a{box-sizing:border-box}
+  body .fw-chip{display:inline-flex;align-items:center;min-height:44px}
+  body [role=tab].fw-tab,body .fw-tabs button{min-height:44px}
+  body .footer-section a{display:inline-flex;align-items:center;min-height:44px}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body .fn-search input,html body .fn-search select,html body label select,html body #resource-query,html body .discovery-search button,html body .fn-pro-card button,html body .fn-empty button,html body [data-refresh],html body main button{min-height:44px!important}
+  html body .fn-jump-tools a,html body .fw-chip,html body a.btn,html body .hero a[href]{min-height:44px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
+  html body .fn-terminal-sources a,html body .fn-section-heading a{min-height:44px;display:inline-flex;align-items:center}
+}
