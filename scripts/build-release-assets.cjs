@@ -5,7 +5,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { publicSiteFiles } = require('./public-site-files.cjs');
 const VERSION = '20261105-tap-targets-3';
+const RESEARCH_VERSION = '20261105-research-1';
+const RESEARCH_ASSETS = new Set(['assets/js/research-service.js','assets/js/edge/app.js','assets/js/edge/render.js','assets/js/edge/profile.js','assets/js/edge/public-research.js','assets/js/quant/app.js','assets/js/quant/profile.js','assets/js/quant/engine.js','assets/js/quant/worker.js','assets/js/quant/public-history.js','assets/js/company-products-data.js']);
 const ASSETS = Object.freeze([
+  ...RESEARCH_ASSETS,
   'assets/css/company-products.css', 'assets/js/company-products.js', 'assets/js/company-products-data.js',
   'fynx-nav.js', 'demo-mode.js', 'auth/auth-form.js',
   'assets/js/home-journal.js', 'assets/js/profile-sync.js', 'assets/js/session-manager.js',
@@ -31,9 +34,10 @@ function rewriteReferences(source, file, assets) {
     let url;
     try { url = new URL(value.replace(/&amp;/g, '&'), ORIGIN + '/' + file); } catch { return original; }
     if (url.origin !== ORIGIN || !assets.has(url.pathname.slice(1))) return original;
+    const version = RESEARCH_ASSETS.has(url.pathname.slice(1)) ? RESEARCH_VERSION : VERSION;
     const existing = url.searchParams.getAll('v');
-    if (existing.length === 1 && existing[0] === VERSION) return original;
-    url.searchParams.set('v', VERSION);
+    if (existing.length === 1 && existing[0] === version) return original;
+    url.searchParams.set('v', version);
     const pathname = value.split(/[?#]/, 1)[0];
     const query = value.includes('&amp;') ? url.search.replace(/&/g, '&amp;') : url.search;
     return quote + pathname + query + url.hash + quote;

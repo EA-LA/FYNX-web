@@ -1,7 +1,7 @@
 <main id="edge-main" class="edge-workspace" aria-busy="true">
  <header class="edge-hero">
   <div class="edge-hero-copy"><a class="edge-back" href="/edge-radar/" id="edge-back" hidden>← All markets</a><div class="edge-eyebrow" id="edge-updated">DAILY RESEARCH · ATTRIBUTED DATA</div><h1>{{TITLE}}</h1><p class="edge-deck" id="edge-brief">{{MARKET_NAME}}</p><p class="edge-muted edge-intro">See how today’s market conditions compare with your strategy’s history. Every score includes its evidence.</p></div>
-  <div class="edge-actions" id="edge-actions"><button class="edge-button" data-action="watchlist">Edit watchlist</button><button class="edge-button edge-primary" data-action="digest">Email me at 6 AM</button></div>
+  <div class="edge-actions" id="edge-actions"><button class="edge-button" data-action="watchlist">Edit watchlist</button><button class="edge-button edge-primary" data-action="digest">6 AM briefing</button></div>
  </header>
  <div class="edge-status" id="edge-status" role="status" aria-live="polite">Loading the latest available snapshot…</div>
  <div id="edge-summary" class="edge-summary" role="region" aria-label="Market overview"><div class="edge-tile"><span>Market mood</span><strong>—</strong><small>Waiting for source data</small></div><div class="edge-tile mobile-hide"><span>FX volatility</span><strong>—</strong><small>Waiting for source data</small></div><div class="edge-tile mobile-event"><span>Next big event</span><strong>—</strong><small>Checking the economic calendar</small></div><div class="edge-tile mobile-hide"><span>Best strategy fit</span><strong>—</strong><small>Waiting for source data</small></div></div>

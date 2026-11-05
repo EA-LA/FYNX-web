@@ -19,8 +19,8 @@ module.exports = [
     item('My accounts','/profile/accounts/','Trading account analytics and statement imports. Connections await the account service.','Connections pending'),
   ]},
   {id:'research',title:'Markets & research',items:[
-    item('Edge Radar','/edge-radar/','Market regimes and strategy-fit research. The live data service is not connected yet.','Data pending'),
-    item('Quant Analyst','/quant-analyst.html','Backtests, optimization, portfolio research and Monte Carlo. Historical data service pending.','Data pending'),
+    item('Edge Radar','/edge-radar/','Market regimes, positioning and strategy fits across 17 markets, with dated source evidence.','Daily research'),
+    item('Quant Analyst','/quant-analyst.html','Backtest strategies on recorded market history, compare portfolios and run Monte Carlo simulations.','Historical research'),
     item('Research Desk','/tools/research-desk.html','Open the collection of market research tools.'),
     item('Market heatmap','/tools/research-heatmap.html','Compare attributed market performance.'),
     item('Economic calendar','/tools/economic-calendar.html','Review upcoming releases and economic events.'),

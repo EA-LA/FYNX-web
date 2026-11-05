@@ -11,7 +11,7 @@
     <div>
       <span class="pill" id="dataPill">Checking historical data…</span>
       <p class="note" id="dataNote">Research on attributed historical prices. Data coverage and last update are shown for each request. Results appear only after data loads.</p>
-      <div class="params data-controls"><label>Timeframe<select id="timeframe"><option value="D1">Daily · OHLC</option><option value="H4">4 hours</option><option value="H1">1 hour</option><option value="M5">5 minutes</option><option value="M1">1 minute</option><option value="tick">Ticks · server job</option></select></label><label>History (years)<input id="historyYears" type="number" min="1" max="30" value="10"></label><label>From<input id="historyFrom" type="date"></label><label>Through<input id="historyTo" type="date"></label></div>
+      <div class="params data-controls"><label>Timeframe<select id="timeframe"><option value="D1">Daily · OHLC</option><option value="H4">4 hours</option><option value="H1">1 hour</option><option value="M5">5 minutes</option><option value="M1">1 minute</option><option value="tick">Ticks · server job</option></select></label><label>History (years)<input id="historyYears" type="number" min="1" max="30" value="10"></label><label>From<input id="historyFrom" type="date"></label><label>Until (exclusive)<input id="historyTo" type="date"></label></div>
       <button type="button" class="btn ghost" id="loadData">Refresh data</button>
       <p class="note" id="quoteStatus">Live quote: checking provider…</p>
     </div>

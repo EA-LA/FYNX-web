@@ -1195,7 +1195,7 @@ var FynxQuant = (() => {
   ];
   function generateEA(input) {
     const p = normalize(input), ext = p.platform === "mt5" ? "mq5" : p.platform === "mt4" ? "mq4" : "cs";
-    return { filename: `FynxQuant_${p.symbol}_${p.tf}.${ext}`, mime: "text/plain;charset=utf-8", source: p.platform === "ctrader" ? csharp(p) : mql(p), notes: [...notes, ...p.platform === "mt5" ? ["Optional Edge heartbeat is disabled by default. Create a token in Profile, enter it only in MT5 EA inputs, and allow https://fynxfinanceworld.com in Expert Advisors WebRequest settings. All account positions are reported. Never share a .set file containing your token.", "Edge day-start balance/equity and end-of-day high-water are unavailable unless you supply verified values with the current Prague date. A later observation is never substituted for midnight; these facts expire at the next date rollover."] : []] };
+    return { filename: `FynxQuant_${p.symbol}_${p.tf}.${ext}`, mime: "text/plain;charset=utf-8", source: p.platform === "ctrader" ? csharp(p) : mql(p), notes: [...notes, ...p.platform === "mt5" ? ["Optional Edge heartbeat is disabled by default. Create a token in Profile, enter it only in MT5 EA inputs, and allow https://us-central1-fynx-c7a28.cloudfunctions.net in Expert Advisors WebRequest settings. All account positions are reported. Never share a .set file containing your token.", "Edge day-start balance/equity and end-of-day high-water are unavailable unless you supply verified values with the current Prague date. A later observation is never substituted for midnight; these facts expire at the next date rollover."] : []] };
   }
   function generateAccountMonitorEA() {
     const p = normalize({ platform: "mt5", symbol: "EURUSD", timeframe: "D1", params: { mode: "ohlc" } });
@@ -1226,7 +1226,7 @@ void OnDeinit(const int reason){EventKillTimer();GlobalVariablesFlush();}
 `;
     return { filename: "FynxAccountMonitor.mq5", mime: "text/plain;charset=utf-8", source, notes: [
       "This standalone MT5 monitor contains reporting and account-history reads only; it cannot place, modify or close trades.",
-      "Create an Edge token, enter it only in MT5 inputs, enable InpEdgeEnabled and allow https://fynxfinanceworld.com in WebRequest settings. Enter the actual initial balance.",
+      "Create an Edge token, enter it only in MT5 inputs, enable InpEdgeEnabled and allow https://us-central1-fynx-c7a28.cloudfunctions.net in WebRequest settings. Enter the actual initial balance.",
       "After the first report, link that token in My Accounts. Then enable InpAccountsHistoryEnabled and enter the broker-confirmed IANA timezone. Never guess UTC or reuse the current server offset for old deals.",
       "Reset facts require verified InpEdgeBaselineDate and day-start/high-water inputs for the current Prague date. Near-midnight samples and local trading-guard baselines are never reported as exact reset facts; values expire at rollover.",
       "History sends at most 100 deals per acknowledged minute. Restarting the EA replays the configured broker history window for server-side deduplication. Records predating that window or missing at the broker remain unavailable.",
@@ -1491,7 +1491,7 @@ void EdgeHeartbeat(){
   string body="{\"version\":"+(AccountsEnabled()?"2":"1")+",\"sentAt\":"+IntegerToString(now)+",\"accountRef\":"+EdgeString(account)+",\"currency\":"+EdgeString(currency)+",\"balance\":"+EdgeNumber(Balance())+",\"equity\":"+EdgeNumber(Equity())+",\"dayStartEquity\":"+EdgePositive(edgeDayEquity)+",\"dayStartBalance\":"+EdgePositive(edgeDayBalance)+",\"dayStartDate\":"+EdgeString(EdgeDayString(edgeDay))+",\"initialBalance\":"+EdgeNumber(InpInitBal)+",\"ruleId\":"+EdgeString(InpEdgeRule)+",\"phase\":"+IntegerToString(InpEdgePhase)+",\"safetyDailyPct\":"+EdgeNumber(InpDailyStop)+",\"highWaterBalance\":"+EdgePositive(edgeHighBalance)+",\"positions\":"+positions+",\"instruments\":"+instruments+extra+"}";
   uchar encoded[];StringToCharArray(body,encoded,0,WHOLE_ARRAY,CP_UTF8);char data[],result[];int size=ArraySize(encoded)-1;ArrayResize(data,size);for(int i=0;i<size;i++)data[i]=(char)encoded[i];
   string responseHeaders,headers="Content-Type: application/json\r\nAuthorization: Bearer "+InpEdgeToken+"\r\n";
-  int status=WebRequest("POST","https://fynxfinanceworld.com/api/edge/heartbeat",headers,1500,data,result,responseHeaders);
+  int status=WebRequest("POST","https://us-central1-fynx-c7a28.cloudfunctions.net/webTradingResearch/api/edge/heartbeat",headers,1500,data,result,responseHeaders);
   if(status==202&&AccountsEnabled()){accountsCursorMsc=accountsPendingMsc;accountsCursorTicket=accountsPendingTicket;}
   // Never log headers, token, body or provider response. A status code is sufficient.
   if(status!=202)Print("Edge heartbeat unavailable (HTTP status ",status,"). Check Profile and WebRequest settings.");

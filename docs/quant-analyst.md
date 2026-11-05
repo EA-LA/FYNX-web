@@ -1,6 +1,6 @@
 # Quant Analyst
 
-Quant Analyst is a local implementation in the existing Finance World static-site repository. Its canonical route is `/quant-analyst.html`; the local service also accepts `/quant-analyst`. The shared navigation places **Quant Analyst · NEW** between Research and Profile. The page reuses the existing header, news category navigation, ticker and session system. The work is on `feature/quant-analyst` and is not a production deployment.
+Quant Analyst is part of Finance World’s static website. Its canonical route is `/quant-analyst.html`; the local service also accepts `/quant-analyst`. The shared navigation places **Quant Analyst · NEW** between Research and Profile. The page reuses the existing header, news category navigation, ticker and session system. Daily research loads published Dukascopy candles and runs in the local calculation worker. The page requests service-backed features from the research API.
 
 ## Run locally
 
@@ -20,7 +20,7 @@ Dukascopy historical requests need no API key. For provider quotes, economic-cal
 node --env-file=.env scripts/quant-dev-server.cjs
 ```
 
-Do not put provider keys or a service-account JSON file into browser assets. For production, serve the existing static build and route `/api/quant/*` over HTTPS to the Node service. Give it a persistent private data volume, service supervision and a trusted reverse-proxy rate limit. Publishing static HTML alone does not enable the API or profile sync.
+Do not put provider keys or a service-account JSON file into browser assets. On the two canonical HTTPS Finance World hostnames, the page routes `/api/quant/*` to the FYNX Firebase `webTradingResearch` function. Other hosts retain relative API routes. The daily archive carries only public historical observations; private account requests are never sent to the archive. Standalone hosting can serve daily backtests, optimization, portfolios, simulations and source exports without an API process. Account synchronization, tick jobs and intraday requests require a working service and the corresponding data coverage.
 
 ## Main files
 
@@ -114,7 +114,7 @@ Engine tests cover ATR, signal timing, future-data isolation, stop/target ambigu
 
 ## Remaining external gates and optional extensions
 
-- Production API hosting/reverse proxy, persistent storage, deployment and scheduler installation must be established separately from the local build.
+- Production API deployments and scheduled archive refreshes are separate from the HTML build; verify the actual endpoints and refresh timestamps when assessing availability.
 - Quote and historical-calendar credentials, entitlements and redistribution permissions must be supplied by the operator; missing ones remain visible as unavailable.
 - Complete ten-year XAU tick and calendar coverage depends on successful, completed ingestion receipts. A small smoke fetch or partial partition archive does not satisfy that coverage claim.
 - Native EA compilation/demo validation and physical-phone performance still require those environments.
