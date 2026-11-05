@@ -501,3 +501,21 @@ html body[data-fynx-terminal] .terminal-edition select { -webkit-appearance:none
 @media (max-width:600px) and (pointer:coarse){
   html body[data-fynx-terminal] .pro-nav nav a,html body a.terminal-ticker-label{display:inline-flex!important;align-items:center;min-height:44px!important;box-sizing:border-box}
 }
+
+/* [site-qa] 2026-11-05 run 16: news/markets pages - header Account/theme, ticker arrows, edition picker (16px stops iOS zoom), breadcrumbs, Save resource and reader buttons reach 44px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  html body[data-fynx-terminal] .terminal-ticker-controls button{width:44px;height:44px}
+  html body[data-fynx-terminal] .terminal-edition select{font-size:16px!important;min-height:44px}
+  html body[data-fynx-terminal] :is(.newsroom-breadcrumb,.newsroom-section-rule,.reader-wayfinding,.resource-wayfinding,.newsroom-feed-message,.reader-error) a{display:inline-flex;align-items:center;min-height:44px;padding:0 4px;box-sizing:border-box}
+  html body[data-fynx-terminal] :is(.newsroom-method summary,button[data-save-resource],.reader-statusbar button,.reader-reading-controls button,#reader-text-size){min-height:44px}
+  html body[data-fynx-terminal] .newsroom-footer a,html body[data-fynx-terminal] .reader-footer a{display:inline-flex;align-items:center;min-height:44px}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body .discovery-header nav>a,html body .discovery-header nav>button,html body .your-news-topic-buttons button{min-height:44px!important;box-sizing:border-box}
+  html body .discovery-header nav>a{display:inline-flex!important;align-items:center}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body :is(.your-news-search input,.your-news-controls select,.your-news-empty button,#yourNewsSort,#yourNewsTopic){min-height:44px;box-sizing:border-box}
+  html body :is(.your-news-empty,.your-news-method) a{display:inline-flex;align-items:center;min-height:44px}
+  html body .your-news-unread{min-height:44px;display:inline-flex;align-items:center;gap:8px}
+}

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-05 (run 16) — [site-qa] Easier tapping across the News pages
+- iPhone: on the News section pages (Markets, Economics, Finance, Your News, article reader) the ticker arrows, Account and theme buttons, breadcrumbs, Save resource, Share/Copy buttons and Your News topic buttons are now full-size tap targets, and the header edition picker no longer zooms the page when tapped. The COT search box is also bigger. https://www.fynxfinanceworld.com/news/economics.html https://www.fynxfinanceworld.com/news/your-news.html https://www.fynxfinanceworld.com/markets/cot.html
+- Checked all Markets and News pages on iPhone SE and 15 Pro Max: no sideways overflow, no errors.
+
 ## 2026-11-05 (run 15) — [site-qa] Easier tapping on About and Pro
 - iPhone: the logo, Menu and theme buttons, and footer links on the About page, plus the Pro page header links, are now full-size tap targets. https://www.fynxfinanceworld.com/about.html https://www.fynxfinanceworld.com/pro.html
 - Checked Patterns, Pro, About, Contact, Dashboard, Calendar, Risk Management and Trading Psychology on iPhone SE and 15 Pro Max: no overflow, no problems.
