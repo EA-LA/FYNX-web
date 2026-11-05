@@ -482,3 +482,17 @@ html body[data-fynx-terminal] .terminal-edition select { -webkit-appearance:none
 @media (max-width:600px) {
   html body[data-fynx-terminal] .terminal-topic-inner > a { white-space:normal; line-height:1.2; padding-right:6px; }
 }
+
+/* [site-qa] 2026-11-05 run 10: 44px tap targets for header search, icon buttons, Sign in and edition picker on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  html body[data-fynx-terminal] .terminal-header-search{min-height:44px !important}
+  html body[data-fynx-terminal] .terminal-header-search input{min-height:44px !important}
+  html body[data-fynx-terminal] .terminal-header-search button{min-height:44px !important;min-width:44px !important}
+  html body[data-fynx-terminal].terminal-masthead-ready[data-fynx-layout=workspace] .top-bar .icon-btn{min-height:44px !important;min-width:44px !important;height:44px !important}
+  html body[data-fynx-terminal] .top-bar a[href*="auth"],html body[data-fynx-terminal] .top-bar a[href*="sign"]{min-height:44px;display:inline-flex;align-items:center}
+  html body[data-fynx-terminal] .terminal-edition select{min-height:44px !important}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body[data-fynx-terminal] #publicAccountLinks a,html body[data-fynx-terminal] a[href*="auth/login"]{display:inline-flex !important;align-items:center;min-height:44px !important}
+  html body[data-fynx-terminal] .terminal-brand{min-height:44px}
+}

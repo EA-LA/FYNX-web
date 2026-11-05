@@ -168,3 +168,12 @@ html body[data-fynx-layout] [hidden]{display:none!important}
 @media (max-width:600px) and (pointer:coarse){
   body .discovery-filters button{min-width:44px}
 }
+
+/* [site-qa] 2026-11-05 run 10: Explore card title links and journal Quick Add reach 44px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  body .discovery-card h3 a,body .discovery-card a.discovery-title{display:flex;align-items:center;min-height:44px}
+  body .discovery-card :is(h2,h3) a{display:flex;align-items:center;min-height:44px}
+}
+@media (max-width:600px) and (pointer:coarse){
+  body #quickAddBtn{min-height:44px;padding-inline:14px}
+}

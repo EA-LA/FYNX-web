@@ -24,7 +24,8 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [x] 2026-11-05 run 7: Back/Home links, Fibonacci theme toggle, discovery header links (Drawdown Simulator etc.) and ATR Stop text fields now 44px on touch phones.
 - [x] 2026-11-05 run 8: tool-page breadcrumb links, `<summary>` disclosures, "Developer sign in", Position Size "Use manual price"/Save buttons now 44px on touch phones (verified Correlation, Position Size, Pip: zero targets under 44px).
 - [x] 2026-11-05 run 9: market ticker items and ‹ › arrows, Explore search/filter buttons and card save buttons now 44px on touch phones.
-- [ ] Tap targets still under 44px: header edition select (25px, 10px font), header search icon button/input and Sign in (36-38px), Explore card title links (23px), journal Quick Add, news Heat Map/Sentiment links.
+- [x] 2026-11-05 run 10: header search field/button, bell icon button, Sign in, edition picker, Explore card title links and journal Quick Add now 44px on touch phones (verified journal/explore: header targets all >=44px).
+- [ ] Tap targets still under 44px: inline text links on news (Heat Map/Sentiment/Challenges, source links), news select/search (40px), Explore footer links, homepage chips/theme button (32px).
 
 ## Bugs found and fixed
 - [x] 2026-11-04 (run 4): tools/position-size.html: floating-point rounding dropped a full 0.01 lot on exact answers (USD/JPY @150, $100 risk, 25 pips gave 0.59, exact is 0.60). Fixed with a tiny tolerance before rounding down. Hand-checked EUR/USD (0.40), USD/JPY (0.60), GBP/JPY with manual rate (0.59), XAU/USD (0.40 lots/40 oz).
@@ -49,6 +50,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [ ] Check live news feeds load on the live site (not testable locally).
 
 ## Page coverage (last full audit)
+- 2026-11-05 run 10: main pages deploy green at f500bfe. Chromium (WebKit unavailable) iPhone SE/15 Pro Max + desktop on journal, explore, news: no overflow, no JS errors. Fixed shared header targets. `npm test` passes after `npm ci`. Next: news inline links/selects, homepage chips.
 - 2026-11-05 run 9: main green (pages deploy success at 535ec27). Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max + desktop on explore, journal, news: no overflow, no JS errors. Fixed ticker/explore targets. `npm test` result below in commit. Next: header search/Sign in, Explore card links, news links.
 - 2026-11-05 run 8: main pages deploy green at a24dffa. Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max + desktop on journal, explore, learn, news, correlation, position-size, pip: no overflow, no JS errors. Fixed tool-page small targets; the Correlation clock and Position Size heading backlog items re-checked and fine. `npm test` passes. Next: ticker items, carousel arrows, explore controls.
 - 2026-11-05 run 7: main deploy green at 333455f. Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max + desktop on options, atr-stop, profit-loss, pivot, breakeven, fibonacci, drawdown-simulator, compound: no overflow, no JS errors, inputs >=16px. Fixed 38-42px targets. `npm test` passes.

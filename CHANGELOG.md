@@ -1,5 +1,8 @@
 # Changelog
 
+## 2026-11-05 (run 10) — [site-qa] Easier tapping in the header on iPhone
+- iPhone: the search box, notification bell, Sign in button and edition picker in the header, the card titles on Explore and Quick Add in the Journal are now full-size tap targets. https://www.fynxfinanceworld.com/journal.html https://www.fynxfinanceworld.com/explore.html
+
 ## 2026-11-05 (run 9) — [site-qa] Easier tapping on Explore and the market ticker
 - iPhone: the Explore search and filter buttons, the save buttons on resource cards and the market ticker arrows are now full-size tap targets. https://www.fynxfinanceworld.com/explore.html https://www.fynxfinanceworld.com/journal.html
 
