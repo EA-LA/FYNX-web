@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-06 (run 21) — [site-qa] More answers in the homepage FAQ
+- Added: the homepage FAQ now answers "Is FYNX free?", "Where does the news come from?" and "Is FYNX financial advice?" with links to Pro, News and the Risk Disclosure; links are full-size tap targets on iPhone. https://www.fynxfinanceworld.com/#faqs
+- Checked on iPhone SE, 15 Pro Max and desktop: no sideways overflow, no errors.
+
 ## 2026-11-06 (run 20) — [site-qa] Bigger fields and links on Account, Partners and Quant pages
 - iPhone: text boxes and dropdowns on Account settings, Preferences, Security and the Quant Analyst are now full-size (44px tall, 16px text so the page no longer zooms when tapped). The Partners category menu, Owner page back link and Affiliate/Risk disclosure links are full-size tap targets. https://www.fynxfinanceworld.com/account-settings.html https://www.fynxfinanceworld.com/partners.html https://www.fynxfinanceworld.com/quant-analyst.html
 - Checked 21 top-level pages on iPhone SE and 15 Pro Max plus desktop: no sideways overflow, no errors.

@@ -47,7 +47,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 
 ## Page-by-page backlog
 ### Home (index.html)
-- [ ] FAQ: only 3 questions; add accurate answers for common questions (data sources, is it free, iOS app, Pro).
+- [x] 2026-11-06 run 21: FAQ now 6 questions (free/Pro, news sources, not financial advice). Left: iOS app question.
 - [ ] Hero buttons "Open Your Workspace" / "Explore Resources" have mismatched widths on iPhone.
 ### Tools
 - [x] 2026-11-04: tools/position-size.html: heading renamed "Position size calculator" with a plain description.
@@ -60,6 +60,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [ ] Check live news feeds load on the live site (not testable locally).
 
 ## Page coverage (last full audit)
+- 2026-11-06 run 21: main CI/pages deploy green at 0cee293. Chromium (WebKit unavailable) iPhone SE/15 Pro Max + desktop on index: no overflow, no JS errors. Homepage FAQ expanded 3→6 (free, news sources, not advice). Next: products/directory/shared-profile targets, inline paragraph links.
 - 2026-11-06 run 20: main pages deploy green at 3ecb220. Chromium (WebKit unavailable) iPhone SE/15 Pro Max + desktop on 21 top-level pages: no overflow, no JS errors. Fixed field sizes/targets. `npm test` passes. Next: products/directory/shared-profile targets, homepage FAQ backlog.
 - 2026-11-06 run 19: main CI/pages deploy green at 368a489. Chromium (WebKit unavailable) iPhone SE/15 Pro Max on all markets/* and learn/*: no overflow, no JS errors. Fixed standalone link targets. Next: homepage FAQ backlog, inline paragraph links.
 - 2026-11-06 run 18: main pages deploy green at 55a578c. Chromium (WebKit unavailable) iPhone SE/15 Pro Max + desktop on all tools/* (no overflow, no JS errors); shot heatmap, interest-rates, journal-export. Fixed tool-page targets. `npm test` passes. Next: markets/* inline links re-scan, learn/* inline links, FAQ backlog on homepage.
