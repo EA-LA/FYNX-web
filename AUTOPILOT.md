@@ -62,6 +62,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [ ] Check live news feeds load on the live site (not testable locally).
 
 ## Page coverage (last full audit)
+- 2026-11-06 run 25: main pages deploy green at 5179bf6. Chromium (WebKit unavailable) iPhone SE/15 Pro Max + desktop on about, dashboard, home, institutional-footprints: no overflow; Dashboard/home 40px links already fine. Fixed footer links (20px) and About journal link (38px). `npm test` passes. Next: inline paragraph links, iOS FAQ question.
 - 2026-11-06 run 24: main pages deploy green at 4e05c2a. Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max + desktop: Correlation clock, header/calculator targets, Position Size heading re-checked and fine; 185 top-level/learn/news/markets/tools pages scanned on iPhone SE (no overflow, no JS errors). Fixed 45 lesson pages. `npm test` passes. Next: institutional-footprints footer links, About/Dashboard/home 38-40px links, inline paragraph links.
 - 2026-11-06 run 23: main pages deploy green at 842d2ae. Chromium (WebKit unavailable) iPhone SE/15 Pro Max on index: no overflow; hero buttons equalised. `npm test` passes. Next: inline paragraph links, iOS FAQ question.
 - 2026-11-06 run 22: main pages deploy green at 2539b58. Chromium (WebKit unavailable) iPhone SE/15 Pro Max on products, directory, shared-profile, index: no overflow, no JS errors, zero targets under 44px. `npm test` passes. Next: inline paragraph links, hero button widths, iOS FAQ question.

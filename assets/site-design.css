@@ -287,3 +287,9 @@ html body[data-fynx-layout] [hidden]{display:none!important}
   html body .lesson-aside li>a{display:flex;align-items:center;min-height:44px;box-sizing:border-box}
   html body .lesson-sequence a{display:block;min-height:44px;box-sizing:border-box;padding:4px 0}
 }
+
+/* [site-qa] run 25: 44px footer links on discovery/lesson pages and About "Read the Journal" link on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .discovery-footer>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body .ecosystem-footnote>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
