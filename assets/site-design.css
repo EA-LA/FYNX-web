@@ -231,3 +231,21 @@ html body[data-fynx-layout] [hidden]{display:none!important}
   html body #briefing-title~a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
   html body :is(.nr-quick-links) a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
 }
+
+/* [site-qa] 2026-11-06 run 18: tool-page header, rail, refresh, chip and source links reach 44px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  html body :is(.discovery-header nav a,.discovery-header nav button,.tool-profile-aside a,.product-start a.discovery-textlink,.sidebar-foot a,.macro-header a,.macro-header nav a,.desk-storage .text-button,.panel-heading button.secondary,.toolbar .segmented button,.chip button,.pill,.actions>a){display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;box-sizing:border-box}
+  html body .desk-storage .text-button{padding:3px 10px}
+  html body section.section>div>a[target=_blank]{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body input#query{min-height:44px;box-sizing:border-box}
+  html body .check-label{min-height:44px;display:flex;align-items:center;gap:8px}
+  html body .check-label input[type=checkbox]{width:24px;height:24px}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body button.secondary,html body a.discovery-textlink,html body .search-row input,html body .search-row input[type=search]{min-height:44px!important;box-sizing:border-box}
+  html body a.discovery-textlink{display:inline-flex;align-items:center}
+  html body section.section a[target=_blank],html body .macro-source a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body .macro-card a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
