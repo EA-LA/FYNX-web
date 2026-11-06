@@ -50,3 +50,8 @@ html body .fp-dialog .fp-count{margin:0!important;color:#999!important;font:400 
   .hero-links a,.product h3>a,.work-title a,.free-note a,footer a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
   th>a,h3>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
 }
+
+/* [site-qa] 2026-11-06 run 22: products page header/intro links reach 44px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  .fp-directory-header a,.fp-directory-intro>a,.fp-directory-end a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}

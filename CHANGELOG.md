@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-06 (run 22) — [site-qa] Easier tapping on Products, Directory and Shared Profile
+- iPhone: the header and intro links on the Products page, the header and menu links on the lightweight Directory, and the FYNX logo link on Shared Profile are now full-size tap targets. https://www.fynxfinanceworld.com/products.html https://www.fynxfinanceworld.com/directory.html
+- Checked on iPhone SE and 15 Pro Max: no sideways overflow, no errors.
+
 ## 2026-11-06 (run 21) — [site-qa] More answers in the homepage FAQ
 - Added: the homepage FAQ now answers "Is FYNX free?", "Where does the news come from?" and "Is FYNX financial advice?" with links to Pro, News and the Risk Disclosure; links are full-size tap targets on iPhone. https://www.fynxfinanceworld.com/#faqs
 - Checked on iPhone SE, 15 Pro Max and desktop: no sideways overflow, no errors.
