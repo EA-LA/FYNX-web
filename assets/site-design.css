@@ -249,3 +249,10 @@ html body[data-fynx-layout] [hidden]{display:none!important}
 @media (max-width:600px) and (pointer:coarse){
   html body .macro-card a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
 }
+@media (max-width:600px) and (pointer:coarse){
+  html body main>.shell>p>a:only-of-type,html body main p>a[target=_blank]:only-child,html body .network-help a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body main .shell>p:has(>a[href*="tools/"]) a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body main.card>p>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}

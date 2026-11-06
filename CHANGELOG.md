@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-06 (run 19) — [site-qa] Easier tapping on Markets and Learn pages
+- iPhone: the "Open … calculator" links on Risk Management and Trading Psychology, the source links on COT, Liquidity, Volatility and Correlation, and the "Chart or live data unavailable?" help links on Markets pages are now full-size tap targets. https://www.fynxfinanceworld.com/learn/risk-management.html https://www.fynxfinanceworld.com/markets/cot.html https://www.fynxfinanceworld.com/markets/crypto.html
+- Checked all Markets and Learn pages on iPhone SE and 15 Pro Max: no sideways overflow, no errors.
+
 ## 2026-11-06 (run 18) — [site-qa] Easier tapping across the tool pages
 - iPhone: on the tool pages (Heat Map, Interest Rates, Market Holidays, Company Screener, Portfolio Tracker, Journal Export and more) the header Explore/Theme/Import buttons, Refresh buttons, "Continue to…" links, source links and filter chips are now full-size tap targets. https://www.fynxfinanceworld.com/tools/heatmap.html https://www.fynxfinanceworld.com/tools/interest-rates.html https://www.fynxfinanceworld.com/tools/market-holidays.html
 - Checked every tool page on iPhone SE and 15 Pro Max: no sideways overflow, no errors.
