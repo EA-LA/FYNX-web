@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-06 (run 24) — [site-qa] Easier tapping on every lesson page
+- iPhone: on all Learn lessons, the "on this page" jump links, Worked example/Practice links, source links, lesson-path list, glossary/tool links and Previous/Next lesson links are now full-size tap targets. https://www.fynxfinanceworld.com/learn/lessons/indices/opening-range-strategy.html https://www.fynxfinanceworld.com/learn/lessons/options/defined-risk-strategies.html
+- Checked on iPhone SE and 15 Pro Max plus desktop: no sideways overflow, no errors.
+
 ## 2026-11-06 (run 23) — [site-qa] Matching hero buttons on the homepage
 - iPhone: "Open Your Workspace" and "Explore Resources" are now the same width instead of two different-sized buttons. https://www.fynxfinanceworld.com/
 - Checked on iPhone SE and 15 Pro Max: no sideways overflow.
