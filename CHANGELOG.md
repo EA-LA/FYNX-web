@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-06 (run 27) — [site-qa] Easier tapping on Directory, Partners, Connection Help and Quant Analyst
+- iPhone: every link in the lightweight Directory lists, the Tools/News header links on Partners, Risk Disclosure and Affiliate Disclosure, the source links on Connection Help, and the market/strategy buttons on Quant Analyst are now full-size tap targets. https://www.fynxfinanceworld.com/directory.html https://www.fynxfinanceworld.com/partners.html https://www.fynxfinanceworld.com/accessibility.html https://www.fynxfinanceworld.com/quant-analyst.html
+- Checked on iPhone SE and 15 Pro Max plus desktop: no sideways overflow, no errors.
+
 ## 2026-11-06 (run 25) — [site-qa] Easier tapping on footer links
 - iPhone: the footer links on discovery/lesson pages (All resources, Connection help, Contact, Risk disclosure) and About's "Read the Journal" link are now full-size tap targets. https://www.fynxfinanceworld.com/about.html https://www.fynxfinanceworld.com/learn/lessons/stocks/institutional-footprints-in-equities.html
 - Checked on iPhone SE and 15 Pro Max plus desktop: no sideways overflow, no errors.

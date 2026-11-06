@@ -22,3 +22,4 @@ html body.quant-page[data-fynx-layout="standalone"] .quant-workspace .btn,html b
 html body.quant-page[data-fynx-layout="standalone"] .quant-workspace input,html body.quant-page[data-fynx-layout="standalone"] .quant-workspace select,html body.quant-page[data-fynx-layout="standalone"] .quant-workspace .ask input{font-size:16px!important}
 html body.quant-page[data-fynx-layout="standalone"] .quant-workspace p>a{display:inline-flex!important;align-items:center!important;min-height:44px!important}
 }
+@media(max-width:900px){html body.quant-page[data-fynx-layout="standalone"] .quant-workspace :is(#mkts .mkt,#newsMkt,#studyEvents){min-height:44px!important}}
