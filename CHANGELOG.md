@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-06 (run 23) — [site-qa] Matching hero buttons on the homepage
+- iPhone: "Open Your Workspace" and "Explore Resources" are now the same width instead of two different-sized buttons. https://www.fynxfinanceworld.com/
+- Checked on iPhone SE and 15 Pro Max: no sideways overflow.
+
 ## 2026-11-06 (run 22) — [site-qa] Easier tapping on Products, Directory and Shared Profile
 - iPhone: the header and intro links on the Products page, the header and menu links on the lightweight Directory, and the FYNX logo link on Shared Profile are now full-size tap targets. https://www.fynxfinanceworld.com/products.html https://www.fynxfinanceworld.com/directory.html
 - Checked on iPhone SE and 15 Pro Max: no sideways overflow, no errors.

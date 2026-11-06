@@ -49,7 +49,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 ## Page-by-page backlog
 ### Home (index.html)
 - [x] 2026-11-06 run 21: FAQ now 6 questions (free/Pro, news sources, not financial advice). Left: iOS app question.
-- [ ] Hero buttons "Open Your Workspace" / "Explore Resources" have mismatched widths on iPhone.
+- [x] 2026-11-06 run 23: hero buttons now equal width (284px SE, 360px Pro Max) on iPhone.
 ### Tools
 - [x] 2026-11-04: tools/position-size.html: heading renamed "Position size calculator" with a plain description.
 - [x] 2026-11-04 run 5: hand-verified math, all correct: position size, pip ($10/lot), margin ($3,666.67 / 120% level), risk/reward (3.00), break-even (1.10017 / 1.09983, $17 cost), compound ($49,308.12 after 10y).
@@ -61,6 +61,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [ ] Check live news feeds load on the live site (not testable locally).
 
 ## Page coverage (last full audit)
+- 2026-11-06 run 23: main pages deploy green at 842d2ae. Chromium (WebKit unavailable) iPhone SE/15 Pro Max on index: no overflow; hero buttons equalised. `npm test` passes. Next: inline paragraph links, iOS FAQ question.
 - 2026-11-06 run 22: main pages deploy green at 2539b58. Chromium (WebKit unavailable) iPhone SE/15 Pro Max on products, directory, shared-profile, index: no overflow, no JS errors, zero targets under 44px. `npm test` passes. Next: inline paragraph links, hero button widths, iOS FAQ question.
 - 2026-11-06 run 21: main CI/pages deploy green at 0cee293. Chromium (WebKit unavailable) iPhone SE/15 Pro Max + desktop on index: no overflow, no JS errors. Homepage FAQ expanded 3→6 (free, news sources, not advice). Next: products/directory/shared-profile targets, inline paragraph links.
 - 2026-11-06 run 20: main pages deploy green at 3ecb220. Chromium (WebKit unavailable) iPhone SE/15 Pro Max + desktop on 21 top-level pages: no overflow, no JS errors. Fixed field sizes/targets. `npm test` passes. Next: products/directory/shared-profile targets, homepage FAQ backlog.
