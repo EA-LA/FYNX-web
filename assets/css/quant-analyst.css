@@ -16,3 +16,9 @@ html body.quant-page[data-fynx-layout="standalone"] .quant-workspace .mkt-quote{
 html body.quant-page[data-fynx-layout="standalone"] .quant-workspace .mkt-quote b{font:500 12px/1.3 var(--q-mono)!important;color:#17261d!important}
 html body.quant-page[data-fynx-layout="standalone"] .quant-workspace .mkt-quote small,html body.quant-page[data-fynx-layout="standalone"] .quant-workspace .mkt-quote time{font:10px/1.3 Inter,Helvetica,sans-serif!important;white-space:normal!important}
 html body.quant-page[data-fynx-layout="standalone"] .quant-workspace .mkt.on .mkt-quote,html body.quant-page[data-fynx-layout="standalone"] .quant-workspace .mkt.on .mkt-quote b,html body.quant-page[data-fynx-layout="standalone"] .quant-workspace .mkt.on .mkt-quote time{color:#d3e4d7!important}
+/* [site-qa] 2026-11-06 run 20: 44px targets and 16px fields on touch phones (stops iOS zoom). */
+@media (max-width:600px) and (pointer:coarse){
+html body.quant-page[data-fynx-layout="standalone"] .quant-workspace .btn,html body.quant-page[data-fynx-layout="standalone"] .quant-workspace input:not([type=checkbox]):not([type=radio]),html body.quant-page[data-fynx-layout="standalone"] .quant-workspace select{min-height:44px!important}
+html body.quant-page[data-fynx-layout="standalone"] .quant-workspace input,html body.quant-page[data-fynx-layout="standalone"] .quant-workspace select,html body.quant-page[data-fynx-layout="standalone"] .quant-workspace .ask input{font-size:16px!important}
+html body.quant-page[data-fynx-layout="standalone"] .quant-workspace p>a{display:inline-flex!important;align-items:center!important;min-height:44px!important}
+}

@@ -256,3 +256,21 @@ html body[data-fynx-layout] [hidden]{display:none!important}
 @media (max-width:600px) and (pointer:coarse){
   html body main.card>p>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
 }
+
+/* [site-qa] 2026-11-06 run 20: form fields and standalone links on account, partners, quant and disclosure pages reach 44px / 16px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  html body :is(.field,.form-grid,.settings-grid,form) :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea){min-height:44px;font-size:16px;box-sizing:border-box}
+  html body :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea){font-size:16px}
+  html body :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select){min-height:44px;box-sizing:border-box}
+  html body :is(.partners-nav a,.partner-nav a,nav.jump a,.page-top a,.back-link,a[href="index.html"],a[href="/"],a[href="partners.html"],a[href="risk-disclosure.html"],a[href="affiliate-disclosure.html"]):not(p a){display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body main p a[href="partners.html"],html body main p a[href="risk-disclosure.html"],html body main p a[href="affiliate-disclosure.html"]{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body :is(.params,.row,.data-controls) :is(input:not([type=checkbox]):not([type=radio]):not([type=file]),select){min-height:44px!important;font-size:16px!important;box-sizing:border-box}
+  html body .network-index a,html body .owner-shell>a:first-child{display:flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body :is(.btn,button) {min-height:44px}
+  html body label.note select,html body label.note input:not([type=checkbox]):not([type=radio]),html body select#metric{min-height:44px!important;font-size:16px!important;box-sizing:border-box}
+  html body main p>a[href*="news"]:only-child{display:inline-flex;align-items:center;min-height:44px}
+}
