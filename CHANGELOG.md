@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-07 (run 29) — [site-qa] Wider tap targets on News and Home
+- iPhone: the News "Refresh" button, the Tokyo map pin and the homepage "Markets" tab are now at least 44px wide. https://www.fynxfinanceworld.com/news.html https://www.fynxfinanceworld.com/
+- Checked on iPhone SE and 15 Pro Max: no sideways overflow, no errors.
+
 ## 2026-11-07 (run 28) — [site-qa] Easier tapping on "recently opened" tools
 - iPhone: the list of recently opened tools on your workspace home (shown after you use a few calculators) is now full-size tap targets. https://www.fynxfinanceworld.com/home.html
 - Checked on iPhone SE and 15 Pro Max: no sideways overflow, no errors.

@@ -301,3 +301,8 @@ html body[data-fynx-layout] [hidden]{display:none!important}
   html body .side button.mkt{min-height:44px}
   html body .note>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
 }
+
+/* [site-qa] run 29: 44px-wide News refresh / Tokyo map pin and homepage "Markets" tab on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .fn-refresh,html body .fn-map-pin,html body .fw-tabs button{min-width:44px;box-sizing:border-box}
+}
