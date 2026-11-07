@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-07 (run 33) — [site-qa] Easier tapping on Learn hub links
+- iPhone: the Quiz and Glossary links on every Learn hub card are now at least 44px wide. https://www.fynxfinanceworld.com/learn.html
+- Checked on iPhone SE and 15 Pro Max: no sideways overflow, no errors; `npm test` passes.
+
 ## 2026-11-07 (run 32) — [site-qa] Easier tapping on research-tool source notes
 - iPhone: the Yahoo Finance / Coinbase source links at the bottom of Company Financials, Company Screener, Heatmap, Portfolio Tracker, Price Alerts, Research Desk, Research Heatmap, Strategy Backtester and Financial Research Assistant, plus the "economic calendar" link on Economic Indicators Heatmap, are now full-size tap targets. https://www.fynxfinanceworld.com/tools/company-screener.html https://www.fynxfinanceworld.com/tools/economic-indicators-heatmap.html
 - Checked on iPhone SE, 15 Pro Max: no sideways overflow, no errors; all 46 tools re-scanned.
