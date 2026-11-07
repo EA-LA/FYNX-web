@@ -66,6 +66,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [ ] Check live news feeds load on the live site (not testable locally).
 
 ## Page coverage (last full audit)
+- 2026-11-07 run 35: main CI/pages deploy green at 0006cc2. Static link check of every local href/src across all HTML pages: 0 broken. No product defects found, no code changes. Next: iOS FAQ question, inline paragraph links.
 - 2026-11-07 run 34: main pages deploy green at 53be76d. Chromium (WebKit unavailable) iPhone SE/15 Pro Max on all 27 top-level pages: no overflow, no JS errors, fields >=16px; only short-width (all 44px tall) header/footer text links remain. Dashboard 'Peellden/Tecnowey' links are Wikimedia photo credits, not a bug. No changes needed.
 - 2026-11-07 run 33: main pages deploy green at 52d7e09. Chromium (WebKit unavailable) iPhone SE/15 Pro Max on 13 key pages: no overflow, no JS errors, fields >=16px. Fixed Learn hub Quiz/Glossary width. Left: short header links (Home/Tools/Plans/Sign in/Terms) 28-43px wide but 44px tall.
 - 2026-11-07 run 32: main pages deploy green at d2e4145. Chromium (WebKit unavailable) iPhone SE/15 Pro Max on all 46 tools/*: no overflow, no JS errors, fields >=16px. Fixed research-tool source-note links and economic-calendar link (44px). Left: checkbox inputs themselves are 24px but their labels are 44px; strategy-backtester file input. Next: inline links on other pages, iOS FAQ question.
