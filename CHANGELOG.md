@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-07 (run 30) — [site-qa] Easier tapping on News source links and Market Holidays
+- iPhone: the official source links on News (Federal Reserve, Bureau of Economic Analysis, etc.) and the exchange links on Market Holidays (NYSE, Nasdaq, LSE, HKEX, JPX) are now full-size tap targets. https://www.fynxfinanceworld.com/news.html https://www.fynxfinanceworld.com/tools/market-holidays.html
+- Checked on iPhone SE, 14 and 15 Pro Max plus desktop: no sideways overflow, no errors.
+
 ## 2026-11-07 (run 29) — [site-qa] Wider tap targets on News and Home
 - iPhone: the News "Refresh" button, the Tokyo map pin and the homepage "Markets" tab are now at least 44px wide. https://www.fynxfinanceworld.com/news.html https://www.fynxfinanceworld.com/
 - Checked on iPhone SE and 15 Pro Max: no sideways overflow, no errors.

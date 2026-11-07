@@ -306,3 +306,10 @@ html body[data-fynx-layout] [hidden]{display:none!important}
 @media (hover:none) and (pointer:coarse) and (max-width:820px){
   html body .fn-refresh,html body .fn-map-pin,html body .fw-tabs button{min-width:44px;box-sizing:border-box}
 }
+
+/* [site-qa] run 30: 44px source links on News and exchange links on Market Holidays on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .fn-release-sources>p>a,html body .fn-terminal-sources a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body .legendRow .rightNote>p{display:flex;flex-wrap:wrap;align-items:center;gap:0 8px}
+  html body .legendRow .rightNote>p>a{display:inline-flex;align-items:center;min-height:44px;min-width:44px;justify-content:center;box-sizing:border-box}
+}
