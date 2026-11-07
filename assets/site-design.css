@@ -313,3 +313,9 @@ html body[data-fynx-layout] [hidden]{display:none!important}
   html body .legendRow .rightNote>p{display:flex;flex-wrap:wrap;align-items:center;gap:0 8px}
   html body .legendRow .rightNote>p>a{display:inline-flex;align-items:center;min-height:44px;min-width:44px;justify-content:center;box-sizing:border-box}
 }
+
+/* [site-qa] run 32: 44px source-note links in research-tool footers and the economic calendar link on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .desk-sources.tool-explainer a[target=_blank]{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body .tool-note a[href$="economic-calendar.html"],html body p>a[href="economic-calendar.html"]{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}

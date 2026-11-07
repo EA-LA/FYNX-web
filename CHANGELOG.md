@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-07 (run 32) — [site-qa] Easier tapping on research-tool source notes
+- iPhone: the Yahoo Finance / Coinbase source links at the bottom of Company Financials, Company Screener, Heatmap, Portfolio Tracker, Price Alerts, Research Desk, Research Heatmap, Strategy Backtester and Financial Research Assistant, plus the "economic calendar" link on Economic Indicators Heatmap, are now full-size tap targets. https://www.fynxfinanceworld.com/tools/company-screener.html https://www.fynxfinanceworld.com/tools/economic-indicators-heatmap.html
+- Checked on iPhone SE, 15 Pro Max: no sideways overflow, no errors; all 46 tools re-scanned.
+
 ## 2026-11-07 (run 31) — [site-qa] New: break-even win rate on the Risk/Reward calculator
 - Added: after you calculate, the Risk/Reward calculator now shows the win rate you need just to break even (1 ÷ (1 + R:R), before costs) — e.g. 3:1 needs 25%, 1:1 needs 50%. It is also included when you Copy/Share the result. https://www.fynxfinanceworld.com/tools/risk-reward.html
 - Checked on iPhone SE, 15 Pro Max and desktop: no sideways overflow, no errors, math hand-verified.
