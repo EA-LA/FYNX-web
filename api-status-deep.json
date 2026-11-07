@@ -1,0 +1,148 @@
+{
+ "components": {
+  "markets": {
+   "name": "Market Hours API",
+   "ok": true,
+   "latency_ms": 2714,
+   "code": 200,
+   "checked_at": "2026-11-07T05:45:03.374Z"
+  },
+  "indicators": {
+   "name": "Indicators API",
+   "ok": true,
+   "latency_ms": 704,
+   "code": 200,
+   "checked_at": "2026-11-07T05:45:04.379Z"
+  },
+  "portfolio": {
+   "name": "Portfolio API",
+   "ok": true,
+   "latency_ms": 669,
+   "code": 200,
+   "checked_at": "2026-11-07T05:45:05.348Z"
+  },
+  "risk": {
+   "name": "Risk API",
+   "ok": true,
+   "latency_ms": 1010,
+   "code": 200,
+   "checked_at": "2026-11-07T05:45:06.658Z"
+  }
+ },
+ "history": [
+  {
+   "t": "2026-11-07T05:45:06.957Z",
+   "markets": true,
+   "indicators": true,
+   "portfolio": true,
+   "risk": true
+  },
+  {
+   "t": "2026-11-06T19:15:32.337Z",
+   "markets": true,
+   "indicators": true,
+   "portfolio": true,
+   "risk": true
+  },
+  {
+   "t": "2026-11-06T06:20:45.828Z",
+   "markets": true,
+   "indicators": true,
+   "portfolio": true,
+   "risk": true
+  },
+  {
+   "t": "2026-11-05T19:50:28.938Z",
+   "markets": true,
+   "indicators": true,
+   "portfolio": true,
+   "risk": true
+  },
+  {
+   "t": "2026-11-05T06:26:19.213Z",
+   "markets": true,
+   "indicators": true,
+   "portfolio": true,
+   "risk": true
+  },
+  {
+   "t": "2026-11-04T19:39:57.421Z",
+   "markets": true,
+   "indicators": true,
+   "portfolio": true,
+   "risk": true
+  },
+  {
+   "t": "2026-11-04T05:59:47.382Z",
+   "markets": true,
+   "indicators": true,
+   "portfolio": true,
+   "risk": true
+  },
+  {
+   "t": "2026-11-03T19:25:00.284Z",
+   "markets": true,
+   "indicators": true,
+   "portfolio": true,
+   "risk": true
+  },
+  {
+   "t": "2026-11-03T06:28:41.403Z",
+   "markets": true,
+   "indicators": true,
+   "portfolio": true,
+   "risk": true
+  },
+  {
+   "t": "2026-11-02T21:40:32.297Z",
+   "markets": true,
+   "indicators": true,
+   "portfolio": true,
+   "risk": true
+  },
+  {
+   "t": "2026-11-02T05:46:46.654Z",
+   "markets": true,
+   "indicators": true,
+   "portfolio": true,
+   "risk": true
+  },
+  {
+   "t": "2026-11-01T17:52:22.917Z",
+   "markets": true,
+   "indicators": true,
+   "portfolio": true,
+   "risk": true
+  },
+  {
+   "t": "2026-11-01T05:47:56.048Z",
+   "markets": true,
+   "indicators": true,
+   "portfolio": true,
+   "risk": true
+  },
+  {
+   "t": "2026-10-31T17:11:36.979Z",
+   "markets": true,
+   "indicators": true,
+   "portfolio": true,
+   "risk": true
+  },
+  {
+   "t": "2026-10-31T05:19:43.546Z",
+   "markets": true,
+   "indicators": true,
+   "portfolio": true,
+   "risk": true
+  },
+  {
+   "t": "2026-10-30T14:39:10.892Z",
+   "markets": true,
+   "indicators": true,
+   "portfolio": true,
+   "risk": true
+  }
+ ],
+ "updated_at": "2026-11-07T05:45:06.957Z",
+ "incidents": []
+}
