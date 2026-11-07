@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-07 (run 31) — [site-qa] New: break-even win rate on the Risk/Reward calculator
+- Added: after you calculate, the Risk/Reward calculator now shows the win rate you need just to break even (1 ÷ (1 + R:R), before costs) — e.g. 3:1 needs 25%, 1:1 needs 50%. It is also included when you Copy/Share the result. https://www.fynxfinanceworld.com/tools/risk-reward.html
+- Checked on iPhone SE, 15 Pro Max and desktop: no sideways overflow, no errors, math hand-verified.
+
 ## 2026-11-07 (run 30) — [site-qa] Easier tapping on News source links and Market Holidays
 - iPhone: the official source links on News (Federal Reserve, Bureau of Economic Analysis, etc.) and the exchange links on Market Holidays (NYSE, Nasdaq, LSE, HKEX, JPX) are now full-size tap targets. https://www.fynxfinanceworld.com/news.html https://www.fynxfinanceworld.com/tools/market-holidays.html
 - Checked on iPhone SE, 14 and 15 Pro Max plus desktop: no sideways overflow, no errors.

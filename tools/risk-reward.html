@@ -551,6 +551,14 @@
               <div class="v mono" id="rewardOut">—</div>
             </div>
 
+            <div class="kv">
+              <div>
+                <div class="k">Break-even win rate</div>
+                <small>1 ÷ (1 + R:R), before costs</small>
+              </div>
+              <div class="v mono" id="beOut">—</div>
+            </div>
+
             <div class="note" id="noteOut"></div>
 
             <div class="shareRow">
@@ -591,6 +599,7 @@
       resultsCard: document.getElementById("resultsCard"),
 
       rrOut: document.getElementById("rrOut"),
+      beOut: document.getElementById("beOut"),
       entryOut: document.getElementById("entryOut"),
       slOut: document.getElementById("slOut"),
       tpOut: document.getElementById("tpOut"),
@@ -648,6 +657,7 @@
       el.tpOut.textContent = "—";
       el.riskOut.textContent = "—";
       el.rewardOut.textContent = "—";
+      el.beOut.textContent = "—";
       el.noteOut.textContent = "";
     }
 
@@ -665,6 +675,7 @@
             `Risk: ${el.riskOut.textContent}`,
             `Reward: ${el.rewardOut.textContent}`,
             `R:R = ${el.rrOut.textContent}`,
+            `Break-even win rate: ${el.beOut.textContent}`,
           ].join("\n");
 
       return `FYNX • Risk/Reward Calculator\n\nEntry: ${entryT}\nStop: ${slT}\nTake Profit: ${tpT}\n\nResult:\n${resultLines}\n`;
@@ -716,6 +727,7 @@
       el.riskOut.textContent = money(risk);
       el.rewardOut.textContent = money(reward);
       el.rrOut.textContent = rrFmt(rr);
+      el.beOut.textContent = (100 / (1 + rr)).toFixed(1) + "%";
 
       const direction =
         (sl < entry && entry < tp) ? "Long (SL < Entry < TP)" :
