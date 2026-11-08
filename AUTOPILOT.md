@@ -67,6 +67,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [ ] Check live news feeds load on the live site (not testable locally).
 
 ## Page coverage (last full audit)
+- 2026-11-08 run 42: main workflows green at 142c358, live site 200. Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max on 14 key pages: no overflow, no JS errors, fields >=16px. `npm ci && npm test` passes. No product changes needed.
 - 2026-11-08 run 41: main CI/pages deploy green at e85d51a. Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max on 13 key pages: no overflow, no JS errors, fields >=16px. `npm test` passes. No product changes needed.
 - 2026-11-08 run 40: main CI/pages deploy green at e707680. Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max on 13 key pages: no overflow, no JS errors, fields >=16px. `npm test` passes. No product changes needed.
 - 2026-11-08 run 39: main CI/pages deploy green at 842b056. Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max on 15 key pages (index, calculator, journal, explore, news, learn, correlation, position-size, risk-reward, compound, margin, pip, glossary, quizzes, pro): no overflow, no JS errors, fields >=16px; remaining <44px items are closed-menu links or 44px-tall short-width header links. `npm ci && npm test` passes. No product changes needed.
