@@ -871,8 +871,32 @@
 <script src="/assets/js/terminal-pages.js?v=20261030-r1" defer></script>
 <!-- terminal-design:end -->
 <!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261106-tap-targets-19"><script src="/assets/js/company-products-data.js?v=20261105-research-1" defer></script><script src="/assets/js/company-products.js?v=20261106-tap-targets-19" defer></script><!-- company-products:assets:end -->
+<style>
+  /* Keyboard-only bypass for the long FYNX navigation and product menus. */
+  .fynx-skip-link {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 100000;
+    transform: translateY(-200%);
+    padding: 12px 16px;
+    border: 2px solid #111;
+    border-radius: 8px;
+    background: #fff;
+    color: #111;
+    font: 600 16px/1.3 system-ui, sans-serif;
+    text-decoration: none;
+  }
+  .fynx-skip-link:focus,
+  .fynx-skip-link:focus-visible {
+    transform: none;
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+  }
+</style>
 </head>
 <body data-fynx-layout="landing" data-fynx-section="FINANCE WORLD" data-fynx-terminal>
+<a class="fynx-skip-link" href="#fynx-main">Skip to main content</a>
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
 <!-- Animated Background -->
   <div class="animated-bg">
@@ -1187,6 +1211,8 @@
     </div>
   </div>
 
+  <main id="fynx-main" tabindex="-1">
+
   <!-- Hero Section -->
   <section class="hero" id="home">
     <div class="hero-content">
@@ -1321,6 +1347,8 @@
       </div>
     </div>
   </section>
+
+  </main>
 
   <!-- Footer -->
   <footer>
