@@ -44,6 +44,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [x] 2026-11-07 run 29: News Refresh button (40px wide), Tokyo map pin (36px) and homepage 'Markets' tab (39px) now 44px wide. Left: short text links (Home/BLS/Blog) narrower than 44px but 44px tall.
 
 ## Bugs found and fixed
+- [x] 2026-11-08 run 36: quant-analyst.html: data-controls grid overflowed 320px iPhone SE; now single column under 450px.
 - [x] 2026-11-04 (run 4): tools/position-size.html: floating-point rounding dropped a full 0.01 lot on exact answers (USD/JPY @150, $100 risk, 25 pips gave 0.59, exact is 0.60). Fixed with a tiny tolerance before rounding down. Hand-checked EUR/USD (0.40), USD/JPY (0.60), GBP/JPY with manual rate (0.59), XAU/USD (0.40 lots/40 oz).
 - [x] 2026-11-04: Homepage "Your News →" button: dark text on dark green, unreadable. Now white.
 - [x] 2026-11-04: Homepage footer copyright: nearly invisible (dark grey on black). Now legible.
@@ -66,6 +67,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [ ] Check live news feeds load on the live site (not testable locally).
 
 ## Page coverage (last full audit)
+- 2026-11-08 run 36: main pages deploy green at 8d2bfe8, live 200. Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max on calculator, correlation, position-size, journal, explore, learn, index, news, trader-journal, quant-analyst + others: Correlation clock, Position Size heading, header/calculator targets still fine. Fixed Quant Analyst data fields overflowing on SE (367px vs 320px). `npm test` passes.
 - 2026-11-08 run 35: main workflows green at 0006cc2, live site 200. Chromium (WebKit unavailable) iPhone SE/14 on markets/*, news/*, resources/*: no overflow, no JS errors. Fixed 40px Follow/Refresh buttons and Your News filters. Left: news/news.html anchor links (18px, redirect-style page). `npm test` passes after `npm ci`.
 - 2026-11-07 run 34: main pages deploy green at 53be76d. Chromium (WebKit unavailable) iPhone SE/15 Pro Max on all 27 top-level pages: no overflow, no JS errors, fields >=16px; only short-width (all 44px tall) header/footer text links remain. Dashboard 'Peellden/Tecnowey' links are Wikimedia photo credits, not a bug. No changes needed.
 - 2026-11-07 run 33: main pages deploy green at 52d7e09. Chromium (WebKit unavailable) iPhone SE/15 Pro Max on 13 key pages: no overflow, no JS errors, fields >=16px. Fixed Learn hub Quiz/Glossary width. Left: short header links (Home/Tools/Plans/Sign in/Terms) 28-43px wide but 44px tall.

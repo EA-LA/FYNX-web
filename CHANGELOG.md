@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-08 (run 36) — [site-qa] Quant Analyst fits small iPhones
+- iPhone SE: the data fields on Quant Analyst stuck out past the right edge (page was 367px wide on a 320px screen). They now stack and fit. https://www.fynxfinanceworld.com/quant-analyst.html
+- Checked 15 key pages on iPhone SE, 14 and 15 Pro Max (Chromium; WebKit unavailable): no other overflow or errors; `npm test` passes.
+
 ## 2026-11-08 (run 35) — [site-qa] Easier tapping on topic pages' Follow buttons and Your News filters
 - iPhone: the "Follow …" and "Refresh coverage" buttons on World, Energy, Finance and Industries news pages, and the filter boxes on Your News, are now at least 44px tall. https://www.fynxfinanceworld.com/news/world.html https://www.fynxfinanceworld.com/news/your-news.html
 - Checked on iPhone SE and 14 plus desktop (Chromium; WebKit unavailable): no sideways overflow, no errors; `npm test` passes.
