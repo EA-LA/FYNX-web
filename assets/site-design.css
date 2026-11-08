@@ -190,7 +190,7 @@ html body[data-fynx-layout] [hidden]{display:none!important}
 }
 @media (max-width:600px) and (pointer:coarse){
   html body .fn-search input,html body .fn-search select,html body label select,html body #resource-query,html body .discovery-search button,html body .fn-pro-card button,html body .fn-empty button,html body [data-refresh],html body main button{min-height:44px!important}
-  html body .fn-jump-tools a,html body .fw-chip,html body a.btn,html body .hero a[href]{min-height:44px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
+  html body .fn-jump-tools a,html body .fn-jump>a,html body .fw-chip,html body a.btn,html body .hero a[href]{min-height:44px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
   html body .fn-terminal-sources a,html body .fn-section-heading a{min-height:44px;display:inline-flex;align-items:center}
 }
 /* [site-qa] 2026-11-05 run 12: 44px tap targets for homepage hero/newsroom links, theme button and resource-page header/A-Z links on touch phones. */

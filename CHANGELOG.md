@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-08 (run 37) — [site-qa] Easier tapping on News jump links
+- iPhone: the Headlines / Your News / Watch & listen / Official sources links at the top of the News page are now 44px tall. https://www.fynxfinanceworld.com/news/news.html
+- Checked all pages on iPhone SE and 15 Pro Max (Chromium; WebKit unavailable): no overflow or errors; `npm test` passes.
+
 ## 2026-11-08 (run 36) — [site-qa] Quant Analyst fits small iPhones
 - iPhone SE: the data fields on Quant Analyst stuck out past the right edge (page was 367px wide on a 320px screen). They now stack and fit. https://www.fynxfinanceworld.com/quant-analyst.html
 - Checked 15 key pages on iPhone SE, 14 and 15 Pro Max (Chromium; WebKit unavailable): no other overflow or errors; `npm test` passes.

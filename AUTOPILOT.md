@@ -67,6 +67,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [ ] Check live news feeds load on the live site (not testable locally).
 
 ## Page coverage (last full audit)
+- 2026-11-08 run 37: main pages deploy green at 5cd7ec7. Chromium (WebKit unavailable) iPhone SE/15 Pro Max on every top-level/section page: no overflow, no JS errors, fields >=16px (only strategy-backtester file input). Fixed news/news.html jump links (18px -> 44px). `npm test` passes.
 - 2026-11-08 run 36: main pages deploy green at 8d2bfe8, live 200. Chromium (WebKit unavailable) iPhone SE/14/15 Pro Max on calculator, correlation, position-size, journal, explore, learn, index, news, trader-journal, quant-analyst + others: Correlation clock, Position Size heading, header/calculator targets still fine. Fixed Quant Analyst data fields overflowing on SE (367px vs 320px). `npm test` passes.
 - 2026-11-08 run 35: main workflows green at 0006cc2, live site 200. Chromium (WebKit unavailable) iPhone SE/14 on markets/*, news/*, resources/*: no overflow, no JS errors. Fixed 40px Follow/Refresh buttons and Your News filters. Left: news/news.html anchor links (18px, redirect-style page). `npm test` passes after `npm ci`.
 - 2026-11-07 run 34: main pages deploy green at 53be76d. Chromium (WebKit unavailable) iPhone SE/15 Pro Max on all 27 top-level pages: no overflow, no JS errors, fields >=16px; only short-width (all 44px tall) header/footer text links remain. Dashboard 'Peellden/Tecnowey' links are Wikimedia photo credits, not a bug. No changes needed.
