@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-08 (run 35) — [site-qa] Easier tapping on topic pages' Follow buttons and Your News filters
+- iPhone: the "Follow …" and "Refresh coverage" buttons on World, Energy, Finance and Industries news pages, and the filter boxes on Your News, are now at least 44px tall. https://www.fynxfinanceworld.com/news/world.html https://www.fynxfinanceworld.com/news/your-news.html
+- Checked on iPhone SE and 14 plus desktop (Chromium; WebKit unavailable): no sideways overflow, no errors; `npm test` passes.
+
 ## 2026-11-07 (run 33) — [site-qa] Easier tapping on Learn hub links
 - iPhone: the Quiz and Glossary links on every Learn hub card are now at least 44px wide. https://www.fynxfinanceworld.com/learn.html
 - Checked on iPhone SE and 15 Pro Max: no sideways overflow, no errors; `npm test` passes.
