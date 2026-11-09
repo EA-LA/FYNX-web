@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-09 (run 48) — [site-qa] Fixes sideways scroll on iPhone SE
+- iPhone SE: the top menu (Home / Tools / News / Partners) on Partners, Risk Disclosure and Affiliate Disclosure stuck out 6px past the screen; it now wraps onto a second line. https://www.fynxfinanceworld.com/partners.html https://www.fynxfinanceworld.com/risk-disclosure.html https://www.fynxfinanceworld.com/affiliate-disclosure.html
+- iPhone SE: the "Trade plan" card on Edge Radar market pages was 11px too wide; it now fits. https://www.fynxfinanceworld.com/edge-radar/nas100/
+- Checked all 237 pages on iPhone SE and 15 Pro Max (Chromium; WebKit unavailable): no overflow left; `npm test` and build pass.
+
 ## 2026-11-08 (run 37) — [site-qa] Easier tapping on News jump links
 - iPhone: the Headlines / Your News / Watch & listen / Official sources links at the top of the News page are now 44px tall. https://www.fynxfinanceworld.com/news/news.html
 - Checked all pages on iPhone SE and 15 Pro Max (Chromium; WebKit unavailable): no overflow or errors; `npm test` passes.
