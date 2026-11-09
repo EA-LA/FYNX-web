@@ -72,14 +72,14 @@
       <section class="content-area news-wrap fn-news-page">
 <!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=News%20%26%20events">News &amp; events</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
 <div class="news-mode-toggle" role="tablist" aria-label="News modules">
-          <button class="news-mode-btn active" type="button" role="tab" aria-selected="true" data-news-tab="feed">News Feed</button>
-          <button class="news-mode-btn" type="button" role="tab" aria-selected="false" data-news-tab="macro">Macro</button>
-          <button class="news-mode-btn" type="button" role="tab" aria-selected="false" data-news-tab="markets">Markets</button>
-          <button class="news-mode-btn" type="button" role="tab" aria-selected="false" data-news-tab="analysis">Analysis</button>
-          <button class="news-mode-btn" type="button" role="tab" aria-selected="false" data-news-tab="positioning">Positioning</button>
+          <button class="news-mode-btn active" type="button" role="tab" id="news-tab-feed" aria-controls="news-panel-feed" aria-selected="true" tabindex="0" data-news-tab="feed">News Feed</button>
+          <button class="news-mode-btn" type="button" role="tab" id="news-tab-macro" aria-controls="news-panel-macro" aria-selected="false" tabindex="-1" data-news-tab="macro">Macro</button>
+          <button class="news-mode-btn" type="button" role="tab" id="news-tab-markets" aria-controls="news-panel-markets" aria-selected="false" tabindex="-1" data-news-tab="markets">Markets</button>
+          <button class="news-mode-btn" type="button" role="tab" id="news-tab-analysis" aria-controls="news-panel-analysis" aria-selected="false" tabindex="-1" data-news-tab="analysis">Analysis</button>
+          <button class="news-mode-btn" type="button" role="tab" id="news-tab-positioning" aria-controls="news-panel-positioning" aria-selected="false" tabindex="-1" data-news-tab="positioning">Positioning</button>
         </div>
 
-        <div class="mode-content active" data-news-panel="feed">
+        <div class="mode-content active" id="news-panel-feed" role="tabpanel" aria-labelledby="news-tab-feed" tabindex="0" data-news-panel="feed">
 <!-- news-intelligence:start -->
 <div class="fn-app" data-news-intelligence>
   <header class="fn-heading">
@@ -111,7 +111,7 @@
 <!-- news-intelligence:end -->
         </div>
 
-        <div class="mode-content" data-news-panel="macro" aria-hidden="true">
+        <div class="mode-content" id="news-panel-macro" role="tabpanel" aria-labelledby="news-tab-macro" tabindex="0" data-news-panel="macro" aria-hidden="true" hidden>
           <div class="module-grid">
             <article class="module-card">
               <h2 class="module-title">Interest Rates</h2>
@@ -124,7 +124,7 @@
           </div>
         </div>
 
-        <div class="mode-content" data-news-panel="markets" aria-hidden="true">
+        <div class="mode-content" id="news-panel-markets" role="tabpanel" aria-labelledby="news-tab-markets" tabindex="0" data-news-panel="markets" aria-hidden="true" hidden>
           <div class="module-grid">
             <article class="module-card">
               <h2 class="module-title">Markets</h2>
@@ -141,7 +141,7 @@
           </div>
         </div>
 
-        <div class="mode-content" data-news-panel="analysis" aria-hidden="true">
+        <div class="mode-content" id="news-panel-analysis" role="tabpanel" aria-labelledby="news-tab-analysis" tabindex="0" data-news-panel="analysis" aria-hidden="true" hidden>
           <div class="module-grid">
             <article class="module-card">
               <h2 class="module-title">Indicators</h2>
@@ -170,7 +170,7 @@
           </div>
         </div>
 
-        <div class="mode-content" data-news-panel="positioning" aria-hidden="true">
+        <div class="mode-content" id="news-panel-positioning" role="tabpanel" aria-labelledby="news-tab-positioning" tabindex="0" data-news-panel="positioning" aria-hidden="true" hidden>
           <div class="module-grid">
             <article class="module-card">
               <h2 class="module-title">Commitments of Traders</h2>
@@ -202,18 +202,44 @@
         const isActive = tab.dataset.newsTab === nextTab;
         tab.classList.toggle('active', isActive);
         tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        tab.tabIndex = isActive ? 0 : -1;
       });
 
       newsPanels.forEach((panel) => {
         const isActive = panel.dataset.newsPanel === nextTab;
         panel.classList.toggle('active', isActive);
         panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+        panel.hidden = !isActive;
       });
     }
 
-    newsTabs.forEach((tab) => {
+    newsTabs.forEach((tab, index) => {
       tab.addEventListener('click', () => setNewsTab(tab.dataset.newsTab));
+      tab.addEventListener('keydown', (event) => {
+        let nextIndex;
+        switch (event.key) {
+          case 'ArrowRight':
+            nextIndex = (index + 1) % newsTabs.length;
+            break;
+          case 'ArrowLeft':
+            nextIndex = (index - 1 + newsTabs.length) % newsTabs.length;
+            break;
+          case 'Home':
+            nextIndex = 0;
+            break;
+          case 'End':
+            nextIndex = newsTabs.length - 1;
+            break;
+          default:
+            return;
+        }
+        event.preventDefault();
+        setNewsTab(newsTabs[nextIndex].dataset.newsTab);
+        newsTabs[nextIndex].focus();
+      });
     });
+
+    setNewsTab(newsTabs.find((tab) => tab.classList.contains('active'))?.dataset.newsTab || 'feed');
   </script>
 
   <script src="fynx-nav.js?v=20261106-tap-targets-19"></script>
