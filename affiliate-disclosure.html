@@ -21,6 +21,8 @@
     .content-card li{line-height:1.65;}
     .mini-affiliate-banner{font-size:.9rem;padding:.7rem .95rem;display:inline-block;}
     body:not(.dark-mode) .notice-box,body:not(.dark-mode) .content-card,body:not(.dark-mode) .mini-affiliate-banner{background:rgba(0,0,0,.03);border-color:rgba(0,0,0,.16);}
+      .nav-container a.logo{color:inherit;text-decoration:none;}
+    .nav-container a.logo:focus-visible{outline:3px solid currentColor;outline-offset:4px;border-radius:4px;}
   </style>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
@@ -65,7 +67,7 @@
   <div class="animated-bg"><div class="grid-overlay"></div><div class="gradient-orb orb-1"></div><div class="gradient-orb orb-2"></div></div>
   <header>
     <div class="nav-container">
-      <div class="logo" onclick="location.href='index.html'"><i class="fas fa-chart-line"></i><span>FYNX</span></div>
+      <a class="logo" href="index.html" aria-label="FYNX Finance World home"><i class="fas fa-chart-line" aria-hidden="true"></i><span>FYNX</span></a>
       <nav><ul><li><a href="index.html">Home</a></li><li><a href="calculator.html">Tools</a></li><li><a href="news.html">News</a></li><li><a href="partners.html">Partners</a></li></ul></nav>
       <button class="fynx-theme-toggle" type="button" aria-label="Toggle theme" data-fynx-theme-toggle title="Toggle black/white mode">
         <i class="fas fa-circle-half-stroke"></i>
