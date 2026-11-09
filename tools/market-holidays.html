@@ -195,6 +195,9 @@
       border-color:#0b0b0b!important;
       color:#f3f3f3!important;
     }
+    #downloadHolidays{min-height:44px}
+    #downloadHolidays:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+    #downloadHolidays:disabled{opacity:.42;cursor:not-allowed}
     .views{margin-left:auto;display:flex;gap:.5rem;flex-wrap:wrap}
     .statline{margin-top:.75rem;color:rgba(255, 255, 255, .45);font-size:.8rem;display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
     .dotSep{color:rgba(255, 255, 255, .20)}
@@ -1106,6 +1109,7 @@
     function render() {
       const items = filtered();
       countEl.textContent = String(items.length);
+      calendarExportStatus.textContent = '';
       downloadHolidays.disabled = items.length === 0;
       downloadHolidays.title = items.length ? 'Download ' + items.length + ' selected calendar events' : 'No matching calendar events';
       yearTxt.textContent = String(state.year);
