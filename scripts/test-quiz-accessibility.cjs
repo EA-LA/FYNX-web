@@ -71,7 +71,7 @@ function questionHarness() {
   const optionsWrap = {
     set innerHTML(value) {
       rendered++;
-      options = [...value.matchAll(/<button type="button" class="option ([^"]*)" data-index="(\\d+)" aria-pressed="(true|false)">/g)]
+      options = [...value.matchAll(/<button type="button" class="option ([^"]*)" data-index="(\d+)" aria-pressed="(true|false)">/g)]
         .map(match => makeButton({ index: match[2] }, `option ${match[1]}`, match[3]));
     },
     querySelectorAll(selector) {
