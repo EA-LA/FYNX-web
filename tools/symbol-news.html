@@ -478,12 +478,12 @@
         <div class="chips" id="chips" aria-label="Quick presets"></div>
       </div>
 
-      <div class="loadingRow" id="loadingRow">
+      <div class="loadingRow" id="loadingRow" role="status" aria-live="polite">
         <div class="spinner"></div>
         <div style="font-weight:900; color:var(--text-strong); font-size:13px;">Loading news…</div>
       </div>
 
-      <div class="errorBox" id="errorBox">
+      <div class="errorBox" id="errorBox" role="alert">
         <i class="fa-solid fa-triangle-exclamation"></i>
         <div id="errorText">Failed to load news.</div>
       </div>
@@ -570,7 +570,6 @@
           const q = chip.getAttribute("data-q") || "";
           el.q.value = q;
           fetchNews(q);
-          document.activeElement.blur();
         });
       });
     }
@@ -727,11 +726,10 @@
     });
 
     el.tapDismiss.addEventListener("click", (e) => {
-      const t = e.target;
-      const isInput = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA");
-      if (!isInput){
-        document.activeElement && document.activeElement.blur && document.activeElement.blur();
-      }
+      // Keyboard and assistive-technology clicks must not steal focus.
+      if (e.detail === 0 || e.target === el.q) return;
+      // Dismiss only an active search keyboard; preserve focus on controls and links.
+      if (document.activeElement === el.q) el.q.blur();
     });
 
     renderChips();
