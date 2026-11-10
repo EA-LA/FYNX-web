@@ -434,6 +434,9 @@
       transition: transform .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
     }
     .chip:hover{transform: translateY(-1px); background: var(--chip-bg-hover); border-color: var(--chip-border-hover)}
+    .chip{max-width:100%;min-height:44px;text-align:left}
+    .chip .preset-label{min-width:0;overflow-wrap:anywhere}
+    .chip:focus-visible{outline:2px solid currentColor;outline-offset:3px}
     .chip i{opacity:.85}
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
@@ -560,7 +563,7 @@
           </div>
 
           <div class="presetRow">
-            <input id="presetName" aria-label="Position preset name" class="field" type="text" placeholder="Preset name (save inputs)" />
+            <input id="presetName" aria-label="Position preset name" class="field" type="text" maxlength="80" placeholder="Preset name (save inputs)" />
             <button id="savePresetBtn" class="ghost"><i class="fa-solid fa-floppy-disk"></i> Save</button>
           </div>
           <div class="hint" id="presetHint">Free presets: 0 / 3. (Saved in your browser)</div>
@@ -917,7 +920,11 @@
 
     function loadPresets(){
       try{
-        return JSON.parse(localStorage.getItem(PRESET_KEY) || "[]") || [];
+        const parsed = JSON.parse(localStorage.getItem(PRESET_KEY) || "[]");
+        // Older or damaged device storage must not prevent the calculator from opening.
+        return Array.isArray(parsed)
+          ? parsed.filter(p => p && typeof p === "object" && !Array.isArray(p)).slice(0, MAX_FREE_PRESETS)
+          : [];
       } catch {
         return [];
       }
@@ -929,20 +936,33 @@
     function renderPresets(){
       const presets = loadPresets();
       els.presetHint.textContent = `Free presets: ${presets.length} / ${MAX_FREE_PRESETS}. (Saved in your browser)`;
-      els.presetChips.innerHTML = "";
+      els.presetChips.replaceChildren();
 
       presets.forEach((p, idx) => {
+        const name = typeof p.name === "string" && p.name.trim() ? p.name.trim() : `Preset ${idx + 1}`;
         const chip = document.createElement("button");
         chip.className = "chip";
         chip.type = "button";
-        chip.innerHTML = `<i class="fa-solid fa-bookmark"></i> ${p.name}`;
+        chip.setAttribute("aria-label", `Load preset ${name}`);
+        const bookmarkIcon = document.createElement("i");
+        bookmarkIcon.className = "fa-solid fa-bookmark";
+        bookmarkIcon.setAttribute("aria-hidden", "true");
+        const label = document.createElement("span");
+        label.className = "preset-label";
+        // Preset names are saved locally; display them as text, never as HTML.
+        label.textContent = name;
+        chip.append(bookmarkIcon, label);
         chip.onclick = () => applyPreset(idx);
         els.presetChips.appendChild(chip);
 
         const del = document.createElement("button");
         del.className = "chip";
         del.type = "button";
-        del.innerHTML = `<i class="fa-solid fa-trash"></i>`;
+        del.setAttribute("aria-label", `Delete preset ${name}`);
+        const trashIcon = document.createElement("i");
+        trashIcon.className = "fa-solid fa-trash";
+        trashIcon.setAttribute("aria-hidden", "true");
+        del.append(trashIcon);
         del.onclick = () => deletePreset(idx);
         els.presetChips.appendChild(del);
       });
