@@ -16,7 +16,28 @@ async function refresh(){
     list.replaceChildren();
   for(const r of result.reminders){const row=document.createElement('div');row.style.cssText='padding:12px 0;border-top:1px solid var(--border)';
     const summary=document.createElement('p');summary.textContent=`${r.name} · ${new Date(r.reminderAt).toLocaleString()} · ${r.status==='sent'?'accepted by email provider (inbox delivery unconfirmed)':r.status.replaceAll('_',' ')}`;row.append(summary);
-    if(r.status==='pending'){const cancel=document.createElement('button');cancel.className='btn';cancel.textContent='Cancel reminder';cancel.onclick=async()=>{cancel.disabled=true;try{await cloudCall('webReminders',{action:'cancel',id:r.id});await refresh();status.textContent='Email reminder cancelled.';}catch(e){status.textContent=e.message;cancel.disabled=false;}};row.append(cancel);}
+    if(r.status==='pending'){
+      const cancel=document.createElement('button');cancel.className='btn';cancel.textContent='Cancel reminder';
+      cancel.onclick=async()=>{
+        if(cancel.disabled)return;
+        cancel.disabled=true;
+        const uid=auth.currentUser?.uid;
+        try{
+          await cloudCall('webReminders',{action:'cancel',id:r.id},{expectedUid:uid});
+          if(auth.currentUser?.uid!==uid)return;
+          try{
+            await refresh();
+            if(auth.currentUser?.uid===uid)status.textContent='Email reminder cancelled.';
+          }catch{
+            // The cancel call succeeded; a later list error must not imply it failed.
+            if(auth.currentUser?.uid===uid)status.textContent='Email reminder cancelled, but the list could not refresh. Use Refresh status to check.';
+          }
+        }catch(e){
+          if(auth.currentUser?.uid===uid){status.textContent=e.message || 'Reminder could not be cancelled.';cancel.disabled=false;}
+        }
+      };
+      row.append(cancel);
+    }
     list.append(row);
   }
     if(!result.reminders.length)list.textContent='No email reminders scheduled.';
