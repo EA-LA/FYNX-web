@@ -1,0 +1,52 @@
+name: Refresh Macro Desk data
+# Publishes one dated snapshot (desk.json) to the separate `macro-data` branch.
+# The branch always holds a single commit (force-replaced), so it never grows.
+# It never writes to main or to the research-data branch.
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/refresh-macro-desk.cjs'
+      - 'assets/data/macro/central-banks.json'
+      - '.github/workflows/refresh-macro-desk.yml'
+permissions:
+  contents: write
+concurrency:
+  group: publish-macro-desk
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read previous snapshot
+        shell: bash
+        run: |
+          set -uo pipefail
+          if git fetch --depth=1 origin refs/heads/macro-data 2>/dev/null; then
+            git show FETCH_HEAD:desk.json > "$RUNNER_TEMP/previous-desk.json" || rm -f "$RUNNER_TEMP/previous-desk.json"
+          fi
+      - name: Fetch public sources
+        run: node scripts/refresh-macro-desk.cjs "$RUNNER_TEMP/out" "$RUNNER_TEMP/previous-desk.json"
+      - name: Publish snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          publish="$RUNNER_TEMP/macro-data"
+          git worktree add --detach "$publish" HEAD
+          cd "$publish"
+          git switch --quiet --orphan macro-data-snapshot
+          git rm -rf --quiet . >/dev/null 2>&1 || true
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp "$RUNNER_TEMP/out/desk.json" desk.json
+          git config user.name 'FYNX macro desk publisher'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -- desk.json
+          git commit --quiet -m "Macro Desk snapshot $(date -u +%FT%RZ)"
+          git push --force origin HEAD:refs/heads/macro-data
