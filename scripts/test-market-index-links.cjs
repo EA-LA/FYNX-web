@@ -21,23 +21,23 @@ test('market directory exposes real, crawlable links to all nine implemented sec
 });
 
 test('each static card has readable text and responsive keyboard styling', () => {
-  const cards = [...html.matchAll(/<a class="market-card"[^>]+>([\\s\\S]*?)<\\/a>/g)];
+  const cards = [...html.matchAll(/<a class="market-card"[^>]+>([\s\S]*?)<\/a>/g)];
   assert.equal(cards.length, sections.length);
   for (const [, body] of cards) {
-    assert.match(body, /<strong>[^<]+<\\/strong>/);
-    assert.match(body, /<span>[^<]{20,}<\\/span>/);
+    assert.match(body, /<strong>[^<]+<\/strong>/);
+    assert.match(body, /<span>[^<]{20,}<\/span>/);
   }
-  assert.match(html, /\\.market-card:focus-visible/);
-  assert.match(html, /@media\\(max-width:600px\\)/);
+  assert.match(html, /\.market-card:focus-visible/);
+  assert.match(html, /@media\(max-width:600px\)/);
 });
 
 test('no placeholder text or obsolete section-only navigation remains', () => {
   assert.doesNotMatch(html, /Placeholder|Add your UI|Add your real content|Add the real dashboards/i);
-  assert.doesNotMatch(html, /href="index\\.html\\?section=/);
+  assert.doesNotMatch(html, /href="index\.html\?section=/);
   assert.match(html, /Market data can be delayed or unavailable/);
 });
 
-const inline = html.match(/<script data-market-redirect>([\\s\\S]*?)<\\/script>/);
+const inline = html.match(/<script data-market-redirect>([\s\S]*?)<\/script>/);
 function redirect(query) {
   assert.ok(inline, 'legacy route script exists');
   const replaced = [];
