@@ -118,6 +118,13 @@ html[data-theme="dark"] .research-page {--desk-positive:#8bc4a3;--desk-negative:
 .heat-change {font-size:25px;letter-spacing:-.7px;line-height:1.25}
 .heat-price {font-size:10px;margin:7px 0}
 .heat-time {font-size:8px;color:var(--fynx-muted);margin-top:auto;line-height:1.6}
+
+.heat-actions {display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.heat-actions a {display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:0;padding:8px 10px;border:1px solid var(--fynx-line);border-radius:4px;background:var(--fynx-panel);color:var(--fynx-text);font-size:10px;font-weight:600;line-height:1.35;text-align:center;text-decoration:none}
+.heat-actions a:hover {background:var(--desk-soft);text-decoration:underline}
+.heat-actions a:focus-visible {outline:2px solid var(--fynx-text);outline-offset:2px}
+@media(max-width:520px){.heat-actions a {flex:1 1 100%}}
+
 .card {padding:22px;border:1px solid var(--fynx-line);border-radius:5px;margin:18px 0;background:var(--fynx-panel)}
 .two-column {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
 .two-column>.card {margin-top:0}
