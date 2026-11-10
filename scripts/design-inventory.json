@@ -415,6 +415,11 @@
     "section": "FINANCE WORLD"
   },
   {
+    "page": "terminal.html",
+    "layout": "standalone",
+    "section": "FINANCE WORLD"
+  },
+  {
     "page": "edge-radar/index.html",
     "layout": "standalone",
     "section": "Edge Radar"
