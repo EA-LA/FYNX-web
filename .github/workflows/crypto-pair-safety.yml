@@ -1,0 +1,24 @@
+name: Crypto calculator pair-name safety
+
+on:
+  pull_request:
+    paths:
+      - "tools/crypto.html"
+      - "scripts/test-crypto-pair-safety.cjs"
+      - ".github/workflows/crypto-pair-safety.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  crypto-pair-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install locked development dependencies
+        run: npm ci --ignore-scripts
+      - name: Check test syntax
+        run: node --check scripts/test-crypto-pair-safety.cjs
+      - name: Run crypto calculator DOM regression tests
+        run: node --test scripts/test-crypto-pair-safety.cjs
