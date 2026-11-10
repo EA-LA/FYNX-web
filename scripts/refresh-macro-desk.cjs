@@ -235,6 +235,40 @@ async function fetchEvents(now) {
   return {events, calendarUpdatedAt: data.updatedAt || null, coverageTo: data.to || null};
 }
 
+/* --- Broker order and position books (optional) ----------------------------
+ * OANDA publishes aggregated order/position books to any account holder. They
+ * are fetched only when OANDA_API_TOKEN is configured as a repository secret;
+ * only bucket percentages near the current price are published. */
+const BOOK_INSTRUMENTS = {EURUSD: 'EUR_USD', GBPUSD: 'GBP_USD', USDJPY: 'USD_JPY', AUDUSD: 'AUD_USD', USDCAD: 'USD_CAD', USDCHF: 'USD_CHF', NZDUSD: 'NZD_USD', EURJPY: 'EUR_JPY', GBPJPY: 'GBP_JPY', EURGBP: 'EUR_GBP', XAUUSD: 'XAU_USD', XAGUSD: 'XAG_USD'};
+function parseBook(payload, kind, around = 12) {
+  const book = payload?.[kind];
+  const price = Number(book?.price), width = Number(book?.bucketWidth);
+  if (!book || !Number.isFinite(price) || !Number.isFinite(width) || width <= 0 || !Array.isArray(book.buckets) || !Number.isFinite(Date.parse(book.time))) throw new Error(`Invalid ${kind}`);
+  const buckets = book.buckets.map(b => ({price: Number(b.price), long: Number(b.longCountPercent), short: Number(b.shortCountPercent)}))
+    .filter(b => Number.isFinite(b.price) && Number.isFinite(b.long) && Number.isFinite(b.short) && b.long >= 0 && b.short >= 0 && b.long <= 100 && b.short <= 100)
+    .sort((a, b) => a.price - b.price);
+  if (!buckets.length) throw new Error(`Empty ${kind}`);
+  const at = buckets.findIndex(b => b.price >= price), center = at < 0 ? buckets.length - 1 : at;
+  const near = buckets.slice(Math.max(0, center - around), center + around).reverse();
+  const total = (k, list) => round(list.reduce((s, b) => s + b[k], 0), 4);
+  return {time: book.time, price, bucketWidth: width, buckets: near, longTotal: total('long', buckets), shortTotal: total('short', buckets)};
+}
+async function fetchBooks(token, env = 'practice') {
+  const base = env === 'live' ? 'https://api-fxtrade.oanda.com' : 'https://api-fxpractice.oanda.com';
+  const headers = {Authorization: `Bearer ${token}`, Accept: 'application/json'};
+  const books = {};
+  for (const [symbol, instrument] of Object.entries(BOOK_INSTRUMENTS)) {
+    const entry = {};
+    for (const kind of ['orderBook', 'positionBook']) {
+      try { entry[kind] = parseBook(await fetchJSON(`${base}/v3/instruments/${instrument}/${kind}`, {timeout: 15000, headers}), kind); }
+      catch (error) { console.warn('[macro-desk] book', symbol, kind, error.message); }
+    }
+    if (entry.orderBook || entry.positionBook) books[symbol] = entry;
+  }
+  if (!Object.keys(books).length) throw new Error('No broker books returned');
+  return books;
+}
+
 /* --- Assemble ------------------------------------------------------------ */
 async function build(previous, now = Date.now()) {
   const prev = previous && previous.version === 1 ? previous : {};
@@ -261,6 +295,8 @@ async function build(previous, now = Date.now()) {
     attempt('live-us', () => fetchLiveUS(now)), attempt('fed', () => fetchFed(now)),
     attempt('rates', () => fetchRates()), attempt('events', () => fetchEvents(now))
   ]);
+  const token = process.env.OANDA_API_TOKEN;
+  const books = token ? await attempt('books', () => fetchBooks(token, process.env.OANDA_ENV)) : undefined;
   return {
     version: 1, generatedAt: iso(now),
     curves,
@@ -268,6 +304,8 @@ async function build(previous, now = Date.now()) {
     fed: fed ? {source: SOURCES.fed.name, sourceURL: SOURCES.fed.url, ...fed} : prev.fed || null,
     rates: rates ? {source: SOURCES.rates.name, sourceURL: SOURCES.rates.url, ...rates} : prev.rates || null,
     events: events ? {source: SOURCES.events.name, sourceURL: SOURCES.events.url, ...events} : prev.events || null,
+    books: books ? {source: 'OANDA order and position books (aggregated client data, ~20-minute snapshots)', sourceURL: 'https://www.oanda.com/forex-trading/analysis/forex-order-book', markets: books}
+      : token && prev.books ? prev.books : null,
     status
   };
 }
@@ -290,4 +328,4 @@ async function main() {
 }
 
 if (require.main === module) main().catch(error => { console.error(error); process.exit(1); });
-module.exports = {parseCSV, parseTreasury, parseECB, parseMOF, parseBoE, japaneseDate, fedOdds, mergeHistory, contractSymbol, build, CB_EVENT};
+module.exports = {parseBook, parseCSV, parseTreasury, parseECB, parseMOF, parseBoE, japaneseDate, fedOdds, mergeHistory, contractSymbol, build, CB_EVENT};
