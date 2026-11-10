@@ -79,8 +79,8 @@ async function settle() {
   for (let i = 0; i < 6; i++) await Promise.resolve();
 }
 
-function reminder(name) {
-  return { id: name, name, status: 'sent', reminderAt: '2026-11-12T16:15:00Z' };
+function reminder(name, status = 'sent') {
+  return { id: name, name, status, reminderAt: '2026-11-12T16:15:00Z' };
 }
 
 test('last requested reminder list wins, even when earlier responses arrive later', async () => {
@@ -158,4 +158,33 @@ test('a schedule finishing after account switch cannot show success for the prev
   assert.equal(h.calls[2].options.expectedUid, 'trader-2');
   h.calls[2].resolve({ reminders: [] });
   await settle();
+});
+
+test('successful cancellation with failed list refresh never claims the cancellation failed', async () => {
+  const h = harness();
+  h.calls[0].resolve({ reminders: [reminder('Upcoming CPI', 'pending')] });
+  await settle();
+  const cancel = h.list.rows[0].children[1];
+  assert.equal(cancel.textContent, 'Cancel reminder');
+  const promise = cancel.onclick();
+  assert.equal(h.calls[1].data.action, 'cancel');
+  assert.equal(h.calls[1].options.expectedUid, 'trader-1');
+  h.calls[1].resolve({ ok: true });
+  await settle();
+  h.calls[2].reject(new Error('List failed'));
+  await promise;
+  assert.match(h.status.textContent, /Email reminder cancelled, but the list could not refresh/);
+  assert.equal(cancel.disabled, true);
+});
+
+test('failed cancellation retains retry access and reports the actual error', async () => {
+  const h = harness();
+  h.calls[0].resolve({ reminders: [reminder('Upcoming CPI', 'pending')] });
+  await settle();
+  const cancel = h.list.rows[0].children[1];
+  const promise = cancel.onclick();
+  h.calls[1].reject(new Error('Could not cancel on server'));
+  await promise;
+  assert.equal(cancel.disabled, false);
+  assert.equal(h.status.textContent, 'Could not cancel on server');
 });
