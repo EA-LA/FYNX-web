@@ -610,10 +610,15 @@
 
     function getAlerts(){
       try{
-        return JSON.parse(localStorage.getItem(ALERTS_KEY)) || [];
+        const stored = JSON.parse(localStorage.getItem(ALERTS_KEY));
+        return Array.isArray(stored) ? stored.filter(alert => alert && typeof alert === "object") : [];
       }catch{
         return [];
       }
+    }
+
+    function escapeHTML(value){
+      return String(value ?? "").replace(/[&<>"\x27]/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "\x27":"&#39;" }[char]));
     }
 
     function saveAlerts(alerts){
@@ -789,23 +794,23 @@
         return `
           <div class="alert-row">
             <div class="alert-main">
-              <div class="alert-title">${alert.name}</div>
-              <div class="alert-sub">${formatDateTime(alert.eventDateTime)} • ${alert.category}</div>
-              <div class="alert-sub">${alert.note || "No extra note."}</div>
+              <div class="alert-title">${escapeHTML(alert.name)}</div>
+              <div class="alert-sub">${formatDateTime(alert.eventDateTime)} • ${escapeHTML(alert.category)}</div>
+              <div class="alert-sub">${alert.note ? escapeHTML(alert.note) : "No extra note."}</div>
             </div>
 
             <div>
-              <div class="badge ${impactLabelClass(alert.impact)}">${alert.impact.toUpperCase()} IMPACT</div>
+              <div class="badge ${impactLabelClass(alert.impact)}">${escapeHTML(String(alert.impact).toUpperCase())} IMPACT</div>
             </div>
 
             <div>
-              <div class="alert-sub">Alert: ${alert.reminderOffset} min before</div>
+              <div class="alert-sub">Alert: ${escapeHTML(alert.reminderOffset)} min before</div>
               <div class="alert-sub">${statusText}</div>
             </div>
 
             <div>
-              <button class="delete-btn" onclick="deleteAlert('${alert.id}')">
-                <i class="fas fa-trash"></i>
+              <button type="button" class="delete-btn" data-delete-alert="${escapeHTML(alert.id)}" aria-label="Remove ${escapeHTML(alert.name)} alert">
+                <i class="fas fa-trash" aria-hidden="true"></i>
               </button>
             </div>
           </div>
@@ -862,10 +867,15 @@
     function setDefaultDateTime(){
       const now = new Date();
       const later = new Date(now.getTime() + 60 * 60000);
-      document.getElementById("eventDate").value = later.toISOString().slice(0,10);
-      document.getElementById("eventTime").value = later.toTimeString().slice(0,5);
+      const pad = value => String(value).padStart(2, "0");
+      document.getElementById("eventDate").value = `${later.getFullYear()}-${pad(later.getMonth() + 1)}-${pad(later.getDate())}`;
+      document.getElementById("eventTime").value = `${pad(later.getHours())}:${pad(later.getMinutes())}`;
     }
 
+    document.getElementById("alertsList").addEventListener("click", event => {
+      const button = event.target.closest?.("button[data-delete-alert]");
+      if (button) deleteAlert(button.dataset.deleteAlert);
+    });
     document.getElementById("addAlertBtn").addEventListener("click", addAlert);
     document.getElementById("clearAllBtn").addEventListener("click", clearAllAlerts);
     document.getElementById("requestPermissionBtn").addEventListener("click", requestPermission);
