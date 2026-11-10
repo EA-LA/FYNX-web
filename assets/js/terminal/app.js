@@ -302,7 +302,7 @@
     inspect(bank.name, h => {
       kv(h, [['Policy rate', rate ? `${rate.display} (${rate.source}, ${rate.observationDate})` : 'Unavailable'], ['Instrument', bank.instrument], ['Next decision', next ? (next.at ? new Date(next.at).toLocaleString() : next.date) : '—'], ['Countdown', next?.at ? M.countdown(next.at - Date.now()) : next ? next.daysAway + ' days' : ''],
         ['Following', (bank.decisions || []).filter(d => d > (next?.date || '')).slice(0, 3).map(day).join(' · ')],
-        ['Futures pricing', odds ? `Cut ${Math.round(odds.cut + odds.cut50)}% · Hold ${odds.hold}% · Hike ${Math.round(odds.hike + odds.hike50)}% (implied ${signed(odds.expectedChangeBp, 0, ' bp')})` : 'No free public futures feed'],
+        ['Futures pricing', odds ? `${[['cut50', 'Cut 50 bp'], ['cut', 'Cut 25 bp'], ['hold', 'No change'], ['hike', 'Hike 25 bp'], ['hike50', 'Hike 50 bp']].filter(([k]) => odds[k] > 0).map(([k, l]) => `${l} ${Math.round(odds[k])}%`).join(' · ')} (implied ${signed(odds.expectedChangeBp, 0, ' bp')}, CBOT Fed funds futures)` : 'No free public futures feed for this bank'],
         ['Calendar', link('Official calendar ↗', bank.calendarURL)]]);
       const ev = (S.desk?.events?.events || []).filter(e => e.currency === bank.currency);
       if (ev.length) { h.append(el('h3', 'fx-h4', 'This week')); ev.forEach(e => h.append(el('p', 'fx-sub', `${new Date(e.time).toLocaleString([], {weekday: 'short', hour: '2-digit', minute: '2-digit'})} · ${e.title}`))); }
