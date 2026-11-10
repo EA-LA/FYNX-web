@@ -258,6 +258,10 @@
       const quant=workspaceNav.querySelector('a[href="/quant-analyst.html"]');
       if(quant){const edge=link('Edge Radar','/edge-radar/',quant.className.replace(/active/g,'').trim());edge.append(element('span','quant-new-badge','NEW'));if(location.pathname.startsWith('/edge-radar'))edge.setAttribute('aria-current','page');quant.after(edge);}
     }
+    if (workspaceNav && !workspaceNav.querySelector('a[href="/macro-desk.html"]')) {
+      const edge=workspaceNav.querySelector('a[href="/edge-radar/"]');
+      if(edge){const macro=link('Macro Desk','/macro-desk.html',edge.className.replace(/active/g,'').trim());macro.append(element('span','quant-new-badge','NEW'));if(/^\/macro-desk(?:\.html)?\/?$/.test(location.pathname))macro.setAttribute('aria-current','page');edge.after(macro);}
+    }
     mountTopics(body);
     mountTicker(body);
     if(body.classList.contains('edge-page')&&window.matchMedia('(max-width:639px)').matches){const current=workspaceNav?.querySelector('[aria-current="page"]');if(current)workspaceNav.scrollLeft=current.offsetLeft-workspaceNav.offsetLeft-workspaceNav.clientWidth/2+current.clientWidth/2;}

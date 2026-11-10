@@ -25,7 +25,8 @@
     "test:accounts": "npm run build:accounts && node --test tests/accounts/*.test.cjs",
     "typecheck:accounts": "tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --strict --skipLibCheck --resolveJsonModule lib/accounts/index.ts",
     "lint:accounts": "node scripts/edge-lint/node_modules/eslint/bin/eslint.js --config eslint.accounts.config.mjs lib/accounts assets/js/accounts backend/accounts scripts/build-accounts.cjs",
-    "dev:accounts:qa": "node tests/accounts/browser-server.cjs"
+    "dev:accounts:qa": "node tests/accounts/browser-server.cjs",
+    "test:macro": "node --test tests/macro/*.test.cjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
