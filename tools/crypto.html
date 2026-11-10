@@ -487,6 +487,12 @@
       });
     }
 
+    // User-entered pair names are plain text, never trusted HTML.
+    function escapeHtml(value) {
+      const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+      return String(value).replace(/[&<>"']/g, character => entities[character]);
+    }
+
     function calculateCryptoTrade() {
       const coin = coinInput.value.trim() || "Crypto Position";
       const capital = parseFloat(capitalInput.value);
@@ -540,7 +546,7 @@
       resultArea.className = "result-box";
       resultArea.innerHTML = `
         <div class="big-result ${pnlClass}">${pnlLabel}: ${money(Math.abs(netPnL))}</div>
-        <div class="result-line"><strong>Pair:</strong> ${coin}</div>
+        <div class="result-line"><strong>Pair:</strong> ${escapeHtml(coin)}</div>
         <div class="result-line"><strong>Trade Type:</strong> ${tradeType === "long" ? "Long" : "Short"}</div>
         <div class="result-line"><strong>Coins / Units:</strong> ${fmt(quantity, 4, 10)}</div>
         <div class="result-line"><strong>ROI:</strong> ${fmt(roi, 2, 2)}%</div>
