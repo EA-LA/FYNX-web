@@ -118,6 +118,8 @@
     wrap.append(bar, legend);
     return wrap;
   }
+  // Column names for the stacked phone layout (td::before reads data-label).
+  function labelCells(tr, labels) { tr.querySelectorAll('td').forEach((td, i) => { if (labels[i]) td.dataset.label = labels[i]; }); }
   function renderBanks() {
     const tbody = $('md-banks'); tbody.replaceChildren();
     const banks = state.schedule?.banks || [], desk = state.desk, now = Date.now();
@@ -152,6 +154,7 @@
       if (events.length) { const ul = el('ul', 'md-events'); for (const e of events) { const li = el('li'); li.append(el('span', 'md-mono md-small', new Date(e.time).toLocaleString([], {weekday: 'short', hour: 'numeric', minute: '2-digit'})), document.createTextNode(' ' + e.title)); ul.append(li); } week.append(ul); }
       else week.append(el('span', 'md-muted md-small', 'Nothing scheduled'));
       tr.append(week);
+      labelCells(tr, ['Policy rate', 'Next decision', 'Market pricing', 'This week']);
       tbody.append(tr);
     }
     const foot = $('md-banks-foot'); foot.replaceChildren();
@@ -250,6 +253,7 @@
       const parts = el('td'); const ul = el('ul', 'md-parts');
       for (const c of result.components) { const li = el('li'); li.append(el('span', 'md-chip ' + signClass(c.score), `${c.label} ${c.score > 0 ? '+' : ''}${c.score}`), el('small', 'md-muted', `${c.detail}${c.weight ? ` · weight ${c.weight}%` : ''}`)); ul.append(li); }
       parts.append(ul); tr.append(parts);
+      labelCells(tr, ['Price', 'Bias', 'What drives it']);
       tbody.append(tr);
     }
   }

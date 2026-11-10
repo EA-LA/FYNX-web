@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-10 (run 59) — [site-qa] Macro Desk tables fit iPhone
+- iPhone: the Central Bank Watch and Smart Bias tables on the new Macro Desk were three screens wide, so you had to swipe sideways inside them to see next decisions and what drives each bias. On phones each bank and each currency pair is now a stacked card with labels (Policy rate, Next decision, Market pricing, This week / Price, Bias, What drives it). Desktop is unchanged. https://www.fynxfinanceworld.com/macro-desk.html
+- iPhone: the "Official calendar" links in Central Bank Watch are now full-size tap targets.
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): no sideways overflow, no errors; `npm test`, `npm run test:macro` and build pass.
+
 ## 2026-11-09 (run 48) — [site-qa] Fixes sideways scroll on iPhone SE
 - iPhone SE: the top menu (Home / Tools / News / Partners) on Partners, Risk Disclosure and Affiliate Disclosure stuck out 6px past the screen; it now wraps onto a second line. https://www.fynxfinanceworld.com/partners.html https://www.fynxfinanceworld.com/risk-disclosure.html https://www.fynxfinanceworld.com/affiliate-disclosure.html
 - iPhone SE: the "Trade plan" card on Edge Radar market pages was 11px too wide; it now fits. https://www.fynxfinanceworld.com/edge-radar/nas100/

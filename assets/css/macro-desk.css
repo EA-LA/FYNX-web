@@ -138,3 +138,19 @@ body.macro-page .md-workspace,body.macro-page .md-ticker{font-family:Inter,Arial
  .md-live-yields small{margin-left:0;width:100%}
  .md-ticker .md-headline{font-size:13px}
 }
+
+/* Phones: stack the wide Central Bank Watch and Smart Bias tables into cards
+   instead of a 860–980px sideways scroll. Labels come from data-label (app.js). */
+@media (max-width:720px){
+ .md-banks,.md-bias{min-width:0}
+ .md-banks thead,.md-bias thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+ .md-banks,.md-banks tbody,.md-banks tr,.md-banks th,.md-banks td,
+ .md-bias,.md-bias tbody,.md-bias tr,.md-bias th,.md-bias td{display:block;width:auto!important}
+ .md-banks tr,.md-bias tr{border-top:1px solid var(--md-line);padding:12px 0}
+ .md-banks tr:first-child,.md-bias tr:first-child{border-top:0}
+ .md-banks th,.md-banks td,.md-bias th,.md-bias td{border-top:0;padding:6px 0}
+ .md-banks td[data-label]::before,.md-bias td[data-label]::before{content:attr(data-label);display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--md-muted);margin-bottom:3px}
+ .md-meter{width:100%}
+ .md-chip{min-width:0}
+ .md-small-link{display:inline-flex;align-items:center;min-height:44px;margin-top:0}
+}
