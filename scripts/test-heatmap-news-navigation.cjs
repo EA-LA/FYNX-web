@@ -8,7 +8,7 @@ const {JSDOM} = require('jsdom');
 
 const root = path.join(__dirname, '..');
 const moduleSource = readFileSync(path.join(root, 'assets/js/research/markets.js'), 'utf8')
-  .replace(/^import .*;\\s*$/gm, '')
+  .replace(/^import .*;\s*$/gm, '')
   .replace('export async function refreshHeatmap', 'async function refreshHeatmap');
 const escapeHTML = value => String(value).replace(/[&<>"']/g, ch =>
   ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[ch]));
@@ -91,11 +91,11 @@ test('unsafe or malformed source URLs are not rendered as clickable links',()=>{
 });
 test('the receiving Symbol News page reads the same q parameter',()=>{
   const reader=readFileSync(path.join(root,'tools/symbol-news.html'),'utf8');
-  assert.match(reader,/new URLSearchParams\\(location\\.search\\)\\.get\\("q"\\)/);
+  assert.match(reader,/new URLSearchParams\(location\.search\)\.get\("q"\)/);
 });
 test('mobile actions remain available as 44px keyboard-focusable targets',()=>{
   const styles=readFileSync(path.join(root,'assets/research-desk.css'),'utf8');
-  assert.match(styles,/\\.heat-actions a\\s*\\{[^}]*min-height:44px/);
-  assert.match(styles,/\\.heat-actions a:focus-visible\\s*\\{/);
-  assert.match(styles,/@media\\(max-width:520px\\)\\{\\.heat-actions a/);
+  assert.match(styles,/\.heat-actions a\s*\{[^}]*min-height:44px/);
+  assert.match(styles,/\.heat-actions a:focus-visible\s*\{/);
+  assert.match(styles,/@media\(max-width:520px\)\{\.heat-actions a/);
 });
