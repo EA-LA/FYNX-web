@@ -180,7 +180,7 @@
       lines.push(`Next central bank decision: ${upcoming.b.name} on ${when}, ${upcoming.next.daysAway === 0 ? 'today' : `in ${upcoming.next.daysAway} day${upcoming.next.daysAway === 1 ? '' : 's'}`}.${oddsText}`);
       facts.push({label: 'Next decision', value: upcoming.b.short, note: when});
     }
-    const soon = (desk?.events?.events || []).filter(e => Date.parse(e.time) >= now && Date.parse(e.time) < now + 2 * DAY && e.impact !== 'low').slice(0, 2);
+    const seen = new Set(), soon = (desk?.events?.events || []).filter(e => Date.parse(e.time) >= now && Date.parse(e.time) < now + 2 * DAY && e.impact !== 'low' && !seen.has(e.currency + e.title) && seen.add(e.currency + e.title)).slice(0, 2);
     if (soon.length) { lines.push('Watch next: ' + soon.map(e => `${e.currency} ${e.title}`).join('; ') + '.'); sources.add(desk.events.source); }
     const ranked = bias.filter(b => finite(b.score)).sort((a, c) => Math.abs(c.score) - Math.abs(a.score));
     if (ranked[0] && Math.abs(ranked[0].score) >= 15) facts.push({label: 'Strongest bias', value: ranked[0].pair.replace(/^(...)(...)$/, '$1/$2'), note: `${ranked[0].label} ${ranked[0].score > 0 ? '+' : ''}${ranked[0].score}`});
