@@ -33,6 +33,9 @@ jobs:
             git show FETCH_HEAD:desk.json > "$RUNNER_TEMP/previous-desk.json" || rm -f "$RUNNER_TEMP/previous-desk.json"
           fi
       - name: Fetch public sources
+        env:
+          OANDA_API_TOKEN: ${{ secrets.OANDA_API_TOKEN }}
+          OANDA_ENV: ${{ vars.OANDA_ENV || 'practice' }}
         run: node scripts/refresh-macro-desk.cjs "$RUNNER_TEMP/out" "$RUNNER_TEMP/previous-desk.json"
       - name: Publish snapshot
         shell: bash

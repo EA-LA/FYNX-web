@@ -189,6 +189,63 @@
     return {title, lines, facts, lead: lead ? {title: lead.title, url: lead.url, source: lead.source, publishedAt: lead.publishedAt} : null, sources: [...sources].filter(Boolean), available: lines.length > 0};
   }
 
+  /* --- Edge Radar insights -------------------------------------------------- */
+  const CRYPTO = new Set(['BTCUSD', 'ETHUSD']), METALS = new Set(['XAUUSD', 'XAGUSD']), INDICES = new Set(['US30', 'NAS100', 'SPX500']);
+  function rangeUnit(symbol, pip) {
+    if (METALS.has(symbol)) return {label: 'USD', scale: 1, digits: symbol === 'XAUUSD' ? 1 : 2};
+    if (INDICES.has(symbol) || CRYPTO.has(symbol)) return {label: 'pts', scale: 1, digits: 0};
+    return {label: 'pips', scale: 1 / (pip || 0.0001), digits: 0};
+  }
+  /* Distribution of completed daily high-low ranges over the last year. */
+  function volDistribution(bars, {symbol, pip, lookback = 252, bins = 20} = {}) {
+    if (!Array.isArray(bars)) return null;
+    const unit = rangeUnit(symbol, pip), weekendOK = CRYPTO.has(symbol);
+    const usable = bars.filter(b => b && finite(b.high) && finite(b.low) && b.high >= b.low && Number.isFinite(Date.parse(b.time)) && (weekendOK || ![0, 6].includes(new Date(b.time).getUTCDay())));
+    const recent = usable.slice(-lookback);
+    if (recent.length < 60) return null;
+    const ranges = recent.map(b => (b.high - b.low) * unit.scale), latest = ranges.at(-1), n = ranges.length;
+    const sorted = [...ranges].sort((a, b) => a - b), q = p => sorted[Math.min(n - 1, Math.max(0, Math.round(p * (n - 1))))];
+    const lo = q(0.01), hi = q(0.99), width = (hi - lo) / bins || 1;
+    const counts = Array.from({length: bins}, (_, i) => ({from: lo + i * width, to: lo + (i + 1) * width, count: 0}));
+    const binOf = v => clamp(Math.floor((v - lo) / width), 0, bins - 1);
+    ranges.forEach(v => counts[binOf(v)].count++);
+    return {bins: counts, latest, latestBin: binOf(latest), latestDate: recent.at(-1).time.slice(0, 10), percentile: Math.round(sorted.filter(v => v < latest).length / (n - 1) * 100),
+      median: q(0.5), p25: q(0.25), p75: q(0.75), sample: n, unit};
+  }
+  const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
+  const KEYWORDS = {USD: ['dollar', 'fed ', 'fed’s', "fed's", 'treasury', 'waller', 'powell', 'fomc', 'cpi', 'inflation'], EUR: ['euro', 'ecb', 'lagarde', 'eurozone'], GBP: ['pound', 'sterling', 'bank of england', 'boe', 'u.k.', 'uk '],
+    JPY: ['yen', 'boj', 'bank of japan', 'japan'], CHF: ['franc', 'snb', 'swiss'], AUD: ['aussie', 'rba', 'australia'], CAD: ['loonie', 'bank of canada', 'canada'], NZD: ['kiwi', 'rbnz', 'new zealand'],
+    XAU: ['gold'], XAG: ['silver'], BTC: ['bitcoin', 'crypto'], ETH: ['ether', 'crypto'], IDX: ['stocks', 's&p', 'nasdaq', 'dow', 'wall street', 'equities']};
+  const REGIME_MEANING = {Choppy: 'prices are swinging without a clear direction', Range: 'price is moving between support and resistance', Trend: 'price is moving steadily in one direction', 'Weak trend': 'a direction is forming but is not strong yet'};
+  function marketStory({symbol, label, edgeMarket, quote, desk, headlines = [], bias, vol, digits = 5, now = Date.now()} = {}) {
+    const st = edgeMarket?.state, lines = [];
+    if (!st) return {available: false, title: `${label}: waiting for data`, lines: [], related: []};
+    const price = finite(quote?.price) ? quote.price : st.close?.value, hi = st.high20?.value, lo = st.low20?.value;
+    const chg = finite(quote?.changePercent) ? quote.changePercent : finite(edgeMarket.dayChangePct?.value) ? edgeMarket.dayChangePct.value : null;
+    const regime = st.regime?.value, position = finite(price) && finite(hi) && finite(lo) && hi > lo ? clamp((price - lo) / (hi - lo), 0, 1) : null;
+    const net = edgeMarket.positioning?.net?.value, crowded = edgeMarket.positioning?.crowded?.value === true;
+    let title = regime === 'Range' ? `${label} is stuck in a range` : regime === 'Choppy' ? `${label} is choppy` : /trend/i.test(regime || '') && position !== null ? `${label} is trending ${position >= 0.5 ? 'higher' : 'lower'}` : `${label} today`;
+    if (position !== null && position >= 0.9) title = `${label} is pressing its 20-day high`;
+    if (position !== null && position <= 0.1) title = `${label} is testing its 20-day low`;
+    if (crowded && finite(net)) title += `, with traders crowded ${net >= 0 ? 'long' : 'short'}`;
+    if (finite(price)) lines.push(`${label} is at ${price.toFixed(digits)}${finite(quote?.price) ? ' (live, delayed)' : ` (daily close ${String(st.date || '').slice(0, 10)})`}${finite(chg) ? `, ${chg >= 0 ? '+' : ''}${chg.toFixed(2)}% on the day` : ''}.`);
+    if (regime) lines.push(`Daily regime is ${regime.toLowerCase()}: ${REGIME_MEANING[regime] || 'see the regime map below'}${finite(st.adx?.value) ? ` (ADX ${Math.round(st.adx.value)})` : ''}.`);
+    if (position !== null) lines.push(`It sits ${Math.round(position * 100)}% of the way up its 20-day range of ${lo.toFixed(digits)}–${hi.toFixed(digits)}.`);
+    if (vol) lines.push(`The latest day's range was ${vol.latest.toFixed(vol.unit.digits)} ${vol.unit.label}, busier than ${vol.percentile}% of days in the past year.`);
+    for (const key of ['carry', 'yields']) { const c = bias?.components?.find(x => x.key === key); if (c) lines.push(c.detail + '.'); }
+    if (finite(net)) lines.push(`Futures traders are net ${net >= 0 ? 'long' : 'short'} ${Math.abs(Math.round(net * 100))}%${crowded ? ', which is crowded by historical standards' : ''} (CFTC).`);
+    const currencies = edgeMarket.currencies || [];
+    const upcoming = [...(edgeMarket.events?.next24h || []), ...(edgeMarket.events?.restOfWeek || [])].filter(e => Date.parse(e.time) >= now).sort((a, b) => Date.parse(a.time) - Date.parse(b.time));
+    const fromDesk = (desk?.events?.events || []).filter(e => currencies.includes(e.currency) && Date.parse(e.time) >= now);
+    const next = upcoming[0] || fromDesk[0];
+    if (next) lines.push(`Next on the calendar: ${next.currency} ${next.title || next.name}, ${new Date(next.time).toLocaleString('en-US', {weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', hourCycle: 'h23'})} UTC.`);
+    const keys = symbol === 'XAUUSD' ? ['XAU', 'USD'] : symbol === 'XAGUSD' ? ['XAG', 'USD'] : symbol === 'BTCUSD' ? ['BTC'] : symbol === 'ETHUSD' ? ['ETH'] : INDICES.has(symbol) ? ['IDX'] : currencies;
+    const words = keys.flatMap(k => KEYWORDS[k] || []);
+    const related = headlines.filter(h => { const t = ' ' + (h.title || '').toLowerCase() + ' '; return words.some(w => t.includes(w)); }).slice(0, 3)
+      .map(h => ({title: h.title, url: h.url, source: h.source, publishedAt: h.publishedAt}));
+    return {available: lines.length > 0, title, lines, related, next: next || null};
+  }
+
   function validateDesk(data) {
     if (!data || data.version !== 1 || !Number.isFinite(Date.parse(data.generatedAt)) || typeof data.curves !== 'object' || typeof data.status !== 'object') throw new Error('The Macro Desk snapshot is unavailable.');
     for (const curve of Object.values(data.curves)) {
@@ -197,5 +254,5 @@
     return data;
   }
 
-  return {AREAS, PAIRS, WEIGHTS, TENOR_YEARS, zonedToUTC, nextDecision, lastDecisionBefore, countdown, policyRate, curveView, yieldChange, smartBias, composeStory, validateDesk};
+  return {AREAS, PAIRS, WEIGHTS, TENOR_YEARS, volDistribution, marketStory, ordinal, rangeUnit, zonedToUTC, nextDecision, lastDecisionBefore, countdown, policyRate, curveView, yieldChange, smartBias, composeStory, validateDesk};
 });

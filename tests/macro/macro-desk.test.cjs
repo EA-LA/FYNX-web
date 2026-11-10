@@ -58,3 +58,23 @@ test('Curve view, story and bias from the published snapshot', () => {
   assert.equal(M.smartBias(M.PAIRS[0], {}).score, null);
   assert.throws(() => M.validateDesk({version: 1}));
 });
+
+test('Volatility distribution from daily bars', () => {
+  const bars = require('../../assets/data/research/bars/EURUSD-D1.json').bars;
+  const v = M.volDistribution(bars, {symbol: 'EURUSD', pip: 0.0001});
+  assert.equal(v.sample, 252); assert.equal(v.bins.reduce((s, b) => s + b.count, 0), 252);
+  assert.ok(v.percentile >= 0 && v.percentile <= 100 && v.median > 0 && v.unit.label === 'pips');
+  assert.equal(M.volDistribution(bars.slice(0, 10), {symbol: 'EURUSD', pip: 0.0001}), null);
+});
+test('Broker book parser keeps buckets near price', () => {
+  const buckets = Array.from({length: 60}, (_, i) => ({price: (1.1 + i * 0.0005).toFixed(4), longCountPercent: '0.5', shortCountPercent: '0.4'}));
+  const b = P.parseBook({orderBook: {time: '2026-11-10T17:00:00Z', price: '1.1154', bucketWidth: '0.0005', buckets}}, 'orderBook');
+  assert.equal(b.buckets.length, 24); assert.ok(b.buckets[0].price > b.buckets.at(-1).price);
+  assert.throws(() => P.parseBook({orderBook: {price: 'x'}}, 'orderBook'));
+});
+test('Market story is built only from inputs', () => {
+  const m = edge.markets.find(x => x.symbol === 'GBPJPY');
+  const s = M.marketStory({symbol: 'GBPJPY', label: 'GBP/JPY', edgeMarket: m, desk, digits: 3, now: Date.parse('2026-11-05T00:00:00Z')});
+  assert.ok(s.available && s.lines.length >= 3 && s.title.startsWith('GBP/JPY'));
+  assert.equal(M.marketStory({symbol: 'X', label: 'X'}).available, false);
+});
