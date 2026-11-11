@@ -1,0 +1,15 @@
+const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
+function setup(){
+ const data=new Map();const merge=(a,b)=>{for(const[k,v]of Object.entries(b))a[k]=v&&typeof v==='object'&&!Array.isArray(v)?merge(a[k]||{},v):v;return a;};
+ const doc=path=>({path,collection:name=>collection(path+'/'+name),get:async()=>({exists:data.has(path),data:()=>data.get(path)}),set:async(value,opts)=>data.set(path,opts?.merge?merge(data.get(path)||{},value):value)});
+ const collection=path=>{const query={limit:()=>query,get:async()=>({docs:[...data.entries()].filter(([key])=>key.startsWith(path+'/')).map(([key,value])=>({id:key.split('/').pop(),data:()=>value}))})};return {doc:id=>doc(path+'/'+id),orderBy:()=>query};};
+ const db={collection,runTransaction:async fn=>fn({get:r=>r.get(),set:(r,d,o)=>r.set(d,o),create:(r,d)=>{assert(!data.has(r.path));return r.set(d);}})};
+ const runtime={https:{onCall:f=>f},pubsub:{schedule:()=>({onRun:f=>f})}};
+ class HttpsError extends Error{constructor(code,message){super(message);this.code=code;}}
+ const modules={'firebase-functions/v1':{runWith:()=>runtime,https:{HttpsError}},'firebase-admin':{firestore:()=>db},'node:crypto':require('node:crypto')};const module={exports:{}};
+ vm.runInNewContext(fs.readFileSync(__dirname+'/web-services.js','utf8'),{module,exports:module.exports,require:name=>modules[name],Date,Number,URLSearchParams,console});
+ return {call:(payload,uid='A')=>module.exports.webLearning(payload,uid?{auth:{uid}}:{}),data};
+}
+test('learning data is private by authenticated UID and lessons merge across writes',async()=>{const h=setup();await assert.rejects(h.call({action:'read'},null),{code:'unauthenticated'});await h.call({action:'lesson',topic:'forex',lesson:'outline-1',completed:true});await h.call({action:'lesson',topic:'forex',lesson:'outline-2',completed:true});const a=await h.call({action:'read',topic:'forex'}),b=await h.call({action:'read',topic:'forex'},'B');assert(a.lessons['outline-1'].completed&&a.lessons['outline-2'].completed);assert.equal(Object.keys(b.lessons).length,0);});
+test('assessment retries preserve one result and reject changed scores',async()=>{const h=setup(),payload={action:'quiz',topic:'forex',attempt:'attempt-one',correct:7,total:10};await h.call(payload);const before=(await h.call({action:'read',topic:'forex'})).attempts[0];await h.call(payload);const after=await h.call({action:'read',topic:'forex'});assert.equal(after.attempts.length,1);assert.equal(after.attempts[0].completedAt,before.completedAt);await assert.rejects(h.call({...payload,correct:8}),{code:'already-exists'});assert.equal((await h.call({action:'read',topic:'stocks'})).attempts.length,0);});
+test('learning rejects invalid scores and injected IDs',async()=>{const h=setup();for(const patch of [{correct:-1},{correct:11},{total:0},{attempt:'../other'},{topic:'../other'}])await assert.rejects(h.call({action:'quiz',topic:'forex',attempt:'one',correct:8,total:10,...patch}));});

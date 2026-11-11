@@ -1,0 +1,117 @@
+{
+  "sources": {
+    "client_sha256": "b8e54a0d4a5cf3ce5c50bddbff9f5d55fdad1a6cd90299b4f1f1e39b603166f0",
+    "server_sha256": "fb43774259bf33f543a676b4042e701310e37c8c8cf66ba0b4bb63c31459223c"
+  },
+  "rows": [
+    {
+      "scenario": "existing/pass-target-and-days",
+      "kind": "synthetic_regression_not_customer_history",
+      "legacy_client": "passed",
+      "legacy_server": "passed",
+      "api": "eligible",
+      "legacy_days": 5,
+      "api_days": 5,
+      "match": true,
+      "explanation": "Equivalent under these fixture inputs."
+    },
+    {
+      "scenario": "existing/incomplete",
+      "kind": "synthetic_regression_not_customer_history",
+      "legacy_client": "active",
+      "legacy_server": "active",
+      "api": "active",
+      "legacy_days": 2,
+      "api_days": 2,
+      "match": true,
+      "explanation": "Equivalent under these fixture inputs."
+    },
+    {
+      "scenario": "existing/daily-breach",
+      "kind": "synthetic_regression_not_customer_history",
+      "legacy_client": "failed",
+      "legacy_server": "failed",
+      "api": "breached",
+      "legacy_days": 1,
+      "api_days": 1,
+      "match": true,
+      "explanation": "Equivalent under these fixture inputs."
+    },
+    {
+      "scenario": "policy/static-vs-trailing",
+      "kind": "synthetic_regression_not_customer_history",
+      "legacy_client": "failed",
+      "legacy_server": "failed",
+      "api": "active",
+      "legacy_days": 8,
+      "api_days": 8,
+      "match": false,
+      "explanation": "Legacy peak drawdown differs from selected static initial-balance maximum loss."
+    },
+    {
+      "scenario": "policy/consistency",
+      "kind": "synthetic_regression_not_customer_history",
+      "legacy_client": "passed",
+      "legacy_server": "passed",
+      "api": "active",
+      "legacy_days": 5,
+      "api_days": 5,
+      "match": false,
+      "explanation": "Legacy progression omits the selected 40% consistency condition."
+    },
+    {
+      "scenario": "policy/intraday-breach-recovery",
+      "kind": "synthetic_regression_not_customer_history",
+      "legacy_client": "passed",
+      "legacy_server": "passed",
+      "api": "breached",
+      "legacy_days": 5,
+      "api_days": 5,
+      "match": false,
+      "explanation": "Net daily P&L can hide an earlier hard breach."
+    },
+    {
+      "scenario": "policy/daily-balance-reference",
+      "kind": "synthetic_regression_not_customer_history",
+      "legacy_client": "failed",
+      "legacy_server": "failed",
+      "api": "eligible",
+      "legacy_days": 6,
+      "api_days": 6,
+      "match": false,
+      "explanation": "Legacy percentage uses initial balance; selected daily floor uses prior closing balance."
+    },
+    {
+      "scenario": "policy/reset-hour",
+      "kind": "synthetic_regression_not_customer_history",
+      "legacy_client": "active",
+      "legacy_server": "active",
+      "api": "active",
+      "legacy_days": 1,
+      "api_days": 2,
+      "match": false,
+      "explanation": "UTC calendar dates differ from the selected 22:00 UTC trading-day reset."
+    },
+    {
+      "scenario": "policy/touch-daily-limit",
+      "kind": "synthetic_regression_not_customer_history",
+      "legacy_client": "active",
+      "legacy_server": "active",
+      "api": "active",
+      "legacy_days": 1,
+      "api_days": 1,
+      "match": true,
+      "explanation": "Equivalent under these fixture inputs."
+    }
+  ],
+  "excluded_existing_fixtures": [
+    {
+      "name": "maximum drawdown breach",
+      "reason": "Standalone equity values have no linked realized/open-position event stream; cannot claim a historical replay."
+    },
+    {
+      "name": "exact configured limits",
+      "reason": "Trade loss -500 and equity/balance 9000 cannot be reconciled without missing position or adjustment data."
+    }
+  ]
+}

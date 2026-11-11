@@ -1,68 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX Tools — Economic Calendar</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <title>Economic Calendar: Releases &amp; Central Bank Events | FYNX</title>
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-
     :root{
-      --bg:#f3f3f5;
+      --bg:#f3f3f3;
       --bg-2:#ffffff;
-      --text:#0b0b0c;
-      --text-soft:rgba(0,0,0,.62);
-      --text-faint:rgba(0,0,0,.48);
-      --border:rgba(0,0,0,.10);
-      --border-strong:rgba(0,0,0,.16);
-      --surface:rgba(255,255,255,.74);
-      --surface-2:rgba(255,255,255,.84);
-      --surface-3:rgba(255,255,255,.92);
-      --shadow:0 20px 60px rgba(0,0,0,.10);
-      --shadow-soft:0 14px 34px rgba(0,0,0,.08);
-      --accent:#0b0b0c;
-      --green:#12a150;
-      --red:#dc3d43;
-      --orange:#ef8d24;
-      --blue:#246bff;
+      --text:#0b0b0b;
+      --text-soft:rgba(0, 0, 0, .62);
+      --text-faint:rgba(0, 0, 0, .48);
+      --border:rgba(0, 0, 0, .10);
+      --border-strong:rgba(0, 0, 0, .16);
+      --surface:rgba(255, 255, 255, .74);
+      --surface-2:rgba(255, 255, 255, .84);
+      --surface-3:rgba(255, 255, 255, .92);
+      --shadow:0 20px 60px rgba(0, 0, 0, .10);
+      --shadow-soft:0 14px 34px rgba(0, 0, 0, .08);
+      --accent:#0b0b0b;
+      --green:#6d6d6d;
+      --red:#6d6d6d;
+      --orange:#9e9e9e;
+      --blue:#676767;
     }
-
     body.dark-mode{
       --bg:#000;
       --bg-2:#050505;
       --text:#fff;
-      --text-soft:rgba(255,255,255,.68);
-      --text-faint:rgba(255,255,255,.50);
-      --border:rgba(255,255,255,.10);
-      --border-strong:rgba(255,255,255,.16);
-      --surface:rgba(255,255,255,.04);
-      --surface-2:rgba(255,255,255,.05);
-      --surface-3:rgba(255,255,255,.07);
+      --text-soft:rgba(255, 255, 255, .68);
+      --text-faint:rgba(255, 255, 255, .50);
+      --border:rgba(255, 255, 255, .10);
+      --border-strong:rgba(255, 255, 255, .16);
+      --surface:rgba(255, 255, 255, .04);
+      --surface-2:rgba(255, 255, 255, .05);
+      --surface-3:rgba(255, 255, 255, .07);
       --shadow:none;
       --shadow-soft:none;
       --accent:#fff;
-      --green:#2bd67b;
-      --red:#ff5b62;
-      --orange:#ffb347;
-      --blue:#77a9ff;
+      --green:#989898;
+      --red:#8d8d8d;
+      --orange:#bdbdbd;
+      --blue:#a4a4a4;
     }
-
     body{
       font-family:'Inter','Segoe UI',system-ui,sans-serif;
       color:var(--text);
       background:
-        radial-gradient(circle at 1px 1px, rgba(0,0,0,0.085) 1px, transparent 1px) 0 0 / 18px 18px,
+        radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.085) 1px, transparent 1px) 0 0 / 18px 18px,
         linear-gradient(var(--bg),var(--bg));
       overflow-x:hidden;
       min-height:100vh;
     }
-
     body.dark-mode{
       background:#000;
     }
-
     .animated-bg{
       position:fixed;
       inset:0;
@@ -70,32 +65,27 @@
       background:transparent;
       overflow:hidden;
     }
-
     body.dark-mode .animated-bg{
       background:#000;
     }
-
     .grid-overlay{
       position:absolute;
       inset:0;
       background-image:
-        linear-gradient(rgba(0,0,0,.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,0,0,.035) 1px, transparent 1px);
+        linear-gradient(rgba(0, 0, 0, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, .035) 1px, transparent 1px);
       background-size:50px 50px;
       animation:gridMove 22s linear infinite;
     }
-
     body.dark-mode .grid-overlay{
       background-image:
-        linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+        linear-gradient(rgba(255, 255, 255, .03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .03) 1px, transparent 1px);
     }
-
     @keyframes gridMove{
       0%{transform:translate(0,0)}
       100%{transform:translate(50px,50px)}
     }
-
     .gradient-orb{
       position:absolute;
       border-radius:50%;
@@ -104,50 +94,43 @@
       animation:float 20s ease-in-out infinite;
       pointer-events:none;
     }
-
     .orb-1{
       width:520px;
       height:520px;
-      background:radial-gradient(circle,rgba(0,0,0,.13) 0%,transparent 72%);
+      background:radial-gradient(circle,rgba(0, 0, 0, .13) 0%,transparent 72%);
       top:-220px;
       left:-220px;
     }
-
     .orb-2{
       width:420px;
       height:420px;
-      background:radial-gradient(circle,rgba(0,0,0,.11) 0%,transparent 72%);
+      background:radial-gradient(circle,rgba(0, 0, 0, .11) 0%,transparent 72%);
       bottom:-170px;
       right:-170px;
       animation-delay:6s;
     }
-
     body.dark-mode .orb-1,
     body.dark-mode .orb-2{
-      background:radial-gradient(circle,rgba(255,255,255,.95) 0%,transparent 70%);
+      background:radial-gradient(circle,rgba(255, 255, 255, .95) 0%,transparent 70%);
       opacity:.16;
     }
-
     @keyframes float{
       0%,100%{transform:translate(0,0) scale(1)}
       33%{transform:translate(50px,-50px) scale(1.08)}
       66%{transform:translate(-50px,50px) scale(.92)}
     }
-
     header{
       position:sticky;
       top:0;
       z-index:1000;
-      background:rgba(243,243,245,.82);
+      background:rgba(243, 243, 243, .82);
       backdrop-filter:blur(20px);
       border-bottom:1px solid var(--border);
       padding:1rem 0;
     }
-
     body.dark-mode header{
-      background:rgba(0,0,0,.84);
+      background:rgba(0, 0, 0, .84);
     }
-
     .nav{
       max-width:1280px;
       margin:0 auto;
@@ -157,7 +140,6 @@
       padding:0 1.25rem;
       gap:1rem;
     }
-
     .brand{
       display:flex;
       align-items:center;
@@ -166,16 +148,13 @@
       letter-spacing:-1px;
       font-size:1.24rem;
     }
-
     .brand i{opacity:.92}
-
     .nav-actions{
       display:flex;
       gap:.6rem;
       flex-wrap:wrap;
       justify-content:flex-end;
     }
-
     .nav a,
     .theme-btn{
       color:var(--text);
@@ -194,20 +173,17 @@
       font-size:.96rem;
       box-shadow:var(--shadow-soft);
     }
-
     .nav a:hover,
     .theme-btn:hover{
       transform:translateY(-1px);
       border-color:var(--border-strong);
       background:var(--surface-2);
     }
-
     main{
       max-width:1280px;
       margin:0 auto;
       padding:2rem 1.25rem 4.5rem;
     }
-
     .hero{
       border:1px solid var(--border);
       background:var(--surface);
@@ -216,7 +192,6 @@
       box-shadow:var(--shadow);
       overflow:hidden;
     }
-
     .hero-top{
       padding:2rem 1.7rem 1.4rem;
       border-bottom:1px solid var(--border);
@@ -226,41 +201,35 @@
       flex-wrap:wrap;
       align-items:flex-start;
     }
-
     .hero-copy{
       max-width:760px;
     }
-
     h1{
       font-size:clamp(2.25rem,4vw,3.45rem);
       line-height:1.02;
       letter-spacing:-2.5px;
       margin-bottom:.8rem;
-      background:linear-gradient(135deg,#000 0%,#6c6c70 100%);
+      background:linear-gradient(135deg,#000 0%,#6c6c6c 100%);
       -webkit-background-clip:text;
       -webkit-text-fill-color:transparent;
     }
-
     body.dark-mode h1{
-      background:linear-gradient(135deg,#fff 0%,#8f8f93 100%);
+      background:linear-gradient(135deg,#fff 0%,#8f8f8f 100%);
       -webkit-background-clip:text;
       -webkit-text-fill-color:transparent;
     }
-
     .lead{
       color:var(--text-soft);
       font-size:1.05rem;
       line-height:1.85;
       max-width:70ch;
     }
-
     .hero-badges{
       display:flex;
       flex-wrap:wrap;
       gap:.7rem;
       margin-top:1rem;
     }
-
     .badge{
       display:inline-flex;
       align-items:center;
@@ -273,29 +242,25 @@
       font-weight:700;
       color:var(--text-soft);
     }
-
     .live-pulse{
       width:10px;
       height:10px;
       border-radius:50%;
       background:var(--green);
-      box-shadow:0 0 0 0 rgba(18,161,80,.6);
+      box-shadow:0 0 0 0 rgba(109, 109, 109, .6);
       animation:pulse 1.8s infinite;
     }
-
     @keyframes pulse{
-      0%{box-shadow:0 0 0 0 rgba(18,161,80,.55)}
-      70%{box-shadow:0 0 0 12px rgba(18,161,80,0)}
-      100%{box-shadow:0 0 0 0 rgba(18,161,80,0)}
+      0%{box-shadow:0 0 0 0 rgba(109, 109, 109, .55)}
+      70%{box-shadow:0 0 0 12px rgba(109, 109, 109, 0)}
+      100%{box-shadow:0 0 0 0 rgba(109, 109, 109, 0)}
     }
-
     .clock-wrap{
       min-width:290px;
       display:grid;
       grid-template-columns:1fr;
       gap:.8rem;
     }
-
     .clock-card{
       border:1px solid var(--border);
       background:var(--surface-2);
@@ -303,7 +268,6 @@
       padding:1rem 1rem 1.05rem;
       box-shadow:var(--shadow-soft);
     }
-
     .clock-label{
       font-size:.82rem;
       color:var(--text-faint);
@@ -312,26 +276,22 @@
       margin-bottom:.35rem;
       font-weight:800;
     }
-
     .clock-value{
       font-size:1.25rem;
       font-weight:900;
       letter-spacing:-.03em;
     }
-
     .clock-sub{
       margin-top:.28rem;
       color:var(--text-soft);
       font-size:.94rem;
     }
-
     .content{
       display:grid;
       grid-template-columns:minmax(0,1.5fr) minmax(300px,.82fr);
       gap:1.2rem;
       padding:1.25rem;
     }
-
     .main-panel,
     .side-panel{
       border:1px solid var(--border);
@@ -340,7 +300,6 @@
       box-shadow:var(--shadow-soft);
       overflow:hidden;
     }
-
     .section-head{
       padding:1rem 1.05rem;
       border-bottom:1px solid var(--border);
@@ -350,7 +309,6 @@
       align-items:center;
       justify-content:space-between;
     }
-
     .section-title{
       display:flex;
       align-items:center;
@@ -359,22 +317,18 @@
       font-weight:900;
       letter-spacing:-.03em;
     }
-
     .section-title i{opacity:.85}
-
     .section-note{
       color:var(--text-faint);
       font-size:.9rem;
       font-weight:600;
     }
-
     .widget-toolbar{
       display:flex;
       flex-wrap:wrap;
       gap:.55rem;
       align-items:center;
     }
-
     .toolbar-pill{
       border:1px solid var(--border);
       background:var(--surface-3);
@@ -385,11 +339,9 @@
       font-weight:800;
       letter-spacing:.01em;
     }
-
     .widget-wrap{
       padding:.8rem;
     }
-
     .widget-shell{
       border:1px solid var(--border);
       background:var(--bg-2);
@@ -398,7 +350,6 @@
       min-height:760px;
       position:relative;
     }
-
     .widget-loading{
       position:absolute;
       inset:0;
@@ -408,34 +359,29 @@
       color:var(--text-faint);
       font-weight:800;
       letter-spacing:.03em;
-      background:linear-gradient(180deg, transparent, rgba(0,0,0,.02));
+      background:linear-gradient(180deg, transparent, rgba(0, 0, 0, .02));
       pointer-events:none;
       z-index:1;
     }
-
     body.dark-mode .widget-loading{
-      background:linear-gradient(180deg, transparent, rgba(255,255,255,.01));
+      background:linear-gradient(180deg, transparent, rgba(255, 255, 255, .01));
     }
-
     .tradingview-widget-container,
     .tradingview-widget-container > div{
       width:100%;
       height:760px;
     }
-
     .sidebar-inner{
       padding:1rem;
       display:grid;
       gap:1rem;
     }
-
     .info-card{
       border:1px solid var(--border);
       background:var(--surface-3);
       border-radius:18px;
       padding:1rem;
     }
-
     .info-card h3{
       font-size:1rem;
       margin-bottom:.75rem;
@@ -444,12 +390,10 @@
       gap:.55rem;
       letter-spacing:-.02em;
     }
-
     .info-list{
       display:grid;
       gap:.7rem;
     }
-
     .info-item{
       display:flex;
       gap:.75rem;
@@ -458,7 +402,6 @@
       line-height:1.6;
       font-size:.95rem;
     }
-
     .dot{
       width:10px;
       height:10px;
@@ -466,17 +409,14 @@
       margin-top:.45rem;
       flex:0 0 auto;
     }
-
     .dot.red{background:var(--red)}
     .dot.orange{background:var(--orange)}
     .dot.green{background:var(--green)}
     .dot.blue{background:var(--blue)}
-
     .session-grid{
       display:grid;
       gap:.8rem;
     }
-
     .session-row{
       display:flex;
       justify-content:space-between;
@@ -487,24 +427,20 @@
       border-radius:14px;
       background:var(--surface);
     }
-
     .session-row strong{
       font-size:.95rem;
       letter-spacing:-.01em;
     }
-
     .session-row span{
       color:var(--text-soft);
       font-size:.9rem;
       text-align:right;
     }
-
     .quick-links{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:.75rem;
     }
-
     .quick-links a{
       text-decoration:none;
       color:var(--text);
@@ -520,24 +456,20 @@
       gap:.75rem;
       min-height:58px;
     }
-
     .quick-links a:hover{
       transform:translateY(-1px);
       border-color:var(--border-strong);
       background:var(--surface-2);
     }
-
     .footer-note{
       padding:0 1.3rem 1.25rem;
       color:var(--text-faint);
       font-size:.88rem;
       line-height:1.7;
     }
-
     .footer-note a{
       color:inherit;
     }
-
     @media (max-width: 1050px){
       .content{
         grid-template-columns:1fr;
@@ -547,7 +479,6 @@
         grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
       }
     }
-
     @media (max-width: 700px){
       .hero-top{
         padding:1.35rem 1rem 1rem;
@@ -572,9 +503,39 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/editorial-pages.css?v=20261109-nav-wrap">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
+<meta name="description" content="Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<style>body .content{grid-template-columns:minmax(0,1fr)}body .side-panel{display:none}body .hero{gap:20px}body .widget-shell,body #tvCalendarWrap{height:760px;min-height:760px}body #tvCalendarWrap>div{height:100%}@media(max-width:600px){body .widget-shell,body #tvCalendarWrap{height:620px;min-height:620px}}</style>
+<link rel="canonical" href="https://www.fynxfinanceworld.com/tools/economic-calendar.html">
+<meta property="og:title" content="Economic Calendar: Releases &amp; Central Bank Events | FYNX">
+<meta property="og:description" content="Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/tools/economic-calendar.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261012" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Economic Calendar: Releases & Central Bank Events","item":"https://www.fynxfinanceworld.com/tools/economic-calendar.html"}]}</script><!-- discovery-schema:end -->
+<!-- search-identity:start --><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.fynxfinanceworld.com/#organization","name":"FYNX","alternateName":"FYNX Finance World","url":"https://www.fynxfinanceworld.com/","founder":{"@id":"https://ea-la.github.io/#person"},"sameAs":["https://www.fynxfunded.com/","https://site.fynxfinanceworld.com/","https://blog.fynxfinanceworld.com/","https://roadmap.fynxfinanceworld.com/"]},{"@type":"Person","@id":"https://ea-la.github.io/#person","name":"Elham Amini","url":"https://ea-la.github.io/","jobTitle":"Founder of FYNX","sameAs":["https://www.linkedin.com/in/elham-amini-745560302/","https://www.instagram.com/___elham_amini___/"],"worksFor":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebSite","@id":"https://www.fynxfinanceworld.com/#website","url":"https://www.fynxfinanceworld.com/","name":"FYNX Finance World","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebPage","@id":"https://www.fynxfinanceworld.com/tools/economic-calendar.html#webpage","url":"https://www.fynxfinanceworld.com/tools/economic-calendar.html","name":"Economic Calendar: Releases & Central Bank Events | FYNX","description":"Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.","inLanguage":"en","isPartOf":{"@id":"https://www.fynxfinanceworld.com/#website"},"publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"},"mainEntity":{"@id":"https://www.fynxfinanceworld.com/tools/economic-calendar.html#tool"}},{"@type":"WebApplication","@id":"https://www.fynxfinanceworld.com/tools/economic-calendar.html#tool","url":"https://www.fynxfinanceworld.com/tools/economic-calendar.html","name":"Economic Calendar: Releases & Central Bank Events","description":"Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}}]}</script><!-- search-identity:end -->
+<!-- FYNX ADSENSE VERIFICATION START -->
+<script>(window.adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 1;</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
+     crossorigin="anonymous"></script>
+<!-- FYNX ADSENSE VERIFICATION END -->
+<!-- terminal-design:start -->
+<link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
+<link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
+<!-- terminal-design:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
 </head>
-<body>
-  <div class="animated-bg">
+<body class="editorial-page editorial-calendar" data-fynx-layout="standalone" data-fynx-section="TOOLS" data-fynx-terminal>
+<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
+<div class="animated-bg">
     <div class="grid-overlay"></div>
     <div class="gradient-orb orb-1"></div>
     <div class="gradient-orb orb-2"></div>
@@ -596,12 +557,13 @@
   </header>
 
   <main>
-    <section class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
       <div class="hero-top">
         <div class="hero-copy">
-          <h1>Economic Calendar</h1>
+          <div class="editorial-label">FYNX / MARKET INTELLIGENCE</div><h1>Economic Calendar</h1>
           <p class="lead">
-            Track market-moving macro events in real time. Use this page before trading forex, gold, indices, and risk assets so you know exactly when high-impact releases, central bank decisions, and labor or inflation data are about to hit.
+            Stay ahead of market-moving events. Follow economic releases, central bank decisions, and inflation data in one place.
           </p>
 
           <div class="hero-badges">
@@ -733,7 +695,10 @@
         </aside>
       </div>
     </section>
-  </main>
+  <!-- discovery-network:start --><details class="network-help"><summary>Chart or live data unavailable?</summary><p>Some networks restrict embedded providers. You can still use <a href="/explore.html?category=Tools">local calculators</a>, read <a href="/learn.html">learning guides</a>, or open the <a href="/directory.html">lightweight directory</a>. For release times, check the <a href="https://www.bls.gov/schedule/">BLS</a> and <a href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm">Federal Reserve</a> calendars. <a href="/accessibility.html">Connection help →</a></p></details><!-- discovery-network:end -->
+<!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Read the calendar before interpreting the market</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Filter by country and event, check the timezone, and open the publisher’s release for definitions and revisions.</p><h3>The calculation or concept</h3><p>A release contains a period, publication time, reported value and sometimes revisions to earlier data.</p></div><div class="tool-example"><h3>Worked example</h3><p>A reported 0.3% monthly change and a 3% annual change measure different intervals. Compare like-for-like values before drawing conclusions.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Embedded providers can be unavailable on managed networks. Use the official release calendars below when the widget cannot load.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/calendar-alerts.html"><strong>Economic Event Reminder Planner</strong><span>Plan reminders for economic events such as inflation releases, employment reports and central bank decisions.</span></a><a href="/tools/interest-rates.html"><strong>Central Bank Policy Rate Comparison</strong><span>Compare published central bank policy-rate observations from the Bank for International Settlements, with dates and source context.</span></a><a href="/tools/economic-indicators-heatmap.html"><strong>GDP, Inflation &amp; Unemployment Indicators</strong><span>Compare published World Bank GDP growth, inflation and unemployment observations. Review dates and source information with each indicator.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const THEME_KEY = "fynx_theme";
@@ -745,7 +710,7 @@
     }
 
     function getStoredTheme(){
-      return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+      try { return window.FynxPreferences?.getItem(THEME_KEY) === "light" ? "light" : "dark"; } catch { return "dark"; }
     }
 
     function updateThemeButton(){
@@ -760,7 +725,7 @@
 
     document.getElementById("themeToggle").addEventListener("click", () => {
       const next = document.body.classList.contains("dark-mode") ? "light" : "dark";
-      localStorage.setItem(THEME_KEY, next);
+      window.FynxPreferences?.setItem(THEME_KEY, next);
       applyTheme(next);
       renderEconomicCalendar();
     });
@@ -805,7 +770,10 @@
 
     function renderEconomicCalendar(){
       const wrap = document.getElementById("tvCalendarWrap");
-      const holder = document.getElementById("tradingview_economic_calendar");
+      wrap.replaceChildren();
+      const holder = document.createElement("div");
+      holder.id = "tradingview_economic_calendar";
+      wrap.appendChild(holder);
       const loading = document.getElementById("widgetLoading");
       const isDark = document.body.classList.contains("dark-mode");
 
@@ -823,7 +791,7 @@
         colorTheme: isDark ? "dark" : "light",
         isTransparent: true,
         width: "100%",
-        height: "760",
+        height: "100%",
         locale: "en",
         importanceFilter: "-1,0,1",
         currencyFilter: "USD,EUR,GBP,JPY,AUD,NZD,CAD,CHF,CNY",
@@ -839,10 +807,13 @@
         }, 900);
       };
 
-      wrap.appendChild(script);
+      script.onerror = () => { loading.textContent = "Calendar unavailable. Please refresh to try again."; };
+      holder.appendChild(script);
     }
 
     renderEconomicCalendar();
   </script>
-</body>
+  <script src="../assets/js/tradingview-fit.js?v=20260922-fit2"></script>
+
+<footer></footer></body>
 </html>

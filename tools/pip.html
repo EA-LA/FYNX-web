@@ -1,95 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX Tools — Pip Calculator</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-
     :root{
-      --bg:#f5f5f2;
+      --bg:#f5f5f5;
       --bg-solid:#ffffff;
-      --panel:rgba(0,0,0,.04);
-      --panel2:rgba(0,0,0,.03);
-      --border:rgba(0,0,0,.12);
-      --border2:rgba(0,0,0,.08);
+      --panel:rgba(0, 0, 0, .04);
+      --panel2:rgba(0, 0, 0, .03);
+      --border:rgba(0, 0, 0, .12);
+      --border2:rgba(0, 0, 0, .08);
       --text:#0a0a0a;
       --text-strong:#000000;
-      --muted:rgba(10,10,10,.68);
-      --muted2:rgba(10,10,10,.50);
-      --danger:#d92d20;
-      --shadow:0 24px 70px rgba(0,0,0,.10);
+      --muted:rgba(10, 10, 10, .68);
+      --muted2:rgba(10, 10, 10, .50);
+      --danger:#5f5f5f;
+      --shadow:0 24px 70px rgba(0, 0, 0, .10);
       --radius:18px;
       --radius2:22px;
       --max:1200px;
-      --header-bg:rgba(255,255,255,.78);
-      --header-border:rgba(0,0,0,.08);
-      --btn-bg:rgba(0,0,0,.03);
-      --btn-bg-hover:rgba(0,0,0,.06);
-      --btn-border:rgba(0,0,0,.12);
-      --btn-border-hover:rgba(0,0,0,.18);
-      --shell-bg:linear-gradient(180deg, rgba(0,0,0,.04), rgba(0,0,0,.02));
-      --card-bg:rgba(255,255,255,.72);
-      --field-bg:rgba(0,0,0,.02);
-      --field-bg-focus:rgba(0,0,0,.04);
-      --field-border-focus:rgba(0,0,0,.18);
-      --primary-bg:rgba(0,0,0,.10);
-      --primary-bg-hover:rgba(0,0,0,.14);
-      --primary-border:rgba(0,0,0,.18);
-      --primary-border-hover:rgba(0,0,0,.28);
-      --ghost-bg:rgba(0,0,0,.03);
-      --ghost-bg-hover:rgba(0,0,0,.06);
-      --ghost-text:rgba(10,10,10,.88);
-      --kv-bg:rgba(0,0,0,.025);
-      --grid-line:rgba(0,0,0,.05);
-      --orb-core:rgba(0,0,0,.22);
-      --toast-bg:rgba(255,255,255,.9);
-      --toast-border:rgba(0,0,0,.12);
-      --toast-text:rgba(10,10,10,.92);
+      --header-bg:rgba(255, 255, 255, .78);
+      --header-border:rgba(0, 0, 0, .08);
+      --btn-bg:rgba(0, 0, 0, .03);
+      --btn-bg-hover:rgba(0, 0, 0, .06);
+      --btn-border:rgba(0, 0, 0, .12);
+      --btn-border-hover:rgba(0, 0, 0, .18);
+      --shell-bg:linear-gradient(180deg, rgba(0, 0, 0, .04), rgba(0, 0, 0, .02));
+      --card-bg:rgba(255, 255, 255, .72);
+      --field-bg:rgba(0, 0, 0, .02);
+      --field-bg-focus:rgba(0, 0, 0, .04);
+      --field-border-focus:rgba(0, 0, 0, .18);
+      --primary-bg:rgba(0, 0, 0, .10);
+      --primary-bg-hover:rgba(0, 0, 0, .14);
+      --primary-border:rgba(0, 0, 0, .18);
+      --primary-border-hover:rgba(0, 0, 0, .28);
+      --ghost-bg:rgba(0, 0, 0, .03);
+      --ghost-bg-hover:rgba(0, 0, 0, .06);
+      --ghost-text:rgba(10, 10, 10, .88);
+      --kv-bg:rgba(0, 0, 0, .025);
+      --grid-line:rgba(0, 0, 0, .05);
+      --orb-core:rgba(0, 0, 0, .22);
+      --toast-bg:rgba(255, 255, 255, .9);
+      --toast-border:rgba(0, 0, 0, .12);
+      --toast-text:rgba(10, 10, 10, .92);
     }
-
     body.dark-mode{
       --bg:#000000;
       --bg-solid:#000000;
-      --panel:rgba(255,255,255,.06);
-      --panel2:rgba(255,255,255,.04);
-      --border:rgba(255,255,255,.12);
-      --border2:rgba(255,255,255,.08);
+      --panel:rgba(255, 255, 255, .06);
+      --panel2:rgba(255, 255, 255, .04);
+      --border:rgba(255, 255, 255, .12);
+      --border2:rgba(255, 255, 255, .08);
       --text:#ffffff;
       --text-strong:#ffffff;
-      --muted:rgba(255,255,255,.68);
-      --muted2:rgba(255,255,255,.50);
-      --danger:#ff4d4d;
-      --shadow:0 24px 70px rgba(0,0,0,.55);
-      --header-bg:rgba(0,0,0,.78);
-      --header-border:rgba(255,255,255,.08);
-      --btn-bg:rgba(255,255,255,.05);
-      --btn-bg-hover:rgba(255,255,255,.08);
-      --btn-border:rgba(255,255,255,.12);
-      --btn-border-hover:rgba(255,255,255,.18);
-      --shell-bg:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-      --card-bg:rgba(0,0,0,.35);
-      --field-bg:rgba(255,255,255,.04);
-      --field-bg-focus:rgba(255,255,255,.06);
-      --field-border-focus:rgba(255,255,255,.22);
-      --primary-bg:rgba(255,255,255,.14);
-      --primary-bg-hover:rgba(255,255,255,.18);
-      --primary-border:rgba(255,255,255,.22);
-      --primary-border-hover:rgba(255,255,255,.28);
-      --ghost-bg:rgba(255,255,255,.05);
-      --ghost-bg-hover:rgba(255,255,255,.08);
-      --ghost-text:rgba(255,255,255,.88);
-      --kv-bg:rgba(255,255,255,.04);
-      --grid-line:rgba(255,255,255,.03);
-      --orb-core:rgba(255,255,255,.92);
-      --toast-bg:rgba(0,0,0,.78);
-      --toast-border:rgba(255,255,255,.14);
-      --toast-text:rgba(255,255,255,.9);
+      --muted:rgba(255, 255, 255, .68);
+      --muted2:rgba(255, 255, 255, .50);
+      --danger:#828282;
+      --shadow:0 24px 70px rgba(0, 0, 0, .55);
+      --header-bg:rgba(0, 0, 0, .78);
+      --header-border:rgba(255, 255, 255, .08);
+      --btn-bg:rgba(255, 255, 255, .05);
+      --btn-bg-hover:rgba(255, 255, 255, .08);
+      --btn-border:rgba(255, 255, 255, .12);
+      --btn-border-hover:rgba(255, 255, 255, .18);
+      --shell-bg:linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .04));
+      --card-bg:rgba(0, 0, 0, .35);
+      --field-bg:rgba(255, 255, 255, .04);
+      --field-bg-focus:rgba(255, 255, 255, .06);
+      --field-border-focus:rgba(255, 255, 255, .22);
+      --primary-bg:rgba(255, 255, 255, .14);
+      --primary-bg-hover:rgba(255, 255, 255, .18);
+      --primary-border:rgba(255, 255, 255, .22);
+      --primary-border-hover:rgba(255, 255, 255, .28);
+      --ghost-bg:rgba(255, 255, 255, .05);
+      --ghost-bg-hover:rgba(255, 255, 255, .08);
+      --ghost-text:rgba(255, 255, 255, .88);
+      --kv-bg:rgba(255, 255, 255, .04);
+      --grid-line:rgba(255, 255, 255, .03);
+      --orb-core:rgba(255, 255, 255, .92);
+      --toast-bg:rgba(0, 0, 0, .78);
+      --toast-border:rgba(255, 255, 255, .14);
+      --toast-text:rgba(255, 255, 255, .9);
     }
-
     body{
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: var(--text);
@@ -98,7 +94,6 @@
       min-height:100vh;
       transition:background .25s ease,color .25s ease;
     }
-
     /* Background */
     .animated-bg{
       position:fixed; inset:0; z-index:-1;
@@ -130,7 +125,6 @@
       0%,100%{transform:translate(0,0) scale(1)}
       50%{transform:translate(30px,-24px) scale(.97)}
     }
-
     /* Header */
     header{
       position:sticky; top:0; z-index:1000;
@@ -175,7 +169,6 @@
     }
     .btn:hover{transform: translateY(-1px); background: var(--btn-bg-hover); border-color: var(--btn-border-hover)}
     .btn i{opacity:.9}
-
     /* Layout */
     main{
       max-width: var(--max);
@@ -209,7 +202,6 @@
     @media (max-width: 980px){
       .title{font-size: 36px}
     }
-
     .grid{
       display:grid;
       grid-template-columns: 1.05fr .95fr;
@@ -219,7 +211,6 @@
     @media (max-width: 980px){
       .grid{grid-template-columns:1fr}
     }
-
     .card{
       border: 1px solid var(--border2);
       background: var(--card-bg);
@@ -244,7 +235,6 @@
       line-height: 1.5;
       transition:color .25s ease;
     }
-
     .row{
       display:grid;
       grid-template-columns: 1.1fr 1fr;
@@ -280,7 +270,6 @@
       font-variant-numeric: tabular-nums;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
-
     .actions{
       display:flex; gap:10px; flex-wrap:wrap;
       margin-top: 12px;
@@ -310,7 +299,6 @@
       display:inline-flex; align-items:center; gap:10px;
     }
     .ghost:hover{transform: translateY(-1px); background: var(--ghost-bg-hover); border-color: var(--btn-border-hover)}
-
     .msg{
       margin-top: 12px;
       color: var(--danger);
@@ -318,7 +306,6 @@
       font-size: 13px;
       min-height: 18px;
     }
-
     /* Results */
     .resultsBox{
       display:flex;
@@ -358,7 +345,6 @@
       font-weight: 850;
       transition:color .25s ease;
     }
-
     .note{
       color: var(--muted2);
       font-size: 12px;
@@ -366,7 +352,6 @@
       margin-top: 8px;
       transition:color .25s ease;
     }
-
     /* Share */
     .shareRow{
       display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px;
@@ -382,7 +367,7 @@
       padding: 10px 12px;
       border-radius: 999px;
       backdrop-filter: blur(14px);
-      box-shadow: 0 14px 40px rgba(0,0,0,.18);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, .18);
       display:none;
       z-index:2000;
       font-weight: 900;
@@ -390,10 +375,38 @@
       transition:background .25s ease,border-color .25s ease,color .25s ease;
     }
   </style>
+  <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
+<title>Forex Pip Value Calculator | FYNX</title>
+<meta name="description" content="Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="stylesheet" href="/assets/css/api-calculator-pilot.css">
+<style>.scenario-link-status{margin:10px 0 0;font-size:13px;line-height:1.5;color:inherit;opacity:.85}.scenario-link-status:empty{display:none}.scenario-link-box{display:block;width:100%;box-sizing:border-box;margin-top:6px;font-size:16px;padding:10px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit}</style>
+<script src="/assets/js/scenario-link.js?v=20261111-scenario-privacy-4" defer></script>
+<link rel="canonical" href="https://www.fynxfinanceworld.com/tools/pip.html">
+<meta property="og:title" content="Forex Pip Value Calculator | FYNX">
+<meta property="og:description" content="Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/tools/pip.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261012" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Forex Pip Value Calculator","item":"https://www.fynxfinanceworld.com/tools/pip.html"}]}</script><!-- discovery-schema:end -->
+<!-- search-identity:start --><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.fynxfinanceworld.com/#organization","name":"FYNX","alternateName":"FYNX Finance World","url":"https://www.fynxfinanceworld.com/","founder":{"@id":"https://ea-la.github.io/#person"},"sameAs":["https://www.fynxfunded.com/","https://site.fynxfinanceworld.com/","https://blog.fynxfinanceworld.com/","https://roadmap.fynxfinanceworld.com/"]},{"@type":"Person","@id":"https://ea-la.github.io/#person","name":"Elham Amini","url":"https://ea-la.github.io/","jobTitle":"Founder of FYNX","sameAs":["https://www.linkedin.com/in/elham-amini-745560302/","https://www.instagram.com/___elham_amini___/"],"worksFor":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebSite","@id":"https://www.fynxfinanceworld.com/#website","url":"https://www.fynxfinanceworld.com/","name":"FYNX Finance World","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebPage","@id":"https://www.fynxfinanceworld.com/tools/pip.html#webpage","url":"https://www.fynxfinanceworld.com/tools/pip.html","name":"Forex Pip Value Calculator | FYNX","description":"Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.","inLanguage":"en","isPartOf":{"@id":"https://www.fynxfinanceworld.com/#website"},"publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"},"mainEntity":{"@id":"https://www.fynxfinanceworld.com/tools/pip.html#tool"}},{"@type":"WebApplication","@id":"https://www.fynxfinanceworld.com/tools/pip.html#tool","url":"https://www.fynxfinanceworld.com/tools/pip.html","name":"Forex Pip Value Calculator","description":"Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}}]}</script><!-- search-identity:end -->
+<!-- FYNX ADSENSE VERIFICATION START -->
+<script>(window.adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 1;</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
+     crossorigin="anonymous"></script>
+<!-- FYNX ADSENSE VERIFICATION END -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
 </head>
 
-<body>
-  <div class="animated-bg">
+<body data-fynx-layout="standalone" data-fynx-section="TOOLS">
+<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
+<div class="animated-bg">
     <div class="grid-overlay"></div>
     <div class="gradient-orb orb-1"></div>
     <div class="gradient-orb orb-2"></div>
@@ -410,11 +423,12 @@
   </header>
 
   <main>
-    <div class="shell" id="tapDismiss">
-      <div class="title">Pip Calculator</div>
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<div class="shell" id="tapDismiss">
+      <h1 class="title">Pip Calculator</h1>
       <div class="subtitle">
         Assumes standard lot = <b>100,000</b> units. Pip size is <b>0.0001</b> for most pairs and <b>0.01</b> for JPY quotes.
-        Enter current price and your lot size to calculate <b>$ per pip</b>.
+        Choose the pip size, enter lots, and supply the quote-to-account conversion rate. Results are in your account currency.
       </div>
 
       <div class="grid">
@@ -422,13 +436,13 @@
         <div class="card">
           <h3>Inputs</h3>
           <div class="hint">
-            Current Price examples: <span class="mono">1.0850</span> (non-JPY) or <span class="mono">157.25</span> (JPY).
+            Conversion rate: account-currency units per 1 quote-currency unit. Use 1 when they match.
             Lots examples: <span class="mono">1</span>, <span class="mono">0.1</span>, <span class="mono">0.01</span>.
           </div>
 
           <div class="row">
-            <label for="price">Current Price</label>
-            <input id="price" class="field mono" type="text" inputmode="decimal" placeholder="e.g. 1.0850 or 157.25" />
+            <label for="price">Quote-to-account rate</label>
+            <input id="price" class="field mono" type="text" inputmode="decimal" value="1" placeholder="e.g. 1 for USD to USD" />
           </div>
 
           <div class="row">
@@ -436,9 +450,11 @@
             <input id="lots" class="field mono" type="text" inputmode="decimal" value="1" placeholder="e.g. 1, 0.1, 0.01" />
           </div>
 
+          <div class="row"><label for="pipIncrement">Pip size</label><select id="pipIncrement" class="field"><option value="0.0001">0.0001 · most forex pairs</option><option value="0.01">0.01 · JPY-quoted pairs</option></select></div>
           <div class="actions">
             <button id="calcBtn" class="primary"><i class="fa-solid fa-calculator"></i> Calculate</button>
             <button id="clearBtn" class="ghost"><i class="fa-solid fa-eraser"></i> Clear</button>
+            <button class="ghost" id="shareScenarioBtn" type="button" data-scenario-fields="price,lots,pipIncrement" data-scenario-run="calcBtn"><i class="fa-solid fa-link"></i> Copy scenario link</button>
           </div>
 
           <div class="msg" id="error"></div>
@@ -486,16 +502,20 @@
       </div>
 
       <div class="note" style="margin-top:14px;">
-        Logic matches your iOS version: pipSize = (price ≥ 10 ? 0.01 : 0.0001), perLot = 100,000 × pipSize, yourPip = perLot × lots.
+        Pip value = 100,000 × lots × pip size × quote-to-account conversion rate. Verify the contract size and conversion rate with your broker.
       </div>
     </div>
-  </main>
+  <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Uses this calculator’s 100,000-unit Forex lot, USD account and supplied conversion rate. The model label is not a verified broker symbol.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
+<!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Translate a forex price move into account currency</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Match the units or lot size to the broker contract. Select the appropriate pip convention and account-currency conversion, then compare the result with your platform.</p><h3>The calculation or concept</h3><p>Pip value in quote currency = units × pip size. Convert that result into the account currency.</p></div><div class="tool-example"><h3>Worked example</h3><p>For 10,000 units of EUR/USD, a 0.0001 pip is $1. A 25-pip move is $25 before spread, fees and financing. A yen pair normally uses a different pip size.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>A pip is not always the smallest displayed price increment. Do not treat a fractional pip, exchange tick or point as interchangeable.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/forex.html"><strong>Forex Trade Planning Calculators</strong><span>Plan a forex trade with links to position sizing and pip value calculators using your account and risk inputs.</span></a><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/currency.html"><strong>Currency Conversion Calculator: Manual Rates</strong><span>Convert currencies using a verified exchange rate you enter. The calculator does not provide live exchange rates.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <div class="toast" id="toast">Copied</div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-  <script>
+  <script src="/assets/vendor/decimal.js"></script>
+<script>
     const el = {
       price: document.getElementById("price"),
       lots: document.getElementById("lots"),
@@ -540,7 +560,7 @@
     function money(x){
       const n = Number(x);
       if (!Number.isFinite(n)) return "—";
-      return "$" + n.toFixed(2);
+      return n.toFixed(2) + " account units";
     }
 
     function setError(msg){
@@ -565,7 +585,7 @@
 
     function shareText(){
       const header = "FYNX • Pip Calculator";
-      const inputs = `Price: ${el.price.value.trim() || "—"}\nLots: ${el.lots.value.trim() || "—"}`;
+      const inputs = `Quote-to-account rate: ${el.price.value.trim() || "—"}\nLots: ${el.lots.value.trim() || "—"}`;
       const result = (el.resultsBox.style.display === "none")
         ? "No result yet — tap Calculate."
         : `Pip size: ${el.pipSizeOut.textContent}\nPip value (per 1.00 lot): ${el.perLotOut.textContent}\nPip value (your lots): ${el.yourOut.textContent}`;
@@ -579,11 +599,11 @@
       const price = parseNum(el.price.value);
       const lots = parseNum(el.lots.value);
 
-      if (!price || price <= 0) { setError("Invalid price"); return; }
+      if (!price || price <= 0) { setError("Enter a positive quote-to-account conversion rate"); return; }
       if (!lots || lots <= 0) { setError("Invalid lots"); return; }
 
-      const size = price >= 10 ? 0.01 : 0.0001;
-      const perLot = 100000.0 * size;
+      const size = Number(document.getElementById("pipIncrement").value);
+      const perLot = 100000.0 * size * price;
       const yourPip = perLot * lots;
 
       el.emptyHint.style.display = "none";
@@ -594,7 +614,7 @@
       el.yourOut.textContent = money(yourPip);
 
       el.noteOut.textContent =
-        `Assumption: standard lot = 100,000 units. Pip size chosen by price heuristic (price ≥ 10 ⇒ 0.01).`;
+        `Standard lot = 100,000 base units. Results use your supplied conversion rate; no live rate is fetched.`;
     }
 
     async function copyResult(){
@@ -641,7 +661,7 @@
     }
 
     function clearAll(){
-      el.price.value = "";
+      el.price.value = "1";
       el.lots.value = "1";
       setError("");
       resetResults();
@@ -680,13 +700,22 @@
     el.downloadBtn.addEventListener("click", downloadPNG);
 
     resetResults();
-  </script>
+
+// Opt-in first-party adapter; all network access stays in the shared controller.
+window.fynxRiskPilot=async()=>{
+ const value=id=>document.getElementById(id).value.trim();
+ const number=(raw,digits)=>{const cleaned=String(raw).replace(/[^0-9.+-]/g,'');if(!cleaned||!Number.isFinite(Number(cleaned)))throw new Error('Calculate valid inputs first.');return Number(cleaned).toFixed(digits);};
+ const meta={instrument_type:'forex',symbol:'FOREX.MODEL',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1'};
+calculate();if(el.error.textContent)throw new Error(el.error.textContent);
+ return {endpoint:'pip-value',input:{...meta,pip_size:value('pipIncrement'),lot_size:value('lots'),quote_to_account_rate:value('price')},resultKey:'pip_value',precision:2,local:number(el.yourOut.textContent,2)};
+};
+</script>
 
   <script>
     const THEME_KEY = "fynx_theme";
 
     (function applyThemeFromStorage(){
-      const saved = localStorage.getItem(THEME_KEY);
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
       if (saved === "dark") document.body.classList.add("dark-mode");
       else document.body.classList.remove("dark-mode");
     })();
@@ -698,5 +727,7 @@
       }
     });
   </script>
-</body>
+
+<script type="module" src="/assets/js/api-calculator-pilot.js"></script>
+<footer></footer></body>
 </html>

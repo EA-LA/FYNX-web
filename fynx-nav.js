@@ -1,4 +1,4 @@
-// Shared authenticated app shell (single source of truth for sidebar/header).
+// Shared authenticated app shell (sidebar + top header) with route-based active state.
 (function () {
   const VIEW_PAGES = {
     home: 'home.html',
@@ -6,7 +6,13 @@
     calculator: 'calculator.html',
     news: 'news.html',
     calendar: 'calendar.html',
-    profile: 'profile.html',
+    learn: 'learn.html',
+    explore: 'explore.html',
+    research: '/tools/research-desk.html',
+    quant: '/quant-analyst.html',
+    edge: '/edge-radar/',
+    macro: '/macro-desk.html',
+    profile: '/profile.html',
   };
 
   const VIEW_LABELS = {
@@ -15,6 +21,12 @@
     calculator: 'Calculator',
     news: 'News',
     calendar: 'Calendar',
+    learn: 'Learn',
+    explore: 'Explore',
+    research: 'Research',
+    quant: 'Quant Analyst',
+    edge: 'Edge Radar',
+    macro: 'Macro Desk',
     profile: 'Profile',
   };
 
@@ -23,11 +35,18 @@
     'index.html': 'home',
     'dashboard.html': 'home',
     'journal.html': 'journal',
+    'trader-journal.html': 'journal',
     'calculator.html': 'calculator',
     'news.html': 'news',
     'calendar.html': 'calendar',
+    'learn.html': 'learn',
     'profile.html': 'profile',
+    'quant-analyst.html': 'quant',
+    'quant-analyst': 'quant',
+    'macro-desk.html': 'macro',
+    'macro-desk': 'macro',
   };
+
 
   const NAV_ICONS = {
     home: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>',
@@ -35,93 +54,199 @@
     calculator: '<rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="16" y2="14"></line><line x1="8" y1="18" x2="16" y2="18"></line>',
     news: '<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><line x1="12" y1="11" x2="18" y2="11"></line><line x1="12" y1="7" x2="18" y2="7"></line>',
     calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>',
+    learn: '<path d="M2 7l10-4 10 4-10 4-10-4z"></path><path d="M6 10v5c0 2.2 2.7 4 6 4s6-1.8 6-4v-5"></path><path d="M22 10v6"></path>',
+    edge: '<circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4"></circle><path d="M12 12 20 4"></path>',
+    macro: '<path d="M3 21h18M5 21V10M10 21V6M15 21v-8M20 21V3"></path>',
+    quant: '<path d="M3 18l5-7 4 3 9-11M3 21h18"></path>',
+    research: '<path d="M4 3h16v18H4zM8 8h8M8 12h8M8 16h5"></path>',
+    explore: '<circle cx="10" cy="10" r="6"></circle><path d="m15 15 6 6"></path>',
     profile: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>',
   };
 
-  function detectCurrentView() {
-    let file = window.location.pathname.split('/').pop() || 'home.html';
-    if (!file.includes('.html')) file = 'home.html';
-    return FILE_TO_VIEW[file] || 'home';
-  }
 
-  function getPageTitle(currentView) {
-    const current = document.querySelector('.page-title');
-    return (current?.textContent || VIEW_LABELS[currentView] || 'Home').trim();
-  }
 
-  function renderNav(currentView) {
+function ensureDemoStyles() {
+  if (document.getElementById('fynxDemoStyles')) return;
+  const style = document.createElement('style');
+  style.id = 'fynxDemoStyles';
+  style.textContent = `
+    .top-bar-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .sidebar-toggle{
+      width:32px;
+      height:32px;
+      border-radius:10px;
+      border:1px solid var(--line, rgba(255, 255, 255, .2));
+      background:transparent;
+      color:inherit;
+      cursor:pointer;
+      font-size:14px;
+      font-weight:900;
+    }
+
+    @media (min-width: 901px){
+      body.sidebar-collapsed .nav-panel{ width:72px !important; }
+      body.sidebar-collapsed .main-content{ margin-left:72px !important; width:calc(100% - 72px) !important; }
+      body.sidebar-collapsed .nav-item{ width:56px !important; padding:12px 0 !important; }
+      body.sidebar-collapsed .nav-label{ display:none !important; }
+      body.sidebar-collapsed .nav-logo{ font-size:18px; }
+    }
+
+    @media (max-width: 900px){
+      .sidebar-toggle{ display:none; }
+    }
+  `;
+
+  document.head.appendChild(style);
+}
+
+function ensureNavConsistencyStyles() {
+  if (document.getElementById('fynxNavConsistencyStyles')) return;
+  const style = document.createElement('style');
+  style.id = 'fynxNavConsistencyStyles';
+  style.textContent = `
+    .nav-item.active{
+      background: var(--surface-2, #f7f7f7) !important;
+      color: var(--text, #0f0f0f) !important;
+      border-color: transparent !important;
+      box-shadow: var(--shadow-2, 0 10px 30px rgba(23, 23, 23, 0.08)) !important;
+    }
+    .nav-item.active::after{
+      content:"";
+      position:absolute;
+      left:-1px;
+      top:50%;
+      transform:translateY(-50%);
+      width:3px;
+      height:26px;
+      background:var(--text, #0f0f0f);
+      border-radius:0 3px 3px 0;
+      opacity:.9;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function detectCurrentView() {
+  if(window.location.pathname.startsWith('/edge-radar'))return 'edge';
+  let file = window.location.pathname.split('/').pop() || 'home.html';
+  if (!file.includes('.html') && !['quant-analyst','macro-desk'].includes(file)) file = 'home.html';
+  return FILE_TO_VIEW[file] || 'home';
+}
+
+  function navMarkup(currentView) {
     return Object.keys(VIEW_PAGES)
       .map((view) => {
         const active = view === currentView ? ' active' : '';
-        return `<a class="app-shell-nav-item${active}" href="${VIEW_PAGES[view]}" data-view="${view}">
-          <svg class="app-shell-icon" viewBox="0 0 24 24">${NAV_ICONS[view]}</svg>
-          <span class="app-shell-label">${VIEW_LABELS[view]}</span>
-        </a>`;
+        return `
+          <a class="nav-item${active}" href="${VIEW_PAGES[view]}" data-view="${view}"${active ? ' aria-current="page"' : ''}>
+            <svg class="nav-icon" viewBox="0 0 24 24">${NAV_ICONS[view]}</svg>
+            <span class="nav-label">${VIEW_LABELS[view]}</span>${['quant','edge','macro'].includes(view) ? '<span class="quant-new-badge">NEW</span>' : ''}
+          </a>
+        `;
       })
       .join('');
   }
 
   function renderShell() {
+    const navPanel = document.querySelector('.nav-panel');
+    const topBar = document.querySelector('.top-bar');
+    if (!navPanel || !topBar) return;
+
     const currentView = detectCurrentView();
-    const title = getPageTitle(currentView);
+    const existingTitle = (topBar.querySelector('.page-title')?.textContent || VIEW_LABELS[currentView] || 'Home').trim();
 
-    const oldContainer = document.querySelector('.app-shell-host, [data-app-shell-host]');
-    const oldContent = document.querySelector('.content-area');
-    if (!oldContainer || !oldContent) return;
+    navPanel.innerHTML = `<div class="nav-logo"><h1>FYNX</h1></div><div class="nav-menu">${navMarkup(currentView)}</div>`;
 
-    const contentChildren = Array.from(oldContent.childNodes);
+   ensureDemoStyles();
+    ensureNavConsistencyStyles();
+    const disableSidebarToggle = true;
+topBar.innerHTML = `
 
-    const root = document.createElement('div');
-    root.className = 'app-shell-root';
-    root.innerHTML = `
-      <nav class="app-shell-sidebar" aria-label="Primary">
-        <div class="app-shell-logo"><h1>FYNX</h1></div>
-        <div class="app-shell-nav">${renderNav(currentView)}</div>
-      </nav>
-      <main class="app-shell-main">
-        <header class="app-shell-header">
-          <h1 class="app-shell-title">${title}</h1>
-          <div class="app-shell-header-right">
-            <span class="app-shell-chip" id="dateChip">Loading...</span>
-            <button class="app-shell-icon-btn" title="Notifications" aria-label="Notifications">
-              <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-            </button>
-            <div class="app-shell-avatar" id="avatarInitials">FX</div>
-          </div>
-        </header>
-        <section class="app-shell-content content-area"></section>
-      </main>
-    `;
+  <div class="top-bar-left">
+    ${disableSidebarToggle ? '' : '<button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Collapse sidebar">&lt;</button>'}
+    <h1 class="page-title">${existingTitle}</h1>
+  </div>
 
-    const newContent = root.querySelector('.app-shell-content');
-    contentChildren.forEach((node) => newContent.appendChild(node));
-
-    oldContainer.replaceWith(root);
-    document.body.classList.add('app-shell');
+  <div class="top-bar-right">
+    <a class="chip" href="/api/" aria-label="FYNX API developer workspace">API</a>
+    <span class="chip" id="dateChip">Loading...</span>
+    <button class="icon-btn" title="Notifications" aria-label="Notifications">
+      <svg viewBox="0 0 24 24">
+        <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </svg>
+    </button>
+    <div class="user-avatar" id="avatarInitials">FX</div>
+  </div>
+`;
 
     const chip = document.getElementById('dateChip');
     if (chip) {
-      chip.textContent = new Date().toLocaleDateString('en-US', {
-        weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+      chip.textContent = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    }
+  }
+
+  function initNav() {
+    renderShell();
+    const actions = document.querySelector('.top-bar') || document.querySelector('.topbar');
+    if(actions && !document.getElementById('publicAccountLinks')) { const links=document.createElement('div');links.id='publicAccountLinks';links.style.cssText='display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px';links.innerHTML='<a href="/pro.html">Pro tools &amp; plans</a><a href="/auth/login.html?returnTo=%2Fhome.html">Sign in</a>';links.querySelectorAll('a').forEach(a=>a.style.cssText='color:inherit;text-decoration:none;font-weight:600;padding:7px 3px;white-space:nowrap'); actions.append(links); window.addEventListener('fynx:session', event => { if(event.detail.type !== 'ready') return; const account=links.lastElementChild;account.textContent=event.detail.user?'Profile':'Sign in';account.href=event.detail.user?'/profile.html':'/auth/login.html?returnTo=%2Fhome.html'; }); }
+    const sidebarKey = 'fynx_sidebar_collapsed';
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const disableSidebarToggle = true;
+    const applySidebarState = (collapsed) => {
+      document.body.classList.toggle('sidebar-collapsed', collapsed);
+      if (toggleBtn) {
+        toggleBtn.textContent = collapsed ? '>' : '<';
+        toggleBtn.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+      }
+      try { localStorage.setItem(sidebarKey, collapsed ? '1' : '0'); } catch {}
+    };
+    if (disableSidebarToggle) {
+      document.body.classList.remove('sidebar-collapsed');
+      try { localStorage.setItem(sidebarKey, '0'); } catch {}
+    } else if (window.matchMedia('(min-width: 901px)').matches) {
+      try { applySidebarState(localStorage.getItem(sidebarKey) === '1'); } catch { applySidebarState(false); }
+    }
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        applySidebarState(!document.body.classList.contains('sidebar-collapsed'));
       });
     }
 
     const initialsEl = document.getElementById('avatarInitials');
     if (initialsEl) {
-      const userName = localStorage.getItem('fynxUserName') || localStorage.getItem('fynx_user_name') || 'FYNX';
-      const initials = userName
-        .split(/\s+/)
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((chunk) => chunk.charAt(0).toUpperCase())
-        .join('') || 'FX';
-      initialsEl.textContent = initials;
+      function updateIdentity() {
+        const userName = window.FynxIdentity?.displayName || '';
+        initialsEl.textContent = userName.split(/\s+/).filter(Boolean).slice(0, 2).map(chunk => chunk[0].toUpperCase()).join('') || 'FX';
+        const account = document.querySelector('#publicAccountLinks a:last-child');
+        if (account) {
+          account.textContent = window.FynxIdentity?.uid ? 'Profile' : 'Sign in';
+          account.href = window.FynxIdentity?.uid ? '/profile.html' : '/auth/login.html?returnTo=' + encodeURIComponent(location.pathname);
+        }
+      }
+      updateIdentity();
+      window.addEventListener('fynx:identity', updateIdentity);
+      import('/assets/js/account-identity.js?v=20260928-audit2').catch(() => {});
+      initialsEl.title = 'Open profile';
+      initialsEl.style.cursor = 'pointer';
+      initialsEl.setAttribute('role', 'link');
+      initialsEl.tabIndex = 0;
+      initialsEl.addEventListener('click', () => { location.href = 'profile.html'; });
+      initialsEl.addEventListener('keydown', event => { if(event.key === 'Enter') location.href = 'profile.html'; });
+
     }
+
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderShell);
+    document.addEventListener('DOMContentLoaded', initNav);
   } else {
-    renderShell();
+    initNav();
   }
 })();

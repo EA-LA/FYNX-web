@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX Tools — Currency Calculator</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       font-family: 'Inter','Segoe UI',system-ui,sans-serif;
       color: var(--text);
@@ -17,53 +15,50 @@
       min-height: 100vh;
       transition: background .3s, color .3s;
     }
-
     body {
       --bg: #fff;
       --text: #0a0a0a;
-      --text-muted: rgba(0,0,0,.58);
-      --border: rgba(0,0,0,.10);
-      --panel-bg: rgba(0,0,0,.03);
-      --header-bg: rgba(255,255,255,.85);
-      --nav-link-bg: rgba(0,0,0,.04);
-      --nav-link-border: rgba(0,0,0,.14);
-      --nav-link-hover-bg: rgba(0,0,0,.08);
-      --nav-link-hover-border: rgba(0,0,0,.25);
-      --grid-line: rgba(0,0,0,.04);
+      --text-muted: rgba(0, 0, 0, .58);
+      --border: rgba(0, 0, 0, .10);
+      --panel-bg: rgba(0, 0, 0, .03);
+      --header-bg: rgba(255, 255, 255, .85);
+      --nav-link-bg: rgba(0, 0, 0, .04);
+      --nav-link-border: rgba(0, 0, 0, .14);
+      --nav-link-hover-bg: rgba(0, 0, 0, .08);
+      --nav-link-hover-border: rgba(0, 0, 0, .25);
+      --grid-line: rgba(0, 0, 0, .04);
       --orb-opacity: .10;
-      --hero-bg: rgba(0,0,0,.03);
+      --hero-bg: rgba(0, 0, 0, .03);
       --h1-from: #0a0a0a;
       --h1-to: #555;
-      --input-bg: rgba(255,255,255,.72);
-      --btn-bg: rgba(0,0,0,.08);
-      --btn-border: rgba(0,0,0,.16);
-      --btn-hover: rgba(0,0,0,.12);
-      --success-bg: rgba(0,0,0,.04);
+      --input-bg: rgba(255, 255, 255, .72);
+      --btn-bg: rgba(0, 0, 0, .08);
+      --btn-border: rgba(0, 0, 0, .16);
+      --btn-hover: rgba(0, 0, 0, .12);
+      --success-bg: rgba(0, 0, 0, .04);
     }
-
     body.dark-mode {
       --bg: #000;
       --text: #fff;
-      --text-muted: rgba(255,255,255,.58);
-      --border: rgba(255,255,255,.10);
-      --panel-bg: rgba(255,255,255,.04);
-      --header-bg: rgba(0,0,0,.85);
-      --nav-link-bg: rgba(255,255,255,.04);
-      --nav-link-border: rgba(255,255,255,.14);
-      --nav-link-hover-bg: rgba(255,255,255,.08);
-      --nav-link-hover-border: rgba(255,255,255,.28);
-      --grid-line: rgba(255,255,255,.03);
+      --text-muted: rgba(255, 255, 255, .58);
+      --border: rgba(255, 255, 255, .10);
+      --panel-bg: rgba(255, 255, 255, .04);
+      --header-bg: rgba(0, 0, 0, .85);
+      --nav-link-bg: rgba(255, 255, 255, .04);
+      --nav-link-border: rgba(255, 255, 255, .14);
+      --nav-link-hover-bg: rgba(255, 255, 255, .08);
+      --nav-link-hover-border: rgba(255, 255, 255, .28);
+      --grid-line: rgba(255, 255, 255, .03);
       --orb-opacity: .20;
-      --hero-bg: rgba(255,255,255,.03);
+      --hero-bg: rgba(255, 255, 255, .03);
       --h1-from: #fff;
       --h1-to: #8a8a8a;
-      --input-bg: rgba(255,255,255,.04);
-      --btn-bg: rgba(255,255,255,.08);
-      --btn-border: rgba(255,255,255,.16);
-      --btn-hover: rgba(255,255,255,.14);
-      --success-bg: rgba(255,255,255,.05);
+      --input-bg: rgba(255, 255, 255, .04);
+      --btn-bg: rgba(255, 255, 255, .08);
+      --btn-border: rgba(255, 255, 255, .16);
+      --btn-hover: rgba(255, 255, 255, .14);
+      --success-bg: rgba(255, 255, 255, .05);
     }
-
     .animated-bg {
       position: fixed;
       inset: 0;
@@ -72,7 +67,6 @@
       overflow: hidden;
       transition: background .3s;
     }
-
     .grid-overlay {
       position: absolute;
       inset: 0;
@@ -82,12 +76,10 @@
       background-size: 50px 50px;
       animation: gridMove 20s linear infinite;
     }
-
     @keyframes gridMove {
       0% { transform: translate(0,0); }
       100% { transform: translate(50px,50px); }
     }
-
     .gradient-orb {
       position: absolute;
       border-radius: 50%;
@@ -95,7 +87,6 @@
       opacity: var(--orb-opacity);
       animation: float 20s ease-in-out infinite;
     }
-
     .orb-1 {
       width: 520px;
       height: 520px;
@@ -103,7 +94,6 @@
       top: -220px;
       left: -220px;
     }
-
     .orb-2 {
       width: 420px;
       height: 420px;
@@ -112,13 +102,11 @@
       right: -170px;
       animation-delay: 6s;
     }
-
     @keyframes float {
       0%,100% { transform: translate(0,0) scale(1); }
       33% { transform: translate(50px,-50px) scale(1.08); }
       66% { transform: translate(-50px,50px) scale(.92); }
     }
-
     header {
       position: sticky;
       top: 0;
@@ -129,7 +117,6 @@
       padding: 1rem 0;
       transition: background .3s, border-color .3s;
     }
-
     .nav {
       max-width: 1200px;
       margin: 0 auto;
@@ -139,7 +126,6 @@
       padding: 0 1.25rem;
       gap: 1rem;
     }
-
     .brand {
       display: flex;
       align-items: center;
@@ -149,14 +135,12 @@
       font-size: 1.25rem;
       color: var(--text);
     }
-
     .nav-actions {
       display: flex;
       gap: .6rem;
       flex-wrap: wrap;
       justify-content: flex-end;
     }
-
     .nav a {
       color: var(--text);
       text-decoration: none;
@@ -168,19 +152,16 @@
       transition: all .25s ease;
       white-space: nowrap;
     }
-
     .nav a:hover {
       border-color: var(--nav-link-hover-border);
       background: var(--nav-link-hover-bg);
       transform: translateY(-1px);
     }
-
     main {
       max-width: 1200px;
       margin: 0 auto;
       padding: 3.5rem 1.25rem 5rem;
     }
-
     .hero {
       padding: 2.25rem 1.75rem;
       border: 1px solid var(--border);
@@ -189,7 +170,6 @@
       backdrop-filter: blur(10px);
       transition: background .3s, border-color .3s;
     }
-
     h1 {
       font-size: 3rem;
       line-height: 1.1;
@@ -199,21 +179,18 @@
       -webkit-text-fill-color: transparent;
       margin-bottom: .75rem;
     }
-
     .subtitle {
       color: var(--text-muted);
       font-size: 1.1rem;
       line-height: 1.8;
       max-width: 75ch;
     }
-
     .panel-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
       gap: 1.25rem;
       margin-top: 1.25rem;
     }
-
     .panel {
       border: 1px solid var(--border);
       background: var(--panel-bg);
@@ -223,7 +200,6 @@
       min-height: 320px;
       transition: background .3s, border-color .3s;
     }
-
     .panel h2 {
       font-size: 1.55rem;
       margin-bottom: .45rem;
@@ -231,37 +207,31 @@
       font-weight: 900;
       letter-spacing: -.5px;
     }
-
     .panel .muted {
       color: var(--text-muted);
       font-size: .97rem;
       line-height: 1.6;
       margin-bottom: 1rem;
     }
-
     .form-grid {
       display: grid;
       gap: .95rem;
       margin-top: 1rem;
     }
-
     .field-group {
       display: grid;
       gap: .4rem;
     }
-
     .field-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: .8rem;
     }
-
     label {
       font-size: .98rem;
       font-weight: 800;
       color: var(--text);
     }
-
     input,
     select {
       width: 100%;
@@ -275,21 +245,17 @@
       transition: border-color .2s ease, background .2s ease, transform .15s ease;
       appearance: none;
     }
-
     input:focus,
     select:focus {
       border-color: var(--text);
       transform: translateY(-1px);
     }
-
     input::placeholder {
       color: var(--text-muted);
     }
-
     .select-wrap {
       position: relative;
     }
-
     .select-wrap::after {
       content: "\f078";
       font-family: "Font Awesome 6 Free";
@@ -302,14 +268,12 @@
       color: var(--text-muted);
       font-size: .8rem;
     }
-
     .actions {
       display: flex;
       flex-wrap: wrap;
       gap: .7rem;
       margin-top: .4rem;
     }
-
     button {
       border: 1px solid var(--btn-border);
       background: var(--btn-bg);
@@ -321,16 +285,13 @@
       transition: all .2s ease;
       font-size: .96rem;
     }
-
     button:hover {
       background: var(--btn-hover);
       transform: translateY(-1px);
     }
-
     .swap-btn {
       width: 100%;
     }
-
     .result-placeholder,
     .result-box {
       border: 1px solid var(--border);
@@ -338,14 +299,12 @@
       border-radius: 16px;
       padding: 1rem;
     }
-
     .result-placeholder {
       color: var(--text-muted);
       min-height: 120px;
       display: flex;
       align-items: center;
     }
-
     .big-result {
       font-size: 2rem;
       font-weight: 900;
@@ -355,13 +314,11 @@
       color: var(--text);
       word-break: break-word;
     }
-
     .result-line {
       color: var(--text-muted);
       line-height: 1.7;
       font-size: .98rem;
     }
-
     .rate-badge {
       display: inline-flex;
       align-items: center;
@@ -375,21 +332,18 @@
       color: var(--text);
       font-weight: 700;
     }
-
     .footnote {
       margin-top: 1rem;
       color: var(--text-muted);
       font-size: .95rem;
       line-height: 1.65;
     }
-
     .mini-note {
       margin-top: .5rem;
       color: var(--text-muted);
       font-size: .9rem;
       line-height: 1.5;
     }
-
     @media (max-width: 720px) {
       h1 { font-size: 2.35rem; }
       .field-row { grid-template-columns: 1fr; }
@@ -397,9 +351,36 @@
       .hero { padding: 1.4rem; }
     }
   </style>
+  <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
+<title>Currency Conversion Calculator: Manual Rates | FYNX</title>
+<meta name="description" content="Convert currencies using a verified exchange rate you enter. The calculator does not provide live exchange rates.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<style>.scenario-link-status{margin:10px 0 0;font-size:13px;line-height:1.5;color:inherit;opacity:.85}.scenario-link-status:empty{display:none}.scenario-link-box{display:block;width:100%;box-sizing:border-box;margin-top:6px;font-size:16px;padding:10px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit}</style>
+<script src="/assets/js/scenario-link.js?v=20261111-scenario-privacy-4" defer></script>
+<link rel="canonical" href="https://www.fynxfinanceworld.com/tools/currency.html">
+<meta property="og:title" content="Currency Conversion Calculator: Manual Rates | FYNX">
+<meta property="og:description" content="Convert currencies using a verified exchange rate you enter. The calculator does not provide live exchange rates.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/tools/currency.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261012" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Currency Conversion Calculator: Manual Rates","item":"https://www.fynxfinanceworld.com/tools/currency.html"}]}</script><!-- discovery-schema:end -->
+<!-- search-identity:start --><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.fynxfinanceworld.com/#organization","name":"FYNX","alternateName":"FYNX Finance World","url":"https://www.fynxfinanceworld.com/","founder":{"@id":"https://ea-la.github.io/#person"},"sameAs":["https://www.fynxfunded.com/","https://site.fynxfinanceworld.com/","https://blog.fynxfinanceworld.com/","https://roadmap.fynxfinanceworld.com/"]},{"@type":"Person","@id":"https://ea-la.github.io/#person","name":"Elham Amini","url":"https://ea-la.github.io/","jobTitle":"Founder of FYNX","sameAs":["https://www.linkedin.com/in/elham-amini-745560302/","https://www.instagram.com/___elham_amini___/"],"worksFor":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebSite","@id":"https://www.fynxfinanceworld.com/#website","url":"https://www.fynxfinanceworld.com/","name":"FYNX Finance World","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebPage","@id":"https://www.fynxfinanceworld.com/tools/currency.html#webpage","url":"https://www.fynxfinanceworld.com/tools/currency.html","name":"Currency Conversion Calculator: Manual Rates | FYNX","description":"Convert currencies using a verified exchange rate you enter. The calculator does not provide live exchange rates.","inLanguage":"en","isPartOf":{"@id":"https://www.fynxfinanceworld.com/#website"},"publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"},"mainEntity":{"@id":"https://www.fynxfinanceworld.com/tools/currency.html#tool"}},{"@type":"WebApplication","@id":"https://www.fynxfinanceworld.com/tools/currency.html#tool","url":"https://www.fynxfinanceworld.com/tools/currency.html","name":"Currency Conversion Calculator: Manual Rates","description":"Convert currencies using a verified exchange rate you enter. The calculator does not provide live exchange rates.","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}}]}</script><!-- search-identity:end -->
+<!-- FYNX ADSENSE VERIFICATION START -->
+<script>(window.adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 1;</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
+     crossorigin="anonymous"></script>
+<!-- FYNX ADSENSE VERIFICATION END -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
 </head>
-<body>
-  <div class="animated-bg">
+<body data-fynx-layout="standalone" data-fynx-section="TOOLS">
+<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
+<div class="animated-bg">
     <div class="grid-overlay"></div>
     <div class="gradient-orb orb-1"></div>
     <div class="gradient-orb orb-2"></div>
@@ -416,10 +397,11 @@
   </header>
 
   <main>
-    <section class="hero">
-      <h1>Currency Calculator</h1>
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
+      <h1>Currency Calculator</h1><p class="site-data-notice">Manual calculation · Enter a verified exchange rate. No live exchange-rate feed is connected.</p>
       <p class="subtitle">
-        Convert currencies instantly using built-in exchange rates. Enter your amount, choose your currencies,
+        Convert currencies using a rate from your chosen provider. Enter your amount, choose your currencies,
         and get a clean conversion result with reverse rate details.
       </p>
 
@@ -427,7 +409,7 @@
         <div class="panel">
           <h2>INPUTS</h2>
           <div class="muted">
-            Enter amount, choose base and target currencies, or type a custom rate if you want manual conversion.
+            Enter the amount, choose the base and target currencies, and enter the destination currency received for one unit of the base currency.
           </div>
 
           <div class="form-grid">
@@ -457,14 +439,15 @@
             </button>
 
             <div class="field-group">
-              <label for="customRate">Custom Rate (Optional)</label>
-              <input id="customRate" type="number" min="0" step="any" placeholder="Leave empty to use built-in rate" />
+              <label for="customRate">Exchange Rate (Required)</label>
+              <input id="customRate" type="number" min="0" step="any" placeholder="Enter your verified exchange rate" />
               <div class="mini-note">Example: if 1 USD = 0.92 EUR, enter 0.92</div>
             </div>
 
             <div class="actions">
               <button type="button" id="calculateBtn"><i class="fas fa-calculator"></i> Calculate</button>
               <button type="button" id="clearBtn"><i class="fas fa-broom"></i> Clear</button>
+              <button type="button" id="shareScenarioBtn" data-scenario-fields="amount,fromCurrency,toCurrency,customRate" data-scenario-run="calculateBtn" data-scenario-optional="customRate" data-scenario-opened="Opened a shared conversion. The rate is the one the sender entered, not a live quote; check it with your provider."><i class="fas fa-link"></i> Copy scenario link</button>
             </div>
           </div>
         </div>
@@ -480,16 +463,18 @@
       </div>
 
       <div class="footnote">
-        Logic: the calculator uses a built-in currency table relative to USD and supports manual override through the custom rate field.
+        Logic: source amount × your entered rate. Results exclude provider fees and spreads. The calculator does not supply or verify market rates.
       </div>
     </section>
-  </main>
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Convert with a rate you can verify</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter a manual rate from your chosen provider and verify its direction. Fixed examples in this tool are not current quotes.</p><h3>The calculation or concept</h3><p>Converted amount = source amount × exchange rate when the rate is expressed as destination currency per source unit.</p></div><div class="tool-example"><h3>Worked example</h3><p>At an illustrative rate of 1.10 USD per EUR, €250 converts to $275 before provider fees. The inverse rate is needed to convert in the opposite direction.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Banks and brokers may apply spreads, fees and different execution rates. Recheck the rate and timestamp before making a real conversion.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/pip.html"><strong>Forex Pip Value Calculator</strong><span>Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.</span></a><a href="/tools/forex.html"><strong>Forex Trade Planning Calculators</strong><span>Plan a forex trade with links to position sizing and pip value calculators using your account and risk inputs.</span></a><a href="/tools/margin.html"><strong>Forex Margin &amp; Leverage Calculator</strong><span>Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const THEME_KEY = "fynx_theme";
 
     (function applyThemeFromStorage() {
-      const saved = localStorage.getItem(THEME_KEY);
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
       if (saved === "dark") document.body.classList.add("dark-mode");
       else document.body.classList.remove("dark-mode");
     })();
@@ -502,26 +487,26 @@
     });
 
     const currencyData = {
-      USD: { name: "US Dollar", rate: 1 },
-      EUR: { name: "Euro", rate: 0.92 },
-      GBP: { name: "British Pound", rate: 0.79 },
-      JPY: { name: "Japanese Yen", rate: 151.25 },
-      CAD: { name: "Canadian Dollar", rate: 1.35 },
-      AUD: { name: "Australian Dollar", rate: 1.52 },
-      CHF: { name: "Swiss Franc", rate: 0.88 },
-      CNY: { name: "Chinese Yuan", rate: 7.21 },
-      AED: { name: "UAE Dirham", rate: 3.6725 },
-      SAR: { name: "Saudi Riyal", rate: 3.75 },
-      INR: { name: "Indian Rupee", rate: 83.1 },
-      PKR: { name: "Pakistani Rupee", rate: 278.4 },
-      AFN: { name: "Afghan Afghani", rate: 71.3 },
-      TRY: { name: "Turkish Lira", rate: 32.1 },
-      SEK: { name: "Swedish Krona", rate: 10.45 },
-      NOK: { name: "Norwegian Krone", rate: 10.72 },
-      DKK: { name: "Danish Krone", rate: 6.86 },
-      NZD: { name: "New Zealand Dollar", rate: 1.64 },
-      SGD: { name: "Singapore Dollar", rate: 1.34 },
-      HKD: { name: "Hong Kong Dollar", rate: 7.82 }
+      USD: { name: "US Dollar" },
+      EUR: { name: "Euro" },
+      GBP: { name: "British Pound" },
+      JPY: { name: "Japanese Yen" },
+      CAD: { name: "Canadian Dollar" },
+      AUD: { name: "Australian Dollar" },
+      CHF: { name: "Swiss Franc" },
+      CNY: { name: "Chinese Yuan" },
+      AED: { name: "UAE Dirham" },
+      SAR: { name: "Saudi Riyal" },
+      INR: { name: "Indian Rupee" },
+      PKR: { name: "Pakistani Rupee" },
+      AFN: { name: "Afghan Afghani" },
+      TRY: { name: "Turkish Lira" },
+      SEK: { name: "Swedish Krona" },
+      NOK: { name: "Norwegian Krone" },
+      DKK: { name: "Danish Krone" },
+      NZD: { name: "New Zealand Dollar" },
+      SGD: { name: "Singapore Dollar" },
+      HKD: { name: "Hong Kong Dollar" }
     };
 
     const amountInput = document.getElementById("amount");
@@ -567,16 +552,7 @@
       toCurrency.value = "EUR";
     }
 
-    function getBuiltInRate(from, to) {
-      const fromRate = currencyData[from]?.rate;
-      const toRate = currencyData[to]?.rate;
-
-      if (!fromRate || !toRate) return null;
-
-      return toRate / fromRate;
-    }
-
-    function renderResult(amount, from, to, rate, usedCustomRate) {
+    function renderResult(amount, from, to, rate, sameCurrency = false) {
       const converted = amount * rate;
       const reverseRate = 1 / rate;
 
@@ -585,7 +561,7 @@
         <div class="big-result">${formatMoney(amount)} ${from} = ${formatMoney(converted)} ${to}</div>
         <div class="result-line"><strong>Rate:</strong> 1 ${from} = ${formatNumber(rate, 8)} ${to}</div>
         <div class="result-line"><strong>Reverse:</strong> 1 ${to} = ${formatNumber(reverseRate, 8)} ${from}</div>
-        <div class="result-line"><strong>Source:</strong> ${usedCustomRate ? "Custom manual rate" : "Built-in rate table"}</div>
+        <div class="result-line"><strong>Source:</strong> ${sameCurrency ? "Same currency (1:1)" : "Your manually entered rate · not a live quote"}</div>
         <div class="rate-badge"><i class="fas fa-coins"></i> Fast currency conversion ready</div>
       `;
     }
@@ -613,37 +589,17 @@
       }
 
       if (from === to) {
-        renderResult(amount, from, to, 1, false);
+        renderResult(amount, from, to, 1, true);
         return;
       }
 
-      let rate;
-      let usedCustomRate = false;
-
-      if (customRateRaw !== "") {
-        rate = parseFloat(customRateRaw);
-        usedCustomRate = true;
-
-        if (!Number.isFinite(rate) || rate <= 0) {
-          resultArea.className = "result-box";
-          resultArea.innerHTML = `
-            <div class="result-line"><strong>Error:</strong> Custom rate must be greater than 0.</div>
-          `;
-          return;
-        }
-      } else {
-        rate = getBuiltInRate(from, to);
-
-        if (!rate) {
-          resultArea.className = "result-box";
-          resultArea.innerHTML = `
-            <div class="result-line"><strong>Error:</strong> Could not calculate this currency pair.</div>
-          `;
-          return;
-        }
+      const rate = Number(customRateRaw);
+      if (!customRateRaw || !Number.isFinite(rate) || rate <= 0 || !Number.isFinite(amount * rate) || !Number.isFinite(1 / rate)) {
+        resultArea.className = "result-box";
+        resultArea.textContent = "Enter a valid exchange rate greater than 0 from your chosen provider. No rate is supplied automatically.";
+        return;
       }
-
-      renderResult(amount, from, to, rate, usedCustomRate);
+      renderResult(amount, from, to, rate);
     }
 
     function clearForm() {
@@ -660,11 +616,20 @@
       fromCurrency.value = toCurrency.value;
       toCurrency.value = currentFrom;
 
+      const enteredRate = Number(customRateInput.value);
+      customRateInput.value = Number.isFinite(enteredRate) && enteredRate > 0 && Number.isFinite(1 / enteredRate) ? String(1 / enteredRate) : "";
       if (resultArea.className === "result-box" && amountInput.value.trim() !== "") {
         calculateConversion();
       }
     }
 
+    function resetRateForPair() {
+      customRateInput.value = "";
+      resultArea.className = "result-placeholder";
+      resultArea.textContent = "Enter the exchange rate for the selected currency pair.";
+    }
+    fromCurrency.addEventListener("change", resetRateForPair);
+    toCurrency.addEventListener("change", resetRateForPair);
     calculateBtn.addEventListener("click", calculateConversion);
     clearBtn.addEventListener("click", clearForm);
     swapBtn.addEventListener("click", swapCurrencies);
@@ -679,5 +644,6 @@
 
     populateCurrencies();
   </script>
-</body>
+
+<footer></footer></body>
 </html>

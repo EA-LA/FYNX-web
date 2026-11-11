@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX — Crypto</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    :root{--bg:#fff;--panel:#fff;--panel-2:#fafafa;--text:#0a0a0a;--muted:#5f5f66;--border:rgba(0,0,0,.08);--border-strong:rgba(0,0,0,.12);--shadow:0 20px 60px rgba(0,0,0,.08);--grid-1:rgba(0,0,0,.05);--grid-2:rgba(0,0,0,.03);--orb:.10}
-    body.dark-mode{--bg:#000;--panel:rgba(255,255,255,.03);--panel-2:rgba(255,255,255,.04);--text:#fff;--muted:rgba(255,255,255,.68);--border:rgba(255,255,255,.10);--border-strong:rgba(255,255,255,.16);--shadow:0 30px 90px rgba(0,0,0,.55);--grid-1:rgba(255,255,255,.04);--grid-2:rgba(255,255,255,.025);--orb:.22}
+    :root{--bg:#fff;--panel:#fff;--panel-2:#fafafa;--text:#0a0a0a;--muted:#606060;--border:rgba(0, 0, 0, .08);--border-strong:rgba(0, 0, 0, .12);--shadow:0 20px 60px rgba(0, 0, 0, .08);--grid-1:rgba(0, 0, 0, .05);--grid-2:rgba(0, 0, 0, .03);--orb:.10}
+    body.dark-mode{--bg:#000;--panel:rgba(255, 255, 255, .03);--panel-2:rgba(255, 255, 255, .04);--text:#fff;--muted:rgba(255, 255, 255, .68);--border:rgba(255, 255, 255, .10);--border-strong:rgba(255, 255, 255, .16);--shadow:0 30px 90px rgba(0, 0, 0, .55);--grid-1:rgba(255, 255, 255, .04);--grid-2:rgba(255, 255, 255, .025);--orb:.22}
     body{font-family:Inter,Segoe UI,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:.25s}
     .animated-bg{position:fixed;inset:0;z-index:-1;background:var(--bg);overflow:hidden}
     .grid-overlay{position:absolute;inset:0;background-image:linear-gradient(var(--grid-1) 1px,transparent 1px),linear-gradient(90deg,var(--grid-1) 1px,transparent 1px);background-size:46px 46px}
@@ -34,10 +34,36 @@
     .coin span{color:var(--muted);font-size:.92rem}
     .widget{min-height:460px;border:1px solid var(--border);border-radius:20px;overflow:hidden;background:var(--panel-2)}
     @media (max-width:1050px){.hero,.grid-2,.coins{grid-template-columns:1fr}}
-  </style>
+  #cryptoScreener{min-height:330px}
+</style>
+  <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
+<title>Crypto Market Overview: Bitcoin, Ethereum &amp; Altcoins | FYNX</title>
+<meta name="description" content="Explore Bitcoin, Ethereum and other cryptocurrency markets with charts and market context for your research.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://www.fynxfinanceworld.com/markets/crypto.html">
+<meta property="og:title" content="Crypto Market Overview: Bitcoin, Ethereum &amp; Altcoins | FYNX">
+<meta property="og:description" content="Explore Bitcoin, Ethereum and other cryptocurrency markets with charts and market context for your research.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/markets/crypto.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261012" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Markets","item":"https://www.fynxfinanceworld.com/explore.html?category=Markets"},{"@type":"ListItem","position":3,"name":"Crypto Market Overview: Bitcoin, Ethereum & Altcoins","item":"https://www.fynxfinanceworld.com/markets/crypto.html"}]}</script><!-- discovery-schema:end -->
+<!-- search-identity:start --><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.fynxfinanceworld.com/#organization","name":"FYNX","alternateName":"FYNX Finance World","url":"https://www.fynxfinanceworld.com/","founder":{"@id":"https://ea-la.github.io/#person"},"sameAs":["https://www.fynxfunded.com/","https://site.fynxfinanceworld.com/","https://blog.fynxfinanceworld.com/","https://roadmap.fynxfinanceworld.com/"]},{"@type":"Person","@id":"https://ea-la.github.io/#person","name":"Elham Amini","url":"https://ea-la.github.io/","jobTitle":"Founder of FYNX","sameAs":["https://www.linkedin.com/in/elham-amini-745560302/","https://www.instagram.com/___elham_amini___/"],"worksFor":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebSite","@id":"https://www.fynxfinanceworld.com/#website","url":"https://www.fynxfinanceworld.com/","name":"FYNX Finance World","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebPage","@id":"https://www.fynxfinanceworld.com/markets/crypto.html#webpage","url":"https://www.fynxfinanceworld.com/markets/crypto.html","name":"Crypto Market Overview: Bitcoin, Ethereum & Altcoins | FYNX","description":"Explore Bitcoin, Ethereum and other cryptocurrency markets with charts and market context for your research.","inLanguage":"en","isPartOf":{"@id":"https://www.fynxfinanceworld.com/#website"},"publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}}]}</script><!-- search-identity:end -->
+<!-- FYNX ADSENSE VERIFICATION START -->
+<script>(window.adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 1;</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
+     crossorigin="anonymous"></script>
+<!-- FYNX ADSENSE VERIFICATION END -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
 </head>
-<body>
-  <div class="animated-bg"><div class="grid-overlay"></div><div class="orb orb1"></div><div class="orb orb2"></div></div>
+<body data-fynx-layout="standalone" data-fynx-section="MARKETS">
+<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
+<div class="animated-bg"><div class="grid-overlay"></div><div class="orb orb1"></div><div class="orb orb2"></div></div>
   <header>
     <div class="nav">
       <div class="brand"><i class="fab fa-bitcoin"></i> Crypto</div>
@@ -60,7 +86,8 @@
   </header>
 
   <main>
-    <section class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Markets">Markets</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
       <div class="card">
         <div class="eyebrow"><i class="fas fa-coins"></i> Crypto Dashboard</div>
         <h1>Monitor major crypto assets fast.</h1>
@@ -87,11 +114,13 @@
         <div class="widget" id="ethChart"></div>
       </div>
     </section>
-  </main>
+  <!-- discovery-network:start --><details class="network-help"><summary>Chart or live data unavailable?</summary><p>Some networks restrict embedded providers. You can still use <a href="/explore.html?category=Tools">local calculators</a>, read <a href="/learn.html">learning guides</a>, or open the <a href="/directory.html">lightweight directory</a>. For release times, check the <a href="https://www.bls.gov/schedule/">BLS</a> and <a href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm">Federal Reserve</a> calendars. <a href="/accessibility.html">Connection help →</a></p></details><!-- discovery-network:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/markets/cot.html"><strong>CFTC Commitments of Traders: Weekly Positions</strong><span>Explore the latest published CFTC Legacy Futures Only positions, including net commercial and non-commercial positions and open interest.</span></a><a href="/markets/liquidity.html"><strong>Crypto Liquidity: Coinbase Bid, Ask &amp; Spread</strong><span>View Coinbase BTC/USD and ETH/USD best bid, ask, spread and displayed size, refreshed every 15 seconds while visible.</span></a><a href="/markets/index.html"><strong>Financial Markets: Forex, Crypto &amp; Market Research</strong><span>Browse forex and crypto market views, technical indicators, volatility, correlations and market research references.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const THEME_KEY = "fynx_theme";
-    function getTheme(){ return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light"; }
+    function getTheme(){ return window.FynxPreferences?.getItem(THEME_KEY) === "dark" ? "dark" : "light"; }
     function applyTheme(theme){
       document.body.classList.toggle("dark-mode", theme === "dark");
       document.getElementById("themeLabel").textContent = theme === "dark" ? "Dark" : "Light";
@@ -99,7 +128,7 @@
     }
     function toggleTheme(){
       const next = getTheme() === "dark" ? "light" : "dark";
-      localStorage.setItem(THEME_KEY, next);
+      window.FynxPreferences?.setItem(THEME_KEY, next);
       applyTheme(next);
     }
     function tvScript(containerId, config){
@@ -109,13 +138,13 @@
       s.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
       s.async = true;
       s.innerHTML = JSON.stringify(config);
-      wrap.appendChild(s);
+      wrap.querySelector('.tradingview-widget-container').appendChild(s);
     }
     function renderWidgets(){
       const theme = getTheme() === "dark" ? "dark" : "light";
 
       const screener = document.getElementById("cryptoScreener");
-      screener.innerHTML = '<div class="tradingview-widget-container" style="height:100%;width:100%"><div id="crypto_screener_inner"></div></div>';
+      screener.innerHTML = '<div class="tradingview-widget-container" style="height:100%;width:100%"><div id="crypto_screener_inner" style="height:100%;width:100%"></div></div>';
       const s1 = document.createElement("script");
       s1.src = "https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js";
       s1.async = true;
@@ -138,7 +167,7 @@
         isTransparent:true,
         locale:"en"
       });
-      screener.appendChild(s1);
+      screener.querySelector('.tradingview-widget-container').appendChild(s1);
 
       tvScript("btcChart", {
         autosize:true, symbol:"BINANCE:BTCUSDT", interval:"240", timezone:"Etc/UTC",
@@ -157,5 +186,7 @@
     document.getElementById("themeToggle").addEventListener("click", toggleTheme);
     window.addEventListener("storage", e => { if(e.key === THEME_KEY) applyTheme(getTheme()); });
   </script>
-</body>
+  <script src="../assets/js/tradingview-fit.js?v=20260922-fit2"></script>
+
+<footer></footer></body>
 </html>

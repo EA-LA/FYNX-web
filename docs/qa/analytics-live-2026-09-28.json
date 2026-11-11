@@ -1,0 +1,17 @@
+[
+  {
+    "route": "correlation",
+    "status": "ECB reference rates via Frankfurter · Observation window 2026-07-03 to 2026-09-25 · Retrieved 9/27/2026, 9:28:20 PM.",
+    "rows": 6
+  },
+  {
+    "route": "liquidity",
+    "status": "Coinbase Exchange · Source time 9/27/2026, 9:30:01 PM · Retrieved 9/27/2026, 9:30:02 PM.",
+    "rows": 5
+  },
+  {
+    "route": "cot",
+    "status": "Positions as of 2026-09-22 · 379 contracts · Retrieved 9/27/2026, 9:30:04 PM · Weekly CFTC Legacy Futures Only. Net positions = long minus short contracts.",
+    "rows": 379
+  }
+]

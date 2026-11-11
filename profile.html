@@ -1,49 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>FYNX Finance World - Profile</title>
+  <script>
+    (function(){
+      const t = window.FynxPreferences?.getItem("fynx_theme") === "light" ? "light" : "dark";
+      document.documentElement.dataset.theme = t;
+      document.documentElement.style.backgroundColor = t === "light" ? "#fbfbfb" : "#000000";
+    })();
+  </script>
+
+
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/app-shell.css" />
+  <link rel="stylesheet" href="assets/css/mobile-fixes.css">
 
   <style>
     :root{
       /* ===== Monochrome System (Light) ===== */
       --bg:#ffffff;
       --surface:#ffffff;
-      --surface-2: rgba(11,11,12,0.04);
-      --text:#0b0b0c;
-      --muted:#5b616a;
-      --line: rgba(11,11,12,0.10);
+      --surface-2: rgba(11, 11, 11, 0.04);
+      --text:#0b0b0b;
+      --muted:#606060;
+      --line: rgba(11, 11, 11, 0.10);
 
-      --accent:#0b0b0c;
-      --accent-soft: rgba(11,11,12,0.08);
+      --accent:#0b0b0b;
+      --accent-soft: rgba(11, 11, 11, 0.08);
 
-      --shadow: 0 18px 38px rgba(0,0,0,0.06);
+      --shadow: 0 18px 38px rgba(0, 0, 0, 0.06);
       --radius: 14px;
       --nav-width: 108px;
 
-      --focus: 0 0 0 3px rgba(11,11,12,0.18);
+      --focus: 0 0 0 3px rgba(11, 11, 11, 0.18);
     }
 
     body.dark-mode{
       /* ===== Monochrome System (Dark) ===== */
       --bg:#000000;
-      --surface:#0b0b0c;
-      --surface-2: rgba(242,243,245,0.08);
-      --text:#f2f3f5;
-      --muted:#a9b0bb;
-      --line: rgba(242,243,245,0.12);
+      --surface:#0b0b0b;
+      --surface-2: rgba(243, 243, 243, 0.08);
+      --text:#f3f3f3;
+      --muted:#afafaf;
+      --line: rgba(243, 243, 243, 0.12);
 
-      --accent:#f2f3f5;
-      --accent-soft: rgba(242,243,245,0.10);
+      --accent:#f3f3f3;
+      --accent-soft: rgba(243, 243, 243, 0.10);
 
-      --shadow: 0 20px 44px rgba(0,0,0,0.55);
+      --shadow: 0 20px 44px rgba(0, 0, 0, 0.55);
 
-      --focus: 0 0 0 3px rgba(242,243,245,0.18);
+      --focus: 0 0 0 3px rgba(243, 243, 243, 0.18);
     }
 
     *{ margin:0; padding:0; box-sizing:border-box; }
@@ -55,24 +66,24 @@
 
       /* Light: micro-dots */
       background:
-        radial-gradient(circle at 1px 1px, rgba(0,0,0,0.06) 1px, transparent 1px) 0 0 / 18px 18px,
+        radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.06) 1px, transparent 1px) 0 0 / 18px 18px,
         linear-gradient(var(--bg), var(--bg));
     }
 
     body.dark-mode{
       /* Dark: grid */
       background:
-        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / 26px 26px,
-        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / 26px 26px,
-        radial-gradient(circle at 40% 10%, rgba(255,255,255,0.06) 0%, transparent 45%),
-        radial-gradient(circle at 70% 0%, rgba(255,255,255,0.04) 0%, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 26px 26px,
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 26px 26px,
+        radial-gradient(circle at 40% 10%, rgba(255, 255, 255, 0.06) 0%, transparent 45%),
+        radial-gradient(circle at 70% 0%, rgba(255, 255, 255, 0.04) 0%, transparent 40%),
         linear-gradient(var(--bg), var(--bg));
     }
 
-    .app-shell-host{ display:flex; min-height:100vh; width:100%; }
+    .dashboard-container{ display:flex; min-height:100vh; width:100%; }
 
     /* ===== Sidebar ===== */
-    .legacy-nav-panel{
+    .nav-panel{
       width: var(--nav-width);
       background: color-mix(in oklab, var(--surface) 92%, transparent);
       border-right: 1px solid var(--line);
@@ -86,7 +97,7 @@
       box-shadow: var(--shadow);
     }
 
-    .legacy-nav-logo{
+    .nav-logo{
       height:84px;
       border-bottom:1px solid var(--line);
       display:grid;
@@ -96,7 +107,7 @@
       letter-spacing:-0.7px;
     }
 
-    .legacy-nav-menu{
+    .nav-menu{
       padding:16px 0;
       display:flex;
       flex-direction:column;
@@ -104,7 +115,7 @@
       align-items:center;
     }
 
-    .legacy-nav-item{
+    .nav-item{
       width:82px;
       border-radius:12px;
       padding:12px 4px;
@@ -120,20 +131,20 @@
       text-decoration:none;
     }
 
-    .legacy-nav-item:hover{
+    .nav-item:hover{
       background: var(--surface-2);
       color: var(--text);
       border-color: var(--line);
       transform: translateY(-1px);
     }
 
-    .legacy-nav-item.active{
+    .nav-item.active{
       background: var(--accent-soft);
       color: var(--text);
       border-color: color-mix(in oklab, var(--text) 18%, var(--line));
     }
 
-    .legacy-nav-item.active::after{
+    .nav-item.active::after{
       content:"";
       position:absolute;
       left:-13px;
@@ -149,7 +160,7 @@
     .nav-icon{ width:20px; height:20px; stroke:currentColor; stroke-width:1.8; fill:none; }
     .nav-label{ font-size:11px; font-weight:800; }
 
-    .legacy-main-content{
+    .main-content{
       margin-left: var(--nav-width);
       width: calc(100% - var(--nav-width));
       display:flex;
@@ -158,7 +169,7 @@
     }
 
     /* ===== Top Bar ===== */
-    .legacy-top-bar{
+    .top-bar{
       height:72px;
       border-bottom:1px solid var(--line);
       background: color-mix(in oklab, var(--surface) 88%, transparent);
@@ -178,7 +189,7 @@
       letter-spacing:-0.2px;
     }
 
-    .legacy-legacy-top-bar-right{
+    .top-bar-right{
       display:flex;
       align-items:center;
       gap:12px;
@@ -251,6 +262,31 @@
       color: var(--muted);
       font-size:14px;
       font-weight:800;
+    }
+    .demo-auth-cta{
+      display:none;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background: var(--surface-2);
+      padding:12px;
+      margin-top:8px;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .demo-auth-copy{ display:grid; gap:2px; }
+    .demo-auth-copy strong{ font-size:13px; font-weight:900; }
+    .demo-auth-copy span{ font-size:12px; color:var(--muted); font-weight:800; }
+    .demo-auth-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+    .demo-auth-btn{
+      border:1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      padding:8px 12px;
+      border-radius:10px;
+      text-decoration:none;
+      font-size:12px;
+      font-weight:900;
     }
 
     /* ===== Panels ===== */
@@ -382,7 +418,7 @@
       font-size:15px;
       font-weight:900;
       letter-spacing:-0.2px;
-      margin: 10px 0 2px;
+      margin: 14px 0 4px;
     }
 
     .settings-list{ display:flex; flex-direction:column; gap:10px; }
@@ -400,6 +436,17 @@
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
     }
+    a.settings-item{
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    a.settings-item:focus-visible{
+      outline: 3px solid currentColor;
+      outline-offset: 3px;
+    }
+    .settings-item:not(a){ cursor: default; }
+
     .settings-item:hover{
       border-color: color-mix(in oklab, var(--text) 18%, var(--line));
       transform: translateY(-1px);
@@ -415,14 +462,14 @@
     .modal-backdrop{
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,.35);
+      background: rgba(0, 0, 0, .35);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 999;
       padding: 24px;
     }
-    body.dark-mode .modal-backdrop{ background: rgba(0,0,0,.55); }
+    body.dark-mode .modal-backdrop{ background: rgba(0, 0, 0, .55); }
 
     .modal{
       width: 520px;
@@ -431,7 +478,7 @@
       border: 1px solid var(--line);
       border-radius: 16px;
       padding: 18px;
-      box-shadow: 0 30px 80px rgba(0,0,0,.18);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .18);
       backdrop-filter: blur(10px);
     }
 
@@ -571,7 +618,7 @@
     @media (max-width:900px){
       :root{ --nav-width: 0px; }
 
-      .legacy-nav-panel{
+      .nav-panel{
         position:fixed;
         bottom:0;
         top:auto;
@@ -582,30 +629,30 @@
         flex-direction:row;
         justify-content:center;
         padding-bottom: env(safe-area-inset-bottom);
-        box-shadow: 0 -12px 28px rgba(0,0,0,0.14);
+        box-shadow: 0 -12px 28px rgba(0, 0, 0, 0.14);
       }
-      .legacy-nav-logo{ display:none; }
-      .legacy-nav-menu{
+      .nav-logo{ display:none; }
+      .nav-menu{
         flex-direction:row;
         width:100%;
         justify-content:space-around;
         padding:6px 8px;
       }
-      .legacy-nav-item{
+      .nav-item{
         width:auto;
         min-width:54px;
         padding:8px;
       }
-      .legacy-nav-item.active::after{ display:none; }
+      .nav-item.active::after{ display:none; }
       .nav-label{ font-size:10px; }
 
-      .legacy-main-content{
+      .main-content{
         margin-left:0;
         width:100%;
         padding-bottom: calc(80px + env(safe-area-inset-bottom));
       }
 
-      .legacy-top-bar{ padding:0 14px; }
+      .top-bar{ padding:0 14px; }
       .content-area{ padding:14px; }
 
       /* ✅ FIX 2: iPhone box a bit big -> tiny reduce only on mobile */
@@ -618,19 +665,49 @@
       .profile-name-row{ flex-direction:column; align-items:flex-start; }
       .edit-profile-btn{ width:100%; }
       .profile-stats{ grid-template-columns: 1fr; }
+      .demo-auth-cta{ flex-direction:column; align-items:flex-start; }
       .form-col{ min-width: 100%; }
     }
   </style>
-  <link rel="stylesheet" href="assets/css/app-shell.css" />
+  <script type="module" src="assets/js/session-bootstrap.js?v=20261111-terminal-desks-1"></script>
+  <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
+
+<title>FYNX Finance World - Profile</title>
+<meta name="description" content="FYNX Finance World - Profile. Explore this resource from FYNX Finance World.">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://www.fynxfinanceworld.com/profile.html">
+<meta property="og:title" content="FYNX Finance World - Profile">
+<meta property="og:description" content="FYNX Finance World - Profile. Explore this resource from FYNX Finance World.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/profile.html">
+<!-- terminal-design:start -->
+<link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
+<link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
+<script src="/assets/js/news-reader-links.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/newsroom-editions.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/news-preferences.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/newsroom-media.js?v=20261111-terminal-desks-1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261111-terminal-desks-1">
+<script src="/assets/js/market-intelligence-data.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/terminal-market-ui.js?v=20261111-terminal-desks-1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261030-r1">
+<script src="/assets/js/terminal-pages.js?v=20261030-r1" defer></script>
+<!-- terminal-design:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
 </head>
 
-<body>
-  <div class="app-shell-host">
-    <nav class="legacy-nav-panel">
-      <div class="legacy-nav-logo">FYNX</div>
+<body data-protected-page="false" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD" data-fynx-terminal>
+<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
+<div class="dashboard-container">
+    <nav class="nav-panel">
+      <div class="nav-logo">FYNX</div>
 
-      <div class="legacy-nav-menu">
-        <a class="legacy-nav-item" href="home.html" data-view="home">
+      <div class="nav-menu">
+        <a class="nav-item" href="home.html" data-view="home">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
@@ -638,7 +715,7 @@
           <span class="nav-label">Home</span>
         </a>
 
-        <a class="legacy-nav-item" href="journal.html" data-view="journal">
+        <a class="nav-item" href="journal.html" data-view="journal">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
@@ -646,7 +723,7 @@
           <span class="nav-label">Journal</span>
         </a>
 
-        <a class="legacy-nav-item" href="calculator.html" data-view="calculator">
+        <a class="nav-item" href="calculator.html" data-view="calculator">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <rect x="4" y="2" width="16" height="20" rx="2"></rect>
             <line x1="8" y1="6" x2="16" y2="6"></line>
@@ -657,7 +734,7 @@
           <span class="nav-label">Calculator</span>
         </a>
 
-        <a class="legacy-nav-item" href="news.html" data-view="news">
+        <a class="nav-item" href="news.html" data-view="news">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
             <line x1="12" y1="11" x2="18" y2="11"></line>
@@ -666,7 +743,7 @@
           <span class="nav-label">News</span>
         </a>
 
-        <a class="legacy-nav-item" href="calendar.html" data-view="calendar">
+        <a class="nav-item" href="calendar.html" data-view="calendar">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
             <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -676,7 +753,7 @@
           <span class="nav-label">Calendar</span>
         </a>
 
-        <a class="legacy-nav-item active" href="profile.html" data-view="profile">
+        <a class="nav-item active" href="profile.html" data-view="profile">
           <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
@@ -686,11 +763,11 @@
       </div>
     </nav>
 
-    <main class="legacy-main-content">
-      <div class="legacy-top-bar">
+    <main class="main-content">
+      <div class="top-bar">
         <h1 class="page-title">Profile</h1>
 
-        <div class="legacy-legacy-top-bar-right">
+        <div class="top-bar-right">
           <button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">
             <svg viewBox="0 0 24 24">
               <path d="M12 3v2M12 19v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M3 12h2M19 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
@@ -713,6 +790,16 @@
         <div class="section-header">
           <h2>Profile</h2>
           <p>Manage your account and settings</p>
+          <div class="demo-auth-cta" id="demoAuthCta">
+            <div class="demo-auth-copy">
+              <strong>Your account and journal</strong>
+              <span>Sign in or sign up to save journal data and settings.</span>
+            </div>
+            <div class="demo-auth-actions">
+              <a class="demo-auth-btn" href="auth/signup.html">Sign Up</a>
+              <a class="demo-auth-btn" href="auth/login.html">Sign In</a>
+            </div>
+          </div>
         </div>
 
         <section class="panel">
@@ -752,16 +839,16 @@
           </div>
 
           <div class="hint">
-            Stats load from your real data if you store it in <b>localStorage</b>:
-            <br>- <b>fynx_trades</b> (array of trades)
-            <br>- or <b>fynx_metrics</b> (precomputed stats)
+            <span id="profileSyncStatus" role="status">Connecting to your account and journal…</span>
           </div>
         </section>
 
         <div class="settings-section-title">Settings</div>
 
         <div class="settings-list">
-          <div class="settings-item" data-link="account-settings.html">
+          <a id="accountsProfileEntry" class="settings-item" href="/profile/accounts"><div class="settings-text"><div class="settings-label">My accounts</div><div class="settings-value">Check availability for trading account connections and imported statements.</div></div></a>
+          <div class="settings-item"><div class="settings-text"><div class="settings-label">Appearance</div><div class="settings-value">Use one theme across your entire FYNX workspace.</div></div><button type="button" class="btn" data-journal-theme data-theme-control><span data-theme-label>Dark theme</span> ◐</button></div>
+          <a class="settings-item" href="account-settings.html">
             <svg class="settings-icon" viewBox="0 0 24 24">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
@@ -770,9 +857,9 @@
               <div class="settings-label">Account Settings</div>
               <div class="settings-value">Update your personal information</div>
             </div>
-          </div>
+          </a>
 
-          <div class="settings-item" data-link="security.html">
+          <a class="settings-item" href="security.html">
             <svg class="settings-icon" viewBox="0 0 24 24">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
@@ -781,9 +868,9 @@
               <div class="settings-label">Security</div>
               <div class="settings-value">Manage password and 2FA</div>
             </div>
-          </div>
+          </a>
 
-          <div class="settings-item" data-link="notifications.html">
+          <a class="settings-item" href="notifications.html">
             <svg class="settings-icon" viewBox="0 0 24 24">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
@@ -792,9 +879,9 @@
               <div class="settings-label">Notifications</div>
               <div class="settings-value">Configure alert preferences</div>
             </div>
-          </div>
+          </a>
 
-          <div class="settings-item" data-link="preferences.html">
+          <a class="settings-item" href="preferences.html">
             <svg class="settings-icon" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M12 1v6m0 6v6m5.66-13.66l-4.24 4.24m0 6.84l-4.24 4.24m13.66-5.66h-6m-6 0H1m13.66 5.66l-4.24-4.24m0-6.84l-4.24-4.24"></path>
@@ -803,7 +890,7 @@
               <div class="settings-label">Preferences</div>
               <div class="settings-value">Customize your experience</div>
             </div>
-          </div>
+          </a>
         </div>
       </div>
     </main>
@@ -857,6 +944,7 @@
     </div>
   </div>
 
+  <script src="demo-mode.js?v=20261111-terminal-desks-1"></script>
   <script>
     /* =========================
        GLOBAL THEME (SYNCED)
@@ -866,7 +954,7 @@
     const themeBtn = document.getElementById("themeBtn");
 
     function applySavedTheme(){
-      const saved = localStorage.getItem(THEME_KEY) || "light";
+      const saved = window.FynxPreferences?.getItem(THEME_KEY) || "light";
       document.body.classList.toggle("dark-mode", saved === "dark");
     }
     applySavedTheme();
@@ -875,20 +963,17 @@
       themeBtn.addEventListener("click", () => {
         const isDarkNow = !document.body.classList.contains("dark-mode");
         document.body.classList.toggle("dark-mode", isDarkNow);
-        localStorage.setItem(THEME_KEY, isDarkNow ? "dark" : "light");
+        window.FynxPreferences?.setItem(THEME_KEY, isDarkNow ? "dark" : "light");
       });
     }
 
-    // ---------- Profile + Stats (LocalStorage only) ----------
-    // ✅ Email comes from login storage (you must set this when user logs in):
-    // localStorage.setItem("fynx_auth_email", userEmail)
-    const AUTH_EMAIL_KEY = "fynx_auth_email";
+    // Profile identity and statistics come from the signed-in account reader.
 
     const DEFAULT_PROFILE = {
       name: "FYNX User",
       avatarDataUrl: "",
       description: "",
-      memberSince: "Jan 2024"
+      memberSince: "—"
     };
 
     function safeJSONParse(v, fallback){
@@ -896,14 +981,13 @@
     }
 
     function getAuthEmail(){
-      const v = (localStorage.getItem(AUTH_EMAIL_KEY) || "").trim();
+      const v = window.FynxProfileState?.email || "";
       return v || "";
     }
 
     function getProfile(){
-      const p = safeJSONParse(localStorage.getItem("fynx_profile"), null);
-      // ✅ never store email in profile (always from AUTH key)
-      const merged = { ...DEFAULT_PROFILE, ...(p || {}) };
+      const p = window.FynxProfileState?.profile || null;
+      const merged = { ...DEFAULT_PROFILE, name: window.FynxProfileState?.uid ? "FYNX User" : "Guest", ...(p || {}) };
       delete merged.email;
       return merged;
     }
@@ -923,6 +1007,7 @@
     }
 
     function renderAvatar(el, profile){
+      if (!el) return;
       el.innerHTML = "";
       if (profile.avatarDataUrl){
         const img = document.createElement("img");
@@ -935,46 +1020,7 @@
     }
 
     function loadMetrics(){
-      // ✅ FIX 1: ONLY localStorage fynx_metrics OR fynx_trades. No other "demo" source.
-      const metrics = safeJSONParse(localStorage.getItem("fynx_metrics"), null);
-      if (metrics && typeof metrics === "object") return metrics;
-
-      const trades = safeJSONParse(localStorage.getItem("fynx_trades"), []);
-      const total = Array.isArray(trades) ? trades.length : 0;
-
-      let wins = 0;
-      let sumReturn = 0;
-      let returnCount = 0;
-
-      if (Array.isArray(trades)){
-        trades.forEach(t => {
-          const pnl = Number(t?.pnl);
-          const isWin = (String(t?.result || "").toLowerCase() === "win") || (!Number.isNaN(pnl) && pnl > 0);
-          if (isWin) wins++;
-
-          const rp = Number(t?.returnPct ?? t?.pnlPct ?? t?.return);
-          if (!Number.isNaN(rp)){
-            sumReturn += rp;
-            returnCount++;
-          }
-        });
-      }
-
-      const winRate = total ? (wins / total) * 100 : null;
-      const avgReturn = returnCount ? (sumReturn / returnCount) : null;
-
-      let memberSince = null;
-      const dates = (Array.isArray(trades) ? trades : [])
-        .map(t => new Date(t?.date || t?.createdAt || t?.timestamp || ""))
-        .filter(d => !isNaN(d.getTime()))
-        .sort((a,b)=>a-b);
-
-      if (dates.length){
-        const d = dates[0];
-        memberSince = d.toLocaleString(undefined, { month: "short", year: "numeric" });
-      }
-
-      return { total, winRate, avgReturn, memberSince };
+      return window.FynxProfileState?.metrics || { total: 0, winRate: null, avgReturn: null, memberSince: "—" };
     }
 
     function fmtNumber(n){
@@ -998,6 +1044,10 @@
 
     function renderProfile(){
       const profile = getProfile();
+      const demoAuthCta = document.getElementById("demoAuthCta");
+      if (demoAuthCta){
+        demoAuthCta.style.display = !window.FynxProfileState?.uid ? "flex" : "none";
+      }
 
       // ✅ FIX 3: name persists forever via localStorage fynx_profile
       document.getElementById("profileName").textContent = profile.name || DEFAULT_PROFILE.name;
@@ -1030,14 +1080,6 @@
 
     renderProfile();
 
-    // ---------- Settings links ----------
-    document.querySelectorAll(".settings-item").forEach(item => {
-      item.addEventListener("click", () => {
-        const link = item.getAttribute("data-link");
-        if (link) window.location.href = link;
-      });
-    });
-
     // ---------- Edit profile modal ----------
     const modalBackdrop = document.getElementById("modalBackdrop");
     const editBtn = document.getElementById("editProfileBtn");
@@ -1053,6 +1095,8 @@
     let pendingAvatarDataUrl = "";
 
     function openModal(){
+      location.href = "account-settings.html";
+      return;
       const p = getProfile();
       nameInput.value = p.name || "";
       descInput.value = p.description || "";
@@ -1105,6 +1149,13 @@
     });
   </script>
 
-  <script src="fynx-nav.js"></script>
-</body>
+  <script src="fynx-nav.js?v=20261111-terminal-desks-1"></script>
+
+  <script type="module">
+    import { mountNotificationBell } from "./assets/js/account-ui.js?v=20260928-audit2";
+    mountNotificationBell();
+  </script>
+
+  <script type="module" src="assets/js/profile-sync.js?v=20261111-terminal-desks-1"></script>
+<script src="/assets/js/research-service.js?v=20261111-terminal-desks-1"></script><script src="/assets/js/quant/profile.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/edge/profile.js?v=20261111-terminal-desks-1" defer></script></body>
 </html>

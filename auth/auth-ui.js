@@ -1,24 +1,23 @@
-import { auth } from "./firebase.js";
+import { withMfa } from "../assets/js/mfa.js?v=20260930-errors";
+import { auth, authPersistenceReady } from "./firebase.js";
 import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  setPersistence,
-  browserLocalPersistence
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-await setPersistence(auth, browserLocalPersistence);
+await authPersistenceReady;
 
 export async function loginWithGoogle() {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
-  return signInWithPopup(auth, provider);
+  return withMfa(() => signInWithPopup(auth, provider));
 }
 
 export async function loginWithEmail(email, password) {
-  return signInWithEmailAndPassword(auth, email, password);
+  return withMfa(() => signInWithEmailAndPassword(auth, email, password));
 }
 
 export async function signupWithEmail(email, password) {
@@ -26,5 +25,5 @@ export async function signupWithEmail(email, password) {
 }
 
 export async function resetPassword(email) {
-  return sendPasswordResetEmail(auth, email);
+  return sendPasswordResetEmail(auth, email, { url: 'https://www.fynxfinanceworld.com/auth/login.html' });
 }

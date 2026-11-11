@@ -1,0 +1,425 @@
+{
+  "stocks": [
+    {
+      "level": "Beginner",
+      "title": "A Beginner’s Guide to Stock Market Structure",
+      "desc": "How exchanges, sessions, and liquidity windows shape your entries.",
+      "tags": [
+        "Market Structure",
+        "Beginner"
+      ]
+    },
+    {
+      "level": "Beginner",
+      "title": "Position Sizing Without Guesswork",
+      "desc": "How to size by stop distance and fixed account risk.",
+      "tags": [
+        "Risk",
+        "Sizing"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "Earnings Trading: Gap, Fade, or Continuation?",
+      "desc": "Framework for pre-earnings preparation and post-print execution.",
+      "tags": [
+        "Earnings",
+        "Catalysts"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "Sector Rotation Playbook",
+      "desc": "Use relative strength to focus on leaders and avoid laggards.",
+      "tags": [
+        "Relative Strength",
+        "Swing"
+      ]
+    },
+    {
+      "level": "Advanced",
+      "title": "Institutional Footprints in Equities",
+      "desc": "Read volume profile, VWAP reactions, and auction context.",
+      "tags": [
+        "Order Flow",
+        "Advanced"
+      ]
+    }
+  ],
+  "funds": [
+    {
+      "level": "Beginner",
+      "title": "ETF Basics for New Traders",
+      "desc": "Understand NAV, spread, and tracking behavior.",
+      "tags": [
+        "ETF",
+        "Beginner"
+      ]
+    },
+    {
+      "level": "Beginner",
+      "title": "Building a Core-Satellite Plan",
+      "desc": "Balance broad exposure with tactical themes.",
+      "tags": [
+        "Portfolio",
+        "Allocation"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "Regime-Based ETF Rotation",
+      "desc": "Rotate between sectors based on macro regime.",
+      "tags": [
+        "Macro",
+        "Rotation"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "Volatility ETFs: Risks and Uses",
+      "desc": "When VIX-linked products are useful—and when to avoid them.",
+      "tags": [
+        "Volatility",
+        "Risk"
+      ]
+    },
+    {
+      "level": "Advanced",
+      "title": "Smart-Beta Fund Comparison",
+      "desc": "Factor exposure, overlap, and unintended concentration.",
+      "tags": [
+        "Factors",
+        "Research"
+      ]
+    }
+  ],
+  "futures": [
+    {
+      "level": "Beginner",
+      "title": "Contract Specs Every Trader Must Know",
+      "desc": "Tick value, multiplier, and session behavior before first trade.",
+      "tags": [
+        "Contracts",
+        "Risk"
+      ]
+    },
+    {
+      "level": "Beginner",
+      "title": "Futures Margin and Leverage 101",
+      "desc": "Why leverage helps and hurts faster than most expect.",
+      "tags": [
+        "Margin",
+        "Leverage"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "Opening Drive vs Balance Day",
+      "desc": "Session classification for better trade selection.",
+      "tags": [
+        "Day Trading",
+        "Sessions"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "Stop Management in Fast Markets",
+      "desc": "Design hard stop and invalidation logic for volatility spikes.",
+      "tags": [
+        "Stops",
+        "Execution"
+      ]
+    },
+    {
+      "level": "Advanced",
+      "title": "Cross-Market Confirmation",
+      "desc": "Use bonds, dollar, and equities to validate futures ideas.",
+      "tags": [
+        "Intermarket",
+        "Advanced"
+      ]
+    }
+  ],
+  "forex": [
+    {
+      "level": "Beginner",
+      "title": "Understanding Currency Pair Behavior",
+      "desc": "Majors, minors, and why spread quality matters.",
+      "tags": [
+        "Pairs",
+        "Basics"
+      ]
+    },
+    {
+      "level": "Beginner",
+      "title": "London and New York Session Playbook",
+      "desc": "How volatility shifts by session and overlap.",
+      "tags": [
+        "Sessions",
+        "Timing"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "Top-Down Multi-Timeframe Setup",
+      "desc": "D1 bias -> H1 structure -> M15 trigger workflow.",
+      "tags": [
+        "MTF",
+        "Execution"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "News-Event Risk Control",
+      "desc": "How to trade around CPI/NFP without random exposure.",
+      "tags": [
+        "Macro",
+        "Risk"
+      ]
+    },
+    {
+      "level": "Advanced",
+      "title": "Correlation and Basket Exposure",
+      "desc": "Avoid hidden risk from correlated USD positions.",
+      "tags": [
+        "Correlation",
+        "Portfolio"
+      ]
+    }
+  ],
+  "crypto": [
+    {
+      "level": "Beginner",
+      "title": "Crypto Market Structure in 24/7 Markets",
+      "desc": "How trend, chop, and weekend liquidity differ from stocks.",
+      "tags": [
+        "Structure",
+        "Beginner"
+      ]
+    },
+    {
+      "level": "Beginner",
+      "title": "Spot vs Perpetual Futures",
+      "desc": "Funding, liquidation, and leverage trade-offs.",
+      "tags": [
+        "Perps",
+        "Leverage"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "On-Chain Signals for Traders",
+      "desc": "Use exchange flows and stablecoin trends for context.",
+      "tags": [
+        "On-Chain",
+        "Context"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "Narrative Rotation Framework",
+      "desc": "Track sector narratives without chasing every pump.",
+      "tags": [
+        "Narratives",
+        "Momentum"
+      ]
+    },
+    {
+      "level": "Advanced",
+      "title": "Risk During High-Volatility Regimes",
+      "desc": "How to survive cascading liquidations and correlation shocks.",
+      "tags": [
+        "Volatility",
+        "Advanced"
+      ]
+    }
+  ],
+  "indices": [
+    {
+      "level": "Beginner",
+      "title": "Index Trading Fundamentals",
+      "desc": "Read broad market behavior before drilling into entries.",
+      "tags": [
+        "Index",
+        "Basics"
+      ]
+    },
+    {
+      "level": "Beginner",
+      "title": "Opening Range Strategy",
+      "desc": "Using first 30 minutes to frame risk and direction.",
+      "tags": [
+        "ORB",
+        "Day Trading"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "Breadth Confirmation Checklist",
+      "desc": "A/D line, sector participation, and internals.",
+      "tags": [
+        "Breadth",
+        "Confirmation"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "Event-Day Positioning",
+      "desc": "How to adjust around FOMC and high-impact releases.",
+      "tags": [
+        "Macro",
+        "Risk"
+      ]
+    },
+    {
+      "level": "Advanced",
+      "title": "Volatility Regime Playbook",
+      "desc": "Scale risk based on VIX state and realized range.",
+      "tags": [
+        "Volatility",
+        "Advanced"
+      ]
+    }
+  ],
+  "bonds": [
+    {
+      "level": "Beginner",
+      "title": "Bond Prices and Yields Explained",
+      "desc": "The inverse relationship and practical trading implications.",
+      "tags": [
+        "Yields",
+        "Beginner"
+      ]
+    },
+    {
+      "level": "Beginner",
+      "title": "Duration for Traders",
+      "desc": "Estimate sensitivity to rate moves quickly.",
+      "tags": [
+        "Duration",
+        "Risk"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "Yield Curve Signals",
+      "desc": "Steepening, flattening, and recession probabilities.",
+      "tags": [
+        "Curve",
+        "Macro"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "Trading Around Inflation Data",
+      "desc": "Positioning rules ahead of CPI/PCE.",
+      "tags": [
+        "Inflation",
+        "Event Risk"
+      ]
+    },
+    {
+      "level": "Advanced",
+      "title": "Rates Cross-Asset Impact",
+      "desc": "How bond moves ripple into equities, FX, and gold.",
+      "tags": [
+        "Intermarket",
+        "Advanced"
+      ]
+    }
+  ],
+  "economy": [
+    {
+      "level": "Beginner",
+      "title": "Macro Dashboard for Traders",
+      "desc": "Build a weekly dashboard: inflation, growth, labor, liquidity.",
+      "tags": [
+        "Macro",
+        "Dashboard"
+      ]
+    },
+    {
+      "level": "Beginner",
+      "title": "How Markets React to Data Surprises",
+      "desc": "Why consensus deviation matters more than headline values.",
+      "tags": [
+        "Data",
+        "Surprises"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "Scenario Planning Before Releases",
+      "desc": "Predefine actions for hot/cold/inline outcomes.",
+      "tags": [
+        "Planning",
+        "Risk"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "Policy Cycle Mapping",
+      "desc": "Link central bank stance to risk-on/risk-off behavior.",
+      "tags": [
+        "Policy",
+        "Regime"
+      ]
+    },
+    {
+      "level": "Advanced",
+      "title": "Macro-to-Trade Translation",
+      "desc": "Convert big-picture thesis into concrete entries and exits.",
+      "tags": [
+        "Execution",
+        "Advanced"
+      ]
+    }
+  ],
+  "options": [
+    {
+      "level": "Beginner",
+      "title": "Options Contract Basics",
+      "desc": "Calls, puts, strike selection, and expiration timing.",
+      "tags": [
+        "Options",
+        "Beginner"
+      ]
+    },
+    {
+      "level": "Beginner",
+      "title": "Defined-Risk Strategies",
+      "desc": "Start with debit and credit spreads before naked exposure.",
+      "tags": [
+        "Risk",
+        "Spreads"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "Reading the Greeks in Real Time",
+      "desc": "Delta, theta, vega and how they impact management.",
+      "tags": [
+        "Greeks",
+        "Management"
+      ]
+    },
+    {
+      "level": "Intermediate",
+      "title": "IV Regimes and Strategy Selection",
+      "desc": "When to buy premium vs sell premium.",
+      "tags": [
+        "IV",
+        "Strategy"
+      ]
+    },
+    {
+      "level": "Advanced",
+      "title": "Portfolio-Level Options Risk",
+      "desc": "Manage net delta, gamma, and event risk across positions.",
+      "tags": [
+        "Portfolio",
+        "Advanced"
+      ]
+    }
+  ]
+}
