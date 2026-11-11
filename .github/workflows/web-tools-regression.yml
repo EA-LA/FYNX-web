@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "news.html"
+      - "assets/js/module-loader.js"
       - "assets/css/news-intelligence.css"
       - "scripts/test-news-tabs-keyboard.cjs"
       - "package.json"

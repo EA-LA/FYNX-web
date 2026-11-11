@@ -213,30 +213,10 @@
       });
     }
 
-    newsTabs.forEach((tab, index) => {
+    // The shared module loader owns keyboard navigation and route history.
+    // Keep one click path for both pointer activation and its keyboard handler.
+    newsTabs.forEach((tab) => {
       tab.addEventListener('click', () => setNewsTab(tab.dataset.newsTab));
-      tab.addEventListener('keydown', (event) => {
-        let nextIndex;
-        switch (event.key) {
-          case 'ArrowRight':
-            nextIndex = (index + 1) % newsTabs.length;
-            break;
-          case 'ArrowLeft':
-            nextIndex = (index - 1 + newsTabs.length) % newsTabs.length;
-            break;
-          case 'Home':
-            nextIndex = 0;
-            break;
-          case 'End':
-            nextIndex = newsTabs.length - 1;
-            break;
-          default:
-            return;
-        }
-        event.preventDefault();
-        setNewsTab(newsTabs[nextIndex].dataset.newsTab);
-        newsTabs[nextIndex].focus();
-      });
     });
 
     setNewsTab(newsTabs.find((tab) => tab.classList.contains('active'))?.dataset.newsTab || 'feed');
