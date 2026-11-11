@@ -1,0 +1,27 @@
+name: Web tools regression
+
+on:
+  pull_request:
+    paths:
+      - "news.html"
+      - "assets/css/news-intelligence.css"
+      - "scripts/test-news-tabs-keyboard.cjs"
+      - "package.json"
+      - ".github/workflows/web-tools-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tools-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run test:tools
