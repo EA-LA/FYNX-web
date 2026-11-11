@@ -5,7 +5,7 @@ def shot(pg, name):
     data = base64.b64encode(pg.screenshot(type='jpeg', quality=70)).decode()
     for i in range(0, len(data), 3000): print(f'SHOT {name} {i//3000} {data[i:i+3000]}')
 with sync_playwright() as p:
-    b = p.chromium.launch(args=['--host-resolver-rules=MAP fynx.test 127.0.0.1'])
+    b = p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--host-resolver-rules=MAP fynx.test 127.0.0.1'])
     ctx = b.new_context(viewport={'width': 1920, 'height': 1080}); pg = ctx.new_page(); errs = []
     pg.on('pageerror', lambda e: errs.append('PAGEERROR ' + str(e)))
     pg.on('console', lambda m: errs.append(m.text) if m.type == 'error' else None)
