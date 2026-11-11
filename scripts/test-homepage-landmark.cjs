@@ -23,4 +23,20 @@ assert.ok(at('</main>') < at('<!-- Footer -->'), 'Footer must remain outside mai
 assert.match(html, /\.fynx-skip-link:focus-visible\s*\{/);
 assert.match(html, /\.fynx-skip-link:focus,\s*\.fynx-skip-link:focus-visible/);
 
+// Exercise the real build step: generated navigation must not overtake the bypass.
+const os = require('node:os');
+const { inject } = require('./build-company-products.cjs');
+const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'fynx-landmark-'));
+try {
+  fs.writeFileSync(path.join(fixture, 'index.html'), html);
+  for (let pass = 0; pass < 2; pass++) {
+    inject(fixture);
+    const built = fs.readFileSync(path.join(fixture, 'index.html'), 'utf8');
+    assert.ok(built.indexOf('class="fynx-skip-link"') < built.indexOf('<!-- company-products:launch:start -->'), 'Build must preserve the skip link before generated navigation');
+    assert.equal([...built.matchAll(/class="fynx-skip-link"/g)].length, 1, 'Build must not duplicate the bypass');
+  }
+} finally {
+  fs.rmSync(fixture, { recursive: true, force: true });
+}
+
 console.log('Homepage accessibility: skip link, main landmark, and keyboard focus checks passed.');
