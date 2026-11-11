@@ -1,0 +1,60 @@
+name: Refresh World desk data
+# Publishes countries.json, states.json, symbols.json and ships.json for the FYNX World desk
+# to the separate `world-data` branch. The branch always holds a single commit
+# (force-replaced), so it never grows. It never writes to main or any other data branch.
+on:
+  schedule:
+    - cron: '41 * * * *'
+  workflow_dispatch:
+    inputs:
+      force_daily:
+        description: 'Refresh daily sources (World Bank, BLS, FEMA, symbols) now'
+        type: boolean
+        default: false
+  push:
+    paths:
+      - 'scripts/refresh-world-data.cjs'
+      - '.github/workflows/refresh-world-data.yml'
+permissions:
+  contents: write
+concurrency:
+  group: publish-world-data
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read previous snapshot
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p "$RUNNER_TEMP/previous"
+          if git fetch --depth=1 origin refs/heads/world-data 2>/dev/null; then
+            for f in countries.json states.json symbols.json ships.json; do git show "FETCH_HEAD:$f" > "$RUNNER_TEMP/previous/$f" 2>/dev/null || rm -f "$RUNNER_TEMP/previous/$f"; done
+          fi
+      - name: Fetch public sources
+        env:
+          AISSTREAM_API_KEY: ${{ secrets.AISSTREAM_API_KEY }}
+          FORCE_DAILY: ${{ inputs.force_daily || 'false' }}
+        run: node scripts/refresh-world-data.cjs "$RUNNER_TEMP/out" "$RUNNER_TEMP/previous"
+      - name: Publish snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          publish="$RUNNER_TEMP/world-data"
+          git worktree add --detach "$publish" HEAD
+          cd "$publish"
+          git switch --quiet --orphan world-data-snapshot
+          git rm -rf --quiet . >/dev/null 2>&1 || true
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp "$RUNNER_TEMP"/out/*.json .
+          git config user.name 'FYNX world publisher'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -- *.json
+          git commit --quiet -m "World desk snapshot $(date -u +%FT%RZ)"
+          git push --force origin HEAD:refs/heads/world-data

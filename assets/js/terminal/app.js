@@ -83,10 +83,38 @@
 
   const store = {get: k => { try { return localStorage.getItem('fx-term-' + k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem('fx-term-' + k, v); } catch {} }};
   const S = {quotes: {}, quotesAt: null, prev: {}, desk: null, edge: null, calendar: null, schedule: null, briefing: [], desks: {}, vix: null, corr: {}, books: {}, history: {}, bars: {}, fin: {}, directory: null, journal: window.FynxTerminalJournal || {status: 'loading'},
-    mk: null, opts: null, earn: null, deskKey: 'all', mktTab: null, mktSort: null, focus: 'SPY', range: 126, finTicker: 'AAPL', deskTab: 'forex', curve: 'US', ecoHigh: false, corrWindow: 60, tool: 'calc', optSym: 'SPY', optExp: 0, perfWin: 21, feeds: {}, paused: false};
+    mk: null, opts: null, earn: null, sym: null, symData: {}, symQuotes: {}, symNews: {}, cards: {}, symbols: null, editing: false, deskKey: 'all', mktTab: null, mktSort: null, focus: 'SPY', range: 126, finTicker: 'AAPL', deskTab: 'forex', curve: 'US', ecoHigh: false, corrWindow: 60, tool: 'calc', optSym: 'SPY', optExp: 0, perfWin: 21, feeds: {}, paused: false};
   const $ = id => document.getElementById(id);
   const finite = v => typeof v === 'number' && Number.isFinite(v);
-  const D = () => DESK_DEFS[S.deskKey];
+  /* Symbol mode: picking one market reloads every box for it. Layouts per asset class. */
+  const SYM_SLOTS = {
+    stock: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'fin', 'earn', 'opt', 'cmp', 'desks', 'heat', 'eco', 'xa', 'tools'],
+    fund: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'perf', 'opt', 'cmp', 'xa', 'desks', 'heat', 'eco', 'term', 'tools'],
+    fx: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'bias', 'cb', 'eco', 'range', 'pos', 'corr', 'curve', 'sess', 'tools'],
+    crypto: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'books', 'edge', 'pos', 'cmp', 'xa', 'desks', 'heat', 'eco', 'tools'],
+    other: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'perf', 'cmp', 'xa', 'term', 'pos', 'desks', 'heat', 'eco', 'tools']
+  };
+  const D = () => S.sym ? symDef() : DESK_DEFS[S.deskKey];
+  function symClass(symbol, type) {
+    const t = String(type || '').toUpperCase();
+    if (t === 'CURRENCY' || /=X$/.test(symbol) || (EDGE[symbol] && /^[A-Z]{6}$/.test(symbol) && !/^(XAU|XAG|BTC|ETH)/.test(symbol))) return 'fx';
+    if (t === 'CRYPTOCURRENCY' || /-USD$/.test(symbol) || /^(BTC|ETH)USD$/.test(symbol)) return 'crypto';
+    if (t === 'ETF' || t === 'MUTUALFUND' || /funds$/.test(info(symbol).group)) return 'fund';
+    if (t === 'EQUITY' || info(symbol).group === 'Stocks') return 'stock';
+    return 'other';
+  }
+  function symCurrencies(symbol) {
+    const e = FX_TO_EDGE[symbol] || symbol, m = /^([A-Z]{3})([A-Z]{3})$/.exec(e);
+    if (m) return [m[1], m[2]];
+    const cur = S.symData[symbol]?.currency; return cur ? [cur.toUpperCase()] : ['USD'];
+  }
+  function symDef() {
+    const s = S.sym, cls = s.cls, base = DESK_DEFS[{stock: 'stocks', fund: 'funds', fx: 'forex', crypto: 'crypto'}[cls]] || DESK_DEFS[S.deskKey] || DESK_DEFS.all, edgeId = FX_TO_EDGE[s.symbol] || (EDGE[s.symbol] ? s.symbol : null);
+    const news = {fx: 'forex', crypto: 'crypto', fund: 'finance', stock: 'stocks'}[cls] || base.news;
+    return {...base, label: shortOf(s.symbol), noun: s.name || s.symbol, who: `${shortOf(s.symbol)} traders`, slots: SYM_SLOTS[cls] || SYM_SLOTS.other, focus: s.symbol, storyKind: 'symbol', symbol: true,
+      calc: {stock: 'shares', fund: 'shares', fx: 'fx', crypto: 'crypto'}[cls] || (FUTSPEC[s.symbol] ? 'futures' : base.calc), ccy: symCurrencies(s.symbol), edge: edgeId ? [edgeId] : base.edge, range: edgeId || base.range,
+      opt: S.opts?.underlyings?.[s.symbol] ? s.symbol : base.opt, news, newsTabs: base.newsTabs?.includes(news) ? base.newsTabs : [news, ...(base.newsTabs || []).slice(0, 4)], heat: cls === 'crypto' ? ['Crypto'] : cls === 'fx' ? ['FX majors', 'FX crosses'] : base.heat || ['Stocks'], grid: null};
+  }
 
   /* --- utilities --------------------------------------------------------- */
   function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined && text !== null) n.textContent = String(text); return n; }
@@ -133,6 +161,7 @@
     const c = CATALOG.find(x => x.symbol === id); if (c) return {name: c.name, group: c.group === 'ETFs' ? stat(id)?.group || 'Equity funds' : c.group === 'FX' ? 'FX majors' : c.group};
     const q = MKQ()[id]; if (q) return {name: q.name, group: q.group};
     if (EDGE[id]) return {name: EDGE[id][0], group: 'Edge'};
+    if (S.symQuotes[id]) return {name: S.symQuotes[id].name || id, group: S.symQuotes[id].group || ''};
     return {name: id, group: ''};
   }
   const nameOf = id => EDGE[id]?.[0] || info(id).name;
@@ -148,6 +177,7 @@
   }
   function quoteFor(id) {
     const live = S.quotes[id] || S.quotes[EDGE_TO_FX[id]];
+    if (!live && S.symQuotes[id]) return S.symQuotes[id];
     const q = stat(id);
     if (live) return q ? {...live, vol20: q.vol20, high52: q.high52, low52: q.low52, dayHigh: q.dayHigh, dayLow: q.dayLow, volume: q.volume, previousClose: q.previousClose} : live;
     return q ? {price: q.price, changePercent: q.changePercent, asOf: q.asOf, source: 'Yahoo Finance', delayed: true, snapshot: true, vol20: q.vol20, high52: q.high52, low52: q.low52, dayHigh: q.dayHigh, dayLow: q.dayLow, volume: q.volume, previousClose: q.previousClose} : null;
@@ -274,8 +304,8 @@
   }
 
   /* --- quote rows (shared by MKTS, IDX, XA, MOV) ------------------------------- */
-  function quoteRow(id, extra) {
-    const q = quoteFor(id), r = rowButton('fx-r3' + (S.focus === id || S.focus === FX_TO_EDGE[id] ? ' sel' : ''), () => focusOn(id), `Chart ${nameOf(id)}`);
+  function quoteRow(id, extra, onPick) {
+    const q = quoteFor(id), r = rowButton('fx-r3' + (S.focus === id || S.focus === FX_TO_EDGE[id] ? ' sel' : ''), onPick || (() => focusOn(id)), onPick ? `Load the desk for ${nameOf(id)}` : `Chart ${nameOf(id)}`);
     const flash = q && finite(S.prev[id]) && S.prev[id] !== q.price ? (q.price > S.prev[id] ? ' fx-flash-up' : ' fx-flash-dn') : '';
     const n = el('span', 'fx-sym'); n.append(el('b', '', shortOf(id)), el('small', '', extra || nameOf(id)));
     r.append(n, el('span', 'fx-num' + flash, q ? fmt(q.price, digitsOf(id)) : '—'), el('span', 'fx-num ' + tone(q?.changePercent), q ? signed(q.changePercent, 2, '%') : '—'));
@@ -288,10 +318,11 @@
     tabs('mkts-tabs', all.map(t => [t[0], t[0]]), S.mktTab, v => { S.mktTab = v; renderMkts(); });
     const host = panel('mkts');
     let list = universe(all.find(t => t[0] === S.mktTab)[1]);
+    if (S.sym && !list.includes(S.sym.symbol) && !list.includes(EDGE_TO_FX[S.sym.symbol])) list = [S.sym.symbol, ...list];
     if (S.mktSort) list = [...list].sort((a, b) => (quoteFor(b)?.changePercent ?? -999) * S.mktSort - (quoteFor(a)?.changePercent ?? -999) * S.mktSort);
     const head = el('div', 'fx-th'); head.append(el('span', '', 'SYMBOL'), el('span', '', 'LAST'), btn(S.mktSort === 1 ? 'CHG ▼' : S.mktSort === -1 ? 'CHG ▲' : 'CHG ↕', 'fx-sort', () => { S.mktSort = S.mktSort === 1 ? -1 : S.mktSort === -1 ? null : 1; renderMkts(); }, 'Sort by change')); host.append(head);
     if (!list.length) return empty(host, 'Loading quotes…');
-    for (const id of list) host.append(quoteRow(id));
+    for (const id of list) host.append(quoteRow(id, null, () => setSymbol({symbol: id})));
     const src = list.some(id => S.quotes[id]) ? 'Live delayed quotes refresh every 30 s; others' : 'Delayed quotes';
     host.append(el('p', 'fx-foot', `${src} from the ${S.mk ? hhmm(S.mk.generatedAt) : ''} market snapshot (Yahoo Finance, exchange delays apply).`));
   }
@@ -430,6 +461,8 @@
     tag.append(btn('Full page ▸', 'fx-chip fx-chip-link', () => openPage('des', id)));
     if (info(id).group === 'Stocks') tag.append(btn('Financials ▸', 'fx-chip fx-chip-link', () => openPage('fa', id)));
     if (S.opts?.underlyings?.[id]) tag.append(btn('Options ▸', 'fx-chip fx-chip-link', () => openPage('options', id)));
+    tag.append(btn('Compare & draw ▸', 'fx-chip fx-chip-link', () => openPage('chart', EDGE_TO_FX[id] && !S.bars[id] ? EDGE_TO_FX[id] : id)));
+    if (!S.sym || S.sym.symbol !== id) tag.prepend(btn(`Load every box for ${shortOf(id)} ▸`, 'fx-chip fx-chip-link pg-primary', () => setSymbol({symbol: id})));
     tag.append(btn('News ▸', 'fx-chip fx-chip-link', () => openPage('news', {q: shortOf(id), name: nameOf(id)})));
     extra.append(tag); host.append(extra);
   }
@@ -488,6 +521,7 @@
   }
   function renderStory() {
     const host = panel('story'), d = D();
+    if (S.sym) return renderSymStory(host);
     setText('t-story', `${S.deskKey === 'all' ? 'Today' : d.noun + ' today'} · ${new Date().toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'})}`);
     if (d.storyKind === 'macro') {
       const rows = M.PAIRS.map(p => M.smartBias(p, {desk: S.desk, edgeMarket: S.edge?.markets?.find(m => m.symbol === p.id), livePrice: quoteFor(p.id)?.price}));
@@ -893,8 +927,8 @@
     r.append(n, body, sc); return r;
   }
   function renderIntel() {
-    const host = panel('intel'), items = intelItems();
-    setText('t-intel', `FYNX Intelligence · ${D().noun.toLowerCase()} ranked now`);
+    const host = panel('intel'), items = S.sym ? symIntel() : intelItems();
+    setText('t-intel', S.sym ? `FYNX Intelligence · ${shortOf(S.sym.symbol)}: what matters now` : `FYNX Intelligence · ${D().noun.toLowerCase()} ranked now`);
     if (!items.length) return empty(host, 'Scanning the live feeds…');
     items.slice(0, 8).forEach((it, i) => host.append(intelRow(it, i)));
     host.append(el('p', 'fx-foot', `Ranked from ${Object.values(S.feeds).filter(Boolean).length} live feeds: moves vs normal, headlines, events, central banks, rates, positioning and options. Not advice.`));
@@ -1031,38 +1065,366 @@
   }
   window.addEventListener('fx-journal', e => { S.journal = e.detail; if (S.tool === 'jrnl') R('tools'); PG?.refresh?.('journal'); });
 
-  /* --- layout: desk bar and panels ---------------------------------------------- */
+  /* --- any-symbol data (FYNX market proxy; falls back to the terminal's own feeds) ---------- */
+  /* The proxy runs as a Vercel function. The site may be served from another host, so try this origin first,
+   * then the Vercel production deployment (the function sends CORS headers for any origin). */
+  const MARKET_FNS = ['/fn/market.js', 'https://fynxfinanceworld.vercel.app/fn/market.js'];
+  let marketFn = null;
+  async function fnMarket(params, timeout = 15000) {
+    const qs = '?' + new URLSearchParams(params), order = marketFn ? [marketFn, ...MARKET_FNS.filter(u => u !== marketFn)] : MARKET_FNS;
+    let last;
+    for (const base of order) {
+      try {
+        const r = await fetch(base + qs, {signal: AbortSignal.timeout(timeout), credentials: 'omit', referrerPolicy: 'no-referrer', headers: {Accept: 'application/json'}});
+        if (!/json/.test(r.headers.get('content-type') || '')) throw new Error('Proxy not on ' + base);
+        const d = await r.json(); marketFn = base;
+        if (!r.ok) throw Object.assign(new Error(d?.error || 'HTTP ' + r.status), {final: r.status === 400 || r.status === 404});
+        return d;
+      } catch (e) { last = e; if (e.final) throw e; }
+    }
+    throw last;
+  }
+  async function symHistory(symbol, range = '2y') {
+    const key = symbol + '|' + range, hit = S.symData[key];
+    if (hit && Date.now() - hit.at < 300000) return hit;
+    try {
+      const d = await fnMarket({op: 'chart', symbol, range});
+      if (Array.isArray(d?.rows) && d.rows.length) {
+        const v = {...d, at: Date.now()}; S.symData[key] = v; S.symData[symbol] = v;
+        S.symQuotes[symbol] = {price: d.price, changePercent: d.changePercent, previousClose: d.previousClose, dayHigh: d.dayHigh, dayLow: d.dayLow, volume: d.volume, high52: d.high52, low52: d.low52, asOf: d.asOf, name: d.name, currency: d.currency, exchange: d.exchange, source: 'Yahoo Finance (delayed)', vol20: volOf(d.rows.map(r => r.close), 20)};
+        return v;
+      }
+    } catch (e) { report('fn-chart', e); }
+    const series = await loadSeries(FX_TO_EDGE[symbol] || symbol);
+    if (!series?.rows?.length) return null;
+    const v = {symbol, name: nameOf(symbol), rows: series.rows, source: series.source, at: Date.now(), fallback: true};
+    S.symData[key] = v; if (!S.symData[symbol]) S.symData[symbol] = v;
+    return v;
+  }
+  function volOf(closes, n) { const r = []; for (let i = Math.max(1, closes.length - n); i < closes.length; i++) r.push(Math.log(closes[i] / closes[i - 1]) * 100); if (r.length < 5) return null; const m = r.reduce((a, b) => a + b, 0) / r.length; return Math.sqrt(r.reduce((a, b) => a + (b - m) ** 2, 0) / (r.length - 1)); }
+  const benchFor = (symbol, cls) => cls === 'crypto' ? (symbol === 'BTC-USD' ? 'QQQ' : 'BTC-USD') : cls === 'fx' ? 'DX-Y.NYB' : symbol === 'SPY' ? 'QQQ' : 'SPY';
+  /* Risk from daily closes: annualized volatility, beta and correlation vs a benchmark, max drawdown, historical 1-day VaR. */
+  function riskStats(rows, benchRows, perYear = 252) {
+    const last = rows.slice(-perYear - 1), rets = [];
+    for (let i = 1; i < last.length; i++) rets.push({date: last[i].date.slice(0, 10), r: last[i].close / last[i - 1].close - 1});
+    if (rets.length < 30) return null;
+    const mean = a => a.reduce((s, v) => s + v, 0) / a.length, sd = a => { const m = mean(a); return Math.sqrt(a.reduce((s, v) => s + (v - m) ** 2, 0) / (a.length - 1)); };
+    const rs = rets.map(x => x.r), vol = sd(rs) * Math.sqrt(perYear) * 100;
+    let peak = -Infinity, mdd = 0; for (const p of last) { peak = Math.max(peak, p.close); mdd = Math.min(mdd, p.close / peak - 1); }
+    const sorted = [...rs].sort((a, b) => a - b), var95 = -sorted[Math.floor(sorted.length * 0.05)] * 100;
+    const total = (last.at(-1).close / last[0].close - 1) * 100;
+    let beta = null, corr = null;
+    if (benchRows?.length) {
+      const bm = new Map(); for (let i = 1; i < benchRows.length; i++) bm.set(benchRows[i].date.slice(0, 10), benchRows[i].close / benchRows[i - 1].close - 1);
+      const pairs = rets.filter(x => bm.has(x.date)).map(x => [x.r, bm.get(x.date)]);
+      if (pairs.length >= 30) { const a = pairs.map(p => p[0]), b = pairs.map(p => p[1]), ma = mean(a), mb = mean(b); let cov = 0, vb = 0, va = 0; pairs.forEach(([x, y]) => { cov += (x - ma) * (y - mb); vb += (y - mb) ** 2; va += (x - ma) ** 2; }); beta = cov / vb; corr = cov / Math.sqrt(va * vb); }
+    }
+    return {vol, mdd: mdd * 100, var95, total, beta, corr, ratio: vol ? total / vol : null, days: rets.length};
+  }
+  /* Normalized % comparison chart for several series. */
+  const CMP_COLORS = ['#ffb000', '#5b8def', '#3ecf8e', '#c4a1ff', '#ff8a80', '#5ed3d3'];
+  function compareChart(series, {W = 640, H = 220, sessions = 252} = {}) {
+    const wrap = el('div', 'fx-chartwrap'), valid = series.filter(x => x.rows?.length > 2);
+    if (!valid.length) { wrap.append(el('p', 'fx-empty', 'Loading comparison…')); return wrap; }
+    const start = valid.map(x => x.rows.at(-Math.min(sessions, x.rows.length)).date.slice(0, 10)).sort().at(-1);
+    const lines = valid.map((x, i) => { const rows = x.rows.filter(r => r.date.slice(0, 10) >= start), b = rows[0]?.close; return {label: x.label, color: x.color || CMP_COLORS[i % CMP_COLORS.length], pts: rows.map(r => ({date: r.date.slice(0, 10), v: (r.close / b - 1) * 100}))}; }).filter(l => l.pts.length > 1);
+    const all = lines.flatMap(l => l.pts.map(p => p.v)), lo = Math.min(0, ...all), hi = Math.max(0, ...all), pad = (hi - lo) * 0.08 || 1;
+    const dates = [...new Set(lines.flatMap(l => l.pts.map(p => p.date)))].sort(), xi = new Map(dates.map((d, i) => [d, i]));
+    const L = 6, R = 52, T = 8, B = 20, x = i => L + i * (W - L - R) / Math.max(1, dates.length - 1), y = v => T + (hi + pad - v) / (hi - lo + 2 * pad) * (H - T - B);
+    const c = svg('svg', {viewBox: `0 0 ${W} ${H}`, class: 'fx-chart', role: 'img', 'aria-label': 'Performance comparison: ' + lines.map(l => `${l.label} ${signed(l.pts.at(-1).v, 1, '%')}`).join(', ')});
+    for (let k = 0; k <= 4; k++) { const v = lo - pad + (hi - lo + 2 * pad) * k / 4; c.append(svg('line', {x1: L, x2: W - R, y1: y(v), y2: y(v), class: 'g'})); const t = svg('text', {x: W - R + 6, y: y(v) + 4, class: 'a'}); t.textContent = signed(v, 1, '%'); c.append(t); }
+    c.append(svg('line', {x1: L, x2: W - R, y1: y(0), y2: y(0), stroke: '#56635c', 'stroke-dasharray': '3 3'}));
+    for (const l of lines) c.append(svg('polyline', {points: l.pts.map(p => `${x(xi.get(p.date)).toFixed(1)},${y(p.v).toFixed(1)}`).join(' '), fill: 'none', stroke: l.color, 'stroke-width': 1.7}));
+    [0, dates.length - 1].forEach((i, k) => { const t = svg('text', {x: x(i), y: H - 5, class: 'a', 'text-anchor': k ? 'end' : 'start'}); t.textContent = day(dates[i]); c.append(t); });
+    const legend = el('div', 'fx-legend'); lines.forEach(l => { const s = el('span'); const dot = el('i'); dot.style.background = l.color; s.append(dot, el('b', '', l.label), el('em', tone(l.pts.at(-1).v), signed(l.pts.at(-1).v, 2, '%'))); legend.append(s); });
+    wrap.append(legend, c); return wrap;
+  }
+
+  /* --- symbol panels --------------------------------------------------------------------- */
+  const perfOf = (rows, n) => rows.length > n ? (rows.at(-1).close / rows.at(-1 - n).close - 1) * 100 : null;
+  function renderSQuote() {
+    const host = panel('squote'), s = S.sym; if (!s) return empty(host, 'Pick a market with Find.');
+    const q = quoteFor(s.symbol), d = S.symData[s.symbol], rows = d?.rows || S.history[s.symbol]?.rows || [], dg = digitsOf(s.symbol);
+    setText('t-squote', `${shortOf(s.symbol)} · ${d?.exchange || s.exchange || ''} ${d?.currency ? '· ' + d.currency : ''}`);
+    if (!q) return empty(host, 'Loading quote…');
+    const top = el('div', 'fx-sqhead'); top.append(el('b', '', fmt(q.price, dg)), el('em', tone(q.changePercent), signed(q.changePercent, 2, '%')), el('small', '', q.asOf ? new Date(q.asOf).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : ''));
+    host.append(el('p', 'fx-sub fx-sqname', s.name || nameOf(s.symbol)), top);
+    const st = el('div', 'fx-calcout fx-c4out');
+    const card = (k, v, cls) => { const x = el('div'); x.append(el('span', '', k), el('b', cls || '', v)); st.append(x); };
+    card('PREV', fmt(q.previousClose, dg)); card('DAY LO–HI', finite(q.dayLow) ? `${fmt(q.dayLow, dg)}–${fmt(q.dayHigh, dg)}` : '—'); card('VOLUME', count(q.volume)); card('20D VOL', finite(q.vol20) ? q.vol20.toFixed(2) + '%' : '—');
+    host.append(st);
+    if (finite(q.high52) && finite(q.low52) && q.high52 > q.low52) { const r = el('div', 'fx-52'); const bar = el('span', 'pg-rbar'), dot = el('i'); dot.style.left = Math.max(0, Math.min(100, (q.price - q.low52) / (q.high52 - q.low52) * 100)) + '%'; bar.append(dot); r.append(el('small', '', '52W ' + fmt(q.low52, dg)), bar, el('small', '', fmt(q.high52, dg))); host.append(r); }
+    if (rows.length > 30) { const p = el('div', 'fx-perfrow'); for (const [n, l] of [[5, '1W'], [21, '1M'], [63, '3M'], [126, '6M'], [251, '1Y']]) { const v = perfOf(rows, n); const x = el('span'); x.append(el('small', '', l), el('b', tone(v), finite(v) ? signed(v, 1, '%') : '—')); p.append(x); } host.append(p); }
+    host.append(el('p', 'fx-foot', `${q.source || 'Delayed quote'} · prices adjusted for splits and dividends`));
+  }
+  async function renderSRisk() {
+    const host = panel('srisk'), s = S.sym; if (!s) return;
+    const bench = benchFor(s.symbol, s.cls); setText('t-srisk', `Risk vs ${shortOf(bench)} · 1 year`);
+    const d = S.symData[s.symbol]; if (!d) return empty(host, 'Loading history…');
+    const b = await symHistory(bench); if (!$('b-srisk') || S.sym?.symbol !== s.symbol) return;
+    const r = riskStats(d.rows, b?.rows, s.cls === 'crypto' ? 365 : 252); host.replaceChildren();
+    if (!r) return empty(host, 'Not enough daily history for risk numbers.');
+    const out = el('div', 'fx-calcout'); const card = (k, v, cls) => { const x = el('div'); x.append(el('span', '', k), el('b', cls || '', v)); out.append(x); };
+    card('VOLATILITY', r.vol.toFixed(1) + '% / yr'); card('MAX DRAWDOWN', r.mdd.toFixed(1) + '%', 'fx-down'); card('1-DAY VaR 95%', r.var95.toFixed(2) + '%'); card(`BETA vs ${shortOf(bench)}`, finite(r.beta) ? r.beta.toFixed(2) : '—');
+    card('CORRELATION', finite(r.corr) ? r.corr.toFixed(2) : '—'); card('1Y RETURN', signed(r.total, 1, '%'), tone(r.total));
+    host.append(out, el('p', 'fx-foot', `From ${r.days} daily returns. VaR: on 1 day in 20 the loss was at least this much. Return ÷ volatility ${finite(r.ratio) ? r.ratio.toFixed(2) : '—'}.`));
+  }
+  async function renderSNews() {
+    const host = panel('snews'), s = S.sym; if (!s) return;
+    setText('t-snews', `${shortOf(s.symbol)} headlines`);
+    if (!S.symNews[s.symbol]) { empty(host, 'Searching headlines…'); try { const r = await fnMarket({op: 'search', q: s.symbol.replace(/=X$|=F$|^\^/g, '')}); S.symNews[s.symbol] = r.news || []; } catch { S.symNews[s.symbol] = []; } if (!$('b-snews') || S.sym?.symbol !== s.symbol) return; host.replaceChildren(); }
+    const own = S.symNews[s.symbol].map(n => ({title: n.title, url: n.url, source: n.publisher, publishedAt: n.publishedAt || new Date().toISOString(), external: true}));
+    const words = [(s.name || '').replace(/,? (Inc|Corp|Corporation|Ltd|plc|Holdings|Group|N\.V\.|S\.A\.|AG|SE|Co)\.?$/i, '').split(' ').slice(0, 2).join(' '), shortOf(s.symbol).length > 2 ? shortOf(s.symbol) : ''].filter(w => w && w.length > 2).map(w => w.toLowerCase());
+    const room = [...S.briefing, ...Object.values(S.desks).flatMap(x => x.items || [])].filter(h => words.some(w => h.title.toLowerCase().includes(w)));
+    const seen = new Set(), items = [...room, ...own].filter(h => { const k = h.title.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+    if (!items.length) return empty(host, 'No current headlines for this market.');
+    for (const h of items.slice(0, 25)) { if (h.external) { const a = link('', h.url, 'fx-row fx-hrow'); a.append(el('time', '', hhmm(h.publishedAt)), el('span', 'fx-ht', h.title), el('small', '', h.source + ' ↗')); host.append(a); } else host.append(headlineRow(h)); }
+  }
+  async function renderCmp() {
+    const host = panel('cmp'), sym = S.sym?.symbol || S.focus, cls = S.sym?.cls || symClass(sym);
+    const peers = [sym, benchFor(sym, cls), ...(cls === 'stock' ? ['QQQ'] : cls === 'crypto' ? ['ETH-USD'] : cls === 'fx' ? ['GC=F'] : ['TLT'])].filter((v, i, a) => a.indexOf(v) === i).slice(0, 3);
+    setText('t-cmp', `${peers.map(shortOf).join(' vs ')} · 1Y`);
+    const data = await Promise.all(peers.map(p => symHistory(p)));
+    if (!$('b-cmp')) return; host.replaceChildren();
+    host.append(compareChart(data.map((d, i) => ({label: shortOf(peers[i]), rows: d?.rows || []}))), btn('Compare more and draw ▸', 'fx-chip fx-chip-link', () => openPage('chart', sym)));
+  }
+  function symbolStoryText() {
+    const s = S.sym, q = quoteFor(s.symbol), d = S.symData[s.symbol], rows = d?.rows || [];
+    if (!q) return null;
+    const lines = [], name = s.name || nameOf(s.symbol), dg = digitsOf(s.symbol);
+    const z = finite(q.vol20) && q.vol20 > 0 && finite(q.changePercent) ? Math.abs(q.changePercent) / q.vol20 : null;
+    lines.push(`${name} is at ${fmt(q.price, dg)}, ${signed(q.changePercent, 2, '%')} today${z ? `, ${z.toFixed(1)}× its typical daily move` : ''}.`);
+    const m1 = perfOf(rows, 21), y1 = perfOf(rows, 251); if (finite(m1)) lines.push(`Over a month it is ${signed(m1, 1, '%')}${finite(y1) ? ` and over a year ${signed(y1, 1, '%')}` : ''}.`);
+    if (finite(q.high52) && finite(q.low52)) { const pos = (q.price - q.low52) / (q.high52 - q.low52); lines.push(pos > 0.9 ? 'It trades near its 52-week high.' : pos < 0.1 ? 'It trades near its 52-week low.' : `It sits ${Math.round(pos * 100)}% of the way up its 52-week range.`); }
+    const e = (S.earn?.events || []).find(x => x.symbol === s.symbol); if (e) lines.push(`Earnings: ${day(e.date)} ${e.time === 'After close' ? 'after the close' : e.time === 'Before open' ? 'before the open' : ''}${finite(e.epsForecast) ? `, EPS forecast $${e.epsForecast.toFixed(2)}` : ''}.`);
+    const u = S.opts?.underlyings?.[s.symbol]; if (u) { const x = u.expiries.find(v => v.dte >= 1) || u.expiries[0]; lines.push(`Options imply a ±${x.movePercent?.toFixed(2)}% move by ${day(x.date)}; put/call volume ${u.putCallVolume?.toFixed(2)}.`); }
+    const ev = nextEvents(symCurrencies(s.symbol), 2); if (ev.length) lines.push(`Next on the calendar: ${ev.map(x => `${x.currency} ${x.title} ${new Date(x.time).toLocaleString([], {weekday: 'short', hour: '2-digit', minute: '2-digit'})}`).join('; ')}.`);
+    const dir = !finite(q.changePercent) ? 'steady' : q.changePercent > 0.3 ? 'higher' : q.changePercent < -0.3 ? 'lower' : 'little changed';
+    return {title: `${shortOf(s.symbol)} ${dir}${z && z >= 1.5 ? ' on a big move' : ''}`, lines};
+  }
+  function renderSymStory(host) {
+    setText('t-story', `${shortOf(S.sym.symbol)} today · ${new Date().toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'})}`);
+    const st = symbolStoryText(); if (!st) return empty(host, 'Loading…');
+    host.append(el('h3', 'fx-h3', st.title), el('p', 'fx-story', st.lines.join(' ')), el('p', 'fx-foot', 'Written from live prices, history, options and the calendar. Not advice.'));
+  }
+  function symIntel() {
+    const s = S.sym, items = [], q = quoteFor(s.symbol), now = Date.now(), add = (score, tag, title, why, act) => items.push({score: Math.round(Math.max(1, Math.min(99, score))), tag, title, why, act});
+    if (q && finite(q.changePercent)) { const z = finite(q.vol20) && q.vol20 ? Math.abs(q.changePercent) / q.vol20 : null; add(30 + (z ?? 1) * 15, 'MOVE', `${shortOf(s.symbol)} ${signed(q.changePercent, 2, '%')} today`, z ? `${z.toFixed(1)}× its typical daily move (20-day)` : 'Today’s change', () => openPage('chart', s.symbol)); }
+    if (q && finite(q.high52) && finite(q.low52)) { const pos = (q.price - q.low52) / (q.high52 - q.low52); if (pos > 0.95 || pos < 0.05) add(62, 'LEVEL', `Near its 52-week ${pos > 0.5 ? 'high' : 'low'}`, `52-week range ${fmt(q.low52, 2)}–${fmt(q.high52, 2)}`, () => openPage('chart', s.symbol)); }
+    const e = (S.earn?.events || []).find(x => x.symbol === s.symbol); if (e) { const d = (Date.parse(e.date) - now) / 86400000; add(80 - Math.max(0, d) * 4, 'EARN', `Reports ${day(e.date)} ${e.time === 'After close' ? 'after close' : e.time === 'Before open' ? 'before open' : ''}`, `EPS forecast ${finite(e.epsForecast) ? '$' + e.epsForecast.toFixed(2) : '—'} · year ago ${finite(e.lastYearEPS) ? '$' + e.lastYearEPS.toFixed(2) : '—'}`, () => openPage('cal', 'earnings')); }
+    const u = S.opts?.underlyings?.[s.symbol]; if (u) { const x = u.expiries.find(v => v.dte >= 1) || u.expiries[0]; add(58, 'OPT', `Options price ±${x.movePercent?.toFixed(2)}% by ${day(x.date)}`, `IV30 ${u.iv30?.toFixed(1)}% · put/call ${u.putCallVolume?.toFixed(2)} · max pain ${fmt(x.maxPain, 0)}`, () => openPage('options', s.symbol)); }
+    for (const ev of nextEvents(symCurrencies(s.symbol), 3)) { const h = (Date.parse(ev.time) - now) / 3600000; add(72 - h * 0.6, 'EVENT', `${ev.currency} ${ev.title}`, `${h < 24 ? 'in ' + Math.round(h) + 'h' : new Date(ev.time).toLocaleString([], {weekday: 'short', hour: '2-digit', minute: '2-digit'})}${ev.forecast ? ' · forecast ' + ev.forecast : ''}`, () => openPage('cal')); }
+    const edgeM = S.edge?.markets?.find(m => m.symbol === (FX_TO_EDGE[s.symbol] || s.symbol));
+    if (edgeM?.positioning?.crowded?.value) add(60, 'COT', `Positioning crowded ${edgeM.positioning.net.value >= 0 ? 'long' : 'short'}`, `CFTC net ${signed(edgeM.positioning.net.value * 100, 0, '%')}`, () => openPage('edge', edgeM.symbol));
+    const pair = M.PAIRS.find(p => p.id === (FX_TO_EDGE[s.symbol] || s.symbol)); if (pair) { const b = M.smartBias(pair, {desk: S.desk, edgeMarket: edgeM, livePrice: q?.price}); if (finite(b.score)) add(50 + Math.abs(b.score) / 3, 'BIAS', `Smart Bias ${b.score > 0 ? '+' : ''}${b.score} (${b.label})`, b.components.map(c => `${c.label} ${c.score > 0 ? '+' : ''}${c.score}`).join(' · '), () => openPage('bias', pair.id)); }
+    for (const n of (S.symNews[s.symbol] || []).slice(0, 3)) add(55 - (now - Date.parse(n.publishedAt || now)) / 3600000 * 3, 'NEWS', n.title, `${n.publisher} · ${n.publishedAt ? ago(n.publishedAt) : ''}`, () => window.open(n.url, '_blank', 'noopener'));
+    return items.sort((a, b) => b.score - a.score);
+  }
+
+  /* --- market cards: any symbol, added with + in Edit mode ---------------------------------- */
+  async function renderCard(slot, host) {
+    const sym = slot.slice(5);
+    setText('t-' + slotId(slot), `${shortOf(sym)} · ${nameOf(sym)}`);
+    const d = await symHistory(sym, '6mo'); if (!host.isConnected) return; host.replaceChildren();
+    const q = quoteFor(sym); if (!q || !d?.rows?.length) return empty(host, 'This market is unavailable right now.');
+    setText('t-' + slotId(slot), `${shortOf(sym)} · ${d.name || nameOf(sym)}`);
+    const top = el('div', 'fx-sqhead'); top.append(el('b', '', fmt(q.price, digitsOf(sym))), el('em', tone(q.changePercent), signed(q.changePercent, 2, '%')), el('small', '', d.exchange || ''));
+    host.append(top, lineChart(d.rows.slice(-126), {digits: digitsOf(sym), W: 420, H: 150, label: nameOf(sym), last: q.price, source: 'Yahoo Finance (delayed) · 6 months'}));
+    const p = el('div', 'fx-perfrow'); for (const [n, l] of [[5, '1W'], [21, '1M'], [63, '3M'], [125, '6M']]) { const v = perfOf(d.rows, n); const x = el('span'); x.append(el('small', '', l), el('b', tone(v), finite(v) ? signed(v, 1, '%') : '—')); p.append(x); }
+    host.append(p, btn(`Load the desk for ${shortOf(sym)} ▸`, 'fx-chip fx-chip-link', () => setSymbol({symbol: sym, name: d.name})));
+  }
+
+  /* --- Finder: search every listed market ------------------------------------------------------ */
+  async function loadSymbolDirectory() {
+    if (S.symbols) return S.symbols;
+    try { const d = await getJSON(WDATA + 'symbols.json', {bust: true, timeout: 30000}); if (Array.isArray(d?.rows)) S.symbols = d; } catch (e) { report('symbols', e); }
+    return S.symbols;
+  }
+  const WDATA = 'https://raw.githubusercontent.com/EA-LA/FYNX-web/world-data/';
+  function localMatches(q) {
+    const u = q.toUpperCase(), l = q.toLowerCase(), out = [], seen = new Set();
+    const push = (symbol, name, type, exchange, extra) => { if (seen.has(symbol)) return; seen.add(symbol); out.push({symbol, name, type, exchange, ...extra}); };
+    const pool = [...CATALOG.map(c => [c.symbol, c.name, c.group]), ...Object.values(MKQ()).map(x => [x.symbol, x.name, x.group]), ...Object.entries(EDGE).map(([k, v]) => [k, v[0], 'Edge'])];
+    for (const [sy, n, g] of pool) if (sy.toUpperCase() === u || shortOf(sy) === u) push(sy, n, g, 'FYNX terminal', {rank: 0});
+    for (const [sy, n, g] of pool) if (shortOf(sy).startsWith(u) || n.toLowerCase().includes(l)) push(sy, n, g, 'FYNX terminal', {rank: 1});
+    for (const [sy, n, t, x] of S.symbols?.rows || []) { if (out.length > 60) break; if (sy === u) push(sy, n, t, x, {rank: 0, isNew: (S.symbols.firstSeen?.[sy] || '') >= newCut()}); }
+    for (const [sy, n, t, x] of S.symbols?.rows || []) { if (out.length > 60) break; if (sy.startsWith(u) || (l.length > 2 && n.toLowerCase().includes(l))) push(sy, n, t, x, {rank: sy.startsWith(u) ? 1 : 2, isNew: (S.symbols.firstSeen?.[sy] || '') >= newCut()}); }
+    return out.sort((a, b) => a.rank - b.rank);
+  }
+  const newCut = () => new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+  let finderPick = null, finderTimer = 0;
+  function openFinder({onPick = setSymbol, title = 'Find any market'} = {}) {
+    finderPick = onPick; const dlg = $('fx-finder'), input = $('fx-finder-input');
+    $('fx-finder-title').textContent = title; input.value = ''; renderFinder('');
+    if (!dlg.open) dlg.showModal(); input.focus(); loadSymbolDirectory().then(() => renderFinder(input.value));
+  }
+  function finderRow(r, i) {
+    const b = rowButton('fx-find' + (i === 0 ? ' sel' : ''), () => { $('fx-finder').close(); finderPick?.({symbol: r.symbol, name: r.name, type: r.type, exchange: r.exchange}); }, `${r.symbol} ${r.name}`);
+    const t = String(r.type || '').toUpperCase(), badge = /EQUITY|STOCK/.test(t) ? 'STOCK' : /ETF|FUND/.test(t) ? 'FUND' : /CRYPTO/.test(t) ? 'CRYPTO' : /CURRENCY|FX/.test(t) ? 'FX' : /FUT/.test(t) ? 'FUTURE' : /INDEX|INDICES|AMERICAS|EUROPE|ASIA/.test(t) ? 'INDEX' : t.slice(0, 8) || 'MARKET';
+    const n = el('span', 'fx-sym'); n.append(el('b', '', r.symbol), el('small', '', r.name));
+    b.append(n, el('span', 'fx-badge', badge), el('span', 'fx-dim', r.exchange || ''), r.isNew ? el('span', 'fx-badge fx-new', 'NEW') : el('span'));
+    return b;
+  }
+  async function renderFinder(q) {
+    const host = $('fx-finder-list'); host.replaceChildren(); q = q.trim();
+    if (!q) {
+      host.append(el('p', 'fx-sub', 'Type a company, ticker, currency, coin, index or future. Results cover the terminal’s markets, every US-listed stock and ETF, and exchanges worldwide.'));
+      const fresh = S.symbols?.newListings?.slice(0, 12) || [];
+      if (fresh.length) { host.append(el('div', 'fx-th1', `NEW LISTINGS · scanned daily (${S.symbols.newListings.length} in 30 days)`)); fresh.forEach((r, i) => host.append(finderRow({...r, isNew: true}, i + 1))); host.append(btn('All new listings ▸', 'fx-chip fx-chip-link', () => { $('fx-finder').close(); openPage('listings'); })); }
+      return;
+    }
+    const local = localMatches(q).slice(0, 25);
+    if (local.length) { host.append(el('div', 'fx-th1', 'MATCHES')); local.forEach((r, i) => host.append(finderRow(r, i))); }
+    const wait = el('p', 'fx-sub', 'Searching exchanges worldwide…'); host.append(wait);
+    clearTimeout(finderTimer);
+    finderTimer = setTimeout(async () => {
+      try {
+        const r = await fnMarket({op: 'search', q}, 9000); if ($('fx-finder-input').value.trim() !== q) return;
+        const have = new Set(local.map(x => x.symbol)), more = (r.quotes || []).filter(x => !have.has(x.symbol));
+        wait.replaceWith(el('div', 'fx-th1', `WORLDWIDE · ${more.length} more`)); more.forEach((x, i) => host.append(finderRow(x, local.length + i)));
+      } catch { wait.textContent = 'Worldwide search is unavailable right now; local matches are shown.'; }
+    }, 250);
+  }
+  $('fx-finder-input').addEventListener('input', e => renderFinder(e.target.value));
+  $('fx-finder-form').addEventListener('submit', e => { e.preventDefault(); $('fx-finder-list').querySelector('.fx-find')?.click(); });
+  $('fx-finder-close').addEventListener('click', () => $('fx-finder').close());
+  $('fx-find-btn').addEventListener('click', () => openFinder());
+
+  async function setSymbol(meta) {
+    const symbol = String(meta?.symbol || '').trim(); if (!symbol) return;
+    const id = FX_TO_EDGE[symbol] && EDGE[FX_TO_EDGE[symbol]] ? symbol : symbol;
+    S.sym = {symbol: id, name: meta.name || nameOf(id), type: meta.type || null, exchange: meta.exchange || null, cls: symClass(id, meta.type)};
+    S.focus = FX_TO_EDGE[id] || id; S.mktTab = null; if (S.sym.cls === 'stock') S.finTicker = id.replace('.', '-');
+    if (S.opts?.underlyings?.[id]) { S.optSym = id; S.optExp = 0; }
+    const u = new URL(location.href); u.searchParams.set('sym', id); history.replaceState(history.state, '', u);
+    store.set('sym', JSON.stringify(S.sym));
+    say(`Loading ${id}…`); PG?.closeAll();
+    renderDeskBar(); buildGrid(); renderAll();
+    const d = await symHistory(id);
+    if (S.sym?.symbol !== id) return;
+    if (d?.name && !meta.name) S.sym.name = d.name;
+    if (d?.rows?.length && !EDGE[S.focus]) S.history[id] = {source: d.source || 'Yahoo Finance', rows: d.rows};
+    S.sym.cls = symClass(id, meta.type || d?.type); document.title = `FYNX Terminal · ${shortOf(id)}`;
+    renderDeskBar(); buildGrid(); renderAll(); say(d ? `${shortOf(id)} loaded: every box shows this market` : `${id}: no data found`);
+    await loadSeries(S.focus); R('focus');
+  }
+  function clearSymbol() { S.sym = null; store.set('sym', ''); const u = new URL(location.href); u.searchParams.delete('sym'); history.replaceState(history.state, '', u); setDesk(S.deskKey); }
+
+  /* --- layout: desk bar, editable panels --------------------------------------------------------- */
   const RENDER = {mkts: renderMkts, focus: renderFocus, heat: renderHeat, fin: renderFin, story: renderStory, intel: renderIntel, top: renderTop, desks: () => renderDesks(), cb: renderCB, curve: renderCurve, vix: renderRisk, bias: renderBias,
     edge: renderEdge, pos: renderPos, eco: renderEco, corr: () => renderCorr(), tools: renderTools, movers: renderMovers, xa: renderXA, idx: renderIdx, sess: renderSess, earn: renderEarn, opt: renderOpt, optlist: renderOptList, chain: renderChain,
-    active: renderActive, term: renderTerm, rates: renderRates, gov: renderGov, books: renderBooks, range: () => renderRange(), perf: renderPerf, official: renderOfficial};
+    active: renderActive, term: renderTerm, rates: renderRates, gov: renderGov, books: renderBooks, range: () => renderRange(), perf: renderPerf, official: renderOfficial,
+    squote: renderSQuote, srisk: () => renderSRisk(), snews: () => renderSNews(), cmp: () => renderCmp()};
+  Object.assign(PANELS, {squote: ['QUOTE', 'Quote & performance', 'des'], srisk: ['RISK', 'Risk', 'port'], snews: ['NEWS', 'Headlines', 'news'], cmp: ['CMP', 'Compare', 'chart']});
+  Object.assign(LINK_LABEL, {chart: 'Chart', port: 'Portfolio', ctry: 'Country', world: 'World'});
   const TABBED = new Set(['mkts', 'focus', 'desks', 'curve', 'eco', 'corr', 'tools', 'perf', 'chain']);
-  function R(...kinds) { for (const k of kinds) if ($('tp-' + k)) { try { RENDER[k](); } catch (e) { report('render-' + k, e); } } }
+  const PANEL_GROUPS = [
+    ['Markets', ['mkts', 'focus', 'squote', 'cmp', 'movers', 'heat', 'perf', 'xa', 'idx', 'srisk']],
+    ['News & intelligence', ['intel', 'story', 'top', 'desks', 'snews', 'official']],
+    ['Rates & macro', ['cb', 'curve', 'gov', 'rates', 'eco', 'bias', 'corr', 'sess']],
+    ['Positioning & volatility', ['edge', 'pos', 'range', 'term', 'vix']],
+    ['Stocks & options', ['fin', 'earn', 'opt', 'optlist', 'chain', 'active', 'books']],
+    ['Your tools', ['tools']]
+  ];
+  const PANEL_DESC = {mkts: 'Watchlist with live prices', focus: 'Daily chart of the selected market', squote: 'Quote, ranges and performance for the selected market', cmp: 'Performance vs benchmarks', movers: 'Biggest gainers and losers', heat: 'Day-change heat map', perf: '1W to 1Y performance bars', xa: 'Cross-asset prices', idx: 'Index and sector funds', srisk: 'Volatility, beta, drawdown, VaR',
+    intel: 'Ranked: what matters now', story: 'Today’s story in plain words', top: 'Latest headlines', desks: 'News by desk', snews: 'Headlines for the selected market', official: 'Central bank and statistics releases',
+    cb: 'Policy rates, next decisions, Fed odds', curve: 'Government yield curves', gov: 'US, euro area, UK, Japan yields', rates: 'Policy rates worldwide', eco: 'Economic calendar', bias: 'Smart Bias by FX pair', corr: 'FX correlation matrix', sess: 'Market sessions',
+    edge: 'Market regimes', pos: 'CFTC futures positioning', range: 'Daily range distribution', term: 'Volatility term structure', vix: 'VIX, mood, crypto book', fin: 'SEC annual financials', earn: 'Earnings calendar', opt: 'Options summary', optlist: 'Options monitor', chain: 'Option chain', active: 'Most active contracts', books: 'Crypto top of book', tools: 'Calculators, journal, sessions'};
+  const slotId = slot => slot.startsWith('card:') ? 'card-' + slot.slice(5).replace(/[^A-Za-z0-9]/g, '_') : slot;
+  const layoutKey = () => S.sym ? 'sym-' + S.sym.cls : S.deskKey;
+  function getSlots() {
+    try { const v = JSON.parse(store.get('layout-' + layoutKey()) || 'null'); if (Array.isArray(v) && v.length && v.length <= 28 && v.every(x => x === null || (typeof x === 'string' && (PANELS[x] || /^card:[A-Za-z0-9.\-=^&]{1,24}$/.test(x))))) return v; } catch {}
+    return [...D().slots];
+  }
+  function setSlots(v) { store.set('layout-' + layoutKey(), JSON.stringify(v)); buildGrid(); renderAll(); }
+  function renderSlot(slot) {
+    if (!slot) return;
+    if (slot.startsWith('card:')) { const host = $('b-' + slotId(slot)); if (host) renderCard(slot, host).catch(e => report('card', e)); return; }
+    R(slot);
+  }
+  function R(...kinds) { for (const k of kinds) if ($('tp-' + k) && RENDER[k]) { try { const r = RENDER[k](); if (r?.catch) r.catch(e => report('render-' + k, e)); } catch (e) { report('render-' + k, e); } } }
+  function gridAreas(n) {
+    const g = D().grid, base = g ? g.areas : ['s1 s2 s3 s4 s5 s6', 's1 s2 s7 s8 s9 s10', 's11 s12 s13 s14 s15 s16'];
+    const names = new Set(base.join(' ').split(/\s+/)), rows = [...base];
+    for (let i = names.size + 1; i <= n; i += 6) rows.push(Array.from({length: 6}, (_, k) => 's' + Math.min(i + k, n)).join(' '));
+    return {rows, base: names.size, cols: g?.cols || ''};
+  }
   function buildGrid() {
     const main = $('fx-main'), keep = [...main.children].filter(n => !n.classList.contains('tp'));
-    const d = D();
+    const slots = getSlots(), {rows, base, cols} = gridAreas(slots.length);
     main.replaceChildren(...keep);
-    main.dataset.desk = S.deskKey;
-    d.slots.forEach((kind, i) => {
-      const [code, title, page] = PANELS[kind];
-      const sec = el('section', 'tp' + (['story', 'intel'].includes(kind) ? ' tp-accent' : '')); sec.id = 'tp-' + kind; sec.style.gridArea = 's' + (i + 1); sec.setAttribute('aria-labelledby', 'h-' + kind);
-      const head = el('header'), h2 = el('h2'); h2.id = 'h-' + kind; const t = el('span', '', title); t.id = 't-' + kind; h2.append(el('b', '', code), t); head.append(h2);
+    main.dataset.desk = S.sym ? 'sym' : S.deskKey;
+    main.style.setProperty('--fx-areas', rows.map(r => `"${r}"`).join(' '));
+    main.style.setProperty('--fx-rows', rows.length > 3 ? `repeat(${rows.length}, minmax(270px, 1fr))` : `repeat(${rows.length}, minmax(0, 1fr))`); main.dataset.tall = rows.length > 3 ? '1' : '';
+    if (cols) main.style.setProperty('--fx-cols', cols); else main.style.removeProperty('--fx-cols');
+    main.classList.toggle('fx-editing', S.editing);
+    const used = new Set();
+    slots.forEach((slot, i) => {
+      if (slot && used.has(slot)) slot = null; if (slot) used.add(slot);
+      const area = 's' + (i + 1);
+      if (!slot) {
+        const sec = el('section', 'tp tp-empty'); sec.style.gridArea = area; if (i >= base) sec.dataset.extra = '1';
+        if (S.editing) sec.append(btn('+ Add panel', 'fx-addpanel', () => openPicker(i), 'Add a panel here'));
+        main.append(sec); return;
+      }
+      const card = slot.startsWith('card:'), kind = card ? 'card' : slot, id = slotId(slot);
+      const [code, title, page] = card ? ['CARD', shortOf(slot.slice(5)), 'des'] : PANELS[slot];
+      const sec = el('section', 'tp' + (['story', 'intel'].includes(kind) ? ' tp-accent' : '')); sec.id = 'tp-' + id; sec.style.gridArea = area; sec.setAttribute('aria-labelledby', 'h-' + id); if (i >= base) sec.dataset.extra = '1';
+      const head = el('header'), h2 = el('h2'); h2.id = 'h-' + id; const t = el('span', '', title); t.id = 't-' + id; h2.append(el('b', '', code), t); head.append(h2);
       const right = el('div', 'tp-right');
-      if (TABBED.has(kind)) { const tb = el('div', 'tp-tabs'); tb.id = kind + '-tabs'; tb.setAttribute('aria-label', title + ' options'); right.append(tb); }
-      const note = el('span', 'tp-note'); note.id = 'n-' + kind; right.append(note);
-      if (page) right.append(btn(LINK_LABEL[page] + ' ▸', 'tp-link', () => openPage(page, page === 'fa' ? S.finTicker : page === 'des' ? S.focus : page === 'options' ? S.optSym : page === 'edge' && kind === 'range' ? D().range : undefined), `Open ${title} full page`));
+      if (S.editing) {
+        right.append(btn('◀', 'fx-ed', () => { const v = getSlots(); if (i > 0) { [v[i - 1], v[i]] = [v[i], v[i - 1]]; setSlots(v); } }, 'Move earlier'), btn('▶', 'fx-ed', () => { const v = getSlots(); if (i < v.length - 1) { [v[i + 1], v[i]] = [v[i], v[i + 1]]; setSlots(v); } }, 'Move later'),
+          btn('Change', 'fx-ed', () => openPicker(i), 'Replace this panel'), btn('✕', 'fx-ed fx-ed-x', () => { const v = getSlots(); v[i] = null; setSlots(v); }, 'Remove this panel'));
+      } else {
+        if (TABBED.has(kind)) { const tb = el('div', 'tp-tabs'); tb.id = kind + '-tabs'; tb.setAttribute('aria-label', title + ' options'); right.append(tb); }
+        const note = el('span', 'tp-note'); note.id = 'n-' + id; right.append(note);
+        if (page) right.append(btn((LINK_LABEL[page] || 'Open') + ' ▸', 'tp-link', () => openPage(page, card ? slot.slice(5) : page === 'fa' ? S.finTicker : page === 'des' || page === 'chart' ? (S.sym?.symbol || S.focus) : page === 'options' ? S.optSym : page === 'edge' && kind === 'range' ? D().range : undefined), `Open ${title} full page`));
+      }
       head.append(right);
-      const body = el('div', 'tp-b' + (['focus', 'curve'].includes(kind) ? ' tp-flex' : '')); body.id = 'b-' + kind;
+      const body = el('div', 'tp-b' + (['focus', 'curve', 'globe'].includes(kind) ? ' tp-flex' : '')); body.id = 'b-' + id;
       sec.append(head, body); main.append(sec);
     });
+    $('fx-editbar').hidden = !S.editing;
+    if (S.editing) $('fx-editbar-text').textContent = `Editing the ${S.sym ? shortOf(S.sym.symbol) + ' (' + S.sym.cls + ')' : D().label} layout · ◀ ▶ move · Change swaps · ✕ removes · + adds any panel or a card for any market`;
   }
+  /* Panel picker */
+  let pickSlot = 0;
+  function openPicker(i) {
+    pickSlot = i; const dlg = $('fx-picker'), q = $('fx-picker-q'); q.value = ''; drawPicker(''); dlg.showModal(); q.focus();
+  }
+  function drawPicker(q) {
+    const host = $('fx-picker-list'), l = q.trim().toLowerCase(), used = new Set(getSlots().filter(Boolean)); host.replaceChildren();
+    const cardBtn = btn('', 'fx-pick fx-pick-card', () => { $('fx-picker').close(); openFinder({title: 'Add a card for any market', onPick: m => { const v = getSlots(); v[pickSlot] = 'card:' + m.symbol; setSlots(v); }}); });
+    cardBtn.append(el('b', '', '+ MARKET CARD'), el('span', '', 'Any stock, fund, currency, coin, index or future worldwide'), el('small', '', 'Pick the market, it gets its own box'));
+    host.append(cardBtn);
+    for (const [g, kinds] of [...PANEL_GROUPS, ...EXTRA_GROUPS]) {
+      const list = kinds.filter(k => PANELS[k] && (!l || (PANELS[k][0] + ' ' + PANELS[k][1] + ' ' + (PANEL_DESC[k] || '')).toLowerCase().includes(l)));
+      if (!list.length) continue;
+      const sec = el('section', 'fx-pickgrp'); sec.append(el('h3', '', g));
+      const grid = el('div', 'fx-pickgrid');
+      for (const k of list) { const b = btn('', 'fx-pick' + (used.has(k) ? ' used' : ''), () => { const v = getSlots(); const at = v.indexOf(k); if (at >= 0) v[at] = null; v[pickSlot] = k; $('fx-picker').close(); setSlots(v); }, `${PANELS[k][1]}`); b.append(el('b', '', PANELS[k][0]), el('span', '', PANELS[k][1]), el('small', '', (PANEL_DESC[k] || '') + (used.has(k) ? ' · on screen (moves here)' : ''))); grid.append(b); }
+      sec.append(grid); host.append(sec);
+    }
+  }
+  $('fx-picker-q').addEventListener('input', e => drawPicker(e.target.value));
+  $('fx-picker-close').addEventListener('click', () => $('fx-picker').close());
+  $('fx-edit').addEventListener('click', () => { S.editing = !S.editing; $('fx-edit').setAttribute('aria-pressed', String(S.editing)); $('fx-edit').textContent = S.editing ? 'Done' : 'Edit'; buildGrid(); renderAll(); });
+  $('fx-ed-done').addEventListener('click', () => $('fx-edit').click());
+  $('fx-ed-row').addEventListener('click', () => { const v = getSlots(); if (v.length + 6 > 28) return say('Up to 28 boxes.'); setSlots([...v, ...Array(6).fill(null)]); });
+  $('fx-ed-unrow').addEventListener('click', () => { const v = getSlots(), {base} = gridAreas(v.length); if (v.length <= base) return say('This is the smallest layout.'); setSlots(v.slice(0, Math.max(base, v.length - 6))); });
+  $('fx-ed-reset').addEventListener('click', () => { store.set('layout-' + layoutKey(), ''); buildGrid(); renderAll(); say('Layout reset'); });
+  const EXTRA_GROUPS = [];
   function renderDeskBar() {
     const host = $('fx-deskbar-list'); host.replaceChildren();
-    for (const k of DESK_ORDER) { const b = btn(DESK_DEFS[k].label, 'fx-desk' + (k === S.deskKey ? ' on' : ''), () => setDesk(k), `${DESK_DEFS[k].label} desk`); b.setAttribute('aria-pressed', String(k === S.deskKey)); host.append(b); }
-    setText('fx-deskbar-note', `FYNX Intelligence ranking ${Object.keys(S.feeds).length || 'the'} live feeds for ${D().who}`);
+    for (const k of DESK_ORDER) { const b = btn(DESK_DEFS[k].label, 'fx-desk' + (k === S.deskKey && !S.sym ? ' on' : k === S.deskKey ? ' base' : ''), () => { if (S.sym) { S.sym = null; store.set('sym', ''); const u = new URL(location.href); u.searchParams.delete('sym'); history.replaceState(history.state, '', u); } setDesk(k); }, `${DESK_DEFS[k].label} desk`); b.setAttribute('aria-pressed', String(k === S.deskKey && !S.sym)); host.append(b); }
+    const chip = $('fx-symchip'); chip.replaceChildren(); chip.hidden = !S.sym;
+    if (S.sym) { chip.append(el('b', '', shortOf(S.sym.symbol)), el('span', '', S.sym.name || ''), btn('✕', 'fx-symx', clearSymbol, `Close ${S.sym.symbol}, back to the ${D().label} desk`)); }
+    setText('fx-deskbar-note', S.sym ? `Every box shows ${shortOf(S.sym.symbol)}` : `FYNX Intelligence ranking ${Object.keys(S.feeds).length || 'the'} live feeds for ${D().who}`);
     const on = host.querySelector('.on'); if (on && host.scrollWidth > host.clientWidth) on.scrollIntoView({block: 'nearest', inline: 'nearest'});
   }
   async function setDesk(key, {initial = false} = {}) {
     if (!DESK_DEFS[key]) key = 'all';
+    if (!initial) PG?.closeAll();
     S.deskKey = key; store.set('desk', key);
     const d = D(); S.mktTab = null; S.focus = resolve(d.focus) || d.focus; S.tool = 'calc'; if (d.opt) { S.optSym = d.opt; S.optExp = 0; } if (d.newsTabs) S.deskTab = d.newsTabs[0];
     if (info(S.focus).group === 'Stocks') S.finTicker = S.focus;
@@ -1071,9 +1433,10 @@
     renderDeskBar(); buildGrid(); renderStrip(); renderNews();
     renderAll(); say(`${d.label} desk loaded`);
     if (initial) return;
-    await Promise.allSettled([loadSeries(S.focus), d.news !== 'all' ? loadNews(d.news) : null, d.slots.includes('books') ? loadBooks(['BTC-USD', 'ETH-USD']) : null]);
-    R('focus', 'top', 'intel', 'books', 'story'); renderNews(); R('desks');
+    await Promise.allSettled([loadSeries(S.focus), d.news !== 'all' ? loadNews(d.news) : null, getSlots().includes('books') ? loadBooks(['BTC-USD', 'ETH-USD']) : null, d.onLoad?.()]);
+    R('focus', 'top', 'intel', 'books', 'story'); renderNews(); R('desks'); d.afterLoad?.();
   }
+
 
   /* --- command bar & keys --------------------------------------------------- */
   let PG = null;
@@ -1097,9 +1460,14 @@
     if (verb === 'CALC') { const id = resolve(arg); openPage('calc', id && EDGE[id] ? {kind: 'fx', pair: id} : {kind: D().calc}); return say('Calculators'); }
     if (verb === 'GO') { if (PAGES.includes(arg)) { openPage(arg.toLowerCase()); return; } return say('Pages: ' + PAGES.join(', ')); }
     if (PAGES.includes(verb)) { openPage(verb.toLowerCase(), rest || undefined); return say(verb); }
+    if (verb === 'SYM' || verb === 'LOAD') { if (arg) { setSymbol({symbol: resolve(rest) || rest.toUpperCase()}); return; } return openFinder(); }
+    if (verb === 'FIND' || verb === 'SEARCH') { openFinder(); if (rest) { $('fx-finder-input').value = rest; renderFinder(rest); } return; }
+    if (verb === 'EDIT') { $('fx-edit').click(); return; }
+    if (verb === 'ALLDESK' || verb === 'CLEAR') { if (S.sym) clearSymbol(); return; }
     const id = resolve(cmd);
-    if (id) { focusOn(id); return say(`Chart: ${nameOf(id)}`); }
-    say(`Unknown: "${cmd}". Type HELP.`);
+    if (id) { setSymbol({symbol: EDGE_TO_FX[id] || id}); return say(`${nameOf(id)}: loading every box`); }
+    if (/^[A-Za-z0-9.\-=^&]{1,24}$/.test(cmd.trim())) { setSymbol({symbol: cmd.trim().toUpperCase()}); return; }
+    openFinder(); $('fx-finder-input').value = cmd; renderFinder(cmd);
   }
   $('fx-cmd-form').addEventListener('submit', e => { e.preventDefault(); const i = $('fx-command'); run(i.value); i.value = ''; });
   const KEYS = [['F1', 'Help', 'help'], ['F2', 'News', 'news'], ['F3', 'Markets', 'mkts'], ['F4', 'Macro', 'macro'], ['F5', 'Edge', 'edge'], ['F6', 'Intel', 'intel'], ['F7', 'Research', 'research'], ['F8', 'Journal', 'journal'], ['F9', 'Calc', 'calc'], ['F10', 'Calendar', 'cal'], ['F11', 'Options', 'options'], ['F12', 'Vol', 'vol']];
@@ -1118,13 +1486,16 @@
 
   /* --- orchestration -------------------------------------------------------- */
   const renderQuotesAll = () => { renderStrip(); R('mkts', 'heat', 'bias', 'movers', 'xa', 'idx', 'perf', 'intel', 'term', 'sess'); if (S.focus) R('focus'); };
-  function renderAll() { renderClocks(); renderStrip(); renderNews(); for (const k of D().slots) R(k); renderLive(); }
+  function renderAll() { renderClocks(); renderStrip(); renderNews(); for (const k of getSlots()) renderSlot(k); renderLive(); }
 
   const CORE = {S, M, $, el, btn, link, svg, kv, inspect, signed, tone, ago, hhmm, day, fmt, big, count, finite, empty, rowButton, tabs, say,
     CATALOG, EDGE, FX_TO_EDGE, EDGE_TO_FX, NEWS_CATS, DESK_DEFS, DESK_ORDER, SESSIONS, EXCHANGES, FUTSPEC, KEYS, CALC_TITLE,
-    info, nameOf, shortOf, quoteFor, stat, digitsOf, universe, resolve, focusOn, setDesk, lineChart, curveChart, tenorGrid, finTable, headlineRow, quoteRow, ecoRow, intelItems, intelRow, biasRows, trendPos, optSummary, chainTable, calculator, renderJournal, sessionRows, periodReturn, setCurve,
-    loadSeries, loadFin, loadDirectory, loadNews, loadBriefing, getJSON, D, R, run, renderAll};
+    info, nameOf, shortOf, quoteFor, stat, digitsOf, universe, resolve, focusOn, setDesk, setSymbol, clearSymbol, openFinder, symHistory, fnMarket, riskStats, compareChart, benchFor, symClass, perfOf, volOf, getSlots, PANELS, PANEL_DESC, EXTRA_GROUPS, LINK_LABEL, RENDER, TABBED, store, TDATA, WDATA, MKQ, report, setText, panel, nextEvents, buildGrid, renderDeskBar, lineChart, curveChart, tenorGrid, finTable, headlineRow, quoteRow, ecoRow, intelItems, intelRow, biasRows, trendPos, optSummary, chainTable, calculator, renderJournal, sessionRows, periodReturn, setCurve,
+    loadSeries, loadFin, loadDirectory, loadNews, loadBriefing, getJSON, D, R, run, renderAll, PAGE_NAMES: PAGES, openPage};
   PG = window.FynxTerminalPages ? window.FynxTerminalPages(CORE) : null;
+  CORE.PG = PG;
+  // Plugins (World desk, portfolio, charts) add panels, desks and pages through CORE.
+  for (const plug of window.FynxTerminalPlugins || []) { try { plug(CORE, PG); } catch (e) { report('plugin', e); } }
 
   async function start() {
     const params = new URLSearchParams(location.search);
@@ -1132,9 +1503,10 @@
     renderKeys(); renderClocks();
     await setDesk(DESK_DEFS[want] ? want : 'all', {initial: true});
     if (params.get('symbol')) S.focus = resolve(params.get('symbol')) || S.focus;
+    if (params.get('sym')) setSymbol({symbol: params.get('sym')});
     PG?.fromLocation();
     const d = D();
-    await Promise.allSettled([loadQuotes(), loadMarkets(), loadDesk(), loadSchedule(), loadEdge(), loadCalendar(), loadBriefing(), loadVix(), loadCorr(), loadBooks(d.slots.includes('books') ? ['BTC-USD', 'ETH-USD'] : ['BTC-USD', 'ETH-USD']), loadOptions(), loadEarnings(), d.news !== 'all' ? loadNews(d.news) : null]);
+    await Promise.allSettled([loadQuotes(), loadMarkets(), loadDesk(), loadSchedule(), loadEdge(), loadCalendar(), loadBriefing(), loadVix(), loadCorr(), loadBooks(getSlots().includes('books') ? ['BTC-USD', 'ETH-USD'] : ['BTC-USD', 'ETH-USD']), loadOptions(), loadEarnings(), d.news !== 'all' ? loadNews(d.news) : null]);
     await loadSeries(S.focus);
     renderDeskBar(); renderAll(); $('fx-main').setAttribute('aria-busy', 'false');
     PG?.rerender();
@@ -1142,7 +1514,7 @@
   }
   const every = (ms, task) => setInterval(async () => { if (!document.hidden) await task(); }, ms);
   every(30000, async () => { await loadQuotes(); renderQuotesAll(); R('story'); });
-  every(15000, async () => { if (!D().slots.includes('books') && S.deskKey !== 'all') return; await loadBooks(D().slots.includes('books') ? ['BTC-USD', 'ETH-USD'] : ['BTC-USD', 'ETH-USD']); R('vix', 'books'); });
+  every(15000, async () => { if (!getSlots().includes('books') && S.deskKey !== 'all') return; await loadBooks(getSlots().includes('books') ? ['BTC-USD', 'ETH-USD'] : ['BTC-USD', 'ETH-USD']); R('vix', 'books'); });
   every(30000, () => { renderClocks(); R('cb', 'sess'); });
   every(120000, async () => { await Promise.allSettled([loadBriefing(), D().news !== 'all' ? loadNews(D().news, true) : null]); renderNews(); R('top', 'story', 'intel', 'official'); });
   every(300000, async () => { await Promise.allSettled([loadDesk(), loadMarkets(), loadOptions(), loadNews(S.deskTab, true)]); renderQuotesAll(); R('cb', 'curve', 'gov', 'rates', 'story', 'bias', 'desks', 'opt', 'optlist', 'chain', 'active', 'intel'); renderStrip(); });

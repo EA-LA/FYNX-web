@@ -3,10 +3,10 @@
 <title>FYNX Terminal: Every Market, Headline and Tool on One Screen | FYNX</title>
 <meta name="description" content="The FYNX Terminal: pick a desk (stocks, forex, bonds, crypto, funds, futures, indices, economy, options or commodities) and every box reloads with live quotes, charts, headlines, FYNX Intelligence, option chains, central banks, yield curves and the calendar.">
 <link rel="icon" href="/favicon-32x32.png"><script src="/assets/js/site-theme-init.js?v=20261011"></script>
-<link rel="stylesheet" href="/assets/funded-system.css"><link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
+<link rel="stylesheet" href="/assets/funded-system.css"><link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-world-1">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="/assets/js/journal-theme.js" defer></script>
-<link rel="stylesheet" href="/assets/css/terminal-all.css?v=20261111-terminal-desks-1">
+<link rel="stylesheet" href="/assets/css/terminal-all.css?v=20261111-terminal-world-1">
 <link rel="canonical" href="https://www.fynxfinanceworld.com/terminal.html">
 <meta property="og:title" content="FYNX Terminal: Every Market, Headline and Tool on One Screen | FYNX">
 <meta property="og:description" content="The FYNX Terminal: pick a desk (stocks, forex, bonds, crypto, funds, futures, indices, economy, options or commodities) and every box reloads with live quotes, charts, headlines, FYNX Intelligence, option chains, central banks, yield curves and the calendar.">
@@ -23,7 +23,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
      crossorigin="anonymous"></script>
 <!-- FYNX ADSENSE VERIFICATION END -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-world-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-world-1" defer></script><!-- company-products:assets:end -->
 </head><body class="fx-terminal" data-fynx-layout="standalone">
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
 <a class="fx-skip" href="#fx-command">Skip to command bar</a>
@@ -33,9 +33,11 @@
  <p class="fx-cmd-msg" id="fx-cmd-msg" role="status" aria-live="polite"></p>
  <div class="fx-clocks" id="fx-clocks" aria-label="Market sessions"></div>
  <button type="button" class="fx-live" id="fx-live" aria-label="Live feed status and sources"><i aria-hidden="true"></i>CONNECTING</button>
+ <button type="button" class="fx-editbtn" id="fx-edit" aria-pressed="false" title="Design your own terminal: move, remove and add panels">Edit</button>
  <a class="fx-classic" id="fx-classic" href="/home.html" title="Leave the terminal and return to the website">Exit <span aria-hidden="true">⏏</span></a>
 </header>
-<nav class="fx-deskbar" aria-label="Terminal desks"><span class="fx-deskbar-label">DESK</span><div class="fx-deskbar-list" id="fx-deskbar-list"></div><span class="fx-deskbar-note" id="fx-deskbar-note">FYNX Intelligence</span></nav>
+<nav class="fx-deskbar" aria-label="Terminal desks"><span class="fx-deskbar-label">DESK</span><div class="fx-deskbar-list" id="fx-deskbar-list"></div><button type="button" class="fx-findbtn" id="fx-find-btn" aria-label="Find any market worldwide"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="2"></circle><line x1="11" y1="11" x2="15" y2="15" stroke="currentColor" stroke-width="2"></line></svg><span>Find any market</span></button><span class="fx-symchip" id="fx-symchip" hidden></span><span class="fx-deskbar-note" id="fx-deskbar-note">FYNX Intelligence</span></nav>
+<div class="fx-editbar" id="fx-editbar" hidden><b>EDIT</b><span id="fx-editbar-text">Editing layout</span><button type="button" id="fx-ed-row">+ Row</button><button type="button" id="fx-ed-unrow">− Row</button><button type="button" id="fx-ed-reset">Reset to default</button><button type="button" class="on" id="fx-ed-done">Done</button></div>
 <div class="fx-strip" id="fx-quotes" aria-label="Market quotes"><span class="fx-dim">Loading quotes…</span></div>
 <section class="fx-news" aria-label="Live headlines"><span class="fx-livebadge"><i aria-hidden="true"></i>LIVE</span><div class="fx-news-win"><div class="fx-news-track" id="fx-news-track"><span class="fx-dim">Loading headlines…</span></div></div><button type="button" id="fx-news-pause" aria-pressed="false">Pause</button></section>
 <main class="fx-grid" id="fx-main" aria-busy="true">
@@ -46,15 +48,20 @@
  <header class="fx-page-head"><button type="button" class="fx-page-back" id="fx-page-back" aria-label="Back">◀ Back</button><nav class="fx-page-crumbs" id="fx-page-crumbs" aria-label="Terminal pages"></nav><h1 id="fx-page-title"><b id="fx-page-code">PAGE</b><span id="fx-page-name"></span></h1><span class="fx-page-sub" id="fx-page-sub"></span><button type="button" class="fx-page-close" id="fx-page-close" aria-label="Close page and return to the desk">Desk ✕</button></header>
  <div class="fx-page-body" id="fx-page-body"></div>
 </div>
+<dialog class="fx-dialog" id="fx-finder" aria-labelledby="fx-finder-title"><form class="fx-dialog-head" id="fx-finder-form" role="search"><h2 id="fx-finder-title">Find any market</h2><label class="fx-sr" for="fx-finder-input">Search markets</label><input id="fx-finder-input" type="search" autocomplete="off" spellcheck="false" placeholder="Apple, NVDA, SAP.DE, 7203.T, EURUSD, BTC, gold, DAX…"><button type="button" id="fx-finder-close" aria-label="Close search">✕</button></form><div class="fx-dialog-body" id="fx-finder-list"></div></dialog>
+<dialog class="fx-dialog fx-dialog-wide" id="fx-picker" aria-labelledby="fx-picker-title"><div class="fx-dialog-head"><h2 id="fx-picker-title">Add a panel</h2><label class="fx-sr" for="fx-picker-q">Filter panels</label><input id="fx-picker-q" type="search" autocomplete="off" placeholder="Filter: chart, options, news, world…"><button type="button" id="fx-picker-close" aria-label="Close">✕</button></div><div class="fx-dialog-body" id="fx-picker-list"></div></dialog>
 <nav class="fx-keys" id="fx-keys" aria-label="Function keys"></nav>
 <aside class="fx-inspect" id="fx-inspect" aria-labelledby="fx-inspect-title" hidden><header><h2 id="fx-inspect-title">Detail</h2><button type="button" id="fx-inspect-close" aria-label="Close detail">×</button></header><div id="fx-inspect-body"></div></aside>
 <noscript><p class="fx-noscript">The FYNX Terminal needs JavaScript for live data. <a href="/home.html">Return to the website</a>.</p></noscript>
-<script src="/assets/js/newsroom-editions.js?v=20261111-terminal-desks-1" defer></script>
-<script src="/assets/js/news-reader-links.js?v=20261111-terminal-desks-1" defer></script>
-<script src="/assets/js/market-intelligence-data.js?v=20261111-terminal-desks-1" defer></script>
-<script src="/assets/js/terminal-market-data.js?v=20261111-terminal-desks-1" defer></script>
-<script src="/assets/js/macro-desk/model.js?v=20261111-terminal-desks-1" defer></script>
-<script src="/assets/js/terminal/pages.js?v=20261111-terminal-desks-1" defer></script>
-<script src="/assets/js/terminal/app.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/newsroom-editions.js?v=20261111-terminal-world-1" defer></script>
+<script src="/assets/js/news-reader-links.js?v=20261111-terminal-world-1" defer></script>
+<script src="/assets/js/market-intelligence-data.js?v=20261111-terminal-world-1" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261111-terminal-world-1" defer></script>
+<script src="/assets/js/macro-desk/model.js?v=20261111-terminal-world-1" defer></script>
+<script src="/assets/js/terminal/geo.js?v=20261111-terminal-world-1" defer></script>
+<script src="/assets/js/terminal/world.js?v=20261111-terminal-world-1" defer></script>
+<script src="/assets/js/terminal/portfolio.js?v=20261111-terminal-world-1" defer></script>
+<script src="/assets/js/terminal/pages.js?v=20261111-terminal-world-1" defer></script>
+<script src="/assets/js/terminal/app.js?v=20261111-terminal-world-1" defer></script>
 <script type="module" src="/assets/js/terminal/journal.js"></script>
 </body></html>
