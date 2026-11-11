@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T18:56:15.358Z",
+  "generatedAt": "2026-11-11T23:11:53.256Z",
   "scope": "Local pure-engine benchmark; not provider, endpoint, browser or production latency evidence",
   "synthetic": true,
   "sourceHash": "08922aca47942c4535dde1ebcc7b76740995b15c3efc10d5ca363f84fa1a390a",
@@ -13,13 +13,13 @@
     "pointInTimeCOTUnavailable": true
   },
   "milliseconds": {
-    "cold": 636.81401,
+    "cold": 642.85701,
     "warm": [
-      543.9474999999999,
-      616.6218799999999,
-      523.5934189999998
+      596.6152439999998,
+      512.6283269999999,
+      548.2403759999997
     ],
-    "warmMean": 561.3875996666666
+    "warmMean": 552.4946489999999
   },
   "snapshotBytes": 1215954,
   "marketResults": 8
