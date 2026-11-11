@@ -1096,7 +1096,10 @@
       }
     } catch (e) { report('fn-chart', e); }
     const series = await loadSeries(FX_TO_EDGE[symbol] || symbol);
-    return series?.rows?.length ? {symbol, name: nameOf(symbol), rows: series.rows, source: series.source, at: Date.now(), fallback: true} : null;
+    if (!series?.rows?.length) return null;
+    const v = {symbol, name: nameOf(symbol), rows: series.rows, source: series.source, at: Date.now(), fallback: true};
+    S.symData[key] = v; if (!S.symData[symbol]) S.symData[symbol] = v;
+    return v;
   }
   function volOf(closes, n) { const r = []; for (let i = Math.max(1, closes.length - n); i < closes.length; i++) r.push(Math.log(closes[i] / closes[i - 1]) * 100); if (r.length < 5) return null; const m = r.reduce((a, b) => a + b, 0) / r.length; return Math.sqrt(r.reduce((a, b) => a + (b - m) ** 2, 0) / (r.length - 1)); }
   const benchFor = (symbol, cls) => cls === 'crypto' ? (symbol === 'BTC-USD' ? 'QQQ' : 'BTC-USD') : cls === 'fx' ? 'DX-Y.NYB' : symbol === 'SPY' ? 'QQQ' : 'SPY';
