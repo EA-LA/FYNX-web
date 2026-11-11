@@ -19,7 +19,7 @@ const EDITIONS = ['us', 'global', 'uk', 'europe', 'asia'];
 const CATEGORIES = ['all', 'stocks', 'forex', 'crypto', 'macro', 'commodities', 'finance', 'economics', 'technology', 'energy', 'industries'];
 const DAY = 86400000, KEEP_DAYS = 21, RECHECK_HOURS = 36, MAX_NEW = Number(process.env.INTELLIGENCE_MAX_NEW || 30), MAX_RECORDS = 600;
 // Not news events: quote pages, investor-conference notices and programme listings.
-const NOT_NEWS = /\b(stock price, news, quote|quote and history|stock quote|share price (?:today|chart)|to (?:participate|present) (?:in|at)|fireside chat|conference call|webcast|announces? (?:date|timing) (?:of|for)|rewind|podcast|live updates?:|market brief \(|newsletter)\b/i;
+const NOT_NEWS = /\b(stock price, news, quote|quote and history|stock quote|share price (?:today|chart)|to (?:participate|present) (?:in|at)|fireside chat|conference call|webcast|announces? (?:date|timing) (?:of|for)|rewind|podcast|live updates?:|market brief \(|newsletter|price targets?|upside for|analysts? (?:like|love|hate)|should you buy|is it a buy|best crypto to buy|stocks? to (?:buy|watch)|undervalued)\b/i;
 const HOLD = /\b(killed|dead|death|dies|died|shooting|shot|murder|rape|sexual|abuse|assault|suicide|terror|bomb|massacre|accused|alleg(?:e|es|ed|ation|ations)|lawsuit|sued|indicted|charged with|arrested|fraud|scandal|investigat(?:ion|ed|ing) into)\b/i;
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -79,9 +79,14 @@ function cluster(items, now) {
     if (!fresh.has(id)) fresh.set(id, {...it, url, id, title: cleanTitle(it), source: Reader.plain(it.source, 120) || new URL(url).hostname, publishedAt: new Date(t).toISOString(), terms: tokens(cleanTitle(it))});
   }
   const rows = [...fresh.values()].sort((a, b) => Date.parse(a.publishedAt) - Date.parse(b.publishedAt));
+  // Rare words carry the event ("Payward", "Goolsbee"); common ones ("Wall Street", "stock") do not.
+  const df = new Map(); for (const r of rows) for (const w of r.terms) df.set(w, (df.get(w) || 0) + 1);
+  const idf = w => Math.log((rows.length + 1) / (1 + (df.get(w) || 0)));
+  const weight = terms => terms.reduce((s, w) => s + idf(w), 0);
+  const similar = (a, b) => { const shared = a.terms.filter(w => b.terms.includes(w)); return shared.length >= 2 && weight(shared) / Math.min(weight(a.terms), weight(b.terms)) >= 0.5; };
   const groups = [];
   for (const row of rows) {
-    const g = groups.find(g => g.items.some(o => { const shared = row.terms.filter(w => o.terms.includes(w)).length; return shared >= 4 || (shared >= 3 && shared / Math.min(row.terms.length, o.terms.length) >= 0.5); }) && Math.abs(Date.parse(row.publishedAt) - Date.parse(g.items[0].publishedAt)) < 30 * 3600000);
+    const g = groups.find(g => similar(g.items[0], row) && Math.abs(Date.parse(row.publishedAt) - Date.parse(g.items[0].publishedAt)) < 30 * 3600000);
     if (g) { if (!g.items.some(o => o.source === row.source)) g.items.push(row); } else groups.push({items: [row]});
   }
   return groups;
