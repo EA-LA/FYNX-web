@@ -101,7 +101,10 @@
     .tag{display:inline-flex; margin-bottom:12px; padding:7px 11px; border-radius:999px; border:1px solid var(--line); color:var(--muted); font-size:.76rem; text-transform:uppercase; letter-spacing:.12em}
     .card h3{margin:0 0 8px; font-size:1.12rem; letter-spacing:-.03em}
     .card p{margin:0; color:var(--text-soft); font-size:.95rem}
-    .category-card{cursor:pointer; transition:.18s ease; position:relative; overflow:hidden}
+    .category-card{cursor:pointer; transition:.18s ease; position:relative; overflow:hidden; width:100%; color:var(--text); font:inherit; text-align:left; appearance:none}
+    .category-card:focus-visible,.option:focus-visible{outline:2px solid var(--text); outline-offset:3px}
+    .category-title{display:block; margin:0 0 8px; font-size:1.12rem; font-weight:700; letter-spacing:-.03em}
+    .category-description{display:block; color:var(--text-soft); font-size:.95rem}
     .category-card:hover{transform:translateY(-2px)}
     .category-card.selected{border-color:var(--text); box-shadow:0 0 0 1px var(--text) inset}
     .category-card.selected::after{
@@ -504,22 +507,28 @@
       return arr;
     }
 
+    function setSelectedCategory(key) {
+      selectedCategory = key;
+      document.querySelectorAll(".category-card").forEach(card => {
+        const isSelected = card.dataset.category === key;
+        card.classList.toggle("selected", isSelected);
+        card.setAttribute("aria-pressed", String(isSelected));
+      });
+    }
+
     function renderCategories(){
       const order = ["all","forex","crypto","stocks","futures","funds","indices","bonds","economy","options"];
       categoriesEl.innerHTML = order.map(key => `
-        <article class="card category-card ${selectedCategory === key ? 'selected' : ''}" data-category="${key}">
-          <div class="tag">${CATEGORY_LABELS[key]}</div>
-          <h3>${CATEGORY_LABELS[key]}</h3>
-          <p>${CATEGORY_DESCRIPTIONS[key]}</p>
+        <button type="button" class="card category-card ${selectedCategory === key ? 'selected' : ''}" data-category="${key}" aria-pressed="${selectedCategory === key}">
+          <span class="tag">${CATEGORY_LABELS[key]}</span>
+          <span class="category-title">${CATEGORY_LABELS[key]}</span>
+          <span class="category-description">${CATEGORY_DESCRIPTIONS[key]}</span>
           <span class="category-count">${FULL_COUNTS[key].toLocaleString()} questions</span>
-        </article>
+        </button>
       `).join("");
 
       document.querySelectorAll(".category-card").forEach(card => {
-        card.addEventListener("click", () => {
-          selectedCategory = card.dataset.category;
-          renderCategories();
-        });
+        card.addEventListener("click", () => setSelectedCategory(card.dataset.category));
       });
     }
 
@@ -563,15 +572,20 @@
       questionCategoryTag.textContent = CATEGORY_LABELS[q.category];
       questionText.textContent = q.question;
       optionsWrap.innerHTML = q.options.map((opt, index) => `
-        <button class="option ${selectedAnswers[currentIndex] === index ? 'selected' : ''}" data-index="${index}">
+        <button type="button" class="option ${selectedAnswers[currentIndex] === index ? 'selected' : ''}" data-index="${index}" aria-pressed="${selectedAnswers[currentIndex] === index}">
           ${String.fromCharCode(65 + index)}. ${opt}
         </button>
       `).join("");
 
-      document.querySelectorAll(".option").forEach(btn => {
+      optionsWrap.querySelectorAll(".option").forEach(btn => {
         btn.addEventListener("click", () => {
-          selectedAnswers[currentIndex] = Number(btn.dataset.index);
-          renderQuestion();
+          const selectedIndex = Number(btn.dataset.index);
+          selectedAnswers[currentIndex] = selectedIndex;
+          optionsWrap.querySelectorAll(".option").forEach(option => {
+            const isSelected = Number(option.dataset.index) === selectedIndex;
+            option.classList.toggle("selected", isSelected);
+            option.setAttribute("aria-pressed", String(isSelected));
+          });
         });
       });
 
@@ -623,8 +637,7 @@
 
     randomCategoryBtn.addEventListener("click", () => {
       const keys = ["forex","crypto","stocks","futures","funds","indices","bonds","economy","options"];
-      selectedCategory = keys[Math.floor(Math.random() * keys.length)];
-      renderCategories();
+      setSelectedCategory(keys[Math.floor(Math.random() * keys.length)]);
     });
 
     nextBtn.addEventListener("click", () => {

@@ -1,4 +1,4 @@
-/* Rotate the public workspace overview automatically without a play/stop control. */
+/* Rotate the public Market Desk overview with an explicit pause/resume control. */
 (() => {
   'use strict';
   const terminal = document.querySelector('.fw-terminal');
@@ -6,17 +6,39 @@
   const tabs = [...terminal.querySelectorAll('[data-fw-tab]')];
   const panels = [...terminal.querySelectorAll('.fw-panel')];
   if (!tabs.length || tabs.length !== panels.length) return;
+  // Insert the control only when the slideshow is functional.
+  const footer = terminal.querySelector('.fw-terminal-foot');
+  if (!footer) return;
+  const rotationToggle = document.createElement('button');
+  rotationToggle.type = 'button';
+  rotationToggle.className = 'fw-rotation-toggle';
+  rotationToggle.setAttribute('data-fw-rotation-toggle', '');
+  footer.append(rotationToggle);
   const motion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+  let userPaused = Boolean(motion?.matches);
   let index = Math.max(0, tabs.findIndex(tab => tab.getAttribute('aria-selected') === 'true'));
   let visible = !('IntersectionObserver' in window), timer = null, suspended = false;
 
   function sync() {
+    const wasPaused = terminal.classList.contains('fw-paused');
     clearInterval(timer);
     timer = null;
-    // Never hide a focused link or override the reader's reduced-motion preference.
-    const paused = suspended || motion?.matches || !visible || document.hidden || terminal.contains(document.activeElement);
+    // Don't move content while the visitor is interacting with a tab or its panel.
+    // The toggle itself stays focused when Resume is explicitly requested.
+    const focusWithin = terminal.contains(document.activeElement) && document.activeElement !== rotationToggle;
+    const paused = suspended || userPaused || !visible || document.hidden || focusWithin;
     terminal.classList.toggle('fw-paused', Boolean(paused));
-    if (!paused) timer = setInterval(() => show((index + 1) % tabs.length), 7000);
+    rotationToggle.textContent = userPaused ? 'Resume rotation' : 'Pause rotation';
+    rotationToggle.setAttribute('aria-label', userPaused
+      ? 'Resume automatic Market Desk rotation'
+      : 'Pause automatic Market Desk rotation');
+    if (!paused) {
+      if (wasPaused) {
+        const bar = terminal.querySelector('.fw-progress>span');
+        if (bar) { bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = ''; }
+      }
+      timer = setInterval(() => show((index + 1) % tabs.length), 7000);
+    }
   }
   function show(next) {
     index = next;
@@ -28,6 +50,10 @@
     const bar = terminal.querySelector('.fw-progress>span');
     if (bar) { bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = ''; }
   }
+  rotationToggle.addEventListener('click', () => {
+    userPaused = !userPaused;
+    sync();
+  });
   tabs.forEach((tab, i) => {
     tab.addEventListener('click', () => { show(i); sync(); });
     tab.addEventListener('keydown', event => {
@@ -45,7 +71,10 @@
   terminal.addEventListener('focusin', sync);
   terminal.addEventListener('focusout', () => queueMicrotask(sync));
   document.addEventListener('visibilitychange', sync);
-  motion?.addEventListener?.('change', sync);
+  motion?.addEventListener?.('change', () => {
+    if (motion.matches) userPaused = true;
+    sync();
+  });
   window.addEventListener('pagehide', () => { suspended = true; sync(); });
   window.addEventListener('pageshow', () => { suspended = false; sync(); });
   show(index);

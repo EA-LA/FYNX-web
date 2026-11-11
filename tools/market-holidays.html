@@ -195,6 +195,9 @@
       border-color:#0b0b0b!important;
       color:#f3f3f3!important;
     }
+    #downloadHolidays{min-height:44px}
+    #downloadHolidays:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+    #downloadHolidays:disabled{opacity:.42;cursor:not-allowed}
     .views{margin-left:auto;display:flex;gap:.5rem;flex-wrap:wrap}
     .statline{margin-top:.75rem;color:rgba(255, 255, 255, .45);font-size:.8rem;display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
     .dotSep{color:rgba(255, 255, 255, .20)}
@@ -489,6 +492,11 @@
 
 
 
+        <div class="group">
+          <label for="downloadHolidays">Calendar</label>
+          <button id="downloadHolidays" type="button" aria-describedby="calendarExportNote">Download selected .ics</button>
+        </div>
+
         <div class="views">
           <div class="group">
             <label>View</label>
@@ -506,6 +514,10 @@
         <span class="dotSep">•</span>
         <span>Dates use the exchange calendar; closing times use the named exchange timezone.</span>
       </div>
+      <p id="calendarExportNote" style="font-size:.82rem;line-height:1.6;opacity:.72;padding:0 0 12px">
+        Download an all-day calendar snapshot of the events matching your year, region, market and impact filters. Early-close hours are not encoded. Entries do not update automatically; verify official exchange notices.
+      </p>
+      <p id="calendarExportStatus" role="status" aria-live="polite" style="font-size:.82rem;padding-bottom:12px"></p>
     </div>
 
     <!-- List -->
@@ -602,6 +614,7 @@
 </main>
 
   <script src="/assets/js/exchange-holidays.js?v=20260928-audit"></script>
+  <script src="/assets/js/holiday-calendar-export.js?v=20261109"></script>
   <script>
     /* ----------------------------- Theme sync ----------------------------- */
     const THEME_KEY = "fynx_theme";
@@ -892,6 +905,8 @@
     const marketSel = document.getElementById("marketSel");
     const yearSel = document.getElementById("yearSel");
     const impactBtn = document.getElementById("impactBtn");
+    const downloadHolidays = document.getElementById("downloadHolidays");
+    const calendarExportStatus = document.getElementById("calendarExportStatus");
 
     const viewList = document.getElementById("viewList");
     const viewTimeline = document.getElementById("viewTimeline");
@@ -1095,6 +1110,9 @@
     function render() {
       const items = filtered();
       countEl.textContent = String(items.length);
+      calendarExportStatus.textContent = '';
+      downloadHolidays.disabled = items.length === 0;
+      downloadHolidays.title = items.length ? 'Download ' + items.length + ' selected calendar events' : 'No matching calendar events';
       yearTxt.textContent = String(state.year);
       document.getElementById('coverageStatus').textContent = 'Published coverage for '+state.year+': '+Object.entries(window.FynxHolidayCoverage).map(([exchange,range])=>{
         const start=state.year+'-01-01',end=state.year+'-12-31';
@@ -1124,6 +1142,14 @@
     viewTimeline.addEventListener("click", () => { setView("timeline"); render(); });
     viewHeatmap.addEventListener("click", () => { setView("heatmap"); render(); });
 
+    downloadHolidays.addEventListener("click", () => {
+      try {
+        const result = window.FynxHolidayCalendarExport.download(filtered(), state.year);
+        calendarExportStatus.textContent = result.count + ' events downloaded to ' + result.name + '. Open the file in your calendar to import this snapshot.';
+      } catch (error) {
+        calendarExportStatus.textContent = 'Calendar download could not start. Please try another browser or save the dates manually.';
+      }
+    });
     prevMonth.addEventListener("click", () => { state.month = Math.max(0, state.month - 1); render(); });
     nextMonth.addEventListener("click", () => { state.month = Math.min(11, state.month + 1); render(); });
 
