@@ -1,0 +1,29 @@
+name: Break-Even Result Freshness
+
+on:
+  pull_request:
+    paths:
+      - 'tools/breakeven.html'
+      - 'scripts/test-breakeven-result-freshness.cjs'
+      - '.github/workflows/breakeven-result-freshness.yml'
+  push:
+    paths:
+      - 'tools/breakeven.html'
+      - 'scripts/test-breakeven-result-freshness.cjs'
+      - '.github/workflows/breakeven-result-freshness.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  breakeven-result-freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check the real production-controller regression
+        run: node --check scripts/test-breakeven-result-freshness.cjs
+      - name: Verify result invalidation, validation and reset behavior
+        run: node --test scripts/test-breakeven-result-freshness.cjs
