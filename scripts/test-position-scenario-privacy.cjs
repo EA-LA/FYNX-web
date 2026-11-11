@@ -11,7 +11,7 @@ const match = html.match(/\(function scenarioLink\(\)\{[\s\S]*?\n    \}\)\(\);/)
 assert.ok(match, 'Position Size scenario controller must exist');
 
 function setup({search = '', clipboard = 'success', manual = false, initial = {}} = {}) {
-  let click, replacements = 0, selected = 0, focused = 0, calculations = 0, manualClicks = 0;
+  let click, replacements = 0, lastUrl = null, selected = 0, focused = 0, calculations = 0, manualClicks = 0;
   const copies = [];
   const status = {
     textContent: '', children: [],
@@ -50,11 +50,13 @@ function setup({search = '', clipboard = 'success', manual = false, initial = {}
   const location = {
     origin:'https://www.fynxfinanceworld.com',
     pathname:'/tools/position-size.html',
-    search
+    search,
+    hash:'',
+    get href() {return this.origin + this.pathname + this.search + this.hash;}
   };
   const context = {
-    document, els, navigator, location, URLSearchParams,
-    history:{replaceState(){replacements += 1;}},
+    document, els, navigator, location, URL, URLSearchParams,
+    history:{state:null, replaceState(state, title, url){replacements += 1; lastUrl = String(url);}},
     pairs:['EURUSD','GBPUSD','XAUUSD'],
     isGoldPair: pair => pair === 'XAUUSD',
     usePercentRisk:true,
@@ -70,7 +72,7 @@ function setup({search = '', clipboard = 'success', manual = false, initial = {}
   assert.equal(typeof click, 'function');
   return {
     click, copies, status, els, quoteRate, context,
-    historyChanges: () => replacements,
+    historyChanges: () => replacements, lastUrl: () => lastUrl,
     selected: () => selected, focused: () => focused,
     calculations: () => calculations, manualClicks: () => manualClicks
   };
@@ -139,5 +141,29 @@ test('opening a valid shared manual-risk link still restores fields and calculat
   assert.equal(b.context.usePercentRisk, false);
   assert.equal(b.manualClicks(), 1);
   assert.equal(b.calculations(), 1);
+  // Inputs are applied to the form, then removed from the address bar.
+  assert.equal(b.historyChanges(), 1);
+  assert.equal(b.lastUrl(), '/tools/position-size.html');
+});
+
+test('opening from Terminal "Full calculator" clears balance and risk from the address bar', () => {
+  const b = setup({search:'?pair=GBPUSD&mode=pct&balance=5000&riskPercent=2&stopPips=40&utm_source=x'});
+  assert.equal(b.els.balance.value, '5000');
+  assert.equal(b.els.riskPercent.value, '2');
+  assert.equal(b.historyChanges(), 1);
+  assert.equal(b.lastUrl(), '/tools/position-size.html?utm_source=x');
+  assert.doesNotMatch(b.lastUrl(), /balance|riskPercent|stopPips|pair=/);
+});
+
+test('a plain visit with no scenario does not touch the address bar', () => {
+  const b = setup({search:''});
   assert.equal(b.historyChanges(), 0);
+});
+
+test('copying after opening a scenario still does not write to history again', async () => {
+  const b = setup({search:'?pair=EURUSD&balance=9000&riskPercent=1&stopPips=20'});
+  const before = b.historyChanges();
+  b.click(); await settle();
+  assert.equal(b.historyChanges(), before);
+  assert.match(b.copies[0], /balance=9000/);
 });

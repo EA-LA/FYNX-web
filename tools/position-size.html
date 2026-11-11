@@ -1207,6 +1207,13 @@
       const rate = num(q.get("quoteUsdRate"), 1e6);
       els.manualPrice.value = price || "";
       quoteRate.value = rate || "";
+      // The inputs are now in the form; clear them from the address bar so the tab URL
+      // (and a later copy/paste of it) does not carry balance or risk numbers.
+      try {
+        const clean = new URL(location.href);
+        ["pair", "mode", "balance", "riskPercent", "riskDollars", "stopPips", "price", "quoteUsdRate"].forEach(k => clean.searchParams.delete(k));
+        history.replaceState(history.state, "", clean.pathname + clean.search + clean.hash);
+      } catch (e) { /* ignore */ }
       syncRiskUI();
       status.textContent = "Opened a shared scenario. Change any input and press Calculate.";
       if (price){
