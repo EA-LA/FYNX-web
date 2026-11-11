@@ -65,7 +65,8 @@
 
     btn.addEventListener('click', function () {
       var link = buildLink();
-      try { window.history.replaceState(null, '', link); } catch (e) { /* ignore */ }
+      // Copy the scenario, but never put account-size or risk inputs into the current URL.
+      // Rewriting browser history exposes them to referrers and subsequent navigation.
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(link).then(function () {
           status.textContent = 'Link copied. Anyone who opens it sees these inputs. Inputs only; nothing is saved to an account.';
