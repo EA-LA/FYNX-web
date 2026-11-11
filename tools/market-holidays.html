@@ -263,7 +263,7 @@
     td{color:rgba(255, 255, 255, .70)}
     body:not(.dark-mode) th{color:rgba(0, 0, 0, .50)}
     body:not(.dark-mode) td{color:rgba(0, 0, 0, .72)}
-    .hmCell{height:32px;border-radius:10px;border:1px solid rgba(255, 255, 255, .12)}
+    .hmCell{height:32px;border-radius:10px;border:1px solid rgba(255, 255, 255, .12);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;font-variant-numeric:tabular-nums}
     .hm0{background:rgba(255, 255, 255, .03)}
     .hm1{background:rgba(255, 255, 255, .06)}
     .hm2{background:rgba(255, 255, 255, .10)}
@@ -558,7 +558,7 @@
         </table>
       </div>
       <div style="margin-top:.8rem;opacity:.60;font-size:.8rem">
-        Heatmap counts all events (closed/early/warning) in the dataset for the selected year.
+        Heatmap counts events matching your Region, Market Type and High Impact filters for the selected year. Each cell shows the number of events.
       </div>
     </div>
 
@@ -1064,20 +1064,20 @@
     }
 
     /* ------------------------------ Render: heatmap ------------------------------ */
-    function renderHeatmap() {
+    function renderHeatmap(items) {
       heatYear.textContent = String(state.year);
       const regions = ["Americas","Europe","Asia"];
       heatBody.innerHTML = "";
 
       regions.forEach(r => {
         const tr = document.createElement("tr");
-        const td0 = document.createElement("td");
-        td0.textContent = r;
-        tr.appendChild(td0);
+        const rowHeader = document.createElement("th");
+        rowHeader.scope = "row";
+        rowHeader.textContent = r;
+        tr.appendChild(rowHeader);
 
         for (let m=0; m<12; m++) {
-          const count = ALL.filter(h =>
-            h.date.getFullYear() === state.year &&
+          const count = items.filter(h =>
             h.date.getMonth() === m &&
             h.regions.includes(r)
           ).length;
@@ -1085,7 +1085,8 @@
           const td = document.createElement("td");
           const box = document.createElement("div");
           box.className = "hmCell " + (count === 0 ? "hm0" : count === 1 ? "hm1" : count === 2 ? "hm2" : "hm3");
-          box.title = `${count} event${count !== 1 ? "s" : ""}`;
+          box.title = `${r}, ${monthNames[m]}: ${count} event${count !== 1 ? "s" : ""}`;
+          box.textContent = String(count);
           td.appendChild(box);
           tr.appendChild(td);
         }
@@ -1123,7 +1124,7 @@
       renderNext();
       if (state.view === "list") renderList(items);
       if (state.view === "timeline") renderTimeline(items);
-      if (state.view === "heatmap") renderHeatmap();
+      if (state.view === "heatmap") renderHeatmap(items);
     }
 
     /* ------------------------------ Events ------------------------------ */
