@@ -31,7 +31,7 @@ const MARKET_RULES = [
   [/\b(CAC 40|French stocks)\b/i, ['^FCHI'], 'indices', 'France'],
   [/\b(FTSE 100|FTSE)\b/, ['^FTSE'], 'indices', 'UK equities'],
   [/\b(dollar index|DXY|U\.?S\.? dollar|greenback)\b/i, ['DX-Y.NYB'], 'forex', 'US dollar'],
-  [/\b(S&P 500|S&P500|Wall Street|U\.?S\.? stocks|stock market|stocks? futures)\b/i, ['^GSPC', 'ES=F'], 'indices', 'US equities'],
+  [/\b(S&P 500|S&P500|Wall Street(?! (?:banks?|firms?|analysts?|Journal|lenders|brokers?|executives?))|U\.?S\.? stocks|stock market|stocks? futures)\b/i, ['^GSPC', 'ES=F'], 'indices', 'US equities'],
   [/\b(Dow Jones|the Dow\b|Dow futures)\b/i, ['^DJI'], 'indices', 'Dow Jones'],
   [/\b(Nasdaq)\b/i, ['^IXIC'], 'indices', 'Nasdaq'],
   [/\b(Russell 2000|small[- ]caps?)\b/i, ['^RUT'], 'indices', 'US small caps'],

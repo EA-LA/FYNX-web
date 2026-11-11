@@ -18,6 +18,8 @@ const RAW = 'https://raw.githubusercontent.com/EA-LA/FYNX-web/';
 const EDITIONS = ['us', 'global', 'uk', 'europe', 'asia'];
 const CATEGORIES = ['all', 'stocks', 'forex', 'crypto', 'macro', 'commodities', 'finance', 'economics', 'technology', 'energy', 'industries'];
 const DAY = 86400000, KEEP_DAYS = 21, RECHECK_HOURS = 36, MAX_NEW = Number(process.env.INTELLIGENCE_MAX_NEW || 30), MAX_RECORDS = 600;
+// Not news events: quote pages, investor-conference notices and programme listings.
+const NOT_NEWS = /\b(stock price, news, quote|quote and history|stock quote|share price (?:today|chart)|to (?:participate|present) (?:in|at)|fireside chat|conference call|webcast|announces? (?:date|timing) (?:of|for)|rewind|podcast|live updates?:|market brief \(|newsletter)\b/i;
 const HOLD = /\b(killed|dead|death|dies|died|shooting|shot|murder|rape|sexual|abuse|assault|suicide|terror|bomb|massacre|accused|alleg(?:e|es|ed|ation|ations)|lawsuit|sued|indicted|charged with|arrested|fraud|scandal|investigat(?:ion|ed|ing) into)\b/i;
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -71,6 +73,7 @@ function cluster(items, now) {
   const fresh = new Map();
   for (const it of items) {
     const url = Reader.safeURL(it.link || it.url), t = Date.parse(it.pubDate || it.publishedAt);
+    if (NOT_NEWS.test(it.title || '')) continue;
     if (!url || !Number.isFinite(t) || now - t > 2 * DAY || t > now + 600000 || (Reader.isNewsworthy && !Reader.isNewsworthy(it))) continue;
     const id = Reader.articleId(url);
     if (!fresh.has(id)) fresh.set(id, {...it, url, id, title: cleanTitle(it), source: Reader.plain(it.source, 120) || new URL(url).hostname, publishedAt: new Date(t).toISOString(), terms: tokens(cleanTitle(it))});
@@ -135,9 +138,11 @@ async function main() {
   for (const g of groups) {
     const ownerId = g.items.map(i => owner.get(short(i.id))).find(Boolean), existing = ownerId && records.get(ownerId);
     if (existing && now - Date.parse(existing.publishedAt) > RECHECK_HOURS * 3600000) continue;
-    const companyMarkets = g.link.companies.filter(c => c.ticker && quotes[c.ticker]).map(c => ({symbol: c.ticker, assetClass: 'stocks', theme: c.name}));
-    const linked = [...companyMarkets, ...g.link.markets].filter((m, i, a) => a.findIndex(x => x.symbol === m.symbol) === i);
-    const stats = linked.map(m => { const s = A.instrumentStats(m.symbol, quotes[m.symbol]); return s && !s.stale ? {...s, assetClass: m.assetClass} : null; }).filter(Boolean).slice(0, 6);
+    // A company leads only when the main headline is about it; otherwise the macro market leads.
+    const lead = g.items[0].title;
+    const companyMarkets = g.link.companies.filter(c => c.ticker && quotes[c.ticker]).map(c => ({symbol: c.ticker, assetClass: 'stocks', theme: c.name, label: c.name, inLead: E.linkStory(lead, {quotes: {}}).companies.some(x => x.ticker === c.ticker)}));
+    const linked = [...companyMarkets.filter(c => c.inLead), ...g.link.markets, ...companyMarkets.filter(c => !c.inLead)].filter((m, i, a) => a.findIndex(x => x.symbol === m.symbol) === i);
+    const stats = linked.map(m => { const s = A.instrumentStats(m.symbol, quotes[m.symbol]); return s && !s.stale ? {...s, name: m.label || s.name, assetClass: m.assetClass} : null; }).filter(Boolean).slice(0, 6);
     const text = g.items.map(i => i.title).join(' ');
     if (!stats.length) continue;
     if (HOLD.test(text)) { review.push({reason: 'sensitive subject', title: g.items[0].title, sources: g.items.map(i => i.source), at: nowISO}); continue; }
@@ -172,7 +177,8 @@ async function main() {
     const {resolveGoogle} = require('../fn/preview.js'), todo = [...records.values()].flatMap(r => r.sources).filter(s => /(^|\.)news\.google\.com$/.test(new URL(s.url).hostname));
     await pool(todo, 4, async s => { try { s.url = await resolveGoogle(s.url); } catch { /* keep the working redirect link */ } });
   }
-  let list = [...records.values()].sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, MAX_RECORDS);
+  const latest = r => Math.max(...r.sources.map(x => Date.parse(x.publishedAt)));
+  let list = [...records.values()].sort((a, b) => latest(b) - latest(a)).slice(0, MAX_RECORDS);
   for (const r of list) r.related = relatedFor(r, list);
   // Write pages: remove pages that aged out, then render.
   await fs.mkdir(DATA, {recursive: true});
