@@ -504,7 +504,7 @@
         <div class="panel">
           <h2>Results</h2>
 
-          <div id="resultStatus" class="result-status">
+          <div id="resultStatus" class="result-status" role="status" aria-live="polite" aria-atomic="true">
             Enter your numbers and calculate.
           </div>
 
@@ -721,6 +721,19 @@
 
       scheduleBody.innerHTML = rows;
     }
+
+    // Previous results no longer represent the inputs as soon as a field changes.
+    // Keep the payment schedule and summary consistent with the form.
+    ["loanAmount", "interestRate", "monthlyPayment"].forEach((id) => {
+      const input = document.getElementById(id);
+      const invalidatePayoff = () => {
+        resetOutput();
+        document.getElementById("resultStatus").textContent =
+          "Inputs changed. Calculate again to update the payoff estimate and schedule.";
+      };
+      input.addEventListener("input", invalidatePayoff);
+      input.addEventListener("change", invalidatePayoff);
+    });
 
     document.getElementById("calculateBtn").addEventListener("click", calculatePayoff);
 
