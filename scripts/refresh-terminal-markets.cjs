@@ -181,7 +181,7 @@ async function fetchEarnings(now) {
     for (const row of r.value?.data?.rows || []) {
       const cap = money(row.marketCap); if (!finite(cap) || cap < 5e9 || !row.symbol) continue;
       events.push({date, symbol: String(row.symbol).slice(0, 10), name: String(row.name || '').slice(0, 80), marketCap: cap, time: /after/i.test(row.time) ? 'After close' : /pre/i.test(row.time) ? 'Before open' : 'Not set',
-        fiscalQuarter: String(row.fiscalQuarterEnding || '').slice(0, 20), epsForecast: money(row.epsForecast), estimates: Number(row.noOfEsts) || null, lastYearEPS: money(row.lastYearEPS), lastYearDate: String(row.lastYearRptDt || '').slice(0, 12) || null});
+        fiscalQuarter: String(row.fiscalQuarterEnding || '').slice(0, 20), epsForecast: money(row.epsForecast), estimates: Number(row.noOfEsts) || null, lastYearEPS: money(row.lastYearEPS), lastYearDate: /\d/.test(row.lastYearRptDt || '') ? String(row.lastYearRptDt).slice(0, 12) : null});
     }
   });
   if (!ok) throw new Error('Earnings calendar unavailable');

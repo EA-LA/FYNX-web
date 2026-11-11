@@ -60,11 +60,15 @@
     return action;
   }
 
-  function allTogether() {
-    const action = link('All Together', '/terminal.html', 'terminal-all-together');
-    action.setAttribute('aria-label', 'All Together: every market, headline and tool on one terminal screen');
-    action.prepend(element('span', 'terminal-all-together-icon', '▦'));
-    action.querySelector('.terminal-all-together-icon').setAttribute('aria-hidden', 'true');
+  /* Bloomberg-style key: black, green live dot, amber <GO> tab. Opens the FYNX Terminal. */
+  function terminalKey() {
+    const action = link('', '/terminal.html', 'terminal-all-together terminal-go-key');
+    action.setAttribute('aria-label', 'FYNX Terminal: every market, headline and tool on one live screen');
+    const dot = element('span', 'terminal-go-dot'), name = element('span', 'terminal-go-name'), go = element('span', 'terminal-go-tab', '<GO>');
+    name.append(element('span', 'terminal-go-brand', 'FYNX '), document.createTextNode('TERMINAL'));
+    [dot, go].forEach(node => node.setAttribute('aria-hidden', 'true'));
+    action.append(dot, name, go);
+    if (location.pathname === '/terminal.html') action.setAttribute('aria-current', 'page');
     return action;
   }
 
@@ -180,7 +184,7 @@
     brand.append(element('span', 'terminal-brand-subtitle', 'FINANCE WORLD'));
     logo.append(brand);
     topBar.prepend(logo);
-    right.prepend(allTogether(), yourNews());
+    right.prepend(terminalKey(), yourNews());
     right.insertBefore(quickAdd(), right.querySelector('#avatarInitials') || accountLinks || null);
     topBar.classList.add('terminal-masthead');
     body.querySelectorAll('.nav-item.active').forEach(function (item) { item.setAttribute('aria-current', 'page'); });
@@ -235,7 +239,7 @@
             utility.actions.append(action);
           }
         });
-        quickActions.prepend(allTogether(), yourNews(), quickAdd());
+        quickActions.prepend(terminalKey(), yourNews(), quickAdd());
       }
       const refreshMenuPosition = function () {
         document.documentElement.style.setProperty('--header-h', header.getBoundingClientRect().height + 'px');
@@ -244,7 +248,7 @@
       if (typeof ResizeObserver === 'function') new ResizeObserver(refreshMenuPosition).observe(header);
     } else {
       const actions = container.querySelector(':scope > nav');
-      if (actions) actions.prepend(allTogether(), yourNews(), quickAdd());
+      if (actions) actions.prepend(terminalKey(), yourNews(), quickAdd());
     }
     return true;
   }
