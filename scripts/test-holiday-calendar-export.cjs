@@ -99,6 +99,6 @@ test('page integrates actual filtered selection and accessible status, without i
   assert.match(html, /id="calendarExportStatus" role="status" aria-live="polite"/);
   assert.match(html, /FynxHolidayCalendarExport\.download\(filtered\(\), state\.year\)/);
   assert.match(html, /downloadHolidays\.disabled = items\.length === 0/);
-  assert.match(html, /src="\/assets\/js\/holiday-calendar-export\.js\?v=20261109"/);
+  assert.match(html, /src="\/assets\/js\/holiday-calendar-export\.js\?v=[^"\s]+"/);
   assert.match(html, /all-day calendar snapshot/);
 });

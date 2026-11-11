@@ -4,8 +4,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { publicSiteFiles } = require('./public-site-files.cjs');
-const VERSION = '20261111-terminal-world-1';
-const RESEARCH_VERSION = '20261111-terminal-desks-1';
+const VERSION = '20261111-pr-cleanup-1';
+const RESEARCH_VERSION = '20261111-pr-cleanup-1';
 const RESEARCH_ASSETS = new Set(['assets/js/research-service.js','assets/js/edge/app.js','assets/js/edge/render.js','assets/js/edge/profile.js','assets/js/edge/public-research.js','assets/js/quant/app.js','assets/js/quant/profile.js','assets/js/quant/engine.js','assets/js/quant/worker.js','assets/js/quant/public-history.js','assets/js/company-products-data.js']);
 const ASSETS = Object.freeze([
   ...RESEARCH_ASSETS,
@@ -18,6 +18,8 @@ const ASSETS = Object.freeze([
   'assets/js/news-reader-links.js', 'assets/js/news-reader.js', 'assets/css/news-reader.css',
   'assets/js/news-preferences.js', 'assets/js/your-news.js', 'assets/css/your-news.css',
   'assets/js/landing-workspace.js', 'assets/landing-workspace.css',
+  'api/workspace.js', 'assets/js/research/personal.js', 'assets/js/research/focus.js',
+  'assets/css/news-intelligence.css', 'assets/js/holiday-calendar-export.js',
   'assets/js/market-intelligence-data.js', 'assets/js/news-intelligence.js',
   'assets/js/terminal-header.js', 'assets/js/terminal-home.js',
   'assets/js/terminal-market-data.js', 'assets/js/terminal-market-ui.js',

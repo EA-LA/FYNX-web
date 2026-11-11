@@ -1,5 +1,5 @@
-import * as view from './render.js?v=20261111-terminal-desks-1';
-import { publishedResearch } from './public-research.js?v=20261111-terminal-desks-1';
+import * as view from './render.js?v=20261111-pr-cleanup-1';
+import { publishedResearch } from './public-research.js?v=20261111-pr-cleanup-1';
 const researchService = window.FynxResearchService;
 const $=id=>document.getElementById(id),root=$('edge-main'),symbol=document.body.dataset.edgeSymbol;
 const config=JSON.parse($('edge-market-config').textContent);
