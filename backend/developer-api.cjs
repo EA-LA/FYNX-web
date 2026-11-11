@@ -85,7 +85,7 @@ async function workspace(data,context){
   const ref=root(uid);await db().runTransaction(async tx=>{const s=await tx.get(ref);if(!s.exists)tx.create(ref,{name:clean(user.displayName||'My API workspace'),email:user.email||'',createdAt:Date.now(),plan:'free',requestCap:null});});
   await require('./developer-billing.cjs').refresh(uid);
   const [p,u,k,r,a,q]=await Promise.all([ref.get(),er.collection('usage').doc(month()).get(),er.collection('keys').orderBy('createdAt','desc').limit(50).get(),er.collection('rules').limit(100).get(),er.collection('accounts').limit(100).get(),er.collection('requests').orderBy('at','desc').orderBy(admin.firestore.FieldPath.documentId(),'desc').limit(25).get()]);
-  return {profile:p.data(),usage:u.data()||{calls:0},limits:entitlement(p.data(),env),keys:rows(k),rules:rows(r),accounts:rows(a),requests:rows(q),month:month(),billing_mode:'live',emailVerified:user.emailVerified,apiBase:'https://us-central1-fynx-c7a28.cloudfunctions.net/developerGateway'};
+  return {supported_scopes:[...access.SCOPES],profile:p.data(),usage:u.data()||{calls:0},limits:entitlement(p.data(),env),keys:rows(k),rules:rows(r),accounts:rows(a),requests:rows(q),month:month(),billing_mode:'live',emailVerified:user.emailVerified,apiBase:'https://us-central1-fynx-c7a28.cloudfunctions.net/developerGateway'};
  }
  if(['createKey','rotateKey','revokeKey'].includes(action)){
   if(!user.emailVerified)error('failed-precondition','Verify your email before creating or changing API keys.');

@@ -7,6 +7,7 @@ on:
       - 'api/**'
       - 'scripts/build-openapi.cjs'
       - 'scripts/test-openapi.cjs'
+      - 'scripts/test-api-capabilities.cjs'
       - '.github/workflows/finance-api-regression.yml'
   workflow_dispatch:
 permissions:
