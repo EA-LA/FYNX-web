@@ -53,7 +53,7 @@ test('published pages are crawlable, unique and credit their sources', {skip: !f
     assert.match(html, /Read original source/); for (const s of a.sources) assert.ok(html.includes(s.url.replace(/&/g, '&amp;')), 'source link ' + s.url);
     assert.ok(a.stats.length >= 1, 'every page measures at least one market');
     if (a.excerpt) assert.ok(a.excerpt.text.split(/\s+/).length <= 31, 'excerpts stay short');
-    assert.doesNotMatch(html, /\bundefined\b|NaN|\[object Object\]/);
+    assert.doesNotMatch(html, /\bundefined\b|\bNaN\b|\[object Object\]/);
   }
   assert.equal(descs.size, articles.length, 'descriptions are unique');
   const map = JSON.parse(fs.readFileSync(path.join(OUT, 'data/map.json'), 'utf8')).map;

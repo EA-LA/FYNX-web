@@ -167,6 +167,11 @@ async function main() {
     }
     records.set(id, rec); if (existing) updated++; else created++;
   }
+  // Original-source links point at the publisher, not at a news aggregator's redirect.
+  if (!offline) {
+    const {resolveGoogle} = require('../fn/preview.js'), todo = [...records.values()].flatMap(r => r.sources).filter(s => /(^|\.)news\.google\.com$/.test(new URL(s.url).hostname));
+    await pool(todo, 4, async s => { try { s.url = await resolveGoogle(s.url); } catch { /* keep the working redirect link */ } });
+  }
   let list = [...records.values()].sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, MAX_RECORDS);
   for (const r of list) r.related = relatedFor(r, list);
   // Write pages: remove pages that aged out, then render.
