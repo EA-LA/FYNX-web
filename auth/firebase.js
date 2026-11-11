@@ -11,7 +11,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyDGSYIB_YIpbWyUMJ1d-v00-xADnvaWckk",
   authDomain: "fynx-c7a28.firebaseapp.com",
   projectId: "fynx-c7a28",
-  storageBucket: "fynx-c7a28.appspot.com",
+  storageBucket: "fynx-c7a28.firebasestorage.app",
   appId: "1:1011050657868:web:2c5ad5a1b275e669b05ce9"
 };
 
@@ -19,5 +19,6 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
 export const authPersistenceReady = setPersistence(auth, browserLocalPersistence).catch((error) => {
+  window.FynxMonitor?.report('auth', 'session-bootstrap', error);
   console.error("Failed to set Firebase auth persistence to LOCAL.", error);
 });

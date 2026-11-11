@@ -1,0 +1,1327 @@
+[
+  {
+    "url": "/tools/atr-stop.html",
+    "title": "ATR Stop-Loss Calculator",
+    "description": "Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/audusd/",
+    "title": "AUD/USD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/basic-calculator.html",
+    "title": "Basic Calculator: Arithmetic, Percentages & Parentheses",
+    "description": "Calculate arithmetic and percentages locally with a keyboard-friendly calculator. Supports decimals, parentheses and standard order of operations.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/price-alerts.html",
+    "title": "Browser Price Alerts & Percentage Crossing Alerts",
+    "description": "Set one-time price or percentage crossing alerts for your watchlist while the FYNX page is open and visible. Review timestamps and browser notification options.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/btcusd/",
+    "title": "BTC/USD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/interest-rates.html",
+    "title": "Central Bank Policy Rate Comparison",
+    "description": "Compare published central bank policy-rate observations from the Bank for International Settlements, with dates and source context.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/company-financials.html",
+    "title": "Company Financial Statements & SEC Research",
+    "description": "Read annual company revenue, net income and cash flow from SEC EDGAR filings. Compare up to ten annual periods with links to the original filings.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/financial-research-assistant.html",
+    "title": "Company Research Assistant & Sourced Financial Briefs",
+    "description": "Create a sourced company research brief from SEC financial facts, with optional on-device AI when supported by your browser.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/company-screener.html",
+    "title": "Company Screener: Revenue, Profit & Cash Flow",
+    "description": "Filter up to 30 companies you select by annual revenue, net margin, positive net income and operating cash flow using SEC company facts.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/compound.html",
+    "title": "Compound Growth & Savings Calculator",
+    "description": "Estimate compound growth using starting capital, return assumptions and recurring deposits for savings or investing scenarios.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/crypto.html",
+    "title": "Crypto Position Size & Profit Calculator",
+    "description": "Estimate crypto position size, trading costs, exit value, profit or loss and break-even price using your own assumptions.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/recent-topics-discussed.html",
+    "title": "Curated Macro & Trading Research Topics",
+    "description": "Browse curated economic and trading research topics for further study. This editorial reference is not a live news or discussion feed.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/currency.html",
+    "title": "Currency Conversion Calculator: Manual Rates",
+    "description": "Convert currencies using a verified exchange rate you enter. The calculator does not provide live exchange rates.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/debt-payoff.html",
+    "title": "Debt Payoff & Interest Calculator",
+    "description": "Estimate how long debt repayment takes, total interest and the effect of changing a monthly payment.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/economic-calendar.html",
+    "title": "Economic Calendar: Releases & Central Bank Events",
+    "description": "Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/calendar-alerts.html",
+    "title": "Economic Event Reminder Planner",
+    "description": "Plan reminders for economic events such as inflation releases, employment reports and central bank decisions.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/",
+    "title": "Edge Radar: Market Regimes & Strategy Fit",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/ethusd/",
+    "title": "ETH/USD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/eurgbp/",
+    "title": "EUR/GBP Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/eurjpy/",
+    "title": "EUR/JPY Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/eurusd/",
+    "title": "EUR/USD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/fibonacci.html",
+    "title": "Fibonacci Retracement & Extension Calculator",
+    "description": "Calculate Fibonacci retracement and extension levels from a swing high and low to study potential price levels.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/margin.html",
+    "title": "Forex Margin & Leverage Calculator",
+    "description": "Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/pip.html",
+    "title": "Forex Pip Value Calculator",
+    "description": "Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/position-size.html",
+    "title": "Forex Position Size & Risk Calculator",
+    "description": "Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/forex.html",
+    "title": "Forex Trade Planning Calculators",
+    "description": "Plan a forex trade with links to position sizing and pip value calculators using your account and risk inputs.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/market-hours.html",
+    "title": "Forex Trading Sessions & Market Hours",
+    "description": "Review market session timing and trading hours to plan when to research and monitor financial markets.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/research-desk.html",
+    "title": "Free Research Desk: Financials, Screener, Backtesting & Portfolio",
+    "description": "Research SEC company financials, screen your company list, explore market heatmaps, backtest strategies, track a manual portfolio and set browser alerts. Seven free FYNX research tools.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/trading-journal.html",
+    "title": "Free Trading Journal: Record Trades & Review Realized Results",
+    "description": "Keep your plan, actual realized result and review notes together. A free FYNX account lets you save trades and return to your history across signed-in sessions.",
+    "category": "Tools",
+    "access": "Free account",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/gbpjpy/",
+    "title": "GBP/JPY Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/gbpusd/",
+    "title": "GBP/USD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/economic-indicators-heatmap.html",
+    "title": "GDP, Inflation & Unemployment Indicators",
+    "description": "Compare published World Bank GDP growth, inflation and unemployment observations. Review dates and source information with each indicator.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/liquidation-guard.html",
+    "title": "Liquidation Risk & Leverage Calculator",
+    "description": "Estimate liquidation price and distance for a leveraged trade using your inputs. Compare risk before choosing a position size.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/portfolio-tracker.html",
+    "title": "Manual Portfolio Tracker & Position Valuation",
+    "description": "Track manually entered USD positions and cash with public indicative prices. Portfolio records are stored in your browser, with import and export controls.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/research-heatmap.html",
+    "title": "Market Heatmap: Stocks, ETFs, Crypto & Forex",
+    "description": "Compare percentage changes across stocks, ETFs, crypto, forex and your watchlist with equal-size tiles and timestamps for each public quote.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/market-holidays.html",
+    "title": "Market Holiday Planning Reference",
+    "description": "Review a partial market holiday planning reference for 2025–2028. Confirm closures and early closing times with the relevant exchange.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/correlation.html",
+    "title": "Market Returns Correlation Calculator",
+    "description": "Calculate the correlation between two return series to compare market behavior and potential overlapping exposure.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/strategy-backtester.html",
+    "title": "Moving Average Strategy Backtester",
+    "description": "Backtest a long-only moving average crossover with historical daily prices or your CSV. Set commission, slippage and fast and slow moving averages.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/nas100/",
+    "title": "NAS100 Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/nzdusd/",
+    "title": "NZD/USD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/options.html",
+    "title": "Options Profit & Loss Calculator",
+    "description": "Estimate call and put option profit or loss at expiration using strike price, premium, contract count and underlying price.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/pivot.html",
+    "title": "Pivot Point Support & Resistance Calculator",
+    "description": "Calculate classic pivot points and support and resistance levels from the previous period's high, low and closing price.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/portfolio-stress-test.html",
+    "title": "Portfolio Stress Test: Exposure, Leverage & Price Shocks",
+    "description": "Estimate the effect of one parallel price shock on a set of signed position values. Compare gross exposure, net exposure and the resulting account equity.",
+    "category": "Tools",
+    "access": "Plus or higher",
+    "topic": ""
+  },
+  {
+    "url": "/tools/position-risk-planner.html",
+    "title": "Position Risk Planner: Contract Size, Stop Risk & Reward",
+    "description": "Turn an explicit loss budget into position units using your entry, stop, target, contract multiplier and currency conversion assumptions.",
+    "category": "Tools",
+    "access": "Essential or higher",
+    "topic": ""
+  },
+  {
+    "url": "/quant-analyst.html",
+    "title": "Quant Analyst: Backtests, Portfolio & Monte Carlo",
+    "description": "Research ATR breakout and news strategies using attributed historical data, walk-forward optimization, portfolio analysis and reproducible risk simulations.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/risk-reward.html",
+    "title": "Risk-to-Reward Ratio Calculator",
+    "description": "Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/spx500/",
+    "title": "SPX500 Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/stock.html",
+    "title": "Stock Position Sizing Calculator",
+    "description": "Calculate a stock trade's position size and risk from account size, risk percentage, entry price and stop price.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/symbol-news.html",
+    "title": "Symbol News Search: Stocks, Forex & Crypto Headlines",
+    "description": "Search financial headlines for a ticker or market symbol. Review the source and publication time, then open the original report for context.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/breakeven.html",
+    "title": "Trading Break-Even Price Calculator",
+    "description": "Calculate a trade's estimated break-even price using position size, fees and spread assumptions.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/calculator.html",
+    "title": "Trading Calculators: Forex, Stocks, Risk & Options",
+    "description": "Explore trading calculators for position size, pip value, margin, risk-reward, options and compounding. Plan trades using your own inputs.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/tools/drawdown-simulator.html",
+    "title": "Trading Drawdown Simulator: 500 Hypothetical Equity Paths",
+    "description": "Explore how repeated wins and losses could affect equity under fixed assumptions. Compare simulated ending balances and drawdown across 500 paths.",
+    "category": "Tools",
+    "access": "Professional or higher",
+    "topic": ""
+  },
+  {
+    "url": "/tools/journal-analytics.html",
+    "title": "Trading Journal Analytics: Expectancy, Profit Factor & Drawdown",
+    "description": "Understand what your recorded trades say about your process. Journal intelligence summarizes realized results from your own saved trading history.",
+    "category": "Tools",
+    "access": "Essential or higher",
+    "topic": ""
+  },
+  {
+    "url": "/tools/journal-export.html",
+    "title": "Trading Journal CSV Export for Spreadsheet Analysis",
+    "description": "Download dated Journal records as a CSV file for your own spreadsheet review. Keep a portable copy of the values you recorded in FYNX.",
+    "category": "Tools",
+    "access": "Essential or higher",
+    "topic": ""
+  },
+  {
+    "url": "/tools/trading-process-review.html",
+    "title": "Trading Process Review: Plan, Risk, Execution & Lessons",
+    "description": "Keep a written trade thesis and review five observable parts of your process. Save the reasoning alongside a checklist you can revisit later.",
+    "category": "Tools",
+    "access": "Essential or higher",
+    "topic": ""
+  },
+  {
+    "url": "/tools/research-watchlists.html",
+    "title": "Trading Research Watchlists: Symbols, Notes & News Links",
+    "description": "Save a focused list of symbols with research notes. Return to the same questions and open symbol-specific news from each result.",
+    "category": "Tools",
+    "access": "Essential or higher",
+    "topic": ""
+  },
+  {
+    "url": "/tools/scenario-comparison.html",
+    "title": "Trading Risk Scenario Comparison: Four Position Budgets",
+    "description": "Compare four position sizes while keeping the same entry, stop, target and contract assumptions. See how changing the risk budget changes both modeled loss and reward.",
+    "category": "Tools",
+    "access": "Essential or higher",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/us30/",
+    "title": "US30 Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/usdcad/",
+    "title": "USD/CAD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/usdchf/",
+    "title": "USD/CHF Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/usdjpy/",
+    "title": "USD/JPY Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/xagusd/",
+    "title": "XAG/USD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/edge-radar/xauusd/",
+    "title": "XAU/USD Edge Radar",
+    "description": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+    "category": "Tools",
+    "topic": ""
+  },
+  {
+    "url": "/learn/lessons/stocks/a-beginners-guide-to-stock-market-structure.html",
+    "title": "A Beginner’s Guide to Stock Market Structure",
+    "description": "How exchanges, sessions, and liquidity windows shape your entries.",
+    "category": "Learning",
+    "topic": "stocks"
+  },
+  {
+    "url": "/learn/lessons/bonds/bond-prices-and-yields-explained.html",
+    "title": "Bond Prices and Yields Explained",
+    "description": "The inverse relationship and practical trading implications.",
+    "category": "Learning",
+    "topic": "bonds"
+  },
+  {
+    "url": "/learn/bonds-glossary.html",
+    "title": "Bonds — Glossary",
+    "description": "Learn Bonds terminology with a practical glossary of market concepts and trading definitions.",
+    "category": "Learning",
+    "topic": "bonds"
+  },
+  {
+    "url": "/learn/bonds-howto.html",
+    "title": "Bonds — How to Trade",
+    "description": "Study Bonds trading with lesson outlines covering market concepts, execution and risk management.",
+    "category": "Learning",
+    "topic": "bonds"
+  },
+  {
+    "url": "/learn/bonds-quizzes.html",
+    "title": "Bonds — Trading Quizzes",
+    "description": "Test your Bonds knowledge with study questions and explanations. Review concepts and practice before trading.",
+    "category": "Learning",
+    "topic": "bonds"
+  },
+  {
+    "url": "/learn/lessons/indices/breadth-confirmation-checklist.html",
+    "title": "Breadth Confirmation Checklist",
+    "description": "A/D line, sector participation, and internals.",
+    "category": "Learning",
+    "topic": "indices"
+  },
+  {
+    "url": "/learn/lessons/funds/building-a-core-satellite-plan.html",
+    "title": "Building a Core-Satellite Plan",
+    "description": "Balance broad exposure with tactical themes.",
+    "category": "Learning",
+    "topic": "funds"
+  },
+  {
+    "url": "/learn/lessons/futures/contract-specs-every-trader-must-know.html",
+    "title": "Contract Specs Every Trader Must Know",
+    "description": "Tick value, multiplier, and session behavior before first trade.",
+    "category": "Learning",
+    "topic": "futures"
+  },
+  {
+    "url": "/learn/lessons/forex/correlation-and-basket-exposure.html",
+    "title": "Correlation and Basket Exposure",
+    "description": "Avoid hidden risk from correlated USD positions.",
+    "category": "Learning",
+    "topic": "forex"
+  },
+  {
+    "url": "/learn/lessons/futures/cross-market-confirmation.html",
+    "title": "Cross-Market Confirmation",
+    "description": "Use bonds, dollar, and equities to validate futures ideas.",
+    "category": "Learning",
+    "topic": "futures"
+  },
+  {
+    "url": "/learn/crypto-glossary.html",
+    "title": "Crypto — Glossary",
+    "description": "Learn Crypto terminology with a practical glossary of market concepts and trading definitions.",
+    "category": "Learning",
+    "topic": "crypto"
+  },
+  {
+    "url": "/learn/crypto-howto.html",
+    "title": "Crypto — How to Trade",
+    "description": "Study Crypto trading with lesson outlines covering market concepts, execution and risk management.",
+    "category": "Learning",
+    "topic": "crypto"
+  },
+  {
+    "url": "/learn/crypto-quizzes.html",
+    "title": "Crypto — Trading Quizzes",
+    "description": "Test your Crypto knowledge with study questions and explanations. Review concepts and practice before trading.",
+    "category": "Learning",
+    "topic": "crypto"
+  },
+  {
+    "url": "/learn/lessons/crypto/crypto-market-structure-in-24-7-markets.html",
+    "title": "Crypto Market Structure in 24/7 Markets",
+    "description": "How trend, chop, and weekend liquidity differ from stocks.",
+    "category": "Learning",
+    "topic": "crypto"
+  },
+  {
+    "url": "/learn/lessons/options/defined-risk-strategies.html",
+    "title": "Defined-Risk Strategies",
+    "description": "Start with debit and credit spreads before naked exposure.",
+    "category": "Learning",
+    "topic": "options"
+  },
+  {
+    "url": "/learn/lessons/bonds/duration-for-traders.html",
+    "title": "Duration for Traders",
+    "description": "Estimate sensitivity to rate moves quickly.",
+    "category": "Learning",
+    "topic": "bonds"
+  },
+  {
+    "url": "/learn/lessons/stocks/earnings-trading-gap-fade-or-continuation.html",
+    "title": "Earnings Trading: Gap, Fade, or Continuation?",
+    "description": "Framework for pre-earnings preparation and post-print execution.",
+    "category": "Learning",
+    "topic": "stocks"
+  },
+  {
+    "url": "/learn/economy-glossary.html",
+    "title": "Economy — Glossary",
+    "description": "Learn Economy terminology with a practical glossary of market concepts and trading definitions.",
+    "category": "Learning",
+    "topic": "economy"
+  },
+  {
+    "url": "/learn/economy-howto.html",
+    "title": "Economy — How to Trade",
+    "description": "Study Economy trading with lesson outlines covering market concepts, execution and risk management.",
+    "category": "Learning",
+    "topic": "economy"
+  },
+  {
+    "url": "/learn/economy-quizzes.html",
+    "title": "Economy — Trading Quizzes",
+    "description": "Test your Economy knowledge with study questions and explanations. Review concepts and practice before trading.",
+    "category": "Learning",
+    "topic": "economy"
+  },
+  {
+    "url": "/learn/lessons/funds/etf-basics-for-new-traders.html",
+    "title": "ETF Basics for New Traders",
+    "description": "Understand NAV, spread, and tracking behavior.",
+    "category": "Learning",
+    "topic": "funds"
+  },
+  {
+    "url": "/learn/lessons/indices/event-day-positioning.html",
+    "title": "Event-Day Positioning",
+    "description": "How to adjust around FOMC and high-impact releases.",
+    "category": "Learning",
+    "topic": "indices"
+  },
+  {
+    "url": "/trading-quizzes.html",
+    "title": "Finance & Forex Trading Quizzes and Knowledge Tests",
+    "description": "Test your finance knowledge with forex, stocks, crypto, bonds, futures and options quizzes. Practice trading concepts and review explanations for each answer.",
+    "category": "Learning",
+    "topic": ""
+  },
+  {
+    "url": "/trading-glossary.html",
+    "title": "Finance & Trading Glossary: Market Terms Explained",
+    "description": "Learn financial market terminology covering forex, crypto, stocks, futures, options, technical analysis and trading psychology.",
+    "category": "Learning",
+    "topic": ""
+  },
+  {
+    "url": "/learn.html",
+    "title": "Finance Learning: Forex, Stocks & Trading Study Guides",
+    "description": "Explore finance learning resources, trading lesson outlines, quizzes and glossaries covering forex, stocks, crypto, funds, futures, bonds and options.",
+    "category": "Learning",
+    "topic": ""
+  },
+  {
+    "url": "/learn/forex-glossary.html",
+    "title": "Forex — Glossary",
+    "description": "Learn Forex terminology with a practical glossary of market concepts and trading definitions.",
+    "category": "Learning",
+    "topic": "forex"
+  },
+  {
+    "url": "/learn/forex-howto.html",
+    "title": "Forex — How to Trade",
+    "description": "Study Forex trading with lesson outlines covering market concepts, execution and risk management.",
+    "category": "Learning",
+    "topic": "forex"
+  },
+  {
+    "url": "/learn/forex-quizzes.html",
+    "title": "Forex — Trading Quizzes",
+    "description": "Test your Forex knowledge with study questions and explanations. Review concepts and practice before trading.",
+    "category": "Learning",
+    "topic": "forex"
+  },
+  {
+    "url": "/learn/funds-glossary.html",
+    "title": "Funds — Glossary",
+    "description": "Learn Funds terminology with a practical glossary of market concepts and trading definitions.",
+    "category": "Learning",
+    "topic": "funds"
+  },
+  {
+    "url": "/learn/funds-howto.html",
+    "title": "Funds — How to Trade",
+    "description": "Study Funds trading with lesson outlines covering market concepts, execution and risk management.",
+    "category": "Learning",
+    "topic": "funds"
+  },
+  {
+    "url": "/learn/funds-quizzes.html",
+    "title": "Funds — Trading Quizzes",
+    "description": "Test your Funds knowledge with study questions and explanations. Review concepts and practice before trading.",
+    "category": "Learning",
+    "topic": "funds"
+  },
+  {
+    "url": "/learn/futures-glossary.html",
+    "title": "Futures — Glossary",
+    "description": "Learn Futures terminology with a practical glossary of market concepts and trading definitions.",
+    "category": "Learning",
+    "topic": "futures"
+  },
+  {
+    "url": "/learn/futures-howto.html",
+    "title": "Futures — How to Trade",
+    "description": "Study Futures trading with lesson outlines covering market concepts, execution and risk management.",
+    "category": "Learning",
+    "topic": "futures"
+  },
+  {
+    "url": "/learn/futures-quizzes.html",
+    "title": "Futures — Trading Quizzes",
+    "description": "Test your Futures knowledge with study questions and explanations. Review concepts and practice before trading.",
+    "category": "Learning",
+    "topic": "futures"
+  },
+  {
+    "url": "/learn/lessons/futures/futures-margin-and-leverage-101.html",
+    "title": "Futures Margin and Leverage 101",
+    "description": "Why leverage helps and hurts faster than most expect.",
+    "category": "Learning",
+    "topic": "futures"
+  },
+  {
+    "url": "/learn/lessons/economy/how-markets-react-to-data-surprises.html",
+    "title": "How Markets React to Data Surprises",
+    "description": "Why consensus deviation matters more than headline values.",
+    "category": "Learning",
+    "topic": "economy"
+  },
+  {
+    "url": "/learn/lessons/indices/index-trading-fundamentals.html",
+    "title": "Index Trading Fundamentals",
+    "description": "Read broad market behavior before drilling into entries.",
+    "category": "Learning",
+    "topic": "indices"
+  },
+  {
+    "url": "/learn/indices-glossary.html",
+    "title": "Indices — Glossary",
+    "description": "Learn Indices terminology with a practical glossary of market concepts and trading definitions.",
+    "category": "Learning",
+    "topic": "indices"
+  },
+  {
+    "url": "/learn/indices-howto.html",
+    "title": "Indices — How to Trade",
+    "description": "Study Indices trading with lesson outlines covering market concepts, execution and risk management.",
+    "category": "Learning",
+    "topic": "indices"
+  },
+  {
+    "url": "/learn/indices-quizzes.html",
+    "title": "Indices — Trading Quizzes",
+    "description": "Test your Indices knowledge with study questions and explanations. Review concepts and practice before trading.",
+    "category": "Learning",
+    "topic": "indices"
+  },
+  {
+    "url": "/learn/lessons/stocks/institutional-footprints-in-equities.html",
+    "title": "Institutional Footprints in Equities",
+    "description": "Read volume profile, VWAP reactions, and auction context.",
+    "category": "Learning",
+    "topic": "stocks"
+  },
+  {
+    "url": "/learn/lessons/options/iv-regimes-and-strategy-selection.html",
+    "title": "IV Regimes and Strategy Selection",
+    "description": "When to buy premium vs sell premium.",
+    "category": "Learning",
+    "topic": "options"
+  },
+  {
+    "url": "/learn/lessons/forex/london-and-new-york-session-playbook.html",
+    "title": "London and New York Session Playbook",
+    "description": "How volatility shifts by session and overlap.",
+    "category": "Learning",
+    "topic": "forex"
+  },
+  {
+    "url": "/learn/lessons/economy/macro-dashboard-for-traders.html",
+    "title": "Macro Dashboard for Traders",
+    "description": "Build a weekly dashboard: inflation, growth, labor, liquidity.",
+    "category": "Learning",
+    "topic": "economy"
+  },
+  {
+    "url": "/learn/lessons/economy/macro-to-trade-translation.html",
+    "title": "Macro-to-Trade Translation",
+    "description": "Convert big-picture thesis into concrete entries and exits.",
+    "category": "Learning",
+    "topic": "economy"
+  },
+  {
+    "url": "/learn/lessons/crypto/narrative-rotation-framework.html",
+    "title": "Narrative Rotation Framework",
+    "description": "Track sector narratives without chasing every pump.",
+    "category": "Learning",
+    "topic": "crypto"
+  },
+  {
+    "url": "/learn/lessons/forex/news-event-risk-control.html",
+    "title": "News-Event Risk Control",
+    "description": "How to trade around CPI/NFP without random exposure.",
+    "category": "Learning",
+    "topic": "forex"
+  },
+  {
+    "url": "/learn/lessons/crypto/on-chain-signals-for-traders.html",
+    "title": "On-Chain Signals for Traders",
+    "description": "Use exchange flows and stablecoin trends for context.",
+    "category": "Learning",
+    "topic": "crypto"
+  },
+  {
+    "url": "/learn/lessons/futures/opening-drive-vs-balance-day.html",
+    "title": "Opening Drive vs Balance Day",
+    "description": "Session classification for better trade selection.",
+    "category": "Learning",
+    "topic": "futures"
+  },
+  {
+    "url": "/learn/lessons/indices/opening-range-strategy.html",
+    "title": "Opening Range Strategy",
+    "description": "Using first 30 minutes to frame risk and direction.",
+    "category": "Learning",
+    "topic": "indices"
+  },
+  {
+    "url": "/learn/options-glossary.html",
+    "title": "Options — Glossary",
+    "description": "Learn Options terminology with a practical glossary of market concepts and trading definitions.",
+    "category": "Learning",
+    "topic": "options"
+  },
+  {
+    "url": "/learn/options-howto.html",
+    "title": "Options — How to Trade",
+    "description": "Study Options trading with lesson outlines covering market concepts, execution and risk management.",
+    "category": "Learning",
+    "topic": "options"
+  },
+  {
+    "url": "/learn/options-quizzes.html",
+    "title": "Options — Trading Quizzes",
+    "description": "Test your Options knowledge with study questions and explanations. Review concepts and practice before trading.",
+    "category": "Learning",
+    "topic": "options"
+  },
+  {
+    "url": "/learn/lessons/options/options-contract-basics.html",
+    "title": "Options Contract Basics",
+    "description": "Calls, puts, strike selection, and expiration timing.",
+    "category": "Learning",
+    "topic": "options"
+  },
+  {
+    "url": "/learn/lessons/economy/policy-cycle-mapping.html",
+    "title": "Policy Cycle Mapping",
+    "description": "Link central bank stance to risk-on/risk-off behavior.",
+    "category": "Learning",
+    "topic": "economy"
+  },
+  {
+    "url": "/learn/lessons/options/portfolio-level-options-risk.html",
+    "title": "Portfolio-Level Options Risk",
+    "description": "Manage net delta, gamma, and event risk across positions.",
+    "category": "Learning",
+    "topic": "options"
+  },
+  {
+    "url": "/learn/lessons/stocks/position-sizing-without-guesswork.html",
+    "title": "Position Sizing Without Guesswork",
+    "description": "How to size by stop distance and fixed account risk.",
+    "category": "Learning",
+    "topic": "stocks"
+  },
+  {
+    "url": "/learn/lessons/bonds/rates-cross-asset-impact.html",
+    "title": "Rates Cross-Asset Impact",
+    "description": "How bond moves ripple into equities, FX, and gold.",
+    "category": "Learning",
+    "topic": "bonds"
+  },
+  {
+    "url": "/learn/lessons/options/reading-the-greeks-in-real-time.html",
+    "title": "Reading the Greeks in Real Time",
+    "description": "Delta, theta, vega and how they impact management.",
+    "category": "Learning",
+    "topic": "options"
+  },
+  {
+    "url": "/learn/lessons/funds/regime-based-etf-rotation.html",
+    "title": "Regime-Based ETF Rotation",
+    "description": "Rotate between sectors based on macro regime.",
+    "category": "Learning",
+    "topic": "funds"
+  },
+  {
+    "url": "/learn/lessons/crypto/risk-during-high-volatility-regimes.html",
+    "title": "Risk During High-Volatility Regimes",
+    "description": "How to survive cascading liquidations and correlation shocks.",
+    "category": "Learning",
+    "topic": "crypto"
+  },
+  {
+    "url": "/learn/lessons/economy/scenario-planning-before-releases.html",
+    "title": "Scenario Planning Before Releases",
+    "description": "Predefine actions for hot/cold/inline outcomes.",
+    "category": "Learning",
+    "topic": "economy"
+  },
+  {
+    "url": "/learn/lessons/stocks/sector-rotation-playbook.html",
+    "title": "Sector Rotation Playbook",
+    "description": "Use relative strength to focus on leaders and avoid laggards.",
+    "category": "Learning",
+    "topic": "stocks"
+  },
+  {
+    "url": "/learn/lessons/funds/smart-beta-fund-comparison.html",
+    "title": "Smart-Beta Fund Comparison",
+    "description": "Factor exposure, overlap, and unintended concentration.",
+    "category": "Learning",
+    "topic": "funds"
+  },
+  {
+    "url": "/learn/lessons/crypto/spot-vs-perpetual-futures.html",
+    "title": "Spot vs Perpetual Futures",
+    "description": "Funding, liquidation, and leverage trade-offs.",
+    "category": "Learning",
+    "topic": "crypto"
+  },
+  {
+    "url": "/learn/stocks-glossary.html",
+    "title": "Stocks — Glossary",
+    "description": "Learn Stocks terminology with a practical glossary of market concepts and trading definitions.",
+    "category": "Learning",
+    "topic": "stocks"
+  },
+  {
+    "url": "/learn/stocks-howto.html",
+    "title": "Stocks — How to Trade",
+    "description": "Study Stocks trading with lesson outlines covering market concepts, execution and risk management.",
+    "category": "Learning",
+    "topic": "stocks"
+  },
+  {
+    "url": "/learn/stocks-quizzes.html",
+    "title": "Stocks — Trading Quizzes",
+    "description": "Test your Stocks knowledge with study questions and explanations. Review concepts and practice before trading.",
+    "category": "Learning",
+    "topic": "stocks"
+  },
+  {
+    "url": "/learn/lessons/futures/stop-management-in-fast-markets.html",
+    "title": "Stop Management in Fast Markets",
+    "description": "Design hard stop and invalidation logic for volatility spikes.",
+    "category": "Learning",
+    "topic": "futures"
+  },
+  {
+    "url": "/learn/lessons/forex/top-down-multi-timeframe-setup.html",
+    "title": "Top-Down Multi-Timeframe Setup",
+    "description": "D1 bias -> H1 structure -> M15 trigger workflow.",
+    "category": "Learning",
+    "topic": "forex"
+  },
+  {
+    "url": "/learn/lessons/bonds/trading-around-inflation-data.html",
+    "title": "Trading Around Inflation Data",
+    "description": "Positioning rules ahead of CPI/PCE.",
+    "category": "Learning",
+    "topic": "bonds"
+  },
+  {
+    "url": "/trading-psychology.html",
+    "title": "Trading Psychology: Discipline, Emotions & Habits",
+    "description": "Study trading psychology, emotional discipline and consistent execution habits across forex, stocks, crypto and other markets.",
+    "category": "Learning",
+    "topic": ""
+  },
+  {
+    "url": "/risk-management.html",
+    "title": "Trading Risk Management: Position Sizing & Drawdown",
+    "description": "Learn trading risk management concepts including position sizing, drawdown control, volatility and protecting trading capital.",
+    "category": "Learning",
+    "topic": ""
+  },
+  {
+    "url": "/learn/lessons/forex/understanding-currency-pair-behavior.html",
+    "title": "Understanding Currency Pair Behavior",
+    "description": "Majors, minors, and why spread quality matters.",
+    "category": "Learning",
+    "topic": "forex"
+  },
+  {
+    "url": "/learn/lessons/funds/volatility-etfs-risks-and-uses.html",
+    "title": "Volatility ETFs: Risks and Uses",
+    "description": "When VIX-linked products are useful—and when to avoid them.",
+    "category": "Learning",
+    "topic": "funds"
+  },
+  {
+    "url": "/learn/lessons/indices/volatility-regime-playbook.html",
+    "title": "Volatility Regime Playbook",
+    "description": "Scale risk based on VIX state and realized range.",
+    "category": "Learning",
+    "topic": "indices"
+  },
+  {
+    "url": "/learn/lessons/bonds/yield-curve-signals.html",
+    "title": "Yield Curve Signals",
+    "description": "Steepening, flattening, and recession probabilities.",
+    "category": "Learning",
+    "topic": "bonds"
+  },
+  {
+    "url": "/markets/cot.html",
+    "title": "CFTC Commitments of Traders: Weekly Positions",
+    "description": "Explore the latest published CFTC Legacy Futures Only positions, including net commercial and non-commercial positions and open interest.",
+    "category": "Markets",
+    "topic": ""
+  },
+  {
+    "url": "/markets/liquidity.html",
+    "title": "Crypto Liquidity: Coinbase Bid, Ask & Spread",
+    "description": "View Coinbase BTC/USD and ETH/USD best bid, ask, spread and displayed size, refreshed every 15 seconds while visible.",
+    "category": "Markets",
+    "topic": ""
+  },
+  {
+    "url": "/markets/crypto.html",
+    "title": "Crypto Market Overview: Bitcoin, Ethereum & Altcoins",
+    "description": "Explore Bitcoin, Ethereum and other cryptocurrency markets with charts and market context for your research.",
+    "category": "Markets",
+    "topic": ""
+  },
+  {
+    "url": "/markets/index.html",
+    "title": "Financial Markets: Forex, Crypto & Market Research",
+    "description": "Browse forex and crypto market views, technical indicators, volatility, correlations and market research references.",
+    "category": "Markets",
+    "topic": ""
+  },
+  {
+    "url": "/markets/currencies.html",
+    "title": "Forex Markets: Currency Pairs & Crosses",
+    "description": "Explore forex currency pairs, compare crosses and review currency market context before planning a trade.",
+    "category": "Markets",
+    "topic": ""
+  },
+  {
+    "url": "/markets/correlation.html",
+    "title": "FX Correlation Matrix: ECB Daily Returns",
+    "description": "Compare six FX pairs using 30, 60 or 90 aligned daily returns from ECB reference rates, with source dates and refresh status.",
+    "category": "Markets",
+    "topic": ""
+  },
+  {
+    "url": "/markets/historical-data.html",
+    "title": "Historical Market Charts: Forex, Bitcoin, Gold & Indices",
+    "description": "Explore historical forex, Bitcoin, gold and S&P 500 charts by market and timeframe with TradingView charts.",
+    "category": "Markets",
+    "topic": ""
+  },
+  {
+    "url": "/market-analysis.html",
+    "title": "Market Analysis: Charts, Technicals & Watchlists",
+    "description": "Explore market charts, technical indicators and watchlists covering forex, crypto, stocks and indices in one analysis workspace.",
+    "category": "Markets",
+    "topic": ""
+  },
+  {
+    "url": "/markets/volatility.html",
+    "title": "Market Volatility: ATR & Trading Risk Context",
+    "description": "Explore volatility and ATR concepts to understand market movement, stop placement and changing trading risk.",
+    "category": "Markets",
+    "topic": ""
+  },
+  {
+    "url": "/markets/indicators.html",
+    "title": "Technical Indicators: Trend & Momentum Research",
+    "description": "Review technical indicator concepts for trend strength, momentum and market conditions before evaluating a trade.",
+    "category": "Markets",
+    "topic": ""
+  },
+  {
+    "url": "/markets/patterns.html",
+    "title": "Trading Chart Patterns: Reference Guide",
+    "description": "Browse chart pattern references to study market structure and trading setups. Use patterns alongside risk management and market context.",
+    "category": "Markets",
+    "topic": ""
+  },
+  {
+    "url": "/news/sentiment.html",
+    "title": "Bitcoin Fear & Greed and Market Sentiment",
+    "description": "Track the dated daily Bitcoin Fear & Greed index from Alternative.me and explore weekly CFTC positioning and market volatility.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/calendar.html",
+    "title": "Economic Calendar & Market Event Tools",
+    "description": "Browse economic calendar tools, event reminders, market hours and holiday references to prepare for scheduled market events.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/economics.html",
+    "title": "Economics News & Research",
+    "description": "Growth, inflation, jobs and central banks. Read the release, check the revision and keep the timeline in view.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/energy.html",
+    "title": "Energy News & Research",
+    "description": "Oil, gas, power and the energy transition. Connect supply, demand, infrastructure and policy with their original data.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/finance.html",
+    "title": "Finance News & Research",
+    "description": "Banking, capital markets and the business of money. Connect the reporting with balance sheets, disclosures and policy.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/news.html",
+    "title": "Financial Market Headlines: Forex, Crypto & Stocks",
+    "description": "Browse financial and world headlines covering forex, crypto, stocks, commodities and macroeconomic developments.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news.html",
+    "title": "Financial News Hub: Headlines, Heatmaps & Sentiment",
+    "description": "Find financial headlines, market heatmaps, sentiment resources and trading practice challenges in the FYNX news hub.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/industries.html",
+    "title": "Industries News & Research",
+    "description": "Companies, supply chains and the real economy. Follow how sector developments connect to reported business performance.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/home/hub.html",
+    "title": "Macro Research Hub: Rates, Indicators & Topics",
+    "description": "Find central bank rate comparisons, economic indicators and curated macro research topics in the FYNX research hub.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/markets.html",
+    "title": "Markets News & Research",
+    "description": "Stocks, currencies and the forces moving capital. Follow current reporting, then examine the data behind the move.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/politics.html",
+    "title": "Politics & Policy News & Research",
+    "description": "Government decisions, trade and regulation through an economic lens. Follow what is proposed, what is adopted and when it takes effect.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/heatmap.html",
+    "title": "Stock, Crypto & Forex Market Heatmaps",
+    "description": "Compare relative strength and weakness across stock, crypto and forex markets with embedded market heatmaps.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/technology.html",
+    "title": "Technology News & Research",
+    "description": "Artificial intelligence, chips, software and the digital economy. Follow the companies, research and policy shaping what comes next.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/challenges.html",
+    "title": "Trading Practice Challenges & Progress",
+    "description": "Explore trading practice challenges across forex, crypto, stocks, futures and options to build a consistent learning routine.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/world.html",
+    "title": "World News & Research",
+    "description": "Global developments with economic consequences. Connect regional reporting, trade and institutions without losing the local context.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/news/your-news.html",
+    "title": "Your News — Follow Topics & Continue Reading",
+    "description": "Build your FYNX front page around the topics you follow. Current reporting for your selected edition, search and unread filters, and your recent reading in one place.",
+    "category": "News & events",
+    "topic": ""
+  },
+  {
+    "url": "/api/risk.html",
+    "title": "Forex Risk Calculation API for Trading Applications",
+    "description": "Integrate caller-supplied forex risk calculations into trading software. Explore FYNX Risk API inputs, supported calculations and integration limits.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
+    "url": "/api/data-security.html",
+    "title": "FYNX API Data & Security | Retention, Keys & Isolation",
+    "description": "How the FYNX API stores keys, isolates customer data, prevents abuse and retains request history.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
+    "url": "/api/docs.html",
+    "title": "FYNX API Documentation: Requests, Authentication & Examples",
+    "description": "Read FYNX API authentication, request examples and endpoint documentation for forex risk calculations and prop firm rule evaluation.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
+    "url": "/api/pricing.html",
+    "title": "FYNX API Pricing & Usage Limits",
+    "description": "Compare FYNX API access, monthly usage allowances and request limits for developers building trading and evaluation applications.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
+    "url": "/api/status.html",
+    "title": "FYNX API Status | Uptime & Incidents",
+    "description": "Live status, uptime, response times and incident history for the FYNX API gateway and products.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
+    "url": "/api/",
+    "title": "FYNX API: Forex Risk Calculations & Prop Firm Rules",
+    "description": "Build with FYNX forex risk calculations and prop firm rule evaluation. Explore documented request inputs, API access, pricing and developer resources.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
+    "url": "/api/access.html",
+    "title": "Get FYNX API Access & Developer Credentials",
+    "description": "Set up FYNX API access and review the developer workspace for forex calculations and prop firm evaluation integrations.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
+    "url": "/api/markets.html",
+    "title": "Market Hours & Holidays API",
+    "description": "Exchange open/closed status, next open and close, published holidays and forex sessions for NYSE, Nasdaq, LSE, TSX, HKEX and TSE.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
+    "url": "/api/portfolio.html",
+    "title": "Portfolio Analytics API: Performance, Drawdown & Exposure",
+    "description": "Win rate, profit factor, drawdown, Sharpe, Sortino, exposure, leverage and currency legs from your trades and positions.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
+    "url": "/api/prop-firm.html",
+    "title": "Prop Firm Rules & Evaluation API",
+    "description": "Evaluate USD prop firm phases using explicit rules, account events and limits. Explore FYNX API eligibility checks, history and integration documentation.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
+    "url": "/api/indicators.html",
+    "title": "Technical Indicators & Screening API",
+    "description": "SMA, EMA, RSI, MACD, Bollinger Bands, ATR, Stochastic, VWAP and multi-symbol screening on your own price data.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
+    "url": "/about.html",
+    "title": "About FYNX — Our Story, Mission & Roadmap",
+    "description": "FYNX started with a purpose: help retail traders. Explore our story, the tools and products we are building, and the long-term plan for the FYNX ecosystem.",
+    "category": "Resources",
+    "topic": ""
+  },
+  {
+    "url": "/affiliate-disclosure.html",
+    "title": "Affiliate Disclosure",
+    "description": "Affiliate disclosure for FYNX Finance World including commissions, sponsored placements, and partner relationship transparency.",
+    "category": "Resources",
+    "topic": ""
+  },
+  {
+    "url": "/contact.html",
+    "title": "Contact",
+    "description": "Contact FYNX Finance World for support and business or partnership inquiries.",
+    "category": "Resources",
+    "topic": ""
+  },
+  {
+    "url": "/founder.html",
+    "title": "Elham Amini — The Founder Behind FYNX",
+    "description": "Meet Elham Amini, founder of FYNX. The story, motivation, and long-term thinking behind a financial ecosystem created to help retail traders.",
+    "category": "Resources",
+    "topic": ""
+  },
+  {
+    "url": "/products.html",
+    "title": "FYNX Company & Products | The FYNX Ecosystem",
+    "description": "Explore FYNX products, websites, trading tools, research, news, learning and developer services in one directory, with clear availability information.",
+    "category": "Resources",
+    "topic": ""
+  },
+  {
+    "url": "/pro.html",
+    "title": "FYNX Pro — Trading Research & Risk Workspaces",
+    "description": "Explore optional FYNX advanced trading tools. Essential $5.99, Plus $10.99 and Professional $30.99 per month. Choose a monthly membership and manage billing online.",
+    "category": "Resources",
+    "topic": ""
+  },
+  {
+    "url": "/terminal.html",
+    "title": "FYNX Terminal: Every Market, Headline and Tool on One Screen",
+    "description": "The FYNX Terminal: pick a desk (stocks, forex, bonds, crypto, funds, futures, indices, economy, options or commodities) and every box reloads with live quotes, charts, headlines, FYNX Intelligence, option chains, central banks, yield curves and the calendar.",
+    "category": "Resources",
+    "topic": ""
+  },
+  {
+    "url": "/macro-desk.html",
+    "title": "Macro Desk: Central Bank Watch, Yield Curves & Smart Bias",
+    "description": "Live headlines, central bank policy rates and next decisions, Fed funds futures odds, US, euro area, UK and Japan yield curves, and a transparent FX bias score. Every number shows its source and date.",
+    "category": "Resources",
+    "topic": ""
+  },
+  {
+    "url": "/risk-disclosure.html",
+    "title": "Risk Disclosure",
+    "description": "Risk disclosure for FYNX Finance World covering trading risks, leverage, partner links, and user responsibility.",
+    "category": "Resources",
+    "topic": ""
+  },
+  {
+    "url": "/partners.html",
+    "title": "Trading Platform Directory",
+    "description": "Explore trusted broker, funded-platform, and trading tool partners connected to FYNX Finance World.",
+    "category": "Resources",
+    "topic": ""
+  }
+]

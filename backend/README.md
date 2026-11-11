@@ -1,0 +1,93 @@
+# FYNX website cloud services
+
+Production project: `fynx-c7a28`, region `us-central1`.
+
+## Deployed features
+
+- `webLearning`: authenticated outline review status, most recent quiz and last 20 quiz attempts. Ownership comes exclusively from the verified Firebase token. Scores are self-reported study history, not certified assessments.
+- `webReminders`: authenticated create/list/cancel. Requires a verified email and explicit per-reminder email consent. Maximum 50 pending reminders; mutation/read throttling is 60 requests per minute per user. Dates must be in the future and within one year.
+- `webReminderDelivery`: Cloud Scheduler checks every minute. Uses the existing `MAILGUN_API_KEY` Secret Manager secret and `notifications@mail.fynxfunded.com`. Sends only to the account's current verified address; callers cannot choose another recipient.
+
+A reminder is claimed transactionally before submission. Ambiguous provider errors and interrupted sends become `delivery_unconfirmed` rather than automatically resending and risking duplicates. `sent` means Mailgun accepted the message, not proof of inbox delivery. Actual arrival depends on the provider and recipient mail system. Pending reminders can be cancelled from Calendar Alerts. Existing browser-local alerts remain separate and require an open page.
+
+Private data is under `fynxWebUsers/{uid}/learning/{topic}` and `fynxWebReminders/{id}`. Existing production rules do not give ordinary clients direct access to these paths. The authenticated functions perform ownership checks; this release did not replace shared Firestore rules or alter funded-product collections.
+
+## Reproducible checks
+
+```
+npm ci --prefix backend
+npm test --prefix backend
+npm run build
+npm test
+```
+
+The developer API functions (`developerGateway`, `developerWorkspace`) deploy from GitHub Actions without keys; see `docs/firebase-github-oidc-setup.md`. Other backend deployment currently uses the existing `/Users/h/Desktop/fynx-functions` Firebase project. `backend/web-services.js` is the version-controlled source; copy it to that project's `functions/web-services.js`. Its existing initialized Admin app and index explicitly export the three `web*` functions. Deploy only these named functions; preserve unrelated scheduled news jobs:
+
+```
+firebase deploy --only functions:webLearning,functions:webReminders,functions:webReminderDelivery --project fynx-c7a28
+```
+
+No Mailgun key belongs in this repository or browser assets. Secret binding is declared only on the scheduled delivery function.
+
+## Two-factor authentication: activation pending
+
+The owner explicitly chose to leave the Identity Platform upgrade pending on September 15, 2026. Firebase rejected enabling TOTP on the current `FIREBASE_AUTH` project; MFA remains `DISABLED`.
+
+The website includes authenticator enrollment/removal and second-factor challenge handling for email, Google and Apple login. Enrollment is intentionally disabled by `enrollmentActivated=false` in `assets/js/mfa.js`. Security displays the pending activation status. No factor was enrolled for any user and the project was not upgraded.
+
+After a separately authorized upgrade, enable optional TOTP in Firebase (one adjacent time interval), turn on enrollment, and verify enrollment, invalid-code rejection, sign-in, reauthentication and removal with a test account. Review other clients sharing this Firebase project for MFA compatibility before encouraging users to enroll. Recovery uses a backed-up authenticator or an administrator identity-verification process; this release does not invent unverified backup codes.
+
+Provider documentation: https://firebase.google.com/docs/auth/web/totp-mfa
+
+## Verification performed
+
+- Unit tests: authenticated-caller requirement, path identifier validation, dates/consent, Mailgun recipient and text encoding.
+- Production callable checks with temporary QA accounts: unauthenticated rejection; lesson save/read; another user's isolation; quiz history; unverified-email rejection; reminder creation/cancellation; denial of another user's cancellation.
+- All temporary QA accounts and documents removed. Test reminders were scheduled a day ahead and cancelled, so no delivery occurred.
+- Mailgun accepted a test-mode message with delivery disabled. This verifies provider credentials/request format, not inbox delivery.
+- Cloud Scheduler is enabled at one-minute intervals.
+- Mobile checks at 390px: no overflow or page errors on the new reminder, learning and security controls.
+
+Remaining: owner activation decision for MFA; then real MFA round-trip tests. Real inbox delivery and optional Mailgun delivery/bounce webhooks remain to be checked. Browser push while the page is closed is not included; background reminders here are email.
+
+## Maintained macroeconomic data
+
+`webMacroData` is a public GET endpoint (`?kind=rates` or `?kind=indicators`). It fetches BIS policy rates and World Bank WDI annual observations, with a six-hour Firestore cache and a five-minute HTTP cache. The cache preserves source observation dates and successful retrieval time. A refresh failure labels retained data stale; without a previous retrieval it returns HTTP 503. Provider requests are bounded by a 20-second timeout. There is no hard-coded numerical fallback.
+
+`macro-data.js` is copied into the existing backend, whose index exports `require('./macro-data').webMacroData`. Deploy with `firebase deploy --only functions:webMacroData --project fynx-c7a28`.
+
+Sources:
+- BIS: https://data.bis.org/topics/CBPOL — daily observations published weekly; the series' policy instrument may differ by economy.
+- World Bank: https://datahelpdesk.worldbank.org/knowledgebase/articles/898581 — most recent non-empty annual values for GDP growth, CPI inflation and modeled ILO unemployment. Each cell retains its own observation year.
+
+Official meeting-calendar links replace fixed meeting dates. No local forward calendar, inferred policy bias, economic strength ranking or surprise score is generated.
+
+Verified: 8 BIS rows and 24 World Bank rows from both providers; public production endpoint; six parser/validation tests; search and mobile/desktop theme layout; provider failure state. Inbox/mail features described above are independent of this endpoint.
+
+## Website market headlines (September 22, 2026)
+
+`market-feed.js` exports `webMarketFeed`, a public read-only endpoint with fixed selectors. `?category=all|forex|crypto|stocks|macro|commodities|world` fetches publisher RSS server-side, rejects unsafe URLs and stories older than seven days, deduplicates, and keeps a five-minute instance cache. All source requests run in parallel with a 4.2-second hard deadline and a 2 MB XML cap. A whole-feed outage may retain a prior headline result for up to 24 hours, explicitly marked stale with its original retrieval/publication dates. Direct publisher feeds provide fallback when Google News aggregation is unavailable; aggregated records identify `via: "Google News"`.
+
+`?kind=releases` returns metadata-only official releases from the Federal Reserve, BEA and ECB: `kind: "official-releases"`, dated `items`, and three source states (`fresh`, `cached`, or `unavailable`). Each feed only accepts HTTPS article links on its exact official hosts. Failed sources can retain their own dated cache for seven days without hiding healthy sources. Nonempty invalid feeds cannot erase a valid cache. The parser rejects malformed XML, DTDs and external entity declarations. There is no arbitrary URL proxy, publisher login or private licensed feed.
+
+The browser module `assets/js/market-intelligence-data.js` exposes the 13 official media destinations and six institution links immediately. It requests only the selected headline category, has a 6.5-second response deadline, and safely reuses dated local caches on failure. Official source links remain available when RSS is unavailable. The frontend rejects a generic headline response as an official-release response, so deploy the updated `webMarketFeed` before publishing the release-list UI. Run `node --test backend/market-feed.test.cjs` with backend dependencies and `node --test scripts/test-market-intelligence-data.cjs` for focused validation.
+
+Add `exports.webMarketFeed = require('./market-feed').webMarketFeed;` to the existing Firebase functions entry point and deploy only `functions:webMarketFeed` to `fynx-c7a28`. It has been deployed from an isolated copy of the existing functions source. Keep this export when preparing future deployments. The home finance-voices directory preserves direct X profile links without requiring an X timeline embed to load.
+
+## Analytics and operational monitoring (September 22 follow-up)
+
+`webMarketAnalytics` accepts only `kind=correlation` with `window=30|60|90`, or `kind=liquidity` with `product=BTC-USD|ETH-USD`. Provider destinations are fixed, so it cannot act as an arbitrary URL proxy. FX observations are aligned before computing daily simple returns and Pearson coefficients; missing/flat series never become invented correlations. Coinbase level-one size is already aggregated and is not multiplied by order count. Auction, crossed, invalid and old books are rejected.
+
+Responses preserve provider observation dates/times and server retrieval time separately. FX has a six-hour cache, with a labeled stale fallback bounded to 24 hours after retrieval; observations older than seven days are marked stale. Order books cache for ten seconds and can fall back only while their source timestamp is under a minute old, explicitly marked stale. No synthetic numerical fallback is used.
+
+`operations.js` supplies an allowlisted browser error receiver and scheduled feed-health probes. The browser sender is now loaded by the shared theme initializer on production domains only. Existing Cloud Monitoring website failure policies and notification channels are preserved. To investigate, filter Cloud Logging by `jsonPayload.monitor="fynx-web"` (failures) or `jsonPayload.monitor="fynx-web-health"` (probes). Provider probes include the actual `webMarketFeed` endpoint, replacing the old RSS converter probe.
+
+For future deployments, copy `market-analytics.js`, `analytics-core.cjs`, and `operations.js` into the existing functions source and retain:
+
+```
+exports.webMarketAnalytics = require('./market-analytics').webMarketAnalytics;
+exports.webOperationalEvent = require('./operations').webOperationalEvent;
+exports.webFeedHealth = require('./operations').webFeedHealth;
+```
+
+Deploy only `functions:webMarketAnalytics,functions:webOperationalEvent,functions:webFeedHealth`. These functions were deployed in this release from an isolated copy preserving the existing exports. Learning/reminder/auth/billing services were not redeployed. The Identity Platform upgrade remains pending by explicit owner choice.

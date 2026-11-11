@@ -1,0 +1,31 @@
+{
+  "testedAt": "2026-11-04T05:05:00Z",
+  "environment": "Loopback Chromium browser, real Accounts API and worker with disposable SQLite database and injected QA identity",
+  "production": false,
+  "fixture": "tests/accounts/fixtures/mt4-statement.html",
+  "fixtureDisclosure": "Every QA page displays LOCAL TEST; no seeded production data or actual broker credentials",
+  "flow": ["Choose platform", "Enter broker timezone Europe/Prague", "Upload MT4 HTML", "Preview three normalized trades", "Confirm import", "Dashboard reports balance and equity 10070 USD, three closed trades and 70 USD closed net profit", "Download CSV", "Download JSON", "Disconnect", "Delete account records", "Observe completed receipt and email not configured"],
+  "missingData": ["No fabricated intraday equity curve", "Today and total account P&L withheld without baseline and complete cash movements", "Unknown original risk remains unavailable", "No synthetic event warning or coaching tip"],
+  "responsiveDashboard": [
+    {"viewportWidth": 360, "documentWidth": 360, "targetsBelow44Pixels": 0},
+    {"viewportWidth": 390, "documentWidth": 390, "targetsBelow44Pixels": 0},
+    {"viewportWidth": 430, "documentWidth": 430, "targetsBelow44Pixels": 0}
+  ],
+  "tableLayout": "620px readable table within a local horizontal scroller; does not widen the document",
+  "axe": {
+    "version": "4.14.0",
+    "tags": ["wcag2a", "wcag2aa", "wcag21aa"],
+    "results": [
+      {"page": "chooser", "width": 390, "passes": 22, "violations": 0},
+      {"page": "MT5 form", "width": 390, "passes": 25, "violations": 0},
+      {"page": "import form", "width": 390, "passes": 27, "violations": 0},
+      {"page": "dashboard", "width": 390, "passes": 24, "violations": 0},
+      {"page": "dashboard", "width": 1440, "passes": 21, "violations": 0},
+      {"page": "security", "width": 390, "passes": 24, "violations": 0},
+      {"page": "security", "width": 1440, "passes": 23, "violations": 0}
+    ]
+  },
+  "browserConsoleErrorsInFinalFlow": 0,
+  "screenshots": "docs/evidence/screenshots/accounts-*.jpg",
+  "notEstablished": ["Physical iPhone or Safari acceptance", "Lighthouse score", "Production backend performance", "Live provider acceptance", "Native MQL compilation", "Real Firebase production browser session", "Email delivery"]
+}

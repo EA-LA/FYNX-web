@@ -1,0 +1,10 @@
+{
+  "name": "fynx_api_backup_checks",
+  "description": "Successful scheduled backup/PITR inspections.",
+  "filter": "resource.type=\"cloud_function\" AND jsonPayload.service=\"fynx_api\" AND jsonPayload.kind=\"backups\" AND jsonPayload.status=200",
+  "metricDescriptor": {
+    "metricKind": "DELTA",
+    "valueType": "INT64",
+    "unit": "1"
+  }
+}

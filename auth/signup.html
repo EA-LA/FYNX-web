@@ -1,18 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script>
-    (function(){
-      const t = localStorage.getItem("fynx_theme") === "light" ? "light" : "dark";
-      document.documentElement.dataset.theme = t;
-      document.documentElement.style.backgroundColor = t === "light" ? "#fbfbfb" : "#000000";
-    })();
-  </script>
 
-  <title>Sign Up — FYNX</title>
-  <meta name="description" content="Create your FYNX account." />
+
+
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -381,9 +376,22 @@
     body.light-mode .fynxLogo .tag{ color: rgba(255, 255, 255, .70); }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
+  <script type="module" src="../assets/js/protect-route.js?v=59193b13e9f5"></script>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
+
+<title>Sign Up — FYNX</title>
+<meta name="description" content="Create your FYNX account.">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://www.fynxfinanceworld.com/auth/signup.html">
+<meta property="og:title" content="Sign Up — FYNX">
+<meta property="og:description" content="Create your FYNX account.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/auth/signup.html">
+  <link rel="stylesheet" href="./auth-form.css?v=20260928">
 </head>
 
-<body class="dark-mode">
+<body class="dark-mode" data-fynx-layout="auth" data-fynx-section="FINANCE WORLD">
   <div class="bg"></div>
 
   <main class="wrap">
@@ -394,7 +402,7 @@
           <a class="toplink" href="../index.html">← Back to FYNX</a>
 
           <!-- ✅ Same toggle system as Login -->
-          <button class="fynx-theme-toggle" type="button" data-fynx-theme-toggle aria-label="Toggle theme" title="Toggle theme">
+          <button class="fynx-theme-toggle" type="button" data-fynx-theme-toggle data-theme-control aria-label="Toggle theme" title="Toggle theme">
             ◐
           </button>
         </div>
@@ -406,34 +414,34 @@
 
         <div>
           <h1>Create your account</h1>
-          <p class="sub">Sign up to unlock the full FYNX experience: tools, news, journal, and your future profile.</p>
+          <p class="sub">Create an account to save your journal and sync your preferences across devices.</p>
         </div>
 
         <div class="actions">
           <button class="btn" id="signupGoogle" type="button">Sign up with Google</button>
           <button class="btn" id="signupApple" type="button">Sign up with Apple</button>
-          <button class="btn" id="viewDemo" type="button">View Demo</button>
+          <a class="btn" href="../home.html">Browse public workspace</a>
         </div>
 
         <form class="form" id="emailSignupForm" autocomplete="on">
           <div class="field">
             <label for="name">Display name</label>
-            <input id="name" name="name" type="text" placeholder="FYNX Trader" required />
+            <input id="name" autocomplete="nickname" maxlength="80" name="name" type="text" placeholder="FYNX Trader" required />
           </div>
 
           <div class="field">
             <label for="email">Email</label>
-            <input id="email" name="email" type="email" placeholder="you@domain.com" required />
+            <input id="email" autocomplete="email" name="email" type="email" placeholder="you@domain.com" required />
           </div>
 
           <div class="field">
             <label for="password">Password</label>
-            <input id="password" name="password" type="password" placeholder="Create a strong password" required />
+            <input id="password" autocomplete="new-password" name="password" type="password" placeholder="Create a strong password" required />
           </div>
 
           <div class="field">
             <label for="confirm">Confirm password</label>
-            <input id="confirm" name="confirm" type="password" placeholder="Repeat password" required />
+            <input id="confirm" autocomplete="new-password" name="confirm" type="password" placeholder="Repeat password" required />
           </div>
 
           <div class="row">
@@ -444,9 +452,9 @@
 
           <p class="foot">
             By creating an account, you agree to FYNX
-            <a href="https://elhamamini.cc/FYNX-Site/terms.html">Terms of Service</a>
+            <a href="https://ea-la.github.io/FYNX-Site/terms.html">Terms of Service</a>
             and
-            <a href="https://elhamamini.cc/FYNX-Site/privacy.html">Privacy Policy</a>.
+            <a href="https://ea-la.github.io/FYNX-Site/privacy.html">Privacy Policy</a>.
           </p>
         </form>
       </div>
@@ -461,7 +469,7 @@
         <div class="fynxLogo">
           <div>
             <div class="big">F Y N X</div>
-            <div class="tag">Black & White • Grok Motion • Clean UX</div>
+            <div class="tag">Your markets • Your process • Your progress</div>
           </div>
         </div>
       </div>
@@ -470,99 +478,9 @@
   </main>
 
   <!-- ✅ Theme persistence (must exist at ../assets/theme.js) -->
-  <script src="../assets/theme.js"></script>
+  <script src="../assets/theme.js?v=20260922-routing"></script>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import {
-      getAuth,
-      signInWithPopup,
-      GoogleAuthProvider,
-      OAuthProvider,
-      createUserWithEmailAndPassword,
-      updateProfile
-    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  <script src="./auth-form.js?v=20261111-terminal-desks-1" defer></script>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDGSYIB_YIpbWyUMJ1d-v00-xADnvaWckk",
-      authDomain: "fynx-c7a28.firebaseapp.com",
-      projectId: "fynx-c7a28",
-      appId: "1:1011050657868:web:2c5ad5a1b275e669b05ce9"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    const googleBtn = document.getElementById("signupGoogle");
-    const appleBtn  = document.getElementById("signupApple");
-    const form      = document.getElementById("emailSignupForm");
-    const viewDemoBtn = document.getElementById("viewDemo");
-
-    function setMode(mode){
-      localStorage.setItem("mode", mode);
-    }
-
-    function showErr(e){
-      console.error(e);
-      alert(e?.message || String(e));
-    }
-
-    googleBtn.addEventListener("click", async () => {
-      try{
-        const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-        setMode("live");
-        localStorage.setItem("fynx_auth_email", auth.currentUser?.email || "");
-        window.location.href = "../home.html";
-      }catch(e){ showErr(e); }
-    });
-
-    appleBtn.addEventListener("click", async () => {
-      try{
-        const provider = new OAuthProvider("apple.com");
-        await signInWithPopup(auth, provider);
-        setMode("live");
-        localStorage.setItem("fynx_auth_email", auth.currentUser?.email || "");
-        window.location.href = "../home.html";
-      }catch(e){ showErr(e); }
-    });
-
-
-    viewDemoBtn.addEventListener("click", () => {
-      setMode("demo");
-      localStorage.setItem("fynx_profile", JSON.stringify({
-        name: "Demo User",
-        description: "You are previewing the app with sample data.",
-        memberSince: "Apr 2026"
-      }));
-      localStorage.setItem("fynx_auth_email", "demo@fynx.app");
-      window.location.href = "../home.html";
-    });
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const displayName = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const pw = document.getElementById("password").value;
-      const cf = document.getElementById("confirm").value;
-
-      if(pw !== cf){
-        alert("Passwords do not match.");
-        return;
-      }
-
-      try{
-        const cred = await createUserWithEmailAndPassword(auth, email, pw);
-        if(displayName){
-          await updateProfile(cred.user, { displayName });
-        }
-        setMode("live");
-        localStorage.setItem("fynx_auth_email", email);
-        window.location.href = "../home.html";
-      }catch(err){ showErr(err); }
-    });
-  </script>
-  <script src="/assets/js/live-site.js" defer></script>
 </body>
 </html>

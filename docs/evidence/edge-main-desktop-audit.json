@@ -1,0 +1,133 @@
+{
+  "accessibility": {
+    "inapplicable": 41,
+    "incomplete": [
+      {
+        "help": "Elements must only use permitted ARIA attributes",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/aria-prohibited-attr?application=axeAPI",
+        "id": "aria-prohibited-attr",
+        "impact": "serious",
+        "nodes": [
+          {
+            "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on \"div\" elements with no valid role attribute.",
+            "html": "<div class=\"edge-filters\" aria-label=\"Market category\">",
+            "target": [
+              ".edge-filters"
+            ]
+          }
+        ]
+      },
+      {
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": [
+          {
+            "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters",
+            "html": "<button type=\"button\" id=\"theme-toggle\" data-theme-control=\"\" aria-label=\"Switch to dark theme\" aria-pressed=\"true\">◐ <span>Theme</span></button>",
+            "target": [
+              "#theme-toggle"
+            ]
+          }
+        ]
+      }
+    ],
+    "passes": 50,
+    "violations": []
+  },
+  "axeVersion": "4.14.0",
+  "capturedAt": "2026-11-03T21:14:26.366Z",
+  "limitations": [
+    "Rendered-state axe audit, not a Lighthouse accessibility score or a complete accessibility certification.",
+    "Performance entries are observed in this browser session without Lighthouse navigation gathering, network/CPU simulation or scoring.",
+    "LCP and CLS describe available buffered entries for this navigation. Long-task blocking time is not Lighthouse TBT."
+  ],
+  "noHorizontalOverflow": true,
+  "observedPerformance": {
+    "cls": 0.0787608748824508,
+    "lcp": 100,
+    "navigation": [
+      {
+        "activationStart": 0,
+        "confidence": {},
+        "connectEnd": 2.099999999627471,
+        "connectStart": 2,
+        "contentEncoding": "",
+        "contentType": "text/html",
+        "criticalCHRestart": 0,
+        "decodedBodySize": 13136,
+        "deliveryType": "",
+        "domComplete": 58.59999999962747,
+        "domContentLoadedEventEnd": 56.90000000037253,
+        "domContentLoadedEventStart": 51,
+        "domInteractive": 31.59999999962747,
+        "domainLookupEnd": 2,
+        "domainLookupStart": 1.7999999998137357,
+        "duration": 58.700000000186265,
+        "encodedBodySize": 13136,
+        "entryType": "navigation",
+        "fetchStart": 0.599999999627471,
+        "finalResponseHeadersStart": 3.2000000001862645,
+        "firstInterimResponseStart": 0,
+        "initiatorType": "navigation",
+        "loadEventEnd": 58.700000000186265,
+        "loadEventStart": 58.700000000186265,
+        "name": "http://127.0.0.1:4174/edge-radar/",
+        "navigationId": 7305,
+        "nextHopProtocol": "http/1.1",
+        "notRestoredReasons": null,
+        "redirectCount": 0,
+        "redirectEnd": 0,
+        "redirectStart": 0,
+        "renderBlockingStatus": "non-blocking",
+        "requestStart": 2.099999999627471,
+        "responseEnd": 3.700000000186265,
+        "responseStart": 3.2000000001862645,
+        "responseStatus": 200,
+        "secureConnectionStart": 0,
+        "serverTiming": [],
+        "startTime": 0,
+        "transferSize": 13436,
+        "type": "reload",
+        "unloadEventEnd": 6.7000000001862645,
+        "unloadEventStart": 6.7000000001862645,
+        "workerCacheLookupStart": 0,
+        "workerFinalSourceType": "",
+        "workerMatchedSourceType": "",
+        "workerRouterEvaluationStart": 0,
+        "workerStart": 0
+      }
+    ],
+    "observedLongTaskBlockingMs": 0,
+    "observedLongTasks": 0,
+    "paint": [
+      {
+        "duration": 0,
+        "entryType": "paint",
+        "name": "first-paint",
+        "navigationId": 7305,
+        "paintTime": 45.5,
+        "presentationTime": 100,
+        "startTime": 100
+      },
+      {
+        "duration": 0,
+        "entryType": "paint",
+        "name": "first-contentful-paint",
+        "navigationId": 7305,
+        "paintTime": 45.5,
+        "presentationTime": 100,
+        "startTime": 100
+      }
+    ]
+  },
+  "pageWidth": 1440,
+  "url": "http://127.0.0.1:4174/edge-radar/",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+  "viewport": {
+    "dpr": 1,
+    "height": 1000,
+    "width": 1440
+  }
+}

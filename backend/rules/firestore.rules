@@ -1,0 +1,154 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    function isAdmin() {
+      return signedIn() && (
+        request.auth.token.admin == true ||
+        (request.auth.token.email_verified == true && request.auth.token.email in ["ha6876122@gmail.com", "fynxteam5@gmail.com"])
+      );
+    }
+    function verifiedForPayout(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data.kycStatus == "verified";
+    }
+    function kycFields() {
+      return [
+        "kycStatus",
+        "kycProvider",
+        "kycSessionId",
+        "kycSubmittedAt",
+        "kycVerifiedAt",
+        "kycRejectionReason"
+      ];
+    }
+    function userKycFieldsUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(kycFields());
+    }
+    function userCreateDoesNotSelfVerify() {
+      return !(request.resource.data.keys().hasAny(kycFields()))
+        || request.resource.data.kycStatus == "not_started";
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && userCreateDoesNotSelfVerify();
+      allow update: if isAdmin() || (isOwner(userId) && userKycFieldsUnchanged());
+
+      // Website-owned records; other product collections keep their existing rules.
+      match /account/{documentId} {
+        allow read, write: if isOwner(userId) && documentId in ['profile', 'preferences', 'notificationPreferences', 'security'];
+      }
+      match /trades/{tradeId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && request.resource.data.symbol is string
+          && request.resource.data.pl is number;
+      }
+      match /notifications/{notificationId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /sessions/{websiteSessionId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && request.resource.data.sessionId == websiteSessionId
+          && request.resource.data.keys().hasOnly(['sessionId','userAgent','platform','language','timezone','status','lastActiveAt','createdAt','updatedAt','revokedAt']);
+      }
+      match /security/{documentId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create, update: if isOwner(userId)
+          && documentId == "settings"
+          && request.resource.data.keys().hasOnly([
+            "twoFactorEnabled",
+            "twoFactorSecret",
+            "loginAlertsEnabled",
+            "backupCodesGeneratedAt",
+            "backupCodeHashes",
+            "activeSessions",
+            "lastSecurityUpdate",
+            "createdAt"
+          ])
+          && request.resource.data.twoFactorEnabled is bool
+          && request.resource.data.loginAlertsEnabled is bool;
+        allow delete: if false;
+      }
+
+      match /sessions/{sessionId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId)
+          && request.resource.data.userId == userId
+          && request.resource.data.keys().hasOnly(["userId", "device", "browser", "ip", "location", "createdAt", "lastActive", "isCurrent"]);
+        allow update: if isOwner(userId) || isAdmin();
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /securityEvents/{eventId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create, update, delete: if isAdmin();
+      }
+    }
+
+    match /kyc_profiles/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /payouts/{payoutId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == "requested"
+        && verifiedForPayout(request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow write: if isAdmin();
+    }
+
+    match /challenges/{challengeId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow write: if isAdmin();
+    }
+
+    match /accounts/{accountId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow write: if isAdmin();
+    }
+
+    match /trades/{tradeId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow write: if isAdmin();
+    }
+
+    match /certificates/{certificateId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow write: if isAdmin();
+    }
+
+    match /public_certificates/{certificateId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /tickets/{ticketId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == "open";
+      allow update: if isAdmin() || (
+        signedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["messages", "status", "updatedAt"])
+        && request.resource.data.status in ["open", "waiting", "closed"]
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

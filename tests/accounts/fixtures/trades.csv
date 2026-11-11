@@ -1,0 +1,4 @@
+id,open_time,close_time,symbol,side,quantity,entry_price,exit_price,net_pnl,commission,swap,fees,stop_loss,take_profit,initial_risk,magic,timeframe
+csv-1,2026-11-02T08:00:00Z,2026-11-02T11:00:00Z,EURUSD.r,buy,0.1,1.1,1.11,99,-1,0,0,1.095,1.11,50,770101,H1
+csv-2,2026-11-02T13:00:00Z,2026-11-03T09:00:00Z,GBPUSD,sell,0.1,1.3,1.305,-53,-1,-2,0,1.305,1.29,50,770101,H1
+csv-3,2026-11-03T10:00:00Z,2026-11-03T12:00:00Z,XAUUSD.m,buy,0.1,2000,2002.5,24,-1,0,0,0,2010,,,H1

@@ -1,7 +1,9 @@
 import { auth } from "../../auth/firebase.js";
-import { bootstrapSession } from "./session-manager.js";
+import { bootstrapSession } from "./session-manager.js?v=20261111-terminal-desks-1";
 
-const protectedPage = document.body?.dataset?.protectedPage !== "false";
+// Public browsing is the default. Only personal account screens require a session.
+const privatePages = new Set(["account-settings.html", "security.html", "notifications.html", "preferences.html"]);
+const protectedPage = privatePages.has(location.pathname.split("/").pop());
 
 function removeLegacyRestoreUi() {
   const selectors = [
@@ -32,6 +34,7 @@ function runSessionBootstrap() {
     loginPage: false,
     loginRedirect: "home.html"
   }).catch((error) => {
+    window.FynxMonitor?.report('auth', 'session-bootstrap', error);
     console.error("Session bootstrap failed", error);
   });
 }

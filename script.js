@@ -146,9 +146,9 @@ function setActiveTopic(topic) {
   document.body.classList.add('learn-detail-open');
   learnDetailSubnav.setAttribute('aria-hidden', 'false');
   learnDetailCaption.innerHTML = '<i class="fas fa-layer-group"></i> ' + (topicLabel[topic] || 'Topic');
-  learnHowTo.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=howto';
-  learnQuizzes.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=quizzes';
-  learnGlossary.href = 'learn/topic.html?topic=' + encodeURIComponent(topic) + '&section=glossary';
+  learnHowTo.href = 'learn/' + encodeURIComponent(topic) + '-howto.html';
+  learnQuizzes.href = 'learn/' + encodeURIComponent(topic) + '-quizzes.html';
+  learnGlossary.href = 'learn/' + encodeURIComponent(topic) + '-glossary.html';
 }
 learnTopicButtons.forEach(btn => {
   btn.addEventListener('click', () => {
@@ -243,9 +243,13 @@ document.querySelectorAll('.mobile-drawer a').forEach(a => {
   const qrHost = document.getElementById("fynxQr");
   if (!widget || !closeBtn || !qrHost) return;
 
+  let downloadDismissed = false;
+  try { downloadDismissed = sessionStorage.getItem('fynx.download-dismissed') === '1'; } catch {}
   closeBtn.addEventListener("click", function(e){
     e.preventDefault();
     e.stopPropagation();
+    downloadDismissed = true;
+    try { sessionStorage.setItem('fynx.download-dismissed', '1'); } catch {}
     widget.classList.add("is-hidden");
   });
 
@@ -271,6 +275,7 @@ document.querySelectorAll('.mobile-drawer a').forEach(a => {
   const isMobile = () => window.matchMedia("(max-width: 768px)").matches;
 
   function applyInitialState(){
+    if (downloadDismissed) { widget.classList.add("is-hidden"); return; }
     if (!isMobile()) {
       widget.classList.remove("is-hidden");
       return;
@@ -279,7 +284,7 @@ document.querySelectorAll('.mobile-drawer a').forEach(a => {
   }
 
   function onScroll(){
-    if (!isMobile()) return;
+    if (downloadDismissed || !isMobile()) return;
     const y = window.scrollY || 0;
     const goingDown = y > lastY;
     if (y < 80) {
@@ -296,3 +301,11 @@ document.querySelectorAll('.mobile-drawer a').forEach(a => {
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", applyInitialState);
 })();
+
+// Size nested menus from their actual content, including wrapped laptop layouts.
+for (const [element, variable] of [[homeSubnav, '--home-menu-height'], [learnSubnav, '--learn-menu-height']]) {
+  if (element) new ResizeObserver(() => document.documentElement.style.setProperty(variable, element.getBoundingClientRect().height + 'px')).observe(element);
+}
+new MutationObserver(() => {
+  for (const name of ['home','learn','news','tools']) document.getElementById(name+'Toggle')?.setAttribute('aria-expanded', String(document.body.classList.contains(name+'-open')));
+}).observe(document.body, {attributes:true,attributeFilter:['class']});
