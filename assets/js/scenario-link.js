@@ -38,7 +38,7 @@
     });
     if (applied && run) {
       run.click();
-      status.textContent = 'Opened a shared scenario. Change any number and calculate again.';
+      status.textContent = btn.getAttribute('data-scenario-opened') || 'Opened a shared scenario. Change any number and calculate again.';
     }
 
     function buildLink() {
