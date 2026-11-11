@@ -131,7 +131,10 @@
     if (typeof root.fetch !== 'function') return;
     const candidates = stories.map(item => ({item, url: safe(item.url || item.link)})).filter(c => c.url);
     const found = await Promise.all(candidates.map(c => lookup(c.url)));
-    const index = found.findIndex(p => p && p.image); if (index < 0) return;
+    const shown = new Set([...(root.document?.querySelectorAll('[data-story-image] img') || [])].map(img => img.src));
+    let index = found.findIndex(p => p && p.image && !shown.has(p.image));
+    if (index < 0) index = found.findIndex(p => p && p.image);
+    if (index < 0) return;
     const {item} = candidates[index], p = found[index], doc = root.document;
     const original = {src: image.src, alt: image.alt, width: image.width, height: image.height, caption: [...caption.childNodes]};
     if (!doc.getElementById('fynx-story-photo-style')) { const st = doc.createElement('style'); st.id = 'fynx-story-photo-style'; st.textContent = '.newsroom-story-photo img{object-fit:cover!important;background:#0d1210}'; doc.head.append(st); }
