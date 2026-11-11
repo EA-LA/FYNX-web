@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-11 (run 64) — [site-qa] Shareable ATR Stop scenarios; Terminal tabs fully visible on desktop
+- New: the ATR Stop calculator has a "Copy scenario link" button. The link carries the pair, Buy/Sell side, entry, ATR period, ATR value and ATR multiple; opening it fills them in and shows the same stop. Only listed pairs, sides and multiples and plain numbers are read from the link; your notes are never included and nothing is saved to an account. https://www.fynxfinanceworld.com/tools/atr-stop.html
+- Fixed (desktop): on a 1440px screen the FYNX Terminal hid the last tab of several panels behind an invisible sideways scroll (for example "SESS" in Tools showed as "SE", and the last range/region tabs in Markets, Curve and Correlation were cut). Every tab is now visible; the small panel subtitle shortens instead. iPhone layout unchanged. https://www.fynxfinanceworld.com/terminal.html
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable) across 17 pages: no sideways overflow, no small tap targets, no errors; ATR links hand-checked (XAU/USD sell 2000, ATR 12, 2.5x = 2030.00, 300 pips); `npm test`, tool/discovery/macro/edge/API checks, edge lint/typecheck and build pass.
+
 ## 2026-11-11 (run 63) — [site-qa] FYNX Terminal works on iPhone; header fits iPhone SE again
 - Fixed on iPhone SE: the new yellow "All Together" button in the site header pushed "Sign in" off the right edge, so every page with that header scrolled sideways on small iPhones. On narrow screens the button now drops its small icon and everything fits; it is also a full 44px tap target. https://www.fynxfinanceworld.com/news.html https://www.fynxfinanceworld.com/learn.html
 - Fixed: the FYNX Terminal page jumped halfway down to the economic calendar as soon as it opened on a phone. It now opens at the top; only the calendar list scrolls to "NOW". https://www.fynxfinanceworld.com/terminal.html
