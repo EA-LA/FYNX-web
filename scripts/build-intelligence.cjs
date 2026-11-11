@@ -128,7 +128,8 @@ async function main() {
   const owner = new Map(); for (const r of records.values()) for (const a of r.articleIds) owner.set(a, r.id);
   const groups = cluster(items, now);
   // Link every group, then fetch history for named companies the snapshot does not carry.
-  for (const g of groups) { const text = g.items.map(i => i.title + '. ' + Reader.plain(i.description || '', 400)).join(' \n '); g.link = E.linkStory(text, {listings, quotes}); }
+  // Headlines only: feed descriptions are often unrelated teaser text.
+  for (const g of groups) { const text = g.items.map(i => i.title).join(' \n '); g.link = E.linkStory(text, {listings, quotes}); }
   const need = [...new Set(groups.flatMap(g => g.link.companies.map(c => c.ticker)).filter(t => t && !quotes[t]))];
   if (!offline && need.length) Object.assign(quotes, await extraQuotes(need, now));
   const review = [];
