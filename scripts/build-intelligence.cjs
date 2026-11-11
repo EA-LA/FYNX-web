@@ -152,6 +152,8 @@ async function main() {
     const stats = linked.map(m => { const s = A.instrumentStats(m.symbol, quotes[m.symbol]); return s && !s.stale ? {...s, name: m.label || s.name, assetClass: m.assetClass} : null; }).filter(Boolean).slice(0, 6);
     const text = g.items.map(i => i.title).join(' ');
     if (!stats.length) continue;
+    // Company-only stories need a business angle (results, deals, shares…), not just a brand mention.
+    if (!g.link.themes.length && !/\b(shares?|stocks?|earnings|revenue|profit|loss|results|deal|acqui\w+|merger|IPO|valuation|sales|CEO|chief executive|layoffs?|jobs|buyback|guidance|forecast|billion|million|bn|investors?|market|downgrade|upgrade|rating|bond|debt|dividend|tariffs?)\b|[$€£%]/i.test(g.items.map(i => i.title).join(' '))) continue;
     if (HOLD.test(text)) { review.push({reason: 'sensitive subject', title: g.items[0].title, sources: g.items.map(i => i.source), at: nowISO}); continue; }
     if (!existing && created >= MAX_NEW) continue;
     const primary = [...g.items].sort((a, b) => (Reader.editorialTier?.(b) || 0) - (Reader.editorialTier?.(a) || 0) || Date.parse(a.publishedAt) - Date.parse(b.publishedAt))[0];
