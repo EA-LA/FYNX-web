@@ -60,3 +60,18 @@ html body .fp-dialog .fp-count{margin:0!important;color:#999!important;font:400 
 @media (max-width:600px) and (pointer:coarse){
   .fp-directory-footer a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;box-sizing:border-box}
 }
+
+/* Featured flagship: FYNX Terminal card at the top of the products menu. */
+.fp-dialog .fp-featured{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:22px;align-items:center;margin:0 0 26px;padding:16px;background:#070909;border:1px solid #2c3530;border-left:3px solid #ffb000;color:#eef3ef!important;text-decoration:none!important}
+.fp-dialog .fp-featured:hover{border-color:#ffb000}.fp-dialog .fp-featured:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.fp-featured-preview{display:flex;flex-direction:column;gap:4px;background:#030405;border:1px solid #1f2825;padding:6px}
+.fp-featured-bar{display:flex;gap:6px;align-items:baseline;font:700 10px/1 'IBM Plex Mono',Menlo,monospace}.fp-featured-bar b{color:#fff}.fp-featured-bar i{font-style:normal;color:#ffb000;letter-spacing:1.5px}.fp-featured-bar em{margin-left:auto;font-style:normal;color:#3ecf8e}
+.fp-featured-desks{display:flex;gap:2px;flex-wrap:wrap}.fp-featured-desks span{font:700 8px/1 'IBM Plex Mono',Menlo,monospace;padding:3px 4px;border:1px solid #2a3530;color:#cfd8d3}.fp-featured-desks span.on{background:#ffb000;border-color:#ffb000;color:#000}
+.fp-featured-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px}.fp-featured-grid span{height:22px;background:#0d1112;border:1px solid #1f2825;border-top:2px solid #131a18}.fp-featured-grid span:nth-child(3n+1){background:linear-gradient(90deg,rgba(62,207,142,.25),rgba(62,207,142,.05))}.fp-featured-grid span:nth-child(4n+2){background:linear-gradient(90deg,rgba(255,107,95,.22),rgba(255,107,95,.04))}
+.fp-featured-text{display:flex;flex-direction:column;gap:5px;min-width:0}
+.fp-featured-kicker{font:700 10px/1.2 'IBM Plex Mono',Menlo,monospace;color:#ffb000;letter-spacing:1.5px;text-transform:uppercase}
+.fp-featured-title{font:800 22px/1.15 Arial,Helvetica,sans-serif;color:#fff}
+.fp-featured-desc{font:400 13px/1.5 Arial,Helvetica,sans-serif;color:#b8c5bd}
+.fp-featured-list{display:flex;flex-wrap:wrap;gap:4px}.fp-featured-list span{font:600 10px/1 Arial,Helvetica,sans-serif;padding:4px 6px;border:1px solid #33403a;color:#d6e0da}
+.fp-featured-cta{font:800 12px/1 Arial,Helvetica,sans-serif;color:#ffb000;margin-top:2px}
+@media(max-width:700px){.fp-dialog .fp-featured{grid-template-columns:1fr;gap:12px;padding:12px}.fp-featured-title{font-size:18px}.fp-featured-list{display:none}}
