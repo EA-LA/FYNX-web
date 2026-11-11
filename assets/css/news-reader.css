@@ -145,3 +145,7 @@ html body.fynx-reader-page.reader-focus-view .reader-main { max-width:850px; }
  .reader-statusbar>div { justify-content:flex-start; }.reader-statusbar button { flex:1 1 auto; }
  .reader-focus-view .reader-section { scroll-margin-top:115px; }
 }
+/* [site-qa] run 65: article header Account and footer Research/Contact links at least 44x44 on touch phones (page does not load site-design.css). */
+@media (hover:none) and (pointer:coarse) and (max-width:820px) {
+ .discovery-header nav a,.reader-footer nav a { display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; box-sizing:border-box; }
+}

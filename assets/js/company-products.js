@@ -34,6 +34,16 @@
   const ordered=[['company','products'],['research','intelligence'],['tools'],['media','business']];
   ordered.forEach(ids=>{const column=element('div','fp-menu-column');ids.forEach(id=>{const group=window.FynxCompanyProducts.find(value=>value.id===id);if(!group)return;const section=element('section','fp-group');section.dataset.productGroup='';section.append(element('h3','',group.title));const list=element('ul');group.items.forEach(item=>{const li=element('li');li.dataset.productItem='';const a=element('a');a.href=item.href;const title=element('span','fp-item-title',item.name);a.append(title);if(item.status)a.append(element('span','fp-status',item.status));const desc=element('span','fp-description',item.description);a.append(desc);li.append(a);list.append(li);});section.append(list);column.append(section);});columns.append(column);});
   const empty=element('p','fp-empty','No matches. Try a different product, topic or tool.');empty.dataset.productEmpty='';empty.hidden=true;layout.append(empty,columns);
+  // Flagship product: a featured card above the columns, with a live-style preview of the terminal desks.
+  const flagship=window.FynxCompanyProducts.flatMap(group=>group.items).find(item=>item.featured);
+  if(flagship){const card=element('a','fp-featured');card.href=flagship.href;card.dataset.productItem='';
+   const preview=element('span','fp-featured-preview');preview.setAttribute('aria-hidden','true');
+   const bar=element('span','fp-featured-bar');bar.append(element('b','','FYNX'),element('i','','TERMINAL'),element('em','','● LIVE'));preview.append(bar);
+   const desks=element('span','fp-featured-desks');(flagship.desks||[]).slice(0,6).forEach((d,i)=>desks.append(element('span',i===0?'on':'',d.toUpperCase())));preview.append(desks);
+   const cells=element('span','fp-featured-grid');for(let i=0;i<8;i++)cells.append(element('span',''));preview.append(cells);
+   const text=element('span','fp-featured-text');text.append(element('span','fp-featured-kicker',flagship.status||'Flagship'),element('span','fp-featured-title',flagship.name),element('span','fp-featured-desc',flagship.description));
+   const list=element('span','fp-featured-list');(flagship.desks||[]).forEach(d=>list.append(element('span','',d)));text.append(list,element('span','fp-featured-cta','Open terminal →'));
+   card.append(preview,text);layout.prepend(card);}
   const footer=element('div','fp-menu-footer');const directory=element('a','fp-directory-link','All products & details →');directory.href='/products.html';
   const count=element('p','fp-count');count.dataset.companyProductsCount='';count.setAttribute('role','status');count.setAttribute('aria-live','polite');footer.append(directory,count);
   shell.append(top,layout,footer);dialog.append(shell);document.body.append(dialog);setupFilter(dialog);

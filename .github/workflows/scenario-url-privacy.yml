@@ -1,0 +1,36 @@
+name: Calculator scenario URL privacy
+
+on:
+  pull_request:
+    paths:
+      - 'tools/**'
+      - 'calculator.html'
+      - 'assets/js/scenario-link.js'
+      - 'scripts/test-scenario-*.cjs'
+      - 'scripts/test-position-scenario-privacy.cjs'
+      - '.github/workflows/scenario-url-privacy.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tools/**'
+      - 'calculator.html'
+      - 'assets/js/scenario-link.js'
+      - 'scripts/test-scenario-*.cjs'
+      - 'scripts/test-position-scenario-privacy.cjs'
+      - '.github/workflows/scenario-url-privacy.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  scenario-url-privacy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check assets/js/scenario-link.js
+      - name: Copy scenario never writes inputs to the URL; shared links still open
+        run: node --test scripts/test-scenario-url-guard.cjs scripts/test-scenario-link-privacy.cjs scripts/test-position-scenario-privacy.cjs

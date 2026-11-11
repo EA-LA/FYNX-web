@@ -35,7 +35,15 @@
       const button=document.createElement('button');button.type='button';button.textContent=text;button.setAttribute('aria-label',label);
       button.addEventListener('click',action);controls.append(button);
     }
-    const left=host.querySelector('.terminal-ticker-track')?.scrollLeft||0;host.replaceChildren(track,controls);track.scrollLeft=left;
+    // Replacing the snapshot must not strand keyboard/VoiceOver users on <body>.
+    // The ticker always renders the same focusable slots: track, label,
+    // instrument links, then previous/next controls.
+    const focusSelector = '.terminal-ticker-track, .terminal-ticker-label, .terminal-ticker-item, .terminal-ticker-controls button';
+    const focusedSlot = [...host.querySelectorAll(focusSelector)].indexOf(document.activeElement);
+    const left=host.querySelector('.terminal-ticker-track')?.scrollLeft||0;
+    host.replaceChildren(track,controls);
+    track.scrollLeft=left;
+    if(focusedSlot!==-1)host.querySelectorAll(focusSelector)[focusedSlot]?.focus({preventScroll:true});
   }
   function start(){if(document.hidden||!window.FynxTerminalData||!document.body.hasAttribute('data-fynx-terminal'))return;window.FynxTerminalData.loadQuotes().then(data=>{latest=data;render(data);document.dispatchEvent(new CustomEvent('fynx:terminal-quotes',{detail:data}));}).catch(()=>{const status=document.querySelector('.terminal-ticker-status');if(status)status.textContent='Quote refresh unavailable · Previous source times still apply';});}
   function timers(){if(!refresh)refresh=setInterval(start,60000);if(!motion)motion=setInterval(()=>{const host=document.querySelector('[data-terminal-ticker]');if(!document.hidden&&!reduced?.matches&&host&&!host.contains(document.activeElement))move();},5000);}
