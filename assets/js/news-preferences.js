@@ -60,8 +60,10 @@
   function clearHistory() {state.history=[];persist();emit('fynx:news-history-change');}
   root.FYNXYourNews = Object.freeze({topics,getTopics:()=>state.topics.slice(),setTopics,getHistory:history,markOpened,isRead:value=>{const id=typeof value==='string'?value:value?.articleId||value?.id;return history().some(item=>item.id===id);},clearHistory,isPersistent:()=>persistent});
   root.addEventListener('storage',event=>{
-    if(event.key!==KEY)return;
-    if(event.newValue===null)state={topics:defaults.slice(),history:[]};
+    // A clear() in another tab emits a storage event with a null key.
+    // Discard private reading history rather than retaining it in this open tab.
+    if(event.key!==KEY&&event.key!==null)return;
+    if(event.key===null||event.newValue===null)state={topics:defaults.slice(),history:[]};
     else {try{if(event.newValue.length>120000)return;const next=normalize(JSON.parse(event.newValue));if(!next)return;state=next;}catch{return;}}
     emit('fynx:news-preferences-change');emit('fynx:news-history-change');
   });
