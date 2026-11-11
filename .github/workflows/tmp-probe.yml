@@ -9,5 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          for u in https://www.fynxfinanceworld.com/ https://fynxfinanceworld.com/ "https://fynxfinanceworld-m7m4cyk4m-elhams-projects-9aed9c12.vercel.app/fn/market.js?op=search&q=nvidia" "https://fynxfinanceworld-m7m4cyk4m-elhams-projects-9aed9c12.vercel.app/fn/market.js?op=chart&symbol=SAP.DE&range=1mo" https://fynxfinanceworld.vercel.app/ "https://fynxfinanceworld.vercel.app/fn/market.js?op=search&q=nvidia" "https://www.fynxfinanceworld.com/fn/market.js?op=search&q=nvidia"; do
-            echo "=== $u"; curl -s -m 25 -D - -o /tmp/b "$u" | grep -iE "^(HTTP|server|content-type|x-vercel|access-control)" ; head -c 300 /tmp/b; echo; done
+          B=https://us-central1-fynx-c7a28.cloudfunctions.net/webResearchData
+          for u in "$B?action=history&symbol=SAP.DE" "$B?action=history&symbol=PLTR" "$B?action=quotes&symbols=SAP.DE,PLTR,7203.T" "$B?action=history&symbol=ES%3DF" "$B?action=search&q=nvidia" "https://query1.finance.yahoo.com/v1/finance/search?q=nvidia&quotesCount=3"; do
+            echo "=== $u"; curl -s -m 25 -H "Origin: https://www.fynxfinanceworld.com" -D - -o /tmp/b "$u" | grep -iE "^(HTTP|content-type|access-control)" ; head -c 400 /tmp/b; echo; done
