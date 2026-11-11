@@ -170,3 +170,8 @@ html body.newsroom-page .newsroom-footer { display: flex; justify-content: space
 @media (hover:none) and (pointer:coarse) and (max-width:820px){
   html body .newsroom-toolbar-actions button{min-height:44px;box-sizing:border-box}
 }
+
+/* [site-qa] run 60: news header Account link, breadcrumbs and footer links at least 44px wide on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .resource-wayfinding nav a,html body .newsroom-breadcrumb a,html body .newsroom-footer nav a,html body .terminal-public-masthead nav>a{min-width:44px!important;justify-content:center;box-sizing:border-box}
+}

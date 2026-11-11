@@ -11,6 +11,7 @@
     research: '/tools/research-desk.html',
     quant: '/quant-analyst.html',
     edge: '/edge-radar/',
+    macro: '/macro-desk.html',
     profile: '/profile.html',
   };
 
@@ -25,6 +26,7 @@
     research: 'Research',
     quant: 'Quant Analyst',
     edge: 'Edge Radar',
+    macro: 'Macro Desk',
     profile: 'Profile',
   };
 
@@ -33,6 +35,7 @@
     'index.html': 'home',
     'dashboard.html': 'home',
     'journal.html': 'journal',
+    'trader-journal.html': 'journal',
     'calculator.html': 'calculator',
     'news.html': 'news',
     'calendar.html': 'calendar',
@@ -40,6 +43,8 @@
     'profile.html': 'profile',
     'quant-analyst.html': 'quant',
     'quant-analyst': 'quant',
+    'macro-desk.html': 'macro',
+    'macro-desk': 'macro',
   };
 
 
@@ -51,6 +56,7 @@
     calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>',
     learn: '<path d="M2 7l10-4 10 4-10 4-10-4z"></path><path d="M6 10v5c0 2.2 2.7 4 6 4s6-1.8 6-4v-5"></path><path d="M22 10v6"></path>',
     edge: '<circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4"></circle><path d="M12 12 20 4"></path>',
+    macro: '<path d="M3 21h18M5 21V10M10 21V6M15 21v-8M20 21V3"></path>',
     quant: '<path d="M3 18l5-7 4 3 9-11M3 21h18"></path>',
     research: '<path d="M4 3h16v18H4zM8 8h8M8 12h8M8 16h5"></path>',
     explore: '<circle cx="10" cy="10" r="6"></circle><path d="m15 15 6 6"></path>',
@@ -129,7 +135,7 @@ function ensureNavConsistencyStyles() {
 function detectCurrentView() {
   if(window.location.pathname.startsWith('/edge-radar'))return 'edge';
   let file = window.location.pathname.split('/').pop() || 'home.html';
-  if (!file.includes('.html') && file !== 'quant-analyst') file = 'home.html';
+  if (!file.includes('.html') && !['quant-analyst','macro-desk'].includes(file)) file = 'home.html';
   return FILE_TO_VIEW[file] || 'home';
 }
 
@@ -140,7 +146,7 @@ function detectCurrentView() {
         return `
           <a class="nav-item${active}" href="${VIEW_PAGES[view]}" data-view="${view}"${active ? ' aria-current="page"' : ''}>
             <svg class="nav-icon" viewBox="0 0 24 24">${NAV_ICONS[view]}</svg>
-            <span class="nav-label">${VIEW_LABELS[view]}</span>${['quant','edge'].includes(view) ? '<span class="quant-new-badge">NEW</span>' : ''}
+            <span class="nav-label">${VIEW_LABELS[view]}</span>${['quant','edge','macro'].includes(view) ? '<span class="quant-new-badge">NEW</span>' : ''}
           </a>
         `;
       })
