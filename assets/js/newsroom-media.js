@@ -106,7 +106,7 @@
   const CACHE_KEY = 'fynx_story_previews_v1', HIT_MS = 6 * 3600000, MISS_MS = 3600000;
   let cache = {};
   try { const raw = root.sessionStorage?.getItem(CACHE_KEY); if (raw && raw.length < 400000) cache = JSON.parse(raw) || {}; } catch { cache = {}; }
-  const waiting = new Map(); let timer = null;
+  const waiting = new Map(), inflight = new Set(); let timer = null;
   function safe(value) { try { const u = new URL(value); return u.protocol === 'https:' && !u.username && !u.password && u.hostname.includes('.') ? u.href : null; } catch { return null; } }
   function persist() {
     try { const now = Date.now(), keep = Object.entries(cache).filter(([, v]) => v && now - v.at < HIT_MS).slice(-150); cache = Object.fromEntries(keep); root.sessionStorage?.setItem(CACHE_KEY, JSON.stringify(cache)); } catch {}
@@ -114,17 +114,18 @@
   function fresh(url) { const v = cache[url]; return v && Date.now() - v.at < (v.image ? HIT_MS : MISS_MS) ? v : null; }
   function flush() {
     timer = null;
-    const urls = [...waiting.keys()]; if (!urls.length) return;
+    const urls = [...waiting.keys()].filter(u => !inflight.has(u)); if (!urls.length) return;
+    urls.forEach(u => inflight.add(u));
     for (let i = 0; i < urls.length; i += 8) {
       const batch = urls.slice(i, i + 8), query = new URLSearchParams(); batch.forEach(u => query.append('u', u));
-      const done = data => batch.forEach(u => { const p = data?.previews?.[u], hit = p && safe(p.image) ? {image: safe(p.image), site: String(p.site || '').slice(0, 80), url: safe(p.url) || u, alt: p.alt ? String(p.alt).slice(0, 300) : '', at: Date.now()} : {image: null, at: Date.now()}; cache[u] = hit; (waiting.get(u) || []).forEach(fn => fn(hit)); waiting.delete(u); });
+      const done = data => batch.forEach(u => { const p = data?.previews?.[u], hit = p && safe(p.image) ? {image: safe(p.image), site: String(p.site || '').slice(0, 80), url: safe(p.url) || u, alt: p.alt ? String(p.alt).slice(0, 300) : '', at: Date.now()} : {image: null, at: Date.now()}; cache[u] = hit; inflight.delete(u); (waiting.get(u) || []).forEach(fn => fn(hit)); waiting.delete(u); });
       root.fetch(PREVIEW + '?' + query, {credentials: 'omit', referrerPolicy: 'no-referrer', signal: root.AbortSignal?.timeout ? root.AbortSignal.timeout(15000) : undefined})
-        .then(r => r.ok ? r.json() : null).catch(() => null).then(data => { if (data) done(data); else batch.forEach(u => { (waiting.get(u) || []).forEach(fn => fn(null)); waiting.delete(u); }); persist(); });
+        .then(r => r.ok ? r.json() : null).catch(() => null).then(data => { if (data) done(data); else batch.forEach(u => { inflight.delete(u); (waiting.get(u) || []).forEach(fn => fn(null)); waiting.delete(u); }); persist(); });
     }
   }
   function lookup(url) {
     const known = fresh(url); if (known) return Promise.resolve(known);
-    return new Promise(resolve => { if (!waiting.has(url)) waiting.set(url, []); waiting.get(url).push(resolve); if (!timer) timer = setTimeout(flush, 40); });
+    return new Promise(resolve => { if (!waiting.has(url)) waiting.set(url, []); waiting.get(url).push(resolve); if (!timer && !inflight.has(url)) timer = setTimeout(flush, 40); });
   }
   async function upgrade(figure, image, caption, stories, settings) {
     if (typeof root.fetch !== 'function') return;
