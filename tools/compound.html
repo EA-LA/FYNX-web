@@ -506,7 +506,7 @@
             </div>
           </div>
 
-          <div class="hint" id="summaryText">
+          <div class="hint" id="summaryText" role="status" aria-live="polite" aria-atomic="true">
             Fill in the numbers and calculate to see the full compounding projection.
           </div>
         </div>
@@ -656,19 +656,15 @@
 
     document.getElementById("calculateBtn").addEventListener("click", calculateCompound);
 
-    document.getElementById("resetBtn").addEventListener("click", () => {
-      document.getElementById("startingBalance").value = 1000;
-      document.getElementById("monthlyDeposit").value = 200;
-      document.getElementById("annualRate").value = 12;
-      document.getElementById("years").value = 10;
-      document.getElementById("compoundFrequency").value = 12;
-      document.getElementById("depositTiming").value = "end";
-
+    // Results belong to the inputs that produced them, never to edited assumptions.
+    // Keep the schedule, all four metrics, and accessible summary in sync.
+    function clearCompoundResults(message){
       document.getElementById("endingBalance").textContent = "$0.00";
       document.getElementById("totalContributions").textContent = "$0.00";
       document.getElementById("totalGrowth").textContent = "$0.00";
       document.getElementById("returnMultiple").textContent = "0.00x";
-      document.getElementById("summaryText").textContent = "Fill in the numbers and calculate to see the full compounding projection.";
+      document.getElementById("summaryText").textContent = message ||
+        "Fill in the numbers and calculate to see the full compounding projection.";
       document.getElementById("scheduleBody").innerHTML = `
         <tr>
           <td colspan="6" style="text-align:center;color:var(--muted);padding:1.4rem;">
@@ -676,6 +672,25 @@
           </td>
         </tr>
       `;
+    }
+
+    ["startingBalance", "monthlyDeposit", "annualRate", "years", "compoundFrequency", "depositTiming"].forEach(id => {
+      const input = document.getElementById(id);
+      const invalidate = () => clearCompoundResults(
+        "Inputs changed. Calculate again to update the projection and yearly schedule."
+      );
+      input.addEventListener("input", invalidate);
+      input.addEventListener("change", invalidate);
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      document.getElementById("startingBalance").value = 1000;
+      document.getElementById("monthlyDeposit").value = 200;
+      document.getElementById("annualRate").value = 12;
+      document.getElementById("years").value = 10;
+      document.getElementById("compoundFrequency").value = 12;
+      document.getElementById("depositTiming").value = "end";
+      clearCompoundResults();
     });
 
     calculateCompound();
