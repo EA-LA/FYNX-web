@@ -203,7 +203,8 @@ window.FynxTerminalPages = T => {
       if (!h.title) head.prepend(el('h1', 'pg-title', a.title));
       meta.textContent = [a.source, ago(a.publishedAt), a.coverageLevel === 'source-text' ? 'From the source text' : a.coverageLevel === 'publisher-excerpt' ? 'From the publisher excerpt' : 'Headline only'].join(' · ');
       if (a.image?.url) { const fig = el('figure', 'pg-fig'), img = el('img'); img.src = a.image.url; img.alt = a.image.alt || ''; img.loading = 'lazy'; img.referrerPolicy = 'no-referrer'; fig.append(img); if (a.image.credit) fig.append(el('figcaption', '', a.image.credit)); head.append(fig); }
-      if (a.summary) head.append(el('p', 'pg-lead', a.summary));
+      const plain = t => String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      if (a.summary && !plain(a.title).startsWith(plain(a.summary))) head.append(el('p', 'pg-lead', a.summary));
       if (a.keyPoints?.length) { const s = section('Key points'); const ul = el('ul', 'pg-ul'); a.keyPoints.forEach(p => { const li = el('li'); li.append(el('span', '', p.text)); if (p.evidence) li.append(el('small', '', p.evidence)); ul.append(li); }); s.append(ul); host.append(s); }
       if (a.numbers?.length) { host.append(cards(a.numbers.map(n => [n.context.slice(0, 90), n.value]))); }
       if (a.context?.length) { const s = section('Context'); a.context.forEach(c => { s.append(el('h3', 'pg-h3', c.title), el('p', 'pg-p', c.text)); }); host.append(s); }

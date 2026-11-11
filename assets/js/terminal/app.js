@@ -97,7 +97,7 @@
   const signed = (v, d = 2, u = '') => finite(v) ? `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(d)}${u}` : '—';
   const tone = v => !finite(v) || Math.abs(v) < 1e-9 ? 'fx-flat' : v > 0 ? 'fx-up' : 'fx-down';
   const ago = iso => { const m = Math.round((Date.now() - Date.parse(iso)) / 60000); return !Number.isFinite(m) ? '' : m < 1 ? 'now' : m < 60 ? m + 'm ago' : m < 1440 ? Math.round(m / 60) + 'h ago' : Math.round(m / 1440) + 'd ago'; };
-  const hhmm = iso => new Date(iso).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+  const hhmm = iso => new Date(iso).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', hourCycle: 'h23'});
   const day = iso => new Date(iso.length === 10 ? iso + 'T12:00:00Z' : iso).toLocaleDateString(undefined, {month: 'short', day: 'numeric'});
   const fmt = (v, d) => finite(v) ? v.toLocaleString('en-US', {minimumFractionDigits: d, maximumFractionDigits: d}) : '—';
   const big = v => !finite(v) ? '—' : Math.abs(v) >= 1e12 ? '$' + (v / 1e12).toFixed(2) + 'T' : Math.abs(v) >= 1e9 ? '$' + (v / 1e9).toFixed(2) + 'B' : Math.abs(v) >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : '$' + v.toFixed(2);
@@ -647,7 +647,7 @@
     r.append(el('b', '', shortOf(p)), el('span', 'fx-num fx-up', b ? fmt(b.bid, digitsOf(p)) : '—'), el('span', 'fx-num fx-down', b ? fmt(b.ask, digitsOf(p)) : '—'), el('span', 'fx-num', b && finite(b.spreadBps) ? b.spreadBps.toFixed(2) + 'bp' : '—')); host.append(r);
   }
   function renderBooks() {
-    const host = panel('books'), list = ['BTC-USD', 'ETH-USD', 'SOL-USD', 'LTC-USD'];
+    const host = panel('books'), list = ['BTC-USD', 'ETH-USD'];
     const head = el('div', 'fx-th fx-c4'); head.append(el('span', '', 'BOOK'), el('span', '', 'BID'), el('span', '', 'ASK'), el('span', '', 'SPRD')); host.append(head);
     list.forEach(p => bookRow(host, p));
     const b = S.books['BTC-USD'];
@@ -1071,7 +1071,7 @@
     renderDeskBar(); buildGrid(); renderStrip(); renderNews();
     renderAll(); say(`${d.label} desk loaded`);
     if (initial) return;
-    await Promise.allSettled([loadSeries(S.focus), d.news !== 'all' ? loadNews(d.news) : null, d.slots.includes('books') ? loadBooks(['BTC-USD', 'ETH-USD', 'SOL-USD', 'LTC-USD']) : null]);
+    await Promise.allSettled([loadSeries(S.focus), d.news !== 'all' ? loadNews(d.news) : null, d.slots.includes('books') ? loadBooks(['BTC-USD', 'ETH-USD']) : null]);
     R('focus', 'top', 'intel', 'books', 'story'); renderNews(); R('desks');
   }
 
@@ -1134,7 +1134,7 @@
     if (params.get('symbol')) S.focus = resolve(params.get('symbol')) || S.focus;
     PG?.fromLocation();
     const d = D();
-    await Promise.allSettled([loadQuotes(), loadMarkets(), loadDesk(), loadSchedule(), loadEdge(), loadCalendar(), loadBriefing(), loadVix(), loadCorr(), loadBooks(d.slots.includes('books') ? ['BTC-USD', 'ETH-USD', 'SOL-USD', 'LTC-USD'] : ['BTC-USD', 'ETH-USD']), loadOptions(), loadEarnings(), d.news !== 'all' ? loadNews(d.news) : null]);
+    await Promise.allSettled([loadQuotes(), loadMarkets(), loadDesk(), loadSchedule(), loadEdge(), loadCalendar(), loadBriefing(), loadVix(), loadCorr(), loadBooks(d.slots.includes('books') ? ['BTC-USD', 'ETH-USD'] : ['BTC-USD', 'ETH-USD']), loadOptions(), loadEarnings(), d.news !== 'all' ? loadNews(d.news) : null]);
     await loadSeries(S.focus);
     renderDeskBar(); renderAll(); $('fx-main').setAttribute('aria-busy', 'false');
     PG?.rerender();
@@ -1142,7 +1142,7 @@
   }
   const every = (ms, task) => setInterval(async () => { if (!document.hidden) await task(); }, ms);
   every(30000, async () => { await loadQuotes(); renderQuotesAll(); R('story'); });
-  every(15000, async () => { if (!D().slots.includes('books') && S.deskKey !== 'all') return; await loadBooks(D().slots.includes('books') ? ['BTC-USD', 'ETH-USD', 'SOL-USD', 'LTC-USD'] : ['BTC-USD', 'ETH-USD']); R('vix', 'books'); });
+  every(15000, async () => { if (!D().slots.includes('books') && S.deskKey !== 'all') return; await loadBooks(D().slots.includes('books') ? ['BTC-USD', 'ETH-USD'] : ['BTC-USD', 'ETH-USD']); R('vix', 'books'); });
   every(30000, () => { renderClocks(); R('cb', 'sess'); });
   every(120000, async () => { await Promise.allSettled([loadBriefing(), D().news !== 'all' ? loadNews(D().news, true) : null]); renderNews(); R('top', 'story', 'intel', 'official'); });
   every(300000, async () => { await Promise.allSettled([loadDesk(), loadMarkets(), loadOptions(), loadNews(S.deskTab, true)]); renderQuotesAll(); R('cb', 'curve', 'gov', 'rates', 'story', 'bias', 'desks', 'opt', 'optlist', 'chain', 'active', 'intel'); renderStrip(); });
