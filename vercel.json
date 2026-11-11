@@ -7,6 +7,10 @@
       "config": {
         "distDir": "dist"
       }
+    },
+    {
+      "src": "fn/market.js",
+      "use": "@vercel/node"
     }
   ]
 }
