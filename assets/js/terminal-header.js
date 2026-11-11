@@ -60,6 +60,14 @@
     return action;
   }
 
+  function allTogether() {
+    const action = link('All Together', '/terminal.html', 'terminal-all-together');
+    action.setAttribute('aria-label', 'All Together: every market, headline and tool on one terminal screen');
+    action.prepend(element('span', 'terminal-all-together-icon', '▦'));
+    action.querySelector('.terminal-all-together-icon').setAttribute('aria-hidden', 'true');
+    return action;
+  }
+
   function requestQuickAdd() {
     const button = document.getElementById('quickAddBtn');
     const entry = document.getElementById('view-entry');
@@ -172,7 +180,7 @@
     brand.append(element('span', 'terminal-brand-subtitle', 'FINANCE WORLD'));
     logo.append(brand);
     topBar.prepend(logo);
-    right.prepend(yourNews());
+    right.prepend(allTogether(), yourNews());
     right.insertBefore(quickAdd(), right.querySelector('#avatarInitials') || accountLinks || null);
     topBar.classList.add('terminal-masthead');
     body.querySelectorAll('.nav-item.active').forEach(function (item) { item.setAttribute('aria-current', 'page'); });
@@ -227,7 +235,7 @@
             utility.actions.append(action);
           }
         });
-        quickActions.prepend(yourNews(), quickAdd());
+        quickActions.prepend(allTogether(), yourNews(), quickAdd());
       }
       const refreshMenuPosition = function () {
         document.documentElement.style.setProperty('--header-h', header.getBoundingClientRect().height + 'px');
@@ -236,7 +244,7 @@
       if (typeof ResizeObserver === 'function') new ResizeObserver(refreshMenuPosition).observe(header);
     } else {
       const actions = container.querySelector(':scope > nav');
-      if (actions) actions.prepend(yourNews(), quickAdd());
+      if (actions) actions.prepend(allTogether(), yourNews(), quickAdd());
     }
     return true;
   }
