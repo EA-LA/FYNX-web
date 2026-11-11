@@ -1,0 +1,13 @@
+name: TEMP probe
+on:
+  push:
+    branches: [tmp/probe]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for u in https://www.fynxfinanceworld.com/ https://fynxfinanceworld.com/ "https://fynxfinanceworld-m7m4cyk4m-elhams-projects-9aed9c12.vercel.app/fn/market.js?op=search&q=nvidia" "https://fynxfinanceworld-m7m4cyk4m-elhams-projects-9aed9c12.vercel.app/fn/market.js?op=chart&symbol=SAP.DE&range=1mo" https://fynxfinanceworld.vercel.app/ "https://fynxfinanceworld.vercel.app/fn/market.js?op=search&q=nvidia" "https://www.fynxfinanceworld.com/fn/market.js?op=search&q=nvidia"; do
+            echo "=== $u"; curl -s -m 25 -D - -o /tmp/b "$u" | grep -iE "^(HTTP|server|content-type|x-vercel|access-control)" ; head -c 300 /tmp/b; echo; done
