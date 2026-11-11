@@ -1,16 +1,22 @@
-name: TEMP site crawl
+name: TEMP live check
 on:
   push:
     branches: [tmp/check-live]
 permissions:
   contents: read
 jobs:
-  crawl:
+  live:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with: {ref: claude/story-photos, path: site}
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - run: pip install playwright==1.48.0
-      - run: node .github/tmp/probe.cjs
+      - run: |
+          (cd site && python3 -m http.server 8080 >/dev/null 2>&1 &)
+          (node .github/tmp/pvserver.cjs $GITHUB_WORKSPACE/site/fn/preview.js &)
+          sleep 2
+          python3 .github/tmp/live.py

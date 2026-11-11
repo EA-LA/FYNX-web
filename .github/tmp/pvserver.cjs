@@ -1,0 +1,2 @@
+const http=require('http');const fn=require(process.argv[2]);
+http.createServer((req,res)=>{const u=new URL(req.url,'http://x');const query={u:u.searchParams.getAll('u')};const r={setHeader:(k,v)=>res.setHeader(k,v),status(c){res.statusCode=c;return this},json(b){res.setHeader('Content-Type','application/json');res.end(JSON.stringify(b))},end(){res.end()}};fn({method:'GET',query},r);}).listen(9001);
