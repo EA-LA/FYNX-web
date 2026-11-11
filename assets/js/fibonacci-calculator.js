@@ -57,6 +57,9 @@
     for (const [id, value] of Object.entries({ swingHigh: '1.1200', swingLow: '1.1000', entryPrice: '1.1124', trendDirection: 'up', pricePrecision: '4' })) el(id).value = value;
     render();
   });
+  // Number inputs emit `input` before blur (including on iPhone); keep visible levels in sync.
+  // `change` is retained for dropdowns and keyboard behavior.
+  for (const id of ['swingHigh', 'swingLow', 'entryPrice']) el(id).addEventListener('input', render);
   for (const id of ['swingHigh', 'swingLow', 'entryPrice', 'trendDirection', 'pricePrecision']) {
     el(id).addEventListener('change', render);
     el(id).addEventListener('keydown', event => { if (event.key === 'Enter') render(); });

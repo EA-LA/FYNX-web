@@ -1,0 +1,52 @@
+name: Refresh Terminal desk data
+# Publishes markets.json, options.json and earnings.json for the FYNX Terminal desks
+# to the separate `terminal-data` branch. The branch always holds a single commit
+# (force-replaced), so it never grows. It never writes to main or any other data branch.
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/refresh-terminal-markets.cjs'
+      - '.github/workflows/refresh-terminal-markets.yml'
+permissions:
+  contents: write
+concurrency:
+  group: publish-terminal-data
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read previous snapshot
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p "$RUNNER_TEMP/previous"
+          if git fetch --depth=1 origin refs/heads/terminal-data 2>/dev/null; then
+            for f in markets.json options.json earnings.json; do git show "FETCH_HEAD:$f" > "$RUNNER_TEMP/previous/$f" 2>/dev/null || rm -f "$RUNNER_TEMP/previous/$f"; done
+          fi
+      - name: Fetch public sources
+        run: node scripts/refresh-terminal-markets.cjs "$RUNNER_TEMP/out" "$RUNNER_TEMP/previous"
+      - name: Publish snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          publish="$RUNNER_TEMP/terminal-data"
+          git worktree add --detach "$publish" HEAD
+          cd "$publish"
+          git switch --quiet --orphan terminal-data-snapshot
+          git rm -rf --quiet . >/dev/null 2>&1 || true
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp "$RUNNER_TEMP"/out/*.json .
+          git config user.name 'FYNX terminal publisher'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -- *.json
+          git commit --quiet -m "Terminal desk snapshot $(date -u +%FT%RZ)"
+          git push --force origin HEAD:refs/heads/terminal-data

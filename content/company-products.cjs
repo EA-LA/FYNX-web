@@ -10,6 +10,7 @@ module.exports = [
     item('Contact & support','/contact.html','Get in touch with the FYNX team.'),
   ]},
   {id:'products',title:'FYNX products',items:[
+    {...item('FYNX Terminal','/terminal.html','Every market, headline and tool on one live screen. Pick your desk: Stocks, Forex, Bonds, Crypto, Funds, Futures, Indices, Economy, Options or Commodities.','New · Flagship'),featured:true,desks:['Stocks','Forex','Bonds','Crypto','Funds','Futures','Indices','Economy','Options','Commodities']},
     item('Finance World','/home.html','Your workspace for finance, markets and trading research.'),
     item('FYNX Mobile','https://site.fynxfinanceworld.com/','Explore FYNX on iPhone and discover the app.'),
     item('FYNX Funded','https://www.fynxfunded.com/','Simulated trading evaluations and account tools. New purchases are paused.','Purchases paused'),
