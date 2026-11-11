@@ -53,16 +53,23 @@ assert.ok(markup.includes('&lt;svg onload=alert(1)&gt;'), 'category escaped as t
 assert.ok(markup.includes('a&quot; onmouseover=&quot;alert(1)'), 'identifier escaped in attribute');
 assert.ok(!markup.includes('<img') && !markup.includes('<script') && !markup.includes('<svg'), 'no executable injected markup');
 assert.ok(!markup.includes(' onclick='), 'deletion no longer uses inline JS');
-assert.ok(markup.includes('aria-label="Remove '), 'delete control has an accessible name');
+assert.ok(markup.includes('aria-label="Delete '), 'delete control has an accessible name');
+assert.ok(markup.includes('data-ics-id='), 'existing calendar download action is preserved');
 assert.equal(a.get('eventDate').value, '2026-11-09', 'defaults to local day, not UTC day');
 assert.equal(a.get('eventTime').value, '18:30', 'defaults to local time plus one hour');
 const handler = a.listeners['alertsList:click'];
 assert.equal(typeof handler, 'function', 'delegated delete handler is installed');
-handler({ target: { closest() { return { dataset: { deleteAlert: malicious.id } }; } } });
+handler({ target: { closest(selector) {
+  return selector === '[data-delete-id]' ? { getAttribute(name) {
+    assert.equal(name, 'data-delete-id'); return malicious.id;
+  } } : null;
+} } });
 assert.equal(JSON.parse(a.saved.fynx_calendar_alerts).length, 0, 'delete works without inline JavaScript');
 const b = mount([], '2026-11-09T07:30:00Z');
 assert.equal(b.get('eventDate').value, '2026-11-09', 'midnight rollover uses local date');
 assert.equal(b.get('eventTime').value, '00:30', 'midnight rollover uses local time');
 const c = mount({ unexpected: 'data' }, '2026-11-10T01:30:00Z');
 assert.ok(c.get('alertsList').innerHTML.includes('No alerts saved yet'), 'invalid stored shape cannot crash render');
+const d = mount([null, false, 'bad', [], malicious], '2026-11-10T01:30:00Z');
+assert.ok(d.get('alertsList').innerHTML.includes('&lt;img'), 'invalid entries are ignored while valid alerts remain');
 console.log('Calendar alerts: HTML escaping, safe delegated delete, local date/time, invalid storage all passed.');
