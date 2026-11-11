@@ -445,7 +445,7 @@
           <h2>RESULT</h2>
           <div class="muted">Enter values and tap Calculate</div>
 
-          <div id="resultArea" class="result-placeholder">
+          <div id="resultArea" class="result-placeholder" aria-live="polite">
             Your pivot levels will appear here.
           </div>
         </div>
@@ -482,6 +482,15 @@
     const calculateBtn = document.getElementById("calculateBtn");
     const clearBtn = document.getElementById("clearBtn");
     const resultArea = document.getElementById("resultArea");
+    let hasDisplayedCalculation = false;
+
+    // A changed input must never leave support/resistance values from the old scenario onscreen.
+    function invalidateResult() {
+      if (!hasDisplayedCalculation) return;
+      hasDisplayedCalculation = false;
+      resultArea.className = "result-placeholder";
+      resultArea.textContent = "Inputs changed. Select Calculate to update pivot levels.";
+    }
 
     function formatValue(num) {
       if (!Number.isFinite(num)) return "-";
@@ -549,6 +558,7 @@
     }
 
     function calculatePivots() {
+      hasDisplayedCalculation = true;
       const high = parseFloat(highInput.value);
       const low = parseFloat(lowInput.value);
       const close = parseFloat(closeInput.value);
@@ -580,6 +590,7 @@
     }
 
     function clearForm() {
+      hasDisplayedCalculation = false;
       highInput.value = "";
       lowInput.value = "";
       closeInput.value = "";
@@ -592,10 +603,14 @@
     clearBtn.addEventListener("click", clearForm);
 
     [highInput, lowInput, closeInput].forEach(input => {
+      // `input` fires while typing on iPhone, without requiring keyboard dismissal.
+      input.addEventListener("input", invalidateResult);
+      input.addEventListener("change", invalidateResult);
       input.addEventListener("keydown", (e) => {
         if (e.key === "Enter") calculatePivots();
       });
     });
+    methodSelect.addEventListener("change", invalidateResult);
   </script>
 
 <footer></footer></body>
