@@ -5,6 +5,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 ## How each run checks the site
 - Serve the repo locally, open every HTML page with Playwright on iPhone SE (320px), iPhone 14 (390px), iPhone 15 Pro Max and desktop 1440x900.
 - Check content cut off past the screen edge, form fields under 16px (iOS zoom), low-contrast text, JS errors, broken local links/images.
+- Privacy rule for "Copy scenario link": copy the link to the clipboard only. Never call `history.replaceState`/`pushState` or set `location.search`/`hash` with calculator inputs (balance, risk, sizes) — it puts private numbers in the tab URL and history. Pages that open a scenario from the URL may only *remove* those params after applying them. `npm run test:tools` enforces this (`scripts/test-scenario-url-guard.cjs`).
 - Note: `/api/*` returns 404 locally because it runs on the server only. Live data feeds are checked on the live site.
 - Known existing check failures (not caused by autopilot, owner decision needed): `npm test` → `test-adsense-verification.cjs` expects no `ads.txt` but the repo has one; `npm run test:proof` needs a sibling `fynxfunded` checkout.
 

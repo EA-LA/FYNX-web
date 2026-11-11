@@ -1187,7 +1187,7 @@
 
       btn.addEventListener("click", () => {
         const link = buildLink();
-        try { history.replaceState(null, "", link); } catch (e) { /* ignore */ }
+        // Copy must not place private balance/risk assumptions into this tab’s URL or history.
         const done = () => { status.textContent = "Link copied. It carries these inputs only; nothing is saved to an account." + (usingManual() ? "" : " The price is re-read from the daily reference rate when opened."); };
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(done, () => showFallback(link));
         else showFallback(link);
@@ -1207,6 +1207,13 @@
       const rate = num(q.get("quoteUsdRate"), 1e6);
       els.manualPrice.value = price || "";
       quoteRate.value = rate || "";
+      // The inputs are now in the form; clear them from the address bar so the tab URL
+      // (and a later copy/paste of it) does not carry balance or risk numbers.
+      try {
+        const clean = new URL(location.href);
+        ["pair", "mode", "balance", "riskPercent", "riskDollars", "stopPips", "price", "quoteUsdRate"].forEach(k => clean.searchParams.delete(k));
+        history.replaceState(history.state, "", clean.pathname + clean.search + clean.hash);
+      } catch (e) { /* ignore */ }
       syncRiskUI();
       status.textContent = "Opened a shared scenario. Change any input and press Calculate.";
       if (price){
