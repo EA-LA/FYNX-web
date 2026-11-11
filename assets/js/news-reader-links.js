@@ -37,7 +37,24 @@
   }
   const key = value => [value.id,value.edition,value.category,value.symbol || ''].join('|');
   function route(value) { const o = options(value); return o ? '/news/article.html?' + new URLSearchParams(o) : null; }
-  function href(item) { return route(item) || '/news/article.html'; }
+  /* FYNX Intelligence: stories with an analysis page open there instead of the quick reader. */
+  let intelMap = null;
+  const intelPath = id => intelMap && typeof id === 'string' && intelMap[id.slice(0, 16)] ? '/intelligence/' + intelMap[id.slice(0, 16)] + '/' : null;
+  function intelFromReader(href) { try { const u = new URL(href, root.location.href); return u.origin === root.location.origin && u.pathname === '/news/article.html' ? intelPath(u.searchParams.get('id')) : null; } catch { return null; } }
+  (function loadIntel() {
+    const KEY = 'fynx_intel_map_v1';
+    const apply = map => {
+      intelMap = map;
+      if (root.location.pathname === '/news/article.html') { const to = intelFromReader(root.location.href); if (to) { root.location.replace(to); return; } }
+      root.document?.querySelectorAll?.('a[href*="/news/article.html?"]').forEach(a => { const to = intelFromReader(a.getAttribute('href')); if (to) a.setAttribute('href', to); });
+    };
+    try { const c = JSON.parse(root.sessionStorage?.getItem(KEY) || 'null'); if (c && Date.now() - c.at < 600000) { apply(c.map); return; } } catch {}
+    if (typeof root.fetch !== 'function') return;
+    root.fetch('/intelligence/data/map.json', {credentials: 'omit', cache: 'no-cache'}).then(r => r.ok ? r.json() : null).then(d => { if (!d || typeof d.map !== 'object') return; try { root.sessionStorage?.setItem(KEY, JSON.stringify({at: Date.now(), map: d.map})); } catch {} apply(d.map); }).catch(() => {});
+    // Links rendered later (feeds, related stories) are switched at the moment they are used.
+    root.document?.addEventListener?.('click', event => { const a = event.target?.closest?.('a[href*="/news/article.html?"]'); if (!a) return; const to = intelFromReader(a.getAttribute('href')); if (to) a.setAttribute('href', to); }, true);
+  })();
+  function href(item) { const o = options(item); return (o && intelPath(o.id)) || route(item) || '/news/article.html'; }
   function normalized(value, o) {
     if (!value || value.id !== o.id || value.edition !== o.edition || value.category !== o.category || !safeURL(value.sourceUrl) || !clean(value.title) || !clean(value.source)) throw new Error('This report could not be verified.');
     const at = Date.parse(value.publishedAt), prepared = Date.parse(value.preparedAt);

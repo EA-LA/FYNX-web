@@ -135,6 +135,7 @@
     if (!original) return;
     const nav=element('nav','terminal-topic-nav'), inner=element('div','terminal-topic-inner');nav.setAttribute('aria-label','News sections');
     inner.append(link('Newsroom','/news.html','terminal-topic-home'));
+    inner.append(link('Intelligence','/intelligence/','terminal-topic-intel'));
     const personal = yourNews(); personal.classList.add('terminal-topic-personal'); inner.append(personal);
     window.FynxEdition.sections.slice(0,6).forEach(function(section){const a=link(section.label,section.href);if(location.pathname===section.href)a.setAttribute('aria-current','page');inner.append(a);});
     const more=element('details','terminal-topic-more');more.append(element('summary','','More'));

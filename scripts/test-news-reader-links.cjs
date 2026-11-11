@@ -16,7 +16,7 @@ function harness({fetch,stored,hostname='www.fynxfinanceworld.com'}={}){
  let now=NOW,hidden=false;const calls=[],listeners={},storage=new Map(stored?[['fynx_reader_cache_v1',stored]]:[]);
  class Clock extends Date{static now(){return now;}}
  const window={location:{hostname,origin:hostname==='127.0.0.1'?'http://127.0.0.1:8765':'https://'+hostname},FynxEdition:{get:()=> 'us'},document:{get hidden(){return hidden;},addEventListener:(name,fn)=>{(listeners[name]??=[]).push(fn);}},sessionStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)}};
- window.fetch=(url,options)=>{calls.push({url,options});if(fetch)return fetch(url,options);const query=new URL(url,window.location.origin).searchParams;return Promise.resolve(response(article({id:query.get('id'),edition:query.get('edition'),category:query.get('category')})));};
+ window.fetch=(url,options)=>{if(String(url).includes('/intelligence/data/map.json'))return Promise.resolve({ok:false,status:404,json:async()=>null});calls.push({url,options});if(fetch)return fetch(url,options);const query=new URL(url,window.location.origin).searchParams;return Promise.resolve(response(article({id:query.get('id'),edition:query.get('edition'),category:query.get('category')})));};
  const context=vm.createContext({window,URL,URLSearchParams,AbortController,Date:Clock,setTimeout:(fn,ms)=>{const timer=setTimeout(fn,ms);timer.unref();return timer;},clearTimeout,console});
  vm.runInContext(script,context);
  return {api:window.FYNXNewsReaderData,calls,storage,advance:ms=>{now+=ms;},hidden:value=>{hidden=value;},emit:(name,event={})=>{for(const fn of listeners[name]||[])fn(event);}};

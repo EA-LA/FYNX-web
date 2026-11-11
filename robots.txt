@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
 Sitemap: https://www.fynxfinanceworld.com/sitemap.xml
+Sitemap: https://www.fynxfinanceworld.com/intelligence/sitemap.xml
