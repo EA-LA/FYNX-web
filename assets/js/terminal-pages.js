@@ -133,7 +133,7 @@
     if (source) {
       const sizing = el('section', 'terminal-position-sizing');
       const heading = sectionTitle('Position sizing');
-      heading.append(copyLink(source, 'Open full tool ↗', 'terminal-full-tool'));
+      heading.append(copyLink(source, 'Open full tool ↗︎', 'terminal-full-tool'));
       const frame = el('iframe', 'terminal-position-frame');
       frame.title = 'Forex position sizing calculator';
       frame.loading = 'lazy';

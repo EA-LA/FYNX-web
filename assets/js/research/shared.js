@@ -10,7 +10,7 @@ export const time=iso=>Number.isFinite(Date.parse(iso))?new Date(iso).toLocaleSt
 export const ageLabel=q=>Date.now()-Date.parse(q.asOf)>900000?'Older quote':'Indicative quote';
 export const errorHTML=message=>`<div class="notice error" role="alert">${escape(message)}</div>`;
 export const loading=message=>`<div class="loading" role="status">${escape(message)}</div>`;
-export const empty=(title,description)=>`<div class="empty-state"><span class="empty-glyph" aria-hidden="true">↗</span><h3>${escape(title)}</h3><p>${escape(description)}</p></div>`;
+export const empty=(title,description)=>`<div class="empty-state"><span class="empty-glyph" aria-hidden="true">↗︎</span><h3>${escape(title)}</h3><p>${escape(description)}</p></div>`;
 export function toast(message) {const box=$('#toast');box.textContent=message;box.hidden=false;clearTimeout(toast.timer);toast.timer=setTimeout(()=>{box.hidden=true;},8000);}
 export function download(name,text,type='application/json') {const url=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 export function options(select,filter=()=>true) {select.innerHTML=C.catalog.filter(filter).map(a=>`<option value="${escape(a.symbol)}">${escape(a.symbol)} · ${escape(a.name)}</option>`).join('');}

@@ -18,7 +18,7 @@
     toolbar.setAttribute('aria-label', 'Choose a tool');
     const open = document.createElement('a');
     open.className = 'module-open';
-    open.textContent = 'Open full page ↗';
+    open.textContent = 'Open full page ↗︎';
     function select(frame, navigate = false) {
       frames.forEach((item, index) => {
         const card = item.closest('.module-card') || item.parentElement;

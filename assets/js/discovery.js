@@ -18,7 +18,7 @@
   function updateSaves(){document.querySelectorAll('[data-save-resource]').forEach(button=>{
     const active=saved.has(saveURL(button));button.setAttribute('aria-pressed',String(active));
     button.textContent=button.closest('.discovery-card')?(active?'✓':'＋'):(active?'Saved':'Save resource');
-    const card=button.closest('.discovery-card');if(card)button.setAttribute('aria-label',`${active?'Remove saved':'Save'} ${card.querySelector('h2').textContent.replace('↗','').trim()}`);
+    const card=button.closest('.discovery-card');if(card)button.setAttribute('aria-label',`${active?'Remove saved':'Save'} ${card.querySelector('h2').textContent.replace('↗︎','').trim()}`);
   });}
   let filterLibrary=()=>{};
   // A slow first index request must not turn two quick taps into a save + unsave.

@@ -130,7 +130,7 @@
     const selected = availablePublishers().filter(p => (publisher==='all'||p.id===publisher) && (topic==='all'||p.topics.includes(topic)));
     const cards = selected.flatMap(p => p.destinations.filter(d => d.category===mediaCategory).map(d => {
       const url = link(d.url); if (!url) return '';
-      return '<article class="fn-media-card"><div class="fn-media-brand"><span class="fn-media-monogram" aria-hidden="true">'+esc(p.name==='The Wall Street Journal'?'WSJ':p.name==='Financial Times'?'FT':p.id==='cnbc'?'CNBC':p.id==='bloomberg'?'B':p.id==='yahoo'?'Y!':p.name.slice(0,3).toUpperCase())+'</span><span class="fn-media-type">'+esc(d.categoryLabel)+'</span></div><h3>'+esc(p.name)+'</h3><p>'+esc(p.summary)+'</p><div class="fn-media-topics">'+p.topics.map(t=>'<span>'+esc(t)+'</span>').join('<span aria-hidden="true"> · </span>')+'</div><p class="fn-media-access">'+esc(d.access)+'</p><a class="fn-media-action" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+(mediaCategory==='podcasts'?'Explore podcasts':mediaCategory==='live'?'Open broadcast page':'Explore videos')+' <span aria-hidden="true">↗</span></a></article>';
+      return '<article class="fn-media-card"><div class="fn-media-brand"><span class="fn-media-monogram" aria-hidden="true">'+esc(p.name==='The Wall Street Journal'?'WSJ':p.name==='Financial Times'?'FT':p.id==='cnbc'?'CNBC':p.id==='bloomberg'?'B':p.id==='yahoo'?'Y!':p.name.slice(0,3).toUpperCase())+'</span><span class="fn-media-type">'+esc(d.categoryLabel)+'</span></div><h3>'+esc(p.name)+'</h3><p>'+esc(p.summary)+'</p><div class="fn-media-topics">'+p.topics.map(t=>'<span>'+esc(t)+'</span>').join('<span aria-hidden="true"> · </span>')+'</div><p class="fn-media-access">'+esc(d.access)+'</p><a class="fn-media-action" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+(mediaCategory==='podcasts'?'Explore podcasts':mediaCategory==='live'?'Open broadcast page':'Explore videos')+' <span aria-hidden="true">↗︎</span></a></article>';
     }));
     $('[data-media-grid]').innerHTML = cards.length ? cards.join('') : '<div class="fn-empty"><h3>No libraries match these filters.</h3><p>Choose another publisher or topic to see available destinations.</p><button type="button" class="fn-refresh" data-media-reset>Clear filters</button></div>';
     $('[data-media-grid]').setAttribute('aria-live','polite');
@@ -145,7 +145,7 @@
   function renderOfficialSidebar() {
     const target = $('.fn-terminal-sources'); if (!target) return;
     const sources = editionSources(edition);
-    target.innerHTML = '<div class="fn-terminal-sources-heading"><h3>Official sources</h3><a href="#official-sources">All sources ↗</a></div><p class="fn-source-note">'+esc(editionLabel())+' edition</p>'+sources.map(source => '<a href="'+esc(link(source.website))+'" target="_blank" rel="noopener noreferrer"><span>'+esc(source.name)+'</span><span aria-hidden="true">↗</span></a>').join('')+(sources.length?'':'<p class="fn-source-note">No official release feed is configured for this edition.</p>');
+    target.innerHTML = '<div class="fn-terminal-sources-heading"><h3>Official sources</h3><a href="#official-sources">All sources ↗︎</a></div><p class="fn-source-note">'+esc(editionLabel())+' edition</p>'+sources.map(source => '<a href="'+esc(link(source.website))+'" target="_blank" rel="noopener noreferrer"><span>'+esc(source.name)+'</span><span aria-hidden="true">↗︎</span></a>').join('')+(sources.length?'':'<p class="fn-source-note">No official release feed is configured for this edition.</p>');
   }
   function renderInstitutions() {
     const sources = editionSources(edition), ids = new Set(sources.map(source => source.id));
@@ -155,7 +155,7 @@
       institutions = [...institutions,...sources.filter(source => !institutions.some(item => item.id === source.id)).map(source => ({...source,url:source.website,region:editionLabel(),summary:'Official publications and announcements.'}))];
     }
     const filtered = institutions.filter(sourceMatchesRegion);
-    $('[data-institution-list]').innerHTML = filtered.length ? filtered.map(item => '<a class="fn-institution" href="'+esc(link(item.url))+'" target="_blank" rel="noopener noreferrer"><div><span>'+esc(item.region)+'</span><h3>'+esc(item.name)+'</h3><p>'+esc(item.summary)+'</p></div><b aria-hidden="true">↗</b></a>').join('') : '<p class="fn-source-note">No institutions match this edition and regional filter.</p>';
+    $('[data-institution-list]').innerHTML = filtered.length ? filtered.map(item => '<a class="fn-institution" href="'+esc(link(item.url))+'" target="_blank" rel="noopener noreferrer"><div><span>'+esc(item.region)+'</span><h3>'+esc(item.name)+'</h3><p>'+esc(item.summary)+'</p></div><b aria-hidden="true">↗︎</b></a>').join('') : '<p class="fn-source-note">No institutions match this edition and regional filter.</p>';
     $$('[data-region]').forEach(button => button.setAttribute('aria-pressed',String(button.dataset.region === region)));
     renderOfficialSidebar(); renderReleases();
   }
@@ -167,7 +167,7 @@
     const sources = releaseState?.sources || [];
     const sourceLinks = configured.filter(sourceMatchesRegion).map(source => {
       const state = sources.find(row => row.id === source.id);
-      return '<a href="'+esc(link(source.website))+'" target="_blank" rel="noopener noreferrer">'+esc(source.name)+' ↗</a>'+(state?'<span> '+esc(state.status==='fresh'?'Refreshed':state.status==='cached'?'Saved releases':'Website available')+(state.fetchedAt?' · '+esc(date(state.fetchedAt)):'')+'</span>':'');
+      return '<a href="'+esc(link(source.website))+'" target="_blank" rel="noopener noreferrer">'+esc(source.name)+' ↗︎</a>'+(state?'<span> '+esc(state.status==='fresh'?'Refreshed':state.status==='cached'?'Saved releases':'Website available')+(state.fetchedAt?' · '+esc(date(state.fetchedAt)):'')+'</span>':'');
     });
     $('[data-release-list]').innerHTML = (items.length ? items.slice(0,12).map(item => '<article class="fn-release"><div class="fn-story-topline"><span class="fn-story-source">'+esc(item.source)+'</span>'+saveButton(item,'release:')+'</div><h4><a href="'+esc(window.FYNXNewsReaderData?.href(item)||'/news/article.html')+'">'+esc(item.title)+' →</a></h4><time datetime="'+esc(item.publishedAt)+'">'+esc(date(item.publishedAt))+'</time></article>').join('') : '<div class="fn-empty"><h3>'+(region==='japan'?'Explore Japan’s official policy calendar.':'Open the original releases.')+'</h3><p>'+(region==='japan'?'The Bank of Japan website includes scheduled meetings, decisions and minutes.':sourceLinks.length?'Recent dated releases will appear when the selected institutions publish them.':'No official release feed matches this edition and regional filter.')+'</p></div>')+(sourceLinks.length?'<div class="fn-release-sources">'+sourceLinks.map(source => '<p>'+source+'</p>').join('')+'</div>':'');
   }

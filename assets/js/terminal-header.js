@@ -117,7 +117,12 @@
       const select = element('select'); select.dataset.editionSelect = '';
       select.setAttribute('aria-label','News edition');
       window.FynxEdition.editions.forEach(function (edition) {const option=element('option','',edition.label+' edition');option.value=edition.id;select.append(option);});
-      select.value=window.FynxEdition.get();label.append(select);actions.append(label);
+      select.value=window.FynxEdition.get();
+      // Compact face shown on phones; the real select sits on top (16px text, transparent) so iOS never zooms.
+      const face=element('span','terminal-edition-face');face.setAttribute('aria-hidden','true');
+      const paint=function(){const e=window.FynxEdition.editions.find(function(x){return x.id===select.value;});face.textContent=e?e.label:'Edition';};
+      paint();select.addEventListener('change',paint);document.addEventListener('fynx:edition-change',function(){select.value=window.FynxEdition.get();paint();});
+      label.append(face,select);actions.append(label);
     }
     inner.append(clock, sessions, actions);
     bar.append(inner);
@@ -136,6 +141,10 @@
     const menu=element('div','terminal-topic-menu');
     window.FynxEdition.sections.slice(6).forEach(section=>menu.append(link(section.label,section.href)));
     menu.append(link('Watch & listen','/news.html#watch-listen'),link('Official sources','/news.html#official-sources'));more.append(menu);inner.append(more);nav.append(inner);original.before(nav);
+    // Phones: the section row scrolls sideways, so the More menu is placed under its button in the viewport.
+    more.addEventListener('toggle',function(){if(!more.open||!window.matchMedia('(max-width:600px)').matches){menu.style.top='';return;}const r=more.querySelector('summary').getBoundingClientRect();menu.style.top=Math.round(r.bottom)+'px';});
+    window.addEventListener('scroll',function(){if(more.open&&window.matchMedia('(max-width:600px)').matches)more.open=false;},{passive:true});
+    document.addEventListener('click',function(e){if(more.open&&!more.contains(e.target))more.open=false;});
   }
 
   function updateClock() {
@@ -203,7 +212,7 @@
     brand.classList.add('terminal-brand');
     if (brand.classList.contains('discovery-brand') || brand.classList.contains('brand')) {
       Array.from(brand.childNodes).filter(function (node) { return node.nodeType === 3 && node.textContent.trim(); }).forEach(function (node) {
-        node.replaceWith(element('strong', '', node.textContent.replace('↗', '').trim()));
+        node.replaceWith(element('strong', '', node.textContent.replace('↗︎', '').trim()));
       });
       const subtitle = brand.querySelector('span');
       if (subtitle) subtitle.classList.add('terminal-brand-subtitle');

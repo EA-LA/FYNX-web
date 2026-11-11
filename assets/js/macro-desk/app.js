@@ -141,7 +141,7 @@
         cd.dataset.at = next.timeKnown ? String(next.at) : ''; nextCell.append(cd);
         if (!next.timeKnown && bank.timeNote) nextCell.append(el('small', 'md-muted', bank.timeNote));
       } else nextCell.append(el('span', 'md-muted', 'No published date yet'));
-      nextCell.append(link('Official calendar ↗', bank.calendarURL, 'md-small-link'));
+      nextCell.append(link('Official calendar ↗︎', bank.calendarURL, 'md-small-link'));
       tr.append(nextCell);
       const pricing = el('td');
       const odds = bank.area === 'US' && desk?.fed?.odds && next && desk.fed.odds.meeting === next.date ? desk.fed.odds : null;

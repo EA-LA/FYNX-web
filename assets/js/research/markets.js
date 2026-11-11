@@ -12,9 +12,9 @@ function tileResearchActions(symbol, quote) {
     } catch (_) { /* Missing or malformed source link: still offer internal research. */ }
   }
   const source = safeSourceURL
-    ? `<a href="${escape(safeSourceURL)}" target="_blank" rel="noopener noreferrer" aria-label="Open quote source for ${safeSymbol}">Quote source ↗</a>`
+    ? `<a href="${escape(safeSourceURL)}" target="_blank" rel="noopener noreferrer" aria-label="Open quote source for ${safeSymbol}">Quote source ↗︎</a>`
     : '';
-  return `<div class="heat-actions"><a href="${newsURL}" aria-label="Read symbol news for ${safeSymbol}">Symbol news ↗</a>${source}</div>`;
+  return `<div class="heat-actions"><a href="${newsURL}" aria-label="Read symbol news for ${safeSymbol}">Symbol news ↗︎</a>${source}</div>`;
 }
 
 let group='Stocks',request=0,lastErrors={};
