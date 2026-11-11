@@ -74,6 +74,10 @@ class Fynx:
         """performance, drawdown, exposure"""
         return self.request("POST", f"/v1/portfolio/{name}", data)
 
+    def finance(self, name, data):
+        """compound-growth, loan-payment, cagr, kelly, drawdown-recovery, trade-pnl, real-return"""
+        return self.request("POST", f"/v1/finance/{name}", data)
+
 
 class _PropFirm:
     """Prop firm rules: rule sets, accounts, events and status."""

@@ -173,6 +173,12 @@
 ## 2026-11-05 (run 8) — [site-qa] More tap-friendly links on tool pages
 - iPhone: the Home / Tools / Find a resource links at the top of calculators, the "Assumptions" disclosures, the "Developer sign in" link and Position Size's "Use manual price" and Save buttons are now full-size tap targets. https://www.fynxfinanceworld.com/tools/position-size.html https://www.fynxfinanceworld.com/tools/correlation.html https://www.fynxfinanceworld.com/tools/pip.html
 
+
+## 2026-11-05 — FYNX API: new Finance Tools product and security hardening
+- New Finance Tools API with seven endpoints on the same API key: compound growth (with a year-by-year schedule), loan payment (with optional amortisation schedule and extra payments), CAGR, Kelly sizing, drawdown recovery, trade P/L and real (inflation-adjusted) return. https://www.fynxfinanceworld.com/api/finance.html
+- New `finance:calculate` key scope, selectable when creating a key in the workspace. Keys created with a product list keep exactly what they had; older all-access keys include it.
+- Docs, OpenAPI file, request playground presets and both SDKs (`client.finance(...)`) cover the new routes. https://www.fynxfinanceworld.com/api/docs.html#finance-reference
+- Security: API responses now send `nosniff`, a locked-down Content-Security-Policy and `no-referrer`; the key workspace refuses to run inside another site's frame (clickjacking); support messages are rate-limited; invoice links only open https addresses.
 ## 2026-11-05 (run 7) — [site-qa] More tap-friendly tool pages on iPhone
 - iPhone: Back and Home links, the Fibonacci theme button, the Drawdown Simulator header links and the ATR Stop input boxes are now full-size tap targets. https://www.fynxfinanceworld.com/tools/atr-stop.html https://www.fynxfinanceworld.com/tools/fibonacci.html https://www.fynxfinanceworld.com/tools/drawdown-simulator.html
 - Checked Pivot, Options, Profit/Loss and ATR Stop against hand-worked examples: all correct. https://www.fynxfinanceworld.com/tools/pivot.html

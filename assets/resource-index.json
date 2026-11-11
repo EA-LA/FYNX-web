@@ -1178,6 +1178,13 @@
     "topic": ""
   },
   {
+    "url": "/api/finance.html",
+    "title": "Finance Tools API: Compound Growth, Loans, CAGR & Kelly",
+    "description": "Compound growth, loan payments, CAGR, Kelly sizing, drawdown recovery, trade P/L and real return from numbers you send. Decimal math, no market data.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
     "url": "/api/risk.html",
     "title": "Forex Risk Calculation API for Trading Applications",
     "description": "Integrate caller-supplied forex risk calculations into trading software. Explore FYNX Risk API inputs, supported calculations and integration limits.",

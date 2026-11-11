@@ -36,6 +36,10 @@
       "description": "Performance, drawdown and exposure analytics."
     },
     {
+      "name": "Finance Tools",
+      "description": "Compound growth, loan payments, CAGR, Kelly sizing, drawdown recovery, trade P/L and real return from caller-supplied numbers."
+    },
+    {
       "name": "Prop Firm Rules",
       "description": "Versioned evaluation rules, ordered account events and eligibility with audit history."
     }
@@ -3914,6 +3918,1344 @@
                     "asset_class": "forex"
                   }
                 ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/finance/compound-growth": {
+      "post": {
+        "tags": [
+          "Finance Tools"
+        ],
+        "operationId": "financeCompoundGrowth",
+        "summary": "Future value with optional regular contributions and a yearly schedule",
+        "description": "Requires the `finance:calculate` scope.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-fynx-scope": "finance:calculate",
+        "responses": {
+          "200": {
+            "description": "Success. The calculation is in `result`.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or revoked API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The key does not include the scope this route requires.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Route or resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Idempotency or ordering conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input; see error.message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit or monthly allowance reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "principal",
+                  "annual_rate_percent",
+                  "years"
+                ],
+                "properties": {
+                  "principal": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "annual_rate_percent": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "years": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "compounds_per_year": {
+                    "type": "integer",
+                    "enum": [
+                      1,
+                      2,
+                      4,
+                      12,
+                      52,
+                      365
+                    ],
+                    "default": 12
+                  },
+                  "contribution_per_period": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "contribution_timing": {
+                    "type": "string",
+                    "enum": [
+                      "start",
+                      "end"
+                    ],
+                    "default": "end"
+                  },
+                  "include_schedule": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "decimals": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 12,
+                    "default": 2,
+                    "description": "Rounding of returned values."
+                  }
+                }
+              },
+              "example": {
+                "principal": "10000",
+                "annual_rate_percent": "7",
+                "years": 10,
+                "compounds_per_year": 12,
+                "contribution_per_period": "200"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/finance/loan-payment": {
+      "post": {
+        "tags": [
+          "Finance Tools"
+        ],
+        "operationId": "financeLoanPayment",
+        "summary": "Monthly payment, total interest and optional amortisation schedule. Principal and extra payments must use whole cents (at most two decimal places).",
+        "description": "Requires the `finance:calculate` scope.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-fynx-scope": "finance:calculate",
+        "responses": {
+          "200": {
+            "description": "Success. The calculation is in `result`.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or revoked API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The key does not include the scope this route requires.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Route or resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Idempotency or ordering conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input; see error.message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit or monthly allowance reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "principal",
+                  "annual_rate_percent",
+                  "term_months"
+                ],
+                "properties": {
+                  "principal": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "annual_rate_percent": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "term_months": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 600
+                  },
+                  "extra_payment": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "include_schedule": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "decimals": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 12,
+                    "default": 2,
+                    "description": "Rounding of returned values."
+                  }
+                }
+              },
+              "example": {
+                "principal": "25000",
+                "annual_rate_percent": "6.5",
+                "term_months": 60
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/finance/cagr": {
+      "post": {
+        "tags": [
+          "Finance Tools"
+        ],
+        "operationId": "financeCagr",
+        "summary": "Compound annual growth rate between two values",
+        "description": "Requires the `finance:calculate` scope.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-fynx-scope": "finance:calculate",
+        "responses": {
+          "200": {
+            "description": "Success. The calculation is in `result`.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or revoked API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The key does not include the scope this route requires.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Route or resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Idempotency or ordering conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input; see error.message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit or monthly allowance reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "start_value",
+                  "end_value",
+                  "years"
+                ],
+                "properties": {
+                  "start_value": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "end_value": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "years": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "decimals": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 12,
+                    "default": 2,
+                    "description": "Rounding of returned values."
+                  }
+                }
+              },
+              "example": {
+                "start_value": "10000",
+                "end_value": "18500",
+                "years": "5"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/finance/kelly": {
+      "post": {
+        "tags": [
+          "Finance Tools"
+        ],
+        "operationId": "financeKelly",
+        "summary": "Kelly fraction, fractional Kelly and expectancy for a win/loss strategy",
+        "description": "Requires the `finance:calculate` scope.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-fynx-scope": "finance:calculate",
+        "responses": {
+          "200": {
+            "description": "Success. The calculation is in `result`.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or revoked API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The key does not include the scope this route requires.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Route or resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Idempotency or ordering conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input; see error.message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit or monthly allowance reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "win_rate_percent",
+                  "payoff_ratio"
+                ],
+                "properties": {
+                  "win_rate_percent": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "payoff_ratio": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "kelly_fraction": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "account_balance": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "decimals": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 12,
+                    "default": 2,
+                    "description": "Rounding of returned values."
+                  }
+                }
+              },
+              "example": {
+                "win_rate_percent": "45",
+                "payoff_ratio": "2",
+                "kelly_fraction": "0.5",
+                "account_balance": "10000"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/finance/drawdown-recovery": {
+      "post": {
+        "tags": [
+          "Finance Tools"
+        ],
+        "operationId": "financeDrawdownRecovery",
+        "summary": "Gain needed to recover a drawdown, in percent, dollars and months",
+        "description": "Requires the `finance:calculate` scope.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-fynx-scope": "finance:calculate",
+        "responses": {
+          "200": {
+            "description": "Success. The calculation is in `result`.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or revoked API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The key does not include the scope this route requires.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Route or resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Idempotency or ordering conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input; see error.message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit or monthly allowance reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "drawdown_percent"
+                ],
+                "properties": {
+                  "drawdown_percent": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "peak_balance": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "monthly_return_percent": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "decimals": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 12,
+                    "default": 2,
+                    "description": "Rounding of returned values."
+                  }
+                }
+              },
+              "example": {
+                "drawdown_percent": "20",
+                "peak_balance": "100000",
+                "monthly_return_percent": "2"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/finance/trade-pnl": {
+      "post": {
+        "tags": [
+          "Finance Tools"
+        ],
+        "operationId": "financeTradePnl",
+        "summary": "Profit or loss of a closed position in any asset, with R multiple",
+        "description": "Requires the `finance:calculate` scope.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-fynx-scope": "finance:calculate",
+        "responses": {
+          "200": {
+            "description": "Success. The calculation is in `result`.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or revoked API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The key does not include the scope this route requires.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Route or resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Idempotency or ordering conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input; see error.message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit or monthly allowance reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "direction",
+                  "entry_price",
+                  "exit_price",
+                  "quantity"
+                ],
+                "properties": {
+                  "direction": {
+                    "type": "string",
+                    "enum": [
+                      "long",
+                      "short"
+                    ]
+                  },
+                  "entry_price": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "exit_price": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "quantity": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "contract_size": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "quote_to_account_rate": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "fees": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "risk_amount": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "account_balance": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "decimals": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 12,
+                    "default": 2,
+                    "description": "Rounding of returned values."
+                  }
+                }
+              },
+              "example": {
+                "direction": "long",
+                "entry_price": "1.0850",
+                "exit_price": "1.0910",
+                "quantity": "1",
+                "contract_size": "100000",
+                "fees": "7",
+                "risk_amount": "300"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/finance/real-return": {
+      "post": {
+        "tags": [
+          "Finance Tools"
+        ],
+        "operationId": "financeRealReturn",
+        "summary": "Inflation-adjusted (real) return",
+        "description": "Requires the `finance:calculate` scope.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-fynx-scope": "finance:calculate",
+        "responses": {
+          "200": {
+            "description": "Success. The calculation is in `result`.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-RateLimit-Limit": {
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "X-RateLimit-Remaining": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or revoked API key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The key does not include the scope this route requires.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Route or resource not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Idempotency or ordering conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid input; see error.message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit or monthly allowance reached.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "nominal_return_percent",
+                  "inflation_percent"
+                ],
+                "properties": {
+                  "nominal_return_percent": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "inflation_percent": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "amount": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^[-+]?\\d{1,18}(\\.\\d{1,12})?$",
+                        "description": "Decimal as a string, e.g. \"1.0850\"."
+                      }
+                    ],
+                    "description": "JSON number or decimal string."
+                  },
+                  "decimals": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 12,
+                    "default": 2,
+                    "description": "Rounding of returned values."
+                  }
+                }
+              },
+              "example": {
+                "nominal_return_percent": "8",
+                "inflation_percent": "3",
+                "amount": "10000"
               }
             }
           }

@@ -1,7 +1,7 @@
 'use strict';
-const SCOPES=Object.freeze(['risk:calculate','propfirm:read','propfirm:write','indicators:calculate','markets:read','portfolio:calculate']);
+const SCOPES=Object.freeze(['risk:calculate','propfirm:read','propfirm:write','indicators:calculate','markets:read','portfolio:calculate','finance:calculate']);
 // Route prefix -> required scope. Unknown routes require a scope nobody has, so they fail closed.
-const ROUTES=[['/v1/risk/','risk:calculate'],['GET /v1/propfirm/','propfirm:read'],['/v1/propfirm/','propfirm:write'],['/v1/indicators/','indicators:calculate'],['/v1/markets/','markets:read'],['/v1/portfolio/','portfolio:calculate']];
+const ROUTES=[['/v1/risk/','risk:calculate'],['GET /v1/propfirm/','propfirm:read'],['/v1/propfirm/','propfirm:write'],['/v1/indicators/','indicators:calculate'],['/v1/markets/','markets:read'],['/v1/portfolio/','portfolio:calculate'],['/v1/finance/','finance:calculate']];
 function scopes(input){
  if(input===undefined)return [...SCOPES];
  if(!Array.isArray(input)||!input.length||input.length>SCOPES.length||input.some(s=>!SCOPES.includes(s))||new Set(input).size!==input.length)throw Object.assign(new Error('Choose one or more supported API key scopes.'),{code:'invalid-argument'});

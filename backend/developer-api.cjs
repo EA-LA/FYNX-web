@@ -7,10 +7,11 @@ const access=require('./developer-access.cjs');
 const plans=require('./developer-plans.cjs');
 const analytics=require('./developer-analytics.cjs');
 const marketHours=require('./developer-markets.cjs');
-// Stateless calculation routes (APIs 6, 7 and 8). They read only the request body and are metered like Risk calls.
+const financeTools=require('./developer-finance.cjs');
+// Stateless calculation routes (APIs 6, 7, 8 and 11). They read only the request body and are metered like Risk calls.
 function statelessRoute(route){
- const m=route.match(/^\/v1\/(indicators|portfolio|markets)\/([a-z-]+)$/);if(!m)return null;
- const [,group,name]=m,fn=group==='indicators'?analytics.indicator:group==='portfolio'?analytics.portfolio:marketHours.markets;
+ const m=route.match(/^\/v1\/(indicators|portfolio|markets|finance)\/([a-z-]+)$/);if(!m)return null;
+ const [,group,name]=m,fn=group==='indicators'?analytics.indicator:group==='portfolio'?analytics.portfolio:group==='finance'?financeTools.finance:marketHours.markets;
  return {group,name,run:input=>fn(name,input)};
 }
 const {payloadHash:canonicalHash,validateInput,entitlement,effectiveCap}=require('./developer-core.cjs');
@@ -101,14 +102,14 @@ async function workspace(data,context){
  if(action==='run'){await require('./developer-billing.cjs').refresh(uid);try{return await runOperation(uid,env,String(data.route||''),data.input||{});}catch(e){const request_id=await recordFailure(uid,env,data.route,e);if(!(e instanceof engine.InputError))throw e;return {request_id,status:422,error:{code:e.code,message:e.message}};}}
  if(action==='history'){const limit=25;let q=data.audit?er.collection('audit'):data.accountId?er.collection('accounts').doc(ident(data.accountId)).collection('events'):er.collection('requests');q=q.orderBy('at','desc').orderBy(admin.firestore.FieldPath.documentId(),'desc');if(data.before!==undefined){if(!Number.isSafeInteger(data.before))error('invalid-argument','Invalid history cursor.');q=q.startAfter(data.before,ident(data.beforeId));}return {items:rows(await q.limit(limit).get())};}
  if(action==='settings'){const name=clean(data.name),cap=Number(data.requestCap),ceiling=plans.capCeiling(entitlement((await root(uid).get()).data()||{},'live'));if(!name||!Number.isInteger(cap)||cap<1||cap>ceiling)error('invalid-argument',`Name and a monthly request cap from 1 to ${ceiling.toLocaleString('en-US')} are required.`);const batch=db().batch();batch.set(root(uid),{name,requestCap:cap,requestCapExplicit:true,updatedAt:Date.now()},{merge:true});batch.create(er.collection('audit').doc(),{at:Date.now(),expireAt:expires(AUDIT_RETENTION_DAYS),action:'settings',name,requestCap:cap});await batch.commit();return {saved:true};}
- if(action==='support'){const subject=clean(data.subject),message=String(data.message||'').trim();if(!subject||message.length<10||message.length>4000)error('invalid-argument','Add a subject and a message between 10 and 4,000 characters.');const ref=root(uid).collection('support').doc();await ref.set({subject,message,createdAt:Date.now(),status:'open',email:user.email||''});return {ticket_id:ref.id};}
+ if(action==='support'){await throttle(uid,5,'supportRate');const subject=clean(data.subject),message=String(data.message||'').trim();if(!subject||message.length<10||message.length>4000)error('invalid-argument','Add a subject and a message between 10 and 4,000 characters.');const ref=root(uid).collection('support').doc();await ref.set({subject,message,createdAt:Date.now(),status:'open',email:user.email||''});return {ticket_id:ref.id};}
  error('invalid-argument','Unknown workspace action.');
  }catch(e){if(e instanceof engine.InputError)error(e.code==='event_order_conflict'?'failed-precondition':'invalid-argument',e.message);throw e;}
 }
 exports.developerWorkspace=runtime.https.onCall(async(data,context)=>{const started=Date.now();let status=200;try{const result=await workspace(data,context);status=result?.status||200;return result;}catch(e){status=errorStatus(e);throw e;}finally{telemetry('workspace',status,started,{action:['bootstrap','createKey','rotateKey','revokeKey','run','history','settings','support'].includes(data?.action)?data.action:'unknown'});}});
 exports.developerGateway=runtime.https.onRequest(async(req,res)=>{
  const started=Date.now(),requestId=randomUUID();res.set('X-Request-Id',requestId);res.on('finish',()=>telemetry('gateway',res.statusCode,started,{request_id:res.getHeader('X-Request-Id')}));
- let owner=null,ownerEnv=null;res.set('Cache-Control','no-store');if(!['GET','POST'].includes(req.method))return res.status(405).json({error:{code:'method_not_allowed',message:'Use GET for reads or POST for writes.'}});
+ let owner=null,ownerEnv=null;res.set('Cache-Control','no-store');res.set('X-Content-Type-Options','nosniff');res.set('Content-Security-Policy',"default-src 'none'; frame-ancestors 'none'");res.set('Referrer-Policy','no-referrer');if(!['GET','POST'].includes(req.method))return res.status(405).json({error:{code:'method_not_allowed',message:'Use GET for reads or POST for writes.'}});
  try{
   if(req.method==='POST'&&(!req.is('application/json')||!validateInput(req.body)))return res.status(400).json({error:{code:'invalid_request',message:'Send a JSON body under 20KB.'}});
   const token=(req.get('Authorization')||'').replace(/^Bearer /,'');if(!/^fynx_(test|live)_[a-f0-9]{64}$/.test(token))error('unauthenticated','Invalid API key.');
