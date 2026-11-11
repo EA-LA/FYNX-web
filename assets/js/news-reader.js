@@ -165,7 +165,7 @@
       const url=safeURL(row?.url), name=text(row?.name,160);if(!url||!name||seen.has(url))continue;seen.add(url);
       const link=node('a'), detail=node('span');link.href=url;link.target='_blank';link.rel='noopener noreferrer';
       detail.append(node('strong',name),node('small',new URL(url).hostname+(row.accessedAt&&time(row.accessedAt)?' · Available material checked '+time(row.accessedAt):'')));
-      link.append(detail,node('span','↗','reader-source-arrow'));link.setAttribute('aria-label','Read original reporting at '+name+' (opens in a new tab)');host.append(link);
+      link.append(detail,node('span','↗︎','reader-source-arrow'));link.setAttribute('aria-label','Read original reporting at '+name+' (opens in a new tab)');host.append(link);
     }
     $('[data-reader-method]').textContent='Prepared from available source material. Source-backed points and FYNX explanatory context are identified separately. Publisher access terms apply to the original report.';
   }

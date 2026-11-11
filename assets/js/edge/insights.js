@@ -78,7 +78,7 @@
   }
 
   function renderBias(symbol, result) {
-    const card = $('ei-bias'), right = link('Method ↗', '/macro-desk.html#md-bias-title', 'ei-small-link');
+    const card = $('ei-bias'), right = link('Method ↗︎', '/macro-desk.html#md-bias-title', 'ei-small-link');
     head(card, 'SMART BIAS', labelOf(symbol), right);
     if (!finite(result.score)) return empty(card, result.reason || 'Not enough current inputs to score this market.');
     const tone = result.score >= 15 ? 'ei-up' : result.score <= -15 ? 'ei-down' : 'ei-flat';

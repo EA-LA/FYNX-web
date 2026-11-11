@@ -28,7 +28,7 @@
     if(rate){
      const age=(Date.now()-Date.parse(rate.observationDate+'T00:00:00Z'))/86400000;
      if(age>14)card.append(el('p','Older observation — check the central bank for a later decision.','macro-warning'));
-     card.append(link('BIS series ↗',`https://data.bis.org/topics/CBPOL/BIS%2CWS_CBPOL%2C1.0/D.${e.area}`));
+     card.append(link('BIS series ↗︎',`https://data.bis.org/topics/CBPOL/BIS%2CWS_CBPOL%2C1.0/D.${e.area}`));
      const detail=el('details');detail.append(el('summary','Policy instrument definition'),el('p',rate.definition||'See the BIS source documentation.'));card.append(detail);
     }
    }else{
@@ -66,7 +66,7 @@
  document.getElementById('sourceDetails').append(link(kind==='rates'?'BIS policy-rate data':'World Bank indicator data',kind==='rates'?'https://data.bis.org/topics/CBPOL':'https://data.worldbank.org/'));
  if(kind==='rates'){
   ['baseCurrency','quoteCurrency'].forEach((id,index)=>{const select=document.getElementById(id);economies.forEach(e=>{const option=el('option',e.currency);option.value=e.currency;select.append(option);});select.selectedIndex=index;select.addEventListener('change',difference);});
-  const sources=document.getElementById('meetingSources');economies.forEach(e=>{const card=el('article',undefined,'macro-card');card.append(el('span',e.currency,'macro-eyebrow'),el('h2',e.bank),link('Official schedule and decisions ↗',e.calendar));sources.append(card);});
+  const sources=document.getElementById('meetingSources');economies.forEach(e=>{const card=el('article',undefined,'macro-card');card.append(el('span',e.currency,'macro-eyebrow'),el('h2',e.bank),link('Official schedule and decisions ↗︎',e.calendar));sources.append(card);});
  }
  load();
 })();

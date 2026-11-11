@@ -214,7 +214,7 @@
     for (const s of allStatuses().filter(x => x.level === 'red' || x.level === 'yellow').slice(0, 14)) for (const n of (C(s.iso)?.news?.items || []).slice(0, 2)) rows.push({s, n});
     if (!rows.length) for (const iso of ['US', 'CN', 'DE', 'JP', 'GB', 'IN']) for (const n of (C(iso)?.news?.items || []).slice(0, 2)) rows.push({s: {iso, level: countryStatus(iso).level}, n});
     if (!rows.length) return host.append(el('p', 'fx-empty', W.countries ? 'No country headlines in the last 24 hours.' : 'Loading world headlines…'));
-    for (const {s, n} of rows) { const a = link('', n.url, 'fx-row fx-cnrow'); const iso = el('b', '', s.iso); iso.style.color = COLOR[s.level]; const t = el('span', 'fx-sym'); t.append(el('span', 'fx-ht', n.title), el('small', '', `${n.source}${n.publishedAt ? ' · ' + ago(n.publishedAt) : ''} ↗`)); a.append(iso, t); host.append(a); }
+    for (const {s, n} of rows) { const a = link('', n.url, 'fx-row fx-cnrow'); const iso = el('b', '', s.iso); iso.style.color = COLOR[s.level]; const t = el('span', 'fx-sym'); t.append(el('span', 'fx-ht', n.title), el('small', '', `${n.source}${n.publishedAt ? ' · ' + ago(n.publishedAt) : ''} ↗︎`)); a.append(iso, t); host.append(a); }
     host.append(el('p', 'fx-foot', 'Country headlines from Google News search (GDELT as backup), last 24 hours, refreshed hourly.'));
   }
   async function renderCData() {
@@ -284,7 +284,7 @@
     if (m?.ccy) { const s = PG.section(`${m.ccy} calendar this week`), ev = (S.calendar?.events || []).filter(e => e.currency === m.ccy).sort((a, b) => Date.parse(a.time) - Date.parse(b.time)); if (ev.length) ev.forEach(e => s.append(T.ecoRow(e))); else s.append(el('p', 'fx-empty', 'No scheduled releases this week.')); g.append(s); }
     host.append(g);
     const news = PG.section(`${name} headlines`), items = c?.news?.items || [];
-    for (const n of items) { const a = link('', n.url, 'fx-row fx-cnrow'); const t = el('span', 'fx-sym'); t.append(el('span', 'fx-ht', n.title), el('small', '', `${n.source}${n.publishedAt ? ' · ' + ago(n.publishedAt) : ''} ↗`)); a.append(el('b', '', '•'), t); news.append(a); }
+    for (const n of items) { const a = link('', n.url, 'fx-row fx-cnrow'); const t = el('span', 'fx-sym'); t.append(el('span', 'fx-ht', n.title), el('small', '', `${n.source}${n.publishedAt ? ' · ' + ago(n.publishedAt) : ''} ↗︎`)); a.append(el('b', '', '•'), t); news.append(a); }
     const room = PG.matchNews([name], 8); room.forEach(h => news.append(T.headlineRow(h)));
     if (!items.length && !room.length) news.append(el('p', 'fx-empty', 'No headlines for this country in the last 24 hours.'));
     host.append(news);
@@ -318,7 +318,7 @@
       host.append(PG.cards([['UNEMPLOYMENT', last.value.toFixed(1) + '%', '', last.date], ['3-MONTH CHANGE', signed(last.value - q.value, 1, ' pts'), tone(-(last.value - q.value))], ['1-YEAR CHANGE', signed(last.value - y.value, 1, ' pts'), tone(-(last.value - y.value))], ['RANK', `${rank} of ${others.length}`, '', '1 = lowest rate']]));
       const sec = PG.section('Unemployment rate · 2 years'); sec.append(T.lineChart(u.map(p => ({date: p.date + '-01', close: p.value})), {digits: 1, W: 900, H: 220, label: `${name} unemployment rate`, source: 'BLS LAUS, seasonally adjusted'})); host.append(sec);
     }
-    const dz = PG.section('Federal disaster declarations · last 120 days'); (s?.disasters || []).forEach(x => dz.append(el('p', 'pg-p', `${x.date} · ${x.type} · ${x.title} (#${x.number})`))); if (!s?.disasters?.length) dz.append(el('p', 'fx-empty', 'None in the last 120 days.')); dz.append(PG.chips([link('FEMA declarations ↗', 'https://www.fema.gov/disaster/declarations', 'fx-chip fx-chip-link')])); host.append(dz);
+    const dz = PG.section('Federal disaster declarations · last 120 days'); (s?.disasters || []).forEach(x => dz.append(el('p', 'pg-p', `${x.date} · ${x.type} · ${x.title} (#${x.number})`))); if (!s?.disasters?.length) dz.append(el('p', 'fx-empty', 'None in the last 120 days.')); dz.append(PG.chips([link('FEMA declarations ↗︎', 'https://www.fema.gov/disaster/declarations', 'fx-chip fx-chip-link')])); host.append(dz);
     const news = PG.section(`${name} headlines`); const hits = PG.matchNews([name], 12); hits.forEach(h => news.append(T.headlineRow(h))); if (!hits.length) news.append(el('p', 'fx-empty', 'No headlines mention this state in the current feeds.')); host.append(news);
   });
 

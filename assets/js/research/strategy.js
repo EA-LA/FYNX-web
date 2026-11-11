@@ -3,7 +3,7 @@ let history=null,result=null,loadID=0;
 options($('#history-symbol'),a=>a.group!=='FX');$('#history-symbol').value='SPY';
 function resetHistory(){history=null;result=null;$('#strategy-output').innerHTML=empty('Load your data first','A new data source clears the previous result, so every backtest uses the displayed history.');}
 function showHistory(){
-  $('#history-status').innerHTML=history?`${escape(history.symbol)} · ${history.bars.length.toLocaleString()} daily rows · ${history.bars[0].date} → ${history.bars.at(-1).date}<br>${history.adjusted?'Provider-adjusted USD prices; no separate dividend credit.':'User-supplied OHLC prices treated as USD. Adjustments depend on your file.'} ${history.omitted?`${history.omitted} incomplete/current-day rows omitted.`:''} ${history.sourceURL?`<a class="inline-link" href="${escape(history.sourceURL)}" target="_blank" rel="noopener">${escape(history.source)} ↗</a> · Retrieved ${time(history.fetchedAt)}`:escape(history.source)}`:'';
+  $('#history-status').innerHTML=history?`${escape(history.symbol)} · ${history.bars.length.toLocaleString()} daily rows · ${history.bars[0].date} → ${history.bars.at(-1).date}<br>${history.adjusted?'Provider-adjusted USD prices; no separate dividend credit.':'User-supplied OHLC prices treated as USD. Adjustments depend on your file.'} ${history.omitted?`${history.omitted} incomplete/current-day rows omitted.`:''} ${history.sourceURL?`<a class="inline-link" href="${escape(history.sourceURL)}" target="_blank" rel="noopener">${escape(history.source)} ↗︎</a> · Retrieved ${time(history.fetchedAt)}`:escape(history.source)}`:'';
 }
 $('#history-form').addEventListener('submit',async event=>{
   event.preventDefault();const symbol=$('#history-symbol').value,id=++loadID;resetHistory();

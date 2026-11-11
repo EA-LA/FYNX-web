@@ -151,7 +151,7 @@ window.FynxTerminalPages = T => {
     const g = grid('pg-desks');
     for (const k of T.DESK_ORDER) { const d = T.DESK_DEFS[k], b = btn('', 'pg-desk' + (k === S.deskKey ? ' on' : ''), () => { closeAll(); T.setDesk(k); }); b.append(el('b', '', d.label), el('small', '', d.slots.map(s => s.toUpperCase()).join(' · '))); g.append(b); }
     s3.append(g);
-    host.append(s1, s2, s3, sourceNote('Everything opens inside the terminal. Links marked ↗ go to an outside source in a new tab. Exit (top right) returns to the website.'));
+    host.append(s1, s2, s3, sourceNote('Everything opens inside the terminal. Links marked ↗︎ go to an outside source in a new tab. Exit (top right) returns to the website.'));
   };
 
   PAGES.sources = host => {
@@ -162,8 +162,8 @@ window.FynxTerminalPages = T => {
     kv(list, [['Live quotes (40)', 'Yahoo Finance via FYNX quote service · delayed, refreshes every 30 s'], ['Futures, indices, funds, FX, crypto (157)', S.mk ? `${S.mk.source} · snapshot ${hhmm(S.mk.generatedAt)}, refreshed every 15 min` : 'Loading'], ['Options (18 chains)', S.opts ? `${S.opts.source} · ${hhmm(S.opts.generatedAt)}` : 'Loading'], ['Earnings', S.earn ? `${S.earn.source} · ${hhmm(S.earn.generatedAt)}` : 'Loading'],
       ['Yield curves', 'U.S. Treasury, ECB, Bank of England, Japan MOF'], ['Live US yields, Fed futures', S.desk?.fed?.source || 'CBOT 30-Day Fed Funds futures, New York Fed EFFR'], ['Policy rates', S.desk?.rates?.source || 'BIS'], ['Economic calendar', 'Forex Factory weekly calendar (FYNX research snapshot)'], ['Regimes, positioning', 'FYNX Edge Radar from Dukascopy candles and CFTC Commitments of Traders'],
       ['VIX history, correlation, crypto book', 'Cboe, ECB reference rates, Coinbase Exchange'], ['Company financials', 'SEC EDGAR XBRL company facts'], ['Headlines and articles', 'FYNX newsroom from publisher and official feeds']]);
-    const out = section('Open the original sources ↗');
-    out.append(chips([link('Yahoo Finance ↗', 'https://finance.yahoo.com/', 'fx-chip fx-chip-link'), link('Cboe delayed quotes ↗', 'https://www.cboe.com/delayed_quotes/', 'fx-chip fx-chip-link'), link('U.S. Treasury ↗', 'https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve', 'fx-chip fx-chip-link'), link('CFTC COT ↗', 'https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm', 'fx-chip fx-chip-link'), link('SEC EDGAR ↗', 'https://www.sec.gov/edgar/search/', 'fx-chip fx-chip-link'), link('Nasdaq earnings ↗', 'https://www.nasdaq.com/market-activity/earnings', 'fx-chip fx-chip-link')]));
+    const out = section('Open the original sources ↗︎');
+    out.append(chips([link('Yahoo Finance ↗︎', 'https://finance.yahoo.com/', 'fx-chip fx-chip-link'), link('Cboe delayed quotes ↗︎', 'https://www.cboe.com/delayed_quotes/', 'fx-chip fx-chip-link'), link('U.S. Treasury ↗︎', 'https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve', 'fx-chip fx-chip-link'), link('CFTC COT ↗︎', 'https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm', 'fx-chip fx-chip-link'), link('SEC EDGAR ↗︎', 'https://www.sec.gov/edgar/search/', 'fx-chip fx-chip-link'), link('Nasdaq earnings ↗︎', 'https://www.nasdaq.com/market-activity/earnings', 'fx-chip fx-chip-link')]));
     host.append(s, list, out);
   };
 
@@ -210,13 +210,13 @@ window.FynxTerminalPages = T => {
       if (a.context?.length) { const s = section('Context'); a.context.forEach(c => { s.append(el('h3', 'pg-h3', c.title), el('p', 'pg-p', c.text)); }); host.append(s); }
       if (a.terms?.length) { const s = section('Terms'); kv(s, a.terms.map(t => [t.term, t.definition])); host.append(s); }
       if (a.questions?.length) { const s = section('Questions to watch'); const ul = el('ul', 'pg-ul'); a.questions.forEach(q => ul.append(el('li', '', q))); s.append(ul); host.append(s); }
-      const src = section('Sources'); src.append(chips([link(`Read the original at ${a.source} ↗`, a.sourceUrl, 'fx-chip fx-chip-link pg-primary'), ...(a.sources || []).map(s => link(s.name + ' ↗', s.url, 'fx-chip fx-chip-link'))]));
+      const src = section('Sources'); src.append(chips([link(`Read the original at ${a.source} ↗︎`, a.sourceUrl, 'fx-chip fx-chip-link pg-primary'), ...(a.sources || []).map(s => link(s.name + ' ↗︎', s.url, 'fx-chip fx-chip-link'))]));
       if (a.coverageNote) src.append(sourceNote(a.coverageNote)); if (a.method) src.append(sourceNote('Method: ' + a.method));
       host.append(src);
       if (a.related?.length) { const s = section('Related'); a.related.forEach(r => s.append(T.headlineRow({...r, publishedAt: r.publishedAt || a.publishedAt, readerUrl: r.readerUrl}))); host.append(s); }
     } else {
       status.textContent = key ? status.textContent : 'FYNX has no reader version of this story yet.';
-      const s = section(''); s.append(chips([h.url ? link(`Read the full story at ${h.source || 'the publisher'} ↗`, h.url, 'fx-chip fx-chip-link pg-primary') : null])); host.append(s);
+      const s = section(''); s.append(chips([h.url ? link(`Read the full story at ${h.source || 'the publisher'} ↗︎`, h.url, 'fx-chip fx-chip-link pg-primary') : null])); host.append(s);
     }
     const words = (h.title || a?.title || '').split(/\s+/).filter(w => /^[A-Z][a-zA-Z]{3,}/.test(w)).slice(0, 4);
     const more = section('More on this'); newsList(more, matchNews(words).filter(x => x.title !== (h.title || a?.title)).slice(0, 8), 'No related headlines in the current feeds.'); host.append(more);
@@ -226,7 +226,7 @@ window.FynxTerminalPages = T => {
     id = T.resolve(id) || id || S.focus;
     const q = T.quoteFor(id), inf = T.info(id), dg = T.digitsOf(id);
     setHead('DES', `${T.shortOf(id)} · ${T.nameOf(id)}`, `${inf.group || ''}${q?.asOf ? ' · as of ' + new Date(q.asOf).toLocaleString() : ''}`);
-    host.append(chips([btn('Chart on desk ▸', 'fx-chip fx-chip-link', () => { closeAll(); T.focusOn(id); }), S.opts?.underlyings?.[id] ? go('Options', 'options', id) : null, inf.group === 'Stocks' ? go('Financials', 'fa', id) : null, T.EDGE[id] ? go('Edge Radar', 'edge', id) : null, go('News', 'news', {q: T.shortOf(id), name: T.nameOf(id)}), link('Price alert ↗', '/tools/price-alerts.html', 'fx-chip fx-chip-link'), link('Backtest ↗', `/quant-analyst.html?symbol=${encodeURIComponent(id)}`, 'fx-chip fx-chip-link')]));
+    host.append(chips([btn('Chart on desk ▸', 'fx-chip fx-chip-link', () => { closeAll(); T.focusOn(id); }), S.opts?.underlyings?.[id] ? go('Options', 'options', id) : null, inf.group === 'Stocks' ? go('Financials', 'fa', id) : null, T.EDGE[id] ? go('Edge Radar', 'edge', id) : null, go('News', 'news', {q: T.shortOf(id), name: T.nameOf(id)}), link('Price alert ↗︎', '/tools/price-alerts.html', 'fx-chip fx-chip-link'), link('Backtest ↗︎', `/quant-analyst.html?symbol=${encodeURIComponent(id)}`, 'fx-chip fx-chip-link')]));
     if (q) host.append(cards([['LAST', fmt(q.price, dg)], ['CHANGE', signed(q.changePercent, 2, '%'), tone(q.changePercent)], ['PREV CLOSE', fmt(q.previousClose, dg)], ['DAY RANGE', finite(q.dayLow) ? `${fmt(q.dayLow, dg)}–${fmt(q.dayHigh, dg)}` : '—'], ['52W RANGE', finite(q.low52) ? `${fmt(q.low52, dg)}–${fmt(q.high52, dg)}` : '—'], ['VOLUME', count(q.volume)], ['20D VOL', finite(q.vol20) ? q.vol20.toFixed(2) + '% / day' : '—'], ['SOURCE', q.snapshot ? 'Yahoo (15-min snapshot)' : q.source || '—']]));
     const perf = [[5, '1W'], [21, '1M'], [63, '3M'], ['ytd', 'YTD'], [251, '1Y']].map(([w, l]) => { const r = T.periodReturn(id, w); return [l, finite(r) ? signed(r, 2, '%') : '—', tone(r)]; });
     if (perf.some(p => p[1] !== '—')) host.append(cards(perf));
@@ -263,7 +263,7 @@ window.FynxTerminalPages = T => {
     const p0 = f.annual[f.periods[0]], p1 = f.annual[f.periods[1]] || {};
     const g = (k) => p0?.[k] && p1?.[k] ? (p0[k].value / p1[k].value - 1) * 100 : null;
     box.append(cards([['REVENUE', big(p0?.revenue?.value), '', finite(g('revenue')) ? signed(g('revenue'), 1, '% y/y') : ''], ['NET INCOME', big(p0?.income?.value), tone(p0?.income?.value), finite(g('income')) ? signed(g('income'), 1, '% y/y') : ''], ['DILUTED EPS', finite(p0?.eps?.value) ? '$' + p0.eps.value.toFixed(2) : '—'], ['NET MARGIN', p0?.revenue && p0?.income ? (p0.income.value / p0.revenue.value * 100).toFixed(1) + '%' : '—'], ['CASH', big(p0?.cash?.value)], ['LT DEBT', big(p0?.longTermDebt?.value)], ['EQUITY', big(p0?.equity?.value)], ['FREE CASH FLOW', p0?.operatingCash && p0?.capex ? big(p0.operatingCash.value - Math.abs(p0.capex.value)) : '—']]));
-    const s = section('All reported years'), w = el('div', 'pg-scroll'); w.append(T.finTable(f, ticker || f.name, f.periods.slice(0, 8))); s.append(w, sourceNote('Click any value for its period, filing date and XBRL tag.'), chips([link('Filings on SEC EDGAR ↗', `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${f.cik}&type=10-K`, 'fx-chip fx-chip-link')]));
+    const s = section('All reported years'), w = el('div', 'pg-scroll'); w.append(T.finTable(f, ticker || f.name, f.periods.slice(0, 8))); s.append(w, sourceNote('Click any value for its period, filing date and XBRL tag.'), chips([link('Filings on SEC EDGAR ↗︎', `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${f.cik}&type=10-K`, 'fx-chip fx-chip-link')]));
     box.append(s);
   };
 
@@ -364,7 +364,7 @@ window.FynxTerminalPages = T => {
     }
     const m = ms.find(x => x.symbol === sym), st = m.state || {}, q = T.quoteFor(sym), dg = T.digitsOf(sym);
     setHead('EDGE', `${sym} · ${T.nameOf(sym)}`, `Edge Radar market page · snapshot ${ago(S.edge.generatedAt)}`);
-    host.append(chips([btn('Chart on desk ▸', 'fx-chip fx-chip-link', () => { closeAll(); T.focusOn(sym); }), go('All markets', 'edge'), M.PAIRS.find(p => p.id === sym) ? go('Smart Bias', 'bias', sym) : null, link('Backtest ↗', `/quant-analyst.html?symbol=${sym}`, 'fx-chip fx-chip-link'), link('Edge Radar on the website ↗', `/edge-radar/${sym.toLowerCase()}/`, 'fx-chip fx-chip-link')]));
+    host.append(chips([btn('Chart on desk ▸', 'fx-chip fx-chip-link', () => { closeAll(); T.focusOn(sym); }), go('All markets', 'edge'), M.PAIRS.find(p => p.id === sym) ? go('Smart Bias', 'bias', sym) : null, link('Backtest ↗︎', `/quant-analyst.html?symbol=${sym}`, 'fx-chip fx-chip-link'), link('Edge Radar on the website ↗︎', `/edge-radar/${sym.toLowerCase()}/`, 'fx-chip fx-chip-link')]));
     const series = await T.loadSeries(sym); if (!alive()) return;
     const vd = M.volDistribution(series?.raw, {symbol: sym, pip: T.EDGE[sym]?.[1]});
     const pair = M.PAIRS.find(p => p.id === sym), b = pair ? M.smartBias(pair, {desk: S.desk, edgeMarket: m, livePrice: q?.price}) : null;
@@ -460,7 +460,7 @@ window.FynxTerminalPages = T => {
     host.append(pageTabs(banks.map(x => [x.short, x.short.toUpperCase()]), b.short, v => { stack.at(-1).arg = v; history.replaceState(history.state, '', location.pathname + location.search + hashOf('cb', v)); show(); }));
     host.append(cards([['POLICY RATE', rate?.display || '—', '', rate ? `${rate.source}, ${rate.observationDate}` : ''], ['NEXT DECISION', n ? day(n.date) : '—', '', n?.at ? new Date(n.at).toLocaleString([], {weekday: 'short', hour: '2-digit', minute: '2-digit'}) : ''], ['COUNTDOWN', n ? (n.at ? M.countdown(n.at - Date.now()) : n.daysAway + ' days') : '—', 'fx-up'], ['FUTURES IMPLY', odds ? signed(odds.expectedChangeBp, 0, ' bp') : '—', '', odds ? 'CBOT Fed funds futures' : 'No free public futures feed']]));
     if (odds) { const s = section('Fed funds futures pricing'); const bar = el('span', 'fx-oddsbar pg-oddsbar'); for (const [k, c] of [['cut50', 'c2'], ['cut', 'c1'], ['hold', 'h'], ['hike', 'k1'], ['hike50', 'k2']]) if (odds[k] > 0) { const i = el('i', c); i.style.width = odds[k] + '%'; bar.append(i); } s.append(bar); kv(s, [...[['cut50', 'Cut 50 bp'], ['cut', 'Cut 25 bp'], ['hold', 'No change'], ['hike', 'Hike 25 bp'], ['hike50', 'Hike 50 bp']].filter(([k]) => odds[k] > 0).map(([k, l]) => [l, Math.round(odds[k]) + '%']), ['Implied rate after', finite(odds.impliedRateAfter) ? odds.impliedRateAfter.toFixed(3) + '%' : null], ['EFFR', S.desk.fed.effr ? `${S.desk.fed.effr.value.toFixed(2)}% (${S.desk.fed.effr.date})` : null], ['Method', odds.method === 'meeting-month' ? 'Meeting-month contract, FedWatch-style' : 'Following-month contract']]); host.append(s); }
-    const sched = section('Decision schedule'); kv(sched, (b.decisions || []).filter(d => d >= new Date().toISOString().slice(0, 10)).slice(0, 8).map((d, i) => [i ? 'Then' : 'Next', new Date(d + 'T12:00:00Z').toLocaleDateString(undefined, {weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'})])); sched.append(chips([b.calendarURL ? link('Official calendar ↗', b.calendarURL, 'fx-chip fx-chip-link') : null]));
+    const sched = section('Decision schedule'); kv(sched, (b.decisions || []).filter(d => d >= new Date().toISOString().slice(0, 10)).slice(0, 8).map((d, i) => [i ? 'Then' : 'Next', new Date(d + 'T12:00:00Z').toLocaleDateString(undefined, {weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'})])); sched.append(chips([b.calendarURL ? link('Official calendar ↗︎', b.calendarURL, 'fx-chip fx-chip-link') : null]));
     const ev = section('This week'), evs = (S.desk?.events?.events || []).filter(e => e.currency === b.currency).concat((S.calendar?.events || []).filter(e => e.currency === b.currency && e.impact === 'high'));
     const seen = new Set(); evs.filter(e => { const k = e.title + e.time; if (seen.has(k)) return false; seen.add(k); return true; }).sort((a, c) => Date.parse(a.time) - Date.parse(c.time)).forEach(e => ev.append(el('p', 'pg-p', `${new Date(e.time).toLocaleString([], {weekday: 'short', hour: '2-digit', minute: '2-digit'})} · ${e.title}`)));
     if (!ev.querySelector('.pg-p')) ev.append(el('p', 'fx-empty', 'No scheduled events for this currency this week.'));
@@ -472,7 +472,7 @@ window.FynxTerminalPages = T => {
   PAGES.journal = host => {
     setHead('JRNL', 'Your trading journal', 'Your saved trades, synced from your FYNX account');
     const j = S.journal;
-    if (j.status === 'signed-out') return host.append(el('p', 'pg-lead', 'Sign in to see your saved trades here. Sign-in opens in a new tab; come back to this tab when you are done.'), chips([link('Sign in ↗', '/auth/login.html?return=/terminal.html%23journal', 'fx-chip fx-chip-link pg-primary'), link('Journal on the website ↗', '/journal.html', 'fx-chip fx-chip-link')]));
+    if (j.status === 'signed-out') return host.append(el('p', 'pg-lead', 'Sign in to see your saved trades here. Sign-in opens in a new tab; come back to this tab when you are done.'), chips([link('Sign in ↗︎', '/auth/login.html?return=/terminal.html%23journal', 'fx-chip fx-chip-link pg-primary'), link('Journal on the website ↗︎', '/journal.html', 'fx-chip fx-chip-link')]));
     if (j.status !== 'ready') return host.append(el('p', 'fx-empty', j.status === 'error' ? 'Journal sync is unavailable right now.' : 'Loading your journal…'));
     const t = j.trades, pls = t.map(x => x.pl).filter(finite), net = pls.reduce((s, v) => s + v, 0), wins = pls.filter(v => v > 0), losses = pls.filter(v => v < 0);
     const pf = losses.length ? wins.reduce((s, v) => s + v, 0) / Math.abs(losses.reduce((s, v) => s + v, 0)) : null;
@@ -485,7 +485,7 @@ window.FynxTerminalPages = T => {
     s2.append(tb);
     const s3 = section('All trades'), tt = el('table', 'fx-table pg-table'), h3 = el('tr'); ['DATE', 'MARKET', 'SIDE', 'SESSION', 'P/L'].forEach(x => h3.append(el('th', '', x))); tt.append(h3);
     [...sorted].reverse().forEach(x => { const tr = el('tr'); tr.append(el('td', '', x.date), el('th', '', x.symbol || '—'), el('td', '', x.side || ''), el('td', 'fx-dim', x.session || ''), el('td', 'fx-num ' + tone(x.pl), finite(x.pl) ? signed(x.pl, 2) : '—')); tt.append(tr); });
-    const w = el('div', 'pg-scroll'); w.append(tt); s3.append(w, chips([link('Add or edit trades on the website ↗', '/journal.html', 'fx-chip fx-chip-link')]));
+    const w = el('div', 'pg-scroll'); w.append(tt); s3.append(w, chips([link('Add or edit trades on the website ↗︎', '/journal.html', 'fx-chip fx-chip-link')]));
     host.append(s2, s3);
   };
 
@@ -535,7 +535,7 @@ window.FynxTerminalPages = T => {
     const act = section('Most active contracts'), tb = el('table', 'fx-table pg-table'), h = el('tr'); ['CONTRACT', 'LAST', 'BID', 'ASK', 'IV', 'DELTA', 'VOLUME', 'OPEN INT'].forEach(x => h.append(el('th', '', x))); tb.append(h);
     u.mostActive.forEach(c => { const tr = el('tr'); tr.append(el('th', c.type === 'C' ? 'fx-up' : 'fx-down', `${day(c.expiry)} ${fmt(c.strike, c.strike % 1 ? 1 : 0)} ${c.type === 'C' ? 'Call' : 'Put'}`), el('td', 'fx-num', fmt(c.last, 2)), el('td', 'fx-num', fmt(c.bid, 2)), el('td', 'fx-num', fmt(c.ask, 2)), el('td', 'fx-num', finite(c.iv) ? (c.iv * 100).toFixed(1) + '%' : '—'), el('td', 'fx-num', finite(c.delta) ? c.delta.toFixed(2) : '—'), el('td', 'fx-num', count(c.volume)), el('td', 'fx-num fx-dim', count(c.oi))); tb.append(tr); });
     const w = el('div', 'pg-scroll'); w.append(tb); act.append(w); host.append(act);
-    host.append(chips([go('Payoff calculator', 'calc', {kind: 'options', sym}), go('Security page', 'des', sym), link('Cboe quote page ↗', `https://www.cboe.com/delayed_quotes/${sym.toLowerCase()}/quote_table`, 'fx-chip fx-chip-link')]));
+    host.append(chips([go('Payoff calculator', 'calc', {kind: 'options', sym}), go('Security page', 'des', sym), link('Cboe quote page ↗︎', `https://www.cboe.com/delayed_quotes/${sym.toLowerCase()}/quote_table`, 'fx-chip fx-chip-link')]));
   };
 
   PAGES.vol = host => {

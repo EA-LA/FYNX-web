@@ -456,7 +456,7 @@
       const b = M.smartBias(pair, {desk: S.desk, edgeMarket: edgeM, livePrice: q?.price});
       tag.append(el('span', 'fx-chip', `Regime ${edgeM.state?.regime?.value || '—'}`), el('span', 'fx-chip', `Vol ${M.ordinal(Math.round(edgeM.state?.volatilityPercentile?.value ?? 0))} pct`), el('span', 'fx-chip ' + tone(edgeM.positioning?.net?.value), `COT ${signed((edgeM.positioning?.net?.value ?? 0) * 100, 0, '%')}${edgeM.positioning?.crowded?.value ? ' crowded' : ''}`));
       if (finite(b.score)) tag.append(el('span', 'fx-chip ' + (b.score >= 15 ? 'fx-up' : b.score <= -15 ? 'fx-down' : ''), `Bias ${b.label} ${b.score > 0 ? '+' : ''}${b.score}`));
-      tag.append(btn('Edge detail ▸', 'fx-chip fx-chip-link', () => openPage('edge', id)), link('Backtest ↗', `/quant-analyst.html?symbol=${id}`, 'fx-chip fx-chip-link'));
+      tag.append(btn('Edge detail ▸', 'fx-chip fx-chip-link', () => openPage('edge', id)), link('Backtest ↗︎', `/quant-analyst.html?symbol=${id}`, 'fx-chip fx-chip-link'));
     }
     tag.append(btn('Full page ▸', 'fx-chip fx-chip-link', () => openPage('des', id)));
     if (info(id).group === 'Stocks') tag.append(btn('Financials ▸', 'fx-chip fx-chip-link', () => openPage('fa', id)));
@@ -476,7 +476,7 @@
       if (!periods.some(p => f.annual[p]?.[id])) continue;
       const label = FIN_ROWS.find(r => r[0] === id)?.[1] || id.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase());
       const tr = el('tr'); tr.append(el('th', '', label));
-      periods.forEach(p => { const fact = f.annual[p]?.[id], td = el('td', 'fx-num'); if (fact) { const perShare = /eps|PerShare/i.test(id); td.append(btn(perShare ? '$' + fact.value.toFixed(2) : big(fact.value), 'fx-cell', () => inspect(`${t} ${label} · FY ${p}`, h => kv(h, [['Value', perShare ? '$' + fact.value : '$' + fact.value.toLocaleString('en-US')], ['Period', `${fact.start || ''} → ${fact.end}`], ['Filed', fact.filed], ['XBRL tag', fact.tag], ['Filing', link('Open on SEC ↗', `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${f.cik}&type=10-K`)]])))); } else td.textContent = '—'; tr.append(td); });
+      periods.forEach(p => { const fact = f.annual[p]?.[id], td = el('td', 'fx-num'); if (fact) { const perShare = /eps|PerShare/i.test(id); td.append(btn(perShare ? '$' + fact.value.toFixed(2) : big(fact.value), 'fx-cell', () => inspect(`${t} ${label} · FY ${p}`, h => kv(h, [['Value', perShare ? '$' + fact.value : '$' + fact.value.toLocaleString('en-US')], ['Period', `${fact.start || ''} → ${fact.end}`], ['Filed', fact.filed], ['XBRL tag', fact.tag], ['Filing', link('Open on SEC ↗︎', `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${f.cik}&type=10-K`)]])))); } else td.textContent = '—'; tr.append(td); });
       table.append(tr);
     }
     if (periods.some(p => f.annual[p]?.revenue && f.annual[p]?.income)) { const tr = el('tr'); tr.append(el('th', '', 'Net margin')); periods.forEach(p => { const a = f.annual[p]; tr.append(el('td', 'fx-num', a?.revenue && a?.income ? (a.income.value / a.revenue.value * 100).toFixed(1) + '%' : '—')); }); table.append(tr); }
@@ -742,7 +742,7 @@
   function ecoEvents() { const ccy = D().ccy; return (S.calendar?.events || []).filter(e => (!S.ecoHigh || e.impact === 'high') && (!ccy || ccy.includes(e.currency))).sort((a, b) => Date.parse(a.time) - Date.parse(b.time)); }
   function ecoRow(e) {
     const past = Date.parse(e.time) < Date.now();
-    const r = rowButton('fx-eco' + (past ? ' past' : ''), () => inspect(e.title, h => { kv(h, [['Currency', e.currency], ['Time', new Date(e.time).toLocaleString()], ['Impact', e.impact], ['Forecast', e.forecast || '—'], ['Previous', e.previous || '—'], ['Status', past ? 'Scheduled time has passed — check the source for the actual figure' : 'Upcoming'], ['Source', link('Forex Factory ↗', 'https://www.forexfactory.com/calendar')]]); h.append(btn('Full calendar ▸', 'fx-chip fx-chip-link', () => openPage('cal'))); }), e.title);
+    const r = rowButton('fx-eco' + (past ? ' past' : ''), () => inspect(e.title, h => { kv(h, [['Currency', e.currency], ['Time', new Date(e.time).toLocaleString()], ['Impact', e.impact], ['Forecast', e.forecast || '—'], ['Previous', e.previous || '—'], ['Status', past ? 'Scheduled time has passed — check the source for the actual figure' : 'Upcoming'], ['Source', link('Forex Factory ↗︎', 'https://www.forexfactory.com/calendar')]]); h.append(btn('Full calendar ▸', 'fx-chip fx-chip-link', () => openPage('cal'))); }), e.title);
     r.append(el('time', '', new Date(e.time).toLocaleString([], {weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'})), el('b', 'cc-' + e.currency, e.currency), el('i', 'imp-' + e.impact, ''), el('span', 'fx-ht', e.title), el('span', 'fx-num', e.forecast || ''), el('span', 'fx-num fx-dim', e.previous || ''));
     return r;
   }
@@ -763,7 +763,7 @@
     let last = '';
     for (const e of ev.slice(0, 40)) {
       if (e.date !== last) { host.append(el('div', 'fx-th1', new Date(e.date + 'T12:00:00Z').toLocaleDateString(undefined, {weekday: 'short', month: 'short', day: 'numeric'}))); last = e.date; }
-      const r = rowButton('fx-earn', () => inspect(`${e.symbol} earnings`, h => { kv(h, [['Company', e.name], ['Date', e.date], ['Time', e.time], ['Fiscal quarter', e.fiscalQuarter], ['EPS forecast', finite(e.epsForecast) ? '$' + e.epsForecast.toFixed(2) : '—'], ['Estimates', e.estimates ?? '—'], ['Year-ago EPS', finite(e.lastYearEPS) ? '$' + e.lastYearEPS.toFixed(2) : '—'], ['Market value', big(e.marketCap)], ['Source', link('Nasdaq earnings calendar ↗', 'https://www.nasdaq.com/market-activity/earnings')]]); h.append(btn('Company page ▸', 'fx-chip fx-chip-link', () => openPage('des', e.symbol))); }), `${e.symbol} earnings ${e.date}`);
+      const r = rowButton('fx-earn', () => inspect(`${e.symbol} earnings`, h => { kv(h, [['Company', e.name], ['Date', e.date], ['Time', e.time], ['Fiscal quarter', e.fiscalQuarter], ['EPS forecast', finite(e.epsForecast) ? '$' + e.epsForecast.toFixed(2) : '—'], ['Estimates', e.estimates ?? '—'], ['Year-ago EPS', finite(e.lastYearEPS) ? '$' + e.lastYearEPS.toFixed(2) : '—'], ['Market value', big(e.marketCap)], ['Source', link('Nasdaq earnings calendar ↗︎', 'https://www.nasdaq.com/market-activity/earnings')]]); h.append(btn('Company page ▸', 'fx-chip fx-chip-link', () => openPage('des', e.symbol))); }), `${e.symbol} earnings ${e.date}`);
       r.append(el('b', '', e.symbol), el('span', 'fx-ht', e.name), el('small', 'fx-dim', e.time === 'After close' ? 'AMC' : e.time === 'Before open' ? 'BMO' : '—'), el('span', 'fx-num', finite(e.epsForecast) ? '$' + e.epsForecast.toFixed(2) : '—'));
       host.append(r);
     }
@@ -1052,7 +1052,7 @@
   }
   function renderJournal(host) {
     const j = S.journal;
-    if (j.status === 'signed-out') { host.append(el('p', 'fx-sub', 'Sign in to see your saved trades here.')); host.append(link('Sign in ↗', '/auth/login.html?return=/terminal.html', 'fx-chip fx-chip-link'), btn('Journal page ▸', 'fx-chip fx-chip-link', () => openPage('journal'))); return; }
+    if (j.status === 'signed-out') { host.append(el('p', 'fx-sub', 'Sign in to see your saved trades here.')); host.append(link('Sign in ↗︎', '/auth/login.html?return=/terminal.html', 'fx-chip fx-chip-link'), btn('Journal page ▸', 'fx-chip fx-chip-link', () => openPage('journal'))); return; }
     if (j.status !== 'ready') return empty(host, j.status === 'error' ? 'Journal sync is unavailable right now.' : 'Loading your journal…');
     const t = j.trades, pls = t.map(x => x.pl).filter(finite), net = pls.reduce((s, v) => s + v, 0), wins = pls.filter(v => v > 0).length;
     const out = el('div', 'fx-calcout'); const card = (k, v, cls) => { const d = el('div'); d.append(el('span', '', k), el('b', cls || '', v)); out.append(d); };
@@ -1178,7 +1178,7 @@
     const room = [...S.briefing, ...Object.values(S.desks).flatMap(x => x.items || [])].filter(h => words.some(w => h.title.toLowerCase().includes(w)));
     const seen = new Set(), items = [...room, ...own].filter(h => { const k = h.title.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
     if (!items.length) return empty(host, 'No current headlines for this market.');
-    for (const h of items.slice(0, 25)) { if (h.external) { const a = link('', h.url, 'fx-row fx-hrow'); a.append(el('time', '', hhmm(h.publishedAt)), el('span', 'fx-ht', h.title), el('small', '', h.source + ' ↗')); host.append(a); } else host.append(headlineRow(h)); }
+    for (const h of items.slice(0, 25)) { if (h.external) { const a = link('', h.url, 'fx-row fx-hrow'); a.append(el('time', '', hhmm(h.publishedAt)), el('span', 'fx-ht', h.title), el('small', '', h.source + ' ↗︎')); host.append(a); } else host.append(headlineRow(h)); }
   }
   async function renderCmp() {
     const host = panel('cmp'), sym = S.sym?.symbol || S.focus, cls = S.sym?.cls || symClass(sym);
