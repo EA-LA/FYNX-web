@@ -5,7 +5,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const researchPages = require('../content/research-pages.cjs');
 const pages = [
-  'index.html', 'home.html', 'journal.html', 'calculator.html', 'news.html',
+  'index.html', 'home.html', 'journal.html', 'trader-journal.html', 'calculator.html', 'news.html',
   'calendar.html', 'learn.html', 'profile.html', 'pro.html', 'explore.html', 'quant-analyst.html', 'macro-desk.html',
   'tools/research-desk.html',
   'edge-radar/index.html', ...require('../backend/quant/engine.cjs').SYMBOLS.map(s=>`edge-radar/${s.id.toLowerCase()}/index.html`),

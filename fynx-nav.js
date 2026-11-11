@@ -35,6 +35,7 @@
     'index.html': 'home',
     'dashboard.html': 'home',
     'journal.html': 'journal',
+    'trader-journal.html': 'journal',
     'calculator.html': 'calculator',
     'news.html': 'news',
     'calendar.html': 'calendar',
