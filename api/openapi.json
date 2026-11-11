@@ -4134,7 +4134,7 @@
           "Finance Tools"
         ],
         "operationId": "financeLoanPayment",
-        "summary": "Monthly payment, total interest and optional amortisation schedule",
+        "summary": "Monthly payment, total interest and optional amortisation schedule. Principal and extra payments must use whole cents (at most two decimal places).",
         "description": "Requires the `finance:calculate` scope.",
         "security": [
           {

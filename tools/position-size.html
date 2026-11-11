@@ -434,12 +434,15 @@
       transition: transform .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
     }
     .chip:hover{transform: translateY(-1px); background: var(--chip-bg-hover); border-color: var(--chip-border-hover)}
+    .chip{max-width:100%;min-height:44px;text-align:left}
+    .chip .preset-label{min-width:0;overflow-wrap:anywhere}
+    .chip:focus-visible{outline:2px solid currentColor;outline-offset:3px}
     .chip i{opacity:.85}
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261105-tap-targets-2">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
 <title>Forex Position Size &amp; Risk Calculator | FYNX</title>
 <meta name="description" content="Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -460,7 +463,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
      crossorigin="anonymous"></script>
 <!-- FYNX ADSENSE VERIFICATION END -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261105-tap-targets-2"><script src="/assets/js/company-products-data.js?v=20261105-tap-targets-2" defer></script><script src="/assets/js/company-products.js?v=20261105-tap-targets-2" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
 </head>
 
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
@@ -560,11 +563,13 @@
           </div>
 
           <div class="presetRow">
-            <input id="presetName" aria-label="Position preset name" class="field" type="text" placeholder="Preset name (save inputs)" />
+            <input id="presetName" aria-label="Position preset name" class="field" type="text" maxlength="80" placeholder="Preset name (save inputs)" />
             <button id="savePresetBtn" class="ghost"><i class="fa-solid fa-floppy-disk"></i> Save</button>
           </div>
           <div class="hint" id="presetHint">Free presets: 0 / 3. (Saved in your browser)</div>
           <div class="presetRow" id="presetChips"></div>
+          <div class="presetRow"><button id="shareScenarioBtn" class="ghost" type="button"><i class="fa-solid fa-link"></i> Copy scenario link</button></div>
+          <p class="hint" id="scenarioStatus" role="status" aria-live="polite"></p>
 
           <div class="msg" id="message"></div>
         </div>
@@ -808,10 +813,10 @@
 
     function startAutoUpdates(){
       stopAutoUpdates();
-      refreshPrice();
       timer = setInterval(() => {
         if (!manualMode && !isGoldPair(els.pair.value)) refreshPrice();
       }, 300000);
+      return refreshPrice();
     }
     function stopAutoUpdates(){
       if (timer) clearInterval(timer);
@@ -917,7 +922,11 @@
 
     function loadPresets(){
       try{
-        return JSON.parse(localStorage.getItem(PRESET_KEY) || "[]") || [];
+        const parsed = JSON.parse(localStorage.getItem(PRESET_KEY) || "[]");
+        // Older or damaged device storage must not prevent the calculator from opening.
+        return Array.isArray(parsed)
+          ? parsed.filter(p => p && typeof p === "object" && !Array.isArray(p)).slice(0, MAX_FREE_PRESETS)
+          : [];
       } catch {
         return [];
       }
@@ -929,20 +938,33 @@
     function renderPresets(){
       const presets = loadPresets();
       els.presetHint.textContent = `Free presets: ${presets.length} / ${MAX_FREE_PRESETS}. (Saved in your browser)`;
-      els.presetChips.innerHTML = "";
+      els.presetChips.replaceChildren();
 
       presets.forEach((p, idx) => {
+        const name = typeof p.name === "string" && p.name.trim() ? p.name.trim() : `Preset ${idx + 1}`;
         const chip = document.createElement("button");
         chip.className = "chip";
         chip.type = "button";
-        chip.innerHTML = `<i class="fa-solid fa-bookmark"></i> ${p.name}`;
+        chip.setAttribute("aria-label", `Load preset ${name}`);
+        const bookmarkIcon = document.createElement("i");
+        bookmarkIcon.className = "fa-solid fa-bookmark";
+        bookmarkIcon.setAttribute("aria-hidden", "true");
+        const label = document.createElement("span");
+        label.className = "preset-label";
+        // Preset names are saved locally; display them as text, never as HTML.
+        label.textContent = name;
+        chip.append(bookmarkIcon, label);
         chip.onclick = () => applyPreset(idx);
         els.presetChips.appendChild(chip);
 
         const del = document.createElement("button");
         del.className = "chip";
         del.type = "button";
-        del.innerHTML = `<i class="fa-solid fa-trash"></i>`;
+        del.setAttribute("aria-label", `Delete preset ${name}`);
+        const trashIcon = document.createElement("i");
+        trashIcon.className = "fa-solid fa-trash";
+        trashIcon.setAttribute("aria-hidden", "true");
+        del.append(trashIcon);
         del.onclick = () => deletePreset(idx);
         els.presetChips.appendChild(del);
       });
@@ -1122,6 +1144,90 @@
     }
 
     init();
+
+    /* =========================
+       SHAREABLE SCENARIO LINK ([site-qa] run 65)
+       Carries pair, risk mode, balance, risk, stop and (only in manual mode) price and
+       quote->USD rate. Values are validated; nothing is saved to an account.
+    ========================== */
+    (function scenarioLink(){
+      const btn = document.getElementById("shareScenarioBtn");
+      const status = document.getElementById("scenarioStatus");
+      const quoteRate = document.getElementById("quoteUsdRate");
+      const num = (v, max) => {
+        const t = String(v ?? "").trim();
+        if (!/^\d{1,12}(\.\d{1,8})?$/.test(t)) return null;
+        const n = Number(t);
+        return Number.isFinite(n) && n > 0 && n <= max ? t : null;
+      };
+      const usingManual = () => isGoldPair(els.pair.value) || els.manualPriceRow.style.display !== "none";
+
+      function buildLink(){
+        const q = new URLSearchParams();
+        q.set("pair", els.pair.value);
+        q.set("mode", usePercentRisk ? "pct" : "usd");
+        const bal = num(els.balance.value, 1e12); if (bal) q.set("balance", bal);
+        const risk = usePercentRisk ? num(els.riskPercent.value, 100) : num(els.riskDollars.value, 1e12);
+        if (risk) q.set(usePercentRisk ? "riskPercent" : "riskDollars", risk);
+        const stop = num(els.stopPips.value, 1e6); if (stop) q.set("stopPips", stop);
+        if (usingManual()){
+          const price = num(els.manualPrice.value, 1e7); if (price) q.set("price", price);
+          const rate = num(quoteRate.value, 1e6); if (rate) q.set("quoteUsdRate", rate);
+        }
+        return location.origin + location.pathname + "?" + q.toString();
+      }
+
+      function showFallback(link){
+        status.textContent = "Copy this link: ";
+        const box = document.createElement("input");
+        box.type = "text"; box.readOnly = true; box.value = link; box.className = "field";
+        box.setAttribute("aria-label", "Scenario link");
+        status.appendChild(box); box.focus(); box.select();
+      }
+
+      btn.addEventListener("click", () => {
+        const link = buildLink();
+        // Copy must not place private balance/risk assumptions into this tab’s URL or history.
+        const done = () => { status.textContent = "Link copied. It carries these inputs only; nothing is saved to an account." + (usingManual() ? "" : " The price is re-read from the daily reference rate when opened."); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(done, () => showFallback(link));
+        else showFallback(link);
+      });
+
+      const q = new URLSearchParams(location.search);
+      const pair = q.get("pair");
+      if (!pair || !pairs.includes(pair)) return;
+      els.pair.value = pair;
+      setStopPipsDecimals();
+      usePercentRisk = q.get("mode") !== "usd";
+      const bal = num(q.get("balance"), 1e12); if (bal) els.balance.value = bal;
+      const rp = num(q.get("riskPercent"), 100); if (rp) els.riskPercent.value = rp;
+      const rd = num(q.get("riskDollars"), 1e12); if (rd) els.riskDollars.value = rd;
+      const stop = num(q.get("stopPips"), 1e6); if (stop) els.stopPips.value = stop;
+      const price = num(q.get("price"), 1e7);
+      const rate = num(q.get("quoteUsdRate"), 1e6);
+      els.manualPrice.value = price || "";
+      quoteRate.value = rate || "";
+      // The inputs are now in the form; clear them from the address bar so the tab URL
+      // (and a later copy/paste of it) does not carry balance or risk numbers.
+      try {
+        const clean = new URL(location.href);
+        ["pair", "mode", "balance", "riskPercent", "riskDollars", "stopPips", "price", "quoteUsdRate"].forEach(k => clean.searchParams.delete(k));
+        history.replaceState(history.state, "", clean.pathname + clean.search + clean.hash);
+      } catch (e) { /* ignore */ }
+      syncRiskUI();
+      status.textContent = "Opened a shared scenario. Change any input and press Calculate.";
+      if (price){
+        document.getElementById("manualModeBtn").click();
+        setMessage("");
+        calculate();
+      } else if (isGoldPair(pair)){
+        startAutoUpdates();
+        setMessage("Gold needs a manual price. Enter your broker’s price and press Calculate.");
+      } else {
+        manualMode = false;
+        startAutoUpdates().then(() => { if (currentPrice > 0) calculate(); });
+      }
+    })();
 
 // Opt-in first-party adapter; all network access stays in the shared controller.
 window.fynxRiskPilot=async()=>{

@@ -45,7 +45,7 @@ function likelyDirection(strategy:EdgeStrategy,bars:Bar[],state:MarketState,tags
 }
 export function computeMarket(symbol:string,input:MarketInput,strategies:EdgeStrategy[]=DEFAULT_STRATEGIES,asOf:string):MarketResult{
   const info=SYMBOLS.find(s=>s.id===symbol);if(!info)throw new Error(`Unknown Edge market ${symbol}.`);const bars=completedDailyBars(input.bars||[],asOf),states=stateSeries(bars),state=states.at(-1)||emptyState(),cot=positioning(symbol,input.cot,asOf);
-  const relevantEvents=(input.events||[]).filter(e=>info.currencies.includes(e.currency)),moves=eventMoves(symbol,bars,input.intradayBars,relevantEvents,asOf),events=computeEventRisk(relevantEvents,info.currencies,asOf,moves,input.calendarAvailable,input.calendarAsOf);
+  const relevantEvents=(input.events||[]).filter(e=>info.currencies.includes(e.currency)),moves=eventMoves(symbol,bars,input.intradayBars,relevantEvents,asOf,input.releaseDays?.filter(day=>info.currencies.includes(day.currency))),events=computeEventRisk(relevantEvents,info.currencies,asOf,moves,input.calendarAvailable,input.calendarAsOf);
   const positionCache=new Map<string,ReturnType<typeof positioning>>(),notes:string[]=[],fits=strategies.map(strategy=>{
     const cache=input.backtests?.[strategy.id],computed=cache?{result:null,reason:null}:runStrategyBacktest(symbol,input,strategy,asOf),trades=cache?.trades||computed.result?.trades||[];
     const timeframe=(strategy.timeframe||'D1').toUpperCase(),executionBars=(timeframe==='D1'?bars:input.strategyBars?.[timeframe]||[]).filter(b=>timeMs(b.time)+(TF[timeframe]||DAY)<=timeMs(asOf)),signalATR=strategyATR(executionBars,strategy),stopDistance=signalATR===null?null:signalATR*(strategy.params.stopS??2);

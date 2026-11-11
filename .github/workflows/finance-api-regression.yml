@@ -1,0 +1,27 @@
+name: Finance API regression
+on:
+  pull_request:
+    paths:
+      - 'backend/developer-*.cjs'
+      - 'backend/package*.json'
+      - 'api/**'
+      - 'scripts/build-openapi.cjs'
+      - 'scripts/test-openapi.cjs'
+      - '.github/workflows/finance-api-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm ci --prefix backend
+      - run: node --test backend/developer-*.test.cjs
+      - run: npm run test:api

@@ -21,13 +21,30 @@
     const card=button.closest('.discovery-card');if(card)button.setAttribute('aria-label',`${active?'Remove saved':'Save'} ${card.querySelector('h2').textContent.replace('↗','').trim()}`);
   });}
   let filterLibrary=()=>{};
+  // A slow first index request must not turn two quick taps into a save + unsave.
+  const pendingSaves=new Set();
+  function setSavePending(url,pending){
+    document.querySelectorAll('[data-save-resource]').forEach(button=>{
+      if(saveURL(button)!==url)return;
+      button.disabled=pending;
+      if(pending)button.setAttribute('aria-busy','true');
+      else button.removeAttribute('aria-busy');
+    });
+  }
   document.addEventListener('click',async event=>{
     const button=event.target.closest('[data-save-resource]');if(!button)return;
-    const url=saveURL(button),rows=await index();
-    if(!rows.some(row=>row.url===url)){announce('This resource cannot be saved right now. Please try again.');return;}
-    const active=saved.has(url);if(active)saved.delete(url);else saved.add(url);
-    const persisted=write(savedKey,[...saved]);updateSaves();filterLibrary();renderWorkspace();
-    announce(persisted?(active?'Removed from saved resources.':'Saved. Find it in your workspace or the Saved filter.'):'Saved for this visit. Browser storage is unavailable.');
+    const url=saveURL(button);
+    if(pendingSaves.has(url))return;
+    pendingSaves.add(url);setSavePending(url,true);
+    try{
+      const rows=await index();
+      if(!rows.some(row=>row.url===url)){announce('This resource cannot be saved right now. Please try again.');return;}
+      const active=saved.has(url);if(active)saved.delete(url);else saved.add(url);
+      const persisted=write(savedKey,[...saved]);updateSaves();filterLibrary();renderWorkspace();
+      announce(persisted?(active?'Removed from saved resources.':'Saved. Find it in your workspace or the Saved filter.'):'Saved for this visit. Browser storage is unavailable.');
+    }finally{
+      pendingSaves.delete(url);setSavePending(url,false);
+    }
   });
   const library=document.querySelector('[data-discovery-library]');
   if(library){

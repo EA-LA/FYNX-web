@@ -5,8 +5,8 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const researchPages = require('../content/research-pages.cjs');
 const pages = [
-  'index.html', 'home.html', 'journal.html', 'calculator.html', 'news.html',
-  'calendar.html', 'learn.html', 'profile.html', 'pro.html', 'explore.html', 'quant-analyst.html',
+  'index.html', 'home.html', 'journal.html', 'trader-journal.html', 'calculator.html', 'news.html',
+  'calendar.html', 'learn.html', 'profile.html', 'pro.html', 'explore.html', 'quant-analyst.html', 'macro-desk.html',
   'tools/research-desk.html',
   'edge-radar/index.html', ...require('../backend/quant/engine.cjs').SYMBOLS.map(s=>`edge-radar/${s.id.toLowerCase()}/index.html`),
   ...researchPages.map(([, slug]) => `tools/${slug}.html`),
@@ -15,7 +15,7 @@ const pages = [
 const navigation = [
   ['Home', '/home.html'], ['Journal', '/journal.html'], ['Calculator', '/calculator.html'],
   ['News', '/news.html'], ['Calendar', '/calendar.html'], ['Learn', '/learn.html'],
-  ['Explore', '/explore.html'], ['Research', '/tools/research-desk.html'], ['Quant Analyst', '/quant-analyst.html'], ['Edge Radar', '/edge-radar/'], ['Profile', '/profile.html'],
+  ['Explore', '/explore.html'], ['Research', '/tools/research-desk.html'], ['Quant Analyst', '/quant-analyst.html'], ['Edge Radar', '/edge-radar/'], ['Macro Desk', '/macro-desk.html'], ['Profile', '/profile.html'],
 ];
 
 for (const page of pages) {
@@ -38,8 +38,8 @@ for (const page of pages) {
   html = html.replace('</head>', assets + (page.startsWith('edge-radar/') ? '<link rel="stylesheet" href="/assets/css/edge-radar.css">\n' : page === 'quant-analyst.html' ? '<link rel="stylesheet" href="/assets/css/quant-analyst.css">\n' : '') + '</head>');
   if (!/data-fynx-layout="workspace"/.test(html) && !/data-fynx-section="TOOLS"/.test(html)) {
     const active = page === 'profile.html' ? '/profile.html' : page.startsWith('edge-radar/') ? '/edge-radar/' : page.startsWith('tools/') ? '/tools/research-desk.html' : `/${page}`;
-    const links = navigation.map(([label, href]) => `<a href="${href}"${href === active ? ' aria-current="page"' : ''}>${label}${['Quant Analyst','Edge Radar'].includes(label) ? '<span class="quant-new-badge">NEW</span>' : ''}</a>`).join('');
-    const nav = `\n<!-- terminal-navigation:start -->\n<nav class="terminal-navigation" aria-label="Workspace navigation">${links}</nav>${page.startsWith('edge-radar/')?'<div class="terminal-ticker-host" data-terminal-ticker role="region" aria-label="Market snapshot"><span class="edge-ticker-loading">Market quotes · loading attributed data…</span></div>':''}\n<!-- terminal-navigation:end -->\n`;
+    const links = navigation.map(([label, href]) => `<a href="${href}"${href === active ? ' aria-current="page"' : ''}>${label}${['Quant Analyst','Edge Radar','Macro Desk'].includes(label) ? '<span class="quant-new-badge">NEW</span>' : ''}</a>`).join('');
+    const nav = `\n<!-- terminal-navigation:start -->\n<nav class="terminal-navigation" aria-label="Workspace navigation">${links}</nav>${page.startsWith('edge-radar/')||page==='macro-desk.html'?'<div class="terminal-ticker-host" data-terminal-ticker role="region" aria-label="Market snapshot"><span class="edge-ticker-loading">Market quotes · loading attributed data…</span></div>':''}\n<!-- terminal-navigation:end -->\n`;
     html = html.replace('</header>', '</header>' + nav);
   }
   fs.writeFileSync(file, html);

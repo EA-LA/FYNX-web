@@ -63,24 +63,20 @@
     .panel{margin-top:1.25rem;border:1px solid rgba(255, 255, 255, .10);background:rgba(0, 0, 0, .55);border-radius:18px;padding:1.25rem;backdrop-filter:blur(10px)}
     .panel h2{font-size:1.2rem;margin-bottom:.5rem}
     .muted{color:rgba(255, 255, 255, .6);font-size:.98rem}
-    .chips{margin-top:1rem;display:flex;gap:.6rem;flex-wrap:wrap}
-    .chip{
-      display:inline-flex;align-items:center;gap:.5rem;
-      border:1px solid rgba(255, 255, 255, .14);
-      background:rgba(255, 255, 255, .04);
-      padding:.55rem .9rem;border-radius:999px;
-      color:rgba(255, 255, 255, .85);
-      font-weight:700;text-decoration:none;
-      transition:all .25s ease;
-      white-space:nowrap;
-    }
-    .chip:hover{color:#fff;border-color:rgba(255, 255, 255, .28);background:rgba(255, 255, 255, .08);transform:translateY(-1px)}
-    .chip.active{border-color:rgba(255, 255, 255, .28);background:rgba(255, 255, 255, .10);color:#fff}
+    .market-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:1rem;margin:1.5rem 0}
+    .market-card{display:flex;flex-direction:column;gap:.65rem;min-height:176px;padding:1.2rem;color:inherit;text-decoration:none;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.035);border-radius:18px;transition:background .15s,border-color .15s}
+    .market-card:hover,.market-card:focus-visible{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.5)}
+    .market-card:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+    .market-card strong{font-size:1.2rem;line-height:1.3}
+    .market-card span{font-size:.9rem;line-height:1.55;color:rgba(255,255,255,.72)}
+    .market-card .market-card-kicker{font-size:.68rem;letter-spacing:.1em;font-weight:800}
+    .market-note{font-size:.9rem}
+    @media(max-width:600px){main{padding:1.4rem .85rem 3rem}.card{padding:1.35rem 1rem}h1{font-size:clamp(2rem,9vw,2.9rem)}.market-grid{grid-template-columns:1fr}.market-card{min-height:0}}
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261105-tap-targets-2">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
 <title>Financial Markets: Forex, Crypto &amp; Market Research | FYNX</title>
 <meta name="description" content="Browse forex and crypto market views, technical indicators, volatility, correlations and market research references.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -100,7 +96,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
      crossorigin="anonymous"></script>
 <!-- FYNX ADSENSE VERIFICATION END -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261105-tap-targets-2"><script src="/assets/js/company-products-data.js?v=20261105-tap-targets-2" defer></script><script src="/assets/js/company-products.js?v=20261105-tap-targets-2" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="MARKETS">
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
@@ -122,50 +118,33 @@
   <main>
 <!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Markets">Markets</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
 <div class="card">
-      <h1 id="title">Markets</h1>
-      <p id="desc">Choose a market section.</p>
-
-      <div class="chips" id="chips"></div>
-
-      <div class="panel">
-        <h2 id="panelTitle">Placeholder</h2>
-        <div class="muted" id="panelText">Add your real content here.</div>
-      </div>
+      <p class="discovery-kicker">MARKETS / RESEARCH</p>
+      <h1>Move from a market question to the right data.</h1>
+      <p>Open an existing FYNX market tool directly. Feeds show their own source and availability; this directory does not display live prices.</p>
+      <nav class="market-grid" aria-label="Market research sections">
+        <a class="market-card" href="/markets/currencies.html" data-market="currencies"><span class="market-card-kicker">01 / MARKET RESEARCH</span><strong>Currencies</strong><span>Compare major and cross-currency charts and market context.</span></a>
+        <a class="market-card" href="/markets/crypto.html" data-market="crypto"><span class="market-card-kicker">02 / MARKET RESEARCH</span><strong>Crypto</strong><span>Explore Bitcoin, Ethereum and other cryptocurrency charts.</span></a>
+        <a class="market-card" href="/markets/indicators.html" data-market="indicators"><span class="market-card-kicker">03 / MARKET RESEARCH</span><strong>Indicators</strong><span>Study market indicators and technical signals in context.</span></a>
+        <a class="market-card" href="/markets/patterns.html" data-market="patterns"><span class="market-card-kicker">04 / MARKET RESEARCH</span><strong>Patterns</strong><span>Review chart pattern examples before forming a trade idea.</span></a>
+        <a class="market-card" href="/markets/volatility.html" data-market="volatility"><span class="market-card-kicker">05 / MARKET RESEARCH</span><strong>Volatility</strong><span>Check Cboe VIX daily history and volatility risk guidance.</span></a>
+        <a class="market-card" href="/markets/correlation.html" data-market="correlation"><span class="market-card-kicker">06 / MARKET RESEARCH</span><strong>FX correlation</strong><span>Compare recent FX return correlations across selectable windows.</span></a>
+        <a class="market-card" href="/markets/cot.html" data-market="cot"><span class="market-card-kicker">07 / MARKET RESEARCH</span><strong>Commitments of Traders</strong><span>Read published CFTC position reports and weekly market context.</span></a>
+        <a class="market-card" href="/markets/liquidity.html" data-market="liquidity"><span class="market-card-kicker">08 / MARKET RESEARCH</span><strong>Crypto liquidity</strong><span>Check Coinbase BTC/USD and ETH/USD bid, ask and spread snapshots.</span></a>
+        <a class="market-card" href="/markets/historical-data.html" data-market="historical-data"><span class="market-card-kicker">09 / MARKET RESEARCH</span><strong>Historical data</strong><span>Inspect historical market charts before testing a hypothesis.</span></a>
+      </nav>
+      <p class="market-note">Market data can be delayed or unavailable. Verify timestamps and sources on each tool before using the information for trading.</p>
     </div>
   <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/markets/cot.html"><strong>CFTC Commitments of Traders: Weekly Positions</strong><span>Explore the latest published CFTC Legacy Futures Only positions, including net commercial and non-commercial positions and open interest.</span></a><a href="/markets/liquidity.html"><strong>Crypto Liquidity: Coinbase Bid, Ask &amp; Spread</strong><span>View Coinbase BTC/USD and ETH/USD best bid, ask, spread and displayed size, refreshed every 15 seconds while visible.</span></a><a href="/markets/crypto.html"><strong>Crypto Market Overview: Bitcoin, Ethereum &amp; Altcoins</strong><span>Explore Bitcoin, Ethereum and other cryptocurrency markets with charts and market context for your research.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
 
-  <script>
-    const params = new URLSearchParams(location.search);
-    const section = (params.get('section') || 'currencies').toLowerCase();
-
-    const sections = [
-      { key:'currencies', icon:'fa-dollar-sign', label:'Currencies' },
-      { key:'crypto', icon:'fa-bitcoin', label:'Crypto' },
-      { key:'indicators', icon:'fa-chart-line', label:'Indicators' },
-      { key:'patterns', icon:'fa-shapes', label:'Patterns' },
-      { key:'volatility', icon:'fa-wave-square', label:'Volatility' },
-      { key:'correlation', icon:'fa-chart-area', label:'Correlation' },
-      { key:'cot', icon:'fa-clipboard-list', label:'Commitments of Traders' },
-      { key:'liquidity', icon:'fa-water', label:'Liquidity' },
-      { key:'historical-data', icon:'fa-database', label:'Historical Data' }
-    ];
-
-    const cfg = sections.find(s => s.key === section) || sections[0];
-
-    document.getElementById('title').textContent = cfg.label;
-    document.getElementById('desc').textContent = 'This is the ' + cfg.label + ' section. Add the real dashboards here.';
-    document.getElementById('panelTitle').textContent = cfg.label;
-    document.getElementById('panelText').textContent = 'Add your UI and content for ' + cfg.label + ' here.';
-
-    const chips = document.getElementById('chips');
-    sections.forEach(s => {
-      const a = document.createElement('a');
-      a.className = 'chip' + (s.key === cfg.key ? ' active' : '');
-      a.href = 'index.html?section=' + encodeURIComponent(s.key);
-      a.innerHTML = '<i class="fas ' + s.icon + '"></i> ' + s.label;
-      chips.appendChild(a);
-    });
+  <script data-market-redirect>
+    (() => {
+      // Older shared ?section= links now go to the implemented market pages.
+      const section = new URLSearchParams(location.search).get('section')?.toLowerCase();
+      if (!section) return;
+      const link = [...document.querySelectorAll('a[data-market]')].find(a => a.dataset.market === section);
+      if (link) location.replace(link.href);
+    })();
   </script>
 
 <footer></footer></body>

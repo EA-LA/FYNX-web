@@ -190,3 +190,8 @@ html body[data-fynx-terminal] .fw-live-story h4 { font-size: 18px; line-height: 
 
 html body[data-fynx-terminal] .fw-live-terminal .fw-live-quotes strong,
 html body[data-fynx-terminal] .fw-live-terminal .fw-live-tools strong { color:var(--fw-text) !important; }
+
+/* [site-qa] 2026-11-07 run 28: "recently opened" workspace links reach 44px on touch phones. */
+@media (max-width: 600px) and (pointer: coarse) {
+  html body[data-fynx-terminal] .nr-recent a { min-height: 44px !important; display: flex !important; align-items: center !important; box-sizing: border-box !important; }
+}

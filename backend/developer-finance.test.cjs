@@ -78,3 +78,25 @@ test('results never contain undefined values (Firestore rejects them in request 
  walk(finance('trade-pnl',{direction:'long',entry_price:'1',exit_price:'2',quantity:'1'}),'pnl');
  walk(finance('real-return',{nominal_return_percent:'5',inflation_percent:'2'}),'real');
 });
+
+test('unknown inherited route names fail closed',()=>{
+ for(const name of ['toString','constructor','__proto__']){
+  assert.throws(()=>finance(name,{}),e=>e.code==='not_found');
+ }
+});
+
+test('extreme inputs fail rather than returning Infinity or an invalid recovery period',()=>{
+ bad('cagr',{start_value:'1',end_value:'2',years:1e-100},/supported calculation range/);
+ bad('cagr',{start_value:'1',end_value:'2',years:'0.000000000001'},/supported calculation range/);
+ bad('drawdown-recovery',{drawdown_percent:'20',monthly_return_percent:1e-100},/supported calculation range/);
+ bad('drawdown-recovery',{drawdown_percent:'20',monthly_return_percent:1e-15},/supported calculation range/);
+});
+
+test('loan schedules reject fractional cents and reconcile displayed payments',()=>{
+ bad('loan-payment',{principal:'1',annual_rate_percent:'0',term_months:3,extra_payment:'0.005'},/whole cents/);
+ bad('loan-payment',{principal:'1.005',annual_rate_percent:'0',term_months:3},/whole cents/);
+ const loan=finance('loan-payment',{principal:'1',annual_rate_percent:'0',term_months:3,extra_payment:'0.01',include_schedule:true});
+ const cents=s=>Math.round(Number(s)*100);
+ assert.equal(loan.schedule.reduce((total,row)=>total+cents(row.payment),0),cents(loan.total_paid));
+ assert.equal(loan.schedule.reduce((total,row)=>total+cents(row.principal),0),cents(loan.principal));
+});

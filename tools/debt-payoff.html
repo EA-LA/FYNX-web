@@ -411,10 +411,12 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261105-tap-targets-2">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
 <title>Debt Payoff &amp; Interest Calculator | FYNX</title>
 <meta name="description" content="Estimate how long debt repayment takes, total interest and the effect of changing a monthly payment.">
 <meta name="robots" content="index, follow, max-image-preview:large">
+<style>.scenario-link-status{margin:10px 0 0;font-size:13px;line-height:1.5;color:inherit;opacity:.85}.scenario-link-status:empty{display:none}.scenario-link-box{display:block;width:100%;box-sizing:border-box;margin-top:6px;font-size:16px;padding:10px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit}</style>
+<script src="/assets/js/scenario-link.js?v=20261111-scenario-privacy-4" defer></script>
 <link rel="canonical" href="https://www.fynxfinanceworld.com/tools/debt-payoff.html">
 <meta property="og:title" content="Debt Payoff &amp; Interest Calculator | FYNX">
 <meta property="og:description" content="Estimate how long debt repayment takes, total interest and the effect of changing a monthly payment.">
@@ -431,7 +433,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
      crossorigin="anonymous"></script>
 <!-- FYNX ADSENSE VERIFICATION END -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261105-tap-targets-2"><script src="/assets/js/company-products-data.js?v=20261105-tap-targets-2" defer></script><script src="/assets/js/company-products.js?v=20261105-tap-targets-2" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
@@ -489,6 +491,9 @@
             <button class="btn secondary" id="resetBtn">
               <i class="fas fa-rotate-left"></i> Reset
             </button>
+            <button class="btn secondary" id="shareScenarioBtn" type="button" data-scenario-fields="loanAmount,interestRate,monthlyPayment" data-scenario-run="calculateBtn">
+              <i class="fas fa-link"></i> Copy scenario link
+            </button>
           </div>
 
           <div class="hint">
@@ -499,7 +504,7 @@
         <div class="panel">
           <h2>Results</h2>
 
-          <div id="resultStatus" class="result-status">
+          <div id="resultStatus" class="result-status" role="status" aria-live="polite" aria-atomic="true">
             Enter your numbers and calculate.
           </div>
 
@@ -716,6 +721,19 @@
 
       scheduleBody.innerHTML = rows;
     }
+
+    // Previous results no longer represent the inputs as soon as a field changes.
+    // Keep the payment schedule and summary consistent with the form.
+    ["loanAmount", "interestRate", "monthlyPayment"].forEach((id) => {
+      const input = document.getElementById(id);
+      const invalidatePayoff = () => {
+        resetOutput();
+        document.getElementById("resultStatus").textContent =
+          "Inputs changed. Calculate again to update the payoff estimate and schedule.";
+      };
+      input.addEventListener("input", invalidatePayoff);
+      input.addEventListener("change", invalidatePayoff);
+    });
 
     document.getElementById("calculateBtn").addEventListener("click", calculatePayoff);
 

@@ -1,0 +1,29 @@
+name: Debt Payoff Input Freshness
+
+on:
+  pull_request:
+    paths:
+      - 'tools/debt-payoff.html'
+      - 'scripts/test-debt-payoff-freshness.cjs'
+      - '.github/workflows/debt-payoff-freshness.yml'
+  push:
+    paths:
+      - 'tools/debt-payoff.html'
+      - 'scripts/test-debt-payoff-freshness.cjs'
+      - '.github/workflows/debt-payoff-freshness.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  debt-payoff-freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check regression test syntax
+        run: node --check scripts/test-debt-payoff-freshness.cjs
+      - name: Verify calculator freshness and recovery behavior
+        run: node --test scripts/test-debt-payoff-freshness.cjs

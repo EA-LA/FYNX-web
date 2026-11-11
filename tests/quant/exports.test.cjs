@@ -59,7 +59,7 @@ test('strategy JSON is versioned and rejects unknown parameters/prototype payloa
 const settings={symbol:'XAUUSD',timeframe:'H1',params:{lookback:32,atrPeriod:14,entryK:.75,stopS:2.5,targetTP:4,maxHold:20,riskPct:.25,mode:'ohlc',strategy:'breakout'}};
 for(const platform of ['mt5','mt4','ctrader'])test(`${platform} export contains tested settings and closed-candle signal guards`,()=>{
  const result=generateEA({...settings,platform});assert.match(result.filename,/XAUUSD_H1/);assert(result.source.includes('32'));assert(result.source.includes('0.75'));assert(result.source.includes('0.25'));assert(result.source.includes('2.5'));assert(result.source.includes('PragueDay'));
- assert(result.notes.some(x=>/native compilation/.test(x)));assert(!/HttpClient|password/i.test(result.source));if(platform==='mt5'){assert.match(result.source,/InpEdgeEnabled = false/);assert.match(result.source,/WebRequest\("POST","https:\/\/fynxfinanceworld.com\/api\/edge\/heartbeat"/);}else assert(!/WebRequest/.test(result.source));
+ assert(result.notes.some(x=>/native compilation/.test(x)));assert(!/HttpClient|password/i.test(result.source));if(platform==='mt5'){assert.match(result.source,/InpEdgeEnabled = false/);assert.match(result.source,/WebRequest\("POST","https:\/\/us-central1-fynx-c7a28\.cloudfunctions\.net\/webTradingResearch\/api\/edge\/heartbeat"/);}else assert(!/WebRequest/.test(result.source));
  if(platform==='ctrader'){
   assert.match(result.source,/int last=Bars.Count-2/);assert.match(result.source,/i<last/);assert.match(result.source,/RoundingMode.Down/);assert.match(result.source,/volume<Symbol.VolumeInUnitsMin\)return/);assert.match(result.source,/LocalStorage.Flush/);assert.match(result.source,/Bars.TimeFrame!=TimeFrame.Hour/);
  }else{

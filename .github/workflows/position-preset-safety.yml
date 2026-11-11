@@ -1,0 +1,21 @@
+name: Position preset rendering regression
+on:
+  pull_request:
+    paths:
+      - 'tools/position-size.html'
+      - 'scripts/test-position-preset-safety.cjs'
+      - '.github/workflows/position-preset-safety.yml'
+  push:
+    branches:
+      - fix/position-presets-safe-render-20261110
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node scripts/test-position-preset-safety.cjs

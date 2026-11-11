@@ -1178,6 +1178,13 @@
     "topic": ""
   },
   {
+    "url": "/api/finance.html",
+    "title": "Finance Tools API: Compound Growth, Loans, CAGR & Kelly",
+    "description": "Compound growth, loan payments, CAGR, Kelly sizing, drawdown recovery, trade P/L and real return from numbers you send. Decimal math, no market data.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
     "url": "/api/risk.html",
     "title": "Forex Risk Calculation API for Trading Applications",
     "description": "Integrate caller-supplied forex risk calculations into trading software. Explore FYNX Risk API inputs, supported calculations and integration limits.",
@@ -1293,6 +1300,20 @@
     "url": "/pro.html",
     "title": "FYNX Pro — Trading Research & Risk Workspaces",
     "description": "Explore optional FYNX advanced trading tools. Essential $5.99, Plus $10.99 and Professional $30.99 per month. Choose a monthly membership and manage billing online.",
+    "category": "Resources",
+    "topic": ""
+  },
+  {
+    "url": "/terminal.html",
+    "title": "FYNX Terminal: Every Market, Headline and Tool on One Screen",
+    "description": "The FYNX Terminal: pick a desk (stocks, forex, bonds, crypto, funds, futures, indices, economy, options or commodities) and every box reloads with live quotes, charts, headlines, FYNX Intelligence, option chains, central banks, yield curves and the calendar.",
+    "category": "Resources",
+    "topic": ""
+  },
+  {
+    "url": "/macro-desk.html",
+    "title": "Macro Desk: Central Bank Watch, Yield Curves & Smart Bias",
+    "description": "Live headlines, central bank policy rates and next decisions, Fed funds futures odds, US, euro area, UK and Japan yield curves, and a transparent FX bias score. Every number shows its source and date.",
     "category": "Resources",
     "topic": ""
   },

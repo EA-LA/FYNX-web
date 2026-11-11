@@ -26,14 +26,19 @@ function int(v,name,min,max,fallback){
  if(!Number.isInteger(v)||v<min||v>max)invalid(`${name} must be a whole number from ${min} to ${max}.`);
  return v;
 }
-const fmt=(d,dp)=>d===null||d===undefined?null:d.toFixed(dp);
+function fmt(d,dp){
+ if(d===null||d===undefined)return null;
+ // Reject overflow before toFixed can allocate an unbounded decimal string.
+ if(!d.isFinite()||d.e>1000)invalid('The result exceeds the supported calculation range.');
+ return d.toFixed(dp);
+}
 const pct=(d,dp)=>fmt(d.mul(HUNDRED),dp);
 
 function finance(name,x){
  if(!x||typeof x!=='object'||Array.isArray(x))invalid('Send a JSON object.');
  const dp=int(x.decimals,'decimals',0,12,2);
+ if(!FINANCE.includes(name))invalid('Finance endpoint not found. Use one of: '+FINANCE.join(', ')+'.','not_found');
  const run={'compound-growth':compoundGrowth,'loan-payment':loanPayment,cagr,kelly,'drawdown-recovery':drawdownRecovery,'trade-pnl':tradePnl,'real-return':realReturn}[name];
- if(!run)invalid('Finance endpoint not found. Use one of: '+FINANCE.join(', ')+'.','not_found');
  return {...run(x,dp),data_basis:'caller_supplied'};
 }
 
@@ -64,6 +69,7 @@ function compoundGrowth(x,dp){
 function loanPayment(x,dp){
  const principal=num(x.principal,'principal',{positive:true}),rate=num(x.annual_rate_percent,'annual_rate_percent',{nonNegative:true,max:100});
  const n=int(x.term_months,'term_months',1,600),extra=opt(x,'extra_payment',0,{nonNegative:true});
+ if(principal.decimalPlaces()>2||extra.decimalPlaces()>2)invalid('principal and extra_payment must use whole cents (at most two decimal places).');
  const r=rate.div(HUNDRED).div(12);
  const exact=r.isZero()?principal.div(n):principal.mul(r).div(ONE.minus(ONE.plus(r).pow(-n)));
  const payment=exact.toDecimalPlaces(2,Decimal.ROUND_HALF_UP);
@@ -111,7 +117,9 @@ function drawdownRecovery(x,dp){
  if(x.peak_balance!==undefined){const p=num(x.peak_balance,'peak_balance',{positive:true}),now=p.mul(left).div(HUNDRED);out.current_balance=fmt(now,2);out.amount_to_recover=fmt(p.minus(now),2);}
  if(x.monthly_return_percent!==undefined){
   const r=num(x.monthly_return_percent,'monthly_return_percent',{positive:true,max:100}).div(HUNDRED);
-  out.months_to_recover=d.isZero()?0:Math.ceil(Decimal.ln(ONE.plus(need)).div(Decimal.ln(ONE.plus(r))).toNumber()-1e-9);
+  const months=d.isZero()?0:Math.ceil(Decimal.ln(ONE.plus(need)).div(Decimal.ln(ONE.plus(r))).toNumber()-1e-9);
+  if(!Number.isSafeInteger(months))invalid('The recovery period exceeds the supported calculation range.');
+  out.months_to_recover=months;
  }
  return out;
 }
