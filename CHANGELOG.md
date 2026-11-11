@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-11 (run 69) — [site-qa] Terminal Portfolio edits the right holding; shareable Correlation scenarios
+- Fixed: on the new FYNX Terminal Portfolio page, setting a holding's quantity to 0 hid it but kept it saved. After that, changing another holding's quantity changed the hidden one instead, the ✕ button removed the wrong holding, and adding the hidden market again did nothing. Edits and removals now always apply to the holding on that row, and a quantity of 0 or blank is refused with a short message (use ✕ to remove a holding). https://www.fynxfinanceworld.com/terminal.html#port
+- Fixed on iPhone: the Portfolio page's ✕ remove button was 26px wide; it is now a 44px tap target. Desktop is unchanged.
+- New: the Correlation calculator has a "Copy scenario link" button. The link carries both data series (2 to 250 plain numbers each) and simple labels such as EUR/USD; opening it fills them in and calculates. The page says the numbers came from the sender and are not live market data. The link is only copied, never written into your address bar. https://www.fynxfinanceworld.com/tools/correlation.html
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): all 240 pages fit iPhone SE with no errors; correlation hand-checked against an independent calculation (1–5 vs 2,4,5,4,5 = 0.7746; page example data = 0.9994); `npm test`, tool/discovery/macro/edge/API checks, edge lint/typecheck and build pass.
+
 ## 2026-11-11 (run 68) — [site-qa] Calendar Alerts: add reminders to your phone calendar, correct default date; shareable Currency conversions
 - New: each upcoming alert on Calendar Alerts has an "Add to calendar" button. It downloads a calendar file with the event and a reminder at your chosen time (for example 15 minutes before), so iPhone's Calendar app reminds you even when the page is closed. Nothing is sent to a server. https://www.fynxfinanceworld.com/tools/calendar-alerts.html
 - Fixed: Calendar Alerts pre-filled tomorrow's date in the evening for US time zones (it used the UTC date with the local time), so a default alert landed 25 hours away instead of 1 hour. It now uses your local date.

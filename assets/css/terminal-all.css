@@ -322,6 +322,7 @@ body.fx-paging .fx-keys .fx-key{opacity:.92}
  html body.fx-terminal .fx-page-back,html body.fx-terminal .fx-page-close,html body.fx-terminal .pg-tabs button{min-height:44px}
  html body.fx-terminal .pg-search input{font-size:16px!important;min-height:44px}
  html body.fx-terminal button.tp-link{min-height:44px;min-width:44px;padding:0 6px}
+ html body.fx-terminal .pg-table .fx-chip{min-width:44px;min-height:44px}
 }
 /* ===== Find any market, symbol mode, layout editor ===== */
 .fx-grid{grid-template-areas:var(--fx-areas,"s1 s2 s3 s4 s5 s6" "s1 s2 s7 s8 s9 s10" "s11 s12 s13 s14 s15 s16");grid-template-rows:var(--fx-rows,repeat(3,minmax(0,1fr)))}

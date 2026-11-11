@@ -95,6 +95,8 @@
   /* ===== PORTFOLIO ANALYTICS ================================================================ */
   const PKEY = 'portfolio';
   const holdings = () => read(PKEY, []).filter(h => h && /^[A-Za-z0-9.\-=^&]{1,24}$/.test(h.symbol) && finite(h.qty) && h.qty > 0);
+  // Edits go by symbol on the cleaned list, so a hidden (zero or invalid) entry can never shift rows.
+  const editHoldings = fn => { const l = holdings(); fn(l); write(PKEY, l); };
   async function analyze() {
     const list = holdings(); if (!list.length) return null;
     const hist = await Promise.all(list.map(h => T.symHistory(h.symbol, '2y'))), bench = await T.symHistory('SPY', '2y');
@@ -140,16 +142,16 @@
   PG.add('port', 'Portfolio', async (host, arg, alive) => {
     PG.setHead('PORT', 'Portfolio analytics', 'Your holdings, priced live, with risk measured from a year of real daily prices · saved in this browser');
     const ed = PG.section('Holdings'), tb = el('table', 'fx-table pg-table'), h = el('tr'); ['SYMBOL', 'NAME', 'QUANTITY', 'PRICE', 'VALUE', 'DAY', ''].forEach(x => h.append(el('th', '', x))); tb.append(h);
-    for (const [i, x] of holdings().entries()) {
+    for (const x of holdings()) {
       const q = quoteFor(x.symbol), tr = el('tr'), qty = el('input'); qty.type = 'number'; qty.min = '0'; qty.step = 'any'; qty.value = x.qty; qty.className = 'pg-qty'; qty.setAttribute('aria-label', `Quantity of ${x.symbol}`);
-      qty.addEventListener('change', () => { const l = read(PKEY, []); l[i].qty = Number(qty.value); write(PKEY, l); PG.rerender(); });
+      qty.addEventListener('change', () => { const n = Number(qty.value); if (!(qty.value !== '' && finite(n) && n > 0)) { qty.value = x.qty; T.say('Quantity must be above 0. Use ✕ to remove a holding.'); return; } editHoldings(l => { const h = l.find(y => y.symbol === x.symbol); if (h) h.qty = n; }); PG.rerender(); });
       const td = el('td'); td.append(qty);
       tr.append(el('th', '', x.symbol), el('td', 'pg-name', nameOf(x.symbol)), td, el('td', 'fx-num', q ? fmt(q.price, digitsOf(x.symbol)) : '…'), el('td', 'fx-num', q ? '$' + Math.round(q.price * x.qty).toLocaleString() : '…'), el('td', 'fx-num ' + tone(q?.changePercent), q ? signed(q.changePercent, 2, '%') : ''));
-      const rm = el('td'); rm.append(btn('✕', 'fx-chip', () => { const l = read(PKEY, []); l.splice(i, 1); write(PKEY, l); PG.rerender(); }, `Remove ${x.symbol}`)); tr.append(rm); tb.append(tr);
+      const rm = el('td'); rm.append(btn('✕', 'fx-chip', () => { editHoldings(l => { const k = l.findIndex(y => y.symbol === x.symbol); if (k >= 0) l.splice(k, 1); }); PG.rerender(); }, `Remove ${x.symbol}`)); tr.append(rm); tb.append(tr);
     }
     const w = el('div', 'pg-scroll'); w.append(tb); ed.append(w);
-    ed.append(PG.chips([btn('+ Add holding', 'fx-chip fx-chip-link pg-primary', () => T.openFinder({title: 'Add a holding', onPick: m => { const l = read(PKEY, []); if (!l.some(x => x.symbol === m.symbol)) l.push({symbol: m.symbol, qty: 10}); write(PKEY, l); T.openPage('port'); }})),
-      btn('Import journal markets', 'fx-chip fx-chip-link', async () => { const tr = S.journal?.trades || []; const syms = [...new Set(tr.map(x => String(x.symbol || '').toUpperCase().replace('/', '')).filter(Boolean))].slice(0, 15); if (!syms.length) { T.say(S.journal?.status === 'ready' ? 'No journal markets found.' : 'Sign in to import your journal.'); return; } const l = read(PKEY, []); for (const s of syms) { const id = T.resolve(s) || s; const sym = T.EDGE_TO_FX?.[id] || id; if (l.some(x => x.symbol === sym)) continue; const d = await T.symHistory(sym, '1y'); const px = d?.rows?.at(-1)?.close; if (finite(px)) l.push({symbol: sym, qty: Math.max(0.0001, Math.round(10000 / px * 10000) / 10000)}); } write(PKEY, l); PG.rerender(); }),
+    ed.append(PG.chips([btn('+ Add holding', 'fx-chip fx-chip-link pg-primary', () => T.openFinder({title: 'Add a holding', onPick: m => { editHoldings(l => { if (!l.some(x => x.symbol === m.symbol)) l.push({symbol: m.symbol, qty: 10}); }); T.openPage('port'); }})),
+      btn('Import journal markets', 'fx-chip fx-chip-link', async () => { const tr = S.journal?.trades || []; const syms = [...new Set(tr.map(x => String(x.symbol || '').toUpperCase().replace('/', '')).filter(Boolean))].slice(0, 15); if (!syms.length) { T.say(S.journal?.status === 'ready' ? 'No journal markets found.' : 'Sign in to import your journal.'); return; } const l = holdings(); for (const s of syms) { const id = T.resolve(s) || s; const sym = T.EDGE_TO_FX?.[id] || id; if (l.some(x => x.symbol === sym)) continue; const d = await T.symHistory(sym, '1y'); const px = d?.rows?.at(-1)?.close; if (finite(px)) l.push({symbol: sym, qty: Math.max(0.0001, Math.round(10000 / px * 10000) / 10000)}); } write(PKEY, l); PG.rerender(); }),
       holdings().length ? btn('Clear all', 'fx-chip', () => { write(PKEY, []); PG.rerender(); }) : null]));
     ed.append(PG.sourceNote('Journal import adds each market you traded with about $10,000 of exposure; edit the quantities to match your account.'));
     host.append(ed);

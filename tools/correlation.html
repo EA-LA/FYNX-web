@@ -369,6 +369,8 @@
     .btn:hover{transform:translateY(-1px)}
     .btn:disabled{opacity:.48;cursor:not-allowed;transform:none;box-shadow:none}
     .export-status{margin:.8rem 0 0;color:var(--text-soft);font-size:.88rem;line-height:1.5}
+    .export-status:empty{display:none}
+    .scenario-link-box{display:block;width:100%;box-sizing:border-box;margin-top:6px;font-size:16px;padding:10px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit}
     .btn.primary{background:var(--pill);color:var(--bg)}
     .btn.secondary{
       background:var(--panel-bg-2);
@@ -570,7 +572,7 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-story-photos-1">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-site-qa-69">
 <title>Market Returns Correlation Calculator | FYNX</title>
 <meta name="description" content="Calculate the correlation between two return series to compare market behavior and potential overlapping exposure.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -590,7 +592,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
      crossorigin="anonymous"></script>
 <!-- FYNX ADSENSE VERIFICATION END -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-story-photos-1"><script src="/assets/js/company-products-data.js?v=20261111-story-photos-1" defer></script><script src="/assets/js/company-products.js?v=20261111-story-photos-1" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-site-qa-69"><script src="/assets/js/company-products-data.js?v=20261111-story-photos-1" defer></script><script src="/assets/js/company-products.js?v=20261111-site-qa-69" defer></script><!-- company-products:assets:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
@@ -694,7 +696,11 @@
               <button class="btn secondary" type="button" id="exportCsvBtn" disabled aria-describedby="exportStatus">
                 <i class="fas fa-file-csv" aria-hidden="true"></i> Download paired CSV
               </button>
+              <button class="btn secondary" type="button" id="shareScenarioBtn" aria-describedby="shareStatus">
+                <i class="fas fa-link" aria-hidden="true"></i> Copy scenario link
+              </button>
             </div>
+            <p id="shareStatus" class="export-status" role="status" aria-live="polite"></p>
             <p id="exportStatus" class="export-status" role="status" aria-live="polite">Calculate to export the paired observations and Pearson r. Download stays on your device.</p>
 
             <div class="results-grid" style="margin-top:1rem;">
@@ -1093,6 +1099,57 @@
       invalidateCorrelation();
       exportStatus.textContent = "Calculate to export the paired observations and Pearson r. Download stays on your device.";
     });
+
+    /* [site-qa] run 69: shareable scenario. The link carries both series (plain numbers only, up to 250 each)
+       and simple labels; it is copied to the clipboard and never written to this tab's address bar. */
+    (function(){
+      const NUM = /^-?\d*\.?\d+(e[-+]?\d+)?$/i, LABEL = /^[A-Za-z0-9 .\/&()_-]{1,24}$/, MAX = 250;
+      const shareBtn = document.getElementById("shareScenarioBtn");
+      const shareStatus = document.getElementById("shareStatus");
+      const tokens = text => String(text || "").split(/[\s,;]+/).filter(Boolean);
+      const validSeries = list => list.length >= 2 && list.length <= MAX && list.every(v => v.length <= 24 && NUM.test(v) && Number.isFinite(Number(v)));
+      const validLabel = v => LABEL.test(v.trim());
+
+      const params = new URLSearchParams(window.location.search);
+      const a = tokens(params.get("a")), b = tokens(params.get("b"));
+      if (validSeries(a) && validSeries(b)) {
+        document.getElementById("seriesA").value = a.join(", ");
+        document.getElementById("seriesB").value = b.join(", ");
+        const la = String(params.get("la") || ""), lb = String(params.get("lb") || "");
+        document.getElementById("seriesALabel").value = validLabel(la) ? la.trim() : "";
+        document.getElementById("seriesBLabel").value = validLabel(lb) ? lb.trim() : "";
+        calculateCorrelation();
+        shareStatus.textContent = "Opened a shared scenario: these are the sender's numbers, not live market data. Edit them and calculate again.";
+      }
+
+      shareBtn.addEventListener("click", () => {
+        const sa = tokens(document.getElementById("seriesA").value), sb = tokens(document.getElementById("seriesB").value);
+        if (!validSeries(sa) || !validSeries(sb)) {
+          shareStatus.textContent = `Enter 2 to ${MAX} plain numbers in each series to share a link.`;
+          return;
+        }
+        const out = new URLSearchParams();
+        const la = document.getElementById("seriesALabel").value, lb = document.getElementById("seriesBLabel").value;
+        let dropped = false;
+        if (validLabel(la)) out.set("la", la.trim()); else if (la.trim()) dropped = true;
+        if (validLabel(lb)) out.set("lb", lb.trim()); else if (lb.trim()) dropped = true;
+        out.set("a", sa.join(","));
+        out.set("b", sb.join(","));
+        const link = window.location.origin + window.location.pathname + "?" + out.toString();
+        const fallback = () => {
+          shareStatus.textContent = "Copy this link: ";
+          const box = document.createElement("input");
+          box.type = "text"; box.readOnly = true; box.value = link; box.className = "scenario-link-box";
+          box.setAttribute("aria-label", "Scenario link");
+          shareStatus.appendChild(box); box.focus(); box.select();
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(link).then(() => {
+            shareStatus.textContent = "Link copied. Anyone who opens it sees both series and labels. Nothing is saved to an account." + (dropped ? " A label was left out: labels can use up to 24 letters, numbers, spaces and . / & ( ) _ -." : "");
+          }, fallback);
+        } else fallback();
+      });
+    })();
 
   </script>
 
