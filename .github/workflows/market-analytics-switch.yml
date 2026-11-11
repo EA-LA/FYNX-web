@@ -1,0 +1,25 @@
+name: Market analytics request switching regression
+
+on:
+  pull_request:
+    paths:
+      - 'assets/js/market-analytics.js'
+      - 'scripts/test-market-analytics-switch.cjs'
+      - '.github/workflows/market-analytics-switch.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  market-analytics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check browser script syntax
+        run: node --check assets/js/market-analytics.js
+      - name: Test rapid market switches and delayed feed responses
+        run: node --test scripts/test-market-analytics-switch.cjs
