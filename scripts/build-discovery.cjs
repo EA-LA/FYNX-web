@@ -157,6 +157,6 @@ for (const url of publicExtras){let file=url.slice(1),html=fs.readFileSync(path.
 const allURLs=['/',...entries.map(e=>e.url),...publicExtras];
 write('sitemap.xml',`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${allURLs.map(url=>`  <url><loc>${base+escape(url)}</loc></url>`).join('\n')}\n</urlset>\n`);
 write('assets/resource-index.json',JSON.stringify(entries.map(({keywords,...e})=>e),null,2)+'\n');
-write('robots.txt',`User-agent: *\nAllow: /\nSitemap: ${base}/sitemap.xml\n`);
+write('robots.txt',`User-agent: *\nAllow: /\nSitemap: ${base}/sitemap.xml\nSitemap: ${base}/intelligence/sitemap.xml\n`);
 fs.mkdirSync(path.join(root,'output'),{recursive:true});write('output/search-audit.json',JSON.stringify({htmlPages:allHTML().length,publicURLs:allURLs.length,lessonURLs:lessonPaths.length,resources:entries.length,aliases,privateFiles:[...privateFiles],publicTools:entries.filter(e=>e.category==='Tools'&&e.url!=='/calculator.html').length,productPages:publicProducts},null,2)+'\n');
 console.log(`Discovery built: ${allURLs.length} canonical public URLs, ${lessonPaths.length} substantive lessons and ${entries.length} searchable resources.`);

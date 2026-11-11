@@ -88,3 +88,4 @@ module.exports = async (req, res) => {
 };
 module.exports.preview = preview;
 module.exports.safeURL = safeURL;
+module.exports.resolveGoogle = resolveGoogle;
