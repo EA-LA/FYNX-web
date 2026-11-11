@@ -1297,6 +1297,20 @@
     "topic": ""
   },
   {
+    "url": "/terminal.html",
+    "title": "FYNX Terminal: Every Market, Headline and Tool on One Screen",
+    "description": "The FYNX Terminal: pick a desk (stocks, forex, bonds, crypto, funds, futures, indices, economy, options or commodities) and every box reloads with live quotes, charts, headlines, FYNX Intelligence, option chains, central banks, yield curves and the calendar.",
+    "category": "Resources",
+    "topic": ""
+  },
+  {
+    "url": "/macro-desk.html",
+    "title": "Macro Desk: Central Bank Watch, Yield Curves & Smart Bias",
+    "description": "Live headlines, central bank policy rates and next decisions, Fed funds futures odds, US, euro area, UK and Japan yield curves, and a transparent FX bias score. Every number shows its source and date.",
+    "category": "Resources",
+    "topic": ""
+  },
+  {
     "url": "/risk-disclosure.html",
     "title": "Risk Disclosure",
     "description": "Risk disclosure for FYNX Finance World covering trading risks, leverage, partner links, and user responsibility.",

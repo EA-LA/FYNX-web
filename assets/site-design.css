@@ -324,3 +324,25 @@ html body[data-fynx-layout] [hidden]{display:none!important}
 @media (hover:none) and (pointer:coarse) and (max-width:820px){
   html body .learning-links a{min-width:44px;justify-content:center;box-sizing:border-box}
 }
+
+/* [site-qa] run 60: breadcrumb (Home / Tools / News), news and resource-page header links, discovery/news/homepage footer links at least 44px wide on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .resource-wayfinding nav a,html body .discovery-footer>a,html body .footer-section a,html body .newsroom-breadcrumb a,html body .newsroom-footer nav a,html body .terminal-public-masthead nav>a,html body .site-resource-header nav a{min-width:44px!important;justify-content:center;box-sizing:border-box}
+}
+
+/* [site-qa] run 61: short source links in "Chart or live data unavailable?" (e.g. BLS), workspace top-bar icon buttons and "Open full page" links at least 44x44 on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .network-help a{min-width:44px;justify-content:center}
+  html body[data-fynx-layout=workspace] .top-bar-right .icon-btn{min-width:44px;min-height:44px;box-sizing:border-box}
+  html body .module-open{display:inline-flex;align-items:center;justify-content:center;min-height:44px;box-sizing:border-box}
+}
+/* [site-qa] run 62: company footer Privacy/Terms links, photo-credit links in figure captions and workspace top-bar icon buttons without .top-bar-right (Security) at least 44px wide on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .footer-baseline a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;box-sizing:border-box}
+  html body figcaption a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;box-sizing:border-box}
+  html body[data-fynx-layout=workspace] .top-bar .icon-btn{min-width:44px;min-height:44px;box-sizing:border-box}
+}
+/* [site-qa] run 65: lesson breadcrumbs (Home / Learn / Forex) at least 44px wide on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .discovery-breadcrumb a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;box-sizing:border-box}
+}
