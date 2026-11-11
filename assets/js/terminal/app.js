@@ -59,6 +59,9 @@
   function tabs(hostId, items, current, onPick) {
     const host = $(hostId); host.replaceChildren();
     for (const [value, label] of items) { const b = btn(label, value === current ? 'on' : '', () => onPick(value)); b.setAttribute('aria-pressed', String(value === current)); host.append(b); }
+    // Narrow screens scroll the tab row sideways; keep the selected tab fully visible (row only, never the page).
+    const on = host.querySelector('.on');
+    if (on && host.scrollWidth > host.clientWidth) { const h = host.getBoundingClientRect(), o = on.getBoundingClientRect(); if (o.right > h.right) host.scrollLeft += o.right - h.right; else if (o.left < h.left) host.scrollLeft -= h.left - o.left; }
   }
   function rowButton(cls, onClick, label) { const r = el('button', 'fx-row ' + (cls || '')); r.type = 'button'; if (label) r.setAttribute('aria-label', label); r.addEventListener('click', onClick); return r; }
   const empty = (host, text) => host.append(el('p', 'fx-empty', text));
@@ -474,8 +477,19 @@
       card('RISK', '$' + riskUsd.toFixed(2)); card('LOTS', lots.toFixed(2)); card('UNITS', Math.round(lots * contract).toLocaleString()); card('PIP / LOT', '$' + pipValue.toFixed(2));
       out.append(el('p', 'fx-foot', `Price ${finite(price) ? fmt(price, EDGE[id][2]) : '—'} · lots rounded down to 0.01 · confirm your broker's contract size.`));
     };
-    form.addEventListener('input', compute); compute();
-    host.append(link('Full calculator ↗', '/calculator.html', 'fx-chip fx-chip-link'));
+    // "Full calculator" opens Position Size with these inputs (its shared-scenario link format); FX prices are re-read there.
+    const full = link('Full calculator ↗', '/tools/position-size.html', 'fx-chip fx-chip-link');
+    const syncFull = () => {
+      const q = new URLSearchParams({pair: calc.pair.slice(0, 3) + '/' + calc.pair.slice(3), mode: 'pct'});
+      if (finite(calc.balance) && calc.balance > 0) q.set('balance', String(calc.balance));
+      if (finite(calc.risk) && calc.risk > 0 && calc.risk <= 100) q.set('riskPercent', String(calc.risk));
+      if (finite(calc.stop) && calc.stop > 0) q.set('stopPips', String(calc.stop));
+      const price = calc.pair === 'XAUUSD' ? quoteFor('XAUUSD')?.price ?? S.edge?.markets?.find(m => m.symbol === 'XAUUSD')?.state?.close?.value : null;
+      if (finite(price) && price > 0) q.set('price', String(price));
+      full.href = '/tools/position-size.html?' + q.toString();
+    };
+    form.addEventListener('input', () => { compute(); syncFull(); }); compute(); syncFull();
+    host.append(full);
   }
   function renderJournal(host) {
     const j = S.journal;
@@ -495,16 +509,18 @@
   /* --- command bar & keys --------------------------------------------------- */
   const PAGES = {HOME: '/home.html', NEWS: '/news.html', MACRO: '/macro-desk.html', EDGE: '/edge-radar/', QUANT: '/quant-analyst.html', RESEARCH: '/tools/research-desk.html', JOURNAL: '/journal.html', CALC: '/calculator.html', CALENDAR: '/calendar.html', LEARN: '/learn.html', PROFILE: '/profile.html'};
   function say(text) { $('fx-cmd-msg').textContent = text; }
+  // On stacked (phone/tablet) layouts the panel a command changes is usually off-screen; bring it into view.
+  function reveal(panel) { if (window.innerWidth < 1100) $(panel).scrollIntoView({behavior: 'smooth', block: 'start'}); }
   function run(cmd) {
     const parts = cmd.trim().toUpperCase().split(/\s+/), [verb, arg] = parts;
     if (!verb) return;
     if (verb === 'HELP' || verb === '?') { inspect('Commands', h => kv(h, [['AAPL, EURUSD, GOLD, BTC', 'Chart any market'], ['NEWS FOREX | MACRO | ENERGY…', 'Switch the news desk'], ['CURVE US | EA | UK | JP', 'Show a yield curve'], ['CB FED | ECB | BOE…', 'Central bank detail'], ['FIN MSFT', 'Company financials'], ['CORR 30 | 60 | 90', 'Correlation window'], ['CALC EURUSD', 'Position size for a pair'], ['GO MACRO | EDGE | QUANT…', 'Open a full page'], ['/', 'Jump to this command bar']])); return say('Commands listed.'); }
-    if (verb === 'NEWS') { const d = DESKS.find(([k, l]) => k.toUpperCase() === arg || l.toUpperCase() === arg); if (d) { S.deskTab = d[0]; renderDesks(true); return say(`News desk: ${d[1]}`); } return say('Desks: ' + DESKS.map(d => d[0].toUpperCase()).join(', ')); }
+    if (verb === 'NEWS') { const d = DESKS.find(([k, l]) => k.toUpperCase() === arg || l.toUpperCase() === arg); if (d) { S.deskTab = d[0]; renderDesks(true); reveal('tp-desks'); return say(`News desk: ${d[1]}`); } return say('Desks: ' + DESKS.map(d => d[0].toUpperCase()).join(', ')); }
     if (verb === 'CURVE') { const a = {US: 'US', EA: 'EA', EU: 'EA', UK: 'GB', GB: 'GB', JP: 'JP', JAPAN: 'JP'}[arg || 'US']; if (a) { setCurve(a); return say('Curve: ' + M.AREAS[a].short); } return say('Use CURVE US, EA, UK or JP.'); }
     if (verb === 'CB') { const b = S.schedule?.banks?.find(x => x.short.toUpperCase() === arg || x.currency === arg); if (b) { inspectBank(b); return say(b.name); } return say('Use CB FED, ECB, BOE, BOJ, SNB, BOC, RBA or RBNZ.'); }
-    if (verb === 'FIN' && arg) { if (CATALOG.find(c => c.symbol === arg && c.group === 'Stocks')) { S.finTicker = arg; renderFin(); return say('Financials: ' + arg); } return say('FIN works for the 20 listed stocks, e.g. FIN AAPL.'); }
-    if (verb === 'CORR') { const w = Number(arg); if ([30, 60, 90].includes(w)) { S.corrWindow = w; renderCorr(true); return say(`Correlation: ${w} days`); } return say('Use CORR 30, 60 or 90.'); }
-    if (verb === 'CALC') { const id = resolve(arg); S.tool = 'calc'; if (id && EDGE[id]) calc.pair = id; renderTools(); return say('Position size calculator'); }
+    if (verb === 'FIN' && arg) { if (CATALOG.find(c => c.symbol === arg && c.group === 'Stocks')) { S.finTicker = arg; renderFin(); reveal('tp-fin'); return say('Financials: ' + arg); } return say('FIN works for the 20 listed stocks, e.g. FIN AAPL.'); }
+    if (verb === 'CORR') { const w = Number(arg); if ([30, 60, 90].includes(w)) { S.corrWindow = w; renderCorr(true); reveal('tp-corr'); return say(`Correlation: ${w} days`); } return say('Use CORR 30, 60 or 90.'); }
+    if (verb === 'CALC') { const id = resolve(arg); S.tool = 'calc'; if (id && EDGE[id]) calc.pair = id; renderTools(); reveal('tp-tools'); return say('Position size calculator'); }
     if (verb === 'GO') { if (PAGES[arg]) { location.href = PAGES[arg]; return; } return say('Pages: ' + Object.keys(PAGES).join(', ')); }
     const id = resolve(cmd);
     if (id) { focusOn(id); return say(`Chart: ${nameOf(id)}`); }

@@ -1,4 +1,4 @@
-/* [site-qa] run 60: shareable calculator scenarios.
+/* [site-qa] run 60: shareable calculator scenarios (run 66: optional fields).
    A button with data-scenario-fields="id1,id2" and data-scenario-run="calculateButtonId"
    copies a link that carries the current inputs. Opening that link fills the same inputs
    (numbers and listed select options only) and runs the calculation once. */
@@ -36,6 +36,9 @@
       var value = String(params.get(el.id)).trim();
       if (isValid(el, value)) { el.value = value; applied += 1; }
     });
+    // Optional fields (data-scenario-optional="id,…") left out of a link were blank when it was shared.
+    var optional = (btn.getAttribute('data-scenario-optional') || '').split(',').map(function (id) { return id.trim(); });
+    if (applied) fields.forEach(function (el) { if (el.tagName !== 'SELECT' && optional.indexOf(el.id) !== -1 && !params.has(el.id)) el.value = ''; });
     if (applied && run) {
       run.click();
       status.textContent = btn.getAttribute('data-scenario-opened') || 'Opened a shared scenario. Change any number and calculate again.';
