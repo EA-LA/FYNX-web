@@ -347,10 +347,12 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261106-tap-targets-19">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
 <title>Pivot Point Support &amp; Resistance Calculator | FYNX</title>
 <meta name="description" content="Calculate classic pivot points and support and resistance levels from the previous period's high, low and closing price.">
 <meta name="robots" content="index, follow, max-image-preview:large">
+<style>.scenario-link-status{margin:10px 0 0;font-size:13px;line-height:1.5;color:inherit;opacity:.85}.scenario-link-status:empty{display:none}.scenario-link-box{display:block;width:100%;box-sizing:border-box;margin-top:6px;font-size:16px;padding:10px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit}</style>
+<script src="/assets/js/scenario-link.js?v=20261111-scenario-privacy-4" defer></script>
 <link rel="canonical" href="https://www.fynxfinanceworld.com/tools/pivot.html">
 <meta property="og:title" content="Pivot Point Support &amp; Resistance Calculator | FYNX">
 <meta property="og:description" content="Calculate classic pivot points and support and resistance levels from the previous period&#39;s high, low and closing price.">
@@ -367,7 +369,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
      crossorigin="anonymous"></script>
 <!-- FYNX ADSENSE VERIFICATION END -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261106-tap-targets-19"><script src="/assets/js/company-products-data.js?v=20261105-research-1" defer></script><script src="/assets/js/company-products.js?v=20261106-tap-targets-19" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
@@ -434,6 +436,7 @@
             <div class="actions">
               <button type="button" id="calculateBtn"><i class="fas fa-calculator"></i> Calculate</button>
               <button type="button" id="clearBtn"><i class="fas fa-broom"></i> Clear</button>
+              <button type="button" id="shareScenarioBtn" data-scenario-fields="high,low,close,method" data-scenario-run="calculateBtn"><i class="fas fa-link"></i> Copy scenario link</button>
             </div>
           </div>
         </div>
@@ -442,7 +445,7 @@
           <h2>RESULT</h2>
           <div class="muted">Enter values and tap Calculate</div>
 
-          <div id="resultArea" class="result-placeholder">
+          <div id="resultArea" class="result-placeholder" aria-live="polite">
             Your pivot levels will appear here.
           </div>
         </div>
@@ -479,6 +482,15 @@
     const calculateBtn = document.getElementById("calculateBtn");
     const clearBtn = document.getElementById("clearBtn");
     const resultArea = document.getElementById("resultArea");
+    let hasDisplayedCalculation = false;
+
+    // A changed input must never leave support/resistance values from the old scenario onscreen.
+    function invalidateResult() {
+      if (!hasDisplayedCalculation) return;
+      hasDisplayedCalculation = false;
+      resultArea.className = "result-placeholder";
+      resultArea.textContent = "Inputs changed. Select Calculate to update pivot levels.";
+    }
 
     function formatValue(num) {
       if (!Number.isFinite(num)) return "-";
@@ -546,6 +558,7 @@
     }
 
     function calculatePivots() {
+      hasDisplayedCalculation = true;
       const high = parseFloat(highInput.value);
       const low = parseFloat(lowInput.value);
       const close = parseFloat(closeInput.value);
@@ -577,6 +590,7 @@
     }
 
     function clearForm() {
+      hasDisplayedCalculation = false;
       highInput.value = "";
       lowInput.value = "";
       closeInput.value = "";
@@ -589,10 +603,14 @@
     clearBtn.addEventListener("click", clearForm);
 
     [highInput, lowInput, closeInput].forEach(input => {
+      // `input` fires while typing on iPhone, without requiring keyboard dismissal.
+      input.addEventListener("input", invalidateResult);
+      input.addEventListener("change", invalidateResult);
       input.addEventListener("keydown", (e) => {
         if (e.key === "Enter") calculatePivots();
       });
     });
+    methodSelect.addEventListener("change", invalidateResult);
   </script>
 
 <footer></footer></body>
