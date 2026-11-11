@@ -11,6 +11,10 @@
     {
       "src": "fn/market.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "fn/preview.js",
+      "use": "@vercel/node"
     }
   ]
 }

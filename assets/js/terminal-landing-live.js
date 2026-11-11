@@ -21,7 +21,7 @@
     const target=$('landingLiveNews'), allItems=recent(), items=allItems.slice(0,2);target.replaceChildren();target.setAttribute('aria-busy','false');visibleStories=allItems.map(item=>item.url).join('|');
     window.FYNXNewsReaderData?.prefetch(allItems);
     renderHeadlines(allItems);
-    const photo=window.FYNXNewsroomMedia?.createFigure(activeEdition==='uk'?'finance':activeEdition==='us'?'markets':'world');if(photo)target.append(photo);
+    const photo=window.FYNXNewsroomMedia?.createFigure(activeEdition==='uk'?'finance':activeEdition==='us'?'markets':'world',{story:allItems.slice(0,4)});if(photo)target.append(photo);
     if(!items.length){target.append(node('p','Recent verified coverage is unavailable for the '+label(activeEdition)+' edition.','fw-live-status'));const a=node('a','Explore original sources at the News desk →');a.href='/news.html';target.append(a);}
     for(const item of items){
       const article=node('article',undefined,'fw-live-story'), a=node('a',item.title), title=node('h4'), time=node('time',date(item.publishedAt));
