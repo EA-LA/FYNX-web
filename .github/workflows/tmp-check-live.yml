@@ -1,22 +1,21 @@
-name: TEMP live check
+name: TEMP intelligence live run
 on:
   push:
     branches: [tmp/check-live]
 permissions:
-  contents: read
+  contents: write
 jobs:
-  live:
+  run:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
-        with: {ref: claude/story-photos, path: site}
-      - uses: actions/setup-python@v5
-        with: {python-version: '3.12'}
-      - run: pip install playwright==1.48.0
+        with: {ref: claude/fynx-intelligence}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: node scripts/build-intelligence.cjs
+      - run: node --test tests/intelligence/*.test.cjs
       - run: |
-          (cd site && python3 -m http.server 8080 >/dev/null 2>&1 &)
-          (node .github/tmp/pvserver.cjs $GITHUB_WORKSPACE/site/fn/preview.js &)
-          sleep 2
-          python3 .github/tmp/live.py
+          git config user.name tmp; git config user.email tmp@users.noreply.github.com
+          git checkout -q -b tmp/intel-out
+          git add -f intelligence && git commit -qm "TEMP intelligence output" && git push -q -f origin tmp/intel-out
