@@ -144,7 +144,7 @@ window.FynxTerminalPages = T => {
   PAGES.help = host => {
     setHead('HELP', 'Commands, keys and desks', 'Type in the command bar, press / to jump there');
     const s1 = section('Commands');
-    kv(s1, [['AAPL · EURUSD · GOLD · ES · VIX · DAX', 'Chart any market on the desk (full page if the desk has no chart)'], ['DES NVDA', 'Full security page: chart, stats, news, financials, options'], ['DESK STOCKS', 'Switch desk (or just type STOCKS, FOREX, BONDS…)'], ['NEWS · NEWS ENERGY · N fed', 'News pages: all, a desk, or a search'], ['FA MSFT', 'Full SEC financials'], ['OPT SPY', 'Options: chain, IV, expected move, max pain'], ['CB FED · CB ECB', 'Central bank page'], ['CURVE UK', 'Yield curve'], ['CORR 30', 'FX correlation window'], ['CALC EURUSD', 'Calculators'], ['GO MACRO · GO EDGE · GO CAL', 'Open any terminal page'], ['Esc', 'Back one page / close a detail'], ['/', 'Jump to the command bar']]);
+    kv(s1, [['NVDA · SAP.DE · 7203.T · EURUSD · BTC', 'Load every box for that market (any listed market worldwide)'], ['FIND toyota', 'Search stocks, funds, currencies, coins, indices and futures worldwide; new listings are scanned daily'], ['EDIT', 'Design your terminal: move, remove, swap and add panels or market cards'], ['CTRY JP · STATE TX · WORLD', 'Country and US state terminal pages; the live globe'], ['CHART TSLA', 'Candles, volume, compare markets, trend lines, levels and measure'], ['PORT', 'Portfolio analytics: value, P/L, volatility, beta, VaR, diversification'], ['LISTINGS', 'Stocks and ETFs listed in the last 30 days'], ['DES NVDA', 'Full security page: chart, stats, news, financials, options'], ['DESK STOCKS', 'Switch desk (or just type STOCKS, FOREX, BONDS…)'], ['NEWS · NEWS ENERGY · N fed', 'News pages: all, a desk, or a search'], ['FA MSFT', 'Full SEC financials'], ['OPT SPY', 'Options: chain, IV, expected move, max pain'], ['CB FED · CB ECB', 'Central bank page'], ['CURVE UK', 'Yield curve'], ['CORR 30', 'FX correlation window'], ['CALC EURUSD', 'Calculators'], ['GO MACRO · GO EDGE · GO CAL', 'Open any terminal page'], ['Esc', 'Back one page / close a detail'], ['/', 'Jump to the command bar']]);
     const s2 = section('Function keys');
     kv(s2, T.KEYS.map(([k, l, p]) => [k, `${l}${['F5', 'F11', 'F12'].includes(k) ? ' (click; the key keeps its browser use)' : ''}`]));
     const s3 = section('Desks: each one reloads every box for that market');
@@ -570,5 +570,7 @@ window.FynxTerminalPages = T => {
     host.append(m);
   };
 
-  return {open, back, closeAll, fromLocation, rerender: () => { if (stack.length) show(); }, isOpen: () => stack.length > 0, refresh: name => { if (stack.at(-1)?.name === name) show(); }};
+  // Plugins add pages: add(name, label, render(body, arg, alive)).
+  const add = (name, label, render) => { NAMES[name] = label; PAGES[name] = render; };
+  return {open, back, closeAll, fromLocation, add, setHead, section, cards, chips, go, pageTabs, sourceNote, quoteTable, newsList, matchNews, grid, rerender: () => { if (stack.length) show(); }, isOpen: () => stack.length > 0, refresh: name => { if (stack.at(-1)?.name === name) show(); }};
 };

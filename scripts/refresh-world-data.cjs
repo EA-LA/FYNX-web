@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* FYNX World desk publisher. Writes public snapshots to the `world-data` branch:
- *   countries.json  every economy: World Bank profile and latest indicators (daily) + GDELT headlines for major economies (hourly)
+ *   countries.json  every economy: World Bank profile and latest indicators (daily) + headlines per country (hourly)
  *   states.json     US states: BLS unemployment rate history and FEMA disaster declarations (daily)
  *   symbols.json    every US-listed stock and ETF (Nasdaq Trader), Coinbase crypto pairs, with first-seen dates for new listings (daily)
  *   ships.json      live AIS ship positions sampled from AISStream (only when AISSTREAM_API_KEY is set)
@@ -61,14 +61,39 @@ async function gdelt(name) {
     return {title: String(a.title).replace(/\s+/g, ' ').trim().slice(0, 240), url: a.url, source: String(a.domain || '').slice(0, 80), publishedAt: at};
   }).filter(a => { const k = a.title.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 10);
 }
-async function countryNews(prev) {
-  const out = {}; let ok = 0;
-  for (const [code, name] of NEWS) {
-    try { out[code] = {items: await gdelt(name), fetchedAt: iso(Date.now())}; ok++; }
-    catch (e) { console.warn(`[world] GDELT ${code}: ${e.message}`); if (prev?.[code]) out[code] = {...prev[code], stale: true}; }
-    await sleep(5600);
+const ENT = {amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' '};
+const decode = t => String(t || '').replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').replace(/&(#\d+|#x[0-9a-f]+|[a-z]+);/gi, (m, e) => e[0] === '#' ? String.fromCodePoint(e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : Number(e.slice(1))) : ENT[e] ?? m).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+// Google News RSS: headlines from many publishers, last 24 h. Each item keeps its publisher name.
+async function googleNews(name) {
+  const q = `"${name}" (economy OR markets OR inflation OR government OR "central bank" OR trade) when:1d`;
+  const xml = await fetchText(`https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-US&gl=US&ceid=US:en`, {timeout: 20000});
+  const seen = new Set(), out = [];
+  for (const m of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
+    const it = m[1], tag = t => (new RegExp(`<${t}[^>]*>([\\s\\S]*?)<\\/${t}>`).exec(it) || [])[1];
+    const source = decode(tag('source')), url = decode(tag('link')), when = Date.parse(decode(tag('pubDate')));
+    let title = decode(tag('title')); if (source && title.endsWith(' - ' + source)) title = title.slice(0, -(source.length + 3));
+    if (!/^https:\/\//.test(url) || !title || seen.has(title.toLowerCase())) continue; seen.add(title.toLowerCase());
+    out.push({title: title.slice(0, 240), url, source: source.slice(0, 80) || 'Google News', publishedAt: Number.isFinite(when) ? iso(when) : null, via: 'Google News'});
+    if (out.length >= 10) break;
   }
-  console.log(`[world] news for ${ok}/${NEWS.length} countries`);
+  return out;
+}
+async function countryNews(prev, countries) {
+  const list = Object.values(countries).map(c => [c.iso2, NEWS.find(n => n[0] === c.iso2)?.[1] || c.name]);
+  const out = {}; let ok = 0, failed = [];
+  for (let i = 0; i < list.length; i += 3) {
+    await Promise.all(list.slice(i, i + 3).map(async ([code, name]) => {
+      try { out[code] = {items: await googleNews(name), fetchedAt: iso(Date.now()), source: 'Google News'}; ok++; }
+      catch (e) { failed.push([code, name]); if (prev?.[code]) out[code] = {...prev[code], stale: true}; }
+    }));
+    await sleep(700);
+  }
+  // Fall back to GDELT for a few major economies that Google News did not answer.
+  for (const [code, name] of failed.filter(([c]) => NEWS.some(n => n[0] === c)).slice(0, 8)) {
+    try { out[code] = {items: await gdelt(name), fetchedAt: iso(Date.now()), source: 'GDELT'}; ok++; } catch (e) { console.warn(`[world] news ${code}: ${e.message}`); }
+    await sleep(6000);
+  }
+  console.log(`[world] news for ${ok}/${list.length} countries`);
   return out;
 }
 
@@ -174,9 +199,9 @@ async function main() {
     catch (e) { console.warn('[world] World Bank failed:', e.message); }
   }
   if (countries) {
-    const news = await countryNews(Object.fromEntries(Object.entries(countries).map(([k, c]) => [k, c.news]).filter(([, v]) => v)));
+    const news = await countryNews(Object.fromEntries(Object.entries(countries).map(([k, c]) => [k, c.news]).filter(([, v]) => v)), countries);
     for (const [k, v] of Object.entries(news)) if (countries[k]) countries[k].news = v;
-    await write(outDir, 'countries.json', {version: 1, generatedAt: iso(now), indicatorsAt, sources: {profile: 'World Bank Open Data (most recent value per indicator)', news: 'GDELT Project DOC 2.0 API (last 24 h)'}, countries});
+    await write(outDir, 'countries.json', {version: 1, generatedAt: iso(now), indicatorsAt, sources: {profile: 'World Bank Open Data (most recent value per indicator)', news: 'Google News RSS search per country (last 24 h; GDELT as backup)'}, countries});
   }
 
   if (force || !fresh(prev.states, 20 * HOUR)) {
