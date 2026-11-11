@@ -28,7 +28,7 @@ function fixture(before, after, fallback) {
 }
 test('research portfolio and price-alert renderers use the shared focus helper', () => {
   const personal = fs.readFileSync(path.join(root, 'assets/js/research/personal.js'), 'utf8');
-  assert.match(personal, /import \{replaceMarkupWithFocus\} from '\.\/focus\.js'/);
+  assert.match(personal, /import \{replaceMarkupWithFocus\} from '\.\/focus\.js(?:\?v=[^'\s]+)?'/);
   assert.match(personal, /replaceMarkupWithFocus\(\$\('#portfolio-output'\),/);
   assert.match(personal, /'holdings', '#holding-symbol'\)/);
   assert.match(personal, /replaceMarkupWithFocus\(\$\('#alerts-output'\),/);

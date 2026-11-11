@@ -8,7 +8,7 @@ function world(clock=1767225600000){ // fixed clock so per-second rate tests are
  const docs=new Map(),users=new Map();
  const snap=p=>({exists:docs.has(p),id:p.split('/').pop(),data:()=>docs.get(p)});
  const ref=p=>({path:p,id:p.split('/').pop(),get:async()=>snap(p),set:async(v,o)=>docs.set(p,o?.merge?{...docs.get(p),...v}:v),update:async v=>docs.set(p,{...docs.get(p),...v}),collection:n=>col(p+'/'+n)});
- const col=p=>({doc:id=>ref(p+'/'+(id||Math.random().toString(36).slice(2))),limit:()=>({path:p,docs:[]}),orderBy:()=>col(p)});
+ const col=p=>({path:p,docs:[],get:async()=>({docs:[]}),doc:id=>ref(p+'/'+(id||Math.random().toString(36).slice(2))),limit:()=>col(p),orderBy:()=>col(p)});
  const db={collection:p=>col(p),runTransaction:async f=>{const w=[];const out=await f({get:async r=>r.docs?{size:0,docs:[]}:snap(r.path),set:(r,v,o)=>w.push(()=>docs.set(r.path,o?.merge?{...docs.get(r.path),...v}:v)),create:(r,v)=>{if(docs.has(r.path))throw Error('exists');w.push(()=>docs.set(r.path,v));},update:(r,v)=>w.push(()=>docs.set(r.path,{...docs.get(r.path),...v}))});w.forEach(x=>x());return out;}};
  class HttpsError extends Error{constructor(code,message){super(message);this.code=code;}}
  const fn={https:{HttpsError,onCall:f=>f,onRequest:f=>f}};
@@ -25,7 +25,7 @@ function world(clock=1767225600000){ // fixed clock so per-second rate tests are
   const req={method,path:p,query:{},body,is:t=>t==='application/json'&&type==='application/json',get:h=>h==='Authorization'&&token?`Bearer ${token}`:undefined};
   await module.exports.developerGateway(req,res);return res;
  }
- return {docs,users,addUser,addKey,call,setClock:t=>{clock=t;}};
+ return {docs,users,addUser,addKey,call,workspace:module.exports.developerWorkspace,setClock:t=>{clock=t;}};
 }
 function seeded(){const w=world();w.addUser('alice');w.addUser('bob');
  w.addKey(KEY('a'),'alice','live');w.addKey(KEY('b','test'),'alice','test');w.addKey(KEY('c'),'bob','live');
@@ -112,4 +112,11 @@ test('finance tools: legacy and finance-scoped keys reach the engine; other scop
 test('gateway responses carry defensive headers',async()=>{
  const w=seeded();for(const token of [KEY('a'),undefined]){const r=await w.call('POST','/v1/markets/exchanges',{token});
   assert.equal(r.headers['X-Content-Type-Options'],'nosniff');assert.match(r.headers['Content-Security-Policy'],/frame-ancestors 'none'/);assert.equal(r.headers['Cache-Control'],'no-store');}
+});
+
+test('workspace bootstrap advertises the deployed scopes without changing existing keys',async()=>{
+ const w=seeded(),before=JSON.stringify(w.docs.get(`fynxDeveloperKeys/${hash(KEY('d'))}`));
+ const result=await w.workspace({action:'bootstrap',environment:'test'},{auth:{uid:'alice'}});
+ assert.deepEqual([...result.supported_scopes],[...require('./developer-access.cjs').SCOPES]);
+ assert.equal(JSON.stringify(w.docs.get(`fynxDeveloperKeys/${hash(KEY('d'))}`)),before);
 });
