@@ -1,0 +1,16 @@
+name: TEMP site crawl
+on:
+  push:
+    branches: [tmp/check-live]
+permissions:
+  contents: read
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install playwright==1.48.0
+      - run: python3 .github/tmp/crawl.py
