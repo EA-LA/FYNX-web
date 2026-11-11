@@ -13,7 +13,7 @@ const MARKET_RULES = [
   [/\b(Treasur(?:y|ies) yields?|bond yields?|10-year yield|Treasuries)\b/i, ['^TNX', 'TLT'], 'rates', 'US Treasuries'],
   [/\b(ECB|European Central Bank|Lagarde|euro ?zone|eurozone)\b/i, ['EURUSD=X', '^STOXX50E'], 'forex', 'Euro area'],
   [/\b(euro)\b(?! ?stoxx)/i, ['EURUSD=X'], 'forex', 'Euro'],
-  [/\b(Bank of England|BoE|Bailey|sterling|British pound|the pound|UK (?:inflation|economy|gilts?)|gilts?)\b/i, ['GBPUSD=X', '^FTSE'], 'forex', 'United Kingdom'],
+  [/\b(Bank of England|BoE|Andrew Bailey|sterling(?!\s+[A-Z]\.)|British pound|the pound|UK (?:inflation|economy|gilts?)|gilts?)\b/i, ['GBPUSD=X', '^FTSE'], 'forex', 'United Kingdom'],
   [/\b(Bank of Japan|BoJ|Ueda|yen|Japan(?:ese)? (?:economy|inflation|stocks|bonds))\b/i, ['JPY=X', '^N225'], 'forex', 'Japan'],
   [/\b(Nikkei)\b/i, ['^N225'], 'indices', 'Japan equities'],
   [/\b(yuan|renminbi|PBOC|People's Bank of China|China's economy|Chinese (?:economy|exports|imports|stocks))\b/i, ['CNY=X', '000001.SS', '^HSI'], 'forex', 'China'],

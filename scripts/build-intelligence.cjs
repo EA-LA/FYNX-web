@@ -19,7 +19,7 @@ const EDITIONS = ['us', 'global', 'uk', 'europe', 'asia'];
 const CATEGORIES = ['all', 'stocks', 'forex', 'crypto', 'macro', 'commodities', 'finance', 'economics', 'technology', 'energy', 'industries'];
 const DAY = 86400000, KEEP_DAYS = 21, RECHECK_HOURS = 36, MAX_NEW = Number(process.env.INTELLIGENCE_MAX_NEW || 30), MAX_RECORDS = 600;
 // Not news events: quote pages, investor-conference notices and programme listings.
-const NOT_NEWS = /\b(stock price, news, quote|quote and history|stock quote|share price (?:today|chart)|to (?:participate|present) (?:in|at)|fireside chat|conference call|webcast|announces? (?:date|timing) (?:of|for)|rewind|podcast|live updates?:|market brief \(|newsletter|price targets?|upside for|analysts? (?:like|love|hate)|should you buy|is it a buy|best crypto to buy|stocks? to (?:buy|watch)|undervalued)\b/i;
+const NOT_NEWS = /\b(stock price, news, quote|quote and history|stock quote|share price (?:today|chart)|to (?:participate|present) (?:in|at)|fireside chat|conference call|webcast|announces? (?:date|timing) (?:of|for)|rewind|podcast|live updates?:|market brief \(|newsletter|price targets?|upside for|analysts? (?:like|love|hate|bullish|bearish)|should you buy|is it a buy|best crypto to buy|at close of trade|convert \d+|price in (?:[A-Z]|british|us|singapore)|^economic outlook$|stocks? to (?:buy|watch)|undervalued)\b/i;
 const HOLD = /\b(killed|dead|death|dies|died|shooting|shot|murder|rape|sexual|abuse|assault|suicide|terror|bomb|massacre|accused|alleg(?:e|es|ed|ation|ations)|lawsuit|sued|indicted|charged with|arrested|fraud|scandal|investigat(?:ion|ed|ing) into)\b/i;
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -73,7 +73,7 @@ function cluster(items, now) {
   const fresh = new Map();
   for (const it of items) {
     const url = Reader.safeURL(it.link || it.url), t = Date.parse(it.pubDate || it.publishedAt);
-    if (NOT_NEWS.test(it.title || '')) continue;
+    if (NOT_NEWS.test(it.title || '') || cleanTitle(it).split(/\s+/).length < 4) continue;
     if (!url || !Number.isFinite(t) || now - t > 2 * DAY || t > now + 600000 || (Reader.isNewsworthy && !Reader.isNewsworthy(it))) continue;
     const id = Reader.articleId(url);
     if (!fresh.has(id)) fresh.set(id, {...it, url, id, title: cleanTitle(it), source: Reader.plain(it.source, 120) || new URL(url).hostname, publishedAt: new Date(t).toISOString(), terms: tokens(cleanTitle(it))});
@@ -83,7 +83,7 @@ function cluster(items, now) {
   const df = new Map(); for (const r of rows) for (const w of r.terms) df.set(w, (df.get(w) || 0) + 1);
   const idf = w => Math.log((rows.length + 1) / (1 + (df.get(w) || 0)));
   const weight = terms => terms.reduce((s, w) => s + idf(w), 0);
-  const similar = (a, b) => { const shared = a.terms.filter(w => b.terms.includes(w)); return shared.length >= 2 && weight(shared) / Math.min(weight(a.terms), weight(b.terms)) >= 0.5; };
+  const similar = (a, b) => { const shared = a.terms.filter(w => b.terms.includes(w)); return (shared.length >= 3 || (shared.length === 2 && Math.min(a.terms.length, b.terms.length) <= 2)) && weight(shared) / Math.min(weight(a.terms), weight(b.terms)) >= 0.5; };
   const groups = [];
   for (const row of rows) {
     const g = groups.find(g => similar(g.items[0], row) && Math.abs(Date.parse(row.publishedAt) - Date.parse(g.items[0].publishedAt)) < 30 * 3600000);
@@ -146,7 +146,7 @@ async function main() {
     const ownerId = g.items.map(i => owner.get(short(i.id))).find(Boolean), existing = ownerId && records.get(ownerId);
     if (existing && now - Date.parse(existing.publishedAt) > RECHECK_HOURS * 3600000) continue;
     // A company leads only when the main headline is about it; otherwise the macro market leads.
-    const lead = g.items[0].title;
+    const lead = [...g.items].sort((a, b) => (Reader.editorialTier?.(b) || 0) - (Reader.editorialTier?.(a) || 0) || Date.parse(a.publishedAt) - Date.parse(b.publishedAt))[0].title;
     const companyMarkets = g.link.companies.filter(c => c.ticker && quotes[c.ticker]).map(c => ({symbol: c.ticker, assetClass: 'stocks', theme: c.name, label: c.name, inLead: E.linkStory(lead, {quotes: {}}).companies.some(x => x.ticker === c.ticker)}));
     const linked = [...companyMarkets.filter(c => c.inLead), ...g.link.markets, ...companyMarkets.filter(c => !c.inLead)].filter((m, i, a) => a.findIndex(x => x.symbol === m.symbol) === i);
     const stats = linked.map(m => { const s = A.instrumentStats(m.symbol, quotes[m.symbol]); return s && !s.stale ? {...s, name: m.label || s.name, assetClass: m.assetClass} : null; }).filter(Boolean).slice(0, 6);
@@ -207,4 +207,4 @@ async function main() {
   console.log(`groups ${groups.length} · created ${created} · updated ${updated} · published ${list.length} · held for review ${review.length} · AI ${process.env.ANTHROPIC_API_KEY ? 'on' : 'off'}`);
 }
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
-module.exports = {cluster, slugify, relatedFor, cleanTitle};
+module.exports = {cluster, slugify, relatedFor, cleanTitle, NOT_NEWS};
