@@ -1,0 +1,148 @@
+'use strict';
+// Test-only API/auth responses exercise the shipped modules. No fixture is imported by production assets.
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{JSDOM}=require('jsdom'),esbuild=require('esbuild');
+const repo=path.resolve(__dirname,'../..');
+let appCode,view;
+test.before(async()=>{
+ const result=await esbuild.build({entryPoints:[path.join(repo,'assets/js/edge/app.js')],bundle:true,format:'iife',platform:'browser',write:false,plugins:[{name:'test-only-firebase-imports',setup(build){build.onResolve({filter:/^(\/auth\/firebase\.js|https:\/\/www\.gstatic\.com\/firebasejs\/.*\/firebase-auth\.js)$/},args=>({path:args.path,namespace:'test-auth'}));build.onLoad({filter:/.*/,namespace:'test-auth'},args=>({contents:args.path.startsWith('/auth/')?'export const auth=globalThis.__edgeTestAuth.firebaseAuth;':'export function onAuthStateChanged(auth,callback){globalThis.__edgeTestAuth.callback=callback;callback(globalThis.__edgeTestAuth.user);return ()=>{};}',loader:'js'}));}}]});appCode=result.outputFiles[0].text;
+ const rendered=esbuild.buildSync({entryPoints:[path.join(repo,'assets/js/edge/render.js')],bundle:true,format:'cjs',platform:'node',write:false});const module={exports:{}};new Function('module','exports',rendered.outputFiles[0].text)(module,module.exports);view=module.exports;
+});
+const stamp='2026-11-03T13:30:00.000Z',v=value=>({value,reason:null,asOf:stamp});
+function fit(id,name,score,symbol='EURUSD'){return {strategyId:id,strategyName:name,symbol,score,label:score>=70?'fit':score>=45?'maybe':'avoid',sampleSize:35,parts:[{id:'regime',label:'Regime match',points:30,rawPoints:30,min:0,max:40,reason:'Test sample'},{id:'record',label:'Strategy record here',points:score-30,rawPoints:score-30,min:0,max:20,reason:'Test sample'}],filtersRelaxed:[],similar:{count:35,avgR:.4,winRate:.6,worstLosingStreak:3,results:[.5,-1,.4]},other:{count:100,avgR:.1,winRate:.5,worstLosingStreak:4,results:[]},shrunkAvgR:.25,overallAvgR:.2,likelyDirection:'long',directionBasis:'test',why:'Synthetic UI fixture evidence',reasons:[],scoreChangeWeek:2};}
+function market(symbol,group,price,score){const fits=[fit('test-breakout','Test breakout',score,symbol),fit('test-mean','Test mean reversion',44,symbol)],plan={available:false,reason:'Broker metadata is unavailable in this test fixture.',model:'closed-candle-atr',signal:'long',trigger:{long:price+1,short:price-1,description:'Test-only trigger'},entry:null,stop:null,target:null,stopDistance:null,riskPct:.5,riskAmount:null,lots:null,brokerSymbol:null,brokerDigits:null,accountCurrency:null,basisAt:stamp,notes:[]};return {symbol,name:group+' test market',group,currencies:group==='Forex majors'?['EUR','USD']:['USD'],asOf:stamp,price:v(price),dayChangePct:v(.2),state:{date:'2026-11-02',availableAt:stamp,regime:v('Trend'),efficiencyRatio:v(.4),trendStrength:v(.4),adx:v(25),atr:v(.01),volatilityPercentile:v(60),volatilityBucket:v('mid'),high20:v(price+1),low20:v(price-1),close:v(price)},regimeHistory:[{week:'2026-10-26',regime:'Trend'}],positioning:{net:{value:null,reason:'No CFTC fixture',asOf:stamp},crowded:{value:null,reason:'No CFTC fixture'},percentile85:{value:null,reason:'No CFTC fixture'},reportDate:null,availableAt:null,history:[],legs:[],basis:'Test-only unavailable position history'},events:{available:true,reason:null,eventIn24h:false,next24h:[],restOfWeek:[],nextHighImpact:null,maximumTypicalMove:v(0)},eventMoves:[],fits,bestFit:fits[0],tradePlans:{'test-breakout':plan,'test-mean':{...plan,trigger:{...plan.trigger,long:price+2}}},returns:[],correlations:[],notes:[]};}
+function snapshot(){const markets=[market('EURUSD','Forex majors',1.1,81),market('XAUUSD','Metals',2100,62),market('BTCUSD','Crypto',60000,54)];return {asOf:stamp,generatedAt:stamp,userTimezone:'UTC',guest:true,status:'available',markets,strategies:[{id:'test-breakout',name:'Test breakout',top:markets.map(m=>m.bestFit).slice(0,2),worst:markets[2].bestFit,bestScore:81,why:'Synthetic UI fixture evidence'},{id:'test-mean',name:'Test mean reversion',top:[],worst:null,bestScore:null,why:'Synthetic unavailable fixture'}],mood:{value:null,reason:'VIX unavailable in test',parts:[],score:null},volatility:{value:'steady',percentile:60,reason:null},nextEvent:null,bestFit:markets[0].bestFit,regimeMap:[{label:'Trend · high volatility',symbols:['EURUSD','XAUUSD','BTCUSD']}],doubleRisk:[],brief:'Synthetic public research fixture.',sources:['Test-only API response'],guard:{connected:false,status:'not-connected'},providerStatus:{quotes:{configured:false,status:'unavailable'}}};}
+const response=(body,status=200,type='application/json')=>({ok:status>=200&&status<300,status,headers:{get:name=>name.toLowerCase()==='content-type'?type:null},json:async()=>structuredClone(body)});
+const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
+async function settle(){for(let i=0;i<8;i++)await new Promise(setImmediate);}
+async function mount(handler,{symbol='',now=Date.now(),origin='https://example.test'}={}){
+ const fragment=fs.readFileSync(path.join(repo,'content/edge-radar.fragment'),'utf8').replaceAll('{{TITLE}}',symbol||'Edge Radar').replaceAll('{{MARKET_NAME}}','Research fixture loading');const dom=new JSDOM(`<!doctype html><body data-edge-symbol="${symbol}">${fragment}<script type="application/json" id="edge-market-config">${JSON.stringify([{id:'EURUSD',label:'EUR/USD'},{id:'XAUUSD',label:'Gold'},{id:'BTCUSD',label:'Bitcoin'}])}</script></body>`,{url:origin+'/edge-radar/'+(symbol?symbol.toLowerCase()+'/':''),runScripts:'outside-only'}),w=dom.window,calls=[],timers=new Map();let nextTimer=1,currentTime=now;w.Date.now=()=>currentTime;
+ Object.defineProperty(w.document,'hidden',{value:false});w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});w.AbortSignal.timeout=()=>new w.AbortController().signal;w.HTMLDialogElement.prototype.showModal=function(){this.setAttribute('open','');};w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open');};
+ w.__edgeTestAuth={user:null,firebaseAuth:{authStateReady:async()=>{}},callback:null};w.fetch=async(url,options={})=>{calls.push({url,options});return handler(String(url),options,calls.length);};
+ w.setTimeout=(callback,ms)=>{const id=nextTimer++;timers.set(id,{callback,ms,interval:false});return id;};w.clearTimeout=id=>timers.delete(id);w.setInterval=(callback,ms)=>{const id=nextTimer++;timers.set(id,{callback,ms,interval:true});return id;};w.clearInterval=id=>timers.delete(id);
+ w.structuredClone=structuredClone;w.eval(fs.readFileSync(path.join(repo,'assets/js/research-service.js'),'utf8'));w.eval(appCode);await settle();
+ return {dom,w,doc:w.document,calls,timers,setNow(value){currentTime=value;},async tick(ms){const entry=[...timers].find(([,timer])=>!timer.interval&&timer.ms===ms);assert.ok(entry,`No pending ${ms}ms timer`);timers.delete(entry[0]);await entry[1].callback();await settle();},async identity(uid){assert.equal(typeof w.__edgeTestAuth.callback,'function');const user=uid?{uid,getIdToken:async()=>`test-token-${uid}`}:null;w.__edgeTestAuth.user=user;w.__edgeTestAuth.callback(user);await settle();},close(){w.dispatchEvent(new w.Event('pagehide'));dom.window.close();}};
+}
+const rows=doc=>[...doc.querySelectorAll('.edge-table tbody .edge-market-name')].map(a=>a.textContent);
+const click=(page,selector)=>{const node=page.doc.querySelector(selector);assert.ok(node,`Missing ${selector}`);node.click();};
+
+test('loading keeps real skeletons and shows no substituted prices before the API resolves',async()=>{
+ const pending=deferred(),page=await mount(()=>pending.promise);try{assert.equal(page.doc.querySelector('#edge-main').getAttribute('aria-busy'),'true');assert.ok(page.doc.querySelector('.edge-loading'));assert.equal(page.doc.querySelectorAll('.edge-market-name').length,0);pending.resolve(response(snapshot()));await settle();assert.equal(page.doc.querySelector('#edge-main').getAttribute('aria-busy'),'false');assert.deepEqual(rows(page.doc),['EURUSD','XAUUSD','BTCUSD']);}finally{page.close();}
+});
+test('cold 202 snapshot polls the actual job through progress to completion and loads its resulting snapshot',async()=>{
+ let loads=0,polls=0;const page=await mount(url=>{if(url.endsWith('/today'))return response(++loads===1?{status:'building',message:'Loading recorded history',job:{jobId:'job-test'}}:snapshot(),loads===1?202:200);if(url.endsWith('/jobs/job-test'))return response(++polls===1?{status:'running',progress:.45}:{status:'complete'});throw new Error('Unexpected request '+url);});try{assert.match(page.doc.querySelector('#edge-status').textContent,/Loading recorded history/);await page.tick(2500);assert.match(page.doc.querySelector('#edge-status').textContent,/45%/);await page.tick(4000);assert.deepEqual(rows(page.doc),['EURUSD','XAUUSD','BTCUSD']);assert.equal(loads,2);assert.equal(polls,2);}finally{page.close();}
+});
+test('API failure offers a working retry and never renders example data',async()=>{
+ let attempt=0;const page=await mount(url=>url.endsWith('.json')?response({},404):++attempt===1?response({error:{message:'Source temporarily offline'}},503):response(snapshot()));try{assert.match(page.doc.querySelector('#edge-status').textContent,/Source temporarily offline/);assert.equal(rows(page.doc).length,0);click(page,'[data-action="retry"]');await settle();assert.equal(attempt,2);assert.equal(rows(page.doc).length,3);assert.equal(page.doc.querySelector('#edge-status').classList.contains('edge-error'),false);}finally{page.close();}
+});
+test('non-JSON outage and failed cold job remain understandable retry states',async()=>{
+ const page=await mount(()=>response({},502,'text/html'));try{assert.match(page.doc.querySelector('#edge-status').textContent,/data service is unavailable/);assert.ok(page.doc.querySelector('[data-action="retry"]'));}finally{page.close();}
+ const failed=await mount(url=>response(url.endsWith('/today')?{status:'building',job:{jobId:'failed'}}:{status:'failed',error:'History refresh failed'}));try{await failed.tick(2500);assert.match(failed.doc.querySelector('#edge-primary').textContent,/Snapshot preparation stopped/);assert.ok(failed.doc.querySelector('[data-action="retry"]'));}finally{failed.close();}
+});
+test('category controls filter real rendered rows and column sorting toggles accessible state',async()=>{
+ const page=await mount(()=>response(snapshot()));try{click(page,'[data-filter="Forex"]');assert.deepEqual(rows(page.doc),['EURUSD']);assert.equal(page.doc.querySelector('[data-filter="Forex"]').getAttribute('aria-pressed'),'true');click(page,'[data-filter="Metals"]');assert.deepEqual(rows(page.doc),['XAUUSD']);click(page,'[data-filter="Indices"]');assert.match(page.doc.querySelector('#edge-primary').textContent,/No markets in this category/);click(page,'[data-filter="All"]');click(page,'[data-sort="price"]');assert.deepEqual(rows(page.doc),['BTCUSD','XAUUSD','EURUSD']);assert.equal(page.doc.querySelector('[data-sort="price"]').closest('th').getAttribute('aria-sort'),'descending');click(page,'[data-sort="price"]');assert.deepEqual(rows(page.doc),['EURUSD','XAUUSD','BTCUSD']);assert.equal(page.doc.querySelector('[data-sort="price"]').closest('th').getAttribute('aria-sort'),'ascending');}finally{page.close();}
+});
+test('detail strategy selection updates score, trigger and Quant deep link without fetching another market',async()=>{
+ const s=snapshot(),page=await mount(url=>response(url.includes('/headlines?')?{items:[],reason:'No test headlines'}:{...s,market:s.markets[0]}),{symbol:'EURUSD'});try{assert.match(page.doc.querySelector('#edge-summary').textContent,/81 \/ 100/);const selected=page.doc.querySelector('#edge-strategy');selected.value='test-mean';selected.dispatchEvent(new page.w.Event('change',{bubbles:true}));assert.match(page.doc.querySelector('#edge-summary').textContent,/44 \/ 100/);assert.equal(new URL(page.doc.querySelector('#edge-actions a').href).searchParams.get('strategy'),'test-mean');assert.match(page.doc.querySelector('#edge-side').textContent,/3\.1/);assert.equal(page.calls.filter(c=>c.url.includes('/market/')).length,1);}finally{page.close();}
+});
+test('guest watchlist, digest and alert actions show sign-in choices and send no private writes',async()=>{
+ const page=await mount(()=>response(snapshot()));try{for(const [selector,label] of [['[data-action="watchlist"]','save your watchlist'],['[data-action="digest"]','manage your briefing preferences'],['[data-alert="test-breakout"]','create an alert']]){click(page,selector);assert.equal(page.doc.querySelector('#edge-dialog').hasAttribute('open'),true);assert.match(page.doc.querySelector('#edge-dialog-title').textContent,new RegExp(label));const login=page.doc.querySelector('#edge-dialog-body a');assert.equal(new URL(login.href).pathname,'/auth/login.html');click(page,'[data-close]');assert.equal(page.doc.querySelector('#edge-dialog').hasAttribute('open'),false);}assert.equal(page.calls.length,1);assert.ok(page.calls.every(c=>!c.options.method||c.options.method==='GET'));}finally{page.close();}
+});
+test('provider text is escaped in main/detail renderers and unsafe headline URLs do not create links',()=>{
+ const s=snapshot(),attack='<img src=x onerror="globalThis.pwned=1">',m=s.markets[0];m.name=attack;m.bestFit.strategyName=attack;m.events.next24h=[{name:attack,currency:'USD',time:stamp,impact:'high',forecast:attack,previous:0,typicalMove:v(.01),moveBasis:'daily-close',moveSampleSize:2}];
+ const dom=new JSDOM('<body>'+view.radar(s.markets,'All','fit','desc')+view.events(s.markets,'UTC')+view.fitBreakdown(m,m.bestFit,m.bestFit.strategyId)+view.headlines([{title:attack,url:'javascript:alert(1)',source:attack,publishedAt:stamp,tone:attack}])+'</body>');try{assert.equal(dom.window.document.querySelectorAll('img,script,[onerror]').length,0);assert.match(dom.window.document.body.textContent,/<img src=x/);assert.equal(dom.window.document.querySelectorAll('#edge-headlines a').length,0);}finally{dom.window.close();}
+});
+test('account switching immediately removes private content and ignores the previous identity late response',async()=>{
+ const privateA=snapshot();privateA.guest=false;privateA.brief='PRIVATE_A_BRIEF';privateA.bestFit.strategyName='PRIVATE_A_STRATEGY';privateA.mood.reason='PRIVATE_A_MOOD';privateA.markets[0].name='PRIVATE_A_MARKET';privateA.markets[0].events.next24h=[{name:'PRIVATE_A_EVENT',currency:'USD',impact:'high',time:stamp,typicalMove:v(.01),moveBasis:'daily-close',moveSampleSize:1}];
+ const pendingB=deferred();const page=await mount((_url,options)=>options.headers?.Authorization==='Bearer test-token-account-a'?response(privateA):options.headers?.Authorization==='Bearer test-token-account-b'?pendingB.promise:response(snapshot()));try{await page.identity('account-a');assert.match(page.doc.body.textContent,/PRIVATE_A_BRIEF/);await page.identity('account-b');assert.doesNotMatch(page.doc.body.textContent,/PRIVATE_A_/);pendingB.resolve(response({...snapshot(),guest:false,brief:'Account B research'}));await settle();assert.match(page.doc.querySelector('#edge-brief').textContent,/Account B research/);assert.doesNotMatch(page.doc.body.textContent,/PRIVATE_A_/);}finally{page.close();}
+});
+test('late signed-in API response cannot overwrite a newer public guest workspace',async()=>{
+ const pending=deferred();const page=await mount((_url,options)=>options.headers?.Authorization?pending.promise:response(snapshot()));try{await page.identity('account-a');await page.identity(null);assert.match(page.doc.querySelector('#edge-brief').textContent,/Synthetic public/);pending.resolve(response({...snapshot(),guest:false,brief:'PRIVATE_LATE_RESPONSE'}));await settle();assert.doesNotMatch(page.doc.body.textContent,/PRIVATE_LATE_RESPONSE/);assert.match(page.doc.querySelector('#edge-updated').textContent,/PUBLIC RESEARCH/);}finally{page.close();}
+});
+test('attributed headlines preserve the existing internal reader route and reject protocol-relative URLs',()=>{
+ const html=view.headlines([{title:'Recorded headline',readerUrl:'/news-reader.html?id=fixture',source:'Test publisher',publishedAt:stamp,tone:'Unclassified'},{title:'Unsafe target',readerUrl:'//external.example/track',source:'Test publisher',publishedAt:stamp,tone:'Unclassified'}]);const dom=new JSDOM('<body>'+html+'</body>',{url:'https://example.test'});try{const links=[...dom.window.document.querySelectorAll('a')];assert.equal(links.length,1);assert.equal(links[0].getAttribute('href'),'/news-reader.html?id=fixture');assert.equal(links[0].textContent,'Recorded headline');}finally{dom.window.close();}
+});
+test('all seventeen detail routes and the main route have canonical URLs, shared controller and sitemap discovery',()=>{
+ const symbols=require('../../backend/quant/engine.cjs').SYMBOLS.map(s=>s.id);assert.equal(symbols.length,17);const sitemap=new JSDOM(fs.readFileSync(path.join(repo,'sitemap.xml'),'utf8'),{contentType:'text/xml'}),locations=new Set([...sitemap.window.document.querySelectorAll('loc')].map(n=>n.textContent));try{for(const symbol of [null,...symbols]){const route='/edge-radar/'+(symbol?symbol.toLowerCase()+'/':''),file=path.join(repo,route,'index.html');assert.ok(fs.existsSync(file),file);const dom=new JSDOM(fs.readFileSync(file,'utf8'));try{assert.equal(dom.window.document.querySelector('link[rel="canonical"]').getAttribute('href'),'https://www.fynxfinanceworld.com'+route);assert.equal(dom.window.document.body.dataset.edgeSymbol,symbol||'');assert.ok(dom.window.document.querySelector('script[src^="/assets/js/edge/app.js"][type="module"]'));assert.ok(dom.window.document.querySelector('#edge-main[aria-busy]'));assert.ok(locations.has('https://www.fynxfinanceworld.com'+route),`Missing sitemap ${route}`);}finally{dom.window.close();}}}finally{sitemap.window.close();}
+});
+test('actual static packager includes public Edge and Accounts shells while excluding private records and server dependencies',()=>{
+ const os=require('node:os'),{execFileSync}=require('node:child_process'),temp=fs.mkdtempSync(path.join(os.tmpdir(),'edge-package-test-'));try{for(const dir of ['api','assets','edge-radar','profile','auth','home','learn','markets','news','resources','tools','scripts','backend/edge','lib/edge','docs','ops','node_modules','tests/edge/fixtures','scripts/edge-lint/node_modules'])fs.mkdirSync(path.join(temp,dir),{recursive:true});
+ for(const file of ['index.html','api/index.html','api/api.js','api/api.css','api/workspace.js','api/examples/quickstart.mjs','api/openapi.json','api/sdk/fynx.mjs','api/sdk/fynx.py','edge-radar/index.html','assets/public.js','.env','backend/edge/private.cjs','lib/edge/private.ts','docs/private.md','ops/private.conf','node_modules/private.js','tests/edge/fixtures/private.json','scripts/edge-lint/node_modules/private.js']){fs.mkdirSync(path.dirname(path.join(temp,file)),{recursive:true});fs.writeFileSync(path.join(temp,file),'TEST-ONLY PACKAGING SENTINEL');}
+ const publicShells=['profile/accounts/index.html','profile/accounts/connect/file/index.html','profile/accounts/connect/ea/index.html','profile/security/index.html'];
+ for(const file of publicShells){fs.mkdirSync(path.dirname(path.join(temp,file)),{recursive:true});fs.writeFileSync(path.join(temp,file),'<!doctype html><meta name="robots" content="noindex,nofollow"><main id="accounts-content">Sign in to load private account data.</main>');}
+ const privateRecords=['.accounts-data/accounts.sqlite','.accounts-data/blobs/private.json','.edge-data/ea_heartbeats/private.json','.quant-data/users/private.json','backend/accounts/private.cjs'];
+ for(const file of privateRecords){fs.mkdirSync(path.dirname(path.join(temp,file)),{recursive:true});fs.writeFileSync(path.join(temp,file),'PRIVATE_ACCOUNT_RECORD_TEST_CANARY');}
+ fs.copyFileSync(path.join(repo,'scripts/package-static.cjs'),path.join(temp,'scripts/package-static.cjs'));execFileSync(process.execPath,[path.join(temp,'scripts/package-static.cjs')],{cwd:temp,stdio:'pipe'});const out=path.join(temp,'dist');assert.ok(fs.existsSync(path.join(out,'edge-radar/index.html')));assert.ok(fs.existsSync(path.join(out,'assets/public.js')));for(const file of publicShells){assert.ok(fs.existsSync(path.join(out,file)),file);assert.match(fs.readFileSync(path.join(out,file),'utf8'),/Sign in to load private account data/);}for(const file of privateRecords)assert.equal(fs.existsSync(path.join(out,file)),false,file+' leaked into static output');for(const excluded of ['backend','lib','docs','ops','scripts','node_modules','tests','.env','.accounts-data','.edge-data','.quant-data'])assert.equal(fs.existsSync(path.join(out,excluded)),false,`${excluded} leaked into static output`);
+ }finally{fs.rmSync(temp,{recursive:true,force:true});}
+});
+test('identity changes remove private dialog form state before the next account response',async()=>{
+ const pending=deferred(),page=await mount((url,options)=>url.endsWith('/watchlist')?response({symbols:['EURUSD'],timeZone:'Asia/Tokyo'}):options.headers?.Authorization==='Bearer test-token-b'?pending.promise:response(snapshot()));try{await page.identity('a');click(page,'[data-action="watchlist"]');await settle();assert.ok(page.doc.querySelector('#edge-watchlist-form'));await page.identity('b');assert.equal(page.doc.querySelector('#edge-dialog').hasAttribute('open'),false);assert.equal(page.doc.querySelector('#edge-dialog-body').children.length,0);pending.resolve(response(snapshot()));await settle();}finally{page.close();}
+});
+test('detail identity reset removes the prior private strategy identifier from action controls',async()=>{
+ const privateData=snapshot(),m=privateData.markets[0];m.fits[0].strategyId='PRIVATE_A_STRATEGY_ID';m.bestFit=m.fits[0];const pending=deferred(),page=await mount((url,options)=>url.includes('/headlines?')?response({items:[]}):options.headers?.Authorization==='Bearer test-token-b'?pending.promise:response({...privateData,market:m}),{symbol:'EURUSD'});try{await page.identity('a');assert.match(page.doc.querySelector('#edge-actions').innerHTML,/PRIVATE_A_STRATEGY_ID/);await page.identity('b');assert.doesNotMatch(page.doc.querySelector('#edge-actions').innerHTML,/PRIVATE_A_STRATEGY_ID/);const clean=snapshot();pending.resolve(response({...clean,market:clean.markets[0]}));await settle();}finally{page.close();}
+});
+function executableDetail(entry=1.12345){const data=snapshot(),m=data.markets[0];data.guest=false;data.guard={connected:true,status:'connected',receivedAt:stamp,currency:'USD',balance:10000,equity:10000,dailyLossRoom:500,dailyLossLimitAmount:500,ruleId:'2-step',phase:1};m.tradePlans['test-breakout']={...m.tradePlans['test-breakout'],available:true,reason:null,entry,stop:entry-.01,target:entry+.02,lots:.25,riskAmount:50,brokerDigits:5,basisAt:stamp,executionQuote:{asOf:stamp,brokerSymbol:'EURUSD.test',bid:entry-.0001,ask:entry}};return {...data,market:m};}
+const planValue=(doc,label)=>[...doc.querySelectorAll('#edge-trade-plan dt')].find(n=>n.textContent===label)?.nextElementSibling.textContent;
+test('held detail page expires broker execution prices and lots as its heartbeat clock becomes stale',async()=>{
+ const fresh=executableDetail(),page=await mount(url=>response(url.includes('/headlines?')?{items:[]}:fresh),{symbol:'EURUSD',now:Date.parse(stamp)});try{assert.equal(planValue(page.doc,'Entry'),'1.12345');assert.equal(planValue(page.doc,'Broker lots'),'0.250');assert.match(page.doc.querySelector('#edge-guard').textContent,/CONNECTED/);page.setNow(Date.parse(stamp)+180001);const clock=[...page.timers.values()].find(timer=>timer.interval&&timer.ms===30000);await clock.callback();await settle();assert.equal(planValue(page.doc,'Entry'),'—');assert.equal(planValue(page.doc,'Stop'),'—');assert.equal(planValue(page.doc,'Target'),'—');assert.equal(planValue(page.doc,'Broker lots'),'—');assert.match(page.doc.querySelector('#edge-trade-plan').textContent,/expired/);assert.match(page.doc.querySelector('#edge-guard').textContent,/OFFLINE/);}finally{page.close();}
+});
+test('late private periodic market refresh cannot replace a new account broker plan',async()=>{
+ const pending=deferred();let privateLoads=0;const page=await mount((url,options)=>{if(url.includes('/headlines?'))return response({items:[]});if(url.endsWith('/guard'))return response(executableDetail().guard);if(options.headers?.Authorization==='Bearer test-token-a'){if(++privateLoads===1)return response(executableDetail(1.11111));return pending.promise;}if(options.headers?.Authorization==='Bearer test-token-b')return response(executableDetail(2.22222));const s=snapshot();return response({...s,market:s.markets[0]});},{symbol:'EURUSD',now:Date.parse(stamp)});try{await page.identity('a');assert.equal(planValue(page.doc,'Entry'),'1.11111');const poll=[...page.timers.values()].filter(timer=>timer.interval&&timer.ms===60000).at(-1),inFlight=poll.callback();await settle();assert.equal(privateLoads,2);await page.identity('b');assert.equal(planValue(page.doc,'Entry'),'2.22222');pending.resolve(response(executableDetail(9.99999)));await inFlight;await settle();assert.equal(planValue(page.doc,'Entry'),'2.22222');assert.doesNotMatch(page.doc.querySelector('#edge-trade-plan').textContent,/9\.99999/);}finally{page.close();}
+});
+
+test('production renders release research when the scheduled copy is inaccessible and keeps public reads anonymous',async()=>{
+ const released={...snapshot(),publicResearch:true};
+ const page=await mount((url,options)=>{
+  assert.equal(options.credentials,'omit');
+  assert.equal(options.headers?.Authorization,undefined);
+  if(url.startsWith('https://raw.githubusercontent.com/'))return response({},404);
+  assert.equal(url,'/assets/data/research/edge.json');
+  return response(released);
+ },{origin:'https://www.fynxfinanceworld.com'});
+ try{
+  assert.deepEqual(rows(page.doc),['EURUSD','XAUUSD','BTCUSD']);
+  assert.equal(page.doc.querySelector('#edge-main').getAttribute('aria-busy'),'false');
+  assert.match(page.doc.querySelector('#edge-updated').textContent,/PUBLIC RESEARCH/);
+  assert.match(page.doc.querySelector('#edge-status').textContent,/published research/i);
+  assert.equal(page.calls.length,2);
+ }finally{page.close();}
+});
+
+test('a signed-in user can read public research during a service outage without leaking the account credential',async()=>{
+ const published={...snapshot(),publicResearch:true},expected='https://us-central1-fynx-c7a28.cloudfunctions.net/webTradingResearch/api/edge/today';
+ const page=await mount((url,options)=>{
+  if(url.startsWith('https://raw.githubusercontent.com/')){
+   assert.equal(options.headers?.Authorization,undefined);
+   return response(published);
+  }
+  assert.equal(url,expected);
+  assert.equal(options.headers.Authorization,'Bearer test-token-member');
+  return response({error:'Offline'},503);
+ },{origin:'https://fynxfinanceworld.com'});
+ try{
+  await page.identity('member');
+  assert.match(page.doc.querySelector('#edge-updated').textContent,/PUBLIC RESEARCH/);
+  assert.match(page.doc.querySelector('#edge-status').textContent,/public markets and built-in strategies/);
+  assert.equal(page.doc.querySelectorAll('.edge-market-name').length,3);
+  assert.doesNotMatch(page.doc.querySelector('#edge-guard').textContent,/CONNECTED|equity \d/i);
+  assert.equal(page.calls.filter(call=>call.url===expected).length,1);
+  click(page,'[data-action="retry"]');await settle();
+  assert.equal(page.calls.filter(call=>call.url===expected).length,2);
+ }finally{page.close();}
+});
+
+test('a scheduled artifact marked private cannot become a public market detail',async()=>{
+ const protectedValue={...snapshot(),publicResearch:true,guest:false};
+ protectedValue.markets[0].name='PRIVATE FILE MARKET NAME';
+ const valid={...snapshot(),publicResearch:true};
+ const page=await mount(url=>{
+  if(url.startsWith('https://raw.githubusercontent.com/'))return response(protectedValue);
+  if(url==='/assets/data/research/edge.json')return response(valid);
+  assert.match(url,/webTradingResearch\/api\/edge\/headlines/);
+  return response({items:[]});
+ },{origin:'https://www.fynxfinanceworld.com',symbol:'EURUSD'});
+ try{
+  assert.doesNotMatch(page.doc.body.textContent,/PRIVATE FILE MARKET NAME/);
+  assert.match(page.doc.querySelector('#edge-brief').textContent,/Forex majors test market/);
+  assert.equal(page.doc.querySelector('#edge-strategy').options.length,2);
+ }finally{page.close();}
+});

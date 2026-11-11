@@ -7,7 +7,12 @@
     news: 'news.html',
     calendar: 'calendar.html',
     learn: 'learn.html',
-    profile: 'profile.html',
+    explore: 'explore.html',
+    research: '/tools/research-desk.html',
+    quant: '/quant-analyst.html',
+    edge: '/edge-radar/',
+    macro: '/macro-desk.html',
+    profile: '/profile.html',
   };
 
   const VIEW_LABELS = {
@@ -17,6 +22,11 @@
     news: 'News',
     calendar: 'Calendar',
     learn: 'Learn',
+    explore: 'Explore',
+    research: 'Research',
+    quant: 'Quant Analyst',
+    edge: 'Edge Radar',
+    macro: 'Macro Desk',
     profile: 'Profile',
   };
 
@@ -25,17 +35,18 @@
     'index.html': 'home',
     'dashboard.html': 'home',
     'journal.html': 'journal',
+    'trader-journal.html': 'journal',
     'calculator.html': 'calculator',
     'news.html': 'news',
     'calendar.html': 'calendar',
     'learn.html': 'learn',
     'profile.html': 'profile',
+    'quant-analyst.html': 'quant',
+    'quant-analyst': 'quant',
+    'macro-desk.html': 'macro',
+    'macro-desk': 'macro',
   };
 
-  function demoBannerMarkup() {
-    if (!isDemoMode()) return '';
-    return `<div style="padding:8px 14px;border-radius:12px;border:1px solid var(--line, rgba(255,255,255,.18));font-size:12px;font-weight:700;letter-spacing:.02em;opacity:.88;">DEMO MODE · SIMULATED DATA</div>`;
-  }
 
   const NAV_ICONS = {
     home: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>',
@@ -44,13 +55,15 @@
     news: '<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path><line x1="12" y1="11" x2="18" y2="11"></line><line x1="12" y1="7" x2="18" y2="7"></line>',
     calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>',
     learn: '<path d="M2 7l10-4 10 4-10 4-10-4z"></path><path d="M6 10v5c0 2.2 2.7 4 6 4s6-1.8 6-4v-5"></path><path d="M22 10v6"></path>',
+    edge: '<circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="4"></circle><path d="M12 12 20 4"></path>',
+    macro: '<path d="M3 21h18M5 21V10M10 21V6M15 21v-8M20 21V3"></path>',
+    quant: '<path d="M3 18l5-7 4 3 9-11M3 21h18"></path>',
+    research: '<path d="M4 3h16v18H4zM8 8h8M8 12h8M8 16h5"></path>',
+    explore: '<circle cx="10" cy="10" r="6"></circle><path d="m15 15 6 6"></path>',
     profile: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>',
   };
 
 
-function isDemoMode() {
-  return localStorage.getItem('mode') === 'demo';
-}
 
 function ensureDemoStyles() {
   if (document.getElementById('fynxDemoStyles')) return;
@@ -120,8 +133,9 @@ function ensureNavConsistencyStyles() {
 }
 
 function detectCurrentView() {
+  if(window.location.pathname.startsWith('/edge-radar'))return 'edge';
   let file = window.location.pathname.split('/').pop() || 'home.html';
-  if (!file.includes('.html')) file = 'home.html';
+  if (!file.includes('.html') && !['quant-analyst','macro-desk'].includes(file)) file = 'home.html';
   return FILE_TO_VIEW[file] || 'home';
 }
 
@@ -130,9 +144,9 @@ function detectCurrentView() {
       .map((view) => {
         const active = view === currentView ? ' active' : '';
         return `
-          <a class="nav-item${active}" href="${VIEW_PAGES[view]}" data-view="${view}">
+          <a class="nav-item${active}" href="${VIEW_PAGES[view]}" data-view="${view}"${active ? ' aria-current="page"' : ''}>
             <svg class="nav-icon" viewBox="0 0 24 24">${NAV_ICONS[view]}</svg>
-            <span class="nav-label">${VIEW_LABELS[view]}</span>
+            <span class="nav-label">${VIEW_LABELS[view]}</span>${['quant','edge','macro'].includes(view) ? '<span class="quant-new-badge">NEW</span>' : ''}
           </a>
         `;
       })
@@ -151,9 +165,8 @@ function detectCurrentView() {
 
    ensureDemoStyles();
     ensureNavConsistencyStyles();
-    const disableSidebarToggle = document.body.hasAttribute('data-disable-sidebar-toggle');
+    const disableSidebarToggle = true;
 topBar.innerHTML = `
-  ${demoBannerMarkup()}
 
   <div class="top-bar-left">
     ${disableSidebarToggle ? '' : '<button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Collapse sidebar">&lt;</button>'}
@@ -161,6 +174,7 @@ topBar.innerHTML = `
   </div>
 
   <div class="top-bar-right">
+    <a class="chip" href="/api/" aria-label="FYNX API developer workspace">API</a>
     <span class="chip" id="dateChip">Loading...</span>
     <button class="icon-btn" title="Notifications" aria-label="Notifications">
       <svg viewBox="0 0 24 24">
@@ -180,22 +194,24 @@ topBar.innerHTML = `
 
   function initNav() {
     renderShell();
+    const actions = document.querySelector('.top-bar') || document.querySelector('.topbar');
+    if(actions && !document.getElementById('publicAccountLinks')) { const links=document.createElement('div');links.id='publicAccountLinks';links.style.cssText='display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px';links.innerHTML='<a href="/pro.html">Pro tools &amp; plans</a><a href="/auth/login.html?returnTo=%2Fhome.html">Sign in</a>';links.querySelectorAll('a').forEach(a=>a.style.cssText='color:inherit;text-decoration:none;font-weight:600;padding:7px 3px;white-space:nowrap'); actions.append(links); window.addEventListener('fynx:session', event => { if(event.detail.type !== 'ready') return; const account=links.lastElementChild;account.textContent=event.detail.user?'Profile':'Sign in';account.href=event.detail.user?'/profile.html':'/auth/login.html?returnTo=%2Fhome.html'; }); }
     const sidebarKey = 'fynx_sidebar_collapsed';
     const toggleBtn = document.getElementById('sidebarToggle');
-    const disableSidebarToggle = document.body.hasAttribute('data-disable-sidebar-toggle');
+    const disableSidebarToggle = true;
     const applySidebarState = (collapsed) => {
       document.body.classList.toggle('sidebar-collapsed', collapsed);
       if (toggleBtn) {
         toggleBtn.textContent = collapsed ? '>' : '<';
         toggleBtn.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
       }
-      localStorage.setItem(sidebarKey, collapsed ? '1' : '0');
+      try { localStorage.setItem(sidebarKey, collapsed ? '1' : '0'); } catch {}
     };
     if (disableSidebarToggle) {
       document.body.classList.remove('sidebar-collapsed');
-      localStorage.setItem(sidebarKey, '0');
+      try { localStorage.setItem(sidebarKey, '0'); } catch {}
     } else if (window.matchMedia('(min-width: 901px)').matches) {
-      applySidebarState(localStorage.getItem(sidebarKey) === '1');
+      try { applySidebarState(localStorage.getItem(sidebarKey) === '1'); } catch { applySidebarState(false); }
     }
     if (toggleBtn) {
       toggleBtn.addEventListener('click', () => {
@@ -205,49 +221,27 @@ topBar.innerHTML = `
 
     const initialsEl = document.getElementById('avatarInitials');
     if (initialsEl) {
-      const userName = isDemoMode()
-        ? 'Demo User'
-        : (localStorage.getItem('fynxUserName') || localStorage.getItem('fynx_user_name') || 'FYNX');
-      const initials = userName
-        .split(/\s+/)
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((chunk) => chunk.charAt(0).toUpperCase())
-        .join('') || 'FX';
-      initialsEl.textContent = initials;
-      initialsEl.title = isDemoMode() ? 'Demo mode' : 'Log out';
-      initialsEl.style.cursor = isDemoMode() ? 'default' : 'pointer';
-      initialsEl.addEventListener('click', async () => {
-        if (isDemoMode()) return;
-        const ok = window.confirm('Log out from this browser?');
-        if (!ok) return;
-        try {
-          if (window.FynxSession?.logout) {
-            await window.FynxSession.logout('manual', 'auth/login.html');
-          }
-        } finally {
-          window.location.href = 'auth/login.html';
+      function updateIdentity() {
+        const userName = window.FynxIdentity?.displayName || '';
+        initialsEl.textContent = userName.split(/\s+/).filter(Boolean).slice(0, 2).map(chunk => chunk[0].toUpperCase()).join('') || 'FX';
+        const account = document.querySelector('#publicAccountLinks a:last-child');
+        if (account) {
+          account.textContent = window.FynxIdentity?.uid ? 'Profile' : 'Sign in';
+          account.href = window.FynxIdentity?.uid ? '/profile.html' : '/auth/login.html?returnTo=' + encodeURIComponent(location.pathname);
         }
-      });
+      }
+      updateIdentity();
+      window.addEventListener('fynx:identity', updateIdentity);
+      import('/assets/js/account-identity.js?v=20260928-audit2').catch(() => {});
+      initialsEl.title = 'Open profile';
+      initialsEl.style.cursor = 'pointer';
+      initialsEl.setAttribute('role', 'link');
+      initialsEl.tabIndex = 0;
+      initialsEl.addEventListener('click', () => { location.href = 'profile.html'; });
+      initialsEl.addEventListener('keydown', event => { if(event.key === 'Enter') location.href = 'profile.html'; });
+
     }
 
-    document.addEventListener('click', (event) => {
-      const anchor = event.target.closest('a[href]');
-      if (!anchor) return;
-      const href = anchor.getAttribute('href') || '';
-      if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) return;
-      if (anchor.target && anchor.target !== '_self') return;
-      if (href === window.location.pathname.split('/').pop()) return;
-
-      let shell = document.getElementById('fynxPageShell');
-      if (!shell) {
-        shell = document.createElement('div');
-        shell.id = 'fynxPageShell';
-        shell.style.cssText = 'position:fixed;inset:0;background:#000;z-index:99998;opacity:0;pointer-events:none;transition:opacity .12s ease;';
-        document.body.appendChild(shell);
-      }
-      requestAnimationFrame(() => { shell.style.opacity = '1'; });
-    }, { capture: true });
   }
 
   if (document.readyState === 'loading') {

@@ -1,13 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trading Glossary | FYNX</title>
-  <meta
-    name="description"
-    content="Trading glossary by FYNX covering forex, crypto, stocks, futures, options, risk, psychology, and market analysis terms in one clean page."
-  />
   <style>
     :root{
       --bg:#f5f5f5;
@@ -26,7 +22,6 @@
       --max:1280px;
       --glow:rgba(255, 255, 255, 0.65);
     }
-
     body.dark-mode{
       --bg:#050505;
       --bg-soft:#0b0b0b;
@@ -40,15 +35,12 @@
       --shadow:0 30px 80px rgba(0, 0, 0, 0.45);
       --glow:rgba(147, 147, 147, 0.08);
     }
-
     *{
       box-sizing:border-box;
     }
-
     html{
       scroll-behavior:smooth;
     }
-
     body{
       margin:0;
       font-family:Inter, Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -60,7 +52,6 @@
       line-height:1.55;
       transition:background .25s ease, color .25s ease;
     }
-
     body::before{
       content:"";
       position:fixed;
@@ -72,18 +63,15 @@
       mask-image:linear-gradient(to bottom, rgba(0, 0, 0, .75), rgba(0, 0, 0, .28));
       z-index:-1;
     }
-
     a{
       color:inherit;
       text-decoration:none;
     }
-
     .page{
       width:min(100%, var(--max));
       margin:0 auto;
       padding:24px 18px 80px;
     }
-
     .hero{
       position:relative;
       overflow:hidden;
@@ -98,7 +86,6 @@
       -webkit-backdrop-filter:blur(18px);
       margin-top:10px;
     }
-
     .hero::after{
       content:"";
       position:absolute;
@@ -108,7 +95,6 @@
       background:radial-gradient(circle, rgba(159, 159, 159, 0.14), transparent 65%);
       pointer-events:none;
     }
-
     .eyebrow{
       display:inline-flex;
       align-items:center;
@@ -119,35 +105,30 @@
       color:var(--muted);
       margin-bottom:16px;
     }
-
     .eyebrow::before{
       content:"";
       width:28px;
       height:1px;
       background:var(--line-strong);
     }
-
     h1{
       margin:0 0 12px;
       font-size:clamp(2.2rem, 6vw, 4.7rem);
       line-height:.96;
       letter-spacing:-0.05em;
     }
-
     .hero p{
       max-width:860px;
       font-size:clamp(1rem, 2.7vw, 1.12rem);
       color:var(--text-soft);
       margin:0 0 26px;
     }
-
     .hero-actions{
       display:flex;
       flex-wrap:wrap;
       gap:12px;
       margin-bottom:22px;
     }
-
     .btn{
       display:inline-flex;
       align-items:center;
@@ -160,47 +141,39 @@
       font-weight:600;
       font-size:.95rem;
     }
-
     .btn.primary{
       background:var(--text);
       color:var(--bg);
       border-color:transparent;
     }
-
     .btn.secondary{
       background:transparent;
       color:var(--text);
     }
-
     .btn:hover{
       transform:translateY(-1px);
     }
-
     .hero-stats{
       display:grid;
       grid-template-columns:repeat(4, minmax(0,1fr));
       gap:12px;
     }
-
     .stat{
       padding:16px;
       border-radius:18px;
       border:1px solid var(--line);
       background:rgba(255, 255, 255, 0.03);
     }
-
     .stat strong{
       display:block;
       font-size:1.18rem;
       letter-spacing:-0.03em;
       margin-bottom:6px;
     }
-
     .stat span{
       color:var(--text-soft);
       font-size:.92rem;
     }
-
     .alpha-nav{
       margin-top:22px;
       padding:18px;
@@ -212,7 +185,6 @@
       flex-wrap:wrap;
       gap:10px;
     }
-
     .alpha-link{
       width:44px;
       height:44px;
@@ -226,13 +198,11 @@
       font-weight:700;
       transition:.2s ease;
     }
-
     .alpha-link:hover{
       color:var(--text);
       border-color:var(--line-strong);
       transform:translateY(-1px);
     }
-
     .section{
       margin-top:22px;
       padding:22px;
@@ -243,7 +213,6 @@
       backdrop-filter:blur(14px);
       -webkit-backdrop-filter:blur(14px);
     }
-
     .section-title{
       display:flex;
       align-items:end;
@@ -251,26 +220,22 @@
       gap:16px;
       margin-bottom:18px;
     }
-
     .section-title h2{
       margin:0;
       font-size:clamp(1.45rem, 4vw, 2.2rem);
       letter-spacing:-0.04em;
     }
-
     .section-title p{
       margin:0;
       max-width:640px;
       color:var(--text-soft);
       font-size:.98rem;
     }
-
     .glossary-grid{
       display:grid;
       grid-template-columns:repeat(2, minmax(0,1fr));
       gap:14px;
     }
-
     .term-card{
       padding:18px;
       border-radius:20px;
@@ -278,7 +243,6 @@
       background:var(--panel-strong);
       height:100%;
     }
-
     .term-header{
       display:flex;
       align-items:center;
@@ -286,13 +250,11 @@
       gap:12px;
       margin-bottom:10px;
     }
-
     .term-card h3{
       margin:0;
       font-size:1.08rem;
       letter-spacing:-0.03em;
     }
-
     .badge{
       display:inline-flex;
       align-items:center;
@@ -306,13 +268,11 @@
       letter-spacing:.11em;
       white-space:nowrap;
     }
-
     .term-card p{
       margin:0;
       color:var(--text-soft);
       font-size:.95rem;
     }
-
     .footer-cta{
       display:flex;
       align-items:center;
@@ -326,77 +286,91 @@
       box-shadow:var(--shadow);
       margin-top:26px;
     }
-
     .footer-cta h2{
       margin:0 0 8px;
       font-size:clamp(1.4rem, 4vw, 2rem);
       letter-spacing:-0.04em;
     }
-
     .footer-cta p{
       margin:0;
       color:var(--text-soft);
       max-width:680px;
     }
-
     .tiny{
       font-size:.88rem;
       color:var(--muted);
       margin-top:8px;
     }
-
     @media (max-width: 980px){
       .hero-stats,
       .glossary-grid{
         grid-template-columns:1fr 1fr;
       }
     }
-
     @media (max-width: 760px){
       .page{
         padding:16px 14px 60px;
       }
-
       .hero,
       .section,
       .footer-cta,
       .alpha-nav{
         border-radius:24px;
       }
-
       .hero{
         padding:22px 18px;
       }
-
       .section{
         padding:18px;
       }
-
       .hero-stats,
       .glossary-grid{
         grid-template-columns:1fr;
       }
-
       .section-title{
         flex-direction:column;
         align-items:flex-start;
       }
-
       .alpha-link{
         width:40px;
         height:40px;
       }
-
       .term-header{
         flex-direction:column;
         align-items:flex-start;
       }
     }
   </style>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
+<title>Finance &amp; Trading Glossary: Market Terms Explained | FYNX</title>
+<meta name="description" content="Learn financial market terminology covering forex, crypto, stocks, futures, options, technical analysis and trading psychology.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://www.fynxfinanceworld.com/trading-glossary.html">
+<meta property="og:title" content="Finance &amp; Trading Glossary: Market Terms Explained | FYNX">
+<meta property="og:description" content="Learn financial market terminology covering forex, crypto, stocks, futures, options, technical analysis and trading psychology.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/trading-glossary.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261012" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Learning","item":"https://www.fynxfinanceworld.com/explore.html?category=Learning"},{"@type":"ListItem","position":3,"name":"Finance & Trading Glossary: Market Terms Explained","item":"https://www.fynxfinanceworld.com/trading-glossary.html"}]}</script><!-- discovery-schema:end -->
+<!-- search-identity:start --><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.fynxfinanceworld.com/#organization","name":"FYNX","alternateName":"FYNX Finance World","url":"https://www.fynxfinanceworld.com/","founder":{"@id":"https://ea-la.github.io/#person"},"sameAs":["https://www.fynxfunded.com/","https://site.fynxfinanceworld.com/","https://blog.fynxfinanceworld.com/","https://roadmap.fynxfinanceworld.com/"]},{"@type":"Person","@id":"https://ea-la.github.io/#person","name":"Elham Amini","url":"https://ea-la.github.io/","jobTitle":"Founder of FYNX","sameAs":["https://www.linkedin.com/in/elham-amini-745560302/","https://www.instagram.com/___elham_amini___/"],"worksFor":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebSite","@id":"https://www.fynxfinanceworld.com/#website","url":"https://www.fynxfinanceworld.com/","name":"FYNX Finance World","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebPage","@id":"https://www.fynxfinanceworld.com/trading-glossary.html#webpage","url":"https://www.fynxfinanceworld.com/trading-glossary.html","name":"Finance & Trading Glossary: Market Terms Explained | FYNX","description":"Learn financial market terminology covering forex, crypto, stocks, futures, options, technical analysis and trading psychology.","inLanguage":"en","isPartOf":{"@id":"https://www.fynxfinanceworld.com/#website"},"publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}}]}</script><!-- search-identity:end -->
+<!-- FYNX ADSENSE VERIFICATION START -->
+<script>(window.adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 1;</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
+     crossorigin="anonymous"></script>
+<!-- FYNX ADSENSE VERIFICATION END -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
 </head>
-<body>
+<body id="top" data-fynx-layout="standalone" data-fynx-section="FINANCE WORLD">
+<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
+<header class="site-resource-header"><a class="site-wordmark" href="/index.html">↗ FYNX</a><nav aria-label="Resource navigation"><a href="/calculator.html">Tools</a><a href="/learn.html">Learn</a><a href="/partners.html">Partners</a><button type="button" data-journal-theme aria-label="Switch theme">◐</button></nav></header>
   <main class="page">
-    <section class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Learning">Learning</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
       <div class="eyebrow">FYNX Learning Module</div>
       <h1>Trading Glossary</h1>
       <p>
@@ -981,13 +955,14 @@
         <a class="btn primary" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'}); return false;">Back to Top</a>
       </div>
     </section>
-  </main>
+  <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/learn/lessons/stocks/a-beginners-guide-to-stock-market-structure.html"><strong>A Beginner’s Guide to Stock Market Structure</strong><span>How exchanges, sessions, and liquidity windows shape your entries.</span></a><a href="/learn/lessons/bonds/bond-prices-and-yields-explained.html"><strong>Bond Prices and Yields Explained</strong><span>The inverse relationship and practical trading implications.</span></a><a href="/learn/bonds-glossary.html"><strong>Bonds — Glossary</strong><span>Learn Bonds terminology with a practical glossary of market concepts and trading definitions.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
   <script>
     const THEME_KEY = "fynx_theme";
 
     function applySavedTheme() {
-      const saved = localStorage.getItem(THEME_KEY) || "light";
+      const saved = window.FynxPreferences?.getItem(THEME_KEY) || "light";
       document.body.classList.toggle("dark-mode", saved === "dark");
     }
 
@@ -998,9 +973,9 @@
     });
 
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => {
-      if (!localStorage.getItem(THEME_KEY)) applySavedTheme();
+      if (!window.FynxPreferences?.getItem(THEME_KEY)) applySavedTheme();
     });
   </script>
-  <script src="/assets/js/live-site.js" defer></script>
-</body>
+
+<footer></footer></body>
 </html>

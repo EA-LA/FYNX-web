@@ -1,3 +1,4 @@
+import { endAccountsSession } from './accounts/logout.js';
 import { auth, app } from "../../auth/firebase.js";
 import {
   getFirestore,
@@ -33,7 +34,7 @@ import {
   DEFAULT_NOTIFICATION_PREFERENCES,
   PRIORITY,
   createNotificationEngine
-} from "./notifications/engine.js";
+} from "./notifications/engine.js?v=20260928-audit2";
 
 const db = getFirestore(app);
 const storage = getStorage(app);
@@ -59,10 +60,10 @@ const DEFAULT_PROFILE = {
   supportEmail: "support@fynxfinanceworld.com",
   appStoreUrl: "https://apps.apple.com/us/app/fynx-finance-world/id6752357210",
   legal: {
-    termsUrl: "https://fynxfinanceworld.com/terms",
-    privacyUrl: "https://fynxfinanceworld.com/privacy",
-    riskDisclosureUrl: "https://fynxfinanceworld.com/risk-disclosure",
-    contactUrl: "https://fynxfinanceworld.com/contact"
+    termsUrl: "https://site.fynxfinanceworld.com/terms.html",
+    privacyUrl: "https://site.fynxfinanceworld.com/privacy.html",
+    riskDisclosureUrl: "https://www.fynxfinanceworld.com/risk-disclosure.html",
+    contactUrl: "https://www.fynxfinanceworld.com/contact.html"
   },
   updatedAt: null,
   createdAt: null
@@ -88,7 +89,7 @@ const DEFAULT_PREFERENCES = {
 const DEFAULT_SECURITY_SETTINGS = {
   loginAlerts: true,
   twoFactor: {
-    status: "coming_soon",
+    status: "activation_pending",
     enrolledAt: null,
     method: null
   },
@@ -160,11 +161,24 @@ async function ensureUserSeed(user) {
     })
   );
 
-  await upsertSessionMetadata(user, { status: "active" });
-  await maybeEmitVerificationCompleted(user);
+  // Notification delivery must not prevent profile/settings initialization.
+  try {
+    await upsertSessionMetadata(user, { status: "active" });
+    await maybeEmitVerificationCompleted(user);
+  } catch (error) {
+    window.FynxMonitor?.report("save", "notifications-save", error);
+  }
 }
 
-export async function bootstrapAccount(user) {
+const pendingBootstraps = new Map();
+export function bootstrapAccount(user) {
+  if (!user?.uid) return Promise.reject(new Error("Sign in to load your account."));
+  if (!pendingBootstraps.has(user.uid)) {
+    pendingBootstraps.set(user.uid, loadAccount(user).finally(() => pendingBootstraps.delete(user.uid)));
+  }
+  return pendingBootstraps.get(user.uid);
+}
+async function loadAccount(user) {
   await ensureUserSeed(user);
   return {
     profile: await getUserProfile(user.uid),
@@ -186,6 +200,7 @@ export const getNotificationPreferences = (uid) => notificationEngine.preference
 export const getSecuritySettings = (uid) => getMergedDoc(uid, "security", DEFAULT_SECURITY_SETTINGS);
 
 export async function saveUserProfile(uid, payload) {
+  try {
   await setDoc(
     userDoc(uid, "profile"),
     {
@@ -194,34 +209,46 @@ export async function saveUserProfile(uid, payload) {
     },
     { merge: true }
   );
+  } catch(error) { window.FynxMonitor?.report("save","profile-save",error); throw error; }
 }
 
 export async function saveUserPreferences(uid, payload) {
+  try {
   await setDoc(userDoc(uid, "preferences"), { ...payload, updatedAt: serverTimestamp() }, { merge: true });
+  } catch(error) { window.FynxMonitor?.report("save","preferences-save",error); throw error; }
 }
 
 export async function saveNotificationPreferences(uid, payload) {
+  try {
   await notificationEngine.preferenceManager.save(uid, payload);
+  } catch(error) { window.FynxMonitor?.report("save","notifications-save",error); throw error; }
 }
 
 export async function saveSecuritySettings(uid, payload) {
+  try {
   await setDoc(userDoc(uid, "security"), { ...payload, updatedAt: serverTimestamp() }, { merge: true });
+  } catch(error) { window.FynxMonitor?.report("save","security-save",error); throw error; }
 }
 
 export async function uploadProfilePhoto(uid, file) {
+  try {
   if (!file) return "";
+  if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type) || file.size >= 5 * 1024 * 1024) throw new Error("Choose a JPEG, PNG, WebP or GIF image smaller than 5 MB.");
   const fileRef = ref(storage, `users/${uid}/profile/${Date.now()}-${file.name}`);
   await uploadBytes(fileRef, file, { contentType: file.type || "image/jpeg" });
-  return getDownloadURL(fileRef);
+  return await getDownloadURL(fileRef);
+  } catch(error) { window.FynxMonitor?.report("upload","photo-upload",error); throw error; }
 }
 
 export async function updateAuthProfile(payload) {
+  try {
   if (!auth.currentUser) throw new Error("No authenticated user");
   await updateProfile(auth.currentUser, payload);
+  } catch(error) { window.FynxMonitor?.report("save","profile-save",error); throw error; }
 }
 
-export function listenNotifications(uid, callback, max = 100) {
-  return notificationEngine.repository.listen(uid, callback, max);
+export function listenNotifications(uid, callback, max = 100, onError) {
+  return notificationEngine.repository.listen(uid, callback, max, onError);
 }
 
 export async function addNotification(uid, payload) {
@@ -295,12 +322,12 @@ export async function updatePasswordWithReauth(currentPassword, newPassword) {
 
 export async function resendVerificationEmail() {
   if (!auth.currentUser) throw new Error("No authenticated user");
-  await sendEmailVerification(auth.currentUser);
+  await sendEmailVerification(auth.currentUser, { url: 'https://www.fynxfinanceworld.com/auth/login.html' });
 }
 
 export async function upsertSessionMetadata(user, payload = {}) {
   if (!user?.uid) return;
-  const sessionId = `${user.uid}-${navigator.userAgent.slice(0, 24)}-${Intl.DateTimeFormat().resolvedOptions().timeZone}`;
+  const sessionId = encodeURIComponent(`${user.uid}-${navigator.userAgent.slice(0, 24)}-${Intl.DateTimeFormat().resolvedOptions().timeZone}`);
   const sessionRef = doc(db, "users", user.uid, "sessions", sessionId);
   const existing = await getDoc(sessionRef);
 
@@ -359,6 +386,7 @@ export async function logoutCurrentSession(redirectTo = "auth/login.html") {
     await window.FynxSession.logout("manual", redirectTo);
     return;
   }
+  await endAccountsSession();
   await signOut(auth);
 }
 

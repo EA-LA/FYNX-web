@@ -1,0 +1,25 @@
+{
+  "displayName": "FYNX API engine health",
+  "monitoredResource": {
+    "type": "uptime_url",
+    "labels": {
+      "project_id": "fynx-c7a28",
+      "host": "us-central1-fynx-c7a28.cloudfunctions.net"
+    }
+  },
+  "httpCheck": {
+    "path": "/developerHealth",
+    "port": 443,
+    "useSsl": true,
+    "validateSsl": true,
+    "requestMethod": "GET"
+  },
+  "period": "300s",
+  "timeout": "10s",
+  "contentMatchers": [
+    {
+      "content": "\"status\":\"ok\"",
+      "matcher": "CONTAINS_STRING"
+    }
+  ]
+}

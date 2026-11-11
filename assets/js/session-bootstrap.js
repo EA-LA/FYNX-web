@@ -1,16 +1,51 @@
 import { auth } from "../../auth/firebase.js";
-import { bootstrapSession } from "./session-manager.js";
+import { bootstrapSession } from "./session-manager.js?v=20261111-terminal-desks-1";
 
-const protectedPage = document.body?.dataset?.protectedPage !== "false";
+// Public browsing is the default. Only personal account screens require a session.
+const privatePages = new Set(["account-settings.html", "security.html", "notifications.html", "preferences.html"]);
+const protectedPage = privatePages.has(location.pathname.split("/").pop());
 
-bootstrapSession({
-  auth,
-  protectedPage,
-  loginPage: false,
-  loginRedirect: "home.html"
-}).catch((error) => {
-  console.error("Session bootstrap failed", error);
-  document.documentElement.classList.remove("fynx-session-booting");
-  const boot = document.getElementById("fynxSessionBoot");
-  if (boot) boot.remove();
-});
+function removeLegacyRestoreUi() {
+  const selectors = [
+    "#sessionRestoreScreen",
+    "#session-restore-screen",
+    "#authRestoreScreen",
+    "#auth-restore-screen",
+    ".session-restore-screen",
+    ".auth-restore-screen",
+    ".session-restore-overlay",
+    ".auth-restore-overlay",
+    ".session-bootstrap-loader",
+    ".session-loader-overlay",
+    ".auth-loader-overlay"
+  ];
+
+  selectors.forEach((selector) => {
+    document.querySelectorAll(selector).forEach((node) => node.remove());
+  });
+
+  document.body?.classList.remove("session-restoring", "auth-restoring", "session-loading", "auth-loading");
+}
+
+function runSessionBootstrap() {
+  bootstrapSession({
+    auth,
+    protectedPage,
+    loginPage: false,
+    loginRedirect: "home.html"
+  }).catch((error) => {
+    window.FynxMonitor?.report('auth', 'session-bootstrap', error);
+    console.error("Session bootstrap failed", error);
+  });
+}
+
+function initSilently() {
+  removeLegacyRestoreUi();
+  window.setTimeout(runSessionBootstrap, 0);
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initSilently, { once: true });
+} else {
+  initSilently();
+}

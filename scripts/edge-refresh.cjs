@@ -1,0 +1,4 @@
+'use strict';
+const {EdgeService}=require('../backend/edge/snapshot.cjs');
+async function main(){const args=process.argv.slice(2),service=new EdgeService();let asOf,zone=process.env.EDGE_GUEST_TIMEZONE||'America/Los_Angeles';for(let i=0;i<args.length;i++){if(args[i]==='--as-of')asOf=args[++i];else if(args[i]==='--timezone')zone=args[++i];else throw new Error('Use --as-of ISO-date and/or --timezone IANA-zone.');}try{const snapshot=await service.refresh({asOf,zone,progress:value=>{if(value===3||value===45||value===90)console.log(JSON.stringify({progress:value}));}});console.log(JSON.stringify({asOf:snapshot.asOf,generatedAt:snapshot.generatedAt,status:snapshot.status,markets:snapshot.markets.length,strategies:snapshot.strategies.length,providerStatus:snapshot.providerStatus}));}finally{await service.jobs.close();}}
+if(require.main===module)main().catch(e=>{console.error(e.code?e.message:'Edge refresh failed: '+e.message);process.exitCode=1;});

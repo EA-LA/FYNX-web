@@ -1,3 +1,4 @@
+import { endAccountsSession } from './accounts/logout.js';
 import {
   browserLocalPersistence,
   onAuthStateChanged,
@@ -17,7 +18,7 @@ const KEYS = {
   offlineAt: `${KEY_PREFIX}session:offlineAt`,
   routeScroll: `${KEY_PREFIX}route:scroll`,
   pageState: `${KEY_PREFIX}state:page`,
-  bootReady: `${KEY_PREFIX}session:boot-ready`
+  bootReady: `${KEY_PREFIX}session:ready`
 };
 
 const SAFE_GLOBAL_KEYS = ["fynx_theme", "mode"];
@@ -26,7 +27,8 @@ let activityThrottleUntil = 0;
 let currentAuth = null;
 let hasBoundListeners = false;
 let bootResolved = false;
-let bootUiTimer = null;
+let pageStateOwner = null;
+let pageStateBound = false;
 
 function now() {
   return Date.now();
@@ -66,7 +68,7 @@ function safeRemoveItem(key) {
 }
 
 function buildStateKey(pageKey) {
-  return `${KEYS.pageState}:${pageKey}`;
+  return `${KEYS.pageState}:${pageStateOwner || "unresolved"}:${pageKey}`;
 }
 
 function getCurrentPageKey() {
@@ -114,6 +116,7 @@ function recordLastRoute() {
 }
 
 function restoreScrollPosition() {
+  if (window.location.hash) return;
   const pageKey = getCurrentPageKey();
   const raw = safeGetItem(`${KEYS.routeScroll}:${pageKey}`);
   const value = Number(raw);
@@ -145,71 +148,6 @@ function isExpired() {
   return now() - last > INACTIVITY_TIMEOUT_MS;
 }
 
-function applyBootingState(isBooting) {
-  document.documentElement.classList.toggle("fynx-session-booting", Boolean(isBooting));
-}
-
-function ensureBootStyles() {
-  if (document.getElementById("fynxSessionBootStyles")) return;
-  const style = document.createElement("style");
-  style.id = "fynxSessionBootStyles";
-  style.textContent = `
-    #fynxSessionBoot {
-      position: fixed;
-      z-index: 99999;
-      display: none;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: 28px;
-      height: 28px;
-      pointer-events: none;
-      background: transparent;
-    }
-    #fynxSessionBoot::before {
-      content: "";
-      display: block;
-      width: 100%;
-      height: 100%;
-      border-radius: 999px;
-      border: 2px solid rgba(255, 255, 255, 0.24);
-      border-top-color: rgba(255, 255, 255, 0.88);
-      animation: fynxSpin .8s linear infinite;
-    }
-    @keyframes fynxSpin {
-      to { transform: rotate(360deg); }
-    }
-  `;
-  document.head.appendChild(style);
-
-  if (!document.getElementById("fynxSessionBoot")) {
-    const boot = document.createElement("div");
-    boot.id = "fynxSessionBoot";
-    boot.setAttribute("aria-hidden", "true");
-    document.documentElement.appendChild(boot);
-  }
-}
-
-function scheduleBootUi() {
-  const boot = document.getElementById("fynxSessionBoot");
-  if (!boot) return;
-  if (bootUiTimer) window.clearTimeout(bootUiTimer);
-  bootUiTimer = window.setTimeout(() => {
-    if (document.documentElement.classList.contains("fynx-session-booting")) {
-      boot.style.display = "flex";
-    }
-  }, 220);
-}
-
-function clearBootUi() {
-  if (bootUiTimer) {
-    window.clearTimeout(bootUiTimer);
-    bootUiTimer = null;
-  }
-  const boot = document.getElementById("fynxSessionBoot");
-  if (boot) boot.remove();
-}
-
 function clearUserScopedState() {
   try {
     const keysToRemove = [];
@@ -235,7 +173,16 @@ function clearUserScopedState() {
   }
 }
 
+function canAccessDraft() {
+  return pageStateOwner !== null && pageStateOwner === (currentAuth?.currentUser?.uid || "guest");
+}
+
+function isSensitiveField(field) {
+  return field.type === "password" || /(?:password|one-time-code)/i.test(field.autocomplete || "");
+}
+
 function savePageDraftState() {
+  if (!canAccessDraft()) return;
   const pageKey = getCurrentPageKey();
   const payload = { values: {}, updatedAt: now() };
 
@@ -245,7 +192,7 @@ function savePageDraftState() {
     if (!key) return;
     const tag = field.tagName.toLowerCase();
     const type = (field.type || "").toLowerCase();
-    const isSensitive = type === "password" || field.autocomplete === "one-time-code";
+    const isSensitive = isSensitiveField(field);
     if (isSensitive) return;
     if (type === "checkbox" || type === "radio") {
       payload.values[key] = Boolean(field.checked);
@@ -260,6 +207,7 @@ function savePageDraftState() {
 }
 
 function restorePageDraftState() {
+  if (!canAccessDraft()) return;
   const pageKey = getCurrentPageKey();
   const saved = safeJsonParse(safeGetItem(buildStateKey(pageKey)), null);
   if (!saved || !saved.values) return;
@@ -269,7 +217,7 @@ function restorePageDraftState() {
     if (!field) return;
 
     const type = (field.type || "").toLowerCase();
-    if (type === "password") return;
+    if (isSensitiveField(field)) return;
     if (type === "checkbox" || type === "radio") {
       field.checked = Boolean(value);
       return;
@@ -281,6 +229,8 @@ function restorePageDraftState() {
 }
 
 function bindPageStateTracking() {
+  if (pageStateBound) return;
+  pageStateBound = true;
   const handler = () => {
     savePageDraftState();
     saveScrollPosition();
@@ -355,7 +305,7 @@ function bindPresenceListeners() {
 
       if (payload.type === "logout") {
         dispatchSessionEvent(payload);
-        window.location.href = payload.redirectTo || "auth/login.html";
+        window.location.href = payload.redirectTo || "/auth/login.html";
       }
 
       if (payload.type === "login") {
@@ -365,9 +315,10 @@ function bindPresenceListeners() {
   });
 }
 
-async function broadcastAndSignOut(reason = "manual", redirectTo = "auth/login.html") {
+async function broadcastAndSignOut(reason = "manual", redirectTo = "/auth/login.html") {
   if (!currentAuth) return;
 
+  await endAccountsSession();
   safeSetItem(KEYS.sessionEvent, JSON.stringify({
     type: "logout",
     at: now(),
@@ -392,74 +343,68 @@ async function validateSessionTimeout(source = "manual") {
   return { expired: false };
 }
 
-async function awaitAuthRestore(auth) {
-  return new Promise((resolve) => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      unsub();
-      resolve(user);
-    });
-  });
-}
-
 export async function bootstrapSession({ auth, protectedPage = false, loginPage = false, loginRedirect = "home.html" } = {}) {
   currentAuth = auth;
-  ensureBootStyles();
-  applyBootingState(true);
-  scheduleBootUi();
   bindPresenceListeners();
-  bindPageStateTracking();
 
-  await setPersistence(auth, browserLocalPersistence);
+  setPersistence(auth, browserLocalPersistence).catch(() => {
+    // no-op
+  });
 
-  const user = await awaitAuthRestore(auth);
+  const redirectTo = `/auth/login.html?returnTo=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`;
 
-  const isDemo = localStorage.getItem("mode") === "demo";
-  const redirectTo = `auth/login.html?returnTo=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`;
+  return new Promise((resolve) => {
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      unsub();
 
-  if (user && !readLastActiveAt()) {
-    trackActivity("restore");
-  }
-
-  if (user) {
-    const timeoutStatus = await validateSessionTimeout("auth-restore");
-    if (timeoutStatus.expired) {
-      applyBootingState(false);
-      clearBootUi();
-      return { user: null, expired: true };
-    }
-
-    safeSetItem(KEYS.sessionEvent, JSON.stringify({
-      type: "login",
-      at: now(),
-      uid: user.uid
-    }));
-
-    const lastRoute = safeGetItem(KEYS.lastRoute);
-    if (loginPage) {
-      const fallback = lastRoute || loginRedirect;
-      const target = getReturnToTarget(fallback);
-      if (!samePath(target)) {
-        window.location.replace(target);
-        return { user, redirected: true };
+      if (user && !readLastActiveAt()) {
+        trackActivity("resume");
       }
-    }
-  }
 
-  if (!user && protectedPage && !isDemo) {
-    window.location.replace(redirectTo);
-    return { user: null, redirected: true };
-  }
+      if (user) {
+        const timeoutStatus = await validateSessionTimeout("auth-state");
+        if (timeoutStatus.expired) {
+          resolve({ user: null, expired: true });
+          return;
+        }
 
-  dispatchSessionEvent({ type: "ready", user: user ? { uid: user.uid, email: user.email || "" } : null, protectedPage, loginPage });
+        safeSetItem(KEYS.sessionEvent, JSON.stringify({
+          type: "login",
+          at: now(),
+          uid: user.uid
+        }));
 
-  if (!bootResolved) {
-    bootResolved = true;
-    safeSetItem(KEYS.bootReady, String(now()));
-  }
+        const lastRoute = safeGetItem(KEYS.lastRoute);
+        if (loginPage) {
+          const fallback = lastRoute || loginRedirect;
+          const target = getReturnToTarget(fallback);
+          if (!samePath(target)) {
+            window.location.replace(target);
+            resolve({ user, redirected: true });
+            return;
+          }
+        }
+      }
 
-  applyBootingState(false);
-  clearBootUi();
-  return { user, redirected: false };
+      if (!user && protectedPage) {
+        window.location.replace(redirectTo);
+        resolve({ user: null, redirected: true });
+        return;
+      }
+
+      pageStateOwner = user?.uid || "guest";
+      bindPageStateTracking();
+
+      dispatchSessionEvent({ type: "ready", user: user ? { uid: user.uid, email: user.email || "" } : null, protectedPage, loginPage });
+
+      if (!bootResolved) {
+        bootResolved = true;
+        safeSetItem(KEYS.bootReady, String(now()));
+      }
+
+      resolve({ user, redirected: false });
+    });
+  });
 }
 
 export const sessionState = {
@@ -474,9 +419,11 @@ export const sessionState = {
   savePageState: savePageDraftState,
   restorePageState: restorePageDraftState,
   getPageState(pageKey) {
+    if (!canAccessDraft()) return null;
     return safeJsonParse(safeGetItem(buildStateKey(pageKey || getCurrentPageKey())), null);
   },
   setPageState(pageKey, value) {
+    if (!canAccessDraft()) return;
     safeSetItem(buildStateKey(pageKey || getCurrentPageKey()), JSON.stringify(value || {}));
   }
 };

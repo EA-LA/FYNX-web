@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX - Account Settings</title>
+
   <script>
     (function(){
-      const t = localStorage.getItem('fynx_theme') === 'light' ? 'light' : 'dark';
+      const t = window.FynxPreferences?.getItem('fynx_theme') === 'light' ? 'light' : 'dark';
       document.documentElement.style.backgroundColor = t === 'light' ? '#fbfbfb' : '#000';
       document.documentElement.dataset.theme = t;
     })();
@@ -63,9 +64,23 @@
     @media(max-width:900px){.grid{grid-template-columns:1fr}.content-area{padding:20px}}
   </style>
   <link rel="stylesheet" href="assets/css/mobile-fixes.css">
+  <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
+
+<title>FYNX - Account Settings</title>
+<meta name="description" content="FYNX - Account Settings. Identity, support, legal, and trading profile controls.">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://www.fynxfinanceworld.com/account-settings.html">
+<meta property="og:title" content="FYNX - Account Settings">
+<meta property="og:description" content="FYNX - Account Settings. Identity, support, legal, and trading profile controls.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/account-settings.html">
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
 </head>
-<body data-protected-page="true">
-  <div class="dashboard-container">
+<body data-protected-page="true" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD">
+<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
+<div class="dashboard-container">
     <nav class="nav-panel"></nav>
     <main class="main-content">
       <div class="top-bar">
@@ -82,20 +97,20 @@
         <form class="card" id="accountForm">
           <h3>Identity</h3>
           <div class="grid">
-            <div class="field"><label>Display name</label><input id="displayName" required></div>
-            <div class="field"><label>Username / handle</label><input id="username" placeholder="fynxtrader"></div>
-            <div class="field" style="grid-column:1/-1"><label>Short bio</label><textarea id="bio" maxlength="280"></textarea></div>
-            <div class="field"><label>Country / region</label><input id="country"></div>
-            <div class="field"><label>Timezone</label><input id="timezone"></div>
-            <div class="field"><label>Preferred currency</label><select id="preferredCurrency"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option><option>AUD</option></select></div>
-            <div class="field"><label>Profile photo upload</label><input type="file" id="profilePhoto" accept="image/*"></div>
+            <div class="field"><label>Display name</label><input id="displayName" aria-label="Display name" required></div>
+            <div class="field"><label>Username / handle</label><input id="username" aria-label="Username" placeholder="fynxtrader"></div>
+            <div class="field" style="grid-column:1/-1"><label>Short bio</label><textarea id="bio" aria-label="Bio" maxlength="280"></textarea></div>
+            <div class="field"><label>Country / region</label><input id="country" aria-label="Country"></div>
+            <div class="field"><label>Timezone</label><input id="timezone" aria-label="Timezone"></div>
+            <div class="field"><label>Preferred currency</label><select id="preferredCurrency" aria-label="Preferred currency"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option><option>AUD</option></select></div>
+            <div class="field"><label>Profile photo upload</label><input type="file" id="profilePhoto" aria-label="Profile photo" accept="image/*"></div>
           </div>
           <div style="margin:10px 0;display:flex;align-items:center;gap:10px"><img id="profilePreview" class="avatar" alt="Profile preview"><span class="status" id="photoStatus">No upload in progress.</span></div>
 
           <h3 style="margin-top:6px">Trading Profile</h3>
           <div class="grid">
-            <div class="field"><label>Experience level</label><select id="experienceLevel"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option><option value="pro">Professional</option></select></div>
-            <div class="field"><label>Risk profile</label><select id="riskProfile"><option value="conservative">Conservative</option><option value="moderate">Moderate</option><option value="aggressive">Aggressive</option></select></div>
+            <div class="field"><label>Experience level</label><select id="experienceLevel" aria-label="Experience level"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option><option value="pro">Professional</option></select></div>
+            <div class="field"><label>Risk profile</label><select id="riskProfile" aria-label="Risk profile"><option value="conservative">Conservative</option><option value="moderate">Moderate</option><option value="aggressive">Aggressive</option></select></div>
             <div class="field" style="grid-column:1/-1"><label>Preferred markets</label><div class="pill-row" id="marketPills"></div></div>
           </div>
 
@@ -104,18 +119,18 @@
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <a class="btn" href="https://apps.apple.com/us/app/fynx-finance-world/id6752357210" target="_blank" rel="noopener">Download App</a>
               <a class="btn" href="mailto:support@fynxfinanceworld.com">Contact Support</a>
-              <a class="btn" href="https://fynxfinanceworld.com/terms" target="_blank" rel="noopener">Terms</a>
-              <a class="btn" href="https://fynxfinanceworld.com/privacy" target="_blank" rel="noopener">Privacy</a>
+              <a class="btn" href="https://site.fynxfinanceworld.com/terms.html" target="_blank" rel="noopener">Terms</a>
+              <a class="btn" href="https://site.fynxfinanceworld.com/privacy.html" target="_blank" rel="noopener">Privacy</a>
               <a class="btn" href="https://fynxfinanceworld.com/risk-disclosure" target="_blank" rel="noopener">Risk Disclosure</a>
             </div>
-            <div style="display:flex;gap:8px;align-items:center"><span id="saveStatus" class="status">Ready</span><button class="btn primary" type="submit">Save changes</button></div>
+            <div style="display:flex;gap:8px;align-items:center"><span id="saveStatus" role="status" aria-live="polite" class="status">Ready</span><button class="btn primary" type="submit">Save changes</button></div>
           </div>
         </form>
       </div>
     </main>
   </div>
 
-  <script type="module" src="assets/js/session-bootstrap.js"></script>
+  <script type="module" src="assets/js/session-bootstrap.js?v=20261111-terminal-desks-1"></script>
 <script>
   (function(){
     const nav=document.querySelector('.nav-panel');
@@ -125,9 +140,9 @@
   })();
 </script>
     <script type="module">
-    import { auth, bootstrapAccount, saveUserProfile, uploadProfilePhoto, updateAuthProfile } from './assets/js/account-system.js';
+    import { auth, bootstrapAccount, saveUserProfile, uploadProfilePhoto, updateAuthProfile } from './assets/js/account-system.js?v=20260928-audit2';
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
-    import { mountNotificationBell } from './assets/js/account-ui.js';
+    import { mountNotificationBell } from './assets/js/account-ui.js?v=20260928-audit2';
     const markets = ['forex','crypto','stocks','indices','commodities','futures'];
     const marketPills = document.getElementById('marketPills');
     const selectedMarkets = new Set();
@@ -135,16 +150,18 @@
     const saveStatus = document.getElementById('saveStatus');
     const photoStatus = document.getElementById('photoStatus');
     const profilePreview = document.getElementById('profilePreview');
+    form.querySelector('button[type=submit]').disabled = true;
+    saveStatus.textContent = 'Loading profile…';
 
     function applyTheme(){
-      const t=localStorage.getItem('fynx_theme') === 'light' ? 'light' : 'dark';
+      const t=window.FynxPreferences?.getItem('fynx_theme') === 'light' ? 'light' : 'dark';
       document.body.classList.toggle('dark-mode', t==='dark');
       document.body.classList.toggle('light-mode', t==='light');
       document.documentElement.dataset.theme = t;
     }
     document.getElementById('themeBtn').addEventListener('click',()=>{
       const light = document.body.classList.contains('light-mode');
-      localStorage.setItem('fynx_theme',light?'dark':'light');
+      window.FynxPreferences?.setItem('fynx_theme',light?'dark':'light');
       applyTheme();
     });
     applyTheme();
@@ -153,6 +170,7 @@
 
     function setForm(profile){
       ['displayName','username','bio','country','timezone','preferredCurrency','experienceLevel','riskProfile'].forEach((id)=>{if(profile[id]!=null)document.getElementById(id).value=profile[id];});
+      profilePreview.dataset.photoUrl = profile.photoURL || '';
       profilePreview.src = profile.photoURL || 'https://dummyimage.com/112x112/eeeeee/666666&text=FX';
       selectedMarkets.clear();
       (profile.preferredMarkets || []).forEach((m)=>selectedMarkets.add(m));
@@ -161,20 +179,27 @@
 
     onAuthStateChanged(auth, async (user)=>{
       if(!user) return;
-      const seeded = await bootstrapAccount(user);
+      try { const seeded = await bootstrapAccount(user);
       setForm({ ...seeded.profile, displayName: seeded.profile.displayName || user.displayName || '' });
+      form.querySelector('button[type=submit]').disabled = false; saveStatus.textContent = 'Ready';
+      } catch { saveStatus.textContent = 'Could not load your profile. Check your connection and reload before editing.'; form.querySelector('button[type=submit]').disabled = true; }
     });
 
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const user = auth.currentUser;
-      if(!user) return;
+      const button = form.querySelector('button[type=submit]');
+      if (button.disabled) return;
+      if (!user) { saveStatus.textContent = 'Sign in again to save your profile.'; return; }
+      if (!navigator.onLine) { saveStatus.textContent = 'You’re offline. Reconnect to save. Your changes are still here.'; return; }
+      button.disabled = true;
       saveStatus.textContent = 'Saving...';
-      let photoURL = profilePreview.src;
+      try {
+      let photoURL = profilePreview.dataset.photoUrl || '';
       const file = document.getElementById('profilePhoto').files?.[0];
       if(file){
         try { photoStatus.textContent = 'Uploading photo...'; photoURL = await uploadProfilePhoto(user.uid, file); photoStatus.textContent = 'Photo uploaded.'; }
-        catch(err){ photoStatus.textContent = 'Upload failed. Check Firebase Storage rules.'; }
+        catch(err){ photoStatus.textContent = 'Photo upload failed. Choose an image under 5 MB and try again.'; throw err; }
       }
       const payload = {
         displayName: document.getElementById('displayName').value.trim(),
@@ -190,12 +215,17 @@
       };
       await saveUserProfile(user.uid, payload);
       await updateAuthProfile({ displayName: payload.displayName, photoURL: payload.photoURL || null });
-      localStorage.setItem('fynxUserName', payload.displayName || 'FYNX User');
+      profilePreview.dataset.photoUrl = payload.photoURL;
+      if(payload.photoURL) profilePreview.src = payload.photoURL;
+      try { localStorage.setItem('fynxUserName', payload.displayName || 'FYNX User'); } catch {}
       saveStatus.textContent = 'Saved';
+      document.getElementById('profilePhoto').value = '';
+      } catch (error) { saveStatus.textContent = 'Could not finish saving. Your changes are still here. Check your connection and try again.'; }
+      finally { button.disabled = false; }
     });
 
     mountNotificationBell();
   </script>
-  <script src="/assets/js/live-site.js" defer></script>
+
 </body>
 </html>

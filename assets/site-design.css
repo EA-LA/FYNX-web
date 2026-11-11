@@ -1,0 +1,348 @@
+/* One visual language, with explicit layouts for each kind of FYNX page. */
+:root,html[data-theme=dark]{--fynx-bg:#0b0c0c;--fynx-panel:#101212;--fynx-panel-2:#17201b;--fynx-line:#292d2c;--fynx-text:#f2f4f3;--fynx-muted:#a0a7a4;--fynx-accent:#c4dbd1;--fynx-on-accent:#111915;--fynx-shadow:none}
+html[data-theme=light]{--fynx-bg:#fff;--fynx-panel:#fff;--fynx-panel-2:#f3f5f4;--fynx-line:#e0e5e2;--fynx-text:#171c19;--fynx-muted:#626b66;--fynx-accent:#345e49;--fynx-on-accent:#fff;--fynx-shadow:none}
+html body[data-fynx-layout]{--bg-soft:var(--fynx-panel-2);--bg-2:var(--fynx-panel-2);--panel-2:var(--fynx-panel-2);--panel-soft:var(--fynx-panel-2);--surface-3:var(--fynx-panel);--text-muted:var(--fynx-muted);--text-soft:var(--fynx-muted);--text-faint:var(--fynx-muted);--border-strong:var(--fynx-line);--shadow:none;--shadow-soft:none;--radius:6px;--radius2:6px;--radius-lg:8px;--shell-bg:var(--fynx-bg);--kv-bg:var(--fynx-panel-2);--ghost-text:var(--fynx-text);--ghost-bg:var(--fynx-panel-2);--primary-bg:var(--fynx-text);--primary-border:var(--fynx-line);--chip-hover:var(--fynx-panel-2);--field-bg-focus:var(--fynx-panel-2);--toast-bg:var(--fynx-panel);--toast-text:var(--fynx-text);font-size:15px;line-height:1.65;background-image:none!important}
+body[data-fynx-layout] *,body[data-fynx-layout] *:before,body[data-fynx-layout] *:after{box-sizing:border-box}
+body[data-fynx-layout] :is(.orb,.orbs,.bg,.gridv-background){display:none!important}
+html body[data-fynx-layout] :is(h1,h2,h3,h4){font-weight:550;line-height:1.2;background-image:none;-webkit-text-fill-color:currentColor}
+html body[data-fynx-layout] :is(.card,.panel,.shell,.hero-card,.contact-card,.tool-card,.tool-item,.market-card,.news-card,.course-card,.widget,.mini-stat,.stat-card,.auth-card,.workspace-guide,.waitlist-card){border-radius:6px!important;box-shadow:none!important;border-color:var(--fynx-line)!important;background:var(--fynx-panel)!important;color:var(--fynx-text)!important;backdrop-filter:none!important}
+html body[data-fynx-layout] :is(.eyebrow,.hero-badge){display:inline-block;background:transparent!important;border:0!important;padding:0!important;color:var(--fynx-muted)!important;font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-weight:600;margin-bottom:18px}
+html body[data-fynx-layout] :is(.btn,.button,.nav-btn,.tab,.chip,.badge,.pill,.tag,.theme-btn,.filter-btn,.primary,.ghost,.secondary){border-radius:4px;box-shadow:none;font-family:inherit}
+html body[data-fynx-layout] :is(button.primary,.btn.primary,.btn-primary){background:var(--fynx-text)!important;color:var(--fynx-bg)!important;border:1px solid var(--fynx-text)!important}
+html body[data-fynx-layout] :is(.hint,.desc,.hero-desc,.note,.subtitle,.muted,.sub,.k,.label,.helper,.help,.section-note){color:var(--fynx-muted)}
+html body[data-fynx-layout] :is(input,select,textarea,button){font-family:inherit}
+html body[data-fynx-layout] :is(input,select,textarea){max-width:100%}
+html body[data-fynx-layout] :is(.card,.panel,.shell,.grid,.content,.panel-grid,.hero-copy,.hero-content,.main-content,.widget-wrap){min-width:0}
+html body[data-fynx-layout] :is(.nav-actions,.nav-right,.hero-actions,.top-actions){flex-wrap:wrap;gap:10px}
+html body[data-fynx-layout] :is(.tab.active,.filter-btn.active,.chip.active){background:var(--fynx-panel-2)!important;color:var(--fynx-accent)!important;border-color:var(--fynx-accent)!important}
+html body[data-fynx-layout=standalone]:not(.editorial-page)>header,html body[data-fynx-layout=resource]>header{position:relative;height:auto;min-height:88px;background:var(--fynx-bg)!important;border-bottom:1px solid var(--fynx-line);padding:0;box-shadow:none}
+html body[data-fynx-layout=standalone]:not(.editorial-page) :is(header .nav,header .nav-container){width:calc(100% - 80px);max-width:1280px;margin:auto;padding:20px 0;min-height:88px;gap:24px;height:auto;flex-wrap:wrap}
+html body[data-fynx-layout=standalone]:not(.editorial-page)>main,html body[data-fynx-layout=standalone]> .wrap{width:calc(100% - 80px);max-width:1280px;margin:0 auto;padding:56px 0 72px;min-width:0}
+html body[data-fynx-layout=standalone]:not(.editorial-page) .hero{display:block!important;min-height:0!important;padding:0 0 36px!important;background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important;text-align:left!important}
+html body[data-fynx-layout=standalone]:not(.editorial-page) :is(main h1,main>.shell>.title){font-size:clamp(34px,4.4vw,60px)!important;letter-spacing:-.055em!important;line-height:1.1!important;margin:0 0 24px!important;max-width:1000px}
+html body[data-fynx-layout=standalone]:not(.editorial-page) .hero p{max-width:740px;font-size:17px!important;line-height:1.75!important;margin:0 0 26px!important}
+html body[data-fynx-layout=standalone] main>.shell{padding:0;background:none!important;border:0;border-radius:0!important}
+html body[data-fynx-layout=standalone] main>.shell>.subtitle{max-width:740px;margin-bottom:32px;font-size:17px}
+html body[data-fynx-layout=standalone] :is(.panel-grid,.hero-stats){margin-top:32px}
+html body[data-fynx-layout=standalone] main>.hero-card{padding:0 0 36px;border:0;background:none!important;border-bottom:1px solid var(--fynx-line)}
+html body[data-fynx-layout=standalone] .tabbar{order:3;flex-basis:100%;display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--fynx-line);padding-top:16px}
+html body[data-fynx-layout=standalone] .hero-right{background:var(--fynx-panel-2);border-radius:6px}
+html body[data-fynx-layout=standalone] .section{margin-top:40px}
+html body[data-fynx-layout=standalone] .section-title h2{font-size:26px}
+html body[data-fynx-layout=standalone] :is(.contact-card,.founder-card){padding:28px;margin-top:24px}
+html body[data-fynx-layout=standalone] .founder-hero{padding:0 0 36px}
+.site-resource-header{display:flex;align-items:center;justify-content:space-between;gap:24px;width:calc(100% - 80px);max-width:1280px;margin:auto;padding:22px 0!important}
+.site-wordmark{font-size:23px;font-weight:700;letter-spacing:-.03em;text-decoration:none;color:var(--fynx-text)}.site-resource-header nav{display:flex;gap:24px;align-items:center}.site-resource-header nav a{text-decoration:none;font-size:13px}.site-resource-header button{background:var(--fynx-panel);border:1px solid var(--fynx-line);color:var(--fynx-text);padding:8px 12px;border-radius:4px;cursor:pointer}
+html body[data-fynx-layout=resource]{display:block;padding:0}
+html body[data-fynx-layout=resource] main.card{width:calc(100% - 80px);max-width:1280px;margin:64px auto;padding:0;border:0!important;background:none!important}
+html body[data-fynx-layout=resource] h1{font-size:clamp(36px,4.5vw,60px);letter-spacing:-.05em!important;margin:0 0 24px}
+html body[data-fynx-layout=resource] main p{font-size:17px;max-width:720px;line-height:1.8}
+html body[data-fynx-layout=resource] main p:has(a){border-top:1px solid var(--fynx-line);margin-top:32px;padding-top:24px}
+html body[data-fynx-layout=workspace]{--app-nav-item-radius:4px;--app-content-pad:32px;--app-top-height:88px}
+html body[data-fynx-layout=workspace] .top-bar{border-bottom:1px solid var(--fynx-line);box-shadow:none;min-height:88px}
+html body[data-fynx-layout=workspace] .top-bar h1{font-size:26px;letter-spacing:-.04em!important}
+html body[data-fynx-layout=workspace] .hero{padding:28px 0!important;min-height:0!important;background:none!important;box-shadow:none!important;border:0!important;overflow:visible!important}
+html body[data-fynx-layout=workspace] .hero h1{font-size:clamp(32px,4vw,52px)!important}
+html body[data-fynx-layout=workspace] :is(.nav-item,.nav-link){border-radius:4px!important;box-shadow:none!important}
+html body[data-fynx-layout=workspace] :is(.nav-item.active,.nav-link.active){background:var(--fynx-panel-2)!important;color:var(--fynx-accent)!important;border-color:var(--fynx-line)!important}
+html body[data-fynx-layout=workspace] .tools-grid{gap:20px}
+html body[data-fynx-layout=auth] .shell{box-shadow:none!important;border:1px solid var(--fynx-line);overflow:hidden}
+html body[data-fynx-layout=auth] .panel{border-radius:0!important}
+html body[data-fynx-layout=auth] h1{font-size:clamp(32px,3.3vw,48px);letter-spacing:-.05em!important}
+html body[data-fynx-layout=auth] .right{background:var(--fynx-panel-2)!important}
+html body[data-fynx-layout=landing] .hero{border-bottom:1px solid var(--fynx-line)}
+html body[data-fynx-layout=landing] :is(.feature-card,.tool-item,.course-card){padding:26px}
+html body[data-fynx-layout=landing] .section-title{font-weight:550}
+html body[data-fynx-layout] .theme-utility{position:static;flex:0 0 auto;padding:10px 13px;min-height:40px}
+html body[data-fynx-layout]>.theme-utility{position:fixed;top:auto;bottom:20px;right:20px;z-index:1200}
+@media(max-width:900px){html body[data-fynx-layout=standalone]:not(.editorial-page)>main,html body[data-fynx-layout=standalone]>.wrap,html body[data-fynx-layout=standalone]:not(.editorial-page) :is(header .nav,header .nav-container),.site-resource-header,html body[data-fynx-layout=resource] main.card{width:calc(100% - 40px)}html body[data-fynx-layout=standalone] .hero-card{grid-template-columns:1fr}html body[data-fynx-layout=workspace]{--app-content-pad:24px}}
+@media(max-width:600px){html body[data-fynx-layout=standalone]:not(.editorial-page)>main{padding-top:32px}html body[data-fynx-layout=standalone]:not(.editorial-page) :is(header .nav,header .nav-container){gap:14px;padding:16px 0}html body[data-fynx-layout=standalone] :is(.panel-grid,.hero-stats){grid-template-columns:1fr}html body[data-fynx-layout=standalone] :is(.nav-actions,.nav-right){gap:6px}html body[data-fynx-layout=standalone] :is(.nav-actions a,.nav-actions button){font-size:12px;padding:9px 12px}.site-resource-header{flex-wrap:wrap;gap:12px}.site-resource-header nav{gap:18px}.site-resource-header nav a{font-size:12px}html body[data-fynx-layout=workspace]{--app-content-pad:18px}html body[data-fynx-layout=resource] main.card{margin:36px auto}html body[data-fynx-layout=auth] .wrap{padding:20px;width:100%}}
+@media(prefers-reduced-motion:reduce){html body[data-fynx-layout] *{animation:none!important;transition:none!important}}
+/* Dashboard sections must size to their contents inside the scrolling workspace. */
+html body[data-fynx-layout=workspace] .content-area{grid-auto-rows:max-content;align-content:start;min-height:0}
+html body[data-fynx-layout=workspace] .top-bar{flex-shrink:0}
+html body[data-fynx-layout=workspace] .hero{height:auto;flex-shrink:0}
+html body[data-fynx-layout] .tradingview-widget-container>style{display:none!important}
+html body[data-fynx-layout] .top-bar-right [data-journal-theme]{display:inline-grid;place-items:center}
+html body[data-fynx-layout] .site-data-notice{max-width:850px!important;border-left:2px solid var(--fynx-accent);background:var(--fynx-panel-2);padding:14px 18px!important;font-size:13px!important;line-height:1.7!important;margin:18px 0 24px!important;color:var(--fynx-muted)!important}
+/* Keep the canvas continuous when a long page scrolls beyond the initial viewport. */
+html[data-theme=dark]{background:#0b0c0c!important}
+html[data-theme=light]{background:#fff!important}
+html body[data-fynx-layout=standalone],html body[data-fynx-layout=resource]{height:auto;min-height:100vh}
+
+/* Product workspace: consistent type, compact chrome and content-sized panels. */
+html body[data-fynx-layout=workspace]{--app-top-height:72px;--app-content-pad:28px;line-height:1.55}
+html body[data-fynx-layout=workspace] .top-bar{min-height:72px!important;height:72px!important}
+html body[data-fynx-layout=workspace] .top-bar .page-title{font-size:16px!important;line-height:1.3!important;margin:0!important;letter-spacing:-.02em!important}
+html body[data-fynx-layout=workspace] .nav-logo h1{font-size:20px!important;margin:0!important;line-height:1.2!important}
+html body[data-fynx-layout=workspace] .nav-item{position:relative}
+html body[data-fynx-layout=workspace] .nav-item.active::after{display:none}
+html body[data-fynx-layout=workspace] :is(.news-wrap.content-area,.calendar-wrap,.learn-wrap){max-width:none!important;width:100%;margin:0;min-width:0}
+html body[data-fynx-layout=workspace] :is(.module-grid,.module-grid.single){display:block}
+html body[data-fynx-layout=workspace] .module-frame{display:block;width:100%;height:900px;min-height:0!important;border:0}
+html body[data-fynx-layout=workspace] [hidden]{display:none!important}
+.module-title{display:none}.module-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.module-toolbar button,.module-open,.learning-card a{font:600 13px inherit;color:var(--fynx-text);background:var(--fynx-panel);border:1px solid var(--fynx-line);padding:10px 14px;border-radius:8px;text-decoration:none;cursor:pointer}
+.module-toolbar button[aria-pressed=true]{background:var(--fynx-accent);color:var(--fynx-on-accent);border-color:var(--fynx-accent)}.module-open{margin-left:auto}
+html body[data-fynx-layout=workspace] .hero-inner{gap:24px;align-items:flex-start}
+html body[data-fynx-layout=workspace] .hero-left{flex:0 0 240px}
+html body[data-fynx-layout=workspace] .hero h1{font-size:32px!important;letter-spacing:-.04em!important}
+html body[data-fynx-layout=workspace] .hero{padding:4px 0 20px!important}
+html body[data-fynx-layout=workspace] #tvTapeWrap{height:78px!important;min-height:0!important;padding:0!important}
+html body[data-fynx-layout=workspace] #tvTapeWrap :is(.tradingview-widget-container,.tradingview-widget-container__widget,iframe){height:78px!important;min-height:0!important}
+html body[data-fynx-layout=workspace] :is(.news-head,.live-head){flex-wrap:wrap}
+html body[data-fynx-layout=workspace] :is(.live-updated,.news-updated){white-space:normal;font-weight:500;font-size:12px}
+html body[data-fynx-layout=workspace] .news-item{padding:16px;line-height:1.6}
+.learning-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.learning-card{border:1px solid var(--fynx-line);border-radius:12px;padding:24px;background:var(--fynx-panel)}.learning-card h2{font-size:23px;margin:0 0 12px}.learning-card p{color:var(--fynx-muted);margin:0 0 24px}.learning-card>a{display:inline-block}.learning-links{display:flex;gap:12px;margin-top:18px}.learning-links a{border:0;padding:0;color:var(--fynx-accent)}.hub-intro{font-size:18px;margin:8px 0 24px}.editorial-label{font-size:11px;letter-spacing:.12em;color:var(--fynx-muted)}
+html body[data-fynx-layout=workspace] .tools-grid{grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+html body[data-fynx-layout=workspace] .tool-card{display:flex;flex-direction:column;padding:22px;border-radius:12px!important}
+html body[data-fynx-layout=workspace] .tool-desc{flex:1;font-weight:400;line-height:1.6}
+html body[data-fynx-layout=workspace] .tool-link{margin-top:18px;min-height:44px}
+html body[data-fynx-layout=workspace] .hero-card{padding:24px;border-radius:12px!important}
+html body[data-fynx-layout=workspace] .quick-calc{padding:20px;border-radius:12px}
+html body[data-fynx-layout=workspace] .calc-grid button{min-height:44px}
+html body[data-fynx-layout=workspace]>.theme-utility{display:none}
+html body[data-fynx-layout] :focus-visible{outline:2px solid var(--fynx-accent);outline-offset:3px}
+.journal-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}.journal-day{border:1px solid var(--fynx-line);border-radius:8px;padding:10px;font-size:12px}.journal-day strong{display:block;margin-top:6px}.journal-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}.journal-metrics>div{padding:16px;border:1px solid var(--fynx-line);border-radius:8px}.journal-metrics b{display:block;font-size:22px;margin-top:8px}
+@media(max-width:1000px){.learning-grid{grid-template-columns:repeat(2,minmax(0,1fr))}html body[data-fynx-layout=workspace] .hero-left{flex:auto}}
+@media(max-width:600px){html body[data-fynx-layout=workspace]{--app-content-pad:16px}html body[data-fynx-layout=workspace] .top-bar{min-height:60px!important;height:60px!important}.learning-grid{grid-template-columns:1fr}.module-open{margin-left:0}.module-toolbar button{min-height:44px}.journal-days{gap:4px}.journal-day{padding:6px;font-size:10px}html body[data-fynx-layout=workspace] .hero-inner{display:block}html body[data-fynx-layout=workspace] .hero-right{margin-top:20px}html body[data-fynx-layout=workspace] .news-item{gap:8px}html body[data-fynx-layout=workspace] .news-time{font-size:10px}html body[data-fynx-layout=workspace] :is(.news-mode-toggle,.calendar-mode-toggle){max-width:100%;flex-wrap:wrap;border-radius:10px}}
+.x-source-links{display:flex;flex-wrap:wrap;gap:10px;padding:16px}.x-source-links a{border:1px solid var(--fynx-line);border-radius:8px;padding:10px 14px;text-decoration:none;color:var(--fynx-accent);font-size:13px}.twitter-timeline{display:block;padding:18px;color:var(--fynx-accent)}
+.workspace-shortcuts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.workspace-shortcuts a{padding:12px 16px;border:1px solid var(--fynx-line);border-radius:8px;font-size:13px;color:var(--fynx-accent);text-decoration:none}.dashboard-card>a{display:inline-block;margin-top:18px;font-size:13px;color:var(--fynx-accent);text-decoration:none}
+@media(max-width:960px){html body[data-fynx-layout=workspace] .nav-menu{gap:0!important;padding:6px 2px!important;overflow:visible}html body[data-fynx-layout=workspace] .nav-item{min-width:0!important;width:14.285%!important;padding:10px 0!important;gap:6px}.nav-label{font-size:9px!important}html body[data-fynx-layout=workspace] .demo-banner{display:none}html body[data-fynx-layout=workspace] .top-bar{flex-wrap:nowrap!important}html body[data-fynx-layout=workspace] .jnav{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;padding:12px;width:100%;overflow:visible}html body[data-fynx-layout=workspace] .jbtn{min-width:0;flex:1 1 140px;padding:10px;font-size:12px;min-height:44px}html body[data-fynx-layout=workspace] .jnav>.note{display:none}}
+@media(max-width:600px){html body[data-fynx-layout=workspace] #dateChip{display:none}html body[data-fynx-layout=workspace] .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}html body[data-fynx-layout=workspace] .jt-right .pill{padding:8px}.hero-card p{font-size:15px!important;font-weight:400!important}}
+html body[data-fynx-layout=workspace] .jt-right a{color:var(--fynx-accent);text-decoration:none;font-size:12px}html body[data-fynx-layout=workspace] .stat .row{display:none}
+@media(max-width:600px){html body[data-fynx-layout=workspace] .grid.cols-12:has(>.stat){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}html body[data-fynx-layout=workspace] .grid.cols-12>.stat{grid-column:span 1!important;padding:14px}html body[data-fynx-layout=workspace] .grid.cols-12:has(>.stat)>.card{grid-column:span 2!important}}
+
+/* Keep navigation legible in both themes and profile details compact on phones. */
+html body[data-fynx-layout=workspace] .nav-item{color:var(--fynx-muted)!important}
+html body[data-fynx-layout=workspace] .nav-item.active{color:var(--fynx-accent)!important}
+html body[data-fynx-layout=workspace] .icon-btn{background:var(--fynx-panel)!important;color:var(--fynx-text)!important}
+@media(max-width:600px){html body[data-fynx-layout=workspace] .profile-header{flex-direction:column;align-items:flex-start;padding:20px;gap:16px}html body[data-fynx-layout=workspace] .profile-info{width:100%}html body[data-fynx-layout=workspace] .profile-avatar-large{width:56px;height:56px;font-size:20px}html body[data-fynx-layout=workspace] .profile-stats{grid-template-columns:repeat(2,minmax(0,1fr))}html body[data-fynx-layout=workspace] .profile-stat-item{padding:12px}html body[data-fynx-layout=workspace] .profile-stat-item h4{font-size:10px}}
+
+/* Hidden UI must not be exposed by component display rules. */
+html body[data-fynx-layout] [hidden]{display:none!important}
+
+/* [site-qa] iPhone: Safari zooms the whole page when a form field's text is under 16px, which leaves pages zoomed and misaligned after typing. Keep fields at 16px on touch phones only. */
+@media (hover:none) and (pointer:coarse) and (max-width:900px){
+  html body :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]):not([type=hidden]), textarea){ font-size:16px !important; }
+  html body select{ font-size:16px !important; }
+  html body[data-fynx-terminal] .terminal-edition select{ font-size:10px !important; }
+}
+
+/* [site-qa] 2026-11-04: 44px minimum tap targets for tool-page buttons on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  body .nav-actions a.btn,body .nav-actions button.btn,body .actions :is(button,.primary,.ghost,a.btn){min-height:44px}
+  body .nav-actions a.btn{justify-content:center}
+}
+
+/* [site-qa] 2026-11-05: 44px tap targets for Save resource and ATR Stop segmented buttons on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  body [data-save-resource]:not(.discovery-card [data-save-resource]){min-height:44px}
+  body .seg button,body .chipsRow .chip{min-height:44px}
+}
+
+/* [site-qa] 2026-11-05 run 7: 44px tap targets for Back/Home links, theme toggle, discovery header links and ATR Stop fields on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  body .nav-actions a:not(.btn),body .theme-btn,body .discovery-header .discovery-brand,body .discovery-header .discovery-button{min-height:44px;display:inline-flex;align-items:center}
+  body input.field,body select.field{min-height:44px}
+}
+
+/* [site-qa] 2026-11-05 run 8: 44px tap targets for breadcrumbs, disclosures, API sign-in link, Position Size buttons and carousel arrows on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  body .resource-wayfinding nav a,body .resource-wayfinding div a{display:inline-flex;align-items:center;min-height:44px;padding:0 4px}
+  body .resource-wayfinding button[data-save-resource]{min-height:44px}
+  body details>summary{min-height:44px;display:flex;align-items:center}
+  body .fynx-api-check a{display:inline-flex;align-items:center;min-height:44px}
+  body button.btn,body button.ghost{min-height:44px}
+}
+
+/* [site-qa] 2026-11-05 run 9: 44px tap targets for Explore search/filters/save buttons and the market ticker arrows on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  body .discovery-search input{min-height:44px}
+  body .discovery-search button,body .discovery-filters button,body .discovery-empty button{min-height:44px}
+  body .discovery-card button[data-save-resource]{width:44px;height:44px}
+  body .discovery-popular a{display:inline-flex;align-items:center;min-height:44px}
+  body .terminal-ticker-controls button{min-width:44px;min-height:44px}
+  body .terminal-ticker-item,body .terminal-ticker-label{min-height:44px;box-sizing:border-box}
+}
+@media (max-width:600px) and (pointer:coarse){
+  body .discovery-filters button{min-width:44px}
+}
+
+/* [site-qa] 2026-11-05 run 10: Explore card title links and journal Quick Add reach 44px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  body .discovery-card h3 a,body .discovery-card a.discovery-title{display:flex;align-items:center;min-height:44px}
+  body .discovery-card :is(h2,h3) a{display:flex;align-items:center;min-height:44px}
+}
+@media (max-width:600px) and (pointer:coarse){
+  body #quickAddBtn{min-height:44px;padding-inline:14px}
+}
+
+/* [site-qa] 2026-11-05 run 11: News page controls/links and homepage tabs, chips and footer links reach 44px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  body .fn-jump-tools a,body .fn-empty a,body .fn-terminal-sources-heading a,body .fn-terminal-sources a,body .fn-text-link,body .fn-media-action{display:inline-flex;align-items:center;min-height:44px}
+  body .fn-search input,body .fn-pro-card button{min-height:44px}
+  body select{min-height:44px}
+  body .fn-terminal-sources a{box-sizing:border-box}
+  body .fw-chip{display:inline-flex;align-items:center;min-height:44px}
+  body [role=tab].fw-tab,body .fw-tabs button{min-height:44px}
+  body .footer-section a{display:inline-flex;align-items:center;min-height:44px}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body .fn-search input,html body .fn-search select,html body label select,html body #resource-query,html body .discovery-search button,html body .fn-pro-card button,html body .fn-empty button,html body [data-refresh],html body main button{min-height:44px!important}
+  html body .fn-jump-tools a,html body .fn-jump>a,html body .fw-chip,html body a.btn,html body .hero a[href]{min-height:44px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
+  html body .fn-terminal-sources a,html body .fn-section-heading a{min-height:44px;display:inline-flex;align-items:center}
+}
+/* [site-qa] 2026-11-05 run 12: 44px tap targets for homepage hero/newsroom links, theme button and resource-page header/A-Z links on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  html body[data-fynx-layout=landing] .hero .btn,html body .fw-front-news-heading nav a,html body a.fw-primary{min-height:44px!important;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box}
+  html body .fynx-network-theme,html body a.fw-link{min-width:44px!important;min-height:44px!important;box-sizing:border-box}html body a.fw-link{display:inline-flex;align-items:center}
+  html body .site-resource-header .site-wordmark,html body .site-resource-header nav a,html body .site-resource-header button{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body .site-resource-header nav{gap:12px}
+  html body .alpha-link{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;box-sizing:border-box}
+}
+/* [site-qa] 2026-11-05 run 13: Learn hub card links (Start learning, Quiz, Glossary, Open quizzes) reach 44px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  html body[data-fynx-terminal] .learning-card>a,html body[data-fynx-terminal] .learning-links a,html body .learning-card>a,html body .learning-links a,html body a.terminal-solid-link{display:inline-flex;align-items:center;min-height:44px!important;box-sizing:border-box}
+  html body .learning-links{gap:8px 18px;flex-wrap:wrap}
+}
+
+/* [site-qa] 2026-11-05 run 14: Trader Journal header chips (API, Pro tools & plans, Sign in) and Account settings reach 44px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  html body .top-bar-right a.chip,html body .top-bar a,html body .jt-right .pill>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+
+/* [site-qa] 2026-11-05 run 15: About/company header (logo, Menu, theme) and section links reach 44px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  html body .company-header :is(.company-wordmark,.company-menu,.company-theme,nav a){display:inline-flex;align-items:center;min-height:44px!important;box-sizing:border-box}
+  html body.company-page .company-footer a{display:inline-flex;align-items:center;min-height:44px}
+  html body .company-theme{min-width:44px;justify-content:center}
+  html body .company-shell a[href^="#"]{display:inline-flex;align-items:center;min-height:44px}
+}
+
+/* [site-qa] 2026-11-05 run 17: standalone arrow/credit/email links on Pro, Dashboard, Contact and homepage reach 44px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  html body :is(.hero-links,.nr-section-head,.nr-actions,.nr-process,.finance-voice-links,.fw-live-news,.contact-item,.work-title,.free-note,.nr-source-note) a,
+  html body :is(h3,th,figcaption)>a,
+  html body a.email-link,
+  html body figcaption a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body #briefing-title~a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body :is(.nr-quick-links) a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+
+/* [site-qa] 2026-11-06 run 18: tool-page header, rail, refresh, chip and source links reach 44px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  html body :is(.discovery-header nav a,.discovery-header nav button,.tool-profile-aside a,.product-start a.discovery-textlink,.sidebar-foot a,.macro-header a,.macro-header nav a,.desk-storage .text-button,.panel-heading button.secondary,.toolbar .segmented button,.chip button,.pill,.actions>a){display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;box-sizing:border-box}
+  html body .desk-storage .text-button{padding:3px 10px}
+  html body section.section>div>a[target=_blank]{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body input#query{min-height:44px;box-sizing:border-box}
+  html body .check-label{min-height:44px;display:flex;align-items:center;gap:8px}
+  html body .check-label input[type=checkbox]{width:24px;height:24px}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body button.secondary,html body a.discovery-textlink,html body .search-row input,html body .search-row input[type=search]{min-height:44px!important;box-sizing:border-box}
+  html body a.discovery-textlink{display:inline-flex;align-items:center}
+  html body section.section a[target=_blank],html body .macro-source a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body .macro-card a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body main>.shell>p>a:only-of-type,html body main p>a[target=_blank]:only-child,html body .network-help a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body main .shell>p:has(>a[href*="tools/"]) a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body main.card>p>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+
+/* [site-qa] 2026-11-06 run 20: form fields and standalone links on account, partners, quant and disclosure pages reach 44px / 16px on touch phones. */
+@media (max-width:600px) and (pointer:coarse){
+  html body :is(.field,.form-grid,.settings-grid,form) :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea){min-height:44px;font-size:16px;box-sizing:border-box}
+  html body :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea){font-size:16px}
+  html body :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select){min-height:44px;box-sizing:border-box}
+  html body :is(.partners-nav a,.partner-nav a,nav.jump a,.page-top a,.back-link,a[href="index.html"],a[href="/"],a[href="partners.html"],a[href="risk-disclosure.html"],a[href="affiliate-disclosure.html"]):not(p a){display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body main p a[href="partners.html"],html body main p a[href="risk-disclosure.html"],html body main p a[href="affiliate-disclosure.html"]{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body :is(.params,.row,.data-controls) :is(input:not([type=checkbox]):not([type=radio]):not([type=file]),select){min-height:44px!important;font-size:16px!important;box-sizing:border-box}
+  html body .network-index a,html body .owner-shell>a:first-child{display:flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+@media (max-width:600px) and (pointer:coarse){
+  html body :is(.btn,button) {min-height:44px}
+  html body label.note select,html body label.note input:not([type=checkbox]):not([type=radio]),html body select#metric{min-height:44px!important;font-size:16px!important;box-sizing:border-box}
+  html body main p>a[href*="news"]:only-child{display:inline-flex;align-items:center;min-height:44px}
+}
+@media (max-width:600px){
+  html body[data-fynx-layout="landing"] .hero .cta-buttons{display:flex;flex-direction:column;align-items:stretch;gap:12px}
+  html body[data-fynx-layout="landing"] .hero .cta-buttons .btn{width:100%;max-width:360px;margin-left:auto;margin-right:auto;justify-content:center;box-sizing:border-box}
+}
+/* Lesson pages: 44px tap targets for jump links, source links and path links on touch phones */
+@media (max-width:600px) and (pointer:coarse){
+  html body .lesson-toc{gap:0 20px}
+  html body .lesson-toc a,html body .lesson-source>a,html body .lesson-article a.discovery-textlink,html body .lesson-aside>a{display:flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body .lesson-toc a{display:inline-flex}
+  html body .lesson-aside li{padding-bottom:0}
+  html body .lesson-aside li>a{display:flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body .lesson-sequence a{display:block;min-height:44px;box-sizing:border-box;padding:4px 0}
+}
+
+/* [site-qa] run 25: 44px footer links on discovery/lesson pages and About "Read the Journal" link on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .discovery-footer>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body .ecosystem-footnote>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+
+/* [site-qa] run 27: 44px nav links in header lists (partners/disclosures), source links in paragraphs on Connection Help, Quant Analyst note link. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body header nav li>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body.discovery-page main p>a:only-child,html body main>section>p>a[href^="http"]:only-child{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body .side button.mkt{min-height:44px}
+  html body .note>a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+
+/* [site-qa] run 29: 44px-wide News refresh / Tokyo map pin and homepage "Markets" tab on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .fn-refresh,html body .fn-map-pin,html body .fw-tabs button{min-width:44px;box-sizing:border-box}
+}
+
+/* [site-qa] run 30: 44px source links on News and exchange links on Market Holidays on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .fn-release-sources>p>a,html body .fn-terminal-sources a{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body .legendRow .rightNote>p{display:flex;flex-wrap:wrap;align-items:center;gap:0 8px}
+  html body .legendRow .rightNote>p>a{display:inline-flex;align-items:center;min-height:44px;min-width:44px;justify-content:center;box-sizing:border-box}
+}
+
+/* [site-qa] run 32: 44px source-note links in research-tool footers and the economic calendar link on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .desk-sources.tool-explainer a[target=_blank]{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+  html body .tool-note a[href$="economic-calendar.html"],html body p>a[href="economic-calendar.html"]{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
+}
+
+/* [site-qa] run 33: Learn hub Quiz/Glossary links and short header links at least 44px wide on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .learning-links a{min-width:44px;justify-content:center;box-sizing:border-box}
+}
+
+/* [site-qa] run 60: breadcrumb (Home / Tools / News), news and resource-page header links, discovery/news/homepage footer links at least 44px wide on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .resource-wayfinding nav a,html body .discovery-footer>a,html body .footer-section a,html body .newsroom-breadcrumb a,html body .newsroom-footer nav a,html body .terminal-public-masthead nav>a,html body .site-resource-header nav a{min-width:44px!important;justify-content:center;box-sizing:border-box}
+}
+
+/* [site-qa] run 61: short source links in "Chart or live data unavailable?" (e.g. BLS), workspace top-bar icon buttons and "Open full page" links at least 44x44 on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .network-help a{min-width:44px;justify-content:center}
+  html body[data-fynx-layout=workspace] .top-bar-right .icon-btn{min-width:44px;min-height:44px;box-sizing:border-box}
+  html body .module-open{display:inline-flex;align-items:center;justify-content:center;min-height:44px;box-sizing:border-box}
+}
+/* [site-qa] run 62: company footer Privacy/Terms links, photo-credit links in figure captions and workspace top-bar icon buttons without .top-bar-right (Security) at least 44px wide on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .footer-baseline a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;box-sizing:border-box}
+  html body figcaption a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;box-sizing:border-box}
+  html body[data-fynx-layout=workspace] .top-bar .icon-btn{min-width:44px;min-height:44px;box-sizing:border-box}
+}
+/* [site-qa] run 65: lesson breadcrumbs (Home / Learn / Forex) at least 44px wide on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .discovery-breadcrumb a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;box-sizing:border-box}
+}

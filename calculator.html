@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <script>
     (function(){
-      const t = localStorage.getItem("fynx_theme") === "light" ? "light" : "dark";
+      const t = window.FynxPreferences?.getItem("fynx_theme") === "dark" ? "dark" : "light";
       document.documentElement.dataset.theme = t;
       document.documentElement.style.backgroundColor = t === "light" ? "#fbfbfb" : "#000000";
     })();
   </script>
-
-  <title>FYNX Finance World - Calculators</title>
-
+  <title>Trading Calculators: Forex, Stocks, Risk &amp; Options | FYNX</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet" />
-
+  <link rel="stylesheet" href="assets/css/app-shell.css" />
+  <link rel="stylesheet" href="assets/css/mobile-fixes.css">
   <style>
     :root{
       /* ===== Monochrome System ===== */
@@ -28,16 +28,12 @@
       --chip: rgba(11, 11, 11, 0.05);
       --chip-strong: rgba(11, 11, 11, 0.08);
       --surface-2: rgba(11, 11, 11, 0.08);
-
       --shadow: 0 18px 38px rgba(0, 0, 0, 0.06);
-
       --radius-lg: 18px;
       --radius-md: 14px;
       --radius-sm: 12px;
-
       --focus: 0 0 0 3px rgba(11, 11, 11, 0.18);
     }
-
     body.dark-mode{
       --bg: #000000;
       --panel: #0b0b0b;
@@ -47,25 +43,19 @@
       --chip: rgba(243, 243, 243, 0.08);
       --chip-strong: rgba(243, 243, 243, 0.12);
       --surface-2: rgba(243, 243, 243, 0.10);
-
       --shadow: 0 20px 44px rgba(0, 0, 0, 0.55);
-
       --focus: 0 0 0 3px rgba(243, 243, 243, 0.18);
     }
-
     *{ margin:0; padding:0; box-sizing:border-box; }
-
     body{
       font-family:"Manrope", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: var(--text);
       min-height:100vh;
-
       /* Light: micro-dots (monochrome) */
       background:
         radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.06) 1px, transparent 1px) 0 0 / 18px 18px,
         linear-gradient(var(--bg), var(--bg));
     }
-
     body.dark-mode{
       /* Dark: subtle grid (monochrome) */
       background:
@@ -75,9 +65,7 @@
         radial-gradient(circle at 70% 0%, rgba(255, 255, 255, 0.04) 0%, transparent 40%),
         linear-gradient(var(--bg), var(--bg));
     }
-
     .dashboard-container{ display:flex; min-height:100vh; }
-
     /* ===== Sidebar ===== */
     .nav-panel{
       width: 112px;
@@ -88,7 +76,6 @@
       z-index: 10;
       backdrop-filter: blur(10px);
     }
-
     .nav-logo{
       height: 88px;
       display:grid;
@@ -99,7 +86,6 @@
       letter-spacing: -1px;
       color: var(--text);
     }
-
     .nav-menu{
       padding: 16px 10px;
       display:flex;
@@ -107,7 +93,6 @@
       gap: 10px;
       align-items:center;
     }
-
     .nav-item{
       width: 90px;
       text-align:center;
@@ -119,7 +104,6 @@
       border: 1px solid transparent;
       transition: 0.18s ease;
       font-weight: 800;
-
       /* ✅ FIX: lock layout so items never jump (no wrapping / no height changes) */
       height: 48px;
       display: flex;
@@ -130,25 +114,21 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     .nav-item:hover{
       background: var(--chip);
       color: var(--text);
       border-color: var(--line);
       transform: translateY(-1px);
     }
-
     .nav-item.active{
       background: var(--chip-strong);
       color: var(--text);
       border-color: color-mix(in oklab, var(--text) 18%, var(--line));
     }
-
     .main-content{
       margin-left: 112px;
       width: calc(100% - 112px);
     }
-
     /* ===== Top Bar ===== */
     .top-bar{
       height: 76px;
@@ -163,7 +143,6 @@
       justify-content:space-between;
       padding: 0 24px;
     }
-
     .title-wrap h1{
       font-size: 20px;
       font-weight: 800;
@@ -175,12 +154,9 @@
       margin-top: 2px;
       font-weight: 700;
     }
-
     .top-actions{ display:flex; align-items:center; gap:12px; }
-
     /* Theme button removed here (ONLY on profile.html) */
     .theme-btn{ display:none; }
-
     .avatar{
       border: 1px solid var(--line);
       background: var(--panel);
@@ -193,17 +169,14 @@
       cursor:pointer;
       transition: 0.18s ease;
     }
-
     .avatar:hover{
       transform: translateY(-1px);
       border-color: color-mix(in oklab, var(--text) 18%, var(--line));
     }
-
     .avatar:focus-visible{
       outline: none;
       box-shadow: var(--focus);
     }
-
     .avatar{
       display:grid;
       place-items:center;
@@ -211,9 +184,7 @@
       padding:0;
       letter-spacing: -0.2px;
     }
-
     .content-area{ padding: 24px; display:grid; gap:14px; }
-
     /* ===== Hero Row ===== */
     .hero{
       display:grid;
@@ -221,7 +192,6 @@
       gap: 16px;
       margin-bottom: 8px;
     }
-
     .hero-card, .quick-calc{
       background: color-mix(in oklab, var(--panel) 92%, transparent);
       border: 1px solid var(--line);
@@ -229,9 +199,7 @@
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
     }
-
     .hero-card{ padding: 20px; }
-
     .hero-badge{
       display:inline-flex;
       align-items:center;
@@ -241,20 +209,17 @@
       font-weight: 900;
       padding: 7px 10px;
       margin-bottom: 12px;
-
       /* monochrome badge */
       background: var(--text);
       color: var(--bg);
       border: 1px solid color-mix(in oklab, var(--text) 70%, transparent);
       letter-spacing: 0.4px;
     }
-
     body.dark-mode .hero-badge{
       background: var(--panel);
       color: var(--text);
       border: 1px solid rgba(243, 243, 243, 0.22);
     }
-
     .hero h2{
       font-size: 28px;
       line-height: 1.08;
@@ -262,16 +227,13 @@
       margin-bottom: 8px;
       font-weight: 900;
     }
-
     .hero p{
       color: var(--muted);
       max-width: 62ch;
       font-weight: 700;
     }
-
     /* ===== Quick Calc ===== */
     .quick-calc{ padding: 18px; }
-
     .calc-display{
       border: 1px solid var(--line);
       background: var(--chip);
@@ -284,13 +246,11 @@
       min-height: 64px;
       letter-spacing: -0.6px;
     }
-
     .calc-grid{
       display:grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
     }
-
     .calc-btn{
       border: 1px solid var(--line);
       background: var(--panel);
@@ -301,27 +261,21 @@
       cursor:pointer;
       transition: 0.16s ease;
     }
-
     .calc-btn:hover{ transform: translateY(-1px); border-color: color-mix(in oklab, var(--text) 18%, var(--line)); }
-
     .calc-btn:focus-visible{ outline:none; box-shadow: var(--focus); }
-
     .calc-btn.op{
       background: var(--chip);
     }
-
     .calc-btn.eq{
       background: var(--text);
       color: var(--bg);
       border-color: color-mix(in oklab, var(--text) 60%, transparent);
     }
-
     body.dark-mode .calc-btn.eq{
       background: #f3f3f3;
       color: #0b0b0b;
       border-color: rgba(243, 243, 243, 0.40);
     }
-
     /* ===== Filters ===== */
     .filters{
       display:flex;
@@ -330,7 +284,6 @@
       gap: 12px;
       margin-bottom: 14px;
     }
-
     .search{
       width: 100%;
       max-width: 440px;
@@ -344,29 +297,24 @@
       backdrop-filter: blur(10px);
       transition: 0.18s ease;
     }
-
     .search::placeholder{ color: color-mix(in oklab, var(--muted) 80%, transparent); }
-
     .search:focus{
       outline: none;
       box-shadow: var(--focus);
       border-color: color-mix(in oklab, var(--text) 18%, var(--line));
     }
-
     .count{
       color: var(--muted);
       font-size: 13px;
       font-weight: 800;
       white-space: nowrap;
     }
-
     /* ===== Tools Grid ===== */
     .tools-grid{
       display:grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 14px;
     }
-
     .tool-card{
       background: color-mix(in oklab, var(--panel) 92%, transparent);
       border: 1px solid var(--line);
@@ -379,25 +327,21 @@
       gap: 11px;
       backdrop-filter: blur(10px);
     }
-
     .tool-card:hover{
       transform: translateY(-3px);
       border-color: color-mix(in oklab, var(--text) 18%, var(--line));
     }
-
     .tool-head{
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap: 8px;
     }
-
     .tool-title{
       font-size: 16px;
       font-weight: 900;
       letter-spacing: -0.2px;
     }
-
     .tool-chip{
       font-size: 11px;
       font-weight: 900;
@@ -408,14 +352,12 @@
       padding: 4px 8px;
       letter-spacing: 0.35px;
     }
-
     .tool-desc{
       font-size: 13px;
       color: var(--muted);
       min-height: 34px;
       font-weight: 700;
     }
-
     .tool-link{
       margin-top:auto;
       text-decoration:none;
@@ -429,23 +371,19 @@
       font-weight: 900;
       transition: 0.18s ease;
     }
-
     .tool-link:hover{
       transform: translateY(-1px);
       filter: brightness(1.03);
     }
-
     body.dark-mode .tool-link{
       background: #f3f3f3;
       color: #0b0b0b;
       border-color: rgba(243, 243, 243, 0.45);
     }
-
     /* ===== Responsive ===== */
     @media (max-width: 980px){
       .hero{ grid-template-columns: 1fr; }
     }
-
     @media (max-width: 760px){
       .nav-panel{ width: 82px; }
       .main-content{ margin-left: 82px; width: calc(100% - 82px); }
@@ -453,7 +391,6 @@
       .content-area{ padding: 14px; }
       .hero h2{ font-size: 24px; }
     }
-
     /* iPhone: make outer nav a bottom bar */
     @media (max-width: 720px){
       .nav-panel{
@@ -480,7 +417,6 @@
         min-width:56px;
         padding:10px 10px;
         border-radius:12px;
-
         /* ✅ keep iPhone behavior exactly as-is */
         height: auto;
         line-height: normal;
@@ -488,23 +424,18 @@
         overflow: visible;
         text-overflow: clip;
       }
-
       .main-content{
         margin-left:0;
         width:100%;
         padding-bottom: calc(88px + env(safe-area-inset-bottom));
       }
-
       .top-bar{
         padding: 0 14px;
         height: 72px;
       }
-
       .content-area{ padding: 14px; }
-
       .hero-card{ padding: 16px; }
       .hero h2{ font-size: 22px; }
-
       .filters{
         flex-direction:column;
         align-items:stretch;
@@ -514,13 +445,50 @@
       .count{ text-align:left; }
     }
   </style>
-  <link rel="stylesheet" href="assets/css/app-shell.css" />
-  <link rel="stylesheet" href="assets/css/mobile-fixes.css">
-  <script type="module" src="assets/js/session-bootstrap.js"></script>
+  <script type="module" src="assets/js/session-bootstrap.js?v=20261111-terminal-desks-1"></script>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
+<meta name="description" content="Explore trading calculators for position size, pip value, margin, risk-reward, options and compounding. Plan trades using your own inputs.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<script src="/assets/js/basic-calculator.js?v=20261012" defer></script>
+<link rel="canonical" href="https://www.fynxfinanceworld.com/calculator.html">
+<meta property="og:title" content="Trading Calculators: Forex, Stocks, Risk &amp; Options | FYNX">
+<meta property="og:description" content="Explore trading calculators for position size, pip value, margin, risk-reward, options and compounding. Plan trades using your own inputs.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/calculator.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261012" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Trading Calculators: Forex, Stocks, Risk & Options","item":"https://www.fynxfinanceworld.com/calculator.html"}]}</script><!-- discovery-schema:end -->
+<!-- search-identity:start --><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.fynxfinanceworld.com/#organization","name":"FYNX","alternateName":"FYNX Finance World","url":"https://www.fynxfinanceworld.com/","founder":{"@id":"https://ea-la.github.io/#person"},"sameAs":["https://www.fynxfunded.com/","https://site.fynxfinanceworld.com/","https://blog.fynxfinanceworld.com/","https://roadmap.fynxfinanceworld.com/"]},{"@type":"Person","@id":"https://ea-la.github.io/#person","name":"Elham Amini","url":"https://ea-la.github.io/","jobTitle":"Founder of FYNX","sameAs":["https://www.linkedin.com/in/elham-amini-745560302/","https://www.instagram.com/___elham_amini___/"],"worksFor":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebSite","@id":"https://www.fynxfinanceworld.com/#website","url":"https://www.fynxfinanceworld.com/","name":"FYNX Finance World","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebPage","@id":"https://www.fynxfinanceworld.com/calculator.html#webpage","url":"https://www.fynxfinanceworld.com/calculator.html","name":"Trading Calculators: Forex, Stocks, Risk & Options | FYNX","description":"Explore trading calculators for position size, pip value, margin, risk-reward, options and compounding. Plan trades using your own inputs.","inLanguage":"en","isPartOf":{"@id":"https://www.fynxfinanceworld.com/#website"},"publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}}]}</script><!-- search-identity:end -->
+<!-- FYNX ADSENSE VERIFICATION START -->
+<script>(window.adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 1;</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
+     crossorigin="anonymous"></script>
+<!-- FYNX ADSENSE VERIFICATION END -->
+<!-- terminal-design:start -->
+<link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
+<link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
+<script src="/assets/js/news-reader-links.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/newsroom-editions.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/news-preferences.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/newsroom-media.js?v=20261111-terminal-desks-1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261111-terminal-desks-1">
+<script src="/assets/js/market-intelligence-data.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/terminal-market-ui.js?v=20261111-terminal-desks-1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261030-r1">
+<script src="/assets/js/terminal-pages.js?v=20261030-r1" defer></script>
+<!-- terminal-design:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
 </head>
 
-<body>
-  <div class="dashboard-container">
+<body data-protected-page="false" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD" data-fynx-terminal>
+<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
+<div class="dashboard-container">
     <nav class="nav-panel">
       <div class="nav-logo">FYNX</div>
       <div class="nav-menu">
@@ -547,30 +515,32 @@
       </header>
 
       <section class="content-area">
-        <div class="hero">
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<div class="hero">
           <div class="hero-card">
-            <span class="hero-badge">FYNX PRO TOOLS</span>
-            <h2>All Calculators in One Place</h2>
-            <p>Fast access, clean UX, and a unified black/white system. Risk, options, forex, stocks, and market timing—built as one suite.</p>
+            <span class="hero-badge">FYNX TRADING TOOLS</span>
+            <h2>Plan your next trade</h2>
+            <p>Size your position, understand your risk, and compare outcomes before you enter.</p>
           </div>
 
-          <div class="quick-calc">
-            <div class="calc-display" id="display">0</div>
-            <div class="calc-grid" id="calcGrid"></div>
+          <div class="quick-calc" data-basic-calculator tabindex="0" role="group" aria-label="Basic calculator">
+            <div class="calc-display" id="display" data-calc-display role="status" aria-live="polite">0</div>
+            <div class="calc-grid" id="calcGrid" data-calc-grid></div>
           </div>
         </div>
 
         <div class="filters">
-          <input id="searchInput" class="search" type="text" placeholder="Search calculators..." />
-          <div class="count" id="countText">0 tools</div>
+          <input id="searchInput" aria-label="Search calculators" class="search" type="text" placeholder="Search calculators..." />
+          <div class="count" id="countText">62 tools</div>
         </div>
 
-        <div class="tools-grid" id="toolsGrid"></div>
-      </section>
+        <div class="tools-grid" id="toolsGrid"><article class="tool-card"><div class="tool-head"><h3 class="tool-title">ATR Stop-Loss Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.</p><a class="tool-link" href="/tools/atr-stop.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">AUD/USD Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/audusd/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Basic Calculator: Arithmetic, Percentages &amp; Parentheses</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Calculate arithmetic and percentages locally with a keyboard-friendly calculator. Supports decimals, parentheses and standard order of operations.</p><a class="tool-link" href="/tools/basic-calculator.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Browser Price Alerts &amp; Percentage Crossing Alerts</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Set one-time price or percentage crossing alerts for your watchlist while the FYNX page is open and visible. Review timestamps and browser notification options.</p><a class="tool-link" href="/tools/price-alerts.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">BTC/USD Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/btcusd/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Central Bank Policy Rate Comparison</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Compare published central bank policy-rate observations from the Bank for International Settlements, with dates and source context.</p><a class="tool-link" href="/tools/interest-rates.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Company Financial Statements &amp; SEC Research</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Read annual company revenue, net income and cash flow from SEC EDGAR filings. Compare up to ten annual periods with links to the original filings.</p><a class="tool-link" href="/tools/company-financials.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Company Research Assistant &amp; Sourced Financial Briefs</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Create a sourced company research brief from SEC financial facts, with optional on-device AI when supported by your browser.</p><a class="tool-link" href="/tools/financial-research-assistant.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Company Screener: Revenue, Profit &amp; Cash Flow</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Filter up to 30 companies you select by annual revenue, net margin, positive net income and operating cash flow using SEC company facts.</p><a class="tool-link" href="/tools/company-screener.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Compound Growth &amp; Savings Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Estimate compound growth using starting capital, return assumptions and recurring deposits for savings or investing scenarios.</p><a class="tool-link" href="/tools/compound.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Crypto Position Size &amp; Profit Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Estimate crypto position size, trading costs, exit value, profit or loss and break-even price using your own assumptions.</p><a class="tool-link" href="/tools/crypto.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Curated Macro &amp; Trading Research Topics</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Browse curated economic and trading research topics for further study. This editorial reference is not a live news or discussion feed.</p><a class="tool-link" href="/tools/recent-topics-discussed.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Currency Conversion Calculator: Manual Rates</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Convert currencies using a verified exchange rate you enter. The calculator does not provide live exchange rates.</p><a class="tool-link" href="/tools/currency.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Debt Payoff &amp; Interest Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Estimate how long debt repayment takes, total interest and the effect of changing a monthly payment.</p><a class="tool-link" href="/tools/debt-payoff.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Economic Calendar: Releases &amp; Central Bank Events</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.</p><a class="tool-link" href="/tools/economic-calendar.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Economic Event Reminder Planner</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Plan reminders for economic events such as inflation releases, employment reports and central bank decisions.</p><a class="tool-link" href="/tools/calendar-alerts.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Edge Radar: Market Regimes &amp; Strategy Fit</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">ETH/USD Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/ethusd/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">EUR/GBP Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/eurgbp/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">EUR/JPY Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/eurjpy/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">EUR/USD Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/eurusd/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Fibonacci Retracement &amp; Extension Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Calculate Fibonacci retracement and extension levels from a swing high and low to study potential price levels.</p><a class="tool-link" href="/tools/fibonacci.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Forex Margin &amp; Leverage Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.</p><a class="tool-link" href="/tools/margin.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Forex Pip Value Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.</p><a class="tool-link" href="/tools/pip.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Forex Position Size &amp; Risk Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</p><a class="tool-link" href="/tools/position-size.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Forex Trade Planning Calculators</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Plan a forex trade with links to position sizing and pip value calculators using your account and risk inputs.</p><a class="tool-link" href="/tools/forex.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Forex Trading Sessions &amp; Market Hours</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Review market session timing and trading hours to plan when to research and monitor financial markets.</p><a class="tool-link" href="/tools/market-hours.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Free Research Desk: Financials, Screener, Backtesting &amp; Portfolio</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Research SEC company financials, screen your company list, explore market heatmaps, backtest strategies, track a manual portfolio and set browser alerts. Seven free FYNX research tools.</p><a class="tool-link" href="/tools/research-desk.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Free Trading Journal: Record Trades &amp; Review Realized Results</h3><span class="tool-chip">Free account</span></div><p class="tool-desc">Keep your plan, actual realized result and review notes together. A free FYNX account lets you save trades and return to your history across signed-in sessions.</p><a class="tool-link" href="/tools/trading-journal.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">GBP/JPY Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/gbpjpy/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">GBP/USD Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/gbpusd/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">GDP, Inflation &amp; Unemployment Indicators</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Compare published World Bank GDP growth, inflation and unemployment observations. Review dates and source information with each indicator.</p><a class="tool-link" href="/tools/economic-indicators-heatmap.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Liquidation Risk &amp; Leverage Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Estimate liquidation price and distance for a leveraged trade using your inputs. Compare risk before choosing a position size.</p><a class="tool-link" href="/tools/liquidation-guard.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Manual Portfolio Tracker &amp; Position Valuation</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Track manually entered USD positions and cash with public indicative prices. Portfolio records are stored in your browser, with import and export controls.</p><a class="tool-link" href="/tools/portfolio-tracker.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Market Heatmap: Stocks, ETFs, Crypto &amp; Forex</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Compare percentage changes across stocks, ETFs, crypto, forex and your watchlist with equal-size tiles and timestamps for each public quote.</p><a class="tool-link" href="/tools/research-heatmap.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Market Holiday Planning Reference</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Review a partial market holiday planning reference for 2025–2028. Confirm closures and early closing times with the relevant exchange.</p><a class="tool-link" href="/tools/market-holidays.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Market Returns Correlation Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Calculate the correlation between two return series to compare market behavior and potential overlapping exposure.</p><a class="tool-link" href="/tools/correlation.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Moving Average Strategy Backtester</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Backtest a long-only moving average crossover with historical daily prices or your CSV. Set commission, slippage and fast and slow moving averages.</p><a class="tool-link" href="/tools/strategy-backtester.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">NAS100 Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/nas100/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">NZD/USD Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/nzdusd/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Options Profit &amp; Loss Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Estimate call and put option profit or loss at expiration using strike price, premium, contract count and underlying price.</p><a class="tool-link" href="/tools/options.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Pivot Point Support &amp; Resistance Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Calculate classic pivot points and support and resistance levels from the previous period&#39;s high, low and closing price.</p><a class="tool-link" href="/tools/pivot.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Portfolio Stress Test: Exposure, Leverage &amp; Price Shocks</h3><span class="tool-chip">Plus or higher</span></div><p class="tool-desc">Estimate the effect of one parallel price shock on a set of signed position values. Compare gross exposure, net exposure and the resulting account equity.</p><a class="tool-link" href="/tools/portfolio-stress-test.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Position Risk Planner: Contract Size, Stop Risk &amp; Reward</h3><span class="tool-chip">Essential or higher</span></div><p class="tool-desc">Turn an explicit loss budget into position units using your entry, stop, target, contract multiplier and currency conversion assumptions.</p><a class="tool-link" href="/tools/position-risk-planner.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Quant Analyst: Backtests, Portfolio &amp; Monte Carlo</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Research ATR breakout and news strategies using attributed historical data, walk-forward optimization, portfolio analysis and reproducible risk simulations.</p><a class="tool-link" href="/quant-analyst.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Risk-to-Reward Ratio Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</p><a class="tool-link" href="/tools/risk-reward.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">SPX500 Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/spx500/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Stock Position Sizing Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Calculate a stock trade&#39;s position size and risk from account size, risk percentage, entry price and stop price.</p><a class="tool-link" href="/tools/stock.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Symbol News Search: Stocks, Forex &amp; Crypto Headlines</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Search financial headlines for a ticker or market symbol. Review the source and publication time, then open the original report for context.</p><a class="tool-link" href="/tools/symbol-news.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Trading Break-Even Price Calculator</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Calculate a trade&#39;s estimated break-even price using position size, fees and spread assumptions.</p><a class="tool-link" href="/tools/breakeven.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Trading Drawdown Simulator: 500 Hypothetical Equity Paths</h3><span class="tool-chip">Professional or higher</span></div><p class="tool-desc">Explore how repeated wins and losses could affect equity under fixed assumptions. Compare simulated ending balances and drawdown across 500 paths.</p><a class="tool-link" href="/tools/drawdown-simulator.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Trading Journal Analytics: Expectancy, Profit Factor &amp; Drawdown</h3><span class="tool-chip">Essential or higher</span></div><p class="tool-desc">Understand what your recorded trades say about your process. Journal intelligence summarizes realized results from your own saved trading history.</p><a class="tool-link" href="/tools/journal-analytics.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Trading Journal CSV Export for Spreadsheet Analysis</h3><span class="tool-chip">Essential or higher</span></div><p class="tool-desc">Download dated Journal records as a CSV file for your own spreadsheet review. Keep a portable copy of the values you recorded in FYNX.</p><a class="tool-link" href="/tools/journal-export.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Trading Process Review: Plan, Risk, Execution &amp; Lessons</h3><span class="tool-chip">Essential or higher</span></div><p class="tool-desc">Keep a written trade thesis and review five observable parts of your process. Save the reasoning alongside a checklist you can revisit later.</p><a class="tool-link" href="/tools/trading-process-review.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Trading Research Watchlists: Symbols, Notes &amp; News Links</h3><span class="tool-chip">Essential or higher</span></div><p class="tool-desc">Save a focused list of symbols with research notes. Return to the same questions and open symbol-specific news from each result.</p><a class="tool-link" href="/tools/research-watchlists.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">Trading Risk Scenario Comparison: Four Position Budgets</h3><span class="tool-chip">Essential or higher</span></div><p class="tool-desc">Compare four position sizes while keeping the same entry, stop, target and contract assumptions. See how changing the risk budget changes both modeled loss and reward.</p><a class="tool-link" href="/tools/scenario-comparison.html">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">US30 Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/us30/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">USD/CAD Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/usdcad/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">USD/CHF Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/usdchf/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">USD/JPY Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/usdjpy/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">XAG/USD Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/xagusd/">Open tool →</a></article><article class="tool-card"><div class="tool-head"><h3 class="tool-title">XAU/USD Edge Radar</h3><span class="tool-chip">Free tool</span></div><p class="tool-desc">Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</p><a class="tool-link" href="/edge-radar/xauusd/">Open tool →</a></article></div>
+      <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/atr-stop.html"><strong>ATR Stop-Loss Calculator</strong><span>Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.</span></a><a href="/edge-radar/audusd/"><strong>AUD/USD Edge Radar</strong><span>Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.</span></a><a href="/tools/basic-calculator.html"><strong>Basic Calculator: Arithmetic, Percentages &amp; Parentheses</strong><span>Calculate arithmetic and percentages locally with a keyboard-friendly calculator. Supports decimals, parentheses and standard order of operations.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</section>
     </main>
   </div>
 
-  <script src="demo-mode.js"></script>
+  <script src="demo-mode.js?v=20261111-terminal-desks-1"></script>
   <script>
     /* =========================
        THEME (SYNCED ACROSS PAGES)
@@ -578,7 +548,7 @@
     ========================= */
     const THEME_KEY = "fynx_theme"; // "dark" or "light"
     function applySavedTheme() {
-      const saved = localStorage.getItem(THEME_KEY) || "light";
+      const saved = window.FynxPreferences?.getItem(THEME_KEY) || "light";
       document.body.classList.toggle("dark-mode", saved === "dark");
     }
     applySavedTheme();
@@ -586,47 +556,10 @@
     /* =========================
        ✅ PROFILE NAME + AVATAR (same as Home)
     ========================= */
-    const NAME_KEYS = [
-      "fynx_profile_name",
-      "fynx_username",
-      "username",
-      "profile_name",
-      "user_name",
-      "fynx_name",
-      "fynxUserName",
-      "displayName",
-      "name"
-    ];
-    const PROFILE_JSON_KEYS = ["fynx_profile", "profile", "fynx_user", "userProfile", "fynx_account"];
-
-    function pickNameFromJson(obj){
-      if (!obj || typeof obj !== "object") return null;
-      const candidates = [
-        obj.username, obj.userName, obj.name, obj.displayName, obj.fullName,
-        obj.profile?.username, obj.profile?.name, obj.profile?.displayName
-      ];
-      for (const c of candidates){
-        if (c && String(c).trim()) return String(c).trim();
-      }
-      return null;
+    function getProfileName() {
+      return window.FynxIdentity?.displayName || null;
     }
-
-    function getProfileName(){
-      for (const k of NAME_KEYS){
-        const v = localStorage.getItem(k);
-        if (v && String(v).trim().length > 0) return String(v).trim();
-      }
-      for (const k of PROFILE_JSON_KEYS){
-        const raw = localStorage.getItem(k);
-        if (!raw) continue;
-        try{
-          const obj = JSON.parse(raw);
-          const n = pickNameFromJson(obj);
-          if (n) return n;
-        }catch(e){}
-      }
-      return null;
-    }
+    window.addEventListener('fynx:identity', renderAvatar);
 
     function cleanDisplayName(full){
       if (!full) return null;
@@ -650,33 +583,6 @@
       el.textContent = initials.toUpperCase();
     }
 
-    function isDemoMode(){
-      return window.FynxDemoMode?.isDemoMode?.() || localStorage.getItem("mode") === "demo";
-    }
-
-    function injectDemoBanner(){
-      if (!isDemoMode()) return;
-      const topBar = document.querySelector(".top-bar");
-      if (!topBar || document.getElementById("demoCalcBanner")) return;
-      const banner = document.createElement("div");
-     banner.id = "demoCalcBanner";
-banner.style.display = "flex";
-banner.style.alignItems = "center";
-banner.style.gap = "10px";
-banner.style.flexWrap = "wrap";
-banner.style.marginRight = "12px";
-banner.style.marginBottom = "6px";
-
-banner.innerHTML = `
-  <span style="font-size:11px;font-weight:900;border:1px solid var(--line);padding:6px 10px;border-radius:999px;">Demo Mode</span>
-  <span style="font-size:11px;opacity:.75;">You are viewing demo data — Sign up to unlock real account</span>
-  <a href="auth/signup.html" style="font-size:11px;font-weight:800;border:1px solid var(--line);padding:6px 10px;border-radius:999px;text-decoration:none;color:inherit;">Sign Up</a>
-  <a href="auth/login.html" style="font-size:11px;font-weight:800;border:1px solid var(--line);padding:6px 10px;border-radius:999px;text-decoration:none;color:inherit;">Log In</a>
-`;
-
-topBar.prepend(banner);
-    }
-
     function renderAvatar(){
       const rawName = getProfileName();
       const displayName = cleanDisplayName(rawName);
@@ -686,41 +592,389 @@ topBar.prepend(banner);
     renderAvatar();
   </script>
 
-  <script src="fynx-nav.js"></script>
+  <script src="fynx-nav.js?v=20261111-terminal-desks-1"></script>
 
   <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
-  <script src="fynx-usercard.js"></script>
+  <script src="fynx-usercard.js?v=20260928-audit2"></script>
 
   <script>
     /* =========================
        TOOLS
     ========================= */
     const tools = [
-      { name: "ATR Stop", file: "tools/atr-stop.html", desc: "Volatility-based stop loss levels." },
-      { name: "Breakeven", file: "tools/breakeven.html", desc: "Find exact breakeven price quickly." },
-      { name: "Calendar Alerts", file: "tools/calendar-alerts.html", desc: "Important event alert timing." },
-      { name: "Compound", file: "tools/compound.html", desc: "Compound growth and return planner." },
-      { name: "Correlation", file: "tools/correlation.html", desc: "Asset relationship and correlation check." },
-      { name: "Crypto", file: "tools/crypto.html", desc: "Crypto sizing and trade utility set." },
-      { name: "Currency", file: "tools/currency.html", desc: "FX conversion and quote helper." },
-      { name: "Economic Calendar", file: "tools/economic-calendar.html", desc: "Macro events by date and impact." },
-      { name: "Fibonacci", file: "tools/fibonacci.html", desc: "Fib retracement and extension levels." },
-      { name: "Forex", file: "tools/forex.html", desc: "Forex trade planning calculator." },
-      { name: "Heatmap", file: "tools/heatmap.html", desc: "Visual market strength overview." },
-      { name: "Liquidation Guard", file: "tools/liquidation-guard.html", desc: "Liquidation risk checker." },
-      { name: "Margin", file: "tools/margin.html", desc: "Required margin and leverage math." },
-      { name: "Market Holidays", file: "tools/market-holidays.html", desc: "Exchange holiday calendar lookup." },
-      { name: "Market Hours", file: "tools/market-hours.html", desc: "Open/close sessions across regions." },
-      { name: "Options Payoff", file: "tools/options-payoff.html", desc: "Strategy payoff profile." },
-      { name: "Options", file: "tools/options.html", desc: "Options pricing and quick metrics." },
-      { name: "Pip", file: "tools/pip.html", desc: "Pip value and move calculator." },
-      { name: "Pivot", file: "tools/pivot.html", desc: "Pivot point support/resistance levels." },
-      { name: "Position Size", file: "tools/position-size.html", desc: "Risk-based position sizing tool." },
-      { name: "Profit Loss", file: "tools/profit-loss.html", desc: "Trade P/L estimation instantly." },
-      { name: "Risk Reward", file: "tools/risk-reward.html", desc: "Risk to reward ratio calculator." },
-      { name: "Stock", file: "tools/stock.html", desc: "Stock return and position utility." },
-      { name: "Symbol News", file: "tools/symbol-news.html", desc: "Company/symbol focused news module." }
-    ];
+      {
+            "name": "ATR Stop-Loss Calculator",
+            "file": "/tools/atr-stop.html",
+            "desc": "Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.",
+            "access": "Free tool"
+      },
+      {
+            "name": "AUD/USD Edge Radar",
+            "file": "/edge-radar/audusd/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Basic Calculator: Arithmetic, Percentages & Parentheses",
+            "file": "/tools/basic-calculator.html",
+            "desc": "Calculate arithmetic and percentages locally with a keyboard-friendly calculator. Supports decimals, parentheses and standard order of operations.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Browser Price Alerts & Percentage Crossing Alerts",
+            "file": "/tools/price-alerts.html",
+            "desc": "Set one-time price or percentage crossing alerts for your watchlist while the FYNX page is open and visible. Review timestamps and browser notification options.",
+            "access": "Free tool"
+      },
+      {
+            "name": "BTC/USD Edge Radar",
+            "file": "/edge-radar/btcusd/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Central Bank Policy Rate Comparison",
+            "file": "/tools/interest-rates.html",
+            "desc": "Compare published central bank policy-rate observations from the Bank for International Settlements, with dates and source context.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Company Financial Statements & SEC Research",
+            "file": "/tools/company-financials.html",
+            "desc": "Read annual company revenue, net income and cash flow from SEC EDGAR filings. Compare up to ten annual periods with links to the original filings.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Company Research Assistant & Sourced Financial Briefs",
+            "file": "/tools/financial-research-assistant.html",
+            "desc": "Create a sourced company research brief from SEC financial facts, with optional on-device AI when supported by your browser.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Company Screener: Revenue, Profit & Cash Flow",
+            "file": "/tools/company-screener.html",
+            "desc": "Filter up to 30 companies you select by annual revenue, net margin, positive net income and operating cash flow using SEC company facts.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Compound Growth & Savings Calculator",
+            "file": "/tools/compound.html",
+            "desc": "Estimate compound growth using starting capital, return assumptions and recurring deposits for savings or investing scenarios.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Crypto Position Size & Profit Calculator",
+            "file": "/tools/crypto.html",
+            "desc": "Estimate crypto position size, trading costs, exit value, profit or loss and break-even price using your own assumptions.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Curated Macro & Trading Research Topics",
+            "file": "/tools/recent-topics-discussed.html",
+            "desc": "Browse curated economic and trading research topics for further study. This editorial reference is not a live news or discussion feed.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Currency Conversion Calculator: Manual Rates",
+            "file": "/tools/currency.html",
+            "desc": "Convert currencies using a verified exchange rate you enter. The calculator does not provide live exchange rates.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Debt Payoff & Interest Calculator",
+            "file": "/tools/debt-payoff.html",
+            "desc": "Estimate how long debt repayment takes, total interest and the effect of changing a monthly payment.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Economic Calendar: Releases & Central Bank Events",
+            "file": "/tools/economic-calendar.html",
+            "desc": "Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Economic Event Reminder Planner",
+            "file": "/tools/calendar-alerts.html",
+            "desc": "Plan reminders for economic events such as inflation releases, employment reports and central bank decisions.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Edge Radar: Market Regimes & Strategy Fit",
+            "file": "/edge-radar/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "ETH/USD Edge Radar",
+            "file": "/edge-radar/ethusd/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "EUR/GBP Edge Radar",
+            "file": "/edge-radar/eurgbp/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "EUR/JPY Edge Radar",
+            "file": "/edge-radar/eurjpy/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "EUR/USD Edge Radar",
+            "file": "/edge-radar/eurusd/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Fibonacci Retracement & Extension Calculator",
+            "file": "/tools/fibonacci.html",
+            "desc": "Calculate Fibonacci retracement and extension levels from a swing high and low to study potential price levels.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Forex Margin & Leverage Calculator",
+            "file": "/tools/margin.html",
+            "desc": "Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Forex Pip Value Calculator",
+            "file": "/tools/pip.html",
+            "desc": "Estimate forex pip value using the currency pair, position size and account currency inputs for trade planning.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Forex Position Size & Risk Calculator",
+            "file": "/tools/position-size.html",
+            "desc": "Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Forex Trade Planning Calculators",
+            "file": "/tools/forex.html",
+            "desc": "Plan a forex trade with links to position sizing and pip value calculators using your account and risk inputs.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Forex Trading Sessions & Market Hours",
+            "file": "/tools/market-hours.html",
+            "desc": "Review market session timing and trading hours to plan when to research and monitor financial markets.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Free Research Desk: Financials, Screener, Backtesting & Portfolio",
+            "file": "/tools/research-desk.html",
+            "desc": "Research SEC company financials, screen your company list, explore market heatmaps, backtest strategies, track a manual portfolio and set browser alerts. Seven free FYNX research tools.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Free Trading Journal: Record Trades & Review Realized Results",
+            "file": "/tools/trading-journal.html",
+            "desc": "Keep your plan, actual realized result and review notes together. A free FYNX account lets you save trades and return to your history across signed-in sessions.",
+            "access": "Free account"
+      },
+      {
+            "name": "GBP/JPY Edge Radar",
+            "file": "/edge-radar/gbpjpy/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "GBP/USD Edge Radar",
+            "file": "/edge-radar/gbpusd/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "GDP, Inflation & Unemployment Indicators",
+            "file": "/tools/economic-indicators-heatmap.html",
+            "desc": "Compare published World Bank GDP growth, inflation and unemployment observations. Review dates and source information with each indicator.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Liquidation Risk & Leverage Calculator",
+            "file": "/tools/liquidation-guard.html",
+            "desc": "Estimate liquidation price and distance for a leveraged trade using your inputs. Compare risk before choosing a position size.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Manual Portfolio Tracker & Position Valuation",
+            "file": "/tools/portfolio-tracker.html",
+            "desc": "Track manually entered USD positions and cash with public indicative prices. Portfolio records are stored in your browser, with import and export controls.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Market Heatmap: Stocks, ETFs, Crypto & Forex",
+            "file": "/tools/research-heatmap.html",
+            "desc": "Compare percentage changes across stocks, ETFs, crypto, forex and your watchlist with equal-size tiles and timestamps for each public quote.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Market Holiday Planning Reference",
+            "file": "/tools/market-holidays.html",
+            "desc": "Review a partial market holiday planning reference for 2025–2028. Confirm closures and early closing times with the relevant exchange.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Market Returns Correlation Calculator",
+            "file": "/tools/correlation.html",
+            "desc": "Calculate the correlation between two return series to compare market behavior and potential overlapping exposure.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Moving Average Strategy Backtester",
+            "file": "/tools/strategy-backtester.html",
+            "desc": "Backtest a long-only moving average crossover with historical daily prices or your CSV. Set commission, slippage and fast and slow moving averages.",
+            "access": "Free tool"
+      },
+      {
+            "name": "NAS100 Edge Radar",
+            "file": "/edge-radar/nas100/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "NZD/USD Edge Radar",
+            "file": "/edge-radar/nzdusd/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Options Profit & Loss Calculator",
+            "file": "/tools/options.html",
+            "desc": "Estimate call and put option profit or loss at expiration using strike price, premium, contract count and underlying price.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Pivot Point Support & Resistance Calculator",
+            "file": "/tools/pivot.html",
+            "desc": "Calculate classic pivot points and support and resistance levels from the previous period's high, low and closing price.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Portfolio Stress Test: Exposure, Leverage & Price Shocks",
+            "file": "/tools/portfolio-stress-test.html",
+            "desc": "Estimate the effect of one parallel price shock on a set of signed position values. Compare gross exposure, net exposure and the resulting account equity.",
+            "access": "Plus or higher"
+      },
+      {
+            "name": "Position Risk Planner: Contract Size, Stop Risk & Reward",
+            "file": "/tools/position-risk-planner.html",
+            "desc": "Turn an explicit loss budget into position units using your entry, stop, target, contract multiplier and currency conversion assumptions.",
+            "access": "Essential or higher"
+      },
+      {
+            "name": "Quant Analyst: Backtests, Portfolio & Monte Carlo",
+            "file": "/quant-analyst.html",
+            "desc": "Research ATR breakout and news strategies using attributed historical data, walk-forward optimization, portfolio analysis and reproducible risk simulations.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Risk-to-Reward Ratio Calculator",
+            "file": "/tools/risk-reward.html",
+            "desc": "Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.",
+            "access": "Free tool"
+      },
+      {
+            "name": "SPX500 Edge Radar",
+            "file": "/edge-radar/spx500/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Stock Position Sizing Calculator",
+            "file": "/tools/stock.html",
+            "desc": "Calculate a stock trade's position size and risk from account size, risk percentage, entry price and stop price.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Symbol News Search: Stocks, Forex & Crypto Headlines",
+            "file": "/tools/symbol-news.html",
+            "desc": "Search financial headlines for a ticker or market symbol. Review the source and publication time, then open the original report for context.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Trading Break-Even Price Calculator",
+            "file": "/tools/breakeven.html",
+            "desc": "Calculate a trade's estimated break-even price using position size, fees and spread assumptions.",
+            "access": "Free tool"
+      },
+      {
+            "name": "Trading Drawdown Simulator: 500 Hypothetical Equity Paths",
+            "file": "/tools/drawdown-simulator.html",
+            "desc": "Explore how repeated wins and losses could affect equity under fixed assumptions. Compare simulated ending balances and drawdown across 500 paths.",
+            "access": "Professional or higher"
+      },
+      {
+            "name": "Trading Journal Analytics: Expectancy, Profit Factor & Drawdown",
+            "file": "/tools/journal-analytics.html",
+            "desc": "Understand what your recorded trades say about your process. Journal intelligence summarizes realized results from your own saved trading history.",
+            "access": "Essential or higher"
+      },
+      {
+            "name": "Trading Journal CSV Export for Spreadsheet Analysis",
+            "file": "/tools/journal-export.html",
+            "desc": "Download dated Journal records as a CSV file for your own spreadsheet review. Keep a portable copy of the values you recorded in FYNX.",
+            "access": "Essential or higher"
+      },
+      {
+            "name": "Trading Process Review: Plan, Risk, Execution & Lessons",
+            "file": "/tools/trading-process-review.html",
+            "desc": "Keep a written trade thesis and review five observable parts of your process. Save the reasoning alongside a checklist you can revisit later.",
+            "access": "Essential or higher"
+      },
+      {
+            "name": "Trading Research Watchlists: Symbols, Notes & News Links",
+            "file": "/tools/research-watchlists.html",
+            "desc": "Save a focused list of symbols with research notes. Return to the same questions and open symbol-specific news from each result.",
+            "access": "Essential or higher"
+      },
+      {
+            "name": "Trading Risk Scenario Comparison: Four Position Budgets",
+            "file": "/tools/scenario-comparison.html",
+            "desc": "Compare four position sizes while keeping the same entry, stop, target and contract assumptions. See how changing the risk budget changes both modeled loss and reward.",
+            "access": "Essential or higher"
+      },
+      {
+            "name": "US30 Edge Radar",
+            "file": "/edge-radar/us30/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "USD/CAD Edge Radar",
+            "file": "/edge-radar/usdcad/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "USD/CHF Edge Radar",
+            "file": "/edge-radar/usdchf/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "USD/JPY Edge Radar",
+            "file": "/edge-radar/usdjpy/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "XAG/USD Edge Radar",
+            "file": "/edge-radar/xagusd/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      },
+      {
+            "name": "XAU/USD Edge Radar",
+            "file": "/edge-radar/xauusd/",
+            "desc": "Attributed market regimes, historical strategy fit, positioning and event risk. Inspect sample sizes, assumptions and account protection in one research workspace.",
+            "access": "Free tool"
+      }
+];
 
     const toolsGrid = document.getElementById("toolsGrid");
     const searchInput = document.getElementById("searchInput");
@@ -731,7 +985,7 @@ topBar.prepend(banner);
         <article class="tool-card">
           <div class="tool-head">
             <h3 class="tool-title">${tool.name}</h3>
-            <span class="tool-chip">PRO</span>
+            <span class="tool-chip">${tool.access}</span>
           </div>
           <p class="tool-desc">${tool.desc}</p>
           <a class="tool-link" href="${tool.file}">Open Tool</a>
@@ -749,53 +1003,8 @@ topBar.prepend(banner);
     });
 
     renderTools(tools);
-    injectDemoBanner();
 
-    /* =========================
-       MINI CALCULATOR
-    ========================= */
-    const calcButtons = ["C", "⌫", "%", "÷", "7", "8", "9", "×", "4", "5", "6", "-", "1", "2", "3", "+", "0", ".", "="];
-    const calcGrid = document.getElementById("calcGrid");
-    const display = document.getElementById("display");
-    let expression = "";
-
-    calcButtons.forEach(btn => {
-      const button = document.createElement("button");
-      const isOp = ["÷","×","-","+","%"].includes(btn);
-      const isEq = btn === "=";
-      button.className = "calc-btn " + (isOp ? "op" : "") + (isEq ? " eq" : "");
-      button.textContent = btn;
-      button.onclick = () => onCalc(btn);
-      calcGrid.appendChild(button);
-    });
-
-    function onCalc(value) {
-      if (value === "C") {
-        expression = "";
-        display.textContent = "0";
-        return;
-      }
-      if (value === "⌫") {
-        expression = expression.slice(0, -1);
-        display.textContent = expression || "0";
-        return;
-      }
-      if (value === "=") {
-        try {
-          const jsExpr = expression.replaceAll("÷", "/").replaceAll("×", "*");
-          const result = eval(jsExpr || "0");
-          expression = String(result);
-          display.textContent = expression;
-        } catch {
-          display.textContent = "Error";
-          expression = "";
-        }
-        return;
-      }
-      expression += value;
-      display.textContent = expression;
-    }
   </script>
-  <script src="/assets/js/live-site.js" defer></script>
-</body>
+
+<footer></footer></body>
 </html>

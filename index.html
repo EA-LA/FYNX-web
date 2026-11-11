@@ -1,22 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fynx Finance World - Professional Trading Tools & Utilities</title>
-
+  <title>Free Trading Calculators &amp; Finance Learning | FYNX Finance World</title>
   <!-- Favicon / Tab Logo -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
-
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="styles.css?v=20261111-terminal-desks-1">
   <!-- ✅ NEW: Global Theme (Light micro-dots + Dark grid) -->
   <link rel="stylesheet" href="assets/theme.css">
-  <script src="assets/theme.js" defer></script>
-
+  <script src="assets/theme.js?v=20260922-routing" defer></script>
   <!-- ✅ FIX: FAQ CSS (KAST-style) — ONLY affects .fynx-faq -->
   <style>
   /* ==============================================
@@ -24,12 +21,10 @@
      Scoped only to .fynx-faq so nothing else changes
   ============================================== */
   .fynx-faq, .fynx-faq * { box-sizing: border-box; }
-
   .fynx-faq{
     padding: 72px 0 40px;
     color: rgba(255, 255, 255, 0.92);
   }
-
   .fynx-faq__wrap{
     width: min(1100px, 92vw);
     margin: 0 auto;
@@ -38,7 +33,6 @@
     gap: 48px;
     align-items: start;
   }
-
   .fynx-faq__title{
     margin: 0;
     font-size: 44px;
@@ -46,15 +40,12 @@
     letter-spacing: -0.02em;
     color: rgba(255, 255, 255, 0.92);
   }
-
   .fynx-faq__right{
     border-top: 1px solid rgba(255, 255, 255, 0.12);
   }
-
   .fynx-faq__item{
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   }
-
   .fynx-faq__q{
     width: 100%;
     appearance: none;
@@ -67,16 +58,13 @@
     gap: 16px;
     cursor: pointer;
     text-align: left;
-
     font-size: 16px;
     font-weight: 700;
     color: rgba(255, 255, 255, 0.88);
   }
-
   .fynx-faq__q:hover{
     color: rgba(255, 255, 255, 1);
   }
-
   .fynx-faq__icon{
     width: 34px;
     height: 34px;
@@ -89,19 +77,16 @@
     flex: 0 0 auto;
     transition: transform 220ms ease, background 220ms ease, border-color 220ms ease;
   }
-
   .fynx-faq__item.is-open .fynx-faq__icon{
     transform: rotate(45deg); /* + → X */
     background: rgba(255, 255, 255, 0.06);
     border-color: rgba(255, 255, 255, 0.22);
   }
-
   .fynx-faq__a{
     overflow: hidden;
     max-height: 0;
     transition: max-height 320ms ease;
   }
-
   .fynx-faq__a p{
     margin: 0;
     padding: 0 6px 18px;
@@ -109,7 +94,8 @@
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.68);
   }
-
+  .fynx-faq__a a{color:inherit;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+  @media (pointer:coarse){.fynx-faq__a a{display:inline-block;min-height:44px;line-height:44px;padding:0 2px}}
   /* Mobile: title moves above list */
   @media (max-width: 820px){
     .fynx-faq__wrap{
@@ -120,14 +106,12 @@
       font-size: 34px;
     }
   }
-
   /* ==============================================
      ✅ FIX ONLY: Download Widget follows Theme
      - Default (Light): light card
      - Dark mode: dark card
      - Scoped ONLY to .fynx-download so nothing else changes
   ============================================== */
-
   /* Light theme (default) */
   .fynx-download .fynx-card{
     background: rgba(255, 255, 255, 0.92);
@@ -137,42 +121,34 @@
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
   }
-
   .fynx-download .fynx-badge{
     background: rgba(0, 0, 0, 0.08);
     color: rgba(0, 0, 0, 0.88);
     border: 1px solid rgba(0, 0, 0, 0.10);
   }
-
   .fynx-download .fynx-title{
     color: rgba(0, 0, 0, 0.92);
   }
-
   .fynx-download .fynx-sub{
     color: rgba(0, 0, 0, 0.62);
   }
-
   .fynx-download .fynx-pill{
     background: rgba(0, 0, 0, 0.10);
     color: rgba(0, 0, 0, 0.88);
     border: 1px solid rgba(0, 0, 0, 0.14);
   }
-
   .fynx-download .fynx-close{
     color: rgba(0, 0, 0, 0.70);
   }
-
   .fynx-download .fynx-close:hover{
     color: rgba(0, 0, 0, 0.92);
   }
-
   .fynx-download .fynx-qr{
     background: #ffffff;
     border: 1px solid rgba(0, 0, 0, 0.10);
     border-radius: 10px;
     padding: 8px;
   }
-
   /* Dark theme (support multiple theme toggling patterns safely) */
   body.dark-mode .fynx-download .fynx-card,
   html.dark-mode .fynx-download .fynx-card,
@@ -183,7 +159,6 @@
     box-shadow: 0 12px 44px rgba(0, 0, 0, 0.55);
     color: rgba(255, 255, 255, 0.92);
   }
-
   body.dark-mode .fynx-download .fynx-badge,
   html.dark-mode .fynx-download .fynx-badge,
   [data-theme="dark"] .fynx-download .fynx-badge,
@@ -192,21 +167,18 @@
     color: rgba(255, 255, 255, 0.88);
     border: 1px solid rgba(255, 255, 255, 0.12);
   }
-
   body.dark-mode .fynx-download .fynx-title,
   html.dark-mode .fynx-download .fynx-title,
   [data-theme="dark"] .fynx-download .fynx-title,
   [data-fynx-theme="dark"] .fynx-download .fynx-title{
     color: rgba(255, 255, 255, 0.92);
   }
-
   body.dark-mode .fynx-download .fynx-sub,
   html.dark-mode .fynx-download .fynx-sub,
   [data-theme="dark"] .fynx-download .fynx-sub,
   [data-fynx-theme="dark"] .fynx-download .fynx-sub{
     color: rgba(255, 255, 255, 0.66);
   }
-
   body.dark-mode .fynx-download .fynx-pill,
   html.dark-mode .fynx-download .fynx-pill,
   [data-theme="dark"] .fynx-download .fynx-pill,
@@ -215,21 +187,18 @@
     color: rgba(255, 255, 255, 0.90);
     border: 1px solid rgba(255, 255, 255, 0.14);
   }
-
   body.dark-mode .fynx-download .fynx-close,
   html.dark-mode .fynx-download .fynx-close,
   [data-theme="dark"] .fynx-download .fynx-close,
   [data-fynx-theme="dark"] .fynx-download .fynx-close{
     color: rgba(255, 255, 255, 0.74);
   }
-
   body.dark-mode .fynx-download .fynx-close:hover,
   html.dark-mode .fynx-download .fynx-close:hover,
   [data-theme="dark"] .fynx-download .fynx-close:hover,
   [data-fynx-theme="dark"] .fynx-download .fynx-close:hover{
     color: rgba(255, 255, 255, 0.95);
   }
-
   body.dark-mode .fynx-download .fynx-qr,
   html.dark-mode .fynx-download .fynx-qr,
   [data-theme="dark"] .fynx-download .fynx-qr,
@@ -237,7 +206,6 @@
     background: #ffffff; /* keep QR readable */
     border: 1px solid rgba(255, 255, 255, 0.14);
   }
-
   /* ==============================================
      ✅ ONLY CHANGE YOU ASKED FOR:
      Make the QR download widget SMALL + CLEAN like KAST
@@ -247,13 +215,11 @@
      - Removes big effects inside widget only
      - Scoped ONLY to .fynx-download
   ============================================== */
-
   /* Clean: remove heavy internal effects (only inside widget) */
   .fynx-download .fynx-aura,
   .fynx-download .fynx-scan{
     display: none !important;
   }
-
   /* Compact card sizing */
   .fynx-download .fynx-card{
     border-radius: 18px;
@@ -261,7 +227,6 @@
     width: 320px;
     max-width: calc(100vw - 28px);
   }
-
   /* Top row */
   .fynx-download .fynx-top{
     display: flex;
@@ -270,7 +235,6 @@
     gap: 10px;
     margin-bottom: 8px;
   }
-
   .fynx-download .fynx-badge{
     font-size: 10px;
     font-weight: 800;
@@ -279,7 +243,6 @@
     border-radius: 999px;
     line-height: 1;
   }
-
   .fynx-download .fynx-close{
     width: 28px;
     height: 28px;
@@ -292,28 +255,24 @@
     line-height: 1;
     cursor: pointer;
   }
-
   body.dark-mode .fynx-download .fynx-close,
   html.dark-mode .fynx-download .fynx-close,
   [data-theme="dark"] .fynx-download .fynx-close,
   [data-fynx-theme="dark"] .fynx-download .fynx-close{
     border-color: rgba(255, 255, 255, 0.12);
   }
-
   /* Content row */
   .fynx-download .fynx-content{
     display: flex;
     align-items: center;
     gap: 12px;
   }
-
   /* QR box smaller like KAST */
   .fynx-download .fynx-qr{
     padding: 6px;
     border-radius: 12px;
     flex: 0 0 auto;
   }
-
   /* Force the generated QR (canvas/img) to be small */
   .fynx-download #fynxQr canvas,
   .fynx-download #fynxQr img{
@@ -321,7 +280,6 @@
     height: 54px !important;
     display: block;
   }
-
   /* Text block */
   .fynx-download .fynx-text{
     min-width: 0;
@@ -329,7 +287,6 @@
     flex-direction: column;
     gap: 3px;
   }
-
   .fynx-download .fynx-title{
     font-size: 14px;
     font-weight: 800;
@@ -339,7 +296,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-
   .fynx-download .fynx-sub{
     font-size: 12px;
     line-height: 1.2;
@@ -348,7 +304,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-
   /* Small pill button like KAST */
   .fynx-download .fynx-pill{
     display: inline-flex;
@@ -362,7 +317,6 @@
     margin-top: 6px;
     line-height: 1;
   }
-
   /* Mobile: even tighter */
   @media (max-width: 520px){
     .fynx-download .fynx-card{
@@ -379,7 +333,6 @@
     .fynx-download .fynx-sub{ font-size: 11.5px; }
     .fynx-download .fynx-pill{ font-size: 11.5px; padding: 6px 10px; }
   }
-
   /* ==============================================
      ✅ UPDATED: Header Resources + Network actions
      - Replaces the 4 icon links
@@ -394,11 +347,9 @@
     margin-left: 12px;
     position: relative;
   }
-
   .fynx-menu{
     position: relative;
   }
-
   .fynx-menu-btn,
   .fynx-network-btn,
   .fynx-network-theme{
@@ -410,7 +361,6 @@
     box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
     transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border-color 180ms ease;
   }
-
   .fynx-menu-btn,
   .fynx-network-btn{
     padding: 0 12px;
@@ -421,18 +371,34 @@
     font-size: 14px;
     font-weight: 700;
   }
-
   .fynx-network-theme{
     width: 36px;
     display: grid;
     place-items: center;
     cursor: pointer;
   }
-
+  /* The shared header uses flex; center the theme glyph within its own box. */
+  #header .nav-container > .fynx-network-theme{
+    display:inline-flex !important;
+    align-items:center;
+    justify-content:center;
+    padding:0 !important;
+    flex-shrink:0;
+    box-sizing:border-box;
+    line-height:1;
+  }
+  #header .nav-container > .fynx-network-theme > i{
+    display:block;
+    width:1em;
+    height:1em;
+    margin:0;
+    font-size:16px;
+    line-height:1;
+    text-align:center;
+  }
   .fynx-menu-btn{
     cursor: pointer;
   }
-
   .fynx-menu-btn:hover,
   .fynx-network-btn:hover,
   .fynx-network-theme:hover{
@@ -440,13 +406,11 @@
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.12);
     background: rgba(255, 255, 255, 0.82);
   }
-
   .fynx-menu-btn:active,
   .fynx-network-btn:active,
   .fynx-network-theme:active{
     transform: translateY(0);
   }
-
   .fynx-menu-panel{
     position: absolute;
     top: calc(100% + 10px);
@@ -464,14 +428,12 @@
     transition: opacity 150ms ease, visibility 150ms ease, transform 150ms ease;
     z-index: 1000;
   }
-
   .fynx-menu.open .fynx-menu-panel{
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
     transform: translateY(0);
   }
-
   .fynx-menu-panel a{
     display: flex;
     align-items: center;
@@ -483,11 +445,9 @@
     padding: 9px 10px;
     border-radius: 10px;
   }
-
   .fynx-menu-panel a:hover{
     background: rgba(0, 0, 0, 0.06);
   }
-
   /* Dark mode */
   body.dark-mode .fynx-menu-btn,
   html.dark-mode .fynx-menu-btn,
@@ -506,7 +466,6 @@
     color: rgba(255, 255, 255, 0.9);
     box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
   }
-
   body.dark-mode .fynx-menu-btn:hover,
   html.dark-mode .fynx-menu-btn:hover,
   [data-theme="dark"] .fynx-menu-btn:hover,
@@ -522,7 +481,6 @@
     background: rgba(0, 0, 0, 0.72);
     border-color: rgba(255, 255, 255, 0.22);
   }
-
   body.dark-mode .fynx-menu-panel,
   html.dark-mode .fynx-menu-panel,
   [data-theme="dark"] .fynx-menu-panel,
@@ -531,21 +489,18 @@
     background: rgba(8, 8, 8, 0.95);
     box-shadow: 0 24px 45px rgba(0, 0, 0, 0.52);
   }
-
   body.dark-mode .fynx-menu-panel a,
   html.dark-mode .fynx-menu-panel a,
   [data-theme="dark"] .fynx-menu-panel a,
   [data-fynx-theme="dark"] .fynx-menu-panel a{
     color: rgba(255, 255, 255, 0.9);
   }
-
   body.dark-mode .fynx-menu-panel a:hover,
   html.dark-mode .fynx-menu-panel a:hover,
   [data-theme="dark"] .fynx-menu-panel a:hover,
   [data-fynx-theme="dark"] .fynx-menu-panel a:hover{
     background: rgba(255, 255, 255, 0.08);
   }
-
   .mobile-header-actions{
     display:none;
     align-items:center;
@@ -553,9 +508,7 @@
     margin-left:auto;
     position:relative;
   }
-
   .mobile-resources-menu{ position:relative; }
-
   .mobile-resources-btn{
     height:44px;
     border-radius:12px;
@@ -569,12 +522,10 @@
     gap:8px;
     cursor:pointer;
   }
-
   .mobile-resources-btn:hover{
     border-color:rgba(255, 255, 255, 0.22);
     background:rgba(255, 255, 255, 0.06);
   }
-
   .mobile-resources-panel{
     top:calc(100% + 10px);
     right:0;
@@ -584,24 +535,20 @@
     overflow:auto;
     -webkit-overflow-scrolling:touch;
   }
-
   body:not(.dark-mode) .mobile-resources-btn{
     border:1px solid rgba(0, 0, 0, 0.12);
     background:rgba(0, 0, 0, 0.03);
     color:rgba(0, 0, 0, 0.86);
   }
-
   body:not(.dark-mode) .mobile-resources-btn:hover{
     border-color:rgba(0, 0, 0, 0.20);
     background:rgba(0, 0, 0, 0.05);
   }
-
   /* Keep header clean on small screens (mobile drawer already exists) */
   @media (max-width: 768px){
     .fynx-top-actions{ display:none; }
     .mobile-header-actions{ display:flex; }
   }
-
   /* ==============================================
      ✅ ONLY FIX YOU ASKED FOR:
      Resources dropdown was opening/clipping "a little bit" (cut off).
@@ -621,7 +568,6 @@
   .fynx-top-actions{ position: relative; z-index: 10000; }
   .fynx-menu{ z-index: 10001; }
   .fynx-menu-panel{ z-index: 10002; }
-
   /* ==============================================
      ✅ ONLY FIX YOU ASKED FOR:
      Desktop hover opens the subnavs (no click required)
@@ -637,7 +583,6 @@
       visibility: visible !important;
       pointer-events: auto !important;
     }
-
     #learnToggle:hover ~ #learnSubnav,
     #learnSubnav:hover{
       display: block !important;
@@ -645,7 +590,6 @@
       visibility: visible !important;
       pointer-events: auto !important;
     }
-
     #toolsToggle:hover ~ #toolsSubnav,
     #toolsSubnav:hover{
       display: block !important;
@@ -653,7 +597,6 @@
       visibility: visible !important;
       pointer-events: auto !important;
     }
-
     #newsToggle:hover ~ #newsSubnav,
     #newsSubnav:hover{
       display: block !important;
@@ -661,7 +604,6 @@
       visibility: visible !important;
       pointer-events: auto !important;
     }
-
     #marketsToggle:hover ~ #homeMarketsSubnav,
     #homeMarketsSubnav:hover{
       display: block !important;
@@ -670,7 +612,6 @@
       pointer-events: auto !important;
     }
   }
-
   /* ==============================================
      ✅ NEW SECTION YOU ASKED FOR (ONLY)
      Everything you need to grow in finance (3 auto-moving images)
@@ -681,11 +622,9 @@
        assets/img/journal.jpg
   ============================================== */
   .fynx-grow, .fynx-grow *{ box-sizing: border-box; }
-
   .fynx-grow{
     padding: 84px 0 64px;
   }
-
   .fynx-grow__wrap{
     width: min(1180px, 92vw);
     margin: 0 auto;
@@ -694,7 +633,6 @@
     gap: 44px;
     align-items: center;
   }
-
   .fynx-grow__kicker{
     display: inline-flex;
     align-items: center;
@@ -709,7 +647,6 @@
     font-size: 12px;
     margin-bottom: 14px;
   }
-
   .fynx-grow__title{
     margin: 0;
     font-size: 44px;
@@ -718,7 +655,6 @@
     color: rgba(255, 255, 255, 0.94);
     font-weight: 900;
   }
-
   .fynx-grow__sub{
     margin: 14px 0 22px;
     max-width: 54ch;
@@ -726,7 +662,6 @@
     font-size: 15.5px;
     line-height: 1.65;
   }
-
   .fynx-grow__cta{
     display: inline-flex;
     align-items: center;
@@ -741,15 +676,12 @@
     box-shadow: 0 16px 44px rgba(0, 0, 0, 0.35);
     transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
   }
-
   .fynx-grow__cta:hover{
     transform: translateY(-1px);
     background: rgba(255, 255, 255, 0.12);
     border-color: rgba(255, 255, 255, 0.22);
   }
-
   .fynx-grow__cta i{ opacity: .9; }
-
   .fynx-grow__stack{
     position: relative;
     width: 100%;
@@ -760,7 +692,6 @@
     overflow: hidden;
     box-shadow: 0 26px 70px rgba(0, 0, 0, 0.40);
   }
-
   .fynx-grow__glow{
     position: absolute;
     inset: -40%;
@@ -771,7 +702,6 @@
     opacity: .55;
     pointer-events: none;
   }
-
   .fynx-grow__card{
     position: absolute;
     width: 78%;
@@ -783,7 +713,6 @@
     transform: translateZ(0);
     pointer-events: none; /* ✅ no hover/click */
   }
-
   .fynx-grow__card img{
     width: 100%;
     height: 220px;
@@ -791,7 +720,6 @@
     object-fit: cover;
     filter: contrast(1.02) saturate(1.02);
   }
-
   .fynx-grow__meta{
     padding: 14px 16px 16px;
     display: flex;
@@ -799,7 +727,6 @@
     justify-content: space-between;
     gap: 14px;
   }
-
   .fynx-grow__label{
     display: inline-flex;
     align-items: center;
@@ -809,7 +736,6 @@
     letter-spacing: -0.01em;
     font-size: 14px;
   }
-
   .fynx-grow__tag{
     font-size: 11px;
     font-weight: 800;
@@ -819,12 +745,10 @@
     background: rgba(255, 255, 255, 0.06);
     color: rgba(255, 255, 255, 0.80);
   }
-
   /* Positions */
   .fynx-grow__card--markets{ top: 34px; left: 10%; transform: rotate(-2deg); }
   .fynx-grow__card--calc{ top: 132px; left: 16%; transform: rotate(1.5deg); }
   .fynx-grow__card--journal{ top: 230px; left: 12%; transform: rotate(-1deg); }
-
   /* Auto-motion (smooth, premium) */
   @keyframes fynxFloatA{
     0%   { transform: translate3d(0,0,0) rotate(-2deg); }
@@ -841,11 +765,9 @@
     50%  { transform: translate3d(10px,10px,0) rotate(-2deg); }
     100% { transform: translate3d(0,0,0) rotate(-1deg); }
   }
-
   .fynx-grow__card--markets{ animation: fynxFloatA 7.8s ease-in-out infinite; }
   .fynx-grow__card--calc{ animation: fynxFloatB 8.6s ease-in-out infinite; }
   .fynx-grow__card--journal{ animation: fynxFloatC 9.2s ease-in-out infinite; }
-
   /* Light mode support */
   body:not(.dark-mode) .fynx-grow__kicker,
   html:not(.dark-mode) .fynx-grow__kicker,
@@ -855,43 +777,36 @@
     background: rgba(255, 255, 255, 0.70);
     color: rgba(0, 0, 0, 0.86);
   }
-
   body:not(.dark-mode) .fynx-grow__title,
   html:not(.dark-mode) .fynx-grow__title{
     color: rgba(0, 0, 0, 0.92);
   }
-
   body:not(.dark-mode) .fynx-grow__sub,
   html:not(.dark-mode) .fynx-grow__sub{
     color: rgba(0, 0, 0, 0.62);
   }
-
   body:not(.dark-mode) .fynx-grow__stack,
   html:not(.dark-mode) .fynx-grow__stack{
     border-color: rgba(0, 0, 0, 0.10);
     background: rgba(255, 255, 255, 0.70);
     box-shadow: 0 26px 70px rgba(0, 0, 0, 0.18);
   }
-
   body:not(.dark-mode) .fynx-grow__card,
   html:not(.dark-mode) .fynx-grow__card{
     border-color: rgba(0, 0, 0, 0.10);
     background: rgba(255, 255, 255, 0.82);
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
   }
-
   body:not(.dark-mode) .fynx-grow__label,
   html:not(.dark-mode) .fynx-grow__label{
     color: rgba(0, 0, 0, 0.90);
   }
-
   body:not(.dark-mode) .fynx-grow__tag,
   html:not(.dark-mode) .fynx-grow__tag{
     border-color: rgba(0, 0, 0, 0.10);
     background: rgba(0, 0, 0, 0.06);
     color: rgba(0, 0, 0, 0.72);
   }
-
   @media (max-width: 980px){
     .fynx-grow__wrap{
       grid-template-columns: 1fr;
@@ -904,7 +819,6 @@
       font-size: 38px;
     }
   }
-
   @media (max-width: 520px){
     .fynx-grow{ padding: 68px 0 54px; }
     .fynx-grow__title{ font-size: 34px; }
@@ -916,9 +830,51 @@
   }
   </style>
   <link rel="stylesheet" href="assets/css/mobile-fixes.css">
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
+<meta name="description" content="Calculate margin, position size, pip value and trading risk. Explore FYNX finance lessons, economic calendars and market research in one workspace.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="stylesheet" href="assets/landing-workspace.css?v=20261111-terminal-desks-1">
+<script src="assets/js/landing-workspace.js?v=20261111-terminal-desks-1" defer></script>
+<link rel="canonical" href="https://www.fynxfinanceworld.com/">
+<meta property="og:title" content="Free Trading Calculators &amp; Finance Learning | FYNX Finance World">
+<meta property="og:description" content="Calculate margin, position size, pip value and trading risk. Explore FYNX finance lessons, economic calendars and market research in one workspace.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261012" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"FYNX Finance World","alternateName":"FYNX","url":"https://www.fynxfinanceworld.com/"}</script><!-- discovery-schema:end -->
+<!-- search-identity:start --><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.fynxfinanceworld.com/#organization","name":"FYNX","alternateName":"FYNX Finance World","url":"https://www.fynxfinanceworld.com/","founder":{"@id":"https://ea-la.github.io/#person"},"sameAs":["https://www.fynxfunded.com/","https://site.fynxfinanceworld.com/","https://blog.fynxfinanceworld.com/","https://roadmap.fynxfinanceworld.com/"]},{"@type":"Person","@id":"https://ea-la.github.io/#person","name":"Elham Amini","url":"https://ea-la.github.io/","jobTitle":"Founder of FYNX","sameAs":["https://www.linkedin.com/in/elham-amini-745560302/","https://www.instagram.com/___elham_amini___/"],"worksFor":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebSite","@id":"https://www.fynxfinanceworld.com/#website","url":"https://www.fynxfinanceworld.com/","name":"FYNX Finance World","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebPage","@id":"https://www.fynxfinanceworld.com/#webpage","url":"https://www.fynxfinanceworld.com/","name":"Free Trading Calculators & Finance Learning | FYNX Finance World","description":"Calculate margin, position size, pip value and trading risk. Explore FYNX finance lessons, economic calendars and market research in one workspace.","inLanguage":"en","isPartOf":{"@id":"https://www.fynxfinanceworld.com/#website"},"publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}}]}</script><!-- search-identity:end -->
+<!-- FYNX ADSENSE VERIFICATION START -->
+<script>(window.adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 1;</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
+     crossorigin="anonymous"></script>
+<!-- FYNX ADSENSE VERIFICATION END -->
+<!-- terminal-design:start -->
+<link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
+<link rel="stylesheet" href="/assets/css/terminal-landing.css?v=20261111-terminal-desks-1">
+<script src="/assets/js/news-reader-links.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/newsroom-editions.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/news-preferences.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/newsroom-media.js?v=20261111-terminal-desks-1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261111-terminal-desks-1">
+<script src="/assets/js/market-intelligence-data.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/terminal-market-ui.js?v=20261111-terminal-desks-1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-home.css?v=20261111-terminal-desks-1">
+<script src="/assets/js/terminal-landing-live.js?v=20261111-terminal-desks-1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261030-r1">
+<script src="/assets/js/terminal-pages.js?v=20261030-r1" defer></script>
+<!-- terminal-design:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
 </head>
-<body>
-  <!-- Animated Background -->
+<body data-fynx-layout="landing" data-fynx-section="FINANCE WORLD" data-fynx-terminal>
+<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
+<!-- Animated Background -->
   <div class="animated-bg">
     <div class="grid-overlay"></div>
     <div class="gradient-orb orb-1"></div>
@@ -938,9 +894,9 @@
         <ul>
           <li><a href="#home" id="homeToggle">Home <span style="opacity:.7;">▾</span></a></li>
           <li><a href="#learn" id="learnToggle">Learn <span style="opacity:.7;">▾</span></a></li>
-          <li><a href="#tools" id="toolsToggle">Tools <span style="opacity:.7;">▾</span></a></li>
-          <li><a href="#news" id="newsToggle">News <span style="opacity:.7;">▾</span></a></li>
-          <li><a href="trader-journal.html">Trader Journal</a></li>
+          <li><a href="#tools" id="toolsToggle" aria-controls="toolsSubnav" aria-expanded="false">Tools ▾</a></li>
+          <li><a href="news.html" id="newsToggle">News <span style="opacity:.7;">▾</span></a></li>
+          <li><a href="/api/">API</a></li>
         </ul>
       </nav>
 
@@ -956,34 +912,48 @@
   <a href="/assets/docs/FYNX-Whitepaper.pdf" target="_blank" rel="noopener" role="menuitem">
     <i class="fa-regular fa-file-lines"></i><span>Whitepaper</span>
   </a>
-  <a href="https://elhamamini.cc/fynx-blog/#" target="_blank" rel="noopener" role="menuitem">
+  <a href="https://blog.fynxfinanceworld.com/" target="_blank" rel="noopener" role="menuitem">
     <i class="fa-solid fa-pen-nib"></i><span>Blog</span>
   </a>
-  <a href="https://elhamamini.cc/FYNX-Site/index.html" target="_blank" rel="noopener" role="menuitem">
+  <a href="https://www.fynxfinanceworld.com/" target="_blank" rel="noopener" role="menuitem">
     <i class="fa-solid fa-globe"></i><span>Main Site</span>
   </a>
   <a href="https://apps.apple.com/app/id6752357210" target="_blank" rel="noopener" role="menuitem">
     <i class="fa-brands fa-apple"></i><span>App Store</span>
   </a>
-  <a href="https://elhamamini.cc/RoadMap-FYNX/" target="_blank" rel="noopener" role="menuitem">
+  <a href="https://ea-la.github.io/RoadMap-FYNX/" target="_blank" rel="noopener" role="menuitem">
     <i class="fa-solid fa-road"></i><span>Roadmap</span>
   </a>
   <a href="https://fynxfunded.com" target="_blank" rel="noopener" role="menuitem">
     <i class="fa-solid fa-chart-simple"></i><span>FYNX Funded</span>
   </a>
+  <a href="partners.html" role="menuitem">
+    <i class="fa-solid fa-handshake"></i><span>Partners</span>
+  </a>
+  <a href="risk-disclosure.html" role="menuitem">
+    <i class="fa-solid fa-triangle-exclamation"></i><span>Risk Disclosure</span>
+  </a>
+  <a href="affiliate-disclosure.html" role="menuitem">
+    <i class="fa-solid fa-file-contract"></i><span>Affiliate Disclosure</span>
+  </a>
 </div>
         </div>
 
-        <a class="fynx-network-btn" href="https://elhamamini.cc/FYNX-Site/index.html" target="_blank" rel="noopener" aria-label="Network">
-          <span>Network</span>
-          <i class="fa-solid fa-globe"></i>
+        <a class="fynx-network-btn" href="home.html" aria-label="Open workspace">
+          <span>Free Dashboard</span>
+          <i class="fa-solid fa-arrow-right"></i>
         </a>
 
-        <button class="fynx-network-theme" type="button" aria-label="Toggle theme" data-fynx-theme-toggle title="Toggle black/white mode">
-          <i class="fas fa-circle-half-stroke"></i>
-        </button>
+
+        <a class="fynx-network-btn" href="pro.html">Plans &amp; Pro tools</a>
+        <a class="fynx-network-btn" href="auth/login.html?returnTo=%2Fhome.html">Sign in (optional)</a>
+
+
       </div>
 
+              <button class="fynx-network-theme" data-theme-control type="button" aria-label="Toggle theme" data-fynx-theme-toggle title="Toggle black/white mode">
+          <i class="fas fa-circle-half-stroke"></i>
+        </button>
       <div class="mobile-header-actions" aria-label="Mobile quick actions">
         <div class="mobile-resources-menu fynx-menu" id="mobileResourcesMenu">
           <button class="mobile-resources-btn" id="mobileResourcesToggle" type="button" aria-expanded="false" aria-controls="mobileResourcesPanel">
@@ -1000,8 +970,11 @@
       </div>
     </div>
   </header>
+<!-- terminal-navigation:start -->
+<nav class="terminal-navigation" aria-label="Workspace navigation"><a href="/home.html">Home</a><a href="/journal.html">Journal</a><a href="/calculator.html">Calculator</a><a href="/news.html">News</a><a href="/calendar.html">Calendar</a><a href="/learn.html">Learn</a><a href="/explore.html">Explore</a><a href="/tools/research-desk.html">Research</a><a href="/quant-analyst.html">Quant Analyst<span class="quant-new-badge">NEW</span></a><a href="/edge-radar/">Edge Radar<span class="quant-new-badge">NEW</span></a><a href="/macro-desk.html">Macro Desk<span class="quant-new-badge">NEW</span></a><a href="/profile.html">Profile</a></nav>
+<!-- terminal-navigation:end -->
 
-  <!-- MOBILE OVERLAY + DRAWER (NEW) -->
+<!-- MOBILE OVERLAY + DRAWER (NEW) -->
   <div class="mobile-overlay" id="mobileOverlay" aria-hidden="true"></div>
   <aside class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
     <div class="mobile-drawer-top">
@@ -1015,6 +988,7 @@
     </div>
 
     <div class="mobile-list">
+      <a class="m-link" href="/api/"><span class="left">FYNX API</span><span>→</span></a>
       <!-- HOME -->
       <div class="m-accordion" data-acc="home">
         <button class="m-acc-btn" type="button">
@@ -1039,8 +1013,8 @@
   <span class="left"><i class="fas fa-percent"></i><span>Interest Rates</span></span>
   <i class="fas fa-arrow-right"></i>
 </a>
-<a class="m-link" href="tools/heatmap.html">
-  <span class="left"><i class="fas fa-fire"></i><span>Economic Indicators Heatmap</span></span>
+<a class="m-link" href="tools/economic-indicators-heatmap.html">
+  <span class="left"><i class="fas fa-fire"></i><span>Economic Indicators</span></span>
   <i class="fas fa-arrow-right"></i>
 </a>
 <a class="m-link" href="tools/recent-topics-discussed.html">
@@ -1054,15 +1028,15 @@
               </button>
               <div class="m-acc-panel">
                 <div class="m-links">
-                  <a class="m-link" href="markets/index.html?section=currencies"><span class="left"><i class="fas fa-dollar-sign"></i><span>Currencies</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=crypto"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=indicators"><span class="left"><i class="fas fa-chart-line"></i><span>Indicators</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=patterns"><span class="left"><i class="fas fa-shapes"></i><span>Patterns</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=volatility"><span class="left"><i class="fas fa-wave-square"></i><span>Volatility</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=correlation"><span class="left"><i class="fas fa-chart-area"></i><span>Correlation</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=cot"><span class="left"><i class="fas fa-clipboard-list"></i><span>Commitments of Traders</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=liquidity"><span class="left"><i class="fas fa-water"></i><span>Liquidity</span></span><i class="fas fa-arrow-right"></i></a>
-                  <a class="m-link" href="markets/index.html?section=historical-data"><span class="left"><i class="fas fa-database"></i><span>Historical Data</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/currencies.html"><span class="left"><i class="fas fa-dollar-sign"></i><span>Currencies</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/crypto.html"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/indicators.html"><span class="left"><i class="fas fa-chart-line"></i><span>Indicators</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/patterns.html"><span class="left"><i class="fas fa-shapes"></i><span>Patterns</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/volatility.html"><span class="left"><i class="fas fa-wave-square"></i><span>Volatility</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/correlation.html"><span class="left"><i class="fas fa-chart-area"></i><span>Correlation</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/cot.html"><span class="left"><i class="fas fa-clipboard-list"></i><span>Commitments of Traders</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/liquidity.html"><span class="left"><i class="fas fa-water"></i><span>Liquidity</span></span><i class="fas fa-arrow-right"></i></a>
+                  <a class="m-link" href="markets/historical-data.html"><span class="left"><i class="fas fa-database"></i><span>Historical Data</span></span><i class="fas fa-arrow-right"></i></a>
                 </div>
               </div>
             </div>
@@ -1078,15 +1052,15 @@
         </button>
         <div class="m-acc-panel">
           <div class="m-links">
-            <a class="m-link" href="learn/topic.html?topic=stocks&section=howto"><span class="left"><i class="fas fa-chart-bar"></i><span>Stocks</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="learn/topic.html?topic=funds&section=howto"><span class="left"><i class="fas fa-coins"></i><span>Funds</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="learn/topic.html?topic=futures&section=howto"><span class="left"><i class="fas fa-bolt"></i><span>Futures</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="learn/topic.html?topic=forex&section=howto"><span class="left"><i class="fas fa-dollar-sign"></i><span>Forex</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="learn/topic.html?topic=crypto&section=howto"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="learn/topic.html?topic=indices&section=howto"><span class="left"><i class="fas fa-layer-group"></i><span>Indices</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="learn/topic.html?topic=bonds&section=howto"><span class="left"><i class="fas fa-landmark"></i><span>Bonds</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="learn/topic.html?topic=economy&section=howto"><span class="left"><i class="fas fa-globe"></i><span>Economy</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="learn/topic.html?topic=options&section=howto"><span class="left"><i class="fas fa-table-cells"></i><span>Options</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/stocks-howto.html"><span class="left"><i class="fas fa-chart-bar"></i><span>Stocks</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/funds-howto.html"><span class="left"><i class="fas fa-coins"></i><span>Funds</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/futures-howto.html"><span class="left"><i class="fas fa-bolt"></i><span>Futures</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/forex-howto.html"><span class="left"><i class="fas fa-dollar-sign"></i><span>Forex</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/crypto-howto.html"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/indices-howto.html"><span class="left"><i class="fas fa-layer-group"></i><span>Indices</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/bonds-howto.html"><span class="left"><i class="fas fa-landmark"></i><span>Bonds</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/economy-howto.html"><span class="left"><i class="fas fa-globe"></i><span>Economy</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="learn/options-howto.html"><span class="left"><i class="fas fa-table-cells"></i><span>Options</span></span><i class="fas fa-arrow-right"></i></a>
           </div>
         </div>
       </div>
@@ -1099,7 +1073,7 @@
         </button>
         <div class="m-acc-panel">
           <div class="m-links">
-            <a class="m-link" href="#tools"><span class="left"><i class="fas fa-th-large"></i><span>Tools Overview</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/research-desk.html"><span class="left"><i class="fas fa-chart-line"></i><span>Research Desk</span></span><i class="fas fa-arrow-right"></i></a><a class="m-link" href="calculator.html"><span class="left"><i class="fas fa-th-large"></i><span>Tools Overview</span></span><i class="fas fa-arrow-right"></i></a>
             <a class="m-link" href="tools/forex.html"><span class="left"><i class="fas fa-chart-line"></i><span>Forex Calculator</span></span><i class="fas fa-arrow-right"></i></a>
             <a class="m-link" href="tools/crypto.html"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto Calculator</span></span><i class="fas fa-arrow-right"></i></a>
             <a class="m-link" href="tools/stock.html"><span class="left"><i class="fas fa-chart-bar"></i><span>Stock Calculator</span></span><i class="fas fa-arrow-right"></i></a>
@@ -1110,7 +1084,7 @@
             <a class="m-link" href="tools/risk-reward.html"><span class="left"><i class="fas fa-scale-balanced"></i><span>Risk/Reward</span></span><i class="fas fa-arrow-right"></i></a>
             <a class="m-link" href="tools/market-hours.html"><span class="left"><i class="fas fa-clock"></i><span>Market Hours</span></span><i class="fas fa-arrow-right"></i></a>
             <a class="m-link" href="tools/economic-calendar.html"><span class="left"><i class="fas fa-calendar-alt"></i><span>Economic Calendar</span></span><i class="fas fa-arrow-right"></i></a>
-            <a class="m-link" href="tools/profit-loss.html"><span class="left"><i class="fas fa-dollar-sign"></i><span>Profit/Loss (Pro)</span></span><i class="fas fa-arrow-right"></i></a>
+            <a class="m-link" href="tools/profit-loss.html"><span class="left"><i class="fas fa-dollar-sign"></i><span>Stock Risk</span></span><i class="fas fa-arrow-right"></i></a>
             <a class="m-link" href="tools/calendar-alerts.html"><span class="left"><i class="fas fa-calendar-check"></i><span>Calendar Alerts (Pro)</span></span><i class="fas fa-arrow-right"></i></a>
             <a class="m-link" href="tools/heatmap.html"><span class="left"><i class="fas fa-fire"></i><span>Heat Map (Pro)</span></span><i class="fas fa-arrow-right"></i></a>
           </div>
@@ -1151,7 +1125,7 @@
     <a class="home-pill" href="tools/market-holidays.html"><i class="fas fa-umbrella-beach"></i> Market Holidays</a>
     <a class="home-pill" href="tools/market-hours.html"><i class="fas fa-clock"></i> Market Hour</a>
     <a class="home-pill" href="tools/interest-rates.html"><i class="fas fa-percent"></i> Interest Rates</a>
-    <a class="home-pill" href="tools/heatmap.html"><i class="fas fa-fire"></i> Economic Indicators Heatmap</a>
+    <a class="home-pill" href="tools/economic-indicators-heatmap.html"><i class="fas fa-fire"></i> Economic Indicators</a>
     <a class="home-pill" href="tools/recent-topics-discussed.html"><i class="fas fa-comment-dots"></i> Recent Topics Discussed</a>
     <button class="home-pill" type="button" id="marketsToggle"><i class="fas fa-layer-group"></i> Markets <span style="opacity:.7;">▾</span></button>
   </div>
@@ -1193,122 +1167,15 @@
   <div class="learn-detail-subnav" id="learnDetailSubnav" aria-hidden="true">
     <div class="learn-detail-inner">
       <span class="learn-caption" id="learnDetailCaption"><i class="fas fa-layer-group"></i> Topic</span>
-      <a class="learn-detail-pill" id="learnHowTo" href="learn/topic.html?topic=forex&section=howto"><i class="fas fa-play"></i> How to Trade</a>
-      <a class="learn-detail-pill" id="learnQuizzes" href="learn/topic.html?topic=forex&section=quizzes"><i class="fas fa-circle-question"></i> Trading Quizzes</a>
-      <a class="learn-detail-pill" id="learnGlossary" href="learn/topic.html?topic=forex&section=glossary"><i class="fas fa-book"></i> Glossary</a>
+      <a class="learn-detail-pill" id="learnHowTo" href="learn/forex-howto.html"><i class="fas fa-play"></i> How to Trade</a>
+      <a class="learn-detail-pill" id="learnQuizzes" href="learn/forex-quizzes.html"><i class="fas fa-circle-question"></i> Trading Quizzes</a>
+      <a class="learn-detail-pill" id="learnGlossary" href="learn/forex-glossary.html"><i class="fas fa-book"></i> Glossary</a>
     </div>
   </div>
 
   <!-- TOOLS SUB-NAV -->
   <div class="tools-subnav" id="toolsSubnav" aria-hidden="true">
-  <div class="tools-subnav-inner">
-
-    <a class="tools-pill primary" href="home/hub.html">
-      <i class="fas fa-th-large"></i> Tools Overview
-    </a>
-
-    <a class="tools-pill" href="tools/forex.html">
-      <i class="fas fa-chart-line"></i> Forex
-    </a>
-
-    <a class="tools-pill" href="tools/crypto.html">
-      <i class="fab fa-bitcoin"></i> Crypto
-    </a>
-
-    <a class="tools-pill" href="tools/stock.html">
-      <i class="fas fa-chart-bar"></i> Stock
-    </a>
-
-    <a class="tools-pill" href="tools/options.html">
-      <i class="fas fa-table-cells"></i> Options
-    </a>
-
-    <a class="tools-pill" href="tools/pip.html">
-      <i class="fas fa-ruler-horizontal"></i> Pip
-    </a>
-
-    <a class="tools-pill" href="tools/margin.html">
-      <i class="fas fa-percent"></i> Margin
-    </a>
-
-    <a class="tools-pill" href="tools/pivot.html">
-      <i class="fas fa-bullseye"></i> Pivot
-    </a>
-
-    <a class="tools-pill" href="tools/fibonacci.html">
-      <i class="fas fa-wave-square"></i> Fibonacci
-    </a>
-
-    <a class="tools-pill" href="tools/currency.html">
-      <i class="fas fa-arrows-rotate"></i> Currency
-    </a>
-
-    <a class="tools-pill" href="tools/breakeven.html">
-      <i class="fas fa-equals"></i> Break-Even
-    </a>
-
-    <a class="tools-pill" href="tools/profit-loss.html">
-      <i class="fas fa-dollar-sign"></i> Profit/Loss
-    </a>
-
-    <a class="tools-pill" href="tools/calendar-alerts.html">
-      <i class="fas fa-calendar-check"></i> Calendar
-    </a>
-
-    <a class="tools-pill" href="tools/symbol-news.html">
-      <i class="fas fa-newspaper"></i> Symbol News
-    </a>
-
-    <a class="tools-pill" href="tools/atr-stop.html">
-      <i class="fas fa-chart-column"></i> ATR Stop
-    </a>
-
-    <a class="tools-pill" href="tools/liquidation-guard.html">
-      <i class="fas fa-shield-alt"></i> Liquidation
-    </a>
-
-    <!-- ✅ FIXED IMPORTANT LINKS -->
-    <a class="tools-pill" href="tools/heatmap.html">
-      <i class="fas fa-fire"></i> Heat Map
-    </a>
-
-    <a class="tools-pill" href="tools/interest-rates.html">
-      <i class="fas fa-percent"></i> Interest Rates
-    </a>
-
-    <a class="tools-pill" href="tools/recent-topics-discussed.html">
-      <i class="fas fa-comments"></i> Recent Topics
-    </a>
-
-    <a class="tools-pill" href="tools/options-payoff.html">
-      <i class="fas fa-diagram-project"></i> Options Payoff
-    </a>
-
-    <a class="tools-pill" href="tools/risk-reward.html">
-      <i class="fas fa-scale-balanced"></i> Risk/Reward
-    </a>
-
-    <a class="tools-pill" href="tools/compound.html">
-      <i class="fas fa-seedling"></i> Compound
-    </a>
-
-    <a class="tools-pill" href="tools/position-size.html">
-      <i class="fas fa-calculator"></i> Position Size
-    </a>
-
-    <a class="tools-pill" href="tools/correlation.html">
-      <i class="fas fa-chart-area"></i> Correlation
-    </a>
-
-    <a class="tools-pill" href="tools/market-hours.html">
-      <i class="fas fa-clock"></i> Market Hours
-    </a>
-
-    <a class="tools-pill" href="tools/economic-calendar.html">
-      <i class="fas fa-calendar-alt"></i> Economic Calendar
-    </a>
-
-  </div>
+  <div class="tools-subnav-inner discovery-menu"><section><h2>Plan your trade</h2><a href="tools/position-size.html">Position size</a><a href="tools/margin.html">Margin &amp; leverage</a><a href="tools/pip.html">Pip value</a><a href="tools/risk-reward.html">Risk / reward</a><a href="tools/atr-stop.html">ATR stop distance</a><a href="tools/liquidation-guard.html">Liquidation estimate</a></section><section><h2>Calculate an outcome</h2><a href="tools/stock.html">Stock position size</a><a href="tools/crypto.html">Crypto profit &amp; loss</a><a href="tools/options.html">Options payoff</a><a href="tools/breakeven.html">Break-even price</a><a href="tools/compound.html">Compound growth</a><a href="tools/debt-payoff.html">Debt payoff</a></section><section><h2>Research the market</h2><a href="tools/research-desk.html">Research Desk · 7 free tools</a><a href="tools/economic-calendar.html">Economic calendar</a><a href="tools/market-hours.html">Market hours</a><a href="tools/market-holidays.html">Market holidays</a><a href="tools/interest-rates.html">Interest rates</a><a href="tools/heatmap.html">Market heatmap</a><a href="tools/symbol-news.html">Symbol news</a></section><section><h2>Find your next resource</h2><a class="discovery-menu-all" href="explore.html?category=Tools">Browse every tool ↗</a><p>Search calculators, compare assumptions, and connect each tool with a learning guide.</p><a href="tools/fibonacci.html">Fibonacci levels</a><a href="tools/pivot.html">Pivot points</a><a href="tools/currency.html">Currency conversion</a><a href="tools/correlation.html">Return correlation</a></section></div>
 </div>
   <!-- NEWS SUB-NAV -->
   <div class="news-subnav" id="newsSubnav" aria-hidden="true">
@@ -1323,161 +1190,42 @@
   <!-- Hero Section -->
   <section class="hero" id="home">
     <div class="hero-content">
-      <h1>Trade Smarter with Professional Tools</h1>
-      <p>Advanced calculators, live market resources, and practical trading utilities built to help traders analyze better, manage risk, and make sharper decisions.</p>
+      <div class="launch-status-badge">YOUR MARKETS. YOUR PROCESS.</div>
+      <h1>A more deliberate<br>trading workspace.</h1>
+      <p>Your professional workspace for market analysis, risk management, trading education, and performance tracking. Explore the tools and build your trading routine.</p>
+      <form class="discovery-search" action="/explore.html" role="search"><label for="resource-query">Find a tool, lesson or market topic</label><div><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="resource-query" name="q" type="search" placeholder="Try margin, position size, bonds…"><button type="submit">Search</button></div></form><div class="discovery-popular"><span>Popular</span><a href="/tools/margin.html">Margin calculator</a><a href="/tools/position-size.html">Position size</a><a href="/learn/forex-howto.html">Learn forex</a></div>
       <div class="cta-buttons">
-        <a href="auth/login.html" class="btn btn-primary"><span>Login</span></a>
-        <a href="auth/signup.html" class="btn btn-secondary"><span>Sign Up</span></a>
+        <a href="home.html" class="btn btn-primary"><span>Open Your Workspace</span></a>
+        <a href="explore.html" class="btn btn-secondary"><span>Explore Resources</span></a>
       </div>
     </div>
+    <aside class="workspace-guide" aria-label="Explore the FYNX ecosystem"><div class="workspace-guide-header"><span>THE FYNX ECOSYSTEM</span><h2>Start with what you need.</h2></div><a class="workspace-resource" href="https://blog.fynxfinanceworld.com/"><span>01</span><div><strong>Read the FYNX Journal</strong><small>Product updates, evaluation preparation and trading routines.</small></div><span>↗</span></a><a class="workspace-resource" href="risk-management.html"><span>02</span><div><strong>Build your knowledge</strong><small>Explore risk management, trading psychology and market concepts.</small></div><span>→</span></a><a class="workspace-resource" href="https://fynxfunded.com"><span>03</span><div><strong>Explore FYNX Funded</strong><small>Review evaluation options and the rules behind each program.</small></div><span>↗</span></a></aside>
     <div class="scroll-indicator">
       <i class="fas fa-chevron-down"></i>
     </div>
   </section>
 
-  <!-- Features Section -->
-  <section class="features">
-    <h2 class="section-title">Why Traders Use FYNX</h2>
-    <div class="feature-grid">
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-toolbox"></i></div>
-        <h3>Professional Toolset</h3>
-        <p>Use practical trading calculators and utilities for position sizing, margin planning, volatility control, and execution prep.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
-        <h3>Market Utilities</h3>
-        <p>Access live market context with economic calendars, market hours, correlation checks, and fast reference tools.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-calculator"></i></div>
-        <h3>Risk Management</h3>
-        <p>Calculate risk/reward, break-even levels, pip value, and trade sizing before entering a position.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-sliders-h"></i></div>
-        <h3>Decision Support</h3>
-        <p>Turn raw market data into clear numbers you can use to make faster, sharper, and more consistent decisions.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-newspaper"></i></div>
-        <h3>Daily Market News</h3>
-        <p>Get breaking financial news, market updates, and economic calendar events in real-time.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
-        <h3>Mobile App</h3>
-        <p>Trade on the go with our Fynx Finance World mobile app, available for iOS and Android.</p>
-      </div>
-    </div>
+  <section class="fw-section fw-front-news" aria-labelledby="landing-headlines-title">
+    <div class="fw-front-news-heading"><div><span class="fw-eyebrow">THE FYNX NEWSROOM</span><h2 id="landing-headlines-title">The latest, with the context you need.</h2></div><nav aria-label="Explore your news"><a class="fw-your-news-link" href="/news/your-news.html">Your News <span aria-hidden="true">→</span></a><a href="/news.html">All reporting <span aria-hidden="true">↗</span></a></nav></div>
+    <div id="landingHeadlineGrid" class="fw-headline-grid" aria-busy="true"><p class="fw-headline-empty">Checking recent reporting for your selected edition…</p></div>
+    <p id="landingHeadlineStatus" class="fw-headline-status" role="status">Source-attributed stories from the past 24 hours. Refreshes every 5 minutes.</p>
   </section>
 
-  <!-- ✅ REPLACED ONLY THIS SECTION: (Removed Quantum Edge) -->
-  <!-- ✅ NEW: Everything you need to grow in finance (with your 3 images auto-moving) -->
-  <section class="fynx-grow" id="learn">
-    <div class="fynx-grow__wrap">
-      <div class="fynx-grow__left">
-        <div class="fynx-grow__kicker">
-          <i class="fas fa-sparkles"></i>
-          <span>FYNX CORE</span>
-        </div>
-
-        <h2 class="fynx-grow__title">Everything you need to grow in finance.</h2>
-        <p class="fynx-grow__sub">
-          Build your edge with markets context, precision calculators, and a real trader journal — designed for clean execution
-          and long-term skill growth.
-        </p>
-
-        <a class="fynx-grow__cta" href="#tools">
-          <i class="fas fa-bolt"></i>
-          <span>Get Best in Finance</span>
-          <i class="fas fa-arrow-right" style="opacity:.8;"></i>
-        </a>
-      </div>
-
-      <div class="fynx-grow__right" aria-hidden="true">
-        <div class="fynx-grow__stack">
-          <div class="fynx-grow__glow"></div>
-
-          <!-- MARKETS -->
-          <div class="fynx-grow__card fynx-grow__card--markets">
-            <img src="assets/img/holidays.jpg" alt="Markets">
-            <div class="fynx-grow__meta">
-              <div class="fynx-grow__label">
-                <i class="fas fa-layer-group" style="opacity:.9;"></i>
-                <span>Markets</span>
-              </div>
-              <span class="fynx-grow__tag">Live Context</span>
-            </div>
-          </div>
-
-          <!-- CALCULATORS -->
-          <div class="fynx-grow__card fynx-grow__card--calc">
-            <img src="assets/img/calculators.jpg" alt="Calculators">
-            <div class="fynx-grow__meta">
-              <div class="fynx-grow__label">
-                <i class="fas fa-calculator" style="opacity:.9;"></i>
-                <span>Calculators</span>
-              </div>
-              <span class="fynx-grow__tag">Risk Precision</span>
-            </div>
-          </div>
-
-          <!-- JOURNAL -->
-          <div class="fynx-grow__card fynx-grow__card--journal">
-            <img src="assets/img/journal.jpg" alt="Trader Journal">
-            <div class="fynx-grow__meta">
-              <div class="fynx-grow__label">
-                <i class="fas fa-book" style="opacity:.9;"></i>
-                <span>Journal</span>
-              </div>
-              <span class="fynx-grow__tag">Track Growth</span>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Tools Section -->
-  <section class="tools-section" id="tools">
-    <h2 class="section-title">Trading Tools & Calculators</h2>
-    <div class="tools-grid">
-      <div class="tool-item" onclick="location.href='tools/position-size.html'">
-        <i class="fas fa-calculator"></i>
-        <h3>Position Size Calculator</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/risk-reward.html'">
-        <i class="fas fa-balance-scale"></i>
-        <h3>Risk/Reward Calculator</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/pip.html'">
-        <i class="fas fa-dollar-sign"></i>
-        <h3>Pip Value Calculator</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/correlation.html'">
-        <i class="fas fa-chart-area"></i>
-        <h3>Market Correlation</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/market-hours.html'">
-        <i class="fas fa-clock"></i>
-        <h3>Market Hours</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/economic-calendar.html'">
-        <i class="fas fa-calendar-alt"></i>
-        <h3>Economic Calendar</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/breakeven.html'">
-        <i class="fas fa-percent"></i>
-        <h3>Break-Even Calculator</h3>
-      </div>
-      <div class="tool-item" onclick="location.href='tools/margin.html'">
-        <i class="fas fa-chart-pie"></i>
-        <h3>Margin Calculator</h3>
-      </div>
-    </div>
-  </section>
+  <section class="fw-section fw-benefits" aria-labelledby="fw-benefits-title">
+    <div class="fw-heading"><div><span class="fw-eyebrow">BUILT AROUND YOUR PROCESS</span><h2 id="fw-benefits-title">A clearer way to approach the markets.</h2></div><p>Research. Plan. Review.<br>One connected workspace for the work behind every trade.</p></div>
+    <div class="fw-benefit-grid"><a class="fw-benefit" href="news.html"><span class="fw-number">01 / FYNX</span><h3>Research with context</h3><p>Follow market headlines, economic releases and trading sessions.</p><span class="fw-link">Explore markets<span aria-hidden="true">↗</span></span></a><a class="fw-benefit" href="tools/position-size.html"><span class="fw-number">02 / FYNX</span><h3>Define your risk</h3><p>Turn account size, entry and stop into a considered position size.</p><span class="fw-link">Plan a position<span aria-hidden="true">↗</span></span></a><a class="fw-benefit" href="journal.html"><span class="fw-number">03 / FYNX</span><h3>Review your process</h3><p>Keep your trades, notes and performance together in your journal.</p><span class="fw-link">Open your journal<span aria-hidden="true">↗</span></span></a><a class="fw-benefit" href="learn.html"><span class="fw-number">04 / FYNX</span><h3>Build your knowledge</h3><p>Study the markets with focused guides, glossaries and quizzes.</p><span class="fw-link">Start learning<span aria-hidden="true">↗</span></span></a><a class="fw-benefit" href="calculator.html"><span class="fw-number">05 / FYNX</span><h3>Find the right tool</h3><p>Move from a question to a calculation without a complicated setup.</p><span class="fw-link">Browse calculators<span aria-hidden="true">↗</span></span></a><a class="fw-benefit" href="https://apps.apple.com/app/id6752357210"><span class="fw-number">06 / FYNX</span><h3>Keep your workspace close</h3><p>Access FYNX on your desktop, phone or the iOS app.</p><span class="fw-link">Explore the app<span aria-hidden="true">↗</span></span></a><a class="fw-benefit" href="/news/your-news.html"><span class="fw-number">07 / FYNX</span><h3>Make the news yours</h3><p>Follow the topics that matter to you, with fresh reporting for your selected edition.</p><span class="fw-link">Open Your News<span aria-hidden="true">↗</span></span></a><a class="fw-benefit" href="/tools/economic-calendar.html"><span class="fw-number">08 / FYNX</span><h3>Prepare for the next release</h3><p>Check economic events, publication times and reported results before you plan.</p><span class="fw-link">View the calendar<span aria-hidden="true">↗</span></span></a></div></section>
+  <section class="fw-showcase" id="learn" aria-labelledby="fw-showcase-title"><div class="fw-showcase-inner">
+    <div class="fw-story"><span class="fw-eyebrow">THE FYNX WORKSPACE</span><h2 id="fw-showcase-title">Every decision.<br>A little more considered.</h2><p>Bring market context, risk planning and trade review into a single daily routine.</p><a class="fw-primary" href="home.html">Explore your workspace <span aria-hidden="true">↗</span></a><div class="fw-steps"><span>01 &nbsp; Research</span><span>02 &nbsp; Plan</span><span>03 &nbsp; Review</span></div></div>
+    <div class="fw-terminal fw-live-terminal" aria-label="FYNX reporting and market overview">
+      <div class="fw-terminal-head"><span class="fw-wordmark">FYNX <span>/ MARKET DESK</span></span><span class="fw-preview-label" data-edition-label>Selected edition</span></div>
+      <div class="fw-tabs" role="tablist" aria-label="Explore reporting, markets and tools"><button type="button" role="tab" id="fw-tab-0" aria-controls="fw-panel-0" aria-selected="true" data-fw-tab="0">Reporting</button><button type="button" role="tab" id="fw-tab-1" aria-controls="fw-panel-1" aria-selected="false" tabindex="-1" data-fw-tab="1">Markets</button><button type="button" role="tab" id="fw-tab-2" aria-controls="fw-panel-2" aria-selected="false" tabindex="-1" data-fw-tab="2">Workspace</button></div>
+      <div class="fw-stage">
+        <div class="fw-panel" id="fw-panel-0" role="tabpanel" aria-labelledby="fw-tab-0"><div class="fw-panel-heading"><div><span class="fw-eyebrow">01 / SOURCED REPORTING</span><h3>The context behind the markets.</h3></div><a class="fw-chip" href="/news.html">News desk →</a></div><div id="landingLiveNews" class="fw-live-news" aria-busy="true"><p>Checking recent published reporting…</p><a href="/news.html">Explore the News desk →</a></div><p id="landingNewsStatus" class="fw-live-status" role="status">Checking sources.</p></div>
+        <div class="fw-panel" id="fw-panel-1" role="tabpanel" aria-labelledby="fw-tab-1" hidden><div class="fw-panel-heading"><div><span class="fw-eyebrow">02 / GLOBAL MARKETS</span><h3>Follow the market, at the source.</h3></div><a class="fw-chip" href="/tools/research-heatmap.html">Heat map →</a></div><table class="fw-live-quotes"><caption class="nr-sr-only">Global indicative quotes with source timestamps</caption><thead><tr><th scope="col">Instrument</th><th scope="col">Last</th><th scope="col">Change</th></tr></thead><tbody id="landingQuoteRows"><tr><td colspan="3">Checking indicative market quotes…</td></tr></tbody></table><p id="landingQuoteStatus" class="fw-live-status">Global instruments are independent of your news edition. Each quote includes its source time.</p></div>
+        <div class="fw-panel" id="fw-panel-2" role="tabpanel" aria-labelledby="fw-tab-2" hidden><div class="fw-panel-heading"><div><span class="fw-eyebrow">03 / YOUR WORKSPACE</span><h3>Turn research into a considered plan.</h3></div><a class="fw-chip" href="/home.html">Open workspace →</a></div><div class="fw-live-tools"><a href="/tools/research-desk.html"><span>01</span><div><strong>Research the evidence</strong><small>Company filings, market comparisons and source documents.</small></div><b aria-hidden="true">↗</b></a><a href="/tools/position-size.html"><span>02</span><div><strong>Calculate your position</strong><small>Use your own balance, risk limit and stop distance.</small></div><b aria-hidden="true">↗</b></a><a href="/journal.html"><span>03</span><div><strong>Review your trading record</strong><small>Record trades and review your actual results in your journal.</small></div><b aria-hidden="true">↗</b></a><a href="/news/your-news.html"><span>04</span><div><strong>Follow your news</strong><small>Keep current reporting from your chosen topics together in Your News.</small></div><b aria-hidden="true">↗</b></a><a href="/tools/economic-calendar.html"><span>05</span><div><strong>Prepare for economic events</strong><small>See upcoming releases and check actual results when published.</small></div><b aria-hidden="true">↗</b></a></div></div>
+      </div><div class="fw-terminal-foot"><span>Reporting refreshes every 5 minutes while visible. Quote times vary by source.</span></div><div class="fw-progress" aria-hidden="true"><span></span></div>
+    </div></div></section>
+  <section class="fw-section fw-tools" id="tools" aria-labelledby="fw-tools-title"><div class="fw-heading"><div><span class="fw-eyebrow">PRECISION, WITHOUT THE FRICTION</span><h2 id="fw-tools-title">The right calculation.<br>Right when you need it.</h2></div><a class="fw-link" href="calculator.html">All calculators <span aria-hidden="true">↗</span></a></div><div class="fw-tool-grid"><a class="fw-tool" href="tools/position-size.html"><div class="fw-tool-top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18h16M7 14V9m5 5V4m5 10V7"/></svg><span>01 <span aria-hidden="true">↗</span></span></div><h3>Position size</h3><p>Size your trade around your risk budget.</p></a><a class="fw-tool" href="tools/risk-reward.html"><div class="fw-tool-top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M4 8l8-4 8 4M4 8l-3 7h6L4 8m16 0-3 7h6l-3-7"/></svg><span>02 <span aria-hidden="true">↗</span></span></div><h3>Risk / reward</h3><p>Compare potential upside and downside.</p></a><a class="fw-tool" href="tools/pip.html"><div class="fw-tool-top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18m5-14H9a3 3 0 000 6h6a3 3 0 010 6H6"/></svg><span>03 <span aria-hidden="true">↗</span></span></div><h3>Pip value</h3><p>Understand what each price move means.</p></a><a class="fw-tool" href="tools/correlation.html"><div class="fw-tool-top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18l5-7 5 3 8-10M3 7l5 2 5-4 8 12"/></svg><span>04 <span aria-hidden="true">↗</span></span></div><h3>Correlation</h3><p>Compare returns and shared exposure.</p></a><a class="fw-tool" href="tools/market-hours.html"><div class="fw-tool-top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v5l4 2M21 12a9 9 0 11-18 0 9 9 0 0118 0"/></svg><span>05 <span aria-hidden="true">↗</span></span></div><h3>Market hours</h3><p>Keep track of global trading sessions.</p></a><a class="fw-tool" href="tools/economic-calendar.html"><div class="fw-tool-top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v16H4zM8 3v4m8-4v4M4 10h16"/></svg><span>06 <span aria-hidden="true">↗</span></span></div><h3>Economic calendar</h3><p>Prepare for upcoming economic releases.</p></a><a class="fw-tool" href="tools/breakeven.html"><div class="fw-tool-top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h18M6 7h12M6 17h12"/></svg><span>07 <span aria-hidden="true">↗</span></span></div><h3>Break-even</h3><p>Find the price that covers your costs.</p></a><a class="fw-tool" href="tools/margin.html"><div class="fw-tool-top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11M8 20v-8m8 8v-8M2 20h20"/></svg><span>08 <span aria-hidden="true">↗</span></span></div><h3>Margin</h3><p>Estimate the capital a position requires.</p></a><a class="fw-tool" href="tools/compound.html"><div class="fw-tool-top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18M4 16l5-2 4-4 6-7m-5 0h5v5"/></svg><span>09 <span aria-hidden="true">↗</span></span></div><h3>Compound growth</h3><p>Explore how contributions, time and an assumed return affect growth.</p></a><a class="fw-tool" href="tools/atr-stop.html"><div class="fw-tool-top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-7 4 14 3-7h4M4 3v2m0 14v2"/></svg><span>10 <span aria-hidden="true">↗</span></span></div><h3>ATR stop distance</h3><p>Estimate a stop distance using your average true range and multiplier.</p></a></div></section>
 
   <!-- =========================
        FAQ Section (KAST-style split)
@@ -1531,6 +1279,45 @@
             </p>
           </div>
         </div>
+
+        <!-- Item 4 -->
+        <div class="fynx-faq__item" role="listitem">
+          <button class="fynx-faq__q" type="button" aria-expanded="false">
+            <span>Is FYNX free?</span>
+            <span class="fynx-faq__icon" aria-hidden="true">+</span>
+          </button>
+          <div class="fynx-faq__a" hidden>
+            <p>
+              Standard calculators and the free dashboard are free to explore without an account. A free account adds your saved Journal and account sync. Optional Pro tools and plans are described on the <a href="pro.html">Pro page</a>.
+            </p>
+          </div>
+        </div>
+
+        <!-- Item 5 -->
+        <div class="fynx-faq__item" role="listitem">
+          <button class="fynx-faq__q" type="button" aria-expanded="false">
+            <span>Where does the news come from?</span>
+            <span class="fynx-faq__icon" aria-hidden="true">+</span>
+          </button>
+          <div class="fynx-faq__a" hidden>
+            <p>
+              FYNX links to reporting from named publishers and official sources, and every story shows its source. We do not write or invent market news. See the <a href="news.html">News page</a> for the sources.
+            </p>
+          </div>
+        </div>
+
+        <!-- Item 6 -->
+        <div class="fynx-faq__item" role="listitem">
+          <button class="fynx-faq__q" type="button" aria-expanded="false">
+            <span>Is FYNX financial advice?</span>
+            <span class="fynx-faq__icon" aria-hidden="true">+</span>
+          </button>
+          <div class="fynx-faq__a" hidden>
+            <p>
+              No. All tools, calculators, news and education are for informational and educational purposes only. Results depend on the numbers you enter. Read the <a href="risk-disclosure.html">Risk Disclosure</a> before trading.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -1541,9 +1328,9 @@
       <div class="footer-section">
         <h3>Learn</h3>
         <ul>
-          <li><a href="learn/topic.html?topic=forex&section=howto">Forex Trading</a></li>
-          <li><a href="learn/topic.html?topic=crypto&section=howto">Crypto Trading</a></li>
-          <li><a href="learn/topic.html?topic=stocks&section=howto">Stock Market</a></li>
+          <li><a href="learn/forex-howto.html">Forex Trading</a></li>
+          <li><a href="learn/crypto-howto.html">Crypto Trading</a></li>
+          <li><a href="learn/stocks-howto.html">Stock Market</a></li>
           <li><a href="trading-psychology.html">Trading Psychology</a></li>
           <li><a href="risk-management.html">Risk Management</a></li>
         </ul>
@@ -1556,32 +1343,36 @@
           <li><a href="tools/economic-calendar.html">Economic Calendar</a></li>
           <li><a href="trading-glossary.html">Trading Glossary</a></li>
           <li><a href="trading-quizzes.html">Quizzes</a></li>
+          <li><a href="/partners.html">Partners</a></li>
+          <li><a href="/risk-disclosure.html">Risk Disclosure</a></li>
+          <li><a href="/affiliate-disclosure.html">Affiliate Disclosure</a></li>
         </ul>
       </div>
       <div class="footer-section">
         <h3>Community</h3>
         <ul>
-          <li><a href="#">Forums</a></li>
-          <li><a href="#">Trading Ideas</a></li>
-          <li><a href="#">Success Stories</a></li>
-          <li><a href="https://elhamamini.cc/fynx-blog/index.html" target="_blank" rel="noopener">Blog</a></li>
+          <li><a href="learn.html">Learning Center</a></li>
+          <li><a href="news.html">Market News</a></li>
+          <li><a href="journal.html">Trading Journal</a></li>
+          <li><a href="https://blog.fynxfinanceworld.com/" target="_blank" rel="noopener">Blog</a></li>
         </ul>
       </div>
      <div class="footer-section">
   <h3>Company</h3>
   <ul>
-    <li><a href="https://elhamamini.cc/FYNX-Site/index.html" target="_blank" rel="noopener">About Us</a></li>
-    <li><a href="founder.html">Founder</a></li>
+    <li><a href="about.html">About FYNX</a></li>
+    <li><a href="founder.html">About the Founder</a></li>
     <li><a href="https://fynxfunded.com" target="_blank" rel="noopener">FYNX Funded</a></li>
-    <li><a href="https://elhamamini.cc/FYNX-Site/support.html" target="_blank" rel="noopener">Contact</a></li>
+    <li><a href="/api/">FYNX API</a></li>
+    <li><a href="/contact.html">Contact</a></li>
     <li><a href="https://apps.apple.com/us/app/fynx-finance-world/id6752357210" target="_blank" rel="noopener">Download App</a></li>
-    <li><a href="https://elhamamini.cc/FYNX-Site/privacy.html" target="_blank" rel="noopener">Privacy Policy</a></li>
-    <li><a href="https://elhamamini.cc/FYNX-Site/terms.html" target="_blank" rel="noopener">Terms of Service</a></li>
+    <li><a href="https://ea-la.github.io/FYNX-Site/privacy.html" target="_blank" rel="noopener">Privacy Policy</a></li>
+    <li><a href="https://ea-la.github.io/FYNX-Site/terms.html" target="_blank" rel="noopener">Terms of Service</a></li>
   </ul>
 </div>
     </div>
     <div class="copyright">
-      © 2025 FYNX. All rights reserved.
+      © 2026 FYNX. All rights reserved.
     </div>
   </footer>
 
@@ -1606,8 +1397,19 @@
   </a>
 
   <!-- QR library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="script.js"></script>
+  <script src="/assets/vendor/qrcode.min.js"></script>
+  <script src="script.js?v=20261011-discovery"></script>
+  <script type="module">
+    import { auth } from './auth/firebase.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
+    const accountLinks = [...document.querySelectorAll('a[href="auth/login.html?returnTo=%2Fhome.html"]')];
+    onAuthStateChanged(auth, user => {
+      accountLinks.forEach(link => {
+        link.textContent = user ? 'Your profile' : 'Sign in';
+        link.href = user ? 'profile.html' : 'auth/login.html?returnTo=%2Fhome.html';
+      });
+    });
+  </script>
 
   <!-- ✅ FIX: FAQ JS (KAST-style) — replaces the wrong old FAQ script -->
   <script>
@@ -1721,151 +1523,6 @@
   })();
   </script>
 
-  <!-- ✅ FIX: Desktop hover subnavs (REAL FIX) -->
-  <script>
-  (function(){
-    // Only on desktop hover devices. Mobile keeps your click behavior.
-    const canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    if(!canHover) return;
 
-    const homeToggle = document.getElementById('homeToggle');
-    const learnToggle = document.getElementById('learnToggle');
-    const toolsToggle = document.getElementById('toolsToggle');
-    const newsToggle = document.getElementById('newsToggle');
-
-    const homeSubnav = document.getElementById('homeSubnav');
-    const learnSubnav = document.getElementById('learnSubnav');
-    const toolsSubnav = document.getElementById('toolsSubnav');
-    const newsSubnav = document.getElementById('newsSubnav');
-
-    const marketsToggle = document.getElementById('marketsToggle');
-    const homeMarketsSubnav = document.getElementById('homeMarketsSubnav');
-
-    const panels = [homeSubnav, learnSubnav, toolsSubnav, newsSubnav, homeMarketsSubnav].filter(Boolean);
-
-    function show(el){
-      if(!el) return;
-      el.style.display = 'block';
-      el.style.opacity = '1';
-      el.style.visibility = 'visible';
-      el.style.pointerEvents = 'auto';
-      el.setAttribute('aria-hidden', 'false');
-    }
-
-    function hide(el){
-      if(!el) return;
-      el.style.opacity = '';
-      el.style.visibility = '';
-      el.style.pointerEvents = '';
-      el.style.display = '';
-      el.setAttribute('aria-hidden', 'true');
-    }
-
-    function hideAll(except){
-      panels.forEach(p => {
-        if(p && p !== except) hide(p);
-      });
-    }
-
-    // Small delay so the user can move mouse from link -> panel without it closing.
-    function hoverPair(triggerEl, panelEl, onOpen){
-      if(!triggerEl || !panelEl) return;
-
-      let t = null;
-      const OPEN_DELAY = 0;
-      const CLOSE_DELAY = 140;
-
-      const open = () => {
-        clearTimeout(t);
-        t = setTimeout(() => {
-          hideAll(panelEl);
-          show(panelEl);
-          if(typeof onOpen === 'function') onOpen();
-        }, OPEN_DELAY);
-      };
-
-      const close = () => {
-        clearTimeout(t);
-        t = setTimeout(() => {
-          // Only close if mouse is not over trigger or panel
-          hide(panelEl);
-        }, CLOSE_DELAY);
-      };
-
-      triggerEl.addEventListener('mouseenter', open);
-      triggerEl.addEventListener('mouseleave', close);
-
-      panelEl.addEventListener('mouseenter', () => {
-        clearTimeout(t);
-        show(panelEl);
-      });
-      panelEl.addEventListener('mouseleave', close);
-    }
-
-    // Prevent jump to #hash when hovering (but allow normal click nav)
-    function preventHashOnHover(a){
-      if(!a) return;
-      a.addEventListener('mouseenter', (e) => {
-        // nothing needed here; just keeping behavior stable
-      });
-    }
-
-    preventHashOnHover(homeToggle);
-    preventHashOnHover(learnToggle);
-    preventHashOnHover(toolsToggle);
-    preventHashOnHover(newsToggle);
-
-    hoverPair(homeToggle, homeSubnav, () => { hide(homeMarketsSubnav); });
-    hoverPair(learnToggle, learnSubnav, () => { hide(homeMarketsSubnav); });
-    hoverPair(toolsToggle, toolsSubnav, () => { hide(homeMarketsSubnav); });
-    hoverPair(newsToggle, newsSubnav, () => { hide(homeMarketsSubnav); });
-
-    // Markets submenu inside Home
-    if(marketsToggle && homeMarketsSubnav){
-      let t2 = null;
-      const CLOSE_DELAY = 140;
-
-      const openMarkets = () => {
-        clearTimeout(t2);
-        show(homeSubnav);      // keep Home open
-        show(homeMarketsSubnav);
-      };
-
-      const closeMarkets = () => {
-        clearTimeout(t2);
-        t2 = setTimeout(() => {
-          hide(homeMarketsSubnav);
-        }, CLOSE_DELAY);
-      };
-
-      marketsToggle.addEventListener('mouseenter', openMarkets);
-      marketsToggle.addEventListener('mouseleave', closeMarkets);
-
-      homeMarketsSubnav.addEventListener('mouseenter', () => {
-        clearTimeout(t2);
-        show(homeSubnav);
-        show(homeMarketsSubnav);
-      });
-      homeMarketsSubnav.addEventListener('mouseleave', closeMarkets);
-    }
-
-    // If you hover anywhere else on the page, close all
-    document.addEventListener('mousemove', (e) => {
-      const withinHeader = e.target.closest && e.target.closest('#header');
-      const withinPanels = e.target.closest && (
-        e.target.closest('#homeSubnav') ||
-        e.target.closest('#learnSubnav') ||
-        e.target.closest('#toolsSubnav') ||
-        e.target.closest('#newsSubnav') ||
-        e.target.closest('#homeMarketsSubnav')
-      );
-      if(!withinHeader && !withinPanels){
-        hideAll(null);
-      }
-    });
-  })();
-  </script>
-  <script src="/assets/js/live-site.js" defer></script>
 </body>
 </html>
-```

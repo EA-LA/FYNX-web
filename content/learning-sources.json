@@ -1,0 +1,11 @@
+{
+  "stocks": ["Investor.gov: Stocks", "https://www.investor.gov/introduction-investing/investing-basics/investment-products/stocks"],
+  "funds": ["Investor.gov: Exchange-traded funds", "https://www.investor.gov/introduction-investing/investing-basics/investment-products/mutual-funds-and-exchange-traded-2"],
+  "futures": ["CME Group: Education", "https://www.cmegroup.com/education.html"],
+  "forex": ["CFTC: Foreign exchange education", "https://www.cftc.gov/LearnAndProtect/forexfrauds"],
+  "crypto": ["CFTC: Virtual currency risks", "https://www.cftc.gov/LearnAndProtect/AdvisoriesAndArticles/understand_risks_of_virtual_currency.html"],
+  "indices": ["Investor.gov: Introduction to investing", "https://www.investor.gov/introduction-investing"],
+  "bonds": ["Investor.gov: Bonds", "https://www.investor.gov/introduction-investing/investing-basics/investment-products/bonds-or-fixed-income-products/bonds"],
+  "economy": ["Federal Reserve: Monetary policy", "https://www.federalreserve.gov/monetarypolicy.htm"],
+  "options": ["Options Industry Council: Options basics", "https://www.optionseducation.org/optionsoverview/options-basics"]
+}

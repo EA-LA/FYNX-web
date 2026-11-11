@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX — Learn</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="../assets/theme.js" defer></script>
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
+  <script src="../assets/theme.js?v=20260922-routing" defer></script>
   <style>
     :root{
       --bg:#080808;
@@ -24,7 +24,6 @@
       --warn:#cdcdcd;
       --danger:#9e9e9e;
     }
-
     html[data-theme="light"], body.light-mode {
       --bg:#f7f7f7;
       --bg-soft:#f1f1f1;
@@ -42,10 +41,8 @@
       --warn:#7f7f7f;
       --danger:#616161;
     }
-
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'Inter','Segoe UI',system-ui,sans-serif;color:var(--text);background:var(--bg);min-height:100vh;overflow-x:hidden}
-
     .animated-bg{position:fixed;inset:0;z-index:-1;overflow:hidden}
     .grid-overlay{
       position:absolute;inset:0;
@@ -57,12 +54,10 @@
       animation:gridMove 22s linear infinite;
     }
     @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(44px,44px)}}
-
     .orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.2;animation:float 18s ease-in-out infinite}
     .orb-1{width:540px;height:540px;background:radial-gradient(circle,var(--accent) 0%,transparent 70%);left:-220px;top:-260px}
     .orb-2{width:420px;height:420px;background:radial-gradient(circle,var(--accent) 0%,transparent 70%);right:-180px;bottom:-160px;animation-delay:5s}
     @keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-40px)}}
-
     header{position:sticky;top:0;z-index:10;background:color-mix(in oklab, var(--bg) 88%, transparent);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
     .nav{max-width:1280px;margin:0 auto;padding:.9rem 1.2rem;display:flex;justify-content:space-between;align-items:center;gap:1rem}
     .brand{display:flex;align-items:center;gap:.55rem;font-size:1.24rem;font-weight:900;letter-spacing:-.9px}
@@ -74,33 +69,27 @@
     }
     .btn:hover,.chip:hover{background:var(--chip-hover);transform:translateY(-1px)}
     .chip.active{background:var(--accent-soft);border-color:color-mix(in oklab, var(--accent) 55%, var(--border));}
-
     main{max-width:1280px;margin:0 auto;padding:1.5rem 1.2rem 3rem}
     .hero{padding:1.4rem;border:1px solid var(--border);background:var(--panel-soft);border-radius:20px}
     h1{font-size:clamp(1.9rem,5.2vw,3rem);line-height:1.1;letter-spacing:-1.5px}
     .sub{margin-top:.55rem;max-width:80ch;color:var(--text-muted);line-height:1.65}
-
     .chips{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:1rem}
-
     .kpis{margin-top:1rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.7rem}
     .kpi{border:1px solid var(--border);background:var(--panel);border-radius:14px;padding:.8rem}
     .kpi .label{color:var(--text-soft);font-size:.82rem}
     .kpi .value{margin-top:.22rem;font-size:1.05rem;font-weight:800}
-
     .panel{margin-top:1rem;border:1px solid var(--border);background:var(--panel);border-radius:16px;padding:1rem}
     .panel h2{font-size:1.1rem;letter-spacing:-.2px}
     .panel p{color:var(--text-muted);line-height:1.65;margin-top:.5rem}
     .panel h3{margin:.85rem 0 .45rem;font-size:1rem}
     ul{display:grid;gap:.45rem;padding-left:1.1rem;color:var(--text-muted)}
     li strong{color:var(--text)}
-
     .grid{margin-top:1rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.8rem}
     .card{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:1rem}
     .card h3{font-size:1.04rem;letter-spacing:-.2px}
     .card .muted{margin-top:.4rem;color:var(--text-muted);line-height:1.6}
     .meta{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.75rem}
     .tag{padding:.26rem .55rem;border-radius:999px;border:1px solid var(--border);background:var(--chip);font-size:.72rem;font-weight:700;color:var(--text-soft)}
-
     .lesson-cards{margin-top:1rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.8rem}
     .lesson-card{border:1px solid var(--border);border-radius:14px;background:var(--panel);overflow:hidden}
     .lesson-head{height:78px;display:flex;align-items:flex-end;padding:.85rem;background:linear-gradient(120deg,var(--accent-soft),transparent)}
@@ -108,7 +97,6 @@
     .lesson-body{padding:.95rem}
     .lesson-title{font-size:1.12rem;line-height:1.28;letter-spacing:-.25px}
     .lesson-desc{margin-top:.5rem;color:var(--text-muted);line-height:1.6}
-
     .quiz-wrap{margin-top:1rem;display:grid;gap:.8rem}
     .quiz-card{border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:1rem}
     .quiz-card h3{font-size:1rem;line-height:1.45}
@@ -116,17 +104,14 @@
     .opt{display:flex;gap:.55rem;align-items:flex-start;border:1px solid var(--border);background:var(--panel-soft);border-radius:10px;padding:.56rem .62rem}
     .opt-letter{display:inline-flex;align-items:center;justify-content:center;width:1.3rem;height:1.3rem;border-radius:50%;background:var(--chip);font-size:.72rem;font-weight:800}
     .answer{margin-top:.68rem;border-left:3px solid var(--ok);padding:.38rem .6rem;background:color-mix(in oklab, var(--ok) 13%, transparent);border-radius:8px;color:var(--text-muted);line-height:1.55}
-
     .rubric{margin-top:1rem;border:1px dashed var(--border);background:var(--panel-soft);border-radius:12px;padding:.9rem}
     .rubric h3{font-size:.95rem}
     .rubric-grid{margin-top:.6rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.55rem}
     .rubric-item{border:1px solid var(--border);border-radius:10px;padding:.62rem;background:var(--panel)}
-
     .glossary{margin-top:1rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.7rem}
     .term{border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:.8rem}
     .term strong{display:block;margin-bottom:.3rem}
     .term p{color:var(--text-muted);line-height:1.58}
-
     @media (max-width:640px){
       .nav{padding:.72rem .8rem}
       main{padding:1rem .82rem 2rem}
@@ -134,9 +119,22 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/editorial-pages.css?v=20261109-nav-wrap">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
+<title>Learn — Topic | FYNX Finance World</title>
+<meta name="description" content="Learn — Topic. Explore this resource from FYNX Finance World.">
+<link rel="canonical" href="https://www.fynxfinanceworld.com/learn/topic.html">
+<meta property="og:title" content="Learn — Topic | FYNX Finance World">
+<meta property="og:description" content="Learn — Topic. Explore this resource from FYNX Finance World.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/learn/topic.html">
+<meta name="robots" content="noindex,follow">
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
 </head>
-<body>
-  <div class="animated-bg">
+<body class="editorial-page editorial-learning" data-fynx-layout="standalone" data-fynx-section="LEARNING">
+<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
+<div class="animated-bg">
     <div class="grid-overlay"></div>
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
@@ -145,20 +143,20 @@
   <header>
     <div class="nav">
       <div class="brand" id="brandTitle"><i class="fas fa-graduation-cap"></i> Learn</div>
-      <a href="../index.html" class="btn"><i class="fas fa-house"></i> Home</a>
+      <div class="editorial-actions"><button class="btn" type="button" data-journal-theme aria-label="Switch theme">◐</button><a href="../learn.html" class="btn">Learning center</a><a href="../index.html" class="btn"><i class="fas fa-house"></i> Home</a></div>
     </div>
   </header>
 
   <main>
     <section class="hero">
-      <h1 id="pageTitle">Learn</h1>
+      <div class="editorial-label">FYNX / LEARNING CENTER</div><h1 id="pageTitle">Learn</h1>
       <p class="sub" id="pageDesc">Loads by topic + section from URL params.</p>
 
       <div class="chips" id="topicChips"></div>
       <div class="chips">
-        <a class="chip" id="chipHowto" href="#"><i class="fas fa-play"></i> How to Trade</a>
-        <a class="chip" id="chipQuizzes" href="#"><i class="fas fa-circle-question"></i> Trading Quizzes</a>
-        <a class="chip" id="chipGlossary" href="#"><i class="fas fa-book"></i> Glossary</a>
+        <a class="chip" id="chipHowto" href="forex-howto.html"><i class="fas fa-play"></i> How to Trade</a>
+        <a class="chip" id="chipQuizzes" href="forex-quizzes.html"><i class="fas fa-circle-question"></i> Trading Quizzes</a>
+        <a class="chip" id="chipGlossary" href="forex-glossary.html"><i class="fas fa-book"></i> Glossary</a>
       </div>
 
       <div class="kpis" id="kpis"></div>
@@ -168,8 +166,10 @@
 
   <script>
     const params = new URLSearchParams(location.search);
-    const topic = (params.get('topic') || 'forex').toLowerCase();
-    const section = (params.get('section') || 'howto').toLowerCase();
+    const requestedTopic = (document.body.dataset.learningTopic || params.get('topic') || 'forex').toLowerCase();
+    const topic = ['stocks','funds','futures','forex','crypto','indices','bonds','economy','options'].includes(requestedTopic) ? requestedTopic : 'forex';
+    const requestedSection = (document.body.dataset.learningSection || params.get('section') || 'howto').toLowerCase();
+    const section = ['howto','quizzes','glossary'].includes(requestedSection) ? requestedSection : 'howto';
 
     const labels = {
       stocks:'Stocks', funds:'Funds', futures:'Futures', forex:'Forex', crypto:'Crypto',
@@ -182,15 +182,15 @@
     };
 
     const topicMeta = {
-      stocks:{ focus:'Earnings + momentum + risk', level:'Beginner to Advanced', modules:22, quizzes:48, terms:62 },
-      funds:{ focus:'ETF rotation + allocation', level:'Beginner to Intermediate', modules:18, quizzes:40, terms:51 },
-      futures:{ focus:'Leverage + session structure', level:'Intermediate to Advanced', modules:24, quizzes:56, terms:67 },
-      forex:{ focus:'Pairs + macro + execution', level:'Beginner to Advanced', modules:27, quizzes:64, terms:70 },
-      crypto:{ focus:'Volatility + on-chain context', level:'Beginner to Advanced', modules:23, quizzes:52, terms:58 },
-      indices:{ focus:'Macro risk + breadth', level:'Intermediate', modules:19, quizzes:45, terms:50 },
-      bonds:{ focus:'Rates + duration + inflation', level:'Intermediate', modules:17, quizzes:39, terms:49 },
-      economy:{ focus:'Data releases + scenarios', level:'Beginner to Advanced', modules:21, quizzes:47, terms:55 },
-      options:{ focus:'Greeks + strategy design', level:'Intermediate to Advanced', modules:29, quizzes:71, terms:78 }
+      stocks:{ focus:'Earnings + momentum + risk', level:'Beginner to Advanced' },
+      funds:{ focus:'ETF rotation + allocation', level:'Beginner to Intermediate' },
+      futures:{ focus:'Leverage + session structure', level:'Intermediate to Advanced' },
+      forex:{ focus:'Pairs + macro + execution', level:'Beginner to Advanced' },
+      crypto:{ focus:'Volatility + on-chain context', level:'Beginner to Advanced' },
+      indices:{ focus:'Macro risk + breadth', level:'Intermediate' },
+      bonds:{ focus:'Rates + duration + inflation', level:'Intermediate' },
+      economy:{ focus:'Data releases + scenarios', level:'Beginner to Advanced' },
+      options:{ focus:'Greeks + strategy design', level:'Intermediate to Advanced' }
     };
 
     const sectionLabels = { howto:'How to Trade', quizzes:'Trading Quizzes', glossary:'Glossary' };
@@ -340,7 +340,7 @@
     };
 
     function linkFor(nextTopic, sec){
-      return 'topic.html?topic=' + encodeURIComponent(nextTopic) + '&section=' + encodeURIComponent(sec);
+      return '/learn/' + encodeURIComponent(nextTopic) + '-' + encodeURIComponent(sec) + '.html';
     }
 
     function renderTopicChips(){
@@ -360,11 +360,13 @@
       document.getElementById('kpis').innerHTML = [
         ['Focus', meta.focus],
         ['Level', meta.level],
-        ['Learning Modules', String(meta.modules)],
-        ['Quiz Questions', String(meta.quizzes)],
-        ['Glossary Terms', String(meta.terms)]
+        ['Lesson outlines', String(lessonLibrary[topic].length)],
+        ['Study questions', String(quizBank[topic].length)],
+        ['Glossary terms', String(glossaryBank[topic].length)]
       ].map(([label,value]) => `<div class="kpi"><div class="label">${label}</div><div class="value">${value}</div></div>`).join('');
     }
+
+    function lessonLink(item){ return '/learn/lessons/' + topic + '/' + item.title.toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.html'; }
 
     function renderHowTo(){
       const lib = lessonLibrary[topic] || lessonLibrary.forex;
@@ -373,7 +375,7 @@
       root.innerHTML = `
         <div class="panel">
           <h2>Trading Framework — ${labels[topic] || 'Market'}</h2>
-          <p>Each path below is designed like a full platform curriculum. Start with beginner modules, complete intermediate execution modules, then move to advanced portfolio-level decision making.</p>
+          <p>Open a guide for a focused explanation, a worked example and a practice exercise. Start with the basics, then compare execution and portfolio risk concepts.</p>
           <div class="grid">
             <div class="card"><h3>1) Market Context</h3><ul><li>Identify regime (trend/range/high-volatility/event risk).</li><li>Map key levels from higher timeframes.</li><li>Define directional bias and invalidation.</li></ul></div>
             <div class="card"><h3>2) Setup & Entry</h3><ul><li>Wait for confirmation trigger, not anticipation.</li><li>Record exact entry, stop, target before execution.</li><li>Keep risk fixed to prevent emotional sizing.</li></ul></div>
@@ -386,7 +388,7 @@
             <article class="lesson-card">
               <div class="lesson-head"><span class="difficulty"><i class="fas fa-lightbulb"></i> ${item.level}</span></div>
               <div class="lesson-body">
-                <h3 class="lesson-title">${item.title}</h3>
+                <h3 class="lesson-title"><a href="${lessonLink(item)}">${item.title} →</a></h3>
                 <p class="lesson-desc">${item.desc}</p>
                 <div class="meta">${item.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
               </div>
@@ -421,7 +423,7 @@
 
       root.innerHTML = `
         <div class="panel">
-          <h2>${labels[topic]} — Assessment Center</h2>
+          <h2>${labels[topic]} — Study questions</h2><p><a class="btn" href="../trading-quizzes.html">Take a scored quiz ↗</a></p><h2>Review the answers</h2>
           <p>This is a product-style assessment format: scenario, multiple choice, and explanation for reinforcement. Use these as weekly checks to verify strategy understanding and risk discipline.</p>
           <div class="grid">
             <div class="card"><h3>Quiz Mode</h3><ul><li>Attempt all questions without viewing answers first.</li><li>Mark confidence level (high/medium/low) per question.</li><li>Review wrong answers and update your trading playbook.</li></ul></div>
@@ -470,7 +472,7 @@
 
       document.getElementById('brandTitle').innerHTML = `<i class="fas ${icons[safeTopic] || 'fa-graduation-cap'}"></i> ${labels[safeTopic]}`;
       document.getElementById('pageTitle').textContent = `${labels[safeTopic]} — ${sectionLabels[safeSection]}`;
-      document.getElementById('pageDesc').textContent = `Comprehensive ${sectionLabels[safeSection].toLowerCase()} content for ${labels[safeTopic]} with a full-platform learning structure.`;
+      document.getElementById('pageDesc').textContent = ({howto: `Study ${labels[safeTopic]} trading with lesson outlines covering market concepts, execution and risk management.`, quizzes: `Test your ${labels[safeTopic]} knowledge with study questions and explanations. Review concepts and practice before trading.`, glossary: `Learn ${labels[safeTopic]} terminology with a practical glossary of market concepts and trading definitions.`})[safeSection];
 
       document.getElementById('chipHowto').href = linkFor(safeTopic, 'howto');
       document.getElementById('chipQuizzes').href = linkFor(safeTopic, 'quizzes');
@@ -480,6 +482,9 @@
       document.getElementById('chipQuizzes').classList.toggle('active', safeSection === 'quizzes');
       document.getElementById('chipGlossary').classList.toggle('active', safeSection === 'glossary');
 
+      document.title = `${labels[safeTopic]} — ${sectionLabels[safeSection]} | FYNX Finance World`;
+      document.querySelector('link[rel=canonical]').href = 'https://www.fynxfinanceworld.com' + linkFor(safeTopic, safeSection);
+      document.querySelector('meta[name=description]').content = document.getElementById('pageDesc').textContent;
       renderTopicChips();
       renderKpis();
 
@@ -490,6 +495,7 @@
 
     run();
   </script>
-  <script src="/assets/js/live-site.js" defer></script>
-</body>
+
+<script type="module" src="/assets/js/cloud-learning.js?v=20260928-learning"></script>
+<footer></footer></body>
 </html>

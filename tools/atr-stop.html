@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FYNX Tools — ATR Stop Suggestion</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     :root{
@@ -27,7 +26,6 @@
       --sell-bg: rgba(0, 0, 0, .12);
       --sell-border: rgba(0, 0, 0, .20);
     }
-
     body.dark-mode{
       --bg:#000;
       --panel: rgba(255, 255, 255, .06);
@@ -44,7 +42,6 @@
       --sell-bg: rgba(132, 132, 132, .12);
       --sell-border: rgba(132, 132, 132, .20);
     }
-
     body{
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color: var(--text);
@@ -57,13 +54,11 @@
     body.dark-mode{
       background: var(--bg);
     }
-
     .animated-bg{
       position:fixed; inset:0; z-index:-1;
       background:transparent; overflow:hidden;
     }
     body.dark-mode .animated-bg{ background:#000; }
-
     .grid-overlay{
       position:absolute; inset:0;
       background-image:
@@ -78,12 +73,10 @@
         linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     }
-
     @keyframes gridMove{
       0%{transform:translate(0,0)}
       100%{transform:translate(52px,52px)}
     }
-
     .gradient-orb{
       position:absolute; border-radius:999px; filter: blur(80px);
       opacity:.18;
@@ -96,12 +89,10 @@
       opacity:.22;
       background: radial-gradient(circle, #fff 0%, transparent 65%);
     }
-
     @keyframes floaty{
       0%,100%{transform:translate(0,0) scale(1)}
       50%{transform:translate(30px,-24px) scale(.97)}
     }
-
     header{
       position:sticky; top:0; z-index:1000;
       background: rgba(243, 243, 243, .82);
@@ -111,7 +102,6 @@
     body.dark-mode header{
       background: rgba(0, 0, 0, .78);
     }
-
     .nav{
       max-width: var(--max);
       margin: 0 auto;
@@ -121,7 +111,6 @@
       justify-content:space-between;
       gap:12px;
     }
-
     .brand{
       display:flex; align-items:center; gap:10px;
       font-weight: 850;
@@ -130,7 +119,6 @@
     }
     .brand i{opacity:.92}
     .nav-actions{display:flex; align-items:center; gap:10px;}
-
     .btn{
       display:inline-flex; align-items:center; gap:10px;
       padding:10px 14px;
@@ -151,9 +139,7 @@
     .btn:hover{transform: translateY(-1px); background: rgba(0, 0, 0, .08); border-color: rgba(0, 0, 0, .18)}
     body.dark-mode .btn:hover{ background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .18); }
     .btn i{opacity:.9}
-
     main{max-width: var(--max); margin:0 auto; padding: 46px 18px 70px;}
-
     .shell{
       background: linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(255, 255, 255, .70));
       border: 1px solid var(--border2);
@@ -164,7 +150,6 @@
     body.dark-mode .shell{
       background: linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .04));
     }
-
     .title{
       font-size: 44px;
       line-height: 1.04;
@@ -180,7 +165,6 @@
       -webkit-background-clip:text;
       -webkit-text-fill-color:transparent;
     }
-
     .subtitle{
       color: var(--muted);
       font-size: 15px;
@@ -189,14 +173,12 @@
       margin-bottom: 18px;
     }
     @media (max-width: 980px){ .title{font-size: 36px} }
-
     .cards{
       display:grid;
       grid-template-columns: 1fr;
       gap: 16px;
       margin-top: 10px;
     }
-
     .card{
       border: 1px solid var(--border2);
       background: rgba(255, 255, 255, .58);
@@ -208,7 +190,6 @@
       background: rgba(0, 0, 0, .35);
       box-shadow:none;
     }
-
     .card h3{
       font-size: 16px;
       font-weight: 950;
@@ -217,12 +198,10 @@
       text-transform: uppercase;
       letter-spacing: .6px;
     }
-
     .chipsRow{
       display:flex; gap:8px; flex-wrap:wrap;
       margin-top: 10px;
     }
-
     .chip{
       border:none;
       cursor:pointer;
@@ -245,7 +224,6 @@
     body.dark-mode .chip:hover{ background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .16); }
     .chip.active{background: rgba(0, 0, 0, .16); border-color: rgba(0, 0, 0, .18)}
     body.dark-mode .chip.active{background: rgba(255, 255, 255, .20); border-color: rgba(255, 255, 255, .18)}
-
     label{
       display:block;
       font-size: 12px;
@@ -255,14 +233,12 @@
       text-transform: uppercase;
       letter-spacing:.4px;
     }
-
     .grid2{
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
     @media (max-width: 860px){ .grid2{grid-template-columns:1fr} }
-
     .field, select, textarea{
       width:100%;
       border-radius: 14px;
@@ -280,7 +256,6 @@
       background: rgba(255, 255, 255, .04);
       color: var(--text);
     }
-
     textarea{
       min-height: 150px;
       resize: vertical;
@@ -288,7 +263,6 @@
       font-size: 12px;
       letter-spacing:.2px;
     }
-
     .field:focus, select:focus, textarea:focus{
       border-color: rgba(0, 0, 0, .22);
       background: rgba(255, 255, 255, .95);
@@ -299,7 +273,6 @@
       border-color: rgba(255, 255, 255, .22);
       background: rgba(255, 255, 255, .06);
     }
-
     .seg{
       display:flex; gap:10px; flex-wrap:wrap;
       margin-top: 6px;
@@ -325,7 +298,6 @@
     body.dark-mode .seg button:hover{ background: rgba(255, 255, 255, .09); border-color: rgba(255, 255, 255, .16); }
     .seg button.active{background: rgba(0, 0, 0, .14); border-color: rgba(0, 0, 0, .20); color:var(--text)}
     body.dark-mode .seg button.active{background: rgba(255, 255, 255, .14); border-color: rgba(255, 255, 255, .20); color:#fff}
-
     .primary{
       border-radius: 14px;
       padding: 12px 14px;
@@ -345,10 +317,8 @@
     }
     .primary:hover{transform: translateY(-1px); background: rgba(0, 0, 0, .18); border-color: rgba(0, 0, 0, .28)}
     body.dark-mode .primary:hover{ background: rgba(255, 255, 255, .18); border-color: rgba(255, 255, 255, .28); }
-
     .muted{color: var(--muted2); font-size: 12px; line-height: 1.55; font-weight: 800;}
     .danger{color: var(--danger); font-size: 12px; font-weight: 950; margin-top: 10px; display:none;}
-
     .pillRow{display:flex; gap:8px; flex-wrap:wrap; margin-top: 10px;}
     .pill{
       display:inline-flex; align-items:center;
@@ -368,7 +338,6 @@
     }
     .pill.buy{background: var(--buy-bg); border-color: var(--buy-border)}
     .pill.sell{background: var(--sell-bg); border-color: var(--sell-border)}
-
     .bigBox{
       margin-top: 12px;
       padding: 14px;
@@ -410,7 +379,6 @@
     }
     .pips.buy{background: var(--sell-bg); border-color: var(--sell-border)}
     .pips.sell{background: var(--buy-bg); border-color: var(--buy-border)}
-
     .rows{margin-top: 10px; display:flex; flex-direction:column; gap:8px}
     .rowLine{
       display:flex; justify-content:space-between; gap:10px;
@@ -432,10 +400,37 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
+<title>ATR Stop-Loss Calculator | FYNX</title>
+<meta name="description" content="Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="stylesheet" href="/assets/css/api-calculator-pilot.css">
+<style>.scenario-link-status{margin:10px 0 0;font-size:13px;line-height:1.5;color:inherit;opacity:.85}.scenario-link-status:empty{display:none}.scenario-link-box{display:block;width:100%;box-sizing:border-box;margin-top:6px;font-size:16px;padding:10px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit}</style>
+<script src="/assets/js/scenario-link.js?v=20261111-scenario-privacy-4" defer></script>
+<link rel="canonical" href="https://www.fynxfinanceworld.com/tools/atr-stop.html">
+<meta property="og:title" content="ATR Stop-Loss Calculator | FYNX">
+<meta property="og:description" content="Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/tools/atr-stop.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261012" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"ATR Stop-Loss Calculator","item":"https://www.fynxfinanceworld.com/tools/atr-stop.html"}]}</script><!-- discovery-schema:end -->
+<!-- search-identity:start --><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.fynxfinanceworld.com/#organization","name":"FYNX","alternateName":"FYNX Finance World","url":"https://www.fynxfinanceworld.com/","founder":{"@id":"https://ea-la.github.io/#person"},"sameAs":["https://www.fynxfunded.com/","https://site.fynxfinanceworld.com/","https://blog.fynxfinanceworld.com/","https://roadmap.fynxfinanceworld.com/"]},{"@type":"Person","@id":"https://ea-la.github.io/#person","name":"Elham Amini","url":"https://ea-la.github.io/","jobTitle":"Founder of FYNX","sameAs":["https://www.linkedin.com/in/elham-amini-745560302/","https://www.instagram.com/___elham_amini___/"],"worksFor":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebSite","@id":"https://www.fynxfinanceworld.com/#website","url":"https://www.fynxfinanceworld.com/","name":"FYNX Finance World","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebPage","@id":"https://www.fynxfinanceworld.com/tools/atr-stop.html#webpage","url":"https://www.fynxfinanceworld.com/tools/atr-stop.html","name":"ATR Stop-Loss Calculator | FYNX","description":"Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.","inLanguage":"en","isPartOf":{"@id":"https://www.fynxfinanceworld.com/#website"},"publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"},"mainEntity":{"@id":"https://www.fynxfinanceworld.com/tools/atr-stop.html#tool"}},{"@type":"WebApplication","@id":"https://www.fynxfinanceworld.com/tools/atr-stop.html#tool","url":"https://www.fynxfinanceworld.com/tools/atr-stop.html","name":"ATR Stop-Loss Calculator","description":"Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}}]}</script><!-- search-identity:end -->
+<!-- FYNX ADSENSE VERIFICATION START -->
+<script>(window.adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 1;</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
+     crossorigin="anonymous"></script>
+<!-- FYNX ADSENSE VERIFICATION END -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
 </head>
 
-<body>
-  <div class="animated-bg">
+<body data-fynx-layout="standalone" data-fynx-section="TOOLS">
+<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
+<div class="animated-bg">
     <div class="grid-overlay"></div>
     <div class="gradient-orb orb-1"></div>
     <div class="gradient-orb orb-2"></div>
@@ -452,8 +447,9 @@
   </header>
 
   <main>
-    <div class="shell" id="tapDismiss">
-      <div class="title">ATR Stop Suggestion</div>
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<div class="shell" id="tapDismiss">
+      <h1 class="title">ATR Stop Suggestion</h1>
       <div class="subtitle">
         Turn ATR into a smart stop-loss. We use <b>ATR × multiple</b> to suggest a volatility-based stop for your trade.
       </div>
@@ -509,6 +505,12 @@
             <label>ATR multiple</label>
             <div class="chipsRow" id="multChips"></div>
           </div>
+          <div class="chipsRow" style="margin-top:14px;">
+            <select id="side" hidden aria-hidden="true" tabindex="-1"><option value="buy">buy</option><option value="sell">sell</option></select>
+            <input type="hidden" id="mult" value="1.5">
+            <button type="button" id="applyScenario" hidden aria-hidden="true" tabindex="-1"></button>
+            <button type="button" class="chip" id="shareScenarioBtn" data-scenario-fields="pair,side,entry,period,atrValue,mult" data-scenario-run="applyScenario" data-scenario-opened="Opened a shared scenario. Results update as you change any input."><i class="fas fa-link"></i> Copy scenario link</button>
+          </div>
           <div class="danger" id="errorBox">Please enter valid numbers.</div>
         </div>
 
@@ -532,12 +534,16 @@
 
       </div>
     </div>
-  </main>
+  <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Compares the theoretical Forex stop at the displayed precision. Gold and crypto verification are outside this rollout.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
+<!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Use volatility to compare stop distances</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Use an ATR value measured on the timeframe of your plan. Select direction and multiplier, then check the suggested distance against market structure and your risk budget.</p><h3>The calculation or concept</h3><p>Illustrative stop distance = average true range × selected multiplier.</p></div><div class="tool-example"><h3>Worked example</h3><p>If ATR is 1.5 price units and the multiplier is 2, the distance is 3 units. A long entry at 100 would place that illustrative level at 97.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>ATR describes historical movement. It does not predict the next move or guarantee that a stop will execute at its stated price.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/risk-reward.html"><strong>Risk-to-Reward Ratio Calculator</strong><span>Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</span></a><a href="/tools/margin.html"><strong>Forex Margin &amp; Leverage Calculator</strong><span>Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
 
-  <script>
+  <script src="/assets/vendor/decimal.js"></script>
+<script>
     const THEME_KEY = "fynx_theme";
     (function applyThemeFromStorage(){
-      const saved = localStorage.getItem(THEME_KEY);
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
       if (saved === "dark") document.body.classList.add("dark-mode");
       else document.body.classList.remove("dark-mode");
     })();
@@ -587,6 +593,7 @@
         btn.textContent = `${m.toFixed(1)}x ATR`;
         btn.addEventListener("click", () => {
           currentMultiple = m;
+          document.getElementById("mult").value = String(m);
           buildMultipleChips();
           updateCalc();
         });
@@ -599,8 +606,21 @@
         sideSeg.querySelectorAll("button").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         currentSide = btn.dataset.side;
+        document.getElementById("side").value = currentSide;
         updateCalc();
       });
+    });
+
+    // [site-qa] run 64: shared scenario links carry side and ATR multiple; only listed values are accepted.
+    document.getElementById("applyScenario").addEventListener("click", () => {
+      const side = document.getElementById("side").value === "sell" ? "sell" : "buy";
+      const sideBtn = sideSeg.querySelector(`button[data-side="${side}"]`);
+      if (sideBtn) sideBtn.click();
+      const m = Number(document.getElementById("mult").value);
+      if (multiples.includes(m)) currentMultiple = m;
+      document.getElementById("mult").value = String(currentMultiple);
+      buildMultipleChips();
+      updateCalc();
     });
 
     function getSelectedPairMeta(){
@@ -636,7 +656,7 @@
         pipsOut.className = "pips sell";
       }
 
-      if(!isFinite(entryVal) || !isFinite(atrVal) || !isFinite(periodVal) || atrVal <= 0 || periodVal <= 0){
+      if(!isFinite(entryVal) || !isFinite(atrVal) || !isFinite(periodVal) || entryVal <= 0 || atrVal <= 0 || periodVal <= 0 || (currentSide === "buy" && entryVal - atrVal * currentMultiple <= 0)){
         errorBox.style.display = "block";
         stopOut.textContent = "—";
         pipsOut.textContent = "— pips";
@@ -668,7 +688,19 @@
 
     buildMultipleChips();
     updateCalc();
-  </script>
-  <script src="/assets/js/live-site.js" defer></script>
-</body>
+
+// Opt-in first-party adapter; all network access stays in the shared controller.
+window.fynxRiskPilot=async()=>{
+ const value=id=>document.getElementById(id).value.trim();
+ const number=(raw,digits)=>{const cleaned=String(raw).replace(/[^0-9.+-]/g,'');if(!cleaned||!Number.isFinite(Number(cleaned)))throw new Error('Calculate valid inputs first.');return Number(cleaned).toFixed(digits);};
+ const meta={instrument_type:'forex',symbol:'FOREX.MODEL',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1'};
+updateCalc();if(errorBox.style.display==='block')throw new Error('Enter valid entry and ATR values.');
+ if(!['EUR/USD','GBP/USD','USD/JPY'].includes(pair.value))throw new Error('This first-party verification supports the listed Forex pairs only.');
+ const precision=getSelectedPairMeta().decimals;
+ return {endpoint:'atr-stop',input:{entry_price:value('entry'),atr_value:value('atrValue'),multiplier:String(currentMultiple),direction:currentSide==='buy'?'long':'short'},resultKey:'stop_loss_price',precision,local:number(stopOut.textContent,precision)};
+};
+</script>
+
+<script type="module" src="/assets/js/api-calculator-pilot.js"></script>
+<footer></footer></body>
 </html>

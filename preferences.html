@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en"><head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>FYNX - Preferences</title>
+
 <link rel="stylesheet" href="assets/css/mobile-fixes.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box} body{font-family:'Inter',sans-serif;background:#fff;color:#000;height:100vh;overflow:hidden} body.dark-mode{background:#000;color:#fff}
@@ -17,20 +18,35 @@ body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,25
 .icon-btn{width:34px;height:34px;border-radius:10px;border:1px solid #ddd;background:#fff;display:grid;place-items:center;cursor:pointer}.icon-btn svg{width:18px;height:18px;stroke:#000;stroke-width:1.5;fill:none}
 body.dark-mode .icon-btn{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.04)} body.dark-mode .icon-btn svg{stroke:#fff}
 @media(max-width:900px){.grid{grid-template-columns:1fr}.content-area{padding:20px}}
-</style></head>
-<body data-protected-page="true"><div class="dashboard-container"><nav class="nav-panel"></nav><main class="main-content">
+</style>  <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
+
+<title>FYNX - Preferences</title>
+<meta name="description" content="FYNX - Preferences. Platform behavior defaults for tools, alerts, and market workflow.">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://www.fynxfinanceworld.com/preferences.html">
+<meta property="og:title" content="FYNX - Preferences">
+<meta property="og:description" content="FYNX - Preferences. Platform behavior defaults for tools, alerts, and market workflow.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/preferences.html">
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
+</head>
+<body data-protected-page="true" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD">
+<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
+<div class="dashboard-container"><nav class="nav-panel"></nav><main class="main-content">
 <div class="top-bar"><h1 class="page-title">Preferences</h1><div style="display:flex;gap:12px"><button class="icon-btn" id="themeBtn" title="Toggle theme"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line></svg></button><button class="icon-btn" title="Notifications"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button></div></div>
 <div class="content-area">
 <div><h2 style="font-size:28px">Preferences</h2><p style="color:#888;font-size:13px;margin-top:4px">Platform behavior defaults for tools, alerts, and market workflow.</p></div>
 <form class="card" id="prefForm"><div class="grid">
-<div class="field"><label>Theme mode</label><select id="themeMode"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
-<div class="field"><label>Timezone</label><input id="timezone"></div>
-<div class="field"><label>Currency</label><select id="currency"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option></select></div>
-<div class="field"><label>Date/time format</label><select id="dateTimeFormat"><option value="MMM d, yyyy HH:mm">MMM d, yyyy HH:mm</option><option value="MM/dd/yyyy hh:mm a">MM/dd/yyyy hh:mm a</option><option value="dd/MM/yyyy HH:mm">dd/MM/yyyy HH:mm</option></select></div>
-<div class="field"><label>Default risk %</label><input type="number" min="0.1" max="10" step="0.1" id="defaultRiskPercent"></div>
-<div class="field"><label>Default lot size</label><input type="number" min="0.01" max="100" step="0.01" id="defaultLotSize"></div>
-<div class="field"><label>Default RR</label><input type="number" min="0.1" max="20" step="0.1" id="defaultRR"></div>
-<div class="field"><label>Preferred market focus</label><select id="preferredMarketFocus"><option value="forex">Forex</option><option value="crypto">Crypto</option><option value="stocks">Stocks</option><option value="indices">Indices</option><option value="commodities">Commodities</option></select></div>
+<div class="field" hidden><label>Theme mode</label><select id="themeMode" aria-label="Theme mode"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
+<div class="field"><label>Timezone</label><input id="timezone" aria-label="Timezone"></div>
+<div class="field"><label>Currency</label><select id="currency" aria-label="Currency"><option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option></select></div>
+<div class="field"><label>Date/time format</label><select id="dateTimeFormat" aria-label="Date time format"><option value="MMM d, yyyy HH:mm">MMM d, yyyy HH:mm</option><option value="MM/dd/yyyy hh:mm a">MM/dd/yyyy hh:mm a</option><option value="dd/MM/yyyy HH:mm">dd/MM/yyyy HH:mm</option></select></div>
+<div class="field"><label>Default risk %</label><input type="number" min="0.1" max="10" step="0.1" id="defaultRiskPercent" aria-label="Default risk percent"></div>
+<div class="field"><label>Default lot size</label><input type="number" min="0.01" max="100" step="0.01" id="defaultLotSize" aria-label="Default lot size"></div>
+<div class="field"><label>Default RR</label><input type="number" min="0.1" max="20" step="0.1" id="defaultRR" aria-label="Default rr"></div>
+<div class="field"><label>Preferred market focus</label><select id="preferredMarketFocus" aria-label="Preferred market focus"><option value="forex">Forex</option><option value="crypto">Crypto</option><option value="stocks">Stocks</option><option value="indices">Indices</option><option value="commodities">Commodities</option></select></div>
 </div>
 <div class="card" style="margin-top:12px">
 <div class="row"><span>Email alerts</span><button class="switch" data-switch="emailAlerts" type="button"><span class="knob"></span></button></div>
@@ -38,9 +54,9 @@ body.dark-mode .icon-btn{border-color:rgba(255,255,255,.12);background:rgba(255,
 <div class="row"><span>Sound alerts</span><button class="switch" data-switch="soundAlerts" type="button"><span class="knob"></span></button></div>
 <div class="row"><span>Performance mode (lighter updates)</span><button class="switch" data-switch="performanceMode" type="button"><span class="knob"></span></button></div>
 </div>
-<div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center"><small id="saveStatus" style="color:#777">Ready</small><button class="btn primary" type="submit">Save preferences</button></div>
+<div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center"><small id="saveStatus" style="color:#777" role="status">Loading preferences…</small><button class="btn primary" type="submit" disabled>Save preferences</button></div>
 </form></div></main></div>
-<script type="module" src="assets/js/session-bootstrap.js"></script>
+<script type="module" src="assets/js/session-bootstrap.js?v=20261111-terminal-desks-1"></script>
 <script>
   (function(){
     const nav=document.querySelector('.nav-panel');
@@ -49,17 +65,19 @@ body.dark-mode .icon-btn{border-color:rgba(255,255,255,.12);background:rgba(255,
     nav.innerHTML=`<div style="padding:32px 0;text-align:center;border-bottom:1px solid #e5e5e5;font-weight:800">FYNX</div><div style="padding:24px 0;display:flex;flex-direction:column;align-items:center;gap:8px">${items.map(([k,href,svg])=>`<a href="${href}" style="width:80px;padding:14px 0;display:flex;flex-direction:column;align-items:center;gap:7px;text-decoration:none;color:#666;border-radius:8px"><svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5">${svg}</svg><span style="font-size:11px;font-weight:600">${k[0].toUpperCase()+k.slice(1)}</span></a>`).join('')}</div>`;
   })();
 </script><script type="module">
-import { auth, bootstrapAccount, saveUserPreferences } from './assets/js/account-system.js';
-import { mountNotificationBell } from './assets/js/account-ui.js';
+import { auth, bootstrapAccount, saveUserPreferences } from './assets/js/account-system.js?v=20260928-audit2';
+import { mountNotificationBell } from './assets/js/account-ui.js?v=20260928-audit2';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
+document.querySelector('#prefForm button[type=submit]').disabled=true;
+saveStatus.textContent='Loading preferences…';
 const bools = { emailAlerts:true, inAppAlerts:true, soundAlerts:false, performanceMode:false };
-function applyTheme(){const t=localStorage.getItem('fynx_theme');document.body.classList.toggle('dark-mode',t==='dark');} applyTheme();
-document.getElementById('themeBtn').onclick=()=>{const d=!document.body.classList.contains('dark-mode');document.body.classList.toggle('dark-mode',d);localStorage.setItem('fynx_theme',d?'dark':'light');};
+function applyTheme(){const t=window.FynxPreferences?.getItem('fynx_theme');document.body.classList.toggle('dark-mode',t==='dark');} applyTheme();
+document.getElementById('themeBtn').onclick=()=>{const d=!document.body.classList.contains('dark-mode');document.body.classList.toggle('dark-mode',d);window.FynxPreferences?.setItem('fynx_theme',d?'dark':'light');};
 document.querySelectorAll('.switch').forEach((s)=>s.onclick=()=>{const k=s.dataset.switch;bools[k]=!bools[k];s.classList.toggle('on',bools[k]);});
 function fill(pref){['themeMode','timezone','currency','dateTimeFormat','defaultRiskPercent','defaultLotSize','defaultRR','preferredMarketFocus'].forEach((id)=>document.getElementById(id).value=pref[id] ?? '');Object.keys(bools).forEach((k)=>{bools[k]=Boolean(pref[k]);document.querySelector(`.switch[data-switch="${k}"]`).classList.toggle('on',bools[k]);});}
-onAuthStateChanged(auth, async (user)=>{if(!user) return; const seeded=await bootstrapAccount(user); fill(seeded.preferences);});
-document.getElementById('prefForm').addEventListener('submit', async(e)=>{e.preventDefault();const user=auth.currentUser;if(!user)return;const payload={themeMode:themeMode.value,timezone:timezone.value.trim(),currency:currency.value,dateTimeFormat:dateTimeFormat.value,defaultRiskPercent:Number(defaultRiskPercent.value||1),defaultLotSize:Number(defaultLotSize.value||0.1),defaultRR:Number(defaultRR.value||2),preferredMarketFocus:preferredMarketFocus.value,...bools};saveStatus.textContent='Saving...';await saveUserPreferences(user.uid,payload);localStorage.setItem('fynx_preferences',JSON.stringify(payload));if(payload.themeMode==='dark'||payload.themeMode==='light'){localStorage.setItem('fynx_theme',payload.themeMode);applyTheme();}saveStatus.textContent='Saved';});
+onAuthStateChanged(auth, async (user)=>{if(!user) return; try { const seeded=await bootstrapAccount(user); fill(seeded.preferences); document.querySelector('#prefForm button[type=submit]').disabled=false;saveStatus.textContent='Ready'; } catch { saveStatus.textContent='Could not load preferences. Check your connection and reload.'; document.querySelector('#prefForm button[type=submit]').disabled=true; }});
+document.getElementById('prefForm').addEventListener('submit', async(e)=>{e.preventDefault();const button=e.currentTarget.querySelector('button[type=submit]');if(button.disabled)return;const user=auth.currentUser;if(!user){saveStatus.textContent='Sign in again to save.';return;}if(!navigator.onLine){saveStatus.textContent='You’re offline. Reconnect to save.';return;}button.disabled=true;try{const payload={themeMode:window.FynxPreferences?.getItem("fynx_theme") || "dark",timezone:timezone.value.trim(),currency:currency.value,dateTimeFormat:dateTimeFormat.value,defaultRiskPercent:Number(defaultRiskPercent.value||1),defaultLotSize:Number(defaultLotSize.value||0.1),defaultRR:Number(defaultRR.value||2),preferredMarketFocus:preferredMarketFocus.value,...bools};saveStatus.textContent='Saving...';await saveUserPreferences(user.uid,payload);localStorage.setItem('fynx_preferences',JSON.stringify(payload));if(payload.themeMode==='dark'||payload.themeMode==='light'){window.FynxPreferences?.setItem('fynx_theme',payload.themeMode);applyTheme();}saveStatus.textContent='Saved';}catch{saveStatus.textContent='Could not save. Your changes are still here. Check your connection and try again.';}finally{button.disabled=false;}});
 mountNotificationBell();
 </script>
-<script src="/assets/js/live-site.js" defer></script>
+
 </body></html>
