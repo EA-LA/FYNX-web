@@ -1,5 +1,5 @@
-import * as view from './render.js?v=20261111-pr-cleanup-1';
-import { publishedResearch } from './public-research.js?v=20261111-pr-cleanup-1';
+import * as view from './render.js?v=20261111-story-photos-1';
+import { publishedResearch } from './public-research.js?v=20261111-story-photos-1';
 const researchService = window.FynxResearchService;
 const $=id=>document.getElementById(id),root=$('edge-main'),symbol=document.body.dataset.edgeSymbol;
 const config=JSON.parse($('edge-market-config').textContent);
@@ -138,7 +138,11 @@ async function poll(id, request) {
     if (!state.snapshot) $('edge-primary').querySelector('h3').textContent = 'Snapshot preparation stopped.';
   }
 }
-async function loadHeadlines(request){try{const data=await api('headlines?symbol='+encodeURIComponent(symbol),{},true);if(request!==state.request)return;state.headlines=data.headlines||data.items||[];state.headlinesReason=data.reason||data.message||null;}catch(e){if(request!==state.request)return;state.headlines=[];state.headlinesReason=e.message;}const area=$('edge-headlines');if(area)area.outerHTML=view.headlines(state.headlines,state.headlinesReason);}
+const NEWS_QUERY={EURUSD:'EUR/USD',GBPUSD:'GBP/USD',USDJPY:'USD/JPY',USDCHF:'USD/CHF',AUDUSD:'AUD/USD',USDCAD:'USD/CAD',NZDUSD:'NZD/USD',EURGBP:'EUR/GBP',EURJPY:'EUR/JPY',GBPJPY:'GBP/JPY',XAUUSD:'gold price',XAGUSD:'silver price',US30:'Dow Jones',NAS100:'Nasdaq 100',SPX500:'S&P 500',BTCUSD:'Bitcoin',ETHUSD:'Ethereum'};
+async function publicHeadlines(){const response=await fetch(MARKET_FN+'?'+new URLSearchParams({op:'search',q:NEWS_QUERY[symbol]||symbol}),{credentials:'omit',signal:AbortSignal.timeout(12000)});if(!response.ok)throw new Error('Headlines are temporarily unavailable.');const data=await response.json();return (data.news||[]).filter(n=>n.title&&/^https:\/\//.test(n.url||'')&&Number.isFinite(Date.parse(n.publishedAt))&&Date.now()-Date.parse(n.publishedAt)<14*864e5).sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt)).map(n=>({title:n.title,url:n.url,source:n.publisher||'Yahoo Finance',publishedAt:n.publishedAt,tone:'Unclassified'}));}
+async function loadHeadlines(request){try{const data=await api('headlines?symbol='+encodeURIComponent(symbol),{},true);if(request!==state.request)return;state.headlines=data.headlines||data.items||[];state.headlinesReason=data.reason||data.message||null;}catch(e){if(request!==state.request)return;state.headlines=[];state.headlinesReason=e.message;
+ // The research headline service is down: use public market headlines for this instrument instead.
+ try{const fallback=await publicHeadlines();if(request!==state.request)return;if(fallback.length){state.headlines=fallback;state.headlinesReason=null;}}catch{}}const area=$('edge-headlines');if(area)area.outerHTML=view.headlines(state.headlines,state.headlinesReason);}
 async function editWatchlist(){if(!state.user){signIn('save your watchlist');return;}try{const current=await api('watchlist');showDialog(`<h2 id="edge-dialog-title">Your daily watchlist</h2><p>Select the markets included in your morning research.</p><form id="edge-watchlist-form"><div class="edge-watchlist-grid">${config.map(m=>`<label><input type="checkbox" name="symbols" value="${view.esc(m.id)}" ${current.symbols.includes(m.id)?'checked':''}>${view.esc(m.label)}</label>`).join('')}</div><label class="edge-form-field">Snapshot time zone<select name="timeZone">${timezones(current.timeZone||state.tz)}</select></label><button class="edge-button edge-primary" type="submit">Save watchlist</button><p class="edge-form-status" role="status"></p></form>`);}catch(e){errorDialog('Watchlist unavailable',e);}}
 function timezones(selected){const all=[...new Set([selected,...(Intl.supportedValuesOf?.('timeZone')||['UTC','America/New_York','America/Los_Angeles','Europe/London','Asia/Dubai','Asia/Tokyo'])])];return all.map(t=>`<option ${t===selected?'selected':''}>${view.esc(t)}</option>`).join('');}
 async function digest(){if(!state.user){signIn('manage your briefing preferences');return;}try{const prefs=await api('preferences');showDialog(`<h2 id="edge-dialog-title">Your 6 AM briefing</h2><p>${prefs.emailConfigured?'Choose whether to receive a daily summary of your watchlist and strategy fits.':'Email delivery is currently unavailable. You can still save your time zone and briefing preference.'}</p><form id="edge-digest-form"><label class="edge-form-field">Time zone<select name="timezone">${timezones(prefs.timezone||state.tz)}</select></label><label><input type="checkbox" name="digestEnabled" ${prefs.digestEnabled?'checked':''}>Email my daily brief at 6 AM</label><button type="submit" class="edge-button edge-primary">Save preference</button><p class="edge-form-status" role="status"></p></form>`);}catch(e){errorDialog('Email preferences unavailable',e);}}
@@ -151,12 +155,33 @@ matchMedia('(max-width:639px)').addEventListener('change',placeGuard);
 const clockTimer=setInterval(()=>{clock();if(lastGuard)renderGuard(lastGuard);},30000);
 async function initializeIdentity(){try{const [{auth:firebaseAuth},{onAuthStateChanged}]=await Promise.all([import('/auth/firebase.js'),import('https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js')]);await firebaseAuth.authStateReady();onAuthStateChanged(firebaseAuth,user=>{const changed=(user?.uid||null)!==(state.user?.uid||null);state.user=user;if(!changed)return;state.identityVersion++;state.request++;clearTimeout(state.poll);state.snapshot=null;state.market=null;state.headlines=null;state.selected=null;dialog.close();$('edge-dialog-body').replaceChildren();if(symbol)$('edge-actions').replaceChildren();$('edge-updated').textContent='LOADING THIS ACCOUNT’S RESEARCH';$('edge-brief').textContent='Preparing your watchlist and strategy fits.';$('edge-summary').replaceChildren();$('edge-side').replaceChildren();$('edge-primary').innerHTML='<section class="edge-panel edge-loading"><h2>Loading your research…</h2><p>Retrieving this account’s watchlist and strategies.</p></section>';renderGuard(null);load();});}catch{}}
 
+// Public delayed quotes (Vercel market proxy) when the research service has no quote provider.
+// Metals are excluded: the public source only lists futures, which differ from the spot series used here.
+const PUBLIC_QUOTE={US30:'^DJI',NAS100:'^NDX',SPX500:'^GSPC',BTCUSD:'BTC-USD',ETHUSD:'ETH-USD'};
+const publicSymbol=s=>PUBLIC_QUOTE[s]||(/^[A-Z]{6}$/.test(s)&&!/^XA[GU]/.test(s)?s+'=X':null);
+const MARKET_FN=/(^|\.)vercel\.app$/.test(location.hostname)?'/fn/market.js':'https://fynxfinanceworld.vercel.app/fn/market.js';
+async function publicQuotes(markets){
+ const pairs=markets.map(m=>[m.symbol,publicSymbol(m.symbol)]).filter(p=>p[1]);if(!pairs.length)return [];
+ const response=await fetch(MARKET_FN+'?'+new URLSearchParams({op:'quotes',symbols:pairs.map(p=>p[1]).join(',')}),{credentials:'omit',signal:AbortSignal.timeout(15000)});if(!response.ok)return [];
+ const data=await response.json();return pairs.map(([symbol,ticker])=>{const q=data.quotes?.[ticker];return q&&{symbol,price:q.price,asOf:q.asOf,changePct:q.changePercent,source:'Yahoo Finance (delayed)'};}).filter(Boolean);
+}
+function applyQuote(m,q){
+ const time=Date.parse(q.asOf);if(!m||!Number.isFinite(q.price)||q.price<=0||!Number.isFinite(time)||time>Date.now()+60000||q.status==='stale')return;
+ // A quote older than the snapshot's last completed close adds nothing; keep the close.
+ if(Date.now()-time>900000&&(!q.source||Date.parse(m.price?.asOf||0)>=time))return;
+ m.price={value:q.price,reason:null,asOf:q.asOf};m.priceSource=q.source||null;if(Number.isFinite(q.changePct))m.dayChangePct={value:q.changePct,reason:null,asOf:q.asOf};
+ const cell=document.querySelector('[data-edge-price="'+m.symbol+'"]');if(cell)cell.innerHTML=view.price(q.price,m.symbol)+'<small>'+(q.source?'Delayed quote':'Quote')+' · '+view.esc(view.date(q.asOf,'UTC'))+' UTC</small>';
+}
 async function refreshQuotes(){
- if(!state.snapshot||!quoteConfigured||quoteBusy||document.hidden)return;
+ if(!state.snapshot||quoteBusy||document.hidden)return;
  const version=state.identityVersion,request=state.request,markets=symbol?[state.market]:state.snapshot.markets;quoteBusy=true;
- try{const response=await fetch(researchService.apiURL('/api/quant/quotes?'+new URLSearchParams({symbols:markets.map(m=>m.symbol).join(',')})),{credentials:'omit',signal:AbortSignal.timeout(15000)});if(!response.ok)return;const data=await response.json();if(version!==state.identityVersion||request!==state.request)return;if(data.configured===false){quoteConfigured=false;return;}
- for(const q of data.quotes||[]){const m=markets.find(m=>m.symbol===q.symbol),time=Date.parse(q.asOf);if(!m||!Number.isFinite(q.price)||q.price<=0||!Number.isFinite(time)||time>Date.now()+60000||Date.now()-time>900000||q.status==='stale')continue;m.price={value:q.price,reason:null,asOf:q.asOf};if(Number.isFinite(q.changePct))m.dayChangePct={value:q.changePct,reason:null,asOf:q.asOf};const cell=document.querySelector('[data-edge-price="'+m.symbol+'"]');if(cell)cell.innerHTML=view.price(q.price,m.symbol)+'<small>Quote · '+view.esc(view.date(q.asOf,'UTC'))+' UTC</small>';}
- if(symbol&&state.market)$('edge-summary').innerHTML=view.detailSummary(state.market,state.market.fits.find(f=>f.strategyId===state.selected));
+ try{
+  let quotes=[],fallback=!quoteConfigured;
+  if(quoteConfigured){try{const response=await fetch(researchService.apiURL('/api/quant/quotes?'+new URLSearchParams({symbols:markets.map(m=>m.symbol).join(',')})),{credentials:'omit',signal:AbortSignal.timeout(15000)});if(!response.ok)fallback=true;else{const data=await response.json();if(data.configured===false){quoteConfigured=false;fallback=true;}else if(Array.isArray(data.quotes)){quotes=data.quotes.filter(q=>q.status!=='stale'&&Date.now()-Date.parse(q.asOf)<=900000);fallback=quotes.length<markets.length;}}}catch{fallback=true;}}
+  if(fallback){const covered=new Set(quotes.map(q=>q.symbol)),missing=markets.filter(m=>!covered.has(m.symbol));if(missing.length)quotes=quotes.concat(await publicQuotes(missing).catch(()=>[]));}
+  if(version!==state.identityVersion||request!==state.request)return;
+  for(const q of quotes)applyQuote(markets.find(m=>m.symbol===q.symbol),q);
+  if(symbol&&state.market)$('edge-summary').innerHTML=view.detailSummary(state.market,state.market.fits.find(f=>f.strategyId===state.selected));
  }catch{/* Keep the previous timestamped quote or daily close on provider outages. */}finally{quoteBusy=false;}
 }
 quoteTimer=setInterval(refreshQuotes,60000);

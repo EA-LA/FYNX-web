@@ -16,8 +16,8 @@
       seen.add(url); titles.add(key); return true;
     }).sort((a,b) => (a.rank||1000)-(b.rank||1000) || (b.priorityScore||0)-(a.priorityScore||0) || Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
   }
-  function leadImage(item) {
-    const meta = item?.image, context = () => window.FYNXNewsroomMedia?.createFigure(activeEdition === 'us' ? 'markets' : activeEdition === 'uk' ? 'finance' : 'world', {loading:'eager'});
+  function leadImage(item, stories = []) {
+    const meta = item?.image, context = () => window.FYNXNewsroomMedia?.createFigure(activeEdition === 'us' ? 'markets' : activeEdition === 'uk' ? 'finance' : 'world', {loading:'eager',story:stories});
     const permitted = meta && (meta.licensed === true || /^(cc0|cc[- ]by(?:[- ]sa)?(?:[ -][34]\.0)?|public domain|publisher[- ]licensed)$/i.test(meta.license));
     if (!permitted || !safeURL(meta.url) || !meta.credit || !meta.license) return context();
     const figure = node('figure',undefined,'nr-story-image'), img = node('img'); img.src=meta.url; img.alt=typeof meta.alt==='string'?meta.alt:''; img.loading='eager'; img.decoding='async'; img.referrerPolicy='no-referrer';
@@ -38,7 +38,7 @@
     const items = recent(result.items, activeEdition), first = items[0];
     window.FYNXNewsReaderData?.prefetch(items.slice(0,6));
     briefingSignature = items.map(item=>item.url).join('|');
-    const photograph = leadImage(first); if (photograph) lead.append(photograph);
+    const photograph = leadImage(first, items.slice(0,4)); if (photograph) lead.append(photograph);
     if (!first) {
       $('briefingSource').textContent = 'FYNX · Market intelligence';
       const title = node('h2','Your market briefing.'); title.id = 'briefing-title';
@@ -88,9 +88,9 @@
       const section = node('section',undefined,'nr-topic-section'), head = node('div',undefined,'nr-section-head'), title = node('h3'), link = node('a',label+' →');
       link.href = '/news/'+id+'.html?edition='+encodeURIComponent(activeEdition); title.append(link); head.append(title); section.append(head);
       const contextId = activeEdition !== 'us' && ['politics','economics','energy'].includes(id) ? 'world' : id;
-      const photo = window.FYNXNewsroomMedia?.createFigure(contextId); if(photo) section.append(photo);
       const list = node('div',undefined,'nr-topic-stories');
       const rows = recent(result?.items,activeEdition).filter(item => !seen.has(item.url)).slice(0,3);
+      const photo = window.FYNXNewsroomMedia?.createFigure(contextId,{story:rows}); if(photo) section.append(photo);
       window.FYNXNewsReaderData?.prefetch(rows.slice(0,1));
       rows.forEach(item => {seen.add(item.url);list.append(miniStory(item));});
       if (!rows.length) list.append(node('p', result ? 'No additional recent reporting is available for this edition. Explore the desk’s source guide.' : 'Checking recent reporting…', 'nr-empty'));
@@ -102,11 +102,18 @@
     const code=edition(); if(topicPending===code)return;
     const request=++topicRequest; topicPending=code;
     const service=window.FYNXMarketIntelligenceData;
+    const settle=(id,result)=>{if(request!==topicRequest || code!==edition())return;topicResults=[...topicResults.filter(value=>value.id!==id),{id,result}];renderTopics();};
+    // Show saved coverage at once, then replace each desk as its refresh lands.
+    for(const [id] of topics){const saved=!force&&service?.getCachedHeadlines?.(id,{edition:code});if(saved&&!topicResults.some(value=>value.id===id))settle(id,saved);}
+    const guard=new Promise(resolve=>setTimeout(resolve,9000));
     try {
-      const values=await Promise.all(topics.map(async ([id])=>{try {const result=await service?.loadHeadlines(id,{edition:code,force});return {id,result:result && (!result.edition || result.edition===code)?result:{items:[],status:'unavailable'}};}catch{return {id,result:{items:[],status:'unavailable'}};}}));
-      if(request!==topicRequest || code!==edition())return;
-      topicResults=values; renderTopics();
+      await Promise.all(topics.map(async ([id])=>{
+        let result;
+        try {result=await Promise.race([service?.loadHeadlines(id,{edition:code,force,timeoutMs:6500}),guard.then(()=>null)]);}catch{result=null;}
+        settle(id,result && (!result.edition || result.edition===code)?result:(topicResults.find(value=>value.id===id)?.result||{items:[],status:'unavailable'}));
+      }));
     } finally {if(request===topicRequest)topicPending='';}
+    if(request===topicRequest&&topicResults.some(value=>!recent(value.result?.items,code).length&&value.result?.status==='unavailable'))setTimeout(()=>{if(request===topicRequest)refreshTopics(true);},45000);
   }
   function switchEdition() {
     activeEdition=edition(); briefing=null;topicResults=[];briefingSignature='';topicSignature='';

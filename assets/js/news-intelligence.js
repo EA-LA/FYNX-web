@@ -63,7 +63,7 @@
       const rights = document.createElement('a'); rights.href = license; rights.textContent = media.license || 'Image license';
       [credit,rights].forEach(anchor => {anchor.target = '_blank';anchor.rel = 'noopener noreferrer';});
       caption.append(credit,document.createTextNode(' · '),rights); figure.append(img,caption);
-    } else figure = window.FYNXNewsroomMedia?.createFigure(contextSection(),{className:'fn-lead-image',loading:'eager'});
+    } else figure = window.FYNXNewsroomMedia?.createFigure(contextSection(),{className:'fn-lead-image',loading:'eager',story:item});
     if (figure) container.insertBefore(figure,container.firstChild);
   }
   function saveButton(item, prefix) {

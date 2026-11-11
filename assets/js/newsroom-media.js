@@ -1,4 +1,6 @@
-/* Section-context images, not photographs of the current headline.
+/* Section-context images, upgraded to the publisher's own story photo when one is published.
+ * Context photographs load first (and stay as the fallback); createFigure(section, {story}) then asks
+ * the FYNX preview service for the share image each publisher attaches to that story.
  * Per-file authorship and license verified using Commons imageinfo/extmetadata.
  * Images remain hosted by Wikimedia; no local copies or editorial alterations.
  */
@@ -85,7 +87,7 @@
     image.width = item.width; image.height = item.height;
     image.loading = settings.loading === 'eager' ? 'eager' : 'lazy';
     image.decoding = 'async'; image.referrerPolicy = 'no-referrer';
-    image.addEventListener('error', () => figure.remove(), { once: true });
+    image.addEventListener('error', () => { if (!figure.dataset.storyImage) figure.remove(); });
     const caption = doc.createElement('figcaption');
     const label = doc.createElement('strong'); label.textContent = 'Context: ' + item.subject + '. ';
     const source = doc.createElement('a'); source.href = item.sourceUrl; source.textContent = item.credit;
@@ -93,9 +95,60 @@
     [source, license].forEach(link => { link.target = '_blank'; link.rel = 'noopener noreferrer'; });
     caption.append(label, source, doc.createTextNode(' · '), license);
     figure.append(image, caption);
+    const stories = (Array.isArray(settings.story) ? settings.story : settings.story ? [settings.story] : []).filter(Boolean).slice(0, 4);
+    if (stories.length) upgrade(figure, image, caption, stories, settings);
     return figure;
   }
-  const api = Object.freeze({ sections, get, createFigure });
+
+  /* ---- Story photos: the publisher's share image for the actual headline ---- */
+  const host = root.location?.hostname || '';
+  const PREVIEW = /(^|\.)vercel\.app$/.test(host) ? '/fn/preview.js' : 'https://fynxfinanceworld.vercel.app/fn/preview.js';
+  const CACHE_KEY = 'fynx_story_previews_v1', HIT_MS = 6 * 3600000, MISS_MS = 3600000;
+  let cache = {};
+  try { const raw = root.sessionStorage?.getItem(CACHE_KEY); if (raw && raw.length < 400000) cache = JSON.parse(raw) || {}; } catch { cache = {}; }
+  const waiting = new Map(); let timer = null;
+  function safe(value) { try { const u = new URL(value); return u.protocol === 'https:' && !u.username && !u.password && u.hostname.includes('.') ? u.href : null; } catch { return null; } }
+  function persist() {
+    try { const now = Date.now(), keep = Object.entries(cache).filter(([, v]) => v && now - v.at < HIT_MS).slice(-150); cache = Object.fromEntries(keep); root.sessionStorage?.setItem(CACHE_KEY, JSON.stringify(cache)); } catch {}
+  }
+  function fresh(url) { const v = cache[url]; return v && Date.now() - v.at < (v.image ? HIT_MS : MISS_MS) ? v : null; }
+  function flush() {
+    timer = null;
+    const urls = [...waiting.keys()]; if (!urls.length) return;
+    for (let i = 0; i < urls.length; i += 8) {
+      const batch = urls.slice(i, i + 8), query = new URLSearchParams(); batch.forEach(u => query.append('u', u));
+      const done = data => batch.forEach(u => { const p = data?.previews?.[u], hit = p && safe(p.image) ? {image: safe(p.image), site: String(p.site || '').slice(0, 80), url: safe(p.url) || u, alt: p.alt ? String(p.alt).slice(0, 300) : '', at: Date.now()} : {image: null, at: Date.now()}; cache[u] = hit; (waiting.get(u) || []).forEach(fn => fn(hit)); waiting.delete(u); });
+      root.fetch(PREVIEW + '?' + query, {credentials: 'omit', referrerPolicy: 'no-referrer', signal: root.AbortSignal?.timeout ? root.AbortSignal.timeout(15000) : undefined})
+        .then(r => r.ok ? r.json() : null).catch(() => null).then(data => { if (data) done(data); else batch.forEach(u => { (waiting.get(u) || []).forEach(fn => fn(null)); waiting.delete(u); }); persist(); });
+    }
+  }
+  function lookup(url) {
+    const known = fresh(url); if (known) return Promise.resolve(known);
+    return new Promise(resolve => { if (!waiting.has(url)) waiting.set(url, []); waiting.get(url).push(resolve); if (!timer) timer = setTimeout(flush, 40); });
+  }
+  async function upgrade(figure, image, caption, stories, settings) {
+    if (typeof root.fetch !== 'function') return;
+    const candidates = stories.map(item => ({item, url: safe(item.url || item.link)})).filter(c => c.url);
+    const found = await Promise.all(candidates.map(c => lookup(c.url)));
+    const index = found.findIndex(p => p && p.image); if (index < 0) return;
+    const {item} = candidates[index], p = found[index], doc = root.document;
+    const original = {src: image.src, alt: image.alt, width: image.width, height: image.height, caption: [...caption.childNodes]};
+    if (!doc.getElementById('fynx-story-photo-style')) { const st = doc.createElement('style'); st.id = 'fynx-story-photo-style'; st.textContent = '.newsroom-story-photo img{object-fit:cover!important;background:#0d1210}'; doc.head.append(st); }
+    const probe = new root.Image(); probe.referrerPolicy = 'no-referrer'; probe.decoding = 'async';
+    probe.onload = () => {
+      if (!figure.isConnected && !figure.parentNode) return;
+      if (probe.naturalWidth < 200 || probe.naturalHeight < 110) return;
+      image.src = p.image; image.alt = p.alt || String(item.title || 'Story photo').slice(0, 300);
+      image.width = probe.naturalWidth; image.height = probe.naturalHeight;
+      figure.classList.add('newsroom-story-photo'); figure.dataset.storyImage = 'publisher';
+      const label = doc.createElement('strong'); label.textContent = 'Story photo · ';
+      const site = doc.createElement('a'); site.href = p.url; site.textContent = p.site || new URL(p.url).hostname.replace(/^www\./, ''); site.target = '_blank'; site.rel = 'noopener noreferrer';
+      caption.replaceChildren(label, site, doc.createTextNode(settings.captionTitle === false ? '' : ' — ' + String(item.title || '').slice(0, 160)));
+      image.addEventListener('error', () => { image.src = original.src; image.alt = original.alt; image.width = original.width; image.height = original.height; caption.replaceChildren(...original.caption); figure.classList.remove('newsroom-story-photo'); delete figure.dataset.storyImage; }, {once: true});
+    };
+    probe.src = p.image;
+  }
+  const api = Object.freeze({ sections, get, createFigure, lookupStoryImage: lookup });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.FYNXNewsroomMedia = api;
 })(typeof window === 'undefined' ? globalThis : window);

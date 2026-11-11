@@ -115,7 +115,7 @@
         ||contextRules.find(([,pattern])=>pattern.test(sourceBrief))?.[0]||'world';
     }
     if(originalEdition!=='us'&&['politics','economics','energy','markets'].includes(context))context=originalEdition==='uk'&&context==='markets'?'finance':'world';
-    return window.FYNXNewsroomMedia?.createFigure(context,{loading:'eager'}) || null;
+    return window.FYNXNewsroomMedia?.createFigure(context,{loading:'eager',story:{url:article.sourceUrl,title:article.title},captionTitle:false}) || null;
   }
   function photograph(article) {
     const host=$('[data-reader-image]'), image=article.image;

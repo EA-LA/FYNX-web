@@ -73,11 +73,11 @@
     figure.append(image, caption);
     return figure;
   }
-  function contextFigure() {
+  function contextFigure(story) {
     let contextId = config.id;
     if (activeEdition !== 'us' && ['politics','economics','energy'].includes(contextId)) contextId = 'world';
     if (activeEdition !== 'us' && contextId === 'markets') contextId = activeEdition === 'uk' ? 'finance' : 'world';
-    return window.FYNXNewsroomMedia?.createFigure(contextId) || null;
+    return window.FYNXNewsroomMedia?.createFigure(contextId, story ? {story} : undefined) || null;
   }
   function story(item, kind) {
     const article = node('article', 'newsroom-story newsroom-story-' + kind);
@@ -93,7 +93,7 @@
     meta.append(published);
     if (item.via) meta.append(node('span', '', 'Via ' + plain(item.via, 100)));
     if (item.status === 'cached' || item.stale === true) meta.append(node('span', 'newsroom-saved-label', 'Saved coverage'));
-    if (kind === 'lead') { const image = imageFor(item) || contextFigure(); if (image) article.append(image); }
+    if (kind === 'lead') { const image = imageFor(item) || contextFigure(item); if (image) article.append(image); }
     article.append(source, title, meta);
     if (kind === 'lead') article.append(node('p', 'newsroom-story-access', 'Read the FYNX brief: key facts, context and the original source.'));
     return article;

@@ -63,7 +63,7 @@
     if(index===0){
       const context=desk(item.desk)?.href.split('/').pop().replace('.html','')||'world';
       const region=selectedEdition();
-      const figure=window.FYNXNewsroomMedia?.createFigure(region!=='us'&&['politics','economics','energy','markets'].includes(context)?'world':context);
+      const figure=window.FYNXNewsroomMedia?.createFigure(region!=='us'&&['politics','economics','energy','markets'].includes(context)?'world':context,{story:item});
       if(figure)article.append(figure);
     }
     article.append(meta,heading);
