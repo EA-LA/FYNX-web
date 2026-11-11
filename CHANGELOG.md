@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-10 (run 60) — [site-qa] Shareable calculator scenarios; wider tap targets on iPhone
+- New: Compound Growth, Debt Payoff and Break-even calculators have a "Copy scenario link" button. It copies a link with your current numbers; opening it fills them in and calculates. Only numbers and listed options are read from the link; nothing is saved to an account. https://www.fynxfinanceworld.com/tools/compound.html https://www.fynxfinanceworld.com/tools/debt-payoff.html https://www.fynxfinanceworld.com/tools/breakeven.html
+- iPhone: the short "Home / Tools / News" breadcrumb links, news-page header "Account" link, and short footer links (Blog, Contact, Quizzes) are now at least 44px wide, not just 44px tall. https://www.fynxfinanceworld.com/tools/position-size.html https://www.fynxfinanceworld.com/news/markets.html https://www.fynxfinanceworld.com/
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): no sideways overflow, no errors; calculators match hand math; `npm test`, tool/discovery checks and build pass.
+
 ## 2026-11-10 (run 59) — [site-qa] Macro Desk tables fit iPhone
 - iPhone: the Central Bank Watch and Smart Bias tables on the new Macro Desk were three screens wide, so you had to swipe sideways inside them to see next decisions and what drives each bias. On phones each bank and each currency pair is now a stacked card with labels (Policy rate, Next decision, Market pricing, This week / Price, Bias, What drives it). Desktop is unchanged. https://www.fynxfinanceworld.com/macro-desk.html
 - iPhone: the "Official calendar" links in Central Bank Watch are now full-size tap targets.
