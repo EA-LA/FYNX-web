@@ -1,0 +1,25 @@
+name: Research workspace focus regression
+
+on:
+  pull_request:
+    paths:
+      - 'assets/js/research/personal.js'
+      - 'assets/js/research/focus.js'
+      - 'scripts/test-research-focus.cjs'
+      - 'package.json'
+      - '.github/workflows/research-focus-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  research-focus:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify research workspace focus behavior
+        run: node scripts/test-research-focus.cjs

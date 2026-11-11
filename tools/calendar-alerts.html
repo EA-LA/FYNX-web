@@ -614,7 +614,8 @@
 
     function getAlerts(){
       try{
-        return JSON.parse(localStorage.getItem(ALERTS_KEY)) || [];
+        const stored = JSON.parse(localStorage.getItem(ALERTS_KEY));
+        return Array.isArray(stored) ? stored.filter(alert => alert && typeof alert === "object" && !Array.isArray(alert)) : [];
       }catch{
         return [];
       }
