@@ -13,7 +13,7 @@ jobs:
         with: {ref: claude/fynx-intelligence}
       - uses: actions/setup-node@v4
         with: {node-version: '22'}
-      - run: INTELLIGENCE_DUMP=intelligence-feeds.json node scripts/build-intelligence.cjs && mkdir -p intelligence/data && mv intelligence-feeds.json intelligence/data/feeds-dump.json
+      - run: node scripts/build-intelligence.cjs
       - run: node --test tests/intelligence/*.test.cjs
       - run: |
           git config user.name tmp; git config user.email tmp@users.noreply.github.com
