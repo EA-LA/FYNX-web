@@ -1187,7 +1187,7 @@
 
       btn.addEventListener("click", () => {
         const link = buildLink();
-        try { history.replaceState(null, "", link); } catch (e) { /* ignore */ }
+        // Copy must not place private balance/risk assumptions into this tab’s URL or history.
         const done = () => { status.textContent = "Link copied. It carries these inputs only; nothing is saved to an account." + (usingManual() ? "" : " The price is re-read from the daily reference rate when opened."); };
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(done, () => showFallback(link));
         else showFallback(link);
