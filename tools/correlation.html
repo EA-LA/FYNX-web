@@ -367,6 +367,8 @@
       box-shadow:var(--shadow-soft);
     }
     .btn:hover{transform:translateY(-1px)}
+    .btn:disabled{opacity:.48;cursor:not-allowed;transform:none;box-shadow:none}
+    .export-status{margin:.8rem 0 0;color:var(--text-soft);font-size:.88rem;line-height:1.5}
     .btn.primary{background:var(--pill);color:var(--bg)}
     .btn.secondary{
       background:var(--panel-bg-2);
@@ -689,7 +691,11 @@
               <button class="btn secondary" id="clearBtn">
                 <i class="fas fa-eraser"></i> Clear
               </button>
+              <button class="btn secondary" type="button" id="exportCsvBtn" disabled aria-describedby="exportStatus">
+                <i class="fas fa-file-csv" aria-hidden="true"></i> Download paired CSV
+              </button>
             </div>
+            <p id="exportStatus" class="export-status" role="status" aria-live="polite">Calculate to export the paired observations and Pearson r. Download stays on your device.</p>
 
             <div class="results-grid" style="margin-top:1rem;">
               <div class="metric">
@@ -802,6 +808,7 @@
 <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/risk-reward.html"><strong>Risk-to-Reward Ratio Calculator</strong><span>Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</span></a><a href="/tools/research-heatmap.html"><strong>Market Heatmap: Stocks, ETFs, Crypto &amp; Forex</strong><span>Compare percentage changes across stocks, ETFs, crypto, forex and your watchlist with equal-size tiles and timestamps for each public quote.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
 
+  <script src="../assets/js/correlation-export.js"></script>
   <script>
     const THEME_KEY = "fynx_theme";
 
@@ -956,7 +963,31 @@
       document.getElementById("matrixBA").innerHTML = html;
     }
 
+    const exportCsvBtn = document.getElementById("exportCsvBtn");
+    const exportStatus = document.getElementById("exportStatus");
+    let completedCorrelation = null;
+
+    function invalidateCorrelation(){
+      completedCorrelation = null;
+      exportCsvBtn.disabled = true;
+      exportStatus.textContent = "Inputs changed. Recalculate before exporting paired observations.";
+      document.getElementById("corrValue").textContent = "—";
+      document.getElementById("corrValue").className = "metric-value";
+      document.getElementById("corrDesc").textContent = "Calculate with your updated observations.";
+      document.getElementById("relationshipValue").textContent = "—";
+      document.getElementById("relationshipValue").className = "metric-value";
+      document.getElementById("relationshipDesc").textContent = "No current result.";
+      document.getElementById("sampleSize").textContent = "0";
+      document.getElementById("tradeRead").textContent = "—";
+      document.getElementById("tradeReadDesc").textContent = "No current result.";
+      updateMatrix(document.getElementById("seriesALabel").value.trim() || "Series A",
+        document.getElementById("seriesBLabel").value.trim() || "Series B", null);
+    }
+
     function calculateCorrelation(){
+      completedCorrelation = null;
+      exportCsvBtn.disabled = true;
+      exportStatus.textContent = "A valid calculation is required for export.";
       const labelA = document.getElementById("seriesALabel").value.trim() || "Series A";
       const labelB = document.getElementById("seriesBLabel").value.trim() || "Series B";
       const seriesA = parseSeries(document.getElementById("seriesA").value);
@@ -1015,9 +1046,33 @@
       tradeReadDescEl.textContent = read.desc;
 
       updateMatrix(labelA, labelB, corr);
+      completedCorrelation = { labelA, labelB, seriesA: seriesA.slice(), seriesB: seriesB.slice(), corr };
+      exportCsvBtn.disabled = false;
+      exportStatus.textContent = "Ready: download a local CSV containing each paired observation and the calculated Pearson r.";
     }
 
     document.getElementById("calculateBtn").addEventListener("click", calculateCorrelation);
+    ["seriesALabel", "seriesBLabel", "seriesA", "seriesB"].forEach(id => {
+      document.getElementById(id).addEventListener("input", invalidateCorrelation);
+    });
+
+    exportCsvBtn.addEventListener("click", () => {
+      if(!completedCorrelation) return;
+      try {
+        const csv = window.FynxCorrelationCSV.makeCsv(completedCorrelation);
+        const objectUrl = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+        const link = document.createElement("a");
+        link.href = objectUrl;
+        link.download = "fynx-correlation-paired-observations.csv";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+        exportStatus.textContent = "CSV prepared locally. Nothing was sent to a server.";
+      } catch (error) {
+        exportStatus.textContent = "CSV export could not be prepared. Recalculate and try again.";
+      }
+    });
 
     document.getElementById("swapBtn").addEventListener("click", () => {
       const labelA = document.getElementById("seriesALabel");
@@ -1035,16 +1090,8 @@
       document.getElementById("seriesBLabel").value = "";
       document.getElementById("seriesA").value = "";
       document.getElementById("seriesB").value = "";
-      document.getElementById("corrValue").textContent = "—";
-      document.getElementById("corrValue").className = "metric-value";
-      document.getElementById("corrDesc").textContent = "Enter two equal-length datasets and calculate.";
-      document.getElementById("relationshipValue").textContent = "—";
-      document.getElementById("relationshipValue").className = "metric-value";
-      document.getElementById("relationshipDesc").textContent = "No result yet.";
-      document.getElementById("sampleSize").textContent = "0";
-      document.getElementById("tradeRead").textContent = "—";
-      document.getElementById("tradeReadDesc").textContent = "No signal yet.";
-      updateMatrix("Series A", "Series B", null);
+      invalidateCorrelation();
+      exportStatus.textContent = "Calculate to export the paired observations and Pearson r. Download stays on your device.";
     });
 
   </script>
