@@ -59,7 +59,9 @@
     for (const [sym, label] of [[m?.idx, 'Stock index'], [m?.fx, 'Currency']]) {
       const q = sym && quoteFor(sym); if (!q || !finite(q.changePercent)) continue; signal = true;
       const z = finite(q.vol20) && q.vol20 > 0 ? Math.abs(q.changePercent) / q.vol20 : Math.abs(q.changePercent) / 1.2;
-      if (z >= 2) bump(2, `${label} ${shortOf(sym)} ${signed(q.changePercent, 2, '%')} (${z.toFixed(1)}× normal)`); else if (z >= 1.2) bump(1, `${label} ${shortOf(sym)} ${signed(q.changePercent, 2, '%')}`);
+      // A shared currency (the euro) moves for every member at once, so for them it can only make a country yellow.
+      const cap = label === 'Currency' && m.ccy === 'EUR' ? 1 : 2;
+      if (z >= 2) bump(cap, `${label} ${shortOf(sym)} ${signed(q.changePercent, 2, '%')} (${z.toFixed(1)}× normal)`); else if (z >= 1.2) bump(1, `${label} ${shortOf(sym)} ${signed(q.changePercent, 2, '%')}`);
     }
     if (iso === 'US') { const ten = S.desk?.liveUS?.quotes?.find(q => q.tenor === '10Y'); if (ten) { const bp = (ten.price - ten.previousClose) * 100; if (Math.abs(bp) >= 8) bump(2, `10-year yield ${signed(bp, 0, ' bp')}`); else if (Math.abs(bp) >= 4) bump(1, `10-year yield ${signed(bp, 0, ' bp')}`); } }
     if (OIL.includes(iso)) { const q = quoteFor('BZ=F'); if (q && finite(q.changePercent) && Math.abs(q.changePercent) >= 2.5) bump(1, `Brent crude ${signed(q.changePercent, 2, '%')}`); }
@@ -213,7 +215,7 @@
     if (!rows.length) for (const iso of ['US', 'CN', 'DE', 'JP', 'GB', 'IN']) for (const n of (C(iso)?.news?.items || []).slice(0, 2)) rows.push({s: {iso, level: countryStatus(iso).level}, n});
     if (!rows.length) return host.append(el('p', 'fx-empty', W.countries ? 'No country headlines in the last 24 hours.' : 'Loading world headlines…'));
     for (const {s, n} of rows) { const a = link('', n.url, 'fx-row fx-cnrow'); const iso = el('b', '', s.iso); iso.style.color = COLOR[s.level]; const t = el('span', 'fx-sym'); t.append(el('span', 'fx-ht', n.title), el('small', '', `${n.source}${n.publishedAt ? ' · ' + ago(n.publishedAt) : ''} ↗`)); a.append(iso, t); host.append(a); }
-    host.append(el('p', 'fx-foot', 'Country headlines from the GDELT Project, last 24 hours, refreshed hourly.'));
+    host.append(el('p', 'fx-foot', 'Country headlines from Google News search (GDELT as backup), last 24 hours, refreshed hourly.'));
   }
   async function renderCData() {
     const host = T.panel('cdata'); await loadWorld(); if (!host.isConnected) return; host.replaceChildren();

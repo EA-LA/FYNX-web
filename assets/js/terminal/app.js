@@ -109,7 +109,7 @@
     const cur = S.symData[symbol]?.currency; return cur ? [cur.toUpperCase()] : ['USD'];
   }
   function symDef() {
-    const base = DESK_DEFS[S.deskKey] || DESK_DEFS.all, s = S.sym, cls = s.cls, edgeId = FX_TO_EDGE[s.symbol] || (EDGE[s.symbol] ? s.symbol : null);
+    const s = S.sym, cls = s.cls, base = DESK_DEFS[{stock: 'stocks', fund: 'funds', fx: 'forex', crypto: 'crypto'}[cls]] || DESK_DEFS[S.deskKey] || DESK_DEFS.all, edgeId = FX_TO_EDGE[s.symbol] || (EDGE[s.symbol] ? s.symbol : null);
     const news = {fx: 'forex', crypto: 'crypto', fund: 'finance', stock: 'stocks'}[cls] || base.news;
     return {...base, label: shortOf(s.symbol), noun: s.name || s.symbol, who: `${shortOf(s.symbol)} traders`, slots: SYM_SLOTS[cls] || SYM_SLOTS.other, focus: s.symbol, storyKind: 'symbol', symbol: true,
       calc: {stock: 'shares', fund: 'shares', fx: 'fx', crypto: 'crypto'}[cls] || (FUTSPEC[s.symbol] ? 'futures' : base.calc), ccy: symCurrencies(s.symbol), edge: edgeId ? [edgeId] : base.edge, range: edgeId || base.range,
@@ -1421,6 +1421,7 @@
   }
   async function setDesk(key, {initial = false} = {}) {
     if (!DESK_DEFS[key]) key = 'all';
+    if (!initial) PG?.closeAll();
     S.deskKey = key; store.set('desk', key);
     const d = D(); S.mktTab = null; S.focus = resolve(d.focus) || d.focus; S.tool = 'calc'; if (d.opt) { S.optSym = d.opt; S.optExp = 0; } if (d.newsTabs) S.deskTab = d.newsTabs[0];
     if (info(S.focus).group === 'Stocks') S.finTicker = S.focus;
