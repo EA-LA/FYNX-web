@@ -519,3 +519,8 @@ html body[data-fynx-terminal] .terminal-edition select { -webkit-appearance:none
   html body :is(.your-news-empty,.your-news-method) a{display:inline-flex;align-items:center;min-height:44px}
   html body .your-news-unread{min-height:44px;display:inline-flex;align-items:center;gap:8px}
 }
+
+/* [site-qa] run 61: Pro page header (Plans, Pro tools, Sign in) and footer links at least 44px wide on touch phones. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .pro-nav nav a,html body .resource-wayfinding nav a,html body[data-fynx-terminal]>footer>a{min-width:44px;justify-content:center;box-sizing:border-box}
+}
