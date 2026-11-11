@@ -20,12 +20,15 @@ function safeURL(value) {
 }
 const decode = s => String(s || '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
 
-async function text(url, init = {}, limit = MAX_HTML) {
-  const res = await fetch(url, {redirect: 'follow', ...init, headers: {'User-Agent': AGENT, 'Accept-Language': 'en-US,en;q=0.8', ...(init.headers || {})}, signal: AbortSignal.timeout(init.timeout || 7000)});
+async function text(url, init = {}, limit = MAX_HTML, until = null) {
+  const res = await fetch(url, {redirect: 'follow', ...init, headers: {'User-Agent': AGENT, 'Accept-Language': 'en-US,en;q=0.8', Cookie: 'CONSENT=YES+', ...(init.headers || {})}, signal: AbortSignal.timeout(init.timeout || 7000)});
   if (!res.ok) throw new Error('HTTP ' + res.status);
   if (!safeURL(res.url)) throw new Error('Unsafe redirect');
   const reader = res.body.getReader(), parts = []; let size = 0;
-  while (size < limit) { const {done, value} = await reader.read(); if (done) break; parts.push(Buffer.from(value)); size += value.length; }
+  while (size < limit) {
+    const {done, value} = await reader.read(); if (done) break; parts.push(Buffer.from(value)); size += value.length;
+    if (until && until.test(Buffer.concat(parts).toString('utf8'))) break;
+  }
   try { reader.cancel(); } catch {}
   return {url: res.url, body: Buffer.concat(parts).toString('utf8')};
 }
@@ -35,7 +38,7 @@ async function resolveGoogle(url) {
   const u = new URL(url);
   const id = u.pathname.split('/').filter(Boolean).pop();
   if (!/^[A-Za-z0-9_-]{20,}$/.test(id || '')) throw new Error('Unknown Google News link');
-  const page = await text(`https://news.google.com/rss/articles/${id}?hl=en-US&gl=US&ceid=US:en`, {timeout: 6000}, 200000);
+  const page = await text(`https://news.google.com/rss/articles/${id}?hl=en-US&gl=US&ceid=US:en`, {timeout: 6000}, 1500000, /data-n-a-sg="[^"]+"[\s\S]*?data-n-a-ts="\d+"|data-n-a-ts="\d+"[\s\S]*?data-n-a-sg="[^"]+"/);
   const sg = page.body.match(/data-n-a-sg="([^"]+)"/)?.[1], ts = page.body.match(/data-n-a-ts="([^"]+)"/)?.[1];
   if (!sg || !ts) throw new Error('Google News signature missing');
   const inner = `["garturlreq",[["X","X",["X","X"],null,null,1,1,"US:en",null,1,null,null,null,null,null,0,1],"X","X",1,[1,1,1],1,1,null,0,0,null,0],"${id}",${Number(ts)},"${sg}"]`;
@@ -51,8 +54,8 @@ async function resolveGoogle(url) {
 function meta(html, names) {
   const head = html.slice(0, html.search(/<\/head>/i) > 0 ? html.search(/<\/head>/i) : html.length);
   for (const name of names) {
-    const tags = head.match(new RegExp(`<meta[^>]+(?:property|name|itemprop)=["']${name.replace(/:/g, ':')}["'][^>]*>`, 'gi')) || [];
-    for (const tag of tags) { const c = tag.match(/content=["']([^"']+)["']/i)?.[1]; if (c) return decode(c); }
+    const tags = head.match(new RegExp(`<meta[^>]+(?:property|name|itemprop)=["']${name}["'][^>]*>`, 'gi')) || [];
+    for (const tag of tags) { const m = tag.match(/content="([^"]*)"|content='([^']*)'/i), c = m && (m[1] ?? m[2]); if (c) return decode(c); }
   }
   return null;
 }
