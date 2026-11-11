@@ -14,4 +14,3 @@ jobs:
         with: {python-version: '3.12'}
       - run: pip install playwright==1.48.0
       - run: node .github/tmp/probe.cjs
-      - run: python3 .github/tmp/r404.py
