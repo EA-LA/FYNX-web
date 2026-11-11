@@ -185,6 +185,7 @@
       white-space:nowrap;
     }
     .btn{
+      font-family: inherit;
       cursor:pointer;
       padding: 10px 14px;
       border-radius: 999px;
@@ -199,6 +200,10 @@
       transform: translateY(-1px);
       border-color: var(--border2);
       background: var(--panel2);
+    }
+    .btn:focus-visible, .tab:focus-visible{
+      outline: 2px solid var(--text);
+      outline-offset: 3px;
     }
     /* main card */
     .card{
@@ -261,6 +266,7 @@
       flex-wrap:wrap;
     }
     .tab{
+      font-family: inherit;
       cursor:pointer;
       padding: 10px 14px;
       border-radius: 999px;
@@ -649,7 +655,8 @@
           <label>Now</label>
           <div id="clock" class="clock">—</div>
         </div>
-        <div class="btn" id="refreshBtn" title="Force refresh" role="button" tabindex="0">Refresh</div>
+        <button class="btn" id="refreshBtn" type="button" title="Refresh market hours">Refresh</button>
+
       </div>
     </div>
 
@@ -665,7 +672,7 @@
         </div>
       </div>
 
-      <div class="tabs" id="tabs"></div>
+      <div class="tabs" id="tabs" role="group" aria-label="Market type"></div>
 
       <div class="content">
         <div class="panel">
@@ -1036,13 +1043,22 @@ function buildTZMenu(){
 }
 
 function buildTabs(){
-  tabsEl.innerHTML = '';
-  for(const [key, obj] of Object.entries(MARKETS)){
-    const t = document.createElement('div');
-    t.className = 'tab' + (key===STATE.active ? ' active' : '');
-    t.textContent = obj.label;
-    t.onclick = () => { STATE.active = key; renderAll(); };
-    tabsEl.appendChild(t);
+  // Reuse the same controls so the 30-second live refresh never steals keyboard focus.
+  if (tabsEl.children.length === 0) {
+    for(const [key, obj] of Object.entries(MARKETS)){
+      const t = document.createElement('button');
+      t.type = 'button';
+      t.dataset.market = key;
+      t.className = 'tab';
+      t.textContent = obj.label;
+      t.addEventListener('click', () => { STATE.active = key; renderAll(); });
+      tabsEl.appendChild(t);
+    }
+  }
+  for(const t of tabsEl.querySelectorAll('button[data-market]')){
+    const active = t.dataset.market === STATE.active;
+    t.classList.toggle('active', active);
+    t.setAttribute('aria-pressed', String(active));
   }
 }
 
@@ -1436,9 +1452,6 @@ tzSelect.addEventListener('change', ()=>{
 refreshBtn.addEventListener('click', ()=>{
   tickClock();
   renderAll();
-});
-refreshBtn.addEventListener('keydown', (e)=>{
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); refreshBtn.click(); }
 });
 
 setInterval(tickClock, 15000);
