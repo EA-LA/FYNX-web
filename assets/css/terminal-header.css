@@ -445,6 +445,9 @@ html body[data-fynx-terminal] .terminal-masthead a.terminal-all-together {
 html body[data-fynx-terminal] .terminal-masthead a.terminal-all-together:hover {background:#ffc433;}
 html body[data-fynx-terminal] .terminal-masthead a.terminal-all-together:focus-visible {outline:2px solid #ffffff; outline-offset:3px;}
 @media(max-width:600px){html body[data-fynx-terminal] .terminal-masthead a.terminal-all-together{padding:7px 9px;font-size:11px;}}
+/* [site-qa] iPhone SE (320px): drop the decorative icon so Sign in stays on screen; 44px tap target on touch phones. */
+@media(max-width:380px){html body[data-fynx-terminal] .terminal-masthead a.terminal-all-together{padding:7px 8px;gap:0;}html body[data-fynx-terminal] .terminal-masthead a.terminal-all-together .terminal-all-together-icon{display:none;}}
+@media(pointer:coarse){html body[data-fynx-terminal] .terminal-masthead a.terminal-all-together{min-height:44px;}}
 
 /* Personal news stays discoverable on every terminal page and on small screens. */
 html body[data-fynx-terminal] .terminal-masthead a.terminal-your-news {

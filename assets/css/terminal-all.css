@@ -190,3 +190,16 @@ html body.fx-terminal .fx-key{color:var(--tx)!important}
 html body.fx-terminal .fx-inspect h2{color:var(--tx)!important}
 .fx-stats b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
 @media (max-width:760px){html body.fx-terminal>header.fx-top{height:auto!important;padding:6px 8px!important;flex-wrap:wrap!important}html body.fx-terminal .fx-cmd{flex:1 1 100%!important;order:3}html body.fx-terminal .fx-cmd-msg{order:4;flex:1 1 100%;max-width:none}html body.fx-terminal .fx-classic{margin-left:auto}}
+/* [site-qa] Touch phones: 44px tap targets and 16px fields (no iOS zoom). Desktop/mouse layout unchanged. */
+@media (pointer:coarse){
+ html body.fx-terminal .fx-brand,html body.fx-terminal .fx-classic,html body.fx-terminal .fx-skip{min-height:44px;height:auto;display:inline-flex;align-items:center}
+ html body.fx-terminal .fx-cmd{height:44px}
+ html body.fx-terminal .fx-cmd input,html body.fx-terminal .fx-form input,html body.fx-terminal .fx-form select{font-size:16px!important;min-height:44px}
+ html body.fx-terminal .tp-tabs button{min-width:44px;min-height:44px}
+ html body.fx-terminal .tp-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:0 6px}
+ html body.fx-terminal .fx-chip-link{min-height:44px}
+ html body.fx-terminal .fx-key{min-height:44px}
+ html body.fx-terminal .fx-strip,html body.fx-terminal .fx-news{height:auto;min-height:44px}
+ html body.fx-terminal .fx-q{min-height:44px;align-items:center}
+ html body.fx-terminal .tp>header{flex-wrap:wrap;row-gap:0}
+}

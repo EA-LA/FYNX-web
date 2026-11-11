@@ -420,7 +420,8 @@
       r.append(el('time', '', new Date(e.time).toLocaleString([], {weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'})), el('b', 'cc-' + e.currency, e.currency), el('i', 'imp-' + e.impact, ''), el('span', 'fx-ht', e.title), el('span', 'fx-num', e.forecast || ''), el('span', 'fx-num fx-dim', e.previous || ''));
       host.append(r);
     }
-    host.querySelector('.fx-nowline')?.scrollIntoView?.({block: 'start'});
+    // Scroll only inside the calendar panel; scrollIntoView also moved the whole page on phones.
+    const nowLine = host.querySelector('.fx-nowline'); if (nowLine) host.scrollTop += nowLine.getBoundingClientRect().top - host.getBoundingClientRect().top;
   }
   async function renderCorr(load = false) {
     tabs('corr-tabs', [[30, '30D'], [60, '60D'], [90, '90D']], S.corrWindow, v => { S.corrWindow = v; renderCorr(true); });

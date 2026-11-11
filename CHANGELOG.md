@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-11 (run 63) — [site-qa] FYNX Terminal works on iPhone; header fits iPhone SE again
+- Fixed on iPhone SE: the new yellow "All Together" button in the site header pushed "Sign in" off the right edge, so every page with that header scrolled sideways on small iPhones. On narrow screens the button now drops its small icon and everything fits; it is also a full 44px tap target. https://www.fynxfinanceworld.com/news.html https://www.fynxfinanceworld.com/learn.html
+- Fixed: the FYNX Terminal page jumped halfway down to the economic calendar as soon as it opened on a phone. It now opens at the top; only the calendar list scrolls to "NOW". https://www.fynxfinanceworld.com/terminal.html
+- Fixed on iPhone (Terminal): tapping the Pair, Balance, Risk or Stop fields zoomed the page (text was 12px; now 16px); the quote strip no longer overlaps the header; panel tabs (1M–2Y, US/EA/UK/JP, 30D–90D, CALC/JRNL/SESS), panel links and the bottom shortcut bar are now 44px tap targets. Desktop layout is unchanged.
+- Fixed on iPhone (Edge Radar): the "Method" link, "All" filter and market symbol links are now 44px tap targets. https://www.fynxfinanceworld.com/edge-radar/ https://www.fynxfinanceworld.com/edge-radar/xauusd/
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable); all 239 pages fit iPhone SE; `npm test`, tool/discovery/macro/edge/API checks, edge lint/typecheck and build pass.
+
 ## 2026-11-11 (run 62) — [site-qa] Shareable scenarios on Pivot, Options and Stock Position calculators; Directory links tappable again
 - New: Pivot Points, Options and Stock Position Size (profit-loss) calculators now have a "Copy scenario link" button. It copies a link with your current numbers; opening it fills them in and calculates. Only numbers and listed options are read from the link; nothing is saved to an account. https://www.fynxfinanceworld.com/tools/pivot.html https://www.fynxfinanceworld.com/tools/options.html https://www.fynxfinanceworld.com/tools/profit-loss.html
 - Fixed on iPhone: links on the lightweight Directory had shrunk back to 20px-tall lines after the page was regenerated; they are 44px tap targets again, and the fix now lives in the page generator so it sticks. https://www.fynxfinanceworld.com/directory.html

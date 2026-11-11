@@ -60,3 +60,5 @@
 .ei-weeks i{position:absolute;left:0;right:0}
 @media (max-width:980px){.ei-card,.ei-story,.ei-bias{grid-column:span 12}}
 @media (max-width:640px){.ei-card{padding:16px 14px}.ei-head h2{font-size:24px}.ei-pick select{min-width:0;width:100%}.ei-pick{width:100%}.ei-vol-now{text-align:left}.ei-card-head{flex-wrap:wrap}.ei-score strong{font-size:38px}.ei-hist{height:130px}}
+/* [site-qa] Touch phones: 44px tap targets */
+@media (pointer:coarse){.ei-small-link{display:inline-flex;align-items:center;min-height:44px;min-width:44px}.edge-workspace .edge-chip{min-width:44px}.edge-workspace .edge-map-symbols a,.edge-workspace .edge-fit-row a{min-width:44px;justify-content:center}}
