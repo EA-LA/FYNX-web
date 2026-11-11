@@ -14,6 +14,7 @@ function num(v,name,{positive=false,nonNegative=false,min,max}={}){
  if(typeof v==='number'&&Number.isFinite(v))d=new Decimal(v);
  else if(typeof v==='string'&&/^[-+]?\d{1,18}(\.\d{1,12})?$/.test(v))d=new Decimal(v);
  else invalid(`${name} must be a finite number or decimal string.`);
+ if(d.abs().gte('1e18')||d.decimalPlaces()>12)invalid(`${name} supports at most 18 integer digits and 12 fractional digits.`);
  if(positive&&!d.gt(0))invalid(`${name} must be positive.`);
  if(nonNegative&&d.lt(0))invalid(`${name} cannot be negative.`);
  if(min!==undefined&&d.lt(min))invalid(`${name} must be at least ${min}.`);
@@ -117,7 +118,7 @@ function drawdownRecovery(x,dp){
  if(x.peak_balance!==undefined){const p=num(x.peak_balance,'peak_balance',{positive:true}),now=p.mul(left).div(HUNDRED);out.current_balance=fmt(now,2);out.amount_to_recover=fmt(p.minus(now),2);}
  if(x.monthly_return_percent!==undefined){
   const r=num(x.monthly_return_percent,'monthly_return_percent',{positive:true,max:100}).div(HUNDRED);
-  const months=d.isZero()?0:Math.ceil(Decimal.ln(ONE.plus(need)).div(Decimal.ln(ONE.plus(r))).toNumber()-1e-9);
+  const months=d.isZero()?0:Math.max(1,Math.ceil(Decimal.ln(ONE.plus(need)).div(Decimal.ln(ONE.plus(r))).toNumber()-1e-9));
   if(!Number.isSafeInteger(months))invalid('The recovery period exceeds the supported calculation range.');
   out.months_to_recover=months;
  }

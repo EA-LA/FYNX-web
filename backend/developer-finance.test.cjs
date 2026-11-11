@@ -86,10 +86,18 @@ test('unknown inherited route names fail closed',()=>{
 });
 
 test('extreme inputs fail rather than returning Infinity or an invalid recovery period',()=>{
- bad('cagr',{start_value:'1',end_value:'2',years:1e-100},/supported calculation range/);
+ bad('cagr',{start_value:'1',end_value:'2',years:1e-100},/fractional digits/);
  bad('cagr',{start_value:'1',end_value:'2',years:'0.000000000001'},/supported calculation range/);
- bad('drawdown-recovery',{drawdown_percent:'20',monthly_return_percent:1e-100},/supported calculation range/);
- bad('drawdown-recovery',{drawdown_percent:'20',monthly_return_percent:1e-15},/supported calculation range/);
+ bad('drawdown-recovery',{drawdown_percent:'20',monthly_return_percent:1e-100},/fractional digits/);
+ bad('drawdown-recovery',{drawdown_percent:'20',monthly_return_percent:1e-15},/fractional digits/);
+});
+
+test('numeric precision matches decimal-string inputs and positive drawdowns need a month',()=>{
+ bad('compound-growth',{principal:1000,annual_rate_percent:1e-50,years:1,contribution_per_period:100},/fractional digits/);
+ bad('trade-pnl',{direction:'long',entry_price:1e100,exit_price:2,quantity:1},/integer digits/);
+ const growth=finance('compound-growth',{principal:1000,annual_rate_percent:1e-12,years:1,contribution_per_period:100});
+ assert.equal(growth.future_value,'2200.00');
+ assert.equal(finance('drawdown-recovery',{drawdown_percent:'0.00000001',monthly_return_percent:100}).months_to_recover,1);
 });
 
 test('loan schedules reject fractional cents and reconcile displayed payments',()=>{
