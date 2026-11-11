@@ -436,6 +436,17 @@
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
     }
+    a.settings-item{
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    a.settings-item:focus-visible{
+      outline: 3px solid currentColor;
+      outline-offset: 3px;
+    }
+    .settings-item:not(a){ cursor: default; }
+
     .settings-item:hover{
       border-color: color-mix(in oklab, var(--text) 18%, var(--line));
       transform: translateY(-1px);
@@ -658,11 +669,11 @@
       .form-col{ min-width: 100%; }
     }
   </style>
-  <script type="module" src="assets/js/session-bootstrap.js?v=20261106-tap-targets-19"></script>
+  <script type="module" src="assets/js/session-bootstrap.js?v=20261111-terminal-desks-1"></script>
   <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261108-tap-targets-33">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261111-terminal-desks-1">
 
 <title>FYNX Finance World - Profile</title>
 <meta name="description" content="FYNX Finance World - Profile. Explore this resource from FYNX Finance World.">
@@ -674,19 +685,19 @@
 <!-- terminal-design:start -->
 <link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
 <link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
-<script src="/assets/js/news-reader-links.js?v=20261106-tap-targets-19" defer></script>
-<script src="/assets/js/newsroom-editions.js?v=20261106-tap-targets-19" defer></script>
-<script src="/assets/js/news-preferences.js?v=20261106-tap-targets-19" defer></script>
-<script src="/assets/js/newsroom-media.js?v=20261106-tap-targets-19" defer></script>
-<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261106-tap-targets-19">
-<script src="/assets/js/market-intelligence-data.js?v=20261106-tap-targets-19" defer></script>
-<script src="/assets/js/terminal-market-data.js?v=20261106-tap-targets-19" defer></script>
-<script src="/assets/js/terminal-header.js?v=20261106-tap-targets-19" defer></script>
-<script src="/assets/js/terminal-market-ui.js?v=20261106-tap-targets-19" defer></script>
+<script src="/assets/js/news-reader-links.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/newsroom-editions.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/news-preferences.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/newsroom-media.js?v=20261111-terminal-desks-1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261111-terminal-desks-1">
+<script src="/assets/js/market-intelligence-data.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261111-terminal-desks-1" defer></script>
+<script src="/assets/js/terminal-market-ui.js?v=20261111-terminal-desks-1" defer></script>
 <link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261030-r1">
 <script src="/assets/js/terminal-pages.js?v=20261030-r1" defer></script>
 <!-- terminal-design:end -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261106-tap-targets-19"><script src="/assets/js/company-products-data.js?v=20261105-research-1" defer></script><script src="/assets/js/company-products.js?v=20261106-tap-targets-19" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261111-terminal-desks-1"><script src="/assets/js/company-products-data.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/company-products.js?v=20261111-terminal-desks-1" defer></script><!-- company-products:assets:end -->
 </head>
 
 <body data-protected-page="false" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD" data-fynx-terminal>
@@ -837,7 +848,7 @@
         <div class="settings-list">
           <a id="accountsProfileEntry" class="settings-item" href="/profile/accounts"><div class="settings-text"><div class="settings-label">My accounts</div><div class="settings-value">Check availability for trading account connections and imported statements.</div></div></a>
           <div class="settings-item"><div class="settings-text"><div class="settings-label">Appearance</div><div class="settings-value">Use one theme across your entire FYNX workspace.</div></div><button type="button" class="btn" data-journal-theme data-theme-control><span data-theme-label>Dark theme</span> ◐</button></div>
-          <div class="settings-item" data-link="account-settings.html">
+          <a class="settings-item" href="account-settings.html">
             <svg class="settings-icon" viewBox="0 0 24 24">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
@@ -846,9 +857,9 @@
               <div class="settings-label">Account Settings</div>
               <div class="settings-value">Update your personal information</div>
             </div>
-          </div>
+          </a>
 
-          <div class="settings-item" data-link="security.html">
+          <a class="settings-item" href="security.html">
             <svg class="settings-icon" viewBox="0 0 24 24">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
@@ -857,9 +868,9 @@
               <div class="settings-label">Security</div>
               <div class="settings-value">Manage password and 2FA</div>
             </div>
-          </div>
+          </a>
 
-          <div class="settings-item" data-link="notifications.html">
+          <a class="settings-item" href="notifications.html">
             <svg class="settings-icon" viewBox="0 0 24 24">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
@@ -868,9 +879,9 @@
               <div class="settings-label">Notifications</div>
               <div class="settings-value">Configure alert preferences</div>
             </div>
-          </div>
+          </a>
 
-          <div class="settings-item" data-link="preferences.html">
+          <a class="settings-item" href="preferences.html">
             <svg class="settings-icon" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M12 1v6m0 6v6m5.66-13.66l-4.24 4.24m0 6.84l-4.24 4.24m13.66-5.66h-6m-6 0H1m13.66 5.66l-4.24-4.24m0-6.84l-4.24-4.24"></path>
@@ -879,7 +890,7 @@
               <div class="settings-label">Preferences</div>
               <div class="settings-value">Customize your experience</div>
             </div>
-          </div>
+          </a>
         </div>
       </div>
     </main>
@@ -933,7 +944,7 @@
     </div>
   </div>
 
-  <script src="demo-mode.js?v=20261106-tap-targets-19"></script>
+  <script src="demo-mode.js?v=20261111-terminal-desks-1"></script>
   <script>
     /* =========================
        GLOBAL THEME (SYNCED)
@@ -1069,14 +1080,6 @@
 
     renderProfile();
 
-    // ---------- Settings links ----------
-    document.querySelectorAll(".settings-item").forEach(item => {
-      item.addEventListener("click", () => {
-        const link = item.getAttribute("data-link");
-        if (link) window.location.href = link;
-      });
-    });
-
     // ---------- Edit profile modal ----------
     const modalBackdrop = document.getElementById("modalBackdrop");
     const editBtn = document.getElementById("editProfileBtn");
@@ -1146,13 +1149,13 @@
     });
   </script>
 
-  <script src="fynx-nav.js?v=20261106-tap-targets-19"></script>
+  <script src="fynx-nav.js?v=20261111-terminal-desks-1"></script>
 
   <script type="module">
     import { mountNotificationBell } from "./assets/js/account-ui.js?v=20260928-audit2";
     mountNotificationBell();
   </script>
 
-  <script type="module" src="assets/js/profile-sync.js?v=20261106-tap-targets-19"></script>
-<script src="/assets/js/research-service.js?v=20261105-research-1"></script><script src="/assets/js/quant/profile.js?v=20261105-research-1" defer></script><script src="/assets/js/edge/profile.js?v=20261105-research-1" defer></script></body>
+  <script type="module" src="assets/js/profile-sync.js?v=20261111-terminal-desks-1"></script>
+<script src="/assets/js/research-service.js?v=20261111-terminal-desks-1"></script><script src="/assets/js/quant/profile.js?v=20261111-terminal-desks-1" defer></script><script src="/assets/js/edge/profile.js?v=20261111-terminal-desks-1" defer></script></body>
 </html>

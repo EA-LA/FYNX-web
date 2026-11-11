@@ -227,7 +227,7 @@
     const body = document.body;
     if (!body?.hasAttribute('data-fynx-terminal') || body.hasAttribute('data-terminal-page')) return;
     const path = location.pathname.split('/').pop() || 'index.html';
-    const routes = { 'journal.html': 'journal', 'calculator.html': 'calculator', 'learn.html': 'learn', 'calendar.html': 'calendar', 'profile.html': 'profile', 'pro.html': 'pro', 'index.html': 'landing' };
+    const routes = { 'journal.html': 'journal', 'trader-journal.html': 'journal', 'calculator.html': 'calculator', 'learn.html': 'learn', 'calendar.html': 'calendar', 'profile.html': 'profile', 'pro.html': 'pro', 'index.html': 'landing' };
     const page = body.classList.contains('research-page') ? 'research' : routes[path];
     if (!page) return;
     body.dataset.terminalPage = page;
