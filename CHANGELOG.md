@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-11 (run 68) — [site-qa] Calendar Alerts: add reminders to your phone calendar, correct default date; shareable Currency conversions
+- New: each upcoming alert on Calendar Alerts has an "Add to calendar" button. It downloads a calendar file with the event and a reminder at your chosen time (for example 15 minutes before), so iPhone's Calendar app reminds you even when the page is closed. Nothing is sent to a server. https://www.fynxfinanceworld.com/tools/calendar-alerts.html
+- Fixed: Calendar Alerts pre-filled tomorrow's date in the evening for US time zones (it used the UTC date with the local time), so a default alert landed 25 hours away instead of 1 hour. It now uses your local date.
+- Fixed: an event name or note typed with angle brackets was run as page code in the alert list; it now shows as plain text. The delete button is now a 44px tap target with a spoken label.
+- New: the Currency converter has a "Copy scenario link" button (amount, currencies and the rate you entered). Opening the link fills them in and converts; the page says the rate came from the sender and is not a live quote. https://www.fynxfinanceworld.com/tools/currency.html
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): all 240 pages fit iPhone SE; calendar file hand-checked (23:30 New York = 04:30 UTC, 60-minute alarm); €250 at 1.10 = $275; `npm test`, tool/discovery/macro/edge/API checks and build pass.
+
 ## 2026-11-11 (run 67) — [site-qa] Trader Journal page fixed on iPhone; shareable Crypto and Stock calculator scenarios
 - Fixed on iPhone: the Trader Journal page (linked from the home page menu) had fallen behind the main Journal: on phones its header overlapped itself and a 12-item bottom bar crushed every label into 26px-wide, overlapping buttons. It now uses the same site header and navigation as the Journal page, with "Journal" highlighted. https://www.fynxfinanceworld.com/trader-journal.html
 - New: the Crypto and Stock calculators have a "Copy scenario link" button. Crypto carries investment, entry, exit, fee % and long/short; Stock carries account size, risk %, entry and stop. Opening the link fills them in and calculates. Only plain numbers and listed options are read; the coin name is not included and nothing is saved to an account. https://www.fynxfinanceworld.com/tools/crypto.html https://www.fynxfinanceworld.com/tools/stock.html

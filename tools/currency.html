@@ -358,6 +358,8 @@
 <title>Currency Conversion Calculator: Manual Rates | FYNX</title>
 <meta name="description" content="Convert currencies using a verified exchange rate you enter. The calculator does not provide live exchange rates.">
 <meta name="robots" content="index, follow, max-image-preview:large">
+<style>.scenario-link-status{margin:10px 0 0;font-size:13px;line-height:1.5;color:inherit;opacity:.85}.scenario-link-status:empty{display:none}.scenario-link-box{display:block;width:100%;box-sizing:border-box;margin-top:6px;font-size:16px;padding:10px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit}</style>
+<script src="/assets/js/scenario-link.js?v=20261111-scenario-3" defer></script>
 <link rel="canonical" href="https://www.fynxfinanceworld.com/tools/currency.html">
 <meta property="og:title" content="Currency Conversion Calculator: Manual Rates | FYNX">
 <meta property="og:description" content="Convert currencies using a verified exchange rate you enter. The calculator does not provide live exchange rates.">
@@ -445,6 +447,7 @@
             <div class="actions">
               <button type="button" id="calculateBtn"><i class="fas fa-calculator"></i> Calculate</button>
               <button type="button" id="clearBtn"><i class="fas fa-broom"></i> Clear</button>
+              <button type="button" id="shareScenarioBtn" data-scenario-fields="amount,fromCurrency,toCurrency,customRate" data-scenario-run="calculateBtn" data-scenario-optional="customRate" data-scenario-opened="Opened a shared conversion. The rate is the one the sender entered, not a live quote; check it with your provider."><i class="fas fa-link"></i> Copy scenario link</button>
             </div>
           </div>
         </div>

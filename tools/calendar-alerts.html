@@ -351,6 +351,10 @@
       font-size:1rem;
       padding:.35rem;
     }
+    .alert-actions{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+    .alert-actions .delete-btn{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px}
+    .ics-btn{min-height:44px;display:inline-flex;align-items:center;gap:.4rem;padding:.5rem .85rem;border-radius:10px;border:1px solid var(--panel-border);background:var(--chip);color:var(--text);font:inherit;font-size:.9rem;font-weight:800;cursor:pointer;white-space:nowrap}
+    .ics-btn:hover,.ics-btn:focus-visible{border-color:var(--text)}
     .empty-state{
       padding:1.3rem 1rem;
       color:var(--muted);
@@ -504,7 +508,7 @@
           </div>
 
           <div class="hint">
-            Alerts are stored in your browser on this device. For live notification popups, keep the page open and allow browser notifications.
+            Alerts are stored in your browser on this device. For live notification popups, keep the page open and allow browser notifications. On iPhone, use <strong>Add to calendar</strong> on a saved alert to get the reminder from your Calendar app even when this page is closed.
           </div>
         </div>
 
@@ -625,6 +629,47 @@
       return generated[alert.id] === alert.name;
     }
 
+    function escapeHtml(value){
+      return String(value == null ? "" : value).replace(/[&<>"']/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[ch]);
+    }
+    // [site-qa] run 68: calendar file (.ics) so the reminder also fires from the phone's Calendar app when this page is closed.
+    function icsText(value){
+      return String(value || "").replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n").replace(/([,;])/g, "\\$1").slice(0, 300);
+    }
+    function icsStamp(date){
+      return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+    }
+    function downloadCalendarFile(id){
+      const alert = getAlerts().find(a => a.id === id);
+      if(!alert) return;
+      const start = new Date(`${alert.date}T${alert.time}`);
+      if(Number.isNaN(start.getTime())) return;
+      const end = new Date(start.getTime() + 30 * 60000);
+      const offset = Math.max(0, parseInt(alert.reminderOffset, 10) || 0);
+      const lines = [
+        "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//FYNX Finance World//Calendar Alerts//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
+        "BEGIN:VEVENT",
+        `UID:${String(alert.id).replace(/[^A-Za-z0-9.-]/g, "")}@fynxfinanceworld.com`,
+        `DTSTAMP:${icsStamp(new Date())}`,
+        `DTSTART:${icsStamp(start)}`,
+        `DTEND:${icsStamp(end)}`,
+        `SUMMARY:${icsText(alert.name)}`,
+        `DESCRIPTION:${icsText(`${String(alert.impact).toUpperCase()} impact · ${alert.category}. ${alert.note || ""} Saved with FYNX Calendar Alerts. Check the official release time before trading.`)}`,
+        "BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${icsText(alert.name)}`, `TRIGGER:-PT${offset}M`, "END:VALARM",
+        "END:VEVENT", "END:VCALENDAR"
+      ];
+      const folded = lines.map(line => (line.match(/.{1,70}/g) || [""]).join("\r\n "));
+      const blob = new Blob([folded.join("\r\n") + "\r\n"], { type: "text/calendar;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${(String(alert.name).replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "") || "event").slice(0, 40)}-${alert.date}.ics`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      setStatus("good", "Calendar file ready", `Open the downloaded file to add ${alert.name} to your calendar with a reminder ${offset} min before. It works even when this page is closed.`);
+    }
     function setStatus(level, title, desc){
       const chip = document.getElementById("statusChip");
       const titleEl = document.getElementById("statusTitle");
@@ -789,23 +834,24 @@
         return `
           <div class="alert-row">
             <div class="alert-main">
-              <div class="alert-title">${alert.name}</div>
-              <div class="alert-sub">${formatDateTime(alert.eventDateTime)} • ${alert.category}</div>
-              <div class="alert-sub">${alert.note || "No extra note."}</div>
+              <div class="alert-title">${escapeHtml(alert.name)}</div>
+              <div class="alert-sub">${formatDateTime(alert.eventDateTime)} • ${escapeHtml(alert.category)}</div>
+              <div class="alert-sub">${escapeHtml(alert.note || "No extra note.")}</div>
             </div>
 
             <div>
-              <div class="badge ${impactLabelClass(alert.impact)}">${alert.impact.toUpperCase()} IMPACT</div>
+              <div class="badge ${impactLabelClass(alert.impact)}">${escapeHtml(String(alert.impact).toUpperCase())} IMPACT</div>
             </div>
 
             <div>
-              <div class="alert-sub">Alert: ${alert.reminderOffset} min before</div>
+              <div class="alert-sub">Alert: ${escapeHtml(alert.reminderOffset)} min before</div>
               <div class="alert-sub">${statusText}</div>
             </div>
 
-            <div>
-              <button class="delete-btn" onclick="deleteAlert('${alert.id}')">
-                <i class="fas fa-trash"></i>
+            <div class="alert-actions">
+              ${minsToEvent > 0 ? `<button type="button" class="ics-btn" data-ics-id="${escapeHtml(alert.id)}" aria-label="Add ${escapeHtml(alert.name)} to your calendar"><i class="fas fa-calendar-plus" aria-hidden="true"></i> Add to calendar</button>` : ""}
+              <button type="button" class="delete-btn" data-delete-id="${escapeHtml(alert.id)}" aria-label="Delete ${escapeHtml(alert.name)} alert">
+                <i class="fas fa-trash" aria-hidden="true"></i>
               </button>
             </div>
           </div>
@@ -862,11 +908,19 @@
     function setDefaultDateTime(){
       const now = new Date();
       const later = new Date(now.getTime() + 60 * 60000);
-      document.getElementById("eventDate").value = later.toISOString().slice(0,10);
+      // Local calendar date (toISOString is UTC and gave tomorrow's date on US evenings).
+      const pad = n => String(n).padStart(2, "0");
+      document.getElementById("eventDate").value = `${later.getFullYear()}-${pad(later.getMonth() + 1)}-${pad(later.getDate())}`;
       document.getElementById("eventTime").value = later.toTimeString().slice(0,5);
     }
 
     document.getElementById("addAlertBtn").addEventListener("click", addAlert);
+    document.getElementById("alertsList").addEventListener("click", (e) => {
+      const ics = e.target.closest("[data-ics-id]");
+      if (ics) { downloadCalendarFile(ics.getAttribute("data-ics-id")); return; }
+      const del = e.target.closest("[data-delete-id]");
+      if (del) deleteAlert(del.getAttribute("data-delete-id"));
+    });
     document.getElementById("clearAllBtn").addEventListener("click", clearAllAlerts);
     document.getElementById("requestPermissionBtn").addEventListener("click", requestPermission);
 
