@@ -128,6 +128,7 @@ async function main() {
   const now = Date.now(), nowISO = new Date(now).toISOString();
   const [items, data, db] = await Promise.all([loadFeeds(offline), loadData(offline), readJSON(path.join(DATA, 'articles.json'), {articles: []})]);
   if (!data.markets?.quotes) throw new Error('Market snapshot unavailable; nothing published.');
+  if (process.env.INTELLIGENCE_DUMP) await fs.writeFile(process.env.INTELLIGENCE_DUMP, JSON.stringify(items));
   const quotes = {...data.markets.quotes}, listings = E.buildListingIndex(data.symbols?.rows || []);
   const records = new Map((db.articles || []).filter(r => now - Date.parse(r.publishedAt) < KEEP_DAYS * DAY).map(r => [r.id, r]));
   const owner = new Map(); for (const r of records.values()) for (const a of r.articleIds) owner.set(a, r.id);
