@@ -1,6 +1,6 @@
 import {C,$,escape,number,money,percent,tone,time,ageLabel,errorHTML,empty,toast,options,metric,quotes,quoteCache} from './shared.js';
 import {store} from './store.js';
-import {replaceMarkupWithFocus} from './focus.js?v=20261111-site-qa-69';
+import {replaceMarkupWithFocus} from './focus.js?v=20261111-site-qa-70';
 let portfolioBusy=false,alertBusy=false,lastCheck='';
 export function renderPortfolio(){
   const p=C.portfolio(store.state.holdings,store.state.cash,quoteCache);

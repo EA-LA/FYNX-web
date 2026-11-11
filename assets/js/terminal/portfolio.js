@@ -10,7 +10,9 @@
   /* ===== CHART: candles, volume, compare, drawings ====================================== */
   const RANGES = [[21, '1M'], [63, '3M'], [126, '6M'], [252, '1Y'], [504, '2Y'], [1260, '5Y']];
   function priceChart(host, rows, sym, {drawKey, tool, onMeasure}) {
-    const W = 1100, H = 440, VH = 70, L = 8, R = 70, T0 = 10, B = 24, dg = digitsOf(sym);
+    // Phones get a narrower drawing box so the chart is about twice as tall (300x120 -> 300x206 on iPhone SE).
+    const narrow = (host.clientWidth || innerWidth) < 700;
+    const W = narrow ? 640 : 1100, H = 440, VH = 70, L = 8, R = 70, T0 = 10, B = 24, dg = digitsOf(sym);
     const hasOHLC = rows.every(r => finite(r.open) && finite(r.high) && finite(r.low));
     const hi = Math.max(...rows.map(r => hasOHLC ? r.high : r.close)), lo = Math.min(...rows.map(r => hasOHLC ? r.low : r.close)), pad = (hi - lo) * 0.06 || hi * 0.01;
     const pH = H - VH - B - T0, n = rows.length, step = (W - L - R) / n;
@@ -39,9 +41,11 @@
     draw();
     const cross = svg('line', {class: 'cx', y1: T0, y2: H - B, x1: -10, x2: -10}), hl = svg('line', {class: 'cx', x1: L, x2: W - R, y1: -10, y2: -10}), temp = svg('line', {stroke: '#c4a1ff', 'stroke-width': 1.5, 'stroke-dasharray': '4 3', x1: -10, x2: -10, y1: -10, y2: -10});
     c.append(cross, hl, temp);
-    const read0 = el('p', 'fx-readout', 'Hover for values · pick a tool above to draw');
+    const touch = matchMedia('(pointer:coarse)').matches;
+    const read0 = el('p', 'fx-readout', touch ? 'Tap or drag on the chart for values · pick a tool above to draw' : 'Hover for values · pick a tool above to draw');
     let start = null;
     const pt = e => { const b = c.getBoundingClientRect(); return {px: (e.clientX - b.left) / b.width * W, py: (e.clientY - b.top) / b.height * H}; };
+    const reset = () => { start = null; ['x1', 'x2', 'y1', 'y2'].forEach(a => temp.setAttribute(a, -10)); };
     c.addEventListener('pointermove', e => {
       const {px, py} = pt(e), i = ix(px), r = rows[i];
       cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); hl.setAttribute('y1', py); hl.setAttribute('y2', py);
@@ -49,15 +53,20 @@
       if (start) { temp.setAttribute('x2', px); temp.setAttribute('y2', py); if (tool() === 'measure') { const p0 = start.price, p1 = inv(py); onMeasure(`${fmt(p0, dg)} → ${fmt(p1, dg)}: ${signed((p1 / p0 - 1) * 100, 2, '%')} over ${Math.abs(i - start.i)} sessions`); } }
     });
     c.addEventListener('pointerdown', e => {
-      const t = tool(); if (t === 'none') return; const {px, py} = pt(e), i = ix(px), price = inv(py);
+      const t = tool();
+      // Pointer mode: a tap on a phone has no hover, so show that bar's values on press (and while dragging).
+      if (t === 'none') { if (e.pointerType !== 'mouse') { c.dispatchEvent(new PointerEvent('pointermove', {clientX: e.clientX, clientY: e.clientY, pointerType: e.pointerType})); c.setPointerCapture?.(e.pointerId); } return; }
+      const {px, py} = pt(e), i = ix(px), price = inv(py);
       if (t === 'h') { const list = read(drawKey, []); list.push({type: 'h', price}); write(drawKey, list); draw(); return; }
       start = {i, price, date: rows[i].date}; temp.setAttribute('x1', x(i)); temp.setAttribute('y1', y(price)); temp.setAttribute('x2', x(i)); temp.setAttribute('y2', y(price)); c.setPointerCapture?.(e.pointerId);
     });
     c.addEventListener('pointerup', e => {
       if (!start) return; const {px, py} = pt(e), i = ix(px), price = inv(py), t = tool();
       if (t === 'trend' && i !== start.i) { const list = read(drawKey, []); list.push({type: 'trend', a: {date: start.date, price: start.price}, b: {date: rows[i].date, price}}); write(drawKey, list); draw(); }
-      start = null; ['x1', 'x2', 'y1', 'y2'].forEach(a => temp.setAttribute(a, -10));
+      reset();
     });
+    // iOS can cancel a touch (incoming call, system gesture); drop the half-drawn line instead of leaving it stuck.
+    c.addEventListener('pointercancel', reset);
     host.append(c, read0);
     return {redraw: draw};
   }
@@ -73,7 +82,7 @@
     const cmpList = () => read(cmpKey, ['SPY']).filter(s => s !== sym).slice(0, 5);
     const drawBar = () => {
       bar.replaceChildren(PG.pageTabs(RANGES.filter(([k], i) => i === 0 || data.rows.length > RANGES[i - 1][0]), range, v => { range = v; drawBar(); render(); }), PG.pageTabs([['price', 'Price'], ['compare', 'Compare %']], mode, v => { mode = v; drawBar(); render(); }));
-      if (mode === 'price') bar.append(PG.pageTabs([['none', 'Pointer'], ['trend', 'Trend line'], ['h', 'Level'], ['measure', 'Measure']], tool, v => { tool = v; drawBar(); }), btn('Clear drawings', 'fx-chip', () => { write(drawKey, []); render(); }));
+      if (mode === 'price') bar.append(PG.pageTabs([['none', 'Pointer'], ['trend', 'Trend line'], ['h', 'Level'], ['measure', 'Measure']], tool, v => { tool = v; drawBar(); }), btn('Undo last', 'fx-chip', () => { const l = read(drawKey, []); if (!l.length) { msg.textContent = 'No drawings to undo.'; return; } l.pop(); write(drawKey, l); render(); msg.textContent = 'Removed the last drawing.'; }), btn('Clear drawings', 'fx-chip', () => { write(drawKey, []); render(); }));
       else { const c = el('div', 'fx-chips'); cmpList().forEach(s => c.append(btn(`${shortOf(s)} ✕`, 'fx-chip', () => { write(cmpKey, read(cmpKey, ['SPY']).filter(x => x !== s)); drawBar(); render(); }, `Remove ${s}`))); c.append(btn('+ Add market', 'fx-chip fx-chip-link', () => T.openFinder({title: 'Compare with…', onPick: m => { const l = read(cmpKey, ['SPY']); if (!l.includes(m.symbol)) l.push(m.symbol); write(cmpKey, l.slice(-5)); drawBar(); render(); }}))); bar.append(c); }
     };
     const render = async () => {

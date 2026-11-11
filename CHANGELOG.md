@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-11 (run 70) — [site-qa] FYNX Terminal charts work on iPhone; Undo for chart drawings
+- Fixed on iPhone: the Terminal's Chart page squeezed a wide desktop chart into the phone screen, so on an iPhone SE it was only 120px tall with unreadable price labels. On phones it is now about twice as tall (206px on iPhone SE, 282px on iPhone 15 Pro Max) with readable labels. Desktop is unchanged. https://www.fynxfinanceworld.com/terminal.html#chart/AAPL
+- Fixed on iPhone: in Pointer mode, tapping the chart did nothing because phones have no mouse hover. A tap now shows that day's open, high, low, close and volume, and dragging your finger moves through the days. If iPhone interrupts a touch while you draw, the half-drawn line is now dropped instead of getting stuck.
+- New: an "Undo last" button on the Terminal Chart removes only your most recent trend line or level. Before, the only option was "Clear drawings", which removed all of them. Drawings are still saved in your browser only.
+- Fixed on iPhone: the Terminal's range tabs (1M to 2Y), the clickable rows on the Markets, Central banks, Smart Bias, Edge, Calendar, Portfolio and Country tables, and the Calendar currency filters are now at least 44px tap targets (rows were 28px tall). https://www.fynxfinanceworld.com/terminal.html#mkts
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): all 240 pages fit iPhone SE; the Terminal's World, Country and State pages fit iPhone SE; drawing by touch tested with trend lines and levels; tap readout matched the expected day by hand; `npm test`, tool, discovery, macro, edge and API checks, edge lint and type checks, Terminal UI tests and the build pass.
+
 ## 2026-11-11 (run 69) — [site-qa] Terminal Portfolio edits the right holding; shareable Correlation scenarios
 - Fixed: on the new FYNX Terminal Portfolio page, setting a holding's quantity to 0 hid it but kept it saved. After that, changing another holding's quantity changed the hidden one instead, the ✕ button removed the wrong holding, and adding the hidden market again did nothing. Edits and removals now always apply to the holding on that row, and a quantity of 0 or blank is refused with a short message (use ✕ to remove a holding). https://www.fynxfinanceworld.com/terminal.html#port
 - Fixed on iPhone: the Portfolio page's ✕ remove button was 26px wide; it is now a 44px tap target. Desktop is unchanged.

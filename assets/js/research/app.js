@@ -4,7 +4,7 @@ import {initializeFinancials,renderScreen} from './financials.js';
 import {refreshHeatmap} from './markets.js';
 import {renderAssistant,checkAI} from './assistant.js';
 import './strategy.js';
-import {renderPortfolio,refreshPortfolio,renderAlerts,checkAlerts} from './personal.js?v=20261111-site-qa-69';
+import {renderPortfolio,refreshPortfolio,renderAlerts,checkAlerts} from './personal.js?v=20261111-site-qa-70';
 import {currentRoute,updatePageIdentity,enableRouteNavigation} from './navigation.js';
 const names=['financials','screener','heatmap','assistant','strategy','portfolio','alerts'];let active=null;
 let lastPath=null;
