@@ -105,11 +105,11 @@
       ensureStyle(doc);
       let settled = false;
       const settle = ok => {
-        if (settled) return; settled = true;
+        if (settled) return; settled = true; figure.dataset.photoSettled = ok ? 'story' : 'context';
         figure.classList.remove('newsroom-photo-pending'); figure.removeAttribute('aria-busy'); caption.hidden = false;
         if (!ok) image.src = item.url;
       };
-      setTimeout(() => settle(false), 5000);
+      setTimeout(() => settle(false), 8000);
       upgrade(figure, image, caption, stories, settings, settle).catch(() => settle(false));
     }
     return figure;
@@ -166,6 +166,8 @@
     ensureStyle(doc);
     const probe = new root.Image(); probe.referrerPolicy = 'no-referrer'; probe.decoding = 'async';
     probe.onload = () => {
+      // Once the context photo is showing, a late story photo would only cause a visible swap.
+      if (figure.dataset.photoSettled === 'context') return;
       if (!figure.isConnected && !figure.parentNode) return settle(false);
       if (probe.naturalWidth < 200 || probe.naturalHeight < 110) return settle(false);
       image.src = p.image; image.alt = p.alt || String(item.title || 'Story photo').slice(0, 300);

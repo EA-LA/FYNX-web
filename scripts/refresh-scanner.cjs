@@ -86,15 +86,14 @@ async function etfs() {
 async function crypto(prevCats) {
   const coins = [];
   for (const page of [1, 2]) { coins.push(...await getJSON(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=${page}&price_change_percentage=1h,24h,7d`, GECKO)); await sleep(2500); }
-  // Category membership changes slowly: refresh at most every 6 hours.
-  let cats = prevCats && Date.now() - Date.parse(prevCats.asOf) < 6 * 3600000 ? prevCats : null;
-  if (!cats) {
-    cats = {asOf: new Date().toISOString(), members: {}};
-    for (const [id, slug] of GECKO_CATS) {
-      try { cats.members[id] = (await getJSON(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=250&category=${slug}`, GECKO)).map(c => c.id); }
-      catch (e) { console.warn('[scanner] category', slug, e.message); if (prevCats?.members?.[id]) cats.members[id] = prevCats.members[id]; }
-      await sleep(2500);
-    }
+  // Category membership changes slowly. CoinGecko's free tier allows a few calls a minute, so each run
+  // refreshes at most three categories older than 6 hours, spaced out, and keeps the rest.
+  const cats = {asOf: new Date().toISOString(), members: {...(prevCats?.members || {})}, updated: {...(prevCats?.updated || {})}};
+  const due = GECKO_CATS.filter(([id]) => !cats.members[id] || Date.now() - Date.parse(cats.updated[id] || 0) > 6 * 3600000).slice(0, 3);
+  for (const [id, slug] of due) {
+    await sleep(13000);
+    try { cats.members[id] = (await getJSON(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=250&category=${slug}`, GECKO)).map(c => c.id); cats.updated[id] = new Date().toISOString(); }
+    catch (e) { console.warn('[scanner] category', slug, e.message); }
   }
   const inCat = id => Object.entries(cats.members).filter(([, ids]) => ids.includes(id)).map(([k]) => k);
   const rows = coins.filter(c => c && c.current_price > 0).map(c => [c.id, String(c.symbol || '').toUpperCase(), String(c.name || '').slice(0, 50), c.current_price, num(c.price_change_percentage_1h_in_currency), num(c.price_change_percentage_24h_in_currency ?? c.price_change_percentage_24h), num(c.price_change_percentage_7d_in_currency), num(c.market_cap), num(c.total_volume), c.market_cap_rank || null, num(c.ath_change_percentage), inCat(c.id)]);

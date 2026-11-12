@@ -365,7 +365,7 @@ test('empty regional headline feeds keep official releases in their own panel ra
   assert.equal(h.calls.releases.length,1,'official releases are independently requested once');
   assert.equal(h.all('.fn-story').length,0);assert.equal(h.all('.fn-release').length,1);assert.match(h.query('[data-release-list]').textContent,/UK official policy/);
   assert.doesNotMatch(h.query('[data-news-stories]').textContent,/UK official policy|Unrelated US/);
-  h.click('[data-news-category="crypto"]');await tick();assert.equal(h.all('.fn-story').length,0);assert.equal(h.calls.headlines.at(-1).edition,'uk');
+  const before=h.calls.headlines.length;h.click('[data-news-category="crypto"]');await tick();assert.equal(h.all('.fn-story').length,0);assert.equal(h.calls.headlines[before].edition,'uk','the selected edition is requested first');assert.ok(h.calls.headlines.slice(before).every(c=>['uk','global'].includes(c.edition)),'an empty desk widens only to the Global edition');
 });
 
 test('regional publisher filters and official source links rebuild without retaining US default destinations', async t => {
