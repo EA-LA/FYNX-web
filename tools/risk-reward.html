@@ -496,7 +496,7 @@
             <button class="ghost" id="shareScenarioBtn" type="button" data-scenario-fields="entry,sl,tp" data-scenario-run="calcBtn"><i class="fa-solid fa-link"></i> Copy scenario link</button>
           </div>
 
-          <div class="msg" id="error"></div>
+          <div class="msg" id="error" role="alert" aria-atomic="true"></div>
 
         </div>
 
@@ -504,6 +504,7 @@
         <div class="card" id="resultsCard">
           <h3>Risk/Reward Result</h3>
           <div class="hint" id="emptyHint">Enter values and tap Calculate to see risk, reward, and R:R.</div>
+          <p class="hint" id="resultStatus" role="status" aria-live="polite" aria-atomic="true"></p>
 
           <div class="resultsBox" id="resultsBox" style="display:none;">
             <div class="rrHighlight">
@@ -598,6 +599,7 @@
       error: document.getElementById("error"),
 
       emptyHint: document.getElementById("emptyHint"),
+      resultStatus: document.getElementById("resultStatus"),
       resultsBox: document.getElementById("resultsBox"),
       resultsCard: document.getElementById("resultsCard"),
 
@@ -651,7 +653,9 @@
       showToast._t = setTimeout(() => el.toast.style.display = "none", 1400);
     }
 
-    function resetResults(){
+    function resetResults(message = "Enter values and tap Calculate to see risk, reward, and R:R."){
+      el.emptyHint.textContent = message;
+      el.resultStatus.textContent = message;
       el.emptyHint.style.display = "block";
       el.resultsBox.style.display = "none";
       el.rrOut.textContent = "—";
@@ -697,10 +701,14 @@
     }
     ["entry","sl","tp"].forEach(id => {
       const input = document.getElementById(id);
-      input.addEventListener("input", () => {
+      const invalidate = () => {
         const c = clampNumber(input.value);
         if (c !== input.value) input.value = c;
-      });
+        setError("");
+        resetResults("Inputs changed. Calculate again to update the risk/reward estimate.");
+      };
+      input.addEventListener("input", invalidate);
+      input.addEventListener("change", invalidate);
     });
 
     /* ===== Calculate (matches Swift logic) ===== */
@@ -713,7 +721,7 @@
 
       if (!(entry > 0 && sl > 0 && tp > 0) || !((sl < entry && tp > entry) || (sl > entry && tp < entry))){
         setError("Use positive prices with stop and target on opposite sides of entry.");
-        resetResults();
+        resetResults("Invalid trade setup. Correct your prices and calculate again.");
         return;
       }
 
@@ -723,6 +731,7 @@
 
       el.emptyHint.style.display = "none";
       el.resultsBox.style.display = "flex";
+      el.resultStatus.textContent = "Risk/reward calculated for the current inputs.";
 
       el.entryOut.textContent = money(entry);
       el.slOut.textContent = money(sl);
