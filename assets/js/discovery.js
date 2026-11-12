@@ -53,16 +53,49 @@
     const normalize=s=>s.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'');
     const synonyms={leverage:['margin'],sizing:['position'],lot:['forex','position'],cpi:['inflation','economic'],nfp:['jobs','economic'],etf:['funds'],pnl:['profit'],rr:['reward']};
     function restore(){const params=new URLSearchParams(location.search);input.value=params.get('q')||'';selected=allowed.has(params.get('category'))?params.get('category'):'All';}
+    // Short tokens (rsi, atr, pip) must start a word, so "rsi" no longer matches "conversion".
+    const wordsOf=s=>s.split(/[^a-z0-9]+/).filter(Boolean);
+    const info=cards.map(card=>{const text=normalize(card.dataset.search||''),title=normalize(card.querySelector('h2').textContent);return {text,title,words:wordsOf(text+' '+title)};});
+    const hit=(t,row)=>t.length<=3?row.words.some(w=>w.startsWith(t)):(row.text.includes(t)||row.title.includes(t));
+    const vocab=new Map();info.forEach(row=>new Set(row.words).forEach(w=>{if(w.length>=3&&!/^\d+$/.test(w))vocab.set(w,(vocab.get(w)||0)+1);}));
+    // Optimal string alignment distance: one typo, missing letter or swapped pair counts as 1.
+    function distance(a,b,max){
+      if(Math.abs(a.length-b.length)>max)return max+1;
+      let prev2=null,prev=Array.from({length:b.length+1},(_,j)=>j);
+      for(let i=1;i<=a.length;i++){
+        const cur=[i];let best=i;
+        for(let j=1;j<=b.length;j++){
+          let v=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+          if(prev2&&i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1])v=Math.min(v,prev2[j-2]+1);
+          cur[j]=v;if(v<best)best=v;
+        }
+        if(best>max)return max+1;
+        prev2=prev;prev=cur;
+      }
+      return prev[b.length];
+    }
+    function correct(t){
+      if(t.length<4||synonyms[t]||[...vocab.keys()].some(w=>w.startsWith(t)))return t;
+      const max=t.length<=5?1:2;let best=t,bestD=max+1,bestN=0;
+      vocab.forEach((n,w)=>{const d=Math.min(distance(t,w,max),w.length>t.length?distance(t,w.slice(0,t.length),max)+0.5:max+1);if(d<bestD||(d===bestD&&n>bestN)){best=w;bestD=d;bestN=n;}});
+      return bestD<=max?best:t;
+    }
+    const matches=(tokens,i)=>tokens.every(t=>[t,...(synonyms[t]||[])].some(word=>hit(word,info[i])));
+    const inView=card=>selected==='All'||selected===card.dataset.category||(selected==='Saved'&&saved.has(card.dataset.resourceUrl));
     filterLibrary=()=>{
-      const tokens=normalize(input.value.trim()).split(/\s+/).filter(Boolean);let count=0;
+      const query=input.value.trim();let tokens=normalize(query).split(/\s+/).filter(Boolean),fixed=null;
+      const countFor=list=>cards.reduce((n,card,i)=>n+(matches(list,i)&&inView(card)?1:0),0);
+      if(tokens.length&&!countFor(tokens)){const alt=tokens.map(correct);if(alt.join(' ')!==tokens.join(' ')&&countFor(alt)){fixed=alt.join(' ');tokens=alt;}}
+      let count=0;
       const ranked=cards.map((card,i)=>{
-        const text=normalize(card.dataset.search),title=normalize(card.querySelector('h2').textContent),match=tokens.every(t=>[t,...(synonyms[t]||[])].some(word=>text.includes(word)));
-        const visible=match&&(selected==='All'||selected===card.dataset.category||(selected==='Saved'&&saved.has(card.dataset.resourceUrl)));
+        const visible=matches(tokens,i)&&inView(card);
         card.hidden=!visible;if(visible)count++;
-        return {card,i,score:tokens.reduce((n,t)=>n+(title.includes(t)?10:0),0)+(card.dataset.category==='Tools'&&tokens.length?1:0)};
+        const row=info[i],titleWords=wordsOf(row.title);
+        return {card,i,score:tokens.reduce((n,t)=>n+(titleWords.some(w=>w.startsWith(t))?10:row.title.includes(t)?6:0),0)+(card.dataset.category==='Tools'&&tokens.length?1:0)};
       });
       const grid=library.querySelector('.discovery-grid');ranked.sort((a,b)=>b.score-a.score||a.i-b.i).forEach(row=>grid.append(row.card));
-      document.getElementById('discovery-count').textContent=`${count} ${count===1?'resource':'resources'}${input.value.trim()?' found':''}`;
+      const label=`${count} ${count===1?'resource':'resources'}`;
+      const countEl=document.getElementById('discovery-count');countEl.style.whiteSpace=fixed?'normal':'';countEl.style.flexBasis=fixed?'100%':'';countEl.textContent=fixed?`No exact match for \u201c${query}\u201d. Showing ${label} for \u201c${fixed}\u201d.`:`${label}${query?' found':''}`;
       document.getElementById('discovery-empty').hidden=count!==0;
       buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===selected)));
     };

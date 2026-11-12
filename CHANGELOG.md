@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-12 (run 75) — [site-qa] Search forgives typos; crypto and compound calculator fixes
+- Fixed: searching the site for a word with a small typo found nothing. Searches like "fibonaci", "margn", "journl" or "posiiton size" now show the closest results with a note such as: No exact match for "fibonaci". Showing 1 resource for "fibonacci". This works from the search box at the top of every page. https://www.fynxfinanceworld.com/explore.html?q=fibonaci
+- Fixed: short searches matched letters hidden inside longer words, so "rsi" listed the Currency Conversion calculator first (because of "conversion"). Short words like rsi, atr and pip now match whole words only. https://www.fynxfinanceworld.com/explore.html?q=rsi
+- Fixed: the Crypto calculator showed a broken break-even price if the fee was 100% or more; it now explains the fee must be below 100% per side. https://www.fynxfinanceworld.com/tools/crypto.html
+- Fixed: the Compound calculator called a year that lost money "Flat"; it now says "Shrinking". https://www.fynxfinanceworld.com/tools/compound.html
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): all 242 main pages with no sideways scrolling or script errors; 21 calculators tried with empty, zero, negative and nonsense inputs without broken numbers; `npm test`, tool, discovery, macro, edge and API checks, edge lint and type checks and the build pass.
+
 ## 2026-11-12 (run 74) — [site-qa] Intelligence files E-mini futures under Indices; Saved stories and filters remembered; 44px checkboxes
 - Fixed: FYNX Intelligence listed the E-mini S&P 500 futures contract under "Commodities" in a story's Market impact box, and those Wall Street stories showed up when you filtered the Intelligence page by Commodities. Equity index futures (E-mini S&P 500, Nasdaq 100, Dow, Russell 2000) are now filed under Indices, for existing stories and for new ones. The Commodities filter now shows 6 stories instead of 11. https://www.fynxfinanceworld.com/intelligence/ https://www.fynxfinanceworld.com/intelligence/rebounding-ai-stocks-lift-wall-d22e2f/
 - Fixed on iPhone: in the Market impact box each market now gets its own line, so names like "E-mini" no longer split across two lines.
