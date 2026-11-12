@@ -4,7 +4,7 @@ const path = require('node:path');
 
 // Match package-static.cjs: only these top-level directories belong to the
 // website. New source, cache or fixture directories must never opt in by default.
-const PUBLIC_DIRECTORIES = Object.freeze(['api', 'assets', 'edge-radar', 'profile', 'auth', 'home', 'learn', 'markets', 'news', 'resources', 'tools', 'intelligence']);
+const PUBLIC_DIRECTORIES = Object.freeze(['api', 'assets', 'edge-radar', 'profile', 'auth', 'home', 'learn', 'markets', 'news', 'resources', 'tools']);
 const PRIVATE_DIRECTORIES = new Set(['node_modules', 'output', 'dist', 'backend', 'docs', 'ops', 'scripts', 'functions', 'tests', '__tests__', 'fixtures', 'coverage', 'src', 'lib', 'content', 'config']);
 
 function isPublicSitePath(file) {
