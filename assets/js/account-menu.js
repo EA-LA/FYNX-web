@@ -99,7 +99,7 @@ html[data-theme=dark] .fx-acct-menu,body.dark-mode .fx-acct-menu{background:#111
     const close = () => { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
     const place = () => { const r = btn.getBoundingClientRect(); menu.style.top = Math.round(r.bottom + 10) + 'px'; menu.style.right = Math.max(10, Math.round(innerWidth - r.right)) + 'px'; };
     const open = () => { build(menu, id()); place(); menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); menu.querySelector('a')?.focus({preventScroll: true}); };
-    btn.addEventListener('click', e => { e.stopPropagation(); if (!id().uid) { location.href = '/auth/login.html?returnTo=' + encodeURIComponent(location.pathname + location.search); return; } menu.hidden ? open() : close(); });
+    btn.addEventListener('click', e => { e.stopPropagation(); if (!id().uid) { if (window.FynxAuth) window.FynxAuth.open('login'); else location.href = '/auth/login.html?returnTo=' + encodeURIComponent(location.pathname + location.search); return; } menu.hidden ? open() : close(); });
     document.addEventListener('click', e => { if (!wrap.contains(e.target) && !menu.contains(e.target)) close(); });
     addEventListener('resize', () => { if (!menu.hidden) place(); }); addEventListener('scroll', () => { if (!menu.hidden) place(); }, {passive: true});
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !menu.hidden) { close(); btn.focus(); } });

@@ -62,7 +62,14 @@
 /* Site-wide: replace manual Refresh buttons with automatic 10-minute updates (assets/js/auto-refresh.js). */
 (function () {
  if (typeof document === 'undefined' || /^\/terminal(\.html)?$/.test(location.pathname) || document.querySelector('script[data-fx-auto-refresh]')) return;
- const own = document.querySelector('script[src*="company-products.js?v=20261112-profile-2"]'), v = own && /[?&]v=([^&]+)/.exec(own.src);
+ const own = document.querySelector('script[src*="company-products.js?v=20261112-signin-1"]'), v = own && /[?&]v=([^&]+)/.exec(own.src);
  const s = document.createElement('script'); s.src = '/assets/js/auto-refresh.js' + (v ? '?v=' + v[1] : ''); s.defer = true; s.dataset.fxAutoRefresh = '1';
+ document.head.append(s);
+})();
+
+/* Site-wide: "Sign in" / "Create account" links open the sign-in window over the current page. */
+(function () {
+ if (typeof document === 'undefined' || /^\/auth\//.test(location.pathname) || document.querySelector('script[data-fx-auth-launcher]')) return;
+ const s = document.createElement('script'); s.src = '/assets/js/auth-launcher.js?v=20261112-signin-1'; s.defer = true; s.dataset.fxAuthLauncher = '1';
  document.head.append(s);
 })();
