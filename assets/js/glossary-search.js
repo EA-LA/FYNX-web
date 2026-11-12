@@ -40,27 +40,48 @@
   const more = finder.querySelector('[data-glossary-more]');
   const moreList = more && more.querySelector('ul');
   const moreNote = more && more.querySelector('[data-glossary-more-note]');
+  const retry = finder.querySelector('[data-glossary-retry]');
   const MARKETS = [['stocks', 'Stocks'], ['funds', 'Funds'], ['futures', 'Futures'], ['options', 'Options'], ['forex', 'Forex'], ['crypto', 'Crypto'], ['indices', 'Indices'], ['bonds', 'Bonds'], ['economy', 'Economy']];
   const MORE_LIMIT = 8;
+  const EXTRA_TIMEOUT_MS = 8000;
   let extra = null;
   let extraLoading = null;
+  let unavailableCount = 0;
   function loadExtra() {
-    if (extra || extraLoading || !more || typeof fetch !== 'function') return extraLoading;
-    extraLoading = Promise.all(MARKETS.map(([slug, market]) => {
+    if (extra !== null || extraLoading || !more || typeof fetch !== 'function') return extraLoading;
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    let timeout;
+    // A stalled market page must not keep the cross-market search pending forever.
+    const requests = Promise.all(MARKETS.map(([slug, market]) => {
       const href = `/learn/${slug}-glossary.html`;
-      return fetch(href, { credentials: 'same-origin' })
-        .then(res => (res.ok ? res.text() : ''))
-        .then(html => {
-          if (!html) return [];
-          const doc = new DOMParser().parseFromString(html, 'text/html');
-          return [...doc.querySelectorAll('.glossary article.term')].map(node => {
-            const term = (node.querySelector('strong')?.textContent || '').trim();
-            const def = (node.querySelector('p')?.textContent || '').trim();
-            return { term, def, market, href, title: fold(term), text: fold(term + ' ' + market + ' ' + def) };
-          }).filter(item => item.term);
+      const options = controller ? { credentials: 'same-origin', signal: controller.signal } : { credentials: 'same-origin' };
+      return fetch(href, options)
+        .then(res => {
+          if (!res.ok) return { items: [], failed: true };
+          return res.text().then(html => {
+            if (!html) return { items: [], failed: true };
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const items = [...doc.querySelectorAll('.glossary article.term')].map(node => {
+              const term = (node.querySelector('strong')?.textContent || '').trim();
+              const def = (node.querySelector('p')?.textContent || '').trim();
+              return { term, def, market, href, title: fold(term), text: fold(term + ' ' + market + ' ' + def) };
+            }).filter(item => item.term);
+            return { items, failed: false };
+          });
         })
-        .catch(() => []);
-    })).then(lists => { extra = lists.flat(); extraLoading = null; apply(false); });
+        .catch(() => ({ items: [], failed: true }));
+    }));
+    extraLoading = Promise.race([
+      requests,
+      new Promise(resolve => { timeout = setTimeout(() => resolve(null), EXTRA_TIMEOUT_MS); })
+    ]).then(lists => {
+      clearTimeout(timeout);
+      if (!lists && controller) controller.abort();
+      extra = lists ? lists.flatMap(result => result.items) : [];
+      unavailableCount = lists ? lists.filter(result => result.failed).length : MARKETS.length;
+      extraLoading = null;
+      apply(false);
+    });
     return extraLoading;
   }
   function renderExtra(words, topic) {
@@ -111,10 +132,17 @@
     const query = input.value.trim();
     if (words.length && !topic) loadExtra();
     const extraCount = renderExtra(words, topic);
+    const searchingMarkets = !!(words.length && !topic && extraLoading);
+    const incompleteMarkets = !!(words.length && !topic && unavailableCount);
     const extraLabel = extraCount ? ` Also ${plural(extraCount)} in the market glossaries below.` : '';
+    const pendingLabel = searchingMarkets ? ' Checking other market glossaries…' : '';
+    const incompleteLabel = incompleteMarkets ? ' Some market glossaries could not be checked; retry for complete results.' : '';
+    if (retry) retry.hidden = !incompleteMarkets;
     if (!filtering) status.textContent = `${plural(total)} from A to Z.`;
-    else if (shown) status.textContent = `Showing ${plural(shown)}${query ? ` for “${query}”` : ''}${topicLabel}.${extraLabel}`;
-    else if (extraCount) status.textContent = `No terms on this page match “${query}”. Found ${plural(extraCount)} in the market glossaries below.`;
+    else if (shown) status.textContent = `Showing ${plural(shown)}${query ? ` for “${query}”` : ''}${topicLabel}.${extraLabel}${pendingLabel}${incompleteLabel}`;
+    else if (extraCount) status.textContent = `No terms on this page match “${query}”. Found ${plural(extraCount)} in the market glossaries below.${incompleteLabel}`;
+    else if (searchingMarkets) status.textContent = `No terms on this page match “${query}”. Checking the market glossaries…`;
+    else if (incompleteMarkets) status.textContent = `No terms on this page match “${query}”. Some market glossaries are unavailable; retry before treating this as no results.`;
     else status.textContent = `No terms match${query ? ` “${query}”` : ''}${topicLabel}. Try a shorter word${select.value ? ' or All topics' : ''}.`;
     clear.hidden = !filtering;
     finder.classList.toggle('is-empty', filtering && !shown && !extraCount);
@@ -141,6 +169,7 @@
   });
   select.addEventListener('change', () => apply(true));
   clear.addEventListener('click', () => { input.value = ''; select.value = ''; apply(true); input.focus(); });
+  if (retry) retry.addEventListener('click', () => { extra = null; unavailableCount = 0; loadExtra(); apply(false); });
   finder.addEventListener('submit', event => { event.preventDefault(); input.blur(); });
   for (const link of document.querySelectorAll('[data-glossary-topic]')) {
     link.addEventListener('click', event => {
