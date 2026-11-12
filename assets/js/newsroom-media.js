@@ -74,10 +74,17 @@
   };
   Object.values(sections).forEach(Object.freeze);
   Object.freeze(sections);
+  function settings0(o) { return o || {}; }
+  // image URL -> story URL it was first used for, so one photo never illustrates two different stories.
+  const usedImages = new Map();
+  const taken = (img, story) => usedImages.has(img) && usedImages.get(img) !== story;
   function get(section) { return Object.hasOwn(sections, section) ? sections[section] : null; }
   function createFigure(section, options) {
     const item = get(section), doc = root.document;
     if (!item || !doc) return null;
+    // Generic context photos (earth, skylines, cranes…) are no longer shown on their own: a figure
+    // appears only when the publisher's photo for this exact story loads within 5 seconds.
+    if (!(Array.isArray(settings0(options).story) ? settings0(options).story.some(Boolean) : settings0(options).story) || typeof root.fetch !== 'function') return null;
     const settings = options || {};
     const figure = doc.createElement('figure');
     figure.className = 'newsroom-context-image' + (settings.className ? ' ' + settings.className : '');
@@ -107,9 +114,9 @@
       const settle = ok => {
         if (settled) return; settled = true; figure.dataset.photoSettled = ok ? 'story' : 'context';
         figure.classList.remove('newsroom-photo-pending'); figure.removeAttribute('aria-busy'); caption.hidden = false;
-        if (!ok) image.src = item.url;
+        if (!ok) { figure.remove(); return; }
       };
-      setTimeout(() => settle(false), 8000);
+      setTimeout(() => settle(false), 5000);
       upgrade(figure, image, caption, stories, settings, settle).catch(() => settle(false));
     }
     return figure;
@@ -158,9 +165,9 @@
     const candidates = stories.map(item => ({item, url: safe(item.url || item.link)})).filter(c => c.url);
     const found = await Promise.all(candidates.map(c => lookup(c.url)));
     const shown = new Set([...(root.document?.querySelectorAll('[data-story-image] img') || [])].map(img => img.src));
-    let index = found.findIndex(p => p && p.image && !shown.has(p.image));
-    if (index < 0) index = found.findIndex(p => p && p.image);
+    const index = found.findIndex((p, i) => p && p.image && !shown.has(p.image) && !taken(p.image, candidates[i].url));
     if (index < 0) return settle(false);
+    usedImages.set(found[index].image, candidates[index].url);
     const {item} = candidates[index], p = found[index], doc = root.document;
     const original = {src: image.getAttribute('src') || figure.dataset.contextSrc || '', alt: image.alt, width: image.width, height: image.height, caption: [...caption.childNodes]};
     ensureStyle(doc);
@@ -177,7 +184,7 @@
       const site = doc.createElement('a'); site.href = p.url; site.textContent = p.site || new URL(p.url).hostname.replace(/^www\./, ''); site.target = '_blank'; site.rel = 'noopener noreferrer';
       caption.replaceChildren(label, site, doc.createTextNode(settings.captionTitle === false ? '' : ' — ' + String(item.title || '').slice(0, 160)));
       settle(true);
-      image.addEventListener('error', () => { image.src = original.src; image.alt = original.alt; image.width = original.width; image.height = original.height; caption.replaceChildren(...original.caption); figure.classList.remove('newsroom-story-photo'); delete figure.dataset.storyImage; }, {once: true});
+      image.addEventListener('error', () => figure.remove(), {once: true});
     };
     probe.onerror = () => settle(false);
     probe.src = p.image;
@@ -211,9 +218,9 @@
     box.textContent = monogram(item && item.source);
     let done = false; const settle = img => { if (done) return; done = true; box.classList.remove('fx-thumb-wait'); if (img) { box.classList.add('fx-thumb-photo'); box.replaceChildren(img); } };
     if (!url || typeof root.fetch !== 'function') { settle(null); return box; }
-    setTimeout(() => settle(null), 7000);
+    setTimeout(() => settle(null), 5000);
     lookup(url).then(p => {
-      const src = p && safe(p.image); if (!src || done) return settle(null);
+      const src = p && safe(p.image); if (!src || done || taken(src, url)) return settle(null); usedImages.set(src, url);
       const img = doc.createElement('img'); img.alt = ''; img.decoding = 'async'; img.referrerPolicy = 'no-referrer';
       img.onload = () => settle(img.naturalWidth >= 80 ? img : null); img.onerror = () => settle(null); img.src = src;
     }, () => settle(null));
