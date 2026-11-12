@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-12 (run 76) — [site-qa] Search and topic filter on the Trading Glossary
+- New: the Trading Glossary now has a "Find a term" box and a Topic picker. Type a word such as "drawdown" or "stop loss" and only matching terms show, with a count; pick a topic such as Risk (10 terms) or Technical (9) to see just those. Letters with no matching terms are hidden, "Clear search" (or Esc) brings everything back, and the search stays in the page address so Back, refresh and shared links reopen the same view. https://www.fynxfinanceworld.com/trading-glossary.html https://www.fynxfinanceworld.com/trading-glossary.html?topic=Risk
+- Fixed: the glossary's "Risk Terms" and "Technical Terms" buttons only jumped to the letters R and T, which mostly hold other terms. They now show the actual Risk and Technical terms.
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): all 242 main pages on iPhone SE and 20 key pages on every device with no sideways scrolling, small text fields or script errors; the glossary search fields are 16px text (no iPhone zoom) and 44px tall; `npm test`, tool, discovery, macro, edge and API checks and the build pass.
+
 ## 2026-11-12 (run 75) — [site-qa] Search forgives typos; crypto and compound calculator fixes
 - Fixed: searching the site for a word with a small typo found nothing. Searches like "fibonaci", "margn", "journl" or "posiiton size" now show the closest results with a note such as: No exact match for "fibonaci". Showing 1 resource for "fibonacci". This works from the search box at the top of every page. https://www.fynxfinanceworld.com/explore.html?q=fibonaci
 - Fixed: short searches matched letters hidden inside longer words, so "rsi" listed the Currency Conversion calculator first (because of "conversion"). Short words like rsi, atr and pip now match whole words only. https://www.fynxfinanceworld.com/explore.html?q=rsi

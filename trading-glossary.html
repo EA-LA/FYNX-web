@@ -174,6 +174,95 @@
       color:var(--text-soft);
       font-size:.92rem;
     }
+    .glossary-finder{
+      margin-top:22px;
+      padding:18px;
+      border-radius:24px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      box-shadow:var(--shadow);
+      scroll-margin-top:84px;
+    }
+    .glossary-finder-fields{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) minmax(0,240px);
+      gap:12px;
+    }
+    .glossary-field{
+      display:grid;
+      gap:6px;
+      min-width:0;
+    }
+    .glossary-field span{
+      color:var(--muted);
+      font-size:.78rem;
+      font-weight:700;
+      letter-spacing:.11em;
+      text-transform:uppercase;
+    }
+    .glossary-field input,
+    .glossary-field select{
+      width:100%;
+      min-width:0;
+      min-height:48px;
+      padding:0 16px;
+      border-radius:16px;
+      border:1px solid var(--line-strong);
+      background:var(--panel-strong);
+      color:var(--text);
+      font:inherit;
+      font-size:16px;
+    }
+    .glossary-field input:focus-visible,
+    .glossary-field select:focus-visible,
+    .glossary-clear:focus-visible{
+      outline:2px solid var(--text);
+      outline-offset:2px;
+    }
+    .glossary-finder-foot{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:8px 12px;
+      margin-top:12px;
+    }
+    .glossary-finder-foot p{
+      margin:0;
+      color:var(--text-soft);
+      font-size:.95rem;
+      overflow-wrap:anywhere;
+    }
+    .glossary-finder.is-empty .glossary-finder-foot p{
+      color:var(--text);
+      font-weight:600;
+    }
+    .glossary-clear{
+      min-height:44px;
+      padding:0 16px;
+      border-radius:999px;
+      border:1px solid var(--line-strong);
+      background:transparent;
+      color:var(--text);
+      font:inherit;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .glossary-finder[hidden],
+    .glossary-clear[hidden],
+    .alpha-nav [hidden],
+    .glossary-grid > [hidden],
+    .section[hidden]{
+      display:none !important;
+    }
+    @media (max-width: 760px){
+      .glossary-finder-fields{
+        grid-template-columns:1fr;
+      }
+      .glossary-finder{
+        padding:16px;
+      }
+    }
     .alpha-nav{
       margin-top:22px;
       padding:18px;
@@ -347,6 +436,7 @@
 <title>Finance &amp; Trading Glossary: Market Terms Explained | FYNX</title>
 <meta name="description" content="Learn financial market terminology covering forex, crypto, stocks, futures, options, technical analysis and trading psychology.">
 <meta name="robots" content="index, follow, max-image-preview:large">
+<script src="/assets/js/glossary-search.js?v=20261112-site-qa-76" defer></script>
 <link rel="canonical" href="https://www.fynxfinanceworld.com/trading-glossary.html">
 <meta property="og:title" content="Finance &amp; Trading Glossary: Market Terms Explained | FYNX">
 <meta property="og:description" content="Learn financial market terminology covering forex, crypto, stocks, futures, options, technical analysis and trading psychology.">
@@ -381,8 +471,8 @@
 
       <div class="hero-actions">
         <a class="btn primary" href="#letter-a">Start Reading</a>
-        <a class="btn secondary" href="#letter-r">Risk Terms</a>
-        <a class="btn secondary" href="#letter-t">Technical Terms</a>
+        <a class="btn secondary" href="/trading-glossary.html?topic=Risk#glossary-search" data-glossary-topic="Risk">Risk Terms</a>
+        <a class="btn secondary" href="/trading-glossary.html?topic=Technical#glossary-search" data-glossary-topic="Technical">Technical Terms</a>
       </div>
 
       <div class="hero-stats">
@@ -404,6 +494,23 @@
         </div>
       </div>
     </section>
+
+    <form class="glossary-finder" id="glossary-search" role="search" aria-label="Find a glossary term" hidden>
+      <div class="glossary-finder-fields">
+        <label class="glossary-field glossary-field-search">
+          <span>Find a term</span>
+          <input id="glossarySearch" type="search" name="q" placeholder="e.g. drawdown, spread" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="80" enterkeyhint="search">
+        </label>
+        <label class="glossary-field">
+          <span>Topic</span>
+          <select id="glossaryTopic" name="topic"><option value="">All topics</option></select>
+        </label>
+      </div>
+      <div class="glossary-finder-foot">
+        <p data-glossary-status role="status" aria-live="polite"></p>
+        <button type="button" class="glossary-clear" data-glossary-clear hidden>Clear search</button>
+      </div>
+    </form>
 
     <nav class="alpha-nav">
       <a class="alpha-link" href="#letter-a">A</a>
