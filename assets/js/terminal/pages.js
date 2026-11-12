@@ -93,6 +93,18 @@ window.FynxTerminalPages = T => {
     catch (e) { body.append(el('p', 'fx-empty', 'This page could not load.')); console.error(e); }
     $('fx-page-back').focus({preventScroll: true});
   }
+  /* site-qa run 73: redrawing the same page (data arriving after start-up, range tabs, portfolio edits) used to
+     send keyboard focus back to the Back button. Keep focus on the same labelled control or row, and the scroll position. */
+  function redraw() {
+    const a = document.activeElement, inBody = a && a !== body && body.contains(a);
+    const key = inBody ? (a.getAttribute('aria-label') || (a.tagName === 'BUTTON' || a.tagName === 'A' ? a.textContent.trim() : '')) : '';
+    const tag = inBody ? a.tagName : '', top = body.scrollTop, y = window.scrollY;
+    show();
+    body.scrollTop = top; if (Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y);
+    if (!key) return;
+    const twin = [...body.querySelectorAll(tag)].find(n => (n.getAttribute('aria-label') || (tag === 'BUTTON' || tag === 'A' ? n.textContent.trim() : '')) === key);
+    twin?.focus({preventScroll: true});
+  }
   $('fx-page-back').addEventListener('click', back);
   $('fx-page-close').addEventListener('click', closeAll);
 
@@ -103,7 +115,7 @@ window.FynxTerminalPages = T => {
     for (const id of ids) {
       const q = T.quoteFor(id); if (!q) continue;
       const tr = el('tr', 'pg-click'); tr.tabIndex = 0; tr.setAttribute('role', 'button'); tr.setAttribute('aria-label', `Open ${T.nameOf(id)}`);
-      const go = () => open('des', id); tr.addEventListener('click', go); tr.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+      const go = () => open('des', id); tr.addEventListener('click', go); tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
       tr.append(el('th', '', T.shortOf(id)), el('td', 'pg-name', T.nameOf(id)), el('td', 'fx-num', fmt(q.price, T.digitsOf(id))), el('td', 'fx-num ' + tone(q.changePercent), signed(q.changePercent, 2, '%')));
       if (perf) for (const w of [5, 21, 'ytd', 251]) { const r = T.periodReturn(id, w); tr.append(el('td', 'fx-num ' + tone(r), finite(r) ? signed(r, 1, '%') : '—')); }
       const rng = el('td', 'pg-range');
@@ -579,5 +591,5 @@ window.FynxTerminalPages = T => {
 
   // Plugins add pages: add(name, label, render(body, arg, alive)).
   const add = (name, label, render) => { NAMES[name] = label; PAGES[name] = render; };
-  return {open, back, closeAll, fromLocation, add, setHead, section, cards, chips, go, pageTabs, sourceNote, quoteTable, newsList, matchNews, grid, rerender: () => { if (stack.length) show(); }, isOpen: () => stack.length > 0, refresh: name => { if (stack.at(-1)?.name === name) show(); }};
+  return {open, back, closeAll, fromLocation, add, setHead, section, cards, chips, go, pageTabs, sourceNote, quoteTable, newsList, matchNews, grid, rerender: () => { if (stack.length) redraw(); }, isOpen: () => stack.length > 0, refresh: name => { if (stack.at(-1)?.name === name) redraw(); }};
 };

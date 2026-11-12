@@ -480,3 +480,8 @@ html body .sc-filters select.sc-in option{background:#0b0e0c;color:#e7ece9}
 .sc-fold>summary{cursor:pointer;margin:6px 0;font:700 11px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#ffb000}.sc-fold>summary:focus-visible{outline:2px solid #ffb000}
 /* site-qa run 72: Scanner on touch screens - column sort buttons (30-42px wide) and the Hide SPACs checkbox row (40px) reach 44px. */
 @media (hover:none) and (pointer:coarse){.sc-sort{display:inline-flex;align-items:center;min-height:44px;min-width:44px}.sc-ctl:has(input[type=checkbox]){min-height:44px;align-content:center}}
+/* site-qa run 73: on phones, two stat cards per row are ~128px wide on an iPhone SE, so key numbers
+   ("-1.52 / +1.42%", "4.8% beyond 2σ", Portfolio diversification) were cut with "…". Let values and notes wrap. */
+@media (max-width:760px){.pg-cards span,.pg-cards b,.pg-cards small{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}}
+/* site-qa run 73: on touch screens the Country page US state buttons (HI, ID, IL, RI...) were 41-43px wide and its headline links 37px tall. */
+@media (hover:none) and (pointer:coarse){.pg-statebtn{min-width:44px;justify-content:center}.fx-page-body a.fx-cnrow{min-height:44px;align-content:center}}
