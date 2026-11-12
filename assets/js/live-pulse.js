@@ -32,7 +32,9 @@
       + '.lp-pos{color:#127a48}.lp-neg{color:#c42828}'
       + '.lp-spark{width:52px;height:18px}.lp-spark polyline{fill:none;stroke-width:1.5;vector-effect:non-scaling-stroke}.lp-spark .lp-up{stroke:#127a48}.lp-spark .lp-down{stroke:#c42828}'
       + '.lp-asof{flex:0 0 auto;display:flex;align-items:center;padding:0 12px;font-size:10px;opacity:.6;border-left:1px solid rgba(127,127,127,.22)}'
-      + '@media (max-width:640px){.lp-asof{display:none}.lp-tag{padding:0 10px}.lp-item{padding:8px 12px}}'
+      + '.lp-tag-txt{display:grid;gap:3px}.lp-tag-sub{display:none;font:600 8px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.08em;opacity:.75}'
+      + '@media (max-width:640px){.lp-asof{display:none}.lp-tag-sub{display:block}.lp-tag{padding:0 10px}.lp-item{padding:8px 12px}}'
+      + '@media (pointer:coarse){.lp-item{min-height:44px}}'
       + '@media (prefers-reduced-motion:reduce){.lp-track{animation:none}.lp-viewport{overflow-x:auto}.lp-dot{animation:none}}';
     document.head.append(st);
   }
@@ -66,7 +68,7 @@
     if (!host && !crumb && !main) return;
     style();
     const strip = document.createElement('section'); strip.className = 'lp-strip'; strip.hidden = true; strip.setAttribute('aria-label', 'Live market pulse');
-    strip.innerHTML = '<span class="lp-tag"><span class="lp-dot" aria-hidden="true"></span>Markets</span><div class="lp-viewport"><div class="lp-track"></div></div><span class="lp-asof"></span>';
+    strip.innerHTML = '<span class="lp-tag"><span class="lp-dot" aria-hidden="true"></span><span class="lp-tag-txt">Markets<span class="lp-tag-sub">Delayed</span></span></span><div class="lp-viewport"><div class="lp-track"></div></div><span class="lp-asof"></span>';
     if (host) host.prepend(strip); else if (crumb) crumb.after(strip); else main.prepend(strip);
     load(strip);
     setInterval(() => { if (!document.hidden && strip.isConnected) load(strip); }, 5 * 60 * 1000);

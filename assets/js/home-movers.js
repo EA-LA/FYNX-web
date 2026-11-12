@@ -21,7 +21,7 @@
     const st = document.createElement('style'); st.id = 'fx-movers-style';
     st.textContent = '.fx-movers{margin-top:18px;padding-top:16px;border-top:1px solid var(--terminal-line,rgba(127,127,127,.25))}'
       + '.fx-movers-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.fx-movers-head h2{margin:0;font-size:15px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}'
-      + '.fx-movers-head a{font-size:12px;text-decoration:none;color:inherit;opacity:.8}.fx-movers-head a:hover{opacity:1;text-decoration:underline}'
+      + '.fx-movers-head a{font-size:12px;text-decoration:none;color:inherit;opacity:.8}.fx-movers-head a:hover{opacity:1;text-decoration:underline}@media (pointer:coarse){.fx-movers-head a{display:inline-flex;align-items:center;min-height:44px;padding:0 2px}}'
       + '.fx-live{width:7px;height:7px;border-radius:50%;background:#1f8a5a;animation:fx-pulse 2s infinite}@keyframes fx-pulse{0%{box-shadow:0 0 0 0 rgba(31,138,90,.5)}70%{box-shadow:0 0 0 7px rgba(31,138,90,0)}100%{box-shadow:0 0 0 0 rgba(31,138,90,0)}}'
       + '.fx-movers-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:8px}.fx-movers-tabs::-webkit-scrollbar{display:none}'
       + '.fx-movers-tabs button{flex:0 0 auto;font-family:inherit;font-weight:700;font-size:11px;line-height:1;letter-spacing:.02em;padding:7px 11px;border-radius:999px;border:1px solid var(--terminal-line,rgba(127,127,127,.3));background:transparent;color:inherit;cursor:pointer}'

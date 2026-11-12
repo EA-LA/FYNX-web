@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-12 (run 79) — [site-qa] Central bank monitor now shows on News; live market strip easier to use on iPhone
+- Fixed: the new Central bank monitor on the News page (policy rates, last move and 12-month change for the Fed, ECB, Bank of England, Bank of Japan, Bank of Canada, RBA, SNB and RBNZ, with Fed futures odds) was built but never appeared, because the page had no place to show it. It now replaces the old map of pins in "Policy moves", and the All / United States / Europe / Japan buttons filter the cards. Sources: BIS policy rates, CBOT fed funds futures and the New York Fed, as labelled under the cards. https://www.fynxfinanceworld.com/news.html#official-sources
+- Fixed on iPhone: the monitor shows two cards per row on phones instead of one, so it takes about a quarter less scrolling, with nothing cut off.
+- Fixed on iPhone: the moving "Markets" price strip at the top of News, Learn, Market Analysis and Research Desk now says "Delayed" on phones (that notice was hidden on small screens), and each price is a 44px tap target. https://www.fynxfinanceworld.com/learn.html
+- Fixed on iPhone: the "Full scanner" link above Market movers on the home page is now a 44px tap target. https://www.fynxfinanceworld.com/home.html
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): full page sweep, before/after screenshots; `npm test`, tool, macro, edge, API, News and research checks pass. Two checks also fail on the unchanged main branch since this morning's update (search index vs sitemap for Intelligence pages) and are left for the builder.
+
 ## 2026-11-12 (run 78) — [site-qa] Site search finds "breakeven", "take profit" and "S&P", and stops suggesting unrelated words
 - Fixed: searching the site for "breakeven" (one word, as most traders type it) found nothing, because the library spells it "break-even". Joined spellings now match: "breakeven", "stoploss" and "positionsize" find the same pages as "break-even", "stop loss" and "position size", and a typo like "brekeven" shows the Break-Even calculator. This works from the search box at the top of every page. https://www.fynxfinanceworld.com/explore.html?q=breakeven
 - Fixed: "take profit", "take-profit" and "tp" found nothing; they now show the profit-target tools (Risk-to-Reward, Position Risk Planner and others). "S&P" also found nothing and now finds its page. https://www.fynxfinanceworld.com/explore.html?q=take%20profit
