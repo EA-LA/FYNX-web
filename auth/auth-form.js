@@ -8,7 +8,7 @@
   status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
   form.before(status);
   const buttons = [...document.querySelectorAll('.actions button, form button')];
-  const labels = new Map(buttons.map(button => [button, button.textContent]));
+  const labels = new Map(buttons.map(button => [button, button.innerHTML]));
   let busy = false, sdkPromise;
   const messages = {
     'auth/invalid-credential': 'The email or password is incorrect. Please try again or reset your password.',
@@ -67,13 +67,17 @@
       window.FynxMonitor?.report('auth', reset ? 'auth-reset' : signup ? 'auth-signup' : 'auth-login', error);
       report(messages[error?.code] || 'We couldn’t complete this request. Check your connection and try again.');
     } finally {
-      busy = false; buttons.forEach(item => { item.disabled = false; item.textContent = labels.get(item); });
+      busy = false; buttons.forEach(item => { item.disabled = false; item.innerHTML = labels.get(item); });
       form.removeAttribute('aria-busy');
     }
   }
   function enter(sdk) {
     try { localStorage.setItem('mode', 'live'); localStorage.setItem('fynx_auth_email', sdk.auth.currentUser?.email || ''); } catch {}
-    location.assign(sdk.safeReturnTo(returnTo));
+    const target = sdk.safeReturnTo(returnTo);
+    // Inside the site-wide sign-in window: continue on the page the reader was on.
+    let framed = false; try { framed = window.top !== window && window.top.location.origin === location.origin; } catch {}
+    if (framed) { window.top.location.assign(target); return; }
+    location.assign(target);
   }
   form.addEventListener('submit', event => {
     event.preventDefault();
