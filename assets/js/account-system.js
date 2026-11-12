@@ -174,7 +174,10 @@ const pendingBootstraps = new Map();
 export function bootstrapAccount(user) {
   if (!user?.uid) return Promise.reject(new Error("Sign in to load your account."));
   if (!pendingBootstraps.has(user.uid)) {
-    pendingBootstraps.set(user.uid, loadAccount(user).finally(() => pendingBootstraps.delete(user.uid)));
+    // Never leave a settings page on "Loading…": give up after 15 s with a clear message.
+    let timer;
+    const timeout = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("Your account is taking too long to load. Check your connection and reload.")), 15000); });
+    pendingBootstraps.set(user.uid, Promise.race([loadAccount(user), timeout]).finally(() => { clearTimeout(timer); pendingBootstraps.delete(user.uid); }));
   }
   return pendingBootstraps.get(user.uid);
 }
