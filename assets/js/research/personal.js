@@ -1,11 +1,18 @@
 import {C,$,escape,number,money,percent,tone,time,ageLabel,errorHTML,empty,toast,options,metric,quotes,quoteCache} from './shared.js';
 import {store} from './store.js';
+import {stageHoldingRemoval,canUndoHolding,restoreRemovedHolding} from './holding-undo.js';
 import {replaceMarkupWithFocus} from './focus.js?v=20261112-site-qa-80';
 let portfolioBusy=false,alertBusy=false,lastCheck='',portfolioRefreshError='';
+let lastRemoved=null,undoBusy=false;
+function pendingUndo(){
+  if(lastRemoved&&!canUndoHolding(lastRemoved,store.key,store.state.revision))lastRemoved=null;
+  return lastRemoved;
+}
 export function renderPortfolio(){
   const p=C.portfolio(store.state.holdings,store.state.cash,quoteCache);
+  const undo=pendingUndo();
   if(document.activeElement!==$('#portfolio-cash'))$('#portfolio-cash').value=store.state.cash;
-  replaceMarkupWithFocus($('#portfolio-output'),`${portfolioRefreshError?errorHTML(portfolioRefreshError):''}<div class="metric-grid">${metric('Total value',money(p.total),p.complete?'Cash + marked positions':'Incomplete · missing marks')}${metric('Positions marked',money(p.markedValue),`${p.rows.length-p.missing.length} of ${p.rows.length} positions`)}${metric('Unrealized P&L',money(p.unrealized),'Priced positions only',tone(p.unrealized))}${metric('Cash balance',money(p.cash),'Manually recorded USD')}</div>${p.missing.length?`<div class="notice">Total value is incomplete. A current USD mark is unavailable for ${[...new Set(p.missing)].map(escape).join(', ')}. Refresh marks to retry. Unpriced positions are not counted as zero.</div>`:''}${p.rows.length?`<div class="table-caption"><h3>Your positions</h3><span class="small muted">${p.rows.length} / 100 positions · USD</span></div><div class="table-wrap"><table class="research-table"><thead><tr><th>Instrument</th><th class="num">Units / avg cost</th><th class="num">Mark</th><th class="num">Value</th><th class="num">Unrealized P&L</th><th>Manage</th></tr></thead><tbody>${p.rows.map(h=>`<tr><td><strong>${escape(h.symbol)}</strong><small>${escape(C.symbolMap[h.symbol].name)}</small></td><td class="num">${number(h.units,6)}<small>${money(h.averageCost)} / unit</small></td><td class="num">${h.value===null?'—':money(h.quote.price)}<small>${h.quote?time(h.quote.asOf)+' · '+ageLabel(h.quote):'No validated quote'}</small></td><td class="num">${money(h.value)}<small>Cost ${money(h.cost)}</small></td><td class="num ${tone(h.profit)}">${money(h.profit)}<small>${h.cost>0&&h.profit!==null?percent(h.profit/h.cost*100):'—'}</small></td><td><button data-edit-holding="${h.id}">Edit</button><button data-delete-holding="${h.id}">Remove</button></td></tr>`).join('')}</tbody></table></div><p class="method-note">USD quotes are accepted up to four days old to cover market closures. Every mark includes its observation time. P&L excludes realized trades, dividends, fees and taxes.</p>`:empty('Start with your first position','Add an instrument, its units and your average cost. Your holdings stay in this browser.')}`, 'holdings', '#holding-symbol');
+  replaceMarkupWithFocus($('#portfolio-output'),`${undo?`<div class="notice" role="status" aria-live="polite">Removed ${escape(undo.holding.symbol)} from this manual portfolio. <button type="button" data-undo-holding ${undoBusy?'disabled':''}>Undo removal</button> <small>Available for 15 seconds, unless another portfolio change is saved.</small></div>`:''}${portfolioRefreshError?errorHTML(portfolioRefreshError):''}<div class="metric-grid">${metric('Total value',money(p.total),p.complete?'Cash + marked positions':'Incomplete · missing marks')}${metric('Positions marked',money(p.markedValue),`${p.rows.length-p.missing.length} of ${p.rows.length} positions`)}${metric('Unrealized P&L',money(p.unrealized),'Priced positions only',tone(p.unrealized))}${metric('Cash balance',money(p.cash),'Manually recorded USD')}</div>${p.missing.length?`<div class="notice">Total value is incomplete. A current USD mark is unavailable for ${[...new Set(p.missing)].map(escape).join(', ')}. Refresh marks to retry. Unpriced positions are not counted as zero.</div>`:''}${p.rows.length?`<div class="table-caption"><h3>Your positions</h3><span class="small muted">${p.rows.length} / 100 positions · USD</span></div><div class="table-wrap"><table class="research-table"><thead><tr><th>Instrument</th><th class="num">Units / avg cost</th><th class="num">Mark</th><th class="num">Value</th><th class="num">Unrealized P&L</th><th>Manage</th></tr></thead><tbody>${p.rows.map(h=>`<tr><td><strong>${escape(h.symbol)}</strong><small>${escape(C.symbolMap[h.symbol].name)}</small></td><td class="num">${number(h.units,6)}<small>${money(h.averageCost)} / unit</small></td><td class="num">${h.value===null?'—':money(h.quote.price)}<small>${h.quote?time(h.quote.asOf)+' · '+ageLabel(h.quote):'No validated quote'}</small></td><td class="num">${money(h.value)}<small>Cost ${money(h.cost)}</small></td><td class="num ${tone(h.profit)}">${money(h.profit)}<small>${h.cost>0&&h.profit!==null?percent(h.profit/h.cost*100):'—'}</small></td><td><button data-edit-holding="${h.id}">Edit</button><button data-delete-holding="${h.id}">Remove</button></td></tr>`).join('')}</tbody></table></div><p class="method-note">USD quotes are accepted up to four days old to cover market closures. Every mark includes its observation time. P&L excludes realized trades, dividends, fees and taxes.</p>`:empty('Start with your first position','Add an instrument, its units and your average cost. Your holdings stay in this browser.')}`, 'holdings', '#holding-symbol');
 }
 export async function refreshPortfolio(){
   if(portfolioBusy)return;portfolioBusy=true;const scope=store.key;
@@ -30,9 +37,44 @@ $('#holding-form').addEventListener('submit',async event=>{
 });
 $('#cash-form').addEventListener('submit',async event=>{event.preventDefault();const cash=Number($('#portfolio-cash').value);try{await store.transact(s=>{s.cash=cash;});toast('Cash balance saved.');}catch(error){toast(error.message);}});
 $('#portfolio-output').addEventListener('click',async event=>{
+  if(event.target.closest?.('[data-undo-holding]')){
+    const queued=pendingUndo();
+    if(!queued||undoBusy)return;
+    undoBusy=true;renderPortfolio();
+    try{
+      await store.transact(s=>{
+        if(s.revision!==queued.revision)throw Error('The portfolio changed. Undo is no longer available.');
+        restoreRemovedHolding(s.holdings,queued);
+      },queued.scope);
+      lastRemoved=null;toast('Position restored.');
+    }catch(error){toast(error.message);}
+    finally{undoBusy=false;renderPortfolio();}
+    return;
+  }
   const edit=event.target.dataset.editHolding,remove=event.target.dataset.deleteHolding;
   if(edit){const h=store.state.holdings.find(h=>h.id===edit);if(h){$('#holding-id').value=h.id;$('#holding-symbol').value=h.symbol;$('#holding-units').value=h.units;$('#holding-cost').value=h.averageCost;$('#holding-form-title').textContent='EDIT POSITION';$('#cancel-holding').hidden=false;$('#holding-units').focus();}}
-  if(remove&&confirm('Remove this position from your manual portfolio?'))try{await store.transact(s=>{s.holdings=s.holdings.filter(h=>h.id!==remove);});if($('#holding-id').value===remove)clearHolding();toast('Position removed.');}catch(error){toast(error.message);}
+  if(remove&&confirm('Remove this position from your manual portfolio?')){
+    const scope=store.key;
+    const removed=store.state.holdings.find(h=>h.id===remove);
+    if(!removed){toast('This position no longer exists.');return;}
+    try{
+      await store.transact(s=>{
+        if(!s.holdings.some(h=>h.id===remove))throw Error('This position was already removed.');
+        s.holdings=s.holdings.filter(h=>h.id!==remove);
+      },scope);
+      if($('#holding-id').value===remove)clearHolding();
+      if(scope!==store.key)return;
+      lastRemoved=stageHoldingRemoval(removed,scope,store.state.revision);
+      const entry=lastRemoved;
+      renderPortfolio();
+      setTimeout(()=>{
+        if(lastRemoved===entry&&!canUndoHolding(entry,store.key,store.state.revision)){
+          lastRemoved=null;renderPortfolio();
+        }
+      },15025);
+      toast('Position removed. Undo is available for 15 seconds.');
+    }catch(error){toast(error.message);}
+  }
 });
 $('#refresh-portfolio').addEventListener('click',refreshPortfolio);
 const kindLabel={priceAbove:'price crosses above',priceBelow:'price crosses below',changeAbove:'change crosses above',changeBelow:'change crosses below'};
@@ -87,4 +129,4 @@ $('#check-alerts').addEventListener('click',()=>checkAlerts(true));
 setInterval(()=>checkAlerts(),60000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkAlerts();});
 let previousScope=null;
-store.addEventListener('change',()=>{const changed=previousScope!==store.key;if(changed){previousScope=store.key;clearHolding();lastCheck='';portfolioRefreshError='';}renderPortfolio();renderAlerts();if(changed){if(location.hash==='#portfolio')refreshPortfolio();checkAlerts();}});
+store.addEventListener('change',()=>{const changed=previousScope!==store.key;if(changed){previousScope=store.key;lastRemoved=null;clearHolding();lastCheck='';portfolioRefreshError='';}renderPortfolio();renderAlerts();if(changed){if(location.hash==='#portfolio')refreshPortfolio();checkAlerts();}});
