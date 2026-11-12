@@ -537,7 +537,8 @@ html body[data-fynx-terminal] .terminal-edition select { -webkit-appearance:none
 @media (max-width:600px) and (pointer:coarse){
   html body :is(.your-news-search input,.your-news-controls select,.your-news-empty button,#yourNewsSort,#yourNewsTopic){min-height:44px;box-sizing:border-box}
   html body :is(.your-news-empty,.your-news-method) a{display:inline-flex;align-items:center;min-height:44px}
-  html body .your-news-unread{min-height:44px;display:inline-flex;align-items:center;gap:8px}
+  html body .your-news-unread,html body .your-news-filters .your-news-unread{min-height:44px;display:inline-flex;align-items:center;gap:8px}
+  html body .your-news-unread input{width:22px;height:22px}
 }
 
 /* [site-qa] run 61: Pro page header (Plans, Pro tools, Sign in) and footer links at least 44px wide on touch phones. */

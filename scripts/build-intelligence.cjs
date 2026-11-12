@@ -187,6 +187,8 @@ async function main() {
     await pool(todo, 4, async s => { try { s.url = await resolveGoogle(s.url); } catch { /* keep the working redirect link */ } });
   }
   const latest = r => Math.max(...r.sources.map(x => Date.parse(x.publishedAt)));
+  // Records outside the recheck window keep their stored stats; re-apply the current asset-class rules to them.
+  for (const r of records.values()) for (const st of r.stats || []) if (st.symbol && st.assetClass !== 'stocks') st.assetClass = E.classOf(st.symbol, quotes[st.symbol]);
   let list = [...records.values()].sort((a, b) => latest(b) - latest(a)).slice(0, MAX_RECORDS);
   for (const r of list) r.related = relatedFor(r, list);
   // Write pages: remove pages that aged out, then render.

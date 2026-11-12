@@ -15,6 +15,16 @@ test('links markets and companies only when the story names them, first mention 
   assert.ok(idx.has('coreweave')); assert.ok(!idx.has('target'));
 });
 
+test('equity index futures are filed under indices, not commodities', () => {
+  assert.equal(E.classOf('ES=F', {name: 'E-mini S&P 500', group: 'Equity futures'}), 'indices');
+  assert.equal(E.classOf('NQ=F', {}), 'indices');
+  assert.equal(E.classOf('GC=F', {name: 'Gold', group: 'Metals'}), 'commodities');
+  assert.equal(E.classOf('CL=F', {}), 'commodities');
+  assert.equal(E.classOf('ZN=F', {name: '10-Year T-Note', group: 'Rate futures'}), 'rates');
+  const s = E.linkStory('Wall Street rallies as AI stocks rebound', {quotes: {'^GSPC': {name: 'S&P 500'}, 'ES=F': {name: 'E-mini S&P 500', group: 'Equity futures'}}});
+  assert.ok(s.markets.length === 2 && s.markets.every(m => m.assetClass === 'indices'));
+});
+
 test('market statistics come from the instrument history', () => {
   const history = Array.from({length: 260}, (_, i) => [new Date(Date.UTC(2025, 10, 11) + i * 86400000).toISOString().slice(0, 10), 100 + Math.sin(i / 9) * 3]);
   const last = history.at(-1)[1], q = {name: 'Test', price: last * 1.05, previousClose: last, changePercent: 5, vol20: 1, asOf: new Date().toISOString(), history};

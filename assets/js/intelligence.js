@@ -28,22 +28,46 @@
   function hub() {
     const input = document.querySelector('[data-intel-search]'); if (!input) return;
     const items = [...document.querySelectorAll('[data-intel-item]')], buttons = [...document.querySelectorAll('[data-intel-filter]')], empty = document.querySelector('[data-intel-empty]'), count = document.querySelector('[data-intel-count]');
-    let filter = 'all';
-    const params = new URLSearchParams(location.search); if (params.get('q')) input.value = params.get('q');
+    const emptyText = empty ? empty.textContent : '';
+    const params = new URLSearchParams(location.search), known = new Set(buttons.map(b => b.dataset.intelFilter));
+    let filter = known.has(params.get('class')) ? params.get('class') : 'all';
+    if (params.get('q')) input.value = params.get('q').slice(0, 80);
+    const paint = () => buttons.forEach(x => x.setAttribute('aria-pressed', String(x.dataset.intelFilter === filter)));
+    // Keep the view in the address so Back from a story, a refresh or a shared link reopens it.
+    function remember() {
+      try {
+        const url = new URL(location.href), q = input.value.trim();
+        if (q) url.searchParams.set('q', q); else url.searchParams.delete('q');
+        if (filter !== 'all') url.searchParams.set('class', filter); else url.searchParams.delete('class');
+        if (url.href !== location.href) history.replaceState(history.state, '', url);
+      } catch {}
+    }
     function apply() {
-      const q = input.value.trim().toLowerCase(), words = q.split(/\s+/).filter(Boolean), mine = new Set(saved().map(x => x.url));
+      const q = input.value.trim().toLowerCase(), words = q.split(/\s+/).filter(Boolean), list = saved(), mine = new Set(list.map(x => x.url));
       let shown = 0;
       for (const li of items) {
         const href = li.querySelector('a')?.getAttribute('href');
         const ok = words.every(w => li.dataset.search.includes(w)) && (filter === 'all' || (filter === 'saved' ? mine.has(href) : li.dataset.classes.split(' ').includes(filter)));
         li.hidden = !ok; if (ok) shown++;
       }
-      empty.hidden = shown > 0;
+      if (empty) {
+        empty.hidden = shown > 0;
+        const onHub = items.some(li => mine.has(li.querySelector('a')?.getAttribute('href')));
+        empty.textContent = filter === 'saved' && !q && !onHub
+          ? (list.length ? 'Your saved stories are older than the stories listed here, so they are no longer shown.' : 'No saved stories yet. Open a story and tap Bookmark to keep it here. Saved stories stay in this browser only.')
+          : emptyText;
+      }
       if (count) count.textContent = `${shown} ${shown === 1 ? 'story' : 'stories'}${q ? ` matching “${input.value.trim()}”` : ''}`;
+      remember();
     }
     input.addEventListener('input', apply);
-    buttons.forEach(b => b.addEventListener('click', () => { filter = b.dataset.intelFilter; buttons.forEach(x => x.setAttribute('aria-pressed', String(x === b))); apply(); }));
-    if (input.value) apply();
+    buttons.forEach(b => b.addEventListener('click', () => { filter = b.dataset.intelFilter; paint(); apply(); }));
+    if (input.value || filter !== 'all') {
+      paint(); apply();
+      // On a phone the chip row scrolls sideways; bring the chosen chip into view without moving the page.
+      const on = buttons.find(b => b.dataset.intelFilter === filter), row = on?.parentElement;
+      if (row && row.scrollWidth > row.clientWidth) row.scrollLeft = Math.max(0, on.offsetLeft - row.offsetLeft - 16);
+    }
   }
   const go = () => { article(); hub(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();

@@ -238,7 +238,7 @@ html body[data-fynx-layout] [hidden]{display:none!important}
   html body .desk-storage .text-button{padding:3px 10px}
   html body section.section>div>a[target=_blank]{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
   html body input#query{min-height:44px;box-sizing:border-box}
-  html body .check-label{min-height:44px;display:flex;align-items:center;gap:8px}
+  html body .check-label,html body .filter-grid .check-label{min-height:44px;display:flex;align-items:center;gap:8px}
   html body .check-label input[type=checkbox]{width:24px;height:24px}
 }
 @media (max-width:600px) and (pointer:coarse){

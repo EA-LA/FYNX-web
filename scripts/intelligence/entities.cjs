@@ -118,6 +118,8 @@ function classOf(symbol, q) {
   if (/^\^(TNX|FVX|TYX|IRX)$/.test(symbol) || /T-Note|T-Bond|Treasur/i.test(q?.name || '') || /bond/i.test(g)) return 'rates';
   if (/=X$|^DX-Y|^6[EJB]=F/.test(symbol)) return 'forex';
   if (/-USD$|^BTC=F|^IBIT$/.test(symbol)) return 'crypto';
+  // Equity index futures (E-mini S&P 500, Nasdaq 100, Dow, Russell 2000) are indices, not commodities.
+  if (/^(ES|NQ|YM|RTY|MES|MNQ|MYM|M2K)=F$/.test(symbol) || /^equity futures$/i.test(g)) return 'indices';
   if (/=F$|^(GLD|SLV|GDX|USO|UNG|DBA)$/.test(symbol)) return 'commodities';
   if (/^\^/.test(symbol) || /^(SPY|VOO|QQQ|IWM|DIA|VTI)$/.test(symbol)) return 'indices';
   return 'stocks';
@@ -138,4 +140,4 @@ function linkStory(text, {listings, quotes}) {
   if (listings) for (const row of findListings(text, listings)) if (![...companies.values()].some(c => c.ticker === row.ticker)) companies.set(row.ticker, {name: row.name, ticker: row.ticker, sector: null});
   return {markets: [...markets.values()], themes: [...new Map(themes.map(t => [t.label, t])).values()], companies: [...companies.values()]};
 }
-module.exports = {linkStory, buildListingIndex, shortName, MARKET_RULES, COMPANIES};
+module.exports = {classOf, linkStory, buildListingIndex, shortName, MARKET_RULES, COMPANIES};

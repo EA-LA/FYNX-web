@@ -7,6 +7,8 @@ const when = iso => { const d = new Date(iso); return Number.isFinite(d.getTime(
 const day = iso => { const d = new Date(String(iso).length === 10 ? iso + 'T12:00:00Z' : iso); return Number.isFinite(d.getTime()) ? d.toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC'}) : ''; };
 const CLASS_LABEL = {stocks: 'Stocks', forex: 'Forex', crypto: 'Crypto', commodities: 'Commodities', indices: 'Indices', rates: 'Interest rates'};
 
+// Follow the site's release asset version (terminal-header.css carries it) so intelligence.css/js changes reach cached phones.
+const assetVersion = assets => assets.match(/terminal-header\.css\?v=([\w-]+)/)?.[1] || assets.match(/\?v=([\w-]+)/)?.[1] || '1';
 function head({title, description, canonical, robots = 'index,follow', jsonld, assets}) {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -20,8 +22,8 @@ function head({title, description, canonical, robots = 'index,follow', jsonld, a
 <meta name="twitter:card" content="summary"><meta name="theme-color" content="#000000">
 <link rel="icon" href="/favicon-32x32.png">
 ${assets}
-<link rel="stylesheet" href="/assets/css/intelligence.css?v=${esc(assets.match(/\?v=([\w-]+)/)?.[1] || '1')}">
-<script src="/assets/js/intelligence.js?v=${esc(assets.match(/\?v=([\w-]+)/)?.[1] || '1')}" defer></script>
+<link rel="stylesheet" href="/assets/css/intelligence.css?v=${esc(assetVersion(assets))}">
+<script src="/assets/js/intelligence.js?v=${esc(assetVersion(assets))}" defer></script>
 ${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, '\\u003c')}</script>` : ''}
 </head>`;
 }
@@ -62,7 +64,7 @@ function articlePage(rec, ctx) {
   const classes = [...new Set(rec.stats.map(s => s.assetClass))];
   const impact = ai && n.marketImpact && Object.keys(n.marketImpact).length
     ? `<dl class="fx-impact">${Object.entries(n.marketImpact).filter(([k, v]) => CLASS_LABEL[k] && v).map(([k, v]) => `<dt>${CLASS_LABEL[k]}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`
-    : `<dl class="fx-impact">${classes.map(c => `<dt>${CLASS_LABEL[c] || c}</dt><dd>${rec.stats.filter(s => s.assetClass === c).map(s => `${esc(s.name)} ${esc(s.dayText)} (${esc(s.priceText)})`).join(' · ')}</dd>`).join('')}</dl>`;
+    : `<dl class="fx-impact">${classes.map(c => `<dt>${CLASS_LABEL[c] || c}</dt><dd>${rec.stats.filter(s => s.assetClass === c).map(s => `${esc(s.name).replace(/-/g, '\u2011')} ${esc(s.dayText)} (${esc(s.priceText)})`).join('<br>')}</dd>`).join('')}</dl>`;
   const table = rec.stats.length ? `<div class="fx-table-wrap"><table class="fx-table"><caption>Linked markets at FYNX's last snapshot</caption><thead><tr><th scope="col">Market</th><th scope="col">Last</th><th scope="col">Day</th><th scope="col">1 month</th><th scope="col">Year to date</th><th scope="col">From 12-mo high</th></tr></thead><tbody>${rec.stats.map(s => { const f = v => Number.isFinite(v) ? (v >= 0 ? '+' : '') + (s.unit === 'bp' ? v.toFixed(0) + ' bp' : v.toFixed(1) + '%') : '—'; return `<tr><th scope="row">${esc(s.name)}<small>${esc(s.symbol)}</small></th><td>${esc(s.priceText)}</td><td>${esc(s.dayText)}</td><td>${f(s.m1)}</td><td>${f(s.ytd)}</td><td>${f(s.fromHigh)}</td></tr>`; }).join('')}</tbody></table></div>` : '';
   const analysis = `${ai ? para(n.analysis) : ''}${rec.dataPoints.length ? `<h3>Verified market data</h3>${rec.dataPoints.map(p => para(p.text)).join('')}` : ''}${table}${rec.macro.length ? `<h3>Rates and policy context</h3>${rec.macro.map(m => `<p>${esc(m.text)} <span class="fx-src">${esc(m.source)}</span></p>`).join('')}` : ''}`;
   const scenarios = ai && (n.bull || n.bear) ? `<div class="fx-two"><div class="fx-card fx-bull"><h3>Bullish case</h3>${para(n.bull)}</div><div class="fx-card fx-bear"><h3>Bearish case</h3>${para(n.bear)}</div></div>${n.shortTerm || n.longTerm ? `<div class="fx-two"><div class="fx-card"><h3>Short term</h3>${para(n.shortTerm)}</div><div class="fx-card"><h3>Long term</h3>${para(n.longTerm)}</div></div>` : ''}${n.risks?.length ? `<h3>Risk factors</h3>${list(n.risks)}` : ''}${n.uncertainty ? `<h3>What is not yet known</h3>${para(n.uncertainty)}` : ''}` : '';
