@@ -1,0 +1,32 @@
+name: Compound Projection Input Freshness
+
+on:
+  pull_request:
+    paths:
+      - 'tools/compound.html'
+      - 'scripts/test-compound-input-freshness.cjs'
+      - '.github/workflows/compound-input-freshness.yml'
+  push:
+    branches:
+      - 'fix/compound-input-freshness-20261111'
+    paths:
+      - 'tools/compound.html'
+      - 'scripts/test-compound-input-freshness.cjs'
+      - '.github/workflows/compound-input-freshness.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  compound-input-freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check test syntax
+        run: node --check scripts/test-compound-input-freshness.cjs
+      - name: Exercise real Compound page controller
+        run: node --test scripts/test-compound-input-freshness.cjs
