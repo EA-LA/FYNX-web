@@ -101,6 +101,7 @@
       border-radius:10px;
       border:1px solid var(--panel-border);
     }
+    .calculation-status{font-size:.9rem;line-height:1.5;margin-top:.5rem;color:var(--muted)}
     .good{color:var(--good)}
     .warn{color:var(--warn)}
     .bad{color:var(--bad)}
@@ -184,6 +185,7 @@
       <!-- RESULT -->
       <div class="panel">
         <h3>Results</h3>
+        <p id="calculationStatus" class="calculation-status" role="status" aria-live="polite">Enter trade details and calculate.</p>
 
         <div class="metric">
           Break Even Price: <strong id="be">—</strong>
@@ -212,7 +214,22 @@
 
 <script src="/assets/vendor/decimal.js"></script>
 <script>
+function clearResults(message = "Inputs changed. Calculate again."){
+  for(const id of ["be", "cost", "pips"]){
+    document.getElementById(id).textContent = "—";
+  }
+  document.getElementById("statusBox").textContent = "Status: —";
+  document.getElementById("calculationStatus").textContent = message;
+}
+
+for(const id of ["type", "entry", "lot", "spread", "commission"]){
+  const field = document.getElementById(id);
+  field.addEventListener("input", () => clearResults());
+  field.addEventListener("change", () => clearResults());
+}
+
 function calc(){
+  clearResults("");
   let type = document.getElementById("type").value;
   let entry = parseFloat(document.getElementById("entry").value);
   let lot = parseFloat(document.getElementById("lot").value);
@@ -220,7 +237,7 @@ function calc(){
   let commission = parseFloat(document.getElementById("commission").value);
 
   if(!Number.isFinite(entry) || !Number.isFinite(lot) || !Number.isFinite(spread) || !Number.isFinite(commission) || entry <= 0 || lot <= 0 || spread < 0 || commission < 0){
-    alert("Enter valid values");
+    clearResults("Enter a positive entry price and lot size, with nonnegative spread and commission.");
     return;
   }
 
@@ -238,7 +255,7 @@ function calc(){
     bePrice = entry - (pipsNeeded * 0.0001);
   }
 
-  if(bePrice <= 0){ alert("Calculated break-even price must be positive."); return; }
+  if(bePrice <= 0){ clearResults("Calculated break-even price must be positive. Review the short setup costs."); return; }
   document.getElementById("be").innerText = bePrice.toFixed(5);
   document.getElementById("cost").innerText = "$" + totalCost.toFixed(2);
   document.getElementById("pips").innerText = pipsNeeded.toFixed(2) + " pips";
@@ -252,18 +269,17 @@ function calc(){
   } else {
     status.innerHTML = "Status: <span class='bad'>Expensive Trade</span>";
   }
+  document.getElementById("calculationStatus").textContent = "Calculated using the current inputs.";
 }
 
 function resetCalc(){
+  document.getElementById("type").value = "buy";
   document.getElementById("entry").value = "1.1000";
   document.getElementById("lot").value = "1";
   document.getElementById("spread").value = "1";
   document.getElementById("commission").value = "7";
 
-  document.getElementById("be").innerText = "—";
-  document.getElementById("cost").innerText = "—";
-  document.getElementById("pips").innerText = "—";
-  document.getElementById("statusBox").innerText = "Status: —";
+  clearResults("Inputs reset. Calculate to update results.");
 }
 
 // Opt-in first-party adapter; all network access stays in the shared controller.
