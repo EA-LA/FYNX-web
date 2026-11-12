@@ -1,0 +1,22 @@
+name: Stock risk result freshness
+on:
+  pull_request:
+    paths:
+      - 'tools/profit-loss.html'
+      - 'scripts/test-stock-risk-result-freshness.cjs'
+      - '.github/workflows/stock-risk-result-freshness.yml'
+  push:
+    branches:
+      - 'fix/stock-risk-result-freshness-20261112-1500'
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test scripts/test-stock-risk-result-freshness.cjs
