@@ -541,6 +541,7 @@
             <div class="pill-row">
               <div class="pill" id="stopCheckPill">Stop check: —</div>
               <div class="pill" id="bufferPill">Buffer: —</div>
+              <div class="pill" id="maxLeveragePill">Max leverage for this stop: —</div>
             </div>
           </div>
 
@@ -572,7 +573,7 @@
             <div class="metric">
               <div class="metric-label">Loss at Stop</div>
               <div class="metric-value warn" id="stopLossValue">—</div>
-              <div class="metric-sub">Approximate dollar loss if price hits your stop.</div>
+              <div class="metric-sub" id="stopLossSub">Approximate dollar loss if price hits your stop.</div>
             </div>
 
             <div class="metric">
@@ -699,9 +700,11 @@
       document.getElementById("notionalValue").textContent = "—";
       document.getElementById("positionSizeValue").textContent = "—";
       document.getElementById("stopLossValue").textContent = "—";
+      document.getElementById("stopLossSub").textContent = "Approximate dollar loss if price hits your stop.";
       document.getElementById("freeBalanceValue").textContent = "—";
       document.getElementById("stopCheckPill").textContent = "Stop check: —";
       document.getElementById("bufferPill").textContent = "Buffer: —";
+      document.getElementById("maxLeveragePill").textContent = "Max leverage for this stop: —";
       document.getElementById("detailsBody").innerHTML = `
         <tr>
           <td colspan="3" style="text-align:center;color:var(--text-muted);padding:1.4rem;">
@@ -730,6 +733,24 @@
       if(marginUsed > balance){
         resetOutput();
         setStatus("bad","Margin exceeds balance","Margin used cannot be larger than your account balance.");
+        return;
+      }
+
+      if(side === "long" && stop >= entry){
+        resetOutput();
+        setStatus("bad","Stop is above entry","For a long position the stop loss must be below the entry price. Check the side or the stop price.");
+        return;
+      }
+
+      if(side === "short" && stop <= entry){
+        resetOutput();
+        setStatus("bad","Stop is below entry","For a short position the stop loss must be above the entry price. Check the side or the stop price.");
+        return;
+      }
+
+      if(maintenance >= 1 / leverage){
+        resetOutput();
+        setStatus("bad","Liquidated at entry",`At ${formatNumber(leverage, 2)}x the initial margin is ${formatPercent(100 / leverage, 2)} of the position, which does not cover the ${formatPercent(maintenance * 100, 2)} maintenance margin. Lower the leverage.`);
         return;
       }
 
@@ -766,13 +787,22 @@
       document.getElementById("liqDistanceValue").textContent = formatPercent(liqDistancePct, 2);
       document.getElementById("notionalValue").textContent = formatCurrency(notional);
       document.getElementById("positionSizeValue").textContent = formatNumber(positionSize, 6);
-      document.getElementById("stopLossValue").textContent = formatCurrency(stopLossDollar);
+      // Isolated margin: if liquidation comes first, the stop is never reached and the margin is lost instead.
+      const lossDisplay = formatCurrency(stopIsSafe ? stopLossDollar : marginUsed);
+      document.getElementById("stopLossValue").textContent = lossDisplay;
+      document.getElementById("stopLossSub").textContent = stopIsSafe ? "Approximate dollar loss if price hits your stop." : "Liquidation comes before your stop, so the whole margin is lost.";
       document.getElementById("freeBalanceValue").textContent = formatCurrency(freeBalance);
 
-      const stopCheckText = stopIsSafe ? "Stop check: above liquidation buffer" : "Stop check: liquidation before stop";
+      const stopCheckText = stopIsSafe ? "Stop check: stop hits before liquidation" : "Stop check: liquidation before stop";
       const bufferText = `Buffer: ${formatPercent(Math.abs(stopDistanceToLiqPct), 2)}`;
       document.getElementById("stopCheckPill").textContent = stopCheckText;
       document.getElementById("bufferPill").textContent = bufferText;
+      // Highest leverage at which the estimated liquidation price stays beyond the planned stop
+      // (long: entry*(1 - 1/L + mm) < stop; short: entry*(1 + 1/L - mm) > stop).
+      const stopFraction = Math.abs(entry - stop) / entry;
+      const maxLeverage = 1 / (stopFraction + maintenance);
+      const maxLeverageText = `${formatNumber(Math.floor(maxLeverage * 10) / 10, 1)}x`;
+      document.getElementById("maxLeveragePill").textContent = `Max leverage for this stop: ${maxLeverageText}`;
 
       let level = "good";
       let title = "Healthy liquidation buffer";
@@ -832,9 +862,14 @@
           meaning: stopIsSafe ? "Your stop appears to trigger before estimated liquidation." : "Your stop is beyond estimated liquidation risk."
         },
         {
+          metric: "Max Leverage for This Stop",
+          value: maxLeverageText,
+          meaning: "Highest leverage that keeps the estimated liquidation price beyond your planned stop. Use less to leave room for fees and mark-price moves."
+        },
+        {
           metric: "Loss at Stop",
-          value: formatCurrency(stopLossDollar),
-          meaning: "Approximate loss if your stop is executed at the planned level."
+          value: lossDisplay,
+          meaning: stopIsSafe ? "Approximate loss if your stop is executed at the planned level." : "Liquidation is reached before the stop, so the committed margin is lost instead."
         },
         {
           metric: "Free Balance",

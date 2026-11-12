@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-12 (run 83) — [site-qa] Liquidation Guard catches impossible trades and shows the safe leverage for your stop
+- Fixed: the Liquidation Guard rated a long trade with its stop above the entry price (or a short with its stop below) as "Healthy" with a $0 loss. It now says the stop is on the wrong side. https://www.fynxfinanceworld.com/tools/liquidation-guard.html
+- Fixed: at extreme leverage (for example 500x with a 0.5% maintenance margin) the tool showed a liquidation price on the wrong side of the entry. It now explains the position would be liquidated straight away and to lower the leverage.
+- Fixed: when liquidation comes before your stop, the "Loss at stop" showed more than the margin you put up ($375 on $250). It now shows the margin you would actually lose and says liquidation comes first. The stop check wording is also correct for short trades.
+- New: "Max leverage for this stop" shows the highest leverage that keeps the estimated liquidation price beyond your planned stop (example: entry 100, stop 96, 0.5% maintenance margin = 22.2x).
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): 208 main pages with no sideways scrolling, small text fields, script errors or broken internal links, including the builder's new top bar and Terminal sign-in; site checks pass.
+
 ## 2026-11-12 (run 82) — [site-qa] Settings pages no longer zoom on iPhone; round account button; tidier Pivot Points results
 - Fixed on iPhone: on Account settings, Preferences and Notifications, tapping a drop-down (currency, experience, category...) made iPhone zoom into the page because the text was too small. Fields are now full size, and the buttons are easier to tap. https://www.fynxfinanceworld.com/account-settings.html
 - Fixed on iPhone: the new round account button in the header was stretched into an oval on phones. It is round again and still easy to tap. https://www.fynxfinanceworld.com/news.html
