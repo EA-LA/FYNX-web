@@ -8,7 +8,7 @@
   const EDGE_URLS = ['https://raw.githubusercontent.com/EA-LA/FYNX-web/research-data/assets/data/research/edge.json', '/assets/data/research/edge.json'];
   const QUOTES_URL = (local ? '/api/research' : 'https://us-central1-fynx-c7a28.cloudfunctions.net/webResearchData') + '?action=quotes&symbols=' + encodeURIComponent(M.PAIRS.map(p => p.quoteSymbol).filter(Boolean).join(','));
   const $ = id => document.getElementById(id);
-  const state = {desk: null, deskError: null, edge: null, schedule: null, quotes: {}, quotesAt: null, headlines: [], curve: 'US', paused: false};
+  const state = {policy: null, desk: null, deskError: null, edge: null, schedule: null, quotes: {}, quotesAt: null, headlines: [], curve: 'US', paused: false};
   const finite = v => typeof v === 'number' && Number.isFinite(v);
 
   /* --- helpers ----------------------------------------------------------- */
@@ -36,6 +36,27 @@
   const report = (op, error) => { try { window.FynxMonitor?.report('feed', 'macro-' + op, error); } catch {} };
 
   /* --- loaders ----------------------------------------------------------- */
+  const POLICY_URL = 'https://raw.githubusercontent.com/EA-LA/FYNX-web/terminal-data/policy.json';
+  const POLICY_AREA = {USD: 'US', EUR: 'XM', GBP: 'GB', JPY: 'JP', CAD: 'CA', AUD: 'AU', CHF: 'CH', NZD: 'NZ'};
+  async function loadPolicy() { try { const d = await getJSON(POLICY_URL, {bust: true}); if (d?.areas) state.policy = d; } catch {} }
+  // Rate path from BIS monthly policy rates: last move, 12-month change and a sparkline since 2022.
+  function ratePath(currency) {
+    const h = state.policy?.areas?.[POLICY_AREA[currency]]?.history; if (!Array.isArray(h) || h.length < 13) return null;
+    const v = h.at(-1)[1]; let move = null;
+    for (let i = h.length - 2; i >= 0; i--) if (h[i][1] !== v) { move = {bp: Math.round((v - h[i][1]) * 100), at: h[i + 1][0]}; break; }
+    const yr = h.at(-13)[1], pts = h.filter(p => p[0] >= '2022-01'), wrap = el('div', 'md-path');
+    if (pts.length > 1) {
+      const vs = pts.map(p => p[1]), lo = Math.min(...vs), hi = Math.max(...vs), W = 160, H = 34, ns = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(ns, 'svg'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('preserveAspectRatio', 'none'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('class', 'md-path-spark');
+      const path = document.createElementNS(ns, 'path'); path.setAttribute('d', pts.map((p, i) => `${i ? 'L' : 'M'}${(i / (pts.length - 1) * W).toFixed(1)},${(H - 3 - (p[1] - lo) / ((hi - lo) || 1) * (H - 6)).toFixed(1)}`).join(''));
+      svg.append(path); wrap.append(svg);
+    }
+    const mon = ym => new Date(ym + '-15T12:00:00Z').toLocaleDateString('en-US', {month: 'short', year: 'numeric', timeZone: 'UTC'});
+    const ch = Math.round((v - yr) * 100);
+    wrap.append(el('small', 'md-mono ' + (move ? (move.bp > 0 ? 'md-up' : 'md-down') : 'md-muted'), move ? `Last move ${move.bp > 0 ? '+' : ''}${move.bp} bp · ${mon(move.at)}` : 'Unchanged since 2015'),
+      el('small', 'md-muted', `12 months ${ch > 0 ? '+' : ''}${ch} bp · BIS ${mon(h.at(-1)[0])}`));
+    return wrap;
+  }
   async function loadSchedule() { if (!state.schedule) state.schedule = await getJSON('/assets/data/macro/central-banks.json'); }
   async function loadDesk() {
     try { state.desk = M.validateDesk(await getJSON(DESK_URL, {bust: true})); state.deskError = null; }
@@ -147,7 +168,7 @@
       const odds = bank.area === 'US' && desk?.fed?.odds && next && desk.fed.odds.meeting === next.date ? desk.fed.odds : null;
       if (odds) {
         pricing.append(oddsBar(odds), el('small', 'md-muted', `Futures imply ${signed(odds.expectedChangeBp, 0, ' bp')} · ${dateLabel(odds.contracts?.[0]?.asOf || desk.generatedAt)}`));
-      } else pricing.append(el('span', 'md-muted md-small', bank.area === 'US' ? 'Futures pricing unavailable right now.' : 'No free public futures feed for this bank.'));
+      } else { const path = ratePath(bank.currency); if (path) { pricing.append(path); if (bank.area !== 'US') pricing.append(el('small', 'md-muted md-tiny', 'No public futures odds for this bank; rate path shown.')); } else pricing.append(el('span', 'md-muted md-small', bank.area === 'US' ? 'Futures pricing unavailable right now.' : 'No public futures odds for this bank.')); }
       tr.append(pricing);
       const week = el('td');
       const events = (desk?.events?.events || []).filter(e => e.currency === bank.currency && Date.parse(e.time) >= now - 3600000).slice(0, 3);
@@ -282,7 +303,7 @@
   }
   async function refresh(force = false) {
     const button = $('md-refresh'); button.disabled = true;
-    await Promise.allSettled([loadSchedule(), loadDesk(), loadQuotes(), loadHeadlines(force), state.edge && !force ? null : loadEdge()]);
+    await Promise.allSettled([loadSchedule(), loadPolicy(), loadDesk(), loadQuotes(), loadHeadlines(force), state.edge && !force ? null : loadEdge()]);
     renderAll(); button.disabled = false;
   }
 

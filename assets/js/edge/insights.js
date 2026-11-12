@@ -74,6 +74,7 @@
       for (const h of story.related) { const li = el('li'); li.append(el('time', 'edge-mono', new Date(h.publishedAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})), link(h.title, h.url), el('span', 'edge-muted', ' · ' + h.source)); ul.append(li); }
       card.append(ul);
     }
+    pricePath(card, symbol);
     card.append(el('p', 'ei-foot', `Written automatically from the figures in this section · Edge Radar snapshot ${String(market.state?.date || '').slice(0, 10)}${quote ? ' · live delayed quote' : ''}. No opinions added.`));
   }
 
@@ -134,8 +135,8 @@
   }
   function renderOrders(symbol) {
     const card = $('ei-orders'), book = state.desk?.books?.markets?.[symbol]?.orderBook, digits = DIGITS[symbol] || 5;
+    if (!book) { head(card, 'KEY PRICE LEVELS', 'Where price sits against recent highs, lows and pivots'); keyLevels(card, symbol); return; }
     head(card, 'ORDER BOOK', 'Pending orders by price');
-    if (!book) { empty(card, 'Broker order-book data is not connected for this market yet. It appears here automatically once the feed is enabled.'); return; }
     ladder(card, book, digits, 'BUY ORDERS', 'SELL ORDERS');
     const wall = [...book.buckets].sort((a, b) => Math.max(b.long, b.short) - Math.max(a.long, a.short))[0];
     card.append(el('p', 'ei-small', `Largest cluster: ${wall.long >= wall.short ? 'buy' : 'sell'} orders near ${wall.price.toFixed(digits)}.`), el('p', 'ei-foot', `OANDA client order book · ${ago(book.time)} · % of all pending orders per price bucket.`));
@@ -164,6 +165,52 @@
     card.append(chart);
     const axis = el('div', 'ei-axis edge-mono'); axis.append(el('span', '', history[0].date), el('span', '', '26 weeks'), el('span', '', history.at(-1).date)); card.append(axis);
     card.append(el('p', 'ei-foot', 'CFTC Commitments of Traders · weekly net (long − short) / (long + short) for speculators. Broker price-level position data appears here once that feed is enabled.'));
+  }
+
+
+  /* Price path + returns (from completed Dukascopy daily bars; live delayed quote marks the latest point). */
+  function pricePath(card, symbol) {
+    const bars = (state.bars[symbol]?.bars || []).filter(b => finite(b.close)); if (bars.length < 30) return;
+    const digits = DIGITS[symbol] || 5, live = state.quotes[symbol]?.price, last = finite(live) ? live : bars.at(-1).close;
+    const pts = bars.slice(-130).map(b => b.close); if (finite(live)) pts.push(live);
+    const min = Math.min(...pts), max = Math.max(...pts), span = max - min || 1, n = pts.length - 1;
+    const line = pts.map((v, i) => `${(i / n * 600).toFixed(1)},${(96 - (v - min) / span * 88).toFixed(1)}`).join(' ');
+    const up = last >= pts[0], ns = 'http://www.w3.org/2000/svg';
+    const wrap = el('div', 'ei-path'), svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 600 100'); svg.setAttribute('preserveAspectRatio', 'none'); svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', `${labelOf(symbol)} daily closes for the last ${pts.length} sessions, from ${pts[0].toFixed(digits)} to ${last.toFixed(digits)}`);
+    const area = document.createElementNS(ns, 'polygon'); area.setAttribute('points', `0,100 ${line} 600,100`); area.setAttribute('class', up ? 'ei-path-area-up' : 'ei-path-area-down');
+    const pl = document.createElementNS(ns, 'polyline'); pl.setAttribute('points', line); pl.setAttribute('class', up ? 'ei-path-up' : 'ei-path-down');
+    svg.append(area, pl);
+    const top = el('div', 'ei-path-head'); top.append(el('span', 'edge-eyebrow', 'PRICE PATH · ~6 MONTHS'), el('span', 'edge-mono edge-muted', `${min.toFixed(digits)} – ${max.toFixed(digits)}`));
+    const ret = el('div', 'ei-returns');
+    const lastTime = Date.parse(bars.at(-1).time);
+    for (const [label, days] of [['1W', 7], ['1M', 30], ['3M', 91], ['6M', 182], ['1Y', 365]]) {
+      const ref = [...bars].reverse().find(b => Date.parse(b.time) <= lastTime - days * 86400000); if (!ref) continue;
+      const chg = (last / ref.close - 1) * 100, chip = el('span', chg >= 0 ? 'ei-ret ei-up' : 'ei-ret ei-down');
+      chip.append(el('small', '', label), document.createTextNode(`${chg >= 0 ? '+' : ''}${chg.toFixed(2)}%`)); ret.append(chip);
+    }
+    wrap.append(top, svg, ret); card.append(wrap);
+  }
+  /* Key levels: previous session, classic floor pivots, 20-day and 52-week extremes. Used while the broker order book is not connected. */
+  function keyLevels(card, symbol) {
+    const bars = (state.bars[symbol]?.bars || []).filter(b => finite(b.high) && finite(b.low) && finite(b.close)), digits = DIGITS[symbol] || 5;
+    if (bars.length < 20) return empty(card, 'Daily price history for this market is unavailable right now.');
+    const p = bars.at(-1), P = (p.high + p.low + p.close) / 3, last20 = bars.slice(-20), year = bars.slice(-252);
+    const now = state.quotes[symbol]?.price ?? p.close;
+    const levels = [
+      ['52-week high', Math.max(...year.map(b => b.high))], ['20-day high', Math.max(...last20.map(b => b.high))],
+      ['R2 pivot', P + (p.high - p.low)], ['R1 pivot', 2 * P - p.low], ['Previous high', p.high], ['Pivot', P], ['Previous low', p.low],
+      ['S1 pivot', 2 * P - p.high], ['S2 pivot', P - (p.high - p.low)], ['20-day low', Math.min(...last20.map(b => b.low))], ['52-week low', Math.min(...year.map(b => b.low))]
+    ].sort((a, b) => b[1] - a[1]);
+    const list = el('div', 'ei-levels'); let marked = false;
+    for (const [label, value] of levels) {
+      if (!marked && value <= now) { const r = el('div', 'ei-level ei-level-now'); r.append(el('span', '', state.quotes[symbol] ? 'Price now (delayed)' : 'Last close'), el('strong', 'edge-mono', now.toFixed(digits)), el('span', 'edge-mono', '')); list.append(r); marked = true; }
+      const dist = (value / now - 1) * 100, r = el('div', 'ei-level' + (value >= now ? ' ei-level-above' : ' ei-level-below'));
+      r.append(el('span', '', label), el('strong', 'edge-mono', value.toFixed(digits)), el('span', 'edge-mono edge-muted', `${dist >= 0 ? '+' : ''}${dist.toFixed(2)}%`)); list.append(r);
+    }
+    if (!marked) { const r = el('div', 'ei-level ei-level-now'); r.append(el('span', '', 'Price now'), el('strong', 'edge-mono', now.toFixed(digits)), el('span')); list.append(r); }
+    card.append(list, el('p', 'ei-foot', `Computed from the ${String(p.time).slice(0, 10)} daily candle and the last year of Dukascopy bid candles. Broker order-book clusters replace this once that feed is enabled.`));
   }
 
   /* --- orchestration -------------------------------------------------------- */

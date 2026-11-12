@@ -62,3 +62,19 @@
 @media (max-width:640px){.ei-card{padding:16px 14px}.ei-head h2{font-size:24px}.ei-pick select{min-width:0;width:100%}.ei-pick{width:100%}.ei-vol-now{text-align:left}.ei-card-head{flex-wrap:wrap}.ei-score strong{font-size:38px}.ei-hist{height:130px}}
 /* [site-qa] Touch phones: 44px tap targets */
 @media (pointer:coarse){.ei-small-link{display:inline-flex;align-items:center;min-height:44px;min-width:44px}.edge-workspace .edge-chip{min-width:44px}.edge-workspace .edge-map-symbols a,.edge-workspace .edge-fit-row a{min-width:44px;justify-content:center}}
+/* Story price path + returns */
+.ei-path{margin:14px 0 4px;padding:12px 12px 10px;border:1px solid rgba(127,127,127,.2);border-radius:10px}
+.ei-path-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px;font-size:11px}
+.ei-path svg{display:block;width:100%;height:110px}
+.ei-path-up{fill:none;stroke:#127a48;stroke-width:1.6;vector-effect:non-scaling-stroke}.ei-path-down{fill:none;stroke:#b4421f;stroke-width:1.6;vector-effect:non-scaling-stroke}
+.ei-path-area-up{fill:rgba(18,122,72,.08)}.ei-path-area-down{fill:rgba(180,66,31,.08)}
+.ei-returns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ei-ret{display:inline-flex;align-items:baseline;gap:6px;padding:5px 9px;border-radius:6px;font:700 12px "IBM Plex Mono",ui-monospace,monospace;background:rgba(127,127,127,.08)}
+.ei-ret small{font:600 10px/1 Arial,sans-serif;opacity:.65}
+.ei-ret.ei-up{color:#127a48;background:rgba(18,122,72,.09)}.ei-ret.ei-down{color:#b4421f;background:rgba(180,66,31,.09)}
+/* Key levels ladder */
+.ei-levels{display:grid;margin-top:6px}
+.ei-level{display:grid;grid-template-columns:1fr auto 70px;gap:10px;align-items:center;padding:7px 4px;border-top:1px solid rgba(127,127,127,.15);font-size:13px}
+.ei-level strong{text-align:right}.ei-level>span:last-child{text-align:right;font-size:11px}
+.ei-level-above>span:first-child{color:#b4421f}.ei-level-below>span:first-child{color:#127a48}
+.ei-level-now{background:rgba(31,90,63,.08);border-radius:6px;border-top-color:transparent;font-weight:700}

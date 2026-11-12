@@ -154,3 +154,9 @@ body.macro-page .md-workspace,body.macro-page .md-ticker{font-family:Inter,Arial
  .md-chip{min-width:0}
  .md-small-link{display:inline-flex;align-items:center;min-height:44px;margin-top:0}
 }
+/* Bank table: rate path in the Market pricing column for banks without public futures odds */
+.md-path{display:grid;gap:3px}
+.md-path-spark{width:140px;max-width:100%;height:30px}
+.md-path-spark path{fill:none;stroke:#1f5a3f;stroke-width:1.6;vector-effect:non-scaling-stroke}
+.md-path .md-up{color:#b4421f}.md-path .md-down{color:#127a48}
+.md-tiny{display:block;font-size:10.5px;margin-top:4px;opacity:.8}

@@ -16,13 +16,20 @@ export function download(name,text,type='application/json') {const url=URL.creat
 export function options(select,filter=()=>true) {select.innerHTML=C.catalog.filter(filter).map(a=>`<option value="${escape(a.symbol)}">${escape(a.symbol)} · ${escape(a.name)}</option>`).join('');}
 export function metric(label,value,foot='',className='') {return `<div class="metric"><span class="metric-label">${escape(label)}</span><div class="metric-value ${className}">${escape(value)}</div><span class="metric-foot">${escape(foot)}</span></div>`;}
 const endpoint=['localhost','127.0.0.1'].includes(location.hostname)?'/api/research':'https://us-central1-fynx-c7a28.cloudfunctions.net/webResearchData';
-export async function api(action,params={}) {
-  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),60000);
+// Second route to the same read-only service (Vercel). SEC EDGAR rate-limits shared cloud IPs at times;
+// when the primary endpoint fails for a reason other than a bad request, the fallback is tried once.
+const fallback=['localhost','127.0.0.1'].includes(location.hostname)?null:(/(^|\.)vercel\.app$/.test(location.hostname)?'/fn/research.js':'https://fynxfinanceworld.vercel.app/fn/research.js');
+async function call(base,action,params,ms) {
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),ms);
   try {
-    const response=await fetch(endpoint+'?'+new URLSearchParams({action,...params}),{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer'});
-    const data=await response.json();if(!response.ok)throw Error(data.error||'Research data is unavailable. Please retry.');return data;
-  }catch(error){if(error.name==='AbortError')throw Error('The source took too long to respond. Please retry.');throw error;}
+    const response=await fetch(base+'?'+new URLSearchParams({action,...params}),{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer'});
+    const data=await response.json().catch(()=>({}));if(!response.ok)throw Object.assign(Error(data.error||'Research data is unavailable. Please retry.'),{status:response.status});return data;
+  }catch(error){if(error.name==='AbortError')throw Object.assign(Error('The source took too long to respond. Please retry.'),{status:504});throw error;}
   finally{clearTimeout(timer);}
+}
+export async function api(action,params={}) {
+  try{return await call(endpoint,action,params,fallback?25000:60000);}
+  catch(error){if(!fallback||error.status===400)throw error;return call(fallback,action,params,45000);}
 }
 export const reports=new Map();
 export async function financials(company) {
