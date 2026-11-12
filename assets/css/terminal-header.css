@@ -656,3 +656,21 @@ html body[data-fynx-terminal] .terminal-utility-actions > a.terminal-utility-ter
   html body[data-fynx-terminal] .terminal-utility .terminal-header-clock { display:none !important; }
   html body[data-fynx-terminal] .terminal-utility .terminal-utility-actions { margin-left:auto; }
 }
+
+/* iPhone utility strip (2026-11-12): the full date ("Thu, Nov 12, 2026 · 3:32 PM MST") is wider in iOS's
+   monospace font than the room left of Products / FYNX Terminal / edition, and the clock could not shrink,
+   so it ran under "Products". On phones show only the time, let the clock shrink with an ellipsis,
+   and keep the right-hand controls whole. */
+@media (max-width:600px){
+  html body[data-fynx-terminal] .terminal-utility .terminal-header-inner { gap:10px !important; overflow:hidden; }
+  html body[data-fynx-terminal] .terminal-utility .terminal-header-clock { flex:1 1 auto !important; min-width:0 !important; overflow:hidden !important; text-overflow:ellipsis; }
+  html body[data-fynx-terminal] .terminal-utility .terminal-header-clock [data-terminal-date],
+  html body[data-fynx-terminal] .terminal-utility .terminal-header-clock #dateChip,
+  html body[data-fynx-terminal] .terminal-utility .terminal-clock-separator { display:none !important; }
+  html body[data-fynx-terminal] .terminal-utility .terminal-header-clock [data-terminal-time] { display:inline !important; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  html body[data-fynx-terminal] .terminal-utility .terminal-utility-actions { flex:0 0 auto !important; margin-left:auto !important; gap:12px !important; }
+  html body[data-fynx-terminal] .terminal-utility .terminal-utility-actions > * { flex-shrink:0 !important; }
+}
+@media (max-width:359px){
+  html body[data-fynx-terminal] .terminal-utility .terminal-header-clock { display:none !important; }
+}
