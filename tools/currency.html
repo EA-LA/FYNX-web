@@ -456,7 +456,7 @@
           <h2>RESULT</h2>
           <div class="muted">Enter values and tap Calculate</div>
 
-          <div id="resultArea" class="result-placeholder">
+          <div id="resultArea" class="result-placeholder" role="status" aria-live="polite" aria-atomic="true">
             Your converted amount will appear here.
           </div>
         </div>
@@ -602,6 +602,14 @@
       renderResult(amount, from, to, rate);
     }
 
+    // A result is valid only for the exact amount and manual rate that produced it.
+    function invalidateConversion() {
+      const message = "Inputs changed. Calculate again to update the conversion.";
+      if (resultArea.className === "result-placeholder" && resultArea.textContent === message) return;
+      resultArea.className = "result-placeholder";
+      resultArea.textContent = message;
+    }
+
     function clearForm() {
       amountInput.value = "";
       customRateInput.value = "";
@@ -627,6 +635,10 @@
       customRateInput.value = "";
       resultArea.className = "result-placeholder";
       resultArea.textContent = "Enter the exchange rate for the selected currency pair.";
+    }
+    for (const field of [amountInput, customRateInput]) {
+      field.addEventListener("input", invalidateConversion);
+      field.addEventListener("change", invalidateConversion);
     }
     fromCurrency.addEventListener("change", resetRateForPair);
     toCurrency.addEventListener("change", resetRateForPair);
