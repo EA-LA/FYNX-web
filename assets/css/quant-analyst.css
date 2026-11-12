@@ -25,3 +25,8 @@ html body.quant-page[data-fynx-layout="standalone"] .quant-workspace p>a{display
 @media(max-width:900px){html body.quant-page[data-fynx-layout="standalone"] .quant-workspace :is(#mkts .mkt,#newsMkt,#studyEvents){min-height:44px!important}}
 
 @media(max-width:450px){html body.quant-page[data-fynx-layout="standalone"] .quant-workspace .data-controls{grid-template-columns:minmax(0,1fr)!important}html body.quant-page[data-fynx-layout="standalone"] .quant-workspace .data-controls input,html body.quant-page[data-fynx-layout="standalone"] .quant-workspace .data-controls select{width:100%!important;min-width:0!important}}
+/* Desktop: the markets column scrolls on its own and stays beside the results, so a short tab
+   (Optimize, Monte Carlo, FTMO, Deploy) no longer leaves a long empty column under the results. */
+@media(min-width:901px){html body.quant-page[data-fynx-layout="standalone"] .quant-workspace .grid{align-items:start!important}
+html body.quant-page[data-fynx-layout="standalone"] .quant-workspace .side{position:sticky!important;top:12px!important;max-height:calc(100vh - 24px)!important;overflow-y:auto!important;overscroll-behavior:contain!important;padding-right:6px!important;scrollbar-width:thin!important}
+html body.quant-page[data-fynx-layout="standalone"] .quant-workspace #surf{min-height:440px!important}}

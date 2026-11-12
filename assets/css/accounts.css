@@ -32,3 +32,9 @@ html body.accounts-page{background:#f6f6f3!important;color:#17191c!important;fon
 
 .ac-alert-thresholds{border:1px solid #dce2d4;padding:12px;display:flex;gap:20px;flex-wrap:wrap;margin:18px 0}.ac-alert-thresholds legend{font-size:12px}.ac-alert-title{margin-top:26px!important}
 @media(max-width:639px){.ac-field input,.ac-field select,.ac-field textarea{font-size:16px}}
+.ac-now{max-width:960px;margin:28px auto 0;padding:0 4px}
+.ac-now h2{margin:6px 0 14px;font-size:22px;letter-spacing:-.02em}
+.ac-now-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.ac-now-card{display:grid;gap:6px;padding:16px;border:1px solid #dfe4e1;border-radius:10px;background:#fff;color:inherit;text-decoration:none;transition:border-color .15s,transform .15s}
+.ac-now-card:hover{border-color:#1f5a3f;transform:translateY(-1px)}
+.ac-now-card strong{font-size:15px;color:#1f5a3f}.ac-now-card span{font-size:13px;line-height:1.5;color:#5f6b64}

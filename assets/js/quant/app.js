@@ -97,7 +97,7 @@
       throw new Error('Stopped waiting for the server job.');
     }
     return new Promise((resolve,reject)=>{
-      const worker=new Worker('/assets/js/quant/worker.js?v=20261111-story-photos-1'), id=++state.seq;
+      const worker=new Worker('/assets/js/quant/worker.js?v=20261112-research-fix-2'), id=++state.seq;
       state.worker=worker;state.reject=reject;
       const finish=()=>{worker.terminate();state.worker=null;state.reject=null;};
       worker.onmessage=({data})=>{if(data.id!==id)return;if(data.progress!==undefined){progress(data.progress);return;}finish();if(data.error)reject(new Error(data.error));else resolve(data.result);};
@@ -173,7 +173,7 @@
     const z=y.map(s=>x.map(k=>r.cells.find(c=>c.entryK===k&&c.stopS===s)?.value??null));
     const colorscale=[[0,'#b74641'],[.5,'#f4f0db'],[1,'#2f8857']];
     const trace=$('surfaceView').value==='heatmap'?{type:'heatmap',x,y,z,colorscale,hoverongaps:false}:{type:'surface',x,y,z,colorscale,contours:{z:{show:true,usecolormap:true,project:{z:true}}}};
-    await plot('surf',[trace],{height:440,title:{text:'In-sample · '+$('metric').selectedOptions[0].text},xaxis:{title:'Entry K'},yaxis:{title:'Stop S'},scene:{xaxis:{title:{text:'Entry K'}},yaxis:{title:{text:'Stop S'}},zaxis:{title:{text:$('metric').selectedOptions[0].text}}}});
+    await plot('surf',[trace],{height:$('surfaceView').value==='heatmap'?440:580,margin:{l:10,r:10,t:50,b:10},title:{text:'In-sample · '+$('metric').selectedOptions[0].text},xaxis:{title:'Entry K'},yaxis:{title:'Stop S'},scene:{aspectmode:'manual',aspectratio:{x:1.5,y:1.5,z:.85},camera:{eye:{x:1.45,y:-1.55,z:.95}},xaxis:{title:{text:'Entry K'}},yaxis:{title:{text:'Stop S'}},zaxis:{title:{text:$('metric').selectedOptions[0].text}}}});
   }
   async function runOptimize() {
     if($('strategyModel').value==='mean-reversion')throw new Error('This optimization grid varies entry ATR and stop ATR. Mean reversion requires a Z-score grid, which is not available yet. Its backtest and portfolio remain available.');
@@ -236,7 +236,8 @@
     stats('portStats',result.stats);
     const traces=result.sleeves.map(s=>curveTrace(s.equity,s.name,'#c7ccc7',1));traces.push(curveTrace(result.equity,'Portfolio','#1f4d3a',2.5));
     await plot('portEq',traces,{title:{text:'Portfolio and sleeves · return %'},yaxis:{ticksuffix:'%'}});
-    await plot('corr',[{type:'heatmap',z:result.correlation,x:sleeves.map(s=>s.name),y:sleeves.map(s=>s.name),zmin:-1,zmax:1,colorscale:[[0,'#b74641'],[.5,'#f5f3e9'],[1,'#2d7b50']],hoverongaps:false}],{title:{text:'Daily-return correlation'},margin:{l:140,r:35,t:45,b:100}});
+    if(sleeves.length<2){if(window.Plotly)try{Plotly.purge($('corr'));}catch(_){}$('corr').innerHTML='<p class="note" style="padding:18px">Correlation needs at least two sleeves. Tick another market or strategy above and build the portfolio again to see how their daily returns move together.</p>';}
+    else await plot('corr',[{type:'heatmap',z:result.correlation,x:sleeves.map(s=>s.name),y:sleeves.map(s=>s.name),zmin:-1,zmax:1,colorscale:[[0,'#b74641'],[.5,'#f5f3e9'],[1,'#2d7b50']],hoverongaps:false}],{title:{text:'Daily-return correlation'},margin:{l:140,r:35,t:45,b:100}});
     log(`Portfolio complete · ${sleeves.length} sleeves. ${newsWarning} ${result.notes?.join(' ')||'Weights use past returns; available overlap determines the research range.'}`);
   }
   async function ensurePortfolio() {if(!state.portfolio)await runPortfolio();}
@@ -276,7 +277,13 @@
     const requestedSymbol=state.symbol;
     try{const data=await api(`/news/headlines?symbol=${requestedSymbol}`);if(state.symbol!==requestedSymbol)return;const items=data.headlines||data.items||data.articles||[];
       $('headlines').replaceChildren();for(const item of items.slice(0,4)){const a=document.createElement('a');const candidate=item.readerUrl||item.url||'/news.html';const u=new URL(candidate,location.origin);a.href=u.origin===location.origin||(u.protocol==='https:'&&['fynxfinanceworld.com','www.fynxfinanceworld.com'].includes(u.hostname))?candidate:'/news.html';a.className='headline';a.textContent=item.title||item.headline;const small=document.createElement('small'),sourceName=item.source?.name||(typeof item.source==='string'?item.source:'FYNX News'),published=item.pubDate||item.publishedAt||item.published_at||item.date;small.textContent=sourceName+' · ';if(published&&Number.isFinite(Date.parse(published))){const time=document.createElement('time');time.dateTime=new Date(published).toISOString();time.textContent=new Date(published).toLocaleString();small.append(time);}else small.append(document.createTextNode('publication time unavailable'));if(data.stale||data.status==='stale')small.append(document.createTextNode(' · cached feed'));a.append(small);$('headlines').append(a);}if(!items.length)$('headlines').innerHTML='<a href="/news.html">Read FYNX News →</a>';
-    }catch{if(state.symbol!==requestedSymbol)return;$('headlines').innerHTML='<a href="/news.html">Open FYNX News for attributed headlines →</a>';}
+    }catch{if(state.symbol!==requestedSymbol)return;
+      // Fallback: the same attributed newsroom feed the News page uses, matched to this market's desk.
+      const cat=/BTC|ETH/.test(requestedSymbol)?'crypto':/XAU|XAG/.test(requestedSymbol)?'commodities':/US30|NAS|SPX/.test(requestedSymbol)?'stocks':'forex';
+      try{const D=window.FYNXMarketIntelligenceData;if(!D)throw 0;const r=await D.loadHeadlines(cat,{timeoutMs:8000});if(state.symbol!==requestedSymbol)return;
+        const items=(r.items||[]).filter(i=>i.title&&i.url).slice(0,5);if(!items.length)throw 0;$('headlines').replaceChildren();
+        for(const item of items){const a=document.createElement('a');a.className='headline';a.href=window.FYNXNewsReaderData?.href(item)||'/news.html';a.textContent=item.title;const small=document.createElement('small');small.textContent=(item.source||'FYNX News')+(item.publishedAt?' · '+new Date(item.publishedAt).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'');a.append(small);$('headlines').append(a);}
+      }catch{$('headlines').innerHTML='<a href="/news.html">Open FYNX News for attributed headlines →</a>';}}
   }
   function renderMarketQuotes() {
     for(const market of Q.SYMBOLS){
