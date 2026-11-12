@@ -50,6 +50,8 @@ jobs:
           cp "$RUNNER_TEMP/out/desk.json" desk.json
           git config user.name 'FYNX macro desk publisher'
           git config user.email 'actions@users.noreply.github.com'
-          git add -- desk.json
+          # Data-only branch: tell Vercel not to deploy it (each push otherwise uses a deployment).
+          printf '{"git":{"deploymentEnabled":false}}\n' > vercel.json
+          git add -- desk.json vercel.json
           git commit --quiet -m "Macro Desk snapshot $(date -u +%FT%RZ)"
           git push --force origin HEAD:refs/heads/macro-data

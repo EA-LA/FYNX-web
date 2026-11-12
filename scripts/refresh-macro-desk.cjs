@@ -213,7 +213,14 @@ async function fetchFed(now) {
     catch (error) { console.warn('Fed funds futures', symbol, error.message); }
   }
   const odds = fedOdds({meeting, effr: effr.value, prices});
-  return {effr, odds: odds ? {...odds, contracts} : null, reason: odds ? null : 'Fed funds futures prices were unavailable.'};
+  // Implied path: monthly average fed funds rate priced by the next 12 contract months (100 − price).
+  const path = [], start = new Date(now);
+  for (let k = 0; k < 12; k++) {
+    const yy = start.getUTCFullYear() + Math.floor((start.getUTCMonth() + k) / 12), mm = (start.getUTCMonth() + k) % 12, symbol = contractSymbol(yy, mm);
+    try { const q = prices[symbol] ? {price: prices[symbol], asOf: contracts.find(c => c.symbol === symbol).asOf} : await yahooQuote(symbol); if (q.price > 80 && q.price < 101 && Date.parse(q.asOf) > now - 5 * DAY) path.push({month: `${yy}-${String(mm + 1).padStart(2, '0')}`, symbol, rate: round(100 - q.price, 4), asOf: q.asOf}); }
+    catch (error) { console.warn('Fed funds path', symbol, error.message); }
+  }
+  return {effr, odds: odds ? {...odds, contracts} : null, path: path.length >= 3 ? path : null, reason: odds ? null : 'Fed funds futures prices were unavailable.'};
 }
 
 /* --- Policy rates and central-bank events ------------------------------- */
