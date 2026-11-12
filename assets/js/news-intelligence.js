@@ -127,13 +127,18 @@
       if (week.length) { items = week; fallbackNote = 'No '+label+' headlines in the past 24 hours — showing the latest from the past 7 days.'; }
       else {
         const match = TOPIC[requested];
-        const all = match ? await D.loadHeadlines('all',{edition:code,timeoutMs:6500}).catch(() => null) : null;
-        const pick = all ? currentItems(all.items,code,'all',false,72).filter(item => !isOfficial(item) && match.test(item.title || '')) : [];
+        const all = await D.loadHeadlines('all',{edition:code,timeoutMs:6500}).catch(() => null);
+        const pick = all && match ? currentItems(all.items,code,'all',false,72).filter(item => !isOfficial(item) && match.test(item.title || '')) : [];
         if (pick.length) { items = pick; fallbackNote = 'No '+label+' desk headlines right now — showing '+requested+' stories from all '+editionLabel()+' coverage.'; }
         else if (code !== 'global') {
           const glob = await D.loadHeadlines(requested,{edition:'global',timeoutMs:6500}).catch(() => null);
           const g = glob ? currentItems(glob.items,'global',requested,false,72).filter(item => !isOfficial(item)) : [];
           if (g.length) { items = g; fallbackNote = 'No '+label+' headlines right now — showing the Global edition '+requested+' desk.'; }
+        }
+        // Last resort: the desk still shows real, dated market coverage rather than an empty box.
+        if (!items.length && all) {
+          const latest = currentItems(all.items,code,'all',false,168).filter(item => !isOfficial(item));
+          if (latest.length) { items = latest; fallbackNote = 'No '+label+' headlines right now — showing the latest '+editionLabel()+' market coverage. This desk checks again automatically.'; }
         }
       }
     }
