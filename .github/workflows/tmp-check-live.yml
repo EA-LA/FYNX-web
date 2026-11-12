@@ -1,18 +1,14 @@
-name: TEMP positioning run
+name: TEMP probe
 on:
   push:
     branches: [tmp/check-live]
 permissions:
-  contents: write
+  contents: read
 jobs:
   run:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: {ref: claude/terminal-prime}
       - uses: actions/setup-node@v4
         with: {node-version: '22'}
-      - run: node scripts/refresh-positioning.cjs out && ls -la out && node -e "const c=require('./out/cot.json');console.log('COT',c.latest,Object.keys(c.markets).join(','));const p=require('./out/policy.json');console.log('POL',Object.entries(p.areas).map(([k,a])=>k+':'+a.history.at(-1).join('=')).join(' '))"
-      - run: |
-          git config user.name tmp; git config user.email tmp@users.noreply.github.com
-          git checkout -q --orphan tmp/intel-out && git rm -rqf . && cp out/*.json . && git add cot.json policy.json && git commit -qm out && git push -qf origin HEAD:tmp/intel-out
+      - run: node .github/tmp/probe.cjs

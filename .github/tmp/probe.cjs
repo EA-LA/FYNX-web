@@ -1,14 +1,10 @@
-const get=async(u,h={})=>{const r=await fetch(u,{headers:{'User-Agent':'FYNX/1.0',...h},signal:AbortSignal.timeout(30000)});const t=await r.text();return [r.status,t];};
+const H={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36','Accept':'application/json, text/plain, */*','Origin':'https://www.nasdaq.com','Referer':'https://www.nasdaq.com/'};
+const get=async(u,h=H)=>{const t0=Date.now();const r=await fetch(u,{headers:h,signal:AbortSignal.timeout(40000)});const t=await r.text();return [r.status,t,Date.now()-t0];};
 (async()=>{
- for(const u of ['https://publicreporting.cftc.gov/resource/gpe5-46if.json?$limit=2&$order=report_date_as_yyyy_mm_dd%20DESC&cftc_contract_market_code=099741',
-  'https://publicreporting.cftc.gov/resource/72hh-3qpy.json?$limit=1&$order=report_date_as_yyyy_mm_dd%20DESC&cftc_contract_market_code=088691',
-  'https://publicreporting.cftc.gov/resource/6dca-aqww.json?$limit=1&$order=report_date_as_yyyy_mm_dd%20DESC&cftc_contract_market_code=098662',
-  'https://stats.bis.org/api/v1/data/WS_CBPOL/M.US+XM+GB+JP+CA+AU+NZ+CH?startPeriod=2024-06&format=csv',
-  'https://stats.bis.org/api/v2/data/dataflow/BIS/WS_CBPOL/1.0/M.US+XM+GB+JP+CA+AU+NZ+CH?startPeriod=2024-06&format=csv',
- ]){try{const [s,t]=await get(u);console.log('P',s,u.slice(0,60),JSON.stringify(t.slice(0,1400)));}catch(e){console.log('P ERR',u.slice(0,60),e.message)}}
- // codes check
- return;const [s,t]=await get('https://publicreporting.cftc.gov/resource/gpe5-46if.json?$select=cftc_contract_market_code,market_and_exchange_names&$where=report_date_as_yyyy_mm_dd%3E%272026-10-25%27&$limit=200');
- console.log('CODES',s,JSON.parse(t).map(r=>r.cftc_contract_market_code+'='+r.market_and_exchange_names.slice(0,45)).join(' ; '));
- const [s2,t2]=await get('https://publicreporting.cftc.gov/resource/72hh-3qpy.json?$select=cftc_contract_market_code,market_and_exchange_names&$where=report_date_as_yyyy_mm_dd%3E%272026-10-25%27%20AND%20(market_and_exchange_names%20like%20%27%25GOLD%25%27%20OR%20market_and_exchange_names%20like%20%27%25CRUDE%25%27%20OR%20market_and_exchange_names%20like%20%27%25SILVER%25%27%20OR%20market_and_exchange_names%20like%20%27%25COPPER%25%27%20OR%20market_and_exchange_names%20like%20%27%25NAT%25GAS%25%27)&$limit=60');
- console.log('DCODES',s2,t2.slice(0,3000));
+ let [s,t,ms]=await get('https://api.nasdaq.com/api/screener/stocks?tableonly=true&download=true');
+ console.log('NQ',s,ms,t.length);try{const d=JSON.parse(t);const rows=d.data.rows;console.log('NQROWS',rows.length,JSON.stringify(rows.slice(0,2)),JSON.stringify(d.data.headers));console.log('NQAI',JSON.stringify(rows.filter(r=>/\bAI\b|\.ai\b|Artificial/i.test(r.name)).slice(0,30).map(r=>r.symbol+':'+r.lastsale+':'+r.name.slice(0,30))));}catch(e){console.log('NQERR',t.slice(0,300))}
+ ;[s,t,ms]=await get('https://api.nasdaq.com/api/screener/etf?tableonly=true&download=true');console.log('ETF',s,ms,t.length,t.slice(0,400));
+ ;[s,t,ms]=await get('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=250&page=1&price_change_percentage=1h,24h,7d',{'User-Agent':'FYNX/1.0','Accept':'application/json'});console.log('CG',s,ms,t.length,t.slice(0,500));
+ ;[s,t,ms]=await get('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=100&category=artificial-intelligence',{'User-Agent':'FYNX/1.0','Accept':'application/json'});console.log('CGAI',s,ms,t.length,t.slice(0,300));
+ ;[s,t,ms]=await get('https://api.coingecko.com/api/v3/coins/categories/list',{'User-Agent':'FYNX/1.0'});console.log('CGCAT',s,t.length,t.slice(0,800));
 })();
