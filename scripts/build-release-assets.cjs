@@ -4,7 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { publicSiteFiles } = require('./public-site-files.cjs');
-const VERSION = '20261112-site-qa-74';
+const VERSION = '20261112-alive-1';
 const RESEARCH_VERSION = '20261111-story-photos-1';
 const RESEARCH_ASSETS = new Set(['assets/js/research-service.js','assets/js/edge/app.js','assets/js/edge/render.js','assets/js/edge/profile.js','assets/js/edge/public-research.js','assets/js/quant/app.js','assets/js/quant/profile.js','assets/js/quant/engine.js','assets/js/quant/worker.js','assets/js/quant/public-history.js','assets/js/company-products-data.js']);
 const ASSETS = Object.freeze([
@@ -14,6 +14,7 @@ const ASSETS = Object.freeze([
   'assets/js/macro-desk/model.js', 'assets/js/macro-desk/app.js', 'assets/css/macro-desk.css',
   'assets/js/edge/insights.js', 'assets/css/edge-insights.css',
   'assets/js/terminal/app.js', 'assets/js/terminal/pages.js', 'assets/js/terminal/geo.js', 'assets/js/terminal/world.js', 'assets/js/terminal/portfolio.js', 'assets/js/terminal/scanner.js', 'assets/css/terminal-all.css',
+  'assets/js/home-movers.js', 'assets/js/live-pulse.js', 'assets/js/cb-monitor.js',
   'assets/js/home-journal.js', 'assets/js/profile-sync.js', 'assets/js/session-manager.js',
   'assets/js/news-reader-links.js', 'assets/js/news-reader.js', 'assets/css/news-reader.css',
   'assets/js/news-preferences.js', 'assets/js/your-news.js', 'assets/css/your-news.css',

@@ -117,6 +117,19 @@ async function main() {
   }
   if (!out.stocks && !out.crypto) throw new Error('No scanner data');
   await fs.writeFile(path.join(outDir, 'scanner.json'), JSON.stringify(out) + '\n');
+  // movers.json: a few-KB digest for the home page and newsroom (biggest moves among large companies,
+  // most traded, crypto movers, AI names under $3).
+  const pick = (rows, f, sort, n) => rows.filter(f).sort(sort).slice(0, n);
+  const st = out.stocks?.rows || [], cr = out.crypto?.rows || [];
+  const stock = r => ({symbol: r[0], name: r[1], price: r[2], changePct: r[3], volume: r[4], marketCap: r[5]});
+  const coin = r => ({symbol: r[1], name: r[2], price: r[3], changePct: r[5], marketCap: r[7], open: r[1] + '-USD'});
+  const big = r => r[5] >= 1e10 && Number.isFinite(r[3]);
+  const movers = {version: 1, generatedAt: out.generatedAt, stocksAsOf: out.stocks?.asOf || null, cryptoAsOf: out.crypto?.asOf || null, sources: out.sources,
+    gainers: pick(st, big, (a, b) => b[3] - a[3], 6).map(stock), losers: pick(st, big, (a, b) => a[3] - b[3], 6).map(stock),
+    active: pick(st, r => Number.isFinite(r[4]) && r[2] >= 1, (a, b) => b[2] * b[4] - a[2] * a[4], 6).map(stock),
+    crypto: pick(cr, r => r[9] && r[9] <= 100 && Number.isFinite(r[5]) && !(r[11] || []).includes('stable'), (a, b) => Math.abs(b[5]) - Math.abs(a[5]), 6).map(coin),
+    aiUnder3: pick(st, r => (r[10] || []).includes('ai') && r[2] <= 3 && r[4] >= 500000, (a, b) => b[4] - a[4], 5).map(stock)};
+  await fs.writeFile(path.join(outDir, 'movers.json'), JSON.stringify(movers) + '\n');
 }
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
 module.exports = {THEMES, ETF_THEMES, cleanName};

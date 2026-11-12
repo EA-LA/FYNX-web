@@ -195,6 +195,13 @@ async function fetchEarnings(now) {
 async function readJSON(file) { try { return JSON.parse(await fs.readFile(file, 'utf8')); } catch { return null; } }
 async function write(dir, name, value) { const target = path.join(dir, name); await fs.writeFile(target + '.tmp', JSON.stringify(value) + '\n'); await fs.rename(target + '.tmp', target); }
 
+const PULSE = [['^GSPC','S&P 500'],['^IXIC','Nasdaq'],['^DJI','Dow'],['^RUT','Russell 2000'],['^VIX','VIX'],['^TNX','US 10Y'],['DX-Y.NYB','Dollar'],['EURUSD=X','EUR/USD'],['JPY=X','USD/JPY'],['GC=F','Gold'],['CL=F','WTI crude'],['BTC-USD','Bitcoin'],['ETH-USD','Ether'],['^FTSE','FTSE 100'],['^GDAXI','DAX'],['^N225','Nikkei']];
+function buildPulse(quotes) {
+  return PULSE.map(([sym, label]) => { const q = quotes[sym]; if (!q || typeof q.price !== 'number') return null;
+    const closes = Array.isArray(q.history) ? q.history.slice(-30).map(r => Array.isArray(r) ? r[1] : null).filter(v => typeof v === 'number') : [];
+    return {symbol: sym, label, price: q.price, changePercent: typeof q.changePercent === 'number' ? q.changePercent : null, asOf: q.asOf || null, stale: !!q.stale, spark: closes}; }).filter(Boolean);
+}
+
 async function main() {
   const [outDir, prevDir] = process.argv.slice(2);
   if (!outDir) throw new Error('Usage: refresh-terminal-markets.cjs <output-dir> [previous-dir]');
@@ -209,8 +216,11 @@ async function main() {
   else { console.warn('[terminal-options] options failed:', options.reason.message); if (prev.options) await write(outDir, 'options.json', {...prev.options, stale: true}); }
   if (earnings.status === 'fulfilled') { await write(outDir, 'earnings.json', {version: 1, generatedAt: iso(now), source: 'Nasdaq earnings calendar (companies above $5B market value)', sourceURL: 'https://www.nasdaq.com/market-activity/earnings', ...earnings.value}); published++; console.log(`[terminal-earnings] ${earnings.value.events.length} events ${earnings.value.from} → ${earnings.value.to}`); }
   else { console.warn('[terminal-earnings] earnings failed:', earnings.reason.message); if (prev.earnings) await write(outDir, 'earnings.json', {...prev.earnings, stale: true}); }
+  // pulse.json: a few-KB slice of markets.json for the live strip on site pages (same data, no history bloat).
+  const snap = markets.status === 'fulfilled' ? markets.value : prev.markets;
+  if (snap && snap.quotes) { const pulse = buildPulse(snap.quotes); if (pulse.length) await write(outDir, 'pulse.json', {version: 1, generatedAt: iso(now), stale: markets.status !== 'fulfilled', source: 'Yahoo Finance chart data (delayed)', items: pulse}); }
   if (!published && !prev.markets) throw new Error('Every provider failed and no previous snapshot exists; nothing published.');
 }
 
 if (require.main === module) main().catch(error => { console.error(error); process.exit(1); });
-module.exports = {parseChart, parseOCC, summarizeOptions, UNIVERSE, OPTION_UNDERLYINGS};
+module.exports = {buildPulse, parseChart, parseOCC, summarizeOptions, UNIVERSE, OPTION_UNDERLYINGS};

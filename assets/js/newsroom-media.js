@@ -182,7 +182,44 @@
     probe.onerror = () => settle(false);
     probe.src = p.image;
   }
-  const api = Object.freeze({ sections, get, createFigure, lookupStoryImage: lookup });
+  function monogram(source) {
+    const words = String(source || '').replace(/^(the|www\.)\s*/i,'').split(/[\s.\-–—:|]+/).filter(w => /[a-z0-9]/i.test(w));
+    if (!words.length) return 'FN';
+    return (words.length === 1 ? words[0].slice(0,3) : words.slice(0,3).map(w => w[0]).join('')).toUpperCase();
+  }
+  function thumbStyle(doc) {
+    if (doc.getElementById('fynx-thumb-style')) return;
+    const st = doc.createElement('style'); st.id = 'fynx-thumb-style';
+    st.textContent = '.fx-thumb{float:right;flex:0 0 auto;width:112px;height:74px;margin:2px 0 8px 16px;border-radius:8px;overflow:hidden;display:grid;place-items:center;background:linear-gradient(135deg,rgba(31,90,63,.14),rgba(31,90,63,.04));border:1px solid rgba(127,127,127,.18);font:800 12px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.08em;color:#1f5a3f}'
+      + '.fx-thumb img{width:100%;height:100%;object-fit:cover;display:block;animation:fx-thumb-in .35s ease}'
+      + '.fx-thumb.fx-thumb-photo{background:#0d1210;border-color:transparent}'
+      + '.fx-thumb-wait{color:transparent!important;background:linear-gradient(100deg,rgba(127,127,127,.10) 30%,rgba(127,127,127,.22) 50%,rgba(127,127,127,.10) 70%);background-size:300% 100%;animation:fynx-photo-wait 1.4s ease-in-out infinite}'
+      + '.nr-latest-story.has-thumb{grid-template-columns:42px minmax(0,1fr) auto}.nr-latest-story .fx-thumb{float:none;width:76px;height:52px;margin:0}'
+      + '#homeSecondaryStories .fx-thumb{width:84px;height:58px}'
+      + 'html[data-theme=dark] .fx-thumb,body.dark-mode .fx-thumb,.terminal-shell .fx-thumb{color:#7fd3a6}'
+      + '@keyframes fynx-photo-wait{0%{background-position:100% 0}100%{background-position:0 0}}@keyframes fx-thumb-in{from{opacity:0}to{opacity:1}}'
+      + '@media (max-width:600px){.fx-thumb{width:84px;height:58px;margin-left:12px}.nr-latest-story .fx-thumb{width:64px;height:46px}}'
+      + '@media (prefers-reduced-motion:reduce){.fx-thumb-wait,.fx-thumb img{animation:none}}';
+    doc.head.append(st);
+  }
+  // Small story picture for list rows: shimmer while the publisher's own preview image is
+  // looked up, then the photo, or a source monogram when the publisher has none. Never swaps twice.
+  function thumb(item) {
+    const doc = root.document, url = safe(item && (item.url || item.link)); if (!doc) return null;
+    thumbStyle(doc);
+    const box = doc.createElement('span'); box.className = 'fx-thumb fx-thumb-wait'; box.setAttribute('aria-hidden','true');
+    box.textContent = monogram(item && item.source);
+    let done = false; const settle = img => { if (done) return; done = true; box.classList.remove('fx-thumb-wait'); if (img) { box.classList.add('fx-thumb-photo'); box.replaceChildren(img); } };
+    if (!url || typeof root.fetch !== 'function') { settle(null); return box; }
+    setTimeout(() => settle(null), 7000);
+    lookup(url).then(p => {
+      const src = p && safe(p.image); if (!src || done) return settle(null);
+      const img = doc.createElement('img'); img.alt = ''; img.decoding = 'async'; img.referrerPolicy = 'no-referrer';
+      img.onload = () => settle(img.naturalWidth >= 80 ? img : null); img.onerror = () => settle(null); img.src = src;
+    }, () => settle(null));
+    return box;
+  }
+  const api = Object.freeze({ sections, get, createFigure, lookupStoryImage: lookup, thumb });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.FYNXNewsroomMedia = api;
 })(typeof window === 'undefined' ? globalThis : window);
