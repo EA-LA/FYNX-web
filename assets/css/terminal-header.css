@@ -636,3 +636,18 @@ html body[data-fynx-terminal] .terminal-utility-actions > a.terminal-utility-ter
 @media (prefers-reduced-motion:reduce){ .terminal-utility-terminal-dot { animation:none; } }
 /* Utility links hide on phones; the Terminal entry stays. */
 @media (max-width:600px){ html body[data-fynx-terminal] .terminal-utility-actions > a.terminal-utility-terminal { display:inline-flex !important; font-size:10px !important; } }
+
+/* [site-qa] run 80: the utility strip (date, Products, FYNX Terminal, edition) is ~340px wide and did not fit a 320px iPhone SE:
+   the edition picker overlapped the Terminal link and pushed the page 7px sideways. Keep Terminal + edition whole,
+   hide its small monitor icon on phones (amber text + live dot still mark it), drop the date under 375px,
+   and give the Terminal link a 44px touch height. */
+@media (max-width:600px){
+  html body[data-fynx-terminal] .terminal-utility-actions > a.terminal-utility-terminal,
+  html body[data-fynx-terminal]:not(#fx-boost) .terminal-utility-actions > .terminal-edition { flex-shrink:0; }
+  html body[data-fynx-terminal] .terminal-utility-actions > a.terminal-utility-terminal { min-height:44px !important; align-items:center; }
+  html body[data-fynx-terminal] .terminal-utility-actions > a.terminal-utility-terminal .terminal-utility-terminal-icon { display:none; }
+}
+@media (max-width:374px){
+  html body[data-fynx-terminal] .terminal-utility .terminal-header-clock { display:none !important; }
+  html body[data-fynx-terminal] .terminal-utility .terminal-utility-actions { margin-left:auto; }
+}

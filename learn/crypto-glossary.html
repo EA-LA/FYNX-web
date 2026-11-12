@@ -120,7 +120,7 @@
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer=""></script>
   <link rel="stylesheet" href="/assets/editorial-pages.css?v=20261109-nav-wrap">
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261112-topbar-1">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261112-site-qa-80">
 <title>Crypto — Glossary | FYNX Finance World</title>
 <meta name="description" content="Learn Crypto terminology with a practical glossary of market concepts and trading definitions.">
 <meta name="robots" content="index,follow,max-image-preview:large">
@@ -140,7 +140,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
      crossorigin="anonymous"></script>
 <!-- FYNX ADSENSE VERIFICATION END -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261112-topbar-1"><script src="/assets/js/company-products-data.js?v=20261111-story-photos-1" defer></script><script src="/assets/js/company-products.js?v=20261112-topbar-1" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261112-site-qa-80"><script src="/assets/js/company-products-data.js?v=20261111-story-photos-1" defer></script><script src="/assets/js/company-products.js?v=20261112-site-qa-80" defer></script><!-- company-products:assets:end -->
 </head>
 <body class="editorial-page editorial-learning" data-fynx-layout="standalone" data-fynx-section="LEARNING" data-learning-topic="crypto" data-learning-section="glossary">
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
@@ -183,7 +183,7 @@
         </div>
 
         <div class="glossary">
-          <article class="term"><strong>Perpetual Futures</strong><p>Futures contract with no expiration; uses funding rate.</p></article><article class="term"><strong>Funding Rate</strong><p>Payment between long/short sides to anchor perp price to spot.</p></article><article class="term"><strong>On-Chain</strong><p>Blockchain transaction/wallet behavior data.</p></article><article class="term"><strong>Dominance</strong><p>Share of total crypto market cap held by a specific coin.</p></article><article class="term"><strong>Liquidation</strong><p>Forced position closure due to insufficient margin.</p></article><article class="term"><strong>Order Book Imbalance</strong><p>Difference in visible bid/ask depth.</p></article><article class="term"><strong>Stablecoin Flow</strong><p>Movement of stablecoins often linked to risk appetite.</p></article><article class="term"><strong>Slippage</strong><p>Difference between expected and actual execution price.</p></article>
+          <article class="term" id="term-perpetual-futures"><strong>Perpetual Futures</strong><p>Futures contract with no expiration; uses funding rate.</p></article><article class="term" id="term-funding-rate"><strong>Funding Rate</strong><p>Payment between long/short sides to anchor perp price to spot.</p></article><article class="term" id="term-on-chain"><strong>On-Chain</strong><p>Blockchain transaction/wallet behavior data.</p></article><article class="term" id="term-dominance"><strong>Dominance</strong><p>Share of total crypto market cap held by a specific coin.</p></article><article class="term" id="term-liquidation"><strong>Liquidation</strong><p>Forced position closure due to insufficient margin.</p></article><article class="term" id="term-order-book-imbalance"><strong>Order Book Imbalance</strong><p>Difference in visible bid/ask depth.</p></article><article class="term" id="term-stablecoin-flow"><strong>Stablecoin Flow</strong><p>Movement of stablecoins often linked to risk appetite.</p></article><article class="term" id="term-slippage"><strong>Slippage</strong><p>Difference between expected and actual execution price.</p></article>
         </div>
       </div>
     </section>
@@ -471,6 +471,9 @@
       `;
     }
 
+    // [site-qa] run 80: stable term anchors (#term-pip) so search results can open on the term itself.
+    function termSlug(term){return String(term).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
+
     function renderGlossary(){
       const words = glossaryBank[topic] || glossaryBank.forex;
       const root = document.getElementById('contentRoot');
@@ -487,7 +490,7 @@
         </div>
 
         <div class="glossary">
-          ${words.map(([term,def]) => `<article class="term"><strong>${term}</strong><p>${def}</p></article>`).join('')}
+          ${words.map(([term,def]) => `<article class="term" id="term-${termSlug(term)}"><strong>${term}</strong><p>${def}</p></article>`).join('')}
         </div>
       `;
     }

@@ -64,7 +64,9 @@
             const items = [...doc.querySelectorAll('.glossary article.term')].map(node => {
               const term = (node.querySelector('strong')?.textContent || '').trim();
               const def = (node.querySelector('p')?.textContent || '').trim();
-              return { term, def, market, href, title: fold(term), text: fold(term + ' ' + market + ' ' + def) };
+              // Run 80: market glossary terms carry ids (#term-pip), so a result opens on the term itself.
+              const link = node.id && /^term-[a-z0-9-]+$/.test(node.id) ? `${href}#${node.id}` : href;
+              return { term, def, market, href: link, title: fold(term), text: fold(term + ' ' + market + ' ' + def) };
             }).filter(item => item.term);
             return { items, failed: false };
           });

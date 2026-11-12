@@ -175,3 +175,9 @@ html body.newsroom-page .newsroom-footer { display: flex; justify-content: space
 @media (hover:none) and (pointer:coarse) and (max-width:820px){
   html body .resource-wayfinding nav a,html body .newsroom-breadcrumb a,html body .newsroom-footer nav a,html body .terminal-public-masthead nav>a{min-width:44px!important;justify-content:center;box-sizing:border-box}
 }
+
+/* [site-qa] run 80: the "Auto-updating · next 10:00" chip kept the 112px action column 216px wide on phones and pushed news section pages 2px sideways on iPhone SE. Let it wrap inside the column. */
+@media(max-width:600px){
+  .newsroom-toolbar-actions{min-width:0}
+  html body .newsroom-toolbar-actions .fx-auto{white-space:normal;max-width:100%;line-height:1.35;font-size:10px;padding:6px 6px;gap:5px;border-radius:12px}
+}

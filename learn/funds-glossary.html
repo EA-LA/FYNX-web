@@ -120,7 +120,7 @@
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer=""></script>
   <link rel="stylesheet" href="/assets/editorial-pages.css?v=20261109-nav-wrap">
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261112-topbar-1">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261112-site-qa-80">
 <title>Funds — Glossary | FYNX Finance World</title>
 <meta name="description" content="Learn Funds terminology with a practical glossary of market concepts and trading definitions.">
 <meta name="robots" content="index,follow,max-image-preview:large">
@@ -140,7 +140,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
      crossorigin="anonymous"></script>
 <!-- FYNX ADSENSE VERIFICATION END -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261112-topbar-1"><script src="/assets/js/company-products-data.js?v=20261111-story-photos-1" defer></script><script src="/assets/js/company-products.js?v=20261112-topbar-1" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261112-site-qa-80"><script src="/assets/js/company-products-data.js?v=20261111-story-photos-1" defer></script><script src="/assets/js/company-products.js?v=20261112-site-qa-80" defer></script><!-- company-products:assets:end -->
 </head>
 <body class="editorial-page editorial-learning" data-fynx-layout="standalone" data-fynx-section="LEARNING" data-learning-topic="funds" data-learning-section="glossary">
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
@@ -183,7 +183,7 @@
         </div>
 
         <div class="glossary">
-          <article class="term"><strong>NAV</strong><p>Net asset value per share of fund holdings.</p></article><article class="term"><strong>Tracking Error</strong><p>Deviation of fund returns from benchmark returns.</p></article><article class="term"><strong>Expense Ratio</strong><p>Annual management fee as percentage of assets.</p></article><article class="term"><strong>AUM</strong><p>Assets under management.</p></article><article class="term"><strong>Creation/Redemption</strong><p>Mechanism market makers use to align ETF price and NAV.</p></article><article class="term"><strong>Smart Beta</strong><p>Rule-based factor investing approach.</p></article><article class="term"><strong>Rebalance</strong><p>Periodic portfolio reset to target weights.</p></article><article class="term"><strong>Overlap Risk</strong><p>Hidden concentration from similar holdings across funds.</p></article>
+          <article class="term" id="term-nav"><strong>NAV</strong><p>Net asset value per share of fund holdings.</p></article><article class="term" id="term-tracking-error"><strong>Tracking Error</strong><p>Deviation of fund returns from benchmark returns.</p></article><article class="term" id="term-expense-ratio"><strong>Expense Ratio</strong><p>Annual management fee as percentage of assets.</p></article><article class="term" id="term-aum"><strong>AUM</strong><p>Assets under management.</p></article><article class="term" id="term-creation-redemption"><strong>Creation/Redemption</strong><p>Mechanism market makers use to align ETF price and NAV.</p></article><article class="term" id="term-smart-beta"><strong>Smart Beta</strong><p>Rule-based factor investing approach.</p></article><article class="term" id="term-rebalance"><strong>Rebalance</strong><p>Periodic portfolio reset to target weights.</p></article><article class="term" id="term-overlap-risk"><strong>Overlap Risk</strong><p>Hidden concentration from similar holdings across funds.</p></article>
         </div>
       </div>
     </section>
@@ -471,6 +471,9 @@
       `;
     }
 
+    // [site-qa] run 80: stable term anchors (#term-pip) so search results can open on the term itself.
+    function termSlug(term){return String(term).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
+
     function renderGlossary(){
       const words = glossaryBank[topic] || glossaryBank.forex;
       const root = document.getElementById('contentRoot');
@@ -487,7 +490,7 @@
         </div>
 
         <div class="glossary">
-          ${words.map(([term,def]) => `<article class="term"><strong>${term}</strong><p>${def}</p></article>`).join('')}
+          ${words.map(([term,def]) => `<article class="term" id="term-${termSlug(term)}"><strong>${term}</strong><p>${def}</p></article>`).join('')}
         </div>
       `;
     }
