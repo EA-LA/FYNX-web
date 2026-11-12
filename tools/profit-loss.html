@@ -413,9 +413,9 @@
 
         <div class="panel">
           <h2>Stock Result</h2>
-          <div class="results-empty" id="emptyState">Enter values and tap Calculate to see risk amount, share size, capital needed, and trade details.</div>
+          <div class="results-empty" id="emptyState" role="status" aria-live="polite" aria-atomic="true">Enter values and tap Calculate to see risk amount, share size, capital needed, and trade details.</div>
 
-          <div class="result-list" id="resultList" style="display:none;">
+          <div class="result-list" id="resultList" style="display:none;" role="status" aria-live="polite" aria-atomic="true">
             <div class="result-item">
               <div class="result-label">Risk Amount</div>
               <div class="result-value" id="riskAmountValue">$0.00</div>
@@ -496,6 +496,8 @@
       }).format(value);
     }
 
+    let calculationAttempted = false;
+
     function resetResults() {
       emptyState.style.display = "block";
       resultList.style.display = "none";
@@ -508,6 +510,7 @@
     }
 
     function calculateStock() {
+      calculationAttempted = true;
       const accountSize = parseFloat(accountSizeInput.value);
       const riskPercent = parseFloat(riskPercentInput.value);
       const entryPrice = parseFloat(entryPriceInput.value);
@@ -559,6 +562,7 @@
     }
 
     function clearStock() {
+      calculationAttempted = false;
       accountSizeInput.value = "";
       riskPercentInput.value = "";
       entryPriceInput.value = "";
@@ -567,10 +571,19 @@
       resetResults();
     }
 
+    function invalidateResults() {
+      // Never present a previous stock-risk estimate against edited assumptions.
+      if (!calculationAttempted) return;
+      resetResults();
+      emptyState.textContent = "Inputs changed. Select Calculate to refresh your stock risk estimate.";
+    }
+
     calculateBtn.addEventListener("click", calculateStock);
     clearBtn.addEventListener("click", clearStock);
 
     [accountSizeInput, riskPercentInput, entryPriceInput, stopLossInput].forEach(input => {
+      input.addEventListener("input", invalidateResults);
+      input.addEventListener("change", invalidateResults);
       input.addEventListener("keydown", (e) => {
         if (e.key === "Enter") calculateStock();
       });
