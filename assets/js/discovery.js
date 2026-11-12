@@ -51,13 +51,18 @@
     const input=document.getElementById('resource-query'), form=input.closest('form'), cards=[...library.querySelectorAll('.discovery-card')],buttons=[...library.querySelectorAll('[data-filter]')];
     const allowed=new Set(buttons.map(b=>b.dataset.filter));let selected='All';
     const normalize=s=>s.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'');
-    const synonyms={leverage:['margin'],sizing:['position'],lot:['forex','position'],cpi:['inflation','economic'],nfp:['jobs','economic'],etf:['funds'],pnl:['profit'],rr:['reward']};
+    const synonyms={leverage:['margin'],sizing:['position'],lot:['forex','position'],cpi:['inflation','economic'],nfp:['jobs','economic'],etf:['funds'],pnl:['profit'],rr:['reward'],tp:['target'],takeprofit:['target']};
     function restore(){const params=new URLSearchParams(location.search);input.value=params.get('q')||'';selected=allowed.has(params.get('category'))?params.get('category'):'All';}
     // Short tokens (rsi, atr, pip) must start a word, so "rsi" no longer matches "conversion".
     const wordsOf=s=>s.split(/[^a-z0-9]+/).filter(Boolean);
-    const info=cards.map(card=>{const text=normalize(card.dataset.search||''),title=normalize(card.querySelector('h2').textContent);return {text,title,words:wordsOf(text+' '+title)};});
-    const hit=(t,row)=>t.length<=3?row.words.some(w=>w.startsWith(t)):(row.text.includes(t)||row.title.includes(t));
-    const vocab=new Map();info.forEach(row=>new Set(row.words).forEach(w=>{if(w.length>=3&&!/^\d+$/.test(w))vocab.set(w,(vocab.get(w)||0)+1);}));
+    const info=cards.map(card=>{const text=normalize(card.dataset.search||''),title=normalize(card.querySelector('h2').textContent);return {text,title,words:wordsOf(text+' '+title),joined:wordsOf(text).join(' ')+' '+wordsOf(title).join(' ')};});
+    // Joined spellings ("breakeven", "stoploss", "positionsize") also match "break-even", "stop loss", "position size".
+    const joinedHit=(t,row)=>t.length>=6&&/^[a-z0-9]+$/.test(t)&&new RegExp('(^| )'+t.split('').join(' ?')).test(row.joined);
+    const hit=(t,row)=>t.length<=3&&/^[a-z0-9]+$/.test(t)?row.words.some(w=>w.startsWith(t)):(row.text.includes(t)||row.title.includes(t)||joinedHit(t,row));
+    const vocab=new Map(),pairs=new Map();info.forEach(row=>{new Set(row.words).forEach(w=>{if(w.length>=3&&!/^\d+$/.test(w))vocab.set(w,(vocab.get(w)||0)+1);});row.words.forEach((w,k)=>{const n=row.words[k+1];if(n&&w.length>=3&&n.length>=3&&!/\d/.test(w+n))pairs.set(w+n,(pairs.get(w+n)||0)+1);});});
+    // Bigger typos are only corrected to topic words (seen in a resource title) that are not too generic, so "taxes" no longer becomes "takes" and "trailing" no longer becomes "trading".
+    const topics=new Set();info.forEach(row=>{const w=wordsOf(row.title);w.forEach((x,k)=>{topics.add(x);if(w[k+1])topics.add(x+w[k+1]);});});
+    const generic=cards.length*0.2;
     // Optimal string alignment distance: one typo, missing letter or swapped pair counts as 1.
     function distance(a,b,max){
       if(Math.abs(a.length-b.length)>max)return max+1;
@@ -77,13 +82,14 @@
     function correct(t){
       if(t.length<4||synonyms[t]||[...vocab.keys()].some(w=>w.startsWith(t)))return t;
       const max=t.length<=5?1:2;let best=t,bestD=max+1,bestN=0;
-      vocab.forEach((n,w)=>{const d=Math.min(distance(t,w,max),w.length>t.length?distance(t,w.slice(0,t.length),max)+0.5:max+1);if(d<bestD||(d===bestD&&n>bestN)){best=w;bestD=d;bestN=n;}});
-      return bestD<=max?best:t;
+      const consider=(n,w,cap=max)=>{const topic=topics.has(w);if(n>generic||!topic)cap=Math.min(cap,1);if(!topic&&w.length===t.length)return;const d=Math.min(distance(t,w,max),w.length>t.length?distance(t,w.slice(0,t.length),max)+0.5:max+1);const rank=d+(topic&&n<=generic?0:0.25);if(d<=cap&&(rank<bestD||(rank===bestD&&n>bestN))){best=w;bestD=rank;bestN=n;}};
+      vocab.forEach((n,w)=>consider(n,w));if(t.length>=6)pairs.forEach((n,w)=>{if(!vocab.has(w))consider(n,w,1);});
+      return best;
     }
     const matches=(tokens,i)=>tokens.every(t=>[t,...(synonyms[t]||[])].some(word=>hit(word,info[i])));
     const inView=card=>selected==='All'||selected===card.dataset.category||(selected==='Saved'&&saved.has(card.dataset.resourceUrl));
     filterLibrary=()=>{
-      const query=input.value.trim();let tokens=normalize(query).split(/\s+/).filter(Boolean),fixed=null;
+      const query=input.value.trim();let tokens=normalize(query).replace(/\btake[\s-]+profits?\b/g,'takeprofit').split(/\s+/).filter(Boolean),fixed=null;
       const countFor=list=>cards.reduce((n,card,i)=>n+(matches(list,i)&&inView(card)?1:0),0);
       if(tokens.length&&!countFor(tokens)){const alt=tokens.map(correct);if(alt.join(' ')!==tokens.join(' ')&&countFor(alt)){fixed=alt.join(' ');tokens=alt;}}
       let count=0;
@@ -91,7 +97,7 @@
         const visible=matches(tokens,i)&&inView(card);
         card.hidden=!visible;if(visible)count++;
         const row=info[i],titleWords=wordsOf(row.title);
-        return {card,i,score:tokens.reduce((n,t)=>n+(titleWords.some(w=>w.startsWith(t))?10:row.title.includes(t)?6:0),0)+(card.dataset.category==='Tools'&&tokens.length?1:0)};
+        return {card,i,score:tokens.reduce((n,t)=>n+(titleWords.some(w=>w.startsWith(t))?10:row.title.includes(t)||(t.length>=6&&titleWords.join('').includes(t))?6:0),0)+(card.dataset.category==='Tools'&&tokens.length?1:0)};
       });
       const grid=library.querySelector('.discovery-grid');ranked.sort((a,b)=>b.score-a.score||a.i-b.i).forEach(row=>grid.append(row.card));
       const label=`${count} ${count===1?'resource':'resources'}`;

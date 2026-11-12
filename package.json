@@ -5,7 +5,7 @@
     "test:api": "node scripts/test-api-pages.cjs && node scripts/test-openapi.cjs && node --test scripts/test-api-capabilities.cjs",
     "test:proof": "node scripts/proof/calculator-parity.cjs && node scripts/proof/calculator-validation.cjs && node scripts/proof/funded-scenarios.cjs && node scripts/proof/pilot-access.cjs && node scripts/proof/pilot-calculators.cjs && node scripts/proof/pilot-controller.cjs",
     "vercel-build": "npm run build && node scripts/package-static.cjs",
-    "test:discovery": "node scripts/test-homepage-landmark.cjs && node scripts/verify-discovery.cjs && node scripts/verify-search.cjs && node scripts/test-fibonacci.cjs",
+    "test:discovery": "node scripts/test-homepage-landmark.cjs && node scripts/verify-discovery.cjs && node scripts/verify-search.cjs && node scripts/test-discovery-search.cjs && node scripts/test-fibonacci.cjs",
     "test:tools": "node scripts/verify-tool-coverage.cjs && node scripts/test-basic-calculator.cjs && node scripts/test-pro-routing.cjs && node --test scripts/test-scenario-url-guard.cjs scripts/test-scenario-link-privacy.cjs scripts/test-position-scenario-privacy.cjs && node scripts/test-market-hours-controls.cjs && node scripts/test-market-holidays-heatmap.cjs && node scripts/test-news-tabs-keyboard.cjs && node --test scripts/test-landing-workspace-rotation.cjs && node --test scripts/test-holiday-calendar-export.cjs && node scripts/test-quiz-accessibility.cjs && node --test scripts/test-research-focus.cjs && node scripts/test-browser-calendar-alerts.cjs",
     "test:research": "node --test backend/research.test.cjs",
     "dev:research": "node scripts/research-dev-server.cjs",
