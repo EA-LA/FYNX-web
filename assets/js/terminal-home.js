@@ -30,7 +30,8 @@
   function sourceLink(item) {const a = node('a', item.title); a.href = window.FYNXNewsReaderData?.href(item) || '/news/article.html'; return a;}
   function kind(item) {return item.source + ' · ' + (item.kind === 'official-release' ? 'Official release' : 'Market news');}
   function time(item) {const el = node('time', date(item.publishedAt) + (item.stale ? ' · Saved coverage' : ''), 'nr-published'); el.dateTime = item.publishedAt; return el;}
-  function miniStory(item) {const a = node('article'), title = node('h3'); title.append(sourceLink(item)); a.append(node('span', kind(item), 'nr-kind'), title, time(item)); return a;}
+  function thumbFor(item) {try {return window.FYNXNewsroomMedia?.thumb?.(item) || null;} catch (_) {return null;}}
+  function miniStory(item) {const a = node('article'), title = node('h3'), pic = thumbFor(item); if (pic) a.append(pic); title.append(sourceLink(item)); a.append(node('span', kind(item), 'nr-kind'), title, time(item)); return a;}
   function renderBriefing(result) {
     const lead = $('homeLeadStory'), latest = $('homeLatestStories'), secondary = $('homeSecondaryStories');
     lead.replaceChildren(); latest.replaceChildren(); secondary.replaceChildren();
@@ -53,7 +54,7 @@
         const article = node('article',undefined,'nr-latest-story');
         const recent = new Date(item.publishedAt).toDateString() === new Date().toDateString();
         const stamp = node('time', new Date(item.publishedAt).toLocaleString([], recent ? {hour:'2-digit',minute:'2-digit',hourCycle:'h23'} : {month:'short',day:'numeric'})); stamp.dateTime = item.publishedAt; stamp.title = date(item.publishedAt);
-        const detail = node('div'), title = node('h3'); title.append(sourceLink(item)); detail.append(title,node('span',kind(item)+(item.stale?' · Saved':''),'nr-kind')); article.append(stamp,detail); latest.append(article);
+        const detail = node('div'), title = node('h3'); title.append(sourceLink(item)); detail.append(title,node('span',kind(item)+(item.stale?' · Saved':''),'nr-kind')); article.append(stamp,detail); const pic = thumbFor(item); if (pic) {article.classList.add('has-thumb'); article.append(pic);} latest.append(article);
       });
       if (items.length <= 3) latest.append(node('p','You’re up to date with the available coverage.','nr-empty'));
     }

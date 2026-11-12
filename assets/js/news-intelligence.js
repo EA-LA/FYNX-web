@@ -52,6 +52,13 @@
     if (mapped === 'finance' && !['global','uk','europe'].includes(edition)) return 'world';
     return mapped;
   }
+  function addThumbs(list) {
+    if (!window.FYNXNewsroomMedia?.thumb) return;
+    document.querySelectorAll('[data-news-stories] [data-thumb-index]').forEach(article => {
+      const item = list[Number(article.dataset.thumbIndex)], host = article.querySelector('.fn-story-content'); if (!item || !host) return;
+      try { const pic = window.FYNXNewsroomMedia.thumb(item); if (pic) host.prepend(pic); } catch (_) {}
+    });
+  }
   function addLeadImage(item) {
     const container = $('.fn-lead .fn-story-content'); if (!container || !item) return;
     const media = item.image, url = link(media?.url), source = link(media?.sourceURL), license = link(media?.licenseURL);
@@ -86,9 +93,10 @@
     $('[data-news-stories]').innerHTML = noteHTML + (matched.length ? matched.slice(0,limit).map((item,index) => {
       const url = window.FYNXNewsReaderData?.href(item) || '/news/article.html'; if (!link(item.url)) return '';
       const official = isOfficial(item), saved = item.status === 'cached' || item.stale === true;
-      return (index===1?'<div class="fn-following-heading"><span>Latest coverage</span><span>Source · publication date</span></div>':'')+'<article class="fn-story '+(index===0?'fn-lead':'')+'" data-story-kind="'+(official?'official-release':item.kind==='analysis'?'analysis':'headline')+'"><div class="fn-story-content"><div class="fn-story-topline">'+(index===0?'<span class="fn-lead-flag">'+(official?'OFFICIAL RELEASE':'TOP STORY')+'</span>':'')+'<span class="fn-story-source">'+esc(item.source)+'</span><span class="fn-story-category">'+esc(official?'Official release':category==='all'?'Market news':category)+'</span></div><h3><a class="fn-story-link" href="'+esc(url)+'">'+esc(item.title)+' <span aria-hidden="true">→</span></a></h3><div class="fn-story-date"><time datetime="'+esc(item.publishedAt)+'">'+esc(date(item.publishedAt))+'</time>'+(item.via?' · via '+esc(item.via):'')+(saved?'<span class="fn-story-saved">Saved coverage</span>':'')+'</div></div>'+saveButton(item,'headline:')+'</article>';
+      return (index===1?'<div class="fn-following-heading"><span>Latest coverage</span><span>Source · publication date</span></div>':'')+'<article class="fn-story '+(index===0?'fn-lead':'')+'" data-story-kind="'+(official?'official-release':item.kind==='analysis'?'analysis':'headline')+'"'+(index>0&&index<=12?' data-thumb-index="'+index+'"':'')+'><div class="fn-story-content"><div class="fn-story-topline">'+(index===0?'<span class="fn-lead-flag">'+(official?'OFFICIAL RELEASE':'TOP STORY')+'</span>':'')+'<span class="fn-story-source">'+esc(item.source)+'</span><span class="fn-story-category">'+esc(official?'Official release':category==='all'?'Market news':category)+'</span></div><h3><a class="fn-story-link" href="'+esc(url)+'">'+esc(item.title)+' <span aria-hidden="true">→</span></a></h3><div class="fn-story-date"><time datetime="'+esc(item.publishedAt)+'">'+esc(date(item.publishedAt))+'</time>'+(item.via?' · via '+esc(item.via):'')+(saved?'<span class="fn-story-saved">Saved coverage</span>':'')+'</div></div>'+saveButton(item,'headline:')+'</article>';
     }).join('') : empty(query?'No headlines match your search.':headlineState==='loading'?'Checking the latest coverage.':headlineState==='unavailable'?'Headlines are temporarily unavailable.':'Fresh coverage for this desk is on its way.',query?'Try another phrase or choose a different market.':'Sources refresh every few minutes. Meanwhile, the official video, audio and institution libraries below are ready to explore.'));
     window.FYNXNewsReaderData?.prefetch(matched.slice(0,6));
+    addThumbs(matched);
     addLeadImage(matched[0]);
   }
   function status(result, target) {
