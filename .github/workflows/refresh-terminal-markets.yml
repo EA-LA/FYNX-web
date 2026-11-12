@@ -1,5 +1,5 @@
 name: Refresh Terminal desk data
-# Publishes markets.json, options.json and earnings.json for the FYNX Terminal desks
+# Publishes markets.json, options.json, earnings.json, cot.json and policy.json for the FYNX Terminal desks
 # to the separate `terminal-data` branch. The branch always holds a single commit
 # (force-replaced), so it never grows. It never writes to main or any other data branch.
 on:
@@ -9,6 +9,7 @@ on:
   push:
     paths:
       - 'scripts/refresh-terminal-markets.cjs'
+      - 'scripts/refresh-positioning.cjs'
       - '.github/workflows/refresh-terminal-markets.yml'
 permissions:
   contents: write
@@ -30,10 +31,13 @@ jobs:
           set -uo pipefail
           mkdir -p "$RUNNER_TEMP/previous"
           if git fetch --depth=1 origin refs/heads/terminal-data 2>/dev/null; then
-            for f in markets.json options.json earnings.json; do git show "FETCH_HEAD:$f" > "$RUNNER_TEMP/previous/$f" 2>/dev/null || rm -f "$RUNNER_TEMP/previous/$f"; done
+            for f in markets.json options.json earnings.json cot.json policy.json; do git show "FETCH_HEAD:$f" > "$RUNNER_TEMP/previous/$f" 2>/dev/null || rm -f "$RUNNER_TEMP/previous/$f"; done
           fi
       - name: Fetch public sources
         run: node scripts/refresh-terminal-markets.cjs "$RUNNER_TEMP/out" "$RUNNER_TEMP/previous"
+      - name: Fetch positioning and policy rates (CFTC, BIS)
+        continue-on-error: true
+        run: node scripts/refresh-positioning.cjs "$RUNNER_TEMP/out" "$RUNNER_TEMP/previous"
       - name: Publish snapshot
         shell: bash
         run: |
