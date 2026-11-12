@@ -7,7 +7,7 @@ const { join } = require('node:path');
 const { runInNewContext } = require('node:vm');
 
 const page = readFileSync(join(__dirname, '../tools/profit-loss.html'), 'utf8');
-const controller = [...page.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/g)]
+const controller = [...page.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
   .map(match => match[1])
   .find(script => script.includes('function calculateStock()'));
 assert.ok(controller, 'Tests must execute the real Stock Calculator controller');
