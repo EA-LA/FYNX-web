@@ -81,9 +81,14 @@
     const settings = options || {};
     const figure = doc.createElement('figure');
     figure.className = 'newsroom-context-image' + (settings.className ? ' ' + settings.className : '');
-    figure.dataset.contextImage = section;
+    figure.dataset.contextImage = section; figure.dataset.contextSrc = item.url;
     const image = doc.createElement('img');
-    image.src = item.url; image.alt = item.alt;
+    const stories = (Array.isArray(settings.story) ? settings.story : settings.story ? [settings.story] : []).filter(Boolean).slice(0, 4);
+    // With a story, never flash the generic context photo: hold a neutral frame until the story photo
+    // loads, and use the context photo only if the publisher has none.
+    const pending = stories.length > 0 && typeof root.fetch === 'function';
+    if (!pending) image.src = item.url;
+    image.alt = item.alt;
     image.width = item.width; image.height = item.height;
     image.loading = settings.loading === 'eager' ? 'eager' : 'lazy';
     image.decoding = 'async'; image.referrerPolicy = 'no-referrer';
@@ -95,8 +100,18 @@
     [source, license].forEach(link => { link.target = '_blank'; link.rel = 'noopener noreferrer'; });
     caption.append(label, source, doc.createTextNode(' · '), license);
     figure.append(image, caption);
-    const stories = (Array.isArray(settings.story) ? settings.story : settings.story ? [settings.story] : []).filter(Boolean).slice(0, 4);
-    if (stories.length) upgrade(figure, image, caption, stories, settings);
+    if (pending) {
+      figure.classList.add('newsroom-photo-pending'); figure.setAttribute('aria-busy', 'true'); caption.hidden = true;
+      ensureStyle(doc);
+      let settled = false;
+      const settle = ok => {
+        if (settled) return; settled = true; figure.dataset.photoSettled = ok ? 'story' : 'context';
+        figure.classList.remove('newsroom-photo-pending'); figure.removeAttribute('aria-busy'); caption.hidden = false;
+        if (!ok) image.src = item.url;
+      };
+      setTimeout(() => settle(false), 8000);
+      upgrade(figure, image, caption, stories, settings, settle).catch(() => settle(false));
+    }
     return figure;
   }
 
@@ -127,29 +142,44 @@
     const known = fresh(url); if (known) return Promise.resolve(known);
     return new Promise(resolve => { if (!waiting.has(url)) waiting.set(url, []); waiting.get(url).push(resolve); if (!timer && !inflight.has(url)) timer = setTimeout(flush, 40); });
   }
-  async function upgrade(figure, image, caption, stories, settings) {
-    if (typeof root.fetch !== 'function') return;
+  function ensureStyle(doc) {
+    if (doc.getElementById('fynx-story-photo-style')) return;
+    const st = doc.createElement('style'); st.id = 'fynx-story-photo-style';
+    st.textContent = '.newsroom-story-photo img{object-fit:cover!important;background:#0d1210}'
+      + '.newsroom-photo-pending img{display:none}'
+      + '.newsroom-photo-pending{position:relative;min-height:180px;aspect-ratio:16/9;background:linear-gradient(100deg,rgba(127,127,127,.10) 30%,rgba(127,127,127,.22) 50%,rgba(127,127,127,.10) 70%);background-size:300% 100%;animation:fynx-photo-wait 1.4s ease-in-out infinite}'
+      + '.newsroom-photo-pending figcaption{display:none}'
+      + '@keyframes fynx-photo-wait{0%{background-position:100% 0}100%{background-position:0 0}}'
+      + '@media (prefers-reduced-motion:reduce){.newsroom-photo-pending{animation:none}}';
+    doc.head.append(st);
+  }
+  async function upgrade(figure, image, caption, stories, settings, settle = () => {}) {
+    if (typeof root.fetch !== 'function') return settle(false);
     const candidates = stories.map(item => ({item, url: safe(item.url || item.link)})).filter(c => c.url);
     const found = await Promise.all(candidates.map(c => lookup(c.url)));
     const shown = new Set([...(root.document?.querySelectorAll('[data-story-image] img') || [])].map(img => img.src));
     let index = found.findIndex(p => p && p.image && !shown.has(p.image));
     if (index < 0) index = found.findIndex(p => p && p.image);
-    if (index < 0) return;
+    if (index < 0) return settle(false);
     const {item} = candidates[index], p = found[index], doc = root.document;
-    const original = {src: image.src, alt: image.alt, width: image.width, height: image.height, caption: [...caption.childNodes]};
-    if (!doc.getElementById('fynx-story-photo-style')) { const st = doc.createElement('style'); st.id = 'fynx-story-photo-style'; st.textContent = '.newsroom-story-photo img{object-fit:cover!important;background:#0d1210}'; doc.head.append(st); }
+    const original = {src: image.getAttribute('src') || figure.dataset.contextSrc || '', alt: image.alt, width: image.width, height: image.height, caption: [...caption.childNodes]};
+    ensureStyle(doc);
     const probe = new root.Image(); probe.referrerPolicy = 'no-referrer'; probe.decoding = 'async';
     probe.onload = () => {
-      if (!figure.isConnected && !figure.parentNode) return;
-      if (probe.naturalWidth < 200 || probe.naturalHeight < 110) return;
+      // Once the context photo is showing, a late story photo would only cause a visible swap.
+      if (figure.dataset.photoSettled === 'context') return;
+      if (!figure.isConnected && !figure.parentNode) return settle(false);
+      if (probe.naturalWidth < 200 || probe.naturalHeight < 110) return settle(false);
       image.src = p.image; image.alt = p.alt || String(item.title || 'Story photo').slice(0, 300);
       image.width = probe.naturalWidth; image.height = probe.naturalHeight;
       figure.classList.add('newsroom-story-photo'); figure.dataset.storyImage = 'publisher';
       const label = doc.createElement('strong'); label.textContent = 'Story photo · ';
       const site = doc.createElement('a'); site.href = p.url; site.textContent = p.site || new URL(p.url).hostname.replace(/^www\./, ''); site.target = '_blank'; site.rel = 'noopener noreferrer';
       caption.replaceChildren(label, site, doc.createTextNode(settings.captionTitle === false ? '' : ' — ' + String(item.title || '').slice(0, 160)));
+      settle(true);
       image.addEventListener('error', () => { image.src = original.src; image.alt = original.alt; image.width = original.width; image.height = original.height; caption.replaceChildren(...original.caption); figure.classList.remove('newsroom-story-photo'); delete figure.dataset.storyImage; }, {once: true});
     };
+    probe.onerror = () => settle(false);
     probe.src = p.image;
   }
   const api = Object.freeze({ sections, get, createFigure, lookupStoryImage: lookup });

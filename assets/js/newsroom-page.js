@@ -42,13 +42,14 @@
     try { return time.toLocaleString(editionInfo(activeEdition).locale || undefined, settings); }
     catch (_) { return time.toLocaleString(undefined, settings); }
   }
-  function normalized(items) {
+  let windowHours = 24, windowEdition = null, widenNote = '';
+  function normalized(items, hours = windowHours, ed = windowEdition || activeEdition) {
     const seen = new Set();
     return (Array.isArray(items) ? items : []).flatMap(item => {
       if (!item || typeof item !== 'object') return [];
       const url = safeURL(item.url || item.link), title = plain(item.title, 500), source = plain(item.source, 160);
       const published = Date.parse(item.publishedAt || item.pubDate);
-      if (!url || !title || !source || seen.has(url) || !Number.isFinite(published) || published > Date.now() + 300000 || Date.now() - published > 24 * 60 * 60 * 1000 || (item.edition && item.edition !== activeEdition)) return [];
+      if (!url || !title || !source || seen.has(url) || !Number.isFinite(published) || published > Date.now() + 300000 || Date.now() - published > hours * 60 * 60 * 1000 || (item.edition && item.edition !== ed)) return [];
       seen.add(url);
       return [{ ...item, url, title, source, publishedAt: new Date(published).toISOString() }];
     }).sort((a, b) => (a.rank||1000)-(b.rank||1000) || (b.priorityScore||0)-(a.priorityScore||0) || Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 60);
@@ -130,6 +131,7 @@
     const retrieved = date(result.fetchedAt);
     $('[data-newsroom-status]').textContent = [editionInfo(activeEdition).label + ' edition', retrieved ? 'Retrieved ' + retrieved : '', rows.length + (rows.length === 1 ? ' report' : ' reports'), saved || unavailable || partial ? plain(result.message, 400) : 'Past 24 hours · Checks every 5 minutes · Publication times shown.'].filter(Boolean).join(' · ');
     app.dataset.feedState = saved ? 'cached' : unavailable ? 'unavailable' : partial ? 'partial' : 'fresh';
+    if (widenNote) $('[data-newsroom-status]').textContent += ' · ' + widenNote;
   }
   function pruneCoverage() {
     const recent = normalized(rows);
@@ -172,7 +174,16 @@
     // An old edition response must never replace the selection made afterwards.
     if (run !== requestNumber || requestedEdition !== edition()) return;
     lastResult = result;
+    windowHours = 24; windowEdition = null; widenNote = '';
     rows = normalized(result.items);
+    // Never leave the desk empty: widen to the past week, then use the Global edition's desk.
+    if (!rows.length) { const week = normalized(result.items, 168); if (week.length) { rows = week; windowHours = 168; widenNote = 'No reports in the past 24 hours for this edition — showing the latest from the past 7 days.'; } }
+    if (!rows.length && requestedEdition !== 'global') {
+      const g = await window.FYNXMarketIntelligenceData.loadHeadlines(config.category, {edition: 'global'}).catch(() => null);
+      if (run !== requestNumber || requestedEdition !== edition()) return;
+      const gr = g ? normalized(g.items, 72, 'global') : [];
+      if (gr.length) { rows = gr; windowHours = 72; windowEdition = 'global'; widenNote = 'No reports for this edition right now — showing the Global edition desk.'; }
+    }
     if (rows.length) render();
     else {
       $('[data-newsroom-secondary]').hidden = true;

@@ -19,6 +19,8 @@
   const bookmark = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg>';
   const REFRESH_MS = 300000;
   let edition = window.FynxEdition?.get() || 'us';
+  let fallbackNote = '';
+  const TOPIC = {forex:/\b(dollar|euro|yen|sterling|pound|currenc\w*|forex|FX|yuan|franc|peso|rupee|won|lira)\b/i, crypto:/\b(bitcoin|crypto\w*|ether|ethereum|stablecoins?|blockchain|solana|XRP|tokens?|Coinbase|Binance|BTC|ETH)\b/i, stocks:/\b(stocks?|shares|equit\w+|Nasdaq|S&P|Dow|earnings|IPO|Wall Street)\b/i, macro:/\b(inflation|Fed|central banks?|rates?|GDP|jobs|payrolls?|CPI|econom\w+|recession|ECB|BoE|BoJ|yields?|tariffs?)\b/i, commodities:/\b(oil|crude|gold|silver|copper|gas|OPEC|wheat|corn|commodit\w+|metals?)\b/i, world:/./};
   let category = 'all', rows = [], limit = 10, newsRun = 0, releaseRun = 0, headlineState = 'loading', mediaCategory = 'videos', region = 'all', releaseRows = [], releaseState;
   let newsInFlight = false, releasesInFlight = false, newsRequestedAt = 0, releasesRequestedAt = 0;
   let refreshTimer = null, pageActive = true;
@@ -27,11 +29,11 @@
   const isOfficial = item => item.kind === 'official-release' || item.category === 'official';
   const editionLabel = () => window.FynxEdition?.editions?.find(item => item.id === edition)?.label || ({us:'US',uk:'UK',global:'Global','middle-east':'Middle East','latin-america':'Latin America'}[edition] || edition.charAt(0).toUpperCase()+edition.slice(1));
   const editionSources = code => D?.sourcesForEdition ? D.sourcesForEdition(code) : D?.officialSources || [];
-  function currentItems(items, code = edition, selected = category, official = false) {
+  function currentItems(items, code = edition, selected = category, official = false, window = 24) {
     const now = Date.now(), allowed = new Set(editionSources(code).map(source => source.id));
     return (items || []).filter(item => {
       const time = Date.parse(item.publishedAt || item.pubDate), release = official || isOfficial(item);
-      const hours = release && official ? 720 : 24;
+      const hours = release && official ? 720 : window;
       return Number.isFinite(time) && time <= now + 300000 && time >= now - hours*3600000 && (!item.edition || item.edition === code) && (!release || !D?.sourcesForEdition || allowed.has(item.sourceId));
     });
   }
@@ -80,11 +82,12 @@
     $('[data-news-count]').textContent = matched.length + countLabel + (matched.length === 1 ? '' : 's');
     $('[data-news-more]').hidden = matched.length <= limit;
     $('[data-news-more]').textContent = matched.some(isOfficial) ? 'Show more coverage' : 'Show more headlines';
-    $('[data-news-stories]').innerHTML = matched.length ? matched.slice(0,limit).map((item,index) => {
+    const noteHTML = fallbackNote && !query ? '<p class="fn-fallback-note" role="status">'+esc(fallbackNote)+'</p>' : '';
+    $('[data-news-stories]').innerHTML = noteHTML + (matched.length ? matched.slice(0,limit).map((item,index) => {
       const url = window.FYNXNewsReaderData?.href(item) || '/news/article.html'; if (!link(item.url)) return '';
       const official = isOfficial(item), saved = item.status === 'cached' || item.stale === true;
       return (index===1?'<div class="fn-following-heading"><span>Latest coverage</span><span>Source · publication date</span></div>':'')+'<article class="fn-story '+(index===0?'fn-lead':'')+'" data-story-kind="'+(official?'official-release':item.kind==='analysis'?'analysis':'headline')+'"><div class="fn-story-content"><div class="fn-story-topline">'+(index===0?'<span class="fn-lead-flag">'+(official?'OFFICIAL RELEASE':'TOP STORY')+'</span>':'')+'<span class="fn-story-source">'+esc(item.source)+'</span><span class="fn-story-category">'+esc(official?'Official release':category==='all'?'Market news':category)+'</span></div><h3><a class="fn-story-link" href="'+esc(url)+'">'+esc(item.title)+' <span aria-hidden="true">→</span></a></h3><div class="fn-story-date"><time datetime="'+esc(item.publishedAt)+'">'+esc(date(item.publishedAt))+'</time>'+(item.via?' · via '+esc(item.via):'')+(saved?'<span class="fn-story-saved">Saved coverage</span>':'')+'</div></div>'+saveButton(item,'headline:')+'</article>';
-    }).join('') : empty(query?'No headlines match your search.':headlineState==='loading'?'Checking the latest coverage.':headlineState==='unavailable'?'Headlines are temporarily unavailable.':'No recent headlines in this category.',query?'Try another phrase or choose a different market.':'The official video, audio and institution libraries below are ready to explore.');
+    }).join('') : empty(query?'No headlines match your search.':headlineState==='loading'?'Checking the latest coverage.':headlineState==='unavailable'?'Headlines are temporarily unavailable.':'Fresh coverage for this desk is on its way.',query?'Try another phrase or choose a different market.':'Sources refresh every few minutes. Meanwhile, the official video, audio and institution libraries below are ready to explore.'));
     window.FYNXNewsReaderData?.prefetch(matched.slice(0,6));
     addLeadImage(matched[0]);
   }
@@ -107,6 +110,25 @@
     if (run !== newsRun || code !== edition) return;
     if (!sameEdition(result,code)) result = {edition:code,items:[],status:'unavailable',message:'This edition could not be refreshed. Try again.'};
     let items = currentItems(result.items,code,requested).filter(item => requested === 'all' || !isOfficial(item));
+    fallbackNote = '';
+    // A desk is never left empty: widen to the past week, then to matching stories in all markets,
+    // then to the Global edition, and say plainly which one is shown.
+    if (!items.length && requested !== 'all') {
+      const label = editionLabel()+' '+requested;
+      const week = currentItems(result.items,code,requested,false,168).filter(item => !isOfficial(item));
+      if (week.length) { items = week; fallbackNote = 'No '+label+' headlines in the past 24 hours — showing the latest from the past 7 days.'; }
+      else {
+        const match = TOPIC[requested];
+        const all = match ? await D.loadHeadlines('all',{edition:code,timeoutMs:6500}).catch(() => null) : null;
+        const pick = all ? currentItems(all.items,code,'all',false,72).filter(item => !isOfficial(item) && match.test(item.title || '')) : [];
+        if (pick.length) { items = pick; fallbackNote = 'No '+label+' desk headlines right now — showing '+requested+' stories from all '+editionLabel()+' coverage.'; }
+        else if (code !== 'global') {
+          const glob = await D.loadHeadlines(requested,{edition:'global',timeoutMs:6500}).catch(() => null);
+          const g = glob ? currentItems(glob.items,'global',requested,false,72).filter(item => !isOfficial(item)) : [];
+          if (g.length) { items = g; fallbackNote = 'No '+label+' headlines right now — showing the Global edition '+requested+' desk.'; }
+        }
+      }
+    }
     if (run !== newsRun || code !== edition) return;
     rows = items; headlineState = result.status; renderHeadlines(); status(result,$('[data-news-status]'));
     newsInFlight = false; $('[data-news-refresh]').disabled = false; $('[data-news-stories]').setAttribute('aria-busy','false');

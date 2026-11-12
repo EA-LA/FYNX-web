@@ -8,11 +8,11 @@
   const edition = () => window.FynxEdition?.get() || 'global';
   const editionLabel = code => window.FynxEdition?.editions?.find(item => item.id === code)?.label || code;
   function safeURL(value) { try { const url = new URL(value); return url.protocol === 'https:' && !url.username && !url.password && (!url.port || url.port === '443') && url.hostname.includes('.') && !url.hostname.endsWith('.local') && !url.hostname.endsWith('.localhost') && !/^[\d.]+$/.test(url.hostname) && !url.hostname.includes(':') ? url.href : null; } catch { return null; } }
-  function recent(items, code) {
+  function recent(items, code, span = day) {
     const seen = new Set(), titles = new Set(), now = Date.now();
     return (Array.isArray(items) ? items : []).filter(item => {
       const published = Date.parse(item?.publishedAt), url = safeURL(item?.url), title = typeof item?.title === 'string' ? item.title.trim() : '', key = title.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
-      if (!url || !title || !item.source || !Number.isFinite(published) || published > now + 300000 || now - published > day || (item.edition && item.edition !== code) || seen.has(url) || titles.has(key)) return false;
+      if (!url || !title || !item.source || !Number.isFinite(published) || published > now + 300000 || now - published > span || (item.edition && item.edition !== code) || seen.has(url) || titles.has(key)) return false;
       seen.add(url); titles.add(key); return true;
     }).sort((a,b) => (a.rank||1000)-(b.rank||1000) || (b.priorityScore||0)-(a.priorityScore||0) || Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
   }
@@ -89,7 +89,9 @@
       link.href = '/news/'+id+'.html?edition='+encodeURIComponent(activeEdition); title.append(link); head.append(title); section.append(head);
       const contextId = activeEdition !== 'us' && ['politics','economics','energy'].includes(id) ? 'world' : id;
       const list = node('div',undefined,'nr-topic-stories');
-      const rows = recent(result?.items,activeEdition).filter(item => !seen.has(item.url)).slice(0,3);
+      let rows = recent(result?.items,activeEdition).filter(item => !seen.has(item.url)).slice(0,3);
+      // Quiet desk: show its latest stories from the past week rather than an empty box.
+      if (!rows.length && result) rows = recent(result.items,activeEdition,7*day).filter(item => !seen.has(item.url)).slice(0,3);
       const photo = window.FYNXNewsroomMedia?.createFigure(contextId,{story:rows}); if(photo) section.append(photo);
       window.FYNXNewsReaderData?.prefetch(rows.slice(0,1));
       rows.forEach(item => {seen.add(item.url);list.append(miniStory(item));});
