@@ -69,6 +69,7 @@
     return c;
   }
   PG.add('cot', 'COT positioning', async (host, key, alive) => {
+    key = key && String(key).toUpperCase();
     PG.setHead('COT', 'Hedge fund positioning', 'CFTC Commitments of Traders · positions as of Tuesday, published Friday');
     host.append(el('p', 'fx-empty', 'Loading CFTC positioning…'));
     const d = await load('cot'); if (!alive()) return; host.replaceChildren();
@@ -211,7 +212,7 @@
     host.append(el('p', 'pm-lead', `${T.nameOf(sym)} · today ${signed(st.current, 2, '%')} (${Math.round(st.pct)} pct) · σ ${st.sd.toFixed(2)}%/day · ${st.ann.toFixed(1)}%/yr`), distChart(st, {W: 460, H: 150, compact: true}));
   };
   PG.add('vstat', 'Volatility stats', async (host, arg, alive) => {
-    const sym = arg || S.sym?.symbol || S.focus || 'EURUSD=X', range = read('vstat-range', '2y');
+    const sym = (arg && (T.resolve(arg) || arg)) || S.sym?.symbol || S.focus || 'EURUSD=X', range = read('vstat-range', '2y');
     PG.setHead('VSTAT', `Volatility stats · ${T.nameOf(sym)}`, 'Distribution of daily returns, tails and average daily range from real price history');
     host.append(PG.chips([btn('Change market', 'fx-chip fx-chip-link pg-primary', () => T.openFinder({title: 'Volatility stats for…', onPick: m => PG.open('vstat', m.symbol)})), ...['EURUSD=X', 'GBPUSD=X', 'JPY=X', 'GC=F', 'CL=F', '^GSPC', 'BTC-USD'].map(s => btn(T.shortOf(s), 'fx-chip' + (s === sym ? ' on' : ''), () => PG.open('vstat', s)))]));
     host.append(PG.pageTabs([['1y', '1 year'], ['2y', '2 years'], ['5y', '5 years (weekly)']], range, v => { store.set('vstat-range', JSON.stringify(v)); PG.rerender(); }));
@@ -256,7 +257,7 @@
     if (!b) { host.append(el('p', 'fx-empty', 'Order and position books appear here once the OANDA connection is switched on for FYNX.')); return; }
     for (const [sym, x] of Object.entries(b).slice(0, 8)) { const pb = x.positionBook; if (!pb) continue; const L = pb.longTotal, Sh = pb.shortTotal, pct = L / (L + Sh) * 100, r = T.rowButton('pm-c4', () => T.openPage('obook', sym), `${sym} books`); const bar = el('span', 'pm-ix'), f = el('i'); f.style.width = pct.toFixed(0) + '%'; bar.append(f); r.append(el('b', '', sym), el('span', 'fx-num up', pct.toFixed(0) + '% long'), el('span', 'fx-num dn', (100 - pct).toFixed(0) + '% short'), bar); host.append(r); }
   };
-  PG.add('obook', 'Order & position book', async (host, arg, alive) => {
+  const renderBook = async (host, arg, alive) => {
     PG.setHead('BOOK', 'Order book & positioning', 'Aggregated OANDA client orders and open positions near the current price');
     await until(() => S.desk); if (!alive()) return;
     const b = books();
@@ -266,7 +267,8 @@
     const g = PG.grid('pg-g2');
     for (const kind of ['orderBook', 'positionBook']) { const bk = x[kind]; if (!bk) continue; const s = PG.section(`${kind === 'orderBook' ? 'Orderbook' : 'Position book'} · ${sym} · price ${fmt(bk.price, dg)}`); s.append(PG.cards([['LONG %', bk.longTotal.toFixed(1) + '%', 'up'], ['SHORT %', bk.shortTotal.toFixed(1) + '%', 'dn'], ['SNAPSHOT', new Date(bk.time).toUTCString().slice(5, 22)]]), bookChart(bk, kind, dg)); g.append(s); }
     host.append(g, PG.sourceNote(`${S.desk.books.source}. Percentages are shares of OANDA clients' orders or positions in each price bucket; they show crowding, not institutional flow.`), PG.chips([btn('Chart ' + sym + ' ▸', 'fx-chip fx-chip-link', () => T.setSymbol({symbol: BOOK_SYMS[sym] || sym}))]));
-  });
+  };
+  PG.add('obook', 'Order & position book', renderBook);
 
   /* ========== MOOD: cross-asset risk sentiment =============================================== */
   // Each input is the day's move divided by its own typical daily move (20-day σ), signed so + = risk-on.
@@ -301,5 +303,8 @@
   });
 
   T.EXTRA_GROUPS.push(['Institutional tools', ['cot', 'wirp', 'vstat', 'obook', 'mood']]);
+  // Command line: COT EUR · WIRP · VSTAT GBPUSD · BOOK EURUSD · MOOD
+  T.PAGE_NAMES.push('COT', 'WIRP', 'VSTAT', 'BOOK', 'MOOD');
+  PG.add('book', 'Order & position book', (host, arg, alive) => renderBook(host, arg && String(arg).toUpperCase(), alive));
   // Nothing on the existing desks is replaced: these tools are added through Edit → + Add panel, and open as full pages.
 });
