@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-12 (run 77) — [site-qa] Trading Glossary search also finds terms from the market glossaries
+- New: searching the Trading Glossary now also looks through the nine market glossaries (Stocks, Funds, Futures, Options, Forex, Crypto, Indices, Bonds, Economy). A search like "yield" or "theta", which found nothing before, now lists the matching terms with their short definition and a link to that market's glossary, best matches first. https://www.fynxfinanceworld.com/trading-glossary.html?q=yield
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): all 236 main pages with no sideways scrolling, small text fields, script errors or broken internal links; result counts match an independent count of the glossary pages; `npm test`, tool, discovery, macro, edge and API checks and the build pass.
+
 ## 2026-11-12 (run 76) — [site-qa] Search and topic filter on the Trading Glossary
 - New: the Trading Glossary now has a "Find a term" box and a Topic picker. Type a word such as "drawdown" or "stop loss" and only matching terms show, with a count; pick a topic such as Risk (10 terms) or Technical (9) to see just those. Letters with no matching terms are hidden, "Clear search" (or Esc) brings everything back, and the search stays in the page address so Back, refresh and shared links reopen the same view. https://www.fynxfinanceworld.com/trading-glossary.html https://www.fynxfinanceworld.com/trading-glossary.html?topic=Risk
 - Fixed: the glossary's "Risk Terms" and "Technical Terms" buttons only jumped to the letters R and T, which mostly hold other terms. They now show the actual Risk and Technical terms.

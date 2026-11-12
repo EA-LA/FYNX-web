@@ -1,7 +1,9 @@
 /* Trading Glossary finder (site-qa 2026-11-12 run 76): search the term cards by word and filter by
    their topic badge. Works on the static page; the finder stays hidden if this script does not run.
    State is kept in ?q= and ?topic= (search words only, never account data) so Back, refresh and
-   shared links reopen the same view. */
+   shared links reopen the same view.
+   Run 77: a search also looks through the nine market glossaries (learn/*-glossary.html, fetched
+   once on the first search) and lists matching terms with their definition and a link. */
 (function () {
   const finder = document.getElementById('glossary-search');
   if (!finder) return;
@@ -35,6 +37,59 @@
   const topicFrom = value => topicNames.find(n => n.toLowerCase() === String(value || '').trim().toLowerCase()) || '';
   const plural = n => `${n} term${n === 1 ? '' : 's'}`;
 
+  const more = finder.querySelector('[data-glossary-more]');
+  const moreList = more && more.querySelector('ul');
+  const moreNote = more && more.querySelector('[data-glossary-more-note]');
+  const MARKETS = [['stocks', 'Stocks'], ['funds', 'Funds'], ['futures', 'Futures'], ['options', 'Options'], ['forex', 'Forex'], ['crypto', 'Crypto'], ['indices', 'Indices'], ['bonds', 'Bonds'], ['economy', 'Economy']];
+  const MORE_LIMIT = 8;
+  let extra = null;
+  let extraLoading = null;
+  function loadExtra() {
+    if (extra || extraLoading || !more || typeof fetch !== 'function') return extraLoading;
+    extraLoading = Promise.all(MARKETS.map(([slug, market]) => {
+      const href = `/learn/${slug}-glossary.html`;
+      return fetch(href, { credentials: 'same-origin' })
+        .then(res => (res.ok ? res.text() : ''))
+        .then(html => {
+          if (!html) return [];
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          return [...doc.querySelectorAll('.glossary article.term')].map(node => {
+            const term = (node.querySelector('strong')?.textContent || '').trim();
+            const def = (node.querySelector('p')?.textContent || '').trim();
+            return { term, def, market, href, title: fold(term), text: fold(term + ' ' + market + ' ' + def) };
+          }).filter(item => item.term);
+        })
+        .catch(() => []);
+    })).then(lists => { extra = lists.flat(); extraLoading = null; apply(false); });
+    return extraLoading;
+  }
+  function renderExtra(words, topic) {
+    if (!more) return 0;
+    if (!words.length || topic || !extra) { more.hidden = true; return 0; }
+    // Whole-term matches first, then matches in the definition.
+    const hits = extra.filter(item => words.every(w => item.text.includes(w)))
+      .sort((a, b) => Number(!words.every(w => a.title.includes(w))) - Number(!words.every(w => b.title.includes(w))));
+    moreList.textContent = '';
+    for (const item of hits.slice(0, MORE_LIMIT)) {
+      const li = document.createElement('li');
+      const head = document.createElement('div');
+      const link = document.createElement('a');
+      link.href = item.href;
+      link.textContent = item.term;
+      const tag = document.createElement('span');
+      tag.textContent = `${item.market} glossary`;
+      head.append(link, tag);
+      const def = document.createElement('p');
+      def.textContent = item.def;
+      li.append(head, def);
+      moreList.append(li);
+    }
+    moreNote.textContent = hits.length > MORE_LIMIT ? `Showing ${MORE_LIMIT} of ${hits.length}. Add another word to narrow the list.` : '';
+    moreNote.hidden = !moreNote.textContent;
+    more.hidden = !hits.length;
+    return hits.length;
+  }
+
   function apply(save) {
     const words = fold(input.value).split(' ').filter(Boolean);
     const topic = select.value.toLowerCase();
@@ -54,11 +109,15 @@
     }
     const topicLabel = select.value ? ` in ${select.value}` : '';
     const query = input.value.trim();
+    if (words.length && !topic) loadExtra();
+    const extraCount = renderExtra(words, topic);
+    const extraLabel = extraCount ? ` Also ${plural(extraCount)} in the market glossaries below.` : '';
     if (!filtering) status.textContent = `${plural(total)} from A to Z.`;
-    else if (shown) status.textContent = `Showing ${plural(shown)}${query ? ` for “${query}”` : ''}${topicLabel}.`;
+    else if (shown) status.textContent = `Showing ${plural(shown)}${query ? ` for “${query}”` : ''}${topicLabel}.${extraLabel}`;
+    else if (extraCount) status.textContent = `No terms on this page match “${query}”. Found ${plural(extraCount)} in the market glossaries below.`;
     else status.textContent = `No terms match${query ? ` “${query}”` : ''}${topicLabel}. Try a shorter word${select.value ? ' or All topics' : ''}.`;
     clear.hidden = !filtering;
-    finder.classList.toggle('is-empty', filtering && !shown);
+    finder.classList.toggle('is-empty', filtering && !shown && !extraCount);
     if (save) {
       try {
         const url = new URL(location.href);
