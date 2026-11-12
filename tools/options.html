@@ -461,7 +461,7 @@
           <h2>RESULT</h2>
           <div class="muted">Enter values and tap Calculate</div>
 
-          <div id="resultArea" class="result-placeholder">
+          <div id="resultArea" class="result-placeholder" role="status" aria-live="polite" aria-atomic="true">
             Your option payoff result will appear here.
           </div>
         </div>
@@ -500,6 +500,18 @@
     const calculateBtn = document.getElementById("calculateBtn");
     const clearBtn = document.getElementById("clearBtn");
     const resultArea = document.getElementById("resultArea");
+
+    // A payoff is valid only for the inputs used to calculate it.
+    function showPendingResult(message) {
+      resultArea.className = "result-placeholder";
+      resultArea.textContent = message;
+    }
+
+    function invalidateEditedResult() {
+      if (resultArea.className !== "result-placeholder") {
+        showPendingResult("Inputs changed. Select Calculate to update this option payoff.");
+      }
+    }
 
     function fmt(num) {
       return Number(num).toLocaleString("en-US", {
@@ -605,12 +617,17 @@
       premium.value = "";
       stockPrice.value = "";
       contracts.value = "";
-      resultArea.className = "result-placeholder";
-      resultArea.textContent = "Your option payoff result will appear here.";
+      showPendingResult("Your option payoff result will appear here.");
     }
 
     calculateBtn.addEventListener("click", calculateOptionPL);
     clearBtn.addEventListener("click", clearForm);
+
+    // Keep all six assumptions, including both selectors, in sync with the result.
+    [optionType, positionType, strikePrice, premium, stockPrice, contracts].forEach(input => {
+      input.addEventListener("input", invalidateEditedResult);
+      input.addEventListener("change", invalidateEditedResult);
+    });
 
     [strikePrice, premium, stockPrice, contracts].forEach(input => {
       input.addEventListener("keydown", (e) => {
