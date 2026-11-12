@@ -1,0 +1,43 @@
+/* FYNX sign in / sign up — site design (light, FYNX green), brand bar, clean card. */
+html:has(body.fx-auth),html body.fx-auth[data-fynx-layout]{height:auto!important;overflow:auto!important}
+html body.fx-auth[data-fynx-layout]{margin:0;min-height:100vh;background:#eef2f0!important;color:#0f1512!important;font-family:Inter,-apple-system,BlinkMacSystemFont,Arial,sans-serif}
+html body.fx-auth[data-fynx-layout] .bg{display:none!important}html body .fx-auth-bar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px clamp(16px,4vw,40px);background:#0b0f0d!important;color:#fff!important;border-bottom:1px solid #1d2622!important}html body .fx-auth-logo{display:grid;text-decoration:none;color:#fff!important;line-height:1}html body .fx-auth-logo strong{font:800 24px/1 Manrope,Inter,Arial,sans-serif;letter-spacing:-.03em}html body .fx-auth-logo span{margin-top:4px;font:600 8.5px/1 Inter,Arial,sans-serif;letter-spacing:.32em;opacity:.7}html body .fx-auth-bar nav{display:flex;gap:4px;flex-wrap:wrap}html body .fx-auth-bar nav a{padding:8px 10px;border-radius:8px;color:#d7dfdb!important;text-decoration:none;font-size:13px;font-weight:600}html body .fx-auth-bar nav a:hover{background:rgba(255,255,255,.08);color:#fff}html body .fx-auth-bar nav a.fx-auth-term{color:#f5b301!important}
+html body.fx-auth[data-fynx-layout] .wrap{min-height:calc(100vh - 62px)!important;display:grid!important;place-items:center!important;padding:clamp(16px,4vw,48px) 16px!important;background:none!important}
+html body.fx-auth[data-fynx-layout] .shell{width:min(1100px,100%)!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:0!important;background:#fff!important;border:1px solid #dfe4e1!important;border-radius:20px!important;overflow:hidden!important;box-shadow:0 24px 60px rgba(8,14,11,.10)!important;padding:0!important}
+html body.fx-auth[data-fynx-layout] .panel{border:0!important;border-radius:0!important;box-shadow:none!important;margin:0!important}
+html body.fx-auth[data-fynx-layout] .panel.left{padding:clamp(24px,4vw,48px)!important;background:#fff!important;display:flex!important;flex-direction:column!important;gap:16px!important}
+html body.fx-auth[data-fynx-layout] .topbar{display:none!important}
+html body.fx-auth[data-fynx-layout] .brand{display:none!important}
+html body.fx-auth[data-fynx-layout] .panel.left h1{margin:0!important;font:800 clamp(28px,3.4vw,38px)/1.08 Manrope,Inter,Arial,sans-serif!important;letter-spacing:-.03em!important;color:#0f1512!important}
+html body.fx-auth[data-fynx-layout] .panel.left .sub{margin:8px 0 0!important;font-size:15px!important;line-height:1.5!important;color:#5f6b64!important}
+html body.fx-auth[data-fynx-layout] .actions{display:grid!important;gap:10px!important;margin:4px 0 0!important}
+html body.fx-auth[data-fynx-layout] .panel .btn{min-height:48px!important;height:auto!important;border-radius:12px!important;border:1px solid #d5dcd8!important;background:#fff!important;color:#0f1512!important;font:700 14.5px Inter,Arial,sans-serif!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:10px!important;text-decoration:none!important;cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s!important;box-shadow:none!important}
+html body.fx-auth[data-fynx-layout] .panel .btn:hover{border-color:#1f5a3f!important;background:#f5f9f7!important}
+html body.fx-auth[data-fynx-layout] .btn svg{width:20px;height:20px;flex:0 0 auto}
+html body.fx-auth[data-fynx-layout] .panel .btn.primary{background:#1f5a3f!important;border-color:#1f5a3f!important;color:#fff!important;margin-top:4px!important}
+html body.fx-auth[data-fynx-layout] .panel .btn.primary:hover{background:#17432f!important}
+html body.fx-auth[data-fynx-layout] .btn:focus-visible,html body.fx-auth[data-fynx-layout] input:focus-visible{outline:2px solid #1f5a3f!important;outline-offset:2px}
+html body.fx-auth[data-fynx-layout] .btn:disabled{opacity:.6;cursor:progress}html body .fx-auth-or{display:flex;align-items:center;gap:12px;color:#7a857f;font-size:12px;font-weight:600;margin:4px 0}html body .fx-auth-or::before,html body .fx-auth-or::after{content:"";flex:1;height:1px;background:#e3e8e5}
+html body.fx-auth[data-fynx-layout] .form{display:grid!important;gap:14px!important;margin:0!important}
+html body.fx-auth[data-fynx-layout] .field{display:grid!important;gap:7px!important}
+html body.fx-auth[data-fynx-layout] .field label{font-size:13px!important;font-weight:700!important;color:#38423d!important}
+html body.fx-auth[data-fynx-layout] input{min-height:50px!important;height:auto!important;border:1px solid #d5dcd8!important;border-radius:12px!important;background:#fff!important;color:#0f1512!important;padding:0 14px!important;font:500 15px Inter,Arial,sans-serif!important;box-shadow:none!important}
+html body.fx-auth[data-fynx-layout] input:focus{border-color:#1f5a3f!important;box-shadow:0 0 0 3px rgba(31,90,63,.14)!important;outline:none}
+html body.fx-auth[data-fynx-layout] .row{display:flex!important;justify-content:space-between!important;gap:10px!important;flex-wrap:wrap!important}
+html body.fx-auth[data-fynx-layout] .mini{font-size:13px!important;color:#1f5a3f!important;font-weight:600!important;text-decoration:none!important}
+html body.fx-auth[data-fynx-layout] .mini:hover{text-decoration:underline!important}
+html body.fx-auth[data-fynx-layout] .foot{font-size:12px!important;color:#6f7a73!important;line-height:1.5!important;margin:4px 0 0!important}
+html body.fx-auth[data-fynx-layout] .foot a{color:#38423d!important}
+html body.fx-auth[data-fynx-layout] [role=status]:not(:empty),html body.fx-auth[data-fynx-layout] .error,html body.fx-auth[data-fynx-layout] .notice{border-radius:12px!important}
+/* Art + benefits panel */
+html body.fx-auth[data-fynx-layout] .panel.right{position:relative!important;min-height:100%!important;padding:0!important;background:#0b0f0d!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;justify-content:flex-end!important}
+html body.fx-auth[data-fynx-layout] .rightInner{position:absolute!important;inset:0!important;border-radius:0!important}
+html body.fx-auth[data-fynx-layout] .heroVideo{width:100%!important;height:100%!important;object-fit:cover!important;opacity:.55;border-radius:0!important}
+html body.fx-auth[data-fynx-layout] .fynxLogo{position:absolute!important;top:32px!important;left:32px!important;right:32px!important;bottom:auto!important;text-align:left!important}
+html body.fx-auth[data-fynx-layout] .fynxLogo .big{font:800 28px/1 Manrope,Inter,sans-serif!important;letter-spacing:.42em!important}
+html body.fx-auth[data-fynx-layout] .fynxLogo .tag{font-size:11px!important;letter-spacing:.18em!important;opacity:.75;margin-top:10px!important}html body .fx-auth-benefits{position:relative;z-index:2;margin:auto 0 0;padding:32px;color:#fff;background:linear-gradient(180deg,rgba(11,15,13,0) 0%,rgba(11,15,13,.86) 22%,rgba(11,15,13,.97) 100%)}html body .fx-auth-k{margin:0;font:700 11px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.16em;color:#7fd3a6}html body .fx-auth-benefits h2{margin:10px 0 16px;font:800 26px/1.15 Manrope,Inter,Arial,sans-serif;letter-spacing:-.02em;color:#fff!important}html body .fx-auth-benefits ul{list-style:none;margin:0;padding:0;display:grid;gap:12px}html body .fx-auth-benefits li{display:grid;gap:2px;padding-left:22px;position:relative}html body .fx-auth-benefits li::before{content:"";position:absolute;left:0;top:5px;width:10px;height:10px;border-radius:3px;background:#2fd47a}html body .fx-auth-benefits li strong{font-size:14px;color:#fff!important}html body .fx-auth-benefits li span{font-size:13px;color:#b9c5bf}html body .fx-auth-safe{margin:18px 0 0;font-size:12px;color:#9aa8a1}
+@media (max-width:860px){
+  html body.fx-auth[data-fynx-layout] .shell{grid-template-columns:1fr!important}
+  html body.fx-auth[data-fynx-layout] .panel.right{min-height:auto!important}
+  html body.fx-auth[data-fynx-layout] .rightInner,html body.fx-auth[data-fynx-layout] .fynxLogo{display:none!important}html body .fx-auth-benefits{background:#0b0f0d;padding:24px}html body .fx-auth-bar nav a:not(.fx-auth-term){display:none}
+}

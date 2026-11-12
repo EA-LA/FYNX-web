@@ -135,7 +135,7 @@ test('keyboard tabs keep one selected tab and one visible panel, including Home/
  }finally{f.dom.window.close();}
 });
 test('portfolio charts render only on visible tabs and receive separate layouts despite Plotly mutation',async()=>{
- const f=fixture();try{await settle();const p={name:'P',method:'equal-weight',sleeves:[{name:'A',returns:sampleReturns}]};await upload(f,'importWorkspace',JSON.stringify(workspace([],[p])));const d=f.w.document;d.getElementById('savedPortfolio').selectedIndex=1;await d.getElementById('loadPortfolio').onclick();
+ const f=fixture();try{await settle();const p={name:'P',method:'equal-weight',sleeves:[{name:'A',returns:sampleReturns},{name:'B',returns:sampleReturns.map(r=>({...r,return:-r.return}))}]};await upload(f,'importWorkspace',JSON.stringify(workspace([],[p])));const d=f.w.document;d.getElementById('savedPortfolio').selectedIndex=1;await d.getElementById('loadPortfolio').onclick();
  const plots=f.plots.filter(x=>['portEq','corr'].includes(x.id));assert.equal(plots.length,2);assert(plots.every(p=>p.visible));assert.notEqual(plots[0].layout,plots[1].layout);assert.notEqual(plots[0].layout.xaxis,plots[1].layout.xaxis);assert.equal(plots[1].layout.yaxis._mutatedForTest,undefined);
  assert.equal(d.getElementById('p-port').hidden,false);
  }finally{f.dom.window.close();}

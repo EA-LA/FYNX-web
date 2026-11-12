@@ -15,6 +15,22 @@
     {
       "src": "fn/preview.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "fn/research.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "backend/research-data.cjs",
+          "backend/research-core.cjs"
+        ]
+      }
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "**": false,
+      "main": true
+    }
+  }
 }

@@ -13,24 +13,6 @@
     })();
   </script>
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;background:#000;color:#fff;overflow:hidden;height:100vh}
-    body.light-mode{background:#fff;color:#000}
-    .dashboard-container{display:flex;height:100vh;width:100vw}
-    .nav-panel{width:120px;background:#000;border-right:1px solid rgba(255, 255, 255, .08);display:flex;flex-direction:column;position:fixed;left:0;top:0;height:100vh;z-index:100}
-    body.light-mode .nav-panel{background:#fafafa;border-right:1px solid #e5e5e5}
-    .main-content{margin-left:120px;flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
-    .top-bar{height:64px;border-bottom:1px solid rgba(255, 255, 255, .08);display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:#000}
-    body.light-mode .top-bar{border-bottom:1px solid #e5e5e5;background:#fff}
-    .page-title{font-size:15px;font-weight:600;color:rgba(255, 255, 255, .68)}
-    body.light-mode .page-title{color:#666}
-    .top-bar-right{display:flex;align-items:center;gap:12px}
-    .icon-btn{width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);display:grid;place-items:center;cursor:pointer}
-    .icon-btn svg{width:18px;height:18px;stroke:#fff;stroke-width:1.5;fill:none}
-    body.light-mode .icon-btn{border-color:#e5e5e5;background:#fff}
-    body.light-mode .icon-btn svg{stroke:#000}
-    .content-area{flex:1;overflow-y:auto;padding:36px;background:#000;display:grid;gap:14px}
-    body.light-mode .content-area{background:#fff}
     .section-header h2{font-size:28px;font-weight:700;letter-spacing:-.5px;color:#fff}
     body.light-mode .section-header h2{color:#000}
     .section-header p{font-size:13px;color:rgba(255,255,255,.7);margin-top:5px}
@@ -61,13 +43,13 @@
     body.light-mode .status{color:#555}
     .avatar{width:56px;height:56px;border-radius:999px;object-fit:cover;border:1px solid rgba(255,255,255,.2);background:#111}
     body.light-mode .avatar{border-color:#ddd;background:#fff}
-    @media(max-width:900px){.grid{grid-template-columns:1fr}.content-area{padding:20px}}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
   </style>
   <link rel="stylesheet" href="assets/css/mobile-fixes.css">
   <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261112-site-qa-80">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261112-profile-2">
 
 <title>FYNX - Account Settings</title>
 <meta name="description" content="FYNX - Account Settings. Identity, support, legal, and trading profile controls.">
@@ -76,9 +58,29 @@
 <meta property="og:title" content="FYNX - Account Settings">
 <meta property="og:description" content="FYNX - Account Settings. Identity, support, legal, and trading profile controls.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/account-settings.html">
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261112-site-qa-80"><script src="/assets/js/company-products-data.js?v=20261111-story-photos-1" defer></script><script src="/assets/js/company-products.js?v=20261112-site-qa-80" defer></script><!-- company-products:assets:end -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/app-shell.css" />
+<link rel="stylesheet" href="/assets/css/settings.css?v=20261112-settings-2" />
+<!-- terminal-design:start -->
+<link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
+<link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
+<script src="/assets/js/news-reader-links.js?v=20261112-profile-2" defer></script>
+<script src="/assets/js/newsroom-editions.js?v=20261112-profile-2" defer></script>
+<script src="/assets/js/news-preferences.js?v=20261112-profile-2" defer></script>
+<script src="/assets/js/newsroom-media.js?v=20261112-profile-2" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261112-profile-2">
+<script src="/assets/js/market-intelligence-data.js?v=20261112-profile-2" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261112-profile-2" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261112-profile-2" defer></script>
+<script src="/assets/js/terminal-market-ui.js?v=20261112-profile-2" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261030-r1">
+<script src="/assets/js/terminal-pages.js?v=20261030-r1" defer></script>
+<!-- terminal-design:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261112-profile-2"><script src="/assets/js/company-products-data.js?v=20261112-research-fix-2" defer></script><script src="/assets/js/company-products.js?v=20261112-profile-2" defer></script><!-- company-products:assets:end -->
 </head>
-<body data-protected-page="true" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD">
+<body data-protected-page="true" data-fynx-settings="account-settings" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD" data-fynx-terminal>
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
 <div class="dashboard-container">
     <nav class="nav-panel"></nav>
@@ -130,19 +132,11 @@
     </main>
   </div>
 
-  <script type="module" src="assets/js/session-bootstrap.js?v=20261112-site-qa-80"></script>
-<script>
-  (function(){
-    const nav=document.querySelector('.nav-panel');
-    if(!nav) return;
-    const items=[['home','home.html','<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>'],['journal','journal.html','<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>'],['calculator','calculator.html','<rect x="4" y="2" width="16" height="20" rx="2"></rect>'],['news','news.html','<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>'],['calendar','calendar.html','<rect x="3" y="4" width="18" height="18" rx="2"></rect>'],['profile','profile.html','<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>']];
-    nav.innerHTML=`<div style="padding:32px 0;text-align:center;border-bottom:1px solid #e5e5e5;font-weight:800">FYNX</div><div style="padding:24px 0;display:flex;flex-direction:column;align-items:center;gap:8px">${items.map(([k,href,svg])=>`<a href="${href}" style="width:80px;padding:14px 0;display:flex;flex-direction:column;align-items:center;gap:7px;text-decoration:none;color:#666;border-radius:8px"><svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5">${svg}</svg><span style="font-size:11px;font-weight:600">${k[0].toUpperCase()+k.slice(1)}</span></a>`).join('')}</div>`;
-  })();
-</script>
-    <script type="module">
-    import { auth, bootstrapAccount, saveUserProfile, uploadProfilePhoto, updateAuthProfile } from './assets/js/account-system.js?v=20260928-audit2';
+  <script type="module" src="assets/js/session-bootstrap.js?v=20261112-profile-2"></script>
+<script type="module">
+    import { auth, bootstrapAccount, saveUserProfile, uploadProfilePhoto, updateAuthProfile } from './assets/js/account-system.js?v=20261112-settings-1';
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
-    import { mountNotificationBell } from './assets/js/account-ui.js?v=20260928-audit2';
+    import { mountNotificationBell } from './assets/js/account-ui.js?v=20261112-bell-1';
     const markets = ['forex','crypto','stocks','indices','commodities','futures'];
     const marketPills = document.getElementById('marketPills');
     const selectedMarkets = new Set();
@@ -159,7 +153,7 @@
       document.body.classList.toggle('light-mode', t==='light');
       document.documentElement.dataset.theme = t;
     }
-    document.getElementById('themeBtn').addEventListener('click',()=>{
+    document.getElementById('themeBtn')?.addEventListener('click',()=>{
       const light = document.body.classList.contains('light-mode');
       window.FynxPreferences?.setItem('fynx_theme',light?'dark':'light');
       applyTheme();
@@ -227,5 +221,7 @@
     mountNotificationBell();
   </script>
 
+<script src="fynx-nav.js?v=20261112-profile-2"></script>
+<script src="/assets/js/settings-shell.js?v=20261112-settings-1" defer></script>
 </body>
 </html>
