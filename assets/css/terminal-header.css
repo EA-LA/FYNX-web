@@ -625,3 +625,14 @@ html body[data-fynx-terminal]:not(#fx-boost) .terminal-edition-face { display:no
   /* site-qa run 72: the edition picker looks 30px tall, but its invisible select now covers the full 44px utility strip. */
   html body[data-fynx-terminal]:not(#fx-boost) .terminal-utility .terminal-edition select { inset:-7px 0 !important; height:auto !important; margin:0 !important; }
 }
+
+/* FYNX Terminal in the utility row: same type as API / Pro tools, highlighted (amber + live dot). */
+html body[data-fynx-terminal] .terminal-utility-actions > a.terminal-utility-terminal { gap:6px; color:#f5b301 !important; font-weight:700 !important; }
+html body[data-fynx-terminal] .terminal-utility-actions > a.terminal-utility-terminal:hover { color:#ffd25e !important; }
+html body[data-fynx-terminal] .terminal-utility-actions > a.terminal-utility-terminal[aria-current=page] { text-decoration:underline; text-underline-offset:3px; }
+.terminal-utility-terminal-icon { display:inline-flex; }
+.terminal-utility-terminal-dot { width:6px; height:6px; border-radius:50%; background:#2fd47a; box-shadow:0 0 0 0 rgba(47,212,122,.6); animation:terminal-utility-pulse 2s infinite; }
+@keyframes terminal-utility-pulse { 0%{box-shadow:0 0 0 0 rgba(47,212,122,.55)} 70%{box-shadow:0 0 0 6px rgba(47,212,122,0)} 100%{box-shadow:0 0 0 0 rgba(47,212,122,0)} }
+@media (prefers-reduced-motion:reduce){ .terminal-utility-terminal-dot { animation:none; } }
+/* Utility links hide on phones; the Terminal entry stays. */
+@media (max-width:600px){ html body[data-fynx-terminal] .terminal-utility-actions > a.terminal-utility-terminal { display:inline-flex !important; font-size:10px !important; } }

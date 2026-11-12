@@ -60,14 +60,14 @@
     return action;
   }
 
-  /* Bloomberg-style key: black, green live dot, amber <GO> tab. Opens the FYNX Terminal. */
-  function terminalKey() {
-    const action = link('', '/terminal.html', 'terminal-all-together terminal-go-key');
+  /* Utility-row entry (Bloomberg "Anywhere" style): same type as API / Pro tools, highlighted amber. */
+  function terminalUtility() {
+    const action = link('', '/terminal.html', 'terminal-utility-terminal');
     action.setAttribute('aria-label', 'FYNX Terminal: every market, headline and tool on one live screen');
-    const dot = element('span', 'terminal-go-dot'), name = element('span', 'terminal-go-name'), go = element('span', 'terminal-go-tab', '<GO>');
-    name.append(element('span', 'terminal-go-brand', 'FYNX '), document.createTextNode('TERMINAL'));
-    [dot, go].forEach(node => node.setAttribute('aria-hidden', 'true'));
-    action.append(dot, name, go);
+    const icon = element('span', 'terminal-utility-terminal-icon'); icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML = '<svg width="13" height="11" viewBox="0 0 13 11" fill="none" stroke="currentColor" stroke-width="1.4"><rect x=".7" y=".7" width="11.6" height="7.2" rx="1"/><path d="M4.5 10.3h4M6.5 7.9v2.4"/></svg>';
+    const dot = element('span', 'terminal-utility-terminal-dot'); dot.setAttribute('aria-hidden', 'true');
+    action.append(icon, document.createTextNode('FYNX Terminal'), dot);
     if (location.pathname === '/terminal.html') action.setAttribute('aria-current', 'page');
     return action;
   }
@@ -111,7 +111,7 @@
     const sessions = element('div', 'terminal-header-sessions');
     sessions.dataset.terminalSessions = '';
     const actions = element('div', 'terminal-utility-actions');
-    actions.append(link('API', '/api/'), link('Pro tools & plans', '/pro.html'));
+    actions.append(terminalUtility(), link('API', '/api/'), link('Pro tools & plans', '/pro.html'));
     if (window.FynxEdition) {
       const label = element('label','terminal-edition');
       const select = element('select'); select.dataset.editionSelect = '';
@@ -174,7 +174,7 @@
     const utility = utilityBar(topBar.querySelector('#dateChip'));
     body.querySelector('.dashboard-container').before(utility.bar);
     const api = right.querySelector('a[href="/api/"]');
-    if (api) utility.actions.firstElementChild.replaceWith(api);
+    if (api) utility.actions.querySelector('a[href="/api/"]').replaceWith(api);
     const accountLinks = topBar.querySelector('#publicAccountLinks');
     if (accountLinks) {
       const pro = accountLinks.querySelector('a[href="/pro.html"]');
@@ -194,7 +194,7 @@
     brand.append(element('span', 'terminal-brand-subtitle', 'FINANCE WORLD'));
     logo.append(brand);
     topBar.prepend(logo);
-    right.prepend(terminalKey(), yourNews());
+    right.prepend(yourNews());
     right.insertBefore(quickAdd(), right.querySelector('#avatarInitials') || accountLinks || null);
     topBar.classList.add('terminal-masthead');
     body.querySelectorAll('.nav-item.active').forEach(function (item) { item.setAttribute('aria-current', 'page'); });
@@ -237,6 +237,7 @@
       if (categories) {
         categories.classList.add('terminal-category-links');
         utility.actions.prepend(categories);
+        const term = utility.actions.querySelector('.terminal-utility-terminal'); if (term) utility.actions.prepend(term);
         // The utility row already provides API; keep one visible destination.
         categories.querySelectorAll('a[href="/api/"], a[href="api/"], a[href="api/index.html"]').forEach(action => { const item = action.closest('li'); if (item) item.remove(); else action.remove(); });
       }
@@ -249,7 +250,7 @@
             utility.actions.append(action);
           }
         });
-        quickActions.prepend(terminalKey(), yourNews(), quickAdd());
+        quickActions.prepend(yourNews(), quickAdd());
       }
       const refreshMenuPosition = function () {
         document.documentElement.style.setProperty('--header-h', header.getBoundingClientRect().height + 'px');
@@ -258,7 +259,7 @@
       if (typeof ResizeObserver === 'function') new ResizeObserver(refreshMenuPosition).observe(header);
     } else {
       const actions = container.querySelector(':scope > nav');
-      if (actions) actions.prepend(terminalKey(), yourNews(), quickAdd());
+      if (actions) actions.prepend(yourNews(), quickAdd());
     }
     return true;
   }
