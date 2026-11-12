@@ -5,6 +5,13 @@ window.FynxTerminalPages = T => {
   'use strict';
   const {S, M, $, el, btn, link, svg, kv, inspect, signed, tone, ago, hhmm, day, fmt, big, count, finite, empty, rowButton} = T;
   const root = $('fx-page'), body = $('fx-page-body');
+  // Keyboard access (site-qa run 72): table rows that open a market or country on click (COT, central banks,
+  // Smart Bias, Edge, listings, countries...) were mouse/touch only. Each becomes focusable; Enter or Space opens it.
+  const keyRows = n => { if (n.nodeType !== 1) return; for (const tr of n.matches('tr.pg-click') ? [n] : n.querySelectorAll('tr.pg-click')) if (!tr.hasAttribute('tabindex')) { tr.tabIndex = 0; tr.setAttribute('role', 'button'); tr.dataset.kbRow = '1'; } };
+  if (body) {
+    new MutationObserver(ms => { for (const m of ms) m.addedNodes.forEach(keyRows); }).observe(body, {childList: true, subtree: true});
+    body.addEventListener('keydown', e => { const tr = e.target; if (tr?.dataset?.kbRow !== '1' || (e.key !== 'Enter' && e.key !== ' ')) return; e.preventDefault(); tr.click(); });
+  }
   if (!root || !body) return null;
   const stack = [];
   let token = 0;

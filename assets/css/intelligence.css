@@ -102,4 +102,6 @@ html body.fx-intel-page .terminal-ticker { background:#0a0a0a; }
   .fx-crumbs a, .fx-sources a, .fx-footer nav a { display:inline-flex; align-items:center; min-height:44px; min-width:44px; }
   .fx-sources a { margin-top:0; }
   .fx-btn { min-height:44px; }
+  /* site-qa run 72: Intelligence home filter chips (All, Stocks, Indices...) were 34px tall. */
+  .fx-filter { min-height:44px; }
 }

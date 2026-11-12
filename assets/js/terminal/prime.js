@@ -17,6 +17,9 @@
   const dateS = d => new Date(String(d).length <= 10 ? d + 'T12:00:00Z' : d).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: '2-digit', timeZone: 'UTC'});
   const read = (k, d) => { try { return JSON.parse(store.get(k) || 'null') ?? d; } catch { return d; } };
   const P = {cot: null, policy: null, loading: {}};
+  // Phones: a 900-unit chart squeezed into a ~300px column shrinks its 10-unit labels to ~3px. Under 700px,
+  // draw the chart at (almost) the column's own width so labels stay ~11px; desktop keeps the wide layout.
+  const fit = (box, H, o = {}) => { const w = box?.clientWidth || 0; return w > 0 && w < 700 ? {...o, W: Math.round(w / 1.1), H, narrow: true} : o; };
   // Pages can open before the desk snapshot and quotes arrive (deep links); wait briefly for them.
   const until = async (test, ms = 25000) => { const t0 = Date.now(); while (!test() && Date.now() - t0 < ms) await new Promise(r => setTimeout(r, 250)); return test(); };
   async function load(name) {
@@ -52,7 +55,7 @@
     T.setText('n-cot', 'CFTC ' + dateS(d.latest));
   };
 
-  function dualChart(rows, price, {W = 900, H = 300, label = ''} = {}) {
+  function dualChart(rows, price, {W = 900, H = 300, label = '', narrow = false} = {}) {
     // Bars: speculative net contracts by week. Line: price on the report dates (right axis).
     const L = 54, R = 66, T0 = 12, B = 24, n = rows.length, bw = (W - L - R) / n;
     const nets = rows.map(r => r.net), lo = Math.min(0, ...nets), hi = Math.max(0, ...nets), y = v => T0 + (hi - v) / (hi - lo || 1) * (H - T0 - B);
@@ -63,9 +66,9 @@
     if (pts.length > 2) {
       const pl = Math.min(...pts.map(p => p[1])), ph = Math.max(...pts.map(p => p[1])), py = v => T0 + (ph - v) / (ph - pl || 1) * (H - T0 - B);
       c.append(svg('polyline', {points: pts.map(([i, v]) => `${(L + (i + 0.5) * bw).toFixed(1)},${py(v).toFixed(1)}`).join(' '), fill: 'none', stroke: '#ffb000', 'stroke-width': 1.8}));
-      [pl, (pl + ph) / 2, ph].forEach(v => { const t = svg('text', {x: W - R + 6, y: py(v) + 4, class: 'a'}); t.setAttribute('fill', '#ffb000'); t.textContent = v >= 100 ? v.toFixed(0) : v.toPrecision(5); c.append(t); });
+      [pl, (pl + ph) / 2, ph].forEach(v => { const t = svg('text', {x: W - R + 6, y: py(v) + 4, class: 'a'}); t.style.fill = '#ffb000'; t.textContent = v >= 100 ? v.toFixed(0) : v.toPrecision(5); c.append(t); });
     }
-    [0, Math.floor(n / 2), n - 1].forEach((i, k) => { const t = svg('text', {x: L + (i + 0.5) * bw, y: H - 6, class: 'a', 'text-anchor': k === 0 ? 'start' : k === 2 ? 'end' : 'middle'}); t.textContent = dateS(rows[i].date); c.append(t); });
+    (narrow ? [0, n - 1] : [0, Math.floor(n / 2), n - 1]).forEach((i, k, a) => { k = k === a.length - 1 ? 2 : k; const t = svg('text', {x: L + (i + 0.5) * bw, y: H - 6, class: 'a', 'text-anchor': k === 0 ? 'start' : k === 2 ? 'end' : 'middle'}); t.textContent = dateS(rows[i].date); c.append(t); });
     return c;
   }
   PG.add('cot', 'COT positioning', async (host, key, alive) => {
@@ -89,7 +92,7 @@
       if (!alive()) return; chartHost.replaceChildren();
       const pr = (hist?.rows || []).map(r => [String(r.date).slice(0, 10), r.close]).filter(r => finite(r[1]));
       const at = date => { let v = null; for (const [d0, c] of pr) { if (d0 > date) break; v = c; } return v; };
-      chartHost.append(dualChart(rows, pr.length ? at : () => null, {label: `${m.label} speculative net positions and price`}));
+      chartHost.append(dualChart(rows, pr.length ? at : () => null, fit(chartHost, 200, {label: `${m.label} speculative net positions and price`})));
       chartHost.append(PG.sourceNote(`Bars: ${GROUP[m.spec].toLowerCase()} net contracts (green long, red short). Orange line: ${T.nameOf(m.price)} (${m.price})${m.inverse ? ' — quoted as USD per unit, so it moves opposite to the currency future' : ''}, weekly on report dates.`));
     });
     const g = PG.grid('pg-g2');
@@ -149,7 +152,7 @@
     if (fp) {
       const s = PG.section('Fed path implied by 30-day fed funds futures'), now = new Date().toISOString().slice(0, 7);
       const series = [{label: 'Implied average fed funds rate', color: '#ff8a3d', width: 2.4, points: fp.points.map(p => [p.month, p.rate])}, {label: `Effective rate today (${fp.effr.value}%)`, color: '#9aa5b1', dash: '5 4', points: fp.points.map(p => [p.month, fp.effr.value])}];
-      s.append(legend(series), multiLine(series, {H: 240, zero: false}));
+      s.append(legend(series), multiLine(series, fit(host, 170, {H: 240, zero: false})));
       const tb = el('table', 'fx-table pg-table'), h = el('tr'); ['MONTH', 'CONTRACT', 'IMPLIED RATE', 'VS TODAY'].forEach(x => h.append(el('th', '', x))); tb.append(h);
       fp.points.forEach(p => { const tr = el('tr' + ''); tr.append(el('th', '', p.month + (p.month === now ? ' (now)' : '')), el('td', '', p.symbol), el('td', 'fx-num', p.rate.toFixed(3) + '%'), el('td', 'fx-num ' + tone(p.rate - fp.effr.value), signed((p.rate - fp.effr.value) * 100, 1, ' bp'))); tb.append(tr); });
       const w = el('div', 'pg-scroll'); w.append(tb); s.append(w, PG.sourceNote(`Implied rate = 100 − futures price for each contract month. Next FOMC decision ${fp.meeting}. ${fp.source}.`)); host.append(s);
@@ -157,7 +160,7 @@
     if (d?.areas) {
       const ranges = [['2018-01', 'Since 2018'], ['2022-01', 'Since 2022'], ['2015-01', 'Since 2015']], from = read('wirp-from', '2022-01');
       const s = PG.section('G10 policy rates'), box = el('div');
-      const draw = f => { box.replaceChildren(); const series = CB.filter(([a]) => d.areas[a]).map(([a, code, color]) => ({label: code, color, points: d.areas[a].history})); box.append(legend(series), multiLine(series, {from: f})); };
+      const draw = f => { box.replaceChildren(); const series = CB.filter(([a]) => d.areas[a]).map(([a, code, color]) => ({label: code, color, points: d.areas[a].history})); box.append(legend(series), multiLine(series, fit(host, 200, {from: f}))); };
       s.append(PG.pageTabs(ranges, from, v => { store.set('wirp-from', JSON.stringify(v)); PG.rerender(); }), box); draw(from); host.append(s);
       const t = PG.section('Policy rates, last move and market pricing'), tb = el('table', 'fx-table pg-table'), h = el('tr'); ['BANK', 'RATE', 'LAST MOVE', 'SINCE', '1Y CHANGE', '2Y YIELD', '2Y − POLICY'].forEach(x => h.append(el('th', '', x))); tb.append(h);
       const CURVE = {US: 'US', XM: 'EA', GB: 'GB', JP: 'JP'};
@@ -185,7 +188,7 @@
     return {ret, n, mean, sd, ann: sd * Math.sqrt(252), skew, kurt, beyond2, p5: sorted[Math.floor(n * 0.05)], p95: sorted[Math.floor(n * 0.95)], current: ret.at(-1), pct: sorted.filter(x => x <= ret.at(-1)).length / n * 100,
       hasHL, avg: {w: avg(5), m: avg(21), q: avg(63), y: avg(252)}, byDow, byMonth, up: {v: ret[maxUp], date: rows[maxUp + 1].date}, dn: {v: ret[maxDn], date: rows[maxDn + 1].date}, from: rows[0].date, to: rows.at(-1).date};
   }
-  function distChart(st, {W = 900, H = 280, compact = false} = {}) {
+  function distChart(st, {W = 900, H = 280, compact = false, narrow = false} = {}) {
     const L = 34, R = 10, T0 = 12, B = 24, bins = compact ? 24 : 40, lo = Math.max(st.mean - 5 * st.sd, Math.min(...st.ret)), hi = Math.min(st.mean + 5 * st.sd, Math.max(...st.ret)), bw = (hi - lo) / bins;
     const counts = Array(bins).fill(0); st.ret.forEach(r => { const k = Math.min(bins - 1, Math.max(0, Math.floor((r - lo) / bw))); counts[k]++; });
     const pdf = x => st.n * bw / (st.sd * Math.sqrt(2 * Math.PI)) * Math.exp(-((x - st.mean) ** 2) / (2 * st.sd ** 2)), top = Math.max(...counts, pdf(st.mean)) * 1.08;
@@ -196,8 +199,8 @@
     const pts = []; for (let i = 0; i <= 120; i++) { const v = lo + (hi - lo) * i / 120; pts.push(`${x(v).toFixed(1)},${y(pdf(v)).toFixed(1)}`); }
     c.append(svg('polyline', {points: pts.join(' '), fill: 'none', stroke: '#ff8a3d', 'stroke-width': 2}));
     const cx = x(Math.max(lo, Math.min(hi, st.current))); c.append(svg('line', {x1: cx, x2: cx, y1: T0, y2: H - B, stroke: '#ffb000', 'stroke-width': 1.6, 'stroke-dasharray': '5 4'}));
-    const ct = svg('text', {x: cx + 4, y: T0 + 12, class: 'a'}); ct.setAttribute('fill', '#ffb000'); ct.textContent = `today ${signed(st.current, 2, '%')}`; c.append(ct);
-    const ticks = compact ? 4 : 8; for (let k = 0; k <= ticks; k++) { const v = lo + (hi - lo) * k / ticks, t = svg('text', {x: x(v), y: H - 6, class: 'a', 'text-anchor': k === 0 ? 'start' : k === ticks ? 'end' : 'middle'}); t.textContent = v.toFixed(1) + '%'; c.append(t); }
+    const flip = cx > W - R - 90, ct = svg('text', {x: flip ? cx - 4 : cx + 4, y: T0 + 12, class: 'a', 'text-anchor': flip ? 'end' : 'start'}); ct.style.fill = '#ffb000'; ct.textContent = `today ${signed(st.current, 2, '%')}`; c.append(ct);
+    const ticks = compact || narrow ? 4 : 8; for (let k = 0; k <= ticks; k++) { const v = lo + (hi - lo) * k / ticks, t = svg('text', {x: x(v), y: H - 6, class: 'a', 'text-anchor': k === 0 ? 'start' : k === ticks ? 'end' : 'middle'}); t.textContent = v.toFixed(1) + '%'; c.append(t); }
     return c;
   }
   const legendDist = () => { const l = el('div', 'pm-legend'); [['Histogram', '#5a5f5c'], ['Bell curve (normal fit)', '#ff8a3d'], ['Current', '#ffb000']].forEach(([t, col]) => { const i = el('span'), sw = el('i'); sw.style.background = col; i.append(sw, document.createTextNode(t)); l.append(i); }); return l; };
@@ -223,7 +226,7 @@
     box.append(PG.cards([[`TODAY'S MOVE`, signed(st.current, 2, '%'), tone(st.current), `${st.pct < 1 ? 'lowest' : st.pct >= 99.5 ? 'highest' : T.M?.ordinal ? T.M.ordinal(Math.round(st.pct)) + ' percentile' : st.pct.toFixed(0) + 'th percentile'} of ${st.n} ${per}s`], [`TYPICAL ${per.toUpperCase()} (σ)`, st.sd.toFixed(2) + '%', '', `${ann.toFixed(1)}% annualised`],
       ['90% OF ' + per.toUpperCase() + 'S', `${st.p5.toFixed(2)} / ${signed(st.p95, 2, '%')}`, '', '5th to 95th percentile'], ['FAT TAILS', st.beyond2.toFixed(1) + '% beyond 2σ', st.beyond2 > 4.6 ? 'dn' : '', `normal curve: 4.6% · excess kurtosis ${st.kurt.toFixed(1)}`],
       ['SKEW', st.skew.toFixed(2), tone(st.skew), st.skew < -0.2 ? 'larger falls than rises' : st.skew > 0.2 ? 'larger rises than falls' : 'roughly symmetric']]));
-    const s1 = PG.section(`Distribution chart · ${T.nameOf(sym)} · ${per === 'day' ? 'daily' : 'weekly'} returns ${String(st.from).slice(0, 10)} → ${String(st.to).slice(0, 10)}`); s1.append(legendDist(), distChart(st)); s1.append(PG.sourceNote(`Bars count ${per}s by return. The orange curve is a normal distribution with the same mean and σ — where bars sit above it in the tails, big moves happen more often than a bell curve predicts. Largest rise ${signed(st.up.v, 2, '%')} (${String(st.up.date).slice(0, 10)}), largest fall ${signed(st.dn.v, 2, '%')} (${String(st.dn.date).slice(0, 10)}).`)); box.append(s1);
+    const s1 = PG.section(`Distribution chart · ${T.nameOf(sym)} · ${per === 'day' ? 'daily' : 'weekly'} returns ${String(st.from).slice(0, 10)} → ${String(st.to).slice(0, 10)}`); s1.append(legendDist(), distChart(st, fit(host, 190))); s1.append(PG.sourceNote(`Bars count ${per}s by return. The orange curve is a normal distribution with the same mean and σ — where bars sit above it in the tails, big moves happen more often than a bell curve predicts. Largest rise ${signed(st.up.v, 2, '%')} (${String(st.up.date).slice(0, 10)}), largest fall ${signed(st.dn.v, 2, '%')} (${String(st.dn.date).slice(0, 10)}).`)); box.append(s1);
     const g = PG.grid('pg-g2'), s2 = PG.section(`Average ${st.hasHL ? 'high–low range' : 'absolute move'} by period`), tb = el('table', 'fx-table pg-table'), hh = el('tr'); ['PERIOD', 'AVERAGE', 'VS 1 YEAR'].forEach(x => hh.append(el('th', '', x))); tb.append(hh);
     if (range !== '5y') [['1 week', st.avg.w], ['1 month', st.avg.m], ['3 months', st.avg.q], ['1 year', st.avg.y]].forEach(([k, v]) => { const tr = el('tr'); tr.append(el('th', '', k), el('td', 'fx-num', v.toFixed(2) + '%'), el('td', 'fx-num ' + tone(v - st.avg.y), signed((v / st.avg.y - 1) * 100, 0, '%'))); tb.append(tr); });
     const last = h.rows.at(-1), dg = T.digitsOf(sym); if (finite(last.high) && finite(last.low) && range !== '5y') { const tr = el('tr'); tr.append(el('th', '', `Latest bar ${String(last.date).slice(0, 10)}`), el('td', 'fx-num', `${fmt(last.low, dg)} – ${fmt(last.high, dg)}`), el('td', 'fx-num', ((last.high - last.low) / last.close * 100).toFixed(2) + '%')); tb.append(tr); }
@@ -235,16 +238,17 @@
 
   /* ========== BOOK: order and position books =============================================== */
   const BOOK_SYMS = {EURUSD: 'EURUSD=X', GBPUSD: 'GBPUSD=X', USDJPY: 'JPY=X', AUDUSD: 'AUDUSD=X', USDCAD: 'CAD=X', USDCHF: 'CHF=X', NZDUSD: 'NZDUSD=X', EURJPY: 'EURJPY=X', GBPJPY: 'GBPJPY=X', EURGBP: 'EURGBP=X', XAUUSD: 'GC=F', XAGUSD: 'SI=F'};
-  function bookChart(book, kind, digits) {
-    const W = 900, rowH = 16, H = book.buckets.length * rowH + 30, mid = W / 2, max = Math.max(...book.buckets.flatMap(b => [b.long, b.short])) || 1;
+  function bookChart(book, kind, digits, {W = 900, narrow = false} = {}) {
+    const rowH = 16, H = book.buckets.length * rowH + 30, mid = W / 2, max = Math.max(...book.buckets.flatMap(b => [b.long, b.short])) || 1;
     const c = svg('svg', {viewBox: `0 0 ${W} ${H}`, class: 'fx-chart pm-chart', role: 'img', 'aria-label': `${kind} around ${book.price}`});
     const head = (x, t, a) => { const e = svg('text', {x, y: 14, class: 'a', 'text-anchor': a}); e.textContent = t; c.append(e); };
-    head(mid - 70, kind === 'orderBook' ? '◀ buy orders' : '◀ long positions', 'end'); head(mid + 70, kind === 'orderBook' ? 'sell orders ▶' : 'short positions ▶', 'start');
+    const gap = narrow ? 40 : 60, lab = narrow ? (kind === 'orderBook' ? ['◀ buy', 'sell ▶'] : ['◀ long', 'short ▶']) : (kind === 'orderBook' ? ['◀ buy orders', 'sell orders ▶'] : ['◀ long positions', 'short positions ▶']);
+    head(mid - gap - 10, lab[0], 'end'); head(mid + gap + 10, lab[1], 'start');
     book.buckets.forEach((b, i) => {
       const y = 24 + i * rowH, near = Math.abs(b.price - book.price) < book.bucketWidth;
-      const lw = b.long / max * (mid - 80), sw = b.short / max * (mid - 80);
-      c.append(svg('rect', {x: mid - 60 - lw, y, width: lw, height: rowH - 3, fill: '#3ecf8e', 'fill-opacity': 0.8}), svg('rect', {x: mid + 60, y, width: sw, height: rowH - 3, fill: '#ff6b5f', 'fill-opacity': 0.8}));
-      const t = svg('text', {x: mid, y: y + rowH - 5, class: 'a', 'text-anchor': 'middle'}); t.textContent = fmt(b.price, digits); if (near) t.setAttribute('fill', '#ffb000'); c.append(t);
+      const lw = b.long / max * (mid - gap - 20), sw = b.short / max * (mid - gap - 20);
+      c.append(svg('rect', {x: mid - gap - lw, y, width: lw, height: rowH - 3, fill: '#3ecf8e', 'fill-opacity': 0.8}), svg('rect', {x: mid + gap, y, width: sw, height: rowH - 3, fill: '#ff6b5f', 'fill-opacity': 0.8}));
+      const t = svg('text', {x: mid, y: y + rowH - 5, class: 'a', 'text-anchor': 'middle'}); t.textContent = fmt(b.price, digits); if (near) t.style.fill = '#ffb000'; c.append(t);
     });
     return c;
   }
@@ -265,7 +269,7 @@
     const sym = b[arg] ? arg : Object.keys(b)[0], x = b[sym], dg = /JPY/.test(sym) ? 3 : /XA[UG]/.test(sym) ? 2 : 5;
     host.append(PG.chips(Object.keys(b).map(k => btn(k, 'fx-chip' + (k === sym ? ' on' : ''), () => PG.open('obook', k)))));
     const g = PG.grid('pg-g2');
-    for (const kind of ['orderBook', 'positionBook']) { const bk = x[kind]; if (!bk) continue; const s = PG.section(`${kind === 'orderBook' ? 'Orderbook' : 'Position book'} · ${sym} · price ${fmt(bk.price, dg)}`); s.append(PG.cards([['LONG %', bk.longTotal.toFixed(1) + '%', 'up'], ['SHORT %', bk.shortTotal.toFixed(1) + '%', 'dn'], ['SNAPSHOT', new Date(bk.time).toUTCString().slice(5, 22)]]), bookChart(bk, kind, dg)); g.append(s); }
+    for (const kind of ['orderBook', 'positionBook']) { const bk = x[kind]; if (!bk) continue; const s = PG.section(`${kind === 'orderBook' ? 'Orderbook' : 'Position book'} · ${sym} · price ${fmt(bk.price, dg)}`); s.append(PG.cards([['LONG %', bk.longTotal.toFixed(1) + '%', 'up'], ['SHORT %', bk.shortTotal.toFixed(1) + '%', 'dn'], ['SNAPSHOT', new Date(bk.time).toUTCString().slice(5, 22)]]), bookChart(bk, kind, dg, fit(host, 0))); g.append(s); }
     host.append(g, PG.sourceNote(`${S.desk.books.source}. Percentages are shares of OANDA clients' orders or positions in each price bucket; they show crowding, not institutional flow.`), PG.chips([btn('Chart ' + sym + ' ▸', 'fx-chip fx-chip-link', () => T.setSymbol({symbol: BOOK_SYMS[sym] || sym}))]));
   };
   PG.add('obook', 'Order & position book', renderBook);

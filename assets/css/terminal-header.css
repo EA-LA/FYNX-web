@@ -621,4 +621,6 @@ html body[data-fynx-terminal]:not(#fx-boost) .terminal-edition-face { display:no
   html body[data-fynx-terminal]:not(#fx-boost).terminal-masthead-ready[data-fynx-layout=workspace] .nav-menu .nav-item,
   html body[data-fynx-terminal]:not(#fx-boost).terminal-masthead-ready > .terminal-navigation > a { min-height:44px !important; }
   html body[data-fynx-terminal]:not(#fx-boost) .terminal-ticker-controls button { width:44px !important; height:44px !important; }
+  /* site-qa run 72: the edition picker looks 30px tall, but its invisible select now covers the full 44px utility strip. */
+  html body[data-fynx-terminal]:not(#fx-boost) .terminal-utility .terminal-edition select { inset:-7px 0 !important; height:auto !important; }
 }
