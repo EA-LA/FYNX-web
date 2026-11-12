@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-12 (run 82) — [site-qa] Settings pages no longer zoom on iPhone; round account button; tidier Pivot Points results
+- Fixed on iPhone: on Account settings, Preferences and Notifications, tapping a drop-down (currency, experience, category...) made iPhone zoom into the page because the text was too small. Fields are now full size, and the buttons are easier to tap. https://www.fynxfinanceworld.com/account-settings.html
+- Fixed on iPhone: the new round account button in the header was stretched into an oval on phones. It is round again and still easy to tap. https://www.fynxfinanceworld.com/news.html
+- Fixed: Pivot Points showed levels with different numbers of decimals (for example 108.916667 next to 113.50). Every level now uses the same precision as your prices (110 gives 2 decimals, 1.08750 gives 5). https://www.fynxfinanceworld.com/tools/pivot.html
+- Improved: Pivot Points results now show resistance and support side by side (R1 next to S1, R2 next to S2...), so the Camarilla levels take about half the scrolling on an iPhone. Long prices switch to one column on small phones so numbers never break across lines.
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): all 255 main pages with no sideways scrolling, small text fields, script errors or broken internal links; the new sign-in window fits small iPhones; Pivot and Options results hand-checked against independent sums; site checks pass (one known older check about release packaging still fails and is unchanged).
+
 ## 2026-11-12 (run 81) — [site-qa] Woodie and Camarilla pivot points; Company Screener checkboxes even on iPhone
 - New: the Pivot Points calculator now offers Woodie and Camarilla methods next to Classic and Fibonacci. Woodie gives the previous close double weight; Camarilla shows four tighter levels (R1–R4, S1–S4) around the close. Shared scenario links keep the chosen method. Example with high 110, low 100, close 108: Woodie pivot 106.50, R1 113.00, S1 103.00; Camarilla R3 110.75, S3 105.25. https://www.fynxfinanceworld.com/tools/pivot.html
 - Fixed on iPhone: on the Company Screener, the "Positive operating cash flow" checkbox was squashed narrower than the one beside it on small phones. Both are now the same full size. https://www.fynxfinanceworld.com/tools/company-screener.html

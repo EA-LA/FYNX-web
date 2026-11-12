@@ -624,6 +624,11 @@ html body[data-fynx-terminal]:not(#fx-boost) .terminal-edition-face { display:no
   html body[data-fynx-terminal]:not(#fx-boost) .terminal-ticker-controls button { width:44px !important; height:44px !important; }
   /* site-qa run 72: the edition picker looks 30px tall, but its invisible select now covers the full 44px utility strip. */
   html body[data-fynx-terminal]:not(#fx-boost) .terminal-utility .terminal-edition select { inset:-7px 0 !important; height:auto !important; margin:0 !important; }
+  /* site-qa run 82: the account avatar (account-menu.js) was stretched into a 36x44 oval by the sitewide
+     44px button rule. Keep a 36px circle with an invisible 44x44 hit box (photo clipped by its own radius). */
+  html body:not(#fx-boost) .fx-acct-btn { min-height:36px !important; height:36px !important; width:36px !important; flex:0 0 36px; position:relative; overflow:visible !important; margin-inline:4px; }
+  html body:not(#fx-boost) .fx-acct-btn img { border-radius:50%; }
+  html body:not(#fx-boost) .fx-acct-btn::after { content:""; position:absolute; inset:-6px; border-radius:50%; }
 }
 
 /* FYNX Terminal in the utility row: same type as API / Pro tools, highlighted (amber + live dot). */

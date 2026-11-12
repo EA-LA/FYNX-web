@@ -70,3 +70,12 @@ body[data-fynx-settings] .security-session-row{padding:12px 0!important}
   body[data-fynx-settings] .card{padding:18px 16px!important}
 }
 html[data-theme=dark] body[data-fynx-settings] .card,body.dark-mode[data-fynx-settings] .card{background:#111614!important;border-color:#27302b!important}
+/* [site-qa run 82] Touch phones: fields at 16px so iOS Safari does not zoom on tap; 44px tap targets. */
+@media (max-width:760px) and (pointer:coarse){
+  body[data-fynx-settings] .content-area input:not([type=checkbox]):not([type=radio]):not([type=file]),body[data-fynx-settings] .content-area select,body[data-fynx-settings] .content-area textarea{font-size:16px!important}
+  html body[data-fynx-settings][data-fynx-layout] .content-area select.btn{font-size:16px!important}
+  html body[data-fynx-settings][data-fynx-layout] .content-area .btn{min-height:44px!important}
+  html body[data-fynx-settings][data-fynx-layout] .content-area .market-pill{min-height:44px;padding:0 16px!important}
+  body[data-fynx-settings] .st-tabs a{min-height:44px;box-sizing:border-box;display:inline-flex;align-items:center}
+  body[data-fynx-settings] .switch::after{content:"";position:absolute;inset:-9px -2px}
+}
