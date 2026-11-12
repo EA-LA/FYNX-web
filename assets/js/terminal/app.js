@@ -1123,19 +1123,20 @@
   }
   /* Normalized % comparison chart for several series. */
   const CMP_COLORS = ['#ffb000', '#5b8def', '#3ecf8e', '#c4a1ff', '#ff8a80', '#5ed3d3'];
-  function compareChart(series, {W = 640, H = 220, sessions = 252} = {}) {
+  function compareChart(series, {W = 640, H = 220, sessions = 252, scale = 1} = {}) {
+    // scale > 1 (phones) enlarges axis text, margins and lines so they stay readable once the SVG is shrunk to a ~300px column.
     const wrap = el('div', 'fx-chartwrap'), valid = series.filter(x => x.rows?.length > 2);
     if (!valid.length) { wrap.append(el('p', 'fx-empty', 'Loading comparison…')); return wrap; }
     const start = valid.map(x => x.rows.at(-Math.min(sessions, x.rows.length)).date.slice(0, 10)).sort().at(-1);
     const lines = valid.map((x, i) => { const rows = x.rows.filter(r => r.date.slice(0, 10) >= start), b = rows[0]?.close; return {label: x.label, color: x.color || CMP_COLORS[i % CMP_COLORS.length], pts: rows.map(r => ({date: r.date.slice(0, 10), v: (r.close / b - 1) * 100}))}; }).filter(l => l.pts.length > 1);
     const all = lines.flatMap(l => l.pts.map(p => p.v)), lo = Math.min(0, ...all), hi = Math.max(0, ...all), pad = (hi - lo) * 0.08 || 1;
     const dates = [...new Set(lines.flatMap(l => l.pts.map(p => p.date)))].sort(), xi = new Map(dates.map((d, i) => [d, i]));
-    const L = 6, R = 52, T = 8, B = 20, x = i => L + i * (W - L - R) / Math.max(1, dates.length - 1), y = v => T + (hi + pad - v) / (hi - lo + 2 * pad) * (H - T - B);
+    const L = 6, R = Math.round(52 * scale), T = 8 * scale, B = Math.round(20 * scale), fs = scale === 1 ? null : {style: `font-size:${10 * scale}px`}, x = i => L + i * (W - L - R) / Math.max(1, dates.length - 1), y = v => T + (hi + pad - v) / (hi - lo + 2 * pad) * (H - T - B);
     const c = svg('svg', {viewBox: `0 0 ${W} ${H}`, class: 'fx-chart', role: 'img', 'aria-label': 'Performance comparison: ' + lines.map(l => `${l.label} ${signed(l.pts.at(-1).v, 1, '%')}`).join(', ')});
-    for (let k = 0; k <= 4; k++) { const v = lo - pad + (hi - lo + 2 * pad) * k / 4; c.append(svg('line', {x1: L, x2: W - R, y1: y(v), y2: y(v), class: 'g'})); const t = svg('text', {x: W - R + 6, y: y(v) + 4, class: 'a'}); t.textContent = signed(v, 1, '%'); c.append(t); }
+    for (let k = 0; k <= 4; k++) { const v = lo - pad + (hi - lo + 2 * pad) * k / 4; c.append(svg('line', {x1: L, x2: W - R, y1: y(v), y2: y(v), class: 'g'})); const t = svg('text', {x: W - R + 6 * scale, y: y(v) + 4 * scale, class: 'a', ...fs}); t.textContent = signed(v, 1, '%'); c.append(t); }
     c.append(svg('line', {x1: L, x2: W - R, y1: y(0), y2: y(0), stroke: '#56635c', 'stroke-dasharray': '3 3'}));
-    for (const l of lines) c.append(svg('polyline', {points: l.pts.map(p => `${x(xi.get(p.date)).toFixed(1)},${y(p.v).toFixed(1)}`).join(' '), fill: 'none', stroke: l.color, 'stroke-width': 1.7}));
-    [0, dates.length - 1].forEach((i, k) => { const t = svg('text', {x: x(i), y: H - 5, class: 'a', 'text-anchor': k ? 'end' : 'start'}); t.textContent = day(dates[i]); c.append(t); });
+    for (const l of lines) c.append(svg('polyline', {points: l.pts.map(p => `${x(xi.get(p.date)).toFixed(1)},${y(p.v).toFixed(1)}`).join(' '), fill: 'none', stroke: l.color, 'stroke-width': 1.7 * scale}));
+    [0, dates.length - 1].forEach((i, k) => { const t = svg('text', {x: x(i), y: H - 5 * scale, class: 'a', 'text-anchor': k ? 'end' : 'start', ...fs}); t.textContent = day(dates[i]); c.append(t); });
     const legend = el('div', 'fx-legend'); lines.forEach(l => { const s = el('span'); const dot = el('i'); dot.style.background = l.color; s.append(dot, el('b', '', l.label), el('em', tone(l.pts.at(-1).v), signed(l.pts.at(-1).v, 2, '%'))); legend.append(s); });
     wrap.append(legend, c); return wrap;
   }

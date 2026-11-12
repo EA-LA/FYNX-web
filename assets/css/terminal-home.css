@@ -212,3 +212,5 @@ html body[data-fynx-terminal] .fw-live-terminal .fw-live-tools strong { color:va
   .nr-voices .finance-voices-grid { grid-template-columns:1fr; }
   .nr-voices .finance-voice, .nr-voices .finance-voice + .finance-voice { padding:14px 0; border-left:0; }
 }
+/* iPhone: Finance voices links are 44px tap targets on touch screens (site-qa run 71). */
+@media (hover:none) and (pointer:coarse){ .nr-voices .finance-voice-links a { min-height:44px; } }
