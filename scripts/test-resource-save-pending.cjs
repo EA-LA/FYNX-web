@@ -82,3 +82,34 @@ test('distinct resources remain independently actionable during a pending save',
   assert.equal(two.disabled, false);
   dom.window.close();
 });
+
+test('a stalled resource index times out, unlocks Save, and supports a new request', async () => {
+  const { dom, requests, one } = setup();
+  const realSetTimeout = dom.window.setTimeout.bind(dom.window);
+  let triggerTimeout;
+  // Advance just the 8-second index deadline without sleeping or changing other UI timers.
+  dom.window.setTimeout = (callback, delay, ...args) => {
+    if (delay === 8000) {
+      triggerTimeout = callback;
+      return 999999;
+    }
+    return realSetTimeout(callback, delay, ...args);
+  };
+  one.click();
+  assert.equal(requests.length, 1);
+  assert.equal(typeof triggerTimeout, 'function');
+  assert.equal(one.disabled, true);
+  triggerTimeout();
+  await flush();
+  assert.equal(one.disabled, false);
+  assert.equal(one.hasAttribute('aria-busy'), false);
+  assert.equal(dom.window.localStorage.getItem(key), null);
+  assert.match(dom.window.document.querySelector('.discovery-toast').textContent, /cannot be saved/i);
+  one.click();
+  assert.equal(requests.length, 2, 'timed-out index request must be retryable');
+  requests[1].resolve({ ok: true, json: async () => [{ url: resource }] });
+  await flush();
+  assert.deepEqual(JSON.parse(dom.window.localStorage.getItem(key)), [resource]);
+  assert.equal(one.disabled, false);
+  dom.window.close();
+});

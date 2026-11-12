@@ -5,7 +5,24 @@
   const read=key=>{try{const data=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(data)?data.filter(x=>typeof x==='string'&&/^\/(?:[a-z0-9-]+\/)*(?:[a-z0-9-]+\.html)?$/.test(x)).map(url=>url==='/tools/options-payoff.html'?'/tools/debt-payoff.html':url).slice(0,100):[];}catch{return [];}};
   let saved=new Set(read(savedKey));
   let indexPromise;
-  const index=()=>indexPromise ||= fetch('/assets/resource-index.json').then(r=>{if(!r.ok)throw Error('index');return r.json();}).then(rows=>Array.isArray(rows)?rows:[]).catch(()=>{indexPromise=null;return [];});
+  // Bounded resource-index loading: a stalled network must not leave Save buttons disabled forever.
+  // Keep one shared request for quick taps and allow retry when the request fails or times out.
+  const index=()=>indexPromise ||= (()=>{
+    const controller=typeof AbortController==='function'?new AbortController():null;
+    let timeoutId;
+    const request=fetch('/assets/resource-index.json',controller?{signal:controller.signal}:undefined)
+      .then(r=>{if(!r.ok)throw Error('index');return r.json();})
+      .then(rows=>Array.isArray(rows)?rows:[]);
+    const timeout=new Promise((_,reject)=>{
+      timeoutId=setTimeout(()=>{
+        controller?.abort();
+        reject(new Error('Resource index timed out'));
+      },8000);
+    });
+    return Promise.race([request,timeout])
+      .catch(()=>{indexPromise=null;return [];})
+      .finally(()=>clearTimeout(timeoutId));
+  })();
   const write=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}};
   let notice;
   function announce(message){
