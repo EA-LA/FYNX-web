@@ -599,3 +599,26 @@ html body[data-fynx-terminal]:not(#fx-boost) .terminal-edition-face { display:no
   html body[data-fynx-terminal]:not(#fx-boost).terminal-masthead-ready .terminal-public-masthead > nav > a:is([href*="auth"],[href*="profile"],[href*="sign"]) { min-height:32px !important; height:32px; padding:0 10px !important; border:1px solid #3a423c; font-size:11px !important; display:inline-flex !important; align-items:center; color:#e9eeea !important; text-decoration:none; }
   html body[data-fynx-terminal]:not(#fx-boost).terminal-masthead-ready .terminal-public-masthead > .terminal-brand { grid-column:1 !important; grid-row:1 !important; }
 }
+/* iPhone tap targets (site-qa 2026-11-11 run 71): keep the compact 32px header look, but give every
+   header control a 44px touch area. Square icons get 6px side margins plus an invisible 44x44 hit box;
+   wider 32px-tall controls get a taller hit box only, so neighbouring hit boxes never overlap. */
+@media (max-width:600px) and (hover:none) and (pointer:coarse){
+  html body[data-fynx-terminal]:not(#fx-boost) :is(.top-bar,.terminal-public-masthead,.terminal-masthead) :is(.icon-btn,[data-theme-control],.fynx-network-theme,.user-avatar,.mobile-resources-btn,.terminal-all-together,a.terminal-go-key,a[href*="auth"],a[href*="sign"],a[href*="profile"]),
+  html body[data-fynx-terminal]:not(#fx-boost) #publicAccountLinks a { position:relative; overflow:visible; }
+  html body[data-fynx-terminal]:not(#fx-boost) :is(.top-bar,.terminal-public-masthead,.terminal-masthead) :is(.icon-btn,[data-theme-control],.fynx-network-theme,.user-avatar)::after { content:""; position:absolute; inset:-7px; }
+  html body[data-fynx-terminal]:not(#fx-boost) :is(.top-bar,.terminal-public-masthead,.terminal-masthead) :is(.icon-btn,[data-theme-control],.fynx-network-theme,.user-avatar) { margin-inline:6px !important; }
+  /* Home masthead: the theme button sits in the same grid cell as Resources, held left of it by a 144px margin. */
+  html body[data-fynx-terminal]:not(#fx-boost).terminal-masthead-ready #header .nav-container > [data-theme-control] { margin-left:0 !important; margin-right:154px !important; }
+  html body[data-fynx-terminal]:not(#fx-boost) :is(.top-bar,.terminal-public-masthead,.terminal-masthead) :is(.mobile-resources-btn,.terminal-all-together,a.terminal-go-key,a[href*="auth"],a[href*="sign"],a[href*="profile"])::after,
+  html body[data-fynx-terminal]:not(#fx-boost) #publicAccountLinks a::after { content:""; position:absolute; inset:-7px -1px; }
+  html body[data-fynx-terminal]:not(#fx-boost) .terminal-header-search { min-height:44px !important; }
+  html body[data-fynx-terminal]:not(#fx-boost) .terminal-header-search input { min-height:44px !important; }
+  html body[data-fynx-terminal]:not(#fx-boost) .terminal-header-search button { min-height:44px !important; min-width:44px !important; }
+  html body[data-fynx-terminal]:not(#fx-boost) .terminal-topic-inner { min-height:44px; }
+  html body[data-fynx-terminal]:not(#fx-boost) .terminal-topic-inner > a, html body[data-fynx-terminal]:not(#fx-boost) .terminal-topic-more > summary { min-height:44px !important; min-width:44px; justify-content:center; }
+  html body[data-fynx-terminal]:not(#fx-boost).terminal-masthead-ready[data-fynx-layout=workspace] .nav-menu,
+  html body[data-fynx-terminal]:not(#fx-boost).terminal-masthead-ready > .terminal-navigation { min-height:44px !important; }
+  html body[data-fynx-terminal]:not(#fx-boost).terminal-masthead-ready[data-fynx-layout=workspace] .nav-menu .nav-item,
+  html body[data-fynx-terminal]:not(#fx-boost).terminal-masthead-ready > .terminal-navigation > a { min-height:44px !important; }
+  html body[data-fynx-terminal]:not(#fx-boost) .terminal-ticker-controls button { width:44px !important; height:44px !important; }
+}

@@ -13,3 +13,5 @@ body[data-view="news"],body.fn-standalone{margin:0}
 .fn-announcement:empty{display:none}.fn-announcement{position:fixed;bottom:85px;right:20px;z-index:2000;max-width:min(420px,calc(100vw - 40px));background:var(--fynx-panel);border:1px solid var(--fynx-accent);border-radius:10px;padding:14px 18px;box-shadow:0 6px 30px #0002;color:var(--fynx-text);font-size:13px}
 @media(max-width:700px){.fn-search input,.fn-selects select{font-size:16px!important}.fn-feed-meta>[data-news-count]{white-space:nowrap}}
 .fn-app .fn-pro-card h3{color:#f5f9f7!important}.fn-app .fn-pro-card p{color:#d2e0d8!important}
+/* A long feed status (e.g. "Refresh unavailable...") wraps instead of pushing the headline count off a phone screen (site-qa run 71). */
+.fn-feed-meta>p{min-width:0;overflow-wrap:anywhere}.fn-feed-meta>[data-news-count]{flex-shrink:0;white-space:nowrap}

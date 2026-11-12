@@ -44,7 +44,9 @@ jobs:
           cd "$RUNNER_TEMP/public-research"
           git config user.name 'FYNX market research publisher'
           git config user.email 'actions@users.noreply.github.com'
-          git add -- assets/data/research
+          # Data-only branch: tell Vercel not to deploy it (each push otherwise uses a deployment).
+          printf '{"git":{"deploymentEnabled":false}}\n' > vercel.json
+          git add -- assets/data/research vercel.json
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Refresh observed market data $(date -u +%F)"
           git push origin HEAD:refs/heads/research-data

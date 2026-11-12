@@ -96,3 +96,10 @@ html body.fx-intel-page .fx-main p, html body.fx-intel-page .fx-main li, html bo
 html body.fx-intel-page .fx-main .fx-fine, html body.fx-intel-page .fx-main .fx-byline span, html body.fx-intel-page .fx-crumbs { color:#8d8d8a; }
 html body.fx-intel-page .fx-main .fx-deck { color:#b9b9b6; }
 html body.fx-intel-page .terminal-ticker { background:#0a0a0a; }
+/* iPhone tap targets (site-qa run 71): breadcrumb, action buttons, source links and footer links reach 44px on touch screens. */
+@media (hover:none) and (pointer:coarse) {
+  .fx-crumbs { align-items:center; }
+  .fx-crumbs a, .fx-sources a, .fx-footer nav a { display:inline-flex; align-items:center; min-height:44px; min-width:44px; }
+  .fx-sources a { margin-top:0; }
+  .fx-btn { min-height:44px; }
+}

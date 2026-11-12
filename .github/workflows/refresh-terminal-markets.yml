@@ -51,6 +51,8 @@ jobs:
           cp "$RUNNER_TEMP"/out/*.json .
           git config user.name 'FYNX terminal publisher'
           git config user.email 'actions@users.noreply.github.com'
+          # Data-only branch: tell Vercel not to deploy it (each push otherwise uses a deployment).
+          printf '{"git":{"deploymentEnabled":false}}\n' > vercel.json
           git add -- *.json
           git commit --quiet -m "Terminal desk snapshot $(date -u +%FT%RZ)"
           git push --force origin HEAD:refs/heads/terminal-data

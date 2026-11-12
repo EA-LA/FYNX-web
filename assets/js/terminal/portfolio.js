@@ -94,7 +94,7 @@
         info.textContent = `${data.source || 'Yahoo Finance'} · ${rows.length} sessions · change ${signed((last / first - 1) * 100, 2, '%')} · high ${fmt(hi, digitsOf(sym))} · low ${fmt(lo, digitsOf(sym))} · drawings are saved in this browser`;
       } else {
         const others = cmpList(), series = await Promise.all(others.map(s => T.symHistory(s, '5y'))); if (!alive()) return;
-        box.append(T.compareChart([{label: shortOf(sym), rows: data.rows}, ...series.map((d, i) => ({label: shortOf(others[i]), rows: d?.rows || []}))], {W: 1100, H: 420, sessions: range}));
+        box.append(T.compareChart([{label: shortOf(sym), rows: data.rows}, ...series.map((d, i) => ({label: shortOf(others[i]), rows: d?.rows || []}))], (box.clientWidth || innerWidth) < 700 ? {W: 640, H: 440, sessions: range, scale: 2} : {W: 1100, H: 420, sessions: range}));
         info.textContent = 'Each line starts at 0% on the first common day of the range; price change only.';
       }
     };
@@ -170,7 +170,7 @@
     if (!a || a.empty) return res.append(el('p', 'fx-empty', 'Price history is not available for these holdings.'));
     res.append(PG.cards(portCards(a)));
     if (a.currencies.length > 1) res.append(PG.sourceNote(`Holdings trade in ${a.currencies.join(', ')}; values add them without currency conversion.`));
-    const g = PG.grid('pg-g2'), c1 = PG.section('Portfolio vs S&P 500 (SPY) · 1 year'); c1.append(T.compareChart([{label: 'Portfolio', rows: a.curve}, {label: 'SPY', rows: a.bench}], {W: 620, H: 260})); g.append(c1);
+    const g = PG.grid('pg-g2'), c1 = PG.section('Portfolio vs S&P 500 (SPY) · 1 year'); c1.append(T.compareChart([{label: 'Portfolio', rows: a.curve}, {label: 'SPY', rows: a.bench}], (host.clientWidth || innerWidth) < 700 ? {W: 640, H: 440, scale: 2} : {W: 620, H: 260})); g.append(c1);
     const c2 = PG.section('Where the risk comes from'), t2 = el('table', 'fx-table pg-table'), h2 = el('tr'); ['HOLDING', 'WEIGHT', 'VOL / YR', 'SHARE OF RISK'].forEach(x => h2.append(el('th', '', x))); t2.append(h2);
     a.series.map((h, i) => ({h, i})).sort((x, y) => a.contrib[y.i] - a.contrib[x.i]).forEach(({h, i}) => { const tr = el('tr', 'pg-click'); tr.addEventListener('click', () => T.setSymbol({symbol: h.symbol})); tr.append(el('th', '', shortOf(h.symbol)), el('td', 'fx-num', (a.weights[i] * 100).toFixed(1) + '%'), el('td', 'fx-num', a.vols[i].toFixed(1) + '%'), el('td', 'fx-num', a.contrib[i].toFixed(1) + '%')); t2.append(tr); });
     c2.append(t2, PG.sourceNote('Share of risk = each holding’s contribution to portfolio variance. It can exceed its weight when a holding is volatile or moves with the rest.')); g.append(c2); res.append(g);
