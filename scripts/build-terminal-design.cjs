@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..');
 const researchPages = require('../content/research-pages.cjs');
 const pages = [
   'index.html', 'home.html', 'journal.html', 'trader-journal.html', 'calculator.html', 'news.html',
-  'calendar.html', 'learn.html', 'profile.html', 'pro.html', 'explore.html', 'quant-analyst.html', 'macro-desk.html',
+  'calendar.html', 'learn.html', 'profile.html', 'account-settings.html', 'security.html', 'notifications.html', 'preferences.html', 'pro.html', 'explore.html', 'quant-analyst.html', 'macro-desk.html',
   'tools/research-desk.html',
   'edge-radar/index.html', ...require('../backend/quant/engine.cjs').SYMBOLS.map(s=>`edge-radar/${s.id.toLowerCase()}/index.html`),
   ...researchPages.map(([, slug]) => `tools/${slug}.html`),
@@ -37,7 +37,7 @@ for (const page of pages) {
   const assets = `<!-- terminal-design:start -->\n<link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">\n<link rel="stylesheet" href="/assets/css/${component}.css?v=20261028">\n${shared}${home}${refinements}${news}<!-- terminal-design:end -->\n`;
   html = html.replace('</head>', assets + (page.startsWith('edge-radar/') ? '<link rel="stylesheet" href="/assets/css/edge-radar.css">\n' : page === 'quant-analyst.html' ? '<link rel="stylesheet" href="/assets/css/quant-analyst.css">\n' : '') + '</head>');
   if (!/data-fynx-layout="workspace"/.test(html) && !/data-fynx-section="TOOLS"/.test(html)) {
-    const active = page === 'profile.html' ? '/profile.html' : page.startsWith('edge-radar/') ? '/edge-radar/' : page.startsWith('tools/') ? '/tools/research-desk.html' : `/${page}`;
+    const active = ['profile.html','account-settings.html','security.html','notifications.html','preferences.html'].includes(page) ? '/profile.html' : page.startsWith('edge-radar/') ? '/edge-radar/' : page.startsWith('tools/') ? '/tools/research-desk.html' : `/${page}`;
     const links = navigation.map(([label, href]) => `<a href="${href}"${href === active ? ' aria-current="page"' : ''}>${label}${['Quant Analyst','Edge Radar','Macro Desk'].includes(label) ? '<span class="quant-new-badge">NEW</span>' : ''}</a>`).join('');
     const nav = `\n<!-- terminal-navigation:start -->\n<nav class="terminal-navigation" aria-label="Workspace navigation">${links}</nav>${page.startsWith('edge-radar/')||page==='macro-desk.html'?'<div class="terminal-ticker-host" data-terminal-ticker role="region" aria-label="Market snapshot"><span class="edge-ticker-loading">Market quotes · loading attributed data…</span></div>':''}\n<!-- terminal-navigation:end -->\n`;
     html = html.replace('</header>', '</header>' + nav);

@@ -1,0 +1,72 @@
+/* FYNX account settings (Account, Security, Notifications, Preferences) in the site design. */
+body[data-fynx-settings]{--st-ink:#0f1512;--st-muted:#5f6b64;--st-line:#e1e6e3;--st-soft:#f6f8f7;--st-green:#1f5a3f;--st-green-2:#1f8a5a;--st-red:#c42828}
+body[data-fynx-settings] .content-area{display:block!important;max-width:1180px!important;margin:0 auto!important;padding:28px 24px 64px!important;background:transparent!important;overflow:visible!important;color:var(--st-ink)}
+body[data-fynx-settings] .st-hidden-head{display:none!important}
+body[data-fynx-settings] .st-hero{display:grid;grid-template-columns:1fr auto;align-items:end;gap:6px 24px;margin:6px 0 18px}
+body[data-fynx-settings] .st-eyebrow{grid-column:1;margin:0;font:700 11px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.14em;color:var(--st-green)}
+body[data-fynx-settings] .st-title{grid-column:1;margin:6px 0 0;font:800 clamp(30px,4vw,44px)/1.05 Manrope,Inter,Arial,sans-serif;letter-spacing:-.03em}
+body[data-fynx-settings] .st-sub{grid-column:1;margin:6px 0 0;font-size:15px;color:var(--st-muted)}
+body[data-fynx-settings] .st-who{grid-column:2;grid-row:1/span 3;display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--st-line);border-radius:14px;background:#fff}
+body[data-fynx-settings] .st-who[hidden]{display:none}
+body[data-fynx-settings] .st-avatar{width:42px;height:42px;border-radius:50%;background:#cfeedd;color:#173f2d;display:grid;place-items:center;font:800 15px Manrope,Inter,sans-serif;overflow:hidden;flex:0 0 auto}
+body[data-fynx-settings] .st-avatar img{width:100%;height:100%;object-fit:cover}
+body[data-fynx-settings] .st-who-meta strong{display:block;font-size:14px}body[data-fynx-settings] .st-who-meta small{display:block;font-size:12px;color:var(--st-muted)}
+body[data-fynx-settings] .st-tabs{display:flex;flex-wrap:nowrap!important;gap:2px;margin:0 0 22px;border-bottom:1px solid var(--st-line);overflow-x:auto;scrollbar-width:none}
+body[data-fynx-settings] .st-tabs::-webkit-scrollbar{display:none}
+body[data-fynx-settings] .st-tabs a{flex:0 0 auto;padding:12px 14px;font-size:14px;font-weight:600;color:var(--st-muted);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-1px}
+body[data-fynx-settings] .st-tabs a:hover{color:var(--st-ink)}
+body[data-fynx-settings] .st-tabs a[aria-current=page]{color:var(--st-green);border-bottom-color:var(--st-green);font-weight:800}
+/* Cards */
+body[data-fynx-settings] .card{background:#fff!important;border:1px solid var(--st-line)!important;border-radius:16px!important;padding:22px 24px!important;margin:0 0 16px!important;box-shadow:0 1px 0 rgba(15,21,18,.02)}
+body[data-fynx-settings] .card h3{margin:0 0 16px!important;font:800 17px/1.2 Manrope,Inter,Arial,sans-serif!important;letter-spacing:-.01em;color:var(--st-ink)!important}
+body[data-fynx-settings] .card h3 ~ h3{margin-top:22px!important}
+body[data-fynx-settings] #mfaSettings h3{font:800 15px Manrope,Inter,sans-serif;margin:0 0 6px}
+body[data-fynx-settings] .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}
+/* Fields */
+body[data-fynx-settings] .field{display:grid;gap:7px;margin:0 0 4px}
+body[data-fynx-settings] .field label,body[data-fynx-settings] .card label{font-size:12.5px!important;font-weight:700!important;color:#38423d!important}
+body[data-fynx-settings] .content-area input:not([type=checkbox]):not([type=radio]):not([type=file]),body[data-fynx-settings] .content-area select,body[data-fynx-settings] .content-area textarea{width:100%;min-height:46px;border:1px solid #d5dcd8!important;border-radius:10px!important;padding:0 14px!important;background:#fff!important;color:var(--st-ink)!important;font:500 14px Inter,Arial,sans-serif!important;transition:border-color .15s,box-shadow .15s}
+body[data-fynx-settings] .content-area textarea{min-height:96px;padding:12px 14px!important;resize:vertical}
+body[data-fynx-settings] .content-area input:focus,body[data-fynx-settings] .content-area select:focus,body[data-fynx-settings] .content-area textarea:focus{outline:none;border-color:var(--st-green)!important;box-shadow:0 0 0 3px rgba(31,90,63,.14)}
+body[data-fynx-settings] .content-area input[type=file]{width:100%;padding:9px 10px;border:1px dashed #c9d2cd;border-radius:10px;background:var(--st-soft);font-size:13px}
+body[data-fynx-settings] .avatar:not([src]),body[data-fynx-settings] .avatar[src=""]{visibility:hidden}
+body[data-fynx-settings] .avatar,body[data-fynx-settings] #avatarPreview{width:64px!important;height:64px!important;border-radius:50%!important;object-fit:cover;border:2px solid var(--st-line)!important;background:var(--st-soft)!important}
+/* Rows + switches */
+body[data-fynx-settings] .row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 0!important;border-bottom:1px solid #eef1ef!important;font-size:14.5px}
+body[data-fynx-settings] .row:last-child{border-bottom:0!important}
+body[data-fynx-settings] .switch{width:46px!important;height:26px!important;border:0!important;border-radius:999px!important;background:#cfd6d2!important;position:relative;cursor:pointer;flex:0 0 auto;transition:background .2s}
+body[data-fynx-settings] .switch .knob{width:20px!important;height:20px!important;top:3px!important;left:3px!important;background:#fff!important;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .2s}
+body[data-fynx-settings] .switch.on{background:var(--st-green-2)!important}
+body[data-fynx-settings] .switch.on .knob{left:23px!important}
+body[data-fynx-settings] .switch:focus-visible{outline:2px solid var(--st-green);outline-offset:2px}
+/* Buttons */
+html body[data-fynx-settings][data-fynx-layout] .content-area .btn{min-height:42px!important;height:auto!important;padding:0 16px!important;border-radius:10px!important;border:1px solid #d5dcd8!important;background:#fff!important;color:var(--st-ink)!important;font:700 13.5px Inter,Arial,sans-serif!important;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;transition:border-color .15s,background .15s}
+html body[data-fynx-settings][data-fynx-layout] .content-area .btn:hover{border-color:var(--st-green)!important;background:#f3f8f5!important}
+html body[data-fynx-settings][data-fynx-layout] .content-area .btn.primary{background:var(--st-green)!important;border-color:var(--st-green)!important;color:#fff!important}
+html body[data-fynx-settings][data-fynx-layout] .content-area .btn.primary:hover{background:#17432f!important}
+html body[data-fynx-settings][data-fynx-layout] .content-area .btn.danger{background:#fff!important;border-color:#f0c7c7!important;color:var(--st-red)!important}
+html body[data-fynx-settings][data-fynx-layout] .content-area .btn.danger:hover{background:#fdeeee!important}
+html body[data-fynx-settings][data-fynx-layout] .content-area .btn:disabled{opacity:.55;cursor:not-allowed}
+body[data-fynx-settings] .actions{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-top:8px}
+body[data-fynx-settings] .status,body[data-fynx-settings] [role=status]{font-size:13px;color:var(--st-muted)}
+/* Pills (preferred markets) */
+body[data-fynx-settings] .pill-row{display:flex;flex-wrap:wrap;gap:8px}
+html body[data-fynx-settings][data-fynx-layout] .content-area .market-pill{padding:8px 14px!important;border:1px solid #d5dcd8!important;border-radius:999px!important;background:#fff!important;color:var(--st-ink)!important;font:600 13px Inter,Arial,sans-serif!important;cursor:pointer}
+html body[data-fynx-settings][data-fynx-layout] .content-area .market-pill.on{background:var(--st-green)!important;color:#fff!important;border-color:var(--st-green)!important}
+/* Notification feed */
+body[data-fynx-settings] .feed-item{padding:14px 16px!important;border:1px solid var(--st-line)!important;border-radius:12px!important;background:#fff!important;margin:0 0 10px!important}
+body[data-fynx-settings] .feed-item.unread{border-left:4px solid var(--st-green-2)!important}
+body[data-fynx-settings] .feed-title{font-size:14px!important}
+body[data-fynx-settings] .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+body[data-fynx-settings] .filters select{width:auto;min-width:180px}
+body[data-fynx-settings] .badge{border-color:#d5dcd8!important;color:#38423d}
+body[data-fynx-settings] #sessionList{font-size:13.5px!important;color:#38423d!important}
+body[data-fynx-settings] .security-session-row{padding:12px 0!important}
+@media (max-width:760px){
+  body[data-fynx-settings] .content-area{padding:18px 14px 48px!important}
+  body[data-fynx-settings] .st-hero{grid-template-columns:1fr}
+  body[data-fynx-settings] .st-who{grid-column:1;grid-row:auto;margin-top:12px}
+  body[data-fynx-settings] .grid{grid-template-columns:1fr}
+  body[data-fynx-settings] .card{padding:18px 16px!important}
+}
+html[data-theme=dark] body[data-fynx-settings] .card,body.dark-mode[data-fynx-settings] .card{background:#111614!important;border-color:#27302b!important}

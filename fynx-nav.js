@@ -31,6 +31,10 @@
   };
 
   const FILE_TO_VIEW = {
+    'account-settings.html': 'profile',
+    'security.html': 'profile',
+    'notifications.html': 'profile',
+    'preferences.html': 'profile',
     'home.html': 'home',
     'index.html': 'home',
     'dashboard.html': 'home',
@@ -232,7 +236,8 @@ topBar.innerHTML = `
       }
       updateIdentity();
       window.addEventListener('fynx:identity', updateIdentity);
-      import('/assets/js/account-identity.js?v=20260928-audit2').catch(() => {});
+      import('/assets/js/account-identity.js?v=20261112-identity-1').catch(() => {});
+      if (!document.querySelector('script[data-fx-account-menu]')) { const m = document.createElement('script'); m.src = '/assets/js/account-menu.js?v=20261112-acct-1'; m.defer = true; m.dataset.fxAccountMenu = '1'; document.head.append(m); }
       initialsEl.title = 'Open profile';
       initialsEl.style.cursor = 'pointer';
       initialsEl.setAttribute('role', 'link');
