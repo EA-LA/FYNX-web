@@ -286,7 +286,7 @@
     let b = document.getElementById('fx-mood');
     if (!b) { b = document.createElement('button'); b.type = 'button'; b.id = 'fx-mood'; b.className = 'pm-mood'; b.addEventListener('click', () => T.openPage('mood')); const live = document.getElementById('fx-live'); (live?.parentNode || top).insertBefore(b, live || null); }
     const m = mood(); if (!m) { b.hidden = true; return; }
-    b.hidden = false; b.dataset.state = m.score >= 0.3 ? 'on' : m.score <= -0.3 ? 'off' : 'flat'; b.textContent = (m.score >= 0.3 ? '↗ ' : m.score <= -0.3 ? '↘ ' : '— ') + m.label; b.title = `Cross-asset risk score ${m.score.toFixed(2)} from ${m.parts.length} markets`;
+    b.hidden = false; b.dataset.state = m.score >= 0.3 ? 'on' : m.score <= -0.3 ? 'off' : 'flat'; b.textContent = (m.score >= 0.3 ? '↗︎ ' : m.score <= -0.3 ? '↘ ' : '— ') + m.label; b.title = `Cross-asset risk score ${m.score.toFixed(2)} from ${m.parts.length} markets`;
   }
   // Check every 3 s until quotes arrive, then every 15 s.
   (function tick() { badge(); setTimeout(tick, document.getElementById('fx-mood')?.hidden === false ? 15000 : 3000); })();

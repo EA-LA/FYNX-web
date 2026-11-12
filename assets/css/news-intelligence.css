@@ -15,3 +15,4 @@ body[data-view="news"],body.fn-standalone{margin:0}
 .fn-app .fn-pro-card h3{color:#f5f9f7!important}.fn-app .fn-pro-card p{color:#d2e0d8!important}
 /* A long feed status (e.g. "Refresh unavailable...") wraps instead of pushing the headline count off a phone screen (site-qa run 71). */
 .fn-feed-meta>p{min-width:0;overflow-wrap:anywhere}.fn-feed-meta>[data-news-count]{flex-shrink:0;white-space:nowrap}
+.fn-fallback-note{margin:0 0 14px;padding:10px 14px;border-left:3px solid #1f5a3f;background:rgba(31,90,63,.08);font:600 13px/1.5 "IBM Plex Mono",ui-monospace,monospace;color:inherit}
