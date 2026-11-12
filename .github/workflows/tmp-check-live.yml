@@ -1,14 +1,18 @@
-name: TEMP probe
+name: TEMP scanner run
 on:
   push:
     branches: [tmp/check-live]
 permissions:
-  contents: read
+  contents: write
 jobs:
   run:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with: {ref: claude/scanner-news-fixes}
       - uses: actions/setup-node@v4
         with: {node-version: '22'}
-      - run: node .github/tmp/probe.cjs
+      - run: node scripts/refresh-scanner.cjs out && ls -la out && node -e "const s=require('./out/scanner.json');const c={};for(const r of s.stocks.rows)for(const t of r[10])c[t]=(c[t]||0)+1;console.log('THEMES',JSON.stringify(c));console.log('AI3',s.stocks.rows.filter(r=>r[10].includes('ai')&&r[2]<3).map(r=>r[0]+':'+r[2]+':'+r[1]).join(' | '));console.log('CRY',s.crypto.rows.length,JSON.stringify(s.crypto.rows[0]))"
+      - run: |
+          git config user.name tmp; git config user.email tmp@users.noreply.github.com
+          git checkout -q --orphan tmp/intel-out && git rm -rqf . && cp out/scanner.json . && git add scanner.json && git commit -qm out && git push -qf origin HEAD:tmp/intel-out
