@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-12 (run 81) — [site-qa] Woodie and Camarilla pivot points; Company Screener checkboxes even on iPhone
+- New: the Pivot Points calculator now offers Woodie and Camarilla methods next to Classic and Fibonacci. Woodie gives the previous close double weight; Camarilla shows four tighter levels (R1–R4, S1–S4) around the close. Shared scenario links keep the chosen method. Example with high 110, low 100, close 108: Woodie pivot 106.50, R1 113.00, S1 103.00; Camarilla R3 110.75, S3 105.25. https://www.fynxfinanceworld.com/tools/pivot.html
+- Fixed on iPhone: on the Company Screener, the "Positive operating cash flow" checkbox was squashed narrower than the one beside it on small phones. Both are now the same full size. https://www.fynxfinanceworld.com/tools/company-screener.html
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): all 242 main pages with no sideways scrolling, small text fields, script errors or broken internal links; six calculators (risk-reward, crypto, stock, pivot, Fibonacci, pip) hand-checked against independent sums; `npm test`, tool, discovery, macro, edge and API checks, edge lint and type checks and the build pass.
+
 ## 2026-11-12 (run 80) — [site-qa] Top bar fits small iPhones again; glossary search opens on the exact term
 - Fixed on iPhone: the new "FYNX Terminal" link in the dark strip at the very top did not fit an iPhone SE. The edition picker ("US") sat on top of it, and on the research pages the whole page could be dragged sideways. The strip now fits on every iPhone size: on the smallest phones the date is left out to make room, the Terminal link is easier to tap, and the "US" label no longer overlaps its arrow. https://www.fynxfinanceworld.com/tools/research-desk.html https://www.fynxfinanceworld.com/news.html
 - Fixed on iPhone: the news section pages (Markets, Economics, Energy, Finance, Industries, Politics, Technology, World) were slightly wider than an iPhone SE screen because the "Auto-updating · next 10:00" label could not wrap. It now wraps neatly under the Follow button. https://www.fynxfinanceworld.com/news/markets.html

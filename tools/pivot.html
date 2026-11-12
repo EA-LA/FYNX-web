@@ -347,7 +347,7 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261112-site-qa-80">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261112-site-qa-81">
 <title>Pivot Point Support &amp; Resistance Calculator | FYNX</title>
 <meta name="description" content="Calculate classic pivot points and support and resistance levels from the previous period's high, low and closing price.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -369,7 +369,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
      crossorigin="anonymous"></script>
 <!-- FYNX ADSENSE VERIFICATION END -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261112-site-qa-80"><script src="/assets/js/company-products-data.js?v=20261111-story-photos-1" defer></script><script src="/assets/js/company-products.js?v=20261112-site-qa-80" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261112-site-qa-81"><script src="/assets/js/company-products-data.js?v=20261111-story-photos-1" defer></script><script src="/assets/js/company-products.js?v=20261112-site-qa-81" defer></script><!-- company-products:assets:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
@@ -429,6 +429,8 @@
                 <select id="method">
                   <option value="classic">Classic</option>
                   <option value="fibonacci">Fibonacci</option>
+                  <option value="woodie">Woodie</option>
+                  <option value="camarilla">Camarilla</option>
                 </select>
               </div>
             </div>
@@ -452,10 +454,10 @@
       </div>
 
       <div class="footnote">
-        Formula uses previous session values. Classic gives PP, R1, R2, R3, S1, S2, S3. Fibonacci gives PP with fib-based support and resistance levels.
+        Formula uses previous session values. Classic gives PP, R1, R2, R3, S1, S2, S3. Fibonacci gives PP with fib-based support and resistance levels. Woodie weights the close twice: PP = (H + L + 2C) ÷ 4. Camarilla places R1–R4 and S1–S4 around the close at 1.1 × range ÷ 12, 6, 4 and 2.
       </div>
     </section>
-  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Calculate reference levels from the previous period</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter high, low and close from the same completed session and check the selected method. Confirm your data provider’s session boundary.</p><h3>The calculation or concept</h3><p>The standard pivot is (high + low + close) ÷ 3. Other pivot methods use different formulas.</p></div><div class="tool-example"><h3>Worked example</h3><p>A previous high of 110, low of 100 and close of 105 gives a standard pivot of 105. Standard R1 is 110 and S1 is 100.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Different sessions and pivot methods produce different levels. A pivot is a reference level, not a forecast or automatic order.</p></details></section><!-- tool-guide:end -->
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Calculate reference levels from the previous period</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter high, low and close from the same completed session and check the selected method. Confirm your data provider’s session boundary.</p><h3>The calculation or concept</h3><p>The standard pivot is (high + low + close) ÷ 3. Fibonacci spaces levels at 38.2%, 61.8% and 100% of the range; Woodie gives the close double weight; Camarilla sets four tighter levels each side of the close.</p></div><div class="tool-example"><h3>Worked example</h3><p>A previous high of 110, low of 100 and close of 105 gives a standard pivot of 105. Standard R1 is 110 and S1 is 100.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Different sessions and pivot methods produce different levels. A pivot is a reference level, not a forecast or automatic order.</p></details></section><!-- tool-guide:end -->
 <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/fibonacci.html"><strong>Fibonacci Retracement &amp; Extension Calculator</strong><span>Calculate Fibonacci retracement and extension levels from a swing high and low to study potential price levels.</span></a><a href="/tools/risk-reward.html"><strong>Risk-to-Reward Ratio Calculator</strong><span>Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</span></a><a href="/tools/market-hours.html"><strong>Forex Trading Sessions &amp; Market Hours</strong><span>Review market session timing and trading hours to plan when to research and monitor financial markets.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
 
@@ -539,6 +541,35 @@
       ]);
     }
 
+    // [site-qa] run 81: Woodie (close weighted twice) and Camarilla (levels around the close).
+    function renderWoodie(high, low, close) {
+      const range = high - low;
+      const pp = (high + low + 2 * close) / 4;
+      renderResult("Woodie", pp, [
+        { label: "R1", value: (2 * pp) - low },
+        { label: "R2", value: pp + range },
+        { label: "R3", value: high + 2 * (pp - low) },
+        { label: "S1", value: (2 * pp) - high },
+        { label: "S2", value: pp - range },
+        { label: "S3", value: low - 2 * (high - pp) }
+      ]);
+    }
+
+    function renderCamarilla(high, low, close) {
+      const step = (high - low) * 1.1;
+      const pp = (high + low + close) / 3;
+      renderResult("Camarilla", pp, [
+        { label: "R1", value: close + step / 12 },
+        { label: "R2", value: close + step / 6 },
+        { label: "R3", value: close + step / 4 },
+        { label: "R4", value: close + step / 2 },
+        { label: "S1", value: close - step / 12 },
+        { label: "S2", value: close - step / 6 },
+        { label: "S3", value: close - step / 4 },
+        { label: "S4", value: close - step / 2 }
+      ]);
+    }
+
     function renderResult(methodName, pp, levels) {
       resultArea.className = "result-box";
       resultArea.innerHTML = `
@@ -584,6 +615,10 @@
 
       if (method === "fibonacci") {
         renderFibonacci(high, low, close);
+      } else if (method === "woodie") {
+        renderWoodie(high, low, close);
+      } else if (method === "camarilla") {
+        renderCamarilla(high, low, close);
       } else {
         renderClassic(high, low, close);
       }

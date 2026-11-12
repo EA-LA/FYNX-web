@@ -239,7 +239,7 @@ html body[data-fynx-layout] [hidden]{display:none!important}
   html body section.section>div>a[target=_blank]{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box}
   html body input#query{min-height:44px;box-sizing:border-box}
   html body .check-label,html body .filter-grid .check-label{min-height:44px;display:flex;align-items:center;gap:8px}
-  html body .check-label input[type=checkbox]{width:24px;height:24px}
+  html body .check-label input[type=checkbox]{width:24px;height:24px;flex:none}
 }
 @media (max-width:600px) and (pointer:coarse){
   html body button.secondary,html body a.discovery-textlink,html body .search-row input,html body .search-row input[type=search]{min-height:44px!important;box-sizing:border-box}
