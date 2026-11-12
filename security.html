@@ -9,6 +9,8 @@
 .content-area{padding:30px;overflow:auto;display:grid;gap:12px}.card{background:#fafafa;border:1px solid #e5e5e5;border-radius:12px;padding:14px} body.dark-mode .card{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.1)}
 .field{display:grid;gap:6px;margin-bottom:8px}.field input{height:40px;border:1px solid #ddd;border-radius:10px;padding:0 12px;background:#fff} body.dark-mode .field input{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12);color:#fff}
 .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.08)} .row:last-child{border-bottom:none}
+.security-session-row{padding:8px 0;border-bottom:1px solid rgba(0,0,0,.08);overflow-wrap:anywhere}
+.security-session-row:last-child{border-bottom:0}
 .switch{width:48px;height:28px;border:1px solid #ddd;border-radius:999px;position:relative;cursor:pointer;background:#fff}.knob{width:22px;height:22px;border-radius:50%;background:#111;position:absolute;left:2px;top:2px;transition:.2s}.switch.on .knob{left:22px}
 body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.2)} body.dark-mode .knob{background:#fff}
 .btn{height:38px;padding:0 12px;border-radius:10px;border:1px solid #ddd;background:#fff;font-size:12px;font-weight:800;cursor:pointer}.btn.primary{background:#000;color:#fff;border-color:#000}.btn.danger{background:#000;color:#fff;border-color:#000}
@@ -39,7 +41,7 @@ body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,25
 <div class="row"><span>Login alerts</span><button class="switch" id="loginAlertsSwitch" type="button"><span class="knob"></span></button></div>
 <div id="mfaSettings" style="padding:16px 0"><h3>Two-factor authentication</h3><p role="status" style="margin:12px 0">Checking authenticator protection…</p><button class="btn" type="button" disabled>Set up authenticator</button></div>
 </div>
-<div class="card"><h3 style="font-size:14px;margin-bottom:8px">Active Sessions</h3><div id="sessionList" style="font-size:12px;color:#777">Loading sessions...</div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" id="logoutCurrentBtn" type="button">Log out current session</button><button class="btn danger" id="logoutAllBtn" type="button">Log out all devices</button></div></div>
+<div class="card"><h3 style="font-size:14px;margin-bottom:8px">Active Sessions</h3><div id="sessionList" style="font-size:12px;color:#777" role="region" aria-label="Active sessions" aria-live="polite">Loading sessions...</div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" id="logoutCurrentBtn" type="button">Log out current session</button><button class="btn danger" id="logoutAllBtn" type="button">Log out all devices</button></div></div>
 </div></main></div>
 <script type="module" src="assets/js/session-bootstrap.js?v=20261112-site-qa-73"></script>
 <script>
@@ -53,6 +55,7 @@ body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,25
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
 import { auth, bootstrapAccount, updatePasswordWithReauth, resendVerificationEmail, saveSecuritySettings, getSessionMetadata, revokeAllSessions, logoutCurrentSession } from './assets/js/account-system.js?v=20260928-email-routing';
 import { mountNotificationBell } from './assets/js/account-ui.js?v=20260928-audit2';
+import { renderSessionMetadata } from './assets/js/security-session-list.js';
 let sessionId = null;
 function applyTheme(){const t=window.FynxPreferences?.getItem('fynx_theme');document.body.classList.toggle('dark-mode',t==='dark');} applyTheme();
 document.getElementById('themeBtn').onclick=()=>{const d=!document.body.classList.contains('dark-mode');document.body.classList.toggle('dark-mode',d);window.FynxPreferences?.setItem('fynx_theme',d?'dark':'light');};
@@ -63,7 +66,14 @@ loginAlertsSwitch.onclick = async()=>{ loginAlertsSwitch.classList.toggle('on');
 logoutCurrentBtn.onclick = async()=>{ await logoutCurrentSession('auth/login.html'); window.location.href='auth/login.html'; };
 logoutAllBtn.onclick = async()=>{ if(!auth.currentUser) return; await revokeAllSessions(auth.currentUser.uid, sessionId); await logoutCurrentSession('auth/login.html?reason=all-sessions-revoked'); window.location.href='auth/login.html?reason=all-sessions-revoked'; };
 
-onAuthStateChanged(auth, async(user)=>{ passwordForm.querySelector('button[type=submit]').disabled=!user; if(!user) return; const seeded = await bootstrapAccount(user); verifyStatus.textContent = user.emailVerified ? 'Verified' : 'Not verified'; loginAlertsSwitch.classList.toggle('on', seeded.security?.loginAlerts !== false); const sessions = await getSessionMetadata(user.uid); const list = sessions.map((s)=>`<div style="padding:8px 0;border-bottom:1px solid rgba(0,0,0,.08)"><strong>${s.platform||'Device'}</strong> • ${s.timezone||'UTC'} • ${s.status||'active'}</div>`).join('') || 'No session metadata yet'; sessionList.innerHTML=list; sessionId = sessions[0]?.sessionId || null;});
+onAuthStateChanged(auth, async(user)=>{ passwordForm.querySelector('button[type=submit]').disabled=!user; if(!user) return; const seeded = await bootstrapAccount(user); verifyStatus.textContent = user.emailVerified ? 'Verified' : 'Not verified'; loginAlertsSwitch.classList.toggle('on', seeded.security?.loginAlerts !== false); try {
+  const sessions = await getSessionMetadata(user.uid);
+  renderSessionMetadata(sessionList, sessions);
+  sessionId = sessions[0]?.sessionId || null;
+} catch (error) {
+  sessionList.textContent = 'Could not load active sessions. Reload to try again.';
+  sessionId = null;
+}});
 
 mountNotificationBell();
 </script>
