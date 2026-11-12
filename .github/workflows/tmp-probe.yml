@@ -10,5 +10,5 @@ jobs:
     steps:
       - run: |
           B=https://us-central1-fynx-c7a28.cloudfunctions.net/webResearchData
-          for u in "$B?action=directory" "$B?action=company&cik=320193" "$B?action=company&ticker=AAPL" "$B?action=search&q=nvidia" "$B?action=quotes&symbols=AAPL,PLTR" "https://www.sec.gov/files/company_tickers.json" "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json" "https://fynxfinanceworld.vercel.app/fn/preview.js?u=https://www.cnbc.com"; do
-            echo "=== $u"; curl -s -m 40 -A "FYNX Finance World research@fynxfinanceworld.com" -H "Origin: https://www.fynxfinanceworld.com" -D - -o /tmp/b -w "time %{time_total}\n" "$u" | grep -iE "^(HTTP|content-type|access-control|time)" ; head -c 300 /tmp/b; echo; done
+          for u in "$B?action=financials&cik=320193" "$B?action=financials&cik=1045810" "$B?action=directory"; do
+            echo "=== $u"; curl -s -m 40 -A "FYNX Finance World research@fynxfinanceworld.com" -H "Origin: https://www.fynxfinanceworld.com" -D - -o /tmp/b -w "time %{time_total}\n" "$u" | grep -iE "^(HTTP|content-type|access-control|time)" ; head -c 600 /tmp/b; echo; done
