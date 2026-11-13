@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-13 (run 84) — [site-qa] Debt Payoff shows how extra payments speed things up; Compound no longer shows $NaN
+- New: the Debt Payoff calculator has an optional "Extra Monthly Payment" box and a "Pay it off faster" section. It compares your extra with paying 10%, 25% and 50% more each month: how many months sooner you'd be debt-free and how much interest you'd save. Example: $10,000 at 10% with $300 a month takes 40 months; adding $100 a month finishes in 29 months and saves $503.78 in interest. Shared scenario links keep the extra amount. https://www.fynxfinanceworld.com/tools/debt-payoff.html
+- Fixed: the Compound calculator showed "$NaN" everywhere if you entered a yearly loss of 100% or more with yearly compounding. It now explains the limit instead. https://www.fynxfinanceworld.com/tools/compound.html
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): 244 main pages with no sideways scrolling, small text fields, script errors or broken internal links; new results hand-checked against independent sums; site checks pass.
+
 ## 2026-11-12 (run 83) — [site-qa] Liquidation Guard catches impossible trades and shows the safe leverage for your stop
 - Fixed: the Liquidation Guard rated a long trade with its stop above the entry price (or a short with its stop below) as "Healthy" with a $0 loss. It now says the stop is on the wrong side. https://www.fynxfinanceworld.com/tools/liquidation-guard.html
 - Fixed: at extreme leverage (for example 500x with a 0.5% maintenance margin) the tool showed a liquidation price on the wrong side of the entry. It now explains the position would be liquidated straight away and to lower the leverage.

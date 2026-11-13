@@ -590,6 +590,14 @@
       const compoundFrequency = Math.max(1, parseInt(document.getElementById("compoundFrequency").value) || 12);
       const depositTiming = document.getElementById("depositTiming").value;
 
+      // A loss of 100% or more per compounding period wipes the balance out; past that the
+      // growth factor is undefined (annual -150% showed $NaN). Ask for a smaller loss instead.
+      if (!(1 + annualRate / compoundFrequency > 0)) {
+        const limit = (compoundFrequency * 100).toLocaleString("en-US");
+        clearCompoundResults(`With this compounding the annual return must be above -${limit}%. A loss that large would wipe out the whole balance in one period.`);
+        return;
+      }
+
       const monthlyRateEquivalent = Math.pow(1 + annualRate / compoundFrequency, compoundFrequency / 12) - 1;
 
       let balance = startingBalance;

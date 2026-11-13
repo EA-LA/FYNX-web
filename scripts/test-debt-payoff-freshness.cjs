@@ -56,7 +56,7 @@ test('the initial example still calculates its correct 40-month schedule', () =>
   assert.match(el('scheduleBody').innerHTML, /<tr>/);
 });
 
-for (const id of ['loanAmount', 'interestRate', 'monthlyPayment']) {
+for (const id of ['loanAmount', 'interestRate', 'monthlyPayment', 'extraPayment']) {
   test('editing ' + id + ' immediately invalidates all previous results', () => {
     const {el, fire} = boot();
     el(id).value = String(Number(el(id).value) + 1);
@@ -110,4 +110,27 @@ test('Reset clears results without pretending a new calculation happened', () =>
 
 test('updated calculation state is announced accessibly', () => {
   assert.match(html, /id="resultStatus"[^>]*role="status"[^>]*aria-live="polite"[^>]*aria-atomic="true"/);
+});
+
+// [site-qa] run 84: optional extra payment + "Pay it off faster" comparison.
+test('extra monthly payment is added and compared with the plain payment', () => {
+  const {el, fire} = boot();
+  assert.match(el('fasterList').innerHTML, /\$330\.00\/month[\s\S]*36 months[\s\S]*4 months sooner[\s\S]*saves \$190\.34/);
+  el('extraPayment').value = '100';
+  fire('calculateBtn', 'click');
+  assert.equal(el('monthsValue').textContent, '29 months');
+  assert.equal(el('interestValue').textContent, '$1,260.38');
+  assert.match(el('summaryText').textContent, /Without the \$100\.00 extra it would take 40 months and \$1,764\.16 in interest, so the extra saves 11 months and \$503\.78/);
+  assert.match(el('fasterList').innerHTML, /faster-mine[\s\S]*your extra[\s\S]*11 months sooner/);
+});
+
+test('an extra payment that rescues a too-low payment is explained, negative extra rejected', () => {
+  const {el, fire} = boot();
+  el('loanAmount').value = '5000'; el('interestRate').value = '24'; el('monthlyPayment').value = '90'; el('extraPayment').value = '60';
+  fire('calculateBtn', 'click');
+  assert.equal(el('monthsValue').textContent, '56 months');
+  assert.match(el('fasterList').innerHTML, /Without the extra, the debt would never be paid off/);
+  el('extraPayment').value = '-5';
+  fire('calculateBtn', 'click');
+  assert.match(el('resultStatus').textContent, /valid positive values/);
 });
