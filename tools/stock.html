@@ -318,6 +318,12 @@
       line-height:1.3;
       word-break:break-word;
     }
+    .stock-plan-table{width:100%;border-collapse:collapse;margin-top:.35rem;font-variant-numeric:tabular-nums}
+    .stock-plan-table th{font-size:.78rem;color:var(--text-soft);font-weight:800;text-align:right;padding:.25rem .3rem}
+    .stock-plan-table td{font-size:.98rem;font-weight:850;color:var(--text-strong);text-align:right;padding:.4rem .3rem;border-top:1px solid var(--border);white-space:nowrap}
+    .stock-plan-table th:first-child,.stock-plan-table td:first-child{text-align:left}
+    .stock-plan-note,.stock-plan-cash{margin:.55rem 0 0;font-size:.88rem;line-height:1.5;color:var(--text-soft);font-weight:650}
+    .stock-plan-cash{color:var(--text-strong)}
     .hint{
       margin-top:1.2rem;
       color:var(--text-soft);
@@ -346,6 +352,7 @@
 <meta name="description" content="Calculate a stock trade's position size and risk from account size, risk percentage, entry price and stop price.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <style>.scenario-link-status{margin:10px 0 0;font-size:13px;line-height:1.5;color:inherit;opacity:.85}.scenario-link-status:empty{display:none}.scenario-link-box{display:block;width:100%;box-sizing:border-box;margin-top:6px;font-size:16px;padding:10px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit}</style>
+<script src="/assets/js/stock-plan.js?v=20261113-site-qa-88" defer></script>
 <script src="/assets/js/scenario-link.js?v=20261111-scenario-privacy-4" defer></script>
 <link rel="canonical" href="https://www.fynxfinanceworld.com/tools/stock.html">
 <meta property="og:title" content="Stock Position Sizing Calculator | FYNX">
@@ -457,11 +464,15 @@
               <div class="result-label">Notes</div>
               <div class="result-value" id="notesValue">—</div>
             </div>
+            <div class="result-item" id="stockPlan" hidden>
+              <div class="result-label">Targets and cash check</div>
+              <div id="stockPlanBody"></div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="hint">This version keeps your existing page style and adds a working stock position size calculator inside the same layout.</div>
+      <div class="hint">Shares round down to whole shares. Results are before commissions and slippage, and a price gap through your stop can make the loss larger. The cash check assumes no margin.</div>
     </section>
   <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Work out a share quantity before entering</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Use the actual entry and stop assumptions for the same ticker. Compare cash requirements as well as the loss budget.</p><h3>The calculation or concept</h3><p>Shares from risk budget = risk amount ÷ absolute entry-to-stop distance; round down to whole shares when required.</p></div><div class="tool-example"><h3>Worked example</h3><p>With a hypothetical $75 risk budget and a $1.50 entry-to-stop distance, the arithmetic gives 50 shares. At a $40 entry those shares require $2,000 before costs.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Fractional-share availability, broker margin and costs vary. A price gap through the stop can make the realized loss larger.</p></details></section><!-- tool-guide:end -->
 <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/risk-reward.html"><strong>Risk-to-Reward Ratio Calculator</strong><span>Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
@@ -519,6 +530,7 @@
       capitalNeededValue.textContent = "$0.00";
       maxLossValue.textContent = "$0.00";
       notesValue.textContent = "—";
+      if (window.FynxStockPlan) window.FynxStockPlan.clear();
     }
 
     function calculateStock() {
@@ -578,6 +590,7 @@
 
       emptyState.style.display = "none";
       resultList.style.display = "grid";
+      if (window.FynxStockPlan) window.FynxStockPlan.render({ accountSize, entryPrice, stopLoss, shares });
     }
 
     function clearStock() {
