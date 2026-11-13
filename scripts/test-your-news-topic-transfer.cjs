@@ -99,3 +99,15 @@ test('page offers actual download/file restore, a status announcement and touch-
   assert.match(ui,/aria-live','polite'/);
   assert.match(css,/\.your-news-transfer-actions button\s*\{[^}]*min-height: 44px/);
 });
+
+test('published page and release builder use the same targeted cache version',()=>{
+  const {rewriteReferences,TOPIC_TRANSFER_VERSION,VERSION,ASSETS} = require('./build-release-assets.cjs');
+  const html=fs.readFileSync(path.join(__dirname,'../news/your-news.html'),'utf8');
+  for(const asset of ['assets/js/news-preferences.js','assets/js/your-news.js','assets/css/your-news.css']) {
+    assert.ok(html.includes(asset+'?v='+TOPIC_TRANSFER_VERSION),asset+' is fresh on the published page');
+  }
+  const source='<script src="/assets/js/news-preferences.js?v=old"></script><script src="/fynx-nav.js?v=old"></script>';
+  const rewritten=rewriteReferences(source,'news/your-news.html',new Set(ASSETS));
+  assert.ok(rewritten.includes('news-preferences.js?v='+TOPIC_TRANSFER_VERSION));
+  assert.ok(rewritten.includes('fynx-nav.js?v='+VERSION));
+});
