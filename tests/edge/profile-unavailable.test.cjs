@@ -5,8 +5,8 @@ const fs=require('node:fs');
 const path=require('node:path');
 const {JSDOM}=require('jsdom');
 const source=fs.readFileSync(path.join(__dirname,'../../assets/js/edge/profile.js'),'utf8')
-  .replace("import('/auth/firebase.js')","window.__authModule()")
-  .replace("import('https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js')","Promise.resolve({onAuthStateChanged:window.__listenAuth})");
+  .replaceAll("import('/auth/firebase.js')","window.__authModule()")
+  .replaceAll("import('https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js')","Promise.resolve({onAuthStateChanged:window.__listenAuth})");
 async function waitFor(check){for(let i=0;i<100;i++){if(check())return;await new Promise(resolve=>setTimeout(resolve,5));}assert.fail('Profile state did not settle');}
 function json(data,status=200){return {ok:status>=200&&status<300,status,headers:{get:()=> 'application/json'},json:async()=>data};}
 function normal(url){if(url.endsWith('/preferences'))return json({timezone:'Europe/Prague',emailConfigured:false});if(url.endsWith('/tokens'))return json({tokens:[]});if(url.endsWith('/alerts'))return json({alerts:[]});return json({notifications:[]});}

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-13 (run 90) — [site-qa] Margin calculator shows how far price can move before a margin call or stop-out
+- New: the Margin calculator has a "How far can price move against you?" table under the results. For your trade it shows how many pips price can move against you, and the price a long or short would reach, before your margin level falls to 100% (a common margin call), 50% (a common stop-out) and 0%. Example: $5,000 balance, $500 margin already used, 1 lot EURUSD at 1.1000 with 30x leverage: 83.3 pips to margin call (long 1.09167 / short 1.10833) and 291.7 pips to a 50% stop-out. If the trade would already open below a level, it says so. Brokers set their own levels, so check yours. https://www.fynxfinanceworld.com/tools/margin.html
+- New: the same card shows the largest lot size your free margin can open, the largest size that keeps your margin level at 300% or more, and the margin per lot (example above: 1.22 lots, 0.31 lots, $3,666.67).
+- Fixed (behind the scenes): 8 automatic Edge Radar profile tests had started failing after today's Profile token update, because the test setup only replaced the first of two sign-in imports. The page itself was fine; the tests run again (90 of 90 pass).
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): all 358 pages with no sideways scrolling, small text fields, script errors or broken internal links; the new table fits the screen on every iPhone without sideways scrolling; results checked against an independent Python calculation; new automatic test; all site checks pass.
+
 ## 2026-11-13 (run 89) — [site-qa] Crypto calculator shows what each price move does to your trade; exact break-even for cheap coins
 - Fixed: the Crypto calculator rounded the break-even price to whole cents, so for low-priced coins it was useless (an entry of 0.1234 showed a break-even of $0.12). Prices now keep the decimals you typed and at least 4 significant digits ($0.1236). https://www.fynxfinanceworld.com/tools/crypto.html
 - Fixed: the Crypto calculator showed internal wording to visitors ("Calculator UI", "matches the same FYNX calculator design"). The form is now titled "Trade details" with a plain description.
