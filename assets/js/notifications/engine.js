@@ -1,4 +1,4 @@
-import {save as saveAccountState,requireSync,accountData,subscribe} from '../account-sync.js?v=20261113-world-ships-2';
+import {save as saveAccountState,requireSync,accountData,subscribe} from '../account-sync.js?v=20261113-world-ships-pro-1';
 import { safeNotificationUrl } from '../safe-content.js?v=20260928-audit2';
 import { app } from "../../../auth/firebase.js";
 import {

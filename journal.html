@@ -583,11 +583,11 @@
   </style>
   <link rel="stylesheet" href="assets/css/app-shell.css" />
   <link rel="stylesheet" href="assets/css/mobile-fixes.css">
-  <script type="module" src="assets/js/session-bootstrap.js?v=20261113-world-ships-2"></script>
+  <script type="module" src="assets/js/session-bootstrap.js?v=20261113-world-ships-pro-1"></script>
   <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261113-world-ships-2">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261113-world-ships-pro-1">
 <meta name="description" content="FYNX — Journal. Explore this resource from FYNX Finance World.">
 <meta name="robots" content="noindex, follow">
 <link rel="canonical" href="https://www.fynxfinanceworld.com/journal.html">
@@ -597,19 +597,19 @@
 <!-- terminal-design:start -->
 <link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
 <link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
-<script src="/assets/js/news-reader-links.js?v=20261113-world-ships-2" defer></script>
-<script src="/assets/js/newsroom-editions.js?v=20261113-world-ships-2" defer></script>
-<script src="/assets/js/news-preferences.js?v=20261113-world-ships-2" defer></script>
-<script src="/assets/js/newsroom-media.js?v=20261113-world-ships-2" defer></script>
-<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261113-world-ships-2">
-<script src="/assets/js/market-intelligence-data.js?v=20261113-world-ships-2" defer></script>
-<script src="/assets/js/terminal-market-data.js?v=20261113-world-ships-2" defer></script>
-<script src="/assets/js/terminal-header.js?v=20261113-world-ships-2" defer></script>
-<script src="/assets/js/terminal-market-ui.js?v=20261113-world-ships-2" defer></script>
+<script src="/assets/js/news-reader-links.js?v=20261113-world-ships-pro-1" defer></script>
+<script src="/assets/js/newsroom-editions.js?v=20261113-world-ships-pro-1" defer></script>
+<script src="/assets/js/news-preferences.js?v=20261113-world-ships-pro-1" defer></script>
+<script src="/assets/js/newsroom-media.js?v=20261113-world-ships-pro-1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261113-world-ships-pro-1">
+<script src="/assets/js/market-intelligence-data.js?v=20261113-world-ships-pro-1" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261113-world-ships-pro-1" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261113-world-ships-pro-1" defer></script>
+<script src="/assets/js/terminal-market-ui.js?v=20261113-world-ships-pro-1" defer></script>
 <link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261030-r1">
 <script src="/assets/js/terminal-pages.js?v=20261030-r1" defer></script>
 <!-- terminal-design:end -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261113-world-ships-2"><script src="/assets/js/company-products-data.js?v=20261113-shared-account-2" defer></script><script src="/assets/js/company-products.js?v=20261113-world-ships-2" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261113-world-ships-pro-1"><script src="/assets/js/company-products-data.js?v=20261113-shared-account-2" defer></script><script src="/assets/js/company-products.js?v=20261113-world-ships-pro-1" defer></script><!-- company-products:assets:end -->
 </head>
 
 <body data-protected-page="false" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD" data-fynx-terminal>
@@ -977,7 +977,7 @@
   </div>
 
   <!-- Firebase -->
-  <script src="demo-mode.js?v=20261113-world-ships-2"></script>
+  <script src="demo-mode.js?v=20261113-world-ships-pro-1"></script>
 
   <script type="module">
     import { app, auth, authPersistenceReady } from "./auth/firebase.js";
@@ -1091,7 +1091,7 @@
       async importTrades(rows, onProgress){
         if (!currentUid) throw new Error("Sign in to import trades into your journal.");
         const owner = currentUid; let done = 0;
-        const {requireSync,saveMany} = await import('./assets/js/account-sync.js?v=20261113-world-ships-2');
+        const {requireSync,saveMany} = await import('./assets/js/account-sync.js?v=20261113-world-ships-pro-1');
         await requireSync(owner);
         for (let i = 0; i < rows.length; i += 50) {
           if(currentUid !== owner) throw new Error('Your account changed. Import stopped.');
@@ -1416,7 +1416,7 @@
 
     async function saveSharedJournal(id, data) {
       const uid = currentUid;
-      const {requireSync, save} = await import('./assets/js/account-sync.js?v=20261113-world-ships-2');
+      const {requireSync, save} = await import('./assets/js/account-sync.js?v=20261113-world-ships-pro-1');
       await requireSync(uid);
       await save('journalTrades', id, data);
     }
@@ -1565,7 +1565,7 @@
     });
   </script>
 
-  <script src="fynx-nav.js?v=20261113-world-ships-2"></script>
+  <script src="fynx-nav.js?v=20261113-world-ships-pro-1"></script>
 
   <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
   <script src="fynx-usercard.js?v=20260928-audit2"></script>
@@ -1573,6 +1573,6 @@
 <link rel="stylesheet" href="/assets/css/journal-mt5.css?v=20261113-site-qa-86">
 <script src="/assets/js/journal-mt5.js?v=20261112-mt5-1" defer></script>
 <script src="/assets/js/journal-coach.js?v=20261113-site-qa-86" defer></script>
-<script type="module" src="/assets/js/account-sync.js?v=20261113-world-ships-2"></script>
+<script type="module" src="/assets/js/account-sync.js?v=20261113-world-ships-pro-1"></script>
 </body>
 </html>
