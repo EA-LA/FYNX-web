@@ -37,7 +37,7 @@ jobs:
           set -uo pipefail
           mkdir -p "$RUNNER_TEMP/previous"
           if git fetch --depth=1 origin refs/heads/world-data 2>/dev/null; then
-            for f in countries.json states.json symbols.json ships.json; do git show "FETCH_HEAD:$f" > "$RUNNER_TEMP/previous/$f" 2>/dev/null || rm -f "$RUNNER_TEMP/previous/$f"; done
+            for f in countries.json states.json symbols.json ships.json shipreg.json; do git show "FETCH_HEAD:$f" > "$RUNNER_TEMP/previous/$f" 2>/dev/null || rm -f "$RUNNER_TEMP/previous/$f"; done
           fi
       - name: Fetch public sources
         env:

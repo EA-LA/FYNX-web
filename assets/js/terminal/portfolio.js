@@ -10,7 +10,7 @@
     if(shared?.sync.uid){if(!shared.sync.ready){T.say('Load your account before saving.');return;}const previous=shared.accountData('portfolios','terminal-default')||{};const work=k==='portfolio'?shared.save('portfolios','terminal-default',{kind:'manual',id:'terminal-default',name:previous.name||'Terminal portfolio',cash:previous.cash||0,currency:'USD',holdings:v.map(h=>{const old=(previous.holdings||[]).find(p=>p.symbol===h.symbol);return {...old,id:old?.id||crypto.randomUUID(),symbol:h.symbol,units:h.qty,averageCost:old?.averageCost??null,currency:old?.currency||'USD'};})}):shared.save('preferences','default',{terminalDrawings:{[k]:v}});work.then(()=>T.say('Saved to your account.')).catch(e=>T.say(e.message));return;}
     store.set(k,JSON.stringify(v));
   };
-  import('/assets/js/account-sync.js?v=20261113-world-ships-2').then(api=>{shared=api;api.subscribe(()=>{PG.rerender();});}).catch(()=>{});
+  import('/assets/js/account-sync.js?v=20261113-world-ships-pro-2').then(api=>{shared=api;api.subscribe(()=>{PG.rerender();});}).catch(()=>{});
 
   /* ===== CHART: candles, volume, compare, drawings ====================================== */
   const RANGES = [[21, '1M'], [63, '3M'], [126, '6M'], [252, '1Y'], [504, '2Y'], [1260, '5Y']];

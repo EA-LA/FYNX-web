@@ -1,4 +1,4 @@
-import {save as saveSharedRecord, requireSync} from './account-sync.js?v=20261113-world-ships-2';
+import {save as saveSharedRecord, requireSync} from './account-sync.js?v=20261113-world-ships-pro-2';
 import { endAccountsSession } from './accounts/logout.js';
 import { auth, app } from "../../auth/firebase.js";
 import {
@@ -35,7 +35,7 @@ import {
   DEFAULT_NOTIFICATION_PREFERENCES,
   PRIORITY,
   createNotificationEngine
-} from "./notifications/engine.js?v=20261113-world-ships-2";
+} from "./notifications/engine.js?v=20261113-world-ships-pro-2";
 
 const db = getFirestore(app);
 const storage = getStorage(app);
