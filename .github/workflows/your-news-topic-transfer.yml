@@ -1,0 +1,38 @@
+name: Your News topic transfer
+
+on:
+  pull_request:
+    paths:
+      - 'assets/js/news-preferences.js'
+      - 'assets/js/your-news.js'
+      - 'assets/css/your-news.css'
+      - 'scripts/test-your-news-topic-transfer.cjs'
+      - '.github/workflows/your-news-topic-transfer.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/news-preferences.js'
+      - 'assets/js/your-news.js'
+      - 'assets/css/your-news.css'
+      - 'scripts/test-your-news-topic-transfer.cjs'
+      - '.github/workflows/your-news-topic-transfer.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  topic-transfer-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check browser script and test syntax
+        run: |
+          node --check assets/js/news-preferences.js
+          node --check assets/js/your-news.js
+          node --check scripts/test-your-news-topic-transfer.cjs
+      - name: Test privacy-safe topic backup and existing storage behavior
+        run: node --test scripts/test-your-news-topic-transfer.cjs scripts/test-news-preferences-storage-clear.cjs
