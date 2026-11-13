@@ -48,6 +48,7 @@ require('./build-advertising.cjs');
 require('./build-adsense-verification.cjs').build();
 require('./build-terminal-design.cjs');
 require('./build-company-products.cjs').inject(root);
+require('./build-account-sync.cjs').build(root);
 // Cache identities must be finalized after every HTML generator.
 require('./normalize-arrows.cjs').run(root);
 require('./build-release-assets.cjs').build(root);

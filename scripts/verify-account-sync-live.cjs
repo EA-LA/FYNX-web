@@ -1,0 +1,128 @@
+#!/usr/bin/env node
+'use strict';
+// Explicit disposable-account integration check. Credentials exist only in RAM.
+// Never run this script against a real customer account or send verification mail.
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const {Store}=require('../assets/js/account-sync-core.js');
+const args=process.argv.slice(2),outputAt=args.indexOf('--output');
+if(!args.includes('--run-disposable-qa')||outputAt<0||!path.isAbsolute(args[outputAt+1]||''))throw Error('Use --run-disposable-qa --output /absolute/sanitized-evidence.json after deployment.');
+const output=args[outputAt+1],config=fs.readFileSync(path.join(__dirname,'../auth/firebase.js'),'utf8');
+const project=config.match(/projectId:\s*["']([^"']+)/)?.[1],apiKey=config.match(/apiKey:\s*["']([^"']+)/)?.[1];
+if(project!=='fynx-c7a28'||!apiKey)throw Error('The expected FYNX project configuration was not found.');
+const functionsBase=`https://us-central1-${project}.cloudfunctions.net`,dbBase=`https://firestore.googleapis.com/v1/projects/${project}/databases/(default)/documents`;
+const report={schemaVersion:1,runId:crypto.randomUUID(),startedAt:new Date().toISOString(),project,scope:'Two disposable QA users; actual web Store plus Swift-shaped requests; no device UI or purchase verification.',steps:[],cleanup:[],passed:false};
+const users=[];let oauth,activeStep='initialize',failure=false;
+function check(value,label){if(!value){const error=new Error(label);error.code='assertion-failed';throw error;}}
+function safeCode(error){return typeof error?.code==='string'&&/^[a-z0-9_-]{1,80}$/i.test(error.code)?error.code:'verification-failed';}
+function memoryStorage(){const values=new Map();return{getItem:key=>values.get(key)||null,setItem:(key,value)=>values.set(key,value),removeItem:key=>values.delete(key)};}
+async function request(url,{method='GET',token,body,allow=[]}={}){
+ const response=await fetch(url,{method,headers:{...(token?{Authorization:'Bearer '+token}:{}),'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(90000)});
+ let payload;try{payload=await response.json();}catch{payload=null;}
+ if(!response.ok&&!allow.includes(response.status)){const error=new Error('Remote request did not succeed.');error.code='http-'+response.status;error.httpStatus=response.status;throw error;}
+ return{status:response.status,body:payload};
+}
+const admin=(url,method='GET',body,allow=[])=>request(url,{method,body,token:oauth,allow});
+async function callable(user,data,name='fynxAccountSync'){
+ const response=await request(functionsBase+'/'+name,{method:'POST',token:user?.idToken,body:{data},allow:[400,401,403,404,409,429,500,503]});
+ if(response.body?.error){const error=new Error(response.body.error.message||'Callable rejected request.');error.code=String(response.body.error.status||'unknown').toLowerCase().replaceAll('_','-');error.details=response.body.error.details;throw error;}
+ check(response.status===200&&response.body&&Object.hasOwn(response.body,'result'),'Callable response shape');return response.body.result;
+}
+async function mustReject(operation,code){try{await operation();}catch(error){check(error.code===code,'Expected rejection '+code);return error;}check(false,'Expected rejection '+code);}
+async function step(name,fn){activeStep=name;const started=Date.now();await fn();report.steps.push({name,status:'passed',durationMs:Date.now()-started});console.log(JSON.stringify({step:name,status:'passed'}));}
+async function signIn(user){const result=await request('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+apiKey,{method:'POST',body:{email:user.email,password:user.password,returnSecureToken:true}});check(result.body?.localId===user.uid&&typeof result.body.idToken==='string','QA sign-in response');user.idToken=result.body.idToken;return user;}
+async function createUser(label){
+ const user={label,email:'fynx-sync-qa-'+crypto.randomUUID()+'@example.invalid',password:crypto.randomBytes(32).toString('hex')};
+ const signup=await request('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+apiKey,{method:'POST',body:{email:user.email,password:user.password,returnSecureToken:true}});
+ check(typeof signup.body?.localId==='string','QA signup response');user.uid=signup.body.localId;user.idToken=signup.body.idToken;users.push(user);
+ await admin(`https://identitytoolkit.googleapis.com/v1/projects/${project}/accounts:update`,'POST',{localId:user.uid,emailVerified:true,displayName:'FYNX disposable sync QA'});
+ await signIn(user);const claims=JSON.parse(Buffer.from(user.idToken.split('.')[1],'base64url').toString());check(claims.email_verified===true,'Verified QA token');return user;
+}
+const userDocument=(user,document,method='GET',fields,mask)=>request(dbBase+'/'+document+(mask?'?updateMask.fieldPaths='+encodeURIComponent(mask):''),{method,token:user.idToken,body:fields?{fields}:undefined,allow:[403,404]});
+function makeStore(user,storage=memoryStorage(),state={offline:false,dropNextAck:false}){
+ const store=new Store({storage,uuid:crypto.randomUUID,call:async data=>{if(state.offline){const error=new Error('QA simulated offline');error.code='unavailable';throw error;}const result=await callable(user,data);if(state.dropNextAck&&data.action==='mutate'){state.dropNextAck=false;const error=new Error('QA simulated lost acknowledgement');error.code='unavailable';throw error;}return result;}});return{store,storage,state};
+}
+const mutation=(domain,id,data,expectedRevision=0)=>({domain,id,data,expectedRevision,mutationId:crypto.randomUUID()});
+async function cleanup(user){
+ const result={label:user.label,authDeleted:false,cleanupComplete:false};
+ try{await signIn(user);const deleted=await callable(user,{expectedUid:user.uid},'fynxAccountDelete');check(deleted.deleted===true,'Account delete confirmation');result.authDeleted=true;result.method='account-delete-callable';}
+ catch{const deleted=await admin(`https://identitytoolkit.googleapis.com/v1/projects/${project}/accounts:delete`,'POST',{localId:user.uid},[400,404]);if(deleted.status===200||deleted.body?.error?.message==='USER_NOT_FOUND'){result.authDeleted=true;result.method='admin-auth-fallback';}else throw Object.assign(new Error('QA Auth cleanup failed.'),{code:'cleanup-auth-failed'});}
+ const marker='fynxAccountSyncDeleted/'+crypto.createHash('sha256').update(JSON.stringify(user.uid)).digest('hex'),deadline=Date.now()+150000;
+ while(Date.now()<deadline){const snap=await admin(dbBase+'/'+marker,'GET',undefined,[404]);if(snap.body?.fields?.completedAt){result.cleanupComplete=true;break;}await new Promise(resolve=>setTimeout(resolve,2500));}
+ if(result.cleanupComplete){const paths=[`users/${user.uid}`,`users/${user.uid}/account/profile`,`users/${user.uid}/trades/qa-trade`,`fynxAccountSyncUsers/${user.uid}`,`fynxAccountSyncUsers/${user.uid}/domains/researchNotes/items/offline-note`,`fynxAccountMemberships/${user.uid}`,`fynxAccountSyncUsers/${user.uid}/domains/researchNotes/items/page-069`,`users/${user.uid}/trades/page-trade-039`];for(const document of paths){const snap=await admin(dbBase+'/'+document,'GET',undefined,[404]);if(snap.status!==404)result.cleanupComplete=false;}}
+ if(user.connectedServices&&result.cleanupComplete){
+  const owner=crypto.createHash('sha256').update(user.uid).digest('hex'),deadline=Date.now()+150000;
+  let erased=false;
+  while(Date.now()<deadline){
+   const records=await admin(dbBase+':runQuery','POST',{structuredQuery:{from:[{collectionId:'fynxResearchPrivateV1'}],where:{fieldFilter:{field:{fieldPath:'owner'},op:'EQUAL',value:{stringValue:owner}}},limit:1}});
+   const intelligence=await admin(dbBase+`/intelligenceAccounts/${user.uid}`,'GET',undefined,[404]);
+   if(!records.body?.some(row=>row.document)&&intelligence.status===404){erased=true;break;}
+   await new Promise(resolve=>setTimeout(resolve,2500));
+  }
+  result.connectedServiceRecordsErased=erased;result.cleanupComplete=erased;
+  // This account was created by this run, and status/run-denial cannot create billing.
+  const billing=await admin(dbBase+`/fynxConsumerLive/${user.uid}`,'GET',undefined,[404]);
+  check(!billing.body?.fields?.customer,'QA did not create a billing customer');
+  const internal=await admin(dbBase+`/fynxConsumerLive/${user.uid}/internal`,'GET',undefined,[404]);
+  for(const document of internal.body?.documents||[])await admin('https://firestore.googleapis.com/v1/'+document.name,'DELETE',undefined,[404]);
+  await admin(dbBase+`/fynxConsumerLive/${user.uid}`,'DELETE',undefined,[404]);
+ }
+ if(user.seededToolWorkspace&&result.cleanupComplete)await admin(dbBase+`/fynxConsumerLive/${user.uid}`,'DELETE',undefined,[404]);
+ check(result.authDeleted&&result.cleanupComplete,'QA cleanup completion');return result;
+}
+async function main(){
+ const cliAuth=require(process.env.FYNX_FIREBASE_AUTH_MODULE||'/Users/h/.npm-global/lib/node_modules/firebase-tools/lib/auth');
+ const account=cliAuth.getGlobalDefaultAccount();check(account?.tokens?.refresh_token,'Firebase CLI account');oauth=(await cliAuth.getAccessToken(account.tokens.refresh_token,['https://www.googleapis.com/auth/cloud-platform'])).access_token;check(oauth,'Firebase CLI access');
+ if(args.includes('--profile-mirror-smoke')){
+  report.scope='One disposable account; canonical profile display mirror, private-field preservation and profile deletion. No real user data.';
+  let user;await step('create-one-verified-disposable-user',async()=>{user=await createUser('qa-profile-mirror');});
+  await step('profile-mirror-preserves-legacy-private-fields',async()=>{
+   await admin(dbBase+`/users/${user.uid}`,'PATCH',{fields:{username:{stringValue:'QA previous'},email:{stringValue:'private-qa@example.invalid'},rank:{stringValue:'qa-rank'},fynxId:{stringValue:'qa-stable-id'}}});
+   const response=await callable(user,{expectedUid:user.uid,action:'mutate',mutations:[mutation('profile','default',{username:'QA connected name',displayName:'QA connected display',photoURL:'https://example.invalid/qa.jpg',bio:'Canonical private biography'})]});user.profileRevision=response.records[0].revision;
+   const root=(await userDocument(user,`users/${user.uid}`)).body.fields;check(root.username.stringValue==='QA connected name'&&root.displayName.stringValue==='QA connected display'&&root.photoURL.stringValue==='https://example.invalid/qa.jpg','Legacy display mirror');check(root.rank.stringValue==='qa-rank'&&root.fynxId.stringValue==='qa-stable-id'&&root.email.stringValue==='private-qa@example.invalid'&&!root.bio,'Private fields preserved; canonical biography not copied');
+  });
+  await step('profile-delete-clears-only-mirrored-display-fields',async()=>{
+   await callable(user,{expectedUid:user.uid,action:'mutate',mutations:[{domain:'profile',id:'default',expectedRevision:user.profileRevision,mutationId:crypto.randomUUID(),deleted:true}]});
+   const root=(await userDocument(user,`users/${user.uid}`)).body.fields;check(!root.username&&!root.displayName&&!root.photoURL&&root.rank.stringValue==='qa-rank'&&root.email.stringValue==='private-qa@example.invalid','Profile deletion preserves root account');check((await userDocument(user,`users/${user.uid}/account/profile`)).status===404,'Canonical profile deleted');
+  });return;
+ }
+ if(args.includes('--connected-services-smoke')){
+  report.scope='One disposable verified account; exact native/web existing-service contracts, synthetic Quant returns, notifications disabled, no purchase or AI generation, complete cleanup.';
+  let user;await step('create-one-verified-disposable-user',async()=>{user=await createUser('qa-connected-services');user.connectedServices=true;});
+  const smoke=require('./verify-connected-services-smoke.cjs');
+  await smoke({user,functionsBase,request,callable,check,mustReject,step:async(name,fn)=>{try{await step(name,fn);}catch(error){failure=true;report.steps.push({name,status:'failed',code:safeCode(error)});console.error(JSON.stringify({step:name,status:'failed',code:safeCode(error)}));}}});
+  return;
+ }
+ let one,two,a,b,other,offline;
+ await step('create-two-verified-disposable-users',async()=>{one=await createUser('qa-account-1');two=await createUser('qa-account-2');});
+ if(args.includes('--bounded-read-smoke')){
+  report.scope='Focused live bounded-read smoke: multiple pages of generic and canonical records, same-account completeness, other-account isolation, disposable cleanup.';
+  await step('write-more-than-two-pages-of-disposable-records',async()=>{for(let start=0;start<70;start+=35)await callable(one,{expectedUid:one.uid,action:'mutate',mutations:Array.from({length:35},(_,offset)=>mutation('researchNotes','page-'+String(start+offset).padStart(3,'0'),{title:'QA page record '+(start+offset),ordinal:start+offset}))});await callable(one,{expectedUid:one.uid,action:'mutate',mutations:Array.from({length:40},(_,i)=>mutation('journalTrades','page-trade-'+String(i).padStart(3,'0'),{symbol:'QA-AAPL',pl:i,dateTs:Date.now(),notes:'QA canonical page'}))});});
+  await step('paged-complete-snapshots-return-all-records-without-duplicates',async()=>{const result=await callable(one,{expectedUid:one.uid,action:'read',domains:['researchNotes','journalTrades']});check(result.records.length===110,'Complete paged count');check(new Set(result.records.map(row=>row.domain+'/'+row.id)).size===110,'No duplicate records');check(result.records.filter(row=>row.domain==='researchNotes').length===70&&result.records.filter(row=>row.domain==='journalTrades').length===40,'Both canonical and generic pages complete');});
+  await step('paged-snapshot-preserves-other-account-isolation',async()=>{const result=await callable(two,{expectedUid:two.uid,action:'read',domains:['researchNotes','journalTrades']});check(result.records.length===0,'Other account remains empty');});
+  return;
+ }
+ await step('actual-web-stores-load-same-account-and-isolated-account',async()=>{a=makeStore(one).store;b=makeStore(await signIn({...one})).store;other=makeStore(two).store;await Promise.all([a.switchUser(one.uid,'qa-a'),b.switchUser(one.uid,'qa-b'),other.switchUser(two.uid,'qa-other')]);check([a,b,other].every(store=>store.ready),'Store ready');});
+ await step('profile-round-trip-and-canonical-firestore-listener-compatibility',async()=>{await a.save('profile','default',{displayName:'QA web profile',username:'QA web profile'});await b.refresh();check(b.record('profile').data.displayName==='QA web profile','Profile arrives on second client');await b.save('profile','default',{displayName:'QA app profile',nativeData:{schemaVersion:1,theme:'dark'}});await a.refresh();check(a.record('profile').data.displayName==='QA app profile','Reverse profile edit');const doc=await userDocument(one,`users/${one.uid}/account/profile`);check(doc.status===200&&doc.body.fields.displayName.stringValue==='QA app profile','Canonical profile source');});
+ await step('journal-rich-fields-round-trip-and-timestamp-storage',async()=>{await a.save('journalTrades','qa-trade',{symbol:'AAPL',pl:12.5,date:'2026-11-13',dateTs:Date.parse('2026-11-13T12:00:00Z'),notes:'QA web',nativeData:{schemaVersion:1,type:'journal',risk:25}});await b.refresh();check(b.record('journalTrades','qa-trade').data.nativeData.risk===25,'Native journal data preserved');await b.save('journalTrades','qa-trade',{notes:'QA app'});await a.refresh();check(a.record('journalTrades','qa-trade').data.notes==='QA app','Reverse journal edit');const doc=await userDocument(one,`users/${one.uid}/trades/qa-trade`);check(doc.status===200&&doc.body.fields.dateTs.timestampValue&&doc.body.fields.symbol.stringValue==='AAPL','Canonical journal Timestamp');});
+ await step('saved-reading-and-history-round-trip',async()=>{await a.save('readingRecords','qa-story',{url:'https://www.fynxfinanceworld.com/news.html',title:'QA story',saved:true,openedAt:null});await b.refresh();check(b.record('readingRecords','qa-story').data.saved===true,'Saved story arrives');await b.save('readingRecords','qa-story',{openedAt:'2026-11-13T12:30:00Z',saved:false});await a.refresh();check(a.record('readingRecords','qa-story').data.openedAt==='2026-11-13T12:30:00Z','History arrives');});
+ await step('two-account-isolation-and-server-owned-capability-rules',async()=>{await other.refresh();check(other.records('journalTrades').length===0&&other.records('readingRecords').length===0,'Different user sees no records');await mustReject(()=>callable(two,{expectedUid:one.uid,action:'read'}),'failed-precondition');check((await userDocument(two,`users/${one.uid}/account/profile`)).status===403,'Different user canonical denial');check((await userDocument(one,`fynxAccountMemberships/${one.uid}`,'PATCH',{source:{stringValue:'account-membership-server-v1'},nativeTier:{stringValue:'pro'}})).status===403,'Client cannot grant membership');});
+ await step('conflict-preserves-draft-and-explicit-keep-local-resolution',async()=>{await Promise.all([a.refresh(),b.refresh()]);await a.save('researchNotes','conflict-note',{title:'From first client',nativeData:{preserved:true}});await mustReject(()=>b.save('researchNotes','conflict-note',{title:'From second client'}),'aborted');check(b.conflicts.length===1&&b.pending.length===1,'Conflicting draft retained');await b.resolveConflict('researchNotes','conflict-note',true);await a.refresh();check(a.record('researchNotes','conflict-note').data.title==='From second client'&&a.record('researchNotes','conflict-note').data.nativeData.preserved===true,'Reviewed merge preserves unknown data');});
+ await step('conflict-explicit-use-cloud-resolution',async()=>{await Promise.all([a.refresh(),b.refresh()]);await a.save('researchNotes','conflict-note',{title:'Current cloud'});await mustReject(()=>b.save('researchNotes','conflict-note',{title:'Discarded draft'}),'aborted');await b.resolveConflict('researchNotes','conflict-note',false);check(b.pending.length===0&&b.record('researchNotes','conflict-note').data.title==='Current cloud','Cloud conflict resolution');});
+ await step('durable-offline-outbox-survives-store-recreation',async()=>{offline=makeStore(one);await offline.store.switchUser(one.uid,'qa-offline');offline.state.offline=true;await mustReject(()=>offline.store.save('researchNotes','offline-note',{title:'Offline draft'}),'unavailable');check(offline.store.pending.length===1,'Offline pending change');const original=offline.store.pending[0].mutationId;const restored=makeStore(one,offline.storage);await restored.store.switchUser(one.uid,'qa-offline');check(restored.store.pending.length===0,'Restored outbox acknowledged');await b.refresh();check(b.record('researchNotes','offline-note').data.title==='Offline draft','Offline replay shared');report.offlineMutationIdPreserved=original.length===36;offline=restored;});
+ await step('lost-acknowledgement-replay-is-idempotent',async()=>{offline.state.dropNextAck=true;await mustReject(()=>offline.store.save('progress','ack-loss',{completed:true}),'unavailable');const sent=offline.store.pending[0];check(!!sent,'Lost acknowledgement queued');const restored=makeStore(one,offline.storage);await restored.store.switchUser(one.uid,'qa-offline');check(restored.store.pending.length===0&&restored.store.record('progress','ack-loss').data.completed===true,'Replay confirmed without duplicate');});
+ await step('atomic-batch-conflict-leaves-no-partial-write',async()=>{const error=await mustReject(()=>callable(one,{expectedUid:one.uid,action:'mutate',mutations:[mutation('progress','must-not-exist',{done:true}),mutation('profile','default',{displayName:'Stale'},0)]}),'aborted');check(error.details.conflicts.length===1,'Atomic conflict details');await b.refresh();check(!b.record('progress','must-not-exist'),'No partial mutation');});
+ await step('swift-uppercase-uuid-ack-and-mutation-id-misuse',async()=>{const change=mutation('calculatorPresets','swift-shape',{name:'QA preset',nativeData:{schemaVersion:1,value:12}});change.mutationId=change.mutationId.toUpperCase();const payload={expectedUid:one.uid,action:'mutate',mutations:[change]},first=await callable(one,payload),replay=await callable(one,payload);check(first.applied[0]===change.mutationId&&first.records[0].revision===replay.records[0].revision,'Exact Swift UUID acknowledgement');await mustReject(()=>callable(one,{...payload,mutations:[{...change,data:{name:'Misused ID'}}]}),'already-exists');});
+ await step('delete-tombstone-blocks-stale-offline-resurrection',async()=>{await a.refresh();const revision=a.record('readingRecords','qa-story').revision;await a.save('readingRecords','qa-story',null,{deleted:true});await b.refresh();check(b.record('readingRecords','qa-story').deleted===true,'Deletion tombstone reaches second client');await mustReject(()=>callable(one,{expectedUid:one.uid,action:'mutate',mutations:[mutation('readingRecords','qa-story',{saved:true},revision)]}),'aborted');});
+ await step('legacy-direct-edits-and-deletes-invalidate-captured-revisions',async()=>{await b.refresh();const before=b.record('profile').revision;const patched=await userDocument(one,`users/${one.uid}/account/profile`,'PATCH',{displayName:{stringValue:'QA legacy edit'}},'displayName');check(patched.status===200,'Legacy profile edit');await b.refresh();check(b.record('profile').data.displayName==='QA legacy edit'&&b.record('profile').revision!==before,'Legacy edit invalidates revision');await mustReject(()=>callable(one,{expectedUid:one.uid,action:'mutate',mutations:[mutation('profile','default',{displayName:'Stale legacy'},before)]}),'aborted');check((await userDocument(one,`users/${one.uid}/trades/qa-trade`,'DELETE')).status===200,'Legacy direct journal delete');await b.refresh();check(b.record('journalTrades','qa-trade').deleted===true,'Legacy delete becomes tombstone');});
+ await step('unauthenticated-requests-and-profile-paid-flags-denied',async()=>{await mustReject(()=>callable(null,{expectedUid:one.uid,action:'read'}),'unauthenticated');await mustReject(()=>callable(one,{expectedUid:one.uid,action:'mutate',mutations:[mutation('profile','default',{isPro:true},b.record('profile').revision)]}),'invalid-argument');});
+ await step('existing-tool-workspace-history-syncs-without-forged-calculations',async()=>{
+  one.seededToolWorkspace=true;await admin(dbBase+`/fynxConsumerLive/${one.uid}`,'PATCH',{fields:{savedCount:{integerValue:'1'}}});
+  await admin(dbBase+`/fynxConsumerLive/${one.uid}/saved/qa-tool-result`,'PATCH',{fields:{name:{stringValue:'QA saved result'},product:{stringValue:'risk'},input:{mapValue:{fields:{balance:{doubleValue:1000}}}},result:{mapValue:{fields:{units:{doubleValue:3}}}},createdAt:{integerValue:String(Date.now())}}});
+  await Promise.all([a.refresh(),b.refresh()]);check(a.record('toolWorkspaces','qa-tool-result')?.data.result.units===3,'Existing paid history visible');await b.save('toolWorkspaces','qa-tool-result',{name:'QA renamed from app'});await a.refresh();check(a.record('toolWorkspaces','qa-tool-result').data.name==='QA renamed from app'&&a.record('toolWorkspaces','qa-tool-result').data.result.units===3,'Rename preserves verified result');
+  await mustReject(()=>callable(one,{expectedUid:one.uid,action:'mutate',mutations:[mutation('toolWorkspaces','qa-tool-result',{result:{units:999}},a.record('toolWorkspaces','qa-tool-result').revision)]}),'invalid-argument');await mustReject(()=>callable(one,{expectedUid:one.uid,action:'mutate',mutations:[mutation('toolWorkspaces','forged-new',{name:'Invented result'})]}),'not-found');
+  await b.save('toolWorkspaces','qa-tool-result',null,{deleted:true});await a.refresh();check(a.record('toolWorkspaces','qa-tool-result').deleted===true,'Tool deletion shared');const counter=await admin(dbBase+`/fynxConsumerLive/${one.uid}`);check(counter.body.fields.savedCount.integerValue==='0','Tool quota counter updated');
+ });
+ await step('server-membership-free-users-receive-no-paid-access',async()=>{for(const user of [one,two]){const result=await callable(user,{expectedUid:user.uid,action:'membership'});check(result.membership?.source==='account-membership-server-v1'&&result.membership.capabilities.accountSync===true,'Verified membership envelope');check(result.membership.webTier===null&&result.membership.nativeTier==='free'&&result.membership.capabilities.nativePro===false&&result.membership.capabilities.webSimulation===false,'No unearned paid capabilities');}});
+ await step('account-switch-clears-in-memory-private-state',async()=>{a.call=data=>callable(two,data);await a.switchUser(two.uid,'qa-switched');check(a.ready&&a.uid===two.uid&&a.records('researchNotes').length===0,'No previous-user state');await a.switchUser(null,null);check(a.rows.size===0&&a.pending.length===0&&a.status==='guest','Sign-out cleared memory');});
+}
+(async()=>{try{await main();}catch(error){failure=true;report.steps.push({name:activeStep,status:'failed',code:safeCode(error)});report.failure={step:activeStep,code:safeCode(error)};console.error(JSON.stringify({step:activeStep,status:'failed',code:safeCode(error)}));}finally{for(const user of users){try{report.cleanup.push(await cleanup(user));}catch(error){failure=true;report.cleanup.push({label:user.label,cleanupComplete:false,code:safeCode(error)});}}report.completedAt=new Date().toISOString();report.disposableUsersCreated=users.length;report.passed=!failure;fs.mkdirSync(path.dirname(output),{recursive:true});fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({passed:report.passed,steps:report.steps.length,cleanupComplete:report.cleanup.filter(row=>row.cleanupComplete).length,evidence:output}));if(failure)process.exitCode=1;}})();

@@ -5,6 +5,7 @@
   if (window.__fynxAccountMenu) return; window.__fynxAccountMenu = true;
   const SECTIONS = [
     ['Your workspace', [
+      ['My shared workspace', '/workspace.html', 'Saved work across web and iPhone'],
       ['Your News', '/news/your-news.html', 'Followed topics and reading history'],
       ['Journal', '/journal.html', 'Trades, notes and performance'],
       ['Watchlist & heatmap', '/tools/research-desk.html#heatmap', 'Your symbols, live'],

@@ -76,7 +76,7 @@
       form.append(node('p', 'Labels organize your research. They do not subscribe you to a live price feed.', 'news-member-fine'));
       const actions = node('div', undefined, 'news-member-actions'); actions.id = 'newsMembershipActions';
       const message = node('p', '', 'news-member-status'); message.setAttribute('role', 'status'); message.setAttribute('aria-live', 'polite');
-      const detail = node('p', 'Headlines, official releases, publisher videos, live pages and podcasts stay free. Publisher subscriptions are separate. Web memberships and App Store purchases are not automatically interchangeable.', 'news-member-fine');
+      const detail = node('p', 'Headlines, official releases, publisher videos, live pages and podcasts stay free. Publisher subscriptions are separate. Included features are verified for your signed-in FYNX account. Manage billing with the provider where you subscribed.', 'news-member-fine');
       dialog.append(header, title, intro, article, form, actions, message, detail); doc.body.append(dialog);
       dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
       dialog.addEventListener('click', event => { if (event.target === dialog) { const r = dialog.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) close(); } });

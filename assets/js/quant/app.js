@@ -9,7 +9,8 @@
   function selectStrategyModel(model){$('strategyModel').value=model;state.news=model==='news';$('meanLookbackLabel').hidden=$('meanEntryZLabel').hidden=model!=='mean-reversion';}
   const marketChanges = new Map(),marketQuotes=new Map(),archiveCloses=new Map(),quoteFailures=new Map();
   let quoteRequest=null,quoteAttemptAt=0,quoteRefreshTimer,quotesUnconfigured=false;
-  let portfolioSelectionTouched=false;
+  let portfolioSelectionTouched=false,savedVersion=0;
+  let pendingSaved={strategies:new Set(),portfolios:new Set()};
   const steps = {backtest:'bt',optimize:'opt',portfolio:'port',montecarlo:'mc',ftmo:'ftmo',deploy:'dep'};
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const number = (x,d=2) => Number.isFinite(x) ? x.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}) : x === Infinity ? '∞' : '—';
@@ -362,14 +363,14 @@
   }
   function readLocal() {
     localReadFailed=false;
-    try{const raw=localStorage.getItem(storageKey());const data=raw?readWorkspace(raw):{strategies:[],portfolios:[]};state.saved=data.strategies;state.savedPortfolios=data.portfolios;}
-    catch{state.saved=[];state.savedPortfolios=[];localReadFailed=true;$('storageStatus').textContent='Stored workspace is invalid. Export JSON to recover the original file; it has not been overwritten.';}
+    try{const raw=localStorage.getItem(storageKey());const data=raw?readWorkspace(raw):{strategies:[],portfolios:[]};state.saved=data.strategies;state.savedPortfolios=data.portfolios;const meta=raw?JSON.parse(raw).pending:null;pendingSaved={strategies:new Set(Array.isArray(meta?.strategies)?meta.strategies:state.uid?state.saved.map(r=>r.id):[]),portfolios:new Set(Array.isArray(meta?.portfolios)?meta.portfolios:state.uid?state.savedPortfolios.map(r=>r.id):[])};}
+    catch{state.saved=[];state.savedPortfolios=[];pendingSaved={strategies:new Set(),portfolios:new Set()};localReadFailed=true;$('storageStatus').textContent='Stored workspace is invalid. Export JSON to recover the original file; it has not been overwritten.';}
     renderSleeves();renderSavedPortfolios();
   }
   function persist(owner) {
     if(owner)assertOwner(owner);
     if(localReadFailed)throw new Error('Stored workspace could not be validated. Export JSON to recover it before replacing it with a validated import.');
-    try{localStorage.setItem(storageKey(),JSON.stringify({version:1,strategies:state.saved,portfolios:state.savedPortfolios}));}
+    try{localStorage.setItem(storageKey(),JSON.stringify({version:1,strategies:state.saved,portfolios:state.savedPortfolios,pending:{strategies:[...pendingSaved.strategies],portfolios:[...pendingSaved.portfolios]}}));}
     catch{throw new Error('Device storage is full or disabled. Export JSON to keep your strategies.');}
   }
   function assertOwner(owner) {
@@ -380,16 +381,23 @@
     assertOwner(owner);const user=state.auth?.currentUser;if(!user||user.uid!==owner.uid)throw new Error('Sign in to sync your private strategies.');
     const token=await user.getIdToken();assertOwner(owner);return {Authorization:`Bearer ${token}`};
   }
+  function reconcileSaved(local,remote,pending,validate) {
+    const rows=new Map(remote.map(value=>{const row=validate(value);return [row.id,row];}));
+    for(const row of local)if(pending.has(row.id)&&!rows.has(row.id))rows.set(row.id,row);
+    if(rows.size>100)throw new Error('Saved workspace exceeds 100 records. Export a backup and reduce the saved items.');
+    return {rows:[...rows.values()],pending:new Set([...pending].filter(id=>!remote.some(row=>row.id===id)))};
+  }
+  function pendingSavedMessage(){const count=pendingSaved.strategies.size+pendingSaved.portfolios.size;return count?` ${count} earlier or unconfirmed device saves are kept locally. Export JSON to keep or re-import those copies.`:'';}
   async function syncSaved(owner) {
-    if(!owner.uid)return;
-    const headers=await authHeaders(owner);const [strategies,portfolios]=await Promise.all([api('/strategies',{headers}),api('/portfolios',{headers})]);assertOwner(owner);
-    const merge=(local,remote,validate)=>{const rows=new Map(local.map(s=>[s.id,s]));remote.forEach(s=>{const clean=validate(s);if(!rows.has(clean.id))rows.set(clean.id,clean);});if(rows.size>100)throw new Error('Saved workspace exceeds 100 records. Export a backup and reduce the saved items.');return [...rows.values()];};
-    const nextStrategies=merge(state.saved,strategies.strategies||strategies.items||[],cleanStrategy),nextPortfolios=merge(state.savedPortfolios,portfolios.portfolios||portfolios.items||[],cleanPortfolio);
-    state.saved=nextStrategies;state.savedPortfolios=nextPortfolios;persist(owner);renderSleeves();renderSavedPortfolios();
+    if(!owner.uid)return;const version=++savedVersion;
+    const headers=await authHeaders(owner);const [strategies,portfolios]=await Promise.all([api('/strategies',{headers}),api('/portfolios',{headers})]);assertOwner(owner);if(version!==savedVersion)return;
+    const nextStrategies=reconcileSaved(state.saved,strategies.strategies||strategies.items||[],pendingSaved.strategies,cleanStrategy),nextPortfolios=reconcileSaved(state.savedPortfolios,portfolios.portfolios||portfolios.items||[],pendingSaved.portfolios,cleanPortfolio);
+    const previous=new Set(state.saved.map(row=>row.id));state.saved=nextStrategies.rows;state.savedPortfolios=nextPortfolios.rows;pendingSaved={strategies:nextStrategies.pending,portfolios:nextPortfolios.pending};
+    state.sleeves=state.sleeves.flatMap(row=>previous.has(row.id)?state.saved.filter(saved=>saved.id===row.id):[row]);persist(owner);renderSleeves();renderSavedPortfolios();$('storageStatus').textContent='Private account workspace refreshed.'+pendingSavedMessage();
   }
   function changeIdentity(uid) {
     if(identityReady&&state.uid===uid)return;
-    const replacingIdentity=identityReady;identityVersion++;state.uid=uid;identityReady=true;
+    const replacingIdentity=identityReady;identityVersion++;savedVersion++;state.uid=uid;identityReady=true;
     if(replacingIdentity){state.jobAbort?.abort();state.cancelled=true;state.worker?.terminate();state.reject?.(new Error('Account changed; calculation cancelled.'));state.worker=null;state.reject=null;}
     state.sleeves=[];state.portfolioInputs=[];state.portfolio=null;if(replacingIdentity)invalidate();$('csvNote').textContent='';
     readLocal();if(!localReadFailed)$('storageStatus').textContent=uid?'Signed in · this account’s private workspace. Guest work remains separate.':'Guest workspace · saved only on this device. Sign in from Profile for account sync.';
@@ -404,7 +412,7 @@
           if(!identityReady||(user?.uid||null)!==state.uid){changeIdentity(user?.uid||null);const owner={uid:state.uid,version:identityVersion};syncSaved(owner).catch(e=>{if(owner.version===identityVersion)$('storageStatus').textContent=`Account workspace loaded on this device. Cloud sync unavailable: ${e.message}`;});}
         });
         const owner={uid:state.uid,version:identityVersion};
-        try{await syncSaved(owner);if(owner.uid&&!localReadFailed)$('storageStatus').textContent='Signed in · private strategies and portfolios loaded from your FYNX account.';}
+        try{await syncSaved(owner);if(owner.uid&&!localReadFailed)$('storageStatus').textContent='Signed in · private strategies and portfolios loaded from your FYNX account.'+pendingSavedMessage();}
         catch(e){if(owner.version===identityVersion)$('storageStatus').textContent=`This account’s device workspace is available. Cloud sync unavailable: ${e.message}`;}
       }catch{state.auth=null;changeIdentity(null);if(!localReadFailed)$('storageStatus').textContent='Guest workspace · account sign-in is unavailable; device saves and JSON export work.';}
       if(location.hash==='#saved-strategies'){showPanel('port');attachSavedSleeves();}
@@ -413,8 +421,8 @@
   async function saveRecord(type,record,owner) {
     assertOwner(owner);if(localReadFailed)throw new Error('Export the invalid stored file before replacing it with a validated import.');if(new Blob([JSON.stringify(record)]).size>1000000)throw new Error('This saved item exceeds 1 MB. Use a smaller return history and keep an external JSON backup.');
     const key=type==='strategies'?'saved':'savedPortfolios';if(state[key].length>=100)throw new Error('Save limit is 100 records. Export a backup before adding more.');
-    state[key].push(record);persist(owner);renderSleeves();renderSavedPortfolios();
-    if(owner.uid){try{const headers=await authHeaders(owner);await api('/'+type,{method:'POST',headers,body:JSON.stringify(record)});assertOwner(owner);}
+    savedVersion++;state[key].push(record);if(owner.uid)pendingSaved[type].add(record.id);persist(owner);renderSleeves();renderSavedPortfolios();
+    if(owner.uid){try{const headers=await authHeaders(owner);await api('/'+type,{method:'POST',headers,body:JSON.stringify(record)});assertOwner(owner);savedVersion++;pendingSaved[type].delete(record.id);persist(owner);}
       catch(error){assertOwner(owner);throw new Error(`Saved to this account’s device workspace; cloud save failed: ${error.message}`);}}
   }
   async function saveStrategy() {
@@ -522,14 +530,14 @@
     // Imports are explicit copies into the currently selected identity, never an implicit guest merge.
     data.strategies.forEach(s=>s.id=crypto.randomUUID());data.portfolios.forEach(p=>p.id=crypto.randomUUID());
     for(const item of [...data.strategies,...data.portfolios])if(new Blob([JSON.stringify(item)]).size>1000000)throw new Error('A workspace item exceeds the 1 MB save limit.');
-    localReadFailed=false;state.saved.push(...data.strategies);state.savedPortfolios.push(...data.portfolios);persist(owner);renderSleeves();renderSavedPortfolios();
-    let failed=0;if(owner.uid){for(const [type,items] of [['strategies',data.strategies],['portfolios',data.portfolios]])for(const item of items){assertOwner(owner);try{const headers=await authHeaders(owner);await api('/'+type,{method:'POST',headers,body:JSON.stringify(item)});assertOwner(owner);}catch(error){assertOwner(owner);failed++;}}}
+    localReadFailed=false;savedVersion++;state.saved.push(...data.strategies);state.savedPortfolios.push(...data.portfolios);if(owner.uid){data.strategies.forEach(r=>pendingSaved.strategies.add(r.id));data.portfolios.forEach(r=>pendingSaved.portfolios.add(r.id));}persist(owner);renderSleeves();renderSavedPortfolios();
+    let failed=0;if(owner.uid){for(const [type,items] of [['strategies',data.strategies],['portfolios',data.portfolios]])for(const item of items){assertOwner(owner);try{const headers=await authHeaders(owner);await api('/'+type,{method:'POST',headers,body:JSON.stringify(item)});assertOwner(owner);savedVersion++;pendingSaved[type].delete(item.id);persist(owner);}catch(error){assertOwner(owner);failed++;}}}
     attachSavedSleeves();$('importWorkspace').value='';log(`Imported ${data.strategies.length} strategies and ${data.portfolios.length} portfolios into ${owner.uid?'this account’s':'the guest'} workspace.${failed?` ${failed} cloud saves failed; the device copies are retained.`:''}`,failed>0);
   });
   $('downloadEa').onclick=()=>{if(state.ea)download(state.ea.filename,state.ea.source,state.ea.mime);};$('copyEa').onclick=()=>work(async()=>{if(!state.ea)return;await navigator.clipboard.writeText(state.ea.source);log('Source copied.');});
   ['eaPlatform','eaDailyGuard','eaMaxGuard'].forEach(id=>{for(const event of ['input','change'])$(id).addEventListener(event,invalidateEA);});
   window.addEventListener('pagehide',()=>{state.worker?.terminate();window.clearTimeout(quoteRefreshTimer);});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!state.busy)refreshMarketQuotes();});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!state.busy){refreshMarketQuotes();if(identityReady&&state.uid)syncSaved({uid:state.uid,version:identityVersion}).catch(error=>{$('storageStatus').textContent=error.message+pendingSavedMessage();});}});
   const deepLink=new URLSearchParams(location.search),deepSymbol=(deepLink.get('symbol')||'').toUpperCase().replace('/','');if(Q.SYMBOLS.some(s=>s.id===deepSymbol))state.symbol=deepSymbol;
   async function preloadStrategy(){const id=deepLink.get('strategy');if(!id)return;if(!/^[A-Za-z0-9_-]{1,80}$/.test(id))throw new Error('The linked strategy ID is invalid.');await identityTask;const item=state.saved.find(s=>s.id===id)||(Q.EDGE_DEFAULT_STRATEGIES||[]).find(s=>s.id===id);if(!item)throw new Error('The linked strategy is not in this account’s saved workspace. Sign in to its owner account.');if(!item.params)throw new Error('This saved return series has no executable strategy parameters. Open it from My strategies in Portfolio.');const p=item.params;selectStrategyModel(p.strategy||item.kind||'breakout');if(!deepSymbol&&item.symbol)state.symbol=item.symbol;$('timeframe').value=item.timeframe||'D1';$('executionMode').value=['close','ohlc'].includes(p.mode)?p.mode:'auto';$('strategyName').value=item.name;
     const fields={lookback:'N',atrPeriod:'AP',entryK:'K',stopS:'S',targetTP:'TP',maxHold:'H',costPips:'C',riskPct:'R',spreadPips:'spread',slippagePips:'slippage',eventType:'eventType',newsWindowMinutes:'newsWindow',meanLookback:'meanLookback',meanEntryZ:'meanEntryZ'};for(const [key,id]of Object.entries(fields))if(p[key]!==undefined)$(id).value=p[key];renderMarkets();renderSleeves();refreshContext();}
