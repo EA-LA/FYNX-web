@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-13 (run 85) — [site-qa] Risk/Reward shows exact forex prices, your expectancy and 1R/2R/3R targets
+- Fixed: the Risk/Reward calculator rounded every price to 4 decimals, so a 5-decimal forex stop like 1.26497 showed as 1.2650 and the risk as 0.0025 instead of 0.00253. Results now keep the decimals you typed (at least 4, up to 8). https://www.fynxfinanceworld.com/tools/risk-reward.html
+- New: an optional "Your win rate (%)" box. With it, the result shows expectancy: the average result per trade in R (multiples of your risk), before costs. Example: a 3:1 setup at 40% wins averages +0.60R per trade; at 20% wins it averages −0.20R and the page says you need more than 25% wins. The win rate is included in "Copy scenario link".
+- New: 1R, 2R and 3R target prices for your entry and stop, for long and short trades (e.g. entry 100, stop 98 gives 102 / 104 / 106).
+- Fixed: the guide under the calculator told you to "select long or short", but there is no such choice; it now explains that direction is detected from your stop.
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): no sideways scrolling, fields 16px and buttons 44px on phones; 140 main pages swept with no script errors; all site checks pass.
+
 ## 2026-11-13 (run 84) — [site-qa] Debt Payoff shows how extra payments speed things up; Compound no longer shows $NaN
 - New: the Debt Payoff calculator has an optional "Extra Monthly Payment" box and a "Pay it off faster" section. It compares your extra with paying 10%, 25% and 50% more each month: how many months sooner you'd be debt-free and how much interest you'd save. Example: $10,000 at 10% with $300 a month takes 40 months; adding $100 a month finishes in 29 months and saves $503.78 in interest. Shared scenario links keep the extra amount. https://www.fynxfinanceworld.com/tools/debt-payoff.html
 - Fixed: the Compound calculator showed "$NaN" everywhere if you entered a yearly loss of 100% or more with yearly compounding. It now explains the limit instead. https://www.fynxfinanceworld.com/tools/compound.html

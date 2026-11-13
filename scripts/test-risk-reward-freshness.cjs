@@ -149,3 +149,63 @@ test('result status and validation errors have assistive technology announcement
   assert.match(html, /id="resultStatus"[^>]*role="status"[^>]*aria-live="polite"[^>]*aria-atomic="true"/);
   assert.match(html, /id="error"[^>]*role="alert"/);
 });
+
+// [site-qa] run 85: precision, target ladder and optional win-rate expectancy.
+test('five-decimal FX prices are shown without rounding to four decimals', () => {
+  const { el, calculate } = boot();
+  calculate('1.26750', '1.26497', '1.27509');
+  assert.equal(el('riskOut').textContent, '0.00253');
+  assert.equal(el('rewardOut').textContent, '0.00759');
+  assert.equal(el('rrOut').textContent, '3.00');
+});
+
+test('1R/2R/3R targets follow the trade direction', () => {
+  const long = boot();
+  long.calculate('100', '98', '106');
+  assert.deepEqual(['r1Out', 'r2Out', 'r3Out'].map(id => long.el(id).textContent), ['102.0000', '104.0000', '106.0000']);
+  const short = boot();
+  short.calculate('100', '102', '94');
+  assert.deepEqual(['r1Out', 'r2Out', 'r3Out'].map(id => short.el(id).textContent), ['98.0000', '96.0000', '94.0000']);
+});
+
+test('expectancy uses the optional win rate and stays blank without it', () => {
+  const { el, fire, calculate } = boot();
+  calculate();
+  assert.equal(el('expOut').textContent, '—');
+  assert.match(el('expNote').textContent, /Add your win rate/);
+  el('winRate').value = '40';
+  fire('winRate', 'input');
+  assert.equal(el('resultsBox').style.display, 'none');
+  fire('calcBtn', 'click');
+  assert.equal(el('expOut').textContent, '+0.60R'); // 0.4 * 3 - 0.6
+  el('winRate').value = '20';
+  fire('calcBtn', 'click');
+  assert.equal(el('expOut').textContent, '−0.20R'); // 0.2 * 3 - 0.8
+  assert.match(el('expNote').textContent, /more than 25\.0% wins/);
+  el('winRate').value = '25';
+  fire('calcBtn', 'click');
+  assert.equal(el('expOut').textContent, '0.00R');
+});
+
+test('out-of-range win rate is rejected without showing a result', () => {
+  const { el, fire, calculate } = boot();
+  for (const bad of ['0', '100', '150', '-5', 'abc']) {
+    el('winRate').value = bad;
+    calculate();
+    assert.equal(el('resultsBox').style.display, 'none', bad);
+    assert.match(el('error').textContent, /Win rate/, bad);
+  }
+  el('winRate').value = '55%';
+  fire('winRate', 'input');
+  fire('calcBtn', 'click');
+  assert.equal(el('expOut').textContent, '+1.20R'); // 0.55 * 3 - 0.45
+});
+
+test('Clear also empties the win rate', () => {
+  const { el, fire, calculate } = boot();
+  el('winRate').value = '40';
+  calculate();
+  fire('clearBtn', 'click');
+  assert.equal(el('winRate').value, '');
+  assert.equal(el('expOut').textContent, '—');
+});
