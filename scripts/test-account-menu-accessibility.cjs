@@ -86,8 +86,8 @@ test('Escape returns focus to trigger; outside click closes; signed-out trigger 
 });
 
 test('visible focus indication, compact touch targets and versioned asset', () => {
-  assert.match(source, /a\\.fx-acct-item:focus-visible\\{[^}]*outline:2px solid/);
-  assert.match(source, /a\\.fx-acct-item\\{[^}]*min-height:44px/);
-  assert.match(source, /\\.fx-acct-out\\{min-height:44px/);
-  assert.match(navSource, /account-menu\\.js\\?v=20261113-keyboard-1/);
+  assert.match(source, /a\.fx-acct-item:focus-visible\{[^}]*outline:2px solid/);
+  assert.match(source, /a\.fx-acct-item\{[^}]*min-height:44px/);
+  assert.match(source, /\.fx-acct-out\{min-height:44px/);
+  assert.match(navSource, /account-menu\.js\?v=20261113-keyboard-1/);
 });
