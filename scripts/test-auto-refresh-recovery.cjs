@@ -18,6 +18,8 @@ async function setup() {
     </main>
   </body></html>`, {url: 'https://www.fynxfinanceworld.com/', runScripts: 'outside-only'});
   const {window} = dom;
+  // JSDOM reports a background tab by default; exercise foreground refresh semantics.
+  Object.defineProperty(window.document, 'hidden', {configurable: true, value: false});
   let now = 1000000000000;
   const ticks = [];
   window.Date.now = () => now;
