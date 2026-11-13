@@ -155,16 +155,17 @@ const CHOKEPOINTS = {Hormuz: [[25.4, 55.4], [27.2, 57.5]], 'Bab-el-Mandeb': [[11
 async function ships(key, seconds = 75) {
   if (typeof WebSocket !== 'function') throw new Error('WebSocket is not available in this Node version.');
   const vessels = new Map(), types = new Map();
+  let feedError = '', opened = false;
   await new Promise(resolve => {
     const ws = new WebSocket('wss://stream.aisstream.io/v0/stream');
     const stop = setTimeout(() => { try { ws.close(); } catch {} resolve(); }, seconds * 1000);
-    ws.onopen = () => ws.send(JSON.stringify({APIKey: key, BoundingBoxes: [[[-90, -180], [90, 180]]], FilterMessageTypes: ['PositionReport', 'ShipStaticData']}));
-    ws.onerror = () => { clearTimeout(stop); resolve(); };
+    ws.onopen = () => { opened = true; ws.send(JSON.stringify({APIKey: key, BoundingBoxes: [[[-90, -180], [90, 180]]], FilterMessageTypes: ['PositionReport', 'ShipStaticData']})); };
+    ws.onerror = ev => { if (!feedError) feedError = opened ? 'The AIS connection dropped.' : 'Could not connect to stream.aisstream.io.'; clearTimeout(stop); resolve(); };
     ws.onclose = () => { clearTimeout(stop); resolve(); };
     ws.onmessage = async ev => {
       try {
         const m = JSON.parse(typeof ev.data === 'string' ? ev.data : await ev.data.text()), meta = m.MetaData || {};
-        if (m.error) { console.warn('[world] AIS:', m.error); return; }
+        if (m.error) { feedError = String(m.error).replace(/[^\w .,:'()-]/g, '').slice(0, 160); console.warn('[world] AIS:', feedError); return; }
         if (m.MessageType === 'ShipStaticData') { const s = m.Message?.ShipStaticData; if (s) types.set(meta.MMSI, {type: s.Type, destination: String(s.Destination || '').trim().slice(0, 30)}); return; }
         if (m.MessageType !== 'PositionReport' || !finite(meta.latitude) || !finite(meta.longitude)) return;
         const p = m.Message.PositionReport;
@@ -174,7 +175,7 @@ async function ships(key, seconds = 75) {
   });
   const kind = t => t >= 80 && t <= 89 ? 'tanker' : t >= 70 && t <= 79 ? 'cargo' : t >= 60 && t <= 69 ? 'passenger' : t ? 'other' : 'unknown';
   const list = [...vessels.values()].map(v => ({...v, kind: kind(types.get(v.mmsi)?.type), destination: types.get(v.mmsi)?.destination || null}));
-  if (!list.length) throw new Error('No AIS positions received.');
+  if (!list.length) throw new Error(feedError ? `AISStream: ${feedError}` : 'No AIS positions were received in the sample window.');
   const counts = Object.fromEntries(Object.entries(CHOKEPOINTS).map(([n, [[a, b], [c, d]]]) => { const inside = list.filter(v => v.lat >= a && v.lat <= c && v.lon >= b && v.lon <= d); return [n, {ships: inside.length, tankers: inside.filter(v => v.kind === 'tanker').length, cargo: inside.filter(v => v.kind === 'cargo').length}]; }));
   const ranked = list.sort((a, b) => (b.kind === 'tanker') - (a.kind === 'tanker') || (b.kind === 'cargo') - (a.kind === 'cargo'));
   return {sampleSeconds: seconds, total: list.length, chokepoints: CHOKEPOINTS, counts, vessels: ranked.slice(0, 8000)};
@@ -216,11 +217,14 @@ async function main() {
 
   const key = process.env.AISSTREAM_API_KEY;
   if (key) {
-    try { const s = await ships(key); await write(outDir, 'ships.json', {version: 1, generatedAt: iso(now), source: 'AISStream.io live AIS (terrestrial and satellite receivers; open-ocean coverage has gaps)', ...s}); console.log(`[world] ships: ${s.total}`, JSON.stringify(s.counts)); }
-    catch (e) { console.warn('[world] ships failed:', e.message); if (prev.ships) await write(outDir, 'ships.json', {...prev.ships, stale: true}); }
+    let s = null, err = null;
+    for (const seconds of [75, 45]) { try { s = await ships(key, seconds); break; } catch (e) { err = e; console.warn('[world] ships attempt failed:', e.message); if (/key|auth|invalid|unauthori/i.test(e.message)) break; } }
+    if (s) { await write(outDir, 'ships.json', {version: 1, generatedAt: iso(now), source: 'AISStream.io live AIS (terrestrial and satellite receivers; open-ocean coverage has gaps)', ...s}); console.log(`[world] ships: ${s.total}`, JSON.stringify(s.counts)); }
+    else if (prev.ships?.vessels?.length) await write(outDir, 'ships.json', {...prev.ships, stale: true, error: err?.message || 'AIS refresh failed.', errorAt: iso(now)});
+    else await write(outDir, 'ships.json', {version: 1, generatedAt: iso(now), status: 'error', message: err?.message || 'AIS refresh failed.', chokepoints: CHOKEPOINTS, vessels: [], counts: {}});
   } else {
     await write(outDir, 'ships.json', {version: 1, generatedAt: iso(now), status: 'not-configured', message: 'Live ship tracking starts once the AISSTREAM_API_KEY repository secret is set.', chokepoints: CHOKEPOINTS, vessels: [], counts: {}});
   }
 }
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
-module.exports = {pipeTable, STATES, CHOKEPOINTS, INDICATORS};
+module.exports = {pipeTable, STATES, CHOKEPOINTS, INDICATORS, ships};

@@ -99,7 +99,7 @@
     const layers = el('div', 'fx-glayers');
     for (const [k, l] of [['lights', 'Country lights'], ['tankers', 'Tankers'], ['cargo', 'Cargo ships'], ['other', 'Other ships'], ['chokes', 'Chokepoints'], ['lanes', 'Main sea routes']]) { const lab = el('label'), cb = el('input'); cb.type = 'checkbox'; cb.checked = W.layers[k]; cb.addEventListener('change', () => { W.layers[k] = cb.checked; draw?.(); }); lab.append(cb, document.createTextNode(l)); layers.append(lab); }
     const legend = el('div', 'fx-glegend'); for (const [k, l] of [['red', 'Big event'], ['yellow', 'Watch'], ['green', 'Quiet'], ['grey', 'No live signal']]) { const s = el('span'); const i = el('i'); i.style.background = COLOR[k]; s.append(i, document.createTextNode(l)); legend.append(s); }
-    const shipNote = el('span', 'fx-gnote', W.ships?.status === 'not-configured' ? 'Ships: waiting for the AIS key' : W.ships?.vessels?.length ? `Ships: ${W.ships.total.toLocaleString()} from AIS · ${T.ago(W.ships.generatedAt)}` : 'Ships: loading');
+    const shipNote = el('span', 'fx-gnote', W.ships?.status === 'not-configured' ? 'Ships: waiting for the AIS key' : W.ships?.status === 'error' ? `Ships: AIS feed problem · ${T.ago(W.ships.generatedAt)}` : W.ships?.vessels?.length ? `Ships: ${W.ships.total.toLocaleString()} from AIS · ${T.ago(W.ships.generatedAt)}${W.ships.stale ? ' · last refresh failed' : ''}` : 'Ships: loading');
     legend.append(shipNote);
     stage.append(tools, layers, legend, card); host.append(stage);
     const sv = svg('svg', {class: 'fx-gsvg', role: 'img', 'aria-label': 'World globe with country status lights, ships and chokepoints. Use the country list for keyboard access.'}); stage.prepend(sv);
@@ -194,9 +194,10 @@
   async function renderShips() {
     const host = T.panel('ships'); await loadWorld(); if (!host.isConnected) return; host.replaceChildren();
     const sd = W.ships;
-    if (!sd || sd.status === 'not-configured') {
+    if (!sd || sd.status === 'not-configured' || sd.status === 'error') {
       T.setText('t-ships', 'Ships & chokepoints');
-      host.append(el('p', 'fx-sub', 'Live tanker and cargo tracking turns on when the free AISStream key is added to the site’s GitHub settings as the secret AISSTREAM_API_KEY. The map then refreshes ship positions every hour.'));
+      if (sd?.status === 'error') host.append(el('p', 'fx-sub', `The AIS key is set, but the last ship refresh (${T.ago(sd.generatedAt)}) failed: ${sd.message || 'unknown error'}. If it mentions the key, create a new key at aisstream.io and update the AISSTREAM_API_KEY secret.`));
+      else host.append(el('p', 'fx-sub', 'Live tanker and cargo tracking turns on when the free AISStream key is added to the site’s GitHub settings as the secret AISSTREAM_API_KEY. The map then refreshes ship positions every hour.'));
       for (const n of Object.keys(sd?.chokepoints || {})) { const r = rowButton('fx-c3', () => W.focusPoint?.(mid(sd.chokepoints[n])), n); r.append(el('b', '', n), el('span', 'fx-dim', '—'), el('span', 'fx-dim', '—')); host.append(r); }
       return;
     }
