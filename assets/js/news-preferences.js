@@ -58,7 +58,25 @@
     state.history=[next,...history().filter(item=>item.id!==next.id)].slice(0,MAX_HISTORY);persist();emit('fynx:news-history-change');return true;
   }
   function clearHistory() {state.history=[];persist();emit('fynx:news-history-change');}
-  root.FYNXYourNews = Object.freeze({topics,getTopics:()=>state.topics.slice(),setTopics,getHistory:history,markOpened,isRead:value=>{const id=typeof value==='string'?value:value?.articleId||value?.id;return history().some(item=>item.id===id);},clearHistory,isPersistent:()=>persistent});
+  // Portable, versioned *topic-only* backup. No account identifiers or reading history
+  // leave the browser, even if the user has opened private market research.
+  function exportTopicBackup() {
+    return JSON.stringify({format:'fynx-your-news-topics',version:1,topics:state.topics.slice()},null,2)+'\n';
+  }
+  function importTopicBackup(raw) {
+    if(typeof raw!=='string'||raw.length>4096)return {ok:false,error:'Choose a valid FYNX topic backup (up to 4 KB).'};
+    let data;
+    try {data=JSON.parse(raw);} catch {return {ok:false,error:'The selected file is not valid JSON.'};}
+    if(!data||typeof data!=='object'||Array.isArray(data)||data.format!=='fynx-your-news-topics'||data.version!==1||
+       !Array.isArray(data.topics)||data.topics.length>topics.length||
+       data.topics.some(id=>typeof id!=='string'||!topics.some(topic=>topic.id===id))||
+       new Set(data.topics).size!==data.topics.length) {
+      return {ok:false,error:'This is not a supported FYNX topic backup. Your current topics were not changed.'};
+    }
+    setTopics(data.topics);
+    return {ok:true,count:state.topics.length,saved:persistent};
+  }
+  root.FYNXYourNews = Object.freeze({topics,getTopics:()=>state.topics.slice(),setTopics,getHistory:history,markOpened,isRead:value=>{const id=typeof value==='string'?value:value?.articleId||value?.id;return history().some(item=>item.id===id);},clearHistory,isPersistent:()=>persistent,exportTopicBackup,importTopicBackup});
   root.addEventListener('storage',event=>{
     // A clear() in another tab emits a storage event with a null key.
     // Discard private reading history rather than retaining it in this open tab.
