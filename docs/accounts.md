@@ -115,3 +115,20 @@ The [browser report](evidence/accounts-browser-validation.json) records statemen
 The owner authorized publishing these additions on 2026-11-03. The custom domain is served by GitHub Pages from `main`, behind Cloudflare; the separate Vercel build is not proof of custom-domain publication. Generated pages and browser assets must be committed before merging. Release version `20261103-features-1` refreshes shared navigation assets in browsers.
 
 This static release publishes the pages and navigation. It does not run `/api/quant`, `/api/edge` or `/api/accounts`. Quant preserves device-local saved research and imported return workflows, while missing market history stays unavailable. Accounts detects a missing/non-JSON service response and shows a clear availability notice with a link to the existing Profile; it never displays credential forms before a successful service response. Edge Profile controls also require a successful service read. Live research feeds, private imports/sync and broker connections remain dependent on integration with the owner's still-unidentified existing backend.
+
+## Live MT4/MT5 login is a Professional feature
+
+FYNX pays MetaApi for every linked MT account, so connecting MT4/MT5 with an account number and investor password requires an active **FYNX Professional** subscription ($30.99/month).
+
+- **Server-side check.** `AccountsService.assertLiveMtPlan` runs before any credential is encrypted or stored, and before MetaApi is contacted. Free, Essential and Plus members get `PLAN_REQUIRED` (HTTP 402).
+- **Where the plan comes from.** The tier is read from Stripe using the same rules as the consumer workspace: an active, live-mode, correctly priced subscription with a paid latest invoice, owned by this uid (`backend/accounts/entitlements.cjs`, `fynxConsumerLive/{uid}.customer`). The browser never decides a plan. Results are cached for 5 minutes; Stripe errors deny access.
+- **Default.** With no `FYNX_CONSUMER_STRIPE_SECRET_KEY`, no plan resolver exists and everyone is refused, so there is no unpaid MetaApi usage.
+- **Limit.** `ACCOUNTS_PRO_MT_CONNECTIONS` sets how many live MT accounts a Professional member may link (default `1`). It is enforced inside the connection transaction, and accounts still awaiting remote cleanup count. `ACCOUNTS_LIVE_MT_PLAN` can change the required tier (default `pro`).
+- **Lapse.** If a subscription ends, the scheduler marks the connection `paused` / `PLAN_REQUIRED` and stops syncing, so there are no MetaApi API calls. Renewal resumes it. The remote MetaApi account still exists while paused; disconnect it to stop its subscription cost.
+- **Free alternatives.** The free one-click MT5 connector (Profile → Edge Radar) and statement import remain available to everyone.
+
+### Launch checklist (owner)
+1. Create a MetaApi account and an API token. Store the token as `ACCOUNTS_METAAPI_TOKEN` in the backend's secret manager, and set `ACCOUNTS_METAAPI_REGION`.
+2. Deploy the My Accounts backend (`createAccountsAPI`) to an approved host that serves `/api/accounts/*` for www.fynxfinanceworld.com. It needs a production database adapter, credential-vault KEK and worker leases (see "Current delivery boundary").
+3. Give that service `FYNX_CONSUMER_STRIPE_SECRET_KEY` (the existing consumer Stripe secret) and Firebase Admin access to `fynxConsumerLive`.
+4. Test with a Professional test account and a demo MT5 investor login. Then confirm a Plus account is refused and that a cancelled subscription pauses syncing.

@@ -97,7 +97,7 @@
       throw new Error('Stopped waiting for the server job.');
     }
     return new Promise((resolve,reject)=>{
-      const worker=new Worker('/assets/js/quant/worker.js?v=20261113-mt5-connect-1'), id=++state.seq;
+      const worker=new Worker('/assets/js/quant/worker.js?v=20261113-accounts-host-2'), id=++state.seq;
       state.worker=worker;state.reject=reject;
       const finish=()=>{worker.terminate();state.worker=null;state.reject=null;};
       worker.onmessage=({data})=>{if(data.id!==id)return;if(data.progress!==undefined){progress(data.progress);return;}finish();if(data.error)reject(new Error(data.error));else resolve(data.result);};
