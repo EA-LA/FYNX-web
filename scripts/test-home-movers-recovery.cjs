@@ -14,7 +14,7 @@ const snapshot = Object.freeze({
 });
 function setup(initialMode = 'ok') {
   const dom = new JSDOM('<div id="homeSecondaryStories"></div>', {
-    url: 'https://www.fynxfinanceworld.com/', runScripts: 'outside-only'
+    url: 'https://www.fynxfinanceworld.com/', runScripts: 'outside-only', pretendToBeVisual: true
   });
   const w = dom.window;
   let mode = initialMode, requests = 0, pending = null;
