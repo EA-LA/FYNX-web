@@ -175,7 +175,11 @@
       const id=row?.articleId || row?.id, published=Date.parse(row?.publishedAt);if(!/^[a-f0-9]{64}$/.test(id || '')||id===article.id||seen.has(id)||!text(row.title)||!text(row.source)||!Number.isFinite(published)||Date.now()-published>24*HOUR||published>Date.now()+300000)continue;
       const href=window.FYNXNewsReaderData?.href({...row,articleId:id,edition:row.edition||originalEdition,category:row.category||options.category});
       if(!href)continue;let target;try{target=new URL(href,location.origin);}catch{continue;}
-      if(target.origin!==location.origin||target.pathname!=='/news/article.html'||target.searchParams.get('id')!==id)continue;
+      // Both the source-backed reader and its published FYNX Intelligence analysis are valid internal destinations.
+      // An Intelligence URL has no article id parameter; only accept the exact, clean slug route.
+      const readerRoute=target.pathname==='/news/article.html'&&target.searchParams.get('id')===id;
+      const intelligenceRoute=/^\/intelligence\/[a-z0-9]+(?:-[a-z0-9]+)*\/$/.test(target.pathname)&&!target.search&&!target.hash;
+      if(target.origin!==location.origin||(!readerRoute&&!intelligenceRoute))continue;
       seen.add(id);const card=node('article'),heading=node('h3'),link=node('a',text(row.title,500));link.href=target.pathname+target.search;heading.append(link);const publishedAt=node('time',time(row.publishedAt));publishedAt.dateTime=row.publishedAt;card.append(node('p',text(row.source,150),'reader-related-source'),heading,publishedAt);host.append(card);
       if(seen.size===3)break;
     }
