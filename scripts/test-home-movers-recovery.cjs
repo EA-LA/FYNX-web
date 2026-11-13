@@ -9,7 +9,7 @@ const flush = () => new Promise(resolve => setImmediate(resolve));
 const snapshot = Object.freeze({
   stocksAsOf: '2026-11-13T12:00:00Z',
   cryptoAsOf: '2026-11-13T12:00:00Z',
-  gainers: [{ symbol: 'AAPL', name: 'Apple', price: 245.12, changePct: 1.5, marketCap: 2500000000000 }],
+  gainers: [{ symbol: 'AAPL', name: 'Apple<img src=x onerror=alert(1)>', price: 245.12, changePct: 1.5, marketCap: 2500000000000 }],
   losers: [], active: [], crypto: [], aiUnder3: []
 });
 function setup(initialMode = 'ok') {
@@ -113,6 +113,7 @@ test('market identifiers and descriptions are escaped rather than inserted as ex
   try {
     await flush(); await flush();
     assert.equal(app.host().querySelectorAll('img,script').length, 0);
+    assert.match(app.host().textContent, /Apple<img src=x onerror=alert\(1\)>/);
     app.host().querySelector('[data-tab="crypto"]').click();
     assert.match(app.host().textContent, /Nothing qualifies/);
   } finally { app.close(); }
