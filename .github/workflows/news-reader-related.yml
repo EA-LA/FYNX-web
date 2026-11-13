@@ -1,0 +1,28 @@
+name: News Reader Related Intelligence Routes
+
+on:
+  pull_request:
+    paths:
+      - 'assets/js/news-reader.js'
+      - 'scripts/test-news-reader-ui.cjs'
+      - '.github/workflows/news-reader-related.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  related-story-routing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Check production script syntax
+        run: node --check assets/js/news-reader.js
+      - name: Verify real reader UI and route behaviors
+        run: node --test scripts/test-news-reader-ui.cjs scripts/test-news-reader-links.cjs
