@@ -13,10 +13,26 @@
   const desk=id=>preferences.topics.find(item=>item.id===id);
   const time=value=>new Date(value).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
   function current(item) {const date=Date.parse(item.publishedAt);return Number.isFinite(date)&&date<=Date.now()+300000&&Date.now()-date<=MAX_AGE;}
+  // The newsroom resolver may point a verified report to a published FYNX Intelligence page.
+  // Only keep known internal brief routes; never render a feed-supplied external destination.
+  function safeBriefHref(href, articleId) {
+    if (typeof href !== 'string' || href.length > 1024 || !href.startsWith('/') || href.startsWith('//')) return false;
+    if (/^\/intelligence\/[a-z0-9]+(?:-[a-z0-9]+)*\/$/.test(href)) return true;
+    if (!href.startsWith('/news/article.html?id=')) return false;
+    try {
+      const url = new URL(href, window.location.origin);
+      const keys = ['id', 'edition', 'category', 'symbol'];
+      return url.origin === window.location.origin &&
+        url.pathname === '/news/article.html' && !url.hash &&
+        url.searchParams.get('id') === articleId &&
+        keys.every(key => url.searchParams.getAll(key).length <= 1) &&
+        [...url.searchParams.keys()].every(key => keys.includes(key));
+    } catch { return false; }
+  }
   function clean(items,category,edition) {
     return (Array.isArray(items)?items:[]).flatMap(item=>{
       if(!item||!current(item)||item.edition!==edition||typeof item.title!=='string'||!item.title.trim()||typeof item.source!=='string'||!item.source.trim()||! /^[a-f0-9]{64}$/.test(item.articleId||''))return [];
-      const href=window.FYNXNewsReaderData?.href(item);if(!href?.startsWith('/news/article.html?id='))return [];
+      const href=window.FYNXNewsReaderData?.href(item);if(!safeBriefHref(href,item.articleId))return [];
       return [{...item,readerUrl:href,desk:category,desks:[category]}];
     });
   }

@@ -1,0 +1,33 @@
+name: Your News Intelligence Routing
+
+on:
+  pull_request:
+    paths:
+      - 'assets/js/your-news.js'
+      - 'news/your-news.html'
+      - 'scripts/test-your-news.cjs'
+      - '.github/workflows/your-news-intelligence-routes.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/your-news.js'
+      - 'news/your-news.html'
+      - 'scripts/test-your-news.cjs'
+      - '.github/workflows/your-news-intelligence-routes.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  route-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check assets/js/your-news.js
+      - run: node --test scripts/test-your-news.cjs

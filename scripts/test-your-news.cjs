@@ -107,3 +107,41 @@ test('automatic refresh keeps current reporting until its replacement is ready a
  for(const done of pending.splice(0))done();await tick();await tick();assert.match(h.w.document.querySelector('[data-your-stories]').textContent,/Replacement fixture report/);assert.doesNotMatch(h.w.document.querySelector('[data-your-stories]').textContent,/Current fixture report/);
  h.edition('uk');assert.equal(h.w.document.querySelectorAll('.your-news-story').length,0);await tick();for(const done of pending.splice(0))done();await tick();await tick();assert.match(h.w.document.querySelector('[data-your-edition]').textContent,/UK/);h.close();
 });
+
+test('published FYNX Intelligence reports stay visible in Your News and link to their internal analysis',async()=>{
+ const h=harness();
+ h.w.FYNXNewsReaderData.href=()=>'/intelligence/market-context-12abc3/';
+ h.start();await tick();await tick();
+ const stories=h.w.document.querySelectorAll('.your-news-story');
+ assert.equal(stories.length,3,'mapped analysis must not disappear from a valid feed');
+ for(const story of stories){
+   const links=story.querySelectorAll('a[href]');
+   assert.ok(links.length>=2);
+   for(const link of links)assert.equal(link.getAttribute('href'),'/intelligence/market-context-12abc3/');
+ }
+ h.close();
+});
+
+test('Your News rejects unapproved, external and malformed destinations without rendering links',async()=>{
+ const rejected=[
+   'https://attacker.example/steal',
+   '//attacker.example/steal',
+   'javascript:alert(1)',
+   '/profile.html',
+   '/intelligence/../../auth/login/',
+   '/intelligence/valid-report/?next=https://attacker.example',
+   '/intelligence/valid-report/#fragment',
+   '/intelligence/%2e%2e/',
+   '/news/article.html?id=bad',
+   '/news/article.html?id='+ID+'&edition=us&category=stocks&redirect=https://attacker.example',
+   '/news/article.html?id='+ID+'&edition=us&category=stocks&id='+ID
+ ];
+ for(const href of rejected){
+   const h=harness({load:async()=>result([item(ID)])});
+   h.api.setTopics(['stocks']);
+   h.w.FYNXNewsReaderData.href=()=>href;
+   h.start();await tick();await tick();
+   assert.equal(h.w.document.querySelectorAll('.your-news-story').length,0,'rejected route: '+href);
+   h.close();
+ }
+});
