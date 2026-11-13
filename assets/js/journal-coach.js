@@ -65,7 +65,7 @@
       const med = a => { const s = a.map(t => t.hold).sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; };
       const mw = med(hw), ml = med(hl);
       if (ml > mw * 1.5 && ml - mw > 5) add('bad', 'You hold losers longer than winners', `Typical losing trade is held ${mins(ml)}, typical winner only ${mins(mw)}. This is the classic "take profits fast, hope on losers" pattern.`, 'Let the stop decide when a loser ends, not hope. For winners, try taking half off at your first target and trailing the rest instead of closing everything early.', hw.length + hl.length);
-      else if (mw >= ml) good('You let winners run', `Typical winner is held ${mins(mw)} vs ${mins(ml)} for losers.`, hw.length + hl.length);
+      else if (mw > ml * 1.2 && mw - ml > 5) good('You let winners run', `Typical winner is held ${mins(mw)} vs ${mins(ml)} for losers.`, hw.length + hl.length);
     }
     // Revenge trading: a new trade opened within 15 minutes of closing a loss
     const seq = trades.filter(t => t.openTime && t.closeTime).sort((a, b) => new Date(a.openTime) - new Date(b.openTime));

@@ -17,4 +17,14 @@ assert.strictEqual(csv.positions[0].openPrice, 1.0812); assert.strictEqual(csv.p
 assert.strictEqual(mt5.parseReport('<html><p>nothing</p></html>', 'a.htm').positions.length, 0);
 const a = coach.analyze(rows); assert.strictEqual(a.all.n, 60); assert.ok(a.insights.length > 0); assert.ok(a.insights.every(i => i.sample >= 1 && i.advice));
 assert.strictEqual(coach.analyze(rows.slice(0, 3)).insights.length, 0, 'no insights below the minimum sample');
+// Holding time: equal winner/loser hold times are not praised as "letting winners run"; clearly longer winners are.
+const held = (winMin, lossMin) => Array.from({length: 10}, (_, i) => {
+  const open = new Date(Date.UTC(2026, 9, 1 + i, 9)); const win = i % 2 === 0;
+  return {id: 'h' + i, symbol: 'EURUSD', pl: win ? 100 : -80, date: open.toISOString().slice(0, 10), openTime: open.toISOString(), closeTime: new Date(open.getTime() + (win ? winMin : lossMin) * 60000).toISOString()};
+});
+const runs = list => coach.analyze(list).strengths.some(g => /let winners run/.test(g.title));
+assert.strictEqual(runs(held(180, 180)), false, 'equal hold times must not be called letting winners run');
+assert.strictEqual(runs(held(185, 180)), false, 'a 5-minute difference is not letting winners run');
+assert.strictEqual(runs(held(300, 120)), true, 'winners held 2.5x longer earn the strength');
+assert.ok(coach.analyze(held(60, 240)).insights.some(i => /hold losers longer/.test(i.title)), 'losers held 4x longer are flagged');
 console.log('MT5 journal import (MT5/MT4/CSV), stable ids, net P/L and Trading Coach thresholds passed.');

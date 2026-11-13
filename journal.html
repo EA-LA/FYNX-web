@@ -385,6 +385,9 @@
     body.dark-mode .stat b{color:var(--j-text)}
     .good{color:var(--j-good)!important}
     .bad{color:var(--j-bad)!important}
+    /* Light theme: the grey good/bad tones were ~2.3:1 and 3.6:1 on white cards (hard to read). Keep the monochrome look with readable contrast. */
+    body:not(.dark-mode) .good{color:#1a1a1a!important}
+    body:not(.dark-mode) .bad{color:#5c5c5c!important}
 
     .row{
       display:flex;align-items:center;justify-content:space-between;
@@ -1561,8 +1564,8 @@
   <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
   <script src="fynx-usercard.js?v=20260928-audit2"></script>
 
-<link rel="stylesheet" href="/assets/css/journal-mt5.css?v=20261112-mt5-1">
+<link rel="stylesheet" href="/assets/css/journal-mt5.css?v=20261113-site-qa-86">
 <script src="/assets/js/journal-mt5.js?v=20261112-mt5-1" defer></script>
-<script src="/assets/js/journal-coach.js?v=20261112-mt5-1" defer></script>
+<script src="/assets/js/journal-coach.js?v=20261113-site-qa-86" defer></script>
 </body>
 </html>

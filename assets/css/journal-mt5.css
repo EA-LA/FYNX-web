@@ -60,4 +60,13 @@ body.dark-mode .mt5-steps li,body.dark-mode .coach-item p{color:var(--j-text)}
   .mt5-steps li{font-size:12.5px}
   .mt5-actions>button,.coach-cta>button{flex:1 1 100%}
   .mt5-opts select{width:100%}
+  /* Phones: summary values wrap instead of being cut to "−USD 23…", and the preview table keeps its Net column on screen. */
+  .mt5-sum>div,.coach-kpis>div{padding:12px}
+  .mt5-sum b,.coach-kpis b{font-size:16px;white-space:normal;overflow-wrap:anywhere}
+  .mt5-sum span{white-space:normal;overflow-wrap:anywhere}
+  .mt5-table{font-size:12px}
+  .mt5-table th,.mt5-table td{padding:8px 6px}
+  .mt5-table th{font-size:10px;letter-spacing:.02em}
 }
+/* Small iPhones (SE): drop the preview's Session column so Net stays visible; the session is still saved with each trade. */
+@media (max-width:400px){.mt5-table th:nth-child(5),.mt5-table td:nth-child(5){display:none}.mt5-table th,.mt5-table td{padding:8px 4px}}

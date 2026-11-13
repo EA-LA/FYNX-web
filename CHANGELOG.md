@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-13 (run 86) — [site-qa] Journal MT5 import and Trading Coach fit small iPhones; Risk/Reward shows the losing streak to plan for
+- Fixed on iPhone: in the Journal's new "Connect MT5" import preview, the net result, date range and account name were cut off with "…" on iPhone SE (e.g. "−USD 23…"), and the Net column of the trade table was off the right edge. Values now wrap, and on small iPhones the preview drops the Session column (it is still saved with each trade) so Net stays visible. https://www.fynxfinanceworld.com/journal.html
+- Fixed: the Trading Coach praised "You let winners run" even when winners and losers were held exactly as long (e.g. "3.0 h vs 3.0 h"). It now only says so when winners are held clearly longer (over 20% and more than 5 minutes).
+- Fixed: on the Journal in the light theme, profit and loss figures were pale grey on white and hard to read. They are now dark and mid grey with readable contrast (the dark theme is unchanged).
+- Fixed on iPhone: the Risk/Reward "Expectancy" value (e.g. +0.60R) spilled past its box on iPhone SE.
+- New: Risk/Reward shows a "Losing streak" row when you enter your win rate: the run of losses in a row that is more likely than not somewhere in 100 trades, worked out exactly (e.g. 40% wins: about a 69% chance of 7 losses in a row, which is −7R). https://www.fynxfinanceworld.com/tools/risk-reward.html?entry=1.2675&sl=1.26497&tp=1.27509&winRate=40
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable). The MT5 import was tested with a sample report (net results hand-checked), and the Coach with 40 sample trades checked in Python. Saving imported trades needs a signed-in account and could not be tested here. All site checks pass.
+
 ## 2026-11-13 (run 85) — [site-qa] Risk/Reward shows exact forex prices, your expectancy and 1R/2R/3R targets
 - Fixed: the Risk/Reward calculator rounded every price to 4 decimals, so a 5-decimal forex stop like 1.26497 showed as 1.2650 and the risk as 0.0025 instead of 0.00253. Results now keep the decimals you typed (at least 4, up to 8). https://www.fynxfinanceworld.com/tools/risk-reward.html
 - New: an optional "Your win rate (%)" box. With it, the result shows expectancy: the average result per trade in R (multiples of your risk), before costs. Example: a 3:1 setup at 40% wins averages +0.60R per trade; at 20% wins it averages −0.20R and the page says you need more than 25% wins. The win rate is included in "Copy scenario link".

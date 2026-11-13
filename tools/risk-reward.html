@@ -326,7 +326,7 @@
     .optional-tag{font-weight:700;color:var(--muted2);font-size:12px;text-transform:none;letter-spacing:0}
     #winRateHint{margin-top:6px;grid-column:1/-1}
     .kv > div:first-child{min-width:0}
-    .kv .v{white-space:nowrap}
+    .kv .v{white-space:nowrap;flex-shrink:0}
     /* Results */
     .resultsBox{
       display:flex;
@@ -585,6 +585,16 @@
 
             <div class="kv">
               <div>
+                <div class="k">Losing streak</div>
+                <small>likely in 100 trades</small>
+              </div>
+              <div class="v mono" id="streakOut">—</div>
+            </div>
+
+            <div class="note" id="streakNote"></div>
+
+            <div class="kv">
+              <div>
                 <div class="k">1R target</div>
                 <small>reward = risk</small>
               </div>
@@ -623,7 +633,7 @@
       </div>
     </div>
   <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Compares the ratio for your supplied prices.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
-<!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Compare a target with the planned downside</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter entry, stop and target; the calculator detects long or short from which side of entry the stop sits. Add your win rate from past trades to see expectancy, and use the 1R/2R/3R targets to compare exits without moving your stop simply to improve the ratio.</p><h3>The calculation or concept</h3><p>Reward-to-risk ratio = distance to target ÷ distance to stop, for the chosen direction.</p></div><div class="tool-example"><h3>Worked example</h3><p>A long entry at $100 with a $98 stop and $106 target has $2 of price risk and $6 of potential reward per unit: 3:1 before costs.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>A large ratio does not make a setup profitable. Win rate, execution costs and the frequency of reaching the target also matter.</p></details></section><!-- tool-guide:end -->
+<!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Compare a target with the planned downside</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter entry, stop and target; the calculator detects long or short from which side of entry the stop sits. Add your win rate from past trades to see expectancy and the losing streak to plan for, and use the 1R/2R/3R targets to compare exits without moving your stop simply to improve the ratio.</p><h3>The calculation or concept</h3><p>Reward-to-risk ratio = distance to target ÷ distance to stop, for the chosen direction.</p></div><div class="tool-example"><h3>Worked example</h3><p>A long entry at $100 with a $98 stop and $106 target has $2 of price risk and $6 of potential reward per unit: 3:1 before costs.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>A large ratio does not make a setup profitable. Win rate, execution costs and the frequency of reaching the target also matter.</p></details></section><!-- tool-guide:end -->
 <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/breakeven.html"><strong>Trading Break-Even Price Calculator</strong><span>Calculate a trade&#39;s estimated break-even price using position size, fees and spread assumptions.</span></a><a href="/tools/stock.html"><strong>Stock Position Sizing Calculator</strong><span>Calculate a stock trade&#39;s position size and risk from account size, risk percentage, entry price and stop price.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
 
@@ -658,6 +668,8 @@
       noteOut: document.getElementById("noteOut"),
       expOut: document.getElementById("expOut"),
       expNote: document.getElementById("expNote"),
+      streakOut: document.getElementById("streakOut"),
+      streakNote: document.getElementById("streakNote"),
       r1Out: document.getElementById("r1Out"),
       r2Out: document.getElementById("r2Out"),
       r3Out: document.getElementById("r3Out"),
@@ -724,6 +736,8 @@
       el.noteOut.textContent = "";
       el.expOut.textContent = "—";
       el.expNote.textContent = "";
+      el.streakOut.textContent = "—";
+      el.streakNote.textContent = "";
       el.r1Out.textContent = "—";
       el.r2Out.textContent = "—";
       el.r3Out.textContent = "—";
@@ -744,7 +758,7 @@
             `Reward: ${el.rewardOut.textContent}`,
             `R:R = ${el.rrOut.textContent}`,
             `Break-even win rate: ${el.beOut.textContent}`,
-            ...(el.winRate.value.trim() ? [`Win rate: ${el.winRate.value.trim()}%`, `Expectancy: ${el.expOut.textContent}`] : []),
+            ...(el.winRate.value.trim() ? [`Win rate: ${el.winRate.value.trim()}%`, `Expectancy: ${el.expOut.textContent}`, `Losing streak to plan for (100 trades): ${el.streakOut.textContent}`] : []),
             `Targets: 1R ${el.r1Out.textContent} · 2R ${el.r2Out.textContent} · 3R ${el.r3Out.textContent}`,
           ].join("\n");
 
@@ -830,6 +844,8 @@
       if (winRate === null){
         el.expOut.textContent = "—";
         el.expNote.textContent = "Add your win rate to see the average result per trade.";
+        el.streakOut.textContent = "—";
+        el.streakNote.textContent = "";
       } else {
         const p = winRate / 100;
         const expectancy = p * rr - (1 - p);
@@ -841,7 +857,31 @@
           : expectancy > 0
             ? `${winsTxt} this setup gains about ${Math.abs(expectancy).toFixed(2)}R per trade on average (${Math.abs(expectancy).toFixed(2)} × your risk), before costs.`
             : `${winsTxt} this setup loses about ${Math.abs(expectancy).toFixed(2)}R per trade on average. You need more than ${(100 / (1 + rr)).toFixed(1)}% wins at this R:R, before costs.`;
+        const streak = likelyLosingStreak(p, 100);
+        el.streakOut.textContent = `${streak.k} in a row`;
+        el.streakNote.textContent = `${winsTxt}, there is about a ${Math.round(streak.prob * 100)}% chance of at least ${streak.k} losses in a row somewhere in 100 trades (−${streak.k}R if you risk the same each time). Size each trade so that run is survivable.`;
       }
+    }
+
+    // Chance of at least one run of k or more losses in n independent trades (exact, by tracking the current run length).
+    function lossRunChance(lossP, n, k){
+      let dist = new Array(k).fill(0); dist[0] = 1; let hit = 0;
+      for (let i = 0; i < n; i++){
+        const next = new Array(k).fill(0);
+        for (let j = 0; j < k; j++){
+          const pr = dist[j]; if (!pr) continue;
+          next[0] += pr * (1 - lossP);
+          if (j + 1 >= k) hit += pr * lossP; else next[j + 1] += pr * lossP;
+        }
+        dist = next;
+      }
+      return hit;
+    }
+    // Longest losing run that is more likely than not (chance >= 50%) over n trades.
+    function likelyLosingStreak(winP, n){
+      const lossP = 1 - winP; let k = 1, prob = lossRunChance(lossP, n, 1);
+      while (k < n){ const nextProb = lossRunChance(lossP, n, k + 1); if (nextProb < 0.5) break; k++; prob = nextProb; }
+      return {k, prob};
     }
 
     function clearAll(){
