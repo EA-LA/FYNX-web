@@ -398,6 +398,28 @@
       font-size:.82rem;
       font-weight:800;
     }
+    .room-card{margin-top:1.25rem;border:1px solid var(--border);border-radius:18px;background:var(--surface-2);padding:1rem 1rem 1.1rem}
+    .room-card[hidden]{display:none}
+    .room-card h2{margin:0 0 .35rem;font-size:1.15rem}
+    .room-card .room-note{margin:.45rem 0 0;color:var(--text-soft);font-size:.9rem;line-height:1.55}
+    .room-scroll{overflow-x:auto;margin-top:.6rem}
+    table.room-table{min-width:0;width:100%}
+    .room-table th,.room-table td{padding:.6rem .5rem;font-size:.9rem;white-space:nowrap}
+    .room-table th{font-size:.75rem;letter-spacing:.04em;white-space:normal;vertical-align:bottom}
+    .room-table td:first-child{white-space:normal}
+    .room-table .room-sub{display:block;color:var(--text-muted);font-size:.78rem;font-weight:600}
+    .room-lots{margin-top:.7rem;display:grid;gap:.35rem}
+    .room-lots div{font-size:.92rem;color:var(--text-soft)}
+    .room-lots strong{color:var(--text)}
+    @media (max-width: 480px){
+      .room-card{padding:.85rem .7rem}
+      .room-table th,.room-table td{padding:.55rem .3rem;font-size:.84rem}
+      .room-table .room-eq{display:none}
+    }
+    @media (max-width: 380px){
+      .room-table th,.room-table td{padding:.5rem .2rem;font-size:.8rem}
+      .room-table th{font-size:.75rem;letter-spacing:0}
+    }
     @media (max-width: 920px){
       .panel-grid,
       .results-grid,
@@ -438,7 +460,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
      crossorigin="anonymous"></script>
 <!-- FYNX ADSENSE VERIFICATION END -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261112-mt5-journal-1"><script src="/assets/js/company-products-data.js?v=20261113-accounts-host-1" defer></script><script src="/assets/js/company-products.js?v=20261112-mt5-journal-1" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261112-mt5-journal-1"><script src="/assets/js/company-products-data.js?v=20261113-accounts-host-2" defer></script><script src="/assets/js/company-products.js?v=20261112-mt5-journal-1" defer></script><!-- company-products:assets:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
@@ -617,6 +639,19 @@
         </table>
       </div>
 
+      <section class="room-card" id="roomCard" hidden aria-labelledby="roomTitle">
+        <h2 id="roomTitle">How far can price move against you?</h2>
+        <div class="room-note" id="roomIntro">Pips this trade can lose before your margin level falls to each level, with your other positions held flat.</div>
+        <div class="room-scroll">
+          <table class="room-table" id="roomTable">
+            <thead><tr><th>Margin level</th><th class="room-eq">Equity left</th><th>Pips against you</th><th>Long falls to</th><th>Short rises to</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="room-lots" id="roomLots"></div>
+        <div class="room-note">Brokers set their own levels: 100% margin call and 50% stop-out are common, but check yours. Assumes margin and pip value stay at their opening values and ignores spread, swaps and commission.</div>
+      </section>
+
       <div class="hint">
         Keep free margin healthy. Even if the broker allows the trade, using too much margin makes the account fragile and much easier to liquidate during normal volatility.
       </div>
@@ -710,6 +745,46 @@
       descEl.textContent = desc;
     }
 
+    function priceDecimals(pipSize, entryPrice){
+      const typed = (String(document.getElementById("entryPrice").value).split(".")[1] || "").length;
+      return Math.min(8, Math.max(pipSize >= 0.01 ? 3 : 5, typed));
+    }
+
+    function renderRoom(ctx){
+      const card = document.getElementById("roomCard");
+      if (!ctx){ card.hidden = true; return; }
+      const { balance, existingUsedMargin, requiredMargin, totalUsedMargin, pipValueUSD, pipSize, entryPrice, lotSize } = ctx;
+      const dp = priceDecimals(pipSize, entryPrice);
+      const fmtPrice = v => v <= 0 ? "below 0" : v.toLocaleString("en-US", { minimumFractionDigits: dp, maximumFractionDigits: dp });
+      const levels = [
+        { pct: 100, label: "100%", sub: "common margin call" },
+        { pct: 50, label: "50%", sub: "common stop-out" },
+        { pct: 0, label: "0%", sub: "balance used up" }
+      ];
+      const rows = levels.map(l => {
+        const equityAt = totalUsedMargin * l.pct / 100;
+        const loss = balance - equityAt;
+        if (loss <= 0 || !(pipValueUSD > 0)) {
+          return `<tr><td>${l.label}<span class="room-sub">${l.sub}</span></td><td class="room-eq">${formatCurrency(equityAt)}</td><td colspan="3">Already below this level when the trade opens</td></tr>`;
+        }
+        const pips = loss / pipValueUSD;
+        const move = pips * pipSize;
+        return `<tr><td>${l.label}<span class="room-sub">${l.sub}</span></td><td class="room-eq">${formatCurrency(equityAt)}</td><td>${pips.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</td><td>${fmtPrice(entryPrice - move)}</td><td>${fmtPrice(entryPrice + move)}</td></tr>`;
+      });
+      document.querySelector("#roomTable tbody").innerHTML = rows.join("");
+      const marginPerLot = requiredMargin / lotSize;
+      const lotsFor = targetLevel => {
+        const room = balance / (targetLevel / 100) - existingUsedMargin;
+        return room > 0 ? Math.floor((room / marginPerLot) * 100 + 1e-9) / 100 : 0;
+      };
+      const lots = v => `${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} lots`;
+      document.getElementById("roomLots").innerHTML =
+        `<div>Largest size your free margin opens (100% level): <strong>${lots(lotsFor(100))}</strong></div>` +
+        `<div>Largest size that keeps margin level at 300% or more: <strong>${lots(lotsFor(300))}</strong></div>` +
+        `<div>Margin per lot at this price and leverage: <strong>${formatCurrency(marginPerLot)}</strong></div>`;
+      card.hidden = false;
+    }
+
     function resetOutput(){
       document.getElementById("requiredMarginValue").textContent = "—";
       document.getElementById("notionalValue").textContent = "—";
@@ -727,6 +802,7 @@
         </tr>
       `;
       setStatus("neutral","No calculation yet","Enter your trade details to see required margin and account impact.");
+      renderRoom(null);
     }
 
     function calculateMargin(){
@@ -791,6 +867,7 @@
       }
 
       setStatus(level, title, desc);
+      renderRoom({ balance, existingUsedMargin, requiredMargin, totalUsedMargin, pipValueUSD, pipSize, entryPrice, lotSize });
 
       const rows = [
         {
