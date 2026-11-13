@@ -1,4 +1,4 @@
-import {sync,subscribe,connected,saveMany,accountData,offerImport} from '../account-sync.js?v=20261113-world-ships-pro-1';
+import {sync,subscribe,connected,saveMany,accountData,offerImport} from '../account-sync.js?v=20261113-world-ships-pro-2';
 import {C,$,escape,toast,download} from './shared.js';
 class ResearchStore extends EventTarget {
   state=C.defaultState();key=null;ready=false;readOnly=false;reason='';raw=null;

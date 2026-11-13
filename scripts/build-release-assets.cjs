@@ -4,8 +4,9 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { publicSiteFiles } = require('./public-site-files.cjs');
-const VERSION = '20261113-world-ships-pro-1';
+const VERSION = '20261113-world-ships-pro-2';
 const RESEARCH_VERSION = '20261113-shared-account-2';
+const ASSET_VERSIONS = Object.freeze({'assets/js/shared-workspace.js':'20261113-notification-lead-1'});
 const RESEARCH_ASSETS = new Set(['assets/js/research-service.js','assets/js/edge/app.js','assets/js/edge/render.js','assets/js/edge/profile.js','assets/js/edge/public-research.js','assets/js/quant/app.js','assets/js/quant/profile.js','assets/js/quant/engine.js','assets/js/quant/worker.js','assets/js/quant/public-history.js','assets/js/company-products-data.js']);
 const ASSETS = Object.freeze([
   ...RESEARCH_ASSETS,
@@ -42,7 +43,8 @@ function rewriteReferences(source, file, assets) {
     let url;
     try { url = new URL(value.replace(/&amp;/g, '&'), ORIGIN + '/' + file); } catch { return original; }
     if (url.origin !== ORIGIN || !assets.has(url.pathname.slice(1))) return original;
-    const version = RESEARCH_ASSETS.has(url.pathname.slice(1)) ? RESEARCH_VERSION : VERSION;
+    const asset = url.pathname.slice(1);
+    const version = ASSET_VERSIONS[asset] || (RESEARCH_ASSETS.has(asset) ? RESEARCH_VERSION : VERSION);
     const existing = url.searchParams.getAll('v');
     if (existing.length === 1 && existing[0] === version) return original;
     url.searchParams.set('v', version);
@@ -78,5 +80,5 @@ function build(root = path.resolve(__dirname, '..')) {
   console.log(`Release asset versions verified: ${VERSION}; ${changed.length} files updated.`);
   return {version:VERSION, assets:[...assets], changed};
 }
-module.exports = {build, rewriteReferences, VERSION, ASSETS};
+module.exports = {build, rewriteReferences, VERSION, ASSETS, ASSET_VERSIONS};
 if (require.main === module) build();

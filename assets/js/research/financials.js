@@ -1,5 +1,5 @@
 import {C,$,escape,number,compact,percent,tone,time,errorHTML,loading,empty,toast,download,metric,api,financials,reports} from './shared.js';
-import {store} from './store.js?v=20261113-world-ships-pro-1';
+import {store} from './store.js?v=20261113-world-ships-pro-2';
 export let currentCompany=C.seedCompanies[0];
 export let currentReport=null;
 let directory=C.seedCompanies,reportPeriod=null,requestID=0,screenID=0,directoryLoaded=false,screenInputs=null;

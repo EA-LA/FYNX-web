@@ -13,7 +13,7 @@ body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,25
 </style>  <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261113-world-ships-pro-1">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261113-world-ships-pro-2">
 
 <title>FYNX - Security</title>
 <meta name="description" content="FYNX - Security. Account defense controls, session visibility, and verification status.">
@@ -30,19 +30,19 @@ body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,25
 <!-- terminal-design:start -->
 <link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
 <link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
-<script src="/assets/js/news-reader-links.js?v=20261113-world-ships-pro-1" defer></script>
-<script src="/assets/js/newsroom-editions.js?v=20261113-world-ships-pro-1" defer></script>
-<script src="/assets/js/news-preferences.js?v=20261113-world-ships-pro-1" defer></script>
-<script src="/assets/js/newsroom-media.js?v=20261113-world-ships-pro-1" defer></script>
-<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261113-world-ships-pro-1">
-<script src="/assets/js/market-intelligence-data.js?v=20261113-world-ships-pro-1" defer></script>
-<script src="/assets/js/terminal-market-data.js?v=20261113-world-ships-pro-1" defer></script>
-<script src="/assets/js/terminal-header.js?v=20261113-world-ships-pro-1" defer></script>
-<script src="/assets/js/terminal-market-ui.js?v=20261113-world-ships-pro-1" defer></script>
+<script src="/assets/js/news-reader-links.js?v=20261113-world-ships-pro-2" defer></script>
+<script src="/assets/js/newsroom-editions.js?v=20261113-world-ships-pro-2" defer></script>
+<script src="/assets/js/news-preferences.js?v=20261113-world-ships-pro-2" defer></script>
+<script src="/assets/js/newsroom-media.js?v=20261113-world-ships-pro-2" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261113-world-ships-pro-2">
+<script src="/assets/js/market-intelligence-data.js?v=20261113-world-ships-pro-2" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261113-world-ships-pro-2" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261113-world-ships-pro-2" defer></script>
+<script src="/assets/js/terminal-market-ui.js?v=20261113-world-ships-pro-2" defer></script>
 <link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261030-r1">
 <script src="/assets/js/terminal-pages.js?v=20261030-r1" defer></script>
 <!-- terminal-design:end -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261113-world-ships-pro-1"><script src="/assets/js/company-products-data.js?v=20261113-shared-account-2" defer></script><script src="/assets/js/company-products.js?v=20261113-world-ships-pro-1" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261113-world-ships-pro-2"><script src="/assets/js/company-products-data.js?v=20261113-shared-account-2" defer></script><script src="/assets/js/company-products.js?v=20261113-world-ships-pro-2" defer></script><!-- company-products:assets:end -->
 </head>
 <body data-protected-page="true" data-fynx-settings="security" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD" data-fynx-terminal>
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
@@ -58,11 +58,11 @@ body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,25
 </div>
 <div class="card"><h3 style="font-size:14px;margin-bottom:8px">Active Sessions</h3><div id="sessionList" style="font-size:12px;color:#777" role="region" aria-label="Active sessions" aria-live="polite">Loading sessions...</div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" id="logoutCurrentBtn" type="button">Log out current session</button><button class="btn danger" id="logoutAllBtn" type="button">Log out all devices</button></div></div>
 </div></main></div>
-<script type="module" src="assets/js/session-bootstrap.js?v=20261113-world-ships-pro-1"></script>
+<script type="module" src="assets/js/session-bootstrap.js?v=20261113-world-ships-pro-2"></script>
 <script type="module">
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
-import { auth, bootstrapAccount, updatePasswordWithReauth, resendVerificationEmail, saveSecuritySettings, getSessionMetadata, revokeAllSessions, logoutCurrentSession } from './assets/js/account-system.js?v=20261113-world-ships-pro-1';
-import { mountNotificationBell } from './assets/js/account-ui.js?v=20261113-world-ships-pro-1';
+import { auth, bootstrapAccount, updatePasswordWithReauth, resendVerificationEmail, saveSecuritySettings, getSessionMetadata, revokeAllSessions, logoutCurrentSession } from './assets/js/account-system.js?v=20261113-world-ships-pro-2';
+import { mountNotificationBell } from './assets/js/account-ui.js?v=20261113-world-ships-pro-2';
 import { renderSessionMetadata } from './assets/js/security-session-list.js';
 let sessionId = null;
 function applyTheme(){const t=window.FynxPreferences?.getItem('fynx_theme');document.body.classList.toggle('dark-mode',t==='dark');} applyTheme();
@@ -86,7 +86,7 @@ onAuthStateChanged(auth, async(user)=>{ passwordForm.querySelector('button[type=
 mountNotificationBell();
 </script>
 <script type="module" src="/assets/js/mfa.js?v=20260930-errors"></script>
-<script src="fynx-nav.js?v=20261113-world-ships-pro-1"></script>
+<script src="fynx-nav.js?v=20261113-world-ships-pro-2"></script>
 <script src="/assets/js/settings-shell.js?v=20261112-settings-1" defer></script>
-<script type="module" src="/assets/js/account-sync.js?v=20261113-world-ships-pro-1"></script>
+<script type="module" src="/assets/js/account-sync.js?v=20261113-world-ships-pro-2"></script>
 </body></html>

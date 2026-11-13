@@ -1,4 +1,4 @@
-import {sync,subscribe,save,saveMany,remove,requireSync,accountData,imports,offerImport,stableID,storyID,membership} from './account-sync.js?v=20261113-world-ships-pro-1';
+import {sync,subscribe,save,saveMany,remove,requireSync,accountData,imports,offerImport,stableID,storyID,membership} from './account-sync.js?v=20261113-world-ships-pro-2';
 import {auth} from '../../auth/firebase.js';
 const $=id=>document.getElementById(id),node=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e;};
 const definitions={
@@ -43,11 +43,25 @@ function render(){
   const del=node('button','Delete');del.onclick=()=>{if(confirm('Delete this item from your FYNX account on every device?'))work(()=>remove(active,row.id));};actions.append(del);card.append(actions);list.append(card);
  }
 }
+const leadTimeMessage='Choose a whole number from 0 to 60 minutes. Zero reminds you at the event time.';
+function validateLeadTime(input){const value=Number(input.value),valid=input.value.trim()!==''&&Number.isInteger(value)&&value>=0&&value<=60;input.setCustomValidity(valid?'':leadTimeMessage);return valid;}
 function editor(row){const d=definitions[active];editing={isNew:!row,domain:active,id:row?.id||(active==='notificationPreferences'?'default':crypto.randomUUID()),revision:row?.revision||0,data:row?.data||{}};dirty=false;$('editor-title').textContent=(row?'Edit ':'Add ')+d.label.toLowerCase();$('editor-status').textContent='';$('editor-fields').replaceChildren();
- for(const [key,label,type='text']of d.fields){const l=node('label',label),input=node(type==='textarea'?'textarea':'input');if(type!=='textarea')input.type=type;input.name=key;if(active==='readingRecords'&&key==='url'&&row)input.readOnly=true;if(type==='number'){input.step='any';input.min='0';}if(type==='checkbox')input.checked=key==='saved'&&!row?true:!!fieldValue(editing.data,key);else if(key==='holdings')input.value=(editing.data.holdings||[]).map(h=>`${h.symbol}, ${h.units}, ${h.averageCost??''}`).join('\n');else if(key==='itemsText')input.value=(editing.data.items||[]).map(i=>`${i.completed?'[x] ':''}${i.title||i.text||i.label||''}`).join('\n');else input.value=format(fieldValue(editing.data,key)??(key==='title'?editing.data.name:undefined));if(['title','name','url','symbols'].includes(key))input.required=true;input.maxLength=type==='textarea'?16000:1200;input.oninput=()=>dirty=true;l.append(input);$('editor-fields').append(l);}$('workspace-editor').showModal();
+ for(const [key,label,type='text']of d.fields){
+  const l=node('label',label),input=node(type==='textarea'?'textarea':'input'),leadTime=active==='notificationPreferences'&&key==='eventLeadMinutes';
+  if(type!=='textarea')input.type=type;input.name=key;if(active==='readingRecords'&&key==='url'&&row)input.readOnly=true;
+  if(type==='number'){input.step=leadTime?'1':'any';input.min='0';if(leadTime)input.max='60';}
+  if(type==='checkbox')input.checked=key==='saved'&&!row?true:!!fieldValue(editing.data,key);
+  else if(key==='holdings')input.value=(editing.data.holdings||[]).map(h=>`${h.symbol}, ${h.units}, ${h.averageCost??''}`).join('\n');
+  else if(key==='itemsText')input.value=(editing.data.items||[]).map(i=>`${i.completed?'[x] ':''}${i.title||i.text||i.label||''}`).join('\n');
+  else input.value=format(fieldValue(editing.data,key)??(leadTime?15:key==='title'?editing.data.name:undefined));
+  if(leadTime||['title','name','url','symbols'].includes(key))input.required=true;input.maxLength=type==='textarea'?16000:1200;
+  input.oninput=()=>{dirty=true;if(leadTime&&validateLeadTime(input)&&$('editor-status').textContent===leadTimeMessage)$('editor-status').textContent='';};l.append(input);
+  if(leadTime){const help=node('small',leadTimeMessage);help.id='event-lead-help';input.setAttribute('aria-describedby',help.id);input.oninvalid=()=>{$('editor-status').textContent=leadTimeMessage;};if(!validateLeadTime(input)&&row&&fieldValue(editing.data,key)!==undefined)help.append(document.createTextNode(' Your saved value is unchanged. Correct it before saving these preferences.'));l.append(help);}
+  $('editor-fields').append(l);
+ }$('workspace-editor').showModal();
 }
 $('workspace-add').onclick=()=>editor(active==='notificationPreferences'?sync.record(active,'default'):null);$('editor-cancel').onclick=()=>{if(!dirty||confirm('Close without saving these changes?'))$('workspace-editor').close();};
-$('workspace-form').onsubmit=async event=>{event.preventDefault();if(!editing||!event.target.reportValidity())return;const owner=sync.uid,edit=editing,d=definitions[edit.domain],data={};const submit=event.target.querySelector('[type=submit]');if(submit.disabled)return;submit.disabled=true;for(const [key,,type]of d.fields){const input=event.target.elements.namedItem(key);fieldSet(data,key,type==='checkbox'?input.checked:type==='number'?Number(input.value):input.value.trim());}
+$('workspace-form').onsubmit=async event=>{event.preventDefault();if(!editing)return;if(editing.domain==='notificationPreferences'){const lead=event.target.elements.namedItem('eventLeadMinutes');if(!validateLeadTime(lead)){$('editor-status').textContent=leadTimeMessage;lead.reportValidity();return;}}if(!event.target.reportValidity())return;const owner=sync.uid,edit=editing,d=definitions[edit.domain],data={};const submit=event.target.querySelector('[type=submit]');if(submit.disabled)return;submit.disabled=true;for(const [key,,type]of d.fields){const input=event.target.elements.namedItem(key);fieldSet(data,key,type==='checkbox'?input.checked:type==='number'?Number(input.value):input.value.trim());}
  try{
   if(data.url&&!safeURL(data.url)||data.sourceURL&&!safeURL(data.sourceURL))throw Error('Use a valid HTTPS source link.');
   if(edit.domain==='readingRecords'&&edit.isNew){edit.id=await storyID(data.url);const existing=sync.record('readingRecords',edit.id);if(existing&&!existing.deleted)throw Error('This story is already in your account. Edit the existing story.');edit.revision=existing?.revision||0;data.id=edit.id;}

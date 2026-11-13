@@ -75,7 +75,7 @@
       if (row && row.scrollWidth > row.clientWidth) row.scrollLeft = Math.max(0, on.offsetLeft - row.offsetLeft - 16);
     }
   }
-  import('/assets/js/account-sync.js?v=20261113-world-ships-pro-1').then(api=>{shared=api;api.offerImport('intelligence-local','Import this browser’s saved stories',()=>localSaved().map(row=>({domain:'readingRecords',id:row.id,data:{...row,url:new URL(row.url,location.origin).href,webPath:row.url,saved:true}})));api.subscribe(()=>document.dispatchEvent(new Event('fynx:saved-stories')));}).catch(()=>{});
+  import('/assets/js/account-sync.js?v=20261113-world-ships-pro-2').then(api=>{shared=api;api.offerImport('intelligence-local','Import this browser’s saved stories',()=>localSaved().map(row=>({domain:'readingRecords',id:row.id,data:{...row,url:new URL(row.url,location.origin).href,webPath:row.url,saved:true}})));api.subscribe(()=>document.dispatchEvent(new Event('fynx:saved-stories')));}).catch(()=>{});
   const go = () => { article(); hub(); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
 })();
