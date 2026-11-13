@@ -250,7 +250,7 @@
   window.addEventListener('pagehide',()=>{clearInterval(timer);timer=null;});
   window.addEventListener('pageshow',()=>{if(/^[a-f0-9]{64}$/.test(options.id)){schedule();onReturn();}});
   start();
-  import('/assets/js/account-sync.js?v=20261113-shared-account-1').then(api=>{
+  import('/assets/js/account-sync.js?v=20261113-world-ships-2').then(api=>{
     shared=api;const saveButton=node('button','Save story');saveButton.type='button';$('[data-reader-share]').before(saveButton);
     let version=0;
     async function paint(){const request=++version;if(!current){saveButton.disabled=true;return;}saveButton.disabled=false;const id=await api.storyID(current.sourceUrl);if(request!==version)return;saveButton.textContent=api.accountData('readingRecords',id)?.saved?'Saved story':'Save story';saveButton.setAttribute('aria-pressed',String(!!api.accountData('readingRecords',id)?.saved));}

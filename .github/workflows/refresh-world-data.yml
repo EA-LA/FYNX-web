@@ -5,6 +5,8 @@ name: Refresh World desk data
 on:
   schedule:
     - cron: '41 * * * *'
+    # GitHub can delay or drop scheduled runs under load; a second slot catches up sooner.
+    - cron: '11 * * * *'
   workflow_dispatch:
     inputs:
       force_daily:
