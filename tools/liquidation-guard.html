@@ -900,6 +900,15 @@
       calculateGuard();
     });
 
+    // Recalculate as the inputs change so the result never shows numbers for an older trade.
+    let liveTimer = null;
+    ["positionSide","entryPrice","accountBalance","riskAllocation","leverage","maintenanceMargin","stopPrice"].forEach(id => {
+      const el = document.getElementById(id);
+      const schedule = () => { clearTimeout(liveTimer); liveTimer = setTimeout(calculateGuard, 250); };
+      el.addEventListener("input", schedule);
+      el.addEventListener("change", schedule);
+    });
+
     calculateGuard();
   </script>
 
