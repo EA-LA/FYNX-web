@@ -34,5 +34,9 @@ jobs:
           node --check assets/js/news-preferences.js
           node --check assets/js/your-news.js
           node --check scripts/test-your-news-topic-transfer.cjs
+      - name: Rebuild the generated Your News page and release asset identities
+        run: |
+          node scripts/build-your-news.cjs
+          node scripts/build-release-assets.cjs
       - name: Test privacy-safe topic backup and existing storage behavior
         run: node --test scripts/test-your-news-topic-transfer.cjs scripts/test-news-preferences-storage-clear.cjs
