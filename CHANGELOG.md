@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-13 (run 92) — [site-qa] Compound calculator checks your savings goal and shows the result in today's money
+- New: the Compound calculator has two optional fields, "Savings Goal" and "Inflation". Fill either one and a "Goal and inflation check" card shows whether you reach the goal, the monthly deposit that reaches it in your chosen years, how long your current deposit takes, and what the ending balance is worth in today's money. Example: $1,000 plus $200 a month at a fixed 12% for 10 years grows to $49,308.12; a $100,000 goal needs $420.37 a month, or takes 14 years 8 months at $200; with 3% inflation the $49,308.12 is worth $36,689.88 today. These are projections with a fixed return, not a promise. Both fields are included in "Copy scenario link". https://www.fynxfinanceworld.com/tools/compound.html
+- Fixed: the Compound summary said "for 1 years"; it now says "for 1 year".
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): all 388 pages with no sideways scrolling, small text fields, script errors or broken internal links; new card fits every iPhone; results checked against an independent Python calculation; new automatic test; all site checks pass.
+
 ## 2026-11-13 (run 91) — [site-qa] Liquidation Guard updates as you type; Connect MT5 links easier to tap on iPhone
 - Fixed: the Liquidation Guard kept showing the result for your previous numbers after you changed a field, until you pressed Calculate again (change the entry from 100 to 200 and it still said the liquidation price was 90.5). It now updates as you type: entry 200 at 10x with 0.5% maintenance shows 181. https://www.fynxfinanceworld.com/tools/liquidation-guard.html
 - Fixed on iPhone: in Profile → Edge Radar, the new "Download again", "Show token" and "Copy" links after you press Connect MT5 were only 17–22px tall, hard to hit with a finger. They are now 44px tap targets on phones; desktop looks the same. https://www.fynxfinanceworld.com/profile.html#edge-settings
