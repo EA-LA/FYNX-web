@@ -7,6 +7,14 @@ function paths(db,uid,domain,id){
 }
 function current(domain,id,meta,source,now){return c.record(domain,id,meta,source?source.exists?source.data():undefined:meta&&!meta.deleted?meta.data:undefined,now);}
 function metadata(record){return {...record,fingerprint:c.hash(record.data)};}
+function legacyDisplayProfile(root){
+ const profile={};
+ for(const key of ['username','displayName'])if(typeof root?.[key]==='string'&&root[key].trim()&&root[key].length<=200)profile[key]=root[key];
+ if(!profile.displayName&&profile.username)profile.displayName=profile.username;
+ if(!profile.username&&profile.displayName)profile.username=profile.displayName;
+ if(typeof root?.photoURL==='string'&&root.photoURL.length<=4000){try{const url=new URL(root.photoURL);if(url.protocol==='https:'&&!url.username&&!url.password)profile.photoURL=root.photoURL;}catch{}}
+ return profile;
+}
 function restoreTimestamps(value,previous,toTimestamp){
  if(previous&&typeof previous.toMillis==='function'&&typeof value==='number'&&Number.isFinite(value))return toTimestamp(value);
  if(Array.isArray(value))return value.map((item,i)=>restoreTimestamps(item,Array.isArray(previous)?previous[i]:undefined,toTimestamp));
@@ -22,7 +30,17 @@ async function boundedCollection(collection,budget){
 function createService({db,now=Date.now,toTimestamp=v=>v,membership=async()=>({status:'unavailable',capabilities:{accountSync:true}})}){
  async function alive(uid,tx){const ref=paths(db,uid,'profile','default').deleted;if((await(tx?tx.get(ref):ref.get())).exists)c.fail('unauthenticated','This account was deleted.');}
  async function rate(uid,changes=0){const root=paths(db,uid,'profile','default').root;await db.runTransaction(async tx=>{await alive(uid,tx);const old=(await tx.get(root)).data()||{},minute=Math.floor(now()/60000),day=Math.floor(now()/86400000),count=old.minute===minute?(old.requests||0)+1:1,mutations=(old.day===day?old.mutations||0:0)+changes;if(count>120||mutations>10000)c.fail('resource-exhausted','Your synchronization rate limit has been reached. Keep your local changes and retry later.');tx.set(root,{minute,requests:count,day,mutations,updatedAt:now()},{merge:true});});}
+ async function importLegacyProfile(uid){return db.runTransaction(async tx=>{
+  await alive(uid,tx);const p=paths(db,uid,'profile','default');const [meta,canonical,legacy]=await Promise.all([tx.get(p.meta),tx.get(p.canonical),tx.get(db.collection('users').doc(uid))]);
+  // Metadata means this profile has participated in sync already, including
+  // intentional or externally observed deletion. Never revive it from a mirror.
+  if(meta.exists||canonical.exists)return;
+  const data=legacyDisplayProfile(legacy.data());if(!Object.keys(data).length)return;
+  const record=current('profile','default',null,{exists:true,data:()=>data},now()),saved=metadata(record);delete saved.data;
+  tx.set(p.canonical,data);tx.set(p.meta,saved);
+ });}
  async function readDomain(uid,domain,budget={remaining:c.LIMITS.responseBytes}){
+  if(domain==='profile')await importLegacyProfile(uid);
   const p=paths(db,uid,domain,'default'),metaSnap=await boundedCollection(p.items,budget);let sourceSnap=null;
   if(p.sourceCollection)sourceSnap=await boundedCollection(p.sourceCollection,budget);else if(p.canonical){sourceSnap=await p.canonical.get();if(sourceSnap.exists)consumeReadBudget(budget,sourceSnap.data());}
   const metas=new Map(metaSnap.docs.map(s=>[s.id,s.data()])),sources=new Map();
@@ -42,7 +60,7 @@ function createService({db,now=Date.now,toTimestamp=v=>v,membership=async()=>({s
   const domains=[...new Set(operations.map(o=>o.domain))],known=new Map(await Promise.all(domains.map(async domain=>{const p=paths(db,uid,domain,'default'),[metas,legacy]=await Promise.all([tx.get(p.items.select().limit(c.LIMITS.recordsPerDomain+1)),p.sourceCollection?tx.get(p.sourceCollection.select().limit(c.LIMITS.recordsPerDomain+1)):Promise.resolve(null)]);return [domain,new Set([...metas.docs.map(s=>s.id),...(legacy?.docs||[]).map(s=>s.id)])];}))),counts=new Map([...known].map(([domain,ids])=>[domain,ids.size]));
   const paidRoot=db.collection('fynxConsumerLive').doc(uid),paid=operations.some(op=>op.domain==='toolWorkspaces'&&op.deleted)?(await tx.get(paidRoot)).data():null;
   const legacyProfile=db.collection('users').doc(uid),legacyProfileSnapshot=operations.some(op=>op.domain==='profile')?await tx.get(legacyProfile):null;
-  const rows=await Promise.all(operations.map(async op=>{const p=paths(db,uid,op.domain,op.id),receipt=p.root.collection('mutations').doc(op.mutationId);const [m,s,r]=await Promise.all([tx.get(p.meta),p.canonical?tx.get(p.canonical):Promise.resolve(null),tx.get(receipt)]);return {op,p,receipt,m,s,r,current:current(op.domain,op.id,m.data(),s,now()),requestHash:c.hash(op)};}));
+  const rows=await Promise.all(operations.map(async op=>{const p=paths(db,uid,op.domain,op.id),receipt=p.root.collection('mutations').doc(op.mutationId);const [m,s,r]=await Promise.all([tx.get(p.meta),p.canonical?tx.get(p.canonical):Promise.resolve(null),tx.get(receipt)]);let observed=s;if(op.domain==='profile'&&!m.exists&&!s?.exists){const legacy=legacyDisplayProfile(legacyProfileSnapshot?.data());if(Object.keys(legacy).length)observed={exists:true,data:()=>legacy};}return {op,p,receipt,m,s,r,current:current(op.domain,op.id,m.data(),observed,now()),requestHash:c.hash(op)};}));
   const conflicts=[];for(const row of rows){if(row.r.exists){if(row.r.data().requestHash!==row.requestHash)c.fail('already-exists','This change ID was already used for different data.');continue;}if(row.op.expectedRevision!==row.current.revision)conflicts.push({domain:row.op.domain,id:row.op.id,current:row.current});}
   if(conflicts.length)c.fail('aborted','Some records changed on another device. Review the latest version before retrying.',{conflicts});
   const prepared=[];for(const row of rows){if(row.r.exists){prepared.push({...row,replay:true,result:row.current});continue;}
@@ -73,4 +91,4 @@ function createService({db,now=Date.now,toTimestamp=v=>v,membership=async()=>({s
  async function handle(input,context){const uid=context?.auth?.uid;if(typeof uid!=='string'||!uid||uid.includes('/')||context.auth.token?.firebase?.sign_in_provider==='anonymous')c.fail('unauthenticated','Sign in to synchronize your account.');const req=c.request(input,uid);await rate(uid,req.mutations?.length||0);if(req.action==='membership')return {schemaVersion:1,membership:await membership(uid),serverTime:now()};if(req.action==='mutate')return mutate(uid,req.mutations);const records=[],budget={remaining:c.LIMITS.responseBytes};for(const domain of req.domains)records.push(...await readDomain(uid,domain,budget));if(Buffer.byteLength(JSON.stringify(records))>c.LIMITS.responseBytes)c.fail('resource-exhausted','The complete snapshot is too large. Request fewer domains; no partial snapshot was returned.');return {schemaVersion:1,records,serverTime:now()};}
  return {handle,readDomain,mutate};
 }
-module.exports={paths,current,metadata,restoreTimestamps,boundedCollection,createService};
+module.exports={paths,current,metadata,legacyDisplayProfile,restoreTimestamps,boundedCollection,createService};

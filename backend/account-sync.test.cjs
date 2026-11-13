@@ -21,15 +21,43 @@ test('profile cannot write membership flags and malformed payloads fail closed',
 test('profile display mirror preserves root privacy, rank and entitlement fields and clears on delete',async()=>{
  const{service,db}=setup();const preserved={email:'private@example.invalid',rank:'existing',isPro:true,kycStatus:'verified',sharing:{enabled:false},fynxId:'unchanged'};
  db.seed('users/alice',{...preserved,username:'Old',displayName:'Old',photoURL:'https://example.invalid/old.jpg',bio:'private root biography'});
- const first=await call(service,[op('profile','default',{username:'Shared',displayName:'Shared display',photoURL:'https://example.invalid/new.jpg',bio:'private canonical biography',nativeData:{rank:'not a grant'}})]);
+ const prior=(await service.handle({expectedUid:'alice',action:'read',domains:['profile']},ctx)).records[0];
+ const first=await call(service,[op('profile','default',{username:'Shared',displayName:'Shared display',photoURL:'https://example.invalid/new.jpg',bio:'private canonical biography',nativeData:{rank:'not a grant'}},prior.revision)]);
  assert.deepEqual(db.read('users/alice'),{...preserved,username:'Shared',displayName:'Shared display',photoURL:'https://example.invalid/new.jpg',bio:'private root biography'});
  await call(service,[{domain:'profile',id:'default',mutationId:randomUUID(),expectedRevision:first.records[0].revision,deleted:true}]);
  assert.deepEqual(db.read('users/alice'),{...preserved,bio:'private root biography'});assert.equal(db.read('users/alice/account/profile'),undefined);
 });
 test('failed profile batches and idempotency replays cannot overwrite legacy root fields',async()=>{
- const{service,db}=setup();db.seed('users/alice',{username:'Before',rank:'preserved'});const change=op('profile','default',{username:'One'});await call(service,[change]);
+ const{service,db}=setup();db.seed('users/alice',{rank:'preserved'});const change=op('profile','default',{username:'One'});await call(service,[change]);
  db.seed('users/alice',{username:'Legacy later',rank:'preserved'});await call(service,[change]);assert.equal(db.read('users/alice').username,'Legacy later');
  await assert.rejects(call(service,[op('profile','default',{username:'Rejected'},0)]),{code:'aborted'});assert.equal(db.read('users/alice').username,'Legacy later');
+});
+test('first profile read imports only owner legacy display fields and preserves older name on a fresh device',async()=>{
+ const{service,db}=setup();const root={username:'Legacy owner',photoURL:'https://example.invalid/legacy.jpg',email:'private@example.invalid',rank:8,isPro:true,bio:'Private',sharing:{enabled:false}};
+ db.seed('users/alice',root).seed('users/bob',{username:'Other owner'});
+ const response=await service.handle({expectedUid:'alice',action:'read',domains:['profile']},ctx),row=response.records[0];
+ assert.deepEqual(row.data,{username:'Legacy owner',displayName:'Legacy owner',photoURL:'https://example.invalid/legacy.jpg'});assert.ok(row.revision>0);
+ assert.deepEqual(db.read('users/alice/account/profile'),row.data);assert.deepEqual(db.read('users/alice'),root);assert.equal(db.read('users/bob/account/profile'),undefined);
+ const again=await service.handle({expectedUid:'alice',action:'read',domains:['profile']},ctx);assert.equal(again.records[0].revision,row.revision);
+ await assert.rejects(call(service,[op('profile','default',{username:'Trader'},0)]),{code:'aborted'});
+});
+test('default profile writes before first read conflict with existing legacy identity',async()=>{
+ const{service,db}=setup();db.seed('users/alice',{username:'Do not overwrite',rank:9});
+ await assert.rejects(call(service,[op('profile','default',{username:'Trader'})]),error=>error.code==='aborted'&&error.details.conflicts[0].current.data.username==='Do not overwrite');
+ assert.equal(db.read('users/alice').username,'Do not overwrite');assert.equal(db.read('users/alice/account/profile'),undefined);
+});
+test('profile tombstones and previously observed direct deletion never resurrect legacy root display data',async()=>{
+ for(const explicit of [true,false]){const{service,db}=setup();db.seed('users/alice',{username:'Legacy'});const row=(await service.handle({expectedUid:'alice',action:'read',domains:['profile']},ctx)).records[0];
+  if(explicit)await call(service,[{domain:'profile',id:'default',expectedRevision:row.revision,mutationId:randomUUID(),deleted:true}]);else db.data.delete('users/alice/account/profile');
+  db.seed('users/alice',{username:'Stale mirror',photoURL:'https://example.invalid/stale.jpg'});
+  const response=await service.handle({expectedUid:'alice',action:'read',domains:['profile']},ctx);assert.equal(response.records[0].deleted,true);assert.equal(db.read('users/alice/account/profile'),undefined);
+ }
+});
+test('legacy import ignores unsupported display values and existing canonical data remains authoritative',async()=>{
+ const{service,db}=setup();db.seed('users/alice',{username:123,displayName:' ',photoURL:'javascript:alert(1)',isPro:true,email:'private@example.invalid'});
+ assert.equal((await service.handle({expectedUid:'alice',action:'read',domains:['profile']},ctx)).records.length,0);assert.equal(db.read('users/alice/account/profile'),undefined);
+ db.seed('users/alice',{username:'Older'}).seed('users/alice/account/profile',{displayName:'Canonical',country:'US'});
+ assert.deepEqual((await service.handle({expectedUid:'alice',action:'read',domains:['profile']},ctx)).records[0].data,{displayName:'Canonical',country:'US'});
 });
 test('duplicate item in batch and incomplete oversized domain are explicit errors',async()=>{const{service,db}=setup();await assert.rejects(call(service,[op('progress','x',{}),op('progress','x',{})]),{code:'invalid-argument'});for(let n=0;n<=core.LIMITS.recordsPerDomain;n++)db.seed(paths(db,'alice','progress','x'+n).meta.path,{domain:'progress',id:'x'+n,revision:1,data:{done:true},deleted:false,fingerprint:core.hash({done:true}),updatedAt:at});await assert.rejects(service.handle({action:'read',expectedUid:'alice',domains:['progress']},ctx),{code:'resource-exhausted'});});
 test('deleted identity cannot recreate records',async()=>{const{service,db}=setup();db.seed('fynxAccountSyncDeleted/'+core.hash('alice'),{completedAt:at});await assert.rejects(call(service,[op('progress','x',{})]),{code:'unauthenticated'});});

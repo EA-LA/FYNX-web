@@ -73,16 +73,20 @@ async function main(){
  const cliAuth=require(process.env.FYNX_FIREBASE_AUTH_MODULE||'/Users/h/.npm-global/lib/node_modules/firebase-tools/lib/auth');
  const account=cliAuth.getGlobalDefaultAccount();check(account?.tokens?.refresh_token,'Firebase CLI account');oauth=(await cliAuth.getAccessToken(account.tokens.refresh_token,['https://www.googleapis.com/auth/cloud-platform'])).access_token;check(oauth,'Firebase CLI access');
  if(args.includes('--profile-mirror-smoke')){
-  report.scope='One disposable account; canonical profile display mirror, private-field preservation and profile deletion. No real user data.';
+  report.scope='One disposable account; legacy root import, stale-default rejection, canonical profile display mirror, private-field preservation and tombstone non-resurrection. No real user data.';
   let user;await step('create-one-verified-disposable-user',async()=>{user=await createUser('qa-profile-mirror');});
   await step('profile-mirror-preserves-legacy-private-fields',async()=>{
    await admin(dbBase+`/users/${user.uid}`,'PATCH',{fields:{username:{stringValue:'QA previous'},email:{stringValue:'private-qa@example.invalid'},rank:{stringValue:'qa-rank'},fynxId:{stringValue:'qa-stable-id'}}});
-   const response=await callable(user,{expectedUid:user.uid,action:'mutate',mutations:[mutation('profile','default',{username:'QA connected name',displayName:'QA connected display',photoURL:'https://example.invalid/qa.jpg',bio:'Canonical private biography'})]});user.profileRevision=response.records[0].revision;
+   await mustReject(()=>callable(user,{expectedUid:user.uid,action:'mutate',mutations:[mutation('profile','default',{username:'Trader'})]}),'aborted');
+   const legacy=(await callable(user,{expectedUid:user.uid,action:'read',domains:['profile']})).records[0];check(legacy.data.username==='QA previous'&&legacy.data.displayName==='QA previous'&&!legacy.data.email&&!legacy.data.rank&&!legacy.data.fynxId,'Legacy owner display import excludes private fields');
+   const response=await callable(user,{expectedUid:user.uid,action:'mutate',mutations:[mutation('profile','default',{username:'QA connected name',displayName:'QA connected display',photoURL:'https://example.invalid/qa.jpg',bio:'Canonical private biography'},legacy.revision)]});user.profileRevision=response.records[0].revision;
    const root=(await userDocument(user,`users/${user.uid}`)).body.fields;check(root.username.stringValue==='QA connected name'&&root.displayName.stringValue==='QA connected display'&&root.photoURL.stringValue==='https://example.invalid/qa.jpg','Legacy display mirror');check(root.rank.stringValue==='qa-rank'&&root.fynxId.stringValue==='qa-stable-id'&&root.email.stringValue==='private-qa@example.invalid'&&!root.bio,'Private fields preserved; canonical biography not copied');
   });
   await step('profile-delete-clears-only-mirrored-display-fields',async()=>{
    await callable(user,{expectedUid:user.uid,action:'mutate',mutations:[{domain:'profile',id:'default',expectedRevision:user.profileRevision,mutationId:crypto.randomUUID(),deleted:true}]});
    const root=(await userDocument(user,`users/${user.uid}`)).body.fields;check(!root.username&&!root.displayName&&!root.photoURL&&root.rank.stringValue==='qa-rank'&&root.email.stringValue==='private-qa@example.invalid','Profile deletion preserves root account');check((await userDocument(user,`users/${user.uid}/account/profile`)).status===404,'Canonical profile deleted');
+   await userDocument(user,`users/${user.uid}`,'PATCH',{username:{stringValue:'QA stale legacy mirror'}},'username');
+   const deleted=(await callable(user,{expectedUid:user.uid,action:'read',domains:['profile']})).records[0];check(deleted.deleted===true&&(await userDocument(user,`users/${user.uid}/account/profile`)).status===404,'Profile tombstone cannot be revived by legacy root');
   });return;
  }
  if(args.includes('--connected-services-smoke')){
