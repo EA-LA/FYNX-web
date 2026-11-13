@@ -2,13 +2,13 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),os=require('node:os'),path=require('node:path'),vm=require('node:vm');
-const {build,VERSION}=require('./build-release-assets.cjs');
+const {build,VERSION,ASSET_VERSIONS,rewriteReferences,ASSETS}=require('./build-release-assets.cjs');
 const {publicSiteFiles,isPublicSitePath,PUBLIC_DIRECTORIES}=require('./public-site-files.cjs');
 
 test('public traversal includes published routes and excludes test, private, hidden and unrecognized source directories',()=>{
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'fynx-public-traversal-'));
   const canary='<script src="/fynx-nav.js?v=fixture-original"></script>';
-  const publicFiles=['index.html','api/index.html','edge-radar/eurusd/index.html','profile/accounts/index.html','profile/accounts/connect/file/index.html','auth/login.html','learn/lessons/forex/example.html','assets/js/example.js'];
+  const publicFiles=['index.html','api/index.html','edge-radar/eurusd/index.html','profile/accounts/index.html','profile/accounts/connect/file/index.html','auth/login.html','learn/lessons/forex/example.html','intelligence/example-article/index.html','assets/js/example.js'];
   const privateFiles=['tests/accounts/fixtures/mt4-statement.html','tests/accounts/example.js','backend/private.html','lib/source.js','content/template.html','config/private.html','docs/guide.html','scripts/example.html','functions/source.js','new-private-service/example.html','.accounts-data/records.html','.edge-data/private.html','.quant-data/private.html','.git/private.html','node_modules/example/index.html','dist/index.html','output/preview.html','tools/fixtures/statement.html','assets/__tests__/example.js','assets/.private/example.js','assets/vendor/example.js'];
   try {
     for(const file of [...publicFiles,...privateFiles]){fs.mkdirSync(path.dirname(path.join(root,file)),{recursive:true});fs.writeFileSync(path.join(root,file),canary);}
@@ -54,4 +54,12 @@ test('cache versioning reaches module importers without touching runtime express
     write('index.html','<script src="assets/js/entry.js?v=regenerated"></script>');
     assert.deepEqual(build(root).changed,['index.html']);assert(read('index.html').includes('?v='+VERSION));
   } finally {fs.rmSync(root,{recursive:true,force:true});}
+});
+
+test('workspace validation release changes only its asset cache identity',()=>{
+ const source=`<script src="/assets/js/shared-workspace.js?v=old"></script><script src="/assets/js/account-sync.js?v=${VERSION}"></script>`;
+ const updated=rewriteReferences(source,'workspace.html',new Set(ASSETS));
+ assert(updated.includes('shared-workspace.js?v='+ASSET_VERSIONS['assets/js/shared-workspace.js']));
+ assert(updated.includes('account-sync.js?v='+VERSION));
+ assert.equal(rewriteReferences(updated,'workspace.html',new Set(ASSETS)),updated);
 });
