@@ -53,7 +53,7 @@ function editor(row){const d=definitions[active];editing={isNew:!row,domain:acti
   if(type==='checkbox')input.checked=key==='saved'&&!row?true:!!fieldValue(editing.data,key);
   else if(key==='holdings')input.value=(editing.data.holdings||[]).map(h=>`${h.symbol}, ${h.units}, ${h.averageCost??''}`).join('\n');
   else if(key==='itemsText')input.value=(editing.data.items||[]).map(i=>`${i.completed?'[x] ':''}${i.title||i.text||i.label||''}`).join('\n');
-  else input.value=format(fieldValue(editing.data,key)??(key==='title'?editing.data.name:undefined));
+  else input.value=format(fieldValue(editing.data,key)??(leadTime?15:key==='title'?editing.data.name:undefined));
   if(leadTime||['title','name','url','symbols'].includes(key))input.required=true;input.maxLength=type==='textarea'?16000:1200;
   input.oninput=()=>{dirty=true;if(leadTime&&validateLeadTime(input)&&$('editor-status').textContent===leadTimeMessage)$('editor-status').textContent='';};l.append(input);
   if(leadTime){const help=node('small',leadTimeMessage);help.id='event-lead-help';input.setAttribute('aria-describedby',help.id);input.oninvalid=()=>{$('editor-status').textContent=leadTimeMessage;};if(!validateLeadTime(input)&&row&&fieldValue(editing.data,key)!==undefined)help.append(document.createTextNode(' Your saved value is unchanged. Correct it before saving these preferences.'));l.append(help);}
