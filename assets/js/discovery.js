@@ -79,7 +79,10 @@
     const vocab=new Map(),pairs=new Map();info.forEach(row=>{new Set(row.words).forEach(w=>{if(w.length>=3&&!/^\d+$/.test(w))vocab.set(w,(vocab.get(w)||0)+1);});row.words.forEach((w,k)=>{const n=row.words[k+1];if(n&&w.length>=3&&n.length>=3&&!/\d/.test(w+n))pairs.set(w+n,(pairs.get(w+n)||0)+1);});});
     // Bigger typos are only corrected to topic words (seen in a resource title) that are not too generic, so "taxes" no longer becomes "takes" and "trailing" no longer becomes "trading".
     const topics=new Set();info.forEach(row=>{const w=wordsOf(row.title);w.forEach((x,k)=>{topics.add(x);if(w[k+1])topics.add(x+w[k+1]);});});
-    const generic=cards.length*0.2;
+    // "Generic" is judged on the core library only: the growing set of dated Intelligence stories must not make "trading" look rare.
+    const coreRows=info.filter((row,i)=>!/^\/intelligence\//.test(cards[i].dataset.resourceUrl||'')),coreCount=new Map();
+    coreRows.forEach(row=>new Set(row.words).forEach(w=>coreCount.set(w,(coreCount.get(w)||0)+1)));
+    const generic=coreRows.length*0.2,isGeneric=w=>(coreCount.get(w)||0)>generic;
     // Optimal string alignment distance: one typo, missing letter or swapped pair counts as 1.
     function distance(a,b,max){
       if(Math.abs(a.length-b.length)>max)return max+1;
@@ -99,7 +102,7 @@
     function correct(t){
       if(t.length<4||synonyms[t]||[...vocab.keys()].some(w=>w.startsWith(t)))return t;
       const max=t.length<=5?1:2;let best=t,bestD=max+1,bestN=0;
-      const consider=(n,w,cap=max)=>{const topic=topics.has(w);if(n>generic||!topic)cap=Math.min(cap,1);if(!topic&&w.length===t.length)return;const d=Math.min(distance(t,w,max),w.length>t.length?distance(t,w.slice(0,t.length),max)+0.5:max+1);const rank=d+(topic&&n<=generic?0:0.25);if(d<=cap&&(rank<bestD||(rank===bestD&&n>bestN))){best=w;bestD=rank;bestN=n;}};
+      const consider=(n,w,cap=max)=>{const topic=topics.has(w),common=isGeneric(w);if(common||!topic)cap=Math.min(cap,1);if(!topic&&w.length===t.length)return;const d=Math.min(distance(t,w,max),w.length>t.length?distance(t,w.slice(0,t.length),max)+0.5:max+1);const rank=d+(topic&&!common?0:0.25);if(d<=cap&&(rank<bestD||(rank===bestD&&n>bestN))){best=w;bestD=rank;bestN=n;}};
       vocab.forEach((n,w)=>consider(n,w));if(t.length>=6)pairs.forEach((n,w)=>{if(!vocab.has(w))consider(n,w,1);});
       return best;
     }

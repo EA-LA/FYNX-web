@@ -56,7 +56,7 @@ test('the initial example still calculates its correct 40-month schedule', () =>
   assert.match(el('scheduleBody').innerHTML, /<tr>/);
 });
 
-for (const id of ['loanAmount', 'interestRate', 'monthlyPayment', 'extraPayment']) {
+for (const id of ['loanAmount', 'interestRate', 'monthlyPayment', 'extraPayment', 'targetMonths']) {
   test('editing ' + id + ' immediately invalidates all previous results', () => {
     const {el, fire} = boot();
     el(id).value = String(Number(el(id).value) + 1);

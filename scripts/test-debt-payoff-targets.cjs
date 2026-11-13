@@ -13,11 +13,11 @@ const src = pick("    function formatCurrency(value){", "    function resetOutpu
   + pick("    function paymentForMonths(loan, monthlyRate, n){", "    function calculatePayoff(){");
 assert.ok(html.includes('id="targetList"'), "target list must be on the page");
 
-function run(loan, annual, current) {
+function run(loan, annual, current, custom) {
   const dom = new JSDOM('<!doctype html><ul id="targetList"></ul>');
   const ctx = { document: dom.window.document, Intl, Math };
-  vm.runInNewContext(src + "\nglobalThis.t = renderTargets; globalThis.p = paymentForMonths;", ctx);
-  ctx.t(loan, annual / 100 / 12, current);
+  vm.runInNewContext(src + "\nglobalThis.t = renderTargets; globalThis.p = paymentForMonths; globalThis.r = readTargetMonths; globalThis.l = termLabel;", ctx);
+  ctx.t(loan, annual / 100 / 12, current, custom);
   return { ctx, items: [...dom.window.document.querySelectorAll("#targetList li")].map(li => li.textContent) };
 }
 
@@ -34,4 +34,27 @@ test("zero interest splits the balance evenly", () => {
   const { ctx, items } = run(10000, 0, 50);
   assert.equal(ctx.p(10000, 0, 24), 416.67);
   assert.match(items[1], /\$416\.67\/month.*\$0\.00 total interest/);
+});
+
+test("your own target is added in order and marked", () => {
+  const { items } = run(10000, 10, 300, 18);
+  assert.equal(items.length, 5);
+  assert.match(items[1], /^18 months \(1 year 6 months\), your target: \$600\.58\/month\$300\.58 more than your payment · \$810\.26 total interest/);
+  const { items: later } = run(10000, 10, 300, 48);
+  assert.match(later[3], /^48 months \(4 years\), your target: \$253\.63\/month\$46\.37 less than your payment · \$2,174\.00 total interest/);
+});
+
+test("a target that matches a standard term is marked, not duplicated", () => {
+  const { items } = run(10000, 10, 300, 24);
+  assert.equal(items.length, 4);
+  assert.match(items[1], /^24 months \(2 years\), your target:/);
+});
+
+test("target field accepts blank or 1-600 whole months only", () => {
+  const { ctx } = run(10000, 10, 300);
+  assert.equal(ctx.r(""), 0);
+  assert.equal(ctx.r(" 18 "), 18);
+  for (const bad of ["0", "-3", "6.5", "601", "abc"]) assert.ok(Number.isNaN(ctx.r(bad)), bad);
+  assert.equal(ctx.l(6), "6 months");
+  assert.equal(ctx.l(13), "13 months (1 year 1 month)");
 });
