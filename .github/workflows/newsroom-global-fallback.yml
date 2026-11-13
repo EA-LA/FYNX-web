@@ -1,0 +1,24 @@
+name: Newsroom Global fallback recovery
+on:
+  pull_request:
+    paths:
+      - 'assets/js/newsroom-page.js'
+      - 'scripts/test-newsroom-global-fallback.cjs'
+      - '.github/workflows/newsroom-global-fallback.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --check assets/js/newsroom-page.js
+      - run: node --check scripts/test-newsroom-global-fallback.cjs
+      - run: node --test scripts/test-newsroom-global-fallback.cjs
