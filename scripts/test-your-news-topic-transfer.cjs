@@ -95,7 +95,7 @@ test('page offers actual download/file restore, a status announcement and touch-
   assert.match(ui,/setupTopicTransfer\(\)/);
   assert.match(ui,/preferences\.exportTopicBackup\(\)/);
   assert.match(ui,/preferences\.importTopicBackup\(await chosen\.text\(\)\)/);
-  assert.match(ui,/file\.size>4096/);
+  assert.match(ui,/chosen\.size>4096/);
   assert.match(ui,/aria-live','polite'/);
   assert.match(css,/\.your-news-transfer-actions button\s*\{[^}]*min-height: 44px/);
 });
