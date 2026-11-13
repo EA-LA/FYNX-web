@@ -4,8 +4,13 @@
   'use strict';
   if (!PG) return;
   const {S, el, btn, svg, signed, tone, fmt, day, finite, rowButton, kv, store, shortOf, nameOf, quoteFor, digitsOf} = T;
-  const read = (k, d) => { try { return JSON.parse(store.get(k) || 'null') ?? d; } catch { return d; } };
-  const write = (k, v) => store.set(k, JSON.stringify(v));
+  let shared=null;
+  const read = (k, d) => { if(shared?.sync.uid){if(k==='portfolio')return (shared.accountData('portfolios','terminal-default')?.holdings||[]).map(h=>({symbol:h.symbol,qty:h.units}));return shared.accountData('preferences')?.terminalDrawings?.[k]??d;}try { return JSON.parse(store.get(k) || 'null') ?? d; } catch { return d; } };
+  const write = (k,v) => {
+    if(shared?.sync.uid){if(!shared.sync.ready){T.say('Load your account before saving.');return;}const previous=shared.accountData('portfolios','terminal-default')||{};const work=k==='portfolio'?shared.save('portfolios','terminal-default',{kind:'manual',id:'terminal-default',name:previous.name||'Terminal portfolio',cash:previous.cash||0,currency:'USD',holdings:v.map(h=>{const old=(previous.holdings||[]).find(p=>p.symbol===h.symbol);return {...old,id:old?.id||crypto.randomUUID(),symbol:h.symbol,units:h.qty,averageCost:old?.averageCost??null,currency:old?.currency||'USD'};})}):shared.save('preferences','default',{terminalDrawings:{[k]:v}});work.then(()=>T.say('Saved to your account.')).catch(e=>T.say(e.message));return;}
+    store.set(k,JSON.stringify(v));
+  };
+  import('/assets/js/account-sync.js?v=20261113-world-ships-2').then(api=>{shared=api;api.subscribe(()=>{PG.rerender();});}).catch(()=>{});
 
   /* ===== CHART: candles, volume, compare, drawings ====================================== */
   const RANGES = [[21, '1M'], [63, '3M'], [126, '6M'], [252, '1Y'], [504, '2Y'], [1260, '5Y']];
@@ -91,7 +96,7 @@
         const rows = data.rows.slice(-range);
         priceChart(box, rows, sym, {drawKey, tool: () => tool, onMeasure: t => { msg.textContent = t; }});
         const first = rows[0].close, last = rows.at(-1).close, hi = Math.max(...rows.map(r => r.high ?? r.close)), lo = Math.min(...rows.map(r => r.low ?? r.close));
-        info.textContent = `${data.source || 'Yahoo Finance'} · ${rows.length} sessions · change ${signed((last / first - 1) * 100, 2, '%')} · high ${fmt(hi, digitsOf(sym))} · low ${fmt(lo, digitsOf(sym))} · drawings are saved in this browser`;
+        info.textContent = `${data.source || 'Yahoo Finance'} · ${rows.length} sessions · change ${signed((last / first - 1) * 100, 2, '%')} · high ${fmt(hi, digitsOf(sym))} · low ${fmt(lo, digitsOf(sym))} · drawings follow your signed-in account`;
       } else {
         const others = cmpList(), series = await Promise.all(others.map(s => T.symHistory(s, '5y'))); if (!alive()) return;
         box.append(T.compareChart([{label: shortOf(sym), rows: data.rows}, ...series.map((d, i) => ({label: shortOf(others[i]), rows: d?.rows || []}))], (box.clientWidth || innerWidth) < 700 ? {W: 640, H: 440, sessions: range, scale: 2} : {W: 1100, H: 420, sessions: range}));
@@ -149,7 +154,7 @@
   };
   T.EXTRA_GROUPS.push(['Portfolio & charts', ['port', 'cmp']]);
   PG.add('port', 'Portfolio', async (host, arg, alive) => {
-    PG.setHead('PORT', 'Portfolio analytics', 'Your holdings, priced live, with risk measured from a year of real daily prices · saved in this browser');
+    PG.setHead('PORT', 'Portfolio analytics', 'Your holdings, priced live, with risk measured from a year of real daily prices · shared with your signed-in devices');
     const ed = PG.section('Holdings'), tb = el('table', 'fx-table pg-table'), h = el('tr'); ['SYMBOL', 'NAME', 'QUANTITY', 'PRICE', 'VALUE', 'DAY', ''].forEach(x => h.append(el('th', '', x))); tb.append(h);
     for (const x of holdings()) {
       const q = quoteFor(x.symbol), tr = el('tr'), qty = el('input'); qty.type = 'number'; qty.min = '0'; qty.step = 'any'; qty.value = x.qty; qty.className = 'pg-qty'; qty.setAttribute('aria-label', `Quantity of ${x.symbol}`);

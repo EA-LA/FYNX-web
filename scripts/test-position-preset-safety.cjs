@@ -31,6 +31,12 @@ function setup(data, raw = false) {
   return { dom, context, actions };
 }
 
+function assertBrowserPresetHint(dom, count) {
+  const hint = dom.window.document.querySelector("#hint").textContent;
+  assert.match(hint, new RegExp("^Free presets:\\s*" + count + "\\s*/\\s*3\\b"));
+  assert.match(hint, /\bSaved in your browser\b/, "Guest presets must identify their browser-local storage scope");
+}
+
 test("saved preset names are rendered as literal text, not executable markup", () => {
   const malicious = '<img src=x onerror="alert(1)"> & Savings';
   const { dom, context } = setup([{ name: malicious, pair: "EUR/USD" }]);
@@ -52,7 +58,7 @@ test("valid saved inputs retain load and delete actions", () => {
     { name: "Gold breakout", pair: "XAU/USD", stopPips: "40" }
   ]);
   context.testRenderPresets();
-  assert.equal(dom.window.document.querySelector("#hint").textContent, "Free presets: 2 / 3. (Saved in your browser)");
+  assertBrowserPresetHint(dom, 2);
   const buttons = dom.window.document.querySelectorAll("#chips button");
   assert.equal(buttons.length, 4);
   buttons[2].click();
@@ -76,7 +82,7 @@ test("mixed legacy data is bounded, displays fallback labels, and preserves butt
   const buttons = dom.window.document.querySelectorAll("#chips button");
   assert.equal(buttons.length, 6);
   assert.equal(buttons[2].querySelector(".preset-label").textContent, "Preset 2");
-  assert.equal(dom.window.document.querySelector("#hint").textContent, "Free presets: 3 / 3. (Saved in your browser)");
+  assertBrowserPresetHint(dom, 3);
   buttons[2].click();
   assert.deepEqual(actions, [["load", 1]]);
   dom.window.close();

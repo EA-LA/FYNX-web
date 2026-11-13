@@ -3,6 +3,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
+const {VERSION}=require('./build-release-assets.cjs');
 const root=path.resolve(__dirname,'..');
 const source=fs.readFileSync(path.join(root,'assets/js/research/personal.js'),'utf8');
 const app=fs.readFileSync(path.join(root,'assets/js/research/app.js'),'utf8');
@@ -56,5 +57,8 @@ test('An old-account request cannot show its failure after switching accounts',a
 });
 test('Error never silently becomes a trusted HTML fragment',()=>{
  assert.match(source,/portfolioRefreshError\?errorHTML\(portfolioRefreshError\)/);
- assert.match(app,/personal\.js\?v=20261112-portfolio-refresh-feedback-1/);
+ const personalImport=app.match(/from\s*['"]([^'"]*personal\.js[^'"]*)['"]/);
+ assert.ok(personalImport,'The app must import the production portfolio renderer');
+ assert.equal(new URL(personalImport[1],'https://www.fynxfinanceworld.com/assets/js/research/app.js').searchParams.get('v'),VERSION,
+   'The portfolio renderer must use the current release cache version');
 });

@@ -9,7 +9,7 @@ const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const route=item=>'/news/article.html?'+new URLSearchParams({id:item.articleId||item.id,edition:item.edition||'us',category:item.category||'all'});
 const item=(id=ID,extra={})=>({articleId:id,title:'Fixture company reports results',source:'Fixture publisher',publishedAt:new Date(NOW-3600000).toISOString(),edition:'us',category:'stocks',rank:1,...extra});
 const result=(items,extra={})=>({items,status:'fresh',stale:false,fetchedAt:new Date(NOW).toISOString(),...extra});
-function harness({stored,blocked=false,load}={}){
+function harness({stored,blocked=false,load,account}={}){
  const dom=new JSDOM(html,{url:'https://www.fynxfinanceworld.com/news/your-news.html',runScripts:'outside-only'}),w=dom.window;
  let now=NOW,edition='us',hidden=false;const timers=new Map(),calls=[];let timerID=0;
  w.Date.now=()=>now;Object.defineProperty(w.document,'hidden',{get:()=>hidden});
@@ -19,7 +19,8 @@ function harness({stored,blocked=false,load}={}){
  w.FynxEdition={get:()=>edition,editions:[{id:'us',label:'US'},{id:'uk',label:'UK'}]};
  w.FYNXNewsReaderData={href:route,prefetch:()=>{}};
  w.FYNXMarketIntelligenceData={loadHeadlines:(category,options)=>{calls.push({category,...options});return load?load(category,options):Promise.resolve(result([item(category[0].charCodeAt(0).toString(16).repeat(32),{category,edition:options.edition,title:'Fixture '+category+' report'})]));}};
- w.eval(preferenceScript);
+ if(account){w.__account={sync:{uid:'A',ready:true,status:'synced',records:domain=>(account.records||[]).filter(r=>r.domain===domain)},accountData:()=>account.interests,subscribe:fn=>fn(w.__account.sync),offerImport:()=>{},save:async()=>{}};}
+ w.eval(account?preferenceScript.replace(/import\('\/assets\/js\/account-sync\.js[^']*'\)/,'Promise.resolve(window.__account)'):preferenceScript);
  const fire=type=>w.document.dispatchEvent(new w.CustomEvent(type));
  return {w,dom,calls,timers,api:w.FYNXYourNews,start:()=>w.eval(pageScript),advance:ms=>{now+=ms;},edition:value=>{edition=value;fire('fynx:edition-change');},visible:value=>{hidden=!value;fire('visibilitychange');},fire,close:()=>dom.window.close()};
 }
@@ -145,3 +146,15 @@ test('Your News rejects unapproved, external and malformed destinations without 
    h.close();
  }
 });
+
+
+test('native detailed follows are editable and filter reports with phrase boundaries',async()=>{
+ const h=harness({account:{interests:{topics:['artificial-intelligence'],regions:['india'],companies:['AAPL']}},load:async(category,options)=>result([item(ID,{category,edition:options.edition,title:'Apple expands artificial intelligence services in India'}),item('b'.repeat(64),{category,edition:options.edition,title:'Retail spending report'})])});await tick();h.start();await tick();await tick();
+ assert(h.api.getTopics().includes('artificial-intelligence'));assert.equal(h.w.document.querySelector('[data-topic="artificial-intelligence"]').getAttribute('aria-pressed'),'true');assert(h.calls.some(c=>c.category==='technology'));assert(h.calls.some(c=>c.category==='world'&&c.edition==='india'));assert.match(h.w.document.querySelector('[data-your-stories]').textContent,/Apple/);assert.doesNotMatch(h.w.document.querySelector('[data-your-stories]').textContent,/Retail spending/);h.close();
+});
+test('native recent history and older bookmarks show without web reader metadata',async()=>{
+ const oldDate=new Date(NOW-100*86400000).toISOString(),record={domain:'readingRecords',id:ID,data:{id:ID,title:'Saved on iPhone',source:'Native publisher',url:'https://publisher.example/old-story',publishedAt:oldDate,openedAt:new Date(NOW-60000).toISOString(),saved:true}};
+ const h=harness({account:{interests:{topics:[]},records:[record]}});await tick();h.start();await tick();assert.equal(h.api.getHistory().length,1);assert.equal(h.api.getSaved().length,1);assert.equal(h.w.document.querySelector('[data-your-history] a').href,'https://publisher.example/old-story');assert.equal(h.w.document.querySelector('[data-your-saved] a').href,'https://publisher.example/old-story');h.close();
+});
+
+test('native saved stories with unknown publication dates remain visible',async()=>{const h=harness({account:{interests:{topics:[]},records:[{domain:'readingRecords',id:ID,data:{title:'Undated saved link',url:'https://publisher.example/story',saved:true}}]}});await tick();h.start();await tick();assert.equal(h.api.getSaved().length,1);assert.equal(h.api.getSaved()[0].publishedAt,null);assert.match(h.w.document.querySelector('[data-your-saved]').textContent,/Undated saved link/);h.close();});

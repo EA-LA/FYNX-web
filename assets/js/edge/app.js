@@ -1,5 +1,5 @@
-import * as view from './render.js?v=20261113-accounts-host-2';
-import { publishedResearch } from './public-research.js?v=20261113-accounts-host-2';
+import * as view from './render.js?v=20261113-shared-account-2';
+import { publishedResearch } from './public-research.js?v=20261113-shared-account-2';
 const researchService = window.FynxResearchService;
 const $=id=>document.getElementById(id),root=$('edge-main'),symbol=document.body.dataset.edgeSymbol;
 const config=JSON.parse($('edge-market-config').textContent);
