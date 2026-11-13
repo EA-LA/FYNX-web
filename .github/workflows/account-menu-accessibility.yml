@@ -1,0 +1,26 @@
+name: Account Popover Keyboard Accessibility
+on:
+  pull_request:
+    paths:
+      - 'assets/js/account-menu.js'
+      - 'fynx-nav.js'
+      - 'scripts/test-account-menu-accessibility.cjs'
+      - '.github/workflows/account-menu-accessibility.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  account-navigation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --check assets/js/account-menu.js
+      - run: node --check fynx-nav.js
+      - run: node --check scripts/test-account-menu-accessibility.cjs
+      - run: node --test scripts/test-account-menu-accessibility.cjs
