@@ -87,6 +87,23 @@ test('article content remains plain text and related stories must remain on veri
  assert.equal(h.q('[data-reader-summary] img'),null);assert.match(h.q('[data-reader-summary]').textContent,/<img/);assert.equal(h.q('[data-reader-related]').children.length,1);assert.equal(h.q('[data-reader-related] a').target,'');assert.match(h.q('[data-reader-related] a').href,/www.fynxfinanceworld.com\/news\/article.html/);
 });
 
+test('related reporting keeps published FYNX Intelligence destinations and rejects other paths',async t=>{
+ const makeRow=(letter,title,readerUrl)=>({articleId:letter.repeat(64),title,source:'Related Fixture Publisher',publishedAt:iso(-1000),readerUrl});
+ const h=harness(t,{load:async()=>article({related:[
+  makeRow('b','Source-backed Intelligence analysis','/intelligence/fixture-market-analysis-abc123/'),
+  makeRow('c','Standard source brief','/news/article.html?id='+('c'.repeat(64))+'&edition=us&category=finance'),
+  makeRow('d','Owner page is not a story','/owner.html'),
+  makeRow('e','Intelligence URL with tracking query','/intelligence/fixture-market-analysis-abc123/?next=/owner.html'),
+  makeRow('f','External Intelligence URL','https://attacker.example/intelligence/fixture-market-analysis-abc123/')
+ ]})});
+ await tick();
+ const links=Array.from(h.doc.querySelectorAll('[data-reader-related] a'));
+ assert.equal(links.length,2,'Show both supported routes, not unverified destinations');
+ assert.equal(links[0].getAttribute('href'),'/intelligence/fixture-market-analysis-abc123/');
+ assert.equal(links[1].getAttribute('href'),'/news/article.html?id='+('c'.repeat(64))+'&edition=us&category=finance');
+ assert.equal(h.q('[data-reader-related-section]').hidden,false);
+});
+
 test('source image requires explicit reusable license and falls back to labeled context',async t=>{
  const valid={url:'https://images.example/report.jpg',credit:'Fixture photographer',sourceUrl:'https://publisher.example/news/quarterly-results',license:'CC BY 4.0',licenseUrl:'https://creativecommons.org/licenses/by/4.0/',alt:'Source image fixture'};
  const h=harness(t,{load:async()=>article({image:valid})});await tick();assert.equal(h.q('[data-reader-image] img').alt,valid.alt);assert.match(h.q('[data-reader-image] figcaption').textContent,/Source image/);

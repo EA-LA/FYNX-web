@@ -80,3 +80,39 @@ test('tab focus temporarily suspends rotation', async () => {
     assert.equal(app.timers.size, 1);
   } finally { app.dom.window.close(); }
 });
+
+function dispatchPointer(app, name, pointerType) {
+  const event = new app.window.Event(name);
+  Object.defineProperty(event, 'pointerType', { value: pointerType });
+  app.terminal.dispatchEvent(event);
+}
+test('hovering with a mouse suspends automatic Market Desk rotation until the pointer leaves', () => {
+  const app = setup();
+  try {
+    assert.equal(app.timers.size, 1);
+    dispatchPointer(app, 'pointerenter', 'mouse');
+    assert.equal(app.timers.size, 0);
+    assert.equal(app.terminal.classList.contains('fw-paused'), true);
+    dispatchPointer(app, 'pointerleave', 'mouse');
+    assert.equal(app.timers.size, 1);
+    assert.equal(app.terminal.classList.contains('fw-paused'), false);
+  } finally { app.dom.window.close(); }
+});
+test('touch pointers do not interrupt automatic Market Desk rotation', () => {
+  const app = setup();
+  try {
+    dispatchPointer(app, 'pointerenter', 'touch');
+    assert.equal(app.timers.size, 1);
+    dispatchPointer(app, 'pointerleave', 'touch');
+    assert.equal(app.timers.size, 1);
+  } finally { app.dom.window.close(); }
+});
+test('leaving hover does not override reduced-motion or explicit pause choices', () => {
+  const app = setup(true);
+  try {
+    dispatchPointer(app, 'pointerenter', 'pen');
+    dispatchPointer(app, 'pointerleave', 'pen');
+    assert.equal(app.timers.size, 0);
+    assert.match(app.toggle.textContent, /Resume rotation/);
+  } finally { app.dom.window.close(); }
+});

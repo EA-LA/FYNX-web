@@ -38,10 +38,13 @@
       + '.fx-movers-foot{font-size:10px;opacity:.65;margin:8px 0 0}'
       + '.fx-mv-skel{height:44px;border-radius:6px;margin:4px 0;background:linear-gradient(100deg,rgba(127,127,127,.10) 30%,rgba(127,127,127,.2) 50%,rgba(127,127,127,.10) 70%);background-size:300% 100%;animation:fynx-photo-wait 1.4s ease-in-out infinite}'
       + '@keyframes fynx-photo-wait{0%{background-position:100% 0}100%{background-position:0 0}}'
+      + '.fx-live.is-stale{background:#888;animation:none}'
+      + '.fx-movers-error{font-size:12px;line-height:1.6;opacity:.85;padding:12px 4px}.fx-movers-retry{border:1px solid currentColor;border-radius:6px;background:transparent;color:inherit;padding:7px 12px;margin-left:8px;min-height:36px;cursor:pointer;font:inherit}'
+      + '.fx-movers-retry:disabled{opacity:.5;cursor:wait}'
       + '@media (prefers-reduced-motion:reduce){.fx-live,.fx-mv-skel{animation:none}}';
     document.head.append(st);
   }
-  let data = null, tab = 'gainers';
+  let data = null, tab = 'gainers', loadFailed = false, loading = false;
   function row(r, kind) {
     const ch = r.changePct, cls = num(ch) ? (ch > 0 ? 'fx-mv-up' : ch < 0 ? 'fx-mv-down' : '') : '';
     const sym = String(r.symbol || ''), open = kind === 'crypto' ? (r.open || sym + '-USD') : sym;
@@ -56,21 +59,40 @@
     const meta = TABS.find(t => t[0] === tab), list = (data && Array.isArray(data[tab]) ? data[tab] : []).slice(0, 6);
     host.querySelectorAll('.fx-movers-tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
     const body = host.querySelector('.fx-movers-body');
-    if (!data) { body.innerHTML = '<div class="fx-mv-skel"></div>'.repeat(5); return; }
+    host.querySelector('.fx-live')?.classList.toggle('is-stale', loadFailed);
+    if (!data) {
+      body.innerHTML = loadFailed
+        ? '<p class="fx-movers-error" role="status">Market movers are temporarily unavailable. No market prices are estimated. <button type="button" class="fx-movers-retry" data-movers-retry>Retry</button></p>'
+        : '<div class="fx-mv-skel"></div>'.repeat(5);
+      return;
+    }
     const asOf = tab === 'crypto' ? data.cryptoAsOf : data.stocksAsOf;
     const src = tab === 'crypto' ? 'CoinGecko' : 'Nasdaq screener';
     body.innerHTML = '<p class="fx-movers-desc">' + esc(meta[2]) + '</p>'
       + (list.length ? list.map(r => row(r, tab)).join('') : '<p class="fx-movers-desc">Nothing qualifies in the latest snapshot. Open the scanner for the full list.</p>')
-      + '<p class="fx-movers-foot">Source: ' + src + (asOf ? ' · as of ' + esc(ago(asOf)) : '') + ' · Stock data may be delayed. Not a recommendation.</p>';
+      + '<p class="fx-movers-foot">Source: ' + src + (asOf ? ' · as of ' + esc(ago(asOf)) : '') + ' · Stock data may be delayed. Not a recommendation.'
+      + (loadFailed ? ' <span role="status">Update failed. Showing the previous snapshot.</span> <button type="button" class="fx-movers-retry" data-movers-retry>Retry</button>' : '') + '</p>';
   }
   async function load(host) {
+    if (loading) return;
+    loading = true;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
     try {
-      const res = await fetch(URL_ + '?t=' + Math.floor(Date.now() / 300000), {cache: 'no-store'});
+      const res = await fetch(URL_ + '?t=' + Math.floor(Date.now() / 300000), {cache: 'no-store', signal: controller.signal});
       if (!res.ok) throw new Error(res.status);
       const j = await res.json(); if (!j || !Array.isArray(j.gainers)) throw new Error('shape');
-      data = j; render(host);
+      data = j;
+      loadFailed = false;
+      host.hidden = false;
+      render(host);
     } catch (_) {
-      if (!data) { host.hidden = true; }
+      // Keep already sourced rows visible, and always provide recovery from a first-load failure.
+      loadFailed = true;
+      render(host);
+    } finally {
+      clearTimeout(timeout);
+      loading = false;
     }
   }
   function init() {
@@ -82,6 +104,13 @@
       + '<div class="fx-movers-body" role="tabpanel"></div>';
     anchor.after(host);
     host.querySelector('.fx-movers-tabs').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (!b) return; tab = b.dataset.tab; render(host); });
+    host.addEventListener('click', e => {
+      const retry = e.target.closest('[data-movers-retry]');
+      if (!retry || loading) return;
+      retry.disabled = true;
+      retry.textContent = 'Retrying…';
+      load(host);
+    });
     render(host); load(host);
     setInterval(() => { if (!document.hidden) load(host); }, 5 * 60 * 1000);
   }

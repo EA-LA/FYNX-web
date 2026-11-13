@@ -52,7 +52,9 @@
     const controller = typeof AbortController === 'function' ? new AbortController() : null;
     let timeout;
     // A stalled market page must not keep the cross-market search pending forever.
-    const requests = Promise.all(MARKETS.map(([slug, market]) => {
+    // Keep each finished market result even if another glossary stalls until timeout.
+    const completed = Array(MARKETS.length).fill(null);
+    const requests = Promise.all(MARKETS.map(([slug, market], index) => {
       const href = `/learn/${slug}-glossary.html`;
       const options = controller ? { credentials: 'same-origin', signal: controller.signal } : { credentials: 'same-origin' };
       return fetch(href, options)
@@ -71,7 +73,8 @@
             return { items, failed: false };
           });
         })
-        .catch(() => ({ items: [], failed: true }));
+        .catch(() => ({ items: [], failed: true }))
+        .then(result => { completed[index] = result; return result; });
     }));
     extraLoading = Promise.race([
       requests,
@@ -79,8 +82,12 @@
     ]).then(lists => {
       clearTimeout(timeout);
       if (!lists && controller) controller.abort();
-      extra = lists ? lists.flatMap(result => result.items) : [];
-      unavailableCount = lists ? lists.filter(result => result.failed).length : MARKETS.length;
+      // A single hung page must not erase successful searches from other markets.
+      const available = lists || completed.filter(Boolean);
+      extra = available.flatMap(result => result.items);
+      unavailableCount = lists
+        ? lists.filter(result => result.failed).length
+        : MARKETS.length - available.filter(result => !result.failed).length;
       extraLoading = null;
       apply(false);
     });

@@ -403,6 +403,14 @@
       font-weight: 750;
       transition:color .25s ease;
     }
+    .streakBox{padding:12px;border-radius:14px;border:1px solid var(--border2);background:var(--kv-bg);overflow-x:auto}
+    .streakBox .k{color:var(--muted2);font-size:12px;font-weight:850;letter-spacing:.2px}
+    .streakBox small{display:block;color:var(--muted2);font-size:12px;font-weight:750;margin-top:2px}
+    .streakTable{width:100%;border-collapse:collapse;margin-top:8px;font-variant-numeric:tabular-nums}
+    .streakTable th{color:var(--muted2);font-size:11px;font-weight:800;text-align:right;padding:4px 3px;line-height:1.25}
+    .streakTable td{color:var(--text-strong);font-size:13px;font-weight:800;text-align:right;padding:6px 3px;border-top:1px solid var(--border2);white-space:nowrap}
+    .streakTable th:first-child,.streakTable td:first-child{text-align:left}
+    .streakTable td[colspan]{text-align:left;color:var(--muted2);font-weight:700}
     .note{
       color: var(--muted2);
       font-size: 12px;
@@ -442,7 +450,7 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261112-iphone-bar-1">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261112-mt5-journal-1">
 <title>Forex Position Size &amp; Risk Calculator | FYNX</title>
 <meta name="description" content="Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -463,7 +471,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
      crossorigin="anonymous"></script>
 <!-- FYNX ADSENSE VERIFICATION END -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261112-iphone-bar-1"><script src="/assets/js/company-products-data.js?v=20261112-research-fix-2" defer></script><script src="/assets/js/company-products.js?v=20261112-iphone-bar-1" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261112-mt5-journal-1"><script src="/assets/js/company-products-data.js?v=20261113-edge-reauth-1" defer></script><script src="/assets/js/company-products.js?v=20261112-mt5-journal-1" defer></script><!-- company-products:assets:end -->
 </head>
 
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
@@ -612,6 +620,15 @@
               <div class="v mono" id="usedPriceOut">—</div>
             </div>
 
+            <div class="streakBox" id="streakBox" aria-live="polite">
+              <div class="k">IF YOU HIT A LOSING STREAK</div>
+              <small id="streakMode">Losses in a row at this risk, before costs.</small>
+              <table class="streakTable">
+                <thead><tr><th scope="col">Losses</th><th scope="col">Balance after</th><th scope="col">Drawdown</th><th scope="col">Gain to recover</th></tr></thead>
+                <tbody id="streakRows"><tr><td colspan="4">Enter a balance and risk.</td></tr></tbody>
+              </table>
+            </div>
+
             <div class="note" id="notes">
               Notes:
               <br/>• Pip size = 0.0001 (most FX), 0.01 (JPY pairs), 0.1 (XAU/USD).
@@ -738,6 +755,28 @@
       return balance * (riskPercent / 100.0);
     }
 
+    function renderStreaks(bal, risk){
+      const body = document.getElementById("streakRows");
+      const mode = document.getElementById("streakMode");
+      if (!body) return;
+      if (!(bal > 0) || !(risk > 0) || (usePercentRisk && !(risk < bal))){
+        body.innerHTML = '<tr><td colspan="4">Enter a balance and a risk below 100%.</td></tr>';
+        return;
+      }
+      const rp = risk / bal;
+      mode.textContent = usePercentRisk
+        ? "Risking " + fmt(rp * 100, 2) + "% of the current balance on each trade, before costs."
+        : "Risking a fixed $" + fmt(risk, 2) + " on each trade, before costs.";
+      const cents = bal < 1000 ? 2 : 0;
+      const money = n => "$" + n.toLocaleString("en-US", {minimumFractionDigits:cents, maximumFractionDigits:cents});
+      body.innerHTML = [3, 5, 10, 20].map(k => {
+        const after = usePercentRisk ? bal * Math.pow(1 - rp, k) : bal - k * risk;
+        if (after <= 0) return `<tr><td>${k}</td><td>$0</td><td>100%</td><td>—</td></tr>`;
+        const dd = 1 - after / bal;
+        return `<tr><td>${k}</td><td>${money(after)}</td><td>${fmt(dd * 100, 1)}%</td><td>+${fmt(dd / (1 - dd) * 100, 1)}%</td></tr>`;
+      }).join("");
+    }
+
     function computeAccountRiskUSD(){
       const bal = parseFloat(els.balance.value) || 0;
       const rp = parseFloat(els.riskPercent.value) || 0;
@@ -745,6 +784,7 @@
 
       const risk = usePercentRisk ? riskAmountFromPercent(bal, rp) : rd;
       els.riskComputed.textContent = "$" + fmt(risk, 2);
+      renderStreaks(bal, risk);
       return risk;
     }
 

@@ -1,0 +1,30 @@
+// MT5/MT4/CSV statement import + Trading Coach: parsing, net P/L, stable ids, and coach thresholds.
+const assert = require('assert'), fs = require('fs'), path = require('path');
+const {JSDOM} = require('jsdom'); global.DOMParser = new JSDOM('').window.DOMParser;
+const mt5 = require('../assets/js/journal-mt5.js'), coach = require('../assets/js/journal-coach.js');
+const buf = fs.readFileSync(path.join(__dirname, 'fixtures/mt5-report-sample.htm'));
+const r = mt5.parseReport(new TextDecoder('utf-16le').decode(buf), 'report.htm');
+assert.strictEqual(r.format, 'MT5 report'); assert.strictEqual(r.info.account, '51234567'); assert.strictEqual(r.info.currency, 'USD');
+assert.strictEqual(r.positions.length, 60, 'Orders section must not be read as positions');
+const rows = mt5.toJournal(r.positions, r.info, 2);
+assert.strictEqual(new Set(rows.map(x => x.id)).size, 60); assert.deepStrictEqual(mt5.toJournal(r.positions, r.info, 2).map(x => x.id), rows.map(x => x.id));
+assert.strictEqual(rows[0].pl, +(rows[0].grossProfit + rows[0].commission + rows[0].swap).toFixed(2));
+assert.ok(rows.every(x => typeof x.symbol === 'string' && typeof x.pl === 'number' && /^\d{4}-\d{2}-\d{2}$/.test(x.date) && mt5.sessions.includes(x.session)));
+const mt4 = mt5.parseReport(`<table><tr><td>Account: 7001234</td><td>Name: X</td><td>Currency: EUR</td></tr><tr><td><b>Closed Transactions:</b></td></tr><tr><td>Ticket</td><td>Open Time</td><td>Type</td><td>Size</td><td>Item</td><td>Price</td><td>S / L</td><td>T / P</td><td>Close Time</td><td>Price</td><td>Commission</td><td>Taxes</td><td>Swap</td><td>Profit</td></tr><tr><td>555</td><td>2026.10.01 09:00:00</td><td>sell</td><td>1.00</td><td>gbpusd</td><td>1.2700</td><td>1.2750</td><td>1.2600</td><td>2026.10.01 15:00:00</td><td>1.2650</td><td>-7.00</td><td>0.00</td><td>-1.20</td><td>500.00</td></tr><tr><td>556</td><td>2026.10.02 09:00:00</td><td>balance</td><td>Deposit</td><td>1000</td></tr></table>`, 's.htm');
+assert.strictEqual(mt4.positions.length, 1); assert.strictEqual(mt5.toJournal(mt4.positions, mt4.info, 2)[0].pl, 491.8); assert.strictEqual(mt4.info.currency, 'EUR');
+const csv = mt5.parseReport('Ticket;Open Time;Type;Volume;Symbol;Open Price;Close Time;Close Price;Commission;Swap;Profit\n9;2026-10-03 10:00;Buy;0,5;EURUSD;1,0812;2026-10-03 11:30;1,0830;-2,50;0;90,00\n', 'x.csv');
+assert.strictEqual(csv.positions[0].openPrice, 1.0812); assert.strictEqual(csv.positions[0].profit, 90);
+assert.strictEqual(mt5.parseReport('<html><p>nothing</p></html>', 'a.htm').positions.length, 0);
+const a = coach.analyze(rows); assert.strictEqual(a.all.n, 60); assert.ok(a.insights.length > 0); assert.ok(a.insights.every(i => i.sample >= 1 && i.advice));
+assert.strictEqual(coach.analyze(rows.slice(0, 3)).insights.length, 0, 'no insights below the minimum sample');
+// Holding time: equal winner/loser hold times are not praised as "letting winners run"; clearly longer winners are.
+const held = (winMin, lossMin) => Array.from({length: 10}, (_, i) => {
+  const open = new Date(Date.UTC(2026, 9, 1 + i, 9)); const win = i % 2 === 0;
+  return {id: 'h' + i, symbol: 'EURUSD', pl: win ? 100 : -80, date: open.toISOString().slice(0, 10), openTime: open.toISOString(), closeTime: new Date(open.getTime() + (win ? winMin : lossMin) * 60000).toISOString()};
+});
+const runs = list => coach.analyze(list).strengths.some(g => /let winners run/.test(g.title));
+assert.strictEqual(runs(held(180, 180)), false, 'equal hold times must not be called letting winners run');
+assert.strictEqual(runs(held(185, 180)), false, 'a 5-minute difference is not letting winners run');
+assert.strictEqual(runs(held(300, 120)), true, 'winners held 2.5x longer earn the strength');
+assert.ok(coach.analyze(held(60, 240)).insights.some(i => /hold losers longer/.test(i.title)), 'losers held 4x longer are flagged');
+console.log('MT5 journal import (MT5/MT4/CSV), stable ids, net P/L and Trading Coach thresholds passed.');

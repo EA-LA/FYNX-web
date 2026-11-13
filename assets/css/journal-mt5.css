@@ -1,0 +1,72 @@
+/* FYNX Journal · Connect MT5 + Trading Coach. Uses the journal's own tokens (card, muted, j-good/j-bad). */
+.mt5-box,.coach-box{display:flex;flex-direction:column;gap:14px}
+.mt5-steps{margin:0 0 16px;padding:0;list-style:none;counter-reset:s;display:grid;gap:12px}
+.mt5-steps li{counter-increment:s;position:relative;padding-left:38px;font-size:13px;line-height:1.55;color:var(--text)}
+.mt5-steps li::before{content:counter(s);position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;border:1px solid var(--cardStroke);background:var(--surface-2)}
+.mt5-steps li strong{display:block;font-weight:650;margin-bottom:2px}
+.mt5-steps li span{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+.mt5-steps em{font-style:normal;font-weight:600}
+.mt5-drop{display:flex;flex-direction:column;align-items:center;gap:6px;padding:26px 16px;border:1.5px dashed var(--cardStroke);border-radius:16px;cursor:pointer;text-align:center;transition:border-color .15s,background .15s}
+.mt5-drop:hover,.mt5-drop.over{border-color:var(--text);background:var(--surface-2)}
+.mt5-drop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.mt5-drop:focus-within{outline:2px solid var(--text);outline-offset:2px}
+.mt5-drop-icon{font-size:22px;line-height:1}
+.mt5-drop strong{font-size:14px}
+.mt5-drop small,.mt5-opts small{color:var(--muted);font-size:12px}
+.mt5-opts{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:14px;font-size:12px}
+.mt5-opts label{font-weight:600}
+.mt5-opts select{font:inherit;font-size:12px;padding:8px 10px;border-radius:10px;border:1px solid var(--cardStroke);background:var(--card);color:var(--text);max-width:100%}
+.mt5-status{min-height:18px;margin:12px 0 0;font-size:12.5px;color:var(--muted)}
+.mt5-status[data-kind=error]{color:#c0392b}
+.mt5-status[data-kind=ok]{color:var(--text);font-weight:600}
+.mt5-safe{margin:14px 0 0;font-size:11.5px;color:var(--muted);line-height:1.5}
+.mt5-sum,.coach-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+.coach-kpis{grid-template-columns:repeat(6,minmax(0,1fr));margin-top:0}
+.mt5-sum>div,.coach-kpis>div{padding:12px 14px;border-radius:14px;border:1px solid var(--cardStroke);background:var(--card);display:flex;flex-direction:column;gap:3px;min-width:0}
+.mt5-sum small,.coach-kpis small{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.mt5-sum b,.coach-kpis b{font-size:18px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mt5-sum span{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mt5-table-wrap{margin-top:12px;overflow-x:auto}
+.mt5-table{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.mt5-table th{text-align:left;font-weight:600;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:8px 10px;border-bottom:1px solid var(--cardStroke)}
+.mt5-table td{padding:8px 10px;border-bottom:1px solid var(--cardStroke);white-space:nowrap}
+.mt5-table th:last-child,.mt5-table td:last-child{text-align:right}
+.mt5-table-wrap>small{display:block;margin-top:6px;font-size:11.5px;color:var(--muted)}
+.mt5-actions,.coach-cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.mt5-import,.mt5-cancel{font:inherit;font-size:13px;font-weight:650;padding:11px 18px;border-radius:12px;cursor:pointer;min-height:44px}
+.mt5-import{background:var(--text);color:var(--bg);border:1px solid var(--text)}
+.mt5-import:disabled{opacity:.6;cursor:default}
+.mt5-cancel{background:transparent;color:var(--text);border:1px solid var(--cardStroke)}
+.coach-cols{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px;align-items:start}
+.coach-cols h3{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.coach-cols section{display:flex;flex-direction:column;gap:10px}
+.coach-item{padding:14px 16px;border-radius:16px;border:1px solid var(--cardStroke);background:var(--card);border-left-width:4px}
+.coach-item.tone-bad{border-left-color:#c0392b}
+.coach-item.tone-warn{border-left-color:#d68910}
+.coach-item.tone-info{border-left-color:var(--muted)}
+.coach-item.tone-good{border-left-color:#1e8449}
+.coach-item-hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.coach-item-hd b{font-size:13.5px}
+.coach-item-hd small{font-size:11px;color:var(--muted);white-space:nowrap}
+.coach-item p{margin:6px 0 0;font-size:12.5px;line-height:1.55;color:var(--text)}
+.coach-advice{padding:9px 11px;border-radius:10px;background:var(--surface-2)}
+.coach-none,.coach-note{font-size:12px;color:var(--muted);line-height:1.5;margin:0}
+.coach-empty p{font-size:13px;color:var(--muted);margin:6px 0 0}
+body.dark-mode .mt5-sum>div,body.dark-mode .coach-kpis>div,body.dark-mode .coach-item{background:rgba(0,0,0,.22)}
+body.dark-mode .mt5-steps li,body.dark-mode .coach-item p{color:var(--j-text)}
+@media (max-width:900px){.coach-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.coach-cols{grid-template-columns:1fr}}
+@media (max-width:600px){
+  .mt5-sum,.coach-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mt5-steps li{font-size:12.5px}
+  .mt5-actions>button,.coach-cta>button{flex:1 1 100%}
+  .mt5-opts select{width:100%}
+  /* Phones: summary values wrap instead of being cut to "−USD 23…", and the preview table keeps its Net column on screen. */
+  .mt5-sum>div,.coach-kpis>div{padding:12px}
+  .mt5-sum b,.coach-kpis b{font-size:16px;white-space:normal;overflow-wrap:anywhere}
+  .mt5-sum span{white-space:normal;overflow-wrap:anywhere}
+  .mt5-table{font-size:12px}
+  .mt5-table th,.mt5-table td{padding:8px 6px}
+  .mt5-table th{font-size:10px;letter-spacing:.02em}
+}
+/* Small iPhones (SE): drop the preview's Session column so Net stays visible; the session is still saved with each trade. */
+@media (max-width:400px){.mt5-table th:nth-child(5),.mt5-table td:nth-child(5){display:none}.mt5-table th,.mt5-table td{padding:8px 4px}}

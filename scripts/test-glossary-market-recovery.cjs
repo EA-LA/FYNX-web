@@ -88,6 +88,19 @@ function response(body = emptyMarkup) {
   assert.equal(d.retry.hidden, false);
   d.dom.window.close();
 
+  // If one market responds before the deadline while other pages stall, keep its result.
+  const partialTimeout = open(href => href.includes('/stocks-')
+    ? Promise.resolve(response(markup))
+    : new Promise(() => {}), shortTimeoutCode);
+  partialTimeout.search('uniquemarketterm');
+  await new Promise(resolve => setTimeout(resolve, 75));
+  assert.equal(partialTimeout.more.hidden, false, 'a completed result survives the timeout');
+  assert.equal(partialTimeout.more.querySelector('a')?.textContent, 'uniquemarketterm');
+  assert.match(partialTimeout.status.textContent, /could not be checked/i,
+    'incomplete coverage remains visible with a partial result');
+  assert.equal(partialTimeout.retry.hidden, false, 'unavailable markets can still be retried');
+  partialTimeout.dom.window.close();
+
   // When a topic is chosen, local terms are filtered without unnecessary remote requests.
   let calls = 0;
   const e = open(() => { calls++; return Promise.resolve(response()); });
@@ -99,5 +112,5 @@ function response(body = emptyMarkup) {
   assert.equal(e.retry.hidden, true);
   e.dom.window.close();
 
-  console.log('Glosssary market-search recovery: pending, success, outage/retry, partial and timeout checks passed');
+  console.log('Glosssary market-search recovery: pending, success, outage/retry, partial failure, timeout and partial-timeout checks passed');
 })().catch(error => { console.error(error); process.exitCode = 1; });

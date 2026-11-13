@@ -209,3 +209,21 @@ test('Clear also empties the win rate', () => {
   assert.equal(el('winRate').value, '');
   assert.equal(el('expOut').textContent, '—');
 });
+
+test('losing streak to plan for matches an exact run-length calculation over 100 trades', () => {
+  const { el, fire, calculate } = boot();
+  calculate();
+  assert.equal(el('streakOut').textContent, '—');
+  // Reference values from an independent Python run-length DP (confirmed by simulation: 40% wins -> P(>=7) 0.689, P(>=8) 0.49).
+  for (const [win, k, pct] of [['40', 7, 69], ['50', 6, 55], ['20', 15, 51], ['60', 4, 80], ['90', 2, 60]]) {
+    el('winRate').value = win;
+    fire('calcBtn', 'click');
+    assert.equal(el('streakOut').textContent, `${k} in a row`, win);
+    assert.match(el('streakNote').textContent, new RegExp(`about a ${pct}% chance of at least ${k} losses in a row`), win);
+    assert.match(el('streakNote').textContent, new RegExp(`−${k}R`), win);
+  }
+  el('winRate').value = '';
+  fire('calcBtn', 'click');
+  assert.equal(el('streakOut').textContent, '—');
+  assert.equal(el('streakNote').textContent, '');
+});

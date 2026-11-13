@@ -18,6 +18,7 @@
   let userPaused = Boolean(motion?.matches);
   let index = Math.max(0, tabs.findIndex(tab => tab.getAttribute('aria-selected') === 'true'));
   let visible = !('IntersectionObserver' in window), timer = null, suspended = false;
+  let pointerReading = false;
 
   function sync() {
     const wasPaused = terminal.classList.contains('fw-paused');
@@ -26,7 +27,7 @@
     // Don't move content while the visitor is interacting with a tab or its panel.
     // The toggle itself stays focused when Resume is explicitly requested.
     const focusWithin = terminal.contains(document.activeElement) && document.activeElement !== rotationToggle;
-    const paused = suspended || userPaused || !visible || document.hidden || focusWithin;
+    const paused = suspended || userPaused || pointerReading || !visible || document.hidden || focusWithin;
     terminal.classList.toggle('fw-paused', Boolean(paused));
     rotationToggle.textContent = userPaused ? 'Resume rotation' : 'Pause rotation';
     rotationToggle.setAttribute('aria-label', userPaused
@@ -68,6 +69,15 @@
   if ('IntersectionObserver' in window) {
     new IntersectionObserver(entries => { visible = entries[0].isIntersecting; sync(); }, { threshold: .25 }).observe(terminal);
   }
+  // Pause while a desktop visitor is reading or comparing Market Desk panels.
+  // Touch movement must not stop the slideshow; focus and manual pause remain independent.
+  function pointerHover(event) {
+    if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
+    pointerReading = event.type === 'pointerenter';
+    sync();
+  }
+  terminal.addEventListener('pointerenter', pointerHover);
+  terminal.addEventListener('pointerleave', pointerHover);
   terminal.addEventListener('focusin', sync);
   terminal.addEventListener('focusout', () => queueMicrotask(sync));
   document.addEventListener('visibilitychange', sync);
