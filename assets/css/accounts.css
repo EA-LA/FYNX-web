@@ -38,3 +38,12 @@ html body.accounts-page{background:#f6f6f3!important;color:#17191c!important;fon
 .ac-now-card{display:grid;gap:6px;padding:16px;border:1px solid #dfe4e1;border-radius:10px;background:#fff;color:inherit;text-decoration:none;transition:border-color .15s,transform .15s}
 .ac-now-card:hover{border-color:#1f5a3f;transform:translateY(-1px)}
 .ac-now-card strong{font-size:15px;color:#1f5a3f}.ac-now-card span{font-size:13px;line-height:1.5;color:#5f6b64}
+/* Professional-only live MT login */
+.ac-pro-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;background:#1f4d3a;color:#fff;font:700 10.5px/1.6 Inter,system-ui,sans-serif;letter-spacing:.08em}
+.ac-platform-top .ac-pro-badge{margin-left:auto;margin-right:6px}
+.ac-pro-lock{display:grid;gap:8px;margin:0 0 18px;padding:18px;border:1px solid #c9d8cf;border-radius:10px;background:#f1f6f2}
+.ac-pro-lock .ac-pro-badge{justify-self:start}
+.ac-pro-lock strong{font-size:16px}
+.ac-pro-lock p{margin:0;color:#4b5650;line-height:1.5}
+.ac-pro-lock .ac-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+@media (max-width:600px){.ac-pro-lock .ac-actions>*{flex:1 1 100%;text-align:center}}
