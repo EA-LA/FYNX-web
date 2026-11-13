@@ -1,0 +1,12 @@
+# HTTPS for the FYNX My Accounts service. Caddy obtains and renews the certificate automatically.
+{$FYNX_DOMAIN} {
+	encode gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+	# Event stream (live account updates) must not be buffered.
+	reverse_proxy 127.0.0.1:8080 {
+		flush_interval -1
+	}
+}
