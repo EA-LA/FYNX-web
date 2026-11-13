@@ -1,3 +1,4 @@
+import {save as saveSharedRecord, requireSync} from './account-sync.js?v=20261113-shared-account-1';
 import { endAccountsSession } from './accounts/logout.js';
 import { auth, app } from "../../auth/firebase.js";
 import {
@@ -34,7 +35,7 @@ import {
   DEFAULT_NOTIFICATION_PREFERENCES,
   PRIORITY,
   createNotificationEngine
-} from "./notifications/engine.js?v=20260928-audit2";
+} from "./notifications/engine.js?v=20261113-shared-account-1";
 
 const db = getFirestore(app);
 const storage = getStorage(app);
@@ -202,23 +203,13 @@ export const getUserPreferences = (uid) => getMergedDoc(uid, "preferences", DEFA
 export const getNotificationPreferences = (uid) => notificationEngine.preferenceManager.get(uid);
 export const getSecuritySettings = (uid) => getMergedDoc(uid, "security", DEFAULT_SECURITY_SETTINGS);
 
-export async function saveUserProfile(uid, payload) {
-  try {
-  await setDoc(
-    userDoc(uid, "profile"),
-    {
-      ...payload,
-      updatedAt: serverTimestamp()
-    },
-    { merge: true }
-  );
-  } catch(error) { window.FynxMonitor?.report("save","profile-save",error); throw error; }
+export async function saveUserProfile(uid, payload, options={}) {
+  await requireSync(uid);
+  await saveSharedRecord('profile','default',payload,options);
 }
-
-export async function saveUserPreferences(uid, payload) {
-  try {
-  await setDoc(userDoc(uid, "preferences"), { ...payload, updatedAt: serverTimestamp() }, { merge: true });
-  } catch(error) { window.FynxMonitor?.report("save","preferences-save",error); throw error; }
+export async function saveUserPreferences(uid, payload, options={}) {
+  await requireSync(uid);
+  await saveSharedRecord('preferences','default',payload,options);
 }
 
 export async function saveNotificationPreferences(uid, payload) {

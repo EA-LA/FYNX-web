@@ -4,11 +4,13 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { publicSiteFiles } = require('./public-site-files.cjs');
-const VERSION = '20261112-mt5-journal-1';
-const RESEARCH_VERSION = '20261113-accounts-host-2';
+const VERSION = '20261113-shared-account-1';
+const RESEARCH_VERSION = '20261113-shared-account-2';
 const RESEARCH_ASSETS = new Set(['assets/js/research-service.js','assets/js/edge/app.js','assets/js/edge/render.js','assets/js/edge/profile.js','assets/js/edge/public-research.js','assets/js/quant/app.js','assets/js/quant/profile.js','assets/js/quant/engine.js','assets/js/quant/worker.js','assets/js/quant/public-history.js','assets/js/company-products-data.js']);
 const ASSETS = Object.freeze([
   ...RESEARCH_ASSETS,
+  'assets/js/account-sync.js','assets/js/account-sync-core.js','assets/js/account-sync-mapping.js','assets/js/shared-workspace.js','assets/css/shared-workspace.css',
+  'assets/js/account-system.js','assets/js/intelligence-workspace.js','assets/js/intelligence-app-check.js','assets/js/intelligence.js','assets/js/research/store.js',
   'assets/css/company-products.css', 'assets/js/company-products.js', 'assets/js/company-products-data.js',
   'fynx-nav.js', 'demo-mode.js', 'auth/auth-form.js',
   'assets/js/macro-desk/model.js', 'assets/js/macro-desk/app.js', 'assets/css/macro-desk.css',

@@ -1,0 +1,8 @@
+'use strict';
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),{webcrypto}=require('node:crypto');
+const source=fs.readFileSync('assets/js/account-sync.js','utf8').replace(/^import .*;$/gm,'').replace(/export /g,'');
+const tick=()=>new Promise(r=>setImmediate(r));
+test('auth listener clears prior private cache even while initial account read is pending',async()=>{
+ let resolve;const pending=new Promise(r=>resolve=r),callbacks=[],cache=new Map(),auth={currentUser:{uid:'A'},authStateReady:async()=>{}};
+ const context={FynxAccountSyncCore:require('../assets/js/account-sync-core.js'),FynxAccountSyncMapping:require('../assets/js/account-sync-mapping.js'),localStorage:{getItem:k=>cache.get(k),setItem:(k,v)=>cache.set(k,v)},auth,app:{},authPersistenceReady:Promise.resolve(),onAuthStateChanged:(a,fn)=>{callbacks.push(fn);return()=>{};},getFunctions:()=>({}),httpsCallable:()=>async()=>pending,crypto:webcrypto,TextEncoder,CustomEvent:class{constructor(type){this.type=type;}},Event:class{},document:{readyState:'loading',addEventListener:()=>{}},addEventListener:()=>{},dispatchEvent:()=>{},setInterval:()=>0,console};context.window=context;vm.runInNewContext(source,context);for(let i=0;i<10&&!callbacks.length;i++)await tick();assert.equal(callbacks.length,1,'listener must not wait on the first cloud read');auth.currentUser=null;callbacks[0](null);assert.equal(context.FynxAccountSync.sync.uid,null);resolve({data:{records:[{domain:'profile',id:'default',revision:1,updatedAt:1,data:{displayName:'Private A'}}]}});await context.FynxAccountSync.connected;assert.equal(context.FynxAccountSync.sync.uid,null);assert.equal(context.FynxAccountSync.sync.records('profile').length,0);
+});

@@ -6,6 +6,7 @@
   const page = document.body.dataset.fynxSettings; if (!page) return;
   const TABS = [
     ['profile', 'Overview', '/profile.html'],
+    ['workspace','My workspace','/workspace.html'],
     ['account-settings', 'Account', '/account-settings.html'],
     ['security', 'Security', '/security.html'],
     ['notifications', 'Notifications', '/notifications.html'],

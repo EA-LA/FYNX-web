@@ -1,0 +1,44 @@
+name: Shared account sync
+
+on:
+  pull_request:
+    paths:
+      - 'backend/account-sync*'
+      - 'backend/test-support/**'
+      - 'backend/consumer-live-*'
+      - 'assets/js/account-sync*'
+      - 'assets/js/shared-workspace.js'
+      - 'assets/js/intelligence-workspace.js'
+      - 'assets/js/intelligence-app-check.js'
+      - 'assets/js/news-preferences.js'
+      - 'assets/js/your-news.js'
+      - 'assets/js/quant/app.js'
+      - 'scripts/test-account-sync-client.cjs'
+      - 'scripts/test-account-sync-auth.cjs'
+      - 'scripts/test-shared-workspace-ui.cjs'
+      - 'scripts/test-quant-sync.cjs'
+      - 'scripts/test-intelligence-app-check.cjs'
+      - 'workspace.html'
+      - '.github/workflows/shared-account-sync.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shared-account:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Verify sync, isolation, migrations and compatibility
+        run: node --test backend/account-sync.test.cjs backend/consumer-live-workspace.test.cjs backend/consumer-live-policy.test.cjs scripts/test-account-sync-client.cjs scripts/test-account-sync-auth.cjs scripts/test-shared-workspace-ui.cjs scripts/test-intelligence-app-check.cjs scripts/test-your-news.cjs scripts/test-news-preferences-storage-clear.cjs scripts/test-quant-sync.cjs
+      - name: Verify existing account and journal flows
+        run: npm test
+      - name: Build static website
+        run: npm run build

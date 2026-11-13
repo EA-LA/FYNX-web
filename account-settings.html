@@ -49,7 +49,7 @@
   <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261112-mt5-journal-1">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261113-shared-account-1">
 
 <title>FYNX - Account Settings</title>
 <meta name="description" content="FYNX - Account Settings. Identity, support, legal, and trading profile controls.">
@@ -66,19 +66,19 @@
 <!-- terminal-design:start -->
 <link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
 <link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
-<script src="/assets/js/news-reader-links.js?v=20261112-mt5-journal-1" defer></script>
-<script src="/assets/js/newsroom-editions.js?v=20261112-mt5-journal-1" defer></script>
-<script src="/assets/js/news-preferences.js?v=20261112-mt5-journal-1" defer></script>
-<script src="/assets/js/newsroom-media.js?v=20261112-mt5-journal-1" defer></script>
-<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261112-mt5-journal-1">
-<script src="/assets/js/market-intelligence-data.js?v=20261112-mt5-journal-1" defer></script>
-<script src="/assets/js/terminal-market-data.js?v=20261112-mt5-journal-1" defer></script>
-<script src="/assets/js/terminal-header.js?v=20261112-mt5-journal-1" defer></script>
-<script src="/assets/js/terminal-market-ui.js?v=20261112-mt5-journal-1" defer></script>
+<script src="/assets/js/news-reader-links.js?v=20261113-shared-account-1" defer></script>
+<script src="/assets/js/newsroom-editions.js?v=20261113-shared-account-1" defer></script>
+<script src="/assets/js/news-preferences.js?v=20261113-shared-account-1" defer></script>
+<script src="/assets/js/newsroom-media.js?v=20261113-shared-account-1" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261113-shared-account-1">
+<script src="/assets/js/market-intelligence-data.js?v=20261113-shared-account-1" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261113-shared-account-1" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261113-shared-account-1" defer></script>
+<script src="/assets/js/terminal-market-ui.js?v=20261113-shared-account-1" defer></script>
 <link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261030-r1">
 <script src="/assets/js/terminal-pages.js?v=20261030-r1" defer></script>
 <!-- terminal-design:end -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261112-mt5-journal-1"><script src="/assets/js/company-products-data.js?v=20261113-accounts-host-2" defer></script><script src="/assets/js/company-products.js?v=20261112-mt5-journal-1" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261113-shared-account-1"><script src="/assets/js/company-products-data.js?v=20261113-shared-account-2" defer></script><script src="/assets/js/company-products.js?v=20261113-shared-account-1" defer></script><!-- company-products:assets:end -->
 </head>
 <body data-protected-page="true" data-fynx-settings="account-settings" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD" data-fynx-terminal>
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
@@ -132,15 +132,18 @@
     </main>
   </div>
 
-  <script type="module" src="assets/js/session-bootstrap.js?v=20261112-mt5-journal-1"></script>
+  <script type="module" src="assets/js/session-bootstrap.js?v=20261113-shared-account-1"></script>
 <script type="module">
-    import { auth, bootstrapAccount, saveUserProfile, uploadProfilePhoto, updateAuthProfile } from './assets/js/account-system.js?v=20261112-settings-1';
+    import {subscribe,accountData,sync} from './assets/js/account-sync.js?v=20261113-shared-account-1';
+    import { auth, bootstrapAccount, saveUserProfile, uploadProfilePhoto, updateAuthProfile } from './assets/js/account-system.js?v=20261113-shared-account-1';
     import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
-    import { mountNotificationBell } from './assets/js/account-ui.js?v=20261112-bell-1';
+    import { mountNotificationBell } from './assets/js/account-ui.js?v=20261113-shared-account-1';
+    let profileDirty=false,profileOwner=null,profileEpoch=0,profileRevision=0;
     const markets = ['forex','crypto','stocks','indices','commodities','futures'];
     const marketPills = document.getElementById('marketPills');
     const selectedMarkets = new Set();
     const form = document.getElementById('accountForm');
+    form.addEventListener('input',()=>profileDirty=true);form.addEventListener('click',event=>{if(event.target.closest('.market-pill'))profileDirty=true;});
     const saveStatus = document.getElementById('saveStatus');
     const photoStatus = document.getElementById('photoStatus');
     const profilePreview = document.getElementById('profilePreview');
@@ -163,6 +166,7 @@
     markets.forEach((m)=>{const b=document.createElement('button');b.type='button';b.className='market-pill';b.dataset.market=m;b.textContent=m.toUpperCase();b.onclick=()=>{b.classList.toggle('on');b.classList.contains('on')?selectedMarkets.add(m):selectedMarkets.delete(m)};marketPills.appendChild(b);});
 
     function setForm(profile){
+      profileRevision=sync.record('profile','default')?.revision||0;
       ['displayName','username','bio','country','timezone','preferredCurrency','experienceLevel','riskProfile'].forEach((id)=>{if(profile[id]!=null)document.getElementById(id).value=profile[id];});
       profilePreview.dataset.photoUrl = profile.photoURL || '';
       profilePreview.src = profile.photoURL || 'https://dummyimage.com/112x112/eeeeee/666666&text=FX';
@@ -172,13 +176,14 @@
     }
 
     onAuthStateChanged(auth, async (user)=>{
-      if(!user) return;
-      try { const seeded = await bootstrapAccount(user);
+      const epoch=++profileEpoch;profileOwner=user?.uid||null;profileDirty=false;form.reset();selectedMarkets.clear();profilePreview.src='';profilePreview.dataset.photoUrl='';form.querySelector('button[type=submit]').disabled=true;if(!user)return;
+      try { const seeded = await bootstrapAccount(user);if(epoch!==profileEpoch||auth.currentUser?.uid!==user.uid)return;
       setForm({ ...seeded.profile, displayName: seeded.profile.displayName || user.displayName || '' });
       form.querySelector('button[type=submit]').disabled = false; saveStatus.textContent = 'Ready';
       } catch { saveStatus.textContent = 'Could not load your profile. Check your connection and reload before editing.'; form.querySelector('button[type=submit]').disabled = true; }
     });
 
+    subscribe(s=>{if(s.uid===profileOwner&&s.ready&&!profileDirty){const data=accountData('profile');if(data)setForm(data);}});
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const user = auth.currentUser;
@@ -207,12 +212,12 @@
         preferredMarkets: Array.from(selectedMarkets),
         photoURL
       };
-      await saveUserProfile(user.uid, payload);
+      await saveUserProfile(user.uid, payload,{expectedRevision:profileRevision});
       await updateAuthProfile({ displayName: payload.displayName, photoURL: payload.photoURL || null });
       profilePreview.dataset.photoUrl = payload.photoURL;
       if(payload.photoURL) profilePreview.src = payload.photoURL;
       try { localStorage.setItem('fynxUserName', payload.displayName || 'FYNX User'); } catch {}
-      saveStatus.textContent = 'Saved';
+      profileDirty=false;saveStatus.textContent = 'Saved to your account';
       document.getElementById('profilePhoto').value = '';
       } catch (error) { saveStatus.textContent = 'Could not finish saving. Your changes are still here. Check your connection and try again.'; }
       finally { button.disabled = false; }
@@ -221,7 +226,8 @@
     mountNotificationBell();
   </script>
 
-<script src="fynx-nav.js?v=20261112-mt5-journal-1"></script>
+<script src="fynx-nav.js?v=20261113-shared-account-1"></script>
 <script src="/assets/js/settings-shell.js?v=20261112-settings-1" defer></script>
+<script type="module" src="/assets/js/account-sync.js?v=20261113-shared-account-1"></script>
 </body>
 </html>

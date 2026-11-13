@@ -13,8 +13,8 @@ const path = require('node:path');
     const context = vm.createContext({
       document:{getElementById:id=>({value:fields[id]})},
       crypto:{randomUUID:()=> 'test-id'},
-      Timestamp:{fromDate:value=>value},serverTimestamp:()=> 'server-time',
-      tradesCol:()=>({}),doc:()=>({}),setDoc:async(ref,value)=>{saved=value;},
+      Timestamp:{fromDate:value=>({toDate:()=>value})},serverTimestamp:()=> 'server-time',
+      tradesCol:()=>({}),doc:()=>({}),setDoc:async(ref,value)=>{saved=value;},saveSharedJournal:async(id,value)=>{saved=value;},
       clearForm:()=>{},setActiveView:()=>{}
     });
     vm.runInContext(html.slice(start,end),context);
