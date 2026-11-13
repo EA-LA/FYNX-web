@@ -321,6 +321,23 @@
       transition:color .25s ease;
       line-height:1.6;
     }
+    .move-wrap{margin-top:1.1rem;border-top:1px solid var(--border);padding-top:.9rem}
+    .move-wrap h3{margin:0 0 .25rem;font-size:1rem;color:var(--text-strong)}
+    .move-note{color:var(--text-muted);font-size:.88rem;line-height:1.5;margin:.15rem 0 .6rem}
+    .move-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .move-table{width:100%;border-collapse:collapse;font-size:.92rem;font-variant-numeric:tabular-nums}
+    .move-table th,.move-table td{padding:.45rem .4rem;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap}
+    .move-table th:first-child,.move-table td:first-child{text-align:left}
+    .move-table th{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-weight:800}
+    .move-table tr.is-exit td{font-weight:900;color:var(--text-strong)}
+    .move-table tr.is-be td{font-style:italic}
+    .mv-roi-inline{display:none}
+    @media (max-width:480px){
+      .move-table .mv-roi{display:none}
+      .move-table .mv-roi-inline{display:block;font-size:.78rem;font-weight:600;color:var(--text-muted)}
+      .move-table th,.move-table td{padding:.4rem .25rem}
+    }
+    @media (max-width:380px){.move-table{font-size:.84rem}.move-table th,.move-table td{padding:.38rem .15rem}.move-table td:first-child{white-space:normal;min-width:3.6em}}
     @media (max-width:720px){
       h1{font-size:2.35rem}
       .field-row{grid-template-columns:1fr}
@@ -378,13 +395,13 @@
 <section class="hero">
       <h1>Crypto Calculator</h1>
       <p class="subtitle">
-        Calculate crypto position size, coins received, total cost, exit value, trading fees, profit or loss, and break-even price.
-        Works for spot crypto trades and matches the same FYNX calculator design.
+        Calculate coins received, total cost, exit value, trading fees, profit or loss, and break-even price for a spot crypto trade,
+        then see what the trade returns if the price moves up or down.
       </p>
 
       <div class="panel-grid">
         <div class="panel">
-          <h2>Calculator UI</h2>
+          <h2>Trade details</h2>
           <div class="muted">Enter your crypto trade details below and calculate the full trade outcome instantly.</div>
 
           <div class="form-grid">
@@ -434,7 +451,7 @@
 
         <div class="panel">
           <h2>Results</h2>
-          <div class="muted">Show position size, total fees, trade value, profit/loss, and break-even.</div>
+          <div class="muted">Coins received, fees, trade value, profit or loss, break-even price and a price-move table.</div>
 
           <div id="resultArea" class="result-placeholder">
             Your crypto trade result will appear here.
@@ -552,6 +569,10 @@
         breakEvenPrice = entryPrice * (1 - feeRate) / (1 + feeRate);
       }
 
+      const priceDp = pricePlaces([entryPriceInput.value, exitPriceInput.value], Math.min(entryPrice, exitPrice, breakEvenPrice));
+      const price = value => "$" + Number(value).toLocaleString("en-US", { minimumFractionDigits: priceDp, maximumFractionDigits: priceDp });
+      const moveRows = cryptoMoveTable({ capital, entryPrice, exitPrice, feeRate, tradeType });
+
       const pnlClass = netPnL >= 0 ? "profit" : "loss";
       const pnlLabel = netPnL >= 0 ? "Net Profit" : "Net Loss";
 
@@ -578,7 +599,7 @@
           </div>
           <div class="stat-card">
             <div class="stat-label">Break-even Price</div>
-            <div class="stat-value">${money(breakEvenPrice)}</div>
+            <div class="stat-value">${price(breakEvenPrice)}</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Entry Value</div>
@@ -589,7 +610,47 @@
             <div class="stat-value">${money(exitValue)}</div>
           </div>
         </div>
+        ${netPnL < 0 && Math.abs(netPnL) > capital ? `<div class="result-line"><strong>Note:</strong> this short loses more than the ${money(capital)} you put in. On a short, losses keep growing as the price rises.</div>` : ""}
+        <div class="move-wrap">
+          <h3>If the price moves</h3>
+          <div class="move-note">Net result after both fees for the same ${fmt(quantity, 4, 10)} coins if you exit at each price, measured from your entry of ${price(entryPrice)}. Your exit and the break-even price are included for comparison. Example moves, not forecasts.</div>
+          <div class="move-scroll"><table class="move-table" id="moveTable">
+            <thead><tr><th scope="col">Move</th><th scope="col">Exit price</th><th scope="col">Net P/L<span class="mv-roi-inline">ROI</span></th><th scope="col" class="mv-roi">ROI</th></tr></thead>
+            <tbody>${moveRows.map(row => `<tr class="${row.kind === "exit" ? "is-exit" : row.kind === "be" ? "is-be" : ""}"><td>${row.kind === "exit" ? "Your exit" : row.kind === "be" ? "Break-even" : (row.move > 0 ? "+" : "−") + Math.abs(row.move) + "%"}</td><td>${price(row.price)}</td><td class="${row.net >= 0.005 ? "profit" : row.net <= -0.005 ? "loss" : ""}">${(row.net <= -0.005 ? "−" : row.net >= 0.005 ? "+" : "") + money(Math.abs(row.net))}<span class="mv-roi-inline">${signedPct(row.roi)}</span></td><td class="mv-roi">${signedPct(row.roi)}</td></tr>`).join("")}</tbody>
+          </table></div>
+        </div>
       `;
+    }
+
+    function signedPct(value) {
+      return (value <= -0.005 ? "−" : value >= 0.005 ? "+" : "") + fmt(Math.abs(value), 2, 2) + "%";
+    }
+
+    // Decimals for prices: what the user typed (at least 2, at most 8); cheap coins keep 4 significant digits.
+    function pricePlaces(typed, smallest) {
+      let dp = 2;
+      typed.forEach(text => {
+        const match = String(text).trim().match(/\.(\d+)$/);
+        if (match) dp = Math.max(dp, match[1].length);
+      });
+      if (smallest > 0 && smallest < 1) dp = Math.max(dp, Math.ceil(-Math.log10(smallest)) + 3);
+      return Math.min(dp, 8);
+    }
+
+    // Net result after entry and exit fees for the same coin quantity at a range of exit prices.
+    function cryptoMoveTable({ capital, entryPrice, exitPrice, feeRate, tradeType }) {
+      const quantity = capital / entryPrice;
+      const sign = tradeType === "long" ? 1 : -1;
+      const breakEven = tradeType === "long" ? entryPrice * (1 + feeRate) / (1 - feeRate) : entryPrice * (1 - feeRate) / (1 + feeRate);
+      const at = (exit, move, kind) => {
+        const gross = sign * (exit - entryPrice) * quantity;
+        const net = gross - capital * feeRate - exit * quantity * feeRate;
+        return { move, price: exit, net, roi: net / capital * 100, kind };
+      };
+      const rows = [-50, -25, -10, 10, 25, 50, 100].map(move => at(entryPrice * (1 + move / 100), move, "move"));
+      rows.push(at(exitPrice, (exitPrice / entryPrice - 1) * 100, "exit"));
+      rows.push(at(breakEven, (breakEven / entryPrice - 1) * 100, "be"));
+      return rows.sort((a, b) => a.price - b.price || (a.kind === "exit" ? -1 : 1));
     }
 
     function clearForm() {
