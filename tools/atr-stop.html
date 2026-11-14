@@ -398,6 +398,10 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
       color: var(--text);
     }
+    .sizeNote{margin:10px 2px 0;font-size:12.5px;line-height:1.5;color:var(--muted)}
+    #sizeError:empty{display:none}
+    #sizeError:not(:empty){display:block}
+    .rowLine span:last-child{text-align:right;overflow-wrap:anywhere}
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
@@ -509,7 +513,7 @@
             <select id="side" hidden aria-hidden="true" tabindex="-1"><option value="buy">buy</option><option value="sell">sell</option></select>
             <input type="hidden" id="mult" value="1.5">
             <button type="button" id="applyScenario" hidden aria-hidden="true" tabindex="-1"></button>
-            <button type="button" class="chip" id="shareScenarioBtn" data-scenario-fields="pair,side,entry,period,atrValue,mult" data-scenario-run="applyScenario" data-scenario-opened="Opened a shared scenario. Results update as you change any input."><i class="fas fa-link"></i> Copy scenario link</button>
+            <button type="button" class="chip" id="shareScenarioBtn" data-scenario-fields="pair,side,entry,period,atrValue,mult,balance,riskPct" data-scenario-optional="balance" data-scenario-run="applyScenario" data-scenario-opened="Opened a shared scenario. Results update as you change any input."><i class="fas fa-link"></i> Copy scenario link</button>
           </div>
           <div class="danger" id="errorBox">Please enter valid numbers.</div>
         </div>
@@ -532,10 +536,38 @@
           </div>
         </div>
 
+        <!-- [site-qa] run 96: size the position for the ATR stop and show R-multiple targets. -->
+        <div class="card" id="sizeCard">
+          <h3>Size This Stop</h3>
+          <div class="grid2">
+            <div>
+              <label for="balance">Account balance (USD, optional)</label>
+              <input id="balance" class="field" inputmode="decimal" placeholder="e.g. 10000" autocomplete="off">
+            </div>
+            <div>
+              <label for="riskPct">Risk per trade (%)</label>
+              <input id="riskPct" class="field" inputmode="decimal" value="1" autocomplete="off">
+            </div>
+          </div>
+          <div class="danger" id="sizeError" role="status"></div>
+          <div class="rows" id="sizeRows" hidden>
+            <div class="rowLine"><span>Risk amount</span><span id="riskAmtOut">—</span></div>
+            <div class="rowLine"><span>Position size</span><span id="sizeOut">—</span></div>
+            <div class="rowLine"><span>Loss if the stop is hit</span><span id="lossOut">—</span></div>
+          </div>
+          <p class="sizeNote" id="sizeNote">Enter your balance to see how big a position this stop allows.</p>
+          <div class="rows" id="targetRows" aria-label="Targets in multiples of the stop distance">
+            <div class="rowLine"><span>Target 1R</span><span id="t1Out">—</span></div>
+            <div class="rowLine"><span>Target 2R</span><span id="t2Out">—</span></div>
+            <div class="rowLine"><span>Target 3R</span><span id="t3Out">—</span></div>
+          </div>
+          <p class="sizeNote">1R is the distance from entry to the ATR stop. Contract sizes assume 100,000 units per Forex lot, 100 oz per gold lot and 1 coin per BTC; check your broker's specification. Account in USD; USD/JPY uses your entry price to convert yen to dollars.</p>
+        </div>
+
       </div>
     </div>
   <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Compares the theoretical Forex stop at the displayed precision. Gold and crypto verification are outside this rollout.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
-<!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Use volatility to compare stop distances</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Use an ATR value measured on the timeframe of your plan. Select direction and multiplier, then check the suggested distance against market structure and your risk budget.</p><h3>The calculation or concept</h3><p>Illustrative stop distance = average true range × selected multiplier.</p></div><div class="tool-example"><h3>Worked example</h3><p>If ATR is 1.5 price units and the multiplier is 2, the distance is 3 units. A long entry at 100 would place that illustrative level at 97.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>ATR describes historical movement. It does not predict the next move or guarantee that a stop will execute at its stated price.</p></details></section><!-- tool-guide:end -->
+<!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Use volatility to compare stop distances</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Use an ATR value measured on the timeframe of your plan. Select direction and multiplier, then check the suggested distance against market structure. Optionally enter your account balance and risk per trade to see the position size that stop allows, the loss at that rounded-down size and 1R, 2R and 3R targets.</p><h3>The calculation or concept</h3><p>Illustrative stop distance = average true range × selected multiplier.</p></div><div class="tool-example"><h3>Worked example</h3><p>If ATR is 1.5 price units and the multiplier is 2, the distance is 3 units. A long entry at 100 would place that illustrative level at 97.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>ATR describes historical movement. It does not predict the next move or guarantee that a stop will execute at its stated price.</p></details></section><!-- tool-guide:end -->
 <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/risk-reward.html"><strong>Risk-to-Reward Ratio Calculator</strong><span>Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</span></a><a href="/tools/margin.html"><strong>Forex Margin &amp; Leverage Calculator</strong><span>Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
 
@@ -664,6 +696,7 @@
         entryOut.textContent = "—";
         multOut.textContent = `${currentMultiple.toFixed(1)}x`;
         periodOut.textContent = "—";
+        updateSize(null);
         return;
       }
 
@@ -679,7 +712,70 @@
       entryOut.textContent = formatPrice(entryVal, meta.decimals);
       multOut.textContent = `${currentMultiple.toFixed(1)}x`;
       periodOut.textContent = String(periodVal);
+      updateSize({meta, entryVal, atrDistance});
     }
+
+    // [site-qa] run 96: position size for the ATR stop (fixed-fractional risk) and 1R/2R/3R targets.
+    const SIZE_SPECS = {
+      "XAU/USD": {lotUnits: 100, step: 0.01, unit: "oz"},
+      "BTC/USD": {lotUnits: 1, step: 0.0001, unit: "BTC", coins: true}
+    };
+    function parseLoose(raw){
+      const t = String(raw).trim().replace(/[,\s$%]/g, "");
+      return t === "" ? null : (/^\d*\.?\d+$/.test(t) ? Number(t) : NaN);
+    }
+    function usd(v){ return "$" + v.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+    function updateSize(calc){
+      const sizeRows = document.getElementById("sizeRows");
+      const sizeError = document.getElementById("sizeError");
+      const sizeNote = document.getElementById("sizeNote");
+      const tOuts = ["t1Out", "t2Out", "t3Out"].map(id => document.getElementById(id));
+      sizeError.textContent = "";
+      if(!calc){
+        tOuts.forEach(o => { o.textContent = "—"; });
+        sizeRows.hidden = true;
+        sizeNote.textContent = "Enter valid trade numbers above first.";
+        return;
+      }
+      const {meta, entryVal, atrDistance} = calc;
+      const dir = currentSide === "buy" ? 1 : -1;
+      tOuts.forEach((o, i) => {
+        const t = entryVal + dir * (i + 1) * atrDistance;
+        o.textContent = t > 0 ? formatPrice(t, meta.decimals) : "below 0";
+      });
+      const bal = parseLoose(document.getElementById("balance").value);
+      const pct = parseLoose(document.getElementById("riskPct").value);
+      sizeRows.hidden = true;
+      if(bal === null){ sizeNote.textContent = "Enter your balance to see how big a position this stop allows."; return; }
+      sizeNote.textContent = "";
+      if(!Number.isFinite(bal) || bal <= 0){ sizeError.textContent = "Enter an account balance above 0."; return; }
+      if(pct === null || !Number.isFinite(pct) || pct <= 0 || pct > 100){ sizeError.textContent = "Risk per trade must be more than 0% and at most 100%."; return; }
+      const spec = SIZE_SPECS[meta.name] || {lotUnits: 100000, step: 0.01, unit: "units"};
+      const perUnit = meta.name === "USD/JPY" ? 1 / entryVal : 1; // USD per 1.0 price move per unit
+      const risk = bal * pct / 100;
+      const lossPerLot = atrDistance * perUnit * spec.lotUnits;
+      const lots = Math.floor(risk / lossPerLot / spec.step + 1e-9) * spec.step;
+      const stepDp = spec.step < 0.01 ? 4 : 2;
+      document.getElementById("riskAmtOut").textContent = `${usd(risk)} (${pct}%)`;
+      const sizeOut = document.getElementById("sizeOut");
+      const lossOut = document.getElementById("lossOut");
+      if(lots < spec.step / 2){
+        const minName = spec.coins ? `${spec.step} BTC` : `${spec.step.toFixed(2)} lots`;
+        sizeOut.textContent = `Below ${minName}`;
+        lossOut.textContent = `${usd(spec.step * lossPerLot)} at ${minName}`;
+        sizeNote.textContent = `The smallest size, ${minName}, would lose more than your ${usd(risk)} risk at this stop. Risk more, or use a smaller ATR multiple.`;
+      } else if(spec.coins){
+        sizeOut.textContent = `${lots.toFixed(stepDp)} BTC`;
+        lossOut.textContent = usd(lots * lossPerLot);
+      } else {
+        const units = Math.round(lots * spec.lotUnits);
+        sizeOut.textContent = `${lots.toFixed(stepDp)} lots (${units.toLocaleString("en-US")} ${spec.unit})`;
+        lossOut.textContent = usd(lots * lossPerLot);
+      }
+      sizeRows.hidden = false;
+    }
+
+    ["balance", "riskPct"].forEach(id => document.getElementById(id).addEventListener("input", updateCalc));
 
     [pair, entry, period, atrValue].forEach(el => {
       el.addEventListener("input", updateCalc);
