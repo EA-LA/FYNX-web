@@ -159,6 +159,13 @@
       $('[data-newsroom-lead]').replaceChildren(message('Checking the latest coverage.', 'Reading ' + config.title.toLowerCase() + ' reporting for the ' + editionInfo(activeEdition).label + ' edition.'));
     }
     pruneCoverage();
+    // Retain only recently validated coverage from this edition during a source outage.
+    // A changed edition must never inherit reports from the previous selection.
+    const priorRows = changedEdition ? [] : rows.slice();
+    const priorWindowHours = windowHours;
+    const priorWindowEdition = windowEdition;
+    const priorWidenNote = widenNote;
+    const priorFetchedAt = lastResult?.fetchedAt || null;
     $('[data-newsroom-status-label]').textContent = 'Checking sources';
     $('[data-newsroom-status]').textContent = 'Refreshing ' + editionInfo(activeEdition).label + ' edition coverage…';
     $('[data-newsroom-refresh]').disabled = true;
@@ -173,6 +180,29 @@
     }
     // An old edition response must never replace the selection made afterwards.
     if (run !== requestNumber || requestedEdition !== edition()) return;
+    // A failed refresh should not erase still-valid, source-checked stories.
+    // Preserve the retrieval timestamp and show an explicit Saved coverage state;
+    // a genuine successful empty response may still clear the previous list.
+    if (result.status === 'unavailable' && priorRows.length) {
+      const retained = normalized(priorRows, priorWindowHours, priorWindowEdition || activeEdition);
+      if (retained.length) {
+        rows = retained;
+        windowHours = priorWindowHours;
+        windowEdition = priorWindowEdition;
+        widenNote = priorWidenNote;
+        lastResult = {
+          ...result,
+          status: 'cached',
+          fetchedAt: priorFetchedAt,
+          message: 'Source refresh unavailable. Showing previously verified reports; use Refresh to try again.'
+        };
+        render();
+        setStatus(lastResult);
+        $('[data-newsroom-refresh]').disabled = false;
+        $('[data-newsroom-stories]').setAttribute('aria-busy', 'false');
+        return;
+      }
+    }
     lastResult = result;
     windowHours = 24; windowEdition = null; widenNote = '';
     rows = normalized(result.items);
