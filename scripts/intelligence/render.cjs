@@ -54,7 +54,7 @@ const list = rows => rows?.length ? `<ul>${rows.map(r => `<li>${esc(r)}</li>`).j
 // sourced article records share a headline or a summary. Attribution is factual,
 // and the stable story ID is a last resort for identical publisher/time pairs.
 function baseDescription(rec) {
-  return (rec.narrative?.overview || rec.summary).replace(/\\s+/g, ' ').slice(0, 155).replace(/\\s\\S*$/, '') + '…';
+  return (rec.narrative?.overview || rec.summary).replace(/\s+/g, ' ').slice(0, 155).replace(/\s\S*$/, '') + '…';
 }
 function seoMetadata(records) {
   const count = (map, key) => map.set(key, (map.get(key) || 0) + 1);
@@ -78,7 +78,7 @@ function seoMetadata(records) {
       `${rec.headline} — ${publisher}, ${time} | FYNX Intelligence`,
       `${rec.headline} — ${publisher}, ${time} · ${rec.id} | FYNX Intelligence`
     ];
-    const description = baseDescription(rec), summary = description.slice(0, 105).replace(/\\s\\S*$/, '').replace(/…$/, '');
+    const description = baseDescription(rec), summary = description.slice(0, 105).replace(/\s\S*$/, '').replace(/…$/, '');
     const descriptionChoices = [
       `${summary}… Source: ${publisher}.`,
       `${summary}… Source: ${publisher}, ${time}.`,
