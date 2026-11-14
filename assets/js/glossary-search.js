@@ -155,7 +155,7 @@
     if (retry) retry.hidden = !incompleteMarkets || searchingMarkets;
     if (!filtering) status.textContent = `${plural(total)} from A to Z.`;
     else if (shown) status.textContent = `Showing ${plural(shown)}${query ? ` for “${query}”` : ''}${topicLabel}.${extraLabel}${pendingLabel}${incompleteLabel}`;
-    else if (extraCount) status.textContent = `No terms on this page match “${query}”. Found ${plural(extraCount)} in the market glossaries below.${incompleteLabel}`;
+    else if (extraCount) status.textContent = `No terms on this page match “${query}”. Found ${plural(extraCount)} in the market glossaries below.${pendingLabel}${incompleteLabel}`;
     else if (searchingMarkets) status.textContent = `No terms on this page match “${query}”. Checking the market glossaries…`;
     else if (incompleteMarkets) status.textContent = `No terms on this page match “${query}”. Some market glossaries are unavailable; retry before treating this as no results.`;
     else status.textContent = `No terms match${query ? ` “${query}”` : ''}${topicLabel}. Try a shorter word${select.value ? ' or All topics' : ''}.`;
