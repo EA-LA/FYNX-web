@@ -22,13 +22,17 @@ const field=(name,label,value='',type='text')=>`<label>${escape(label)}<input na
 const select=(name,label,opts)=>`<label>${label}<select name="${name}">${opts.map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select></label>`;
 const formData=f=>Object.fromEntries(new FormData(f));
 // API key scopes. Must match backend/developer-access.cjs (checked by scripts/test-openapi.cjs).
-const SCOPES=[['risk:calculate','Risk calculations'],['indicators:calculate','Indicators & screening'],['markets:read','Market hours & holidays'],['portfolio:calculate','Portfolio analytics'],['finance:calculate','Finance tools'],['propfirm:read','Prop firm: read accounts'],['propfirm:write','Prop firm: create & update']];
+const SCOPES=[['risk:calculate','Risk calculations'],['indicators:calculate','Indicators & screening'],['markets:read','Market hours & holidays'],['portfolio:calculate','Portfolio analytics'],['finance:calculate','Finance tools'],['options:calculate','Options pricing & greeks'],['propfirm:read','Prop firm: read accounts'],['propfirm:write','Prop firm: create & update']];
 const scopeLabel=k=>Array.isArray(k.scopes)?(k.scopes.length===SCOPES.length?'All products':k.scopes.map(s=>escape(s)).join('<br>')):'All products (legacy key)';
 // Older backend releases do not advertise capabilities. Keep their six products
-// usable and reveal Finance Tools only after the server confirms activation.
-const LEGACY_SCOPES=SCOPES.filter(([scope])=>scope!=='finance:calculate').map(([scope])=>scope);
+// usable and reveal preview products only after the server confirms activation.
+const PREVIEW={'finance:calculate':'Finance Tools','options:calculate':'Options'};
+const LEGACY_SCOPES=SCOPES.filter(([scope])=>!PREVIEW[scope]).map(([scope])=>scope);
+const GROUP_SCOPE={risk:'risk:calculate',indicators:'indicators:calculate',markets:'markets:read',portfolio:'portfolio:calculate',finance:'finance:calculate',options:'options:calculate'};
 function availableScopes(){const supported=Array.isArray(state?.supported_scopes)?state.supported_scopes:LEGACY_SCOPES;return SCOPES.filter(([scope])=>supported.includes(scope));}
-function financeAvailable(){return availableScopes().some(([scope])=>scope==='finance:calculate');}
+function scopeAvailable(scope){return availableScopes().some(([s])=>s===scope);}
+function presetAvailable(route){const scope=GROUP_SCOPE[route.split('/')[0]];return !scope||scopeAvailable(scope);}
+function pendingProducts(){return Object.entries(PREVIEW).filter(([scope])=>!scopeAvailable(scope)).map(([,name])=>name);}
 function chosenScopes(form){const supported=new Set(availableScopes().map(([scope])=>scope));const picked=[...form.querySelectorAll('input[name=scope]:checked')].map(i=>i.value).filter(scope=>supported.has(scope));return picked.length===SCOPES.length?undefined:picked;}
 const presets={
  'risk/position-size':{instrument_type:'forex',symbol:'EURUSD',account_currency:'USD',contract_size:'100000',quote_to_account_rate:'1',lot_step:'0.01',minimum_lot:'0.01',account_balance:'10000',risk_percent:'1',entry_price:'1.0850',stop_loss_price:'1.0820',direction:'long'},
@@ -54,22 +58,27 @@ const presets={
  'finance/kelly':{win_rate_percent:'45',payoff_ratio:'2',kelly_fraction:'0.5',account_balance:'10000'},
  'finance/drawdown-recovery':{drawdown_percent:'20',peak_balance:'100000',monthly_return_percent:'2'},
  'finance/trade-pnl':{direction:'long',entry_price:'1.0850',exit_price:'1.0910',quantity:'1',contract_size:'100000',fees:'7',risk_amount:'300'},
- 'finance/real-return':{nominal_return_percent:'8',inflation_percent:'3',amount:'10000'}
+ 'finance/real-return':{nominal_return_percent:'8',inflation_percent:'3',amount:'10000'},
+ 'options/price':{option_type:'call',spot:'42',strike:'40',days_to_expiry:'182.5',volatility_percent:'20',risk_free_rate_percent:'10',contracts:'1'},
+ 'options/implied-volatility':{option_type:'call',spot:'42',strike:'40',days_to_expiry:'182.5',risk_free_rate_percent:'10',option_price:'4.76'},
+ 'options/payoff':{legs:[{type:'call',side:'long',strike:'100',premium:'5'},{type:'call',side:'short',strike:'110',premium:'2'}]},
+ 'options/probability':{spot:'100',days_to_expiry:'30',volatility_percent:'25',target_prices:['110','90']},
+ 'options/expected-move':{spot:'100',days_to_expiry:'30',volatility_percent:'25'}
 };
 async function load(){if(!auth.currentUser)return;const version=++loadVersion,uid=auth.currentUser.uid,requestedEnv=env;const next=await call('bootstrap');if(version!==loadVersion||uid!==auth.currentUser?.uid||requestedEnv!==env)return;state=next;$('#auth-panel').hidden=true;$('#app').hidden=false;$('#signout').hidden=false;$('#verification').hidden=state.emailVerified;notice('');render();}
 function render(){
  if(!state)return;const page=location.hash.slice(1)||'overview';document.querySelectorAll('.ws-nav a').forEach(a=>{if(a.hash==='#'+page)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});const panel=$('#panel');
  const titles={overview:'Workspace overview',keys:'API keys',playground:'Request playground',history:'Request history',rules:'Rule sets',accounts:'Accounts & events',billing:'Billing & invoices',settings:'Settings & support'};
  panel.innerHTML=`<p class="eyebrow">${escape(env.toUpperCase())} ENVIRONMENT <span class="pill">${escape(state.limits.plan)}</span></p><h1>${titles[page]||titles.overview}</h1>`;
- if(['keys','playground'].includes(page)&&!financeAvailable())panel.innerHTML+='<p class="notice">Finance Tools is in preview and awaiting activation. Existing products remain available.</p>';
+ const pending=pendingProducts();if(['keys','playground'].includes(page)&&pending.length)panel.innerHTML+=`<p class="notice">${escape(pending.join(' and '))} ${pending.length>1?'are':'is'} in preview and awaiting activation. Existing products remain available.</p>`;
  if(page==='overview'){
  panel.innerHTML+=`<p>${escape(state.profile.name)} · Usage resets on the first of each month at 00:00 UTC.</p><div class="stats"><div class="stat"><span>SUCCESSFUL CALLS / ${escape(state.month)}</span><strong>${state.usage.calls.toLocaleString()}</strong></div><div class="stat"><span>INCLUDED MONTHLY CALLS</span><strong>${state.limits.monthlyCalls.toLocaleString()}</strong></div><div class="stat"><span>REQUESTS / SECOND</span><strong>${state.limits.rps}</strong></div></div><p>Saved monthly request cap: ${state.profile.requestCap?.toLocaleString()||'Plan allowance'}. ${env==='test'?'Test usage is unbilled.':state.limits.overage?'Extra calls are billed only above your included allowance and only up to your saved cap.':'No extra-call charges on this plan.'}</p><h2>Recent requests</h2>`+historyMarkup(state.requests)+`<h2>Connect from your server</h2><p>Use the gateway URL below followed by an endpoint path. Send your key in the Authorization header.</p>`+json({base_url:endpoint,example_path:'/v1/risk/position-size',authorization:'Bearer YOUR_KEY'})+'<p class="help">Contract values are supplied by you. Examples are not broker-verified instrument specifications.</p>';
  }else if(page==='keys'){
  panel.innerHTML+='<p>Keys are scoped to this environment. Secrets are displayed only once. Rotation immediately revokes the old key.</p><form id="key-form">'+field('label','Key label','My integration')+'<fieldset class="scopes"><legend>Products this key can call</legend>'+availableScopes().map(([v,t])=>`<label><input type="checkbox" name="scope" value="${v}" checked> ${t} <code>${v}</code></label>`).join('')+'<p class="help">Grant only what the integration needs. Scopes cannot be changed later; create a new key instead. Rotation keeps the same scopes.</p></fieldset><button class="button primary">Create API key</button></form>'+(state.keys.length?table(['Label','Key prefix','Scopes','Created','Status','Actions'],state.keys.map(k=>[escape(k.label),'<code>'+escape(k.prefix)+'</code>',scopeLabel(k),escape(date(k.createdAt)),k.revokedAt?'Revoked':'Active',k.revokedAt?'—':`<button data-rotate="${escape(k.id)}">Rotate</button> <button data-revoke="${escape(k.id)}">Revoke</button>`])):empty('No keys in this environment. Create one after verifying your email.'));
- $('#key-form').onsubmit=e=>{e.preventDefault();const scopes=chosenScopes(e.target);if(scopes&&!scopes.length){notice('Choose at least one product for this key.',true);return;}task(async()=>{const result=await call('createKey',{label:new FormData(e.target).get('label'),...(scopes?{scopes}:{})});await load();showKey(result.key);});};
- panel.querySelectorAll('[data-rotate],[data-revoke]').forEach(b=>b.onclick=()=>{const rotate=!!b.dataset.rotate;if(!confirm(rotate?'Rotate this key? The old key will stop working immediately.':'Revoke this key? Requests using it will stop working immediately.'))return;task(async()=>{const r=await call(rotate?'rotateKey':'revokeKey',{id:b.dataset.rotate||b.dataset.revoke,label:'Rotated key'});await load();if(r.key)showKey(r.key);});});
+ $('#key-form').onsubmit=e=>{e.preventDefault();const scopes=chosenScopes(e.target);if(scopes&&!scopes.length){notice('Choose at least one product for this key.',true);return;}task(async()=>{const result=await call('createKey',{label:new FormData(e.target).get('label'),...(scopes?{scopes}:{})});await load();showKey(result.key,scopes);});};
+ panel.querySelectorAll('[data-rotate],[data-revoke]').forEach(b=>b.onclick=()=>{const rotate=!!b.dataset.rotate;if(!confirm(rotate?'Rotate this key? The old key will stop working immediately.':'Revoke this key? Requests using it will stop working immediately.'))return;task(async()=>{const old=state.keys.find(k=>k.id===(b.dataset.rotate||b.dataset.revoke));const r=await call(rotate?'rotateKey':'revokeKey',{id:b.dataset.rotate||b.dataset.revoke,label:'Rotated key'});await load();if(r.key)showKey(r.key,old?.scopes);});});
  }else if(page==='playground'){
- panel.innerHTML+='<p>Runs a real server-side calculation and records the request in this environment. Successful calls count toward its allowance.</p><form id="run-form">'+select('endpoint','Calculation',Object.keys(presets).filter(x=>!x.startsWith('finance/')||financeAvailable()).map(x=>[x,x]))+'<label>JSON input<textarea id="request-input" spellcheck="false"></textarea></label><button class="button primary">Run request</button></form><p class="help">Examples use caller-supplied metadata. The engine does not fetch prices or guarantee execution outcomes.</p><div id="response" aria-live="polite"></div>';
+ panel.innerHTML+='<p>Runs a real server-side calculation and records the request in this environment. Successful calls count toward its allowance.</p><form id="run-form">'+select('endpoint','Calculation',Object.keys(presets).filter(presetAvailable).map(x=>[x,x]))+'<label>JSON input<textarea id="request-input" spellcheck="false"></textarea></label><button class="button primary">Run request</button></form><p class="help">Examples use caller-supplied metadata. The engine does not fetch prices or guarantee execution outcomes.</p><div id="response" aria-live="polite"></div>';
  const picker=$('#run-form select');const fill=()=>{$('#request-input').value=JSON.stringify(presets[picker.value],null,2);};fill();picker.onchange=fill;
  $('#run-form').onsubmit=e=>{e.preventDefault();task(async()=>{const result=await call('run',{route:'/v1/'+picker.value,input:JSON.parse($('#request-input').value)});$('#response').innerHTML='<h2>Response · '+result.status+'</h2>'+json(result);});};
  }else if(page==='history'){
@@ -98,8 +107,31 @@ function render(){
  }else {location.hash='overview';}
 }
 function historyMarkup(items){return items.length?items.map(r=>'<details><summary>'+escape(date(r.at))+' · '+escape(r.status)+' · '+escape(r.route)+'</summary>'+json(r)+'</details>').join(''):empty('No recorded requests yet. Try the playground.');}
-function showKey(key){$('#new-key').value=key;$('#key-dialog').showModal();}
-$('#close-key').onclick=()=>$('#key-dialog').close();$('#key-dialog').addEventListener('close',()=>{$('#new-key').value='';});
+// First request shown with a brand-new key: the first product the key may call, with a tiny valid body.
+const FIRST_CALL=[
+ ['risk:calculate','POST','/v1/risk/risk-reward',{entry_price:'1.0850',stop_loss_price:'1.0820',take_profit_price:'1.0940',direction:'long'}],
+ ['markets:read','POST','/v1/markets/status',{exchanges:['NYSE','LSE']}],
+ ['indicators:calculate','POST','/v1/indicators/sma',{values:['1.0812','1.0820','1.0835','1.0829','1.0861'],period:3}],
+ ['portfolio:calculate','POST','/v1/portfolio/performance',{trades:[{pnl:'250',r_multiple:'2'},{pnl:'-125',r_multiple:'-1'}],starting_balance:'10000'}],
+ ['finance:calculate','POST','/v1/finance/cagr',{start_value:'10000',end_value:'18500',years:'5'}],
+ ['options:calculate','POST','/v1/options/expected-move',{spot:'100',days_to_expiry:'30',volatility_percent:'25'}],
+ ['propfirm:read','GET','/v1/propfirm/accounts/ACCOUNT_ID/status',null],
+ ['propfirm:write','GET','/v1/propfirm/accounts/ACCOUNT_ID/status',null]
+];
+function firstCall(key,scopes){
+ const allowed=Array.isArray(scopes)?scopes:SCOPES.map(([s])=>s),pick=FIRST_CALL.find(([s])=>allowed.includes(s)&&scopeAvailable(s))||FIRST_CALL[0];
+ const [,method,path,body]=pick,q=s=>"'"+String(s).replace(/'/g,"'\\''")+"'";
+ return ['curl -sS'+(method==='GET'?'':' -X POST')+' '+q(endpoint+path),'  -H '+q('Authorization: Bearer '+key),...(body?['  -H '+q('Content-Type: application/json'),'  -d '+q(JSON.stringify(body))]:[])].join(' \\\n');
+}
+async function copyText(text,label){
+ const status=$('#copy-key-status');
+ try{await navigator.clipboard.writeText(text);status.textContent=label+' copied.';}
+ catch(e){status.textContent='Copy is blocked here. Select the text and copy it manually.';}
+}
+function showKey(key,scopes){$('#new-key').value=key;$('#first-call').textContent=firstCall(key,scopes);$('#copy-key-status').textContent='';$('#key-dialog').showModal();}
+$('#copy-key').onclick=()=>copyText($('#new-key').value,'Key');
+$('#copy-first-call').onclick=()=>copyText($('#first-call').textContent,'Command');
+$('#close-key').onclick=()=>$('#key-dialog').close();$('#key-dialog').addEventListener('close',()=>{$('#new-key').value='';$('#first-call').textContent='';$('#copy-key-status').textContent='';});
 $('#auth-form').onsubmit=e=>{e.preventDefault();task(async()=>{await withMfa(()=>signInWithEmailAndPassword(auth,$('#email').value.trim(),$('#password').value));});};
 $('#signup').onclick=()=>task(async()=>{if(!$('#auth-form').reportValidity())return;await createUserWithEmailAndPassword(auth,$('#email').value.trim(),$('#password').value);});
 $('#google-signin').onclick=()=>task(async()=>{await withMfa(()=>signInWithPopup(auth,new GoogleAuthProvider()));});

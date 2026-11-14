@@ -8,6 +8,7 @@ test('each route needs its own scope',()=>{
  assert.equal(a.required('/v1/markets/status'),'markets:read');
  assert.equal(a.required('/v1/portfolio/drawdown'),'portfolio:calculate');
  assert.equal(a.required('/v1/finance/cagr'),'finance:calculate');
+ assert.equal(a.required('/v1/options/price'),'options:calculate');
  assert.equal(a.required('/v1/unknown/x'),null);
 });
 test('legacy keys keep full access, including new products',()=>{
@@ -15,6 +16,7 @@ test('legacy keys keep full access, including new products',()=>{
 });
 test('explicit scopes are honored and do not silently gain new products',()=>{
  const old={scopes:['propfirm:read','propfirm:write','risk:calculate']};
+ assert.equal(a.permits(old,'/v1/options/price'),false,'keys created before Options tools need the new scope added explicitly');
  assert.equal(a.permits(old,'/v1/finance/cagr'),false,'keys created before Finance tools need the new scope added explicitly');
  assert.equal(a.permits(old,'/v1/risk/margin'),true);assert.equal(a.permits(old,'/v1/indicators/sma'),false);assert.equal(a.permits(old,'/v1/markets/status'),false);
  assert.equal(a.permits({scopes:['markets:read']},'/v1/markets/status'),true);assert.equal(a.permits({scopes:['markets:read']},'/v1/risk/margin'),false);

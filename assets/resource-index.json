@@ -1185,6 +1185,13 @@
     "topic": ""
   },
   {
+    "url": "/api/options.html",
+    "title": "Options API: Black-Scholes Pricing, Greeks & Implied Volatility",
+    "description": "Option prices and greeks, implied volatility, multi-leg payoff, price probabilities and expected move from numbers you send. No market data required.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
     "url": "/api/risk.html",
     "title": "Forex Risk Calculation API for Trading Applications",
     "description": "Integrate caller-supplied forex risk calculations into trading software. Explore FYNX Risk API inputs, supported calculations and integration limits.",
