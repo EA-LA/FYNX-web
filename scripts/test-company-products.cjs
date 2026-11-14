@@ -117,13 +117,23 @@ test('search has an honest no-match state and clearing it restores all product l
     assert(input, 'The directory should offer product search');
     const visible = () => [...dialog.querySelectorAll('[data-product-item]')].filter(item => !item.hidden && !item.closest('[hidden]'));
     const initial = visible().length; assert.equal(initial, products.length);
+    const count = dialog.querySelector('[data-company-products-count]');
+    assert.equal(count.textContent, products.length + ' of ' + products.length + ' products & resources', 'Featured product should count only once');
+    const featured = dialog.querySelector('.fp-featured');
+    assert(featured && !featured.hidden, 'Flagship remains available with an empty query');
     input.value = 'zzq-no-product-can-match-this-8712'; input.dispatchEvent(new w.Event('input', {bubbles:true})); await tick();
     assert.equal(visible().length, 0);
+    assert.equal(featured.hidden, true, 'No-match state should also hide the featured card');
     assert.match(dialog.querySelector('[data-company-products-count]').textContent, /\b0\b|no (?:products|results|matches)/i);
     input.value = ''; input.dispatchEvent(new w.Event('input', {bubbles:true})); await tick();
     assert.equal(visible().length, initial, 'Clearing search must restore the complete directory');
     input.value = 'wallet'; input.dispatchEvent(new w.Event('input', {bubbles:true})); await tick();
     assert(visible().length > 0 && visible().some(item => /wallet/i.test(item.textContent)));
+    assert.equal(featured.hidden, true, 'Wallet search should hide unrelated Terminal feature');
+    assert.equal(count.textContent, visible().length + ' of ' + products.length + ' products & resources');
+    input.value = 'terminal'; input.dispatchEvent(new w.Event('input', {bubbles:true})); await tick();
+    assert.equal(featured.hidden, false, 'A matching flagship remains featured');
+    assert.equal(count.textContent, visible().length + ' of ' + products.length + ' products & resources');
   } finally {dom.window.close();}
 });
 
