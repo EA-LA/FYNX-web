@@ -1,6 +1,6 @@
 # Consumer memberships
 
-The dashboard, news, calendar, learning, standard calculators and basic Journal remain free. Authentication is required for personal saves and memberships.
+News, calendar, learning, standard calculators and basic Journal remain free without an account. The dashboard (`home.html`) and account pages require a free account (see `assets/js/auth-gate.js`). Authentication is also required for personal saves and memberships.
 
 | Monthly USD plan | Included tools | Saved workspace limit | Live Stripe price |
 | --- | --- | --- | --- |
