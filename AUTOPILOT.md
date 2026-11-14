@@ -133,6 +133,7 @@ Maintained by the scheduled site-quality and autopilot tasks. Newest notes first
 - [x] 2026-11-04: learn/risk-management, learn/trading-psychology, resources/quizzes, resources/market-analysis, resources/trading-glossary: links were pale grey and nearly invisible. They're now readable, and each page links to its full guide (the trading-psychology page previously pointed only to forex lessons).
 
 ## Page-by-page backlog
+- [ ] 2026-11-14 run 97: small text links under 44px on phones: auth/login|signup|forgot "Back to FYNX" 86x21 and "Forgot password?" 113x21 (auth pages: owner/builder scope), api/docs.html header "Get API Key" 75x16, api/data-security.html inline links (in running text, acceptable).
 ### Home (index.html)
 - [x] 2026-11-06 run 21: FAQ now 6 questions (free/Pro, news sources, not financial advice). Left: iOS app question.
 - [x] 2026-11-06 run 23: hero buttons now equal width (284px SE, 360px Pro Max) on iPhone.
