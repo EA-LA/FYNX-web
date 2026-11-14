@@ -47,14 +47,19 @@
   let extra = null;
   let extraLoading = null;
   let unavailableCount = 0;
-  function loadExtra() {
-    if (extra !== null || extraLoading || !more || typeof fetch !== 'function') return extraLoading;
+  // A successful market page remains usable if a different glossary fails later.
+  // Retry only unavailable markets instead of discarding already verified terms.
+  const verifiedMarkets = new Map();
+  function loadExtra(retryFailed = false) {
+    if ((!retryFailed && extra !== null) || extraLoading || !more || typeof fetch !== 'function') return extraLoading;
+    const pendingMarkets = MARKETS.filter(([slug]) => !verifiedMarkets.has(slug));
+    if (!pendingMarkets.length) return Promise.resolve();
     const controller = typeof AbortController === 'function' ? new AbortController() : null;
     let timeout;
     // A stalled market page must not keep the cross-market search pending forever.
     // Keep each finished market result even if another glossary stalls until timeout.
-    const completed = Array(MARKETS.length).fill(null);
-    const requests = Promise.all(MARKETS.map(([slug, market], index) => {
+    const completed = Array(pendingMarkets.length).fill(null);
+    const requests = Promise.all(pendingMarkets.map(([slug, market], index) => {
       const href = `/learn/${slug}-glossary.html`;
       const options = controller ? { credentials: 'same-origin', signal: controller.signal } : { credentials: 'same-origin' };
       return fetch(href, options)
@@ -82,12 +87,13 @@
     ]).then(lists => {
       clearTimeout(timeout);
       if (!lists && controller) controller.abort();
-      // A single hung page must not erase successful searches from other markets.
-      const available = lists || completed.filter(Boolean);
-      extra = available.flatMap(result => result.items);
-      unavailableCount = lists
-        ? lists.filter(result => result.failed).length
-        : MARKETS.length - available.filter(result => !result.failed).length;
+      // Keep results from earlier successful markets while retrying only failed pages.
+      // Timed-out pages remain unavailable; an abort must not erase valid entries.
+      completed.forEach((result, index) => {
+        if (result && !result.failed) verifiedMarkets.set(pendingMarkets[index][0], result.items);
+      });
+      extra = [...verifiedMarkets.values()].flat();
+      unavailableCount = MARKETS.length - verifiedMarkets.size;
       extraLoading = null;
       apply(false);
     });
@@ -145,8 +151,8 @@
     const incompleteMarkets = !!(words.length && !topic && unavailableCount);
     const extraLabel = extraCount ? ` Also ${plural(extraCount)} in the market glossaries below.` : '';
     const pendingLabel = searchingMarkets ? ' Checking other market glossaries…' : '';
-    const incompleteLabel = incompleteMarkets ? ' Some market glossaries could not be checked; retry for complete results.' : '';
-    if (retry) retry.hidden = !incompleteMarkets;
+    const incompleteLabel = incompleteMarkets && !searchingMarkets ? ' Some market glossaries could not be checked; retry for complete results.' : '';
+    if (retry) retry.hidden = !incompleteMarkets || searchingMarkets;
     if (!filtering) status.textContent = `${plural(total)} from A to Z.`;
     else if (shown) status.textContent = `Showing ${plural(shown)}${query ? ` for “${query}”` : ''}${topicLabel}.${extraLabel}${pendingLabel}${incompleteLabel}`;
     else if (extraCount) status.textContent = `No terms on this page match “${query}”. Found ${plural(extraCount)} in the market glossaries below.${incompleteLabel}`;
@@ -178,7 +184,7 @@
   });
   select.addEventListener('change', () => apply(true));
   clear.addEventListener('click', () => { input.value = ''; select.value = ''; apply(true); input.focus(); });
-  if (retry) retry.addEventListener('click', () => { extra = null; unavailableCount = 0; loadExtra(); apply(false); });
+  if (retry) retry.addEventListener('click', () => { loadExtra(true); apply(false); });
   finder.addEventListener('submit', event => { event.preventDefault(); input.blur(); });
   for (const link of document.querySelectorAll('[data-glossary-topic]')) {
     link.addEventListener('click', event => {
