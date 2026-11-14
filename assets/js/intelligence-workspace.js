@@ -1,7 +1,7 @@
 import {app,auth} from '../../auth/firebase.js';
 import {getFunctions,httpsCallable} from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js';
-import {subscribe,sync} from './account-sync.js?v=20261114-heatmaps-3';
-import {verifyMarketWorkspace} from './intelligence-app-check.js?v=20261114-heatmaps-3';
+import {subscribe,sync} from './account-sync.js?v=20261114-consistency-1';
+import {verifyMarketWorkspace} from './intelligence-app-check.js?v=20261114-consistency-1';
 const host=document.getElementById('intelligence-workspace');
 const node=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e;};
 const callables=new Map();

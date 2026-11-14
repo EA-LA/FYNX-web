@@ -201,6 +201,37 @@
     return true;
   }
 
+  /* Same account controls as the workspace pages (bell, photo menu, Profile) for pages
+     whose original header has none, so the masthead looks and works the same everywhere. */
+  function accountActions() {
+    if (document.getElementById('avatarInitials')) return null;
+    const box = element('div', 'terminal-account');
+    const bell = link('', '/notifications.html', 'icon-btn terminal-account-bell');
+    bell.title = 'Notifications';
+    bell.setAttribute('aria-label', 'Notifications');
+    bell.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>';
+    const avatar = element('div', 'user-avatar');
+    avatar.id = 'avatarInitials';
+    const account = link('Sign in', '/auth/login.html?returnTo=' + encodeURIComponent(location.pathname + location.search), 'terminal-account-profile');
+    const paint = function () {
+      const signedIn = !!(window.FynxIdentity && window.FynxIdentity.uid);
+      account.textContent = signedIn ? 'Profile' : 'Sign in';
+      account.href = signedIn ? '/profile.html' : '/auth/login.html?returnTo=' + encodeURIComponent(location.pathname + location.search);
+    };
+    paint();
+    window.addEventListener('fynx:identity', paint);
+    box.append(bell, avatar, account);
+    import('/assets/js/account-identity.js?v=20261112-identity-1').catch(function () {});
+    if (!document.querySelector('script[data-fx-account-menu]')) {
+      const menu = document.createElement('script');
+      menu.src = '/assets/js/account-menu.js?v=20261114-consistency-1';
+      menu.defer = true;
+      menu.dataset.fxAccountMenu = '1';
+      document.head.append(menu);
+    }
+    return box;
+  }
+
   function enhancePublic(body, header) {
     const container = header.querySelector('.nav-container') || header;
     const utility = utilityBar();
@@ -259,7 +290,11 @@
       if (typeof ResizeObserver === 'function') new ResizeObserver(refreshMenuPosition).observe(header);
     } else {
       const actions = container.querySelector(':scope > nav');
-      if (actions) actions.prepend(yourNews(), quickAdd());
+      if (actions) {
+        actions.prepend(yourNews(), quickAdd());
+        const account = accountActions();
+        if (account) actions.append(account);
+      }
     }
     return true;
   }
