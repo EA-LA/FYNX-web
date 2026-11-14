@@ -86,6 +86,14 @@ function weekStart(value) {
   date.setUTCDate(date.getUTCDate() - date.getUTCDay());
   return date.toISOString().slice(0,10);
 }
+// Public calendar rows: every country and importance level, as published (no values estimated).
+const IMPACTS = {High: 'high', Medium: 'medium', Low: 'low', Holiday: 'holiday', 'Non-Economic': 'other'};
+function publicRows(rows) {
+  return (Array.isArray(rows) ? rows : []).filter(r => typeof r.title === 'string' && r.title.trim() && /^[A-Z]{3}$/.test(String(r.country || '')) && Number.isFinite(Date.parse(r.date))).map(r => {
+    const time = iso(Date.parse(r.date)), name = r.title.trim();
+    return { id: hash([r.country, name, time]), time, title: name, currency: r.country, impact: IMPACTS[r.impact] || 'other', forecast: r.forecast || null, previous: r.previous || null };
+  }).sort((a,b) => a.time.localeCompare(b.time) || a.currency.localeCompare(b.currency));
+}
 function parseCalendar(rows, observedAt) {
   if (!Array.isArray(rows) || !rows.length) throw new Error('The weekly calendar is empty.');
   const week = weekStart(observedAt);
@@ -97,8 +105,10 @@ function parseCalendar(rows, observedAt) {
     return { id: hash([r.country, name, time]), time, name, title: name, currency: r.country, type: eventType(name) === 'OTHER' ? name : eventType(name), impact: r.impact.toLowerCase(),
       actual: null, forecast: r.forecast || null, previous: r.previous || null, timing: 'scheduled', availableAt: observedAt, source: SOURCE.calendar.name, sourceURL: 'https://www.forexfactory.com/calendar' };
   }).sort((a,b) => a.time.localeCompare(b.time));
+  // Full week for the public calendar pages (every country and importance). Scoring keeps using `events` above.
+  const all = publicRows(rows);
   // Use a conservative UTC boundary so we never claim coverage past Saturday evening in New York.
-  return { source: SOURCE.calendar.name, sourceURL: SOURCE.calendar.url, updatedAt: observedAt, from: week, to: iso(Date.parse(week) + 7 * DAY), events, status: 'scheduled' };
+  return { source: SOURCE.calendar.name, sourceURL: SOURCE.calendar.url, updatedAt: observedAt, from: week, to: iso(Date.parse(week) + 7 * DAY), events, all, status: 'scheduled' };
 }
 function parseClaimArchive(html, year, observedAt) {
   const days = new Map();
@@ -137,8 +147,9 @@ async function observedSources(previous, previousCalendar) {
     (async () => { const response = await fetch(SOURCE.vix.url, {signal: AbortSignal.timeout(25000)}); if (!response.ok) throw new Error('Cboe is unavailable.'); return parseVix(await response.text()); })(),
     (async () => parseCalendar(await fetchJSON(SOURCE.calendar.url, {provider: SOURCE.calendar.name, timeout: 20000}), iso(Date.now())))(),
     claimReleaseDays(previous, iso(Date.now())),
+    (async () => publicRows(await fetchJSON(SOURCE.calendar.url.replace('thisweek', 'nextweek'), {provider: SOURCE.calendar.name, timeout: 20000})))(),
   ]);
-  const [cotResult, vixResult, calendarResult, releasesResult] = result;
+  const [cotResult, vixResult, calendarResult, releasesResult, nextWeekResult] = result;
   const releaseDays = releasesResult.status === 'fulfilled' ? releasesResult.value : previous?.releaseDays || [];
   const cotData = cotResult.status === 'fulfilled' ? cotResult.value : null;
   const cot = cotData ? cotData.records.map(({market,reportDate,availableAt,long,short,report,contractCode,availabilityBasis}) => ({market,reportDate,availableAt,long,short,report,contractCode,availabilityBasis})) : previous?.cot || [];
@@ -146,6 +157,8 @@ async function observedSources(previous, previousCalendar) {
   const fetchedAt = iso(Date.now());
   const vix = vixData ? vixData.rows.filter(r => Date.parse(r.date) + DAY <= Date.now()).map(r => ({...r, availableAt: fetchedAt, source: SOURCE.vix.name, sourceURL: SOURCE.vix.url})) : previous?.vix || [];
   const calendar = calendarResult.status === 'fulfilled' ? calendarResult.value : previousCalendar;
+  // Next week's schedule (published by the same source) so weekend visitors still see what is coming.
+  if (calendar) { const prevNext = (previousCalendar?.nextWeek || []).filter(e => Date.parse(e.time) > Date.now()); calendar.nextWeek = nextWeekResult.status === 'fulfilled' && nextWeekResult.value.length ? nextWeekResult.value : prevNext; }
   const calendarUsable = Boolean(calendar && calendar.status === 'scheduled' && Date.parse(calendar.to) >= Date.now() + DAY && Date.parse(calendar.updatedAt) > Date.now() - DAY);
   const cotFresh = cot.length > 0 && Date.now() - Date.parse(cotData?.latestReportDate || previous?.providerStatus?.cot?.reportDate) <= 18 * DAY;
   const providerStatus = {
@@ -197,5 +210,5 @@ async function refresh(dir) {
   await write(dir, 'manifest.json', {version:1, generatedAt:factors.asOf, markets:markets.map(m => summarize(datasets.get(m.id)))});
   console.log(`Published ${snapshot.markets.length} markets with ${factors.cot.length} CFTC reports, ${factors.vix.length} VIX closes and ${factors.events.length} upcoming announcements.`);
 }
-module.exports = { coverage, validateBars, summarize, parseCalendar, parseClaimArchive, loadBars };
+module.exports = { coverage, validateBars, summarize, parseCalendar, publicRows, parseClaimArchive, loadBars };
 if (require.main === module) refresh(path.resolve(process.argv[2] || path.join(__dirname, '../assets/data/research'))).catch(error => { console.error(error.message); process.exitCode = 1; });

@@ -41,5 +41,5 @@ Promise.all([get('api-status.json'),get('api-status-deep.json')]).then(([s,d])=>
  const inc=[...(s.incidents||[]),...(d?.incidents||[])].sort((a,b)=>b.started_at.localeCompare(a.started_at)).slice(0,15);
  $('#incidents').innerHTML=inc.length?'<ul class="incident-list">'+inc.map(i=>`<li><strong>${i.resolved_at?'Resolved':'Ongoing'}:</strong> ${esc(i.summary)} <span>Started ${esc(new Date(i.started_at).toUTCString())}${i.resolved_at?` · resolved ${esc(new Date(i.resolved_at).toUTCString())}`:''}</span>${i.issue?` <a href="https://github.com/EA-LA/FYNX-web/issues/${Number(i.issue)}">Details ↗︎</a>`:''}</li>`).join('')+'</ul>':'<p>No incidents recorded.</p>';
 });})();
-</script><script type="module" src="/assets/js/account-sync.js?v=20261114-consistency-1"></script>
+</script><script type="module" src="/assets/js/account-sync.js?v=20261114-consistency-2"></script>
 </body></html>

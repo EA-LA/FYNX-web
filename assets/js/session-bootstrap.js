@@ -1,5 +1,5 @@
 import { auth } from "../../auth/firebase.js";
-import { bootstrapSession } from "./session-manager.js?v=20261114-consistency-1";
+import { bootstrapSession } from "./session-manager.js?v=20261114-consistency-2";
 
 // Public browsing is the default. The dashboard and personal account screens require a session.
 // Keep in sync with PRIVATE_PAGES in auth-gate.js (checked by scripts/test-auth-gate.cjs).

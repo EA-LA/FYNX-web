@@ -1,5 +1,5 @@
-import './account-sync-core.js?v=20261114-consistency-1';
-import './account-sync-mapping.js?v=20261114-consistency-1';
+import './account-sync-core.js?v=20261114-consistency-2';
+import './account-sync-mapping.js?v=20261114-consistency-2';
 import {app,auth,authPersistenceReady} from '../../auth/firebase.js';
 import {onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
 import {getFunctions,httpsCallable} from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js';
