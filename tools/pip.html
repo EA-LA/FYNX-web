@@ -374,6 +374,20 @@
       font-size: 13px;
       transition:background .25s ease,border-color .25s ease,color .25s ease;
     }
+    /* Pip moves and risk (run 98) */
+    .optLabel{font-weight:700;color:var(--muted2)}
+    .pm-box{min-width:0;max-width:100%;padding:12px;border-radius:14px;border:1px solid var(--border2);background:var(--kv-bg)}
+    .pm-box h4{margin:0 0 8px;font-size:13px;font-weight:950;text-transform:uppercase;letter-spacing:.2px;color:var(--text-strong)}
+    .pm-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .pm-box table{display:table;width:100%;max-width:none;border-collapse:collapse;font-size:14px}
+    .pm-box th,.pm-box td{padding:7px 6px;text-align:right;border-bottom:1px solid var(--border2);white-space:nowrap}
+    .pm-box th:first-child,.pm-box td:first-child{text-align:left}
+    .pm-box th{font-size:12px;font-weight:850;color:var(--muted2);white-space:normal}
+    .pm-box tr.pm-yours td{font-weight:950;color:var(--text-strong)}
+    .pm-risk{margin-top:10px;font-size:14px;line-height:1.5;color:var(--text)}
+    .pm-risk b{color:var(--text-strong)}
+    .pm-risk p{margin:0 0 6px}
+    @media (max-width:420px){.pm-box th,.pm-box td{padding:7px 3px;font-size:13px}.pm-box th{font-size:11px}}
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
@@ -451,10 +465,18 @@
           </div>
 
           <div class="row"><label for="pipIncrement">Pip size</label><select id="pipIncrement" class="field"><option value="0.0001">0.0001 · most forex pairs</option><option value="0.01">0.01 · JPY-quoted pairs</option></select></div>
+          <div class="row">
+            <label for="pipMove">Pip move <span class="optLabel">(optional)</span></label>
+            <input id="pipMove" class="field mono" type="text" inputmode="decimal" value="" placeholder="e.g. 25" />
+          </div>
+          <div class="row">
+            <label for="riskAmount">Amount to risk <span class="optLabel">(optional)</span></label>
+            <input id="riskAmount" class="field mono" type="text" inputmode="decimal" value="" placeholder="e.g. 100" />
+          </div>
           <div class="actions">
             <button id="calcBtn" class="primary"><i class="fa-solid fa-calculator"></i> Calculate</button>
             <button id="clearBtn" class="ghost"><i class="fa-solid fa-eraser"></i> Clear</button>
-            <button class="ghost" id="shareScenarioBtn" type="button" data-scenario-fields="price,lots,pipIncrement" data-scenario-run="calcBtn"><i class="fa-solid fa-link"></i> Copy scenario link</button>
+            <button class="ghost" id="shareScenarioBtn" type="button" data-scenario-fields="price,lots,pipIncrement,pipMove,riskAmount" data-scenario-optional="pipMove,riskAmount" data-scenario-run="calcBtn"><i class="fa-solid fa-link"></i> Copy scenario link</button>
           </div>
 
           <div class="msg" id="error"></div>
@@ -490,8 +512,18 @@
               <div class="v mono" id="yourOut">—</div>
             </div>
 
-            <div class="note" id="noteOut"></div>
+            <div class="pm-box" id="pipMoves">
+              <h4>What a move is worth</h4>
+              <div class="pm-wrap">
+                <table id="pipMoveTable">
+                  <thead><tr><th scope="col">Move</th><th scope="col">Price distance</th><th scope="col">Value at your lots (account units)</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <div class="pm-risk" id="riskOut" hidden></div>
+            </div>
 
+            <div class="note" id="noteOut"></div>
             <div class="shareRow">
               <button id="copyBtn" class="ghost"><i class="fa-solid fa-copy"></i> Copy</button>
               <button id="shareBtn" class="ghost"><i class="fa-solid fa-share-nodes"></i> Share</button>
@@ -506,7 +538,7 @@
       </div>
     </div>
   <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Uses this calculator’s 100,000-unit Forex lot, USD account and supplied conversion rate. The model label is not a verified broker symbol.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
-<!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Translate a forex price move into account currency</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Match the units or lot size to the broker contract. Select the appropriate pip convention and account-currency conversion, then compare the result with your platform.</p><h3>The calculation or concept</h3><p>Pip value in quote currency = units × pip size. Convert that result into the account currency.</p></div><div class="tool-example"><h3>Worked example</h3><p>For 10,000 units of EUR/USD, a 0.0001 pip is $1. A 25-pip move is $25 before spread, fees and financing. A yen pair normally uses a different pip size.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>A pip is not always the smallest displayed price increment. Do not treat a fractional pip, exchange tick or point as interchangeable.</p></details></section><!-- tool-guide:end -->
+<!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Translate a forex price move into account currency</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Match the units or lot size to the broker contract. Select the appropriate pip convention and account-currency conversion, then compare the result with your platform. Add an optional pip move or amount to risk to see what that move is worth and the stop or lot size your risk allows.</p><h3>The calculation or concept</h3><p>Pip value in quote currency = units × pip size. Convert that result into the account currency.</p></div><div class="tool-example"><h3>Worked example</h3><p>For 10,000 units of EUR/USD, a 0.0001 pip is $1. A 25-pip move is $25 before spread, fees and financing. A yen pair normally uses a different pip size.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>A pip is not always the smallest displayed price increment. Do not treat a fractional pip, exchange tick or point as interchangeable.</p></details></section><!-- tool-guide:end -->
 <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/forex.html"><strong>Forex Trade Planning Calculators</strong><span>Plan a forex trade with links to position sizing and pip value calculators using your account and risk inputs.</span></a><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/currency.html"><strong>Currency Conversion Calculator: Manual Rates</strong><span>Convert currencies using a verified exchange rate you enter. The calculator does not provide live exchange rates.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
 
@@ -538,7 +570,33 @@
 
       toast: document.getElementById("toast"),
       tapDismiss: document.getElementById("tapDismiss"),
+      pipIncrement: document.getElementById("pipIncrement"),
+      pipMove: document.getElementById("pipMove"),
+      riskAmount: document.getElementById("riskAmount"),
+      moveBody: document.querySelector("#pipMoveTable tbody"),
+      riskOut: document.getElementById("riskOut"),
     };
+    let hasCalculated = false;
+    const MOVE_STEPS = [1, 5, 10, 20, 50, 100];
+    function pipsText(p){
+      const t = Number.isInteger(p) ? String(p) : p.toFixed(1);
+      return t + (p === 1 ? " pip" : " pips");
+    }
+    function distanceText(pips, size){
+      const dp = (size === 0.01 ? 2 : 4) + (Number.isInteger(pips) ? 0 : 1);
+      return (pips * size).toFixed(dp);
+    }
+    function optionalPositive(input, label, max){
+      const raw = String(input.value ?? "").trim();
+      if (!raw) return { value: null };
+      const n = parseNum(raw);
+      if (n === null || n <= 0) return { error: `Enter a positive ${label}, or leave it blank` };
+      if (max && n > max) return { error: `${label[0].toUpperCase() + label.slice(1)} must be ${max.toLocaleString("en-US")} or less` };
+      return { value: n };
+    }
+    function floorTo(x, step){
+      return Math.floor(x / step + 1e-9) * step;
+    }
 
     function clampNumber(str){
       const filtered = String(str ?? "").replace(/[^0-9.\-]/g,"");
@@ -581,6 +639,55 @@
       el.perLotOut.textContent = "—";
       el.yourOut.textContent = "—";
       el.noteOut.textContent = "";
+      el.moveBody.textContent = "";
+      el.riskOut.hidden = true;
+      el.riskOut.textContent = "";
+    }
+    function renderMoves(yourPip, size, move){
+      const steps = MOVE_STEPS.slice();
+      if (move !== null && !steps.includes(move)) steps.push(move);
+      steps.sort((a, b) => a - b);
+      el.moveBody.textContent = "";
+      for (const p of steps){
+        const tr = document.createElement("tr");
+        if (p === move) tr.className = "pm-yours";
+        const label = pipsText(p) + (p === move ? " (yours)" : "");
+        for (const text of [label, distanceText(p, size), (yourPip * p).toFixed(2)]){
+          const td = document.createElement("td");
+          td.textContent = text;
+          tr.appendChild(td);
+        }
+        el.moveBody.appendChild(tr);
+      }
+    }
+    function renderRisk(yourPip, perLot, risk, move, lots, size){
+      if (risk === null){ el.riskOut.hidden = true; el.riskOut.textContent = ""; return; }
+      el.riskOut.textContent = "";
+      el.riskOut.hidden = false;
+      const add = (parts) => {
+        const p = document.createElement("p");
+        for (const part of parts){
+          if (typeof part === "string") p.appendChild(document.createTextNode(part));
+          else { const b = document.createElement("b"); b.textContent = part.b; p.appendChild(b); }
+        }
+        el.riskOut.appendChild(p);
+      };
+      const riskText = money(risk);
+      const stopPips = Number(floorTo(risk / yourPip, 0.1).toFixed(1));
+      if (stopPips < 0.1){
+        add([`At ${lots} lots, ${riskText} covers less than 0.1 pip. Use fewer lots or a larger amount.`]);
+      } else {
+        add([`At ${lots} lots, ${riskText} covers a stop of `, { b: pipsText(stopPips) }, ` (price distance ${distanceText(stopPips, size)}).`]);
+      }
+      if (move !== null){
+        const stopLabel = (Number.isInteger(move) ? String(move) : move.toFixed(1)) + "-pip";
+        const fitLots = Number(floorTo(risk / (perLot * move), 0.01).toFixed(2));
+        if (fitLots < 0.01){
+          add([`For a ${stopLabel} stop, ${riskText} is less than the smallest 0.01 lot would lose (${money(perLot * move * 0.01)}).`]);
+        } else {
+          add([`For a ${stopLabel} stop, ${riskText} allows `, { b: fitLots.toFixed(2) + " lots" }, ` (rounded down to 0.01), losing ${money(perLot * move * fitLots)} at the stop.`]);
+        }
+      }
     }
 
     function shareText(){
@@ -588,11 +695,14 @@
       const inputs = `Quote-to-account rate: ${el.price.value.trim() || "—"}\nLots: ${el.lots.value.trim() || "—"}`;
       const result = (el.resultsBox.style.display === "none")
         ? "No result yet — tap Calculate."
-        : `Pip size: ${el.pipSizeOut.textContent}\nPip value (per 1.00 lot): ${el.perLotOut.textContent}\nPip value (your lots): ${el.yourOut.textContent}`;
+        : `Pip size: ${el.pipSizeOut.textContent}\nPip value (per 1.00 lot): ${el.perLotOut.textContent}\nPip value (your lots): ${el.yourOut.textContent}` +
+          [...el.moveBody.rows].filter(r => r.classList.contains("pm-yours")).map(r => `\nYour move ${r.cells[0].textContent.replace(" (yours)", "")}: ${r.cells[2].textContent} account units`).join("") +
+          (el.riskOut.hidden ? "" : "\n" + [...el.riskOut.querySelectorAll("p")].map(p => p.textContent).join("\n"));
       return `${header}\n\n${inputs}\n\nResult:\n${result}\n`;
     }
 
     function calculate(){
+      hasCalculated = true;
       setError("");
       resetResults();
 
@@ -600,9 +710,14 @@
       const lots = parseNum(el.lots.value);
 
       if (!price || price <= 0) { setError("Enter a positive quote-to-account conversion rate"); return; }
-      if (!lots || lots <= 0) { setError("Invalid lots"); return; }
-
-      const size = Number(document.getElementById("pipIncrement").value);
+      if (!lots || lots <= 0) { setError("Enter a positive number of lots, e.g. 1 or 0.1"); return; }
+      const moveIn = optionalPositive(el.pipMove, "pip move", 100000);
+      if (moveIn.error) { setError(moveIn.error); return; }
+      const riskIn = optionalPositive(el.riskAmount, "amount to risk");
+      if (riskIn.error) { setError(riskIn.error); return; }
+      const move = moveIn.value === null ? null : Math.round(moveIn.value * 10) / 10;
+      if (move === 0) { setError("Enter a pip move of at least 0.1, or leave it blank"); return; }
+      const size = Number(el.pipIncrement.value);
       const perLot = 100000.0 * size * price;
       const yourPip = perLot * lots;
 
@@ -613,8 +728,13 @@
       el.perLotOut.textContent = money(perLot);
       el.yourOut.textContent = money(yourPip);
 
+      renderMoves(yourPip, size, move);
+      renderRisk(yourPip, perLot, riskIn.value, move, el.lots.value.trim(), size);
       el.noteOut.textContent =
-        `Standard lot = 100,000 base units. Results use your supplied conversion rate; no live rate is fetched.`;
+        `Standard lot = 100,000 base units. Results use your supplied conversion rate; no live rate is fetched. Moves are examples, not forecasts; spread, commission and slippage are not included.`;
+    }
+    function recalcIfShown(){
+      if (hasCalculated) calculate();
     }
 
     async function copyResult(){
@@ -663,19 +783,23 @@
     function clearAll(){
       el.price.value = "1";
       el.lots.value = "1";
+      el.pipMove.value = "";
+      el.riskAmount.value = "";
+      hasCalculated = false;
       setError("");
       resetResults();
       el.price.focus();
     }
 
-    [el.price, el.lots].forEach(inp => {
+    [el.price, el.lots, el.pipMove, el.riskAmount].forEach(inp => {
       inp.addEventListener("input", () => {
         const c = clampNumber(inp.value);
         if (c !== inp.value) inp.value = c;
+        recalcIfShown();
       });
     });
-
-    [el.price, el.lots].forEach(inp => {
+    el.pipIncrement.addEventListener("change", recalcIfShown);
+    [el.price, el.lots, el.pipMove, el.riskAmount].forEach(inp => {
       inp.addEventListener("keydown", (e) => {
         if (e.key === "Enter"){
           e.preventDefault();
