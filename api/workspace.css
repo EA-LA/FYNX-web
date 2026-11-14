@@ -11,3 +11,6 @@ html[data-theme="dark"] .error{background:#472522;color:#ffd8d0!important}
 #copy-key-status:empty{display:none}
 #notice .text-button{padding:0;margin-left:4px;font:inherit}
 .plan-soon{display:inline-block;margin-top:8px;font-size:13px;color:var(--muted,#5b6b62);font-style:italic}
+/* iPhone: 16px fields stop iOS zooming on tap; 44px Retry target (site-qa run 97) */
+@media(max-width:760px){.auth-card input,.ws-nav select,.ws-panel input,.ws-panel select,.ws-panel textarea:not([readonly]){font-size:16px}}
+@media(pointer:coarse){#notice .text-button{display:inline-flex;align-items:center;min-height:44px;min-width:44px;padding:0 6px}}

@@ -338,6 +338,27 @@
       transition:color .25s ease;
       line-height:1.6;
     }
+    .payoff-ladder{margin-top:1rem}
+    .payoff-ladder h3{font-size:1rem;margin:0 0 .3rem;color:var(--text-strong)}
+    .payoff-ladder p{color:var(--text-muted);font-size:.9rem;line-height:1.5;margin:0 0 .5rem}
+    .payoff-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .payoff-ladder table{width:100%;border-collapse:collapse;font-size:.92rem;font-variant-numeric:tabular-nums}
+    .payoff-ladder th,.payoff-ladder td{padding:.45rem .4rem;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
+    .payoff-ladder th:first-child,.payoff-ladder td:first-child{text-align:left}
+    .payoff-ladder th{font-size:.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em}
+    .payoff-ladder td small{display:block;font-size:.76rem;color:var(--text-muted);font-weight:700}
+    .payoff-ladder tr.is-key td{font-weight:800;color:var(--text-strong);background:var(--surface)}
+    .payoff-ladder td:first-child{white-space:normal}
+    .payoff-ladder .pl-ret{display:none}
+    .payoff-ladder td small{white-space:normal;line-height:1.3}
+    @media (max-width:430px){
+      .payoff-ladder table{font-size:.86rem}
+      .payoff-ladder th,.payoff-ladder td{padding:.4rem .25rem}
+      .payoff-ladder th{font-size:.7rem;letter-spacing:.02em;white-space:normal}
+      .payoff-ladder th:nth-child(3),.payoff-ladder td:nth-child(3){display:none}
+      .payoff-ladder .pl-ret{display:inline}
+      .payoff-ladder small.pl-ret{display:block}
+    }
     @media (max-width:720px){
       h1{font-size:2.35rem}
       .field-row{grid-template-columns:1fr}
@@ -587,6 +608,22 @@
         maxLossText = `$${fmt((strike * totalShares) - premiumTotal)}`;
       }
 
+      // A put can never pay more than its strike, so a premium at or above the strike has no break-even.
+      const putBeyondStrike = type === "put" && breakEven <= 0;
+      if (putBeyondStrike) {
+        if (position === "long") maxProfitText = "None (premium ≥ strike)";
+        else maxLossText = "None (premium ≥ strike)";
+      }
+      const isLong = position === "long";
+      const pnlAt = price => {
+        const intrinsic = type === "call" ? Math.max(price - strike, 0) : Math.max(strike - price, 0);
+        return isLong ? intrinsic * totalShares - premiumTotal : premiumTotal - intrinsic * totalShares;
+      };
+      const settle = value => Math.abs(value) < 0.005 ? 0 : value;
+      const returnText = value => premiumTotal > 0 ? `${value > 0 ? "+" : value < 0 ? "−" : ""}${fmt(Math.abs(value / premiumTotal * 100))}%` : "—";
+      const moneyText = value => `${value > 0 ? "+" : value < 0 ? "−" : ""}$${fmt(Math.abs(value))}`;
+      const ladderHtml = payoffLadder({ strike, stock, breakEven: putBeyondStrike ? null : breakEven, pnlAt, settle, returnText, moneyText, isLong });
+
       const profitLossLabel = pnl >= 0 ? "Profit" : "Loss";
 
       resultArea.className = "result-box";
@@ -595,7 +632,8 @@
         <div class="result-line"><strong>Type:</strong> ${position.charAt(0).toUpperCase() + position.slice(1)} ${type.charAt(0).toUpperCase() + type.slice(1)}</div>
         <div class="result-line"><strong>Intrinsic Value / Share:</strong> $${fmt(intrinsicValuePerShare)}</div>
         <div class="result-line"><strong>Total Premium:</strong> $${fmt(premiumTotal)}</div>
-        <div class="result-line"><strong>Break-even Price:</strong> $${fmt(breakEven)}</div>
+        <div class="result-line"><strong>Break-even Price:</strong> ${putBeyondStrike ? "Not reachable (premium ≥ strike)" : `$${fmt(breakEven)}`}</div>
+        <div class="result-line"><strong>${isLong ? "Return on Premium Paid" : "Share of Premium Kept"}:</strong> ${returnText(settle(pnl))}</div>
 
         <div class="pnl-boxes">
           <div class="mini-box">
@@ -607,7 +645,36 @@
             <div class="mini-value">${maxLossText}</div>
           </div>
         </div>
+        ${ladderHtml}
       `;
+    }
+
+    // P/L at a ladder of expiration prices around the strike, plus the strike, break-even and your price.
+    function payoffLadder({ strike, stock, breakEven, pnlAt, settle, returnText, moneyText, isLong }) {
+      const base = strike > 0 ? strike : stock;
+      if (!(base > 0)) return "";
+      const rows = new Map();
+      const add = (price, label, key) => {
+        if (!Number.isFinite(price) || price < 0) return;
+        const id = Math.round(price * 100);
+        const row = rows.get(id) || { price: id / 100, labels: [], key: false };
+        if (!row.labels.includes(label)) row.labels.push(label);
+        row.key = row.key || key;
+        rows.set(id, row);
+      };
+      for (const pct of [-20, -10, -5, 5, 10, 20]) add(base * (1 + pct / 100), `${pct > 0 ? "+" : "−"}${Math.abs(pct)}% vs strike`, false);
+      if (strike > 0) add(strike, "Strike", true);
+      if (breakEven !== null) add(breakEven, "Break-even", true);
+      add(stock, "Your price", true);
+      const body = [...rows.values()].sort((a, b) => a.price - b.price).map(row => {
+        const value = settle(pnlAt(row.price));
+        return `<tr${row.key ? ' class="is-key"' : ""}><td>$${fmt(row.price)}<small>${row.labels.join(" · ")}</small></td><td>${moneyText(value)}<small class="pl-ret">${returnText(value)}</small></td><td>${returnText(value)}</td></tr>`;
+      }).join("");
+      return `<div class="payoff-ladder" id="payoffLadder">
+          <h3>P/L at other expiration prices</h3>
+          <p>Example prices around the strike, not forecasts. Same contracts and premium, before fees.</p>
+          <div class="payoff-scroll"><table id="payoffTable"><thead><tr><th scope="col">Price at expiry</th><th scope="col">P/L<span class="pl-ret"> · ${isLong ? "on premium" : "of premium"}</span></th><th scope="col">${isLong ? "On premium" : "Of premium"}</th></tr></thead><tbody>${body}</tbody></table></div>
+        </div>`;
     }
 
     function clearForm() {
