@@ -4,7 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { publicSiteFiles } = require('./public-site-files.cjs');
-const VERSION = '20261114-heatmaps-3';
+const VERSION = '20261114-own-calendar-1';
 const RESEARCH_VERSION = '20261113-shared-account-2';
 const TOPIC_TRANSFER_VERSION = '20261113-topic-transfer-2';
 const ASSET_VERSIONS = Object.freeze({'assets/js/shared-workspace.js':'20261113-notification-lead-1','assets/js/news-preferences.js':TOPIC_TRANSFER_VERSION,'assets/js/your-news.js':TOPIC_TRANSFER_VERSION,'assets/css/your-news.css':TOPIC_TRANSFER_VERSION});
@@ -26,7 +26,7 @@ const ASSETS = Object.freeze([
   'api/workspace.js', 'assets/js/research/personal.js', 'assets/js/research/focus.js',
   'assets/css/news-intelligence.css', 'assets/js/holiday-calendar-export.js',
   'assets/js/market-intelligence-data.js', 'assets/js/news-intelligence.js',
-  'assets/js/terminal-header.js', 'assets/js/terminal-home.js',
+  'assets/js/terminal-header.js', 'assets/js/terminal-home.js', 'assets/js/fynx-calendar.js', 'assets/css/fynx-calendar.css',
   'assets/js/terminal-market-data.js', 'assets/js/terminal-market-ui.js',
   'assets/js/terminal-landing-live.js', 'assets/js/newsroom-editions.js',
   'assets/js/newsroom-media.js', 'assets/js/newsroom-page.js',
