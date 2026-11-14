@@ -76,7 +76,25 @@
   const newsSymbols=()=>[...new Set([...(state.companies||[]),...(shared?.sync.records('newsWatchlists')||[]).filter(r=>r.data.influencesNews||r.data.newsInfluence).flatMap(r=>r.data.symbols||[])])];
   function reasons(item){const text=[item.title,item.reader?.summary,item.category].filter(Boolean).join(' '),chosen=state.topics;return [...topics.filter(t=>chosen.includes(t.id)&&(t.broad?t.feed===item.category:[t.label,...t.terms].some(term=>matches(term,text)))).map(t=>t.id),...regions.filter(r=>(state.regions||[]).includes(r.id)&&[r.label,...r.terms].some(term=>matches(term,text))).map(r=>'region:'+r.id),...companies.filter(c=>newsSymbols().includes(c.id)&&[c.label,...c.terms].some(term=>matches(term,text))).map(c=>'company:'+c.id)];}
   function coveragePlan(){const plan=state.topics.map(id=>({category:topics.find(t=>t.id===id)?.feed,edition:null}));if(newsSymbols().length)plan.push({category:'stocks',edition:null},{category:'crypto',edition:null},{category:'forex',edition:null});for(const r of regions.filter(r=>(state.regions||[]).includes(r.id)))plan.push({category:'world',edition:r.edition});return [...new Map(plan.filter(p=>p.category).map(p=>[p.category+'|'+p.edition,p])).values()];}
-  root.FYNXYourNews = Object.freeze({topics,regions,companies,getTopics:()=>state.topics.slice(),setTopics,getRegions:()=>[...(state.regions||[])],setRegions:v=>setInterest('regions',v),getCompanies:()=>[...(state.companies||[])],getNewsSymbols:newsSymbols,setCompanies:v=>setInterest('companies',v),coveragePlan,reasons,getSaved:()=>[...(state.saved||[])],getHistory:history,markOpened,isRead:value=>{const id=typeof value==='string'?value:value?.articleId||value?.id,url=typeof value==='object'?value?.url:null;return history().some(item=>item.id===id||url&&item.url===url);},clearHistory,isPersistent:()=>persistent});
+  // Portable, versioned *topic-only* backup. No account identifiers or reading history
+  // leave the browser, even if the user has opened private market research.
+  function exportTopicBackup() {
+    return JSON.stringify({format:'fynx-your-news-topics',version:1,topics:state.topics.slice()},null,2)+'\n';
+  }
+  function importTopicBackup(raw) {
+    if(typeof raw!=='string'||raw.length>4096)return {ok:false,error:'Choose a valid FYNX topic backup (up to 4 KB).'};
+    let data;
+    try {data=JSON.parse(raw);} catch {return {ok:false,error:'The selected file is not valid JSON.'};}
+    if(!data||typeof data!=='object'||Array.isArray(data)||data.format!=='fynx-your-news-topics'||data.version!==1||
+       !Array.isArray(data.topics)||data.topics.length>topics.length||
+       data.topics.some(id=>typeof id!=='string'||!topics.some(topic=>topic.id===id))||
+       new Set(data.topics).size!==data.topics.length) {
+      return {ok:false,error:'This is not a supported FYNX topic backup. Your current topics were not changed.'};
+    }
+    setTopics(data.topics);
+    return {ok:true,count:state.topics.length,saved:persistent};
+  }
+  root.FYNXYourNews = Object.freeze({exportTopicBackup,importTopicBackup,topics,regions,companies,getTopics:()=>state.topics.slice(),setTopics,getRegions:()=>[...(state.regions||[])],setRegions:v=>setInterest('regions',v),getCompanies:()=>[...(state.companies||[])],getNewsSymbols:newsSymbols,setCompanies:v=>setInterest('companies',v),coveragePlan,reasons,getSaved:()=>[...(state.saved||[])],getHistory:history,markOpened,isRead:value=>{const id=typeof value==='string'?value:value?.articleId||value?.id,url=typeof value==='object'?value?.url:null;return history().some(item=>item.id===id||url&&item.url===url);},clearHistory,isPersistent:()=>persistent});
   root.addEventListener('storage',event=>{
     // A clear() in another tab emits a storage event with a null key.
     // Discard private reading history rather than retaining it in this open tab.

@@ -139,6 +139,48 @@
     if(run!==generation)return;
     rows=nextRows;resultState=nextState;busy=false;$('[data-your-stories]').setAttribute('aria-busy','false');render();schedule();
   }
+  function setupTopicTransfer() {
+    const section=app.querySelector('.your-news-topics');
+    if(!section)return;
+    const group=node('div',undefined,'your-news-transfer');
+    const actions=node('div',undefined,'your-news-transfer-actions');
+    const save=node('button','Download topics'),restore=node('button','Restore topics');
+    save.type=restore.type='button';
+    const file=node('input');file.type='file';file.accept='.json,application/json';file.hidden=true;
+    file.setAttribute('aria-label','Select a FYNX topic backup JSON file');
+    const note=node('p','Move your followed topics to another browser or iPhone. Files contain only topic choices, never reading history or account details. Restoring replaces your followed topics, not your reading history.','your-news-transfer-note');
+    const feedback=node('p',undefined,'your-news-transfer-status');
+    feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');
+    actions.append(save,restore,file);group.append(actions,note,feedback);section.append(group);
+    save.addEventListener('click',()=>{
+      let href;
+      try {
+        href=URL.createObjectURL(new Blob([preferences.exportTopicBackup()],{type:'application/json'}));
+        const link=node('a');link.href=href;link.download='fynx-your-news-topics.json';
+        document.body.append(link);link.click();link.remove();
+        feedback.textContent='Topic backup prepared. Keep the downloaded file somewhere private.';
+      } catch {
+        feedback.textContent='Could not download a backup in this browser.';
+      } finally {
+        if(href)window.setTimeout(()=>URL.revokeObjectURL(href),3000);
+      }
+    });
+    restore.addEventListener('click',()=>file.click());
+    file.addEventListener('change',async()=>{
+      const chosen=file.files?.[0];file.value='';
+      if(!chosen)return;
+      if(chosen.size<1||chosen.size>4096){feedback.textContent='Choose a FYNX topic backup smaller than 4 KB.';return;}
+      restore.disabled=true;feedback.textContent='Checking the selected topic backup…';
+      try {
+        const result=preferences.importTopicBackup(await chosen.text());
+        feedback.textContent=!result.ok?result.error:result.saved?
+          'Restored '+result.count+' followed topic'+(result.count===1?'':'s')+' in this browser.':
+          'Topics restored for this visit, but browser storage is unavailable.';
+      } catch {feedback.textContent='Could not read the selected file. Your topics were not changed.';}
+      finally {restore.disabled=false;}
+    });
+  }
+  setupTopicTransfer();
   $('[data-your-filter-form]').addEventListener('submit',event=>event.preventDefault());
   for(const selector of ['[data-your-search]','[data-your-topic-filter]','[data-your-sort]','[data-your-unread]'])$(selector).addEventListener(selector==='[data-your-search]'?'input':'change',()=>{displayLimit=18;render();});
   $('[data-your-refresh]').addEventListener('click',()=>refresh(true));
