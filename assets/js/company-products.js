@@ -64,7 +64,7 @@
 /* Site-wide: replace manual Refresh buttons with automatic 10-minute updates (assets/js/auto-refresh.js). */
 (function () {
  if (typeof document === 'undefined' || /^\/terminal(\.html)?$/.test(location.pathname) || document.querySelector('script[data-fx-auto-refresh]')) return;
- const own = document.querySelector('script[src*="company-products.js?v=20261113-world-ships-pro-2"]'), v = own && /[?&]v=([^&]+)/.exec(own.src);
+ const own = document.querySelector('script[src*="company-products.js?v=20261114-heatmaps-3"]'), v = own && /[?&]v=([^&]+)/.exec(own.src);
  const s = document.createElement('script'); s.src = '/assets/js/auto-refresh.js' + (v ? '?v=' + v[1] : ''); s.defer = true; s.dataset.fxAutoRefresh = '1';
  document.head.append(s);
 })();

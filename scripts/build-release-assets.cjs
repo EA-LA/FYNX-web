@@ -4,7 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { publicSiteFiles } = require('./public-site-files.cjs');
-const VERSION = '20261113-world-ships-pro-2';
+const VERSION = '20261114-heatmaps-3';
 const RESEARCH_VERSION = '20261113-shared-account-2';
 const TOPIC_TRANSFER_VERSION = '20261113-topic-transfer-2';
 const ASSET_VERSIONS = Object.freeze({'assets/js/shared-workspace.js':'20261113-notification-lead-1','assets/js/news-preferences.js':TOPIC_TRANSFER_VERSION,'assets/js/your-news.js':TOPIC_TRANSFER_VERSION,'assets/css/your-news.css':TOPIC_TRANSFER_VERSION});
@@ -17,7 +17,7 @@ const ASSETS = Object.freeze([
   'fynx-nav.js', 'demo-mode.js', 'auth/auth-form.js',
   'assets/js/macro-desk/model.js', 'assets/js/macro-desk/app.js', 'assets/css/macro-desk.css',
   'assets/js/edge/insights.js', 'assets/css/edge-insights.css',
-  'assets/js/terminal/app.js', 'assets/js/terminal/pages.js', 'assets/js/terminal/geo.js', 'assets/js/terminal/world.js', 'assets/js/terminal/portfolio.js', 'assets/js/terminal/scanner.js', 'assets/css/terminal-all.css',
+  'assets/js/terminal/app.js', 'assets/js/terminal/pages.js', 'assets/js/terminal/geo.js', 'assets/js/terminal/world.js', 'assets/js/terminal/portfolio.js', 'assets/js/terminal/scanner.js', 'assets/js/terminal/heatmaps.js', 'assets/css/terminal-all.css',
   'assets/js/home-movers.js', 'assets/js/live-pulse.js', 'assets/js/cb-monitor.js',
   'assets/js/home-journal.js', 'assets/js/profile-sync.js', 'assets/js/session-manager.js',
   'assets/js/news-reader-links.js', 'assets/js/news-reader.js', 'assets/css/news-reader.css',

@@ -202,6 +202,7 @@
 
   // Command line: SCAN · SCAN CRYPTO · SCAN AI3 · SCAN PENNY …
   T.PAGE_NAMES.push('SCAN');
+  T.loadScanner = load; // shared with the heat maps (one download of scanner.json)
   // Panel: the last scan's top results.
   T.PANELS.scan = ['SCAN', 'Market scanner', 'scan'];
   T.PANEL_DESC.scan = 'Top results of your last scan — gainers, AI stocks under $3, crypto movers and more';
