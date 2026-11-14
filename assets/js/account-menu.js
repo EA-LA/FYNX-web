@@ -3,6 +3,7 @@
 (function () {
   'use strict';
   if (window.__fynxAccountMenu) return; window.__fynxAccountMenu = true;
+  let navCount = 0;
   const SECTIONS = [
     ['Your workspace', [
       ['My shared workspace', '/workspace.html', 'Saved work across web and iPhone'],
@@ -41,18 +42,19 @@
 .fx-acct-who strong{display:block;font-size:15px;line-height:1.25}.fx-acct-who small{display:block;font-size:12px;color:#6a756f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fx-acct-who a{display:inline-block;margin-top:4px;font-size:12px;font-weight:700;color:#1f5a3f;text-decoration:none}.fx-acct-who a:hover{text-decoration:underline}
 .fx-acct-h{margin:10px 10px 4px;font:700 10.5px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:#7a857f}
-.fx-acct-menu a.fx-acct-item{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:center;padding:9px 10px;border-radius:9px;color:inherit;text-decoration:none;font-size:13.5px;font-weight:600}
+.fx-acct-menu a.fx-acct-item{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:center;padding:9px 10px;min-height:44px;border-radius:9px;color:inherit;text-decoration:none;font-size:13.5px;font-weight:600}
 .fx-acct-menu a.fx-acct-item.plain{grid-template-columns:1fr;font-weight:500}
 .fx-acct-menu a.fx-acct-item small{display:block;font-size:11.5px;font-weight:400;color:#6a756f;margin-top:1px}
-.fx-acct-menu a.fx-acct-item:hover,.fx-acct-menu a.fx-acct-item:focus-visible{background:#f0f4f2;outline:none}
+.fx-acct-menu a.fx-acct-item:hover{background:#f0f4f2}
+.fx-acct-menu a.fx-acct-item:focus-visible{background:#f0f4f2;outline:2px solid #1f5a3f;outline-offset:-2px}
 .fx-acct-menu a.fx-acct-item[aria-current=page]{background:#e8f2ec;color:#1f5a3f}
 .fx-acct-menu svg{width:18px;height:18px;fill:none;stroke:#1f5a3f;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .fx-acct-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px}
 .fx-acct-pro{display:block;margin:8px 4px 6px;padding:12px 14px;border-radius:11px;background:linear-gradient(135deg,#173f2d,#1f5a3f);color:#fff;text-decoration:none}
 .fx-acct-pro strong{display:block;font-size:14px}.fx-acct-pro span{display:block;font-size:12px;opacity:.85;margin-top:3px}
 .fx-acct-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid #edf0ee;margin-top:6px;padding:8px 6px 2px}
-.fx-acct-foot a{font-size:12.5px;color:#4a554f;text-decoration:none;font-weight:600}.fx-acct-foot a:hover{color:#1f5a3f}
-.fx-acct-out{border:0;background:transparent;color:#c42828;font:700 13px Inter,Arial,sans-serif;padding:8px 10px;border-radius:8px;cursor:pointer}.fx-acct-out:hover{background:#fdeeee}
+.fx-acct-foot a{display:inline-flex;align-items:center;min-height:44px;font-size:12.5px;color:#4a554f;text-decoration:none;font-weight:600}.fx-acct-foot a:hover{color:#1f5a3f}
+ .fx-acct-out{min-height:44px;border:0;background:transparent;color:#c42828;font:700 13px Inter,Arial,sans-serif;padding:8px 10px;border-radius:8px;cursor:pointer}.fx-acct-out:hover{background:#fdeeee}
 html[data-theme=dark] .fx-acct-menu,body.dark-mode .fx-acct-menu{background:#111614;color:#e8ece9;border-color:#27302b}
 @media (max-width:600px){.fx-acct-menu{left:10px!important;right:10px!important;width:auto}}`;
     document.head.append(st);
@@ -72,14 +74,14 @@ html[data-theme=dark] .fx-acct-menu,body.dark-mode .fx-acct-menu{background:#111
       menu.append(el('p', 'fx-acct-h', title));
       const box = el('div', title === 'Settings' ? 'fx-acct-grid' : '');
       for (const [label, href, hint] of items) {
-        const a = el('a', 'fx-acct-item' + (ICON[label] ? '' : ' plain')); a.href = href; a.setRole = 'menuitem'; a.setAttribute('role', 'menuitem');
+        const a = el('a', 'fx-acct-item' + (ICON[label] ? '' : ' plain')); a.href = href;
         if (location.pathname === href.split('#')[0]) a.setAttribute('aria-current', 'page');
         if (ICON[label]) { const ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg'), p = document.createElementNS(ns, 'path'); svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('aria-hidden', 'true'); p.setAttribute('d', ICON[label]); svg.append(p); a.append(svg); }
         const text = el('span', '', label); if (hint) text.append(el('small', '', hint)); a.append(text); box.append(a);
       }
       menu.append(box);
     }
-    const pro = el('a', 'fx-acct-pro'); pro.href = '/pro.html'; pro.setAttribute('role', 'menuitem');
+    const pro = el('a', 'fx-acct-pro'); pro.href = '/pro.html';
     pro.append(el('strong', '', 'Membership & Pro tools →'), el('span', '', 'Plans, billing and the tools each tier unlocks')); menu.append(pro);
     const foot = el('div', 'fx-acct-foot'), help = el('a', '', 'Help & support'); help.href = '/contact.html';
     const out = el('button', 'fx-acct-out', 'Sign out'); out.type = 'button';
@@ -92,9 +94,9 @@ html[data-theme=dark] .fx-acct-menu,body.dark-mode .fx-acct-menu{background:#111
   }
   function mount(host) {
     if (host.dataset.fxAcct) return; host.dataset.fxAcct = '1'; style();
-    const wrap = el('span', 'fx-acct'), btn = el('button', 'fx-acct-btn'), menu = el('div', 'fx-acct-menu');
-    btn.type = 'button'; btn.setAttribute('aria-haspopup', 'menu'); btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-label', 'Account menu');
-    menu.hidden = true; menu.setAttribute('role', 'menu');
+    const wrap = el('span', 'fx-acct'), btn = el('button', 'fx-acct-btn'), menu = el('nav', 'fx-acct-menu');
+    btn.type = 'button'; btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-label', 'Account menu');
+    menu.hidden = true; menu.id = 'fynx-account-nav-' + (++navCount); menu.setAttribute('aria-label', 'Account navigation'); btn.setAttribute('aria-controls', menu.id);
     host.replaceWith(wrap); wrap.append(btn); document.body.append(menu); wrap.id = host.id || 'avatarInitials'; wrap.classList.add('user-avatar-menu');
     const id = () => window.FynxIdentity || {};
     const close = () => { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
@@ -102,6 +104,11 @@ html[data-theme=dark] .fx-acct-menu,body.dark-mode .fx-acct-menu{background:#111
     const open = () => { build(menu, id()); place(); menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); menu.querySelector('a')?.focus({preventScroll: true}); };
     btn.addEventListener('click', e => { e.stopPropagation(); if (!id().uid) { if (window.FynxAuth) window.FynxAuth.open('login'); else location.href = '/auth/login.html?returnTo=' + encodeURIComponent(location.pathname + location.search); return; } menu.hidden ? open() : close(); });
     document.addEventListener('click', e => { if (!wrap.contains(e.target) && !menu.contains(e.target)) close(); });
+    // Normal Tab navigation through links, unlike an ARIA menu that requires arrow-key handling.
+    // Close only when focus leaves both the navigation panel and its trigger.
+    menu.addEventListener('focusout', e => {
+      if (!menu.hidden && !menu.contains(e.relatedTarget) && !wrap.contains(e.relatedTarget)) close();
+    });
     addEventListener('resize', () => { if (!menu.hidden) place(); }); addEventListener('scroll', () => { if (!menu.hidden) place(); }, {passive: true});
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !menu.hidden) { close(); btn.focus(); } });
     const paint = () => { const v = id(); paintAvatar(btn, v); btn.title = v.uid ? (v.displayName || v.email || 'Your account') : 'Sign in'; if (!v.uid) { btn.textContent = ''; btn.append(svgUser()); } };
