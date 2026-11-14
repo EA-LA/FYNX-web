@@ -114,6 +114,8 @@ html[data-theme=dark] .fx-acct-menu,body.dark-mode .fx-acct-menu{background:#111
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !menu.hidden) { close(); btn.focus(); } });
     const paint = () => { const v = id(); paintAvatar(btn, v); btn.title = v.uid ? (v.displayName || v.email || 'Your account') : 'Sign in'; if (!v.uid) { btn.textContent = ''; btn.append(svgUser()); } };
     window.addEventListener('fynx:identity', paint); paint();
+    // Older page scripts may still write initials into #avatarInitials; keep the real button in place.
+    new MutationObserver(() => { if (!wrap.contains(btn)) { wrap.replaceChildren(btn); paint(); } }).observe(wrap, {childList: true});
   }
   function svgUser() { const ns = 'http://www.w3.org/2000/svg', s = document.createElementNS(ns, 'svg'), p = document.createElementNS(ns, 'path'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('width', '18'); s.setAttribute('height', '18'); s.style.cssText = 'fill:none;stroke:currentColor;stroke-width:1.8'; p.setAttribute('d', 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'); s.append(p); return s; }
   function scan() { document.querySelectorAll('div.user-avatar#avatarInitials').forEach(mount); return !!document.querySelector('.fx-acct'); }

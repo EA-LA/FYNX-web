@@ -674,3 +674,25 @@ html body[data-fynx-terminal] .terminal-utility-actions > a.terminal-utility-ter
 @media (max-width:359px){
   html body[data-fynx-terminal] .terminal-utility .terminal-header-clock { display:none !important; }
 }
+
+/* Account controls on pages whose original header had none (Edge Radar, Macro Desk, Quant Analyst, tools):
+   same bell, photo menu and Profile button as Home and Journal, at every width. */
+html body[data-fynx-terminal].terminal-masthead-ready .terminal-public-masthead > nav > .terminal-account { display:inline-flex !important; align-items:center; gap:10px; margin-left:4px; }
+html body[data-fynx-terminal].terminal-masthead-ready .terminal-account > .terminal-account-bell { display:inline-flex !important; align-items:center; justify-content:center; width:32px !important; height:32px !important; min-height:32px !important; padding:0 !important; margin:0 !important; border:1px solid #252a27; border-radius:2px; background:transparent; color:#f8faf9 !important; position:relative; }
+html body[data-fynx-terminal].terminal-masthead-ready .terminal-account > .terminal-account-bell::after { content:""; position:absolute; inset:-6px; }
+html body[data-fynx-terminal].terminal-masthead-ready .terminal-account > .terminal-account-profile { display:inline-flex !important; align-items:center; height:32px; min-height:32px !important; padding:0 11px !important; background:#17231b; border:1px solid #333e36; border-radius:1px; color:#dce9e0 !important; font:600 12px/1 Inter,Arial,sans-serif !important; text-decoration:none; white-space:nowrap; position:relative; }
+html body[data-fynx-terminal].terminal-masthead-ready .terminal-account > .terminal-account-profile::after { content:""; position:absolute; inset:-6px -1px; }
+html body[data-fynx-terminal].terminal-masthead-ready .terminal-account > :is(.user-avatar, .fx-acct) { margin:0 !important; height:auto !important; min-height:0 !important; }
+html body[data-fynx-terminal].terminal-masthead-ready .terminal-account > div.user-avatar { width:36px; height:36px !important; border-radius:50%; background:#cfeedd; }
+html body[data-fynx-terminal].terminal-masthead-ready .terminal-account > div.user-avatar::after { content:none; }
+@media (max-width:900px) {
+  html body[data-fynx-terminal].terminal-masthead-ready .terminal-public-masthead > nav > .terminal-account { display:inline-flex !important; margin-left:auto; }
+  html body[data-fynx-terminal].terminal-masthead-ready .terminal-account > .terminal-account-profile { font-size:11px !important; padding:0 10px !important; }
+}
+/* Section row on standalone pages uses the same type size as the workspace pages' row on phones. */
+@media (max-width:600px) {
+  html body[data-fynx-terminal]:not(#fx-boost).terminal-masthead-ready > .terminal-navigation > a { font-size:11px !important; min-height:40px !important; }
+}
+/* Explore and Home are already in the section row; keep the masthead the same as Home's. */
+html body[data-fynx-terminal].terminal-masthead-ready .terminal-public-masthead > nav:has(> .terminal-account) > a:is([href="/explore.html"],[href="/home.html"]) { display:none !important; }
+html body[data-fynx-terminal].terminal-masthead-ready .terminal-account > .terminal-account-profile { font-size:13px !important; height:33px; }

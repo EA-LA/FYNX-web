@@ -1,5 +1,5 @@
 import {C,$,escape,number,percent,time,ageLabel,errorHTML,loading,empty,toast,options,quotes,quoteCache} from './shared.js';
-import {store} from './store.js?v=20261114-own-calendar-1';
+import {store} from './store.js?v=20261114-consistency-2';
 
 function tileResearchActions(symbol, quote) {
   const safeSymbol = escape(symbol);

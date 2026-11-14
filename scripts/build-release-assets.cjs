@@ -4,7 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { publicSiteFiles } = require('./public-site-files.cjs');
-const VERSION = '20261114-own-calendar-1';
+const VERSION = '20261114-consistency-2';
 const RESEARCH_VERSION = '20261113-shared-account-2';
 const TOPIC_TRANSFER_VERSION = '20261113-topic-transfer-2';
 const ASSET_VERSIONS = Object.freeze({'assets/js/shared-workspace.js':'20261113-notification-lead-1','assets/js/news-preferences.js':TOPIC_TRANSFER_VERSION,'assets/js/your-news.js':TOPIC_TRANSFER_VERSION,'assets/css/your-news.css':TOPIC_TRANSFER_VERSION});

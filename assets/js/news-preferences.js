@@ -104,7 +104,7 @@
     else {try{if(event.newValue.length>120000)return;const next=normalize(JSON.parse(event.newValue));if(!next)return;state=next;}catch{return;}}
     emit('fynx:news-preferences-change');emit('fynx:news-history-change');
   });
-  import('/assets/js/account-sync.js?v=20261114-own-calendar-1').then(api=>{
+  import('/assets/js/account-sync.js?v=20261114-consistency-2').then(api=>{
     shared=api;
     api.offerImport('news-local','Import this browser’s news topics and reading history',async()=>{const local=read();if(!local)return [];return [{domain:'newsInterests',id:'default',data:{topics:[...new Set([...(api.accountData('newsInterests')?.topics||[]),...local.topics])]}},...await Promise.all(local.history.map(async row=>({domain:'readingRecords',id:row.url?await api.storyID(row.url):row.id,data:{...row,webArticleId:row.id,openedAt:new Date(row.openedAt).toISOString()}})))];});
     api.subscribe(sync=>{if(sync.uid){const interests=api.accountData('newsInterests');state={topics:selected(interests?.topics||defaults),regions:interests?.regions||[],companies:interests?.companies||[],saved:sync.records('readingRecords').filter(row=>row.data.saved).map(row=>record({...row.data,id:row.data.webArticleId||row.id,recordId:row.id},{saved:true})).filter(Boolean),history:sync.records('readingRecords').filter(row=>row.data.openedAt).map(row=>record({...row.data,id:row.data.webArticleId||row.id,recordId:row.id})).filter(Boolean)};persistent=sync.status==='synced';}else {state=read()||{topics:defaults.slice(),history:[]};persistent=true;}emit('fynx:news-preferences-change');emit('fynx:news-history-change');});
