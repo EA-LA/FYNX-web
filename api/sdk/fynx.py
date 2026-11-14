@@ -78,6 +78,10 @@ class Fynx:
         """compound-growth, loan-payment, cagr, kelly, drawdown-recovery, trade-pnl, real-return"""
         return self.request("POST", f"/v1/finance/{name}", data)
 
+    def options(self, name, data):
+        """price, implied-volatility, payoff, probability, expected-move"""
+        return self.request("POST", f"/v1/options/{name}", data)
+
 
 class _PropFirm:
     """Prop firm rules: rule sets, accounts, events and status."""

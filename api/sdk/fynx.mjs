@@ -54,6 +54,8 @@ export class Fynx {
   portfolio(name, input) { return this.request('POST', `/v1/portfolio/${name}`, input); }
   /** Finance tools: compound-growth, loan-payment, cagr, kelly, drawdown-recovery, trade-pnl, real-return */
   finance(name, input) { return this.request('POST', `/v1/finance/${name}`, input); }
+  /** Options: price, implied-volatility, payoff, probability, expected-move */
+  options(name, input) { return this.request('POST', `/v1/options/${name}`, input); }
 
   /** Prop firm rules */
   propfirm = {
