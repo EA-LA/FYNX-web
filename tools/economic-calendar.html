@@ -507,10 +507,13 @@
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
   <link rel="stylesheet" href="/assets/editorial-pages.css?v=20261109-nav-wrap">
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261114-heatmaps-3">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261114-own-calendar-1">
 <meta name="description" content="Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <style>body .content{grid-template-columns:minmax(0,1fr)}body .side-panel{display:none}body .hero{gap:20px}body .widget-shell,body #tvCalendarWrap{height:760px;min-height:760px}body #tvCalendarWrap>div{height:100%}@media(max-width:600px){body .widget-shell,body #tvCalendarWrap{height:620px;min-height:620px}}</style>
+<link rel="stylesheet" href="/assets/css/fynx-calendar.css?v=20261114-own-calendar-1">
+<script src="/assets/js/fynx-calendar.js?v=20261114-own-calendar-1"></script>
+<style>.fynx-cal-host{--terminal-text:var(--text);--terminal-muted:var(--text-soft);--terminal-line:var(--border);--terminal-green:var(--green);--terminal-bg:var(--bg-2);padding:6px 14px 12px}.widget-shell{min-height:0}</style>
 <link rel="canonical" href="https://www.fynxfinanceworld.com/tools/economic-calendar.html">
 <meta property="og:title" content="Economic Calendar: Releases &amp; Central Bank Events | FYNX">
 <meta property="og:description" content="Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.">
@@ -531,7 +534,7 @@
 <link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
 <link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
 <!-- terminal-design:end -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261114-heatmaps-3"><script src="/assets/js/company-products-data.js?v=20261113-shared-account-2" defer></script><script src="/assets/js/company-products.js?v=20261114-heatmaps-3" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261114-own-calendar-1"><script src="/assets/js/company-products-data.js?v=20261113-shared-account-2" defer></script><script src="/assets/js/company-products.js?v=20261114-own-calendar-1" defer></script><!-- company-products:assets:end -->
 </head>
 <body class="editorial-page editorial-calendar" data-fynx-layout="standalone" data-fynx-section="TOOLS" data-fynx-terminal>
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
@@ -599,19 +602,15 @@
             </div>
 
             <div class="widget-toolbar">
-              <div class="toolbar-pill">High impact first</div>
-              <div class="toolbar-pill">Forex focused</div>
-              <div class="toolbar-pill">Theme synced</div>
+              <div class="toolbar-pill">Every country</div>
+              <div class="toolbar-pill">Filters &amp; search</div>
+              <div class="toolbar-pill">Your time zone</div>
             </div>
           </div>
 
           <div class="widget-wrap">
             <div class="widget-shell">
-              <div class="widget-loading" id="widgetLoading">Loading live economic calendar…</div>
-
-              <div class="tradingview-widget-container" id="tvCalendarWrap">
-                <div id="tradingview_economic_calendar"></div>
-              </div>
+              <div id="fynxCalendar" class="fynx-cal-host"></div>
             </div>
           </div>
 
@@ -669,17 +668,17 @@
             <div class="info-card">
               <h3><i class="fas fa-link"></i> Quick market links</h3>
               <div class="quick-links">
-                <a href="https://www.tradingview.com/symbols/TVC-DXY/" target="_blank" rel="noopener noreferrer">
-                  <span>DXY</span><i class="fas fa-arrow-up-right-from-square"></i>
+                <a href="/terminal.html?sym=DX-Y.NYB">
+                  <span>DXY</span><i class="fas fa-arrow-right"></i>
                 </a>
-                <a href="https://www.tradingview.com/symbols/OANDA-XAUUSD/" target="_blank" rel="noopener noreferrer">
-                  <span>XAUUSD</span><i class="fas fa-arrow-up-right-from-square"></i>
+                <a href="/terminal.html?sym=GC=F">
+                  <span>XAUUSD</span><i class="fas fa-arrow-right"></i>
                 </a>
-                <a href="https://www.tradingview.com/symbols/EURUSD/" target="_blank" rel="noopener noreferrer">
-                  <span>EURUSD</span><i class="fas fa-arrow-up-right-from-square"></i>
+                <a href="/terminal.html?sym=EURUSD=X">
+                  <span>EURUSD</span><i class="fas fa-arrow-right"></i>
                 </a>
-                <a href="https://www.tradingview.com/symbols/GBPUSD/" target="_blank" rel="noopener noreferrer">
-                  <span>GBPUSD</span><i class="fas fa-arrow-up-right-from-square"></i>
+                <a href="/terminal.html?sym=GBPUSD=X">
+                  <span>GBPUSD</span><i class="fas fa-arrow-right"></i>
                 </a>
               </div>
             </div>
@@ -727,13 +726,11 @@
       const next = document.body.classList.contains("dark-mode") ? "light" : "dark";
       window.FynxPreferences?.setItem(THEME_KEY, next);
       applyTheme(next);
-      renderEconomicCalendar();
     });
 
     window.addEventListener("storage", (e) => {
       if (e.key === THEME_KEY) {
         applyTheme(e.newValue === "dark" ? "dark" : "light");
-        renderEconomicCalendar();
       }
     });
 
@@ -768,53 +765,14 @@
     updateClocks();
     setInterval(updateClocks, 1000);
 
-    function renderEconomicCalendar(){
-      const wrap = document.getElementById("tvCalendarWrap");
-      wrap.replaceChildren();
-      const holder = document.createElement("div");
-      holder.id = "tradingview_economic_calendar";
-      wrap.appendChild(holder);
-      const loading = document.getElementById("widgetLoading");
-      const isDark = document.body.classList.contains("dark-mode");
-
-      holder.innerHTML = "";
-      wrap.querySelectorAll("script[data-tv-script='economic-calendar']").forEach(el => el.remove());
-
-      loading.style.display = "flex";
-
-      const script = document.createElement("script");
-      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-events.js";
-      script.async = true;
-      script.setAttribute("data-tv-script", "economic-calendar");
-
-      script.innerHTML = JSON.stringify({
-        colorTheme: isDark ? "dark" : "light",
-        isTransparent: true,
-        width: "100%",
-        height: "100%",
-        locale: "en",
-        importanceFilter: "-1,0,1",
-        currencyFilter: "USD,EUR,GBP,JPY,AUD,NZD,CAD,CHF,CNY",
-        countryFilter: "us,eu,gb,jp,au,nz,ca,ch,cn",
-        calendarDisplayMode: "day",
-        hideDateRanges: false,
-        scaleMode: "fit"
-      });
-
-      script.onload = () => {
-        setTimeout(() => {
-          loading.style.display = "none";
-        }, 900);
-      };
-
-      script.onerror = () => { loading.textContent = "Calendar unavailable. Please refresh to try again."; };
-      holder.appendChild(script);
+    function mountFynxCalendar(){
+      const host = document.getElementById("fynxCalendar");
+      if (window.FynxCalendar) window.FynxCalendar.mount(host, {compact: false});
+      else host.textContent = "The economic calendar could not be loaded. Please refresh.";
     }
-
-    renderEconomicCalendar();
+    mountFynxCalendar();
   </script>
-  <script src="../assets/js/tradingview-fit.js?v=20260922-fit2"></script>
 
-<footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261114-heatmaps-3"></script>
+<footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261114-own-calendar-1"></script>
 </body>
 </html>

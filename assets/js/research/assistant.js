@@ -1,5 +1,5 @@
 import {C,$,escape,time,toast} from './shared.js';
-import {currentReport,currentCompany} from './financials.js?v=20261114-heatmaps-3';
+import {currentReport,currentCompany} from './financials.js?v=20261114-own-calendar-1';
 let topic='summary',model=null,modelAbort=null,requestAbort=null,aiGeneration=0;
 const aiOptions={expectedInputs:[{type:'text',languages:['en']}],expectedOutputs:[{type:'text',languages:['en']}]};
 const explain={

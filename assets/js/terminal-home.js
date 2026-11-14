@@ -161,18 +161,11 @@
   }
   function mountCalendar() {
     calendarCleanup();
-    const wrap = $('homeEconomicCalendar'); wrap.replaceChildren();
+    const wrap = $('homeEconomicCalendar'); if (!wrap) return;
     const currencies={us:'USD',uk:'GBP',canada:'CAD',europe:'EUR',japan:'JPY',australia:'AUD',india:'INR'}, currency=currencies[edition()];
-    $('homeCalendarScope').textContent='Calendar supplied by TradingView · '+(currency ? editionLabel(edition())+' edition: '+currency+' releases.' : edition()==='global' ? 'Global currency coverage.' : 'Global currency coverage; a dedicated '+editionLabel(edition())+' calendar filter is not available.');
-    const loading=node('p','Loading the economic calendar…','nr-calendar-loading');loading.setAttribute('role','status');wrap.append(loading);
-    const holder=node('div',undefined,'tradingview-widget-container');holder.style.height='100%';
-    const widget=node('div',undefined,'tradingview-widget-container__widget'), script=document.createElement('script');script.src='https://s3.tradingview.com/external-embedding/embed-widget-events.js';script.async=true;
-    script.textContent=JSON.stringify({colorTheme:document.documentElement.dataset.theme==='dark'?'dark':'light',isTransparent:true,width:'100%',height:390,locale:'en',importanceFilter:'0,1',currencyFilter:currency || 'USD,EUR,GBP,JPY,AUD,NZD,CAD,CHF,CNY'});
-    script.addEventListener('error',()=>{if(holder.isConnected)wrap.replaceChildren(node('p','The calendar provider could not be reached. Use the full calendar and its official sources.','nr-empty'));});
-    holder.append(widget,script);wrap.append(holder);
-    const observer=new MutationObserver(()=>{const frame=holder.querySelector('iframe');if(frame){frame.addEventListener('load',()=>loading.remove(),{once:true});observer.disconnect();}});observer.observe(holder,{childList:true,subtree:true});
-    const timeout=setTimeout(()=>{observer.disconnect();if(loading.isConnected)loading.textContent='Calendar loading slowly. The full calendar and its official sources remain available below.';},12000);
-    calendarCleanup=()=>{observer.disconnect();clearTimeout(timeout);};
+    $('homeCalendarScope').textContent=(currency ? editionLabel(edition())+' edition: '+currency+' releases, high and medium importance.' : 'High and medium importance releases for every major currency.');
+    if (!window.FynxCalendar) { wrap.replaceChildren(node('p','The economic calendar could not be loaded. Use the full calendar.','nr-empty')); return; }
+    calendarCleanup = window.FynxCalendar.mount(wrap, {compact: true, limit: 8, currencies: currency ? [currency] : null});
   }
   function mirrorSessions() {
     const host = document.querySelector('[data-terminal-sessions]'); if (!host) return;
