@@ -821,7 +821,7 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261112-mt5-journal-1">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261113-world-ships-pro-2">
 <title>Trading Practice Challenges &amp; Progress | FYNX</title>
 <meta name="description" content="Explore trading practice challenges across forex, crypto, stocks, futures and options to build a consistent learning routine.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -833,7 +833,7 @@
 <meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
 <meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
 <meta name="twitter:card" content="summary_large_image">
-<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261112-site-qa-78" defer></script><!-- discovery-assets:end -->
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261113-site-qa-95" defer></script><!-- discovery-assets:end -->
 <!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"News & events","item":"https://www.fynxfinanceworld.com/explore.html?category=News%20%26%20events"},{"@type":"ListItem","position":3,"name":"Trading Practice Challenges & Progress","item":"https://www.fynxfinanceworld.com/news/challenges.html"}]}</script><!-- discovery-schema:end -->
 <!-- search-identity:start --><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.fynxfinanceworld.com/#organization","name":"FYNX","alternateName":"FYNX Finance World","url":"https://www.fynxfinanceworld.com/","founder":{"@id":"https://ea-la.github.io/#person"},"sameAs":["https://www.fynxfunded.com/","https://site.fynxfinanceworld.com/","https://blog.fynxfinanceworld.com/","https://roadmap.fynxfinanceworld.com/"]},{"@type":"Person","@id":"https://ea-la.github.io/#person","name":"Elham Amini","url":"https://ea-la.github.io/","jobTitle":"Founder of FYNX","sameAs":["https://www.linkedin.com/in/elham-amini-745560302/","https://www.instagram.com/___elham_amini___/"],"worksFor":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebSite","@id":"https://www.fynxfinanceworld.com/#website","url":"https://www.fynxfinanceworld.com/","name":"FYNX Finance World","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebPage","@id":"https://www.fynxfinanceworld.com/news/challenges.html#webpage","url":"https://www.fynxfinanceworld.com/news/challenges.html","name":"Trading Practice Challenges & Progress | FYNX","description":"Explore trading practice challenges across forex, crypto, stocks, futures and options to build a consistent learning routine.","inLanguage":"en","isPartOf":{"@id":"https://www.fynxfinanceworld.com/#website"},"publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}}]}</script><!-- search-identity:end -->
 <!-- FYNX ADSENSE VERIFICATION START -->
@@ -841,7 +841,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
      crossorigin="anonymous"></script>
 <!-- FYNX ADSENSE VERIFICATION END -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261112-mt5-journal-1"><script src="/assets/js/company-products-data.js?v=20261113-accounts-host-2" defer></script><script src="/assets/js/company-products.js?v=20261112-mt5-journal-1" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261113-world-ships-pro-2"><script src="/assets/js/company-products-data.js?v=20261113-shared-account-2" defer></script><script src="/assets/js/company-products.js?v=20261113-world-ships-pro-2" defer></script><!-- company-products:assets:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="NEWS">
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
@@ -915,7 +915,7 @@
         <div class="metric-box">
           <div class="metric-label">Completed</div>
           <div class="metric-value" id="completedCount">0</div>
-          <div class="metric-sub">Finished challenges saved locally in the browser.</div>
+          <div class="metric-sub">Finished challenges shared with your signed-in account.</div>
         </div>
 
         <div class="metric-box">
@@ -1086,6 +1086,7 @@
     });
 
     const STORAGE_KEY = 'fynx_challenges_state_v1';
+    let sharedChallenges=null;
 
     const challengeData = [
       {
@@ -1182,6 +1183,7 @@
     let currentCategory = 'all';
 
     function loadState() {
+      if(sharedChallenges?.sync.uid)return challengeData.map(base=>({...base,...(sharedChallenges.accountData('challenges',base.id)||{})}));
       const saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) return challengeData;
 
@@ -1199,8 +1201,12 @@
     let challenges = loadState();
 
     function saveState() {
+      if(sharedChallenges?.sync.uid){const changes=challenges.filter(row=>JSON.stringify(sharedChallenges.accountData('challenges',row.id))!==JSON.stringify(row)).map(row=>({domain:'challenges',id:row.id,data:{...row,target:100}}));if(changes.length)sharedChallenges.saveMany(changes).catch(error=>{const status=document.getElementById('challengeSyncStatus');status.textContent=error.message;});return;}
       localStorage.setItem(STORAGE_KEY, JSON.stringify(challenges));
     }
+    const challengeSyncStatus=document.createElement('p');challengeSyncStatus.id='challengeSyncStatus';challengeSyncStatus.setAttribute('role','status');document.getElementById('challengeGrid').before(challengeSyncStatus);
+    import('/assets/js/account-sync.js?v=20261113-world-ships-pro-2').then(api=>{sharedChallenges=api;api.offerImport('challenges-local','Import earlier practice challenges',()=>{try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]').map(row=>({domain:'challenges',id:row.id,data:{...row,target:100}}));}catch{return [];}});api.subscribe(sync=>{challenges=loadState();renderChallenges();challengeSyncStatus.textContent=sync.uid?(sync.status==='synced'?'Practice progress shared with your iPhone.':sync.error||'Loading shared progress…'):'Guest progress stays in this browser.';});}).catch(()=>{});
+
 
     function getCategoryLabel(category) {
       const map = {
@@ -1399,5 +1405,6 @@
     renderChallenges();
   </script>
 
-<footer></footer></body>
+<footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261113-world-ships-pro-2"></script>
+</body>
 </html>

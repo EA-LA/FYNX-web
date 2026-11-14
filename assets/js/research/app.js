@@ -1,10 +1,10 @@
 import {$,toast} from './shared.js';
-import {store} from './store.js';
-import {initializeFinancials,renderScreen} from './financials.js';
-import {refreshHeatmap} from './markets.js';
-import {renderAssistant,checkAI} from './assistant.js';
+import {store} from './store.js?v=20261113-shared-account-1';
+import {initializeFinancials,renderScreen} from './financials.js?v=20261113-shared-account-1';
+import {refreshHeatmap} from './markets.js?v=20261113-shared-account-1';
+import {renderAssistant,checkAI} from './assistant.js?v=20261113-shared-account-1';
 import './strategy.js';
-import {renderPortfolio,refreshPortfolio,renderAlerts,checkAlerts} from './personal.js?v=20261112-portfolio-refresh-feedback-1';
+import {renderPortfolio,refreshPortfolio,renderAlerts,checkAlerts} from './personal.js?v=20261113-shared-account-1';
 import {currentRoute,updatePageIdentity,enableRouteNavigation} from './navigation.js';
 const names=['financials','screener','heatmap','assistant','strategy','portfolio','alerts'];let active=null;
 let lastPath=null;

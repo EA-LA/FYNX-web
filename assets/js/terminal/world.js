@@ -93,15 +93,15 @@
     T.setText('t-globe', 'Live world · click any light');
     host.append(el('p', 'fx-empty', 'Loading the globe…'));
     await loadWorld(); if (!host.isConnected) return; host.replaceChildren();
-    const stage = el('div', 'fx-gstage'), card = el('div', 'fx-gcard'); card.hidden = true;
+    const stage = el('div', 'fx-gstage'), card = el('div', 'fx-gcard'), scard = el('div', 'fx-gcard fx-scard'); card.hidden = true; scard.hidden = true;
     const tools = el('div', 'fx-gtools');
     tools.append(btn(W.flat ? 'Globe' : 'Flat map', 'fx-gbtn', () => { W.flat = !W.flat; W.scale = 1; renderGlobe(); }), btn('+', 'fx-gbtn', () => { W.scale = Math.min(8, W.scale * 1.4); draw?.(); }, 'Zoom in'), btn('−', 'fx-gbtn', () => { W.scale = Math.max(0.7, W.scale / 1.4); draw?.(); }, 'Zoom out'), btn('Reset', 'fx-gbtn', () => { W.rot = [20, -22]; W.scale = 1; draw?.(); }));
     const layers = el('div', 'fx-glayers');
     for (const [k, l] of [['lights', 'Country lights'], ['tankers', 'Tankers'], ['cargo', 'Cargo ships'], ['other', 'Other ships'], ['chokes', 'Chokepoints'], ['lanes', 'Main sea routes']]) { const lab = el('label'), cb = el('input'); cb.type = 'checkbox'; cb.checked = W.layers[k]; cb.addEventListener('change', () => { W.layers[k] = cb.checked; draw?.(); }); lab.append(cb, document.createTextNode(l)); layers.append(lab); }
     const legend = el('div', 'fx-glegend'); for (const [k, l] of [['red', 'Big event'], ['yellow', 'Watch'], ['green', 'Quiet'], ['grey', 'No live signal']]) { const s = el('span'); const i = el('i'); i.style.background = COLOR[k]; s.append(i, document.createTextNode(l)); legend.append(s); }
-    const shipNote = el('span', 'fx-gnote', W.ships?.status === 'not-configured' ? 'Ships: waiting for the AIS key' : W.ships?.vessels?.length ? `Ships: ${W.ships.total.toLocaleString()} from AIS · ${T.ago(W.ships.generatedAt)}` : 'Ships: loading');
+    const shipNote = el('span', 'fx-gnote', W.ships?.status === 'not-configured' ? 'Ships: waiting for the AIS key' : W.ships?.status === 'error' ? `Ships: AIS feed problem · ${T.ago(W.ships.generatedAt)}` : W.ships?.vessels?.length ? `Ships: ${W.ships.total.toLocaleString()} from AIS · ${T.ago(W.ships.generatedAt)}${W.ships.stale ? ' · last refresh failed' : ''}` : 'Ships: loading');
     legend.append(shipNote);
-    stage.append(tools, layers, legend, card); host.append(stage);
+    stage.append(tools, layers, legend, card, scard); host.append(stage);
     const sv = svg('svg', {class: 'fx-gsvg', role: 'img', 'aria-label': 'World globe with country status lights, ships and chokepoints. Use the country list for keyboard access.'}); stage.prepend(sv);
     const statuses = new Map(allStatuses().map(s => [s.iso, s]));
     const gSphere = svg('path', {class: 'g-sphere'}), gGrat = svg('path', {class: 'g-grat'}), gLand = svg('g'), gLanes = svg('g'), gShips = svg('g'), gChokes = svg('g'), gLights = svg('g');
@@ -110,7 +110,7 @@
     const lanePaths = LANES.map(pts => { const seg = []; for (let i = 0; i < pts.length - 1; i++) { const it = G.geoInterpolate(pts[i], pts[i + 1]); for (let t = 0; t <= 1.0001; t += 0.05) seg.push(it(t)); } const p = svg('path', {class: 'g-lane'}); gLanes.append(p); return [{type: 'LineString', coordinates: seg}, p]; });
     const centroid = f => { const fix = {US: [-98, 39], RU: [45, 56], CA: [-100, 56], NO: [9, 61], FR: [2.5, 46.5], IT: [12.5, 42.8], CL: [-71, -33], GB: [-1.5, 52.5], NZ: [172, -41], ID: [113, -1]}[f.properties.iso2]; return fix || G.geoCentroid(f); };
     const lights = W.feats.filter(f => f.properties.iso2).map(f => { const st = statuses.get(f.properties.iso2), big2 = st && st.level !== 'grey' && st.level !== 'green'; const g = svg('g', {class: 'g-light'}); const ring = svg('circle', {r: 11, fill: 'none', stroke: COLOR[st?.level || 'grey'], 'stroke-opacity': 0.5, 'stroke-width': 2}); const dot = svg('circle', {r: big2 ? 6 : st?.level === 'green' ? 4.2 : 3, fill: COLOR[st?.level || 'grey'], stroke: '#06080a', 'stroke-width': 1.5}); const t = svg('title'); t.textContent = `${nameOfC(f.properties.iso2)}: ${st?.level === 'grey' ? 'no live signal' : st?.level}`; g.append(t); if (big2) g.append(ring); g.append(dot); g.addEventListener('click', e => { e.stopPropagation(); select(f.properties.iso2); }); gLights.append(g); return [centroid(f), g, f.properties.iso2]; });
-    const chokes = Object.entries(W.ships?.chokepoints || {}).map(([n, [[a, b], [c, d]]]) => { const g = svg('g', {class: 'g-choke'}); const r = svg('rect', {width: 10, height: 10, x: -5, y: -5, transform: 'rotate(45)'}); const t = svg('text', {x: 9, y: 14}); const cnt = W.ships?.counts?.[n]; t.textContent = cnt ? `${n} · ${cnt.ships}` : n; g.append(r, t); gChokes.append(g); return [[(b + d) / 2, (a + c) / 2], g]; });
+    const chokes = Object.entries(W.ships?.chokepoints || {}).map(([n, [[a, b], [c, d]]]) => { const g = svg('g', {class: 'g-choke', role: 'button', tabindex: '0', 'aria-label': `${n} chokepoint details`}); g.addEventListener('click', e => { e.stopPropagation(); chokeCard(n); }); g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chokeCard(n); } }); const r = svg('rect', {width: 10, height: 10, x: -5, y: -5, transform: 'rotate(45)'}); const t = svg('text', {x: 9, y: 14}); const cnt = W.ships?.counts?.[n]; t.textContent = cnt ? `${n} · ${cnt.ships}` : n; g.append(r, t); gChokes.append(g); return [[(b + d) / 2, (a + c) / 2], g]; });
     const vessels = (W.ships?.vessels || []).slice(0, 4000);
     draw = () => {
       const w = sv.clientWidth || 800, h = sv.clientHeight || 600; sv.setAttribute('viewBox', `0 0 ${w} ${h}`);
@@ -123,14 +123,17 @@
       for (const [ll, g] of lights) { if (!visible(ll)) { g.style.display = 'none'; continue; } const [x, y] = proj(ll); g.style.display = ''; g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`); }
       gChokes.style.display = W.layers.chokes ? '' : 'none'; for (const [ll, g] of chokes) { if (!visible(ll)) { g.style.display = 'none'; continue; } const [x, y] = proj(ll); g.style.display = ''; g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`); }
       gShips.replaceChildren();
-      const frag = document.createDocumentFragment(), sz = Math.max(1.6, 1.4 * Math.sqrt(W.scale));
-      for (const v of vessels) {
-        const on = v.kind === 'tanker' ? W.layers.tankers : v.kind === 'cargo' ? W.layers.cargo : W.layers.other; if (!on) continue;
+      const frag = document.createDocumentFragment(), sz = Math.max(1.6, 1.4 * Math.sqrt(W.scale)), arrows = W.flat ? W.scale >= 1.6 : W.scale >= 2.2;
+      for (let i = 0; i < vessels.length; i++) {
+        const v = vessels[i], on = v.kind === 'tanker' ? W.layers.tankers : v.kind === 'cargo' ? W.layers.cargo : W.layers.other; if (!on) continue;
         const ll = [v.lon, v.lat]; if (!visible(ll)) continue; const p = proj(ll); if (!p) continue;
-        frag.append(svg('circle', {cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: v.kind === 'tanker' ? sz * 1.25 : sz, class: 'g-ship g-' + v.kind}));
+        const k = v.kind === 'tanker' ? 1.25 : 1, wait = isWaiting(v), dirn = v.heading ?? v.cog, cls = `g-ship g-${v.kind}${wait ? ' g-wait' : ''}${W.selShip === v.mmsi ? ' g-sel' : ''}`;
+        if (arrows && !wait && dirn !== null && dirn !== undefined) { const a = sz * k * 1.5; frag.append(svg('path', {d: `M0 ${(-a * 1.5).toFixed(1)}L${a.toFixed(1)} ${a.toFixed(1)}L0 ${(a * 0.45).toFixed(1)}L${(-a).toFixed(1)} ${a.toFixed(1)}Z`, transform: `translate(${p[0].toFixed(1)} ${p[1].toFixed(1)}) rotate(${Math.round(dirn)})`, class: cls, 'data-i': i})); }
+        else frag.append(svg('circle', {cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: (wait && arrows ? sz * 1.3 : sz) * k, class: cls, 'data-i': i}));
       }
       gShips.append(frag);
       if (W.sel) place(W.sel);
+      if (!scard.hidden && scard._ll) placeAt(scard, scard._ll);
     };
     function place(iso) {
       const f = W.feats.find(x => x.properties.iso2 === iso); if (!f) return;
@@ -155,11 +158,53 @@
       card.append(btn(`Open ${nameOfC(iso)} terminal ▸`, 'fx-gc-open', () => T.openPage('ctry', iso)));
       place(iso);
     }
+    function placeAt(box, ll) {
+      const w = sv.clientWidth, h = sv.clientHeight, proj = projection(w, h), p = proj(ll);
+      if (!p || (!W.flat && G.geoDistance(ll, [-W.rot[0], -W.rot[1]]) > Math.PI / 2)) { box.style.visibility = 'hidden'; return; }
+      box.style.visibility = ''; box.style.left = Math.min(w - 330, Math.max(8, p[0] + 16)) + 'px'; box.style.top = Math.min(h - 260, Math.max(48, p[1] - 30)) + 'px';
+    }
+    const fact2 = (facts, k, v) => { if (v === null || v === undefined || v === '') return; const sp = el('span'); sp.append(el('small', '', k), el('b', '', String(v))); facts.append(sp); };
+    function shipCard(v) {
+      W.selShip = v.mmsi; card.hidden = true; scard.replaceChildren(); scard.hidden = false; scard._ll = [v.lon, v.lat];
+      const head = el('div', 'fx-gc-head'); head.append(el('b', 'fx-gc-iso fx-kind-' + v.kind, KIND_LABEL[v.kind] || 'SHIP'), el('strong', '', v.name || `MMSI ${v.mmsi}`), btn('✕', 'fx-gc-x', () => { scard.hidden = true; W.selShip = null; draw(); }, 'Close'));
+      scard.append(head);
+      const nav = W.ships?.navCodes?.[v.nav];
+      scard.append(el('p', 'fx-gc-route', v.dest ? `→ ${v.dest}${v.eta ? ` · ETA ${v.eta} UTC` : ''}` : 'Destination not broadcast'));
+      const facts = el('div', 'fx-gc-facts');
+      fact2(facts, 'STATUS', isWaiting(v) ? (nav || 'Stopped') : nav || 'Moving');
+      fact2(facts, 'SPEED', finite(v.sog) ? v.sog.toFixed(1) + ' kn' : null);
+      fact2(facts, 'COURSE', finite(v.cog) ? v.cog + '°' : null);
+      fact2(facts, 'DRAUGHT', finite(v.draught) ? v.draught.toFixed(1) + ' m' : null);
+      fact2(facts, 'SIZE', finite(v.len) ? `${v.len}${finite(v.beam) ? ' × ' + v.beam : ''} m` : null);
+      fact2(facts, v.imo ? 'IMO' : 'MMSI', v.imo || v.mmsi);
+      scard.append(facts, el('p', 'fx-gc-news', `Last AIS report ${v.at ? ago(v.at.replace(' ', 'T') + 'Z') : 'in this snapshot'}. Destination and ETA are typed in by the crew; AIS does not broadcast where a ship came from.`));
+      placeAt(scard, scard._ll); draw();
+    }
+    function chokeCard(n) {
+      const c = W.ships?.counts?.[n], box = W.ships?.chokepoints?.[n]; if (!box) return;
+      W.selShip = null; card.hidden = true; scard.replaceChildren(); scard.hidden = false; scard._ll = mid(box);
+      const head = el('div', 'fx-gc-head'); head.append(el('b', 'fx-gc-iso', 'CHOKE'), el('strong', '', n), btn('✕', 'fx-gc-x', () => { scard.hidden = true; }, 'Close'));
+      scard.append(head);
+      if (!c || !c.ships) { scard.append(el('p', '', 'No ship reported its position inside this area during the sample. Free AIS receivers do not cover every strait, so this is not proof that it is empty.')); placeAt(scard, scard._ll); return; }
+      const facts = el('div', 'fx-gc-facts');
+      fact2(facts, 'SHIPS', c.ships); fact2(facts, 'TANKERS', c.tankers); fact2(facts, 'CARGO', c.cargo);
+      fact2(facts, 'WAITING', c.waiting !== undefined ? `${c.waiting}${c.waitingTankers ? ` (${c.waitingTankers} tankers)` : ''}` : null);
+      fact2(facts, 'MOVING', c.moving); fact2(facts, 'AVG SPEED', finite(c.avgKnots) ? c.avgKnots + ' kn' : null);
+      scard.append(facts);
+      const flow = flowText(c); if (flow) scard.append(el('p', 'fx-gc-route', 'Traffic: ' + flow));
+      if (c.topDest?.length) scard.append(el('p', 'fx-gc-news', 'Heading to: ' + c.topDest.map(([d, k]) => `${d} (${k})`).join(', ')));
+      scard.append(btn('Zoom to ' + n + ' ▸', 'fx-gc-open', () => W.focusPoint(scard._ll)));
+      placeAt(scard, scard._ll);
+    }
+    W.shipCardFor = mmsi => { const v = vessels.find(x => x.mmsi === mmsi); if (v) shipCard(v); };
+    W.chokeCard = chokeCard;
+    let lastMoved = false;
+    gShips.addEventListener('click', e => { if (lastMoved) return; const i = e.target?.dataset?.i; if (i !== undefined) { e.stopPropagation(); shipCard(vessels[+i]); } });
     // interaction: drag to spin, wheel to zoom
     let drag = null;
     sv.addEventListener('pointerdown', e => { drag = {x: e.clientX, y: e.clientY, rot: [...W.rot], moved: false}; sv.setPointerCapture?.(e.pointerId); });
     sv.addEventListener('pointermove', e => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true; const k = 0.35 / W.scale; W.rot = W.flat ? [drag.rot[0] + dx * k, 0] : [drag.rot[0] + dx * k, Math.max(-80, Math.min(80, drag.rot[1] - dy * k))]; requestAnimationFrame(() => draw?.()); });
-    sv.addEventListener('pointerup', () => { drag = null; });
+    sv.addEventListener('pointerup', () => { lastMoved = !!drag?.moved; drag = null; });
     sv.addEventListener('wheel', e => { e.preventDefault(); W.scale = Math.max(0.7, Math.min(8, W.scale * (e.deltaY < 0 ? 1.15 : 1 / 1.15))); requestAnimationFrame(() => draw?.()); }, {passive: false});
     W.focusOn = iso => { const f = W.feats.find(x => x.properties.iso2 === iso); if (!f) return; const ll = centroid(f); W.rot = W.flat ? [-ll[0], 0] : [-ll[0], -ll[1]]; W.scale = Math.max(W.scale, 1.6); draw(); select(iso); };
     W.focusPoint = ll => { W.rot = W.flat ? [-ll[0], 0] : [-ll[0], -ll[1]]; W.scale = 5; draw(); };
@@ -194,20 +239,43 @@
   async function renderShips() {
     const host = T.panel('ships'); await loadWorld(); if (!host.isConnected) return; host.replaceChildren();
     const sd = W.ships;
-    if (!sd || sd.status === 'not-configured') {
+    if (!sd || sd.status === 'not-configured' || sd.status === 'error') {
       T.setText('t-ships', 'Ships & chokepoints');
-      host.append(el('p', 'fx-sub', 'Live tanker and cargo tracking turns on when the free AISStream key is added to the site’s GitHub settings as the secret AISSTREAM_API_KEY. The map then refreshes ship positions every hour.'));
+      if (sd?.status === 'error') host.append(el('p', 'fx-sub', `The AIS key is set, but the last ship refresh (${T.ago(sd.generatedAt)}) failed: ${sd.message || 'unknown error'}. If it mentions the key, create a new key at aisstream.io and update the AISSTREAM_API_KEY secret.`));
+      else host.append(el('p', 'fx-sub', 'Live tanker and cargo tracking turns on when the free AISStream key is added to the site’s GitHub settings as the secret AISSTREAM_API_KEY. The map then refreshes ship positions every hour.'));
       for (const n of Object.keys(sd?.chokepoints || {})) { const r = rowButton('fx-c3', () => W.focusPoint?.(mid(sd.chokepoints[n])), n); r.append(el('b', '', n), el('span', 'fx-dim', '—'), el('span', 'fx-dim', '—')); host.append(r); }
       return;
     }
     T.setText('t-ships', `Ships · ${sd.total.toLocaleString()} tracked`);
-    const k = sd.vessels.reduce((a, v) => (a[v.kind] = (a[v.kind] || 0) + 1, a), {});
-    const out = el('div', 'fx-calcout'); [['TANKERS', k.tanker || 0], ['CARGO', k.cargo || 0], ['OTHER', (k.other || 0) + (k.passenger || 0) + (k.unknown || 0)], ['SNAPSHOT', T.ago(sd.generatedAt)]].forEach(([a, b]) => { const d = el('div'); d.append(el('span', '', a), el('b', '', typeof b === 'number' ? b.toLocaleString() : b)); out.append(d); }); host.append(out);
-    const head = el('div', 'fx-th fx-c4'); head.append(el('span', '', 'CHOKEPOINT'), el('span', '', 'SHIPS'), el('span', '', 'TANKER'), el('span', '', 'CARGO')); host.append(head);
-    for (const [n, c] of Object.entries(sd.counts || {})) { const r = rowButton('fx-c4 fx-choke', () => W.focusPoint?.(mid(sd.chokepoints[n])), `${n}: ${c.ships} ships`); r.append(el('b', '', n), el('span', 'fx-num', c.ships), el('span', 'fx-num', c.tankers), el('span', 'fx-num', c.cargo)); host.append(r); }
-    host.append(el('p', 'fx-foot', `${sd.source}. Counts are ships reporting inside each area during a ${sd.sampleSeconds}-second sample.`));
+    const k = sd.kinds || sd.vessels.reduce((a, v) => (a[v.kind] = (a[v.kind] || 0) + 1, a), {});
+    const waiting = sd.waiting ?? sd.vessels.filter(isWaiting).length, typedPct = sd.total ? Math.round((sd.typed ?? sd.total - (k.unknown || 0)) / sd.total * 100) : 0;
+    const kpi = el('div', 'fx-shipkpi');
+    for (const [a, b, sub] of [['TRACKED', sd.total, `${typedPct}% identified`], ['TANKERS', k.tanker || 0, sd.waitingTankers !== undefined ? `${sd.waitingTankers} waiting` : ''], ['CARGO', k.cargo || 0, ''], ['WAITING', waiting, 'anchored or stopped']]) { const d = el('div'); d.append(el('span', '', a), el('b', '', Number(b).toLocaleString()), el('small', '', sub)); kpi.append(d); }
+    host.append(kpi);
+    const t = el('table', 'fx-table fx-shiptab'), h = el('tr'); [['CHOKEPOINT', ''], ['SHIPS', 'Ships reporting inside the area'], ['TNK', 'Tankers'], ['CGO', 'Cargo ships'], ['WAIT', 'At anchor, moored or stopped'], ['KN', 'Average speed of moving ships, knots'], ['FLOW', 'Moving ships by direction']].forEach(([x, tip]) => { const th = el('th', '', x); if (tip) th.title = tip; h.append(th); }); t.append(h);
+    for (const [n, c] of Object.entries(sd.counts || {}).sort((a, b) => b[1].ships - a[1].ships)) {
+      const tr = el('tr', 'pg-click'); tr.tabIndex = 0; tr.setAttribute('aria-label', `${n}: ${c.ships} ships. Show on globe`);
+      const go = () => { W.focusPoint?.(mid(sd.chokepoints[n])); W.chokeCard?.(n); }; tr.addEventListener('click', go); tr.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+      const none = !c.ships, cell = (v, cls = '') => el('td', 'fx-num ' + cls, none ? '—' : v === undefined || v === null ? '—' : String(v));
+      const f = c.flow || {}, fl = c.axis === 'ew' ? `${f.E || 0}E ${f.W || 0}W` : `${f.N || 0}N ${f.S || 0}S`;
+      tr.append(el('th', '', n), cell(c.ships), cell(c.tankers, c.tankers ? 'fx-tank' : ''), cell(c.cargo), cell(c.waiting, c.waiting ? 'fx-wait' : ''), cell(finite(c.avgKnots) ? c.avgKnots.toFixed(1) : null), cell(c.moving ? fl : null, 'fx-flow'));
+      if (none) tr.title = 'No AIS position reports from this area in the sample. Free receivers do not cover every strait.';
+      t.append(tr);
+    }
+    host.append(t);
+    if (sd.tankerDestinations?.length) {
+      host.append(el('div', 'fx-th1', 'TANKERS · DECLARED DESTINATIONS'));
+      const max = sd.tankerDestinations[0][1], list = el('div', 'fx-destlist');
+      for (const [d, n] of sd.tankerDestinations.slice(0, 8)) { const r = el('div', 'fx-dest'); const bar = el('i'); bar.style.width = Math.max(4, n / max * 100) + '%'; r.append(el('span', '', d), bar, el('b', 'fx-num', String(n))); list.append(r); }
+      host.append(list);
+    }
+    host.append(el('p', 'fx-foot', `${sd.source}. Snapshot ${T.ago(sd.generatedAt)}, ${sd.sampleSeconds}-second sample. Waiting = AIS status at anchor/moored or speed under 0.5 kn. Destinations are typed by crews; AIS does not broadcast a ship's origin. “—” means no reports from that area, not an empty strait. Click a row or any ship on the globe for details; zoom in to see direction arrows.`));
   }
   const mid = ([[a, b], [c, d]]) => [(b + d) / 2, (a + c) / 2];
+  const KIND_LABEL = {tanker: 'TANKER', cargo: 'CARGO', passenger: 'PASSENGER', other: 'OTHER', unknown: 'SHIP'};
+  // Waiting = at anchor or moored by AIS status, or practically stopped (< 0.5 kn).
+  const isWaiting = v => v.nav === 1 || v.nav === 5 || (finite(v.sog) && v.sog < 0.5);
+  const flowText = c => { const f = c?.flow || {}, keys = c?.axis === 'ew' ? [['E', 'eastbound'], ['W', 'westbound']] : [['N', 'northbound'], ['S', 'southbound']]; const parts = keys.filter(([k]) => f[k]).map(([k, l]) => `${f[k]} ${l}`); return parts.join(' · '); };
   async function renderCNews() {
     const host = T.panel('cnews'); await loadWorld(); if (!host.isConnected) return; host.replaceChildren();
     const rows = [];

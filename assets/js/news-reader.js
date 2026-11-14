@@ -11,7 +11,7 @@
   const options = {id:params.get('id') || '', edition:originalEdition, category:params.get('category') || 'all'};
   if (params.get('symbol')) options.symbol = params.get('symbol');
   let current = null, pendingUpdate = null, request = 0, loading = false, timer = null, lastCheck = 0, lastAttempt = 0, refreshUnavailable = false;
-  let sharing = false, markedOpened = false;
+  let sharing = false, markedOpened = false, shared=null;
   const preferenceKey = 'fynx:reader-preferences:v1';
   let preferences = {size:'standard',focus:false};
   const labels = {all:'News',stocks:'Markets',forex:'Currencies',crypto:'Digital assets',macro:'Economics',commodities:'Commodities',finance:'Finance',economics:'Economics',technology:'Technology',politics:'Politics & Policy',industries:'Industries',energy:'Energy',world:'World',analysis:'Analysis',official:'Official sources'};
@@ -45,6 +45,7 @@
     document.body.classList.toggle('reader-focus-view',preferences.focus);
     $('[data-reader-text-size]').value=preferences.size;
     const button=$('[data-reader-focus]');button.setAttribute('aria-pressed',String(preferences.focus));button.textContent=preferences.focus?'Exit focus view':'Focus view';
+    if(save&&shared?.sync.uid){shared.save('preferences','default',{reader:preferences}).catch(error=>actionStatus(error.message));return;}
     if(save)try{localStorage.setItem(preferenceKey,JSON.stringify(preferences));}catch{ $('[data-reader-preferences-note]').textContent='Preferences apply for this visit. Browser storage is unavailable.'; }
   }
   function storyURL() {
@@ -192,7 +193,7 @@
     $('[data-reader-copy]').disabled=false;
     $('[data-reader-share]').disabled=sharing;
     metadata(article);photograph(article);summary(article);points(article);context(article);rail(article);sources(article);related(article);syncBackLinks();updateStatus();
-    if(!markedOpened)try{window.FYNXYourNews?.markOpened({...article,edition:originalEdition,category:options.category,...(options.symbol?{symbol:options.symbol}:{})});markedOpened=!!window.FYNXYourNews;}catch{}
+    if(!markedOpened)try{window.FYNXYourNews?.markOpened({...article,url:article.sourceUrl,edition:originalEdition,category:options.category,...(options.symbol?{symbol:options.symbol}:{})});markedOpened=!!window.FYNXYourNews;}catch{}
   }
   function fail(message) {
     if(current){refreshUnavailable=true;updateStatus();return;}
@@ -249,4 +250,12 @@
   window.addEventListener('pagehide',()=>{clearInterval(timer);timer=null;});
   window.addEventListener('pageshow',()=>{if(/^[a-f0-9]{64}$/.test(options.id)){schedule();onReturn();}});
   start();
+  import('/assets/js/account-sync.js?v=20261113-world-ships-pro-2').then(api=>{
+    shared=api;const saveButton=node('button','Save story');saveButton.type='button';$('[data-reader-share]').before(saveButton);
+    let version=0;
+    async function paint(){const request=++version;if(!current){saveButton.disabled=true;return;}saveButton.disabled=false;const id=await api.storyID(current.sourceUrl);if(request!==version)return;saveButton.textContent=api.accountData('readingRecords',id)?.saved?'Saved story':'Save story';saveButton.setAttribute('aria-pressed',String(!!api.accountData('readingRecords',id)?.saved));}
+    saveButton.onclick=async()=>{if(!current)return;if(!api.sync.uid){location.href='/auth/login.html?returnTo='+encodeURIComponent(location.pathname+location.search);return;}saveButton.disabled=true;const article=current;try{const id=await api.storyID(article.sourceUrl),saved=!!api.accountData('readingRecords',id)?.saved;await api.save('readingRecords',id,{id,webArticleId:article.id,title:article.title,url:article.sourceUrl,source:article.source,publishedAt:article.publishedAt,readerUrl:new URL(storyURL()).pathname+new URL(storyURL()).search,saved:!saved});actionStatus(saved?'Removed from saved stories.':'Story saved to your account.');await paint();}catch(error){actionStatus(error.message);}finally{saveButton.disabled=false;}};
+    api.subscribe(()=>{const settings=api.accountData('preferences')?.reader;if(settings){if(['standard','large','larger'].includes(settings.size))preferences.size=settings.size;if(typeof settings.focus==='boolean')preferences.focus=settings.focus;readingPreferences();}paint();});
+    const observer=new MutationObserver(()=>paint());observer.observe($('[data-reader-share]'),{attributes:true,attributeFilter:['disabled']});paint();
+  }).catch(()=>{});
 })();

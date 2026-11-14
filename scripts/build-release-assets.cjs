@@ -4,13 +4,15 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { publicSiteFiles } = require('./public-site-files.cjs');
-const VERSION = '20261112-mt5-journal-1';
-const RESEARCH_VERSION = '20261113-accounts-host-2';
-const TOPIC_TRANSFER_VERSION = '20261113-topic-transfer-1';
-const TOPIC_TRANSFER_ASSETS = new Set(['assets/js/news-preferences.js','assets/js/your-news.js','assets/css/your-news.css']);
+const VERSION = '20261113-world-ships-pro-2';
+const RESEARCH_VERSION = '20261113-shared-account-2';
+const TOPIC_TRANSFER_VERSION = '20261113-topic-transfer-2';
+const ASSET_VERSIONS = Object.freeze({'assets/js/shared-workspace.js':'20261113-notification-lead-1','assets/js/news-preferences.js':TOPIC_TRANSFER_VERSION,'assets/js/your-news.js':TOPIC_TRANSFER_VERSION,'assets/css/your-news.css':TOPIC_TRANSFER_VERSION});
 const RESEARCH_ASSETS = new Set(['assets/js/research-service.js','assets/js/edge/app.js','assets/js/edge/render.js','assets/js/edge/profile.js','assets/js/edge/public-research.js','assets/js/quant/app.js','assets/js/quant/profile.js','assets/js/quant/engine.js','assets/js/quant/worker.js','assets/js/quant/public-history.js','assets/js/company-products-data.js']);
 const ASSETS = Object.freeze([
   ...RESEARCH_ASSETS,
+  'assets/js/account-sync.js','assets/js/account-sync-core.js','assets/js/account-sync-mapping.js','assets/js/shared-workspace.js','assets/css/shared-workspace.css',
+  'assets/js/account-system.js','assets/js/intelligence-workspace.js','assets/js/intelligence-app-check.js','assets/js/intelligence.js','assets/js/research/store.js',
   'assets/css/company-products.css', 'assets/js/company-products.js', 'assets/js/company-products-data.js',
   'fynx-nav.js', 'demo-mode.js', 'auth/auth-form.js',
   'assets/js/macro-desk/model.js', 'assets/js/macro-desk/app.js', 'assets/css/macro-desk.css',
@@ -43,7 +45,7 @@ function rewriteReferences(source, file, assets) {
     try { url = new URL(value.replace(/&amp;/g, '&'), ORIGIN + '/' + file); } catch { return original; }
     if (url.origin !== ORIGIN || !assets.has(url.pathname.slice(1))) return original;
     const asset = url.pathname.slice(1);
-    const version = RESEARCH_ASSETS.has(asset) ? RESEARCH_VERSION : TOPIC_TRANSFER_ASSETS.has(asset) ? TOPIC_TRANSFER_VERSION : VERSION;
+    const version = ASSET_VERSIONS[asset] || (RESEARCH_ASSETS.has(asset) ? RESEARCH_VERSION : VERSION);
     const existing = url.searchParams.getAll('v');
     if (existing.length === 1 && existing[0] === version) return original;
     url.searchParams.set('v', version);
@@ -79,5 +81,5 @@ function build(root = path.resolve(__dirname, '..')) {
   console.log(`Release asset versions verified: ${VERSION}; ${changed.length} files updated.`);
   return {version:VERSION, assets:[...assets], changed};
 }
-module.exports = {build, rewriteReferences, VERSION, TOPIC_TRANSFER_VERSION, ASSETS};
+module.exports = {build, rewriteReferences, VERSION, TOPIC_TRANSFER_VERSION, ASSETS, ASSET_VERSIONS};
 if (require.main === module) build();

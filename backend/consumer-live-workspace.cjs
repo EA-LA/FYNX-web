@@ -2,6 +2,7 @@
 const functions=require('firebase-functions/v1'),admin=require('firebase-admin'),Stripe=require('stripe');
 const {PLANS,run}=require('./consumer-core.cjs');
 const {PRODUCT,PRICES,priceMatches,planForSubscription}=require('./consumer-live-policy.cjs');
+const {appleValid}=require('./account-sync-membership.cjs');
 const SITE='https://www.fynxfinanceworld.com/pro.html';
 const TOOLS=new Set(Object.values(PLANS).flatMap(plan=>plan.products));
 function returnUrl(tool,outcome){const url=new URL(SITE);url.searchParams.set('tool',TOOLS.has(tool)?tool:'analytics');if(outcome)url.searchParams.set('checkout',outcome);return url.href;}
@@ -11,6 +12,7 @@ function stripe(){const key=(process.env.FYNX_CONSUMER_STRIPE_SECRET_KEY||'').tr
 const root=uid=>admin.firestore().collection('fynxConsumerLive').doc(uid);
 async function rateLimit(uid){const ref=root(uid).collection('internal').doc('rate');await admin.firestore().runTransaction(async tx=>{const d=(await tx.get(ref)).data()||{},minute=Math.floor(Date.now()/60000),count=d.minute===minute?(d.count||0)+1:1;if(count>30)fail('resource-exhausted','Please wait a minute before trying again.');tx.set(ref,{minute,count});});}
 async function entitlement(uid,s){const profile=(await root(uid).get()).data()||{};if(!profile.customer)return {tier:null};const list=await s.subscriptions.list({customer:profile.customer,status:'all',limit:100,expand:['data.latest_invoice']});const sub=list.data.find(x=>planForSubscription(x,uid,profile.customer));return {tier:sub?planForSubscription(sub,uid,profile.customer):null,hasBillingAccount:true,subscription:sub?{status:sub.status,cancelAtPeriodEnd:sub.cancel_at_period_end,currentPeriodEnd:sub.items.data[0]?.current_period_end||sub.current_period_end||null}:null};}
+async function appleBridge(uid){if(process.env.FYNX_ACCOUNT_MEMBERSHIP_BRIDGE!=='pro-equivalent')return false;return appleValid((await admin.firestore().collection('intelligenceEntitlements').doc(uid).get()).data(),Date.now());}
 async function trades(uid){const snap=await admin.firestore().collection('users').doc(uid).collection('trades').orderBy('dateTs','asc').limit(1001).get();if(snap.size>1000)fail('resource-exhausted','This preview supports up to 1,000 dated trades.');return snap.docs.map(d=>d.data()).filter(t=>Number.isFinite(Number(t.pl)));}
 async function handler(data,ctx){
  if(!ctx.auth)fail('unauthenticated','Sign in to use your optional Pro workspace.');const uid=ctx.auth.uid;
@@ -27,11 +29,12 @@ async function handler(data,ctx){
   const config=await s.billingPortal.configurations.create({business_profile:{headline:'FYNX membership billing'},features:{invoice_history:{enabled:true},payment_method_update:{enabled:true},subscription_cancel:{enabled:true,mode:'at_period_end'}}},{idempotencyKey:'fynx-consumer-live-portal-v1'});
   return {url:(await s.billingPortal.sessions.create({customer,configuration:config.id,return_url:returnUrl(data.tool)})).url,mode:'live'};
  }
- let state;
+ let state;const appleAccess=await appleBridge(uid);
  try{state=await entitlement(uid,s);}catch(error){
-  if(data.action!=='status')throw error;
+  if(data.action!=='status'&&!appleAccess)throw error;
   state={tier:null,hasBillingAccount:!!(await ref.get()).data()?.customer,billingUnavailable:true};
  }
+ if(appleAccess)state={...state,tier:'pro',accessProvider:'apple',stripeTier:state.tier};
  if(data?.action==='status')return {mode:'live',...state,plans:PLANS,features:{researchNotesVersion:1}};
  if(data?.action==='checkout'){
   await admin.firestore().runTransaction(async tx=>{const d=(await tx.get(ref)).data()||{};if(d.checkoutLockUntil>Date.now())fail('aborted','Checkout is already opening. Please retry shortly.');tx.set(ref,{checkoutLockUntil:Date.now()+120000},{merge:true});});

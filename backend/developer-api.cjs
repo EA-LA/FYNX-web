@@ -8,10 +8,11 @@ const plans=require('./developer-plans.cjs');
 const analytics=require('./developer-analytics.cjs');
 const marketHours=require('./developer-markets.cjs');
 const financeTools=require('./developer-finance.cjs');
-// Stateless calculation routes (APIs 6, 7, 8 and 11). They read only the request body and are metered like Risk calls.
+const optionsTools=require('./developer-options.cjs');
+// Stateless calculation routes (APIs 6, 7, 8, 11 and 12). They read only the request body and are metered like Risk calls.
 function statelessRoute(route){
- const m=route.match(/^\/v1\/(indicators|portfolio|markets|finance)\/([a-z-]+)$/);if(!m)return null;
- const [,group,name]=m,fn=group==='indicators'?analytics.indicator:group==='portfolio'?analytics.portfolio:group==='finance'?financeTools.finance:marketHours.markets;
+ const m=route.match(/^\/v1\/(indicators|portfolio|markets|finance|options)\/([a-z-]+)$/);if(!m)return null;
+ const [,group,name]=m,fn=group==='indicators'?analytics.indicator:group==='portfolio'?analytics.portfolio:group==='finance'?financeTools.finance:group==='options'?optionsTools.options:marketHours.markets;
  return {group,name,run:input=>fn(name,input)};
 }
 const {payloadHash:canonicalHash,validateInput,entitlement,effectiveCap}=require('./developer-core.cjs');

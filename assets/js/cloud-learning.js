@@ -1,3 +1,4 @@
+import {sync,subscribe,save as saveShared,requireSync,accountData} from './account-sync.js?v=20261113-world-ships-pro-2';
 import { cloudCall, auth } from './cloud-client.js?v=20260928-learning';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
 const topics = new Set(['general','forex','stocks','crypto','funds','futures','indices','bonds','economy','options']);
@@ -29,7 +30,7 @@ function render(data){
 async function read(){
  const version=generation,uid=owner;if(!uid)return;
  ready=false;buttons.forEach(b=>b.disabled=true);retry.hidden=true;status.textContent='Loading your learning progress…';
- try{const data=await cloudCall('webLearning',{action:'read',topic:currentTopic},{expectedUid:uid});if(!active(version,uid))return;render(data);ready=true;retryAction=null;}
+ try{await requireSync(uid);const data=accountData('progress','learning-'+currentTopic)||{lessons:{},attempts:[]};if(!active(version,uid))return;render(data);ready=true;retryAction=null;}
  catch(error){if(active(version,uid))failed('Could not load progress. Check your connection and retry.',read);}
  finally{if(active(version,uid))buttons.forEach(b=>b.disabled=!ready);}
 }
@@ -37,7 +38,12 @@ async function save(payload){
  const version=generation,uid=owner;if(!uid||auth.currentUser?.uid!==uid)return;
  retry.hidden=true;ready=false;buttons.forEach(b=>b.disabled=true);status.textContent='Saving to your account…';
  try{
-   await cloudCall('webLearning',payload,{expectedUid:uid});
+   await requireSync(uid);
+   const id='learning-'+payload.topic,current=accountData('progress',id)||{lessons:{},attempts:[]};
+   const data={title:payload.topic+' learning',topic:payload.topic};
+   if(payload.action==='lesson')data.lessons={[payload.lesson]:{completed:payload.completed,updatedAt:Date.now()}};
+   else {const existing=(current.attempts||[]).find(a=>a.id===payload.attempt);if(existing&&(existing.correct!==payload.correct||existing.total!==payload.total))throw Error('This assessment was already saved with a different score.');data.attempts=[...(existing?[]:[{id:payload.attempt,correct:payload.correct,total:payload.total,completedAt:Date.now(),source:'self-reported'}]),...(current.attempts||[])].slice(0,20);}
+   await saveShared('progress',id,data);
    if(!active(version,uid))return;
    currentTopic=payload.topic;await read();
  }catch(error){if(active(version,uid))failed('Progress was not confirmed saved. Retry to sync it to your account.',()=>save(payload));}
@@ -63,3 +69,7 @@ window.addEventListener('fynx:quiz-completed',event=>{
 });
 // Pull fresh cloud data when returning to a tab/device; do not overwrite a failed save awaiting retry.
 window.addEventListener('focus',()=>{if(owner&&!retryAction&&ready)read();});
+
+const importOld=document.createElement('button');importOld.type='button';importOld.className='btn';importOld.textContent='Import earlier learning progress';panel.append(importOld);
+importOld.onclick=async()=>{const uid=owner,version=generation;if(!uid)return;importOld.disabled=true;try{await requireSync(uid);const old=await cloudCall('webLearning',{action:'read',topic:currentTopic},{expectedUid:uid});if(!active(version,uid))return;if(!confirm('Import earlier learning progress for '+currentTopic+' into this account? Existing shared records will be kept.'))return;const id='learning-'+currentTopic,current=accountData('progress',id)||{};const lessons={...(old.lessons||{}),...(current.lessons||{})},attempts=[...(current.attempts||[]),...(old.attempts||[]).filter(a=>!(current.attempts||[]).some(b=>a.id===b.id))].slice(0,20);await saveShared('progress',id,{title:currentTopic+' learning',topic:currentTopic,lessons,attempts});await read();}catch(e){status.textContent=e.message;}finally{importOld.disabled=false;}};
+subscribe(s=>{importOld.hidden=!s.uid;if(s.uid===owner&&s.ready&&!retryAction){const data=accountData('progress','learning-'+currentTopic);if(data)render(data);}});

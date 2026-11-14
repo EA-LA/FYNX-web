@@ -179,7 +179,15 @@
     // Never leave the desk empty: widen to the past week, then use the Global edition's desk.
     if (!rows.length) { const week = normalized(result.items, 168); if (week.length) { rows = week; windowHours = 168; widenNote = 'No reports in the past 24 hours for this edition — showing the latest from the past 7 days.'; } }
     if (!rows.length && requestedEdition !== 'global') {
-      const g = await window.FYNXMarketIntelligenceData.loadHeadlines(config.category, {edition: 'global'}).catch(() => null);
+      // The market-data module may not have loaded (or its method may throw
+      // synchronously). Failure of the optional Global fallback must not leave
+      // Refresh disabled or the reporting area stuck in aria-busy state.
+      let g = null;
+      try {
+        if (typeof window.FYNXMarketIntelligenceData?.loadHeadlines === 'function') {
+          g = await window.FYNXMarketIntelligenceData.loadHeadlines(config.category, {edition: 'global'});
+        }
+      } catch (_) { /* The selected-edition failure state is shown below. */ }
       if (run !== requestNumber || requestedEdition !== edition()) return;
       const gr = g ? normalized(g.items, 72, 'global') : [];
       if (gr.length) { rows = gr; windowHours = 72; windowEdition = 'global'; widenNote = 'No reports for this edition right now — showing the Global edition desk.'; }

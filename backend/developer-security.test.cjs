@@ -109,6 +109,17 @@ test('finance tools: legacy and finance-scoped keys reach the engine; other scop
  const bad=await w.call('POST','/v1/finance/cagr',{token:KEY('7'),body:{start_value:'x'}});assert.equal(bad.code,422);
  const unknown=await w.call('POST','/v1/finance/nope',{token:KEY('7'),body});assert.equal(unknown.code,422);assert.equal(unknown.body.error.code,'not_found');
 });
+test('options tools: legacy and options-scoped keys reach the engine; other scoped keys are refused',async()=>{
+ const w=seeded();w.addKey(KEY('8'),'alice','live',{scopes:['options:calculate']});w.addKey(KEY('7'),'alice','live',{scopes:['finance:calculate']});
+ const body={option_type:'call',spot:'42',strike:'40',days_to_expiry:'182.5',volatility_percent:'20',risk_free_rate_percent:'10'};
+ const legacy=await w.call('POST','/v1/options/price',{token:KEY('a'),body});assert.equal(legacy.code,200);assert.equal(legacy.body.result.price,'4.7594');
+ const scoped=await w.call('POST','/v1/options/price',{token:KEY('8'),body});assert.equal(scoped.code,200);
+ assert.equal((await w.call('POST','/v1/options/price',{token:KEY('7'),body})).code,403,'finance-only key');
+ assert.equal((await w.call('POST','/v1/finance/cagr',{token:KEY('8'),body})).code,403,'options-only key cannot call finance');
+ assert.equal((await w.call('GET','/v1/options/price',{token:KEY('a')})).code,403,'options routes are POST only');
+ const bad=await w.call('POST','/v1/options/price',{token:KEY('8'),body:{...body,spot:'-1'}});assert.equal(bad.code,422);assert.match(bad.body.error.message,/spot/);
+ const unknown=await w.call('POST','/v1/options/nope',{token:KEY('8'),body});assert.equal(unknown.code,422);assert.equal(unknown.body.error.code,'not_found');
+});
 test('gateway responses carry defensive headers',async()=>{
  const w=seeded();for(const token of [KEY('a'),undefined]){const r=await w.call('POST','/v1/markets/exchanges',{token});
   assert.equal(r.headers['X-Content-Type-Options'],'nosniff');assert.match(r.headers['Content-Security-Policy'],/frame-ancestors 'none'/);assert.equal(r.headers['Cache-Control'],'no-store');}

@@ -394,7 +394,7 @@ html body.fx-terminal .fx-pickgrp h3{margin:6px 0;font:700 10.5px 'IBM Plex Mono
 .g-grat{fill:none;stroke:#1d3a4c;stroke-width:.5}
 .g-land{stroke:#3b5254;stroke-width:.5;cursor:pointer}.g-land:hover{stroke:var(--am);stroke-width:1.2}
 .g-lane{fill:none;stroke:#5b8def;stroke-opacity:.5;stroke-width:1.2;stroke-dasharray:4 4}
-.g-ship{stroke:#05090c;stroke-width:.5;pointer-events:none}.g-tanker{fill:#f4a261}.g-cargo{fill:#7fb0ff}.g-passenger,.g-other,.g-unknown{fill:#9aa79f;fill-opacity:.7}
+.g-ship{stroke:#05090c;stroke-width:.5;cursor:pointer}.g-tanker{fill:#f4a261}.g-cargo{fill:#7fb0ff}.g-passenger,.g-other,.g-unknown{fill:#9aa79f;fill-opacity:.7}
 .g-choke rect{fill:#06080a;stroke:#c4a1ff;stroke-width:1.6}.g-choke text{fill:#c4a1ff;font:600 11px 'IBM Plex Mono',monospace;paint-order:stroke;stroke:#05090c;stroke-width:3}
 .g-light{cursor:pointer}.g-light text{fill:#e7ece9;font:700 10.5px 'IBM Plex Mono',monospace;paint-order:stroke;stroke:#05090c;stroke-width:3;pointer-events:none}
 .fx-gtools{position:absolute;top:8px;right:8px;display:flex;gap:3px;z-index:2}
@@ -485,3 +485,19 @@ html body .sc-filters select.sc-in option{background:#0b0e0c;color:#e7ece9}
 @media (max-width:760px){.pg-cards span,.pg-cards b,.pg-cards small{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}}
 /* site-qa run 73: on touch screens the Country page US state buttons (HI, ID, IL, RI...) were 41-43px wide and its headline links 37px tall. */
 @media (hover:none) and (pointer:coarse){.pg-statebtn{min-width:44px;justify-content:center}.fx-page-body a.fx-cnrow{min-height:44px;align-content:center}}
+
+/* WORLD · ships & chokepoints (AIS) */
+.g-ship.g-wait{fill-opacity:.15;stroke-width:1.2}.g-tanker.g-wait{stroke:#f4a261}.g-cargo.g-wait{stroke:#7fb0ff}.g-other.g-wait,.g-unknown.g-wait,.g-passenger.g-wait{stroke:#9aa79f}
+.g-ship.g-sel{stroke:#fff;stroke-width:2}
+.g-choke{cursor:pointer}.g-choke:focus{outline:none}.g-choke:focus rect,.g-choke:hover rect{fill:#c4a1ff}
+.fx-scard .fx-gc-route{margin:2px 0 6px;font:600 12px 'IBM Plex Mono',monospace;color:var(--am)}
+.fx-kind-tanker{background:#f4a261!important;color:#05090c!important}.fx-kind-cargo{background:#7fb0ff!important;color:#05090c!important}
+.fx-shipkpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;padding:2px 8px 6px}
+.fx-shipkpi div{background:var(--p2);padding:5px 7px;min-width:0}.fx-shipkpi span{display:block;font-size:9.5px;color:var(--mu);letter-spacing:.04em}
+.fx-shipkpi b{display:block;font:700 15px 'IBM Plex Mono',monospace}.fx-shipkpi small{display:block;font-size:9.5px;color:var(--mu);line-height:1.25}
+.fx-shiptab{font-size:11px}.fx-shiptab th,.fx-shiptab td{padding:3px 4px}.fx-shiptab tr.pg-click{cursor:pointer}.fx-shiptab tr.pg-click:hover,.fx-shiptab tr.pg-click:focus{background:#1a2420;outline:none}
+.fx-shiptab td.fx-tank{color:#f4a261}.fx-shiptab td.fx-wait{color:var(--am)}.fx-shiptab td.fx-flow{font-size:10px;white-space:nowrap}
+.fx-destlist{padding:2px 8px 4px;display:grid;gap:3px}
+.fx-dest{display:grid;grid-template-columns:minmax(0,1fr) 70px 30px;align-items:center;gap:6px;font-size:11px}
+.fx-dest span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'IBM Plex Mono',monospace}
+.fx-dest i{display:block;height:6px;background:#f4a261;opacity:.75}.fx-dest b{text-align:right;font-weight:600}

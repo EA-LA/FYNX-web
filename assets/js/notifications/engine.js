@@ -1,3 +1,4 @@
+import {save as saveAccountState,requireSync,accountData,subscribe} from '../account-sync.js?v=20261113-world-ships-pro-2';
 import { safeNotificationUrl } from '../safe-content.js?v=20260928-audit2';
 import { app } from "../../../auth/firebase.js";
 import {
@@ -73,7 +74,7 @@ function notificationCollection(uid) {
 }
 
 function mapNotification(docSnap) {
-  const data = docSnap.data() || {};
+  const data = {...(docSnap.data() || {}),...(accountData('notificationState',docSnap.id)||{})};
   return {
     id: docSnap.id,
     userId: data.userId || "",
@@ -99,19 +100,20 @@ function mapNotification(docSnap) {
 
 export class NotificationPreferenceManager {
   async get(uid) {
-    const snap = await getDoc(doc(db, "users", uid, "account", "notificationPreferences"));
-    return { ...DEFAULT_NOTIFICATION_PREFERENCES, ...(snap.exists() ? snap.data() : {}) };
+    await requireSync(uid);
+    return {...DEFAULT_NOTIFICATION_PREFERENCES,...(accountData('notificationPreferences')||{})};
   }
 
   async save(uid, payload) {
-    await setDoc(doc(db, "users", uid, "account", "notificationPreferences"), { ...payload, updatedAt: serverTimestamp() }, { merge: true });
+    await requireSync(uid);
+    await saveAccountState('notificationPreferences','default',payload);
   }
 }
 
 export class NotificationRepository {
   listen(uid, callback, max = 100, onError = () => {}) {
     const q = query(notificationCollection(uid), orderBy("timestamp", "desc"), limit(max));
-    return onSnapshot(q, (snap) => callback(snap.docs.map(mapNotification)), onError);
+    let latest=[];const off=onSnapshot(q,snap=>{latest=snap.docs;callback(latest.map(mapNotification));},onError);const offSync=subscribe(()=>callback(latest.map(mapNotification)));return()=>{off();offSync();};
   }
 
   async create(uid, payload) {
@@ -139,19 +141,14 @@ export class NotificationRepository {
   }
 
   async markRead(uid, id, read = true) {
-    await updateDoc(doc(db, "users", uid, "notifications", id), { read, readAt: read ? serverTimestamp() : null });
+    await requireSync(uid);await saveAccountState('notificationState',id,{read,readAt:read?Date.now():null});
   }
 
   async markAllRead(uid) {
     const snap = await getDocs(query(notificationCollection(uid), where("read", "==", false), where("archived", "==", false)));
-    const batch = writeBatch(db);
-    snap.docs.forEach((d) => batch.update(d.ref, { read: true, readAt: serverTimestamp() }));
-    await batch.commit();
+    for(const doc of snap.docs)await this.markRead(uid,doc.id,true);
   }
-
-  async dismiss(uid, id) {
-    await updateDoc(doc(db, "users", uid, "notifications", id), { archived: true, dismissed: true, dismissedAt: serverTimestamp() });
-  }
+  async dismiss(uid,id){await requireSync(uid);await saveAccountState('notificationState',id,{archived:true,dismissed:true,dismissedAt:Date.now()});}
 
   async hasRecentByDedupeKey(uid, dedupeKey, windowMs, category = null) {
     if (!dedupeKey) return false;

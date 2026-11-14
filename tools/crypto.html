@@ -332,6 +332,15 @@
     .move-table tr.is-exit td{font-weight:900;color:var(--text-strong)}
     .move-table tr.is-be td{font-style:italic}
     .mv-roi-inline{display:none}
+    label .opt{font-weight:600;font-size:.8rem;color:var(--text-muted)}
+    .plan-wrap{margin-top:1.1rem;border-top:1px solid var(--border);padding-top:.9rem}
+    .plan-wrap h3{margin:0 0 .25rem;font-size:1rem;color:var(--text-strong)}
+    .plan-list{display:grid;gap:.5rem;margin:.5rem 0 0}
+    .plan-row{display:flex;justify-content:space-between;align-items:baseline;gap:.75rem;flex-wrap:wrap;padding:.5rem 0;border-bottom:1px solid var(--border)}
+    .plan-row dt{font-weight:800;color:var(--text-strong);margin:0}
+    .plan-row dd{margin:0;font-variant-numeric:tabular-nums;font-weight:800;text-align:right}
+    .plan-row .plan-sub{display:block;font-size:.8rem;font-weight:600;color:var(--text-muted)}
+    .plan-warn{color:var(--text-muted);font-size:.88rem;line-height:1.5;margin:.4rem 0 0}
     @media (max-width:480px){
       .move-table .mv-roi{display:none}
       .move-table .mv-roi-inline{display:block;font-size:.78rem;font-weight:600;color:var(--text-muted)}
@@ -348,7 +357,7 @@
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
-  <link rel="stylesheet" href="/assets/site-design.css?v=20261112-mt5-journal-1">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261113-world-ships-pro-2">
 <title>Crypto Position Size &amp; Profit Calculator | FYNX</title>
 <meta name="description" content="Estimate crypto position size, trading costs, exit value, profit or loss and break-even price using your own assumptions.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -362,7 +371,7 @@
 <meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
 <meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
 <meta name="twitter:card" content="summary_large_image">
-<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261112-site-qa-78" defer></script><!-- discovery-assets:end -->
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261113-site-qa-95" defer></script><!-- discovery-assets:end -->
 <!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Crypto Position Size & Profit Calculator","item":"https://www.fynxfinanceworld.com/tools/crypto.html"}]}</script><!-- discovery-schema:end -->
 <!-- search-identity:start --><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.fynxfinanceworld.com/#organization","name":"FYNX","alternateName":"FYNX Finance World","url":"https://www.fynxfinanceworld.com/","founder":{"@id":"https://ea-la.github.io/#person"},"sameAs":["https://www.fynxfunded.com/","https://site.fynxfinanceworld.com/","https://blog.fynxfinanceworld.com/","https://roadmap.fynxfinanceworld.com/"]},{"@type":"Person","@id":"https://ea-la.github.io/#person","name":"Elham Amini","url":"https://ea-la.github.io/","jobTitle":"Founder of FYNX","sameAs":["https://www.linkedin.com/in/elham-amini-745560302/","https://www.instagram.com/___elham_amini___/"],"worksFor":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebSite","@id":"https://www.fynxfinanceworld.com/#website","url":"https://www.fynxfinanceworld.com/","name":"FYNX Finance World","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebPage","@id":"https://www.fynxfinanceworld.com/tools/crypto.html#webpage","url":"https://www.fynxfinanceworld.com/tools/crypto.html","name":"Crypto Position Size & Profit Calculator | FYNX","description":"Estimate crypto position size, trading costs, exit value, profit or loss and break-even price using your own assumptions.","inLanguage":"en","isPartOf":{"@id":"https://www.fynxfinanceworld.com/#website"},"publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"},"mainEntity":{"@id":"https://www.fynxfinanceworld.com/tools/crypto.html#tool"}},{"@type":"WebApplication","@id":"https://www.fynxfinanceworld.com/tools/crypto.html#tool","url":"https://www.fynxfinanceworld.com/tools/crypto.html","name":"Crypto Position Size & Profit Calculator","description":"Estimate crypto position size, trading costs, exit value, profit or loss and break-even price using your own assumptions.","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}}]}</script><!-- search-identity:end -->
 <!-- FYNX ADSENSE VERIFICATION START -->
@@ -370,7 +379,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
      crossorigin="anonymous"></script>
 <!-- FYNX ADSENSE VERIFICATION END -->
-<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261112-mt5-journal-1"><script src="/assets/js/company-products-data.js?v=20261113-accounts-host-2" defer></script><script src="/assets/js/company-products.js?v=20261112-mt5-journal-1" defer></script><!-- company-products:assets:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261113-world-ships-pro-2"><script src="/assets/js/company-products-data.js?v=20261113-shared-account-2" defer></script><script src="/assets/js/company-products.js?v=20261113-world-ships-pro-2" defer></script><!-- company-products:assets:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="TOOLS">
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
@@ -441,10 +450,21 @@
               </div>
             </div>
 
+            <div class="field-row">
+              <div class="field-group">
+                <label for="targetProfit">Target Profit ($) <span class="opt">optional</span></label>
+                <input id="targetProfit" type="number" step="any" min="0" inputmode="decimal" placeholder="e.g. 150">
+              </div>
+              <div class="field-group">
+                <label for="stopPrice">Stop Price <span class="opt">optional</span></label>
+                <input id="stopPrice" type="number" step="any" min="0" inputmode="decimal" placeholder="e.g. 62000">
+              </div>
+            </div>
+
             <div class="actions">
               <button type="button" id="calculateBtn"><i class="fas fa-calculator"></i> Calculate</button>
               <button type="button" id="clearBtn"><i class="fas fa-broom"></i> Clear</button>
-              <button type="button" id="shareScenarioBtn" data-scenario-fields="capital,entryPrice,exitPrice,feePercent,tradeType" data-scenario-optional="feePercent" data-scenario-run="calculateBtn"><i class="fas fa-link"></i> Copy scenario link</button>
+              <button type="button" id="shareScenarioBtn" data-scenario-fields="capital,entryPrice,exitPrice,feePercent,tradeType,targetProfit,stopPrice" data-scenario-optional="feePercent,targetProfit,stopPrice" data-scenario-run="calculateBtn"><i class="fas fa-link"></i> Copy scenario link</button>
             </div>
           </div>
         </div>
@@ -463,7 +483,7 @@
         This calculator assumes spot-style fee logic on entry and exit. For long trades profit comes from price rising. For short trades profit comes from price falling.
       </div>
     </section>
-  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Estimate a crypto trade using explicit cost assumptions</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter asset quantity, entry and exit assumptions, and the applicable fees. Confirm whether your plan concerns spot holdings or a leveraged derivative.</p><h3>The calculation or concept</h3><p>Gross P/L for a simple long spot position = quantity × (exit price − entry price). Net P/L subtracts modeled costs.</p></div><div class="tool-example"><h3>Worked example</h3><p>Buying 0.1 units at $30,000 and selling at $31,000 produces $100 gross profit. Fees on both transactions reduce the net result.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Spot arithmetic does not fully model perpetual funding, exchange margin tiers or liquidation. Quotes and liquidity differ between venues.</p></details></section><!-- tool-guide:end -->
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Estimate a crypto trade using explicit cost assumptions</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter the amount you invest, entry and exit prices and the fee per side. Optionally add a target profit to see the exit price it needs, and a stop price to see the loss at the stop after fees and your reward to risk. Confirm whether your plan concerns spot holdings or a leveraged derivative.</p><h3>The calculation or concept</h3><p>Gross P/L for a simple long spot position = quantity × (exit price − entry price). Net P/L subtracts modeled costs.</p></div><div class="tool-example"><h3>Worked example</h3><p>Buying 0.1 units at $30,000 and selling at $31,000 produces $100 gross profit. Fees on both transactions reduce the net result.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Spot arithmetic does not fully model perpetual funding, exchange margin tiers or liquidation. Quotes and liquidity differ between venues.</p></details></section><!-- tool-guide:end -->
 <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/breakeven.html"><strong>Trading Break-Even Price Calculator</strong><span>Calculate a trade&#39;s estimated break-even price using position size, fees and spread assumptions.</span></a><a href="/tools/liquidation-guard.html"><strong>Liquidation Risk &amp; Leverage Calculator</strong><span>Estimate liquidation price and distance for a leveraged trade using your inputs. Compare risk before choosing a position size.</span></a><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
 
@@ -489,6 +509,8 @@
     const exitPriceInput = document.getElementById("exitPrice");
     const feePercentInput = document.getElementById("feePercent");
     const tradeTypeInput = document.getElementById("tradeType");
+    const targetProfitInput = document.getElementById("targetProfit");
+    const stopPriceInput = document.getElementById("stopPrice");
     const calculateBtn = document.getElementById("calculateBtn");
     const clearBtn = document.getElementById("clearBtn");
     const resultArea = document.getElementById("resultArea");
@@ -572,6 +594,7 @@
       const priceDp = pricePlaces([entryPriceInput.value, exitPriceInput.value], Math.min(entryPrice, exitPrice, breakEvenPrice));
       const price = value => "$" + Number(value).toLocaleString("en-US", { minimumFractionDigits: priceDp, maximumFractionDigits: priceDp });
       const moveRows = cryptoMoveTable({ capital, entryPrice, exitPrice, feeRate, tradeType });
+      const planHtml = cryptoPlanCheck({ capital, entryPrice, feeRate, tradeType, netPnL, price });
 
       const pnlClass = netPnL >= 0 ? "profit" : "loss";
       const pnlLabel = netPnL >= 0 ? "Net Profit" : "Net Loss";
@@ -611,6 +634,7 @@
           </div>
         </div>
         ${netPnL < 0 && Math.abs(netPnL) > capital ? `<div class="result-line"><strong>Note:</strong> this short loses more than the ${money(capital)} you put in. On a short, losses keep growing as the price rises.</div>` : ""}
+        ${planHtml}
         <div class="move-wrap">
           <h3>If the price moves</h3>
           <div class="move-note">Net result after both fees for the same ${fmt(quantity, 4, 10)} coins if you exit at each price, measured from your entry of ${price(entryPrice)}. Your exit and the break-even price are included for comparison. Example moves, not forecasts.</div>
@@ -620,6 +644,49 @@
           </table></div>
         </div>
       `;
+    }
+
+    // Optional "Plan check": exit price for a target profit and loss at a stop, both after entry and exit fees.
+    // Long:  net(X) = q*X*(1-f) - C*(1+f)  ->  X = E*(1 + f + T/C)/(1 - f)
+    // Short: net(X) = C*(1-f) - q*X*(1+f)  ->  X = E*(1 - f - T/C)/(1 + f); best case (price to 0) is C*(1-f)
+    function cryptoPlanCheck({ capital, entryPrice, feeRate, tradeType, netPnL, price }) {
+      const targetText = targetProfitInput.value.trim();
+      const stopText = stopPriceInput.value.trim();
+      if (!targetText && !stopText) return "";
+      const quantity = capital / entryPrice;
+      const long = tradeType === "long";
+      const netAt = exit => (long ? 1 : -1) * (exit - entryPrice) * quantity - capital * feeRate - exit * quantity * feeRate;
+      const move = exit => signedPct((exit / entryPrice - 1) * 100) + " from entry";
+      const rows = [], notes = [];
+      if (targetText) {
+        const target = parseFloat(targetText);
+        if (!Number.isFinite(target) || target <= 0) {
+          notes.push("Target profit must be a number above 0.");
+        } else {
+          const exit = long ? entryPrice * (1 + feeRate + target / capital) / (1 - feeRate) : entryPrice * (1 - feeRate - target / capital) / (1 + feeRate);
+          if (exit > 0) rows.push(["Exit price for +" + money(target), price(exit), move(exit)]);
+          else notes.push("A short of " + money(capital) + " cannot make " + money(target) + ": even if the price fell to 0 the most it could make after fees is " + money(capital * (1 - feeRate)) + ".");
+        }
+      }
+      if (stopText) {
+        const stop = parseFloat(stopText);
+        if (!Number.isFinite(stop) || stop <= 0) {
+          notes.push("Stop price must be a number above 0.");
+        } else if (long ? stop >= entryPrice : stop <= entryPrice) {
+          notes.push("For a " + (long ? "long the stop goes below" : "short the stop goes above") + " the entry price of " + price(entryPrice) + ".");
+        } else {
+          const atStop = netAt(stop);
+          rows.push(["Loss at stop", "−" + money(Math.abs(atStop)), move(stop) + ", " + signedPct(atStop / capital * 100) + " of the stake"]);
+          if (netPnL > 0 && atStop < 0) rows.push(["Reward to risk", fmt(netPnL / Math.abs(atStop), 2, 2) + " : 1", "net profit at your exit ÷ net loss at the stop"]);
+          else if (netPnL <= 0) notes.push("Reward to risk needs an exit that ends in profit after fees.");
+        }
+      }
+      return `<div class="plan-wrap" id="planCheck">
+          <h3>Plan check</h3>
+          <div class="move-note">After both fees, for the same ${fmt(quantity, 4, 10)} coins.</div>
+          ${rows.length ? `<dl class="plan-list">${rows.map(r => `<div class="plan-row"><dt>${r[0]}</dt><dd>${r[1]}<span class="plan-sub">${r[2]}</span></dd></div>`).join("")}</dl>` : ""}
+          ${notes.map(n => `<p class="plan-warn">${escapeHtml(n)}</p>`).join("")}
+        </div>`;
     }
 
     function signedPct(value) {
@@ -660,6 +727,8 @@
       exitPriceInput.value = "";
       feePercentInput.value = "";
       tradeTypeInput.value = "long";
+      targetProfitInput.value = "";
+      stopPriceInput.value = "";
       resultArea.className = "result-placeholder";
       resultArea.textContent = "Your crypto trade result will appear here.";
     }
@@ -667,12 +736,13 @@
     calculateBtn.addEventListener("click", calculateCryptoTrade);
     clearBtn.addEventListener("click", clearForm);
 
-    [coinInput, capitalInput, entryPriceInput, exitPriceInput, feePercentInput].forEach(input => {
+    [coinInput, capitalInput, entryPriceInput, exitPriceInput, feePercentInput, targetProfitInput, stopPriceInput].forEach(input => {
       input.addEventListener("keydown", (e) => {
         if (e.key === "Enter") calculateCryptoTrade();
       });
     });
   </script>
 
-<footer></footer></body>
+<footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261113-world-ships-pro-2"></script>
+</body>
 </html>
