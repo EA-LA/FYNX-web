@@ -346,6 +346,31 @@
       font-size:.95rem;
       transition:color .25s ease;
     }
+    /* [site-qa] run 99: where the current price sits + every method side by side. */
+    .px-card{margin-top:.9rem;border:1px solid var(--border);border-radius:16px;background:var(--result-bg);padding:1rem;min-width:0}
+    .px-card h3{margin:0 0 .5rem;font-size:1rem;font-weight:900;color:var(--text-strong);letter-spacing:0}
+    .px-line{color:var(--text-soft);font-size:.95rem;line-height:1.55;margin:.25rem 0}
+    .px-line strong{color:var(--text-strong);font-variant-numeric:tabular-nums}
+    .px-note{color:var(--text-muted);font-size:.86rem;line-height:1.5;margin-top:.55rem}
+    .px-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+    .px-table{display:table;max-width:none;width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.9rem}
+    .px-table th,.px-table td{padding:.42rem .5rem;text-align:right;white-space:nowrap;border-bottom:1px solid var(--border)}
+    .px-table th:first-child,.px-table td:first-child{text-align:left;font-weight:800;color:var(--text-muted)}
+    .px-table thead th{font-size:.74rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted)}
+    .px-table .px-chosen{color:var(--text-strong);font-weight:900}
+    .px-table tr.px-pp td{font-weight:900;color:var(--text-strong)}
+    .px-table th:first-child,.px-table td:first-child{position:sticky;left:0;background:linear-gradient(var(--result-bg),var(--result-bg)),var(--bg-solid,#fff);z-index:1}
+    .px-short{display:none}
+    .px-hint{display:none;color:var(--text-muted);font-size:.8rem;margin:.1rem 0 .35rem}
+    .px-card.px-scrolls .px-hint{display:block}
+    @media (max-width:430px){
+      .px-card{padding:.8rem .55rem}
+      .px-table{font-size:.8rem}
+      .px-table th,.px-table td{padding:.38rem .22rem}
+      .px-table thead th{font-size:.66rem;letter-spacing:0}
+      .px-long{display:none}
+      .px-short{display:inline}
+    }
     @media (max-width:720px){
       h1{font-size:2.35rem}
       .field-row{grid-template-columns:1fr}
@@ -444,10 +469,14 @@
               </div>
             </div>
 
+            <div class="field-group">
+              <label for="price">Current Price (optional)</label>
+              <input id="price" type="number" step="any" inputmode="decimal" placeholder="e.g. 1.1030 — shows where price sits among the levels">
+            </div>
             <div class="actions">
               <button type="button" id="calculateBtn"><i class="fas fa-calculator"></i> Calculate</button>
               <button type="button" id="clearBtn"><i class="fas fa-broom"></i> Clear</button>
-              <button type="button" id="shareScenarioBtn" data-scenario-fields="high,low,close,method" data-scenario-run="calculateBtn"><i class="fas fa-link"></i> Copy scenario link</button>
+              <button type="button" id="shareScenarioBtn" data-scenario-fields="high,low,close,method,price" data-scenario-optional="price" data-scenario-run="calculateBtn"><i class="fas fa-link"></i> Copy scenario link</button>
             </div>
           </div>
         </div>
@@ -459,11 +488,12 @@
           <div id="resultArea" class="result-placeholder" aria-live="polite">
             Your pivot levels will appear here.
           </div>
+          <div id="pivotExtras" hidden></div>
         </div>
       </div>
 
       <div class="footnote">
-        Formula uses previous session values. Classic gives PP, R1, R2, R3, S1, S2, S3. Fibonacci gives PP with fib-based support and resistance levels. Woodie weights the close twice: PP = (H + L + 2C) ÷ 4. Camarilla places R1–R4 and S1–S4 around the close at 1.1 × range ÷ 12, 6, 4 and 2.
+        Formula uses previous session values. Classic gives PP, R1, R2, R3, S1, S2, S3. Fibonacci gives PP with fib-based support and resistance levels. Woodie weights the close twice: PP = (H + L + 2C) ÷ 4. Camarilla places R1–R4 and S1–S4 around the close at 1.1 × range ÷ 12, 6, 4 and 2. Add a current price (optional) to see the nearest level above and below it; the table compares all four methods for the same candle.
       </div>
     </section>
   <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Calculate reference levels from the previous period</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter high, low and close from the same completed session and check the selected method. Confirm your data provider’s session boundary.</p><h3>The calculation or concept</h3><p>The standard pivot is (high + low + close) ÷ 3. Fibonacci spaces levels at 38.2%, 61.8% and 100% of the range; Woodie gives the close double weight; Camarilla sets four tighter levels each side of the close.</p></div><div class="tool-example"><h3>Worked example</h3><p>A previous high of 110, low of 100 and close of 105 gives a standard pivot of 105. Standard R1 is 110 and S1 is 100.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Different sessions and pivot methods produce different levels. A pivot is a reference level, not a forecast or automatic order.</p></details></section><!-- tool-guide:end -->
@@ -499,6 +529,7 @@
     function invalidateResult() {
       if (!hasDisplayedCalculation) return;
       hasDisplayedCalculation = false;
+      window.FynxPivotExtras?.hide();
       resultArea.className = "result-placeholder";
       resultArea.textContent = "Inputs changed. Select Calculate to update pivot levels.";
     }
@@ -599,10 +630,12 @@
           Method used: <strong>${methodName}</strong>. Pivot levels are reference zones, not guaranteed reversal points.
         </div>
       `;
+      window.FynxPivotExtras?.show(methodName, pp, levels);
     }
 
     function calculatePivots() {
       hasDisplayedCalculation = true;
+      window.FynxPivotExtras?.hide();
       const high = parseFloat(highInput.value);
       const low = parseFloat(lowInput.value);
       const close = parseFloat(closeInput.value);
@@ -640,6 +673,7 @@
 
     function clearForm() {
       hasDisplayedCalculation = false;
+      window.FynxPivotExtras?.hide();
       highInput.value = "";
       lowInput.value = "";
       closeInput.value = "";
@@ -662,6 +696,84 @@
     methodSelect.addEventListener("change", invalidateResult);
   </script>
 
+  <script>
+    // [site-qa] run 99: optional Current Price -> nearest level above/below, and all four
+    // methods side by side for the same High/Low/Close. Uses the page's own formatValue().
+    (function () {
+      const priceInput = document.getElementById("price");
+      const box = document.getElementById("pivotExtras");
+      if (!priceInput || !box) return;
+      let last = null;
+      const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+      function allMethods(h, l, c) {
+        const r = h - l;
+        const cp = (h + l + c) / 3;
+        const wp = (h + l + 2 * c) / 4;
+        const st = r * 1.1;
+        return [
+          { name: "Classic", short: "Classic", pp: cp, lv: { R1: 2 * cp - l, R2: cp + r, R3: h + 2 * (cp - l), S1: 2 * cp - h, S2: cp - r, S3: l - 2 * (h - cp) } },
+          { name: "Fibonacci", short: "Fib", pp: cp, lv: { R1: cp + 0.382 * r, R2: cp + 0.618 * r, R3: cp + r, S1: cp - 0.382 * r, S2: cp - 0.618 * r, S3: cp - r } },
+          { name: "Woodie", short: "Woodie", pp: wp, lv: { R1: 2 * wp - l, R2: wp + r, R3: h + 2 * (wp - l), S1: 2 * wp - h, S2: wp - r, S3: l - 2 * (h - wp) } },
+          { name: "Camarilla", short: "Cam.", pp: cp, lv: { R1: c + st / 12, R2: c + st / 6, R3: c + st / 4, R4: c + st / 2, S1: c - st / 12, S2: c - st / 6, S3: c - st / 4, S4: c - st / 2 } }
+        ];
+      }
+      function pct(d, p) { return (d / p * 100).toFixed(2) + "%"; }
+      function positionHtml(methodName, pp, levels) {
+        const raw = String(priceInput.value).trim();
+        if (raw === "") return "";
+        const p = Number(raw);
+        if (!Number.isFinite(p) || p <= 0) {
+          return `<div class="px-card"><h3>Where price sits</h3><div class="px-line">Enter a current price above 0 to see the nearest levels.</div></div>`;
+        }
+        const all = [{ label: "PP", value: pp }].concat(levels).sort((a, b) => b.value - a.value);
+        const shown = formatValue(p);
+        const at = all.filter(lv => formatValue(lv.value) === shown);
+        const above = all.filter(lv => lv.value > p && formatValue(lv.value) !== shown);
+        const below = all.filter(lv => lv.value < p && formatValue(lv.value) !== shown);
+        const up = above.length ? above[above.length - 1] : null;
+        const down = below.length ? below[0] : null;
+        let head;
+        if (at.length) head = `Price <strong>${shown}</strong> is at <strong>${esc(at.map(x => x.label).join(" / "))}</strong>.`;
+        else if (up && down) head = `Price <strong>${shown}</strong> sits between <strong>${esc(down.label)}</strong> and <strong>${esc(up.label)}</strong>.`;
+        else if (down) head = `Price <strong>${shown}</strong> is above every ${esc(methodName)} level.`;
+        else head = `Price <strong>${shown}</strong> is below every ${esc(methodName)} level.`;
+        const lines = [`<div class="px-line" id="pxHead">${head}</div>`];
+        if (up) lines.push(`<div class="px-line">Next level up: <strong>${esc(up.label)} ${formatValue(up.value)}</strong>, ${formatValue(up.value - p)} away (+${pct(up.value - p, p)}).</div>`);
+        if (down) lines.push(`<div class="px-line">Next level down: <strong>${esc(down.label)} ${formatValue(down.value)}</strong>, ${formatValue(p - down.value)} away (−${pct(p - down.value, p)}).</div>`);
+        if (up && down) {
+          const near = (up.value - p) <= (p - down.value) ? up : down;
+          lines.push(`<div class="px-line">Closer level: <strong>${esc(near.label)}</strong>.</div>`);
+        }
+        return `<div class="px-card" id="pxPosition"><h3>Where price sits</h3>${lines.join("")}<div class="px-note">Distances are in price units. Levels come from the previous period, so they do not move with the current price.</div></div>`;
+      }
+      function compareHtml(methodName) {
+        const h = parseFloat(highInput.value), l = parseFloat(lowInput.value), c = parseFloat(closeInput.value);
+        // The chosen method comes first so it is on screen without swiping on small iPhones.
+        const ms = allMethods(h, l, c).sort((x, y) => (y.name === methodName) - (x.name === methodName));
+        const raw = String(priceInput.value).trim();
+        const p = raw === "" ? NaN : Number(raw);
+        const order = ["R4", "R3", "R2", "R1", "PP", "S1", "S2", "S3", "S4"];
+        const rows = order.map(k => ({ k, v: ms.map(m => (k === "PP" ? m.pp : m.lv[k])), sort: k === "PP" ? 0 : (k[0] === "R" ? 10 - Number(k[1]) : -Number(k[1])) }));
+        const head = `<tr><th scope="col">Level</th>${ms.map(m => `<th scope="col"${m.name === methodName ? ' class="px-chosen"' : ""}><span class="px-long">${m.name}</span><span class="px-short" aria-hidden="true">${m.short}</span></th>`).join("")}</tr>`;
+        const body = rows.map(r => `<tr${r.k === "PP" ? ' class="px-pp"' : ""}><td>${r.k}</td>${r.v.map((v, i) => `<td${ms[i].name === methodName ? ' class="px-chosen"' : ""}>${v === undefined ? "–" : formatValue(v)}</td>`).join("")}</tr>`).join("");
+        return `<div class="px-card" id="pxCompare"><h3>All methods for this candle</h3><div class="px-hint">Swipe the table sideways to see every method.</div><div class="px-wrap"><table class="px-table"><caption class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Pivot levels by method</caption><thead>${head}</thead><tbody>${body}</tbody></table></div><div class="px-note">Same High/Low/Close in every column; your method is the first column, in bold. Only Camarilla has R4/S4. Where several methods put a level close together, traders often treat that area as more important.</div></div>`;
+      }
+      function draw() {
+        if (!last) return;
+        box.innerHTML = positionHtml(last.methodName, last.pp, last.levels) + compareHtml(last.methodName);
+        box.hidden = false;
+        const wrap = box.querySelector(".px-wrap");
+        if (wrap) wrap.closest(".px-card").classList.toggle("px-scrolls", wrap.scrollWidth > wrap.clientWidth + 1);
+      }
+      window.FynxPivotExtras = {
+        show(methodName, pp, levels) { last = { methodName, pp, levels }; draw(); },
+        hide() { last = null; box.hidden = true; box.innerHTML = ""; }
+      };
+      priceInput.addEventListener("input", draw);
+      priceInput.addEventListener("keydown", e => { if (e.key === "Enter") calculatePivots(); });
+      clearBtn.addEventListener("click", () => { priceInput.value = ""; });
+    })();
+  </script>
 <footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261114-consistency-2"></script>
 </body>
 </html>
