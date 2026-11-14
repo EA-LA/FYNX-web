@@ -15,14 +15,24 @@
   const num = v => typeof v === 'number' && isFinite(v);
   function price(v) { if (!num(v)) return '—'; if (v > 0 && v < 0.01) return v.toPrecision(3); const d = v >= 1000 ? 0 : v >= 1 ? 2 : 4; return v.toLocaleString('en-US', {minimumFractionDigits: d, maximumFractionDigits: d}); }
   function big(v) { if (!num(v)) return ''; const a = Math.abs(v); return a >= 1e12 ? (v/1e12).toFixed(2)+'T' : a >= 1e9 ? (v/1e9).toFixed(1)+'B' : a >= 1e6 ? (v/1e6).toFixed(1)+'M' : a >= 1e3 ? (v/1e3).toFixed(0)+'K' : String(Math.round(v)); }
-  function ago(iso) { const t = Date.parse(iso); if (!t) return ''; const m = Math.round((Date.now()-t)/60000); return m < 1 ? 'just now' : m < 60 ? m+' min ago' : m < 1440 ? Math.round(m/60)+' h ago' : new Date(t).toLocaleDateString([], {month:'short', day:'numeric'}); }
+  function ago(iso) { const t = Date.parse(iso); if (!Number.isFinite(t) || t <= 0 || t > Date.now() + 300000) return ''; const m = Math.round((Date.now()-t)/60000); return m < 1 ? 'just now' : m < 60 ? m+' min ago' : m < 1440 ? Math.round(m/60)+' h ago' : new Date(t).toLocaleDateString([], {month:'short', day:'numeric'}); }
+  // Snapshot creation time is not an exchange trade timestamp. Never label old or
+  // unverified snapshots as current, even when the JSON request itself succeeds.
+  function freshness(iso) {
+    const time = Date.parse(iso);
+    if (!Number.isFinite(time) || time <= 0 || time > Date.now() + 300000)
+      return {label:'Snapshot time unverified', stale:true};
+    return Date.now() - time > 45 * 60000
+      ? {label:'Older snapshot', stale:true}
+      : {label:'Recent snapshot', stale:false};
+  }
   function style() {
     if (document.getElementById('fx-movers-style')) return;
     const st = document.createElement('style'); st.id = 'fx-movers-style';
     st.textContent = '.fx-movers{margin-top:18px;padding-top:16px;border-top:1px solid var(--terminal-line,rgba(127,127,127,.25))}'
       + '.fx-movers-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.fx-movers-head h2{margin:0;font-size:15px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}'
       + '.fx-movers-head a{font-size:12px;text-decoration:none;color:inherit;opacity:.8}.fx-movers-head a:hover{opacity:1;text-decoration:underline}@media (pointer:coarse){.fx-movers-head a{display:inline-flex;align-items:center;min-height:44px;padding:0 2px}}'
-      + '.fx-live{width:7px;height:7px;border-radius:50%;background:#1f8a5a;animation:fx-pulse 2s infinite}@keyframes fx-pulse{0%{box-shadow:0 0 0 0 rgba(31,138,90,.5)}70%{box-shadow:0 0 0 7px rgba(31,138,90,0)}100%{box-shadow:0 0 0 0 rgba(31,138,90,0)}}'
+      + '.fx-live{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.65}'
       + '.fx-movers-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:8px}.fx-movers-tabs::-webkit-scrollbar{display:none}'
       + '.fx-movers-tabs button{flex:0 0 auto;font-family:inherit;font-weight:700;font-size:11px;line-height:1;letter-spacing:.02em;padding:7px 11px;border-radius:999px;border:1px solid var(--terminal-line,rgba(127,127,127,.3));background:transparent;color:inherit;cursor:pointer}'
       + '.fx-movers-tabs button[aria-selected=true]{background:#1f5a3f;border-color:#1f5a3f;color:#fff}'
@@ -38,7 +48,7 @@
       + '.fx-movers-foot{font-size:10px;opacity:.65;margin:8px 0 0}'
       + '.fx-mv-skel{height:44px;border-radius:6px;margin:4px 0;background:linear-gradient(100deg,rgba(127,127,127,.10) 30%,rgba(127,127,127,.2) 50%,rgba(127,127,127,.10) 70%);background-size:300% 100%;animation:fynx-photo-wait 1.4s ease-in-out infinite}'
       + '@keyframes fynx-photo-wait{0%{background-position:100% 0}100%{background-position:0 0}}'
-      + '.fx-live.is-stale{background:#888;animation:none}'
+      + '.fx-live.is-stale{opacity:.3}'
       + '.fx-movers-error{font-size:12px;line-height:1.6;opacity:.85;padding:12px 4px}.fx-movers-retry{border:1px solid currentColor;border-radius:6px;background:transparent;color:inherit;padding:7px 12px;margin-left:8px;min-height:36px;cursor:pointer;font:inherit}'
       + '.fx-movers-retry:disabled{opacity:.5;cursor:wait}'
       + '@media (prefers-reduced-motion:reduce){.fx-live,.fx-mv-skel{animation:none}}';
@@ -59,18 +69,21 @@
     const meta = TABS.find(t => t[0] === tab), list = (data && Array.isArray(data[tab]) ? data[tab] : []).slice(0, 6);
     host.querySelectorAll('.fx-movers-tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
     const body = host.querySelector('.fx-movers-body');
-    host.querySelector('.fx-live')?.classList.toggle('is-stale', loadFailed);
+    const asOf = data ? (tab === 'crypto' ? data.cryptoAsOf : data.stocksAsOf) : null;
+    const quality = freshness(asOf);
+    const indicator = host.querySelector('.fx-live');
+    indicator?.classList.toggle('is-stale', loadFailed || quality.stale);
+    indicator?.setAttribute('title', !data ? 'Snapshot unavailable' : loadFailed ? 'Update unavailable; previous snapshot' : quality.label);
     if (!data) {
       body.innerHTML = loadFailed
         ? '<p class="fx-movers-error" role="status">Market movers are temporarily unavailable. No market prices are estimated. <button type="button" class="fx-movers-retry" data-movers-retry>Retry</button></p>'
         : '<div class="fx-mv-skel"></div>'.repeat(5);
       return;
     }
-    const asOf = tab === 'crypto' ? data.cryptoAsOf : data.stocksAsOf;
     const src = tab === 'crypto' ? 'CoinGecko' : 'Nasdaq screener';
     body.innerHTML = '<p class="fx-movers-desc">' + esc(meta[2]) + '</p>'
       + (list.length ? list.map(r => row(r, tab)).join('') : '<p class="fx-movers-desc">Nothing qualifies in the latest snapshot. Open the scanner for the full list.</p>')
-      + '<p class="fx-movers-foot">Source: ' + src + (asOf ? ' · as of ' + esc(ago(asOf)) : '') + ' · Stock data may be delayed. Not a recommendation.'
+      + '<p class="fx-movers-foot"><span class="fx-movers-quality" role="status">' + esc(quality.label) + '</span> · Source: ' + src + (ago(asOf) ? ' · as of ' + esc(ago(asOf)) : '') + ' · Stock data may be delayed. Not a recommendation.'
       + (loadFailed ? ' <span role="status">Update failed. Showing the previous snapshot.</span> <button type="button" class="fx-movers-retry" data-movers-retry>Retry</button>' : '') + '</p>';
   }
   async function load(host) {
