@@ -12,7 +12,15 @@
     let timeoutId;
     const request=fetch('/assets/resource-index.json',controller?{signal:controller.signal}:undefined)
       .then(r=>{if(!r.ok)throw Error('index');return r.json();})
-      .then(rows=>Array.isArray(rows)?rows:[]);
+      // A transient 200 response with an empty, truncated or malformed index
+      // must not be mistaken for a valid resource library and cached forever.
+      .then(rows=>{
+        const safePath=/^\/(?:[a-z0-9-]+\/)*(?:[a-z0-9-]+\.html)?$/;
+        if(!Array.isArray(rows)||!rows.length||rows.some(row=>!row||typeof row.url!=='string'||!safePath.test(row.url))) {
+          throw new Error('Resource index unavailable');
+        }
+        return rows;
+      });
     const timeout=new Promise((_,reject)=>{
       timeoutId=setTimeout(()=>{
         controller?.abort();

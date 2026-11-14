@@ -113,3 +113,49 @@ test('a stalled resource index times out, unlocks Save, and supports a new reque
   assert.equal(one.disabled, false);
   dom.window.close();
 });
+
+test('HTTP 200 with an empty index remains retryable instead of caching a false empty library', async () => {
+  const { dom, requests, one } = setup();
+  one.click();
+  requests[0].resolve({ ok: true, json: async () => [] });
+  await flush();
+  assert.equal(one.disabled, false);
+  assert.match(dom.window.document.querySelector('.discovery-toast').textContent, /cannot be saved/i);
+  one.click();
+  assert.equal(requests.length, 2, 'empty index should be fetched again after recovery');
+  requests[1].resolve({ ok: true, json: async () => [{ url: resource }] });
+  await flush();
+  assert.deepEqual(JSON.parse(dom.window.localStorage.getItem(key)), [resource]);
+  dom.window.close();
+});
+
+test('malformed index rows fail safely without freezing Save and can recover', async () => {
+  const { dom, requests, one } = setup();
+  one.click();
+  requests[0].resolve({ ok: true, json: async () => [{ url: resource }, null] });
+  await flush();
+  assert.equal(one.disabled, false);
+  assert.equal(one.hasAttribute('aria-busy'), false);
+  assert.equal(dom.window.localStorage.getItem(key), null);
+  one.click();
+  assert.equal(requests.length, 2, 'malformed index should be retryable');
+  requests[1].resolve({ ok: true, json: async () => [{ url: resource }] });
+  await flush();
+  assert.deepEqual(JSON.parse(dom.window.localStorage.getItem(key)), [resource]);
+  dom.window.close();
+});
+
+test('index entries with unsafe off-site paths fail closed and can recover', async () => {
+  const { dom, requests, one } = setup();
+  one.click();
+  requests[0].resolve({ ok: true, json: async () => [{ url: 'https://example.com/' }] });
+  await flush();
+  assert.equal(one.disabled, false);
+  assert.equal(dom.window.localStorage.getItem(key), null);
+  one.click();
+  assert.equal(requests.length, 2);
+  requests[1].resolve({ ok: true, json: async () => [{ url: resource }] });
+  await flush();
+  assert.deepEqual(JSON.parse(dom.window.localStorage.getItem(key)), [resource]);
+  dom.window.close();
+});
