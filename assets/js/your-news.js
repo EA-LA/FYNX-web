@@ -5,7 +5,7 @@
   if(!app||!preferences||app.dataset.ready)return;
   app.dataset.ready='true';
   const $=selector=>app.querySelector(selector), CADENCE=300000, MAX_AGE=86400000;
-  let generation=0, rows=[], resultState=[], lastAttempt=0, timer=null, displayLimit=18, busy=false, activeScope='';
+  let generation=0, rows=[], resultState=[], lastAttempt=0, timer=null, displayLimit=18, busy=false, activeScope='', showingPrevious=false;
   const queue=[];let active=0;
   const node=(tag,text,className)=>{const element=document.createElement(tag);if(text!==undefined)element.textContent=text;if(className)element.className=className;return element;};
   const selectedEdition=()=>window.FynxEdition?.get()||'us';
@@ -100,7 +100,7 @@
     $('[data-your-status-title]').textContent=state;
     const checked=resultState.map(item=>Date.parse(item.fetchedAt)).filter(Number.isFinite),oldest=checked.length?Math.min(...checked):null;
     $('[data-your-status]').textContent=!chosen.length?'Follow one or more topics to create your front page.':[
-      editionLabel()+' edition','Past 24 hours',oldest?'Oldest desk check '+time(oldest):'Checking source availability','Refreshes every 5 minutes while visible',failed?failed+' topic feed'+(failed===1?' is':'s are')+' temporarily unavailable':partial?'Some sources are temporarily unavailable':'',saved?'Some reports are from dated saved coverage':''
+      editionLabel()+' edition','Past 24 hours',oldest?'Oldest desk check '+time(oldest):'Checking source availability','Refreshes every 5 minutes while visible',failed?failed+' topic feed'+(failed===1?' is':'s are')+' temporarily unavailable':partial?'Some sources are temporarily unavailable':'',saved?'Some reports are from dated saved coverage':'',showingPrevious?'Earlier sourced reports remain visible while affected feeds are unavailable. Check publication times.':''
     ].filter(Boolean).join(' · ');
   }
   function render() {
@@ -119,17 +119,26 @@
   }
   function schedule() {clearTimeout(timer);timer=null;if(!document.hidden)timer=setTimeout(()=>refresh(false),Math.max(1000,CADENCE-(Date.now()-lastAttempt)));}
   async function refresh(force=false) {
-    const run=++generation,edition=selectedEdition(),chosen=preferences.coveragePlan(),scope=edition+'|'+JSON.stringify(chosen)+'|'+preferences.getTopics().join(',')+'|'+preferences.getCompanies().join(',')+'|'+preferences.getRegions().join(','),preserve=scope===activeScope&&rows.some(current),nextRows=[],nextState=[];
+    const run=++generation,edition=selectedEdition(),chosen=preferences.coveragePlan(),scope=edition+'|'+JSON.stringify(chosen)+'|'+preferences.getTopics().join(',')+'|'+preferences.getCompanies().join(',')+'|'+preferences.getRegions().join(','),preserve=scope===activeScope&&rows.some(current),previousRows=preserve?rows.filter(current):[],nextRows=[],nextState=[];
+    let retainedDuringOutage=false;
     for(const work of queue.splice(0))work.resolve(null);
     lastAttempt=Date.now();busy=true;activeScope=scope;
-    if(!preserve){displayLimit=18;rows=[];resultState=[];}
+    if(!preserve){displayLimit=18;rows=[];resultState=[];showingPrevious=false;}
     topicControls();render();$('[data-your-stories]').setAttribute('aria-busy','true');
     if(!chosen.length){busy=false;$('[data-your-stories]').setAttribute('aria-busy','false');render();schedule();return;}
     await Promise.all(chosen.map(async(plan,index)=>{
       const category=plan.category,feedEdition=plan.edition||edition;
       const result=await load(category,feedEdition,force,run);if(run!==generation||edition!==selectedEdition()||!result)return;
       nextState[index]=result;
-      const incoming=clean(result.items,category,feedEdition).map(item=>({...item,desks:preferences.reasons(item)})).filter(item=>item.desks.length),existing=new Map(nextRows.map(item=>[item.articleId,item]));
+      const incoming=clean(result.items,category,feedEdition).map(item=>({...item,desks:preferences.reasons(item)})).filter(item=>item.desks.length);
+      // A failed feed check must not erase previously sourced, still-current reports.
+      // A successful empty feed is authoritative and does not reuse old coverage.
+      if(preserve&&result.status==='unavailable'){
+        const previous=previousRows.filter(item=>item.desk===category&&item.edition===feedEdition&&current(item))
+          .map(item=>({...item,desks:preferences.reasons(item)})).filter(item=>item.desks.length);
+        if(previous.length){incoming.push(...previous);retainedDuringOutage=true;}
+      }
+      const existing=new Map(nextRows.map(item=>[item.articleId,item]));
       for(const item of incoming){const previous=existing.get(item.articleId);if(previous){for(const reason of item.desks)if(!previous.desks.includes(reason))previous.desks.push(reason);}else{nextRows.push(item);existing.set(item.articleId,item);}}
       nextRows.sort((a,b)=>(a.rank||1000)-(b.rank||1000)||(b.priorityScore||0)-(a.priorityScore||0)||Date.parse(b.publishedAt)-Date.parse(a.publishedAt));
       // Keep the current, still-fresh edition in place during a periodic check.
@@ -137,7 +146,7 @@
       if(!preserve){rows=nextRows.slice();resultState=nextState.slice();render();}
     }));
     if(run!==generation)return;
-    rows=nextRows;resultState=nextState;busy=false;$('[data-your-stories]').setAttribute('aria-busy','false');render();schedule();
+    rows=nextRows;resultState=nextState;showingPrevious=retainedDuringOutage;busy=false;$('[data-your-stories]').setAttribute('aria-busy','false');render();schedule();
   }
   function setupTopicTransfer() {
     const section=app.querySelector('.your-news-topics');
