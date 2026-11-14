@@ -13,7 +13,7 @@ function article(id, publisher, timestamp, headline = 'Wall Street stocks steady
   };
 }
 const from = html => ({
-  title: html.match(/<title>([^<]+)<\\/title>/)[1],
+  title: html.match(/<title>([^<]+)<\/title>/)[1],
   description: html.match(/<meta name="description" content="([^"]+)"/)[1],
   canonical: html.match(/<link rel="canonical" href="([^"]+)"/)[1]
 });
@@ -47,5 +47,5 @@ test('non-colliding SEO titles and descriptions remain unchanged', () => {
   const rec = article('uniqueslug', 'Reuters', '2026-11-14T12:00:00Z', 'Bitcoin markets stabilize after volatile overnight trading');
   const meta = R.seoMetadata([rec]).get(rec.slug);
   assert.equal(meta.title, rec.headline + ' | FYNX Intelligence');
-  assert.equal(meta.description, rec.summary.replace(/\\s+/g, ' ').slice(0, 155).replace(/\\s\\S*$/, '') + '…');
+  assert.equal(meta.description, rec.summary.replace(/\s+/g, ' ').slice(0, 155).replace(/\s\S*$/, '') + '…');
 });
