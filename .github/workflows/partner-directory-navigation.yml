@@ -1,0 +1,36 @@
+name: Partner directory mobile navigation
+
+on:
+  pull_request:
+    paths:
+      - 'assets/js/partners-directory.js'
+      - 'partners.html'
+      - 'scripts/test-partner-directory-navigation.cjs'
+      - '.github/workflows/partner-directory-navigation.yml'
+  push:
+    branches:
+      - 'fix/partner-directory-mobile-category-scroll-20261114'
+    paths:
+      - 'assets/js/partners-directory.js'
+      - 'partners.html'
+      - 'scripts/test-partner-directory-navigation.cjs'
+      - '.github/workflows/partner-directory-navigation.yml'
+  workflow_dispatch:
+
+jobs:
+  navigation-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate the production script and its regression tests
+        run: |
+          node --check assets/js/partners-directory.js
+          node --check scripts/test-partner-directory-navigation.cjs
+          node --test scripts/test-partner-directory-navigation.cjs
+      - name: Verify page markup and versioned entrypoint
+        run: |
+          node -e "const fs=require('fs'), assert=require('node:assert/strict'); const html=fs.readFileSync('partners.html','utf8'); for(const id of ['partnerSearch','clearPartnerSearch','partnerEmpty','partnerResultCount','all','funded','brokers','trading-tools']) assert.match(html,new RegExp('id=\"'+id+'\"')); assert.match(html,/partners-directory\\.js\\?v=20261114-mobile-category-1/);"
