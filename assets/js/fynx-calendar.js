@@ -43,6 +43,31 @@
   function chip(ccy) { const c = el('span', 'fc-ccy', ccy); const meta = CCY[ccy]; c.title = meta?.[0] || ccy; if (meta) c.style.setProperty('--fc-c', meta[1]); return c; }
   function value(label, v, cls = '') { const s = el('span', 'fc-val ' + cls); s.append(el('small', '', label), el('b', '', v || '—')); return s; }
 
+  /* "Add to calendar": the shown upcoming events as an iCalendar (.ics) file that iPhone, Google and Outlook calendars import.
+     Timed releases get a 10-minute reminder; holidays are all-day. Built on the device, nothing is sent anywhere. */
+  const icsText = v => String(v == null ? '' : v).replace(/\\/g, '\\\\').replace(/\r\n|\r|\n/g, '\\n').replace(/;/g, '\\;').replace(/,/g, '\\,');
+  const icsFold = line => { const enc = new TextEncoder(); let out = '', n = 0; for (const ch of line) { const b = enc.encode(ch).length; if (n + b > 75) { out += '\r\n '; n = 1; } out += ch; n += b; } return out; };
+  const icsStamp = ms => new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  const icsDate = ms => { const d = new Date(ms); return `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, '0')}${String(d.getUTCDate()).padStart(2, '0')}`; };
+  function toICS(events, now = Date.now()) {
+    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//FYNX Finance World//Economic Calendar//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:FYNX economic calendar'];
+    for (const e of events) {
+      const t = Date.parse(e.time); if (!Number.isFinite(t)) continue;
+      const allDay = isAllDay(e), country = CCY[e.currency]?.[0] || e.currency, imp = IMPACT[e.impact]?.[1] || '';
+      const uid = (e.id ? String(e.id) : `${e.time}-${e.currency}-${e.title}`.replace(/[^A-Za-z0-9-]/g, '')).slice(0, 80) + '@fynxfinanceworld.com';
+      const desc = [`${country} · ${imp}`, e.forecast ? `Forecast: ${e.forecast}` : '', e.previous ? `Previous: ${e.previous}` : '',
+        'Schedule from Forex Factory via FYNX research. Release times can change: check the source before trading.', 'https://www.fynxfinanceworld.com/tools/economic-calendar.html'].filter(Boolean).join('\n');
+      lines.push('BEGIN:VEVENT', `UID:${uid}`, `DTSTAMP:${icsStamp(now)}`);
+      if (allDay) lines.push(`DTSTART;VALUE=DATE:${icsDate(t)}`, `DTEND;VALUE=DATE:${icsDate(t + 86400000)}`);
+      else lines.push(`DTSTART:${icsStamp(t)}`, `DTEND:${icsStamp(t + 15 * 60000)}`);
+      lines.push(`SUMMARY:${icsText(`${e.currency} ${e.title}`)}`, `DESCRIPTION:${icsText(desc)}`, 'TRANSP:TRANSPARENT');
+      if (!allDay) lines.push('BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsText(`${e.currency} ${e.title} in 10 minutes`)}`, 'TRIGGER:-PT10M', 'END:VALARM');
+      lines.push('END:VEVENT');
+    }
+    lines.push('END:VCALENDAR');
+    return lines.map(icsFold).join('\r\n') + '\r\n';
+  }
+
   function mount(host, opts = {}) {
     if (!host) return () => {};
     const o = {compact: false, limit: 8, currencies: null, ...opts};
@@ -68,16 +93,38 @@
         return true;
       });
     }
+    // The search box is created once per calendar so the 60-second refresh and filter clicks never replace it
+    // (replacing it dropped focus and closed the iPhone keyboard mid-typing).
+    const q = el('input', 'fc-search'); q.type = 'search'; q.placeholder = 'Search events (CPI, payrolls, ECB…)'; q.setAttribute('aria-label', 'Search events');
+    q.addEventListener('input', () => { st.q = q.value.trim().toLowerCase(); drawList(); });
+    const exp = el('div', 'fc-export'), expBtn = el('button', 'fc-chip fc-ics'), expNote = el('span', 'fc-export-note');
+    expBtn.type = 'button'; expNote.setAttribute('aria-live', 'polite'); exp.append(expBtn, expNote);
+    let exportable = [];
+    expBtn.addEventListener('click', () => {
+      if (!exportable.length) return;
+      try {
+        const url = URL.createObjectURL(new Blob([toICS(exportable)], {type: 'text/calendar;charset=utf-8'}));
+        const a = el('a'); a.href = url; a.download = `fynx-economic-calendar-${new Date().toISOString().slice(0, 10)}.ics`; document.body.append(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+        expNote.textContent = `Saved ${exportable.length} event${exportable.length === 1 ? '' : 's'}. Open the file to add them to your calendar.`;
+      } catch { expNote.textContent = 'This browser could not create the calendar file.'; }
+    });
+    function drawExport(rows) {
+      const now = Date.now(); exportable = rows.filter(e => Date.parse(e.time) > now);
+      expBtn.textContent = exportable.length ? `Add ${exportable.length} upcoming to calendar (.ics)` : 'No upcoming events to add';
+      expBtn.disabled = !exportable.length; expBtn.title = 'Download the upcoming events shown below, with a 10-minute reminder for each release';
+    }
     function renderControls() {
-      controls.replaceChildren();
+      const active = document.activeElement, focusKey = active && controls.contains(active) && active.dataset.fcKey;
+      for (const g of [...controls.children]) if (g !== q && g !== exp) g.remove(); // never detach the search box: that would blur it
+      if (q.parentNode !== controls) controls.append(q, exp);
       const group = (label, items, isOn, toggle) => { const g = el('div', 'fc-group'); g.setAttribute('role', 'group'); g.setAttribute('aria-label', label); g.append(el('span', 'fc-glabel', label));
-        for (const [k, text] of items) { const b = el('button', 'fc-chip' + (isOn(k) ? ' on' : ''), text); b.type = 'button'; b.setAttribute('aria-pressed', String(isOn(k))); b.addEventListener('click', () => { toggle(k); save(); draw(); }); g.append(b); } controls.append(g); };
+        for (const [k, text] of items) { const b = el('button', 'fc-chip' + (isOn(k) ? ' on' : ''), text); b.type = 'button'; b.dataset.fcKey = label + ':' + k; b.setAttribute('aria-pressed', String(isOn(k))); b.addEventListener('click', () => { toggle(k); save(); draw(); }); g.append(b); } controls.insertBefore(g, q); };
       group('Day', [['today', 'Today'], ['tomorrow', 'Tomorrow'], ['upcoming', 'Upcoming'], ['week', 'This week']], k => st.day === k, k => { st.day = k; });
       group('Importance', [['high', 'High'], ['medium', 'Medium'], ['low', 'Low'], ['holiday', 'Holidays']], k => st.imp.has(k), k => { st.imp.has(k) ? st.imp.delete(k) : st.imp.add(k); });
       const present = [...new Set(data.list.map(e => e.currency))].sort((a, b) => (Object.keys(CCY).indexOf(a) + 99 * !CCY[a]) - (Object.keys(CCY).indexOf(b) + 99 * !CCY[b]));
       group('Currency', [['*', 'All'], ...present.map(c => [c, c])], k => k === '*' ? !st.ccy.size : st.ccy.has(k), k => { if (k === '*') st.ccy.clear(); else st.ccy.has(k) ? st.ccy.delete(k) : st.ccy.add(k); });
-      const q = el('input', 'fc-search'); q.type = 'search'; q.placeholder = 'Search events (CPI, payrolls, ECB…)'; q.value = st.q; q.setAttribute('aria-label', 'Search events');
-      q.addEventListener('input', () => { st.q = q.value.trim().toLowerCase(); drawList(); }); controls.append(q);
+      if (focusKey) [...controls.querySelectorAll('.fc-chip')].find(b => b.dataset.fcKey === focusKey)?.focus({preventScroll: true}); // keyboard users stay on the chip they pressed
     }
     function drawNext() {
       next.replaceChildren(); const now = Date.now();
@@ -88,6 +135,7 @@
     function drawList() {
       list.replaceChildren(); const now = Date.now();
       let rows = filtered();
+      if (!o.compact) drawExport(rows);
       let recap = false;
       if (o.compact && !rows.length && st.day === 'upcoming') { // nothing left this week: show the latest releases instead of an empty box
         rows = data.list.filter(e => Date.parse(e.time) <= now && st.imp.has(e.impact === 'other' ? 'low' : e.impact) && (!st.ccy.size || st.ccy.has(e.currency)) && !isAllDay(e)).slice(-o.limit); recap = rows.length > 0;
@@ -132,5 +180,5 @@
     const vis = () => { if (!document.hidden) refresh(false); }; document.addEventListener('visibilitychange', vis);
     return () => { alive = false; clearInterval(tick); clearInterval(poll); document.removeEventListener('visibilitychange', vis); };
   }
-  root.FynxCalendar = {mount, load};
+  root.FynxCalendar = {mount, load, toICS};
 })(window);

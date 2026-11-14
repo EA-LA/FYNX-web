@@ -47,3 +47,10 @@
   .fc-title{font-size:14px}
 }
 .fc-recap{margin:6px 0 2px;font-size:12.5px;color:var(--fc-muted)}
+/* "Add to calendar (.ics)" row on the full calendar (site-qa run 97). */
+.fc-export{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.fc-export .fc-ics{background:var(--fc-text);color:var(--terminal-bg,var(--bg,#fff));border-color:var(--fc-text);line-height:1.25}
+.fc-export .fc-ics:disabled{background:transparent;border-color:var(--fc-line);color:var(--fc-muted);cursor:default}
+.fc-export-note{font-size:12.5px;color:var(--fc-muted)}
+.fc-export-note:empty{display:none}
+@media (hover:none) and (pointer:coarse){.fc-export .fc-ics{min-height:44px;font-size:13px}}
