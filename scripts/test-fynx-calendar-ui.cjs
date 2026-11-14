@@ -84,8 +84,33 @@ const fixture = {updatedAt: new Date(base).toISOString(), all: [
   assert.ok(unfolded.includes('Forecast: 0.3%\\nPrevious: 0.2%'));
   assert.ok(unfolded.includes('DTSTAMP:20261114T120000Z'));
 
+  // "+ Calendar" on each upcoming row (run 98): one event per file, keyboard focus survives the refresh redraw.
+  const adds = [...host.querySelectorAll('.fc-add')];
+  assert.equal(adds.length, rows().length, 'every upcoming row has a + Calendar button');
+  const blobs = [];
+  window.URL.createObjectURL = blob => { blobs.push(blob); return 'blob:test'; };
+  window.URL.revokeObjectURL = () => {};
+  window.HTMLAnchorElement.prototype.click = function () { this.dataset.clicked = this.download; };
+  const audBtn = adds.find(b => /AUD Retail Sales/.test(b.getAttribute('aria-label')));
+  audBtn.focus(); audBtn.click();
+  assert.equal(blobs.length, 1);
+  const one = (await new Promise(res => { const fr = new window.FileReader(); fr.onload = () => res(fr.result); fr.readAsText(blobs[0]); })).replace(/\r\n /g, '');
+  assert.equal((one.match(/BEGIN:VEVENT/g) || []).length, 1, 'one event in the file');
+  assert.ok(one.includes('SUMMARY:AUD Retail Sales m/m') && one.includes('UID:b@fynxfinanceworld.com'));
+  assert.ok(/Saved “AUD Retail Sales m\/m”/.test(host.querySelector('.fc-export-note').textContent));
+  window.document.dispatchEvent(new window.Event('visibilitychange'));
+  await tick();
+  const focused = window.document.activeElement;
+  assert.ok(focused && focused.classList.contains('fc-add') && focused.dataset.fcEvent === 'b', 'focus stays on the same + Calendar button after a redraw');
+  assert.notStrictEqual(focused, audBtn, 'list was redrawn');
+  const compactHost = window.document.createElement('div'); window.document.body.append(compactHost);
+  const stopCompact = window.FynxCalendar.mount(compactHost, {compact: true});
+  for (let i = 0; i < 20 && !compactHost.querySelector('.fc-row'); i++) await tick();
+  assert.equal(compactHost.querySelectorAll('.fc-add').length, 0, 'compact home view has no per-row buttons');
+  stopCompact();
+
   stop();
   assert.ok(fetches >= 1);
   window.close();
-  console.log('FYNX calendar UI: search box survives refreshes with focus and text; chip focus kept; filters work; .ics export valid.');
+  console.log('FYNX calendar UI: search box survives refreshes with focus and text; chip focus kept; filters work; .ics export valid; + Calendar saves one event and keeps focus.');
 })().catch(e => { console.error(e); process.exit(1); });

@@ -100,15 +100,24 @@
     const exp = el('div', 'fc-export'), expBtn = el('button', 'fc-chip fc-ics'), expNote = el('span', 'fc-export-note');
     expBtn.type = 'button'; expNote.setAttribute('aria-live', 'polite'); exp.append(expBtn, expNote);
     let exportable = [];
+    function saveICS(events, filename, done) {
+      try {
+        const url = URL.createObjectURL(new Blob([toICS(events)], {type: 'text/calendar;charset=utf-8'}));
+        const a = el('a'); a.href = url; a.download = filename; document.body.append(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+        expNote.textContent = done;
+      } catch { expNote.textContent = 'This browser could not create the calendar file.'; }
+    }
     expBtn.addEventListener('click', () => {
       if (!exportable.length) return;
-      try {
-        const url = URL.createObjectURL(new Blob([toICS(exportable)], {type: 'text/calendar;charset=utf-8'}));
-        const a = el('a'); a.href = url; a.download = `fynx-economic-calendar-${new Date().toISOString().slice(0, 10)}.ics`; document.body.append(a); a.click(); a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 30000);
-        expNote.textContent = `Saved ${exportable.length} event${exportable.length === 1 ? '' : 's'}. Open the file to add them to your calendar.`;
-      } catch { expNote.textContent = 'This browser could not create the calendar file.'; }
+      saveICS(exportable, `fynx-economic-calendar-${new Date().toISOString().slice(0, 10)}.ics`, `Saved ${exportable.length} event${exportable.length === 1 ? '' : 's'}. Open the file to add them to your calendar.`);
     });
+    // One event (site-qa run 98): a "+ Calendar" button on each upcoming row of the full calendar.
+    const eventKey = e => String(e.id || `${e.time}-${e.currency}-${e.title}`);
+    function addOne(e) {
+      const slug = `${e.currency}-${e.title}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'event';
+      saveICS([e], `fynx-${slug}.ics`, `Saved “${e.currency} ${e.title}”. Open the file to add it to your calendar.`);
+    }
     function drawExport(rows) {
       const now = Date.now(); exportable = rows.filter(e => Date.parse(e.time) > now);
       expBtn.textContent = exportable.length ? `Add ${exportable.length} upcoming to calendar (.ics)` : 'No upcoming events to add';
@@ -133,6 +142,7 @@
       next.append(el('span', 'fc-next-k', 'NEXT ' + (n.impact === 'high' ? 'HIGH-IMPACT' : 'EVENT')), chip(n.currency), el('b', '', n.title), el('span', 'fc-next-t', `${until(Date.parse(n.time) - now)} · ${timeLabel(n.time)}`));
     }
     function drawList() {
+      const focusAdd = document.activeElement && list.contains(document.activeElement) && document.activeElement.dataset.fcEvent; // the 30 s redraw keeps keyboard focus
       list.replaceChildren(); const now = Date.now();
       let rows = filtered();
       if (!o.compact) drawExport(rows);
@@ -155,9 +165,11 @@
         const what = el('div', 'fc-what'); const meta = el('div', 'fc-meta'); meta.append(chip(e.currency), bars(e.impact)); what.append(meta, el('span', 'fc-title', e.title));
         const nums = el('div', 'fc-nums'); nums.append(value('Forecast', e.forecast), value('Previous', e.previous));
         if (past && !allDay) { const a = el('a', 'fc-actual', 'Result ↗'); const dd = new Date(t); a.href = `https://www.forexfactory.com/calendar?day=${['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'][dd.getUTCMonth()]}${dd.getUTCDate()}.${dd.getUTCFullYear()}`; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.title = 'Open the released result at the source'; nums.append(a); }
+        if (!o.compact && !past) { const add = el('button', 'fc-add', '+ Calendar'); add.type = 'button'; add.dataset.fcEvent = eventKey(e); add.setAttribute('aria-label', `Add ${e.currency} ${e.title} to your calendar (.ics)`); add.title = allDay ? 'Download this day as an all-day calendar event' : 'Download this release as a calendar event with a 10-minute reminder'; add.addEventListener('click', () => addOne(e)); nums.append(add); }
         r.append(when, what, nums); list.append(r);
         if (!past && !firstUpcoming) firstUpcoming = r;
       }
+      if (focusAdd) [...list.querySelectorAll('.fc-add')].find(b => b.dataset.fcEvent === focusAdd)?.focus({preventScroll: true});
       if (!o.compact && firstUpcoming && st.day === 'week' && !list.dataset.scrolled) { list.dataset.scrolled = '1'; requestAnimationFrame(() => { try { list.scrollTop = Math.max(0, firstUpcoming.offsetTop - list.offsetTop - 40); } catch {} }); }
     }
     function drawFoot() {

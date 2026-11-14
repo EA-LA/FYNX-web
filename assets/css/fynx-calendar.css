@@ -54,3 +54,12 @@
 .fc-export-note{font-size:12.5px;color:var(--fc-muted)}
 .fc-export-note:empty{display:none}
 @media (hover:none) and (pointer:coarse){.fc-export .fc-ics{min-height:44px;font-size:13px}}
+/* "+ Calendar" on each upcoming row (site-qa run 98): one event as an .ics file. */
+.fc-add{flex:0 0 auto;font:700 12px/1 Inter,system-ui,sans-serif;color:var(--fc-accent);background:transparent;border:1px solid var(--fc-line);border-radius:4px;padding:7px 9px;white-space:nowrap;cursor:pointer}
+.fc-add:hover{border-color:var(--fc-accent)}
+.fc-add:focus-visible{outline:2px solid var(--fc-accent);outline-offset:2px}
+@media (hover:none) and (pointer:coarse){.fc-add{min-height:44px;padding:0 12px;font-size:13px}}
+@media (max-width:640px){.fc-full .fc-nums:has(.fc-add){display:grid;grid-template-columns:auto auto;justify-content:start;column-gap:18px;row-gap:6px}.fc-full .fc-nums .fc-add{grid-column:1/-1;justify-self:start}}
+/* iPhone SE (site-qa run 98): the full calendar list is ~196px wide there, so the numbers column (~98px) pushed
+   "Previous" 32px past the edge, where it was cut off. On narrow phones the numbers use the whole row, under the time. */
+@media (max-width:400px){.fc-full .fc-nums{grid-column:1/-1}}
