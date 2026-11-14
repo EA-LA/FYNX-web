@@ -33,4 +33,4 @@ jobs:
           node --test scripts/test-partner-directory-navigation.cjs
       - name: Verify page markup and versioned entrypoint
         run: |
-          node -e "const fs=require('fs'), assert=require('node:assert/strict'); const html=fs.readFileSync('partners.html','utf8'); for(const id of ['partnerSearch','clearPartnerSearch','partnerEmpty','partnerResultCount','all','funded','brokers','trading-tools']) assert.ok(html.includes('id=\\"'+id+'\\"')); assert.ok(html.includes('partners-directory.js?v=20261114-mobile-category-1'));"
+          node -e "const fs=require('fs'), assert=require('node:assert/strict'); const html=fs.readFileSync('partners.html','utf8'); const dq=String.fromCharCode(34); for(const id of ['partnerSearch','clearPartnerSearch','partnerEmpty','partnerResultCount','all','funded','brokers','trading-tools']) assert.ok(html.includes('id='+dq+id+dq)); assert.ok(html.includes('partners-directory.js?v=20261114-mobile-category-1'));"
