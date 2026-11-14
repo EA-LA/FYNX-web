@@ -1,4 +1,4 @@
-import {sync,subscribe,save as saveShared,requireSync,accountData} from './account-sync.js?v=20261113-world-ships-pro-2';
+import {sync,subscribe,save as saveShared,requireSync,accountData} from './account-sync.js?v=20261114-heatmaps-1';
 import { cloudCall, auth } from './cloud-client.js?v=20260928-learning';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
 const topics = new Set(['general','forex','stocks','crypto','funds','futures','indices','bonds','economy','options']);

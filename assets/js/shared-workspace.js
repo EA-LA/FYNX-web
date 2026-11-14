@@ -1,4 +1,4 @@
-import {sync,subscribe,save,saveMany,remove,requireSync,accountData,imports,offerImport,stableID,storyID,membership} from './account-sync.js?v=20261113-world-ships-pro-2';
+import {sync,subscribe,save,saveMany,remove,requireSync,accountData,imports,offerImport,stableID,storyID,membership} from './account-sync.js?v=20261114-heatmaps-1';
 import {auth} from '../../auth/firebase.js';
 const $=id=>document.getElementById(id),node=(tag,text)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;return e;};
 const definitions={
