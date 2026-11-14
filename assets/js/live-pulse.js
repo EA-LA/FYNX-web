@@ -22,8 +22,8 @@
     if (document.getElementById('lp-style')) return;
     const st = document.createElement('style'); st.id = 'lp-style';
     st.textContent = '.lp-strip{position:relative;display:flex;align-items:stretch;gap:0;margin:0 0 18px;border:1px solid rgba(127,127,127,.22);border-radius:12px;overflow:hidden;background:rgba(127,127,127,.04)}'
-      + '.lp-tag{flex:0 0 auto;display:flex;align-items:center;gap:7px;padding:0 14px;font:800 10px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;border-right:1px solid rgba(127,127,127,.22);background:rgba(31,90,63,.08);color:#1f5a3f}'
-      + '.lp-dot{width:7px;height:7px;border-radius:50%;background:#1f8a5a;animation:lp-pulse 2s infinite}@keyframes lp-pulse{0%{box-shadow:0 0 0 0 rgba(31,138,90,.5)}70%{box-shadow:0 0 0 7px rgba(31,138,90,0)}100%{box-shadow:0 0 0 0 rgba(31,138,90,0)}}'
+      + '.lp-tag{flex:0 0 auto;display:flex;align-items:center;gap:7px;padding:0 14px;font:800 10px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;border-right:1px solid rgba(127,127,127,.22);background:rgba(127,127,127,.07);color:inherit}'
+      + '.lp-dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.5}'
       + '.lp-viewport{flex:1 1 auto;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent)}'
       + '.lp-track{display:flex;width:max-content;animation:lp-scroll var(--lp-dur,60s) linear infinite}.lp-strip:hover .lp-track,.lp-strip:focus-within .lp-track{animation-play-state:paused}'
       + '@keyframes lp-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}'
@@ -41,7 +41,29 @@
       + '@media (prefers-reduced-motion:reduce){.lp-track{animation:none}.lp-viewport{overflow-x:auto}.lp-dot{animation:none}}';
     document.head.append(st);
   }
-  function ago(iso) { const t = Date.parse(iso); if (!t) return ''; const m = Math.round((Date.now() - t) / 60000); return m < 60 ? Math.max(1, m) + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : new Date(t).toLocaleDateString([], {month: 'short', day: 'numeric'}); }
+  // A successful download is not proof of a fresh market quote. This feed
+  // is a delayed snapshot; reject invalid and implausibly future timestamps.
+  const MAX_SNAPSHOT_AGE = 45 * 60000;
+  const FUTURE_SKEW_ALLOWANCE = 5 * 60000;
+  function ago(iso) {
+    const t = Date.parse(iso);
+    if (!Number.isFinite(t)) return '';
+    const m = Math.max(0, Math.round((Date.now() - t) / 60000));
+    return m < 1 ? 'just now' : m < 60 ? m + ' min ago'
+      : m < 1440 ? Math.round(m / 60) + ' h ago'
+      : new Date(t).toLocaleDateString([], {month: 'short', day: 'numeric'});
+  }
+  function snapshotStatus(iso, upstreamStale = false) {
+    const timestamp = typeof iso === 'string' ? Date.parse(iso) : NaN;
+    const age = Date.now() - timestamp;
+    if (!Number.isFinite(timestamp) || age < -FUTURE_SKEW_ALLOWANCE) {
+      return { label: 'Unverified', detail: 'Snapshot time unverified', stale: true };
+    }
+    const ageLabel = ago(iso);
+    if (upstreamStale) return { label: 'Stale', detail: 'Stale snapshot · ' + ageLabel, stale: true };
+    if (age > MAX_SNAPSHOT_AGE) return { label: 'Older', detail: 'Older snapshot · ' + ageLabel, stale: true };
+    return { label: 'Delayed', detail: 'Delayed snapshot · ' + ageLabel, stale: false };
+  }
   function render(strip, data) {
     const items = (Array.isArray(data?.items) ? data.items : []).filter(i => i && num(i.price));
     if (!items.length) throw new Error('No sourced market prices');
@@ -56,11 +78,11 @@
     track.innerHTML = html + html.replace(/<a /g, '<a tabindex="-1" aria-hidden="true" ');
     track.style.setProperty('--lp-dur', Math.max(40, items.length * 5) + 's');
     lastSourceAt = data.generatedAt;
-    const stale = data.stale === true || items.some(i => i.stale === true);
+    const state = snapshotStatus(data.generatedAt, data.stale === true || items.some(i => i.stale === true));
     strip.classList.remove('is-error');
-    strip.classList.toggle('is-stale', stale);
-    strip.querySelector('.lp-tag-sub').textContent = stale ? 'Stale' : 'Delayed';
-    strip.querySelector('.lp-asof').textContent = (stale ? 'Stale · ' : 'Delayed · ') + ago(data.generatedAt);
+    strip.classList.toggle('is-stale', state.stale);
+    strip.querySelector('.lp-tag-sub').textContent = state.label;
+    strip.querySelector('.lp-asof').textContent = state.detail;
     strip.querySelector('.lp-viewport').hidden = false;
     strip.querySelector('.lp-asof').hidden = false;
     strip.querySelector('.lp-feedback').hidden = true;
@@ -88,7 +110,7 @@
       strip.querySelector('.lp-tag-sub').textContent = previous ? 'Stale' : 'Unavailable';
       strip.querySelector('.lp-viewport').hidden = !previous;
       strip.querySelector('.lp-asof').hidden = !previous;
-      if (previous) strip.querySelector('.lp-asof').textContent = 'Stale · ' + ago(lastSourceAt);
+      if (previous) strip.querySelector('.lp-asof').textContent = snapshotStatus(lastSourceAt, true).detail;
       strip.querySelector('.lp-feedback-text').textContent = previous
         ? 'Update failed. Showing the last sourced snapshot.'
         : 'Market pulse unavailable. No prices are estimated.';
@@ -105,7 +127,7 @@
     const host = document.querySelector('[data-live-pulse]'), crumb = document.querySelector('.resource-wayfinding'), main = document.querySelector('main');
     if (!host && !crumb && !main) return;
     style();
-    const strip = document.createElement('section'); strip.className = 'lp-strip'; strip.hidden = true; strip.setAttribute('aria-label', 'Delayed market pulse');
+    const strip = document.createElement('section'); strip.className = 'lp-strip'; strip.hidden = true; strip.setAttribute('aria-label', 'Delayed market snapshots, not live quotes');
     strip.innerHTML = '<span class="lp-tag"><span class="lp-dot" aria-hidden="true"></span><span class="lp-tag-txt">Markets<span class="lp-tag-sub">Delayed</span></span></span><div class="lp-viewport"><div class="lp-track"></div></div><span class="lp-asof"></span><div class="lp-feedback" role="status" hidden><span class="lp-feedback-text"></span><button class="lp-retry" type="button">Retry</button></div>';
     if (host) host.prepend(strip); else if (crumb) crumb.after(strip); else main.prepend(strip);
     strip.querySelector('.lp-retry').addEventListener('click', () => load(strip));

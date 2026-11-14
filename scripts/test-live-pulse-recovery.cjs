@@ -17,7 +17,7 @@ function setup(mode = 'ok') {
   const intervals = [], timeouts = new Map();
   let sequence = 0, requests = 0, pendingSignal = null;
   const quote = {
-    generatedAt: '2026-11-13T16:48:32Z', stale: false,
+    generatedAt: new Date(Date.now() - 10 * 60000).toISOString(), stale: false,
     items: [{symbol: '^GSPC', label: 'S&P 500', price: 7515.05,
       changePercent: -1.019, spark: [7600, 7515.05]}]
   };
@@ -35,6 +35,9 @@ function setup(mode = 'ok') {
       options.signal.addEventListener('abort', () => reject(Error('aborted')), {once: true});
     });
     if (mode === 'stale') return Promise.resolve({ok: true, json: async () => ({...quote, stale: true})});
+    if (mode === 'old') return Promise.resolve({ok: true, json: async () => ({...quote, generatedAt: new Date(Date.now() - 2 * 3600000).toISOString()})});
+    if (mode === 'future') return Promise.resolve({ok: true, json: async () => ({...quote, generatedAt: new Date(Date.now() + 3600000).toISOString()})});
+    if (mode === 'unverified') return Promise.resolve({ok: true, json: async () => ({...quote, generatedAt: 'not-an-ISO-timestamp'})});
     return Promise.resolve({ok: true, json: async () => quote});
   };
   w.eval(source);
@@ -123,5 +126,43 @@ test('an empty response never produces estimated quotes, and source stale flags 
     assert.match(app.strip().querySelector('.lp-asof').textContent, /Stale/);
     assert.equal(app.strip().querySelector('.lp-tag-sub').textContent, 'Stale');
     assert.equal(app.strip().querySelector('.lp-item').getAttribute('href'), '/terminal.html?sym=%5EGSPC');
+  } finally { app.close(); }
+});
+
+test('a successful fetch of an old source snapshot is explicitly older, never live', async () => {
+  const app = setup('old');
+  try {
+    await settle();
+    assert.equal(app.strip().classList.contains('is-stale'), true);
+    assert.equal(app.strip().querySelector('.lp-tag-sub').textContent, 'Older');
+    assert.match(app.strip().querySelector('.lp-asof').textContent, /Older snapshot/);
+    assert.equal(app.strip().querySelectorAll('.lp-item').length, 2);
+  } finally { app.close(); }
+});
+
+test('future or invalid source timestamps cannot look recently updated', async () => {
+  for (const mode of ['future', 'unverified']) {
+    const app = setup(mode);
+    try {
+      await settle();
+      assert.equal(app.strip().classList.contains('is-stale'), true);
+      assert.equal(app.strip().querySelector('.lp-tag-sub').textContent, 'Unverified');
+      assert.equal(app.strip().querySelector('.lp-asof').textContent, 'Snapshot time unverified');
+    } finally { app.close(); }
+  }
+});
+
+test('fresh verified retry recovers from older snapshot without changing sourced prices', async () => {
+  const app = setup('old');
+  try {
+    await settle();
+    app.setMode('ok');
+    app.strip().querySelector('.lp-retry').click();
+    await settle();
+    assert.equal(app.strip().classList.contains('is-stale'), false);
+    assert.match(app.strip().querySelector('.lp-asof').textContent, /Delayed snapshot/);
+    assert.equal(app.strip().querySelectorAll('.lp-item').length, 2);
+    const css = app.w.document.getElementById('lp-style').textContent;
+    assert.doesNotMatch(css, /animation:lp-pulse|background:#1f8a5a/);
   } finally { app.close(); }
 });
