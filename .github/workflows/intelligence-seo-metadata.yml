@@ -1,0 +1,25 @@
+name: Intelligence SEO metadata regression
+on:
+  pull_request:
+    paths:
+      - 'scripts/intelligence/render.cjs'
+      - 'scripts/build-intelligence.cjs'
+      - 'tests/intelligence/**'
+      - '.github/workflows/intelligence-seo-metadata.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate publisher and renderer syntax
+        run: |
+          node --check scripts/build-intelligence.cjs
+          node --check scripts/intelligence/render.cjs
+      - name: Run Intelligence regression suite
+        run: node --test tests/intelligence/*.test.cjs
