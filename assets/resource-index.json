@@ -1185,6 +1185,13 @@
     "topic": ""
   },
   {
+    "url": "/api/options.html",
+    "title": "Options API: Black-Scholes Pricing, Greeks & Implied Volatility",
+    "description": "Option prices and greeks, implied volatility, multi-leg payoff, price probabilities and expected move from numbers you send. No market data required.",
+    "category": "Developers",
+    "topic": ""
+  },
+  {
     "url": "/api/risk.html",
     "title": "Forex Risk Calculation API for Trading Applications",
     "description": "Integrate caller-supplied forex risk calculations into trading software. Explore FYNX Risk API inputs, supported calculations and integration limits.",
@@ -1241,13 +1248,6 @@
     "topic": ""
   },
   {
-    "url": "/api/options.html",
-    "title": "Options API: Black-Scholes Pricing, Greeks & Implied Volatility",
-    "description": "Option prices and greeks, implied volatility, multi-leg payoff, price probabilities and expected move from numbers you send. No market data required.",
-    "category": "Developers",
-    "topic": ""
-  },
-  {
     "url": "/api/portfolio.html",
     "title": "Portfolio Analytics API: Performance, Drawdown & Exposure",
     "description": "Win rate, profit factor, drawdown, Sharpe, Sortino, exposure, leverage and currency legs from your trades and positions.",
@@ -1292,7 +1292,7 @@
   {
     "url": "/intelligence/10-year-treasury-yield-moves-to-515-as-traders-weigh-producer-price-0dd1e7/index.html",
     "title": "10-year Treasury yield moves to 5.15% as traders weigh producer price report",
-    "description": "CNBC reported this story on Nov 13, 2026, 9:08 PM UTC. At FYNX's latest market snapshot, US 10-year yield was at 5.154%, +5.1 bp on the…",
+    "description": "CNBC reported this story on Nov 13, 2026, 3:40 PM UTC. At FYNX's latest market snapshot, US 10-year yield was at 5.103%, +10.5 bp on the…",
     "category": "Resources",
     "topic": ""
   },
@@ -1453,7 +1453,7 @@
   {
     "url": "/intelligence/binance-says-it-has-replaced-all-63-billion-in-crypto-stolen-in-record-652787/index.html",
     "title": "Binance Says It Has Replaced All $6.3 Billion in Crypto Stolen in Record-Breaking Heist",
-    "description": "CNBC reported this story on Nov 13, 2026, 12:03 PM UTC. At FYNX's latest market snapshot, Bitcoin was at 68,017.38, -4.66% on the…",
+    "description": "CNBC reported this story on Nov 13, 2026, 12:03 PM UTC, and 4 other outlets (The Times of India, Sky News, ITWeb) covered the same development. At FYNX's…",
     "category": "Resources",
     "topic": ""
   },
@@ -1502,7 +1502,7 @@
   {
     "url": "/intelligence/cftc-chair-selig-tells-cnbc-crypto-industry-is-embracing-agency-rules-0b3b64/index.html",
     "title": "CFTC Chair Selig tells CNBC crypto industry is embracing agency rules as legislation hopes fade",
-    "description": "CNBC reported this story on Nov 13, 2026, 8:07 PM UTC. At FYNX's latest market snapshot, Bitcoin was at 68,017.38, -4.66% on the…",
+    "description": "CNBC reported this story on Nov 13, 2026, 1:15 PM UTC, and 1 other outlet (UA.NEWS) covered the same development. At FYNX's latest market snapshot,…",
     "category": "Resources",
     "topic": ""
   },
@@ -1516,7 +1516,7 @@
   {
     "url": "/intelligence/chicago-feds-goolsbee-says-central-bank-has-definitely-got-work-to-do-392aad/index.html",
     "title": "Chicago Fed's Goolsbee says central bank 'has definitely got work to do' on inflation",
-    "description": "CNBC reported this story on Nov 13, 2026, 2:22 PM UTC. At FYNX's latest market snapshot, US 10-year yield was at 5.154%, +5.1 bp on the…",
+    "description": "CNBC reported this story on Nov 13, 2026, 2:22 PM UTC. At FYNX's latest market snapshot, US 10-year yield was at 5.103%, +10.5 bp on the…",
     "category": "Resources",
     "topic": ""
   },
@@ -1558,7 +1558,7 @@
   {
     "url": "/intelligence/cisco-beats-on-earnings-says-ai-infrastructure-revenue-will-double-this-4d8197/index.html",
     "title": "Cisco beats on earnings, says AI infrastructure revenue will double this fiscal year",
-    "description": "CNBC reported this story on Nov 13, 2026, 2:26 PM UTC. At FYNX's latest market snapshot, Cisco was at 95.64, -6.24% on the…",
+    "description": "CNBC reported this story on Nov 13, 2026, 2:26 PM UTC. At FYNX's latest market snapshot, Cisco was at 96.13, -5.76% on the…",
     "category": "Resources",
     "topic": ""
   },
@@ -1836,13 +1836,6 @@
     "topic": ""
   },
   {
-    "url": "/intelligence/goldman-sachs-looks-to-cash-in-on-big-ipos-twice-anthropics-historic-7cba32/index.html",
-    "title": "Goldman Sachs looks to cash in on big IPOs twice. Anthropic’s historic deal is its next chance",
-    "description": "CNBC reported this story on Nov 13, 2026, 9:44 PM UTC. At FYNX's latest market snapshot, Goldman Sachs was at 916.56, +0.32% on the…",
-    "category": "Resources",
-    "topic": ""
-  },
-  {
     "url": "/intelligence/heres-what-nvidia-interim-ceo-colette-kress-and-board-chair-harvey-715fd0/index.html",
     "title": "Here's what Nvidia interim CEO Colette Kress and board chair Harvey Jones wrote to Nvidia employees",
     "description": "CNBC reported this story on Nov 12, 2026, 7:42 PM UTC. At FYNX's latest market snapshot, Nvidia was at 164.30, -5.43% on the…",
@@ -1888,13 +1881,6 @@
     "url": "/intelligence/indias-russian-oil-imports-touch-record-euro-64-bn-in-445aa2/index.html",
     "title": "India’s Russian oil imports touch record EURO 6.4 bn in October",
     "description": "The Hitavada reported this story on Nov 13, 2026, 7:09 AM UTC, and 1 other outlet (The Pamphlet) covered the same development. At FYNX's latest market…",
-    "category": "Resources",
-    "topic": ""
-  },
-  {
-    "url": "/intelligence/is-a-bottom-in-for-the-nasdaq-100-charts-to-159e0d/index.html",
-    "title": "Is a bottom in for the Nasdaq-100? Charts to watch",
-    "description": "CNBC reported this story on Nov 13, 2026, 6:00 PM UTC. At FYNX's latest market snapshot, Nasdaq Composite was at 25,136.27, -0.91% on the…",
     "category": "Resources",
     "topic": ""
   },
@@ -2020,7 +2006,7 @@
   {
     "url": "/intelligence/nvidia-on-track-for-longest-weekly-losing-streak-since-2012-as-market-c2730d/index.html",
     "title": "Nvidia on track for longest weekly losing streak since 2012 as market value sinks by $1.6 trillion",
-    "description": "CNBC reported this story on Nov 13, 2026, 10:18 PM UTC. At FYNX's latest market snapshot, Nvidia was at 162.85, -2.01% on the…",
+    "description": "CNBC reported this story on Nov 13, 2026, 5:51 AM UTC. At FYNX's latest market snapshot, Nvidia was at 166.19, -4.34% on the…",
     "category": "Resources",
     "topic": ""
   },
@@ -2055,14 +2041,14 @@
   {
     "url": "/intelligence/nvidia-without-jensen-huang-what-lies-ahead-for-asian-accd57/index.html",
     "title": "Nvidia without Jensen Huang. What lies ahead for Asian chipmakers?",
-    "description": "CNBC reported this story on Nov 13, 2026, 7:29 AM UTC. At FYNX's latest market snapshot, Nvidia was at 162.85, -2.01% on the…",
+    "description": "CNBC reported this story on Nov 13, 2026, 7:29 AM UTC. At FYNX's latest market snapshot, Nvidia was at 166.19, -4.34% on the…",
     "category": "Resources",
     "topic": ""
   },
   {
     "url": "/intelligence/nvidias-turmoil-is-prompting-a-rotation-across-chip-stocks-heres-what-4b8f07/index.html",
     "title": "Nvidia’s turmoil is prompting a rotation across chip stocks. Here's what we know",
-    "description": "CNBC reported this story on Nov 13, 2026, 8:27 AM UTC. At FYNX's latest market snapshot, Nvidia was at 162.85, -2.01% on the…",
+    "description": "CNBC reported this story on Nov 13, 2026, 8:27 AM UTC. At FYNX's latest market snapshot, Nvidia was at 166.19, -4.34% on the…",
     "category": "Resources",
     "topic": ""
   },
@@ -2083,7 +2069,7 @@
   {
     "url": "/intelligence/oil-prices-rise-after-trump-says-no-iran-deal-needed-weve-got-their-312b2e/index.html",
     "title": "Oil prices rise after Trump says no Iran deal needed: 'We've got their Strait'",
-    "description": "CNBC reported this story on Nov 13, 2026, 12:01 AM UTC. At FYNX's latest market snapshot, Brent crude oil was at 96.08, +0.27% on the…",
+    "description": "CNBC reported this story on Nov 13, 2026, 12:01 AM UTC. At FYNX's latest market snapshot, Brent crude oil was at 96.02, +0.21% on the…",
     "category": "Resources",
     "topic": ""
   },
@@ -2125,7 +2111,7 @@
   {
     "url": "/intelligence/russian-crude-production-rebounds-after-trump-diesel-deal-iea-says-as-f3cf4f/index.html",
     "title": "Russian crude production rebounds after Trump diesel deal, IEA says as oil markets return to surplus",
-    "description": "CNBC reported this story on Nov 13, 2026, 12:05 PM UTC. At FYNX's latest market snapshot, Brent crude oil was at 96.08, +0.27% on the…",
+    "description": "CNBC reported this story on Nov 13, 2026, 12:05 PM UTC. At FYNX's latest market snapshot, Brent crude oil was at 96.02, +0.21% on the…",
     "category": "Resources",
     "topic": ""
   },
@@ -2363,7 +2349,7 @@
   {
     "url": "/intelligence/why-singapore-keeps-turning-up-in-the-fight-over-nvidia-chips-and-317012/index.html",
     "title": "Why Singapore keeps turning up in the fight over Nvidia chips and China",
-    "description": "CNBC reported this story on Nov 13, 2026, 7:15 AM UTC. At FYNX's latest market snapshot, Nvidia was at 162.85, -2.01% on the…",
+    "description": "CNBC reported this story on Nov 13, 2026, 7:15 AM UTC. At FYNX's latest market snapshot, Nvidia was at 166.19, -4.34% on the…",
     "category": "Resources",
     "topic": ""
   },

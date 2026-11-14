@@ -4,9 +4,10 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { publicSiteFiles } = require('./public-site-files.cjs');
-const VERSION = '20261114-heatmaps-2';
+const VERSION = '20261114-heatmaps-3';
 const RESEARCH_VERSION = '20261113-shared-account-2';
-const ASSET_VERSIONS = Object.freeze({'assets/js/shared-workspace.js':'20261113-notification-lead-1'});
+const TOPIC_TRANSFER_VERSION = '20261113-topic-transfer-2';
+const ASSET_VERSIONS = Object.freeze({'assets/js/shared-workspace.js':'20261113-notification-lead-1','assets/js/news-preferences.js':TOPIC_TRANSFER_VERSION,'assets/js/your-news.js':TOPIC_TRANSFER_VERSION,'assets/css/your-news.css':TOPIC_TRANSFER_VERSION});
 const RESEARCH_ASSETS = new Set(['assets/js/research-service.js','assets/js/edge/app.js','assets/js/edge/render.js','assets/js/edge/profile.js','assets/js/edge/public-research.js','assets/js/quant/app.js','assets/js/quant/profile.js','assets/js/quant/engine.js','assets/js/quant/worker.js','assets/js/quant/public-history.js','assets/js/company-products-data.js']);
 const ASSETS = Object.freeze([
   ...RESEARCH_ASSETS,
@@ -80,5 +81,5 @@ function build(root = path.resolve(__dirname, '..')) {
   console.log(`Release asset versions verified: ${VERSION}; ${changed.length} files updated.`);
   return {version:VERSION, assets:[...assets], changed};
 }
-module.exports = {build, rewriteReferences, VERSION, ASSETS, ASSET_VERSIONS};
+module.exports = {build, rewriteReferences, VERSION, TOPIC_TRANSFER_VERSION, ASSETS, ASSET_VERSIONS};
 if (require.main === module) build();

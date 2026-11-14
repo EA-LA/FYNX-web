@@ -33,7 +33,8 @@
 .fx-acct-btn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:0;border-radius:50%;border:2px solid rgba(255,255,255,.18);background:#cfeedd;color:#173f2d;font:800 13px/1 Manrope,Inter,Arial,sans-serif;cursor:pointer;overflow:hidden;transition:border-color .15s,box-shadow .15s}
 .fx-acct-btn:hover,.fx-acct-btn[aria-expanded=true]{border-color:#7fd3a6;box-shadow:0 0 0 3px rgba(127,211,166,.25)}
 .fx-acct-btn:focus-visible{outline:2px solid #f5b301;outline-offset:2px}
-.fx-acct-btn img{width:100%;height:100%;object-fit:cover;display:block}
+.fx-acct-btn img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
+@media (pointer:coarse){.fx-acct-btn{position:relative;overflow:visible}.fx-acct-btn::before{content:"";position:absolute;inset:-6px;border-radius:50%}.fx-acct-who a{display:inline-flex;align-items:center;min-height:44px;margin-top:0}}
 .fx-acct-menu{position:fixed;right:12px;top:64px;z-index:5000;width:min(340px,calc(100vw - 20px));max-height:min(80vh,680px);overflow:auto;background:#fff;color:#0f1512;border:1px solid #dfe4e1;border-radius:14px;box-shadow:0 18px 50px rgba(8,14,11,.22);padding:8px;font-family:Inter,Arial,sans-serif;text-align:left}
 .fx-acct-menu[hidden]{display:none}
 .fx-acct-who{display:grid;grid-template-columns:48px 1fr;gap:12px;align-items:center;padding:12px 10px 14px;border-bottom:1px solid #edf0ee;margin-bottom:6px}
