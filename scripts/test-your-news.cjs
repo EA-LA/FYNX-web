@@ -158,3 +158,52 @@ test('native recent history and older bookmarks show without web reader metadata
 });
 
 test('native saved stories with unknown publication dates remain visible',async()=>{const h=harness({account:{interests:{topics:[]},records:[{domain:'readingRecords',id:ID,data:{title:'Undated saved link',url:'https://publisher.example/story',saved:true}}]}});await tick();h.start();await tick();assert.equal(h.api.getSaved().length,1);assert.equal(h.api.getSaved()[0].publishedAt,null);assert.match(h.w.document.querySelector('[data-your-saved]').textContent,/Undated saved link/);h.close();});
+
+test('an unavailable refresh keeps earlier same-edition reports and discloses feed failure',async()=>{
+ let offline=false;
+ const h=harness({load:async(category,options)=>offline
+   ?result([],{status:'unavailable',stale:true,fetchedAt:null})
+   :result([item(category[0].charCodeAt(0).toString(16).repeat(32),{category,edition:options.edition,title:'Earlier '+category+' report'})])});
+ h.start();await tick();await tick();
+ const d=h.w.document;assert.equal(d.querySelectorAll('.your-news-story').length,3);
+ offline=true;d.querySelector('[data-your-refresh]').click();await tick();await tick();
+ assert.equal(d.querySelectorAll('.your-news-story').length,3);
+ assert.match(d.querySelector('[data-your-stories]').textContent,/Earlier stocks report/);
+ assert.equal(d.querySelector('[data-your-status-title]').textContent,'Sources unavailable');
+ assert.match(d.querySelector('[data-your-status]').textContent,/Earlier sourced reports remain visible/);
+ assert.equal(d.querySelector('[data-your-stories]').getAttribute('aria-busy'),'false');
+ h.close();
+});
+
+test('a partial outage keeps the failed feed without retaining successful feeds older reports',async()=>{
+ let offline=false;
+ const h=harness({load:async(category,options)=>offline&&category==='economics'
+   ?result([],{status:'unavailable',stale:true,fetchedAt:null})
+   :result([item(category[0].charCodeAt(0).toString(16).repeat(32),{category,edition:options.edition,title:(offline?'Updated ':'Earlier ')+category+' report'})])});
+ h.start();await tick();await tick();offline=true;
+ const d=h.w.document;d.querySelector('[data-your-refresh]').click();await tick();await tick();
+ assert.equal(d.querySelectorAll('.your-news-story').length,3);
+ assert.match(d.querySelector('[data-your-stories]').textContent,/Earlier economics report/);
+ assert.match(d.querySelector('[data-your-stories]').textContent,/Updated stocks report/);
+ assert.doesNotMatch(d.querySelector('[data-your-stories]').textContent,/Earlier stocks report/);
+ assert.match(d.querySelector('[data-your-status-title]').textContent,/Partly refreshed/);
+ offline=false;d.querySelector('[data-your-refresh]').click();await tick();await tick();
+ assert.doesNotMatch(d.querySelector('[data-your-status]').textContent,/Earlier sourced reports remain visible/);
+ h.close();
+});
+
+test('expired reports and successful empty refreshes do not resurrect old coverage',async()=>{
+ let mode='good';
+ const h=harness({load:async(category,options)=>mode==='good'
+   ?result([item(category[0].charCodeAt(0).toString(16).repeat(32),{category,edition:options.edition})])
+   :mode==='empty'?result([]):result([],{status:'unavailable',stale:true,fetchedAt:null})});
+ h.start();await tick();await tick();const d=h.w.document;
+ mode='empty';d.querySelector('[data-your-refresh]').click();await tick();await tick();
+ assert.equal(d.querySelectorAll('.your-news-story').length,0);
+ mode='good';d.querySelector('[data-your-refresh]').click();await tick();await tick();
+ assert.equal(d.querySelectorAll('.your-news-story').length,3);
+ h.advance(25*3600000);mode='unavailable';d.querySelector('[data-your-refresh]').click();await tick();await tick();
+ assert.equal(d.querySelectorAll('.your-news-story').length,0);
+ assert.doesNotMatch(d.querySelector('[data-your-status]').textContent,/Earlier sourced reports remain visible/);
+ h.close();
+});
