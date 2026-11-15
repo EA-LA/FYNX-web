@@ -5,6 +5,8 @@ on:
     paths:
       - assets/js/fynx-calendar.js
       - tools/economic-calendar.html
+      - home.html
+      - scripts/build-release-assets.cjs
       - scripts/test-fynx-calendar-ui.cjs
       - .github/workflows/economic-calendar-release-trust.yml
   workflow_dispatch:
