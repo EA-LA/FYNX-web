@@ -28,3 +28,25 @@ test('the fallback fetches one fixed URL, coalesces requests, revalidates cache 
 test('a provider outage is unavailable, not a false definitive missing-story result',async()=>{
  let calls=0;const resolver=P.createResolver({now:()=>now,fetcher:async()=>{calls++;throw Error('offline');}});await assert.rejects(resolver(id));await assert.rejects(resolver(id));assert.equal(calls,1);
 });
+test('independent snapshots require an explicit publisher-evidence company name and reject ambiguous, conflicting or stale data',()=>{
+ const p=fixture();p.articles[0].companies=[{name:'Nvidia',ticker:'NVDA'},{name:'Apple',ticker:'AAPL'}];p.articles[0].stats=[stat({symbol:'NVDA',name:'Nvidia'}),stat({symbol:'AAPL',name:'Apple'})];
+ const item={title:'The week ahead',description:'Nvidia and Anthropic will share the spotlight in the AI trade.'};
+ const values=P.namedMarketContext(p,item,now);assert.equal(values.length,1);assert.equal(values[0].symbol,'NVDA');assert.equal(values[0].asOf,stat().asOf);assert(!JSON.stringify(values).includes('reaction'));
+ assert.deepEqual(P.namedMarketContext(p,{title:'Apple harvest expands',description:''},now),[]);assert.deepEqual(P.namedMarketContext(p,{title:'Unrelated central bank report'},now),[]);
+ p.articles.push({companies:[],stats:[stat({symbol:'NVDA',name:'Nvidia',price:9999})]});assert.deepEqual(P.namedMarketContext(p,item,now),[]);
+ assert.deepEqual(P.namedMarketContext({...fixture(),generatedAt:new Date(now-2*86400000).toISOString()},item,now),[]);
+});
+test('only complete exact-source-bound published excerpts and licensed images survive the common reader',()=>{
+ const p=fixture(),source=p.articles[0].sources[0],text='The company reported that its earnings rose by 12 percent compared with the previous quarter.';
+ const excerpt={articleID:id,sourceURL:url,publisher:source.publisher,text,expiresAt:new Date(now+3600000).toISOString()};p.articles[0].excerpt=excerpt;
+ let result=P.normalize(p,id,now);assert.equal(result.article.coverageLevel,'publisher-excerpt');assert.equal(result.article.summary,text);assert.equal(result.article.contentExpiresAt,excerpt.expiresAt);
+ for(const patch of [{sourceURL:'https://publisher.example/another'},{articleID:'b'.repeat(64)},{text:text+'…'},{expiresAt:new Date(now-1).toISOString()}]){p.articles[0].excerpt={...excerpt,...patch};assert.equal(P.normalize(p,id,now).article.coverageLevel,'headline-only');}
+ p.articles[0].excerpt=excerpt;source.image={url:'https://images.example/a.jpg',sourceURL:url,articleID:id,licenseURL:'https://creativecommons.org/licenses/by/4.0/',credit:'Publisher photographer',expiresAt:new Date(now+7200000).toISOString()};result=P.normalize(p,id,now);assert.equal(result.article.image.expiresAt,excerpt.expiresAt);assert.equal(result.article.image.articleID,id);
+ source.image.sourceURL='https://publisher.example/other';assert.equal(P.normalize(p,id,now).article.image,null);
+});
+test('the publishing pipeline retains complete evidence and exact provenance, and retries old null or clipped excerpts',()=>{
+ const Pipeline=require('../scripts/build-intelligence.cjs'),item={source:'Publisher',title:'Company reports earnings increase',url,publishedAt:new Date(now-60000).toISOString()},description='The company reported earnings increased by 12 percent compared with the previous quarter. The company scheduled its next earnings release for November 20, 2026.';
+ const article=R.createBrief({source:item.source,title:item.title,link:url,pubDate:item.publishedAt,description},{now});article.contentExpiresAt=new Date(now+3600000).toISOString();
+ const excerpt=Pipeline.excerptFromArticle(article,item,now);assert(excerpt);assert.equal(excerpt.articleID,id);assert.equal(excerpt.sourceURL,url);assert(!excerpt.text.includes('…'));assert(excerpt.text.includes('November 20, 2026.'));assert(Pipeline.reusableExcerpt(excerpt,item,now));
+ assert.equal(Pipeline.reusableExcerpt(null,item,now),false);assert.equal(Pipeline.reusableExcerpt({...excerpt,text:excerpt.text+'…'},item,now),false);assert.equal(Pipeline.excerptFromArticle({...article,sourceUrl:'https://publisher.example/wrong'},item,now),null);
+});

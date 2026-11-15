@@ -37,19 +37,19 @@ async function cleanup(db,now) {
     if(!expired.docs.length)return;const batch=db.batch();for(const doc of expired.docs)batch.delete(doc.ref);await batch.commit();})(),350);
   }catch{console.warn('FYNX verified news cleanup deferred',{stage:'cleanup'});/* Expiry checks still fail closed; retry in one minute. */}
 }
-async function persistRows(rows,now=Date.now()) {
+async function persistRows(rows,now=Date.now(),{timeoutMs=STORE_TIMEOUT_MS,runCleanup=true}={}) {
   const db=database();if(!db||!rows.length)return;
   const records=rows.map(row=>serialize(row,now));
   const changed=records.filter(record=>{const old=persisted.get(keyFor(record.articleId,record.scope));return !old||old.fingerprint!==record.fingerprint||old.expiresAt<=now;});
   if(changed.length){
     const batch=db.batch();for(const record of changed)batch.set(db.collection(COLLECTION).doc(keyFor(record.articleId,record.scope)),record);
-    try{await deadline(batch.commit());}catch{throw Object.assign(new Error('Verified news storage is temporarily unavailable'),{newsStoreStage:'write'});}
+    try{await deadline(batch.commit(),Math.min(STORE_TIMEOUT_MS,Math.max(1,timeoutMs)));}catch{throw Object.assign(new Error('Verified news storage is temporarily unavailable'),{newsStoreStage:'write'});}
     for(const record of changed){const key=keyFor(record.articleId,record.scope);persisted.delete(key);persisted.set(key,{fingerprint:record.fingerprint,expiresAt:record.expiresAt.getTime()});}
     while(persisted.size>MAX_LOCAL_RECORDS)persisted.delete(persisted.keys().next().value);
   }
   // Cleanup is awaited so serverless freezing cannot silently abandon it. It
   // deletes at most 25 expired records and never changes unexpired news.
-  await cleanup(db,now);
+  if(runCleanup)await cleanup(db,now);
 }
 async function read(id,scope,now=Date.now()) {
   if(typeof id!=='string'||!/^[a-f0-9]{64}$/.test(id)||!validScope(scope))return null;
@@ -75,7 +75,7 @@ async function read(id,scope,now=Date.now()) {
   // Older stored topic templates and any injected derived claims are discarded.
   // Source-bound sections are recalculated at read time so future events expire.
   const intelligence=require('./story-evidence.cjs').sections(brief,{now});
-  const verifiedBrief={...brief,intelligence,context:intelligence.context.map(x=>({title:'Reported background',text:x.text,sourceURL:x.sourceURL})),questions:[],isCurrent:now-published<=DAY};
+  const verifiedBrief={...brief,image:Reader.approvedImage(brief.image,item,{now,expiresAt:expiry}),intelligence,context:intelligence.context.map(x=>({title:'Reported background',text:x.text,sourceURL:x.sourceURL})),questions:[],isCurrent:now-published<=DAY};
   return {item,brief:verifiedBrief,seenAt:verifiedAt,expiresAt:expiry};
 }
 // Resolve existing public records across editions. An input URL only computes

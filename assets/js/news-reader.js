@@ -13,7 +13,7 @@
   const sourceURL = safeURL(params.get('url'));
   const resolveShared = !!sourceURL || !params.has('edition');
   let current = null, pendingUpdate = null, request = 0, loading = false, timer = null, lastCheck = 0, lastAttempt = 0, refreshUnavailable = false;
-  let sharing = false, markedOpened = false, shared=null;
+  let sharing = false, markedOpened = false, shared=null, imageExpiryTimer=null;
   const preferenceKey = 'fynx:reader-preferences:v1';
   let preferences = {size:'standard',focus:false};
   const labels = {all:'News',stocks:'Markets',forex:'Currencies',crypto:'Digital assets',macro:'Economics',commodities:'Commodities',finance:'Finance',economics:'Economics',technology:'Technology',politics:'Politics & Policy',industries:'Industries',energy:'Energy',world:'World',analysis:'Analysis',official:'Official sources'};
@@ -40,13 +40,14 @@
   }
   function fingerprint(article) {return JSON.stringify([article.id,article.title,article.sourceUrl,article.publishedAt,article.coverageLevel,article.coverageNote,article.summary,article.keyPoints,article.numbers,article.context,article.questions,article.terms,article.image,article.related,article.intelligence,article.marketContext]);}
   function currentStory(article) {const age=Date.now()-Date.parse(article.publishedAt);return article.isCurrent!==false&&age>=-300000&&age<=24*HOUR;}
-  function retained(article) {
-    if(!article)return false;
+  function contentExpiry(article) {
+    if(!article)return NaN;
     const published=Date.parse(article.publishedAt),limit=published+(article.category==='official'?30:7)*24*HOUR;
-    const expiry=article.contentExpiresAt?Math.min(limit,Date.parse(article.contentExpiresAt)):limit;
-    return published>0&&Number.isFinite(expiry)&&expiry>Date.now();
+    return published>0?(article.contentExpiresAt?Math.min(limit,Date.parse(article.contentExpiresAt)):limit):NaN;
   }
+  function retained(article) {const expiry=contentExpiry(article);return Number.isFinite(expiry)&&expiry>Date.now();}
   function clearExpired() {
+    clearExpiredImages();
     if(!current||retained(current))return;
     current=null;pendingUpdate=null;
     for(const name of ['summary','points','context','questions','numbers','terms','sources','related','image'])$('[data-reader-'+name+']')?.replaceChildren();
@@ -109,42 +110,51 @@
     for(const [term,value] of detail){if(!value)continue;const row=node('div');row.append(node('dt',term),node('dd',value));check.append(row);}
     $('[data-reader-check-note]').textContent=article.coverageLevel==='headline-only'?'This page does not imply that FYNX read the complete article. The source link below is available for the full reporting.':'Check the original report for its full wording, qualifications and later corrections. A FYNX brief is not independent verification of every source claim.';
   }
-  function contextFigure(article) {
-    const category=article.category || options.category;
-    const contextRules=[
-      ['markets',/\b(?:stock markets?|stock exchanges?|S&P\s*500|Nasdaq|Dow Jones|Wall Street|equities)\b/i],
-      ['finance',/\b(?:earnings|quarterly results|revenue|profits?|banking|bonds?|yields?|loans?|credit markets?|financing)\b/i],
-      ['technology',/\b(?:artificial intelligence|AI|semiconductors?|computer chips?|chipmakers?|software|cybersecurity|data cent(?:er|re)s?|technology)\b/i],
-      ['economics',/\b(?:inflation|CPI|GDP|unemployment|payrolls?|jobs report|central banks?|Federal Reserve|policy rates?|interest rates?|economic growth)\b/i],
-      ['energy',/\b(?:crude oil|oil prices?|natural gas|renewables?|energy|wind farms?|solar power|OPEC)\b/i],
-      ['industries',/\b(?:manufacturing|factories|factory|automotive|airlines?|aviation|industrial|supply chains?)\b/i],
-      ['markets',/\b(?:stocks?|forex|currencies|bitcoin|crypto|ethereum)\b/i],
-      ['politics',/\b(?:elections?|parliament|congress|government|president|politics|legislation)\b/i]
-    ];
-    let context=sections[category] || (category==='forex'||category==='crypto'?'markets':'world');
-    if(['all','analysis','official'].includes(category)){
-      // Infer only from reported material, never from the generic explanations.
-      // Prefer the headline's subject before looking for detail in the brief.
-      const sourceBrief=[article.summary,...(Array.isArray(article.keyPoints)?article.keyPoints.map(point=>point?.text):[])].map(value=>text(value,1800)).join(' ');
-      context=contextRules.find(([,pattern])=>pattern.test(text(article.title,600)))?.[0]
-        ||contextRules.find(([,pattern])=>pattern.test(sourceBrief))?.[0]||'world';
-    }
-    if(originalEdition!=='us'&&['politics','economics','energy','markets'].includes(context))context=originalEdition==='uk'&&context==='markets'?'finance':'world';
-    return window.FYNXNewsroomMedia?.createFigure(context,{loading:'eager',story:{url:article.sourceUrl,title:article.title},captionTitle:false}) || null;
+  // A share-image/Open Graph URL is not a license. The optional image must be
+  // bound to this exact article and carry the same approved rights as the API.
+  function approvedImage(article, parentExpiry=Infinity) {
+    const image=article?.image;
+    if(!image||typeof image!=='object'||Array.isArray(image))return null;
+    const id=article.id||article.articleId, source=safeURL(article.sourceUrl), imageSource=safeURL(image.sourceURL||image.sourceUrl);
+    const url=safeURL(image.url),licenseURL=safeURL(image.licenseURL||image.licenseUrl),credit=text(image.credit,300),license=text(image.license,100);
+    const licenses={'https://creativecommons.org/licenses/by/4.0/':'CC BY 4.0','https://creativecommons.org/licenses/by-sa/4.0/':'CC BY-SA 4.0','https://creativecommons.org/publicdomain/zero/1.0/':'CC0'};
+    const expires=typeof image.expiresAt==='string'?Date.parse(image.expiresAt):NaN,limit=Math.min(contentExpiry(article),parentExpiry);
+    if(!/^[a-f0-9]{64}$/.test(id||'')||image.articleID!==id||!source||imageSource!==source||!url||!licenseURL||licenses[licenseURL]!==license||!credit||image.credit.length>300||!Number.isFinite(expires)||!Number.isFinite(limit)||expires<=Date.now()||expires>limit||expires>Date.now()+30*24*HOUR)return null;
+    if([image.width,image.height].some(value=>value!=null&&(!Number.isInteger(value)||value<1||value>10000)))return null;
+    const kind=image.kind||'source',caption=text(image.caption,600),sourcePage=safeURL(image.sourcePage);
+    if(!['source','article','context'].includes(kind)||(kind==='context'&&(!caption||typeof image.caption!=='string'||image.caption.length>600||!sourcePage)))return null;
+    return {url,source,licenseURL,license,credit,expires,kind,caption,sourcePage,alt:text(image.alt,300)||(kind==='context'?'Context photograph: '+caption:'Article image for '+text(article.title,500))};
+  }
+  function imageFigure(article, {compact=false,parentExpiry=Infinity}={}) {
+    const image=approvedImage(article,parentExpiry);if(!image)return null;
+    const figure=node('figure',undefined,compact?'reader-related-photo':'reader-approved-photo'),img=node('img');
+    figure.dataset.readerImageExpiry=String(image.expires);
+    img.src=image.url;img.alt=image.alt;img.loading=compact?'lazy':'eager';img.decoding='async';img.referrerPolicy='no-referrer';
+    const context=image.kind==='context';
+    if(context){figure.dataset.readerImageKind='context';img.style.objectFit='contain';}
+    const caption=node('figcaption');caption.append(node('strong',context?'Context photograph: ':'Source image: '));
+    if(context)caption.append(image.caption+' Photo: '+image.credit+' · ');
+    const source=node('a',context?'Original image source':image.credit);source.href=context?image.sourcePage:image.source;source.target='_blank';source.rel='noopener noreferrer';
+    const rights=node('a',image.license);rights.href=image.licenseURL;rights.target='_blank';rights.rel='noopener noreferrer';caption.append(source,' · ',rights);
+    img.addEventListener('error',()=>{figure.remove();scheduleImageExpiry();},{once:true});
+    figure.append(img,caption);return figure;
   }
   function photograph(article) {
-    const host=$('[data-reader-image]'), image=article.image;
-    host.replaceChildren();
-    const license=text(image?.license,100), credit=text(image?.credit,200), source=safeURL(image?.sourceUrl || image?.sourceURL), url=safeURL(image?.url);
-    const reusable=/^(CC0|CC BY(?:-SA)? [34]\.0|Public domain)$/i.test(license);
-    if(!url||!credit||!reusable){const figure=contextFigure(article);if(figure)host.append(figure);return;}
-    const figure=node('figure'), img=node('img');img.src=url;img.alt=text(image.alt,300);img.loading='eager';img.decoding='async';img.referrerPolicy='no-referrer';
-    const caption=node('figcaption');caption.append(node('strong','Source image: '));
-    if(source){const a=node('a',credit);a.href=source;a.target='_blank';a.rel='noopener noreferrer';caption.append(a);}else caption.append(credit);
-    const licenseURL=safeURL(image.licenseUrl || image.licenseURL);
-    caption.append(' · ');if(licenseURL){const a=node('a',license);a.href=licenseURL;a.target='_blank';a.rel='noopener noreferrer';caption.append(a);}else caption.append(license);
-    img.addEventListener('error',()=>{const fallback=contextFigure(article);if(fallback)figure.replaceWith(fallback);else figure.remove();},{once:true});
-    figure.append(img,caption);host.append(figure);
+    const host=$('[data-reader-image]');host.replaceChildren();
+    const figure=imageFigure(article);if(figure)host.append(figure);
+    // Missing permission or failed imagery keeps a clean, readable text layout.
+    // Do not ask the newsroom preview helper to retrieve an unlicensed OG image.
+  }
+  function clearExpiredImages() {
+    root.querySelectorAll('[data-reader-image-expiry]').forEach(figure=>{
+      if(Number(figure.dataset.readerImageExpiry)<=Date.now()){figure.querySelector('img')?.removeAttribute('src');figure.remove();}
+    });
+    scheduleImageExpiry();
+  }
+  function scheduleImageExpiry() {
+    if(imageExpiryTimer!==null){window.clearTimeout(imageExpiryTimer);imageExpiryTimer=null;}
+    const dates=[...root.querySelectorAll('[data-reader-image-expiry]')].map(figure=>Number(figure.dataset.readerImageExpiry)).filter(Number.isFinite);
+    if(dates.length)imageExpiryTimer=window.setTimeout(clearExpiredImages,Math.max(1,Math.min(2147483647,Math.min(...dates)-Date.now())));
   }
   function summary(article) {
     const host=$('[data-reader-summary]');host.replaceChildren();
@@ -202,16 +212,21 @@
   function related(article) {
     const rows=Array.isArray(article.related)?article.related:[], host=$('[data-reader-related]'),seen=new Set();host.replaceChildren();
     for(const row of rows.slice(0,12)){
-      const id=row?.articleId || row?.id, published=Date.parse(row?.publishedAt);if(!/^[a-f0-9]{64}$/.test(id || '')||id===article.id||seen.has(id)||!text(row.title)||!text(row.source)||!Number.isFinite(published)||Date.now()-published>24*HOUR||published>Date.now()+300000)continue;
-      const href=window.FYNXNewsReaderData?.href({...row,articleId:id,edition:row.edition||originalEdition,category:row.category||options.category});
+      const id=row?.articleId || row?.id, published=Date.parse(row?.publishedAt);if(!/^[a-f0-9]{64}$/.test(id || '')||id===article.id||seen.has(id)||!text(row.title)||!text(row.source)||!Number.isFinite(published)||Date.now()-published>7*24*HOUR||published>Date.now()+300000)continue;
+      // Verified shared-service rows retain the exact publisher source. Resolve
+      // it directly instead of searching a different edition/category feed.
+      const sourceValue=row.sourceUrl??row.sourceURL,source=sourceValue==null?null:safeURL(sourceValue);
+      if(sourceValue!=null&&!source)continue;
+      const exact=source?new URL('/news/article.html',location.origin):null;if(exact)exact.searchParams.set('url',source);
+      const href=exact?.href||window.FYNXNewsReaderData?.href({...row,articleId:id,edition:row.edition||originalEdition,category:row.category||options.category});
       if(!href)continue;let target;try{target=new URL(href,location.origin);}catch{continue;}
       // Both the source-backed reader and its published FYNX Intelligence analysis are valid internal destinations.
       // An Intelligence URL has no article id parameter; only accept the exact, clean slug route.
-      const readerRoute=target.pathname==='/news/article.html'&&target.searchParams.get('id')===id;
+      const readerRoute=target.pathname==='/news/article.html'&&(source?target.searchParams.get('url')===source&&!target.searchParams.has('edition'):target.searchParams.get('id')===id);
       const intelligenceRoute=/^\/intelligence\/[a-z0-9]+(?:-[a-z0-9]+)*\/$/.test(target.pathname)&&!target.search&&!target.hash;
       if(target.origin!==location.origin||(!readerRoute&&!intelligenceRoute))continue;
-      seen.add(id);const card=node('article'),heading=node('h3'),link=node('a',text(row.title,500));link.href=target.pathname+target.search;heading.append(link);const publishedAt=node('time',time(row.publishedAt));publishedAt.dateTime=row.publishedAt;card.append(node('p',text(row.source,150),'reader-related-source'),heading,publishedAt);host.append(card);
-      if(seen.size===3)break;
+      seen.add(id);const card=node('article'),heading=node('h3'),link=node('a',text(row.title,500));const figure=imageFigure({...row,id},{compact:true,parentExpiry:contentExpiry(article)});if(figure)card.append(figure);link.href=target.pathname+target.search;heading.append(link);const publishedAt=node('time',time(row.publishedAt));publishedAt.dateTime=row.publishedAt;card.append(node('p',text(row.source,150),'reader-related-source'),heading,publishedAt);host.append(card);
+      if(seen.size===5)break;
     }
     section('related',seen.size>0);
   }
@@ -221,7 +236,7 @@
     $('[data-reader-title]').textContent=text(article.title,600);document.title=text(article.title,150)+' | FYNX Reader';
     $('[data-reader-copy]').disabled=false;
     $('[data-reader-share]').disabled=sharing;
-    metadata(article);photograph(article);summary(article);points(article);context(article);rail(article);sources(article);related(article);syncBackLinks();updateStatus();
+    metadata(article);photograph(article);summary(article);points(article);context(article);rail(article);sources(article);related(article);scheduleImageExpiry();syncBackLinks();updateStatus();
     if(!markedOpened)try{window.FYNXYourNews?.markOpened({...article,url:article.sourceUrl,edition:originalEdition,category:options.category,...(options.symbol?{symbol:options.symbol}:{})});markedOpened=!!window.FYNXYourNews;}catch{}
   }
   function fail(message) {
@@ -280,7 +295,7 @@
     if(!resolveShared)try{const url=new URL(location.href);url.searchParams.set('edition',originalEdition);history.replaceState(history.state,'',url);}catch{}
   });
   document.addEventListener('visibilitychange',onReturn);
-  window.addEventListener('pagehide',()=>{clearInterval(timer);timer=null;});
+  window.addEventListener('pagehide',()=>{clearInterval(timer);timer=null;window.clearTimeout(imageExpiryTimer);imageExpiryTimer=null;});
   window.addEventListener('pageshow',()=>{if(/^[a-f0-9]{64}$/.test(options.id)){schedule();onReturn();}});
   start();
   import('/assets/js/account-sync.js?v=20261115-intelligence-1').then(api=>{

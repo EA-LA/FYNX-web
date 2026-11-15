@@ -19,7 +19,9 @@ test('public traversal includes published routes and excludes test, private, hid
     assert(isPublicSitePath('profile/accounts/connect/ea/index.html'));
     for(const file of ['../private.html','/tests/private.html','tools/../../private.html','tools\\private.html','tests/accounts/fixtures/mt4-statement.html','assets/.private/example.js'])assert.equal(isPublicSitePath(file),false,file);
     const packagedDirectories=fs.readFileSync(path.join(__dirname,'package-static.cjs'),'utf8').match(/const directories = (\[[^;]+\]);/)[1];
-    assert.deepEqual(vm.runInNewContext(packagedDirectories).join(','),PUBLIC_DIRECTORIES.join(','),'Traversal must match the public packaging roots');
+    // Association documents are packaged intentionally but contain no page/module
+    // asset references; hidden-directory traversal remains disabled.
+    assert.deepEqual(vm.runInNewContext(packagedDirectories).filter(directory=>directory!=='.well-known').join(','),PUBLIC_DIRECTORIES.join(','),'Page traversal must match public packaging roots apart from association documents');
     const result=build(root);
     assert.deepEqual(result.changed.sort(),publicFiles.slice().sort());
     for(const file of privateFiles)assert.equal(fs.readFileSync(path.join(root,file),'utf8'),canary,'Build mutated non-public source: '+file);
@@ -60,6 +62,17 @@ test('workspace validation release changes only its asset cache identity',()=>{
  const source=`<script src="/assets/js/shared-workspace.js?v=old"></script><script src="/assets/js/account-sync.js?v=${VERSION}"></script>`;
  const updated=rewriteReferences(source,'workspace.html',new Set(ASSETS));
  assert(updated.includes('shared-workspace.js?v='+ASSET_VERSIONS['assets/js/shared-workspace.js']));
- assert(updated.includes('account-sync.js?v='+VERSION));
+ assert(updated.includes('account-sync.js?v='+ASSET_VERSIONS['assets/js/account-sync.js']));
  assert.equal(rewriteReferences(updated,'workspace.html',new Set(ASSETS)),updated);
+});
+
+
+test('urgent reader version changes only its two assets and matches the published reader page',()=>{
+ const targets=new Set(['assets/js/news-reader.js','assets/css/news-reader.css']);
+ const source='<script src="/assets/js/news-reader.js?v=old"></script><link href="/assets/css/news-reader.css?v=old"><script src="/assets/js/news-reader-links.js?v=preserved"></script>';
+ const rewritten=rewriteReferences(source,'news/article.html',targets);
+ for(const asset of targets){assert.equal(ASSET_VERSIONS[asset],'20261115-urgent-reader-1');assert(rewritten.includes(asset+'?v='+ASSET_VERSIONS[asset]));}
+ assert(rewritten.includes('news-reader-links.js?v=preserved'));assert.equal(rewriteReferences(rewritten,'news/article.html',targets),rewritten);
+ const page=fs.readFileSync(path.join(__dirname,'../news/article.html'),'utf8');
+ assert.equal(rewriteReferences(page,'news/article.html',targets),page,'The checked-in reader page uses the release manifest versions');
 });

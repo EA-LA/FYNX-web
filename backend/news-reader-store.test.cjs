@@ -61,15 +61,16 @@ test('stored brief metadata must agree with the verified article and selected sc
  }finally{reset();}
 });
 test('shared resolver finds an exact known story across editions without fetching a supplied URL',async()=>{
- const db=fakeDatabase(),previous=global.fetch;Store._test.setDatabaseForTests(db);let calls=0;global.fetch=async url=>{calls++;assert.equal(url,require('./published-intelligence.cjs').INDEX_URL);return{ok:true,text:async()=>JSON.stringify({version:1,generatedAt:new Date().toISOString(),articles:[]})};};
+ const db=fakeDatabase(),previous=global.fetch;Store._test.setDatabaseForTests(db);let calls=0;const fixedFeeds=require('./publisher-feed-reader.cjs').PUBLISHER_FEEDS.map(f=>f.url),feedCalls=[];global.fetch=async url=>{if(fixedFeeds.includes(url)){feedCalls.push(url);return{ok:true,text:async()=>'<rss><channel></channel></rss>'};}calls++;assert.equal(url,require('./published-intelligence.cjs').INDEX_URL);return{ok:true,text:async()=>JSON.stringify({version:1,generatedAt:new Date().toISOString(),articles:[]})};};
  try{
   const row=Reader.decorate(makeItem({edition:'uk',link:'https://publisher.example/exact?oc=5&utm_source=feed'}));await Store.persistRows([row]);
   const found=await api.resolveArticle({url:'https://publisher.example/exact?utm_source=app&oc=7'});assert.equal(found.article.id,row.articleId);assert.equal(found.article.edition,'uk');assert.equal(found.article.sourceUrl,'https://publisher.example/exact');assert(Number.isFinite(Date.parse(found.article.contentExpiresAt)));
   const byID=await api.resolveArticle({id:row.articleId});assert.equal(byID.article.id,row.articleId);
   await assert.rejects(api.resolveArticle({url:row.link,id:'b'.repeat(64)}),e=>e.status===400);
-  assert.equal(calls,0,'Known stored records do not contact any publisher or index');
+  assert.equal(calls,1,'Optional independent context reads only the fixed public index, never the supplied source URL');
   await assert.rejects(api.resolveArticle({url:'https://publisher.example/another'}),e=>e.status===404);
-  assert.equal(calls,1,'A miss fetches only the fixed published index');
+  assert.equal(calls,1,'The fixed public index is shared and cached for exact-match fallback');
+  assert.equal(feedCalls.length,4,'ID-only discovery uses only the four fixed publisher feeds');
  }finally{global.fetch=previous;reset();}
 });
 test('forged source evidence and citations fail closed while derived injected sections are rebuilt',async()=>{
