@@ -40,7 +40,7 @@
   /* FYNX Intelligence: stories with an analysis page open there instead of the quick reader. */
   let intelMap = null;
   const intelPath = id => intelMap && typeof id === 'string' && intelMap[id.slice(0, 16)] ? '/intelligence/' + intelMap[id.slice(0, 16)] + '/' : null;
-  function intelFromReader(href) { try { const u = new URL(href, root.location.href); return u.origin === root.location.origin && u.pathname === '/news/article.html' ? intelPath(u.searchParams.get('id')) : null; } catch { return null; } }
+  function intelFromReader(href) { try { const u = new URL(href, root.location.href); return u.origin === root.location.origin && u.pathname === '/news/article.html' && u.searchParams.has('edition') ? intelPath(u.searchParams.get('id')) : null; } catch { return null; } }
   (function loadIntel() {
     const KEY = 'fynx_intel_map_v1';
     const apply = map => {
@@ -117,6 +117,24 @@
       } finally {clearTimeout(timeout);pending.delete(k);}
     });pending.set(k,task);return task;
   }
+  function canonicalSource(value){const safe=safeURL(value);if(!safe)return null;const u=new URL(safe);u.hash='';for(const key of [...u.searchParams.keys()])if(/^utm_|^(fbclid|gclid|oc)$/i.test(key))u.searchParams.delete(key);return u.href;}
+  async function resolveArticle(value={}) {
+    const params={kind:'resolve'};
+    if(value.url){const url=safeURL(value.url);if(!url)throw Error('Invalid source URL.');params.url=url;}
+    else if(/^[a-f0-9]{64}$/.test(value.id||''))params.id=value.id;
+    else throw Error('Invalid story identifier.');
+    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),14000);
+    try{
+      const response=await root.fetch(endpoint+'?'+new URLSearchParams(params),{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer',headers:{Accept:'application/json'}});
+      if(!response.ok){const error=Error(response.status===404||response.status===410?'This exact story is not available in the shared newsroom.':'The shared reader is temporarily unavailable.');error.status=response.status;throw error;}
+      const raw=await response.text();if(raw.length>180000)throw Error('This story response is too large.');
+      const result=JSON.parse(raw),article=result.article;
+      if(result.kind!=='article'||!article||value.id&&article.id!==value.id)throw Error('The story identity could not be verified.');
+      if(params.url&&canonicalSource(article.sourceUrl)!==canonicalSource(params.url))throw Error('The source does not match this story.');
+      if(article.contentExpiresAt&&(!Number.isFinite(Date.parse(article.contentExpiresAt))||Date.parse(article.contentExpiresAt)<=Date.now()))throw Error('This story has expired.');
+      return normalized(article,{id:article.id,edition:article.edition||'us',category:article.category||'all'});
+    }finally{clearTimeout(timeout);}
+  }
   function drain() {
     if(root.document?.hidden)return;
     while(active<3&&queue.length) {
@@ -136,5 +154,5 @@
   root.document?.addEventListener('visibilitychange',drain);
   root.document?.addEventListener('pointerover',event=>{const a=event.target.closest?.('a[href*="/news/article.html?"]');if(!a)return;try{prefetch([Object.fromEntries(new URL(a.href).searchParams)]);}catch{}},{passive:true});
   root.document?.addEventListener('focusin',event=>{const a=event.target.closest?.('a[href*="/news/article.html?"]');if(!a)return;try{prefetch([Object.fromEntries(new URL(a.href).searchParams)]);}catch{}});
-  root.FYNXNewsReaderData=Object.freeze({href,remember,prefetch,loadArticle,getCachedArticle});
+  root.FYNXNewsReaderData=Object.freeze({href,remember,prefetch,loadArticle,getCachedArticle,resolveArticle});
 })(typeof window==='undefined'?globalThis:window);

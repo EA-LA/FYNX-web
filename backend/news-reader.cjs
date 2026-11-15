@@ -19,6 +19,7 @@ function plain(value, max=14000) {
   return s.replace(/<(script|style|noscript|nav|footer|header)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,' ').replace(/<[^>]*>/g,' ').replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,max);
 }
 function safeURL(value) {
+  if(typeof value!=='string')return null;
   try {
     const u=new URL(value); if(u.protocol!=='https:'||u.username||u.password||(u.port&&u.port!=='443')||u.href.length>2048)return null;
     if(!u.hostname.includes('.')||u.hostname.endsWith('.')||/\.(local|localhost|internal)$/i.test(u.hostname)||/^[\d.]+$/.test(u.hostname)||u.hostname.includes(':'))return null;
@@ -86,16 +87,16 @@ function sentenceList(value) {
 }
 function sourceEvidence(item,sourceText,coverageLevel) {
   const title=titleWithoutPublisher(item),terms=tokens(title);
-  const candidates=sentenceList(sourceText).map((text,index)=>({text,index,score:tokens(text).filter(t=>terms.includes(t)).length+( /(?:\d|%|\$|£|€)/.test(text)?1:0)})).filter(x=>x.score>0||coverageLevel==='publisher-excerpt');
+  const candidates=sentenceList(sourceText).filter(text=>/[.!][\"”’')]*$/.test(text)&&!/[\u2026]|\.\.\./.test(text)&&words(text).length<=35).map((text,index)=>({text,index,score:tokens(text).filter(t=>terms.includes(t)).length+( /(?:\d|%|\$|£|€)/.test(text)?1:0)})).filter(x=>x.score>0||coverageLevel==='publisher-excerpt');
   const sorted=candidates.sort((a,b)=>b.score-a.score||a.index-b.index).slice(0,3).sort((a,b)=>a.index-b.index);
   // Never publish full extracted article text. At most 90 source-derived words
   // across summary, key evidence and repeated number values; source paragraphs stay at source.
   const excerpts=[];let remaining=78;
-  for(const row of sorted){if(remaining<12)break;const excerpt=bounded(row.text,Math.min(remaining,35));remaining-=words(excerpt).length;if(!excerpts.includes(excerpt))excerpts.push(excerpt);}
+  for(const row of sorted){if(remaining<12)break;const excerpt=row.text;if(words(excerpt).length>Math.min(remaining,35)||excerpts.includes(excerpt))continue;remaining-=words(excerpt).length;excerpts.push(excerpt);}
   if(!excerpts.length)return {summary:title,keyPoints:[],numbers:[]};
-  const numbers=[];
+  const numbers=[];let numberWords=90-excerpts.reduce((n,x)=>n+words(x).length,0);
   for(const sentence of excerpts)for(const match of sentence.matchAll(/(?:\b\d[\d,.]*%?\s?[-–]\s?\d[\d,.]*\s?(?:percent|%)|[$£€¥]\s?\d[\d,.]*(?:\s?(?:billion|million|trillion))?|\b\d[\d,.]*\s?(?:percentage points|basis points|percent|billion|million|trillion|bps|%))(?=$|[\s.,;:)])/gi)){
-    const value=match[0];if(/^\d{4}$/.test(value)||value.length<2||numbers.some(n=>n.value===value))continue;
+    const value=match[0];if(/^\d{4}$/.test(value)||value.length<2||numbers.some(n=>n.value===value)||words(value).length>numberWords)continue;numberWords-=words(value).length;
     // A context excerpt preserves the actual qualifier; no arithmetic, inferred
     // forecast, price target or change direction is fabricated.
     numbers.push({value,context:sentence===excerpts[0]?'Reported in the source brief above.':'Reported in the key evidence above.'});if(numbers.length>=4)break;
@@ -112,11 +113,14 @@ function createBrief(item,options={}) {
   const sourceText=plain(options.sourceText??item.description??'',14000);
   const titleTerms=tokens(title),metadataTerms=new Set([...titleTerms,...tokens(item.source)]),sourceTerms=tokens(sourceText);
   const useful=sourceText.length>55&&sourceTerms.filter(t=>!metadataTerms.has(t)).length>=2&&sourceText!==title;
-  const coverageLevel=useful?(options.coverageLevel==='source-text'?'source-text':'publisher-excerpt'):'headline-only';
+  let coverageLevel=useful?(options.coverageLevel==='source-text'?'source-text':'publisher-excerpt'):'headline-only';
   const findings=useful?sourceEvidence(item,sourceText,coverageLevel):{summary:title,keyPoints:[],numbers:[]};
-  const analysis=explain(title,useful?sourceText:'',item.category);
+  if(findings.summary===title&&!findings.keyPoints.length)coverageLevel='headline-only';
+  const glossary=explain(title,useful?sourceText:'',item.category);
+  const intelligence=require('./story-evidence.cjs').sections({...findings,coverageLevel,sourceUrl},{now});
+  const analysis={context:intelligence.context.map(x=>({title:'Reported background',text:x.text,sourceURL:x.sourceURL})),terms:glossary.terms,questions:[],intelligence};
   return {id,title,source:plain(item.source,160)||'Publisher',sourceUrl,publishedAt:item.pubDate||item.publishedAt,edition:item.edition||'us',category:item.kind==='official-release'?'official':item.category||'all',image:item.image||null,
-    coverageLevel,coverageNote:coverageLevel==='source-text'?'FYNX reviewed publicly accessible source text. The brief uses short source excerpts; explanations below are general reading context, not independent confirmation.':coverageLevel==='publisher-excerpt'?(options.sourceAccess==='public-key-points'?'FYNX reviewed the publisher’s public Key Points summary. The complete article, including any restricted text, has not been reviewed.':'FYNX reviewed the publisher’s supplied excerpt. Details absent from that excerpt are not filled in.'):'Only the headline and source metadata are available to FYNX. The complete article has not been reviewed; the context below does not add unverified story facts.',
+    coverageLevel,coverageNote:coverageLevel==='source-text'?'FYNX reviewed publicly accessible source text. The brief uses short attributed source excerpts. Story sections include only evidence available in that material.':coverageLevel==='publisher-excerpt'?(options.sourceAccess==='public-key-points'?'FYNX reviewed the publisher’s public Key Points summary. The complete article, including any restricted text, has not been reviewed.':'FYNX reviewed the publisher’s supplied excerpt. Details absent from that excerpt are not filled in.'):'Only the headline and source metadata are available to FYNX. The complete article has not been reviewed; the context below does not add unverified story facts.',
     preparedAt:new Date(now).toISOString(),updatedAt:new Date(options.accessedAt||now).toISOString(),...findings,...analysis,
     related:relatedRows(item,options.related||[]),sources:[{name:plain(item.source,160)||'Publisher',url:sourceUrl,accessedAt:new Date(options.accessedAt||now).toISOString()}],method:'source-backed-extractive',isCurrent:now-Date.parse(item.pubDate||item.publishedAt)<=DAY,
     sourceAccess:options.sourceAccess|| (coverageLevel==='headline-only'?'metadata-only':'publisher-feed'),sourceWordLimit:90};

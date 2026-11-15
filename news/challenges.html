@@ -1205,7 +1205,7 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(challenges));
     }
     const challengeSyncStatus=document.createElement('p');challengeSyncStatus.id='challengeSyncStatus';challengeSyncStatus.setAttribute('role','status');document.getElementById('challengeGrid').before(challengeSyncStatus);
-    import('/assets/js/account-sync.js?v=20261114-consistency-2').then(api=>{sharedChallenges=api;api.offerImport('challenges-local','Import earlier practice challenges',()=>{try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]').map(row=>({domain:'challenges',id:row.id,data:{...row,target:100}}));}catch{return [];}});api.subscribe(sync=>{challenges=loadState();renderChallenges();challengeSyncStatus.textContent=sync.uid?(sync.status==='synced'?'Practice progress shared with your iPhone.':sync.error||'Loading shared progress…'):'Guest progress stays in this browser.';});}).catch(()=>{});
+    import('/assets/js/account-sync.js?v=20261115-intelligence-1').then(api=>{sharedChallenges=api;api.offerImport('challenges-local','Import earlier practice challenges',()=>{try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]').map(row=>({domain:'challenges',id:row.id,data:{...row,target:100}}));}catch{return [];}});api.subscribe(sync=>{challenges=loadState();renderChallenges();challengeSyncStatus.textContent=sync.uid?(sync.status==='synced'?'Practice progress shared with your iPhone.':sync.error||'Loading shared progress…'):'Guest progress stays in this browser.';});}).catch(()=>{});
 
 
     function getCategoryLabel(category) {
@@ -1405,6 +1405,6 @@
     renderChallenges();
   </script>
 
-<footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261114-consistency-2"></script>
+<footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
 </body>
 </html>

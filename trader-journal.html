@@ -591,7 +591,7 @@ section.view.active{display:block}
 <!-- terminal-design:start -->
 <link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
 <link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
-<script src="/assets/js/news-reader-links.js?v=20261114-consistency-2" defer></script>
+<script src="/assets/js/news-reader-links.js?v=20261115-intelligence-1" defer></script>
 <script src="/assets/js/newsroom-editions.js?v=20261114-consistency-2" defer></script>
 <script src="/assets/js/news-preferences.js?v=20261113-topic-transfer-2" defer></script>
 <script src="/assets/js/newsroom-media.js?v=20261114-consistency-2" defer></script>
@@ -1370,7 +1370,7 @@ section.view.active{display:block}
 
     async function saveSharedJournal(id, data) {
       const uid = currentUid;
-      const {requireSync, save} = await import('./assets/js/account-sync.js?v=20261114-consistency-2');
+      const {requireSync, save} = await import('./assets/js/account-sync.js?v=20261115-intelligence-1');
       await requireSync(uid);
       await save('journalTrades', id, data);
     }
@@ -1522,6 +1522,6 @@ section.view.active{display:block}
   <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
   <script src="fynx-usercard.js?v=20260928-audit2"></script>
 
-<script type="module" src="/assets/js/account-sync.js?v=20261114-consistency-2"></script>
+<script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
 </body>
 </html>

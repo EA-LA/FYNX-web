@@ -88,10 +88,16 @@ function weekStart(value) {
 }
 // Public calendar rows: every country and importance level, as published (no values estimated).
 const IMPACTS = {High: 'high', Medium: 'medium', Low: 'low', Holiday: 'holiday', 'Non-Economic': 'other'};
+function calendarValue(value) {
+  const text = typeof value === 'number' && Number.isFinite(value) ? String(value) : typeof value === 'string' ? value.trim() : '';
+  return text && text.length <= 160 && !/^(?:[-—–]|n\/a|na|null|none|pending|tba)$/i.test(text) ? text : null;
+}
 function publicRows(rows) {
   return (Array.isArray(rows) ? rows : []).filter(r => typeof r.title === 'string' && r.title.trim() && /^[A-Z]{3}$/.test(String(r.country || '')) && Number.isFinite(Date.parse(r.date))).map(r => {
     const time = iso(Date.parse(r.date)), name = r.title.trim();
-    return { id: hash([r.country, name, time]), time, title: name, currency: r.country, impact: IMPACTS[r.impact] || 'other', forecast: r.forecast || null, previous: r.previous || null };
+    const event = { id: hash([r.country, name, time]), stableEventID: hash([r.country, String(r.date).slice(0, 10), r.title].join('|')), time, title: name, currency: r.country, impact: IMPACTS[r.impact] || 'other', forecast: calendarValue(r.forecast), previous: calendarValue(r.previous) };
+    for (const field of ['actual', 'unit', 'reference', 'revised']) { const value = calendarValue(r[field]); if (value !== null) event[field] = value; }
+    return event;
   }).sort((a,b) => a.time.localeCompare(b.time) || a.currency.localeCompare(b.currency));
 }
 function parseCalendar(rows, observedAt) {

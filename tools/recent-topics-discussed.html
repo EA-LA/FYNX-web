@@ -393,6 +393,6 @@
 
 <script>
  document.querySelectorAll('[data-save-topic]').forEach(button=>{const key='fynx_saved_'+button.dataset.saveTopic;function show(saved){button.setAttribute('aria-pressed',String(saved));button.textContent=saved?'Saved ✓':'Save topic';}try{show(localStorage.getItem(key)==='true');}catch{}button.addEventListener('click',()=>{try{const saved=button.getAttribute('aria-pressed')!=='true';localStorage.setItem(key,String(saved));show(saved);}catch{button.textContent='Saving unavailable';}});});
-</script><footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261114-consistency-2"></script>
+</script><footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
 </body>
 </html>

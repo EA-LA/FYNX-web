@@ -1,6 +1,6 @@
 'use strict';
 const {createHash}=require('node:crypto');
-const DOMAINS=Object.freeze(['profile','preferences','journalTrades','journalArchive','readingRecords','newsInterests','newsWatchlists','portfolios','researchNotes','researchChats','notificationState','notificationPreferences','progress','challenges','calculatorPresets','checklists','toolWorkspaces']);
+const DOMAINS=Object.freeze(['profile','preferences','journalTrades','journalArchive','readingRecords','mediaLibrary','newsInterests','newsWatchlists','portfolios','researchNotes','researchChats','notificationState','notificationPreferences','progress','challenges','calculatorPresets','checklists','toolWorkspaces']);
 const LIMITS=Object.freeze({mutations:50,itemBytes:131072,requestBytes:524288,recordsPerDomain:2000,responseBytes:8388608,domains:DOMAINS.length});
 class SyncError extends Error{constructor(code,message,details){super(message);this.code=code;this.details=details;}}
 const fail=(code,message,details)=>{throw new SyncError(code,message,details);};

@@ -362,6 +362,23 @@ async function loadArticle(id, edition, category, symbol) {
   const article = await Reader.enhance(record.item,pool);
   return {kind:'article',article,fetchedAt:article.updatedAt,freshForMs:FRESH_MS};
 }
+async function resolveArticle(query) {
+  const id=query.url!==undefined?Reader.articleId(query.url):query.id;
+  if(typeof id!=='string'||!/^[a-f0-9]{64}$/.test(id))throw Object.assign(new Error('Invalid article identifier'),{status:400});
+  if(query.id!==undefined&&query.url!==undefined&&query.id!==id)throw Object.assign(new Error('The source URL does not match this article.'),{status:400});
+  const record=await ReaderStore.resolve(id);
+  if(!record){
+    const published=await require('./published-intelligence.cjs').resolve(id);
+    if(published)return published;
+    throw Object.assign(new Error('This exact story is not currently available in the shared newsroom.'),{status:404});
+  }
+  // Read only previously ingested evidence. Unknown URLs are never fetched.
+  const article={...record.brief,intelligence:require('./story-evidence.cjs').sections(record.brief)};
+  article.context=article.intelligence.context.map(x=>({title:'Reported background',text:x.text,sourceURL:x.sourceURL}));article.questions=[];
+  article.contentExpiresAt=new Date(record.expiresAt).toISOString();
+  article.isCurrent=Date.now()-Date.parse(article.publishedAt)<=24*HOUR_MS;
+  return {kind:'article',article,fetchedAt:new Date(record.seenAt).toISOString(),freshForMs:FRESH_MS};
+}
 async function handler(req, res) {
   res.set('Access-Control-Allow-Origin','*'); res.set('X-Content-Type-Options','nosniff');
   if (req.method === 'OPTIONS') { res.set('Access-Control-Allow-Methods','GET'); return res.status(204).send(''); }
@@ -369,16 +386,18 @@ async function handler(req, res) {
   const query = req.query || {}, kind = query.kind === undefined ? 'headlines' : query.kind;
   const category = query.category === undefined ? 'all' : query.category, edition = query.edition === undefined ? 'us' : query.edition;
   try {
-    if (typeof kind !== 'string' || !['headlines','releases','article','symbol'].includes(kind)) throw new Error('Unknown kind');
+    if (typeof kind !== 'string' || !['headlines','releases','article','symbol','resolve'].includes(kind)) throw new Error('Unknown kind');
     validateSelectors(kind === 'article' && category === 'official' ? 'all' : category,edition);
+    if(kind==='resolve'&&((query.url!==undefined&&!Reader.safeURL(query.url))||(query.id!==undefined&&(typeof query.id!=='string'||!/^[a-f0-9]{64}$/.test(query.id)))||(query.url===undefined&&query.id===undefined)))throw new Error('Invalid source identifier');
     if (kind === 'symbol') require('./symbol-news')._test.queryFor(query.q);
     if (kind === 'article' && (typeof query.id !== 'string' || !/^[a-f0-9]{64}$/.test(query.id))) throw new Error('Invalid article identifier');
     if (kind === 'article' && query.symbol !== undefined) require('./symbol-news')._test.queryFor(query.symbol);
   } catch { return res.status(400).json({error:'Unknown feed selector or article identifier'}); }
   try {
-    const data = kind === 'article' ? await loadArticle(query.id,edition,category,query.symbol) : kind === 'symbol' ? await loadSymbol(query.q) : kind === 'releases' ? await loadOfficialReleases(edition,category) : await load(category,edition);
+    const data = kind === 'resolve' ? await resolveArticle(query) : kind === 'article' ? await loadArticle(query.id,edition,category,query.symbol) : kind === 'symbol' ? await loadSymbol(query.q) : kind === 'releases' ? await loadOfficialReleases(edition,category) : await load(category,edition);
     // Instance cache and HTTP cache together never extend freshness past 5 min.
-    const age = Date.now() - Date.parse(data.fetchedAt), remaining = Number.isFinite(age) ? Math.max(0,Math.floor((FRESH_MS - age) / 1000)) : 0;
+    const age = Date.now() - Date.parse(data.fetchedAt), contentTTL = data.article?.contentExpiresAt ? Math.max(0,Math.floor((Date.parse(data.article.contentExpiresAt)-Date.now())/1000)) : 60;
+    const remaining = Number.isFinite(age) && Number.isFinite(contentTTL) ? Math.min(contentTTL,Math.max(0,Math.floor((FRESH_MS - age) / 1000))) : 0;
     res.set('Cache-Control',data.stale || !remaining ? 'no-store' : 'public,max-age=' + Math.min(60,remaining)); return res.json(data);
   } catch (error) {
     if(error.newsStoreStage)console.warn('FYNX verified news store unavailable',{stage:error.newsStoreStage,kind,edition,category});
@@ -387,4 +406,4 @@ async function handler(req, res) {
   }
 }
 exports.webMarketFeed = functions.runWith({timeoutSeconds:15,memory:'256MB',maxInstances:4}).https.onRequest(handler);
-exports._test = {parseFeed,mergeFeeds,load,loadOfficialReleases,loadSymbol,loadArticle,articleRecords,cache,pending,safeURL,fetchXML,officialSources,handler,newsSources,editions,queries,publicationTime,feedImage,retentionHours,PROVIDER_TIMEOUT_MS,FRESH_MS,MAX_CACHE_ENTRIES};
+exports._test = {parseFeed,mergeFeeds,load,loadOfficialReleases,loadSymbol,loadArticle,resolveArticle,articleRecords,cache,pending,safeURL,fetchXML,officialSources,handler,newsSources,editions,queries,publicationTime,feedImage,retentionHours,PROVIDER_TIMEOUT_MS,FRESH_MS,MAX_CACHE_ENTRIES};

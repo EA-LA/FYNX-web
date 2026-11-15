@@ -12,6 +12,7 @@ body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,25
 .btn{height:38px;padding:0 12px;border-radius:10px;border:1px solid #ddd;background:#fff;font-size:12px;font-weight:800;cursor:pointer}
 small.dim{font-size:11px;color:#777} .filters{display:flex;gap:8px;flex-wrap:wrap} .feed-actions{display:flex;gap:6px;margin-top:8px}
 @media(max-width:900px){}
+#intelligence-preferences{margin-top:24px;padding-top:20px;border-top:1px solid rgba(127,127,127,.3)}#intelligence-preferences h3{font-size:16px;margin-bottom:10px}#intelligence-preferences p{font-size:13px;line-height:1.6;color:var(--muted,#737373)}#intelligence-preferences form{display:grid;gap:12px;margin-top:16px}#intelligence-preferences select{font:inherit;min-height:44px;padding:10px;border:1px solid #888;border-radius:8px;background:transparent;color:inherit}#intelligence-preferences fieldset{border:1px solid rgba(127,127,127,.3);padding:14px;border-radius:10px;display:grid;gap:6px}#intelligence-preferences legend{font-weight:700;padding:0 6px}#intelligence-preferences fieldset label{display:flex;align-items:center;gap:12px;min-height:44px;font-size:14px}#intelligence-preferences input{accent-color:#111;width:20px;height:20px}#intelligence-preferences .btn{min-height:44px;height:auto;justify-self:start}#intelligence-preferences :focus-visible{outline:2px solid currentColor;outline-offset:3px}
 </style>  <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
@@ -32,7 +33,7 @@ small.dim{font-size:11px;color:#777} .filters{display:flex;gap:8px;flex-wrap:wra
 <!-- terminal-design:start -->
 <link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
 <link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
-<script src="/assets/js/news-reader-links.js?v=20261114-consistency-2" defer></script>
+<script src="/assets/js/news-reader-links.js?v=20261115-intelligence-1" defer></script>
 <script src="/assets/js/newsroom-editions.js?v=20261114-consistency-2" defer></script>
 <script src="/assets/js/news-preferences.js?v=20261113-topic-transfer-2" defer></script>
 <script src="/assets/js/newsroom-media.js?v=20261114-consistency-2" defer></script>
@@ -71,6 +72,7 @@ small.dim{font-size:11px;color:#777} .filters{display:flex;gap:8px;flex-wrap:wra
 <div class="row"><span>Future billing/challenge alerts</span><button class="switch" data-pref="billingChallenges" type="button"><span class="knob"></span></button></div>
 <div class="row"><span>Sound alerts</span><button class="switch" data-pref="soundEnabled" type="button"><span class="knob"></span></button></div>
 <div style="margin-top:8px;font-size:12px;color:#777" id="permStatus">Permission: unknown</div>
+<section id="intelligence-preferences" aria-labelledby="intelligence-preferences-title"><h3 id="intelligence-preferences-title">FYNX intelligence</h3><p>Share coverage, delivery mode and brief choices with your FYNX iPhone app. Device permission, its pause switch, quiet hours and Time Sensitive authorization stay on each device. Brief times follow that device’s local time zone.</p></section>
 </div>
 </div></main></div>
 <script type="module" src="assets/js/session-bootstrap.js?v=20261114-consistency-2"></script>
@@ -106,9 +108,9 @@ let unreadOnly = false;
 function applyTheme(){const t=window.FynxPreferences?.getItem('fynx_theme');document.body.classList.toggle('dark-mode',t==='dark');} applyTheme();
 (document.getElementById('themeBtn')||{}).onclick=()=>{const d=!document.body.classList.contains('dark-mode');document.body.classList.toggle('dark-mode',d);window.FynxPreferences?.setItem('fynx_theme',d?'dark':'light');};
 
-document.querySelectorAll('.switch[data-pref]').forEach((s)=>s.onclick=async()=>{const k=s.dataset.pref;prefs[k]=!prefs[k];s.classList.toggle('on',prefs[k]);if(auth.currentUser){try { await saveNotificationPreferences(auth.currentUser.uid,prefs); } catch(error) { prefs[k]=!prefs[k];s.classList.toggle('on',prefs[k]);throw error; }} });
+document.querySelectorAll('.switch[data-pref]').forEach((s)=>s.onclick=async()=>{const k=s.dataset.pref;prefs[k]=!prefs[k];s.classList.toggle('on',prefs[k]);if(auth.currentUser){try { await saveNotificationPreferences(auth.currentUser.uid,{[k]:prefs[k]}); } catch(error) { prefs[k]=!prefs[k];s.classList.toggle('on',prefs[k]);throw error; }} });
 
-requestPermissionBtn.onclick=async()=>{const result = await requestBrowserNotificationPermission();permStatus.textContent = `Permission: ${result.permission}${result.supported?'':' (unsupported browser)'}`;prefs.browserEnabled = result.permission==='granted';document.querySelector('.switch[data-pref="browserEnabled"]').classList.toggle('on', prefs.browserEnabled);if(auth.currentUser){await saveNotificationPreferences(auth.currentUser.uid,prefs);} };
+requestPermissionBtn.onclick=async()=>{const result = await requestBrowserNotificationPermission();permStatus.textContent = `Permission: ${result.permission}${result.supported?'':' (unsupported browser)'}`;prefs.browserEnabled = result.permission==='granted';document.querySelector('.switch[data-pref="browserEnabled"]').classList.toggle('on', prefs.browserEnabled);if(auth.currentUser){await saveNotificationPreferences(auth.currentUser.uid,{browserEnabled:prefs.browserEnabled});} };
 
 function filteredItems(items){
   const cat = categoryFilter.value;
@@ -186,5 +188,6 @@ mountNotificationBell();
 </script>
 <script src="fynx-nav.js?v=20261114-consistency-2"></script>
 <script src="/assets/js/settings-shell.js?v=20261112-settings-1" defer></script>
-<script type="module" src="/assets/js/account-sync.js?v=20261114-consistency-2"></script>
+<script type="module" src="/assets/js/intelligence-editorial-preferences.js?v=20261114-consistency-2"></script>
+<script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
 </body></html>

@@ -597,7 +597,7 @@
 <!-- terminal-design:start -->
 <link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
 <link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
-<script src="/assets/js/news-reader-links.js?v=20261114-consistency-2" defer></script>
+<script src="/assets/js/news-reader-links.js?v=20261115-intelligence-1" defer></script>
 <script src="/assets/js/newsroom-editions.js?v=20261114-consistency-2" defer></script>
 <script src="/assets/js/news-preferences.js?v=20261113-topic-transfer-2" defer></script>
 <script src="/assets/js/newsroom-media.js?v=20261114-consistency-2" defer></script>
@@ -1091,7 +1091,7 @@
       async importTrades(rows, onProgress){
         if (!currentUid) throw new Error("Sign in to import trades into your journal.");
         const owner = currentUid; let done = 0;
-        const {requireSync,saveMany} = await import('./assets/js/account-sync.js?v=20261114-consistency-2');
+        const {requireSync,saveMany} = await import('./assets/js/account-sync.js?v=20261115-intelligence-1');
         await requireSync(owner);
         for (let i = 0; i < rows.length; i += 50) {
           if(currentUid !== owner) throw new Error('Your account changed. Import stopped.');
@@ -1416,7 +1416,7 @@
 
     async function saveSharedJournal(id, data) {
       const uid = currentUid;
-      const {requireSync, save} = await import('./assets/js/account-sync.js?v=20261114-consistency-2');
+      const {requireSync, save} = await import('./assets/js/account-sync.js?v=20261115-intelligence-1');
       await requireSync(uid);
       await save('journalTrades', id, data);
     }
@@ -1573,6 +1573,6 @@
 <link rel="stylesheet" href="/assets/css/journal-mt5.css?v=20261113-site-qa-86">
 <script src="/assets/js/journal-mt5.js?v=20261112-mt5-1" defer></script>
 <script src="/assets/js/journal-coach.js?v=20261113-site-qa-86" defer></script>
-<script type="module" src="/assets/js/account-sync.js?v=20261114-consistency-2"></script>
+<script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
 </body>
 </html>

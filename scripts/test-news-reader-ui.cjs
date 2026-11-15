@@ -23,11 +23,12 @@ function harness(t,{cached=null,load=async()=>article(),query='?id='+id+'&editio
  setup(w);w.eval(script);return {w,doc:w.document,calls,intervals,setEdition:value=>{edition=value;},q:selector=>w.document.querySelector(selector)};
 }
 
-test('reader renders source facts, general context and original source in distinct sections',async t=>{
+test('reader preserves source facts and omits generic topic context',async t=>{
  const h=harness(t);await tick();assert.equal(h.q('[data-reader-title]').textContent,article().title);
  assert.match(h.q('[data-reader-access]').textContent,/Source text reviewed/);
  assert.match(h.q('[data-reader-summary]').textContent,/quarterly revenue/);
- assert.match(h.q('[data-reader-context-section]').textContent,/separate from the source/);
+ assert.equal(h.q('[data-reader-context-section]').hidden,true);
+ assert.doesNotMatch(h.q('[data-reader-context]').textContent,/Revenue measures sales/);
  assert.equal(h.q('[data-reader-numbers] strong').textContent,'12%');
  assert.equal(h.q('[data-reader-sources] a').href,article().sourceUrl);
  assert.equal(h.q('[data-reader-loaded]').hidden,false);
@@ -194,4 +195,40 @@ test('only verified displayed stories enter local opening history, once per read
  const rejected=[];const bad=harness(t,{load:async()=>article({id:'b'.repeat(64)}),setup:w=>{w.FYNXYourNews={markOpened:value=>rejected.push(value)};}});await tick();
  assert.equal(rejected.length,0);assert.equal(bad.q('[data-reader-share]').disabled,true);assert.equal(bad.q('[data-reader-copy]').disabled,true);
  assert.equal(h.q('.reader-your-news').getAttribute('href'),'/news/your-news.html');
+});
+
+test('story-specific sections require exact supporting source evidence',async t=>{
+ const source=article().sourceUrl,summary='The new rule may affect borrowing costs for eligible households.';
+ const h=harness(t,{load:async()=>article({summary,intelligence:{version:1,whyItMatters:[{text:summary,sourceURL:source,kind:'potential'},{text:'Unsupported benefit claim',sourceURL:source,kind:'source-reported'}],marketImpact:[{text:summary,sourceURL:'https://wrong.example/report',kind:'reported-movement'}],context:[],nextEvents:[]}})});await tick();
+ assert.equal(h.q('[data-reader-context-section]').hidden,false);assert.match(h.q('[data-reader-context]').textContent,/eligible households/);assert.doesNotMatch(h.q('[data-reader-context]').textContent,/Unsupported benefit|Source-reported movement/);
+});
+test('source URL links resolve to the authoritative web story identity',async t=>{
+ const h=harness(t,{query:'?url='+encodeURIComponent(article().sourceUrl),setup:w=>{w.FYNXNewsReaderData.resolveArticle=async request=>{assert.equal(request.url,article().sourceUrl);return article();};}});await tick();
+ assert.equal(h.q('[data-reader-title]').textContent,article().title);assert.equal(h.q('[data-reader-loaded]').hidden,false);
+});
+
+
+test('dated market context preserves units and rejects stale or unsupported snapshots',async t=>{
+ const snapshot={symbol:'US10Y',name:'Treasury yield',price:4.1,changeValue:2,changeUnit:'bp',asOf:iso(-60000),source:'Fixture market provider',sourceURL:'https://provider.example/quote'};
+ const h=harness(t,{load:async()=>article({marketContext:[snapshot,{...snapshot,symbol:'BTC-USD',asOf:iso(-7200000)},{...snapshot,name:'Unsafe',sourceURL:'javascript:alert(1)'},{...snapshot,name:'Expired',asOf:iso(-5*86400000)}]})});await tick();
+ const content=h.q('[data-reader-context]').textContent;assert.match(content,/do not establish a reaction/);assert.match(content,/\+2.00bp/);assert.doesNotMatch(content,/BTC-USD|Unsafe|Expired/);assert.equal(h.q('[data-reader-context] a').href,snapshot.sourceURL);
+});
+
+test('a changed market snapshot offers an update without replacing active reading',async t=>{
+ const first=article({marketContext:[{symbol:'TEST',name:'Fixture',price:100,asOf:iso(-60000),source:'Fixture',sourceURL:'https://provider.example/quote'}]});
+ const h=harness(t,{cached:first,load:async()=>({...first,marketContext:[{...first.marketContext[0],price:101}]})});await tick();
+ assert.match(h.q('[data-reader-context]').textContent,/100/);assert.match(h.q('[data-reader-refresh]').textContent,/Read updated brief/);h.q('[data-reader-refresh]').click();assert.match(h.q('[data-reader-context]').textContent,/101/);
+});
+
+
+test('resolved stories share their exact id without changing to a scoped feed lookup',async t=>{
+ const shared=[],h=harness(t,{query:'?url='+encodeURIComponent(article().sourceUrl),setup:w=>{w.FYNXNewsReaderData.resolveArticle=async()=>article();w.navigator.share=async value=>shared.push(value);}});await tick();h.q('[data-reader-share]').click();await tick();
+ assert.equal(shared[0].url,'https://www.fynxfinanceworld.com/news/article.html?id='+id);
+});
+test('source expiry clears an open reader and prevents expired updates from being applied',async t=>{
+ const h=harness(t,{load:async()=>article({contentExpiresAt:iso(1000)})});await tick();assert.equal(h.q('[data-reader-content]').hidden,false);
+ h.w.Date.now=()=>now+2000;h.intervals.find(x=>x.ms===20000).fn();assert.equal(h.q('[data-reader-content]').hidden,true);assert.equal(h.q('[data-reader-summary]').children.length,0);assert.equal(h.q('[data-reader-share]').disabled,true);
+});
+test('a definitive removed shared story clears a previously visible brief',async t=>{
+ let removed=false;const h=harness(t,{query:'?id='+id,setup:w=>{w.FYNXNewsReaderData.resolveArticle=async()=>{if(removed){const error=Error('Removed');error.status=404;throw error;}return article();};}});await tick();removed=true;await h.intervals[0].fn();await tick();assert.equal(h.q('[data-reader-content]').hidden,true);assert.equal(h.q('[data-reader-share]').disabled,true);
 });

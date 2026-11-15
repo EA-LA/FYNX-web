@@ -4,7 +4,7 @@ const Store=require('./news-reader-store.cjs'),Reader=require('./news-reader.cjs
 function fakeDatabase(){
  const records=new Map(),stats={commits:0,reads:0,sets:0,deletes:0,cleanupLimits:[]};let rejectWrites=false;
  const ref=id=>({id,async get(){stats.reads++;return{exists:records.has(id),data:()=>records.get(id)};},async delete(){stats.deletes++;records.delete(id);}});
- const db={records,stats,set rejectWrites(v){rejectWrites=v;},collection(name){assert.equal(name,Store.COLLECTION);return {doc:ref,where(field,op,date){assert.equal(field,'expiresAt');assert.equal(op,'<=');return{limit(n){stats.cleanupLimits.push(n);return{async get(){return{docs:[...records].filter(([,row])=>row.expiresAt<=date).slice(0,n).map(([id])=>({ref:ref(id)}))};}};}};}};},batch(){const ops=[];return{set(r,value){ops.push(['set',r,value]);},delete(r){ops.push(['delete',r]);},async commit(){stats.commits++;if(rejectWrites)throw Error('Firestore unavailable');for(const [type,r,v] of ops){if(type==='set'){stats.sets++;records.set(r.id,{...v,scope:{category:v.scope.category,symbol:v.scope.symbol,edition:v.scope.edition}});}else{stats.deletes++;records.delete(r.id);}}}};}};
+ const db={records,stats,set rejectWrites(v){rejectWrites=v;},collection(name){assert.equal(name,Store.COLLECTION);return {doc:ref,where(field,op,value){assert(['expiresAt','articleId'].includes(field));assert.equal(op,field==='expiresAt'?'<=':'==');return{limit(n){if(field==='expiresAt')stats.cleanupLimits.push(n);return{async get(){return{docs:[...records].filter(([,row])=>field==='expiresAt'?row.expiresAt<=value:row.articleId===value).slice(0,n).map(([id,row])=>({ref:ref(id),data:()=>row}))};}};}};}};},batch(){const ops=[];return{set(r,value){ops.push(['set',r,value]);},delete(r){ops.push(['delete',r]);},async commit(){stats.commits++;if(rejectWrites)throw Error('Firestore unavailable');for(const [type,r,v] of ops){if(type==='set'){stats.sets++;records.set(r.id,{...v,scope:{category:v.scope.category,symbol:v.scope.symbol,edition:v.scope.edition}});}else{stats.deletes++;records.delete(r.id);}}}};}};
  return db;
 }
 const makeItem=(extra={})=>({title:'Technology company reports higher earnings',source:'Publisher',link:'https://publisher.example/technology-report',pubDate:new Date(Date.now()-60000).toISOString(),edition:'us',category:'technology',kind:'headline',description:'The technology company reported that its quarterly earnings increased by 12 percent after revenue from cloud services expanded.',...extra});
@@ -58,5 +58,55 @@ test('stored brief metadata must agree with the verified article and selected sc
  try{const row=Reader.decorate(makeItem()),scope={edition:'us',category:'technology',symbol:''};await Store.persistRows([row]);const key=Store.keyFor(row.articleId,scope),saved=db.records.get(key);
  const changes=[{edition:'uk'},{category:'finance'},{source:'Impersonated publisher'},{title:'Unrelated fabricated title'},{publishedAt:new Date(Date.now()-86400000).toISOString()},{coverageLevel:'fully-verified'},{preparedAt:'invalid'},{updatedAt:new Date(Date.now()+86400000).toISOString()},{summary:'x'.repeat(20000)}];
  for(const change of changes){db.records.set(key,{...saved,brief:{...saved.brief,...change}});assert.equal(await Store.read(row.articleId,scope),null,JSON.stringify(Object.keys(change)));}
+ }finally{reset();}
+});
+test('shared resolver finds an exact known story across editions without fetching a supplied URL',async()=>{
+ const db=fakeDatabase(),previous=global.fetch;Store._test.setDatabaseForTests(db);let calls=0;global.fetch=async url=>{calls++;assert.equal(url,require('./published-intelligence.cjs').INDEX_URL);return{ok:true,text:async()=>JSON.stringify({version:1,generatedAt:new Date().toISOString(),articles:[]})};};
+ try{
+  const row=Reader.decorate(makeItem({edition:'uk',link:'https://publisher.example/exact?oc=5&utm_source=feed'}));await Store.persistRows([row]);
+  const found=await api.resolveArticle({url:'https://publisher.example/exact?utm_source=app&oc=7'});assert.equal(found.article.id,row.articleId);assert.equal(found.article.edition,'uk');assert.equal(found.article.sourceUrl,'https://publisher.example/exact');assert(Number.isFinite(Date.parse(found.article.contentExpiresAt)));
+  const byID=await api.resolveArticle({id:row.articleId});assert.equal(byID.article.id,row.articleId);
+  await assert.rejects(api.resolveArticle({url:row.link,id:'b'.repeat(64)}),e=>e.status===400);
+  assert.equal(calls,0,'Known stored records do not contact any publisher or index');
+  await assert.rejects(api.resolveArticle({url:'https://publisher.example/another'}),e=>e.status===404);
+  assert.equal(calls,1,'A miss fetches only the fixed published index');
+ }finally{global.fetch=previous;reset();}
+});
+test('forged source evidence and citations fail closed while derived injected sections are rebuilt',async()=>{
+ const db=fakeDatabase();Store._test.setDatabaseForTests(db);
+ try{
+  const row=Reader.decorate(makeItem()),scope=Store.scopeOf(row);await Store.persistRows([row]);const key=Store.keyFor(row.articleId,scope),saved=db.records.get(key);
+  for(const patch of [{summary:'A forged report claims earnings fell 99 percent.'},{keyPoints:[{text:'A fabricated 99 percent decline was reported.'}]},{numbers:[{value:'999 billion',context:'invented'}]},{sources:[{name:'Publisher',url:'https://attacker.example/'}]}]){
+   db.records.set(key,{...saved,brief:{...saved.brief,...patch}});assert.equal(await Store.resolve(row.articleId),null);
+  }
+  db.records.set(key,{...saved,brief:{...saved.brief,intelligence:{whyItMatters:[{text:'Invented analysis',sourceURL:row.link}]},context:[{title:'Generic',text:'Invented analysis'}]}});
+  const result=await Store.resolve(row.articleId);assert(result);assert(!JSON.stringify(result.brief).includes('Invented analysis'));
+ }finally{reset();}
+});
+test('resolver excludes expired and malformed scope records and recalculates currentness',async()=>{
+ const db=fakeDatabase();Store._test.setDatabaseForTests(db);
+ try{
+  const row=Reader.decorate(makeItem({pubDate:new Date(Date.now()-2*86400000).toISOString()})),scope=Store.scopeOf(row);await Store.persistRows([row]);const key=Store.keyFor(row.articleId,scope),saved=db.records.get(key);
+  assert.equal((await api.resolveArticle({id:row.articleId})).article.isCurrent,false);
+  db.records.set(key,{...saved,expiresAt:new Date(Date.now()-1)});assert.equal(await Store.resolve(row.articleId),null);
+  db.records.set(key,{...saved,scope:{edition:['uk'],category:'technology',symbol:''}});assert.equal(await Store.resolve(row.articleId),null);
+  db.records.set(key,{...saved,item:{...saved.item,link:'https://publisher.example/different'}});assert.equal(await Store.resolve(row.articleId),null);
+ }finally{reset();}
+});
+test('public resolve selector rejects array and non-HTTPS URLs before any outbound request',async()=>{
+ const previous=global.fetch;let calls=0;global.fetch=async()=>{calls++;throw Error('unexpected fetch');};
+ try{for(const query of [{url:['https://publisher.example/a']},{url:'http://publisher.example/a'},{url:'https://127.0.0.1/private'},{url:'https://user:password@publisher.example/private'},{id:['a'.repeat(64)]}]){const res=response();await api.handler({method:'GET',query:{kind:'resolve',...query}},res);assert.equal(res.code,400);}assert.equal(calls,0);}
+ finally{global.fetch=previous;reset();}
+});
+test('cross-scope resolution has one overall storage deadline rather than one budget for every record',async()=>{
+ const db=fakeDatabase();Store._test.setDatabaseForTests(db);
+ try{
+  const row=Reader.decorate(makeItem());await Store.persistRows([row]);
+  const original=db.collection.bind(db),delay=()=>new Promise(resolve=>setTimeout(resolve,60));
+  db.collection=name=>{const collection=original(name);return {...collection,
+   where(...args){const query=collection.where(...args);return {limit(n){const limited=query.limit(n);return {async get(){await delay();return limited.get();}};}};},
+   doc(id){const ref=collection.doc(id);return {...ref,async get(){await delay();return ref.get();}};}
+  };};
+  await assert.rejects(Store.resolve(row.articleId,Date.now(),{timeoutMs:100}),error=>error.newsStoreStage==='resolve');
  }finally{reset();}
 });

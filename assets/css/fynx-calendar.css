@@ -63,3 +63,10 @@
 /* iPhone SE (site-qa run 98): the full calendar list is ~196px wide there, so the numbers column (~98px) pushed
    "Previous" 32px past the edge, where it was cut off. On narrow phones the numbers use the whole row, under the time. */
 @media (max-width:400px){.fc-full .fc-nums{grid-column:1/-1}}
+.fc-open-event{appearance:none;background:none;border:0;padding:5px 0;text-align:left;color:inherit;font-family:inherit;cursor:pointer;min-height:44px}
+.fc-open-event:hover{text-decoration:underline}.fc-open-event:focus-visible,.fc-detail-related:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+.fc-detail{margin:12px 0 20px;padding:22px;border:1px solid var(--fc-line);border-radius:14px;background:var(--fc-soft);line-height:1.6;overflow-wrap:anywhere}
+.fc-detail[hidden]{display:none}.fc-detail-kicker{display:block;font-weight:800;letter-spacing:.1em;margin-bottom:12px}.fc-detail-title{font-family:Georgia,serif;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:22px 0 14px}
+.fc-detail-phase{display:block;margin:14px 0}.fc-detail-figures{display:flex;flex-wrap:wrap;gap:22px;margin:18px 0}.fc-detail-figures .fc-val{align-items:flex-start}.fc-detail-comparison{font-weight:700}.fc-detail-actions{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}.fc-detail .fc-chip{min-height:44px}
+.fc-detail-related{display:block;text-align:left;width:100%;background:transparent;border:0;border-bottom:1px solid var(--fc-line);padding:14px 0;color:inherit;font:600 14px/1.5 inherit;cursor:pointer;min-height:44px}.fc-detail a{display:inline-block;margin-top:18px;color:inherit;font-weight:700}
+@media(max-width:400px){.fc-detail{padding:16px}.fc-detail-figures{gap:12px}}
