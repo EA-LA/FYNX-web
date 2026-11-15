@@ -10,6 +10,17 @@ const source = fs.readFileSync(path.join(__dirname, '..', 'assets/js/fynx-calend
 const page = fs.readFileSync(path.join(__dirname, '..', 'tools/economic-calendar.html'), 'utf8');
 assert.match(page, /fynx-calendar\.js\?v=20261115-release-trust/, 'page loads the updated calendar script');
 assert.match(page, /verify the actual figure at the source/, 'page does not promise verified release data');
+const home = fs.readFileSync(path.join(__dirname, '..', 'home.html'), 'utf8');
+assert.match(home, /fynx-calendar\.js\?v=20261115-release-trust/, 'homepage preview loads the updated calendar script');
+const releaseAssets = require('./build-release-assets.cjs');
+assert.equal(releaseAssets.ASSET_VERSIONS['assets/js/fynx-calendar.js'], '20261115-release-trust',
+  'release asset builder must not undo calendar cache invalidation');
+const rewritten = releaseAssets.rewriteReferences(
+  '<script src="/assets/js/fynx-calendar.js?v=outdated"></script>', 'home.html', new Set(['assets/js/fynx-calendar.js'])
+);
+assert.match(rewritten, /fynx-calendar\.js\?v=20261115-release-trust/,
+  'a website build upgrades stale economic calendar script versions');
+
 const base = Date.now();
 const at = h => new Date(base + h * 3600000).toISOString();
 const fixture = {updatedAt: new Date(base).toISOString(), all: [
