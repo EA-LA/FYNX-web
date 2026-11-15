@@ -1,0 +1,25 @@
+name: Intelligence bookmark storage recovery
+on:
+  pull_request:
+    paths:
+      - 'assets/js/intelligence.js'
+      - 'scripts/test-intelligence-bookmark-storage.cjs'
+      - '.github/workflows/intelligence-bookmarks.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bookmarks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check browser script and regression harness syntax
+        run: |
+          node --check assets/js/intelligence.js
+          node --check scripts/test-intelligence-bookmark-storage.cjs
+      - name: Test bookmark storage recovery
+        run: node --test scripts/test-intelligence-bookmark-storage.cjs
