@@ -7,8 +7,9 @@ const { JSDOM } = require('jsdom');
 const source = fs.readFileSync(path.join(__dirname, '../assets/js/home-movers.js'), 'utf8');
 const flush = () => new Promise(resolve => setImmediate(resolve));
 const snapshot = Object.freeze({
-  stocksAsOf: '2026-11-13T12:00:00Z',
-  cryptoAsOf: '2026-11-13T12:00:00Z',
+  // Recovery tests use a current fixture; stale and invalid timestamps are tested separately.
+  stocksAsOf: new Date().toISOString(),
+  cryptoAsOf: new Date().toISOString(),
   gainers: [{ symbol: 'AAPL', name: 'Apple<img src=x onerror=alert(1)>', price: 245.12, changePct: 1.5, marketCap: 2500000000000 }],
   losers: [], active: [], crypto: [], aiUnder3: []
 });
