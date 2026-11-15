@@ -142,7 +142,7 @@ function parseFeed(xml, now = Date.now(), options = {}) {
   if (!Object.hasOwn(parsed.rss || {}, 'channel') && !Object.hasOwn(parsed, 'feed') && !Object.hasOwn(rdf || {}, 'channel')) throw new Error('Not a supported feed');
   const rows = asArray(parsed.rss?.channel?.item ?? parsed.feed?.entry ?? rdf?.item);
   let validRows = 0;
-  const hours = retentionHours(options.category, options.official);
+  const hours = options.readerRetention===true?(options.official?720:168):retentionHours(options.category, options.official);
   const items = rows.flatMap(item => {
     const rawLink = Array.isArray(item.link) ? item.link.find(link => !link['@_rel'] || link['@_rel'] === 'alternate') : item.link;
     let href = typeof rawLink === 'object' ? rawLink?.['@_href'] ?? rawLink?.['#text'] : rawLink;
@@ -360,16 +360,40 @@ async function loadArticle(id, edition, category, symbol) {
   if (!record) throw Object.assign(new Error('This article is no longer available in the selected feed. Open the latest news to choose a current story.'),{status:404});
   const pool = [...articleRecords.values()].map(value => value.item).filter(item => item.edition === edition && (category === 'official' ? item.kind === 'official-release' : item.category === category) && (!symbol || item.symbol === symbol) && validDate(item.pubDate,Date.now(),category === 'official' ? 720 : 24));
   const article = await Reader.enhance(record.item,pool);
+  article.contentExpiresAt=new Date(Date.parse(record.item.pubDate)+(category==='official'?30:7)*24*HOUR_MS).toISOString();
   return {kind:'article',article,fetchedAt:article.updatedAt,freshForMs:FRESH_MS};
 }
-async function resolveArticle(query) {
+async function optionalWithin(operation,fallback,timeoutMs=4000){
+  let timer;try{return await Promise.race([Promise.resolve().then(operation).catch(()=>fallback),new Promise(resolve=>{timer=setTimeout(()=>resolve(fallback),timeoutMs);})]);}finally{clearTimeout(timer);}
+}
+async function resolveArticle(query,{enrichmentTimeoutMs=4000}={}) {
   const id=query.url!==undefined?Reader.articleId(query.url):query.id;
   if(typeof id!=='string'||!/^[a-f0-9]{64}$/.test(id))throw Object.assign(new Error('Invalid article identifier'),{status:400});
   if(query.id!==undefined&&query.url!==undefined&&query.id!==id)throw Object.assign(new Error('The source URL does not match this article.'),{status:400});
-  let record,storageFailure;
-  try{record=await ReaderStore.resolve(id);}catch(error){
-    if(error.newsStoreStage!=='resolve')throw error;
-    storageFailure=error;
+  // The current publisher feeds also serve native cards. Resolve their exact
+  // records in parallel with storage so a new headline need not wait for a
+  // website visitor to seed the database or the next static-index publication.
+  const [stored,live]=await Promise.allSettled([
+    ReaderStore.resolve(id),require('./publisher-feed-reader.cjs').resolve(id,{sourceURL:query.url})
+  ]);
+  let record=stored.status==='fulfilled'?stored.value:null,storageFailure=stored.status==='rejected'?stored.reason:null;
+  if(storageFailure&&storageFailure.newsStoreStage!=='resolve')throw storageFailure;
+  const current=live.status==='fulfilled'?live.value:null;
+  if(current){
+    const sameStored=record&&record.item.title===current.item.title&&record.item.pubDate===current.item.pubDate;
+    if(sameStored&&!Reader.articleCache.has(id))Reader.restoreVerified(current.item,record.brief);
+    const base=Reader.prime(current.item,current.pool);
+    // Save the exact public base before optional enrichment. Keep the write
+    // bounded and awaited; do not rely on serverless background persistence.
+    if(!sameStored)try{await ReaderStore.persistRows([{...current.item,reader:base}],Date.now(),{timeoutMs:900,runCleanup:false});}catch{console.warn('FYNX verified news store unavailable',{stage:'resolve-write'});}
+    const [article,context]=await Promise.all([
+      optionalWithin(()=>Reader.enhance(current.item,current.pool),base,enrichmentTimeoutMs),
+      optionalWithin(()=>require('./published-intelligence.cjs').contextFor(current.item),[],enrichmentTimeoutMs)
+    ]);
+    article.contentExpiresAt=new Date(current.expiresAt).toISOString();
+    article.image=Reader.approvedImage(article.image,current.item,{expiresAt:current.expiresAt});
+    if(article.coverageLevel!==base.coverageLevel||article.summary!==base.summary)try{await ReaderStore.persistRows([{...current.item,reader:article}],Date.now(),{timeoutMs:750,runCleanup:false});}catch{console.warn('FYNX verified news store unavailable',{stage:'resolve-enrichment-write'});}
+    return {kind:'article',article:{...article,marketContext:context},fetchedAt:current.fetchedAt,freshForMs:FRESH_MS};
   }
   if(!record){
     // A cold/unavailable database must not prevent an exact match in the
@@ -379,10 +403,14 @@ async function resolveArticle(query) {
     try{published=await require('./published-intelligence.cjs').resolve(id);}catch(error){throw storageFailure||error;}
     if(published)return published;
     if(storageFailure)throw storageFailure;
+    if(live.status==='rejected')throw live.reason;
     throw Object.assign(new Error('This exact story is not currently available in the shared newsroom.'),{status:404});
   }
-  // Read only previously ingested evidence. Unknown URLs are never fetched.
-  const article={...record.brief,intelligence:require('./story-evidence.cjs').sections(record.brief)};
+  // Enrichment receives only a previously ingested exact record. Its existing
+  // publisher allowlist, robots checks and paywall checks still apply.
+  if(!Reader.articleCache.has(id))Reader.restoreVerified(record.item,record.brief);
+  const [enriched,context]=await Promise.all([optionalWithin(()=>Reader.enhance(record.item,[]),record.brief,enrichmentTimeoutMs),optionalWithin(()=>require('./published-intelligence.cjs').contextFor(record.item),[],enrichmentTimeoutMs)]);
+  const article={...enriched,marketContext:context,intelligence:require('./story-evidence.cjs').sections(enriched)};
   article.context=article.intelligence.context.map(x=>({title:'Reported background',text:x.text,sourceURL:x.sourceURL}));article.questions=[];
   article.contentExpiresAt=new Date(record.expiresAt).toISOString();
   article.isCurrent=Date.now()-Date.parse(article.publishedAt)<=24*HOUR_MS;

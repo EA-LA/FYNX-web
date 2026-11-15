@@ -85,6 +85,9 @@ html body.fynx-reader-page .reader-related h2 { font-size:30px; letter-spacing:-
 .reader-related-heading>a { color:var(--terminal-green); font-size:11px; text-decoration:none; flex:0 0 auto; }
 .reader-related-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:25px; }
 .reader-related-grid article { min-width:0; border-top:1px solid var(--terminal-line); padding-top:16px; }
+.reader-related-photo { margin:0 0 14px; }
+.reader-related-photo img { display:block; width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:8px; background:var(--terminal-panel); }
+.reader-related-photo figcaption { margin-top:6px; color:var(--terminal-muted); font-size:10px; line-height:1.5; }
 .reader-related-source { color:var(--terminal-green); font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
 html body.fynx-reader-page .reader-related-grid h3 { font-size:20px; letter-spacing:-.035em; line-height:1.2; margin:8px 0 12px; }
 .reader-related-grid h3 a { text-decoration:none; }

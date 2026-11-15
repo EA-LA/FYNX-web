@@ -84,10 +84,23 @@ test('older direct-reader coverage is visibly historical, never labeled current'
 });
 
 test('article content remains plain text and related stories must remain on verified internal routes',async t=>{
- const h=harness(t,{load:async()=>article({summary:'<img src=x onerror=alert(1)>',related:[{articleId:'b'.repeat(64),title:'Fixture follow-up',source:'Second Publisher',publishedAt:iso(-1000)},{articleId:'c'.repeat(64),title:'External redirect',source:'Other',publishedAt:iso(-1000),readerUrl:'https://attacker.example/news/article.html?id='+('c'.repeat(64))},{articleId:'d'.repeat(64),title:'Old story',source:'Other',publishedAt:iso(-3*86400000)}]})});await tick();
+ const h=harness(t,{load:async()=>article({summary:'<img src=x onerror=alert(1)>',related:[{articleId:'b'.repeat(64),title:'Fixture follow-up',source:'Second Publisher',publishedAt:iso(-1000)},{articleId:'c'.repeat(64),title:'External redirect',source:'Other',publishedAt:iso(-1000),readerUrl:'https://attacker.example/news/article.html?id='+('c'.repeat(64))},{articleId:'d'.repeat(64),title:'Old story',source:'Other',publishedAt:iso(-8*86400000)}]})});await tick();
  assert.equal(h.q('[data-reader-summary] img'),null);assert.match(h.q('[data-reader-summary]').textContent,/<img/);assert.equal(h.q('[data-reader-related]').children.length,1);assert.equal(h.q('[data-reader-related] a').target,'');assert.match(h.q('[data-reader-related] a').href,/www.fynxfinanceworld.com\/news\/article.html/);
 });
 
+test('shared-service related reporting uses the exact internal source resolver without edition redirection',async t=>{
+ const row={articleId:'b'.repeat(64),title:'Anthropic follow-up fixture',source:'CNBC',sourceUrl:'https://www.cnbc.com/2026/11/12/anthropic-fixture.html?x=1&y=2',publishedAt:iso(-3*86400000),readerUrl:'/news/article.html?id='+('b'.repeat(64))+'&edition=uk&category=technology'};
+ const h=harness(t,{load:async()=>article({related:[row]}),setup:w=>{w.FYNXNewsReaderData.href=()=>{throw Error('Exact shared sources must not use edition-based or Intelligence-map lookup');};}});await tick();
+ const link=h.q('[data-reader-related] h3 a'),target=new URL(link.href);
+ assert.equal(target.origin,h.w.location.origin);assert.equal(target.pathname,'/news/article.html');assert.equal(target.searchParams.get('url'),row.sourceUrl);
+ assert.deepEqual([...target.searchParams.keys()],['url']);assert.equal(link.target,'');assert.equal(h.q('[data-reader-related-section]').hidden,false);
+});
+test('unsafe source URLs and expired related reporting are skipped without discarding legacy internal links',async t=>{
+ const row=(letter,extra={})=>({articleId:letter.repeat(64),title:'Related fixture '+letter,source:'Fixture',publishedAt:iso(-1000),...extra});
+ const h=harness(t,{load:async()=>article({related:[row('b',{sourceUrl:'javascript:alert(1)'}),row('c',{sourceUrl:'https://127.0.0.1/private'}),row('d',{sourceUrl:'http://publisher.example/story'}),row('e',{sourceUrl:'https://publisher.example/old',publishedAt:iso(-8*86400000)}),row('f')]})});await tick();
+ const links=h.doc.querySelectorAll('[data-reader-related] h3 a');assert.equal(links.length,1);assert.equal(new URL(links[0].href).searchParams.get('id'),'f'.repeat(64));
+ assert.equal(h.q('[data-reader-content]').hidden,false);assert.match(h.q('[data-reader-summary]').textContent,/quarterly revenue/);
+});
 test('related reporting keeps published FYNX Intelligence destinations and rejects other paths',async t=>{
  const makeRow=(letter,title,readerUrl)=>({articleId:letter.repeat(64),title,source:'Related Fixture Publisher',publishedAt:iso(-1000),readerUrl});
  const h=harness(t,{load:async()=>article({related:[
@@ -105,11 +118,80 @@ test('related reporting keeps published FYNX Intelligence destinations and rejec
  assert.equal(h.q('[data-reader-related-section]').hidden,false);
 });
 
-test('source image requires explicit reusable license and falls back to labeled context',async t=>{
- const valid={url:'https://images.example/report.jpg',credit:'Fixture photographer',sourceUrl:'https://publisher.example/news/quarterly-results',license:'CC BY 4.0',licenseUrl:'https://creativecommons.org/licenses/by/4.0/',alt:'Source image fixture'};
- const h=harness(t,{load:async()=>article({image:valid})});await tick();assert.equal(h.q('[data-reader-image] img').alt,valid.alt);assert.match(h.q('[data-reader-image] figcaption').textContent,/Source image/);
- h.q('[data-reader-image] img').dispatchEvent(new h.w.Event('error'));assert.match(h.q('[data-reader-image]').textContent,/Context photograph/);
- const bad=harness(t,{load:async()=>article({image:{...valid,license:'All rights reserved'}})});await tick();assert.equal(bad.q('[data-reader-image] img'),null);assert.match(bad.q('[data-reader-image]').textContent,/Context photograph/);
+const licensedImage=(extra={})=>({url:'https://images.example/report.jpg',articleID:id,credit:'Fixture photographer',sourceURL:article().sourceUrl,license:'CC BY 4.0',licenseURL:'https://creativecommons.org/licenses/by/4.0/',expiresAt:iso(3600000),alt:'Source image fixture',...extra});
+test('source image requires approved rights bound to the exact article',async t=>{
+ const valid=licensedImage(),h=harness(t,{load:async()=>article({image:valid})});await tick();
+ assert.equal(h.q('[data-reader-image] img').alt,valid.alt);assert.equal(h.q('[data-reader-image] img').src,valid.url);
+ const credit=h.q('[data-reader-image] figcaption');assert.match(credit.textContent,/Fixture photographer/);assert.match(credit.textContent,/CC BY 4.0/);
+ assert.equal(credit.querySelectorAll('a')[0].href,article().sourceUrl);assert.equal(credit.querySelectorAll('a')[1].href,valid.licenseURL);
+ h.q('[data-reader-image] img').dispatchEvent(new h.w.Event('error'));
+ assert.equal(h.q('[data-reader-image] img'),null);assert.equal(h.q('[data-reader-content]').hidden,false);assert.match(h.q('[data-reader-summary]').textContent,/quarterly revenue/);
+});
+const contextImage=(extra={})=>licensedImage({kind:'context',caption:'NVIDIA headquarters in Santa Clara, California, photographed in 2018. Context image, not a photograph of this reported event.',sourcePage:'https://commons.wikimedia.org/wiki/File:NVIDIA_Headquarters.jpg',credit:'Coolcaesar; edited by Jacek Halicki',license:'CC BY-SA 4.0',licenseURL:'https://creativecommons.org/licenses/by-sa/4.0/',alt:undefined,...extra});
+test('approved context photograph preserves historical caption author original source and uncropped display',async t=>{
+ const image=contextImage(),h=harness(t,{load:async()=>article({image})});await tick();
+ const figure=h.q('[data-reader-image] figure'),img=figure.querySelector('img'),caption=figure.querySelector('figcaption');
+ assert.equal(figure.dataset.readerImageKind,'context');assert.equal(img.style.objectFit,'contain');assert.match(img.alt,/Context photograph:.*2018/);
+ assert.match(caption.textContent,/Context photograph: NVIDIA headquarters/);assert.match(caption.textContent,/2018.*not a photograph of this reported event/);
+ assert.match(caption.textContent,/Coolcaesar; edited by Jacek Halicki/);assert.match(caption.textContent,/CC BY-SA 4.0/);
+ const links=caption.querySelectorAll('a');assert.equal(links[0].textContent,'Original image source');assert.equal(links[0].href,image.sourcePage);assert.equal(links[1].href,image.licenseURL);
+ assert.equal(h.q('[data-reader-content]').hidden,false);
+});
+test('context permission does not bypass caption provenance identity or license requirements',async t=>{
+ for(const invalid of [{caption:''},{caption:'x'.repeat(601)},{caption:null},{sourcePage:undefined},{sourcePage:'http://commons.wikimedia.org/wiki/File:Example.jpg'},{sourcePage:'https://127.0.0.1/private'},{license:'All rights reserved'},{licenseURL:'https://unlicensed.example/terms'},{articleID:'b'.repeat(64)}]){
+  const h=harness(t,{load:async()=>article({image:contextImage(invalid)})});await tick();
+  assert.equal(h.q('[data-reader-image] img'),null,JSON.stringify(invalid));assert.equal(h.q('[data-reader-content]').hidden,false);assert.match(h.q('[data-reader-summary]').textContent,/quarterly revenue/);
+ }
+});
+test('approved related context photo is also uncropped and clearly labeled',async t=>{
+ const row={articleId:'b'.repeat(64),title:'NVIDIA follow-up fixture',source:'Fixture Publisher',sourceUrl:'https://publisher.example/follow-up',publishedAt:iso(-1000)};
+ row.image=contextImage({articleID:row.articleId,sourceURL:row.sourceUrl});
+ const h=harness(t,{load:async()=>article({related:[row]})});await tick();
+ assert.equal(h.q('[data-reader-related] img').style.objectFit,'contain');assert.match(h.q('[data-reader-related] figcaption').textContent,/Context photograph:.*2018/);
+ assert.equal(new URL(h.q('[data-reader-related] h3 a').href).searchParams.get('url'),row.sourceUrl);
+});
+test('mismatched expired and malformed optional images cannot degrade verified article text',async t=>{
+ const rejected=[
+  {articleID:'b'.repeat(64)},{articleID:undefined},{sourceURL:'https://publisher.example/other-story'},
+  {expiresAt:undefined},{expiresAt:iso(-1)},{expiresAt:'not-a-date'},{expiresAt:iso(8*86400000)},
+  {license:'All rights reserved'},{licenseURL:'https://unverified.example/license'},
+  {license:'CC0'}, {credit:'   '},{width:-1},{height:10001},{width:1.5},
+  {url:'http://images.example/report.jpg'},{sourceURL:'javascript:alert(1)'}
+ ];
+ for(const bad of rejected){
+  let previews=0;
+  const h=harness(t,{load:async()=>article({image:licensedImage(bad)}),setup:w=>{w.FYNXNewsroomMedia.createFigure=()=>{previews++;throw Error('Unlicensed preview must not be requested');};}});await tick();
+  assert.equal(h.q('[data-reader-image] img'),null,JSON.stringify(bad));assert.equal(previews,0);
+  assert.equal(h.q('[data-reader-title]').textContent,article().title);assert.equal(h.q('[data-reader-content]').hidden,false);assert.match(h.q('[data-reader-summary]').textContent,/quarterly revenue/);
+ }
+ const pastContent=harness(t,{load:async()=>article({contentExpiresAt:iso(1000),image:licensedImage({expiresAt:iso(2000)})})});await tick();
+ assert.equal(pastContent.q('[data-reader-image] img'),null,'Image rights may not exceed article content retention');
+ assert.equal(pastContent.q('[data-reader-content]').hidden,false);
+});
+test('legacy string and partially malformed related artwork preserve all verified story text',async t=>{
+ const rows=['b','c','d','e','f'].map((letter,index)=>({articleId:letter.repeat(64),title:'Verified related story '+index,source:'Second Publisher',sourceUrl:'https://publisher.example/story-'+index,publishedAt:iso(-1000),image:[null,'https://images.example/unlicensed.jpg',[],{url:'https://images.example/incomplete.jpg'},licensedImage({articleID:letter.repeat(64),sourceURL:'https://publisher.example/story-'+index})][index]}));
+ const h=harness(t,{load:async()=>article({image:'https://images.example/legacy-unlicensed.jpg',related:rows})});await tick();
+ assert.equal(h.q('[data-reader-image] img'),null);assert.equal(h.q('[data-reader-content]').hidden,false);
+ assert.equal(h.doc.querySelectorAll('[data-reader-related] h3 a').length,5,'Malformed optional artwork does not discard related metadata');
+ assert.equal(h.doc.querySelectorAll('[data-reader-related] img').length,1,'Only the independently approved image is displayed');
+ assert.match(h.q('[data-reader-summary]').textContent,/quarterly revenue/);
+});
+test('image permission expiry removes imagery while preserving reading position and source text',async t=>{
+ const h=harness(t,{load:async()=>article({contentExpiresAt:iso(3600000),image:licensedImage({expiresAt:iso(1000)})})});await tick();
+ const summary=h.q('[data-reader-summary]'),detail=h.q('[data-reader-points] summary');detail.focus();assert.ok(h.q('[data-reader-image] img'));
+ h.w.Date.now=()=>now+2000;h.doc.dispatchEvent(new h.w.Event('visibilitychange'));
+ assert.equal(h.q('[data-reader-image] img'),null);assert.equal(h.q('[data-reader-summary]'),summary);assert.equal(h.doc.activeElement,detail);assert.equal(h.q('[data-reader-content]').hidden,false);
+});
+test('related images are bound to their own story and disappear independently of links',async t=>{
+ const rows=['b','c','d'].map((letter,index)=>({articleId:letter.repeat(64),title:'Verified follow-up '+index,source:'Second Publisher',sourceUrl:'https://publisher.example/follow-up-'+index,publishedAt:iso(-1000)}));
+ rows[0].image=licensedImage({articleID:rows[0].articleId,sourceURL:rows[0].sourceUrl,expiresAt:iso(1000)});
+ rows[1].image=licensedImage({articleID:rows[0].articleId,sourceURL:rows[0].sourceUrl});
+ rows[2].image=licensedImage({articleID:rows[2].articleId,sourceURL:rows[2].sourceUrl,expiresAt:iso(7200000)});
+ const h=harness(t,{load:async()=>article({related:rows,contentExpiresAt:iso(3600000)})});await tick();
+ assert.equal(h.q('[data-reader-related]').children.length,3);assert.equal(h.doc.querySelectorAll('[data-reader-related] img').length,1);
+ assert.match(h.q('[data-reader-related] figcaption').textContent,/Fixture photographer/);
+ h.w.Date.now=()=>now+2000;h.doc.dispatchEvent(new h.w.Event('visibilitychange'));
+ assert.equal(h.doc.querySelectorAll('[data-reader-related] img').length,0);assert.equal(h.doc.querySelectorAll('[data-reader-related] h3 a').length,3);assert.equal(h.q('[data-reader-content]').hidden,false);
 });
 
 test('a cache fallback never counts as a successful source refresh, including after returning to the tab',async t=>{
@@ -121,29 +203,11 @@ test('a cache fallback never counts as a successful source refresh, including af
  assert.match(h.q('[data-reader-status]').textContent,/could not be refreshed/);
 });
 
-test('broad-desk context images follow the reported subject while keeping the context label',async t=>{
- const cases=[
-  ['Stock market after midterm elections: What S&P 500 history shows','markets'],
-  ['Company earnings improve as quarterly revenue rises','finance'],
-  ['New semiconductor technology enters production','technology'],
-  ['Inflation slows in the latest consumer price release','economics'],
-  ['Oil prices move after OPEC production decision','energy'],
-  ['Manufacturing factories expand their assembly lines','industries'],
-  ['Congress holds a vote on new legislation','politics'],
-  ['A new report examines the changing outlook','world']
- ];
- for(const [title,expected] of cases){
-  const h=harness(t,{load:async()=>article({category:'all',title,summary:title,keyPoints:[]}),query:'?id='+id+'&edition=us&category=all'});await tick();
-  assert.equal(h.q('[data-reader-image] figure').dataset.contextImage,expected,title);
-  assert.match(h.q('[data-reader-image]').textContent,/Context photograph/);
+test('missing authorized artwork never invokes the publisher Open Graph preview fallback',async t=>{
+ for(const title of ['Stock markets and S&P 500','Company quarterly earnings','Semiconductor production','Inflation release','Oil production','Manufacturing factories','Congress votes','A changing outlook']){
+  let previews=0;const h=harness(t,{load:async()=>article({title,category:'all'}),setup:w=>{w.FYNXNewsroomMedia.createFigure=()=>{previews++;return w.document.createElement('figure');};}});await tick();
+  assert.equal(previews,0);assert.equal(h.q('[data-reader-image]').childElementCount,0);assert.equal(h.q('[data-reader-title]').textContent,title);assert.equal(h.q('[data-reader-content]').hidden,false);
  }
-});
-
-test('broad-desk image inference uses source details but never generic FYNX context as evidence',async t=>{
- const source=harness(t,{load:async()=>article({category:'all',title:'What the new announcement means',summary:'The company announced a new semiconductor manufacturing process.',keyPoints:[]})});await tick();
- assert.equal(source.q('[data-reader-image] figure').dataset.contextImage,'technology');
- const unreported=harness(t,{load:async()=>article({category:'all',title:'A new announcement draws attention',summary:'Only the headline is available.',keyPoints:[],context:[{title:'Technology',text:'Artificial intelligence, software and semiconductor markets are general topics.'}]})});await tick();
- assert.equal(unreported.q('[data-reader-image] figure').dataset.contextImage,'world');
 });
 
 test('reading size and focus preferences persist and focus can be exited with Escape',async t=>{

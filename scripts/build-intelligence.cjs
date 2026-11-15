@@ -92,12 +92,24 @@ function cluster(items, now) {
   return groups;
 }
 
+function reusableExcerpt(excerpt,item,now=Date.now()) {
+  const sourceURL=Reader.safeURL(item.url||item.link),id=Reader.articleId(sourceURL);
+  return !!excerpt&&excerpt.articleID===id&&Reader.safeURL(excerpt.sourceURL)===sourceURL&&excerpt.publisher===item.source&&typeof excerpt.text==='string'&&/[.!]["”’')]*$/.test(excerpt.text)&&!/[\u2026]|\.\.\./.test(excerpt.text)&&excerpt.text.split(/\s+/).length<=78&&Number.isFinite(Date.parse(excerpt.expiresAt))&&Date.parse(excerpt.expiresAt)>now;
+}
+function excerptFromArticle(a,item,now=Date.now()) {
+  const sourceURL=Reader.safeURL(item.url||item.link),id=Reader.articleId(sourceURL);
+  if(!a||a.id!==id||Reader.safeURL(a.sourceUrl)!==sourceURL||a.title!==cleanTitle(item)||Date.parse(a.publishedAt)!==Date.parse(item.publishedAt||item.pubDate)||!['source-text','publisher-excerpt'].includes(a.coverageLevel)||a.method!=='source-backed-extractive')return null;
+  const paragraphs=[a.summary,...(Array.isArray(a.keyPoints)?a.keyPoints:[]).map(p=>p?.text)];
+  if(paragraphs.some(p=>typeof p!=='string'||!/[.!]["”’')]*$/.test(p)||/[\u2026]|\.\.\./.test(p)))return null;
+  const declaredExpiry=a.contentExpiresAt===undefined?Infinity:Date.parse(a.contentExpiresAt);
+  const text=paragraphs.join(' '),expiry=Math.min(declaredExpiry,Date.parse(a.publishedAt)+(a.category==='official'?30:7)*DAY);
+  if(text.split(/\s+/).length<8||text.split(/\s+/).length>78||!Number.isFinite(expiry)||expiry<=now)return null;
+  return {text,publisher:a.source,sourceURL,articleID:id,expiresAt:new Date(expiry).toISOString(),coverageLevel:a.coverageLevel,sourceAccess:a.sourceAccess,accessedAt:a.updatedAt,numbers:(a.numbers||[]).map(n=>n.value).filter(n=>typeof n==='string'&&text.includes(n)).slice(0,4),image:Reader.approvedImage(a.image,{link:sourceURL,pubDate:a.publishedAt,source:a.source,kind:a.category==='official'?'official-release':'headline'},{now,expiresAt:expiry})};
+}
 async function readerExcerpt(item) {
   try {
-    const data = await getJSON(`${FEED}?${new URLSearchParams({kind: 'article', id: item.id, edition: item.edition || 'us', category: item.category || 'all'})}`, 12000);
-    const a = data.article; if (!a || a.coverageLevel === 'headline-only' || !a.summary || a.summary === a.title) return null;
-    const words = a.summary.split(/\s+/); if (words.length < 8) return null;
-    return {text: words.slice(0, 30).join(' ').replace(/[,;:]$/, '') + (words.length > 30 ? '…' : ''), publisher: a.source, numbers: (a.numbers || []).map(n => n.value).slice(0, 4)};
+    const data = await getJSON(`${FEED}?${new URLSearchParams({kind:'resolve',id:item.id,url:item.url||item.link})}`, 12000);
+    return excerptFromArticle(data.article,item);
   } catch { return null; }
 }
 
@@ -159,7 +171,9 @@ async function main() {
     const primary = [...g.items].sort((a, b) => (Reader.editorialTier?.(b) || 0) - (Reader.editorialTier?.(a) || 0) || Date.parse(a.publishedAt) - Date.parse(b.publishedAt))[0];
     const sources = [primary, ...g.items.filter(i => i !== primary)].slice(0, 8).map(i => ({publisher: i.source, title: i.title, url: i.url, publishedAt: i.publishedAt}));
     const newSources = !existing || sources.length > existing.sources.length;
-    const excerpt = existing && !newSources ? existing.excerpt : offline ? null : await readerExcerpt(primary);
+    // Retry a previous miss; an old null or clipped/unbound excerpt must not
+    // remain frozen forever simply because the source count did not change.
+    const excerpt = !newSources&&reusableExcerpt(existing?.excerpt,primary,now) ? existing.excerpt : offline ? null : await readerExcerpt(primary);
     if (sources.length < 2 && !excerpt) continue; // too little source material for a meaningful page
     const macro = A.macroContext(data.desk, g.link.themes, linked), catalysts = A.catalysts({companies: g.link.companies, markets: linked, themes: g.link.themes}, {earnings: data.earnings, desk: data.desk}, now);
     const dataPoints = A.dataAnalysis(stats, macro).points;
@@ -211,4 +225,4 @@ async function main() {
   console.log(`groups ${groups.length} · created ${created} · updated ${updated} · published ${list.length} · held for review ${review.length} · AI ${process.env.ANTHROPIC_API_KEY ? 'on' : 'off'}`);
 }
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
-module.exports = {cluster, slugify, relatedFor, cleanTitle, NOT_NEWS};
+module.exports = {cluster, slugify, relatedFor, cleanTitle, NOT_NEWS,excerptFromArticle,reusableExcerpt};
