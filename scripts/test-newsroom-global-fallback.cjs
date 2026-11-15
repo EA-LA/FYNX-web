@@ -112,3 +112,71 @@ test('a successful Global fallback still populates coverage for an empty edition
     assert.match(app.doc.querySelector('[data-newsroom-status]').textContent, /Global edition desk/);
   } finally { app.close(); }
 });
+
+
+test('retains valid saved reports when the next refresh fails, with honest status and working Retry', async () => {
+  let online = true;
+  const calls = [];
+  const app = setup((category, { edition }) => {
+    calls.push(edition);
+    return online
+      ? Promise.resolve({ status: 'fresh', fetchedAt: new Date().toISOString(), items: [story('us')] })
+      : Promise.reject(Error('offline'));
+  });
+  try {
+    await settle();
+    completed(app, 'fresh');
+    assert.match(app.lead.textContent, /Verified source headline/);
+    online = false;
+    app.button.click();
+    await settle();
+    completed(app, 'cached');
+    assert.match(app.lead.textContent, /Verified source headline/, 'verified story remains visible');
+    assert.match(app.label.textContent, /Saved coverage/);
+    assert.match(app.doc.querySelector('[data-newsroom-status]').textContent, /Source refresh unavailable/);
+    assert.deepEqual(calls, ['us', 'us'], 'an outage with saved coverage does not silently replace it with Global');
+    online = true;
+    app.button.click();
+    await settle();
+    completed(app, 'fresh');
+    assert.match(app.label.textContent, /Coverage updated/);
+  } finally { app.close(); }
+});
+
+test('changing edition never presents retained reporting from the previous edition after an outage', async () => {
+  let online = true;
+  const app = setup((category, { edition }) => online
+    ? Promise.resolve({ status: 'fresh', fetchedAt: new Date().toISOString(), items: [story('us')] })
+    : Promise.reject(Error('offline')));
+  try {
+    await settle();
+    completed(app, 'fresh');
+    online = false;
+    app.dom.window.FynxEdition.get = () => 'uk';
+    app.dom.window.document.dispatchEvent(new app.dom.window.Event('fynx:edition-change'));
+    await settle();
+    completed(app, 'unavailable');
+    assert.doesNotMatch(app.lead.textContent, /Verified source headline/);
+    assert.match(app.lead.textContent, /temporarily unavailable/i);
+  } finally { app.close(); }
+});
+
+test('a successful empty update is not mislabeled as saved coverage', async () => {
+  let first = true;
+  const app = setup(() => {
+    if (first) {
+      first = false;
+      return Promise.resolve({ status: 'fresh', fetchedAt: new Date().toISOString(), items: [story('us')] });
+    }
+    return Promise.resolve({ status: 'fresh', fetchedAt: new Date().toISOString(), items: [] });
+  });
+  try {
+    await settle();
+    completed(app, 'fresh');
+    app.button.click();
+    await settle();
+    completed(app, 'fresh');
+    assert.doesNotMatch(app.lead.textContent, /Verified source headline/);
+    assert.match(app.lead.textContent, /No recent reports/i);
+  } finally { app.close(); }
+});
