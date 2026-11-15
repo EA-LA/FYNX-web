@@ -18,6 +18,10 @@ const RAW = 'https://raw.githubusercontent.com/EA-LA/FYNX-web/';
 const EDITIONS = ['us', 'global', 'uk', 'europe', 'asia'];
 const CATEGORIES = ['all', 'stocks', 'forex', 'crypto', 'macro', 'commodities', 'finance', 'economics', 'technology', 'energy', 'industries'];
 const DAY = 86400000, KEEP_DAYS = 21, RECHECK_HOURS = 36, MAX_NEW = Number(process.env.INTELLIGENCE_MAX_NEW || 30), MAX_RECORDS = 600;
+// The published Intelligence page has a stricter attributed-source excerpt limit
+// than the upstream reader's private evidence brief. Keep complete sentences.
+const MAX_PUBLISHED_EXCERPT_WORDS = 31;
+const sourceWords = text => typeof text === 'string' ? text.trim().split(/\s+/).filter(Boolean).length : 0;
 // Not news events: quote pages, investor-conference notices and programme listings.
 const NOT_NEWS = /\b(stock price, news, quote|quote and history|stock quote|share price (?:today|chart)|to (?:participate|present) (?:in|at)|fireside chat|conference call|webcast|announces? (?:date|timing) (?:of|for)|rewind|podcast|live updates?:|market brief \(|newsletter|price targets?|upside for|analysts? (?:like|love|hate|bullish|bearish)|should you buy|is it a buy|best crypto to buy|at close of trade|convert \d+|price in (?:[A-Z]|british|us|singapore)|^economic outlook$|stocks? to (?:buy|watch)|undervalued)\b/i;
 const HOLD = /\b(killed|dead|death|dies|died|shooting|shot|murder|rape|sexual|abuse|assault|suicide|terror|bomb|massacre|accused|alleg(?:e|es|ed|ation|ations)|lawsuit|sued|indicted|charged with|arrested|fraud|scandal|investigat(?:ion|ed|ing) into)\b/i;
@@ -94,7 +98,7 @@ function cluster(items, now) {
 
 function reusableExcerpt(excerpt,item,now=Date.now()) {
   const sourceURL=Reader.safeURL(item.url||item.link),id=Reader.articleId(sourceURL);
-  return !!excerpt&&excerpt.articleID===id&&Reader.safeURL(excerpt.sourceURL)===sourceURL&&excerpt.publisher===item.source&&typeof excerpt.text==='string'&&/[.!]["”’')]*$/.test(excerpt.text)&&!/[\u2026]|\.\.\./.test(excerpt.text)&&excerpt.text.split(/\s+/).length<=78&&Number.isFinite(Date.parse(excerpt.expiresAt))&&Date.parse(excerpt.expiresAt)>now;
+  return !!excerpt&&excerpt.articleID===id&&Reader.safeURL(excerpt.sourceURL)===sourceURL&&excerpt.publisher===item.source&&typeof excerpt.text==='string'&&/[.!]["”’')]*$/.test(excerpt.text)&&!/[\u2026]|\.\.\./.test(excerpt.text)&&sourceWords(excerpt.text)<=MAX_PUBLISHED_EXCERPT_WORDS&&Number.isFinite(Date.parse(excerpt.expiresAt))&&Date.parse(excerpt.expiresAt)>now;
 }
 function excerptFromArticle(a,item,now=Date.now()) {
   const sourceURL=Reader.safeURL(item.url||item.link),id=Reader.articleId(sourceURL);
@@ -102,8 +106,12 @@ function excerptFromArticle(a,item,now=Date.now()) {
   const paragraphs=[a.summary,...(Array.isArray(a.keyPoints)?a.keyPoints:[]).map(p=>p?.text)];
   if(paragraphs.some(p=>typeof p!=='string'||!/[.!]["”’')]*$/.test(p)||/[\u2026]|\.\.\./.test(p)))return null;
   const declaredExpiry=a.contentExpiresAt===undefined?Infinity:Date.parse(a.contentExpiresAt);
-  const text=paragraphs.join(' '),expiry=Math.min(declaredExpiry,Date.parse(a.publishedAt)+(a.category==='official'?30:7)*DAY);
-  if(text.split(/\s+/).length<8||text.split(/\s+/).length>78||!Number.isFinite(expiry)||expiry<=now)return null;
+  // Each upstream summary/key point is a complete, directly sourced sentence.
+  // Select one that fits the public page instead of clipping a longer quote
+  // mid-sentence or concatenating several sentences beyond the publication cap.
+  const text=paragraphs.find(p=>sourceWords(p)>=8&&sourceWords(p)<=MAX_PUBLISHED_EXCERPT_WORDS);
+  const expiry=Math.min(declaredExpiry,Date.parse(a.publishedAt)+(a.category==='official'?30:7)*DAY);
+  if(!text||!Number.isFinite(expiry)||expiry<=now)return null;
   return {text,publisher:a.source,sourceURL,articleID:id,expiresAt:new Date(expiry).toISOString(),coverageLevel:a.coverageLevel,sourceAccess:a.sourceAccess,accessedAt:a.updatedAt,numbers:(a.numbers||[]).map(n=>n.value).filter(n=>typeof n==='string'&&text.includes(n)).slice(0,4),image:Reader.approvedImage(a.image,{link:sourceURL,pubDate:a.publishedAt,source:a.source,kind:a.category==='official'?'official-release':'headline'},{now,expiresAt:expiry})};
 }
 async function readerExcerpt(item) {
