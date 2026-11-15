@@ -57,10 +57,22 @@
     if (root.matches && eligible(root)) adopt(root);
     root.querySelectorAll('button').forEach(b => { if (eligible(b)) adopt(b); });
   }
+  // Do not fire actions in inactive tabs, collapsed panels, or disabled form groups.
+  // They may contain loaded-but-hidden widgets whose refresh handlers have side effects.
+  // Check at click time so a panel becoming visible can refresh on the next cycle.
+  function canAutoRefresh(button) {
+    if (!button.isConnected || button.matches(':disabled') || button.getAttribute('aria-disabled') === 'true') return false;
+    for (let element = button; element; element = element.parentElement) {
+      if (element.hasAttribute('hidden') || element.hasAttribute('inert') || element.getAttribute('aria-hidden') === 'true') return false;
+      const style = window.getComputedStyle(element);
+      if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
+    }
+    return true;
+  }
   function run() {
     last = Date.now(); next = last + EVERY;
     document.querySelectorAll('[data-fx-auto]').forEach(button => {
-      if (!button.isConnected || button.disabled) return;
+      if (!canAutoRefresh(button)) return;
       const chip = button.nextElementSibling && button.nextElementSibling.classList.contains('fx-auto') ? button.nextElementSibling : null;
       if (chip) { chip.classList.add('is-updating'); chip.lastChild.textContent = 'Updating…'; setTimeout(() => { chip.classList.remove('is-updating'); paint(); }, 2500); }
       try { button.click(); } catch (_) {}
