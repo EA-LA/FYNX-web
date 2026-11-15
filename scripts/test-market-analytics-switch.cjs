@@ -150,3 +150,59 @@ test('correlation windows can be switched during a pending request', async () =>
   assert.match(h.output.children[0].children[0].textContent, /90 daily returns/);
   assert.match(h.status.textContent, /ECB/);
 });
+
+
+test('malformed liquidity observations are rejected rather than rendered as prices', async () => {
+  const h = setup();
+  await settle(h.calls[0], { ...sample(), bid: null });
+  assert.equal(h.output.children.length, 0, 'a missing bid must not become $0.00');
+  assert.match(h.status.textContent, /unavailable/i);
+  assert.equal(h.button.disabled, false, 'user can retry');
+  assert.equal(h.reports.length, 1, 'invalid feed is reported');
+});
+
+test('invalid or future source timestamps cannot make prices look current', async () => {
+  const invalid = setup();
+  await settle(invalid.calls[0], { ...sample(), observationTime: 'not-a-time' });
+  assert.equal(invalid.output.children.length, 0);
+  assert.match(invalid.status.textContent, /unavailable/i);
+
+  const future = setup();
+  await settle(future.calls[0], { ...sample(), fetchedAt: '2099-01-01T00:00:00Z' });
+  assert.equal(future.output.children.length, 0);
+  assert.match(future.status.textContent, /unavailable/i);
+});
+
+test('a rejected refresh keeps the prior valid market snapshot and marks it stale', async () => {
+  const h = setup();
+  await settle(h.calls[0], sample());
+  const previous = h.output.children[0];
+  h.button.trigger('click');
+  await settle(h.calls[1], { ...sample(), askSize: 'unavailable' });
+  assert.equal(h.output.children[0], previous, 'valid prior table survives bad data');
+  assert.match(h.status.textContent, /Stale data/);
+  assert.match(h.status.textContent, /Refresh failed/);
+  assert.equal(h.button.disabled, false);
+});
+
+test('incomplete and out-of-range correlation matrices cannot be shown', async () => {
+  const h = setup('correlation');
+  await settle(h.calls[0], { ...correlation(30), matrix: [[1.3]] });
+  assert.equal(h.output.children.length, 0);
+  assert.match(h.status.textContent, /unavailable/i);
+  h.button.trigger('click');
+  await settle(h.calls[1], { ...correlation(30), matrix: [] });
+  assert.equal(h.output.children.length, 0);
+  assert.match(h.status.textContent, /unavailable/i);
+});
+
+test('valid market observations still render after a rejected response', async () => {
+  const h = setup('correlation');
+  await settle(h.calls[0], { ...correlation(30), matrix: [[null, 1]] });
+  assert.equal(h.output.children.length, 0);
+  h.button.trigger('click');
+  await settle(h.calls[1], correlation(30));
+  assert.equal(h.output.children.length, 1);
+  assert.match(h.status.textContent, /ECB/);
+  assert.doesNotMatch(h.status.textContent, /Stale data/);
+});
