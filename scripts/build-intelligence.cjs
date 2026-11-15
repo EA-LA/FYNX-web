@@ -197,7 +197,7 @@ async function main() {
   for (const d of await fs.readdir(OUT, {withFileTypes: true})) if (d.isDirectory() && d.name !== 'data' && !keep.has(d.name)) await fs.rm(path.join(OUT, d.name), {recursive: true, force: true});
   const reader = await fs.readFile(path.join(ROOT, 'news/article.html'), 'utf8');
   const assets = reader.split('</head>')[0].split('\n').filter(l => /<(script|link)\b/.test(l) && !/news-reader\.(css|js)|rel="icon"/.test(l)).join('\n');
-  const ctx = {assets, bySlug: new Map(list.map(r => [r.slug, r])), generatedAt: nowISO};
+  const ctx = {assets, bySlug: new Map(list.map(r => [r.slug, r])), metadata: R.seoMetadata(list), generatedAt: nowISO};
   for (const r of list) { await fs.mkdir(path.join(OUT, r.slug), {recursive: true}); await fs.writeFile(path.join(OUT, r.slug, 'index.html'), R.articlePage(r, ctx)); }
   await fs.writeFile(path.join(OUT, 'index.html'), R.hubPage(list, ctx));
   await fs.writeFile(path.join(OUT, 'method.html'), R.methodPage(ctx));

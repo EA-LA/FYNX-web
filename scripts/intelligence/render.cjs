@@ -50,10 +50,53 @@ function section(id, title, inner, tag) {
 const para = t => t ? `<p>${esc(t)}</p>` : '';
 const list = rows => rows?.length ? `<ul>${rows.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : '';
 
+// Preserve publisher headlines. Only SEO metadata is disambiguated when separately
+// sourced article records share a headline or a summary. Attribution is factual,
+// and the stable story ID is a last resort for identical publisher/time pairs.
+function baseDescription(rec) {
+  return (rec.narrative?.overview || rec.summary).replace(/\s+/g, ' ').slice(0, 155).replace(/\s\S*$/, '') + '…';
+}
+function seoMetadata(records) {
+  const count = (map, key) => map.set(key, (map.get(key) || 0) + 1);
+  const titles = new Map(), descriptions = new Map();
+  for (const rec of records) {
+    count(titles, `${rec.headline} | FYNX Intelligence`);
+    count(descriptions, baseDescription(rec));
+  }
+  const usedTitles = new Set(), usedDescriptions = new Set(), result = new Map();
+  const choose = (options, used) => {
+    const found = options.find(value => !used.has(value));
+    if (!found) throw new Error('Unable to assign unique Intelligence SEO metadata');
+    used.add(found);
+    return found;
+  };
+  for (const rec of [...records].sort((a, b) => a.slug.localeCompare(b.slug))) {
+    const source = rec.sources[0], publisher = source.publisher || 'Source', time = when(source.publishedAt);
+    const title = `${rec.headline} | FYNX Intelligence`;
+    const titleChoices = [
+      `${rec.headline} — ${publisher} | FYNX Intelligence`,
+      `${rec.headline} — ${publisher}, ${time} | FYNX Intelligence`,
+      `${rec.headline} — ${publisher}, ${time} · ${rec.id} | FYNX Intelligence`
+    ];
+    const description = baseDescription(rec), summary = description.slice(0, 105).replace(/\s\S*$/, '').replace(/…$/, '');
+    const descriptionChoices = [
+      `${summary}… Source: ${publisher}.`,
+      `${summary}… Source: ${publisher}, ${time}.`,
+      `${summary}… Source: ${publisher}, ${time}; market: ${rec.stats[0]?.symbol || 'markets'}.`,
+      `${summary}… Source: ${publisher}, ${time}; story: ${rec.id}.`
+    ];
+    result.set(rec.slug, {
+      title: choose(titles.get(title) > 1 ? titleChoices : [title, ...titleChoices], usedTitles),
+      description: choose(descriptions.get(description) > 1 ? descriptionChoices : [description, ...descriptionChoices], usedDescriptions)
+    });
+  }
+  return result;
+}
+
 function articlePage(rec, ctx) {
   const n = rec.narrative, ai = rec.method === 'ai';
   const url = `${SITE}/intelligence/${rec.slug}/`, primary = rec.sources[0];
-  const description = (n?.overview || rec.summary).replace(/\s+/g, ' ').slice(0, 155).replace(/\s\S*$/, '') + '…';
+  const {title, description} = ctx.metadata?.get(rec.slug) || {title: `${rec.headline} | FYNX Intelligence`, description: baseDescription(rec)};
   const jsonld = {'@context': 'https://schema.org', '@type': 'NewsArticle', headline: rec.headline.slice(0, 110), description, mainEntityOfPage: url, datePublished: rec.publishedAt, dateModified: rec.updatedAt,
     author: {'@type': 'Organization', name: 'FYNX Intelligence', url: SITE + '/intelligence/'}, publisher: {'@type': 'Organization', name: 'FYNX Finance World', logo: {'@type': 'ImageObject', url: SITE + '/favicon-32x32.png'}},
     isAccessibleForFree: true, isBasedOn: rec.sources.map(s => s.url), about: [...rec.companies.map(c => ({'@type': 'Corporation', name: c.name, ...(c.ticker ? {tickerSymbol: c.ticker} : {})})), ...rec.themes.map(t => ({'@type': 'Thing', name: t.label}))]};
@@ -100,7 +143,7 @@ ${section('method', 'How this page was made', method)}
 <p class="fx-disclaimer">For education and research only — not investment advice. Markets can move against any analysis.</p>
 </article>
 </main>`;
-  return head({title: `${rec.headline} | FYNX Intelligence`, description, canonical: url, jsonld, assets: ctx.assets}) + '\n' + shell(body);
+  return head({title, description, canonical: url, jsonld, assets: ctx.assets}) + '\n' + shell(body);
 }
 
 function hubPage(records, ctx) {
@@ -130,4 +173,4 @@ ${section('m6', 'Publishers', '<p>Original reporting belongs to its publishers. 
   return head({title: 'How FYNX Intelligence is made | FYNX Finance World', description: 'Sources, story selection, verified data, AI assistance, update and correction policy for FYNX Intelligence analysis pages.', canonical: SITE + '/intelligence/method.html', assets: ctx.assets}) + '\n' + shell(body, 'hub');
 }
 
-module.exports = {articlePage, hubPage, methodPage, esc, when, SITE};
+module.exports = {articlePage, hubPage, methodPage, seoMetadata, esc, when, SITE};
