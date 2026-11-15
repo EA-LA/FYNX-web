@@ -32,6 +32,7 @@ function ensureBellStyles() {
     .bell-sub{ padding:10px 16px 6px; font:700 10.5px "IBM Plex Mono",ui-monospace,monospace; letter-spacing:.12em; color:#7a857f; text-transform:uppercase; }
     .bell-item{ position:relative; padding:11px 16px 11px 28px; border-bottom:1px solid #f1f3f2; cursor:pointer; }
     .bell-item:hover{ background:#f6f8f7; }
+    .bell-item:focus-visible{ outline:2px solid currentColor; outline-offset:-3px; }
     .bell-item strong{ display:block; font-size:13px; margin-bottom:3px; }
     .bell-item small{ color:#6a756f; font-size:11.5px; }
     .bell-item.unread::before{ content:""; position:absolute; left:12px; top:16px; width:7px; height:7px; border-radius:50%; background:#1f8a5a; }
@@ -78,6 +79,11 @@ function ensureBellDom(button) {
 
 function bindItemClicks(list) {
   list.querySelectorAll(".bell-item[data-id]").forEach((node) => {
+    node.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      node.click();
+    });
     node.addEventListener("click", async () => {
       const id = node.dataset.id;
       const link = node.dataset.link;
@@ -119,11 +125,14 @@ function renderBell(drop, badge, notifications) {
     for (const item of items) {
       const row = document.createElement('div');
       row.className = 'bell-item' + (item.read ? '' : ' unread');
+      row.setAttribute('role', 'button');
+      row.tabIndex = 0;
       row.dataset.id = String(item.id);
       row.dataset.link = safeNotificationUrl(item.sourceUrl) || new URL('notifications.html', location.href).href;
       const title = document.createElement('strong'), detail = document.createElement('small');
       title.textContent = String(item.title || 'Notification');
       detail.textContent = `${item.source || 'FYNX'} • ${formatTime(item.timestamp)}`;
+      row.setAttribute('aria-label', `${item.read ? 'Read' : 'Unread'} notification: ${title.textContent}. ${detail.textContent}`);
       row.append(title, detail); list.append(row);
     }
   }
@@ -144,6 +153,14 @@ export async function mountNotificationBell() {
   const dom = ensureBellDom(bellButton);
   if (!dom) return;
 
+  dom.drop.id = 'fynx-notification-dropdown';
+  bellButton.setAttribute('aria-controls', dom.drop.id);
+  bellButton.setAttribute('aria-expanded', 'false');
+  const setOpen = open => {
+    dom.drop.classList.toggle('open', open);
+    bellButton.setAttribute('aria-expanded', String(open));
+  };
+
   bellButton.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -152,13 +169,19 @@ export async function mountNotificationBell() {
     const rect = bellButton.getBoundingClientRect();
     dom.drop.style.top = Math.round(rect.bottom + 10) + "px";
     dom.drop.style.right = Math.max(10, Math.round(window.innerWidth - rect.right)) + "px";
-    dom.drop.classList.toggle("open");
+    const open = !dom.drop.classList.contains('open');
+    setOpen(open);
+    if (open) dom.drop.querySelector('.bell-item[tabindex="0"], .bell-link')?.focus({ preventScroll: true });
   });
 
   document.addEventListener("click", (event) => {
-    if (!dom.drop.contains(event.target) && !bellButton.contains(event.target)) {
-      dom.drop.classList.remove("open");
-    }
+    if (!dom.drop.contains(event.target) && !bellButton.contains(event.target)) setOpen(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== 'Escape' || !dom.drop.classList.contains('open')) return;
+    event.preventDefault();
+    setOpen(false);
+    bellButton.focus();
   });
 
   onAuthStateChanged(auth, async (user) => {
