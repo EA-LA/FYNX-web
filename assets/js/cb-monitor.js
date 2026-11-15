@@ -39,7 +39,7 @@
   function validHistory(history) {
     return Array.isArray(history) && history.length > 0 && history.every((point, index) =>
       Array.isArray(point) && typeof point[0] === 'string' &&
-      /^\\d{4}-(0[1-9]|1[0-2])$/.test(point[0]) &&
+      /^\d{4}-(0[1-9]|1[0-2])$/.test(point[0]) &&
       typeof point[1] === 'number' && Number.isFinite(point[1]) &&
       (index === 0 || point[0] > history[index - 1][0]));
   }
@@ -71,7 +71,7 @@
       if (!available.length) { unavailable(); return; }
       const fed = desk?.fed, odds = fed?.odds;
       const validOdds = odds && typeof odds.meeting === 'string' &&
-        /^\\d{4}-\\d{2}-\\d{2}$/.test(odds.meeting) && Number.isFinite(Date.parse(odds.meeting)) &&
+        /^\d{4}-\d{2}-\d{2}$/.test(odds.meeting) && Number.isFinite(Date.parse(odds.meeting)) &&
         ['hike', 'hold', 'cut'].every(key => typeof odds[key] === 'number' &&
           Number.isFinite(odds[key]) && odds[key] >= 0 && odds[key] <= 100);
       cards = available.map(([a, name, code, reg, url]) => {
@@ -87,7 +87,7 @@
       return {region: reg, html: `<a class="cb-card cb-${trend}" href="${esc(url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(name)}: policy rate ${v.toFixed(2)} percent">
         <span class="cb-code">${esc(code)}</span><span class="cb-name">${esc(name)}</span>
         <span class="cb-rate">${v.toFixed(2)}<small>%</small></span>
-        <span class="cb-move">${mv ? `${mv.bp > 0 ? '▲' : '▼'} ${mv.bp > 0 ? '+' : ''}${mv.bp} bp · ${esc(month(mv.at))}` : 'Unchanged since 2015'}${effr}</span>
+        <span class="cb-move">${mv ? `${mv.bp > 0 ? '▲' : '▼'} ${mv.bp > 0 ? '+' : ''}${mv.bp} bp · ${esc(month(mv.at))}` : 'No change in available history'}${effr}</span>
         ${spark(h)}
         <span class="cb-meta">12 months: ${ch12 == null ? '—' : (ch12 > 0 ? '+' : '') + ch12 + ' bp'} · as of ${esc(month(h.at(-1)[0]))}</span>${next}</a>`};
     });
