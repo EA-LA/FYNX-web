@@ -70,3 +70,20 @@ test('missing source evidence and incomplete sentences are never used', () => {
   assert.equal(Publisher.excerptFromArticle(article({coverageLevel: 'headline-only'}), source), null);
   assert.equal(Publisher.excerptFromArticle(article({method: 'generated'}), source), null);
 });
+
+test('historic cached articles beyond their refresh window cannot block new publication', () => {
+  const aged = {
+    id: 'historic', publishedAt: new Date(Date.now() - 48 * 3600000).toISOString(),
+    sources: [{publisher: source.source, url}], stats: [{symbol: 'SPY'}],
+    excerpt: {text: longSentence, publisher: source.source, sourceURL: url}
+  };
+  const recent = {id: 'recent', excerpt: {text: shortSentence}};
+  const invalid = {id: 'invalid', excerpt: {text: 42}};
+  const records = new Map([[aged.id, aged], [recent.id, recent], [invalid.id, invalid]]);
+  assert.equal(Publisher.sanitizeStoredExcerpts(records), records);
+  assert.equal(records.get('historic').excerpt, null);
+  assert.equal(records.get('invalid').excerpt, null);
+  assert.equal(records.get('recent').excerpt.text, shortSentence);
+  assert.equal(records.get('historic').sources[0].url, url, 'verified attribution must be retained');
+  assert.deepEqual(records.get('historic').stats, [{symbol: 'SPY'}], 'market context must be retained');
+});
