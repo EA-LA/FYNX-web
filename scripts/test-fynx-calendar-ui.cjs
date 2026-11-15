@@ -115,8 +115,8 @@ const fixture = {updatedAt: new Date(base).toISOString(), all: [
     time: at(-1), forecast: 0, previous: 0};
   const futureZero = {id: 'zero-future', title: 'Inventory Change', currency: 'USD', impact: 'medium',
     time: at(1), forecast: 0, previous: null};
-  const zeroICS = window.FynxCalendar.toICS([pastZero], Date.parse('2026-11-14T12:00:00Z')).replace(/\\r\\n /g, '');
-  assert.ok(zeroICS.includes('Forecast: 0\\\\nPrevious: 0'), 'export preserves numerical zero forecast and previous');
+  const zeroICS = window.FynxCalendar.toICS([pastZero], Date.parse('2026-11-14T12:00:00Z')).replace(/\r\n /g, '');
+  assert.ok(zeroICS.includes('Forecast: 0\\nPrevious: 0'), 'export preserves numerical zero forecast and previous');
   assert.ok(!zeroICS.includes('Forecast: —'), 'zero values must not be substituted with missing values');
 
   fixture.all = [pastZero, futureZero];
