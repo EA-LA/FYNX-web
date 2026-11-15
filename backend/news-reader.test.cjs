@@ -110,7 +110,7 @@ test('expired verified records cannot survive a feed refresh that no longer cont
 });
 test('index and model numerals are not reported financial facts and election context does not invent unrelated glossary terms',()=>{
  const row=item({title:'Stock market after midterm elections: What S&P 500 history shows',description:'Midterms historically precede a strong year for the S&P 500. Here is what to know if you are watching the market.'});
- const brief=R.createBrief(row,{now});assert.deepEqual(brief.numbers,[]);assert(!brief.terms.some(t=>t.term==='Tariff'||t.term==='Effective date'));assert(brief.context.some(c=>c.title.includes('historical')));
+ const brief=R.createBrief(row,{now});assert.deepEqual(brief.numbers,[]);assert(!brief.terms.some(t=>t.term==='Tariff'||t.term==='Effective date'));assert(brief.context.some(c=>c.text==='Midterms historically precede a strong year for the S&P 500.'));assert(brief.context.every(c=>c.sourceURL===brief.sourceUrl),'Historical context is source-specific, not a reusable topic template');
  assert(!brief.keyPoints.some(p=>/^what to know|^here is what/i.test(p.text)));
 });
 test('five-minute expiry refreshes source text, while the publication time remains the actual publisher time',async()=>{

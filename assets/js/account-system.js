@@ -1,4 +1,4 @@
-import {save as saveSharedRecord, requireSync} from './account-sync.js?v=20261114-consistency-2';
+import {save as saveSharedRecord, requireSync} from './account-sync.js?v=20261115-intelligence-1';
 import { endAccountsSession } from './accounts/logout.js';
 import { auth, app } from "../../auth/firebase.js";
 import {

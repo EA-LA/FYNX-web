@@ -1,7 +1,7 @@
 /* Shared account protocol. Storage contains an account-scoped cache and durable outbox. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.FynxAccountSyncCore=api;})(typeof globalThis==='undefined'?this:globalThis,function(){
   'use strict';
-  const DOMAINS=['profile','preferences','journalTrades','journalArchive','readingRecords','newsInterests','newsWatchlists','portfolios','researchNotes','researchChats','notificationState','notificationPreferences','progress','challenges','calculatorPresets','checklists','toolWorkspaces'];
+  const DOMAINS=['profile','preferences','journalTrades','journalArchive','readingRecords','mediaLibrary','newsInterests','newsWatchlists','portfolios','researchNotes','researchChats','notificationState','notificationPreferences','progress','challenges','calculatorPresets','checklists','toolWorkspaces'];
   const copy=value=>JSON.parse(JSON.stringify(value));
   const object=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
   const key=(domain,id)=>domain+'\n'+id;

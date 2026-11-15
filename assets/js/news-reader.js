@@ -7,9 +7,11 @@
   const $ = selector => root.querySelector(selector);
   const HOUR = 3600000, cadence = 5 * 60000;
   const params = new URLSearchParams(location.search);
-  const originalEdition = params.get('edition') || window.FynxEdition?.get() || 'us';
+  let originalEdition = params.get('edition') || window.FynxEdition?.get() || 'us';
   const options = {id:params.get('id') || '', edition:originalEdition, category:params.get('category') || 'all'};
   if (params.get('symbol')) options.symbol = params.get('symbol');
+  const sourceURL = safeURL(params.get('url'));
+  const resolveShared = !!sourceURL || !params.has('edition');
   let current = null, pendingUpdate = null, request = 0, loading = false, timer = null, lastCheck = 0, lastAttempt = 0, refreshUnavailable = false;
   let sharing = false, markedOpened = false, shared=null;
   const preferenceKey = 'fynx:reader-preferences:v1';
@@ -36,8 +38,20 @@
     if(!Object.hasOwn(coverageLabels,article.coverageLevel))throw new Error('The available source material could not be verified.');
     return article;
   }
-  function fingerprint(article) {return JSON.stringify([article.id,article.title,article.sourceUrl,article.publishedAt,article.coverageLevel,article.coverageNote,article.summary,article.keyPoints,article.numbers,article.context,article.questions,article.terms,article.image,article.related]);}
+  function fingerprint(article) {return JSON.stringify([article.id,article.title,article.sourceUrl,article.publishedAt,article.coverageLevel,article.coverageNote,article.summary,article.keyPoints,article.numbers,article.context,article.questions,article.terms,article.image,article.related,article.intelligence,article.marketContext]);}
   function currentStory(article) {const age=Date.now()-Date.parse(article.publishedAt);return article.isCurrent!==false&&age>=-300000&&age<=24*HOUR;}
+  function retained(article) {
+    if(!article)return false;
+    const published=Date.parse(article.publishedAt),limit=published+(article.category==='official'?30:7)*24*HOUR;
+    const expiry=article.contentExpiresAt?Math.min(limit,Date.parse(article.contentExpiresAt)):limit;
+    return published>0&&Number.isFinite(expiry)&&expiry>Date.now();
+  }
+  function clearExpired() {
+    if(!current||retained(current))return;
+    current=null;pendingUpdate=null;
+    for(const name of ['summary','points','context','questions','numbers','terms','sources','related','image'])$('[data-reader-'+name+']')?.replaceChildren();
+    fail('This story’s source material has expired. Check for updates or open current reporting.');
+  }
   function status(message) { $('[data-reader-status]').textContent=message; }
   function actionStatus(message) { $('[data-reader-action-status]').textContent=message; }
   function readingPreferences(save=false) {
@@ -50,8 +64,8 @@
   }
   function storyURL() {
     const url=new URL('/news/article.html',location.origin);
-    url.searchParams.set('id',options.id);url.searchParams.set('edition',originalEdition);url.searchParams.set('category',options.category);
-    if(options.symbol)url.searchParams.set('symbol',options.symbol);
+    url.searchParams.set('id',options.id);
+    if(!resolveShared){url.searchParams.set('edition',originalEdition);url.searchParams.set('category',options.category);if(options.symbol)url.searchParams.set('symbol',options.symbol);}
     return url.href;
   }
   function fallbackLink() {
@@ -88,7 +102,7 @@
     const host=$('[data-reader-meta]'), publisher=node('span',text(article.source,150));
     const publication=node('time','Published '+time(article.publishedAt));publication.dateTime=article.publishedAt;
     host.replaceChildren(publisher,publication,node('span',labelEdition(originalEdition)+' edition'),node('span',currentStory(article)?'Current coverage':'Past coverage'));
-    const deck=article.coverageLevel==='headline-only'?'The headline is available. FYNX has not obtained enough source text to summarize the full report.':article.coverageLevel==='publisher-excerpt'?'A concise brief from the publisher’s available excerpt, followed by clear FYNX context.':'A concise brief from accessible source text, followed by clear FYNX context.';
+    const deck=article.coverageLevel==='headline-only'?'The headline is available. FYNX has not obtained enough source text to summarize the full report.':article.coverageLevel==='publisher-excerpt'?'A concise brief from the publisher’s available excerpt, with additional source-backed detail when available.':'A concise brief from accessible source text, with additional source-backed detail when available.';
     $('[data-reader-deck]').textContent=deck;
     const check=$('[data-reader-check]');check.replaceChildren();
     const detail=[['Publisher',text(article.source,150)],['Material available',coverageLabels[article.coverageLevel]],['Published',time(article.publishedAt)],['Brief prepared',time(article.preparedAt)],['Coverage',currentStory(article)?'Within the current news window':'Outside the current news window']];
@@ -145,11 +159,26 @@
     rows.forEach((row,index)=>{const article=node('article'),detail=node('div');article.append(node('span',String(index+1).padStart(2,'0'),'reader-point-number'));detail.append(node('p',text(row.text,1800)));const evidence=text(row.evidence,600);if(evidence&&evidence!==text(row.text,1800)){const details=node('details');details.append(node('summary','See the source evidence'),node('blockquote',evidence));detail.append(details);}article.append(detail);host.append(article);});
   }
   function context(article) {
-    const rows=Array.isArray(article.context)?article.context.filter(row=>text(row?.title)&&text(row?.text)).slice(0,5):[];
-    section('context',rows.length>0);const host=$('[data-reader-context]');host.replaceChildren();
-    rows.forEach(row=>{const article=node('article');article.append(node('h3',text(row.title,200)),node('p',text(row.text,2200)));host.append(article);});
-    const questions=Array.isArray(article.questions)?article.questions.map(row=>text(row,800)).filter(Boolean).slice(0,6):[];
-    section('questions',questions.length>0);$('[data-reader-questions]').replaceChildren(...questions.map(value=>node('li',value)));
+    const evidence=new Set([article.summary,...(article.keyPoints||[]).map(x=>x.text)]),sections=article.intelligence;
+    const groups=[['whyItMatters','Why it matters'],['marketImpact','Potential market impact'],['context','Broader context'],['nextEvents','What happens next']];
+    const host=$('[data-reader-context]');host.replaceChildren();
+    if(sections?.version===1)for(const [key,title] of groups){
+      const rows=(Array.isArray(sections[key])?sections[key]:[]).filter(x=>evidence.has(x.text)&&safeURL(x.sourceURL)===safeURL(article.sourceUrl)).slice(0,2);
+      if(!rows.length)continue;const block=node('article');block.append(node('h3',title));
+      for(const row of rows){block.append(node('p',text(row.text,2200)));block.append(node('small',row.kind==='potential'?'Potential effect described by the source':row.kind==='reported-movement'?'Source-reported movement; causal attribution not established':'Attributed to '+text(article.source,160)));}
+      host.append(block);
+    }
+    const snapshots=(Array.isArray(article.marketContext)?article.marketContext:[]).filter(row=>{
+      const age=Date.now()-Date.parse(row.asOf),maxAge=/-USD$/.test(row.symbol||'')?HOUR:4*24*HOUR;
+      return text(row.symbol,24)&&text(row.name,160)&&Number.isFinite(row.price)&&row.price>0&&text(row.source,160)&&safeURL(row.sourceURL)&&Number.isFinite(age)&&age>=-300000&&age<=maxAge;
+    }).slice(0,6);
+    if(snapshots.length){const block=node('article');block.append(node('h3','Dated market context'),node('p','These separate market snapshots do not establish a reaction to this report.'));
+      for(const row of snapshots){const value=Number(row.price).toLocaleString(undefined,{maximumFractionDigits:6}),change=Number.isFinite(row.changeValue)&&['%','bp'].includes(row.changeUnit)?' · '+(row.changeValue>=0?'+':'')+row.changeValue.toFixed(2)+row.changeUnit:Number.isFinite(row.changePercent)?' · '+(row.changePercent>=0?'+':'')+row.changePercent.toFixed(2)+'%':'';
+        block.append(node('p',text(row.name,160)+' ('+text(row.symbol,24)+') · '+value+(text(row.currency,8)?' '+text(row.currency,8):'')+change));
+        const link=node('a',text(row.source,160)+' · '+time(row.asOf));link.href=safeURL(row.sourceURL);link.target='_blank';link.rel='noopener noreferrer';block.append(link);
+      }host.append(block);
+    }
+    section('context',host.childElementCount>0);section('questions',false);$('[data-reader-questions]').replaceChildren();
   }
   function rail(article) {
     const numbers=Array.isArray(article.numbers)?article.numbers.filter(row=>text(row?.value)&&text(row?.context)).slice(0,5):[];
@@ -168,7 +197,7 @@
       detail.append(node('strong',name),node('small',new URL(url).hostname+(row.accessedAt&&time(row.accessedAt)?' · Available material checked '+time(row.accessedAt):'')));
       link.append(detail,node('span','↗︎','reader-source-arrow'));link.setAttribute('aria-label','Read original reporting at '+name+' (opens in a new tab)');host.append(link);
     }
-    $('[data-reader-method]').textContent='Prepared from available source material. Source-backed points and FYNX explanatory context are identified separately. Publisher access terms apply to the original report.';
+    $('[data-reader-method]').textContent='Prepared from available source material. Attributed reporting and separately dated market snapshots are identified explicitly. Publisher access terms apply to the original report.';
   }
   function related(article) {
     const rows=Array.isArray(article.related)?article.related:[], host=$('[data-reader-related]'),seen=new Set();host.replaceChildren();
@@ -196,6 +225,7 @@
     if(!markedOpened)try{window.FYNXYourNews?.markOpened({...article,url:article.sourceUrl,edition:originalEdition,category:options.category,...(options.symbol?{symbol:options.symbol}:{})});markedOpened=!!window.FYNXYourNews;}catch{}
   }
   function fail(message) {
+    if(current&&!retained(current)){current=null;pendingUpdate=null;}
     if(current){refreshUnavailable=true;updateStatus();return;}
     const host=$('[data-reader-error]');host.hidden=false;host.replaceChildren(node('h1','This brief is not available right now.'),node('p',message || 'The source item may have left the current news window or the news service could not retrieve it. Choose a current story from the newsroom.'));
     const back=node('a','Browse the latest reporting →');back.href=deskURL(window.FynxEdition?.get()||originalEdition);host.append(back);
@@ -207,7 +237,10 @@
     try {
       const service=window.FYNXNewsReaderData;
       if(!service?.loadArticle)throw new Error('The reader service is temporarily unavailable. Please try again.');
-      const article=validate(await service.loadArticle({...options,force}));
+      const raw=resolveShared?await service.resolveArticle(sourceURL?{url:sourceURL}:{id:options.id}):await service.loadArticle({...options,force});
+      if(resolveShared&&!current){options.id=raw.id;options.category=raw.category||'all';originalEdition=raw.edition||'us';options.edition=originalEdition;}
+      const article=validate(raw);
+      if(!retained(article))throw new Error('This story’s source material has expired.');
       if(serial!==request)return;
       if(article.refreshUnavailable){
         if(!current)render(article);
@@ -218,18 +251,18 @@
       if(!current)render(article);
       else if(fingerprint(article)!==fingerprint(current)){pendingUpdate=article;updateStatus();}
       else updateStatus();
-    }catch(error){if(serial===request)fail(text(error?.message,400));}
+    }catch(error){if(serial===request){if(error?.status===404||error?.status===410){current=null;pendingUpdate=null;}clearExpired();fail(text(error?.message,400));}}
     finally{if(serial===request){loading=false;button.disabled=false;button.textContent=pendingUpdate?'Read updated brief':'Check for updates ↻';}}
   }
-  function schedule(){if(!timer)timer=window.setInterval(()=>{if(!document.hidden)refresh();},cadence);}
-  function onReturn(){if(document.hidden)return;if(Date.now()-lastAttempt>=cadence)refresh();else updateStatus();}
+  function schedule(){if(!timer){timer=window.setInterval(()=>{if(!document.hidden)refresh();},cadence);window.setInterval(clearExpired,20000);}}
+  function onReturn(){if(document.hidden)return;clearExpired();if(Date.now()-lastAttempt>=cadence)refresh();else updateStatus();}
   async function start() {
     syncBackLinks();
-    if(!/^[a-f0-9]{64}$/.test(options.id)){fail('Open a story from the FYNX newsroom to see its source-backed brief. This address does not identify a verified story.');$('[data-reader-refresh]').disabled=true;return;}
-    try {const saved=await window.FYNXNewsReaderData?.getCachedArticle(options);if(saved)render(validate(saved));}catch{}
+    if(!sourceURL&&!/^[a-f0-9]{64}$/.test(options.id)){fail('Open a story from the FYNX newsroom to see its source-backed brief. This address does not identify a verified story.');$('[data-reader-refresh]').disabled=true;return;}
+    try {const saved=resolveShared?null:await window.FYNXNewsReaderData?.getCachedArticle(options);if(saved&&retained(saved))render(validate(saved));}catch{}
     refresh();schedule();
   }
-  $('[data-reader-refresh]').addEventListener('click',()=>{if(pendingUpdate){render(pendingUpdate);$('[data-reader-refresh]').textContent='Check for updates ↻';}else refresh(true);});
+  $('[data-reader-refresh]').addEventListener('click',()=>{if(pendingUpdate&&retained(pendingUpdate)){render(pendingUpdate);$('[data-reader-refresh]').textContent='Check for updates ↻';}else {pendingUpdate=null;clearExpired();refresh(true);}});
   $('[data-reader-copy]').addEventListener('click',()=>{if(current)copyLink();});
   $('[data-reader-share]').addEventListener('click',shareStory);
   $('[data-reader-share-close]').addEventListener('click',()=>{$('[data-reader-share-fallback]').hidden=true;$('[data-reader-copy]').focus();});
@@ -244,17 +277,32 @@
     // Keep a shared story tied to the edition that retrieved it. The preference
     // still applies to Back to news and subsequent browsing, without replacing
     // the report the visitor is currently reading.
-    try{const url=new URL(location.href);url.searchParams.set('edition',originalEdition);history.replaceState(history.state,'',url);}catch{}
+    if(!resolveShared)try{const url=new URL(location.href);url.searchParams.set('edition',originalEdition);history.replaceState(history.state,'',url);}catch{}
   });
   document.addEventListener('visibilitychange',onReturn);
   window.addEventListener('pagehide',()=>{clearInterval(timer);timer=null;});
   window.addEventListener('pageshow',()=>{if(/^[a-f0-9]{64}$/.test(options.id)){schedule();onReturn();}});
   start();
-  import('/assets/js/account-sync.js?v=20261114-consistency-2').then(api=>{
+  import('/assets/js/account-sync.js?v=20261115-intelligence-1').then(api=>{
     shared=api;const saveButton=node('button','Save story');saveButton.type='button';$('[data-reader-share]').before(saveButton);
     let version=0;
-    async function paint(){const request=++version;if(!current){saveButton.disabled=true;return;}saveButton.disabled=false;const id=await api.storyID(current.sourceUrl);if(request!==version)return;saveButton.textContent=api.accountData('readingRecords',id)?.saved?'Saved story':'Save story';saveButton.setAttribute('aria-pressed',String(!!api.accountData('readingRecords',id)?.saved));}
-    saveButton.onclick=async()=>{if(!current)return;if(!api.sync.uid){location.href='/auth/login.html?returnTo='+encodeURIComponent(location.pathname+location.search);return;}saveButton.disabled=true;const article=current;try{const id=await api.storyID(article.sourceUrl),saved=!!api.accountData('readingRecords',id)?.saved;await api.save('readingRecords',id,{id,webArticleId:article.id,title:article.title,url:article.sourceUrl,source:article.source,publishedAt:article.publishedAt,readerUrl:new URL(storyURL()).pathname+new URL(storyURL()).search,saved:!saved});actionStatus(saved?'Removed from saved stories.':'Story saved to your account.');await paint();}catch(error){actionStatus(error.message);}finally{saveButton.disabled=false;}};
+    function sourceIdentity(value){
+      const source=safeURL(value);if(!source)return null;
+      const url=new URL(source);url.hash='';
+      // Keep literal '+' distinct from a space, as native bookmark hashing does.
+      // URLSearchParams would silently change that significant source value.
+      try{const pairs=(url.search?url.search.slice(1).split('&'):[]).map(raw=>({raw,name:decodeURIComponent(raw.split('=',1)[0])}));url.search=pairs.filter(({name})=>!/^utm_|^(fbclid|gclid|oc|mc_cid|mc_eid|__source)$/i.test(name)).sort((a,b)=>a.name<b.name?-1:a.name>b.name?1:0).map(x=>x.raw).join('&');return window.FynxAccountSyncMapping?.canonicalStoryURL(url.href)||url.href;}catch{return null;}
+    }
+    function existingBookmark(article){
+      const rows=[...(api.sync.rows?.values()||[])].filter(row=>!row.deleted&&row.domain==='readingRecords'&&safeURL(row.data?.url));
+      // A reader ID and the original bookmark's source-URL hash are different
+      // identities. Retain that original record when the resolver removes oc.
+      const source=sourceIdentity(article.sourceUrl);
+      return rows.find(row=>row.data.webArticleId===article.id)||(source?rows.find(row=>sourceIdentity(row.data.url)===source):null);
+    }
+    async function bookmark(article){const existing=existingBookmark(article);return {id:existing?.id||await api.storyID(article.sourceUrl),url:existing?.data.url||article.sourceUrl};}
+    async function paint(){const request=++version,article=current,uid=api.sync.uid;if(!article){saveButton.disabled=true;return;}const {id}=await bookmark(article);if(request!==version||uid!==api.sync.uid||article!==current)return;const saved=!!api.accountData('readingRecords',id)?.saved;saveButton.disabled=false;saveButton.textContent=saved?'Saved story':'Save story';saveButton.setAttribute('aria-pressed',String(saved));}
+    saveButton.onclick=async()=>{if(!current)return;if(!api.sync.uid){location.href='/auth/login.html?returnTo='+encodeURIComponent(location.pathname+location.search);return;}saveButton.disabled=true;const article=current,uid=api.sync.uid;try{const {id,url}=await bookmark(article);if(uid!==api.sync.uid)throw Error('Your account changed. Please try again.');const saved=!!api.accountData('readingRecords',id)?.saved;await api.save('readingRecords',id,{id,webArticleId:article.id,title:article.title,url,source:article.source,publishedAt:article.publishedAt,readerUrl:new URL(storyURL()).pathname+new URL(storyURL()).search,saved:!saved});actionStatus(saved?'Removed from saved stories.':'Story saved to your account.');}catch(error){actionStatus(error.message);}finally{await paint();}};
     api.subscribe(()=>{const settings=api.accountData('preferences')?.reader;if(settings){if(['standard','large','larger'].includes(settings.size))preferences.size=settings.size;if(typeof settings.focus==='boolean')preferences.focus=settings.focus;readingPreferences();}paint();});
     const observer=new MutationObserver(()=>paint());observer.observe($('[data-reader-share]'),{attributes:true,attributeFilter:['disabled']});paint();
   }).catch(()=>{});

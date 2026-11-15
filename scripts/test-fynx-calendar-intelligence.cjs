@@ -1,0 +1,42 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const {JSDOM} = require('jsdom');
+const source = fs.readFileSync('assets/js/fynx-calendar.js', 'utf8');
+const id = 'a'.repeat(64), otherID = 'b'.repeat(64), now = Date.now();
+const event = {id, title: 'CPI <script>unsafe()</script>', currency: 'USD', impact: 'high', time: new Date(now - 3600000).toISOString(), forecast: '0.3%', previous: '0.2%'};
+const next = {id: otherID, title: 'Retail sales', currency: 'USD', impact: 'medium', time: new Date(now + 3600000).toISOString(), forecast: '1.0%', previous: '0.5%'};
+async function harness(query, rows) {
+  const dom = new JSDOM('<div id="calendar"></div>', {url: 'https://www.fynxfinanceworld.com/tools/economic-calendar.html' + query, runScripts: 'outside-only', pretendToBeVisual: true});
+  const w = dom.window; w.TextEncoder = TextEncoder;
+  w.fetch = async () => ({ok: true, json: async () => ({updatedAt: new Date(now).toISOString(), source: 'Forex Factory', all: rows})});
+  w.eval(source); const host = w.document.getElementById('calendar'), stop = w.FynxCalendar.mount(host, {compact: false});
+  for (let i = 0; i < 30 && !host.querySelector('.fc-search'); i++) await new Promise(r => setTimeout(r, 10));
+  return {w, host, done() {stop(); w.close();}};
+}
+(async () => {
+  let h = await harness('?event=' + id, [event, next]);
+  assert.equal(h.host.querySelector('.fc-detail-title').textContent, event.title, 'exact shared event opens internal detail');
+  assert.equal(h.host.querySelector('.fc-detail script'), null, 'source text cannot inject HTML');
+  assert.equal(h.host.querySelector('.fc-detail-phase').textContent, 'Awaiting reported result', 'elapsed schedule never invents a released result');
+  assert.match(h.host.querySelector('.fc-detail').textContent, /not supplied.*calendar feed/, 'missing history and reaction explicit');
+  assert.equal(h.w.FynxCalendar.phase({...event, actual: 0}), 'Result reported', 'numeric zero remains real supplied value');
+  assert.equal(h.w.FynxCalendar.phase({...next, actual: '1%'}), 'Before release', 'future actual cannot become confirmed release');
+  assert.equal(h.w.FynxCalendar.comparison({...event, actual: '0.4%'}), 'Above forecast by 0.1 percentage points.');
+  assert.equal(h.w.FynxCalendar.comparison({...event, actual: '0.4%', unit: 'K'}), null, 'conflicting explicit units fail closed');
+  assert.equal(h.w.FynxCalendar.comparison({...event, actual: '0.2–0.4%'}), null, 'range not treated as scalar');
+  assert.equal(h.w.FynxCalendar.eventURL(event), 'https://www.fynxfinanceworld.com/tools/economic-calendar.html?event=' + id);
+  assert.equal(h.w.FynxCalendar.eventURL({...event, id: '../wrong'}), null);
+  assert.equal(h.host.querySelector('.fc-detail h3').textContent, 'Following this release', 'later historical rows are not labeled upcoming from today');
+  h.host.querySelector('.fc-detail-related').click();
+  assert.equal(h.host.querySelector('.fc-detail-title').textContent, next.title, 'related event opens exact internal event');
+  assert.equal(new URL(h.w.location.href).searchParams.get('event'), otherID, 'navigation keeps shareable identity');
+  h.done();
+  h = await harness('?event=' + 'c'.repeat(64), [event, next]);
+  assert.match(h.host.querySelector('.fc-detail').textContent, /not in the current calendar/, 'missing ID does not substitute another release'); h.done();
+  h = await harness('?event=' + id + '&event=' + otherID, [event, next]);
+  assert.match(h.host.querySelector('.fc-detail').textContent, /not in the current calendar/, 'ambiguous event ID rejected'); h.done();
+  const stable = 'd'.repeat(64); h = await harness('?event=' + stable, [{...event, stableEventID: stable}, next]);
+  assert.equal(h.host.querySelector('.fc-detail-title').textContent, event.title, 'stable native day identity opens exact website event');
+  assert.equal(h.w.FynxCalendar.eventURL({...event, stableEventID: stable}), 'https://www.fynxfinanceworld.com/tools/economic-calendar.html?event=' + stable, 'new links use stable day alias'); h.done();
+  console.log('Calendar intelligence: 18 route, attribution, actual-value and safe-render checks passed.');
+})().catch(error => {console.error(error); process.exit(1);});

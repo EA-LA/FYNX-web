@@ -5,7 +5,7 @@ const root = path.resolve(__dirname, '..');
 const out = path.join(root, 'dist');
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
-const directories = ['api', 'assets', 'edge-radar', 'profile', 'auth', 'home', 'learn', 'markets', 'news', 'resources', 'tools', 'intelligence'];
+const directories = ['.well-known', 'api', 'assets', 'edge-radar', 'profile', 'auth', 'home', 'learn', 'markets', 'news', 'resources', 'tools', 'intelligence'];
 for (const dir of directories) if (fs.existsSync(path.join(root, dir))) fs.cpSync(path.join(root, dir), path.join(out, dir), { recursive: true });
 for (const file of fs.readdirSync(root, { withFileTypes: true })) {
   if (file.isFile() && (/\.(html|css|js|png|ico|svg|xml)$/.test(file.name) || ['robots.txt', 'ads.txt'].includes(file.name))) {
