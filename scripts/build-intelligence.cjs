@@ -22,6 +22,18 @@ const DAY = 86400000, KEEP_DAYS = 21, RECHECK_HOURS = 36, MAX_NEW = Number(proce
 // than the upstream reader's private evidence brief. Keep complete sentences.
 const MAX_PUBLISHED_EXCERPT_WORDS = 31;
 const sourceWords = text => typeof text === 'string' ? text.trim().split(/\s+/).filter(Boolean).length : 0;
+// Some saved articles are older than the 36-hour refresh window and therefore
+// never reach reusableExcerpt(). Clean the persisted records before building
+// pages so one legacy long quote cannot block the entire daily publication.
+function sanitizeStoredExcerpts(records) {
+  for (const record of records.values()) {
+    const excerpt = record.excerpt;
+    if (excerpt && (typeof excerpt.text !== 'string' || sourceWords(excerpt.text) > MAX_PUBLISHED_EXCERPT_WORDS)) {
+      record.excerpt = null;
+    }
+  }
+  return records;
+}
 // Not news events: quote pages, investor-conference notices and programme listings.
 const NOT_NEWS = /\b(stock price, news, quote|quote and history|stock quote|share price (?:today|chart)|to (?:participate|present) (?:in|at)|fireside chat|conference call|webcast|announces? (?:date|timing) (?:of|for)|rewind|podcast|live updates?:|market brief \(|newsletter|price targets?|upside for|analysts? (?:like|love|hate|bullish|bearish)|should you buy|is it a buy|best crypto to buy|at close of trade|convert \d+|price in (?:[A-Z]|british|us|singapore)|^economic outlook$|stocks? to (?:buy|watch)|undervalued)\b/i;
 const HOLD = /\b(killed|dead|death|dies|died|shooting|shot|murder|rape|sexual|abuse|assault|suicide|terror|bomb|massacre|accused|alleg(?:e|es|ed|ation|ations)|lawsuit|sued|indicted|charged with|arrested|fraud|scandal|investigat(?:ion|ed|ing) into)\b/i;
@@ -154,7 +166,7 @@ async function main() {
   if (!data.markets?.quotes) throw new Error('Market snapshot unavailable; nothing published.');
   if (process.env.INTELLIGENCE_DUMP) await fs.writeFile(process.env.INTELLIGENCE_DUMP, JSON.stringify(items));
   const quotes = {...data.markets.quotes}, listings = E.buildListingIndex(data.symbols?.rows || []);
-  const records = new Map((db.articles || []).filter(r => now - Date.parse(r.publishedAt) < KEEP_DAYS * DAY).map(r => [r.id, r]));
+  const records = sanitizeStoredExcerpts(new Map((db.articles || []).filter(r => now - Date.parse(r.publishedAt) < KEEP_DAYS * DAY).map(r => [r.id, r])));
   const owner = new Map(); for (const r of records.values()) for (const a of r.articleIds) owner.set(a, r.id);
   const groups = cluster(items, now);
   // Link every group, then fetch history for named companies the snapshot does not carry.
@@ -237,4 +249,4 @@ async function main() {
   console.log(`groups ${groups.length} · created ${created} · updated ${updated} · published ${list.length} · held for review ${review.length} · AI ${process.env.ANTHROPIC_API_KEY ? 'on' : 'off'}`);
 }
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
-module.exports = {cluster, slugify, relatedFor, cleanTitle, NOT_NEWS,excerptFromArticle,reusableExcerpt};
+module.exports = {cluster, slugify, relatedFor, cleanTitle, NOT_NEWS,excerptFromArticle,reusableExcerpt,sanitizeStoredExcerpts};
