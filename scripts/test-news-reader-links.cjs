@@ -65,6 +65,41 @@ test('cache expiration triggers a real request and invalid cached data cannot hy
  const restored=harness({stored:valid});await restored.api.loadArticle(baseOptions);assert.equal(restored.calls.length,0);
 });
 
+test('one corrupt stored brief does not erase other independently verified cached stories',async()=>{
+ const third='c'.repeat(64),keyFor=id=>id+'|us|all|';
+ const rows=[
+  [keyFor(ID),{at:NOW,complete:true,article:article()}],
+  [keyFor(SECOND),{at:NOW,complete:true,article:article({id:SECOND,sourceUrl:'javascript:alert(1)'})}],
+  [keyFor(third),{at:NOW,complete:true,article:article({id:third})}]
+ ];
+ const h=harness({stored:JSON.stringify(rows)});
+ assert.equal(h.api.getCachedArticle(baseOptions).id,ID);
+ assert.equal(h.api.getCachedArticle({...baseOptions,id:SECOND}),null);
+ assert.equal(h.api.getCachedArticle({...baseOptions,id:third}).id,third);
+ await h.api.loadArticle(baseOptions);
+ await h.api.loadArticle({...baseOptions,id:third});
+ assert.equal(h.calls.length,0,'Both verified complete stories should reopen without a network request');
+});
+
+test('malformed cache rows and forged keys cannot hydrate unverified reports',()=>{
+ const forged=SECOND+'|us|all|',valid=ID+'|us|all|';
+ const rows=[
+  null,
+  {bad:'entry'},
+  ['not-a-valid-id',{}],
+  [valid,null],
+  [valid,{at:NOW,complete:true,article:article({id:SECOND})}],
+  [forged+'unexpected',{at:NOW,complete:true,article:article({id:SECOND})}],
+  [forged,{at:NOW+60000,complete:true,article:article({id:SECOND})}],
+  [valid,{at:NOW,complete:true,article:article()}]
+ ];
+ const restored=harness({stored:JSON.stringify(rows)});
+ assert.equal(restored.api.getCachedArticle(baseOptions).id,ID);
+ assert.equal(restored.api.getCachedArticle({...baseOptions,id:SECOND}),null);
+ assert.equal(harness({stored:JSON.stringify({unexpected:'object'})}).api.getCachedArticle(baseOptions),null);
+ assert.equal(harness({stored:'{broken'}).api.getCachedArticle(baseOptions),null);
+});
+
 test('source validation rejects mismatches, local URLs, missing dates and future publication',async()=>{
  for(const extra of [{id:SECOND},{edition:'uk'},{category:'stocks'},{sourceUrl:'http://publisher.example/report'},{sourceUrl:'https://127.0.0.1/report'},{sourceUrl:'https://secret.internal/report'},{publishedAt:'unknown'},{publishedAt:iso(3600000)},{preparedAt:iso(3600000)},{coverageLevel:'invented'}]){
   const h=harness({fetch:async()=>response(article(extra))});await assert.rejects(h.api.loadArticle(baseOptions),/verified|metadata/);assert.equal(h.api.getCachedArticle(baseOptions),null);
