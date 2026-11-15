@@ -1,0 +1,26 @@
+name: Bitcoin Sentiment Observation Validation
+on:
+  pull_request:
+    paths:
+      - 'assets/js/sentiment-feed.js'
+      - 'scripts/test-sentiment-observations.cjs'
+      - '.github/workflows/sentiment-observation-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sentiment-observations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: |
+          node --check assets/js/sentiment-feed.js
+          node --check scripts/test-sentiment-observations.cjs
+      - name: Test Pacific UTC dates and source validation
+        env:
+          TZ: America/Los_Angeles
+        run: node scripts/test-sentiment-observations.cjs
