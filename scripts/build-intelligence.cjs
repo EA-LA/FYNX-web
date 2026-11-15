@@ -109,7 +109,11 @@ function excerptFromArticle(a,item,now=Date.now()) {
   // Each upstream summary/key point is a complete, directly sourced sentence.
   // Select one that fits the public page instead of clipping a longer quote
   // mid-sentence or concatenating several sentences beyond the publication cap.
-  const text=paragraphs.find(p=>sourceWords(p)>=8&&sourceWords(p)<=MAX_PUBLISHED_EXCERPT_WORDS);
+  const candidates=paragraphs.filter(p=>sourceWords(p)>=8&&sourceWords(p)<=MAX_PUBLISHED_EXCERPT_WORDS);
+  // Dated catalysts are more useful than a generic first sentence; keep the
+  // exact complete publisher wording rather than recombining or paraphrasing.
+  const dated=/\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2}(?:,?\s+\d{4})?\b|\b\d{4}-\d{2}-\d{2}\b/i;
+  const text=candidates.find(p=>dated.test(p))||candidates[0];
   const expiry=Math.min(declaredExpiry,Date.parse(a.publishedAt)+(a.category==='official'?30:7)*DAY);
   if(!text||!Number.isFinite(expiry)||expiry<=now)return null;
   return {text,publisher:a.source,sourceURL,articleID:id,expiresAt:new Date(expiry).toISOString(),coverageLevel:a.coverageLevel,sourceAccess:a.sourceAccess,accessedAt:a.updatedAt,numbers:(a.numbers||[]).map(n=>n.value).filter(n=>typeof n==='string'&&text.includes(n)).slice(0,4),image:Reader.approvedImage(a.image,{link:sourceURL,pubDate:a.publishedAt,source:a.source,kind:a.category==='official'?'official-release':'headline'},{now,expiresAt:expiry})};
