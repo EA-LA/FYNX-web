@@ -7,6 +7,9 @@ const path = require('path');
 const {JSDOM} = require('jsdom');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'assets/js/fynx-calendar.js'), 'utf8');
+const page = fs.readFileSync(path.join(__dirname, '..', 'tools/economic-calendar.html'), 'utf8');
+assert.match(page, /fynx-calendar\.js\?v=20261115-release-trust/, 'page loads the updated calendar script');
+assert.match(page, /verify the actual figure at the source/, 'page does not promise verified release data');
 const base = Date.now();
 const at = h => new Date(base + h * 3600000).toISOString();
 const fixture = {updatedAt: new Date(base).toISOString(), all: [
