@@ -42,6 +42,16 @@ test('a too-long upstream summary can fall back to a separate complete sourced k
   assert.ok(excerpt.text.endsWith('.'));
 });
 
+test('when several complete excerpts qualify, a dated catalyst takes priority', () => {
+  const dated = 'The company said its next earnings release is scheduled for November 20, 2026.';
+  const excerpt = Publisher.excerptFromArticle(article({
+    summary: shortSentence, keyPoints: [{text: dated}]
+  }), source);
+  assert.ok(excerpt);
+  assert.equal(excerpt.text, dated);
+  assert.deepEqual(excerpt.numbers, []);
+});
+
 test('a single source sentence over the cap is omitted rather than truncated or fabricated', () => {
   assert.equal(Publisher.excerptFromArticle(article({
     summary: longSentence, keyPoints: []
