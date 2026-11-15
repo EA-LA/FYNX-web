@@ -101,6 +101,37 @@ function response(body = emptyMarkup) {
   assert.equal(partialTimeout.retry.hidden, false, 'unavailable markets can still be retried');
   partialTimeout.dom.window.close();
 
+  // Retrying a failed market must retain already verified terms and avoid refetching them.
+  const retryUrls = [];
+  let retryFutures = false;
+  let resolveFutures;
+  const f = open(href => {
+    retryUrls.push(href);
+    if (href.includes('/futures-')) {
+      if (!retryFutures) return Promise.reject(new Error('offline'));
+      return new Promise(resolve => { resolveFutures = resolve; });
+    }
+    return Promise.resolve(response(markup));
+  });
+  f.search('uniquemarketterm');
+  await flush();
+  assert.equal(retryUrls.length, 9);
+  assert.equal(f.more.hidden, false);
+  assert.equal(f.more.querySelectorAll('li').length, 8);
+  assert.equal(f.retry.hidden, false);
+  retryFutures = true;
+  f.retry.click();
+  assert.equal(retryUrls.length, 10, 'retry fetches only the missing market');
+  assert.match(retryUrls[9], /futures-glossary/);
+  assert.equal(f.more.querySelectorAll('li').length, 8, 'known results stay visible during retry');
+  assert.equal(f.retry.hidden, true, 'no duplicate retry while request is running');
+  assert.match(f.status.textContent, /Checking other market glossaries/i);
+  resolveFutures(response(markup));
+  await flush();
+  assert.match(f.status.textContent, /9 terms in the market glossaries/i);
+  assert.equal(f.retry.hidden, true);
+  f.dom.window.close();
+
   // When a topic is chosen, local terms are filtered without unnecessary remote requests.
   let calls = 0;
   const e = open(() => { calls++; return Promise.resolve(response()); });
