@@ -34,8 +34,8 @@
       + '.fx-movers-head a{font-size:12px;text-decoration:none;color:inherit;opacity:.8}.fx-movers-head a:hover{opacity:1;text-decoration:underline}@media (pointer:coarse){.fx-movers-head a{display:inline-flex;align-items:center;min-height:44px;padding:0 2px}}'
       + '.fx-live{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.65}'
       + '.fx-movers-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:8px}.fx-movers-tabs::-webkit-scrollbar{display:none}'
-      + '.fx-movers-tabs button{flex:0 0 auto;font-family:inherit;font-weight:700;font-size:11px;line-height:1;letter-spacing:.02em;padding:7px 11px;border-radius:999px;border:1px solid var(--terminal-line,rgba(127,127,127,.3));background:transparent;color:inherit;cursor:pointer}'
-      + '.fx-movers-tabs button[aria-selected=true]{background:#1f5a3f;border-color:#1f5a3f;color:#fff}'
+      + '.fx-movers-tabs button{flex:0 0 auto;font-family:inherit;font-weight:700;font-size:11px;line-height:1;letter-spacing:.02em;padding:0 14px;min-height:44px;border-radius:999px;border:1px solid var(--terminal-line,rgba(127,127,127,.3));background:transparent;color:inherit;cursor:pointer}'
+      + '.fx-movers-tabs button[aria-selected=true]{background:rgba(127,127,127,.24);border-color:currentColor;color:inherit}.fx-movers-tabs button:focus-visible{outline:2px solid currentColor;outline-offset:2px}'
       + '.fx-movers-desc{font-size:11px;opacity:.7;margin:0 0 6px}'
       + '.fx-mv{display:grid;grid-template-columns:30px minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--terminal-line,rgba(127,127,127,.18));text-decoration:none;color:inherit;border-radius:6px;transition:background .15s}'
       + '.fx-mv:hover{background:rgba(127,127,127,.08)}.fx-mv:last-child{border-bottom:0}'
@@ -67,7 +67,8 @@
   }
   function render(host) {
     const meta = TABS.find(t => t[0] === tab), list = (data && Array.isArray(data[tab]) ? data[tab] : []).slice(0, 6);
-    host.querySelectorAll('.fx-movers-tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
+    host.querySelectorAll('.fx-movers-tabs button').forEach(b => { const selected = b.dataset.tab === tab; b.setAttribute('aria-selected', String(selected)); b.tabIndex = selected ? 0 : -1; });
+    host.querySelector('.fx-movers-body').setAttribute('aria-labelledby', 'fx-movers-tab-' + tab);
     const body = host.querySelector('.fx-movers-body');
     const asOf = data ? (tab === 'crypto' ? data.cryptoAsOf : data.stocksAsOf) : null;
     const quality = freshness(asOf);
@@ -113,10 +114,24 @@
     style();
     const host = document.createElement('section'); host.className = 'fx-movers'; host.setAttribute('aria-labelledby', 'fx-movers-title');
     host.innerHTML = '<div class="fx-movers-head"><h2 id="fx-movers-title"><span class="fx-live" aria-hidden="true"></span>Market movers</h2><a href="/terminal.html#scan">Full scanner →</a></div>'
-      + '<div class="fx-movers-tabs" role="tablist">' + TABS.map(t => '<button type="button" role="tab" data-tab="' + t[0] + '" aria-selected="false">' + t[1] + '</button>').join('') + '</div>'
-      + '<div class="fx-movers-body" role="tabpanel"></div>';
+      + '<div class="fx-movers-tabs" role="tablist" aria-label="Market mover categories">' + TABS.map(t => '<button type="button" role="tab" id="fx-movers-tab-' + t[0] + '" aria-controls="fx-movers-panel" tabindex="-1" data-tab="' + t[0] + '" aria-selected="false">' + t[1] + '</button>').join('') + '</div>'
+      + '<div class="fx-movers-body" id="fx-movers-panel" role="tabpanel" aria-labelledby="fx-movers-tab-gainers" tabindex="0"></div>';
     anchor.after(host);
-    host.querySelector('.fx-movers-tabs').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (!b) return; tab = b.dataset.tab; render(host); });
+    const tablist = host.querySelector('.fx-movers-tabs');
+    tablist.addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (!b) return; tab = b.dataset.tab; render(host); });
+    tablist.addEventListener('keydown', e => {
+      if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key)) return;
+      const focused = e.target.closest('button[data-tab]');
+      if (!focused) return;
+      const buttons = Array.from(tablist.querySelectorAll('button[data-tab]'));
+      const index = buttons.indexOf(focused);
+      if (index < 0) return;
+      e.preventDefault();
+      const next = e.key === 'Home' ? 0 : e.key === 'End' ? buttons.length - 1 :
+        (index + (e.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length;
+      buttons[next].click();
+      buttons[next].focus();
+    });
     host.addEventListener('click', e => {
       const retry = e.target.closest('[data-movers-retry]');
       if (!retry || loading) return;
