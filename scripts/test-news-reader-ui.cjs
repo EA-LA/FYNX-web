@@ -224,6 +224,7 @@ test('a changed market snapshot offers an update without replacing active readin
 test('resolved stories share their exact id without changing to a scoped feed lookup',async t=>{
  const shared=[],h=harness(t,{query:'?url='+encodeURIComponent(article().sourceUrl),setup:w=>{w.FYNXNewsReaderData.resolveArticle=async()=>article();w.navigator.share=async value=>shared.push(value);}});await tick();h.q('[data-reader-share]').click();await tick();
  assert.equal(shared[0].url,'https://www.fynxfinanceworld.com/news/article.html?id='+id);
+ h.setEdition('uk');h.doc.dispatchEvent(new h.w.CustomEvent('fynx:edition-change'));assert.equal(new URL(h.w.location.href).searchParams.has('edition'),false);
 });
 test('source expiry clears an open reader and prevents expired updates from being applied',async t=>{
  const h=harness(t,{load:async()=>article({contentExpiresAt:iso(1000)})});await tick();assert.equal(h.q('[data-reader-content]').hidden,false);

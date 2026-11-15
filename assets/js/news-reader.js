@@ -277,7 +277,7 @@
     // Keep a shared story tied to the edition that retrieved it. The preference
     // still applies to Back to news and subsequent browsing, without replacing
     // the report the visitor is currently reading.
-    try{const url=new URL(location.href);url.searchParams.set('edition',originalEdition);history.replaceState(history.state,'',url);}catch{}
+    if(!resolveShared)try{const url=new URL(location.href);url.searchParams.set('edition',originalEdition);history.replaceState(history.state,'',url);}catch{}
   });
   document.addEventListener('visibilitychange',onReturn);
   window.addEventListener('pagehide',()=>{clearInterval(timer);timer=null;});
