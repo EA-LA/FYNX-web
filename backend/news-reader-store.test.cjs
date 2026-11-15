@@ -110,3 +110,18 @@ test('cross-scope resolution has one overall storage deadline rather than one bu
   await assert.rejects(Store.resolve(row.articleId,Date.now(),{timeoutMs:100}),error=>error.newsStoreStage==='resolve');
  }finally{reset();}
 });
+test('database unavailability can recover only an exact current published headline; unknown remains unavailable',async()=>{
+ const Published=require('./published-intelligence.cjs'),original=Published.resolve,db=fakeDatabase(),row=makeItem({link:'https://publisher.example/published-match'}),urls=[];
+ const payload={version:1,generatedAt:new Date().toISOString(),articles:[{sources:[{url:row.link,title:row.title,publisher:row.source,publishedAt:row.pubDate}],stats:[]}]};
+ const databaseFailure={collection(){return{where(){return{limit(){return{async get(){throw Error('Cold Firestore connection unavailable');}};}};}};}};
+ const index=(value,fail=false)=>{Published.resolve=Published.createResolver({fetcher:async url=>{urls.push(url);if(fail)throw Error('Published index unavailable');return value;}});};
+ try{
+  Store._test.setDatabaseForTests(databaseFailure);index(payload);
+  const exact=response();await api.handler({method:'GET',query:{kind:'resolve',url:row.link}},exact);
+  assert.equal(exact.code,200);assert.equal(exact.body.article.sourceUrl,row.link);assert.equal(exact.body.article.coverageLevel,'headline-only');assert.equal(exact.body.article.summary,row.title);assert.deepEqual(exact.body.article.keyPoints,[]);
+  index(payload);const unknown=response();await api.handler({method:'GET',query:{kind:'resolve',url:'https://publisher.example/not-published'}},unknown);assert.equal(unknown.code,503);assert(!unknown.body.article);
+  index(payload,true);const unavailable=response();await api.handler({method:'GET',query:{kind:'resolve',url:row.link}},unavailable);assert.equal(unavailable.code,503);assert(!unavailable.body.article);
+  Store._test.setDatabaseForTests(db);index(payload);const absent=response();await api.handler({method:'GET',query:{kind:'resolve',url:'https://publisher.example/not-published'}},absent);assert.equal(absent.code,404);
+  assert.equal(urls.length,4);assert(urls.every(url=>url===Published.INDEX_URL),'Recovery fetches only the fixed FYNX index');
+ }finally{Published.resolve=original;reset();}
+});

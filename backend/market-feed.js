@@ -366,10 +366,19 @@ async function resolveArticle(query) {
   const id=query.url!==undefined?Reader.articleId(query.url):query.id;
   if(typeof id!=='string'||!/^[a-f0-9]{64}$/.test(id))throw Object.assign(new Error('Invalid article identifier'),{status:400});
   if(query.id!==undefined&&query.url!==undefined&&query.id!==id)throw Object.assign(new Error('The source URL does not match this article.'),{status:400});
-  const record=await ReaderStore.resolve(id);
+  let record,storageFailure;
+  try{record=await ReaderStore.resolve(id);}catch(error){
+    if(error.newsStoreStage!=='resolve')throw error;
+    storageFailure=error;
+  }
   if(!record){
-    const published=await require('./published-intelligence.cjs').resolve(id);
+    // A cold/unavailable database must not prevent an exact match in the
+    // separately validated public index. This yields headline metadata only,
+    // never an expired stored excerpt or an arbitrary-URL publisher fetch.
+    let published;
+    try{published=await require('./published-intelligence.cjs').resolve(id);}catch(error){throw storageFailure||error;}
     if(published)return published;
+    if(storageFailure)throw storageFailure;
     throw Object.assign(new Error('This exact story is not currently available in the shared newsroom.'),{status:404});
   }
   // Read only previously ingested evidence. Unknown URLs are never fetched.
