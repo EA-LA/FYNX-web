@@ -32,6 +32,49 @@ test('large source text is limited to short evidence snippets and distinct origi
  assert.equal(brief.coverageLevel,'source-text');assert(brief.summary.length<description.length/10);assert(brief.keyPoints.length<=2);
  assert(!JSON.stringify(brief).includes(description));assert(brief.context.every(x=>x.title&&x.text));
 });
+test('publisher evidence preserves name initials instead of emitting an incomplete former T. fact',()=>{
+ const sentences=['The technology company expects investors to review its new offering this week.','Its advisers include a former T. Rowe Price manager who will discuss the offering.','A. B. Smith will present the proposed timetable to investors later this month.'];
+ const brief=R.createBrief(item({description:sentences.join(' ')}),{now});
+ assert.deepEqual([brief.summary,...brief.keyPoints.map(p=>p.text)],sentences);
+ assert(!brief.keyPoints.some(p=>/\bformer T\.$/.test(p.text)));
+});
+test('publisher evidence keeps honorifics, country abbreviations, dates and decimals inside complete sentences',()=>{
+ const sentences=['Dr. Jane Smith said U.S. Treasury yields rose after the policy decision.','Mr. Alan Jones said U.K. investors will review the inflation data on Nov. 15.','The company reported $3.5 billion in revenue and a 3.25 percent margin on Sept. 3.'];
+ const brief=R.createBrief(item({description:sentences.join(' ')}),{now});
+ assert.deepEqual([brief.summary,...brief.keyPoints.map(p=>p.text)],sentences);
+ const emitted=[brief.summary,...brief.keyPoints.map(p=>p.text),...brief.numbers.map(n=>n.value)].join(' ').split(/\s+/).length;
+ assert(emitted<=90);assert([brief.summary,...brief.keyPoints.map(p=>p.text)].every(text=>text.split(/\s+/).length<=35));
+});
+test('complete quoted sentences and company suffixes still allow genuine following sentence boundaries',()=>{
+ const sentences=['The investment manager said, “Our committee will review the proposal next week.”','The proposed agreement includes a contract with Example Holdings Inc.','It will be discussed by the board after the independent review is complete.'];
+ const brief=R.createBrief(item({description:sentences.join(' ')}),{now});
+ assert.deepEqual([brief.summary,...brief.keyPoints.map(p=>p.text)],sentences);
+});
+test('an oversized sentence containing initials is omitted whole without manufacturing shorter evidence',()=>{
+ const long=['The investment committee asked a former T. Rowe Price manager to review',...Array(25).fill('documentation')].join(' ')+'.';
+ const complete='Officials will publish the final inflation assessment after the scheduled policy meeting on Monday.';
+ assert(long.split(/\s+/).length>35);
+ const brief=R.createBrief(item({description:long+' '+complete}),{now});
+ assert.equal(brief.summary,complete);assert.deepEqual(brief.keyPoints,[]);
+ assert(!JSON.stringify(brief.intelligence).includes('former T.'));
+});
+test('a publisher excerpt cut off after a name initial or honorific cannot become a complete fact',()=>{
+ for(const ending of ['a former T.','the economist Dr.','the adviser A. B.']){
+  const brief=R.createBrief(item({description:'The company said investors will receive a detailed assessment from '+ending}),{now});
+  assert.equal(brief.coverageLevel,'headline-only',ending);assert.deepEqual(brief.keyPoints,[],ending);
+ }
+});
+test('a persisted initial fragment is rebuilt before a failed optional publisher refresh can reuse it',async()=>{
+ const previous=global.fetch;R.articleCache.clear();
+ const source=item({link:'https://www.coindesk.com/persisted-initial-test',description:'The technology company expects investors to review its new offering this week. Its advisers include a former T.'});
+ const stored={...R.createBrief(source,{now}),keyPoints:[{text:'Its advisers include a former T.'}]};
+ try{
+  global.fetch=async()=>{throw new Error('Publisher unavailable');};R.restoreVerified(source,stored);
+  const brief=await R.enhance(source);
+  assert.equal(brief.summary,'The technology company expects investors to review its new offering this week.');
+  assert.deepEqual(brief.keyPoints,[]);assert(!JSON.stringify(brief.intelligence).includes('former T.'));
+ }finally{global.fetch=previous;R.articleCache.clear();}
+});
 test('only a matching public article produces reviewed source text; paid and unrelated text remain inaccessible',()=>{
  const source=item(),body=source.description.repeat(3);
  const page=data=>'<script type="application/ld+json">'+JSON.stringify(data)+'</script>';
