@@ -1,6 +1,31 @@
 {
- "generatedAt": "2026-11-14T20:47:56.679Z",
+ "generatedAt": "2026-11-15T01:59:14.527Z",
  "items": [
+  {
+   "reason": "sensitive subject",
+   "title": "EXCLUSIVE: NRS drags Sterling Global Oil, CEO to court over alleged OML 146 tax liability",
+   "sources": [
+    "Nairametrics",
+    "National Accord Newspaper"
+   ],
+   "at": "2026-11-15T01:59:14.527Z"
+  },
+  {
+   "reason": "sensitive subject",
+   "title": "Stuart Sterling steps back from UK ethics commission amid sexual misconduct allegations",
+   "sources": [
+    "fish4news.co.uk"
+   ],
+   "at": "2026-11-15T01:59:14.527Z"
+  },
+  {
+   "reason": "sensitive subject",
+   "title": "Middle class dead: ECB says housing crisis and inflation crush Greeks as top 10% win",
+   "sources": [
+    "Bankingnews"
+   ],
+   "at": "2026-11-15T01:59:14.527Z"
+  },
   {
    "reason": "sensitive subject",
    "title": "Lutnick faces questions over Nvidia spy scandal. His sons' firm has deep ties to the chipmaker",
@@ -210,14 +235,6 @@
     "BigGo Finance"
    ],
    "at": "2026-11-12T07:24:47.103Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "UK Retail Traders Pile Into Nvidia as CEO Affair Scandal Wipes $430 Billion Off Market Value",
-   "sources": [
-    "BigGo Finance"
-   ],
-   "at": "2026-11-11T23:09:13.336Z"
   }
  ]
 }
