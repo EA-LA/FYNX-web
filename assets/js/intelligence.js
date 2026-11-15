@@ -3,7 +3,27 @@
   'use strict';
   const KEY = 'fynx_intel_saved_v1';
   let shared=null;
-  const localSaved = () => {try {return JSON.parse(localStorage.getItem(KEY)||'[]');}catch{return [];}};
+  // A malformed or outdated browser entry must not break the Intelligence
+  // page or become an off-site link when saved stories are imported.
+  const localSaved = () => {
+    try {
+      const rows = JSON.parse(localStorage.getItem(KEY) || '[]');
+      if (!Array.isArray(rows)) return [];
+      const seen = new Set();
+      return rows.flatMap(row => {
+        if (!row || typeof row !== 'object' || Array.isArray(row) ||
+            !/^[a-f0-9]{8,64}$/.test(row.id || '') || typeof row.url !== 'string') return [];
+        try {
+          const url = new URL(row.url, location.origin);
+          if (url.origin !== location.origin ||
+              !/^\/intelligence\/[a-z0-9-]+\/$/.test(url.pathname) ||
+              url.search || url.hash || seen.has(row.id)) return [];
+          seen.add(row.id);
+          return [{...row, url: url.pathname}];
+        } catch { return []; }
+      }).slice(0, 200);
+    } catch { return []; }
+  };
   const saved = () => shared?.sync.uid?shared.sync.records('readingRecords').filter(r=>r.data.saved).map(r=>({...r.data,id:r.data.webStoryID||r.id,recordId:r.id,url:r.data.webPath||r.data.readerUrl||r.data.url})):localSaved();
   const store = async list => {
     if(shared?.sync.uid){await shared.requireSync();const before=saved(),next=new Map(list.map(row=>[row.id,row]));for(const row of before)if(!next.has(row.id))await shared.save('readingRecords',row.recordId||row.id,{saved:false});for(const row of list)if(!before.some(v=>v.id===row.id)){const source=document.querySelector('.fx-actions a[target="_blank"]')?.href||document.querySelector('[data-intel-url]')?.dataset.intelUrl||new URL(row.url,location.origin).href;const canonical=await shared.storyID(source);await shared.save('readingRecords',canonical,{...row,id:canonical,webStoryID:row.id,url:source,webPath:row.url,source:document.querySelector('.fx-byline b')?.textContent||'FYNX',publishedAt:document.querySelector('.fx-sources time')?.dateTime||new Date().toISOString(),saved:true});}return;}
