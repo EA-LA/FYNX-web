@@ -12,6 +12,9 @@
   <link rel="stylesheet" href="assets/theme.css">
   <script src="assets/theme.js?v=20260922-routing" defer></script>
   <style>
+    .contact-skip{position:fixed;top:1rem;left:1rem;z-index:10000;transform:translateY(calc(-100% - 2rem));background:#000;color:#fff;border:2px solid #fff;border-radius:8px;padding:12px 16px;font-weight:700;text-decoration:none;box-shadow:0 4px 20px rgba(0,0,0,.24);}
+    body:not(.dark-mode) .contact-skip{background:#fff;color:#000;border-color:#000;}
+    .contact-skip:focus-visible,.contact-skip:focus{transform:none;outline:3px solid currentColor;outline-offset:3px;}
     .contact-page{max-width:920px;margin:0 auto;padding:130px 1.5rem 80px;}
     .contact-page h1{font-size:clamp(2rem,4vw,3.1rem);margin-bottom:.8rem;}
     .contact-card{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.04);border-radius:16px;padding:1.2rem 1.3rem;margin-bottom:1rem;}
@@ -48,6 +51,7 @@
 <!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261114-consistency-2"><script src="/assets/js/company-products-data.js?v=20261113-shared-account-2" defer></script><script src="/assets/js/company-products.js?v=20261114-consistency-2" defer></script><!-- company-products:assets:end -->
 </head>
 <body data-fynx-layout="standalone" data-fynx-section="FINANCE WORLD">
+<a class="contact-skip" href="#contact-main">Skip to main content</a>
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
 <script>
     (function () {
@@ -73,7 +77,7 @@
     </div>
   </header>
 
-  <main class="contact-page">
+  <main class="contact-page" id="contact-main" tabindex="-1">
 <!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Resources">Resources</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
 <h1>Contact FYNX Finance World</h1>
     <section class="contact-card">
