@@ -91,3 +91,22 @@ test('visible focus indication, compact touch targets and versioned asset', () =
   assert.match(source, /\.fx-acct-out\{min-height:44px/);
   assert.match(navSource, /account-menu\.js\?v=20261114-consistency-1/);
 });
+
+
+test('notification bell remains usable without account scripts or authentication', () => {
+  const dom = new JSDOM('<div class="nav-panel"></div><div class="top-bar"><h1 class="page-title">Home</h1></div>', {
+    url: 'https://www.fynxfinanceworld.com/home.html', runScripts: 'outside-only'
+  });
+  try {
+    Object.defineProperty(dom.window.document, 'readyState', { configurable: true, get: () => 'complete' });
+    dom.window.eval(navSource);
+    const bell = dom.window.document.querySelector('.top-bar-right .icon-btn[title="Notifications"]');
+    assert.ok(bell, 'the FYNX navigation renders the bell');
+    assert.equal(bell.tagName, 'A', 'without notification scripts it must remain a native link');
+    assert.equal(bell.getAttribute('href'), '/notifications.html');
+    assert.equal(bell.getAttribute('aria-label'), 'Notifications');
+    assert.ok(bell.querySelector('svg'), 'preserve the existing icon');
+  } finally {
+    dom.window.close();
+  }
+});
