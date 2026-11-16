@@ -1,6 +1,22 @@
 {
- "generatedAt": "2026-11-15T01:59:14.527Z",
+ "generatedAt": "2026-11-16T06:47:20.529Z",
  "items": [
+  {
+   "reason": "sensitive subject",
+   "title": "Intel Faces Shareholder Lawsuit After 29% Stock Drop",
+   "sources": [
+    "Global Banking & Finance Review"
+   ],
+   "at": "2026-11-16T06:47:20.529Z"
+  },
+  {
+   "reason": "sensitive subject",
+   "title": "Lutnick faces questions over Nvidia spy scandal. His sons' firm has ties to the chipmaker",
+   "sources": [
+    "CNBC"
+   ],
+   "at": "2026-11-16T06:47:20.529Z"
+  },
   {
    "reason": "sensitive subject",
    "title": "EXCLUSIVE: NRS drags Sterling Global Oil, CEO to court over alleged OML 146 tax liability",
@@ -162,79 +178,6 @@
     "The Business Times"
    ],
    "at": "2026-11-13T06:56:30.664Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Jensen Huang's affair with alleged spy revives push to tighten China chip curbs ahead of Trump-Xi summit",
-   "sources": [
-    "CNBC"
-   ],
-   "at": "2026-11-12T23:42:59.442Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "CRYPTO CRIME | India’s Financial Crimes Watchdog Raids 2 Exchanges Over Illegal USDT Cross-Border Trades",
-   "sources": [
-    "BitKE",
-    "CoinDesk"
-   ],
-   "at": "2026-11-12T16:53:23.791Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "India crypto exchanges face FEMA probe over alleged cross-border trades",
-   "sources": [
-    "Traders Union"
-   ],
-   "at": "2026-11-12T16:53:23.791Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Jensen Huang's affair with alleged spy revives push to tighten China chip curbs ahead of Trump-Xi summit",
-   "sources": [
-    "CNBC"
-   ],
-   "at": "2026-11-12T16:53:23.791Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Chinese AI firms rush to secure Nvidia chip capacity as spy scandal stirs fear of US curbs",
-   "sources": [
-    "The Business Times"
-   ],
-   "at": "2026-11-12T16:53:23.791Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "China steps up legal action against stock market fraud and misconduct",
-   "sources": [
-    "South China Morning Post"
-   ],
-   "at": "2026-11-12T07:24:47.103Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "EXCLUSIVE: Chinese AI firms rush to secure Nvidia chip capacity as spy scandal stirs fear of US curbs",
-   "sources": [
-    "Reuters"
-   ],
-   "at": "2026-11-12T07:24:47.103Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Nvidia shares evaporate 20% after CEO scandal amid Asian stock market recovery",
-   "sources": [
-    "Laodong.vn"
-   ],
-   "at": "2026-11-12T07:24:47.103Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "UK Retail Traders Pile Into Nvidia as CEO Affair Scandal Wipes $430 Billion Off Market Value",
-   "sources": [
-    "BigGo Finance"
-   ],
-   "at": "2026-11-12T07:24:47.103Z"
   }
  ]
 }
