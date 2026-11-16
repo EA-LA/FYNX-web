@@ -169,7 +169,7 @@ test('deferred header waits for actual fynx-nav at interactive, preserves accoun
     w.document.addEventListener('DOMContentLoaded', () => {
       originalAvatar = w.document.getElementById('avatarInitials');
       originalBell = w.document.querySelector('.icon-btn[aria-label="Notifications"]');
-      originalBell.addEventListener('click', () => bellClicks++);
+      originalBell.addEventListener('click', event => { event.preventDefault(); bellClicks++; });
     }, { once: true });
     w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
     await tick();

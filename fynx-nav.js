@@ -180,12 +180,12 @@ topBar.innerHTML = `
   <div class="top-bar-right">
     <a class="chip" href="/api/" aria-label="FYNX API developer workspace">API</a>
     <span class="chip" id="dateChip">Loading...</span>
-    <button class="icon-btn" title="Notifications" aria-label="Notifications">
+    <a class="icon-btn" href="/notifications.html" title="Notifications" aria-label="Notifications">
       <svg viewBox="0 0 24 24">
         <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
       </svg>
-    </button>
+    </a>
     <div class="user-avatar" id="avatarInitials">FX</div>
   </div>
 `;
