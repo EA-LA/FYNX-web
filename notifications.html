@@ -7,7 +7,7 @@
 .feed-top{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#777;margin-bottom:4px}.feed-title{font-size:13px;font-weight:800}.feed-body{font-size:12px;color:#666;margin-top:3px}
 .badge{font-size:10px;border:1px solid #ddd;border-radius:999px;padding:2px 7px;font-weight:700}
 .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.08)} .row:last-child{border-bottom:none}
-.switch{width:48px;height:28px;border:1px solid #ddd;border-radius:999px;position:relative;cursor:pointer;background:#fff}.knob{width:22px;height:22px;border-radius:50%;background:#111;position:absolute;left:2px;top:2px;transition:.2s}.switch.on .knob{left:22px}
+.switch{width:48px;height:28px;border:1px solid #ddd;border-radius:999px;position:relative;cursor:pointer;background:#fff}.knob{width:22px;height:22px;border-radius:50%;background:#111;position:absolute;left:2px;top:2px;transition:.2s}.switch.on .knob{left:22px}.switch:focus-visible{outline:2px solid currentColor;outline-offset:3px}
 body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.2)} body.dark-mode .knob{background:#fff}
 .btn{height:38px;padding:0 12px;border-radius:10px;border:1px solid #ddd;background:#fff;font-size:12px;font-weight:800;cursor:pointer}
 small.dim{font-size:11px;color:#777} .filters{display:flex;gap:8px;flex-wrap:wrap} .feed-actions{display:flex;gap:6px;margin-top:8px}
@@ -61,16 +61,16 @@ small.dim{font-size:11px;color:#777} .filters{display:flex;gap:8px;flex-wrap:wra
   <h3 style="font-size:14px;margin:10px 0 8px">Recent Activity</h3><div id="feed"></div>
 </div>
 <div class="card"><h3 style="font-size:14px;margin-bottom:8px">Notification Preferences</h3>
-<div class="row"><span>In-app notifications</span><button class="switch" data-pref="inAppEnabled" type="button"><span class="knob"></span></button></div>
-<div class="row"><span>Browser notifications</span><div style="display:flex;gap:8px"><button class="btn" id="requestPermissionBtn">Enable</button><button class="switch" data-pref="browserEnabled" type="button"><span class="knob"></span></button></div></div>
-<div class="row"><span>Email alerts</span><button class="switch" data-pref="emailEnabled" type="button"><span class="knob"></span></button></div>
-<div class="row"><span>Breaking market/news alerts</span><button class="switch" data-pref="breakingNews" type="button"><span class="knob"></span></button></div>
-<div class="row"><span>High impact economic alerts</span><button class="switch" data-pref="highImpactEconomic" type="button"><span class="knob"></span></button></div>
-<div class="row"><span>Calendar reminders</span><button class="switch" data-pref="calendarReminders" type="button"><span class="knob"></span></button></div>
-<div class="row"><span>Platform updates</span><button class="switch" data-pref="platformUpdates" type="button"><span class="knob"></span></button></div>
-<div class="row"><span>Account/security alerts</span><button class="switch" data-pref="accountSecurity" type="button"><span class="knob"></span></button></div>
-<div class="row"><span>Future billing/challenge alerts</span><button class="switch" data-pref="billingChallenges" type="button"><span class="knob"></span></button></div>
-<div class="row"><span>Sound alerts</span><button class="switch" data-pref="soundEnabled" type="button"><span class="knob"></span></button></div>
+<div class="row"><span>In-app notifications</span><button class="switch" data-pref="inAppEnabled" type="button" role="switch" aria-label="In-app notifications" aria-checked="false"><span class="knob"></span></button></div>
+<div class="row"><span>Browser notifications</span><div style="display:flex;gap:8px"><button class="btn" id="requestPermissionBtn">Enable</button><button class="switch" data-pref="browserEnabled" type="button" role="switch" aria-label="Browser notifications" aria-checked="false"><span class="knob"></span></button></div></div>
+<div class="row"><span>Email alerts</span><button class="switch" data-pref="emailEnabled" type="button" role="switch" aria-label="Email alerts" aria-checked="false"><span class="knob"></span></button></div>
+<div class="row"><span>Breaking market/news alerts</span><button class="switch" data-pref="breakingNews" type="button" role="switch" aria-label="Breaking market and news alerts" aria-checked="false"><span class="knob"></span></button></div>
+<div class="row"><span>High impact economic alerts</span><button class="switch" data-pref="highImpactEconomic" type="button" role="switch" aria-label="High impact economic alerts" aria-checked="false"><span class="knob"></span></button></div>
+<div class="row"><span>Calendar reminders</span><button class="switch" data-pref="calendarReminders" type="button" role="switch" aria-label="Calendar reminders" aria-checked="false"><span class="knob"></span></button></div>
+<div class="row"><span>Platform updates</span><button class="switch" data-pref="platformUpdates" type="button" role="switch" aria-label="Platform updates" aria-checked="false"><span class="knob"></span></button></div>
+<div class="row"><span>Account/security alerts</span><button class="switch" data-pref="accountSecurity" type="button" role="switch" aria-label="Account and security alerts" aria-checked="false"><span class="knob"></span></button></div>
+<div class="row"><span>Future billing/challenge alerts</span><button class="switch" data-pref="billingChallenges" type="button" role="switch" aria-label="Future billing and challenge alerts" aria-checked="false"><span class="knob"></span></button></div>
+<div class="row"><span>Sound alerts</span><button class="switch" data-pref="soundEnabled" type="button" role="switch" aria-label="Sound alerts" aria-checked="false"><span class="knob"></span></button></div>
 <div style="margin-top:8px;font-size:12px;color:#777" id="permStatus">Permission: unknown</div>
 <section id="intelligence-preferences" aria-labelledby="intelligence-preferences-title"><h3 id="intelligence-preferences-title">FYNX intelligence</h3><p>Share coverage, delivery mode and brief choices with your FYNX iPhone app. Device permission, its pause switch, quiet hours and Time Sensitive authorization stay on each device. Brief times follow that device’s local time zone.</p></section>
 </div>
@@ -108,9 +108,10 @@ let unreadOnly = false;
 function applyTheme(){const t=window.FynxPreferences?.getItem('fynx_theme');document.body.classList.toggle('dark-mode',t==='dark');} applyTheme();
 (document.getElementById('themeBtn')||{}).onclick=()=>{const d=!document.body.classList.contains('dark-mode');document.body.classList.toggle('dark-mode',d);window.FynxPreferences?.setItem('fynx_theme',d?'dark':'light');};
 
-document.querySelectorAll('.switch[data-pref]').forEach((s)=>s.onclick=async()=>{const k=s.dataset.pref;prefs[k]=!prefs[k];s.classList.toggle('on',prefs[k]);if(auth.currentUser){try { await saveNotificationPreferences(auth.currentUser.uid,{[k]:prefs[k]}); } catch(error) { prefs[k]=!prefs[k];s.classList.toggle('on',prefs[k]);throw error; }} });
+function syncPrefSwitch(s, checked){const enabled=Boolean(checked);s.classList.toggle('on',enabled);s.setAttribute('aria-checked',String(enabled));}
+document.querySelectorAll('.switch[data-pref]').forEach((s)=>s.onclick=async()=>{const k=s.dataset.pref;prefs[k]=!prefs[k];syncPrefSwitch(s,prefs[k]);if(auth.currentUser){try { await saveNotificationPreferences(auth.currentUser.uid,{[k]:prefs[k]}); } catch(error) { prefs[k]=!prefs[k];syncPrefSwitch(s,prefs[k]);throw error; }} });
 
-requestPermissionBtn.onclick=async()=>{const result = await requestBrowserNotificationPermission();permStatus.textContent = `Permission: ${result.permission}${result.supported?'':' (unsupported browser)'}`;prefs.browserEnabled = result.permission==='granted';document.querySelector('.switch[data-pref="browserEnabled"]').classList.toggle('on', prefs.browserEnabled);if(auth.currentUser){await saveNotificationPreferences(auth.currentUser.uid,{browserEnabled:prefs.browserEnabled});} };
+requestPermissionBtn.onclick=async()=>{const result = await requestBrowserNotificationPermission();permStatus.textContent = `Permission: ${result.permission}${result.supported?'':' (unsupported browser)'}`;prefs.browserEnabled = result.permission==='granted';syncPrefSwitch(document.querySelector('.switch[data-pref="browserEnabled"]'),prefs.browserEnabled);if(auth.currentUser){await saveNotificationPreferences(auth.currentUser.uid,{browserEnabled:prefs.browserEnabled});} };
 
 function filteredItems(items){
   const cat = categoryFilter.value;
@@ -153,7 +154,7 @@ function renderFeed(items){
   guardActions(feed);
 }
 
-function setPrefs(data){Object.assign(prefs,data||{});Object.keys(prefs).forEach((k)=>{const sw=document.querySelector(`.switch[data-pref="${k}"]`);if(sw)sw.classList.toggle('on',Boolean(prefs[k]));});permStatus.textContent = `Permission: ${('Notification' in window)?Notification.permission:'unsupported'}`;}
+function setPrefs(data){Object.assign(prefs,data||{});Object.keys(prefs).forEach((k)=>{const sw=document.querySelector(`.switch[data-pref="${k}"]`);if(sw)syncPrefSwitch(sw,prefs[k]);});permStatus.textContent = `Permission: ${('Notification' in window)?Notification.permission:'unsupported'}`;}
 
 markAllBtn.onclick=async()=>{if(auth.currentUser){await markAllNotificationsRead(auth.currentUser.uid);}};
 unreadOnlyBtn.onclick=()=>{unreadOnly=!unreadOnly; unreadOnlyBtn.textContent=`Unread only: ${unreadOnly?'On':'Off'}`; renderFeed(current);};
