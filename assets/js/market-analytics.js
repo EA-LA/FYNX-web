@@ -31,10 +31,12 @@
    if(data.product!==selected)throw Error('Source returned a different market');
    if(!timeOk(data.observationTime)||
       !['bid','ask','spread','spreadBps','bidSize','askSize'].every(key=>finite(data[key]))||
-      data.bid<=0||data.ask<=0||data.spread<0||data.spreadBps<0||
-      data.bidSize<0||data.askSize<0)throw Error('Invalid liquidity observation');
+      data.bid<=0||data.ask<data.bid||data.spread<0||data.spreadBps<0||
+      data.bidSize<0||data.askSize<0||
+      Math.abs(data.spread-(data.ask-data.bid))>Math.max(1e-8,data.spread*1e-8))throw Error('Invalid liquidity observation');
   }else{
-   if(!Number.isInteger(data.observations)||data.observations<=0||
+   if(!Number.isInteger(data.observations)||data.observations!==Number(selected)||
+      (data.window!==undefined&&data.window!==Number(selected))||
       !dateOk(data.startDate)||!dateOk(data.observationDate)||
       Date.parse(data.startDate)>Date.parse(data.observationDate)||
       !Array.isArray(data.pairs)||!data.pairs.length||
