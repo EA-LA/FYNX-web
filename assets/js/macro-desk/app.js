@@ -319,8 +319,16 @@
       if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
       await navigator.clipboard.writeText(note);
       status.textContent = 'Research note copied with sources and dated observations.';
+      $('md-copy-fallback').hidden = true;
+      $('md-copy-text').value = '';
     } catch {
-      status.textContent = 'Copy unavailable. Check clipboard permission or use an HTTPS browser.';
+      const fallback = $('md-copy-fallback'), field = $('md-copy-text');
+      field.value = note;
+      fallback.hidden = false;
+      fallback.open = true;
+      field.focus();
+      field.select();
+      status.textContent = 'Clipboard access unavailable. The note is selected below for manual copying.';
     } finally {
       button.disabled = !researchNote;
     }
