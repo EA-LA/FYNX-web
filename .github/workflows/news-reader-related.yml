@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - 'assets/js/news-reader.js'
+      - 'assets/js/news-reader-links.js'
       - 'scripts/test-news-reader-ui.cjs'
+      - 'scripts/test-news-reader-links.cjs'
       - '.github/workflows/news-reader-related.yml'
   workflow_dispatch:
 
@@ -23,6 +25,8 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
       - name: Check production script syntax
-        run: node --check assets/js/news-reader.js
+        run: |
+          node --check assets/js/news-reader.js
+          node --check assets/js/news-reader-links.js
       - name: Verify real reader UI and route behaviors
         run: node --test scripts/test-news-reader-ui.cjs scripts/test-news-reader-links.cjs

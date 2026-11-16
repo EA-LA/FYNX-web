@@ -79,11 +79,21 @@
   }
   try {
     const raw=root.sessionStorage?.getItem(storageKey);
-    if(raw&&raw.length<1500000) for(const [k,r] of JSON.parse(raw).slice(-MAX)) {
-      const parts=k.split('|'),o=options({id:parts[0],edition:parts[1],category:parts[2],symbol:parts[3]});
-      if(o&&Number.isFinite(r.at)&&r.at<=Date.now()&&Date.now()-r.at<FRESH) records.set(k,{article:normalized(r.article,o),at:r.at,complete:r.complete===true});
+    if(raw&&raw.length<1500000) {
+      const stored=JSON.parse(raw);
+      if(Array.isArray(stored)) for(const entry of stored.slice(-MAX)) {
+        if(!Array.isArray(entry)||entry.length!==2)continue;
+        const [k,r]=entry;
+        if(typeof k!=='string'||!r||typeof r!=='object'||Array.isArray(r))continue;
+        const parts=k.split('|');
+        if(parts.length!==4)continue;
+        const o=options({id:parts[0],edition:parts[1],category:parts[2],symbol:parts[3]});
+        if(!o||key(o)!==k||!Number.isFinite(r.at)||r.at>Date.now()||Date.now()-r.at>=FRESH)continue;
+        // A single damaged item must not discard other verified, recent briefs.
+        try{records.set(k,{article:normalized(r.article,o),at:r.at,complete:r.complete===true});}catch{}
+      }
     }
-  } catch { records.clear(); }
+  } catch { /* Unreadable storage is treated as an empty cache. */ }
   function getCachedArticle(value) {
     const o=options(value); if(!o)return null;
     const r=records.get(key(o)); return r&&Date.now()-r.at<FRESH ? r.article : null;
