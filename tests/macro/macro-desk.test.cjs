@@ -78,3 +78,19 @@ test('Market story is built only from inputs', () => {
   assert.ok(s.available && s.lines.length >= 3 && s.title.startsWith('GBP/JPY'));
   assert.equal(M.marketStory({symbol: 'X', label: 'X'}).available, false);
 });
+
+test('A sourced Macro Desk note preserves the dated snapshot and never fabricates unavailable figures', () => {
+  const story = M.composeStory({desk, banks: schedule.banks, now: Date.parse('2026-11-10T17:30:00Z')});
+  const note = M.composeResearchNote(story, {generatedAt: desk.generatedAt});
+  assert.ok(note && note.startsWith('FYNX MACRO DESK — RESEARCH NOTE\n'));
+  assert.ok(note.includes(new Date(desk.generatedAt).toISOString()), 'snapshot time is explicit');
+  assert.ok(note.includes(story.title));
+  for (const line of story.lines) assert.ok(note.includes(line), 'share reflects rendered research');
+  assert.ok(note.includes('Sources: ') && note.includes('https://www.fynxfinanceworld.com/macro-desk.html'));
+  assert.ok(note.includes('not a live alert'));
+  assert.equal(M.composeResearchNote({available: false, lines: ['Do not share']}, {generatedAt: desk.generatedAt}), null);
+  assert.equal(M.composeResearchNote(story, {}), null, 'missing timestamp disables copying');
+  assert.equal(M.composeResearchNote(story, {generatedAt: 'not a timestamp'}), null);
+  const safe = M.composeResearchNote({available: true, title: 'Test\nTitle', lines: ['USD\nrate'], sources: ['BIS\nfeed']}, {generatedAt: desk.generatedAt});
+  assert.ok(safe.includes('Test Title') && safe.includes('USD rate') && safe.includes('BIS feed'));
+});
