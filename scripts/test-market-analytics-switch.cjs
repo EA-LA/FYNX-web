@@ -65,10 +65,12 @@ function sample(product = 'BTC-USD') {
 }
 function correlation(observations) {
   const now = new Date().toISOString();
+  // Keep simulated ECB observations recent across subsequent calendar dates.
+  const startDate = new Date(Date.now() - 45 * 86400000).toISOString().slice(0, 10);
   return {
     observations, pairs: ['EURUSD'], matrix: [[1]],
-    source: 'ECB', startDate: '2026-10-01',
-    observationDate: '2026-11-08', fetchedAt: now, stale: false
+    source: 'ECB', startDate,
+    observationDate: now.slice(0, 10), fetchedAt: now, stale: false
   };
 }
 async function settle(call, data) {
