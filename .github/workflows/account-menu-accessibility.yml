@@ -4,6 +4,7 @@ on:
     paths:
       - 'assets/js/account-menu.js'
       - 'assets/js/account-ui.js'
+      - 'assets/js/safe-content.js'
       - 'fynx-nav.js'
       - 'scripts/test-account-menu-accessibility.cjs'
       - 'scripts/test-shared-account-ui.cjs'
