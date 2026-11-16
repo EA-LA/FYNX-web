@@ -25,10 +25,17 @@ const sourceWords = text => typeof text === 'string' ? text.trim().split(/\s+/).
 // Some saved articles are older than the 36-hour refresh window and therefore
 // never reach reusableExcerpt(). Clean the persisted records before building
 // pages so one legacy long quote cannot block the entire daily publication.
-function sanitizeStoredExcerpts(records) {
+function sanitizeStoredExcerpts(records, now = Date.now()) {
   for (const record of records.values()) {
     const excerpt = record.excerpt;
-    if (excerpt && (typeof excerpt.text !== 'string' || sourceWords(excerpt.text) > MAX_PUBLISHED_EXCERPT_WORDS)) {
+    if (!excerpt) continue;
+    const text = excerpt.text, expiry = Date.parse(excerpt.expiresAt);
+    // Old records outside the refresh window still render their saved excerpt.
+    // Never publish expired, truncated, ellipsized or otherwise invalid quotes.
+    if (typeof text !== 'string' || sourceWords(text) === 0 ||
+        sourceWords(text) > MAX_PUBLISHED_EXCERPT_WORDS ||
+        !/[.!]["”’')]*$/.test(text) || /[\u2026]|\.\.\./.test(text) ||
+        !Number.isFinite(expiry) || expiry <= now) {
       record.excerpt = null;
     }
   }
