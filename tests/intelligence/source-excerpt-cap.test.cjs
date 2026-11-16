@@ -77,7 +77,7 @@ test('historic cached articles beyond their refresh window cannot block new publ
     sources: [{publisher: source.source, url}], stats: [{symbol: 'SPY'}],
     excerpt: {text: longSentence, publisher: source.source, sourceURL: url}
   };
-  const recent = {id: 'recent', excerpt: {text: shortSentence}};
+  const recent = {id: 'recent', excerpt: {text: shortSentence, expiresAt: new Date(Date.now() + 3600000).toISOString()}};
   const invalid = {id: 'invalid', excerpt: {text: 42}};
   const records = new Map([[aged.id, aged], [recent.id, recent], [invalid.id, invalid]]);
   assert.equal(Publisher.sanitizeStoredExcerpts(records), records);
@@ -86,4 +86,27 @@ test('historic cached articles beyond their refresh window cannot block new publ
   assert.equal(records.get('recent').excerpt.text, shortSentence);
   assert.equal(records.get('historic').sources[0].url, url, 'verified attribution must be retained');
   assert.deepEqual(records.get('historic').stats, [{symbol: 'SPY'}], 'market context must be retained');
+});
+
+test('cached source quotes are removed when expired, clipped, ellipsized or missing expiry', () => {
+  const now = Date.parse('2026-11-15T18:00:00Z');
+  const expiry = new Date(now + 3600000).toISOString();
+  const cases = [
+    {id: 'expired', excerpt: {text: shortSentence, expiresAt: new Date(now - 1000).toISOString()}},
+    {id: 'missing-expiry', excerpt: {text: shortSentence}},
+    {id: 'clipped', excerpt: {text: shortSentence.slice(0, -1), expiresAt: expiry}},
+    {id: 'ellipsis', excerpt: {text: 'Officials confirmed the decision…', expiresAt: expiry}},
+    {id: 'empty', excerpt: {text: '  ', expiresAt: expiry}},
+    {id: 'healthy', excerpt: {text: shortSentence, expiresAt: expiry}}
+  ].map(record => ({...record, sources: [{publisher: source.source, url}], stats: [{symbol: 'SPY'}]}));
+  const records = new Map(cases.map(record => [record.id, record]));
+  Publisher.sanitizeStoredExcerpts(records, now);
+  for (const id of ['expired', 'missing-expiry', 'clipped', 'ellipsis', 'empty']) {
+    assert.equal(records.get(id).excerpt, null, id);
+  }
+  assert.equal(records.get('healthy').excerpt.text, shortSentence);
+  for (const rec of records.values()) {
+    assert.deepEqual(rec.sources, [{publisher: source.source, url}]);
+    assert.deepEqual(rec.stats, [{symbol: 'SPY'}]);
+  }
 });
