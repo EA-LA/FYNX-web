@@ -206,3 +206,29 @@ test('valid market observations still render after a rejected response', async (
   assert.match(h.status.textContent, /ECB/);
   assert.doesNotMatch(h.status.textContent, /Stale data/);
 });
+
+test('a feed for the wrong correlation window never replaces the selected window', async () => {
+  const h = setup('correlation'); // Selector requests 30 observations.
+  await settle(h.calls[0], correlation(90));
+  assert.equal(h.output.children.length, 0, '90 observations must not be shown under 30');
+  assert.match(h.status.textContent, /unavailable/i);
+  h.button.trigger('click');
+  await settle(h.calls[1], { ...correlation(30), window: 90 });
+  assert.equal(h.output.children.length, 0, 'the explicit backend window must also match');
+  h.button.trigger('click');
+  await settle(h.calls[2], { ...correlation(30), window: 30 });
+  assert.equal(h.output.children.length, 1, 'valid selected-window data still renders');
+});
+
+test('crossed or internally inconsistent order books cannot be shown as quotes', async () => {
+  const h = setup();
+  await settle(h.calls[0], { ...sample(), ask: 101, spread: 0 });
+  assert.equal(h.output.children.length, 0, 'ask below bid must not render');
+  h.button.trigger('click');
+  await settle(h.calls[1], { ...sample(), spread: 0.2 });
+  assert.equal(h.output.children.length, 0, 'displayed spread must match best bid and ask');
+  h.button.trigger('click');
+  await settle(h.calls[2], sample());
+  assert.equal(h.output.children.length, 1, 'valid live quotes still render');
+  assert.equal(h.button.disabled, false);
+});
