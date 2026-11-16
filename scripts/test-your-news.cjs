@@ -84,6 +84,20 @@ test('changing a followed topic preserves keyboard focus on that topic',async()=
  const h=harness();h.start();await tick();await tick();const button=h.w.document.querySelector('[data-topic="technology"]');button.focus();button.click();await tick();await tick();assert.equal(h.w.document.activeElement.dataset.topic,'technology');assert.equal(h.w.document.activeElement.getAttribute('aria-pressed'),'false');h.close();
 });
 
+test('region and company follows preserve keyboard focus when follow chips rebuild',async()=>{
+ const h=harness();h.start();await tick();await tick();
+ const d=h.w.document,details=d.querySelector('[data-your-more-interests]');details.open=true;
+ for(const [label,key] of [['United States','region:united-states'],['Apple','company:AAPL']]){
+   const button=[...details.querySelectorAll('button')].find(entry=>entry.textContent===label);
+   assert.ok(button,label+' follow option exists');button.focus();
+   assert.equal(d.activeElement,button,label+' can receive focus');
+   button.click();await tick();await tick();
+   assert.equal(d.activeElement?.dataset.topic,key,label+' focus survives re-render');
+   assert.equal(d.activeElement?.getAttribute('aria-pressed'),'true');
+ }
+ h.close();
+});
+
 test('shared stories remain findable under each followed topic without duplicates',async()=>{
  const h=harness({load:async category=>result([item(ID,{category})])});h.start();await tick();await tick();const d=h.w.document;assert.equal(d.querySelectorAll('.your-news-story').length,1);
  for(const topic of ['stocks','economics','technology']){d.querySelector('[data-your-topic-filter]').value=topic;d.querySelector('[data-your-topic-filter]').dispatchEvent(new h.w.Event('change'));assert.equal(d.querySelectorAll('.your-news-story').length,1);}
