@@ -119,3 +119,59 @@ test('market identifiers and descriptions are escaped rather than inserted as ex
     assert.match(app.host().textContent, /Nothing qualifies/);
   } finally { app.close(); }
 });
+
+test('market mover tabs expose one keyboard stop and an associated panel', async () => {
+  const app = setup();
+  try {
+    await flush(); await flush();
+    const host = app.host();
+    const tabs = Array.from(host.querySelectorAll('[role="tab"]'));
+    const panel = host.querySelector('[role="tabpanel"]');
+    assert.equal(host.querySelector('[role="tablist"]').getAttribute('aria-label'), 'Market mover categories');
+    assert.equal(tabs.length, 5);
+    assert.equal(panel.id, 'fx-movers-panel');
+    assert.equal(panel.tabIndex, 0);
+    tabs.forEach((b, i) => {
+      assert.equal(b.id, 'fx-movers-tab-' + b.dataset.tab);
+      assert.equal(b.getAttribute('aria-controls'), panel.id);
+      assert.equal(b.tabIndex, i === 0 ? 0 : -1);
+      assert.equal(b.getAttribute('aria-selected'), i === 0 ? 'true' : 'false');
+    });
+    assert.equal(panel.getAttribute('aria-labelledby'), tabs[0].id);
+    const styles = host.ownerDocument.getElementById('fx-movers-style').textContent;
+    assert.match(styles, /min-height:44px/);
+    assert.match(styles, /button:focus-visible/);
+  } finally { app.close(); }
+});
+test('arrow/Home/End keys move focus and selection without capturing Tab', async () => {
+  const app = setup();
+  try {
+    await flush(); await flush();
+    const host = app.host();
+    const tabs = Array.from(host.querySelectorAll('[role="tab"]'));
+    const panel = host.querySelector('[role="tabpanel"]');
+    function press(key, target = app.w.document.activeElement) {
+      const event = new app.w.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      target.dispatchEvent(event);
+      return event;
+    }
+    function active(index) {
+      assert.equal(app.w.document.activeElement, tabs[index]);
+      assert.equal(panel.getAttribute('aria-labelledby'), tabs[index].id);
+      assert.equal(tabs[index].tabIndex, 0);
+      assert.equal(tabs.filter(b => b.tabIndex === 0).length, 1);
+      assert.equal(tabs.filter(b => b.getAttribute('aria-selected') === 'true').length, 1);
+    }
+    tabs[0].focus();
+    active(0);
+    for (const [key, index] of [['ArrowRight',1], ['End',4], ['ArrowRight',0], ['ArrowLeft',4], ['Home',0]]) {
+      assert.equal(press(key).defaultPrevented, true);
+      active(index);
+    }
+    assert.equal(press('Tab').defaultPrevented, false);
+    tabs[3].click();
+    assert.equal(tabs[3].tabIndex, 0);
+    assert.equal(tabs[0].tabIndex, -1);
+    assert.equal(panel.getAttribute('aria-labelledby'), tabs[3].id);
+  } finally { app.close(); }
+});
