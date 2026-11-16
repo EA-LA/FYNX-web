@@ -6,6 +6,7 @@ on:
       - 'assets/js/account-ui.js'
       - 'assets/js/safe-content.js'
       - 'fynx-nav.js'
+      - 'notifications.html'
       - 'scripts/test-account-menu-accessibility.cjs'
       - 'scripts/test-shared-account-ui.cjs'
       - 'scripts/test-terminal-ui.cjs'
