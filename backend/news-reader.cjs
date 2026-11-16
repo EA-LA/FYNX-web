@@ -101,8 +101,34 @@ function explain(title,sourceText,category) {
   if(!matched.length)return {context:[{title:'Read the event in its own terms',text:'Compare the reported event with the earlier position, identify the people or organisations directly involved, and check the publication time. Treat forecasts and allegations as such. Related reporting can add context without independently confirming every claim.'}],terms:[],questions:['What is confirmed in the source, and what remains a forecast or allegation?','What earlier event or published record provides the comparison?']};
   return {context:matched.map(x=>({title:x.title,text:x.text})),terms:[...new Map(matched.flatMap(x=>x.terms).filter(([term])=>termMentioned(term,title+' '+sourceText)).map(([term,definition])=>[term,{term,definition}])).values()].slice(0,5),questions:[...new Set(matched.flatMap(x=>x.questions))].slice(0,4)};
 }
+function periodContinues(before,after) {
+  const token=/\b([A-Za-z]+)\.$/.exec(before)?.[1]||'';
+  // An initial or title belongs to the following name. Acronyms are ambiguous
+  // at sentence ends, so keep them together unless a clear new sentence starts.
+  const newSentence=/^(?:The|This|These|Those|It|Its|They|He|She|We|Our|Their|However|Meanwhile|Separately)\b/.test(after);
+  if(/(?:\b[A-Za-z]\.){2,}$/.test(before))return !newSentence;
+  if(/^[A-Z]$/.test(token)||/^(?:Mr|Mrs|Ms|Dr|Prof|Rev|Hon|St|Sr|Jr)$/i.test(token))return true;
+  if(/^(?:Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec|No|Fig|Vol)$/i.test(token)&&/^\d/.test(after))return true;
+  if(/^(?:Inc|Corp|Co|Ltd|Dept|Univ|vs|etc)$/i.test(token))return !newSentence;
+  return false;
+}
+function incompleteNameEnding(value) {
+  const tail=String(value||'').replace(/["”’')\]]+$/,'');
+  return /\b(?:Mr|Mrs|Ms|Dr|Prof|Rev|Hon|St|Sr|Jr)\.$/i.test(tail)||/(?:^|\s)[A-Z]\.$/.test(tail);
+}
 function sentenceList(value) {
-  return plain(value).split(/(?<=[.!?])\s+(?=[A-Z“"'\d])/).map(s=>s.trim()).filter(s=>s.length>24&&!/^(?:what|how|why|when|where|who|here['’]s|here is what|read|watch|listen|see|find out|learn)\b/i.test(s)&&!s.endsWith('?')&&!/\b(subscribe|sign up|click here|read more|all rights reserved|cookie|javascript|advertisement|continue reading)\b/i.test(s));
+  const text=plain(value),sentences=[];let start=0;
+  for(const boundary of text.matchAll(/([.!?])(["”’')\]]*)\s+(?=[A-Z“"'‘\d])/g)){
+    const end=boundary.index+1+boundary[2].length,next=boundary.index+boundary[0].length;
+    if(boundary[1]==='.'&&!boundary[2]&&periodContinues(text.slice(start,end),text.slice(next)))continue;
+    sentences.push(text.slice(start,end));start=next;
+  }
+  sentences.push(text.slice(start));
+  return sentences.map(s=>s.trim()).filter(s=>{
+    // A feed clipped immediately after a name/title is not a complete fact.
+    if(incompleteNameEnding(s))return false;
+    return s.length>24&&!/^(?:what|how|why|when|where|who|here['’]s|here is what|read|watch|listen|see|find out|learn)\b/i.test(s)&&!/[?]["”’')\]]*$/.test(s)&&!/\b(subscribe|sign up|click here|read more|all rights reserved|cookie|javascript|advertisement|continue reading)\b/i.test(s);
+  });
 }
 function sourceEvidence(item,sourceText,coverageLevel) {
   const title=titleWithoutPublisher(item),terms=tokens(title);
@@ -214,6 +240,9 @@ function extractPage(html,item) {
 function cacheArticle(id,data) { articleCache.delete(id);articleCache.set(id,data);while(articleCache.size>MAX_ARTICLES)articleCache.delete(articleCache.keys().next().value); }
 function restoreVerified(item,brief,now=Date.now()) {
   const id=articleId(item.link),fingerprint=createHash('sha256').update([item.title,item.description,item.pubDate].join('|')).digest('hex');
+  // A stored pre-fix fragment must not survive a failed optional page refresh.
+  // Rebuild from the exact available evidence; do not guess the missing name.
+  if(brief.coverageLevel!=='headline-only'&&[brief.summary,...(brief.keyPoints||[]).map(point=>point.text)].some(incompleteNameEnding))brief=createBrief(item,{now});
   cacheArticle(id,{item,brief,at:now,fingerprint,scannedAt:0});
 }
 function prime(item,related=[],now=Date.now()) {
