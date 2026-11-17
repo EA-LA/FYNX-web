@@ -37,7 +37,7 @@
   }else{
    if(!Number.isInteger(data.observations)||data.observations!==Number(selected)||
       (data.window!==undefined&&data.window!==Number(selected))||
-      !dateOk(data.startDate)||!dateOk(data.observationDate)||
+      !dateOk(data.startDate)||!timeOk(data.observationDate)||
       Date.parse(data.startDate)>Date.parse(data.observationDate)||
       !Array.isArray(data.pairs)||!data.pairs.length||
       !data.pairs.every(pair=>typeof pair==='string'&&pair.trim())||
