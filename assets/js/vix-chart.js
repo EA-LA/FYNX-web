@@ -13,10 +13,12 @@
   function validDate(value) {
     if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
     const parsed = new Date(`${value}T00:00:00Z`);
-    return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+    // An observation dated after the current UTC day cannot be a published daily close.
+    return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value &&
+      parsed.getTime() <= Date.now();
   }
 
-  function verifiedRows(value) {
+  function verifiedRows(value, observationDate) {
     if (!Array.isArray(value) || value.length < 2 || value.length > 1000) {
       throw new Error('Missing VIX history');
     }
@@ -30,6 +32,8 @@
     if (rows.some((row, index) => index && row.date === rows[index - 1].date)) {
       throw new Error('Duplicate VIX dates');
     }
+    // The advertised latest observation must agree with the verified daily rows.
+    if (observationDate !== rows.at(-1).date) throw new Error('Mismatched VIX source date');
     return rows.slice(-90);
   }
 
@@ -81,8 +85,11 @@
     chart.append(svgNode('text', {x: 660, y: 340, 'text-anchor': 'end', fill: 'currentColor', 'font-size': 14}, latest.date));
 
     const fetchedAt = Date.parse(data.fetchedAt);
-    const retrieved = Number.isFinite(fetchedAt) ? ` · Retrieved ${new Date(fetchedAt).toLocaleString()}` : ' · Retrieval time unavailable';
-    const status = note(`${data.stale ? 'Stale source · ' : ''}Latest source observation ${latest.date} (UTC)${retrieved}`);
+    const credibleRetrieval = typeof data.fetchedAt === 'string' && Number.isFinite(fetchedAt) &&
+      fetchedAt <= Date.now() + 5 * 60 * 1000;
+    const retrieved = credibleRetrieval ? ` · Retrieved ${new Date(fetchedAt).toLocaleString()}` : ' · Retrieval time unavailable';
+    const stale = data.stale === true || Date.now() - Date.parse(`${latest.date}T00:00:00Z`) > 7 * 86400000;
+    const status = note(`${stale ? 'Stale source · ' : ''}Latest source observation ${latest.date} (UTC)${retrieved}`);
     root.replaceChildren(headline, chart, status);
   }
 
@@ -96,7 +103,7 @@
       const response = await fetch(endpoint, {signal: AbortSignal.timeout(20000)});
       if (!response.ok) throw new Error('Feed unavailable');
       const data = await response.json();
-      render(data, verifiedRows(data?.rows));
+      render(data, verifiedRows(data?.rows, data?.observationDate));
       hasVerifiedChart = true;
     } catch {
       const previous = root.querySelector('[data-vix-retry-status]');
