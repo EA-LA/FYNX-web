@@ -44,10 +44,13 @@
       ids.push(widget.slot);
       T.PANELS[widget.slot] = ['MINE', project.name.slice(0, 28), ''];
       T.PANEL_DESC[widget.slot] = 'Private tool · ' + project.name;
+      const projectId = widget.projectId;
       T.RENDER[widget.slot] = () => {
+        const live = byId(projectId);
+        if (!live) return;
         const host = T.panel(widget.slot);
         if (!host) return;
-        mount(host, project.main, Core.snapshotQuotes(T.S.quotes), {title: project.name});
+        mount(host, live.main, T.S && T.S.quotes, {title: live.name});
       };
     }
     const groups = T.EXTRA_GROUPS;
@@ -56,11 +59,19 @@
     if (ids.length) groups.push(['Built by you', ids]);
   }
 
+  function stopAllFrames() {
+    for (const frame of [...frames]) {
+      try { frame._fxbStop?.(); } catch (e) {}
+    }
+  }
+
   function clearInstalls(T) {
-    for (const widget of state.installs) {
-      delete T.PANELS[widget.slot];
-      delete T.RENDER[widget.slot];
-      delete T.PANEL_DESC[widget.slot];
+    if (!T || !T.PANELS) return;
+    for (const key of Object.keys(T.PANELS)) {
+      if (!key.startsWith('mine-')) continue;
+      delete T.PANELS[key];
+      delete T.RENDER[key];
+      delete T.PANEL_DESC[key];
     }
     const at = T.EXTRA_GROUPS.findIndex(group => group[0] === 'Built by you');
     if (at >= 0) T.EXTRA_GROUPS.splice(at, 1);
@@ -80,11 +91,15 @@
   function watch(T) {
     connect().then(api => {
       stopWatch = api.onAuthStateChanged(api.auth, user => {
+        const switching = state.ready;
+        stopAllFrames();
+        clearInstalls(T);
+        if (switching && T.buildGrid) { try { T.buildGrid(); T.renderAll(); } catch (e) {} }
         state.uid = user ? user.uid : null;
         state.projects = [];
         state.installs = [];
         state.error = '';
-        if (!user) { state.status = 'signed-out'; state.ready = true; clearInstalls(T); emit(); return; }
+        if (!user) { state.status = 'signed-out'; state.ready = true; emit(); return; }
         state.status = 'loading';
         emit();
         const db = api.firestore.getFirestore(api.app);
@@ -92,9 +107,11 @@
         const installs = api.firestore.doc(db, 'users', user.uid, 'builderInstalls', 'current');
         Promise.all([api.firestore.getDocs(projects), api.firestore.getDoc(installs)]).then(([projectSnap, installSnap]) => {
           if (api.auth.currentUser?.uid !== user.uid) return;
-          state.projects = projectSnap.docs.map(row => projectView(row.id, row.data())).sort((a, b) => b.updatedAt - a.updatedAt);
+          const rows = projectSnap.docs.map(row => ({id: row.id, ...row.data()}));
           const widgets = installSnap.exists() ? installSnap.data().widgets : [];
-          state.installs = Array.isArray(widgets) ? widgets.filter(widget => widget && typeof widget.slot === 'string' && typeof widget.projectId === 'string').slice(0, Core.LIMITS.widgets) : [];
+          const view = Core.accountView(user.uid, rows, widgets);
+          state.projects = view.projects.sort((a, b) => b.updatedAt - a.updatedAt);
+          state.installs = view.installs;
           state.status = 'ready';
           state.ready = true;
           registerInstalls(T);
@@ -126,6 +143,7 @@
   }
 
   function mount(host, code, quotes, hooks) {
+    hooks = hooks || {};
     host._fxbStop?.();
     host._fxbStop = null;
     sweepFrames();
@@ -142,29 +160,37 @@
     frame.dataset.fxb = '1';
     frame.dataset.token = token;
     frame.setAttribute('sandbox', Core.SANDBOX_ATTR);
+    frame.setAttribute('csp', Core.SANDBOX_CSP);
+    frame.setAttribute('allow', '');
     frame.referrerPolicy = 'no-referrer';
     frame.title = hooks.title || 'FYNX widget preview';
     frame.srcdoc = Core.SANDBOX_HTML;
     host.append(frame);
     frames.add(frame);
     let settled = false;
+    let stop = function () {};
     const timer = setTimeout(() => {
       if (settled) return;
       hooks.onError?.('Stopped. The widget did not finish within 8 seconds.');
       stop();
     }, 8000);
     function finish() { if (settled) return; settled = true; clearTimeout(timer); }
+    let readySeen = false;
+    let initialLoadSeen = false;
     function onMessage(event) {
-      if (event.source !== frame.contentWindow || !event.data) return;
-      if (event.data.type === 'fynx-error' && event.data.token === token) { finish(); hooks.onError?.(event.data.message || 'The widget failed.'); }
+      if (event.source !== frame.contentWindow || !event.data || typeof event.data !== 'object') return;
+      if (event.origin !== 'null') { hooks.onError?.('Stopped. The sandbox origin check failed.'); stop(); return; }
+      if (event.data.type === 'fynx-ready') {
+        if (readySeen) { hooks.onError?.('Stopped. The widget tried to leave the sandbox.'); stop(); return; }
+        readySeen = true;
+        try { frame.contentWindow.postMessage({type: 'fynx-run', token, code, quotes: Core.snapshotQuotes(quotes)}, '*'); }
+        catch (error) { finish(); hooks.onError?.(String(error.message || 'The widget failed.').slice(0, 500)); }
+        return;
+      }
+      if (event.data.type === 'fynx-error' && event.data.token === token) { finish(); hooks.onError?.(String(event.data.message || 'The widget failed.').slice(0, 500)); }
       if (event.data.type === 'fynx-done' && event.data.token === token) { finish(); hooks.onDone?.(); }
     }
-    window.addEventListener('message', onMessage);
-    frame.addEventListener('load', () => {
-      try { frame.contentWindow.postMessage({type: 'fynx-run', token, code, quotes}, '*'); }
-      catch (error) { finish(); hooks.onError?.(error.message); }
-    });
-    const stop = function () {
+    stop = function () {
       finish();
       window.removeEventListener('message', onMessage);
       frames.delete(frame);
@@ -174,6 +200,13 @@
     };
     frame._fxbStop = stop;
     host._fxbStop = stop;
+    window.addEventListener('message', onMessage);
+    frame.addEventListener('load', () => {
+      if (!readySeen) return;
+      if (!initialLoadSeen) { initialLoadSeen = true; return; }
+      hooks.onError?.('Stopped. The widget tried to leave the sandbox.');
+      stop();
+    });
     return stop;
   }
 
@@ -185,6 +218,10 @@
       try { frame.contentWindow.postMessage({type: 'fynx-quotes', token: frame.dataset.token || '', quotes}, '*'); } catch (e) {}
     });
   }, 30000);
+
+  window.FynxBuilderMount = mount;
+  window.FynxBuilderSweep = sweepFrames;
+  window.FynxBuilderStop = stopAllFrames;
 
   (window.FynxTerminalPlugins = window.FynxTerminalPlugins || []).push((T, PG) => {
     window.FynxTerminalCore = T;
@@ -225,8 +262,10 @@
         const check = Core.validateProject(draft);
         if (!check.ok) { say(check.errors[0]); return; }
         if (!state.uid || !dbApi) { say(state.error || 'Sign in before saving. Nothing was stored.'); return; }
-        const api = dbApi;
         const id = draft.id || ('p' + crypto.randomUUID().replace(/-/g, '').slice(0, 20));
+        if (!/^p[a-z0-9]{8,24}$/.test(id)) { say('Project id is not valid. Nothing was stored.'); return; }
+        if (!draft.id && state.projects.length >= Core.LIMITS.projects) { say('You can save up to ' + Core.LIMITS.projects + ' private projects.'); return; }
+        const api = dbApi;
         const prior = byId(id);
         const next = Core.withVersion(prior, check.project);
         next.authorUid = state.uid;
@@ -248,8 +287,9 @@
       async function writeInstalls(widgets) {
         const api = await connect();
         if (!state.uid) throw new Error('Sign in before installing.');
-        await api.firestore.setDoc(api.firestore.doc(api.firestore.getFirestore(api.app), 'users', state.uid, 'builderInstalls', 'current'), {widgets});
-        state.installs = widgets;
+        const clean = Core.sanitizeWidgets(widgets);
+        await api.firestore.setDoc(api.firestore.doc(api.firestore.getFirestore(api.app), 'users', state.uid, 'builderInstalls', 'current'), {widgets: clean});
+        state.installs = clean;
         registerInstalls(T);
       }
 
@@ -300,7 +340,12 @@
         if (!window.confirm('Delete this private project from your account?')) return;
         await uninstall();
         const api = await connect();
-        await api.firestore.deleteDoc(api.firestore.doc(api.firestore.getFirestore(api.app), 'users', state.uid, 'builderProjects', draft.id));
+        try {
+          await api.firestore.deleteDoc(api.firestore.doc(api.firestore.getFirestore(api.app), 'users', state.uid, 'builderProjects', draft.id));
+        } catch (error) {
+          say('Removed from the terminal, but the account copy is still there. ' + (error.message || 'Try deleting it again.'));
+          return;
+        }
         state.projects = state.projects.filter(project => project.id !== draft.id);
         currentId = state.projects[0]?.id || null;
         draft = draftOf(byId(currentId));

@@ -1332,11 +1332,26 @@
     cb: 'Policy rates, next decisions, Fed odds', curve: 'Government yield curves', gov: 'US, euro area, UK, Japan yields', rates: 'Policy rates worldwide', eco: 'Economic calendar', bias: 'Smart Bias by FX pair', corr: 'FX correlation matrix', sess: 'Market sessions',
     edge: 'Market regimes', pos: 'CFTC futures positioning', range: 'Daily range distribution', term: 'Volatility term structure', vix: 'VIX, mood, crypto book', fin: 'SEC annual financials', earn: 'Earnings calendar', opt: 'Options summary', optlist: 'Options monitor', chain: 'Option chain', active: 'Most active contracts', books: 'Crypto top of book', tools: 'Calculators, journal, sessions'};
   const slotId = slot => slot.startsWith('card:') ? 'card-' + slot.slice(5).replace(/[^A-Za-z0-9]/g, '_') : slot;
+  /* layout-slot:start */
+  function builtinLayoutSlot(slot) {
+    if (slot === null) return null;
+    if (typeof slot !== 'string') return undefined;
+    if (Object.prototype.hasOwnProperty.call(PANELS, slot) || /^card:[A-Za-z0-9.\-=^&]{1,24}$/.test(slot)) return slot;
+    if (/^mine-p[a-z0-9]{8,24}$/.test(slot)) return null;
+    return undefined;
+  }
   const layoutKey = () => S.sym ? 'sym-' + S.sym.cls : S.deskKey;
   function getSlots() {
-    try { const v = JSON.parse(store.get('layout-' + layoutKey()) || 'null'); if (Array.isArray(v) && v.length && v.length <= 28 && v.every(x => x === null || (typeof x === 'string' && (PANELS[x] || /^card:[A-Za-z0-9.\-=^&]{1,24}$/.test(x))))) return v; } catch {}
+    try {
+      const v = JSON.parse(store.get('layout-' + layoutKey()) || 'null');
+      if (Array.isArray(v) && v.length && v.length <= 28) {
+        const next = v.map(builtinLayoutSlot);
+        if (next.every(x => x !== undefined)) return next;
+      }
+    } catch {}
     return [...D().slots];
   }
+  /* layout-slot:end */
   function setSlots(v) { store.set('layout-' + layoutKey(), JSON.stringify(v)); buildGrid(); renderAll(); }
   function renderSlot(slot) {
     if (!slot) return;
@@ -1387,6 +1402,7 @@
     });
     $('fx-editbar').hidden = !S.editing;
     if (S.editing) $('fx-editbar-text').textContent = `Editing the ${S.sym ? shortOf(S.sym.symbol) + ' (' + S.sym.cls + ')' : D().label} layout · ◀ ▶ move · Change swaps · ✕ removes · + adds any panel or a card for any market`;
+    try { window.FynxBuilderSweep?.(); } catch (e) {}
   }
   /* Panel picker */
   let pickSlot = 0;

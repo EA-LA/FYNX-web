@@ -22,19 +22,43 @@ Symbols already loaded by the terminal include `SPY`, `QQQ`, `AAPL`, `BTC-USD`, 
 
 ## What the sandbox refuses
 
-The iframe uses `sandbox="allow-scripts"` only. It does not get `allow-same-origin`, so it cannot read the terminal page, cookies, or account.
+The iframe uses `sandbox="allow-scripts"` only. It does not get `allow-same-origin`, so its origin is opaque (`"null"`) and it cannot read the terminal page, cookies, storage, or account.
 
-Its document policy is `default-src 'none'` and `connect-src 'none'`. `fetch`, XHR, WebSocket, EventSource, and remote scripts are blocked.
+The document policy is `default-src 'none'` and `connect-src 'none'`. The sandbox also replaces `fetch`, XHR, WebSocket, workers, and WebRTC on that window and on nested frames the widget creates. `document.write` is blocked so a widget cannot replace the locked document. A second load, or a second ready signal, removes the frame.
 
-Do not put API keys, passwords, or tokens in `main.js`. Saving and running are rejected when the source looks like it contains a credential. Phase 2 is the place for account-level credentials, and it is not built yet.
+Chromium does not let a page cancel `location` inside a sandboxed frame. A widget can navigate that frame once. The request carries no terminal cookie and no referrer, the widget cannot read the response, and the terminal page itself does not navigate. The frame is removed when that load finishes. This is not a channel to the signed-in account. `fetch`, XHR, images, beacons, workers, and WebRTC do not leave the frame.
+
+Do not put API keys, passwords, or tokens in `main.js`. The editor rejects source that looks like a credential. That scan is easy to bypass with concatenation. It is not the security boundary. The sandbox and the Firestore rules are. Phase 2 is the place for account-level credentials, and it is not built yet.
 
 ## Account storage
 
-Projects are stored at `users/{uid}/builderProjects/{projectId}`. Installations are stored at `users/{uid}/builderInstalls/current`. Firestore rules allow only that user, and they force `visibility == "private"`.
+Projects are stored at `users/{uid}/builderProjects/{projectId}`. Installations are stored at `users/{uid}/builderInstalls/current`. Rules allow an ordinary user to read and write only their own documents, force `visibility == "private"`, and reject a widget slot that is not `mine-` plus that project id. Up to 12 installed widgets and 5 stored versions.
 
-Those rules have to be deployed before Save or Add to my terminal can succeed. Until then the editor and sandbox still run, and the page says that nothing was saved.
+Those rules are not live until they are deployed. Until then Save and Add to my terminal fail closed, and the page says nothing was stored. The editor and the sandbox still run.
 
-Panel placement uses the same per-device layout store as the rest of the terminal. The project source is the part stored on the account.
+Panel placement uses the same per-device layout store as the rest of the terminal. An installed slot that belongs to a project this account does not have is left empty. It does not load another account's source. The project source is the part stored on the account.
+
+## Before this can be used on the live site
+
+This repository has no `firebase.json`. Do not run `firebase deploy` from FYNX-web. Production rules are released from the existing functions project (see [backend/README.md](../backend/README.md)).
+
+1. Download the live rules (`firebase firestore:rules:get` or the Firebase console) and diff them against `backend/rules/firestore.rules`.
+2. If production has diverged, do not replace the whole ruleset. Copy only the `builderVersion`, `builderVersions`, `builderWidget`, and `builderWidgets` functions, plus the `builderProjects` and `builderInstalls` matches, into the live `match /users/{userId}` block.
+3. Only when the live file matches this one, from the Firebase directory whose rules file is exactly this file:
+
+```
+firebase deploy --only firestore:rules --project fynx-c7a28
+```
+
+Never deploy without `--only firestore:rules`. Never deploy functions from this repository.
+
+4. Sign in with a non-admin account. Save a project, reload, Run, and add it to the desk. Sign in as a second account and confirm that project and panel are absent. Remove the install.
+
+The existing admin wildcard still allows an administrator to read these documents, the same as the rest of the database. This release does not change that.
+
+## Not in this release
+
+Community Library, official submission, creator profiles, rewards, admin review, in-terminal AI, Monaco, and external API keys stay later phases. The builder says so in the settings panel. Do not tell users those are available.
 
 ## Prompt for ChatGPT or Claude
 

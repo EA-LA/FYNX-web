@@ -87,28 +87,81 @@ service cloud.firestore {
         allow create, update, delete: if isAdmin();
       }
 
-      // Private FYNX Builder projects. Visibility cannot be changed to public from the client.
+      // Private FYNX Builder projects. A project cannot be made public from the client.
+      // Ordinary users: owner only. The pre-existing admin wildcard at the bottom of this file still matches every path, including these.
+      function builderVersion(version) {
+        return version is map
+          && version.keys().hasOnly(['version', 'savedAt', 'main'])
+          && version.version is int
+          && version.version > 0
+          && version.version < 10000
+          && version.savedAt is number
+          && version.main is string
+          && version.main.size() > 0
+          && version.main.size() <= 48000;
+      }
+      function builderVersions(versions) {
+        return versions is list
+          && versions.size() <= 5
+          && (versions.size() < 1 || builderVersion(versions[0]))
+          && (versions.size() < 2 || builderVersion(versions[1]))
+          && (versions.size() < 3 || builderVersion(versions[2]))
+          && (versions.size() < 4 || builderVersion(versions[3]))
+          && (versions.size() < 5 || builderVersion(versions[4]));
+      }
+      function builderWidget(widget) {
+        return widget is map
+          && widget.keys().hasOnly(['slot', 'projectId', 'name', 'version', 'enabled'])
+          && widget.slot is string
+          && widget.projectId is string
+          && widget.slot == 'mine-' + widget.projectId
+          && widget.projectId.matches('^p[a-z0-9]{8,24}$')
+          && widget.name is string
+          && widget.name.size() > 0
+          && widget.name.size() <= 80
+          && widget.version is int
+          && widget.version > 0
+          && widget.version < 10000
+          && widget.enabled is bool;
+      }
+      function builderWidgets(widgets) {
+        return widgets is list
+          && widgets.size() <= 12
+          && (widgets.size() < 1 || builderWidget(widgets[0]))
+          && (widgets.size() < 2 || builderWidget(widgets[1]))
+          && (widgets.size() < 3 || builderWidget(widgets[2]))
+          && (widgets.size() < 4 || builderWidget(widgets[3]))
+          && (widgets.size() < 5 || builderWidget(widgets[4]))
+          && (widgets.size() < 6 || builderWidget(widgets[5]))
+          && (widgets.size() < 7 || builderWidget(widgets[6]))
+          && (widgets.size() < 8 || builderWidget(widgets[7]))
+          && (widgets.size() < 9 || builderWidget(widgets[8]))
+          && (widgets.size() < 10 || builderWidget(widgets[9]))
+          && (widgets.size() < 11 || builderWidget(widgets[10]))
+          && (widgets.size() < 12 || builderWidget(widgets[11]));
+      }
       match /builderProjects/{projectId} {
         allow read: if isOwner(userId);
         allow create, update: if isOwner(userId)
+          && projectId.matches('^p[a-z0-9]{8,24}$')
           && request.resource.data.keys().hasOnly(['name', 'description', 'category', 'version', 'visibility', 'authorUid', 'main', 'updatedAt', 'versions'])
           && request.resource.data.name is string
           && request.resource.data.name.size() > 0
           && request.resource.data.name.size() <= 80
           && request.resource.data.description is string
+          && request.resource.data.description.size() >= 12
           && request.resource.data.description.size() <= 500
-          && request.resource.data.category is string
-          && request.resource.data.category.size() <= 40
+          && request.resource.data.category in ['stocks', 'forex', 'crypto', 'bonds', 'commodities', 'options', 'policy', 'news', 'research', 'macro', 'visualization', 'portfolio', 'education', 'risk', 'business']
           && request.resource.data.visibility == 'private'
           && request.resource.data.authorUid == userId
           && request.resource.data.main is string
+          && request.resource.data.main.size() > 0
           && request.resource.data.main.size() <= 48000
           && request.resource.data.version is int
           && request.resource.data.version > 0
           && request.resource.data.version < 10000
           && request.resource.data.updatedAt is number
-          && request.resource.data.versions is list
-          && request.resource.data.versions.size() <= 5;
+          && builderVersions(request.resource.data.versions);
         allow delete: if isOwner(userId);
       }
       match /builderInstalls/{documentId} {
@@ -116,8 +169,7 @@ service cloud.firestore {
         allow create, update: if isOwner(userId)
           && documentId == 'current'
           && request.resource.data.keys().hasOnly(['widgets'])
-          && request.resource.data.widgets is list
-          && request.resource.data.widgets.size() <= 24;
+          && builderWidgets(request.resource.data.widgets);
         allow delete: if false;
       }
     }

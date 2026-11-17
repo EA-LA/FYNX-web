@@ -31,13 +31,14 @@
     code: 48000,
     projects: 40,
     versions: 5,
-    widgets: 24,
+    widgets: 12,
     quotes: 80
   });
   const SANDBOX_ATTR = 'allow-scripts';
+  const SANDBOX_CSP = "default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; font-src 'none'; frame-src 'none'; child-src 'none'; worker-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; navigate-to 'none'";
   const SANDBOX_HTML = `<!doctype html>
 <html><head><meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; font-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="${SANDBOX_CSP}">
 <style>
   html,body{margin:0;background:#06080a;color:#e7ece9;font:12px/1.4 Inter,Arial,sans-serif}
   body{padding:8px}
@@ -50,10 +51,125 @@
   function deny(name) {
     return function () { throw new Error('FYNX Builder blocked ' + name + '. Widgets cannot use the network in this release.'); };
   }
-  try { Object.defineProperty(self, 'fetch', {configurable: false, writable: false, value: deny('fetch')}); } catch (e) {}
-  try { Object.defineProperty(self, 'XMLHttpRequest', {configurable: false, writable: false, value: deny('XMLHttpRequest')}); } catch (e) {}
-  try { Object.defineProperty(self, 'WebSocket', {configurable: false, writable: false, value: deny('WebSocket')}); } catch (e) {}
-  try { Object.defineProperty(self, 'EventSource', {configurable: false, writable: false, value: deny('EventSource')}); } catch (e) {}
+  function lockWindow(win) {
+    if (!win || win.__fynxLocked) return;
+    try { Object.defineProperty(win, '__fynxLocked', {value: true}); } catch (e) { return; }
+    var names = ['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource', 'Worker', 'SharedWorker', 'WebTransport', 'RTCPeerConnection', 'webkitRTCPeerConnection', 'open'];
+    var proto = null;
+    try { proto = Object.getPrototypeOf(win); } catch (e) {}
+    for (var i = 0; i < names.length; i++) {
+      try { if (proto) Object.defineProperty(proto, names[i], {configurable: false, writable: false, value: deny(names[i])}); } catch (e2) {}
+      try { Object.defineProperty(win, names[i], {configurable: false, writable: false, value: deny(names[i])}); } catch (e3) {}
+    }
+    try { if (win.navigator) Object.defineProperty(win.navigator, 'sendBeacon', {configurable: false, writable: false, value: deny('sendBeacon')}); } catch (e4) {}
+    try { if (win.navigator && win.navigator.serviceWorker) win.navigator.serviceWorker.register = deny('ServiceWorker'); } catch (e5) {}
+  }
+  function lockNode(node) {
+    if (!node) return;
+    var type = node.nodeType;
+    if (type !== 1 && type !== 11) return;
+    try {
+      if (node.tagName === 'IFRAME' && node.contentWindow) lockWindow(node.contentWindow);
+      var frames = node.querySelectorAll ? node.querySelectorAll('iframe') : [];
+      for (var i = 0; i < frames.length; i++) if (frames[i].contentWindow) lockWindow(frames[i].contentWindow);
+      var metas = node.querySelectorAll ? node.querySelectorAll('meta[http-equiv]') : [];
+      for (var j = 0; j < metas.length; j++) if (/^refresh$/i.test(metas[j].getAttribute('http-equiv') || '')) metas[j].remove();
+    } catch (e) {}
+  }
+  function wrapInsert(proto, name) {
+    var orig = proto && proto[name];
+    if (typeof orig !== 'function') return;
+    proto[name] = function () {
+      var result = orig.apply(this, arguments);
+      for (var i = 0; i < arguments.length; i++) lockNode(arguments[i]);
+      lockNode(this);
+      return result;
+    };
+  }
+  lockWindow(window);
+  wrapInsert(Node.prototype, 'appendChild');
+  wrapInsert(Node.prototype, 'insertBefore');
+  wrapInsert(Node.prototype, 'replaceChild');
+  wrapInsert(Element.prototype, 'append');
+  wrapInsert(Element.prototype, 'prepend');
+  wrapInsert(Element.prototype, 'replaceChildren');
+  wrapInsert(Element.prototype, 'insertAdjacentElement');
+  wrapInsert(Element.prototype, 'after');
+  wrapInsert(Element.prototype, 'before');
+  wrapInsert(Element.prototype, 'replaceWith');
+  try {
+    var htmlDesc = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+    if (htmlDesc && htmlDesc.set) {
+      Object.defineProperty(Element.prototype, 'innerHTML', {
+        configurable: true, enumerable: htmlDesc.enumerable, get: htmlDesc.get,
+        set: function (value) { htmlDesc.set.call(this, value); lockNode(this); }
+      });
+    }
+    var outerDesc = Object.getOwnPropertyDescriptor(Element.prototype, 'outerHTML');
+    if (outerDesc && outerDesc.set) {
+      Object.defineProperty(Element.prototype, 'outerHTML', {
+        configurable: true, enumerable: outerDesc.enumerable, get: outerDesc.get,
+        set: function (value) { outerDesc.set.call(this, value); lockNode(this.parentNode); }
+      });
+    }
+    var insertHTML = Element.prototype.insertAdjacentHTML;
+    if (typeof insertHTML === 'function') {
+      Element.prototype.insertAdjacentHTML = function () {
+        var result = insertHTML.apply(this, arguments);
+        lockNode(this);
+        return result;
+      };
+    }
+  } catch (e) {}
+  try {
+    ['open', 'write', 'writeln'].forEach(function (name) {
+      try { Object.defineProperty(Document.prototype, name, {configurable: false, writable: false, value: deny('document.' + name)}); } catch (e2) {}
+    });
+  } catch (e) {}
+  try {
+    ['assign', 'replace', 'reload'].forEach(function (name) {
+      try { Location.prototype[name] = deny('location.' + name); } catch (e2) {}
+    });
+    var hrefDesc = Object.getOwnPropertyDescriptor(Location.prototype, 'href');
+    if (hrefDesc && hrefDesc.configurable) {
+      Object.defineProperty(Location.prototype, 'href', {configurable: false, enumerable: hrefDesc.enumerable, get: hrefDesc.get, set: deny('location.href')});
+    }
+  } catch (e) {}
+  document.addEventListener('click', function (event) {
+    var node = event.target;
+    while (node && node !== document) {
+      if (node.tagName === 'A' && node.hasAttribute('href')) { event.preventDefault(); event.stopPropagation(); return; }
+      node = node.parentNode;
+    }
+  }, true);
+  try {
+    var frameProto = window.HTMLIFrameElement && HTMLIFrameElement.prototype;
+    ['contentWindow', 'contentDocument'].forEach(function (prop) {
+      var desc = frameProto && Object.getOwnPropertyDescriptor(frameProto, prop);
+      if (!desc || !desc.get) return;
+      Object.defineProperty(frameProto, prop, {
+        configurable: false, enumerable: desc.enumerable,
+        get: function () {
+          var value = desc.get.call(this);
+          try { lockWindow(prop === 'contentWindow' ? value : value && value.defaultView); } catch (e2) {}
+          return value;
+        }
+      });
+    });
+  } catch (e) {}
+  function cleanQuotes(input) {
+    var out = [];
+    var rows = Array.isArray(input) ? input : [];
+    for (var i = 0; i < rows.length && out.length < 80; i++) {
+      var row = rows[i];
+      var price = Number(row && row.price);
+      var name = String(row && row.symbol || '');
+      if (!name || !isFinite(price)) continue;
+      var change = Number(row.changePercent);
+      out.push({symbol: name.slice(0, 32), price: price, changePercent: isFinite(change) ? change : null});
+    }
+    return out;
+  }
   var quotes = [];
   var listeners = [];
   function quote(symbol) {
@@ -81,13 +197,14 @@
   window.addEventListener('message', function (event) {
     if (event.source !== parent || !event.data) return;
     if (event.data.type === 'fynx-quotes' && event.data.token) {
-      quotes = Array.isArray(event.data.quotes) ? event.data.quotes : [];
+      quotes = cleanQuotes(event.data.quotes);
       listeners.slice().forEach(function (fn) { try { fn(); } catch (error) { fail(event.data.token, error); } });
       return;
     }
     if (event.data.type !== 'fynx-run') return;
     var token = event.data.token;
-    quotes = Array.isArray(event.data.quotes) ? event.data.quotes : [];
+    if (String(event.data.code || '').length > 48000) { fail(token, new Error('main.js is limited to 48000 characters.')); return; }
+    quotes = cleanQuotes(event.data.quotes);
     listeners = [];
     var root = document.getElementById('root');
     root.replaceChildren();
@@ -141,6 +258,7 @@
   }
 
   function secretFindings(code) {
+    // This is a courtesy check so people do not paste keys into source. It is not the security boundary.
     const text = String(code || '');
     const found = [];
     const patterns = [
@@ -176,25 +294,79 @@
   function snapshotQuotes(quotes, limit) {
     const cap = limit || LIMITS.quotes;
     const out = [];
-    if (!quotes || typeof quotes !== 'object') return out;
-    for (const [symbol, row] of Object.entries(quotes)) {
+    const rows = Array.isArray(quotes)
+      ? quotes.map(row => [row && row.symbol, row])
+      : Object.entries(quotes && typeof quotes === 'object' ? quotes : {});
+    for (const [symbol, row] of rows) {
       if (out.length >= cap) break;
       const price = Number(row && row.price);
-      if (!symbol || !Number.isFinite(price)) continue;
+      const name = String(symbol || '');
+      if (!name || !Number.isFinite(price)) continue;
       const change = Number(row.changePercent);
-      out.push({
-        symbol: String(symbol).slice(0, 32),
-        price,
-        changePercent: Number.isFinite(change) ? change : null
-      });
+      out.push({symbol: name.slice(0, 32), price, changePercent: Number.isFinite(change) ? change : null});
     }
     return out;
   }
 
   function slotFor(projectId) {
-    const clean = String(projectId || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 24);
-    if (clean.length < 8) throw new Error('Project id is not valid.');
-    return 'mine-' + clean;
+    const id = String(projectId || '');
+    if (!/^p[a-z0-9]{8,24}$/.test(id)) throw new Error('Project id is not valid.');
+    return 'mine-' + id;
+  }
+
+  function sanitizeWidgets(widgets) {
+    const out = [];
+    const seen = new Set();
+    for (const widget of Array.isArray(widgets) ? widgets : []) {
+      if (!widget || typeof widget !== 'object') continue;
+      const projectId = String(widget.projectId || '');
+      let slot = '';
+      try { slot = slotFor(projectId); } catch { continue; }
+      if (widget.slot !== slot || seen.has(projectId)) continue;
+      const name = cleanText(widget.name, LIMITS.name);
+      const version = Number(widget.version);
+      if (!name || !Number.isInteger(version) || version < 1 || version > 9999) continue;
+      seen.add(projectId);
+      out.push({slot, projectId, name, version, enabled: widget.enabled !== false});
+      if (out.length >= LIMITS.widgets) break;
+    }
+    return out;
+  }
+
+  function layoutSlot(slot, panels) {
+    if (slot === null) return null;
+    if (typeof slot !== 'string') return undefined;
+    const known = panels && typeof panels === 'object' ? panels : {};
+    if (Object.prototype.hasOwnProperty.call(known, slot) || /^card:[A-Za-z0-9.\-=^&]{1,24}$/.test(slot)) return slot;
+    if (/^mine-p[a-z0-9]{8,24}$/.test(slot)) return null;
+    return undefined;
+  }
+
+  function accountView(uid, projectRows, installWidgets) {
+    if (typeof uid !== 'string' || !uid) return {projects: [], installs: []};
+    const projects = [];
+    for (const row of Array.isArray(projectRows) ? projectRows : []) {
+      if (!row || row.authorUid !== uid || typeof row.id !== 'string' || !/^p[a-z0-9]{8,24}$/.test(row.id)) continue;
+      const check = validateProject(row);
+      if (!check.ok) continue;
+      const versions = [];
+      for (const version of Array.isArray(row.versions) ? row.versions : []) {
+        const main = version && typeof version.main === 'string' ? version.main : '';
+        const number = Number(version && version.version);
+        if (!main || main.length > LIMITS.code || !Number.isInteger(number) || number < 1 || number > 9999) continue;
+        versions.push({version: number, savedAt: Number(version.savedAt) || 0, main});
+      }
+      projects.push({
+        id: row.id,
+        ...check.project,
+        version: Number(row.version) || 1,
+        updatedAt: Number(row.updatedAt) || 0,
+        versions: versions.slice(-LIMITS.versions)
+      });
+    }
+    projects.sort((a, b) => b.updatedAt - a.updatedAt);
+    const visible = projects.slice(0, LIMITS.projects);
+    return {projects: visible, installs: sanitizeWidgets(installWidgets).filter(widget => visible.some(project => project.id === widget.projectId))};
   }
 
   function placeWidget(slots, slot, max) {
@@ -230,7 +402,7 @@
   }
 
   return {
-    CATEGORIES, LIMITS, SANDBOX_ATTR, SANDBOX_HTML, ASSISTANT_PROMPT, TEMPLATE,
-    cleanText, secretFindings, validateProject, snapshotQuotes, slotFor, placeWidget, stripWidget, withVersion
+    CATEGORIES, LIMITS, SANDBOX_ATTR, SANDBOX_CSP, SANDBOX_HTML, ASSISTANT_PROMPT, TEMPLATE,
+    cleanText, secretFindings, validateProject, snapshotQuotes, slotFor, sanitizeWidgets, accountView, layoutSlot, placeWidget, stripWidget, withVersion
   };
 });
