@@ -54,7 +54,9 @@ test('sandbox document blocks the network and does not share the terminal origin
   assert.match(core.SANDBOX_HTML, /default-src 'none'/);
   assert.match(core.SANDBOX_HTML, /worker-src 'none'/);
   assert.match(core.SANDBOX_HTML, /frame-src 'none'/);
-  assert.match(core.SANDBOX_CSP, /navigate-to 'none'/);
+  assert.doesNotMatch(core.SANDBOX_CSP, /navigate-to/);
+  assert.match(core.SANDBOX_HTML, /with \(scopeProxy\)/);
+  assert.match(core.SANDBOX_HTML, /evalTickets/);
   assert.equal(core.SANDBOX_HTML.includes(core.SANDBOX_CSP), true);
   assert.doesNotMatch(core.SANDBOX_HTML, /allow-same-origin/);
   assert.equal(core.SANDBOX_ATTR, 'allow-scripts');
@@ -167,7 +169,7 @@ test('terminal page wires the builder without replacing desks, panels, or shortc
   const rules = read('backend/rules/firestore.rules');
   const release = read('scripts/build-release-assets.cjs');
   assert.match(html, /id="fx-build"/);
-  assert.match(html, /assets\/js\/terminal\/builder-core\.js\?v=20261117-builder-2/);
+  assert.match(html, /assets\/js\/terminal\/builder-core\.js\?v=20261117-builder-3/);
   assert.match(html, /assets\/js\/terminal\/builder\.js\?v=20261117-builder-2/);
   assert.ok(html.indexOf('builder.js') < html.indexOf('terminal/app.js'));
   assert.match(html, /assets\/js\/terminal\/app\.js\?v=20261117-builder-2/);

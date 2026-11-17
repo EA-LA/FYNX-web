@@ -74,3 +74,48 @@ test('firestore rules keep builder projects private to the owner', async () => {
   await assertSucceeds(getDoc(doc(admin, 'users/alice/builderProjects/' + id)));
   await assertSucceeds(getDoc(projectRef));
 });
+
+test('create, save, reload, install, and remove stay inside the owner account', async () => {
+  const core = require('../assets/js/terminal/builder-core.js');
+  const created = core.validateProject({
+    name: 'Global Market Intelligence',
+    description: 'A private snapshot of the S&P 500, gold, and the dollar.',
+    category: 'macro',
+    main: core.TEMPLATE
+  });
+  assert.equal(created.ok, true);
+  const id = 'p9876workflow1';
+  const saved = core.withVersion(null, created.project);
+  saved.authorUid = 'alice';
+  saved.updatedAt = 1700000001000;
+  const alice = env.authenticatedContext('alice').firestore();
+  const bob = env.authenticatedContext('bob').firestore();
+  const projectRef = doc(alice, 'users/alice/builderProjects/' + id);
+  await assertSucceeds(setDoc(projectRef, saved));
+  const reloaded = await assertSucceeds(getDoc(doc(env.authenticatedContext('alice').firestore(), 'users/alice/builderProjects/' + id)));
+  assert.equal(reloaded.exists(), true);
+  const view = core.accountView('alice', [{id, ...reloaded.data()}], []);
+  assert.equal(view.projects.length, 1);
+  assert.equal(view.projects[0].main.includes('function render'), true);
+  assert.equal(view.projects[0].visibility, 'private');
+  await assertFails(getDoc(doc(bob, 'users/alice/builderProjects/' + id)));
+
+  const slot = core.slotFor(id);
+  const widgets = core.sanitizeWidgets([{slot, projectId: id, name: saved.name, version: saved.version, enabled: true}]);
+  assert.equal(widgets.length, 1);
+  const installRef = doc(env.authenticatedContext('alice').firestore(), 'users/alice/builderInstalls/current');
+  await assertSucceeds(setDoc(installRef, {widgets}));
+  const installed = core.accountView('alice', [{id, ...reloaded.data()}], widgets);
+  assert.equal(installed.installs.length, 1);
+  assert.equal(installed.installs[0].slot, slot);
+  await assertSucceeds(setDoc(installRef, {widgets: []}));
+  const removed = await assertSucceeds(getDoc(installRef));
+  assert.deepEqual(removed.data().widgets, []);
+  await assertFails(deleteDoc(installRef));
+  await assertFails(getDoc(doc(bob, 'users/alice/builderInstalls/current')));
+
+  await assertSucceeds(setDoc(doc(alice, 'users/alice/notifications/n1'), {text: 'desk still saves'}));
+  await assertFails(getDoc(doc(bob, 'users/alice/notifications/n1')));
+  await assertSucceeds(setDoc(doc(alice, 'users/alice/trades/t1'), {symbol: 'SPY', pl: 1.5}));
+  await assertFails(setDoc(doc(bob, 'users/alice/trades/t2'), {symbol: 'SPY', pl: 1}));
+});

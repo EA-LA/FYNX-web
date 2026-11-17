@@ -120,6 +120,24 @@ test('sandboxed widget renders quotes and cannot reach the account, page, or net
         try { parentStore = String(parent.localStorage.getItem('fx-term-secret')); } catch (e) { parentStore = 'throw:' + e.name; }
         try { parentDoc = parent.document.title; } catch (e) { parentDoc = 'throw:' + e.name; }
         try { Object.prototype.fynxPwned = 'yes'; } catch (e) {}
+        try { location.href = attack + '/leave'; note('loc', 'called'); } catch (e) { note('loc', e.message); }
+        try { eval('location.href=' + JSON.stringify(attack + '/eval')); note('eval', 'called'); } catch (e) { note('eval', e.message); }
+        try { Function('location.href=' + JSON.stringify(attack + '/fn'))(); note('fn', 'called'); } catch (e) { note('fn', e.message); }
+        try { root.constructor.constructor('location.href=' + JSON.stringify(attack + '/ctor'))(); note('ctor', 'called'); } catch (e) { note('ctor', e.message); }
+        try { realWin.location.href = attack + '/realwin'; note('realwin', 'called'); } catch (e) { note('realwin', e.message); }
+        try { nativeEval(attack); note('native', 'called'); } catch (e) { note('native', e.message); }
+        try {
+          var topNode = root.getRootNode();
+          if (topNode && topNode.location) topNode.location.href = attack + '/root';
+          else note('root', 'no-location');
+        } catch (e) { note('root', e.message); }
+        try {
+          var meta = document.createElement('meta');
+          meta.httpEquiv = 'refresh';
+          meta.content = '0;url=' + attack + '/meta';
+          document.head.appendChild(meta);
+          note('meta', 'inserted');
+        } catch (e) { note('meta', e.message); }
         parent.postMessage({type: 'fynx-probe', name: 'attacks', value: JSON.stringify({notes: notes, cookie: cookie, parentCookie: parentCookie, store: store, parentStore: parentStore, parentDoc: parentDoc})}, '*');
         root.textContent = 'attack-ran';
       }`);
@@ -151,7 +169,8 @@ test('sandboxed widget renders quotes and cannot reach the account, page, or net
     const attack = JSON.parse(report.probes.find(probe => probe.name === 'attacks').value);
     for (const note of attack.notes) {
       if (note.startsWith('img=')) continue;
-      assert.match(note, /blocked|SecurityError|not a constructor|is not a constructor|denied/i, note);
+      assert.doesNotMatch(note, /=(called|inserted|no-throw)$/, note);
+      assert.match(note, /blocked|SecurityError|not a constructor|is not a constructor|is not a function|undefined|no-location|denied/i, note);
     }
     assert.equal(attack.cookie.includes('SUPERSECRET'), false);
     assert.match(attack.parentCookie, /throw:SecurityError/);
@@ -164,14 +183,10 @@ test('sandboxed widget renders quotes and cannot reach the account, page, or net
     const navigations = attackHits.filter(hit => hit.path.startsWith('/attack/leave'));
     const others = attackHits.filter(hit => !hit.path.startsWith('/attack/leave') && !hit.path.startsWith('upgrade:/attack/leave'));
     assert.equal(others.length, 0, JSON.stringify(others));
-    assert.ok(navigations.length <= 1, JSON.stringify(navigations));
-    for (const hit of navigations) {
-      assert.equal(hit.cookie, '', 'a frame navigation must not send the terminal cookie');
-      assert.equal(hit.referer, '', 'a frame navigation must not send a referrer');
-    }
+    assert.equal(navigations.length, 0, JSON.stringify(navigations));
     assert.equal(report.title, 'SAFE');
     assert.equal(page.url(), base + '/harness.html');
-    assert.notEqual(report.leave.status, 'timeout', JSON.stringify(report.leave));
+    assert.equal(report.leave.status, 'error', JSON.stringify(report.leave));
   } finally {
     await browser.close();
     await new Promise(resolve => server.close(resolve));

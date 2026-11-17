@@ -26,7 +26,7 @@ The iframe uses `sandbox="allow-scripts"` only. It does not get `allow-same-orig
 
 The document policy is `default-src 'none'` and `connect-src 'none'`. The sandbox also replaces `fetch`, XHR, WebSocket, workers, and WebRTC on that window and on nested frames the widget creates. `document.write` is blocked so a widget cannot replace the locked document. A second load, or a second ready signal, removes the frame.
 
-Chromium does not let a page cancel `location` inside a sandboxed frame. A widget can navigate that frame once. The request carries no terminal cookie and no referrer, the widget cannot read the response, and the terminal page itself does not navigate. The frame is removed when that load finishes. This is not a channel to the signed-in account. `fetch`, XHR, images, beacons, workers, and WebRTC do not leave the frame.
+User code does not receive the frame's real `window`, `document`, or `location`. It runs in a scope whose free variables resolve to a finance DOM facade. `location.href`, `eval`, the `Function` constructor, and DOM walks back to the frame's document are blocked. Chromium still has no CSP directive that cancels navigation, so this is enforced in the frame before the widget runs. `fetch`, XHR, images, beacons, workers, dynamic `import()`, and WebRTC do not leave the frame. A second load still removes the frame.
 
 Do not put API keys, passwords, or tokens in `main.js`. The editor rejects source that looks like a credential. That scan is easy to bypass with concatenation. It is not the security boundary. The sandbox and the Firestore rules are. Phase 2 is the place for account-level credentials, and it is not built yet.
 
@@ -42,17 +42,20 @@ Panel placement uses the same per-device layout store as the rest of the termina
 
 This repository has no `firebase.json`. Do not run `firebase deploy` from FYNX-web. Production rules are released from the existing functions project (see [backend/README.md](../backend/README.md)).
 
-1. Download the live rules (`firebase firestore:rules:get` or the Firebase console) and diff them against `backend/rules/firestore.rules`.
-2. If production has diverged, do not replace the whole ruleset. Copy only the `builderVersion`, `builderVersions`, `builderWidget`, and `builderWidgets` functions, plus the `builderProjects` and `builderInstalls` matches, into the live `match /users/{userId}` block.
-3. Only when the live file matches this one, from the Firebase directory whose rules file is exactly this file:
+1. Download the live rules (`firebase firestore:rules:get --project fynx-c7a28` or the Firebase console) and save that file. It is the rollback copy.
+2. Diff the live rules against `backend/rules/firestore.rules`. The repo change is an insertion inside `match /users/{userId}` only. It does not delete or rewrite any existing match.
+3. If production has diverged, do not replace the whole ruleset. Copy only the `builderVersion`, `builderVersions`, `builderWidget`, and `builderWidgets` functions, plus the `builderProjects` and `builderInstalls` matches, into the live `match /users/{userId}` block.
+4. Only when the file you are about to publish matches that reviewed result, from the Firebase directory whose rules file is exactly that file:
 
 ```
 firebase deploy --only firestore:rules --project fynx-c7a28
 ```
 
-Never deploy without `--only firestore:rules`. Never deploy functions from this repository.
+Never deploy without `--only firestore:rules`. Never deploy functions from this repository. An unrestricted `firebase deploy` can publish functions from the wrong project.
 
-4. Sign in with a non-admin account. Save a project, reload, Run, and add it to the desk. Sign in as a second account and confirm that project and panel are absent. Remove the install.
+Rollback is the same command with the saved live file put back in place. It is rules-only, so it does not restore or delete documents.
+
+5. Sign in with a non-admin account. Save a project, reload, Run, and add it to the desk. Sign in as a second account and confirm that project and panel are absent. Remove the install.
 
 The existing admin wildcard still allows an administrator to read these documents, the same as the rest of the database. This release does not change that.
 
