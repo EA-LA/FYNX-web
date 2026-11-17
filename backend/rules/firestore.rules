@@ -86,6 +86,40 @@ service cloud.firestore {
         allow read: if isOwner(userId) || isAdmin();
         allow create, update, delete: if isAdmin();
       }
+
+      // Private FYNX Builder projects. Visibility cannot be changed to public from the client.
+      match /builderProjects/{projectId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && request.resource.data.keys().hasOnly(['name', 'description', 'category', 'version', 'visibility', 'authorUid', 'main', 'updatedAt', 'versions'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 80
+          && request.resource.data.description is string
+          && request.resource.data.description.size() <= 500
+          && request.resource.data.category is string
+          && request.resource.data.category.size() <= 40
+          && request.resource.data.visibility == 'private'
+          && request.resource.data.authorUid == userId
+          && request.resource.data.main is string
+          && request.resource.data.main.size() <= 48000
+          && request.resource.data.version is int
+          && request.resource.data.version > 0
+          && request.resource.data.version < 10000
+          && request.resource.data.updatedAt is number
+          && request.resource.data.versions is list
+          && request.resource.data.versions.size() <= 5;
+        allow delete: if isOwner(userId);
+      }
+      match /builderInstalls/{documentId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && documentId == 'current'
+          && request.resource.data.keys().hasOnly(['widgets'])
+          && request.resource.data.widgets is list
+          && request.resource.data.widgets.size() <= 24;
+        allow delete: if false;
+      }
     }
 
     match /kyc_profiles/{userId} {

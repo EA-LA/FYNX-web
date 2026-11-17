@@ -1464,6 +1464,7 @@
     if (verb === 'SYM' || verb === 'LOAD') { if (arg) { setSymbol({symbol: resolve(rest) || rest.toUpperCase()}); return; } return openFinder(); }
     if (verb === 'FIND' || verb === 'SEARCH') { openFinder(); if (rest) { $('fx-finder-input').value = rest; renderFinder(rest); } return; }
     if (verb === 'EDIT') { $('fx-edit').click(); return; }
+    if (verb === 'BUILD' || verb === 'BUILDER') { if (!window.FynxBuilderReady) return say('Builder is still loading.'); openPage('builder'); return say('FYNX Builder'); }
     if (verb === 'ALLDESK' || verb === 'CLEAR') { if (S.sym) clearSymbol(); return; }
     const id = resolve(cmd);
     if (id) { setSymbol({symbol: EDGE_TO_FX[id] || id}); return say(`${nameOf(id)}: loading every box`); }
@@ -1472,7 +1473,7 @@
   }
   $('fx-cmd-form').addEventListener('submit', e => { e.preventDefault(); const i = $('fx-command'); run(i.value); i.value = ''; });
   const KEYS = [['F1', 'Help', 'help'], ['F2', 'News', 'news'], ['F3', 'Markets', 'mkts'], ['F4', 'Macro', 'macro'], ['F5', 'Edge', 'edge'], ['F6', 'Intel', 'intel'], ['F7', 'Research', 'research'], ['F8', 'Journal', 'journal'], ['F9', 'Calc', 'calc'], ['F10', 'Calendar', 'cal'], ['F11', 'Options', 'options'], ['F12', 'Vol', 'vol']];
-  function renderKeys() { const host = $('fx-keys'); host.replaceChildren(); KEYS.forEach(([k, l, p]) => { const b = btn('', 'fx-key', () => openPage(p), `${k} ${l}`); b.append(el('b', '', k), document.createTextNode(l)); host.append(b); }); }
+  function renderKeys() { const host = $('fx-keys'); host.replaceChildren(); KEYS.forEach(([k, l, p]) => { const b = btn('', 'fx-key', () => openPage(p), `${k} ${l}`); b.append(el('b', '', k), document.createTextNode(l)); host.append(b); }); if (window.FynxBuilderKey) { const b = btn('', 'fx-key', () => openPage('builder'), 'Build your own'); b.append(el('b', '', 'BLD'), document.createTextNode('Build')); host.append(b); } }
   document.addEventListener('keydown', e => {
     const typing = ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName);
     if (e.key === 'Escape') { if (!$('fx-inspect').hidden) { $('fx-inspect').hidden = true; return; } if (PG?.isOpen()) { PG.back(); return; } }
