@@ -43,7 +43,14 @@
     };
     area.prepend(hero, nav);
     window.addEventListener('fynx:identity', paint); paint();
-    nav.querySelector('[aria-current]')?.scrollIntoView({block: 'nearest', inline: 'center'});
+    // Center the selected tab inside the horizontal nav without scrolling the document.
+    // scrollIntoView() could jump past the page heading on compact iPhone screens.
+    const selected = nav.querySelector('[aria-current="page"]');
+    if (selected && nav.scrollWidth > nav.clientWidth) {
+      const bar = nav.getBoundingClientRect();
+      const tab = selected.getBoundingClientRect();
+      nav.scrollLeft += tab.left - bar.left - (bar.width - tab.width) / 2;
+    }
   }
   function initials(id) { const s = (id.displayName || id.email || 'F').trim(); return s.split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map(p => p[0].toUpperCase()).join('') || 'F'; }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
