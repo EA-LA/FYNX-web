@@ -12,7 +12,7 @@ function render(trades,available=false){
  return complete;
 }
 const retry = document.getElementById('homeJournalRetry');
-let stop, epoch = 0, userForView = null;
+let stop, epoch = 0, userForView = null, verifiedUid = null;
 
 function showRetry(visible, loading = false) {
  if (!retry) return;
@@ -27,12 +27,20 @@ function connect(user, manual = false) {
  stop?.();
  stop = null;
  showRetry(manual && !!user, manual && !!user);
- render([]);
+ // Keep the last verified figures visible during a same-account retry.
+ // Clear them immediately on sign-out or whenever the account changes.
+ const preserve = !!user && verifiedUid === user.uid;
+ if (!preserve) {
+  render([]);
+  verifiedUid = null;
+ }
  if (!user) {
   status.textContent = 'Sign in to load your results.';
   return;
  }
- status.textContent = manual ? 'Reconnecting to your saved journal…' : 'Loading your saved journal…';
+ status.textContent = manual
+  ? preserve ? 'Reconnecting to your saved journal… Showing previously synced figures until updated.' : 'Reconnecting to your saved journal…'
+  : preserve ? 'Refreshing your saved journal… Showing previously synced figures until updated.' : 'Loading your saved journal…';
  const failed = () => {
   if (request !== epoch) return;
   stop?.();
@@ -47,6 +55,7 @@ function connect(user, manual = false) {
    snapshot => {
     if (request !== epoch) return;
     const complete = render(snapshot.docs.map(d => d.data()), true);
+    verifiedUid = user.uid;
     status.textContent = !complete
      ? 'Some trades have no recorded realized P/L. Complete those records in Journal to view your results.'
      : snapshot.empty ? 'Record your first trade in Journal.' : 'Synced with your saved journal';
