@@ -118,7 +118,7 @@ test('preserves last verified observations across an outage and clears warning o
   assert.equal(app.root.querySelector('[data-vix-retry-status]').getAttribute('role'), 'status');
   app.button.click(); await settle();
   assert.equal(app.root.children.filter(child => child.dataset.vixRetryStatus).length, 1);
-  app.setData({...sample(),rows: [{date:'2026-11-14',close:22},{date:'2026-11-15',close:23}]});
+  app.setData({...sample(),observationDate:'2026-11-15',rows: [{date:'2026-11-14',close:22},{date:'2026-11-15',close:23}]});
   app.button.click(); await settle();
   assert.match(app.root.textContent, /23\.00VIX/);
   assert.doesNotMatch(app.root.textContent, /Update failed/);
