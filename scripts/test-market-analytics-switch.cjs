@@ -234,3 +234,27 @@ test('crossed or internally inconsistent order books cannot be shown as quotes',
   assert.equal(h.output.children.length, 1, 'valid live quotes still render');
   assert.equal(h.button.disabled, false);
 });
+
+test('future-dated correlation observations are rejected but current dates still work', async () => {
+  const h = setup('correlation');
+  await settle(h.calls[0], { ...correlation(30), observationDate: '2099-01-01' });
+  assert.equal(h.output.children.length, 0, 'future market data must not appear as verified');
+  assert.match(h.status.textContent, /unavailable/i);
+  assert.equal(h.button.disabled, false, 'retry remains available');
+  h.button.trigger('click');
+  await settle(h.calls[1], correlation(30));
+  assert.equal(h.output.children.length, 1, 'a valid observation recovers after rejection');
+  assert.match(h.status.textContent, /ECB/);
+});
+
+test('a future-dated correlation refresh cannot overwrite the last verified table', async () => {
+  const h = setup('correlation');
+  await settle(h.calls[0], correlation(30));
+  const previous = h.output.children[0];
+  h.button.trigger('click');
+  await settle(h.calls[1], { ...correlation(30), observationDate: '2099-01-01' });
+  assert.equal(h.output.children[0], previous);
+  assert.match(h.status.textContent, /Stale data/);
+  assert.match(h.status.textContent, /Refresh failed/);
+  assert.equal(h.button.disabled, false);
+});
