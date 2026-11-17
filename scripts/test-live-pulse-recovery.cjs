@@ -203,7 +203,7 @@ test('invalid refresh preserves and labels the previously verified snapshot', as
     await settle();
     assert.equal(app.strip().querySelectorAll('.lp-item').length, 2);
     assert.match(app.strip().querySelector('.lp-asof').textContent, /Stale/);
-    assert.match(app.strip().textContent, /previous snapshot/);
+    assert.match(app.strip().textContent, /Showing the last sourced snapshot/);
   } finally { app.close(); }
 });
 
