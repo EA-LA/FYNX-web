@@ -13,12 +13,12 @@ const snapshot = Object.freeze({
   gainers: [{ symbol: 'AAPL', name: 'Apple<img src=x onerror=alert(1)>', price: 245.12, changePct: 1.5, marketCap: 2500000000000 }],
   losers: [], active: [], crypto: [], aiUnder3: []
 });
-function setup(initialMode = 'ok') {
+function setup(initialMode = 'ok', initialSnapshot = snapshot) {
   const dom = new JSDOM('<div id="homeSecondaryStories"></div>', {
     url: 'https://www.fynxfinanceworld.com/', runScripts: 'outside-only', pretendToBeVisual: true
   });
   const w = dom.window;
-  let mode = initialMode, requests = 0, pending = null;
+  let mode = initialMode, requests = 0, pending = null, payload = initialSnapshot;
   const intervals = [], timeouts = new Map();
   let nextTimer = 0;
   w.setInterval = (fn, ms) => { assert.equal(ms, 300000); intervals.push(fn); return ++nextTimer; };
@@ -34,13 +34,14 @@ function setup(initialMode = 'ok') {
       pending = { signal: opts.signal };
       opts.signal.addEventListener('abort', () => reject(Error('aborted')), { once: true });
     });
-    return Promise.resolve({ ok: true, json: async () => snapshot });
+    return Promise.resolve({ ok: true, json: async () => payload });
   };
   w.eval(source);
   w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
   return {
     dom, w, intervals, timeouts, get requests() { return requests; }, get pending() { return pending; },
     mode(next) { mode = next; },
+    snapshot(next) { payload = next; },
     host() { return w.document.querySelector('.fx-movers'); },
     close() { w.close(); }
   };
@@ -116,7 +117,7 @@ test('market identifiers and descriptions are escaped rather than inserted as ex
     assert.equal(app.host().querySelectorAll('img,script').length, 0);
     assert.match(app.host().textContent, /Apple<img src=x onerror=alert\(1\)>/);
     app.host().querySelector('[data-tab="crypto"]').click();
-    assert.match(app.host().textContent, /Nothing qualifies/);
+    assert.match(app.host().textContent, /No verified movers are available/);
   } finally { app.close(); }
 });
 
@@ -173,5 +174,60 @@ test('arrow/Home/End keys move focus and selection without capturing Tab', async
     assert.equal(tabs[3].tabIndex, 0);
     assert.equal(tabs[0].tabIndex, -1);
     assert.equal(panel.getAttribute('aria-labelledby'), tabs[3].id);
+  } finally { app.close(); }
+});
+
+test('unverified source timestamps cannot publish market prices', async () => {
+  for (const invalidTime of ['invalid-date', new Date(Date.now() + 60 * 60000).toISOString(), '2026-11-17']) {
+    const app = setup('ok', {...snapshot, stocksAsOf: invalidTime});
+    try {
+      await flush(); await flush();
+      assert.equal(app.host().querySelectorAll('.fx-mv').length, 0);
+      assert.match(app.host().textContent, /temporarily unavailable/);
+      assert.ok(app.host().querySelector('[data-movers-retry]'));
+    } finally { app.close(); }
+  }
+});
+test('failed snapshot time validation retains verified prices and retry', async () => {
+  const app = setup();
+  try {
+    await flush(); await flush();
+    assert.equal(app.host().querySelectorAll('.fx-mv').length, 1);
+    app.snapshot({...snapshot, cryptoAsOf: 'not-a-date'});
+    app.intervals[0]();
+    await flush(); await flush();
+    assert.equal(app.host().querySelectorAll('.fx-mv').length, 1);
+    assert.match(app.host().textContent, /Update failed. Showing the previous snapshot/);
+    assert.ok(app.host().querySelector('[data-movers-retry]'));
+    app.snapshot(snapshot);
+    app.host().querySelector('[data-movers-retry]').click();
+    await flush(); await flush();
+    assert.doesNotMatch(app.host().textContent, /Update failed/);
+  } finally { app.close(); }
+});
+test('bad rows do not hide valid movers or break the instrument links', async () => {
+  const app = setup('ok', {
+    ...snapshot,
+    gainers: [
+      null, false, {}, { symbol:'', price:1, changePct:1 },
+      { symbol:'BAD', price:Infinity, changePct:1 },
+      { symbol:'BAD2', price:0, changePct:1 },
+      { symbol:'AAPL', name:'Apple', price:245.12, changePct:1.5 }
+    ]
+  });
+  try {
+    await flush(); await flush();
+    assert.equal(app.host().querySelectorAll('.fx-mv').length, 1);
+    assert.match(app.host().querySelector('.fx-mv').textContent, /AAPL/);
+    assert.doesNotMatch(app.host().textContent, /Update failed/);
+  } finally { app.close(); }
+});
+test('all unusable rows produce a truthful empty state instead of crashing', async () => {
+  const app = setup('ok', {...snapshot, gainers:[null, {symbol:'?', price:NaN, changePct:0}]});
+  try {
+    await flush(); await flush();
+    assert.equal(app.host().querySelectorAll('.fx-mv').length, 0);
+    assert.match(app.host().textContent, /No verified movers are available/);
+    assert.doesNotMatch(app.host().textContent, /Update failed/);
   } finally { app.close(); }
 });

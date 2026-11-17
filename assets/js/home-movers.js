@@ -26,6 +26,17 @@
       ? {label:'Older snapshot', stale:true}
       : {label:'Recent snapshot', stale:false};
   }
+  // Keep prior verified prices when a new snapshot lacks a credible source time.
+  function verifiedTime(iso) {
+    if (typeof iso !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(iso)) return false;
+    const time = Date.parse(iso);
+    return Number.isFinite(time) && time > 0 && time <= Date.now() + 300000;
+  }
+  function usableMover(row) {
+    return row && typeof row === 'object' && typeof row.symbol === 'string' &&
+      row.symbol.trim().length > 0 && row.symbol.length <= 40 &&
+      num(row.price) && row.price > 0 && num(row.changePct);
+  }
   function style() {
     if (document.getElementById('fx-movers-style')) return;
     const st = document.createElement('style'); st.id = 'fx-movers-style';
@@ -66,7 +77,7 @@
       + '<span class="fx-mv-ch">' + (num(ch) ? (ch > 0 ? '+' : '') + ch.toFixed(2) + '%' : '—') + '</span></a>';
   }
   function render(host) {
-    const meta = TABS.find(t => t[0] === tab), list = (data && Array.isArray(data[tab]) ? data[tab] : []).slice(0, 6);
+    const meta = TABS.find(t => t[0] === tab), list = (data && Array.isArray(data[tab]) ? data[tab] : []).filter(usableMover).slice(0, 6);
     host.querySelectorAll('.fx-movers-tabs button').forEach(b => { const selected = b.dataset.tab === tab; b.setAttribute('aria-selected', String(selected)); b.tabIndex = selected ? 0 : -1; });
     host.querySelector('.fx-movers-body').setAttribute('aria-labelledby', 'fx-movers-tab-' + tab);
     const body = host.querySelector('.fx-movers-body');
@@ -83,7 +94,7 @@
     }
     const src = tab === 'crypto' ? 'CoinGecko' : 'Nasdaq screener';
     body.innerHTML = '<p class="fx-movers-desc">' + esc(meta[2]) + '</p>'
-      + (list.length ? list.map(r => row(r, tab)).join('') : '<p class="fx-movers-desc">Nothing qualifies in the latest snapshot. Open the scanner for the full list.</p>')
+      + (list.length ? list.map(r => row(r, tab)).join('') : '<p class="fx-movers-desc">No verified movers are available for this category. Open the scanner for additional coverage.</p>')
       + '<p class="fx-movers-foot"><span class="fx-movers-quality" role="status">' + esc(quality.label) + '</span> · Source: ' + src + (ago(asOf) ? ' · as of ' + esc(ago(asOf)) : '') + ' · Stock data may be delayed. Not a recommendation.'
       + (loadFailed ? ' <span role="status">Update failed. Showing the previous snapshot.</span> <button type="button" class="fx-movers-retry" data-movers-retry>Retry</button>' : '') + '</p>';
   }
@@ -95,7 +106,8 @@
     try {
       const res = await fetch(URL_ + '?t=' + Math.floor(Date.now() / 300000), {cache: 'no-store', signal: controller.signal});
       if (!res.ok) throw new Error(res.status);
-      const j = await res.json(); if (!j || !Array.isArray(j.gainers)) throw new Error('shape');
+      const j = await res.json();
+      if (!j || !Array.isArray(j.gainers) || !verifiedTime(j.stocksAsOf) || !verifiedTime(j.cryptoAsOf)) throw new Error('unverified snapshot');
       data = j;
       loadFailed = false;
       host.hidden = false;

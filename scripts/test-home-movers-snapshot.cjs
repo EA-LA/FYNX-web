@@ -60,13 +60,15 @@ test('successful fetch with stock data older than 45 minutes is marked stale', a
   } finally {p.finish();}
 });
 
-test('future and invalid timestamps cannot be mislabeled just now', async () => {
+test('future and invalid timestamps never expose unverified quote rows', async () => {
   for (const time of [iso(20), 'invalid-date']) {
     const p = await page([snapshot(time)]);
     try {
-      assert.equal(p.quality(), 'Snapshot time unverified');
+      assert.equal(p.host.querySelectorAll('.fx-mv').length, 0);
+      assert.equal(p.quality(), undefined);
       assert.equal(p.indicator().classList.contains('is-stale'), true);
-      assert.doesNotMatch(p.host.querySelector('.fx-movers-foot').textContent, /as of just now/);
+      assert.match(p.host.textContent, /temporarily unavailable/);
+      assert.ok(p.host.querySelector('[data-movers-retry]'));
     } finally {p.finish();}
   }
 });
