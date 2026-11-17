@@ -122,7 +122,14 @@
   }
   function csv(asset, rows) {
     const cols = COLS[asset], lines = [cols.map(c => c[1]).join(',')];
-    rows.forEach(r => lines.push(cols.map(([k]) => { const v = Array.isArray(r[k]) ? r[k].join(' ') : r[k]; return /[",\n]/.test(String(v ?? '')) ? '"' + String(v).replace(/"/g, '""') + '"' : (v ?? ''); }).join(',')));
+    const cell = value => {
+      const numeric = typeof value === 'number' && Number.isFinite(value);
+      const raw = Array.isArray(value) ? value.join(' ') : String(value ?? '');
+      // CSV quoting does not prevent formula execution by spreadsheet applications.
+      const safe = !numeric && /^[\s\u0000-\u001f\uFEFF]*[=+\-@]/u.test(raw) ? "'" + raw : raw;
+      return /[",\r\n]/.test(safe) || safe !== raw ? '"' + safe.replace(/"/g, '""') + '"' : safe;
+    };
+    rows.forEach(r => lines.push(cols.map(([k]) => cell(r[k])).join(',')));
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([lines.join('\n')], {type: 'text/csv'})); a.download = `fynx-scan-${asset}-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
