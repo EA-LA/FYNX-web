@@ -38,6 +38,14 @@ function setup(mode = 'ok') {
     if (mode === 'old') return Promise.resolve({ok: true, json: async () => ({...quote, generatedAt: new Date(Date.now() - 2 * 3600000).toISOString()})});
     if (mode === 'future') return Promise.resolve({ok: true, json: async () => ({...quote, generatedAt: new Date(Date.now() + 3600000).toISOString()})});
     if (mode === 'unverified') return Promise.resolve({ok: true, json: async () => ({...quote, generatedAt: 'not-an-ISO-timestamp'})});
+    if (mode === 'invalid-row') return Promise.resolve({ok: true, json: async () => ({...quote,
+      items: [{...quote.items[0], symbol: ''}, {...quote.items[0], label: null}]})});
+    if (mode === 'mixed-rows') return Promise.resolve({ok: true, json: async () => ({...quote,
+      items: [{...quote.items[0], symbol: ''}, quote.items[0]]})});
+    if (mode === 'bad-spark') return Promise.resolve({ok: true, json: async () => ({...quote,
+      items: [{...quote.items[0], spark: [7600, NaN]}]})});
+    if (mode === 'oversized-spark') return Promise.resolve({ok: true, json: async () => ({...quote,
+      items: [{...quote.items[0], spark: Array(400).fill(7600)}]})});
     return Promise.resolve({ok: true, json: async () => quote});
   };
   w.eval(source);
@@ -140,16 +148,63 @@ test('a successful fetch of an old source snapshot is explicitly older, never li
   } finally { app.close(); }
 });
 
-test('future or invalid source timestamps cannot look recently updated', async () => {
+test('future or invalid source timestamps never display unverified quotes', async () => {
   for (const mode of ['future', 'unverified']) {
     const app = setup(mode);
     try {
       await settle();
       assert.equal(app.strip().classList.contains('is-stale'), true);
-      assert.equal(app.strip().querySelector('.lp-tag-sub').textContent, 'Unverified');
-      assert.equal(app.strip().querySelector('.lp-asof').textContent, 'Snapshot time unverified');
+      assert.equal(app.strip().querySelector('.lp-tag-sub').textContent, 'Unavailable');
+      assert.equal(app.strip().querySelectorAll('.lp-item').length, 0);
+      assert.match(app.strip().textContent, /Market pulse unavailable. No prices are estimated/);
     } finally { app.close(); }
   }
+});
+
+test('quotes missing a symbol or label never create broken Terminal destinations', async () => {
+  const app = setup('invalid-row');
+  try {
+    await settle();
+    assert.equal(app.strip().querySelectorAll('.lp-item').length, 0);
+    assert.match(app.strip().textContent, /No prices are estimated/);
+    app.setMode('mixed-rows');
+    app.strip().querySelector('.lp-retry').click();
+    await settle();
+    const links = [...app.strip().querySelectorAll('.lp-item')];
+    assert.equal(links.length, 2);
+    assert.ok(links.every(link => link.getAttribute('href') === '/terminal.html?sym=%5EGSPC'));
+  } finally { app.close(); }
+});
+
+test('malformed or oversized sparklines cannot generate invalid SVG paths', async () => {
+  for (const mode of ['bad-spark', 'oversized-spark']) {
+    const app = setup(mode);
+    try {
+      await settle();
+      const strip = app.strip();
+      assert.equal(strip.querySelectorAll('.lp-item').length, 2, 'verified prices remain visible');
+      assert.equal(strip.querySelectorAll('.lp-spark').length, 0);
+      assert.doesNotMatch(strip.innerHTML, /NaN|Infinity|30-day trend/);
+      app.setMode('ok');
+      strip.querySelector('.lp-retry').click();
+      await settle();
+      assert.equal(strip.querySelectorAll('.lp-spark').length, 2, 'verified trend recovers');
+    } finally { app.close(); }
+  }
+});
+
+test('invalid refresh preserves and labels the previously verified snapshot', async () => {
+  const app = setup();
+  try {
+    await settle();
+    assert.equal(app.strip().querySelectorAll('.lp-item').length, 2);
+    app.setMode('unverified');
+    app.intervals[0]();
+    await settle();
+    assert.equal(app.strip().querySelectorAll('.lp-item').length, 2);
+    assert.match(app.strip().querySelector('.lp-asof').textContent, /Stale/);
+    assert.match(app.strip().textContent, /previous snapshot/);
+  } finally { app.close(); }
 });
 
 test('fresh verified retry recovers from older snapshot without changing sourced prices', async () => {
