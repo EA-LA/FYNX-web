@@ -117,7 +117,7 @@ test('market identifiers and descriptions are escaped rather than inserted as ex
     assert.equal(app.host().querySelectorAll('img,script').length, 0);
     assert.match(app.host().textContent, /Apple<img src=x onerror=alert\(1\)>/);
     app.host().querySelector('[data-tab="crypto"]').click();
-    assert.match(app.host().textContent, /Nothing qualifies/);
+    assert.match(app.host().textContent, /No verified movers are available/);
   } finally { app.close(); }
 });
 
