@@ -55,6 +55,9 @@
 .fx-acct-pro strong{display:block;font-size:14px}.fx-acct-pro span{display:block;font-size:12px;opacity:.85;margin-top:3px}
 .fx-acct-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid #edf0ee;margin-top:6px;padding:8px 6px 2px}
 .fx-acct-foot a{display:inline-flex;align-items:center;min-height:44px;font-size:12.5px;color:#4a554f;text-decoration:none;font-weight:600}.fx-acct-foot a:hover{color:#1f5a3f}
+.fx-acct-error{margin:6px 6px 8px;padding:9px 10px;border:1px solid #9a9a9a;border-radius:8px;background:#f6f6f6;color:#171717;font:600 12.5px/1.45 Inter,Arial,sans-serif}
+.fx-acct-error[hidden]{display:none}
+html[data-theme=dark] .fx-acct-error,body.dark-mode .fx-acct-error{background:#242424;color:#f5f5f5;border-color:#777}
  .fx-acct-out{min-height:44px;border:0;background:transparent;color:#c42828;font:700 13px Inter,Arial,sans-serif;padding:8px 10px;border-radius:8px;cursor:pointer}.fx-acct-out:hover{background:#fdeeee}
 html[data-theme=dark] .fx-acct-menu,body.dark-mode .fx-acct-menu{background:#111614;color:#e8ece9;border-color:#27302b}
 @media (max-width:600px){.fx-acct-menu{left:10px!important;right:10px!important;width:auto}}`;
@@ -86,12 +89,18 @@ html[data-theme=dark] .fx-acct-menu,body.dark-mode .fx-acct-menu{background:#111
     pro.append(el('strong', '', 'Membership & Pro tools →'), el('span', '', 'Plans, billing and the tools each tier unlocks')); menu.append(pro);
     const foot = el('div', 'fx-acct-foot'), help = el('a', '', 'Help & support'); help.href = '/contact.html';
     const out = el('button', 'fx-acct-out', 'Sign out'); out.type = 'button';
+    const error = el('p', 'fx-acct-error'); error.setAttribute('role', 'alert'); error.hidden = true;
     out.addEventListener('click', async () => {
+      error.hidden = true; error.textContent = '';
       out.disabled = true; out.textContent = 'Signing out…';
       try { if (window.FynxSession?.logout) await window.FynxSession.logout('manual', '/auth/login.html'); else { const m = await import('/auth/firebase.js'); const a = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js'); await a.signOut(m.auth); } location.href = '/auth/login.html'; }
-      catch (_) { out.disabled = false; out.textContent = 'Sign out'; }
+      catch (_) {
+        out.disabled = false; out.textContent = 'Sign out';
+        error.textContent = 'Could not sign out. Check your connection and try again.';
+        error.hidden = false;
+      }
     });
-    foot.append(help, out); menu.append(foot);
+    foot.append(help, out); menu.append(foot, error);
   }
   function mount(host) {
     if (host.dataset.fxAcct) return; host.dataset.fxAcct = '1'; style();
