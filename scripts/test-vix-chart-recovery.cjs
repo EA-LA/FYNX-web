@@ -118,7 +118,7 @@ test('preserves last verified observations across an outage and clears warning o
   assert.equal(app.root.querySelector('[data-vix-retry-status]').getAttribute('role'), 'status');
   app.button.click(); await settle();
   assert.equal(app.root.children.filter(child => child.dataset.vixRetryStatus).length, 1);
-  app.setData({...sample(),rows: [{date:'2026-11-14',close:22},{date:'2026-11-15',close:23}]});
+  app.setData({...sample(),observationDate:'2026-11-15',rows: [{date:'2026-11-14',close:22},{date:'2026-11-15',close:23}]});
   app.button.click(); await settle();
   assert.match(app.root.textContent, /23\.00VIX/);
   assert.doesNotMatch(app.root.textContent, /Update failed/);
@@ -143,4 +143,40 @@ test('stale and missing retrieval timestamps are explicitly labeled', async () =
   assert.match(app.root.textContent, /Stale source/);
   assert.match(app.root.textContent, /Retrieval time unavailable/);
   assert.doesNotMatch(app.root.textContent, /Invalid Date/);
+});
+
+
+test('rejects tomorrow or future daily closes and allows recovery from an invalid first load', async () => {
+  const tomorrow = new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10);
+  const app = setup({...sample(), observationDate: tomorrow,
+    rows: [{date:'2026-11-13',close:19.1},{date:tomorrow,close:21}]});
+  await settle();
+  assert.equal(app.root.find('svg'), null);
+  assert.match(app.root.textContent, /observations are unavailable/);
+  app.setData(sample());
+  app.button.click();
+  await settle();
+  assert.ok(app.root.find('svg'));
+  assert.match(app.root.textContent, /Latest source observation 2026-11-14/);
+});
+
+test('rejects mismatched declared observation date without erasing a verified chart', async () => {
+  const app = setup();
+  await settle();
+  app.setData({...sample(), observationDate:'2026-11-13'});
+  app.button.click(); await settle();
+  assert.ok(app.root.find('svg'));
+  assert.match(app.root.textContent, /Update failed.*last sourced/);
+  assert.match(app.root.textContent, /20\.25VIX · Daily close 2026-11-14/);
+});
+
+test('flags old history and does not claim future-dated retrieval metadata as verified', async () => {
+  const app = setup({...sample(), stale:false, fetchedAt:'2099-01-01T12:00:00Z',
+    observationDate:'2020-01-03',
+    rows:[{date:'2020-01-02',close:14.2},{date:'2020-01-03',close:14.7}]});
+  await settle();
+  assert.ok(app.root.find('svg'));
+  assert.match(app.root.textContent, /Stale source/);
+  assert.match(app.root.textContent, /Retrieval time unavailable/);
+  assert.doesNotMatch(app.root.textContent, /2099/);
 });
