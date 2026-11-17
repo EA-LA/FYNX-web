@@ -1,6 +1,22 @@
 {
- "generatedAt": "2026-11-16T18:40:35.508Z",
+ "generatedAt": "2026-11-17T02:58:59.530Z",
  "items": [
+  {
+   "reason": "sensitive subject",
+   "title": "Asian stocks sink as scandal-hit Nvidia prepares for earnings",
+   "sources": [
+    "Yahoo Finance Singapore"
+   ],
+   "at": "2026-11-17T02:58:59.530Z"
+  },
+  {
+   "reason": "sensitive subject",
+   "title": "Lutnick faces questions over Nvidia spy scandal. His sons' firm has ties to the chipmaker",
+   "sources": [
+    "CNBC"
+   ],
+   "at": "2026-11-17T02:58:59.530Z"
+  },
   {
    "reason": "sensitive subject",
    "title": "Lutnick faces questions over Nvidia spy scandal. His sons' firm has ties to the chipmaker",
@@ -89,30 +105,6 @@
     "CNBC"
    ],
    "at": "2026-11-14T06:42:44.924Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Supreme Court agrees to hear Robinhood challenge to IPO information omission lawsuit",
-   "sources": [
-    "CNBC"
-   ],
-   "at": "2026-11-13T23:41:28.621Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Lutnick faces questions over Nvidia spy scandal. His sons’ firm has deep ties to the chipmaker",
-   "sources": [
-    "CNBC"
-   ],
-   "at": "2026-11-13T23:41:28.621Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Nvidia scandal draws in Commerce Secretary Lutnick, who reportedly agrees to testify about China chip sales",
-   "sources": [
-    "CNBC"
-   ],
-   "at": "2026-11-13T23:41:28.621Z"
   }
  ]
 }
