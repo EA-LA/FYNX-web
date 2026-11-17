@@ -9,6 +9,7 @@
   const QUOTES_URL = (local ? '/api/research' : 'https://us-central1-fynx-c7a28.cloudfunctions.net/webResearchData') + '?action=quotes&symbols=' + encodeURIComponent(M.PAIRS.map(p => p.quoteSymbol).filter(Boolean).join(','));
   const $ = id => document.getElementById(id);
   const state = {policy: null, desk: null, deskError: null, edge: null, schedule: null, quotes: {}, quotesAt: null, headlines: [], curve: 'US', paused: false};
+  let researchNote = null;
   const finite = v => typeof v === 'number' && Number.isFinite(v);
 
   /* --- helpers ----------------------------------------------------------- */
@@ -110,6 +111,9 @@
   }
   function renderStory(rows) {
     const story = M.composeStory({desk: state.desk, banks: state.schedule?.banks || [], headlines: state.headlines, bias: rows.map(r => r.result)});
+    researchNote = M.composeResearchNote(story, {generatedAt: state.desk?.generatedAt});
+    $('md-copy-brief').disabled = !researchNote;
+    $('md-copy-status').textContent = '';
     $('md-story-time').textContent = `TODAY'S STORY · ${new Date().toLocaleTimeString([], {hour: 'numeric', minute: '2-digit', timeZoneName: 'short'})}`;
     const body = $('md-story-body'); body.replaceChildren();
     if (!story.available) { $('md-story-title').textContent = 'Today’s story is waiting for data'; body.append(el('p', 'md-muted', 'The rate data could not be loaded. Try Refresh now.')); return; }
@@ -307,6 +311,28 @@
     renderAll(); button.disabled = false;
   }
 
+  $('md-copy-brief').addEventListener('click', async () => {
+    if (!researchNote) return;
+    const note = researchNote, status = $('md-copy-status'), button = $('md-copy-brief');
+    button.disabled = true;
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(note);
+      status.textContent = 'Research note copied with sources and dated observations.';
+      $('md-copy-fallback').hidden = true;
+      $('md-copy-text').value = '';
+    } catch {
+      const fallback = $('md-copy-fallback'), field = $('md-copy-text');
+      field.value = note;
+      fallback.hidden = false;
+      fallback.open = true;
+      field.focus();
+      field.select();
+      status.textContent = 'Clipboard access unavailable. The note is selected below for manual copying.';
+    } finally {
+      button.disabled = !researchNote;
+    }
+  });
   $('md-refresh').addEventListener('click', () => refresh(true));
   $('md-curve-tabs').addEventListener('click', event => { const tab = event.target.closest('[role=tab]'); if (tab && !tab.disabled) { state.curve = tab.dataset.area; renderLiveYields(); renderCurves(); } });
   $('md-curve-tabs').addEventListener('keydown', event => {

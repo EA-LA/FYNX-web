@@ -40,6 +40,13 @@ body.macro-page .md-workspace,body.macro-page .md-ticker{font-family:Inter,Arial
 .md-hero-side{display:flex;flex-direction:column;align-items:flex-end;gap:10px;max-width:420px}
 .md-status{font-size:13px;line-height:1.5;color:var(--md-muted);text-align:right}
 .md-status.md-warn{color:var(--md-warn)}
+.md-hero-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px}
+.md-copy-status{font-size:12px;color:var(--md-muted);line-height:1.5;text-align:right;max-width:420px}
+.md-copy-fallback{width:100%;min-width:0;border:1px solid var(--md-line);background:var(--md-paper);padding:10px 12px;border-radius:3px}
+.md-copy-fallback summary{font-size:13px;font-weight:700;cursor:pointer}
+.md-copy-fallback label{display:block;font-size:12px;margin:10px 0 4px}
+.md-copy-fallback textarea{display:block;width:100%;min-height:144px;resize:vertical;padding:10px;border-radius:3px;border:1px solid var(--md-line);color:var(--md-ink);background:var(--md-paper);font:16px/1.5 ui-monospace,SFMono-Regular,monospace}
+@media(max-width:720px){.md-hero-actions{justify-content:flex-start}.md-copy-status{text-align:left}}
 .md-button{min-height:44px;padding:10px 16px;border:1px solid var(--md-line);border-radius:3px;background:var(--md-paper);color:var(--md-ink);font:600 13px Inter,Arial,sans-serif;cursor:pointer}
 .md-button:hover{background:var(--md-soft)}.md-button:disabled{opacity:.6;cursor:wait}
 

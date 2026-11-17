@@ -189,6 +189,35 @@
     return {title, lines, facts, lead: lead ? {title: lead.title, url: lead.url, source: lead.source, publishedAt: lead.publishedAt} : null, sources: [...sources].filter(Boolean), available: lines.length > 0};
   }
 
+
+  /* Point-in-time notes for trade journals: reuse the displayed research, not new calculations. */
+  function composeResearchNote(story, {generatedAt} = {}) {
+    const at = Date.parse(generatedAt);
+    if (!story?.available || !Array.isArray(story.lines) || !story.lines.length || !Number.isFinite(at)) return null;
+    const clean = value => String(value == null ? '' : value).replace(/[\x00-\x1f\x7f]/g, ' ').replace(/\s+/g, ' ').trim();
+    const lines = [
+      'FYNX MACRO DESK — RESEARCH NOTE',
+      clean(story.title),
+      'Rates snapshot: ' + new Date(at).toISOString() + ' (UTC)',
+      '',
+      ...story.lines.map(clean).filter(Boolean)
+    ];
+    if (Array.isArray(story.facts) && story.facts.length) {
+      lines.push('', 'Key observations');
+      for (const fact of story.facts) {
+        if (fact?.label && fact?.value) lines.push(clean(fact.label) + ': ' + clean(fact.value) + (fact.note ? ' — ' + clean(fact.note) : ''));
+      }
+    }
+    if (story.lead?.title && story.lead?.source) {
+      lines.push('', 'Reported headline: ' + clean(story.lead.title), 'Publisher: ' + clean(story.lead.source));
+      const published = Date.parse(story.lead.publishedAt);
+      if (Number.isFinite(published)) lines.push('Published: ' + new Date(published).toISOString() + ' (UTC)');
+    }
+    if (Array.isArray(story.sources) && story.sources.length) lines.push('', 'Sources: ' + story.sources.map(clean).filter(Boolean).join('; '));
+    lines.push('', 'Data may be delayed or revised. This is a point-in-time research note, not a live alert or investment advice.', 'https://www.fynxfinanceworld.com/macro-desk.html');
+    return lines.join('\n') + '\n';
+  }
+
   /* --- Edge Radar insights -------------------------------------------------- */
   const CRYPTO = new Set(['BTCUSD', 'ETHUSD']), METALS = new Set(['XAUUSD', 'XAGUSD']), INDICES = new Set(['US30', 'NAS100', 'SPX500']);
   function rangeUnit(symbol, pip) {
@@ -254,5 +283,5 @@
     return data;
   }
 
-  return {AREAS, PAIRS, WEIGHTS, TENOR_YEARS, volDistribution, marketStory, ordinal, rangeUnit, zonedToUTC, nextDecision, lastDecisionBefore, countdown, policyRate, curveView, yieldChange, smartBias, composeStory, validateDesk};
+  return {AREAS, PAIRS, WEIGHTS, TENOR_YEARS, volDistribution, marketStory, ordinal, rangeUnit, zonedToUTC, nextDecision, lastDecisionBefore, countdown, policyRate, curveView, yieldChange, smartBias, composeStory, composeResearchNote, validateDesk};
 });
