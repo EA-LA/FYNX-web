@@ -11,13 +11,67 @@ function render(trades,available=false){
  document.getElementById('homeWinRate').textContent=complete&&trades.length?(values.filter(value=>Number(value)>0).length/trades.length*100).toFixed(1)+'%':'—';
  return complete;
 }
-let stop,epoch=0;
-render([]);
-onAuthStateChanged(auth,user=>{
- const request=++epoch;
- stop?.(); stop=null;
+const retry = document.getElementById('homeJournalRetry');
+let stop, epoch = 0, userForView = null;
+
+function showRetry(visible, loading = false) {
+ if (!retry) return;
+ retry.hidden = !visible;
+ retry.disabled = loading;
+ retry.textContent = loading ? 'Reconnecting…' : 'Retry journal sync';
+}
+
+function connect(user, manual = false) {
+ // Every new subscription invalidates callbacks from the prior user or attempt.
+ const request = ++epoch;
+ stop?.();
+ stop = null;
+ showRetry(manual && !!user, manual && !!user);
  render([]);
- if(!user){status.textContent='Sign in to load your results.';return;}
- status.textContent='Loading your saved journal…';
- stop=onSnapshot(collection(getFirestore(app),'users',user.uid,'trades'),snapshot=>{if(request!==epoch)return;const complete=render(snapshot.docs.map(d=>d.data()),true);status.textContent=!complete?'Some trades have no recorded realized P/L. Complete those records in Journal to view your results.':snapshot.empty?'Record your first trade in Journal.':'Synced with your saved journal';},()=>{if(request!==epoch)return;render([]);status.textContent='Journal sync unavailable. Please try again.';});
+ if (!user) {
+  status.textContent = 'Sign in to load your results.';
+  return;
+ }
+ status.textContent = manual ? 'Reconnecting to your saved journal…' : 'Loading your saved journal…';
+ const failed = () => {
+  if (request !== epoch) return;
+  stop?.();
+  stop = null;
+  // Preserve the last verified figures, but label them as potentially stale.
+  status.textContent = 'Journal sync unavailable. Displayed figures may be out of date. Retry to reconnect.';
+  showRetry(true);
+ };
+ try {
+  stop = onSnapshot(
+   collection(getFirestore(app), 'users', user.uid, 'trades'),
+   snapshot => {
+    if (request !== epoch) return;
+    const complete = render(snapshot.docs.map(d => d.data()), true);
+    status.textContent = !complete
+     ? 'Some trades have no recorded realized P/L. Complete those records in Journal to view your results.'
+     : snapshot.empty ? 'Record your first trade in Journal.' : 'Synced with your saved journal';
+    showRetry(false);
+   },
+   failed
+  );
+ } catch {
+  failed();
+ }
+}
+
+render([]);
+showRetry(false);
+onAuthStateChanged(auth, user => {
+ userForView = user;
+ connect(user);
+});
+retry?.addEventListener('click', () => {
+ const user = auth.currentUser;
+ if (!user || user.uid !== userForView?.uid) {
+  // Do not reconnect the old account while Firebase is changing sessions.
+  userForView = user || null;
+  connect(userForView);
+  return;
+ }
+ connect(user, true);
 });

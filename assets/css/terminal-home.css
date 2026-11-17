@@ -75,6 +75,10 @@ html body[data-fynx-terminal] .nr-sessions .mh-fill { background: var(--terminal
 .nr-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 15px; }
 .nr-actions a { padding: 9px 12px; font-size: 11px; font-weight: 700; border: 1px solid var(--terminal-text); }
 .nr-actions .nr-primary { background: var(--terminal-text); color: var(--terminal-bg) !important; }
+.nr-actions .nr-journal-retry { min-height: 44px; padding: 9px 12px; border: 1px solid var(--terminal-text); background: var(--terminal-bg); color: var(--terminal-text); font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+.nr-actions .nr-journal-retry[hidden] { display: none; }
+.nr-actions .nr-journal-retry:focus-visible { outline: 2px solid var(--terminal-text); outline-offset: 3px; }
+.nr-actions .nr-journal-retry:disabled { opacity: .65; cursor: progress; }
 .nr-process { margin-top: 24px; padding: 18px; background: var(--terminal-panel); }
 .nr-process > span { font-size: 9px; color: var(--terminal-muted); font-weight: 700; letter-spacing: .07em; }
 .nr-process h3 { font-size: 22px; line-height: 1.1; letter-spacing: -.04em; margin: 8px 0; }
