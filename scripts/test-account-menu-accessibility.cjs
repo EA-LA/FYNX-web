@@ -93,6 +93,38 @@ test('visible focus indication, compact touch targets and versioned asset', () =
 });
 
 
+test('failed sign-out displays an accessible error and keeps retry available', async () => {
+  const app = setup();
+  let attempts = 0;
+  app.w.FynxSession = {
+    logout: async () => { attempts++; throw new Error('network unavailable'); }
+  };
+  try {
+    app.button.click();
+    const menu = app.menu();
+    const signOut = menu.querySelector('.fx-acct-out');
+    const error = menu.querySelector('.fx-acct-error');
+    assert.equal(error.getAttribute('role'), 'alert');
+    assert.equal(error.hidden, true);
+    signOut.click();
+    assert.equal(signOut.disabled, true, 'show a pending sign-out state');
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.equal(attempts, 1);
+    assert.equal(signOut.disabled, false, 'allow retry after the failed request');
+    assert.equal(signOut.textContent, 'Sign out');
+    assert.equal(error.hidden, false, 'failure is not silent');
+    assert.match(error.textContent, /Could not sign out.*try again/i);
+    assert.equal(menu.hidden, false, 'keep the account menu open so retry is possible');
+    signOut.click();
+    assert.equal(error.hidden, true, 'clear a previous failure before retrying');
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.equal(attempts, 2);
+    assert.equal(error.hidden, false, 'a second failure is communicated');
+  } finally {
+    app.close();
+  }
+});
+
 test('notification bell remains usable without account scripts or authentication', () => {
   const dom = new JSDOM('<div class="nav-panel"></div><div class="top-bar"><h1 class="page-title">Home</h1></div>', {
     url: 'https://www.fynxfinanceworld.com/home.html', runScripts: 'outside-only'
