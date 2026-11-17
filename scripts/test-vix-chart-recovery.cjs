@@ -167,7 +167,7 @@ test('rejects mismatched declared observation date without erasing a verified ch
   app.button.click(); await settle();
   assert.ok(app.root.find('svg'));
   assert.match(app.root.textContent, /Update failed.*last sourced/);
-  assert.match(app.root.textContent, /20\\.25VIX · Daily close 2026-11-14/);
+  assert.match(app.root.textContent, /20\.25VIX · Daily close 2026-11-14/);
 });
 
 test('flags old history and does not claim future-dated retrieval metadata as verified', async () => {
