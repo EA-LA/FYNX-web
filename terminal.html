@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="/assets/js/journal-theme.js" defer></script>
 <link rel="stylesheet" href="/assets/css/terminal-all.css?v=20261114-consistency-2">
+<link rel="stylesheet" href="/assets/css/terminal-builder.css?v=20261117-builder-2">
 <!-- terminal-gate:start -->
 <script>document.documentElement.classList.add('ftg-checking');setTimeout(function(){var r=document.documentElement;if(r.classList.contains('ftg-checking')&&!document.querySelector('.ftg')){var w=document.querySelector('.ftg-wait');if(w)w.innerHTML='Secure sign-in could not load. <a href="/terminal.html" style="color:#f5b301;margin-left:8px">Reload</a>';}},12000);</script>
 <link rel="stylesheet" href="/assets/css/terminal-gate.css?v=20261112-gate-4">
@@ -38,6 +39,7 @@
  <p class="fx-cmd-msg" id="fx-cmd-msg" role="status" aria-live="polite"></p>
  <div class="fx-clocks" id="fx-clocks" aria-label="Market sessions"></div>
  <button type="button" class="fx-live" id="fx-live" aria-label="Live feed status and sources"><i aria-hidden="true"></i>CONNECTING</button>
+ <button type="button" class="fx-editbtn" id="fx-build" title="Build a private tool and add it to your terminal">Build your own</button>
  <button type="button" class="fx-editbtn" id="fx-edit" aria-pressed="false" title="Design your own terminal: move, remove and add panels">Edit</button>
  <a class="fx-classic" id="fx-classic" href="/home.html" title="Leave the terminal and return to the website">Exit <span aria-hidden="true">⏏</span></a>
 </header>
@@ -69,8 +71,10 @@
 <script src="/assets/js/terminal/prime.js?v=20261112-site-qa-72" defer></script>
 <script src="/assets/js/terminal/scanner.js?v=20261114-consistency-2" defer></script>
 <script src="/assets/js/terminal/heatmaps.js?v=20261114-consistency-2" defer></script>
-<script src="/assets/js/terminal/pages.js?v=20261114-consistency-2" defer></script>
-<script src="/assets/js/terminal/app.js?v=20261114-consistency-2" defer></script>
+<script src="/assets/js/terminal/pages.js?v=20261117-builder-2" defer></script>
+<script src="/assets/js/terminal/builder-core.js?v=20261117-builder-3"></script>
+<script src="/assets/js/terminal/builder.js?v=20261117-builder-2"></script>
+<script src="/assets/js/terminal/app.js?v=20261117-builder-2" defer></script>
 <script type="module" src="/assets/js/terminal/journal.js"></script>
 <script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
 </body></html>
