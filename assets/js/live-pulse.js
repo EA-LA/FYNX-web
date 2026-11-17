@@ -13,7 +13,8 @@
     return v.toLocaleString('en-US', {minimumFractionDigits: d, maximumFractionDigits: d}) + (sym === '^TNX' ? '%' : '');
   }
   function spark(values, up) {
-    if (!values || values.length < 2) return '';
+    // Malformed upstream sparkline arrays must never generate NaN/Infinity SVG paths.
+    if (!Array.isArray(values) || values.length < 2 || values.length > 365 || !values.every(num)) return '';
     const min = Math.min(...values), max = Math.max(...values), span = max - min || 1, n = values.length - 1;
     const pts = values.map((v, i) => (i / n * 60).toFixed(1) + ',' + (18 - (v - min) / span * 16).toFixed(1)).join(' ');
     return '<svg class="lp-spark" viewBox="0 0 60 20" preserveAspectRatio="none" aria-hidden="true"><polyline points="' + pts + '" class="' + (up ? 'lp-up' : 'lp-down') + '"/></svg>';
@@ -65,12 +66,19 @@
     return { label: 'Delayed', detail: 'Delayed snapshot · ' + ageLabel, stale: false };
   }
   function render(strip, data) {
-    const items = (Array.isArray(data?.items) ? data.items : []).filter(i => i && num(i.price));
+    // A successful HTTP response does not verify when the quotes were collected.
+    // Retain the last good snapshot on malformed or implausibly future source times.
+    if (snapshotStatus(data?.generatedAt).label === 'Unverified') throw new Error('Market source time is unverified');
+    const items = (Array.isArray(data?.items) ? data.items : []).filter(i => i && num(i.price) &&
+      typeof i.symbol === 'string' && !!i.symbol.trim() &&
+      typeof i.label === 'string' && !!i.label.trim());
     if (!items.length) throw new Error('No sourced market prices');
     const html = items.map(i => {
       const ch = i.changePercent, cls = num(ch) ? (ch >= 0 ? 'lp-pos' : 'lp-neg') : '';
-      const s = i.spark || [], up = s.length > 1 ? s[s.length - 1] >= s[0] : (ch || 0) >= 0;
-      return '<a class="lp-item" href="/terminal.html?sym=' + encodeURIComponent(i.symbol) + '" title="' + esc(i.label) + ' · 30-day trend · open in FYNX Terminal">'
+      const s = Array.isArray(i.spark) && i.spark.length <= 365 && i.spark.every(num) ? i.spark : [];
+      const up = s.length > 1 ? s[s.length - 1] >= s[0] : (ch || 0) >= 0;
+      const trendLabel = s.length > 1 ? ' · 30-day trend' : '';
+      return '<a class="lp-item" href="/terminal.html?sym=' + encodeURIComponent(i.symbol) + '" title="' + esc(i.label) + trendLabel + ' · open in FYNX Terminal">'
         + '<span class="lp-name">' + esc(i.label) + '</span><span class="lp-px">' + fmt(i.symbol, i.price) + '</span>'
         + '<span class="lp-ch ' + cls + '">' + (num(ch) ? (ch > 0 ? '+' : '') + ch.toFixed(2) + '%' : '') + '</span>' + spark(s, up) + '</a>';
     }).join('');
