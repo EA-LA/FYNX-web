@@ -146,8 +146,11 @@
       }));
       const installs = Core.sanitizeWidgets(state.installs.filter(widget => !widget.deviceOnly));
       const deviceInstalls = Core.sanitizeWidgets(state.installs.filter(widget => widget.deviceOnly));
-      const draft = draftRecord(captureDraft());
+      const draft = draftRecord(captureDraft()) || draftRecord(state.draft);
       localStorage.setItem(localKey(uid), JSON.stringify({projects, installs, deviceInstalls, draft}));
+      // Reopening the Builder page must use the latest editor recovery draft,
+      // not the snapshot from the last authentication event.
+      state.draft = draft;
       return true;
     } catch (e) {
       return false;
@@ -351,6 +354,8 @@
       let projectQuery = '';
       let seenUid = state.uid;
       let draftTimer = 0;
+      let editRevision = 0;
+      let saveSequence = Promise.resolve();
 
       const draftOf = project => ({
         id: project?.id || null,
@@ -405,13 +410,18 @@
       }
       function markDirty() {
         dirty = true;
+        editRevision += 1;
         scheduleDraft();
-        setSaveLabel('Unsaved', 'warn');
+        setSaveLabel('Unsaved changes · recovery pending', 'warn');
       }
       function scheduleDraft() {
         const uid = state.uid;
         clearTimeout(draftTimer);
-        draftTimer = setTimeout(() => { if (state.uid === uid) writeDevice(uid); }, 250);
+        draftTimer = setTimeout(() => {
+          if (state.uid !== uid) return;
+          const preserved = writeDevice(uid);
+          setSaveLabel(preserved ? 'Saved to this browser · account sync pending' : 'Recovery save failed', 'warn');
+        }, 750);
       }
       function syncCode() {
         if (cm) draft.main = cm.getValue();
@@ -548,6 +558,8 @@
         const id = draft.id || ('p' + (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())).replace(/-/g, '').slice(0, 20));
         if (!/^p[a-z0-9]{8,24}$/.test(id)) { say('Project id is not valid. Nothing was stored.', 'error'); return; }
         if (!draft.id && state.projects.length >= Core.LIMITS.projects) { say('You can save up to ' + Core.LIMITS.projects + ' private projects.', 'error'); return; }
+        const ownerUid = state.uid;
+        const savingRevision = editRevision;
         const prior = byId(id);
         const next = Core.withVersion(prior, check.project);
         next.updatedAt = Date.now();
@@ -571,7 +583,6 @@
         draft.name = view.name;
         draft.description = view.description;
         draft.category = view.category;
-        draft.main = view.main;
         currentId = id;
         dirty = false;
         const localOk = writeDevice(state.uid);
@@ -584,6 +595,14 @@
         }
         try {
           const api = dbApi;
+          // Serialize cloud writes: an older network request cannot finish
+          // after a newer write and become the final account copy.
+          const previousSave = saveSequence;
+          let releaseSave;
+          saveSequence = new Promise(resolve => { releaseSave = resolve; });
+          await previousSave;
+          if (state.uid !== ownerUid) { releaseSave(); return; }
+          try {
           await api.firestore.setDoc(api.firestore.doc(api.firestore.getFirestore(api.app), 'users', state.uid, 'builderProjects', id), {
             name: next.name,
             description: next.description,
@@ -595,11 +614,17 @@
             updatedAt: next.updatedAt,
             versions: next.versions
           });
+          } finally { releaseSave(); }
+          if (state.uid !== ownerUid) return;
           view.stored = 'account';
           state.projects = state.projects.map(project => project.id === id ? {...view} : project);
           writeDevice(state.uid);
-          say('Saved to your account as version ' + view.version + '. Only you can read it.', 'ok');
-          setSaveLabel('Account · v' + view.version, 'on');
+          if (editRevision === savingRevision && currentId === id) {
+            say('Synced to your account as version ' + view.version + '.', 'ok');
+            setSaveLabel('Synced to your account · v' + view.version, 'on');
+          } else {
+            setSaveLabel('Newer changes · saved to this browser', 'warn');
+          }
           if (state.installs.some(widget => widget.projectId === id)) registerInstalls(T);
         } catch (error) {
           const denied = error && error.code === 'permission-denied';
@@ -611,7 +636,7 @@
           say(denied
             ? 'Not saved to your account. The builder security rules are not deployed, so this copy stays on this browser only.'
             : 'Not saved to your account. ' + (error.message || 'Try again.') + ' A copy remains on this browser.', 'error');
-          setSaveLabel('Browser only', 'warn');
+          if (editRevision === savingRevision && currentId === id) setSaveLabel('Saved to this browser · sync failed', 'warn');
         }
       }
 
@@ -701,6 +726,7 @@
           currentId = null;
           draft = draftOf(null);
           dirty = false;
+          state.draft = draftRecord(draft);
           say('Cleared the unsaved draft.', '');
           writeDevice(state.uid);
           paint();
@@ -736,6 +762,7 @@
         currentId = null;
         draft = {...draft, id: null, name: (draft.name + ' copy').slice(0, Core.LIMITS.name), version: 1, versions: []};
         dirty = true;
+        editRevision += 1;
         say('Duplicated into an unsaved project. Save it to keep the copy.', '');
         scheduleDraft();
         paint();
@@ -850,6 +877,8 @@
         currentId = id;
         draft = draftOf(project);
         dirty = false;
+        state.draft = draftRecord(draft);
+        writeDevice(state.uid);
         consoleText = project.stored === 'device' ? 'Opened the copy stored on this browser.' : 'Opened version ' + project.version + '.';
         consoleLevel = '';
         paint();
@@ -898,6 +927,8 @@
           currentId = null;
           draft = draftOf(null);
           dirty = true;
+          editRevision += 1;
+          scheduleDraft();
           consoleText = 'Unsaved project. Save it before installing.';
           consoleLevel = '';
           paint();
@@ -1049,7 +1080,7 @@
         fillSide(side);
         mountEditor(draft.main);
         updateLines();
-        const label = dirty ? ['Unsaved', 'warn'] : (!draft.id ? ['Not saved', 'warn'] : (byId(draft.id)?.stored === 'account' ? ['Account · v' + draft.version, 'on'] : ['On this browser', 'warn']));
+        const label = dirty ? ['Unsaved changes', 'warn'] : (!draft.id ? ['Not saved', 'warn'] : (byId(draft.id)?.stored === 'account' ? ['Account · v' + draft.version, 'on'] : ['On this browser', 'warn']));
         setSaveLabel(label[0], label[1]);
         say(consoleText, consoleLevel);
         updateStatus();
