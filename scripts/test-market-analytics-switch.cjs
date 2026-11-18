@@ -387,6 +387,6 @@ test('both public market research views expose accessible share controls and cur
     assert.match(html, /data-analysis-share>/);
     assert.match(html, /data-analysis-share-status[^>]*role="status"/);
     assert.match(html, /data-analysis-share-fallback[^>]*aria-label=/);
-    assert.match(html, /market-analytics\\.js\\?v=20261118-share-view-1/);
+    assert.ok(html.includes('market-analytics.js?v=20261118-share-view-1'), 'script version is refreshed');
   }
 });
