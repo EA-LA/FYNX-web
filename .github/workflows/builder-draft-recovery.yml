@@ -1,0 +1,32 @@
+name: Builder draft recovery regression
+on:
+  push:
+    branches:
+      - fix/builder-draft-recovery-20261118
+  pull_request:
+    paths:
+      - assets/js/terminal/builder.js
+      - scripts/test-terminal-builder-ui.cjs
+      - .github/workflows/builder-draft-recovery.yml
+jobs:
+  builder:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test harness
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Syntax and isolated core regressions
+        run: |
+          node --check assets/js/terminal/builder.js
+          node --check scripts/test-terminal-builder-ui.cjs
+          node --test scripts/test-terminal-builder.cjs
+      - name: Chromium UI and sandbox regressions
+        run: |
+          node --test scripts/test-terminal-builder-ui.cjs
+          node --test scripts/test-terminal-builder-sandbox.cjs
