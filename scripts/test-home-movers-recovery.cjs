@@ -197,7 +197,8 @@ test('failed snapshot time validation retains verified prices and retry', async 
     app.intervals[0]();
     await flush(); await flush();
     assert.equal(app.host().querySelectorAll('.fx-mv').length, 1);
-    assert.match(app.host().textContent, /Update failed. Showing the previous snapshot/);
+    assert.match(app.host().textContent, /Update failed for crypto movers/);
+    assert.equal(app.host().querySelector('.fx-live').classList.contains('is-stale'), false);
     assert.ok(app.host().querySelector('[data-movers-retry]'));
     app.snapshot(snapshot);
     app.host().querySelector('[data-movers-retry]').click();
@@ -229,5 +230,55 @@ test('all unusable rows produce a truthful empty state instead of crashing', asy
     assert.equal(app.host().querySelectorAll('.fx-mv').length, 0);
     assert.match(app.host().textContent, /No verified movers are available/);
     assert.doesNotMatch(app.host().textContent, /Update failed/);
+  } finally { app.close(); }
+});
+
+
+test('verified stocks stay available when independent crypto data is unverified', async () => {
+  const app = setup('ok', {...snapshot, cryptoAsOf: null, crypto: [{symbol:'FAKE',price:1,changePct:99}]});
+  try {
+    await flush(); await flush();
+    assert.match(app.host().textContent, /AAPL/);
+    assert.match(app.host().textContent, /Update failed for crypto movers/);
+    assert.equal(app.host().querySelectorAll('.fx-mv').length, 1);
+    assert.equal(app.host().querySelector('.fx-live').classList.contains('is-stale'), false);
+    app.host().querySelector('[data-tab="crypto"]').click();
+    assert.match(app.host().textContent, /Crypto movers are temporarily unavailable/);
+    assert.equal(app.host().querySelectorAll('.fx-mv').length, 0);
+    assert.ok(app.host().querySelector('[data-movers-retry]'));
+  } finally { app.close(); }
+});
+
+test('verified crypto stays available when independent stock data is unverified', async () => {
+  const app = setup('ok', {...snapshot, stocksAsOf: null,
+    crypto:[{symbol:'BTC',name:'Bitcoin',price:90000,changePct:2,open:'BTC-USD'}]});
+  try {
+    await flush(); await flush();
+    assert.match(app.host().textContent, /Stock movers are temporarily unavailable/);
+    assert.equal(app.host().querySelectorAll('.fx-mv').length, 0);
+    app.host().querySelector('[data-tab="crypto"]').click();
+    assert.match(app.host().textContent, /BTC/);
+    assert.equal(app.host().querySelectorAll('.fx-mv').length, 1);
+    assert.match(app.host().textContent, /Update failed for stock movers/);
+    assert.equal(app.host().querySelector('.fx-live').classList.contains('is-stale'), false);
+  } finally { app.close(); }
+});
+
+test('partial refresh retains earlier verified crypto but never displays unverified replacement rows', async () => {
+  const app = setup('ok', {...snapshot,crypto:[{symbol:'BTC',name:'Bitcoin',price:92000,changePct:1}]});
+  try {
+    await flush(); await flush();
+    app.snapshot({...snapshot, cryptoAsOf:'invalid', crypto:[{symbol:'FAKE',price:1,changePct:99}]});
+    app.intervals[0](); await flush(); await flush();
+    app.host().querySelector('[data-tab="crypto"]').click();
+    assert.match(app.host().textContent, /BTC/);
+    assert.doesNotMatch(app.host().textContent, /FAKE/);
+    assert.match(app.host().textContent, /Update failed. Showing the previous snapshot/);
+    assert.equal(app.host().querySelector('.fx-live').classList.contains('is-stale'), true);
+    app.snapshot({...snapshot, crypto:[{symbol:'ETH',name:'Ethereum',price:3100,changePct:3}]});
+    app.host().querySelector('[data-movers-retry]').click(); await flush(); await flush();
+    assert.match(app.host().textContent, /ETH/);
+    assert.doesNotMatch(app.host().textContent, /Update failed/);
+    assert.equal(app.host().querySelector('.fx-live').classList.contains('is-stale'), false);
   } finally { app.close(); }
 });

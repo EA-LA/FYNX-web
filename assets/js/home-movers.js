@@ -66,6 +66,7 @@
     document.head.append(st);
   }
   let data = null, tab = 'gainers', loadFailed = false, loading = false;
+  let partialFailure = {stocks:false,crypto:false};
   function row(r, kind) {
     const ch = r.changePct, cls = num(ch) ? (ch > 0 ? 'fx-mv-up' : ch < 0 ? 'fx-mv-down' : '') : '';
     const sym = String(r.symbol || ''), open = kind === 'crypto' ? (r.open || sym + '-USD') : sym;
@@ -81,22 +82,29 @@
     host.querySelectorAll('.fx-movers-tabs button').forEach(b => { const selected = b.dataset.tab === tab; b.setAttribute('aria-selected', String(selected)); b.tabIndex = selected ? 0 : -1; });
     host.querySelector('.fx-movers-body').setAttribute('aria-labelledby', 'fx-movers-tab-' + tab);
     const body = host.querySelector('.fx-movers-body');
-    const asOf = data ? (tab === 'crypto' ? data.cryptoAsOf : data.stocksAsOf) : null;
+    const cryptoTab = tab === 'crypto';
+    const asOf = data ? (cryptoTab ? data.cryptoAsOf : data.stocksAsOf) : null;
     const quality = freshness(asOf);
+    const sourceFailed = cryptoTab ? partialFailure.crypto : partialFailure.stocks;
+    const showingPrior = loadFailed || sourceFailed;
     const indicator = host.querySelector('.fx-live');
-    indicator?.classList.toggle('is-stale', loadFailed || quality.stale);
-    indicator?.setAttribute('title', !data ? 'Snapshot unavailable' : loadFailed ? 'Update unavailable; previous snapshot' : quality.label);
-    if (!data) {
-      body.innerHTML = loadFailed
-        ? '<p class="fx-movers-error" role="status">Market movers are temporarily unavailable. No market prices are estimated. <button type="button" class="fx-movers-retry" data-movers-retry>Retry</button></p>'
+    indicator?.classList.toggle('is-stale', showingPrior || quality.stale);
+    indicator?.setAttribute('title', !data || !verifiedTime(asOf) ? 'Snapshot unavailable' : showingPrior ? 'Update unavailable; previous snapshot' : quality.label);
+    // A verified stock snapshot must not unlock unverified crypto (or vice versa).
+    if (!data || !verifiedTime(asOf)) {
+      const label = !data ? 'Market' : cryptoTab ? 'Crypto' : 'Stock';
+      body.innerHTML = (loadFailed || data)
+        ? '<p class="fx-movers-error" role="status">' + label + ' movers are temporarily unavailable. No market prices are estimated. <button type="button" class="fx-movers-retry" data-movers-retry>Retry</button></p>'
         : '<div class="fx-mv-skel"></div>'.repeat(5);
       return;
     }
-    const src = tab === 'crypto' ? 'CoinGecko' : 'Nasdaq screener';
+    const src = cryptoTab ? 'CoinGecko' : 'Nasdaq screener';
+    // Recovery is source-specific: keep a healthy feed current while its peer fails.
+    const peerFailure = !loadFailed && !sourceFailed && (cryptoTab ? partialFailure.stocks : partialFailure.crypto);
     body.innerHTML = '<p class="fx-movers-desc">' + esc(meta[2]) + '</p>'
       + (list.length ? list.map(r => row(r, tab)).join('') : '<p class="fx-movers-desc">No verified movers are available for this category. Open the scanner for additional coverage.</p>')
       + '<p class="fx-movers-foot"><span class="fx-movers-quality" role="status">' + esc(quality.label) + '</span> · Source: ' + src + (ago(asOf) ? ' · as of ' + esc(ago(asOf)) : '') + ' · Stock data may be delayed. Not a recommendation.'
-      + (loadFailed ? ' <span role="status">Update failed. Showing the previous snapshot.</span> <button type="button" class="fx-movers-retry" data-movers-retry>Retry</button>' : '') + '</p>';
+      + (showingPrior ? ' <span role="status">Update failed. Showing the previous snapshot.</span> <button type="button" class="fx-movers-retry" data-movers-retry>Retry</button>' : peerFailure ? ' <span role="status">Update failed for ' + (cryptoTab ? 'stock' : 'crypto') + ' movers. This snapshot remains verified.</span> <button type="button" class="fx-movers-retry" data-movers-retry>Retry</button>' : '') + '</p>';
   }
   async function load(host) {
     if (loading) return;
@@ -107,8 +115,20 @@
       const res = await fetch(URL_ + '?t=' + Math.floor(Date.now() / 300000), {cache: 'no-store', signal: controller.signal});
       if (!res.ok) throw new Error(res.status);
       const j = await res.json();
-      if (!j || !Array.isArray(j.gainers) || !verifiedTime(j.stocksAsOf) || !verifiedTime(j.cryptoAsOf)) throw new Error('unverified snapshot');
-      data = j;
+      const stockKeys = ['gainers', 'losers', 'active', 'aiUnder3'];
+      const validStocks = verifiedTime(j?.stocksAsOf) && stockKeys.every(key => Array.isArray(j[key]));
+      const validCrypto = verifiedTime(j?.cryptoAsOf) && Array.isArray(j?.crypto);
+      if (!validStocks && !validCrypto) throw new Error('unverified snapshot');
+      const previous = data;
+      const keepStocks = !validStocks && previous && verifiedTime(previous.stocksAsOf);
+      const keepCrypto = !validCrypto && previous && verifiedTime(previous.cryptoAsOf);
+      data = {
+        stocksAsOf: validStocks ? j.stocksAsOf : keepStocks ? previous.stocksAsOf : null,
+        cryptoAsOf: validCrypto ? j.cryptoAsOf : keepCrypto ? previous.cryptoAsOf : null,
+        ...Object.fromEntries(stockKeys.map(key => [key, validStocks ? j[key] : keepStocks ? previous[key] : []])),
+        crypto: validCrypto ? j.crypto : keepCrypto ? previous.crypto : []
+      };
+      partialFailure = {stocks: !validStocks, crypto: !validCrypto};
       loadFailed = false;
       host.hidden = false;
       render(host);
