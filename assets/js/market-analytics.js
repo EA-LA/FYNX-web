@@ -1,6 +1,6 @@
 (() => {
  const root=document.querySelector('[data-market-analysis]');if(!root)return;
- const kind=root.dataset.marketAnalysis,select=root.querySelector('select'),status=root.querySelector('[role=status]'),output=root.querySelector('[data-analysis-output]'),button=root.querySelector('button');
+ const kind=root.dataset.marketAnalysis,select=root.querySelector('select'),status=root.querySelector('[data-analysis-feed-status]'),output=root.querySelector('[data-analysis-output]'),button=root.querySelector('button');
  let version=0,last=null,timer,controller=null,refreshFailed=false;
  const number=(n,max=4)=>Number(n).toLocaleString(undefined,{maximumFractionDigits:max});
  // A shared view contains only an allowlisted public market or correlation window.
