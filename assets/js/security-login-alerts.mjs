@@ -25,7 +25,9 @@ export function createLoginAlertsController({ button, status, save }) {
     confirmed = loaded ? savedValue : false;
     pending = false;
     render(loaded ? '' : uid
-      ? 'Could not load login alert settings. Reload to retry.'
+      ? savedValue === undefined
+        ? 'Loading login alert settings…'
+        : 'Could not load login alert settings. Reload to retry.'
       : 'Sign in to manage login alerts.');
   }
 
