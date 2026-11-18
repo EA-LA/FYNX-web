@@ -157,6 +157,9 @@
     }
   }
 
+  // A browser can close before the debounced recovery timer fires.
+  window.addEventListener('pagehide', () => { if (state.uid) writeDevice(state.uid); });
+
   function watch(T) {
     connect().then(api => {
       stopWatch = api.onAuthStateChanged(api.auth, user => {
@@ -617,7 +620,9 @@
           } finally { releaseSave(); }
           if (state.uid !== ownerUid) return;
           view.stored = 'account';
-          state.projects = state.projects.map(project => project.id === id ? {...view} : project);
+          // Do not roll back a newer local project while an older request resolves.
+          state.projects = state.projects.map(project => project.id === id
+            ? (project.updatedAt > view.updatedAt ? project : {...view}) : project);
           writeDevice(state.uid);
           if (editRevision === savingRevision && currentId === id) {
             say('Synced to your account as version ' + view.version + '.', 'ok');
@@ -627,6 +632,7 @@
           }
           if (state.installs.some(widget => widget.projectId === id)) registerInstalls(T);
         } catch (error) {
+          if (state.uid !== ownerUid) return;
           const denied = error && error.code === 'permission-denied';
           if (!localOk) {
             say('Not saved. The account refused the write and this browser could not keep a copy.', 'error');
