@@ -23,8 +23,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
-      - run: npm ci --no-audit --no-fund
+      - run: npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund
       - name: Verify calendar syntax
         run: node --check assets/js/fynx-calendar.js && node --check scripts/test-fynx-calendar-ui.cjs
       - name: Exercise calendar UI, missing values, source confirmation, and ICS export
