@@ -1,0 +1,23 @@
+name: Resource save pending-state regression
+on:
+  pull_request:
+    paths:
+      - 'assets/js/discovery.js'
+      - 'scripts/test-resource-save-pending.cjs'
+      - '.github/workflows/resource-save-pending.yml'
+  push:
+    branches:
+      - 'fix/discovery-save-pending-20261110-1458'
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --check assets/js/discovery.js
+      - run: node --test scripts/test-resource-save-pending.cjs

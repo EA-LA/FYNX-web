@@ -1,0 +1,29 @@
+name: Fibonacci live-input consistency
+on:
+  pull_request:
+    paths:
+      - 'assets/js/fibonacci-calculator.js'
+      - 'scripts/test-fibonacci.cjs'
+      - 'scripts/test-fibonacci-live-input.cjs'
+      - '.github/workflows/fibonacci-live-input.yml'
+  workflow_dispatch:
+
+jobs:
+  fibonacci:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse production calculator and regression scripts
+        run: |
+          node --check assets/js/fibonacci-calculator.js
+          node --check scripts/test-fibonacci.cjs
+          node --check scripts/test-fibonacci-live-input.cjs
+      - name: Validate Fibonacci math and live input behavior
+        run: |
+          node scripts/test-fibonacci.cjs
+          node scripts/test-fibonacci-live-input.cjs

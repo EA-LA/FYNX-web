@@ -1,0 +1,22 @@
+name: Currency conversion result freshness
+on:
+  pull_request:
+    paths:
+      - 'tools/currency.html'
+      - 'scripts/test-currency-result-freshness.cjs'
+      - '.github/workflows/currency-result-freshness.yml'
+  push:
+    branches:
+      - 'fix/currency-manual-rate-result-freshness-20261112-0905'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test scripts/test-currency-result-freshness.cjs

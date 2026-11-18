@@ -1,0 +1,31 @@
+name: Your News storage privacy regression
+
+on:
+  pull_request:
+    paths:
+      - 'assets/js/news-preferences.js'
+      - 'scripts/test-news-preferences-storage-clear.cjs'
+      - '.github/workflows/news-preferences-storage-clear.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/news-preferences.js'
+      - 'scripts/test-news-preferences-storage-clear.cjs'
+      - '.github/workflows/news-preferences-storage-clear.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  storage-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate browser preferences syntax
+        run: node --check assets/js/news-preferences.js
+      - name: Test storage clearing and cross-tab synchronization
+        run: node --test scripts/test-news-preferences-storage-clear.cjs

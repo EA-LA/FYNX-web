@@ -1,0 +1,21 @@
+name: Browser calendar alerts safety regression
+on:
+  pull_request:
+    paths:
+      - tools/calendar-alerts.html
+      - scripts/test-browser-calendar-alerts.cjs
+      - .github/workflows/browser-calendar-alerts.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser-calendar-alerts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify browser alerts HTML and local date behavior
+        run: node scripts/test-browser-calendar-alerts.cjs

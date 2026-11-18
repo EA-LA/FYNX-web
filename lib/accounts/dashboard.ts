@@ -1,0 +1,20 @@
+import { ACCOUNTS_CONFIG } from './config';
+import { accountMetrics, dayStartValues, selectSnapshots, metric } from './metrics';
+import { evaluateRules } from './rules';
+import { coachInsights, liveComparisons, matchStrategy, planChecks } from './coach';
+import { LIMITS } from './normalize';
+import type { AccountDashboard, DashboardInput } from './types';
+export function buildDashboard(input: DashboardInput, options: { asOf: string; timezone: string; minimumTrades?: number }): AccountDashboard {
+  const asOf = new Date(options.asOf).toISOString();
+  if (input.trades.length > LIMITS.rows || input.deals.length > LIMITS.rows || input.positions.length > LIMITS.positions || (input.strategies?.length || 0) > 500 || (input.bindings?.length || 0) > 1000 || (input.entryFacts?.length || 0) > LIMITS.rows) throw new Error('Dashboard exceeds its processing budget.');
+  let factPoints = 0; for (const f of input.entryFacts || []) { factPoints += f.stopObservations.length + f.events.length; if (factPoints > 250000) throw new Error('Entry evidence exceeds its processing budget.'); }
+  const scoped = { ...input, trades: input.trades.filter(t => t.openedAt <= asOf && (t.closedAt === null || t.closedAt <= asOf)), positions: input.positions.filter(p => p.asOf <= asOf), deals: input.deals.filter(d => d.time <= asOf) };
+  const metrics = accountMetrics(scoped, { asOf, timezone: options.timezone }), strategies = input.strategies || [], facts = new Map((input.entryFacts || []).filter(f => f.asOf <= asOf).map(f => [f.tradeId, f]));
+  const trades = scoped.trades.map(trade => { const strategyMatch = matchStrategy(trade, strategies, input.bindings, input.manualAssignments), assigned = { ...trade, strategyId: strategyMatch.strategyId }, check = planChecks(assigned, facts.get(trade.id)); return { ...assigned, tags: check.tags, planCheck: check, strategyMatch }; });
+  const minimum = options.minimumTrades ?? ACCOUNTS_CONFIG.coachMinimumTrades;
+  const challenge = input.ruleContext ? evaluateRules({ ...input.ruleContext, snapshots: input.snapshots, positions: scoped.positions, deals: scoped.deals, trades, coverage: input.coverage, asOf }) : null;
+  const observations = selectSnapshots(input.snapshots, asOf), latest = observations.at(-1), start = dayStartValues(observations, scoped.deals, input.coverage, asOf, options.timezone), pct = input.safetyDailyPct;
+  let safetyLossRoom = metric(null, 'Set a personal daily safety percentage and record the actual day-start balance and current-day equity.'), safetyLossAmount = metric(null, 'No personal safety stop has been calculated.');
+  if (pct !== null && pct !== undefined && pct !== 0) { if (!Number.isFinite(pct) || pct <= 0 || pct > 100) throw new Error('Invalid personal daily safety percentage.'); const declared = input.initialBalance !== null && input.initialBalance !== undefined && input.initialBalance > 0 ? input.initialBalance : null, amountBase = declared ?? start.balance; if (start.balance !== null && amountBase !== null && amountBase > 0) { const amount = amountBase * pct / 100, basis = `${pct}% of ${declared === null ? 'observed day-start balance' : 'declared initial capital'}; daily floor uses the actual ${options.timezone} day-start balance.`; safetyLossAmount = metric(amount, basis); if (latest && latest.asOf >= start.time && latest.equity !== null) safetyLossRoom = metric(latest.equity - start.balance + amount, basis); } }
+  return { asOf, safetyLossRoom, safetyLossAmount, timezone: options.timezone, metrics, challenge, positions: scoped.positions, trades, insights: coachInsights(trades.filter(t => t.closedAt !== null && t.closedAt <= asOf), { minimumTrades: minimum }), liveVsBacktest: liveComparisons(trades, strategies, asOf, minimum), coverage: input.coverage, notes: ['FYNX displays read-only financial observations and does not trade or certify prop-firm compliance.', 'Unknown initial stops, currency conversions, entry scores and telemetry gaps remain unavailable.', 'Round trips whose final exit is after the requested as-of are omitted; a historical partial position is not reconstructed from its final summary.'] };
+}

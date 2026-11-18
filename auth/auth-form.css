@@ -1,0 +1,16 @@
+html body[data-fynx-layout=auth] .left{padding:32px!important;gap:20px}
+html body[data-fynx-layout=auth] .topbar{position:static;margin-bottom:4px}
+html body[data-fynx-layout=auth] .brand{margin-top:0}
+html body[data-fynx-layout=auth] h1{font-size:clamp(30px,3.5vw,44px)!important;line-height:1.12!important;letter-spacing:-.04em!important;margin-bottom:14px}
+html body[data-fynx-layout=auth] .auth-status{font-size:14px;line-height:1.6;margin:0;padding:12px 14px;border:1px solid #b65349;border-radius:8px;color:var(--fynx-text);background:var(--fynx-panel-2)}
+html body[data-fynx-layout=auth] .auth-status:empty{display:none}
+html body[data-fynx-layout=auth] .auth-status[data-kind=success]{border-color:var(--fynx-accent)}
+html body[data-fynx-layout=auth] input{min-height:48px;font-size:16px}
+html body[data-fynx-layout=auth] button:disabled{opacity:.65;cursor:wait;transform:none}
+html body[data-fynx-layout=auth] .password-wrap{position:relative}
+html body[data-fynx-layout=auth] .password-wrap input{padding-right:70px}
+html body[data-fynx-layout=auth] .password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--fynx-text);padding:10px;cursor:pointer;font-size:12px}
+html body[data-fynx-layout=auth] .fynxLogo .big{color:#fff!important}
+html body[data-fynx-layout=auth] .fynxLogo .tag{background:transparent!important;color:#d4ded8!important}
+html body[data-fynx-layout=auth] .row{flex-wrap:wrap;gap:14px}
+@media(max-width:920px){html body[data-fynx-layout=auth] .right{display:none}html body[data-fynx-layout=auth] .shell{max-width:560px}html body[data-fynx-layout=auth] .left{padding:24px!important}}

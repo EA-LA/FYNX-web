@@ -1,0 +1,4 @@
+'use strict';
+const {workerData,parentPort}=require('node:worker_threads');
+const {AccountsDB}=require('./db.cjs');const {AccountsRepository}=require('./repository.cjs');const {AccountsService}=require('./service.cjs');
+(async()=>{let service;try{const db=new AccountsDB({filename:workerData.filename}),row=db.get("SELECT * FROM provider_jobs WHERE id=? AND state='running' AND lease_owner=?",workerData.jobId,workerData.owner);if(!row)throw Object.assign(new Error(),{code:'CONNECTION_CANCELLED'});service=new AccountsService({repository:new AccountsRepository({db}),startJobs:false});const result=await service.runJob(row);parentPort.postMessage({ok:true,result});}catch(error){parentPort.postMessage({ok:false,code:/^[A-Z_]{3,60}$/.test(error.code||'')?error.code:'JOB_FAILED',retryAfterSeconds:Number(error.retryAfterSeconds)||undefined});}finally{await service?.close();}})();

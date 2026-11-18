@@ -1,0 +1,28 @@
+name: Company products search regression
+
+on:
+  pull_request:
+    paths:
+      - "assets/js/company-products.js"
+      - "assets/js/company-products-data.js"
+      - "content/company-products.cjs"
+      - "scripts/test-company-products.cjs"
+      - ".github/workflows/company-products-search.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  company-products:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check assets/js/company-products.js
+      - run: node --test scripts/test-company-products.cjs

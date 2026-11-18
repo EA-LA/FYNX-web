@@ -1,0 +1,27 @@
+name: Homepage market movers snapshot freshness
+
+on:
+  pull_request:
+    paths:
+      - "assets/js/home-movers.js"
+      - "home.html"
+      - "scripts/test-home-movers-snapshot.cjs"
+      - ".github/workflows/home-movers-snapshot.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot-freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check assets/js/home-movers.js
+      - run: node --test scripts/test-home-movers-snapshot.cjs
