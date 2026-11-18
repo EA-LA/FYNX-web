@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-11-04T05:04:20.448Z",
+  "status": "local-fixture-measurement",
+  "runtime": {
+    "node": "v24.13.0",
+    "platform": "darwin",
+    "architecture": "arm64"
+  },
+  "fixture": {
+    "path": "tests/accounts/fixtures/trades.csv",
+    "sha256": "a5a13a79980207ae54e32fde98cf5c462c7d4a78acd8de4d7bd4c5de8a367d44",
+    "synthetic": true,
+    "currency": "USD",
+    "closedTrades": 3,
+    "closedPL": 70
+  },
+  "engineBundleSha256": "d6ba4d77cb911577e0c0005b4ff5485b13b9c4ce85ba775c152b8d16c2011b9d",
+  "setup": {
+    "storage": "node:sqlite in-memory database",
+    "identity": "injected test-only Firebase identity verifier and session validator",
+    "session": "previously bootstrapped opaque session; cached identity validation",
+    "calculation": "actual CSV parse and account engine; materialized dashboard generated before measurement",
+    "savedStrategies": "injected empty list",
+    "workerMode": "inline test jobs during setup only"
+  },
+  "measurement": {
+    "operation": "await createAccountsAPI.loadPage(req, {accountId})",
+    "samples": 100,
+    "warmupCalls": 5,
+    "percentileMethod": "nearest rank over ascending performance.now() durations",
+    "unit": "milliseconds",
+    "p50": 0.0939159999999788,
+    "p95": 0.13374999999996362,
+    "maximum": 0.20574999999996635,
+    "meetsLocal300msTarget": true
+  },
+  "excluded": [
+    "HTTP/network latency",
+    "HTML rendering and transfer",
+    "real Firebase verification latency",
+    "disk-backed or production database latency",
+    "provider network calls",
+    "large-account load",
+    "production concurrency"
+  ],
+  "productionReadiness": "Not a production benchmark. Existing backend identification and equivalent deployment-specific validation remain required."
+}

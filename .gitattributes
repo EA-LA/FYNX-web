@@ -1,0 +1,3 @@
+
+# Preserve the upstream Plotly distribution, including embedded shader formatting.
+assets/js/quant/plotly.min.js -whitespace linguist-vendored=true

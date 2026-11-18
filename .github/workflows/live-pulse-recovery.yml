@@ -1,0 +1,23 @@
+name: Delayed Market Pulse recovery
+on:
+  pull_request:
+    paths:
+      - 'assets/js/live-pulse.js'
+      - 'scripts/test-live-pulse-recovery.cjs'
+      - '.github/workflows/live-pulse-recovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --check assets/js/live-pulse.js
+      - run: node --test scripts/test-live-pulse-recovery.cjs

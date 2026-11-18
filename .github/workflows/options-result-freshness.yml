@@ -1,0 +1,26 @@
+name: Options Calculator Result Freshness
+
+on:
+  pull_request:
+    paths:
+      - 'tools/options.html'
+      - 'scripts/test-options-result-freshness.cjs'
+      - '.github/workflows/options-result-freshness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  options-result-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax
+        run: node --check scripts/test-options-result-freshness.cjs
+      - name: Options controller behavioral regressions
+        run: node --test scripts/test-options-result-freshness.cjs

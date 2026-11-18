@@ -1,0 +1,129 @@
+{
+  "checkedAt": "2026-11-03T20:36:43.513425+00:00",
+  "baseline": "73c343e34b31dacbf4b4591e3db253d96a47ba1f",
+  "branch": "feature/quant-analyst",
+  "deployed": false,
+  "reference": {
+    "file": "docs/reference/quant-analyst-reference.html",
+    "source": "User-approved reference recovered from Claude",
+    "golden": {
+      "trades": 162,
+      "roundedReturnPct": -4.3,
+      "roundedSharpe": -0.11,
+      "roundedMaxDrawdownPct": 13.9
+    }
+  },
+  "checks": {
+    "quantTests": {
+      "passed": 109,
+      "failed": 0,
+      "skipped": 0
+    },
+    "strictTypescript": true,
+    "siteBuild": true,
+    "existingSiteNpmTest": true,
+    "discovery": true,
+    "terminalTests": 13,
+    "privateDirectoriesExcludedFromStaticPackage": true
+  },
+  "browser": {
+    "desktop": {
+      "width": 1440,
+      "documentWidth": 1440
+    },
+    "mobile": {
+      "width": 390,
+      "documentWidth": 390
+    },
+    "activeNavigationBetweenResearchAndProfile": true,
+    "verifiedFlows": [
+      "real daily backtest",
+      "72-cell optimization",
+      "2D heatmap toggle",
+      "portfolio",
+      "2000-path Monte Carlo",
+      "2000-attempt FTMO simulation",
+      "three platform downloads"
+    ],
+    "phoneWorkerPerformanceVerified": false,
+    "cloudAccountSyncVerifiedWithProductionCredentials": false
+  },
+  "realHistory": [
+    {
+      "symbol": "EURUSD",
+      "timeframe": "D1",
+      "records": 3127,
+      "from": "2016-11-03",
+      "through": "2026-11-02",
+      "gzipBytes": 68359
+    },
+    {
+      "symbol": "XAUUSD",
+      "timeframe": "D1",
+      "records": 3109,
+      "from": "2016-11-03",
+      "through": "2026-11-02",
+      "gzipBytes": 76845
+    },
+    {
+      "symbol": "XAUUSD",
+      "timeframe": "tick",
+      "records": 12910,
+      "from": "2016-11-03T00:00:00.247Z",
+      "through": "2016-11-03T01:59:58.353Z",
+      "gzipBytes": 104166,
+      "fullDecade": false
+    }
+  ],
+  "headlines": {
+    "provider": "existing FYNX webMarketFeed / Google News RSS",
+    "observedItems": 5,
+    "allInternalReaderLinks": true,
+    "allDated": true,
+    "fetchedAt": "2026-11-03T20:30:43.499Z"
+  },
+  "apiSmoke": {
+    "unconfiguredQuotes": "QUOTES_NOT_CONFIGURED",
+    "unconfiguredCalendar": "503 CALENDAR_NOT_CONFIGURED",
+    "anonymousSavedStrategies": "401 SIGN_IN_REQUIRED",
+    "privateEnvironmentAndSourcePaths": 404,
+    "incompleteDecadeTickRequest": "409 HISTORY_NOT_INGESTED"
+  },
+  "downloadedSourceFiles": [
+    {
+      "platform": "MetaTrader 5",
+      "file": "FynxQuant_EURUSD_D1.mq5",
+      "bytes": 8977,
+      "sha256": "f2d694600297cf0e106ab6ec1b04aa57320f28fe5cd6d6521a433cd83d2e99bd",
+      "downloadVerified": true,
+      "nativeCompilationVerified": false
+    },
+    {
+      "platform": "MetaTrader 4",
+      "file": "FynxQuant_EURUSD_D1.mq4",
+      "bytes": 8927,
+      "sha256": "a51b7abd8aac17583dfee43be52c4d5d6ac964eeb6c8ff0eaca7c30d1ad20283",
+      "downloadVerified": true,
+      "nativeCompilationVerified": false
+    },
+    {
+      "platform": "cTrader",
+      "file": "FynxQuant_EURUSD_D1.cs",
+      "bytes": 6772,
+      "sha256": "afffe5090b2d346d6e51c8be7ca83a14e1983961c8cb6258037c2653ec0ee193",
+      "downloadVerified": true,
+      "nativeCompilationVerified": false
+    }
+  ],
+  "remainingGates": [
+    "Complete ten-year XAU tick and historical calendar ingestion; current tick archive covers two hours.",
+    "Configure quote/calendar provider credentials and required entitlements.",
+    "Configure Firebase project and server identity; verify real account sync.",
+    "Provision production API hosting, persistent private volume and scheduled updater, then perform authorized release.",
+    "Compile/test source in native MT5, MT4 and cTrader platforms; measure physical phone worker performance."
+  ],
+  "optionalCapabilities": {
+    "llmParserEnabled": false,
+    "heartbeatImplemented": false
+  }
+}

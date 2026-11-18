@@ -1,0 +1,153 @@
+name: Deploy FYNX API backend (keyless)
+
+# Updates ONLY the source code of the existing developer API functions
+# (developerGateway, developerWorkspace, developerBilling, developerBillingWebhook) in Cloud Functions 1st gen.
+# - Authenticates with Workload Identity Federation; no JSON key exists or is used.
+# - Default mode is a read-only inventory. Deployment requires choosing mode=deploy.
+# - PATCHes each function with updateMask=sourceUploadUrl, so memory, timeout,
+#   secrets, env vars, service account, trigger and IAM are never modified.
+# - Refuses to deploy if the live source contains changes that are not in Git.
+# - Verifies the live result and rolls back automatically on failure.
+# - Never creates, deletes or touches any other function.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'inventory = read-only checks; deploy = update the API functions; test = run endpoint tests against the live API'
+        type: choice
+        options: [inventory, deploy, test]
+        default: inventory
+      paypal_secret_rotated:
+        description: 'Owner confirms the PayPal secret found in production .runtimeconfig.json has been rotated (required for deploy)'
+        type: boolean
+        default: false
+      drift_public_key:
+        description: 'Optional base64 RSA public key (3072+ bits). If live source has changes not in Git, those files are encrypted to it in the report.'
+        type: string
+        required: false
+        default: ''
+
+concurrency:
+  group: fynx-api-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm ci --prefix backend
+      - run: npm test --prefix backend
+      - run: npm run test:api
+
+  production:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: firebase-api-deploy
+    permissions:
+      contents: read
+      id-token: write
+      checks: write
+    env:
+      PROJECT_ID: fynx-c7a28
+      REGION: us-central1
+      TARGETS: developerGateway,developerWorkspace,developerBilling,developerBillingWebhook
+      MODE: ${{ inputs.mode }}
+      WORK_DIR: .deploy-work
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history: deployed files are matched against every committed version
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check OIDC configuration
+        env:
+          PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          test -n "$PROVIDER" || { echo "::error::Set the GCP_WORKLOAD_IDENTITY_PROVIDER repository variable"; exit 1; }
+          test -n "$SERVICE_ACCOUNT" || { echo "::error::Set the GCP_DEPLOY_SERVICE_ACCOUNT repository variable"; exit 1; }
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_lifetime: 3600s
+
+      - name: Inventory (read-only)
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+        run: node .github/scripts/fynx-api-deploy.cjs inventory
+
+      - name: Download currently deployed source (read-only)
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+        run: node .github/scripts/fynx-api-deploy.cjs fetch
+
+      - name: Compare deployed source with Git history
+        id: compare
+        continue-on-error: ${{ inputs.mode == 'inventory' }}
+        env:
+          DRIFT_PUBLIC_KEY_B64: ${{ inputs.drift_public_key }}
+        run: node .github/scripts/fynx-api-deploy.cjs compare
+
+      - name: Build and validate deploy package
+        run: node .github/scripts/fynx-api-deploy.cjs bundle
+
+      - name: Readiness checks (permissions, credential scan, rollback, secret exposure)
+        continue-on-error: ${{ inputs.mode != 'deploy' }}
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          SMOKE_API_KEY: ${{ secrets.FYNX_API_SMOKE_KEY }}
+        run: node .github/scripts/fynx-api-deploy.cjs readiness
+
+      - name: Deploy (source only)
+        id: deploy
+        if: inputs.mode == 'deploy'
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          PAYPAL_SECRET_ROTATED: ${{ inputs.paypal_secret_rotated }}
+        run: node .github/scripts/fynx-api-deploy.cjs deploy
+
+      - name: Verify live functions
+        id: verify
+        if: inputs.mode == 'deploy' && steps.deploy.outcome == 'success'
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          SMOKE_API_KEY: ${{ secrets.FYNX_API_SMOKE_KEY }}
+        run: node .github/scripts/fynx-api-deploy.cjs verify
+
+      - name: Endpoint tests against the live API
+        if: inputs.mode == 'test'
+        env:
+          SMOKE_API_KEY: ${{ secrets.FYNX_API_SMOKE_KEY }}
+        run: node .github/scripts/fynx-api-deploy.cjs endpoints
+
+      - name: Roll back on failure
+        if: failure() && inputs.mode == 'deploy' && steps.deploy.outcome != 'skipped'
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+        run: node .github/scripts/fynx-api-deploy.cjs rollback
+
+      - name: Publish report
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+        run: node .github/scripts/fynx-api-deploy.cjs report

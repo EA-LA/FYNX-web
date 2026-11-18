@@ -1,0 +1,10 @@
+{
+  "name": "fynx_api_server_failures",
+  "description": "FYNX API engine, billing, health and backup failures. No request payloads or secrets.",
+  "filter": "resource.type=\"cloud_function\" AND jsonPayload.service=\"fynx_api\" AND jsonPayload.status>=500",
+  "metricDescriptor": {
+    "metricKind": "DELTA",
+    "valueType": "INT64",
+    "unit": "1"
+  }
+}

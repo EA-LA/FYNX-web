@@ -1,0 +1,30 @@
+name: Risk Reward Current Input Safety
+
+on:
+  pull_request:
+    paths:
+      - 'tools/risk-reward.html'
+      - 'scripts/test-risk-reward-freshness.cjs'
+      - '.github/workflows/risk-reward-freshness.yml'
+  push:
+    paths:
+      - 'tools/risk-reward.html'
+      - 'scripts/test-risk-reward-freshness.cjs'
+      - '.github/workflows/risk-reward-freshness.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  risk-reward-freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate test syntax
+        run: node --check scripts/test-risk-reward-freshness.cjs
+      - name: Exercise production Risk/Reward controller
+        run: node --test scripts/test-risk-reward-freshness.cjs

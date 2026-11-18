@@ -1,0 +1,420 @@
+[
+  {
+    "id": "forex-101",
+    "moduleNumber": 1,
+    "module": "Forex Fundamentals",
+    "title": "What is Forex Trading?",
+    "level": "Beginner",
+    "duration": "10 min",
+    "objective": "Understand what forex trading is, how the forex market works, and why it's the largest financial market in the world.",
+    "content": "<p>The <strong>foreign exchange market</strong>, commonly called forex or FX, is the global marketplace for trading national currencies against one another. With over $7.5 trillion traded daily as of 2026, it's the world's largest and most liquid financial market.</p><p>Unlike stock markets, forex operates 24 hours a day, five days a week, across major financial centers in London, New York, Tokyo, and Sydney. This continuous operation allows traders worldwide to respond immediately to global economic events.</p><p>Currencies are always traded in pairs, such as EUR/USD (Euro vs US Dollar) or GBP/JPY (British Pound vs Japanese Yen). When you buy a currency pair, you're simultaneously buying one currency and selling another.</p>",
+    "example": "If you believe the Euro will strengthen against the US Dollar, you would buy EUR/USD. If the pair moves from 1.0800 to 1.0850, you've made 50 pips of profit. On a standard lot (100,000 units), that's $500 profit.",
+    "mistakes": [
+      "Thinking forex is gambling rather than strategic trading",
+      "Trading without understanding currency pair relationships",
+      "Ignoring the impact of global economic events on currency values"
+    ],
+    "checklist": [
+      "Understand that currencies trade in pairs",
+      "Recognize that forex operates 24/5",
+      "Know the major currency pairs",
+      "Understand the concept of pips and lots"
+    ]
+  },
+  {
+    "id": "forex-102",
+    "moduleNumber": 1,
+    "module": "Forex Fundamentals",
+    "title": "Understanding Currency Pairs",
+    "level": "Beginner",
+    "duration": "12 min",
+    "objective": "Learn how to read currency pairs, understand base and quote currencies, and identify major, minor, and exotic pairs.",
+    "content": "<p>Every forex trade involves two currencies: the <strong>base currency</strong> (listed first) and the <strong>quote currency</strong> (listed second). The exchange rate tells you how much of the quote currency you need to buy one unit of the base currency.</p><p><strong>Major pairs</strong> include the US Dollar and account for nearly 75% of forex trading volume. Examples include EUR/USD, GBP/USD, and USD/JPY. These pairs offer the tightest spreads and highest liquidity.</p><p><strong>Minor pairs</strong> (or cross pairs) don't include the US Dollar but feature other major currencies like EUR/GBP or AUD/NZD. <strong>Exotic pairs</strong> combine a major currency with an emerging market currency, such as USD/TRY (Turkish Lira) or EUR/PLN (Polish Zloty).</p>",
+    "example": "In the pair EUR/USD = 1.0850, the Euro is the base currency and the US Dollar is the quote currency. This means 1 Euro equals 1.0850 US Dollars. If you buy this pair, you profit when the Euro strengthens against the Dollar.",
+    "mistakes": [
+      "Confusing which currency is strengthening or weakening",
+      "Trading exotic pairs without understanding higher volatility",
+      "Not checking spread costs on minor and exotic pairs"
+    ],
+    "checklist": [
+      "Identify the base and quote currency in any pair",
+      "Know the difference between major, minor, and exotic pairs",
+      "Understand how to read exchange rate quotes",
+      "Recognize the most liquid currency pairs"
+    ]
+  },
+  {
+    "id": "forex-103",
+    "moduleNumber": 1,
+    "module": "Forex Fundamentals",
+    "title": "Pips, Lots, and Position Sizing",
+    "level": "Beginner",
+    "duration": "15 min",
+    "objective": "Master the basics of measuring price movements in pips, understand lot sizes, and learn proper position sizing for risk management.",
+    "content": "<p>A <strong>pip</strong> (percentage in point) is the smallest price movement in forex, typically the fourth decimal place in most pairs (0.0001). For Japanese Yen pairs, a pip is the second decimal place (0.01). Pips are how profits and losses are measured.</p><p><strong>Lot sizes</strong> determine your position size. A <strong>standard lot</strong> is 100,000 units of the base currency, a <strong>mini lot</strong> is 10,000 units, and a <strong>micro lot</strong> is 1,000 units. The lot size you choose directly affects your profit and loss per pip movement.</p><p><strong>Position sizing</strong> is critical for risk management. Never risk more than 1-2% of your trading capital on a single trade. Calculate your position size based on your stop loss distance and account balance.</p>",
+    "example": "With a $10,000 account, risking 1% means you can afford to lose $100 per trade. If your stop loss is 50 pips away, your position size should be 0.2 lots (20,000 units), because 50 pips × $2 per pip (for 0.2 lots) = $100.",
+    "mistakes": [
+      "Trading position sizes that are too large for the account",
+      "Not calculating pip value before entering trades",
+      "Risking more than 2% of capital on a single trade"
+    ],
+    "checklist": [
+      "Calculate pip value for your position size",
+      "Determine risk amount before entering trade",
+      "Use proper lot size based on stop loss distance",
+      "Never risk more than 1-2% per trade"
+    ]
+  },
+  {
+    "id": "forex-201",
+    "moduleNumber": 2,
+    "module": "Market Analysis",
+    "title": "Introduction to Technical Analysis",
+    "level": "Beginner",
+    "duration": "18 min",
+    "objective": "Learn the foundations of technical analysis, including chart types, timeframes, and the basic premise that price action reflects all available information.",
+    "content": "<p><strong>Technical analysis</strong> is the study of historical price movements to forecast future price direction. It's based on three core principles: price discounts everything, price moves in trends, and history tends to repeat itself.</p><p>The three main chart types are <strong>line charts</strong> (connecting closing prices), <strong>bar charts</strong> (showing open, high, low, close), and <strong>candlestick charts</strong> (visually representing price action with colored bodies and wicks).</p><p><strong>Timeframes</strong> range from 1-minute charts (for scalpers) to monthly charts (for long-term position traders). Most swing traders focus on the 4-hour and daily charts for primary analysis, using 1-hour charts for precise entry timing.</p>",
+    "example": "A trader might identify an uptrend on the daily chart, wait for a pullback on the 4-hour chart, and then enter on a bullish reversal pattern on the 1-hour chart. This multi-timeframe approach provides confirmation and better entry points.",
+    "mistakes": [
+      "Analyzing too many timeframes and getting confused",
+      "Ignoring higher timeframe trends",
+      "Relying solely on one indicator without price action context"
+    ],
+    "checklist": [
+      "Choose your primary timeframe for analysis",
+      "Use candlestick charts for detailed price action",
+      "Analyze higher timeframes for trend direction",
+      "Mark key support and resistance levels"
+    ]
+  },
+  {
+    "id": "forex-202",
+    "moduleNumber": 2,
+    "module": "Market Analysis",
+    "title": "Support and Resistance Levels",
+    "level": "Beginner",
+    "duration": "16 min",
+    "objective": "Identify and draw support and resistance levels, understand their psychological significance, and learn how they guide trading decisions.",
+    "content": "<p><strong>Support</strong> is a price level where buying interest is strong enough to overcome selling pressure, preventing further decline. <strong>Resistance</strong> is where selling interest overcomes buying pressure, capping upward movement.</p><p>These levels form because market participants remember past prices. When a currency pair approaches a previous high or low, traders who missed the move or are in losing positions make decisions that create predictable behavior at these zones.</p><p>The more times a level is tested, the stronger it becomes. However, when a strong level finally breaks, it often leads to significant price movement as stop losses trigger and new positions open in the breakout direction.</p>",
+    "example": "EUR/USD repeatedly bounces off 1.0800 support three times over two weeks. On the fourth test, it breaks below with strong momentum. This breakdown often signals a move to the next major support level, potentially at 1.0750 or lower.",
+    "mistakes": [
+      "Drawing too many support/resistance lines",
+      "Treating levels as exact prices rather than zones",
+      "Ignoring role reversal (support becoming resistance and vice versa)"
+    ],
+    "checklist": [
+      "Identify major support/resistance on higher timeframes",
+      "Mark levels where price reversed multiple times",
+      "Consider these as zones, not exact prices",
+      "Watch for role reversal after level breaks"
+    ]
+  },
+  {
+    "id": "forex-203",
+    "moduleNumber": 2,
+    "module": "Market Analysis",
+    "title": "Trend Identification and Analysis",
+    "level": "Beginner",
+    "duration": "14 min",
+    "objective": "Recognize uptrends, downtrends, and ranging markets, and understand how to trade with the trend for higher probability setups.",
+    "content": "<p>The golden rule of trading is: <strong>the trend is your friend</strong>. An uptrend consists of higher highs and higher lows, while a downtrend shows lower highs and lower lows. A ranging market moves sideways between support and resistance without clear direction.</p><p>Trendlines connect swing lows in an uptrend or swing highs in a downtrend. A valid trendline needs at least two touches, but three or more make it more reliable. The steeper the trendline, the less sustainable it typically is.</p><p>Always trade in the direction of the higher timeframe trend. If the daily chart shows an uptrend, look for buying opportunities on pullbacks rather than trying to pick tops with short positions.</p>",
+    "example": "GBP/USD is in a daily uptrend with a clear trendline connecting the lows. When price pulls back to the trendline and forms a bullish reversal pattern on the 4-hour chart, that's a high-probability long entry with the trend.",
+    "mistakes": [
+      "Fighting the trend by trying to pick tops or bottoms",
+      "Drawing trendlines through price action instead of connecting touches",
+      "Ignoring trendline breaks as potential reversal signals"
+    ],
+    "checklist": [
+      "Identify the current trend on your primary timeframe",
+      "Draw trendlines connecting at least two swing points",
+      "Trade pullbacks in trending markets",
+      "Recognize when trends are losing momentum"
+    ]
+  },
+  {
+    "id": "forex-204",
+    "moduleNumber": 2,
+    "module": "Market Analysis",
+    "title": "Candlestick Patterns",
+    "level": "Intermediate",
+    "duration": "20 min",
+    "objective": "Learn to read and interpret key candlestick patterns that signal potential reversals or continuation of trends.",
+    "content": "<p>Candlestick patterns reveal market psychology. <strong>Bullish patterns</strong> like the Hammer, Bullish Engulfing, and Morning Star suggest upward movement, while <strong>bearish patterns</strong> like the Shooting Star, Bearish Engulfing, and Evening Star indicate potential declines.</p><p><strong>Doji candlesticks</strong> (where open and close are nearly equal) show indecision and often appear at market turning points. The context matters greatly—a Doji at resistance after an uptrend is more significant than one in the middle of a range.</p><p>Single candlestick patterns provide quick signals, while multi-candlestick patterns (like Three White Soldiers or Three Black Crows) offer stronger confirmation of trend continuation or reversal.</p>",
+    "example": "After a strong downtrend in USD/JPY, a Hammer candlestick forms at a key support level. The long lower wick shows buyers rejected lower prices. If the next candle closes above the Hammer's high, it confirms a potential reversal, offering a long entry.",
+    "mistakes": [
+      "Trading candlestick patterns without considering market context",
+      "Ignoring the importance of where patterns form (support/resistance)",
+      "Not waiting for confirmation candles before entering"
+    ],
+    "checklist": [
+      "Identify pattern location relative to support/resistance",
+      "Wait for confirmation candle to complete",
+      "Consider the timeframe—higher timeframes are more reliable",
+      "Combine patterns with other technical tools"
+    ]
+  },
+  {
+    "id": "forex-301",
+    "moduleNumber": 3,
+    "module": "Technical Indicators",
+    "title": "Moving Averages",
+    "level": "Intermediate",
+    "duration": "17 min",
+    "objective": "Understand Simple and Exponential Moving Averages, how to use them for trend identification and dynamic support/resistance.",
+    "content": "<p><strong>Moving Averages</strong> (MAs) smooth price action by calculating the average price over a specific period. <strong>Simple Moving Averages</strong> (SMA) give equal weight to all periods, while <strong>Exponential Moving Averages</strong> (EMA) give more weight to recent prices, making them more responsive.</p><p>Popular periods include the 20 EMA (short-term), 50 EMA (medium-term), and 200 EMA (long-term). When price is above the MA, the trend is considered bullish; below indicates bearish. MA crossovers can signal trend changes.</p><p>Moving averages can also act as dynamic support in uptrends and dynamic resistance in downtrends. Price often bounces off major MAs, providing trade entry opportunities.</p>",
+    "example": "When the 50 EMA crosses above the 200 EMA (called a Golden Cross), it's a bullish signal. When EUR/USD price pulls back to the 50 EMA in an uptrend and bounces, traders often enter long positions with stops below the MA.",
+    "mistakes": [
+      "Using too many MAs and creating conflicting signals",
+      "Applying MAs in ranging markets where they generate false signals",
+      "Not adjusting MA periods for different timeframes"
+    ],
+    "checklist": [
+      "Choose 2-3 MAs maximum for your strategy",
+      "Use EMAs in trending markets for faster signals",
+      "Watch for price reactions at major MAs",
+      "Confirm MA signals with price action"
+    ]
+  },
+  {
+    "id": "forex-302",
+    "moduleNumber": 3,
+    "module": "Technical Indicators",
+    "title": "Relative Strength Index (RSI)",
+    "level": "Intermediate",
+    "duration": "15 min",
+    "objective": "Learn to use RSI to identify overbought/oversold conditions and potential divergences that signal reversals.",
+    "content": "<p>The <strong>Relative Strength Index</strong> (RSI) is a momentum oscillator that measures the speed and magnitude of price changes, oscillating between 0 and 100. Traditionally, readings above 70 indicate overbought conditions, while below 30 suggests oversold.</p><p>However, in strong trends, RSI can remain in overbought or oversold territory for extended periods. The most powerful RSI signals occur when <strong>divergence</strong> appears between price and the indicator.</p><p><strong>Bullish divergence</strong> occurs when price makes lower lows but RSI makes higher lows, suggesting weakening downward momentum. <strong>Bearish divergence</strong> is the opposite—price makes higher highs while RSI makes lower highs, indicating fading upward momentum.</p>",
+    "example": "GBP/JPY reaches a new high at 192.00, but RSI peaks at 75 and then only reaches 70 on the next rally to 193.00. This bearish divergence warns of exhaustion, and traders might prepare for a reversal or at least secure profits on long positions.",
+    "mistakes": [
+      "Shorting in strong uptrends just because RSI is overbought",
+      "Ignoring divergence signals on higher timeframes",
+      "Using RSI in isolation without price structure context"
+    ],
+    "checklist": [
+      "Check RSI for overbought/oversold conditions",
+      "Look for divergences between price and RSI",
+      "Use 14-period RSI as the standard setting",
+      "Confirm RSI signals with support/resistance levels"
+    ]
+  },
+  {
+    "id": "forex-303",
+    "moduleNumber": 3,
+    "module": "Technical Indicators",
+    "title": "MACD (Moving Average Convergence Divergence)",
+    "level": "Intermediate",
+    "duration": "18 min",
+    "objective": "Master the MACD indicator for identifying momentum shifts, trend changes, and trade entries through crossovers and divergence.",
+    "content": "<p>The <strong>MACD</strong> consists of two lines—the MACD line (12 EMA minus 26 EMA) and the signal line (9 EMA of the MACD line)—plus a histogram showing the distance between them. It's excellent for spotting momentum changes and trend reversals.</p><p>A <strong>bullish signal</strong> occurs when the MACD line crosses above the signal line, especially when happening below the zero line. A <strong>bearish signal</strong> is when the MACD crosses below the signal line, particularly above zero.</p><p>Like RSI, MACD divergence is powerful. When price makes new highs but MACD doesn't confirm (makes lower highs), bearish divergence warns of potential reversal. The histogram expanding shows strengthening momentum, while contracting indicates weakening momentum.</p>",
+    "example": "USD/CAD is trending down, and MACD lines are below zero with a strong negative histogram. When the MACD line crosses above the signal line, it signals a potential short-term bounce or reversal. Combined with bullish price action at support, this offers a long trade opportunity.",
+    "mistakes": [
+      "Trading every MACD crossover without filtering for quality setups",
+      "Ignoring the zero line as a trend filter",
+      "Not waiting for histogram confirmation of momentum shift"
+    ],
+    "checklist": [
+      "Use standard settings (12, 26, 9) initially",
+      "Look for MACD crossovers in the direction of the trend",
+      "Watch for divergences on higher timeframes",
+      "Confirm with price action before entering"
+    ]
+  },
+  {
+    "id": "forex-401",
+    "moduleNumber": 4,
+    "module": "Fundamental Analysis",
+    "title": "Economic Indicators and Their Impact",
+    "level": "Intermediate",
+    "duration": "22 min",
+    "objective": "Understand key economic indicators that move currency markets, including GDP, employment data, inflation, and interest rates.",
+    "content": "<p><strong>Fundamental analysis</strong> examines economic factors that influence currency values. Major indicators include <strong>Gross Domestic Product</strong> (GDP), which measures a country's economic output; <strong>employment data</strong> like the US Non-Farm Payrolls (NFP); and <strong>inflation metrics</strong> such as Consumer Price Index (CPI).</p><p><strong>Interest rates</strong> are the most powerful driver of currency values. When a central bank raises rates, it typically strengthens the currency by attracting foreign investment seeking higher returns. Rate cuts usually weaken a currency.</p><p>Other critical indicators include Retail Sales, Manufacturing PMI (Purchasing Managers' Index), Trade Balance, and Consumer Confidence. These reports are released on scheduled dates and can cause significant market volatility.</p>",
+    "example": "When the Federal Reserve raises interest rates by 0.25% unexpectedly, USD often surges across all pairs. If EUR/USD is at 1.0850, it might quickly drop to 1.0750-1.0700 as traders rush to buy dollars, anticipating higher returns on USD-denominated assets.",
+    "mistakes": [
+      "Trading immediately before major news without understanding volatility risk",
+      "Ignoring the consensus forecast vs actual result",
+      "Not considering whether news is already priced into the market"
+    ],
+    "checklist": [
+      "Check economic calendar daily for scheduled releases",
+      "Understand which indicators most impact your pairs",
+      "Compare actual results to consensus forecasts",
+      "Avoid trading during major news if you're inexperienced"
+    ]
+  },
+  {
+    "id": "forex-402",
+    "moduleNumber": 4,
+    "module": "Fundamental Analysis",
+    "title": "Central Banks and Monetary Policy",
+    "level": "Intermediate",
+    "duration": "20 min",
+    "objective": "Learn how central banks influence currency values through monetary policy decisions, forward guidance, and quantitative measures.",
+    "content": "<p>Central banks like the <strong>Federal Reserve</strong> (US), <strong>European Central Bank</strong> (ECB), <strong>Bank of England</strong> (BoE), and <strong>Bank of Japan</strong> (BoJ) control monetary policy through interest rate decisions, asset purchases, and policy statements.</p><p><strong>Hawkish</strong> central banks prioritize fighting inflation and tend to raise rates or reduce monetary stimulus, strengthening their currency. <strong>Dovish</strong> banks focus on economic growth and employment, often cutting rates or maintaining low rates, which typically weakens their currency.</p><p><strong>Forward guidance</strong>—hints about future policy direction—can move markets significantly. Traders analyze central bank minutes and speeches for clues about rate path expectations. Quantitative Easing (QE) increases money supply and usually weakens a currency, while Quantitative Tightening (QT) does the opposite.</p>",
+    "example": "In January 2022, when the Fed signaled aggressive rate hikes to combat inflation, the US Dollar Index rose from 95 to 114 over the year. Traders who positioned long USD against low-yielding currencies like JPY (in USD/JPY) or EUR (in EUR/USD shorts) profited substantially from this hawkish shift.",
+    "mistakes": [
+      "Ignoring central bank policy divergence between currency pairs",
+      "Misinterpreting neutral statements as dovish or hawkish",
+      "Not following central bank meeting schedules"
+    ],
+    "checklist": [
+      "Know the meeting dates of relevant central banks",
+      "Understand each bank's current policy stance",
+      "Monitor inflation trends that influence policy",
+      "Follow speeches by key central bank officials"
+    ]
+  },
+  {
+    "id": "forex-403",
+    "moduleNumber": 4,
+    "module": "Fundamental Analysis",
+    "title": "Geopolitical Events and Market Sentiment",
+    "level": "Intermediate",
+    "duration": "19 min",
+    "objective": "Recognize how political events, global crises, and market sentiment shifts affect currency movements and risk appetite.",
+    "content": "<p><strong>Geopolitical events</strong>—elections, trade disputes, military conflicts, and political instability—create uncertainty that impacts currency markets. During times of global uncertainty, traders typically move into <strong>safe-haven currencies</strong> like USD, JPY, and CHF (Swiss Franc).</p><p><strong>Risk-on sentiment</strong> occurs when investors are optimistic about the global economy and seek higher-yielding assets, strengthening currencies like AUD, NZD, and CAD. <strong>Risk-off sentiment</strong> happens during crises, driving flows into safe havens and away from emerging market and commodity currencies.</p><p>Elections and referendums create volatility through uncertainty. Brexit negotiations in 2016-2020 caused extreme volatility in GBP pairs. US presidential elections, trade war developments, and military conflicts can all trigger significant currency moves.</p>",
+    "example": "When Russia invaded Ukraine in February 2022, risk-off sentiment dominated. JPY strengthened as investors fled to safety, USD rallied on its safe-haven status, while EUR weakened due to Europe's proximity to the conflict and energy dependence on Russia. EUR/USD fell from 1.1300 to below 1.0400 in months.",
+    "mistakes": [
+      "Underestimating the speed and magnitude of geopolitical moves",
+      "Holding large positions during major political events",
+      "Not understanding which currencies are safe havens"
+    ],
+    "checklist": [
+      "Monitor major political events and elections",
+      "Understand safe-haven vs risk-on currencies",
+      "Reduce position sizes during geopolitical uncertainty",
+      "Follow news sources for real-time developments"
+    ]
+  },
+  {
+    "id": "forex-501",
+    "moduleNumber": 5,
+    "module": "Risk Management",
+    "title": "The Importance of Stop Losses",
+    "level": "Beginner",
+    "duration": "16 min",
+    "objective": "Understand why stop losses are essential, how to place them strategically, and the psychological discipline required to honor them.",
+    "content": "<p>A <strong>stop loss</strong> is a predetermined price level where you'll exit a losing trade to prevent further losses. It's the single most important risk management tool because it defines your maximum loss before you enter the trade.</p><p>Place stop losses beyond obvious support or resistance levels, not right at them. If you're long at 1.0850 with support at 1.0800, place your stop at 1.0785, giving the trade room to breathe but still protecting if support breaks.</p><p>The cardinal sin is moving your stop loss further away to avoid being stopped out. This behavior destroys accounts. If your stop is hit, the trade thesis was wrong—accept the small loss and move on. A stopped-out trade that then reverses is better than holding a loser that falls further.</p>",
+    "example": "You buy EUR/USD at 1.0850 with a stop at 1.0800 (50 pips) and a target at 1.0950 (100 pips). Your risk-reward ratio is 1:2. Even if only 40% of your trades win, you'll be profitable long-term due to winning more when right than you lose when wrong.",
+    "mistakes": [
+      "Trading without stop losses and hoping price recovers",
+      "Moving stops further away when price approaches them",
+      "Placing stops at obvious levels where many others have them"
+    ],
+    "checklist": [
+      "Always set stop loss before entering trade",
+      "Place stops beyond key support/resistance",
+      "Never move stops in the wrong direction",
+      "Accept that being stopped out is part of trading"
+    ]
+  },
+  {
+    "id": "forex-502",
+    "moduleNumber": 5,
+    "module": "Risk Management",
+    "title": "Position Sizing and Risk Per Trade",
+    "level": "Beginner",
+    "duration": "18 min",
+    "objective": "Calculate proper position sizes based on account balance, risk percentage, and stop loss distance to preserve capital.",
+    "content": "<p>Professional traders typically risk 0.5-2% of their account per trade. This ensures that even a string of losses won't devastate the account. With 1% risk per trade, you can lose 10 trades in a row and still have 90% of your capital.</p><p>The formula for position sizing: <strong>Position Size = (Account Balance × Risk %) ÷ Stop Loss in Pips ÷ Pip Value</strong>. This guarantees that regardless of your stop loss distance, you're risking the same dollar amount.</p><p>Smaller position sizes allow you to trade with less emotion. When you risk 10% per trade, a losing streak becomes psychologically unbearable. At 1% risk, you can endure normal trading variance without panic.</p>",
+    "example": "$10,000 account, risking 1% ($100) per trade. Stop loss is 50 pips on EUR/USD. Pip value for a mini lot (0.1) is $1. Position size = $100 ÷ 50 pips ÷ $1 = 2 mini lots (0.2 standard lots). If stopped out, you lose exactly $100, or 1% of your account.",
+    "mistakes": [
+      "Using the same lot size regardless of stop loss distance",
+      "Risking too much per trade based on overconfidence",
+      "Not recalculating position size as account grows or shrinks"
+    ],
+    "checklist": [
+      "Decide risk percentage before analyzing any trade",
+      "Calculate position size for every trade",
+      "Adjust lot size based on stop loss distance",
+      "Never risk more than 2% on a single trade"
+    ]
+  },
+  {
+    "id": "forex-503",
+    "moduleNumber": 5,
+    "module": "Risk Management",
+    "title": "Risk-Reward Ratios",
+    "level": "Intermediate",
+    "duration": "17 min",
+    "objective": "Learn to identify and execute trades with favorable risk-reward ratios to ensure long-term profitability even with lower win rates.",
+    "content": "<p>The <strong>risk-reward ratio</strong> compares potential profit to potential loss. A 1:2 ratio means you risk $100 to potentially make $200. A 1:3 ratio risks $100 to make $300. Consistently finding trades with positive risk-reward is crucial for profitability.</p><p>With a 1:2 risk-reward ratio, you only need to win 35% of trades to break even (accounting for spreads). Win 40-45% and you're consistently profitable. This is far easier than trying to maintain a 60-70% win rate with poor risk-reward.</p><p>Before entering any trade, identify your target and stop loss. If your target is closer than twice your stop loss distance, the trade doesn't meet minimum risk-reward criteria and should be avoided unless you have exceptional conviction.</p>",
+    "example": "You identify a long setup in USD/JPY at 148.50 with support at 148.00 (50 pips stop) and resistance at 150.00 (150 pips target). This offers a 1:3 risk-reward. Even winning just 30% of these trades yields profit over time.",
+    "mistakes": [
+      "Taking profits too early and letting losers run",
+      "Accepting 1:1 or worse risk-reward ratios",
+      "Not measuring risk-reward before entering trade"
+    ],
+    "checklist": [
+      "Identify target and stop before entry",
+      "Aim for minimum 1:2 risk-reward ratio",
+      "Measure in pips or percentage, not just dollars",
+      "Let winners run and cut losers short"
+    ]
+  },
+  {
+    "id": "forex-601",
+    "moduleNumber": 6,
+    "module": "Trading Psychology",
+    "title": "Controlling Emotions",
+    "level": "Intermediate",
+    "duration": "20 min",
+    "objective": "Develop emotional discipline to avoid revenge trading, overtrading, and other psychological pitfalls that destroy trading accounts.",
+    "content": "<p>Trading psychology often determines success more than technical skills. <strong>Fear</strong> causes traders to exit winning trades prematurely or avoid taking valid setups. <strong>Greed</strong> leads to overtrading, oversized positions, and holding losers hoping for recovery.</p><p><strong>Revenge trading</strong>—taking impulsive trades after losses to recover quickly—is account suicide. After a losing trade, step away. Review what went wrong, accept the loss, and wait for your next high-probability setup.</p><p>Develop a <strong>trading routine</strong> that removes emotion. Check charts at specific times, follow your rules mechanically, and track every trade. When you trade based on feelings rather than strategy, you're gambling, not trading.</p>",
+    "example": "After three winning trades, a trader feels invincible and takes a marginal setup with triple the usual position size. It loses, wiping out all previous gains. This is classic overconfidence bias. Maintaining consistent position sizes and strategy adherence would have preserved profits.",
+    "mistakes": [
+      "Taking random trades after a big loss to recover",
+      "Increasing position sizes after wins or losses",
+      "Checking charts constantly instead of following a plan"
+    ],
+    "checklist": [
+      "Accept that losses are part of trading",
+      "Never revenge trade—wait for proper setups",
+      "Follow your trading plan mechanically",
+      "Take breaks after emotional trades"
+    ]
+  },
+  {
+    "id": "forex-602",
+    "moduleNumber": 6,
+    "module": "Trading Psychology",
+    "title": "Building a Trading Journal",
+    "level": "Intermediate",
+    "duration": "15 min",
+    "objective": "Learn to maintain a detailed trading journal that tracks not just trades but also your psychological state and lessons learned.",
+    "content": "<p>A <strong>trading journal</strong> is essential for improvement. Record entry/exit prices, lot size, stop loss, target, reason for trade, market conditions, and most importantly—how you felt before, during, and after the trade.</p><p>Review your journal weekly. Look for patterns: Do you lose more on Fridays? Are you better at breakouts or pullbacks? Do you violate rules when stressed? This data reveals your strengths, weaknesses, and emotional triggers.</p><p>Beyond numbers, write a narrative for each trade. What did you see? Why did you enter? If it lost, what went wrong? If it won, was it luck or skill? This reflection transforms experience into wisdom.</p>",
+    "example": "After 50 trades, your journal shows you win 65% of pullback trades but only 35% of breakout trades. Your best trading occurs between 8-11 AM, while afternoon trades lose money. Armed with this data, you focus on pullbacks during morning hours, immediately improving results.",
+    "mistakes": [
+      "Recording only wins or only profitable trades",
+      "Not tracking emotional state and lessons learned",
+      "Failing to review and analyze journal regularly"
+    ],
+    "checklist": [
+      "Record every trade, win or lose",
+      "Include screenshots of chart at entry",
+      "Note your emotional state and reasoning",
+      "Review journal weekly for patterns"
+    ]
+  },
+  {
+    "id": "forex-603",
+    "moduleNumber": 6,
+    "module": "Trading Psychology",
+    "title": "Patience and Discipline",
+    "level": "Intermediate",
+    "duration": "14 min",
+    "objective": "Cultivate the patience to wait for high-probability setups and the discipline to follow your trading plan without deviation.",
+    "content": "<p><strong>Patience</strong> is waiting for your specific setup rather than forcing trades. Professional traders might analyze 20 charts and take zero trades because nothing meets their criteria. Amateurs feel compelled to always have a position.</p><p><strong>Discipline</strong> means following your rules even when your emotions scream otherwise. If your strategy says don't trade during major news, you don't—regardless of how tempting the setup looks.</p><p>The market will always be there tomorrow. Missing a trade is infinitely better than taking a bad one. Every trade you avoid that doesn't meet your criteria is money saved and capital preserved for genuine opportunities.</p>",
+    "example": "A trader's strategy requires three confirmations: trend alignment, support/resistance, and indicator convergence. A chart shows strong trend and support but indicator is neutral. Despite temptation, the disciplined trader waits for all three, avoiding a lower-probability trade that might have failed.",
+    "mistakes": [
+      "Forcing trades because you're bored or feel you should be trading",
+      "Abandoning your strategy because something 'looks good'",
+      "Trading just to trade rather than trading to profit"
+    ],
+    "checklist": [
+      "Define your setup criteria clearly",
+      "Wait for all criteria to be met",
+      "Accept that some days have zero trades",
+      "Remember: not trading is a position"
+    ]
+  }
+]

@@ -1,0 +1,23 @@
+name: Central bank monitor recovery
+on:
+  pull_request:
+    paths:
+      - 'assets/js/cb-monitor.js'
+      - 'scripts/test-cb-monitor-recovery.cjs'
+      - '.github/workflows/cb-monitor-recovery.yml'
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript parse
+        run: node --check assets/js/cb-monitor.js
+      - name: Central bank feed recovery regression
+        run: node scripts/test-cb-monitor-recovery.cjs

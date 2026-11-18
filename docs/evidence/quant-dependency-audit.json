@@ -1,0 +1,14 @@
+{
+  "generatedAt": "2026-11-03T20:25:58.952Z",
+  "scope": "npm audit --omit=optional --omit=dev",
+  "summary": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "packages": [],
+  "note": "Quant service uses Firebase Admin app/auth only; optional Firestore/Storage packages are not required."
+}
