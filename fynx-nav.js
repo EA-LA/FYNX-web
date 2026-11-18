@@ -174,7 +174,7 @@ topBar.innerHTML = `
 
   <div class="top-bar-left">
     ${disableSidebarToggle ? '' : '<button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Collapse sidebar">&lt;</button>'}
-    <h1 class="page-title">${existingTitle}</h1>
+    <h1 class="page-title"></h1>
   </div>
 
   <div class="top-bar-right">
@@ -189,6 +189,10 @@ topBar.innerHTML = `
     <div class="user-avatar" id="avatarInitials">FX</div>
   </div>
 `;
+
+    // Page titles originate as text; never reparse them as HTML.
+    // A title such as "Stocks < $3" must stay visible and cannot inject markup.
+    topBar.querySelector('.page-title').textContent = existingTitle;
 
     const chip = document.getElementById('dateChip');
     if (chip) {
