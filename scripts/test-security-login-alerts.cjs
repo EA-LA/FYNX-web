@@ -51,6 +51,9 @@ test('Switch starts unavailable until a confirmed account value arrives', async 
   assert.equal(h.button.disabled, true);
   assert.equal(h.button.getAttribute('aria-checked'), 'false');
   assert.match(h.status.textContent, /Checking/);
+  h.controller.setAccount('alpha', undefined);
+  assert.equal(h.button.disabled, true);
+  assert.match(h.status.textContent, /Loading/);
   h.controller.setAccount('alpha', true);
   assert.equal(h.button.disabled, false);
   assert.equal(h.button.getAttribute('aria-checked'), 'true');
