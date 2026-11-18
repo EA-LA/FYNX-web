@@ -258,3 +258,51 @@ test('a future-dated correlation refresh cannot overwrite the last verified tabl
   assert.match(h.status.textContent, /Refresh failed/);
   assert.equal(h.button.disabled, false);
 });
+
+
+test('refresh keeps verified source time and failure warning visible until recovery', async () => {
+  const h = setup();
+  await settle(h.calls[0], sample());
+  const previous = h.output.children[0];
+
+  h.button.trigger('click');
+  assert.match(h.status.textContent, /Coinbase.*Source time/);
+  assert.match(h.status.textContent, /Checking for updated observations/);
+  assert.equal(h.output.children[0], previous, 'verified table remains available');
+
+  await fail(h.calls[1]);
+  assert.match(h.status.textContent, /Stale data/);
+  assert.match(h.status.textContent, /Refresh failed/);
+
+  // The scheduled tick must not erase the warning while a fresh request is pending.
+  h.intervals[0]();
+  assert.equal(h.calls.length, 3);
+  assert.match(h.status.textContent, /Stale data/);
+  assert.match(h.status.textContent, /Refresh failed/);
+  assert.match(h.status.textContent, /Checking for updated observations/);
+  assert.equal(h.output.children[0], previous);
+
+  await settle(h.calls[2], sample());
+  assert.match(h.status.textContent, /Coinbase/);
+  assert.doesNotMatch(h.status.textContent, /Stale data|Refresh failed|Checking for updated observations/);
+  assert.equal(h.button.disabled, false);
+});
+
+test('switching markets clears an earlier failure instead of mislabelling new quotes', async () => {
+  const h = setup();
+  await settle(h.calls[0], sample());
+  h.button.trigger('click');
+  await fail(h.calls[1]);
+  assert.match(h.status.textContent, /Refresh failed/);
+
+  h.select.value = 'ETH-USD';
+  h.select.trigger('change');
+  assert.equal(h.output.children.length, 0, 'old BTC table is removed');
+  assert.match(h.status.textContent, /Loading source observations/);
+  assert.doesNotMatch(h.status.textContent, /Refresh failed/);
+
+  await settle(h.calls[2], sample('ETH-USD'));
+  assert.match(h.status.textContent, /Coinbase/);
+  assert.doesNotMatch(h.status.textContent, /Stale data|Refresh failed/);
+  assert.match(h.output.children[0].children[0].textContent, /ETH-USD/);
+});

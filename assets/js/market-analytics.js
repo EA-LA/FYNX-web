@@ -1,7 +1,7 @@
 (() => {
  const root=document.querySelector('[data-market-analysis]');if(!root)return;
  const kind=root.dataset.marketAnalysis,select=root.querySelector('select'),status=root.querySelector('[role=status]'),output=root.querySelector('[data-analysis-output]'),button=root.querySelector('button');
- let version=0,last=null,timer,controller=null;
+ let version=0,last=null,timer,controller=null,refreshFailed=false;
  const number=(n,max=4)=>Number(n).toLocaleString(undefined,{maximumFractionDigits:max});
  function render(data){
   // Build the next table off-screen; a malformed response must not erase the last good one.
@@ -48,7 +48,7 @@
   }
  }
  function updateStatus(){if(!last)return;const stale=last.stale||(kind==='liquidity'?Date.now()-Date.parse(last.observationTime)>60000:Date.now()-Date.parse(last.observationDate)>7*86400000);
- status.textContent=`${stale?'Stale data — ':''}${last.source} · ${kind==='liquidity'?'Source time '+new Date(last.observationTime).toLocaleString():'Observation window '+last.startDate+' to '+last.observationDate} · Retrieved ${new Date(last.fetchedAt).toLocaleString()}.`;}
+ status.textContent=`${stale?'Stale data — ':''}${last.source} · ${kind==='liquidity'?'Source time '+new Date(last.observationTime).toLocaleString():'Observation window '+last.startDate+' to '+last.observationDate} · Retrieved ${new Date(last.fetchedAt).toLocaleString()}.${refreshFailed?' Refresh failed; previous observations remain.':''}`;}
  function syncSourceLink(){
   if(kind!=='liquidity')return;
   const link=root.querySelector('[data-market-source]'),product=select.value;
@@ -62,7 +62,8 @@
   const active=new AbortController();controller=active;
   const selected=select.value;
   button.disabled=true;
-  status.textContent='Loading source observations…';
+  if(last){updateStatus();status.textContent+=' Checking for updated observations…';}
+  else status.textContent='Loading source observations…';
   const timeout=setTimeout(()=>active.abort(),20000);
   try{
    const params=new URLSearchParams({kind,[kind==='correlation'?'window':'product']:selected});
@@ -71,11 +72,11 @@
    const data=await response.json();
    if(current!==version)return;
    validate(data,selected);
-   render(data);last=data;updateStatus();
+   render(data);last=data;refreshFailed=false;updateStatus();
   }catch(error){
    if(current!==version)return; // A replaced request cannot overwrite the new market's state.
    window.FynxMonitor?.report('feed','feed-load',error);
-   if(last){last.stale=true;updateStatus();status.textContent+=' Refresh failed; previous observations remain.';}
+   if(last){last.stale=true;refreshFailed=true;updateStatus();}
    else status.textContent='Source data is unavailable. Retry or open the source link below. No estimated values are shown.';
   }finally{
    clearTimeout(timeout);
@@ -84,7 +85,7 @@
  }
  select.addEventListener('change',()=>{
   // Never leave the previous market's figures or source URL under the new selection.
-  last=null;output.replaceChildren();syncSourceLink();load(true);
+  last=null;refreshFailed=false;output.replaceChildren();syncSourceLink();load(true);
  });
  button.addEventListener('click',()=>load(true));
  function schedule(){clearInterval(timer);if(!document.hidden)timer=setInterval(()=>{updateStatus();load();},kind==='liquidity'?15000:300000);}
