@@ -3,7 +3,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
-const {VERSION}=require('./build-release-assets.cjs');
+const {VERSION,ASSET_VERSIONS}=require('./build-release-assets.cjs');
 const root=path.resolve(__dirname,'..');
 const source=fs.readFileSync(path.join(root,'assets/js/research/personal.js'),'utf8');
 const app=fs.readFileSync(path.join(root,'assets/js/research/app.js'),'utf8');
@@ -61,4 +61,20 @@ test('Error never silently becomes a trusted HTML fragment',()=>{
  assert.ok(personalImport,'The app must import the production portfolio renderer');
  assert.equal(new URL(personalImport[1],'https://www.fynxfinanceworld.com/assets/js/research/app.js').searchParams.get('v'),VERSION,
    'The portfolio renderer must use the current release cache version');
+});
+
+test('Research Desk entry module cache identity changes with the portfolio fix',()=>{
+ const html=fs.readFileSync(path.join(root,'tools/research-desk.html'),'utf8');
+ const match=html.match(/<script[^>]+src="(\/assets\/js\/research\/app\.js\?v=[^"]+)"/);
+ assert.ok(match,'Research Desk page loads the production research app entry module');
+ const url=new URL(match[1],'https://www.fynxfinanceworld.com');
+ assert.equal(url.searchParams.get('v'),ASSET_VERSIONS['assets/js/research/app.js'],
+   'A new entry module must have a distinct browser cache identity');
+ for(const file of ['personal.js','store.js']){
+   const expr=new RegExp("from\\s*['\"]([^'\"]*"+file.replace('.','\\.')+"[^'\"]*)['\"]");
+   const imported=app.match(expr);
+   assert.ok(imported,'The production app imports '+file);
+   assert.equal(new URL(imported[1],'https://www.fynxfinanceworld.com/assets/js/research/app.js').searchParams.get('v'),VERSION,
+     'The production app must load the current '+file+' release');
+ }
 });
