@@ -32,7 +32,7 @@ function setup(kind = 'liquidity', { search = '', clipboard } = {}) {
     dataset: { marketAnalysis: kind },
     querySelector(name) {
       return {
-        select, button, '[role=status]': status,
+        select, button, '[data-analysis-feed-status]': status, '[role=status]': status,
         '[data-analysis-output]': output, '[data-market-source]': link,
         '[data-analysis-share]': shareButton, '[data-analysis-share-status]': shareStatus,
         '[data-analysis-share-fallback]': shareFallback
