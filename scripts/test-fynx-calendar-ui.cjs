@@ -8,17 +8,17 @@ const {JSDOM} = require('jsdom');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'assets/js/fynx-calendar.js'), 'utf8');
 const page = fs.readFileSync(path.join(__dirname, '..', 'tools/economic-calendar.html'), 'utf8');
-assert.match(page, /fynx-calendar\.js\?v=20261115-release-trust/, 'page loads the updated calendar script');
+assert.match(page, /fynx-calendar\.js\?v=20261117-calendar-trust-merge-1/, 'page loads the updated calendar script');
 assert.match(page, /verify the actual figure at the source/, 'page does not promise verified release data');
 const home = fs.readFileSync(path.join(__dirname, '..', 'home.html'), 'utf8');
-assert.match(home, /fynx-calendar\.js\?v=20261115-release-trust/, 'homepage preview loads the updated calendar script');
+assert.match(home, /fynx-calendar\.js\?v=20261117-calendar-trust-merge-1/, 'homepage preview loads the updated calendar script');
 const releaseAssets = require('./build-release-assets.cjs');
-assert.equal(releaseAssets.ASSET_VERSIONS['assets/js/fynx-calendar.js'], '20261115-release-trust',
+assert.equal(releaseAssets.ASSET_VERSIONS['assets/js/fynx-calendar.js'], '20261117-calendar-trust-merge-1',
   'release asset builder must not undo calendar cache invalidation');
 const rewritten = releaseAssets.rewriteReferences(
   '<script src="/assets/js/fynx-calendar.js?v=outdated"></script>', 'home.html', new Set(['assets/js/fynx-calendar.js'])
 );
-assert.match(rewritten, /fynx-calendar\.js\?v=20261115-release-trust/,
+assert.match(rewritten, /fynx-calendar\.js\?v=20261117-calendar-trust-merge-1/,
   'a website build upgrades stale economic calendar script versions');
 
 const base = Date.now();
@@ -150,7 +150,7 @@ const fixture = {updatedAt: new Date(base).toISOString(), all: [
     'numerical zero and a truly missing value remain distinct');
   assert.match(pastRow.getAttribute('aria-label'), /forecast 0, previous 0/,
     'VoiceOver also receives the zero values');
-  assert.match(pastRow.textContent, /Time passed/, 'past events are not called released without confirmation');
+  assert.match(pastRow.textContent, /Awaiting result/, 'past events are not called released without confirmation');
   assert.doesNotMatch(pastRow.textContent, /Released/);
   const resultLink = pastRow.querySelector('.fc-actual');
   assert.equal(resultLink.textContent, 'Check result ↗', 'source link does not imply the release is verified');
