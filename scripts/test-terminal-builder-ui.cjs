@@ -270,7 +270,7 @@ test('an accepted account save is labeled as an account save and stays private',
       name.dispatchEvent(new Event('input', {bubbles: true}));
     }, core.TEMPLATE);
     await page.click('.fxb-tools button:text("Save")');
-    await page.waitForFunction(() => /Saved to your account as version/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    await page.waitForFunction(() => /Synced to your account as version/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
     await page.click('[data-fxb-install]');
     await page.waitForFunction(() => /Other people cannot see it/.test(document.body.dataset.said || ''));
     const stored = await page.evaluate(() => (window.__fxbDocs || []).map(row => row.path));
@@ -279,6 +279,54 @@ test('an accepted account save is labeled as an account save and stays private',
     await page.evaluate(() => window.__fxbSetUser({uid: 'bob'}));
     await page.waitForFunction(() => !document.querySelector('.fxb-side')?.innerText.includes('Alice Account Book'));
     assert.equal(await page.evaluate(() => (document.querySelector('.CodeMirror')?.CodeMirror?.getValue?.() || '').includes('Alice Account Book')), false);
+  } finally {
+    await browser.close();
+    server.close();
+  }
+});
+
+test('reopening builder preserves the unsaved latest code and independent saved projects', {timeout: 60000}, async () => {
+  const server = await startServer();
+  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage']});
+  try {
+    const page = await browser.newPage();
+    await mockFirebase(page);
+    await page.goto(`http://127.0.0.1:${server.address().port}/builder-ui.html`, {waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = false; window.__fxbOpen(); });
+    await page.waitForFunction(() => document.querySelector('[data-fxb-status]')?.textContent === 'Private to your account');
+    const codeA = 'function render(root, FYNX) { root.textContent = "PROJECT_A_MARKER"; }';
+    const codeB = 'function render(root, FYNX) { root.textContent = "PROJECT_B_MARKER"; }';
+    const setCodeAndName = async (code, name) => page.evaluate(({code, name}) => {
+      document.querySelector('.CodeMirror').CodeMirror.setValue(code);
+      const input = document.querySelector('[aria-label="Project name"]');
+      input.value = name;
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+    }, {code, name});
+    await setCodeAndName(codeA, 'Independent Project A');
+    await page.click('.fxb-tools button:text("Save")');
+    await page.waitForFunction(() => /Synced to your account as version/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    await page.click('button:text("New project")');
+    await setCodeAndName(codeB, 'Independent Project B');
+    await page.click('.fxb-tools button:text("Run")');
+    await page.waitForFunction(() => /PROJECT_B_MARKER/.test(document.querySelector('[data-fxb-preview]')?.textContent || '') ||
+      !!document.querySelector('[data-fxb-preview] iframe'));
+    await page.waitForFunction(() => /Saved to this browser/.test(document.querySelector('[data-fxb-save]')?.textContent || ''));
+    // Regression: remount without signing out or refreshing. Previously the
+    // auth-time in-memory draft replaced the latest locally preserved code.
+    await page.evaluate(() => window.__fxbOpen());
+    assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeB);
+    await page.click('.fxb-tools button:text("Save")');
+    await page.waitForFunction(() => /Synced to your account as version/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = false; window.__fxbOpen(); });
+    await page.waitForFunction(() => document.querySelector('[data-fxb-status]')?.textContent === 'Private to your account');
+    await page.click('button:text("Independent Project A")');
+    assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeA);
+    await page.click('button:text("Independent Project B")');
+    assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeB);
+    const docs = await page.evaluate(() => (window.__fxbDocs || []).filter(row => row.path.includes('/builderProjects/')));
+    assert.equal(docs.length, 2);
+    assert.notEqual(docs[0].id, docs[1].id);
   } finally {
     await browser.close();
     server.close();
