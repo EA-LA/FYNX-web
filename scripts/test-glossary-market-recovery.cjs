@@ -78,6 +78,31 @@ function response(body = emptyMarkup) {
   assert.equal(c.more.hidden, false);
   c.dom.window.close();
 
+  // A 200 OK consent/error page is not a verified empty market glossary.
+  // The failed market must remain retryable while healthy market results survive.
+  const malformedUrls = [];
+  let futuresMarkupHealthy = false;
+  const malformed = open(href => {
+    malformedUrls.push(href);
+    if (href.includes('/futures-')) return Promise.resolve(response(
+      futuresMarkupHealthy ? markup : '<html><body><h1>Please sign in to continue</h1></body></html>'
+    ));
+    return Promise.resolve(response(emptyMarkup));
+  });
+  malformed.search('uniquemarketterm');
+  await flush();
+  assert.match(malformed.status.textContent, /could not be checked|unavailable/i,
+    'unexpected successful HTML is not mistaken for a complete no-match');
+  assert.equal(malformed.retry.hidden, false, 'the unexpected market response remains retryable');
+  futuresMarkupHealthy = true;
+  malformed.retry.click();
+  await flush();
+  assert.equal(malformedUrls.length, 10, 'retry fetches only the invalid market page');
+  assert.match(malformedUrls.at(-1), /futures-glossary/);
+  assert.equal(malformed.more.hidden, false, 'market term appears after valid markup returns');
+  assert.equal(malformed.retry.hidden, true, 'a valid retry clears incomplete coverage');
+  malformed.dom.window.close();
+
   // Even a fetch that never resolves must end in recoverable feedback rather than indefinite loading.
   const shortTimeoutCode = productionCode.replace('const EXTRA_TIMEOUT_MS = 8000;', 'const EXTRA_TIMEOUT_MS = 35;');
   assert.notEqual(shortTimeoutCode, productionCode, 'the actual production timeout is exercised');
