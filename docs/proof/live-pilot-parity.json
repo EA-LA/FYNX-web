@@ -1,0 +1,122 @@
+{
+  "propQuickstartInternallyVerified": true,
+  "quickstartInternallyVerified": true,
+  "externalBetaVerified": false,
+  "verifiedAt": "2026-09-22T15:21:47.951Z",
+  "mode": "temporary_qa_test_key",
+  "realCustomerHistories": false,
+  "rows": [
+    {
+      "case": "risk-reward/long",
+      "browser": 3,
+      "liveApi": 3,
+      "match": true,
+      "adapterInputVerified": true
+    },
+    {
+      "case": "risk-reward/short",
+      "browser": 3,
+      "liveApi": 3,
+      "match": true,
+      "adapterInputVerified": true
+    },
+    {
+      "case": "risk-reward/integer",
+      "browser": 2,
+      "liveApi": 2,
+      "match": true,
+      "adapterInputVerified": true
+    },
+    {
+      "case": "pip/USD",
+      "browser": 10,
+      "liveApi": 10,
+      "match": true,
+      "adapterInputVerified": true
+    },
+    {
+      "case": "pip/JPY",
+      "browser": 6.25,
+      "liveApi": 6.25,
+      "match": true,
+      "adapterInputVerified": true
+    },
+    {
+      "case": "pip/cross",
+      "browser": 3.75,
+      "liveApi": 3.75,
+      "match": true,
+      "adapterInputVerified": true
+    },
+    {
+      "case": "margin/USD quoted",
+      "browser": 3616.67,
+      "liveApi": 3616.67,
+      "match": true,
+      "adapterInputVerified": true
+    },
+    {
+      "case": "margin/USD base",
+      "browser": 3333.33,
+      "liveApi": 3333.33,
+      "match": true,
+      "adapterInputVerified": true
+    },
+    {
+      "case": "margin/cross",
+      "browser": 3541.67,
+      "liveApi": 3541.67,
+      "match": true,
+      "adapterInputVerified": true
+    },
+    {
+      "case": "break-even/buy",
+      "browser": 1.08519,
+      "liveApi": 1.08519,
+      "match": true,
+      "adapterInputVerified": true
+    },
+    {
+      "case": "break-even/sell",
+      "browser": 1.08481,
+      "liveApi": 1.08481,
+      "match": true,
+      "adapterInputVerified": true
+    },
+    {
+      "case": "atr-stop/buy",
+      "browser": 1.076,
+      "liveApi": 1.076,
+      "match": true,
+      "adapterInputVerified": true
+    },
+    {
+      "case": "atr-stop/sell",
+      "browser": 1.09175,
+      "liveApi": 1.09175,
+      "match": true,
+      "adapterInputVerified": true
+    },
+    {
+      "case": "position-size/exact",
+      "browser": 0.33,
+      "liveApi": 0.33,
+      "match": true,
+      "adapterInputVerified": true
+    },
+    {
+      "case": "position-size/floor",
+      "browser": 0.66,
+      "liveApi": 0.66,
+      "match": true,
+      "adapterInputVerified": true
+    },
+    {
+      "case": "position-size/below-minimum",
+      "browser": 0,
+      "liveApi": 0,
+      "match": true,
+      "adapterInputVerified": true
+    }
+  ]
+}

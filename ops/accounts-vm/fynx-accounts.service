@@ -1,0 +1,42 @@
+[Unit]
+Description=FYNX My Accounts service (accounts.fynxfinanceworld.com)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=fynx
+Group=fynx
+WorkingDirectory=/opt/fynx-web
+ExecStart=/opt/fynx-web/ops/accounts-vm/run.sh
+Restart=always
+RestartSec=5
+# Non-secret configuration (project-specific values come from project.conf written by startup.sh)
+Environment=NODE_ENV=production
+Environment=ACCOUNTS_PORT=8080
+Environment=ACCOUNTS_DB_PATH=/var/lib/fynx-accounts/accounts.sqlite
+Environment=ACCOUNTS_ALLOWED_ORIGINS=https://www.fynxfinanceworld.com,https://fynxfinanceworld.com
+Environment=ACCOUNTS_CORS=true
+Environment=ACCOUNTS_HINT_COOKIE_DOMAIN=.fynxfinanceworld.com
+Environment=ACCOUNTS_TRUST_LOCAL_PROXY=true
+Environment=ACCOUNTS_MT5_ENABLED=true
+Environment=ACCOUNTS_MT4_ENABLED=true
+Environment=ACCOUNTS_METAAPI_REGION=new-york
+Environment=ACCOUNTS_LIVE_MT_PLAN=pro
+Environment=ACCOUNTS_PRO_MT_CONNECTIONS=1
+Environment=ACCOUNTS_EMAIL_SEND_ENABLED=false
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/fynx-accounts
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

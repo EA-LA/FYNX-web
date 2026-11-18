@@ -1,0 +1,276 @@
+/* Dense editorial page layouts, scoped independently of Home and News. */
+html body[data-fynx-terminal][data-terminal-page] .content-area { padding-top: 24px !important; }
+html body[data-fynx-terminal][data-terminal-page] .resource-wayfinding { margin-bottom: 20px; padding-bottom: 9px; font-size: 10px; }
+html body[data-fynx-terminal][data-terminal-page] .terminal-page-title {
+  margin: 4px 0 10px;
+  font: 800 36px/1.06 Arial, Helvetica, sans-serif !important;
+  letter-spacing: -.055em;
+  color: var(--terminal-text);
+}
+html body[data-fynx-terminal][data-terminal-page] .terminal-section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-top: 2px solid var(--terminal-text);
+}
+html body[data-fynx-terminal][data-terminal-page] .terminal-section-heading h2 { margin: 0; font-size: 11px !important; font-weight: 700 !important; line-height: 1.4; letter-spacing: .02em; text-transform: uppercase; }
+html body[data-fynx-terminal][data-terminal-page] .terminal-section-heading > span { font: 10px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; color: var(--terminal-muted); }
+html body[data-fynx-terminal][data-terminal-page] :is(.terminal-learning-main, .terminal-reading-rail, .terminal-calendar-main, .terminal-calendar-rail, .terminal-research-rail, #research-panel, .terminal-profile-settings, .terminal-profile-aside) { min-width: 0; }
+html body[data-fynx-terminal][data-terminal-page] :is(.terminal-learning-layout, .terminal-calendar-layout, .terminal-research-layout, .terminal-profile-layout) {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(230px, 1fr);
+  align-items: start;
+  gap: 30px;
+}
+
+/* Journal: preserve the real metrics and chart data in a continuous workbench. */
+html body[data-fynx-terminal][data-terminal-page=journal] .journal-shell { border: 0 !important; }
+html body[data-fynx-terminal][data-terminal-page=journal] .journal-top { padding: 0 0 22px; gap: 30px; border: 0; }
+html body[data-fynx-terminal][data-terminal-page=journal] .jt-title b { font-size: 36px; line-height: 1.05; font-weight: 800; }
+html body[data-fynx-terminal][data-terminal-page=journal] .jt-title small { margin-top: 8px; color: var(--terminal-muted); }
+html body[data-fynx-terminal][data-terminal-page=journal] .jt-right { gap: 7px; }
+html body[data-fynx-terminal][data-terminal-page=journal] .jt-right .pill { padding: 5px 8px; font-size: 11px; }
+html body[data-fynx-terminal][data-terminal-page=journal] .jnav { padding: 0; background: transparent !important; }
+html body[data-fynx-terminal][data-terminal-page=journal] .jbtn { min-height: 44px; padding: 10px 15px 10px 0; margin-right: 18px; }
+html body[data-fynx-terminal][data-terminal-page=journal] .jico { display: none; }
+html body[data-fynx-terminal][data-terminal-page=journal] .jnav > .note { padding: 8px 0; color: var(--terminal-muted); }
+html body[data-fynx-terminal][data-terminal-page=journal] .jcontent { padding: 18px 0 0; }
+html body[data-fynx-terminal][data-terminal-page=journal] #view-dash > .grid > .card { border: 0 !important; }
+html body[data-fynx-terminal][data-terminal-page=journal] #view-dash > .grid > .card > .hd { padding: 0 0 13px; border: 0; }
+html body[data-fynx-terminal][data-terminal-page=journal] #view-dash > .grid > .card > .bd { padding: 0; }
+html body[data-fynx-terminal][data-terminal-page=journal] #view-dash > .grid > .card > .bd > .grid { gap: 0; }
+html body[data-fynx-terminal][data-terminal-page=journal] #view-dash .stat { padding: 15px 17px; border: 1px solid var(--terminal-line); border-right: 0; gap: 8px; }
+html body[data-fynx-terminal][data-terminal-page=journal] #view-dash .stat:nth-child(4) { border-right: 1px solid var(--terminal-line); }
+html body[data-fynx-terminal][data-terminal-page=journal] #view-dash .stat b { font: 600 24px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: -.04em; }
+html body[data-fynx-terminal][data-terminal-page=journal] #view-dash .stat .row { gap: 6px; padding-top: 0 !important; }
+html body[data-fynx-terminal][data-terminal-page=journal] #view-dash .stat .row small { font-size: 9px; text-transform: none; letter-spacing: 0; }
+html body[data-fynx-terminal][data-terminal-page=journal] #view-dash .stat .badge { padding: 2px 4px; font-size: 9px; background: var(--terminal-panel); }
+html body[data-fynx-terminal][data-terminal-page=journal] #view-dash .stat ~ .card { margin-top: 25px; border: 0 !important; border-top: 2px solid var(--terminal-text) !important; }
+html body[data-fynx-terminal][data-terminal-page=journal] #view-dash .stat ~ .card:last-child { margin-left: 26px; }
+html body[data-fynx-terminal][data-terminal-page=journal] .journal-shell .hd { padding: 10px 0; }
+html body[data-fynx-terminal][data-terminal-page=journal] .journal-shell .hd b { font-size: 11px; text-transform: uppercase; }
+html body[data-fynx-terminal][data-terminal-page=journal] .journal-shell .hd small { font: 10px/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; }
+html body[data-fynx-terminal][data-terminal-page=journal] #view-dash .stat ~ .card .bd { padding: 14px 0; }
+
+/* The real position-sizing tool sits beside the original arithmetic controls. */
+html body[data-fynx-terminal][data-terminal-page=calculator] .content-area > .resource-wayfinding { margin-bottom: 8px; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .hero:has(.quick-calc) { grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); align-items: start; gap: 18px 30px; margin-bottom: 0; padding-bottom: 16px !important; border: 0 !important; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .hero > .hero-card { grid-column: 1 / -1; min-width: 0; padding: 0 !important; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .hero-card > .hero-badge { display: block; width: fit-content; padding: 0; margin: 0; border: 0; background: transparent; color: var(--terminal-muted); }
+html body[data-fynx-terminal][data-terminal-page=calculator] .hero-card > h2 { font-size: 36px !important; margin: 8px 0 10px !important; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .hero-card > p { font-size: 13px !important; max-width: 500px !important; margin: 0; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .terminal-position-sizing { grid-column: 1; min-width: 0; margin: 0; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .terminal-full-tool { color: var(--terminal-green); font-size: 10px; font-weight: 600; white-space: nowrap; text-decoration: none; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .terminal-full-tool:hover { text-decoration: underline; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .terminal-position-frame { display: block; width: 100%; min-height: 320px; border: 0; background: var(--terminal-bg); }
+html body[data-fynx-terminal][data-terminal-page=calculator] .quick-calc { grid-column: 2; min-width: 0; margin: 0; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .quick-calc { padding: 0 !important; border: 0 !important; background: transparent !important; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .calc-grid { gap: 1px; border: 1px solid var(--terminal-line); background: var(--terminal-line); }
+html body[data-fynx-terminal][data-terminal-page=calculator] .calc-btn { min-height: 39px; border: 0; background: var(--terminal-panel); font-size: 13px; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .calc-display { min-height: 56px; margin-bottom: 0; border: 1px solid var(--terminal-line); border-bottom: 0; font-size: 25px; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .filters { padding: 0 0 12px; margin-bottom: 0; border: 0; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .tools-grid .tool-card { padding: 17px; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .tool-title { font-size: 14px; line-height: 1.35; letter-spacing: -.025em; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .tool-desc { font-size: 12px; margin: 8px 0 14px; line-height: 1.55; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .tool-head { flex-wrap: wrap; gap: 6px; }
+html body[data-fynx-terminal][data-terminal-page=calculator] .tool-chip { font-size: 8px; padding: 1px 4px; }
+
+/* Learning: three contiguous topic columns beside the existing next steps. */
+html body[data-fynx-terminal][data-terminal-page=learn] .hub-intro { margin: 0 0 24px; font-size: 13px; font-weight: 400; line-height: 1.6; letter-spacing: 0; color: var(--terminal-muted); }
+html body[data-fynx-terminal][data-terminal-page=learn] .learning-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; }
+html body[data-fynx-terminal][data-terminal-page=learn] .learning-card { min-width: 0; min-height: 218px; padding: 18px; }
+html body[data-fynx-terminal][data-terminal-page=learn] .learning-card .eyebrow { margin-bottom: 12px; font: 10px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; color: var(--terminal-muted); }
+html body[data-fynx-terminal][data-terminal-page=learn] .learning-card h2 { font-size: 22px; line-height: 1.1; margin: 0 0 9px; }
+html body[data-fynx-terminal][data-terminal-page=learn] .learning-card p { margin-bottom: 18px; line-height: 1.55; }
+html body[data-fynx-terminal][data-terminal-page=learn] .learning-card > a { min-height: 35px; padding: 8px 10px; font-size: 10px; }
+html body[data-fynx-terminal][data-terminal-page=learn] .learning-links { gap: 12px; margin-top: 12px; }
+html body[data-fynx-terminal][data-terminal-page=learn] .learning-links a { font-size: 10px; }
+html body[data-fynx-terminal][data-terminal-page=learn] .terminal-reading-rail .resource-related { margin: 0; padding: 10px 0 0; border-top: 2px solid var(--terminal-text); }
+html body[data-fynx-terminal][data-terminal-page=learn] .terminal-reading-rail .resource-related h2 { font-size: 20px !important; line-height: 1.1; margin: 6px 0 12px; }
+html body[data-fynx-terminal][data-terminal-page=learn] .terminal-reading-rail .resource-related-links { display: block; }
+html body[data-fynx-terminal][data-terminal-page=learn] .terminal-reading-rail .resource-related-links a { display: block; margin: 0; padding: 12px 0; border: 0; border-bottom: 1px solid var(--terminal-line); }
+html body[data-fynx-terminal][data-terminal-page=learn] .terminal-reading-rail .resource-related-links strong { display: block; font-size: 12px; line-height: 1.5; }
+html body[data-fynx-terminal][data-terminal-page=learn] .terminal-reading-rail .resource-related-links span { display: block; margin-top: 5px; color: var(--terminal-muted); font-size: 11px; line-height: 1.5; }
+html body[data-fynx-terminal][data-terminal-page=learn] .terminal-quiz-prompt { margin-top: 24px; padding: 16px; background: var(--terminal-panel); }
+html body[data-fynx-terminal][data-terminal-page=learn] .terminal-quiz-prompt h2 { margin: 0 0 10px; font-size: 14px; font-weight: 700; }
+html body[data-fynx-terminal][data-terminal-page=learn] .terminal-quiz-prompt p { color: var(--terminal-muted); font-size: 12px; line-height: 1.5; }
+html body[data-fynx-terminal][data-terminal-page=learn] .terminal-solid-link { display: inline-flex; align-items: center; min-height: 36px; margin-top: 12px; padding: 8px 12px; background: var(--terminal-green); color: var(--fynx-on-accent); font-size: 11px; font-weight: 700; text-decoration: none; }
+
+/* Research: existing horizontal tools remain, with source context at the side. */
+html body[data-fynx-terminal][data-terminal-page=research] .research-main > .resource-wayfinding { margin: 14px 0; padding-bottom: 8px; }
+html body[data-fynx-terminal][data-terminal-page=research] .desk-heading { padding: 0 0 20px; }
+html body[data-fynx-terminal][data-terminal-page=research] .desk-heading > div { min-width: 0; }
+html body[data-fynx-terminal][data-terminal-page=research] .desk-heading .eyebrow { margin: 0 0 8px; }
+html body[data-fynx-terminal][data-terminal-page=research].research-page .desk-heading h1 { font-size: 36px !important; line-height: 1.08; margin: 0; }
+html body[data-fynx-terminal][data-terminal-page=research] .desk-lead { margin: 8px 0 0; font-size: 13px; }
+html body[data-fynx-terminal][data-terminal-page=research] .desk-layout { border-top: 0; }
+html body[data-fynx-terminal][data-terminal-page=research] #desk-nav { display: flex; flex-wrap: wrap; }
+html body[data-fynx-terminal][data-terminal-page=research] #desk-nav a { flex: 1 1 auto; min-width: 0; justify-content: center; padding: 13px 10px; font-size: 11px; }
+html body[data-fynx-terminal][data-terminal-page=research] #desk-nav :is(.nav-glyph, small),
+html body[data-fynx-terminal][data-terminal-page=research] #desk-nav a > span:last-child { display: none; }
+html body[data-fynx-terminal][data-terminal-page=research] .desk-storage { padding: 12px 0 18px; font-size: 10px; }
+html body[data-fynx-terminal][data-terminal-page=research] .desk-panel { padding-top: 0; }
+html body[data-fynx-terminal][data-terminal-page=research] .panel-heading { border-top: 2px solid var(--terminal-text); padding-top: 12px; margin-bottom: 12px; }
+html body[data-fynx-terminal][data-terminal-page=research] .panel-heading .eyebrow { margin-bottom: 8px; }
+html body[data-fynx-terminal][data-terminal-page=research] .panel-heading h2 { font-size: 27px !important; }
+html body[data-fynx-terminal][data-terminal-page=research] #company-form :is(input, button) { min-height: 36px; padding-block: 8px; }
+html body[data-fynx-terminal][data-terminal-page=research] #directory-status { margin: 8px 0; font-size: 10px; }
+html body[data-fynx-terminal][data-terminal-page=research] .company-results { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; margin: 10px 0 18px; }
+html body[data-fynx-terminal][data-terminal-page=research] .company-result { min-height: 45px; padding: 8px; gap: 6px; }
+html body[data-fynx-terminal][data-terminal-page=research] .company-result > span:first-child { min-width: 0; }
+html body[data-fynx-terminal][data-terminal-page=research] .company-result > span:last-child { flex-shrink: 0; }
+html body[data-fynx-terminal][data-terminal-page=research] .company-result strong { font-size: 11px; }
+html body[data-fynx-terminal][data-terminal-page=research] .company-result small { max-width: 100%; font-size: 9px; }
+html body[data-fynx-terminal][data-terminal-page=research] .terminal-research-rail { border-top: 2px solid var(--terminal-text); padding-top: 10px; }
+html body[data-fynx-terminal][data-terminal-page=research] .terminal-research-rail > .eyebrow { font-size: 11px !important; margin: 0 0 8px; }
+html body[data-fynx-terminal][data-terminal-page=research] .terminal-workbench-links { display: flex; flex-direction: column; }
+html body[data-fynx-terminal][data-terminal-page=research] .terminal-workbench-links a { padding: 10px 0; border-bottom: 1px solid var(--terminal-line); color: var(--terminal-text); text-decoration: none; }
+html body[data-fynx-terminal][data-terminal-page=research] .terminal-workbench-links strong { display: block; font-size: 12px; line-height: 1.5; }
+html body[data-fynx-terminal][data-terminal-page=research] .terminal-workbench-links small { display: block; margin-top: 3px; color: var(--terminal-muted); font-size: 11px; line-height: 1.5; }
+html body[data-fynx-terminal][data-terminal-page=research] .terminal-research-rail .sidebar-foot { display: block; margin-top: 20px; padding: 16px; border: 0; background: var(--terminal-panel); font-size: 11px; line-height: 1.6; }
+html body[data-fynx-terminal][data-terminal-page=research] .terminal-research-rail .sidebar-foot strong { display: block; margin-bottom: 8px; font-size: 10px; text-transform: uppercase; }
+html body[data-fynx-terminal][data-terminal-page=research] .terminal-research-rail .sidebar-foot a { display: inline-block; margin-top: 10px; }
+html body[data-fynx-terminal][data-terminal-page=research] .research-table :is(th, td) { padding: 9px 10px; font-size: 11px; }
+html body[data-fynx-terminal][data-terminal-page=research] .table-wrap { max-width: 100%; overflow-x: auto; }
+html body[data-fynx-terminal][data-terminal-page=research] .metric-grid { gap: 0; }
+html body[data-fynx-terminal][data-terminal-page=research] .metric-value { font-size: 24px; }
+
+/* Profile identity and actual account statistics share one compact strip. */
+html body[data-fynx-terminal][data-terminal-page=profile] .section-header { margin-bottom: 22px; }
+html body[data-fynx-terminal][data-terminal-page=profile] .section-header h2 { font-size: 36px; }
+html body[data-fynx-terminal][data-terminal-page=profile] .profile-header { display: grid; grid-template-columns: 46px minmax(150px, 1fr) minmax(350px, 1.5fr) auto; grid-template-rows: auto auto auto; align-items: center; gap: 3px 18px; padding: 20px; }
+html body[data-fynx-terminal][data-terminal-page=profile] :is(.profile-info, .profile-name-row) { display: contents; }
+html body[data-fynx-terminal][data-terminal-page=profile] .profile-avatar-large { grid-column: 1; grid-row: 1 / 4; width: 46px; height: 46px; font-size: 17px; }
+html body[data-fynx-terminal][data-terminal-page=profile] #profileName { grid-column: 2; grid-row: 1; font-size: 20px; margin: 0; }
+html body[data-fynx-terminal][data-terminal-page=profile] #profileEmail { grid-column: 2; grid-row: 2; overflow-wrap: anywhere; font-size: 11px; }
+html body[data-fynx-terminal][data-terminal-page=profile] #profileDesc { grid-column: 2; grid-row: 3; font-size: 11px; }
+html body[data-fynx-terminal][data-terminal-page=profile] #editProfileBtn { grid-column: 4; grid-row: 1 / 4; min-height: 35px; padding: 8px 10px; font-size: 10px; white-space: nowrap; }
+html body[data-fynx-terminal][data-terminal-page=profile] .profile-stats { grid-column: 3; grid-row: 1 / 4; margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 0; border-left: 1px solid var(--terminal-line); }
+html body[data-fynx-terminal][data-terminal-page=profile] .profile-stat-item { padding: 8px 12px; text-align: left; }
+html body[data-fynx-terminal][data-terminal-page=profile] .profile-stat-item h4 { font-size: 8px; letter-spacing: .08em; }
+html body[data-fynx-terminal][data-terminal-page=profile] .profile-stat-item p { margin-top: 7px; font-size: 16px; line-height: 1.4; }
+html body[data-fynx-terminal][data-terminal-page=profile] .terminal-profile-layout { margin-top: 28px; grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr); }
+html body[data-fynx-terminal][data-terminal-page=profile] .settings-section-title { margin: 0; padding-top: 12px; font-size: 11px; }
+html body[data-fynx-terminal][data-terminal-page=profile] .settings-item { padding: 16px 0; }
+html body[data-fynx-terminal][data-terminal-page=profile] .settings-icon { width: 17px; height: 17px; }
+html body[data-fynx-terminal][data-terminal-page=profile] .settings-label { font-size: 12px; }
+html body[data-fynx-terminal][data-terminal-page=profile] .settings-value { margin-top: 3px; color: var(--terminal-muted); font-size: 11px; }
+html body[data-fynx-terminal][data-terminal-page=profile] .terminal-profile-aside > .settings-item { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; border-top: 2px solid var(--terminal-text); border-bottom: 0; padding: 12px 0 16px; }
+html body[data-fynx-terminal][data-terminal-page=profile] .terminal-profile-aside > .settings-item .settings-label { text-transform: uppercase; font-size: 11px; }
+html body[data-fynx-terminal][data-terminal-page=profile] .terminal-profile-aside [data-theme-control] { border-radius: 0; padding: 8px 12px; min-height: 36px; font-size: 11px; }
+html body[data-fynx-terminal][data-terminal-page=profile] .terminal-pro-link { display: block; margin-top: 18px; padding: 22px; background: #133b2b; color: #fff; font-size: 23px; font-weight: 750; line-height: 1.15; letter-spacing: -.03em; text-decoration: none; }
+html body[data-fynx-terminal][data-terminal-page=profile] .terminal-pro-link span { display: block; margin-bottom: 16px; font-size: 9px; letter-spacing: .1em; }
+
+/* Calendar retains each live module and its existing tab/route handling. */
+html body[data-fynx-terminal][data-terminal-page=calendar] .terminal-calendar-heading { margin-bottom: 20px; }
+html body[data-fynx-terminal][data-terminal-page=calendar] .calendar-mode-toggle { margin-bottom: 24px; }
+html body[data-fynx-terminal][data-terminal-page=calendar] .terminal-calendar-main > .mode-content > .panel { border: 0 !important; }
+html body[data-fynx-terminal][data-terminal-page=calendar] .terminal-calendar-rail .hub-directory { margin: 0; padding: 10px 0 0; border-top: 2px solid var(--terminal-text); }
+html body[data-fynx-terminal][data-terminal-page=calendar] .terminal-calendar-rail .hub-directory h2 { font-size: 11px !important; text-transform: uppercase; margin-bottom: 12px; }
+html body[data-fynx-terminal][data-terminal-page=calendar] .terminal-calendar-rail .hub-directory > p { margin-bottom: 14px; color: var(--terminal-muted); font-size: 11px; line-height: 1.6; }
+html body[data-fynx-terminal][data-terminal-page=calendar] .terminal-calendar-rail .hub-directory-links { display: block; }
+html body[data-fynx-terminal][data-terminal-page=calendar] .terminal-calendar-rail .hub-directory-links a { display: block; margin: 0; padding: 12px 0; border: 0; border-bottom: 1px solid var(--terminal-line); }
+html body[data-fynx-terminal][data-terminal-page=calendar] .terminal-calendar-rail .hub-directory-links strong { font-size: 12px; }
+html body[data-fynx-terminal][data-terminal-page=calendar] .terminal-calendar-rail .hub-directory-links span { font-size: 11px; line-height: 1.55; color: var(--terminal-muted); }
+
+/* Membership: contiguous tier cards and a comparison derived from those tiers. */
+html body[data-fynx-terminal][data-terminal-page=pro] .pro-hero { padding: 8px 0 27px; gap: 44px; }
+html body[data-fynx-terminal][data-terminal-page=pro] .pro-hero h1 { font-size: 46px; margin: 11px 0 17px; max-width: 580px; }
+html body[data-fynx-terminal][data-terminal-page=pro] .pro-hero .intro { font-size: 13px; line-height: 1.6; }
+html body[data-fynx-terminal][data-terminal-page=pro] .membership { padding: 20px; }
+html body[data-fynx-terminal][data-terminal-page=pro] .membership h2 { font-size: 25px; }
+html body[data-fynx-terminal][data-terminal-page=pro] .section-heading { margin: 24px 0 18px; }
+html body[data-fynx-terminal][data-terminal-page=pro] .section-heading h2 { font-size: 30px; }
+html body[data-fynx-terminal][data-terminal-page=pro] .plan { padding: 20px; }
+html body[data-fynx-terminal][data-terminal-page=pro] .plan.featured { padding-top: 18px; }
+html body[data-fynx-terminal][data-terminal-page=pro] .plan h3 { font-size: 36px; margin: 12px 0; }
+html body[data-fynx-terminal][data-terminal-page=pro] .plan p { font-size: 12px; }
+html body[data-fynx-terminal][data-terminal-page=pro] .plan li { margin: 8px 0; font-size: 11px; }
+html body[data-fynx-terminal][data-terminal-page=pro] .fine { margin-bottom: 26px; }
+html body[data-fynx-terminal][data-terminal-page=pro] .terminal-plan-comparison { margin-bottom: 30px; }
+html body[data-fynx-terminal][data-terminal-page=pro] .terminal-comparison-scroll { overflow-x: auto; }
+html body[data-fynx-terminal][data-terminal-page=pro] .terminal-plan-comparison table { width: 100%; min-width: 480px; border-collapse: collapse; font-size: 11px; }
+html body[data-fynx-terminal][data-terminal-page=pro] .terminal-plan-comparison :is(td, th) { padding: 9px 12px; border-bottom: 1px solid var(--terminal-line); text-align: center; }
+html body[data-fynx-terminal][data-terminal-page=pro] .terminal-plan-comparison th:first-child { text-align: left; padding-left: 0; }
+html body[data-fynx-terminal][data-terminal-page=pro] .terminal-plan-comparison thead th { color: var(--terminal-muted); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
+html body[data-fynx-terminal][data-terminal-page=pro] .terminal-plan-comparison tbody th { font-size: 11px; font-weight: 600; }
+html body[data-fynx-terminal][data-terminal-page=pro] .terminal-plan-comparison a { color: var(--terminal-text); text-decoration: none; }
+html body[data-fynx-terminal][data-terminal-page=pro] .terminal-plan-comparison a:hover { text-decoration: underline; }
+html body[data-fynx-terminal][data-terminal-page=pro] .terminal-included { color: var(--terminal-green); font-weight: 700; }
+html body[data-fynx-terminal][data-terminal-page=pro] .products { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+html body[data-fynx-terminal][data-terminal-page=pro] .products .product { padding: 17px; min-height: 210px; }
+html body[data-fynx-terminal][data-terminal-page=pro] .products .product h3 { font-size: 16px; }
+html body[data-fynx-terminal][data-terminal-page=pro] .products .product p { font-size: 11px; line-height: 1.6; }
+html body[data-fynx-terminal][data-terminal-page=pro] .terminal-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+/* Public landing uses the same tight editorial rhythm with its own content. */
+html body[data-fynx-terminal][data-terminal-page=landing] .hero { padding-block: 36px !important; gap: 44px; }
+html body[data-fynx-terminal][data-terminal-page=landing] .hero h1 { font-size: clamp(38px, 4.1vw, 56px) !important; }
+html body[data-fynx-terminal][data-terminal-page=landing] .hero p { font-size: 14px !important; }
+html body[data-fynx-terminal][data-terminal-page=landing] .fw-benefit-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+html body[data-fynx-terminal][data-terminal-page=landing] .fw-benefit { padding: 20px; min-height: 180px; }
+html body[data-fynx-terminal][data-terminal-page=landing] .fw-benefit h3 { font-size: 19px; }
+html body[data-fynx-terminal][data-terminal-page=landing] .fw-benefit p { font-size: 12px; line-height: 1.6; }
+html body[data-fynx-terminal][data-terminal-page=landing] .fw-tool-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+html body[data-fynx-terminal][data-terminal-page=landing] .fw-tool { min-height: 160px; padding: 17px; }
+
+@media (max-width: 1100px) {
+  html body[data-fynx-terminal][data-terminal-page] :is(.terminal-learning-layout, .terminal-calendar-layout, .terminal-research-layout) { grid-template-columns: minmax(0, 1fr) 235px; gap: 24px; }
+  html body[data-fynx-terminal][data-terminal-page=learn] .learning-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html body[data-fynx-terminal][data-terminal-page=profile] .profile-header { grid-template-columns: 46px minmax(160px, 1fr) auto; }
+  html body[data-fynx-terminal][data-terminal-page=profile] .profile-stats { grid-column: 1 / -1; grid-row: 4; margin-top: 18px; border-left: 0; border-top: 1px solid var(--terminal-line); padding-top: 12px; }
+  html body[data-fynx-terminal][data-terminal-page=profile] #editProfileBtn { grid-column: 3; }
+  html body[data-fynx-terminal][data-terminal-page=landing] .fw-benefit-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  html body[data-fynx-terminal][data-terminal-page=landing] .fw-tool-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  html body[data-fynx-terminal][data-terminal-page=pro] .products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 850px) {
+  html body[data-fynx-terminal][data-terminal-page] :is(.terminal-learning-layout, .terminal-calendar-layout, .terminal-research-layout, .terminal-profile-layout) { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  html body[data-fynx-terminal][data-terminal-page=learn] .learning-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  html body[data-fynx-terminal][data-terminal-page=learn] .terminal-reading-rail { display: grid; grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr); gap: 24px; }
+  html body[data-fynx-terminal][data-terminal-page=learn] .terminal-quiz-prompt { margin: 0; align-self: start; }
+  html body[data-fynx-terminal][data-terminal-page=research] .terminal-workbench-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+  html body[data-fynx-terminal][data-terminal-page=calculator] .hero:has(.quick-calc) { grid-template-columns: minmax(0, 1fr) 270px; gap: 18px 24px; }
+  html body[data-fynx-terminal][data-terminal-page=research] .company-results { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  html body[data-fynx-terminal][data-terminal-page] .terminal-page-title { font-size: 31px !important; }
+  html body[data-fynx-terminal][data-terminal-page] .resource-wayfinding { flex-wrap: wrap; gap: 8px 12px; }
+  html body[data-fynx-terminal][data-terminal-page=journal] .journal-top { padding-bottom: 18px; gap: 16px; }
+  html body[data-fynx-terminal][data-terminal-page=journal] .jt-title b { font-size: 32px; }
+  html body[data-fynx-terminal][data-terminal-page=journal] .jbtn { margin-right: 10px; font-size: 10px; }
+  html body[data-fynx-terminal][data-terminal-page=journal] #view-dash .stat { grid-column: span 6 !important; border-right: 1px solid var(--terminal-line); padding: 13px; }
+  html body[data-fynx-terminal][data-terminal-page=journal] #view-dash .stat ~ .card:last-child { margin-left: 0; }
+  html body[data-fynx-terminal][data-terminal-page=calculator] .hero:has(.quick-calc) { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  html body[data-fynx-terminal][data-terminal-page=calculator] .quick-calc { grid-column: 1; }
+  html body[data-fynx-terminal][data-terminal-page=calculator] .hero-card > h2 { font-size: 32px !important; }
+  html body[data-fynx-terminal][data-terminal-page=calculator] .calc-btn { min-height: 44px; }
+  html body[data-fynx-terminal][data-terminal-page=learn] .learning-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html body[data-fynx-terminal][data-terminal-page=learn] .learning-card { padding: 16px; min-height: 222px; }
+  html body[data-fynx-terminal][data-terminal-page=learn] .learning-card h2 { font-size: 21px; }
+  html body[data-fynx-terminal][data-terminal-page=learn] .learning-card > a { min-height: 40px; }
+  html body[data-fynx-terminal][data-terminal-page=learn] .terminal-reading-rail { display: block; }
+  html body[data-fynx-terminal][data-terminal-page=learn] .terminal-quiz-prompt { margin-top: 24px; }
+  html body[data-fynx-terminal][data-terminal-page=research].research-page .desk-heading h1 { font-size: 31px !important; }
+  html body[data-fynx-terminal][data-terminal-page=research] #desk-nav a { flex-basis: 45%; min-height: 44px; justify-content: flex-start; }
+  html body[data-fynx-terminal][data-terminal-page=research] .terminal-workbench-links { grid-template-columns: minmax(0, 1fr); }
+  html body[data-fynx-terminal][data-terminal-page=profile] .profile-header { grid-template-columns: 40px minmax(0, 1fr); padding: 17px; gap: 4px 13px; }
+  html body[data-fynx-terminal][data-terminal-page=profile] #editProfileBtn { grid-column: 1 / -1; grid-row: 5; justify-self: start; margin-top: 14px; min-height: 40px; }
+  html body[data-fynx-terminal][data-terminal-page=profile] .profile-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html body[data-fynx-terminal][data-terminal-page=profile] .profile-stat-item { border-right: 0; padding: 12px 4px; }
+  html body[data-fynx-terminal][data-terminal-page=pro] .pro-hero h1 { font-size: 36px; }
+  html body[data-fynx-terminal][data-terminal-page=pro] .products { grid-template-columns: minmax(0, 1fr); }
+  html body[data-fynx-terminal][data-terminal-page=landing] .hero { gap: 28px; padding-block: 28px !important; }
+  html body[data-fynx-terminal][data-terminal-page=landing] .hero h1 { font-size: 38px !important; }
+  html body[data-fynx-terminal][data-terminal-page=landing] :is(.fw-benefit-grid, .fw-tool-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 360px) {
+  html body[data-fynx-terminal][data-terminal-page=research] .company-results { grid-template-columns: minmax(0, 1fr); }
+  html body[data-fynx-terminal][data-terminal-page=learn] .learning-grid,
+  html body[data-fynx-terminal][data-terminal-page=landing] .fw-benefit-grid { grid-template-columns: minmax(0, 1fr); }
+}

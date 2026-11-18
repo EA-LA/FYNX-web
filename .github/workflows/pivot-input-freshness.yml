@@ -1,0 +1,26 @@
+name: Pivot Calculator Input Freshness
+
+on:
+  pull_request:
+    paths:
+      - 'tools/pivot.html'
+      - 'scripts/test-pivot-input-freshness.cjs'
+      - '.github/workflows/pivot-input-freshness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pivot-input-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax
+        run: node --check scripts/test-pivot-input-freshness.cjs
+      - name: Pivot controller behavioral regressions
+        run: node --test scripts/test-pivot-input-freshness.cjs

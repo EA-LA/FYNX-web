@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script><script src="/assets/js/auth-gate.js?v=20261113-lock"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <script>
+    (function(){
+      const t = window.FynxPreferences?.getItem("fynx_theme") === "dark" ? "dark" : "light";
+      document.documentElement.dataset.theme = t;
+      document.documentElement.style.backgroundColor = t === "light" ? "#fbfbfb" : "#000000";
+    })();
+  </script>
+  <title>Market Overview: Trading Tools, News &amp; Learning | FYNX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/app-shell.css" />
+  <link rel="stylesheet" href="assets/css/mobile-fixes.css">
+  <style>
+    :root{
+      --bg:#ffffff;
+      --surface:#ffffff;
+      --surface-2:#f7f7f7;
+      --text:#0f0f0f;
+      --muted:#727272;
+      --line:#e7e7e7;
+      --shadow:0 16px 42px rgba(35, 35, 35, 0.08);
+      --shadow-2:0 10px 30px rgba(23, 23, 23, 0.08);
+      --radius:14px;
+      --nav-width:120px;
+      --chip:#f4f4f4;
+      --chip-line:#e7e7e7;
+      /* STRICT black/white only */
+      --pos:#181818;
+      --neg:#181818;
+      --hero-dot: rgba(0, 0, 0, 0.06);
+      /* ✅ FIX #1: Buttons follow theme strictly:
+         Light mode => fully white button (black text)
+         Dark mode  => fully black button (white text)
+      */
+      --btn-bg:#ffffff;
+      --btn-text:#0f0f0f;
+      --btn-border:#0f0f0f;
+      --card-bg:#fafafa;
+      --card-hover:#f5f5f5;
+      --ring: rgba(0, 0, 0, 0.12);
+      --glow: rgba(0, 0, 0, 0.08);
+      --alive: rgba(0, 0, 0, 0.06);
+    }
+    body.dark-mode{
+      --bg:#000000;
+      --surface:#000000;
+      --surface-2:rgba(255, 255, 255, 0.04);
+      --text:#ffffff;
+      --muted:rgba(255, 255, 255, 0.55);
+      --line:rgba(255, 255, 255, 0.10);
+      --shadow:0 16px 42px rgba(0, 0, 0, 0.45);
+      --shadow-2:0 12px 34px rgba(0, 0, 0, 0.55);
+      --chip:rgba(255, 255, 255, 0.06);
+      --chip-line:rgba(255, 255, 255, 0.10);
+      --hero-dot: rgba(255, 255, 255, 0.08);
+      /* ✅ FIX #1: dark mode primary button = fully black */
+      --btn-bg:#000000;
+      --btn-text:#ffffff;
+      --btn-border:#ffffff;
+      --card-bg:rgba(255, 255, 255, 0.03);
+      --card-hover:rgba(255, 255, 255, 0.05);
+      --ring: rgba(255, 255, 255, 0.14);
+      --glow: rgba(255, 255, 255, 0.10);
+      --alive: rgba(255, 255, 255, 0.08);
+    }
+    *{ margin:0; padding:0; box-sizing:border-box; }
+    body{
+      font-family:"Manrope", system-ui, -apple-system, Segoe UI, sans-serif;
+      background:
+        radial-gradient(circle at 1px 1px, var(--hero-dot) 1px, transparent 1px) 0 0 / 18px 18px,
+        linear-gradient(var(--bg), var(--bg));
+      color:var(--text);
+      height:100vh;
+      overflow:hidden;
+    }
+    /* Subtle grid fade */
+    .bg-grid{
+      position:fixed; inset:0;
+      pointer-events:none;
+      background:
+        linear-gradient(to right, transparent 0%, transparent 45%, rgba(0, 0, 0, 0.04) 50%, transparent 55%, transparent 100%),
+        linear-gradient(to bottom, transparent 0%, transparent 45%, rgba(0, 0, 0, 0.04) 50%, transparent 55%, transparent 100%);
+      opacity:0.45;
+      mix-blend-mode:normal;
+    }
+    body.dark-mode .bg-grid{
+      background:
+        linear-gradient(to right, transparent 0%, transparent 45%, rgba(255, 255, 255, 0.06) 50%, transparent 55%, transparent 100%),
+        linear-gradient(to bottom, transparent 0%, transparent 45%, rgba(255, 255, 255, 0.06) 50%, transparent 55%, transparent 100%);
+      opacity:0.35;
+    }
+    /* Micro-animations (clean + alive) */
+    @keyframes riseIn {
+      from { transform: translateY(10px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes softPulse {
+      0%,100% { opacity: .55; transform: translateY(0); }
+      50%     { opacity: 1; transform: translateY(-1px); }
+    }
+    @keyframes shimmerLine {
+      0% { transform: translateX(-40%); opacity: 0; }
+      30% { opacity: .9; }
+      100% { transform: translateX(140%); opacity: 0; }
+    }
+    @keyframes scan {
+      0% { transform: translateX(-30%); opacity: 0; }
+      30% { opacity: .95; }
+      100% { transform: translateX(130%); opacity: 0; }
+    }
+    .dashboard-container{ display:flex; height:100vh; width:100vw; }
+    /* NAV */
+    .nav-panel{
+      width:var(--nav-width);
+      background:color-mix(in oklab, var(--surface) 92%, transparent);
+      border-right:1px solid var(--line);
+      position:fixed;
+      left:0; top:0;
+      height:100vh;
+      z-index:100;
+      display:flex;
+      flex-direction:column;
+      backdrop-filter: blur(10px);
+    }
+    .nav-logo{
+      padding:30px 0;
+      text-align:center;
+      border-bottom:1px solid var(--line);
+    }
+    .nav-logo h1{
+      font-size:18px;
+      font-weight:800;
+      letter-spacing:-0.6px;
+      color:var(--text);
+    }
+    .nav-menu{
+      flex:1;
+      padding:18px 0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+    }
+    .nav-item{
+      width:86px;
+      padding:14px 0;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      cursor:pointer;
+      transition:all .18s ease;
+      position:relative;
+      border-radius:12px;
+      color:var(--muted);
+      border:1px solid transparent;
+      user-select:none;
+    }
+    .nav-item:hover{
+      background:var(--surface-2);
+      color:var(--text);
+      border-color:var(--line);
+      transform:translateY(-1px);
+    }
+    .nav-item.active{
+      background:var(--surface-2);
+      color:var(--text);
+      border-color:transparent;
+      box-shadow:var(--shadow-2);
+    }
+    .nav-item.active::after{
+      content:"";
+      position:absolute;
+      left:-1px;
+      top:50%;
+      transform:translateY(-50%);
+      width:3px;
+      height:26px;
+      background:var(--text);
+      border-radius:0 3px 3px 0;
+      opacity:0.9;
+    }
+    body.dark-mode .nav-item.active::after{ background:#ffffff; opacity:0.9; }
+    .nav-icon{
+      width:22px; height:22px;
+      stroke:currentColor;
+      stroke-width:1.7;
+      fill:none;
+      opacity:0.9;
+    }
+    .nav-label{
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:0.2px;
+    }
+    /* MAIN */
+    .main-content{
+      margin-left:var(--nav-width);
+      flex:1;
+      height:100vh;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    /* TOP BAR */
+    .top-bar{
+      height:72px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 28px;
+      background:color-mix(in oklab, var(--surface) 90%, transparent);
+      backdrop-filter: blur(10px);
+      position:sticky;
+      top:0;
+      z-index:20;
+    }
+    .page-title{
+      font-size:14px;
+      font-weight:700;
+      color:var(--muted);
+      letter-spacing:0.2px;
+    }
+    .top-bar-right{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .chip{
+      border:1px solid var(--chip-line);
+      background:var(--chip);
+      color:var(--muted);
+      border-radius:999px;
+      font-size:12px;
+      padding:8px 12px;
+      font-weight:700;
+    }
+    .icon-btn{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:color-mix(in oklab, var(--surface) 92%, transparent);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      color:var(--muted);
+      transition:0.18s ease;
+    }
+    .icon-btn:hover{
+      color:var(--text);
+      border-color:color-mix(in oklab, var(--text) 28%, var(--line));
+      transform:translateY(-1px);
+    }
+    .icon-btn svg{ width:18px; height:18px; stroke:currentColor; stroke-width:1.7; fill:none; }
+    .user-avatar{
+      width:34px; height:34px;
+      border-radius:999px;
+      background:var(--surface-2);
+      border:1px solid var(--line);
+      display:grid;
+      place-items:center;
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+      transition:0.18s ease;
+      cursor:pointer;
+    }
+    .user-avatar:hover{
+      transform:translateY(-1px);
+      border-color:color-mix(in oklab, var(--text) 28%, var(--line));
+      color:var(--text);
+    }
+    /* CONTENT */
+    .content-area{
+      flex:1;
+      overflow-y:auto;
+      padding:24px 28px 28px;
+    }
+    .content-area::-webkit-scrollbar{ width:6px; }
+    .content-area::-webkit-scrollbar-track{ background:transparent; }
+    .content-area::-webkit-scrollbar-thumb{ background:color-mix(in oklab, var(--muted) 22%, transparent); border-radius:6px; }
+    .content-area::-webkit-scrollbar-thumb:hover{ background:color-mix(in oklab, var(--muted) 35%, transparent); }
+    /* HERO */
+    .hero{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:color-mix(in oklab, var(--surface) 92%, transparent);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      position:relative;
+      margin-bottom:16px;
+      animation: riseIn .38s ease both;
+    }
+    .hero::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(900px 320px at 18% 0%, rgba(0, 0, 0, 0.06) 0%, transparent 60%),
+        radial-gradient(700px 260px at 92% 0%, rgba(0, 0, 0, 0.05) 0%, transparent 60%);
+      pointer-events:none;
+    }
+    body.dark-mode .hero::before{
+      background:
+        radial-gradient(900px 320px at 18% 0%, rgba(255, 255, 255, 0.08) 0%, transparent 60%),
+        radial-gradient(700px 260px at 92% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 60%);
+    }
+    .hero::after{
+      content:"";
+      position:absolute;
+      top:0; left:-40%;
+      width:40%;
+      height:100%;
+      background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--text) 10%, transparent), transparent);
+      opacity:.14;
+      pointer-events:none;
+      animation: shimmerLine 6.5s ease-in-out infinite;
+    }
+    body.dark-mode .hero::after{
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+      opacity:.12;
+    }
+    .hero-inner{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      padding:18px 18px 16px;
+      position:relative;
+      z-index:1;
+    }
+    /* Greeting block */
+    .greeting{
+      display:grid;
+      gap:6px;
+      margin-bottom:10px;
+    }
+    .greeting .hello{
+      font-size:20px;
+      font-weight:900;
+      letter-spacing:-0.4px;
+      color:var(--text);
+      line-height:1.15;
+    }
+    .greeting .meta{
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+      letter-spacing:0.2px;
+    }
+    .greeting .daily{
+      margin-top:6px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: color-mix(in oklab, var(--surface) 88%, transparent);
+      box-shadow: 0 1px 0 color-mix(in oklab, var(--text) 8%, transparent);
+      font-size:13px;
+      line-height:1.45;
+      color: var(--text);
+      font-weight:800;
+      animation: riseIn .45s ease both;
+    }
+    .greeting .daily span{
+      color: var(--muted);
+      font-weight:900;
+      margin-right:6px;
+      letter-spacing:0.2px;
+    }
+    /* Primary button (kept in code but not used on Home now) */
+    .btn{
+      border-radius:999px;
+      padding:10px 14px;
+      font-size:13px;
+      font-weight:900;
+      cursor:pointer;
+      transition:0.18s ease;
+      border:1px solid var(--line);
+      background:var(--surface);
+      color:var(--text);
+    }
+    .btn:hover{
+      transform:translateY(-1px);
+      border-color:color-mix(in oklab, var(--text) 22%, var(--line));
+    }
+    .btn.primary{
+      background:var(--btn-bg);
+      color:var(--btn-text);
+      border-color:var(--btn-border);
+    }
+    .btn.primary:hover{ opacity:0.92; }
+    /* ✅ Market Hours (more alive like example) */
+    .market-hours{
+      width:100%;
+      border:1px solid var(--line);
+      background:var(--surface);
+      border-radius:16px;
+      padding:12px;
+      display:grid;
+      gap:12px;
+      position:relative;
+      overflow:hidden;
+      margin-top:10px;
+    }
+    /* Alive background + scan */
+    .market-hours::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(520px 180px at 12% 0%, var(--glow) 0%, transparent 62%),
+        radial-gradient(520px 180px at 92% 0%, var(--glow) 0%, transparent 62%),
+        linear-gradient(180deg, transparent, var(--alive), transparent);
+      opacity:1;
+      pointer-events:none;
+    }
+    .market-hours::after{
+      content:"";
+      position:absolute;
+      top:0; left:-30%;
+      width:30%;
+      height:100%;
+      background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--text) 12%, transparent), transparent);
+      opacity:.12;
+      pointer-events:none;
+      animation: scan 4.8s ease-in-out infinite;
+    }
+    body.dark-mode .market-hours::after{
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+      opacity:.12;
+    }
+    .mh-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+    .mh-title{
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:0.9px;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+    .mh-updated{
+      font-size:12px;
+      font-weight:900;
+      color:var(--muted);
+    }
+    .mh-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+    .mh-card{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:color-mix(in oklab, var(--surface-2) 94%, transparent);
+      padding:10px;
+      display:grid;
+      gap:8px;
+      min-height:92px;
+      transition:0.18s ease;
+      position:relative;
+      overflow:hidden;
+    }
+    .mh-card:hover{
+      transform:translateY(-1px);
+      border-color:color-mix(in oklab, var(--text) 18%, var(--line));
+      background:color-mix(in oklab, var(--surface-2) 90%, transparent);
+    }
+    /* Animated inner glow on open */
+    .mh-card.open::before{
+      content:"";
+      position:absolute; inset:-1px;
+      background:
+        radial-gradient(260px 110px at 20% 0%, color-mix(in oklab, var(--text) 10%, transparent), transparent 60%),
+        radial-gradient(260px 110px at 80% 0%, color-mix(in oklab, var(--text) 10%, transparent), transparent 60%);
+      opacity:.55;
+      pointer-events:none;
+    }
+    body.dark-mode .mh-card.open::before{
+      background:
+        radial-gradient(260px 110px at 20% 0%, rgba(255, 255, 255, 0.12), transparent 60%),
+        radial-gradient(260px 110px at 80% 0%, rgba(255, 255, 255, 0.10), transparent 60%);
+      opacity:.55;
+    }
+    .mh-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      position:relative;
+      z-index:1;
+    }
+    .mh-name{
+      font-size:11px;
+      font-weight:1000;
+      letter-spacing:0.9px;
+      text-transform:uppercase;
+      color:var(--text);
+      opacity:0.95;
+    }
+    .mh-badge{
+      font-size:10px;
+      font-weight:1000;
+      letter-spacing:0.8px;
+      text-transform:uppercase;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 86%, transparent);
+      color: var(--muted);
+      white-space:nowrap;
+    }
+    .mh-badge.open{
+      color: var(--text);
+      border-color: color-mix(in oklab, var(--text) 26%, var(--line));
+      background: color-mix(in oklab, var(--surface) 92%, transparent);
+    }
+    body.dark-mode .mh-badge.open{
+      border-color: rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.06);
+      color:#ffffff;
+    }
+    .mh-time{
+      font-size:12px;
+      font-weight:900;
+      color:var(--muted);
+      line-height:1.3;
+      position:relative;
+      z-index:1;
+    }
+    /* Open dot */
+    .mh-dotrow{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      position:relative;
+      z-index:1;
+    }
+    .dot{
+      width:8px; height:8px;
+      border-radius:999px;
+      background: var(--text);
+      opacity:0.22;
+    }
+    .dot.open{
+      opacity:0.95;
+      animation: softPulse 2.2s ease-in-out infinite;
+    }
+    /* Progress bar */
+    .mh-bar{
+      height:8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 88%, transparent);
+      overflow:hidden;
+      position:relative;
+      z-index:1;
+    }
+    .mh-fill{
+      height:100%;
+      width:0%;
+      background: var(--text);
+      opacity:0.22;
+      transition: width .35s ease;
+    }
+    body.dark-mode .mh-fill{
+      background:#ffffff;
+      opacity:0.18;
+    }
+    /* Existing pulse (unchanged style) */
+    .mini-pulse{
+      width:100%;
+      border:1px solid var(--line);
+      background:var(--surface);
+      border-radius:14px;
+      padding:12px;
+      display:grid;
+      gap:8px;
+      margin-top:12px;
+    }
+    .pulse-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+      letter-spacing:0.2px;
+    }
+    .pulse-values{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:2px;
+    }
+    .pulse-card{
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:var(--surface-2);
+      padding:10px;
+      display:grid;
+      gap:6px;
+    }
+    .pulse-card .k{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:900;
+      letter-spacing:0.6px;
+      text-transform:uppercase;
+    }
+    .pulse-card .v{
+      font-size:16px;
+      font-weight:900;
+      color:var(--text);
+      letter-spacing:-0.3px;
+    }
+    .pulse-card .c{
+      font-size:12px;
+      font-weight:900;
+      color: var(--muted);
+    }
+    /* GRID CARDS */
+    .card-grid{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:16px;
+      margin-bottom:16px;
+    }
+    .dashboard-card{
+      background:var(--card-bg);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px;
+      transition:0.18s ease;
+      box-shadow:var(--shadow-2);
+      position:relative;
+      overflow:hidden;
+      animation: riseIn .42s ease both;
+    }
+    .dashboard-card:hover{
+      background:var(--card-hover);
+      border-color:color-mix(in oklab, var(--text) 14%, var(--line));
+      transform:translateY(-2px);
+    }
+    .card-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:12px;
+    }
+    .card-title{
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:0.9px;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+    .card-icon{
+      width:16px; height:16px;
+      stroke:color-mix(in oklab, var(--muted) 70%, transparent);
+      stroke-width:1.7;
+      fill:none;
+    }
+    .card-value{
+      font-size:30px;
+      font-weight:900;
+      letter-spacing:-1px;
+      margin-bottom:6px;
+      color:var(--text);
+    }
+    .card-subtitle{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+    }
+    .card-meta{
+      display:flex;
+      gap:16px;
+      margin-top:14px;
+      padding-top:14px;
+      border-top:1px solid var(--line);
+    }
+    .card-meta-item{ display:flex; flex-direction:column; gap:4px; }
+    .card-meta-label{ font-size:11px; color:var(--muted); font-weight:800; }
+    .card-meta-value{ font-size:13px; font-weight:900; color:var(--text); }
+    .card-large{
+      grid-column:span 3;
+      padding:18px;
+    }
+    .card-section-title{
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:0.9px;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+    /* ✅ NEW: Live Activity + News (black/white, same style) */
+    .live-stack{
+      display:grid;
+      gap:12px;
+    }
+    .live-toprow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .live-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .live-title{
+      font-size:12px;
+      font-weight:1000;
+      letter-spacing:0.9px;
+      text-transform:uppercase;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .live-pill{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 88%, transparent);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:10px;
+      font-weight:1000;
+      letter-spacing:0.8px;
+      text-transform:uppercase;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .live-dot{
+      width:8px; height:8px;
+      border-radius:999px;
+      background: var(--text);
+      opacity:0.95;
+      animation: softPulse 2.2s ease-in-out infinite;
+    }
+    .live-updated{
+      font-size:12px;
+      font-weight:900;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .tv-wrap{
+      border:1px solid var(--line);
+      border-radius:14px;
+      overflow:hidden;
+      background: var(--surface);
+    }
+    .news-wrap{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: color-mix(in oklab, var(--surface-2) 94%, transparent);
+      overflow:hidden;
+    }
+    .news-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 12px;
+      border-bottom:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 92%, transparent);
+    }
+    .news-head .label{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .news-head .label strong{
+      font-size:12px;
+      font-weight:1000;
+      letter-spacing:0.9px;
+      text-transform:uppercase;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .news-sub{
+      font-size:12px;
+      font-weight:900;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .news-list{
+      display:grid;
+      gap:0;
+      max-height:320px;
+      overflow:auto;
+    }
+    .news-list::-webkit-scrollbar{ width:6px; }
+    .news-list::-webkit-scrollbar-track{ background:transparent; }
+    .news-list::-webkit-scrollbar-thumb{ background:color-mix(in oklab, var(--muted) 22%, transparent); border-radius:6px; }
+    .news-list::-webkit-scrollbar-thumb:hover{ background:color-mix(in oklab, var(--muted) 35%, transparent); }
+    .news-item{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 12px;
+      border-top:1px solid var(--line);
+      text-decoration:none;
+      color:inherit;
+      transition:0.18s ease;
+    }
+    .news-item:hover{
+      background: color-mix(in oklab, var(--surface) 90%, transparent);
+      transform: translateY(-1px);
+    }
+    .news-main{
+      display:grid;
+      gap:6px;
+      min-width:0;
+    }
+    .news-source{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:11px;
+      font-weight:1000;
+      color:var(--muted);
+      letter-spacing:0.3px;
+      min-width:0;
+    }
+    .news-source .badge{
+      font-size:10px;
+      font-weight:1000;
+      letter-spacing:0.8px;
+      text-transform:uppercase;
+      padding:5px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: color-mix(in oklab, var(--surface) 88%, transparent);
+      color: var(--muted);
+      white-space:nowrap;
+    }
+    .news-title{
+      font-size:13px;
+      font-weight:900;
+      color:var(--text);
+      line-height:1.35;
+      overflow:hidden;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+    }
+    .news-time{
+      font-size:11px;
+      font-weight:900;
+      color:var(--muted);
+      white-space:nowrap;
+      margin-top:2px;
+    }
+    .news-empty{
+      padding:14px 12px;
+      font-size:13px;
+      font-weight:900;
+      color:var(--muted);
+    }
+    /* ✅ Refresh buttons (news + x) — minimal, same styling */
+    .news-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      white-space:nowrap;
+    }
+    .news-refresh-btn{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+    }
+    /* Mobile */
+    @media (max-width: 980px){
+      .hero-inner{ flex-direction:column; align-items:flex-start; }
+      .mh-grid{ grid-template-columns:1fr 1fr; }
+      .pulse-values{ grid-template-columns:1fr 1fr; }
+      .card-grid{ grid-template-columns:1fr; }
+      .card-large{ grid-column:span 1; }
+      .content-area{ padding:16px; }
+      .top-bar{ padding:0 16px; }
+    }
+    @media (max-width: 720px){
+      .nav-panel{
+        width:100%;
+        height:74px;
+        bottom:0;
+        top:auto;
+        left:0;
+        right:0;
+        border-right:none;
+        border-top:1px solid var(--line);
+        flex-direction:row;
+        align-items:center;
+        justify-content:center;
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .nav-logo{ display:none; }
+      .nav-menu{
+        flex-direction:row;
+        width:100%;
+        justify-content:space-around;
+        padding:8px 10px;
+        gap:8px;
+      }
+      .nav-item{ width:auto; min-width:56px; padding:10px 10px; }
+      .nav-item.active::after{ display:none; }
+      .main-content{
+        margin-left:0;
+        width:100%;
+        padding-bottom: calc(88px + env(safe-area-inset-bottom));
+      }
+      .news-list{ max-height:360px; }
+    }
+  </style>
+  <script type="module" src="assets/js/session-bootstrap.js?v=20261114-consistency-2"></script>
+  <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261114-consistency-2">
+<meta name="description" content="Explore the FYNX market overview with trading tools, financial news and links to finance learning resources.">
+<link rel="canonical" href="https://www.fynxfinanceworld.com/home.html">
+<meta property="og:title" content="Market Overview: Trading Tools, News &amp; Learning | FYNX">
+<meta property="og:description" content="Explore the FYNX market overview with trading tools, financial news and links to finance learning resources.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/home.html">
+<link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261113-site-qa-95" defer></script>
+<meta name="robots" content="noindex,follow">
+<!-- terminal-design:start -->
+<link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
+<link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
+<script src="/assets/js/news-reader-links.js?v=20261115-intelligence-1" defer></script>
+<script src="/assets/js/newsroom-editions.js?v=20261114-consistency-2" defer></script>
+<script src="/assets/js/news-preferences.js?v=20261113-topic-transfer-2" defer></script>
+<script src="/assets/js/newsroom-media.js?v=20261114-consistency-2" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261114-site-qa-97">
+<script src="/assets/js/market-intelligence-data.js?v=20261114-consistency-2" defer></script>
+<script src="/assets/js/terminal-market-data.js?v=20261114-consistency-2" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261114-consistency-2" defer></script>
+<script src="/assets/js/terminal-market-ui.js?v=20261114-consistency-2" defer></script>
+<link rel="stylesheet" href="/assets/css/terminal-home.css?v=20261117-journal-retry">
+<link rel="stylesheet" href="/assets/css/fynx-calendar.css?v=20261115-intelligence-1">
+<script src="/assets/js/fynx-calendar.js?v=20261115-intelligence-1" defer></script>
+<script src="/assets/js/terminal-home.js?v=20261114-consistency-2" defer></script>
+<script src="/assets/js/home-movers.js?v=20261117-independent-sources-1" defer></script>
+<!-- terminal-design:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261114-consistency-2"><script src="/assets/js/company-products-data.js?v=20261113-shared-account-2" defer></script><script src="/assets/js/company-products.js?v=20261114-consistency-2" defer></script><!-- company-products:assets:end -->
+</head>
+
+<body data-protected-page="false" data-fynx-layout="workspace" data-fynx-section="FINANCE WORLD" data-fynx-terminal>
+<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
+<div class="bg-grid"></div>
+
+  <div class="dashboard-container">
+    <!-- LEFT NAVIGATION PANEL -->
+    <nav class="nav-panel">
+      <div class="nav-logo"><h1>FYNX</h1></div>
+
+      <div class="nav-menu">
+        <div class="nav-item active" data-view="home">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span class="nav-label">Home</span>
+        </div>
+
+        <div class="nav-item" data-view="journal">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <span class="nav-label">Journal</span>
+        </div>
+
+        <div class="nav-item" data-view="calculator">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+            <line x1="8" y1="6" x2="16" y2="6"></line>
+            <line x1="8" y1="10" x2="16" y2="10"></line>
+            <line x1="8" y1="14" x2="16" y2="14"></line>
+            <line x1="8" y1="18" x2="16" y2="18"></line>
+          </svg>
+          <span class="nav-label">Calculator</span>
+        </div>
+
+        <div class="nav-item" data-view="news">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+            <line x1="12" y1="11" x2="18" y2="11"></line>
+            <line x1="12" y1="7" x2="18" y2="7"></line>
+          </svg>
+          <span class="nav-label">News</span>
+        </div>
+
+        <div class="nav-item" data-view="calendar">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span class="nav-label">Calendar</span>
+        </div>
+
+        <div class="nav-item" data-view="profile">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span class="nav-label">Profile</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <!-- TOP BAR -->
+      <div class="top-bar">
+        <h1 class="page-title">Home</h1>
+        <div class="top-bar-right">
+          <span class="chip" id="dateChip">Loading...</span>
+
+          <button class="icon-btn" title="Notifications" aria-label="Notifications">
+            <svg viewBox="0 0 24 24">
+              <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </button>
+
+          <div class="user-avatar" id="avatarInitials">FX</div>
+        </div>
+      </div>
+
+      <!-- CONTENT -->
+      <div class="content-area newsroom-content">
+        <h1 class="nr-sr-only">FYNX market briefing</h1>
+        <div class="nr-daily-bar"><div><span id="greetingText" class="nr-greeting">Welcome to your workspace.</span><span id="greetingMeta" class="nr-sr-only">Local time</span><div id="dailyLine" class="nr-daily"><span>Daily</span> Build a considered trading routine.</div></div><form action="/explore.html" class="nr-search" role="search"><label class="nr-sr-only" for="resource-query">Find a tool, lesson or market topic</label><input id="resource-query" name="q" type="search" placeholder="Try margin, position size, bonds…"><button type="submit">Search</button></form></div>
+        <div class="nr-front">
+          <section class="nr-lead" aria-labelledby="briefing-title">
+            <div class="nr-eyebrow"><span class="nr-red-label">Briefing</span><span id="briefingSource">FYNX · Market intelligence</span></div><p class="nr-edition" id="homeEditionStatus" data-edition-label>Selected edition</p>
+            <div id="homeLeadStory" aria-busy="true"><h2 id="briefing-title">Your market briefing.</h2><p class="nr-empty">Checking published headlines and official releases.</p><a href="/news.html">Explore the News desk →</a></div>
+            <div id="homeSecondaryStories" class="nr-secondary"></div>
+          </section>
+          <section class="nr-latest" aria-labelledby="latest-title"><div class="nr-section-head"><h2 id="latest-title">Latest</h2><a href="/news.html">All coverage →</a></div><div id="homeLatestStories" aria-busy="true"><p class="nr-empty">Connecting to the original sources…</p></div><div class="nr-feed-status"><p id="homeBriefingStatus" role="status">Checking coverage.</p><button type="button" id="homeBriefingRefresh">↻ Refresh</button></div></section>
+          <aside class="nr-side" aria-label="Market overview"><section><div class="nr-section-head"><h2>Markets</h2><a href="/tools/research-heatmap.html">Heat map →</a></div><table class="nr-market-table"><thead><tr><th scope="col">Instrument</th><th scope="col">Last</th><th scope="col">Change</th></tr></thead><tbody id="homeQuoteRows"><tr><td colspan="3">Loading indicative quotes…</td></tr></tbody></table><p id="homeQuoteStatus" class="nr-source-note">Source timestamps appear with each quote.</p></section>
+            <figure class="nr-chart" aria-label="SPY adjusted daily market history"><div class="nr-chart-top"><span>MARKET CONTEXT · SPY</span><span id="homeChartValue">—</span></div><div id="homeHistoryChart" class="nr-chart-canvas"><p>Loading adjusted daily prices…</p></div><figcaption id="homeChartSource">S&amp;P 500 ETF · historical daily closes</figcaption></figure>
+            <section class="nr-sessions"><div class="nr-section-head"><h2>Trading sessions</h2><a href="/tools/market-hours.html">Hours →</a></div><div class="mh-grid">
+                  <div class="mh-card" id="cardLondon">
+                    <div class="mh-head">
+                      <div class="mh-name">London</div>
+                      <div class="mh-badge" id="badgeLondon">—</div>
+                    </div>
+                    <div class="mh-dotrow"><span class="dot" id="dotLondon"></span><span class="mh-time" id="timeLondon">—</span></div>
+                    <div class="mh-bar"><div class="mh-fill" id="fillLondon"></div></div>
+                  </div>
+
+                  <div class="mh-card" id="cardNewYork">
+                    <div class="mh-head">
+                      <div class="mh-name">New York</div>
+                      <div class="mh-badge" id="badgeNewYork">—</div>
+                    </div>
+                    <div class="mh-dotrow"><span class="dot" id="dotNewYork"></span><span class="mh-time" id="timeNewYork">—</span></div>
+                    <div class="mh-bar"><div class="mh-fill" id="fillNewYork"></div></div>
+                  </div>
+
+                  <div class="mh-card" id="cardSydney">
+                    <div class="mh-head">
+                      <div class="mh-name">Sydney</div>
+                      <div class="mh-badge" id="badgeSydney">—</div>
+                    </div>
+                    <div class="mh-dotrow"><span class="dot" id="dotSydney"></span><span class="mh-time" id="timeSydney">—</span></div>
+                    <div class="mh-bar"><div class="mh-fill" id="fillSydney"></div></div>
+                  </div>
+
+                  <div class="mh-card" id="cardAsia">
+                    <div class="mh-head">
+                      <div class="mh-name">Asia</div>
+                      <div class="mh-badge" id="badgeAsia">—</div>
+                    </div>
+                    <div class="mh-dotrow"><span class="dot" id="dotAsia"></span><span class="mh-time" id="timeAsia">—</span></div>
+                    <div class="mh-bar"><div class="mh-fill" id="fillAsia"></div></div>
+                  </div>
+                </div><p class="nr-source-note"><span id="mhUpdated">—</span> · Indicative weekday FX sessions. Local holidays may vary.</p></section>
+          </aside>
+        </div>
+        <div class="nr-middle">
+          <section class="nr-calendar"><div class="nr-section-head"><h2>Economic calendar</h2><a href="/calendar.html">Full calendar →</a></div><div id="homeEconomicCalendar" class="nr-calendar-widget"></div><p class="nr-source-note"><span id="homeCalendarScope">High and medium importance releases.</span> <a href="/tools/economic-calendar.html">Open the full calendar</a> for every country, filters and search.</p></section>
+          <section class="nr-journal"><div class="nr-section-head"><h2>Your journal</h2><a href="/journal.html">Open journal →</a></div><div class="nr-journal-grid"><div><span>Recorded trades</span><strong id="homeTrades">—</strong></div><div><span>Win rate</span><strong id="homeWinRate">—</strong></div><div class="nr-journal-pnl"><span>Net realized P/L</span><strong id="homePnl">—</strong></div></div><p id="homeStatsStatus" class="nr-source-note" role="status" aria-live="polite">Sign in to load your results.</p><div class="nr-actions"><button type="button" id="homeJournalRetry" class="nr-journal-retry" hidden>Retry journal sync</button><a class="nr-primary" href="/journal.html">Review your journal</a><a href="/calculator.html">Plan a position</a></div><div class="nr-process"><span>YOUR NEXT STEP</span><h3>Research. Plan. Review.</h3><p>Keep the source, define your risk, and return to your own trading record.</p><a href="/pro.html">Explore Pro tools &amp; plans →</a></div></section>
+        </div>
+        <section class="nr-topic-coverage" aria-labelledby="homeTopicsTitle"><div class="nr-section-head"><h2 id="homeTopicsTitle">Across the newsroom</h2><span data-edition-label>Selected edition</span></div><p class="nr-source-note">Recent reporting by topic, with original sources and publication times. Each desk shows the photo its publisher attached to the top story; a context photograph appears only when no story photo is published.</p><div id="homeTopicSections" class="nr-topic-grid" aria-busy="true"><p class="nr-empty">Checking the latest topic coverage…</p></div></section>
+        <div class="nr-resources">
+          <section><div class="nr-section-head"><h2>Quick access</h2><a href="/tools/research-desk.html">Research Desk · 7 free tools →</a></div><div class="nr-quick-links"><a href="/tools/position-size.html">Position size <span>→</span></a><a href="/tools/margin.html">Margin <span>→</span></a><a href="/tools/risk-reward.html">Risk / reward <span>→</span></a><a href="/tools/economic-calendar.html">Economic calendar <span>→</span></a><a href="/learn.html">Learning paths <span>→</span></a><a href="/tools/research-desk.html">Research Desk <span>→</span></a></div><details class="nr-saved"><summary>Saved in this browser</summary><div class="workspace-resource-list" data-workspace-saved><p>Save tools and lessons from the resource library to keep them here.</p></div></details></section>
+          <section><div class="nr-section-head"><h2>Recently opened</h2><a href="/explore.html">Explore resources →</a></div><div class="workspace-resource-list nr-recent" data-workspace-recent><p>Your recently opened resources will appear here.</p></div></section>
+        </div>
+        <section class="nr-learning"><div class="nr-section-head"><h2>Build your market knowledge</h2><a href="/learn.html">Learning center →</a></div><div class="nr-learning-grid"><a href="/learn/forex-howto.html"><span>01</span><h3>Forex</h3><p>Currencies, pips and position sizing</p><b>Start learning ↗︎</b></a><a href="/learn/stocks-howto.html"><span>02</span><h3>Stocks</h3><p>Shares, valuation and market structure</p><b>Start learning ↗︎</b></a><a href="/learn/crypto-howto.html"><span>03</span><h3>Crypto</h3><p>Digital assets, custody and volatility</p><b>Start learning ↗︎</b></a><a href="/learn/funds-howto.html"><span>04</span><h3>Funds</h3><p>Diversification, ETFs and fund costs</p><b>Start learning ↗︎</b></a><a href="/learn/futures-howto.html"><span>05</span><h3>Futures</h3><p>Contracts, margin and expiration</p><b>Start learning ↗︎</b></a><a href="/learn/indices-howto.html"><span>06</span><h3>Indices</h3><p>Benchmarks and market exposure</p><b>Start learning ↗︎</b></a></div></section>
+      </div>
+    </main>
+  </div>
+
+  <script src="demo-mode.js?v=20261114-consistency-2"></script>
+  <script>
+    // =========================
+    // THEME (APPLY ONLY) — synced across pages via ONE key: fynx_theme
+    // =========================
+    const THEME_KEY = "fynx_theme";
+    (function applyThemeFromStorage(){
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
+      if (saved === "dark") document.body.classList.add("dark-mode");
+      else document.body.classList.remove("dark-mode");
+    })();
+
+
+
+    // =========================
+    // DATE CHIP
+    // =========================
+    const dateChip = document.getElementById("dateChip");
+    dateChip.textContent = new Date().toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric", year:"numeric" });
+
+    // =========================
+    // Mini pulse timestamp (placeholder)
+    // =========================
+
+
+    // =============================================================================
+    // ✅ FIX #2: PROFILE NAME always shows from username (whatever user sets)
+    // We read common keys + JSON profile objects used by profile pages.
+    // =============================================================================
+    function getProfileName() {
+      return window.FynxIdentity?.displayName || null;
+    }
+    window.addEventListener('fynx:identity', renderGreeting);
+
+    function cleanDisplayName(full){
+      if (!full) return null;
+      let s = String(full).trim();
+      // remove trailing punctuation so we don't show "Elham.."
+      s = s.replace(/[.!,;:]+$/g, "").trim();
+      return s || null;
+    }
+
+    function firstName(full){
+      if (!full) return null;
+      const parts = String(full).trim().split(/\s+/);
+      return parts[0] || full;
+    }
+
+    function getDayGreeting(h){
+      if (h >= 5 && h < 12) return "Good morning";
+      if (h >= 12 && h < 17) return "Good afternoon";
+      if (h >= 17 && h < 21) return "Good evening";
+      return "Good night";
+    }
+
+    function safeTZLabel(){
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || "Local";
+    }
+
+    function setAvatarFromName(name){
+      const el = document.getElementById("avatarInitials");
+      // The shared account menu (photo + menu) owns this slot once it is mounted.
+      if (!el || el.classList.contains("fx-acct") || el.querySelector(".fx-acct-btn")) return;
+
+      const n = cleanDisplayName(name || "");
+      if (!n){
+        el.textContent = "FX";
+        return;
+      }
+      const parts = n.split(/\s+/).filter(Boolean);
+      let initials = parts[0]?.[0] || "F";
+      if (parts.length > 1) initials += parts[parts.length-1]?.[0] || "";
+      el.textContent = initials.toUpperCase();
+    }
+
+    function renderGreeting(){
+      const greetEl = document.getElementById("greetingText");
+      const metaEl = document.getElementById("greetingMeta");
+
+      const rawName = getProfileName();
+      const displayName = cleanDisplayName(rawName);
+      const fn = cleanDisplayName(firstName(displayName)) || "Trader";
+
+      setAvatarFromName(displayName);
+
+      const d = new Date();
+      const g = getDayGreeting(d.getHours());
+
+      const timeStr = d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+      const tz = safeTZLabel();
+
+      greetEl.textContent = `${g}, ${fn}.`;
+      metaEl.textContent = `Local time ${timeStr} — ${tz}`;
+    }
+
+    // =============================================================================
+    // DAILY ROTATING MESSAGE (100 lines) — changes once per day
+    // =============================================================================
+    const DAILY_LINES = [
+      "Your edge is discipline, not luck.",
+      "Protect capital first. Opportunity comes second.",
+      "A clean plan beats a loud opinion.",
+      "Small mistakes compound. Fix them early.",
+      "Patience is a position.",
+      "Trade the plan. Not the mood.",
+      "Consistency is the real flex.",
+      "If it’s not clear, it’s a no.",
+      "Win the process, and results follow.",
+      "You don’t need more trades — you need better trades.",
+      "Risk small. Think big.",
+      "Momentum is earned, not gifted.",
+      "Reduce noise. Increase signal.",
+      "The chart rewards calm minds.",
+      "One good setup can pay for a week of boredom.",
+      "You are paid for waiting.",
+      "Precision beats speed.",
+      "A+ setups only. Everything else is distraction.",
+      "Cut the impulse. Keep the structure.",
+      "A stop-loss is self-respect.",
+      "No revenge trades. Ever.",
+      "Your rules are your freedom.",
+      "Protect your sleep. Protect your decisions.",
+      "Track behavior, not just P&L.",
+      "You can be right and still lose — manage risk.",
+      "The goal is repeatable execution.",
+      "Trade less. Review more.",
+      "Never confuse activity with progress.",
+      "If you can’t explain it, you can’t trade it.",
+      "Your best trade is often no trade.",
+      "Shrink drawdowns. Grow confidence.",
+      "Confidence comes from receipts: journaling.",
+      "If you hesitate, size down.",
+      "Structure first. Entry second.",
+      "Stop hunting — start selecting.",
+      "Let price come to you.",
+      "Avoid chaos sessions. Trade your window.",
+      "Your future self is built by today’s choices.",
+      "Simplicity scales.",
+      "Respect the range. Attack the breakout.",
+      "Protect the downside. Upside takes care of itself.",
+      "Don’t predict. React with rules.",
+      "Your system is your identity.",
+      "Be ruthless with weak setups.",
+      "The market pays for clarity.",
+      "A plan without risk is a fantasy.",
+      "When unsure, do nothing.",
+      "Boredom is a sign you’re doing it right.",
+      "Execution > motivation.",
+      "Your edge is in the boring details.",
+      "Never increase risk to fix a mistake.",
+      "Trust your rules — not your feelings.",
+      "Focus is wealth.",
+      "Don’t chase — confirm.",
+      "Reduce positions when emotions rise.",
+      "A clean entry starts with a clean mind.",
+      "You only need one good trade per day.",
+      "If it’s not in your model, it’s not for you.",
+      "Protect your mental capital.",
+      "One rule broken can erase ten good days.",
+      "Track mistakes like you track profits.",
+      "The market punishes ego.",
+      "Be systematic. Be patient.",
+      "Stop trying to be a hero.",
+      "The goal is to survive and compound.",
+      "Take what the market gives — not what you want.",
+      "Price is the final truth.",
+      "Setup quality beats win rate.",
+      "If you can’t manage it, don’t enter it.",
+      "Your watchlist is your battlefield.",
+      "Speed kills precision.",
+      "Let the setup breathe.",
+      "Don’t trade to feel something.",
+      "Trade to execute something.",
+      "The less you force, the more you win.",
+      "One mistake is information. Two is a pattern.",
+      "Today is for execution, not experimentation.",
+      "Keep the rules. Remove the drama.",
+      "Be a sniper, not a machine gun.",
+      "Your risk is your responsibility.",
+      "A calm trader is a profitable trader.",
+      "Journal the why, not just the what.",
+      "One percent improvements compound fast.",
+      "When you win, stay humble.",
+      "When you lose, stay logical.",
+      "Trend or range — choose before you act.",
+      "Wait for confirmation. Then commit.",
+      "Trade the level, not the story.",
+      "If you can’t hold it, don’t take it.",
+      "Your system should feel boring.",
+      "Don’t marry positions.",
+      "Let winners work. Cut losers fast.",
+      "You don’t need perfect — you need repeatable.",
+      "The best traders say “no” most of the time.",
+      "Respect liquidity. Respect timing.",
+      "One clean session is enough.",
+      "Focus on expectancy.",
+      "Protect your account like it’s a business.",
+      "Your habits are your strategy.",
+      "Clarity is the currency of performance."
+    ];
+
+    function getDayStamp(d){
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function setDailyLine(){
+      const el = document.getElementById("dailyLine");
+      if (!el) return;
+
+      const stamp = getDayStamp(new Date());
+      let sum = 0;
+      for (let i = 0; i < stamp.length; i++) sum += stamp.charCodeAt(i) * (i + 1);
+
+      const idx = sum % DAILY_LINES.length;
+      el.innerHTML = `<span>Daily:</span> ${DAILY_LINES[idx] || "Stay sharp. Stay disciplined."}`;
+    }
+
+    // =============================================================================
+    // MARKET HOURS (Real computation) + more “alive” UI (badge, dot, progress)
+    // =============================================================================
+    const SESSIONS = {
+      London:   { tz: "Europe/London",      open: "08:00", close: "17:00" },
+      NewYork:  { tz: "America/New_York",   open: "08:00", close: "17:00" },
+      Sydney:   { tz: "Australia/Sydney",   open: "08:00", close: "17:00" },
+      Asia:     { tz: "Asia/Tokyo",         open: "09:00", close: "18:00" }
+    };
+
+    function parseHHMM(s){
+      const [hh, mm] = s.split(":").map(Number);
+      return { hh, mm };
+    }
+
+    function zonedParts(date, timeZone){
+      const fmt = new Intl.DateTimeFormat("en-US", {
+        timeZone,
+        year:"numeric", month:"2-digit", day:"2-digit",
+        hour:"2-digit", minute:"2-digit", second:"2-digit",
+        hour12:false
+      });
+      const parts = fmt.formatToParts(date);
+      const map = {};
+      for (const p of parts) map[p.type] = p.value;
+      return {
+        year: Number(map.year),
+        month: Number(map.month),
+        day: Number(map.day),
+        hour: Number(map.hour),
+        minute: Number(map.minute),
+        second: Number(map.second)
+      };
+    }
+
+    function makeZonedDateLike(dateNow, timeZone, hh, mm){
+      const p = zonedParts(dateNow, timeZone);
+      const approx = new Date(Date.UTC(p.year, p.month - 1, p.day, hh, mm, 0));
+      const pp = zonedParts(approx, timeZone);
+
+      const targetMinutes = hh * 60 + mm;
+      const gotMinutes = pp.hour * 60 + pp.minute;
+
+      const dayDiff =
+        (pp.year - p.year) * 525600 +
+        (pp.month - p.month) * 43200 +
+        (pp.day - p.day) * 1440;
+
+      const minuteDiff = (gotMinutes - targetMinutes) + dayDiff;
+      return new Date(approx.getTime() - minuteDiff * 60 * 1000);
+    }
+
+    function formatDuration(ms){
+      const s = Math.max(0, Math.floor(ms / 1000));
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      if (h <= 0) return `${m}m`;
+      return `${h}h ${m}m`;
+    }
+
+    function computeSession(cfg, now){
+      const o=parseHHMM(cfg.open),c=parseHHMM(cfg.close);
+      for(let offset=0;offset<8;offset++){
+        const day=new Date(now.getTime()+offset*86400000);
+        const weekday=new Intl.DateTimeFormat('en-US',{timeZone:cfg.tz,weekday:'short'}).format(day);
+        if(weekday==='Sat'||weekday==='Sun')continue;
+        const openAt=makeZonedDateLike(day,cfg.tz,o.hh,o.mm), closeAt=makeZonedDateLike(day,cfg.tz,c.hh,c.mm);
+        if(closeAt>now)return {openAt,closeAt};
+      }
+    }
+
+    function setSessionUI(key, isOpen, badgeText, lineText, progressPct){
+      const dot = document.getElementById(`dot${key}`);
+      const badge = document.getElementById(`badge${key}`);
+      const time = document.getElementById(`time${key}`);
+      const fill = document.getElementById(`fill${key}`);
+      const card = document.getElementById(`card${key}`);
+
+      dot.classList.remove("open");
+      badge.classList.remove("open");
+      card.classList.remove("open");
+
+      if (isOpen){
+        dot.classList.add("open");
+        badge.classList.add("open");
+        card.classList.add("open");
+      }
+
+      badge.textContent = badgeText;
+      time.textContent = lineText;
+      fill.style.width = `${Math.max(0, Math.min(100, progressPct || 0))}%`;
+    }
+
+    function updateMarketHours(){
+      const now = new Date();
+      document.getElementById("mhUpdated").textContent =
+        `Updated ${now.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}`;
+
+      // Helper
+      function updateOne(labelKey, cfg){
+        const w = computeSession(cfg, now);
+        const isOpen = (now >= w.openAt && now < w.closeAt);
+
+        const total = (w.closeAt - w.openAt);
+        const elapsed = Math.max(0, Math.min(total, now - w.openAt));
+        const pct = total > 0 ? (elapsed / total) * 100 : 0;
+
+        if (isOpen){
+          setSessionUI(labelKey, true, "OPEN", `Closes in ${formatDuration(w.closeAt - now)}`, pct);
+        } else {
+          let nextOpen = w.openAt;
+          if (now >= w.closeAt) nextOpen = new Date(w.openAt.getTime() + 24*60*60*1000);
+          setSessionUI(labelKey, false, "CLOSED", `Opens in ${formatDuration(nextOpen - now)}`, 0);
+        }
+      }
+
+      updateOne("London", SESSIONS.London);
+      updateOne("NewYork", SESSIONS.NewYork);
+      updateOne("Sydney", SESSIONS.Sydney);
+
+      // Asia badge uses PRE-MARKET wording when closed (like your reference)
+      (function updateAsia(){
+        const cfg = SESSIONS.Asia;
+        const w = computeSession(cfg, now);
+        const isOpen = (now >= w.openAt && now < w.closeAt);
+        const total = (w.closeAt - w.openAt);
+        const elapsed = Math.max(0, Math.min(total, now - w.openAt));
+        const pct = total > 0 ? (elapsed / total) * 100 : 0;
+
+        if (isOpen){
+          setSessionUI("Asia", true, "OPEN", `Closes in ${formatDuration(w.closeAt - now)}`, pct);
+        } else {
+          let nextOpen = w.openAt;
+          if (now >= w.closeAt) nextOpen = new Date(w.openAt.getTime() + 24*60*60*1000);
+
+          const dot = document.getElementById("dotAsia");
+          dot.classList.remove("open");
+          document.getElementById("badgeAsia").classList.remove("open");
+          document.getElementById("cardAsia").classList.remove("open");
+
+          document.getElementById("badgeAsia").textContent = "PRE-MARKET";
+          document.getElementById("timeAsia").textContent = `Opens in ${formatDuration(nextOpen - now)}`;
+          document.getElementById("fillAsia").style.width = "0%";
+        }
+      })();
+    }
+
+    function initHome(){
+      renderGreeting();
+      setDailyLine();
+      updateMarketHours();
+      setInterval(() => { if (!document.hidden) { renderGreeting(); updateMarketHours(); } }, 20000);
+    }
+    initHome();
+  </script>
+
+  <script src="fynx-nav.js?v=20261116-bell-link-1"></script>
+
+  <!-- ✅ CONNECT FX USER CARD (ONLY CHANGE) -->
+  <script src="fynx-usercard.js?v=20260928-audit2"></script>
+  <script src="assets/js/tradingview-fit.js?v=20260922-fit2"></script>
+
+<script type="module" src="assets/js/home-journal.js?v=20261117-journal-retry-2"></script>
+<footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
+</body>
+</html>

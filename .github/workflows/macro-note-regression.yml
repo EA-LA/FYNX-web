@@ -1,0 +1,36 @@
+name: Macro Desk research note regression
+on:
+  pull_request:
+    paths:
+      - 'assets/js/macro-desk/**'
+      - 'assets/css/macro-desk.css'
+      - 'macro-desk.html'
+      - 'scripts/build-release-assets.cjs'
+      - 'tests/macro/**'
+      - '.github/workflows/macro-note-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  macro:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Test real Macro Desk fixtures and sourced note export
+        run: npm run test:macro
+      - name: Parse changed JavaScript
+        run: |
+          node --check assets/js/macro-desk/model.js
+          node --check assets/js/macro-desk/app.js
+          node --check scripts/build-release-assets.cjs
+      - name: Build website without deployment
+        run: npm run build

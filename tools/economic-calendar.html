@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Economic Calendar: Releases &amp; Central Bank Events | FYNX</title>
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#f3f3f3;
+      --bg-2:#ffffff;
+      --text:#0b0b0b;
+      --text-soft:rgba(0, 0, 0, .62);
+      --text-faint:rgba(0, 0, 0, .48);
+      --border:rgba(0, 0, 0, .10);
+      --border-strong:rgba(0, 0, 0, .16);
+      --surface:rgba(255, 255, 255, .74);
+      --surface-2:rgba(255, 255, 255, .84);
+      --surface-3:rgba(255, 255, 255, .92);
+      --shadow:0 20px 60px rgba(0, 0, 0, .10);
+      --shadow-soft:0 14px 34px rgba(0, 0, 0, .08);
+      --accent:#0b0b0b;
+      --green:#6d6d6d;
+      --red:#6d6d6d;
+      --orange:#9e9e9e;
+      --blue:#676767;
+    }
+    body.dark-mode{
+      --bg:#000;
+      --bg-2:#050505;
+      --text:#fff;
+      --text-soft:rgba(255, 255, 255, .68);
+      --text-faint:rgba(255, 255, 255, .50);
+      --border:rgba(255, 255, 255, .10);
+      --border-strong:rgba(255, 255, 255, .16);
+      --surface:rgba(255, 255, 255, .04);
+      --surface-2:rgba(255, 255, 255, .05);
+      --surface-3:rgba(255, 255, 255, .07);
+      --shadow:none;
+      --shadow-soft:none;
+      --accent:#fff;
+      --green:#989898;
+      --red:#8d8d8d;
+      --orange:#bdbdbd;
+      --blue:#a4a4a4;
+    }
+    body{
+      font-family:'Inter','Segoe UI',system-ui,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.085) 1px, transparent 1px) 0 0 / 18px 18px,
+        linear-gradient(var(--bg),var(--bg));
+      overflow-x:hidden;
+      min-height:100vh;
+    }
+    body.dark-mode{
+      background:#000;
+    }
+    .animated-bg{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      background:transparent;
+      overflow:hidden;
+    }
+    body.dark-mode .animated-bg{
+      background:#000;
+    }
+    .grid-overlay{
+      position:absolute;
+      inset:0;
+      background-image:
+        linear-gradient(rgba(0, 0, 0, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, .035) 1px, transparent 1px);
+      background-size:50px 50px;
+      animation:gridMove 22s linear infinite;
+    }
+    body.dark-mode .grid-overlay{
+      background-image:
+        linear-gradient(rgba(255, 255, 255, .03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .03) 1px, transparent 1px);
+    }
+    @keyframes gridMove{
+      0%{transform:translate(0,0)}
+      100%{transform:translate(50px,50px)}
+    }
+    .gradient-orb{
+      position:absolute;
+      border-radius:50%;
+      filter:blur(80px);
+      opacity:.20;
+      animation:float 20s ease-in-out infinite;
+      pointer-events:none;
+    }
+    .orb-1{
+      width:520px;
+      height:520px;
+      background:radial-gradient(circle,rgba(0, 0, 0, .13) 0%,transparent 72%);
+      top:-220px;
+      left:-220px;
+    }
+    .orb-2{
+      width:420px;
+      height:420px;
+      background:radial-gradient(circle,rgba(0, 0, 0, .11) 0%,transparent 72%);
+      bottom:-170px;
+      right:-170px;
+      animation-delay:6s;
+    }
+    body.dark-mode .orb-1,
+    body.dark-mode .orb-2{
+      background:radial-gradient(circle,rgba(255, 255, 255, .95) 0%,transparent 70%);
+      opacity:.16;
+    }
+    @keyframes float{
+      0%,100%{transform:translate(0,0) scale(1)}
+      33%{transform:translate(50px,-50px) scale(1.08)}
+      66%{transform:translate(-50px,50px) scale(.92)}
+    }
+    header{
+      position:sticky;
+      top:0;
+      z-index:1000;
+      background:rgba(243, 243, 243, .82);
+      backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--border);
+      padding:1rem 0;
+    }
+    body.dark-mode header{
+      background:rgba(0, 0, 0, .84);
+    }
+    .nav{
+      max-width:1280px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 1.25rem;
+      gap:1rem;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:.7rem;
+      font-weight:900;
+      letter-spacing:-1px;
+      font-size:1.24rem;
+    }
+    .brand i{opacity:.92}
+    .nav-actions{
+      display:flex;
+      gap:.6rem;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .nav a,
+    .theme-btn{
+      color:var(--text);
+      text-decoration:none;
+      font-weight:700;
+      border:1px solid var(--border);
+      background:var(--surface);
+      padding:.62rem .96rem;
+      border-radius:999px;
+      transition:all .25s ease;
+      white-space:nowrap;
+      display:inline-flex;
+      align-items:center;
+      gap:.48rem;
+      cursor:pointer;
+      font-size:.96rem;
+      box-shadow:var(--shadow-soft);
+    }
+    .nav a:hover,
+    .theme-btn:hover{
+      transform:translateY(-1px);
+      border-color:var(--border-strong);
+      background:var(--surface-2);
+    }
+    main{
+      max-width:1280px;
+      margin:0 auto;
+      padding:2rem 1.25rem 4.5rem;
+    }
+    .hero{
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:26px;
+      backdrop-filter:blur(14px);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .hero-top{
+      padding:2rem 1.7rem 1.4rem;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      justify-content:space-between;
+      gap:1rem;
+      flex-wrap:wrap;
+      align-items:flex-start;
+    }
+    .hero-copy{
+      max-width:760px;
+    }
+    h1{
+      font-size:clamp(2.25rem,4vw,3.45rem);
+      line-height:1.02;
+      letter-spacing:-2.5px;
+      margin-bottom:.8rem;
+      background:linear-gradient(135deg,#000 0%,#6c6c6c 100%);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+    body.dark-mode h1{
+      background:linear-gradient(135deg,#fff 0%,#8f8f8f 100%);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+    }
+    .lead{
+      color:var(--text-soft);
+      font-size:1.05rem;
+      line-height:1.85;
+      max-width:70ch;
+    }
+    .hero-badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.7rem;
+      margin-top:1rem;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      padding:.56rem .82rem;
+      border:1px solid var(--border);
+      background:var(--surface-2);
+      border-radius:999px;
+      font-size:.92rem;
+      font-weight:700;
+      color:var(--text-soft);
+    }
+    .live-pulse{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:var(--green);
+      box-shadow:0 0 0 0 rgba(109, 109, 109, .6);
+      animation:pulse 1.8s infinite;
+    }
+    @keyframes pulse{
+      0%{box-shadow:0 0 0 0 rgba(109, 109, 109, .55)}
+      70%{box-shadow:0 0 0 12px rgba(109, 109, 109, 0)}
+      100%{box-shadow:0 0 0 0 rgba(109, 109, 109, 0)}
+    }
+    .clock-wrap{
+      min-width:290px;
+      display:grid;
+      grid-template-columns:1fr;
+      gap:.8rem;
+    }
+    .clock-card{
+      border:1px solid var(--border);
+      background:var(--surface-2);
+      border-radius:18px;
+      padding:1rem 1rem 1.05rem;
+      box-shadow:var(--shadow-soft);
+    }
+    .clock-label{
+      font-size:.82rem;
+      color:var(--text-faint);
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-bottom:.35rem;
+      font-weight:800;
+    }
+    .clock-value{
+      font-size:1.25rem;
+      font-weight:900;
+      letter-spacing:-.03em;
+    }
+    .clock-sub{
+      margin-top:.28rem;
+      color:var(--text-soft);
+      font-size:.94rem;
+    }
+    .content{
+      display:grid;
+      grid-template-columns:minmax(0,1.5fr) minmax(300px,.82fr);
+      gap:1.2rem;
+      padding:1.25rem;
+    }
+    .main-panel,
+    .side-panel{
+      border:1px solid var(--border);
+      background:var(--surface-2);
+      border-radius:22px;
+      box-shadow:var(--shadow-soft);
+      overflow:hidden;
+    }
+    .section-head{
+      padding:1rem 1.05rem;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      flex-wrap:wrap;
+      gap:.8rem;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .section-title{
+      display:flex;
+      align-items:center;
+      gap:.65rem;
+      font-size:1.06rem;
+      font-weight:900;
+      letter-spacing:-.03em;
+    }
+    .section-title i{opacity:.85}
+    .section-note{
+      color:var(--text-faint);
+      font-size:.9rem;
+      font-weight:600;
+    }
+    .widget-toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.55rem;
+      align-items:center;
+    }
+    .toolbar-pill{
+      border:1px solid var(--border);
+      background:var(--surface-3);
+      color:var(--text-soft);
+      border-radius:999px;
+      padding:.45rem .72rem;
+      font-size:.82rem;
+      font-weight:800;
+      letter-spacing:.01em;
+    }
+    .widget-wrap{
+      padding:.8rem;
+    }
+    .widget-shell{
+      border:1px solid var(--border);
+      background:var(--bg-2);
+      border-radius:18px;
+      overflow:hidden;
+      min-height:760px;
+      position:relative;
+    }
+    .widget-loading{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--text-faint);
+      font-weight:800;
+      letter-spacing:.03em;
+      background:linear-gradient(180deg, transparent, rgba(0, 0, 0, .02));
+      pointer-events:none;
+      z-index:1;
+    }
+    body.dark-mode .widget-loading{
+      background:linear-gradient(180deg, transparent, rgba(255, 255, 255, .01));
+    }
+    .tradingview-widget-container,
+    .tradingview-widget-container > div{
+      width:100%;
+      height:760px;
+    }
+    .sidebar-inner{
+      padding:1rem;
+      display:grid;
+      gap:1rem;
+    }
+    .info-card{
+      border:1px solid var(--border);
+      background:var(--surface-3);
+      border-radius:18px;
+      padding:1rem;
+    }
+    .info-card h3{
+      font-size:1rem;
+      margin-bottom:.75rem;
+      display:flex;
+      align-items:center;
+      gap:.55rem;
+      letter-spacing:-.02em;
+    }
+    .info-list{
+      display:grid;
+      gap:.7rem;
+    }
+    .info-item{
+      display:flex;
+      gap:.75rem;
+      align-items:flex-start;
+      color:var(--text-soft);
+      line-height:1.6;
+      font-size:.95rem;
+    }
+    .dot{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      margin-top:.45rem;
+      flex:0 0 auto;
+    }
+    .dot.red{background:var(--red)}
+    .dot.orange{background:var(--orange)}
+    .dot.green{background:var(--green)}
+    .dot.blue{background:var(--blue)}
+    .session-grid{
+      display:grid;
+      gap:.8rem;
+    }
+    .session-row{
+      display:flex;
+      justify-content:space-between;
+      gap:1rem;
+      align-items:center;
+      padding:.82rem .9rem;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:var(--surface);
+    }
+    .session-row strong{
+      font-size:.95rem;
+      letter-spacing:-.01em;
+    }
+    .session-row span{
+      color:var(--text-soft);
+      font-size:.9rem;
+      text-align:right;
+    }
+    .quick-links{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:.75rem;
+    }
+    .quick-links a{
+      text-decoration:none;
+      color:var(--text);
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:14px;
+      padding:.9rem;
+      font-weight:800;
+      transition:all .2s ease;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:.75rem;
+      min-height:58px;
+    }
+    .quick-links a:hover{
+      transform:translateY(-1px);
+      border-color:var(--border-strong);
+      background:var(--surface-2);
+    }
+    .footer-note{
+      padding:0 1.3rem 1.25rem;
+      color:var(--text-faint);
+      font-size:.88rem;
+      line-height:1.7;
+    }
+    .footer-note a{
+      color:inherit;
+    }
+    @media (max-width: 1050px){
+      .content{
+        grid-template-columns:1fr;
+      }
+      .clock-wrap{
+        width:100%;
+        grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      }
+    }
+    @media (max-width: 700px){
+      .hero-top{
+        padding:1.35rem 1rem 1rem;
+      }
+      .content{
+        padding:1rem;
+      }
+      .widget-wrap{
+        padding:.65rem;
+      }
+      .sidebar-inner{
+        padding:.85rem;
+      }
+      .quick-links{
+        grid-template-columns:1fr;
+      }
+      .nav{
+        padding:0 .9rem;
+      }
+      main{
+        padding:1.2rem .9rem 3.2rem;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/editorial-pages.css?v=20261109-nav-wrap">
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261114-consistency-2">
+<meta name="description" content="Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<style>body .content{grid-template-columns:minmax(0,1fr)}body .side-panel{display:none}body .hero{gap:20px}body .widget-shell,body #tvCalendarWrap{height:760px;min-height:760px}body #tvCalendarWrap>div{height:100%}@media(max-width:600px){body .widget-shell,body #tvCalendarWrap{height:620px;min-height:620px}}</style>
+<link rel="stylesheet" href="/assets/css/fynx-calendar.css?v=20261115-intelligence-1">
+<script src="/assets/js/fynx-calendar.js?v=20261115-intelligence-1"></script>
+<style>.fynx-cal-host{--terminal-text:var(--text);--terminal-muted:var(--text-soft);--terminal-line:var(--border);--terminal-green:var(--green);--terminal-bg:var(--bg-2);padding:6px 14px 12px}.widget-shell{min-height:0}</style>
+<link rel="canonical" href="https://www.fynxfinanceworld.com/tools/economic-calendar.html">
+<meta property="og:title" content="Economic Calendar: Releases &amp; Central Bank Events | FYNX">
+<meta property="og:description" content="Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/tools/economic-calendar.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261113-site-qa-95" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Economic Calendar: Releases & Central Bank Events","item":"https://www.fynxfinanceworld.com/tools/economic-calendar.html"}]}</script><!-- discovery-schema:end -->
+<!-- search-identity:start --><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.fynxfinanceworld.com/#organization","name":"FYNX","alternateName":"FYNX Finance World","url":"https://www.fynxfinanceworld.com/","founder":{"@id":"https://ea-la.github.io/#person"},"sameAs":["https://www.fynxfunded.com/","https://site.fynxfinanceworld.com/","https://blog.fynxfinanceworld.com/","https://roadmap.fynxfinanceworld.com/"]},{"@type":"Person","@id":"https://ea-la.github.io/#person","name":"Elham Amini","url":"https://ea-la.github.io/","jobTitle":"Founder of FYNX","sameAs":["https://www.linkedin.com/in/elham-amini-745560302/","https://www.instagram.com/___elham_amini___/"],"worksFor":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebSite","@id":"https://www.fynxfinanceworld.com/#website","url":"https://www.fynxfinanceworld.com/","name":"FYNX Finance World","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebPage","@id":"https://www.fynxfinanceworld.com/tools/economic-calendar.html#webpage","url":"https://www.fynxfinanceworld.com/tools/economic-calendar.html","name":"Economic Calendar: Releases & Central Bank Events | FYNX","description":"Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.","inLanguage":"en","isPartOf":{"@id":"https://www.fynxfinanceworld.com/#website"},"publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"},"mainEntity":{"@id":"https://www.fynxfinanceworld.com/tools/economic-calendar.html#tool"}},{"@type":"WebApplication","@id":"https://www.fynxfinanceworld.com/tools/economic-calendar.html#tool","url":"https://www.fynxfinanceworld.com/tools/economic-calendar.html","name":"Economic Calendar: Releases & Central Bank Events","description":"Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}}]}</script><!-- search-identity:end -->
+<!-- FYNX ADSENSE VERIFICATION START -->
+<script>(window.adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 1;</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
+     crossorigin="anonymous"></script>
+<!-- FYNX ADSENSE VERIFICATION END -->
+<!-- terminal-design:start -->
+<link rel="stylesheet" href="/assets/css/terminal-shell.css?v=20261028">
+<link rel="stylesheet" href="/assets/css/terminal-workspace.css?v=20261028">
+<!-- terminal-design:end -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261114-consistency-2"><script src="/assets/js/company-products-data.js?v=20261113-shared-account-2" defer></script><script src="/assets/js/company-products.js?v=20261114-consistency-2" defer></script><!-- company-products:assets:end -->
+</head>
+<body class="editorial-page editorial-calendar" data-fynx-layout="standalone" data-fynx-section="TOOLS" data-fynx-terminal>
+<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
+<div class="animated-bg">
+    <div class="grid-overlay"></div>
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+  </div>
+
+  <header>
+    <div class="nav">
+      <div class="brand"><i class="fas fa-chart-line"></i> FYNX Tools</div>
+
+      <div class="nav-actions">
+        <button class="theme-btn" id="themeToggle" type="button">
+          <i class="fas fa-circle-half-stroke"></i>
+          <span id="themeToggleText">Theme</span>
+        </button>
+        <a href="../index.html#tools"><i class="fas fa-arrow-left"></i> Back</a>
+        <a href="../index.html"><i class="fas fa-house"></i> Home</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
+      <div class="hero-top">
+        <div class="hero-copy">
+          <div class="editorial-label">FYNX / MARKET INTELLIGENCE</div><h1>Economic Calendar</h1>
+          <p class="lead">
+            Stay ahead of market-moving events. Follow economic releases, central bank decisions, and inflation data in one place.
+          </p>
+
+          <div class="hero-badges">
+            <div class="badge"><span class="live-pulse"></span> Live macro event feed</div>
+            <div class="badge"><i class="fas fa-filter"></i> Impact and currency filters</div>
+            <div class="badge"><i class="fas fa-bolt"></i> Built for pre-trade risk checks</div>
+          </div>
+        </div>
+
+        <div class="clock-wrap">
+          <div class="clock-card">
+            <div class="clock-label">Your local time</div>
+            <div class="clock-value" id="localClock">--:--:--</div>
+            <div class="clock-sub" id="localDate">Loading…</div>
+          </div>
+          <div class="clock-card">
+            <div class="clock-label">UTC / market reference</div>
+            <div class="clock-value" id="utcClock">--:--:--</div>
+            <div class="clock-sub">Use this to avoid missing releases</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <section class="main-panel">
+          <div class="section-head">
+            <div>
+              <div class="section-title">
+                <i class="fas fa-calendar-days"></i>
+                <span>Live calendar feed</span>
+              </div>
+              <div class="section-note">Focus on high-impact events first, then check forecast vs previous vs actual.</div>
+            </div>
+
+            <div class="widget-toolbar">
+              <div class="toolbar-pill">Every country</div>
+              <div class="toolbar-pill">Filters &amp; search</div>
+              <div class="toolbar-pill">Your time zone</div>
+            </div>
+          </div>
+
+          <div class="widget-wrap">
+            <div class="widget-shell">
+              <div id="fynxCalendar" class="fynx-cal-host"></div>
+            </div>
+          </div>
+
+          <div class="footer-note">
+            Use this page as a risk filter: avoid entering right before red-folder events, and for gold or USD pairs always check CPI, NFP, FOMC, Powell speeches, rates, unemployment, GDP, and PMIs first.
+          </div>
+        </section>
+
+        <aside class="side-panel">
+          <div class="section-head">
+            <div class="section-title">
+              <i class="fas fa-layer-group"></i>
+              <span>Trade smarter</span>
+            </div>
+          </div>
+
+          <div class="sidebar-inner">
+            <div class="info-card">
+              <h3><i class="fas fa-triangle-exclamation"></i> Impact guide</h3>
+              <div class="info-list">
+                <div class="info-item"><span class="dot red"></span><div><strong>High impact</strong><br>Can move gold, USD pairs, indices, and yields fast. Reduce risk or wait for confirmation.</div></div>
+                <div class="info-item"><span class="dot orange"></span><div><strong>Medium impact</strong><br>Still important for intraday volatility, especially during London and New York.</div></div>
+                <div class="info-item"><span class="dot green"></span><div><strong>Low impact</strong><br>Usually less violent, but still useful for context and sentiment.</div></div>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <h3><i class="fas fa-business-time"></i> Key sessions</h3>
+              <div class="session-grid">
+                <div class="session-row">
+                  <strong>Tokyo</strong>
+                  <span>00:00–09:00 UTC</span>
+                </div>
+                <div class="session-row">
+                  <strong>London</strong>
+                  <span>08:00–17:00 UTC</span>
+                </div>
+                <div class="session-row">
+                  <strong>New York</strong>
+                  <span>13:00–22:00 UTC</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <h3><i class="fas fa-crosshairs"></i> What matters most</h3>
+              <div class="info-list">
+                <div class="info-item"><span class="dot blue"></span><div><strong>USD / Gold:</strong> CPI, Core CPI, NFP, FOMC, rates, Powell, PCE, unemployment.</div></div>
+                <div class="info-item"><span class="dot blue"></span><div><strong>EUR pairs:</strong> ECB rates, CPI, PMIs, GDP, Lagarde comments.</div></div>
+                <div class="info-item"><span class="dot blue"></span><div><strong>GBP pairs:</strong> BOE rates, CPI, GDP, jobs data, Bailey comments.</div></div>
+                <div class="info-item"><span class="dot blue"></span><div><strong>JPY pairs:</strong> BOJ, inflation, intervention risk, yield headlines.</div></div>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <h3><i class="fas fa-link"></i> Quick market links</h3>
+              <div class="quick-links">
+                <a href="/terminal.html?sym=DX-Y.NYB">
+                  <span>DXY</span><i class="fas fa-arrow-right"></i>
+                </a>
+                <a href="/terminal.html?sym=GC=F">
+                  <span>XAUUSD</span><i class="fas fa-arrow-right"></i>
+                </a>
+                <a href="/terminal.html?sym=EURUSD=X">
+                  <span>EURUSD</span><i class="fas fa-arrow-right"></i>
+                </a>
+                <a href="/terminal.html?sym=GBPUSD=X">
+                  <span>GBPUSD</span><i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <h3><i class="fas fa-shield-halved"></i> Execution rule</h3>
+              <div class="info-list">
+                <div class="info-item"><span class="dot red"></span><div>Do not open a fresh trade seconds before a major release unless news trading is your system.</div></div>
+                <div class="info-item"><span class="dot orange"></span><div>Wait for spread normalization and post-news structure if you are a confirmation trader.</div></div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  <!-- discovery-network:start --><details class="network-help"><summary>Chart or live data unavailable?</summary><p>Some networks restrict embedded providers. You can still use <a href="/explore.html?category=Tools">local calculators</a>, read <a href="/learn.html">learning guides</a>, or open the <a href="/directory.html">lightweight directory</a>. For release times, check the <a href="https://www.bls.gov/schedule/">BLS</a> and <a href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm">Federal Reserve</a> calendars. <a href="/accessibility.html">Connection help →</a></p></details><!-- discovery-network:end -->
+<!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Read the calendar before interpreting the market</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Filter by country and event, check the timezone, and open the publisher’s release for definitions and revisions.</p><h3>The calculation or concept</h3><p>A release contains a period, publication time, reported value and sometimes revisions to earlier data.</p></div><div class="tool-example"><h3>Worked example</h3><p>A reported 0.3% monthly change and a 3% annual change measure different intervals. Compare like-for-like values before drawing conclusions.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Embedded providers can be unavailable on managed networks. Use the official release calendars below when the widget cannot load.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/calendar-alerts.html"><strong>Economic Event Reminder Planner</strong><span>Plan reminders for economic events such as inflation releases, employment reports and central bank decisions.</span></a><a href="/tools/interest-rates.html"><strong>Central Bank Policy Rate Comparison</strong><span>Compare published central bank policy-rate observations from the Bank for International Settlements, with dates and source context.</span></a><a href="/tools/economic-indicators-heatmap.html"><strong>GDP, Inflation &amp; Unemployment Indicators</strong><span>Compare published World Bank GDP growth, inflation and unemployment observations. Review dates and source information with each indicator.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
+
+  <script>
+    const THEME_KEY = "fynx_theme";
+
+    function applyTheme(mode){
+      if(mode === "dark") document.body.classList.add("dark-mode");
+      else document.body.classList.remove("dark-mode");
+      updateThemeButton();
+    }
+
+    function getStoredTheme(){
+      try { return window.FynxPreferences?.getItem(THEME_KEY) === "light" ? "light" : "dark"; } catch { return "dark"; }
+    }
+
+    function updateThemeButton(){
+      const isDark = document.body.classList.contains("dark-mode");
+      const text = document.getElementById("themeToggleText");
+      if(text) text.textContent = isDark ? "Dark" : "Light";
+    }
+
+    (function initTheme(){
+      applyTheme(getStoredTheme());
+    })();
+
+    document.getElementById("themeToggle").addEventListener("click", () => {
+      const next = document.body.classList.contains("dark-mode") ? "light" : "dark";
+      window.FynxPreferences?.setItem(THEME_KEY, next);
+      applyTheme(next);
+    });
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === THEME_KEY) {
+        applyTheme(e.newValue === "dark" ? "dark" : "light");
+      }
+    });
+
+    function updateClocks(){
+      const now = new Date();
+
+      const localTime = now.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+
+      const localDate = now.toLocaleDateString([], {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+
+      const utcTime = now.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZone: "UTC"
+      });
+
+      document.getElementById("localClock").textContent = localTime;
+      document.getElementById("localDate").textContent = localDate;
+      document.getElementById("utcClock").textContent = utcTime + " UTC";
+    }
+
+    updateClocks();
+    setInterval(updateClocks, 1000);
+
+    function mountFynxCalendar(){
+      const host = document.getElementById("fynxCalendar");
+      if (window.FynxCalendar) window.FynxCalendar.mount(host, {compact: false});
+      else host.textContent = "The economic calendar could not be loaded. Please refresh.";
+    }
+    mountFynxCalendar();
+  </script>
+
+<footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
+</body>
+</html>

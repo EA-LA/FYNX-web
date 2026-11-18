@@ -1,0 +1,20 @@
+name: Symbol News keyboard focus regression
+on:
+  pull_request:
+    paths:
+      - 'tools/symbol-news.html'
+      - 'scripts/test-symbol-news-focus.cjs'
+      - '.github/workflows/symbol-news-focus.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  focus-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Exercise Symbol News keyboard and accessibility behavior
+        run: node --test scripts/test-symbol-news-focus.cjs
