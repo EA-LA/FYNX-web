@@ -68,6 +68,9 @@
           return res.text().then(html => {
             if (!html) return { items: [], failed: true };
             const doc = new DOMParser().parseFromString(html, 'text/html');
+            // A successful HTTP response can be a login, consent or error page.
+            // Only a market glossary document counts as verified coverage.
+            if (!doc.querySelector('.glossary')) return { items: [], failed: true };
             const items = [...doc.querySelectorAll('.glossary article.term')].map(node => {
               const term = (node.querySelector('strong')?.textContent || '').trim();
               const def = (node.querySelector('p')?.textContent || '').trim();
