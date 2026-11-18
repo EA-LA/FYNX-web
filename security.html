@@ -84,7 +84,7 @@ logoutAllBtn.onclick = async()=>{ if(!auth.currentUser) return; await revokeAllS
 
 onAuthStateChanged(auth, async (user) => {
   const revision = ++authRevision;
-  loginAlertController.setAccount(null);
+  loginAlertController.setAccount(user?.uid || null, undefined);
   passwordForm.querySelector('button[type=submit]').disabled = !user;
   if (!user) return;
   verifyStatus.textContent = user.emailVerified ? 'Verified' : 'Not verified';
