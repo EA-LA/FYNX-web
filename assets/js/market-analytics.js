@@ -3,6 +3,45 @@
  const kind=root.dataset.marketAnalysis,select=root.querySelector('select'),status=root.querySelector('[role=status]'),output=root.querySelector('[data-analysis-output]'),button=root.querySelector('button');
  let version=0,last=null,timer,controller=null,refreshFailed=false;
  const number=(n,max=4)=>Number(n).toLocaleString(undefined,{maximumFractionDigits:max});
+ // A shared view contains only an allowlisted public market or correlation window.
+ // It never includes account state, snapshots, timestamps or other URL parameters.
+ const viewKey=kind==='correlation'?'window':'product';
+ const shareButton=root.querySelector('[data-analysis-share]');
+ const shareStatus=root.querySelector('[data-analysis-share-status]');
+ const shareFallback=root.querySelector('[data-analysis-share-fallback]');
+ const isAllowed=value=>Array.from(select.options||[]).some(option=>option.value===value);
+ function restoreSharedView(){
+  const requested=new URLSearchParams(window.location?.search||'').get(viewKey);
+  if(requested&&isAllowed(requested))select.value=requested;
+ }
+ function shareableURL(){
+  if(!isAllowed(select.value)||!window.location?.origin||!window.location?.pathname)return null;
+  const url=new URL(window.location.pathname,window.location.origin);
+  url.searchParams.set(viewKey,select.value);
+  return url.href;
+ }
+ function resetShareFeedback(){
+  if(shareStatus)shareStatus.textContent='';
+  if(shareFallback){shareFallback.hidden=true;shareFallback.value='';}
+ }
+ if(shareButton&&shareStatus&&shareFallback)shareButton.addEventListener('click',async()=>{
+  const url=shareableURL();
+  if(!url){shareStatus.textContent='Unable to create a view link. Please reload the page.';return;}
+  try{
+   if(!window.navigator?.clipboard?.writeText)throw Error('Clipboard unavailable');
+   await window.navigator.clipboard.writeText(url);
+   shareFallback.hidden=true;
+   shareStatus.textContent='View link copied. Market observations refresh when opened.';
+  }catch(_){
+   shareFallback.value=url;
+   shareFallback.hidden=false;
+   shareFallback.focus();
+   shareFallback.select();
+   shareStatus.textContent='Copy the selected link from the field below. Observations refresh when opened.';
+  }
+ });
+ restoreSharedView();
+ syncSourceLink();
  function render(data){
   // Build the next table off-screen; a malformed response must not erase the last good one.
   const table=document.createElement('table'),caption=document.createElement('caption');
@@ -85,7 +124,7 @@
  }
  select.addEventListener('change',()=>{
   // Never leave the previous market's figures or source URL under the new selection.
-  last=null;refreshFailed=false;output.replaceChildren();syncSourceLink();load(true);
+  last=null;refreshFailed=false;output.replaceChildren();resetShareFeedback();syncSourceLink();load(true);
  });
  button.addEventListener('click',()=>load(true));
  function schedule(){clearInterval(timer);if(!document.hidden)timer=setInterval(()=>{updateStatus();load();},kind==='liquidity'?15000:300000);}
