@@ -7,7 +7,7 @@
 .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.08)} .row:last-child{border-bottom:none}
 .security-session-row{padding:8px 0;border-bottom:1px solid rgba(0,0,0,.08);overflow-wrap:anywhere}
 .security-session-row:last-child{border-bottom:0}
-.switch{width:48px;height:28px;border:1px solid #ddd;border-radius:999px;position:relative;cursor:pointer;background:#fff}.knob{width:22px;height:22px;border-radius:50%;background:#111;position:absolute;left:2px;top:2px;transition:.2s}.switch.on .knob{left:22px}
+.switch{width:48px;height:28px;border:1px solid #ddd;border-radius:999px;position:relative;cursor:pointer;background:#fff}.knob{width:22px;height:22px;border-radius:50%;background:#111;position:absolute;left:2px;top:2px;transition:.2s}.switch.on .knob{left:22px}.switch:disabled{cursor:wait;opacity:.7}.switch:focus-visible{outline:3px solid currentColor;outline-offset:3px}
 body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.2)} body.dark-mode .knob{background:#fff}
 .btn{height:38px;padding:0 12px;border-radius:10px;border:1px solid #ddd;background:#fff;font-size:12px;font-weight:800;cursor:pointer}.btn.primary{background:#000;color:#fff;border-color:#000}.btn.danger{background:#000;color:#fff;border-color:#000}
 </style>  <script type="module" src="./assets/js/protect-route.js?v=59193b13e9f5"></script>
@@ -53,7 +53,8 @@ body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,25
 <div class="card"><h3 style="font-size:14px;margin-bottom:8px">Password</h3><form id="passwordForm"><div class="field"><label style="font-size:12px;color:#777">Current password</label><input type="password" id="currentPassword" aria-label="Current password" required></div><div class="field"><label style="font-size:12px;color:#777">New password</label><input type="password" id="newPassword" aria-label="New password" required minlength="8"></div><div style="display:flex;gap:8px;align-items:center"><button class="btn primary" type="submit" disabled>Change password</button><span id="passwordStatus" style="font-size:12px;color:#777"></span></div></form></div>
 <div class="card"><h3 style="font-size:14px;margin-bottom:8px">Verification & Controls</h3>
 <div class="row"><span>Email verification</span><div style="display:flex;gap:8px;align-items:center"><span id="verifyStatus" style="font-size:12px">Checking...</span><button class="btn" id="resendBtn" type="button">Resend email</button></div></div>
-<div class="row"><span>Login alerts</span><button class="switch" id="loginAlertsSwitch" type="button"><span class="knob"></span></button></div>
+<div class="row"><span>Login alerts</span><button class="switch" id="loginAlertsSwitch" type="button" role="switch" aria-label="Login alerts" aria-checked="false" aria-describedby="loginAlertsStatus" disabled><span class="knob"></span></button></div>
+<p id="loginAlertsStatus" role="status" aria-live="polite" style="font-size:12px;color:#888;margin:4px 0 12px">Checking login alert settings…</p>
 <div id="mfaSettings" style="padding:16px 0"><h3>Two-factor authentication</h3><p role="status" style="margin:12px 0">Checking authenticator protection…</p><button class="btn" type="button" disabled>Set up authenticator</button></div>
 </div>
 <div class="card"><h3 style="font-size:14px;margin-bottom:8px">Active Sessions</h3><div id="sessionList" style="font-size:12px;color:#777" role="region" aria-label="Active sessions" aria-live="polite">Loading sessions...</div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" id="logoutCurrentBtn" type="button">Log out current session</button><button class="btn danger" id="logoutAllBtn" type="button">Log out all devices</button></div></div>
@@ -64,24 +65,50 @@ import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/f
 import { auth, bootstrapAccount, updatePasswordWithReauth, resendVerificationEmail, saveSecuritySettings, getSessionMetadata, revokeAllSessions, logoutCurrentSession } from './assets/js/account-system.js?v=20261114-consistency-2';
 import { mountNotificationBell } from './assets/js/account-ui.js?v=20261114-consistency-2';
 import { renderSessionMetadata } from './assets/js/security-session-list.js';
+import { createLoginAlertsController } from './assets/js/security-login-alerts.mjs';
 let sessionId = null;
+let authRevision = 0;
+const loginAlertController = createLoginAlertsController({
+  button: loginAlertsSwitch,
+  status: loginAlertsStatus,
+  save: (uid, enabled) => saveSecuritySettings(uid, { loginAlerts: enabled })
+});
 function applyTheme(){const t=window.FynxPreferences?.getItem('fynx_theme');document.body.classList.toggle('dark-mode',t==='dark');} applyTheme();
 (document.getElementById('themeBtn')||{}).onclick=()=>{const d=!document.body.classList.contains('dark-mode');document.body.classList.toggle('dark-mode',d);window.FynxPreferences?.setItem('fynx_theme',d?'dark':'light');};
 
 passwordForm.addEventListener('submit', async(e)=>{e.preventDefault(); const button=passwordForm.querySelector('button[type=submit]');if(button.disabled)return;button.disabled=true; passwordStatus.textContent='Updating...'; try{ await updatePasswordWithReauth(currentPassword.value,newPassword.value); passwordStatus.textContent='Password updated'; passwordForm.reset(); }catch(err){passwordStatus.textContent=['auth/invalid-credential','auth/wrong-password'].includes(err.code)?'Your current password is incorrect. Please try again.':err.code==='auth/weak-password'?'Choose a stronger password with at least 8 characters.':'Could not update your password. Check your connection and sign in again if needed.';}finally{button.disabled=false;}});
 resendBtn.onclick = async()=>{ try { await resendVerificationEmail(); verifyStatus.textContent='Verification email sent'; } catch(err){ verifyStatus.textContent='Could not send email'; } };
-loginAlertsSwitch.onclick = async()=>{ loginAlertsSwitch.classList.toggle('on'); if(auth.currentUser){ await saveSecuritySettings(auth.currentUser.uid, { loginAlerts: loginAlertsSwitch.classList.contains('on') }); } };
+// The controller commits the visible switch state only after Firestore confirms the write.
 logoutCurrentBtn.onclick = async()=>{ await logoutCurrentSession('auth/login.html'); window.location.href='auth/login.html'; };
 logoutAllBtn.onclick = async()=>{ if(!auth.currentUser) return; await revokeAllSessions(auth.currentUser.uid, sessionId); await logoutCurrentSession('auth/login.html?reason=all-sessions-revoked'); window.location.href='auth/login.html?reason=all-sessions-revoked'; };
 
-onAuthStateChanged(auth, async(user)=>{ passwordForm.querySelector('button[type=submit]').disabled=!user; if(!user) return; verifyStatus.textContent = user.emailVerified ? 'Verified' : 'Not verified'; resendBtn.hidden = !!user.emailVerified; let seeded = {}; try { seeded = await bootstrapAccount(user); } catch (_) {} loginAlertsSwitch.classList.toggle('on', seeded.security?.loginAlerts !== false); try {
-  const sessions = await getSessionMetadata(user.uid);
-  renderSessionMetadata(sessionList, sessions);
-  sessionId = sessions[0]?.sessionId || null;
-} catch (error) {
-  sessionList.textContent = 'Could not load active sessions. Reload to try again.';
-  sessionId = null;
-}});
+onAuthStateChanged(auth, async (user) => {
+  const revision = ++authRevision;
+  loginAlertController.setAccount(null);
+  passwordForm.querySelector('button[type=submit]').disabled = !user;
+  if (!user) return;
+  verifyStatus.textContent = user.emailVerified ? 'Verified' : 'Not verified';
+  resendBtn.hidden = !!user.emailVerified;
+  try {
+    const seeded = await bootstrapAccount(user);
+    if (revision !== authRevision || auth.currentUser?.uid !== user.uid) return;
+    const setting = seeded.security?.loginAlerts;
+    loginAlertController.setAccount(user.uid, typeof setting === 'boolean' ? setting : null);
+  } catch (_) {
+    if (revision !== authRevision || auth.currentUser?.uid !== user.uid) return;
+    loginAlertController.setAccount(user.uid, null);
+  }
+  try {
+    const sessions = await getSessionMetadata(user.uid);
+    if (revision !== authRevision || auth.currentUser?.uid !== user.uid) return;
+    renderSessionMetadata(sessionList, sessions);
+    sessionId = sessions[0]?.sessionId || null;
+  } catch (error) {
+    if (revision !== authRevision || auth.currentUser?.uid !== user.uid) return;
+    sessionList.textContent = 'Could not load active sessions. Reload to try again.';
+    sessionId = null;
+  }
+});
 
 mountNotificationBell();
 </script>
