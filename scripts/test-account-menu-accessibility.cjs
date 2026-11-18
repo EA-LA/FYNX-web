@@ -142,3 +142,22 @@ test('notification bell remains usable without account scripts or authentication
     dom.window.close();
   }
 });
+
+test('shared header keeps page title as text, never parsed markup', () => {
+  const dom = new JSDOM('<div class="nav-panel"></div><div class="top-bar"><h1 class="page-title"></h1></div>', {
+    url: 'https://www.fynxfinanceworld.com/news.html', runScripts: 'outside-only'
+  });
+  try {
+    Object.defineProperty(dom.window.document, 'readyState', { configurable: true, get: () => 'complete' });
+    const title = 'Stocks < $3 & <img src=x onerror=alert(1)>';
+    dom.window.document.querySelector('.page-title').textContent = title;
+    dom.window.eval(navSource);
+    const heading = dom.window.document.querySelector('.top-bar .page-title');
+    assert.equal(heading.textContent, title, 'literal symbols and markup-like text remain readable');
+    assert.equal(heading.querySelector('img'), null, 'page title must not create DOM elements');
+    assert.equal(dom.window.document.querySelector('.nav-item.active')?.getAttribute('data-view'), 'news',
+      'safe title handling must retain route-aware navigation');
+  } finally {
+    dom.window.close();
+  }
+});
