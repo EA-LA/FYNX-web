@@ -72,7 +72,8 @@ test('a failed refresh retains sourced rows, shows failure state and supports a 
     app.mode('fail'); app.intervals[0]();
     await flush(); await flush();
     assert.equal(app.host().querySelectorAll('.fx-mv').length, 1);
-    assert.match(app.host().textContent, /Update failed. Showing the previous snapshot/);
+    assert.match(app.host().textContent, /Update failed for crypto movers/);
+    assert.equal(app.host().querySelector('.fx-live').classList.contains('is-stale'), false);
     assert.equal(app.host().querySelector('.fx-live').classList.contains('is-stale'), true);
     app.mode('ok'); app.host().querySelector('[data-movers-retry]').click();
     await flush(); await flush();
