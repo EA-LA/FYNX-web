@@ -17,11 +17,28 @@
     document.getElementById('partnerResultCount').textContent=`${total} ${total===1?'platform':'platforms'}${query?' found':''}`;
     document.getElementById('partnerEmpty').hidden=total!==0;clear.hidden=!search.value;
   }
+  // pushState keeps category URLs shareable but suppresses the browser's native
+  // anchor scrolling. Explicitly reveal the results after a category click,
+  // especially on iPhone where the filters stack above the platform cards.
+  function revealResults(selected) {
+    const empty = document.getElementById('partnerEmpty');
+    const target = !empty.hidden ? empty
+      : selected === 'all' ? document.getElementById('all')
+      : sections.find(section => section.id === selected && !section.hidden);
+    if (!target || typeof target.scrollIntoView !== 'function') return;
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+  }
   function reset(){search.value='';history.replaceState(null,'',location.pathname+location.search+'#all');render();search.focus();}
   search.addEventListener('input',render);
   clear.addEventListener('click',()=>{search.value='';render();search.focus();});
   document.getElementById('resetPartnerFilters').addEventListener('click',reset);
-  links.forEach(link=>link.addEventListener('click',event=>{event.preventDefault();history.pushState(null,'',link.getAttribute('href'));render();}));
+  links.forEach(link=>link.addEventListener('click',event=>{
+    event.preventDefault();
+    history.pushState(null,'',link.getAttribute('href'));
+    render();
+    revealResults(category());
+  }));
   window.addEventListener('hashchange',render);window.addEventListener('popstate',render);
   render();
 })();
