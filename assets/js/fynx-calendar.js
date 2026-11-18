@@ -76,7 +76,7 @@
       const t = Date.parse(e.time); if (!Number.isFinite(t)) continue;
       const allDay = isAllDay(e), country = CCY[e.currency]?.[0] || e.currency, imp = IMPACT[e.impact]?.[1] || '';
       const uid = (e.id ? String(e.id) : `${e.time}-${e.currency}-${e.title}`.replace(/[^A-Za-z0-9-]/g, '')).slice(0, 80) + '@fynxfinanceworld.com';
-      const desc = [`${country} · ${imp}`, e.forecast ? `Forecast: ${e.forecast}` : '', e.previous ? `Previous: ${e.previous}` : '',
+      const desc = [`${country} · ${imp}`, supplied(e.forecast) !== null ? `Forecast: ${e.forecast}` : '', supplied(e.previous) !== null ? `Previous: ${e.previous}` : '',
         'Schedule from Forex Factory via FYNX research. Release times can change: check the source before trading.', 'https://www.fynxfinanceworld.com/tools/economic-calendar.html'].filter(Boolean).join('\n');
       lines.push('BEGIN:VEVENT', `UID:${uid}`, `DTSTAMP:${icsStamp(now)}`);
       if (allDay) lines.push(`DTSTART;VALUE=DATE:${icsDate(t)}`, `DTEND;VALUE=DATE:${icsDate(t + 86400000)}`);
@@ -214,12 +214,12 @@
         if (key !== last) { list.append(el('div', 'fc-day', dayLabel(t))); last = key; }
         const past = t <= now, allDay = isAllDay(e);
         const r = el('div', 'fc-row' + (past ? ' fc-past' : '') + (e.impact === 'high' ? ' fc-high' : '')); r.setAttribute('role', 'listitem');
-        r.setAttribute('aria-label', `${timeLabel(e.time, allDay)}, ${CCY[e.currency]?.[0] || e.currency}, ${e.title}, ${IMPACT[e.impact]?.[1] || ''}${e.forecast ? ', forecast ' + e.forecast : ''}${e.previous ? ', previous ' + e.previous : ''}`);
+        r.setAttribute('aria-label', `${timeLabel(e.time, allDay)}, ${CCY[e.currency]?.[0] || e.currency}, ${e.title}, ${IMPACT[e.impact]?.[1] || ''}${supplied(e.forecast) !== null ? ', forecast ' + e.forecast : ''}${supplied(e.previous) !== null ? ', previous ' + e.previous : ''}`);
         const when = el('div', 'fc-when'); when.append(el('time', '', timeLabel(e.time, allDay))); when.lastChild.dateTime = e.time;
         when.append(el('small', past ? 'fc-done' : 'fc-soon', past ? (allDay ? '' : phase(e) === 'Result reported' ? 'Result reported' : 'Awaiting result') : until(t - now)));
         const what = el('div', 'fc-what'); const meta = el('div', 'fc-meta'); meta.append(chip(e.currency), bars(e.impact)); const title = el('button', 'fc-title fc-open-event', e.title); title.type = 'button'; title.addEventListener('click', () => selectEvent(e)); what.append(meta, title);
         const nums = el('div', 'fc-nums'); nums.append(value('Forecast', e.forecast), value('Previous', e.previous));
-        if (past && !allDay) { const a = el('a', 'fc-actual', 'Result ↗'); const dd = new Date(t); a.href = `https://www.forexfactory.com/calendar?day=${['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'][dd.getUTCMonth()]}${dd.getUTCDate()}.${dd.getUTCFullYear()}`; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.title = 'Open the released result at the source'; nums.append(a); }
+        if (past && !allDay) { const a = el('a', 'fc-actual', 'Check result ↗'); const dd = new Date(t); a.href = `https://www.forexfactory.com/calendar?day=${['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'][dd.getUTCMonth()]}${dd.getUTCDate()}.${dd.getUTCFullYear()}`; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.title = 'Check whether an actual result is published at the source'; nums.append(a); }
         if (!o.compact && !past) { const add = el('button', 'fc-add', '+ Calendar'); add.type = 'button'; add.dataset.fcEvent = eventKey(e); add.setAttribute('aria-label', `Add ${e.currency} ${e.title} to your calendar (.ics)`); add.title = allDay ? 'Download this day as an all-day calendar event' : 'Download this release as a calendar event with a 10-minute reminder'; add.addEventListener('click', () => addOne(e)); nums.append(add); }
         r.append(when, what, nums); list.append(r);
         if (!past && !firstUpcoming) firstUpcoming = r;
@@ -230,7 +230,7 @@
     function drawFoot() {
       foot.replaceChildren();
       const src = el('a', '', 'Forex Factory'); src.href = 'https://www.forexfactory.com/calendar'; src.target = '_blank'; src.rel = 'noopener noreferrer';
-      foot.append(`Times in your time zone (${Intl.DateTimeFormat().resolvedOptions().timeZone}). Schedule, forecasts and previous values from `, src, ` via FYNX research, updated ${new Date(data.updatedAt).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'})}. “Result ↗” opens the published figure at the source.`);
+      foot.append(`Times in your time zone (${Intl.DateTimeFormat().resolvedOptions().timeZone}). Schedule, forecasts and previous values from `, src, ` via FYNX research, updated ${new Date(data.updatedAt).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'})}. “Check result ↗” opens the source to verify whether an actual figure has been published.`);
     }
     function draw() { if (!data) return; renderControls(); drawNext(); drawList(); drawFoot(); drawDetail(); }
     async function refresh(force) {
