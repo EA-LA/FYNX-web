@@ -722,10 +722,11 @@
           }
         }
         state.projects = state.projects.filter(item => item.id !== id);
-        writeDevice(state.uid);
         currentId = state.projects[0]?.id || null;
         draft = currentId ? draftOf(byId(currentId)) : draftOf(null);
         dirty = false;
+        // Persist the replacement draft, not the deleted project's former draft.
+        writeDevice(state.uid);
         say(deviceOnly ? 'Deleted from this browser.' : 'Project deleted from your account.', 'ok');
         paint();
       }
@@ -840,6 +841,10 @@
       }
       function openProject(id) {
         syncCode();
+        if (dirty) {
+          say('Save your current changes before opening another project. Your code has not been discarded.', 'error');
+          return;
+        }
         const project = byId(id);
         if (!project) return;
         currentId = id;
@@ -886,6 +891,10 @@
         scroll.append(el('h2', '', 'Projects'));
         scroll.append(buttonEl('New project', '', () => {
           syncCode();
+          if (dirty) {
+            say('Save your current changes before starting another project. Your code has not been discarded.', 'error');
+            return;
+          }
           currentId = null;
           draft = draftOf(null);
           dirty = true;
