@@ -1,0 +1,102 @@
+{
+  "source_commit": "216885c",
+  "kind": "synthetic_fixtures_against_actual_page_scripts",
+  "rows": [
+    {
+      "case": "risk-reward/long",
+      "browser": 3,
+      "api": 3,
+      "match": true
+    },
+    {
+      "case": "risk-reward/short",
+      "browser": 3,
+      "api": 3,
+      "match": true
+    },
+    {
+      "case": "risk-reward/integer",
+      "browser": 2,
+      "api": 2,
+      "match": true
+    },
+    {
+      "case": "pip/USD",
+      "browser": 10,
+      "api": 10,
+      "match": true
+    },
+    {
+      "case": "pip/JPY",
+      "browser": 6.25,
+      "api": 6.25,
+      "match": true
+    },
+    {
+      "case": "pip/cross",
+      "browser": 3.75,
+      "api": 3.75,
+      "match": true
+    },
+    {
+      "case": "margin/USD quoted",
+      "browser": 3616.67,
+      "api": 3616.67,
+      "match": true
+    },
+    {
+      "case": "margin/USD base",
+      "browser": 3333.33,
+      "api": 3333.33,
+      "match": true
+    },
+    {
+      "case": "margin/cross",
+      "browser": 3541.67,
+      "api": 3541.67,
+      "match": true
+    },
+    {
+      "case": "break-even/buy",
+      "browser": 1.08519,
+      "api": 1.08519,
+      "match": true
+    },
+    {
+      "case": "break-even/sell",
+      "browser": 1.08481,
+      "api": 1.08481,
+      "match": true
+    },
+    {
+      "case": "atr-stop/buy",
+      "browser": 1.076,
+      "api": 1.076,
+      "match": true
+    },
+    {
+      "case": "atr-stop/sell",
+      "browser": 1.09175,
+      "api": 1.09175,
+      "match": true
+    },
+    {
+      "case": "position-size/exact",
+      "browser": 0.33,
+      "api": 0.33,
+      "match": true
+    },
+    {
+      "case": "position-size/floor",
+      "browser": 0.67,
+      "api": 0.66,
+      "match": false
+    },
+    {
+      "case": "position-size/below-minimum",
+      "browser": 0,
+      "api": 0,
+      "match": true
+    }
+  ]
+}

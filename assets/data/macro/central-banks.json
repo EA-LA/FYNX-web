@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "verifiedAt": "2026-11-10",
+  "note": "Scheduled decision days copied from each central bank's published calendar. Banks can change dates or act between meetings; always confirm on the official calendar.",
+  "banks": [
+    {
+      "area": "US", "currency": "USD", "name": "Federal Reserve", "short": "Fed",
+      "instrument": "Federal funds target range",
+      "time": "14:00", "timeZone": "America/New_York",
+      "calendarURL": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "previous": "2026-10-28",
+      "decisions": ["2026-12-09", "2027-01-27", "2027-03-17", "2027-04-28", "2027-06-09", "2027-07-28", "2027-09-15", "2027-10-27", "2027-12-08"]
+    },
+    {
+      "area": "XM", "currency": "EUR", "name": "European Central Bank", "short": "ECB",
+      "instrument": "Deposit facility rate",
+      "time": "14:15", "timeZone": "Europe/Berlin",
+      "calendarURL": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
+      "previous": "2026-10-29",
+      "decisions": ["2026-12-17", "2027-02-04", "2027-03-18", "2027-04-29", "2027-06-10", "2027-07-22", "2027-09-09", "2027-10-28", "2027-12-16"]
+    },
+    {
+      "area": "GB", "currency": "GBP", "name": "Bank of England", "short": "BoE",
+      "instrument": "Bank Rate",
+      "time": "12:00", "timeZone": "Europe/London",
+      "calendarURL": "https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates",
+      "previous": "2026-11-05",
+      "decisions": ["2026-12-17", "2027-02-04", "2027-03-18", "2027-04-29", "2027-06-17", "2027-07-29", "2027-09-16", "2027-11-04", "2027-12-16"]
+    },
+    {
+      "area": "JP", "currency": "JPY", "name": "Bank of Japan", "short": "BoJ",
+      "instrument": "Uncollateralized overnight call rate",
+      "time": null, "timeZone": "Asia/Tokyo",
+      "timeNote": "Announced when the meeting ends, usually around midday Tokyo time",
+      "calendarURL": "https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm",
+      "previous": "2026-10-30",
+      "decisions": ["2026-12-18", "2027-01-22", "2027-03-18", "2027-04-28", "2027-06-11", "2027-07-22", "2027-09-22", "2027-10-29", "2027-12-17"]
+    },
+    {
+      "area": "CH", "currency": "CHF", "name": "Swiss National Bank", "short": "SNB",
+      "instrument": "SNB policy rate",
+      "time": "09:30", "timeZone": "Europe/Zurich",
+      "calendarURL": "https://www.snb.ch/en/ifor/media/id/media_events",
+      "previous": "2026-09-24",
+      "decisions": ["2026-12-10", "2027-03-18", "2027-06-24", "2027-09-23", "2027-12-16"]
+    },
+    {
+      "area": "CA", "currency": "CAD", "name": "Bank of Canada", "short": "BoC",
+      "instrument": "Target for the overnight rate",
+      "time": "09:45", "timeZone": "America/Toronto",
+      "calendarURL": "https://www.bankofcanada.ca/core-functions/monetary-policy/key-interest-rate/",
+      "previous": "2026-10-28",
+      "decisions": ["2026-12-09", "2027-01-27", "2027-03-03", "2027-04-28", "2027-06-02", "2027-07-21", "2027-09-08", "2027-10-27", "2027-12-08"]
+    },
+    {
+      "area": "AU", "currency": "AUD", "name": "Reserve Bank of Australia", "short": "RBA",
+      "instrument": "Cash rate target",
+      "time": "14:30", "timeZone": "Australia/Sydney",
+      "calendarURL": "https://www.rba.gov.au/schedules-events/board-meeting-schedules.html",
+      "previous": "2026-11-03",
+      "decisions": ["2026-12-08", "2027-02-09", "2027-03-23", "2027-05-04", "2027-06-22", "2027-08-10", "2027-09-21", "2027-11-02", "2027-12-14"]
+    },
+    {
+      "area": "NZ", "currency": "NZD", "name": "Reserve Bank of New Zealand", "short": "RBNZ",
+      "instrument": "Official Cash Rate",
+      "time": "14:00", "timeZone": "Pacific/Auckland",
+      "calendarURL": "https://www.rbnz.govt.nz/monetary-policy/about-monetary-policy/how-we-release-information",
+      "previous": "2026-10-28",
+      "decisions": ["2026-12-09", "2027-02-10", "2027-03-17", "2027-05-05", "2027-06-16", "2027-08-04", "2027-09-15", "2027-10-27"]
+    }
+  ]
+}

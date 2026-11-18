@@ -1,0 +1,43 @@
+name: Publish FYNX Intelligence
+# Builds FYNX Intelligence pages from the news service and FYNX's public data snapshots
+# and commits them to /intelligence on main (GitHub Pages and Vercel deploy from main).
+# Optional secret ANTHROPIC_API_KEY enables AI-assisted narrative (checked before publishing).
+on:
+  schedule:
+    - cron: '23 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      max_new:
+        description: 'Maximum new stories this run'
+        required: false
+        default: '30'
+permissions:
+  contents: write
+concurrency:
+  group: publish-intelligence
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Build Intelligence
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          INTELLIGENCE_MAX_NEW: ${{ github.event.inputs.max_new || '30' }}
+        run: node scripts/build-intelligence.cjs
+      - name: Check pages
+        run: node --test tests/intelligence/*.test.cjs
+      - name: Commit
+        run: |
+          git config user.name "fynx-intelligence[bot]"
+          git config user.email "fynx-intelligence@users.noreply.github.com"
+          git add intelligence
+          if git diff --cached --quiet; then echo "No changes."; exit 0; fi
+          git commit -q -m "Intelligence: refresh $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin HEAD:main && exit 0; sleep 5; done
+          exit 1

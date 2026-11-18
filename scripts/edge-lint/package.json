@@ -1,0 +1,13 @@
+{
+  "name": "fynx-edge-lint-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Isolated developer lint toolchain; never bundled or copied to public assets. Application TypeScript remains unchanged.",
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.14.0",
+    "globals": "17.14.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1"
+  }
+}

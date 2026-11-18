@@ -1,0 +1,896 @@
+{
+  "asOf": "2025-05-20T10:00:00.000Z",
+  "status": "available",
+  "brief": "EURUSD with News drift scores 83; GBPUSD with News drift scores 83. BTCUSD is the weakest measured fit (0); its historical sample contains 136 trades; Next high-impact release: US CPI test fixture (USD) at May 23, 12:30 PM UTC.",
+  "mood": "mixed",
+  "markets": [
+    {
+      "symbol": "EURUSD",
+      "price": 2.905498544,
+      "stateDate": "2025-05-19",
+      "regime": "Strong trend",
+      "er": 1,
+      "adx": 63.616995676,
+      "atr": 0.017876375,
+      "volatility": 64.940239044,
+      "cot": 0.006023661,
+      "crowded": false,
+      "event": false,
+      "fits": [
+        {
+          "id": "builtin-atr-breakout",
+          "score": 81,
+          "label": "fit",
+          "sample": 66,
+          "avgR": 1.823793897,
+          "parts": [
+            [
+              "regime",
+              38
+            ],
+            [
+              "volatility",
+              23
+            ],
+            [
+              "record",
+              20
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        },
+        {
+          "id": "builtin-mean-reversion",
+          "score": 0,
+          "label": "avoid",
+          "sample": 136,
+          "avgR": -0.971753156,
+          "parts": [
+            [
+              "regime",
+              0
+            ],
+            [
+              "volatility",
+              0
+            ],
+            [
+              "record",
+              0
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        },
+        {
+          "id": "builtin-news-drift",
+          "score": 83,
+          "label": "fit",
+          "sample": 73,
+          "avgR": 1.896991939,
+          "parts": [
+            [
+              "regime",
+              40
+            ],
+            [
+              "volatility",
+              23
+            ],
+            [
+              "record",
+              20
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        }
+      ]
+    },
+    {
+      "symbol": "GBPUSD",
+      "price": 3.433771006,
+      "stateDate": "2025-05-19",
+      "regime": "Strong trend",
+      "er": 1,
+      "adx": 63.616995676,
+      "atr": 0.021126625,
+      "volatility": 64.940239044,
+      "cot": 0.006023661,
+      "crowded": false,
+      "event": false,
+      "fits": [
+        {
+          "id": "builtin-atr-breakout",
+          "score": 81,
+          "label": "fit",
+          "sample": 66,
+          "avgR": 1.824956875,
+          "parts": [
+            [
+              "regime",
+              38
+            ],
+            [
+              "volatility",
+              23
+            ],
+            [
+              "record",
+              20
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        },
+        {
+          "id": "builtin-mean-reversion",
+          "score": 0,
+          "label": "avoid",
+          "sample": 136,
+          "avgR": -0.970573039,
+          "parts": [
+            [
+              "regime",
+              0
+            ],
+            [
+              "volatility",
+              0
+            ],
+            [
+              "record",
+              0
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        },
+        {
+          "id": "builtin-news-drift",
+          "score": 83,
+          "label": "fit",
+          "sample": 73,
+          "avgR": 1.901108894,
+          "parts": [
+            [
+              "regime",
+              40
+            ],
+            [
+              "volatility",
+              23
+            ],
+            [
+              "record",
+              20
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        }
+      ]
+    },
+    {
+      "symbol": "USDJPY",
+      "price": 316.963477517,
+      "stateDate": "2025-05-19",
+      "regime": "Strong trend",
+      "er": 1,
+      "adx": 63.616995676,
+      "atr": 1.950149954,
+      "volatility": 64.940239044,
+      "cot": -0.006023661,
+      "crowded": false,
+      "event": false,
+      "fits": [
+        {
+          "id": "builtin-atr-breakout",
+          "score": 81,
+          "label": "fit",
+          "sample": 66,
+          "avgR": 1.824423844,
+          "parts": [
+            [
+              "regime",
+              38
+            ],
+            [
+              "volatility",
+              23
+            ],
+            [
+              "record",
+              20
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        },
+        {
+          "id": "builtin-mean-reversion",
+          "score": 0,
+          "label": "avoid",
+          "sample": 136,
+          "avgR": -0.971113926,
+          "parts": [
+            [
+              "regime",
+              0
+            ],
+            [
+              "volatility",
+              0
+            ],
+            [
+              "record",
+              0
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        },
+        {
+          "id": "builtin-news-drift",
+          "score": 83,
+          "label": "fit",
+          "sample": 73,
+          "avgR": 1.899221956,
+          "parts": [
+            [
+              "regime",
+              40
+            ],
+            [
+              "volatility",
+              23
+            ],
+            [
+              "record",
+              20
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        }
+      ]
+    },
+    {
+      "symbol": "USDCHF",
+      "price": 2.509294197,
+      "stateDate": "2025-05-19",
+      "regime": "Strong trend",
+      "er": 1,
+      "adx": 63.616995676,
+      "atr": 0.015438687,
+      "volatility": 64.940239044,
+      "cot": -0.006023661,
+      "crowded": false,
+      "event": false,
+      "fits": [
+        {
+          "id": "builtin-atr-breakout",
+          "score": 81,
+          "label": "fit",
+          "sample": 66,
+          "avgR": 1.822600314,
+          "parts": [
+            [
+              "regime",
+              38
+            ],
+            [
+              "volatility",
+              23
+            ],
+            [
+              "record",
+              20
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        },
+        {
+          "id": "builtin-mean-reversion",
+          "score": 0,
+          "label": "avoid",
+          "sample": 136,
+          "avgR": -0.972964329,
+          "parts": [
+            [
+              "regime",
+              0
+            ],
+            [
+              "volatility",
+              0
+            ],
+            [
+              "record",
+              0
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        },
+        {
+          "id": "builtin-news-drift",
+          "score": 83,
+          "label": "fit",
+          "sample": 73,
+          "avgR": 1.892766644,
+          "parts": [
+            [
+              "regime",
+              40
+            ],
+            [
+              "volatility",
+              23
+            ],
+            [
+              "record",
+              20
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        }
+      ]
+    },
+    {
+      "symbol": "AUDUSD",
+      "price": 1.848953619,
+      "stateDate": "2025-05-19",
+      "regime": "Strong trend",
+      "er": 1,
+      "adx": 63.616995676,
+      "atr": 0.011375875,
+      "volatility": 64.940239044,
+      "cot": 0.006023661,
+      "crowded": false,
+      "event": false,
+      "fits": [
+        {
+          "id": "builtin-atr-breakout",
+          "score": 81,
+          "label": "fit",
+          "sample": 66,
+          "avgR": 1.819474263,
+          "parts": [
+            [
+              "regime",
+              38
+            ],
+            [
+              "volatility",
+              23
+            ],
+            [
+              "record",
+              20
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        },
+        {
+          "id": "builtin-mean-reversion",
+          "score": 0,
+          "label": "avoid",
+          "sample": 136,
+          "avgR": -0.97613645,
+          "parts": [
+            [
+              "regime",
+              0
+            ],
+            [
+              "volatility",
+              0
+            ],
+            [
+              "record",
+              0
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        },
+        {
+          "id": "builtin-news-drift",
+          "score": 83,
+          "label": "fit",
+          "sample": 73,
+          "avgR": 1.881700395,
+          "parts": [
+            [
+              "regime",
+              40
+            ],
+            [
+              "volatility",
+              23
+            ],
+            [
+              "record",
+              20
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        }
+      ]
+    },
+    {
+      "symbol": "XAUUSD",
+      "price": 4754.452162761,
+      "stateDate": "2025-05-19",
+      "regime": "Strong trend",
+      "er": 1,
+      "adx": 63.616995676,
+      "atr": 29.252249315,
+      "volatility": 64.940239044,
+      "cot": 0.006023661,
+      "crowded": false,
+      "event": false,
+      "fits": [
+        {
+          "id": "builtin-atr-breakout",
+          "score": 81,
+          "label": "fit",
+          "sample": 66,
+          "avgR": 1.826733648,
+          "parts": [
+            [
+              "regime",
+              38
+            ],
+            [
+              "volatility",
+              23
+            ],
+            [
+              "record",
+              20
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        },
+        {
+          "id": "builtin-mean-reversion",
+          "score": 0,
+          "label": "avoid",
+          "sample": 136,
+          "avgR": -0.968770081,
+          "parts": [
+            [
+              "regime",
+              0
+            ],
+            [
+              "volatility",
+              0
+            ],
+            [
+              "record",
+              0
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        },
+        {
+          "id": "builtin-news-drift",
+          "score": 83,
+          "label": "fit",
+          "sample": 73,
+          "avgR": 1.907398685,
+          "parts": [
+            [
+              "regime",
+              40
+            ],
+            [
+              "volatility",
+              23
+            ],
+            [
+              "record",
+              20
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        }
+      ]
+    },
+    {
+      "symbol": "SPX500",
+      "price": 10565.449250581,
+      "stateDate": "2025-05-19",
+      "regime": "Strong trend",
+      "er": 1,
+      "adx": 63.616995676,
+      "atr": 65.004998477,
+      "volatility": 64.940239044,
+      "cot": 0.006023661,
+      "crowded": false,
+      "event": false,
+      "fits": [
+        {
+          "id": "builtin-atr-breakout",
+          "score": 81,
+          "label": "fit",
+          "sample": 66,
+          "avgR": 1.829274433,
+          "parts": [
+            [
+              "regime",
+              38
+            ],
+            [
+              "volatility",
+              23
+            ],
+            [
+              "record",
+              20
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        },
+        {
+          "id": "builtin-mean-reversion",
+          "score": 0,
+          "label": "avoid",
+          "sample": 136,
+          "avgR": -0.966191852,
+          "parts": [
+            [
+              "regime",
+              0
+            ],
+            [
+              "volatility",
+              0
+            ],
+            [
+              "record",
+              0
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        },
+        {
+          "id": "builtin-news-drift",
+          "score": 83,
+          "label": "fit",
+          "sample": 73,
+          "avgR": 1.916393087,
+          "parts": [
+            [
+              "regime",
+              40
+            ],
+            [
+              "volatility",
+              23
+            ],
+            [
+              "record",
+              20
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        }
+      ]
+    },
+    {
+      "symbol": "BTCUSD",
+      "price": 79240.869379355,
+      "stateDate": "2025-05-19",
+      "regime": "Strong trend",
+      "er": 1,
+      "adx": 63.616995676,
+      "atr": 487.537488576,
+      "volatility": 64.940239044,
+      "cot": 0.006023661,
+      "crowded": false,
+      "event": false,
+      "fits": [
+        {
+          "id": "builtin-atr-breakout",
+          "score": 81,
+          "label": "fit",
+          "sample": 66,
+          "avgR": 1.828581492,
+          "parts": [
+            [
+              "regime",
+              38
+            ],
+            [
+              "volatility",
+              23
+            ],
+            [
+              "record",
+              20
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        },
+        {
+          "id": "builtin-mean-reversion",
+          "score": 0,
+          "label": "avoid",
+          "sample": 136,
+          "avgR": -0.966895006,
+          "parts": [
+            [
+              "regime",
+              0
+            ],
+            [
+              "volatility",
+              0
+            ],
+            [
+              "record",
+              0
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        },
+        {
+          "id": "builtin-news-drift",
+          "score": 83,
+          "label": "fit",
+          "sample": 73,
+          "avgR": 1.913940068,
+          "parts": [
+            [
+              "regime",
+              40
+            ],
+            [
+              "volatility",
+              23
+            ],
+            [
+              "record",
+              20
+            ],
+            [
+              "positioning",
+              0
+            ],
+            [
+              "events",
+              0
+            ]
+          ],
+          "relaxed": [
+            "event and positioning flags"
+          ]
+        }
+      ]
+    }
+  ]
+}

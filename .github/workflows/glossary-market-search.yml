@@ -1,0 +1,37 @@
+name: Glossary market search recovery
+
+on:
+  pull_request:
+    paths:
+      - 'assets/js/glossary-search.js'
+      - 'trading-glossary.html'
+      - 'scripts/test-glossary-market-recovery.cjs'
+      - '.github/workflows/glossary-market-search.yml'
+  push:
+    paths:
+      - 'assets/js/glossary-search.js'
+      - 'trading-glossary.html'
+      - 'scripts/test-glossary-market-recovery.cjs'
+      - '.github/workflows/glossary-market-search.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  glossary-market-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Parse production JavaScript and regression test
+        run: |
+          node --check assets/js/glossary-search.js
+          node --check scripts/test-glossary-market-recovery.cjs
+      - name: Exercise production glossary search against page DOM
+        run: node scripts/test-glossary-market-recovery.cjs

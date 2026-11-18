@@ -1,0 +1,31 @@
+{
+  "displayName": "FYNX API: backup inspection missing",
+  "combiner": "OR",
+  "enabled": true,
+  "notificationChannels": [
+    "projects/fynx-c7a28/notificationChannels/13193237577260677372"
+  ],
+  "conditions": [
+    {
+      "displayName": "No successful backup inspection for eight hours",
+      "conditionAbsent": {
+        "filter": "metric.type=\"logging.googleapis.com/user/fynx_api_backup_checks\" AND resource.type=\"cloud_function\"",
+        "duration": "28800s",
+        "trigger": {
+          "count": 1
+        },
+        "aggregations": [
+          {
+            "alignmentPeriod": "3600s",
+            "perSeriesAligner": "ALIGN_SUM",
+            "crossSeriesReducer": "REDUCE_SUM"
+          }
+        ]
+      }
+    }
+  ],
+  "documentation": {
+    "content": "Check developerBackupCheck, Cloud Scheduler and docs/developer-operations.md. Do not disable backup protection to clear this alert.",
+    "mimeType": "text/markdown"
+  }
+}

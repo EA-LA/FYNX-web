@@ -1,0 +1,25 @@
+name: Market Desk rotation regression
+on:
+  pull_request:
+    paths:
+      - index.html
+      - assets/js/landing-workspace.js
+      - assets/landing-workspace.css
+      - scripts/test-landing-workspace-rotation.cjs
+      - package.json
+      - package-lock.json
+      - .github/workflows/landing-workspace-rotation.yml
+  workflow_dispatch:
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test scripts/test-landing-workspace-rotation.cjs

@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#f7f7f7;
+      --bg-solid:#ffffff;
+      --text:#0a0a0a;
+      --text-strong:#000000;
+      --text-muted:rgba(10, 10, 10, .65);
+      --text-soft:rgba(10, 10, 10, .55);
+      --border:rgba(10, 10, 10, .10);
+      --border-strong:rgba(10, 10, 10, .14);
+      --surface:rgba(255, 255, 255, .78);
+      --surface-2:rgba(255, 255, 255, .86);
+      --nav-bg:rgba(255, 255, 255, .85);
+      --nav-link-bg:rgba(0, 0, 0, .03);
+      --nav-link-bg-hover:rgba(0, 0, 0, .06);
+      --grid-line:rgba(0, 0, 0, .05);
+      --orb-core:rgba(0, 0, 0, .22);
+      --hero-gradient-1:#0a0a0a;
+      --hero-gradient-2:#6b6b6b;
+      --input-bg:#ffffff;
+      --good:#5f5f5f;
+      --warn:#919191;
+      --bad:#606060;
+      --chip:#f1f1f1;
+    }
+    body.dark-mode{
+      --bg:#000000;
+      --bg-solid:#000000;
+      --text:#ffffff;
+      --text-strong:#ffffff;
+      --text-muted:rgba(255, 255, 255, .65);
+      --text-soft:rgba(255, 255, 255, .55);
+      --border:rgba(255, 255, 255, .10);
+      --border-strong:rgba(255, 255, 255, .14);
+      --surface:rgba(255, 255, 255, .03);
+      --surface-2:rgba(0, 0, 0, .55);
+      --nav-bg:rgba(0, 0, 0, .85);
+      --nav-link-bg:rgba(255, 255, 255, .04);
+      --nav-link-bg-hover:rgba(255, 255, 255, .08);
+      --grid-line:rgba(255, 255, 255, .03);
+      --orb-core:rgba(255, 255, 255, .9);
+      --hero-gradient-1:#ffffff;
+      --hero-gradient-2:#8a8a8a;
+      --input-bg:rgba(255, 255, 255, .03);
+      --good:#989898;
+      --warn:#bdbdbd;
+      --bad:#969696;
+      --chip:rgba(255, 255, 255, .05);
+    }
+    body{
+      font-family:'Inter','Segoe UI',system-ui,sans-serif;
+      color:var(--text);
+      background:var(--bg-solid);
+      overflow-x:hidden;
+      min-height:100vh;
+      transition:background .25s ease,color .25s ease;
+    }
+    .animated-bg{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      background:var(--bg-solid);
+      overflow:hidden;
+      transition:background .25s ease;
+    }
+    .grid-overlay{
+      position:absolute;inset:0;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size:50px 50px;
+      animation:gridMove 20s linear infinite;
+      transition:background-image .25s ease;
+    }
+    @keyframes gridMove{0%{transform:translate(0,0)}100%{transform:translate(50px,50px)}}
+    .gradient-orb{
+      position:absolute;
+      border-radius:50%;
+      filter:blur(80px);
+      opacity:.25;
+      animation:float 20s ease-in-out infinite;
+    }
+    .orb-1{
+      width:520px;
+      height:520px;
+      background:radial-gradient(circle,var(--orb-core) 0%,transparent 70%);
+      top:-220px;
+      left:-220px;
+    }
+    .orb-2{
+      width:420px;
+      height:420px;
+      background:radial-gradient(circle,var(--orb-core) 0%,transparent 70%);
+      bottom:-170px;
+      right:-170px;
+      animation-delay:6s;
+    }
+    @keyframes float{
+      0%,100%{transform:translate(0,0) scale(1)}
+      33%{transform:translate(50px,-50px) scale(1.08)}
+      66%{transform:translate(-50px,50px) scale(.92)}
+    }
+    header{
+      position:sticky;
+      top:0;
+      z-index:1000;
+      background:var(--nav-bg);
+      backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--border);
+      padding:1rem 0;
+      transition:background .25s ease,border-color .25s ease;
+    }
+    .nav{
+      max-width:1200px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 1.25rem;
+      gap:1rem;
+      flex-wrap:wrap;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      font-weight:900;
+      letter-spacing:-1px;
+      font-size:1.25rem;
+      color:var(--text-strong);
+      transition:color .25s ease;
+    }
+    .brand i{opacity:.9}
+    .nav-actions{
+      display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end
+    }
+    .nav a,
+    .theme-btn{
+      color:var(--text-muted);
+      text-decoration:none;
+      font-weight:700;
+      border:1px solid var(--border-strong);
+      background:var(--nav-link-bg);
+      padding:.55rem .9rem;
+      border-radius:999px;
+      transition:all .25s ease;
+      white-space:nowrap;
+      cursor:pointer;
+      font:inherit;
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+    }
+    .nav a:hover,
+    .theme-btn:hover{
+      color:var(--text-strong);
+      border-color:var(--border-strong);
+      background:var(--nav-link-bg-hover);
+      transform:translateY(-1px);
+    }
+    main{
+      max-width:1200px;
+      margin:0 auto;
+      padding:3rem 1.25rem 5rem;
+    }
+    .hero{
+      padding:2rem 1.5rem;
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:22px;
+      backdrop-filter:blur(10px);
+      transition:background .25s ease,border-color .25s ease;
+    }
+    h1{
+      font-size:3rem;
+      line-height:1.1;
+      letter-spacing:-2px;
+      background:linear-gradient(135deg,var(--hero-gradient-1) 0%,var(--hero-gradient-2) 100%);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      margin-bottom:.75rem;
+    }
+    p{
+      color:var(--text-muted);
+      font-size:1.08rem;
+      line-height:1.8;
+      max-width:76ch;
+      transition:color .25s ease;
+    }
+    .panel-grid{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:1.25rem;
+      margin-top:1.25rem;
+    }
+    .panel{
+      border:1px solid var(--border);
+      background:var(--surface-2);
+      border-radius:18px;
+      padding:1.2rem;
+      backdrop-filter:blur(10px);
+      transition:background .25s ease,border-color .25s ease;
+    }
+    .panel h2{
+      font-size:1.15rem;
+      margin-bottom:.9rem;
+      color:var(--text-strong);
+      transition:color .25s ease;
+    }
+    .muted{
+      color:var(--text-muted);
+      font-size:.98rem;
+      transition:color .25s ease;
+    }
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:.95rem;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:.45rem;
+    }
+    .field.full{grid-column:1 / -1}
+    .field label{
+      color:var(--text-muted);
+      font-size:.9rem;
+      font-weight:800;
+      letter-spacing:.01em;
+    }
+    .field input,
+    .field select{
+      width:100%;
+      border:1px solid var(--border);
+      background:var(--input-bg);
+      color:var(--text-strong);
+      padding:.9rem .95rem;
+      border-radius:14px;
+      outline:none;
+      font:inherit;
+      transition:border-color .2s ease,background .2s ease,color .2s ease,transform .2s ease;
+    }
+    .field input:focus,
+    .field select:focus{
+      border-color:var(--border-strong);
+      transform:translateY(-1px);
+    }
+    .button-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.75rem;
+      margin-top:1rem;
+    }
+    .btn{
+      border:none;
+      padding:.9rem 1rem;
+      border-radius:14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:all .2s ease;
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      font:inherit;
+    }
+    .btn.primary{
+      background:var(--text-strong);
+      color:var(--bg-solid);
+    }
+    .btn.secondary{
+      background:var(--nav-link-bg);
+      color:var(--text-strong);
+      border:1px solid var(--border);
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .results-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:.85rem;
+      margin-bottom:1rem;
+    }
+    .metric{
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:16px;
+      padding:1rem;
+      min-height:120px;
+    }
+    .metric-label{
+      color:var(--text-soft);
+      font-size:.78rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-bottom:.45rem;
+      font-weight:800;
+    }
+    .metric-value{
+      color:var(--text-strong);
+      font-size:1.3rem;
+      font-weight:900;
+      letter-spacing:-.03em;
+    }
+    .metric-sub{
+      margin-top:.35rem;
+      color:var(--text-muted);
+      font-size:.9rem;
+      line-height:1.5;
+    }
+    .good{color:var(--good)}
+    .warn{color:var(--warn)}
+    .bad{color:var(--bad)}
+    .status-box{
+      border:1px solid var(--border);
+      background:var(--surface);
+      border-radius:16px;
+      padding:1rem;
+      margin-bottom:1rem;
+    }
+    .status-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      border:1px solid var(--border);
+      background:var(--chip);
+      padding:.45rem .7rem;
+      border-radius:999px;
+      font-size:.82rem;
+      font-weight:800;
+      margin-bottom:.7rem;
+    }
+    .status-title{
+      font-size:1.05rem;
+      font-weight:900;
+      color:var(--text-strong);
+      margin-bottom:.35rem;
+    }
+    .status-desc{
+      color:var(--text-muted);
+      line-height:1.7;
+      font-size:.96rem;
+    }
+    .schedule-wrap{
+      margin-top:1.25rem;
+      border:1px solid var(--border);
+      border-radius:18px;
+      overflow:auto;
+      background:var(--surface-2);
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:760px;
+    }
+    th,td{
+      padding:.95rem .85rem;
+      border-bottom:1px solid var(--border);
+      text-align:left;
+      font-size:.94rem;
+    }
+    th{
+      color:var(--text-soft);
+      font-size:.82rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      font-weight:800;
+      background:var(--surface);
+    }
+    tr:last-child td{border-bottom:none}
+    .hint{
+      margin-top:1.2rem;
+      color:var(--text-soft);
+      font-size:.95rem;
+      transition:color .25s ease;
+      line-height:1.8;
+    }
+    .pill-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:.55rem;
+      margin-top:.9rem;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      padding:.45rem .65rem;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:var(--chip);
+      color:var(--text-muted);
+      font-size:.82rem;
+      font-weight:800;
+    }
+    @media (max-width: 920px){
+      .panel-grid,
+      .results-grid,
+      .form-grid{
+        grid-template-columns:1fr;
+      }
+    }
+    @media (max-width: 720px){
+      main{padding:2rem .95rem 3rem}
+      .hero{padding:1.25rem 1rem}
+      h1{font-size:2.35rem}
+      .nav{padding:0 .9rem}
+    }
+  </style>
+  <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
+  <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
+  <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
+  <link rel="stylesheet" href="/assets/site-design.css?v=20261114-consistency-2">
+<title>Liquidation Risk &amp; Leverage Calculator | FYNX</title>
+<meta name="description" content="Estimate liquidation price and distance for a leveraged trade using your inputs. Compare risk before choosing a position size.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<style>.scenario-link-status{margin:10px 0 0;font-size:13px;line-height:1.5;color:inherit;opacity:.85}.scenario-link-status:empty{display:none}.scenario-link-box{display:block;width:100%;box-sizing:border-box;margin-top:6px;font-size:16px;padding:10px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit}</style>
+<script src="/assets/js/scenario-link.js?v=20261111-scenario-privacy-4" defer></script>
+<link rel="canonical" href="https://www.fynxfinanceworld.com/tools/liquidation-guard.html">
+<meta property="og:title" content="Liquidation Risk &amp; Leverage Calculator | FYNX">
+<meta property="og:description" content="Estimate liquidation price and distance for a leveraged trade using your inputs. Compare risk before choosing a position size.">
+<meta property="og:url" content="https://www.fynxfinanceworld.com/tools/liquidation-guard.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.fynxfinanceworld.com/assets/social/fynx-resources.png">
+<meta property="og:image:alt" content="FYNX trading calculators, finance lessons and market research">
+<meta name="twitter:card" content="summary_large_image">
+<!-- discovery-assets:start --><link rel="stylesheet" href="/assets/discovery.css?v=20261012"><script src="/assets/js/discovery.js?v=20261113-site-qa-95" defer></script><!-- discovery-assets:end -->
+<!-- discovery-schema:start --><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.fynxfinanceworld.com/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://www.fynxfinanceworld.com/explore.html?category=Tools"},{"@type":"ListItem","position":3,"name":"Liquidation Risk & Leverage Calculator","item":"https://www.fynxfinanceworld.com/tools/liquidation-guard.html"}]}</script><!-- discovery-schema:end -->
+<!-- search-identity:start --><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.fynxfinanceworld.com/#organization","name":"FYNX","alternateName":"FYNX Finance World","url":"https://www.fynxfinanceworld.com/","founder":{"@id":"https://ea-la.github.io/#person"},"sameAs":["https://www.fynxfunded.com/","https://site.fynxfinanceworld.com/","https://blog.fynxfinanceworld.com/","https://roadmap.fynxfinanceworld.com/"]},{"@type":"Person","@id":"https://ea-la.github.io/#person","name":"Elham Amini","url":"https://ea-la.github.io/","jobTitle":"Founder of FYNX","sameAs":["https://www.linkedin.com/in/elham-amini-745560302/","https://www.instagram.com/___elham_amini___/"],"worksFor":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebSite","@id":"https://www.fynxfinanceworld.com/#website","url":"https://www.fynxfinanceworld.com/","name":"FYNX Finance World","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}},{"@type":"WebPage","@id":"https://www.fynxfinanceworld.com/tools/liquidation-guard.html#webpage","url":"https://www.fynxfinanceworld.com/tools/liquidation-guard.html","name":"Liquidation Risk & Leverage Calculator | FYNX","description":"Estimate liquidation price and distance for a leveraged trade using your inputs. Compare risk before choosing a position size.","inLanguage":"en","isPartOf":{"@id":"https://www.fynxfinanceworld.com/#website"},"publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"},"mainEntity":{"@id":"https://www.fynxfinanceworld.com/tools/liquidation-guard.html#tool"}},{"@type":"WebApplication","@id":"https://www.fynxfinanceworld.com/tools/liquidation-guard.html#tool","url":"https://www.fynxfinanceworld.com/tools/liquidation-guard.html","name":"Liquidation Risk & Leverage Calculator","description":"Estimate liquidation price and distance for a leveraged trade using your inputs. Compare risk before choosing a position size.","applicationCategory":"FinanceApplication","operatingSystem":"Web browser","publisher":{"@id":"https://www.fynxfinanceworld.com/#organization"}}]}</script><!-- search-identity:end -->
+<!-- FYNX ADSENSE VERIFICATION START -->
+<script>(window.adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 1;</script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8416444551809049"
+     crossorigin="anonymous"></script>
+<!-- FYNX ADSENSE VERIFICATION END -->
+<!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261114-consistency-2"><script src="/assets/js/company-products-data.js?v=20261113-shared-account-2" defer></script><script src="/assets/js/company-products.js?v=20261114-consistency-2" defer></script><!-- company-products:assets:end -->
+</head>
+<body data-fynx-layout="standalone" data-fynx-section="TOOLS">
+<!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
+<div class="animated-bg">
+    <div class="grid-overlay"></div>
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+  </div>
+
+  <header>
+    <div class="nav">
+      <div class="brand"><i class="fas fa-shield-halved"></i> FYNX Tools</div>
+      <div class="nav-actions">
+        <button class="theme-btn" id="themeToggle" type="button">
+          <i class="fas fa-circle-half-stroke"></i>
+          <span id="themeToggleText">Theme</span>
+        </button>
+        <a href="../index.html#tools"><i class="fas fa-arrow-left"></i> Back</a>
+        <a href="../index.html"><i class="fas fa-house"></i> Home</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+<!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Tools">Tools</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
+<section class="hero">
+      <h1>Liquidation Guard</h1>
+      <p>
+        Estimate liquidation risk before you place a leveraged trade. This tool shows liquidation price, distance to liquidation, maximum safe drawdown, position notional, margin used, and a simple risk rating so you can avoid getting wiped out by overleveraging.
+      </p>
+
+      <div class="panel-grid">
+        <div class="panel">
+          <h2>Trade Inputs</h2>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="positionSide">Position Side</label>
+              <select id="positionSide">
+                <option value="long" selected>Long</option>
+                <option value="short">Short</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="entryPrice">Entry Price</label>
+              <input id="entryPrice" type="number" min="0" step="0.0001" value="100.00" />
+            </div>
+
+            <div class="field">
+              <label for="accountBalance">Account Balance ($)</label>
+              <input id="accountBalance" type="number" min="0" step="0.01" value="1000" />
+            </div>
+
+            <div class="field">
+              <label for="riskAllocation">Margin Used ($)</label>
+              <input id="riskAllocation" type="number" min="0" step="0.01" value="250" />
+            </div>
+
+            <div class="field">
+              <label for="leverage">Leverage (x)</label>
+              <input id="leverage" type="number" min="1" step="0.1" value="10" />
+            </div>
+
+            <div class="field">
+              <label for="maintenanceMargin">Maintenance Margin (%)</label>
+              <input id="maintenanceMargin" type="number" min="0" step="0.01" value="0.5" />
+            </div>
+
+            <div class="field full">
+              <label for="stopPrice">Planned Stop Loss Price</label>
+              <input id="stopPrice" type="number" min="0" step="0.0001" value="96.00" />
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button class="btn primary" id="calculateBtn">
+              <i class="fas fa-calculator"></i> Calculate Guard
+            </button>
+            <button class="btn secondary" id="resetBtn">
+              <i class="fas fa-rotate-left"></i> Reset
+            </button>
+            <button class="btn secondary" id="shareScenarioBtn" type="button" data-scenario-fields="positionSide,entryPrice,accountBalance,riskAllocation,leverage,maintenanceMargin,stopPrice" data-scenario-run="calculateBtn"><i class="fas fa-link"></i> Copy scenario link</button>
+          </div>
+
+          <div class="hint">
+            This is an estimate tool. Real exchange liquidation engines may include fees, mark price, tiered maintenance margin, and exchange-specific formulas.
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Guard Results</h2>
+
+          <div class="status-box">
+            <div class="status-chip" id="riskChip"><i class="fas fa-circle"></i> Waiting</div>
+            <div class="status-title" id="riskTitle">No calculation yet</div>
+            <div class="status-desc" id="riskDesc">Enter your numbers and calculate to see how close your trade is to liquidation.</div>
+
+            <div class="pill-row">
+              <div class="pill" id="stopCheckPill">Stop check: —</div>
+              <div class="pill" id="bufferPill">Buffer: —</div>
+              <div class="pill" id="maxLeveragePill">Max leverage for this stop: —</div>
+            </div>
+          </div>
+
+          <div class="results-grid">
+            <div class="metric">
+              <div class="metric-label">Estimated Liquidation Price</div>
+              <div class="metric-value bad" id="liqPriceValue">—</div>
+              <div class="metric-sub">Approximate price where the position would be forced out.</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Distance to Liquidation</div>
+              <div class="metric-value" id="liqDistanceValue">—</div>
+              <div class="metric-sub">Distance from entry to liquidation in percent.</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Position Notional</div>
+              <div class="metric-value" id="notionalValue">—</div>
+              <div class="metric-sub">Margin used multiplied by leverage.</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Position Size</div>
+              <div class="metric-value" id="positionSizeValue">—</div>
+              <div class="metric-sub">Estimated quantity controlled at entry.</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Loss at Stop</div>
+              <div class="metric-value warn" id="stopLossValue">—</div>
+              <div class="metric-sub" id="stopLossSub">Approximate dollar loss if price hits your stop.</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Free Balance After Margin</div>
+              <div class="metric-value good" id="freeBalanceValue">—</div>
+              <div class="metric-sub">Account balance not committed as margin.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="schedule-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Value</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody id="detailsBody">
+            <tr>
+              <td colspan="3" style="text-align:center;color:var(--text-muted);padding:1.4rem;">
+                No details yet.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="hint">
+        Best use: keep your planned stop clearly away from liquidation, reduce leverage if your liquidation buffer is too small, and never size a trade so large that one normal move can erase your margin.
+      </div>
+    </section>
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Compare a leveraged position with liquidation assumptions</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter the position and margin assumptions requested by the tool. Compare the estimate with the liquidation value shown by your venue.</p><h3>The calculation or concept</h3><p>Liquidation depends on equity, maintenance margin and the exchange’s pricing and collateral rules.</p></div><div class="tool-example"><h3>Worked example</h3><p>A 10% adverse move on a $10,000 linear position changes its value by about $1,000. A $1,000 collateral balance could be exhausted sooner after maintenance requirements and fees.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Cross margin, mark prices, tiered maintenance, funding and inverse contracts can produce different outcomes. This estimate does not replace venue calculations or a stop plan.</p></details></section><!-- tool-guide:end -->
+<!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/margin.html"><strong>Forex Margin &amp; Leverage Calculator</strong><span>Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.</span></a><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/crypto.html"><strong>Crypto Position Size &amp; Profit Calculator</strong><span>Estimate crypto position size, trading costs, exit value, profit or loss and break-even price using your own assumptions.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
+</main>
+
+  <script>
+    const THEME_KEY = "fynx_theme";
+
+    function applyTheme(mode){
+      if (mode === "dark") document.body.classList.add("dark-mode");
+      else document.body.classList.remove("dark-mode");
+      updateThemeButton();
+    }
+
+    function updateThemeButton(){
+      const text = document.getElementById("themeToggleText");
+      if (!text) return;
+      text.textContent = document.body.classList.contains("dark-mode") ? "Dark" : "Light";
+    }
+
+    (function applyThemeFromStorage(){
+      const saved = window.FynxPreferences?.getItem(THEME_KEY);
+      applyTheme(saved === "dark" ? "dark" : "light");
+    })();
+
+    document.getElementById("themeToggle").addEventListener("click", () => {
+      const next = document.body.classList.contains("dark-mode") ? "light" : "dark";
+      window.FynxPreferences?.setItem(THEME_KEY, next);
+      applyTheme(next);
+    });
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === THEME_KEY) {
+        applyTheme(e.newValue === "dark" ? "dark" : "light");
+      }
+    });
+
+    function formatCurrency(value){
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 2
+      }).format(value);
+    }
+
+    function formatNumber(value, digits = 4){
+      if (!Number.isFinite(value)) return "—";
+      return Number(value).toLocaleString("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: digits
+      });
+    }
+
+    function formatPercent(value, digits = 2){
+      if (!Number.isFinite(value)) return "—";
+      return `${value >= 0 ? "" : "-"}${Math.abs(value).toFixed(digits)}%`;
+    }
+
+    function setStatus(level, title, desc){
+      const chip = document.getElementById("riskChip");
+      const titleEl = document.getElementById("riskTitle");
+      const descEl = document.getElementById("riskDesc");
+
+      let icon = "fa-circle";
+      let label = "Neutral";
+      let cls = "";
+
+      if(level === "good"){
+        icon = "fa-shield";
+        label = "Safer";
+        cls = "good";
+      } else if(level === "warn"){
+        icon = "fa-triangle-exclamation";
+        label = "Warning";
+        cls = "warn";
+      } else if(level === "bad"){
+        icon = "fa-skull-crossbones";
+        label = "Danger";
+        cls = "bad";
+      }
+
+      chip.className = `status-chip ${cls}`;
+      chip.innerHTML = `<i class="fas ${icon}"></i> ${label}`;
+      titleEl.textContent = title;
+      descEl.textContent = desc;
+    }
+
+    function resetOutput(){
+      document.getElementById("liqPriceValue").textContent = "—";
+      document.getElementById("liqDistanceValue").textContent = "—";
+      document.getElementById("notionalValue").textContent = "—";
+      document.getElementById("positionSizeValue").textContent = "—";
+      document.getElementById("stopLossValue").textContent = "—";
+      document.getElementById("stopLossSub").textContent = "Approximate dollar loss if price hits your stop.";
+      document.getElementById("freeBalanceValue").textContent = "—";
+      document.getElementById("stopCheckPill").textContent = "Stop check: —";
+      document.getElementById("bufferPill").textContent = "Buffer: —";
+      document.getElementById("maxLeveragePill").textContent = "Max leverage for this stop: —";
+      document.getElementById("detailsBody").innerHTML = `
+        <tr>
+          <td colspan="3" style="text-align:center;color:var(--text-muted);padding:1.4rem;">
+            No details yet.
+          </td>
+        </tr>
+      `;
+      setStatus("neutral","No calculation yet","Enter your numbers and calculate to see how close your trade is to liquidation.");
+    }
+
+    function calculateGuard(){
+      const side = document.getElementById("positionSide").value;
+      const entry = parseFloat(document.getElementById("entryPrice").value) || 0;
+      const balance = parseFloat(document.getElementById("accountBalance").value) || 0;
+      const marginUsed = parseFloat(document.getElementById("riskAllocation").value) || 0;
+      const leverage = parseFloat(document.getElementById("leverage").value) || 0;
+      const maintenance = (parseFloat(document.getElementById("maintenanceMargin").value) || 0) / 100;
+      const stop = parseFloat(document.getElementById("stopPrice").value) || 0;
+
+      if(entry <= 0 || balance <= 0 || marginUsed <= 0 || leverage <= 0 || stop <= 0){
+        resetOutput();
+        setStatus("bad","Invalid inputs","All values must be positive numbers.");
+        return;
+      }
+
+      if(marginUsed > balance){
+        resetOutput();
+        setStatus("bad","Margin exceeds balance","Margin used cannot be larger than your account balance.");
+        return;
+      }
+
+      if(side === "long" && stop >= entry){
+        resetOutput();
+        setStatus("bad","Stop is above entry","For a long position the stop loss must be below the entry price. Check the side or the stop price.");
+        return;
+      }
+
+      if(side === "short" && stop <= entry){
+        resetOutput();
+        setStatus("bad","Stop is below entry","For a short position the stop loss must be above the entry price. Check the side or the stop price.");
+        return;
+      }
+
+      if(maintenance >= 1 / leverage){
+        resetOutput();
+        setStatus("bad","Liquidated at entry",`At ${formatNumber(leverage, 2)}x the initial margin is ${formatPercent(100 / leverage, 2)} of the position, which does not cover the ${formatPercent(maintenance * 100, 2)} maintenance margin. Lower the leverage.`);
+        return;
+      }
+
+      const notional = marginUsed * leverage;
+      const positionSize = notional / entry;
+      const maintenanceMarginValue = notional * maintenance;
+
+      let liqPrice = 0;
+
+      if(side === "long"){
+        liqPrice = entry * (1 - (1 / leverage) + maintenance);
+      } else {
+        liqPrice = entry * (1 + (1 / leverage) - maintenance);
+      }
+
+      const liqDistancePct = Math.abs((entry - liqPrice) / entry) * 100;
+      const freeBalance = balance - marginUsed;
+
+      let stopLossDollar = 0;
+      let stopDistanceToLiqPct = 0;
+      let stopIsSafe = false;
+
+      if(side === "long"){
+        stopLossDollar = Math.max(0, (entry - stop) * positionSize);
+        stopDistanceToLiqPct = ((stop - liqPrice) / entry) * 100;
+        stopIsSafe = stop > liqPrice;
+      } else {
+        stopLossDollar = Math.max(0, (stop - entry) * positionSize);
+        stopDistanceToLiqPct = ((liqPrice - stop) / entry) * 100;
+        stopIsSafe = stop < liqPrice;
+      }
+
+      document.getElementById("liqPriceValue").textContent = formatNumber(liqPrice, 4);
+      document.getElementById("liqDistanceValue").textContent = formatPercent(liqDistancePct, 2);
+      document.getElementById("notionalValue").textContent = formatCurrency(notional);
+      document.getElementById("positionSizeValue").textContent = formatNumber(positionSize, 6);
+      // Isolated margin: if liquidation comes first, the stop is never reached and the margin is lost instead.
+      const lossDisplay = formatCurrency(stopIsSafe ? stopLossDollar : marginUsed);
+      document.getElementById("stopLossValue").textContent = lossDisplay;
+      document.getElementById("stopLossSub").textContent = stopIsSafe ? "Approximate dollar loss if price hits your stop." : "Liquidation comes before your stop, so the whole margin is lost.";
+      document.getElementById("freeBalanceValue").textContent = formatCurrency(freeBalance);
+
+      const stopCheckText = stopIsSafe ? "Stop check: stop hits before liquidation" : "Stop check: liquidation before stop";
+      const bufferText = `Buffer: ${formatPercent(Math.abs(stopDistanceToLiqPct), 2)}`;
+      document.getElementById("stopCheckPill").textContent = stopCheckText;
+      document.getElementById("bufferPill").textContent = bufferText;
+      // Highest leverage at which the estimated liquidation price stays beyond the planned stop
+      // (long: entry*(1 - 1/L + mm) < stop; short: entry*(1 + 1/L - mm) > stop).
+      const stopFraction = Math.abs(entry - stop) / entry;
+      const maxLeverage = 1 / (stopFraction + maintenance);
+      const maxLeverageText = `${formatNumber(Math.floor(maxLeverage * 10) / 10, 1)}x`;
+      document.getElementById("maxLeveragePill").textContent = `Max leverage for this stop: ${maxLeverageText}`;
+
+      let level = "good";
+      let title = "Healthy liquidation buffer";
+      let desc = "Your liquidation price is reasonably separated from entry. Risk is still real, but this is less fragile than an overleveraged setup.";
+
+      if(liqDistancePct < 2 || !stopIsSafe){
+        level = "bad";
+        title = "High liquidation risk";
+        desc = "This trade is fragile. Price could reach liquidation before your intended stop or with only a small adverse move.";
+      } else if(liqDistancePct < 5 || Math.abs(stopDistanceToLiqPct) < 1){
+        level = "warn";
+        title = "Thin buffer";
+        desc = "Your liquidation distance is not very large. A volatile move or exchange mark price behavior could squeeze this setup fast.";
+      }
+
+      setStatus(level, title, desc);
+
+      const rows = [
+        {
+          metric: "Side",
+          value: side === "long" ? "Long" : "Short",
+          meaning: "Direction of the leveraged position."
+        },
+        {
+          metric: "Entry Price",
+          value: formatNumber(entry, 4),
+          meaning: "Price where the position is opened."
+        },
+        {
+          metric: "Margin Used",
+          value: formatCurrency(marginUsed),
+          meaning: "Capital committed as initial margin."
+        },
+        {
+          metric: "Leverage",
+          value: `${formatNumber(leverage, 2)}x`,
+          meaning: "Multiplier applied to your margin."
+        },
+        {
+          metric: "Estimated Liquidation Price",
+          value: formatNumber(liqPrice, 4),
+          meaning: "Approximate forced-exit level under this simplified model."
+        },
+        {
+          metric: "Distance to Liquidation",
+          value: formatPercent(liqDistancePct, 2),
+          meaning: "How far price can move against you from entry before liquidation."
+        },
+        {
+          metric: "Maintenance Margin Value",
+          value: formatCurrency(maintenanceMarginValue),
+          meaning: "Minimum equity requirement implied by maintenance margin."
+        },
+        {
+          metric: "Planned Stop Loss",
+          value: formatNumber(stop, 4),
+          meaning: stopIsSafe ? "Your stop appears to trigger before estimated liquidation." : "Your stop is beyond estimated liquidation risk."
+        },
+        {
+          metric: "Max Leverage for This Stop",
+          value: maxLeverageText,
+          meaning: "Highest leverage that keeps the estimated liquidation price beyond your planned stop. Use less to leave room for fees and mark-price moves."
+        },
+        {
+          metric: "Loss at Stop",
+          value: lossDisplay,
+          meaning: stopIsSafe ? "Approximate loss if your stop is executed at the planned level." : "Liquidation is reached before the stop, so the committed margin is lost instead."
+        },
+        {
+          metric: "Free Balance",
+          value: formatCurrency(freeBalance),
+          meaning: "Unused balance remaining outside committed margin."
+        }
+      ];
+
+      document.getElementById("detailsBody").innerHTML = rows.map(row => `
+        <tr>
+          <td>${row.metric}</td>
+          <td>${row.value}</td>
+          <td>${row.meaning}</td>
+        </tr>
+      `).join("");
+    }
+
+    document.getElementById("calculateBtn").addEventListener("click", calculateGuard);
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      document.getElementById("positionSide").value = "long";
+      document.getElementById("entryPrice").value = "100.00";
+      document.getElementById("accountBalance").value = "1000";
+      document.getElementById("riskAllocation").value = "250";
+      document.getElementById("leverage").value = "10";
+      document.getElementById("maintenanceMargin").value = "0.5";
+      document.getElementById("stopPrice").value = "96.00";
+      calculateGuard();
+    });
+
+    // Recalculate as the inputs change so the result never shows numbers for an older trade.
+    let liveTimer = null;
+    ["positionSide","entryPrice","accountBalance","riskAllocation","leverage","maintenanceMargin","stopPrice"].forEach(id => {
+      const el = document.getElementById(id);
+      const schedule = () => { clearTimeout(liveTimer); liveTimer = setTimeout(calculateGuard, 250); };
+      el.addEventListener("input", schedule);
+      el.addEventListener("change", schedule);
+    });
+
+    calculateGuard();
+  </script>
+
+<footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
+</body>
+</html>

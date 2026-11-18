@@ -1,0 +1,24 @@
+
+node_modules/
+
+dist/
+
+output/playwright/
+
+output/
+.playwright-cli/
+firebase-debug.log
+.deploy-work/
+
+# Private Quant provider cache, saved user records and credentials
+.quant-data/
+.env
+.env.*
+!.env.example
+!.env.quant.example
+
+# Private Edge Radar snapshots and account reporting
+.edge-data/
+
+# Private trading-account database and credentials
+.accounts-data/

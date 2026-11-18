@@ -1,0 +1,7 @@
+# Isolated Edge lint tools
+
+Run `npm run lint:edge:setup` once after checkout, then `npm run lint:edge` from the repository root. The committed lockfile pins the developer toolchain. `eslint.edge.config.mjs` checks Edge TypeScript, browser controllers, backend modules and scheduler/import scripts, excluding generated bundles. Correctness rules do not impose a broad formatting rewrite.
+
+The application currently uses TypeScript 7. The current official `typescript-eslint` peer range is TypeScript >=4.8.4 and <6.1.0, so this private package uses its supported TypeScript 6.0.3 parser dependency. The application compiler and runtime dependencies remain unchanged. `scripts/` is excluded from static packaging, and a packaging regression verifies that these dependencies never enter public output.
+
+On 2026-11-03, npm audit reports the transitive developer-only minimatch advisory [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249), concerning glob-parts amplification. The report marks versions below 11.0.1 affected; current available releases in the declared 10.x and 9.x ranges do not include a patched release. No unsupported transitive major override or automatic force downgrade was applied. This isolated tool processes committed, trusted local lint patterns; it is not a request-time backend dependency. Recheck the advisory and compatible upstream releases when updating the toolchain.
