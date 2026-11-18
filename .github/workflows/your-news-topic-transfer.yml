@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install dependencies for browser behavior tests
-        run: npm ci --ignore-scripts --no-audit --no-fund
+        run: npm install --ignore-scripts --no-save --package-lock=false --no-audit --no-fund
       - name: Check browser script and test syntax
         run: |
           node --check assets/js/news-preferences.js
