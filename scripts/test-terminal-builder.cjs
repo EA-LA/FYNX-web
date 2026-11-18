@@ -169,8 +169,14 @@ test('terminal page wires the builder without replacing desks, panels, or shortc
   const rules = read('backend/rules/firestore.rules');
   const release = read('scripts/build-release-assets.cjs');
   assert.match(html, /id="fx-build"/);
-  assert.match(html, /assets\/js\/terminal\/builder-core\.js\?v=20261117-builder-3/);
-  assert.match(html, /assets\/js\/terminal\/builder\.js\?v=20261117-builder-2/);
+  assert.match(html, /assets\/vendor\/codemirror\/codemirror\.js\?v=20261117-builder-4/);
+  assert.match(html, /assets\/vendor\/codemirror\/javascript\.js\?v=20261117-builder-4/);
+  assert.match(html, /assets\/vendor\/codemirror\/searchcursor\.js\?v=20261117-builder-4/);
+  assert.match(html, /assets\/css\/terminal-builder\.css\?v=20261117-builder-4/);
+  assert.match(html, /assets\/js\/terminal\/builder-core\.js\?v=20261117-builder-4/);
+  assert.match(html, /assets\/js\/terminal\/builder\.js\?v=20261117-builder-4/);
+  assert.doesNotMatch(html, /cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net\/npm\/codemirror|unpkg\.com\/codemirror/);
+  assert.ok(html.indexOf('codemirror.js') < html.indexOf('builder-core.js'));
   assert.ok(html.indexOf('builder.js') < html.indexOf('terminal/app.js'));
   assert.match(html, /assets\/js\/terminal\/app\.js\?v=20261117-builder-2/);
   assert.match(html, /assets\/js\/terminal\/pages\.js\?v=20261117-builder-2/);
@@ -195,6 +201,20 @@ test('terminal page wires the builder without replacing desks, panels, or shortc
   assert.doesNotMatch(builder, /allow-same-origin/);
   assert.match(builder, /Visibility is private/);
   assert.match(builder, /Community Library, official submission, and external API credentials are not part of this release/);
+  assert.match(builder, /fx-term-builder-v1:/);
+  assert.match(builder, /if \(!window\.CodeMirror\)/);
+  assert.match(builder, /Core\.syntaxError\(draft\.main\)/);
+  assert.doesNotMatch(builder, /key === 'F5'|event\.key === 'F5'/);
+  assert.match(builder, /Added to this desk on this browser only/);
+  assert.match(builder, /Not saved to your account/);
+  assert.doesNotMatch(builder, /allow-same-origin/);
+  const css = read('assets/css/terminal-builder.css');
+  assert.match(css, /#fx-page-body > \.fxb/);
+  assert.match(css, /color-scheme:dark!important/);
+  assert.match(css, /background:var\(--fxb-field\)!important/);
+  assert.doesNotMatch(css, /#fx-command|fx-cmd /);
+  assert.match(read('assets/vendor/codemirror/LICENSE'), /MIT License/);
+  assert.match(read('assets/vendor/codemirror/codemirror.js'), /CodeMirror/);
   const cats = [...rules.match(/category in \[([^\]]+)\]/)[1].matchAll(/'([^']+)'/g)].map(match => match[1]);
   assert.deepEqual(cats, core.CATEGORIES.map(([id]) => id));
   assert.match(rules, /match \/builderProjects\/\{projectId\}/);
@@ -210,3 +230,25 @@ test('terminal page wires the builder without replacing desks, panels, or shortc
   assert.match(rules, /main\.size\(\) <= 48000/);
   assert.equal(rules.includes("visibility == 'public'"), false);
 });
+
+test('syntax checks parse without running, and account merge keeps only this browser\'s unsynced work', () => {
+  assert.equal(core.syntaxError(core.TEMPLATE), '');
+  assert.equal(core.syntaxError('   '), 'main.js is empty.');
+  assert.match(core.syntaxError('function render(root, FYNX) {'), /Syntax error/);
+  assert.equal(core.syntaxError('function render(root, FYNX) { throw new Error("executed"); }'), '');
+  const localOnly = row('alice', otherId, {updatedAt: 50, stored: 'device'});
+  const cached = row('alice', 'p0000cached01', {updatedAt: 5, stored: 'account'});
+  const shared = row('alice', projectId, {updatedAt: 10, stored: 'device', main: 'function render(root, FYNX) { root.textContent = "local"; }\n'});
+  const server = core.accountView('alice', [row('alice', projectId, {updatedAt: 20})], []);
+  const merged = core.mergeAccount([localOnly, cached, shared, {id: otherId, name: 'bad', main: 'nope'}], server);
+  const ids = merged.projects.map(project => project.id);
+  assert.ok(ids.includes(otherId));
+  assert.equal(ids.includes('p0000cached01'), false);
+  assert.equal(merged.projects.find(project => project.id === projectId).updatedAt, 20);
+  assert.equal(merged.projects.find(project => project.id === otherId).stored, 'device');
+  const newer = core.mergeAccount([row('alice', projectId, {updatedAt: 40, stored: 'device', main: 'function render(root, FYNX) { root.textContent = "newer"; }\n'})], server);
+  assert.match(newer.projects.find(project => project.id === projectId).main, /newer/);
+  const kept = core.mergeAccount([localOnly, cached], {projects: [], installs: []});
+  assert.deepEqual(kept.projects.map(project => project.id), [otherId]);
+});
+

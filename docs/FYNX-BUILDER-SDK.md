@@ -34,7 +34,7 @@ Do not put API keys, passwords, or tokens in `main.js`. The editor rejects sourc
 
 Projects are stored at `users/{uid}/builderProjects/{projectId}`. Installations are stored at `users/{uid}/builderInstalls/current`. Rules allow an ordinary user to read and write only their own documents, force `visibility == "private"`, and reject a widget slot that is not `mine-` plus that project id. Up to 12 installed widgets and 5 stored versions.
 
-Those rules are not live until they are deployed. Until then Save and Add to my terminal fail closed, and the page says nothing was stored. The editor and the sandbox still run.
+Those rules are not live until they are deployed. Until then an account save is refused. The builder keeps a copy in this browser under `localStorage` key `fx-term-builder-v1:` plus the signed-in user id, and the page says that copy will not follow you to another device. It does not call that an account save. Add to my terminal can still place the panel on this desk. If the account write is refused, the page says it was added on this browser only. The editor and the sandbox still run without the rules.
 
 Panel placement uses the same per-device layout store as the rest of the terminal. An installed slot that belongs to a project this account does not have is left empty. It does not load another account's source. The project source is the part stored on the account.
 
@@ -61,7 +61,7 @@ The existing admin wildcard still allows an administrator to read these document
 
 ## Not in this release
 
-Community Library, official submission, creator profiles, rewards, admin review, in-terminal AI, Monaco, and external API keys stay later phases. The builder says so in the settings panel. Do not tell users those are available.
+Community Library, official submission, creator profiles, rewards, admin review, in-terminal AI, and external API keys stay later phases. The editor is CodeMirror 5.65.16 in `assets/vendor/codemirror` (MIT). It is not loaded from a CDN. Monaco is not used. The builder says the unfinished phases are not part of this release. Do not tell users those are available.
 
 ## Prompt for ChatGPT or Claude
 

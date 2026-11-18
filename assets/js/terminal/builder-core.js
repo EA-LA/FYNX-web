@@ -546,18 +546,31 @@ parent.postMessage({type: 'fynx-ready'}, '*');
   const card = document.createElement('section');
   const title = document.createElement('h2');
   title.textContent = 'Global Market Intelligence';
-  const line = document.createElement('p');
-  const bits = [];
-  const spy = FYNX.quote('SPY');
-  const gold = FYNX.quote('GC=F') || FYNX.quote('GLD');
-  const dollar = FYNX.quote('DX-Y.NYB');
-  bits.push(spy ? 'S&P 500 ' + FYNX.format(spy.price, 2) + ' (' + FYNX.signed(spy.changePercent) + ')' : 'S&P 500 is not in this terminal snapshot');
-  if (gold) bits.push('Gold ' + FYNX.format(gold.price, 2) + ' (' + FYNX.signed(gold.changePercent) + ')');
-  else bits.push('Gold is not in this terminal snapshot');
-  if (dollar) bits.push('Dollar index ' + FYNX.format(dollar.price, 2) + ' (' + FYNX.signed(dollar.changePercent) + ')');
-  else bits.push('Dollar index is not in this terminal snapshot');
-  line.textContent = bits.join(' · ');
-  card.append(title, line);
+  card.append(title);
+  function row(label, quote, missing) {
+    const line = document.createElement('p');
+    const name = document.createElement('span');
+    name.textContent = label + '  ';
+    line.append(name);
+    if (!quote) {
+      const miss = document.createElement('span');
+      miss.className = 'fxb-miss';
+      miss.textContent = missing;
+      line.append(miss);
+      return line;
+    }
+    const price = document.createElement('span');
+    price.textContent = FYNX.format(quote.price, 2) + '  ';
+    const change = document.createElement('span');
+    const n = Number(quote.changePercent);
+    change.textContent = FYNX.signed(quote.changePercent);
+    change.style.color = n > 0 ? '#3ecf8e' : n < 0 ? '#ff6b5f' : '#8e9b94';
+    line.append(price, change);
+    return line;
+  }
+  card.append(row('S&P 500', FYNX.quote('SPY'), 'S&P 500 is not in this terminal snapshot'));
+  card.append(row('Gold', FYNX.quote('GC=F') || FYNX.quote('GLD'), 'Gold is not in this terminal snapshot'));
+  card.append(row('Dollar index', FYNX.quote('DX-Y.NYB'), 'Dollar index is not in this terminal snapshot'));
   root.replaceChildren(card);
 }
 `;
@@ -710,8 +723,76 @@ parent.postMessage({type: 'fynx-ready'}, '*');
     };
   }
 
+  function syntaxError(code) {
+    const text = String(code || '');
+    if (!text.trim()) return 'main.js is empty.';
+    try {
+      // Compile only. Calling the result would run the widget outside the sandbox.
+      new Function('"use strict";\n' + text);
+      return '';
+    } catch (error) {
+      const message = error && error.message ? String(error.message) : 'JavaScript could not be parsed.';
+      return 'Syntax error: ' + message.replace(/\s+/g, ' ').slice(0, 240);
+    }
+  }
+
+  function historyOf(versions) {
+    const out = [];
+    for (const version of Array.isArray(versions) ? versions : []) {
+      const main = version && typeof version.main === 'string' ? version.main : '';
+      const number = Number(version && version.version);
+      if (!main || main.length > LIMITS.code || !Number.isInteger(number) || number < 1 || number > 9999) continue;
+      out.push({version: number, savedAt: Number(version.savedAt) || 0, main});
+    }
+    return out.slice(-LIMITS.versions);
+  }
+
+  function localProject(project, check) {
+    return {
+      id: project.id,
+      ...check.project,
+      version: Number(project.version) || 1,
+      updatedAt: Number(project.updatedAt) || 0,
+      versions: historyOf(project.versions),
+      stored: project.stored === 'account' ? 'account' : 'device'
+    };
+  }
+
+  function mergeAccount(localProjects, serverView) {
+    const serverProjects = (serverView && Array.isArray(serverView.projects) ? serverView.projects : []).slice(0, LIMITS.projects);
+    const serverById = new Map();
+    for (const project of serverProjects) {
+      if (project && typeof project.id === 'string') serverById.set(project.id, project);
+    }
+    const localOnly = [];
+    const newer = new Map();
+    for (const project of Array.isArray(localProjects) ? localProjects : []) {
+      if (!project || typeof project.id !== 'string' || !/^p[a-z0-9]{8,24}$/.test(project.id)) continue;
+      const check = validateProject(project);
+      if (!check.ok) continue;
+      const row = localProject(project, check);
+      const server = serverById.get(row.id);
+      if (!server) {
+        if (row.stored !== 'account') localOnly.push(row);
+        continue;
+      }
+      if (row.stored !== 'account' && row.updatedAt > (Number(server.updatedAt) || 0)) newer.set(row.id, row);
+    }
+    const projects = serverProjects.map(project => newer.get(project.id) || project);
+    for (const project of localOnly) {
+      if (projects.length >= LIMITS.projects) break;
+      projects.push(project);
+    }
+    projects.sort((a, b) => (Number(b.updatedAt) || 0) - (Number(a.updatedAt) || 0));
+    return {
+      projects,
+      installs: serverView && Array.isArray(serverView.installs) ? serverView.installs : []
+    };
+  }
+
   return {
     CATEGORIES, LIMITS, SANDBOX_ATTR, SANDBOX_CSP, SANDBOX_HTML, ASSISTANT_PROMPT, TEMPLATE,
-    cleanText, secretFindings, validateProject, snapshotQuotes, slotFor, sanitizeWidgets, accountView, layoutSlot, placeWidget, stripWidget, withVersion
+    cleanText, secretFindings, validateProject, snapshotQuotes, slotFor, sanitizeWidgets, accountView, layoutSlot, placeWidget, stripWidget, withVersion,
+    syntaxError, mergeAccount
   };
 });
