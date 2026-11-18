@@ -99,3 +99,12 @@ test('production Notifications page imports controller and avoids optimistic tog
   assert.match(html, /authRevision !== revision/);
   assert.doesNotMatch(html, /prefs\[k\]=!prefs\[k\]/);
 });
+
+test('production inline notification script parses after ES imports are removed', () => {
+  const vm = require('node:vm');
+  const html = fs.readFileSync(path.resolve(__dirname, '../notifications.html'), 'utf8');
+  const inline = html.match(/<script type="module">([\s\S]*?)<\/script>/);
+  assert.ok(inline, 'Notifications inline module exists');
+  const script = inline[1].replace(/^import .*?;\s*$/gm, '');
+  assert.doesNotThrow(() => new vm.Script(script, { filename: 'notifications-inline.js' }));
+});
