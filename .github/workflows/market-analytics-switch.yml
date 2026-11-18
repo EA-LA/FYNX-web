@@ -5,6 +5,8 @@ on:
     paths:
       - 'assets/js/market-analytics.js'
       - 'scripts/test-market-analytics-switch.cjs'
+      - 'markets/liquidity.html'
+      - 'markets/correlation.html'
       - '.github/workflows/market-analytics-switch.yml'
   workflow_dispatch:
 
