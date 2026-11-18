@@ -69,8 +69,8 @@ import { createLoginAlertsController } from './assets/js/security-login-alerts.m
 let sessionId = null;
 let authRevision = 0;
 const loginAlertController = createLoginAlertsController({
-  button: loginAlertsSwitch,
-  status: loginAlertsStatus,
+  button: document.getElementById('loginAlertsSwitch'),
+  status: document.getElementById('loginAlertsStatus'),
   save: (uid, enabled) => saveSecuritySettings(uid, { loginAlerts: enabled })
 });
 function applyTheme(){const t=window.FynxPreferences?.getItem('fynx_theme');document.body.classList.toggle('dark-mode',t==='dark');} applyTheme();
