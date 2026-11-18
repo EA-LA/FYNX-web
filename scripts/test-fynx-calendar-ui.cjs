@@ -7,6 +7,20 @@ const path = require('path');
 const {JSDOM} = require('jsdom');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'assets/js/fynx-calendar.js'), 'utf8');
+const page = fs.readFileSync(path.join(__dirname, '..', 'tools/economic-calendar.html'), 'utf8');
+assert.match(page, /fynx-calendar\.js\?v=20261117-calendar-trust-merge-1/, 'page loads the updated calendar script');
+assert.match(page, /verify the actual figure at the source/, 'page does not promise verified release data');
+const home = fs.readFileSync(path.join(__dirname, '..', 'home.html'), 'utf8');
+assert.match(home, /fynx-calendar\.js\?v=20261117-calendar-trust-merge-1/, 'homepage preview loads the updated calendar script');
+const releaseAssets = require('./build-release-assets.cjs');
+assert.equal(releaseAssets.ASSET_VERSIONS['assets/js/fynx-calendar.js'], '20261117-calendar-trust-merge-1',
+  'release asset builder must not undo calendar cache invalidation');
+const rewritten = releaseAssets.rewriteReferences(
+  '<script src="/assets/js/fynx-calendar.js?v=outdated"></script>', 'home.html', new Set(['assets/js/fynx-calendar.js'])
+);
+assert.match(rewritten, /fynx-calendar\.js\?v=20261117-calendar-trust-merge-1/,
+  'a website build upgrades stale economic calendar script versions');
+
 const base = Date.now();
 const at = h => new Date(base + h * 3600000).toISOString();
 const fixture = {updatedAt: new Date(base).toISOString(), all: [
@@ -108,6 +122,41 @@ const fixture = {updatedAt: new Date(base).toISOString(), all: [
   for (let i = 0; i < 20 && !compactHost.querySelector('.fc-row'); i++) await tick();
   assert.equal(compactHost.querySelectorAll('.fc-add').length, 0, 'compact home view has no per-row buttons');
   stopCompact();
+
+  // A numeric zero is a real published forecast/previous value, not missing data.
+  // Passing the scheduled release time is not evidence that an actual result is published.
+  const pastZero = {id: 'zero-past', title: 'Producer Prices', currency: 'USD', impact: 'high',
+    time: at(-1), forecast: 0, previous: 0};
+  const futureZero = {id: 'zero-future', title: 'Inventory Change', currency: 'USD', impact: 'medium',
+    time: at(1), forecast: 0, previous: null};
+  const zeroICS = window.FynxCalendar.toICS([pastZero], Date.parse('2026-11-14T12:00:00Z')).replace(/\r\n /g, '');
+  assert.ok(zeroICS.includes('Forecast: 0\\nPrevious: 0'), 'export preserves numerical zero forecast and previous');
+  assert.ok(!zeroICS.includes('Forecast: —'), 'zero values must not be substituted with missing values');
+
+  fixture.all = [pastZero, futureZero];
+  window.localStorage.clear();
+  await window.FynxCalendar.load(true);
+  const truthHost = window.document.createElement('div');
+  window.document.body.append(truthHost);
+  const stopTruth = window.FynxCalendar.mount(truthHost, {compact: false});
+  for (let i = 0; i < 20 && truthHost.querySelectorAll('.fc-row').length < 2; i++) await tick();
+  const truthRows = [...truthHost.querySelectorAll('.fc-row')];
+  assert.equal(truthRows.length, 2, 'both known past and upcoming releases appear');
+  const pastRow = truthRows.find(row => row.textContent.includes('Producer Prices'));
+  const futureRow = truthRows.find(row => row.textContent.includes('Inventory Change'));
+  assert.deepEqual([...pastRow.querySelectorAll('.fc-val b')].map(n => n.textContent), ['0', '0'],
+    'the displayed forecast and previous reflect numerical zero');
+  assert.deepEqual([...futureRow.querySelectorAll('.fc-val b')].map(n => n.textContent), ['0', '—'],
+    'numerical zero and a truly missing value remain distinct');
+  assert.match(pastRow.getAttribute('aria-label'), /forecast 0, previous 0/,
+    'VoiceOver also receives the zero values');
+  assert.match(pastRow.textContent, /Awaiting result/, 'past events are not called released without confirmation');
+  assert.doesNotMatch(pastRow.textContent, /Released/);
+  const resultLink = pastRow.querySelector('.fc-actual');
+  assert.equal(resultLink.textContent, 'Check result ↗', 'source link does not imply the release is verified');
+  assert.match(resultLink.title, /check whether.*published/i);
+  assert.ok(!futureRow.querySelector('.fc-actual'), 'future events do not show a result link');
+  stopTruth();
 
   stop();
   assert.ok(fetches >= 1);
