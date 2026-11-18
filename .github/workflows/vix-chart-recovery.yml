@@ -1,0 +1,21 @@
+name: VIX Daily Chart Verification
+on:
+  pull_request:
+    paths:
+      - 'assets/js/vix-chart.js'
+      - 'scripts/test-vix-chart-recovery.cjs'
+      - '.github/workflows/vix-chart-recovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check assets/js/vix-chart.js
+      - run: node --test scripts/test-vix-chart-recovery.cjs

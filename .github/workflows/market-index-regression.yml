@@ -1,0 +1,21 @@
+name: Markets directory links regression
+on:
+  pull_request:
+    paths:
+      - 'markets/index.html'
+      - 'markets/*.html'
+      - 'scripts/test-market-index-links.cjs'
+      - '.github/workflows/market-index-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  navigation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check scripts/test-market-index-links.cjs
+      - run: node --test scripts/test-market-index-links.cjs

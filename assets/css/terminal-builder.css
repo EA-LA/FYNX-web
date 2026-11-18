@@ -1,0 +1,133 @@
+/* FYNX Builder. Scoped to the builder page so desks, the command bar, and other pages stay untouched.
+   funded-system.css paints every input with !important. These rules are more specific and important so a light theme cannot turn the builder white. */
+html body.fx-terminal #fx-page-body > .fxb{
+  --fxb-bg:#06080a;--fxb-panel:#0d1112;--fxb-elev:#131a18;--fxb-field:#030405;--fxb-line:#1f2825;--fxb-line-2:#2a3530;--fxb-text:#e7ece9;--fxb-muted:#8e9b94;--fxb-amber:#ffb000;--fxb-up:#3ecf8e;--fxb-down:#ff6b5f;
+  max-width:none!important;min-height:0;display:grid!important;
+  grid-template-columns:var(--fxb-side,248px) minmax(0,1fr) var(--fxb-preview,340px);
+  grid-template-rows:auto minmax(480px,1fr) auto;gap:8px;color:var(--fxb-text)!important;color-scheme:dark!important;background:var(--fxb-bg)!important;font-family:Inter,Arial,sans-serif
+}
+html body.fx-terminal #fx-page-body .fxb :is(h2,h3,p,span,label,small,strong,button){letter-spacing:0!important}
+html body.fx-terminal #fx-page-body .fxb h2{margin:0 0 6px;font:700 10px/1.3 'IBM Plex Mono',ui-monospace,monospace!important;color:var(--fxb-amber)!important;letter-spacing:1px!important}
+html body.fx-terminal #fx-page-body .fxb p,
+html body.fx-terminal #fx-page-body .fxb .fxb-note{color:var(--fxb-muted)!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-bar{grid-column:1 / -1;grid-row:1;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:6px 8px;background:var(--fxb-panel)!important;border:1px solid var(--fxb-line)!important;color:var(--fxb-text)!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-bar strong{font:700 11px 'IBM Plex Mono',monospace!important;letter-spacing:1px!important;color:var(--fxb-amber)!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-bar > span{color:var(--fxb-muted)!important;font-size:11px}
+html body.fx-terminal #fx-page-body .fxb .fxb-tools{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+html body.fx-terminal #fx-page-body .fxb .fxb-btn{height:28px;padding:0 10px;background:var(--fxb-field)!important;color:var(--fxb-text)!important;border:1px solid var(--fxb-line-2)!important;border-radius:0!important;box-shadow:none!important;font:700 11px/1 'IBM Plex Mono',monospace!important;white-space:nowrap;cursor:pointer}
+html body.fx-terminal #fx-page-body .fxb .fxb-btn:hover{border-color:var(--fxb-amber)!important;color:var(--fxb-amber)!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-btn.on{background:var(--fxb-amber)!important;color:#000!important;border-color:var(--fxb-amber)!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-btn.on:hover{color:#000!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-btn.danger{border-color:#7a3030!important;color:var(--fxb-down)!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-btn:disabled{opacity:.45!important;cursor:not-allowed}
+html body.fx-terminal #fx-page-body .fxb .fxb-side{grid-column:1;grid-row:2;position:relative;display:flex;flex-direction:column;padding:0;overflow:hidden;background:var(--fxb-panel)!important;border:1px solid var(--fxb-line)!important;min-width:0;color:var(--fxb-text)!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-side-scroll{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:6px;padding:8px}
+html body.fx-terminal #fx-page-body .fxb .fxb-editor{grid-column:2;grid-row:2;display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--fxb-panel)!important;border:1px solid var(--fxb-line)!important;color:var(--fxb-text)!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-preview{grid-column:3;grid-row:2;position:relative;display:flex;flex-direction:column;min-width:0;padding:8px;background:var(--fxb-panel)!important;border:1px solid var(--fxb-line)!important;color:var(--fxb-text)!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-assist{grid-column:1 / -1;grid-row:3;padding:8px;background:var(--fxb-panel)!important;border:1px solid var(--fxb-line)!important;color:var(--fxb-text)!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-split{position:absolute;top:0;bottom:0;width:8px;cursor:col-resize;z-index:3;background:transparent}
+html body.fx-terminal #fx-page-body .fxb .fxb-split:hover,
+html body.fx-terminal #fx-page-body .fxb .fxb-split:focus{background:var(--fxb-amber)!important;outline:none!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-side > .fxb-split{right:0}
+html body.fx-terminal #fx-page-body .fxb .fxb-preview > .fxb-split{left:-4px}
+html body.fx-terminal #fx-page-body .fxb .fxb-side .fxb-btn{height:auto;min-height:32px;text-align:left;white-space:normal;width:100%}
+html body.fx-terminal #fx-page-body .fxb .fxb-side .fxb-btn small{display:block;color:var(--fxb-muted)!important;font-weight:500}
+html body.fx-terminal #fx-page-body .fxb .fxb-side .fxb-btn.on small{color:#3a2a00!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-side .fxb-btn.on{color:#000!important}
+html body.fx-terminal #fx-page-body .fxb label{display:flex;flex-direction:column;gap:3px;font:10px/1.3 'IBM Plex Mono',monospace!important;color:var(--fxb-muted)!important}
+html body.fx-terminal #fx-page-body .fxb label span{color:var(--fxb-muted)!important}
+html body.fx-terminal #fx-page-body .fxb :is(input,select,textarea){
+  background:var(--fxb-field)!important;background-color:var(--fxb-field)!important;color:var(--fxb-text)!important;-webkit-text-fill-color:var(--fxb-text)!important;
+  border:1px solid var(--fxb-line-2)!important;border-radius:0!important;box-shadow:none!important;font:12px/1.45 'IBM Plex Mono',ui-monospace,monospace!important;
+  padding:6px 8px;min-width:0;color-scheme:dark!important;caret-color:var(--fxb-amber)!important
+}
+html body.fx-terminal #fx-page-body .fxb :is(input,select,textarea)::placeholder{color:var(--fxb-muted)!important;-webkit-text-fill-color:var(--fxb-muted)!important;opacity:1!important}
+html body.fx-terminal #fx-page-body .fxb :is(input,select,textarea):hover{border-color:#3d4f48!important}
+html body.fx-terminal #fx-page-body .fxb :is(input.fxb-field,select.fxb-field,textarea.fxb-field,textarea.fxb-code):focus,
+html body.fx-terminal #fx-page-body .fxb :is(input.fxb-field,select.fxb-field,textarea.fxb-field,textarea.fxb-code,button.fxb-btn):focus-visible{
+  outline:1px solid var(--fxb-amber)!important;outline-offset:0!important;border-color:var(--fxb-amber)!important
+}
+html body.fx-terminal #fx-page-body .fxb textarea[readonly]{background:var(--fxb-field)!important;color:var(--fxb-text)!important;-webkit-text-fill-color:var(--fxb-text)!important;opacity:1!important}
+html body.fx-terminal #fx-page-body .fxb :is(input,select,textarea):disabled{background:var(--fxb-elev)!important;color:var(--fxb-muted)!important;-webkit-text-fill-color:var(--fxb-muted)!important;opacity:1!important}
+html body.fx-terminal #fx-page-body .fxb select{
+  appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,#ffb000 50%),linear-gradient(135deg,#ffb000 50%,transparent 50%)!important;
+  background-position:calc(100% - 14px) calc(50% - 2px),calc(100% - 9px) calc(50% - 2px)!important;background-size:5px 5px,5px 5px!important;background-repeat:no-repeat!important;background-color:var(--fxb-field)!important;padding-right:22px
+}
+html body.fx-terminal #fx-page-body .fxb select option,
+html body.fx-terminal #fx-page-body .fxb select optgroup{background:#0d1112!important;color:#e7ece9!important}
+html body.fx-terminal #fx-page-body .fxb input:-webkit-autofill,
+html body.fx-terminal #fx-page-body .fxb input:-webkit-autofill:hover,
+html body.fx-terminal #fx-page-body .fxb input:-webkit-autofill:focus,
+html body.fx-terminal #fx-page-body .fxb textarea:-webkit-autofill{
+  -webkit-text-fill-color:#e7ece9!important;caret-color:#ffb000!important;box-shadow:0 0 0 1000px #030405 inset!important;transition:background-color 99999s ease-out
+}
+html body.fx-terminal #fx-page-body .fxb .fxb-filebar,
+html body.fx-terminal #fx-page-body .fxb .fxb-find{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 8px;border-bottom:1px solid var(--fxb-line);background:var(--fxb-elev)!important;color:var(--fxb-muted)!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-find{border-bottom:0;border-top:1px solid var(--fxb-line)}
+html body.fx-terminal #fx-page-body .fxb .fxb-tab{padding:2px 8px;background:var(--fxb-field)!important;border:1px solid var(--fxb-line-2)!important;color:var(--fxb-text)!important;font:11px 'IBM Plex Mono',monospace}
+html body.fx-terminal #fx-page-body .fxb .fxb-filebar span,
+html body.fx-terminal #fx-page-body .fxb .fxb-save{color:var(--fxb-muted)!important;font:11px 'IBM Plex Mono',monospace}
+html body.fx-terminal #fx-page-body .fxb .fxb-save.on{color:var(--fxb-up)!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-save.warn{color:var(--fxb-amber)!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-cmhost{flex:1 1 auto;min-height:240px;background:#030405!important;position:relative}
+html body.fx-terminal #fx-page-body .fxb .fxb-code{flex:1;min-height:240px;resize:none;border:0!important;padding:8px 10px;background:#030405!important;color:#e7ece9!important;-webkit-text-fill-color:#e7ece9!important;font:12px/1.45 'IBM Plex Mono',ui-monospace,monospace!important;tab-size:2}
+html body.fx-terminal #fx-page-body .fxb .fxb-find input{flex:1 1 120px;height:26px;padding:2px 8px}
+html body.fx-terminal #fx-page-body .fxb .fxb-find .fxb-btn{height:26px}
+html body.fx-terminal #fx-page-body .fxb .CodeMirror{height:100%;background:#030405!important;color:#e7ece9!important;font-family:'IBM Plex Mono',ui-monospace,monospace!important;font-size:12px!important;line-height:1.45!important}
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-scroll,
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-sizer,
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-lines,
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-code,
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-gutters,
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-gutter{background:#030405!important;border-color:#1f2825!important}
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-gutters{border-right:1px solid #1f2825!important}
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-linenumber{color:#6d8078!important;padding:0 8px 0 4px!important}
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-cursor{border-left:1px solid #ffb000!important}
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-selected{background:#1c2b26!important}
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-focused .CodeMirror-selected{background:#24362f!important}
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-focused{outline:1px solid #ffb000!important;outline-offset:-1px!important}
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-line::selection,
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-line > span::selection,
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-line > span > span::selection{background:#24362f!important}
+html body.fx-terminal #fx-page-body .fxb .cm-s-fynx .cm-keyword{color:#ffb000!important}
+html body.fx-terminal #fx-page-body .fxb .cm-s-fynx .cm-atom{color:#ffb000!important}
+html body.fx-terminal #fx-page-body .fxb .cm-s-fynx .cm-number{color:#7dcea0!important}
+html body.fx-terminal #fx-page-body .fxb .cm-s-fynx .cm-def{color:#e7ece9!important}
+html body.fx-terminal #fx-page-body .fxb .cm-s-fynx .cm-variable,
+html body.fx-terminal #fx-page-body .fxb .cm-s-fynx .cm-variable-2,
+html body.fx-terminal #fx-page-body .fxb .cm-s-fynx .cm-property{color:#d5e4de!important}
+html body.fx-terminal #fx-page-body .fxb .cm-s-fynx .cm-operator,
+html body.fx-terminal #fx-page-body .fxb .cm-s-fynx .cm-bracket{color:#c5b48a!important}
+html body.fx-terminal #fx-page-body .fxb .cm-s-fynx .cm-comment{color:#6d8078!important;font-style:italic}
+html body.fx-terminal #fx-page-body .fxb .cm-s-fynx .cm-string,
+html body.fx-terminal #fx-page-body .fxb .cm-s-fynx .cm-string-2{color:#3ecf8e!important}
+html body.fx-terminal #fx-page-body .fxb .cm-s-fynx .cm-meta{color:#8e9b94!important}
+html body.fx-terminal #fx-page-body .fxb .cm-s-fynx .cm-error{color:#ff6b5f!important;background:transparent!important}
+html body.fx-terminal #fx-page-body .fxb .cm-s-fynx span.CodeMirror-matchingbracket{color:#ffb000!important;outline:1px solid #3d4f48}
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-scrollbar-filler,
+html body.fx-terminal #fx-page-body .fxb .CodeMirror-gutter-filler{background:#030405!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-console{margin:0;min-height:52px;max-height:108px;overflow:auto;padding:6px 8px;background:#030405!important;color:#8e9b94!important;border-top:1px solid #1f2825;font:11px/1.45 'IBM Plex Mono',ui-monospace,monospace!important;white-space:pre-wrap}
+html body.fx-terminal #fx-page-body .fxb .fxb-console.error{color:#ff6b5f!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-console.ok{color:#3ecf8e!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-screen{flex:1;min-height:180px;background:#06080a!important;border:1px solid #1f2825!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-screen iframe{width:100%;height:100%;min-height:180px;border:0;background:#06080a!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-error,
+html body.fx-terminal #fx-page-body .fxb .fxb-note.bad{color:#ff6b5f!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-up{color:#3ecf8e!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-down{color:#ff6b5f!important}
+html body.fx-terminal #fx-page-body .fxb .fxb-versions{display:flex;flex-direction:column;gap:4px}
+html body.fx-terminal #fx-page-body .fxb .fxb-assist textarea{width:100%;min-height:88px;resize:vertical}
+html body.fx-terminal #fx-page-body .fxb .fxb-list{display:flex;flex-direction:column;gap:4px}
+@media (max-width:1100px){
+  html body.fx-terminal #fx-page-body > .fxb{grid-template-columns:1fr!important;grid-template-rows:auto auto auto auto auto}
+  html body.fx-terminal #fx-page-body .fxb .fxb-bar,
+  html body.fx-terminal #fx-page-body .fxb .fxb-side,
+  html body.fx-terminal #fx-page-body .fxb .fxb-editor,
+  html body.fx-terminal #fx-page-body .fxb .fxb-preview,
+  html body.fx-terminal #fx-page-body .fxb .fxb-assist{grid-column:1!important;grid-row:auto!important}
+  html body.fx-terminal #fx-page-body .fxb .fxb-tools{margin-left:0}
+  html body.fx-terminal #fx-page-body .fxb .fxb-btn{min-height:36px}
+  html body.fx-terminal #fx-page-body .fxb .fxb-split{display:none!important}
+  html body.fx-terminal #fx-page-body .fxb .fxb-cmhost,
+  html body.fx-terminal #fx-page-body .fxb .fxb-code{min-height:320px}
+}

@@ -1,0 +1,26 @@
+name: Market holiday calendar export regression
+
+on:
+  pull_request:
+    paths:
+      - 'tools/market-holidays.html'
+      - 'assets/js/holiday-calendar-export.js'
+      - 'scripts/test-holiday-calendar-export.cjs'
+      - 'package.json'
+      - '.github/workflows/holiday-calendar-export.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  calendar-export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate ICS export, UTF-8 folding and UI wiring
+        run: node --test scripts/test-holiday-calendar-export.cjs

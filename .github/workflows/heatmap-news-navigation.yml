@@ -1,0 +1,22 @@
+name: Heatmap to Symbol News research navigation
+on:
+  pull_request:
+    paths:
+      - 'assets/js/research/markets.js'
+      - 'assets/research-desk.css'
+      - 'scripts/test-heatmap-news-navigation.cjs'
+      - '.github/workflows/heatmap-news-navigation.yml'
+  workflow_dispatch:
+jobs:
+  navigation-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci --ignore-scripts
+      - run: node --check assets/js/research/markets.js
+      - run: node --test scripts/test-heatmap-news-navigation.cjs

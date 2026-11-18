@@ -1,0 +1,4 @@
+# GitHub Pages excludes dot-directories unless explicitly included.
+# Keep its existing build behavior while publishing only this association file.
+include:
+  - .well-known

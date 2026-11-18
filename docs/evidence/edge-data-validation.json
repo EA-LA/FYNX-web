@@ -1,0 +1,377 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-11-03T21:11:06.863Z",
+  "finishedAt": "2026-11-03T21:11:17.048Z",
+  "environment": "Local Node service; not deployed production",
+  "prices": [
+    {
+      "symbol": "EURUSD",
+      "records": 3127,
+      "from": "2016-11-03T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "cached",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:16:47.539Z"
+    },
+    {
+      "symbol": "GBPUSD",
+      "records": 3126,
+      "from": "2016-11-03T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "cached",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:18:38.280Z"
+    },
+    {
+      "symbol": "USDJPY",
+      "records": 3127,
+      "from": "2016-11-03T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "cached",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:58:22.657Z"
+    },
+    {
+      "symbol": "AUDUSD",
+      "records": 3127,
+      "from": "2016-11-03T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "cached",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:58:25.510Z"
+    },
+    {
+      "symbol": "USDCAD",
+      "records": 3127,
+      "from": "2016-11-03T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "historical",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:59:38.266Z"
+    },
+    {
+      "symbol": "USDCHF",
+      "records": 3127,
+      "from": "2016-11-03T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "cached",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:58:24.033Z"
+    },
+    {
+      "symbol": "NZDUSD",
+      "records": 3124,
+      "from": "2016-11-03T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "historical",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:59:39.739Z"
+    },
+    {
+      "symbol": "XAUUSD",
+      "records": 3109,
+      "from": "2016-11-03T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "cached",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:17:15.916Z"
+    },
+    {
+      "symbol": "XAGUSD",
+      "records": 3109,
+      "from": "2016-11-03T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "historical",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:59:41.163Z"
+    },
+    {
+      "symbol": "EURJPY",
+      "records": 3127,
+      "from": "2016-11-03T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "historical",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:59:42.951Z"
+    },
+    {
+      "symbol": "GBPJPY",
+      "records": 3126,
+      "from": "2016-11-03T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "historical",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:59:44.809Z"
+    },
+    {
+      "symbol": "EURGBP",
+      "records": 3127,
+      "from": "2016-11-03T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "historical",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:59:46.658Z"
+    },
+    {
+      "symbol": "US30",
+      "records": 3036,
+      "from": "2016-11-03T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "historical",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:59:48.095Z"
+    },
+    {
+      "symbol": "NAS100",
+      "records": 3036,
+      "from": "2016-11-03T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "historical",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:59:49.499Z"
+    },
+    {
+      "symbol": "SPX500",
+      "records": 3032,
+      "from": "2016-11-03T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "cached",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:58:26.829Z"
+    },
+    {
+      "symbol": "BTCUSD",
+      "records": 3372,
+      "from": "2017-05-07T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "cached",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:58:28.260Z"
+    },
+    {
+      "symbol": "ETHUSD",
+      "records": 3184,
+      "from": "2017-12-11T00:00:00.000Z",
+      "to": "2026-11-02T00:00:00.000Z",
+      "requestedFrom": "2016-11-03",
+      "requestedTo": "2026-11-03",
+      "status": "historical",
+      "source": "Dukascopy",
+      "updatedAt": "2026-11-03T20:59:51.665Z"
+    }
+  ],
+  "cot": {
+    "source": "CFTC Commitments of Traders",
+    "sourceURL": "https://publicreporting.cftc.gov/stories/s/r4w3-av2u",
+    "records": 8886,
+    "fetchedAt": "2026-11-03T20:58:12.821Z",
+    "latestReportDate": "2026-10-27",
+    "markets": [
+      {
+        "market": "CAD",
+        "records": 679,
+        "firstReportDate": "2013-10-29",
+        "lastReportDate": "2026-10-27",
+        "latestVersionAvailableAt": "2026-10-30T19:30:08.844Z"
+      },
+      {
+        "market": "CHF",
+        "records": 679,
+        "firstReportDate": "2013-10-29",
+        "lastReportDate": "2026-10-27",
+        "latestVersionAvailableAt": "2026-10-30T19:30:08.844Z"
+      },
+      {
+        "market": "GBP",
+        "records": 679,
+        "firstReportDate": "2013-10-29",
+        "lastReportDate": "2026-10-27",
+        "latestVersionAvailableAt": "2026-10-30T19:30:08.844Z"
+      },
+      {
+        "market": "JPY",
+        "records": 679,
+        "firstReportDate": "2013-10-29",
+        "lastReportDate": "2026-10-27",
+        "latestVersionAvailableAt": "2026-10-30T19:30:08.844Z"
+      },
+      {
+        "market": "EUR",
+        "records": 679,
+        "firstReportDate": "2013-10-29",
+        "lastReportDate": "2026-10-27",
+        "latestVersionAvailableAt": "2026-10-30T19:30:08.844Z"
+      },
+      {
+        "market": "NZD",
+        "records": 679,
+        "firstReportDate": "2013-10-29",
+        "lastReportDate": "2026-10-27",
+        "latestVersionAvailableAt": "2026-10-30T19:30:08.844Z"
+      },
+      {
+        "market": "US30",
+        "records": 679,
+        "firstReportDate": "2013-10-29",
+        "lastReportDate": "2026-10-27",
+        "latestVersionAvailableAt": "2026-10-30T19:30:08.844Z"
+      },
+      {
+        "market": "SPX500",
+        "records": 679,
+        "firstReportDate": "2013-10-29",
+        "lastReportDate": "2026-10-27",
+        "latestVersionAvailableAt": "2026-10-30T19:30:08.844Z"
+      },
+      {
+        "market": "NAS100",
+        "records": 679,
+        "firstReportDate": "2013-10-29",
+        "lastReportDate": "2026-10-27",
+        "latestVersionAvailableAt": "2026-10-30T19:30:08.844Z"
+      },
+      {
+        "market": "AUD",
+        "records": 679,
+        "firstReportDate": "2013-10-29",
+        "lastReportDate": "2026-10-27",
+        "latestVersionAvailableAt": "2026-10-30T19:30:08.844Z"
+      },
+      {
+        "market": "BTC",
+        "records": 447,
+        "firstReportDate": "2018-04-10",
+        "lastReportDate": "2026-10-27",
+        "latestVersionAvailableAt": "2026-10-30T19:30:08.844Z"
+      },
+      {
+        "market": "ETH",
+        "records": 291,
+        "firstReportDate": "2021-04-06",
+        "lastReportDate": "2026-10-27",
+        "latestVersionAvailableAt": "2026-10-30T19:30:08.844Z"
+      },
+      {
+        "market": "XAG",
+        "records": 679,
+        "firstReportDate": "2013-10-29",
+        "lastReportDate": "2026-10-27",
+        "latestVersionAvailableAt": "2026-10-30T19:30:18.435Z"
+      },
+      {
+        "market": "XAU",
+        "records": 679,
+        "firstReportDate": "2013-10-29",
+        "lastReportDate": "2026-10-27",
+        "latestVersionAvailableAt": "2026-10-30T19:30:18.435Z"
+      }
+    ]
+  },
+  "snapshot": {
+    "asOf": "2026-11-03T21:11:07.031Z",
+    "status": "partial",
+    "markets": 8,
+    "strategies": 3,
+    "refreshMs": 1971.267,
+    "measurement": "New worker thread plus private provider-cache reads and persistence; no provider/network cold-start claim.",
+    "tradeCacheRecordsBefore": 48,
+    "tradeCacheRecordsAfter": 72,
+    "providerStatus": {
+      "cot": {
+        "status": "available",
+        "updatedAt": "2026-11-03T20:58:12.821Z",
+        "reportDate": "2026-10-27",
+        "reason": null
+      },
+      "vix": {
+        "status": "unavailable",
+        "updatedAt": null,
+        "reason": "VIX needs EDGE_FRED_API_KEY. Other available mood inputs are still shown."
+      },
+      "calendar": {
+        "status": "unavailable",
+        "historyAvailable": false,
+        "updatedAt": "2026-11-03T21:11:07.057Z",
+        "reason": "Economic calendar needs QUANT_CALENDAR_API_KEY and historical-calendar access. No event dates are approximated."
+      },
+      "quotes": {
+        "status": "unavailable",
+        "configured": false
+      }
+    }
+  },
+  "cachedPublicHTTP": {
+    "samples": 50,
+    "authorization": "none",
+    "measurement": "Loopback HTTP fetch + complete JSON parse, same service process after snapshot refresh.",
+    "firstMs": 62.78,
+    "p50Ms": 24.434,
+    "p95Ms": 37.605,
+    "maxMs": 62.78,
+    "within300ms": true
+  },
+  "headlines": {
+    "httpStatus": 503,
+    "source": null,
+    "items": 0,
+    "firstPublishedAt": null,
+    "internalReader": false,
+    "errorCode": "PROVIDER_UNAVAILABLE"
+  },
+  "configuration": {
+    "localPrivateEnvironmentFilesFound": false,
+    "namesOnly": [
+      {
+        "name": "QUANT_QUOTES_API_KEY",
+        "present": false
+      },
+      {
+        "name": "QUANT_CALENDAR_API_KEY",
+        "present": false
+      },
+      {
+        "name": "EDGE_FRED_API_KEY",
+        "present": false
+      }
+    ]
+  },
+  "notValidated": [
+    "Production deployment or cron installation",
+    "Authenticated browser Firebase flow",
+    "FRED/calendar/quotes provider acceptance without configured keys",
+    "Broker terminal or physical-device heartbeat delivery",
+    "Actual email delivery"
+  ]
+}

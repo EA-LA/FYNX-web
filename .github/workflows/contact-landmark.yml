@@ -1,0 +1,22 @@
+name: Contact page keyboard navigation
+on:
+  pull_request:
+    paths:
+      - 'contact.html'
+      - 'scripts/test-contact-landmark.cjs'
+      - 'scripts/build-company-products.cjs'
+      - '.github/workflows/contact-landmark.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contact-navigation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check scripts/test-contact-landmark.cjs
+      - run: node scripts/test-contact-landmark.cjs

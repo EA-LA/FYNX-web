@@ -1,0 +1,169 @@
+{
+  "accessibility": {
+    "inapplicable": 43,
+    "incomplete": [
+      {
+        "help": "Elements must only use permitted ARIA attributes",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/aria-prohibited-attr?application=axeAPI",
+        "id": "aria-prohibited-attr",
+        "impact": "serious",
+        "nodes": [
+          {
+            "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on \"div\" elements with no valid role attribute.",
+            "html": "<div class=\"terminal-ticker-track\" tabindex=\"0\" aria-label=\"Global market quotes. Scroll to see more.\">",
+            "target": [
+              ".terminal-ticker-track"
+            ]
+          }
+        ]
+      },
+      {
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": [
+          {
+            "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters",
+            "html": "<button type=\"button\" id=\"theme-toggle\" data-theme-control=\"\" aria-label=\"Switch to dark theme\" aria-pressed=\"true\">◐ <span>Theme</span></button>",
+            "target": [
+              "#theme-toggle"
+            ]
+          },
+          {
+            "failureSummary": "Fix any of the following:\n  Element content contains only non-text characters",
+            "html": "<button type=\"button\" aria-label=\"Pause market strip\" aria-pressed=\"false\">Ⅱ</button>",
+            "target": [
+              "button[aria-label=\"Pause market strip\"]"
+            ]
+          }
+        ]
+      },
+      {
+        "help": "Elements must have their visible text as part of their accessible name",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/label-content-name-mismatch?application=axeAPI",
+        "id": "label-content-name-mismatch",
+        "impact": "serious",
+        "nodes": [
+          {
+            "failureSummary": "Fix any of the following:\n  Unable to determine if the visible text is part of the accessible name",
+            "html": "<button type=\"button\" aria-label=\"Previous market quotes\">‹</button>",
+            "target": [
+              "button[aria-label=\"Previous market quotes\"]"
+            ]
+          },
+          {
+            "failureSummary": "Fix any of the following:\n  Unable to determine if the visible text is part of the accessible name",
+            "html": "<button type=\"button\" aria-label=\"Pause market strip\" aria-pressed=\"false\">Ⅱ</button>",
+            "target": [
+              "button[aria-label=\"Pause market strip\"]"
+            ]
+          },
+          {
+            "failureSummary": "Fix any of the following:\n  Unable to determine if the visible text is part of the accessible name",
+            "html": "<button type=\"button\" aria-label=\"Next market quotes\">›</button>",
+            "target": [
+              "button[aria-label=\"Next market quotes\"]"
+            ]
+          }
+        ]
+      }
+    ],
+    "passes": 48,
+    "violations": []
+  },
+  "axeVersion": "4.14.0",
+  "capturedAt": "2026-11-03T21:14:30.365Z",
+  "limitations": [
+    "Rendered-state axe audit, not a Lighthouse accessibility score or a complete accessibility certification.",
+    "Performance entries are observed in this browser session without Lighthouse navigation gathering, network/CPU simulation or scoring.",
+    "LCP and CLS describe available buffered entries for this navigation. Long-task blocking time is not Lighthouse TBT."
+  ],
+  "noHorizontalOverflow": true,
+  "observedPerformance": {
+    "cls": 0.07878742834020544,
+    "lcp": 252,
+    "navigation": [
+      {
+        "activationStart": 0,
+        "confidence": {},
+        "connectEnd": 0.2999999998137355,
+        "connectStart": 0.2999999998137355,
+        "contentEncoding": "",
+        "contentType": "text/html",
+        "criticalCHRestart": 0,
+        "decodedBodySize": 13068,
+        "deliveryType": "",
+        "domComplete": 207.69999999925497,
+        "domContentLoadedEventEnd": 199.09999999962747,
+        "domContentLoadedEventStart": 193.5,
+        "domInteractive": 192.29999999981376,
+        "domainLookupEnd": 0.2999999998137355,
+        "domainLookupStart": 0.2999999998137355,
+        "duration": 207.69999999925497,
+        "encodedBodySize": 13068,
+        "entryType": "navigation",
+        "fetchStart": 0.2999999998137355,
+        "finalResponseHeadersStart": 2.2999999998137355,
+        "firstInterimResponseStart": 0,
+        "initiatorType": "navigation",
+        "loadEventEnd": 207.69999999925497,
+        "loadEventStart": 207.69999999925497,
+        "name": "http://127.0.0.1:4174/edge-radar/usdjpy/",
+        "navigationId": 8853,
+        "nextHopProtocol": "http/1.1",
+        "notRestoredReasons": null,
+        "redirectCount": 0,
+        "redirectEnd": 0,
+        "redirectStart": 0,
+        "renderBlockingStatus": "non-blocking",
+        "requestStart": 1.2999999998137357,
+        "responseEnd": 2.8999999994412065,
+        "responseStart": 2.2999999998137355,
+        "responseStatus": 200,
+        "secureConnectionStart": 0,
+        "serverTiming": [],
+        "startTime": 0,
+        "transferSize": 13368,
+        "type": "navigate",
+        "unloadEventEnd": 5.3999999994412065,
+        "unloadEventStart": 5.3999999994412065,
+        "workerCacheLookupStart": 0,
+        "workerFinalSourceType": "",
+        "workerMatchedSourceType": "",
+        "workerRouterEvaluationStart": 0,
+        "workerStart": 0
+      }
+    ],
+    "observedLongTaskBlockingMs": 0,
+    "observedLongTasks": 0,
+    "paint": [
+      {
+        "duration": 0,
+        "entryType": "paint",
+        "name": "first-paint",
+        "navigationId": 8853,
+        "paintTime": 190.69999999925497,
+        "presentationTime": 252,
+        "startTime": 252
+      },
+      {
+        "duration": 0,
+        "entryType": "paint",
+        "name": "first-contentful-paint",
+        "navigationId": 8853,
+        "paintTime": 190.69999999925497,
+        "presentationTime": 252,
+        "startTime": 252
+      }
+    ]
+  },
+  "pageWidth": 1440,
+  "url": "http://127.0.0.1:4174/edge-radar/usdjpy/",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+  "viewport": {
+    "dpr": 1,
+    "height": 1000,
+    "width": 1440
+  }
+}

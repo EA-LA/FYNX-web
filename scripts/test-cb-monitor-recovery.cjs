@@ -1,0 +1,129 @@
+/* Regression tests for the real Newsroom central-bank monitor. Run with Node. */
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+const source = fs.readFileSync(path.join(__dirname, '../assets/js/cb-monitor.js'), 'utf8');
+
+const goodHistory = [['2026-08', 3.25], ['2026-09', 3.5], ['2026-10', 3.75]];
+const valid = () => ({
+  source: 'BIS monthly series',
+  areas: {
+    US: {history: goodHistory},
+    GB: {history: [['2026-09', 4.0], ['2026-10', 4.0]]}
+  }
+});
+const validDesk = () => ({
+  fed: {
+    source: 'fed funds futures',
+    effr: {targetFrom: 3.5, targetTo: 3.75},
+    odds: {meeting: '2026-12-09', hike: 35, hold: 60, cut: 5}
+  }
+});
+function harness(provider, timer = setTimeout) {
+  const grid = {innerHTML: ''}, note = {textContent: ''}, listeners = {};
+  const host = {
+    innerHTML: '',
+    querySelector(selector) {
+      if (selector === '.cb-grid') return grid;
+      if (selector === '[data-cb-source]') return note;
+      throw new Error('Unexpected selector: ' + selector);
+    },
+    contains(node) {return node === retryButton;}
+  };
+  const retryButton = {};
+  const document = {
+    querySelector(selector) {
+      assert.equal(selector, '[data-cb-monitor]');
+      return host;
+    },
+    addEventListener(type, callback) {
+      listeners[type] = callback;
+    }
+  };
+  let calls = 0;
+  const fetch = async (url, options) => {
+    calls += 1;
+    return provider(String(url).includes('/policy.json') ? 'policy' : 'desk', options);
+  };
+  const sandbox = {document, fetch, AbortController, setTimeout: timer, clearTimeout, console};
+  vm.runInNewContext(source, sandbox, {filename: 'cb-monitor.js'});
+  return {
+    grid, note, get calls() {return calls;},
+    retry() {listeners.click({target: {closest: selector => selector === '[data-cb-retry]' ? retryButton : null}});},
+    region(name) {listeners.click({target: {closest: selector => selector === '[data-region]' ? {dataset: {region: name}} : null}});}
+  };
+}
+const json = value => ({ok: true, json: async () => value});
+const missing = {ok: false, json: async () => {throw new Error('Should not parse 404');}};
+async function settle() {
+  for (let i = 0; i < 5; i++) await new Promise(resolve => setImmediate(resolve));
+}
+(async () => {
+  // An unreachable rate feed cannot leave the skeleton spinning forever.
+  const unavailable = harness(async kind => kind === 'policy' ? missing : json(validDesk()));
+  await settle();
+  assert.match(unavailable.grid.innerHTML, /Retry policy data/);
+  assert.match(unavailable.grid.innerHTML, /No estimated rates/);
+  assert.equal(unavailable.grid.innerHTML.includes('cb-card'), false);
+  console.log('ok 1 - policy feed failure offers an honest retry');
+
+  // A retry actually refetches and paints sourced rates.
+  let recovered = false;
+  const recovery = harness(async kind => kind === 'policy' ? (recovered ? json(valid()) : missing) : json(validDesk()));
+  await settle();
+  assert.match(recovery.grid.innerHTML, /Retry policy data/);
+  recovered = true;
+  recovery.retry();
+  await settle();
+  assert.match(recovery.grid.innerHTML, /Federal Reserve/);
+  assert.match(recovery.grid.innerHTML, /3.75/);
+  assert.equal(recovery.calls, 4);
+  console.log('ok 2 - retry restores official policy data');
+
+  // One malformed bank must not take down all verified banks.
+  const partiallyInvalid = valid();
+  partiallyInvalid.areas.GB = {history: [['not-a-month', '4.0']]};
+  const partial = harness(async kind => json(kind === 'policy' ? partiallyInvalid : validDesk()));
+  await settle();
+  assert.match(partial.grid.innerHTML, /Federal Reserve/);
+  assert.doesNotMatch(partial.grid.innerHTML, /Bank of England/);
+  assert.match(partial.note.textContent, /7 banks omitted/);
+  console.log('ok 3 - malformed bank series is isolated');
+
+  // Unordered, missing and non-finite records must not be shown as live rates.
+  const invalid = harness(async kind => json(kind === 'policy' ? {
+    areas: {US: {history: [['2026-10', 3.5], ['2026-09', 3.75]]}, GB: {history: []}}
+  } : validDesk()));
+  await settle();
+  assert.match(invalid.grid.innerHTML, /Retry policy data/);
+  assert.doesNotMatch(invalid.grid.innerHTML, /cb-card/);
+  console.log('ok 4 - invalid-only series cannot display invented values');
+
+  const untrustedOdds = validDesk();
+  untrustedOdds.fed.odds.hike = '100';
+  untrustedOdds.fed.effr.targetFrom = '<script>alert(1)</script>';
+  const guarded = harness(async kind => json(kind === 'policy' ? valid() : untrustedOdds));
+  await settle();
+  assert.match(guarded.grid.innerHTML, /Federal Reserve/);
+  assert.doesNotMatch(guarded.grid.innerHTML, /Next FOMC/);
+  assert.doesNotMatch(guarded.grid.innerHTML, /<script>/);
+  console.log('ok 5 - invalid odds and unsafe policy target content do not render');
+
+  // Region filtering remains functional with the verified subset.
+  guarded.region('europe');
+  assert.match(guarded.grid.innerHTML, /Bank of England/);
+  assert.doesNotMatch(guarded.grid.innerHTML, /Federal Reserve/);
+  guarded.region('us');
+  assert.match(guarded.grid.innerHTML, /Federal Reserve/);
+  console.log('ok 6 - filters still work after feed validation');
+
+  // A never-resolving fetch is terminated instead of showing a permanent skeleton.
+  const stalled = harness((_kind, options) => new Promise((_resolve, reject) => {
+    options.signal.addEventListener('abort', () => reject(new Error('aborted')), {once: true});
+  }), callback => setImmediate(callback));
+  await settle();
+  assert.match(stalled.grid.innerHTML, /Retry policy data/);
+  console.log('ok 7 - timed-out fetch resolves to recoverable state');
+})().catch(error => {console.error(error);process.exitCode = 1;});

@@ -1,0 +1,27 @@
+name: Terminal scanner CSV safety
+on:
+  pull_request:
+    paths:
+      - 'assets/js/terminal/scanner.js'
+      - 'scripts/test-scanner-csv-safety.cjs'
+      - '.github/workflows/terminal-scanner-csv-safety.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/terminal/scanner.js'
+      - 'scripts/test-scanner-csv-safety.cjs'
+      - '.github/workflows/terminal-scanner-csv-safety.yml'
+permissions:
+  contents: read
+jobs:
+  scanner-csv:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check assets/js/terminal/scanner.js
+      - run: node --check scripts/test-scanner-csv-safety.cjs
+      - run: node --test scripts/test-scanner-csv-safety.cjs

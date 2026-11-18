@@ -1,0 +1,782 @@
+[
+  {
+    "id": "q001",
+    "level": "beginner",
+    "question": "What is volatility in forex?",
+    "options": [
+      "How often you trade",
+      "The degree of price fluctuation over time",
+      "The number of pairs available",
+      "Your profit percentage"
+    ],
+    "correct": 1,
+    "explanation": "Volatility measures the degree of price fluctuation over a period. High volatility means large price swings, offering more profit potential but also higher risk. Low volatility indicates stable, range-bound movement. Different pairs and timeframes have different volatility levels."
+  },
+  {
+    "id": "q054",
+    "level": "intermediate",
+    "question": "What is the best time to trade forex?",
+    "options": [
+      "Only during Asian session",
+      "When major markets overlap (London/New York)",
+      "Anytime is equally good",
+      "Only on Mondays"
+    ],
+    "correct": 1,
+    "explanation": "The best liquidity and volatility typically occur during market overlaps, especially the London/New York overlap (8 AM - 12 PM EST). This period sees the highest trading volume. However, 'best' depends on your strategy and the pairs you trade."
+  },
+  {
+    "id": "q055",
+    "level": "intermediate",
+    "question": "What is the ATR (Average True Range) indicator used for?",
+    "options": [
+      "Predicting price direction",
+      "Measuring market volatility",
+      "Identifying support and resistance",
+      "Finding entry signals"
+    ],
+    "correct": 1,
+    "explanation": "ATR measures market volatility by calculating the average range between high and low prices over a period. It doesn't predict direction but helps with stop loss placement and position sizing. Higher ATR requires wider stops; lower ATR allows tighter stops."
+  },
+  {
+    "id": "q056",
+    "level": "intermediate",
+    "question": "What is a double top pattern?",
+    "options": [
+      "A bullish continuation pattern",
+      "A bearish reversal pattern with two peaks at similar levels",
+      "A candlestick pattern",
+      "An indicator signal"
+    ],
+    "correct": 1,
+    "explanation": "A double top is a bearish reversal pattern where price reaches a resistance level twice and fails to break through, forming two peaks at similar heights. When price breaks below the support level between the peaks, it confirms the pattern and signals a downtrend."
+  },
+  {
+    "id": "q057",
+    "level": "intermediate",
+    "question": "What does GDP measure?",
+    "options": [
+      "Government debt percentage",
+      "Total economic output of a country",
+      "Stock market performance",
+      "Currency strength"
+    ],
+    "correct": 1,
+    "explanation": "Gross Domestic Product (GDP) measures the total value of all goods and services produced in a country. Higher GDP growth typically strengthens a currency as it indicates a healthy economy. GDP reports are closely watched economic indicators."
+  },
+  {
+    "id": "q058",
+    "level": "intermediate",
+    "question": "What is quantitative easing (QE)?",
+    "options": [
+      "Raising interest rates",
+      "Central bank buying assets to inject money into economy",
+      "Reducing government spending",
+      "Increasing taxes"
+    ],
+    "correct": 1,
+    "explanation": "Quantitative Easing is when a central bank purchases government bonds or other assets to increase money supply and stimulate the economy. QE typically weakens a currency by increasing supply. The opposite, Quantitative Tightening (QT), strengthens currency."
+  },
+  {
+    "id": "q059",
+    "level": "intermediate",
+    "question": "What is the Consumer Price Index (CPI)?",
+    "options": [
+      "A measure of consumer confidence",
+      "A measure of inflation through price changes in consumer goods",
+      "A measure of retail sales",
+      "A measure of employment"
+    ],
+    "correct": 1,
+    "explanation": "CPI measures inflation by tracking price changes in a basket of consumer goods and services. Higher CPI indicates rising inflation, which often leads central banks to raise interest rates, typically strengthening the currency. It's a key economic indicator."
+  },
+  {
+    "id": "q060",
+    "level": "intermediate",
+    "question": "What is meant by 'risk-on' sentiment?",
+    "options": [
+      "Taking excessive risk",
+      "Market optimism leading to investment in higher-risk assets",
+      "Using high leverage",
+      "Trading without stop losses"
+    ],
+    "correct": 1,
+    "explanation": "Risk-on sentiment describes market optimism where investors seek higher returns by moving into riskier assets. This typically strengthens commodity currencies (AUD, NZD, CAD) and emerging markets while weakening safe havens (USD, JPY, CHF). The opposite is risk-off sentiment."
+  }
+] "What does the first currency in a currency pair represent?",
+    "options": [
+      "The quote currency",
+      "The base currency",
+      "The cross currency",
+      "The commodity currency"
+    ],
+    "correct": 1,
+    "explanation": "The first currency in a pair is the base currency. When you see EUR/USD, EUR is the base currency and USD is the quote currency. The exchange rate tells you how much of the quote currency you need to buy one unit of the base currency."
+  },
+  {
+    "id": "q002",
+    "level": "beginner",
+    "question": "What is a pip in forex trading?",
+    "options": [
+      "A type of currency",
+      "The smallest price movement, typically 0.0001",
+      "A trading strategy",
+      "The broker's commission"
+    ],
+    "correct": 1,
+    "explanation": "A pip (percentage in point) is the smallest price movement in most currency pairs, typically the fourth decimal place (0.0001). For Japanese yen pairs, a pip is the second decimal place (0.01). Pips are used to measure profit and loss."
+  },
+  {
+    "id": "q003",
+    "level": "beginner",
+    "question": "How many units of currency are in a standard lot?",
+    "options": [
+      "1,000",
+      "10,000",
+      "100,000",
+      "1,000,000"
+    ],
+    "correct": 2,
+    "explanation": "A standard lot equals 100,000 units of the base currency. A mini lot is 10,000 units, and a micro lot is 1,000 units. The lot size you choose affects your profit/loss per pip movement."
+  },
+  {
+    "id": "q004",
+    "level": "beginner",
+    "question": "What does it mean when the forex market operates 24/5?",
+    "options": [
+      "It's open 24 hours a day, 5 days a week",
+      "It trades 24 currency pairs, 5 days weekly",
+      "It processes trades in 24-5 minutes",
+      "It requires 24 hours to settle, 5 days to clear"
+    ],
+    "correct": 0,
+    "explanation": "The forex market operates 24 hours a day from Monday to Friday, rotating through major financial centers (Sydney, Tokyo, London, New York). This allows traders worldwide to participate at any time during the trading week."
+  },
+  {
+    "id": "q005",
+    "level": "beginner",
+    "question": "Which of these is a major currency pair?",
+    "options": [
+      "EUR/GBP",
+      "AUD/NZD",
+      "EUR/USD",
+      "USD/TRY"
+    ],
+    "correct": 2,
+    "explanation": "EUR/USD is a major pair because it includes the US Dollar. Major pairs always include USD and represent the most liquid and widely traded currency combinations. EUR/GBP and AUD/NZD are cross pairs (minors), while USD/TRY is an exotic pair."
+  },
+  {
+    "id": "q006",
+    "level": "beginner",
+    "question": "If EUR/USD is quoted at 1.0850, what does this mean?",
+    "options": [
+      "1 USD equals 1.0850 EUR",
+      "1 EUR equals 1.0850 USD",
+      "The spread is 1.0850 pips",
+      "The exchange fee is 1.0850%"
+    ],
+    "correct": 1,
+    "explanation": "When EUR/USD is quoted at 1.0850, it means 1 Euro equals 1.0850 US Dollars. The base currency (EUR) always equals 1, and the quote shows how much of the quote currency (USD) is needed to buy it."
+  },
+  {
+    "id": "q007",
+    "level": "beginner",
+    "question": "What is the maximum percentage of your account you should risk per trade?",
+    "options": [
+      "10%",
+      "5%",
+      "1-2%",
+      "0.1%"
+    ],
+    "correct": 2,
+    "explanation": "Professional traders typically risk 1-2% of their account per trade. This allows you to survive losing streaks without significant drawdown. Risking 1% means you can lose 10 trades in a row and still have 90% of your capital intact."
+  },
+  {
+    "id": "q008",
+    "level": "beginner",
+    "question": "What is a stop loss?",
+    "options": [
+      "A profit target",
+      "A predetermined exit point to limit losses",
+      "A trading fee",
+      "A type of chart pattern"
+    ],
+    "correct": 1,
+    "explanation": "A stop loss is a predetermined price level where you'll exit a losing trade to prevent further losses. It's essential for risk management and should be set before entering any trade. Never trade without a stop loss."
+  },
+  {
+    "id": "q009",
+    "level": "beginner",
+    "question": "Which timeframe is typically used for swing trading?",
+    "options": [
+      "1-minute",
+      "5-minute",
+      "4-hour and daily",
+      "Monthly"
+    ],
+    "correct": 2,
+    "explanation": "Swing traders typically use 4-hour and daily charts for analysis and trade management. These timeframes capture multi-day price swings while filtering out the noise of lower timeframes. Scalpers use 1-5 minute charts, while position traders use weekly/monthly."
+  },
+  {
+    "id": "q010",
+    "level": "beginner",
+    "question": "What does 'going long' mean in forex?",
+    "options": [
+      "Holding a trade for a long time",
+      "Buying a currency pair expecting it to rise",
+      "Using long-term charts",
+      "Trading large lot sizes"
+    ],
+    "correct": 1,
+    "explanation": "Going long means buying a currency pair with the expectation that it will increase in value. If you buy EUR/USD, you're long Euros and short Dollars. The opposite, going short, means selling a pair expecting it to decrease."
+  },
+  {
+    "id": "q011",
+    "level": "beginner",
+    "question": "What is support in technical analysis?",
+    "options": [
+      "A price level where buying interest prevents further decline",
+      "Help provided by your broker",
+      "The foundation of a chart",
+      "A type of indicator"
+    ],
+    "correct": 0,
+    "explanation": "Support is a price level where buying interest is strong enough to prevent the price from falling further. Traders expect the price to bounce off support levels. When support breaks, it often becomes resistance."
+  },
+  {
+    "id": "q012",
+    "level": "beginner",
+    "question": "What does 'the trend is your friend' mean?",
+    "options": [
+      "Always follow other traders",
+      "Trade in the direction of the prevailing trend",
+      "Only trade trending pairs",
+      "Trends never reverse"
+    ],
+    "correct": 1,
+    "explanation": "This trading adage means you should trade in the direction of the prevailing trend rather than against it. Trading with the trend increases your probability of success because you're aligned with the dominant market force."
+  },
+  {
+    "id": "q013",
+    "level": "beginner",
+    "question": "Which candlestick pattern suggests a potential bullish reversal?",
+    "options": [
+      "Shooting Star",
+      "Hammer",
+      "Bearish Engulfing",
+      "Evening Star"
+    ],
+    "correct": 1,
+    "explanation": "A Hammer candlestick has a long lower wick and small body near the top, showing that buyers rejected lower prices. When it appears after a downtrend at support, it suggests a potential bullish reversal. Always wait for confirmation."
+  },
+  {
+    "id": "q014",
+    "level": "beginner",
+    "question": "What is leverage in forex trading?",
+    "options": [
+      "A type of indicator",
+      "The ability to control large positions with small capital",
+      "A trading strategy",
+      "The broker's profit margin"
+    ],
+    "correct": 1,
+    "explanation": "Leverage allows you to control a large position with a small amount of capital. For example, 100:1 leverage means you can control $100,000 with $1,000. While leverage magnifies profits, it also magnifies losses, making risk management crucial."
+  },
+  {
+    "id": "q015",
+    "level": "beginner",
+    "question": "What is the spread in forex?",
+    "options": [
+      "The difference between support and resistance",
+      "The difference between bid and ask price",
+      "The range of a candlestick",
+      "Your profit potential"
+    ],
+    "correct": 1,
+    "explanation": "The spread is the difference between the bid (selling) price and ask (buying) price. It represents the broker's commission and is measured in pips. Major pairs typically have spreads of 0.5-2 pips, while exotic pairs have wider spreads."
+  },
+  {
+    "id": "q016",
+    "level": "intermediate",
+    "question": "What does a Doji candlestick pattern indicate?",
+    "options": [
+      "Strong bullish momentum",
+      "Strong bearish momentum",
+      "Market indecision",
+      "A breakout is imminent"
+    ],
+    "correct": 2,
+    "explanation": "A Doji forms when the opening and closing prices are nearly equal, creating a small or non-existent body with wicks. It indicates market indecision and often appears at potential turning points. Context matters—a Doji at resistance after an uptrend is more significant."
+  },
+  {
+    "id": "q017",
+    "level": "intermediate",
+    "question": "What is bullish divergence on the RSI?",
+    "options": [
+      "Price and RSI both making higher highs",
+      "Price making lower lows while RSI makes higher lows",
+      "Price making higher highs while RSI makes lower highs",
+      "RSI above 70"
+    ],
+    "correct": 1,
+    "explanation": "Bullish divergence occurs when price makes lower lows but RSI makes higher lows, suggesting weakening downward momentum. This often precedes a bullish reversal. It's a powerful signal, especially on higher timeframes and near support levels."
+  },
+  {
+    "id": "q018",
+    "level": "intermediate",
+    "question": "What does a MACD crossover above the zero line suggest?",
+    "options": [
+      "Strong bearish signal",
+      "Market is overbought",
+      "Strong bullish momentum",
+      "No trading signal"
+    ],
+    "correct": 2,
+    "explanation": "When the MACD line crosses above the signal line and both are above zero, it's a strong bullish signal indicating upward momentum. Crossovers above zero are generally more reliable than those below, as they confirm the trend direction."
+  },
+  {
+    "id": "q019",
+    "level": "intermediate",
+    "question": "What is the risk-reward ratio of risking 50 pips to gain 100 pips?",
+    "options": [
+      "1:1",
+      "1:2",
+      "2:1",
+      "1:3"
+    ],
+    "correct": 1,
+    "explanation": "Risking 50 pips to gain 100 pips gives you a 1:2 risk-reward ratio. This means for every dollar you risk, you potentially gain two dollars. With a 1:2 ratio, you only need to win about 35% of trades to break even (after spreads)."
+  },
+  {
+    "id": "q020",
+    "level": "intermediate",
+    "question": "Which moving average period is most commonly used?",
+    "options": [
+      "10",
+      "20",
+      "50",
+      "All of the above are commonly used"
+    ],
+    "correct": 3,
+    "explanation": "The 20, 50, and 200 period moving averages are all widely used, each serving different purposes. The 20 MA tracks short-term trends, the 50 MA shows intermediate trends, and the 200 MA indicates long-term trends. Many traders use multiple MAs together."
+  },
+  {
+    "id": "q021",
+    "level": "intermediate",
+    "question": "What does it mean when price breaks below a trendline?",
+    "options": [
+      "Guaranteed reversal",
+      "Potential trend weakening or reversal",
+      "Nothing significant",
+      "Always a false breakout"
+    ],
+    "correct": 1,
+    "explanation": "A trendline break suggests potential trend weakening or reversal, but it's not guaranteed. Wait for confirmation through additional price action, such as a close below the trendline, increased volume, or a retest that fails. False breaks are common."
+  },
+  {
+    "id": "q022",
+    "level": "intermediate",
+    "question": "What is a safe-haven currency?",
+    "options": [
+      "A currency backed by gold",
+      "A currency that strengthens during market uncertainty",
+      "The strongest currency in the world",
+      "A currency with fixed exchange rates"
+    ],
+    "correct": 1,
+    "explanation": "Safe-haven currencies like USD, JPY, and CHF tend to strengthen during times of market uncertainty and risk-off sentiment as investors flee to safety. These currencies are backed by stable economies and are considered low-risk stores of value."
+  },
+  {
+    "id": "q023",
+    "level": "intermediate",
+    "question": "What does 'hawkish' central bank policy mean?",
+    "options": [
+      "Focus on employment growth",
+      "Focus on fighting inflation through rate hikes",
+      "Cutting interest rates",
+      "Neutral stance"
+    ],
+    "correct": 1,
+    "explanation": "Hawkish policy prioritizes fighting inflation, typically through raising interest rates or reducing monetary stimulus. This usually strengthens the currency. Dovish policy is the opposite, focusing on growth and employment, often through rate cuts or stimulus."
+  },
+  {
+    "id": "q024",
+    "level": "intermediate",
+    "question": "If you have a $10,000 account and risk 1% with a 40-pip stop, what position size should you use on EUR/USD?",
+    "options": [
+      "0.1 lots",
+      "0.25 lots",
+      "0.5 lots",
+      "1.0 lots"
+    ],
+    "correct": 1,
+    "explanation": "Risk amount = $10,000 × 1% = $100. For EUR/USD, pip value for 1 standard lot is $10. Position = $100 ÷ 40 pips ÷ $10 per pip = 0.25 lots. This ensures you lose exactly $100 (1%) if stopped out, regardless of stop distance."
+  },
+  {
+    "id": "q025",
+    "level": "intermediate",
+    "question": "What is the Golden Cross?",
+    "options": [
+      "When the 50 MA crosses above the 200 MA",
+      "When price crosses above all MAs",
+      "When RSI crosses 50",
+      "When MACD crosses zero"
+    ],
+    "correct": 0,
+    "explanation": "The Golden Cross occurs when the 50-period moving average crosses above the 200-period moving average, signaling a potential long-term bullish trend. The opposite, when the 50 MA crosses below the 200 MA, is called the Death Cross and signals bearish momentum."
+  },
+  {
+    "id": "q026",
+    "level": "intermediate",
+    "question": "What is slippage?",
+    "options": [
+      "The broker's commission",
+      "The difference between expected and actual execution price",
+      "A type of stop loss",
+      "Price movement in your favor"
+    ],
+    "correct": 1,
+    "explanation": "Slippage occurs when your order is executed at a different price than expected, often during high volatility or low liquidity. For example, you try to buy at 1.0850 but get filled at 1.0853. Slippage can be positive or negative."
+  },
+  {
+    "id": "q027",
+    "level": "intermediate",
+    "question": "What is a Fibonacci retracement used for?",
+    "options": [
+      "Calculating position size",
+      "Identifying potential support/resistance during pullbacks",
+      "Measuring volatility",
+      "Determining trend direction"
+    ],
+    "correct": 1,
+    "explanation": "Fibonacci retracements identify potential support/resistance levels during pullbacks in a trend. Common retracement levels are 38.2%, 50%, and 61.8%. Traders watch these levels for potential entry points in the direction of the main trend."
+  },
+  {
+    "id": "q028",
+    "level": "intermediate",
+    "question": "What is consolidation in price action?",
+    "options": [
+      "Strong trending movement",
+      "Sideways movement within a range",
+      "A reversal pattern",
+      "A breakout"
+    ],
+    "correct": 1,
+    "explanation": "Consolidation is when price moves sideways within a defined range, neither trending up nor down. It represents market indecision and often precedes significant moves. Traders can range-trade during consolidation or wait for a breakout."
+  },
+  {
+    "id": "q029",
+    "level": "intermediate",
+    "question": "What does the Non-Farm Payrolls (NFP) report measure?",
+    "options": [
+      "UK employment",
+      "US employment excluding farm workers",
+      "Global employment trends",
+      "Unemployment benefits claims"
+    ],
+    "correct": 1,
+    "explanation": "The Non-Farm Payrolls report measures US employment change, excluding farm workers, government employees, and non-profit organizations. Released monthly, it's one of the most market-moving economic indicators and significantly impacts USD pairs."
+  },
+  {
+    "id": "q030",
+    "level": "intermediate",
+    "question": "What is the purpose of a trading journal?",
+    "options": [
+      "To brag about winning trades",
+      "To track trades and identify patterns for improvement",
+      "Required by brokers",
+      "Only for professional traders"
+    ],
+    "correct": 1,
+    "explanation": "A trading journal tracks all trades, strategies, emotions, and lessons learned. Reviewing it reveals patterns in your trading—what works, what doesn't, and psychological triggers. It's essential for continuous improvement and developing consistency."
+  },
+  {
+    "id": "q031",
+    "level": "beginner",
+    "question": "What is margin in forex trading?",
+    "options": [
+      "Your total profit",
+      "The amount required to open and maintain a leveraged position",
+      "The broker's fee",
+      "Your account balance"
+    ],
+    "correct": 1,
+    "explanation": "Margin is the amount of capital required to open and maintain a leveraged position. For example, with 100:1 leverage, you need $1,000 margin to control a $100,000 position. If losses reduce your margin below required levels, you'll receive a margin call."
+  },
+  {
+    "id": "q032",
+    "level": "beginner",
+    "question": "What does USD/JPY represent?",
+    "options": [
+      "Japanese Yen per US Dollar",
+      "US Dollar per Japanese Yen",
+      "A stock symbol",
+      "A commodity"
+    ],
+    "correct": 0,
+    "explanation": "USD/JPY represents how many Japanese Yen you need to buy one US Dollar. If USD/JPY = 148.50, then 1 US Dollar equals 148.50 Japanese Yen. This is one of the major pairs and is highly liquid."
+  },
+  {
+    "id": "q033",
+    "level": "beginner",
+    "question": "What is a margin call?",
+    "options": [
+      "A phone call from your broker",
+      "When your account falls below minimum margin requirements",
+      "A type of order",
+      "A trading strategy"
+    ],
+    "correct": 1,
+    "explanation": "A margin call occurs when your account equity falls below the broker's required margin level. This happens when losses on open positions reduce your available margin. The broker may close your positions to prevent further losses."
+  },
+  {
+    "id": "q034",
+    "level": "beginner",
+    "question": "What is liquidity in forex?",
+    "options": [
+      "How much water a currency is worth",
+      "The ease of buying/selling without affecting price",
+      "Your account balance",
+      "The number of traders online"
+    ],
+    "correct": 1,
+    "explanation": "Liquidity refers to how easily you can buy or sell a currency pair without significantly impacting its price. Major pairs like EUR/USD have high liquidity with tight spreads, while exotic pairs have lower liquidity and wider spreads."
+  },
+  {
+    "id": "q035",
+    "level": "beginner",
+    "question": "What time does the forex market open on Sunday?",
+    "options": [
+      "Midnight GMT",
+      "5 PM EST when Sydney opens",
+      "9 AM EST",
+      "The forex market doesn't open on Sunday"
+    ],
+    "correct": 1,
+    "explanation": "The forex market opens Sunday evening at 5 PM EST (10 PM GMT) when the Sydney session begins. It then runs continuously through all time zones until Friday 5 PM EST when the New York session closes."
+  },
+  {
+    "id": "q036",
+    "level": "beginner",
+    "question": "What is a pending order?",
+    "options": [
+      "An order waiting to be approved",
+      "An order that executes when price reaches a specified level",
+      "A canceled order",
+      "An order with no stop loss"
+    ],
+    "correct": 1,
+    "explanation": "A pending order automatically executes when price reaches your specified level. Types include Buy Limit, Sell Limit, Buy Stop, and Sell Stop. This allows you to enter trades even when you're not watching the charts."
+  },
+  {
+    "id": "q037",
+    "level": "intermediate",
+    "question": "What is the difference between a Buy Stop and a Buy Limit order?",
+    "options": [
+      "No difference, they're the same",
+      "Buy Stop is above current price, Buy Limit is below",
+      "Buy Stop is for long trades, Buy Limit is for short",
+      "Buy Limit has a stop loss, Buy Stop doesn't"
+    ],
+    "correct": 1,
+    "explanation": "A Buy Stop order is placed above the current price (to enter on a breakout), while a Buy Limit is placed below (to enter on a pullback). Buy Stop assumes price will continue higher after breaking a level, while Buy Limit assumes price will reverse."
+  },
+  {
+    "id": "q038",
+    "level": "intermediate",
+    "question": "What is a trailing stop?",
+    "options": [
+      "A stop loss that never moves",
+      "A stop that automatically moves with profitable price movement",
+      "A type of pending order",
+      "A stop placed far from entry"
+    ],
+    "correct": 1,
+    "explanation": "A trailing stop automatically moves in your favor as the trade becomes profitable, locking in gains while allowing profits to run. For example, a 50-pip trailing stop stays 50 pips below the highest price reached in a long trade."
+  },
+  {
+    "id": "q039",
+    "level": "intermediate",
+    "question": "What does 'scaling in' mean?",
+    "options": [
+      "Closing a position gradually",
+      "Adding to a winning position",
+      "Reducing position size",
+      "Entering on different timeframes"
+    ],
+    "correct": 1,
+    "explanation": "Scaling in means adding to a position as it moves in your favor, increasing exposure to a winning trade. However, this increases risk if the trade reverses. Only scale in when the trade is profitable and you have room in your risk management."
+  },
+  {
+    "id": "q040",
+    "level": "intermediate",
+    "question": "What is correlation in forex?",
+    "options": [
+      "All pairs move together",
+      "The statistical relationship between two currency pairs",
+      "A trading strategy",
+      "The spread difference between pairs"
+    ],
+    "correct": 1,
+    "explanation": "Correlation measures how currency pairs move in relation to each other. Positive correlation means pairs move together (EUR/USD and GBP/USD). Negative correlation means they move oppositely (EUR/USD and USD/CHF). Understanding correlation helps manage risk."
+  },
+  {
+    "id": "q041",
+    "level": "intermediate",
+    "question": "What is the typical spread on EUR/USD?",
+    "options": [
+      "0.1-0.5 pips",
+      "0.5-2 pips",
+      "5-10 pips",
+      "10-20 pips"
+    ],
+    "correct": 1,
+    "explanation": "EUR/USD, the most liquid pair, typically has spreads of 0.5-2 pips depending on broker and market conditions. During major news or off-market hours, spreads can widen significantly. Always check spread before entering trades."
+  },
+  {
+    "id": "q042",
+    "level": "intermediate",
+    "question": "What is meant by 'trading the news'?",
+    "options": [
+      "Reading financial news while trading",
+      "Taking positions based on scheduled economic releases",
+      "Only trading during news events",
+      "Ignoring all news"
+    ],
+    "correct": 1,
+    "explanation": "Trading the news involves taking positions around scheduled economic releases like NFP, CPI, or interest rate decisions. These events create volatility and opportunities, but also risk. Many traders avoid trading immediately before/during major news."
+  },
+  {
+    "id": "q043",
+    "level": "intermediate",
+    "question": "What is an ECN broker?",
+    "options": [
+      "A broker that trades against you",
+      "An Electronic Communication Network providing direct market access",
+      "A European broker",
+      "A broker requiring no minimum deposit"
+    ],
+    "correct": 1,
+    "explanation": "ECN brokers provide direct access to the interbank market through an Electronic Communication Network. They typically charge commissions but offer tighter spreads and no dealing desk, meaning they don't trade against you."
+  },
+  {
+    "id": "q044",
+    "level": "intermediate",
+    "question": "What is swap or rollover in forex?",
+    "options": [
+      "Changing currency pairs",
+      "Interest paid or earned for holding positions overnight",
+      "The spread cost",
+      "A type of order"
+    ],
+    "correct": 1,
+    "explanation": "Swap (or rollover) is the interest paid or earned for holding a position overnight. It's based on the interest rate differential between the two currencies in your pair. Positive swap earns you money, negative swap costs you."
+  },
+  {
+    "id": "q045",
+    "level": "intermediate",
+    "question": "What is a currency carry trade?",
+    "options": [
+      "Carrying cash across borders",
+      "Borrowing low-interest currency to buy high-interest currency",
+      "A type of technical analysis",
+      "Moving positions between brokers"
+    ],
+    "correct": 1,
+    "explanation": "A carry trade involves borrowing a currency with low interest rates and using it to buy a currency with high interest rates, profiting from the interest rate differential. For example, shorting JPY (low rates) and buying AUD (higher rates)."
+  },
+  {
+    "id": "q046",
+    "level": "beginner",
+    "question": "What is a lot value?",
+    "options": [
+      "The total value of your position",
+      "The spread cost",
+      "The pip value per lot",
+      "Your profit target"
+    ],
+    "correct": 0,
+    "explanation": "Lot value is the total value of your position. For a standard lot of EUR/USD (100,000 units), if EUR/USD = 1.0850, your position value is $108,500. Understanding lot value helps you manage leverage and risk appropriately."
+  },
+  {
+    "id": "q047",
+    "level": "beginner",
+    "question": "What happens if you don't close a position before the weekend?",
+    "options": [
+      "It automatically closes",
+      "The broker closes it",
+      "It stays open, subject to weekend risk",
+      "You pay a penalty"
+    ],
+    "correct": 2,
+    "explanation": "Positions held over the weekend remain open but are subject to gap risk—price may open significantly different on Sunday from Friday's close due to weekend news events. Many traders close positions Friday to avoid this risk."
+  },
+  {
+    "id": "q048",
+    "level": "beginner",
+    "question": "What is a demo account?",
+    "options": [
+      "A temporary live account",
+      "A practice account with virtual money",
+      "A discounted account",
+      "An account for demonstrating to others"
+    ],
+    "correct": 1,
+    "explanation": "A demo account allows you to practice trading with virtual money in real market conditions. It's essential for beginners to master their strategy and platform functionality before risking real capital. However, demo trading lacks emotional pressure."
+  },
+  {
+    "id": "q049",
+    "level": "beginner",
+    "question": "What does 'bid' price mean?",
+    "options": [
+      "The price you can buy at",
+      "The price you can sell at",
+      "The average price",
+      "The closing price"
+    ],
+    "correct": 1,
+    "explanation": "The bid price is the price at which you can sell a currency pair. It's always lower than the ask price. The difference between bid and ask is the spread, which represents the broker's profit."
+  },
+  {
+    "id": "q050",
+    "level": "beginner",
+    "question": "What does 'ask' or 'offer' price mean?",
+    "options": [
+      "The price you can sell at",
+      "The price you can buy at",
+      "The historical price",
+      "The predicted price"
+    ],
+    "correct": 1,
+    "explanation": "The ask (or offer) price is the price at which you can buy a currency pair. It's always higher than the bid price. When you enter a long trade, you buy at the ask price and will later sell at the bid price."
+  },
+  {
+    "id": "q051",
+    "level": "intermediate",
+    "question": "What is price action trading?",
+    "options": [
+      "Trading based on price movement without indicators",
+      "Trading only during high volatility",
+      "Trading with leverage",
+      "Trading multiple pairs simultaneously"
+    ],
+    "correct": 0,
+    "explanation": "Price action trading focuses on raw price movement, patterns, and candlestick formations rather than indicators. Price action traders believe that price itself reflects all information and that patterns repeat due to human psychology."
+  },
+  {
+    "id": "q052",
+    "level": "intermediate",
+    "question": "What is a head and shoulders pattern?",
+    "options": [
+      "A continuation pattern",
+      "A reversal pattern with three peaks",
+      "A type of indicator",
+      "A candlestick pattern"
+    ],
+    "correct": 1,
+    "explanation": "The head and shoulders is a bearish reversal pattern with three peaks—the middle (head) higher than the two outside peaks (shoulders). When price breaks below the neckline connecting the troughs, it signals a potential downtrend. An inverse pattern signals bullish reversal."
+  },
+  {
+    "id": "q053",
+    "level": "intermediate",
+    "question":

@@ -1,0 +1,64 @@
+{
+  "capturedAt": "2026-11-03T21:14:00.576Z",
+  "browser": "CUA Chromium",
+  "routes": [
+    "/edge-radar/",
+    "/edge-radar/usdjpy/"
+  ],
+  "desktop": {
+    "width": 1440,
+    "height": 1000
+  },
+  "mainWidths": [
+    {
+      "scrollWidth": 360,
+      "smallTargets": [],
+      "width": 360
+    },
+    {
+      "scrollWidth": 390,
+      "smallTargets": [],
+      "width": 390
+    },
+    {
+      "scrollWidth": 430,
+      "smallTargets": [],
+      "width": 430
+    }
+  ],
+  "detailWidths": [
+    {
+      "scrollWidth": 360,
+      "smallTargets": [],
+      "width": 360
+    },
+    {
+      "scrollWidth": 390,
+      "smallTargets": [],
+      "width": 390
+    },
+    {
+      "scrollWidth": 430,
+      "smallTargets": [],
+      "width": 430
+    }
+  ],
+  "checks": {
+    "filterMetals": "passed; XAUUSD remained",
+    "sortAscending": "passed; AUDUSD first",
+    "detailLink": "passed",
+    "strategySwitch": "passed; mean reversion changed samples and Quant URL",
+    "internalHeadlineReader": "passed; /news/article.html",
+    "guestWatchlist": "passed; sign-in dialog, no write",
+    "guestDigest": "passed; sign-in dialog, no email",
+    "loading": "passed; actual request held",
+    "providerError": "passed; test-only 503, Retry data shown",
+    "retryEmptyState": "passed; test-only empty-account response",
+    "restoredRealData": true
+  },
+  "limitations": [
+    "Responsive Chromium viewport checks, not a physical iPhone/Safari test.",
+    "Error and empty states used temporary browser-only response interception. It was cleared before screenshots.",
+    "No production deployment, native MT5 compile, real authenticated browser or email delivery was performed."
+  ]
+}

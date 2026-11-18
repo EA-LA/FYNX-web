@@ -1,0 +1,22 @@
+name: Terminal ticker keyboard focus regression
+on:
+  pull_request:
+    paths:
+      - 'assets/js/terminal-market-ui.js'
+      - 'scripts/test-terminal-ticker-focus.cjs'
+      - '.github/workflows/terminal-ticker-focus.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  accessibility-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci --ignore-scripts
+      - run: node --check assets/js/terminal-market-ui.js
+      - run: node --test scripts/test-terminal-ticker-focus.cjs
