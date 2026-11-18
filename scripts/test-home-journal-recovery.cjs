@@ -49,7 +49,7 @@ const snapshot = values => ({empty:values.length===0,docs:values.map(value=>({da
 test('Home includes a real accessible, initially hidden, mobile-sized retry action', () => {
  assert.match(html, /id="homeStatsStatus"[^>]*role="status"[^>]*aria-live="polite"/);
  assert.match(html, /<button[^>]*type="button"[^>]*id="homeJournalRetry"[^>]*hidden>/);
- assert.match(html, /home-journal\.js\?v=20261117-journal-retry/);
+ assert.match(html, /home-journal\.js\?v=20261117-journal-retry-2/);
  assert.match(html, /terminal-home\.css\?v=20261117-journal-retry/);
  assert.match(css, /\.nr-actions \.nr-journal-retry\s*\{[^}]*min-height:\s*44px/);
  assert.match(css, /\.nr-journal-retry:focus-visible/);
@@ -147,5 +147,45 @@ test('Synchronous listener setup errors expose the same actionable retry state',
  assert.equal(e.subscriptions.length,1);
  e.subscriptions[0].success(snapshot([]));
  assert.match(e.elements.homeStatsStatus.textContent,/Record your first trade/);
+ assert.equal(e.elements.homeJournalRetry.hidden,true);
+});
+
+test('Retry preserves the last verified journal figures through a second outage and replaces them on recovery', () => {
+ const e=setup();
+ e.login('account-a');
+ e.subscriptions[0].success(snapshot([{pl:80},{pl:-20}]));
+ e.subscriptions[0].failed(new Error('offline'));
+ e.clickRetry();
+ assert.equal(e.elements.homePnl.textContent,'$60.00');
+ assert.equal(e.elements.homeTrades.textContent,2);
+ assert.equal(e.elements.homeWinRate.textContent,'50.0%');
+ assert.match(e.elements.homeStatsStatus.textContent,/previously synced figures/);
+ e.subscriptions[1].failed(new Error('still offline'));
+ assert.equal(e.elements.homePnl.textContent,'$60.00');
+ assert.match(e.elements.homeStatsStatus.textContent,/may be out of date/);
+ e.clickRetry();
+ e.subscriptions[2].success(snapshot([{pl:125}]));
+ assert.equal(e.elements.homePnl.textContent,'$125.00');
+ assert.equal(e.elements.homeTrades.textContent,1);
+ assert.equal(e.elements.homeJournalRetry.hidden,true);
+});
+
+test('Retry cannot expose another account’s journal while switching users', () => {
+ const e=setup();
+ e.login('account-a');
+ e.subscriptions[0].success(snapshot([{pl:200}]));
+ e.subscriptions[0].failed(new Error('offline'));
+ e.clickRetry();
+ assert.equal(e.elements.homePnl.textContent,'$200.00');
+ e.login('account-b');
+ assert.equal(e.elements.homePnl.textContent,'—');
+ assert.equal(e.elements.homeTrades.textContent,0);
+ e.subscriptions[1].success(snapshot([{pl:9000}]));
+ e.subscriptions[1].failed(new Error('old user error'));
+ assert.equal(e.elements.homePnl.textContent,'—');
+ e.subscriptions[2].success(snapshot([{pl:55}]));
+ assert.equal(e.elements.homePnl.textContent,'$55.00');
+ e.logout();
+ assert.equal(e.elements.homePnl.textContent,'—');
  assert.equal(e.elements.homeJournalRetry.hidden,true);
 });
