@@ -162,3 +162,24 @@ html body.fx-terminal #fx-page-body .fxb :is(button,summary,input,textarea,selec
   html body.fx-terminal #fx-page-body .fxb .fxb-tools .fxb-btn{min-height:36px}
   html body.fx-terminal #fx-page-body .fxb .fxb-assist textarea{min-height:120px}
 }
+
+html body.fx-terminal #fx-page-body .fxb .fxb-project-menu{
+  margin:0 0 5px!important;padding:3px 5px!important;
+  border:1px solid var(--fxb-line)!important;background:var(--fxb-panel)!important
+}
+html body.fx-terminal #fx-page-body .fxb .fxb-project-menu summary{
+  font-size:10px!important;color:var(--fxb-muted)!important
+}
+html body.fx-terminal #fx-page-body .fxb .fxb-project-menu[open]{
+  display:flex;flex-direction:column;gap:4px
+}
+html body.fx-terminal #fx-page-body .fxb .fxb-project-menu .fxb-btn{
+  width:100%;min-height:30px;margin-top:3px
+}
+html body.fx-terminal #fx-page-body .fxb .fxb-diff{
+  max-height:160px;overflow:auto;white-space:pre-wrap;word-break:break-word;
+  color:var(--fxb-text);background:var(--fxb-field);padding:6px;font:11px/1.4 ui-monospace,monospace
+}
+html body.fx-terminal #fx-page-body .fxb .fxb-version-row{
+  display:flex;flex-wrap:wrap;gap:4px;padding:5px 0;border-top:1px solid var(--fxb-line)
+}
