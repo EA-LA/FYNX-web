@@ -367,6 +367,52 @@ test('reopening builder preserves the unsaved latest code and independent saved 
     assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeB);
     assert.match(await page.locator('.fxb-list').innerText(), /Independent Project B/);
     assert.doesNotMatch(await page.locator('.fxb-list').innerText(), /Independent Project A/);
+    // The 30-day browser Trash can restore a deleted cloud document locally,
+    // without touching Project B or requiring Firestore while offline.
+    await page.click('button:text("Trash (1)")');
+    await page.click('button:text("Restore Independent Project A")');
+    assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeA);
+    await page.click('button:text("Independent Project B")');
+    assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeB);
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = true; window.__fxbOpen(); });
+    await page.waitForFunction(() => /refused|unavailable/.test(document.querySelector('[data-fxb-status]')?.textContent || ''));
+    assert.match(await page.locator('.fxb-list').innerText(), /Independent Project A/);
+    assert.match(await page.locator('.fxb-list').innerText(), /Independent Project B/);
+  } finally {
+    await browser.close();
+    server.close();
+  }
+});
+
+test('template wizard produces executable code and account autosync preserves edits', {timeout: 60000}, async () => {
+  const server = await startServer();
+  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage']});
+  try {
+    const page = await browser.newPage();
+    await mockFirebase(page);
+    await page.goto(`http://127.0.0.1:${server.address().port}/builder-ui.html`, {waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = false; window.__fxbOpen(); });
+    await page.waitForFunction(() => document.querySelector('[data-fxb-status]')?.textContent === 'Private to your account');
+    await page.selectOption('[aria-label="Starting template"]', 'calculator');
+    await page.fill('[aria-label="New project name"]', 'Position Calculator Demo');
+    await page.click('button:text("Create project")');
+    const source = await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue());
+    assert.match(source, /function render\(root, FYNX\)/);
+    assert.match(source, /Risk at 1%/);
+    await page.click('.fxb-bar button:text("Run")');
+    await page.waitForFunction(() => document.querySelector('[data-fxb-preview] iframe'));
+    await page.waitForFunction(() => (window.__fxbDocs || []).some(row => row.path.includes('/builderProjects/') && row.data.name === 'Position Calculator Demo'));
+    const saved = await page.evaluate(() => (window.__fxbDocs || []).find(row => row.data?.name === 'Position Calculator Demo'));
+    assert.equal(saved.data.main, source);
+    const modified = source.replace('Risk at 1%', 'Risk allocation at 1%');
+    await page.evaluate(code => document.querySelector('.CodeMirror').CodeMirror.setValue(code), modified);
+    await page.waitForFunction(() => (window.__fxbDocs || []).some(row => row.data?.main?.includes('Risk allocation at 1%')));
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = false; window.__fxbOpen(); });
+    await page.waitForFunction(() => document.querySelector('[data-fxb-status]')?.textContent === 'Private to your account');
+    assert.match(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), /Risk allocation at 1%/);
+    assert.match(await page.locator('.fxb-versions').innerText(), /v1/);
   } finally {
     await browser.close();
     server.close();
