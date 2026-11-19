@@ -47,7 +47,7 @@ jobs:
           distribution: temurin
           java-version: '21'
       - name: Install isolated Firebase emulator tooling
-        run: npm install --no-save --ignore-scripts @firebase/rules-unit-testing@4 firebase@10 firebase-tools@15
+        run: npm install --no-save --ignore-scripts @firebase/rules-unit-testing@4 firebase@11 firebase-tools@15
       - name: Verify owner-only projects and installs without production
         run: |
           printf '%s\\n' '{"firestore":{"rules":"backend/rules/firestore.rules"},"emulators":{"firestore":{"host":"127.0.0.1","port":8080},"ui":{"enabled":false}}}' > "$RUNNER_TEMP/fynx-builder-emulator.json"
