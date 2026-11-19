@@ -218,23 +218,26 @@
   T.PAGE_NAMES.push('TOUR');
   window.FynxTerminalTour = {start: () => start()};
 
-  // First visit: wait for the session check and the first full render, then open once for a new account.
+  // First visit: open once per account, the first time it uses the Terminal in this browser (and for any
+  // account created in the last 30 days). Waits for sign-in and the first full render.
+  const VISITED = 'fx-term-visited';
+  let firstVisit = false; try { firstVisit = !localStorage.getItem(VISITED); } catch (_) {}
   (async () => {
-    let user = null;
     try {
       const [{auth}, {onAuthStateChanged}] = await Promise.all([import('/auth/firebase.js'), import('https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js')]);
       await auth.authStateReady?.();
-      user = auth.currentUser || await new Promise(resolve => { const off = onAuthStateChanged(auth, u => { if (u) { off(); resolve(u); } }); });
-    } catch (_) { return; }
-    uid = user.uid;
-    const forced = new URLSearchParams(location.search).get('tour') === '1';
-    let seen = false; try { seen = !!localStorage.getItem(seenKey(uid)); } catch (_) { seen = true; }
-    const created = Date.parse(user.metadata?.creationTime || '');
-    const isNew = Number.isFinite(created) && Date.now() - created < NEW_ACCOUNT_DAYS * 864e5;
-    if (!forced && (seen || !isNew)) return;
-    const ready = () => !document.documentElement.classList.contains('ftg-locked') && !document.documentElement.classList.contains('ftg-checking') && $('fx-main')?.getAttribute('aria-busy') === 'false';
-    for (let i = 0; i < 120 && !ready(); i++) await new Promise(r => setTimeout(r, 500));
-    if (!ready()) return;
-    setTimeout(() => start(), 600);
+      const user = auth.currentUser || await new Promise(resolve => { const off = onAuthStateChanged(auth, u => { if (u) { off?.(); resolve(u); } }); });
+      uid = user.uid; try { localStorage.setItem(VISITED, new Date().toISOString()); } catch (_) {}
+      const forced = new URLSearchParams(location.search).get('tour') === '1';
+      let seen = false; try { seen = !!localStorage.getItem(seenKey(uid)); } catch (_) { seen = !!sessionStorage?.getItem?.(seenKey(uid)); }
+      const created = Date.parse(user.metadata?.creationTime || '');
+      const isNew = Number.isFinite(created) && Date.now() - created < NEW_ACCOUNT_DAYS * 864e5;
+      if (!forced && (seen || !(isNew || firstVisit))) return;
+      const ready = () => !document.documentElement.classList.contains('ftg-locked') && !document.documentElement.classList.contains('ftg-checking') && $('fx-main')?.getAttribute('aria-busy') === 'false';
+      for (let i = 0; i < 360 && !ready(); i++) await new Promise(r => setTimeout(r, 500));
+      if (!ready()) return;
+      await new Promise(r => setTimeout(r, 900));
+      if (!root && !document.querySelector('.fx-gg,.ftg-gate')) start();
+    } catch (e) { T.report?.('tour', e); }
   })();
 });

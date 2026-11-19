@@ -226,7 +226,56 @@
     }, () => settle(null));
     return box;
   }
-  const api = Object.freeze({ sections, get, createFigure, lookupStoryImage: lookup, thumb });
+
+  /* ---- Card photos: a 16:9 image for headline cards ----
+     The publisher's photo for this exact story when it has one; otherwise a designed tile with the outlet's
+     initials and the story's topic (never a stock photo that could be mistaken for the story). */
+  const TOPICS = [
+    [/\b(oil|crude|opec|gas|lng|energy|power grid|solar|wind|pipeline|refiner)/i, 'Energy', ['#3a1f0c', '#9a5418']],
+    [/\b(ai|a\.i\.|chips?|semiconductor|nvidia|software|tech|apple|microsoft|alphabet|google|amazon|meta|tesla|openai|anthropic|cyber|robot)/i, 'Technology', ['#1b1840', '#4a3d9e']],
+    [/\b(fed|ecb|boe|boj|central bank|rates?|bonds?|yields?|treasur|banks?|lending|inflation|currency|dollar|yen|euro)\b/i, 'Finance', ['#12293f', '#2a5a86']],
+    [/\b(gdp|economy|economic|jobs|unemployment|tariffs?|trade|exports?|imports?|growth|recession|wages)\b/i, 'Economy', ['#33290f', '#7a6122']],
+    [/\b(election|president|prime minister|minister|senate|congress|parliament|government|policy|court|summit|sanctions?|diplomat)/i, 'Politics', ['#36141d', '#7c2d3e']],
+    [/\b(war|military|strike|missile|conflict|troops|china|russia|ukraine|iran|israel|india|europe|africa|middle east)\b/i, 'World', ['#0c2a34', '#1f6f86']],
+    [/\b(factory|manufactur|autos?|airline|retail|shipping|ports?|steel|mining|pharma|drug)/i, 'Industries', ['#262b30', '#55606b']]
+  ];
+  function topicOf(title) { for (const [rx, label, tint] of TOPICS) if (rx.test(title || '')) return {label, tint}; return {label: 'Markets', tint: ['#0e352a', '#1f6b4f']}; }
+  function cardStyle(doc) {
+    if (doc.getElementById('fynx-cardimg-style')) return;
+    const st = doc.createElement('style'); st.id = 'fynx-cardimg-style';
+    st.textContent = '.fx-cardimg{position:relative;display:block;margin:0 0 14px;aspect-ratio:16/9;overflow:hidden;border-radius:6px;background:#11161a}'
+      + '.fx-cardimg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;animation:fx-thumb-in .35s ease;transition:transform .35s ease}'
+      + 'a:hover .fx-cardimg img,.fx-cardimg:hover img,article:hover .fx-cardimg img{transform:scale(1.03)}'
+      + '.fx-cardimg-tile{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:12px 14px;color:#fff;overflow:hidden}'
+      + '.fx-cardimg-tile::after{content:"";position:absolute;right:-18%;bottom:-40%;width:75%;aspect-ratio:1;border-radius:50%;border:1px solid rgba(255,255,255,.14);box-shadow:0 0 0 22px rgba(255,255,255,.04),0 0 0 48px rgba(255,255,255,.03)}'
+      + '.fx-cardimg-tile b{font:800 34px/1 Manrope,Inter,Arial,sans-serif;letter-spacing:-.02em;opacity:.95}'
+      + '.fx-cardimg-tile span{position:relative;z-index:1;font:700 10px/1.3 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;opacity:.85}'
+      + '.fx-cardimg-wait::before{content:"";position:absolute;inset:0;z-index:2;background:linear-gradient(100deg,rgba(127,127,127,.12) 30%,rgba(127,127,127,.26) 50%,rgba(127,127,127,.12) 70%);background-size:300% 100%;animation:fynx-photo-wait 1.4s ease-in-out infinite}'
+      + '@keyframes fynx-photo-wait{0%{background-position:100% 0}100%{background-position:0 0}}@keyframes fx-thumb-in{from{opacity:0}to{opacity:1}}'
+      + '@media (prefers-reduced-motion:reduce){.fx-cardimg img{animation:none;transition:none}.fx-cardimg-wait::before{animation:none}}';
+    doc.head.append(st);
+  }
+  function cardImage(item) {
+    const doc = root.document; if (!doc || !item) return null;
+    cardStyle(doc);
+    const fig = doc.createElement('span'); fig.className = 'fx-cardimg fx-cardimg-wait'; fig.setAttribute('aria-hidden', 'true');
+    const t = topicOf(item.title), tile = doc.createElement('span'); tile.className = 'fx-cardimg-tile';
+    tile.style.background = `linear-gradient(135deg,${t.tint[0]} 0%,${t.tint[1]} 100%)`;
+    const mono = doc.createElement('b'); mono.textContent = monogram(item.source);
+    const lab = doc.createElement('span'); lab.textContent = `${t.label} · ${String(item.source || 'FYNX').slice(0, 40)}`;
+    tile.append(mono, lab); fig.append(tile);
+    let done = false; const settle = img => { if (done) return; done = true; fig.classList.remove('fx-cardimg-wait'); if (img) { tile.remove(); fig.append(img); fig.dataset.storyImage = 'publisher'; } };
+    const url = safe(item.url || item.link);
+    if (!url || typeof root.fetch !== 'function') { settle(null); return fig; }
+    setTimeout(() => settle(null), 4500);
+    lookup(url).then(p => {
+      const src = p && safe(p.image); if (!src || done || taken(src, url)) return settle(null); usedImages.set(src, url);
+      const img = doc.createElement('img'); img.alt = ''; img.decoding = 'async'; img.referrerPolicy = 'no-referrer';
+      img.onload = () => settle(img.naturalWidth >= 240 && img.naturalHeight >= 120 ? img : null); img.onerror = () => settle(null); img.src = src;
+    }, () => settle(null));
+    return fig;
+  }
+  const api = Object.freeze({ sections, get, createFigure, lookupStoryImage: lookup, thumb, cardImage, topicOf });
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.FYNXNewsroomMedia = api;
 })(typeof window === 'undefined' ? globalThis : window);

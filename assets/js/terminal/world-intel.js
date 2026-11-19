@@ -179,7 +179,7 @@
     const statuses = W.statusOf || (() => null);
     for (const iso of score.keys()) { const st = statuses(iso); if (st?.level === 'red') bump(iso, 2, 'Country light is red (market or event signal)'); }
     const hotspots = [...score.entries()].filter(([, s]) => s >= 6).sort((a, b) => b[1] - a[1]).slice(0, 25).map(([iso, s]) => ({id: 'h-' + iso, layer: 'hotspots', iso, ll: centroid(iso), sev: s >= 12 ? 'high' : s >= 8 ? 'med' : 'low', score: s, why: why.get(iso).sort((a, b) => b[0] - a[0]), title: `${countryName(iso)} hotspot`}));
-    D.events = [...events, ...hotspots, ...quakes, ...alerts];
+    D.events = [...events, ...hotspots, ...quakes, ...alerts]; D.ver = (D.ver || 0) + 1;
     D.liveZones = liveZones;
     D.byId = new Map(D.events.map(e => [e.id, e]));
     const refs = D.ref?.layers || {};
@@ -243,6 +243,9 @@ html body.fx-terminal .fx-ilp-search:focus{border-color:var(--am)!important}
 .fx-ilp-ev em{font:600 9.5px 'IBM Plex Mono',monospace;font-style:normal;padding:1px 4px;color:#000}
 .fx-ilp-empty{padding:12px 8px;color:var(--mu);font-size:11.5px;line-height:1.5}
 .fx-ic{flex:none;display:block}
+.fx-gstage .fx-gsvg,.fx-gstage .fx-gsvg *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.fx-gstage.fx-dragging{cursor:grabbing}.fx-gstage.fx-dragging .gi-pulse{animation-play-state:paused}
+.fx-gstage .fx-gsvg ::selection{background:transparent}
 .g-intel .gi{cursor:pointer}
 .g-intel .gi:hover .gi-bg,.g-intel .gi.sel .gi-bg{stroke:#ffb000;stroke-width:1.6}
 .g-intel .gi.sel .gi-sel{display:block}
@@ -386,7 +389,7 @@ html body.fx-terminal .fx-ic-src a{display:inline-block;min-height:44px;padding:
 
   /* --- mount + draw ---------------------------------------------------------------------------------- */
   function mount(m) {
-    ctx = {...m, sel: null};
+    ctx = {...m, sel: null}; pool.clear(); zonePool.clear(); pipePool.clear();
     const defs = svg('defs'), pat = svg('pattern', {id: 'gi-hatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)'});
     pat.append(svg('rect', {width: 6, height: 6, fill: 'rgba(255,72,60,.10)'}), svg('line', {x1: 0, y1: 0, x2: 0, y2: 6, stroke: '#ff5a4f', 'stroke-width': 1.6, 'stroke-opacity': 0.7}));
     defs.append(pat); m.sv.prepend(defs);
@@ -409,34 +412,47 @@ html body.fx-terminal .fx-ic-src a{display:inline-block;min-height:44px;padding:
   }
   const PIPE_COLOR = {oil: '#c08a4e', gas: '#4fc3f7', fuel: '#f4a261'};
   const OFFSET = {conflict: [0, 0], protests: [-11, -9], cyber: [11, -9], hotspots: [0, 0]};
+  const pool = new Map(), zonePool = new Map(), pipePool = new Map(), geom = new Map();
+  const cached = (key, fn) => { let v = geom.get(key); if (!v) geom.set(key, v = fn()); return v; };
   function draw(proj, path, visible) {
     if (!ctx) return;
     const {gIntel, gZones, gPipes} = ctx, refs = D.ref?.layers || {}, k = Math.min(1.7, 0.85 + 0.12 * W.scale), labels = W.scale >= 2.6, refLabels = W.scale >= 4.5;
     // zones
-    const zf = document.createDocumentFragment();
+    const zSeen = new Set(), zone = (key, d, cls, id) => { zSeen.add(key); d = d || ''; let p = zonePool.get(key); if (!p) { p = svg('path', id ? {'data-id': id} : {}); zonePool.set(key, p); gZones.append(p); } p.setAttribute('d', d); p.setAttribute('class', cls); };
     if (on.zones) {
       // Hatch countries with repeated conflict reports; very large countries are left to the reference circles,
       // because shading all of Russia or the US would overstate where fighting is.
-      for (const iso of D.liveZones || []) { const f = W.feats?.find(x => x.properties.iso2 === iso); if (!f || bigCountry(f)) continue; const d = path(f); if (d) zf.append(svg('path', {d, class: 'g-zone-live'})); }
-      (refs.zones || []).forEach((z, i) => { const d = path({type: 'Polygon', coordinates: [circle(z.ll, z.r)]}); if (d) zf.append(svg('path', {d, class: 'g-zone-ref' + (ctx.selId === `zones-${i}` ? ' sel' : ''), 'data-id': `zones-${i}`}, )); });
+      for (const iso of D.liveZones || []) { const f = W.feats?.find(x => x.properties.iso2 === iso); if (!f || bigCountry(f)) continue; zone('lz-' + iso, path(f), 'g-zone-live'); }
+      (refs.zones || []).forEach((z, i) => zone(`zones-${i}`, path(cached('zone' + i, () => ({type: 'Polygon', coordinates: [circle(z.ll, z.r)]}))), 'g-zone-ref' + (ctx.selId === `zones-${i}` ? ' sel' : ''), `zones-${i}`));
     }
-    gZones.replaceChildren(zf);
+    for (const [key, p] of zonePool) if (!zSeen.has(key)) { p.remove(); zonePool.delete(key); }
     // pipelines
-    const pf = document.createDocumentFragment();
+    const pSeen = new Set();
     if (on.pipelines) (refs.pipelines || []).forEach((p, i) => {
       const off = /offline|damaged|construction|varies/i.test(p.s), id = `pipelines-${i}`;
-      for (const pts of p.paths) {
-        const d = path({type: 'LineString', coordinates: densify(pts)}); if (!d) continue;
-        pf.append(svg('path', {d, class: 'g-pipe-hit', 'data-id': id}), svg('path', {d, class: 'g-pipe' + (ctx.selId === id ? ' sel' : ''), stroke: PIPE_COLOR[p.k] || '#f4a261', 'stroke-dasharray': off ? '5 4' : '', 'stroke-opacity': 0.92}));
-      }
+      p.paths.forEach((pts, j) => {
+        const key = `${id}#${j}`, d = path(cached(key, () => ({type: 'LineString', coordinates: densify(pts)}))) || '';
+        let pair = pipePool.get(key);
+        if (!pair) { pair = [svg('path', {class: 'g-pipe-hit', 'data-id': id}), svg('path', {stroke: PIPE_COLOR[p.k] || '#f4a261', 'stroke-dasharray': off ? '5 4' : '', 'stroke-opacity': 0.92})]; pipePool.set(key, pair); gPipes.append(...pair); }
+        pSeen.add(key); pair[0].setAttribute('d', d); pair[1].setAttribute('d', d); pair[1].setAttribute('class', 'g-pipe' + (ctx.selId === id ? ' sel' : ''));
+      });
     });
-    gPipes.replaceChildren(pf);
+    for (const [key, pair] of pipePool) if (!pSeen.has(key)) { pair.forEach(x => x.remove()); pipePool.delete(key); }
     // points
-    const f = document.createDocumentFragment();
+    // Markers are built once and only moved while the globe turns; they are rebuilt only when their look changes.
+    const seen = new Set(), kq = k.toFixed(2);
     const put = (id, ll, build, label, dx = 0, dy = 0) => {
-      if (!ll || !visible(ll)) return; const p = proj(ll); if (!p) return;
-      const g = svg('g', {class: 'gi' + (ctx.selId === id ? ' sel' : ''), 'data-id': id, transform: `translate(${(p[0] + dx).toFixed(1)} ${(p[1] + dy).toFixed(1)})`, tabindex: '-1'});
-      build(g); if (label) { const t = svg('text', {x: 9 * k, y: 3.5}); t.textContent = label; g.append(t); } f.append(g);
+      if (!ll) return; seen.add(id);
+      const sig = `${D.ver}|${kq}|${label}|${ctx.selId === id}`; let rec = pool.get(id);
+      if (!rec || rec.sig !== sig) {
+        const g = svg('g', {class: 'gi' + (ctx.selId === id ? ' sel' : ''), 'data-id': id, tabindex: '-1'});
+        build(g); if (label) { const t = svg('text', {x: 9 * k, y: 3.5}); t.textContent = label; g.append(t); }
+        if (rec) rec.g.replaceWith(g); else gIntel.append(g); rec = {g, sig}; pool.set(id, rec);
+      }
+      const p = visible(ll) ? proj(ll) : null;
+      if (!p) { if (rec.shown !== false) { rec.g.style.display = 'none'; rec.shown = false; } return; }
+      if (rec.shown === false) { rec.g.style.display = ''; rec.shown = true; }
+      rec.g.setAttribute('transform', `translate(${(p[0] + dx).toFixed(1)} ${(p[1] + dy).toFixed(1)})`);
     };
     const glyph = (g, name, color, size = 13) => { const s = size * k; g.append(svg('circle', {r: s * 0.68, class: 'gi-bg', fill: 'rgba(5,8,10,.82)', stroke: color, 'stroke-width': 0.9}), svg('circle', {r: s * 0.95, class: 'gi-sel', fill: 'none', stroke: '#ffb000', 'stroke-width': 1.4}), svg('path', {d: ICON[name], fill: color, 'fill-rule': 'evenodd', transform: `translate(${-s * 0.42} ${-s * 0.42}) scale(${(s * 0.84 / 12).toFixed(3)})`})); };
     for (const [layer, icon] of [['airports', 'plane'], ['ports', 'anchor'], ['dams', 'dam'], ['datacenters', 'server'], ['exchanges', 'candle'], ['spaceports', 'rocket'], ['bases', 'tri'], ['nuclear', 'rad']]) {
@@ -459,7 +475,7 @@ html body.fx-terminal .fx-ic-src a{display:inline-block;min-height:44px;padding:
         }, labels ? countryName(e.iso) + (e.n > 1 ? ` · ${e.n}` : '') : '', dx * k, dy * k);
       }
     }
-    gIntel.replaceChildren(f);
+    for (const [id, rec] of pool) if (!seen.has(id)) { rec.g.remove(); pool.delete(id); }
   }
   const BIG = new Map();
   function bigCountry(f) { const k = f.properties.iso2; if (!BIG.has(k)) { const [[x0, y0], [x1, y1]] = G.geoBounds(f); BIG.set(k, (x1 < x0 ? x1 + 360 - x0 : x1 - x0) > 35 || y1 - y0 > 28); } return BIG.get(k); }

@@ -9,13 +9,20 @@
   const label = code => window.FynxEdition?.editions?.find(item=>item.id===code)?.label || code;
   const date = value => new Date(value).toLocaleString([], {month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
   function url(value) {try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&(!u.port||u.port==='443')&&u.hostname.includes('.')&&!u.hostname.endsWith('.local')&&!u.hostname.endsWith('.localhost')&&!/^[\d.]+$/.test(u.hostname)&&!u.hostname.includes(':')?u.href:null;}catch{return null;}}
-  function recent() {
-    const seen=new Set(),titles=new Set();
-    return (briefing?.items || []).filter(item=>{
-      const at=Date.parse(item.publishedAt), key=String(item.title || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
-      if(!url(item.url)||!key||!item.source||!Number.isFinite(at)||at>Date.now()+300000||Date.now()-at>day||(item.edition&&item.edition!==activeEdition)||seen.has(item.url)||titles.has(key))return false;
-      seen.add(item.url);titles.add(key);return true;
-    }).slice(0,6);
+  // Newest first: today's reporting, then the latest older stories (3 days, a week, a month, then other
+  // editions) so the newsroom is never empty. Each story shows its publication time.
+  function recent(want=6) {
+    const seen=new Set(),titles=new Set(),out=[],items=briefing?.items||[];
+    for(const anyEdition of [false,true])for(const span of [day,3*day,7*day,30*day]){
+      const batch=items.filter(item=>{
+        const at=Date.parse(item.publishedAt), key=String(item.title || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
+        if(!url(item.url)||!key||!item.source||!Number.isFinite(at)||at>Date.now()+300000||Date.now()-at>span||(!anyEdition&&item.edition&&item.edition!==activeEdition)||seen.has(item.url)||titles.has(key))return false;
+        seen.add(item.url);titles.add(key);return true;
+      });
+      out.push(...(out.length?batch.sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt)):batch));
+      if(out.length>=want)return out.slice(0,want);
+    }
+    return out;
   }
   function renderNews() {
     const target=$('landingLiveNews'), allItems=recent(), items=allItems.slice(0,2);target.replaceChildren();target.setAttribute('aria-busy','false');visibleStories=allItems.map(item=>item.url).join('|');
@@ -30,20 +37,21 @@
       if(item.stale || item.status==='cached')article.append(node('span',' · Saved coverage','fw-live-source'));
       target.append(article);
     }
-    $('landingNewsStatus').textContent=label(activeEdition)+' edition · '+(briefing?.message || 'Coverage could not be refreshed.')+(briefing?.fetchedAt?' Retrieved '+date(briefing.fetchedAt)+'.':'')+' Fresh reporting: past 24 hours. Checked every 5 minutes.';
+    $('landingNewsStatus').textContent=label(activeEdition)+' edition · '+(briefing?.message || 'Coverage could not be refreshed.')+(briefing?.fetchedAt?' Retrieved '+date(briefing.fetchedAt)+'.':'')+' Newest reporting first. Checked every 5 minutes.';
   }
   function renderHeadlines(items) {
     const grid=$('landingHeadlineGrid'),status=$('landingHeadlineStatus');if(!grid)return;
     const articles=items.map(item=>{
       const article=node('article',undefined,'fw-headline'),title=node('h3'),link=node('a',item.title),time=node('time',date(item.publishedAt));
       link.href=window.FYNXNewsReaderData?.href(item)||'/news/article.html';title.append(link);time.dateTime=item.publishedAt;
+      const pic=window.FYNXNewsroomMedia?.cardImage?.(item);if(pic){const link2=node('a');link2.href=link.href;link2.tabIndex=-1;link2.setAttribute('aria-hidden','true');link2.className='fw-headline-pic';link2.append(pic);article.append(link2);}
       article.append(node('p',item.source,'fw-headline-source'),title,time);
       if(item.stale||item.status==='cached')article.append(node('span','Saved coverage','fw-headline-saved'));
       return article;
     });
-    if(!articles.length)articles.push(node('p','No recent verified reporting is available for the '+label(activeEdition)+' edition. Explore the Newsroom sources or choose another edition.','fw-headline-empty'));
+    if(!articles.length)articles.push(node('p',briefing?'No recent verified reporting is available for the '+label(activeEdition)+' edition. Explore the Newsroom sources or choose another edition.':'Checking recent reporting for your selected edition…','fw-headline-empty'));
     grid.replaceChildren(...articles);grid.setAttribute('aria-busy','false');
-    if(status)status.textContent=label(activeEdition)+' edition · Past 24 hours · Checks every 5 minutes'+(briefing?.fetchedAt?' · Retrieved '+date(briefing.fetchedAt):'')+(briefing?.stale||briefing?.status==='cached'?' · Saved coverage':briefing?.status==='unavailable'?' · Sources unavailable':briefing?.partial?' · Partly refreshed':'')+'.';
+    if(status)status.textContent=label(activeEdition)+' edition · Newest first · Checks every 5 minutes'+(briefing?.fetchedAt?' · Retrieved '+date(briefing.fetchedAt):'')+(briefing?.stale||briefing?.status==='cached'?' · Saved coverage':briefing?.status==='unavailable'?' · Sources unavailable':briefing?.partial?' · Partly refreshed':'')+'.';
   }
   async function refresh(force=false) {
     const code=edition();if(pending===code)return;pending=code;lastAttempt=Date.now();const serial=++request;
