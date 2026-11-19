@@ -9,6 +9,16 @@
   if (!G || !PG) return;
   const {S, M, el, btn, link, svg, signed, tone, fmt, ago, day, big, finite, rowButton, kv, shortOf, quoteFor, digitsOf} = T;
   const W = S.world = {countries: null, states: null, ships: null, topo: null, us: null, feats: null, statesFeat: null, rot: [20, -22], scale: 1, flat: false, layers: {lights: true, tankers: true, cargo: true, other: false, chokes: true, lanes: true}, sel: null};
+  if (!document.getElementById('fx-globe-style')) {
+    // Globe layering and drag behaviour. Safari needs the -webkit- prefix, otherwise dragging selects every label
+    // on the map and washes the globe out.
+    const st = document.createElement('style'); st.id = 'fx-globe-style';
+    st.textContent = '.fx-gstage .fx-gsvg,.fx-gstage .fx-gships{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}' +
+      '.fx-gships{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}' +
+      '.fx-gsvg-top{pointer-events:none;background:none}.fx-gsvg-top .g-light,.fx-gsvg-top .g-choke,.fx-gsvg-top .gi{pointer-events:auto}' +
+      '.fx-gstage.fx-dragging,.fx-gstage.fx-dragging *{cursor:grabbing!important}';
+    document.head.append(st);
+  }
   const EUROZONE = ['DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'IE', 'AT', 'PT', 'GR', 'FI', 'SK', 'SI', 'LT', 'LV', 'EE', 'LU', 'MT', 'CY', 'HR'];
   const MKT = {US: {ccy: 'USD', bank: 'Fed', idx: '^GSPC', area: 'US'}, GB: {ccy: 'GBP', bank: 'BoE', idx: '^FTSE', fx: 'GBPUSD=X', area: 'GB'}, JP: {ccy: 'JPY', bank: 'BoJ', idx: '^N225', fx: 'JPY=X', area: 'JP'}, CH: {ccy: 'CHF', bank: 'SNB', fx: 'CHF=X'},
     CA: {ccy: 'CAD', bank: 'BoC', idx: '^GSPTSE', fx: 'CAD=X'}, AU: {ccy: 'AUD', bank: 'RBA', idx: '^AXJO', fx: 'AUDUSD=X'}, NZ: {ccy: 'NZD', bank: 'RBNZ', fx: 'NZDUSD=X'}, CN: {ccy: 'CNY', idx: '000001.SS', fx: 'CNY=X'}, HK: {ccy: 'HKD', idx: '^HSI'}, KR: {ccy: 'KRW', idx: '^KS11'},
@@ -103,20 +113,24 @@
     legend.append(shipNote);
     stage.append(tools, layers, legend, card, scard); host.append(stage);
     const sv = svg('svg', {class: 'fx-gsvg', role: 'img', 'aria-label': 'World globe with country status lights, ships, chokepoints and intelligence layers. Use the country list and the Events tab for keyboard access.'}); stage.prepend(sv);
+    // Layers: base map (svg) → ships (canvas, thousands of dots) → markers (svg). Only the markers on top take clicks.
+    const cv = el('canvas', 'fx-gships'), top = svg('svg', {class: 'fx-gsvg fx-gsvg-top', 'aria-hidden': 'true'}); sv.after(cv, top);
+    const onMap = e => e.target === sv || sv.contains(e.target) || top.contains(e.target) || e.target === cv;
     const statuses = new Map(allStatuses().map(s => [s.iso, s]));
     const gSphere = svg('path', {class: 'g-sphere'}), gGrat = svg('path', {class: 'g-grat'}), gLand = svg('g'), gLanes = svg('g'), gShips = svg('g'), gChokes = svg('g'), gLights = svg('g');
     const gZones = svg('g', {class: 'g-zones'}), gPipes = svg('g', {class: 'g-pipes'}), gIntel = svg('g', {class: 'g-intel'});
-    sv.append(gSphere, gGrat, gLand, gZones, gLanes, gPipes, gShips, gChokes, gLights, gIntel);
+    sv.append(gSphere, gGrat, gLand, gZones, gLanes, gPipes); top.append(gChokes, gLights, gIntel);
     const paths = W.feats.map(f => { const st = statuses.get(f.properties.iso2); const p = svg('path', {class: 'g-land', fill: TINT[st?.level || 'grey']}); const t = svg('title'); t.textContent = `${f.properties.name}${st ? ' · ' + st.level : ''}`; p.append(t); p.addEventListener('click', () => select(f.properties.iso2)); gLand.append(p); return [f, p]; });
     const lanePaths = LANES.map(pts => { const seg = []; for (let i = 0; i < pts.length - 1; i++) { const it = G.geoInterpolate(pts[i], pts[i + 1]); for (let t = 0; t <= 1.0001; t += 0.05) seg.push(it(t)); } const p = svg('path', {class: 'g-lane'}); gLanes.append(p); return [{type: 'LineString', coordinates: seg}, p]; });
     const centroid = f => { const fix = {US: [-98, 39], RU: [45, 56], CA: [-100, 56], NO: [9, 61], FR: [2.5, 46.5], IT: [12.5, 42.8], CL: [-71, -33], GB: [-1.5, 52.5], NZ: [172, -41], ID: [113, -1]}[f.properties.iso2]; return fix || G.geoCentroid(f); };
     const lights = W.feats.filter(f => f.properties.iso2).map(f => { const st = statuses.get(f.properties.iso2), big2 = st && st.level !== 'grey' && st.level !== 'green'; const g = svg('g', {class: 'g-light'}); const ring = svg('circle', {r: 11, fill: 'none', stroke: COLOR[st?.level || 'grey'], 'stroke-opacity': 0.5, 'stroke-width': 2}); const dot = svg('circle', {r: big2 ? 6 : st?.level === 'green' ? 4.2 : 3, fill: COLOR[st?.level || 'grey'], stroke: '#06080a', 'stroke-width': 1.5}); const t = svg('title'); t.textContent = `${nameOfC(f.properties.iso2)}: ${st?.level === 'grey' ? 'no live signal' : st?.level}`; g.append(t); if (big2) g.append(ring); g.append(dot); g.addEventListener('click', e => { e.stopPropagation(); select(f.properties.iso2); }); gLights.append(g); return [centroid(f), g, f.properties.iso2]; });
     const chokes = Object.entries(W.ships?.chokepoints || {}).map(([n, [[a, b], [c, d]]]) => { const g = svg('g', {class: 'g-choke', role: 'button', tabindex: '0', 'aria-label': `${n} chokepoint details`}); g.addEventListener('click', e => { e.stopPropagation(); chokeCard(n); }); g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chokeCard(n); } }); const r = svg('rect', {width: 10, height: 10, x: -5, y: -5, transform: 'rotate(45)'}); const t = svg('text', {x: 9, y: 14}); const cnt = W.ships?.counts?.[n]; t.textContent = cnt ? `${n} · ${cnt.ships}` : n; g.append(r, t); gChokes.append(g); return [[(b + d) / 2, (a + c) / 2], g]; });
-    const vessels = (W.ships?.vessels || []).slice(0, 4000);
+    const vessels = (W.ships?.vessels || []).slice(0, 4000), shipXY = [];
+    const shipVec = vessels.map(v => { const la = v.lat * Math.PI / 180, lo = v.lon * Math.PI / 180; return [Math.cos(la) * Math.cos(lo), Math.cos(la) * Math.sin(lo), Math.sin(la)]; });
     W.centroidOf = iso => { const f = W.feats.find(x => x.properties.iso2 === iso); return f ? centroid(f) : null; };
     W.statusOf = iso => statuses.get(iso) || null;
     draw = () => {
-      const w = sv.clientWidth || 800, h = sv.clientHeight || 600; sv.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      const w = sv.clientWidth || 800, h = sv.clientHeight || 600; sv.setAttribute('viewBox', `0 0 ${w} ${h}`); top.setAttribute('viewBox', `0 0 ${w} ${h}`);
       const proj = projection(w, h), path = G.geoPath(proj), center = W.flat ? null : [-W.rot[0], -W.rot[1]];
       const visible = ll => W.flat || G.geoDistance(ll, center) < Math.PI / 2 - 0.02;
       gSphere.setAttribute('d', path({type: 'Sphere'}) || ''); gGrat.setAttribute('d', path(G.geoGraticule10()) || '');
@@ -125,16 +139,31 @@
       gLights.style.display = W.layers.lights ? '' : 'none';
       for (const [ll, g] of lights) { if (!visible(ll)) { g.style.display = 'none'; continue; } const [x, y] = proj(ll); g.style.display = ''; g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`); }
       gChokes.style.display = W.layers.chokes ? '' : 'none'; for (const [ll, g] of chokes) { if (!visible(ll)) { g.style.display = 'none'; continue; } const [x, y] = proj(ll); g.style.display = ''; g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`); }
-      gShips.replaceChildren();
-      const frag = document.createDocumentFragment(), sz = Math.max(1.6, 1.4 * Math.sqrt(W.scale)), arrows = W.flat ? W.scale >= 1.6 : W.scale >= 2.2;
+      // Ships are painted on a canvas: thousands of SVG elements made dragging the globe stutter.
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+      const c2 = cv.getContext('2d'); c2.setTransform(dpr, 0, 0, dpr, 0, 0); c2.clearRect(0, 0, w, h);
+      const sz = Math.max(1.6, 1.4 * Math.sqrt(W.scale)), arrows = W.flat ? W.scale >= 1.6 : W.scale >= 2.2, groups = new Map();
+      const cx = center ? [Math.cos(center[1] * Math.PI / 180) * Math.cos(center[0] * Math.PI / 180), Math.cos(center[1] * Math.PI / 180) * Math.sin(center[0] * Math.PI / 180), Math.sin(center[1] * Math.PI / 180)] : null, lim = Math.cos(Math.PI / 2 - 0.02);
+      shipXY.length = 0;
       for (let i = 0; i < vessels.length; i++) {
         const v = vessels[i], on = v.kind === 'tanker' ? W.layers.tankers : v.kind === 'cargo' ? W.layers.cargo : W.layers.other; if (!on) continue;
-        const ll = [v.lon, v.lat]; if (!visible(ll)) continue; const p = proj(ll); if (!p) continue;
-        const k = v.kind === 'tanker' ? 1.25 : 1, wait = isWaiting(v), dirn = v.heading ?? v.cog, cls = `g-ship g-${v.kind}${wait ? ' g-wait' : ''}${W.selShip === v.mmsi ? ' g-sel' : ''}`;
-        if (arrows && !wait && dirn !== null && dirn !== undefined) { const a = sz * k * 1.5; frag.append(svg('path', {d: `M0 ${(-a * 1.5).toFixed(1)}L${a.toFixed(1)} ${a.toFixed(1)}L0 ${(a * 0.45).toFixed(1)}L${(-a).toFixed(1)} ${a.toFixed(1)}Z`, transform: `translate(${p[0].toFixed(1)} ${p[1].toFixed(1)}) rotate(${Math.round(dirn)})`, class: cls, 'data-i': i})); }
-        else frag.append(svg('circle', {cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: (wait && arrows ? sz * 1.3 : sz) * k, class: cls, 'data-i': i}));
+        if (cx) { const u = shipVec[i]; if (u[0] * cx[0] + u[1] * cx[1] + u[2] * cx[2] < lim) continue; }
+        const p = proj([v.lon, v.lat]); if (!p) continue;
+        const k = v.kind === 'tanker' ? 1.25 : 1, wait = isWaiting(v), dirn = v.heading ?? v.cog, key = `${v.kind === 'tanker' || v.kind === 'cargo' ? v.kind : 'other'}|${wait ? 1 : 0}|${W.selShip === v.mmsi ? 1 : 0}`;
+        let g = groups.get(key); if (!g) groups.set(key, g = new Path2D());
+        if (arrows && !wait && dirn !== null && dirn !== undefined) {
+          const a = sz * k * 1.5, t = dirn * Math.PI / 180, c = Math.cos(t), sn = Math.sin(t), X = (x, y) => p[0] + x * c - y * sn, Y = (x, y) => p[1] + x * sn + y * c;
+          g.moveTo(X(0, -a * 1.5), Y(0, -a * 1.5)); g.lineTo(X(a, a), Y(a, a)); g.lineTo(X(0, a * 0.45), Y(0, a * 0.45)); g.lineTo(X(-a, a), Y(-a, a)); g.closePath();
+        } else { const r = (wait && arrows ? sz * 1.3 : sz) * k; g.moveTo(p[0] + r, p[1]); g.arc(p[0], p[1], r, 0, Math.PI * 2); }
+        shipXY.push(p[0], p[1], i);
       }
-      gShips.append(frag);
+      const SHIP_COLOR = {tanker: '#f4a261', cargo: '#7fb0ff', other: '#9aa79f'};
+      for (const [key, g] of groups) {
+        const [kind, wait, sel] = key.split('|'), col = SHIP_COLOR[kind];
+        c2.globalAlpha = wait === '1' ? 0.15 : kind === 'other' ? 0.7 : 1; c2.fillStyle = col; c2.fill(g);
+        c2.globalAlpha = 1; c2.lineWidth = sel === '1' ? 2 : wait === '1' ? 1.2 : 0.5; c2.strokeStyle = sel === '1' ? '#fff' : wait === '1' ? col : '#05090c'; c2.stroke(g);
+      }
       try { W.intel?.draw(proj, path, visible); } catch (e) { T.report('intel-draw', e); }
       if (W.sel) place(W.sel);
       if (!scard.hidden && scard._ll) placeAt(scard, scard._ll);
@@ -204,13 +233,23 @@
     W.shipCardFor = mmsi => { const v = vessels.find(x => x.mmsi === mmsi); if (v) shipCard(v); };
     W.chokeCard = chokeCard;
     let lastMoved = false;
-    gShips.addEventListener('click', e => { if (lastMoved) return; const i = e.target?.dataset?.i; if (i !== undefined) { e.stopPropagation(); shipCard(vessels[+i]); } });
+    // Ship clicks: the nearest ship within 8 px, unless a marker on top was clicked.
+    stage.addEventListener('click', e => {
+      if (lastMoved || !onMap(e) || e.target.closest?.('.gi,.g-choke,.g-light,.g-zone-ref,.g-pipe-hit')) return;
+      const r = sv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top; let best = -1, bd = 64;
+      for (let j = 0; j < shipXY.length; j += 3) { const d = (shipXY[j] - x) ** 2 + (shipXY[j + 1] - y) ** 2; if (d < bd) { bd = d; best = shipXY[j + 2]; } }
+      if (best >= 0) { e.stopPropagation(); e.preventDefault(); shipCard(vessels[best]); }
+    }, true);
     // interaction: drag to spin, wheel to zoom
-    let drag = null;
-    sv.addEventListener('pointerdown', e => { drag = {x: e.clientX, y: e.clientY, rot: [...W.rot], moved: false}; sv.setPointerCapture?.(e.pointerId); });
-    sv.addEventListener('pointermove', e => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true; const k = 0.35 / W.scale; W.rot = W.flat ? [drag.rot[0] + dx * k, 0] : [drag.rot[0] + dx * k, Math.max(-80, Math.min(80, drag.rot[1] - dy * k))]; requestAnimationFrame(() => draw?.()); });
-    sv.addEventListener('pointerup', () => { lastMoved = W.lastMoved = !!drag?.moved; drag = null; });
-    sv.addEventListener('wheel', e => { e.preventDefault(); W.scale = Math.max(0.7, Math.min(8, W.scale * (e.deltaY < 0 ? 1.15 : 1 / 1.15))); requestAnimationFrame(() => draw?.()); }, {passive: false});
+    let drag = null, queued = false;
+    // At most one redraw per animation frame, however many pointer events arrive.
+    const schedule = () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; draw?.(); }); };
+    stage.addEventListener('pointerdown', e => { if (e.button > 0 || !onMap(e)) return; drag = {x: e.clientX, y: e.clientY, rot: [...W.rot], moved: false, id: e.pointerId}; window.getSelection?.()?.removeAllRanges?.(); });
+    stage.addEventListener('pointermove', e => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (!drag.moved && Math.abs(dx) + Math.abs(dy) > 3) { drag.moved = true; stage.classList.add('fx-dragging'); try { stage.setPointerCapture(drag.id); } catch (_) {} } const k = 0.35 / W.scale; W.rot = W.flat ? [drag.rot[0] + dx * k, 0] : [drag.rot[0] + dx * k, Math.max(-80, Math.min(80, drag.rot[1] - dy * k))]; schedule(); });
+    const endDrag = e => { if (!drag) return; lastMoved = W.lastMoved = !!drag.moved; try { stage.releasePointerCapture(drag.id); } catch (_) {} drag = null; stage.classList.remove('fx-dragging'); if (lastMoved) setTimeout(() => { lastMoved = W.lastMoved = false; }, 0); };
+    stage.addEventListener('pointerup', endDrag); stage.addEventListener('pointercancel', endDrag);
+    stage.addEventListener('selectstart', e => { if (onMap(e) || drag) e.preventDefault(); });
+    stage.addEventListener('wheel', e => { if (!onMap(e)) return; e.preventDefault(); W.scale = Math.max(0.7, Math.min(8, W.scale * (e.deltaY < 0 ? 1.15 : 1 / 1.15))); schedule(); }, {passive: false});
     W.focusOn = iso => { const f = W.feats.find(x => x.properties.iso2 === iso); if (!f) return; const ll = centroid(f); W.rot = W.flat ? [-ll[0], 0] : [-ll[0], -ll[1]]; W.scale = Math.max(W.scale, 1.6); draw(); select(iso); };
     W.focusPoint = ll => { W.rot = W.flat ? [-ll[0], 0] : [-ll[0], -ll[1]]; W.scale = 5; draw(); };
     W.intel?.mount({sv, stage, legend, gZones, gPipes, gIntel, redraw: () => draw?.()});
@@ -287,7 +326,9 @@
     const rows = [];
     for (const s of allStatuses().filter(x => x.level === 'red' || x.level === 'yellow').slice(0, 14)) for (const n of (C(s.iso)?.news?.items || []).slice(0, 2)) rows.push({s, n});
     if (!rows.length) for (const iso of ['US', 'CN', 'DE', 'JP', 'GB', 'IN']) for (const n of (C(iso)?.news?.items || []).slice(0, 2)) rows.push({s: {iso, level: countryStatus(iso).level}, n});
-    if (!rows.length) return host.append(el('p', 'fx-empty', W.countries ? 'No country headlines in the last 24 hours.' : 'Loading world headlines…'));
+    if (!rows.length) for (const [iso, c] of Object.entries(W.countries?.countries || {})) for (const n of (c.news?.items || []).slice(0, 1)) rows.push({s: {iso, level: countryStatus(iso).level}, n});
+    rows.sort((a, b) => (Date.parse(b.n.publishedAt) || 0) - (Date.parse(a.n.publishedAt) || 0)); rows.splice(28);
+    if (!rows.length) return host.append(el('p', 'fx-empty', 'Loading world headlines…'));
     for (const {s, n} of rows) { const a = link('', n.url, 'fx-row fx-cnrow'); const iso = el('b', '', s.iso); iso.style.color = COLOR[s.level]; const t = el('span', 'fx-sym'); t.append(el('span', 'fx-ht', n.title), el('small', '', `${n.source}${n.publishedAt ? ' · ' + ago(n.publishedAt) : ''} ↗︎`)); a.append(iso, t); host.append(a); }
     host.append(el('p', 'fx-foot', 'Country headlines from Google News search (GDELT as backup), last 24 hours, refreshed hourly.'));
   }
@@ -360,7 +401,7 @@
     const news = PG.section(`${name} headlines`), items = c?.news?.items || [];
     for (const n of items) { const a = link('', n.url, 'fx-row fx-cnrow'); const t = el('span', 'fx-sym'); t.append(el('span', 'fx-ht', n.title), el('small', '', `${n.source}${n.publishedAt ? ' · ' + ago(n.publishedAt) : ''} ↗︎`)); a.append(el('b', '', '•'), t); news.append(a); }
     const room = PG.matchNews([name], 8); room.forEach(h => news.append(T.headlineRow(h)));
-    if (!items.length && !room.length) news.append(el('p', 'fx-empty', 'No headlines for this country in the last 24 hours.'));
+    if (!items.length && !room.length) { news.append(el('p', 'fx-foot', `Nothing new about ${name} today · latest world headlines`)); [...T.S.briefing].sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 8).forEach(h => news.append(T.headlineRow(h))); }
     host.append(news);
     const f = W.feats.find(x => x.properties.iso2 === iso);
     if (f && W.ships?.vessels?.length) {

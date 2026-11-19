@@ -49,7 +49,7 @@
       if (!item || typeof item !== 'object') return [];
       const url = safeURL(item.url || item.link), title = plain(item.title, 500), source = plain(item.source, 160);
       const published = Date.parse(item.publishedAt || item.pubDate);
-      if (!url || !title || !source || seen.has(url) || !Number.isFinite(published) || published > Date.now() + 300000 || Date.now() - published > hours * 60 * 60 * 1000 || (item.edition && item.edition !== ed)) return [];
+      if (!url || !title || !source || seen.has(url) || !Number.isFinite(published) || published > Date.now() + 300000 || Date.now() - published > hours * 60 * 60 * 1000 || (ed !== '*' && item.edition && item.edition !== ed)) return [];
       seen.add(url);
       return [{ ...item, url, title, source, publishedAt: new Date(published).toISOString() }];
     }).sort((a, b) => (a.rank||1000)-(b.rank||1000) || (b.priorityScore||0)-(a.priorityScore||0) || Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 60);
@@ -138,11 +138,8 @@
     if (recent.length === rows.length) return;
     rows = recent;
     if (rows.length) render();
-    else {
-      $('[data-newsroom-secondary]').hidden = true;
-      $('[data-newsroom-latest-section]').hidden = true;
-      $('[data-newsroom-lead]').replaceChildren(message('No recent reports in this edition.', 'Reports older than 24 hours have been removed. The source directory and FYNX reading guide remain available while fresh coverage is checked.'));
-    }
+    // Everything on screen aged out: load again, which widens to the latest older reports instead of an empty page.
+    else refresh(false);
     if (lastResult) setStatus(lastResult);
   }
   async function refresh(force) {
@@ -208,6 +205,7 @@
     rows = normalized(result.items);
     // Never leave the desk empty: widen to the past week, then use the Global edition's desk.
     if (!rows.length) { const week = normalized(result.items, 168); if (week.length) { rows = week; windowHours = 168; widenNote = 'No reports in the past 24 hours for this edition — showing the latest from the past 7 days.'; } }
+    if (!rows.length) { const month = normalized(result.items, 720, '*'); if (month.length) { rows = month; windowHours = 720; windowEdition = '*'; widenNote = 'Showing the latest available reports for this desk, newest first.'; } }
     if (!rows.length && requestedEdition !== 'global') {
       // The market-data module may not have loaded (or its method may throw
       // synchronously). Failure of the optional Global fallback must not leave
@@ -223,9 +221,9 @@
       // time must determine the displayed status, not the failed/empty edition.
       // Ignore a Global response explicitly marked unavailable, even if it carries items.
       const gr = g?.status !== 'unavailable' && Array.isArray(g?.items)
-        ? normalized(g.items, 72, 'global') : [];
+        ? [72, 168, 720].map(h => normalized(g.items, h, 'global')).find(list => list.length) || [] : [];
       if (gr.length) {
-        rows = gr; windowHours = 72; windowEdition = 'global';
+        rows = gr; windowHours = Math.max(72, ...gr.map(item => Math.ceil((Date.now() - Date.parse(item.publishedAt)) / 3600000) + 1)); windowEdition = 'global';
         const selectedUnavailable = result.status === 'unavailable';
         const savedGlobal = g.status === 'cached';
         result = {
