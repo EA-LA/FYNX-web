@@ -87,6 +87,10 @@
       color:var(--text);
       border-color:var(--line);
     }
+    .calendar-mode-btn:focus-visible{
+      outline:3px solid var(--text);
+      outline-offset:3px;
+    }
     .mode-content{ display:none; }
     .mode-content.active{ display:block; }
     .panel{
@@ -162,24 +166,24 @@
       <section class="content-area calendar-wrap">
 <!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=News%20%26%20events">News &amp; events</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
 <div class="calendar-mode-toggle" role="tablist" aria-label="Calendar modules">
-          <button class="calendar-mode-btn active" type="button" role="tab" aria-selected="true" data-calendar-tab="economic">Economic Calendar</button>
-          <button class="calendar-mode-btn" type="button" role="tab" aria-selected="false" data-calendar-tab="holidays">Market Holidays</button>
-          <button class="calendar-mode-btn" type="button" role="tab" aria-selected="false" data-calendar-tab="hours">Market Hours</button>
+          <button class="calendar-mode-btn active" type="button" role="tab" id="calendar-tab-economic" aria-controls="calendar-panel-economic" aria-selected="true" tabindex="0" data-calendar-tab="economic">Economic Calendar</button>
+          <button class="calendar-mode-btn" type="button" role="tab" id="calendar-tab-holidays" aria-controls="calendar-panel-holidays" aria-selected="false" tabindex="-1" data-calendar-tab="holidays">Market Holidays</button>
+          <button class="calendar-mode-btn" type="button" role="tab" id="calendar-tab-hours" aria-controls="calendar-panel-hours" aria-selected="false" tabindex="-1" data-calendar-tab="hours">Market Hours</button>
         </div>
 
-        <div class="mode-content active" data-calendar-panel="economic">
+        <div class="mode-content active" id="calendar-panel-economic" role="tabpanel" aria-labelledby="calendar-tab-economic" data-calendar-panel="economic" aria-hidden="false">
           <div class="panel">
             <iframe class="module-frame" title="Economic Calendar" data-src="tools/economic-calendar.html" loading="lazy"></iframe>
           </div>
         </div>
 
-        <div class="mode-content" data-calendar-panel="holidays" aria-hidden="true">
+        <div class="mode-content" id="calendar-panel-holidays" role="tabpanel" aria-labelledby="calendar-tab-holidays" data-calendar-panel="holidays" aria-hidden="true" hidden>
           <div class="panel">
             <iframe class="module-frame" title="Market Holidays" data-src="tools/market-holidays.html" loading="lazy"></iframe>
           </div>
         </div>
 
-        <div class="mode-content" data-calendar-panel="hours" aria-hidden="true">
+        <div class="mode-content" id="calendar-panel-hours" role="tabpanel" aria-labelledby="calendar-tab-hours" data-calendar-panel="hours" aria-hidden="true" hidden>
           <div class="panel">
             <iframe class="module-frame" title="Market Hours" data-src="tools/market-hours.html" loading="lazy"></iframe>
           </div>
@@ -207,6 +211,7 @@
       calendarPanels.forEach((panel) => {
         const isActive = panel.dataset.calendarPanel === nextTab;
         panel.classList.toggle('active', isActive);
+        panel.hidden = !isActive;
         panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
       });
     }
