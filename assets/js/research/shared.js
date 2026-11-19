@@ -7,7 +7,14 @@ export const compact=n=>C.finite(n)?new Intl.NumberFormat('en-US',{notation:'com
 export const percent=n=>C.finite(n)?`${n>0?'+':''}${number(n)}%`:'—';
 export const tone=n=>C.finite(n)?n>0?'positive':n<0?'negative':'':'';
 export const time=iso=>Number.isFinite(Date.parse(iso))?new Date(iso).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'Time unavailable';
-export const ageLabel=q=>Date.now()-Date.parse(q.asOf)>900000?'Older quote':'Indicative quote';
+// Quote age is based on the source observation, not on when the feed was fetched.
+// Browser clocks can differ slightly; do not claim a future or missing time is fresh.
+export const ageLabel=q=>{
+  const now=Date.now();
+  const observedAt=typeof q?.asOf==='string'&&q.asOf.trim()?Date.parse(q.asOf):NaN;
+  if(!Number.isFinite(observedAt)||observedAt>now+5*60000)return 'Quote time unverified';
+  return now-observedAt>15*60000?'Older quote':'Indicative quote';
+};
 export const errorHTML=message=>`<div class="notice error" role="alert">${escape(message)}</div>`;
 export const loading=message=>`<div class="loading" role="status">${escape(message)}</div>`;
 export const empty=(title,description)=>`<div class="empty-state"><span class="empty-glyph" aria-hidden="true">↗︎</span><h3>${escape(title)}</h3><p>${escape(description)}</p></div>`;
