@@ -368,6 +368,7 @@
       let onboardingOpen = false;
       let seenUid = state.uid;
       let draftTimer = 0;
+      let cloudTimer = 0;
       let editRevision = 0;
 
       const draftOf = project => ({
@@ -425,6 +426,7 @@
         dirty = true;
         editRevision += 1;
         scheduleDraft();
+        scheduleCloudSync();
         setSaveLabel('Unsaved changes · recovery pending', 'warn');
       }
       function scheduleDraft() {
@@ -435,6 +437,16 @@
           const preserved = writeDevice(uid);
           if (dirty) setSaveLabel(preserved ? 'Saved to this browser · account not yet synced' : 'Recovery save failed', 'warn');
         }, 750);
+      }
+      function scheduleCloudSync() {
+        clearTimeout(cloudTimer);
+        const uid = state.uid;
+        cloudTimer = setTimeout(() => {
+          if (!root.isConnected || state.uid !== uid || !uid) return;
+          // Invalid JS or secrets remain recoverable locally, never uploaded.
+          if (!Core.validateProject(draft).ok) return;
+          persist(true);
+        }, 1800);
       }
       function syncCode() {
         if (cm) draft.main = cm.getValue();
@@ -563,7 +575,8 @@
         return clean;
       }
 
-      async function persist() {
+      async function persist(automatic = false) {
+        clearTimeout(cloudTimer);
         syncCode();
         const check = Core.validateProject(draft);
         if (!check.ok) { say(check.errors[0], 'error'); setSaveLabel('Not saved', 'warn'); return; }
@@ -575,7 +588,15 @@
         const ownerUid = state.uid;
         const savingRevision = editRevision;
         const prior = byId(id);
-        const next = Core.withVersion(prior, check.project);
+        const next = automatic
+          ? {...check.project, version: prior?.version || 1, versions: prior?.versions || []}
+          : Core.withVersion(prior, check.project);
+        // An explicit Save Version creates a checkpoint even if autosave
+        // already synchronized identical source at the current revision.
+        if (!automatic && prior && next.version === prior.version && prior.main === check.project.main) {
+          next.version = prior.version + 1;
+          next.versions = [...(prior.versions || []), {version: prior.version, savedAt: prior.updatedAt || Date.now(), main: prior.main}].slice(-Core.LIMITS.versions);
+        }
         next.updatedAt = Date.now();
         const view = {
           id,
@@ -636,7 +657,7 @@
             ? (project.updatedAt > view.updatedAt ? project : {...view}) : project);
           writeDevice(state.uid);
           if (editRevision === savingRevision && currentId === id) {
-            say('Synced to your account as version ' + view.version + '.', 'ok');
+            say(automatic ? 'Autosaved to your account.' : 'Synced to your account as version ' + view.version + '.', 'ok');
             setSaveLabel('Synced to your account · v' + view.version, 'on');
           } else {
             setSaveLabel('Newer changes · saved to this browser', 'warn');
@@ -1150,6 +1171,7 @@
         tools.append(buttonEl('Run', 'on', () => { syncCode(); run(); }));
         tools.append(buttonEl('Stop', '', stop));
         tools.append(buttonEl('Save', '', () => { syncCode(); persist(); }));
+        tools.append(buttonEl('Retry account sync', '', () => { syncCode(); persist(true); }));
         const installButton = buttonEl('Add to my terminal', 'on', () => { if (installedNow()) uninstall(false); else install(); });
         installButton.setAttribute('data-fxb-install', '');
         tools.append(installButton);
@@ -1270,6 +1292,7 @@
         if (!root.isConnected) {
           listeners.delete(onState);
           clearTimeout(draftTimer);
+          clearTimeout(cloudTimer);
           if (state.uid === seenUid && captureDraft && captureDraft() === draft) {
             // Leaving a page must never discard a change still in debounce.
             writeDevice(state.uid);
