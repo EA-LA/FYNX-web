@@ -52,7 +52,18 @@
         if (!live) return;
         const host = T.panel(widget.slot);
         if (!host) return;
-        mount(host, live.main, T.S && T.S.quotes, {title: live.name});
+        // Never silently substitute a newer, unreviewed autosave for the
+        // exact source version the user explicitly installed.
+        const installedSource = live.version === widget.version
+          ? live.main
+          : (live.versions || []).find(version => version.version === widget.version)?.main;
+        if (!installedSource) {
+          const message = document.createElement('p');
+          message.textContent = 'Installed version is no longer retained. Open Builder, run the latest version, and choose Update installed tool.';
+          host.replaceChildren(message);
+          return;
+        }
+        mount(host, installedSource, T.S && T.S.quotes, {title: live.name});
       };
     }
     const groups = T.EXTRA_GROUPS;
@@ -468,9 +479,10 @@
       function updateInstallButton() {
         const button = root.querySelector('[data-fxb-install]');
         if (!button) return;
-        const installed = installedNow();
-        button.textContent = installed ? 'Remove from terminal' : 'Add to my terminal';
-        button.classList.toggle('on', !installed);
+        const installation = draft.id && state.installs.find(widget => widget.projectId === draft.id && widget.enabled);
+        const updateAvailable = installation && Number(installation.version) !== Number(draft.version);
+        button.textContent = updateAvailable ? 'Update installed tool' : installation ? 'Remove from terminal' : 'Add to my terminal';
+        button.classList.toggle('on', !installation || !!updateAvailable);
       }
       function updateStatus() {
         const node = root.querySelector('[data-fxb-status]');
@@ -694,7 +706,9 @@
         if (!saved || saved.main !== draft.main || saved.name !== draft.name) { say('Save the project before adding it to your terminal.', 'error'); return; }
         if (successfulPreviewCode !== draft.main) { say('Run this saved code successfully before installing it.', 'error'); return; }
         const deskName = String(T.S?.deskKey || 'current').toUpperCase() + ' desk';
-        if (!window.confirm('Install "' + saved.name + '" to ' + deskName + '? This does not delete or publish your source project.')) {
+        const previousInstall = state.installs.find(widget => widget.projectId === draft.id);
+        const action = previousInstall ? 'Update' : 'Install';
+        if (!window.confirm(action + ' "' + saved.name + '" (version ' + saved.version + ') on ' + deskName + '? This does not delete or publish your source project.')) {
           say('Installation cancelled; your project is unchanged.', ''); return;
         }
         let slot = '';
@@ -1254,7 +1268,11 @@
           say('Code indentation updated. Run to verify its behavior.', 'ok');
         }));
         tools.append(buttonEl('Retry account sync', '', () => { syncCode(); persist(true); }));
-        const installButton = buttonEl('Add to my terminal', 'on', () => { if (installedNow()) uninstall(false); else install(); });
+        const installButton = buttonEl('Add to my terminal', 'on', () => {
+          const existing = draft.id && state.installs.find(widget => widget.projectId === draft.id && widget.enabled);
+          if (existing && Number(existing.version) === Number(draft.version)) uninstall(false);
+          else install();
+        });
         installButton.setAttribute('data-fxb-install', '');
         tools.append(installButton);
         bar.append(tools);
