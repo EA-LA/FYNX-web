@@ -5,6 +5,12 @@
   const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)');
   const format=q=>q.price.toLocaleString('en-US',{minimumFractionDigits:['EURUSD=X','GBPUSD=X'].includes(q.symbol)?4:2,maximumFractionDigits:['EURUSD=X','GBPUSD=X'].includes(q.symbol)?4:2});
   const change=q=>q.changePercent===null?'—':`${q.changePercent>0?'▲ ':q.changePercent<0?'▼ ':''}${Math.abs(q.changePercent).toFixed(2)}%`;
+  // The feed can be fetched recently while an individual exchange quote is hours old.
+  // Make its source age visible on touch screens, where hover-only titles do not work.
+  const olderSource=(quote,now)=> {
+    const time=Date.parse(quote?.asOf);
+    return Number.isFinite(time)&&now-time>45*60000;
+  };
   function move(direction=1){
     const track=document.querySelector('.terminal-ticker-track');if(!track)return;
     const max=track.scrollWidth-track.clientWidth;
@@ -16,19 +22,22 @@
     const host=document.querySelector('[data-terminal-ticker]');if(!host)return;
     if(rendered===data&&host.querySelector('.terminal-ticker-track'))return;
     const previous=rendered;rendered=data;
+    const now=Date.now();
+    let olderCount=0;
     const track=document.createElement('div');track.className='terminal-ticker-track';track.tabIndex=0;track.setAttribute('aria-label','Global market quotes. Scroll to see more.');
     const inner=document.createElement('div');inner.className='terminal-ticker-inner';
     const label=document.createElement('a');label.href='/tools/research-heatmap.html';label.className='terminal-ticker-label';label.textContent='Global markets';inner.append(label);
     for(const item of window.FynxTerminalData.instruments){
-      const q=data.quotes[item.symbol],a=document.createElement('a');a.href='/tools/research-heatmap.html';a.className='terminal-ticker-item';
-      const name=document.createElement('strong');name.textContent=item.shortName+(item.group==='ETF'?' ETF':'');
+      const q=data.quotes[item.symbol],older=olderSource(q,now),a=document.createElement('a');a.href='/tools/research-heatmap.html';a.className='terminal-ticker-item';
+      if(older)olderCount++;
+      const name=document.createElement('strong');name.textContent=item.shortName+(item.group==='ETF'?' ETF':'')+(older?' · Older':'');
       const price=document.createElement('span');price.textContent=q?format(q):'Unavailable';
       const movement=document.createElement('span');movement.textContent=q?change(q):'—';
-      if(q){movement.className=q.changePercent>0?'terminal-up':q.changePercent<0?'terminal-down':'';a.title=`${item.name} · ${q.currency} · ${q.source} · As of ${new Date(q.asOf).toLocaleString()} · ${q.basis}${q.delayed?' · Delayed':' · Indicative'}${data.stale?' · Saved quote':''}`;
+      if(q){movement.className=q.changePercent>0?'terminal-up':q.changePercent<0?'terminal-down':'';a.title=`${item.name} · ${q.currency} · ${q.source} · As of ${new Date(q.asOf).toLocaleString()} · ${q.basis}${q.delayed?' · Delayed':' · Indicative'}${data.stale?' · Saved quote':''}${older?' · Older source quote':''}`;
         if(previous?.quotes[item.symbol]&&previous.quotes[item.symbol].price!==q.price)price.classList.add('terminal-price-changed');}
       a.append(name,price,movement);inner.append(a);
     }
-    const status=document.createElement('small');status.className='terminal-ticker-status';status.textContent=data.status==='unavailable'?'Quotes unavailable':`${data.stale?'Saved':'Indicative / may be delayed'} · ${data.fetchedAt?new Date(data.fetchedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):''} · Checks every minute`;
+    const status=document.createElement('small');status.className='terminal-ticker-status';status.textContent=data.status==='unavailable'?'Quotes unavailable':`${data.stale?'Saved':'Indicative / may be delayed'}${olderCount?' · '+olderCount+' older source quote'+(olderCount===1?'':'s'):''} · ${data.fetchedAt?new Date(data.fetchedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):''} · Checks every minute`;
     inner.append(status);track.append(inner);
     const controls=document.createElement('div');controls.className='terminal-ticker-controls';
     for(const [text,label,action] of [['‹','Previous market quotes',()=>move(-1)],['›','Next market quotes',()=>move(1)]]){
