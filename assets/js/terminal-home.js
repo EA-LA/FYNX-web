@@ -12,9 +12,21 @@
     const seen = new Set(), titles = new Set(), now = Date.now();
     return (Array.isArray(items) ? items : []).filter(item => {
       const published = Date.parse(item?.publishedAt), url = safeURL(item?.url), title = typeof item?.title === 'string' ? item.title.trim() : '', key = title.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
-      if (!url || !title || !item.source || !Number.isFinite(published) || published > now + 300000 || now - published > span || (item.edition && item.edition !== code) || seen.has(url) || titles.has(key)) return false;
+      if (!url || !title || !item.source || !Number.isFinite(published) || published > now + 300000 || now - published > span || (code && item.edition && item.edition !== code) || seen.has(url) || titles.has(key)) return false;
       seen.add(url); titles.add(key); return true;
     }).sort((a,b) => (a.rank||1000)-(b.rank||1000) || (b.priorityScore||0)-(a.priorityScore||0) || Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+  }
+  // Newest first, never empty: today's stories, then the latest from the past 3 days, week and month,
+  // then the same windows from any edition. Stories in "skip" (already shown elsewhere) are left out.
+  function freshFirst(items, code, want, skip = new Set()) {
+    const out = [], have = new Set(skip);
+    for (const ed of [code, null]) for (const span of [day, 3 * day, 7 * day, 30 * day]) {
+      const batch = recent(items, ed, span).filter(item => !have.has(item.url));
+      batch.forEach(item => have.add(item.url));
+      out.push(...(out.length ? batch.sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)) : batch));
+      if (out.length >= want) return out.slice(0, want);
+    }
+    return out;
   }
   function leadImage(item, stories = []) {
     const meta = item?.image, context = () => window.FYNXNewsroomMedia?.createFigure(activeEdition === 'us' ? 'markets' : activeEdition === 'uk' ? 'finance' : 'world', {loading:'eager',story:stories});
@@ -36,7 +48,7 @@
     const lead = $('homeLeadStory'), latest = $('homeLatestStories'), secondary = $('homeSecondaryStories');
     lead.replaceChildren(); latest.replaceChildren(); secondary.replaceChildren();
     lead.setAttribute('aria-busy','false'); latest.setAttribute('aria-busy','false');
-    const items = recent(result.items, activeEdition), first = items[0];
+    const items = freshFirst(result.items, activeEdition, 10), first = items[0];
     window.FYNXNewsReaderData?.prefetch(items.slice(0,6));
     briefingSignature = items.map(item=>item.url).join('|');
     const photograph = leadImage(first, items.slice(0,4)); if (photograph) lead.append(photograph);
@@ -58,7 +70,7 @@
       });
       if (items.length <= 3) latest.append(node('p','You’re up to date with the available coverage.','nr-empty'));
     }
-    $('homeBriefingStatus').textContent = editionLabel(activeEdition)+' edition · '+(result.message || (items.length ? 'Dated source coverage.' : 'Coverage is temporarily unavailable.'))+(result.fetchedAt?' Retrieved '+date(result.fetchedAt)+'.':'')+' Fresh reporting: past 24 hours. Checked every 5 minutes.';
+    $('homeBriefingStatus').textContent = editionLabel(activeEdition)+' edition · '+(result.message || (items.length ? 'Dated source coverage.' : 'Coverage is temporarily unavailable.'))+(result.fetchedAt?' Retrieved '+date(result.fetchedAt)+'.':'')+' Newest reporting first. Checked every 5 minutes.';
     $('homeEditionStatus').textContent = editionLabel(activeEdition)+' edition';
   }
   async function refreshBriefing(force = false) {
@@ -90,13 +102,13 @@
       link.href = '/news/'+id+'.html?edition='+encodeURIComponent(activeEdition); title.append(link); head.append(title); section.append(head);
       const contextId = activeEdition !== 'us' && ['politics','economics','energy'].includes(id) ? 'world' : id;
       const list = node('div',undefined,'nr-topic-stories');
-      let rows = recent(result?.items,activeEdition).filter(item => !seen.has(item.url)).slice(0,3);
-      // Quiet desk: show its latest stories from the past week rather than an empty box.
-      if (!rows.length && result) rows = recent(result.items,activeEdition,7*day).filter(item => !seen.has(item.url)).slice(0,3);
+      // Newest first; a quiet desk shows its latest older stories, then the Global edition's, never an empty box.
+      let rows = freshFirst(result?.items, activeEdition, 3, seen);
+      if (rows.length < 3 && result?.fallback) rows = [...rows, ...freshFirst(result.fallback, null, 3 - rows.length, new Set([...seen, ...rows.map(r => r.url)]))];
       const photo = window.FYNXNewsroomMedia?.createFigure(contextId,{story:rows}); if(photo) section.append(photo);
       window.FYNXNewsReaderData?.prefetch(rows.slice(0,1));
       rows.forEach(item => {seen.add(item.url);list.append(miniStory(item));});
-      if (!rows.length) list.append(node('p', result ? 'No additional recent reporting is available for this edition. Explore the desk’s source guide.' : 'Checking recent reporting…', 'nr-empty'));
+      if (!rows.length) list.append(node('p', !result ? 'Checking recent reporting…' : result.status === 'unavailable' ? 'Coverage is temporarily unavailable. It will refresh automatically.' : 'Loading the latest reporting…', 'nr-empty'));
       section.append(list,node('p',result ? (result.stale || result.status==='cached' ? 'Saved coverage · ' : '')+editionLabel(activeEdition)+' edition'+(result.fetchedAt?' · Retrieved '+date(result.fetchedAt):' · Source temporarily unavailable') : editionLabel(activeEdition)+' edition', 'nr-source-note'));
       host.append(section);
     }
@@ -105,7 +117,9 @@
     const code=edition(); if(topicPending===code)return;
     const request=++topicRequest; topicPending=code;
     const service=window.FYNXMarketIntelligenceData;
-    const settle=(id,result)=>{if(request!==topicRequest || code!==edition())return;topicResults=[...topicResults.filter(value=>value.id!==id),{id,result}];renderTopics();};
+    const settle=(id,result)=>{if(request!==topicRequest || code!==edition())return;topicResults=[...topicResults.filter(value=>value.id!==id),{id,result}];renderTopics();
+      // A desk with fewer than three stories in this edition borrows the Global edition's latest.
+      if(code!=='global'&&result&&!result.fallback&&freshFirst(result.items,null,3).length<3&&typeof service?.loadHeadlines==='function')Promise.resolve(service.loadHeadlines(id,{edition:'global',timeoutMs:6500})).then(g=>{if(request!==topicRequest||code!==edition()||!Array.isArray(g?.items))return;const cur=topicResults.find(value=>value.id===id);if(cur&&cur.result===result){cur.result={...result,fallback:g.items};renderTopics();}}).catch(()=>{});};
     // Show saved coverage at once, then replace each desk as its refresh lands.
     for(const [id] of topics){const saved=!force&&service?.getCachedHeadlines?.(id,{edition:code});if(saved&&!topicResults.some(value=>value.id===id))settle(id,saved);}
     const guard=new Promise(resolve=>setTimeout(resolve,9000));

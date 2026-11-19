@@ -542,7 +542,14 @@
 
   /* --- NEWS --------------------------------------------------------------- */
   function headlineRow(h) {
-    const a = rowButton('fx-hrow', () => openPage('article', h), h.title); a.append(el('time', '', hhmm(h.publishedAt)), el('span', 'fx-ht', h.title), el('small', '', `${h.source}${h.kind === 'official-release' ? ' · OFFICIAL' : ''}`)); return a;
+    const old = Date.now() - Date.parse(h.publishedAt) > 20 * 3600000, stamp = old ? new Date(h.publishedAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) : hhmm(h.publishedAt);
+    const a = rowButton('fx-hrow', () => openPage('article', h), h.title); a.append(el('time', '', stamp), el('span', 'fx-ht', h.title), el('small', '', `${h.source}${h.kind === 'official-release' ? ' · OFFICIAL' : ''}`)); return a;
+  }
+  // A quiet desk or market still shows news: the latest stories across FYNX, newest first, with a note.
+  function fallbackNews(host, note, n = 25) {
+    const items = [...S.briefing].sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+    if (!items.length) return empty(host, 'Loading headlines…');
+    host.append(el('p', 'fx-foot', note)); items.slice(0, n).forEach(h => host.append(headlineRow(h)));
   }
   async function renderTop() {
     const d = D(), cat = d.news;
@@ -550,7 +557,7 @@
     const host = panel('top');
     if (cat !== 'all' && !S.desks[cat]) { empty(host, 'Loading headlines…'); await loadNews(cat); if (D().news !== cat || !$('b-top')) return; host.replaceChildren(); }
     const items = cat === 'all' ? S.briefing : S.desks[cat]?.items || [];
-    if (!items.length) return empty(host, cat === 'all' ? 'Loading headlines…' : 'No current stories for this desk.');
+    if (!items.length) return cat === 'all' ? empty(host, 'Loading headlines…') : fallbackNews(host, 'This desk is quiet right now · latest across FYNX');
     items.slice(0, 40).forEach(h => host.append(headlineRow(h)));
   }
   async function renderDesks(load = false) {
@@ -560,7 +567,7 @@
     const host = panel('desks'), cat = S.deskTab;
     if (load || !S.desks[cat]) { empty(host, 'Loading desk…'); await loadNews(cat); if (cat !== S.deskTab || !$('b-desks')) return; host.replaceChildren(); }
     const dd = S.desks[cat];
-    if (!dd?.items?.length) return empty(host, 'No current stories for this desk. Try another desk.');
+    if (!dd?.items?.length) return fallbackNews(host, 'This desk is quiet right now · latest across FYNX');
     dd.items.forEach(h => host.append(headlineRow(h)));
   }
   function renderOfficial() {
@@ -1178,7 +1185,7 @@
     const words = [(s.name || '').replace(/,? (Inc|Corp|Corporation|Ltd|plc|Holdings|Group|N\.V\.|S\.A\.|AG|SE|Co)\.?$/i, '').split(' ').slice(0, 2).join(' '), shortOf(s.symbol).length > 2 ? shortOf(s.symbol) : ''].filter(w => w && w.length > 2).map(w => w.toLowerCase());
     const room = [...S.briefing, ...Object.values(S.desks).flatMap(x => x.items || [])].filter(h => words.some(w => h.title.toLowerCase().includes(w)));
     const seen = new Set(), items = [...room, ...own].filter(h => { const k = h.title.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
-    if (!items.length) return empty(host, 'No current headlines for this market.');
+    if (!items.length) return fallbackNews(host, 'No headlines mention this market yet · latest market news', 15);
     for (const h of items.slice(0, 25)) { if (h.external) { const a = link('', h.url, 'fx-row fx-hrow'); a.append(el('time', '', hhmm(h.publishedAt)), el('span', 'fx-ht', h.title), el('small', '', h.source + ' ↗︎')); host.append(a); } else host.append(headlineRow(h)); }
   }
   async function renderCmp() {
