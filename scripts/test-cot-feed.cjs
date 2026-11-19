@@ -8,7 +8,7 @@ w.Blob=class {constructor(parts,options){this.data=parts.join('');this.type=opti
 w.URL.createObjectURL=blob=>{csvBlobs.push(blob);return 'blob:verified-cftc-csv';};
 w.URL.revokeObjectURL=()=>{};
 w.HTMLAnchorElement.prototype.click=function(){downloads.push({href:this.href,filename:this.download});};
-w.fetch=async url=>{calls++;const params=new URL(url).searchParams;if(mode==='fail')throw Error('offline');if(params.get('$limit')==='1')return{ok:true,json:async()=>[{report_date_as_yyyy_mm_dd:date}]};return{ok:true,json:async()=>[mode==='invalid'?{...row,open_interest_all:''}:mode==='formula'?{...row,market_and_exchange_names:' =HYPERLINK("https://example.test","click")'}:row]};};
+w.fetch=async url=>{calls++;const params=new URL(url).searchParams;if(mode==='fail')throw Error('offline');if(params.get('$limit')==='1')return{ok:true,json:async()=>[{report_date_as_yyyy_mm_dd:date}]};return{ok:true,json:async()=>[mode==='invalid'?{...row,open_interest_all:''}:mode==='formula'?{...row,market_and_exchange_names:' =HYPERLINK("https://example.test","click")'}:row, ...(mode==='multi'?[{...row,market_and_exchange_names:'GOLD - COMEX'}]:[])]};};
 w.eval(fs.readFileSync('assets/js/cot-feed.js','utf8'));
 assert.equal(w.document.querySelector('#cotExport').disabled,true,'CSV unavailable before verified report');
 await tick();await tick();
@@ -18,7 +18,20 @@ assert.equal(downloads.length,1);
 assert.match(downloads[0].filename,/^fynx-cftc-legacy-futures-\d{4}-\d{2}-\d{2}\.csv$/);
 assert.match(csvBlobs[0].data,/^\uFEFF"Source","Report date","Retrieved UTC"/);
 assert.ok(csvBlobs[0].data.includes('"EURO FX","100","30","70","20","60","-40","200"'));
-assert.match(w.document.querySelector('#cotExportStatus').textContent,/1 verified contract/);assert.match(w.document.querySelector('#cotRows').textContent,/\+70-40/);assert.match(w.document.querySelector('#cotStatus').textContent,/Older report/);assert.match(w.document.querySelector('#cotStatus').textContent,/Retrieved/);
+assert.match(w.document.querySelector('#cotExportStatus').textContent,/1 verified contract/);assert.match(w.document.querySelector('#cotRows').textContent,/\+70-40/);
+mode='multi';w.document.querySelector('#cotRefresh').click();await tick();await tick();
+assert.match(w.document.querySelector('#cotStatus').textContent,/2 contracts/);
+w.document.querySelector('#cotSearch').value='euro';
+w.document.querySelector('#cotSearch').dispatchEvent(new w.Event('input'));
+w.document.querySelector('#cotExport').click();
+assert.ok(csvBlobs.at(-1).data.includes('"EURO FX"'));
+assert.ok(!csvBlobs.at(-1).data.includes('"GOLD - COMEX"'),'filtered export excludes nonmatching contracts');
+assert.match(w.document.querySelector('#cotExportStatus').textContent,/1 verified contract/);
+w.document.querySelector('#cotSearch').value='';
+w.document.querySelector('#cotSearch').dispatchEvent(new w.Event('input'));
+w.document.querySelector('#cotExport').click();
+assert.ok(csvBlobs.at(-1).data.includes('"GOLD - COMEX"'),'clearing filter exports the entire verified snapshot');
+assert.match(w.document.querySelector('#cotStatus').textContent,/Older report/);assert.match(w.document.querySelector('#cotStatus').textContent,/Retrieved/);
 for(const next of ['fail','invalid']){mode=next;w.document.querySelector('#cotRefresh').click();await tick();await tick();assert.match(w.document.querySelector('#cotStatus').textContent,/Refresh failed/);assert.match(w.document.querySelector('#cotStatus').textContent,new RegExp(date.slice(0,10)));assert.match(w.document.querySelector('#cotRows').textContent,/200/);}
 // Data preserved from the last verified refresh remains exportable, with the original report date.
 assert.equal(w.document.querySelector('#cotExport').disabled,false);
