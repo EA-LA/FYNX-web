@@ -2,6 +2,7 @@
  *   ?op=search&q=nvidia          instruments worldwide (stocks, ETFs, indices, futures, FX, crypto) and related news
  *   ?op=chart&symbol=NVDA&range=1y   quote plus daily (or intraday) bars
  *   ?op=quotes&symbols=NVDA,SAP.DE  up to 25 latest quotes
+ *   ?op=closes&symbols=AAPL,MSFT&range=5y  up to 60 symbols of split/dividend-adjusted daily closes on shared dates
  * Source: Yahoo Finance public endpoints. Nothing is stored; responses are cached briefly at the edge. */
 'use strict';
 const AGENT = 'Mozilla/5.0 (compatible; FYNXFinanceWorld/1.0; +https://www.fynxfinanceworld.com/terminal.html)';
@@ -46,6 +47,24 @@ async function chart(symbol, range) {
   out.changePercent = out.previousClose ? r6((out.price / out.previousClose - 1) * 100) : null;
   return out;
 }
+// Daily adjusted closes for many symbols, aligned on the union of trading dates (null where a market was closed).
+async function closes(symbols, range) {
+  const series = {}, failed = {}, names = {};
+  let next = 0;
+  const work = async () => {
+    while (next < symbols.length) {
+      const s = symbols[next++];
+      try {
+        const data = await yahoo(`/v8/finance/chart/${encodeURIComponent(s)}?range=${range}&interval=1d&includePrePost=false&events=div%2Csplit`);
+        const out = parseChart(s, data, false); names[s] = out.name;
+        series[s] = new Map(out.rows.map(r => [r.date, r.close]));
+      } catch (e) { failed[s] = e.status === 404 ? 'No data for this symbol.' : 'Unavailable'; }
+    }
+  };
+  await Promise.all(Array.from({length: Math.min(6, symbols.length)}, work));
+  const dates = [...new Set(Object.values(series).flatMap(m => [...m.keys()]))].sort();
+  return {dates, names, failed, series: Object.fromEntries(Object.entries(series).map(([s, m]) => [s, dates.map(d => m.has(d) ? m.get(d) : null)]))};
+}
 async function search(q) {
   const d = await yahoo(`/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=20&newsCount=10&enableFuzzyQuery=false&lang=en-US&region=US`);
   return {
@@ -78,7 +97,13 @@ module.exports = async (req, res) => {
       await Promise.all(symbols.map(async s => { try { const c = await chart(s, '5d'); delete c.rows; quotes[s] = c; } catch (e) { errors[s] = e.message; } }));
       body = {quotes, errors, source: 'Yahoo Finance (delayed)', fetchedAt: new Date().toISOString()};
       res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
-    } else return res.status(400).json({error: 'Choose op=search, chart or quotes.'});
+    } else if (q.op === 'closes') {
+      const symbols = [...new Set(String(q.symbols || '').split(',').map(s => s.trim()).filter(Boolean))], range = ['1y', '2y', '5y'].includes(q.range) ? q.range : '5y';
+      if (!symbols.length || symbols.length > 60 || !symbols.every(s => SYMBOL.test(s))) return res.status(400).json({error: 'Choose 1 to 60 valid symbols.'});
+      body = {...await closes(symbols, range), range, source: 'Yahoo Finance daily adjusted closes (delayed)', fetchedAt: new Date().toISOString()};
+      if (!body.dates.length) return res.status(502).json({error: 'Market data is temporarily unavailable.'});
+      res.setHeader('Cache-Control', 'public, s-maxage=21600, stale-while-revalidate=86400');
+    } else return res.status(400).json({error: 'Choose op=search, chart, quotes or closes.'});
     return res.status(200).json(body);
   } catch (e) {
     return res.status(e.status === 404 ? 404 : 502).json({error: e.status === 404 ? e.message : 'Market data is temporarily unavailable.'});
