@@ -30,6 +30,7 @@
       + '@keyframes lp-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}'
       + '.lp-item{display:flex;align-items:center;gap:9px;padding:9px 16px;border-right:1px solid rgba(127,127,127,.14);text-decoration:none;color:inherit;white-space:nowrap}.lp-item:hover{background:rgba(127,127,127,.08)}'
       + '.lp-name{font-size:11px;font-weight:700;opacity:.75}.lp-px{font:700 12px "IBM Plex Mono",ui-monospace,monospace}.lp-ch{font:800 11px "IBM Plex Mono",ui-monospace,monospace}'
+      + '.lp-age{border:1px solid rgba(127,127,127,.3);border-radius:4px;padding:2px 4px;font:700 9px/1.1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.03em}'
       + '.lp-pos{color:#127a48}.lp-neg{color:#c42828}'
       + '.lp-spark{width:52px;height:18px}.lp-spark polyline{fill:none;stroke-width:1.5;vector-effect:non-scaling-stroke}.lp-spark .lp-up{stroke:#127a48}.lp-spark .lp-down{stroke:#c42828}'
       + '.lp-asof{flex:0 0 auto;display:flex;align-items:center;padding:0 12px;font-size:10px;opacity:.6;border-left:1px solid rgba(127,127,127,.22)}'
@@ -69,18 +70,31 @@
     // A successful HTTP response does not verify when the quotes were collected.
     // Retain the last good snapshot on malformed or implausibly future source times.
     if (snapshotStatus(data?.generatedAt).label === 'Unverified') throw new Error('Market source time is unverified');
-    const items = (Array.isArray(data?.items) ? data.items : []).filter(i => i && num(i.price) &&
+    const snapshotAt = Date.parse(data.generatedAt);
+    const rawItems = Array.isArray(data?.items) ? data.items : [];
+    // A newly generated feed is not proof that each underlying market price is current.
+    // Reject unverifiable or future-dated observations, preserving other sourced quotes.
+    const quoteTime = i => typeof i?.asOf === 'string' ? Date.parse(i.asOf) : NaN;
+    const items = rawItems.filter(i => i && num(i.price) &&
       typeof i.symbol === 'string' && !!i.symbol.trim() &&
-      typeof i.label === 'string' && !!i.label.trim());
-    if (!items.length) throw new Error('No sourced market prices');
+      typeof i.label === 'string' && !!i.label.trim() &&
+      Number.isFinite(quoteTime(i)) &&
+      quoteTime(i) <= Math.min(Date.now(), snapshotAt) + FUTURE_SKEW_ALLOWANCE);
+    if (!items.length) throw new Error('No verified market quote times');
+    const partial = items.length !== rawItems.length;
+    const olderQuote = i => data.stale === true || i.stale === true || Date.now() - quoteTime(i) > MAX_SNAPSHOT_AGE;
+    const olderCount = items.filter(olderQuote).length;
     const html = items.map(i => {
       const ch = i.changePercent, cls = num(ch) ? (ch >= 0 ? 'lp-pos' : 'lp-neg') : '';
       const s = Array.isArray(i.spark) && i.spark.length <= 365 && i.spark.every(num) ? i.spark : [];
       const up = s.length > 1 ? s[s.length - 1] >= s[0] : (ch || 0) >= 0;
       const trendLabel = s.length > 1 ? ' · 30-day trend' : '';
-      return '<a class="lp-item" href="/terminal.html?sym=' + encodeURIComponent(i.symbol) + '" title="' + esc(i.label) + trendLabel + ' · open in FYNX Terminal">'
+      const asOf = new Date(quoteTime(i)).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+      const ageNote = olderQuote(i) ? 'Older sourced quote' : 'Delayed sourced quote';
+      return '<a class="lp-item" href="/terminal.html?sym=' + encodeURIComponent(i.symbol) + '" title="' + esc(i.label) + trendLabel + ' · ' + ageNote + ' as of ' + esc(asOf) + ' · open in FYNX Terminal">'
         + '<span class="lp-name">' + esc(i.label) + '</span><span class="lp-px">' + fmt(i.symbol, i.price) + '</span>'
-        + '<span class="lp-ch ' + cls + '">' + (num(ch) ? (ch > 0 ? '+' : '') + ch.toFixed(2) + '%' : '') + '</span>' + spark(s, up) + '</a>';
+        + '<span class="lp-ch ' + cls + '">' + (num(ch) ? (ch > 0 ? '+' : '') + ch.toFixed(2) + '%' : '') + '</span>'
+        + (olderQuote(i) ? '<span class="lp-age">Older</span>' : '') + spark(s, up) + '</a>';
     }).join('');
     const track = strip.querySelector('.lp-track');
     track.innerHTML = html + html.replace(/<a /g, '<a tabindex="-1" aria-hidden="true" ');
@@ -88,9 +102,12 @@
     lastSourceAt = data.generatedAt;
     const state = snapshotStatus(data.generatedAt, data.stale === true || items.some(i => i.stale === true));
     strip.classList.remove('is-error');
-    strip.classList.toggle('is-stale', state.stale);
-    strip.querySelector('.lp-tag-sub').textContent = state.label;
-    strip.querySelector('.lp-asof').textContent = state.detail;
+    strip.classList.toggle('is-stale', state.stale || olderCount > 0 || partial);
+    strip.querySelector('.lp-tag-sub').textContent = partial ? 'Partial' : olderCount && !state.stale ? 'Older quotes' : state.label;
+    strip.querySelector('.lp-asof').textContent =
+      (partial ? 'Some quote timestamps could not be verified. ' : '') +
+      (olderCount ? olderCount + ' quote' + (olderCount === 1 ? '' : 's') + ' older than 45 minutes or marked stale. ' : '') +
+      state.detail;
     strip.querySelector('.lp-viewport').hidden = false;
     strip.querySelector('.lp-asof').hidden = false;
     strip.querySelector('.lp-feedback').hidden = true;
