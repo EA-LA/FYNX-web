@@ -219,8 +219,27 @@
         }
       } catch (_) { /* The selected-edition failure state is shown below. */ }
       if (run !== requestNumber || requestedEdition !== edition()) return;
-      const gr = g ? normalized(g.items, 72, 'global') : [];
-      if (gr.length) { rows = gr; windowHours = 72; windowEdition = 'global'; widenNote = 'No reports for this edition right now — showing the Global edition desk.'; }
+      // Global fallback is a different source result. Its freshness and retrieval
+      // time must determine the displayed status, not the failed/empty edition.
+      // Ignore a Global response explicitly marked unavailable, even if it carries items.
+      const gr = g?.status !== 'unavailable' && Array.isArray(g?.items)
+        ? normalized(g.items, 72, 'global') : [];
+      if (gr.length) {
+        rows = gr; windowHours = 72; windowEdition = 'global';
+        const selectedUnavailable = result.status === 'unavailable';
+        const savedGlobal = g.status === 'cached';
+        result = {
+          ...g,
+          status: savedGlobal ? 'cached' : 'fresh',
+          partial: !savedGlobal && (selectedUnavailable || g.stale === true),
+          message: selectedUnavailable
+            ? 'Selected edition sources could not be refreshed; showing Global edition reporting.'
+            : g.message
+        };
+        widenNote = selectedUnavailable
+          ? 'Selected edition sources unavailable — showing the Global edition desk.'
+          : 'No reports for this edition right now — showing the Global edition desk.';
+      }
     }
     if (rows.length) render();
     else {

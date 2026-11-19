@@ -180,3 +180,43 @@ test('a successful empty update is not mislabeled as saved coverage', async () =
     assert.match(app.lead.textContent, /No recent reports/i);
   } finally { app.close(); }
 });
+
+test('a successful Global fallback after a regional outage is partly refreshed, not unavailable', async () => {
+  const fetchedAt = new Date().toISOString();
+  const app = setup((category, { edition }) => Promise.resolve(edition === 'global'
+    ? { status: 'fresh', fetchedAt, items: [story('global')] }
+    : { status: 'unavailable', fetchedAt: null, items: [] }));
+  try {
+    await settle();
+    completed(app, 'partial');
+    assert.match(app.lead.textContent, /Verified source headline/);
+    assert.match(app.label.textContent, /Partly refreshed/);
+    assert.match(app.doc.querySelector('[data-newsroom-status]').textContent, /Selected edition sources unavailable/);
+    assert.match(app.doc.querySelector('[data-newsroom-status]').textContent, /Retrieved/);
+    assert.doesNotMatch(app.label.textContent, /Sources unavailable/);
+  } finally { app.close(); }
+});
+
+test('an empty edition with saved Global reports shows Saved coverage, not Coverage updated', async () => {
+  const app = setup((category, { edition }) => Promise.resolve(edition === 'global'
+    ? { status: 'cached', stale: true, fetchedAt: new Date().toISOString(), items: [story('global')] }
+    : { status: 'fresh', fetchedAt: new Date().toISOString(), items: [] }));
+  try {
+    await settle();
+    completed(app, 'cached');
+    assert.match(app.lead.textContent, /Verified source headline/);
+    assert.match(app.label.textContent, /Saved coverage/);
+  } finally { app.close(); }
+});
+
+test('an unavailable Global response with residual items cannot appear as verified fallback', async () => {
+  const app = setup((category, { edition }) => Promise.resolve(edition === 'global'
+    ? { status: 'unavailable', fetchedAt: null, items: [story('global')] }
+    : { status: 'unavailable', fetchedAt: null, items: [] }));
+  try {
+    await settle();
+    completed(app, 'unavailable');
+    assert.doesNotMatch(app.lead.textContent, /Verified source headline/);
+    assert.match(app.label.textContent, /Sources unavailable/);
+  } finally { app.close(); }
+});
