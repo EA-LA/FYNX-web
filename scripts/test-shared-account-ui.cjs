@@ -43,36 +43,52 @@ const tick=()=>new Promise(resolve=>setImmediate(resolve));
  assert.equal(trigger.getAttribute('aria-expanded'),'false');
  assert.equal(dropdown.classList.contains('open'),false);
  failRead=true;await onAuth({uid:'A'});assert(w.document.querySelector('#bellList'));await onAuth(null);assert.match(w.document.querySelector('#bellList').textContent,/No alerts/);w.close();
+ const {createNotificationPreferenceController}=await import('data:text/javascript;base64,'+Buffer.from(fs.readFileSync('assets/js/notifications/preference-save.mjs','utf8')).toString('base64'));
  const dom=new JSDOM(fs.readFileSync('notifications.html','utf8'),{url:'https://example.com/notifications.html',runScripts:'outside-only'}),n=dom.window;
- Object.assign(n,{safeNotificationUrl:url,auth:{currentUser:null},mountNotificationBell(){},onAuthStateChanged(){},countUnread:rows=>rows.filter(r=>!r.read).length});
- const source=[...fs.readFileSync('notifications.html','utf8').matchAll(/<script type="module">([\s\S]*?)<\/script>/g)].at(-1)[1];n.eval(strip(source));n.renderFeed([item]);assert.equal(n.document.querySelectorAll('#feed img').length,0);assert.equal(n.document.querySelector('.feed-title').textContent,hostile);assert.equal(n.document.querySelector('.feed-item').dataset.link,'');assert.equal(n.document.querySelector('.js-open'),null);
+ let notificationAuthChanged,failPreferenceWrite=false;const preferenceWrites=[];
+ Object.assign(n,{
+   safeNotificationUrl:url,
+   auth:{currentUser:{uid:'A'}},
+   mountNotificationBell(){},
+   onAuthStateChanged:(_,callback)=>notificationAuthChanged=callback,
+   countUnread:rows=>rows.filter(r=>!r.read).length,
+   bootstrapAccount:async()=>({notificationPreferences:{inAppEnabled:true,browserEnabled:false}}),
+   listenNotifications:()=>()=>{},
+   saveNotificationPreferences:async(uid,payload)=>{preferenceWrites.push([uid,payload]);if(failPreferenceWrite)throw Error('offline');},
+   requestBrowserNotificationPermission:async()=>({permission:'granted',supported:true}),
+   createNotificationPreferenceController
+ });
+ const source=[...fs.readFileSync('notifications.html','utf8').matchAll(/<script type="module">([\s\S]*?)<\/script>/g)].at(-1)[1];
+ n.eval(strip(source));n.renderFeed([item]);assert.equal(n.document.querySelectorAll('#feed img').length,0);assert.equal(n.document.querySelector('.feed-title').textContent,hostile);assert.equal(n.document.querySelector('.feed-item').dataset.link,'');assert.equal(n.document.querySelector('.js-open'),null);
  const switches=[...n.document.querySelectorAll('button.switch[data-pref]')];
  assert.equal(switches.length,10,'Every notification preference uses an accessible switch');
  for(const sw of switches){
    assert.equal(sw.getAttribute('role'),'switch');
    assert(sw.getAttribute('aria-label'),'A switch must have a screen-reader label');
    assert.equal(sw.getAttribute('aria-checked'),'false');
+   assert.equal(sw.disabled,true,'Settings are unavailable until account bootstrap completes');
  }
+ await notificationAuthChanged({uid:'A'});
  const inAppSwitch=n.document.querySelector('[data-pref="inAppEnabled"]');
- n.setPrefs({inAppEnabled:true,browserEnabled:false});
  assert.equal(inAppSwitch.getAttribute('aria-checked'),'true');
  assert(inAppSwitch.classList.contains('on'));
  inAppSwitch.click();
+ assert.equal(inAppSwitch.getAttribute('aria-checked'),'true','Do not display unconfirmed change');
+ await tick();
  assert.equal(inAppSwitch.getAttribute('aria-checked'),'false');
  assert(!inAppSwitch.classList.contains('on'));
- n.requestBrowserNotificationPermission=async()=>({permission:'granted',supported:true});
  n.document.getElementById('requestPermissionBtn').click();
  await tick();
  const browserSwitch=n.document.querySelector('[data-pref="browserEnabled"]');
  assert.equal(browserSwitch.getAttribute('aria-checked'),'true');
  assert(browserSwitch.classList.contains('on'));
- n.auth.currentUser={uid:'A'};
- n.saveNotificationPreferences=async()=>{throw Error('offline');};
+ assert(preferenceWrites.some(([uid,payload])=>uid==='A' && payload.browserEnabled===true));
+ failPreferenceWrite=true;
  inAppSwitch.click();
  await tick();
- assert.equal(inAppSwitch.getAttribute('aria-checked'),'false','Failed save must restore assistive-tech state');
- assert(!inAppSwitch.classList.contains('on'),'Failed save must restore visual state');
- assert.match(n.document.querySelector('p[role="status"]').textContent,/Could not complete/);
+ assert.equal(inAppSwitch.getAttribute('aria-checked'),'false','Failed save keeps confirmed assistive-tech state');
+ assert(!inAppSwitch.classList.contains('on'),'Failed save keeps confirmed visual state');
+ assert.match(n.document.querySelector('p[role="status"]').textContent,/previous setting is unchanged/);
  n.close();
  let authChanged,callbacks=[],stops=0;const identity={window:{dispatchEvent(){}},CustomEvent:class{},auth:{},app:{},onAuthStateChanged:(_,callback)=>authChanged=callback,getFirestore:()=>({}),doc:(_,__,uid)=>uid,onSnapshot:(_,callback)=>{callbacks.push(callback);return()=>stops++;}};
  vm.runInNewContext(strip(fs.readFileSync('assets/js/account-identity.js','utf8')),identity);

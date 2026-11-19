@@ -7,7 +7,7 @@
 .feed-top{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#777;margin-bottom:4px}.feed-title{font-size:13px;font-weight:800}.feed-body{font-size:12px;color:#666;margin-top:3px}
 .badge{font-size:10px;border:1px solid #ddd;border-radius:999px;padding:2px 7px;font-weight:700}
 .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.08)} .row:last-child{border-bottom:none}
-.switch{width:48px;height:28px;border:1px solid #ddd;border-radius:999px;position:relative;cursor:pointer;background:#fff}.knob{width:22px;height:22px;border-radius:50%;background:#111;position:absolute;left:2px;top:2px;transition:.2s}.switch.on .knob{left:22px}.switch:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+.switch{width:48px;height:28px;border:1px solid #ddd;border-radius:999px;position:relative;cursor:pointer;background:#fff}.knob{width:22px;height:22px;border-radius:50%;background:#111;position:absolute;left:2px;top:2px;transition:.2s}.switch.on .knob{left:22px}.switch:focus-visible{outline:2px solid currentColor;outline-offset:3px}.switch:disabled{cursor:not-allowed;opacity:.55}.switch[aria-busy="true"]{cursor:progress;opacity:.75}
 body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.2)} body.dark-mode .knob{background:#fff}
 .btn{height:38px;padding:0 12px;border-radius:10px;border:1px solid #ddd;background:#fff;font-size:12px;font-weight:800;cursor:pointer}
 small.dim{font-size:11px;color:#777} .filters{display:flex;gap:8px;flex-wrap:wrap} .feed-actions{display:flex;gap:6px;margin-top:8px}
@@ -81,6 +81,7 @@ import { safeNotificationUrl } from './assets/js/safe-content.js?v=20260928-audi
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
 import { auth, bootstrapAccount, saveNotificationPreferences, listenNotifications, markNotificationRead, markAllNotificationsRead, dismissNotification, requestBrowserNotificationPermission, showBrowserNotification, ingestNewsNotifications, countUnread } from './assets/js/account-system.js?v=20261114-consistency-2';
 import { mountNotificationBell } from './assets/js/account-ui.js?v=20261114-consistency-2';
+import { createNotificationPreferenceController } from './assets/js/notifications/preference-save.mjs?v=20261118-1';
 
 const prefs = {};
 const actionStatus = document.createElement('p');
@@ -109,9 +110,43 @@ function applyTheme(){const t=window.FynxPreferences?.getItem('fynx_theme');docu
 (document.getElementById('themeBtn')||{}).onclick=()=>{const d=!document.body.classList.contains('dark-mode');document.body.classList.toggle('dark-mode',d);window.FynxPreferences?.setItem('fynx_theme',d?'dark':'light');};
 
 function syncPrefSwitch(s, checked){const enabled=Boolean(checked);s.classList.toggle('on',enabled);s.setAttribute('aria-checked',String(enabled));}
-document.querySelectorAll('.switch[data-pref]').forEach((s)=>s.onclick=async()=>{const k=s.dataset.pref;prefs[k]=!prefs[k];syncPrefSwitch(s,prefs[k]);if(auth.currentUser){try { await saveNotificationPreferences(auth.currentUser.uid,{[k]:prefs[k]}); } catch(error) { prefs[k]=!prefs[k];syncPrefSwitch(s,prefs[k]);throw error; }} });
+const preferenceButtons = [...document.querySelectorAll('.switch[data-pref]')];
+const permissionButton = document.getElementById('requestPermissionBtn');
+const permissionStatus = document.getElementById('permStatus');
+permissionButton.disabled = true;
+const preferenceController = createNotificationPreferenceController({
+  keys: preferenceButtons.map(button => button.dataset.pref),
+  currentUid: () => auth.currentUser?.uid || null,
+  save: saveNotificationPreferences,
+  render: (key, state) => {
+    const button = preferenceButtons.find(item => item.dataset.pref === key);
+    if (!button) return;
+    prefs[key] = state.checked;
+    syncPrefSwitch(button, state.checked);
+    button.disabled = state.disabled;
+    button.setAttribute('aria-busy', String(state.busy));
+  },
+  report: message => { actionStatus.textContent = message; }
+});
+preferenceButtons.forEach(button => {
+  button.onclick = () => preferenceController.toggle(button.dataset.pref);
+});
 
-requestPermissionBtn.onclick=async()=>{const result = await requestBrowserNotificationPermission();permStatus.textContent = `Permission: ${result.permission}${result.supported?'':' (unsupported browser)'}`;prefs.browserEnabled = result.permission==='granted';syncPrefSwitch(document.querySelector('.switch[data-pref="browserEnabled"]'),prefs.browserEnabled);if(auth.currentUser){await saveNotificationPreferences(auth.currentUser.uid,{browserEnabled:prefs.browserEnabled});} };
+permissionButton.onclick = async () => {
+  const uid = auth.currentUser?.uid;
+  if (!uid || permissionButton.disabled) return;
+  permissionButton.disabled = true;
+  try {
+    const result = await requestBrowserNotificationPermission();
+    if (auth.currentUser?.uid !== uid) return;
+    permissionStatus.textContent = `Permission: ${result.permission}${result.supported ? '' : ' (unsupported browser)'}`;
+    await preferenceController.set('browserEnabled', result.permission === 'granted');
+  } catch {
+    if (auth.currentUser?.uid === uid) actionStatus.textContent = 'Could not request browser notification permission. Try again.';
+  } finally {
+    if (auth.currentUser?.uid === uid) permissionButton.disabled = false;
+  }
+};
 
 function filteredItems(items){
   const cat = categoryFilter.value;
@@ -154,7 +189,10 @@ function renderFeed(items){
   guardActions(feed);
 }
 
-function setPrefs(data){Object.assign(prefs,data||{});Object.keys(prefs).forEach((k)=>{const sw=document.querySelector(`.switch[data-pref="${k}"]`);if(sw)syncPrefSwitch(sw,prefs[k]);});permStatus.textContent = `Permission: ${('Notification' in window)?Notification.permission:'unsupported'}`;}
+function setPrefs(uid, data){
+  preferenceController.load(uid, data);
+  permissionStatus.textContent = `Permission: ${('Notification' in window) ? Notification.permission : 'unsupported'}`;
+}
 
 markAllBtn.onclick=async()=>{if(auth.currentUser){await markAllNotificationsRead(auth.currentUser.uid);}};
 unreadOnlyBtn.onclick=()=>{unreadOnly=!unreadOnly; unreadOnlyBtn.textContent=`Unread only: ${unreadOnly?'On':'Off'}`; renderFeed(current);};
@@ -171,17 +209,32 @@ refreshNewsBtn.onclick=async()=>{
   }
 };
 
+let authRevision = 0;
 onAuthStateChanged(auth, async (user)=>{
+  const revision = ++authRevision;
+  const uid = user?.uid || null;
+  preferenceController.reset(uid);
+  permissionButton.disabled = true;
   if(unsub) { unsub(); unsub=null; }
   current=[]; renderFeed(current);
-  if(!user) return;
+  if(!uid) {
+    actionStatus.textContent = 'Sign in to manage notification preferences.';
+    return;
+  }
   try {
-  const seeded = await bootstrapAccount(user);
-  if(auth.currentUser?.uid!==user.uid)return;
-  setPrefs(seeded.notificationPreferences);
-  if(unsub) unsub();
-  unsub = listenNotifications(user.uid, (items)=>{ current = items; renderFeed(items); }, 100, () => { actionStatus.textContent='Notifications unavailable. Check your connection and reload.'; });
-  } catch { actionStatus.textContent='Could not load notifications. Check your connection and reload.'; }
+    const seeded = await bootstrapAccount(user);
+    if(authRevision !== revision || auth.currentUser?.uid !== uid) return;
+    setPrefs(uid, seeded.notificationPreferences);
+    permissionButton.disabled = false;
+    unsub = listenNotifications(uid, (items)=>{
+      if(authRevision !== revision || auth.currentUser?.uid !== uid) return;
+      current = items; renderFeed(items);
+    }, 100, () => {
+      if(authRevision === revision) actionStatus.textContent='Notifications unavailable. Check your connection and reload.';
+    });
+  } catch {
+    if(authRevision === revision) actionStatus.textContent='Could not load notifications. Check your connection and reload.';
+  }
 });
 
 guardActions();
