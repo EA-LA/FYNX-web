@@ -359,6 +359,14 @@ test('reopening builder preserves the unsaved latest code and independent saved 
     await page.waitForFunction(() => document.querySelector('[data-fxb-status]')?.textContent === 'Private to your account');
     assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeB);
     assert.doesNotMatch(await page.locator('.fxb-list').innerText(), /Independent Project A/);
+    // Cloud is now down. Account-synced projects must remain available as
+    // validated per-user browser backups, never replaced by the starter.
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = true; window.__fxbOpen(); });
+    await page.waitForFunction(() => /refused|unavailable/.test(document.querySelector('[data-fxb-status]')?.textContent || ''));
+    assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeB);
+    assert.match(await page.locator('.fxb-list').innerText(), /Independent Project B/);
+    assert.doesNotMatch(await page.locator('.fxb-list').innerText(), /Independent Project A/);
   } finally {
     await browser.close();
     server.close();
