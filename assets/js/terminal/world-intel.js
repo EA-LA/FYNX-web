@@ -216,6 +216,8 @@
 .fx-ilp-tabs button.on{color:var(--tx);border-bottom-color:var(--am)}
 .fx-ilp-search{margin:7px 8px 5px;padding:6px 8px;background:#0d1312;border:1px solid #26302c;color:var(--tx);font:12px Inter,Arial,sans-serif;width:auto}
 .fx-ilp-search:focus{outline:1px solid var(--am);border-color:var(--am)}
+html body.fx-terminal .fx-ilp-search{background:#0d1312!important;color:var(--tx)!important;border:1px solid #26302c!important;border-radius:0!important}
+html body.fx-terminal .fx-ilp-search:focus{border-color:var(--am)!important}
 .fx-ilp-chips{display:flex;flex-wrap:wrap;gap:3px;padding:0 8px 6px}
 .fx-ilp-chips button{padding:2px 6px;min-height:20px;background:#121917;border:1px solid #26302c;color:#b9c4be;font:600 10px Inter,Arial,sans-serif}
 .fx-ilp-chips button.on{background:var(--am);border-color:var(--am);color:#000}
@@ -289,7 +291,22 @@
 .fx-glegend .fx-gl-intel span{gap:4px}
 .fx-glegend .fx-gl-intel i.sq{border-radius:0;background:repeating-linear-gradient(45deg,#ff5a4f 0 2px,transparent 2px 4px)!important;border:1px solid #ff5a4f}
 .fx-glegend .fx-gl-intel i.ln{height:2px;width:14px;border-radius:0}
-@media (max-width:760px){.fx-ilp{width:auto;right:8px;top:44px;max-height:calc(100% - 96px)}.fx-icard{left:8px;right:8px;width:auto;top:auto;bottom:44px;max-height:60%}}`;
+@media (max-width:760px){.fx-ilp{width:auto;right:8px;top:44px;max-height:calc(100% - 96px)}.fx-icard{left:8px;right:8px;width:auto;top:auto;bottom:44px;max-height:60%}}
+/* Phones: the open panel sits below the map buttons and the globe tile grows so the layer list has room
+   (before, the list was squeezed to 0px on iPhone and no layer could be switched). Category chips scroll in one row. */
+@media (max-width:760px){#tp-globe:has(.fx-ilp:not(.collapsed)){min-height:700px}.fx-ilp{top:60px}.fx-ilp:not(.collapsed){bottom:8px;max-height:none}
+.fx-ilp-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.fx-ilp-chips::-webkit-scrollbar{display:none}.fx-ilp-chips button{flex:none}}
+/* Touch screens: 44px tap targets in the layer panel and the event card. */
+@media (pointer:coarse){
+html body.fx-terminal .fx-ilp-head button,html body.fx-terminal .fx-ic-top button{width:44px;height:44px;min-height:44px}
+html body.fx-terminal .fx-ilp-chips button{min-width:44px;min-height:44px}
+html body.fx-terminal .fx-ilp-tabs button,html body.fx-terminal .fx-ilp-foot button,html body.fx-terminal .fx-ic-act button,html body.fx-terminal .fx-ic-act a,html body.fx-terminal .fx-ic-tags button{min-height:44px}
+html body.fx-terminal .fx-ilp-row{grid-template-columns:22px 16px minmax(0,1fr) auto 44px;min-height:44px;padding:0 0 0 4px}
+html body.fx-terminal .fx-ilp-row input{width:22px;height:22px}
+html body.fx-terminal .fx-ilp-row label{align-self:stretch;line-height:44px}
+html body.fx-terminal .fx-ilp-row .i{width:44px;height:44px;min-height:44px;border:0;border-radius:0;background:radial-gradient(circle,transparent 0 8px,#2a3530 8px 9px,transparent 9.5px)}
+html body.fx-terminal .fx-ilp-row .i[aria-expanded=true]{background:radial-gradient(circle,transparent 0 8px,var(--am) 8px 9px,transparent 9.5px)}
+html body.fx-terminal .fx-ic-src a{display:inline-block;min-height:44px;padding:4px 0;box-sizing:border-box}}`;
   document.head.append(st);
 
   /* --- panel --------------------------------------------------------------------------------------- */
