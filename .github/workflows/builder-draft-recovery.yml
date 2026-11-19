@@ -8,6 +8,7 @@ on:
       - assets/js/terminal/builder.js
       - assets/css/terminal-builder.css
       - scripts/test-terminal-builder-ui.cjs
+      - scripts/test-terminal-builder-sandbox.cjs
       - .github/workflows/builder-draft-recovery.yml
 jobs:
   builder:
@@ -21,7 +22,12 @@ jobs:
       - name: Install browser test harness
         run: |
           npm install --no-save --ignore-scripts playwright@1.56.1
-          npx playwright install --with-deps chromium
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          if [ -n "$CHROME" ]; then
+            echo "FYNX_CHROMIUM_PATH=$CHROME" >> "$GITHUB_ENV"
+          else
+            npx playwright install --with-deps chromium
+          fi
       - name: Syntax and isolated core regressions
         run: |
           node --check assets/js/terminal/builder.js
