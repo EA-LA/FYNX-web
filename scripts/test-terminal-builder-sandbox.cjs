@@ -49,7 +49,7 @@ test('sandboxed widget renders quotes and cannot reach the account, page, or net
   const server = await startServer();
   const port = server.address().port;
   const base = `http://127.0.0.1:${port}`;
-  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage']});
+  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'], ...(process.env.FYNX_CHROMIUM_PATH ? {executablePath: process.env.FYNX_CHROMIUM_PATH} : {})});
   try {
     const page = await browser.newPage();
     await page.goto(base + '/harness.html', {waitUntil: 'domcontentloaded'});
