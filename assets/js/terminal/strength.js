@@ -27,12 +27,18 @@
     return Object.fromEntries(CCY.map(([c]) => [c, (all[c] - mean) * 100]));
   }
   function today() {
-    const out = {}; let asOf = null;
+    const out = {}; let oldestAt = null, sourceTimesComplete = true;
     for (const [c, [sym, dir]] of Object.entries(LEG)) {
       const q = quoteFor(sym); if (!q || !finite(q.changePercent)) return null;
-      out[c] = dir * Math.log(1 + q.changePercent / 100); if (q.asOf && (!asOf || q.asOf > asOf)) asOf = q.asOf;
+      out[c] = dir * Math.log(1 + q.changePercent / 100);
+      // The basket uses all seven FX pairs. Its freshness is limited by the oldest source,
+      // never by the newest pair or the time this panel was rendered.
+      const at = typeof q.asOf === 'string' ? Date.parse(q.asOf) : NaN;
+      if (!Number.isFinite(at) || at > Date.now() + 300000) sourceTimesComplete = false;
+      else if (oldestAt === null || at < oldestAt) oldestAt = at;
     }
-    const v = relative(out); return v ? {now: v, asOf} : null;
+    const v = relative(out);
+    return v ? {now: v, asOf: sourceTimesComplete && oldestAt !== null ? new Date(oldestAt).toISOString() : null} : null;
   }
   function series(sessions) {
     const hist = {};
@@ -176,7 +182,7 @@
     if (!data) { setText('n-str', ''); return empty(host, win === 'td' ? 'Waiting for live FX quotes…' : 'Loading daily FX history…'); }
     const order = rank(data.now); setText('n-str', `${order[0]} ▲ ${order.at(-1)} ▼`);
     const wrap = el('div', 'fx-str'); host.append(wrap);
-    if (win === 'td') { bars(wrap, data.now); wrap.append(el('p', 'fx-foot', `Day change vs the 8-currency basket · live quotes${data.asOf ? ' · ' + ago(data.asOf) : ''}. Pick 1W–6M for the trend lines.`)); return; }
+    if (win === 'td') { bars(wrap, data.now); wrap.append(el('p', 'fx-foot', `Day change vs the 8-currency basket · FX quotes · ${data.asOf ? 'oldest source quote ' + ago(data.asOf) : 'source time unavailable for one or more pairs'}. Pick 1W–6M for the trend lines.`)); return; }
     const redraw = () => renderPanel();
     legend(wrap, redraw);
     const box = el('div', 'fx-str-chart'); wrap.append(box); rankStrip(wrap, data.now);
