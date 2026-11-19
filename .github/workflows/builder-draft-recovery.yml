@@ -33,3 +33,22 @@ jobs:
           node --test scripts/test-terminal-builder-sandbox.cjs
       - name: WebKit Builder UI regressions (Safari-like, not macOS Safari)
         run: FYNX_BROWSER=webkit node --test scripts/test-terminal-builder-ui.cjs
+
+  firestore-rules:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install isolated Firebase emulator tooling
+        run: npm install --no-save --ignore-scripts @firebase/rules-unit-testing@4 firebase@10 firebase-tools@15
+      - name: Verify owner-only projects and installs without production
+        run: |
+          printf '%s\\n' '{"firestore":{"rules":"backend/rules/firestore.rules"},"emulators":{"firestore":{"host":"127.0.0.1","port":8080},"ui":{"enabled":false}}}' > "$RUNNER_TEMP/fynx-builder-emulator.json"
+          npx firebase emulators:exec --only firestore --project demo-fynx-builder --config "$RUNNER_TEMP/fynx-builder-emulator.json" 'node --test scripts/test-terminal-builder-rules.cjs'
