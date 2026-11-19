@@ -340,6 +340,25 @@ test('reopening builder preserves the unsaved latest code and independent saved 
     const docs = await page.evaluate(() => (window.__fxbDocs || []).filter(row => row.path.includes('/builderProjects/')));
     assert.equal(docs.length, 2);
     assert.notEqual(docs[0].id, docs[1].id);
+    // Installing and uninstalling must not remove the source document.
+    await page.click('[data-fxb-install]');
+    await page.waitForFunction(() => /Other people cannot see it/.test(document.body.dataset.said || ''));
+    assert.ok((await page.evaluate(() => window.__T.PANELS)) && await page.locator('[data-fxb-install]').count() === 1);
+    await page.click('[data-fxb-install]');
+    assert.equal(await page.evaluate(() => (window.__fxbDocs || []).filter(row => row.path.includes('/builderProjects/')).length), 2);
+    // Deleting A must not affect B (the legacy implementation permanently
+    // deletes; recoverable Trash is deliberately not claimed by this test).
+    await page.click('button:text("Independent Project A")');
+    page.once('dialog', dialog => dialog.accept());
+    await page.click('button:text("Delete project")');
+    await page.waitForFunction(() => !document.querySelector('.fxb-list')?.textContent.includes('Independent Project A'));
+    assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeB);
+    assert.equal(await page.evaluate(() => (window.__fxbDocs || []).filter(row => row.path.includes('/builderProjects/')).length), 1);
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = false; window.__fxbOpen(); });
+    await page.waitForFunction(() => document.querySelector('[data-fxb-status]')?.textContent === 'Private to your account');
+    assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeB);
+    assert.doesNotMatch(await page.locator('.fxb-list').innerText(), /Independent Project A/);
   } finally {
     await browser.close();
     server.close();
