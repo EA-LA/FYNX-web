@@ -9,9 +9,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-let chromium;
-try { ({chromium} = require('/tmp/builder-tools/node_modules/playwright')); }
-catch { ({chromium} = require('playwright')); }
+let browserEngines;
+try { browserEngines = require('/tmp/builder-tools/node_modules/playwright'); }
+catch { browserEngines = require('playwright'); }
+const chromium = process.env.FYNX_BROWSER === 'webkit' ? browserEngines.webkit : browserEngines.chromium;
 
 const html = `<!doctype html><html lang="en" data-theme="light"><head><meta charset="utf-8">
 <link rel="stylesheet" href="/assets/funded-system.css">
