@@ -179,7 +179,7 @@ document.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeAllBars();
-    closeMobileMenu();
+    closeMobileMenu({ returnFocus: true });
   }
 });
 
@@ -189,30 +189,50 @@ const mobileOverlay = document.getElementById('mobileOverlay');
 const mobileCloseBtn = document.getElementById('mobileCloseBtn');
 const mobileDrawer = document.getElementById('mobileDrawer');
 
+function setMobileAccordion(accordion, expanded) {
+  const trigger = accordion.querySelector(':scope > .m-acc-btn');
+  const panel = accordion.querySelector(':scope > .m-acc-panel');
+  accordion.classList.toggle('open', expanded);
+  trigger?.setAttribute('aria-expanded', String(expanded));
+  panel?.setAttribute('aria-hidden', String(!expanded));
+  // Overflow clipping alone leaves closed links reachable by keyboard.
+  panel?.toggleAttribute('inert', !expanded);
+  if (!expanded) {
+    accordion.querySelectorAll('.m-accordion.open').forEach(nested => setMobileAccordion(nested, false));
+  }
+}
+
 function openMobileMenu() {
   closeAllBars();
   document.body.classList.add('mobile-menu-open');
   mobileMenuBtn.setAttribute('aria-expanded', 'true');
+  mobileMenuBtn.setAttribute('aria-label', 'Close menu');
   mobileOverlay.setAttribute('aria-hidden', 'false');
   mobileDrawer.setAttribute('aria-hidden', 'false');
+  mobileDrawer.removeAttribute('inert');
+  mobileCloseBtn.focus();
 }
 
-function closeMobileMenu() {
+function closeMobileMenu({ returnFocus = false } = {}) {
+  const wasOpen = document.body.classList.contains('mobile-menu-open');
   document.body.classList.remove('mobile-menu-open');
   mobileMenuBtn.setAttribute('aria-expanded', 'false');
+  mobileMenuBtn.setAttribute('aria-label', 'Open menu');
   mobileOverlay.setAttribute('aria-hidden', 'true');
   mobileDrawer.setAttribute('aria-hidden', 'true');
-  document.querySelectorAll('.m-accordion.open').forEach(el => el.classList.remove('open'));
+  mobileDrawer.setAttribute('inert', '');
+  document.querySelectorAll('.mobile-drawer .m-accordion.open').forEach(acc => setMobileAccordion(acc, false));
+  if (wasOpen && returnFocus) mobileMenuBtn.focus();
 }
 
 mobileMenuBtn.addEventListener('click', () => {
   const isOpen = document.body.classList.contains('mobile-menu-open');
-  if (isOpen) closeMobileMenu();
+  if (isOpen) closeMobileMenu({ returnFocus: true });
   else openMobileMenu();
 });
 
-mobileCloseBtn.addEventListener('click', closeMobileMenu);
-mobileOverlay.addEventListener('click', closeMobileMenu);
+mobileCloseBtn.addEventListener('click', () => closeMobileMenu({ returnFocus: true }));
+mobileOverlay.addEventListener('click', () => closeMobileMenu({ returnFocus: true }));
 
 // Accordion behavior in drawer
 document.querySelectorAll('.m-accordion > .m-acc-btn').forEach(btn => {
@@ -220,13 +240,11 @@ document.querySelectorAll('.m-accordion > .m-acc-btn').forEach(btn => {
     const acc = btn.parentElement;
     const isNested = acc.closest('.m-acc-panel') !== null;
     if (!isNested) {
-      document.querySelectorAll('.mobile-drawer .m-accordion').forEach(other => {
-        if (other !== acc && other.getAttribute('data-acc') && !other.closest('.m-acc-panel')) {
-          other.classList.remove('open');
-        }
+      document.querySelectorAll('.mobile-drawer > .mobile-list > .m-accordion').forEach(other => {
+        if (other !== acc) setMobileAccordion(other, false);
       });
     }
-    acc.classList.toggle('open');
+    setMobileAccordion(acc, !acc.classList.contains('open'));
   });
 });
 
