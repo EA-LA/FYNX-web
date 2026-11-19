@@ -822,6 +822,42 @@
         paint();
       }
 
+      // Starter code follows the same render(root, FYNX) SDK as the original.
+      // All values come from the terminal snapshot; missing prices stay blank.
+      const starterTemplates = [
+        ['blank', 'Blank project', 'research', 'A new private financial tool.'],
+        ['stocks', 'Stock Market Dashboard', 'stocks', 'Stock market snapshots and daily changes.'],
+        ['forex', 'Forex Tool', 'forex', 'Currency-market snapshots and utilities.'],
+        ['crypto', 'Cryptocurrency Monitor', 'crypto', 'Cryptocurrency snapshot monitor.'],
+        ['news', 'Economic News Dashboard', 'news', 'Notes and economic event overview.'],
+        ['calculator', 'Financial Calculator', 'risk', 'Interactive financial calculation.'],
+        ['research', 'AI Research Dashboard', 'research', 'Research workspace without a connected AI provider.'],
+        ['custom', 'Custom Financial Tool', 'visualization', 'Create a custom finance widget.']
+      ];
+      function templateSource(key) {
+        if (key === 'blank' || key === 'custom') return 'function render(root, FYNX) {\n  const title = document.createElement("h2");\n  title.textContent = "My financial tool";\n  root.replaceChildren(title);\n}\n';
+        if (key === 'calculator') return 'function render(root, FYNX) {\n  const label = document.createElement("p");\n  label.textContent = "Position risk calculator — example";\n  const input = document.createElement("input"); input.type = "number"; input.value = "10000"; input.setAttribute("aria-label", "Account balance");\n  const output = document.createElement("p");\n  function update() { const balance = Number(input.value); output.textContent = Number.isFinite(balance) && balance >= 0 ? "Risk at 1%: " + (balance * 0.01).toFixed(2) : "Enter a valid balance"; }\n  input.addEventListener("input", update); update();\n  root.replaceChildren(label, input, output);\n}\n';
+        const symbols = key === 'forex' ? ['EURUSD', 'GBPUSD'] : key === 'crypto' ? ['BTCUSD', 'ETHUSD'] : ['SPY', 'QQQ', 'GLD'];
+        const title = starterTemplates.find(row => row[0] === key)?.[1] || 'Financial dashboard';
+        return 'function render(root, FYNX) {\n  const heading = document.createElement("h2"); heading.textContent = ' + JSON.stringify(title) + ';\n  root.replaceChildren(heading);\n  ' + (key === 'news' || key === 'research'
+          ? 'const note = document.createElement("p"); note.textContent = "Research notes are private. Connect a reviewed data source before displaying live headlines."; root.append(note);'
+          : 'for (const symbol of ' + JSON.stringify(symbols) + ') { const quote = FYNX.quote(symbol); const line = document.createElement("p"); line.textContent = symbol + ": " + (quote ? FYNX.format(quote.price, 2) : "Not in terminal snapshot"); root.append(line); }') + '\n}\n';
+      }
+      function createTemplate(key, name) {
+        syncCode();
+        if (dirty) { say('Save your existing changes before creating another project.', 'error'); return; }
+        const template = starterTemplates.find(row => row[0] === key) || starterTemplates[0];
+        const cleaned = Core.cleanText(name, Core.LIMITS.name);
+        if (!cleaned) { say('Enter a project name.', 'error'); return; }
+        currentId = null;
+        draft = {id: null, name: cleaned, description: template[3], category: template[2], main: templateSource(key), version: 1, versions: []};
+        dirty = true;
+        editRevision += 1;
+        scheduleDraft();
+        say('Created a private draft. Run to preview, then Save Version to keep a checkpoint.', 'ok');
+        paint();
+      }
+
       function duplicate() {
         syncCode();
         currentId = null;
@@ -964,6 +1000,20 @@
         versions.replaceChildren();
         const history = (draft.versions || []).slice().reverse();
         if (!history.length) versions.append(el('p', 'fxb-note', 'No saved versions yet. Saving a change keeps the previous one.'));
+        if (draft.id) {
+          versions.append(buttonEl('Save Version', '', () => persist()));
+          versions.append(buttonEl('Export main.js', '', () => {
+            syncCode();
+            const blob = new Blob([draft.main], {type: 'text/javascript'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = draft.name.replace(/[^a-z0-9_-]+/gi, '-').slice(0, 48) + '-main.js';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1500);
+            say('Exported your current main.js; your saved project was not changed.', 'ok');
+          }));
+        }
         history.forEach(version => {
           versions.append(buttonEl('Restore v' + version.version, '', () => {
             draft.main = String(version.main || '');
@@ -983,6 +1033,21 @@
         side.replaceChildren();
         const scroll = el('div', 'fxb-side-scroll');
         scroll.append(el('h2', '', 'Projects'));
+        const creator = el('div', 'fxb-creator');
+        const templateSelect = document.createElement('select');
+        templateSelect.className = 'fxb-field';
+        templateSelect.setAttribute('aria-label', 'Starting template');
+        starterTemplates.forEach(([key, label]) => {
+          const option = document.createElement('option'); option.value = key; option.textContent = label; templateSelect.append(option);
+        });
+        const creatorName = document.createElement('input');
+        creatorName.className = 'fxb-field';
+        creatorName.maxLength = Core.LIMITS.name;
+        creatorName.placeholder = 'New project name';
+        creatorName.setAttribute('aria-label', 'New project name');
+        creator.append(el('h2', '', 'Create a project'), templateSelect, creatorName,
+          buttonEl('Create project', 'on', () => createTemplate(templateSelect.value, creatorName.value)));
+        scroll.append(creator);
         scroll.append(buttonEl('New project', '', () => {
           syncCode();
           if (dirty) {
