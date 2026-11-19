@@ -133,7 +133,7 @@ function isLight(color) {
 
 test('builder stays dark, runs, and keeps a denied account on this browser only', {timeout: 60000}, async () => {
   const server = await startServer();
-  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage']});
+  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'], ...(process.env.FYNX_CHROMIUM_PATH ? {executablePath: process.env.FYNX_CHROMIUM_PATH} : {})});
   const errors = [];
   try {
     const page = await browser.newPage({viewport: {width: 1280, height: 800}});
@@ -271,7 +271,7 @@ test('builder stays dark, runs, and keeps a denied account on this browser only'
 
 test('an accepted account save is labeled as an account save and stays private', {timeout: 60000}, async () => {
   const server = await startServer();
-  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage']});
+  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'], ...(process.env.FYNX_CHROMIUM_PATH ? {executablePath: process.env.FYNX_CHROMIUM_PATH} : {})});
   try {
     const page = await browser.newPage({viewport: {width: 1280, height: 800}});
     await mockFirebase(page);
@@ -307,7 +307,7 @@ test('an accepted account save is labeled as an account save and stays private',
 
 test('reopening builder preserves the unsaved latest code and independent saved projects', {timeout: 60000}, async () => {
   const server = await startServer();
-  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage']});
+  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'], ...(process.env.FYNX_CHROMIUM_PATH ? {executablePath: process.env.FYNX_CHROMIUM_PATH} : {})});
   try {
     const page = await browser.newPage();
     await mockFirebase(page);
@@ -397,7 +397,7 @@ test('reopening builder preserves the unsaved latest code and independent saved 
 
 test('template wizard produces executable code and account autosync preserves edits', {timeout: 60000}, async () => {
   const server = await startServer();
-  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage']});
+  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'], ...(process.env.FYNX_CHROMIUM_PATH ? {executablePath: process.env.FYNX_CHROMIUM_PATH} : {})});
   try {
     const page = await browser.newPage();
     await mockFirebase(page);
@@ -431,7 +431,7 @@ test('template wizard produces executable code and account autosync preserves ed
 
 test('installed code remains pinned until successful preview and explicit update', {timeout: 60000}, async () => {
   const server = await startServer();
-  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage']});
+  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'], ...(process.env.FYNX_CHROMIUM_PATH ? {executablePath: process.env.FYNX_CHROMIUM_PATH} : {})});
   try {
     const page = await browser.newPage();
     await mockFirebase(page);
