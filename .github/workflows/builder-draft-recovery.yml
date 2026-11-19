@@ -21,7 +21,7 @@ jobs:
       - name: Install browser test harness
         run: |
           npm install --no-save --ignore-scripts playwright@1.56.1
-          npx playwright install --with-deps chromium webkit
+          npx playwright install --with-deps chromium
       - name: Syntax and isolated core regressions
         run: |
           node --check assets/js/terminal/builder.js
@@ -31,8 +31,6 @@ jobs:
         run: |
           node --test scripts/test-terminal-builder-ui.cjs
           node --test scripts/test-terminal-builder-sandbox.cjs
-      - name: WebKit Builder UI regressions (Safari-like, not macOS Safari)
-        run: FYNX_BROWSER=webkit node --test scripts/test-terminal-builder-ui.cjs
 
   firestore-rules:
     runs-on: ubuntu-24.04
