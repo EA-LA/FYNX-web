@@ -1029,7 +1029,32 @@
           row.append(el('small', '', 'v' + item.version + ' · ' + (item.stored === 'device' ? 'browser copy' : 'account') + (isInstalled ? ' · installed' : ' · not installed')));
           row.append(el('small', '', item.description.slice(0, 70)));
           row.append(el('small', '', 'Modified: ' + (item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : 'Unknown')));
-          list.append(row);
+          const more = document.createElement('details');
+          more.className = 'fxb-project-menu';
+          const header = document.createElement('summary');
+          header.textContent = 'More options for ' + item.name;
+          more.append(header);
+          function selectForAction(action) {
+            if (item.id !== draft.id) openProject(item.id);
+            if (draft.id !== item.id) return;
+            action();
+          }
+          more.append(buttonEl('Rename', '', () => selectForAction(() => {
+            const input = root.querySelector('[aria-label="Project name"]');
+            input?.focus(); input?.select();
+            say('Edit the name and autosave will preserve it.', 'ok');
+          })));
+          more.append(buttonEl('Duplicate', '', () => selectForAction(duplicate)));
+          more.append(buttonEl('Version history', '', () => selectForAction(() =>
+            root.querySelector('[data-fxb-versions]')?.scrollIntoView({block: 'nearest'}))));
+          more.append(buttonEl('Export', '', () => selectForAction(() => {
+            const exports = [...root.querySelectorAll('.fxb-versions button')];
+            exports.find(button => button.textContent === 'Export main.js')?.click();
+          })));
+          more.append(buttonEl(isInstalled ? 'Uninstall from terminal' : 'Install to terminal', '', () =>
+            selectForAction(() => { if (isInstalled) uninstall(false); else install(); })));
+          more.append(buttonEl('Delete', 'danger', () => selectForAction(removeProject)));
+          list.append(row, more);
         });
         versions.replaceChildren();
         const history = (draft.versions || []).slice().reverse();
