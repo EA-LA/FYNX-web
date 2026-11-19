@@ -218,6 +218,9 @@ test('builder stays dark, runs, and keeps a denied account on this browser only'
     await page.waitForFunction(() => document.querySelector('.CodeMirror')?.CodeMirror?.getValue?.().includes('FYNX_MARKER_77'));
     assert.match(await page.locator('.fxb-side').innerText(), /Alice Private Book/);
 
+    await page.click('.fxb-bar button:text("Run")');
+    await page.waitForFunction(() => /snapshot price|No prices are in this terminal snapshot/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    page.once('dialog', dialog => dialog.accept());
     await page.click('[data-fxb-install]');
     await page.waitForFunction(() => /this browser only/.test(document.body.dataset.said || ''));
     const said = await page.evaluate(() => document.body.dataset.said);
@@ -284,6 +287,9 @@ test('an accepted account save is labeled as an account save and stays private',
     }, core.TEMPLATE);
     await page.click('.fxb-tools button:text("Save")');
     await page.waitForFunction(() => /Synced to your account as version/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    await page.click('.fxb-bar button:text("Run")');
+    await page.waitForFunction(() => /snapshot price|No prices are in this terminal snapshot/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    page.once('dialog', dialog => dialog.accept());
     await page.click('[data-fxb-install]');
     await page.waitForFunction(() => /Other people cannot see it/.test(document.body.dataset.said || ''));
     const stored = await page.evaluate(() => (window.__fxbDocs || []).map(row => row.path));
@@ -341,6 +347,9 @@ test('reopening builder preserves the unsaved latest code and independent saved 
     assert.equal(docs.length, 2);
     assert.notEqual(docs[0].id, docs[1].id);
     // Installing and uninstalling must not remove the source document.
+    await page.click('.fxb-bar button:text("Run")');
+    await page.waitForFunction(() => /snapshot price|No prices are in this terminal snapshot/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    page.once('dialog', dialog => dialog.accept());
     await page.click('[data-fxb-install]');
     await page.waitForFunction(() => /Other people cannot see it/.test(document.body.dataset.said || ''));
     assert.ok((await page.evaluate(() => window.__T.PANELS)) && await page.locator('[data-fxb-install]').count() === 1);
