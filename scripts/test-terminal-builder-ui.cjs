@@ -428,3 +428,57 @@ test('template wizard produces executable code and account autosync preserves ed
     server.close();
   }
 });
+
+test('installed code remains pinned until successful preview and explicit update', {timeout: 60000}, async () => {
+  const server = await startServer();
+  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage']});
+  try {
+    const page = await browser.newPage();
+    await mockFirebase(page);
+    await page.goto(`http://127.0.0.1:${server.address().port}/builder-ui.html`, {waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = false; window.__fxbOpen(); });
+    await page.waitForFunction(() => document.querySelector('[data-fxb-status]')?.textContent === 'Private to your account');
+    const source1 = 'function render(root, FYNX) { root.textContent = "PINNED_VERSION_ONE"; }';
+    const source2 = 'function render(root, FYNX) { root.textContent = "PINNED_VERSION_TWO"; }';
+    await page.evaluate(code => {
+      document.querySelector('.CodeMirror').CodeMirror.setValue(code);
+      const name = document.querySelector('[aria-label="Project name"]');
+      name.value = 'Pinned Market Tool';
+      name.dispatchEvent(new Event('input', {bubbles: true}));
+    }, source1);
+    await page.click('.fxb-bar button:text("Save")');
+    await page.waitForFunction(() => /Synced to your account/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    // Installation is blocked until a successful sandbox preview.
+    await page.click('[data-fxb-install]');
+    assert.match(await page.locator('[data-fxb-console]').innerText(), /Run this saved code successfully/);
+    await page.click('.fxb-bar button:text("Run")');
+    await page.waitForFunction(() => /snapshot price|No prices are in this terminal snapshot/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    page.once('dialog', dialog => dialog.accept());
+    await page.click('[data-fxb-install]');
+    const slot = await page.evaluate(() => Object.keys(window.__T.RENDER).find(key => key.startsWith('mine-p')));
+    assert.ok(slot);
+    await page.evaluate(code => document.querySelector('.CodeMirror').CodeMirror.setValue(code), source2);
+    await page.waitForFunction(() => (window.__fxbDocs || []).some(row => row.data?.main?.includes('PINNED_VERSION_TWO')));
+    await page.waitForFunction(() => /Update installed tool/.test(document.querySelector('[data-fxb-install]')?.textContent || ''));
+    await page.evaluate(slot => {
+      window.__T.panel = () => {
+        let host = document.getElementById('installed-probe');
+        if (!host) { host = document.createElement('div'); host.id = 'installed-probe'; document.body.append(host); }
+        host.replaceChildren(); return host;
+      };
+      window.__T.RENDER[slot]();
+    }, slot);
+    await page.frameLocator('#installed-probe iframe').locator('body').waitFor();
+    assert.match(await page.frameLocator('#installed-probe iframe').locator('body').innerText(), /PINNED_VERSION_ONE/);
+    await page.click('.fxb-bar button:text("Run")');
+    await page.waitForFunction(() => /snapshot price|No prices are in this terminal snapshot/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    page.once('dialog', dialog => dialog.accept());
+    await page.click('[data-fxb-install]');
+    await page.evaluate(slot => window.__T.RENDER[slot](), slot);
+    await page.frameLocator('#installed-probe iframe').locator('body').waitFor();
+    assert.match(await page.frameLocator('#installed-probe iframe').locator('body').innerText(), /PINNED_VERSION_TWO/);
+  } finally {
+    await browser.close();
+    server.close();
+  }
+});
