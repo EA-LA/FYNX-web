@@ -6,7 +6,7 @@
   if (!Core) return;
   window.FynxBuilderKey = true;
 
-  const state = {uid: null, projects: [], installs: [], draft: null, status: 'loading', error: '', ready: false};
+  const state = {uid: null, projects: [], installs: [], trash: [], draft: null, status: 'loading', error: '', ready: false};
   const listeners = new Set();
   const frames = new Set();
   let dbApi = null;
@@ -127,7 +127,8 @@
       return {
         projects: merged.projects.map(project => ({...project, stored: storedById.get(project.id) === 'account' ? 'account' : 'device'})),
         installs: accountInstalls.concat(deviceInstalls.filter(widget => !seen.has(widget.projectId))).slice(0, Core.LIMITS.widgets),
-        draft: draftRecord(raw.draft)
+        draft: draftRecord(raw.draft),
+        trash: (Array.isArray(raw.trash) ? raw.trash : []).filter(row => row && row.project && row.project.authorUid === uid && Number(row.deletedAt) > Date.now() - 30 * 86400000).slice(-Core.LIMITS.projects)
       };
     } catch (e) {
       return null;
@@ -153,7 +154,7 @@
       const installs = Core.sanitizeWidgets(state.installs.filter(widget => !widget.deviceOnly));
       const deviceInstalls = Core.sanitizeWidgets(state.installs.filter(widget => widget.deviceOnly));
       const draft = draftRecord(captureDraft()) || draftRecord(state.draft);
-      localStorage.setItem(localKey(uid), JSON.stringify({projects, installs, deviceInstalls, draft}));
+      localStorage.setItem(localKey(uid), JSON.stringify({projects, installs, deviceInstalls, draft, trash: state.trash}));
       // Reopening the Builder page must use the latest editor recovery draft,
       // not the snapshot from the last authentication event.
       state.draft = draft;
@@ -178,6 +179,7 @@
         state.uid = nextUid;
         state.projects = [];
         state.installs = [];
+        state.trash = [];
         state.draft = null;
         state.error = '';
         if (!user) {
@@ -190,6 +192,7 @@
         if (local) {
           state.projects = local.projects.map(project => ({...project, authorUid: user.uid, stored: project.stored === 'account' ? 'account' : 'device'}));
           state.installs = local.installs.filter(widget => state.projects.some(project => project.id === widget.projectId));
+          state.trash = local.trash;
           state.draft = local.draft;
           state.status = 'device';
           state.ready = true;
@@ -361,6 +364,8 @@
       let dirty = false;
       let cm = null;
       let projectQuery = '';
+      let showTrash = false;
+      let onboardingOpen = false;
       let seenUid = state.uid;
       let draftTimer = 0;
       let editRevision = 0;
