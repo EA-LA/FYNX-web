@@ -1000,7 +1000,7 @@
 
 <!-- MOBILE OVERLAY + DRAWER (NEW) -->
   <div class="mobile-overlay" id="mobileOverlay" aria-hidden="true"></div>
-  <aside class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+  <aside class="mobile-drawer" id="mobileDrawer" aria-hidden="true" inert>
     <div class="mobile-drawer-top">
       <div class="mobile-title">
         <i class="fas fa-chart-line"></i>
@@ -1015,11 +1015,11 @@
       <a class="m-link" href="/api/"><span class="left">FYNX API</span><span>→</span></a>
       <!-- HOME -->
       <div class="m-accordion" data-acc="home">
-        <button class="m-acc-btn" type="button">
+        <button class="m-acc-btn" type="button" aria-expanded="false" aria-controls="mobilePanelHome">
           <span class="left"><i class="fas fa-house"></i> Home</span>
           <i class="fas fa-chevron-down"></i>
         </button>
-        <div class="m-acc-panel">
+        <div class="m-acc-panel" id="mobilePanelHome" aria-hidden="true" inert>
           <div class="m-links">
             <a class="m-link" href="tools/economic-calendar.html">
               <span class="left"><i class="fas fa-calendar-alt"></i><span>Economic Calendar</span></span>
@@ -1046,11 +1046,11 @@
   <i class="fas fa-arrow-right"></i>
 </a>
             <div class="m-accordion" data-acc="homeMarkets" style="margin-top:.4rem;">
-              <button class="m-acc-btn" type="button">
+              <button class="m-acc-btn" type="button" aria-expanded="false" aria-controls="mobilePanelHomeMarkets">
                 <span class="left"><i class="fas fa-layer-group"></i> Markets</span>
                 <i class="fas fa-chevron-down"></i>
               </button>
-              <div class="m-acc-panel">
+              <div class="m-acc-panel" id="mobilePanelHomeMarkets" aria-hidden="true" inert>
                 <div class="m-links">
                   <a class="m-link" href="markets/currencies.html"><span class="left"><i class="fas fa-dollar-sign"></i><span>Currencies</span></span><i class="fas fa-arrow-right"></i></a>
                   <a class="m-link" href="markets/crypto.html"><span class="left"><i class="fab fa-bitcoin"></i><span>Crypto</span></span><i class="fas fa-arrow-right"></i></a>
@@ -1070,11 +1070,11 @@
 
       <!-- LEARN -->
       <div class="m-accordion" data-acc="learn">
-        <button class="m-acc-btn" type="button">
+        <button class="m-acc-btn" type="button" aria-expanded="false" aria-controls="mobilePanelLearn">
           <span class="left"><i class="fas fa-graduation-cap"></i> Learn</span>
           <i class="fas fa-chevron-down"></i>
         </button>
-        <div class="m-acc-panel">
+        <div class="m-acc-panel" id="mobilePanelLearn" aria-hidden="true" inert>
           <div class="m-links">
             <a class="m-link" href="learn/stocks-howto.html"><span class="left"><i class="fas fa-chart-bar"></i><span>Stocks</span></span><i class="fas fa-arrow-right"></i></a>
             <a class="m-link" href="learn/funds-howto.html"><span class="left"><i class="fas fa-coins"></i><span>Funds</span></span><i class="fas fa-arrow-right"></i></a>
@@ -1091,11 +1091,11 @@
 
       <!-- TOOLS -->
       <div class="m-accordion" data-acc="tools">
-        <button class="m-acc-btn" type="button">
+        <button class="m-acc-btn" type="button" aria-expanded="false" aria-controls="mobilePanelTools">
           <span class="left"><i class="fas fa-th-large"></i> Tools</span>
           <i class="fas fa-chevron-down"></i>
         </button>
-        <div class="m-acc-panel">
+        <div class="m-acc-panel" id="mobilePanelTools" aria-hidden="true" inert>
           <div class="m-links">
             <a class="m-link" href="tools/research-desk.html"><span class="left"><i class="fas fa-chart-line"></i><span>Research Desk</span></span><i class="fas fa-arrow-right"></i></a><a class="m-link" href="calculator.html"><span class="left"><i class="fas fa-th-large"></i><span>Tools Overview</span></span><i class="fas fa-arrow-right"></i></a>
             <a class="m-link" href="tools/forex.html"><span class="left"><i class="fas fa-chart-line"></i><span>Forex Calculator</span></span><i class="fas fa-arrow-right"></i></a>
@@ -1117,11 +1117,11 @@
 
       <!-- NEWS -->
       <div class="m-accordion" data-acc="news">
-        <button class="m-acc-btn" type="button">
+        <button class="m-acc-btn" type="button" aria-expanded="false" aria-controls="mobilePanelNews">
           <span class="left"><i class="fas fa-newspaper"></i> News</span>
           <i class="fas fa-chevron-down"></i>
         </button>
-        <div class="m-acc-panel">
+        <div class="m-acc-panel" id="mobilePanelNews" aria-hidden="true" inert>
           <div class="m-links">
             <a class="m-link" href="news/news.html"><span class="left"><i class="fas fa-newspaper"></i><span>News</span></span><i class="fas fa-arrow-right"></i></a>
             <a class="m-link" href="news/heatmap.html"><span class="left"><i class="fas fa-fire"></i><span>Heat Map</span></span><i class="fas fa-arrow-right"></i></a>
