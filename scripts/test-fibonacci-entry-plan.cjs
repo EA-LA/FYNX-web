@@ -46,3 +46,18 @@ assert.match(html, /<option value="3">3 Decimals/);
 assert.match(html, /id="fibPlan"[^>]*hidden/);
 assert.doesNotMatch(html, /<table style="min-width:480px">/, 'levels table must fit iPhone without a sideways swipe');
 console.log('Fibonacci entry plan: zone, stop, R targets, edge cases and page wiring passed.');
+
+// [site-qa] run 101: levels-table marks for the entry (retracement rows only; 0%/100% are not rows).
+const { entryMarks } = require('../assets/js/fibonacci-calculator.js');
+const marksOf = p => [...entryMarks(p.zone).entries()];
+assert.deepEqual(marksOf(plan({ high: 1.12, low: 1.10, entry: 1.109, stop: 1.106 })), [[0.5, 'Entry zone'], [0.618, 'Entry zone']]);
+assert.deepEqual(marksOf(plan({ high: 151.2, low: 148.6, entry: 149.9, eps: 0.0005 })), [[0.5, 'Your entry']]);
+// Shallow pullback between 0% (swing high) and 23.6%: only the 23.6% row is in the table.
+assert.deepEqual(marksOf(plan({ high: 120, low: 100, entry: 119 })), [[0.236, 'Entry zone']]);
+// Deep pullback between 78.6% and 100%: only 78.6%.
+assert.deepEqual(marksOf(plan({ high: 120, low: 100, direction: 'down', entry: 118 })), [[0.786, 'Entry zone']]);
+// At the swing end, or outside the swing: nothing marked.
+assert.deepEqual(marksOf(plan({ high: 120, low: 100, entry: 120, eps: 0.005 })), []);
+assert.deepEqual(marksOf(plan({ high: 120, low: 100, entry: 125 })), []);
+assert.equal(entryMarks(null).size, 0);
+console.log('fibonacci entry marks: ok');

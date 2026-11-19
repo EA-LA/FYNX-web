@@ -54,7 +54,17 @@
     });
     return { depth, zone, stop: { price: stopPrice, source: stopSource, risk }, targets };
   }
-  if (typeof module !== 'undefined' && module.exports) module.exports = { calculate, plan };
+  // Which retracement rows of the levels table to mark for an entry: the level it sits at,
+  // or the two levels it sits between (0% / 100% are not table rows). Outside the swing: none.
+  function entryMarks(zone) {
+    const marks = new Map();
+    if (!zone) return marks;
+    const inTable = level => level && level.ratio > 0 && level.ratio < 1;
+    if (zone.kind === 'at' && inTable(zone.level)) marks.set(zone.level.ratio, 'Your entry');
+    if (zone.kind === 'between') for (const level of [zone.shallow, zone.deep]) if (inTable(level)) marks.set(level.ratio, 'Entry zone');
+    return marks;
+  }
+  if (typeof module !== 'undefined' && module.exports) module.exports = { calculate, plan, entryMarks };
   if (typeof document === 'undefined') return;
   const el = id => document.getElementById(id);
   function render() {
@@ -72,11 +82,23 @@
       el('goldenZoneValue').textContent = [result.retracements[2].price, result.retracements[3].price].sort((a,b) => a-b).map(price).join(' – ');
       el('nearestValue').textContent = result.nearest ? `${percent(result.nearest.ratio)} · ${price(result.nearest.price)}` : 'No entry provided';
       el('fibLevels').replaceChildren();
+      let marks = new Map();
+      if (rawEntry !== '') {
+        const entry = el('entryPrice').valueAsNumber; const up = el('trendDirection').value === 'up';
+        // Stand-in stop: only the zone is needed here, so a stop error must not hide the marks.
+        try { marks = entryMarks(plan({ high: el('swingHigh').valueAsNumber, low: el('swingLow').valueAsNumber, direction: el('trendDirection').value, entry, stop: up ? entry / 2 : entry * 2, eps: 0.5 * Math.pow(10, -precision) }).zone); } catch (_) { marks = new Map(); }
+      }
       for (const [type, levels] of [['Retracement', result.retracements], ['Extension', result.extensions]]) {
         for (const level of levels) {
           const row = document.createElement('tr');
-          for (const text of [type, percent(level.ratio), price(level.price)]) {
-            const cell = document.createElement('td'); cell.textContent = text; row.append(cell);
+          const mark = type === 'Retracement' ? marks.get(level.ratio) : undefined;
+          const cells = [type, percent(level.ratio), price(level.price)].map(text => {
+            const cell = document.createElement('td'); cell.textContent = text; row.append(cell); return cell;
+          });
+          if (mark) {
+            row.className = 'is-entry-zone';
+            const tag = document.createElement('span'); tag.className = 'fib-entry-tag'; tag.textContent = mark;
+            cells[1].append(tag);
           }
           el('fibLevels').append(row);
         }

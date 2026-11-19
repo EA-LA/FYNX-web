@@ -11,7 +11,7 @@ for (const page of ["stock.html", "profit-loss.html"]) {
     const html = fs.readFileSync(path.resolve(__dirname, "../tools", page), "utf8");
     assert.ok(html.includes('id="stockPlan"') && html.includes('id="stockPlanBody"'));
     assert.ok(html.includes("/assets/js/stock-plan.js"));
-    assert.ok(html.includes("FynxStockPlan.render({ accountSize, entryPrice, stopLoss, shares })"));
+    assert.ok(html.includes("FynxStockPlan.render({ accountSize, entryPrice, stopLoss, shares, riskPercent })"));
     assert.ok(html.includes("FynxStockPlan.clear()"));
     assert.ok(!html.includes("keeps your existing page style"));
   });
@@ -54,4 +54,28 @@ test("render writes a table and the cash sentence; clear hides it", () => {
   assert.equal(doc.getElementById("stockPlan").hidden, true);
   render({ accountSize: 0, entryPrice: 50, stopLoss: 49, shares: 1 }, doc);
   assert.equal(doc.getElementById("stockPlan").hidden, true);
+});
+
+// [site-qa] run 101: losing-streak table (values from an independent Python calculation).
+test("losing streak re-sizes on the balance left", () => {
+  const p = plan({ accountSize: 10000, entryPrice: 50, stopLoss: 48, shares: 100, riskPercent: 2 });
+  assert.deepEqual(p.streak.map(s => [s.losses, Number(s.balance.toFixed(2)), Number(s.drawdown.toFixed(1)), Number(s.recover.toFixed(1))]), [
+    [3, 9411.92, 5.9, 6.2], [5, 9039.21, 9.6, 10.6], [10, 8170.73, 18.3, 22.4], [20, 6676.08, 33.2, 49.8],
+  ]);
+  assert.equal(Number(plan({ accountSize: 10000, entryPrice: 50, stopLoss: 48, shares: 50, riskPercent: 1 }).streak[3].balance.toFixed(2)), 8179.07);
+});
+
+test("losing streak is left out without a usable risk %", () => {
+  for (const riskPercent of [undefined, 0, -1, 100, 150, NaN]) {
+    assert.equal(plan({ accountSize: 10000, entryPrice: 50, stopLoss: 48, shares: 100, riskPercent }).streak, null);
+  }
+});
+
+test("losing streak renders a table with a plain note", () => {
+  const dom = new JSDOM('<div id="stockPlan" hidden><div id="stockPlanBody"></div></div>');
+  render({ accountSize: 10000, entryPrice: 50, stopLoss: 48, shares: 100, riskPercent: 2 }, dom.window.document);
+  const rows = [...dom.window.document.querySelectorAll(".stock-streak-table tbody tr")].map(tr => [...tr.cells].map(c => c.textContent));
+  assert.deepEqual(rows[0], ["3", "$9,412", "5.9%", "+6.2%"]);
+  assert.equal(rows.length, 4);
+  assert.match(dom.window.document.getElementById("stockPlanBody").textContent, /risk 2% of the balance left/);
 });

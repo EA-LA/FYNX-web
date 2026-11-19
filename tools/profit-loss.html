@@ -324,6 +324,12 @@
     .stock-plan-table th:first-child,.stock-plan-table td:first-child{text-align:left}
     .stock-plan-note,.stock-plan-cash{margin:.55rem 0 0;font-size:.88rem;line-height:1.5;color:var(--text-soft);font-weight:650}
     .stock-plan-cash{color:var(--text-strong)}
+    .stock-plan-sub{margin:.9rem 0 0;font-size:.82rem;font-weight:850;color:var(--text-soft)}
+    .stock-streak-scroll{overflow-x:auto;max-width:100%}
+    .stock-streak-table th:first-child,.stock-streak-table td:first-child{padding-left:0}
+    .stock-streak-table th:last-child,.stock-streak-table td:last-child{padding-right:0}
+    .stock-streak-table th,.stock-streak-table td{padding-left:.15rem;padding-right:.15rem;font-size:.86rem}
+    .stock-streak-table th{font-size:.7rem;white-space:normal;line-height:1.2;hyphens:manual;vertical-align:bottom}
     .hint{
       margin-top:1.2rem;
       color:var(--text-soft);
@@ -356,7 +362,7 @@
 <meta property="og:description" content="Estimate stock position size, risk amount and per-share risk using account balance, entry price and stop-loss inputs.">
 <meta property="og:url" content="https://www.fynxfinanceworld.com/tools/profit-loss.html">
 <style>.scenario-link-status{margin:10px 0 0;font-size:13px;line-height:1.5;color:inherit;opacity:.85}.scenario-link-status:empty{display:none}.scenario-link-box{display:block;width:100%;box-sizing:border-box;margin-top:6px;font-size:16px;padding:10px;border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit}</style>
-<script src="/assets/js/stock-plan.js?v=20261113-site-qa-88" defer></script>
+<script src="/assets/js/stock-plan.js?v=20261119-site-qa-101" defer></script>
 <script src="/assets/js/scenario-link.js?v=20261111-scenario-privacy-4" defer></script>
 <link rel="canonical" href="https://www.fynxfinanceworld.com/tools/stock.html">
 <!-- company-products:assets:start --><link rel="stylesheet" href="/assets/css/company-products.css?v=20261114-consistency-2"><script src="/assets/js/company-products-data.js?v=20261113-shared-account-2" defer></script><script src="/assets/js/company-products.js?v=20261114-consistency-2" defer></script><!-- company-products:assets:end -->
@@ -571,7 +577,7 @@
 
       emptyState.style.display = "none";
       resultList.style.display = "grid";
-      if (window.FynxStockPlan) window.FynxStockPlan.render({ accountSize, entryPrice, stopLoss, shares });
+      if (window.FynxStockPlan) window.FynxStockPlan.render({ accountSize, entryPrice, stopLoss, shares, riskPercent });
     }
 
     function clearStock() {

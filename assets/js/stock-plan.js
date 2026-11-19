@@ -31,11 +31,26 @@
       var fit = Math.floor(account / entry);
       cash = { shares: fit, cost: fit * entry, loss: fit * risk, lossPct: (fit * risk) / account * 100 };
     }
-    return { long: long, shares: shares, dp: dp, targets: targets, cash: cash };
+    return { long: long, shares: shares, dp: dp, targets: targets, cash: cash, streak: streak(account, input.riskPercent) };
+  }
+
+  // Losing streak when every trade is re-sized to risk the same % of the current balance:
+  // balance after k losses = account x (1 - r)^k; gain to recover = drawdown / (1 - drawdown).
+  function streak(account, riskPercent) {
+    var r = Number(riskPercent) / 100;
+    if (!(account > 0) || !(r > 0) || !(r < 1)) return null;
+    return [3, 5, 10, 20].map(function (k) {
+      var balance = account * Math.pow(1 - r, k);
+      var dd = 1 - balance / account;
+      return { losses: k, balance: balance, drawdown: dd * 100, recover: dd / (1 - dd) * 100 };
+    });
   }
 
   function money(n) {
     return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+  }
+  function money0(n) {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
   }
   function price(n, dp) {
     return n.toLocaleString("en-US", { minimumFractionDigits: dp, maximumFractionDigits: dp });
@@ -84,6 +99,32 @@
           " (" + money(p.cash.cost) + ") without margin. At that size the loss at your stop is " +
           money(p.cash.loss) + " (" + p.cash.lossPct.toFixed(2) + "% of the account)."
         : "Cash check: your account cannot buy one share at this price without margin.", "stock-plan-cash"));
+    }
+    if (p.streak) {
+      body.appendChild(el(doc, "div", "If you hit a losing streak", "stock-plan-sub"));
+      var st = el(doc, "table", null, "stock-plan-table stock-streak-table");
+      var sh = el(doc, "tr");
+      ["Losses", "Balance", "Draw\u00ADdown", "To recover"].forEach(function (h) {
+        var th = el(doc, "th", h); th.scope = "col"; sh.appendChild(th);
+      });
+      var sth = el(doc, "thead"); sth.appendChild(sh); st.appendChild(sth);
+      var stb = el(doc, "tbody");
+      p.streak.forEach(function (row) {
+        var tr = el(doc, "tr");
+        tr.appendChild(el(doc, "td", String(row.losses)));
+        tr.appendChild(el(doc, "td", money0(row.balance)));
+        tr.appendChild(el(doc, "td", row.drawdown.toFixed(1) + "%"));
+        tr.appendChild(el(doc, "td", "+" + row.recover.toFixed(1) + "%"));
+        stb.appendChild(tr);
+      });
+      st.appendChild(stb);
+      // Very large balances can outgrow a small phone: scroll inside the card, never the page.
+      var wrap = el(doc, "div", null, "stock-streak-scroll");
+      wrap.tabIndex = 0; wrap.setAttribute("role", "region"); wrap.setAttribute("aria-label", "Losing streak table");
+      wrap.appendChild(st);
+      body.appendChild(wrap);
+      body.appendChild(el(doc, "div", "Losses in a row, re-sizing each trade to risk " + Number(Number(input.riskPercent).toFixed(2)) +
+        "% of the balance left. \"To recover\" is the gain needed to get back to the starting balance. Before costs; an example, not a forecast.", "stock-plan-note"));
     }
     box.hidden = !body.firstChild;
     return p;
