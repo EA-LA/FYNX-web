@@ -1,0 +1,58 @@
+name: Builder draft recovery regression
+on:
+  push:
+    branches:
+      - fix/builder-draft-recovery-20261118
+  pull_request:
+    paths:
+      - assets/js/terminal/builder.js
+      - assets/css/terminal-builder.css
+      - scripts/test-terminal-builder-ui.cjs
+      - scripts/test-terminal-builder-sandbox.cjs
+      - .github/workflows/builder-draft-recovery.yml
+jobs:
+  builder:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test harness
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          if [ -n "$CHROME" ]; then
+            echo "FYNX_CHROMIUM_PATH=$CHROME" >> "$GITHUB_ENV"
+          else
+            npx playwright install --with-deps chromium
+          fi
+      - name: Syntax and isolated core regressions
+        run: |
+          node --check assets/js/terminal/builder.js
+          node --check scripts/test-terminal-builder-ui.cjs
+          node --test scripts/test-terminal-builder.cjs
+      - name: Chromium UI and sandbox regressions
+        run: |
+          node --test scripts/test-terminal-builder-ui.cjs
+          node --test scripts/test-terminal-builder-sandbox.cjs
+
+  firestore-rules:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install isolated Firebase emulator tooling
+        run: npm install --no-save --ignore-scripts @firebase/rules-unit-testing@4 firebase@11 firebase-tools@15
+      - name: Verify owner-only projects and installs without production
+        run: |
+          printf '%s\\n' '{"firestore":{"rules":"backend/rules/firestore.rules"},"emulators":{"firestore":{"host":"127.0.0.1","port":8080},"ui":{"enabled":false}}}' > "$RUNNER_TEMP/fynx-builder-emulator.json"
+          npx firebase emulators:exec --only firestore --project demo-fynx-builder --config "$RUNNER_TEMP/fynx-builder-emulator.json" 'node --test scripts/test-terminal-builder-rules.cjs'

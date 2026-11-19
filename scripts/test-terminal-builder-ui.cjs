@@ -9,9 +9,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-let chromium;
-try { ({chromium} = require('/tmp/builder-tools/node_modules/playwright')); }
-catch { ({chromium} = require('playwright')); }
+let browserEngines;
+try { browserEngines = require('/tmp/builder-tools/node_modules/playwright'); }
+catch { browserEngines = require('playwright'); }
+const chromium = process.env.FYNX_BROWSER === 'webkit' ? browserEngines.webkit : browserEngines.chromium;
 
 const html = `<!doctype html><html lang="en" data-theme="light"><head><meta charset="utf-8">
 <link rel="stylesheet" href="/assets/funded-system.css">
@@ -57,30 +58,43 @@ const authStateMock = `export function onAuthStateChanged(auth, cb) {
   return () => {};
 }`;
 const firestoreMock = `function denied() { const error = new Error('Missing or insufficient permissions.'); error.code = 'permission-denied'; return error; }
+function docs() {
+  if (Array.isArray(globalThis.__fxbDocs) && globalThis.__fxbDocs.length) return globalThis.__fxbDocs;
+  try {
+    const saved = JSON.parse(sessionStorage.getItem('__fxbMockCloud') || '[]');
+    if (Array.isArray(saved)) return (globalThis.__fxbDocs = saved);
+  } catch (error) {}
+  return (globalThis.__fxbDocs = []);
+}
+function commitDocs(rows) {
+  globalThis.__fxbDocs = rows;
+  sessionStorage.setItem('__fxbMockCloud', JSON.stringify(rows));
+}
 export function getFirestore() { return {}; }
 export function collection() { return {path: Array.prototype.slice.call(arguments, 1).join('/')}; }
 export function doc() { return {path: Array.prototype.slice.call(arguments, 1).join('/')}; }
 export function getDocs(ref) {
   if (globalThis.__fxbDeny) return Promise.reject(denied());
-  const rows = (globalThis.__fxbDocs || []).filter(row => row.path.indexOf(ref.path + '/') === 0);
+  const rows = docs().filter(row => row.path.indexOf(ref.path + '/') === 0);
   return Promise.resolve({docs: rows.map(row => ({id: row.id, data: () => row.data}))});
 }
 export function getDoc(ref) {
   if (globalThis.__fxbDeny) return Promise.reject(denied());
-  const hit = (globalThis.__fxbDocs || []).find(row => row.path === ref.path);
+  const hit = docs().find(row => row.path === ref.path);
   return Promise.resolve({exists: () => !!hit, data: () => hit ? hit.data : {}});
 }
 export function setDoc(ref, data) {
   if (globalThis.__fxbDeny) return Promise.reject(denied());
-  const docs = globalThis.__fxbDocs || (globalThis.__fxbDocs = []);
+  const rows = docs();
   const row = {path: ref.path, id: ref.path.split('/').pop(), data: data};
-  const at = docs.findIndex(item => item.path === ref.path);
-  if (at >= 0) docs[at] = row; else docs.push(row);
+  const at = rows.findIndex(item => item.path === ref.path);
+  if (at >= 0) rows[at] = row; else rows.push(row);
+  commitDocs(rows);
   return Promise.resolve();
 }
 export function deleteDoc(ref) {
   if (globalThis.__fxbDeny) return Promise.reject(denied());
-  globalThis.__fxbDocs = (globalThis.__fxbDocs || []).filter(row => row.path !== ref.path);
+  commitDocs(docs().filter(row => row.path !== ref.path));
   return Promise.resolve();
 }`;
 
@@ -119,7 +133,7 @@ function isLight(color) {
 
 test('builder stays dark, runs, and keeps a denied account on this browser only', {timeout: 60000}, async () => {
   const server = await startServer();
-  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage']});
+  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'], ...(process.env.FYNX_CHROMIUM_PATH ? {executablePath: process.env.FYNX_CHROMIUM_PATH} : {})});
   const errors = [];
   try {
     const page = await browser.newPage({viewport: {width: 1280, height: 800}});
@@ -205,6 +219,9 @@ test('builder stays dark, runs, and keeps a denied account on this browser only'
     await page.waitForFunction(() => document.querySelector('.CodeMirror')?.CodeMirror?.getValue?.().includes('FYNX_MARKER_77'));
     assert.match(await page.locator('.fxb-side').innerText(), /Alice Private Book/);
 
+    await page.click('.fxb-bar button:text("Run")');
+    await page.waitForFunction(() => /snapshot price|No prices are in this terminal snapshot/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    page.once('dialog', dialog => dialog.accept());
     await page.click('[data-fxb-install]');
     await page.waitForFunction(() => /this browser only/.test(document.body.dataset.said || ''));
     const said = await page.evaluate(() => document.body.dataset.said);
@@ -254,7 +271,7 @@ test('builder stays dark, runs, and keeps a denied account on this browser only'
 
 test('an accepted account save is labeled as an account save and stays private', {timeout: 60000}, async () => {
   const server = await startServer();
-  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage']});
+  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'], ...(process.env.FYNX_CHROMIUM_PATH ? {executablePath: process.env.FYNX_CHROMIUM_PATH} : {})});
   try {
     const page = await browser.newPage({viewport: {width: 1280, height: 800}});
     await mockFirebase(page);
@@ -270,7 +287,10 @@ test('an accepted account save is labeled as an account save and stays private',
       name.dispatchEvent(new Event('input', {bubbles: true}));
     }, core.TEMPLATE);
     await page.click('.fxb-tools button:text("Save")');
-    await page.waitForFunction(() => /Saved to your account as version/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    await page.waitForFunction(() => /Synced to your account as version/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    await page.click('.fxb-bar button:text("Run")');
+    await page.waitForFunction(() => /snapshot price|No prices are in this terminal snapshot/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    page.once('dialog', dialog => dialog.accept());
     await page.click('[data-fxb-install]');
     await page.waitForFunction(() => /Other people cannot see it/.test(document.body.dataset.said || ''));
     const stored = await page.evaluate(() => (window.__fxbDocs || []).map(row => row.path));
@@ -279,6 +299,184 @@ test('an accepted account save is labeled as an account save and stays private',
     await page.evaluate(() => window.__fxbSetUser({uid: 'bob'}));
     await page.waitForFunction(() => !document.querySelector('.fxb-side')?.innerText.includes('Alice Account Book'));
     assert.equal(await page.evaluate(() => (document.querySelector('.CodeMirror')?.CodeMirror?.getValue?.() || '').includes('Alice Account Book')), false);
+  } finally {
+    await browser.close();
+    server.close();
+  }
+});
+
+test('reopening builder preserves the unsaved latest code and independent saved projects', {timeout: 60000}, async () => {
+  const server = await startServer();
+  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'], ...(process.env.FYNX_CHROMIUM_PATH ? {executablePath: process.env.FYNX_CHROMIUM_PATH} : {})});
+  try {
+    const page = await browser.newPage();
+    await mockFirebase(page);
+    await page.goto(`http://127.0.0.1:${server.address().port}/builder-ui.html`, {waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = false; window.__fxbOpen(); });
+    await page.waitForFunction(() => document.querySelector('[data-fxb-status]')?.textContent === 'Private to your account');
+    const codeA = 'function render(root, FYNX) { root.textContent = "PROJECT_A_MARKER"; }';
+    const codeB = 'function render(root, FYNX) { root.textContent = "PROJECT_B_MARKER"; }';
+    const setCodeAndName = async (code, name) => page.evaluate(({code, name}) => {
+      document.querySelector('.CodeMirror').CodeMirror.setValue(code);
+      const input = document.querySelector('[aria-label="Project name"]');
+      input.value = name;
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+    }, {code, name});
+    await setCodeAndName(codeA, 'Independent Project A');
+    await page.click('.fxb-tools button:text("Save")');
+    await page.waitForFunction(() => /Synced to your account as version/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    await page.click('button:text("New project")');
+    await setCodeAndName(codeB, 'Independent Project B');
+    await page.click('.fxb-tools button:text("Run")');
+    await page.waitForFunction(() => /PROJECT_B_MARKER/.test(document.querySelector('[data-fxb-preview]')?.textContent || '') ||
+      !!document.querySelector('[data-fxb-preview] iframe'));
+    await page.waitForFunction(() => /Saved to this browser/.test(document.querySelector('[data-fxb-save]')?.textContent || ''));
+    // Regression: remount without signing out or refreshing. Previously the
+    // auth-time in-memory draft replaced the latest locally preserved code.
+    await page.evaluate(() => window.__fxbOpen());
+    assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeB);
+    await page.click('.fxb-tools button:text("Save")');
+    await page.waitForFunction(() => /Synced to your account as version/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = false; window.__fxbOpen(); });
+    await page.waitForFunction(() => document.querySelector('[data-fxb-status]')?.textContent === 'Private to your account');
+    await page.click('button:text("Independent Project A")');
+    assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeA);
+    await page.click('button:text("Independent Project B")');
+    assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeB);
+    const docs = await page.evaluate(() => (window.__fxbDocs || []).filter(row => row.path.includes('/builderProjects/')));
+    assert.equal(docs.length, 2);
+    assert.notEqual(docs[0].id, docs[1].id);
+    // Installing and uninstalling must not remove the source document.
+    await page.click('.fxb-bar button:text("Run")');
+    await page.waitForFunction(() => /snapshot price|No prices are in this terminal snapshot/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    page.once('dialog', dialog => dialog.accept());
+    await page.click('[data-fxb-install]');
+    await page.waitForFunction(() => /Other people cannot see it/.test(document.body.dataset.said || ''));
+    assert.ok((await page.evaluate(() => window.__T.PANELS)) && await page.locator('[data-fxb-install]').count() === 1);
+    await page.click('[data-fxb-install]');
+    assert.equal(await page.evaluate(() => (window.__fxbDocs || []).filter(row => row.path.includes('/builderProjects/')).length), 2);
+    // Deleting A must not affect B (the legacy implementation permanently
+    // deletes; recoverable Trash is deliberately not claimed by this test).
+    await page.click('button:text("Independent Project A")');
+    page.once('dialog', dialog => dialog.accept());
+    await page.click('button:text("Delete project")');
+    await page.waitForFunction(() => !document.querySelector('.fxb-list')?.textContent.includes('Independent Project A'));
+    assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeB);
+    assert.equal(await page.evaluate(() => (window.__fxbDocs || []).filter(row => row.path.includes('/builderProjects/')).length), 1);
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = false; window.__fxbOpen(); });
+    await page.waitForFunction(() => document.querySelector('[data-fxb-status]')?.textContent === 'Private to your account');
+    assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeB);
+    assert.doesNotMatch(await page.locator('.fxb-list').innerText(), /Independent Project A/);
+    // Cloud is now down. Account-synced projects must remain available as
+    // validated per-user browser backups, never replaced by the starter.
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = true; window.__fxbOpen(); });
+    await page.waitForFunction(() => /refused|unavailable/.test(document.querySelector('[data-fxb-status]')?.textContent || ''));
+    assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeB);
+    assert.match(await page.locator('.fxb-list').innerText(), /Independent Project B/);
+    assert.doesNotMatch(await page.locator('.fxb-list').innerText(), /Independent Project A/);
+    // The 30-day browser Trash can restore a deleted cloud document locally,
+    // without touching Project B or requiring Firestore while offline.
+    await page.click('button:text("Trash (1)")');
+    await page.click('button:text("Restore Independent Project A")');
+    assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeA);
+    await page.click('button:text("Independent Project B")');
+    assert.equal(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), codeB);
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = true; window.__fxbOpen(); });
+    await page.waitForFunction(() => /refused|unavailable/.test(document.querySelector('[data-fxb-status]')?.textContent || ''));
+    assert.match(await page.locator('.fxb-list').innerText(), /Independent Project A/);
+    assert.match(await page.locator('.fxb-list').innerText(), /Independent Project B/);
+  } finally {
+    await browser.close();
+    server.close();
+  }
+});
+
+test('template wizard produces executable code and account autosync preserves edits', {timeout: 60000}, async () => {
+  const server = await startServer();
+  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'], ...(process.env.FYNX_CHROMIUM_PATH ? {executablePath: process.env.FYNX_CHROMIUM_PATH} : {})});
+  try {
+    const page = await browser.newPage();
+    await mockFirebase(page);
+    await page.goto(`http://127.0.0.1:${server.address().port}/builder-ui.html`, {waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = false; window.__fxbOpen(); });
+    await page.waitForFunction(() => document.querySelector('[data-fxb-status]')?.textContent === 'Private to your account');
+    await page.selectOption('[aria-label="Starting template"]', 'calculator');
+    await page.fill('[aria-label="New project name"]', 'Position Calculator Demo');
+    await page.click('button:text("Create project")');
+    const source = await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue());
+    assert.match(source, /function render\(root, FYNX\)/);
+    assert.match(source, /Risk at 1%/);
+    await page.click('.fxb-bar button:text("Run")');
+    await page.waitForFunction(() => document.querySelector('[data-fxb-preview] iframe'));
+    await page.waitForFunction(() => (window.__fxbDocs || []).some(row => row.path.includes('/builderProjects/') && row.data.name === 'Position Calculator Demo'));
+    const saved = await page.evaluate(() => (window.__fxbDocs || []).find(row => row.data?.name === 'Position Calculator Demo'));
+    assert.equal(saved.data.main, source);
+    const modified = source.replace('Risk at 1%', 'Risk allocation at 1%');
+    await page.evaluate(code => document.querySelector('.CodeMirror').CodeMirror.setValue(code), modified);
+    await page.waitForFunction(() => (window.__fxbDocs || []).some(row => row.data?.main?.includes('Risk allocation at 1%')));
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = false; window.__fxbOpen(); });
+    await page.waitForFunction(() => document.querySelector('[data-fxb-status]')?.textContent === 'Private to your account');
+    assert.match(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), /Risk allocation at 1%/);
+    assert.match(await page.locator('.fxb-versions').innerText(), /v1/);
+  } finally {
+    await browser.close();
+    server.close();
+  }
+});
+
+test('installed code remains pinned until successful preview and explicit update', {timeout: 60000}, async () => {
+  const server = await startServer();
+  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'], ...(process.env.FYNX_CHROMIUM_PATH ? {executablePath: process.env.FYNX_CHROMIUM_PATH} : {})});
+  try {
+    const page = await browser.newPage();
+    await mockFirebase(page);
+    await page.goto(`http://127.0.0.1:${server.address().port}/builder-ui.html`, {waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = false; window.__fxbOpen(); });
+    await page.waitForFunction(() => document.querySelector('[data-fxb-status]')?.textContent === 'Private to your account');
+    const source1 = 'function render(root, FYNX) { root.textContent = "PINNED_VERSION_ONE"; }';
+    const source2 = 'function render(root, FYNX) { root.textContent = "PINNED_VERSION_TWO"; }';
+    await page.evaluate(code => {
+      document.querySelector('.CodeMirror').CodeMirror.setValue(code);
+      const name = document.querySelector('[aria-label="Project name"]');
+      name.value = 'Pinned Market Tool';
+      name.dispatchEvent(new Event('input', {bubbles: true}));
+    }, source1);
+    await page.click('.fxb-bar button:text("Save")');
+    await page.waitForFunction(() => /Synced to your account/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    // Installation is blocked until a successful sandbox preview.
+    await page.click('[data-fxb-install]');
+    assert.match(await page.locator('[data-fxb-console]').innerText(), /Run this saved code successfully/);
+    await page.click('.fxb-bar button:text("Run")');
+    await page.waitForFunction(() => /snapshot price|No prices are in this terminal snapshot/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    page.once('dialog', dialog => dialog.accept());
+    await page.click('[data-fxb-install]');
+    const slot = await page.evaluate(() => Object.keys(window.__T.RENDER).find(key => key.startsWith('mine-p')));
+    assert.ok(slot);
+    await page.evaluate(code => document.querySelector('.CodeMirror').CodeMirror.setValue(code), source2);
+    await page.waitForFunction(() => (window.__fxbDocs || []).some(row => row.data?.main?.includes('PINNED_VERSION_TWO')));
+    await page.waitForFunction(() => /Update installed tool/.test(document.querySelector('[data-fxb-install]')?.textContent || ''));
+    await page.evaluate(slot => {
+      window.__T.panel = () => {
+        let host = document.getElementById('installed-probe');
+        if (!host) { host = document.createElement('div'); host.id = 'installed-probe'; document.body.append(host); }
+        host.replaceChildren(); return host;
+      };
+      window.__T.RENDER[slot]();
+    }, slot);
+    await page.frameLocator('#installed-probe iframe').locator('body').waitFor();
+    assert.match(await page.frameLocator('#installed-probe iframe').locator('body').innerText(), /PINNED_VERSION_ONE/);
+    await page.click('.fxb-bar button:text("Run")');
+    await page.waitForFunction(() => /snapshot price|No prices are in this terminal snapshot/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    page.once('dialog', dialog => dialog.accept());
+    await page.click('[data-fxb-install]');
+    await page.evaluate(slot => window.__T.RENDER[slot](), slot);
+    await page.frameLocator('#installed-probe iframe').locator('body').waitFor();
+    assert.match(await page.frameLocator('#installed-probe iframe').locator('body').innerText(), /PINNED_VERSION_TWO/);
   } finally {
     await browser.close();
     server.close();

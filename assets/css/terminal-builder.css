@@ -131,3 +131,55 @@ html body.fx-terminal #fx-page-body .fxb .fxb-list{display:flex;flex-direction:c
   html body.fx-terminal #fx-page-body .fxb .fxb-cmhost,
   html body.fx-terminal #fx-page-body .fxb .fxb-code{min-height:320px}
 }
+
+/* Builder 2.0 controls are scoped; no terminal desk or site-wide input rules change. */
+html body.fx-terminal #fx-page-body .fxb .fxb-creator{
+  display:flex;flex-direction:column;gap:5px;padding:8px;border:1px solid var(--fxb-line-2);
+  background:var(--fxb-elev)!important
+}
+html body.fx-terminal #fx-page-body .fxb .fxb-creator input,
+html body.fx-terminal #fx-page-body .fxb .fxb-creator select{width:100%;font-size:12px!important}
+html body.fx-terminal #fx-page-body .fxb details{
+  margin-top:8px;padding:7px 9px;border:1px solid var(--fxb-line-2);
+  color:var(--fxb-text)!important;background:var(--fxb-field)!important
+}
+html body.fx-terminal #fx-page-body .fxb details summary{
+  cursor:pointer;font:700 11px/1.5 'IBM Plex Mono',ui-monospace,monospace;
+  color:var(--fxb-amber)!important;outline-offset:3px
+}
+html body.fx-terminal #fx-page-body .fxb details[open] > :not(summary){margin-top:8px}
+html body.fx-terminal #fx-page-body .fxb .fxb-assist .fxb-tools{
+  margin:6px 0;justify-content:flex-start
+}
+html body.fx-terminal #fx-page-body .fxb .fxb-assist .fxb-tools .fxb-btn{
+  height:auto;min-height:30px;white-space:normal;text-align:left
+}
+html body.fx-terminal #fx-page-body .fxb :is(button,summary,input,textarea,select):focus-visible{
+  outline:2px solid var(--fxb-amber)!important;outline-offset:2px!important
+}
+@media(max-width:700px){
+  html body.fx-terminal #fx-page-body .fxb .fxb-bar{gap:6px}
+  html body.fx-terminal #fx-page-body .fxb .fxb-tools .fxb-btn{min-height:36px}
+  html body.fx-terminal #fx-page-body .fxb .fxb-assist textarea{min-height:120px}
+}
+
+html body.fx-terminal #fx-page-body .fxb .fxb-project-menu{
+  margin:0 0 5px!important;padding:3px 5px!important;
+  border:1px solid var(--fxb-line)!important;background:var(--fxb-panel)!important
+}
+html body.fx-terminal #fx-page-body .fxb .fxb-project-menu summary{
+  font-size:10px!important;color:var(--fxb-muted)!important
+}
+html body.fx-terminal #fx-page-body .fxb .fxb-project-menu[open]{
+  display:flex;flex-direction:column;gap:4px
+}
+html body.fx-terminal #fx-page-body .fxb .fxb-project-menu .fxb-btn{
+  width:100%;min-height:30px;margin-top:3px
+}
+html body.fx-terminal #fx-page-body .fxb .fxb-diff{
+  max-height:160px;overflow:auto;white-space:pre-wrap;word-break:break-word;
+  color:var(--fxb-text);background:var(--fxb-field);padding:6px;font:11px/1.4 ui-monospace,monospace
+}
+html body.fx-terminal #fx-page-body .fxb .fxb-version-row{
+  display:flex;flex-wrap:wrap;gap:4px;padding:5px 0;border-top:1px solid var(--fxb-line)
+}
