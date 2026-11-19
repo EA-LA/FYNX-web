@@ -1,0 +1,27 @@
+name: Mobile Drawer Accessibility
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'script.js'
+      - 'styles.css'
+      - 'scripts/test-mobile-drawer-accessibility.cjs'
+      - '.github/workflows/mobile-drawer-accessibility.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mobile-navigation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --check script.js
+      - run: node --check scripts/test-mobile-drawer-accessibility.cjs
+      - run: node --test scripts/test-mobile-drawer-accessibility.cjs
+      - run: node scripts/test-homepage-landmark.cjs
