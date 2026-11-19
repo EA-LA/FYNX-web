@@ -19,6 +19,7 @@ function setup(mode = 'ok') {
   const quote = {
     generatedAt: new Date(Date.now() - 10 * 60000).toISOString(), stale: false,
     items: [{symbol: '^GSPC', label: 'S&P 500', price: 7515.05,
+      asOf: new Date(Date.now() - 12 * 60000).toISOString(),
       changePercent: -1.019, spark: [7600, 7515.05]}]
   };
   w.setInterval = (callback, ms) => { assert.equal(ms, 300000); intervals.push(callback); return ++sequence; };
@@ -42,6 +43,12 @@ function setup(mode = 'ok') {
       items: [{...quote.items[0], symbol: ''}, {...quote.items[0], label: null}]})});
     if (mode === 'mixed-rows') return Promise.resolve({ok: true, json: async () => ({...quote,
       items: [{...quote.items[0], symbol: ''}, quote.items[0]]})});
+    if (mode === 'old-quote') return Promise.resolve({ok: true, json: async () => ({...quote,
+      items: [{...quote.items[0], asOf: new Date(Date.now() - 2 * 3600000).toISOString()}]})});
+    if (mode === 'future-quote') return Promise.resolve({ok: true, json: async () => ({...quote,
+      items: [{...quote.items[0], asOf: new Date(Date.now() + 3600000).toISOString()}]})});
+    if (mode === 'mixed-quote-times') return Promise.resolve({ok: true, json: async () => ({...quote,
+      items: [quote.items[0], {...quote.items[0], symbol: 'BTC-USD', label: 'Bitcoin', asOf: 'invalid'}]})});
     if (mode === 'bad-spark') return Promise.resolve({ok: true, json: async () => ({...quote,
       items: [{...quote.items[0], spark: [7600, NaN]}]})});
     if (mode === 'oversized-spark') return Promise.resolve({ok: true, json: async () => ({...quote,
@@ -219,5 +226,39 @@ test('fresh verified retry recovers from older snapshot without changing sourced
     assert.equal(app.strip().querySelectorAll('.lp-item').length, 2);
     const css = app.w.document.getElementById('lp-style').textContent;
     assert.doesNotMatch(css, /animation:lp-pulse|background:#1f8a5a/);
+  } finally { app.close(); }
+});
+
+test('a fresh feed never represents an older underlying market observation as current', async () => {
+  const app = setup('old-quote');
+  try {
+    await settle();
+    const strip = app.strip();
+    assert.equal(strip.querySelector('.lp-tag-sub').textContent, 'Older quotes');
+    assert.equal(strip.classList.contains('is-stale'), true);
+    assert.match(strip.querySelector('.lp-asof').textContent, /1 quote older than 45 minutes/);
+    assert.equal(strip.querySelectorAll('.lp-age').length, 2, 'both visual ticker copies label the old quote');
+    assert.match(strip.querySelector('.lp-item').title, /Older sourced quote as of/);
+    app.setMode('ok');
+    strip.querySelector('.lp-retry').click();
+    await settle();
+    assert.equal(strip.classList.contains('is-stale'), false);
+    assert.equal(strip.querySelectorAll('.lp-age').length, 0);
+  } finally { app.close(); }
+});
+
+test('invalid or future underlying quote timestamps are never displayed as verified prices', async () => {
+  const app = setup('future-quote');
+  try {
+    await settle();
+    assert.equal(app.strip().querySelectorAll('.lp-item').length, 0);
+    assert.match(app.strip().textContent, /No prices are estimated/);
+    app.setMode('mixed-quote-times');
+    app.strip().querySelector('.lp-retry').click();
+    await settle();
+    assert.equal(app.strip().querySelectorAll('.lp-item').length, 2, 'only valid sourced quote and its ticker copy survive');
+    assert.equal(app.strip().querySelector('.lp-tag-sub').textContent, 'Partial');
+    assert.match(app.strip().querySelector('.lp-asof').textContent, /timestamps could not be verified/);
+    assert.doesNotMatch(app.strip().innerHTML, /Bitcoin/);
   } finally { app.close(); }
 });
