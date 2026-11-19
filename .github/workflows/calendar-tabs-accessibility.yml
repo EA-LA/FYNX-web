@@ -1,0 +1,28 @@
+name: Calendar tab accessibility and deep-link regression
+on:
+  pull_request:
+    paths:
+      - 'calendar.html'
+      - 'assets/js/module-loader.js'
+      - 'scripts/test-calendar-tabs-accessibility.cjs'
+      - '.github/workflows/calendar-tabs-accessibility.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  calendar-tabs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify Calendar tabs with the real shared loader
+        run: |
+          node --check scripts/test-calendar-tabs-accessibility.cjs
+          node --test scripts/test-calendar-tabs-accessibility.cjs
