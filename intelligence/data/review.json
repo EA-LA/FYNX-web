@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-18T22:57:48.697Z",
+ "generatedAt": "2026-11-19T07:34:25.684Z",
  "items": [
   {
    "reason": "sensitive subject",
@@ -92,22 +92,6 @@
     "CNBC"
    ],
    "at": "2026-11-16T18:40:35.508Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Intel Faces Shareholder Lawsuit After 29% Stock Drop",
-   "sources": [
-    "Global Banking & Finance Review"
-   ],
-   "at": "2026-11-16T06:47:20.529Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Lutnick faces questions over Nvidia spy scandal. His sons' firm has ties to the chipmaker",
-   "sources": [
-    "CNBC"
-   ],
-   "at": "2026-11-16T06:47:20.529Z"
   }
  ]
 }
