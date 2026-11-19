@@ -8,7 +8,7 @@ const { JSDOM } = require('jsdom');
 const script = fs.readFileSync(path.join(__dirname, '../assets/js/terminal-market-ui.js'), 'utf8');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
-async function setup() {
+async function setup({ quoteAsOf, stale = false } = {}) {
   const dom = new JSDOM('<!doctype html><html><body data-fynx-terminal><div data-terminal-ticker></div><button id="outside">Outside</button></body></html>', {
     url: 'https://www.fynxfinanceworld.com/', runScripts: 'outside-only', pretendToBeVisual: true
   });
@@ -22,10 +22,10 @@ async function setup() {
     quotes: {
       'BTC-USD': {
         price, changePercent: 1.5, currency: 'USD', source: 'Exchange',
-        asOf: new Date().toISOString(), basis: 'indicative', delayed: true
+        asOf: quoteAsOf || new Date().toISOString(), basis: 'indicative', delayed: true
       }
     },
-    fetchedAt: new Date().toISOString(), status: 'fresh', stale: false
+    fetchedAt: new Date().toISOString(), status: stale ? 'cached' : 'fresh', stale
   });
   window.FynxTerminalData = {
     instruments: [{ symbol: 'BTC-USD', name: 'Bitcoin', shortName: 'BTC', group: 'Crypto' }],
@@ -92,4 +92,31 @@ test('does not steal focus from controls outside the ticker', async () => {
     assert.equal(window.document.activeElement, outside);
     assert.match(host.textContent, /108/);
   } finally { close(); }
+});
+
+test('reveals old source quotes visibly even when the feed was just retrieved', async () => {
+  const quoteAsOf = new Date(Date.now() - 2 * 3600000).toISOString();
+  const { host, close } = await setup({ quoteAsOf });
+  try {
+    const item = host.querySelector('.terminal-ticker-item');
+    assert.match(item.querySelector('strong').textContent, /BTC · Older/);
+    assert.match(item.title, /Older source quote/);
+    assert.match(item.title, /As of/);
+    assert.match(host.querySelector('.terminal-ticker-status').textContent, /1 older source quote/);
+    assert.match(host.textContent, /100\.00/, 'the original sourced price stays visible');
+  } finally { close(); }
+});
+
+test('does not mislabel recent quotes and distinguishes saved data from aged source times', async () => {
+  const fresh = await setup();
+  try {
+    assert.doesNotMatch(fresh.host.querySelector('.terminal-ticker-item strong').textContent, /Older/);
+    assert.doesNotMatch(fresh.host.querySelector('.terminal-ticker-status').textContent, /older source quote/);
+  } finally { fresh.close(); }
+
+  const saved = await setup({ quoteAsOf: new Date(Date.now() - 3 * 3600000).toISOString(), stale: true });
+  try {
+    assert.match(saved.host.querySelector('.terminal-ticker-status').textContent, /Saved · 1 older source quote/);
+    assert.match(saved.host.querySelector('.terminal-ticker-item').title, /Saved quote.*Older source quote/);
+  } finally { saved.close(); }
 });
