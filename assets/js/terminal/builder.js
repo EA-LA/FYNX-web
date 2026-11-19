@@ -400,6 +400,7 @@
         draft = draftOf(state.projects[0]);
       } else draft = draftOf(null);
       captureDraft = () => draft;
+      try { onboardingOpen = !localStorage.getItem('fx-term-builder-tour:' + state.uid); } catch (e) { onboardingOpen = false; }
 
       function say(text, level) {
         consoleText = text;
@@ -1229,18 +1230,47 @@
 
         const assist = el('section', 'fxb-assist');
         assist.append(el('h2', '', 'Builder assistant'));
-        assist.append(el('p', 'fxb-note', 'No AI provider is connected here. Copy this prompt into ChatGPT or Claude, then paste the JavaScript it returns into main.js and press Run. Do not paste API keys.'));
+        assist.append(el('p', 'fxb-note', 'What do you want to build? Describe a financial tool and generate SDK-compatible code with an external AI assistant. FYNX has no integrated AI provider enabled here.'));
+        const examples = el('div', 'fxb-tools');
+        for (const idea of ['Create a stock scanner', 'Build a forex calculator', 'Make a financial news dashboard', 'Track macroeconomic indicators']) {
+          examples.append(buttonEl(idea, '', () => {
+            const prompt = root.querySelector('[aria-label="Prompt for an external coding assistant"]');
+            if (prompt) prompt.value = Core.ASSISTANT_PROMPT + '\\nUser request: ' + idea + '.';
+            const details = prompt?.closest('details'); if (details) details.open = true;
+            say('Prompt prepared. Copy it into an external AI assistant.', 'ok');
+          }));
+        }
+        assist.append(examples);
+        const docs = document.createElement('details');
+        const summary = document.createElement('summary');
+        summary.textContent = 'Assistant prompt and Widget SDK documentation';
+        docs.append(summary);
         const prompt = document.createElement('textarea');
         prompt.className = 'fxb-field';
         prompt.readOnly = true;
         prompt.value = Core.ASSISTANT_PROMPT;
         prompt.setAttribute('aria-label', 'Prompt for an external coding assistant');
-        assist.append(prompt);
-        assist.append(buttonEl('Copy prompt', '', async () => {
-          try { await navigator.clipboard.writeText(Core.ASSISTANT_PROMPT); say('Prompt copied.', 'ok'); }
+        docs.append(prompt);
+        docs.append(buttonEl('Copy prompt', '', async () => {
+          try { await navigator.clipboard.writeText(prompt.value); say('Prompt copied.', 'ok'); }
           catch (e) { prompt.focus(); prompt.select(); say('Select the prompt and copy it manually.', 'error'); }
         }));
-        assist.append(el('p', 'fxb-note', 'The widget contract is function render(root, FYNX). FYNX.quote returns a snapshot price or null. Missing symbols stay blank. Prices are never invented.'));
+        docs.append(el('p', 'fxb-note', 'SDK: function render(root, FYNX). FYNX.quote returns snapshot quotes or null. No direct network requests, credentials, Firebase, or access to the host page are permitted.'));
+        assist.append(docs);
+        const tutorial = document.createElement('details');
+        tutorial.open = onboardingOpen;
+        const guide = document.createElement('summary');
+        guide.textContent = 'First-time guide · four steps';
+        tutorial.append(guide);
+        tutorial.append(el('p', 'fxb-note', '1. Create a project from a template. 2. Add or paste JavaScript in main.js. 3. Run to preview in the isolated sandbox. 4. Save Version, then Add to my terminal.'));
+        tutorial.append(buttonEl('Skip or finish tutorial', '', () => {
+          onboardingOpen = false;
+          tutorial.open = false;
+          try { localStorage.setItem('fx-term-builder-tour:' + state.uid, 'seen'); } catch (e) {}
+        }));
+        assist.append(tutorial);
+        assist.append(buttonEl('Restart tutorial', '', () => { tutorial.open = true; onboardingOpen = true; }));
+
         root.append(bar, side, editor, preview, assist);
         fillSide(side);
         mountEditor(draft.main);
