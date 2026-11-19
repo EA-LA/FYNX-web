@@ -93,7 +93,14 @@ html[data-theme=dark] .fx-acct-menu,body.dark-mode .fx-acct-menu{background:#111
     out.addEventListener('click', async () => {
       error.hidden = true; error.textContent = '';
       out.disabled = true; out.textContent = 'Signing out…';
-      try { if (window.FynxSession?.logout) await window.FynxSession.logout('manual', '/auth/login.html'); else { const m = await import('/auth/firebase.js'); const a = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js'); await a.signOut(m.auth); } location.href = '/auth/login.html'; }
+      try {
+        // The shared session manager clears account-scoped data and tells other tabs. It only knows the
+        // Firebase session on pages that bootstrapped it, so always finish with a direct sign-out too.
+        try { if (window.FynxSession?.logout) await window.FynxSession.logout('manual', '/'); } catch (_) {}
+        const m = await import('/auth/firebase.js'); const a = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js');
+        await a.signOut(m.auth);
+        location.replace('/');
+      }
       catch (_) {
         out.disabled = false; out.textContent = 'Sign out';
         error.textContent = 'Could not sign out. Check your connection and try again.';
@@ -116,8 +123,10 @@ html[data-theme=dark] .fx-acct-menu,body.dark-mode .fx-acct-menu{background:#111
     document.addEventListener('click', e => { if (!wrap.contains(e.target) && !menu.contains(e.target)) close(); });
     // Normal Tab navigation through links, unlike an ARIA menu that requires arrow-key handling.
     // Close only when focus leaves both the navigation panel and its trigger.
+    // Safari does not focus buttons on click, so relatedTarget is null when Sign out is pressed; closing then
+    // would hide the button before its click lands. Outside clicks are handled by the document listener above.
     menu.addEventListener('focusout', e => {
-      if (!menu.hidden && !menu.contains(e.relatedTarget) && !wrap.contains(e.relatedTarget)) close();
+      if (!menu.hidden && e.relatedTarget && !menu.contains(e.relatedTarget) && !wrap.contains(e.relatedTarget)) close();
     });
     addEventListener('resize', () => { if (!menu.hidden) place(); }); addEventListener('scroll', () => { if (!menu.hidden) place(); }, {passive: true});
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && !menu.hidden) { close(); btn.focus(); } });

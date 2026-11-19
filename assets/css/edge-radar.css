@@ -53,3 +53,31 @@ html body.edge-page[data-edge-symbol=""] #edge-main .edge-deck{min-height:68px}
 html body.edge-page>.terminal-ticker-host{display:flex!important;min-height:36px;height:36px;overflow:hidden}
 .edge-ticker-loading{font:11px/1.4 'IBM Plex Mono',monospace;color:#595d5b;padding:10px 24px}
 @media(max-width:639px){html body.edge-page>.terminal-ticker-host{min-height:35px;height:35px}.edge-ticker-loading{padding:14px 16px}}
+/* Daily watchlist: search, groups and bulk selection */
+.edge-dialog:has(#edge-watchlist-form){max-width:620px}
+.edge-sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.edge-wl-tools{position:sticky;top:-28px;z-index:1;display:grid;gap:10px;margin:16px -28px 4px;padding:12px 28px;background:#fff;border-bottom:1px solid #e3e6e1}
+.edge-dialog label.edge-wl-search{position:relative;display:block;min-height:0}
+.edge-wl-search svg{position:absolute;left:12px;top:50%;width:16px;height:16px;transform:translateY(-50%);fill:none;stroke:#595d5b;stroke-width:1.8;stroke-linecap:round;pointer-events:none}
+.edge-wl-search input{width:100%;min-height:44px;padding:10px 12px 10px 38px;border:1px solid #bcc5b6;border-radius:3px;background:#fff;color:#17191c;font:inherit;font-size:14px}
+.edge-wl-search input:focus{border-color:#1f4d3a;outline:3px solid #1f4d3a33;outline-offset:0}
+.edge-wl-bulk{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.edge-wl-count{margin-right:auto;font:600 12px/1.3 'IBM Plex Mono',monospace;color:#595d5b;letter-spacing:.02em}
+.edge-wl-count.edge-wl-full{color:#8a5a00}
+.edge-dialog .edge-wl-link{min-height:32px;padding:4px 10px;border:1px solid #d3d8d0;border-radius:3px;background:#fff;color:#1f4d3a;font-size:12px;font-weight:600}
+.edge-dialog .edge-wl-link:hover{background:#f0f4f1;border-color:#1f4d3a}
+.edge-wl-group{margin:14px 0 0;padding:0;border:0;min-width:0}
+.edge-wl-group legend{display:flex;align-items:center;justify-content:space-between;width:100%;padding:0 0 6px;border-bottom:1px solid #e3e6e1;font:700 11px/1 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#595d5b}
+.edge-wl-group .edge-watchlist-grid{margin:8px 0 0;gap:6px 10px}
+.edge-dialog label.edge-wl-item{align-items:center;gap:10px;min-height:52px;padding:8px 10px;border:1px solid #e3e6e1;border-radius:4px;cursor:pointer;transition:border-color .15s,background .15s}
+.edge-dialog label.edge-wl-item:hover{border-color:#9fb3a6;background:#f7f9f7}
+.edge-dialog label.edge-wl-item.is-on{border-color:#1f4d3a;background:#eef5f0}
+.edge-dialog label.edge-wl-item:has(input:disabled){opacity:.5;cursor:not-allowed}
+.edge-dialog label.edge-wl-item[hidden],.edge-wl-group[hidden]{display:none!important}
+.edge-wl-label{display:grid;gap:2px;min-width:0}
+.edge-wl-label b{font-size:13.5px;font-weight:700;color:#17191c}
+.edge-wl-label small{font-size:11.5px;color:#595d5b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.edge-dialog .edge-wl-empty{margin:18px 0 0;padding:14px;border:1px dashed #c7cbc5;border-radius:4px;text-align:center}
+@media(max-width:639px){.edge-wl-tools{top:-22px;margin-inline:-22px;padding-inline:22px}}
+@media(max-width:519px){.edge-wl-group .edge-watchlist-grid{grid-template-columns:1fr}}
+.edge-wl-group legend .edge-wl-link{font:600 12px/1.2 Inter,Arial,sans-serif;letter-spacing:0;text-transform:none}

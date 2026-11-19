@@ -154,7 +154,7 @@
       doc.body.classList.add('terminal-position-embedded');
       const stylesheet = doc.createElement('link');
       stylesheet.rel = 'stylesheet';
-      stylesheet.href = '/assets/css/terminal-position-embed.css?v=20261029-r2';
+      stylesheet.href = '/assets/css/terminal-position-embed.css?v=20261119-streak-1';
       const resize = function () {
         const height = Math.ceil(doc.body.getBoundingClientRect().height);
         if (height > 0 && Math.abs(frame.getBoundingClientRect().height - height) > 2) frame.style.height = (height + 2) + 'px';

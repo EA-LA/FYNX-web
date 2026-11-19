@@ -224,7 +224,7 @@
     import('/assets/js/account-identity.js?v=20261112-identity-1').catch(function () {});
     if (!document.querySelector('script[data-fx-account-menu]')) {
       const menu = document.createElement('script');
-      menu.src = '/assets/js/account-menu.js?v=20261114-consistency-1';
+      menu.src = '/assets/js/account-menu.js?v=20261119-signout-1';
       menu.defer = true;
       menu.dataset.fxAccountMenu = '1';
       document.head.append(menu);

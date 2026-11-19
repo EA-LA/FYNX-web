@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head>
-  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script><script src="/assets/js/auth-gate.js?v=20261113-lock"></script><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script><script src="/assets/js/auth-gate.js?v=20261119-guest-1"></script><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <link rel="stylesheet" href="assets/css/mobile-fixes.css">
 <style>
 .feed-item{padding:10px;border:1px solid rgba(0,0,0,.08);border-radius:10px;margin-bottom:8px;cursor:pointer;background:#fff} body.dark-mode .feed-item{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.03)} .feed-item.unread{border-left:3px solid #000} body.dark-mode .feed-item.unread{border-left-color:#fff}
@@ -40,7 +40,7 @@ small.dim{font-size:11px;color:#777} .filters{display:flex;gap:8px;flex-wrap:wra
 <link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261114-site-qa-97">
 <script src="/assets/js/market-intelligence-data.js?v=20261114-consistency-2" defer></script>
 <script src="/assets/js/terminal-market-data.js?v=20261114-consistency-2" defer></script>
-<script src="/assets/js/terminal-header.js?v=20261114-consistency-2" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261119-signout-1" defer></script>
 <script src="/assets/js/terminal-market-ui.js?v=20261114-consistency-2" defer></script>
 <link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261030-r1">
 <script src="/assets/js/terminal-pages.js?v=20261030-r1" defer></script>
@@ -75,7 +75,7 @@ small.dim{font-size:11px;color:#777} .filters{display:flex;gap:8px;flex-wrap:wra
 <section id="intelligence-preferences" aria-labelledby="intelligence-preferences-title"><h3 id="intelligence-preferences-title">FYNX intelligence</h3><p>Share coverage, delivery mode and brief choices with your FYNX iPhone app. Device permission, its pause switch, quiet hours and Time Sensitive authorization stay on each device. Brief times follow that device’s local time zone.</p></section>
 </div>
 </div></main></div>
-<script type="module" src="assets/js/session-bootstrap.js?v=20261114-consistency-2"></script>
+<script type="module" src="assets/js/session-bootstrap.js?v=20261119-guest-1"></script>
 <script type="module">
 import { safeNotificationUrl } from './assets/js/safe-content.js?v=20260928-audit2';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
@@ -240,7 +240,7 @@ onAuthStateChanged(auth, async (user)=>{
 guardActions();
 mountNotificationBell();
 </script>
-<script src="fynx-nav.js?v=20261116-bell-link-1"></script>
+<script src="fynx-nav.js?v=20261119-signout-1"></script>
 <script src="/assets/js/settings-shell.js?v=20261112-settings-1" defer></script>
 <script type="module" src="/assets/js/intelligence-editorial-preferences.js?v=20261114-consistency-2"></script>
 <script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
