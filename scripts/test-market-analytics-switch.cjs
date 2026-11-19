@@ -9,27 +9,33 @@ const source = fs.readFileSync(path.join(__dirname, '../assets/js/market-analyti
 function element(tag = 'div') {
   const listeners = {};
   return {
-    tag, children: [], textContent: '', disabled: false, value: '', href: '',
+    tag, children: [], textContent: '', disabled: false, value: '', href: '', hidden: false,
+    focus() { this.focused = true; }, select() { this.selected = true; },
     listeners,
     append(...nodes) { this.children.push(...nodes); },
     replaceChildren(...nodes) { this.children = [...nodes]; },
     addEventListener(type, listener) { (listeners[type] ||= []).push(listener); },
-    trigger(type) { for (const listener of listeners[type] || []) listener({}); }
+    trigger(type) { return Promise.all((listeners[type] || []).map(listener => listener({}))); }
   };
 }
 
-function setup(kind = 'liquidity') {
+function setup(kind = 'liquidity', { search = '', clipboard } = {}) {
   const select = element('select');
   select.value = kind === 'liquidity' ? 'BTC-USD' : '30';
+  select.options = (kind === 'liquidity' ? ['BTC-USD', 'ETH-USD'] : ['30', '60', '90']).map(value => ({value}));
   const button = element('button'), status = element('p');
+  const shareButton = element('button'), shareStatus = element('p'), shareFallback = element('input');
+  shareFallback.hidden = true;
   const output = element('div'), link = element('a');
   link.href = 'https://www.coinbase.com/advanced-trade/spot/BTC-USD';
   const root = {
     dataset: { marketAnalysis: kind },
     querySelector(name) {
       return {
-        select, button, '[role=status]': status,
-        '[data-analysis-output]': output, '[data-market-source]': link
+        select, button, '[data-analysis-feed-status]': status, '[role=status]': status,
+        '[data-analysis-output]': output, '[data-market-source]': link,
+        '[data-analysis-share]': shareButton, '[data-analysis-share-status]': shareStatus,
+        '[data-analysis-share-fallback]': shareFallback
       }[name] || null;
     }
   };
@@ -40,9 +46,18 @@ function setup(kind = 'liquidity') {
     createElement: element,
     addEventListener() {}
   };
-  const window = { addEventListener() {}, FynxMonitor: { report(...args) { reports.push(args); } } };
+  const window = {
+    addEventListener() {},
+    location: {
+      origin: 'https://www.fynxfinanceworld.com',
+      pathname: kind === 'liquidity' ? '/markets/liquidity.html' : '/markets/correlation.html',
+      search
+    },
+    navigator: { clipboard },
+    FynxMonitor: { report(...args) { reports.push(args); } }
+  };
   const context = {
-    document, window, AbortController, URLSearchParams, Date, Number,
+    document, window, AbortController, URL, URLSearchParams, Date, Number,
     setInterval(callback) { intervals.push(callback); return intervals.length; },
     clearInterval() {}, setTimeout() { return 1; }, clearTimeout() {},
     fetch(url, options) {
@@ -52,7 +67,7 @@ function setup(kind = 'liquidity') {
     }
   };
   vm.runInNewContext(source, context, { filename: 'market-analytics.js' });
-  return { select, button, status, output, link, calls, intervals, reports };
+  return { select, button, status, output, link, shareButton, shareStatus, shareFallback, calls, intervals, reports };
 }
 
 function sample(product = 'BTC-USD') {
@@ -305,4 +320,73 @@ test('switching markets clears an earlier failure instead of mislabelling new qu
   assert.match(h.status.textContent, /Coinbase/);
   assert.doesNotMatch(h.status.textContent, /Stale data|Refresh failed/);
   assert.match(h.output.children[0].children[0].textContent, /ETH-USD/);
+});
+
+test('market view links restore only allowlisted selections before source requests', () => {
+  const eth = setup('liquidity', { search: '?product=ETH-USD' });
+  assert.equal(eth.select.value, 'ETH-USD');
+  assert.match(eth.calls[0].url, /product=ETH-USD/);
+  assert.match(eth.link.href, /ETH-USD$/);
+
+  const fx = setup('correlation', { search: '?window=90' });
+  assert.equal(fx.select.value, '90');
+  assert.match(fx.calls[0].url, /window=90/);
+});
+
+test('invalid or injected URL selections never change the active market', () => {
+  const invalid = setup('liquidity', { search: '?product=BTC-USD%3Cscript%3E' });
+  assert.equal(invalid.select.value, 'BTC-USD');
+  assert.match(invalid.calls[0].url, /product=BTC-USD/);
+  const invalidWindow = setup('correlation', { search: '?window=999' });
+  assert.equal(invalidWindow.select.value, '30');
+  assert.match(invalidWindow.calls[0].url, /window=30/);
+});
+
+test('copy view link includes the chosen public symbol but no incoming private query', async () => {
+  const copied = [];
+  const h = setup('liquidity', {
+    search: '?product=BTC-USD&token=private-secret',
+    clipboard: { writeText: async url => copied.push(url) }
+  });
+  h.select.value = 'ETH-USD';
+  h.select.trigger('change');
+  await h.shareButton.trigger('click');
+  assert.deepEqual(copied, ['https://www.fynxfinanceworld.com/markets/liquidity.html?product=ETH-USD']);
+  assert.match(h.shareStatus.textContent, /copied/);
+  assert.equal(h.shareFallback.hidden, true);
+});
+
+test('denied clipboard offers a selectable manual link without claiming success', async () => {
+  const h = setup('correlation', {
+    clipboard: { writeText: async () => { throw new Error('denied'); } }
+  });
+  h.select.value = '60';
+  h.select.trigger('change');
+  await h.shareButton.trigger('click');
+  assert.equal(h.shareFallback.hidden, false);
+  assert.equal(h.shareFallback.value, 'https://www.fynxfinanceworld.com/markets/correlation.html?window=60');
+  assert.equal(h.shareFallback.focused, true);
+  assert.equal(h.shareFallback.selected, true);
+  assert.doesNotMatch(h.shareStatus.textContent, /copied/i);
+  h.select.value = '90';
+  h.select.trigger('change');
+  assert.equal(h.shareFallback.hidden, true);
+  assert.equal(h.shareStatus.textContent, '');
+});
+
+test('clipboard not supported reveals manual share URL', async () => {
+  const h = setup();
+  await h.shareButton.trigger('click');
+  assert.equal(h.shareFallback.hidden, false);
+  assert.match(h.shareFallback.value, /product=BTC-USD$/);
+});
+
+test('both public market research views expose accessible share controls and current asset versions', () => {
+  for (const name of ['liquidity', 'correlation']) {
+    const html = fs.readFileSync(path.join(__dirname, '../markets', name + '.html'), 'utf8');
+    assert.match(html, /data-analysis-share>/);
+    assert.match(html, /data-analysis-share-status[^>]*role="status"/);
+    assert.match(html, /data-analysis-share-fallback[^>]*aria-label=/);
+    assert.ok(html.includes('market-analytics.js?v=20261118-share-view-1'), 'script version is refreshed');
+  }
 });
