@@ -577,5 +577,5 @@
       grid: {cols: '1fr 1fr 1fr 1fr 1fr 1fr', areas: ['s1 s1 s1 s2 s2 s2', 's1 s1 s1 s2 s2 s2', 's3 s3 s4 s5 s6 s7']}};
     const wi = T.DESK_ORDER.indexOf('world'); T.DESK_ORDER.splice(wi >= 0 ? wi + 1 : 1, 0, 'quant');
   }
-  T.QuantLab = {loadCloses, alignedReturns, quantile, erfc, cholesky, topEigen};
+  T.QuantLab = {loadCloses, alignedReturns, quantile, erfc, cholesky, topEigen, kpis, UNIVERSE, SECTOR_OF};
 });
