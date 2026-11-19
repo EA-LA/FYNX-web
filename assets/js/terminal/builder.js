@@ -589,9 +589,9 @@
         const ownerUid = state.uid;
         const savingRevision = editRevision;
         const prior = byId(id);
-        const next = automatic
-          ? {...check.project, version: prior?.version || 1, versions: prior?.versions || []}
-          : Core.withVersion(prior, check.project);
+        // Each changed source is versioned, including autosaves. Keep only
+        // the last bounded snapshots under the existing Firestore schema.
+        const next = Core.withVersion(prior, check.project);
         // An explicit Save Version creates a checkpoint even if autosave
         // already synchronized identical source at the current revision.
         if (!automatic && prior && next.version === prior.version && prior.main === check.project.main) {
@@ -1016,7 +1016,10 @@
         if (!rows.length) list.append(el('p', 'fxb-note', state.projects.length ? 'No project matches that search.' : (state.status === 'error' ? state.error : 'No saved projects yet.')));
         rows.slice(0, Core.LIMITS.projects).forEach(item => {
           const row = buttonEl(item.name, item.id === draft.id ? 'on' : '', () => openProject(item.id));
-          row.append(el('small', '', (item.stored === 'device' ? 'this browser' : 'v' + item.version) + ' · private'));
+          const isInstalled = state.installs.some(widget => widget.projectId === item.id);
+          row.append(el('small', '', 'v' + item.version + ' · ' + (item.stored === 'device' ? 'browser copy' : 'account') + (isInstalled ? ' · installed' : ' · not installed')));
+          row.append(el('small', '', item.description.slice(0, 70)));
+          row.append(el('small', '', 'Modified: ' + (item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : 'Unknown')));
           list.append(row);
         });
         versions.replaceChildren();
@@ -1037,18 +1040,40 @@
           }));
         }
         history.forEach(version => {
-          versions.append(buttonEl('Restore v' + version.version, '', () => {
+          const row = el('div', 'fxb-version-row');
+          const when = version.savedAt ? new Date(version.savedAt).toLocaleString() : 'Time unavailable';
+          row.append(el('p', 'fxb-note', 'v' + version.version + ' · ' + when));
+          row.append(buttonEl('Compare v' + version.version, '', () => {
+            syncCode();
+            let view = root.querySelector('[data-fxb-compare]');
+            if (!view) {
+              view = document.createElement('pre');
+              view.setAttribute('data-fxb-compare', '');
+              view.className = 'fxb-diff';
+              versions.append(view);
+            }
+            const oldLines = String(version.main || '').split('\n');
+            const newLines = String(draft.main || '').split('\n');
+            const lines = [];
+            for (let i = 0; i < Math.min(120, Math.max(oldLines.length, newLines.length)); i++) {
+              if (oldLines[i] === newLines[i]) continue;
+              if (oldLines[i] != null) lines.push('- ' + (i + 1) + ' ' + oldLines[i]);
+              if (newLines[i] != null) lines.push('+ ' + (i + 1) + ' ' + newLines[i]);
+            }
+            view.textContent = lines.slice(0, 100).join('\n').slice(0, 10000) || 'No differences in the compared lines.';
+          }));
+          row.append(buttonEl('Restore v' + version.version, '', () => {
+            if (!window.confirm('Restore version ' + version.version + '? Your current version will remain in history.')) return;
             draft.main = String(version.main || '');
-            dirty = true;
             if (cm) cm.setValue(draft.main);
             else {
               const area = root.querySelector('textarea.fxb-code');
               if (area) area.value = draft.main;
             }
-            say('Restored version ' + version.version + ' into the editor. Save to keep it.', '');
-            setSaveLabel('Unsaved', 'warn');
-            scheduleDraft();
+            markDirty();
+            say('Restored version ' + version.version + ' into the editor. Autosave will create a new revision.', 'ok');
           }));
+          versions.append(row);
         });
       }
       function fillSide(side) {
