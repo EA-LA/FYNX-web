@@ -36,7 +36,9 @@ function setup(mode = 'ok') {
       options.signal.addEventListener('abort', () => reject(Error('aborted')), {once: true});
     });
     if (mode === 'stale') return Promise.resolve({ok: true, json: async () => ({...quote, stale: true})});
-    if (mode === 'old') return Promise.resolve({ok: true, json: async () => ({...quote, generatedAt: new Date(Date.now() - 2 * 3600000).toISOString()})});
+    if (mode === 'old') return Promise.resolve({ok: true, json: async () => ({...quote,
+      generatedAt: new Date(Date.now() - 2 * 3600000).toISOString(),
+      items: [{...quote.items[0], asOf: new Date(Date.now() - 2.5 * 3600000).toISOString()}]})});
     if (mode === 'future') return Promise.resolve({ok: true, json: async () => ({...quote, generatedAt: new Date(Date.now() + 3600000).toISOString()})});
     if (mode === 'unverified') return Promise.resolve({ok: true, json: async () => ({...quote, generatedAt: 'not-an-ISO-timestamp'})});
     if (mode === 'invalid-row') return Promise.resolve({ok: true, json: async () => ({...quote,
