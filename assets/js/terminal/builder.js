@@ -98,7 +98,7 @@
   function draftRecord(draft) {
     if (!draft || typeof draft !== 'object') return null;
     const main = String(draft.main || '');
-    if (!main.trim() || main.length > Core.LIMITS.code) return null;
+    if (!main.trim() || main.length > Core.LIMITS.code || Core.secretFindings(main).length) return null;
     const category = Core.CATEGORIES.some(([id]) => id === draft.category) ? draft.category : 'macro';
     return {
       id: typeof draft.id === 'string' && /^p[a-z0-9]{8,24}$/.test(draft.id) ? draft.id : null,
@@ -128,7 +128,7 @@
         projects: merged.projects.map(project => ({...project, stored: storedById.get(project.id) === 'account' ? 'account' : 'device'})),
         installs: accountInstalls.concat(deviceInstalls.filter(widget => !seen.has(widget.projectId))).slice(0, Core.LIMITS.widgets),
         draft: draftRecord(raw.draft),
-        trash: (Array.isArray(raw.trash) ? raw.trash : []).filter(row => row && row.project && row.project.authorUid === uid && Number(row.deletedAt) > Date.now() - 30 * 86400000).slice(-Core.LIMITS.projects)
+        trash: (Array.isArray(raw.trash) ? raw.trash : []).filter(row => row && row.project && row.project.authorUid === uid && Core.validateProject(row.project).ok && Number(row.deletedAt) > Date.now() - 30 * 86400000).slice(-Core.LIMITS.projects)
       };
     } catch (e) {
       return null;
