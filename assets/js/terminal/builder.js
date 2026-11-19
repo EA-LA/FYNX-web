@@ -828,6 +828,10 @@
           say('A project with this identifier already exists. Recovery cancelled.', 'error');
           return;
         }
+        if (state.projects.length >= Core.LIMITS.projects) {
+          say('Your project limit is full. Export a project before restoring; no existing projects were changed.', 'error');
+          return;
+        }
         const restored = {...entry.project, stored: 'device', updatedAt: Date.now()};
         const check = Core.validateProject(restored);
         if (!check.ok) { say('Recovery failed: ' + check.errors[0], 'error'); return; }
@@ -1195,6 +1199,7 @@
         root.replaceChildren();
         const bar = el('div', 'fxb-bar');
         bar.append(el('strong', '', 'FYNX BUILDER'));
+        bar.append(el('span', 'fxb-active-title', draft.name + ' · v' + (draft.version || 1)));
         const status = el('span', '', statusText());
         status.setAttribute('data-fxb-status', '');
         bar.append(status);
@@ -1202,6 +1207,14 @@
         tools.append(buttonEl('Run', 'on', () => { syncCode(); run(); }));
         tools.append(buttonEl('Stop', '', stop));
         tools.append(buttonEl('Save', '', () => { syncCode(); persist(); }));
+        tools.append(buttonEl('History', '', () => root.querySelector('[data-fxb-versions]')?.scrollIntoView({block: 'nearest', behavior: 'smooth'})));
+        tools.append(buttonEl('Indent code', '', () => {
+          if (!cm) { say('Auto-indentation requires the code editor.', 'error'); return; }
+          if (cm.lineCount() > 3000) { say('Too many lines for automatic indentation; edit smaller sections.', 'error'); return; }
+          cm.operation(() => { for (let line = 0; line < cm.lineCount(); line++) cm.indentLine(line, 'smart'); });
+          syncCode(); markDirty();
+          say('Code indentation updated. Run to verify its behavior.', 'ok');
+        }));
         tools.append(buttonEl('Retry account sync', '', () => { syncCode(); persist(true); }));
         const installButton = buttonEl('Add to my terminal', 'on', () => { if (installedNow()) uninstall(false); else install(); });
         installButton.setAttribute('data-fxb-install', '');
@@ -1308,6 +1321,7 @@
         const label = dirty ? ['Unsaved changes', 'warn'] : (!draft.id ? ['Not saved', 'warn'] : (byId(draft.id)?.stored === 'account' ? ['Account · v' + draft.version, 'on'] : ['On this browser', 'warn']));
         setSaveLabel(label[0], label[1]);
         say(consoleText, consoleLevel);
+        previewNote('Ready to run · sandbox isolated from your account and network.', false);
         updateStatus();
       }
 
@@ -1365,6 +1379,7 @@
           seenUid = state.uid;
           if (previous && previous !== state.uid) {
             dirty = false;
+            try { onboardingOpen = !localStorage.getItem('fx-term-builder-tour:' + state.uid); } catch (e) { onboardingOpen = false; }
             if (state.draft && state.draft.main) draft = applyRecord(state.draft);
             else if (state.projects[0]) draft = draftOf(state.projects[0]);
             else draft = draftOf(null);
