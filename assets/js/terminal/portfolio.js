@@ -111,6 +111,7 @@
   const holdings = () => read(PKEY, []).filter(h => h && /^[A-Za-z0-9.\-=^&]{1,24}$/.test(h.symbol) && finite(h.qty) && h.qty > 0);
   // Edits go by symbol on the cleaned list, so a hidden (zero or invalid) entry can never shift rows.
   const editHoldings = fn => { const l = holdings(); fn(l); write(PKEY, l); };
+  T.portfolioHoldings = holdings;
   async function analyze() {
     const list = holdings(); if (!list.length) return null;
     const hist = await Promise.all(list.map(h => T.symHistory(h.symbol, '2y'))), bench = await T.symHistory('SPY', '2y');
