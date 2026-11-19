@@ -1,0 +1,30 @@
+name: Pro workspace result freshness
+
+on:
+  pull_request:
+    paths:
+      - "pro.html"
+      - "assets/js/pro-workspace.js"
+      - "scripts/test-consumer-live-ui.cjs"
+      - ".github/workflows/pro-workspace-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pro-workspace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --test scripts/test-consumer-live-ui.cjs
+      - run: node scripts/test-pro-routing.cjs
+      - run: npm run build
