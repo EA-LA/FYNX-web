@@ -1,0 +1,31 @@
+name: Security login alert confirmed state
+
+on:
+  pull_request:
+    paths:
+      - 'security.html'
+      - 'assets/js/security-login-alerts.mjs'
+      - 'scripts/test-security-login-alerts.cjs'
+      - '.github/workflows/security-login-alerts.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'security.html'
+      - 'assets/js/security-login-alerts.mjs'
+      - 'scripts/test-security-login-alerts.cjs'
+      - '.github/workflows/security-login-alerts.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  login-alert-save:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check assets/js/security-login-alerts.mjs
+      - run: node --test scripts/test-security-login-alerts.cjs scripts/test-security-session-list.cjs
