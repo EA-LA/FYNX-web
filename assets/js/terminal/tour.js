@@ -54,7 +54,12 @@
     futmap: 'Every futures complex coloured by its move.',
     newsmap: 'Which market topics dominate the headlines, and which are heating up.',
     cfx: 'Top coins and FX majors, crosses and emerging currencies in one map.',
-    scan: 'Screen thousands of markets by your own filters.'
+    scan: 'Screen thousands of markets by your own filters.',
+    globe: 'The live world. Drag to spin and scroll to zoom. The Intelligence layers panel switches on conflict events, protests, cyber threats, earthquakes, disaster alerts, bases, pipelines, ports and more, and its Events tab lists what matters now. Click any marker for its Event intelligence card.',
+    cwatch: 'Every country ranked red, yellow or green, with the reason. Click one to fly the globe there.',
+    ships: 'Live tankers and cargo ships from AIS, with counts at each chokepoint.',
+    cnews: 'Headlines for the countries with events right now.',
+    cdata: 'Economies at a glance: GDP, growth, inflation and jobs.'
   };
   const HEADER = [
     ['#fx-command', 'Command bar', 'Type any market (EURUSD, AAPL, gold), a desk (FOREX) or a command such as NEWS, CAL, STR or HELP, then press Enter. Press / from anywhere to jump here.'],

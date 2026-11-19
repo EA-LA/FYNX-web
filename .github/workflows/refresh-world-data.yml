@@ -1,5 +1,5 @@
 name: Refresh World desk data
-# Publishes countries.json, states.json, symbols.json and ships.json for the FYNX World desk
+# Publishes countries.json, states.json, symbols.json, ships.json and hazards.json for the FYNX World desk
 # to the separate `world-data` branch. The branch always holds a single commit
 # (force-replaced), so it never grows. It never writes to main or any other data branch.
 on:
@@ -37,7 +37,7 @@ jobs:
           set -uo pipefail
           mkdir -p "$RUNNER_TEMP/previous"
           if git fetch --depth=1 origin refs/heads/world-data 2>/dev/null; then
-            for f in countries.json states.json symbols.json ships.json shipreg.json; do git show "FETCH_HEAD:$f" > "$RUNNER_TEMP/previous/$f" 2>/dev/null || rm -f "$RUNNER_TEMP/previous/$f"; done
+            for f in countries.json states.json symbols.json ships.json shipreg.json hazards.json; do git show "FETCH_HEAD:$f" > "$RUNNER_TEMP/previous/$f" 2>/dev/null || rm -f "$RUNNER_TEMP/previous/$f"; done
           fi
       - name: Fetch public sources
         env:

@@ -4,6 +4,7 @@
  *   states.json     US states: BLS unemployment rate history and FEMA disaster declarations (daily)
  *   symbols.json    every US-listed stock and ETF (Nasdaq Trader), Coinbase crypto pairs, with first-seen dates for new listings (daily)
  *   ships.json      live AIS ship positions sampled from AISStream (only when AISSTREAM_API_KEY is set)
+ *   hazards.json    earthquakes M4.5+ in the last 7 days (USGS) and active disaster alerts (GDACS, NASA EONET) (hourly)
  * Each part keeps its last good snapshot (marked stale) when a source fails. Nothing is estimated.
  * Usage: node scripts/refresh-world-data.cjs <output-dir> [previous-dir] */
 'use strict';
@@ -223,6 +224,63 @@ function pruneRegistry(reg, now = Date.now()) {
 }
 
 /* --- run ---------------------------------------------------------------------------- */
+
+/* --- Hazards: earthquakes and natural-disaster alerts ---------------------------------------------- */
+const HAZ_TYPE = {TC: 'storm', FL: 'flood', VO: 'volcano', DR: 'drought', WF: 'wildfire', severeStorms: 'storm', floods: 'flood', volcanoes: 'volcano', drought: 'drought', wildfires: 'wildfire', landslides: 'landslide', tempExtremes: 'heat', dustHaze: 'dust', snow: 'snow', manmade: 'manmade'};
+const kmBetween = (a, b) => { const r = Math.PI / 180, dLat = (b[1] - a[1]) * r, dLon = (b[0] - a[0]) * r, h = Math.sin(dLat / 2) ** 2 + Math.cos(a[1] * r) * Math.cos(b[1] * r) * Math.sin(dLon / 2) ** 2; return 12742 * Math.asin(Math.sqrt(h)); };
+function pointOf(g) {
+  if (!g) return null;
+  if (g.type === 'Point' && finite(g.coordinates?.[0]) && finite(g.coordinates?.[1])) return [g.coordinates[0], g.coordinates[1]];
+  const ring = g.type === 'Polygon' ? g.coordinates?.[0] : g.type === 'MultiPolygon' ? g.coordinates?.[0]?.[0] : null;
+  if (!Array.isArray(ring) || !ring.length) return null;
+  const pts = ring.filter(p => finite(p[0]) && finite(p[1])); if (!pts.length) return null;
+  return [pts.reduce((a, p) => a + p[0], 0) / pts.length, pts.reduce((a, p) => a + p[1], 0) / pts.length];
+}
+async function quakes() {
+  const d = await fetchJSON('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson');
+  return (d.features || []).map(f => {
+    const p = f.properties || {}, c = f.geometry?.coordinates || [];
+    if (!finite(p.mag) || !finite(c[0]) || !finite(c[1])) return null;
+    return {id: f.id, mag: Math.round(p.mag * 10) / 10, place: String(p.place || 'Unknown location').slice(0, 140), time: iso(p.time), depth: finite(c[2]) ? Math.round(c[2]) : null, lon: c[0], lat: c[1], tsunami: p.tsunami === 1, alert: p.alert || null, felt: finite(p.felt) ? p.felt : null, url: p.url || null};
+  }).filter(Boolean).sort((a, b) => b.mag - a.mag).slice(0, 400);
+}
+async function gdacs(now) {
+  const day = ms => iso(ms).slice(0, 10);
+  const d = await fetchJSON(`https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH?eventlist=TC;FL;VO;DR;WF&fromDate=${day(now - 14 * DAY)}&toDate=${day(now)}&alertlevel=Green;Orange;Red`, {headers: {Accept: 'application/json'}});
+  return (d.features || []).map(f => {
+    const p = f.properties || {}, ll = pointOf(f.geometry), type = HAZ_TYPE[p.eventtype];
+    if (!ll || !type) return null;
+    const lvl = String(p.alertlevel || '').toLowerCase(), to = Date.parse(p.todate);
+    if (Number.isFinite(to) && now - to > 7 * DAY && String(p.iscurrent) !== 'true') return null;
+    const report = typeof p.url === 'object' ? p.url.report : null;
+    return {id: `gdacs-${p.eventtype}-${p.eventid}`, src: 'GDACS', type, title: String(p.name || p.description || type).slice(0, 140), level: lvl === 'red' ? 'high' : lvl === 'orange' ? 'med' : 'low', lon: ll[0], lat: ll[1],
+      from: p.fromdate ? iso(Date.parse(p.fromdate)) : null, to: Number.isFinite(to) ? iso(to) : null, country: p.country || null, iso2: (p.affectedcountries || [])[0]?.iso2 || null,
+      detail: p.severitydata?.severitytext ? String(p.severitydata.severitytext).slice(0, 200) : null, url: report || `https://www.gdacs.org/report.aspx?eventtype=${p.eventtype}&eventid=${p.eventid}`};
+  }).filter(Boolean);
+}
+async function eonet() {
+  const d = await fetchJSON('https://eonet.gsfc.nasa.gov/api/v3/events?status=open&days=30&limit=400');
+  return (d.events || []).map(e => {
+    const cat = e.categories?.[0]?.id, type = HAZ_TYPE[cat]; if (!type) return null;
+    const g = (e.geometry || []).at(-1), ll = pointOf(g); if (!ll) return null;
+    const mag = finite(g.magnitudeValue) ? g.magnitudeValue : null, unit = g.magnitudeUnit || '';
+    const level = type === 'storm' && mag !== null && /kts/i.test(unit) ? (mag >= 96 ? 'high' : mag >= 64 ? 'med' : 'low') : type === 'volcano' ? 'med' : 'low';
+    return {id: 'eonet-' + e.id, src: 'NASA EONET', type, title: String(e.title || type).slice(0, 140), level, lon: ll[0], lat: ll[1], from: g.date || null, to: null, country: null, iso2: null,
+      detail: mag !== null ? `${mag} ${unit}`.trim() : null, url: e.sources?.[0]?.url || e.link || null};
+  }).filter(Boolean);
+}
+async function hazards(now, prev) {
+  const [q, g, n] = await Promise.allSettled([quakes(), gdacs(now), eonet()]);
+  const errors = {};
+  for (const [k, r] of [['quakes', q], ['gdacs', g], ['eonet', n]]) if (r.status === 'rejected') { errors[k] = r.reason?.message || String(r.reason); console.warn(`[world] hazards ${k} failed:`, errors[k]); }
+  const alerts = g.status === 'fulfilled' ? g.value : (prev?.alerts || []).filter(a => a.src === 'GDACS');
+  // EONET adds events GDACS does not carry; skip ones GDACS already reports nearby.
+  for (const a of n.status === 'fulfilled' ? n.value : (prev?.alerts || []).filter(a => a.src === 'NASA EONET')) if (!alerts.some(b => b.type === a.type && kmBetween([a.lon, a.lat], [b.lon, b.lat]) < 200)) alerts.push(a);
+  if (q.status === 'rejected' && g.status === 'rejected' && n.status === 'rejected') throw new Error('All hazard sources failed');
+  return {version: 1, generatedAt: iso(now), sources: {quakes: 'USGS Earthquake Hazards Program, M4.5+ past 7 days', alerts: 'GDACS (UN/EC Global Disaster Alert and Coordination System) and NASA EONET open natural events'},
+    quakes: q.status === 'fulfilled' ? q.value : (prev?.quakes || []), alerts: alerts.slice(0, 500), ...(Object.keys(errors).length ? {errors, stale: true} : {})};
+}
+
 async function readJSON(file) { try { return JSON.parse(await fs.readFile(file, 'utf8')); } catch { return null; } }
 async function write(dir, name, value) { const t = path.join(dir, name); await fs.writeFile(t + '.tmp', JSON.stringify(value) + '\n'); await fs.rename(t + '.tmp', t); }
 const fresh = (doc, ms) => doc?.generatedAt && Date.now() - Date.parse(doc.generatedAt) < ms;
@@ -231,7 +289,7 @@ async function main() {
   if (!outDir) throw new Error('Usage: refresh-world-data.cjs <output-dir> [previous-dir]');
   await fs.mkdir(outDir, {recursive: true});
   const now = Date.now(), prev = {};
-  for (const f of ['countries', 'states', 'symbols', 'ships', 'shipreg']) prev[f] = prevDir ? await readJSON(path.join(prevDir, f + '.json')) : null;
+  for (const f of ['countries', 'states', 'symbols', 'ships', 'shipreg', 'hazards']) prev[f] = prevDir ? await readJSON(path.join(prevDir, f + '.json')) : null;
   const force = process.env.FORCE_DAILY === 'true';
 
   // Countries: profiles/indicators daily, news hourly.
@@ -256,6 +314,9 @@ async function main() {
     catch (e) { console.warn('[world] symbols failed:', e.message); if (prev.symbols) await write(outDir, 'symbols.json', {...prev.symbols, stale: true}); }
   } else if (prev.symbols) await write(outDir, 'symbols.json', prev.symbols);
 
+  try { const h = await hazards(now, prev.hazards); await write(outDir, 'hazards.json', h); console.log(`[world] hazards: ${h.quakes.length} quakes, ${h.alerts.length} alerts`); }
+  catch (e) { console.warn('[world] hazards failed:', e.message); if (prev.hazards) await write(outDir, 'hazards.json', {...prev.hazards, stale: true}); }
+
   const key = process.env.AISSTREAM_API_KEY;
   if (key) {
     let s = null, err = null;
@@ -270,4 +331,4 @@ async function main() {
   }
 }
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
-module.exports = {pipeTable, STATES, CHOKEPOINTS, INDICATORS, ships, pruneRegistry, etaText};
+module.exports = {hazards, pointOf, kmBetween, pipeTable, STATES, CHOKEPOINTS, INDICATORS, ships, pruneRegistry, etaText};
