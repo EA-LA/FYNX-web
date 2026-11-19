@@ -90,28 +90,31 @@
   }
   async function renderGlobe() {
     const host = T.panel('globe'); host.classList.add('fx-globe');
-    T.setText('t-globe', 'Live world · click any light');
+    T.setText('t-globe', 'Live world · global intelligence');
     host.append(el('p', 'fx-empty', 'Loading the globe…'));
     await loadWorld(); if (!host.isConnected) return; host.replaceChildren();
     const stage = el('div', 'fx-gstage'), card = el('div', 'fx-gcard'), scard = el('div', 'fx-gcard fx-scard'); card.hidden = true; scard.hidden = true;
     const tools = el('div', 'fx-gtools');
     tools.append(btn(W.flat ? 'Globe' : 'Flat map', 'fx-gbtn', () => { W.flat = !W.flat; W.scale = 1; renderGlobe(); }), btn('+', 'fx-gbtn', () => { W.scale = Math.min(8, W.scale * 1.4); draw?.(); }, 'Zoom in'), btn('−', 'fx-gbtn', () => { W.scale = Math.max(0.7, W.scale / 1.4); draw?.(); }, 'Zoom out'), btn('Reset', 'fx-gbtn', () => { W.rot = [20, -22]; W.scale = 1; draw?.(); }));
-    const layers = el('div', 'fx-glayers');
-    for (const [k, l] of [['lights', 'Country lights'], ['tankers', 'Tankers'], ['cargo', 'Cargo ships'], ['other', 'Other ships'], ['chokes', 'Chokepoints'], ['lanes', 'Main sea routes']]) { const lab = el('label'), cb = el('input'); cb.type = 'checkbox'; cb.checked = W.layers[k]; cb.addEventListener('change', () => { W.layers[k] = cb.checked; draw?.(); }); lab.append(cb, document.createTextNode(l)); layers.append(lab); }
+    let layers = W.intel ? W.intel.panel({redraw: () => draw?.()}) : null;
+    if (!layers) { layers = el('div', 'fx-glayers'); for (const [k, l] of [['lights', 'Country lights'], ['tankers', 'Tankers'], ['cargo', 'Cargo ships'], ['other', 'Other ships'], ['chokes', 'Chokepoints'], ['lanes', 'Main sea routes']]) { const lab = el('label'), cb = el('input'); cb.type = 'checkbox'; cb.checked = W.layers[k]; cb.addEventListener('change', () => { W.layers[k] = cb.checked; draw?.(); }); lab.append(cb, document.createTextNode(l)); layers.append(lab); } }
     const legend = el('div', 'fx-glegend'); for (const [k, l] of [['red', 'Big event'], ['yellow', 'Watch'], ['green', 'Quiet'], ['grey', 'No live signal']]) { const s = el('span'); const i = el('i'); i.style.background = COLOR[k]; s.append(i, document.createTextNode(l)); legend.append(s); }
     const shipNote = el('span', 'fx-gnote', W.ships?.status === 'not-configured' ? 'Ships: waiting for the AIS key' : W.ships?.status === 'error' ? `Ships: AIS feed problem · ${T.ago(W.ships.generatedAt)}` : W.ships?.vessels?.length ? `Ships: ${W.ships.total.toLocaleString()} from AIS · ${T.ago(W.ships.generatedAt)}${W.ships.stale ? ' · last refresh failed' : ''}` : 'Ships: loading');
     legend.append(shipNote);
     stage.append(tools, layers, legend, card, scard); host.append(stage);
-    const sv = svg('svg', {class: 'fx-gsvg', role: 'img', 'aria-label': 'World globe with country status lights, ships and chokepoints. Use the country list for keyboard access.'}); stage.prepend(sv);
+    const sv = svg('svg', {class: 'fx-gsvg', role: 'img', 'aria-label': 'World globe with country status lights, ships, chokepoints and intelligence layers. Use the country list and the Events tab for keyboard access.'}); stage.prepend(sv);
     const statuses = new Map(allStatuses().map(s => [s.iso, s]));
     const gSphere = svg('path', {class: 'g-sphere'}), gGrat = svg('path', {class: 'g-grat'}), gLand = svg('g'), gLanes = svg('g'), gShips = svg('g'), gChokes = svg('g'), gLights = svg('g');
-    sv.append(gSphere, gGrat, gLand, gLanes, gShips, gChokes, gLights);
+    const gZones = svg('g', {class: 'g-zones'}), gPipes = svg('g', {class: 'g-pipes'}), gIntel = svg('g', {class: 'g-intel'});
+    sv.append(gSphere, gGrat, gLand, gZones, gLanes, gPipes, gShips, gChokes, gLights, gIntel);
     const paths = W.feats.map(f => { const st = statuses.get(f.properties.iso2); const p = svg('path', {class: 'g-land', fill: TINT[st?.level || 'grey']}); const t = svg('title'); t.textContent = `${f.properties.name}${st ? ' · ' + st.level : ''}`; p.append(t); p.addEventListener('click', () => select(f.properties.iso2)); gLand.append(p); return [f, p]; });
     const lanePaths = LANES.map(pts => { const seg = []; for (let i = 0; i < pts.length - 1; i++) { const it = G.geoInterpolate(pts[i], pts[i + 1]); for (let t = 0; t <= 1.0001; t += 0.05) seg.push(it(t)); } const p = svg('path', {class: 'g-lane'}); gLanes.append(p); return [{type: 'LineString', coordinates: seg}, p]; });
     const centroid = f => { const fix = {US: [-98, 39], RU: [45, 56], CA: [-100, 56], NO: [9, 61], FR: [2.5, 46.5], IT: [12.5, 42.8], CL: [-71, -33], GB: [-1.5, 52.5], NZ: [172, -41], ID: [113, -1]}[f.properties.iso2]; return fix || G.geoCentroid(f); };
     const lights = W.feats.filter(f => f.properties.iso2).map(f => { const st = statuses.get(f.properties.iso2), big2 = st && st.level !== 'grey' && st.level !== 'green'; const g = svg('g', {class: 'g-light'}); const ring = svg('circle', {r: 11, fill: 'none', stroke: COLOR[st?.level || 'grey'], 'stroke-opacity': 0.5, 'stroke-width': 2}); const dot = svg('circle', {r: big2 ? 6 : st?.level === 'green' ? 4.2 : 3, fill: COLOR[st?.level || 'grey'], stroke: '#06080a', 'stroke-width': 1.5}); const t = svg('title'); t.textContent = `${nameOfC(f.properties.iso2)}: ${st?.level === 'grey' ? 'no live signal' : st?.level}`; g.append(t); if (big2) g.append(ring); g.append(dot); g.addEventListener('click', e => { e.stopPropagation(); select(f.properties.iso2); }); gLights.append(g); return [centroid(f), g, f.properties.iso2]; });
     const chokes = Object.entries(W.ships?.chokepoints || {}).map(([n, [[a, b], [c, d]]]) => { const g = svg('g', {class: 'g-choke', role: 'button', tabindex: '0', 'aria-label': `${n} chokepoint details`}); g.addEventListener('click', e => { e.stopPropagation(); chokeCard(n); }); g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chokeCard(n); } }); const r = svg('rect', {width: 10, height: 10, x: -5, y: -5, transform: 'rotate(45)'}); const t = svg('text', {x: 9, y: 14}); const cnt = W.ships?.counts?.[n]; t.textContent = cnt ? `${n} · ${cnt.ships}` : n; g.append(r, t); gChokes.append(g); return [[(b + d) / 2, (a + c) / 2], g]; });
     const vessels = (W.ships?.vessels || []).slice(0, 4000);
+    W.centroidOf = iso => { const f = W.feats.find(x => x.properties.iso2 === iso); return f ? centroid(f) : null; };
+    W.statusOf = iso => statuses.get(iso) || null;
     draw = () => {
       const w = sv.clientWidth || 800, h = sv.clientHeight || 600; sv.setAttribute('viewBox', `0 0 ${w} ${h}`);
       const proj = projection(w, h), path = G.geoPath(proj), center = W.flat ? null : [-W.rot[0], -W.rot[1]];
@@ -132,6 +135,7 @@
         else frag.append(svg('circle', {cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: (wait && arrows ? sz * 1.3 : sz) * k, class: cls, 'data-i': i}));
       }
       gShips.append(frag);
+      try { W.intel?.draw(proj, path, visible); } catch (e) { T.report('intel-draw', e); }
       if (W.sel) place(W.sel);
       if (!scard.hidden && scard._ll) placeAt(scard, scard._ll);
     };
@@ -154,6 +158,7 @@
       if (c?.data?.growth) fact(`GDP ${c.data.growth.year}`, signed(c.data.growth.value, 1, '%'));
       if (c?.data?.inflation) fact(`CPI ${c.data.inflation.year}`, c.data.inflation.value.toFixed(1) + '%');
       card.append(facts);
+      const intelLine = W.intel?.countryLine(iso); if (intelLine) card.append(el('p', 'fx-gc-route', 'Intel: ' + intelLine));
       const top = c?.news?.items?.[0]; if (top) card.append(el('p', 'fx-gc-news', top.title));
       card.append(btn(`Open ${nameOfC(iso)} terminal ▸`, 'fx-gc-open', () => T.openPage('ctry', iso)));
       place(iso);
@@ -204,10 +209,11 @@
     let drag = null;
     sv.addEventListener('pointerdown', e => { drag = {x: e.clientX, y: e.clientY, rot: [...W.rot], moved: false}; sv.setPointerCapture?.(e.pointerId); });
     sv.addEventListener('pointermove', e => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true; const k = 0.35 / W.scale; W.rot = W.flat ? [drag.rot[0] + dx * k, 0] : [drag.rot[0] + dx * k, Math.max(-80, Math.min(80, drag.rot[1] - dy * k))]; requestAnimationFrame(() => draw?.()); });
-    sv.addEventListener('pointerup', () => { lastMoved = !!drag?.moved; drag = null; });
+    sv.addEventListener('pointerup', () => { lastMoved = W.lastMoved = !!drag?.moved; drag = null; });
     sv.addEventListener('wheel', e => { e.preventDefault(); W.scale = Math.max(0.7, Math.min(8, W.scale * (e.deltaY < 0 ? 1.15 : 1 / 1.15))); requestAnimationFrame(() => draw?.()); }, {passive: false});
     W.focusOn = iso => { const f = W.feats.find(x => x.properties.iso2 === iso); if (!f) return; const ll = centroid(f); W.rot = W.flat ? [-ll[0], 0] : [-ll[0], -ll[1]]; W.scale = Math.max(W.scale, 1.6); draw(); select(iso); };
     W.focusPoint = ll => { W.rot = W.flat ? [-ll[0], 0] : [-ll[0], -ll[1]]; W.scale = 5; draw(); };
+    W.intel?.mount({sv, stage, legend, gZones, gPipes, gIntel, redraw: () => draw?.()});
     new ResizeObserver(() => draw?.()).observe(sv);
     draw();
     if (W.sel) select(W.sel);
@@ -296,7 +302,7 @@
 
   /* --- register panels and the WORLD desk ------------------------------------------------------- */
   Object.assign(T.PANELS, {globe: ['WORLD', 'Live world', 'world'], cwatch: ['WATCH', 'Countries by status', 'world'], ships: ['SHIP', 'Ships & chokepoints'], cnews: ['WNEWS', 'World headlines', 'news'], cdata: ['ECON', 'Economies at a glance', 'world']});
-  Object.assign(T.PANEL_DESC, {globe: 'Interactive globe: country lights, ships, chokepoints', cwatch: 'Every country ranked red, yellow, green', ships: 'Live tankers and cargo ships, chokepoint counts', cnews: 'Headlines for countries with events', cdata: 'GDP, growth, inflation, jobless by country'});
+  Object.assign(T.PANEL_DESC, {globe: 'Interactive globe: country lights, ships, conflict, cyber, hazards and infrastructure layers', cwatch: 'Every country ranked red, yellow, green', ships: 'Live tankers and cargo ships, chokepoint counts', cnews: 'Headlines for countries with events', cdata: 'GDP, growth, inflation, jobless by country'});
   Object.assign(T.RENDER, {globe: () => renderGlobe(), cwatch: () => renderWatch(), ships: () => renderShips(), cnews: () => renderCNews(), cdata: () => renderCData()});
   T.EXTRA_GROUPS.push(['World', ['globe', 'cwatch', 'ships', 'cnews', 'cdata']]);
   T.DESK_DEFS.world = {label: 'WORLD', noun: 'World', who: 'global macro traders', slots: ['cwatch', 'ships', 'globe', 'cnews', 'cb', 'xa', 'eco', 'cdata', 'intel'],
