@@ -815,8 +815,13 @@ body:not(.dark-mode) .m-acc-btn{
 body:not(.dark-mode) .m-acc-panel{
   border-top: 1px solid rgba(0, 0, 0, 0.10);
 }
-.m-accordion.open .m-acc-panel{
+.m-accordion.open > .m-acc-panel{
   max-height: 1200px;
+}
+.m-acc-btn:focus-visible{
+  outline: 3px solid currentColor;
+  outline-offset: -4px;
+  border-radius: 8px;
 }
 .m-links{
   display:flex;
