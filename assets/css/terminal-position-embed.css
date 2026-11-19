@@ -106,6 +106,13 @@ body.terminal-position-embedded .kv:nth-child(4) { border-right: 1px solid var(-
 body.terminal-position-embedded .kv .k { font-size: 9px; }
 body.terminal-position-embedded .kv small { font-size: 9px; color: var(--muted); }
 body.terminal-position-embedded .kv .v { font-size: 18px; font-weight: 600; overflow-wrap: anywhere; }
+/* Losing-streak table spans the full results row so every column fits. */
+body.terminal-position-embedded .streakBox { grid-column: 1 / -1; margin-top: 12px; padding: 12px 14px; border-radius: 0; border: 1px solid var(--border); overflow: visible; }
+body.terminal-position-embedded .streakBox .k { font-size: 9px; font-weight: 700; letter-spacing: .05em; }
+body.terminal-position-embedded .streakBox small { font-size: 11px; font-weight: 500; color: var(--muted); }
+body.terminal-position-embedded .streakTable { table-layout: fixed; width: 100%; margin-top: 10px; }
+body.terminal-position-embedded .streakTable th { font-size: 9px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 6px 8px; white-space: normal; }
+body.terminal-position-embedded .streakTable td { font-size: 13px; font-weight: 600; padding: 8px; }
 body.terminal-position-embedded .resultsBox > .note { grid-column: 1 / -1; margin: 12px 0 0; font-size: 10px; line-height: 1.6; }
 body.terminal-position-embedded .shell > .note { margin: 10px 0 0 !important; font-size: 10px; line-height: 1.6; }
 @media (max-width: 520px) {
@@ -114,5 +121,7 @@ body.terminal-position-embedded .shell > .note { margin: 10px 0 0 !important; fo
   body.terminal-position-embedded .card:first-child > .row:has(#quoteUsdRate) { grid-column: 1 / -1; }
   body.terminal-position-embedded .resultsBox { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   body.terminal-position-embedded .kv { border-right: 1px solid var(--border); }
+  body.terminal-position-embedded .streakTable td { font-size: 12px; padding: 7px 4px; }
+  body.terminal-position-embedded .streakTable th { padding: 6px 4px; }
   body.terminal-position-embedded :is(.field, select, .primary, .ghost, #manualModeBtn) { min-height: 40px; }
 }

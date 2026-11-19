@@ -1,9 +1,10 @@
 /* Members-only pages: load right after site-theme-init.js, before any page content renders.
-   Hides the page until session-bootstrap.js confirms a signed-in account, so signed-out visitors
-   never see dashboard content; they are sent to sign in (or sign up) and brought back afterwards.
+   Hides the page until session-bootstrap.js confirms a signed-in account; signed-out visitors are
+   sent to sign in (or sign up) and brought back afterwards. The dashboard (home.html) is public:
+   guests can look around, and personal tools (Terminal, Journal, Your News) ask them to sign in.
    Account data itself is protected server-side by Firebase rules; this gate controls what renders. */
 (() => {
-  const PRIVATE_PAGES = ['home.html', 'dashboard.html', 'profile.html', 'account-settings.html', 'security.html', 'notifications.html', 'preferences.html'];
+  const PRIVATE_PAGES = ['profile.html', 'account-settings.html', 'security.html', 'notifications.html', 'preferences.html'];
   const page = (location.pathname.split('/').pop() || '').toLowerCase();
   const isPrivate = PRIVATE_PAGES.includes(page);
   const loginUrl = reason => '/auth/login.html?returnTo=' + encodeURIComponent(location.pathname + location.search + location.hash) + (reason ? '&reason=' + reason : '');

@@ -1,9 +1,9 @@
 import { auth } from "../../auth/firebase.js";
-import { bootstrapSession } from "./session-manager.js?v=20261114-consistency-2";
+import { bootstrapSession } from "./session-manager.js?v=20261119-signout-1";
 
-// Public browsing is the default. The dashboard and personal account screens require a session.
+// Public browsing is the default, including the dashboard. Personal account screens require a session.
 // Keep in sync with PRIVATE_PAGES in auth-gate.js (checked by scripts/test-auth-gate.cjs).
-const privatePages = new Set(["home.html", "dashboard.html", "profile.html", "account-settings.html", "security.html", "notifications.html", "preferences.html"]);
+const privatePages = new Set(["profile.html", "account-settings.html", "security.html", "notifications.html", "preferences.html"]);
 const protectedPage = privatePages.has((location.pathname.split("/").pop() || "").toLowerCase());
 
 function removeLegacyRestoreUi() {

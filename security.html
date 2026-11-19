@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head>
-  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script><script src="/assets/js/auth-gate.js?v=20261113-lock"></script><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="/assets/js/site-theme-init.js?v=20261011-discovery"></script><script src="/assets/js/auth-gate.js?v=20261119-guest-1"></script><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <link rel="stylesheet" href="assets/css/mobile-fixes.css">
 <style>
 .field{display:grid;gap:6px;margin-bottom:8px}.field input{height:40px;border:1px solid #ddd;border-radius:10px;padding:0 12px;background:#fff} body.dark-mode .field input{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12);color:#fff}
@@ -37,7 +37,7 @@ body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,25
 <link rel="stylesheet" href="/assets/css/terminal-header.css?v=20261114-site-qa-97">
 <script src="/assets/js/market-intelligence-data.js?v=20261114-consistency-2" defer></script>
 <script src="/assets/js/terminal-market-data.js?v=20261114-consistency-2" defer></script>
-<script src="/assets/js/terminal-header.js?v=20261114-consistency-2" defer></script>
+<script src="/assets/js/terminal-header.js?v=20261119-signout-1" defer></script>
 <script src="/assets/js/terminal-market-ui.js?v=20261114-consistency-2" defer></script>
 <link rel="stylesheet" href="/assets/css/terminal-pages.css?v=20261030-r1">
 <script src="/assets/js/terminal-pages.js?v=20261030-r1" defer></script>
@@ -59,7 +59,7 @@ body.dark-mode .switch{background:rgba(255,255,255,.04);border-color:rgba(255,25
 </div>
 <div class="card"><h3 style="font-size:14px;margin-bottom:8px">Active Sessions</h3><div id="sessionList" style="font-size:12px;color:#777" role="region" aria-label="Active sessions" aria-live="polite">Loading sessions...</div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" id="logoutCurrentBtn" type="button">Log out current session</button><button class="btn danger" id="logoutAllBtn" type="button">Log out all devices</button></div></div>
 </div></main></div>
-<script type="module" src="assets/js/session-bootstrap.js?v=20261114-consistency-2"></script>
+<script type="module" src="assets/js/session-bootstrap.js?v=20261119-guest-1"></script>
 <script type="module">
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
 import { auth, bootstrapAccount, updatePasswordWithReauth, resendVerificationEmail, saveSecuritySettings, getSessionMetadata, revokeAllSessions, logoutCurrentSession } from './assets/js/account-system.js?v=20261114-consistency-2';
@@ -113,7 +113,7 @@ onAuthStateChanged(auth, async (user) => {
 mountNotificationBell();
 </script>
 <script type="module" src="/assets/js/mfa.js?v=20260930-errors"></script>
-<script src="fynx-nav.js?v=20261116-bell-link-1"></script>
+<script src="fynx-nav.js?v=20261119-signout-1"></script>
 <script src="/assets/js/settings-shell.js?v=20261112-settings-1" defer></script>
 <script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
 </body></html>

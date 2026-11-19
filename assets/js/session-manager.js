@@ -316,9 +316,11 @@ function bindPresenceListeners() {
 }
 
 async function broadcastAndSignOut(reason = "manual", redirectTo = "/auth/login.html") {
-  if (!currentAuth) return;
+  // Pages that never ran bootstrapSession still need a working sign-out.
+  const auth = currentAuth || (await import("../../auth/firebase.js")).auth;
+  if (!auth) return;
 
-  await endAccountsSession();
+  try { await endAccountsSession(); } catch (error) { console.warn("Accounts session cleanup failed", error); }
   safeSetItem(KEYS.sessionEvent, JSON.stringify({
     type: "logout",
     at: now(),
@@ -327,7 +329,7 @@ async function broadcastAndSignOut(reason = "manual", redirectTo = "/auth/login.
   }));
 
   clearUserScopedState();
-  await signOut(currentAuth);
+  await signOut(auth);
 }
 
 async function validateSessionTimeout(source = "manual") {

@@ -51,7 +51,7 @@
     card.append(alt, el('p', 'fx-help', '<a href="/contact.html" target="_top">Need help?</a>'));
     main.replaceChildren(card);
     document.querySelector('.bg')?.remove();
-    if (!embed && !document.querySelector('.fx-auth-bar')) document.body.prepend(el('header', 'fx-auth-bar', '<a class="fx-auth-logo" href="/home.html" aria-label="FYNX Finance World home"><strong>FYNX</strong><span>FINANCE WORLD</span></a><a class="fx-auth-back" href="/home.html">Back to FYNX</a>'));
+    if (!embed && !document.querySelector('.fx-auth-bar')) document.body.prepend(el('header', 'fx-auth-bar', '<a class="fx-auth-logo" href="/" aria-label="FYNX Finance World home"><strong>FYNX</strong><span>FINANCE WORLD</span></a><a class="fx-auth-back" href="/">Back to FYNX</a>'));
     // In the site-wide window, keep the frame height in step with the card.
     if (embed) {
       const send = () => parent.postMessage({fynxAuth: 'size', height: Math.ceil(card.getBoundingClientRect().height)}, location.origin);
