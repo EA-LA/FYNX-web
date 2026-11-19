@@ -1,0 +1,32 @@
+name: API status page reliability
+
+on:
+  pull_request:
+    paths:
+      - 'api/status.html'
+      - 'scripts/test-api-status-display.cjs'
+      - '.github/workflows/api-status-display.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'api/status.html'
+      - 'scripts/test-api-status-display.cjs'
+      - '.github/workflows/api-status-display.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  api-status-renderer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Exercise production API status renderer
+        run: node --test scripts/test-api-status-display.cjs

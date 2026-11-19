@@ -27,16 +27,30 @@
 </main><footer><div class="footer-top"><div><a class="brand" href="/api/">FYNX <span>API</span></a><p>Trading infrastructure.<br>Built with explicit rules.</p></div><div><h2>Products</h2><a href="/api/risk.html">Risk API</a><a href="/api/indicators.html">Indicators API</a><a href="/api/markets.html">Market Hours API</a><a href="/api/portfolio.html">Portfolio API</a><a href="/api/finance.html">Finance Tools API</a><a href="/api/options.html">Options API</a><a href="/api/prop-firm.html">Prop Firm Rules API</a><a href="/api/pricing.html">Pricing</a></div><div><h2>Developers</h2><a href="/api/docs.html">Documentation</a><a href="/api/status.html">Status</a><a href="/api/data-security.html">Data &amp; security</a><a href="/api/workspace.html">Get API Key</a><a href="/api/workspace.html">Sign In</a></div><div><h2>FYNX ecosystem</h2><a href="/">Finance World ↗︎</a><a href="https://www.fynxfunded.com/">FYNX Funded ↗︎</a><a href="/contact.html">Contact</a></div></div><div class="footer-bottom"><p>© 2026 FYNX.</p><p>Calculations use supplied data. No investment advice, live market data or trade execution.</p></div></footer><div class="sr-only" role="status" id="copy-status"></div><script>
 (()=>{const RAW='https://raw.githubusercontent.com/EA-LA/FYNX-web/status-data',$=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const get=f=>fetch(`${RAW}/${f}?t=${Date.now()}`,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
-const ago=t=>{const m=Math.round((Date.now()-Date.parse(t))/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' d ago';};
+// Malformed or missing timestamps are unknown, never "just now".
+const elapsed=t=>{const at=Date.parse(t);return Number.isFinite(at)?Math.max(0,Date.now()-at):Infinity;};
+const ago=t=>{const ms=elapsed(t);if(!Number.isFinite(ms))return 'time unavailable';const m=Math.round(ms/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' d ago';};
 Promise.all([get('api-status.json'),get('api-status-deep.json')]).then(([s,d])=>{
  const banner=$('#status-banner');
- if(!s){banner.textContent='Status data is not available yet. The monitor publishes its first results within an hour of activation.';return;}
- const stale=Date.now()-Date.parse(s.updated_at)>6*3600000,comps={...(s.components||{}),...(d?.components||{})},bad=Object.values(comps).filter(c=>!c.ok);
- banner.textContent=stale?`Status data is stale (last update ${ago(s.updated_at)}). The monitor may be delayed.`:bad.length?`Degraded: ${bad.map(c=>c.name).join(', ')}.`:`All systems operational · updated ${ago(s.updated_at)}`;
- banner.className='notice '+(stale?'status-stale':bad.length?'status-bad':'status-ok');
+ if(!s){banner.textContent='Current status could not be loaded. Try again later or view the raw monitor data.';banner.className='notice status-stale';$('#components').innerHTML='<tr><td colspan="4">Component status unavailable.</td></tr>';$('#incidents').innerHTML='<p>Incident history unavailable.</p>';$('#bars').innerHTML='';return;}
+ // Gateway checks are hourly; deeper product checks run twice a day.
+ // A fresh gateway check does not establish that older product results remain current.
+ const stale=elapsed(s.updated_at)>6*3600000;
+ const maxProductAge=18*3600000;
+ const comps={...(s.components||{}),...(d?.components||{})};
+ const values=Object.values(comps);
+ const deepAvailable=!!(d?.components&&Object.keys(d.components).length);
+ const statusOf=c=>!c||elapsed(c.checked_at)>maxProductAge?'Stale':c.ok===true?'Operational':c.ok===false?'Failing':'Unknown';
+ const bad=values.filter(c=>statusOf(c)==='Failing');
+ const incomplete=!deepAvailable||!values.length||values.some(c=>['Stale','Unknown'].includes(statusOf(c)));
+ banner.textContent=stale?`Status data is stale (last update ${ago(s.updated_at)}). The monitor may be delayed.`
+  :bad.length?`Degraded: ${bad.map(c=>c.name||'Unnamed component').join(', ')}.`
+  :incomplete?`Gateway status may be available, but some product checks are missing, outdated or unverified. Last gateway update ${ago(s.updated_at)}.`
+  :`All systems operational · updated ${ago(s.updated_at)}`;
+ banner.className='notice '+(bad.length?'status-bad':stale||incomplete?'status-stale':'status-ok');
  $('#up30').textContent=s.uptime_30d==null?'–':s.uptime_30d+'%';$('#up90').textContent=s.uptime_90d==null?'–':s.uptime_90d+'%';$('#target').textContent=(s.target_uptime_percent||99.5)+'%';
  const today=(s.daily||[])[0];$('#p50').textContent=today?.p50_ms!=null?today.p50_ms+' ms':'–';$('#p95').textContent=today?.p95_ms!=null?today.p95_ms+' ms':'–';
- $('#components').innerHTML=Object.values(comps).map(c=>`<tr><td>${esc(c.name)}</td><td><span class="status-dot ${c.ok?'ok':'bad'}"></span>${c.ok?'Operational':'Failing'}</td><td>${c.latency_ms!=null?esc(c.latency_ms)+' ms':'–'}</td><td>${esc(ago(c.checked_at))}</td></tr>`).join('');
+ $('#components').innerHTML=values.length?values.map(c=>{const state=statusOf(c);return `<tr><td>${esc(c?.name||'Unnamed component')}</td><td><span class="status-dot ${state==='Operational'?'ok':state==='Failing'?'bad':''}"></span>${state}</td><td>${c?.latency_ms!=null?esc(c.latency_ms)+' ms':'–'}</td><td>${esc(ago(c?.checked_at))}</td></tr>`;}).join(''):'<tr><td colspan="4">No verified component checks are available.</td></tr>';
  const days=new Map((s.daily||[]).map(x=>[x.date,x]));let bars='';for(let i=89;i>=0;i--){const k=new Date(Date.now()-i*864e5).toISOString().slice(0,10),x=days.get(k),r=x?x.ok/x.checks:null;bars+=`<span class="${r==null?'none':r===1?'ok':'warn'}" title="${k}: ${x?`${x.ok}/${x.checks} checks passed`:'no data'}"></span>`;}$('#bars').innerHTML=bars;
  const inc=[...(s.incidents||[]),...(d?.incidents||[])].sort((a,b)=>b.started_at.localeCompare(a.started_at)).slice(0,15);
  $('#incidents').innerHTML=inc.length?'<ul class="incident-list">'+inc.map(i=>`<li><strong>${i.resolved_at?'Resolved':'Ongoing'}:</strong> ${esc(i.summary)} <span>Started ${esc(new Date(i.started_at).toUTCString())}${i.resolved_at?` · resolved ${esc(new Date(i.resolved_at).toUTCString())}`:''}</span>${i.issue?` <a href="https://github.com/EA-LA/FYNX-web/issues/${Number(i.issue)}">Details ↗︎</a>`:''}</li>`).join('')+'</ul>':'<p>No incidents recorded.</p>';
