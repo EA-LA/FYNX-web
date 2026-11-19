@@ -153,12 +153,15 @@
       }));
       const installs = Core.sanitizeWidgets(state.installs.filter(widget => !widget.deviceOnly));
       const deviceInstalls = Core.sanitizeWidgets(state.installs.filter(widget => widget.deviceOnly));
-      const draft = draftRecord(captureDraft()) || draftRecord(state.draft);
+      const editorDraft = captureDraft();
+      // Never persist apparent credentials in local recovery data either.
+      const unsafeDraft = editorDraft && Core.secretFindings(editorDraft.main).length > 0;
+      const draft = unsafeDraft ? null : (draftRecord(editorDraft) || draftRecord(state.draft));
       localStorage.setItem(localKey(uid), JSON.stringify({projects, installs, deviceInstalls, draft, trash: state.trash}));
       // Reopening the Builder page must use the latest editor recovery draft,
       // not the snapshot from the last authentication event.
       state.draft = draft;
-      return true;
+      return !unsafeDraft;
     } catch (e) {
       return false;
     }
@@ -773,6 +776,7 @@
         }
         const id = draft.id;
         const project = byId(id);
+        if (Core.secretFindings(draft.main).length) { say('Remove credentials from your editor before deleting or archiving this project.', 'error'); return; }
         if (!project) { say('This project is not saved. Use New project to discard the starter.', 'error'); return; }
         if (!window.confirm('Move "' + project.name + '" to Trash? The 30-day recovery copy stays in this browser only. Cloud deletion, once confirmed, cannot be undone on another device.')) return;
         const deviceOnly = project.stored !== 'account';
