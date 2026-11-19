@@ -11,6 +11,8 @@
   const frames = new Set();
   let dbApi = null;
   let stopWatch = null;
+  // One queue across Builder page mounts; stale pages cannot overtake new saves.
+  let accountWriteQueue = Promise.resolve();
 
   function emit() { listeners.forEach(fn => { try { fn(state); } catch (e) { console.error(e); } }); }
   const byId = id => state.projects.find(project => project.id === id) || null;
@@ -358,7 +360,6 @@
       let seenUid = state.uid;
       let draftTimer = 0;
       let editRevision = 0;
-      let saveSequence = Promise.resolve();
 
       const draftOf = project => ({
         id: project?.id || null,
@@ -423,7 +424,7 @@
         draftTimer = setTimeout(() => {
           if (state.uid !== uid) return;
           const preserved = writeDevice(uid);
-          setSaveLabel(preserved ? 'Saved to this browser · account sync pending' : 'Recovery save failed', 'warn');
+          if (dirty) setSaveLabel(preserved ? 'Saved to this browser · account not yet synced' : 'Recovery save failed', 'warn');
         }, 750);
       }
       function syncCode() {
@@ -561,6 +562,7 @@
         const id = draft.id || ('p' + (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())).replace(/-/g, '').slice(0, 20));
         if (!/^p[a-z0-9]{8,24}$/.test(id)) { say('Project id is not valid. Nothing was stored.', 'error'); return; }
         if (!draft.id && state.projects.length >= Core.LIMITS.projects) { say('You can save up to ' + Core.LIMITS.projects + ' private projects.', 'error'); return; }
+        clearTimeout(draftTimer);
         const ownerUid = state.uid;
         const savingRevision = editRevision;
         const prior = byId(id);
@@ -600,9 +602,9 @@
           const api = dbApi;
           // Serialize cloud writes: an older network request cannot finish
           // after a newer write and become the final account copy.
-          const previousSave = saveSequence;
+          const previousSave = accountWriteQueue;
           let releaseSave;
-          saveSequence = new Promise(resolve => { releaseSave = resolve; });
+          accountWriteQueue = new Promise(resolve => { releaseSave = resolve; });
           await previousSave;
           if (state.uid !== ownerUid) { releaseSave(); return; }
           try {
@@ -1132,7 +1134,12 @@
       function onState() {
         if (!root.isConnected) {
           listeners.delete(onState);
-          if (captureDraft && captureDraft() === draft) captureDraft = () => null;
+          clearTimeout(draftTimer);
+          if (state.uid === seenUid && captureDraft && captureDraft() === draft) {
+            // Leaving a page must never discard a change still in debounce.
+            writeDevice(state.uid);
+            captureDraft = () => null;
+          }
           return;
         }
         if (state.uid !== seenUid) {
