@@ -1,0 +1,30 @@
+name: CFTC verified report CSV export regression
+on:
+  pull_request:
+    paths:
+      - 'assets/js/cot-feed.js'
+      - 'markets/cot.html'
+      - 'scripts/test-cot-feed.cjs'
+      - '.github/workflows/cot-csv-export.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verified-cot-export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Parse CFTC feed and regression test JavaScript
+        run: node --check assets/js/cot-feed.js && node --check scripts/test-cot-feed.cjs
+      - name: Verify report retrieval, matching export, CSV escaping and recovery
+        run: node scripts/test-cot-feed.cjs
+      - name: Check Markets directory navigation
+        run: node scripts/test-market-index-links.cjs

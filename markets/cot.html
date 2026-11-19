@@ -77,12 +77,14 @@
 <div class="card">
     <h1>Commitments of Traders</h1>
     <p class="desc">Compare reported futures positions across markets. CFTC observations are weekly, not intraday trading signals.</p>
-    <div class="actions"><label for="cotSearch">Find a contract <input id="cotSearch" type="search" placeholder="Euro, gold, S&P…"></label><button class="btn" id="cotRefresh" type="button">Refresh report</button></div>
+    <div class="actions"><label for="cotSearch">Find a contract <input id="cotSearch" type="search" placeholder="Euro, gold, S&P…"></label><button class="btn" id="cotRefresh" type="button">Refresh report</button><button class="btn" id="cotExport" type="button" disabled aria-describedby="cotExportHelp">Download matching CSV</button></div>
+    <p id="cotExportHelp" class="desc" style="margin:10px 0">Export only validated weekly CFTC rows currently matching your search, including report and retrieval dates. No estimates.</p>
+    <p id="cotExportStatus" role="status" aria-live="polite" style="margin:10px 0"></p>
     <p id="cotStatus" role="status">Loading the latest published report…</p>
     <p><a href="https://publicreporting.cftc.gov/stories/s/Legacy-Futures-Only/yjak-hhbj/" target="_blank" rel="noopener">Open official CFTC report ↗︎</a></p>
     <div style="overflow:auto;max-height:640px"><table style="width:100%;border-collapse:collapse"><thead><tr><th>Contract / exchange</th><th>Non-commercial net</th><th>Commercial net</th><th>Open interest</th></tr></thead><tbody id="cotRows"></tbody></table></div>
     <style>#cotRows td,main th{padding:14px;text-align:left;border-bottom:1px solid var(--border)}#cotSearch{min-height:44px;font-size:16px;padding:10px;background:var(--panel);color:var(--text);border:1px solid var(--border);max-width:100%}#cotStatus{margin:20px 0}</style>
-    <script src="../assets/js/cot-feed.js?v=20260928-ingestion" defer></script>
+    <script src="../assets/js/cot-feed.js?v=20261119-cot-verified-csv-1" defer></script>
   </div>
 <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/markets/liquidity.html"><strong>Crypto Liquidity: Coinbase Bid, Ask &amp; Spread</strong><span>View Coinbase BTC/USD and ETH/USD best bid, ask, spread and displayed size, refreshed every 15 seconds while visible.</span></a><a href="/markets/crypto.html"><strong>Crypto Market Overview: Bitcoin, Ethereum &amp; Altcoins</strong><span>Explore Bitcoin, Ethereum and other cryptocurrency markets with charts and market context for your research.</span></a><a href="/markets/index.html"><strong>Financial Markets: Forex, Crypto &amp; Market Research</strong><span>Browse forex and crypto market views, technical indicators, volatility, correlations and market research references.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
