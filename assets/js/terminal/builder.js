@@ -116,12 +116,16 @@
     try {
       const raw = JSON.parse(localStorage.getItem(localKey(uid)) || 'null');
       if (!raw || typeof raw !== 'object') return null;
-      const merged = Core.mergeAccount(Array.isArray(raw.projects) ? raw.projects : [], {projects: [], installs: []});
+      // Validate every cached project against this account. Previously merging
+      // against an empty cloud view discarded account-synced browser backups.
+      // Those must remain readable when Firestore is temporarily unavailable.
+      const merged = Core.accountView(uid, Array.isArray(raw.projects) ? raw.projects : [], []);
+      const storedById = new Map((Array.isArray(raw.projects) ? raw.projects : []).map(row => [row?.id, row?.stored]));
       const accountInstalls = Core.sanitizeWidgets(raw.installs).map(widget => ({...widget, deviceOnly: false}));
       const deviceInstalls = Core.sanitizeWidgets(raw.deviceInstalls).map(widget => ({...widget, deviceOnly: true}));
       const seen = new Set(accountInstalls.map(widget => widget.projectId));
       return {
-        projects: merged.projects,
+        projects: merged.projects.map(project => ({...project, stored: storedById.get(project.id) === 'account' ? 'account' : 'device'})),
         installs: accountInstalls.concat(deviceInstalls.filter(widget => !seen.has(widget.projectId))).slice(0, Core.LIMITS.widgets),
         draft: draftRecord(raw.draft)
       };
