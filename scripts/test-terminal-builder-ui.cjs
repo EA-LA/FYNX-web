@@ -57,30 +57,43 @@ const authStateMock = `export function onAuthStateChanged(auth, cb) {
   return () => {};
 }`;
 const firestoreMock = `function denied() { const error = new Error('Missing or insufficient permissions.'); error.code = 'permission-denied'; return error; }
+function docs() {
+  if (Array.isArray(globalThis.__fxbDocs) && globalThis.__fxbDocs.length) return globalThis.__fxbDocs;
+  try {
+    const saved = JSON.parse(sessionStorage.getItem('__fxbMockCloud') || '[]');
+    if (Array.isArray(saved)) return (globalThis.__fxbDocs = saved);
+  } catch (error) {}
+  return (globalThis.__fxbDocs = []);
+}
+function commitDocs(rows) {
+  globalThis.__fxbDocs = rows;
+  sessionStorage.setItem('__fxbMockCloud', JSON.stringify(rows));
+}
 export function getFirestore() { return {}; }
 export function collection() { return {path: Array.prototype.slice.call(arguments, 1).join('/')}; }
 export function doc() { return {path: Array.prototype.slice.call(arguments, 1).join('/')}; }
 export function getDocs(ref) {
   if (globalThis.__fxbDeny) return Promise.reject(denied());
-  const rows = (globalThis.__fxbDocs || []).filter(row => row.path.indexOf(ref.path + '/') === 0);
+  const rows = docs().filter(row => row.path.indexOf(ref.path + '/') === 0);
   return Promise.resolve({docs: rows.map(row => ({id: row.id, data: () => row.data}))});
 }
 export function getDoc(ref) {
   if (globalThis.__fxbDeny) return Promise.reject(denied());
-  const hit = (globalThis.__fxbDocs || []).find(row => row.path === ref.path);
+  const hit = docs().find(row => row.path === ref.path);
   return Promise.resolve({exists: () => !!hit, data: () => hit ? hit.data : {}});
 }
 export function setDoc(ref, data) {
   if (globalThis.__fxbDeny) return Promise.reject(denied());
-  const docs = globalThis.__fxbDocs || (globalThis.__fxbDocs = []);
+  const rows = docs();
   const row = {path: ref.path, id: ref.path.split('/').pop(), data: data};
-  const at = docs.findIndex(item => item.path === ref.path);
-  if (at >= 0) docs[at] = row; else docs.push(row);
+  const at = rows.findIndex(item => item.path === ref.path);
+  if (at >= 0) rows[at] = row; else rows.push(row);
+  commitDocs(rows);
   return Promise.resolve();
 }
 export function deleteDoc(ref) {
   if (globalThis.__fxbDeny) return Promise.reject(denied());
-  globalThis.__fxbDocs = (globalThis.__fxbDocs || []).filter(row => row.path !== ref.path);
+  commitDocs(docs().filter(row => row.path !== ref.path));
   return Promise.resolve();
 }`;
 
