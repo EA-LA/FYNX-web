@@ -880,7 +880,8 @@
         dirty = true;
         editRevision += 1;
         scheduleDraft();
-        say('Created a private draft. Run to preview, then Save Version to keep a checkpoint.', 'ok');
+        scheduleCloudSync();
+        say('Created a private draft. Run to preview; automatic saving preserves it, and Save Version makes a checkpoint.', 'ok');
         paint();
       }
 
