@@ -749,28 +749,76 @@
           paint();
           return;
         }
-        if (!window.confirm('Delete this private project from your account and this browser?')) return;
         const id = draft.id;
         const project = byId(id);
-        const deviceOnly = !project || project.stored !== 'account';
-        if (state.installs.some(widget => widget.projectId === id)) await uninstall(true);
-        if (!deviceOnly && state.uid && dbApi) {
+        if (!project) { say('This project is not saved. Use New project to discard the starter.', 'error'); return; }
+        if (!window.confirm('Move "' + project.name + '" to Trash? The 30-day recovery copy stays in this browser only. Cloud deletion, once confirmed, cannot be undone on another device.')) return;
+        const deviceOnly = project.stored !== 'account';
+        // Create a recovery snapshot before ANY destructive request. If the
+        // browser refuses local storage, refuse the deletion entirely.
+        const previousTrash = state.trash.slice();
+        state.trash = state.trash.filter(row => row.project.id !== id).concat([{
+          project: {...project, main: draft.main, authorUid: state.uid},
+          deletedAt: Date.now()
+        }]).slice(-Core.LIMITS.projects);
+        if (!writeDevice(state.uid)) {
+          state.trash = previousTrash;
+          say('Deletion cancelled. This browser could not preserve a recovery copy.', 'error');
+          return;
+        }
+        if (!deviceOnly) {
+          if (!dbApi) {
+            state.trash = previousTrash;
+            writeDevice(state.uid);
+            say('Cannot delete the cloud project while account storage is unavailable.', 'error');
+            return;
+          }
           try {
             const api = await connect();
+            if (api.auth.currentUser?.uid !== state.uid) throw new Error('Account changed during deletion.');
             await api.firestore.deleteDoc(api.firestore.doc(api.firestore.getFirestore(api.app), 'users', state.uid, 'builderProjects', id));
           } catch (error) {
-            say('Could not delete it from your account. ' + (error.message || 'It is still saved there.'), 'error');
-            paint();
+            state.trash = previousTrash;
+            writeDevice(state.uid);
+            say('Deletion cancelled. Your account still has the project. ' + (error.message || ''), 'error');
             return;
           }
         }
+        if (state.installs.some(widget => widget.projectId === id)) await uninstall(true);
         state.projects = state.projects.filter(item => item.id !== id);
         currentId = state.projects[0]?.id || null;
         draft = currentId ? draftOf(byId(currentId)) : draftOf(null);
         dirty = false;
-        // Persist the replacement draft, not the deleted project's former draft.
+        // Persist the replacement draft, never the deleted project's old draft.
         writeDevice(state.uid);
-        say(deviceOnly ? 'Deleted from this browser.' : 'Project deleted from your account.', 'ok');
+        say('Moved to browser Trash. Recover within 30 days on this browser.', 'ok');
+        paint();
+      }
+
+      async function restoreTrash(id) {
+        const entry = state.trash.find(row => row.project.id === id);
+        if (!entry || entry.project.authorUid !== state.uid) return;
+        if (state.projects.some(project => project.id === id)) {
+          say('A project with this identifier already exists. Recovery cancelled.', 'error');
+          return;
+        }
+        const restored = {...entry.project, stored: 'device', updatedAt: Date.now()};
+        const check = Core.validateProject(restored);
+        if (!check.ok) { say('Recovery failed: ' + check.errors[0], 'error'); return; }
+        const previous = state.trash.slice();
+        state.projects = [restored, ...state.projects].slice(0, Core.LIMITS.projects);
+        state.trash = state.trash.filter(row => row !== entry);
+        currentId = id;
+        draft = draftOf(restored);
+        dirty = false;
+        if (!writeDevice(state.uid)) {
+          state.projects = state.projects.filter(row => row.id !== id);
+          state.trash = previous;
+          say('Restore cancelled: browser storage is full or unavailable.', 'error');
+          return;
+        }
+        showTrash = false;
+        say('Recovered to this browser. Select Save to sync the restored project to your account.', 'ok');
         paint();
       }
 
@@ -998,6 +1046,19 @@
         actions.append(buttonEl('Duplicate', '', duplicate));
         actions.append(buttonEl('Delete project', 'danger', removeProject));
         scroll.append(actions);
+        scroll.append(buttonEl(showTrash ? 'Hide Trash' : 'Trash (' + state.trash.length + ')', '', () => {
+          showTrash = !showTrash;
+          paint();
+        }));
+        if (showTrash) {
+          const entries = state.trash.slice().reverse();
+          if (!entries.length) scroll.append(el('p', 'fxb-note', 'Trash is empty.'));
+          entries.forEach(entry => {
+            scroll.append(el('p', 'fxb-note', entry.project.name + ' · browser recovery · ' + new Date(entry.deletedAt).toLocaleDateString()));
+            scroll.append(buttonEl('Restore ' + entry.project.name, '', () => restoreTrash(entry.project.id)));
+          });
+          scroll.append(el('p', 'fxb-note', 'Recovery copies expire after 30 days and are stored in this browser, not Firebase.'));
+        }
         scroll.append(el('p', 'fxb-note', 'Visibility is private. Community Library, official submission, and external API credentials are not part of this release. Widgets cannot make network requests.'));
         side.append(scroll);
         const split = el('div', 'fxb-split');
