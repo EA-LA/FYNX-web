@@ -147,11 +147,14 @@
       groups.get(key).items.push(h);
     };
     const consider = (h, feedIso) => {
-      const t = Date.parse(h.publishedAt || h.at || h.time || ''); if (!h.title || (finite(t) && t < cutoff)) return;
+      const t = Date.parse(h.publishedAt || h.at || h.time || '');
+      // Unverified or future-dated headlines must not be presented as reports from the last 72 hours.
+      // Allow a small clock-skew tolerance for otherwise valid provider timestamps.
+      if (!h.title || !Number.isFinite(t) || t < cutoff || t > now + 5 * 60000) return;
       const cats = classify(h.title); if (!cats.length) return;
       const m = mentions(h.title), iso = feedIso && (m.includes(feedIso) || !m.length) ? feedIso : m[0];
       if (!iso) return;
-      for (const c of cats) add(iso, c, {title: h.title, source: h.source || h.publisher || '', url: h.url || h.link || null, at: finite(t) ? new Date(t).toISOString() : null});
+      for (const c of cats) add(iso, c, {title: h.title, source: h.source || h.publisher || '', url: h.url || h.link || null, at: new Date(t).toISOString()});
     };
     for (const [iso, c] of Object.entries(W.countries?.countries || {})) for (const h of c.news?.items || []) consider(h, iso);
     for (const h of T.S.briefing || []) consider(h, null);

@@ -1,0 +1,23 @@
+name: World desk verified headline age regression
+on:
+  pull_request:
+    paths:
+      - 'assets/js/terminal/world-intel.js'
+      - 'terminal.html'
+      - 'scripts/test-world-intel-headline-time.cjs'
+      - '.github/workflows/world-intel-headline-time.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  world-headline-time:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check assets/js/terminal/world-intel.js
+      - run: node --check scripts/test-world-intel-headline-time.cjs
+      - run: node --test scripts/test-world-intel-headline-time.cjs
