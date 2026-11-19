@@ -362,6 +362,7 @@
       let currentId = null;
       let draft = null;
       let stopPreview = () => {};
+      let successfulPreviewCode = null;
       let consoleText = 'Ctrl/Cmd+Enter runs. Ctrl/Cmd+S saves. Ctrl/Cmd+F finds. Ctrl/Cmd+H replaces.';
       let consoleLevel = '';
       let dirty = false;
@@ -427,6 +428,8 @@
         return 'Private to your account';
       }
       function markDirty() {
+        // Any source edit invalidates the last successfully tested source.
+        successfulPreviewCode = null;
         dirty = true;
         editRevision += 1;
         scheduleDraft();
@@ -689,6 +692,11 @@
         if (!state.uid) { say('Sign in before installing. Nothing was added.', 'error'); return; }
         const saved = draft.id ? byId(draft.id) : null;
         if (!saved || saved.main !== draft.main || saved.name !== draft.name) { say('Save the project before adding it to your terminal.', 'error'); return; }
+        if (successfulPreviewCode !== draft.main) { say('Run this saved code successfully before installing it.', 'error'); return; }
+        const deskName = String(T.S?.deskKey || 'current').toUpperCase() + ' desk';
+        if (!window.confirm('Install "' + saved.name + '" to ' + deskName + '? This does not delete or publish your source project.')) {
+          say('Installation cancelled; your project is unchanged.', ''); return;
+        }
         let slot = '';
         try { slot = Core.slotFor(draft.id); }
         catch (error) { say('Project id is not valid. Nothing was installed.', 'error'); return; }
@@ -903,6 +911,7 @@
       function run() {
         stopPreview();
         syncCode();
+        successfulPreviewCode = null;
         const syntax = Core.syntaxError(draft.main);
         if (syntax) { say(syntax, 'error'); showPreviewMessage(syntax); previewNote(syntax, true); return; }
         const check = Core.validateProject({...draft, description: draft.description || 'Preview of a financial widget.', name: draft.name || 'Preview'});
@@ -911,12 +920,14 @@
         const preview = root.querySelector('[data-fxb-preview]');
         if (!preview) return;
         const quotes = snapshot(T);
+        const sourceUnderTest = draft.main;
         say('Running in the sandbox…', '');
         previewNote('Running…', false);
         stopPreview = mount(preview, draft.main, quotes, {
           title: draft.name,
           onError: message => { say(message, 'error'); previewNote(message, true); },
           onDone: () => {
+            if (draft.main === sourceUnderTest) successfulPreviewCode = sourceUnderTest;
             const count = quotes.length;
             const text = count
               ? 'Running in the sandbox. ' + count + ' snapshot price' + (count === 1 ? '' : 's') + ' available. Network access is blocked.'
@@ -1008,6 +1019,7 @@
         if (!project) return;
         currentId = id;
         draft = draftOf(project);
+        successfulPreviewCode = null;
         dirty = false;
         state.draft = draftRecord(draft);
         writeDevice(state.uid);
@@ -1225,6 +1237,7 @@
         const bar = el('div', 'fxb-bar');
         bar.append(el('strong', '', 'FYNX BUILDER'));
         bar.append(el('span', 'fxb-active-title', draft.name + ' · v' + (draft.version || 1)));
+        bar.append(el('span', 'fxb-install-desk', 'Install destination: ' + String(T.S?.deskKey || 'current').toUpperCase() + ' desk'));
         const status = el('span', '', statusText());
         status.setAttribute('data-fxb-status', '');
         bar.append(status);
@@ -1254,6 +1267,8 @@
         lines.setAttribute('data-fxb-lines', '');
         const save = el('span', 'fxb-save', '');
         save.setAttribute('data-fxb-save', '');
+        save.setAttribute('role', 'status');
+        save.setAttribute('aria-live', 'polite');
         fileBar.append(lines, save);
         editor.append(fileBar);
         const editorHost = el('div', 'fxb-cmhost');
@@ -1292,6 +1307,8 @@
         preview.append(screen);
         const note = el('p', 'fxb-note', '');
         note.setAttribute('data-fxb-preview-note', '');
+        note.setAttribute('role', 'status');
+        note.setAttribute('aria-live', 'polite');
         preview.append(note);
         preview.append(buttonEl('Refresh preview', '', () => { syncCode(); run(); }));
         bindSplit(split, '--fxb-preview', 340, true, 220, 640);
