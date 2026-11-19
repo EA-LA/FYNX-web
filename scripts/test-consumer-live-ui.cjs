@@ -47,3 +47,44 @@ test('expired and cross-account drafts never appear in the payment workspace',as
   const h=await load({user:true,newsDraft:draft});assert.equal(h.document.getElementById('newsDraftReturn'),null);h.close();
  }
 });
+
+test('Pro analysis clears an old paid result when a numeric input changes',async()=>{
+ const h=await load({user:true,tier:'starter',query:'?tool=risk',handler:data=>data.action==='run'?{result:{positionUnits:321}}:undefined});
+ h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.match(h.document.getElementById('result').textContent,/321/);
+ const field=h.document.getElementById('tool-balance');
+ field.value='25000';
+ field.dispatchEvent(new h.document.defaultView.Event('input',{bubbles:true}));
+ assert.match(h.document.getElementById('result').textContent,/Inputs changed/);
+ assert.doesNotMatch(h.document.getElementById('result').textContent,/321/);
+ assert.match(h.document.getElementById('status').textContent,/Run analysis again/);
+ h.close();
+});
+test('Pro analysis rejects a late result when a field changes during a request',async()=>{
+ let finish;
+ const h=await load({user:true,tier:'starter',query:'?tool=risk',handler:data=>data.action==='run'?new Promise(resolve=>{finish=resolve;}):undefined});
+ h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(typeof finish,'function');
+ const field=h.document.getElementById('tool-riskPct');
+ field.value='2';
+ field.dispatchEvent(new h.document.defaultView.Event('input',{bubbles:true}));
+ finish({result:{positionUnits:999}});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.doesNotMatch(h.document.getElementById('result').textContent,/999/);
+ assert.match(h.document.getElementById('status').textContent,/changed while the analysis ran/);
+ h.close();
+});
+test('Pro analysis invalidates old output when a checklist answer changes',async()=>{
+ const h=await load({user:true,tier:'starter',query:'?tool=review',handler:data=>data.action==='run'?{result:{completed:['Entry plan defined']}}:undefined});
+ h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.match(h.document.getElementById('result').textContent,/Entry plan defined/);
+ const checkbox=h.document.getElementById('tool-plan');
+ checkbox.checked=true;
+ checkbox.dispatchEvent(new h.document.defaultView.Event('change',{bubbles:true}));
+ assert.match(h.document.getElementById('result').textContent,/Inputs changed/);
+ assert.doesNotMatch(h.document.getElementById('result').textContent,/Entry plan defined/);
+ h.close();
+});
