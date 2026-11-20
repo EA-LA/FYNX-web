@@ -1,4 +1,4 @@
-/* FYNX Terminal access. The website is free to browse; the Terminal requires a FYNX account.
+/* FYNX Terminal access. Signed-out visitors get a read-only guest preview with public data; account features need a FYNX account.
    The account is the same one used on the website (one Firebase session per browser), so a
    member who is already signed in on the site goes straight in, and signing in here also
    signs them in on the website. */
@@ -44,8 +44,30 @@ function noteFailure() {
 function clearFailures() { try { sessionStorage.removeItem(LOCK_KEY); } catch {} }
 function lockedFor() { const u = lockState().until || 0; return u > Date.now() ? Math.ceil((u - Date.now()) / 1000) : 0; }
 
-function unlock() { root.classList.remove('ftg-locked', 'ftg-checking'); gate?.remove(); gate = null; }
+function unlock() { root.classList.remove('ftg-locked', 'ftg-checking', 'ftg-guest'); gate?.remove(); gate = null; document.querySelector('.ftg-guest-bar')?.remove(); }
 function lock() { root.classList.remove('ftg-checking'); root.classList.add('ftg-locked'); render(); }
+
+/* Guest preview: signed-out visitors can look around the Terminal with the same public, delayed market data the
+   website shows. Nothing account-specific is available (journal, saved tools, plan); daily allowances for guests
+   come from FYNXPlan, and paid entitlements are verified on the server for signed-in members only. The sign-in
+   panel opens from the guest bar and can be closed to return to the preview. */
+function guestBar() {
+  if (document.querySelector('.ftg-guest-bar')) return;
+  const open = m => () => { mode = m; lock(); };
+  const bar = h('div', {class: 'ftg-guest-bar', role: 'region', 'aria-label': 'Guest preview'},
+    h('p', {}, h('strong', {text: 'Guest preview'}), h('span', {text: ' · Public, delayed market data. Sign in to sync your journal, save tools to your account and use your plan.'})),
+    h('div', {class: 'ftg-guest-actions'},
+      h('button', {type: 'button', class: 'ftg-guest-signin', text: 'Sign in'}),
+      h('button', {type: 'button', class: 'ftg-guest-create', text: 'Create free account'}),
+      h('a', {href: '/pro.html', class: 'ftg-guest-plans', text: 'Plans'}),
+      h('button', {type: 'button', class: 'ftg-guest-min', 'aria-label': 'Minimise the guest preview bar', 'aria-expanded': 'true', text: '–'})));
+  bar.querySelector('.ftg-guest-signin').onclick = open('login');
+  bar.querySelector('.ftg-guest-create').onclick = open('signup');
+  const min = bar.querySelector('.ftg-guest-min'); min.onclick = () => { const on = bar.classList.toggle('is-min'); min.setAttribute('aria-expanded', String(!on)); min.textContent = on ? '+' : '–'; };
+  document.body.prepend(bar);
+}
+function guest() { root.classList.remove('ftg-checking', 'ftg-locked'); root.classList.add('ftg-guest'); gate?.remove(); gate = null; guestBar(); }
+const wantsLogin = () => { try { return new URLSearchParams(location.search).get('login') === '1'; } catch { return false; } };
 
 function strong(pw) { return pw.length >= 8 && /[A-Za-z]/.test(pw) && /\d/.test(pw); }
 
@@ -84,10 +106,12 @@ function render() {
     h('p', {class: 'ftg-lead', text: reset ? 'Enter your FYNX ID and we’ll email a secure reset link.' : 'Secure FYNX authentication for the Terminal. Your FYNX website account works here: sign in once and you’re signed in on both.'}),
     form, providers, swap);
   gate = h('div', {class: 'ftg', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'ftg-title'},
-    h('header', {class: 'ftg-top'}, h('a', {class: 'ftg-brand', href: '/home.html'}, h('strong', {text: 'FYNX'}), h('span', {text: 'TERMINAL'})), h('a', {class: 'ftg-back', href: '/home.html', text: 'Back to FYNX website'})),
+    h('header', {class: 'ftg-top'}, h('a', {class: 'ftg-brand', href: '/home.html'}, h('strong', {text: 'FYNX'}), h('span', {text: 'TERMINAL'})), h('div', {class: 'ftg-top-actions'}, auth.currentUser ? null : h('button', {type: 'button', class: 'ftg-guest-back', text: 'Continue as guest'}), h('a', {class: 'ftg-back', href: '/home.html', text: 'Back to FYNX website'}))),
     h('main', {class: 'ftg-main'}, panel),
-    h('footer', {class: 'ftg-foot'}, h('span', {text: `© ${new Date().getFullYear()} FYNX Finance World`}), h('nav', {}, h('a', {href: '/contact.html', text: 'Contact us'}), h('a', {href: 'https://ea-la.github.io/FYNX-Site/terms.html', text: 'Terms of Service'}), h('a', {href: 'https://ea-la.github.io/FYNX-Site/privacy.html', text: 'Privacy Policy'}))));
+    h('footer', {class: 'ftg-foot'}, h('span', {text: `© ${new Date().getFullYear()} FYNX Finance World`}), h('nav', {}, h('a', {href: '/contact.html', text: 'Contact us'}), h('a', {href: 'https://site.fynxfinanceworld.com/terms.html', text: 'Terms of Service'}), h('a', {href: 'https://site.fynxfinanceworld.com/privacy.html', text: 'Privacy Policy'}))));
   document.body.append(gate);
+  gate.querySelector('.ftg-guest-back')?.addEventListener('click', guest);
+  gate.addEventListener('keydown', e => { if (e.key === 'Escape' && !auth.currentUser) guest(); });
   try { const last = localStorage.getItem('fynx_auth_email'); if (last && !signup) email.value = last; } catch {}
   (signup ? name : email.value && !reset ? pw : email).focus();
 
@@ -128,11 +152,13 @@ function render() {
 }
 
 /* Signed out (or session expired) → lock; signed in on the website or here → open the Terminal. */
+/* Signed out → guest preview (or the sign-in panel with ?login=1); signed in on the website or here → full Terminal. */
 let first = true;
 onAuthStateChanged(auth, user => {
   if (user) { unlock(); first = false; return; }
-  if (first || !gate) lock(); first = false;
+  if (first) { if (wantsLogin()) lock(); else guest(); } else if (!gate) guest();
+  first = false;
 });
-// If Firebase cannot load at all, still show the login (the Terminal never opens without an account).
-setTimeout(() => { if (root.classList.contains('ftg-checking') && !auth.currentUser) lock(); }, 8000);
+// If Firebase cannot load at all, open the guest preview: public data only, nothing account-specific.
+setTimeout(() => { if (root.classList.contains('ftg-checking') && !auth.currentUser) guest(); }, 8000);
 window.FynxTerminalSignOut = () => signOut(auth);
