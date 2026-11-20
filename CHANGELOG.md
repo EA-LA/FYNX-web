@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-20 (run 104) — [site-qa] New Plans, Welcome tour and upgrade window fit iPhone
+- Fixed on iPhone: on iPhone SE the upgrade window (shown when you reach today's limit in a Terminal or Quant lab) opened scrolled down to the Plus card, so the title, the reason and the close "×" were hidden above. It now opens at the top. The close button and the plan buttons are now 44px to tap on phones; desktop looks the same. After closing, the keyboard focus goes back to the button you used.
+- Fixed on iPhone: on the new membership Welcome page, the tour step markers were tiny bars (6px tall); they are now 44px-tall tap targets with the same look, and you can move through the tour with the arrow keys. The header links are full-size and "Plans & billing" no longer breaks onto two lines on iPhone SE. https://www.fynxfinanceworld.com/welcome.html
+- Fixed on iPhone: the Questions list on the Plans page had 24px-tall rows; each question is now 44px to tap, with the same spacing. https://www.fynxfinanceworld.com/pro.html#plans
+- Checked on iPhone SE, 14, 15 Pro Max and desktop (Chromium; WebKit unavailable): all 599 pages with no sideways scrolling, script errors or broken internal links; the Welcome page was checked with a test stand-in for a confirmed Plus plan (real plans need a signed-in account); all site checks pass except the known directory check that also fails on main.
+
 ## 2026-11-20 (run 103) — [site-qa] Terminal Quant lab fits iPhone; Pivot Points marks the levels around your price
 - Fixed on iPhone: in the Terminal's new Quant lab, the "✕" buttons that remove a holding (Portfolio risk simulator, Factor neutrality) were only 29px wide, and the Order flow zoom "+"/"−" buttons 26px. They are now at least 44px to tap on phones; desktop looks the same. https://www.fynxfinanceworld.com/terminal.html#mcvar
 - Fixed on iPhone: on iPhone SE the holdings table was wider than its card (the "✕" was cut off), and the Factor neutrality, Regime momentum and Order flow pages scrolled sideways inside the panel because of a dropdown and the "Does imbalance predict the next move?" table. They now fit; that table scrolls inside its own card. https://www.fynxfinanceworld.com/terminal.html#factor

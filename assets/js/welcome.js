@@ -45,7 +45,7 @@
     const p = document.createElement('p'); p.textContent = text;
     const a = document.createElement('a'); a.className = 'wl-btn'; a.href = href; a.textContent = cta + ' →';
     body.append(t, h, p, a); d.append(num, body); host.append(d);
-    $('wlDots').querySelectorAll('button').forEach((b, i) => { b.classList.toggle('on', i === step); b.setAttribute('aria-selected', String(i === step)); });
+    $('wlDots').querySelectorAll('button').forEach((b, i) => { b.classList.toggle('on', i === step); b.setAttribute('aria-selected', String(i === step)); b.tabIndex = i === step ? 0 : -1; });
     $('wlPrev').disabled = step === 0;
     $('wlNext').textContent = step === steps.length - 1 ? 'Open your Terminal →' : 'Next →';
   }
@@ -67,6 +67,14 @@
     renderStep();
     try { localStorage.setItem('fynx.welcome.seen', tier); } catch (_) {}
   }
+  // Tour step tabs: Left/Right/Home/End move between steps (standard tab-list keys).
+  $('wlDots').addEventListener('keydown', e => {
+    if (!steps.length) return;
+    const to = {ArrowLeft: step - 1, ArrowRight: step + 1, Home: 0, End: steps.length - 1}[e.key];
+    if (to === undefined) return;
+    e.preventDefault(); step = (to + steps.length) % steps.length; renderStep();
+    $('wlDots').querySelectorAll('button')[step].focus();
+  });
   $('wlPrev').addEventListener('click', () => { if (step > 0) { step--; renderStep(); } });
   $('wlNext').addEventListener('click', () => { if (step < steps.length - 1) { step++; renderStep(); } else location.href = $('wlStart').href; });
   $('wlTourBtn').addEventListener('click', () => $('wlTour').scrollIntoView({behavior: 'smooth', block: 'start'}));
