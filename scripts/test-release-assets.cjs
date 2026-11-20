@@ -71,7 +71,7 @@ test('urgent reader version changes only its two assets and matches the publishe
  const targets=new Set(['assets/js/news-reader.js','assets/css/news-reader.css']);
  const source='<script src="/assets/js/news-reader.js?v=old"></script><link href="/assets/css/news-reader.css?v=old"><script src="/assets/js/news-reader-links.js?v=preserved"></script>';
  const rewritten=rewriteReferences(source,'news/article.html',targets);
- for(const asset of targets){assert.equal(ASSET_VERSIONS[asset],'20261115-urgent-reader-1');assert(rewritten.includes(asset+'?v='+ASSET_VERSIONS[asset]));}
+ for(const asset of targets){assert.equal(ASSET_VERSIONS[asset],'20261120-news-in-site-1');assert(rewritten.includes(asset+'?v='+ASSET_VERSIONS[asset]));}
  assert(rewritten.includes('news-reader-links.js?v=preserved'));assert.equal(rewriteReferences(rewritten,'news/article.html',targets),rewritten);
  const page=fs.readFileSync(path.join(__dirname,'../news/article.html'),'utf8');
  assert.equal(rewriteReferences(page,'news/article.html',targets),page,'The checked-in reader page uses the release manifest versions');
