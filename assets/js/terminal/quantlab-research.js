@@ -19,6 +19,8 @@
   const QL = T.QuantLab;
   if (!QL) return;
   const {loadCloses, quantile, erfc, cholesky, kpis, UNIVERSE} = QL;
+  // Browser network errors ('Failed to fetch', Safari 'Load failed', timeouts) are not useful to read; show the plain fallback instead.
+  const why = (e, fb) => { const m = (e && e.message) || ''; return !m || /failed to fetch|load failed|networkerror|network request|aborted|timed? ?out/i.test(m) ? fb : m; };
   const SYM_RE = /^[A-Z0-9.\-=^&]{1,24}$/;
   const pct = (v, d = 1) => finite(v) ? (v * 100).toFixed(d) + '%' : '—';
   const spct = (v, d = 1) => finite(v) ? (v >= 0 ? '+' : '−') + Math.abs(v * 100).toFixed(d) + '%' : '—';
@@ -254,7 +256,7 @@
     wrap.append(symbolBox(vSym, go), chips(VSCAN, vSym, go));
     const out = el('div'); out.style.cssText = 'display:flex;flex-direction:column;gap:12px'; wrap.append(out);
     out.append(note(`Downloading 10 years of ${vSym} and fitting the model…`));
-    let a; try { a = await vLoad(vSym); } catch (e) { out.replaceChildren(note(e.message || 'Price history is unavailable right now.')); return; }
+    let a; try { a = await vLoad(vSym); } catch (e) { out.replaceChildren(note(why(e, 'Price history is unavailable right now.'))); return; }
     if (!out.isConnected) return; out.replaceChildren();
     const hd = el('div', 'fx-ql-head'), sp = el('span', 'fx-ql-state', a.state[0]); sp.style.color = a.state[1];
     hd.append(sp, el('span', 'fx-ql-sub', `${a.sym} volatility is ${a.ratio.toFixed(2)}× its long-run level. ${a.ratio >= 1.3 ? 'A shock is still echoing; expect bigger daily swings than usual for a while.' : a.ratio <= 0.8 ? 'A quiet spell; quiet tends to persist, but calm clusters end abruptly.' : 'Volatility is near its normal level.'}`));
@@ -352,7 +354,7 @@
   function nowCell(a, tz) { const n = localNow(tz); if (!n || !a) return {n}; const r = a.days.indexOf(n.dow), c = a.hours.indexOf(Math.floor(n.tod / 60)); const v = r >= 0 && c >= 0 ? a.vol[r][c] : null; return {n, rc: r >= 0 && c >= 0 ? [r, c] : null, v: v?.v}; }
   async function renderIseas() {
     const host = panel('iseas'); empty(host, `Loading ${iSym} intraday bars…`);
-    let d; try { d = await iLoad(iSym); } catch (e) { report('iseas', e); return empty(host, e.message || 'Intraday data is unavailable right now.'); }
+    let d; try { d = await iLoad(iSym); } catch (e) { report('iseas', e); return empty(host, why(e, 'Intraday data is unavailable right now.')); }
     if (!$('tp-iseas')) return; host.replaceChildren(); setText('n-iseas', iSym + ' · ' + tzCity(d.tz) + ' time');
     const w = el('div', 'fx-ql'); host.append(w);
     const sel = el('select'); sel.setAttribute('aria-label', 'Market'); for (const [k, l] of ISYMS) { const o = el('option', '', `${k} · ${l}`); o.value = k; if (k === iSym) o.selected = true; sel.append(o); } if (!ISYMS.some(x => x[0] === iSym)) { const o = el('option', '', iSym); o.value = iSym; o.selected = true; sel.prepend(o); }
@@ -370,7 +372,7 @@
     const go = s => { iSym = s; store.set('iseas-sym', s); PG.rerender(); };
     wrap.append(symbolBox(iSym, go), chips(ISYMS, iSym, go));
     const out = el('div'); out.style.cssText = 'display:flex;flex-direction:column;gap:12px'; wrap.append(out); out.append(note(`Downloading ${iSym} hourly bars (2 years) and 5-minute bars (60 days)…`));
-    let d; try { d = await iLoad(iSym); } catch (e) { out.replaceChildren(note(e.message || 'Intraday data is unavailable right now.')); return; }
+    let d; try { d = await iLoad(iSym); } catch (e) { out.replaceChildren(note(why(e, 'Intraday data is unavailable right now.'))); return; }
     if (!out.isConnected) return; out.replaceChildren();
     const H = d.h, M = d.m, city = tzCity(d.tz), nc = nowCell(H, d.tz);
     if (H) {
@@ -485,7 +487,7 @@
   }
   async function renderFactor() {
     const host = panel('factor'); empty(host, 'Running the factor regression…');
-    let r; try { r = await fCompute(); } catch (e) { report('factor', e); return empty(host, e.message || 'Price history is unavailable right now.'); }
+    let r; try { r = await fCompute(); } catch (e) { report('factor', e); return empty(host, why(e, 'Price history is unavailable right now.')); }
     if (!$('tp-factor')) return; host.replaceChildren(); setText('n-factor', r.pr.label + ' · ' + Math.round(r.T_ / 21) + 'm');
     const w = el('div', 'fx-ql'); host.append(w);
     const n = r.flags.filter(Boolean).length, hd = el('div', 'fx-ql-head'), sp = el('span', 'fx-ql-state', n ? `${n} FACTOR BET${n > 1 ? 'S' : ''}` : 'NEUTRAL'); sp.style.color = n ? '#ff5a4f' : '#3ecf8e'; sp.style.fontSize = '14px';
@@ -514,7 +516,7 @@
     opts.append(sel('Factors', FV.set, FSETS.map(x => [x[0], x[1]]), v => { FV.set = v; saveF(); rerun(); }), sel('Window', FV.look, [[126, '6 months'], [252, '1 year'], [504, '2 years'], [1000, '4 years']], v => { FV.look = +v; saveF(); rerun(); }), vl);
     inCard.append(opts); wrap.append(inCard);
     const out = el('div'); out.style.cssText = 'display:flex;flex-direction:column;gap:12px'; wrap.append(out); out.append(note('Downloading prices and running the regression…'));
-    let r; try { r = await fCompute(); } catch (e) { out.replaceChildren(note(e.message || 'Price history is unavailable right now.')); return; }
+    let r; try { r = await fCompute(); } catch (e) { out.replaceChildren(note(why(e, 'Price history is unavailable right now.'))); return; }
     if (!out.isConnected) return; out.replaceChildren();
     if (r.missing.length) out.append(note(`No price history for ${r.missing.join(', ')}; left out.`));
     const n = r.flags.filter(Boolean).length, hd = el('div', 'fx-ql-head'), sp = el('span', 'fx-ql-state', n ? 'NOT NEUTRAL' : 'FACTOR-NEUTRAL'); sp.style.color = n ? '#ff5a4f' : '#3ecf8e';
@@ -594,7 +596,7 @@
   }
   async function renderRmom() {
     const host = panel('rmom'); empty(host, 'Backtesting 10 years of momentum…');
-    let r; try { r = await rmCompute(); } catch (e) { report('rmom', e); return empty(host, e.message || 'Price history is unavailable right now.'); }
+    let r; try { r = await rmCompute(); } catch (e) { report('rmom', e); return empty(host, why(e, 'Price history is unavailable right now.')); }
     if (!$('tp-rmom')) return; host.replaceChildren(); setText('n-rmom', (RV.uni === 'assets' ? 'Cross-asset' : '50 US stocks') + ' · 12-1');
     const w = el('div', 'fx-ql'); host.append(w);
     const hd = el('div', 'fx-ql-head'), sp = el('span', 'fx-ql-state', 'CRASH RISK ' + r.now.risk[0]); sp.style.color = r.now.risk[1]; sp.style.fontSize = '14px';
@@ -614,7 +616,7 @@
     const bl = el('label', '', 'Bear market ='), bs = el('select'); for (const [v, t] of [[12, 'SPY down over 12 months'], [24, 'SPY down over 24 months (D&M)']]) { const o = el('option', '', t); o.value = v; if (v === RV.bear) o.selected = true; bs.append(o); } bs.addEventListener('change', () => { RV.bear = +bs.value; saveR(); rerun(); }); bl.append(bs); opts.append(bl);
     wrap.append(opts);
     const out = el('div'); out.style.cssText = 'display:flex;flex-direction:column;gap:12px'; wrap.append(out); out.append(note('Downloading 10 years of prices and backtesting…'));
-    let r; try { r = await rmCompute(); } catch (e) { out.replaceChildren(note(e.message || 'Price history is unavailable right now.')); return; }
+    let r; try { r = await rmCompute(); } catch (e) { out.replaceChildren(note(why(e, 'Price history is unavailable right now.'))); return; }
     if (!out.isConnected) return; out.replaceChildren();
     const hd = el('div', 'fx-ql-head'), sp = el('span', 'fx-ql-state', 'MOMENTUM CRASH RISK: ' + r.now.risk[0]); sp.style.color = r.now.risk[1];
     hd.append(sp, el('span', 'fx-ql-sub', `${r.now.bear ? 'Bear' : 'Bull'} market: SPY ${spct(r.now.mkt)} over ${RV.bear} months. Market volatility ${pct(r.now.vol, 0)} (${r.now.hiVol ? 'above' : 'below'} its median). ${r.now.risk[0] === 'HIGH' ? 'This is the state where momentum crashes happened: losers rebound hardest when the market turns.' : r.now.risk[0] === 'ELEVATED' ? 'One of the two crash conditions is present.' : 'Neither crash condition is present.'}`)); out.append(hd);

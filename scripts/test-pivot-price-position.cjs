@@ -78,3 +78,26 @@ test('typing a price updates live; changing the candle or Clear hides the extras
   doc.getElementById('calculateBtn').click();
   assert.equal(doc.getElementById('pivotExtras').hidden, true, 'no extras next to an error');
 });
+
+// [site-qa] run 103: the level cards that bracket the current price are marked.
+const marks = dom => Object.fromEntries([...dom.window.document.querySelectorAll('#resultArea .px-mark')].map(el => [el.dataset.level, el.querySelector('.px-tag').textContent]));
+
+test('level cards: next level up/down and price-at-level are marked and follow the price input', () => {
+  let dom = run({ ...EUR, method: 'classic', price: '1.08702' });
+  assert.deepEqual(marks(dom), { PP: '↓ Next down', R1: '↑ Next up' });
+  dom = run({ ...EUR, method: 'camarilla', price: '1.08702' });
+  assert.deepEqual(marks(dom), { R1: '↓ Next down', R2: '↑ Next up' });
+  dom = run({ high: '110', low: '100', close: '105', method: 'classic', price: '105' });
+  assert.deepEqual(marks(dom), { PP: '● Price here', R1: '↑ Next up', S1: '↓ Next down' });
+  dom = run({ high: '110', low: '100', close: '105', method: 'classic', price: '130' });
+  assert.deepEqual(marks(dom), { R3: '↓ Next down' });
+  // Typing a new price re-marks; clearing it removes every mark and tag.
+  const doc = dom.window.document, price = doc.getElementById('price');
+  price.value = '96'; price.dispatchEvent(new dom.window.Event('input'));
+  assert.deepEqual(marks(dom), { S1: '↑ Next up', S2: '↓ Next down' });
+  price.value = ''; price.dispatchEvent(new dom.window.Event('input'));
+  assert.deepEqual(marks(dom), {});
+  assert.equal(doc.querySelectorAll('#resultArea .px-tag').length, 0);
+  dom = run({ high: '110', low: '100', close: '105', method: 'classic', price: '-1' });
+  assert.deepEqual(marks(dom), {});
+});

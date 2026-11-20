@@ -140,6 +140,7 @@
 .fx-of-tip{position:absolute;z-index:2;pointer-events:none;padding:5px 7px;background:rgba(8,11,10,.95);border:1px solid var(--ln2);font:500 10.5px/1.5 'IBM Plex Mono',monospace;color:var(--tx);white-space:nowrap}
 .fx-of-zoom{position:absolute;right:6px;top:6px;z-index:2;display:flex;gap:3px}
 .fx-of-zoom button{width:26px;height:24px;padding:0;background:rgba(8,11,10,.85);border:1px solid #2a3530;color:var(--tx);font:700 13px Inter,Arial,sans-serif;cursor:pointer}
+@media (pointer:coarse){.fx-of-zoom button{width:44px;height:44px}}
 .fx-of-sig{width:100%;border-collapse:collapse;font:500 12px 'IBM Plex Mono',monospace}
 .fx-of-sig th,.fx-of-sig td{padding:6px 8px;border-top:1px solid var(--ln);text-align:right}
 .fx-of-sig th{color:var(--mu);font-size:10px;font-weight:600;letter-spacing:.05em}
@@ -149,6 +150,7 @@
 .fx-of-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:12px}
 .fx-of-card{padding:10px 12px;background:var(--p2);border:1px solid var(--ln)}
 .fx-of-card h3{margin:0 0 8px;font:700 11px 'IBM Plex Mono',monospace;letter-spacing:.08em;color:var(--am)}
+.fx-of-card{min-width:0}.of-sig{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .fx-of-tape{max-height:300px;overflow:auto;font:500 11.5px 'IBM Plex Mono',monospace}
 .fx-of-tape div{display:grid;grid-template-columns:70px 1fr 1fr;gap:8px;padding:2px 4px;border-bottom:1px solid #111816}
 @media (max-width:900px){.fx-of-grid{grid-template-columns:1fr}.fx-of-page .fx-of-stage{min-height:380px}}

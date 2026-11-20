@@ -14,6 +14,8 @@
   'use strict';
   const {el, btn, svg, $, panel, setText, tabs, store, empty, finite, signed, report} = T;
 
+  // Browser network errors ('Failed to fetch', Safari 'Load failed', timeouts) are not useful to read; show the plain fallback instead.
+  const why = (e, fb) => { const m = (e && e.message) || ''; return !m || /failed to fetch|load failed|networkerror|network request|aborted|timed? ?out/i.test(m) ? fb : m; };
   /* --- data ----------------------------------------------------------------------------------------- */
   const cache = new Map();
   async function loadCloses(symbols, range = '5y') {
@@ -121,14 +123,17 @@
 .fx-ql-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .fx-ql-row label{display:flex;align-items:center;gap:6px;color:var(--mu);font-size:11.5px}
 .fx-ql-row select,.fx-ql-row input{background:#0d1312;border:1px solid #26302c;color:var(--tx);font:12px 'IBM Plex Mono',monospace;padding:5px 6px;min-height:30px}
+.fx-ql-row label{max-width:100%;flex-wrap:wrap}.fx-ql-row select{max-width:100%;min-width:0}
 .fx-ql-row input[type=range]{padding:0;accent-color:#ffb000;min-width:220px;flex:1}
 .fx-ql-btn{min-height:30px;padding:4px 10px;background:#121917;border:1px solid #2a3530;color:var(--tx);font:600 11.5px Inter,Arial,sans-serif;cursor:pointer}
 .fx-ql-btn:hover,.fx-ql-btn.on{border-color:var(--am);color:var(--am)}
 .fx-ql-btn.pri{background:var(--am);border-color:var(--am);color:#000}
+@media (pointer:coarse){.fx-ql-btn{min-width:44px}}
 .fx-ql-tbl{width:100%;border-collapse:collapse;font:500 12px 'IBM Plex Mono',monospace}
 .fx-ql-tbl th,.fx-ql-tbl td{padding:6px 8px;border-top:1px solid var(--ln);text-align:right}
 .fx-ql-tbl th{color:var(--mu);font-size:10.5px;font-weight:600;letter-spacing:.05em}
 .fx-ql-tbl th:first-child,.fx-ql-tbl td:first-child{text-align:left}
+@media (max-width:400px){.fx-ql-tbl th,.fx-ql-tbl td{padding:6px 4px}}
 .fx-ql-tbl input{width:84px;background:#0d1312;border:1px solid #26302c;color:var(--tx);font:12px 'IBM Plex Mono',monospace;padding:4px 6px;text-align:right}
 .fx-ql-tbl input.sym{width:110px;text-align:left;text-transform:uppercase}
 .fx-ql-split{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:14px}
@@ -498,7 +503,7 @@
 
   async function renderMcvar() {
     const host = panel('mcvar'); tabs('mcvar-tabs', [['1', '1D'], ['10', '10D'], ['21', '1M']], String(V.horizon), v => { V.horizon = +v; saveV(); T.R('mcvar'); });
-    if (!SIM || simKey !== key()) { empty(host, `Simulating ${PATHS.toLocaleString()} futures…`); try { await sim(); } catch (e) { report('mcvar', e); return empty(host, e.message || 'Price history is unavailable right now.'); } if (!$('tp-mcvar')) return; }
+    if (!SIM || simKey !== key()) { empty(host, `Simulating ${PATHS.toLocaleString()} futures…`); try { await sim(); } catch (e) { report('mcvar', e); return empty(host, why(e, 'Price history is unavailable right now.')); } if (!$('tp-mcvar')) return; }
     const r = SIM; host.replaceChildren();
     setText('n-mcvar', `${r.A.symbols.length} assets · ${{normal: 'normal', t: 'fat tails', boot: 'bootstrap'}[V.method]}`);
     const wrap = el('div', 'fx-ql'); host.append(wrap);
@@ -535,7 +540,7 @@
     wrap.append(inCard, out);
     async function rerun() { if (!wrap.isConnected) return; PG.rerender(); }
     out.append(el('p', 'fx-ql-note', `Downloading prices and simulating ${PATHS.toLocaleString()} futures…`));
-    let r; try { r = await sim(); } catch (e) { out.replaceChildren(el('p', 'fx-ql-note', e.message || 'Price history is unavailable right now.')); return; }
+    let r; try { r = await sim(); } catch (e) { out.replaceChildren(el('p', 'fx-ql-note', why(e, 'Price history is unavailable right now.'))); return; }
     if (!out.isConnected) return; out.replaceChildren();
     if (r.symbolsMissing.length) out.append(el('p', 'fx-ql-note', `No price history for ${r.symbolsMissing.join(', ')}; simulated without them.`));
     kpis(out, [[`VALUE AT RISK ${Math.round(V.conf * 100)}%`, money(-r.VaR), `${pct(r.VaR / r.value)} over ${V.horizon} day${V.horizon > 1 ? 's' : ''}`, '#ffb000'], ['EXPECTED SHORTFALL', money(-r.es), 'average loss beyond VaR', '#ff5a4f'], ['MEDIAN OUTCOME', money(r.median), 'half of futures do better'], ['GOOD CASE (95TH)', money(r.best), '1 in 20 futures beat this'], ['P(LOSS > 10%)', pct(r.probLoss10, 1), `of ${PATHS.toLocaleString()} paths`]]);

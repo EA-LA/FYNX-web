@@ -361,6 +361,10 @@
     .px-table tr.px-pp td{font-weight:900;color:var(--text-strong)}
     .px-table th:first-child,.px-table td:first-child{position:sticky;left:0;background:linear-gradient(var(--result-bg),var(--result-bg)),var(--bg-solid,#fff);z-index:1}
     .px-short{display:none}
+    /* [site-qa] run 103: level cards that bracket the current price. */
+    .level-card.px-mark{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+    .px-tag{display:block;margin-top:.2rem;font-size:.72rem;font-weight:800;color:var(--text-soft);letter-spacing:.02em;overflow-wrap:anywhere}
+    .pivot-main .px-tag{font-size:.78rem;letter-spacing:0}
     .px-hint{display:none;color:var(--text-muted);font-size:.8rem;margin:.1rem 0 .35rem}
     .px-card.px-scrolls .px-hint{display:block}
     @media (max-width:430px){
@@ -617,10 +621,10 @@
     function renderResult(methodName, pp, levels) {
       resultArea.className = "result-box";
       resultArea.innerHTML = `
-        <div class="pivot-main">PP: ${formatValue(pp)}</div>
+        <div class="pivot-main" data-level="PP">PP: ${formatValue(pp)}</div>
         <div class="levels levels-paired${levels.some(level => formatValue(level.value).length > 8) ? " levels-long" : ""}" style="grid-template-rows:repeat(${Math.ceil(levels.length / 2)},auto)">
           ${levels.map(level => `
-            <div class="level-card">
+            <div class="level-card" data-level="${level.label}">
               <div class="level-label">${level.label}</div>
               <div class="level-value">${formatValue(level.value)}</div>
             </div>
@@ -718,6 +722,39 @@
         ];
       }
       function pct(d, p) { return (d / p * 100).toFixed(2) + "%"; }
+      // Levels at the price (same display rounding), and the nearest level above and below it.
+      function locate(p, pp, levels) {
+        const all = [{ label: "PP", value: pp }].concat(levels).sort((a, b) => b.value - a.value);
+        const shown = formatValue(p);
+        const at = all.filter(lv => formatValue(lv.value) === shown);
+        const above = all.filter(lv => lv.value > p && formatValue(lv.value) !== shown);
+        const below = all.filter(lv => lv.value < p && formatValue(lv.value) !== shown);
+        return { at, up: above.length ? above[above.length - 1] : null, down: below.length ? below[0] : null };
+      }
+      // [site-qa] run 103: mark the result cards that bracket the current price.
+      function markCards() {
+        const area = document.getElementById("resultArea");
+        if (!area) return;
+        area.querySelectorAll(".px-mark").forEach(el => el.classList.remove("px-mark"));
+        area.querySelectorAll(".px-tag").forEach(el => el.remove());
+        if (!last) return;
+        const raw = String(priceInput.value).trim();
+        const p = raw === "" ? NaN : Number(raw);
+        if (!Number.isFinite(p) || p <= 0) return;
+        const { at, up, down } = locate(p, last.pp, last.levels);
+        const tag = (lv, text) => {
+          const card = area.querySelector(`[data-level="${lv.label}"]`);
+          if (!card) return;
+          card.classList.add("px-mark");
+          const t = document.createElement("span");
+          t.className = "px-tag";
+          t.textContent = text;
+          card.appendChild(t);
+        };
+        at.forEach(lv => tag(lv, "● Price here"));
+        if (up) tag(up, "↑ Next up");
+        if (down) tag(down, "↓ Next down");
+      }
       function positionHtml(methodName, pp, levels) {
         const raw = String(priceInput.value).trim();
         if (raw === "") return "";
@@ -725,13 +762,8 @@
         if (!Number.isFinite(p) || p <= 0) {
           return `<div class="px-card"><h3>Where price sits</h3><div class="px-line">Enter a current price above 0 to see the nearest levels.</div></div>`;
         }
-        const all = [{ label: "PP", value: pp }].concat(levels).sort((a, b) => b.value - a.value);
         const shown = formatValue(p);
-        const at = all.filter(lv => formatValue(lv.value) === shown);
-        const above = all.filter(lv => lv.value > p && formatValue(lv.value) !== shown);
-        const below = all.filter(lv => lv.value < p && formatValue(lv.value) !== shown);
-        const up = above.length ? above[above.length - 1] : null;
-        const down = below.length ? below[0] : null;
+        const { at, up, down } = locate(p, pp, levels);
         let head;
         if (at.length) head = `Price <strong>${shown}</strong> is at <strong>${esc(at.map(x => x.label).join(" / "))}</strong>.`;
         else if (up && down) head = `Price <strong>${shown}</strong> sits between <strong>${esc(down.label)}</strong> and <strong>${esc(up.label)}</strong>.`;
@@ -764,6 +796,7 @@
         box.hidden = false;
         const wrap = box.querySelector(".px-wrap");
         if (wrap) wrap.closest(".px-card").classList.toggle("px-scrolls", wrap.scrollWidth > wrap.clientWidth + 1);
+        markCards();
       }
       window.FynxPivotExtras = {
         show(methodName, pp, levels) { last = { methodName, pp, levels }; draw(); },
