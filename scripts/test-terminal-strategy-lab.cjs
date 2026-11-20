@@ -49,6 +49,16 @@ const FE = S.features(P, 20); const f = S.forecastAt(P, FE, 1499, 20, 10, 30);
 ok(f && f.analogs.every(e => e <= 1499 - 10), 'analogs only use windows whose future is known');
 let hits = 0, n = 0; for (let t = 600; t <= 1489; t += 10) { const g = S.forecastAt(P, FE, t, 20, 10, 30); if (!g) continue; n++; if ((g.q50[9] > 0) === (Math.log(P.c[t + 10] / P.c[t]) > 0)) hits++; }
 ok(hits / n > 0.9, 'periodic pattern forecast hit rate ' + (hits / n).toFixed(2));
+// FINSABER-style significance: identical to buy & hold, a planted edge, random positions
+{
+  let z = 99; const rnd = () => { z = (z * 16807) % 2147483647; return z / 2147483647; }, gs = () => Math.sqrt(-2 * Math.log(rnd() + 1e-12)) * Math.cos(2 * Math.PI * rnd());
+  const n = 1500, bh = new Float64Array(n), eqE = new Float64Array(n), eqR = new Float64Array(n), posAll = new Int8Array(n).fill(1), posR = new Int8Array(n); bh[0] = eqE[0] = eqR[0] = 1;
+  for (let i = 1; i < n; i++) { const r = 0.0003 + 0.01 * gs(); bh[i] = bh[i - 1] * (1 + r); eqE[i] = eqE[i - 1] * (1 + r + 0.0015); posR[i - 1] = rnd() < 0.5 ? 1 : 0; eqR[i] = eqR[i - 1] * (1 + posR[i - 1] * r); }
+  const same = S.significance(bh, bh, posAll, 0, n - 1, 252), edge = S.significance(eqE, bh, posAll, 0, n - 1, 252), rnd2 = S.significance(eqR, bh, posR, 0, n - 1, 252);
+  ok(Math.abs(same.excess) < 1e-12 && same.pExcess > 0.3 && Math.abs(same.gap) < 1e-9, `same as buy & hold: no edge (p ${same.pExcess.toFixed(2)})`);
+  ok(edge.pExcess < 0.01 && edge.gapLo > 0 && edge.pGap < 0.01, `planted edge detected: p ${edge.pExcess.toFixed(4)}, Sharpe gap ${edge.gap.toFixed(2)} [${edge.gapLo.toFixed(2)}, ${edge.gapHi.toFixed(2)}]`);
+  ok(rnd2.pExcess > 0.05 && rnd2.randPct > 0.02 && rnd2.randPct < 0.98, `random positions are not significant (p ${rnd2.pExcess.toFixed(2)}, timing percentile ${(rnd2.randPct * 100).toFixed(0)})`);
+}
 ok(T.DESK_DEFS.strategy?.slots.length === 4 && T.RENDER.btest && T.RENDER.optim && T.RENDER.fcast, 'registered');
 
 if (!fail) console.log('Strategy Lab: rule parser, next-bar fills, gap stops, costs, optimizer and forecaster checks passed.');

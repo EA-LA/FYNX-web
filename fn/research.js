@@ -1,5 +1,5 @@
 /* FYNX research fallback (Vercel serverless). Same read-only service as the Cloud Function
- * (backend/research-data.cjs): ?action=directory | financials&cik= | history | quotes.
+ * (backend/research-data.cjs): ?action=directory | financials&cik= | earnings&cik=&symbol= | history | quotes.
  * Used by the Research desk when the primary endpoint is rate-limited by SEC EDGAR, so company
  * financials still load. SEC is called with a declared User-Agent and paced below its fair-access limit. */
 'use strict';

@@ -1,17 +1,17 @@
 'use strict';
-const C=require('./research-core.cjs');
+const C=require('./research-core.cjs'),E=require('./earnings-core.cjs');
 const SEC_AGENT='FYNX Finance World Research https://www.fynxfinanceworld.com/contact.html';
 
 function createResearchService({fetcher=fetch,now=()=>Date.now()}={}) {
   const cache=new Map(),pending=new Map();let secTail=Promise.resolve(),lastSEC=0,secPause=0;
-  async function json(url,limit=12000000) {
+  async function body(url,limit=12000000,accept='application/json',extra={}) {
     const sec=url.startsWith('https://data.sec.gov/')||url.startsWith('https://www.sec.gov/');
     if(sec) {
       if(now()<secPause)throw Error('SEC requested a pause. Please retry in a minute.');
       const turn=secTail.then(async()=>{const delay=Math.max(0,550-(now()-lastSEC));if(delay)await new Promise(resolve=>setTimeout(resolve,delay));lastSEC=now();});
       secTail=turn.catch(()=>{});await turn;
     }
-    const response=await fetcher(url,{signal:AbortSignal.timeout(14000),headers:{Accept:'application/json','User-Agent':sec?SEC_AGENT:'FYNX-FinanceWorld/1.0'}});
+    const response=await fetcher(url,{signal:AbortSignal.timeout(14000),headers:{Accept:accept,'User-Agent':sec?SEC_AGENT:'FYNX-FinanceWorld/1.0',...extra}});
     if(!response.ok){if(sec&&[403,429].includes(response.status))secPause=now()+60000;throw Error(sec?'SEC data is temporarily unavailable. Try again later or open SEC directly.':'Market data is temporarily unavailable. Try again later.');}
     if(Number(response.headers.get('content-length'))>limit)throw Error('Source response is too large.');
     let text;
@@ -19,8 +19,9 @@ function createResearchService({fetcher=fetch,now=()=>Date.now()}={}) {
       const reader=response.body.getReader(),decoder=new TextDecoder();let size=0;const parts=[];
       try {while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>limit)throw Error('Source response is too large.');parts.push(decoder.decode(value,{stream:true}));}parts.push(decoder.decode());text=parts.join('');}finally{await reader.cancel();}
     }else{text=await response.text();if(Buffer.byteLength(text)>limit)throw Error('Source response is too large.');}
-    return JSON.parse(text);
+    return text;
   }
+  const json=async(url,limit,accept,extra)=>JSON.parse(await body(url,limit,accept,extra));
   async function cached(key,ttl,load) {
     const old=cache.get(key);if(old&&now()-old.at<ttl)return old.data;
     if(pending.has(key))return pending.get(key);
@@ -87,6 +88,26 @@ function createResearchService({fetcher=fetch,now=()=>Date.now()}={}) {
       if(!/^\d{1,10}$/.test(String(params.cik))||Number(params.cik)<1)throw Object.assign(Error('Choose a valid SEC company.'),{status:400});
       const cik=Number(params.cik);
       return cached('facts:'+cik,12*3600000,async()=>C.parseFinancials(await json(`https://data.sec.gov/api/xbrl/companyfacts/CIK${String(cik).padStart(10,'0')}.json`),cik,now()));
+    }
+    if(action==='earnings') {
+      if(!/^\d{1,10}$/.test(String(params.cik))||Number(params.cik)<1)throw Object.assign(Error('Choose a valid SEC company.'),{status:400});
+      const cik=Number(params.cik),pad=String(cik).padStart(10,'0'),symbol=/^[A-Z][A-Z.\-]{0,9}$/.test(String(params.symbol||''))?String(params.symbol):'';
+      return cached('earnings:'+cik+':'+symbol,12*3600000,async()=>{
+        const sub=await json(`https://data.sec.gov/submissions/CIK${pad}.json`,8000000),releases=E.earningsReleases(sub,8);
+        let eps=[];try{eps=E.quarterlyEPS(await json(`https://data.sec.gov/api/xbrl/companyfacts/CIK${pad}.json`));}catch(_){}
+        for(const r of releases) {
+          r.eps=E.matchEPS(eps,r.filed);r.tone=null;
+          try {
+            const base=`https://www.sec.gov/Archives/edgar/data/${cik}/${r.accession.replace(/-/g,'')}/`,doc=E.pickExhibit(await json(base+'index.json',300000),r.primary);
+            if(doc&&/^[\w.\-]+$/.test(doc))r.tone=E.releaseTone(E.htmlToText(await body(base+doc,4000000,'text/html,text/plain')));
+          }catch(_){}
+          delete r.primary;
+        }
+        // consensus surprises are a bonus: the release history stands without them
+        let surprises=[];
+        if(symbol)try{surprises=E.parseSurprises(await json(`https://api.nasdaq.com/api/company/${encodeURIComponent(symbol)}/earnings-surprise`,400000,'application/json, text/plain, */*',{'Accept-Language':'en-US,en;q=0.9',Origin:'https://www.nasdaq.com',Referer:'https://www.nasdaq.com/'}));}catch(_){}
+        return {cik,name:String(sub.name||'').slice(0,120),releases,surprises,source:'SEC EDGAR (8-K Item 2.02 releases, XBRL EPS)'+(surprises.length?'; Nasdaq consensus':''),fetchedAt:new Date(now()).toISOString()};
+      });
     }
     if(action==='history') {
       if(!C.symbolMap[params.symbol]||C.symbolMap[params.symbol].group==='FX')throw Object.assign(Error('Choose a supported USD instrument.'),{status:400});

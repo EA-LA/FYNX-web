@@ -22,7 +22,8 @@
       "config": {
         "includeFiles": [
           "backend/research-data.cjs",
-          "backend/research-core.cjs"
+          "backend/research-core.cjs",
+          "backend/earnings-core.cjs"
         ]
       }
     }

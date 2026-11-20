@@ -117,6 +117,32 @@
     }
     return {predict: r => { let z = b2; for (let a = 0; a < h; a++) { let s = b1[a]; for (let j = 0; j < p; j++) s += W1[a * p + j] * r[j]; z += W2[a] * Math.tanh(s); } return 1 / (1 + Math.exp(-z)); }};
   }
+  // Regression net: one or two tanh hidden layers, linear output, mean squared error, Adam with a decaying step.
+  function mlpRegFit(X, y, {hidden = [16, 16], epochs = 300, lr = 0.01, l2 = 1e-5, batch = 32, seed = 1} = {}) {
+    const n = X.length, sizes = [X[0].length, ...hidden, 1], rand = rng(seed), L = sizes.length - 1;
+    const W = [], B = [];
+    for (let l = 0; l < L; l++) { W.push(Float64Array.from({length: sizes[l + 1] * sizes[l]}, () => gauss(rand) * Math.sqrt(1 / sizes[l]))); B.push(new Float64Array(sizes[l + 1])); }
+    const P = [...W, ...B], M1 = P.map(a => new Float64Array(a.length)), M2 = P.map(a => new Float64Array(a.length)), order = Array.from({length: n}, (_, i) => i); let step = 0;
+    const forward = r => { const acts = [Float64Array.from(r)]; for (let l = 0; l < L; l++) { const a = acts[l], o = new Float64Array(sizes[l + 1]); for (let j = 0; j < sizes[l + 1]; j++) { let z = B[l][j]; for (let i = 0; i < sizes[l]; i++) z += W[l][j * sizes[l] + i] * a[i]; o[j] = l < L - 1 ? Math.tanh(z) : z; } acts.push(o); } return acts; };
+    for (let ep = 0; ep < epochs; ep++) {
+      for (let i = n - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+      const rate = lr * (0.1 + 0.9 * (1 - ep / epochs));
+      for (let s0 = 0; s0 < n; s0 += batch) {
+        const G = P.map(a => new Float64Array(a.length)), bs = Math.min(batch, n - s0);
+        for (let k = s0; k < s0 + bs; k++) {
+          const acts = forward(X[order[k]]); let delta = Float64Array.of(acts[L][0] - y[order[k]]);
+          for (let l = L - 1; l >= 0; l--) {
+            const a = acts[l], gW = G[l], gB = G[L + l], prev = new Float64Array(sizes[l]);
+            for (let j = 0; j < sizes[l + 1]; j++) { gB[j] += delta[j]; for (let i = 0; i < sizes[l]; i++) { gW[j * sizes[l] + i] += delta[j] * a[i]; prev[i] += W[l][j * sizes[l] + i] * delta[j]; } }
+            if (l > 0) { for (let i = 0; i < sizes[l]; i++) prev[i] *= 1 - a[i] * a[i]; delta = prev; }
+          }
+        }
+        step++; const c1 = 1 - 0.9 ** step, c2 = 1 - 0.999 ** step;
+        P.forEach((w, q) => { for (let i = 0; i < w.length; i++) { const g = G[q][i] / bs + (q < L ? l2 * w[i] : 0); M1[q][i] = 0.9 * M1[q][i] + 0.1 * g; M2[q][i] = 0.999 * M2[q][i] + 0.001 * g * g; w[i] -= rate * (M1[q][i] / c1) / (Math.sqrt(M2[q][i] / c2) + 1e-8); } });
+      }
+    }
+    return {predict: r => forward(r)[L][0]};
+  }
   // Gradient-boosted regression trees (squared error).
   function gbmFit(X, y, {rounds = 80, depth = 3, lr = 0.08, minLeaf = 30, q = 12, seed = 1} = {}) {
     const n = X.length, all = Array.from({length: n}, (_, i) => i), thr = thresholds(X, all, q), rand = rng(seed), f0 = mean(y), F = new Float64Array(n).fill(f0), T = [];
@@ -237,8 +263,11 @@
   /* --------------------------------------------- Q-learning --------------------------------------------- */
   // Tabular Q-learning over market states × previous position. Actions: 0 short, 1 cash, 2 long.
   // states[t] in [0, S), rets[t] = return from t to t+1. Reward = position × return − cost × |position change|.
-  function qLearn(states, rets, S, {from = 0, to = states.length - 1, epochs = 150, alpha = 0.05, gamma = 0.9, cost = 0.0005, seed = 5} = {}) {
-    const rand = rng(seed), Q = Array.from({length: S * 3}, () => new Float64Array(3)), pos = [-1, 0, 1];
+  // Step size shrinks with each state-action's visit count (Robbins–Monro, n^-0.7, floored at alpha). A fixed step
+  // would make every estimate a moving average of only its last ~1/alpha visits: because the same history is replayed
+  // in order, the agent would learn the final few weeks of data rather than the whole sample.
+  function qLearn(states, rets, S, {from = 0, to = states.length - 1, epochs = 150, alpha = 0.001, gamma = 0.9, cost = 0.0005, seed = 5} = {}) {
+    const rand = rng(seed), Q = Array.from({length: S * 3}, () => new Float64Array(3)), N = Array.from({length: S * 3}, () => new Float64Array(3)), pos = [-1, 0, 1];
     for (let ep = 0; ep < epochs; ep++) {
       const eps = Math.max(0.02, 0.4 * (1 - ep / (epochs * 0.8))); let prev = 1;
       for (let t = from; t < to; t++) {
@@ -246,7 +275,8 @@
         const a = rand() < eps ? Math.floor(rand() * 3) : (q[0] > q[1] ? (q[0] > q[2] ? 0 : 2) : (q[1] > q[2] ? 1 : 2));
         const r = 100 * (pos[a] * rets[t] - cost * Math.abs(pos[a] - pos[prev]));
         const s2 = states[t + 1] * 3 + a, nq = Q[s2], best = Math.max(nq[0], nq[1], nq[2]);
-        q[a] += alpha * (r + gamma * best - q[a]); prev = a;
+        const step = Math.max(alpha, Math.pow(1 + N[s][a]++, -0.7));
+        q[a] += step * (r + gamma * best - q[a]); prev = a;
       }
     }
     const act = s => { const q = Q[s]; return q[0] > q[1] ? (q[0] > q[2] ? 0 : 2) : (q[1] > q[2] ? 1 : 2); };
@@ -260,6 +290,6 @@
   }
   const sharpe = (r, ann = 252) => { const s = sd(r); return s > 0 ? mean(r) / s * Math.sqrt(ann) : 0; };
 
-  const api = {rng, gauss, mean, sd, ncdf, binomTail, standardizer, solve, logisticFit, forestFit, mlpFit, gbmFit, growTree, treePredict, gmmFit, eigSym, pca, engleGranger, adf, egNull, pFromNull, bh, isolationForest, qLearn, runPolicy, sharpe, finite};
+  const api = {rng, gauss, mean, sd, ncdf, binomTail, standardizer, solve, logisticFit, forestFit, mlpFit, mlpRegFit, gbmFit, growTree, treePredict, gmmFit, eigSym, pca, engleGranger, adf, egNull, pFromNull, bh, isolationForest, qLearn, runPolicy, sharpe, finite};
   if (typeof module === 'object' && module.exports) module.exports = api; else root.FynxMLCore = api;
 })(typeof self !== 'undefined' ? self : this);

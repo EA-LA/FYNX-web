@@ -73,6 +73,8 @@
     rltrade: 'Reinforcement learning: a Q-learning agent picks long, short or cash, then trades years it never saw, against buy and hold and random policies.',
     factorloop: 'Factor research loop: like RD-Agent, it proposes factor ideas, tests them, keeps and mutates the winners over several rounds, then tests the final pick once on years it never saw.',
     committee: 'AI investment committee: fundamentals, valuation, technical, news and market analysts score a stock with evidence, bull and bear researchers argue, and the risk team sizes the trade in a memo you can copy.',
+    optlab: 'Options pricing lab: fits flat Black\u2013Scholes, the term structure, a smile curve and a neural net to a real option chain, scores each on quotes it never saw and draws the implied-volatility surface in 3-D.',
+    earnprev: 'Earnings preview: the next report and consensus, the move options are pricing against the stock\u2019s real past moves, beats and misses, the tone of each press release and an event study of how the stock reacted.',
     kronos: 'Kronos AI forecast: the open-source Kronos foundation model for candlesticks runs on your device and samples many possible futures, shown as a forecast range with a check on past data.',
     fcast: 'K-line pattern forecaster: finds the past candle patterns most like today and shows what happened next as a forecast fan, with an honest out-of-sample track record.',
     globe: 'The live world. Drag to spin and scroll to zoom. The Intelligence layers panel switches on conflict events, protests, cyber threats, earthquakes, disaster alerts, bases, pipelines, ports and more, and its Events tab lists what matters now. Click any marker for its Event intelligence card.',

@@ -219,6 +219,30 @@
     const psr = ncdf(sr * Math.sqrt(n - 1) / Math.sqrt(Math.max(1e-9, 1 - sk * sr + (ku - 1) / 4 * sr * sr)));
     return {total, cagr, vol: s * Math.sqrt(ann), sharpe, sortino: down ? m / down * Math.sqrt(ann) : 0, mdd, calmar: mdd < 0 ? cagr / -mdd : NaN, psr, n};
   }
+  // FINSABER-style significance (Li et al., 2025: most timing strategies stop beating buy & hold once tested long and
+  // properly). Block bootstrap of daily excess returns over buy & hold, a paired bootstrap of the Sharpe gap, and a
+  // random-timing baseline that shifts the strategy's own position series in time (same exposure, same trade lengths).
+  function significance(eq, bh, pos, from, to, ann, {sims = 2000, block = 20, seed = 7} = {}) {
+    const rs = [], rb = [], P = [];
+    for (let i = from + 1; i <= to; i++) if (finite(eq[i]) && finite(eq[i - 1]) && eq[i - 1] > 0 && finite(bh[i]) && finite(bh[i - 1]) && bh[i - 1] > 0) { rs.push(eq[i] / eq[i - 1] - 1); rb.push(bh[i] / bh[i - 1] - 1); P.push(pos[i - 1] || 0); }
+    const n = rs.length; if (n < 60) return null;
+    let s = (seed >>> 0) || 1; const rand = () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    const sr = r => { const m = mean(r), v = sd(r); return v > 0 ? m / v * Math.sqrt(ann) : 0; };
+    const d = rs.map((v, i) => v - rb[i]), md = mean(d), gap = sr(rs) - sr(rb);
+    let beatMean = 0, gapLE0 = 0; const gaps = new Float64Array(sims);
+    for (let k = 0; k < sims; k++) {
+      const a = [], b = [], e = [];
+      while (a.length < n) { const st = Math.floor(rand() * n); for (let j = 0; j < block && a.length < n; j++) { const q = (st + j) % n; a.push(rs[q]); b.push(rb[q]); e.push(d[q] - md); } }
+      if (mean(e) >= md) beatMean++;
+      gaps[k] = sr(a) - sr(b); if (gaps[k] <= 0) gapLE0++;
+    }
+    gaps.sort();
+    // random timing: same position path shifted to a random start (gross of costs, compared like for like)
+    const gross = sh => { const r = new Array(n); for (let i = 0; i < n; i++) r[i] = P[(i + sh) % n] * rb[i]; return sr(r); };
+    const own = gross(0), shifts = []; for (let k = 0; k < 500; k++) shifts.push(gross(1 + Math.floor(rand() * (n - 1))));
+    const exposure = P.filter(v => v).length / n;
+    return {n, years: n / ann, excess: md * ann, pExcess: (beatMean + 1) / (sims + 1), gap, gapLo: gaps[Math.floor(0.05 * sims)], gapHi: gaps[Math.floor(0.95 * sims)], pGap: (gapLE0 + 1) / (sims + 1), randPct: shifts.filter(v => v < own).length / shifts.length, ownGross: own, exposure};
+  }
   const annFor = (B, sym) => { const yrs = (B.t.at(-1) - B.t[0]) / (365.25 * 86400); return Math.max(1, Math.round(B.t.length / Math.max(yrs, 0.05))) || (isCrypto(sym) ? 365 : 252); };
 
   /* ---------------------------------------------- BTEST UI ----------------------------------------------- */
@@ -243,7 +267,7 @@
     const closed = res.trades.filter(t => !t.open), wins = closed.filter(t => t.ret > 0), losses = closed.filter(t => t.ret <= 0);
     const gp = wins.reduce((a, t) => a + t.ret, 0), gl = -losses.reduce((a, t) => a + t.ret, 0);
     let inMkt = 0; for (let i = s0; i < N; i++) if (res.pos[i]) inMkt++;
-    return {R, B, res, ann, N, s0, cut, bh, all: perf(res.eq, s0, N - 1, ann), is: perf(res.eq, s0, cut, ann), oos: perf(res.eq, cut, N - 1, ann), bhAll: perf(bh, s0, N - 1, ann), bhOos: perf(bh, cut, N - 1, ann),
+    return {R, B, res, ann, N, s0, cut, bh, sig: significance(res.eq, bh, res.pos, s0, N - 1, ann), all: perf(res.eq, s0, N - 1, ann), is: perf(res.eq, s0, cut, ann), oos: perf(res.eq, cut, N - 1, ann), bhAll: perf(bh, s0, N - 1, ann), bhOos: perf(bh, cut, N - 1, ann),
       tstats: {n: closed.length, win: closed.length ? wins.length / closed.length : NaN, avgW: wins.length ? mean(wins.map(t => t.ret)) : NaN, avgL: losses.length ? mean(losses.map(t => t.ret)) : NaN, pf: gl > 0 ? gp / gl : NaN, exposure: inMkt / (N - s0), avgBars: closed.length ? mean(closed.map(t => t.bars)) : NaN}};
   }
   function ruleChips(R) {
@@ -332,6 +356,15 @@
     const v = el('div', 'fx-ql-verdict'); v.style.borderColor = beat ? '#3ecf8e' : '#ffb000';
     v.textContent = !r.tstats.n ? 'The rules never triggered in this history. Loosen a condition or try another market.' : `In-sample (first ${Math.round(BV.split * 100)}%): Sharpe ${num(r.is?.sharpe)} vs buy & hold ${num(perf(r.bh, r.s0, r.cut, r.ann)?.sharpe)}. Out-of-sample (the part you should trust more): Sharpe ${num(r.oos?.sharpe)} vs ${num(r.bhOos?.sharpe)}, CAGR ${spct(r.oos?.cagr)} vs ${spct(r.bhOos?.cagr)}${(r.oos?.cagr ?? 0) < (r.bhOos?.cagr ?? 0) && beat ? ' (smoother, but it made less money)' : ''}. ${r.all?.psr >= 0.95 ? 'The full-period Sharpe is statistically above zero (PSR ≥ 95%).' : 'The full-period Sharpe is not statistically distinguishable from zero (PSR below 95%).'} Costs: ${BV.feeBps} bp fee + ${BV.slipBps} bp slippage per side.`;
     out.append(v);
+    if (r.sig && r.tstats.n) {
+      const g = r.sig, sigBeat = g.pGap < 0.05 && g.pExcess < 0.05, luck = g.randPct < 0.9, sc = el('div'); sc.style.cssText = 'display:flex;flex-direction:column;gap:10px';
+      kpis(sc, [['BEATS BUY & HOLD?', g.pExcess < 0.05 ? 'YES' : 'NOT PROVEN', `p ${g.pExcess < 0.001 ? '< 0.001' : g.pExcess.toFixed(3)} · excess ${spct(g.excess)}/yr`, g.pExcess < 0.05 ? '#3ecf8e' : '#ffb000'],
+        ['SHARPE GAP (90% RANGE)', num(g.gap), `${num(g.gapLo)} to ${num(g.gapHi)} · p ${g.pGap.toFixed(3)}`, g.gapLo > 0 ? '#3ecf8e' : g.gapHi < 0 ? '#ff5a4f' : '#ffb000'],
+        ['VS RANDOM TIMING', pct(g.randPct, 0), `percentile of 500 shifted copies · in market ${pct(g.exposure, 0)}`, g.randPct >= 0.95 ? '#3ecf8e' : '#ffb000']]);
+      const sv = el('div', 'fx-ql-verdict'); sv.style.borderColor = sigBeat && !luck ? '#3ecf8e' : '#ffb000';
+      sv.textContent = `Over ${g.years.toFixed(1)} years the strategy earned ${(Math.abs(g.excess) * 100).toFixed(1)}% a year ${g.excess >= 0 ? 'more' : 'less'} than buy & hold (after costs). ${g.excess >= 0 ? `A block bootstrap puts the chance of an edge that large arising by luck at ${g.pExcess < 0.001 ? 'under 0.1%' : (g.pExcess * 100).toFixed(1) + '%'}` : `So there is no return edge over holding (block bootstrap p ${g.pExcess.toFixed(2)})`}, and the Sharpe ratio gap has a 90% range of ${num(g.gapLo)} to ${num(g.gapHi)}. ${luck ? `The same trades placed at random times did as well ${pct(1 - g.randPct, 0)} of the time, so the timing itself is not clearly adding value.` : `Only ${pct(1 - g.randPct, 0)} of randomly timed copies with the same exposure did as well, so the timing looks informative.`} ${sigBeat && !luck ? 'This passes the test most published timing strategies fail.' : 'Like most timing strategies in long tests (the FINSABER finding), this does not convincingly beat simply holding.'}`;
+      sc.append(sv); out.append(card('IS IT SIGNIFICANT? · FINSABER-STYLE CHECK AGAINST BUY & HOLD', sc, note('Block bootstrap (20-day blocks, 2,000 resamples) of daily returns over buy & hold; random timing shifts the strategy’s own position series to random start dates, keeping exposure and holding periods. Inspired by FINSABER (Li et al., 2025), which found that many celebrated timing strategies lose their edge against buy & hold once tested over long periods and many assets.')));
+    }
     const eqc = chartBox(300); out.append(card('EQUITY (LOG SCALE) · SHADED = OUT OF SAMPLE', eqc));
     const grid = el('div', 'fx-sl-grid'), pc = chartBox(300), mc = chartBox(Math.max(160, 22 * 11 + 30));
     grid.append(card('LAST 160 BARS · ▲ ENTRY ▼ EXIT', pc), card('MONTHLY RETURNS (%)', mc)); out.append(grid);
@@ -623,5 +656,5 @@
       grid: {cols: '1fr 1fr 1fr 1fr 1fr 1fr', areas: ['s1 s1 s1 s2 s2 s2', 's1 s1 s1 s2 s2 s2', 's3 s3 s3 s4 s4 s4']}};
     const qi = T.DESK_ORDER.indexOf('quant'); T.DESK_ORDER.splice(qi >= 0 ? qi + 1 : 1, 0, 'strategy');
   }
-  T.StrategyLab = {parseRules, normalizeText, backtest, perf, covEstimate, hrp, erc, minVarLambda, projCapped, weightsFor, features, forecastAt, smaArr, emaArr, rsiArr, atrArr, candleChart};
+  T.StrategyLab = {significance, parseRules, normalizeText, backtest, perf, covEstimate, hrp, erc, minVarLambda, projCapped, weightsFor, features, forecastAt, smaArr, emaArr, rsiArr, atrArr, candleChart};
 });
