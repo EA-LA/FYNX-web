@@ -7,6 +7,27 @@
   status.id = 'authStatus'; status.className = 'auth-status';
   status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
   form.before(status);
+  // Sign-up guidance shown before submitting: the real requirement (8+ characters, checked here and by Firebase),
+  // a live check of it, and live confirmation matching. Messages are tied to the fields for screen readers.
+  if (signup && form.elements.password && form.elements.confirm) {
+    const pw = form.elements.password, cf = form.elements.confirm, em = form.elements.email;
+    const rules = document.createElement('p'); rules.id = 'pwRules'; rules.className = 'auth-hint';
+    const rule = document.createElement('span'); rule.className = 'auth-rule'; rule.textContent = 'At least 8 characters';
+    rules.append(rule, document.createTextNode(' · Stronger with upper- and lowercase letters, a number and a symbol.'));
+    const match = document.createElement('p'); match.id = 'pwMatch'; match.className = 'auth-hint'; match.setAttribute('aria-live', 'polite');
+    const emailHint = document.createElement('p'); emailHint.id = 'emailHint'; emailHint.className = 'auth-hint'; emailHint.setAttribute('aria-live', 'polite');
+    (pw.closest('.field') || pw.parentElement).append(rules); (cf.closest('.field') || cf.parentElement).append(match); if (em) (em.closest('.field') || em.parentElement).append(emailHint);
+    pw.setAttribute('aria-describedby', 'pwRules'); cf.setAttribute('aria-describedby', 'pwMatch'); pw.minLength = 8; em?.setAttribute('aria-describedby', 'emailHint');
+    const check = () => {
+      const ok = pw.value.length >= 8; rule.dataset.ok = ok ? 'yes' : pw.value ? 'no' : '';
+      rule.textContent = (ok ? '✓ ' : '') + 'At least 8 characters';
+      if (!cf.value) { match.textContent = ''; delete match.dataset.ok; cf.removeAttribute('aria-invalid'); return; }
+      const same = cf.value === pw.value; match.textContent = same ? '✓ Passwords match' : 'Passwords don’t match yet'; match.dataset.ok = same ? 'yes' : 'no';
+      cf.setAttribute('aria-invalid', same ? 'false' : 'true');
+    };
+    pw.addEventListener('input', check); cf.addEventListener('input', check);
+    em?.addEventListener('blur', () => { const v = em.value.trim(); const ok = !v || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); emailHint.textContent = ok ? '' : 'Enter a full email address, like name@example.com.'; em.setAttribute('aria-invalid', ok ? 'false' : 'true'); });
+  }
   const buttons = [...document.querySelectorAll('.actions button, form button')];
   const labels = new Map(buttons.map(button => [button, button.innerHTML]));
   let busy = false, sdkPromise;
@@ -81,11 +102,13 @@
   }
   form.addEventListener('submit', event => {
     event.preventDefault();
-    if (!form.reportValidity() || busy) return;
+    if (busy) return;
     const email = form.elements.email.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { report('Enter a valid email address, like name@example.com.'); form.elements.email.setAttribute('aria-invalid', 'true'); form.elements.email.focus(); return; }
+    if (!form.reportValidity()) return;
     const password = form.elements.password?.value;
     if (signup && !form.elements.name.value.trim()) { report('Enter your display name.'); form.elements.name.focus(); return; }
-    if (signup && password.length < 8) { report('Use at least 8 characters for your password.'); form.elements.password.focus(); return; }
+    if (signup && password.length < 8) { report('Use at least 8 characters for your password.'); form.elements.password.setAttribute('aria-invalid', 'true'); form.elements.password.focus(); return; }
     if (signup && password !== form.elements.confirm.value) { report('Your passwords don’t match. Please re-enter them.'); form.elements.confirm.focus(); return; }
     run(form.querySelector('[type=submit]'), async sdk => {
       if (reset) {
@@ -98,6 +121,8 @@
         const credential = await sdk.api.createUserWithEmailAndPassword(sdk.auth, email, password);
         try { await sdk.api.updateProfile(credential.user, { displayName: form.elements.name.value.trim() }); }
         catch { report('Your account was created. You can finish setting your name in Profile.', true); }
+        // Same verification email the Terminal sign-up sends; failure to send never blocks the new account.
+        try { if (sdk.api.sendEmailVerification) await sdk.api.sendEmailVerification(credential.user, { url: 'https://www.fynxfinanceworld.com/auth/login.html' }); } catch {}
       } else await sdk.withMfa(() => sdk.api.signInWithEmailAndPassword(sdk.auth, email, password));
       enter(sdk);
     });
