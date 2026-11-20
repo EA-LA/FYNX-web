@@ -1,6 +1,23 @@
 {
- "generatedAt": "2026-11-20T00:41:23.574Z",
+ "generatedAt": "2026-11-20T10:08:02.481Z",
  "items": [
+  {
+   "reason": "sensitive subject",
+   "title": "Bessent Hits Southeast Asia Scam Networks With New Sanctions as Crypto Fraud Losses Top $7.2 Billion",
+   "sources": [
+    "BigGo Finance",
+    "Blockonomi"
+   ],
+   "at": "2026-11-20T10:08:02.481Z"
+  },
+  {
+   "reason": "sensitive subject",
+   "title": "Explained: Why new US AI chip rules are hitting China’s tech stocks, and what Jensen Huang scandal has to do with it",
+   "sources": [
+    "The Statesman"
+   ],
+   "at": "2026-11-20T10:08:02.481Z"
+  },
   {
    "reason": "sensitive subject",
    "title": "AMD Stock Price Crashes 11% After a New Scandal Involving China",
@@ -92,22 +109,6 @@
     "Yahoo Finance"
    ],
    "at": "2026-11-17T13:37:57.153Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Asian stocks sink as scandal-hit Nvidia prepares for earnings",
-   "sources": [
-    "Yahoo Finance Singapore"
-   ],
-   "at": "2026-11-17T02:58:59.530Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Lutnick faces questions over Nvidia spy scandal. His sons' firm has ties to the chipmaker",
-   "sources": [
-    "CNBC"
-   ],
-   "at": "2026-11-17T02:58:59.530Z"
   }
  ]
 }
