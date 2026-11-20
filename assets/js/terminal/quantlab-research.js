@@ -658,5 +658,5 @@
     T.PAGE_NAMES.push('VCLUST', 'GARCH', 'ISEAS', 'SEASONALITY', 'FACTOR', 'RMOM', 'MOMENTUM');
   }
   if (T.DESK_DEFS?.quant) Object.assign(T.DESK_DEFS.quant, {slots: ['oflow', 'panic', 'mcvar', 'vclust', 'iseas', 'factor', 'rmom'], grid: {cols: '1fr 1fr 1fr 1fr 1fr 1fr', areas: ['s1 s1 s1 s2 s2 s2', 's1 s1 s1 s2 s2 s2', 's3 s3 s4 s4 s5 s5', 's6 s6 s6 s7 s7 s7']}});
-  T.QuantResearch = {acf, garch, ols, ljungBox, chi2p, intradayReturns};
+  T.QuantResearch = {acf, garch, ols, ljungBox, chi2p, intradayReturns, loadBars, mean, sd, ui: {frame, label, lineChart, heatmap, heatColor, legendScale, card, chartBox, note, chips, symbolBox, pill, betaBar}};
 });
