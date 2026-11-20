@@ -36,7 +36,7 @@
     const st = el('style'); st.id = 'fx-gg-style';
     st.textContent = `
 .fx-gg{position:fixed;inset:0;z-index:6000;display:grid;place-items:center;padding:20px;background:rgba(9,14,12,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);animation:fxggIn .2s ease-out}
-.fx-gg-card{position:relative;width:min(460px,100%);max-height:calc(100vh - 40px);overflow:auto;background:#fff;color:#111815;border:1px solid #d9dddb;border-radius:14px;box-shadow:0 30px 80px rgba(8,14,11,.35);padding:30px 28px 24px;font-family:Inter,Arial,Helvetica,sans-serif;text-align:left}
+.fx-gg-card{position:relative;width:min(460px,100%);max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow:auto;background:#fff;color:#111815;border:1px solid #d9dddb;border-radius:14px;box-shadow:0 30px 80px rgba(8,14,11,.35);padding:30px 28px 24px;font-family:Inter,Arial,Helvetica,sans-serif;text-align:left}
 .fx-gg-kicker{margin:0 0 10px;font:700 11px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.14em;color:#1f5a3f}
 .fx-gg-card h2{margin:0 0 10px;font:800 25px/1.2 Manrope,Inter,Arial,sans-serif;letter-spacing:-.02em}
 .fx-gg-card p{margin:0 0 16px;font-size:14.5px;line-height:1.6;color:#4d5953}
@@ -63,7 +63,8 @@ html[data-theme=dark] .fx-gg-secondary,body.dark-mode .fx-gg-secondary{backgroun
 html[data-theme=dark] .fx-gg-x,body.dark-mode .fx-gg-x{color:#a6b4ab}
 @keyframes fxggIn{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.fx-gg{animation:none}.fx-gg-primary:hover{transform:none}}
-@media (max-width:480px){.fx-gg-card{padding:26px 20px 20px}.fx-gg-card h2{font-size:22px}}`;
+@media (max-width:480px){.fx-gg-card{padding:26px 20px 20px}.fx-gg-card h2{font-size:22px}}
+@media (pointer:coarse){.fx-gg-actions .fx-gg-quiet{min-height:44px!important}.fx-gg-x{width:44px;height:44px;top:8px;right:8px}}`;
     document.head.append(st);
   }
   function dismiss() {
