@@ -198,12 +198,33 @@ window.FynxTerminalPages = T => {
       if (cat === 'official') { list.replaceChildren(); return newsList(list, S.briefing.filter(h => h.kind === 'official-release'), 'No official releases in the current feed.'); }
       const r = await T.loadNews(cat); if (!alive()) return;
       list.replaceChildren(); newsList(list, r?.items || [], 'No current stories for this desk.');
-      list.append(sourceNote('Headlines from publisher and official feeds, newest first. Articles open as terminal pages; the original story opens at its publisher in a new tab.'));
+      list.append(sourceNote('Headlines from publisher and official feeds, newest first. Every story opens as a FYNX page with its source credited by name; nothing sends you to another site.'));
     };
     bar.addEventListener('submit', e => { e.preventDefault(); q = input.value.trim(); cat = q ? 'search' : T.D().news; setHead('NEWS', q ? `News: ${q}` : 'News'); draw(); });
     draw();
   };
 
+  // FYNX brief for a story the newsroom has not summarised: the headline with its source credited, what the topic
+  // usually means for markets (FYNX's own words) and where to follow it in the terminal. No link leaves FYNX.
+  const TOPICS = [
+    [/\b(fed|fomc|powell|ecb|lagarde|boe|boj|central bank|rate (cut|hike)|interest rates?)\b/i, 'Central banks and rates', 'Rate decisions and guidance move bond yields first, then the dollar and the value investors put on future profits. Watch 2-year yields and futures pricing for how much the market believes the message.', [['Central banks', 'cb'], ['Macro', 'macro'], ['Calendar', 'cal']]],
+    [/\b(inflation|cpi|pce|ppi|prices rose|price index)\b/i, 'Inflation', 'Inflation surprises change expected interest rates. Hotter numbers usually lift yields and the dollar and weigh on long-duration assets such as growth stocks and long bonds.', [['Macro', 'macro'], ['Calendar', 'cal']]],
+    [/\b(jobs|payrolls|unemployment|jobless|labor market|hiring)\b/i, 'Jobs and growth', 'Labour data shapes the growth outlook and the path of rates. Strong hiring can be good for earnings but bad for rate-cut hopes; markets react to the mix.', [['Macro', 'macro'], ['Calendar', 'cal']]],
+    [/\b(earnings|quarterly|revenue|guidance|profit|eps|results)\b/i, 'Earnings', 'Company results move the stock mostly through guidance and how they compare with expectations, not the headline number alone. Sector peers often move in sympathy.', [['Research', 'research'], ['Calendar', 'cal']]],
+    [/\b(oil|crude|opec|brent|wti|gasoline|natural gas|lng)\b/i, 'Energy', 'Energy prices feed into inflation, airline and transport costs and energy-producer profits, and can move commodity currencies such as the Canadian dollar and Norwegian krone.', [['Markets', 'mkts'], ['Macro', 'macro']]],
+    [/\b(bitcoin|crypto|ether|ethereum|stablecoin|etf flows?)\b/i, 'Crypto', 'Crypto reacts to liquidity, regulation and fund flows, and tends to move with high-risk assets when markets are stressed.', [['Markets', 'mkts']]],
+    [/\b(tariff|trade war|sanction|export controls?|china|war|ceasefire|missile|attack)\b/i, 'Geopolitics and trade', 'Political shocks usually show up first in oil, gold, safe-haven currencies (yen, Swiss franc) and the volatility index, then in the sectors directly exposed.', [['Intel', 'intel'], ['Macro', 'macro']]],
+    [/\b(treasury|yields?|bonds?|bund|gilt|jgb|deficit|auction)\b/i, 'Bonds', 'Bond yields set the discount rate for every other asset. Rising long-term yields tighten financial conditions even without a central-bank move.', [['Macro', 'macro'], ['Central banks', 'cb']]]
+  ];
+  function briefFor(host, h) {
+    const title = h.title || '', words = title.split(/\s+/).filter(w => /^[A-Z][a-zA-Z]{2,}/.test(w)).slice(0, 4);
+    const s1 = section('FYNX brief'); s1.append(el('p', 'pg-p', `Reported by ${h.source || 'a news publisher'}${h.publishedAt ? ', ' + ago(h.publishedAt) : ''}. FYNX has not written a full summary of this story yet, so here is the context to read it with. Original reporting belongs to ${h.source || 'its publisher'}; FYNX does not reproduce it.`));
+    host.append(s1);
+    const topics = TOPICS.filter(t => t[0].test(title)).slice(0, 2);
+    for (const [, name, text, links] of topics) { const s = section('What this usually means · ' + name); s.append(el('p', 'pg-p', text), chips(links.map(([l, p]) => go(l, p)))); host.append(s); }
+    if (!topics.length) { const s = section('Follow it in the terminal'); s.append(chips([go('Markets', 'mkts'), go('Macro', 'macro'), go('All news', 'news')])); host.append(s); }
+    if (words.length) { const s = section('Search the terminal'); s.append(chips(words.slice(0, 3).map(w => go(`News on ${w.replace(/[^A-Za-z]/g, '')}`, 'news', w.replace(/[^A-Za-z]/g, ''))))); host.append(s); }
+  }
   PAGES.article = async (host, h, alive) => {
     if (!h) return open('news');
     setHead('ART', h.title || 'Article', h.source ? `${h.source}${h.publishedAt ? ' · ' + new Date(h.publishedAt).toLocaleString() : ''}` : '');
@@ -215,6 +236,8 @@ window.FynxTerminalPages = T => {
     const R = window.FYNXNewsReaderData, key = readerKey(h);
     let a = null;
     if (R && key) { try { a = await R.loadArticle({...h, ...key, articleId: key.id}); } catch (e) { status.textContent = e.message || 'This article could not be loaded.'; } }
+    // Any headline with a source address can still be read in FYNX: the newsroom looks the story up by its URL.
+    else if (R?.resolveArticle && h.url) { try { a = await R.resolveArticle({url: h.url}); } catch (_) { /* fall back to the FYNX brief below */ } }
     if (!alive()) return;
     if (a) {
       status.remove();
@@ -229,13 +252,13 @@ window.FynxTerminalPages = T => {
       if (a.context?.length) { const s = section('Context'); a.context.forEach(c => { s.append(el('h3', 'pg-h3', c.title), el('p', 'pg-p', c.text)); }); host.append(s); }
       if (a.terms?.length) { const s = section('Terms'); kv(s, a.terms.map(t => [t.term, t.definition])); host.append(s); }
       if (a.questions?.length) { const s = section('Questions to watch'); const ul = el('ul', 'pg-ul'); a.questions.forEach(q => ul.append(el('li', '', q))); s.append(ul); host.append(s); }
-      const src = section('Sources'); src.append(chips([link(`Read the original at ${a.source} ↗︎`, a.sourceUrl, 'fx-chip fx-chip-link pg-primary'), ...(a.sources || []).map(s => link(s.name + ' ↗︎', s.url, 'fx-chip fx-chip-link'))]));
+      const src = section('Sources'), also = (a.sources || []).map(s => s.name).filter(n => n && n !== a.source);
+      src.append(el('p', 'pg-p', `Original reporting by ${a.source}${also.length ? `; also cited: ${[...new Set(also)].slice(0, 6).join(', ')}` : ''}. This is FYNX’s own summary: FYNX does not reproduce the article and keeps you in the terminal.`));
       if (a.coverageNote) src.append(sourceNote(a.coverageNote)); if (a.method) src.append(sourceNote('Method: ' + a.method));
       host.append(src);
       if (a.related?.length) { const s = section('Related'); a.related.forEach(r => s.append(T.headlineRow({...r, publishedAt: r.publishedAt || a.publishedAt, readerUrl: r.readerUrl}))); host.append(s); }
     } else {
-      status.textContent = key ? status.textContent : 'FYNX has no reader version of this story yet.';
-      const s = section(''); s.append(chips([h.url ? link(`Read the full story at ${h.source || 'the publisher'} ↗︎`, h.url, 'fx-chip fx-chip-link pg-primary') : null])); host.append(s);
+      status.remove(); briefFor(host, h);
     }
     const words = (h.title || a?.title || '').split(/\s+/).filter(w => /^[A-Z][a-zA-Z]{3,}/.test(w)).slice(0, 4);
     const more = section('More on this'); newsList(more, matchNews(words).filter(x => x.title !== (h.title || a?.title)).slice(0, 8), 'No related headlines in the current feeds.'); host.append(more);

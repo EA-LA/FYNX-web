@@ -329,7 +329,7 @@
     if (!rows.length) for (const [iso, c] of Object.entries(W.countries?.countries || {})) for (const n of (c.news?.items || []).slice(0, 1)) rows.push({s: {iso, level: countryStatus(iso).level}, n});
     rows.sort((a, b) => (Date.parse(b.n.publishedAt) || 0) - (Date.parse(a.n.publishedAt) || 0)); rows.splice(28);
     if (!rows.length) return host.append(el('p', 'fx-empty', 'Loading world headlines…'));
-    for (const {s, n} of rows) { const a = link('', n.url, 'fx-row fx-cnrow'); const iso = el('b', '', s.iso); iso.style.color = COLOR[s.level]; const t = el('span', 'fx-sym'); t.append(el('span', 'fx-ht', n.title), el('small', '', `${n.source}${n.publishedAt ? ' · ' + ago(n.publishedAt) : ''} ↗︎`)); a.append(iso, t); host.append(a); }
+    for (const {s, n} of rows) { const a = btn('', 'fx-row fx-cnrow', () => T.openPage('article', {title: n.title, url: n.url, source: n.source, publishedAt: n.publishedAt, external: true})); const iso = el('b', '', s.iso); iso.style.color = COLOR[s.level]; const t = el('span', 'fx-sym'); t.append(el('span', 'fx-ht', n.title), el('small', '', `${n.source}${n.publishedAt ? ' · ' + ago(n.publishedAt) : ''}`)); a.append(iso, t); host.append(a); }
     host.append(el('p', 'fx-foot', 'Country headlines from Google News search (GDELT as backup), last 24 hours, refreshed hourly.'));
   }
   async function renderCData() {
@@ -399,7 +399,7 @@
     if (m?.ccy) { const s = PG.section(`${m.ccy} calendar this week`), ev = (S.calendar?.events || []).filter(e => e.currency === m.ccy).sort((a, b) => Date.parse(a.time) - Date.parse(b.time)); if (ev.length) ev.forEach(e => s.append(T.ecoRow(e))); else s.append(el('p', 'fx-empty', 'No scheduled releases this week.')); g.append(s); }
     host.append(g);
     const news = PG.section(`${name} headlines`), items = c?.news?.items || [];
-    for (const n of items) { const a = link('', n.url, 'fx-row fx-cnrow'); const t = el('span', 'fx-sym'); t.append(el('span', 'fx-ht', n.title), el('small', '', `${n.source}${n.publishedAt ? ' · ' + ago(n.publishedAt) : ''} ↗︎`)); a.append(el('b', '', '•'), t); news.append(a); }
+    for (const n of items) { const a = btn('', 'fx-row fx-cnrow', () => T.openPage('article', {title: n.title, url: n.url, source: n.source, publishedAt: n.publishedAt, external: true})); const t = el('span', 'fx-sym'); t.append(el('span', 'fx-ht', n.title), el('small', '', `${n.source}${n.publishedAt ? ' · ' + ago(n.publishedAt) : ''}`)); a.append(el('b', '', '•'), t); news.append(a); }
     const room = PG.matchNews([name], 8); room.forEach(h => news.append(T.headlineRow(h)));
     if (!items.length && !room.length) { news.append(el('p', 'fx-foot', `Nothing new about ${name} today · latest world headlines`)); [...T.S.briefing].sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 8).forEach(h => news.append(T.headlineRow(h))); }
     host.append(news);

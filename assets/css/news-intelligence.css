@@ -43,3 +43,5 @@ html[data-theme=dark] .fn-cb-monitor .cb-card,body.dark-mode .fn-cb-monitor .cb-
 /* site-qa run 79: monitor fits phones as 2 compact columns; institution list keeps its natural row height beside the taller monitor */
 .fn-official-layout>.fn-institutions{align-self:start}
 @media (max-width:520px){.fn-cb-monitor .cb-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.fn-cb-monitor .cb-card{padding:11px 10px 10px}.fn-cb-monitor .cb-code{font-size:10px}.fn-cb-monitor .cb-name{font-size:11px;line-height:1.3}.fn-cb-monitor .cb-rate{font-size:23px}.fn-cb-monitor .cb-rate small{font-size:12px}.fn-cb-monitor .cb-move{font-size:10.5px;line-height:1.4}.fn-cb-monitor .cb-spark{height:28px}.fn-cb-monitor .cb-meta{font-size:10px;line-height:1.4}.fn-cb-monitor .cb-next{grid-column:1/-1;font-size:11px}.fn-cb-monitor .cb-skel{height:120px}.fn-cb-monitor .cb-card:first-child:has(.cb-next){grid-column:1/-1}}
+
+.fn-release-sources .fn-release-source{font-weight:700;color:inherit}

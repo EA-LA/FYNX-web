@@ -60,7 +60,7 @@ test('published pages are crawlable, unique and credit their sources', {skip: !f
     assert.ok(!titles.has(title), 'duplicate title ' + title); titles.add(title);
     assert.ok(!canon.has(c)); canon.add(c); assert.equal(c, `https://www.fynxfinanceworld.com/intelligence/${a.slug}/`);
     descs.add(d); assert.match(html, /<meta name="robots" content="index,follow">/); assert.match(html, /"@type":"NewsArticle"/);
-    assert.match(html, /Read original source/); for (const s of a.sources) assert.ok(html.includes(s.url.replace(/&/g, '&amp;')), 'source link ' + s.url);
+    for (const s of a.sources) assert.ok(html.includes(s.publisher.replace(/&/g, '&amp;')), 'source credited ' + s.publisher);
     assert.ok(a.stats.length >= 1, 'every page measures at least one market');
     if (a.excerpt) assert.ok(a.excerpt.text.split(/\s+/).length <= 31, 'excerpts stay short');
     assert.doesNotMatch(html, /\bundefined\b|\bNaN\b|\[object Object\]/);
@@ -68,4 +68,18 @@ test('published pages are crawlable, unique and credit their sources', {skip: !f
   assert.equal(descs.size, articles.length, 'descriptions are unique');
   const map = JSON.parse(fs.readFileSync(path.join(OUT, 'data/map.json'), 'utf8')).map;
   for (const slug of Object.values(map)) assert.ok(fs.existsSync(path.join(OUT, slug, 'index.html')));
+});
+
+test('article pages credit sources by name and never send readers to another site', {skip: !fs.existsSync(path.join(OUT, 'data/articles.json'))}, () => {
+  const R = require('../../scripts/intelligence/render.cjs');
+  const {articles} = JSON.parse(fs.readFileSync(path.join(OUT, 'data/articles.json'), 'utf8'));
+  const list = articles.slice(0, 12), ctx = {assets: '', bySlug: new Map(list.map(r => [r.slug, r])), metadata: R.seoMetadata(list), generatedAt: new Date().toISOString()};
+  for (const a of list) {
+    const html = R.articlePage(a, ctx);
+    assert.doesNotMatch(html, /Read original source/);
+    for (const s of a.sources) { assert.ok(html.includes('Original reporting by ' + s.publisher.replace(/&/g, '&amp;')), 'credited ' + s.publisher); assert.ok(!html.includes('href="' + s.url.replace(/&/g, '&amp;') + '"'), 'no link to ' + s.url); }
+    const out = [...html.matchAll(/<a\b[^>]*href="(https?:[^"]+)"/g)].map(m => m[1]).filter(u => !u.startsWith('https://www.fynxfinanceworld.com/'));
+    assert.deepEqual(out, [], 'no outbound links in ' + a.slug);
+    assert.match(html, /href="#sources"/);
+  }
 });

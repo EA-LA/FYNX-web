@@ -190,7 +190,7 @@
       institutions = [...institutions,...sources.filter(source => !institutions.some(item => item.id === source.id)).map(source => ({...source,url:source.website,region:editionLabel(),summary:'Official publications and announcements.'}))];
     }
     const filtered = institutions.filter(sourceMatchesRegion);
-    $('[data-institution-list]').innerHTML = filtered.length ? filtered.map(item => '<a class="fn-institution" href="'+esc(link(item.url))+'" target="_blank" rel="noopener noreferrer"><div><span>'+esc(item.region)+'</span><h3>'+esc(item.name)+'</h3><p>'+esc(item.summary)+'</p></div><b aria-hidden="true">↗︎</b></a>').join('') : '<p class="fn-source-note">No institutions match this edition and regional filter.</p>';
+    $('[data-institution-list]').innerHTML = filtered.length ? filtered.map(item => '<div class="fn-institution"><div><span>'+esc(item.region)+'</span><h3>'+esc(item.name)+'</h3><p>'+esc(item.summary)+' FYNX reads its releases and summarises them in the newsroom.</p></div></div>').join('') : '<p class="fn-source-note">No institutions match this edition and regional filter.</p>';
     $$('[data-region]').forEach(button => button.setAttribute('aria-pressed',String(button.dataset.region === region)));
     renderOfficialSidebar(); renderReleases();
   }
@@ -202,7 +202,7 @@
     const sources = releaseState?.sources || [];
     const sourceLinks = configured.filter(sourceMatchesRegion).map(source => {
       const state = sources.find(row => row.id === source.id);
-      return '<a href="'+esc(link(source.website))+'" target="_blank" rel="noopener noreferrer">'+esc(source.name)+' ↗︎</a>'+(state?'<span> '+esc(state.status==='fresh'?'Refreshed':state.status==='cached'?'Saved releases':'Website available')+(state.fetchedAt?' · '+esc(date(state.fetchedAt)):'')+'</span>':'');
+      return '<span class="fn-release-source">'+esc(source.name)+'</span>'+(state?'<span> '+esc(state.status==='fresh'?'Refreshed':state.status==='cached'?'Saved releases':'Website available')+(state.fetchedAt?' · '+esc(date(state.fetchedAt)):'')+'</span>':'');
     });
     $('[data-release-list]').innerHTML = (items.length ? items.slice(0,12).map(item => '<article class="fn-release"><div class="fn-story-topline"><span class="fn-story-source">'+esc(item.source)+'</span>'+saveButton(item,'release:')+'</div><h4><a href="'+esc(window.FYNXNewsReaderData?.href(item)||'/news/article.html')+'">'+esc(item.title)+' →</a></h4><time datetime="'+esc(item.publishedAt)+'">'+esc(date(item.publishedAt))+'</time></article>').join('') : '<div class="fn-empty"><h3>'+(region==='japan'?'Explore Japan’s official policy calendar.':'Open the original releases.')+'</h3><p>'+(region==='japan'?'The Bank of Japan website includes scheduled meetings, decisions and minutes.':sourceLinks.length?'Recent dated releases will appear when the selected institutions publish them.':'No official release feed matches this edition and regional filter.')+'</p></div>')+(sourceLinks.length?'<div class="fn-release-sources">'+sourceLinks.map(source => '<p>'+source+'</p>').join('')+'</div>':'');
   }

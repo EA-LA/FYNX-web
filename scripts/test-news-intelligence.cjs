@@ -125,7 +125,7 @@ test('source libraries and institutions render synchronously while both public f
   assert.equal(h.query('[data-news-intelligence]').dataset.newsReady, 'true');
   assert.equal(h.all('.fn-media-card').length, 2);
   assert.equal(h.all('.fn-institution').length, 6);
-  assert.equal(h.all('.fn-release-sources a').length, 3);
+  assert.equal(h.all('.fn-release-sources .fn-release-source').length, 3);
   assert.equal(h.calls.headlines.length, 1); assert.equal(h.calls.releases.length, 1);
   assert.equal(h.calls.headlines[0].timeoutMs, 6500); assert.equal(h.calls.releases[0].timeoutMs, 6500);
   assert.equal(h.calls.network, 0); assert.equal(h.calls.saved.length, 0); assert.equal(h.calls.plans, 0);
@@ -212,7 +212,7 @@ test('media category, publisher and topic filters combine and can recover from a
 test('region controls filter institutions and dated releases together, including Japan fallback', async t => {
   const h = harness(t); await tick();
   assert.equal(h.all('.fn-release').length, 3);
-  h.click('[data-region="us"]'); assert.equal(h.all('.fn-institution').length, 3); assert.equal(h.all('.fn-release').length, 2); assert.equal(h.all('.fn-release-sources a').length, 2);
+  h.click('[data-region="us"]'); assert.equal(h.all('.fn-institution').length, 3); assert.equal(h.all('.fn-release').length, 2); assert.equal(h.all('.fn-release-sources .fn-release-source').length, 2);
   h.click('[data-region="europe"]'); assert.equal(h.all('.fn-institution').length, 2); assert.equal(h.all('.fn-release').length, 1); assert.match(h.query('.fn-release').textContent, /Euro area policy/);
   h.click('[data-region="japan"]'); assert.equal(h.all('.fn-institution').length, 1); assert.match(h.query('.fn-institution').textContent, /Bank of Japan/); assert.equal(h.all('.fn-release').length, 0);
   assert.match(h.query('[data-release-list]').textContent, /Japan’s official policy calendar/);
@@ -373,8 +373,8 @@ test('regional publisher filters and official source links rebuild without retai
   h.input('[data-media-publisher]','cnbc');assert.match(h.query('.fn-media-card').textContent,/CNBC/);
   h.win.FynxEdition.set('uk');await tick();
   assert.equal(h.query('[data-media-publisher]').value,'all');assert.doesNotMatch(h.query('[data-media-grid]').textContent,/CNBC/);assert.match(h.query('.fn-media-edition').textContent,/UK edition · Global publisher libraries/);
-  assert.deepEqual(h.all('.fn-institution h3').map(el=>el.textContent),['Bank of England']);assert.deepEqual(h.all('.fn-release-sources a').map(el=>el.textContent),['Bank of England ↗︎']);
-  h.click('[data-region="us"]');assert.equal(h.all('.fn-release-sources a').length,0);assert.equal(h.all('.fn-institution').length,0);
+  assert.deepEqual(h.all('.fn-institution h3').map(el=>el.textContent),['Bank of England']);assert.deepEqual(h.all('.fn-release-sources .fn-release-source').map(el=>el.textContent),['Bank of England']);
+  h.click('[data-region="us"]');assert.equal(h.all('.fn-release-sources .fn-release-source').length,0);assert.equal(h.all('.fn-institution').length,0);
   h.win.FynxEdition.set('canada');await tick();assert.match(h.query('.fn-terminal-sources').textContent,/Bank of Canada/);assert.match(h.query('.fn-institution').textContent,/Bank of Canada/);assert.equal(h.query('[data-region="all"]').getAttribute('aria-pressed'),'true');
 });
 

@@ -185,7 +185,7 @@
     if(snapshots.length){const block=node('article');block.append(node('h3','Dated market context'),node('p','These separate market snapshots do not establish a reaction to this report.'));
       for(const row of snapshots){const value=Number(row.price).toLocaleString(undefined,{maximumFractionDigits:6}),change=Number.isFinite(row.changeValue)&&['%','bp'].includes(row.changeUnit)?' · '+(row.changeValue>=0?'+':'')+row.changeValue.toFixed(2)+row.changeUnit:Number.isFinite(row.changePercent)?' · '+(row.changePercent>=0?'+':'')+row.changePercent.toFixed(2)+'%':'';
         block.append(node('p',text(row.name,160)+' ('+text(row.symbol,24)+') · '+value+(text(row.currency,8)?' '+text(row.currency,8):'')+change));
-        const link=node('a',text(row.source,160)+' · '+time(row.asOf));link.href=safeURL(row.sourceURL);link.target='_blank';link.rel='noopener noreferrer';block.append(link);
+        block.append(node('small','Data: '+text(row.source,160)+' · '+time(row.asOf)));
       }host.append(block);
     }
     section('context',host.childElementCount>0);section('questions',false);$('[data-reader-questions]').replaceChildren();
@@ -203,11 +203,12 @@
     const rows=[{name:article.source,url:article.sourceUrl,accessedAt:article.preparedAt},...(Array.isArray(article.sources)?article.sources:[])];
     for(const row of rows.slice(0,8)){
       const url=safeURL(row?.url), name=text(row?.name,160);if(!url||!name||seen.has(url))continue;seen.add(url);
-      const link=node('a'), detail=node('span');link.href=url;link.target='_blank';link.rel='noopener noreferrer';
-      detail.append(node('strong',name),node('small',new URL(url).hostname+(row.accessedAt&&time(row.accessedAt)?' · Available material checked '+time(row.accessedAt):'')));
-      link.append(detail,node('span','↗︎','reader-source-arrow'));link.setAttribute('aria-label','Read original reporting at '+name+' (opens in a new tab)');host.append(link);
+      // Sources are credited by name; FYNX keeps readers on its own summary instead of sending them away.
+      const credit=node('div'), detail=node('span');credit.className='reader-source-credit';
+      detail.append(node('strong',name),node('small','Original reporting · '+new URL(url).hostname.replace(/^www\./,'')+(row.accessedAt&&time(row.accessedAt)?' · Available material checked '+time(row.accessedAt):'')));
+      credit.append(detail);host.append(credit);
     }
-    $('[data-reader-method]').textContent='Prepared from available source material. Attributed reporting and separately dated market snapshots are identified explicitly. Publisher access terms apply to the original report.';
+    $('[data-reader-method]').textContent='Prepared from available source material. Attributed reporting and separately dated market snapshots are identified explicitly. Original reporting belongs to the publishers credited here; FYNX summarises it in its own words and does not reproduce it.';
   }
   function related(article) {
     const rows=Array.isArray(article.related)?article.related:[], host=$('[data-reader-related]'),seen=new Set();host.replaceChildren();
