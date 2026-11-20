@@ -338,6 +338,20 @@
       transition:color .25s ease;
       line-height:1.6;
     }
+    .move-wrap{margin-top:1.1rem;border-top:1px solid var(--border);padding-top:.9rem}
+    .move-wrap h3{margin:0 0 .25rem;font-size:1rem;color:var(--text-strong)}
+    .move-note{color:var(--text-muted);font-size:.88rem;line-height:1.5;margin:.15rem 0 .6rem}
+    .move-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .move-table{width:100%;border-collapse:collapse;font-size:.92rem;font-variant-numeric:tabular-nums}
+    .move-table th,.move-table td{padding:.45rem .4rem;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap;vertical-align:top}
+    .move-table th:first-child,.move-table td:first-child{text-align:left}
+    .move-table th{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-weight:800}
+    .move-table th{white-space:normal;vertical-align:bottom}
+    .move-table .mv-tag{display:block;white-space:normal;font-size:.76rem;font-weight:600;color:var(--text-muted);font-style:normal}
+    .move-table .mv-k{white-space:nowrap}
+    .move-table tr.is-yours td{font-weight:900;color:var(--text-strong)}
+    .move-table tr.is-be td{font-style:italic}
+    @media (max-width:380px){.move-table .mv-k{white-space:normal}.result-box{padding:.85rem .7rem}.move-table{font-size:.84rem}.move-table th,.move-table td{padding:.38rem .18rem}}
     @media (max-width:720px){
       h1{font-size:2.35rem}
       .field-row{grid-template-columns:1fr}
@@ -607,7 +621,67 @@
             <div class="mini-value">${maxLossText}</div>
           </div>
         </div>
+        ${payoffTableHtml({ type, position, strike, prem, stock, totalShares, breakEven })}
       `;
+    }
+
+    // Payoff at expiration for example prices around the strike, plus break-even and your price.
+    function optionPayoffRows({ type, position, strike, prem, stock, totalShares, breakEven }) {
+      const sign = position === "long" ? 1 : -1;
+      const premiumTotal = prem * totalShares;
+      const cents = value => Math.round(value * 100) / 100;
+      const pnlAt = price => {
+        const intrinsic = type === "call" ? Math.max(price - strike, 0) : Math.max(strike - price, 0);
+        return sign * (intrinsic - prem) * totalShares;
+      };
+      const rows = [];
+      const add = (price, kind, move) => {
+        if (!Number.isFinite(price) || price < 0) return;
+        const key = cents(price);
+        const existing = rows.find(row => cents(row.price) === key);
+        if (existing) { existing.kinds.push(kind); if (move !== undefined) existing.move = move; return; }
+        rows.push({ price, kinds: [kind], move });
+      };
+      if (strike > 0) [-30, -20, -10, -5, 0, 5, 10, 20, 30].forEach(move => add(strike * (1 + move / 100), move === 0 ? "strike" : "move", move));
+      else add(0, "strike", 0);
+      add(breakEven, "be");
+      add(stock, "yours");
+      rows.sort((a, b) => a.price - b.price);
+      return rows.map(row => {
+        const pnl = pnlAt(row.price);
+        return { ...row, pnl, ofPremium: premiumTotal > 0 ? pnl / premiumTotal : null };
+      });
+    }
+
+    function payoffTableHtml(inputs) {
+      const rows = optionPayoffRows(inputs);
+      const money = value => {
+        const rounded = Math.round(value * 100) / 100;
+        if (rounded === 0) return "$0.00";
+        return (rounded > 0 ? "+$" : "−$") + fmt(Math.abs(rounded));
+      };
+      const pct = ratio => {
+        if (ratio === null) return "—";
+        const rounded = Math.round(ratio * 1000) / 10;
+        if (rounded === 0) return "0%";
+        return (rounded > 0 ? "+" : "−") + Math.abs(rounded).toLocaleString("en-US", { maximumFractionDigits: 1 }) + "%";
+      };
+      const label = kind => kind.kind === "yours" ? "Your price"
+        : kind.kind === "be" ? "Break-even"
+        : kind.kind === "strike" ? "Strike"
+        : (kind.move > 0 ? "+" : "−") + Math.abs(kind.move) + "%";
+      const tag = row => row.kinds.map(kind => `<span class="mv-k">${label({ kind, move: row.move })}</span>`).join(" · ");
+      const cls = row => [row.kinds.includes("yours") ? "is-yours" : "", row.kinds.includes("be") ? "is-be" : ""].filter(Boolean).join(" ");
+      const premiumWord = inputs.position === "long" ? "paid" : "received";
+      return `
+        <div class="move-wrap">
+          <h3>Payoff at expiration</h3>
+          <p class="move-note">Profit or loss on ${inputs.totalShares.toLocaleString("en-US")} shares at example prices around the strike (−10% = 10% below the strike), plus break-even and your price. "% of premium" compares it with the $${fmt(inputs.prem * inputs.totalShares)} premium ${premiumWord}. Examples, not forecasts; before commissions.</p>
+          <div class="move-scroll"><table class="move-table" id="payoffTable">
+            <thead><tr><th scope="col">Price at expiry</th><th scope="col">P/L</th><th scope="col">% of premium</th></tr></thead>
+            <tbody>${rows.map(row => `<tr class="${cls(row)}"><td>$${fmt(row.price)}<span class="mv-tag">${tag(row)}</span></td><td>${money(row.pnl)}</td><td>${pct(row.ofPremium)}</td></tr>`).join("")}</tbody>
+          </table></div>
+        </div>`;
     }
 
     function clearForm() {
