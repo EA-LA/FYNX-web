@@ -7,6 +7,14 @@ on:
       - 'terminal.html'
       - 'scripts/test-terminal-tour-compact.cjs'
       - '.github/workflows/terminal-tour-compact.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'assets/js/terminal/tour.js'
+      - 'terminal.html'
+      - 'scripts/test-terminal-tour-compact.cjs'
+      - '.github/workflows/terminal-tour-compact.yml'
   workflow_dispatch:
 
 permissions:
