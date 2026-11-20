@@ -44,24 +44,24 @@ function calc(values) {
 
 test('0.5 lots EURUSD: move table, your 25-pip move and the risk fit', () => {
   const r = calc({ price: '1', lots: '0.5', pipIncrement: '0.0001', pipMove: '25', riskAmount: '100' });
-  assert.equal(r.your, '5.00 account units');
+  assert.equal(r.your, '5.00 USD');
   assert.deepEqual(r.rows.map(row => row[0]), ['1 pip', '5 pips', '10 pips', '20 pips', '25 pips (yours)', '50 pips', '100 pips']);
   const by = Object.fromEntries(r.rows.map(row => [row[0], row.slice(1)]));
   assert.deepEqual(by['1 pip'], ['0.0001', '5.00']);
   assert.deepEqual(by['25 pips (yours)'], ['0.0025', '125.00']);
   assert.deepEqual(by['100 pips'], ['0.0100', '500.00']);
-  assert.match(r.risk, /At 0\.5 lots, 100\.00 account units covers a stop of 20 pips \(price distance 0\.0020\)\./);
-  assert.match(r.risk, /For a 25-pip stop, 100\.00 account units allows 0\.40 lots \(rounded down to 0\.01\), losing 100\.00 account units at the stop\./);
+  assert.match(r.risk, /At 0\.5 lots, 100\.00 USD covers a stop of 20 pips \(price distance 0\.0020\)\./);
+  assert.match(r.risk, /For a 25-pip stop, 100\.00 USD allows 0\.40 lots \(rounded down to 0\.01\), losing 100\.00 USD at the stop\./);
 });
 
 test('JPY pair with a typed conversion rate rounds sizes down', () => {
   const r = calc({ price: '0.0066667', lots: '1', pipIncrement: '0.01', pipMove: '30', riskAmount: '100' });
-  assert.equal(r.your, '6.67 account units');
+  assert.equal(r.your, '6.67 USD');
   const by = Object.fromEntries(r.rows.map(row => [row[0], row.slice(1)]));
   assert.deepEqual(by['30 pips (yours)'], ['0.30', '200.00']);
   assert.deepEqual(by['10 pips'], ['0.10', '66.67']);
   assert.match(r.risk, /covers a stop of 14\.9 pips \(price distance 0\.149\)/);
-  assert.match(r.risk, /allows 0\.49 lots .* losing 98\.00 account units/);
+  assert.match(r.risk, /allows 0\.49 lots .* losing 98\.00 USD/);
 });
 
 test('fractional move and an amount too small for 0.01 lots', () => {
@@ -69,9 +69,9 @@ test('fractional move and an amount too small for 0.01 lots', () => {
   assert.deepEqual(r.yours, ['37.5 pips (yours)']);
   assert.deepEqual(r.rows.find(row => row[0].startsWith('37.5'))[1], '0.00375');
   assert.match(r.risk, /covers a stop of 166\.6 pips/);
-  assert.match(r.risk, /allows 0\.13 lots .* losing 48\.75 account units/);
+  assert.match(r.risk, /allows 0\.13 lots .* losing 48\.75 USD/);
   r = calc({ price: '1', lots: '1', pipMove: '500', riskAmount: '40' });
-  assert.match(r.risk, /less than the smallest 0\.01 lot would lose \(50\.00 account units\)/);
+  assert.match(r.risk, /less than the smallest 0\.01 lot would lose \(50\.00 USD\)/);
 });
 
 test('optional fields: blank is fine, bad values explain themselves', () => {
@@ -90,15 +90,15 @@ test('result follows the inputs after the first Calculate (no stale numbers)', (
   const doc = dom.window.document;
   set(dom, { price: '1', lots: '1' });
   doc.getElementById('calcBtn').click();
-  assert.equal(read(dom).your, '10.00 account units');
+  assert.equal(read(dom).your, '10.00 USD');
   const lots = doc.getElementById('lots');
   lots.value = '2';
   lots.dispatchEvent(new dom.window.Event('input'));
-  assert.equal(read(dom).your, '20.00 account units');
+  assert.equal(read(dom).your, '20.00 USD');
   const size = doc.getElementById('pipIncrement');
   size.value = '0.01';
   size.dispatchEvent(new dom.window.Event('change'));
-  assert.equal(read(dom).your, '2000.00 account units');
+  assert.equal(read(dom).your, '2000.00 USD');
   lots.value = '';
   lots.dispatchEvent(new dom.window.Event('input'));
   assert.equal(read(dom).shown, false, 'an emptied field hides the old result');

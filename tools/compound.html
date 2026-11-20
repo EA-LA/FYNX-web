@@ -444,7 +444,7 @@
 
             <div class="field">
               <label for="years">Years</label>
-              <input id="years" type="number" min="1" step="1" value="10">
+              <input id="years" type="number" min="1" max="100" step="1" value="10">
             </div>
 
             <div class="field">
@@ -606,10 +606,19 @@
     }
 
     function calculateCompound(){
-      const startingBalance = Math.max(0, parseFloat(document.getElementById("startingBalance").value) || 0);
-      const monthlyDeposit = Math.max(0, parseFloat(document.getElementById("monthlyDeposit").value) || 0);
+      // Invalid inputs are rejected with a message instead of being silently changed
+      // (a negative balance used to become $0 and 0 years used to run a 1-year projection).
+      const raw = id => document.getElementById(id).value.trim();
+      const startRaw = raw("startingBalance"), depositRaw = raw("monthlyDeposit"), yearsRaw = raw("years");
+      const startingBalance = startRaw === "" ? 0 : Number(startRaw);
+      const monthlyDeposit = depositRaw === "" ? 0 : Number(depositRaw);
+      if (!Number.isFinite(startingBalance) || startingBalance < 0) { clearCompoundResults("The starting balance can’t be negative. Enter 0 or a positive amount.", true); markInvalid("startingBalance"); return; }
+      if (!Number.isFinite(monthlyDeposit) || monthlyDeposit < 0) { clearCompoundResults("The monthly deposit can’t be negative. This calculator models deposits, not withdrawals.", true); markInvalid("monthlyDeposit"); return; }
+      const yearsNum = Number(yearsRaw);
+      if (yearsRaw === "" || !Number.isInteger(yearsNum) || yearsNum < 1 || yearsNum > 100) { clearCompoundResults(yearsRaw !== "" && Number(yearsRaw) === 0 ? "With 0 years there is nothing to compound: your ending balance equals your starting balance. Enter 1 to 100 years for a projection." : "Enter a whole number of years from 1 to 100.", true); markInvalid("years"); return; }
+      ["startingBalance", "monthlyDeposit", "years"].forEach(id => document.getElementById(id).removeAttribute?.("aria-invalid"));
       const annualRate = (parseFloat(document.getElementById("annualRate").value) || 0) / 100;
-      const years = Math.max(1, parseInt(document.getElementById("years").value) || 1);
+      const years = yearsNum;
       const compoundFrequency = Math.max(1, parseInt(document.getElementById("compoundFrequency").value) || 12);
       const depositTiming = document.getElementById("depositTiming").value;
 
@@ -774,11 +783,18 @@
 
     // Results belong to the inputs that produced them, never to edited assumptions.
     // Keep the schedule, all four metrics, and accessible summary in sync.
-    function clearCompoundResults(message){
-      document.getElementById("endingBalance").textContent = "$0.00";
-      document.getElementById("totalContributions").textContent = "$0.00";
-      document.getElementById("totalGrowth").textContent = "$0.00";
-      document.getElementById("returnMultiple").textContent = "0.00x";
+    function markInvalid(id){
+      const input = document.getElementById(id);
+      input.setAttribute?.("aria-invalid", "true");
+      if (document.activeElement !== input) input.focus?.({preventScroll: true});
+    }
+    function clearCompoundResults(message, invalid = false){
+      // An invalid input shows dashes, never a $0.00 result that looks like an answer.
+      const blank = invalid ? "—" : null;
+      document.getElementById("endingBalance").textContent = blank || "$0.00";
+      document.getElementById("totalContributions").textContent = blank || "$0.00";
+      document.getElementById("totalGrowth").textContent = blank || "$0.00";
+      document.getElementById("returnMultiple").textContent = blank || "0.00x";
       document.getElementById("summaryText").textContent = message ||
         "Fill in the numbers and calculate to see the full compounding projection.";
       document.getElementById("goalBox").hidden = true;

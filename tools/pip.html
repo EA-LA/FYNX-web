@@ -450,14 +450,24 @@
         <div class="card">
           <h3>Inputs</h3>
           <div class="hint">
-            Conversion rate: account-currency units per 1 quote-currency unit. Use 1 when they match.
+            Pick the pair and your account currency. FYNX fills the quote-to-account rate: exactly 1 when the quote currency is your account currency, otherwise the latest ECB daily reference rate (not a live price). You can type your broker’s rate instead.
             Lots examples: <span class="mono">1</span>, <span class="mono">0.1</span>, <span class="mono">0.01</span>.
           </div>
 
+          <div class="row"><label for="pair">Currency pair</label><select id="pair" class="field">
+            <option value="EUR/USD">EUR/USD</option><option value="GBP/USD">GBP/USD</option><option value="AUD/USD">AUD/USD</option><option value="NZD/USD">NZD/USD</option>
+            <option value="USD/JPY">USD/JPY</option><option value="USD/CHF">USD/CHF</option><option value="USD/CAD">USD/CAD</option>
+            <option value="EUR/GBP">EUR/GBP</option><option value="EUR/JPY">EUR/JPY</option><option value="GBP/JPY">GBP/JPY</option><option value="AUD/JPY">AUD/JPY</option>
+            <option value="EUR/CHF">EUR/CHF</option><option value="EUR/AUD">EUR/AUD</option><option value="GBP/CHF">GBP/CHF</option><option value="CAD/JPY">CAD/JPY</option>
+            <option value="custom">Other pair (enter the rate yourself)</option></select></div>
+          <div class="row"><label for="accountCcy">Account currency</label><select id="accountCcy" class="field">
+            <option>USD</option><option>EUR</option><option>GBP</option><option>JPY</option><option>AUD</option><option>CAD</option><option>CHF</option><option>NZD</option></select></div>
+
           <div class="row">
             <label for="price">Quote-to-account rate</label>
-            <input id="price" class="field mono" type="text" inputmode="decimal" value="1" placeholder="e.g. 1 for USD to USD" />
+            <input id="price" class="field mono" type="text" inputmode="decimal" value="1" placeholder="Account units per 1 quote-currency unit" aria-describedby="rateStatus" />
           </div>
+          <p id="rateStatus" class="hint" role="status" aria-live="polite" style="margin-top:-4px">Same currency: USD quote, USD account. Rate is exactly 1.</p>
 
           <div class="row">
             <label for="lots">Lots</label>
@@ -618,7 +628,8 @@
     function money(x){
       const n = Number(x);
       if (!Number.isFinite(n)) return "—";
-      return n.toFixed(2) + " account units";
+      const ccy = document.getElementById("accountCcy")?.value || "";
+      return n.toFixed(ccy === "JPY" ? 0 : 2) + (ccy ? " " + ccy : " account units");
     }
 
     function setError(msg){
@@ -731,7 +742,7 @@
       renderMoves(yourPip, size, move);
       renderRisk(yourPip, perLot, riskIn.value, move, el.lots.value.trim(), size);
       el.noteOut.textContent =
-        `Standard lot = 100,000 base units. Results use your supplied conversion rate; no live rate is fetched. Moves are examples, not forecasts; spread, commission and slippage are not included.`;
+        `Standard lot = 100,000 base units. Conversion rate: ${rateMode === "exact" ? "exactly 1 (same currency)" : rateMode === "reference" ? "ECB daily reference rate (not live)" : "entered manually"}. Moves are examples, not forecasts; spread, commission and slippage are not included.`;
     }
     function recalcIfShown(){
       if (hasCalculated) calculate();
@@ -799,6 +810,37 @@
       });
     });
     el.pipIncrement.addEventListener("change", recalcIfShown);
+
+    /* Quote-to-account rate from the pair and account currency (audit L5): never a silent 1.
+       Same currency → exactly 1. Otherwise the ECB daily reference rate via Frankfurter, with its date;
+       if it cannot be loaded the field is cleared and the user is asked for their broker's rate. */
+    const pairEl = document.getElementById("pair"), acctEl = document.getElementById("accountCcy"), rateStatus = document.getElementById("rateStatus");
+    let rateRequest = 0, rateMode = "exact";
+    async function fillRate(){
+      const pair = pairEl.value, acct = acctEl.value, request = ++rateRequest;
+      if (pair === "custom") { rateMode = "manual"; el.price.value = ""; rateStatus.textContent = `Enter how many ${acct} one unit of the pair’s quote currency is worth (your broker’s rate).`; recalcIfShown(); return; }
+      const quote = pair.split("/")[1];
+      el.pipIncrement.value = quote === "JPY" ? "0.01" : "0.0001";
+      if (quote === acct) { rateMode = "exact"; el.price.value = "1"; rateStatus.textContent = `Same currency: ${quote} quote, ${acct} account. Rate is exactly 1.`; recalcIfShown(); return; }
+      el.price.value = ""; rateStatus.textContent = `Loading the ${quote}→${acct} reference rate…`;
+      try {
+        const res = await fetch(`https://api.frankfurter.dev/v1/latest?base=${encodeURIComponent(quote)}&symbols=${encodeURIComponent(acct)}`, {cache: "no-store", signal: AbortSignal.timeout(8000)});
+        if (!res.ok) throw new Error("rate");
+        const data = await res.json(), rate = Number(data?.rates?.[acct]);
+        const observed = typeof data?.date === "string" ? Date.parse(data.date + "T00:00:00Z") : NaN;
+        if (!(rate > 0) || !Number.isFinite(observed) || Date.now() - observed > 7 * 86400000) throw new Error("rate");
+        if (request !== rateRequest) return;
+        rateMode = "reference"; el.price.value = String(Number(rate.toPrecision(6)));
+        rateStatus.textContent = `ECB daily reference rate via Frankfurter, observed ${data.date}: 1 ${quote} = ${el.price.value} ${acct}. Not a live price; use your broker’s rate for exact figures.`;
+      } catch (_) {
+        if (request !== rateRequest) return;
+        rateMode = "manual"; el.price.value = "";
+        rateStatus.textContent = `Couldn’t load a ${quote}→${acct} reference rate. Enter your broker’s rate: ${acct} per 1 ${quote}.`;
+      }
+      recalcIfShown();
+    }
+    pairEl.addEventListener("change", fillRate); acctEl.addEventListener("change", fillRate);
+    el.price.addEventListener("input", () => { if (rateMode !== "manual") { rateMode = "manual"; rateStatus.textContent = "Manual rate: you entered it, FYNX did not fetch it."; } });
     [el.price, el.lots, el.pipMove, el.riskAmount].forEach(inp => {
       inp.addEventListener("keydown", (e) => {
         if (e.key === "Enter"){
