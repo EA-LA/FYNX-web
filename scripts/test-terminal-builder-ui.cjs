@@ -482,3 +482,66 @@ test('installed code remains pinned until successful preview and explicit update
     server.close();
   }
 });
+
+test('delete removes the account copy even when the list still says "this browser", and leaves a clean draft', {timeout: 60000}, async () => {
+  const server = await startServer();
+  const browser = await chromium.launch({headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'], ...(process.env.FYNX_CHROMIUM_PATH ? {executablePath: process.env.FYNX_CHROMIUM_PATH} : {})});
+  try {
+    const page = await browser.newPage({viewport: {width: 1440, height: 900}});
+    await mockFirebase(page);
+    await page.goto(`http://127.0.0.1:${server.address().port}/builder-ui.html`, {waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = true; window.__fxbOpen(); });
+    await page.waitForFunction(() => /refused|unavailable/.test(document.querySelector('[data-fxb-status]')?.textContent || ''));
+    await page.evaluate(() => {
+      document.querySelector('.CodeMirror').CodeMirror.setValue('function render(root, FYNX) { root.textContent = "STALE_MARKER"; }');
+      const input = document.querySelector('[aria-label="Project name"]');
+      input.value = 'Stale Label Project';
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+    });
+    await page.click('.fxb-tools button:text("Save")');
+    await page.waitForFunction(() => /this browser only|Not saved to your account/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    assert.match(await page.locator('.fxb-list').innerText(), /Stale Label Project[\s\S]*this browser/);
+    // The same project also reached the account (e.g. an autosave that finished later): the label is stale.
+    await page.evaluate(() => {
+      const local = JSON.parse(localStorage.getItem('fx-term-builder-v1:alice'));
+      const p = local.projects.find(row => row.name === 'Stale Label Project');
+      const data = {name: p.name, description: p.description, category: p.category, visibility: 'private', version: p.version, authorUid: 'alice', main: p.main, updatedAt: p.updatedAt, versions: p.versions};
+      const rows = [{path: 'users/alice/builderProjects/' + p.id, id: p.id, data}];
+      window.__fxbDocs = rows;
+      sessionStorage.setItem('__fxbMockCloud', JSON.stringify(rows));
+      window.__fxbDeny = false;
+    });
+    page.once('dialog', dialog => dialog.accept());
+    await page.click('button:text("Delete project")');
+    await page.waitForFunction(() => !document.querySelector('.fxb-list')?.textContent.includes('Stale Label Project'));
+    assert.equal(await page.evaluate(() => (window.__fxbDocs || []).filter(row => row.path.includes('/builderProjects/')).length), 0);
+    assert.equal(await page.inputValue('[aria-label="Project name"]'), 'Untitled project');
+    assert.doesNotMatch(await page.evaluate(() => document.querySelector('.CodeMirror').CodeMirror.getValue()), /STALE_MARKER|Global Market Intelligence/);
+    assert.match(await page.locator('[data-fxb-console]').innerText(), /Deleted "Stale Label Project"/);
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await page.evaluate(() => { window.__fxbDeny = false; window.__fxbOpen(); });
+    await page.waitForFunction(() => document.querySelector('[data-fxb-status]')?.textContent === 'Private to your account');
+    assert.doesNotMatch(await page.locator('.fxb-list').innerText(), /Stale Label Project/);
+    // The per-project ✕ deletes a project without opening it first.
+    await page.evaluate(() => {
+      document.querySelector('.CodeMirror').CodeMirror.setValue('function render(root, FYNX) { root.textContent = "ROW_DELETE"; }');
+      const input = document.querySelector('[aria-label="Project name"]');
+      input.value = 'Row Delete Project';
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+    });
+    await page.click('.fxb-tools button:text("Save")');
+    await page.waitForFunction(() => /Synced to your account as version/.test(document.querySelector('[data-fxb-console]')?.textContent || ''));
+    page.once('dialog', dialog => dialog.accept());
+    await page.click('[aria-label="Delete Row Delete Project"]');
+    await page.waitForFunction(() => !document.querySelector('.fxb-list')?.textContent.includes('Row Delete Project'));
+    await page.waitForTimeout(1500);
+    assert.match(await page.locator('[data-fxb-console]').innerText(), /Deleted "Row Delete Project"/);
+    assert.equal(await page.evaluate(() => (window.__fxbDocs || []).filter(row => row.path.includes('/builderProjects/')).length), 0);
+    await page.click('button:text("Trash (2)")');
+    await page.click('button:text("Restore Row Delete Project")');
+    await page.waitForFunction(() => (window.__fxbDocs || []).some(row => row.path.includes('/builderProjects/') && row.data.name === 'Row Delete Project'));
+  } finally {
+    await browser.close();
+    server.close();
+  }
+});

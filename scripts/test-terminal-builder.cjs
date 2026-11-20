@@ -172,9 +172,9 @@ test('terminal page wires the builder without replacing desks, panels, or shortc
   assert.match(html, /assets\/vendor\/codemirror\/codemirror\.js\?v=20261117-builder-4/);
   assert.match(html, /assets\/vendor\/codemirror\/javascript\.js\?v=20261117-builder-4/);
   assert.match(html, /assets\/vendor\/codemirror\/searchcursor\.js\?v=20261117-builder-4/);
-  assert.match(html, /assets\/css\/terminal-builder\.css\?v=20261117-builder-4/);
+  assert.match(html, /assets\/css\/terminal-builder\.css\?v=20261119-builder-5/);
   assert.match(html, /assets\/js\/terminal\/builder-core\.js\?v=20261117-builder-4/);
-  assert.match(html, /assets\/js\/terminal\/builder\.js\?v=20261117-builder-4/);
+  assert.match(html, /assets\/js\/terminal\/builder\.js\?v=20261119-builder-5/);
   assert.doesNotMatch(html, /cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net\/npm\/codemirror|unpkg\.com\/codemirror/);
   assert.ok(html.indexOf('codemirror.js') < html.indexOf('builder-core.js'));
   assert.ok(html.indexOf('builder.js') < html.indexOf('terminal/app.js'));
