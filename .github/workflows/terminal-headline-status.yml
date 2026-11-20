@@ -1,0 +1,25 @@
+name: Terminal headline feed state regression
+on:
+  pull_request:
+    paths:
+      - 'assets/js/terminal/app.js'
+      - 'terminal.html'
+      - 'scripts/test-terminal-headline-status.cjs'
+      - '.github/workflows/terminal-headline-status.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  headline-state:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --check assets/js/terminal/app.js
+      - run: node --check scripts/test-terminal-headline-status.cjs
+      - run: node --test scripts/test-terminal-headline-status.cjs
