@@ -8,17 +8,17 @@ const {JSDOM} = require('jsdom');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'assets/js/fynx-calendar.js'), 'utf8');
 const page = fs.readFileSync(path.join(__dirname, '..', 'tools/economic-calendar.html'), 'utf8');
-assert.match(page, /fynx-calendar\.js\?v=20261120-site-pages-1/, 'page loads the updated calendar script');
+assert.match(page, /fynx-calendar\.js\?v=20261120-audit-1/, 'page loads the updated calendar script');
 assert.match(page, /verify the actual figure at the source/, 'page does not promise verified release data');
 const home = fs.readFileSync(path.join(__dirname, '..', 'home.html'), 'utf8');
-assert.match(home, /fynx-calendar\.js\?v=20261120-site-pages-1/, 'homepage preview loads the updated calendar script');
+assert.match(home, /fynx-calendar\.js\?v=20261120-audit-1/, 'homepage preview loads the updated calendar script');
 const releaseAssets = require('./build-release-assets.cjs');
-assert.equal(releaseAssets.ASSET_VERSIONS['assets/js/fynx-calendar.js'], '20261120-site-pages-1',
+assert.equal(releaseAssets.ASSET_VERSIONS['assets/js/fynx-calendar.js'], '20261120-audit-1',
   'release asset builder must not undo calendar cache invalidation');
 const rewritten = releaseAssets.rewriteReferences(
-  '<script src="/assets/js/fynx-calendar.js?v=20261120-audit-1"></script>', 'home.html', new Set(['assets/js/fynx-calendar.js'])
+  '<script src="/assets/js/fynx-calendar.js?v=20261120-site-pages-1"></script>', 'home.html', new Set(['assets/js/fynx-calendar.js'])
 );
-assert.match(rewritten, /fynx-calendar\.js\?v=20261120-site-pages-1/,
+assert.match(rewritten, /fynx-calendar\.js\?v=20261120-audit-1/,
   'a website build upgrades stale economic calendar script versions');
 
 const base = Date.now();
