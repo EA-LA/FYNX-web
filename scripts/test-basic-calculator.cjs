@@ -1,4 +1,6 @@
-const assert=require('node:assert/strict'),{evaluate}=require('../assets/js/basic-calculator.js');
-for(const [expression,result] of [['2+3*4',14],['(2+3)*4',20],['200×5%',10],['200×(1+5%)',210],['200+5%',200.05],['-5+2',-3],['2*-3',-6],['.1+.2',.3],['1e-7*100',.00001],['-(2+3)%',-.05],['0/-1',0]])assert.equal(evaluate(expression),result,expression);
+const assert=require('node:assert/strict'),{evaluate,evaluateExact}=require('../assets/js/basic-calculator.js');
+for(const [expression,result] of [['2+3*4',14],['(2+3)*4',20],['200×5%',10],['200×(1+5%)',210],['200+5%',210],['200-5%',190],['200÷5%',4000],['5%',.05],['50+10%+10%',60.5],['100-100%',0],['200+(5%)',200.05],['-5+2',-3],['2*-3',-6],['.1+.2',.3],['1e-7*100',.00001],['-(2+3)%',-.05],['0/-1',0]])assert.equal(evaluate(expression),result,expression);
 for(const expression of ['1/0','0/0','1+','(1+2','2(3)','alert(1)','1e309','1e308*10','2**3','2;3','', '1'.repeat(201)])assert.throws(()=>evaluate(expression),expression);
-console.log('Basic calculator: precedence, percentages, decimals, signs, parentheses and invalid input passed.');
+// Exact decimal arithmetic: large integers and decimals keep every digit.
+for(const [expression,text] of [['99999999999999999+1','100000000000000000'],['123456789012345678×1000','123456789012345678000'],['12345678901234567890123×2','24691357802469135780246'],['.1+.2','0.3'],['0.000000000000000001*3','0.000000000000000003'],['1/3','0.33333333333333'],['2/3','0.66666666666667'],['1/7*7','1'],['1e308','1e+308']])assert.equal(evaluateExact(expression),text,expression);
+console.log('Basic calculator: precedence, percent convention (a ± b% of a), exact large numbers, decimals, signs, parentheses and invalid input passed.');

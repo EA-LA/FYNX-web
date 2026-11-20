@@ -2,8 +2,10 @@
  *
  * The plan comes from the live membership service (consumerLiveWorkspace → status), the same server check that guards
  * paid Pro tools. A URL flag, local storage or a checkout return can never raise the plan. Allowances are counted per
- * account per day in this browser and reset at local midnight. They shape the experience; they are not a security
- * boundary (all calculations run in the browser).
+ * signed-in account per UTC day on the server (consumerLiveWorkspace → usage), so the device clock, clearing browser
+ * storage or switching devices does not reset them; guests are counted in this browser. If the server cannot be reached
+ * the local counter applies. All calculations run in the browser, so the allowance shapes use; it is not a paywall for
+ * data that is public anyway. Paid tools on the server check the plan there.
  *
  *   FYNXPlan.ready()                 → Promise<{tier, name, uid, signedIn}>
  *   FYNXPlan.charge(cat, key, opts)  → Promise<boolean>; same key twice on one day is charged once
@@ -63,7 +65,23 @@
       state = {tier, uid: user.uid, signedIn: true, verified: true};
       try { root.sessionStorage.setItem(CACHE, JSON.stringify({uid: user.uid, tier, at: Date.now()})); } catch (_) {}
     } catch (_) { state = {tier: 'free', uid: user.uid, signedIn: true, verified: false}; }
-    emit();
+    emit(); syncUsage();
+  }
+  // Today's counts from the server, so the meter is right on every device (best effort, never blocks a tool).
+  async function syncUsage() {
+    if (!state.signedIn || !services) return;
+    try {
+      const r = await services.call({action: 'usage', op: 'read', cat: 'all'});
+      if (!r || !r.counts) return;
+      const v = readUsage(); for (const c of Object.keys(LIMITS)) v.counts[c] = Number(r.counts[c]) || 0;
+      if (Number.isFinite(r.resetAt)) v.resetAt = r.resetAt; v.server = true; writeUsage(v); emit();
+    } catch (_) {}
+  }
+  // When the allowance resets, in the visitor's own time: server-counted members reset at 00:00 UTC.
+  function resetText() {
+    const v = readUsage();
+    if (v.server && Number.isFinite(v.resetAt)) return 'Resets at ' + new Date(v.resetAt).toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'}) + ' your time (00:00 UTC).';
+    return 'Resets at midnight on this device.';
   }
   function ready() {
     if (readyPromise) return readyPromise;
@@ -88,6 +106,19 @@
     await Promise.race([ready(), new Promise(r => setTimeout(r, 6000))]);
     const u = readUsage(), k = String(key || '').slice(0, 300), keys = u.keys[cat] || (u.keys[cat] = []);
     if (k && keys.includes(k)) return true;
+    // Signed-in members: the server keeps the count for the UTC day (device clock and browser storage cannot reset it).
+    // If the server cannot be reached, the local counter below still applies so tools keep working.
+    if (state.signedIn && state.uid && services) {
+      try {
+        const r = await services.call({action: 'usage', op: 'charge', cat, ...(k ? {key: k} : {})});
+        if (r && typeof r.allowed === 'boolean') {
+          const v = readUsage(); v.counts[cat] = Number(r.used) || 0; if (k && r.allowed && !(v.keys[cat] || (v.keys[cat] = [])).includes(k)) v.keys[cat].push(k);
+          if (Number.isFinite(r.resetAt)) v.resetAt = r.resetAt; v.server = true; writeUsage(v); emit();
+          if (!r.allowed) { if (!opts.silent) paywall({cat, feature: opts.feature, reason: 'limit'}); return false; }
+          return true;
+        }
+      } catch (_) {}
+    }
     const limit = limitOf(cat), used = u.counts[cat] || 0;
     if (used >= limit) { if (!opts.silent) paywall({cat, feature: opts.feature, reason: 'limit'}); return false; }
     u.counts[cat] = used + 1; if (k) { keys.push(k); if (keys.length > 400) keys.splice(0, keys.length - 400); }
@@ -200,7 +231,7 @@
     style(); const m = meter(cat), c = el('div', 'fxp-lock');
     c.append(el('div', 'fxp-kick', `${NAMES[state.tier].toUpperCase()} · ${m.used}/${Number.isFinite(m.limit) ? m.limit : '∞'} ${WHAT[cat].toUpperCase()} USED TODAY`));
     c.append(el('h3', '', `${feature} is ready. Unlock it to see the result.`));
-    c.append(el('p', '', what || `You have reached today's ${WHAT[cat]} on the ${NAMES[state.tier]} plan. Plus gives you ${limitOf(cat, 'plus')} a day across every Terminal tool for $10.99 a month; Professional is unlimited. Your allowance also resets at midnight.`));
+    c.append(el('p', '', what || `You have reached today's ${WHAT[cat]} on the ${NAMES[state.tier]} plan. Plus gives you ${limitOf(cat, 'plus')} a day across every Terminal tool for $10.99 a month; Professional is unlimited. Your allowance ${resetText().charAt(0).toLowerCase() + resetText().slice(1)}`));
     const row = el('div', 'row'), b1 = el('button', 'fxp-cta', 'Unlock with Plus · $10.99/mo'), b2 = el('button', 'fxp-cta alt', 'See all plans');
     b1.type = b2.type = 'button';
     b1.addEventListener('click', async () => { b1.disabled = true; try { await checkout('plus'); } catch (e) { b1.disabled = false; paywall({cat, feature}); } });
@@ -209,10 +240,12 @@
   }
   function chip(cat = 'analysis') {
     style(); const c = el('span', 'fxp-chip');
-    const paint = () => { const m = meter(cat); c.replaceChildren(); if (!Number.isFinite(m.limit)) { c.append(el('b', '', NAMES[m.tier]), document.createTextNode(' · unlimited')); return; } c.append(el('b', '', `${m.left}/${m.limit}`), document.createTextNode(` ${WHAT[cat]} left today`)); if (m.tier !== 'pro') { const u = el('button', '', m.tier === 'plus' ? 'Go unlimited' : 'Upgrade'); u.type = 'button'; u.addEventListener('click', () => paywall({cat, reason: 'upsell'})); c.append(u); } };
+    const paint = () => { const m = meter(cat); c.replaceChildren(); if (!Number.isFinite(m.limit)) { c.append(el('b', '', NAMES[m.tier]), document.createTextNode(' · unlimited')); return; } c.append(el('b', '', `${m.left}/${m.limit}`), document.createTextNode(` ${WHAT[cat]} left today`)); c.title = resetText() + (state.signedIn ? ' Counted on your FYNX account.' : ' Guest previews are counted in this browser; a free account keeps the count on your account.'); if (m.tier !== 'pro') { const u = el('button', '', m.tier === 'plus' ? 'Go unlimited' : 'Upgrade'); u.type = 'button'; u.addEventListener('click', () => paywall({cat, reason: 'upsell'})); c.append(u); } };
     paint(); listeners.add(paint); return c;
   }
 
   root.FYNXPlan = {ready, refresh, charge, meter, paywall, lockedCard, chip, checkout, onChange: fn => { listeners.add(fn); return () => listeners.delete(fn); },
-    get tier() { return state.tier; }, get name() { return NAMES[state.tier]; }, LIMITS, NAMES, PRICES, PERKS, limitOf};
+    resetText, get tier() { return state.tier; }, get name() { return NAMES[state.tier]; }, LIMITS, NAMES, PRICES, PERKS, limitOf};
+  // Test hook (scripts/test-fynx-plan-usage.cjs only): inject a fake server and account.
+  if (root.__FYNX_PLAN_TEST__) root.FYNXPlan._test = {set(svc, st) { services = svc; state = {...state, ...st}; readyPromise = Promise.resolve(state); }};
 })(typeof window !== 'undefined' ? window : globalThis);

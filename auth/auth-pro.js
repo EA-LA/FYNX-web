@@ -25,7 +25,7 @@
     const lead = {login: 'Your journal, Your News, alerts and saved research, on every device.', signup: 'Free. Save your journal, follow markets and sync across devices.', forgot: 'Enter your account email and we’ll send a secure reset link.'}[page];
     card.append(el('div', 'fx-card-brand', '<strong>FYNX</strong><span>FINANCE WORLD</span>'), el('h1', '', title)); card.querySelector('h1').id = 'fx-card-title';
     card.append(el('p', 'fx-card-lead', lead));
-    if (page !== 'forgot') card.append(el('p', 'fx-card-terms', 'By continuing, I agree to the FYNX <a href="https://ea-la.github.io/FYNX-Site/terms.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="https://ea-la.github.io/FYNX-Site/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.'));
+    if (page !== 'forgot') card.append(el('p', 'fx-card-terms', 'By continuing, I agree to the FYNX <a href="https://site.fynxfinanceworld.com/terms.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="https://site.fynxfinanceworld.com/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.'));
     if (status) card.append(status);
     if (form) {
       form.querySelectorAll('.foot, .row').forEach(n => n.remove());

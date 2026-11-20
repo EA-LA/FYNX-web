@@ -75,11 +75,20 @@
     // A newly generated feed is not proof that each underlying market price is current.
     // Reject unverifiable or future-dated observations, preserving other sourced quotes.
     const quoteTime = i => typeof i?.asOf === 'string' ? Date.parse(i.asOf) : NaN;
-    const items = rawItems.filter(i => i && num(i.price) &&
+    // One canonical quote per instrument: when the page's market ticker (FynxTerminalData, refreshed every minute)
+    // has a newer quote for the same symbol, the strip shows that one instead of its 15-minute snapshot, so the
+    // same page never shows two different EUR/USD prices.
+    const canon = canonical?.quotes || {};
+    const merged = rawItems.map(i => {
+      const c = i && canon[i.symbol];
+      if (!c || !num(c.price) || !(Date.parse(c.asOf) > quoteTime(i))) return i;
+      return {...i, price: c.price, changePercent: num(c.changePercent) ? c.changePercent : i.changePercent, asOf: c.asOf, stale: false, canonical: true};
+    });
+    const items = merged.filter(i => i && num(i.price) &&
       typeof i.symbol === 'string' && !!i.symbol.trim() &&
       typeof i.label === 'string' && !!i.label.trim() &&
       Number.isFinite(quoteTime(i)) &&
-      quoteTime(i) <= Math.min(Date.now(), snapshotAt) + FUTURE_SKEW_ALLOWANCE);
+      quoteTime(i) <= Math.max(Math.min(Date.now(), snapshotAt), i.canonical ? Date.now() : 0) + FUTURE_SKEW_ALLOWANCE);
     if (!items.length) throw new Error('No verified market quote times');
     const partial = items.length !== rawItems.length;
     const olderQuote = i => data.stale === true || i.stale === true || Date.now() - quoteTime(i) > MAX_SNAPSHOT_AGE;
@@ -90,7 +99,7 @@
       const up = s.length > 1 ? s[s.length - 1] >= s[0] : (ch || 0) >= 0;
       const trendLabel = s.length > 1 ? ' · 30-day trend' : '';
       const asOf = new Date(quoteTime(i)).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
-      const ageNote = olderQuote(i) ? 'Older sourced quote' : 'Delayed sourced quote';
+      const ageNote = i.canonical ? 'Same quote as the market ticker' : olderQuote(i) ? 'Older sourced quote' : 'Delayed sourced quote';
       return '<a class="lp-item" href="/terminal.html?sym=' + encodeURIComponent(i.symbol) + '" title="' + esc(i.label) + trendLabel + ' · ' + ageNote + ' as of ' + esc(asOf) + ' · open in FYNX Terminal">'
         + '<span class="lp-name">' + esc(i.label) + '</span><span class="lp-px">' + fmt(i.symbol, i.price) + '</span>'
         + '<span class="lp-ch ' + cls + '">' + (num(ch) ? (ch > 0 ? '+' : '') + ch.toFixed(2) + '%' : '') + '</span>'
@@ -113,7 +122,11 @@
     strip.querySelector('.lp-feedback').hidden = true;
     strip.hidden = false;
   }
-  let pending = null, lastSourceAt = null;
+  let pending = null, lastSourceAt = null, lastData = null, lastStrip = null, canonical = null;
+  document.addEventListener('fynx:terminal-quotes', e => {
+    canonical = e.detail && e.detail.status !== 'unavailable' ? e.detail : null;
+    if (lastData && lastStrip?.isConnected) { try { render(lastStrip, lastData); } catch (_) {} }
+  });
   async function load(strip) {
     // An initial offline request must not permanently remove the pulse.
     if (pending || !strip.isConnected) return;
@@ -127,7 +140,7 @@
         cache: 'no-store', signal: controller.signal
       });
       if (!res.ok) throw new Error('Market source unavailable');
-      render(strip, await res.json());
+      const data = await res.json(); render(strip, data); lastData = data; lastStrip = strip;
     } catch (_) {
       const previous = !!strip.querySelector('.lp-item');
       strip.classList.toggle('is-error', !previous);

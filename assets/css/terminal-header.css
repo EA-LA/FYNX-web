@@ -701,3 +701,13 @@ html body[data-fynx-terminal].terminal-masthead-ready .terminal-public-masthead 
    Intelligence) or "Sign in" (Pro) link was a duplicate, and on iPhone SE it pushed Sign in off the screen (sideways scroll). */
 html body[data-fynx-terminal]:not(#fx-boost).terminal-masthead-ready .terminal-public-masthead > nav:has(> .terminal-account) > a:is([href="/profile.html"],[href^="/auth/login"],[href^="/auth/signup"]) { display:none !important; }
 html body[data-fynx-terminal].terminal-masthead-ready .terminal-account > .terminal-account-profile { font-size:13px !important; height:33px; }
+
+/* Audit H2: phones keep a visible Plans entry point in the top bar (the full "Pro tools & plans" label is hidden at
+   this width to save space; the short label is decorative so screen readers still read the full link text). */
+@media (max-width: 600px) {
+  html body[data-fynx-terminal] .terminal-utility-actions > a[href="/pro.html"] { display: inline-flex !important; align-items: center; min-height: 44px; padding: 0 2px !important; font-size: 0 !important; letter-spacing: 0; color: #ffb000 !important; white-space: nowrap; }
+  html body[data-fynx-terminal] .terminal-utility-actions > a[href="/pro.html"]::before { content: "Plans" / ""; font: 700 10px/1 Inter, Arial, sans-serif; letter-spacing: .02em; }
+}
+@media (max-width: 360px) {
+  html body[data-fynx-terminal] .terminal-header-clock { display: none !important; }
+}

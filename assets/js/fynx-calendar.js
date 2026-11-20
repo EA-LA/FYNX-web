@@ -33,7 +33,8 @@
               const identity = [e.currency, `${part('year')}-${part('month')}-${part('day')}`, e.title].join('|');
               try { e.stableEventID = [...new Uint8Array(await root.crypto.subtle.digest('SHA-256', new TextEncoder().encode(identity)))].map(b => b.toString(16).padStart(2, '0')).join(''); } catch {}
             }));
-            cache = {...d, list}; cacheAt = Date.now(); return cache;
+            feedActuals = list.some(e => supplied(e.actual) !== null);
+            cache = {...d, list, hasActuals: feedActuals}; cacheAt = Date.now(); return cache;
           }
         } catch {}
       }
@@ -52,7 +53,13 @@
   function bars(impact) { const [n, label] = IMPACT[impact] || IMPACT.other; const b = el('span', 'fc-imp fc-imp-' + (impact || 'other')); b.title = label; b.setAttribute('aria-label', label); for (let i = 0; i < 3; i++) b.append(el('i', i < n ? 'on' : '')); return b; }
   function chip(ccy) { const c = el('span', 'fc-ccy', ccy); const meta = CCY[ccy]; c.title = meta?.[0] || ccy; if (meta) c.style.setProperty('--fc-c', meta[1]); return c; }
   const supplied = value => { const s = typeof value === 'number' && Number.isFinite(value) ? String(value) : typeof value === 'string' ? value.trim() : ''; return s && s.length <= 160 && !/^(?:[-—–]|n\/a|na|null|none|pending|tba)$/i.test(s) ? s : null; };
-  const phase = (e, now = Date.now()) => Date.parse(e.time) > now ? 'Before release' : supplied(e.actual) !== null && e.estimated !== true ? 'Result reported' : 'Awaiting reported result';
+  // Status of a release. 'Awaiting reported result' is used only for a short window, and only when the feed is known to
+  // carry actual figures; otherwise an elapsed release says plainly that the feed has no result (nothing is estimated).
+  // The current source (Forex Factory weekly schedule) supplies forecast and previous values but no actuals.
+  const AWAIT_MS = 2 * 3600000;
+  let feedActuals = false;
+  const phase = (e, now = Date.now(), withActuals = feedActuals) => Date.parse(e.time) > now ? 'Before release' : supplied(e.actual) !== null && e.estimated !== true ? 'Result reported' : withActuals && now - Date.parse(e.time) < AWAIT_MS ? 'Awaiting reported result' : 'Result not in feed';
+  const rowStatus = (e, now) => ({'Result reported': 'Released', 'Awaiting reported result': 'Awaiting result', 'Result not in feed': 'Result unavailable'})[phase(e, now)] || '';
   const publicEventID = e => /^[a-f0-9]{64}$/.test(String(e.stableEventID || '')) ? e.stableEventID : e.id;
   const eventURL = e => /^[a-f0-9]{64}$/.test(String(publicEventID(e) || '')) ? 'https://www.fynxfinanceworld.com/tools/economic-calendar.html?event=' + publicEventID(e) : null;
   function comparison(e, now = Date.now()) {
@@ -162,7 +169,7 @@
       if (e.reference) detail.append(el('p', '', 'Reference period: ' + e.reference));
       if (supplied(e.revised)) detail.append(el('p', '', 'Revision supplied: ' + supplied(e.revised)));
       const surprise = comparison(e); if (surprise) detail.append(el('p', 'fc-detail-comparison', surprise));
-      detail.append(el('p', '', phase(e) === 'Before release' ? 'The scheduled release is still ahead. Forecasts are expectations, not results.' : phase(e) === 'Awaiting reported result' ? 'The scheduled time has passed, but the connected source has not supplied an actual. No surprise or market direction is inferred.' : 'Actual, forecast and previous are source-reported fields. A numerical surprise alone does not establish the market reaction.'));
+      detail.append(el('p', '', phase(e) === 'Before release' ? 'The scheduled release is still ahead. Forecasts are expectations, not results.' : phase(e) === 'Awaiting reported result' ? 'The scheduled time has passed, but the connected source has not supplied an actual yet. It may be delayed. No surprise or market direction is inferred.' : phase(e) === 'Result not in feed' ? 'The scheduled time has passed. This calendar feed supplies the schedule, forecasts and previous values but not actual results, so FYNX shows no actual rather than estimating one. The official figure is published by the statistics agency or central bank named in the release.' : 'Actual, forecast and previous are source-reported fields. A numerical surprise alone does not establish the market reaction.'));
       detail.append(el('p', '', 'Verified comparable history and measured market reactions are not supplied by this calendar feed.'));
       const actions = el('div', 'fc-detail-actions'), url = eventURL(e);
       if (Date.parse(e.time) > Date.now() && e.estimated !== true) { const remind = el('button', 'fc-chip', 'Add reminder (.ics)'); remind.type = 'button'; remind.addEventListener('click', () => addOne(e)); actions.append(remind); }
@@ -216,7 +223,7 @@
         const r = el('div', 'fc-row' + (past ? ' fc-past' : '') + (e.impact === 'high' ? ' fc-high' : '')); r.setAttribute('role', 'listitem');
         r.setAttribute('aria-label', `${timeLabel(e.time, allDay)}, ${CCY[e.currency]?.[0] || e.currency}, ${e.title}, ${IMPACT[e.impact]?.[1] || ''}${supplied(e.forecast) !== null ? ', forecast ' + e.forecast : ''}${supplied(e.previous) !== null ? ', previous ' + e.previous : ''}`);
         const when = el('div', 'fc-when'); when.append(el('time', '', timeLabel(e.time, allDay))); when.lastChild.dateTime = e.time;
-        when.append(el('small', past ? 'fc-done' : 'fc-soon', past ? (allDay ? '' : phase(e) === 'Result reported' ? 'Result reported' : 'Awaiting result') : until(t - now)));
+        when.append(el('small', past ? 'fc-done' : 'fc-soon', past ? (allDay ? '' : rowStatus(e, now)) : until(t - now)));
         const what = el('div', 'fc-what'); const meta = el('div', 'fc-meta'); meta.append(chip(e.currency), bars(e.impact)); const title = el('button', 'fc-title fc-open-event', e.title); title.type = 'button'; title.addEventListener('click', () => selectEvent(e)); what.append(meta, title);
         const nums = el('div', 'fc-nums'); nums.append(value('Forecast', e.forecast), value('Previous', e.previous));
         // Results stay in FYNX: show the actual figure when the feed has it, otherwise open the event detail here.
@@ -230,7 +237,8 @@
     }
     function drawFoot() {
       foot.replaceChildren();
-      foot.append(`Times in your time zone (${Intl.DateTimeFormat().resolvedOptions().timeZone}). Schedule, forecasts and previous values from Forex Factory via FYNX research, updated ${new Date(data.updatedAt).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'})}. Actual figures appear here as soon as the feed reports them.`);
+      foot.append(`Times in your time zone (${Intl.DateTimeFormat().resolvedOptions().timeZone}). Schedule, forecasts and previous values from Forex Factory via FYNX research, updated ${new Date(data.updatedAt).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'})}. ${data.hasActuals ? 'Actual figures appear here as soon as the feed reports them.' : 'This feed does not include actual results; past releases are marked “Result unavailable” instead of showing an estimate.'}`);
+      if (!data.hasActuals && data.sourceURL && /^https:\/\//.test(data.sourceURL)) { const a = el('a', 'fc-source', 'Calendar source ↗'); a.href = data.sourceURL; a.target = '_blank'; a.rel = 'noopener'; foot.append(' ', a); }
     }
     function draw() { if (!data) return; renderControls(); drawNext(); drawList(); drawFoot(); drawDetail(); }
     async function refresh(force) {

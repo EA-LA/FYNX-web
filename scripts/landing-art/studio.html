@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>FYNX landing artwork studio</title>
+<!-- Source for the homepage card artwork. Rendered to AVIF/WebP by render.py; all figures are illustrative examples. -->
+<style>
+@font-face{font-family:Inter;src:url(fonts/inter-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:Inter;src:url(fonts/inter-latin-500-normal.woff2);font-weight:500}
+@font-face{font-family:Inter;src:url(fonts/inter-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:Inter;src:url(fonts/inter-latin-700-normal.woff2);font-weight:700}
+@font-face{font-family:Inter;src:url(fonts/inter-latin-800-normal.woff2);font-weight:800}
+@font-face{font-family:Plex;src:url(fonts/ibm-plex-mono-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:Plex;src:url(fonts/ibm-plex-mono-latin-500-normal.woff2);font-weight:500}
+@font-face{font-family:Plex;src:url(fonts/ibm-plex-mono-latin-600-normal.woff2);font-weight:600}
+:root{--paper:#f4f2eb;--paper2:#ebe7dc;--ink:#121513;--ink2:#2a2f2c;--mute:#6e736d;--line:#dcd8cc;--green:#1f5c45;--green2:#2e7d5d;--mint:#dcefe4;--mint2:#c4e3d1;--red:#c9453b;--rose:#f6dcd8;--amber:#e3a21a;--dark:#0d1110;--dark2:#151b19;--dline:#26302c}
+*{box-sizing:border-box;margin:0}
+body{background:#888;font-family:Inter,sans-serif;color:var(--ink);padding:20px;display:flex;flex-wrap:wrap;gap:20px;-webkit-font-smoothing:antialiased}
+.ab{position:relative;overflow:hidden;flex:none}
+.big{width:600px;height:375px}.calc{width:320px;height:180px}.eco{width:120px;height:120px}
+.mono{font-family:Plex,monospace}
+.card{position:absolute;background:#fff;border-radius:12px;box-shadow:0 1px 0 #0000000a,0 18px 40px -12px #12201a40,0 4px 12px -4px #12201a1f;border:1px solid #e7e3d8}
+.dcard{position:absolute;background:var(--dark2);border-radius:12px;border:1px solid var(--dline);box-shadow:0 24px 50px -16px #000a}
+.eyebrow{font:600 8.5px/1 Plex,monospace;letter-spacing:.14em;color:var(--green);text-transform:uppercase}
+.k{font:500 8px/1 Plex,monospace;letter-spacing:.1em;color:var(--mute);text-transform:uppercase}
+.grid-bg{background-image:linear-gradient(#0000000a 1px,transparent 1px),linear-gradient(90deg,#0000000a 1px,transparent 1px);background-size:24px 24px}
+.dgrid{background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:24px 24px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;font:600 9px/1 Inter;background:#fff;border:1px solid var(--line);color:var(--ink2)}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.row{display:flex;align-items:center}
+.pos{color:var(--green2)}.neg{color:var(--red)}
+svg{display:block}
+</style></head><body>
+
+<!-- ============ PROCESS CARDS (600x375 → 1200x750) ============ -->
+
+<!-- 1 Research with context -->
+<section class="ab big grid-bg" id="process-research" style="background-color:#e4f1e9">
+  <div style="position:absolute;inset:0;background:radial-gradient(120% 90% at 0% 0%,#f7fbf8 0,#f7fbf800 60%)"></div>
+  <div class="card" style="left:34px;top:34px;width:308px;height:292px;padding:20px 22px">
+    <div class="row" style="justify-content:space-between"><span class="eyebrow">Markets · Briefing</span><span class="k">08:26 ET</span></div>
+    <div style="font:700 21px/1.18 Inter;letter-spacing:-.02em;margin:14px 0 10px">Yields edge higher as traders weigh the jobs report</div>
+    <div style="font:400 10.5px/1.55 Inter;color:var(--mute)">Treasury yields, the dollar and the session ahead, with the releases that matter today.</div>
+    <div style="height:1px;background:var(--line);margin:16px 0 12px"></div>
+    <div class="row" style="gap:10px"><div style="width:58px;height:40px;border-radius:6px;background:linear-gradient(135deg,#1f5c45,#3f8f6c)"></div><div style="flex:1"><div style="font:600 10.5px/1.35 Inter">Central banks: what changed this week</div><div class="k" style="margin-top:5px">Newsroom · 12 min</div></div></div>
+    <div class="row" style="gap:10px;margin-top:12px"><div style="width:58px;height:40px;border-radius:6px;background:linear-gradient(135deg,#2a2f2c,#58625c)"></div><div style="flex:1"><div style="font:600 10.5px/1.35 Inter">Oil steadies as supply outlook improves</div><div class="k" style="margin-top:5px">Newsroom · 34 min</div></div></div>
+  </div>
+  <div class="card" style="left:360px;top:52px;width:206px;height:150px;padding:16px 16px 12px">
+    <div class="row" style="justify-content:space-between"><b style="font:700 12px Inter">EUR/USD</b><span class="mono pos" style="font-size:10px">▲ 0.21%</span></div>
+    <div class="mono" style="font:600 22px Plex;margin:4px 0 6px">1.0874</div>
+    <svg width="174" height="62" id="spark1"></svg>
+  </div>
+  <div class="card" style="left:376px;top:218px;width:190px;height:108px;padding:14px 16px">
+    <div class="k">Next release</div>
+    <div style="font:700 13px/1.25 Inter;margin:8px 0 6px">US CPI y/y</div>
+    <div class="row" style="gap:6px"><span class="chip" style="background:var(--rose);border-color:#efc5bf;color:#8c2a22">● High impact</span><span class="mono" style="font-size:10px;color:var(--mute)">13:30</span></div>
+  </div>
+  <div class="row" style="position:absolute;left:34px;bottom:14px;gap:6px"><span class="chip"><i class="dot" style="background:var(--green2)"></i>London open</span><span class="chip"><i class="dot" style="background:var(--green2)"></i>New York open</span><span class="chip"><i class="dot" style="background:#b8b4a8"></i>Tokyo closed</span></div>
+</section>
+
+<!-- 2 Define your risk -->
+<section class="ab big grid-bg" id="process-risk" style="background-color:var(--paper)">
+  <div class="card" style="left:36px;top:36px;width:300px;height:303px;padding:20px 22px">
+    <span class="eyebrow">Position size</span>
+    <div style="margin-top:14px;display:grid;gap:9px">
+      <div class="row" style="justify-content:space-between;border:1px solid var(--line);border-radius:8px;padding:9px 11px"><span class="k">Account</span><b class="mono" style="font-size:12px">$25,000</b></div>
+      <div class="row" style="justify-content:space-between;border:1px solid var(--line);border-radius:8px;padding:9px 11px"><span class="k">Risk</span><b class="mono" style="font-size:12px">1.0% · $250</b></div>
+      <div class="row" style="justify-content:space-between;border:1px solid var(--line);border-radius:8px;padding:9px 11px"><span class="k">Stop distance</span><b class="mono" style="font-size:12px">25 pips</b></div>
+    </div>
+    <div style="margin-top:16px;background:var(--green);border-radius:10px;padding:14px 16px;color:#fff">
+      <div class="k" style="color:#cfe7da">Position size</div>
+      <div class="row" style="justify-content:space-between;align-items:baseline;margin-top:6px"><b style="font:800 30px/1 Inter;letter-spacing:-.02em">1.00 <span style="font-size:15px;font-weight:600">lot</span></b><span class="mono" style="font-size:10px;color:#cfe7da">$10 / pip</span></div>
+    </div>
+  </div>
+  <div class="card" style="left:360px;top:60px;width:204px;height:255px;padding:14px">
+    <svg width="176" height="227" id="ladder"></svg>
+  </div>
+</section>
+
+<!-- 3 Review your process -->
+<section class="ab big" id="process-review" style="background:linear-gradient(140deg,#123a2c 0%,#1f5c45 60%,#2c7a5a 100%)">
+  <div class="dgrid" style="position:absolute;inset:0"></div>
+  <div class="card" style="left:34px;top:34px;width:380px;height:306px;padding:18px 20px">
+    <div class="row" style="justify-content:space-between"><span class="eyebrow">Journal · Performance</span><span class="k">Last 90 days</span></div>
+    <div class="row" style="gap:22px;margin:12px 0 4px">
+      <div><div class="k">Win rate</div><b style="font:700 19px Inter">58%</b></div>
+      <div><div class="k">Avg R</div><b style="font:700 19px Inter">1.6</b></div>
+      <div><div class="k">Profit factor</div><b style="font:700 19px Inter">1.9</b></div>
+      <div><div class="k">Trades</div><b style="font:700 19px Inter">64</b></div>
+    </div>
+    <svg width="340" height="118" id="equity"></svg>
+    <div style="display:grid;gap:5px;margin-top:8px">
+      <div class="row mono" style="justify-content:space-between;font-size:9.5px;padding:6px 8px;background:#f6f5f0;border-radius:6px"><span>GBP/USD · long</span><span style="color:var(--mute)">breakout</span><b class="pos">+2.1R</b></div>
+      <div class="row mono" style="justify-content:space-between;font-size:9.5px;padding:6px 8px;background:#f6f5f0;border-radius:6px"><span>XAU/USD · short</span><span style="color:var(--mute)">range fade</span><b class="neg">−1.0R</b></div>
+    </div>
+  </div>
+  <div class="card" style="left:432px;top:96px;width:136px;height:184px;padding:14px">
+    <div class="k">Rule check</div>
+    <div style="display:grid;gap:9px;margin-top:12px;font:500 10px/1.3 Inter">
+      <div class="row" style="gap:7px"><span style="color:var(--green2)">✓</span>Risk ≤ 1%</div>
+      <div class="row" style="gap:7px"><span style="color:var(--green2)">✓</span>Stop set</div>
+      <div class="row" style="gap:7px"><span style="color:var(--green2)">✓</span>Plan noted</div>
+      <div class="row" style="gap:7px"><span style="color:var(--amber)">!</span>Moved stop</div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 Build your knowledge -->
+<section class="ab big grid-bg" id="process-learn" style="background-color:#efe9dc">
+  <div class="card" style="left:34px;top:40px;width:262px;height:296px;padding:20px 22px">
+    <span class="eyebrow">Learning path · Risk</span>
+    <div style="font:700 19px/1.2 Inter;letter-spacing:-.015em;margin:12px 0 6px">Sizing a trade around your stop</div>
+    <div style="font:400 10.5px/1.55 Inter;color:var(--mute)">Why the stop decides the size, not the other way round.</div>
+    <div class="row" style="justify-content:space-between;margin:18px 0 6px"><span class="k">Lesson 4 of 9</span><span class="k">44%</span></div>
+    <div style="height:6px;border-radius:9px;background:#ece9df"><div style="width:44%;height:100%;border-radius:9px;background:var(--green)"></div></div>
+    <div style="display:grid;gap:7px;margin-top:16px;font:500 10.5px Inter">
+      <div class="row" style="gap:8px"><span style="width:16px;height:16px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:9px">✓</span>Risk per trade</div>
+      <div class="row" style="gap:8px"><span style="width:16px;height:16px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:9px">✓</span>Drawdown and recovery</div>
+      <div class="row" style="gap:8px;color:var(--ink)"><span style="width:16px;height:16px;border-radius:50%;border:1.5px solid var(--green);display:grid;place-items:center;font-size:8px;color:var(--green)">4</span><b>Stop-based sizing</b></div>
+    </div>
+  </div>
+  <div class="card" style="left:316px;top:96px;width:252px;height:220px;padding:16px 18px">
+    <div class="k">Quiz · Question 2</div>
+    <div style="font:600 12.5px/1.35 Inter;margin:9px 0 12px">A 1:3 risk/reward means…</div>
+    <div style="display:grid;gap:7px;font:500 10.5px Inter">
+      <div style="padding:9px 11px;border:1px solid var(--line);border-radius:8px">You risk three to make one</div>
+      <div class="row" style="justify-content:space-between;padding:9px 11px;border:1.5px solid var(--green2);background:var(--mint);border-radius:8px"><span>You risk one to aim for three</span><b class="pos">✓</b></div>
+      <div style="padding:9px 11px;border:1px solid var(--line);border-radius:8px">You win three trades in four</div>
+    </div>
+  </div>
+  <span class="chip" style="position:absolute;left:440px;top:52px">Glossary · Drawdown</span>
+</section>
+
+<!-- 5 Find the right tool -->
+<section class="ab big grid-bg" id="process-tools" style="background-color:#e3efe8">
+  <div id="toolgrid" style="position:absolute;left:40px;top:40px;display:grid;grid-template-columns:repeat(3,116px);gap:12px"></div>
+  <div class="card" style="left:416px;top:78px;width:156px;height:220px;padding:16px">
+    <span class="eyebrow">Margin</span>
+    <div style="display:grid;gap:7px;margin:12px 0;font:500 9.5px Plex">
+      <div class="row" style="justify-content:space-between"><span style="color:var(--mute)">Pair</span><b>EUR/USD</b></div>
+      <div class="row" style="justify-content:space-between"><span style="color:var(--mute)">Size</span><b>1.00 lot</b></div>
+      <div class="row" style="justify-content:space-between"><span style="color:var(--mute)">Leverage</span><b>1:50</b></div>
+    </div>
+    <div style="height:1px;background:var(--line)"></div>
+    <div class="k" style="margin-top:12px">Required</div>
+    <b style="display:block;font:800 24px Inter;letter-spacing:-.02em;margin-top:6px;color:var(--green)">$2,175</b>
+    <div style="font:400 9px/1.4 Inter;color:var(--mute);margin-top:6px">at 1.0874</div>
+  </div>
+</section>
+
+<!-- 6 Keep your workspace close -->
+<section class="ab big" id="process-devices" style="background:radial-gradient(120% 120% at 20% 0%,#1d2a25 0%,#0b0f0e 70%)">
+  <div style="position:absolute;left:26px;top:44px;width:410px;height:272px;border-radius:12px 12px 4px 4px;background:#1b1f1e;padding:9px;box-shadow:0 30px 60px -20px #000">
+    <div style="width:100%;height:100%;background:#0b0f0e;border-radius:5px;overflow:hidden;position:relative">
+      <div class="row" style="height:22px;padding:0 10px;gap:8px;border-bottom:1px solid #1e2724;font:600 8px Plex;color:#ffb000;letter-spacing:.12em">FYNX <span style="color:#6f7c75">TERMINAL</span><span style="margin-left:auto;color:#3ecf8e">● LIVE</span></div>
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:6px;padding:7px">
+        <div style="border:1px solid #1e2724;border-radius:4px;padding:7px"><div style="font:600 7px Plex;color:#ffb000;letter-spacing:.1em">SPX · 1D</div><svg width="196" height="150" id="tcandles"></svg></div>
+        <div style="display:grid;gap:6px">
+          <div style="border:1px solid #1e2724;border-radius:4px;padding:7px" id="tquotes"></div>
+          <div style="border:1px solid #1e2724;border-radius:4px;padding:7px"><div style="font:600 7px Plex;color:#ffb000;letter-spacing:.1em">REGIMES</div><svg width="150" height="40" id="tregime"></svg></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="position:absolute;left:8px;top:316px;width:446px;height:12px;border-radius:0 0 14px 14px;background:linear-gradient(#2a302e,#141817)"></div>
+  <div style="position:absolute;left:418px;top:58px;width:150px;height:300px;border-radius:30px;background:#1a1d1c;padding:7px;box-shadow:0 30px 60px -16px #000,inset 0 0 0 1.5px #33403a">
+    <div style="width:100%;height:100%;border-radius:24px;background:#f6f4ee;overflow:hidden;position:relative">
+      <div style="position:absolute;left:50%;top:7px;width:46px;height:13px;border-radius:9px;background:#0b0d0c;transform:translateX(-50%)"></div>
+      <div style="padding:30px 12px 0"><div class="row" style="justify-content:space-between"><b style="font:800 13px Inter;letter-spacing:-.02em">FYNX</b><span style="width:16px;height:16px;border-radius:50%;background:var(--green)"></span></div>
+        <div style="font:700 11px/1.25 Inter;margin:10px 0 8px">Good morning</div>
+        <div id="pquotes" style="display:grid;gap:5px"></div>
+        <div style="margin-top:9px;background:var(--green);border-radius:9px;padding:9px;color:#fff"><div style="font:500 6.5px Plex;letter-spacing:.1em;color:#cfe7da">JOURNAL · WEEK</div><b style="font:700 15px Inter">+3.4R</b><svg width="100" height="22" id="pspark"></svg></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 Make the news yours -->
+<section class="ab big grid-bg" id="process-news" style="background-color:var(--paper2)">
+  <div class="card" style="left:34px;top:36px;width:250px;height:303px;padding:18px 18px">
+    <span class="eyebrow">Your News · Topics</span>
+    <div style="font:700 16px/1.25 Inter;margin:10px 0 14px">Follow what matters to your trading</div>
+    <div id="topics" style="display:flex;flex-wrap:wrap;gap:7px"></div>
+    <div style="height:1px;background:var(--line);margin:16px 0 12px"></div>
+    <div class="row" style="justify-content:space-between"><span class="k">Edition</span><b style="font:600 10px Inter">Americas</b></div>
+    <div class="row" style="justify-content:space-between;margin-top:8px"><span class="k">Alerts</span><span style="width:26px;height:15px;border-radius:9px;background:var(--green);position:relative"><i style="position:absolute;right:2px;top:2px;width:11px;height:11px;border-radius:50%;background:#fff"></i></span></div>
+  </div>
+  <div id="feed" style="position:absolute;left:302px;top:36px;width:266px;display:grid;gap:10px"></div>
+</section>
+
+<!-- 8 Prepare for the next release -->
+<section class="ab big" id="process-calendar" style="background:linear-gradient(150deg,#f5f3ec 0%,#e1efe6 100%)">
+  <div class="grid-bg" style="position:absolute;inset:0"></div>
+  <div class="card" style="left:34px;top:34px;width:532px;height:306px;padding:16px 18px">
+    <div class="row" style="justify-content:space-between"><span class="eyebrow">Economic calendar</span><span class="k">Times in your zone</span></div>
+    <div id="days" class="row" style="gap:6px;margin:12px 0 10px"></div>
+    <div class="row k" style="padding:0 10px 6px;gap:0"><span style="width:52px">Time</span><span style="width:44px">Ccy</span><span style="flex:1">Event</span><span style="width:46px">Impact</span><span style="width:58px;text-align:right">Actual</span><span style="width:62px;text-align:right">Forecast</span><span style="width:62px;text-align:right">Previous</span></div>
+    <div id="events" style="display:grid;gap:5px"></div>
+  </div>
+</section>
+
+<!-- ============ CALCULATOR THUMBNAILS (320x180 → 640x360) ============ -->
+<section class="ab calc" id="calc-position-size"></section>
+<section class="ab calc" id="calc-risk-reward"></section>
+<section class="ab calc" id="calc-pip-value"></section>
+<section class="ab calc" id="calc-correlation"></section>
+<section class="ab calc" id="calc-market-hours"></section>
+<section class="ab calc" id="calc-economic-calendar"></section>
+<section class="ab calc" id="calc-break-even"></section>
+<section class="ab calc" id="calc-margin"></section>
+<section class="ab calc" id="calc-compound-growth"></section>
+<section class="ab calc" id="calc-atr-stop"></section>
+
+<!-- ============ ECOSYSTEM THUMBNAILS (120x120 → 360x360) ============ -->
+<section class="ab eco" id="eco-journal" style="background:linear-gradient(145deg,#1f5c45,#2e7d5d)">
+  <div style="position:absolute;left:26px;top:22px;width:68px;height:82px;background:#fff;border-radius:6px;box-shadow:0 10px 20px -8px #0008;transform:rotate(-6deg);padding:9px 8px">
+    <div style="height:22px;border-radius:3px;background:linear-gradient(135deg,#dcefe4,#9ccbb3)"></div>
+    <div style="height:4px;border-radius:2px;background:#121513;margin-top:7px;width:90%"></div>
+    <div style="height:4px;border-radius:2px;background:#121513;margin-top:4px;width:70%"></div>
+    <div style="height:3px;border-radius:2px;background:#cfcabd;margin-top:7px"></div>
+    <div style="height:3px;border-radius:2px;background:#cfcabd;margin-top:3px;width:85%"></div>
+    <div style="height:3px;border-radius:2px;background:#cfcabd;margin-top:3px;width:60%"></div>
+  </div>
+  <div style="position:absolute;right:16px;top:16px;font:800 13px Inter;color:#fff;letter-spacing:-.02em">J</div>
+</section>
+<section class="ab eco" id="eco-learn" style="background:linear-gradient(145deg,#f1ece0,#e2d9c5)">
+  <svg width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="34" fill="none" stroke="#d8d1c0" stroke-width="7"/><circle cx="60" cy="60" r="34" fill="none" stroke="#1f5c45" stroke-width="7" stroke-linecap="round" stroke-dasharray="150 214" transform="rotate(-90 60 60)"/><path d="M44 52c6-3 11-3 16 0v20c-5-3-10-3-16 0zM60 52c5-3 10-3 16 0v20c-6-3-11-3-16 0z" fill="#fff" stroke="#121513" stroke-width="2" stroke-linejoin="round"/></svg>
+</section>
+<section class="ab eco" id="eco-funded" style="background:radial-gradient(110% 110% at 20% 10%,#1d2a25,#0b0f0e)">
+  <svg width="120" height="120" viewBox="0 0 120 120"><path d="M18 88 L38 76 L52 80 L66 60 L80 64 L100 34" fill="none" stroke="#3ecf8e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="16" y1="34" x2="104" y2="34" stroke="#ffb000" stroke-width="1.6" stroke-dasharray="4 4"/><circle cx="100" cy="34" r="6.5" fill="#3ecf8e"/><path d="M97 34l2.2 2.2 4-4.3" fill="none" stroke="#0b0f0e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><text x="18" y="27" font-family="Plex" font-size="8.5" fill="#ffb000" letter-spacing="1">TARGET</text></svg>
+</section>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const S=(tag,a,p)=>{const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.append(e);return e};
+const T=(p,x,y,t,o={})=>{const e=S('text',{x,y,'font-family':o.mono===false?'Inter':'Plex','font-size':o.s||9,fill:o.c||'#6e736d','font-weight':o.w||500,'text-anchor':o.a||'start','letter-spacing':o.ls||0},p);e.textContent=t;return e};
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const walk=(n,drift,vol,start=0)=>{let v=start;return Array.from({length:n},()=>v+=drift+(rnd()-.5)*vol)};
+const path=(vals,w,h,pad=4,lo,hi)=>{lo=lo??Math.min(...vals);hi=hi??Math.max(...vals);return vals.map((v,i)=>`${i?'L':'M'}${(pad+i/(vals.length-1)*(w-2*pad)).toFixed(1)} ${(pad+(hi-v)/(hi-lo||1)*(h-2*pad)).toFixed(1)}`).join('')};
+const G='#1f5c45',G2='#2e7d5d',R='#c9453b',A='#e3a21a',M='#6e736d',L='#dcd8cc';
+// 1 spark
+{const s=document.getElementById('spark1'),v=walk(60,.02,.6);const d=path(v,174,62);S('path',{d:d+'L170 62L4 62Z',fill:'#dcefe4'},s);S('path',{d,fill:'none',stroke:G2,'stroke-width':1.8,'stroke-linejoin':'round'},s)}
+// 2 ladder
+{const s=document.getElementById('ladder'),w=176,h=227,Y=p=>14+(1.0905-p)/(0.0055)*(h-30);
+ for(let i=0;i<6;i++){const p=1.0900-i*0.001;S('line',{x1:44,x2:w,y1:Y(p),y2:Y(p),stroke:'#efece4'},s);T(s,0,Y(p)+3,p.toFixed(4),{s:8})}
+ S('rect',{x:44,y:Y(1.0874),width:w-44,height:Y(1.0849)-Y(1.0874),fill:'#f6dcd8'},s);S('rect',{x:44,y:Y(1.0899),width:w-44,height:Y(1.0874)-Y(1.0899),fill:'#dcefe4'},s);
+ S('line',{x1:44,x2:w,y1:Y(1.0874),y2:Y(1.0874),stroke:'#121513','stroke-width':1.6},s);S('line',{x1:44,x2:w,y1:Y(1.0849),y2:Y(1.0849),stroke:R,'stroke-width':1.6,'stroke-dasharray':'4 3'},s);S('line',{x1:44,x2:w,y1:Y(1.0899),y2:Y(1.0899),stroke:G2,'stroke-width':1.6,'stroke-dasharray':'4 3'},s);
+ T(s,w-4,Y(1.0874)-5,'ENTRY 1.0874',{s:7.5,a:'end',c:'#121513',w:600});T(s,w-4,Y(1.0849)+11,'STOP −25 PIPS',{s:7.5,a:'end',c:R,w:600});T(s,w-4,Y(1.0899)-5,'TARGET +25',{s:7.5,a:'end',c:G2,w:600});
+ T(s,52,Y(1.0861)+3,'−$250',{s:10,c:R,w:600});T(s,52,Y(1.0886)+3,'+$250',{s:10,c:G2,w:600})}
+// 3 equity
+{const s=document.getElementById('equity'),v=walk(70,.9,5.2,0);const d=path(v,340,118,6);const g=S('linearGradient',{id:'eg',x1:0,y1:0,x2:0,y2:1},S('defs',{},s));S('stop',{offset:0,'stop-color':'#2e7d5d','stop-opacity':.28},g);S('stop',{offset:1,'stop-color':'#2e7d5d','stop-opacity':0},g);
+ for(let i=1;i<4;i++)S('line',{x1:0,x2:340,y1:i*29.5,y2:i*29.5,stroke:'#f0ede5'},s);S('path',{d:d+'L334 118L6 118Z',fill:'url(#eg)'},s);S('path',{d,fill:'none',stroke:G2,'stroke-width':2,'stroke-linejoin':'round'},s)}
+// 5 tools grid
+{const tools=[['Position size','M4 18h16M7 14V9m5 5V4m5 10V7'],['Risk / reward','M12 3v18M4 8l8-4 8 4'],['Pip value','M12 3v18m5-14H9a3 3 0 000 6h6a3 3 0 010 6H6'],['Correlation','M4 18 18 5M5 9l3 3m4-6 3 3m-7 7 3 3'],['Margin','M3 20h18M5 20V10l7-5 7 5v10M9 20v-6h6v6'],['Compound','M4 18c6 0 10-4 14-12m0 0h-4m4 0v4'],['Break-even','M4 16 20 8M4 8h16'],['ATR stop','M3 12h4l3-6 4 12 3-6h4'],['Market hours','M12 7v5l3 2M12 21a9 9 0 110-18 9 9 0 010 18']];
+ const g=document.getElementById('toolgrid');tools.forEach(([n,d],i)=>{const c=document.createElement('div');const on=i===4;c.style.cssText=`width:116px;height:88px;border-radius:10px;padding:12px;background:${on?'#1f5c45':'#fff'};color:${on?'#fff':'#121513'};border:1px solid ${on?'#1f5c45':'#e4e0d5'};box-shadow:${on?'0 16px 30px -12px #1f5c4599':'0 6px 16px -10px #12201a33'};${on?'transform:translateY(-4px)':''}`;c.innerHTML=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${on?'#cfe7da':'#2e7d5d'}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg><div style="font:600 11px/1.2 Inter;margin-top:18px">${n}</div>`;g.append(c)})}
+// 6 terminal
+{const s=document.getElementById('tcandles'),w=196,h=150;let p=100;const cs=Array.from({length:34},()=>{const o=p;p+=(rnd()-.45)*4;const c=p;return{o,c,h:Math.max(o,c)+rnd()*2.2,l:Math.min(o,c)-rnd()*2.2}});const lo=Math.min(...cs.map(c=>c.l)),hi=Math.max(...cs.map(c=>c.h)),Y=v=>6+(hi-v)/(hi-lo)*(h-12),bw=w/cs.length;
+ for(let i=1;i<4;i++)S('line',{x1:0,x2:w,y1:i*h/4,y2:i*h/4,stroke:'#16201c'},s);cs.forEach((c,i)=>{const x=i*bw+bw/2,col=c.c>=c.o?'#3ecf8e':'#ff5a4f';S('line',{x1:x,x2:x,y1:Y(c.h),y2:Y(c.l),stroke:col},s);S('rect',{x:x-bw*.32,y:Y(Math.max(c.o,c.c)),width:bw*.64,height:Math.max(1,Math.abs(Y(c.o)-Y(c.c))),fill:col},s)});
+ const q=document.getElementById('tquotes');q.innerHTML='<div style="font:600 7px Plex;color:#ffb000;letter-spacing:.1em;margin-bottom:5px">WATCHLIST</div>'+[['EURUSD','1.0874','+0.21'],['XAUUSD','2,382.4','+0.64'],['US10Y','4.21%','−0.03'],['BTCUSD','64,180','−1.12'],['NVDA','118.20','+1.85']].map(([a,b,c])=>`<div class="row" style="justify-content:space-between;font:500 7.5px/1.9 Plex;color:#c9d2cd"><span>${a}</span><span>${b}</span><span style="color:${c[0]==='+'?'#3ecf8e':'#ff5a4f'}">${c}%</span></div>`).join('');
+ const r=document.getElementById('tregime');[['#3ecf8e',.5],['#ffb000',.28],['#ff5a4f',.22]].reduce((x,[c,f])=>{S('rect',{x,y:8,width:150*f-2,height:14,rx:2,fill:c,'fill-opacity':.85},r);return x+150*f},0);T(r,0,36,'CALM · NORMAL · STRESSED',{s:6.5,c:'#6f7c75'})}
+{const q=document.getElementById('pquotes');q.innerHTML=[['S&P 500','+0.42%'],['EUR/USD','+0.21%'],['Gold','+0.64%']].map(([a,c])=>`<div class="row" style="justify-content:space-between;background:#fff;border:1px solid #e6e2d7;border-radius:7px;padding:6px 7px;font:600 8px Inter"><span>${a}</span><span style="color:#2e7d5d;font-family:Plex">${c}</span></div>`).join('');const s=document.getElementById('pspark');S('path',{d:path(walk(30,.3,1.2),100,22,2),fill:'none',stroke:'#cfe7da','stroke-width':1.5},s)}
+// 7 news
+{const t=document.getElementById('topics');[['Central banks',1],['Oil & energy',1],['AI & chips',1],['Earnings',0],['Crypto',0],['Bonds',1]].forEach(([n,on])=>{const c=document.createElement('span');c.className='chip';c.style.cssText=on?'background:#1f5c45;border-color:#1f5c45;color:#fff':'';c.textContent=(on?'✓ ':'+ ')+n;t.append(c)});
+ const f=document.getElementById('feed');[['Central banks','Policymakers signal patience as inflation cools','8 min'],['AI & chips','Chipmakers lead the open after strong guidance','21 min'],['Oil & energy','Crude holds its range ahead of inventory data','46 min'],['Bonds','Curve steepens as long-dated yields rise','1 h']].forEach(([tag,h,m],i)=>{const c=document.createElement('div');c.className='card';c.style.cssText='position:relative;padding:12px 14px;border-radius:10px';c.innerHTML=`<div class="row" style="justify-content:space-between"><span style="font:600 7.5px Plex;letter-spacing:.1em;color:#1f5c45;text-transform:uppercase">${tag}</span><span class="k">${m}</span></div><div style="font:600 11px/1.35 Inter;margin-top:6px">${h}</div>`;f.append(c)})}
+// 8 calendar
+{const d=document.getElementById('days');[['MON','17'],['TUE','18'],['WED','19'],['THU','20'],['FRI','21']].forEach(([a,b],i)=>{const c=document.createElement('div');const on=i===3;c.style.cssText=`flex:1;text-align:center;padding:7px 0;border-radius:8px;border:1px solid ${on?'#1f5c45':'#e4e0d5'};background:${on?'#1f5c45':'#fff'};color:${on?'#fff':'#121513'}`;c.innerHTML=`<div style="font:500 7.5px Plex;letter-spacing:.12em;opacity:.75">${a}</div><div style="font:700 14px Inter;margin-top:2px">${b}</div>`;d.append(c)});
+ const ev=document.getElementById('events');const imp=n=>[0,1,2].map(i=>`<i class="dot" style="background:${i<n?(n===3?'#c9453b':n===2?'#e3a21a':'#9aa39d'):'#e4e0d5'};margin-right:2px"></i>`).join('');
+ [['08:30','USD','CPI m/m',3,'0.3%','0.2%','0.4%','r'],['08:30','USD','Initial jobless claims',2,'218K','225K','231K','r'],['10:00','USD','Existing home sales',1,'—','4.02M','3.96M','u'],['13:00','USD','30-year bond auction',2,'—','—','4.61%','u'],['19:30','AUD','Employment change',3,'—','22.5K','47.5K','u']].forEach(([t,c,n,i,a,f,p,st],k)=>{const r=document.createElement('div');r.className='row';r.style.cssText=`padding:7px 10px;border-radius:7px;font:500 9.5px Inter;background:${k===0?'#eef6f1':'#faf9f5'};border:1px solid ${k===0?'#cfe5d8':'#efece4'}`;r.innerHTML=`<span class="mono" style="width:52px">${t}</span><span style="width:44px"><span style="font:600 7.5px Plex;padding:3px 5px;border-radius:4px;background:#121513;color:#fff">${c}</span></span><span style="flex:1;font-weight:600">${n}${st==='r'?' <span style=\"font:600 7px Plex;color:#2e7d5d;letter-spacing:.08em\">RELEASED</span>':''}</span><span style="width:46px">${imp(i)}</span><span class="mono" style="width:58px;text-align:right;font-weight:600;color:${a==='—'?'#9aa39d':'#2e7d5d'}">${a}</span><span class="mono" style="width:62px;text-align:right">${f}</span><span class="mono" style="width:62px;text-align:right;color:#6e736d">${p}</span>`;ev.append(r)})}
+
+// ============ calculator thumbnails ============
+function calc(id,bg,draw){const sec=document.getElementById(id);sec.style.background=bg;const s=S('svg',{width:320,height:180,viewBox:'0 0 320 180'},sec);draw(s)}
+const PAPER='linear-gradient(160deg,#f7f5ef,#ece8dd)',MINT='linear-gradient(160deg,#f2f8f4,#dcefe4)';
+calc('calc-position-size',MINT,s=>{for(let r=0;r<4;r++)for(let c=0;c<4;c++){const on=r*4+c<10;S('rect',{x:60+c*30,y:40+r*26,width:24,height:20,rx:4,fill:on?G:'#fff',stroke:on?G:'#d7e6dc'},s)}
+  S('path',{d:'M196 40v98',stroke:R,'stroke-width':2},s);S('path',{d:'M190 40h12M190 138h12',stroke:R,'stroke-width':2},s);T(s,212,84,'1% RISK',{s:10,c:R,w:600});T(s,212,100,'$250',{s:16,c:'#121513',w:700,mono:false});T(s,60,160,'1.00 LOT · 10 MINI LOTS',{s:10,c:G,w:600,ls:1})});
+calc('calc-risk-reward',PAPER,s=>{S('rect',{x:120,y:30,width:80,height:84,rx:6,fill:'#dcefe4',stroke:G2},s);S('rect',{x:120,y:114,width:80,height:28,rx:6,fill:'#f6dcd8',stroke:R},s);S('line',{x1:96,x2:224,y1:114,y2:114,stroke:'#121513','stroke-width':2},s);
+  T(s,160,78,'REWARD 3R',{s:10,c:G,w:600,a:'middle'});T(s,160,132,'RISK 1R',{s:9,c:R,w:600,a:'middle'});T(s,232,118,'ENTRY',{s:8.5,c:'#121513',w:600});T(s,48,90,'1 : 3',{s:22,c:'#121513',w:700,mono:false})});
+calc('calc-pip-value',MINT,s=>{for(let i=0;i<5;i++){const y=34+i*26;S('line',{x1:70,x2:250,y1:y,y2:y,stroke:i===2||i===3?G2:'#cfe3d6','stroke-width':i===2||i===3?2:1},s);T(s,40,y+3,(1.0873+(4-i)*0.0001).toFixed(4),{s:9,c:i===2||i===3?'#121513':M,w:i===2||i===3?600:400})}
+  S('path',{d:'M262 86v26',stroke:G,'stroke-width':2},s);S('path',{d:'M257 91l5-5 5 5M257 107l5 5 5-5',stroke:G,'stroke-width':2,fill:'none'},s);T(s,160,166,'1 PIP = $10.00 · 1 LOT',{s:10,c:G,w:600,a:'middle',ls:1})});
+calc('calc-correlation',PAPER,s=>{S('line',{x1:50,x2:270,y1:150,y2:150,stroke:L},s);S('line',{x1:50,x2:50,y1:20,y2:150,stroke:L},s);for(let i=0;i<46;i++){const x=rnd(),y=x*.8+(rnd()-.5)*.32;S('circle',{cx:56+x*206,cy:146-Math.max(0,Math.min(1,y+.1))*120,r:3.2,fill:G2,'fill-opacity':.7},s)}S('line',{x1:56,x2:262,y1:134,y2:30,stroke:'#121513','stroke-width':2},s);T(s,262,170,'ρ = 0.82',{s:11,c:'#121513',w:600,a:'end'})});
+calc('calc-market-hours',MINT,s=>{const ss=[['SYDNEY',22,7],['TOKYO',0,9],['LONDON',8,17],['NEW YORK',13,22]];ss.forEach(([n,a,b],i)=>{const y=30+i*30,X=h=>70+h/24*230;T(s,8,y+12,n,{s:8,c:M,w:600});const seg=(x1,x2)=>S('rect',{x:X(x1),y,width:X(x2)-X(x1),height:16,rx:4,fill:i>=2?G:'#9ccbb3'},s);a<b?seg(a,b):(seg(a,24),seg(0,b))});
+  S('line',{x1:70+14.5/24*230,x2:70+14.5/24*230,y1:22,y2:152,stroke:R,'stroke-width':2},s);T(s,70+14.5/24*230+5,162,'NOW · OVERLAP',{s:8,c:R,w:600});[0,6,12,18,24].forEach(h=>T(s,70+h/24*230,172,String(h).padStart(2,'0'),{s:7.5,a:'middle'}))});
+calc('calc-economic-calendar',PAPER,s=>{for(let r=0;r<4;r++)for(let c=0;c<7;c++){const x=40+c*35,y=26+r*32,on=r===2&&c===3;S('rect',{x,y,width:30,height:27,rx:5,fill:on?G:'#fff',stroke:on?G:'#e2ded2'},s);T(s,x+5,y+11,String(r*7+c+1),{s:7.5,c:on?'#fff':M});const k=(r*7+c)%5;if(k===1||on)S('circle',{cx:x+22,cy:y+19,r:3,fill:on?'#fff':R},s);if(k===3)S('circle',{cx:x+22,cy:y+19,r:3,fill:A},s)}});
+calc('calc-break-even',MINT,s=>{S('line',{x1:40,x2:280,y1:150,y2:150,stroke:'#cfe3d6'},s);S('path',{d:'M40 110 L280 110',stroke:R,'stroke-width':2,'stroke-dasharray':'5 4'},s);S('path',{d:'M40 150 C110 140 150 115 172 110 S240 60 280 34',stroke:G,'stroke-width':2.4,fill:'none'},s);S('circle',{cx:172,cy:110,r:6,fill:'#fff',stroke:'#121513','stroke-width':2},s);T(s,180,132,'BREAK-EVEN 1.0912',{s:9,c:'#121513',w:600});T(s,44,104,'COSTS + SPREAD',{s:8,c:R,w:600})});
+calc('calc-margin',PAPER,s=>{const cx=160,cy=130,r=78;S('path',{d:`M${cx-r} ${cy}A${r} ${r} 0 0 1 ${cx+r} ${cy}`,stroke:'#e2ded2','stroke-width':16,fill:'none','stroke-linecap':'round'},s);S('path',{d:`M${cx-r} ${cy}A${r} ${r} 0 0 1 ${cx+r*Math.cos(Math.PI*.62)} ${cy-r*Math.sin(Math.PI*.62)}`,stroke:G,'stroke-width':16,fill:'none','stroke-linecap':'round'},s);T(s,cx,cy-14,'$2,175',{s:22,c:'#121513',w:700,a:'middle',mono:false});T(s,cx,cy+6,'MARGIN · 1:50',{s:8.5,c:M,w:600,a:'middle',ls:1})});
+calc('calc-compound-growth',MINT,s=>{const n=12;for(let i=0;i<n;i++){const v=Math.pow(1.2335,i)/Math.pow(1.2335,n-1);S('rect',{x:46+i*20,y:150-v*120,width:14,height:v*120,rx:3,fill:i===n-1?G:'#9ccbb3'},s)}S('path',{d:Array.from({length:n},(_,i)=>`${i?'L':'M'}${53+i*20} ${144-Math.pow(1.2335,i)/Math.pow(1.2335,n-1)*120}`).join(''),stroke:'#121513','stroke-width':1.8,fill:'none'},s);T(s,46,30,'+8% A YEAR · 30 YEARS',{s:9,c:G,w:600})});
+calc('calc-atr-stop',PAPER,s=>{let p=90;const cs=Array.from({length:18},()=>{const o=p;p+=(rnd()-.42)*9;return{o,c:p,h:Math.max(o,p)+rnd()*5,l:Math.min(o,p)-rnd()*5}});const lo=Math.min(...cs.map(c=>c.l)),hi=Math.max(...cs.map(c=>c.h)),last=cs[cs.length-1].c,atr=(hi-lo)/6,stop=last-2*atr,lo2=Math.min(lo,stop-atr*.3),Y=v=>24+(hi-v)/(hi-lo2)*120,K=(Y(lo2)-24)/(hi-lo2);cs.forEach((c,i)=>{const x=46+i*13,col=c.c>=c.o?G2:R;S('line',{x1:x,x2:x,y1:Y(c.h),y2:Y(c.l),stroke:col,'stroke-width':1.4},s);S('rect',{x:x-4,y:Y(Math.max(c.o,c.c)),width:8,height:Math.max(2,Math.abs(c.o-c.c)*K),fill:col},s)});S('rect',{x:40,y:Y(last),width:250,height:Y(stop)-Y(last),fill:'#f6dcd8','fill-opacity':.55},s);S('line',{x1:40,x2:290,y1:Y(last),y2:Y(last),stroke:'#121513','stroke-width':1.2},s);S('line',{x1:40,x2:290,y1:Y(stop),y2:Y(stop),stroke:R,'stroke-width':2,'stroke-dasharray':'5 4'},s);T(s,290,Y(stop)+14,'STOP · 2× ATR',{s:8.5,c:R,w:600,a:'end'})});
+</script>
+</body></html>
