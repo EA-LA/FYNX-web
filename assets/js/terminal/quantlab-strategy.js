@@ -12,7 +12,7 @@
  *        out-of-sample comparison with trading costs.
  * FCAST  K-line pattern forecaster. Finds the past candle windows most similar to the latest one (returns, ranges,
  *        bodies, wicks and volume, scaled by volatility) and shows what happened next as a forecast fan, then scores
- *        that method out of sample. A transparent analog model, not the Kronos neural network.
+ *        that method out of sample. A transparent analog model; the Kronos neural network has its own page (kronos.js).
  * Nothing here is advice; past patterns and backtests do not guarantee future results. */
 (window.FynxTerminalPlugins = window.FynxTerminalPlugins || []).push((T, PG) => {
   'use strict';
@@ -568,7 +568,9 @@
     const opts = el('div', 'fx-ql-row'); opts.style.marginTop = '8px';
     const sel = (lab, val, list, on) => { const l = el('label', '', lab), s = el('select'); for (const [v, t] of list) { const o = el('option', '', t); o.value = v; if (String(v) === String(val)) o.selected = true; s.append(o); } s.addEventListener('change', () => on(s.value)); l.append(s); return l; };
     opts.append(sel('Candles', FV.tf, [['1d', 'Daily · 10 years'], ['1h', 'Hourly · 2 years']], v => { FV.tf = v; saveF(); rerun(); }), sel('Pattern length', FV.W, [[10, '10 candles'], [20, '20 candles'], [40, '40 candles']], v => { FV.W = +v; saveF(); rerun(); }), sel('Forecast', FV.H, [[5, '5 candles'], [10, '10 candles'], [20, '20 candles']], v => { FV.H = +v; saveF(); rerun(); }), sel('Matches', FV.K, [[15, '15'], [30, '30'], [60, '60']], v => { FV.K = +v; saveF(); rerun(); }));
-    ic.append(opts); wrap.append(ic);
+    ic.append(opts);
+    if (T.PANELS.kronos) { const kr = el('div', 'fx-ql-row'); kr.style.marginTop = '8px'; kr.append(btn('Try the Kronos AI model on ' + FV.sym + ' ▸', 'fx-ql-btn', () => T.openPage('kronos', FV.sym))); ic.append(kr); }
+    wrap.append(ic);
     const out = el('div'); out.style.cssText = 'display:flex;flex-direction:column;gap:12px'; wrap.append(out); out.append(note('Downloading candles, matching patterns and scoring the method out of sample…'));
     let r; try { r = await fGet(); } catch (e) { out.replaceChildren(el('div', 'fx-sl-err', e.message || 'Candles unavailable right now.')); return; }
     if (!out.isConnected) return; out.replaceChildren();
@@ -584,7 +586,7 @@
     const two = el('div', 'fx-sl-grid'), pc = chartBox(260), cc = chartBox(260);
     two.append(card(`OUT-OF-SAMPLE TEST · PREDICTED MEDIAN VS WHAT HAPPENED (${r.ev.n} NON-OVERLAPPING TESTS)`, pc, note(`Each dot is one test made with data available at the time. Dots in the top-right and bottom-left quadrants were right about direction. Correlation (IC) ${num(r.ev.ic, 2)}.`)), card('CALIBRATION · PREDICTED P(UP) VS ACTUAL SHARE UP', cc, note('If the probabilities are honest, the bars sit on the diagonal.')));
     out.append(two);
-    out.append(card('HOW IT WORKS (AND HOW IT DIFFERS FROM KRONOS)', ...[`Each of the last ${r.W} candles is described by its return, range, body and wicks (and volume when available), divided by that window’s volatility so shapes are comparable across calm and wild periods; recent candles count more. The ${r.K} most similar past windows are found by distance, and their next ${r.H} candles, rescaled to today’s volatility, form the fan.`, 'Scoring: every ' + r.H + ' candles over the last part of history, the forecast is rebuilt using only windows whose outcomes were already known, then compared with what happened. Hit rate vs the base rate (binomial z-test), Brier score vs always predicting the base rate, and band coverage.', 'Kronos is a large transformer pre-trained on candlestick “tokens” from many markets; it needs a GPU model server, which FYNX does not run. This analog method is transparent and runs in your browser, and its track record is shown rather than assumed.', 'Delayed Yahoo Finance candles. Not advice.'].map(note)));
+    out.append(card('HOW IT WORKS (AND HOW IT DIFFERS FROM KRONOS)', ...[`Each of the last ${r.W} candles is described by its return, range, body and wicks (and volume when available), divided by that window’s volatility so shapes are comparable across calm and wild periods; recent candles count more. The ${r.K} most similar past windows are found by distance, and their next ${r.H} candles, rescaled to today’s volatility, form the fan.`, 'Scoring: every ' + r.H + ' candles over the last part of history, the forecast is rebuilt using only windows whose outcomes were already known, then compared with what happened. Hit rate vs the base rate (binomial z-test), Brier score vs always predicting the base rate, and band coverage.', 'Kronos is a Transformer pre-trained on candlestick “tokens” from many markets. FYNX runs the real Kronos model too, on your device: open KRONOS to compare. This analog method is simpler and fully transparent, and its track record is shown rather than assumed.', 'Delayed Yahoo Finance candles. Not advice.'].map(note)));
     requestAnimationFrame(() => {
       candleChart(cb, r.B, r.N - 120, r.N - 1, {fan: r.fan, ghost: r.ghost, aria: 'Candles with forecast fan'});
       { const {w, h, s} = frame(pc, 'Predicted versus actual returns'), padL = 46, padR = 10, padT = 8, padB = 18, iw = w - padL - padR, ih = h - padT - padB, xs = r.tests.map(x => x.med), ys = r.tests.map(x => x.actual);
@@ -621,5 +623,5 @@
       grid: {cols: '1fr 1fr 1fr 1fr 1fr 1fr', areas: ['s1 s1 s1 s2 s2 s2', 's1 s1 s1 s2 s2 s2', 's3 s3 s3 s4 s4 s4']}};
     const qi = T.DESK_ORDER.indexOf('quant'); T.DESK_ORDER.splice(qi >= 0 ? qi + 1 : 1, 0, 'strategy');
   }
-  T.StrategyLab = {parseRules, normalizeText, backtest, perf, covEstimate, hrp, erc, minVarLambda, projCapped, weightsFor, features, forecastAt, smaArr, emaArr, rsiArr, atrArr};
+  T.StrategyLab = {parseRules, normalizeText, backtest, perf, covEstimate, hrp, erc, minVarLambda, projCapped, weightsFor, features, forecastAt, smaArr, emaArr, rsiArr, atrArr, candleChart};
 });

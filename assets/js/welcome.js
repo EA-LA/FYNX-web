@@ -17,13 +17,14 @@
       ['The QUANT desk', 'Live order flow from the Kraken order book, the 50-stock panic detector, Monte Carlo VaR, volatility clustering, intraday seasonality, factor neutrality and regime momentum, side by side.', 'Open the QUANT desk', '/terminal.html?desk=quant', 'QUANT LAB'],
       ['Write a strategy in plain English', 'Type “buy when RSI(2) is below 10 and close is above the 200-day average”, then test it bar by bar with costs and an out-of-sample check.', 'Open the backtester', '/terminal.html#btest', 'BACKTEST'],
       ['Build a better portfolio', 'Minimum variance, maximum Sharpe, risk parity and hierarchical risk parity, compared walk-forward after costs.', 'Open the optimizer', '/terminal.html#optim', 'STRATEGY LAB'],
-      ['See the forecast range', 'The K-line forecaster finds the past patterns most like today and shows the range of what came next, with its honest track record.', 'Open the forecaster', '/terminal.html#fcast', 'AI'],
+      ['Run the Kronos AI model', 'The open-source Kronos foundation model for candlesticks runs on your device and samples many possible futures for any market: a forecast range, checked on past data.', 'Open Kronos', '/terminal.html#kronos', 'AI'],
       ['Stress test your portfolio', 'Your seventh Pro tool shows how separate positions affect the whole account under price shocks.', 'Open stress testing', '/pro.html?tool=portfolio#workbench', 'PRO TOOLS']
     ],
     pro: [
       ['No more limits', 'Every analysis, backtest and AI forecast in the Terminal is unlimited. Run as many ideas as you can think of.', 'Open the STRATEGY desk', '/terminal.html?desk=strategy', 'UNLIMITED'],
       ['The QUANT desk', 'Live order flow, the panic detector, Monte Carlo VaR, volatility, seasonality, factor and momentum labs on one screen.', 'Open the QUANT desk', '/terminal.html?desk=quant', 'QUANT LAB'],
       ['Drawdown simulation', 'Your eighth Pro tool runs 500 simulated paths to show the drawdowns your rules could produce before you commit risk.', 'Open drawdown simulation', '/pro.html?tool=simulation#workbench', 'PRO TOOLS'],
+      ['Unlimited Kronos AI forecasts', 'Run the open-source Kronos foundation model on any market as often as you like, including the larger Kronos-small and 32-path forecast ranges.', 'Open Kronos', '/terminal.html#kronos', 'AI'],
       ['Strategy research loop', 'Backtest in plain English, optimise portfolios and check forecasts out of sample, as often as you like.', 'Open the backtester', '/terminal.html#btest', 'BACKTEST'],
       ['Keep everything', 'Save up to 500 workspaces and come back to any analysis from any device you sign in on.', 'Open Pro tools', '/pro.html?tool=analytics#workbench', 'WORKSPACES']
     ]

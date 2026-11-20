@@ -64,6 +64,7 @@
     rmom: 'Regime-dependent momentum: 12-1 month winners minus losers, split by bull/bear market and volatility, with today\u2019s momentum crash risk and vol-scaled and regime-aware versions.',
     btest: 'Strategy backtester: write rules in plain English (buy when RSI(2) is below 10 and close is above the 200-day average…) and test them bar by bar on real prices, with next-bar fills, stops, costs and an out-of-sample check.',
     optim: 'Portfolio optimizer: minimum variance, maximum Sharpe, risk parity, hierarchical risk parity and more, compared walk-forward out of sample with costs, plus the efficient frontier.',
+    kronos: 'Kronos AI forecast: the open-source Kronos foundation model for candlesticks runs on your device and samples many possible futures, shown as a forecast range with a check on past data.',
     fcast: 'K-line pattern forecaster: finds the past candle patterns most like today and shows what happened next as a forecast fan, with an honest out-of-sample track record.',
     globe: 'The live world. Drag to spin and scroll to zoom. The Intelligence layers panel switches on conflict events, protests, cyber threats, earthquakes, disaster alerts, bases, pipelines, ports and more, and its Events tab lists what matters now. Click any marker for its Event intelligence card.',
     cwatch: 'Every country ranked red, yellow or green, with the reason. Click one to fly the globe there.',
