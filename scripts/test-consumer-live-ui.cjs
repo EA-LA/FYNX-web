@@ -132,3 +132,26 @@ test('a failed confirmed delete keeps the saved workspace visible',async()=>{
  assert.equal(h.calls.filter(c=>c.action==='delete').length,1);
  h.close();
 });
+
+test('pending Pro deletion remains protected and keyboard-operable after a failed request',async()=>{
+ const item={id:'risk-saved-confirm-3',name:'Risk strategy',product:'risk',input:{balance:'10000'},result:{positionUnits:30}};
+ const h=await load({user:true,tier:'starter',handler:data=>{
+  if(data.action==='list')return {items:[item],limit:25};
+  if(data.action==='delete')throw Error('Temporary delete outage');
+ }});
+ const [,remove,confirmDelete,cancelDelete]=h.document.querySelector('#savedItems article').querySelectorAll('button');
+ remove.focus();
+ remove.onclick();
+ assert.equal(h.document.activeElement,confirmDelete,'focus should move off the disabled Delete button');
+ await confirmDelete.onclick();
+ assert.match(h.document.getElementById('status').textContent,/Temporary delete outage/);
+ assert.equal(remove.disabled,true,'a failed request must not re-enable Delete while confirmation is visible');
+ assert.equal(confirmDelete.hidden,false);
+ assert.equal(cancelDelete.hidden,false);
+ assert.match(h.document.getElementById('savedItems').textContent,/Risk strategy/);
+ cancelDelete.onclick();
+ assert.equal(remove.disabled,false);
+ assert.equal(h.document.activeElement,remove,'Cancel should restore focus to Delete');
+ assert.equal(h.calls.filter(c=>c.action==='delete').length,1);
+ h.close();
+});
