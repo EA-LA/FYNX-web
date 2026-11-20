@@ -7,7 +7,7 @@
 
   <style>
     body{
-      margin:0; height:100vh; display:grid; place-items:center;
+      margin:0; min-height:100vh; min-height:100svh; padding:16px; display:grid; place-items:center;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background:#000; color:#fff;
     }
@@ -31,6 +31,7 @@
       margin-right: 10px;
     }
     @keyframes spin{ to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce){ .spinner{animation:none;} }
     a{ color:#fff; }
   </style>
   <link rel="stylesheet" href="assets/css/mobile-fixes.css">
@@ -49,10 +50,10 @@
 </head>
 <body data-fynx-layout="utility" data-fynx-section="FINANCE WORLD">
 <!-- company-products:launch:start --><div id="fynx-products-launch" class="fp-launch"><a class="fp-trigger" data-company-products-open href="/products.html" aria-label="FYNX: Company & Products"><span class="fp-trigger-full">FYNX Products</span><span class="fp-trigger-short">Products</span><span aria-hidden="true">⌄</span></a></div><!-- company-products:launch:end -->
-<div class="card">
-    <p class="title"><span class="spinner"></span>Opening FYNX…</p>
+<div class="card" role="status" aria-live="polite">
+    <p class="title"><span class="spinner" aria-hidden="true"></span>Opening FYNX…</p>
     <p class="text">If the app is installed, it will open now. Confirm login inside the app.</p>
-    <p class="text" style="margin-top:10px;">If nothing happens, you’ll be sent to the App Store.</p>
+    <p class="text" style="margin-top:10px;">If FYNX does not open, you can <a href="https://apps.apple.com/app/id6752357210">open it in the App Store</a>.</p>
   </div>
 
   <script>
@@ -66,12 +67,27 @@
     // We pass returnTo so app knows where to go back after confirm.
     const deepLink = `fynx://auth/web-login?returnTo=${encodeURIComponent(returnTo)}`;
 
-    // Try open app
+    // Safari can suspend timers while the native app is foregrounded.
+    // Never redirect to the App Store after the user successfully left this page.
+    let appOpened = false;
+    let fallbackTimer;
+    const cancelFallback = () => {
+      appOpened = true;
+      if (fallbackTimer !== undefined) clearTimeout(fallbackTimer);
+    };
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") cancelFallback();
+    });
+    window.addEventListener("pagehide", cancelFallback);
+
+    // Keep the existing native URL scheme and returnTo handoff unchanged.
     window.location.href = deepLink;
 
-    // Fallback to App Store if app didn’t open
-    setTimeout(() => {
-      window.location.href = APP_STORE_URL;
+    // If the app was not opened, take the user to the App Store.
+    fallbackTimer = setTimeout(() => {
+      if (!appOpened && document.visibilityState !== "hidden") {
+        window.location.href = APP_STORE_URL;
+      }
     }, 1200);
   </script>
 
