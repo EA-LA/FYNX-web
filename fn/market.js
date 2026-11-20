@@ -3,7 +3,7 @@
  *   ?op=chart&symbol=NVDA&range=1y   quote plus daily (or intraday) bars
  *   ?op=quotes&symbols=NVDA,SAP.DE  up to 25 latest quotes
  *   ?op=closes&symbols=AAPL,MSFT&range=5y  up to 60 symbols of split/dividend-adjusted daily closes on shared dates
- *   ?op=bars&symbol=SPY&interval=5m        intraday bars (5m/15m: last 60 days, 1h: last 2 years) with exchange-local time of day
+ *   ?op=bars&symbol=SPY&interval=5m        OHLCV bars (5m/15m: last 60 days, 1h: last 2 years, 1d: 10 years adjusted) with exchange-local time of day
  * Source: Yahoo Finance public endpoints. Nothing is stored; responses are cached briefly at the edge. */
 'use strict';
 const AGENT = 'Mozilla/5.0 (compatible; FYNXFinanceWorld/1.0; +https://www.fynxfinanceworld.com/terminal.html)';
@@ -67,19 +67,23 @@ async function closes(symbols, range) {
   return {dates, names, failed, series: Object.fromEntries(Object.entries(series).map(([s, m]) => [s, dates.map(d => m.has(d) ? m.get(d) : null)]))};
 }
 // Intraday bars for seasonality work. Each bar carries its exchange-local minute of day and weekday (DST-aware).
-const BAR_RANGE = {'5m': '60d', '15m': '60d', '1h': '730d'};
+const BAR_RANGE = {'5m': '60d', '15m': '60d', '1h': '730d', '1d': '10y'};
 async function bars(symbol, interval) {
-  const data = await yahoo(`/v8/finance/chart/${encodeURIComponent(symbol)}?range=${BAR_RANGE[interval]}&interval=${interval}&includePrePost=false`);
+  const data = await yahoo(`/v8/finance/chart/${encodeURIComponent(symbol)}?range=${BAR_RANGE[interval]}&interval=${interval}&includePrePost=false${interval === '1d' ? '&events=div%2Csplit' : ''}`);
   const r = data?.chart?.result?.[0], m = r?.meta;
   if (!m || !Array.isArray(r.timestamp)) throw Object.assign(new Error('No intraday data for this symbol.'), {status: 404});
   const tz = m.exchangeTimezoneName || 'UTC', q = r.indicators?.quote?.[0] || {};
   let fmt; try { fmt = new Intl.DateTimeFormat('en-US', {timeZone: tz, hourCycle: 'h23', weekday: 'short', hour: '2-digit', minute: '2-digit', year: 'numeric', month: '2-digit', day: '2-digit'}); } catch (_) { fmt = new Intl.DateTimeFormat('en-US', {timeZone: 'UTC', hourCycle: 'h23', weekday: 'short', hour: '2-digit', minute: '2-digit', year: 'numeric', month: '2-digit', day: '2-digit'}); }
   const DOW = {Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6};
-  const out = {t: [], c: [], v: [], tod: [], dow: [], day: []};
+  const out = {t: [], o: [], h: [], l: [], c: [], v: [], tod: [], dow: [], day: []};
+  const adj = interval === '1d' ? r.indicators?.adjclose?.[0]?.adjclose : null;
   r.timestamp.forEach((ts, i) => {
     const c = q.close?.[i]; if (!finite(c) || c <= 0) return;
     const p = Object.fromEntries(fmt.formatToParts(new Date(ts * 1000)).map(x => [x.type, x.value]));
-    out.t.push(ts); out.c.push(r6(c)); out.v.push(finite(q.volume?.[i]) ? q.volume[i] : 0);
+    // Daily bars are split- and dividend-adjusted so returns are total returns.
+    const k = adj && finite(adj[i]) && adj[i] > 0 ? adj[i] / c : 1;
+    const o = finite(q.open?.[i]) && q.open[i] > 0 ? q.open[i] : c, hi = finite(q.high?.[i]) && q.high[i] > 0 ? q.high[i] : Math.max(o, c), lo = finite(q.low?.[i]) && q.low[i] > 0 ? q.low[i] : Math.min(o, c);
+    out.t.push(ts); out.o.push(r6(o * k)); out.h.push(r6(Math.max(hi, o, c) * k)); out.l.push(r6(Math.min(lo, o, c) * k)); out.c.push(r6(c * k)); out.v.push(finite(q.volume?.[i]) ? q.volume[i] : 0);
     out.tod.push((+p.hour % 24) * 60 + +p.minute); out.dow.push(DOW[p.weekday] ?? 0); out.day.push(`${p.year}-${p.month}-${p.day}`);
   });
   return {symbol: m.symbol || symbol, name: m.longName || m.shortName || symbol, timezone: tz, type: m.instrumentType || null, interval, ...out};
@@ -120,7 +124,7 @@ module.exports = async (req, res) => {
       const symbol = String(q.symbol || ''), interval = BAR_RANGE[q.interval] ? q.interval : '5m';
       if (!SYMBOL.test(symbol)) return res.status(400).json({error: 'Invalid symbol.'});
       body = {...await bars(symbol, interval), source: 'Yahoo Finance intraday bars (delayed)', fetchedAt: new Date().toISOString()};
-      res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=7200');
+      res.setHeader('Cache-Control', `public, s-maxage=${interval === '1d' ? 21600 : 1800}, stale-while-revalidate=${interval === '1d' ? 86400 : 7200}`);
     } else if (q.op === 'closes') {
       const symbols = [...new Set(String(q.symbols || '').split(',').map(s => s.trim()).filter(Boolean))], range = ['1y', '2y', '5y', '10y'].includes(q.range) ? q.range : '5y';
       if (!symbols.length || symbols.length > 60 || !symbols.every(s => SYMBOL.test(s))) return res.status(400).json({error: 'Choose 1 to 60 valid symbols.'});
