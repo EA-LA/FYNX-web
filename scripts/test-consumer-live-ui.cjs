@@ -199,3 +199,31 @@ test('Pro journal CSV URL is released when a new export replaces it or the page 
  assert.equal(resolveObjectURL(second),undefined,'leaving the page should release the latest CSV');
  h.close();
 });
+
+
+test('unsaved Pro notes, checklist answers and risk inputs survive switching tools',async()=>{
+ const h=await load({user:true,tier:'starter',query:'?tool=review'});
+ const notes=h.document.getElementById('tool-notes'),check=h.document.getElementById('tool-plan');
+ notes.value='Review the downside before entry';notes.dispatchEvent(new h.document.defaultView.Event('input',{bubbles:true}));
+ check.checked=true;check.dispatchEvent(new h.document.defaultView.Event('change',{bubbles:true}));
+ h.document.querySelector('#productCards button[data-key="risk"]').onclick();
+ const balance=h.document.getElementById('tool-balance');balance.value='27500';balance.dispatchEvent(new h.document.defaultView.Event('input',{bubbles:true}));
+ h.document.querySelector('#productCards button[data-key="review"]').onclick();
+ assert.equal(h.document.getElementById('tool-notes').value,'Review the downside before entry');
+ assert.equal(h.document.getElementById('tool-plan').checked,true);
+ h.document.querySelector('#productCards button[data-key="risk"]').onclick();
+ assert.equal(h.document.getElementById('tool-balance').value,'27500');
+ assert.equal(h.calls.filter(c=>c.action==='save'||c.action==='run').length,0,'switching tools must not submit or persist drafts');
+ h.close();
+});
+
+test('unsaved Pro drafts are cleared on account change',async()=>{
+ const h=await load({user:true,tier:'starter',query:'?tool=review'});
+ h.document.getElementById('tool-notes').value='Private trading note';
+ h.document.querySelector('#productCards button[data-key="risk"]').onclick();
+ await h.changeUser(null);
+ await h.changeUser({uid:'different-account'});
+ h.document.querySelector('#productCards button[data-key="review"]').onclick();
+ assert.equal(h.document.getElementById('tool-notes').value,'','previous account drafts must not appear for a new account');
+ h.close();
+});
