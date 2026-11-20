@@ -16,6 +16,9 @@
     value: ['VALUE', 'Valuation workbench', 'DCF bear/base/bull from SEC filings, the growth the price implies, peers and a buyout check.', 'analysis'],
     committee: ['COMMITTEE', 'AI investment committee', 'Five analysts, a bull/bear debate and a risk team turn any stock into a decision memo.', 'ai'],
     factorloop: ['FACTORLOOP', 'Factor research loop', 'Propose, test and refine factor ideas automatically, then check the winner on unseen years.', 'ai'],
+    optlab: ['OPTLAB', 'Options pricing lab', 'Black–Scholes against a neural-net volatility surface on real option chains, scored on quotes it never saw.', 'ai'],
+    earnprev: ['EARNPREV', 'Earnings preview', 'The move options are pricing vs real past moves, beats and misses, release tone and an event study.', 'ai'],
+    comply: ['COMPLY', 'Compliance check', 'Scan a post, memo or ad for SEC and FINRA red flags and missing disclosures, then copy a cleaner draft.', 'analysis'],
     btest: ['BTEST', 'Plain-English backtester', 'Describe a strategy in words and get a backtest with costs and an honest verdict.', 'backtest'],
     mcvar: ['MCVAR', 'Portfolio risk simulator', 'Monte Carlo value-at-risk and drawdowns for a portfolio you enter.', 'analysis'],
     panic: ['PANIC', 'Market panic detector', 'Correlation, breadth and volatility signals that flag a market under stress.', 'analysis']
@@ -25,12 +28,12 @@
     'macro-desk': ['Take the macro view further', ['regime', 'volml', 'kronos', 'panic']],
     'edge-radar': ['Test an edge before you trade it', ['mlpred', 'regime', 'btest', 'anomaly']],
     'quant-analyst': ['More quant research in the Terminal', ['factorloop', 'rltrade', 'mlpred', 'pairs']],
-    'research-desk': ['From filings to a decision', ['value', 'committee', 'pca', 'factorloop']],
-    explore: ['The newest tools in the FYNX Terminal', ['kronos', 'committee', 'value', 'factorloop']],
+    'research-desk': ['From filings to a decision', ['value', 'committee', 'earnprev', 'comply']],
+    explore: ['The newest tools in the FYNX Terminal', ['earnprev', 'optlab', 'kronos', 'committee']],
     learn: ['Learn it, then see it work on real data', ['pairs', 'mlpred', 'value', 'factorloop']],
-    calendar: ['Before the event, size the risk', ['volml', 'committee', 'regime', 'anomaly']],
-    news: ['Turn a headline into analysis', ['committee', 'anomaly', 'kronos', 'regime']],
-    calculator: ['Calculators, then the full models', ['value', 'mcvar', 'volml', 'btest']],
+    calendar: ['Before the event, size the risk', ['earnprev', 'optlab', 'volml', 'committee']],
+    news: ['Turn a headline into analysis', ['committee', 'earnprev', 'anomaly', 'kronos']],
+    calculator: ['Calculators, then the full models', ['optlab', 'value', 'mcvar', 'btest']],
     journal: ['Stress-test the way you trade', ['btest', 'mcvar', 'rltrade', 'mlpred']]
   };
   const CAT = {ai: 'AI tool', analysis: 'Analysis', backtest: 'Backtest'};

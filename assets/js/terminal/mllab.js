@@ -490,7 +490,7 @@
     const states = new Int32Array(N), rets = new Float64Array(N);
     for (let t = first; t < N; t++) { states[t] = (c[t] > s50[t] ? 4 : 0) + (c[t] > c[t - 20] ? 2 : 0) + (v20[t] > vMed ? 1 : 0); rets[t] = t + 1 < N ? r[t + 1] : 0; }
     const cost = costBp / 1e4, runs = [];
-    for (const seed of [5, 6, 7, 8, 9]) runs.push(ML.qLearn(states, rets, 8, {from: first, to: cut, epochs: 120, alpha: 0.05, gamma: 0.9, cost, seed}));
+    for (const seed of [5, 6, 7, 8, 9]) runs.push(ML.qLearn(states, rets, 8, {from: first, to: cut, epochs: 120, gamma: 0.9, cost, seed}));
     await tick();
     // majority vote across 5 seeds for stability
     const act = s => { const v = [0, 0, 0]; runs.forEach(q => v[q.act(s)]++); return v.indexOf(Math.max(...v)); };
@@ -528,7 +528,7 @@
     const two = el('div', 'fx-ml-grid'), dc = chartBox(240); out.append(two);
     two.append(card('THE LEARNED POLICY (WHAT IT DOES WHEN FLAT, LONG OR SHORT)', table(['Market state', 'Days', 'If flat', 'If long', 'If short'], r.policy.map(p => [p.label, String(p.days), ACT[p.fromCash], ACT[p.fromLong], ACT[p.fromShort]]), (i, j) => j >= 2 ? ACOL[[0, 0, r.policy[i].fromCash, r.policy[i].fromLong, r.policy[i].fromShort][j]] : i === r.now ? AMBER : null)),
       card('OUT-OF-SAMPLE SHARPE OF 500 RANDOM POLICIES (AMBER LINE = AGENT)', dc, note('Each random policy picks long, short or cash at random for each of the 24 state/position combinations. If the agent sits in the middle, it learned nothing useful.')));
-    out.append(card('HOW IT WORKS', ...['State: price above or below its 50-day average, 20-day momentum up or down, volatility above or below its training median, and the current position (24 states). Actions: long, cash or short. Reward: the next day’s return on the position minus the switching cost.', `Q-learning (α 0.05, γ 0.9, ε-greedy exploration falling from 40% to 2%, 120 passes) is trained on the first 70% of history; five agents with different seeds vote. The last 30% is never seen in training.`, 'Delayed Yahoo Finance data. Not advice.'].map(note)));
+    out.append(card('HOW IT WORKS', ...['State: price above or below its 50-day average, 20-day momentum up or down, volatility above or below its training median, and the current position (24 states). Actions: long, cash or short. Reward: the next day’s return on the position minus the switching cost.', `Q-learning (γ 0.9, a step size that shrinks with every visit so each value averages the whole training period, ε-greedy exploration falling from 40% to 2%, 120 passes) is trained on the first 70% of history; five agents with different seeds vote. The last 30% is never seen in training.`, 'Delayed Yahoo Finance data. Not advice.'].map(note)));
     requestAnimationFrame(() => {
       lineChart(cb, {series: [{v: cum(r.bhOut), color: GREY, width: 1.2, name: 'Buy & hold'}, {v: cum(r.oos), color: AMBER, width: 1.8, name: 'Q-learning agent'}], xs: r.B.day.slice(r.cut, r.N - 1), log: true, yfmt: v => v.toFixed(2) + '×', aria: 'Out-of-sample growth'});
       const lo = r.randomSharpes[0], hi = r.randomSharpes[r.randomSharpes.length - 1], nb = 20, hist = new Array(nb).fill(0); r.randomSharpes.forEach(v => hist[Math.min(nb - 1, Math.floor((v - lo) / ((hi - lo) || 1) * nb))]++);

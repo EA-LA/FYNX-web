@@ -33,7 +33,7 @@ Route: `/tools/research-desk.html`. The public desk is linked from the entrance 
 
 Frontend publication uses the repository’s existing Vercel integration. The static packaging step excludes Firebase source, scripts, tests and local output.
 
-To prepare the independent backend release, place only `research-api.js`, `research-data.cjs` and `research-core.cjs` in an isolated Node 22 Firebase functions package. Export `require('./research-api.js').webResearchData` from its `index.js`, install `firebase-functions` and its `firebase-admin` peer dependency, then deploy only:
+To prepare the independent backend release, place only `research-api.js`, `research-data.cjs`, `research-core.cjs` and `earnings-core.cjs` in an isolated Node 22 Firebase functions package. Export `require('./research-api.js').webResearchData` from its `index.js`, install `firebase-functions` and its `firebase-admin` peer dependency, then deploy only:
 
 ```
 firebase deploy --only functions:webResearchData --project fynx-c7a28 --non-interactive

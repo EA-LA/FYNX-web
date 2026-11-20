@@ -20,6 +20,10 @@ const X3 = [], y3 = []; for (let i = 0; i < 1500; i++) { const a = g() * 2, b = 
 const gb = M.gbmFit(X3.slice(0, 1000), y3.slice(0, 1000), {rounds: 120, depth: 3, lr: 0.1, minLeaf: 10});
 const mse = f => M.mean(X3.slice(1000).map((x, i) => (f(x) - y3[1000 + i]) ** 2)), base = M.mean(y3.slice(1000).map(v => (v - M.mean(y3.slice(0, 1000))) ** 2));
 ok(mse(gb.predict) < 0.25 * base, `boosting MSE ${mse(gb.predict).toFixed(3)} vs constant ${base.toFixed(3)}`);
+// regression net fits a smooth volatility-smile-like surface
+const X6 = [], y6 = []; for (let i = 0; i < 900; i++) { const k = (r() - 0.5) * 0.6, t = 0.05 + r() * 0.5; X6.push([k / Math.sqrt(t), Math.sqrt(t)]); y6.push(0.2 - 0.25 * k + 0.6 * k * k + 0.05 * Math.sqrt(t) + 0.003 * g()); }
+const nr = M.mlpRegFit(X6.slice(0, 700), y6.slice(0, 700), {hidden: [16, 16], epochs: 250, lr: 0.01, seed: 3}), rmse = Math.sqrt(M.mean(X6.slice(700).map((x, i) => (nr.predict(x) - y6[700 + i]) ** 2)));
+ok(rmse < 0.012, 'regression net out-of-sample RMSE ' + rmse.toFixed(4) + ' on a smile surface (noise 0.003)');
 // Gaussian mixture recovers two clusters
 const X4 = []; for (let i = 0; i < 600; i++) X4.push(i < 400 ? [g() * 0.5 - 2, g() * 0.5] : [g() * 0.8 + 3, g() * 0.8 + 1]);
 const gm = M.gmmFit(X4, 2, {seed: 4}), cs = gm.mu.map(m => Array.from(m)).sort((a, b) => a[0] - b[0]), ws = Array.from(gm.w).sort();
@@ -44,9 +48,15 @@ const X5 = Array.from({length: 1000}, () => [g(), g(), g()]); X5.push([6, -6, 5]
 const iso = M.isolationForest(X5, {seed: 1}), s = X5.map(iso.score), rank = s.filter(v => v > s[1000]).length;
 ok(rank === 0 && s[1000] > 0.6 && M.mean(s.slice(0, 1000)) < 0.5, `isolation forest: outlier score ${s[1000].toFixed(2)} (rank ${rank + 1}), normal mean ${M.mean(s.slice(0, 1000)).toFixed(2)}`);
 // Q-learning: state 0 drifts up, state 1 drifts down → long in 0, short in 1
-const st = [], rt = []; let cur = 0; for (let t = 0; t < 3000; t++) { if (r() < 0.05) cur = 1 - cur; st.push(cur); rt.push((cur ? -0.002 : 0.002) + 0.01 * g()); }
-const ql = M.qLearn(st, rt, 2, {epochs: 60, cost: 0.0002});
-ok(ql.act(0 * 3 + 2) === 2 && ql.act(1 * 3 + 0) === 0, 'Q-learning: long in the up state, short in the down state');
+// Learned on 10 independent datasets (own random streams): the full policy must come out in at least 8.
+let qPass = 0, ql = null, st = null, rt = null;
+for (let seed = 1; seed <= 10; seed++) {
+  const rq = M.rng(100 + seed), gq = () => M.gauss(rq), s1 = [], r1 = []; let cur = 0;
+  for (let t = 0; t < 3000; t++) { if (rq() < 0.05) cur = 1 - cur; s1.push(cur); r1.push((cur ? -0.002 : 0.002) + 0.01 * gq()); }
+  const q = M.qLearn(s1, r1, 2, {epochs: 60, cost: 0.0002, seed});
+  if ([0, 1, 2].every(p => q.act(p) === 2) && [0, 1, 2].every(p => q.act(3 + p) === 0)) { qPass++; if (!ql) { ql = q; st = s1; rt = r1; } }
+}
+ok(qPass >= 8, `Q-learning: long in the up state and short in the down state whatever the position, in ${qPass} of 10 datasets`);
 const pr = M.runPolicy(st, rt, ql.act, 0, 2999, 0.0002); ok(M.sharpe(pr) > 2, 'learned policy Sharpe ' + M.sharpe(pr).toFixed(2));
 console.log(fail ? `${fail} ML lab check(s) failed` : 'ML lab maths: classifiers, boosting, mixtures, PCA, cointegration, isolation forest and Q-learning checks passed');
 process.exit(fail ? 1 : 0);
