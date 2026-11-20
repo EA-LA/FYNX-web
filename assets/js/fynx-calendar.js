@@ -170,7 +170,7 @@
       detail.append(actions);
       const nextEvents = data.list.filter(row => eventKey(row) !== eventKey(e) && row.currency === e.currency && Date.parse(row.time) > Date.parse(e.time)).slice(0, 5);
       if (nextEvents.length) { detail.append(el('h3', '', 'Following this release')); for (const nextEvent of nextEvents) { const b = el('button', 'fc-detail-related', nextEvent.title + ' · ' + new Date(nextEvent.time).toLocaleString()); b.type = 'button'; b.addEventListener('click', () => selectEvent(nextEvent)); detail.append(b); } }
-      const source = el('a', '', 'Open original source calendar'); source.href = 'https://www.forexfactory.com/calendar'; source.target = '_blank'; source.rel = 'noopener noreferrer'; detail.append(source);
+      const follow = el('a', '', 'Follow market coverage in the FYNX newsroom ▸'); follow.href = '/news.html'; detail.append(follow);
       detail.append(el('p', 'fc-foot', `Source: ${data.source || 'Forex Factory via FYNX research'} · Checked ${Number.isFinite(Date.parse(data.updatedAt)) ? new Date(data.updatedAt).toLocaleString() : 'time unavailable'}.`));
     }
     function drawExport(rows) {
@@ -219,7 +219,8 @@
         when.append(el('small', past ? 'fc-done' : 'fc-soon', past ? (allDay ? '' : phase(e) === 'Result reported' ? 'Result reported' : 'Awaiting result') : until(t - now)));
         const what = el('div', 'fc-what'); const meta = el('div', 'fc-meta'); meta.append(chip(e.currency), bars(e.impact)); const title = el('button', 'fc-title fc-open-event', e.title); title.type = 'button'; title.addEventListener('click', () => selectEvent(e)); what.append(meta, title);
         const nums = el('div', 'fc-nums'); nums.append(value('Forecast', e.forecast), value('Previous', e.previous));
-        if (past && !allDay) { const a = el('a', 'fc-actual', 'Check result ↗'); const dd = new Date(t); a.href = `https://www.forexfactory.com/calendar?day=${['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'][dd.getUTCMonth()]}${dd.getUTCDate()}.${dd.getUTCFullYear()}`; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.title = 'Check whether an actual result is published at the source'; nums.append(a); }
+        // Results stay in FYNX: show the actual figure when the feed has it, otherwise open the event detail here.
+        if (past && !allDay) { if (phase(e) === 'Result reported') nums.append(value('Actual', e.actual)); else { const a = el('button', 'fc-actual', 'Result details ▸'); a.type = 'button'; a.title = 'Open this release in FYNX'; a.addEventListener('click', () => selectEvent(e)); nums.append(a); } }
         if (!o.compact && !past) { const add = el('button', 'fc-add', '+ Calendar'); add.type = 'button'; add.dataset.fcEvent = eventKey(e); add.setAttribute('aria-label', `Add ${e.currency} ${e.title} to your calendar (.ics)`); add.title = allDay ? 'Download this day as an all-day calendar event' : 'Download this release as a calendar event with a 10-minute reminder'; add.addEventListener('click', () => addOne(e)); nums.append(add); }
         r.append(when, what, nums); list.append(r);
         if (!past && !firstUpcoming) firstUpcoming = r;
@@ -229,8 +230,7 @@
     }
     function drawFoot() {
       foot.replaceChildren();
-      const src = el('a', '', 'Forex Factory'); src.href = 'https://www.forexfactory.com/calendar'; src.target = '_blank'; src.rel = 'noopener noreferrer';
-      foot.append(`Times in your time zone (${Intl.DateTimeFormat().resolvedOptions().timeZone}). Schedule, forecasts and previous values from `, src, ` via FYNX research, updated ${new Date(data.updatedAt).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'})}. “Check result ↗” opens the source to verify whether an actual figure has been published.`);
+      foot.append(`Times in your time zone (${Intl.DateTimeFormat().resolvedOptions().timeZone}). Schedule, forecasts and previous values from Forex Factory via FYNX research, updated ${new Date(data.updatedAt).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'})}. Actual figures appear here as soon as the feed reports them.`);
     }
     function draw() { if (!data) return; renderControls(); drawNext(); drawList(); drawFoot(); drawDetail(); }
     async function refresh(force) {

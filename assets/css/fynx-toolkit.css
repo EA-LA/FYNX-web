@@ -1,0 +1,28 @@
+/* "From the FYNX Terminal" strip (fynx-toolkit.js). Light by default, dark with the site's dark theme. */
+.fxk{max-width:1234px;margin:48px auto 40px;padding:22px 0 0;border-top:3px solid #111;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111;box-sizing:border-box}
+main > .fxk{width:calc(100% - 48px)}
+.fxk-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px}
+.fxk-kicker{margin:0 0 6px;font:700 11px/1.3 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:#1f4d3a}
+.fxk h2{margin:0;font:800 clamp(20px,2.2vw,26px)/1.2 Inter,-apple-system,sans-serif;letter-spacing:-.01em}
+.fxk-plans{flex:none;font:600 14px Inter,sans-serif;color:#1f4d3a;text-decoration:none;white-space:nowrap}
+.fxk-plans:hover,.fxk-plans:focus-visible{text-decoration:underline}
+.fxk-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.fxk-card{display:flex;flex-direction:column;gap:6px;min-height:170px;padding:16px;border:1px solid #e3e5e4;border-radius:10px;background:#fff;color:#111;text-decoration:none;transition:border-color .15s,transform .15s,box-shadow .15s}
+.fxk-card:hover,.fxk-card:focus-visible{border-color:#1f4d3a;box-shadow:0 6px 18px rgba(17,17,17,.07);transform:translateY(-1px);outline:none}
+.fxk-card:focus-visible{outline:2px solid #1f4d3a;outline-offset:2px}
+.fxk-code{align-self:flex-start;padding:2px 7px;border-radius:4px;background:#0b0f0e;color:#ffb000;font:700 11px/1.5 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:.04em}
+.fxk-card b{font:700 16px/1.3 Inter,sans-serif}
+.fxk-card p{margin:0;flex:1;color:#4a4f4d;font-size:13.5px;line-height:1.5}
+.fxk-meta{color:#1f4d3a;font:600 12.5px Inter,sans-serif}
+.fxk-plan{margin:14px 0 0;padding:10px 14px;border-radius:8px;background:#f2f6f4;color:#1f3a30;font-size:13.5px;line-height:1.5}
+html[data-theme=dark] .fxk{border-top-color:#e8ecea;color:#e8ecea}
+html[data-theme=dark] .fxk-kicker,html[data-theme=dark] .fxk-plans,html[data-theme=dark] .fxk-meta{color:#a5d2ba}
+html[data-theme=dark] .fxk-card{background:#0f1513;border-color:#26302c;color:#e8ecea}
+html[data-theme=dark] .fxk-card:hover,html[data-theme=dark] .fxk-card:focus-visible{border-color:#a5d2ba;box-shadow:none}
+html[data-theme=dark] .fxk-card p{color:#aeb9b3}
+html[data-theme=dark] .fxk-plan{background:#13201b;color:#cfe5d8}
+@media (max-width:1000px){.fxk-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.fxk{margin:32px auto 28px}main > .fxk{width:calc(100% - 32px)}.fxk-head{flex-direction:column;align-items:flex-start;gap:8px}.fxk-grid{grid-template-columns:1fr}.fxk-card{min-height:0}}
+@media (prefers-reduced-motion:reduce){.fxk-card{transition:none}.fxk-card:hover{transform:none}}
+section.fxk .fxk-kicker,section.fxk a.fxk-plans{color:#1f4d3a}
+html[data-theme=dark] section.fxk .fxk-kicker,html[data-theme=dark] section.fxk a.fxk-plans{color:#a5d2ba}
