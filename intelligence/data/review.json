@@ -1,6 +1,22 @@
 {
- "generatedAt": "2026-11-19T17:25:45.606Z",
+ "generatedAt": "2026-11-20T00:41:23.574Z",
  "items": [
+  {
+   "reason": "sensitive subject",
+   "title": "AMD Stock Price Crashes 11% After a New Scandal Involving China",
+   "sources": [
+    "BeInCrypto"
+   ],
+   "at": "2026-11-20T00:41:23.574Z"
+  },
+  {
+   "reason": "sensitive subject",
+   "title": "Bessent Hits Southeast Asia Scam Networks With New Sanctions as Crypto Fraud Losses Top $7.2 Billion",
+   "sources": [
+    "BigGo Finance"
+   ],
+   "at": "2026-11-20T00:41:23.574Z"
+  },
   {
    "reason": "sensitive subject",
    "title": "72-year-old Sterling Heights woman killed in pedestrian crash involving delivery truck",
@@ -92,14 +108,6 @@
     "CNBC"
    ],
    "at": "2026-11-17T02:58:59.530Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Lutnick faces questions over Nvidia spy scandal. His sons' firm has ties to the chipmaker",
-   "sources": [
-    "CNBC"
-   ],
-   "at": "2026-11-16T18:40:35.508Z"
   }
  ]
 }
