@@ -119,11 +119,49 @@ async function settle() {
   assert.match(guarded.grid.innerHTML, /Federal Reserve/);
   console.log('ok 6 - filters still work after feed validation');
 
+  // A valid but several-month-old monthly series must never appear current without a warning.
+  const monthFromNow = offset => {
+    const now = new Date();
+    return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + offset, 1)).toISOString().slice(0, 7);
+  };
+  const oldSeries = {
+    source: 'BIS monthly series',
+    areas: {US: {history: [[monthFromNow(-5), 3.5], [monthFromNow(-4), 3.75]]}}
+  };
+  const dated = harness(async kind => json(kind === 'policy' ? oldSeries : validDesk()));
+  await settle();
+  assert.match(dated.grid.innerHTML, /Older published coverage — verify current rate/);
+  assert.match(dated.grid.innerHTML, /Federal Reserve/);
+  assert.match(dated.note.textContent, /1 bank has older published coverage/);
+  console.log('ok 7 - older monthly observations remain visible with explicit age warnings');
+
+  // A future-dated monthly policy entry cannot be displayed as today's observed rate.
+  const futureSeries = {
+    source: 'BIS monthly series',
+    areas: {US: {history: [[monthFromNow(-1), 3.5], [monthFromNow(1), 4.25]]}}
+  };
+  const future = harness(async kind => json(kind === 'policy' ? futureSeries : validDesk()));
+  await settle();
+  assert.match(future.grid.innerHTML, /Verified policy-rate data is unavailable/);
+  assert.doesNotMatch(future.grid.innerHTML, /cb-card/);
+  console.log('ok 8 - future-effective observations cannot be reported as current');
+
+  // A timely published monthly series does not get an unnecessary stale warning.
+  const recentSeries = {
+    source: 'BIS monthly series',
+    areas: {US: {history: [[monthFromNow(-1), 3.5], [monthFromNow(0), 3.75]]}}
+  };
+  const recent = harness(async kind => json(kind === 'policy' ? recentSeries : validDesk()));
+  await settle();
+  assert.match(recent.grid.innerHTML, /Federal Reserve/);
+  assert.doesNotMatch(recent.grid.innerHTML, /Older published coverage/);
+  console.log('ok 9 - timely monthly observations have no stale-data warning');
+
   // A never-resolving fetch is terminated instead of showing a permanent skeleton.
   const stalled = harness((_kind, options) => new Promise((_resolve, reject) => {
     options.signal.addEventListener('abort', () => reject(new Error('aborted')), {once: true});
   }), callback => setImmediate(callback));
   await settle();
   assert.match(stalled.grid.innerHTML, /Retry policy data/);
-  console.log('ok 7 - timed-out fetch resolves to recoverable state');
+  console.log('ok 10 - timed-out fetch resolves to recoverable state');
 })().catch(error => {console.error(error);process.exitCode = 1;});
