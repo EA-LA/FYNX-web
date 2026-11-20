@@ -181,7 +181,7 @@
       image.width = probe.naturalWidth; image.height = probe.naturalHeight;
       figure.classList.add('newsroom-story-photo'); figure.dataset.storyImage = 'publisher';
       const label = doc.createElement('strong'); label.textContent = 'Story photo · ';
-      const site = doc.createElement('a'); site.href = p.url; site.textContent = p.site || new URL(p.url).hostname.replace(/^www\./, ''); site.target = '_blank'; site.rel = 'noopener noreferrer';
+      const site = doc.createElement('span'); site.textContent = p.site || new URL(p.url).hostname.replace(/^www\./, '');
       caption.replaceChildren(label, site, doc.createTextNode(settings.captionTitle === false ? '' : ' — ' + String(item.title || '').slice(0, 160)));
       settle(true);
       image.addEventListener('error', () => figure.remove(), {once: true});

@@ -75,6 +75,8 @@ html body.fynx-reader-page .reader-rail h2 { font-size:16px; line-height:1.3; le
 .reader-terms dd { margin-top:6px; font-size:11px; line-height:1.7; color:var(--terminal-muted); }
 .reader-source-list a { display:flex; justify-content:space-between; align-items:start; gap:18px; padding:17px 0; border-top:1px solid var(--terminal-line); text-decoration:none; }
 .reader-source-list a:first-child { border-top:0; padding-top:0; }
+.reader-source-list .reader-source-credit { display:flex; justify-content:space-between; align-items:start; gap:18px; padding:17px 0; border-top:1px solid var(--terminal-line); }
+.reader-source-list .reader-source-credit:first-child { border-top:0; padding-top:0; }
 .reader-source-list strong { font-size:15px; line-height:1.5; }
 .reader-source-list small { display:block; margin-top:5px; color:var(--terminal-muted); font:10px/1.6 ui-monospace,monospace; overflow-wrap:anywhere; }
 .reader-source-list .reader-source-arrow { font-size:19px; color:var(--terminal-green); }

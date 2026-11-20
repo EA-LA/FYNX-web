@@ -30,7 +30,7 @@ test('reader preserves source facts and omits generic topic context',async t=>{
  assert.equal(h.q('[data-reader-context-section]').hidden,true);
  assert.doesNotMatch(h.q('[data-reader-context]').textContent,/Revenue measures sales/);
  assert.equal(h.q('[data-reader-numbers] strong').textContent,'12%');
- assert.equal(h.q('[data-reader-sources] a').href,article().sourceUrl);
+ assert.equal(h.q('[data-reader-sources] a'),null);assert.match(h.q('[data-reader-sources]').textContent,/Original reporting/);
  assert.equal(h.q('[data-reader-loaded]').hidden,false);
  assert.equal(h.q('[data-news-reader]').querySelector('meta[name="robots"]'),null); // Metadata lives outside the main reader.
  assert.equal(h.doc.querySelector('meta[name="robots"]').content,'noindex,follow');
@@ -42,7 +42,7 @@ test('headline-only coverage never claims the complete article was reviewed',asy
  assert.match(h.q('[data-reader-deck]').textContent,/not obtained enough source text/);
  assert.match(h.q('[data-reader-check-note]').textContent,/does not imply that FYNX read the complete article/);
  assert.equal(h.q('[data-reader-points-section]').hidden,true);assert.equal(h.q('[data-reader-context-section]').hidden,true);assert.equal(h.q('[data-reader-numbers-section]').hidden,true);
- assert.equal(h.q('[data-reader-sources] a').textContent.includes('Fixture Publisher'),true);
+ assert.equal(h.q('[data-reader-sources]').textContent.includes('Fixture Publisher'),true);
 });
 
 test('cached article opens immediately and a changed brief waits for explicit application',async t=>{
@@ -214,7 +214,7 @@ test('reading size and focus preferences persist and focus can be exited with Es
  const h=harness(t,{setup:w=>w.localStorage.setItem('fynx:reader-preferences:v1',JSON.stringify({size:'large',focus:true}))});await tick();
  assert.equal(h.q('[data-news-reader]').dataset.readerSize,'large');assert.equal(h.doc.body.classList.contains('reader-focus-view'),true);
  assert.equal(h.q('[data-reader-focus]').getAttribute('aria-pressed'),'true');
- assert.equal(h.q('[data-reader-sources] a').href,article().sourceUrl);
+ assert.equal(h.q('[data-reader-sources] a'),null);assert.match(h.q('[data-reader-sources]').textContent,/Original reporting/);
  const select=h.q('[data-reader-text-size]');select.value='larger';select.dispatchEvent(new h.w.Event('change'));
  assert.equal(JSON.parse(h.w.localStorage.getItem('fynx:reader-preferences:v1')).size,'larger');
  h.doc.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Escape'}));
@@ -275,7 +275,7 @@ test('source URL links resolve to the authoritative web story identity',async t=
 test('dated market context preserves units and rejects stale or unsupported snapshots',async t=>{
  const snapshot={symbol:'US10Y',name:'Treasury yield',price:4.1,changeValue:2,changeUnit:'bp',asOf:iso(-60000),source:'Fixture market provider',sourceURL:'https://provider.example/quote'};
  const h=harness(t,{load:async()=>article({marketContext:[snapshot,{...snapshot,symbol:'BTC-USD',asOf:iso(-7200000)},{...snapshot,name:'Unsafe',sourceURL:'javascript:alert(1)'},{...snapshot,name:'Expired',asOf:iso(-5*86400000)}]})});await tick();
- const content=h.q('[data-reader-context]').textContent;assert.match(content,/do not establish a reaction/);assert.match(content,/\+2.00bp/);assert.doesNotMatch(content,/BTC-USD|Unsafe|Expired/);assert.equal(h.q('[data-reader-context] a').href,snapshot.sourceURL);
+ const content=h.q('[data-reader-context]').textContent;assert.match(content,/do not establish a reaction/);assert.match(content,/\+2.00bp/);assert.doesNotMatch(content,/BTC-USD|Unsafe|Expired/);assert.equal(h.q('[data-reader-context] a'),null);
 });
 
 test('a changed market snapshot offers an update without replacing active reading',async t=>{

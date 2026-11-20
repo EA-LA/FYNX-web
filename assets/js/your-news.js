@@ -69,12 +69,12 @@
     host.replaceChildren();
     if(!opened.length)host.append(node('p','Open a story on the web or iPhone to build your reading history here.','your-news-empty-note'));
     for(const item of opened.slice(0,6)){
-      const entry=node('article',undefined,'your-news-history-item'),link=node('a',item.title);link.href=item.readerUrl;if(!item.readerUrl.startsWith('/')){link.target='_blank';link.rel='noopener noreferrer';}
+      const entry=node('article',undefined,'your-news-history-item'),link=node('a',item.title);link.href=item.readerUrl.startsWith('/')?item.readerUrl:'/news/article.html?url='+encodeURIComponent(item.readerUrl);
       const label=node('p',item.source+' · Opened '+time(item.openedAt));
       if(!current(item))label.append(node('span','Past coverage','your-news-past'));
       entry.append(link,label);host.append(entry);
     }
-    const savedHost=$('[data-your-saved]');if(savedHost){savedHost.replaceChildren();const saved=preferences.getSaved?.()||[];if(!saved.length)savedHost.append(node('p','Stories saved on the web or iPhone appear here.'));for(const item of saved.slice(0,12)){const entry=node('article',undefined,'your-news-history-item'),link=node('a',item.title);link.href=item.readerUrl;if(!item.readerUrl.startsWith('/')){link.target='_blank';link.rel='noopener noreferrer';}entry.append(link,node('p',item.source));savedHost.append(entry);}}
+    const savedHost=$('[data-your-saved]');if(savedHost){savedHost.replaceChildren();const saved=preferences.getSaved?.()||[];if(!saved.length)savedHost.append(node('p','Stories saved on the web or iPhone appear here.'));for(const item of saved.slice(0,12)){const entry=node('article',undefined,'your-news-history-item'),link=node('a',item.title);link.href=item.readerUrl.startsWith('/')?item.readerUrl:'/news/article.html?url='+encodeURIComponent(item.readerUrl);entry.append(link,node('p',item.source));savedHost.append(entry);}}
   }
   function story(item,index) {
     const article=node('article',undefined,'your-news-story'+(index===0?' your-news-story-lead':''));

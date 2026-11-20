@@ -283,6 +283,7 @@ html body.fx-terminal .fx-ilp-search:focus{border-color:var(--am)!important}
 .fx-ic-src li::before{content:"";width:5px;height:5px;margin-top:5px;border-radius:50%;background:#3ecf8e}
 .fx-ic-src a{color:#e7ece9;text-decoration:none}
 .fx-ic-src a:hover{color:var(--am);text-decoration:underline}
+.fx-ic-src .fx-ic-story{all:unset;cursor:pointer;color:#e7ece9;display:block}.fx-ic-src .fx-ic-story:hover,.fx-ic-src .fx-ic-story:focus-visible{color:var(--am);text-decoration:underline}
 .fx-ic-src small{display:block;color:var(--mu);font-size:10.5px}
 .fx-ic-why li::before{background:var(--am)}
 .fx-ic-tags{display:flex;flex-wrap:wrap;gap:4px}
@@ -507,7 +508,7 @@ html body.fx-terminal .fx-ic-src a{display:inline-block;min-height:44px;padding:
     if (x.sev) row('Severity', sevPill(x.sev));
     if (x.at) row('Time (UTC)', `${new Date(x.at).toISOString().slice(0, 16).replace('T', ' ')} (${ago(x.at)})`);
     if (x.ll) row('Location', `${Math.abs(x.ll[1]).toFixed(2)}°${x.ll[1] >= 0 ? 'N' : 'S'}, ${Math.abs(x.ll[0]).toFixed(2)}°${x.ll[0] >= 0 ? 'E' : 'W'}`);
-    const actions = el('div', 'fx-ic-act'); let srcUrl = null;
+    const actions = el('div', 'fx-ic-act'); let srcUrl = null, srcItem = null;
     if (x.q) {
       row('Magnitude', `M${x.q.mag.toFixed(1)}`); row('Depth', finite(x.q.depth) ? `${x.q.depth} km` : null); row('Tsunami', x.q.tsunami ? 'Tsunami message issued' : 'No tsunami message'); row('PAGER alert', x.q.alert ? x.q.alert.toUpperCase() : 'None'); row('Felt reports', x.q.felt);
       body.append(kv, el('h3', 'fx-ic-h', 'Summary'), el('p', 'fx-ic-p', `A magnitude ${x.q.mag.toFixed(1)} earthquake ${x.q.place}${finite(x.q.depth) ? ` at ${x.q.depth} km depth` : ''}. ${x.q.mag >= 7 ? 'Major quake: damage and supply disruption are possible.' : x.q.mag >= 6 ? 'Strong quake: local damage is possible.' : 'Moderate quake.'}`));
@@ -521,8 +522,8 @@ html body.fx-terminal .fx-ic-src a{display:inline-block;min-height:44px;padding:
       row('Reports', `${x.n} in the last 72 h`);
       body.append(kv, el('h3', 'fx-ic-h', 'Summary'), el('p', 'fx-ic-p', `${x.n} ${kind} headline${x.n === 1 ? '' : 's'} about ${countryName(x.iso)} in the last 72 hours. Latest: “${x.items[0].title}”.`));
       const h = el('h3', 'fx-ic-h', 'Intelligence'); h.append(el('small', '', `${x.items.length} source${x.items.length === 1 ? '' : 's'}`)); body.append(h);
-      const ul = el('ul', 'fx-ic-src'); for (const it of x.items.slice(0, 8)) { const li = el('li'), d = el('div'); d.append(it.url ? T.link(it.title, it.url) : el('span', '', it.title), el('small', '', [it.source, it.at ? ago(it.at) : ''].filter(Boolean).join(' · '))); li.append(d); ul.append(li); } body.append(ul);
-      srcUrl = x.items[0]?.url;
+      const ul = el('ul', 'fx-ic-src'); for (const it of x.items.slice(0, 8)) { const li = el('li'), d = el('div'); d.append(it.url ? btn(it.title, 'fx-ic-story', () => T.openPage('article', {title: it.title, url: it.url, source: it.source, publishedAt: it.at, external: true})) : el('span', '', it.title), el('small', '', [it.source, it.at ? ago(it.at) : ''].filter(Boolean).join(' · '))); li.append(d); ul.append(li); } body.append(ul);
+      srcUrl = x.items[0]?.url; srcItem = x.items[0];
     } else if (x.layer === 'hotspots') {
       row('Score', `${x.score} (high at 12+)`);
       body.append(kv, el('h3', 'fx-ic-h', 'Why it is a hotspot'));
@@ -534,7 +535,7 @@ html body.fx-terminal .fx-ic-src a{display:inline-block;min-height:44px;padding:
       else row('Type', r.k);
       if (x.layer === 'exchanges' && r.idx) { const q = quoteFor(r.idx); if (q && finite(q.changePercent)) row('Index today', `${T.shortOf(r.idx)} ${signed(q.changePercent, 2, '%')}`); }
       body.append(kv, el('h3', 'fx-ic-h', 'Summary'), el('p', 'fx-ic-p', r.d || ''));
-      if (x.layer === 'zones') { const ev = D.events.find(e => e.layer === 'conflict' && r.c.includes(e.iso)); body.append(el('p', 'fx-ic-p', ev ? `Live: ${ev.n} conflict report${ev.n === 1 ? '' : 's'} about ${countryName(ev.iso)} in the last 72 h.` : 'No conflict headlines about these countries in the last 72 h.')); if (ev) srcUrl = ev.items[0]?.url; }
+      if (x.layer === 'zones') { const ev = D.events.find(e => e.layer === 'conflict' && r.c.includes(e.iso)); body.append(el('p', 'fx-ic-p', ev ? `Live: ${ev.n} conflict report${ev.n === 1 ? '' : 's'} about ${countryName(ev.iso)} in the last 72 h.` : 'No conflict headlines about these countries in the last 72 h.')); if (ev) { srcUrl = ev.items[0]?.url; srcItem = ev.items[0]; } }
     }
     // Related: nearby sites, chokepoints and live events.
     if (x.ll) {
@@ -547,7 +548,7 @@ html body.fx-terminal .fx-ic-src a{display:inline-block;min-height:44px;padding:
       for (const [d, label, fn] of near.slice(0, 6)) tags.append(btn(`${label} · ${Math.round(d)} km`, '', fn));
       if (tags.childElementCount) { body.append(el('h3', 'fx-ic-h', 'Related')); body.append(tags); }
     }
-    if (srcUrl) { const a = T.link('Open source ↗', srcUrl, 'pri'); actions.append(a); }
+    if (srcUrl && srcItem) actions.append(btn('Read the FYNX summary ▸', 'pri', () => T.openPage('article', {title: srcItem.title, url: srcUrl, source: srcItem.source, publishedAt: srcItem.at, external: true})));
     if (iso) actions.append(btn(`${countryName(iso)} terminal ▸`, srcUrl ? '' : 'pri', () => T.openPage('ctry', iso)));
     if (actions.childElementCount) body.append(actions);
     body.append(el('p', 'fx-ic-note', live ? (x.items ? 'Grouped from headlines by fixed rules; open the sources to verify. Not a forecast.' : x.q ? 'Source: USGS Earthquake Hazards Program.' : x.a ? `Source: ${x.a.src}.` : 'Signals are combined by fixed rules. Not a forecast.') : `Reference data, reviewed ${monthOf(D.ref?.reviewed)}. Positions are approximate.`));

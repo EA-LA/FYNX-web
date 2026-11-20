@@ -485,7 +485,7 @@ html body .sc-filters select.sc-in option{background:#0b0e0c;color:#e7ece9}
    ("-1.52 / +1.42%", "4.8% beyond 2σ", Portfolio diversification) were cut with "…". Let values and notes wrap. */
 @media (max-width:760px){.pg-cards span,.pg-cards b,.pg-cards small{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}}
 /* site-qa run 73: on touch screens the Country page US state buttons (HI, ID, IL, RI...) were 41-43px wide and its headline links 37px tall. */
-@media (hover:none) and (pointer:coarse){.pg-statebtn{min-width:44px;justify-content:center}.fx-page-body a.fx-cnrow{min-height:44px;align-content:center}}
+@media (hover:none) and (pointer:coarse){.pg-statebtn{min-width:44px;justify-content:center}.fx-page-body .fx-cnrow{min-height:44px;align-content:center}}
 
 /* WORLD · ships & chokepoints (AIS) */
 .g-ship.g-wait{fill-opacity:.15;stroke-width:1.2}.g-tanker.g-wait{stroke:#f4a261}.g-cargo.g-wait{stroke:#7fb0ff}.g-other.g-wait,.g-unknown.g-wait,.g-passenger.g-wait{stroke:#9aa79f}

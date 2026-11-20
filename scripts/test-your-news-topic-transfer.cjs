@@ -109,5 +109,5 @@ test('published page and release builder use the same targeted cache version',()
   const source='<script src="/assets/js/news-preferences.js?v=old"></script><script src="/fynx-nav.js?v=old"></script>';
   const rewritten=rewriteReferences(source,'news/your-news.html',new Set(ASSETS));
   assert.ok(rewritten.includes('news-preferences.js?v='+TOPIC_TRANSFER_VERSION));
-  assert.ok(rewritten.includes('fynx-nav.js?v='+VERSION));
+  assert.ok(rewritten.includes('fynx-nav.js?v='+(require('./build-release-assets.cjs').ASSET_VERSIONS['fynx-nav.js']||VERSION)));
 });

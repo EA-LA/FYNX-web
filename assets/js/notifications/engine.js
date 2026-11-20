@@ -189,7 +189,8 @@ export class BrowserNotificationAdapter {
       data: { sourceUrl: payload.sourceUrl || "notifications.html" }
     });
     notif.onclick = () => {
-      const link = safeNotificationUrl(payload.sourceUrl) || new URL("notifications.html", location.href).href;
+      // News alerts open FYNX's own summary of the story, not the publisher's site.
+      const source = safeNotificationUrl(payload.sourceUrl), link = source ? new URL("/news/article.html?url=" + encodeURIComponent(source), location.href).href : new URL("notifications.html", location.href).href;
       window.open(link, "_blank", "noopener");
     };
     return true;

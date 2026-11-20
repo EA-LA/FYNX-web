@@ -1191,7 +1191,8 @@
     const room = [...S.briefing, ...Object.values(S.desks).flatMap(x => x.items || [])].filter(h => words.some(w => h.title.toLowerCase().includes(w)));
     const seen = new Set(), items = [...room, ...own].filter(h => { const k = h.title.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
     if (!items.length) return fallbackNews(host, 'No headlines mention this market yet · latest market news', 15);
-    for (const h of items.slice(0, 25)) { if (h.external) { const a = link('', h.url, 'fx-row fx-hrow'); a.append(el('time', '', hhmm(h.publishedAt)), el('span', 'fx-ht', h.title), el('small', '', h.source + ' ↗︎')); host.append(a); } else host.append(headlineRow(h)); }
+    // Every headline opens as a FYNX article page (summary or brief), never at the publisher.
+    for (const h of items.slice(0, 25)) host.append(headlineRow(h));
   }
   async function renderCmp() {
     const host = panel('cmp'), sym = S.sym?.symbol || S.focus, cls = S.sym?.cls || symClass(sym);
@@ -1230,7 +1231,7 @@
     const edgeM = S.edge?.markets?.find(m => m.symbol === (FX_TO_EDGE[s.symbol] || s.symbol));
     if (edgeM?.positioning?.crowded?.value) add(60, 'COT', `Positioning crowded ${edgeM.positioning.net.value >= 0 ? 'long' : 'short'}`, `CFTC net ${signed(edgeM.positioning.net.value * 100, 0, '%')}`, () => openPage('edge', edgeM.symbol));
     const pair = M.PAIRS.find(p => p.id === (FX_TO_EDGE[s.symbol] || s.symbol)); if (pair) { const b = M.smartBias(pair, {desk: S.desk, edgeMarket: edgeM, livePrice: q?.price}); if (finite(b.score)) add(50 + Math.abs(b.score) / 3, 'BIAS', `Smart Bias ${b.score > 0 ? '+' : ''}${b.score} (${b.label})`, b.components.map(c => `${c.label} ${c.score > 0 ? '+' : ''}${c.score}`).join(' · '), () => openPage('bias', pair.id)); }
-    for (const n of (S.symNews[s.symbol] || []).slice(0, 3)) add(55 - (now - Date.parse(n.publishedAt || now)) / 3600000 * 3, 'NEWS', n.title, `${n.publisher} · ${n.publishedAt ? ago(n.publishedAt) : ''}`, () => window.open(n.url, '_blank', 'noopener'));
+    for (const n of (S.symNews[s.symbol] || []).slice(0, 3)) add(55 - (now - Date.parse(n.publishedAt || now)) / 3600000 * 3, 'NEWS', n.title, `${n.publisher} · ${n.publishedAt ? ago(n.publishedAt) : ''}`, () => openPage('article', {title: n.title, url: n.url, source: n.publisher, publishedAt: n.publishedAt, external: true}));
     return items.sort((a, b) => b.score - a.score);
   }
 
