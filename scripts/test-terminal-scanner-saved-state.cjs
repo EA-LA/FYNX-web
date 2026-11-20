@@ -11,7 +11,7 @@ const snapshot = {
   generatedAt: '2026-11-19T12:00:00Z',
   sources: {stocks: 'Test scanner feed', etfs: 'Test ETF feed', crypto: 'Test crypto feed'},
   stocks: {asOf: '2026-11-19T12:00:00Z', rows: [
-    ['FYNX', 'FYNX Example', 42, 2.5, 10000, 2500000000, 'Technology', 'Software', 'US', 2024, ['ai']]
+    ['FYNX', 'FYNX Example', 42, 2.5, 1000000, 2500000000, 'Technology', 'Software', 'US', 2024, ['ai']]
   ]},
   etfs: {rows: []}, crypto: {rows: []}, themes: [{id: 'ai', label: 'AI'}]
 };
