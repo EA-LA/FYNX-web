@@ -1,0 +1,142 @@
+/* Homepage card artwork (process cards, calculator tiles, ecosystem list).
+   Images are rendered from scripts/landing-art/studio.html; figures in them are illustrative examples. */
+
+html body[data-fynx-layout="landing"] .fw-has-media picture,
+html body[data-fynx-layout="landing"] .fw-has-media img,
+html body[data-fynx-layout="landing"] .workspace-thumb img { display: block; width: 100%; height: auto; }
+
+/* ---------- Built around your process (8 cards) ---------- */
+html body[data-fynx-layout="landing"] .fw-benefit.fw-has-media {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 14px 14px 22px;
+}
+html body[data-fynx-layout="landing"] .fw-benefit.fw-has-media > :not(picture) { margin-inline: 8px; }
+html body[data-fynx-layout="landing"] .fw-media {
+  display: block;
+  aspect-ratio: 16 / 10;
+  margin: 0 0 20px;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid var(--landing-line, #e2dfd6);
+  background: #eef2ee;
+}
+html body[data-fynx-layout="landing"] .fw-media img {
+  height: 100%;
+  object-fit: cover;
+  transition: transform .5s cubic-bezier(.2, .7, .2, 1);
+}
+html body[data-fynx-layout="landing"] .fw-benefit.fw-has-media .fw-link { margin-top: auto; }
+html body[data-fynx-layout="landing"] .fw-benefit.fw-has-media p { margin-bottom: 18px; }
+
+/* ---------- Precision, without the friction (10 calculator tiles) ---------- */
+html body[data-fynx-layout="landing"] .fw-tool.fw-has-media {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 12px 12px 18px;
+}
+html body[data-fynx-layout="landing"] .fw-tool.fw-has-media > :not(picture) { margin-inline: 6px; }
+html body[data-fynx-layout="landing"] .fw-tool-media {
+  display: block;
+  aspect-ratio: 16 / 9;
+  margin: 0 0 14px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #f1f4f0;
+}
+html body[data-fynx-layout="landing"] .fw-tool-media img {
+  height: 100%;
+  object-fit: cover;
+  transition: transform .5s cubic-bezier(.2, .7, .2, 1);
+}
+html body[data-fynx-layout="landing"] .fw-tool.fw-has-media .fw-tool-top { margin-bottom: 10px; }
+html body[data-fynx-layout="landing"] .fw-tool.fw-has-media .fw-tool-top svg { width: 18px; height: 18px; }
+
+/* ---------- The FYNX ecosystem (3 resources) ---------- */
+html body[data-fynx-layout="landing"] .workspace-resource:has(.workspace-thumb) { grid-template-columns: 20px 56px minmax(0, 1fr) 16px; align-items: center; column-gap: 14px; }
+html body[data-fynx-layout="landing"] .workspace-thumb {
+  display: block;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 1px 0 #00000008, 0 6px 14px -8px #12201a55;
+}
+html body[data-fynx-layout="landing"] .workspace-resource > div { min-width: 0; flex: 1; }
+
+/* Hover/focus: a gentle zoom, no layout shift */
+@media (hover: hover) {
+  html body[data-fynx-layout="landing"] .fw-benefit.fw-has-media:hover .fw-media img,
+  html body[data-fynx-layout="landing"] .fw-tool.fw-has-media:hover .fw-tool-media img { transform: scale(1.035); }
+}
+html body[data-fynx-layout="landing"] .fw-has-media:focus-visible { outline: 2px solid var(--fw-accent, #1f5c45); outline-offset: -2px; }
+@media (prefers-reduced-motion: reduce) {
+  html body[data-fynx-layout="landing"] .fw-media img,
+  html body[data-fynx-layout="landing"] .fw-tool-media img { transition: none; transform: none !important; }
+}
+
+/* ---------- Tablet ---------- */
+@media (max-width: 1100px) {
+  html body[data-fynx-layout="landing"] .fw-section.fw-tools .fw-tool-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 1000px) {
+  html body[data-fynx-layout="landing"] .fw-section.fw-benefits .fw-benefit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ---------- Phones ---------- */
+@media (max-width: 760px) {
+  html body[data-fynx-layout="landing"] .fw-section.fw-tools .fw-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html body[data-fynx-layout="landing"] .fw-tool.fw-has-media { padding: 10px 10px 16px; }
+  html body[data-fynx-layout="landing"] .fw-tool.fw-has-media > :not(picture) { margin-inline: 4px; }
+  html body[data-fynx-layout="landing"] .fw-tool.fw-has-media h3 { font-size: 14px; }
+  html body[data-fynx-layout="landing"] .fw-tool.fw-has-media p { font-size: 11.5px; line-height: 1.5; }
+  html body[data-fynx-layout="landing"] .fw-tool-media { margin-bottom: 11px; }
+  html body[data-fynx-layout="landing"] .workspace-thumb { width: 52px; height: 52px; border-radius: 9px; }
+  html body[data-fynx-layout="landing"] .workspace-resource:has(.workspace-thumb) { grid-template-columns: 18px 52px minmax(0, 1fr) 14px; column-gap: 12px; }
+}
+@media (max-width: 600px) {
+  html body[data-fynx-layout="landing"] .fw-section.fw-benefits .fw-benefit-grid { grid-template-columns: 1fr; }
+  html body[data-fynx-layout="landing"] .fw-benefit.fw-has-media { padding: 12px 12px 20px; }
+  html body[data-fynx-layout="landing"] .fw-benefit.fw-has-media > :not(picture) { margin-inline: 6px; }
+  html body[data-fynx-layout="landing"] .fw-media { margin-bottom: 16px; }
+}
+@media (max-width: 360px) {
+  html body[data-fynx-layout="landing"] .fw-tool.fw-has-media p { display: none; }
+  html body[data-fynx-layout="landing"] .workspace-thumb { width: 44px; height: 44px; }
+  html body[data-fynx-layout="landing"] .workspace-resource:has(.workspace-thumb) { grid-template-columns: 16px 44px minmax(0, 1fr) 12px; column-gap: 10px; }
+}
+
+/* ---------- App download prompt (index only) ---------- */
+html body[data-fynx-layout="landing"] .fynx-download > .fynx-close { position: absolute; top: 12px; right: 12px; z-index: 3; }
+html body[data-fynx-layout="landing"] .fynx-download .fynx-card-link { display: block; color: inherit; text-decoration: none; border-radius: inherit; }
+html body[data-fynx-layout="landing"] .fynx-download .fynx-card-link:focus-visible { outline: 2px solid var(--fw-accent, #1f5c45); outline-offset: 3px; }
+html body[data-fynx-layout="landing"] .fynx-download.is-hidden { visibility: hidden; transition: opacity .22s ease, transform .22s ease, visibility 0s linear .22s; }
+@media (prefers-reduced-motion: reduce) { html body[data-fynx-layout="landing"] .fynx-download { transition: none; } }
+
+/* ---------- Mobile account entry points (audit H2) ---------- */
+.mobile-signin { display: none; }
+@media (max-width: 768px) {
+  .mobile-header-actions .mobile-signin {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 40px; min-width: 44px; padding: 0 12px; border-radius: 10px;
+    background: #1f5c45; color: #fff !important; border: 1px solid #1f5c45;
+    font: 700 13px/1 Inter, Arial, sans-serif; text-decoration: none; white-space: nowrap;
+  }
+  .mobile-header-actions .mobile-signin:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+}
+@media (max-width: 360px) {
+  .mobile-header-actions .mobile-resources-btn span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .mobile-header-actions .mobile-signin { padding: 0 10px; font-size: 12px; }
+}
+.mobile-account { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 2px 0 6px; }
+.mobile-account a {
+  display: flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 12px; border-radius: 12px;
+  font: 700 14px/1.2 Inter, Arial, sans-serif; text-decoration: none; text-align: center;
+}
+.mobile-account-primary { background: #1f5c45; color: #fff !important; border: 1px solid #1f5c45; }
+.mobile-account-secondary { background: transparent; color: inherit !important; border: 1px solid currentColor; }
+.mobile-account a:focus-visible { outline: 2px solid #3ecf8e; outline-offset: 2px; }
+.mobile-account-note { grid-column: 1 / -1; margin: 2px 2px 0; font: 400 12px/1.45 Inter, Arial, sans-serif; opacity: .72; }
