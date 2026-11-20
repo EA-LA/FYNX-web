@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-20T10:08:02.481Z",
+ "generatedAt": "2026-11-20T18:39:06.011Z",
  "items": [
   {
    "reason": "sensitive subject",
@@ -101,14 +101,6 @@
     "AFP.com"
    ],
    "at": "2026-11-17T22:28:51.087Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Asian stocks sink as scandal-hit Nvidia prepares for earnings",
-   "sources": [
-    "Yahoo Finance"
-   ],
-   "at": "2026-11-17T13:37:57.153Z"
   }
  ]
 }
