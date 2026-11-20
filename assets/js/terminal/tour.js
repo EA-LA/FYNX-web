@@ -71,6 +71,7 @@
     pairs: 'Pairs trading test: cointegration on every pair, how many chance alone would produce, and whether the survivors still work later.',
     anomaly: 'Anomaly detection: an isolation forest flags the most unusual trading days from returns, gaps, ranges and volume.',
     rltrade: 'Reinforcement learning: a Q-learning agent picks long, short or cash, then trades years it never saw, against buy and hold and random policies.',
+    factorloop: 'Factor research loop: like RD-Agent, it proposes factor ideas, tests them, keeps and mutates the winners over several rounds, then tests the final pick once on years it never saw.',
     committee: 'AI investment committee: fundamentals, valuation, technical, news and market analysts score a stock with evidence, bull and bear researchers argue, and the risk team sizes the trade in a memo you can copy.',
     kronos: 'Kronos AI forecast: the open-source Kronos foundation model for candlesticks runs on your device and samples many possible futures, shown as a forecast range with a check on past data.',
     fcast: 'K-line pattern forecaster: finds the past candle patterns most like today and shows what happened next as a forecast fan, with an honest out-of-sample track record.',
