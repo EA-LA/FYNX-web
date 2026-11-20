@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome to your FYNX membership</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Thank you for joining FYNX. A short tour of everything your membership unlocks.">
+<link rel="icon" href="/favicon-32x32.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="/assets/css/welcome.css?v=20261120-plans-1">
+<script src="/assets/js/fynx-plan.js?v=20261120-plans-1" defer></script>
+<script src="/assets/js/welcome.js?v=20261120-plans-1" defer></script>
+</head><body>
+<header class="wl-top"><a class="wl-brand" href="/"><b>FYNX</b><span>FINANCE WORLD</span></a><nav><a href="/terminal.html">Terminal</a><a href="/pro.html#plans">Plans &amp; billing</a></nav></header>
+<main id="main" class="wl">
+ <section class="wl-state" id="wlChecking" aria-live="polite"><div class="wl-spin" aria-hidden="true"></div><h1>Confirming your membership…</h1><p>We are checking your payment with Stripe. This usually takes a few seconds.</p></section>
+ <section class="wl-state" id="wlPending" hidden aria-live="polite"><p class="wl-kick">ALMOST THERE</p><h1>Your payment is still being confirmed.</h1><p>Stripe has not confirmed the payment to us yet. Nothing is lost: your plan unlocks as soon as it arrives. Try again in a moment, or contact support if you were charged and this does not clear.</p><div class="wl-row"><button type="button" class="wl-btn" id="wlRetry">Check again</button><a class="wl-btn ghost" href="/contact.html">Contact support</a></div></section>
+ <section class="wl-state" id="wlGuest" hidden><p class="wl-kick">SIGN IN</p><h1>Sign in to see your membership.</h1><p>Your plan is linked to your FYNX account.</p><div class="wl-row"><a class="wl-btn" href="/auth/login.html?returnTo=%2Fwelcome.html">Sign in</a><a class="wl-btn ghost" href="/pro.html#plans">View plans</a></div></section>
+ <section id="wlWelcome" hidden>
+  <div class="wl-hero"><div class="wl-burst" aria-hidden="true"></div><p class="wl-kick" id="wlKick">MEMBERSHIP ACTIVE</p><h1 id="wlTitle">Thank you. Welcome to FYNX.</h1><p class="wl-lead" id="wlLead"></p>
+   <div class="wl-receipt"><div><span>PLAN</span><b id="wlPlan">—</b></div><div><span>PRICE</span><b id="wlPrice">—</b></div><div><span>TODAY</span><b id="wlToday">—</b></div><div><span>BILLING</span><b><a href="/pro.html#plans">Manage subscription</a></b></div></div>
+   <div class="wl-row"><a class="wl-btn big" id="wlStart" href="/terminal.html?desk=quant">Open your Terminal →</a><button type="button" class="wl-btn ghost big" id="wlTourBtn">Take the 60-second tour</button></div>
+  </div>
+  <section class="wl-unlocked"><h2>What you just unlocked</h2><ul class="wl-perks" id="wlPerks"></ul></section>
+  <section class="wl-tour" id="wlTour" aria-label="Membership tour"><div class="wl-tour-head"><h2>Your tour</h2><div class="wl-dots" id="wlDots" role="tablist"></div></div><div class="wl-steps" id="wlSteps"></div><div class="wl-row wl-tour-nav"><button type="button" class="wl-btn ghost" id="wlPrev">← Back</button><button type="button" class="wl-btn" id="wlNext">Next →</button></div></section>
+  <p class="wl-fine">Allowances reset at midnight on your device. Cancel renewal anytime in Manage subscription; paid access continues to the end of the period. Research tools only, not investment advice.</p>
+ </section>
+</main>
+<script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
+</body></html>
