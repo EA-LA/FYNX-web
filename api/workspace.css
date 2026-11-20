@@ -11,3 +11,6 @@ html[data-theme="dark"] .error{background:#472522;color:#ffd8d0!important}
 #copy-key-status:empty{display:none}
 #notice .text-button{padding:0;margin-left:4px;font:inherit}
 .plan-soon{display:inline-block;margin-top:8px;font-size:13px;color:var(--muted,#5b6b62);font-style:italic}
+/* iPhone (site-qa run 108): sign-in email/password, environment picker and the new-key box were 12-14px, so iOS Safari
+   zoomed the page on tap; the "Retry" link shown when sign-in cannot load was a 22px-tall target. */
+@media (hover:none) and (pointer:coarse){#workspace input:not([type=checkbox]):not([type=radio]),#workspace select,#key-dialog textarea{font-size:16px}#notice .text-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:0 6px;margin-left:0}}

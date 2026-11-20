@@ -361,6 +361,11 @@
     .px-table tr.px-pp td{font-weight:900;color:var(--text-strong)}
     .px-table th:first-child,.px-table td:first-child{position:sticky;left:0;background:linear-gradient(var(--result-bg),var(--result-bg)),var(--bg-solid,#fff);z-index:1}
     .px-short{display:none}
+    .px-zones{list-style:none;margin:0;padding:0}
+    .px-zone{padding:.45rem 0;border-bottom:1px solid var(--border);color:var(--text-soft);font-size:.95rem;line-height:1.5;overflow-wrap:anywhere}
+    .px-zone:last-child{border-bottom:0}
+    .px-zone strong{color:var(--text-strong);font-variant-numeric:tabular-nums}
+    .px-zone-who{display:block;font-size:.86rem;color:var(--text-muted)}
     .px-table td.px-near{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--text-strong)}
     .px-mk{display:inline-block;margin-left:.15rem;font-size:.75em;font-weight:900;color:var(--accent)}
     .px-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -501,7 +506,7 @@
       </div>
 
       <div class="footnote">
-        Formula uses previous session values. Classic gives PP, R1, R2, R3, S1, S2, S3. Fibonacci gives PP with fib-based support and resistance levels. Woodie weights the close twice: PP = (H + L + 2C) ÷ 4. Camarilla places R1–R4 and S1–S4 around the close at 1.1 × range ÷ 12, 6, 4 and 2. Add a current price (optional) to see the nearest level above and below it; the table compares all four methods for the same candle.
+        Formula uses previous session values. Classic gives PP, R1, R2, R3, S1, S2, S3. Fibonacci gives PP with fib-based support and resistance levels. Woodie weights the close twice: PP = (H + L + 2C) ÷ 4. Camarilla places R1–R4 and S1–S4 around the close at 1.1 × range ÷ 12, 6, 4 and 2. Add a current price (optional) to see the nearest level above and below it; the table compares all four methods for the same candle and lists the price areas where at least three of them agree.
       </div>
     </section>
   <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Calculate reference levels from the previous period</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter high, low and close from the same completed session and check the selected method. Confirm your data provider’s session boundary.</p><h3>The calculation or concept</h3><p>The standard pivot is (high + low + close) ÷ 3. Fibonacci spaces levels at 38.2%, 61.8% and 100% of the range; Woodie gives the close double weight; Camarilla sets four tighter levels each side of the close.</p></div><div class="tool-example"><h3>Worked example</h3><p>A previous high of 110, low of 100 and close of 105 gives a standard pivot of 105. Standard R1 is 110 and S1 is 100.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Different sessions and pivot methods produce different levels. A pivot is a reference level, not a forecast or automatic order.</p></details></section><!-- tool-guide:end -->
@@ -813,9 +818,62 @@
         const legend = hasP ? ` Shaded: in each column, the nearest level above and below your current price ${formatValue(p)}, or a level at that price.` : "";
         return `<div class="px-card" id="pxCompare"><h3>All methods for this candle</h3><div class="px-hint">Swipe the table sideways to see every method.</div><div class="px-wrap"><table class="px-table"><caption class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Pivot levels by method</caption><thead>${head}</thead><tbody>${body}</tbody></table></div><div class="px-note">Same High/Low/Close in every column; your method is the first column, in bold. Only Camarilla has R4/S4. Where several methods put a level close together, traders often treat that area as more important.${legend}</div></div>`;
       }
+      // [site-qa] run 108: "Where the methods agree": price areas where at least 3 of the 4 methods put a level
+      // within 5% of the candle's range of each other. Levels sorted by price and grouped greedily (a group spans at
+      // most that tolerance). A group made of one price only (e.g. the shared PP formula) does not count.
+      const AGREE_SHARE = 0.05;
+      function agreeZones(h, l, c) {
+        const r = h - l;
+        if (!(r > 0)) return { tol: 0, zones: [] };
+        const tol = r * AGREE_SHARE;
+        const pts = [];
+        allMethods(h, l, c).forEach(m => {
+          pts.push({ m: m.name, label: "PP", value: m.pp });
+          Object.keys(m.lv).forEach(k => pts.push({ m: m.name, label: k, value: m.lv[k] }));
+        });
+        pts.sort((a, b) => a.value - b.value);
+        const groups = [];
+        let cur = [];
+        for (const pt of pts) {
+          if (cur.length && pt.value - cur[0].value > tol * (1 + 1e-9)) { groups.push(cur); cur = []; }
+          cur.push(pt);
+        }
+        if (cur.length) groups.push(cur);
+        const zones = groups.map(g => ({
+          lo: g[0].value, hi: g[g.length - 1].value,
+          methods: [...new Set(g.map(x => x.m))],
+          prices: new Set(g.map(x => x.value.toPrecision(12))).size,
+          levels: g
+        })).filter(z => z.methods.length >= 3 && z.prices >= 2).sort((a, b) => b.hi - a.hi);
+        return { tol, zones };
+      }
+      function agreeHtml() {
+        const h = parseFloat(highInput.value), l = parseFloat(lowInput.value), c = parseFloat(closeInput.value);
+        const { tol, zones } = agreeZones(h, l, c);
+        if (!tol) return "";
+        const raw = String(priceInput.value).trim();
+        const p = raw === "" ? NaN : Number(raw);
+        const hasP = Number.isFinite(p) && p > 0;
+        const items = zones.map(z => {
+          const lo = formatValue(z.lo), hi = formatValue(z.hi);
+          const range = lo === hi ? lo : `${lo} – ${hi}`;
+          const who = z.levels.map(x => `${x.m} ${x.label}`).join(", ");
+          let where = "";
+          if (hasP) {
+            if (p >= z.lo && p <= z.hi) where = " Your price is inside this area.";
+            else if (z.lo > p) where = ` ${formatValue(z.lo - p)} above your price (+${pct(z.lo - p, p)}).`;
+            else where = ` ${formatValue(p - z.hi)} below your price (−${pct(p - z.hi, p)}).`;
+          }
+          return `<li class="px-zone"><strong>${range}</strong> · ${z.methods.length} methods<span class="px-zone-who">${esc(who)}.${where}</span></li>`;
+        });
+        const list = items.length
+          ? `<ul class="px-zones">${items.join("")}</ul>`
+          : `<div class="px-line">No price area where 3 or more methods agree for this candle.</div>`;
+        return `<div class="px-card" id="pxAgree"><h3>Where the methods agree</h3>${list}<div class="px-note">An area is listed when at least 3 of the 4 methods have a level within ${formatValue(tol)} of each other (5% of the candle's range). Classic, Fibonacci and Camarilla share the same PP, and Classic R2/S2 equal Fibonacci R3/S3, so part of any agreement comes from the formulas themselves. These are reference levels from the previous period, not a forecast.</div></div>`;
+      }
       function draw() {
         if (!last) return;
-        box.innerHTML = positionHtml(last.methodName, last.pp, last.levels) + compareHtml(last.methodName);
+        box.innerHTML = positionHtml(last.methodName, last.pp, last.levels) + compareHtml(last.methodName) + agreeHtml();
         box.hidden = false;
         const wrap = box.querySelector(".px-wrap");
         if (wrap) wrap.closest(".px-card").classList.toggle("px-scrolls", wrap.scrollWidth > wrap.clientWidth + 1);

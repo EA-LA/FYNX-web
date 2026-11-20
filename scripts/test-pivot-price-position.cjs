@@ -126,3 +126,30 @@ test('all methods table marks, per method, the levels that bracket the current p
     assert.doesNotMatch(text(dom, 'pxCompare'), /Shaded/);
   }
 });
+
+// [site-qa] run 108: "Where the methods agree" (3+ methods within 5% of the candle's range). Expected zones from an
+// independent Python grouping of the same formulas.
+const zones = dom => [...dom.window.document.querySelectorAll('#pxAgree .px-zone')].map(li => li.textContent.replace(/\s+/g, ' ').trim());
+
+test('where the methods agree: stock candle, with distance from the current price', () => {
+  const dom = run({ high: '110', low: '100', close: '108', method: 'classic', price: '109' });
+  const z = zones(dom);
+  assert.equal(z.length, 4);
+  assert.match(z[0], /^116\.00 – 116\.50 · 3 methods.*Classic R2, Fibonacci R3, Woodie R2\. 7\.00 above your price \(\+6\.42%\)\.$/);
+  assert.match(z[1], /^106\.00 – 106\.50 · 4 methods.*Classic PP.*Woodie PP\. 2\.50 below your price \(−2\.29%\)\.$/);
+  assert.match(z[2], /^102\.00 – 102\.50 · 3 methods.*Classic S1, Fibonacci S1, Camarilla S4\./);
+  assert.match(z[3], /^96\.00 – 96\.50 · 3 methods.*Classic S2, Fibonacci S3, Woodie S2\./);
+  assert.match(text(dom, 'pxAgree'), /within 0\.50 of each other \(5% of the candle's range\)/);
+});
+
+test('where the methods agree: FX candle, price inside a zone, no price, flat candle', () => {
+  let dom = run({ ...EUR, method: 'woodie', price: '1.08550' });
+  const z = zones(dom);
+  assert.deepEqual(z.map(t => t.split(' · ')[0]), ['1.09390 – 1.09403', '1.08534 – 1.08573', '1.08154 – 1.08195', '1.07730 – 1.07743']);
+  assert.match(z[1], /4 methods.*Your price is inside this area\.$/);
+  dom = run({ ...EUR, method: 'classic', price: '' });
+  assert.equal(zones(dom).length, 4);
+  assert.doesNotMatch(text(dom, 'pxAgree'), /your price/);
+  dom = run({ high: '100', low: '100', close: '100', method: 'classic', price: '' });
+  assert.equal(text(dom, 'pxAgree'), null);
+});
