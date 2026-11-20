@@ -97,6 +97,36 @@
     crypto: [['sym', 'SYMBOL'], ['name', 'NAME'], ['price', 'PRICE', price], ['c1', '1H %', pct, true], ['c24', '24H %', pct, true], ['c7', '7D %', pct, true], ['cap', 'MKT CAP', big], ['vol', 'VOLUME', big], ['ath', 'FROM ATH', pct, true], ['themes', 'CATEGORIES']],
     markets: [['sym', 'SYMBOL'], ['name', 'NAME'], ['group', 'GROUP'], ['price', 'PRICE', null], ['chg', 'DAY %', pct, true], ['z', 'VS NORMAL', v => finite(v) ? signed(v, 1, 'σ') : '—', true], ['m1', '1M %', pct, true], ['ytd', 'YTD %', pct, true], ['fromHigh', 'FROM 12M HIGH', pct, true]]
   };
+  // Stored scans can outlive renamed presets or be partially written by a browser.
+  // Validate before rendering either the full page or the desk panel; do not erase
+  // the original saved value unless the user explicitly saves a new selection.
+  function restoreScanState(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !Object.prototype.hasOwnProperty.call(PRESETS, raw.asset)) return null;
+    const fallback = PRESETS[raw.asset][0], filters = {};
+    const input = raw.f && typeof raw.f === 'object' && !Array.isArray(raw.f) ? raw.f : fallback[2];
+    for (const key of ['q', 'cap', 'theme', 'sector', 'country', 'group']) {
+      if (typeof input[key] === 'string' && input[key].length <= 300) filters[key] = input[key];
+    }
+    for (const key of ['priceMin', 'priceMax', 'volMin', 'chgMin', 'chgMax', 'rankMax', 'athMin', 'nearHigh', 'nearLow']) {
+      const value = input[key];
+      if ((typeof value === 'number' || typeof value === 'string') && value !== '' && Number.isFinite(Number(value))) filters[key] = value;
+    }
+    for (const key of ['ipo', 'noSpac', 'noLev']) if (typeof input[key] === 'boolean') filters[key] = input[key];
+    const sort = Array.isArray(raw.sort) && raw.sort.length === 2 &&
+      COLS[raw.asset].some(([key]) => key === raw.sort[0]) && [1, -1, -2].includes(raw.sort[1])
+      ? raw.sort : fallback[3];
+    return {
+      asset: raw.asset,
+      preset: typeof raw.preset === 'string' && raw.preset.length <= 80 ? raw.preset : fallback[0],
+      f: filters, sort,
+      limit: Number.isSafeInteger(raw.limit) && raw.limit >= 10 && raw.limit <= 1000 ? raw.limit : 100
+    };
+  }
+  const savedScans = () => {
+    const value = read('scan-saved', []);
+    return Array.isArray(value) ? value.filter(x => x && typeof x === 'object' &&
+      typeof x.asset === 'string' && typeof x.name === 'string' && x.name.trim()) : [];
+  };
   const themeLabel = (asset, id) => asset === 'crypto' ? CRYPTO_CATS[id] : asset === 'etfs' ? ETF_THEMES[id] : DATA?.themes?.find(t => t.id === id)?.label || id;
 
   function table(asset, rows, sort, onSort, limit) {
@@ -139,7 +169,7 @@
   function number(value, placeholder, onChange) { const i = document.createElement('input'); i.type = 'number'; i.inputMode = 'decimal'; i.step = 'any'; i.className = 'sc-in'; i.placeholder = placeholder; i.value = value ?? ''; i.addEventListener('change', () => onChange(i.value === '' ? '' : Number(i.value))); return i; }
 
   PG.add('scan', 'Market scanner', async (host, arg, alive) => {
-    let st = read('scan-state', null);
+    let st = restoreScanState(read('scan-state', null));
     const argAsset = ASSETS.find(a => a[0] === String(arg || '').toLowerCase())?.[0];
     const presetArg = arg && !argAsset ? String(arg).toLowerCase() : null;
     if (!st || argAsset || presetArg) {
@@ -156,7 +186,7 @@
     host.append(PG.pageTabs(ASSETS, st.asset, a => { const p = PRESETS[a][0]; setSt({asset: a, preset: p[0], f: {...p[2]}, sort: p[3], limit: 100}); }));
     const pre = el('div', 'fx-chips sc-presets');
     PRESETS[st.asset].forEach(([id, label, f, s]) => { const b = btn(label, 'fx-chip' + (st.preset === id ? ' on' : ''), () => setSt({preset: id, f: {...f, ...(st.f.q ? {q: st.f.q} : {})}, sort: s, limit: 100})); b.setAttribute('aria-pressed', String(st.preset === id)); pre.append(b); });
-    const saved = read('scan-saved', []).filter(x => x.asset === st.asset);
+    const saved = savedScans().filter(x => x.asset === st.asset);
     saved.forEach(x => { const b = btn('★ ' + x.name, 'fx-chip sc-saved' + (st.preset === 'saved:' + x.name ? ' on' : ''), () => setSt({preset: 'saved:' + x.name, f: x.f, sort: x.sort, limit: 100}), 'Saved scan ' + x.name); pre.append(b); });
     host.append(pre);
     // Filters.
@@ -193,9 +223,9 @@
     const all = rowsFor(st.asset), hits = sortRows(apply(all, f, st.asset), st.sort);
     const bar = el('div', 'sc-bar');
     bar.append(el('b', '', `${hits.length.toLocaleString()} of ${all.length.toLocaleString()} ${st.asset === 'markets' ? 'markets' : st.asset === 'crypto' ? 'assets' : st.asset === 'etfs' ? 'ETFs' : 'stocks'} match`));
-    bar.append(btn('Save scan', 'fx-chip', () => { const name = prompt('Name this scan', PRESETS[st.asset].find(p => p[0] === st.preset)?.[1] || 'My scan'); if (!name) return; const list = read('scan-saved', []).filter(x => !(x.asset === st.asset && x.name === name)); list.unshift({asset: st.asset, name: name.slice(0, 40), f: st.f, sort: st.sort}); save('scan-saved', list.slice(0, 30)); setSt({preset: 'saved:' + name.slice(0, 40)}); }),
+    bar.append(btn('Save scan', 'fx-chip', () => { const name = prompt('Name this scan', PRESETS[st.asset].find(p => p[0] === st.preset)?.[1] || 'My scan'); if (!name) return; const list = savedScans().filter(x => !(x.asset === st.asset && x.name === name)); list.unshift({asset: st.asset, name: name.slice(0, 40), f: st.f, sort: st.sort}); save('scan-saved', list.slice(0, 30)); setSt({preset: 'saved:' + name.slice(0, 40)}); }),
       btn('Export CSV', 'fx-chip', () => csv(st.asset, hits)), btn('Reset', 'fx-chip', () => { const p = PRESETS[st.asset][0]; setSt({preset: p[0], f: {...p[2]}, sort: p[3], limit: 100}); }));
-    if (st.preset.startsWith('saved:')) bar.append(btn('Delete saved scan', 'fx-chip', () => { save('scan-saved', read('scan-saved', []).filter(x => !(x.asset === st.asset && 'saved:' + x.name === st.preset))); const p = PRESETS[st.asset][0]; setSt({preset: p[0], f: {...p[2]}, sort: p[3]}); }));
+    if (st.preset.startsWith('saved:')) bar.append(btn('Delete saved scan', 'fx-chip', () => { save('scan-saved', savedScans().filter(x => !(x.asset === st.asset && 'saved:' + x.name === st.preset))); const p = PRESETS[st.asset][0]; setSt({preset: p[0], f: {...p[2]}, sort: p[3]}); }));
     host.append(bar);
     if (!hits.length) { host.append(el('p', 'pg-lead', 'No market matches every filter. Loosen one filter — for example widen the price range or clear the theme.')); }
     else {
@@ -217,7 +247,7 @@
   T.RENDER.scan = async () => {
     const host = T.panel('scan'); host.append(el('p', 'fx-empty', 'Loading scanner…'));
     await load(); if (!host.isConnected) return; host.replaceChildren();
-    const st = read('scan-state', null) || (() => { const a = deskAsset(), p = PRESETS[a][0]; return {asset: a, preset: p[0], f: {...p[2]}, sort: p[3]}; })();
+    const st = restoreScanState(read('scan-state', null)) || (() => { const a = deskAsset(), p = PRESETS[a][0]; return {asset: a, preset: p[0], f: {...p[2]}, sort: p[3]}; })();
     const hits = sortRows(apply(rowsFor(st.asset), st.f, st.asset), st.sort).slice(0, 10);
     host.append(el('p', 'pm-lead', (PRESETS[st.asset].find(p => p[0] === st.preset)?.[1] || (st.preset.startsWith('saved:') ? st.preset.slice(6) : 'Custom scan')) + ' · ' + ASSETS.find(a => a[0] === st.asset)[1]));
     const key = st.asset === 'crypto' ? 'c24' : 'chg';
