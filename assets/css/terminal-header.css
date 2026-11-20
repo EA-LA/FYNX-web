@@ -711,3 +711,8 @@ html body[data-fynx-terminal].terminal-masthead-ready .terminal-account > .termi
 @media (max-width: 360px) {
   html body[data-fynx-terminal] .terminal-header-clock { display: none !important; }
 }
+/* [site-qa] run 109: the phone "Plans" link above asked for a 44px height, but the base `.terminal-utility-actions > a`
+   rule sets min-height:25px !important, so it stayed 25px tall and 32px wide. Give it a real 44px touch target. */
+@media (max-width: 600px) {
+  html body[data-fynx-terminal] .terminal-utility-actions > a[href="/pro.html"] { min-height: 44px !important; min-width: 44px; justify-content: center; }
+}
