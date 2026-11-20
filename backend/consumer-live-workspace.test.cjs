@@ -101,3 +101,42 @@ test('verified status declares the account-bound idempotent research-save capabi
 });
 test('approved fresh Apple membership grants equivalent website tools and blocks duplicate checkout',async()=>{const h=harness({bridge:true});h.data.set('intelligenceEntitlements/owner',{source:'app-store-server',productId:'com.fynx.financeworld.monthly',environment:'Production',expiresAt:Date.now()+600000,verifiedAt:Date.now()-1000});assert.equal((await h.call({action:'status'})).tier,'pro');assert.equal((await h.call({action:'run',product:'watchlist',input:{symbols:['AAPL']}})).mode,'live');await assert.rejects(h.call({action:'checkout',tier:'pro'}),{code:'already-exists'});});
 test('Apple equivalence is disabled by default and revoked or stale proof never grants access',async()=>{for(const options of [{},{bridge:true,revoked:true},{bridge:true,stale:true}]){const h=harness(options);h.data.set('intelligenceEntitlements/owner',{source:'app-store-server',productId:'com.fynx.financeworld.monthly',environment:'Production',expiresAt:Date.now()+600000,verifiedAt:Date.now()-(options.stale?86400001:1000),revoked:options.revoked===true});assert.equal((await h.call({action:'status'})).tier,null);}});
+
+// Daily allowances on the server (audit Phase 5)
+test('free daily analyses are counted on the server: 5 allowed, the 6th refused, repeats free',async()=>{
+ const h=harness({customer:true});
+ for(let i=1;i<=5;i++){const r=await h.call({action:'usage',cat:'analysis',key:'k'+i});assert.equal(r.allowed,true);assert.equal(r.used,i);assert.equal(r.tier,'free');assert.equal(r.limit,5);}
+ assert.equal((await h.call({action:'usage',cat:'analysis',key:'k6'})).allowed,false);
+ assert.equal((await h.call({action:'usage',cat:'analysis',key:'k3'})).repeat,true,'same analysis again is not charged');
+ const read=await h.call({action:'usage',op:'read',cat:'all'});
+ assert.equal(JSON.stringify(read.counts),JSON.stringify({analysis:5,ai:0,backtest:0}));assert.equal(read.limits.ai,2);assert.ok(read.resetAt>Date.now()&&read.resetAt-Date.now()<=86400000);
+});
+test('server day ignores anything the client sends about time, and usage is per account',async()=>{
+ const h=harness({customer:true});
+ await h.call({action:'usage',cat:'ai'});await h.call({action:'usage',cat:'ai',day:'1999-01-01',now:0});
+ assert.equal((await h.call({action:'usage',cat:'ai'})).allowed,false,'free AI allowance is 2 per server day');
+ const day=new Date().toISOString().slice(0,10);
+ assert.equal(h.data.get('fynxConsumerLive/owner/usage/'+day).counts.ai,2);
+ assert.ok(![...h.data.keys()].some(k=>k.includes('1999')),'client-supplied dates are not used');
+ assert.equal((await h.call({action:'usage',cat:'ai'},'other')).allowed,true,'another account has its own allowance');
+});
+test('paid tiers use their own limits; Professional is unlimited and not written',async()=>{
+ const h=harness({paid:true,tier:'plus'});
+ const r=await h.call({action:'usage',cat:'backtest'});assert.equal(r.tier,'plus');assert.equal(r.limit,50);assert.equal(r.used,1);
+ const p=harness({paid:true,tier:'pro'});
+ for(let i=0;i<20;i++)assert.equal((await p.call({action:'usage',cat:'ai'})).allowed,true);
+ assert.ok(![...p.data.keys()].some(k=>k.includes('/usage/')),'unlimited usage is not stored');
+});
+test('usage requests are validated',async()=>{
+ const h=harness({customer:true});
+ await assert.rejects(h.call({action:'usage',cat:'mining'}),{code:'invalid-argument'});
+ await assert.rejects(h.call({action:'usage',cat:'ai',op:'reset'}),{code:'invalid-argument'});
+ await assert.rejects(h.call({action:'usage',cat:'ai',key:'x'.repeat(301)}),{code:'invalid-argument'});
+ await assert.rejects(harness().call({action:'usage',cat:'ai'},null),{code:'unauthenticated'});
+});
+test('server limits match the limits the website advertises',()=>{
+ const src=fs.readFileSync(__dirname+'/../assets/js/fynx-plan.js','utf8'),block=/const LIMITS = (\{[\s\S]*?\n  \});/.exec(src)[1];
+ const client=vm.runInNewContext('('+block+')',{Infinity});
+ const server=(()=>{const m={exports:{}};vm.runInNewContext(fs.readFileSync(__dirname+'/consumer-live-workspace.cjs','utf8'),{module:m,exports:m.exports,require:n=>({'firebase-functions/v1':{https:{HttpsError:Error},runWith:()=>({https:{onCall:f=>f}})},'firebase-admin':{},'stripe':function(){}}[n]||require(n)),process:{env:{}},console});return m.exports._test.USAGE_LIMITS;})();
+ for(const cat of Object.keys(client))for(const tier of ['free','starter','plus','pro'])assert.equal(server[cat][tier],Number.isFinite(client[cat][tier])?client[cat][tier]:null,cat+' '+tier);
+});

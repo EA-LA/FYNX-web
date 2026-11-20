@@ -14,13 +14,38 @@ async function rateLimit(uid){const ref=root(uid).collection('internal').doc('ra
 async function entitlement(uid,s){const profile=(await root(uid).get()).data()||{};if(!profile.customer)return {tier:null};const list=await s.subscriptions.list({customer:profile.customer,status:'all',limit:100,expand:['data.latest_invoice']});const sub=list.data.find(x=>planForSubscription(x,uid,profile.customer));return {tier:sub?planForSubscription(sub,uid,profile.customer):null,hasBillingAccount:true,subscription:sub?{status:sub.status,cancelAtPeriodEnd:sub.cancel_at_period_end,currentPeriodEnd:sub.items.data[0]?.current_period_end||sub.current_period_end||null}:null};}
 async function appleBridge(uid){if(process.env.FYNX_ACCOUNT_MEMBERSHIP_BRIDGE!=='pro-equivalent')return false;return appleValid((await admin.firestore().collection('intelligenceEntitlements').doc(uid).get()).data(),Date.now());}
 async function trades(uid){const snap=await admin.firestore().collection('users').doc(uid).collection('trades').orderBy('dateTs','asc').limit(1001).get();if(snap.size>1000)fail('resource-exhausted','This preview supports up to 1,000 dated trades.');return snap.docs.map(d=>d.data()).filter(t=>Number.isFinite(Number(t.pl)));}
+// Daily allowances counted on the server (audit Phase 5). The day is the server's UTC date, so changing the device clock,
+// clearing browser storage or switching devices does not reset it. Limits mirror assets/js/fynx-plan.js (signed-in tiers).
+// Professional (null) is unlimited and is not written. Repeating the same analysis key on the same day is free.
+const USAGE_LIMITS={analysis:{free:5,starter:15,plus:60,pro:null},ai:{free:2,starter:5,plus:25,pro:null},backtest:{free:4,starter:12,plus:50,pro:null}};
+async function usage(uid,tier,data){
+ const t=['starter','plus','pro'].includes(tier)?tier:'free',op=data?.op===undefined?'charge':data.op;
+ if(!['read','charge'].includes(op))fail('invalid-argument','Unknown usage request.');
+ const all=op==='read'&&data?.cat==='all';
+ if(!all&&!Object.prototype.hasOwnProperty.call(USAGE_LIMITS,data?.cat))fail('invalid-argument','Unknown usage category.');
+ if(data?.key!==undefined&&(typeof data.key!=='string'||data.key.length>300))fail('invalid-argument','Invalid usage key.');
+ const now=new Date(),day=now.toISOString().slice(0,10),resetAt=Date.parse(day+'T00:00:00.000Z')+86400000,ref=root(uid).collection('usage').doc(day);
+ const limits=Object.fromEntries(Object.entries(USAGE_LIMITS).map(([k,v])=>[k,v[t]]));
+ return admin.firestore().runTransaction(async tx=>{
+  const d=(await tx.get(ref)).data()||{},counts={...(d.counts||{})},keys={...(d.keys||{})};
+  if(all)return {tier:t,day,resetAt,limits,counts:Object.fromEntries(Object.keys(USAGE_LIMITS).map(k=>[k,Number(counts[k])||0]))};
+  const cat=data.cat,limit=limits[cat],used=Number(counts[cat])||0,seen=Array.isArray(keys[cat])?keys[cat]:[],key=data.key||'',base={cat,tier:t,limit,day,resetAt};
+  if(op==='read')return {...base,used,allowed:limit===null||used<limit};
+  if(key&&seen.includes(key))return {...base,used,allowed:true,repeat:true};
+  if(limit===null)return {...base,used,allowed:true};
+  if(used>=limit)return {...base,used,allowed:false};
+  counts[cat]=used+1;if(key)keys[cat]=[...seen,key].slice(-400);
+  tx.set(ref,{counts,keys,updatedAt:now.getTime()},{merge:true});
+  return {...base,used:used+1,allowed:true};
+ });
+}
 async function handler(data,ctx){
  if(!ctx.auth)fail('unauthenticated','Sign in to use your optional Pro workspace.');const uid=ctx.auth.uid;
  if(data?.accountUid!==undefined&&data.accountUid!==uid)fail('unauthenticated','Your account changed. Reopen this research note before saving.');
  const user=await admin.auth().getUser(uid);if(user.disabled)fail('permission-denied','This account is disabled.');
  const signedIn=ctx.auth.token?.auth_time;
  if(!Number.isSafeInteger(signedIn)||signedIn<=0||signedIn>Math.floor(Date.now()/1000)+60||Date.parse(user.tokensValidAfterTime)>signedIn*1000)fail('unauthenticated','Session expired. Sign in again.');
- if(!['status','checkout','portal','list','delete','run','save'].includes(data?.action))fail('invalid-argument','Unknown action.');
+ if(!['status','checkout','portal','list','delete','run','save','usage'].includes(data?.action))fail('invalid-argument','Unknown action.');
  await rateLimit(uid);
  const s=stripe(),ref=root(uid);
  // Payment-method updates and cancellation must not depend on entitlement reads.
@@ -36,6 +61,7 @@ async function handler(data,ctx){
  }
  if(appleAccess)state={...state,tier:'pro',accessProvider:'apple',stripeTier:state.tier};
  if(data?.action==='status')return {mode:'live',...state,plans:PLANS,features:{researchNotesVersion:1}};
+ if(data?.action==='usage')return usage(uid,state.tier,data);
  if(data?.action==='checkout'){
   await admin.firestore().runTransaction(async tx=>{const d=(await tx.get(ref)).data()||{};if(d.checkoutLockUntil>Date.now())fail('aborted','Checkout is already opening. Please retry shortly.');tx.set(ref,{checkoutLockUntil:Date.now()+120000},{merge:true});});
   try {
@@ -83,7 +109,7 @@ async function handler(data,ctx){
  return {result,mode:'live'};
 }
 exports.consumerLiveWorkspace=functions.runWith({secrets:['FYNX_CONSUMER_STRIPE_SECRET_KEY'],timeoutSeconds:60,memory:'256MB',maxInstances:3}).https.onCall(handler);
-exports._test={handler};
+exports._test={handler,USAGE_LIMITS};
 exports.entitlement=entitlement;
 exports.stripe=stripe;
 exports.root=root;
