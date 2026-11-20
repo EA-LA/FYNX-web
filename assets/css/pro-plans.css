@@ -1,0 +1,57 @@
+/* FYNX membership plans (pro.html#plans). Uses the page's --bg/--panel/--ink/--muted/--line variables, so it follows the
+   light and dark site themes. Amber marks the recommended plan, matching the Terminal. */
+.fxm{--amber:#e39b00;--amber-ink:#1a1200}
+.fxm .fxm-head{max-width:820px;margin:0 0 26px}
+.fxm .fxm-head h2{font-size:clamp(30px,4.6vw,48px);line-height:1.05;letter-spacing:-.02em;margin:6px 0 12px}
+.fxm .fxm-lead{font-size:17px;line-height:1.6;color:var(--muted);margin:0}
+.fxm-now[hidden]{display:none!important}
+.fxm-now{margin-top:16px;display:inline-flex;gap:10px;align-items:center;padding:8px 12px;border:1px solid var(--line);border-left:3px solid var(--amber);font-size:13.5px;color:var(--ink);background:var(--panel)}
+.fxm-now b{font-weight:800}
+.fxm-plans{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:stretch}
+.fxm-plan{position:relative;display:flex;flex-direction:column;gap:10px;padding:24px 20px 20px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+.fxm-plan.hot{border:2px solid var(--amber);box-shadow:0 18px 50px rgba(227,155,0,.18);transform:translateY(-6px);background:linear-gradient(180deg,rgba(227,155,0,.08),var(--bg) 45%)}
+.fxm-plan.pro{background:linear-gradient(180deg,var(--panel),var(--bg))}
+.fxm-badge{position:absolute;top:-12px;left:18px;padding:3px 10px;border-radius:999px;background:var(--amber);color:var(--amber-ink);font:800 10.5px/1.4 'IBM Plex Mono',ui-monospace,monospace;letter-spacing:.1em}
+.fxm-badge.dark{background:var(--ink);color:var(--bg)}
+.fxm-tier{margin:0;font:700 11.5px 'IBM Plex Mono',ui-monospace,monospace;letter-spacing:.14em;color:var(--muted)}
+.fxm-plan h3{margin:0;font-size:36px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+.fxm-plan h3 span{font-size:13px;font-weight:500;color:var(--muted);margin-left:6px;letter-spacing:0}
+.fxm-pitch{margin:0;color:var(--muted);font-size:14px;line-height:1.5;min-height:42px}
+.fxm-plan ul{margin:4px 0 6px;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px;flex:1;font-size:14px;line-height:1.45}
+.fxm-plan li{position:relative;padding-left:22px;color:var(--ink)}
+.fxm-plan li::before{content:'✓';position:absolute;left:0;top:0;color:var(--accent);font-weight:800}
+.fxm-plan.hot li::before{color:var(--amber)}
+.fxm-btn{display:flex;align-items:center;justify-content:center;min-height:46px;padding:0 16px;border-radius:10px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);font:800 14.5px Inter,Arial,sans-serif;text-decoration:none;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.fxm-plan.hot .fxm-btn{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
+.fxm-btn.ghost{background:transparent;color:var(--ink)}
+.fxm-btn:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(0,0,0,.14)}
+.fxm-btn:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.fxm-note{margin:0;text-align:center;font-size:12px;color:var(--muted)}
+.fxm-plan.picked{outline:3px solid var(--amber);outline-offset:4px}
+.fxm-show{margin:46px 0 0;padding:28px;border-radius:16px;background:#0b0f0e;color:#e8ecea;border:1px solid #1f2925}
+.fxm-show .eyebrow{color:#ffb000}
+.fxm-show h3{margin:6px 0 6px;font-size:clamp(22px,3vw,30px);letter-spacing:-.01em;color:#fff}
+.fxm-show-head p{margin:0 0 18px;color:#a9b5ae;max-width:640px}
+.fxm-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.fxm-tool{display:flex;flex-direction:column;gap:6px;padding:14px;border:1px solid #23302b;border-radius:10px;background:#0f1514;color:#e8ecea;text-decoration:none;transition:border-color .12s,transform .12s}
+.fxm-tool:hover{border-color:#ffb000;transform:translateY(-2px)}
+.fxm-tool b{font-size:14.5px;color:#fff}
+.fxm-tool span{font-size:12.5px;line-height:1.45;color:#9fada6;flex:1}
+.fxm-tool em{font:700 10px 'IBM Plex Mono',ui-monospace,monospace;letter-spacing:.12em;color:#ffb000;font-style:normal}
+.fxm-compare{margin:44px 0 0}
+.fxm-compare h3,.fxm-faq h3{font-size:24px;margin:0 0 12px;color:var(--ink)}
+.fxm-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+.fxm-scroll table{width:100%;border-collapse:collapse;min-width:640px;font-size:14px}
+.fxm-scroll th,.fxm-scroll td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:center;color:var(--ink)}
+.fxm-scroll tbody th{text-align:left;font-weight:500}
+.fxm-scroll thead th{font:700 11.5px 'IBM Plex Mono',ui-monospace,monospace;letter-spacing:.1em;color:var(--muted);background:var(--panel)}
+.fxm-scroll thead th:first-child{text-align:left}
+.fxm-scroll .hot{background:rgba(227,155,0,.08);font-weight:700}
+.fxm-scroll thead .hot{color:var(--amber)}
+.fxm-scroll tr:last-child th,.fxm-scroll tr:last-child td{border-bottom:0;font-weight:800}
+.fxm-faq{margin:40px 0 0;max-width:820px}
+.fxm-faq details{border-bottom:1px solid var(--line);padding:14px 0}
+.fxm-faq summary{cursor:pointer;font-weight:700;font-size:15.5px;color:var(--ink)}
+.fxm-faq details p{margin:10px 0 0;color:var(--muted);line-height:1.6}
+@media (max-width:1100px){.fxm-plans{grid-template-columns:repeat(2,minmax(0,1fr))}.fxm-plan.hot{transform:none}.fxm-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.fxm-plans,.fxm-grid{grid-template-columns:1fr}.fxm-show{padding:20px 16px}.fxm-plan h3{font-size:32px}}
