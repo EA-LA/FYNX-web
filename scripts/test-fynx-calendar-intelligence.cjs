@@ -17,7 +17,11 @@ async function harness(query, rows) {
   let h = await harness('?event=' + id, [event, next]);
   assert.equal(h.host.querySelector('.fc-detail-title').textContent, event.title, 'exact shared event opens internal detail');
   assert.equal(h.host.querySelector('.fc-detail script'), null, 'source text cannot inject HTML');
-  assert.equal(h.host.querySelector('.fc-detail-phase').textContent, 'Awaiting reported result', 'elapsed schedule never invents a released result');
+  assert.equal(h.host.querySelector('.fc-detail-phase').textContent, 'Result not in feed', 'elapsed schedule never invents a released result; a feed without actuals says so');
+  assert.match(h.host.querySelector('.fc-detail').textContent, /does not include actual results|not actual results/, 'the reason a result is missing is explained');
+  const t0 = Date.parse(event.time);
+  assert.equal(h.w.FynxCalendar.phase(event, t0 + 60000, true), 'Awaiting reported result', 'a feed that carries actuals waits briefly for one');
+  assert.equal(h.w.FynxCalendar.phase(event, t0 + 3 * 3600000, true), 'Result not in feed', 'a stale wait never stays “awaiting” forever');
   assert.match(h.host.querySelector('.fc-detail').textContent, /not supplied.*calendar feed/, 'missing history and reaction explicit');
   assert.equal(h.w.FynxCalendar.phase({...event, actual: 0}), 'Result reported', 'numeric zero remains real supplied value');
   assert.equal(h.w.FynxCalendar.phase({...next, actual: '1%'}), 'Before release', 'future actual cannot become confirmed release');

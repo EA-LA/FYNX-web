@@ -16,7 +16,7 @@ const releaseAssets = require('./build-release-assets.cjs');
 assert.equal(releaseAssets.ASSET_VERSIONS['assets/js/fynx-calendar.js'], '20261120-site-pages-1',
   'release asset builder must not undo calendar cache invalidation');
 const rewritten = releaseAssets.rewriteReferences(
-  '<script src="/assets/js/fynx-calendar.js?v=outdated"></script>', 'home.html', new Set(['assets/js/fynx-calendar.js'])
+  '<script src="/assets/js/fynx-calendar.js?v=20261120-audit-1"></script>', 'home.html', new Set(['assets/js/fynx-calendar.js'])
 );
 assert.match(rewritten, /fynx-calendar\.js\?v=20261120-site-pages-1/,
   'a website build upgrades stale economic calendar script versions');
@@ -150,7 +150,7 @@ const fixture = {updatedAt: new Date(base).toISOString(), all: [
     'numerical zero and a truly missing value remain distinct');
   assert.match(pastRow.getAttribute('aria-label'), /forecast 0, previous 0/,
     'VoiceOver also receives the zero values');
-  assert.match(pastRow.textContent, /Awaiting result/, 'past events are not called released without confirmation');
+  assert.match(pastRow.textContent, /Result unavailable/, 'past events without a supplied actual say so instead of “awaiting” forever');
   assert.doesNotMatch(pastRow.textContent, /Released/);
   const resultLink = pastRow.querySelector('.fc-actual');
   assert.equal(resultLink.textContent, 'Result details ▸', 'the result control does not imply the release is verified');
