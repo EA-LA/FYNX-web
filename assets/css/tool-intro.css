@@ -1,0 +1,18 @@
+/* "How it works" panel for complex tools (Edge Radar, Quant Analyst, Macro Desk). Closed by default so expert
+   workflows stay uncluttered; inherits each page's colours and fonts. */
+.fx-tool-intro{margin:18px 0 0;border:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:10px;max-width:980px;font-size:14px;line-height:1.55}
+.fx-tool-intro>summary{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;padding:12px 16px;min-height:44px;box-sizing:border-box;cursor:pointer;list-style:none;font-weight:700}
+.fx-tool-intro>summary::-webkit-details-marker{display:none}
+.fx-tool-intro>summary::before{content:"+";display:inline-grid;place-items:center;width:20px;height:20px;border:1px solid currentColor;border-radius:50%;font:600 14px/1 Inter,Arial,sans-serif;flex:none;align-self:center}
+.fx-tool-intro[open]>summary::before{content:"−"}
+.fx-tool-intro>summary span{font-weight:400;opacity:.72;font-size:13px}
+.fx-tool-intro>summary:focus-visible{outline:2px solid currentColor;outline-offset:2px;border-radius:9px}
+.fx-tool-intro-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;padding:4px 16px 14px}
+/* Hero sections on some pages force `.hero p` sizes with !important; the panel keeps its own type scale. */
+html body details.fx-tool-intro.fx-tool-intro.fx-tool-intro h3{margin:0 0 5px!important;padding:0!important;font:700 11.5px/1.3 Inter,Arial,sans-serif!important;letter-spacing:.07em!important;text-transform:uppercase;color:inherit;max-width:none!important}
+html body details.fx-tool-intro.fx-tool-intro.fx-tool-intro p{margin:0!important;padding:0!important;max-width:none!important;font-size:13.5px!important;line-height:1.55!important;font-family:Inter,Arial,sans-serif;font-weight:400;letter-spacing:0!important;opacity:.88;color:inherit}
+html body details.fx-tool-intro.fx-tool-intro.fx-tool-intro p.fx-tool-intro-note{padding:0 16px 14px!important;font-size:12.5px!important;opacity:.75}
+html body details.fx-tool-intro.fx-tool-intro>summary{font-family:Inter,Arial,sans-serif;font-size:14px;line-height:1.35;margin:0}
+html body details.fx-tool-intro.fx-tool-intro section{margin:0;padding:0;border:0;background:none;min-width:0}
+@media (max-width:900px){.fx-tool-intro-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.fx-tool-intro-grid{grid-template-columns:1fr;gap:12px}.fx-tool-intro>summary span{flex-basis:100%}}
