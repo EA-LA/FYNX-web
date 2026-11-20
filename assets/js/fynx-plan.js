@@ -114,7 +114,7 @@
     const s = el('style'); s.id = 'fynx-plan-style';
     s.textContent = `
 .fxp-dlg{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(2,4,5,.78);backdrop-filter:blur(6px);font-family:Inter,Arial,sans-serif;color:#e8ecea}
-.fxp-box{position:relative;width:min(860px,100%);max-height:calc(100vh - 32px);overflow:auto;background:linear-gradient(180deg,#0d1211,#070a0b);border:1px solid #2a3330;border-top:3px solid #ffb000;box-shadow:0 30px 80px rgba(0,0,0,.6);padding:26px 26px 20px}
+.fxp-box{position:relative;width:min(860px,100%);max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow:auto;background:linear-gradient(180deg,#0d1211,#070a0b);border:1px solid #2a3330;border-top:3px solid #ffb000;box-shadow:0 30px 80px rgba(0,0,0,.6);padding:26px 26px 20px}
 .fxp-x{position:absolute;top:10px;right:12px;width:36px;height:36px;padding:0!important;background:none!important;border:0!important;color:#8e9b94!important;font:400 26px/1 Arial,sans-serif!important;cursor:pointer}
 .fxp-kick{font:700 10.5px 'IBM Plex Mono',monospace!important;letter-spacing:.14em!important;color:#ffb000!important}
 .fxp-box h2{margin:8px 0 8px!important;font:800 clamp(22px,3.2vw,30px)/1.15 Inter,Arial,sans-serif!important;color:#fff!important;letter-spacing:-.01em!important;text-transform:none!important}
@@ -143,7 +143,8 @@
 .fxp-lock .fxp-cta{padding:0 16px}
 .fxp-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border:1px solid #2a3330;font:600 10.5px 'IBM Plex Mono',monospace;color:#8e9b94;white-space:nowrap}
 .fxp-chip b{color:#ffb000}.fxp-chip button{background:none!important;border:0!important;color:#ffb000!important;font:700 10.5px 'IBM Plex Mono',monospace!important;cursor:pointer;padding:0 0 0 4px!important}
-@media (max-width:760px){.fxp-plans{grid-template-columns:1fr}.fxp-box{padding:22px 16px 16px}.fxp-meter i{flex-basis:110px}}`;
+@media (max-width:760px){.fxp-plans{grid-template-columns:1fr}.fxp-box{padding:22px 16px 16px}.fxp-meter i{flex-basis:110px}}
+@media (pointer:coarse){.fxp-x{top:6px;right:6px;width:44px;height:44px}.fxp-cta{height:auto;min-height:44px}.fxp-box h2{padding-right:34px}}`;
     doc.head.append(s);
   }
   const PERKS = {
@@ -167,6 +168,7 @@
   let open = null;
   function paywall({cat = 'analysis', feature = '', reason = 'limit', title, lead} = {}) {
     style(); if (open) open.remove();
+    const back = doc.activeElement;
     const m = meter(cat), wrap = el('div', 'fxp-dlg'), box = el('div', 'fxp-box');
     wrap.setAttribute('role', 'dialog'); wrap.setAttribute('aria-modal', 'true'); wrap.setAttribute('aria-labelledby', 'fxp-title');
     const x = el('button', 'fxp-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', () => close());
@@ -185,11 +187,13 @@
     const a = el('a', '', 'Compare every plan →'); a.href = '/pro.html#plans'; fine.append(a);
     if (state.tier === 'guest') { fine.append(document.createTextNode(' · ')); const s = el('a', '', 'Create a free account'); s.href = '/auth/signup.html?returnTo=' + encodeURIComponent(root.location.pathname + root.location.search + root.location.hash); fine.append(s); }
     box.append(fine); wrap.append(box);
-    const close = () => { wrap.remove(); open = null; doc.removeEventListener('keydown', onKey); };
+    const close = () => { wrap.remove(); open = null; doc.removeEventListener('keydown', onKey); if (back && back.isConnected && typeof back.focus === 'function') back.focus({preventScroll: true}); };
     const onKey = e => { if (e.key === 'Escape') close(); };
     wrap.addEventListener('click', e => { if (e.target === wrap) close(); });
     doc.addEventListener('keydown', onKey);
-    doc.body.append(wrap); open = wrap; setTimeout(() => plans.querySelector('.fxp-plan.hot .fxp-cta')?.focus(), 30);
+    doc.body.append(wrap); open = wrap;
+    // Focus without scrolling: on small phones scrolling to the Plus button hid the title, the reason and the close button.
+    setTimeout(() => { plans.querySelector('.fxp-plan.hot .fxp-cta')?.focus({preventScroll: true}); box.scrollTop = 0; }, 30);
     return close;
   }
   function lockedCard({cat = 'analysis', feature = 'This analysis', what = ''} = {}) {

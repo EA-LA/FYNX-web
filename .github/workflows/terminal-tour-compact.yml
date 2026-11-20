@@ -1,0 +1,30 @@
+name: Terminal guided tour compact-screen regression
+
+on:
+  pull_request:
+    paths:
+      - 'assets/js/terminal/tour.js'
+      - 'terminal.html'
+      - 'scripts/test-terminal-tour-compact.cjs'
+      - '.github/workflows/terminal-tour-compact.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  terminal-tour:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Verify Terminal tour syntax
+        run: node --check assets/js/terminal/tour.js
+      - name: Test compact-screen tour and keyboard focus
+        run: node --test scripts/test-terminal-tour-compact.cjs

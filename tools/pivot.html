@@ -361,6 +361,9 @@
     .px-table tr.px-pp td{font-weight:900;color:var(--text-strong)}
     .px-table th:first-child,.px-table td:first-child{position:sticky;left:0;background:linear-gradient(var(--result-bg),var(--result-bg)),var(--bg-solid,#fff);z-index:1}
     .px-short{display:none}
+    .px-table td.px-near{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--text-strong)}
+    .px-mk{display:inline-block;margin-left:.15rem;font-size:.75em;font-weight:900;color:var(--accent)}
+    .px-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
     /* [site-qa] run 103: level cards that bracket the current price. */
     .level-card.px-mark{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
     .px-tag{display:block;margin-top:.2rem;font-size:.72rem;font-weight:800;color:var(--text-soft);letter-spacing:.02em;overflow-wrap:anywhere}
@@ -374,6 +377,7 @@
       .px-table thead th{font-size:.66rem;letter-spacing:0}
       .px-long{display:none}
       .px-short{display:inline}
+      .px-mk{display:none}
     }
     @media (max-width:720px){
       h1{font-size:2.35rem}
@@ -787,8 +791,27 @@
         const order = ["R4", "R3", "R2", "R1", "PP", "S1", "S2", "S3", "S4"];
         const rows = order.map(k => ({ k, v: ms.map(m => (k === "PP" ? m.pp : m.lv[k])), sort: k === "PP" ? 0 : (k[0] === "R" ? 10 - Number(k[1]) : -Number(k[1])) }));
         const head = `<tr><th scope="col">Level</th>${ms.map(m => `<th scope="col"${m.name === methodName ? ' class="px-chosen"' : ""}><span class="px-long">${m.name}</span><span class="px-short" aria-hidden="true">${m.short}</span></th>`).join("")}</tr>`;
-        const body = rows.map(r => `<tr${r.k === "PP" ? ' class="px-pp"' : ""}><td>${r.k}</td>${r.v.map((v, i) => `<td${ms[i].name === methodName ? ' class="px-chosen"' : ""}>${v === undefined ? "–" : formatValue(v)}</td>`).join("")}</tr>`).join("");
-        return `<div class="px-card" id="pxCompare"><h3>All methods for this candle</h3><div class="px-hint">Swipe the table sideways to see every method.</div><div class="px-wrap"><table class="px-table"><caption class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Pivot levels by method</caption><thead>${head}</thead><tbody>${body}</tbody></table></div><div class="px-note">Same High/Low/Close in every column; your method is the first column, in bold. Only Camarilla has R4/S4. Where several methods put a level close together, traders often treat that area as more important.</div></div>`;
+        // [site-qa] run 105: with a Current Price, mark in every column the levels that bracket it
+        // (same locate() as the cards), so the methods can be compared at a glance.
+        const hasP = Number.isFinite(p) && p > 0;
+        const marks = ms.map(m => {
+          if (!hasP) return {};
+          const { at, up, down } = locate(p, m.pp, Object.keys(m.lv).map(label => ({ label, value: m.lv[label] })));
+          const out = {};
+          at.forEach(lv => { out[lv.label] = "at"; });
+          if (up) out[up.label] = "up";
+          if (down) out[down.label] = "down";
+          return out;
+        });
+        const MK = { up: ["↑", "next level up"], down: ["↓", "next level down"], at: ["●", "price is here"] };
+        const cell = (v, i, k) => {
+          const cls = [ms[i].name === methodName ? "px-chosen" : "", marks[i][k] ? "px-near" : ""].filter(Boolean).join(" ");
+          const mk = marks[i][k] ? `<span class="px-mk" aria-hidden="true">${MK[marks[i][k]][0]}</span><span class="px-sr">, ${MK[marks[i][k]][1]}</span>` : "";
+          return `<td${cls ? ` class="${cls}"` : ""}>${v === undefined ? "–" : formatValue(v) + mk}</td>`;
+        };
+        const body = rows.map(r => `<tr${r.k === "PP" ? ' class="px-pp"' : ""}><td>${r.k}</td>${r.v.map((v, i) => cell(v, i, r.k)).join("")}</tr>`).join("");
+        const legend = hasP ? ` Shaded: in each column, the nearest level above and below your current price ${formatValue(p)}, or a level at that price.` : "";
+        return `<div class="px-card" id="pxCompare"><h3>All methods for this candle</h3><div class="px-hint">Swipe the table sideways to see every method.</div><div class="px-wrap"><table class="px-table"><caption class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Pivot levels by method</caption><thead>${head}</thead><tbody>${body}</tbody></table></div><div class="px-note">Same High/Low/Close in every column; your method is the first column, in bold. Only Camarilla has R4/S4. Where several methods put a level close together, traders often treat that area as more important.${legend}</div></div>`;
       }
       function draw() {
         if (!last) return;

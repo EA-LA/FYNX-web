@@ -52,7 +52,8 @@
 .fx-kr-scroll{max-height:300px;overflow:auto}
 .fx-kr-err{padding:10px 12px;border-left:3px solid #ff5a4f;background:#1a0b0b;color:#ffb4ad;font-size:12.5px;line-height:1.5}
 .fx-kr-err .fx-ql-btn{margin-top:8px}
-@media (max-width:900px){.fx-kr-hero{grid-template-columns:1fr}}`;
+@media (max-width:900px){.fx-kr-hero{grid-template-columns:1fr}}
+@media (pointer:coarse){.fx-kr-run .fx-ql-btn.pri{min-height:44px}}`;
   document.head.append(st);
 
   /* ------------------------------------------- worker client ------------------------------------------- */

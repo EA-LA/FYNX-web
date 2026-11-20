@@ -22,7 +22,9 @@ function run(values) {
   return dom;
 }
 const text = (dom, id) => { const el = dom.window.document.getElementById(id); return el ? el.textContent.replace(/\s+/g, ' ').trim() : null; };
-const table = dom => [...dom.window.document.querySelectorAll('#pxCompare tr')].map(tr => [...tr.cells].map(td => td.textContent.trim()));
+// Level values only: the run-105 bracket marks (glyph + screen-reader text) are checked separately below.
+const table = dom => [...dom.window.document.querySelectorAll('#pxCompare tr')].map(tr => [...tr.cells].map(td => { const c = td.cloneNode(true); c.querySelectorAll('.px-mk,.px-sr').forEach(n => n.remove()); return c.textContent.trim(); }));
+const tableMarks = dom => { const doc = dom.window.document; const heads = [...doc.querySelectorAll('#pxCompare thead th')].map(th => (th.querySelector('.px-long') || th).textContent.trim()); return [...doc.querySelectorAll('#pxCompare td.px-near')].map(td => { const tr = td.parentElement; return `${heads[[...tr.cells].indexOf(td)]} ${tr.cells[0].textContent.trim()} ${td.querySelector('.px-mk').textContent}`; }).sort(); };
 const EUR = { high: '1.08950', low: '1.08120', close: '1.08610' };
 
 test('classic: price between PP and R1 with distances and the closer level', () => {
@@ -100,4 +102,27 @@ test('level cards: next level up/down and price-at-level are marked and follow t
   assert.equal(doc.querySelectorAll('#resultArea .px-tag').length, 0);
   dom = run({ high: '110', low: '100', close: '105', method: 'classic', price: '-1' });
   assert.deepEqual(marks(dom), {});
+});
+
+test('all methods table marks, per method, the levels that bracket the current price (run 105)', () => {
+  // Hand-checked: H110 L100 C108. Classic PP 106 R1 112; Fib PP 106 R1 109.82; Woodie PP 106.5 R1 113;
+  // Camarilla R1 108.917 R2 109.833. Price 109 sits between those pairs.
+  let dom = run({ high: '110', low: '100', close: '108', method: 'classic', price: '109' });
+  assert.deepEqual(tableMarks(dom), ['Camarilla R1 ↓', 'Camarilla R2 ↑', 'Classic PP ↓', 'Classic R1 ↑', 'Fibonacci PP ↓', 'Fibonacci R1 ↑', 'Woodie PP ↓', 'Woodie R1 ↑']);
+  assert.match(text(dom, 'pxCompare'), /Shaded: in each column, the nearest level above and below your current price 109\.00/);
+  assert.match(dom.window.document.querySelector('#pxCompare td.px-near .px-sr').textContent, /next level (up|down)/);
+  // At a level (display precision): Classic/Fib PP 106 at the price; Woodie PP 106.5 is next up.
+  dom = run({ high: '110', low: '100', close: '108', method: 'classic', price: '106' });
+  const m = tableMarks(dom);
+  assert.ok(m.includes('Classic PP ●') && m.includes('Classic R1 ↑') && m.includes('Classic S1 ↓'));
+  assert.ok(m.includes('Woodie PP ↑') && m.includes('Woodie S1 ↓'));
+  // Above every level: only the top level of each column is marked (down).
+  dom = run({ high: '110', low: '100', close: '108', method: 'classic', price: '200' });
+  assert.deepEqual(tableMarks(dom), ['Camarilla R4 ↓', 'Classic R3 ↓', 'Fibonacci R3 ↓', 'Woodie R3 ↓']);
+  // No price, or an invalid one: no marks and no shading note.
+  for (const price of ['', '-1']) {
+    dom = run({ high: '110', low: '100', close: '108', method: 'classic', price });
+    assert.deepEqual(tableMarks(dom), []);
+    assert.doesNotMatch(text(dom, 'pxCompare'), /Shaded/);
+  }
 });
