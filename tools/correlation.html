@@ -568,6 +568,18 @@
       .section-body{padding:.9rem}
       .nav{padding:0 .9rem}
     }
+    .rel-card{border:1px solid var(--panel-border);background:var(--panel-bg-2);border-radius:18px;padding:1rem;margin-top:1rem}
+    .rel-card[hidden]{display:none}
+    .rel-card h3{margin:0 0 .35rem;font-size:1.02rem;font-weight:900;letter-spacing:-.02em}
+    .rel-intro,.rel-note{color:var(--text-soft);font-size:.88rem;line-height:1.55}
+    .rel-verdict{margin:.7rem 0 .2rem;font-weight:700;font-size:.95rem;line-height:1.5}
+    .rel-list{list-style:none;margin:.6rem 0 0;padding:0}
+    .rel-list li{display:flex;justify-content:space-between;align-items:baseline;gap:.75rem;padding:.6rem 0;border-top:1px solid var(--panel-border)}
+    .rel-k{color:var(--text-soft);font-size:.9rem;line-height:1.4;min-width:0}
+    .rel-k small{display:block;color:var(--text-faint);font-size:.8rem;margin-top:.15rem}
+    .rel-v{font-weight:900;font-size:.98rem;text-align:right;white-space:nowrap;flex-shrink:0;font-variant-numeric:tabular-nums}
+    .rel-note{margin-top:.7rem}
+    @media (max-width:380px){.rel-card{padding:.85rem}.rel-list li{flex-wrap:wrap;gap:.3rem}.rel-v{text-align:left}}
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
@@ -752,6 +764,21 @@
                 </tbody>
               </table>
             </div>
+
+            <section class="rel-card" id="relCard" aria-labelledby="relTitle" hidden>
+              <h3 id="relTitle">How reliable is this r?</h3>
+              <div class="rel-intro">A high correlation from a few data points can be luck. These checks use the same pairs you entered.</div>
+              <div class="rel-verdict" id="relVerdict" role="status" aria-live="polite"></div>
+              <ul class="rel-list">
+                <li><span class="rel-k">Shared movement (R²)<small id="relR2Note"></small></span><span class="rel-v" id="relR2">—</span></li>
+                <li><span class="rel-k">Likely range of r (95%)<small id="relCiNote"></small></span><span class="rel-v" id="relCi">—</span></li>
+                <li><span class="rel-k">p-value: chance of an r this far from 0 with no real link<small id="relPNote"></small></span><span class="rel-v" id="relP">—</span></li>
+                <li><span class="rel-k">r needed with <span id="relN">0</span> pairs to pass the 5% test</span><span class="rel-v" id="relCrit">—</span></li>
+                <li><span class="rel-k" id="relBetaBLabel">Average move in B when A moves 1</span><span class="rel-v" id="relBetaB">—</span></li>
+                <li><span class="rel-k" id="relBetaALabel">Average move in A when B moves 1</span><span class="rel-v" id="relBetaA">—</span></li>
+              </ul>
+              <div class="rel-note">Pearson test, assuming roughly normal, independent observations. Use returns (% changes), not raw prices: two trending price series can show a high r with no real link. Past correlation can change quickly.</div>
+            </section>
           </div>
 
           <div class="footer-note">
@@ -815,6 +842,7 @@
 </main>
 
   <script src="../assets/js/correlation-export.js"></script>
+  <script src="../assets/js/correlation-stats.js?v=20261120-site-qa-110"></script>
   <script>
     const THEME_KEY = "fynx_theme";
 
@@ -973,7 +1001,58 @@
     const exportStatus = document.getElementById("exportStatus");
     let completedCorrelation = null;
 
+    const relCard = document.getElementById("relCard");
+    function relFmt(v){
+      if(!Number.isFinite(v)) return "—";
+      const abs = Math.abs(v);
+      const text = abs >= 1000 ? abs.toLocaleString("en-US", { maximumFractionDigits: 2 }) : String(Number(abs.toPrecision(4)));
+      return (v < 0 ? "−" : "") + text;
+    }
+    function relR(v){ return (v < 0 ? "−" : "") + Math.abs(v).toFixed(3); }
+    function relP(p){ return p < 0.001 ? "< 0.001" : p.toFixed(3); }
+    function relPEq(p){ return p < 0.001 ? "p < 0.001" : `p = ${p.toFixed(3)}`; }
+    function setRel(id, text){ document.getElementById(id).textContent = text; }
+    function hideReliability(){ relCard.hidden = true; }
+    function renderReliability(seriesA, seriesB, labelA, labelB){
+      const st = window.FynxCorrelationStats ? window.FynxCorrelationStats.describe(seriesA, seriesB) : null;
+      const n = seriesA.length;
+      relCard.hidden = false;
+      setRel("relN", String(n));
+      setRel("relBetaBLabel", `Average move in ${labelB} when ${labelA} moves 1`);
+      setRel("relBetaALabel", `Average move in ${labelA} when ${labelB} moves 1`);
+      if(!st){
+        setRel("relVerdict", n === 2
+          ? "With only 2 pairs, r is always +1 or −1. Add at least 3 pairs (ideally 30 or more) to test it."
+          : "Not enough varied data to test this result.");
+        ["relR2", "relCi", "relP", "relCrit", "relBetaB", "relBetaA"].forEach(id => setRel(id, "—"));
+        ["relR2Note", "relCiNote", "relPNote"].forEach(id => setRel(id, ""));
+        return;
+      }
+      const pct = (st.r2 * 100).toFixed(1);
+      setRel("relR2", `${pct}%`);
+      setRel("relR2Note", `Share of the ups and downs in ${labelB} that line up with ${labelA}.`);
+      if(st.ci){
+        setRel("relCi", `${relR(st.ci[0])} to ${relR(st.ci[1])}`);
+        setRel("relCiNote", st.ci[0] < 0 && st.ci[1] > 0 ? "Includes 0, so no link at all is still possible." : "Does not include 0.");
+      } else {
+        setRel("relCi", "—");
+        setRel("relCiNote", st.perfect ? "Not defined when the pairs sit exactly on a line." : "Needs at least 4 pairs.");
+      }
+      setRel("relP", relP(st.p));
+      setRel("relPNote", st.significant ? "Under 5%: unlikely to be luck alone." : "5% or more: could be luck.");
+      setRel("relCrit", st.criticalR == null ? "—" : `±${st.criticalR.toFixed(3)}`);
+      setRel("relBetaB", relFmt(st.betaBonA));
+      setRel("relBetaA", relFmt(st.betaAonB));
+      const few = n < 30 ? ` With fewer than 30 pairs, treat it as a rough read.` : "";
+      let verdict;
+      if(st.perfect) verdict = `The ${n} pairs sit exactly on a straight line (r = ${st.r > 0 ? "+1" : "−1"}). Check that the two series are not the same data.`;
+      else if(st.significant) verdict = `Probably a real link in this sample: an r of ${relR(st.r)} from ${n} pairs would rarely happen by chance (${relPEq(st.p)}).${few}`;
+      else verdict = `Could be luck: with ${n} pairs, an r of ${relR(st.r)} is not enough to rule out no link (${relPEq(st.p)}). It would need to reach ±${st.criticalR.toFixed(3)}, or you need more data.`;
+      setRel("relVerdict", verdict);
+    }
+
     function invalidateCorrelation(){
+      hideReliability();
       completedCorrelation = null;
       exportCsvBtn.disabled = true;
       exportStatus.textContent = "Inputs changed. Recalculate before exporting paired observations.";
@@ -1017,6 +1096,7 @@
         tradeReadEl.textContent = "—";
         tradeReadDescEl.textContent = "No valid result.";
         updateMatrix(labelA, labelB, null);
+        hideReliability();
         return;
       }
 
@@ -1032,6 +1112,7 @@
         tradeReadEl.textContent = "—";
         tradeReadDescEl.textContent = "No valid result.";
         updateMatrix(labelA, labelB, null);
+        hideReliability();
         return;
       }
 
@@ -1052,6 +1133,7 @@
       tradeReadDescEl.textContent = read.desc;
 
       updateMatrix(labelA, labelB, corr);
+      renderReliability(seriesA, seriesB, labelA, labelB);
       completedCorrelation = { labelA, labelB, seriesA: seriesA.slice(), seriesB: seriesB.slice(), corr };
       exportCsvBtn.disabled = false;
       exportStatus.textContent = "Ready: download a local CSV containing each paired observation and the calculated Pearson r.";
