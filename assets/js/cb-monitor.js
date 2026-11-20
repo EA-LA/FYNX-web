@@ -37,11 +37,18 @@
   }
   // Bad records must not hide valid bank cards or render fabricated rate values.
   function validHistory(history) {
+    // A future-effective observation must not be displayed as today's policy rate.
+    const currentMonth = new Date().toISOString().slice(0, 7);
     return Array.isArray(history) && history.length > 0 && history.every((point, index) =>
       Array.isArray(point) && typeof point[0] === 'string' &&
-      /^\d{4}-(0[1-9]|1[0-2])$/.test(point[0]) &&
+      /^\d{4}-(0[1-9]|1[0-2])$/.test(point[0]) && point[0] <= currentMonth &&
       typeof point[1] === 'number' && Number.isFinite(point[1]) &&
       (index === 0 || point[0] > history[index - 1][0]));
+  }
+  // The feed is a monthly series. Missing recent months must be visible, not presented as current.
+  function monthsOld(ym) {
+    const now = new Date(), year = Number(ym.slice(0, 4)), month = Number(ym.slice(5, 7));
+    return (now.getUTCFullYear() - year) * 12 + now.getUTCMonth() + 1 - month;
   }
   let region = 'all', cards = [], loading = false;
   function unavailable() {
@@ -78,6 +85,7 @@
       const h = policy.areas[a].history, v = h.at(-1)[1], mv = lastMove(h), yr = h.at(-13)?.[1];
       const ch12 = Number.isFinite(yr) ? Math.round((v - yr) * 100) : null;
       const trend = mv ? (mv.bp > 0 ? 'up' : 'down') : 'flat';
+      const olderCoverage = monthsOld(h.at(-1)[0]) >= 3;
       let next = '';
       if (a === 'US' && validOdds) {
         const lead = [['hike', odds.hike], ['hold', odds.hold], ['cut', odds.cut]].sort((x, y) => (y[1] || 0) - (x[1] || 0))[0];
@@ -89,10 +97,12 @@
         <span class="cb-rate">${v.toFixed(2)}<small>%</small></span>
         <span class="cb-move">${mv ? `${mv.bp > 0 ? '▲' : '▼'} ${mv.bp > 0 ? '+' : ''}${mv.bp} bp · ${esc(month(mv.at))}` : 'No change in available history'}${effr}</span>
         ${spark(h)}
-        <span class="cb-meta">12 months: ${ch12 == null ? '—' : (ch12 > 0 ? '+' : '') + ch12 + ' bp'} · as of ${esc(month(h.at(-1)[0]))}</span>${next}</a>`};
+        <span class="cb-meta">12 months: ${ch12 == null ? '—' : (ch12 > 0 ? '+' : '') + ch12 + ' bp'} · as of ${esc(month(h.at(-1)[0]))}${olderCoverage ? ' · Older published coverage — verify current rate' : ''}</span>${next}</a>`};
     });
       const partial = available.length < BANKS.length ? ` ${BANKS.length - available.length} banks omitted because their records could not be verified.` : '';
-      host.querySelector('[data-cb-source]').textContent = `Policy rates: ${policy.source || 'BIS monthly policy-rate series'}. ${validOdds ? 'Fed odds: ' + (fed?.source || 'fed funds futures') + '. ' : ''}Cards open each bank's official meeting calendar.${partial}`;
+      const olderCount = available.filter(([area]) => monthsOld(policy.areas[area].history.at(-1)[0]) >= 3).length;
+      const ageNote = olderCount ? ` ${olderCount} bank${olderCount === 1 ? '' : 's'} ha${olderCount === 1 ? 's' : 've'} older published coverage; verify its current rate with the institution.` : '';
+      host.querySelector('[data-cb-source]').textContent = `Policy rates: ${policy.source || 'BIS monthly policy-rate series'}. ${validOdds ? 'Fed odds: ' + (fed?.source || 'fed funds futures') + '. ' : ''}Cards open each bank's official meeting calendar.${partial}${ageNote}`;
       render();
     } catch (_) {
       unavailable();
