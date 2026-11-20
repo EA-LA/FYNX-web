@@ -155,3 +155,47 @@ test('pending Pro deletion remains protected and keyboard-operable after a faile
  assert.equal(h.calls.filter(c=>c.action==='delete').length,1);
  h.close();
 });
+
+test('Pro journal CSV URL is released when the customer switches tools',async()=>{
+ const {resolveObjectURL}=require('node:buffer');
+ const h=await load({user:true,tier:'starter',query:'?tool=export',handler:data=>data.action==='run'?{result:{csv:'date,pnl\\n2026-11-20,42',rows:1}}:undefined});
+ h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+ await new Promise(resolve=>setImmediate(resolve));
+ const link=h.document.querySelector('#result a[download="fynx-journal.csv"]');
+ assert.ok(link,'export should provide the existing download link');
+ const download=link.href;
+ assert.ok(resolveObjectURL(download),'temporary CSV should exist before changing tools');
+ h.document.querySelector('#productCards button[data-key="risk"]').onclick();
+ assert.equal(resolveObjectURL(download),undefined,'changing tools should release the previous export');
+ assert.doesNotMatch(h.document.getElementById('result').textContent,/Download/);
+ h.close();
+});
+
+test('Pro journal CSV URL is released when a member signs out',async()=>{
+ const {resolveObjectURL}=require('node:buffer');
+ const h=await load({user:true,tier:'starter',query:'?tool=export',handler:data=>data.action==='run'?{result:{csv:'date,pnl\\n2026-11-20,10',rows:1}}:undefined});
+ h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+ await new Promise(resolve=>setImmediate(resolve));
+ const download=h.document.querySelector('#result a[download]').href;
+ assert.ok(resolveObjectURL(download));
+ await h.changeUser(null);
+ assert.equal(resolveObjectURL(download),undefined,'sign-out should release the account CSV');
+ assert.equal(h.document.querySelector('#result a[download]'),null);
+ h.close();
+});
+
+test('Pro journal CSV URL is released when a new export replaces it or the page closes',async()=>{
+ const {resolveObjectURL}=require('node:buffer');
+ let count=0;
+ const h=await load({user:true,tier:'starter',query:'?tool=export',handler:data=>data.action==='run'?{result:{csv:'record,pnl\\n'+(++count)+',20',rows:1}}:undefined});
+ const run=async()=>{h.document.getElementById('toolForm').onsubmit({preventDefault(){}});await new Promise(resolve=>setImmediate(resolve));return h.document.querySelector('#result a[download]').href;};
+ const first=await run();
+ assert.ok(resolveObjectURL(first));
+ const second=await run();
+ assert.notEqual(first,second);
+ assert.equal(resolveObjectURL(first),undefined,'superseded export should be released');
+ assert.ok(resolveObjectURL(second),'latest download remains available');
+ h.document.defaultView.dispatchEvent(new h.document.defaultView.Event('pagehide'));
+ assert.equal(resolveObjectURL(second),undefined,'leaving the page should release the latest CSV');
+ h.close();
+});
