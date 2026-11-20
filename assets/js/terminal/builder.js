@@ -103,6 +103,9 @@
 
   const LOCAL_PREFIX = 'fx-term-builder-v1:';
   let captureDraft = () => null;
+  // The terminal redraws an open page once its data finishes loading. Keep the
+  // last message and the chosen tab so a redraw does not look like a reset.
+  const pageMemory = {text: '', level: '', at: 0, tab: 'preview', uid: null};
 
   function localKey(uid) { return LOCAL_PREFIX + uid; }
 
@@ -360,7 +363,9 @@
     let pageListener = null;
 
     PG.add('builder', 'Builder', host => {
-      PG.setHead('BUILD', 'FYNX Builder', 'Create. Code. Test. Your terminal, your tool.');
+      // A previous mount may still hold keystrokes inside its 750 ms recovery debounce: flush them first.
+      if (state.uid && captureDraft()) writeDevice(state.uid);
+      PG.setHead('BUILD', 'FYNX Builder', 'Write a small market tool, preview it safely, and add it to your terminal.');
       const root = document.createElement('div');
       root.className = 'fxb';
       host.append(root);
@@ -374,8 +379,9 @@
       let draft = null;
       let stopPreview = () => {};
       let successfulPreviewCode = null;
-      let consoleText = 'Ctrl/Cmd+Enter runs. Ctrl/Cmd+S saves. Ctrl/Cmd+F finds. Ctrl/Cmd+H replaces.';
-      let consoleLevel = '';
+      const remembered = pageMemory.uid === state.uid && Date.now() - pageMemory.at < 120000;
+      let consoleText = remembered && pageMemory.text ? pageMemory.text : 'Ctrl/Cmd+Enter runs. Ctrl/Cmd+S saves. Ctrl/Cmd+F finds. Ctrl/Cmd+H replaces.';
+      let consoleLevel = remembered ? pageMemory.level : '';
       let dirty = false;
       let cm = null;
       let projectQuery = '';
@@ -420,6 +426,7 @@
       function say(text, level) {
         consoleText = text;
         consoleLevel = level || '';
+        Object.assign(pageMemory, {text, level: level || '', at: Date.now(), uid: state.uid});
         const log = root.querySelector('[data-fxb-console]');
         if (!log) return;
         log.textContent = text;
@@ -445,7 +452,8 @@
         editRevision += 1;
         scheduleDraft();
         scheduleCloudSync();
-        setSaveLabel('Unsaved changes · recovery pending', 'warn');
+        scheduleLive();
+        setSaveLabel('Unsaved changes', 'warn');
       }
       function scheduleDraft() {
         const uid = state.uid;
@@ -453,7 +461,7 @@
         draftTimer = setTimeout(() => {
           if (state.uid !== uid) return;
           const preserved = writeDevice(uid);
-          if (dirty) setSaveLabel(preserved ? 'Saved to this browser · account not yet synced' : 'Recovery save failed', 'warn');
+          if (dirty) setSaveLabel(preserved ? 'Saved to this browser · syncing…' : 'Recovery save failed', 'warn');
         }, 750);
       }
       function scheduleCloudSync() {
@@ -486,7 +494,9 @@
       }
       function updateStatus() {
         const node = root.querySelector('[data-fxb-status]');
-        if (node) node.textContent = statusText();
+        if (node) { node.textContent = statusText(); node.className = 'fxb-status' + (state.status === 'ready' ? ' ok' : state.status === 'loading' ? '' : ' warn'); }
+        const retry = root.querySelector('[data-fxb-retry]');
+        if (retry) retry.hidden = !(state.uid && (state.status === 'device' || state.status === 'error'));
         updateInstallButton();
       }
       function updateLines() {
@@ -523,6 +533,7 @@
           tabSize: 2,
           indentWithTabs: false,
           matchBrackets: true,
+          lineWrapping: true,
           autoCloseBrackets: true,
           undoDepth: 200,
           extraKeys: {
@@ -547,13 +558,14 @@
         note.textContent = text || '';
         note.className = 'fxb-note' + (bad ? ' bad' : '');
       }
-      function showPreviewMessage(text) {
+      function showPreviewMessage(text, neutral) {
         const preview = root.querySelector('[data-fxb-preview]');
         if (!preview) return;
         stopPreview();
         preview.replaceChildren();
+        if (!neutral) setRunState(false);
         const paragraph = document.createElement('p');
-        paragraph.className = 'fxb-error';
+        paragraph.className = neutral ? 'fxb-empty' : 'fxb-error';
         paragraph.textContent = text;
         preview.append(paragraph);
       }
@@ -576,8 +588,8 @@
             try { handle.releasePointerCapture(ev.pointerId); } catch (e) {}
             if (cm) cm.refresh();
             try {
-              const side = parseInt(root.style.getPropertyValue('--fxb-side'), 10) || 248;
-              const preview = parseInt(root.style.getPropertyValue('--fxb-preview'), 10) || 340;
+              const side = parseInt(root.style.getPropertyValue('--fxb-side'), 10) || 260;
+              const preview = parseInt(root.style.getPropertyValue('--fxb-preview'), 10) || 380;
               localStorage.setItem('fx-term-builder-panes', JSON.stringify({side, preview}));
             } catch (e) {}
           }
@@ -682,6 +694,7 @@
             setSaveLabel('Newer changes · saved to this browser', 'warn');
           }
           if (state.installs.some(widget => widget.projectId === id)) registerInstalls(T);
+          rebuildList();
         } catch (error) {
           if (state.uid !== ownerUid) return;
           const denied = error && error.code === 'permission-denied';
@@ -749,13 +762,14 @@
         else T.say('Added to this desk on this browser only. Your account refused the installation, so it will not follow you to another device.');
       }
 
-      async function uninstall(quiet) {
-        if (!draft.id) return;
+      async function uninstall(quiet, targetId) {
+        const projectId = targetId || draft.id;
+        if (!projectId) return;
         let slot = '';
-        try { slot = Core.slotFor(draft.id); }
+        try { slot = Core.slotFor(projectId); }
         catch (error) { say('Project id is not valid.', 'error'); return; }
-        const current = state.installs.find(widget => widget.projectId === draft.id);
-        const remaining = state.installs.filter(widget => widget.projectId !== draft.id);
+        const current = state.installs.find(widget => widget.projectId === projectId);
+        const remaining = state.installs.filter(widget => widget.projectId !== projectId);
         let accountOk = true;
         if (current && !current.deviceOnly && state.uid && dbApi) {
           try { await writeAccountInstalls(remaining.filter(widget => !widget.deviceOnly)); }
@@ -784,62 +798,83 @@
         rebuildList();
       }
 
-      async function removeProject() {
+      // Account writes and deletes share one queue, so a save that started
+      // before a delete can never land after it and bring the project back.
+      async function queueAccount(task) {
+        const previous = accountWriteQueue;
+        let release;
+        accountWriteQueue = new Promise(resolve => { release = resolve; });
+        try { await previous; return await task(); } finally { release(); }
+      }
+      function blankDraft() {
+        return {id: null, name: 'Untitled project', description: 'A new private financial tool.', category: 'research', main: templateSource('blank'), version: 1, versions: []};
+      }
+      async function removeProject(targetId) {
         syncCode();
-        if (!draft.id) {
-          currentId = null;
-          draft = draftOf(null);
+        const id = targetId || draft.id;
+        if (!id) {
+          if (!window.confirm('Discard "' + (draft.name || 'this project') + '"? It was never saved.')) return;
+          clearTimeout(cloudTimer); clearTimeout(draftTimer);
+          currentId = state.projects[0]?.id || null;
+          draft = currentId ? draftOf(byId(currentId)) : blankDraft();
           dirty = false;
           state.draft = draftRecord(draft);
-          say('Cleared the unsaved draft.', '');
           writeDevice(state.uid);
+          consoleText = 'Discarded the unsaved project.'; consoleLevel = 'ok';
           paint();
           return;
         }
-        const id = draft.id;
         const project = byId(id);
-        if (Core.secretFindings(draft.main).length) { say('Remove credentials from your editor before deleting or archiving this project.', 'error'); return; }
-        if (!project) { say('This project is not saved. Use New project to discard the starter.', 'error'); return; }
-        if (!window.confirm('Move "' + project.name + '" to Trash? The 30-day recovery copy stays in this browser only. Cloud deletion, once confirmed, cannot be undone on another device.')) return;
-        const deviceOnly = project.stored !== 'account';
-        // Create a recovery snapshot before ANY destructive request. If the
-        // browser refuses local storage, refuse the deletion entirely.
+        if (!project) { say('This project is no longer in your list.', 'error'); rebuildList(); return; }
+        const isCurrent = id === draft.id;
+        const source = isCurrent ? draft.main : project.main;
+        if (Core.secretFindings(source).length) { say('Remove credentials from the code before deleting this project.', 'error'); return; }
+        const installed = state.installs.some(widget => widget.projectId === id);
+        if (!window.confirm('Delete "' + project.name + '"?\n\nIt is removed from your projects' + (installed ? ' and from your terminal' : '') + '. You can restore it from Trash on this browser for 30 days.')) return;
+        if (isCurrent) { clearTimeout(cloudTimer); clearTimeout(draftTimer); }
+        // Keep a recovery copy before anything destructive; refuse if the browser cannot store it.
         const previousTrash = state.trash.slice();
-        state.trash = state.trash.filter(row => row.project.id !== id).concat([{
-          project: {...project, main: draft.main, authorUid: state.uid},
-          deletedAt: Date.now()
-        }]).slice(-Core.LIMITS.projects);
+        state.trash = state.trash.filter(row => row.project.id !== id).concat([{project: {...project, main: source, authorUid: state.uid}, deletedAt: Date.now()}]).slice(-Core.LIMITS.projects);
         if (!writeDevice(state.uid)) {
           state.trash = previousTrash;
-          say('Deletion cancelled. This browser could not preserve a recovery copy.', 'error');
+          say('Not deleted. This browser could not keep a recovery copy.', 'error');
           return;
         }
-        if (!deviceOnly) {
-          if (!dbApi) {
-            state.trash = previousTrash;
-            writeDevice(state.uid);
-            say('Cannot delete the cloud project while account storage is unavailable.', 'error');
-            return;
-          }
+        const inAccount = project.stored === 'account';
+        // The label can lag behind an autosave, so always remove the account copy when signed in.
+        if (state.uid && dbApi) {
           try {
-            const api = await connect();
-            if (api.auth.currentUser?.uid !== state.uid) throw new Error('Account changed during deletion.');
-            await api.firestore.deleteDoc(api.firestore.doc(api.firestore.getFirestore(api.app), 'users', state.uid, 'builderProjects', id));
+            await queueAccount(async () => {
+              const api = await connect();
+              if (api.auth.currentUser?.uid !== state.uid) throw new Error('Account changed during deletion.');
+              await api.firestore.deleteDoc(api.firestore.doc(api.firestore.getFirestore(api.app), 'users', state.uid, 'builderProjects', id));
+            });
           } catch (error) {
-            state.trash = previousTrash;
-            writeDevice(state.uid);
-            say('Deletion cancelled. Your account still has the project. ' + (error.message || ''), 'error');
-            return;
+            if (inAccount) {
+              state.trash = previousTrash;
+              writeDevice(state.uid);
+              say('Not deleted. Your account still has the project: ' + (error.message || 'the request was refused.'), 'error');
+              return;
+            }
           }
+        } else if (inAccount) {
+          state.trash = previousTrash;
+          writeDevice(state.uid);
+          say('Not deleted. Account storage is unavailable right now; try again in a moment.', 'error');
+          return;
         }
-        if (state.installs.some(widget => widget.projectId === id)) await uninstall(true);
+        if (installed) await uninstall(true, id);
         state.projects = state.projects.filter(item => item.id !== id);
-        currentId = state.projects[0]?.id || null;
-        draft = currentId ? draftOf(byId(currentId)) : draftOf(null);
-        dirty = false;
-        // Persist the replacement draft, never the deleted project's old draft.
+        if (isCurrent) {
+          currentId = state.projects[0]?.id || null;
+          draft = currentId ? draftOf(byId(currentId)) : blankDraft();
+          dirty = false;
+          successfulPreviewCode = null;
+        }
+        state.draft = draftRecord(draft);
         writeDevice(state.uid);
-        say('Moved to browser Trash. Recover within 30 days on this browser.', 'ok');
+        consoleText = 'Deleted "' + project.name + '". Restore it from Trash within 30 days on this browser.';
+        consoleLevel = 'ok';
         paint();
       }
 
@@ -870,8 +905,10 @@
           return;
         }
         showTrash = false;
-        say('Recovered to this browser. Select Save to sync the restored project to your account.', 'ok');
+        consoleText = 'Restored "' + restored.name + '".' + (state.status === 'ready' ? ' Syncing it back to your account…' : ' It is on this browser; Save syncs it to your account when storage is available.');
+        consoleLevel = 'ok';
         paint();
+        if (state.status === 'ready' && dbApi) persist(true);
       }
 
       // Starter code follows the same render(root, FYNX) SDK as the original.
@@ -895,9 +932,9 @@
           ? 'const note = document.createElement("p"); note.textContent = "Research notes are private. Connect a reviewed data source before displaying live headlines."; root.append(note);'
           : 'for (const symbol of ' + JSON.stringify(symbols) + ') { const quote = FYNX.quote(symbol); const line = document.createElement("p"); line.textContent = symbol + ": " + (quote ? FYNX.format(quote.price, 2) : "Not in terminal snapshot"); root.append(line); }') + '\n}\n';
       }
-      function createTemplate(key, name) {
-        syncCode();
-        if (dirty) { say('Save your existing changes before creating another project.', 'error'); return; }
+      async function createTemplate(key, name) {
+        if (!Core.cleanText(name, Core.LIMITS.name)) { say('Enter a name for the new project.', 'error'); root.querySelector('[aria-label="New project name"]')?.focus(); return; }
+        if (dirty && !(await settleDirty())) return;
         const template = starterTemplates.find(row => row[0] === key) || starterTemplates[0];
         const cleaned = Core.cleanText(name, Core.LIMITS.name);
         if (!cleaned) { say('Enter a project name.', 'error'); return; }
@@ -922,40 +959,57 @@
         paint();
       }
 
-      function run() {
+      function run(options) {
+        const quiet = !!(options && options.quiet);
+        const tell = (text, level) => { if (!quiet) say(text, level); };
+        clearTimeout(liveTimer);
         stopPreview();
         syncCode();
         successfulPreviewCode = null;
         const syntax = Core.syntaxError(draft.main);
-        if (syntax) { say(syntax, 'error'); showPreviewMessage(syntax); previewNote(syntax, true); return; }
+        if (syntax) { tell(syntax, 'error'); showPreviewMessage(syntax); previewNote(syntax, true); return; }
         const check = Core.validateProject({...draft, description: draft.description || 'Preview of a financial widget.', name: draft.name || 'Preview'});
         const blocking = check.errors.find(error => /credential|secret|access key|empty|define function|limited/i.test(error));
-        if (blocking) { say(blocking, 'error'); showPreviewMessage(blocking); previewNote(blocking, true); return; }
+        if (blocking) { tell(blocking, 'error'); showPreviewMessage(blocking); previewNote(blocking, true); return; }
         const preview = root.querySelector('[data-fxb-preview]');
         if (!preview) return;
         const quotes = snapshot(T);
         const sourceUnderTest = draft.main;
-        say('Running in the sandbox…', '');
+        tell('Running in the sandbox…', '');
         previewNote('Running…', false);
+        setRunState(true);
         stopPreview = mount(preview, draft.main, quotes, {
           title: draft.name,
-          onError: message => { say(message, 'error'); previewNote(message, true); },
+          onError: message => { tell(message, 'error'); previewNote(message, true); setRunState(false); },
           onDone: () => {
             if (draft.main === sourceUnderTest) successfulPreviewCode = sourceUnderTest;
             const count = quotes.length;
             const text = count
               ? 'Running in the sandbox. ' + count + ' snapshot price' + (count === 1 ? '' : 's') + ' available. Network access is blocked.'
               : 'Running. No prices are in this terminal snapshot, so missing symbols stay blank. Nothing was invented.';
-            say(text, 'ok');
+            tell(text, 'ok');
             previewNote(text, false);
           }
         }) || (() => {});
       }
+      function setRunState(on) {
+        const pill = root.querySelector('[data-fxb-runstate]');
+        if (pill) { pill.textContent = on ? '● Live' : '○ Stopped'; pill.className = 'fxb-runstate' + (on ? ' on' : ''); }
+      }
+      let liveTimer = 0;
+      function liveEnabled() { try { return localStorage.getItem('fx-term-builder-live') !== 'off'; } catch (e) { return true; } }
+      function scheduleLive() {
+        clearTimeout(liveTimer);
+        if (!liveEnabled()) return;
+        liveTimer = setTimeout(() => { if (root.isConnected && !Core.syntaxError(draft.main)) run({quiet: true}); }, 1200);
+      }
       function stop() {
+        clearTimeout(liveTimer);
         stopPreview();
         say('Stopped.', '');
-        showPreviewMessage('Stopped.');
+        showPreviewMessage('Stopped. Press Run to start the preview again.', true);
         previewNote('Stopped.', false);
+        setRunState(false);
       }
       function findValue() { return root.querySelector('[data-fxb-find]')?.value || ''; }
       function replaceValue() { return root.querySelector('[data-fxb-replace]')?.value || ''; }
@@ -1023,12 +1077,16 @@
         const area = root.querySelector('textarea.fxb-code');
         if (area) { area.focus(); document.execCommand('redo'); }
       }
-      function openProject(id) {
+      // Saves the open project before switching away. Returns false if it cannot be kept safely.
+      async function settleDirty() {
         syncCode();
-        if (dirty) {
-          say('Save your current changes before opening another project. Your code has not been discarded.', 'error');
-          return;
-        }
+        if (!dirty) return true;
+        if (state.uid && Core.validateProject(draft).ok) { await persist(true); return !dirty; }
+        say('Your current changes are not saved yet (' + (Core.validateProject(draft).errors[0] || 'sign in to save') + '). Fix or save them first; nothing was discarded.', 'error');
+        return false;
+      }
+      async function openProject(id) {
+        if (dirty && !(await settleDirty())) return;
         const project = byId(id);
         if (!project) return;
         currentId = id;
@@ -1041,69 +1099,63 @@
         consoleLevel = '';
         paint();
       }
+      function relTime(ms) {
+        if (!ms) return 'unknown';
+        const d = Date.now() - ms;
+        if (d < 60000) return 'just now';
+        if (d < 3600000) return Math.round(d / 60000) + ' min ago';
+        if (d < 86400000) return Math.round(d / 3600000) + ' h ago';
+        return new Date(ms).toLocaleDateString();
+      }
       function rebuildList() {
         const list = root.querySelector('[data-fxb-list]');
         const versions = root.querySelector('[data-fxb-versions]');
         if (!list || !versions) return;
         list.replaceChildren();
+        const count = root.querySelector('[data-fxb-count]');
+        if (count) count.textContent = state.projects.length + ' / ' + Core.LIMITS.projects;
         const query = projectQuery.trim().toLowerCase();
         const rows = state.projects.filter(item => !query || item.name.toLowerCase().includes(query) || String(item.category).toLowerCase().includes(query));
-        if (!rows.length) list.append(el('p', 'fxb-note', state.projects.length ? 'No project matches that search.' : (state.status === 'error' ? state.error : 'No saved projects yet.')));
+        if (!draft.id) {
+          const unsaved = el('div', 'fxb-proj on');
+          const open = el('div', 'fxb-proj-open');
+          open.textContent = draft.name || 'Untitled project';
+          open.append(el('small', '', dirty ? 'Unsaved draft · autosaves while you type' : 'New draft · not saved yet'));
+          unsaved.append(open);
+          list.append(unsaved);
+        }
+        if (!rows.length) list.append(el('p', 'fxb-note', state.projects.length ? 'No project matches that search.' : (state.status === 'error' ? state.error : state.status === 'loading' ? 'Loading your projects…' : 'No saved projects yet. Your first save appears here.')));
         rows.slice(0, Core.LIMITS.projects).forEach(item => {
-          const row = buttonEl(item.name, item.id === draft.id ? 'on' : '', () => openProject(item.id));
           const isInstalled = state.installs.some(widget => widget.projectId === item.id);
-          row.append(el('small', '', 'v' + item.version + ' · ' + (item.stored === 'device' ? 'browser copy' : 'account') + (isInstalled ? ' · installed' : ' · not installed')));
-          row.append(el('small', '', item.description.slice(0, 70)));
-          row.append(el('small', '', 'Modified: ' + (item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : 'Unknown')));
-          const more = document.createElement('details');
-          more.className = 'fxb-project-menu';
-          const header = document.createElement('summary');
-          header.textContent = 'More options for ' + item.name;
-          more.append(header);
-          function selectForAction(action) {
-            if (item.id !== draft.id) openProject(item.id);
-            if (draft.id !== item.id) return;
-            action();
-          }
-          more.append(buttonEl('Rename', '', () => selectForAction(() => {
-            const input = root.querySelector('[aria-label="Project name"]');
-            input?.focus(); input?.select();
-            say('Edit the name and autosave will preserve it.', 'ok');
-          })));
-          more.append(buttonEl('Duplicate', '', () => selectForAction(duplicate)));
-          more.append(buttonEl('Version history', '', () => selectForAction(() =>
-            root.querySelector('[data-fxb-versions]')?.scrollIntoView({block: 'nearest'}))));
-          more.append(buttonEl('Export', '', () => selectForAction(() => {
-            const exports = [...root.querySelectorAll('.fxb-versions button')];
-            exports.find(button => button.textContent === 'Export main.js')?.click();
-          })));
-          more.append(buttonEl(isInstalled ? 'Uninstall from terminal' : 'Install to terminal', '', () =>
-            selectForAction(() => { if (isInstalled) uninstall(false); else install(); })));
-          more.append(buttonEl('Delete', 'danger', () => selectForAction(removeProject)));
-          list.append(row, more);
+          const row = el('div', 'fxb-proj' + (item.id === draft.id ? ' on' : ''));
+          const open = buttonEl(item.name, 'fxb-proj-open', () => openProject(item.id));
+          const meta = el('small', '', 'v' + item.version + ' · ' + (item.stored === 'device' ? 'this browser' : 'account') + ' · ' + relTime(item.updatedAt));
+          open.append(meta);
+          if (isInstalled) open.append(el('span', 'fxb-badge', 'ON TERMINAL'));
+          open.title = item.description || item.name;
+          const del = buttonEl('✕', 'fxb-icon danger', event => { event.stopPropagation(); removeProject(item.id); });
+          del.title = 'Delete ' + item.name;
+          del.setAttribute('aria-label', 'Delete ' + item.name);
+          row.append(open, del);
+          list.append(row);
         });
         versions.replaceChildren();
         const history = (draft.versions || []).slice().reverse();
-        if (!history.length) versions.append(el('p', 'fxb-note', 'No saved versions yet. Saving a change keeps the previous one.'));
+        const head = el('div', 'fxb-row');
         if (draft.id) {
-          versions.append(buttonEl('Save Version', '', () => persist()));
-          versions.append(buttonEl('Export main.js', '', () => {
-            syncCode();
-            const blob = new Blob([draft.main], {type: 'text/javascript'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = draft.name.replace(/[^a-z0-9_-]+/gi, '-').slice(0, 48) + '-main.js';
-            a.click();
-            setTimeout(() => URL.revokeObjectURL(url), 1500);
-            say('Exported your current main.js; your saved project was not changed.', 'ok');
-          }));
+          head.append(buttonEl('Save version', 'on', () => persist()));
+          head.append(buttonEl('Export main.js', '', exportMain));
         }
+        versions.append(head);
+        versions.append(el('p', 'fxb-note', draft.id
+          ? 'Current: v' + (draft.version || 1) + '. Every save keeps the previous code, up to ' + Core.LIMITS.versions + ' versions.'
+          : 'Save this project to start its version history.'));
+        if (draft.id && !history.length) versions.append(el('p', 'fxb-note', 'No earlier versions yet.'));
         history.forEach(version => {
           const row = el('div', 'fxb-version-row');
           const when = version.savedAt ? new Date(version.savedAt).toLocaleString() : 'Time unavailable';
-          row.append(el('p', 'fxb-note', 'v' + version.version + ' · ' + when));
-          row.append(buttonEl('Compare v' + version.version, '', () => {
+          row.append(el('b', '', 'v' + version.version), el('span', 'fxb-note', when));
+          row.append(buttonEl('Compare', '', () => {
             syncCode();
             let view = root.querySelector('[data-fxb-compare]');
             if (!view) {
@@ -1114,16 +1166,17 @@
             }
             const oldLines = String(version.main || '').split('\n');
             const newLines = String(draft.main || '').split('\n');
-            const lines = [];
+            const lines = ['Changes from v' + version.version + ' to the editor:'];
             for (let i = 0; i < Math.min(120, Math.max(oldLines.length, newLines.length)); i++) {
               if (oldLines[i] === newLines[i]) continue;
               if (oldLines[i] != null) lines.push('- ' + (i + 1) + ' ' + oldLines[i]);
               if (newLines[i] != null) lines.push('+ ' + (i + 1) + ' ' + newLines[i]);
             }
-            view.textContent = lines.slice(0, 100).join('\n').slice(0, 10000) || 'No differences in the compared lines.';
+            view.textContent = lines.length > 1 ? lines.slice(0, 100).join('\n').slice(0, 10000) : 'No differences.';
+            view.scrollIntoView({block: 'nearest'});
           }));
-          row.append(buttonEl('Restore v' + version.version, '', () => {
-            if (!window.confirm('Restore version ' + version.version + '? Your current version will remain in history.')) return;
+          row.append(buttonEl('Restore', '', () => {
+            if (!window.confirm('Put version ' + version.version + ' back in the editor? Your current code stays in history.')) return;
             draft.main = String(version.main || '');
             if (cm) cm.setValue(draft.main);
             else {
@@ -1131,16 +1184,48 @@
               if (area) area.value = draft.main;
             }
             markDirty();
-            say('Restored version ' + version.version + ' into the editor. Autosave will create a new revision.', 'ok');
+            say('Restored version ' + version.version + ' into the editor. It autosaves as a new version.', 'ok');
           }));
           versions.append(row);
         });
       }
+      function exportMain() {
+        syncCode();
+        const blob = new Blob([draft.main], {type: 'text/javascript'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = (draft.name || 'project').replace(/[^a-z0-9_-]+/gi, '-').slice(0, 48) + '-main.js';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        say('Downloaded main.js. Your saved project was not changed.', 'ok');
+      }
+      async function newProject() {
+        if (dirty && !(await settleDirty())) return;
+        currentId = null;
+        draft = blankDraft();
+        dirty = true;
+        editRevision += 1;
+        successfulPreviewCode = null;
+        scheduleDraft();
+        consoleText = 'New project. Write your code, press Run to preview, and it saves automatically.';
+        consoleLevel = '';
+        paint();
+        const name = root.querySelector('[aria-label="Project name"]');
+        if (name) { name.focus(); name.select(); }
+      }
       function fillSide(side) {
         side.replaceChildren();
         const scroll = el('div', 'fxb-side-scroll');
-        scroll.append(el('h2', '', 'Projects'));
+        const head = el('div', 'fxb-side-head');
+        head.append(el('h2', '', 'Projects'));
+        const count = el('span', 'fxb-count', '');
+        count.setAttribute('data-fxb-count', '');
+        head.append(count);
+        scroll.append(head);
+        scroll.append(buttonEl('+ New project', 'on fxb-wide', newProject));
         const creator = el('div', 'fxb-creator');
+        creator.append(el('span', 'fxb-label', 'Or start from a template'));
         const templateSelect = document.createElement('select');
         templateSelect.className = 'fxb-field';
         templateSelect.setAttribute('aria-label', 'Starting template');
@@ -1150,26 +1235,11 @@
         const creatorName = document.createElement('input');
         creatorName.className = 'fxb-field';
         creatorName.maxLength = Core.LIMITS.name;
-        creatorName.placeholder = 'New project name';
+        creatorName.placeholder = 'Name, e.g. My FX dashboard';
         creatorName.setAttribute('aria-label', 'New project name');
-        creator.append(el('h2', '', 'Create a project'), templateSelect, creatorName,
-          buttonEl('Create project', 'on', () => createTemplate(templateSelect.value, creatorName.value)));
+        creatorName.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); createTemplate(templateSelect.value, creatorName.value); } });
+        creator.append(templateSelect, creatorName, buttonEl('Create project', '', () => createTemplate(templateSelect.value, creatorName.value)));
         scroll.append(creator);
-        scroll.append(buttonEl('New project', '', () => {
-          syncCode();
-          if (dirty) {
-            say('Save your current changes before starting another project. Your code has not been discarded.', 'error');
-            return;
-          }
-          currentId = null;
-          draft = draftOf(null);
-          dirty = true;
-          editRevision += 1;
-          scheduleDraft();
-          consoleText = 'Unsaved project. Save it before installing.';
-          consoleLevel = '';
-          paint();
-        }));
         const search = document.createElement('input');
         search.type = 'search';
         search.className = 'fxb-field';
@@ -1177,20 +1247,96 @@
         search.setAttribute('aria-label', 'Search projects');
         search.value = projectQuery;
         search.addEventListener('input', () => { projectQuery = search.value; rebuildList(); });
-        scroll.append(search);
-        scroll.append(field('Name', draft.name, Core.LIMITS.name, value => { draft.name = value; markDirty(); }, 'Project name'));
-        const description = document.createElement('textarea');
-        description.className = 'fxb-field';
-        description.rows = 3;
-        description.maxLength = Core.LIMITS.description;
-        description.value = draft.description;
-        description.setAttribute('aria-label', 'Project description');
-        description.addEventListener('input', () => { draft.description = description.value; markDirty(); });
-        const descriptionLabel = document.createElement('label');
-        descriptionLabel.append(el('span', '', 'Description'), description);
-        scroll.append(descriptionLabel);
-        const category = document.createElement('label');
-        category.append(el('span', '', 'Category'));
+        if (state.projects.length > 4 || projectQuery) scroll.append(search);
+        const list = el('div', 'fxb-list');
+        list.setAttribute('data-fxb-list', '');
+        scroll.append(list);
+        const trash = el('div', 'fxb-trash');
+        trash.append(buttonEl((showTrash ? 'Hide Trash' : 'Trash (' + state.trash.length + ')'), 'fxb-ghost', () => { showTrash = !showTrash; paint(); }));
+        if (showTrash) {
+          const entries = state.trash.slice().reverse();
+          if (!entries.length) trash.append(el('p', 'fxb-note', 'Trash is empty.'));
+          entries.forEach(entry => {
+            const row = el('div', 'fxb-trash-row');
+            row.append(el('span', 'fxb-note', entry.project.name + ' · deleted ' + relTime(entry.deletedAt)));
+            row.append(buttonEl('Restore ' + entry.project.name, '', () => restoreTrash(entry.project.id)));
+            trash.append(row);
+          });
+          trash.append(el('p', 'fxb-note', 'Deleted projects can be restored for 30 days on this browser.'));
+        }
+        scroll.append(trash);
+        side.append(scroll);
+        const split = el('div', 'fxb-split');
+        split.setAttribute('data-fxb-split', 'side');
+        split.setAttribute('role', 'separator');
+        split.setAttribute('aria-orientation', 'vertical');
+        split.setAttribute('aria-label', 'Resize projects');
+        split.tabIndex = 0;
+        side.append(split);
+        bindSplit(split, '--fxb-side', 260, false, 200, 520);
+        rebuildList();
+      }
+      let paneTab = pageMemory.uid === state.uid ? pageMemory.tab : 'preview';
+      function showPane(name) {
+        paneTab = name;
+        pageMemory.tab = name; pageMemory.uid = state.uid;
+        root.querySelectorAll('[data-fxb-tab]').forEach(tab => { const on = tab.getAttribute('data-fxb-tab') === name; tab.classList.toggle('sel', on); tab.setAttribute('aria-selected', String(on)); });
+        root.querySelectorAll('[data-fxb-pane]').forEach(pane => { pane.hidden = pane.getAttribute('data-fxb-pane') !== name; });
+      }
+
+      function paint() {
+        stopPreview();
+        clearTimeout(liveTimer);
+        cm = null;
+        root.replaceChildren();
+        const bar = el('div', 'fxb-bar');
+        const ident = el('div', 'fxb-ident');
+        ident.append(el('strong', '', 'BUILDER'));
+        ident.append(el('span', 'fxb-active-title', draft.name || 'Untitled project'));
+        const save = el('span', 'fxb-save', '');
+        save.setAttribute('data-fxb-save', '');
+        save.setAttribute('role', 'status');
+        save.setAttribute('aria-live', 'polite');
+        ident.append(save);
+        const status = el('span', 'fxb-status', statusText());
+        status.setAttribute('data-fxb-status', '');
+        ident.append(status);
+        bar.append(ident);
+        const tools = el('div', 'fxb-tools');
+        const runButton = buttonEl('Run', 'on', () => { syncCode(); showPane('preview'); run(); });
+        runButton.title = 'Run in the preview (Ctrl/Cmd+Enter)';
+        const stopButton = buttonEl('Stop', '', stop);
+        const saveButton = buttonEl('Save', '', () => { syncCode(); persist(); });
+        saveButton.title = 'Save a version (Ctrl/Cmd+S)';
+        tools.append(runButton, stopButton, saveButton);
+        const retry = buttonEl('Retry account sync', 'fxb-ghost', () => { syncCode(); persist(true); });
+        retry.title = 'Try saving to your account again';
+        retry.setAttribute('data-fxb-retry', '');
+        tools.append(retry);
+        const installButton = buttonEl('Add to my terminal', 'on', () => {
+          const existing = draft.id && state.installs.find(widget => widget.projectId === draft.id && widget.enabled);
+          if (existing && Number(existing.version) === Number(draft.version)) uninstall(false);
+          else install();
+        });
+        installButton.setAttribute('data-fxb-install', '');
+        installButton.title = 'Adds this tool as a box on your ' + String(T.S?.deskKey || 'current').toUpperCase() + ' desk';
+        tools.append(installButton);
+        bar.append(tools);
+
+        const side = el('aside', 'fxb-side');
+        const editor = el('section', 'fxb-editor');
+        const meta = el('div', 'fxb-meta');
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.className = 'fxb-field fxb-name';
+        nameInput.value = draft.name;
+        nameInput.maxLength = Core.LIMITS.name;
+        nameInput.placeholder = 'Project name';
+        nameInput.setAttribute('aria-label', 'Project name');
+        nameInput.addEventListener('input', () => {
+          draft.name = nameInput.value; markDirty();
+          const title = root.querySelector('.fxb-active-title'); if (title) title.textContent = draft.name || 'Untitled project';
+        });
         const select = document.createElement('select');
         select.className = 'fxb-field';
         select.setAttribute('aria-label', 'Finance category');
@@ -1201,93 +1347,31 @@
           option.selected = id === draft.category;
           select.append(option);
         });
-        select.addEventListener('change', () => { draft.category = select.value; markDirty(); rebuildList(); });
-        category.append(select);
-        scroll.append(category);
-        scroll.append(el('h2', '', 'Explorer'));
-        scroll.append(buttonEl('main.js', 'on', () => { if (cm) cm.focus(); else root.querySelector('textarea.fxb-code')?.focus(); }));
-        scroll.append(el('h2', '', 'Saved'));
-        const list = el('div', 'fxb-list');
-        list.setAttribute('data-fxb-list', '');
-        scroll.append(list);
-        scroll.append(el('h2', '', 'Versions'));
-        const versions = el('div', 'fxb-versions');
-        versions.setAttribute('data-fxb-versions', '');
-        scroll.append(versions);
-        const actions = el('div', 'fxb-tools');
-        actions.append(buttonEl('Duplicate', '', duplicate));
-        actions.append(buttonEl('Delete project', 'danger', removeProject));
-        scroll.append(actions);
-        scroll.append(buttonEl(showTrash ? 'Hide Trash' : 'Trash (' + state.trash.length + ')', '', () => {
-          showTrash = !showTrash;
-          paint();
-        }));
-        if (showTrash) {
-          const entries = state.trash.slice().reverse();
-          if (!entries.length) scroll.append(el('p', 'fxb-note', 'Trash is empty.'));
-          entries.forEach(entry => {
-            scroll.append(el('p', 'fxb-note', entry.project.name + ' · browser recovery · ' + new Date(entry.deletedAt).toLocaleDateString()));
-            scroll.append(buttonEl('Restore ' + entry.project.name, '', () => restoreTrash(entry.project.id)));
-          });
-          scroll.append(el('p', 'fxb-note', 'Recovery copies expire after 30 days and are stored in this browser, not Firebase.'));
-        }
-        scroll.append(el('p', 'fxb-note', 'Visibility is private. Community Library, official submission, and external API credentials are not part of this release. Widgets cannot make network requests.'));
-        side.append(scroll);
-        const split = el('div', 'fxb-split');
-        split.setAttribute('data-fxb-split', 'side');
-        split.setAttribute('role', 'separator');
-        split.setAttribute('aria-orientation', 'vertical');
-        split.setAttribute('aria-label', 'Resize projects');
-        split.tabIndex = 0;
-        side.append(split);
-        bindSplit(split, '--fxb-side', 248, false, 180, 520);
-        rebuildList();
-      }
-
-      function paint() {
-        stopPreview();
-        cm = null;
-        root.replaceChildren();
-        const bar = el('div', 'fxb-bar');
-        bar.append(el('strong', '', 'FYNX BUILDER'));
-        bar.append(el('span', 'fxb-active-title', draft.name + ' · v' + (draft.version || 1)));
-        bar.append(el('span', 'fxb-install-desk', 'Install destination: ' + String(T.S?.deskKey || 'current').toUpperCase() + ' desk'));
-        const status = el('span', '', statusText());
-        status.setAttribute('data-fxb-status', '');
-        bar.append(status);
-        const tools = el('div', 'fxb-tools');
-        tools.append(buttonEl('Run', 'on', () => { syncCode(); run(); }));
-        tools.append(buttonEl('Stop', '', stop));
-        tools.append(buttonEl('Save', '', () => { syncCode(); persist(); }));
-        tools.append(buttonEl('History', '', () => root.querySelector('[data-fxb-versions]')?.scrollIntoView({block: 'nearest', behavior: 'smooth'})));
-        tools.append(buttonEl('Indent code', '', () => {
-          if (!cm) { say('Auto-indentation requires the code editor.', 'error'); return; }
-          if (cm.lineCount() > 3000) { say('Too many lines for automatic indentation; edit smaller sections.', 'error'); return; }
-          cm.operation(() => { for (let line = 0; line < cm.lineCount(); line++) cm.indentLine(line, 'smart'); });
-          syncCode(); markDirty();
-          say('Code indentation updated. Run to verify its behavior.', 'ok');
-        }));
-        tools.append(buttonEl('Retry account sync', '', () => { syncCode(); persist(true); }));
-        const installButton = buttonEl('Add to my terminal', 'on', () => {
-          const existing = draft.id && state.installs.find(widget => widget.projectId === draft.id && widget.enabled);
-          if (existing && Number(existing.version) === Number(draft.version)) uninstall(false);
-          else install();
-        });
-        installButton.setAttribute('data-fxb-install', '');
-        tools.append(installButton);
-        bar.append(tools);
-
-        const side = el('aside', 'fxb-side');
-        const editor = el('section', 'fxb-editor');
+        select.addEventListener('change', () => { draft.category = select.value; markDirty(); });
+        const metaActions = el('div', 'fxb-row');
+        metaActions.append(buttonEl('Duplicate', 'fxb-ghost', duplicate), buttonEl('Export', 'fxb-ghost', exportMain), buttonEl('Delete project', 'danger', () => removeProject()));
+        const description = document.createElement('input');
+        description.type = 'text';
+        description.className = 'fxb-field fxb-desc';
+        description.maxLength = Core.LIMITS.description;
+        description.value = draft.description;
+        description.placeholder = 'Short description: what does this tool show?';
+        description.setAttribute('aria-label', 'Project description');
+        description.addEventListener('input', () => { draft.description = description.value; markDirty(); });
+        meta.append(nameInput, select, metaActions, description);
+        editor.append(meta);
         const fileBar = el('div', 'fxb-filebar');
         fileBar.append(el('span', 'fxb-tab', 'main.js'));
         const lines = el('span', '', '');
         lines.setAttribute('data-fxb-lines', '');
-        const save = el('span', 'fxb-save', '');
-        save.setAttribute('data-fxb-save', '');
-        save.setAttribute('role', 'status');
-        save.setAttribute('aria-live', 'polite');
-        fileBar.append(lines, save);
+        fileBar.append(lines, el('span', 'fxb-spacer', ''));
+        fileBar.append(buttonEl('Format', 'fxb-ghost', () => {
+          if (!cm) { say('Formatting requires the code editor.', 'error'); return; }
+          if (cm.lineCount() > 3000) { say('Too many lines to format at once.', 'error'); return; }
+          cm.operation(() => { for (let line = 0; line < cm.lineCount(); line++) cm.indentLine(line, 'smart'); });
+          syncCode(); markDirty();
+          say('Indentation tidied. Run to check it still works.', 'ok');
+        }));
         editor.append(fileBar);
         const editorHost = el('div', 'fxb-cmhost');
         editorHost.setAttribute('data-fxb-editor-host', '');
@@ -1296,19 +1380,21 @@
         const findInput = document.createElement('input');
         findInput.type = 'search';
         findInput.className = 'fxb-field';
-        findInput.placeholder = 'Find';
+        findInput.placeholder = 'Find (Ctrl/Cmd+F)';
         findInput.setAttribute('aria-label', 'Find in main.js');
         findInput.setAttribute('data-fxb-find', '');
+        findInput.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); findNext(); } });
         const replaceInput = document.createElement('input');
         replaceInput.type = 'text';
         replaceInput.className = 'fxb-field';
-        replaceInput.placeholder = 'Replace';
+        replaceInput.placeholder = 'Replace with';
         replaceInput.setAttribute('aria-label', 'Replace in main.js');
         replaceInput.setAttribute('data-fxb-replace', '');
-        find.append(findInput, replaceInput, buttonEl('Find', '', findNext), buttonEl('Replace', '', replaceOne), buttonEl('All', '', replaceAll), buttonEl('Undo', '', undo), buttonEl('Redo', '', redo));
+        find.append(findInput, replaceInput, buttonEl('Find', '', findNext), buttonEl('Replace', '', replaceOne), buttonEl('All', '', replaceAll), buttonEl('Undo', 'fxb-ghost', undo), buttonEl('Redo', 'fxb-ghost', redo));
         editor.append(find);
         const log = el('p', 'fxb-console', '');
         log.setAttribute('data-fxb-console', '');
+        log.setAttribute('role', 'log');
         editor.append(log);
 
         const preview = el('section', 'fxb-preview');
@@ -1319,70 +1405,107 @@
         split.setAttribute('aria-label', 'Resize preview');
         split.tabIndex = 0;
         preview.append(split);
-        preview.append(el('h2', '', 'Preview'));
+        const tabsRow = el('div', 'fxb-tabs');
+        tabsRow.setAttribute('role', 'tablist');
+        for (const [key, label] of [['preview', 'Preview'], ['versions', 'Versions'], ['guide', 'Guide & SDK']]) {
+          const tab = buttonEl(label, 'fxb-tabbtn', () => showPane(key));
+          tab.setAttribute('role', 'tab');
+          tab.setAttribute('data-fxb-tab', key);
+          tabsRow.append(tab);
+        }
+        preview.append(tabsRow);
+
+        const pPane = el('div', 'fxb-pane');
+        pPane.setAttribute('data-fxb-pane', 'preview');
+        const pHead = el('div', 'fxb-row');
+        const runState = el('span', 'fxb-runstate', '○ Stopped');
+        runState.setAttribute('data-fxb-runstate', '');
+        const liveLabel = document.createElement('label');
+        liveLabel.className = 'fxb-check';
+        const liveBox = document.createElement('input');
+        liveBox.type = 'checkbox';
+        liveBox.checked = liveEnabled();
+        liveBox.setAttribute('aria-label', 'Live preview');
+        liveBox.addEventListener('change', () => { try { localStorage.setItem('fx-term-builder-live', liveBox.checked ? 'on' : 'off'); } catch (e) {} if (liveBox.checked) scheduleLive(); else clearTimeout(liveTimer); });
+        liveLabel.append(liveBox, el('span', '', 'Live preview while typing'));
+        pHead.append(runState, liveLabel, el('span', 'fxb-spacer', ''), buttonEl('Refresh preview', 'fxb-ghost', () => { syncCode(); run(); }));
+        pPane.append(pHead);
         const screen = el('div', 'fxb-screen');
         screen.setAttribute('data-fxb-preview', '');
-        preview.append(screen);
+        pPane.append(screen);
         const note = el('p', 'fxb-note', '');
         note.setAttribute('data-fxb-preview-note', '');
         note.setAttribute('role', 'status');
         note.setAttribute('aria-live', 'polite');
-        preview.append(note);
-        preview.append(buttonEl('Refresh preview', '', () => { syncCode(); run(); }));
-        bindSplit(split, '--fxb-preview', 340, true, 220, 640);
+        pPane.append(note);
+        pPane.append(el('p', 'fxb-note fxb-fine', 'The preview runs in a locked sandbox: no network, no account access. Prices come from this terminal’s snapshot.'));
 
-        const assist = el('section', 'fxb-assist');
-        assist.append(el('h2', '', 'Builder assistant'));
-        assist.append(el('p', 'fxb-note', 'What do you want to build? Describe a financial tool and generate SDK-compatible code with an external AI assistant. FYNX has no integrated AI provider enabled here.'));
-        const examples = el('div', 'fxb-tools');
-        for (const idea of ['Create a stock scanner', 'Build a forex calculator', 'Make a financial news dashboard', 'Track macroeconomic indicators']) {
-          examples.append(buttonEl(idea, '', () => {
-            const prompt = root.querySelector('[aria-label="Prompt for an external coding assistant"]');
-            if (prompt) prompt.value = Core.ASSISTANT_PROMPT + '\\nUser request: ' + idea + '.';
-            const details = prompt?.closest('details'); if (details) details.open = true;
-            say('Prompt prepared. Copy it into an external AI assistant.', 'ok');
-          }));
+        const vPane = el('div', 'fxb-pane');
+        vPane.setAttribute('data-fxb-pane', 'versions');
+        const versions = el('div', 'fxb-versions');
+        versions.setAttribute('data-fxb-versions', '');
+        vPane.append(versions);
+
+        const gPane = el('div', 'fxb-pane fxb-assist');
+        gPane.setAttribute('data-fxb-pane', 'guide');
+        const steps = el('ol', 'fxb-steps');
+        for (const [title, text] of [['Write', 'Edit main.js. Your tool is one function: render(root, FYNX).'], ['Run', 'Press Run (or Ctrl/Cmd+Enter) to see it in the preview.'], ['Save', 'It autosaves while you type; Save keeps a named version.'], ['Add to my terminal', 'Puts the tool on your desk as its own box. Only you can see it.']]) {
+          const li = document.createElement('li'); li.append(el('b', '', title), el('span', '', text)); steps.append(li);
         }
-        assist.append(examples);
-        const docs = document.createElement('details');
-        const summary = document.createElement('summary');
-        summary.textContent = 'Assistant prompt and Widget SDK documentation';
-        docs.append(summary);
+        gPane.append(el('h2', '', 'How it works'), steps);
+        gPane.append(el('h2', '', 'Widget SDK'));
+        const sdk = el('dl', 'fxb-sdk');
+        for (const [sig, text] of [['render(root, FYNX)', 'Required. Build your tool inside root with document.createElement and textContent.'], ['FYNX.quote("SPY")', '{symbol, price, changePercent} from the terminal snapshot, or null if missing.'], ['FYNX.quotes()', 'Every quote in the current snapshot.'], ['FYNX.format(n, 2)', 'Formats a number with fixed digits.'], ['FYNX.signed(n)', 'Formats a change with + or − sign.'], ['FYNX.onQuotes(fn)', 'Calls fn again when prices refresh (about every 30 s).']]) {
+          sdk.append(el('dt', '', sig), el('dd', '', text));
+        }
+        gPane.append(sdk);
+        gPane.append(el('p', 'fxb-note', 'Not allowed: network requests (fetch, WebSocket), innerHTML, storage, cookies and API keys. Symbols: SPY, QQQ, AAPL, BTC-USD, EURUSD=X, GC=F, DX-Y.NYB, ^TNX and anything on your desk.'));
+        gPane.append(el('p', 'fxb-note', 'Visibility is private. Community Library, official submission, and external API credentials are not part of this release. Widgets cannot make network requests.'));
+        gPane.append(el('h2', '', 'Write it with AI'));
+        gPane.append(el('p', 'fxb-note', 'Pick an idea, copy the prompt into any AI assistant, then paste the code it returns into main.js.'));
         const prompt = document.createElement('textarea');
         prompt.className = 'fxb-field';
         prompt.readOnly = true;
         prompt.value = Core.ASSISTANT_PROMPT;
         prompt.setAttribute('aria-label', 'Prompt for an external coding assistant');
-        docs.append(prompt);
-        docs.append(buttonEl('Copy prompt', '', async () => {
+        const examples = el('div', 'fxb-row');
+        for (const idea of ['Stock scanner', 'Forex calculator', 'Crypto monitor', 'Macro dashboard']) {
+          examples.append(buttonEl(idea, 'fxb-ghost', () => {
+            prompt.value = Core.ASSISTANT_PROMPT.split('\n').slice(0, -1).join('\n') + '\nBuild this: a ' + idea.toLowerCase() + ' that uses the terminal snapshot and says clearly when a symbol is missing.';
+            say('Prompt ready for a ' + idea.toLowerCase() + '. Copy it into an AI assistant.', 'ok');
+          }));
+        }
+        gPane.append(examples, prompt);
+        gPane.append(buttonEl('Copy prompt', 'on', async () => {
           try { await navigator.clipboard.writeText(prompt.value); say('Prompt copied.', 'ok'); }
           catch (e) { prompt.focus(); prompt.select(); say('Select the prompt and copy it manually.', 'error'); }
         }));
-        docs.append(el('p', 'fxb-note', 'SDK: function render(root, FYNX). FYNX.quote returns snapshot quotes or null. No direct network requests, credentials, Firebase, or access to the host page are permitted.'));
-        assist.append(docs);
-        const tutorial = document.createElement('details');
-        tutorial.open = onboardingOpen;
-        const guide = document.createElement('summary');
-        guide.textContent = 'First-time guide · four steps';
-        tutorial.append(guide);
-        tutorial.append(el('p', 'fxb-note', '1. Create a project from a template. 2. Add or paste JavaScript in main.js. 3. Run to preview in the isolated sandbox. 4. Save Version, then Add to my terminal.'));
-        tutorial.append(buttonEl('Skip or finish tutorial', '', () => {
-          onboardingOpen = false;
-          tutorial.open = false;
-          try { localStorage.setItem('fx-term-builder-tour:' + state.uid, 'seen'); } catch (e) {}
-        }));
-        assist.append(tutorial);
-        assist.append(buttonEl('Restart tutorial', '', () => { tutorial.open = true; onboardingOpen = true; }));
+        gPane.append(el('h2', '', 'Shortcuts'));
+        gPane.append(el('p', 'fxb-note', 'Ctrl/Cmd+Enter run · Ctrl/Cmd+S save · Ctrl/Cmd+F find · Ctrl/Cmd+H replace · Tab indent'));
+        preview.append(pPane, vPane, gPane);
+        bindSplit(split, '--fxb-preview', 380, true, 260, 700);
 
-        root.append(bar, side, editor, preview, assist);
+        root.append(bar, side, editor, preview);
+        if (onboardingOpen) {
+          const welcome = el('div', 'fxb-welcome');
+          welcome.append(el('b', '', 'Welcome to FYNX Builder.'), el('span', '', ' Write a small JavaScript tool, press Run to preview it, then Add to my terminal. It autosaves and only you can see it.'));
+          welcome.append(buttonEl('Got it', 'fxb-ghost', () => {
+            onboardingOpen = false; welcome.remove();
+            try { localStorage.setItem('fx-term-builder-tour:' + state.uid, 'seen'); } catch (e) {}
+          }), buttonEl('Show guide', 'fxb-ghost', () => showPane('guide')));
+          editor.insertBefore(welcome, meta);
+        }
         fillSide(side);
         mountEditor(draft.main);
         updateLines();
-        const label = dirty ? ['Unsaved changes', 'warn'] : (!draft.id ? ['Not saved', 'warn'] : (byId(draft.id)?.stored === 'account' ? ['Account · v' + draft.version, 'on'] : ['On this browser', 'warn']));
+        const label = dirty ? ['Unsaved changes', 'warn'] : (!draft.id ? ['Not saved yet', 'warn'] : (byId(draft.id)?.stored === 'account' ? ['Saved · v' + draft.version, 'on'] : ['Saved on this browser · v' + draft.version, 'warn']));
         setSaveLabel(label[0], label[1]);
         say(consoleText, consoleLevel);
-        previewNote('Ready to run · sandbox isolated from your account and network.', false);
+        previewNote('Ready.', false);
+        showPane(paneTab);
         updateStatus();
+        // Show the tool straight away; the sandbox is isolated, so an automatic run is safe.
+        requestAnimationFrame(() => { if (root.isConnected && draft.main && !Core.syntaxError(draft.main)) run({quiet: true}); });
       }
 
       function el(tag, cls, text) {
