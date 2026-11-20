@@ -315,7 +315,8 @@ html body.fx-terminal .pg-title{margin:4px 0 6px;font-size:24px!important;line-h
 body.fx-paging .fx-keys .fx-key{opacity:.92}
 @media (max-width:1280px),(max-height:700px){.fx-page{min-height:80vh}}
 @media (max-width:900px){.pg-g2{grid-template-columns:minmax(0,1fr)}.fx-deskbar-note{display:none}html body.fx-terminal .pg-title{font-size:19px!important}}
-@media (max-width:760px){.fx-page{margin:0;border-left:0;border-right:0}.fx-page-body{padding:8px 10px 24px}.fx-page-crumbs{display:none}.fx-page-sub{flex:1 1 100%;order:5}.pg-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.fx-c4out{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){.fx-page{margin:0;border-left:0;border-right:0}.fx-page-body{padding:8px 10px 24px}.fx-page-crumbs{display:none}.fx-page-sub{flex:1 1 100%;order:5;white-space:normal;line-height:1.4}html body.fx-terminal .fx-page-head h1{flex:1 1 0;line-height:1.3}.fx-page-head h1 span{white-space:normal;overflow-wrap:anywhere}.pg-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:420px){html body.fx-terminal .fx-page-head h1{flex:1 1 100%;order:4}}.fx-c4out{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (pointer:coarse){
  html body.fx-terminal .fx-desk{height:40px;padding:0 12px}
  html body.fx-terminal .fx-deskbar{height:auto;min-height:44px}

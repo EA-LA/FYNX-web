@@ -144,7 +144,7 @@
 .fxp-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border:1px solid #2a3330;font:600 10.5px 'IBM Plex Mono',monospace;color:#8e9b94;white-space:nowrap}
 .fxp-chip b{color:#ffb000}.fxp-chip button{background:none!important;border:0!important;color:#ffb000!important;font:700 10.5px 'IBM Plex Mono',monospace!important;cursor:pointer;padding:0 0 0 4px!important}
 @media (max-width:760px){.fxp-plans{grid-template-columns:1fr}.fxp-box{padding:22px 16px 16px}.fxp-meter i{flex-basis:110px}}
-@media (pointer:coarse){.fxp-x{top:6px;right:6px;width:44px;height:44px}.fxp-cta{height:auto;min-height:44px}.fxp-box h2{padding-right:34px}}`;
+@media (pointer:coarse){.fxp-x{top:6px;right:6px;width:44px;height:44px}.fxp-cta{height:auto;min-height:44px}.fxp-box h2{padding-right:34px}.fxp-fine a{display:inline-flex;align-items:center;min-height:44px}}`;
     doc.head.append(s);
   }
   const PERKS = {
