@@ -298,6 +298,11 @@
   function renderNews() {
     const track = $('fx-news-track'); track.replaceChildren();
     const cat = D().news, items = (cat === 'all' ? S.briefing : S.desks[cat]?.items?.length ? S.desks[cat].items : S.briefing).slice(0, 18);
+    // The strip can contain cached or delayed headlines: never claim a live feed solely because items exist.
+    const headlineStatus = $('fx-headline-feed-status');
+    if (headlineStatus) headlineStatus.textContent = items.length ? 'HEADLINES' : 'UNAVAILABLE';
+    const pauseButton = $('fx-news-pause');
+    if (pauseButton) pauseButton.disabled = !items.length;
     if (!items.length) { track.append(el('span', 'fx-dim', 'Headlines are temporarily unavailable.')); track.classList.remove('run'); return; }
     for (const copy of [0, 1]) for (const h of items) { const a = btn('', 'fx-hl', () => openPage('article', h)); if (copy) { a.tabIndex = -1; a.setAttribute('aria-hidden', 'true'); } a.append(el('time', '', hhmm(h.publishedAt)), el('strong', '', h.title), el('span', '', h.source)); track.append(a); }
     track.style.setProperty('--dur', Math.max(60, items.length * 8) + 's'); track.classList.add('run');
