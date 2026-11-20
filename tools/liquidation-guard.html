@@ -400,6 +400,27 @@
       font-size:.82rem;
       font-weight:800;
     }
+    .lev-card{margin-top:1.25rem}
+    .lev-card h2{font-size:1.05rem;font-weight:900;color:var(--text-strong);margin:0 0 .35rem}
+    .lev-card p{color:var(--text-muted);font-size:.92rem;line-height:1.6;margin:0 0 .6rem}
+    .lev-card .schedule-wrap{margin-top:.4rem}
+    .lev-card table{min-width:0}
+    .lev-card th,.lev-card td{padding:.7rem .75rem;white-space:nowrap}
+    .lev-card td:first-child{font-weight:800}
+    .lev-card tr.lev-yours td{background:var(--chip);font-weight:800}
+    .lev-card tr.lev-bad td:not(:first-child){color:var(--text-soft)}
+    .lev-card tr.lev-bad td:last-child{color:var(--text-strong);font-weight:800}
+    .lev-tag{display:block;font-size:.74rem;font-weight:700;color:var(--text-soft);white-space:normal}
+    @media (max-width: 600px){
+      .lev-card th,.lev-card td{padding:.6rem .45rem;font-size:.84rem}
+      .lev-card th{font-size:.68rem;letter-spacing:.03em;white-space:normal}
+      .lev-card .lev-sub{display:block}
+    }
+    @media (max-width: 380px){
+      .lev-card th,.lev-card td{padding:.55rem .2rem;font-size:.78rem}
+      .lev-card th:first-child,.lev-card td:first-child{padding-left:.4rem}
+      .lev-card th{font-size:.72rem;letter-spacing:0;text-transform:none}
+    }
     @media (max-width: 920px){
       .panel-grid,
       .results-grid,
@@ -604,11 +625,29 @@
         </table>
       </div>
 
+      <div class="lev-card" id="levCard" hidden>
+        <h2 id="levTitle">Same margin, different leverage</h2>
+        <p id="levNote"></p>
+        <div class="schedule-wrap">
+          <table id="levTable" aria-labelledby="levTitle">
+            <thead>
+              <tr>
+                <th scope="col">Leverage</th>
+                <th scope="col">Liquidation price</th>
+                <th scope="col">Move to liquidation</th>
+                <th scope="col">At your stop</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="hint">
         Best use: keep your planned stop clearly away from liquidation, reduce leverage if your liquidation buffer is too small, and never size a trade so large that one normal move can erase your margin.
       </div>
     </section>
-  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Compare a leveraged position with liquidation assumptions</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter the position and margin assumptions requested by the tool. Compare the estimate with the liquidation value shown by your venue.</p><h3>The calculation or concept</h3><p>Liquidation depends on equity, maintenance margin and the exchange’s pricing and collateral rules.</p></div><div class="tool-example"><h3>Worked example</h3><p>A 10% adverse move on a $10,000 linear position changes its value by about $1,000. A $1,000 collateral balance could be exhausted sooner after maintenance requirements and fees.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Cross margin, mark prices, tiered maintenance, funding and inverse contracts can produce different outcomes. This estimate does not replace venue calculations or a stop plan.</p></details></section><!-- tool-guide:end -->
+  <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Compare a leveraged position with liquidation assumptions</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter the position and margin assumptions requested by the tool. Compare the estimate with the liquidation value shown by your venue. The “Same margin, different leverage” table shows how the liquidation price and the loss at your stop change at other leverage levels.</p><h3>The calculation or concept</h3><p>Liquidation depends on equity, maintenance margin and the exchange’s pricing and collateral rules.</p></div><div class="tool-example"><h3>Worked example</h3><p>A 10% adverse move on a $10,000 linear position changes its value by about $1,000. A $1,000 collateral balance could be exhausted sooner after maintenance requirements and fees.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Cross margin, mark prices, tiered maintenance, funding and inverse contracts can produce different outcomes. This estimate does not replace venue calculations or a stop plan.</p></details></section><!-- tool-guide:end -->
 <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/margin.html"><strong>Forex Margin &amp; Leverage Calculator</strong><span>Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.</span></a><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/crypto.html"><strong>Crypto Position Size &amp; Profit Calculator</strong><span>Estimate crypto position size, trading costs, exit value, profit or loss and break-even price using your own assumptions.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
 
@@ -712,6 +751,8 @@
           </td>
         </tr>
       `;
+      document.getElementById("levCard").hidden = true;
+      document.getElementById("levTable").tBodies[0].innerHTML = "";
       setStatus("neutral","No calculation yet","Enter your numbers and calculate to see how close your trade is to liquidation.");
     }
 
@@ -801,7 +842,13 @@
       // (long: entry*(1 - 1/L + mm) < stop; short: entry*(1 + 1/L - mm) > stop).
       const stopFraction = Math.abs(entry - stop) / entry;
       const maxLeverage = 1 / (stopFraction + maintenance);
-      const maxLeverageText = `${formatNumber(Math.floor(maxLeverage * 10) / 10, 1)}x`;
+      // Round down to 0.1x; when the stop sits exactly on that level's liquidation price
+      // (e.g. 2000 short, stop 2080, 1% maintenance -> 20x), step down so the stop still comes first.
+      let maxRounded = Math.floor(maxLeverage * 10 + 1e-9) / 10;
+      const liqAt = lev => side === "long" ? entry * (1 - 1 / lev + maintenance) : entry * (1 + 1 / lev - maintenance);
+      const clearsStop = lev => side === "long" ? stop - liqAt(lev) > entry * 1e-9 : liqAt(lev) - stop > entry * 1e-9;
+      if(maxRounded >= 1.1 && !clearsStop(maxRounded)) maxRounded = Math.round((maxRounded - 0.1) * 10) / 10;
+      const maxLeverageText = `${formatNumber(maxRounded, 1)}x`;
       document.getElementById("maxLeveragePill").textContent = `Max leverage for this stop: ${maxLeverageText}`;
 
       let level = "good";
@@ -878,6 +925,8 @@
         }
       ];
 
+      renderLeverageTable({ side, entry, marginUsed, leverage, maintenance, stop, maxRounded });
+
       document.getElementById("detailsBody").innerHTML = rows.map(row => `
         <tr>
           <td>${row.metric}</td>
@@ -885,6 +934,43 @@
           <td>${row.meaning}</td>
         </tr>
       `).join("");
+    }
+
+    // "Same margin, different leverage": the same liquidation formula as above at common leverage
+    // levels, plus the user's leverage and the max leverage for the stop.
+    function renderLeverageTable({ side, entry, marginUsed, leverage, maintenance, stop, maxRounded }){
+      const levels = [1, 2, 3, 5, 10, 20, 50, 100];
+      const key = v => Math.round(v * 100) / 100;
+      const all = new Map(levels.map(v => [key(v), { lev: v, tags: [] }]));
+      const add = (v, tag) => {
+        if(!(v >= 1)) return;
+        const k = key(v);
+        if(!all.has(k)) all.set(k, { lev: v, tags: [] });
+        all.get(k).tags.push(tag);
+      };
+      add(leverage, "yours");
+      add(maxRounded, "max for your stop");
+      const stopFraction = Math.abs(entry - stop) / entry;
+      const sorted = [...all.values()].sort((a, b) => a.lev - b.lev);
+      const body = sorted.map(({ lev, tags }) => {
+        const label = `${formatNumber(lev, 2)}x`;
+        const tagHtml = tags.length ? ` <span class="lev-tag">${tags.join(" · ")}</span>` : "";
+        const yours = tags.includes("yours");
+        if(maintenance >= 1 / lev){
+          return `<tr class="lev-bad${yours ? " lev-yours" : ""}"><td>${label}${tagHtml}</td><td colspan="3">Liquidated at entry</td></tr>`;
+        }
+        const liq = side === "long" ? entry * (1 - 1 / lev + maintenance) : entry * (1 + 1 / lev - maintenance);
+        const dist = Math.abs(entry - liq) / entry * 100;
+        const safe = side === "long" ? stop > liq : stop < liq;
+        const atStop = safe
+          ? `−${formatCurrency(marginUsed * lev * stopFraction)}`
+          : `Liquidated<span class="lev-sub"> (−${formatCurrency(marginUsed)})</span>`;
+        const cls = [safe ? "" : "lev-bad", yours ? "lev-yours" : ""].filter(Boolean).join(" ");
+        return `<tr${cls ? ` class="${cls}"` : ""}><td>${label}${tagHtml}</td><td>${formatNumber(liq, 4)}</td><td>${formatPercent(dist, 2)}</td><td>${atStop}</td></tr>`;
+      }).join("");
+      document.getElementById("levTable").tBodies[0].innerHTML = body;
+      document.getElementById("levNote").textContent = `Every row keeps your ${formatCurrency(marginUsed)} margin, ${formatPercent(maintenance * 100, 2)} maintenance margin and stop at ${formatNumber(stop, 4)}. Only the leverage changes, so the position and the loss at your stop grow with it. Rows marked “Liquidated” reach liquidation before your stop. Estimates before fees and funding; exchanges use mark price and their own margin tiers.`;
+      document.getElementById("levCard").hidden = false;
     }
 
     document.getElementById("calculateBtn").addEventListener("click", calculateGuard);
