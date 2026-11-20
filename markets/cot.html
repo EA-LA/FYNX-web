@@ -77,7 +77,7 @@
 <div class="card">
     <h1>Commitments of Traders</h1>
     <p class="desc">Compare reported futures positions across markets. CFTC observations are weekly, not intraday trading signals.</p>
-    <div class="actions"><label for="cotSearch">Find a contract <input id="cotSearch" type="search" placeholder="Euro, gold, S&P…"></label><button class="btn" id="cotRefresh" type="button">Refresh report</button><button class="btn" id="cotExport" type="button" disabled aria-describedby="cotExportHelp">Download matching CSV</button><label class="cot-shortlist-toggle"><input id="cotSavedOnly" type="checkbox"> Show saved only</label></div>
+    <div class="actions"><label for="cotSearch">Find a contract <input id="cotSearch" type="search" placeholder="Euro, gold, S&P…"></label><button class="btn" id="cotRefresh" type="button" data-no-auto-refresh>Refresh report</button><button class="btn" id="cotExport" type="button" disabled aria-describedby="cotExportHelp">Download matching CSV</button><label class="cot-shortlist-toggle"><input id="cotSavedOnly" type="checkbox"> Show saved only</label></div>
     <p id="cotExportHelp" class="desc" style="margin:10px 0">Export only verified CFTC rows matching your search and Saved-only filter, including report and retrieval dates. No estimates.</p><p id="cotSavedStatus" class="desc" role="status" aria-live="polite" style="margin:10px 0">Saved contracts are kept on this browser only, not synced or used for alerts.</p>
     <p id="cotExportStatus" role="status" aria-live="polite" style="margin:10px 0"></p>
     <p id="cotStatus" role="status">Loading the latest published report…</p>

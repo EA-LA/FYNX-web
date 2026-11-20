@@ -1,4 +1,6 @@
-/* FYNX auto-refresh. Manual "Refresh" buttons are replaced site-wide by a live status chip:
+/* FYNX auto-refresh. Manual "Refresh" buttons get a status chip ("Next check m:ss"), not an "Auto-updating" claim:
+   the chip describes the schedule, while each section labels its own data as live, delayed, reference or manual (audit L6).
+   Buttons marked data-no-auto-refresh (manual-entry tools, weekly reports) are never clicked automatically.
    every page section that had a refresh control now updates itself every 10 minutes while the
    page is visible, and immediately when you come back to a tab that has gone stale.
    The original buttons stay in the DOM (hidden) so each section keeps its own refresh logic. */
@@ -33,7 +35,7 @@
     chips.forEach(chip => {
       if (!chip.isConnected) { chips.delete(chip); return; }
       if (chip.classList.contains('is-updating')) return;
-      chip.lastChild.textContent = 'Auto-updating · next ' + mmss(left);
+      chip.lastChild.textContent = 'Next check ' + mmss(left);
     });
   }
   function eligible(button) {
@@ -48,7 +50,7 @@
     button.dataset.fxAuto = '1';
     // The second-by-second countdown is visual-only, not a repeated screen-reader announcement.
     const chip = document.createElement('span'); chip.className = 'fx-auto'; chip.setAttribute('aria-hidden', 'true');
-    chip.title = 'This section refreshes on its own every 10 minutes while the page is open.';
+    chip.title = 'FYNX checks this section’s source again every 10 minutes while the page is open. The data is only as current as its source: see the time and source shown with it (live, delayed or reference).';
     chip.append(document.createElement('i'), document.createTextNode(''));
     button.after(chip); chips.add(chip); paint();
   }
@@ -74,7 +76,7 @@
     document.querySelectorAll('[data-fx-auto]').forEach(button => {
       if (!canAutoRefresh(button)) return;
       const chip = button.nextElementSibling && button.nextElementSibling.classList.contains('fx-auto') ? button.nextElementSibling : null;
-      if (chip) { chip.classList.add('is-updating'); chip.lastChild.textContent = 'Updating…'; setTimeout(() => { chip.classList.remove('is-updating'); paint(); }, 2500); }
+      if (chip) { chip.classList.add('is-updating'); chip.lastChild.textContent = 'Checking…'; setTimeout(() => { chip.classList.remove('is-updating'); paint(); }, 2500); }
       try { button.click(); } catch (_) {}
     });
     paint();

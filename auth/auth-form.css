@@ -14,3 +14,9 @@ html body[data-fynx-layout=auth] .fynxLogo .big{color:#fff!important}
 html body[data-fynx-layout=auth] .fynxLogo .tag{background:transparent!important;color:#d4ded8!important}
 html body[data-fynx-layout=auth] .row{flex-wrap:wrap;gap:14px}
 @media(max-width:920px){html body[data-fynx-layout=auth] .right{display:none}html body[data-fynx-layout=auth] .shell{max-width:560px}html body[data-fynx-layout=auth] .left{padding:24px!important}}
+/* Sign-up guidance (password requirement, live confirmation, email format) */
+.auth-hint{margin:6px 0 0;font-size:12.5px;line-height:1.45;color:var(--muted,#6b706b)}
+.auth-hint:empty{display:none}
+.auth-rule[data-ok="yes"],.auth-hint[data-ok="yes"]{color:#1f7a54;font-weight:600}
+.auth-rule[data-ok="no"],.auth-hint[data-ok="no"]{color:#b3261e;font-weight:600}
+input[aria-invalid="true"]{border-color:#b3261e!important}

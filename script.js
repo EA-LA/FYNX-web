@@ -261,15 +261,24 @@ document.querySelectorAll('.mobile-drawer a').forEach(a => {
   const qrHost = document.getElementById("fynxQr");
   if (!widget || !closeBtn || !qrHost) return;
 
+  // Dismissal is remembered for 30 days on this device (older sessions used sessionStorage).
+  const DISMISS_KEY = 'fynx.download-dismissed-at', DISMISS_MS = 30 * 86400000;
   let downloadDismissed = false;
-  try { downloadDismissed = sessionStorage.getItem('fynx.download-dismissed') === '1'; } catch {}
+  try {
+    const at = Number(localStorage.getItem(DISMISS_KEY) || 0);
+    downloadDismissed = sessionStorage.getItem('fynx.download-dismissed') === '1' || (at > 0 && Date.now() - at < DISMISS_MS);
+  } catch {}
+  function dismiss(){
+    downloadDismissed = true;
+    try { sessionStorage.setItem('fynx.download-dismissed', '1'); localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch {}
+    widget.classList.add("is-hidden");
+  }
   closeBtn.addEventListener("click", function(e){
     e.preventDefault();
     e.stopPropagation();
-    downloadDismissed = true;
-    try { sessionStorage.setItem('fynx.download-dismissed', '1'); } catch {}
-    widget.classList.add("is-hidden");
+    dismiss();
   });
+  widget.addEventListener("keydown", function(e){ if (e.key === "Escape") { dismiss(); } });
 
   qrHost.innerHTML = "";
   if (window.QRCode) {
@@ -292,17 +301,27 @@ document.querySelectorAll('.mobile-drawer a').forEach(a => {
   let lastY = window.scrollY || 0;
   const isMobile = () => window.matchMedia("(max-width: 768px)").matches;
 
+  // Desktop: wait for real engagement (scrolled well past the first screen and some time on the page)
+  // instead of covering the newsroom on arrival.
+  const loadedAt = Date.now();
+  let engaged = false;
+  function engagedNow(){
+    if (engaged) return true;
+    engaged = (window.scrollY || 0) > window.innerHeight * 1.5 && Date.now() - loadedAt > 8000;
+    return engaged;
+  }
   function applyInitialState(){
     if (downloadDismissed) { widget.classList.add("is-hidden"); return; }
     if (!isMobile()) {
-      widget.classList.remove("is-hidden");
+      widget.classList.toggle("is-hidden", !engagedNow());
       return;
     }
     widget.classList.add("is-hidden");
   }
 
   function onScroll(){
-    if (downloadDismissed || !isMobile()) return;
+    if (downloadDismissed) return;
+    if (!isMobile()) { if (engagedNow()) widget.classList.remove("is-hidden"); return; }
     const y = window.scrollY || 0;
     const goingDown = y > lastY;
     if (y < 80) {
