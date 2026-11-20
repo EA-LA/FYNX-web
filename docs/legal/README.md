@@ -25,6 +25,13 @@ This contradicts the website checkout flow.
 - The pricing page states that iPhone-app subscriptions are billed and managed by Apple, separate from website billing.
 - No new legal terms were published.
 
+## Drafts in this folder
+
+- `website-terms-DRAFT.md`: Website Terms of Service covering Stripe billing, renewal, cancellation at period end, Apple-billed app subscriptions, daily limits, market data and risk.
+- `website-privacy-DRAFT.md`: Website Privacy Policy covering Firebase, Firestore sync, Stripe, AdSense, local storage, third parties and deletion.
+
+To publish, resolve the markers, then replace `terms.html` and `privacy.html` in `EA-LA/FYNX-Site` (served at `site.fynxfinanceworld.com`). Keep the existing iPhone-app terms as a separate section or page.
+
 ## What the owner must decide before publishing
 
 Each item below is marked `[OWNER DECISION]` or `[LAWYER REVIEW]` in the drafts.
