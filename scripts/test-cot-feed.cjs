@@ -8,7 +8,7 @@ w.Blob=class {constructor(parts,options){this.data=parts.join('');this.type=opti
 w.URL.createObjectURL=blob=>{csvBlobs.push(blob);return 'blob:verified-cftc-csv';};
 w.URL.revokeObjectURL=()=>{};
 w.HTMLAnchorElement.prototype.click=function(){downloads.push({href:this.href,filename:this.download});};
-w.fetch=async url=>{calls++;const params=new URL(url).searchParams;if(mode==='fail')throw Error('offline');if(params.get('$limit')==='1')return{ok:true,json:async()=>[{report_date_as_yyyy_mm_dd:date}]};return{ok:true,json:async()=>[mode==='invalid'?{...row,open_interest_all:''}:mode==='formula'?{...row,market_and_exchange_names:' =HYPERLINK("https://example.test","click")'}:row, ...(mode==='multi'?[{...row,market_and_exchange_names:'GOLD - COMEX'}]:[])]};};
+w.fetch=async url=>{calls++;const params=new URL(url).searchParams;if(mode==='fail')throw Error('offline');if(params.get('$limit')==='1')return{ok:true,json:async()=>[{report_date_as_yyyy_mm_dd:date}]};return{ok:true,json:async()=>[mode==='invalid'?{...row,open_interest_all:''}:mode==='formula'?{...row,market_and_exchange_names:' =HYPERLINK("https://example.test","click")'}:row, ...(mode==='multi'?[{...row,cftc_contract_market_code:'088691',market_and_exchange_names:'GOLD - COMEX'}]:[])]};};
 w.eval(fs.readFileSync('assets/js/cot-feed.js','utf8'));
 assert.equal(w.document.querySelector('#cotExport').disabled,true,'CSV unavailable before verified report');
 await tick();await tick();
