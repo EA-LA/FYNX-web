@@ -88,3 +88,47 @@ test('Pro analysis invalidates old output when a checklist answer changes',async
  assert.doesNotMatch(h.document.getElementById('result').textContent,/Entry plan defined/);
  h.close();
 });
+
+test('saved Pro workspaces require explicit deletion confirmation',async()=>{
+ let deleted=false;
+ const item={id:'risk-saved-1',name:'Risk review',product:'risk',input:{balance:'10000'},result:{positionUnits:25}};
+ const h=await load({user:true,tier:'starter',handler:data=>{
+  if(data.action==='list')return {items:deleted?[]:[item],limit:25};
+  if(data.action==='delete'){deleted=true;return {deleted:true};}
+ }});
+ const entry=h.document.querySelector('#savedItems article');
+ const buttons=entry.querySelectorAll('button');
+ assert.equal(buttons.length,4);
+ const [,remove,confirmDelete,cancelDelete]=buttons;
+ assert.equal(confirmDelete.hidden,true);
+ remove.onclick();
+ assert.equal(h.calls.filter(c=>c.action==='delete').length,0,'initial click must never delete');
+ assert.equal(remove.disabled,true);
+ assert.equal(confirmDelete.hidden,false);
+ assert.equal(cancelDelete.hidden,false);
+ assert.match(h.document.getElementById('status').textContent,/cannot be undone/);
+ cancelDelete.onclick();
+ assert.equal(remove.disabled,false);
+ assert.equal(confirmDelete.hidden,true);
+ assert.equal(cancelDelete.hidden,true);
+ assert.equal(h.calls.filter(c=>c.action==='delete').length,0,'cancel must preserve data');
+ remove.onclick();
+ await confirmDelete.onclick();
+ assert.equal(h.calls.filter(c=>c.action==='delete').length,1,'only explicit confirmation deletes');
+ assert.match(h.document.getElementById('savedItems').textContent,/0 \/ 25 saved/);
+ h.close();
+});
+test('a failed confirmed delete keeps the saved workspace visible',async()=>{
+ const item={id:'risk-saved-2',name:'Saved analysis',product:'risk',input:{balance:'10000'},result:{positionUnits:30}};
+ const h=await load({user:true,tier:'starter',handler:data=>{
+  if(data.action==='list')return {items:[item],limit:25};
+  if(data.action==='delete')throw Error('Deletion failed on server');
+ }});
+ const [,remove,confirmDelete]=h.document.querySelector('#savedItems article').querySelectorAll('button');
+ remove.onclick();
+ await confirmDelete.onclick();
+ assert.match(h.document.getElementById('status').textContent,/Deletion failed on server/);
+ assert.match(h.document.getElementById('savedItems').textContent,/Saved analysis/);
+ assert.equal(h.calls.filter(c=>c.action==='delete').length,1);
+ h.close();
+});
