@@ -6,6 +6,14 @@ on:
       - 'terminal.html'
       - 'scripts/test-terminal-headline-status.cjs'
       - '.github/workflows/terminal-headline-status.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'assets/js/terminal/app.js'
+      - 'terminal.html'
+      - 'scripts/test-terminal-headline-status.cjs'
+      - '.github/workflows/terminal-headline-status.yml'
   workflow_dispatch:
 permissions:
   contents: read
