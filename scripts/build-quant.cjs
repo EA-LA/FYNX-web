@@ -5,7 +5,7 @@ const root = path.resolve(__dirname, '..');
 function buildPage() {
   const header = fs.readFileSync(path.join(root, 'tools/research-desk.html'), 'utf8').match(/<header class="discovery-header">[\s\S]*?<\/header>/)[0];
   const content = fs.readFileSync(path.join(root, 'content/quant-analyst.fragment'), 'utf8');
-  fs.writeFileSync(path.join(root, 'quant-analyst.html'), `<!doctype html>
+  fs.writeFileSync(path.join(root, 'quant-analyst.html'), require('./lib/tool-intro.cjs').apply('quant', `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quant Analyst: Backtests, Portfolio & Monte Carlo | FYNX</title>
 <meta name="description" content="Research ATR breakout and news strategies using attributed historical data, walk-forward optimization, portfolio analysis and reproducible risk simulations.">
@@ -17,7 +17,7 @@ function buildPage() {
 <script src="/assets/js/research-service.js?v=20261104-research" defer></script><script src="/assets/js/quant/engine.js" defer></script><script src="/assets/js/quant/public-history.js?v=20261104-research" defer></script><script src="/assets/js/fynx-plan.js?v=20261120-usage-1" defer></script><link rel="stylesheet" href="/assets/css/fynx-toolkit.css?v=20261120-toolkit-1"><script src="/assets/js/fynx-toolkit.js?v=20261121-toolkit-2" defer></script><script src="/assets/js/quant/app.js?v=20261104-research" defer></script>
 </head><body data-fynx-layout="standalone" class="discovery-page quant-page" data-fynx-terminal>
 <a class="discovery-skip" href="#quant-main">Skip to Quant Analyst</a>${header}
-${content}<noscript><p>JavaScript is required for calculations. Read the risk disclosure and data sources before using these tools.</p></noscript></body></html>`);
+${content}<noscript><p>JavaScript is required for calculations. Read the risk disclosure and data sources before using these tools.</p></noscript></body></html>`));
 }
 function buildBundles() {
   const esbuild = require('esbuild');
