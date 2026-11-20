@@ -109,14 +109,14 @@
 .fx-tour-block{position:fixed;inset:0;background:transparent}
 .fx-tour-spot{position:fixed;border:2px solid var(--or,#f4a261);border-radius:4px;box-shadow:0 0 0 9999px rgba(2,4,3,.72),0 0 0 5px rgba(244,162,97,.22),0 0 28px rgba(244,162,97,.35);pointer-events:none;transition:left .28s ease,top .28s ease,width .28s ease,height .28s ease}
 .fx-tour-spot.center{left:50%!important;top:50%!important;width:0!important;height:0!important;border:0}
-.fx-tour-card{position:fixed;width:min(400px,calc(100vw - 24px));background:#0f1412;color:var(--tx,#e7ece9);border:2px solid var(--or,#f4a261);border-radius:6px;box-shadow:0 24px 60px rgba(0,0,0,.6);font-family:Inter,Arial,sans-serif;transition:left .28s ease,top .28s ease;outline:none}
+.fx-tour-card{position:fixed;width:min(400px,calc(100vw - 24px));max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain;background:#0f1412;color:var(--tx,#e7ece9);border:2px solid var(--or,#f4a261);border-radius:6px;box-shadow:0 24px 60px rgba(0,0,0,.6);font-family:Inter,Arial,sans-serif;transition:left .28s ease,top .28s ease;outline:none}
 .fx-tour-head{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:center;padding:16px 18px 12px;border-bottom:1px solid #222b27}
 .fx-tour-ic{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:rgba(244,162,97,.14)}
 .fx-tour-ic svg{width:14px;height:14px;fill:none;stroke:var(--or,#f4a261);stroke-width:2;stroke-linejoin:round}
 .fx-tour-n{display:block;color:var(--mu,#8e9b94);font-size:12.5px;font-weight:500}
 .fx-tour-card h2{margin:2px 0 0;font-size:16px;font-weight:700;line-height:1.3;color:var(--tx,#e7ece9)}
 .fx-tour-body{margin:0;padding:14px 18px 16px;font-size:14px;line-height:1.65;color:#d5ddd8}
-.fx-tour-foot{display:flex;align-items:center;gap:8px;padding:12px 18px 14px;border-top:1px solid #222b27}
+.fx-tour-foot{position:sticky;bottom:0;z-index:1;display:flex;align-items:center;gap:8px;padding:12px 18px 14px;border-top:1px solid #222b27;background:#0f1412}
 .fx-tour-bar{flex:1;min-width:50px;height:3px;border-radius:2px;background:#26302c;overflow:hidden;margin-right:6px}
 .fx-tour-bar i{display:block;height:100%;background:var(--or,#f4a261);transition:width .25s ease}
 .fx-tour-foot button{min-height:34px;padding:6px 12px;border-radius:4px;font:600 13px Inter,Arial,sans-serif;cursor:pointer;white-space:nowrap}
@@ -202,7 +202,8 @@
       else if (fits.left) { x = box.l - m - cw; y = box.t; }
       else { x = box.l + 16; y = box.t + 16; }
       card.style.left = Math.round(Math.min(Math.max(m, x), vw - cw - m)) + 'px';
-      card.style.top = Math.round(Math.min(Math.max(m, y), vh - ch - m)) + 'px';
+      // Do not position the dialog above the viewport if extreme zoom or a virtual keyboard reduces usable height.
+       card.style.top = Math.round(Math.max(m, Math.min(Math.max(m, y), vh - ch - m))) + 'px';
     });
   }
   function finish() {
