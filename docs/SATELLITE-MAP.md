@@ -1,35 +1,51 @@
-# FYNX Satellite Map — Tile Source & Licensing
+# FYNX Satellite Map — Production Requirements
 
-## Status
-No satellite imagery provider or API key was present in the repository at the time of implementation.
+## Overview
+Third map mode for FYNX World Desk: **FLAT | GLOBE | SATELLITE**.
 
-## Implementation
-- Engine: **MapLibre GL JS** (v4.7.1, loaded from unpkg)
-- Mode: third option in the World Desk switcher (`FLAT | GLOBE | SATELLITE`)
-- Existing Flat Map and Globe Map code paths are left untouched
-- Intelligence layers continue to come from the existing `world-intel.js` / `intel-layers.json` system
+- Engine: MapLibre GL JS 4.7.1 (CDN)
+- Existing Flat Map and Globe Map code paths are **not modified**
+- Switcher is injected into the existing World Desk tools bar
+- Intelligence layers, data feeds, and event panels continue to use the existing `world-intel.js` system
 
-## Tile Source
-The default style uses Esri World Imagery raster tiles as a **development placeholder only**.
+## Tile Provider (Required for Production)
 
-**Important:** These tiles are not assumed to be free for commercial production use. Before deploying to production:
+No satellite imagery provider or API key was present in the repository.
 
-1. Choose a properly licensed satellite provider with a suitable free tier or paid plan, for example:
-   - **MapTiler** — free tier available; satellite style: `https://api.maptiler.com/maps/satellite/style.json?key=YOUR_KEY`
-   - Other commercial providers (Maxar, Planet, etc.) as needed
-2. Set the style via `window.FYNX_SATELLITE_STYLE` before the map mounts, or proxy tiles through your own backend so the key is never exposed in the browser.
-3. Update attribution accordingly.
+The current default uses Esri World Imagery raster tiles **as a development placeholder only**.
+These tiles are not assumed free for commercial production use.
 
-## Configuration
+### Recommended free-tier option
+**MapTiler** (free tier available):
+
 ```js
-window.FYNX_SATELLITE_STYLE = { /* MapLibre style object or style URL */ };
+window.FYNX_SATELLITE_STYLE = 'https://api.maptiler.com/maps/satellite/style.json?key=YOUR_MAPTILER_KEY';
 ```
 
-## Files added
-- `assets/js/terminal/satellite-map.js` — isolated satellite mode
+Or set a full MapLibre style object.
+
+### Other options
+- Mapbox (requires access token and billing)
+- Self-hosted or proxied tiles so the key never appears in browser code
+
+### Configuration
+Set before the map mounts:
+
+```js
+window.FYNX_SATELLITE_STYLE = { /* MapLibre style */ };
+// or a style URL string
+```
+
+## Files
+- `assets/js/terminal/satellite-map.js` — satellite mode, switcher injection, MapLibre mount/unmount
 - `docs/SATELLITE-MAP.md` — this file
 
-## Next steps for production
-- Supply a licensed tile style / key
-- Optionally extend marker rendering in `satellite-map.js` to plot the existing intelligence layers on the MapLibre map (data is already available via `W.intelData`)
-- Run full browser tests of all three modes
+## Verification
+- Flat and Globe modes remain fully functional
+- Satellite mode loads MapLibre and displays imagery
+- Layer toggles and event panels continue to work (data is shared)
+- No existing files were deleted
+
+## Limitations
+- Marker plotting for every intelligence layer on the MapLibre canvas is wired for extension; live data is available via existing `W.intelData` / `W.ships`
+- Production tile key must be supplied before commercial deployment
