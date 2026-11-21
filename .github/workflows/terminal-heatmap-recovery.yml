@@ -1,0 +1,32 @@
+name: Terminal heatmap data and recovery regression
+on:
+  pull_request:
+    paths:
+      - 'assets/js/terminal/heatmaps.js'
+      - 'terminal.html'
+      - 'scripts/test-terminal-heatmap-recovery.cjs'
+      - '.github/workflows/terminal-heatmap-recovery.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/terminal/heatmaps.js'
+      - 'terminal.html'
+      - 'scripts/test-terminal-heatmap-recovery.cjs'
+      - '.github/workflows/terminal-heatmap-recovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  heatmap-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --check assets/js/terminal/heatmaps.js
+      - run: node --check scripts/test-terminal-heatmap-recovery.cjs
+      - run: node --test scripts/test-terminal-heatmap-recovery.cjs
