@@ -1,6 +1,14 @@
 {
- "generatedAt": "2026-11-21T09:56:13.672Z",
+ "generatedAt": "2026-11-21T17:36:51.114Z",
  "items": [
+  {
+   "reason": "sensitive subject",
+   "title": "Japan's government revises AML policy, rates crypto asset abuse risk as \"considerable\"",
+   "sources": [
+    "BigGo Finance"
+   ],
+   "at": "2026-11-21T17:36:51.114Z"
+  },
   {
    "reason": "sensitive subject",
    "title": "Republican Senator Tom Cotton says Lutnick ignored his China chip warnings",
@@ -67,31 +75,6 @@
     "Audacy"
    ],
    "at": "2026-11-19T17:25:45.606Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Sony beats £2bn UK lawsuit over PlayStation Store game prices",
-   "sources": [
-    "Cryptopolitan",
-    "Retail Gazette"
-   ],
-   "at": "2026-11-18T15:47:17.745Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "CryptoUK Raises Client-Data Concerns About UK Crypto Market-Abuse Framework",
-   "sources": [
-    "www.tokenpost.com"
-   ],
-   "at": "2026-11-18T15:47:17.745Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Jensen Huang scandal fuels bipartisan push to block AI chip sales to China",
-   "sources": [
-    "CNBC"
-   ],
-   "at": "2026-11-18T15:47:17.745Z"
   }
  ]
 }
