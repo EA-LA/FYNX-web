@@ -48,7 +48,7 @@
   button.disabled=Boolean(savedIssue)||!validCode(code);
  }
  const matchingRows=()=>rows.filter(r=>
-  r.market_and_exchange_names.toLowerCase().includes(search.value.trim().toLowerCase())&&
+  (r.market_and_exchange_names.toLowerCase().includes(search.value.trim().toLowerCase())||r.cftc_contract_market_code.toLowerCase().includes(search.value.trim().toLowerCase()))&&
   (!savedOnly.checked||savedCodes.has(r.cftc_contract_market_code))
  );
  restoreSaved();updateSavedStatus();
