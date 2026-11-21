@@ -279,3 +279,28 @@ test('unsaved Pro drafts are cleared on account change',async()=>{
  assert.equal(h.document.getElementById('tool-notes').value,'','previous account drafts must not appear for a new account');
  h.close();
 });
+
+test('paid scenario results expose a caption, column headers, and body rows for assistive technology',async()=>{
+ const h=await load({user:true,tier:'starter',query:'?tool=scenarios',handler:data=>data.action==='run'?{result:{scenarios:[{case:'Downside',pnl:-200},{case:'Upside',pnl:400}]}}:undefined});
+ h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+ await new Promise(resolve=>setImmediate(resolve));
+ const table=h.document.querySelector('#result table');
+ assert.ok(table,'scenario calculation should produce a results table');
+ assert.equal(table.querySelector('caption')?.textContent,'Scenario comparison results');
+ assert.deepEqual([...table.querySelectorAll('thead th')].map(th=>th.scope),['col','col']);
+ assert.equal(table.querySelectorAll('tbody tr').length,2);
+ assert.match(table.querySelector('tbody').textContent,/Downside/);
+ h.close();
+});
+
+test('paid journal analytics rows are presented as a labelled data table',async()=>{
+ const h=await load({user:true,tier:'starter',query:'?tool=analytics',handler:data=>data.action==='run'?{result:{rows:[{date:'2026-11-20',pnl:100}]}}:undefined});
+ h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+ await new Promise(resolve=>setImmediate(resolve));
+ const table=h.document.querySelector('#result table');
+ assert.ok(table,'journal analytics should render its returned rows');
+ assert.equal(table.querySelector('caption')?.textContent,'Journal analysis results');
+ assert.equal(table.querySelector('thead th')?.getAttribute('scope'),'col');
+ assert.equal(table.querySelector('tbody tr td')?.textContent,'2026-11-20');
+ h.close();
+});
