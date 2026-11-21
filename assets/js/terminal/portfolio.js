@@ -5,7 +5,25 @@
   if (!PG) return;
   const {S, el, btn, svg, signed, tone, fmt, day, finite, rowButton, kv, store, shortOf, nameOf, quoteFor, digitsOf} = T;
   let shared=null;
-  const read = (k, d) => { if(shared?.sync.uid){if(k==='portfolio')return (shared.accountData('portfolios','terminal-default')?.holdings||[]).map(h=>({symbol:h.symbol,qty:h.units}));return shared.accountData('preferences')?.terminalDrawings?.[k]??d;}try { return JSON.parse(store.get(k) || 'null') ?? d; } catch { return d; } };
+  // Browser storage and older synced records can contain non-array values. Do not let one damaged
+  // saved preference take down the chart or Portfolio desk; keep the original stored value intact.
+  const read = (k, d) => {
+    if (shared?.sync.uid) {
+      if (k === 'portfolio') {
+        const rows = shared.accountData('portfolios', 'terminal-default')?.holdings;
+        return Array.isArray(rows) ? rows.filter(h => h && typeof h === 'object').map(h => ({symbol: h.symbol, qty: h.units})) : d;
+      }
+      const rows = shared.accountData('preferences')?.terminalDrawings?.[k];
+      return Array.isArray(rows) ? rows : d;
+    }
+    try { const rows = JSON.parse(store.get(k) || 'null'); return Array.isArray(rows) ? rows : d; }
+    catch { return d; }
+  };
+  const validDrawing = d => d && typeof d === 'object' &&
+    ((d.type === 'h' && Number.isFinite(d.price)) ||
+      (d.type === 'trend' && typeof d.a?.date === 'string' && typeof d.b?.date === 'string' &&
+        Number.isFinite(d.a?.price) && Number.isFinite(d.b?.price)));
+  const drawingList = key => read(key, []).filter(validDrawing);
   const write = (k,v) => {
     if(shared?.sync.uid){if(!shared.sync.ready){T.say('Load your account before saving.');return;}const previous=shared.accountData('portfolios','terminal-default')||{};const work=k==='portfolio'?shared.save('portfolios','terminal-default',{kind:'manual',id:'terminal-default',name:previous.name||'Terminal portfolio',cash:previous.cash||0,currency:'USD',holdings:v.map(h=>{const old=(previous.holdings||[]).find(p=>p.symbol===h.symbol);return {...old,id:old?.id||crypto.randomUUID(),symbol:h.symbol,units:h.qty,averageCost:old?.averageCost??null,currency:old?.currency||'USD'};})}):shared.save('preferences','default',{terminalDrawings:{[k]:v}});work.then(()=>T.say('Saved to your account.')).catch(e=>T.say(e.message));return;}
     store.set(k,JSON.stringify(v));
@@ -37,7 +55,7 @@
     const idxOf = date => { const d = date.slice(0, 10); let j = rows.findIndex(r => r.date.slice(0, 10) >= d); return j < 0 ? n - 1 : j; };
     const draw = () => {
       layer.replaceChildren();
-      for (const [k, d] of read(drawKey, []).entries()) {
+      for (const [k, d] of drawingList(drawKey).entries()) {
         if (d.type === 'h') { if (d.price < lo - pad || d.price > hi + pad) continue; layer.append(svg('line', {x1: L, x2: W - R, y1: y(d.price), y2: y(d.price), stroke: '#ffb000', 'stroke-width': 1.3, 'stroke-dasharray': '6 4'})); const t = svg('text', {x: W - R + 6, y: y(d.price) - 3, fill: '#ffb000', 'font-size': 10, 'font-family': 'IBM Plex Mono, monospace'}); t.textContent = fmt(d.price, dg); layer.append(t); }
         if (d.type === 'trend') { const i1 = idxOf(d.a.date), i2 = idxOf(d.b.date); if (i1 === i2) continue; const slope = (d.b.price - d.a.price) / (i2 - i1), ext = n - 1; layer.append(svg('line', {x1: x(i1), y1: y(d.a.price), x2: x(ext), y2: y(d.a.price + slope * (ext - i1)), stroke: '#5b8def', 'stroke-width': 1.6})); layer.append(svg('circle', {cx: x(i1), cy: y(d.a.price), r: 3, fill: '#5b8def'}), svg('circle', {cx: x(i2), cy: y(d.b.price), r: 3, fill: '#5b8def'})); }
         void k;
@@ -62,12 +80,12 @@
       // Pointer mode: a tap on a phone has no hover, so show that bar's values on press (and while dragging).
       if (t === 'none') { if (e.pointerType !== 'mouse') { c.dispatchEvent(new PointerEvent('pointermove', {clientX: e.clientX, clientY: e.clientY, pointerType: e.pointerType})); c.setPointerCapture?.(e.pointerId); } return; }
       const {px, py} = pt(e), i = ix(px), price = inv(py);
-      if (t === 'h') { const list = read(drawKey, []); list.push({type: 'h', price}); write(drawKey, list); draw(); return; }
+      if (t === 'h') { const list = drawingList(drawKey); list.push({type: 'h', price}); write(drawKey, list); draw(); return; }
       start = {i, price, date: rows[i].date}; temp.setAttribute('x1', x(i)); temp.setAttribute('y1', y(price)); temp.setAttribute('x2', x(i)); temp.setAttribute('y2', y(price)); c.setPointerCapture?.(e.pointerId);
     });
     c.addEventListener('pointerup', e => {
       if (!start) return; const {px, py} = pt(e), i = ix(px), price = inv(py), t = tool();
-      if (t === 'trend' && i !== start.i) { const list = read(drawKey, []); list.push({type: 'trend', a: {date: start.date, price: start.price}, b: {date: rows[i].date, price}}); write(drawKey, list); draw(); }
+      if (t === 'trend' && i !== start.i) { const list = drawingList(drawKey); list.push({type: 'trend', a: {date: start.date, price: start.price}, b: {date: rows[i].date, price}}); write(drawKey, list); draw(); }
       reset();
     });
     // iOS can cancel a touch (incoming call, system gesture); drop the half-drawn line instead of leaving it stuck.
@@ -84,11 +102,12 @@
     host.append(PG.chips([btn(`Load every box for ${shortOf(sym)} ▸`, 'fx-chip fx-chip-link pg-primary', () => T.setSymbol({symbol: sym})), PG.go('Security page', 'des', sym), btn('Change market ▸', 'fx-chip fx-chip-link', () => T.openFinder({title: 'Chart a market', onPick: m => { PG.closeAll(); T.openPage('chart', m.symbol); }}))]), bar, msg, box, info);
     const data = await T.symHistory(sym, '5y'); if (!alive()) return;
     if (!data?.rows?.length) { box.append(el('p', 'fx-empty', 'Daily history is not available for this market.')); return; }
-    const cmpList = () => read(cmpKey, ['SPY']).filter(s => s !== sym).slice(0, 5);
+    const compareList = () => read(cmpKey, ['SPY']).filter(s => typeof s === 'string' && /^[A-Za-z0-9.\-=^&]{1,24}$/.test(s));
+    const cmpList = () => compareList().filter(s => s !== sym).slice(0, 5);
     const drawBar = () => {
       bar.replaceChildren(PG.pageTabs(RANGES.filter(([k], i) => i === 0 || data.rows.length > RANGES[i - 1][0]), range, v => { range = v; drawBar(); render(); }), PG.pageTabs([['price', 'Price'], ['compare', 'Compare %']], mode, v => { mode = v; drawBar(); render(); }));
-      if (mode === 'price') bar.append(PG.pageTabs([['none', 'Pointer'], ['trend', 'Trend line'], ['h', 'Level'], ['measure', 'Measure']], tool, v => { tool = v; drawBar(); }), btn('Undo last', 'fx-chip', () => { const l = read(drawKey, []); if (!l.length) { msg.textContent = 'No drawings to undo.'; return; } l.pop(); write(drawKey, l); render(); msg.textContent = 'Removed the last drawing.'; }), btn('Clear drawings', 'fx-chip', () => { write(drawKey, []); render(); }));
-      else { const c = el('div', 'fx-chips'); cmpList().forEach(s => c.append(btn(`${shortOf(s)} ✕`, 'fx-chip', () => { write(cmpKey, read(cmpKey, ['SPY']).filter(x => x !== s)); drawBar(); render(); }, `Remove ${s}`))); c.append(btn('+ Add market', 'fx-chip fx-chip-link', () => T.openFinder({title: 'Compare with…', onPick: m => { const l = read(cmpKey, ['SPY']); if (!l.includes(m.symbol)) l.push(m.symbol); write(cmpKey, l.slice(-5)); drawBar(); render(); }}))); bar.append(c); }
+      if (mode === 'price') bar.append(PG.pageTabs([['none', 'Pointer'], ['trend', 'Trend line'], ['h', 'Level'], ['measure', 'Measure']], tool, v => { tool = v; drawBar(); }), btn('Undo last', 'fx-chip', () => { const l = drawingList(drawKey); if (!l.length) { msg.textContent = 'No drawings to undo.'; return; } l.pop(); write(drawKey, l); render(); msg.textContent = 'Removed the last drawing.'; }), btn('Clear drawings', 'fx-chip', () => { write(drawKey, []); render(); }));
+      else { const c = el('div', 'fx-chips'); cmpList().forEach(s => c.append(btn(`${shortOf(s)} ✕`, 'fx-chip', () => { write(cmpKey, compareList().filter(x => x !== s)); drawBar(); render(); }, `Remove ${s}`))); c.append(btn('+ Add market', 'fx-chip fx-chip-link', () => T.openFinder({title: 'Compare with…', onPick: m => { const l = compareList(); if (!l.includes(m.symbol)) l.push(m.symbol); write(cmpKey, l.slice(-5)); drawBar(); render(); }}))); bar.append(c); }
     };
     const render = async () => {
       box.replaceChildren(); msg.textContent = '';
@@ -108,7 +127,7 @@
 
   /* ===== PORTFOLIO ANALYTICS ================================================================ */
   const PKEY = 'portfolio';
-  const holdings = () => read(PKEY, []).filter(h => h && /^[A-Za-z0-9.\-=^&]{1,24}$/.test(h.symbol) && finite(h.qty) && h.qty > 0);
+  const holdings = () => read(PKEY, []).filter(h => h && typeof h === 'object' && typeof h.symbol === 'string' &&/^[A-Za-z0-9.\-=^&]{1,24}$/.test(h.symbol) && finite(h.qty) && h.qty > 0);
   // Edits go by symbol on the cleaned list, so a hidden (zero or invalid) entry can never shift rows.
   const editHoldings = fn => { const l = holdings(); fn(l); write(PKEY, l); };
   T.portfolioHoldings = holdings;
