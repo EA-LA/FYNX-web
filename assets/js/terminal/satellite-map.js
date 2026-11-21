@@ -49,18 +49,13 @@
         }
       }
     } catch (_) {}
+    // Do not load unlicensed fallback imagery on the commercial website.
+    // An empty background is safe until a licensed MapTiler style is configured.
     return {
       style: {
         version: 8,
-        sources: {
-          satellite: {
-            type: 'raster',
-            tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
-            tileSize: 256,
-            attribution: '© Esri · Maxar · Earthstar Geographics (development placeholder — not licensed for commercial production)'
-          }
-        },
-        layers: [{ id: 'satellite', type: 'raster', source: 'satellite' }]
+        sources: {},
+        layers: [{ id: 'unconfigured-background', type: 'background', paint: { 'background-color': '#0a0c0b' } }]
       },
       licensed: false
     };
@@ -180,7 +175,7 @@
       const note = document.createElement('div');
       note.className = 'fx-sat-notice';
       note.style.cssText = 'position:absolute;top:8px;left:8px;z-index:5;background:rgba(0,0,0,.72);color:#ffd23f;font:12px/1.3 Inter,system-ui,sans-serif;padding:6px 10px;border-radius:6px;max-width:280px;pointer-events:none';
-      note.textContent = 'Development imagery — configure /assets/config/satellite.json for MapTiler';
+      note.textContent = 'Satellite imagery unavailable — configure MapTiler in /assets/config/satellite.json';
       satContainer.appendChild(note);
     }
 
