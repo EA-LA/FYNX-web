@@ -118,6 +118,33 @@ test('saved Pro workspaces require explicit deletion confirmation',async()=>{
  assert.match(h.document.getElementById('savedItems').textContent,/0 \/ 25 saved/);
  h.close();
 });
+test('opening a saved Pro workspace focuses the loaded tool for keyboard and mobile users',async()=>{
+ const item={id:'risk-open-focus',name:'Saved risk analysis',product:'risk',input:{balance:'12500',riskPct:'1'},result:{positionUnits:77}};
+ const h=await load({user:true,tier:'starter',query:'?tool=analytics',handler:data=>data.action==='list'?{items:[item],limit:25}:undefined});
+ const open=h.document.querySelector('#savedItems article button');
+ open.focus();open.onclick();
+ assert.equal(h.document.activeElement,h.document.getElementById('toolTitle'),'keyboard focus moves to the newly opened analysis');
+ assert.equal(h.document.getElementById('toolTitle').textContent,'Position risk planner');
+ assert.equal(h.document.getElementById('tool-balance').value,'12500');
+ assert.match(h.document.getElementById('result').textContent,/77/);
+ assert.equal(h.document.querySelector('#productCards button[data-key="risk"]').getAttribute('aria-pressed'),'true');
+ h.close();
+});
+test('confirmed Pro workspace deletion returns focus to the remaining saved-workspace section',async()=>{
+ let deleted=false;
+ const item={id:'risk-delete-focus',name:'Delete me',product:'risk',input:{balance:'10000'},result:{positionUnits:10}};
+ const h=await load({user:true,tier:'starter',handler:data=>{
+  if(data.action==='list')return {items:deleted?[]:[item],limit:25};
+  if(data.action==='delete'){deleted=true;return {deleted:true};}
+ }});
+ const [,remove,confirmDelete]=h.document.querySelector('#savedItems article').querySelectorAll('button');
+ remove.onclick();await confirmDelete.onclick();
+ assert.equal(deleted,true);
+ assert.equal(h.document.activeElement,h.document.querySelector('.saved h2'),'focus moves off the removed confirmation button');
+ assert.match(h.document.getElementById('savedItems').textContent,/0 \/ 25 saved/);
+ h.close();
+});
+
 test('a failed confirmed delete keeps the saved workspace visible',async()=>{
  const item={id:'risk-saved-2',name:'Saved analysis',product:'risk',input:{balance:'10000'},result:{positionUnits:30}};
  const h=await load({user:true,tier:'starter',handler:data=>{
