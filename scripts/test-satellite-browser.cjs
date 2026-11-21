@@ -53,7 +53,7 @@ const path = require('node:path');
     stage = 'first satellite activation';
     await page.getByRole('button',{name:'SATELLITE'}).click();
     stage = 'first map load';
-    await page.waitForFunction(()=>window.__maps.length===1 && !!window.__maps[0].getSource('intel'), {timeout:6000});
+    await page.waitForFunction(()=>window.__maps.length===1 && !!window.__maps[0].getSource('intel'), null, {timeout:6000});
     let state=await page.evaluate(()=>({count:window.__maps[0].sources.intel.data.features.length,hidden:document.querySelector('.fx-gsvg').style.visibility}));
     assert.equal(state.count,1);
     assert.equal(state.hidden,'hidden');
