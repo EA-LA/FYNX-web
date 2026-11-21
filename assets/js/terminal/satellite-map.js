@@ -84,55 +84,117 @@
     raisedOverlays = [];
   }
 
-  const DEFAULT_ON = new Set(['conflict', 'zones', 'protests', 'hotspots', 'cyber', 'quakes', 'alerts', 'tankers', 'cargo', 'chokes', 'lights']);
+  const DEFAULT_ON = new Set(['conflict', 'zones', 'protests', 'hotspots', 'cyber', 'quakes', 'alerts', 'tankers', 'cargo', 'chokes', 'lights', 'lanes']);
+  const colors = {
+    conflict:'#ff3b30', zones:'#ff5a4f', protests:'#c77dff', hotspots:'#ff6b5f',
+    cyber:'#00e5ff', bases:'#a5d66b', nuclear:'#ffe14d', quakes:'#ff8a65',
+    alerts:'#ffca28', tankers:'#ff9f43', cargo:'#5b8def', other:'#8e9b94',
+    chokes:'#c9a7ff', datacenters:'#4dd0e1', spaceports:'#b388ff',
+    ports:'#80cbc4', airports:'#e6e6e6', dams:'#4fc3f7', exchanges:'#ffb000',
+    pipelines:'#f4a261'
+  };
+  let refreshHandle = null;
+  let panelCleanup = null;
+  let resizeObserver = null;
 
   function layerOn(key) {
+    // The intelligence sidebar persists its own security/cyber/etc. settings.
+    if (W.intel && typeof W.intel.isOn === 'function') return W.intel.isOn(key);
     if (W.layers && typeof W.layers[key] === 'boolean') return W.layers[key];
-    const box = document.querySelector(`input[data-layer="${key}"]`);
-    if (box) return box.checked;
     return DEFAULT_ON.has(key);
   }
 
+  function point(lon, lat, properties) {
+    const x = Number(lon), y = Number(lat);
+    if (!Number.isFinite(x) || !Number.isFinite(y) || Math.abs(x) > 180 || Math.abs(y) > 90) return null;
+    return {type:'Feature',geometry:{type:'Point',coordinates:[x,y]},properties};
+  }
+  function collection(features) {
+    return {type:'FeatureCollection',features:features.filter(Boolean)};
+  }
+
   function buildFeatures() {
-    const feats = [];
-    const add = (lon, lat, props) => {
-      if (!Number.isFinite(lon) || !Number.isFinite(lat)) return;
-      feats.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [lon, lat] }, properties: props });
-    };
-    for (const v of (W.ships?.vessels || []).slice(0, 4000)) {
-      const kind = v.kind || 'other';
-      const key = kind === 'tanker' ? 'tankers' : kind === 'cargo' ? 'cargo' : 'other';
+    const features = [], D = W.intelData;
+    // Same records, IDs and toggle states as Flat/Globe, including non-default layers.
+    for (const [id, item] of (D?.byId || new Map())) {
+      if (!item?.ll || !layerOn(item.layer) || item.layer === 'pipelines') continue;
+      const props = {
+        id, layer:item.layer, name:item.title || item.ref?.n || item.layer,
+        country:item.iso || item.ref?.c || '', sev:item.sev || '',
+        desc:item.ref?.d || '', source:item.ref ? 'FYNX reference data' :
+          item.layer === 'quakes' ? 'USGS' : item.layer === 'alerts' ? (item.a?.src || 'Hazards feed') : 'FYNX classified headlines',
+        time:item.at || '', reports:item.n || 0
+      };
+      features.push(point(item.ll[0],item.ll[1],props));
+    }
+    // Early loading fallback: show hazards while the intelligence index builds.
+    if (!(D?.byId?.size)) {
+      for (const q of D?.haz?.quakes || []) if (layerOn('quakes'))
+        features.push(point(q.lon,q.lat,{layer:'quakes',name:q.place || 'Earthquake',mag:q.mag,time:q.time,source:'USGS'}));
+      for (const a of D?.haz?.alerts || []) if (layerOn('alerts'))
+        features.push(point(a.lon,a.lat,{layer:'alerts',name:a.title || 'Natural alert',time:a.from,source:a.src || 'Hazard feed'}));
+    }
+    for (const [name, bounds] of Object.entries(W.ships?.chokepoints || {})) {
+      if (!layerOn('chokes') || !Array.isArray(bounds) || !Array.isArray(bounds[0]) || !Array.isArray(bounds[1])) continue;
+      features.push(point((+bounds[0][1] + +bounds[1][1]) / 2,(+bounds[0][0] + +bounds[1][0]) / 2,
+        {id:'choke-'+name,layer:'chokes',name:name+' chokepoint',source:'AIS / geographic reference'}));
+    }
+    return collection(features);
+  }
+
+  function shipFeatures() {
+    const features=[];
+    for (const v of (W.ships?.vessels || []).slice(0,5000)) {
+      const key=v.kind === 'tanker' ? 'tankers' : v.kind === 'cargo' ? 'cargo' : 'other';
       if (!layerOn(key)) continue;
-      add(v.lon, v.lat, { layer: kind, name: v.name || kind, source: 'AIS', updated: W.ships?.generatedAt || '' });
+      features.push(point(v.lon,v.lat,{layer:key,name:v.name || key,source:'AIS',updated:W.ships?.generatedAt || '',mmsi:v.mmsi || ''}));
     }
-    if (layerOn('quakes')) {
-      for (const q of W.intelData?.haz?.quakes || []) {
-        add(q.lon, q.lat, { layer: 'quakes', name: q.place || 'Earthquake', mag: q.mag, time: q.time, url: q.url || '', source: 'USGS' });
+    return collection(features);
+  }
+
+  function lightFeatures() {
+    if (!layerOn('lights')) return collection([]);
+    return collection((W.feats || []).map(f => {
+      const iso=f.properties?.iso2;
+      if (!iso) return null;
+      const ll=W.centroidOf?.(iso);
+      const status=W.statusOf?.(iso);
+      if (!ll) return null;
+      const level=status?.level || 'grey';
+      return point(ll[0],ll[1],{id:'country-'+iso,layer:'lights',name:f.properties?.name || iso,iso,
+        level,source:'FYNX country-status model'});
+    }));
+  }
+
+  function lineFeatures() {
+    const features=[];
+    if (layerOn('lanes')) for (const route of W.mainSeaRoutes || []) {
+      if (Array.isArray(route) && route.length>1)
+        features.push({type:'Feature',geometry:{type:'LineString',coordinates:route},properties:{layer:'lanes'}});
+    }
+    return collection(features);
+  }
+  function pipelineFeatures() {
+    const features=[];
+    if (layerOn('pipelines')) for (const pipe of W.intelData?.ref?.layers?.pipelines || []) {
+      for (const route of pipe.paths || []) {
+        if (Array.isArray(route) && route.length > 1)
+          features.push({type:'Feature',geometry:{type:'LineString',coordinates:route},
+            properties:{layer:'pipelines',name:pipe.n || 'Pipeline',kind:pipe.k || ''}});
       }
     }
-    if (layerOn('alerts')) {
-      for (const a of W.intelData?.haz?.alerts || []) {
-        if (a.ll) add(a.ll[0], a.ll[1], { layer: 'alerts', name: a.title || a.type || 'Alert', source: a.source || 'GDACS/EONET', time: a.time || '' });
-      }
-    }
-    const ref = W.intelData?.ref?.layers || {};
-    for (const [key, arr] of Object.entries(ref)) {
-      if (!layerOn(key) || !Array.isArray(arr)) continue;
-      for (const item of arr) {
-        if (!item.ll || item.ll.length < 2) continue;
-        add(item.ll[0], item.ll[1], { layer: key, name: item.n || key, desc: item.d || '', country: item.c || '', source: 'Reference (reviewed 2026-11)' });
-      }
-    }
-    for (const ev of W.intelData?.events || []) {
-      if (!layerOn(ev.layer) || !ev.ll) continue;
-      add(ev.ll[0], ev.ll[1], { layer: ev.layer, name: ev.title || ev.layer, sev: ev.sev || '', n: ev.n || 0, time: ev.at || '', source: 'FYNX headlines' });
-    }
-    return { type: 'FeatureCollection', features: feats };
+    return collection(features);
   }
 
   function updateMarkers() {
-    if (!mapInstance || !mapInstance.getSource('intel')) return;
-    try { mapInstance.getSource('intel').setData(buildFeatures()); } catch (_) {}
+    if (!mapInstance) return;
+    try {
+      const data={intel:buildFeatures(),shipping:shipFeatures(),lights:lightFeatures(),lanes:lineFeatures(),pipelines:pipelineFeatures()};
+      for (const [key,value] of Object.entries(data)) {
+        const source=mapInstance.getSource(key);
+        if (source) source.setData(value);
+      }
+    } catch (error) { console.warn('FYNX satellite layer refresh failed',error); }
   }
 
   function escapeHTML(value) {
