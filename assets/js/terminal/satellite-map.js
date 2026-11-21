@@ -36,7 +36,6 @@
     if (window.FYNX_SATELLITE_STYLE) return window.FYNX_SATELLITE_STYLE;
     const meta = document.querySelector('meta[name="fynx-satellite-style"]');
     if (meta && meta.content) return meta.content;
-    // Development placeholder only. Not for commercial production.
     return {
       version: 8,
       sources: {
@@ -56,12 +55,15 @@
   let popup = null;
   let searchBox = null;
 
+  // Layers that are on by default in world-intel.js when no saved preference exists.
+  const DEFAULT_ON = new Set(['conflict', 'zones', 'protests', 'hotspots', 'cyber', 'quakes', 'alerts', 'tankers', 'cargo', 'chokes', 'lights']);
+
   function layerOn(key) {
-    // Prefer live checkbox state from the existing intelligence panel
-    const box = document.querySelector(`.fx-glayers input[data-layer="${key}"], .fx-intel input[data-layer="${key}"]`);
-    if (box) return box.checked;
+    // Existing World Desk checkboxes do not set data-layer; use shared state first.
     if (W.layers && typeof W.layers[key] === 'boolean') return W.layers[key];
-    return false;
+    const box = document.querySelector(`input[data-layer="${key}"]`);
+    if (box) return box.checked;
+    return DEFAULT_ON.has(key);
   }
 
   function buildFeatures() {
@@ -70,25 +72,22 @@
       if (!Number.isFinite(lon) || !Number.isFinite(lat)) return;
       feats.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [lon, lat] }, properties: props });
     };
-    // Ships
     for (const v of (W.ships?.vessels || []).slice(0, 4000)) {
       const kind = v.kind || 'other';
-      if (!layerOn(kind === 'tanker' ? 'tankers' : kind === 'cargo' ? 'cargo' : 'other')) continue;
+      const key = kind === 'tanker' ? 'tankers' : kind === 'cargo' ? 'cargo' : 'other';
+      if (!layerOn(key)) continue;
       add(v.lon, v.lat, { layer: kind, name: v.name || kind, source: 'AIS', updated: W.ships?.generatedAt || '' });
     }
-    // Earthquakes
     if (layerOn('quakes')) {
       for (const q of W.intelData?.haz?.quakes || []) {
         add(q.lon, q.lat, { layer: 'quakes', name: q.place || 'Earthquake', mag: q.mag, time: q.time, url: q.url || '', source: 'USGS' });
       }
     }
-    // Natural alerts
     if (layerOn('alerts')) {
       for (const a of W.intelData?.haz?.alerts || []) {
         if (a.ll) add(a.ll[0], a.ll[1], { layer: 'alerts', name: a.title || a.type || 'Alert', source: a.source || 'GDACS/EONET', time: a.time || '' });
       }
     }
-    // Reference layers
     const ref = W.intelData?.ref?.layers || {};
     for (const [key, arr] of Object.entries(ref)) {
       if (!layerOn(key) || !Array.isArray(arr)) continue;
@@ -97,7 +96,6 @@
         add(item.ll[0], item.ll[1], { layer: key, name: item.n || key, desc: item.d || '', country: item.c || '', source: 'Reference (reviewed 2026-11)' });
       }
     }
-    // Live events (conflict, protests, cyber)
     for (const ev of W.intelData?.events || []) {
       if (!layerOn(ev.layer) || !ev.ll) continue;
       add(ev.ll[0], ev.ll[1], { layer: ev.layer, name: ev.title || ev.layer, sev: ev.sev || '', n: ev.n || 0, time: ev.at || '', source: 'FYNX headlines' });
@@ -106,7 +104,7 @@
   }
 
   function updateMarkers() {
-    if (!mapInstance || !mapInstance.isStyleLoaded || !mapInstance.getSource('intel')) return;
+    if (!mapInstance || !mapInstance.getSource('intel')) return;
     try { mapInstance.getSource('intel').setData(buildFeatures()); } catch (_) {}
   }
 
@@ -136,7 +134,6 @@
     satContainer.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:2;background:#0a0c0b;';
     host.appendChild(satContainer);
 
-    // Non-production notice when no licensed style is configured
     if (!window.FYNX_SATELLITE_STYLE && !document.querySelector('meta[name="fynx-satellite-style"]')) {
       const note = document.createElement('div');
       note.className = 'fx-sat-notice';
@@ -159,7 +156,6 @@
     mapInstance.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
     mapInstance.addControl(new maplibregl.FullscreenControl(), 'top-right');
 
-    // Search box
     searchBox = document.createElement('input');
     searchBox.type = 'search';
     searchBox.placeholder = 'Search country, city, or coordinates';
@@ -168,10 +164,8 @@
       if (e.key !== 'Enter') return;
       const q = searchBox.value.trim();
       if (!q) return;
-      // Coordinates
       const m = q.match(/^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/);
       if (m) { mapInstance.flyTo({ center: [+m[2], +m[1]], zoom: 8 }); return; }
-      // Simple geocode via Nominatim (open, rate-limited — fine for interactive search)
       try {
         const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`, { headers: { 'Accept': 'application/json' } });
         const d = await r.json();
@@ -239,8 +233,6 @@
       });
       mapInstance.on('mouseenter', 'intel-circles', () => { mapInstance.getCanvas().style.cursor = 'pointer'; });
       mapInstance.on('mouseleave', 'intel-circles', () => { mapInstance.getCanvas().style.cursor = ''; });
-
-      // Keep markers in sync with existing layer toggles
       const panel = document.querySelector('.fx-glayers, .fx-intel');
       if (panel) panel.addEventListener('change', updateMarkers);
     });
@@ -267,7 +259,6 @@
     } else {
       unmountSatellite();
       stage.querySelectorAll('.fx-gsvg, .fx-gships').forEach(el => { el.style.visibility = ''; el.style.pointerEvents = ''; });
-      // Existing draw path refreshes Flat/Globe via W.flat
       if (typeof W.intelRedraw === 'function') W.intelRedraw();
     }
   }
@@ -276,7 +267,6 @@
     const tools = document.querySelector('.fx-gtools');
     if (!tools || tools.dataset.satSwitcher) return;
     tools.dataset.satSwitcher = '1';
-    // Keep the original toggle button functional for Flat/Globe; add Satellite as an extra control
     const modes = [['flat', 'FLAT'], ['globe', 'GLOBE'], ['satellite', 'SATELLITE']];
     const group = document.createElement('div');
     group.className = 'fx-sat-modes';
@@ -296,7 +286,6 @@
       group.appendChild(b);
     });
     tools.prepend(group);
-    // Hide the original binary toggle so only the three-way control is visible
     const orig = tools.querySelector('.fx-gbtn:not(.fx-sat-modes .fx-gbtn)');
     if (orig && /Globe|Flat/.test(orig.textContent)) orig.style.display = 'none';
   }
