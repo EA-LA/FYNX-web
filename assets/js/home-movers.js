@@ -109,12 +109,26 @@
   async function load(host) {
     if (loading) return;
     loading = true;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
+    // Keep the widget usable in webviews without AbortController and bound
+    // the full request, including response-body parsing, to the same timeout.
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    let timeout;
     try {
-      const res = await fetch(URL_ + '?t=' + Math.floor(Date.now() / 300000), {cache: 'no-store', signal: controller.signal});
-      if (!res.ok) throw new Error(res.status);
-      const j = await res.json();
+      const request = (async () => {
+        const options = controller ? {cache: 'no-store', signal: controller.signal} : {cache: 'no-store'};
+        const res = await fetch(URL_ + '?t=' + Math.floor(Date.now() / 300000), options);
+        if (!res.ok) throw new Error(res.status);
+        return res.json();
+      })();
+      const j = await Promise.race([
+        request,
+        new Promise((_, reject) => {
+          timeout = setTimeout(() => {
+            if (controller) controller.abort();
+            reject(new Error('Market movers request timed out'));
+          }, 12000);
+        })
+      ]);
       const stockKeys = ['gainers', 'losers', 'active', 'aiUnder3'];
       const validStocks = verifiedTime(j?.stocksAsOf) && stockKeys.every(key => Array.isArray(j[key]));
       const validCrypto = verifiedTime(j?.cryptoAsOf) && Array.isArray(j?.crypto);
