@@ -277,18 +277,26 @@
   }
 
   function setMode(mode) {
+    if (!['flat', 'globe', 'satellite'].includes(mode)) return;
     W.mapMode = mode;
-    W.flat = mode === 'flat';
     try { localStorage.setItem('fynx-map-mode', mode); } catch (_) {}
     const stage = document.querySelector('.fx-gstage');
     if (!stage) return;
     if (mode === 'satellite') {
+      // Retain the actual SVG projection state so returning to the original modes works.
       stage.querySelectorAll('.fx-gsvg, .fx-gships').forEach(el => { el.style.visibility = 'hidden'; el.style.pointerEvents = 'none'; });
       mountSatellite(stage).catch(err => console.warn('Satellite map failed', err));
     } else {
       unmountSatellite();
       stage.querySelectorAll('.fx-gsvg, .fx-gships').forEach(el => { el.style.visibility = ''; el.style.pointerEvents = ''; });
-      if (typeof W.intelRedraw === 'function') W.intelRedraw();
+      // world.js owns projection and its renderGlobe() is private. Use its existing
+      // toggle to redraw only when changing projection, without replacing its logic.
+      const wantFlat = mode === 'flat';
+      if (W.flat !== wantFlat) {
+        const originalToggle = document.querySelector('.fx-gtools > .fx-gbtn');
+        if (originalToggle) originalToggle.click();
+        else W.flat = wantFlat;
+      }
     }
   }
 
