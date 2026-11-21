@@ -22,3 +22,6 @@ firebase-debug.log
 
 # Private trading-account database and credentials
 .accounts-data/
+
+# Runtime MapTiler config (generated at deploy from MAPTILER_API_KEY)
+assets/config/satellite.json
