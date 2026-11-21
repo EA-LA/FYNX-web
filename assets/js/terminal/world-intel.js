@@ -564,7 +564,7 @@ html body.fx-terminal .fx-ic-src a{display:inline-block;min-height:44px;padding:
     return [hs ? `Intel hotspot (score ${hs.score})` : '', ...ev.map(e => `${e.n} ${e.layer === 'protests' ? 'protest' : e.layer} report${e.n === 1 ? '' : 's'}`)].filter(Boolean).join(' · ') + ' in 72 h';
   }
 
-  W.intel = {panel: o => { const b = panel(o); if (ctx) ctx.layersBox = b; W._ilpBox = b; return b; }, mount: m => { mount({...m, layersBox: W._ilpBox}); }, draw, countryLine, open: id => openItem(id, {zoom: true}), load, layers: L};
+  W.intel = {panel: o => { const b = panel(o); if (ctx) ctx.layersBox = b; W._ilpBox = b; return b; }, mount: m => { mount({...m, layersBox: W._ilpBox}); }, draw, countryLine, open: id => openItem(id, {zoom: true}), load, layers: L, isOn};
   // Refresh: rebuild from fresh headlines whenever the World data reloads; hazards every 10 minutes.
   setInterval(() => { if (document.hidden || !document.getElementById('tp-globe')) return; build(); W.intelRedraw?.(); }, 120000);
   setInterval(() => { if (document.hidden || !document.getElementById('tp-globe')) return; loadHazards().then(() => { build(); D.at = Date.now(); W.intelRedraw?.(); }); }, 600000);
