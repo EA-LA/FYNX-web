@@ -89,6 +89,58 @@ test('Pro analysis invalidates old output when a checklist answer changes',async
  h.close();
 });
 
+test('paid saved workspaces can be searched by name or product without backend requests',async()=>{
+ const items=[
+  {id:'s1',name:'London EURUSD setup',product:'risk',input:{},result:{}},
+  {id:'s2',name:'Bitcoin review',product:'review',input:{},result:{}},
+  {id:'s3',name:'Weekly scan',product:'watchlist',input:{},result:{}}
+ ];
+ const h=await load({user:true,tier:'pro',handler:data=>data.action==='list'?{items,limit:500}:undefined});
+ const search=h.document.getElementById('savedSearch');
+ const entries=()=>[...h.document.querySelectorAll('#savedItems article')];
+ const type=query=>{search.value=query;search.dispatchEvent(new h.document.defaultView.Event('input',{bubbles:true}));};
+ assert.equal(h.document.getElementById('savedSearchControls').hidden,false);
+ assert.equal(entries().length,3);
+ type(' eurusd ');
+ assert.deepEqual(entries().map(entry=>entry.hidden),[false,true,true]);
+ assert.match(h.document.getElementById('savedSearchCount').textContent,/1 of 3/);
+ type('RESEARCH WATCHLISTS');
+ assert.deepEqual(entries().map(entry=>entry.hidden),[true,true,false],'product titles are searchable');
+ type('not in any record');
+ assert.ok(entries().every(entry=>entry.hidden));
+ assert.match(h.document.getElementById('savedSearchCount').textContent,/0 of 3/);
+ type('');
+ assert.ok(entries().every(entry=>!entry.hidden));
+ assert.equal(h.calls.filter(call=>call.action==='list').length,1,'filtering must stay client side');
+ assert.equal(h.calls.filter(call=>call.action==='run'||call.action==='save').length,0);
+ h.close();
+});
+
+test('Pro saved search survives deletion refresh but clears on account sign-out',async()=>{
+ let items=[
+  {id:'s1',name:'Portfolio review',product:'portfolio',input:{},result:{}},
+  {id:'s2',name:'Risk review',product:'risk',input:{},result:{}}
+ ];
+ const h=await load({user:true,tier:'pro',handler:data=>{
+  if(data.action==='list')return {items,limit:500};
+  if(data.action==='delete'){items=items.filter(item=>item.id!==data.id);return {deleted:true};}
+ }});
+ const search=h.document.getElementById('savedSearch');
+ search.value='portfolio';search.dispatchEvent(new h.document.defaultView.Event('input',{bubbles:true}));
+ const portfolio=[...h.document.querySelectorAll('#savedItems article')].find(row=>!row.hidden);
+ const [,remove,confirmDelete]=portfolio.querySelectorAll('button');
+ remove.onclick();await confirmDelete.onclick();
+ assert.equal(search.value,'portfolio','refresh should preserve the active filter for the same account');
+ assert.equal(h.document.querySelectorAll('#savedItems article').length,1);
+ assert.equal(h.document.querySelector('#savedItems article').hidden,true);
+ assert.match(h.document.getElementById('savedSearchCount').textContent,/0 of 1/);
+ await h.changeUser(null);
+ assert.equal(h.document.getElementById('savedSearchControls').hidden,true);
+ assert.equal(search.value,'','account-specific search must clear when a user signs out');
+ assert.equal(h.document.querySelectorAll('#savedItems article').length,0);
+ h.close();
+});
+
 test('saved Pro workspaces require explicit deletion confirmation',async()=>{
  let deleted=false;
  const item={id:'risk-saved-1',name:'Risk review',product:'risk',input:{balance:'10000'},result:{positionUnits:25}};
