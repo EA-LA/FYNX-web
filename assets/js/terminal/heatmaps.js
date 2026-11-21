@@ -214,9 +214,19 @@
     await Promise.allSettled(NEWS_FEEDS.map(c => loadNews(c)));
     if (!host.isConnected) return; host.replaceChildren();
     const seen = new Set(), items = [];
-    for (const c of NEWS_FEEDS) for (const h of (c === 'all' ? S.briefing : S.desks[c]?.items) || []) { const k = (h.url || h.title || '').toLowerCase(); if (!h?.title || seen.has(k)) continue; seen.add(k); items.push(h); }
-    const now = Date.now(), recent = items.filter(h => { const t = Date.parse(h.publishedAt); return !finite(t) || now - t < 86400000; });
-    if (!recent.length) return host.append(el('p', 'fx-empty', 'No live headlines yet. They refresh every two minutes.'));
+    for (const c of NEWS_FEEDS) for (const h of (c === 'all' ? S.briefing : S.desks[c]?.items) || []) {
+      // Feeds may contain null or partially populated entries during an upstream refresh.
+      if (typeof h?.title !== 'string' || !h.title.trim()) continue;
+      const k = String(h.url || h.title).toLowerCase();
+      if (seen.has(k)) continue;
+      seen.add(k); items.push(h);
+    }
+    // A 24-hour heat map must not count undated, stale or future-dated headlines as fresh.
+    const now = Date.now(), recent = items.filter(h => {
+      const t = Date.parse(h.publishedAt);
+      return Number.isFinite(t) && t <= now && now - t < 86400000;
+    });
+    if (!recent.length) return host.append(el('p', 'fx-empty', 'No headlines with verified publication times in the last 24 hours. Try again shortly.'));
     const tiles = TOPICS.map(([name, re]) => { const hits = recent.filter(h => re.test(h.title)), fresh = hits.filter(h => now - Date.parse(h.publishedAt) < 3 * 3600000).length; return {name, hits, value: hits.length, fresh, heat: hits.length ? fresh / hits.length : 0}; }).filter(t => t.value).sort((a, b) => b.value - a.value);
     if (!tiles.length) return host.append(el('p', 'fx-empty', 'No headline matched the tracked topics yet.'));
     setText('n-newsmap', `${recent.length} headlines · hottest ${tiles.slice().sort((a, b) => b.heat * Math.sqrt(b.value) - a.heat * Math.sqrt(a.value))[0].name}`);
@@ -275,16 +285,34 @@
     T.PANELS[id] = [code, title, 'heatmaps'];
     T.PANEL_DESC[id] = desc;
     T.LINK_LABEL[id] = 'All heat maps';
-    T.RENDER[id] = async () => { const host = panel(id); try { await fn(host); } catch (e) { T.report('heat-' + id, e); } };
+    T.RENDER[id] = async () => {
+      const host = panel(id);
+      try { await fn(host); }
+      catch (e) {
+        T.report('heat-' + id, e);
+        const message = el('p', 'fx-empty', 'Heat map unavailable right now. Check your connection and retry.');
+        message.setAttribute('role', 'alert');
+        host.replaceChildren(message, btn('Retry heat map', 'fx-chip', () => T.R(id)));
+      }
+    };
   }
   T.EXTRA_GROUPS.push(['Heat maps', MAPS.map(m => m[0])]);
   if (PG) {
     PG.add('heatmaps', 'Heat maps', async (host, arg) => {
-      const key = MAPS.find(m => m[0] === String(arg || '').toLowerCase() || m[1] === String(arg || '').toUpperCase())?.[0] || store.get('hm-page') || 'aimap';
+      const requested = MAPS.find(m => m[0] === String(arg || '').toLowerCase() || m[1] === String(arg || '').toUpperCase());
+      const selected = requested || MAPS.find(m => m[0] === store.get('hm-page')) || MAPS[0];
+      const key = selected[0];
       PG.setHead('HEAT', 'Heat maps', 'AI bubbles, sectors, futures, news and crypto & currencies — live, colour-coded, click anything to open it');
       host.append(PG.pageTabs(MAPS.map(m => [m[0], m[2]]), key, k => { store.set('hm-page', k); PG.rerender(); }));
       const body = el('div', 'hm-page'); host.append(body);
-      await MAPS.find(m => m[0] === key)[4](body, {big: true});
+      try { await selected[4](body, {big: true}); }
+      catch (e) {
+        T.report('heat-' + key, e);
+        if (!body.isConnected) return;
+        const message = el('p', 'fx-empty', 'Heat map unavailable right now. Check your connection and retry.');
+        message.setAttribute('role', 'alert');
+        body.replaceChildren(message, btn('Retry heat map', 'fx-chip', () => PG.rerender()));
+      }
     });
     T.PAGE_NAMES.push('HEATMAPS');
   }
