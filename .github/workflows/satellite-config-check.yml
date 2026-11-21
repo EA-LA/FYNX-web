@@ -5,6 +5,8 @@ on:
     paths:
       - assets/js/terminal/satellite-map.js
       - scripts/test-satellite-config.cjs
+      - scripts/test-satellite-browser.cjs
+      - .github/workflows/satellite-config-check.yml
       - terminal.html
       - docs/SATELLITE-MAP.md
   push:
@@ -19,3 +21,9 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/test-satellite-config.cjs
+      - name: Install browser smoke test dependencies
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Run satellite Chromium smoke tests
+        run: node scripts/test-satellite-browser.cjs
