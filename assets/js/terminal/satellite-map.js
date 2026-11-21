@@ -287,6 +287,16 @@
         }
         return;
       }
+      // Search FYNX's existing country dataset locally before the external geocoder.
+      const country=(W.feats || []).find(f=>{
+        const name=String(f.properties?.name || '').toLowerCase();
+        const iso=String(f.properties?.iso2 || '').toLowerCase();
+        return name===q.toLowerCase() || iso===q.toLowerCase();
+      });
+      if (country) {
+        const center=W.centroidOf?.(country.properties.iso2);
+        if (center && mapInstance) {mapInstance.flyTo({center,zoom:4});return;}
+      }
       try {
         const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`, { headers: { 'Accept': 'application/json' } });
         const d = await r.json();
@@ -489,6 +499,21 @@
       group.appendChild(b);
     });
     tools.prepend(group);
+    if (!tools.querySelector('.fx-sat-fullscreen')) {
+      const full=document.createElement('button');
+      full.type='button';
+      full.className='fx-gbtn fx-sat-fullscreen';
+      full.textContent='⛶';
+      full.title='Toggle fullscreen World Desk map';
+      full.setAttribute('aria-label','Toggle fullscreen World Desk map');
+      full.addEventListener('click',()=>{
+        const stage=tools.closest('.fx-gstage');
+        if (!stage) return;
+        if (document.fullscreenElement) document.exitFullscreen?.();
+        else stage.requestFullscreen?.().catch?.(()=>{});
+      });
+      tools.appendChild(full);
+    }
     const orig = tools.querySelector('.fx-gbtn:not(.fx-sat-modes .fx-gbtn)');
     if (orig && /Globe|Flat/.test(orig.textContent)) orig.style.display = 'none';
   }
