@@ -1,6 +1,15 @@
 {
- "generatedAt": "2026-11-20T18:39:06.011Z",
+ "generatedAt": "2026-11-21T01:35:03.205Z",
  "items": [
+  {
+   "reason": "sensitive subject",
+   "title": "Republican Senator Tom Cotton says Lutnick ignored his China chip warnings",
+   "sources": [
+    "Al Arabiya English",
+    "Times Now"
+   ],
+   "at": "2026-11-21T01:35:03.205Z"
+  },
   {
    "reason": "sensitive subject",
    "title": "Bessent Hits Southeast Asia Scam Networks With New Sanctions as Crypto Fraud Losses Top $7.2 Billion",
@@ -66,41 +75,6 @@
     "CNBC"
    ],
    "at": "2026-11-18T15:47:17.745Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Asian stocks slide as US tech curbs weigh on sentiment, Nvidia earnings awaited",
-   "sources": [
-    "FXStreet",
-    "Yahoo Finance Singapore",
-    "Bloomberg.com"
-   ],
-   "at": "2026-11-17T22:28:51.087Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Sony Wins £2 Billion UK Lawsuit Over PlayStation Store Pricing",
-   "sources": [
-    "Global Banking & Finance Review",
-    "Cryptopolitan"
-   ],
-   "at": "2026-11-17T22:28:51.087Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Jensen Huang scandal fuels bipartisan push to block AI chip sales to China",
-   "sources": [
-    "CNBC"
-   ],
-   "at": "2026-11-17T22:28:51.087Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Asian stocks sink as scandal-hit Nvidia prepares for earnings",
-   "sources": [
-    "AFP.com"
-   ],
-   "at": "2026-11-17T22:28:51.087Z"
   }
  ]
 }
