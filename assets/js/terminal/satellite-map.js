@@ -27,8 +27,6 @@
     });
   }
 
-  // Development placeholder. Production must supply a licensed style.
-  // See docs/SATELLITE-MAP.md.
   const SATELLITE_STYLE = {
     version: 8,
     sources: {
@@ -44,6 +42,57 @@
 
   let mapInstance = null;
   let satContainer = null;
+  let popup = null;
+
+  function layerOn(key) {
+    if (W.layers && typeof W.layers[key] === 'boolean') return W.layers[key];
+    return true;
+  }
+
+  function buildFeatures() {
+    const feats = [];
+    // Ships
+    if (layerOn('tankers') || layerOn('cargo') || layerOn('other')) {
+      for (const v of (W.ships?.vessels || []).slice(0, 3000)) {
+        if (!Number.isFinite(v.lon) || !Number.isFinite(v.lat)) continue;
+        const kind = v.kind || 'other';
+        if (kind === 'tanker' && !layerOn('tankers')) continue;
+        if (kind === 'cargo' && !layerOn('cargo')) continue;
+        if (kind !== 'tanker' && kind !== 'cargo' && !layerOn('other')) continue;
+        feats.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [v.lon, v.lat] }, properties: { layer: kind, name: v.name || kind, kind, source: 'AIS' } });
+      }
+    }
+    // Earthquakes
+    if (layerOn('quakes') && W.intelData?.haz?.quakes) {
+      for (const q of W.intelData.haz.quakes) {
+        if (!Number.isFinite(q.lon) || !Number.isFinite(q.lat)) continue;
+        feats.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [q.lon, q.lat] }, properties: { layer: 'quakes', name: q.place || 'Earthquake', mag: q.mag, time: q.time, url: q.url || '' } });
+      }
+    }
+    // Reference layers from intel-layers.json
+    const ref = W.intelData?.ref?.layers || {};
+    const refMap = { bases: 'bases', nuclear: 'nuclear', ports: 'ports', airports: 'airports', dams: 'dams', datacenters: 'datacenters', spaceports: 'spaceports', exchanges: 'exchanges' };
+    for (const [key, arr] of Object.entries(ref)) {
+      if (!layerOn(key) || !Array.isArray(arr)) continue;
+      for (const item of arr) {
+        if (!item.ll || item.ll.length < 2) continue;
+        feats.push({ type: 'Feature', geometry: { type: 'Point', coordinates: item.ll }, properties: { layer: key, name: item.n || key, desc: item.d || '', country: item.c || '' } });
+      }
+    }
+    // Live events (conflict, protests, cyber) — country centroids if available
+    if (W.intelData?.events) {
+      for (const ev of W.intelData.events) {
+        if (!layerOn(ev.layer) || !ev.ll) continue;
+        feats.push({ type: 'Feature', geometry: { type: 'Point', coordinates: ev.ll }, properties: { layer: ev.layer, name: ev.title || ev.layer, sev: ev.sev || '', n: ev.n || 0 } });
+      }
+    }
+    return { type: 'FeatureCollection', features: feats };
+  }
+
+  function updateMarkers() {
+    if (!mapInstance || !mapInstance.getSource('intel')) return;
+    mapInstance.getSource('intel').setData(buildFeatures());
+  }
 
   async function mountSatellite(host) {
     if (mapInstance) return mapInstance;
@@ -64,14 +113,43 @@
 
     mapInstance.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
     mapInstance.addControl(new maplibregl.FullscreenControl(), 'top-right');
-    mapInstance.addControl(new maplibregl.GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: false }), 'top-right');
 
     mapInstance.on('load', () => {
-      // Existing intelligence panels and layer toggles remain in the DOM.
-      // Markers for live layers (ships, quakes, conflict, etc.) can be added here
-      // using data already present in W.intelData / W.ships when available.
-      if (W.intel && typeof W.intel.redraw === 'function') {
-        try { W.intel.redraw(); } catch (_) {}
+      mapInstance.addSource('intel', { type: 'geojson', data: buildFeatures() });
+      mapInstance.addLayer({
+        id: 'intel-circles',
+        type: 'circle',
+        source: 'intel',
+        paint: {
+          'circle-radius': ['match', ['get', 'layer'], 'quakes', 7, 'bases', 5, 'nuclear', 6, 4],
+          'circle-color': ['match', ['get', 'layer'],
+            'tankers', '#ff9f43', 'cargo', '#5b8def', 'other', '#8e9b94',
+            'quakes', '#ff8a65', 'bases', '#a5d66b', 'nuclear', '#ffe14d',
+            'ports', '#80cbc4', 'airports', '#e6e6e6', 'conflict', '#ff3b30',
+            'protests', '#c77dff', 'cyber', '#00e5ff', '#c9a7ff'],
+          'circle-stroke-width': 1,
+          'circle-stroke-color': '#06080a'
+        }
+      });
+      popup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: '320px' });
+      mapInstance.on('click', 'intel-circles', (e) => {
+        const f = e.features?.[0]; if (!f) return;
+        const p = f.properties || {};
+        const html = `<div style="font:13px/1.4 Inter,system-ui,sans-serif;color:#e8e8e8;background:#111;padding:8px 10px;border-radius:6px;max-width:300px">
+          <strong>${p.name || 'Event'}</strong><br>
+          <span style="opacity:.7">${p.layer || ''}${p.country ? ' · ' + p.country : ''}</span><br>
+          ${p.desc ? p.desc + '<br>' : ''}
+          ${p.mag ? 'Magnitude ' + p.mag + '<br>' : ''}
+          ${p.url ? '<a href="' + p.url + '" target="_blank" rel="noopener" style="color:#7ec8ff">Source</a>' : ''}
+        </div>`;
+        popup.setLngLat(e.lngLat).setHTML(html).addTo(mapInstance);
+      });
+      mapInstance.on('mouseenter', 'intel-circles', () => { mapInstance.getCanvas().style.cursor = 'pointer'; });
+      mapInstance.on('mouseleave', 'intel-circles', () => { mapInstance.getCanvas().style.cursor = ''; });
+      // Refresh markers when layers change
+      const orig = W.intel?.redraw;
+      if (typeof orig === 'function') {
+        W.intel.redraw = function () { orig.apply(this, arguments); updateMarkers(); };
       }
     });
 
@@ -79,14 +157,8 @@
   }
 
   function unmountSatellite() {
-    if (mapInstance) {
-      mapInstance.remove();
-      mapInstance = null;
-    }
-    if (satContainer && satContainer.parentNode) {
-      satContainer.parentNode.removeChild(satContainer);
-      satContainer = null;
-    }
+    if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+    if (satContainer && satContainer.parentNode) { satContainer.parentNode.removeChild(satContainer); satContainer = null; }
   }
 
   function setMode(mode) {
@@ -95,34 +167,26 @@
     const stage = document.querySelector('.fx-gstage');
     if (!stage) return;
     if (mode === 'satellite') {
-      // Hide SVG/canvas layers; show MapLibre
       stage.querySelectorAll('.fx-gsvg, .fx-gships').forEach(el => el.style.visibility = 'hidden');
       mountSatellite(stage).catch(err => console.warn('Satellite map failed', err));
     } else {
       unmountSatellite();
       stage.querySelectorAll('.fx-gsvg, .fx-gships').forEach(el => el.style.visibility = '');
-      // Existing render path handles flat/globe via W.flat
-      if (typeof window.FynxTerminal?.redrawGlobe === 'function') {
-        window.FynxTerminal.redrawGlobe();
-      }
+      // Existing draw function (if exposed) will refresh Flat/Globe
+      if (typeof W.intelRedraw === 'function') W.intelRedraw();
     }
   }
 
-  // Inject three-way switcher without touching core SVG code.
   function injectSwitcher() {
     const tools = document.querySelector('.fx-gtools');
     if (!tools || tools.dataset.satSwitcher) return;
     tools.dataset.satSwitcher = '1';
-
-    // Remove the original binary toggle if present (first button)
     const firstBtn = tools.querySelector('.fx-gbtn');
     if (firstBtn && /Globe|Flat/.test(firstBtn.textContent)) firstBtn.remove();
-
     const modes = [['flat', 'FLAT'], ['globe', 'GLOBE'], ['satellite', 'SATELLITE']];
     const group = document.createElement('div');
     group.className = 'fx-sat-modes';
     group.style.cssText = 'display:inline-flex;gap:4px;margin-right:8px;';
-
     modes.forEach(([id, label]) => {
       const b = document.createElement('button');
       b.type = 'button';
@@ -132,27 +196,18 @@
         setMode(id);
         group.querySelectorAll('.fx-gbtn').forEach(x => x.classList.remove('fx-active'));
         b.classList.add('fx-active');
-        // Trigger existing re-render for flat/globe
-        if (id !== 'satellite') {
-          const host = document.querySelector('.fx-globe');
-          if (host && typeof T.panel === 'function') {
-            // Soft re-render by calling the existing draw if available
-            W.scale = 1;
-          }
-        }
       });
       group.appendChild(b);
     });
     tools.prepend(group);
   }
 
-  // Observe for the globe panel to appear, then inject switcher.
   const obs = new MutationObserver(() => injectSwitcher());
   obs.observe(document.body, { childList: true, subtree: true });
-  // Also try immediately
   setTimeout(injectSwitcher, 500);
 
   W.mountSatellite = mountSatellite;
   W.unmountSatellite = unmountSatellite;
   W.setMapMode = setMode;
+  W.updateSatelliteMarkers = updateMarkers;
 });
