@@ -122,8 +122,15 @@
     try { mapInstance.getSource('intel').setData(buildFeatures()); } catch (_) {}
   }
 
+  function escapeHTML(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, char => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[char]));
+  }
+
   function showPopup(lngLat, p) {
     if (!popup || !mapInstance) return;
+    p = Object.fromEntries(Object.entries(p).map(([key, value]) => [key, escapeHTML(value)]));
     const lines = [
       `<strong>${p.name || 'Location'}</strong>`,
       `<span style="opacity:.7">${p.layer || ''}${p.country ? ' · ' + p.country : ''}</span>`
@@ -143,7 +150,9 @@
   async function mountSatellite(host) {
     if (mapInstance) return mapInstance;
     const maplibregl = await loadMapLibre();
+    if (W.mapMode !== 'satellite') return null;
     const resolved = await resolveStyle();
+    if (W.mapMode !== 'satellite') return null;
     satContainer = document.createElement('div');
     satContainer.className = 'fx-sat-map';
     satContainer.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:2;background:#0a0c0b;';
@@ -179,11 +188,17 @@
       const q = searchBox.value.trim();
       if (!q) return;
       const m = q.match(/^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/);
-      if (m) { mapInstance.flyTo({ center: [+m[2], +m[1]], zoom: 8 }); return; }
+      if (m) {
+        const lat = +m[1], lon = +m[2];
+        if (Math.abs(lat) <= 90 && Math.abs(lon) <= 180 && mapInstance) {
+          mapInstance.flyTo({ center: [lon, lat], zoom: 8 });
+        }
+        return;
+      }
       try {
         const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`, { headers: { 'Accept': 'application/json' } });
         const d = await r.json();
-        if (d[0]) mapInstance.flyTo({ center: [+d[0].lon, +d[0].lat], zoom: 6 });
+        if (d[0] && mapInstance && W.mapMode === 'satellite') mapInstance.flyTo({ center: [+d[0].lon, +d[0].lat], zoom: 6 });
       } catch (_) {}
     });
     satContainer.appendChild(searchBox);
