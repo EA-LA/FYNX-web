@@ -53,7 +53,7 @@ function setup(initial = {}) {
     openFinder({onPick}) {onPick({symbol: 'MSFT'});},
     say() {},
     report() {},
-    PANEL_DESC: {}, PANELS: {}, RENDER: {}, EXTRA_GROUPS: []
+    PANEL_DESC: {}, PANELS: {}, RENDER: {}, EXTRA_GROUPS: [], PAGE_NAMES: []
   };
   const PG = {
     add: (key, _label, fn) => {pages[key] = fn;},
