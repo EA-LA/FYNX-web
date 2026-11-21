@@ -3,12 +3,14 @@ on:
   pull_request:
     paths:
       - 'assets/js/terminal/heatmaps.js'
+      - 'terminal.html'
       - 'scripts/test-terminal-heatmap-recovery.cjs'
       - '.github/workflows/terminal-heatmap-recovery.yml'
   push:
     branches: [main]
     paths:
       - 'assets/js/terminal/heatmaps.js'
+      - 'terminal.html'
       - 'scripts/test-terminal-heatmap-recovery.cjs'
       - '.github/workflows/terminal-heatmap-recovery.yml'
   workflow_dispatch:
