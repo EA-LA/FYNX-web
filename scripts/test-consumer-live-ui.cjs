@@ -314,7 +314,7 @@ test('legacy saved Pro tools cannot replace the active analysis',async()=>{
  assert.match(entry.textContent,/no longer available/);
  assert.equal(remove.disabled,false,'legacy records must remain deletable');
  open.onclick();
- assert.equal(h.document.getElementById('toolTitle').textContent,'Position sizing & risk');
+ assert.equal(h.document.getElementById('toolTitle').textContent,'Position risk planner');
  assert.doesNotMatch(h.document.getElementById('result').textContent,/999/);
  assert.equal(h.calls.filter(c=>c.action==='delete'||c.action==='run').length,0);
  h.close();
