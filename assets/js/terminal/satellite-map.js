@@ -1,6 +1,6 @@
 /* FYNX Terminal plugin: Satellite Map mode for the WORLD desk.
  * Isolated addition — does not modify existing Flat or Globe rendering logic.
- * Uses MapLibre GL JS. Tile source is configurable; see docs/SATELLITE-MAP.md.
+ * Uses MapLibre GL JS. Tile source is loaded at runtime; see docs/SATELLITE-MAP.md.
  */
 (window.FynxTerminalPlugins = window.FynxTerminalPlugins || []).push((T) => {
   'use strict';
@@ -32,21 +32,37 @@
     });
   }
 
-  function getStyle() {
-    if (window.FYNX_SATELLITE_STYLE) return window.FYNX_SATELLITE_STYLE;
+  async function resolveStyle() {
+    if (window.FYNX_SATELLITE_STYLE) return { style: window.FYNX_SATELLITE_STYLE, licensed: true };
     const meta = document.querySelector('meta[name="fynx-satellite-style"]');
-    if (meta && meta.content) return meta.content;
-    return {
-      version: 8,
-      sources: {
-        satellite: {
-          type: 'raster',
-          tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
-          tileSize: 256,
-          attribution: '© Esri · Maxar · Earthstar Geographics (development placeholder — not licensed for commercial production)'
+    if (meta && meta.content) return { style: meta.content, licensed: true };
+    try {
+      const r = await fetch('/assets/config/satellite.json', { cache: 'no-store' });
+      if (r.ok) {
+        const cfg = await r.json();
+        if (cfg && cfg.style) return { style: cfg.style, licensed: true };
+        if (cfg && cfg.key) {
+          return {
+            style: 'https://api.maptiler.com/maps/satellite/style.json?key=' + encodeURIComponent(cfg.key),
+            licensed: true
+          };
         }
+      }
+    } catch (_) {}
+    return {
+      style: {
+        version: 8,
+        sources: {
+          satellite: {
+            type: 'raster',
+            tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+            tileSize: 256,
+            attribution: '© Esri · Maxar · Earthstar Geographics (development placeholder — not licensed for commercial production)'
+          }
+        },
+        layers: [{ id: 'satellite', type: 'raster', source: 'satellite' }]
       },
-      layers: [{ id: 'satellite', type: 'raster', source: 'satellite' }]
+      licensed: false
     };
   }
 
@@ -55,11 +71,9 @@
   let popup = null;
   let searchBox = null;
 
-  // Layers that are on by default in world-intel.js when no saved preference exists.
   const DEFAULT_ON = new Set(['conflict', 'zones', 'protests', 'hotspots', 'cyber', 'quakes', 'alerts', 'tankers', 'cargo', 'chokes', 'lights']);
 
   function layerOn(key) {
-    // Existing World Desk checkboxes do not set data-layer; use shared state first.
     if (W.layers && typeof W.layers[key] === 'boolean') return W.layers[key];
     const box = document.querySelector(`input[data-layer="${key}"]`);
     if (box) return box.checked;
@@ -129,23 +143,23 @@
   async function mountSatellite(host) {
     if (mapInstance) return mapInstance;
     const maplibregl = await loadMapLibre();
+    const resolved = await resolveStyle();
     satContainer = document.createElement('div');
     satContainer.className = 'fx-sat-map';
     satContainer.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:2;background:#0a0c0b;';
     host.appendChild(satContainer);
 
-    if (!window.FYNX_SATELLITE_STYLE && !document.querySelector('meta[name="fynx-satellite-style"]')) {
+    if (!resolved.licensed) {
       const note = document.createElement('div');
       note.className = 'fx-sat-notice';
       note.style.cssText = 'position:absolute;top:8px;left:8px;z-index:5;background:rgba(0,0,0,.72);color:#ffd23f;font:12px/1.3 Inter,system-ui,sans-serif;padding:6px 10px;border-radius:6px;max-width:280px;pointer-events:none';
-      note.textContent = 'Development imagery — set FYNX_SATELLITE_STYLE for production';
+      note.textContent = 'Development imagery — configure /assets/config/satellite.json for MapTiler';
       satContainer.appendChild(note);
     }
 
-    const style = getStyle();
     mapInstance = new maplibregl.Map({
       container: satContainer,
-      style,
+      style: resolved.style,
       center: [0, 20],
       zoom: 2,
       attributionControl: true,
