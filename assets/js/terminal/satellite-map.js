@@ -70,6 +70,24 @@
   let satContainer = null;
   let popup = null;
   let searchBox = null;
+  let raisedOverlays = [];
+
+  function elevateMapControls(stage) {
+    if (raisedOverlays.length) return;
+    for (const el of stage.querySelectorAll(':scope > .fx-gtools, :scope > .fx-glayers, :scope > .fx-glegend, :scope > .fx-gcard, :scope > .fx-scard')) {
+      raisedOverlays.push({ el, position: el.style.position, zIndex: el.style.zIndex });
+      if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+      el.style.zIndex = '6';
+    }
+  }
+
+  function restoreMapControls() {
+    for (const item of raisedOverlays) {
+      item.el.style.position = item.position;
+      item.el.style.zIndex = item.zIndex;
+    }
+    raisedOverlays = [];
+  }
 
   const DEFAULT_ON = new Set(['conflict', 'zones', 'protests', 'hotspots', 'cyber', 'quakes', 'alerts', 'tankers', 'cargo', 'chokes', 'lights']);
 
@@ -283,11 +301,13 @@
     const stage = document.querySelector('.fx-gstage');
     if (!stage) return;
     if (mode === 'satellite') {
-      // Retain the actual SVG projection state so returning to the original modes works.
+      // Keep existing controls above the satellite canvas; preserve their layout.
+      elevateMapControls(stage);
       stage.querySelectorAll('.fx-gsvg, .fx-gships').forEach(el => { el.style.visibility = 'hidden'; el.style.pointerEvents = 'none'; });
       mountSatellite(stage).catch(err => console.warn('Satellite map failed', err));
     } else {
       unmountSatellite();
+      restoreMapControls();
       stage.querySelectorAll('.fx-gsvg, .fx-gships').forEach(el => { el.style.visibility = ''; el.style.pointerEvents = ''; });
       // world.js owns projection and its renderGlobe() is private. Use its existing
       // toggle to redraw only when changing projection, without replacing its logic.
