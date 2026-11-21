@@ -19,6 +19,7 @@ const src = fs.readFileSync(path.join(__dirname, '..', 'assets/js/terminal/satel
 assert.ok(src.includes('/assets/config/satellite.json'), 'map must load runtime config');
 assert.ok(src.includes('maplibregl.Map'), 'map must initialize MapLibre');
 assert.ok(src.includes('escapeHTML(value)'), 'popup content must escape HTML');
+assert.ok(!src.includes('server.arcgisonline.com'), 'unlicensed Esri development tiles must not be fetched');
 assert.ok(src.includes('/^https?:\\/\\//i.test(p.url)'), 'popup source links must be http(s)');
 assert.ok(src.includes('originalToggle.click()'), 'flat/globe must use original redraw function');
 assert.ok(src.includes("W.mapMode !== 'satellite'"), 'async mount must respect mode changes');
