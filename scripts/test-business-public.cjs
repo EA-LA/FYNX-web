@@ -9,6 +9,38 @@ const root=path.resolve(__dirname,'..'),tick=()=>new Promise(r=>setImmediate(r))
   assert.equal(requests,id==='bad'?0:1);assert.equal(dom.window.document.getElementById('open-profile').hidden,code!==200||id==='bad');
   assert.equal(dom.window.document.querySelectorAll('img').length,0,'untrusted names are plain text');dom.window.close();
  }
+
+ // Network, malformed API responses and untrusted server errors must remain recoverable.
+ const failures=[
+  ['HTML gateway response',async()=>({ok:false,status:503,json:async()=>{throw SyntaxError('bad JSON from server')}}),/Unable to check this profile/],
+  ['Unexpected success body',async()=>({ok:true,status:200,json:async()=>null}),/Unable to check this profile/],
+  ['Blank shared name',async()=>({ok:true,status:200,json:async()=>({id:'FYNX-1234ABCD',username:'   '})}),/Unable to check this profile/],
+  ['Untrusted server message',async()=>({ok:false,status:503,json:async()=>({error:'secret internal database error'})}),/Unable to check this profile/],
+  ['Offline fetch',async()=>{throw Error('secret internal network details')},/Unable to check this profile/],
+  ['Timed out',async()=>{throw Object.assign(Error('abort details'),{name:'AbortError'})},/connection timed out/]
+ ];
+ for(const [scenario,reply,expected] of failures){
+  const dom=new JSDOM(fs.readFileSync(path.join(root,'shared-profile.html'),'utf8'),{url:'https://www.fynxfinanceworld.com/shared-profile.html?id=FYNX-1234ABCD',runScripts:'outside-only'});
+  dom.window.AbortController=AbortController;dom.window.fetch=reply;
+  dom.window.eval(fs.readFileSync(path.join(root,'assets/js/shared-profile.js'),'utf8'));await tick();
+  const page=dom.window.document,body=page.getElementById('profile-status').textContent;
+  assert.match(body,expected,scenario);
+  assert.doesNotMatch(body,/secret|internal|bad JSON|abort details/i,scenario+' must not expose diagnostics');
+  assert.equal(page.getElementById('retry').hidden,false,scenario+' offers retry');
+  assert.equal(page.getElementById('open-profile').hidden,true);
+  assert.equal(page.getElementById('profile-id').hidden,true);
+  assert.equal(page.getElementById('profile-notice').hidden,true);
+  dom.window.close();
+ }
+ {
+  const dom=new JSDOM(fs.readFileSync(path.join(root,'shared-profile.html'),'utf8'),{url:'https://www.fynxfinanceworld.com/shared-profile.html?id=FYNX-1234ABCD',runScripts:'outside-only'});
+  dom.window.AbortController=AbortController;
+  dom.window.fetch=async()=>({ok:true,status:200,json:async()=>({id:'FYNX-1234ABCD',username:'Trader'})});
+  dom.window.eval(fs.readFileSync(path.join(root,'assets/js/shared-profile.js'),'utf8'));await tick();
+  assert.equal(dom.window.document.getElementById('profile-notice').hidden,true,'Missing optional notice must stay hidden');
+  assert.equal(dom.window.document.getElementById('open-profile').hidden,false);
+  dom.window.close();
+ }
  for(const outcome of ['accepted','denied','network']){
   const html='<div id="formView"><form id="waitlistForm"><input name="fullName" value="Example Trader"><input name="email" value="test@example.invalid"><input name="consent" type="checkbox" checked><button id="submitBtn">Join</button><div id="message"></div></form></div><div id="successView" hidden></div>';
   const dom=new JSDOM(html,{url:'https://ea-la.github.io/fynx-finance-world/waitlist.html',runScripts:'outside-only'});dom.window.AbortController=AbortController;let sent;
@@ -18,5 +50,5 @@ const root=path.resolve(__dirname,'..'),tick=()=>new Promise(r=>setImmediate(r))
   assert.equal(dom.window.document.getElementById('successView').hidden,outcome!=='accepted');assert.equal(dom.window.document.getElementById('submitBtn').disabled,false);
   if(outcome!=='accepted')assert(dom.window.document.getElementById('message').textContent.length>0);dom.window.close();
  }
- console.log('PASS: invalid/private/published profile, safe names, signup success, retryable failure, network failure');
+ console.log('PASS: shared-profile validation, safe private/error responses, offline recovery, missing notices and waitlist flows');
 })().catch(e=>{console.error(e);process.exitCode=1});
