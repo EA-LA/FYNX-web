@@ -1,13 +1,15 @@
 /* TradingView percentage heights require a definite containing block. */
 (function () {
   const watched=new WeakSet();
-  const resize=new ResizeObserver(()=>refresh());
+  // Older iPhone webviews may not support ResizeObserver; window resize
+  // and widget insertion still provide useful fallback triggers.
+  const resize = typeof ResizeObserver === 'function' ? new ResizeObserver(() => refresh()) : null;
   function fit() {
     document.querySelectorAll('.tradingview-widget-container').forEach(container => {
       if (container.closest('#tvTapeWrap')) return;
       const host = container.closest('.widget-shell, .widget, .tv-wrap') || container.parentElement;
       if (!host) return;
-      if (!watched.has(host)) { watched.add(host); resize.observe(host); }
+      if (!watched.has(host)) { watched.add(host); resize?.observe(host); }
       if (!host.clientWidth) return;
       const minimum = parseFloat(getComputedStyle(host).minHeight) || 0;
       // Only size known chart hosts; do not turn ticker/quote badges into charts.
@@ -34,6 +36,26 @@
   window.FYNXTradingViewFit = {refresh};
   document.addEventListener('DOMContentLoaded', refresh);
   window.addEventListener('resize', refresh);
-  new MutationObserver(refresh).observe(document.documentElement, {childList:true, subtree:true});
+  // Market prices, clocks and headlines change often. An unrelated DOM update
+  // should not rescan and resize every embedded chart on the page.
+  function hasChart(node) {
+    return node?.nodeType === 1 && (
+      node.matches?.('.tradingview-widget-container') ||
+      node.querySelector?.('.tradingview-widget-container')
+    );
+  }
+  function chartMutation(records) {
+    if (records.some(record => {
+      const target = record.target;
+      if (target?.nodeType === 1 && (
+        target.matches?.('.tradingview-widget-container') ||
+        target.closest?.('.tradingview-widget-container')
+      )) return true;
+      return [...record.addedNodes, ...record.removedNodes].some(hasChart);
+    })) refresh();
+  }
+  if (typeof MutationObserver === 'function') {
+    new MutationObserver(chartMutation).observe(document.documentElement, {childList:true, subtree:true});
+  }
   refresh();
 })();
