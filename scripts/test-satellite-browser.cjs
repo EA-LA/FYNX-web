@@ -3,11 +3,13 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 
 (async () => {
+  let stage = 'launch';
   const browser = await chromium.launch({ headless: true });
   try {
     const page = await browser.newPage();
     const failures = [];
     page.on('pageerror', error => failures.push(error.message));
+    stage = 'initial document';
     await page.setContent(`<!doctype html><html><head></head><body>
       <div class="fx-gstage" style="position:relative;width:850px;height:450px">
         <svg class="fx-gsvg"></svg><canvas class="fx-gships"></canvas>
@@ -41,37 +43,48 @@ const path = require('node:path');
       window.maplibregl={Map:MockMap,NavigationControl:class{},FullscreenControl:class{},Popup:MockPopup};
       window.__T={S:{world:W}};
     });
+    stage = 'plugin registration';
     await page.addScriptTag({path:path.join(__dirname,'..','assets/js/terminal/satellite-map.js')});
     await page.evaluate(()=>window.FynxTerminalPlugins[0](window.__T));
-    await page.waitForSelector('.fx-sat-modes button');
+    stage = 'switcher injection';
+    await page.waitForSelector('.fx-sat-modes button', {timeout:6000});
     const names=await page.locator('.fx-sat-modes button').allTextContents();
     assert.deepEqual(names,['FLAT','GLOBE','SATELLITE']);
+    stage = 'first satellite activation';
     await page.getByRole('button',{name:'SATELLITE'}).click();
-    await page.waitForFunction(()=>window.__maps.length===1 && !!window.__maps[0].getSource('intel'));
+    stage = 'first map load';
+    await page.waitForFunction(()=>window.__maps.length===1 && !!window.__maps[0].getSource('intel'), {timeout:6000});
     let state=await page.evaluate(()=>({count:window.__maps[0].sources.intel.data.features.length,hidden:document.querySelector('.fx-gsvg').style.visibility}));
     assert.equal(state.count,1);
     assert.equal(state.hidden,'hidden');
+    stage = 'flat mode';
     await page.getByRole('button',{name:'FLAT',exact:true}).click();
     state=await page.evaluate(()=>({flat:window.__W.flat,draws:window.__originalDraws,removed:window.__maps[0].removed,visible:document.querySelector('.fx-gsvg').style.visibility}));
     assert.equal(state.flat,true);
     assert.equal(state.draws,1);
     assert.equal(state.removed,true);
     assert.equal(state.visible,'');
+    stage = 'globe mode';
     await page.getByRole('button',{name:'GLOBE',exact:true}).click();
     assert.equal(await page.evaluate(()=>window.__W.flat),false);
     assert.equal(await page.evaluate(()=>window.__originalDraws),2);
     await page.getByRole('button',{name:'SATELLITE'}).click();
-    await page.waitForFunction(()=>window.__maps.length===2 && !!window.__maps[1].getSource('intel'));
+    stage = 'second map load';
+    await page.waitForFunction(()=>window.__maps.length===2 && !!window.__maps[1].getSource('intel'), {timeout:6000});
     await page.evaluate(()=>{
       window.__maps[1].handlers['click:intel-circles']({
         features:[{properties:{name:'<img src=x onerror=alert(1)>',layer:'quakes',url:'javascript:alert(1)'}}],
         lngLat:{lng:1,lat:2}
       });
     });
+    stage = 'popup validation';
     const html=await page.evaluate(()=>window.__popupHTML);
     assert.ok(html.includes('&lt;img'));
     assert.ok(!html.includes('href="javascript:'));
     assert.deepEqual(failures,[]);
     console.log('Satellite browser smoke test passed: modes, mount, marker, popup safety');
+  } catch (error) {
+    console.error('::error title=Satellite browser smoke test failed::' + stage + ': ' + error.message.replace(/\n/g, ' '));
+    throw error;
   } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exit(1);});
