@@ -142,7 +142,7 @@
     if (p.time) lines.push('Time: ' + p.time);
     if (p.updated) lines.push('Feed: ' + p.updated);
     if (p.source) lines.push('Source: ' + p.source);
-    if (p.url) lines.push(`<a href="${p.url}" target="_blank" rel="noopener" style="color:#7ec8ff">Open source</a>`);
+    if (p.url && /^https?:\/\//i.test(p.url)) lines.push(`<a href="${p.url}" target="_blank" rel="noopener noreferrer" style="color:#7ec8ff">Open source</a>`);
     const html = `<div style="font:13px/1.45 Inter,system-ui,sans-serif;color:#e8e8e8;background:#0d1110;padding:10px 12px;border-radius:8px;max-width:300px;border:1px solid rgba(255,255,255,.08)">${lines.join('<br>')}</div>`;
     popup.setLngLat(lngLat).setHTML(html).addTo(mapInstance);
   }
