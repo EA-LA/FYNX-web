@@ -1,0 +1,25 @@
+/* Scoped satellite map polish: original Flat/Globe styles remain unchanged. */
+.fx-gstage.fx-satellite-active{overflow:hidden;isolation:isolate}
+.fx-satellite-active .fx-gtools{z-index:12!important;max-width:calc(100% - 12px);align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.fx-satellite-active .fx-ilp{z-index:10!important;box-sizing:border-box;max-height:calc(100% - 58px);background:rgba(5,10,12,.96)}
+.fx-satellite-active .fx-glegend{z-index:9!important;bottom:3px;left:3px;right:3px;padding:4px 7px;gap:7px;line-height:1.15;background:rgba(5,9,12,.88)}
+.fx-satellite-active .fx-gcard,.fx-satellite-active .fx-scard{z-index:11!important}
+.fx-satellite-active .fx-sat-map{overflow:hidden;max-width:100%}
+.fx-satellite-active .fx-sat-modes{display:flex;align-items:center;flex-shrink:0;gap:2px}
+.fx-satellite-active .fx-sat-modes .fx-gbtn{padding:0 7px;min-width:unset}
+.fx-satellite-active .fx-sat-modes .fx-active{border-color:#ffb000;color:#ffb000}
+.fx-sat-search{position:absolute;right:9px;top:45px;z-index:5;box-sizing:border-box;width:min(245px,calc(100% - 18px));height:29px;padding:5px 9px;background:rgba(6,11,12,.96)!important;color:#eee!important;border:1px solid #34423b!important;border-radius:2px!important;font:12px Inter,Arial,sans-serif}
+.fx-sat-search:focus{outline:1px solid #ffb000}
+.fx-sat-map .maplibregl-ctrl-bottom-left{bottom:33px}
+.fx-sat-map .maplibregl-ctrl-attrib{background:rgba(5,9,12,.85)!important;color:#cad2d1!important;font:10px Inter,Arial,sans-serif}
+.fx-sat-map .maplibregl-ctrl-attrib a{color:#b4dce9!important}
+.fx-sat-map .maplibregl-popup-content{background:#0d1110!important;border:1px solid #384640!important;color:#e8e8e8!important;padding:0!important}
+.fx-sat-map .maplibregl-popup-tip{border-top-color:#0d1110!important}
+.fx-sat-map .maplibregl-popup-close-button{color:#fff;background:#27342f}
+@media(max-width:760px){
+ .fx-satellite-active .fx-gtools{left:5px;right:5px;top:5px;justify-content:flex-end;gap:2px}
+ .fx-satellite-active .fx-gtools .fx-gbtn{height:30px;padding:0 5px}
+ .fx-satellite-active .fx-ilp{top:76px!important;max-height:calc(100% - 120px)}
+ .fx-sat-search{right:6px;top:41px;width:min(215px,calc(100% - 12px))}
+ .fx-satellite-active .fx-glegend{font-size:10px;gap:4px}
+}
