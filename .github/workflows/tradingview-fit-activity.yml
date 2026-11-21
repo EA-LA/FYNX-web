@@ -1,0 +1,28 @@
+name: TradingView chart sizing and mutation regression
+on:
+  pull_request:
+    paths:
+      - 'assets/js/tradingview-fit.js'
+      - 'scripts/test-tradingview-fit-activity.cjs'
+      - '.github/workflows/tradingview-fit-activity.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/tradingview-fit.js'
+      - 'scripts/test-tradingview-fit-activity.cjs'
+      - '.github/workflows/tradingview-fit-activity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  chart-sizing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check assets/js/tradingview-fit.js
+      - run: node --check scripts/test-tradingview-fit-activity.cjs
+      - run: node --test scripts/test-tradingview-fit-activity.cjs
