@@ -1,63 +1,60 @@
-# FYNX Satellite Map — Production Requirements
+# FYNX Satellite Map — MapTiler production configuration
 
-## Overview
-Third map mode for FYNX World Desk: **FLAT | GLOBE | SATELLITE**.
+## What is implemented
+The Satellite Map loads its tile style at runtime. The key is never stored in git.
 
-- Engine: MapLibre GL JS 4.7.1 (CDN)
-- Existing Flat Map and Globe Map code paths are **not modified**
-- Three-way switcher is injected into the existing World Desk tools bar
-- Intelligence markers are plotted as clustered GeoJSON circles
-- Clicking a marker opens a popup with available fields only
-- Location search accepts coordinates or place names
+Load order:
+1. `window.FYNX_SATELLITE_STYLE` (if set before the map mounts)
+2. `<meta name="fynx-satellite-style">`
+3. `GET /assets/config/satellite.json` (preferred for this site)
+4. Development placeholder (Esri) with a yellow notice — not for commercial use
 
-## MapTiler configuration (exact)
-
-### What to create
-1. Sign up at https://www.maptiler.com/
-2. Open **Account → Keys** and create an API key.
-3. Restrict the key:
-   - Allowed HTTP referrers: `https://www.fynxfinanceworld.com/*`, `https://fynxfinanceworld.com/*`, and any preview host you use.
-   - Do not leave the key unrestricted.
-4. Choose a commercial plan that covers your expected map loads. The free tier is not assumed suitable for commercial production — confirm MapTiler's current terms.
-
-### What the app expects
-A MapLibre style URL or style object. The satellite style is:
-
+Expected MapTiler style:
 ```
 https://api.maptiler.com/maps/satellite/style.json?key=YOUR_MAPTILER_KEY
 ```
 
-### Secure configuration (preferred)
-Do **not** put the key in committed source or in a public meta tag if you can avoid it.
+## Exact hosting steps (GitHub Pages / static host)
 
-Preferred order:
-1. **Backend proxy** (best). Store the key in a server-only environment variable (`MAPTILER_API_KEY`). Serve tiles or the style through your own origin so the browser never sees the key.
-2. **Domain-restricted key** (acceptable if proxy is not ready). Inject the style URL at runtime from a non-committed config:
-   ```html
-   <meta name="fynx-satellite-style" content="https://api.maptiler.com/maps/satellite/style.json?key=YOUR_KEY">
-   ```
-   or
-   ```js
-   window.FYNX_SATELLITE_STYLE = 'https://api.maptiler.com/maps/satellite/style.json?key=YOUR_KEY';
-   ```
-   Restrict the key to your domains in the MapTiler dashboard. The key is still visible to the browser, but MapTiler will reject requests from other sites.
+The site is served from the repository (CNAME `www.fynxfinanceworld.com`). GitHub Pages cannot inject secrets at request time, so the key must be written into a non-committed config file at deploy time, or uploaded once.
 
-Never commit the key. Never paste it into a public repository, issue, or PR comment.
+### 1. Restrict the MapTiler key
+In MapTiler → Account → Keys → FYNX Satellite Map:
+- Allowed HTTP referrers:
+  - `https://www.fynxfinanceworld.com/*`
+  - `https://fynxfinanceworld.com/*`
+  - any preview host you use
+- Do not leave the key unrestricted.
 
-### Until a key is set
-The map falls back to Esri World Imagery as a **development placeholder** and shows a yellow notice. That source is not approved for commercial deployment.
+### 2. Store the key as a hosting secret
+GitHub → EA-LA/FYNX-web → Settings → Secrets and variables → Actions → New repository secret:
+- Name: `MAPTILER_API_KEY`
+- Value: the MapTiler key (not the full URL)
 
-## Files
-- `assets/js/terminal/satellite-map.js`
-- `docs/SATELLITE-MAP.md`
-- `terminal.html` (script include only)
+### 3. Deliver the config at runtime
+The map fetches this file (not in git):
+```
+/assets/config/satellite.json
+```
 
-## Verification status
-- GitHub Actions on the latest commit: **passed** (tree safety, world-intel headline, terminal heatmap, headline, tour, scanner, portfolio)
-- Flat and Globe source code: **not modified**
-- Production browser testing: **unavailable in this environment**
-- Production build: **not executed in this environment**
+Contents (generated, never committed):
+```json
+{
+  "style": "https://api.maptiler.com/maps/satellite/style.json?key=YOUR_MAPTILER_KEY"
+}
+```
 
-## Remaining blockers
-- Licensed MapTiler key (or equivalent) must be supplied before commercial deployment
-- Browser verification of all three modes, marker clicks, and mobile layout is still required
+How to generate it on deploy without committing it:
+```bash
+mkdir -p assets/config
+printf '{"style":"https://api.maptiler.com/maps/satellite/style.json?key=%s"}\n' "$MAPTILER_API_KEY" > assets/config/satellite.json
+```
+Run that step in the deploy job after checkout and before the Pages upload. The file is then served to the browser; the key is domain-restricted in MapTiler so other sites cannot reuse it.
+
+### 4. One-time manual option (if you are not using a deploy job yet)
+Upload `assets/config/satellite.json` with the same JSON to the live host. Do not add it to the repository.
+
+## Verification
+- Flat and Globe source code are unchanged
+- Browser testing of the three modes is not available in this environment
+- After the config file is live, open Terminal → World Desk → SATELLITE. The yellow notice should be gone and MapTiler imagery should load.
