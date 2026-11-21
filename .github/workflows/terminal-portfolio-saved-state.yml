@@ -1,0 +1,36 @@
+name: Terminal portfolio saved-state recovery
+
+on:
+  pull_request:
+    paths:
+      - "assets/js/terminal/portfolio.js"
+      - "terminal.html"
+      - "scripts/test-terminal-portfolio-saved-state.cjs"
+      - ".github/workflows/terminal-portfolio-saved-state.yml"
+  push:
+    branches: [main]
+    paths:
+      - "assets/js/terminal/portfolio.js"
+      - "terminal.html"
+      - "scripts/test-terminal-portfolio-saved-state.cjs"
+      - ".github/workflows/terminal-portfolio-saved-state.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  saved-state:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check syntax
+        run: |
+          node --check assets/js/terminal/portfolio.js
+          node --check scripts/test-terminal-portfolio-saved-state.cjs
+      - name: Verify damaged preferences recover without losing valid items
+        run: node --test scripts/test-terminal-portfolio-saved-state.cjs
