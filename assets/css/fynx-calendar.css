@@ -79,3 +79,5 @@ button.fc-actual:hover{border-color:var(--fc-accent);text-decoration:none}
 .fc-actual{flex:0 0 auto}
 @media (max-width:640px){.fc-nums{flex-wrap:wrap;row-gap:2px}}
 @media (hover:none) and (pointer:coarse){.fc-actual{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;font-size:13px}}
+/* [site-qa] run 111: filter chips ("All", "USD"...) were 35px wide on iPhone - 44px minimum tap width. */
+@media (hover:none) and (pointer:coarse){.fc-chip{min-width:44px}}

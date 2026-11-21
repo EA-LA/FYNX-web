@@ -68,3 +68,8 @@
 @media (hover:none) and (pointer:coarse) and (max-width:820px){
   html body .your-news-filters select,html body .your-news-filters input[type="search"]{min-height:44px;box-sizing:border-box}
 }
+
+/* [site-qa] run 111: short topic buttons ("Oil", "Gold") were 42px wide on iPhone - 44px minimum tap width. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body .your-news-topic-buttons button{min-width:44px}
+}

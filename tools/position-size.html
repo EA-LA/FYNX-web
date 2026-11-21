@@ -411,6 +411,9 @@
     .streakTable td{color:var(--text-strong);font-size:13px;font-weight:800;text-align:right;padding:6px 3px;border-top:1px solid var(--border2);white-space:nowrap}
     .streakTable th:first-child,.streakTable td:first-child{text-align:left}
     .streakTable td[colspan]{text-align:left;color:var(--muted2);font-weight:700}
+    .streakTable tr.yours td{color:var(--text-strong);font-weight:900;background:var(--border2)}
+    #stopsBox[hidden]{display:none}
+    @media (max-width:380px){ .streakTable th{font-size:10.5px;padding:4px 2px} .streakTable td{font-size:12px;padding:6px 2px} }
     .note{
       color: var(--muted2);
       font-size: 12px;
@@ -626,6 +629,15 @@
               <table class="streakTable">
                 <thead><tr><th scope="col">Losses</th><th scope="col">Balance after</th><th scope="col">Drawdown</th><th scope="col">Gain to recover</th></tr></thead>
                 <tbody id="streakRows"><tr><td colspan="4">Enter a balance and risk.</td></tr></tbody>
+              </table>
+            </div>
+
+            <div class="streakBox" id="stopsBox" aria-live="polite" hidden>
+              <div class="k">SAME RISK, OTHER STOPS</div>
+              <small id="stopsMode">Lots that keep the same dollar risk if you choose a different stop.</small>
+              <table class="streakTable">
+                <thead><tr><th scope="col">Stop (pips)</th><th scope="col">Lots</th><th scope="col">Loss at stop</th><th scope="col">Unused risk</th></tr></thead>
+                <tbody id="stopsRows"></tbody>
               </table>
             </div>
 
@@ -894,10 +906,44 @@
     }
 
     /* =========================
+       SAME RISK, OTHER STOPS ([site-qa] run 111)
+       Lots for common stop distances at the same dollar risk and pip value, rounded
+       down to 0.01 like the main result. Loss at stop = lots x stop x pip value.
+    ========================== */
+    function renderStopTable(riskUSD, stopPips, pvUSD){
+      const box = document.getElementById("stopsBox");
+      const body = document.getElementById("stopsRows");
+      if (!box || !body) return;
+      if (!(riskUSD > 0) || !(stopPips > 0) || !(pvUSD > 0)){ box.hidden = true; body.innerHTML = ""; return; }
+      const stops = [10, 15, 20, 25, 30, 40, 50, 75, 100];
+      if (!stops.includes(stopPips)) stops.push(stopPips);
+      stops.sort((a, b) => a - b);
+      const money = n => "$" + n.toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2});
+      body.innerHTML = stops.map(sp => {
+        const lots = positionSizeLots(riskUSD, sp, pvUSD);
+        const yours = sp === stopPips;
+        const label = (Number.isInteger(sp) ? String(sp) : fmt(sp, 2)) + (yours ? " (yours)" : "");
+        if (!lots) return `<tr${yours ? ' class="yours"' : ""}><td>${label}</td><td>0.00</td><td colspan="2">Below 0.01 lot</td></tr>`;
+        const loss = Math.round(lots * sp * pvUSD * 100) / 100;
+        const unused = Math.max(0, Math.round((riskUSD - loss) * 100) / 100);
+        return `<tr${yours ? ' class="yours"' : ""}><td>${label}</td><td>${fmt(lots, 2)}</td><td>${money(loss)}</td><td>${money(unused)}</td></tr>`;
+      }).join("");
+      document.getElementById("stopsMode").textContent =
+        "Keeping $" + fmt(riskUSD, 2) + " of risk at $" + fmt(pvUSD, 2) + " per pip per lot. Lots round down to 0.01, before costs.";
+      box.hidden = false;
+    }
+
+    function clearResults(){
+      ["lotsOut", "unitsOut", "pipOut", "usedPriceOut"].forEach(k => { els[k].textContent = "—"; });
+      renderStopTable(0, 0, 0);
+    }
+
+    /* =========================
        CALCULATE
     ========================== */
     async function calculate(){
       setMessage("");
+      clearResults();
 
       const pair = els.pair.value;
       const bal = parseFloat(els.balance.value) || 0;
@@ -947,6 +993,7 @@
 
         els.pipOut.textContent = fmt(pvUSD, 2);
         els.usedPriceOut.textContent = displayedPrice(pair, usedPrice);
+        renderStopTable(riskUSD, stopPips, pvUSD);
       } catch (e){
         if (request === priceRequest && pair === els.pair.value) setMessage("Could not compute pip value (conversion failed).");
       } finally{
@@ -1046,6 +1093,7 @@
       els.manualPrice.value = p.manualPrice ?? "";
       document.getElementById("quoteUsdRate").value = "";
 
+      clearResults();
       computeAccountRiskUSD();
       startAutoUpdates();
       setMessage("");
@@ -1136,6 +1184,7 @@
       const toggleRisk = () => {
         usePercentRisk = !usePercentRisk;
         syncRiskUI();
+        clearResults();
       };
       els.riskSwitch.addEventListener("click", toggleRisk);
       els.riskSwitch.addEventListener("keydown", (e) => {
@@ -1147,12 +1196,13 @@
         document.getElementById("quoteUsdRate").value = "";
         setMessage("");
         setStopPipsDecimals();
-        els.lotsOut.textContent = "—";
-        els.unitsOut.textContent = "—";
-        els.pipOut.textContent = "—";
-        els.usedPriceOut.textContent = "—";
+        clearResults();
         startAutoUpdates();
       });
+
+      // A result no longer matches once an input is edited: clear it until Calculate is pressed again.
+      [els.balance, els.riskPercent, els.riskDollars, els.stopPips, els.manualPrice, document.getElementById("quoteUsdRate")]
+        .forEach(el => el.addEventListener("input", clearResults));
 
       ["input","blur"].forEach(evt => {
         els.balance.addEventListener(evt, computeAccountRiskUSD);
