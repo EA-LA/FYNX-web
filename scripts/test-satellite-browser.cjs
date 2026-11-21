@@ -103,6 +103,15 @@ const path = require('node:path');
         lngLat:{lng:1,lat:2}
       });
     });
+    stage = 'cluster expansion';
+    await page.evaluate(()=>{
+      const map=window.__maps[1];
+      map.sources.intel.getClusterExpansionZoom=async()=>6;
+      map.handlers['click:clusters']({
+        features:[{properties:{cluster_id:42},geometry:{coordinates:[1,2]}}]
+      });
+    });
+    await page.waitForFunction(()=>window.__maps[1].lastEase?.zoom===6,null,{timeout:3000});
     stage = 'popup validation';
     const html=await page.evaluate(()=>window.__popupHTML);
     assert.ok(html.includes('&lt;img'));
