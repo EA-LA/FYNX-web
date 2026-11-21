@@ -28,7 +28,7 @@ Style used:
 1. `window.FYNX_SATELLITE_STYLE`
 2. `<meta name="fynx-satellite-style">`
 3. `GET /assets/config/satellite.json`
-4. Development placeholder with a yellow notice (not for commercial use)
+4. Safe blank background with a configuration notice (no unlicensed fallback imagery)
 
 ## Checks
 - `scripts/test-satellite-config.cjs` — config shape and map init contract
