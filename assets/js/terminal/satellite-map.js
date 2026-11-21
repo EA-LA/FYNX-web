@@ -331,7 +331,7 @@
         addSource('country-labels',labels);
         mapInstance.addLayer({
           id:'sat-country-labels',type:'symbol',source:'country-labels',
-          minzoom:2,
+          minzoom:1.3,
           layout:{'text-field':['get','name'],'text-size':['interpolate',['linear'],['zoom'],2,10,6,13],
             'text-font':['Open Sans Regular','Arial Unicode MS Regular'],'text-allow-overlap':false,'text-padding':4},
           paint:{'text-color':'#f0f0e7','text-halo-color':'rgba(3,8,12,.95)','text-halo-width':1.4}
@@ -415,9 +415,10 @@
           const f=e.features?.[0]; if (!f) return;
           const src=mapInstance.getSource(source);
           if (!src?.getClusterExpansionZoom) return;
-          src.getClusterExpansionZoom(f.properties.cluster_id,(err,zoom)=>{
-            if (!err && mapInstance) mapInstance.easeTo({center:f.geometry.coordinates,zoom});
-          });
+          // MapLibre GL JS v4+ returns a Promise, not a callback.
+          Promise.resolve(src.getClusterExpansionZoom(f.properties.cluster_id))
+            .then(zoom=>{if(mapInstance && W.mapMode==='satellite')mapInstance.easeTo({center:f.geometry.coordinates,zoom});})
+            .catch(error=>console.warn('Cluster expansion unavailable',error));
         });
       }
       const panel=host.querySelector('.fx-ilp,.fx-glayers');
