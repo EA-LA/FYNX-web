@@ -304,3 +304,21 @@ test('paid journal analytics rows are presented as a labelled data table',async(
  assert.equal(table.querySelector('tbody tr td')?.textContent,'2026-11-20');
  h.close();
 });
+
+
+test('membership refresh removes previously rendered paid results after access is revoked',async()=>{
+ let tier='starter';
+ const h=await load({user:true,query:'?tool=risk',handler:data=>{
+  if(data.action==='status')return {tier,plans:PLANS,hasBillingAccount:true};
+  if(data.action==='run')return {result:{positionUnits:987654}};
+ }});
+ h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.match(h.document.getElementById('result').textContent,/987,654|987654/);
+ tier=null;
+ await h.document.getElementById('loadSaved').onclick();
+ assert.doesNotMatch(h.document.getElementById('result').textContent,/987,654|987654/);
+ assert.match(h.document.getElementById('result').textContent,/Membership access changed/);
+ assert.doesNotMatch(h.document.getElementById('accessMessage').textContent,/Included in your membership/);
+ h.close();
+});
