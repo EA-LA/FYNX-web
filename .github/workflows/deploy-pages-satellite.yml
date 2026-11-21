@@ -1,0 +1,78 @@
+name: Deploy site with MapTiler config
+
+# Injects MAPTILER_API_KEY into the published site only.
+# The key is never committed. Requires Settings → Pages → Source = GitHub Actions.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Require MapTiler secret
+        env:
+          MAPTILER_API_KEY: ${{ secrets.MAPTILER_API_KEY }}
+        run: |
+          if [ -z "$MAPTILER_API_KEY" ]; then
+            echo "::error::MAPTILER_API_KEY secret is missing"
+            exit 1
+          fi
+
+      - name: Write runtime satellite config
+        env:
+          MAPTILER_API_KEY: ${{ secrets.MAPTILER_API_KEY }}
+        run: |
+          mkdir -p assets/config
+          python3 - << 'PY'
+          import json, os
+          key = os.environ["MAPTILER_API_KEY"].strip()
+          if not key or len(key) < 8:
+            raise SystemExit("MAPTILER_API_KEY is empty or too short")
+          style = "https://api.maptiler.com/maps/satellite/style.json?key=" + key
+          with open("assets/config/satellite.json", "w") as f:
+            json.dump({"style": style, "provider": "maptiler"}, f)
+          print("Wrote assets/config/satellite.json (key not printed)")
+          PY
+
+      - name: Verify config shape without printing the key
+        run: |
+          python3 - << 'PY'
+          import json
+          cfg = json.load(open("assets/config/satellite.json"))
+          style = cfg.get("style", "")
+          assert style.startswith("https://api.maptiler.com/maps/satellite/style.json?key=")
+          assert "YOUR_" not in style
+          print("satellite.json shape ok")
+          PY
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

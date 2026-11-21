@@ -1,0 +1,30 @@
+name: Satellite config and map init check
+
+on:
+  pull_request:
+    paths:
+      - assets/js/terminal/satellite-map.js
+      - scripts/test-satellite-config.cjs
+      - scripts/test-satellite-browser.cjs
+      - .github/workflows/satellite-config-check.yml
+      - terminal.html
+      - docs/SATELLITE-MAP.md
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/test-satellite-config.cjs
+      - name: Install browser smoke test dependencies
+        run: |
+          mkdir -p "$RUNNER_TEMP/fynx-browser-test"
+          npm install --prefix "$RUNNER_TEMP/fynx-browser-test" --no-save playwright
+          "$RUNNER_TEMP/fynx-browser-test/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Run satellite Chromium smoke tests
+        run: NODE_PATH="$RUNNER_TEMP/fynx-browser-test/node_modules" node scripts/test-satellite-browser.cjs
