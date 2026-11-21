@@ -24,7 +24,7 @@ const path = require('node:path');
       class MockMap {
         constructor(opts){ this.opts=opts; this.handlers={}; this.sources={};this.canvas={style:{}};window.__maps.push(this); queueMicrotask(()=>this.handlers.load?.());}
         addControl(){}
-        on(event,layer,fn){this.handlers[event]=typeof layer==='function'?layer:fn;}
+        on(event,layer,fn){this.handlers[typeof layer==='string'?event+':'+layer:event]=typeof layer==='function'?layer:fn;}
         addSource(name,source){this.sources[name]={...source,setData:(data)=>{this.sources[name].data=data;}};}
         getSource(name){return this.sources[name];}
         addLayer(){}
@@ -63,7 +63,7 @@ const path = require('node:path');
     await page.getByRole('button',{name:'SATELLITE'}).click();
     await page.waitForFunction(()=>window.__maps.length===2 && !!window.__maps[1].getSource('intel'));
     await page.evaluate(()=>{
-      window.__maps[1].handlers.click({
+      window.__maps[1].handlers['click:intel-circles']({
         features:[{properties:{name:'<img src=x onerror=alert(1)>',layer:'quakes',url:'javascript:alert(1)'}}],
         lngLat:{lng:1,lat:2}
       });
