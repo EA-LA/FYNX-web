@@ -304,3 +304,18 @@ test('paid journal analytics rows are presented as a labelled data table',async(
  assert.equal(table.querySelector('tbody tr td')?.textContent,'2026-11-20');
  h.close();
 });
+
+test('legacy saved Pro tools cannot replace the active analysis',async()=>{
+ const legacy={id:'old-1',name:'Archived model',product:'retired-product',input:{},result:{positionUnits:999}};
+ const h=await load({user:true,tier:'pro',query:'?tool=risk',handler:data=>data.action==='list'?{items:[legacy],limit:500}:undefined});
+ const entry=h.document.querySelector('#savedItems article');
+ const [open,remove]=entry.querySelectorAll('button');
+ assert.equal(open.disabled,true,'unsupported saved tool must not be opened');
+ assert.match(entry.textContent,/no longer available/);
+ assert.equal(remove.disabled,false,'legacy records must remain deletable');
+ open.onclick();
+ assert.equal(h.document.getElementById('toolTitle').textContent,'Position sizing & risk');
+ assert.doesNotMatch(h.document.getElementById('result').textContent,/999/);
+ assert.equal(h.calls.filter(c=>c.action==='delete'||c.action==='run').length,0);
+ h.close();
+});
