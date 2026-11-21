@@ -35,7 +35,7 @@ function setup(initial = {}) {
     S: {focus: 'AAPL'},
     el: element,
     btn: (label, _cls, onClick) => { const b = element(); b.label = label; b.click = onClick; buttons.push(b); return b; },
-    svg: (tag) => {drawn.push(tag); return element();},
+    svg: (tag, attrs) => {drawn.push({tag, attrs}); return element();},
     store: {get: key => storage[key] ?? null, set: (key, value) => {storage[key] = value;}},
     finite: Number.isFinite,
     signed: n => String(n),
@@ -86,7 +86,7 @@ test('old object-shaped drawing state does not break chart rendering', async () 
 test('null and incomplete trend/level entries do not break chart rendering', async () => {
   const {pages, drawn} = setup({'draw-AAPL': JSON.stringify([null, {type:'trend', a:null}, {type:'h', price:'invalid'}, {type:'h', price:103}])});
   await pages.chart(element(), 'AAPL', () => true);
-  assert.ok(drawn.includes('line'), 'A valid level should still render');
+  assert.ok(drawn.some(x => x.tag === 'line' && x.attrs?.stroke === '#ffb000'), 'A valid saved level should still render');
 });
 test('corrupt comparison list can switch mode and add a valid market', async () => {
   const h = setup({'cmp-list': '{"legacy":true}'});
