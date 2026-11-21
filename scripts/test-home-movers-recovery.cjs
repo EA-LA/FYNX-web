@@ -13,11 +13,12 @@ const snapshot = Object.freeze({
   gainers: [{ symbol: 'AAPL', name: 'Apple<img src=x onerror=alert(1)>', price: 245.12, changePct: 1.5, marketCap: 2500000000000 }],
   losers: [], active: [], crypto: [], aiUnder3: []
 });
-function setup(initialMode = 'ok', initialSnapshot = snapshot) {
+function setup(initialMode = 'ok', initialSnapshot = snapshot, withoutAbortController = false) {
   const dom = new JSDOM('<div id="homeSecondaryStories"></div>', {
     url: 'https://www.fynxfinanceworld.com/', runScripts: 'outside-only', pretendToBeVisual: true
   });
   const w = dom.window;
+  if (withoutAbortController) w.AbortController = undefined;
   let mode = initialMode, requests = 0, pending = null, payload = initialSnapshot;
   const intervals = [], timeouts = new Map();
   let nextTimer = 0;
@@ -27,12 +28,14 @@ function setup(initialMode = 'ok', initialSnapshot = snapshot) {
   w.fetch = (_url, opts) => {
     requests++;
     assert.equal(opts.cache, 'no-store');
-    assert.ok(opts.signal, 'requests must be abortable');
+    if (withoutAbortController) assert.equal(opts.signal, undefined, 'legacy webviews omit signal');
+    else assert.ok(opts.signal, 'modern requests must be abortable');
     if (mode === 'fail') return Promise.reject(Error('offline'));
     if (mode === 'invalid') return Promise.resolve({ ok: true, json: async () => ({ gainers: null }) });
+    if (mode === 'json-stall') return Promise.resolve({ ok: true, json: () => new Promise(() => {}) });
     if (mode === 'stall') return new Promise((_, reject) => {
       pending = { signal: opts.signal };
-      opts.signal.addEventListener('abort', () => reject(Error('aborted')), { once: true });
+      opts.signal?.addEventListener('abort', () => reject(Error('aborted')), { once: true });
     });
     return Promise.resolve({ ok: true, json: async () => payload });
   };
@@ -280,5 +283,52 @@ test('partial refresh retains earlier verified crypto but never displays unverif
     assert.match(app.host().textContent, /ETH/);
     assert.doesNotMatch(app.host().textContent, /Update failed/);
     assert.equal(app.host().querySelector('.fx-live').classList.contains('is-stale'), false);
+  } finally { app.close(); }
+});
+
+test('webviews without AbortController still load, refresh and retry verified movers', async () => {
+  const app = setup('ok', snapshot, true);
+  try {
+    await flush(); await flush();
+    assert.equal(app.host().querySelectorAll('.fx-mv').length, 1);
+    app.mode('fail'); app.intervals[0]();
+    await flush(); await flush();
+    assert.match(app.host().textContent, /Update failed. Showing the previous snapshot/);
+    app.mode('ok'); app.host().querySelector('[data-movers-retry]').click();
+    await flush(); await flush();
+    assert.match(app.host().textContent, /AAPL/);
+    assert.doesNotMatch(app.host().textContent, /Update failed/);
+  } finally { app.close(); }
+});
+
+test('webviews without AbortController time out stalled requests and allow retry', async () => {
+  const app = setup('stall', snapshot, true);
+  try {
+    assert.equal(app.requests, 1);
+    assert.equal(app.timeouts.size, 1);
+    assert.equal(app.pending.signal, undefined);
+    [...app.timeouts.values()][0]();
+    await flush(); await flush();
+    assert.match(app.host().textContent, /temporarily unavailable/);
+    assert.ok(app.host().querySelector('[data-movers-retry]'));
+    assert.equal(app.timeouts.size, 0);
+    app.mode('ok'); app.host().querySelector('[data-movers-retry]').click();
+    await flush(); await flush();
+    assert.match(app.host().textContent, /AAPL/);
+  } finally { app.close(); }
+});
+
+test('stalled JSON parsing cannot leave Market Movers loading indefinitely', async () => {
+  const app = setup('json-stall');
+  try {
+    assert.equal(app.requests, 1);
+    assert.equal(app.timeouts.size, 1);
+    [...app.timeouts.values()][0]();
+    await flush(); await flush();
+    assert.match(app.host().textContent, /temporarily unavailable/);
+    assert.ok(app.host().querySelector('[data-movers-retry]'));
+    app.mode('ok'); app.host().querySelector('[data-movers-retry]').click();
+    await flush(); await flush();
+    assert.match(app.host().textContent, /AAPL/);
   } finally { app.close(); }
 });
