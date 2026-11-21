@@ -420,7 +420,7 @@
       // Existing world feeds refresh while this tile is open; map sources follow.
       refreshHandle=setInterval(()=>{if(!document.hidden && W.mapMode==='satellite')updateMarkers();},12000);
       if (window.ResizeObserver) {
-        resizeObserver=new ResizeObserver(()=>{if(mapInstance)mapInstance.resize();});
+        resizeObserver=new ResizeObserver(()=>{if(mapInstance && typeof mapInstance.resize==='function')mapInstance.resize();});
         resizeObserver.observe(host);
       }
       updateMarkers();
@@ -431,6 +431,9 @@
   }
 
   function unmountSatellite() {
+    if (refreshHandle) {clearInterval(refreshHandle);refreshHandle=null;}
+    if (panelCleanup) {panelCleanup();panelCleanup=null;}
+    if (resizeObserver) {resizeObserver.disconnect();resizeObserver=null;}
     if (mapInstance) { try { mapInstance.remove(); } catch (_) {} mapInstance = null; }
     if (satContainer && satContainer.parentNode) { satContainer.parentNode.removeChild(satContainer); satContainer = null; }
     searchBox = null;
@@ -442,6 +445,7 @@
     try { localStorage.setItem('fynx-map-mode', mode); } catch (_) {}
     const stage = document.querySelector('.fx-gstage');
     if (!stage) return;
+    stage.classList.toggle('fx-satellite-active',mode==='satellite');
     if (mode === 'satellite') {
       // Keep existing controls above the satellite canvas; preserve their layout.
       elevateMapControls(stage);
@@ -469,7 +473,7 @@
     const modes = [['flat', 'FLAT'], ['globe', 'GLOBE'], ['satellite', 'SATELLITE']];
     const group = document.createElement('div');
     group.className = 'fx-sat-modes';
-    group.style.cssText = 'display:inline-flex;gap:4px;margin-right:6px;';
+    group.style.cssText = 'display:inline-flex;gap:2px;margin-right:4px;';
     modes.forEach(([id, label]) => {
       const b = document.createElement('button');
       b.type = 'button';
