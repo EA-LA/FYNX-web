@@ -1,0 +1,30 @@
+name: Login return screen accessibility regression
+
+on:
+  pull_request:
+    paths:
+      - "app-return.html"
+      - "scripts/test-app-return-accessibility.cjs"
+      - ".github/workflows/app-return-accessibility.yml"
+  push:
+    branches: [main]
+    paths:
+      - "app-return.html"
+      - "scripts/test-app-return-accessibility.cjs"
+      - ".github/workflows/app-return-accessibility.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  login-return:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node --check scripts/test-app-return-accessibility.cjs
+      - run: node --test scripts/test-app-return-accessibility.cjs
