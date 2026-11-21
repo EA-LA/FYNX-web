@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - assets/js/terminal/satellite-map.js
+      - assets/js/terminal/world.js
+      - assets/js/terminal/world-intel.js
+      - assets/css/terminal-satellite.css
       - scripts/test-satellite-config.cjs
       - scripts/test-satellite-browser.cjs
       - .github/workflows/satellite-config-check.yml
