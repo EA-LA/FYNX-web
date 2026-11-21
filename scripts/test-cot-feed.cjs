@@ -44,6 +44,17 @@ savedOnly.checked=false;savedOnly.dispatchEvent(new w.Event('change'));
 assert.equal(w.document.querySelectorAll('#cotRows tr').length,2,'show all restores the verified snapshot');
 assert.equal(w.document.querySelector('#cotRows .cot-save').getAttribute('aria-pressed'),'true','saved state survives refresh');
 
+// Contract codes are stable identifiers used in CFTC publications; searching by code must also scope CSV export.
+w.document.querySelector('#cotSearch').value='088691';
+w.document.querySelector('#cotSearch').dispatchEvent(new w.Event('input'));
+assert.equal(w.document.querySelectorAll('#cotRows .cot-save').length,1,'CFTC contract-code search matches one contract');
+assert.match(w.document.querySelector('#cotRows').textContent,/GOLD - COMEX/);
+w.document.querySelector('#cotExport').click();
+assert.ok(csvBlobs.at(-1).data.includes('GOLD - COMEX'),'contract-code filtered CSV includes selected contract');
+assert.ok(!csvBlobs.at(-1).data.includes('EURO FX'),'contract-code filtered CSV excludes other markets');
+w.document.querySelector('#cotSearch').value='not-a-code';
+w.document.querySelector('#cotSearch').dispatchEvent(new w.Event('input'));
+assert.equal(w.document.querySelector('#cotExport').disabled,true,'unknown code cannot export unrelated markets');
 w.document.querySelector('#cotSearch').value='euro';
 w.document.querySelector('#cotSearch').dispatchEvent(new w.Event('input'));
 w.document.querySelector('#cotExport').click();
