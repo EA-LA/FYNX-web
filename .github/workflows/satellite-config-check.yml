@@ -1,0 +1,21 @@
+name: Satellite config and map init check
+
+on:
+  pull_request:
+    paths:
+      - assets/js/terminal/satellite-map.js
+      - scripts/test-satellite-config.cjs
+      - terminal.html
+      - docs/SATELLITE-MAP.md
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/test-satellite-config.cjs
