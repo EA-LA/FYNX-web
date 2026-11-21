@@ -244,20 +244,37 @@
     mapInstance = new maplibregl.Map({
       container: satContainer,
       style: resolved.style,
-      center: [0, 20],
-      zoom: 2,
+      center: [0, 15],
+      zoom: 1.5,
       attributionControl: true,
       maxZoom: 18,
       minZoom: 1
     });
 
-    mapInstance.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
-    mapInstance.addControl(new maplibregl.FullscreenControl(), 'top-right');
+    // FYNX's existing +, − and Reset buttons control both map engines.
+    // Do not add MapLibre's white native buttons over the terminal toolbar.
+    const stageTools = host.querySelector('.fx-gtools');
+    if (stageTools && !stageTools.dataset.satControls) {
+      stageTools.dataset.satControls = '1';
+      stageTools.addEventListener('click', event => {
+        if (W.mapMode !== 'satellite' || !mapInstance) return;
+        const button = event.target.closest('button');
+        if (!button || button.closest('.fx-sat-modes')) return;
+        const text = button.textContent.trim();
+        if (text !== '+' && text !== '−' && text !== '-' && text !== 'Reset') return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (text === '+') mapInstance.zoomIn();
+        else if (text === '−' || text === '-') mapInstance.zoomOut();
+        else mapInstance.flyTo({center:[0,15],zoom:1.5,bearing:0,pitch:0});
+      }, true);
+    }
 
     searchBox = document.createElement('input');
     searchBox.type = 'search';
     searchBox.placeholder = 'Search country, city, or coordinates';
-    searchBox.style.cssText = 'position:absolute;top:8px;right:56px;z-index:4;width:220px;padding:6px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:#111;color:#eee;font:13px Inter,system-ui,sans-serif';
+    searchBox.className = 'fx-sat-search';
+    searchBox.setAttribute('aria-label','Find country, city, or latitude and longitude');
     searchBox.addEventListener('keydown', async (e) => {
       if (e.key !== 'Enter') return;
       const q = searchBox.value.trim();
@@ -279,66 +296,134 @@
     satContainer.appendChild(searchBox);
 
     mapInstance.on('load', () => {
-      mapInstance.addSource('intel', {
-        type: 'geojson',
-        data: buildFeatures(),
-        cluster: true,
-        clusterMaxZoom: 10,
-        clusterRadius: 50
+      if (!mapInstance || W.mapMode !== 'satellite') return;
+      const addSource=(id,data,cluster=false) => mapInstance.addSource(id,{
+        type:'geojson',data, ...(cluster?{cluster:true,clusterMaxZoom:9,clusterRadius:38}:{})
       });
-      mapInstance.addLayer({
-        id: 'clusters',
-        type: 'circle',
-        source: 'intel',
-        filter: ['has', 'point_count'],
-        paint: {
-          'circle-color': '#1a3a32',
-          'circle-radius': ['step', ['get', 'point_count'], 16, 20, 22, 100, 30],
-          'circle-stroke-width': 1,
-          'circle-stroke-color': '#3ecf8e'
-        }
-      });
-      mapInstance.addLayer({
-        id: 'cluster-count',
-        type: 'symbol',
-        source: 'intel',
-        filter: ['has', 'point_count'],
-        layout: { 'text-field': '{point_count_abbreviated}', 'text-size': 12 },
-        paint: { 'text-color': '#fff' }
-      });
-      mapInstance.addLayer({
-        id: 'intel-circles',
-        type: 'circle',
-        source: 'intel',
-        filter: ['!', ['has', 'point_count']],
-        paint: {
-          'circle-radius': ['match', ['get', 'layer'], 'quakes', 7, 'bases', 5, 'nuclear', 6, 4],
-          'circle-color': ['match', ['get', 'layer'],
-            'tankers', '#ff9f43', 'cargo', '#5b8def', 'other', '#8e9b94',
-            'quakes', '#ff8a65', 'bases', '#a5d66b', 'nuclear', '#ffe14d',
-            'ports', '#80cbc4', 'airports', '#e6e6e6', 'conflict', '#ff3b30',
-            'protests', '#c77dff', 'cyber', '#00e5ff', 'alerts', '#ffca28', '#c9a7ff'],
-          'circle-stroke-width': 1,
-          'circle-stroke-color': '#06080a'
-        }
-      });
-      popup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: '340px' });
-      mapInstance.on('click', 'intel-circles', (e) => {
-        const f = e.features?.[0]; if (!f) return;
-        showPopup(e.lngLat, f.properties || {});
-      });
-      mapInstance.on('click', 'clusters', (e) => {
-        const f = e.features?.[0]; if (!f) return;
-        const cid = f.properties.cluster_id;
-        mapInstance.getSource('intel').getClusterExpansionZoom(cid, (err, zoom) => {
-          if (err) return;
-          mapInstance.easeTo({ center: f.geometry.coordinates, zoom });
+      addSource('intel',buildFeatures(),true);
+      addSource('shipping',shipFeatures(),true);
+      addSource('lights',lightFeatures());
+      addSource('lanes',lineFeatures());
+      addSource('pipelines',pipelineFeatures());
+
+      // Country boundaries and country names come from the exact same country
+      // geometry used by the existing Globe/Flat map, without a new API key.
+      if (Array.isArray(W.feats) && W.feats.length) {
+        addSource('countries',collection(W.feats));
+        mapInstance.addLayer({
+          id:'sat-country-borders',type:'line',source:'countries',
+          paint:{'line-color':'rgba(214,226,230,.48)','line-width':['interpolate',['linear'],['zoom'],1,0.35,6,1.1],'line-opacity':0.75}
         });
+        const labels=collection(W.feats.map(f => {
+          const ll=W.centroidOf?.(f.properties?.iso2);
+          return ll ? point(ll[0],ll[1],{name:f.properties.name || f.properties.iso2}) : null;
+        }));
+        addSource('country-labels',labels);
+        mapInstance.addLayer({
+          id:'sat-country-labels',type:'symbol',source:'country-labels',
+          minzoom:2,
+          layout:{'text-field':['get','name'],'text-size':['interpolate',['linear'],['zoom'],2,10,6,13],
+            'text-font':['Open Sans Regular','Arial Unicode MS Regular'],'text-allow-overlap':false,'text-padding':4},
+          paint:{'text-color':'#f0f0e7','text-halo-color':'rgba(3,8,12,.95)','text-halo-width':1.4}
+        });
+      }
+
+      mapInstance.addLayer({
+        id:'sat-shipping-lanes',type:'line',source:'lanes',
+        paint:{'line-color':'#83bce1','line-width':1.4,'line-opacity':0.5,'line-dasharray':[3,3]}
       });
-      mapInstance.on('mouseenter', 'intel-circles', () => { mapInstance.getCanvas().style.cursor = 'pointer'; });
-      mapInstance.on('mouseleave', 'intel-circles', () => { mapInstance.getCanvas().style.cursor = ''; });
-      const panel = document.querySelector('.fx-glayers, .fx-intel');
-      if (panel) panel.addEventListener('change', updateMarkers);
+      mapInstance.addLayer({
+        id:'sat-pipelines',type:'line',source:'pipelines',
+        paint:{'line-color':'#f4a261','line-width':2,'line-opacity':0.8,'line-dasharray':[2,1]}
+      });
+      mapInstance.addLayer({
+        id:'sat-country-status',type:'circle',source:'lights',minzoom:3.4,
+        paint:{'circle-radius':3,'circle-color':['match',['get','level'],
+          'red','#ff6b5f','yellow','#ffb000','green','#3ecf8e','#768a83'],
+          'circle-stroke-color':'#04100c','circle-stroke-width':1}
+      });
+
+      // World security and natural event markers stay visible even at world zoom.
+      mapInstance.addLayer({
+        id:'clusters',type:'circle',source:'intel',filter:['has','point_count'],
+        paint:{'circle-color':'rgba(13,37,30,.90)',
+          'circle-radius':['step',['get','point_count'],13,10,17,50,22,200,28],
+          'circle-stroke-width':1.3,'circle-stroke-color':'#3ecf8e'}
+      });
+      mapInstance.addLayer({
+        id:'cluster-count',type:'symbol',source:'intel',filter:['has','point_count'],
+        layout:{'text-field':'{point_count_abbreviated}','text-size':10.5},
+        paint:{'text-color':'#f3f8f4'}
+      });
+      mapInstance.addLayer({
+        id:'intel-circles',type:'circle',source:'intel',filter:['!', ['has','point_count']],
+        paint:{'circle-radius':['interpolate',['linear'],['zoom'],1,3.5,8,6],
+          'circle-color':['match',['get','layer'],
+            'conflict','#ff3b30','zones','#ff5a4f','protests','#c77dff',
+            'hotspots','#ff6b5f','cyber','#00e5ff','quakes','#ff8a65',
+            'alerts','#ffca28','bases','#a5d66b','nuclear','#ffe14d',
+            'datacenters','#4dd0e1','spaceports','#b388ff','dams','#4fc3f7',
+            'ports','#80cbc4','airports','#e6e6e6','chokes','#c9a7ff',
+            'exchanges','#ffb000','#c9a7ff'],
+          'circle-stroke-width':1,'circle-stroke-color':'#06100c'}
+      });
+
+      // AIS can exceed 4,000 vessels. Keep those separate to avoid hiding
+      // critical conflict/hazard events behind giant vessel clusters.
+      mapInstance.addLayer({
+        id:'sat-shipping-clusters',type:'circle',source:'shipping',
+        minzoom:3.5,filter:['has','point_count'],
+        paint:{'circle-color':'#172b35','circle-radius':['step',['get','point_count'],11,20,16,100,21],
+          'circle-stroke-width':1,'circle-stroke-color':'#82b7e1'}
+      });
+      mapInstance.addLayer({
+        id:'sat-shipping-count',type:'symbol',source:'shipping',
+        minzoom:3.5,filter:['has','point_count'],
+        layout:{'text-field':'{point_count_abbreviated}','text-size':10},
+        paint:{'text-color':'#fff'}
+      });
+      mapInstance.addLayer({
+        id:'sat-ships',type:'circle',source:'shipping',minzoom:3.5,
+        filter:['!', ['has','point_count']],
+        paint:{'circle-radius':3,'circle-color':['match',['get','layer'],
+          'tankers','#ff9f43','cargo','#5b8def','#8e9b94'],
+          'circle-stroke-color':'#081015','circle-stroke-width':0.6}
+      });
+
+      popup = new maplibregl.Popup({closeButton:true,closeOnClick:true,maxWidth:'340px'});
+      const clickPoint=(e) => {
+        const f=e.features?.[0]; if (!f) return;
+        showPopup(e.lngLat,f.properties || {});
+      };
+      for (const id of ['intel-circles','sat-ships','sat-country-status']) {
+        mapInstance.on('click',id,clickPoint);
+        mapInstance.on('mouseenter',id,()=>{mapInstance.getCanvas().style.cursor='pointer';});
+        mapInstance.on('mouseleave',id,()=>{mapInstance.getCanvas().style.cursor='';});
+      }
+      for (const [id,source] of [['clusters','intel'],['sat-shipping-clusters','shipping']]) {
+        mapInstance.on('click',id,(e)=>{
+          const f=e.features?.[0]; if (!f) return;
+          const src=mapInstance.getSource(source);
+          if (!src?.getClusterExpansionZoom) return;
+          src.getClusterExpansionZoom(f.properties.cluster_id,(err,zoom)=>{
+            if (!err && mapInstance) mapInstance.easeTo({center:f.geometry.coordinates,zoom});
+          });
+        });
+      }
+      const panel=host.querySelector('.fx-ilp,.fx-glayers');
+      if (panel) {
+        const refresh=()=>setTimeout(updateMarkers,0);
+        panel.addEventListener('change',refresh);
+        panel.addEventListener('click',refresh);
+        panelCleanup=()=>{panel.removeEventListener('change',refresh);panel.removeEventListener('click',refresh);};
+      }
+      // Existing world feeds refresh while this tile is open; map sources follow.
+      refreshHandle=setInterval(()=>{if(!document.hidden && W.mapMode==='satellite')updateMarkers();},12000);
+      if (window.ResizeObserver) {
+        resizeObserver=new ResizeObserver(()=>{if(mapInstance)mapInstance.resize();});
+        resizeObserver.observe(host);
+      }
+      updateMarkers();
     });
 
     mapInstance.on('error', (e) => console.warn('Satellite map error', e?.error || e));
