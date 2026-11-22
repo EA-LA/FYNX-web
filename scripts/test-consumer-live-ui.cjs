@@ -319,3 +319,21 @@ test('legacy saved Pro tools cannot replace the active analysis',async()=>{
  assert.equal(h.calls.filter(c=>c.action==='delete'||c.action==='run').length,0);
  h.close();
 });
+
+
+test('membership refresh removes previously rendered paid results after access is revoked',async()=>{
+ let tier='starter';
+ const h=await load({user:true,query:'?tool=risk',handler:data=>{
+  if(data.action==='status')return {tier,plans:PLANS,hasBillingAccount:true};
+  if(data.action==='run')return {result:{positionUnits:987654}};
+ }});
+ h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.match(h.document.getElementById('result').textContent,/987,654|987654/);
+ tier=null;
+ await h.document.getElementById('loadSaved').onclick();
+ assert.doesNotMatch(h.document.getElementById('result').textContent,/987,654|987654/);
+ assert.match(h.document.getElementById('result').textContent,/Membership access changed/);
+ assert.doesNotMatch(h.document.getElementById('accessMessage').textContent,/Included in your membership/);
+ h.close();
+});
