@@ -305,6 +305,29 @@ test('paid journal analytics rows are presented as a labelled data table',async(
  h.close();
 });
 
+test('saved results from higher tiers remain listed but cannot be opened on a lower plan',async()=>{
+ const old={id:'saved-plus',name:'Private stress test',product:'portfolio',input:{balance:'10000'},result:{grossExposure:987654}};
+ let tier='pro';
+ const h=await load({user:true,query:'?tool=risk',handler:data=>{
+  if(data.action==='status')return {tier,plans:PLANS,hasBillingAccount:true};
+  if(data.action==='list')return {items:[old],limit:PLANS[tier].saved};
+ }});
+ const first=h.document.querySelector('#savedItems article button');
+ assert.equal(first.disabled,false,'Professional members can open a saved Plus analysis');
+ tier='starter';
+ await h.document.getElementById('loadSaved').onclick();
+ const entry=h.document.querySelector('#savedItems article'),[open,remove]=entry.querySelectorAll('button');
+ assert.equal(open.disabled,true,'downgraded members cannot open a higher-tier result');
+ assert.match(entry.textContent,/Plus membership required/);
+ assert.equal(remove.disabled,false,'downgraded customers may still delete their own record');
+ open.onclick();
+ assert.equal(h.document.getElementById('toolTitle').textContent,'Position risk planner');
+ assert.doesNotMatch(h.document.getElementById('result').textContent,/987,654|987654/);
+ assert.match(h.document.getElementById('status').textContent,/Upgrade to Plus/);
+ assert.equal(h.calls.filter(c=>c.action==='run'||c.action==='save'||c.action==='delete').length,0);
+ h.close();
+});
+
 test('legacy saved Pro tools cannot replace the active analysis',async()=>{
  const legacy={id:'old-1',name:'Archived model',product:'retired-product',input:{},result:{positionUnits:999}};
  const h=await load({user:true,tier:'pro',query:'?tool=risk',handler:data=>data.action==='list'?{items:[legacy],limit:500}:undefined});
