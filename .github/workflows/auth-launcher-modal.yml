@@ -1,0 +1,25 @@
+name: Sign-in Dialog Keyboard Containment
+on:
+  pull_request:
+    paths:
+      - 'assets/js/auth-launcher.js'
+      - 'scripts/test-auth-launcher-modal.cjs'
+      - '.github/workflows/auth-launcher-modal.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sign-in-modal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --check assets/js/auth-launcher.js
+      - run: node --check scripts/test-auth-launcher-modal.cjs
+      - run: node --test scripts/test-auth-launcher-modal.cjs
+      - run: node scripts/test-auth-form.cjs
