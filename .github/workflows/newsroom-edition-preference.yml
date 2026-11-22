@@ -1,0 +1,31 @@
+name: Newsroom edition preference regression
+
+on:
+  pull_request:
+    paths:
+      - 'assets/js/newsroom-editions.js'
+      - 'scripts/test-newsroom-edition-storage.cjs'
+      - '.github/workflows/newsroom-edition-preference.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/newsroom-editions.js'
+      - 'scripts/test-newsroom-edition-storage.cjs'
+      - '.github/workflows/newsroom-edition-preference.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  edition-preference:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check newsroom edition script syntax
+        run: node --check assets/js/newsroom-editions.js
+      - name: Test cross-tab edition preference behavior
+        run: node --test scripts/test-newsroom-edition-storage.cjs
