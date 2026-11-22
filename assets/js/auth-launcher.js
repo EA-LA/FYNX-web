@@ -5,6 +5,22 @@
   'use strict';
   if (window.FynxAuth || /^\/auth\//.test(location.pathname)) return;
   let overlay, frame, lastFocus;
+  // Preserve the page's existing inert states while the sign-in dialog is open.
+  // aria-modal alone does not prevent keyboard focus from reaching page controls.
+  const outsideInert = new Map();
+  function lockPage() {
+    for (const element of document.body.children) {
+      if (element === overlay) continue;
+      outsideInert.set(element, element.hasAttribute('inert'));
+      element.setAttribute('inert', '');
+    }
+  }
+  function unlockPage() {
+    for (const [element, wasInert] of outsideInert) {
+      if (!wasInert) element.removeAttribute('inert');
+    }
+    outsideInert.clear();
+  }
   const PAGES = {login: '/auth/login.html', signup: '/auth/signup.html', forgot: '/auth/forgot.html'};
   function style() {
     if (document.getElementById('fx-signin-style')) return;
@@ -28,11 +44,26 @@
     const close = document.createElement('button'); close.type = 'button'; close.className = 'fx-signin-close'; close.setAttribute('aria-label', 'Close'); close.textContent = '×';
     const wait = document.createElement('div'); wait.className = 'fx-signin-wait'; wait.textContent = 'Loading secure sign-in…';
     frame = document.createElement('iframe'); frame.title = 'FYNX sign in';
-    frame.addEventListener('load', () => { wait.hidden = true; try { frame.contentDocument.querySelector('#email, #name')?.focus(); } catch (_) {} });
+    frame.addEventListener('load', () => {
+      wait.hidden = true;
+      try {
+        const inner = frame.contentDocument;
+        inner?.querySelector('#email, #name')?.focus();
+        // Key events inside an iframe do not bubble to its parent document.
+        inner?.addEventListener('keydown', event => {
+          if (event.key === 'Escape' && !overlay.hidden) { event.preventDefault(); hide(); }
+        });
+      } catch (_) { /* A blocked frame still has the visible Close button. */ }
+    });
     box.append(close, wait, frame); overlay.append(box); document.body.append(overlay);
     close.addEventListener('click', hide);
     overlay.addEventListener('mousedown', e => { if (e.target === overlay) hide(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && overlay && !overlay.hidden) hide(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && overlay && !overlay.hidden) { e.preventDefault(); hide(); } });
+    document.addEventListener('focusin', e => {
+      if (overlay && !overlay.hidden && !overlay.contains(e.target)) {
+        overlay.querySelector('.fx-signin-close')?.focus();
+      }
+    }, true);
     addEventListener('message', e => {
       if (e.origin !== location.origin || !e.data || !e.data.fynxAuth) return;
       if (e.data.fynxAuth === 'size' && e.data.height) frame.style.height = Math.min(Math.max(e.data.height, 360), 1200) + 'px';
@@ -44,14 +75,18 @@
     const page = PAGES[mode] || PAGES.login;
     const url = new URL(page, location.origin); url.searchParams.set('embed', '1');
     url.searchParams.set('returnTo', returnTo || (location.pathname + location.search + location.hash));
-    lastFocus = document.activeElement;
+    const wasHidden = overlay.hidden;
+    if (wasHidden) lastFocus = document.activeElement;
     overlay.querySelector('.fx-signin-wait').hidden = false;
     frame.src = url.pathname + url.search;
     overlay.hidden = false; document.documentElement.classList.add('fx-signin-open');
+    if (wasHidden) lockPage();
     overlay.querySelector('.fx-signin-close').focus();
   }
   function hide() {
-    if (!overlay) return; overlay.hidden = true; document.documentElement.classList.remove('fx-signin-open');
+    if (!overlay || overlay.hidden) return;
+    overlay.hidden = true; document.documentElement.classList.remove('fx-signin-open');
+    unlockPage();
     frame.src = 'about:blank'; lastFocus?.focus?.();
   }
   window.FynxAuth = {open, close: hide};
