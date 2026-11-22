@@ -30,6 +30,11 @@
   }
   root.FynxEdition=Object.freeze({get:()=>current,set,editions,sections});
   document.addEventListener('change',event=>{if(event.target.matches('[data-edition-select]'))set(event.target.value);});
-  root.addEventListener('storage',event=>{if(event.key===key&&valid(event.newValue))set(event.newValue,false);});
+  root.addEventListener('storage',event=>{
+    // Storage.clear() fires with a null key; removeItem() has a null value.
+    if(event.key!==key&&event.key!==null)return;
+    if(valid(event.newValue)){set(event.newValue,false);return;}
+    if(event.newValue===null)set(valid(requested)?requested:'us',false);
+  });
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sync,{once:true});else sync();
 })(window);
