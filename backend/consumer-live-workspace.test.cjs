@@ -27,6 +27,27 @@ test('existing unpaid subscription blocks duplicate payment and still permits bi
 test('revocation is checked on the next tool request',async()=>{const h=harness({paid:true});assert.equal((await h.call({action:'status'})).tier,'starter');h.state.subscriptions[0].status='canceled';await assert.rejects(h.call({action:'run',product:'watchlist',input:{symbols:['AAPL']}}),{code:'permission-denied'});});
 test('payment API outage never grants tools',async()=>{await assert.rejects(harness({customer:true,stripeDown:true}).call({action:'run',product:'watchlist',input:{symbols:['AAPL']}}),/Stripe unavailable/);});
 test('higher-tier tools are denied and saved work is owner-scoped',async()=>{const h=harness({paid:true});await assert.rejects(h.call({action:'run',product:'portfolio',input:{}}),{code:'permission-denied'});await h.call({action:'save',product:'watchlist',name:'Research',input:{symbols:['AAPL']}});assert.equal((await h.call({action:'list'})).items.length,1);await assert.rejects(h.call({action:'list'},'other'),{code:'permission-denied'});});
+test('downgrade masks higher-tier saved inputs and results without deleting the record',async()=>{
+ const h=harness({paid:true,tier:'pro'}),path='fynxConsumerLive/owner/saved/stress-1';
+ h.data.set(path,{name:'Original stress analysis',product:'portfolio',createdAt:1234,input:{balance:'9000'},result:{grossExposure:987654}});
+ const before=(await h.call({action:'list'})).items[0];
+ assert.equal(before.result.grossExposure,987654);
+ h.state.subscriptions=[h.sub('starter')];
+ const restricted=(await h.call({action:'list'})).items;
+ assert.equal(restricted.length,1,'saved records remain visible');
+ assert.equal(restricted[0].name,'Original stress analysis');
+ assert.equal(restricted[0].locked,true);
+ assert.equal(Object.hasOwn(restricted[0],'input'),false,'paid inputs must not be sent to a lower tier');
+ assert.equal(Object.hasOwn(restricted[0],'result'),false,'paid results must not be sent to a lower tier');
+ assert.ok(h.data.has(path),'downgrade cannot destroy stored work');
+ h.state.subscriptions=[h.sub('pro')];
+ const restored=(await h.call({action:'list'})).items[0];
+ assert.equal(restored.result.grossExposure,987654,'restoring the eligible plan unlocks the original result');
+ h.state.subscriptions=[h.sub('starter')];
+ await h.call({action:'delete',id:'stress-1'});
+ assert.equal(h.data.has(path),false,'customers can delete locked workspaces');
+});
+
 test('paid workspace quota is enforced transactionally',async()=>{const h=harness({paid:true});h.data.set('fynxConsumerLive/owner',{customer:'cus_owner',savedCount:25});await assert.rejects(h.call({action:'save',product:'watchlist',name:'Extra',input:{symbols:['AAPL']}}),{code:'resource-exhausted'});});
 
 test('every action rejects a revoked session before provider calls or writes',async()=>{

@@ -87,7 +87,11 @@ async function handler(data,ctx){
  }
  const plan=PLANS[state.tier];if(!plan)fail('permission-denied','Choose a plan to unlock these advanced tools. The public website remains free.');
  const saved=ref.collection('saved');
- if(data?.action==='list'){const snap=await saved.orderBy('createdAt','desc').get();return {items:snap.docs.map(d=>({id:d.id,...d.data()})),limit:plan.saved};}
+ if(data?.action==='list'){
+  // Keep older saved records discoverable after a downgrade without disclosing out-of-tier inputs/results.
+  const snap=await saved.orderBy('createdAt','desc').get();
+  return {items:snap.docs.map(d=>{const item=d.data();return plan.products.includes(item.product)?{id:d.id,...item}:{id:d.id,name:item.name,product:item.product,createdAt:item.createdAt,locked:true};}),limit:plan.saved};
+ }
  if(data?.action==='delete'){if(typeof data.id!=='string'||!/^[a-zA-Z0-9_-]{1,100}$/.test(data.id))fail('invalid-argument','Invalid saved item.');await admin.firestore().runTransaction(async tx=>{const item=saved.doc(data.id),snap=await tx.get(item),counter=(await tx.get(ref)).data()?.savedCount||0;if(snap.exists){tx.delete(item);tx.set(ref,{savedCount:Math.max(0,counter-1)},{merge:true});}});return {deleted:true};}
  const product=data?.product;if(!plan.products.includes(product))fail('permission-denied','This tool requires a higher plan.');
  if(!['run','save'].includes(data?.action))fail('invalid-argument','Unknown action.');
