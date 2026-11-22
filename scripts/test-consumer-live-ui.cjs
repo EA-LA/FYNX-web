@@ -89,6 +89,58 @@ test('Pro analysis invalidates old output when a checklist answer changes',async
  h.close();
 });
 
+test('paid saved workspaces can be searched by name or product without backend requests',async()=>{
+ const items=[
+  {id:'s1',name:'London EURUSD setup',product:'risk',input:{},result:{}},
+  {id:'s2',name:'Bitcoin review',product:'review',input:{},result:{}},
+  {id:'s3',name:'Weekly scan',product:'watchlist',input:{},result:{}}
+ ];
+ const h=await load({user:true,tier:'pro',handler:data=>data.action==='list'?{items,limit:500}:undefined});
+ const search=h.document.getElementById('savedSearch');
+ const entries=()=>[...h.document.querySelectorAll('#savedItems article')];
+ const type=query=>{search.value=query;search.dispatchEvent(new h.document.defaultView.Event('input',{bubbles:true}));};
+ assert.equal(h.document.getElementById('savedSearchControls').hidden,false);
+ assert.equal(entries().length,3);
+ type(' eurusd ');
+ assert.deepEqual(entries().map(entry=>entry.hidden),[false,true,true]);
+ assert.match(h.document.getElementById('savedSearchCount').textContent,/1 of 3/);
+ type('RESEARCH WATCHLISTS');
+ assert.deepEqual(entries().map(entry=>entry.hidden),[true,true,false],'product titles are searchable');
+ type('not in any record');
+ assert.ok(entries().every(entry=>entry.hidden));
+ assert.match(h.document.getElementById('savedSearchCount').textContent,/0 of 3/);
+ type('');
+ assert.ok(entries().every(entry=>!entry.hidden));
+ assert.equal(h.calls.filter(call=>call.action==='list').length,1,'filtering must stay client side');
+ assert.equal(h.calls.filter(call=>call.action==='run'||call.action==='save').length,0);
+ h.close();
+});
+
+test('Pro saved search survives deletion refresh but clears on account sign-out',async()=>{
+ let items=[
+  {id:'s1',name:'Portfolio review',product:'portfolio',input:{},result:{}},
+  {id:'s2',name:'Risk review',product:'risk',input:{},result:{}}
+ ];
+ const h=await load({user:true,tier:'pro',handler:data=>{
+  if(data.action==='list')return {items,limit:500};
+  if(data.action==='delete'){items=items.filter(item=>item.id!==data.id);return {deleted:true};}
+ }});
+ const search=h.document.getElementById('savedSearch');
+ search.value='portfolio';search.dispatchEvent(new h.document.defaultView.Event('input',{bubbles:true}));
+ const portfolio=[...h.document.querySelectorAll('#savedItems article')].find(row=>!row.hidden);
+ const [,remove,confirmDelete]=portfolio.querySelectorAll('button');
+ remove.onclick();await confirmDelete.onclick();
+ assert.equal(search.value,'portfolio','refresh should preserve the active filter for the same account');
+ assert.equal(h.document.querySelectorAll('#savedItems article').length,1);
+ assert.equal(h.document.querySelector('#savedItems article').hidden,true);
+ assert.match(h.document.getElementById('savedSearchCount').textContent,/0 of 1/);
+ await h.changeUser(null);
+ assert.equal(h.document.getElementById('savedSearchControls').hidden,true);
+ assert.equal(search.value,'','account-specific search must clear when a user signs out');
+ assert.equal(h.document.querySelectorAll('#savedItems article').length,0);
+ h.close();
+});
+
 test('saved Pro workspaces require explicit deletion confirmation',async()=>{
  let deleted=false;
  const item={id:'risk-saved-1',name:'Risk review',product:'risk',input:{balance:'10000'},result:{positionUnits:25}};
@@ -252,5 +304,86 @@ test('unsaved Pro drafts are cleared on account change',async()=>{
  await h.changeUser({uid:'different-account'});
  h.document.querySelector('#productCards button[data-key="review"]').onclick();
  assert.equal(h.document.getElementById('tool-notes').value,'','previous account drafts must not appear for a new account');
+ h.close();
+});
+
+test('paid scenario results expose a caption, column headers, and body rows for assistive technology',async()=>{
+ const h=await load({user:true,tier:'starter',query:'?tool=scenarios',handler:data=>data.action==='run'?{result:{scenarios:[{case:'Downside',pnl:-200},{case:'Upside',pnl:400}]}}:undefined});
+ h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+ await new Promise(resolve=>setImmediate(resolve));
+ const table=h.document.querySelector('#result table');
+ assert.ok(table,'scenario calculation should produce a results table');
+ assert.equal(table.querySelector('caption')?.textContent,'Scenario comparison results');
+ assert.deepEqual([...table.querySelectorAll('thead th')].map(th=>th.scope),['col','col']);
+ assert.equal(table.querySelectorAll('tbody tr').length,2);
+ assert.match(table.querySelector('tbody').textContent,/Downside/);
+ h.close();
+});
+
+test('paid journal analytics rows are presented as a labelled data table',async()=>{
+ const h=await load({user:true,tier:'starter',query:'?tool=analytics',handler:data=>data.action==='run'?{result:{rows:[{date:'2026-11-20',pnl:100}]}}:undefined});
+ h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+ await new Promise(resolve=>setImmediate(resolve));
+ const table=h.document.querySelector('#result table');
+ assert.ok(table,'journal analytics should render its returned rows');
+ assert.equal(table.querySelector('caption')?.textContent,'Journal analysis results');
+ assert.equal(table.querySelector('thead th')?.getAttribute('scope'),'col');
+ assert.equal(table.querySelector('tbody tr td')?.textContent,'2026-11-20');
+ h.close();
+});
+
+test('saved results from higher tiers remain listed but cannot be opened on a lower plan',async()=>{
+ const old={id:'saved-plus',name:'Private stress test',product:'portfolio',input:{balance:'10000'},result:{grossExposure:987654}};
+ let tier='pro';
+ const h=await load({user:true,query:'?tool=risk',handler:data=>{
+  if(data.action==='status')return {tier,plans:PLANS,hasBillingAccount:true};
+  if(data.action==='list')return {items:[old],limit:PLANS[tier].saved};
+ }});
+ const first=h.document.querySelector('#savedItems article button');
+ assert.equal(first.disabled,false,'Professional members can open a saved Plus analysis');
+ tier='starter';
+ await h.document.getElementById('loadSaved').onclick();
+ const entry=h.document.querySelector('#savedItems article'),[open,remove]=entry.querySelectorAll('button');
+ assert.equal(open.disabled,true,'downgraded members cannot open a higher-tier result');
+ assert.match(entry.textContent,/Plus membership required/);
+ assert.equal(remove.disabled,false,'downgraded customers may still delete their own record');
+ open.onclick();
+ assert.equal(h.document.getElementById('toolTitle').textContent,'Position risk planner');
+ assert.doesNotMatch(h.document.getElementById('result').textContent,/987,654|987654/);
+ assert.match(h.document.getElementById('status').textContent,/Upgrade to Plus/);
+ assert.equal(h.calls.filter(c=>c.action==='run'||c.action==='save'||c.action==='delete').length,0);
+ h.close();
+});
+
+test('legacy saved Pro tools cannot replace the active analysis',async()=>{
+ const legacy={id:'old-1',name:'Archived model',product:'retired-product',input:{},result:{positionUnits:999}};
+ const h=await load({user:true,tier:'pro',query:'?tool=risk',handler:data=>data.action==='list'?{items:[legacy],limit:500}:undefined});
+ const entry=h.document.querySelector('#savedItems article');
+ const [open,remove]=entry.querySelectorAll('button');
+ assert.equal(open.disabled,true,'unsupported saved tool must not be opened');
+ assert.match(entry.textContent,/no longer available/);
+ assert.equal(remove.disabled,false,'legacy records must remain deletable');
+ open.onclick();
+ assert.equal(h.document.getElementById('toolTitle').textContent,'Position risk planner');
+ assert.doesNotMatch(h.document.getElementById('result').textContent,/999/);
+ assert.equal(h.calls.filter(c=>c.action==='delete'||c.action==='run').length,0);
+ h.close();
+});
+
+
+test('membership refresh removes previously rendered paid results after access is revoked',async()=>{
+ let tier='starter';
+ const h=await load({user:true,query:'?tool=risk',handler:data=>{
+  if(data.action==='status')return {tier,plans:PLANS,hasBillingAccount:true};
+  if(data.action==='run')return {result:{positionUnits:987654}};
+ }});
+ h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.match(h.document.getElementById('result').textContent,/987,654|987654/);
+ tier=null;
+ await h.document.getElementById('loadSaved').onclick();
+ assert.doesNotMatch(h.document.getElementById('result').textContent,/987,654|987654/);
+ assert.match(h.document.getElementById('result').textContent,/Membership access changed/);
+ assert.doesNotMatch(h.document.getElementById('accessMessage').textContent,/Included in your membership/);
  h.close();
 });
