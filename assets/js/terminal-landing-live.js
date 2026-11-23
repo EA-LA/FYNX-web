@@ -65,7 +65,8 @@
     }finally{if(serial===request)pending='';}
   }
   function renderQuotes(data) {
-    if(!data?.quotes)return;const target=$('landingQuoteRows');target.replaceChildren();
+    if(!data?.quotes || !window.FynxTerminalData.instruments.some(instrument=>data.quotes[instrument.symbol])) throw Error('No verified quotes available.');
+    const target=$('landingQuoteRows');target.replaceChildren();
     for(const instrument of window.FynxTerminalData.instruments.slice(0,5)){
       const row=node('tr'),name=node('td'),last=node('td'),change=node('td'),q=data.quotes[instrument.symbol];
       name.append(node('strong',instrument.shortName),node('small',instrument.name));
