@@ -19,7 +19,7 @@ function harness({stored,blocked=false,load,account}={}){
  w.FynxEdition={get:()=>edition,editions:[{id:'us',label:'US'},{id:'uk',label:'UK'}]};
  w.FYNXNewsReaderData={href:route,prefetch:()=>{}};
  w.FYNXMarketIntelligenceData={loadHeadlines:(category,options)=>{calls.push({category,...options});return load?load(category,options):Promise.resolve(result([item(category[0].charCodeAt(0).toString(16).repeat(32),{category,edition:options.edition,title:'Fixture '+category+' report'})]));}};
- if(account){w.__account={sync:{uid:'A',ready:account.ready!==false,status:account.ready===false?'loading':'synced',records:domain=>(account.records||[]).filter(r=>r.domain===domain)},accountData:()=>account.interests,subscribe:fn=>fn(w.__account.sync),offerImport:()=>{},save:account.save||async()=>{}};}
+ if(account){w.__account={sync:{uid:'A',ready:account.ready!==false,status:account.ready===false?'loading':'synced',records:domain=>(account.records||[]).filter(r=>r.domain===domain)},accountData:()=>account.interests,subscribe:fn=>fn(w.__account.sync),offerImport:()=>{},save:account.save||(async()=>{})};}
  w.eval(account?preferenceScript.replace(/import\('\/assets\/js\/account-sync\.js[^']*'\)/,'Promise.resolve(window.__account)'):preferenceScript);
  const fire=type=>w.document.dispatchEvent(new w.CustomEvent(type));
  return {w,dom,calls,timers,api:w.FYNXYourNews,start:()=>w.eval(pageScript),advance:ms=>{now+=ms;},edition:value=>{edition=value;fire('fynx:edition-change');},visible:value=>{hidden=!value;fire('visibilitychange');},fire,close:()=>dom.window.close()};
