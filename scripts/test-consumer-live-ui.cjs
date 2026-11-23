@@ -388,3 +388,21 @@ test('membership refresh removes previously rendered paid results after access i
  assert.doesNotMatch(h.document.getElementById('accessMessage').textContent,/Included in your membership/);
  h.close();
 });
+
+test('Pro risk sizing retains six-decimal position units without changing money precision',async()=>{
+ const h=await load({user:true,tier:'starter',query:'?tool=risk',handler:data=>data.action==='run'?{result:{riskBudget:12.34567,units:0.000125,lossAtStop:12.34567}}:undefined});
+ h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+ await new Promise(resolve=>setImmediate(resolve));
+ const cards=[...h.document.querySelectorAll('#result .metric')];
+ const valueFor=label=>cards.find(card=>card.querySelector('small').textContent===label)?.querySelector('strong').textContent;
+ assert.equal(valueFor('Units'),'0.000125','a nonzero 6-decimal position must not display as zero');
+ assert.equal(valueFor('Risk Budget'),'12.346','other monetary results keep current 3-decimal formatting');
+ h.close();
+});
+test('Pro scenario tables retain six-decimal units and existing other column precision',async()=>{
+ const h=await load({user:true,tier:'starter',query:'?tool=scenarios',handler:data=>data.action==='run'?{result:{scenarios:[{riskMultiplier:1,units:0.000003,profitAtTarget:9.876543}]}}:undefined});
+ h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.deepEqual([...h.document.querySelectorAll('#result tbody tr td')].map(el=>el.textContent),['1','0.000003','9.877']);
+ h.close();
+});
