@@ -4,6 +4,20 @@ const risk={balance:10000,riskPct:1,entry:100,stop:98,target:104,multiplier:1,ra
 test('three monthly USD tiers unlock six, seven, eight products',()=>{assert.deepEqual(Object.values(PLANS).map(p=>[p.cents,p.products.length,p.saved]),[[599,6,25],[1099,7,100],[3099,8,500]]);});
 test('actual journal metrics and drawdown',()=>{const r=run('analytics',{},[{pl:100},{pl:-40},{pl:20}]);assert.equal(r.netPL,80);assert.equal(r.maxDrawdown,40);assert.equal(r.profitFactor,3);assert.deepEqual(r.curve,[100,60,80]);});
 test('risk sizing and scenario budgets',()=>{const r=run('risk',risk);assert.equal(r.units,50);assert.equal(r.lossAtStop,100);assert.equal(r.profitAtTarget,200);assert.deepEqual(run('scenarios',risk).scenarios.map(x=>x.riskBudget),[50,100,150,200]);assert.throws(()=>run('risk',{...risk,stop:101}));});
+test('paid risk scenarios support the minimum valid base risk without clamping the half-risk case',()=>{
+ const input={...risk,riskPct:0.01};
+ const result=run('scenarios',input);
+ assert.equal(result.base.riskBudget,1);
+ assert.deepEqual(result.scenarios.map(x=>x.riskBudget),[0.5,1,1.5,2]);
+ assert.deepEqual(result.scenarios.map(x=>x.units),[0.25,0.5,0.75,1]);
+ assert.throws(()=>run('risk',{...input,riskPct:0.005}),/Risk percent/);
+ assert.throws(()=>run('scenarios',{...input,riskPct:0.005}),/Risk percent/);
+});
+test('paid scenario risk preserves the existing maximum risk cap',()=>{
+ const result=run('scenarios',{...risk,riskPct:80});
+ assert.deepEqual(result.scenarios.map(x=>x.riskBudget),[4000,8000,10000,10000]);
+ assert.throws(()=>run('scenarios',{...risk,riskPct:101}),/Risk percent/);
+});
 test('process review and watchlist persist meaningful inputs',()=>{assert.equal(run('review',{notes:'Wait for confirmation',plan:true,risk:true}).score,40);assert.deepEqual(run('watchlist',{symbols:['aapl','AAPL','BTCUSD']}).symbols,['AAPL','BTCUSD']);});
 test('Pro process review accepts optional blank notes without weakening other validation',()=>{for(const notes of [undefined,'','   ']){const r=run('review',{notes,plan:true,risk:false});assert.equal(r.notes,'');assert.equal(r.score,20);assert.deepEqual(r.completed,['plan']);assert.deepEqual(r.missing,['risk','event','execution','review']);}assert.equal(run('review',{notes:'  Wait for confirmation  ',plan:true}).notes,'Wait for confirmation');assert.throws(()=>run('review',{notes:'X'.repeat(2001)}),/valid name/);});
 test('CSV quotes and blocks spreadsheet formulas',()=>{const r=run('export',{},[{symbol:'=IMPORTXML("x")',pl:-5,notes:'a,b\nline'}]);assert.match(r.csv,/"'=IMPORTXML/);assert.match(r.csv,/"a,b\nline"/);});
