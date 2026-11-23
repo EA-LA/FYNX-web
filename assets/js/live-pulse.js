@@ -91,7 +91,10 @@
       quoteTime(i) <= Math.max(Math.min(Date.now(), snapshotAt), i.canonical ? Date.now() : 0) + FUTURE_SKEW_ALLOWANCE);
     if (!items.length) throw new Error('No verified market quote times');
     const partial = items.length !== rawItems.length;
-    const olderQuote = i => data.stale === true || i.stale === true || Date.now() - quoteTime(i) > MAX_SNAPSHOT_AGE;
+    // A stale batch flag applies to the batch's original observation, not to a
+    // newer separately sourced canonical quote from the Terminal ticker.
+    const olderQuote = i => i.stale === true || (!i.canonical && data.stale === true) ||
+      Date.now() - quoteTime(i) > MAX_SNAPSHOT_AGE;
     const olderCount = items.filter(olderQuote).length;
     const html = items.map(i => {
       const ch = i.changePercent, cls = num(ch) ? (ch >= 0 ? 'lp-pos' : 'lp-neg') : '';

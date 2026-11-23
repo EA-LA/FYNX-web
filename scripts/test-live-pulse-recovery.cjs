@@ -264,3 +264,23 @@ test('invalid or future underlying quote timestamps are never displayed as verif
     assert.doesNotMatch(app.strip().innerHTML, /Bitcoin/);
   } finally { app.close(); }
 });
+
+test('fresh canonical ticker quote does not inherit an older source-batch badge', async () => {
+  const app = setup('stale');
+  try {
+    await settle();
+    assert.equal(app.strip().querySelectorAll('.lp-age').length, 2, 'stale source rows are visibly marked older');
+    app.w.document.dispatchEvent(new app.w.CustomEvent('fynx:terminal-quotes', {
+      detail: {status: 'ok', quotes: {
+        '^GSPC': {price: 7520.25, changePercent: 0.25, asOf: new Date(Date.now() - 60000).toISOString()}
+      }}
+    }));
+    const strip = app.strip(), links = [...strip.querySelectorAll('.lp-item')];
+    assert.equal(links.length, 2, 'the ticker duplication remains stable');
+    assert.match(links[0].textContent, /7,520/, 'a newer canonical quote replaces the old batch price');
+    assert.doesNotMatch(links[0].textContent, /7,515/, 'old snapshot price is no longer displayed');
+    assert.match(links[0].title, /Same quote as the market ticker as of/, 'quote provenance remains visible');
+    assert.equal(strip.querySelectorAll('.lp-age').length, 0, 'fresh canonical observations must not inherit batch staleness');
+    assert.match(strip.querySelector('.lp-asof').textContent, /Stale snapshot/, 'the older source batch remains disclosed');
+  } finally { app.close(); }
+});
