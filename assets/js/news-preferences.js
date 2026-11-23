@@ -91,8 +91,27 @@
        new Set(data.topics).size!==data.topics.length) {
       return {ok:false,error:'This is not a supported FYNX topic backup. Your current topics were not changed.'};
     }
+    // A browser-only restore is synchronous; account restores must await confirmation.
+    // Never claim success while the signed-in account is still loading or offline.
+    if (shared?.sync.uid) {
+      if (!shared.sync.ready) return {ok:false,error:'Your account is still loading. No topics were changed. Try again when account sync is ready.'};
+      const uid = shared.sync.uid, next = selected(data.topics);
+      const existing = shared.accountData('newsInterests') || {};
+      // Preserve native-only topics that this website does not expose.
+      const hidden = (Array.isArray(existing.topics) ? existing.topics : []).filter(id => !topics.some(topic => topic.id === id));
+      if (JSON.stringify(next) === JSON.stringify(state.topics) && shared.sync.status === 'synced')
+        return {ok:true,count:next.length,saved:true,scope:'account'};
+      return Promise.resolve().then(async () => {
+        if (shared.sync.uid !== uid) throw Error('Account changed during restore.');
+        await shared.save('newsInterests','default',{topics:[...new Set([...hidden,...next])]});
+        if (shared.sync.uid !== uid) throw Error('Account changed during restore.');
+        state.topics = next;
+        emit('fynx:news-preferences-change');
+        return {ok:true,count:next.length,saved:true,scope:'account'};
+      }).catch(() => ({ok:false,error:'Could not confirm the account topic restore. Check your account sync before retrying; existing topics were not overwritten in this view.'}));
+    }
     setTopics(data.topics);
-    return {ok:true,count:state.topics.length,saved:persistent};
+    return {ok:true,count:state.topics.length,saved:persistent,scope:'browser'};
   }
   root.FYNXYourNews = Object.freeze({exportTopicBackup,importTopicBackup,topics,regions,companies,getTopics:()=>state.topics.slice(),setTopics,getRegions:()=>[...(state.regions||[])],setRegions:v=>setInterest('regions',v),getCompanies:()=>[...(state.companies||[])],getNewsSymbols:newsSymbols,setCompanies:v=>setInterest('companies',v),coveragePlan,reasons,getSaved:()=>[...(state.saved||[])],getHistory:history,markOpened,isRead:value=>{const id=typeof value==='string'?value:value?.articleId||value?.id,url=typeof value==='object'?value?.url:null;return history().some(item=>item.id===id||url&&item.url===url);},clearHistory,isPersistent:()=>persistent});
   root.addEventListener('storage',event=>{

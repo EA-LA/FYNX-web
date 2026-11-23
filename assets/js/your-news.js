@@ -181,9 +181,11 @@
       if(chosen.size<1||chosen.size>4096){feedback.textContent='Choose a FYNX topic backup smaller than 4 KB.';return;}
       restore.disabled=true;feedback.textContent='Checking the selected topic backup…';
       try {
-        const result=preferences.importTopicBackup(await chosen.text());
-        feedback.textContent=!result.ok?result.error:result.saved?
-          'Restored '+result.count+' followed topic'+(result.count===1?'':'s')+' in this browser.':
+        const result=await preferences.importTopicBackup(await chosen.text());
+        const restored='Restored '+result.count+' followed topic'+(result.count===1?'':'s');
+        feedback.textContent=!result.ok?result.error:result.scope==='account'?
+          restored+' to your FYNX account.':result.saved?
+          restored+' in this browser.':
           'Topics restored for this visit, but browser storage is unavailable.';
       } catch {feedback.textContent='Could not read the selected file. Your topics were not changed.';}
       finally {restore.disabled=false;}
