@@ -70,6 +70,28 @@ test('published pages are crawlable, unique and credit their sources', {skip: !f
   for (const slug of Object.values(map)) assert.ok(fs.existsSync(path.join(OUT, slug, 'index.html')));
 });
 
+test('HTML-escaped publisher punctuation is still credited and never linked externally', () => {
+  const R = require('../../scripts/intelligence/render.cjs');
+  const publisher = "Barron's & Co.";
+  const sourceUrl = 'https://news.example/story?a=1&b=2';
+  const stamp = '2026-11-22T12:00:00Z';
+  const article = {
+    id: 'escaping-regression', slug: 'escaping-regression',
+    headline: 'Financial markets react to policy announcement',
+    summary: 'A verified news report.', whyData: 'Market implications remain uncertain.',
+    method: 'data', narrative: {}, excerpt: null,
+    publishedAt: stamp, analyzedAt: stamp, updatedAt: stamp,
+    sources: [{publisher, url: sourceUrl, title: 'Market report', publishedAt: stamp}],
+    companies: [], themes: [], stats: [], macro: [], facts: [], dataPoints: [],
+    catalysts: [], related: []
+  };
+  const metadata = new Map([[article.slug, {title: 'FYNX test article', description: 'Escaped source credit regression'}]]);
+  const html = R.articlePage(article, {assets: '', bySlug: new Map(), metadata});
+  assert.ok(html.includes('Original reporting by ' + R.esc(publisher)));
+  assert.ok(html.includes('data-story-photo="' + R.esc(sourceUrl) + '"'));
+  assert.ok(!html.includes('href="' + R.esc(sourceUrl) + '"'));
+});
+
 test('article pages credit sources by name and never send readers to another site', {skip: !fs.existsSync(path.join(OUT, 'data/articles.json'))}, () => {
   const R = require('../../scripts/intelligence/render.cjs');
   const {articles} = JSON.parse(fs.readFileSync(path.join(OUT, 'data/articles.json'), 'utf8'));
@@ -77,7 +99,7 @@ test('article pages credit sources by name and never send readers to another sit
   for (const a of list) {
     const html = R.articlePage(a, ctx);
     assert.doesNotMatch(html, /Read original source/);
-    for (const s of a.sources) { assert.ok(html.includes('Original reporting by ' + s.publisher.replace(/&/g, '&amp;')), 'credited ' + s.publisher); assert.ok(!html.includes('href="' + s.url.replace(/&/g, '&amp;') + '"'), 'no link to ' + s.url); }
+    for (const s of a.sources) { assert.ok(html.includes('Original reporting by ' + R.esc(s.publisher)), 'credited ' + s.publisher); assert.ok(!html.includes('href="' + R.esc(s.url) + '"'), 'no link to ' + s.url); }
     const out = [...html.matchAll(/<a\b[^>]*href="(https?:[^"]+)"/g)].map(m => m[1]).filter(u => !u.startsWith('https://www.fynxfinanceworld.com/'));
     assert.deepEqual(out, [], 'no outbound links in ' + a.slug);
     assert.match(html, /href="#sources"/);
