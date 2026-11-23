@@ -4,8 +4,10 @@ on:
     paths:
       - index.html
       - assets/js/landing-workspace.js
+      - assets/js/terminal-landing-live.js
       - assets/landing-workspace.css
       - scripts/test-landing-workspace-rotation.cjs
+      - scripts/test-landing-quote-recovery.cjs
       - package.json
       - package-lock.json
       - .github/workflows/landing-workspace-rotation.yml
@@ -22,4 +24,4 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts
-      - run: node --test scripts/test-landing-workspace-rotation.cjs
+      - run: node --test scripts/test-landing-workspace-rotation.cjs scripts/test-landing-quote-recovery.cjs
