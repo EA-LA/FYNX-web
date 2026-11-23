@@ -19,7 +19,7 @@ function harness({stored,blocked=false,load,account}={}){
  w.FynxEdition={get:()=>edition,editions:[{id:'us',label:'US'},{id:'uk',label:'UK'}]};
  w.FYNXNewsReaderData={href:route,prefetch:()=>{}};
  w.FYNXMarketIntelligenceData={loadHeadlines:(category,options)=>{calls.push({category,...options});return load?load(category,options):Promise.resolve(result([item(category[0].charCodeAt(0).toString(16).repeat(32),{category,edition:options.edition,title:'Fixture '+category+' report'})]));}};
- if(account){w.__account={sync:{uid:'A',ready:true,status:'synced',records:domain=>(account.records||[]).filter(r=>r.domain===domain)},accountData:()=>account.interests,subscribe:fn=>fn(w.__account.sync),offerImport:()=>{},save:async()=>{}};}
+ if(account){w.__account={sync:{uid:'A',ready:account.ready!==false,status:account.ready===false?'loading':'synced',records:domain=>(account.records||[]).filter(r=>r.domain===domain)},accountData:()=>account.interests,subscribe:fn=>fn(w.__account.sync),offerImport:()=>{},save:account.save||async()=>{}};}
  w.eval(account?preferenceScript.replace(/import\('\/assets\/js\/account-sync\.js[^']*'\)/,'Promise.resolve(window.__account)'):preferenceScript);
  const fire=type=>w.document.dispatchEvent(new w.CustomEvent(type));
  return {w,dom,calls,timers,api:w.FYNXYourNews,start:()=>w.eval(pageScript),advance:ms=>{now+=ms;},edition:value=>{edition=value;fire('fynx:edition-change');},visible:value=>{hidden=!value;fire('visibilitychange');},fire,close:()=>dom.window.close()};
@@ -220,4 +220,28 @@ test('expired reports and successful empty refreshes do not resurrect old covera
  assert.equal(d.querySelectorAll('.your-news-story').length,0);
  assert.doesNotMatch(d.querySelector('[data-your-status]').textContent,/Earlier sourced reports remain visible/);
  h.close();
+});
+
+
+const restoreBackup=topics=>JSON.stringify({format:'fynx-your-news-topics',version:1,topics});
+test('signed-in topic restore refuses to claim success before account preferences load',async()=>{
+ const writes=[],h=harness({account:{ready:false,interests:{topics:['stocks']},save:async(...args)=>writes.push(args)}});
+ await tick();const before=h.api.getTopics(),outcome=await h.api.importTopicBackup(restoreBackup(['world']));
+ assert.equal(outcome.ok,false);assert.match(outcome.error,/still loading/i);
+ assert.deepEqual([...h.api.getTopics()],[...before]);assert.equal(writes.length,0);h.close();
+});
+test('failed signed-in topic restore reports failure and retains visible interests',async()=>{
+ const writes=[],h=harness({account:{interests:{topics:['stocks']},save:async(...args)=>{writes.push(args);throw Error('offline');}}});
+ await tick();const outcome=await h.api.importTopicBackup(restoreBackup(['world']));
+ assert.equal(outcome.ok,false);assert.match(outcome.error,/could not confirm/i);
+ assert.deepEqual([...h.api.getTopics()],['stocks']);assert.equal(writes.length,1);h.close();
+});
+test('confirmed account topic restore preserves native-only follows and changes view after save',async()=>{
+ let finish;const writes=[],h=harness({account:{interests:{topics:['stocks','native-only-desk']},save:(...args)=>{writes.push(args);return new Promise(resolve=>{finish=resolve;});}}});
+ await tick();const pending=h.api.importTopicBackup(restoreBackup(['economics']));
+ await tick();assert.deepEqual([...h.api.getTopics()],['stocks'],'keep current topics while confirmation is outstanding');
+ assert.equal(writes.length,1);assert.equal(writes[0][0],'newsInterests');assert.deepEqual([...writes[0][2].topics],['native-only-desk','economics']);
+ finish();const outcome=await pending;
+ assert.equal(outcome.ok,true);assert.equal(outcome.saved,true);assert.equal(outcome.scope,'account');
+ assert.deepEqual([...h.api.getTopics()],['economics']);h.close();
 });
