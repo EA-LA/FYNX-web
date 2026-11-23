@@ -277,9 +277,31 @@ test('Pro journal CSV URL is released when a new export replaces it or the page 
  assert.ok(resolveObjectURL(second),'latest download remains available');
  h.document.defaultView.dispatchEvent(new h.document.defaultView.Event('pagehide'));
  assert.equal(resolveObjectURL(second),undefined,'leaving the page should release the latest CSV');
+ assert.equal(h.document.querySelector('#result a[download]'),null,'back/forward cache must not restore a dead link');
+ assert.match(h.document.getElementById('result').textContent,/Run analysis again/);
  h.close();
 });
 
+
+test('expired Pro CSV downloads explain recovery and return keyboard focus to Run analysis',async()=>{
+ const {resolveObjectURL}=require('node:buffer');
+ const h=await load({user:true,tier:'starter',query:'?tool=export',handler:data=>data.action==='run'?{result:{csv:'date,pnl\\n2026-11-20,42',rows:1}}:undefined});
+ const run=async()=>{h.document.getElementById('toolForm').onsubmit({preventDefault(){}});await new Promise(resolve=>setImmediate(resolve));return h.document.querySelector('#result a[download]');};
+ const link=await run(),url=link.href;
+ link.focus();
+ link.addEventListener('click',event=>event.preventDefault());
+ link.click();
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(resolveObjectURL(url),undefined);
+ assert.equal(h.document.querySelector('#result a[download]'),null);
+ assert.match(h.document.getElementById('result').textContent,/expired.*Run analysis again/);
+ assert.equal(h.document.activeElement,h.document.getElementById('runTool'));
+ const next=await run();
+ assert.notEqual(next.href,url);
+ assert.ok(resolveObjectURL(next.href));
+ h.document.defaultView.dispatchEvent(new h.document.defaultView.Event('pagehide'));
+ h.close();
+});
 
 test('unsaved Pro notes, checklist answers and risk inputs survive switching tools',async()=>{
  const h=await load({user:true,tier:'starter',query:'?tool=review'});
