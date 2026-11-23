@@ -48,7 +48,7 @@ const sample = () => ({
   observationDate: '2026-11-14', fetchedAt: '2026-11-15T03:00:00Z', stale: false
 });
 const settle = async () => { await new Promise(resolve => setImmediate(resolve)); await new Promise(resolve => setImmediate(resolve)); };
-function setup(initial = sample()) {
+function setup(initial = sample(), options = {}) {
   const root = new Element('div');
   const button = new Element('button');
   let data = initial, requestCount = 0;
@@ -59,11 +59,13 @@ function setup(initial = sample()) {
     createElementNS: (_ns, tag) => new Element(tag)
   };
   const sandbox = {
-    document, window: {}, Date, AbortSignal,
+    document, window: {}, Date, AbortSignal: options.AbortSignal ?? AbortSignal,
+    AbortController: options.noController ? undefined : AbortController,
+    setTimeout: options.setTimeout ?? setTimeout, clearTimeout: options.clearTimeout ?? clearTimeout,
     fetch: async (_url, init) => {
       requestCount++;
       calls.push({url:_url, signal:init.signal});
-      if (typeof data === 'function') return data();
+      if (typeof data === 'function') return data(init.signal);
       if(data instanceof Error) throw data;
       return {ok: true, json: async () => data};
     }
@@ -179,4 +181,38 @@ test('flags old history and does not claim future-dated retrieval metadata as ve
   assert.match(app.root.textContent, /Stale source/);
   assert.match(app.root.textContent, /Retrieval time unavailable/);
   assert.doesNotMatch(app.root.textContent, /2099/);
+});
+
+
+test('loads verified history on older browsers without AbortSignal.timeout', async () => {
+  const app = setup(sample(), {AbortSignal: {}});
+  await settle();
+  assert.equal(app.requests, 1);
+  assert.ok(app.root.find('svg'));
+  assert.equal(app.button.disabled, false);
+});
+
+test('a stalled JSON body times out without AbortController; a late response cannot replace recovery', async () => {
+  let expire, finishBody, clearCount = 0;
+  const app = setup(() => ({ok: true, json: () => new Promise(resolve => { finishBody = resolve; })}), {
+    AbortSignal: {}, noController: true,
+    setTimeout: (callback, delay) => { assert.equal(delay, 20000); expire = callback; return 1; },
+    clearTimeout: () => { clearCount++; }
+  });
+  await settle();
+  assert.equal(app.button.disabled, true);
+  expire();
+  await settle();
+  assert.equal(app.button.disabled, false);
+  assert.match(app.root.textContent, /observations are unavailable/);
+  assert.equal(clearCount, 1);
+  app.setData(sample());
+  app.button.click();
+  await settle();
+  assert.ok(app.root.find('svg'));
+  finishBody({...sample(), observationDate: '2026-11-15', rows: [{date:'2026-11-14',close:80},{date:'2026-11-15',close:90}]});
+  await settle();
+  assert.match(app.root.textContent, /20\.25VIX/);
+  assert.doesNotMatch(app.root.textContent, /90\.00VIX/);
+  assert.equal(clearCount, 2);
 });
