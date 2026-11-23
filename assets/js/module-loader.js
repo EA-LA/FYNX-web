@@ -43,7 +43,10 @@
           style.textContent = `html.fynx-embedded body{height:auto!important;min-height:0!important}html.fynx-embedded body>header,html.fynx-embedded .theme-utility{display:none!important}html.fynx-embedded body>main,html.fynx-embedded body>.wrap{width:100%!important;max-width:none!important;padding:24px!important;margin:0!important}html.fynx-embedded .hero{padding:0 0 20px!important;min-height:0!important}html.fynx-embedded .hero h1{font-size:30px!important}html.fynx-embedded .clock-wrap,html.fynx-embedded .hero-badges,html.fynx-embedded .hero-stats,html.fynx-embedded .hero-right{display:none!important}html.fynx-embedded .content{grid-template-columns:minmax(0,1fr)!important}html.fynx-embedded .side-panel{display:none!important}`;
           doc.head.append(style);
           const resize = () => { const height = Math.ceil(doc.body.getBoundingClientRect().height); if(height > 0) frame.style.height = `${height + 4}px`; };
-          new ResizeObserver(resize).observe(doc.body); resize();
+          resize();
+          // Older Safari/WebViews may lack ResizeObserver. Keep initial sizing and
+          // same-origin link handling available even in that case.
+          if (typeof ResizeObserver === 'function') new ResizeObserver(resize).observe(doc.body);
           doc.addEventListener('click', event => {
             const link = event.target.closest('a[href]');
             if (link && link.target !== '_blank' && !link.getAttribute('href').startsWith('#')) { event.preventDefault(); window.location.href = link.href; }
