@@ -7,6 +7,28 @@ test('risk sizing and scenario budgets',()=>{const r=run('risk',risk);assert.equ
 test('process review and watchlist persist meaningful inputs',()=>{assert.equal(run('review',{notes:'Wait for confirmation',plan:true,risk:true}).score,40);assert.deepEqual(run('watchlist',{symbols:['aapl','AAPL','BTCUSD']}).symbols,['AAPL','BTCUSD']);});
 test('Pro process review accepts optional blank notes without weakening other validation',()=>{for(const notes of [undefined,'','   ']){const r=run('review',{notes,plan:true,risk:false});assert.equal(r.notes,'');assert.equal(r.score,20);assert.deepEqual(r.completed,['plan']);assert.deepEqual(r.missing,['risk','event','execution','review']);}assert.equal(run('review',{notes:'  Wait for confirmation  ',plan:true}).notes,'Wait for confirmation');assert.throws(()=>run('review',{notes:'X'.repeat(2001)}),/valid name/);});
 test('CSV quotes and blocks spreadsheet formulas',()=>{const r=run('export',{},[{symbol:'=IMPORTXML("x")',pl:-5,notes:'a,b\nline'}]);assert.match(r.csv,/"'=IMPORTXML/);assert.match(r.csv,/"a,b\nline"/);});
+test('Pro journal CSV exports signed realized P/L as spreadsheet numbers',()=>{
+ const trades=[{date:'2026-11-22',symbol:'EURUSD',session:'NY',pl:-5.25,notes:'Loss'},{date:'2026-11-22',symbol:'XAUUSD',session:'NY',pl:'-2.5',notes:'Loss'},{date:'2026-11-22',symbol:'SPY',session:'NY',pl:4.5,notes:'Win'}];
+ const r=run('export',{},trades);
+ assert.match(r.csv,/"-5\.25"/);
+ assert.match(r.csv,/"-2\.5"/);
+ assert.match(r.csv,/"4\.5"/);
+ assert.doesNotMatch(r.csv,/"'-5\.25"/);
+ assert.equal(r.rows,3);
+});
+test('Pro journal CSV neutralizes formula prefixes behind invisible characters',()=>{
+ const trades=[
+  {date:'2026-11-22',symbol:' \uFEFF=IMPORTXML("x")',session:'\t+1+2',pl:-5,notes:'\u0000-1+2'},
+  {date:'2026-11-22',symbol:'EURUSD',session:'NY',pl:'=2+2',notes:'\u200b@HYPERLINK("x")'}
+ ];
+ const r=run('export',{},trades);
+ assert.ok(r.csv.includes('"\' \uFEFF=IMPORTXML(""x"")"'));
+ assert.ok(r.csv.includes('"\'\t+1+2"'));
+ assert.ok(r.csv.includes('"\'\u0000-1+2"'));
+ assert.ok(r.csv.includes('"\'=2+2"'));
+ assert.ok(r.csv.includes('"\'\u200b@HYPERLINK(""x"")"'));
+ assert.ok(r.csv.includes('"-5"'));
+});
 test('portfolio long/short stress preserves signs',()=>{const r=run('portfolio',{balance:10000,shock:-5,positions:[{symbol:'A',value:6000},{symbol:'B',value:-2000}]});assert.equal(r.scenarioPL,-200);assert.equal(r.grossExposure,8000);assert.equal(r.scenarioEquity,9800);});
 test('simulation endpoints and bounds',()=>{const d={balance:10000,riskPct:1,winRate:0,rewardRisk:2,trades:10};assert.equal(run('simulation',d).lossFrequency,100);assert.equal(run('simulation',{...d,winRate:100}).lossFrequency,0);assert.deepEqual(run('simulation',d),run('simulation',d));assert.throws(()=>run('simulation',{...d,trades:501}));assert.throws(()=>run('simulation',{...d,balance:1e9,riskPct:20,rewardRisk:20,winRate:100,trades:500}));});
 const subscription=()=>({status:'active',livemode:false,metadata:{product:'fynx_consumer_test',fynx_uid:'u',tier:'starter'},items:{data:[{quantity:1,price:{currency:'usd',unit_amount:599,recurring:{interval:'month',interval_count:1}}}]}});
