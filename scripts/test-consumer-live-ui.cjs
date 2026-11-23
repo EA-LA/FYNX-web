@@ -170,6 +170,34 @@ test('saved Pro workspaces require explicit deletion confirmation',async()=>{
  assert.match(h.document.getElementById('savedItems').textContent,/0 \/ 25 saved/);
  h.close();
 });
+test('opening a saved Pro workspace moves focus and view to the loaded analysis',async()=>{
+ const item={id:'risk-open-focus',name:'Saved risk analysis',product:'risk',input:{balance:'12500',riskPct:'1'},result:{positionUnits:77}};
+ const h=await load({user:true,tier:'starter',query:'?tool=analytics',handler:data=>data.action==='list'?{items:[item],limit:25}:undefined});
+ const open=h.document.querySelector('#savedItems article button');
+ open.focus();open.onclick();
+ assert.equal(h.document.activeElement,h.document.getElementById('toolTitle'),'focus follows the opened analysis');
+ assert.equal(h.document.getElementById('toolTitle').textContent,'Position risk planner');
+ assert.equal(h.document.getElementById('tool-balance').value,'12500');
+ assert.match(h.document.getElementById('result').textContent,/77/);
+ assert.equal(h.document.querySelector('#productCards button[data-key="risk"]').getAttribute('aria-pressed'),'true');
+ h.close();
+});
+
+test('confirmed saved Pro deletion returns focus to the saved-workspace heading',async()=>{
+ let deleted=false;
+ const item={id:'risk-delete-focus',name:'Delete me',product:'risk',input:{balance:'10000'},result:{positionUnits:10}};
+ const h=await load({user:true,tier:'starter',handler:data=>{
+  if(data.action==='list')return {items:deleted?[]:[item],limit:25};
+  if(data.action==='delete'){deleted=true;return {deleted:true};}
+ }});
+ const [,remove,confirmDelete]=h.document.querySelector('#savedItems article').querySelectorAll('button');
+ remove.onclick();await confirmDelete.onclick();
+ assert.equal(deleted,true);
+ assert.equal(h.document.activeElement,h.document.querySelector('.saved h2'),'focus survives the removed confirmation button');
+ assert.match(h.document.getElementById('savedItems').textContent,/0 \/ 25 saved/);
+ h.close();
+});
+
 test('a failed confirmed delete keeps the saved workspace visible',async()=>{
  const item={id:'risk-saved-2',name:'Saved analysis',product:'risk',input:{balance:'10000'},result:{positionUnits:30}};
  const h=await load({user:true,tier:'starter',handler:data=>{
@@ -358,5 +386,74 @@ test('membership refresh removes previously rendered paid results after access i
  assert.doesNotMatch(h.document.getElementById('result').textContent,/987,654|987654/);
  assert.match(h.document.getElementById('result').textContent,/Membership access changed/);
  assert.doesNotMatch(h.document.getElementById('accessMessage').textContent,/Included in your membership/);
+ h.close();
+});
+
+test('Pro risk sizing retains six-decimal position units without changing money precision',async()=>{
+ const h=await load({user:true,tier:'starter',query:'?tool=risk',handler:data=>data.action==='run'?{result:{riskBudget:12.34567,units:0.000125,lossAtStop:12.34567}}:undefined});
+ h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+ await new Promise(resolve=>setImmediate(resolve));
+ const cards=[...h.document.querySelectorAll('#result .metric')];
+ const valueFor=label=>cards.find(card=>card.querySelector('small').textContent===label)?.querySelector('strong').textContent;
+ assert.equal(valueFor('Units'),'0.000125','a nonzero 6-decimal position must not display as zero');
+ assert.equal(valueFor('Risk Budget'),'12.346','other monetary results keep current 3-decimal formatting');
+ h.close();
+});
+test('Pro scenario tables retain six-decimal units and existing other column precision',async()=>{
+ const h=await load({user:true,tier:'starter',query:'?tool=scenarios',handler:data=>data.action==='run'?{result:{scenarios:[{riskMultiplier:1,units:0.000003,profitAtTarget:9.876543}]}}:undefined});
+ h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.deepEqual([...h.document.querySelectorAll('#result tbody tr td')].map(el=>el.textContent),['1','0.000003','9.877']);
+ h.close();
+});
+
+
+test('Pro save retries an uncertain response with the same idempotency request',async()=>{
+ let attempts=0;
+ const h=await load({user:true,tier:'starter',query:'?tool=risk',handler:data=>{
+  if(data.action==='save'){
+   if(++attempts===1)throw Error('Connection interrupted after server commit');
+   return {saved:true,id:'request-'+data.requestId,result:{positionUnits:42}};
+  }
+ }});
+ h.document.getElementById('workspaceName').value='London risk plan';
+ await h.document.getElementById('saveTool').onclick();
+ assert.match(h.document.getElementById('status').textContent,/Connection interrupted/);
+ await h.document.getElementById('saveTool').onclick();
+ const requests=h.calls.filter(c=>c.action==='save');
+ assert.equal(requests.length,2);
+ assert.match(requests[0].requestId,/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+ assert.equal(requests[0].requestId,requests[1].requestId,'retry must not create a second saved record');
+ assert.equal(requests[0].accountUid,'owner','backend must reject a save made with another signed-in identity');
+ assert.match(h.document.getElementById('status').textContent,/Workspace saved to your account/);
+ h.close();
+});
+
+test('Pro save creates fresh request IDs after edited inputs and names',async()=>{
+ const h=await load({user:true,tier:'starter',query:'?tool=risk',handler:data=>{
+  if(data.action==='save')throw Error('Save timed out');
+ }});
+ const name=h.document.getElementById('workspaceName');name.value='London risk';
+ await h.document.getElementById('saveTool').onclick();
+ name.value='New York risk';name.dispatchEvent(new h.document.defaultView.Event('input',{bubbles:true}));
+ await h.document.getElementById('saveTool').onclick();
+ const balance=h.document.getElementById('tool-balance');balance.value='15000';balance.dispatchEvent(new h.document.defaultView.Event('input',{bubbles:true}));
+ await h.document.getElementById('saveTool').onclick();
+ const ids=h.calls.filter(c=>c.action==='save').map(c=>c.requestId);
+ assert.equal(ids.length,3);
+ assert.equal(new Set(ids).size,3,'new payloads must not reuse an earlier save request');
+ h.close();
+});
+
+test('two explicitly successful Pro saves can still create separate saved records',async()=>{
+ const h=await load({user:true,tier:'starter',query:'?tool=risk',handler:data=>
+  data.action==='save'?{saved:true,id:'request-'+data.requestId,result:{positionUnits:1}}:undefined
+ });
+ h.document.getElementById('workspaceName').value='Risk plan';
+ await h.document.getElementById('saveTool').onclick();
+ await h.document.getElementById('saveTool').onclick();
+ const ids=h.calls.filter(c=>c.action==='save').map(c=>c.requestId);
+ assert.equal(ids.length,2);
+ assert.notEqual(ids[0],ids[1],'a successful save clears the retry token');
  h.close();
 });
