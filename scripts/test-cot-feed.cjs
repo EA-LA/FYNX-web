@@ -29,6 +29,7 @@ assert.equal(downloads.length,1);
 assert.match(downloads[0].filename,/^fynx-cftc-legacy-futures-\d{4}-\d{2}-\d{2}\.csv$/);
 assert.match(csvBlobs[0].data,/^\uFEFF"Source","Report date","Retrieved UTC"/);
 assert.ok(csvBlobs[0].data.includes('"Contract / exchange","CFTC contract code","Non-commercial long"'),'download includes the stable CFTC identifier for cross-referencing');
+assert.ok(fs.readFileSync('markets/cot.html','utf8').includes('import the CFTC contract code column as Text'),'spreadsheet import guidance preserves leading zeros');
 assert.ok(csvBlobs[0].data.includes('"EURO FX","099741","100","30","70","20","60","-40","200"'));
 assert.match(w.document.querySelector('#cotExportStatus').textContent,/1 verified contract/);assert.match(w.document.querySelector('#cotRows').textContent,/\+70-40/);
 mode='multi';w.document.querySelector('#cotRefresh').click();await tick();await tick();
