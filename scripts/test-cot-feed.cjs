@@ -28,7 +28,8 @@ w.document.querySelector('#cotExport').click();
 assert.equal(downloads.length,1);
 assert.match(downloads[0].filename,/^fynx-cftc-legacy-futures-\d{4}-\d{2}-\d{2}\.csv$/);
 assert.match(csvBlobs[0].data,/^\uFEFF"Source","Report date","Retrieved UTC"/);
-assert.ok(csvBlobs[0].data.includes('"EURO FX","100","30","70","20","60","-40","200"'));
+assert.ok(csvBlobs[0].data.includes('"Contract / exchange","CFTC contract code","Non-commercial long"'),'download includes the stable CFTC identifier for cross-referencing');
+assert.ok(csvBlobs[0].data.includes('"EURO FX","099741","100","30","70","20","60","-40","200"'));
 assert.match(w.document.querySelector('#cotExportStatus').textContent,/1 verified contract/);assert.match(w.document.querySelector('#cotRows').textContent,/\+70-40/);
 mode='multi';w.document.querySelector('#cotRefresh').click();await tick();await tick();
 assert.match(w.document.querySelector('#cotStatus').textContent,/2 contracts/);
@@ -70,7 +71,7 @@ for(const next of ['fail','invalid']){mode=next;w.document.querySelector('#cotRe
 // Data preserved from the last verified refresh remains exportable, with the original report date.
 assert.equal(w.document.querySelector('#cotExport').disabled,false);
 w.document.querySelector('#cotExport').click();
-assert.ok(csvBlobs.at(-1).data.includes('"EURO FX","100"'));
+assert.ok(csvBlobs.at(-1).data.includes('"EURO FX","099741","100"'));
 mode='formula';w.document.querySelector('#cotRefresh').click();await tick();await tick();
 w.document.querySelector('#cotExport').click();
 assert.ok(csvBlobs.at(-1).data.includes('"\' =HYPERLINK(""https://example.test"",""click"")"'),'remote contract name cannot run spreadsheet formula');
@@ -124,4 +125,36 @@ await tick();await tick();
 assert.equal(w2.document.querySelector('#cotRows .cot-save').getAttribute('aria-pressed'),'true','saved contracts survive a new browser visit');
 assert.match(w2.document.querySelector('#cotSavedStatus').textContent,/1 saved contract/);
 dom2.window.close();
-dom.window.close();console.log('COT verified data, safe CSV, persistent browser shortlist, saved-only export, storage recovery and report refresh passed.');})().catch(e=>{console.error(e);process.exitCode=1});
+
+const dom3=new JSDOM('<table><tbody id="cotRows"></tbody></table><p id="cotStatus"></p><input id="cotSearch"><button id="cotRefresh"></button><button id="cotExport" disabled></button><p id="cotExportStatus"></p><input type="checkbox" id="cotSavedOnly"><p id="cotSavedStatus"></p>',{runScripts:'outside-only',url:'https://www.fynxfinanceworld.com/markets/cot.html'}),w3=dom3.window;
+w3.AbortSignal=AbortSignal;
+const fallbackBlobs=[];
+w3.Blob=class {constructor(parts){this.data=parts.join('');}};
+w3.URL.createObjectURL=blob=>{fallbackBlobs.push(blob);return 'blob:cftc-code-fallback';};
+w3.URL.revokeObjectURL=()=>{};
+w3.HTMLAnchorElement.prototype.click=function(){};
+w3.fetch=async url=>new URL(url).searchParams.get('$limit')==='1'
+ ?{ok:true,json:async()=>[{report_date_as_yyyy_mm_dd:date}]}
+ :{ok:true,json:async()=>[
+  {...row,cftc_contract_market_code:null,market_and_exchange_names:'EURO FX NO CODE'},
+  {...row,cftc_contract_market_code:'=HYPERLINK("https://example.test","x")',market_and_exchange_names:'GOLD WITH BAD CODE'}
+ ]};
+w3.eval(fs.readFileSync('assets/js/cot-feed.js','utf8'));
+await tick();await tick();
+assert.match(w3.document.querySelector('#cotStatus').textContent,/2 contracts/,'valid numeric CFTC observations survive missing/invalid identifiers');
+assert.ok(!w3.document.querySelector('#cotStatus').textContent.includes('Refresh failed'));
+assert.equal(w3.document.querySelectorAll('#cotRows .cot-save').length,2);
+assert.ok([...w3.document.querySelectorAll('#cotRows .cot-save')].every(button=>button.disabled),'cannot save a contract without a valid stable identifier');
+assert.match(w3.document.querySelector('#cotRows .cot-save').getAttribute('aria-label'),/Save unavailable/);
+w3.document.querySelector('#cotSearch').value='EURO';
+w3.document.querySelector('#cotSearch').dispatchEvent(new w3.Event('input'));
+assert.equal(w3.document.querySelectorAll('#cotRows .cot-save').length,1,'name search still works without a CFTC code');
+w3.document.querySelector('#cotExport').click();
+assert.ok(fallbackBlobs.at(-1).data.includes('"EURO FX NO CODE","","100"'),'missing code is exported as an empty field, not a fake identifier');
+w3.document.querySelector('#cotSearch').value='';
+w3.document.querySelector('#cotSearch').dispatchEvent(new w3.Event('input'));
+w3.document.querySelector('#cotExport').click();
+assert.ok(fallbackBlobs.at(-1).data.includes("'=HYPERLINK("),'untrusted contract codes are escaped against spreadsheet formulas');
+assert.ok(!fallbackBlobs.at(-1).data.includes(',"=HYPERLINK('),'an untrusted code cannot start a spreadsheet formula');
+dom3.window.close();
+dom.window.close();console.log('COT verified data, official contract-code CSV, missing-code recovery, safe CSV, saved shortlist and refresh passed.');})().catch(e=>{console.error(e);process.exitCode=1});
