@@ -10,6 +10,7 @@
  const SAVED_KEY='fynx:cot:saved-contract-codes:v1';
  const MAX_SAVED=100;
  const validCode=code=>typeof code==='string'&&/^[a-zA-Z0-9_-]{1,24}$/.test(code);
+ const codeOf=row=>typeof row.cftc_contract_market_code==='string'?row.cftc_contract_market_code:'';
  let savedCodes=new Set(),savedIssue='';
  function parseSaved(raw){
   if(raw===null)return new Set();
@@ -41,16 +42,22 @@
   }
  }
  function setSavedButton(button,row){
-  const code=row.cftc_contract_market_code,selected=savedCodes.has(code);
-  button.textContent=selected?'Saved':'Save';
+  const code=codeOf(row),canSave=validCode(code),selected=canSave&&savedCodes.has(code);
+  button.textContent=!canSave?'Unavailable':selected?'Saved':'Save';
   button.setAttribute('aria-pressed',String(selected));
-  button.setAttribute('aria-label',`${selected?'Remove':'Save'} ${row.market_and_exchange_names} ${selected?'from':'to'} saved contracts on this browser`);
-  button.disabled=Boolean(savedIssue)||!validCode(code);
+  button.setAttribute('aria-label',canSave
+   ?`${selected?'Remove':'Save'} ${row.market_and_exchange_names} ${selected?'from':'to'} saved contracts on this browser`
+   :`Save unavailable for ${row.market_and_exchange_names}: no valid contract identifier in the CFTC report`);
+  button.title=canSave?'':'The CFTC report did not provide a valid contract code. You can still search and export this observation.';
+  button.disabled=Boolean(savedIssue)||!canSave;
  }
- const matchingRows=()=>rows.filter(r=>
-  (r.market_and_exchange_names.toLowerCase().includes(search.value.trim().toLowerCase())||r.cftc_contract_market_code.toLowerCase().includes(search.value.trim().toLowerCase()))&&
-  (!savedOnly.checked||savedCodes.has(r.cftc_contract_market_code))
- );
+ const matchingRows=()=>{
+  const query=search.value.trim().toLowerCase();
+  return rows.filter(r=>
+   (r.market_and_exchange_names.toLowerCase().includes(query)||codeOf(r).toLowerCase().includes(query))&&
+   (!savedOnly.checked||savedCodes.has(codeOf(r)))
+  );
+ };
  restoreSaved();updateSavedStatus();
  function updateExportAvailability(){
   exportButton.disabled=busy||!reportDate||!retrievedAt||matchingRows().length===0;
@@ -66,16 +73,16 @@
   if(busy||!reportDate||!retrievedAt||!rows.length)return;
   const selected=matchingRows();
   if(!selected.length){exportStatus.textContent='No matching contracts to export. Clear or change the search.';updateExportAvailability();return;}
-  const header=['Source','Report date','Retrieved UTC','Contract / exchange','Non-commercial long','Non-commercial short','Non-commercial net','Commercial long','Commercial short','Commercial net','Open interest'];
+  const header=['Source','Report date','Retrieved UTC','Contract / exchange','CFTC contract code','Non-commercial long','Non-commercial short','Non-commercial net','Commercial long','Commercial short','Commercial net','Open interest'];
   const lines=[header.map(v=>csvField(v)).join(',')];
   for(const r of selected){
    const long=Number(r.noncomm_positions_long_all),short=Number(r.noncomm_positions_short_all);
    const commercialLong=Number(r.comm_positions_long_all),commercialShort=Number(r.comm_positions_short_all);
    lines.push([
     'CFTC Legacy Futures Only',reportDate.slice(0,10),retrievedAt,
-    r.market_and_exchange_names,long,short,long-short,
+    r.market_and_exchange_names,codeOf(r),long,short,long-short,
     commercialLong,commercialShort,commercialLong-commercialShort,Number(r.open_interest_all)
-   ].map((value,index)=>csvField(value,index===3)).join(','));
+   ].map((value,index)=>csvField(value,index===3||index===4)).join(','));
   }
   let objectUrl;
   try{
