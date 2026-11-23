@@ -95,7 +95,7 @@ test('an empty verified-source snapshot is an unavailable state and never erases
     a.requests.shift().resolve(sample);
     await tick();
     const prior=rows.textContent;
-    assert.match(prior,/1\\.0831/);
+    assert.match(prior,/1\.0831/);
 
     await a.refresh();
     a.requests.shift().resolve({quotes:{},status:'unavailable'});
