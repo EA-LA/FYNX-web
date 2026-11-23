@@ -20,14 +20,24 @@
   // pushState keeps category URLs shareable but suppresses the browser's native
   // anchor scrolling. Explicitly reveal the results after a category click,
   // especially on iPhone where the filters stack above the platform cards.
-  function revealResults(selected) {
+  function revealResults(selected, focusHeading = false) {
     const empty = document.getElementById('partnerEmpty');
     const target = !empty.hidden ? empty
       : selected === 'all' ? document.getElementById('all')
       : sections.find(section => section.id === selected && !section.hidden);
-    if (!target || typeof target.scrollIntoView !== 'function') return;
-    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-    target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+    if (!target) return;
+    if (typeof target.scrollIntoView === 'function') {
+      const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+      target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+    }
+    // Native hash navigation normally moves keyboard focus. pushState does not:
+    // return that expected behavior for keyboard / assistive-technology activation,
+    // without stealing focus from pointer and touch users.
+    if (focusHeading) {
+      const heading = target.querySelector?.('h2') || target;
+      if (!heading.hasAttribute?.('tabindex')) heading.setAttribute('tabindex', '-1');
+      heading.focus({ preventScroll: true });
+    }
   }
   function reset(){search.value='';history.replaceState(null,'',location.pathname+location.search+'#all');render();search.focus();}
   search.addEventListener('input',render);
@@ -37,7 +47,7 @@
     event.preventDefault();
     history.pushState(null,'',link.getAttribute('href'));
     render();
-    revealResults(category());
+    revealResults(category(), event.detail === 0);
   }));
   window.addEventListener('hashchange',render);window.addEventListener('popstate',render);
   render();
