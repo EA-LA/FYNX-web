@@ -33,7 +33,7 @@
       throw new Error('Duplicate VIX dates');
     }
     // The advertised latest observation must agree with the verified daily rows.
-    if (observationDate !== rows.at(-1).date) throw new Error('Mismatched VIX source date');
+    if (observationDate !== rows[rows.length - 1].date) throw new Error('Mismatched VIX source date');
     return rows.slice(-90);
   }
 
@@ -57,7 +57,7 @@
     const max = Math.ceil(Math.max(...values) + 1);
     const y = value => 300 - (value - min) / (max - min) * 260;
     const x = index => 60 + index / (rows.length - 1) * 600;
-    const latest = rows.at(-1);
+    const latest = rows[rows.length - 1];
 
     const headline = note('', '');
     headline.style.cssText = 'font-size:32px;font-weight:700;margin:16px 0';
@@ -93,6 +93,30 @@
     root.replaceChildren(headline, chart, status);
   }
 
+  // Bound both the request and JSON body, including older WebViews that
+  // lack AbortSignal.timeout (or AbortController entirely).
+  async function fetchDailyObservations() {
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    let timer;
+    try {
+      return await Promise.race([
+        new Promise((_, reject) => {
+          timer = setTimeout(() => {
+            reject(new Error('VIX request timed out'));
+            if (controller) controller.abort();
+          }, 20000);
+        }),
+        (async () => {
+          const response = await fetch(endpoint, controller ? {signal: controller.signal} : {});
+          if (!response.ok) throw new Error('Feed unavailable');
+          return response.json();
+        })()
+      ]);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   async function load() {
     if (busy) return;
     busy = true;
@@ -100,9 +124,7 @@
     root.setAttribute('aria-busy', 'true');
     if (!hasVerifiedChart) root.textContent = 'Loading Cboe VIX daily observations…';
     try {
-      const response = await fetch(endpoint, {signal: AbortSignal.timeout(20000)});
-      if (!response.ok) throw new Error('Feed unavailable');
-      const data = await response.json();
+      const data = await fetchDailyObservations();
       render(data, verifiedRows(data?.rows, data?.observationDate));
       hasVerifiedChart = true;
     } catch {
