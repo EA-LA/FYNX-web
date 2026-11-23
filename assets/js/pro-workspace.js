@@ -4,7 +4,7 @@ const catalog=window.FynxProCatalog;
 const riskFields=[['balance','Account balance','10000'],['riskPct','Risk per trade (%)','1'],['entry','Entry price','100'],['stop','Stop price','98'],['target','Target price','104'],['multiplier','Contract multiplier','1'],['rate','Quote → account conversion rate','1']];
 const definitions={analytics:[],export:[],risk:riskFields,scenarios:riskFields,review:[['notes','Trade thesis and review','','textarea'],['plan','Entry plan defined',false,'checkbox'],['risk','Risk budget checked',false,'checkbox'],['event','Scheduled events checked',false,'checkbox'],['execution','Execution followed the plan',false,'checkbox'],['review','Outcome and lesson recorded',false,'checkbox']],watchlist:[['symbols','Symbols, separated by commas','AAPL, MSFT, BTCUSD','text'],['notes','Research notes','','textarea']],portfolio:[['balance','Account equity','10000'],['shock','Price shock (%)','-5'],['positions','Positions: SYMBOL, signed value in account currency (one per line)','AAPL, 6000\nMSFT, 4000\nSPY, -2000','textarea']],simulation:[['balance','Starting equity','10000'],['riskPct','Risk per trade (%)','1'],['winRate','Assumed win rate (%)','45'],['rewardRisk','Assumed reward/risk','2'],['trades','Trades per path (1–500)','100']]};
 let state={tier:null,plans:{}},selected='analytics',busy=false,user=null,authEpoch=0;
-let inputRevision=0,hasCurrentResult=false,exportUrl=null;
+let inputRevision=0,hasCurrentResult=false,exportUrl=null,saveAttempt=null;
 const checkoutToolKey='fynxProCheckoutTool';
 // Keep unsaved inputs in this page only; never carry them across account changes.
 const toolDrafts=new Map();
@@ -19,8 +19,15 @@ const fmt=(v,key)=>typeof v==='number'?v.toLocaleString(undefined,{maximumFracti
 function node(tag,text,className){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(className)e.className=className;return e;}
 function status(s){$('status').textContent=s;}
 function clearExportUrl(){if(exportUrl){URL.revokeObjectURL(exportUrl);exportUrl=null;}}
+function freshSaveRequestId(){
+ // The backend accepts UUID-shaped idempotency keys. Use browser cryptographic randomness only.
+ const bytes=new Uint8Array(16);window.crypto.getRandomValues(bytes);
+ bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
+ const hex=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+ return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+}
 function invalidateResult(){
- inputRevision++;
+ inputRevision++;saveAttempt=null;
  if(!hasCurrentResult)return;
  hasCurrentResult=false;
  clearExportUrl();
@@ -52,7 +59,7 @@ function selectTool(key,input,{reset=false}={}){if(!Object.hasOwn(catalog,key))r
   toolDrafts.set(selected,draft);
  }
  input??=toolDrafts.get(key);
- clearExportUrl();inputRevision++;hasCurrentResult=false;selected=key;const url=new URL(location.href);url.searchParams.set('tool',key);history.replaceState(null,'',url);$('toolGuide').href=catalog[key][3];for(const b of $('productCards').querySelectorAll('button[data-key]'))b.setAttribute('aria-pressed',String(b.dataset.key===key));$('toolTitle').textContent=catalog[key][0];$('toolTier').textContent=catalog[key][1].toUpperCase();$('toolDescription').textContent=catalog[key][2];$('fields').replaceChildren();for(const [name,label,value,type='number'] of definitions[key]){const wrap=node('div',undefined,type==='textarea'?'wide':'');const l=node('label',label);l.htmlFor='tool-'+name;const e=document.createElement(type==='textarea'?'textarea':'input');e.id='tool-'+name;e.name=name;if(type!=='textarea')e.type=type;if(type==='number')e.step='any';if(type==='checkbox'){wrap.className='check';e.checked=input?.[name]??value;wrap.append(e,l);}else{e.value=input?.[name]??value;e.required=name!=='notes';wrap.append(l,e);}e.addEventListener(type==='checkbox'?'change':'input',invalidateResult);$('fields').append(wrap);}if(!definitions[key].length)$('fields').append(node('p','Uses up to 1,000 of your dated, saved Journal trades. No sample account results are substituted.','wide'));$('saveTool').hidden=key==='export';$('result').replaceChildren(node('p','Run this tool to see your result.'));status('');updateAccess();}
+ saveAttempt=null;clearExportUrl();inputRevision++;hasCurrentResult=false;selected=key;const url=new URL(location.href);url.searchParams.set('tool',key);history.replaceState(null,'',url);$('toolGuide').href=catalog[key][3];for(const b of $('productCards').querySelectorAll('button[data-key]'))b.setAttribute('aria-pressed',String(b.dataset.key===key));$('toolTitle').textContent=catalog[key][0];$('toolTier').textContent=catalog[key][1].toUpperCase();$('toolDescription').textContent=catalog[key][2];$('fields').replaceChildren();for(const [name,label,value,type='number'] of definitions[key]){const wrap=node('div',undefined,type==='textarea'?'wide':'');const l=node('label',label);l.htmlFor='tool-'+name;const e=document.createElement(type==='textarea'?'textarea':'input');e.id='tool-'+name;e.name=name;if(type!=='textarea')e.type=type;if(type==='number')e.step='any';if(type==='checkbox'){wrap.className='check';e.checked=input?.[name]??value;wrap.append(e,l);}else{e.value=input?.[name]??value;e.required=name!=='notes';wrap.append(l,e);}e.addEventListener(type==='checkbox'?'change':'input',invalidateResult);$('fields').append(wrap);}if(!definitions[key].length)$('fields').append(node('p','Uses up to 1,000 of your dated, saved Journal trades. No sample account results are substituted.','wide'));$('saveTool').hidden=key==='export';$('result').replaceChildren(node('p','Run this tool to see your result.'));status('');updateAccess();}
 function inputs(){const d={};for(const [name,,,type='number'] of definitions[selected]){const e=$('tool-'+name);d[name]=type==='checkbox'?e.checked:e.value;}if(selected==='watchlist')d.symbols=d.symbols.split(',').map(x=>x.trim()).filter(Boolean);if(selected==='portfolio')d.positions=d.positions.split('\n').filter(x=>x.trim()).map(line=>{const parts=line.split(',');if(parts.length!==2)throw Error('Use one SYMBOL, signed value pair per line.');return {symbol:parts[0].trim(),value:parts[1].trim()};});return d;}
 function render(result){clearExportUrl();hasCurrentResult=true;const area=$('result');area.replaceChildren();if(result.csv!==undefined){const a=node('a',`Download ${result.rows} journal entries (.csv)`,'primary');const url=URL.createObjectURL(new Blob([result.csv],{type:'text/csv;charset=utf-8'}));exportUrl=url;a.href=url;a.download='fynx-journal.csv';a.addEventListener('click',()=>setTimeout(()=>{if(exportUrl===url)clearExportUrl();},60000),{once:true});area.append(a);return;}
  const metrics=node('div',undefined,'metric-grid');for(const [key,value] of Object.entries(result)){if(['notice','notes','curve'].includes(key)||(value!==null&&typeof value==='object'))continue;const card=node('div',undefined,'metric');card.append(node('small',title(key)),node('strong',fmt(value,key)));metrics.append(card);}if(metrics.children.length)area.append(metrics);
@@ -83,7 +90,18 @@ $('savedSearch').addEventListener('input',filterSaved);
 window.addEventListener('popstate',()=>selectTool(requestedTool()));
 window.addEventListener('pagehide',clearExportUrl);
 $('toolForm').onsubmit=e=>{e.preventDefault();perform(async()=>{if(!user)throw Error('Sign in to use an advanced tool. You can continue browsing for free.');if(!entitled())throw Error('Choose the required plan above to unlock this tool.');const product=selected,revision=inputRevision,input=inputs();const d=(await call({action:'run',product,input})).data;if(revision!==inputRevision||product!==selected){status('Inputs or selected tool changed while the analysis ran. Run again.');return;}render(d.result);status('Analysis complete.');});};
-$('saveTool').onclick=()=>perform(async()=>{if(!entitled())throw Error('Sign in and choose the required plan first.');if(!$('toolForm').reportValidity())throw Error('Complete the required inputs.');const product=selected,revision=inputRevision,input=inputs();const d=(await call({action:'save',product,name:$('workspaceName').value,input})).data;const changed=revision!==inputRevision||product!==selected;if(!changed)render(d.result);await loadSaved();status(changed?'Workspace saved with the submitted inputs. Run the current inputs again.':'Workspace saved to your account.');});
+$('saveTool').onclick=()=>perform(async()=>{if(!entitled())throw Error('Sign in and choose the required plan first.');if(!$('toolForm').reportValidity())throw Error('Complete the required inputs.');
+ const product=selected,revision=inputRevision,input=inputs(),name=$('workspaceName').value,accountUid=user.uid;
+ const key=JSON.stringify({accountUid,product,revision,name:name.trim(),input});
+ if(!saveAttempt||saveAttempt.key!==key)saveAttempt={key,requestId:freshSaveRequestId()};
+ // Reuse the same requestId after a lost response, preventing duplicate saved records/quota use.
+ const d=(await call({action:'save',accountUid,product,name,input,requestId:saveAttempt.requestId})).data;
+ const changed=revision!==inputRevision||product!==selected;
+ if(!changed)render(d.result);
+ await loadSaved();
+ saveAttempt=null;
+ status(changed?'Workspace saved with the submitted inputs. Run the current inputs again.':'Workspace saved to your account.');
+});
 function navigateStripe(url){const u=new URL(url);if(u.protocol!=='https:'||!['checkout.stripe.com','billing.stripe.com'].includes(u.hostname))throw Error('Invalid checkout destination.');location.href=u.href;}
 document.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>perform(async()=>{if(!user){location.href=signInPath();return;}rememberTool();const d=(await call({action:'checkout',tier:b.dataset.plan,tool:selected})).data;navigateStripe(d.url);}));
 $('manageBilling').onclick=()=>perform(async()=>{navigateStripe((await call({action:'portal',tool:selected})).data.url);});$('loadSaved').textContent='Refresh membership and saved workspaces';$('loadSaved').onclick=()=>perform(async()=>{await refresh();await loadSaved();showMembershipStatus('Membership and saved workspaces refreshed.');});
@@ -104,7 +122,7 @@ try {
  call=async data=>{const epoch=authEpoch,result=await request(data);if(epoch!==authEpoch)throw Error('Account changed. Please retry.');return result;};
  await config.authPersistenceReady;authSDK.onAuthStateChanged(config.auth,async u=>{
   const epoch=++authEpoch;user=u;state={tier:null,plans:{}};
-  $('workspaceName').value='';$('savedSearch').value='';$('savedSearchControls').hidden=true;$('savedSearchCount').textContent='';$('savedItems').replaceChildren();selectTool(selected,undefined,{reset:true});
+  saveAttempt=null;$('workspaceName').value='';$('savedSearch').value='';$('savedSearchControls').hidden=true;$('savedSearchCount').textContent='';$('savedItems').replaceChildren();selectTool(selected,undefined,{reset:true});
   try{
    await refresh();await loadSaved();
    if(checkoutOutcome()==='complete'){
