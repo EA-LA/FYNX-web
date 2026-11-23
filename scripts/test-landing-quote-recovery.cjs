@@ -81,6 +81,30 @@ test('later failed refresh keeps dated quotes visible, explicitly marks them as 
   }finally{a.dom.window.close();}
 });
 
+test('an empty verified-source snapshot is an unavailable state and never erases prior dated quotes',async()=>{
+  const a=await setup();
+  try{
+    const rows=a.w.document.getElementById('landingQuoteRows');
+    const status=a.w.document.getElementById('landingQuoteStatus');
+    a.requests.shift().resolve({quotes:{},status:'unavailable'});
+    await tick();
+    assert.match(rows.textContent,/quotes are unavailable/i);
+    assert.match(status.textContent,/No quote values have been loaded/i);
+
+    await a.refresh();
+    a.requests.shift().resolve(sample);
+    await tick();
+    const prior=rows.textContent;
+    assert.match(prior,/1\\.0831/);
+
+    await a.refresh();
+    a.requests.shift().resolve({quotes:{},status:'unavailable'});
+    await tick();
+    assert.equal(rows.textContent,prior);
+    assert.match(status.textContent,/may be out of date/i);
+  }finally{a.dom.window.close();}
+});
+
 test('the landing page loads the versioned live quote script',()=>{
   assert.match(html,/src="\/assets\/js\/terminal-landing-live\.js\?v=20261123-quote-recovery-1"/);
 });
