@@ -277,7 +277,8 @@ test('fresh canonical ticker quote does not inherit an older source-batch badge'
     }));
     const strip = app.strip(), links = [...strip.querySelectorAll('.lp-item')];
     assert.equal(links.length, 2, 'the ticker duplication remains stable');
-    assert.match(links[0].textContent, /7,520\.25/, 'a newer canonical quote replaces the old batch price');
+    assert.match(links[0].textContent, /7,520/, 'a newer canonical quote replaces the old batch price');
+    assert.doesNotMatch(links[0].textContent, /7,515/, 'old snapshot price is no longer displayed');
     assert.match(links[0].title, /Same quote as the market ticker as of/, 'quote provenance remains visible');
     assert.equal(strip.querySelectorAll('.lp-age').length, 0, 'fresh canonical observations must not inherit batch staleness');
     assert.match(strip.querySelector('.lp-asof').textContent, /Stale snapshot/, 'the older source batch remains disclosed');
