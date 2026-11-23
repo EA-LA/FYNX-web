@@ -84,6 +84,32 @@ try {
   checkSelected('hours');
   assert.equal(new URL(window.location.href).searchParams.get('section'), 'hours');
 
+  // Same-origin embedded pages must still size and forward links when an older
+  // WebView does not expose ResizeObserver. Exercise the real load handler.
+  const frame = panels[2].querySelector('iframe');
+  const embedded = document.implementation.createHTMLDocument('Embedded market hours');
+  embedded.body.getBoundingClientRect = () => ({ height: 320 });
+  Object.defineProperty(frame, 'contentDocument', { configurable: true, value: embedded });
+  for (const supported of [false, true]) {
+    let observed = false;
+    window.ResizeObserver = supported ? class {
+      observe(target) { observed = target === embedded.body; }
+    } : undefined;
+    frame.style.height = '';
+    const linkHandlers = [];
+    const originalAdd = embedded.addEventListener;
+    embedded.addEventListener = function(type, handler, ...args) {
+      if (type === 'click') linkHandlers.push(handler);
+      return originalAdd.call(this, type, handler, ...args);
+    };
+    frame.dispatchEvent(new window.Event('load'));
+    embedded.addEventListener = originalAdd;
+    assert.equal(frame.style.height, '324px', 'initial frame height works with ResizeObserver supported=' + supported);
+    assert.equal(observed, supported, 'observe only when available');
+    assert.equal(linkHandlers.length, 1, 'same-origin link handling is installed regardless of ResizeObserver');
+    for (const handler of linkHandlers) embedded.removeEventListener('click', handler);
+  }
+
   console.log('Calendar tabs: focus, labels, hidden iframes, keyboard controls and deep links passed');
 } finally {
   setImmediate(() => window.close());
