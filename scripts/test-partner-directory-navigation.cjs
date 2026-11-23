@@ -17,15 +17,18 @@ function node(id = '') {
     getAttribute(name) { return attributes[name] ?? null; },
     removeAttribute(name) { delete attributes[name]; },
     addEventListener(type, listener) { (events[type] ||= []).push(listener); },
-    dispatch(type) { const event = { prevented: false, preventDefault() { this.prevented = true; } }; (events[type] || []).forEach(fn => fn(event)); return event; },
+    dispatch(type, { detail = 1 } = {}) { const event = { detail, prevented: false, preventDefault() { this.prevented = true; } }; (events[type] || []).forEach(fn => fn(event)); return event; },
     scrollIntoView(options) { scrolls.push(options); },
-    focus() { this.focused = true; },
+    focus(options) { this.focused = true; this.focusOptions = options; },
+    hasAttribute(name) { return Object.prototype.hasOwnProperty.call(attributes, name); },
+    querySelector(selector) { return selector === 'h2' ? (this.heading || null) : null; },
     querySelectorAll() { return []; }
   };
   return element;
 }
 function setup({ reducedMotion = false, hash = '' } = {}) {
   const sections = ['funded', 'brokers', 'trading-tools'].map(id => node(id));
+  sections.forEach(section => { section.heading = node(); });
   const cards = sections.map((section, i) => {
     const card = node();
     card.textContent = ['FTMO Funded Platform', 'IC Markets Broker', 'Tradezella Trading Tool'][i];
@@ -40,6 +43,8 @@ function setup({ reducedMotion = false, hash = '' } = {}) {
     partnerEmpty: node(), resetPartnerFilters: node(), all: node('all')
   };
   for (const section of sections) elements[section.id] = section;
+  elements.all.heading = sections[0].heading;
+  elements.partnerEmpty.heading = node();
   const location = { hash, pathname: '/partners.html', search: '' };
   const history = {
     paths: [],
@@ -60,7 +65,7 @@ function setup({ reducedMotion = false, hash = '' } = {}) {
     }
   };
   vm.runInNewContext(source, { document, window, history, location }, { filename: 'partners-directory.js' });
-  function click(category) { return links.find(link => link.dataset.partnerCategory === category).dispatch('click'); }
+  function click(category, detail = 1) { return links.find(link => link.dataset.partnerCategory === category).dispatch('click', { detail }); }
   function totalScrolls() { return [...sections, elements.all, elements.partnerEmpty].reduce((n, el) => n + el.scrolls.length, 0); }
   return { sections, cards, links, elements, location, history, window, events, click, totalScrolls };
 }
@@ -111,4 +116,37 @@ test('typing, hash changes, and browser history do not unexpectedly move the vie
   for (const fn of app.events.popstate) fn();
   for (const fn of app.events.hashchange) fn();
   assert.equal(app.totalScrolls(), 0);
+});
+
+test('keyboard category activation focuses the visible results heading without a second scroll', () => {
+  const app = setup();
+  app.click('brokers', 0);
+  const heading = app.sections[1].heading;
+  assert.equal(heading.focused, true);
+  assert.equal(heading.getAttribute('tabindex'), '-1');
+  assert.equal(heading.focusOptions.preventScroll, true);
+  assert.equal(app.sections[1].scrolls.length, 1);
+});
+
+test('pointer navigation never steals keyboard focus', () => {
+  const app = setup();
+  app.click('funded', 1);
+  assert.equal(app.sections[0].heading.focused, undefined);
+  assert.equal(app.sections[0].scrolls.length, 1);
+});
+
+test('keyboard navigation to empty results focuses the recovery heading', () => {
+  const app = setup();
+  app.elements.partnerSearch.value = 'not listed';
+  app.elements.partnerSearch.dispatch('input');
+  app.click('trading-tools', 0);
+  assert.equal(app.elements.partnerEmpty.heading.focused, true);
+  assert.equal(app.elements.partnerEmpty.scrolls.length, 1);
+});
+
+test('keyboard navigation to all platforms focuses the first visible section heading', () => {
+  const app = setup({ hash: '#brokers' });
+  app.click('all', 0);
+  assert.equal(app.sections[0].heading.focused, true);
+  assert.equal(app.elements.all.scrolls.length, 1);
 });
