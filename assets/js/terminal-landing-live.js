@@ -3,7 +3,7 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const cadence = 300000, day = 86400000;
-  let request = 0, pending = '', activeEdition = '', lastAttempt = 0, briefing = null, visibleStories = '';
+  let request = 0, pending = '', activeEdition = '', lastAttempt = 0, briefing = null, visibleStories = '', quoteSnapshotSeen = false;
   const node = (tag, text, className) => {const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(className)el.className=className;return el;};
   const edition = () => window.FynxEdition?.get() || 'global';
   const label = code => window.FynxEdition?.editions?.find(item=>item.id===code)?.label || code;
@@ -65,7 +65,8 @@
     }finally{if(serial===request)pending='';}
   }
   function renderQuotes(data) {
-    if(!data?.quotes)return;const target=$('landingQuoteRows');target.replaceChildren();
+    if(!data?.quotes || !window.FynxTerminalData.instruments.some(instrument=>data.quotes[instrument.symbol])) throw Error('No verified quotes available.');
+    const target=$('landingQuoteRows');target.replaceChildren();
     for(const instrument of window.FynxTerminalData.instruments.slice(0,5)){
       const row=node('tr'),name=node('td'),last=node('td'),change=node('td'),q=data.quotes[instrument.symbol];
       name.append(node('strong',instrument.shortName),node('small',instrument.name));
@@ -77,12 +78,21 @@
       }else{last.textContent='—';change.textContent='Unavailable';}
       row.append(name,last,change);target.append(row);
     }
+    quoteSnapshotSeen = true;
     $('landingQuoteStatus').textContent=(data.stale?'Saved quotes. ':'')+'Global indicative instruments, independent of your news edition. ETFs are fund prices. Changes use each source’s comparison period; quote times are local.';
   }
   function start(){
     if(!$('landingLiveNews')||!window.FynxTerminalData)return;
     activeEdition=edition();refresh();
-    const quotes=()=>window.FynxTerminalData.loadQuotes().then(renderQuotes).catch(()=>{$('landingQuoteStatus').textContent='Global quote sources are temporarily unavailable. Open the research heat map to check again.';});quotes();
+    const quotes=()=>Promise.resolve().then(()=>window.FynxTerminalData.loadQuotes()).then(renderQuotes).catch(()=>{
+      if (quoteSnapshotSeen) {
+        $('landingQuoteStatus').textContent='Quote refresh failed. Previously loaded quote values remain visible and may be out of date. Check their source timestamps or retry in the research heat map.';
+      } else {
+        const target=$('landingQuoteRows'), row=node('tr'), cell=node('td','Indicative quotes are unavailable. Try again in the research heat map.');
+        cell.colSpan=3;row.append(cell);target.replaceChildren(row);
+        $('landingQuoteStatus').textContent='Global quote sources are unavailable. No quote values have been loaded.';
+      }
+    });quotes();
     document.addEventListener('fynx:terminal-quotes',event=>renderQuotes(event.detail));
     document.addEventListener('fynx:edition-change',()=>{activeEdition=edition();++request;pending='';briefing=null;visibleStories='';$('landingLiveNews').replaceChildren(node('p','Checking '+label(activeEdition)+' reporting…'));$('landingLiveNews').setAttribute('aria-busy','true');$('landingNewsStatus').textContent='Checking published sources for the selected edition.';const grid=$('landingHeadlineGrid');if(grid){grid.replaceChildren(node('p','Checking '+label(activeEdition)+' reporting…','fw-headline-empty'));grid.setAttribute('aria-busy','true');}if($('landingHeadlineStatus'))$('landingHeadlineStatus').textContent='Checking published sources for the '+label(activeEdition)+' edition.';refresh();});
     function check(){if(document.hidden)return;if(briefing&&recent().map(item=>item.url).join('|')!==visibleStories)renderNews();if(Date.now()-lastAttempt>=cadence)refresh();quotes();}
