@@ -5,7 +5,17 @@ function number(v,name,min=0,max=1e9){if(v===''||v===null||v===undefined||!Numbe
 function label(v,max=120){if(typeof v!=='string'||!v.trim()||v.length>max)throw Error('Enter a valid name.');return v.trim();}
 function analytics(trades){const values=trades.map(t=>Number(t.pl)).filter(Number.isFinite);let equity=0,peak=0,drawdown=0;const curve=values.map(pl=>{equity+=pl;peak=Math.max(peak,equity);drawdown=Math.max(drawdown,peak-equity);return equity;});const wins=values.filter(x=>x>0),losses=values.filter(x=>x<0),grossWin=wins.reduce((a,b)=>a+b,0),grossLoss=-losses.reduce((a,b)=>a+b,0);return {trades:values.length,netPL:equity,winRate:values.length?wins.length/values.length*100:0,expectancy:values.length?equity/values.length:0,profitFactor:grossLoss?grossWin/grossLoss:null,maxDrawdown:drawdown,curve,notice:'Based on recorded realized P/L, in account currency. No starting balance or deposits are assumed.'};}
 function risk(d){const balance=number(d.balance,'Balance',1),riskPct=number(d.riskPct,'Risk percent',0.01,100),entry=number(d.entry,'Entry',0.000001),stop=number(d.stop,'Stop',0.000001),target=number(d.target,'Target',0.000001),multiplier=number(d.multiplier??1,'Contract multiplier',0.000001),rate=number(d.rate??1,'Quote-to-account rate',0.000001);if(entry===stop||(entry-stop)*(target-entry)<=0)throw Error('Stop and target must lie on opposite sides of entry.');const budget=balance*riskPct/100,perUnit=Math.abs(entry-stop)*multiplier*rate,units=Math.floor(budget/perUnit*1e6)/1e6;return {riskBudget:budget,units,lossAtStop:units*perUnit,profitAtTarget:units*Math.abs(target-entry)*multiplier*rate,rewardRisk:Math.abs(target-entry)/Math.abs(entry-stop),notice:'Model only. Units use your contract multiplier and conversion rate. Fees, slippage and broker lot increments are excluded.'};}
-function csv(trades){const safe=v=>'"'+String(v??'').replace(/^[=+\-@\t\r]/,"'$&").replace(/"/g,'""')+'"';return {csv:'Date,Symbol,Session,Realized P/L,Notes\r\n'+trades.map(t=>[t.date,t.symbol,t.session,t.pl,t.notes].map(safe).join(',')).join('\r\n'),rows:trades.length};}
+function csv(trades){
+ const safe=(value,isRealizedPL=false)=>{
+  const text=String(value??'');
+  // Trusted numeric P/L remains numeric in spreadsheets, including negative values.
+  if(isRealizedPL&&text.trim()!==''&&Number.isFinite(Number(text)))return '"'+String(Number(text))+'"';
+  // Quoting alone does not neutralize formulas hidden behind whitespace, BOM or controls.
+  const neutralized=/^[\s\u0000-\u001f\u007f\u200b\u2060\ufeff]*[=+\-@]/u.test(text)?"'"+text:text;
+  return '"'+neutralized.replace(/"/g,'""')+'"';
+ };
+ return {csv:'Date,Symbol,Session,Realized P/L,Notes\r\n'+trades.map(t=>[t.date,t.symbol,t.session,t.pl,t.notes].map((v,i)=>safe(v,i===3)).join(',')).join('\r\n'),rows:trades.length};
+}
 function run(product,d={},trades=[]){
  if(product==='analytics')return analytics(trades);
  if(product==='export')return csv(trades);
