@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-22T21:54:48.673Z",
+ "generatedAt": "2026-11-23T14:49:36.634Z",
  "items": [
   {
    "reason": "sensitive subject",
@@ -58,39 +58,6 @@
     "Times Now"
    ],
    "at": "2026-11-21T01:35:03.205Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Bessent Hits Southeast Asia Scam Networks With New Sanctions as Crypto Fraud Losses Top $7.2 Billion",
-   "sources": [
-    "BigGo Finance",
-    "Blockonomi"
-   ],
-   "at": "2026-11-20T10:08:02.481Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Explained: Why new US AI chip rules are hitting China’s tech stocks, and what Jensen Huang scandal has to do with it",
-   "sources": [
-    "The Statesman"
-   ],
-   "at": "2026-11-20T10:08:02.481Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "AMD Stock Price Crashes 11% After a New Scandal Involving China",
-   "sources": [
-    "BeInCrypto"
-   ],
-   "at": "2026-11-20T00:41:23.574Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Bessent Hits Southeast Asia Scam Networks With New Sanctions as Crypto Fraud Losses Top $7.2 Billion",
-   "sources": [
-    "BigGo Finance"
-   ],
-   "at": "2026-11-20T00:41:23.574Z"
   }
  ]
 }
