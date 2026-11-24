@@ -54,12 +54,16 @@ async function loadBars(dir, market, dates, provider) {
   const canExtend = previous?.symbol === market.id && previous.timeframe === 'D1' && previous.requestedFrom <= dates.from && previous.to >= iso(Date.parse(dates.to) - 35 * DAY);
   // Re-fetch a recent overlap so ordinary provider corrections are applied.
   const start = canExtend ? iso(Math.max(Date.parse(dates.from), Date.parse(previous.to) - 14 * DAY)) : dates.from;
+  let failureStage = 'provider request failed';
   try {
     const fresh = await provider.history({ symbol: market, timeframe: 'D1', from: start, to: dates.to });
+    failureStage = 'provider returned empty or regressed history';
     if (!fresh.length || previous && fresh.at(-1).time < previous.to) throw new Error('The provider did not return the latest previously published session.');
+    failureStage = 'daily history validation failed';
     const bars = [...(canExtend ? previous.bars.filter(b => b.time >= dates.from && b.time < start) : []), ...fresh];
     validateBars(bars, dates);
     const last = bars.at(-1).time;
+    failureStage = 'latest daily observation is more than one week old';
     if (Date.parse(dates.to) - Date.parse(last) > DAY * 7) throw new Error('Provider daily history is more than one week old.');
     return { symbol: market.id, timeframe: 'D1', requestedTimeframe: 'D1', execution: 'ohlc', bars, source: SOURCE.prices.name, sourceURL: SOURCE.prices.url,
       requestedFrom: dates.from, requestedTo: dates.to, from: bars[0].time, to: last, updatedAt: iso(Date.now()), status: 'historical', priceSide: 'bid', completeBarsOnly: true,
@@ -67,6 +71,8 @@ async function loadBars(dir, market, dates, provider) {
   } catch (error) {
     if (!previous || previous.symbol !== market.id || previous.timeframe !== 'D1') throw new Error(`${market.id}: ${error.message}`);
     validateBars(previous.bars, {from: previous.requestedFrom, to: previous.requestedTo});
+    // Log only the known stage, never arbitrary upstream exception text or URLs.
+    console.warn(`${market.id}: refresh fallback (${failureStage}); retaining previous observations.`);
     return { ...previous, status: 'stale', warning: 'The data provider could not refresh this market. Original observation and retrieval dates are preserved.' };
   }
 }
