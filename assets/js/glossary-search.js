@@ -108,6 +108,11 @@
     // Whole-term matches first, then matches in the definition.
     const hits = extra.filter(item => words.every(w => item.text.includes(w)))
       .sort((a, b) => Number(!words.every(w => a.title.includes(w))) - Number(!words.every(w => b.title.includes(w))));
+    // Async retries rebuild the list. Preserve a keyboard user's current result.
+    const active = document.activeElement;
+    const focusedResult = active && moreList.contains(active) && active.tagName === 'A'
+      ? { href: active.getAttribute('href'), term: active.textContent } : null;
+    let restoredFocus = null;
     moreList.textContent = '';
     for (const item of hits.slice(0, MORE_LIMIT)) {
       const li = document.createElement('li');
@@ -115,6 +120,7 @@
       const link = document.createElement('a');
       link.href = item.href;
       link.textContent = item.term;
+      if (focusedResult && item.href === focusedResult.href && item.term === focusedResult.term) restoredFocus = link;
       const tag = document.createElement('span');
       tag.textContent = `${item.market} glossary`;
       head.append(link, tag);
@@ -126,6 +132,7 @@
     moreNote.textContent = hits.length > MORE_LIMIT ? `Showing ${MORE_LIMIT} of ${hits.length}. Add another word to narrow the list.` : '';
     moreNote.hidden = !moreNote.textContent;
     more.hidden = !hits.length;
+    if (focusedResult) (restoredFocus || input).focus({ preventScroll: true });
     return hits.length;
   }
 
@@ -197,6 +204,7 @@
       input.value = '';
       select.value = name;
       apply(true);
+      if (event.detail === 0) input.focus({ preventScroll: true });
       finder.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
     });
   }
