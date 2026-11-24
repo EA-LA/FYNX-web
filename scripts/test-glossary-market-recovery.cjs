@@ -151,10 +151,18 @@ function response(body = emptyMarkup) {
   assert.equal(f.more.querySelectorAll('li').length, 8, 'known results stay visible during retry');
   assert.equal(f.retry.hidden, true, 'no duplicate retry while request is running');
   assert.match(f.status.textContent, /Checking other market glossaries/i);
+  // A reader may tab to an already verified result while the retry is pending.
+  const existingLink = f.more.querySelector('a');
+  const existingHref = existingLink.getAttribute('href');
+  existingLink.focus();
+  assert.equal(f.dom.window.document.activeElement, existingLink);
   resolveFutures(response(markup));
   await flush();
   assert.match(f.status.textContent, /9 terms in the market glossaries/i);
   assert.equal(f.retry.hidden, true);
+  assert.equal(f.dom.window.document.activeElement.getAttribute('href'), existingHref,
+    'async results preserve keyboard focus on the same glossary link');
+  assert.ok(f.more.contains(f.dom.window.document.activeElement));
   f.dom.window.close();
 
   // When a topic is chosen, local terms are filtered without unnecessary remote requests.
@@ -167,6 +175,20 @@ function response(body = emptyMarkup) {
   assert.equal(calls, 0);
   assert.equal(e.retry.hidden, true);
   e.dom.window.close();
+
+  // Keyboard-activated topic shortcuts should land at the search control, not leave
+  // focus behind in the hero. Pointer activation must not open a mobile keyboard.
+  const g = open(() => Promise.resolve(response()));
+  const shortcut = g.dom.window.document.querySelector('[data-glossary-topic="Risk"]');
+  const finder = g.dom.window.document.getElementById('glossary-search');
+  finder.scrollIntoView = () => {};
+  shortcut.focus();
+  shortcut.dispatchEvent(new g.dom.window.MouseEvent('click', { bubbles: true, cancelable: true, detail: 0 }));
+  assert.equal(g.dom.window.document.activeElement, g.input);
+  shortcut.focus();
+  shortcut.dispatchEvent(new g.dom.window.MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 }));
+  assert.equal(g.dom.window.document.activeElement, shortcut);
+  g.dom.window.close();
 
   console.log('Glosssary market-search recovery: pending, success, outage/retry, partial failure, timeout and partial-timeout checks passed');
 })().catch(error => { console.error(error); process.exitCode = 1; });
