@@ -60,7 +60,7 @@
       import('./firebase.js'),
       import('https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js'),
       import('../assets/js/mfa.js?v=20260930-errors'),
-      import('../assets/js/route-utils.js?v=20260922-routing')
+      import('../assets/js/route-utils.js?v=20261124-routing')
     ]).then(async ([config, api, mfa, routes]) => {
       await config.authPersistenceReady;
       return { auth: config.auth, api, withMfa: mfa.withMfa, safeReturnTo: routes.safeReturnTo };

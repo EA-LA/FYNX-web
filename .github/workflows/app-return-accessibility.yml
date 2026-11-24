@@ -4,12 +4,16 @@ on:
   pull_request:
     paths:
       - "app-return.html"
+      - "assets/js/route-utils.js"
+      - "scripts/test-routing.cjs"
       - "scripts/test-app-return-accessibility.cjs"
       - ".github/workflows/app-return-accessibility.yml"
   push:
     branches: [main]
     paths:
       - "app-return.html"
+      - "assets/js/route-utils.js"
+      - "scripts/test-routing.cjs"
       - "scripts/test-app-return-accessibility.cjs"
       - ".github/workflows/app-return-accessibility.yml"
   workflow_dispatch:
@@ -26,5 +30,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - run: node scripts/test-routing.cjs
       - run: node --check scripts/test-app-return-accessibility.cjs
       - run: node --test scripts/test-app-return-accessibility.cjs
