@@ -126,10 +126,32 @@ async function refresh(){
  state=next;updateAccess();
 }
 function filterSaved(){const query=$('savedSearch').value.trim().toLocaleLowerCase();const entries=$('savedItems').querySelectorAll('article');let matches=0;for(const entry of entries){entry.hidden=!entry.dataset.search.includes(query);if(!entry.hidden)matches++;}$('savedSearchCount').textContent=query?`${matches} of ${entries.length} saved workspaces match.`:`${entries.length} saved workspaces shown.`;}
-async function loadSaved(){if(!user||!state.tier){$('savedSearchControls').hidden=true;$('savedSearchCount').textContent='';$('savedItems').replaceChildren(node('p',state.billingUnavailable?'Saved workspaces are temporarily unavailable. Refresh membership to try again.':'Sign in and activate a membership to save your work.'));return;}const d=(await call({action:'list'})).data;$('savedSearchControls').hidden=false;$('savedItems').replaceChildren(node('p',`${d.items.length} / ${d.limit} saved`));for(const item of d.items){const el=node('article');el.dataset.search=(String(item.name||'')+' '+(catalog[item.product]?.[0]||item.product||'')).toLocaleLowerCase();el.append(node('strong',item.name),node('p',catalog[item.product]?.[0]||item.product));const open=node('button','Open'),remove=node('button','Delete');const supported=Object.hasOwn(catalog,item.product)&&Object.hasOwn(definitions,item.product);const allowed=supported&&item.locked!==true&&state.plans[state.tier]?.products?.includes(item.product);if(!allowed){open.disabled=true;if(!supported){open.title='This saved tool is no longer available';el.append(node('p','This saved tool is no longer available. Its record remains saved and can still be deleted.'));}else{open.title='Requires '+catalog[item.product][1]+' membership';el.append(node('p',catalog[item.product][1]+' membership required to open this saved analysis. Your record remains saved and can still be deleted.'));}}open.onclick=()=>{if(!supported){status('This saved tool is no longer available. Your saved record was not changed.');return;}if(item.locked===true||!state.plans[state.tier]?.products?.includes(item.product)){status('Upgrade to '+catalog[item.product][1]+' to open this saved analysis. Your record remains saved.');return;}const i={...item.input};if(Array.isArray(i.symbols))i.symbols=i.symbols.join(', ');if(Array.isArray(i.positions))i.positions=i.positions.map(p=>p.symbol+', '+p.value).join('\n');selectTool(item.product,i);$('workspaceName').value=item.name;render(item.result);const heading=$('toolTitle');heading.tabIndex=-1;heading.focus({preventScroll:true});$('workbench').scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});};const confirmDelete=node('button','Confirm delete'),cancelDelete=node('button','Cancel');confirmDelete.type='button';cancelDelete.type='button';confirmDelete.hidden=true;cancelDelete.hidden=true;
+function clearSavedView(message){
+ $('savedSearchControls').hidden=true;$('savedSearchCount').textContent='';$('savedItems').replaceChildren(node('p',message));
+}
+async function loadSaved(){if(!user||!state.tier){clearSavedView(state.billingUnavailable?'Saved workspaces are temporarily unavailable. Refresh membership to try again.':'Sign in and activate a membership to save your work.');return;}
+ const epoch=authEpoch;
+ let d;
+ try{d=(await call({action:'list'})).data;}
+ catch(e){
+  if(epoch!==authEpoch)throw e;
+  // Do not leave older saved results or quota information visible after a failed refresh.
+  // This includes a tier change followed by a failed list request.
+  const message='Saved workspaces could not be refreshed. Use Refresh membership and saved workspaces to try again.';
+  clearSavedView(message);
+  throw Error(message);
+ }
+ if(epoch!==authEpoch)throw Error('Account changed. Please retry.');
+ $('savedSearchControls').hidden=false;$('savedItems').replaceChildren(node('p',`${d.items.length} / ${d.limit} saved`));for(const item of d.items){const el=node('article');el.dataset.search=(String(item.name||'')+' '+(catalog[item.product]?.[0]||item.product||'')).toLocaleLowerCase();el.append(node('strong',item.name),node('p',catalog[item.product]?.[0]||item.product));const open=node('button','Open'),remove=node('button','Delete');const supported=Object.hasOwn(catalog,item.product)&&Object.hasOwn(definitions,item.product);const allowed=supported&&item.locked!==true&&state.plans[state.tier]?.products?.includes(item.product);if(!allowed){open.disabled=true;if(!supported){open.title='This saved tool is no longer available';el.append(node('p','This saved tool is no longer available. Its record remains saved and can still be deleted.'));}else{open.title='Requires '+catalog[item.product][1]+' membership';el.append(node('p',catalog[item.product][1]+' membership required to open this saved analysis. Your record remains saved and can still be deleted.'));}}open.onclick=()=>{if(!supported){status('This saved tool is no longer available. Your saved record was not changed.');return;}if(item.locked===true||!state.plans[state.tier]?.products?.includes(item.product)){status('Upgrade to '+catalog[item.product][1]+' to open this saved analysis. Your record remains saved.');return;}const i={...item.input};if(Array.isArray(i.symbols))i.symbols=i.symbols.join(', ');if(Array.isArray(i.positions))i.positions=i.positions.map(p=>p.symbol+', '+p.value).join('\n');selectTool(item.product,i);$('workspaceName').value=item.name;render(item.result);const heading=$('toolTitle');heading.tabIndex=-1;heading.focus({preventScroll:true});$('workbench').scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});};const confirmDelete=node('button','Confirm delete'),cancelDelete=node('button','Cancel');confirmDelete.type='button';cancelDelete.type='button';confirmDelete.hidden=true;cancelDelete.hidden=true;
  remove.onclick=()=>{remove.disabled=true;confirmDelete.hidden=false;cancelDelete.hidden=false;confirmDelete.focus();status('Confirm deletion of "'+(item.name||'Untitled workspace')+'". This cannot be undone.');};
  cancelDelete.onclick=()=>{remove.disabled=false;confirmDelete.hidden=true;cancelDelete.hidden=true;status('Deletion cancelled.');remove.focus();};
- confirmDelete.onclick=()=>perform(async()=>{await call({action:'delete',id:item.id});await loadSaved();const heading=$('savedItems').closest('.saved').querySelector('h2');heading.tabIndex=-1;heading.focus({preventScroll:true});status('Workspace deleted.');});
+ confirmDelete.onclick=()=>perform(async()=>{
+   const epoch=authEpoch;await call({action:'delete',id:item.id});
+   let message='Workspace deleted.';
+   try{await loadSaved();}catch(e){if(epoch!==authEpoch)throw e;message+=' '+e.message;}
+   if(epoch!==authEpoch)return;
+   const heading=$('savedItems').closest('.saved').querySelector('h2');heading.tabIndex=-1;heading.focus({preventScroll:true});status(message);
+  });
  el.append(open,remove,confirmDelete,cancelDelete);$('savedItems').append(el);}filterSaved();}
 for(const b of $('productCards').querySelectorAll('button[data-key]')){b.onclick=()=>{selectTool(b.dataset.key);$('workbench').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});};}
 $('savedSearch').addEventListener('input',filterSaved);
@@ -137,16 +159,18 @@ window.addEventListener('popstate',()=>selectTool(requestedTool()));
 window.addEventListener('pagehide',()=>expireExport(exportUrl));
 $('toolForm').onsubmit=e=>{e.preventDefault();perform(async()=>{if(!user)throw Error('Sign in to use an advanced tool. You can continue browsing for free.');if(!entitled())throw Error('Choose the required plan above to unlock this tool.');const product=selected,revision=inputRevision,input=inputs();const d=(await call({action:'run',product,input})).data;if(revision!==inputRevision||product!==selected){status('Inputs or selected tool changed while the analysis ran. Run again.');return;}render(d.result);status('Analysis complete.');});};
 $('saveTool').onclick=()=>perform(async()=>{if(!entitled())throw Error('Sign in and choose the required plan first.');if(!$('toolForm').reportValidity())throw Error('Complete the required inputs.');
- const product=selected,revision=inputRevision,input=inputs(),name=$('workspaceName').value,accountUid=user.uid;
+ const product=selected,revision=inputRevision,input=inputs(),name=$('workspaceName').value,accountUid=user.uid,epoch=authEpoch;
  const key=JSON.stringify({accountUid,product,revision,name:name.trim(),input});
  if(!saveAttempt||saveAttempt.key!==key)saveAttempt={key,requestId:freshSaveRequestId()};
  // Reuse the same requestId after a lost response, preventing duplicate saved records/quota use.
  const d=(await call({action:'save',accountUid,product,name,input,requestId:saveAttempt.requestId})).data;
  const changed=revision!==inputRevision||product!==selected;
  if(!changed)render(d.result);
- await loadSaved();
+ // The write is acknowledged; a failed list refresh is not a failed save.
  saveAttempt=null;
- status(changed?'Workspace saved with the submitted inputs. Run the current inputs again.':'Workspace saved to your account.');
+ let message=changed?'Workspace saved with the submitted inputs. Run the current inputs again.':'Workspace saved to your account.';
+ try{await loadSaved();}catch(e){if(epoch!==authEpoch)throw e;message+=' '+e.message;}
+ if(epoch===authEpoch)status(message);
 });
 function navigateStripe(url){const u=new URL(url);if(u.protocol!=='https:'||!['checkout.stripe.com','billing.stripe.com'].includes(u.hostname))throw Error('Invalid checkout destination.');location.href=u.href;}
 document.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>perform(async()=>{if(!user){location.href=signInPath();return;}rememberTool();const d=(await call({action:'checkout',tier:b.dataset.plan,tool:selected})).data;navigateStripe(d.url);}));
