@@ -28,7 +28,7 @@ test('member subscription sends selected tier and tool to live backend',async()=
 test('paid membership renders access and payment management',async()=>{const h=await load({user:true,tier:'plus',billing:true});assert.match(h.document.getElementById('membershipTitle').textContent,/Plus membership/);assert.equal(h.document.getElementById('manageBilling').hidden,false);assert.match(h.document.getElementById('accessMessage').textContent,/Included/);h.close();});
 test('failed payment retains billing management',async()=>{const h=await load({user:true,billing:true});assert.equal(h.document.getElementById('manageBilling').hidden,false);assert.match(h.document.getElementById('accessMessage').textContent,/monthly membership/);h.close();});
 test('cancelled checkout explains the outcome and restores the chosen tool',async()=>{const h=await load({user:true,query:'?checkout=cancelled',rememberedTool:'simulation'});assert.equal(h.location.searchParams.get('tool'),'simulation');assert.match(h.document.getElementById('status').textContent,/without completing/);assert.equal(h.calls.filter(c=>c.action==='checkout').length,0);h.close();});
-test('checkout return alone never grants access and offers a membership refresh',async()=>{const h=await load({user:true,billing:true,query:'?checkout=complete',statusTier:n=>n>4?'plus':null});assert.match(h.document.getElementById('status').textContent,/has not been confirmed/);assert.equal(h.calls.filter(c=>c.action==='status').length,4);assert.doesNotMatch(h.document.getElementById('membershipTitle').textContent,/Plus/);await h.document.getElementById('loadSaved').onclick();assert.match(h.document.getElementById('status').textContent,/Payment confirmed/);assert.match(h.document.getElementById('membershipTitle').textContent,/Plus membership/);h.close();});
+test('checkout return alone never grants access and offers a membership refresh',async()=>{const h=await load({user:true,billing:true,query:'?checkout=complete',statusTier:n=>n>4?'plus':null});assert.match(h.document.getElementById('status').textContent,/has not been confirmed/);assert.equal(h.calls.filter(c=>c.action==='status').length,4);assert.doesNotMatch(h.document.getElementById('membershipTitle').textContent,/Plus/);await h.document.getElementById('loadSaved').onclick();assert.match(h.document.getElementById('status').textContent,/Plus membership verified.*This tool is included/);assert.match(h.document.getElementById('status').textContent,/does not confirm a new checkout payment/);assert.match(h.document.getElementById('membershipTitle').textContent,/Plus membership/);h.close();});
 test('temporary verification outage keeps payment recovery available and access locked',async()=>{const h=await load({user:true,billing:true,unavailable:true});assert.match(h.document.getElementById('membershipTitle').textContent,/unavailable/);assert.match(h.document.getElementById('status').textContent,/Manage subscription/);assert.equal(h.document.getElementById('manageBilling').hidden,false);assert.doesNotMatch(h.document.getElementById('accessMessage').textContent,/Included/);await h.document.getElementById('manageBilling').onclick();assert.equal(h.calls.at(-1).action,'portal');h.close();});
 test('untrusted payment redirect is rejected',async()=>{const h=await load({user:true,destination:'https://checkout.stripe.com.attacker.invalid/pay'});await h.document.querySelector('[data-plan="starter"]').onclick();assert.equal(h.location.hostname,'www.fynxfinanceworld.com');assert.match(h.document.getElementById('status').textContent,/Invalid checkout destination/);h.close();});
 test('late membership response cannot repopulate an account after sign-out',async()=>{let deferred=false,resolveStatus;const h=await load({user:true,tier:'plus',billing:true,handler:data=>{if(deferred&&data.action==='status')return new Promise(resolve=>{resolveStatus=resolve;});}});deferred=true;const pending=h.changeUser({uid:'other'});await Promise.resolve();await h.changeUser(null);resolveStatus({tier:'pro',hasBillingAccount:true,plans:PLANS});await pending;assert.equal(h.document.getElementById('membershipTitle').textContent,'Free to explore');assert.equal(h.document.getElementById('manageBilling').hidden,true);assert.doesNotMatch(h.document.getElementById('savedItems').textContent,/saved$/);h.close();});
@@ -657,5 +657,32 @@ test('confirmed Pro deletion reports success even if the list refresh fails',asy
   fail=false;await h.document.getElementById('loadSaved').onclick();
   assert.match(h.document.getElementById('savedItems').textContent,/0 \/ 25 saved/);
   assert.equal(h.calls.filter(c=>c.action==='delete').length,1);
+ }finally{h.close();}
+});
+
+test('checkout return does not claim a new payment or unlock an out-of-plan tool',async()=>{
+ const h=await load({user:true,tier:'starter',billing:true,query:'?checkout=complete&tool=simulation'});
+ try{
+  const message=h.document.getElementById('status').textContent;
+  assert.match(message,/Essential membership verified/);
+  assert.match(message,/Professional or higher is required for this tool/i);
+  assert.match(message,/does not confirm a new checkout payment/);
+  assert.doesNotMatch(message,/Payment confirmed|tools are unlocked/i);
+  assert.doesNotMatch(h.document.getElementById('accessMessage').textContent,/Included/);
+  assert.equal(h.calls.filter(c=>c.action==='checkout').length,0);
+ }finally{h.close();}
+});
+test('checkout return distinguishes verified Apple access from a new web payment',async()=>{
+ const h=await load({user:true,query:'?checkout=complete',handler:data=>data.action==='status'?{tier:'pro',accessProvider:'apple',plans:PLANS}:undefined});
+ try{
+  assert.match(h.document.getElementById('status').textContent,/App Store membership verified.*does not confirm a new checkout payment/);
+  assert.match(h.document.getElementById('accessMessage').textContent,/Included/);
+ }finally{h.close();}
+});
+test('signed-out checkout return asks for the checkout account instead of implying payment verification',async()=>{
+ const h=await load({query:'?checkout=complete'});
+ try{
+  assert.match(h.document.getElementById('status').textContent,/Sign in with the account used at checkout/);
+  assert.equal(h.calls.length,0);
  }finally{h.close();}
 });
