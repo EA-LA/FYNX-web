@@ -177,7 +177,16 @@ document.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>perform(async(
 $('manageBilling').onclick=()=>perform(async()=>{navigateStripe((await call({action:'portal',tool:selected})).data.url);});$('loadSaved').textContent='Refresh membership and saved workspaces';$('loadSaved').onclick=()=>perform(async()=>{await refresh();await loadSaved();showMembershipStatus('Membership and saved workspaces refreshed.');});
 function showMembershipStatus(fallback){
  if(state.billingUnavailable){status(state.hasBillingAccount?'Membership verification is temporarily unavailable. You can still open Manage subscription. Refresh to try again.':'Membership verification is temporarily unavailable. Refresh to try again.');return;}
- if(checkoutOutcome()==='complete'){status(state.tier?'Payment confirmed. Your tools are unlocked.':'Payment has not been confirmed yet. Refresh membership to check again, or contact support if you were charged.');return;}
+ if(checkoutOutcome()==='complete'){
+  // The return URL is not a receipt, and status verifies access, not this checkout session.
+  if(!user){status('Sign in with the account used at checkout to verify your membership.');return;}
+  const plan=state.plans[state.tier];
+  if(!plan){status('Payment has not been confirmed yet. Refresh membership to check again, or contact support if you were charged.');return;}
+  const access=entitled()?'This tool is included.':catalog[selected][1]+' or higher is required for this tool.';
+  const membership=state.accessProvider==='apple'?'App Store membership':plan.name+' membership';
+  status(membership+' verified. '+access+' This does not confirm a new checkout payment. Check your payment receipt or contact support if needed.');
+  return;
+ }
  if(checkoutOutcome()==='cancelled'){status('You returned from checkout without completing it. Choose a plan when you are ready, or use Manage subscription to review an existing membership.');return;}
  status(fallback);
 }
@@ -197,7 +206,7 @@ try {
    await refresh();await loadSaved();
    if(checkoutOutcome()==='complete'){
     for(let attempt=0;user&&!state.tier&&!state.billingUnavailable&&attempt<3;attempt++){
-     status('Confirming your payment…');await new Promise(resolve=>setTimeout(resolve,2000));if(epoch!==authEpoch)return;await refresh();
+     status('Checking your membership…');await new Promise(resolve=>setTimeout(resolve,2000));if(epoch!==authEpoch)return;await refresh();
     }
     if(state.tier)await loadSaved();
    }
