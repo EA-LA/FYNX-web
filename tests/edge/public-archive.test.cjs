@@ -70,3 +70,36 @@ test('stale research fallbacks identify the failing stage without logging upstre
     await fs.rm(dir,{recursive:true,force:true});
   }
 });
+
+test('historical provider errors keep the API contract and expose only allowlisted diagnostic categories', async () => {
+  const { DukascopyProvider } = require('../../backend/quant/providers.cjs');
+  const input = {symbol:{dukascopy:'eurusd'},timeframe:'D1',from:day(1),to:day(2)};
+  const cases = [
+    [{code:'DUKASCOPY_ACCESS_DENIED',status:403}, 'access-denied', 'provider access denied'],
+    [{name:'RateLimitError',status:429}, 'rate-limited', 'provider rate limited'],
+    [{code:'ETIMEDOUT'}, 'connection', 'provider connection failed'],
+    [{code:'private-custom-code'}, undefined, 'provider request failed'],
+  ];
+  const fs = require('node:fs/promises'), os = require('node:os'), path = require('node:path');
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(),'fynx-provider-'));
+  try {
+    for (const [fields, category, stage] of cases) {
+      const provider = new DukascopyProvider({download: async () => {throw Object.assign(Error('private-upstream-url'),fields);}});
+      await assert.rejects(() => provider.history(input), error => {
+        assert.equal(error.code,'PROVIDER_UNAVAILABLE');
+        assert.equal(error.status,503);
+        assert.equal(error.providerFailure,category);
+        assert.ok(!JSON.stringify(error).includes('private-upstream-url'));
+        return true;
+      });
+      await assert.rejects(() => loadBars(dir,{id:'EURUSD',dukascopy:'eurusd'},{from:input.from,to:input.to},provider), error => {
+        assert.equal(error.message,'EURUSD: '+stage+'; no previous observations available.');
+        return true;
+      });
+    }
+    await assert.rejects(() => new DukascopyProvider({download:{}}).history(input), {code:'PROVIDER_NOT_INSTALLED'});
+  } finally { await fs.rm(dir,{recursive:true,force:true}); }
+});
+test('installed Dukascopy dependency exposes the expected downloader without network access', () => {
+  assert.equal(typeof require('dukascopy-node').getHistoricalRates,'function');
+});
