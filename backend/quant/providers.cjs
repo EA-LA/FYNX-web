@@ -6,9 +6,17 @@ class DukascopyProvider {
   async history({ symbol, timeframe, from, to }) {
     let downloader = this.download;
     if (!downloader) { try { downloader = require('dukascopy-node').getHistoricalRates; } catch { throw fail('Install dukascopy-node to enable historical market data.', 503, 'PROVIDER_NOT_INSTALLED'); } }
+    if (typeof downloader !== 'function') throw fail('The installed historical market data adapter is incompatible.', 503, 'PROVIDER_NOT_INSTALLED');
     let rows;
     try { rows = await downloader({ instrument: symbol.dukascopy || symbol.dukascopyId, dates: { from, to }, timeframe: timeframe.toLowerCase(), format: 'json', priceType: 'bid', volumes: true, batchSize: 3, pauseBetweenBatchesMs: 300, retryCount: 2, retryOnEmpty: false, useCache: false }); }
-    catch { throw fail('Dukascopy history is temporarily unavailable. Retry this range later.', 503, 'PROVIDER_UNAVAILABLE'); }
+    catch (error) {
+      // Keep the public API error stable and never carry through upstream messages or URLs.
+      const failure = fail('Dukascopy history is temporarily unavailable. Retry this range later.', 503, 'PROVIDER_UNAVAILABLE');
+      if (error?.code === 'DUKASCOPY_ACCESS_DENIED' || error?.status === 403) failure.providerFailure = 'access-denied';
+      else if (error?.name === 'RateLimitError' || error?.status === 429) failure.providerFailure = 'rate-limited';
+      else if (['ETIMEDOUT', 'ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND', 'EAI_AGAIN'].includes(error?.code)) failure.providerFailure = 'connection';
+      throw failure;
+    }
     if (!Array.isArray(rows)) throw fail('Dukascopy returned invalid history.', 503, 'PROVIDER_UNAVAILABLE');
     const fromMs = Date.parse(from), toMs = Math.min(Date.parse(to), Date.now());
     const normalized = rows.filter(r => Number.isFinite(r.timestamp) && r.timestamp >= fromMs && r.timestamp < toMs).map(r => {
