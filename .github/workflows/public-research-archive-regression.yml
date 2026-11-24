@@ -1,0 +1,20 @@
+name: Public research archive regression
+on:
+  pull_request:
+    paths:
+      - 'scripts/refresh-public-research.cjs'
+      - 'tests/edge/public-archive.test.cjs'
+      - '.github/workflows/public-research-archive-regression.yml'
+permissions:
+  contents: read
+jobs:
+  archive-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --test tests/edge/public-archive.test.cjs
