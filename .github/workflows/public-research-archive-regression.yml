@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'scripts/refresh-public-research.cjs'
+      - 'backend/quant/providers.cjs'
+      - 'package-lock.json'
       - 'tests/edge/public-archive.test.cjs'
       - '.github/workflows/public-research-archive-regression.yml'
 permissions:

@@ -69,7 +69,13 @@ async function loadBars(dir, market, dates, provider) {
       requestedFrom: dates.from, requestedTo: dates.to, from: bars[0].time, to: last, updatedAt: iso(Date.now()), status: 'historical', priceSide: 'bid', completeBarsOnly: true,
       granularityNote: 'Completed daily bid candles. The candle timestamp is its UTC opening. Market history begins with the first available session.' };
   } catch (error) {
-    if (!previous || previous.symbol !== market.id || previous.timeframe !== 'D1') throw new Error(`${market.id}: ${error.message}`);
+    if (failureStage === 'provider request failed') {
+      if (error?.code === 'PROVIDER_NOT_INSTALLED') failureStage = 'provider adapter unavailable';
+      else if (error?.providerFailure === 'access-denied') failureStage = 'provider access denied';
+      else if (error?.providerFailure === 'rate-limited') failureStage = 'provider rate limited';
+      else if (error?.providerFailure === 'connection') failureStage = 'provider connection failed';
+    }
+    if (!previous || previous.symbol !== market.id || previous.timeframe !== 'D1') throw new Error(`${market.id}: ${failureStage}; no previous observations available.`);
     validateBars(previous.bars, {from: previous.requestedFrom, to: previous.requestedTo});
     // Log only the known stage, never arbitrary upstream exception text or URLs.
     console.warn(`${market.id}: refresh fallback (${failureStage}); retaining previous observations.`);
