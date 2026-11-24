@@ -145,7 +145,11 @@ function response(body = emptyMarkup) {
   assert.equal(f.more.querySelectorAll('li').length, 8);
   assert.equal(f.retry.hidden, false);
   retryFutures = true;
+  f.retry.focus();
   f.retry.click();
+  assert.equal(f.dom.window.document.activeElement, f.status,
+    'retry moves focus to the status before hiding its focused button');
+  assert.equal(f.status.tabIndex, -1, 'status is programmatically focusable, not a new Tab stop');
   assert.equal(retryUrls.length, 10, 'retry fetches only the missing market');
   assert.match(retryUrls[9], /futures-glossary/);
   assert.equal(f.more.querySelectorAll('li').length, 8, 'known results stay visible during retry');
@@ -164,6 +168,28 @@ function response(body = emptyMarkup) {
     'async results preserve keyboard focus on the same glossary link');
   assert.ok(f.more.contains(f.dom.window.document.activeElement));
   f.dom.window.close();
+
+  // A changed query while retrying must win, without moving the reader's focus.
+  let recovering = false;
+  const recoveryRequests = [];
+  const h = open(() => recovering
+    ? new Promise(resolve => recoveryRequests.push(resolve))
+    : Promise.reject(new Error('offline')));
+  h.search('uniquemarketterm');
+  await flush();
+  recovering = true;
+  h.input.focus();
+  h.retry.click();
+  assert.equal(h.dom.window.document.activeElement, h.input,
+    'activation without focus on Retry does not steal focus');
+  h.search('drawdown');
+  recoveryRequests.forEach(resolve => resolve(response(markup)));
+  await flush();
+  assert.equal(h.dom.window.document.activeElement, h.input,
+    'late recovery does not steal focus from the updated search');
+  assert.match(h.status.textContent, /drawdown/);
+  assert.equal(h.more.hidden, true, 'old query results do not replace the newer query');
+  h.dom.window.close();
 
   // When a topic is chosen, local terms are filtered without unnecessary remote requests.
   let calls = 0;
