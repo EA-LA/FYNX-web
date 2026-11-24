@@ -32,3 +32,19 @@ test('saving a story follows its existing bookmark after sources reorder',async 
  const h=harness(t,{story:story()},{rows:[['readingRecords:existing',existing]]});await tick();await tick();h.q('save').click();await tick();
  assert.equal(h.saved.length,1);assert.equal(h.saved[0].key,existing.id);assert.equal(h.saved[0].data.url,existing.data.url);assert.equal(h.saved[0].data.intelligenceStoryID,id);assert.equal(h.saved[0].data.saved,true);
 });
+
+test('malformed optional related data does not hide a verified public story',async t=>{
+ for(const related of [{items:[]},42,'unavailable',[null,false,{}]]){
+  const h=harness(t,{story:story(),related});await tick();await tick();
+  assert.equal(h.q('story').hidden,false);assert.equal(h.q('retry').hidden,true);
+  assert.equal(h.q('related-section').hidden,true);assert.match(h.q('status').textContent,/Source-confirmed reporting/);
+ }
+});
+test('a malformed related item cannot prevent a valid related link from rendering',async t=>{
+ const relatedID='b'.repeat(64);
+ const h=harness(t,{story:story(),related:[null,{id:relatedID,title:'Valid related report'},{id:relatedID,title:'Duplicate'},{id,title:'Current story'}]});
+ await tick();await tick();
+ assert.equal(h.q('story').hidden,false);assert.equal(h.q('related-section').hidden,false);
+ assert.equal(h.q('related').children.length,1);
+ assert.equal(h.q('related').querySelector('a').getAttribute('href'),'/intelligence/story.html?id='+relatedID);
+});
