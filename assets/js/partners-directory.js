@@ -34,7 +34,9 @@
     // return that expected behavior for keyboard / assistive-technology activation,
     // without stealing focus from pointer and touch users.
     if (focusHeading) {
-      const heading = target.querySelector?.('h2') || target;
+      const focusTarget = selected === 'all' && empty.hidden
+        ? sections.find(section => !section.hidden) || target : target;
+      const heading = focusTarget.querySelector?.('h2') || focusTarget;
       if (!heading.hasAttribute?.('tabindex')) heading.setAttribute('tabindex', '-1');
       heading.focus({ preventScroll: true });
     }
@@ -44,6 +46,8 @@
   clear.addEventListener('click',()=>{search.value='';render();search.focus();});
   document.getElementById('resetPartnerFilters').addEventListener('click',reset);
   links.forEach(link=>link.addEventListener('click',event=>{
+    // Keep native link behavior for new tabs/windows and already handled clicks.
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     history.pushState(null,'',link.getAttribute('href'));
     render();

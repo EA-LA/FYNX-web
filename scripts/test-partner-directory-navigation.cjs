@@ -17,7 +17,7 @@ function node(id = '') {
     getAttribute(name) { return attributes[name] ?? null; },
     removeAttribute(name) { delete attributes[name]; },
     addEventListener(type, listener) { (events[type] ||= []).push(listener); },
-    dispatch(type, { detail = 1 } = {}) { const event = { detail, prevented: false, preventDefault() { this.prevented = true; } }; (events[type] || []).forEach(fn => fn(event)); return event; },
+    dispatch(type, { detail = 1, button = 0, ...modifiers } = {}) { const event = { detail, button, prevented: false, ...modifiers, preventDefault() { this.prevented = true; } }; (events[type] || []).forEach(fn => fn(event)); return event; },
     scrollIntoView(options) { scrolls.push(options); },
     focus(options) { this.focused = true; this.focusOptions = options; },
     hasAttribute(name) { return Object.prototype.hasOwnProperty.call(attributes, name); },
@@ -65,7 +65,7 @@ function setup({ reducedMotion = false, hash = '' } = {}) {
     }
   };
   vm.runInNewContext(source, { document, window, history, location }, { filename: 'partners-directory.js' });
-  function click(category, detail = 1) { return links.find(link => link.dataset.partnerCategory === category).dispatch('click', { detail }); }
+  function click(category, detail = 1, modifiers = {}) { return links.find(link => link.dataset.partnerCategory === category).dispatch('click', { detail, ...modifiers }); }
   function totalScrolls() { return [...sections, elements.all, elements.partnerEmpty].reduce((n, el) => n + el.scrolls.length, 0); }
   return { sections, cards, links, elements, location, history, window, events, click, totalScrolls };
 }
@@ -148,5 +148,28 @@ test('keyboard navigation to all platforms focuses the first visible section hea
   const app = setup({ hash: '#brokers' });
   app.click('all', 0);
   assert.equal(app.sections[0].heading.focused, true);
+  assert.equal(app.elements.all.scrolls.length, 1);
+});
+
+test('modified or non-primary category clicks retain native link behavior', () => {
+  for (const modifiers of [{metaKey:true},{ctrlKey:true},{shiftKey:true},{altKey:true},{button:1},{defaultPrevented:true}]) {
+    const app = setup({ hash: '#funded' });
+    const event = app.click('brokers', 1, modifiers);
+    assert.equal(event.prevented, false);
+    assert.equal(app.location.hash, '#funded');
+    assert.equal(app.history.paths.length, 0);
+    assert.equal(app.totalScrolls(), 0);
+  }
+});
+
+test('all-platforms keyboard navigation focuses the first matching visible heading', () => {
+  const app = setup({ hash: '#funded' });
+  app.elements.partnerSearch.value = 'IC Markets';
+  app.elements.partnerSearch.dispatch('input');
+  app.click('all', 0);
+  assert.equal(app.sections[0].hidden, true);
+  assert.equal(app.sections[1].hidden, false);
+  assert.equal(app.sections[0].heading.focused, undefined);
+  assert.equal(app.sections[1].heading.focused, true);
   assert.equal(app.elements.all.scrolls.length, 1);
 });
