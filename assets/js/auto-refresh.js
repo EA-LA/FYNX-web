@@ -38,10 +38,15 @@
       chip.lastChild.textContent = 'Next check ' + mmss(left);
     });
   }
+  function excluded(button) {
+    // The HTML button type defaults to submit, including controls associated
+    // with a form outside their own DOM subtree via the form attribute.
+    if (button.form && button.type === 'submit') return true;
+    return Boolean(button.closest(SKIP) || button.closest('.fp-menu, [data-company-products], nav, dialog'));
+  }
   function eligible(button) {
     if (!(button instanceof HTMLElement) || button.dataset.fxAuto) return false;
-    if (button.closest(SKIP) || button.matches(SKIP)) return false;
-    if (button.closest('.fp-menu, [data-company-products], nav, dialog')) return false;
+    if (excluded(button)) return false;
     return button.matches(SELECT) || (button.tagName === 'BUTTON' && TEXT.test(button.textContent || ''));
   }
   function adopt(button) {
@@ -63,7 +68,7 @@
   // They may contain loaded-but-hidden widgets whose refresh handlers have side effects.
   // Check at click time so a panel becoming visible can refresh on the next cycle.
   function canAutoRefresh(button) {
-    if (!button.isConnected || button.matches(':disabled') || button.getAttribute('aria-disabled') === 'true') return false;
+    if (!button.isConnected || excluded(button) || button.matches(':disabled') || button.getAttribute('aria-disabled') === 'true') return false;
     for (let element = button; element; element = element.parentElement) {
       if (element.hasAttribute('hidden') || element.hasAttribute('inert') || element.getAttribute('aria-hidden') === 'true') return false;
       const style = window.getComputedStyle(element);
