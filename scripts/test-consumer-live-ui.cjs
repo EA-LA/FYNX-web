@@ -479,3 +479,14 @@ test('two explicitly successful Pro saves can still create separate saved record
  assert.notEqual(ids[0],ids[1],'a successful save clears the retry token');
  h.close();
 });
+
+test('Professional simulation constrains trades per path to whole numbers without restricting other numeric fields',async()=>{
+ const h=await load({user:true,tier:'pro',query:'?tool=simulation'});
+ try{
+  const field=h.document.getElementById('tool-trades');
+  assert.equal(field.min,'1');assert.equal(field.max,'500');assert.equal(field.step,'1');
+  for(const value of ['1','100','500']){field.value=value;assert.equal(field.checkValidity(),true);}
+  for(const value of ['0','10.5','501']){field.value=value;assert.equal(field.checkValidity(),false);}
+  assert.equal(h.document.getElementById('tool-riskPct').step,'any');
+ }finally{h.close();}
+});
