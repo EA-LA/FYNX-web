@@ -20,7 +20,8 @@ async function setup() {
       <fieldset id="disabledGroup" disabled><button id="fieldsetRefresh" type="button">Refresh</button></fieldset>
       <button id="ariaDisabledRefresh" aria-disabled="true">Refresh</button>
       <button id="billing-refresh">Refresh</button>
-      <form><button id="submit" type="submit">Refresh</button></form>
+      <form id="refreshForm"><button id="submit" type="submit">Refresh</button><button id="implicitSubmit">Refresh</button><button id="formRefresh" type="button">Refresh</button></form>
+      <button id="associatedSubmit" form="refreshForm">Refresh</button>
     </main>
   </body></html>`, {url: 'https://www.fynxfinanceworld.com/', runScripts: 'outside-only'});
   const {window} = dom;
@@ -138,5 +139,45 @@ test('visibility:hidden ancestors prevent timer actions without disabling manual
     assert.equal(calls, 1, 'visible parent allows the next regular refresh');
     button.click();
     assert.equal(calls, 2, 'manual refresh remains available');
+  } finally { app.close(); }
+});
+
+test('implicit and externally associated submit buttons are not automatically activated', async () => {
+  const app = await setup();
+  try {
+    let submissions = 0, refreshes = 0;
+    app.document.getElementById('refreshForm').addEventListener('submit', event => {
+      event.preventDefault();
+      submissions++;
+    });
+    for (const id of ['implicitSubmit', 'associatedSubmit']) {
+      assert.equal(app.document.getElementById(id).dataset.fxAuto, undefined, id);
+    }
+    const refresh = app.document.getElementById('formRefresh');
+    refresh.addEventListener('click', () => refreshes++);
+    app.advance(10 * 60 * 1000 + 1);
+    assert.equal(submissions, 0);
+    assert.equal(refreshes, 1, 'explicit non-submit refresh still works');
+  } finally { app.close(); }
+});
+
+test('timer rechecks form ownership and manual-only opt-out after registration', async () => {
+  const app = await setup();
+  try {
+    const button = app.document.getElementById('refreshBtn');
+    const retry = app.document.getElementById('retryVix');
+    let clicks = 0, retryClicks = 0;
+    button.addEventListener('click', event => { event.preventDefault(); clicks++; });
+    retry.addEventListener('click', () => retryClicks++);
+    button.setAttribute('form', 'refreshForm');
+    retry.setAttribute('data-no-auto-refresh', '');
+    app.advance(10 * 60 * 1000 + 1);
+    assert.equal(clicks, 0);
+    assert.equal(retryClicks, 0);
+    button.removeAttribute('form');
+    retry.removeAttribute('data-no-auto-refresh');
+    app.advance(10 * 60 * 1000 + 1);
+    assert.equal(clicks, 1);
+    assert.equal(retryClicks, 1);
   } finally { app.close(); }
 });
