@@ -1,7 +1,8 @@
 'use strict';
 const PRODUCTS=['analytics','risk','scenarios','review','export','watchlist','portfolio','simulation'];
 const PLANS={starter:{name:'Essential',cents:599,products:PRODUCTS.slice(0,6),saved:25},plus:{name:'Plus',cents:1099,products:PRODUCTS.slice(0,7),saved:100},pro:{name:'Professional',cents:3099,products:PRODUCTS,saved:500}};
-function number(v,name,min=0,max=1e9){if(v===''||v===null||v===undefined||!Number.isFinite(Number(v))||Number(v)<min||Number(v)>max)throw Error(`${name} must be between ${min} and ${max}.`);return Number(v);}
+// Accept actual decimal financial inputs, never JavaScript coercions of blanks, booleans or arrays.
+function number(v,name,min=0,max=1e9){const decimal=typeof v==='number'||(typeof v==='string'&&/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(v.trim()));const n=decimal?Number(v):NaN;if(!Number.isFinite(n)||n<min||n>max)throw Error(`${name} must be between ${min} and ${max}.`);return n;}
 function label(v,max=120){if(typeof v!=='string'||!v.trim()||v.length>max)throw Error('Enter a valid name.');return v.trim();}
 function analytics(trades){const values=trades.map(t=>Number(t.pl)).filter(Number.isFinite);let equity=0,peak=0,drawdown=0;const curve=values.map(pl=>{equity+=pl;peak=Math.max(peak,equity);drawdown=Math.max(drawdown,peak-equity);return equity;});const wins=values.filter(x=>x>0),losses=values.filter(x=>x<0),grossWin=wins.reduce((a,b)=>a+b,0),grossLoss=-losses.reduce((a,b)=>a+b,0);return {trades:values.length,netPL:equity,winRate:values.length?wins.length/values.length*100:0,expectancy:values.length?equity/values.length:0,profitFactor:grossLoss?grossWin/grossLoss:null,maxDrawdown:drawdown,curve,notice:'Based on recorded realized P/L, in account currency. No starting balance or deposits are assumed.'};}
 // Validate the customer's base risk before applying an internal scenario multiplier.

@@ -54,3 +54,23 @@ test('Professional drawdown simulation rejects fractional trade counts instead o
  for(const trades of [1.5,10.5,'499.9'])assert.throws(()=>run('simulation',{...input,trades}),/whole number/);
  for(const trades of [0,501])assert.throws(()=>run('simulation',{...input,trades}),/Trades/);
 });
+
+test('paid financial tools reject values coerced to numbers instead of valid decimal inputs',()=>{
+ const portfolio={balance:10000,shock:-5,positions:[{symbol:'A',value:6000}]};
+ const simulation={balance:10000,riskPct:1,winRate:45,rewardRisk:2,trades:10};
+ for(const value of [' ','\t',false,true,[],[0],[1],{},'0x10','0b10',null,undefined]){
+  assert.throws(()=>run('portfolio',{...portfolio,shock:value}),/Shock percent/);
+  assert.throws(()=>run('portfolio',{...portfolio,positions:[{symbol:'A',value}]}),/Signed position value/);
+  assert.throws(()=>run('simulation',{...simulation,winRate:value}),/Win rate/);
+ }
+ assert.throws(()=>run('risk',{...risk,riskPct:true}),/Risk percent/);
+ assert.throws(()=>run('scenarios',{...risk,riskPct:[1]}),/Risk percent/);
+});
+test('paid financial inputs preserve decimal strings, scientific notation, signed values and explicit zero',()=>{
+ const portfolio={balance:10000,shock:-5,positions:[{symbol:'A',value:6000},{symbol:'B',value:-2000}]};
+ const expected=run('portfolio',portfolio);
+ for(const shock of [' -5.0 ','-5e0','-05.','-0.5e1'])assert.deepEqual(run('portfolio',{...portfolio,shock}),expected);
+ assert.deepEqual(run('portfolio',{...portfolio,shock:'0'}),run('portfolio',{...portfolio,shock:0}));
+ assert.deepEqual(run('risk',{...risk,riskPct:'1e0'}),run('risk',risk));
+ assert.deepEqual(run('simulation',{balance:'10000',riskPct:'1',winRate:'0',rewardRisk:'2',trades:'10'}),run('simulation',{balance:10000,riskPct:1,winRate:0,rewardRisk:2,trades:10}));
+});
