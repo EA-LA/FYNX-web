@@ -490,3 +490,55 @@ test('Professional simulation constrains trades per path to whole numbers withou
   assert.equal(h.document.getElementById('tool-riskPct').step,'any');
  }finally{h.close();}
 });
+
+test('failed Pro membership refresh clears stale access and results, then allows recovery',async()=>{
+ let unavailable=false;
+ const saved={id:'saved-risk',name:'Private risk model',product:'risk',input:{balance:'10000'},result:{units:987654}};
+ const h=await load({user:true,query:'?tool=risk',handler:data=>{
+  if(data.action==='status'){
+   if(unavailable)throw Error('Network unavailable');
+   return {tier:'starter',plans:PLANS,hasBillingAccount:true};
+  }
+  if(data.action==='list')return {items:[saved],limit:25};
+  if(data.action==='run')return {result:{units:987654}};
+ }});
+ try{
+  h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.match(h.document.getElementById('result').textContent,/987,654|987654/);
+  assert.match(h.document.getElementById('savedItems').textContent,/Private risk model/);
+  unavailable=true;
+  await h.document.getElementById('loadSaved').onclick();
+  assert.match(h.document.getElementById('membershipTitle').textContent,/unavailable/);
+  assert.doesNotMatch(h.document.getElementById('accessMessage').textContent,/Included/);
+  assert.doesNotMatch(h.document.getElementById('result').textContent,/987,654|987654/);
+  assert.match(h.document.getElementById('result').textContent,/Refresh membership/);
+  assert.doesNotMatch(h.document.getElementById('savedItems').textContent,/Private risk model/);
+  assert.equal(h.document.getElementById('savedSearchControls').hidden,true);
+  assert.equal(h.document.getElementById('manageBilling').hidden,false);
+  assert.match(h.document.getElementById('status').textContent,/Manage subscription/);
+  h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(h.calls.filter(c=>c.action==='run').length,1);
+  unavailable=false;
+  await h.document.getElementById('loadSaved').onclick();
+  assert.match(h.document.getElementById('accessMessage').textContent,/Included/);
+  assert.match(h.document.getElementById('savedItems').textContent,/Private risk model/);
+  assert.equal(h.document.getElementById('tool-balance').value,'10000');
+  h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(h.calls.filter(c=>c.action==='run').length,2);
+  assert.match(h.document.getElementById('result').textContent,/987,654|987654/);
+ }finally{h.close();}
+});
+test('initial Pro verification failure does not advertise an unknown billing account',async()=>{
+ const h=await load({user:true,handler:data=>{if(data.action==='status')throw Error('Network unavailable');}});
+ try{
+  assert.match(h.document.getElementById('membershipTitle').textContent,/unavailable/);
+  assert.match(h.document.getElementById('status').textContent,/Refresh to try again/);
+  assert.doesNotMatch(h.document.getElementById('status').textContent,/Manage subscription/);
+  assert.doesNotMatch(h.document.getElementById('membershipText').textContent,/Manage subscription/);
+  assert.equal(h.document.getElementById('manageBilling').hidden,true);
+  assert.equal(h.calls.filter(c=>c.action==='list').length,0);
+ }finally{h.close();}
+});
