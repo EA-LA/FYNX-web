@@ -194,7 +194,13 @@
   });
   select.addEventListener('change', () => apply(true));
   clear.addEventListener('click', () => { input.value = ''; select.value = ''; apply(true); input.focus(); });
-  if (retry) retry.addEventListener('click', () => { loadExtra(true); apply(false); });
+  if (retry) retry.addEventListener('click', () => {
+    // Retry hides while loading. Keep keyboard focus on a visible status, without
+    // reopening the mobile keyboard or stealing focus from another control.
+    if (document.activeElement === retry) status.focus({ preventScroll: true });
+    loadExtra(true);
+    apply(false);
+  });
   finder.addEventListener('submit', event => { event.preventDefault(); input.blur(); });
   for (const link of document.querySelectorAll('[data-glossary-topic]')) {
     link.addEventListener('click', event => {
