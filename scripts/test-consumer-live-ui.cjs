@@ -542,3 +542,43 @@ test('initial Pro verification failure does not advertise an unknown billing acc
   assert.equal(h.calls.filter(c=>c.action==='list').length,0);
  }finally{h.close();}
 });
+
+test('paid Journal path inspector explains first loss, recovery and account currency',async()=>{
+ const h=await load({user:true,tier:'starter',query:'?tool=analytics',handler:d=>d.action==='run'?{result:{curve:[-20,10,5,15]}}:undefined});
+ try{
+  h.document.getElementById('toolForm').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));
+  const details=h.document.querySelector('.path-inspector');assert.ok(details);assert.equal(details.open,false);
+  assert.match(details.textContent,/not account equity/);
+  const rows=[...details.querySelectorAll('tbody tr')].map(r=>[...r.children].map(c=>c.textContent));
+  assert.deepEqual(rows,[['Trade 1','-20','-20','20'],['Trade 2','10','30','0'],['Trade 3','5','-5','5'],['Trade 4','15','10','0']]);
+  assert.equal(details.querySelectorAll('thead th[scope="col"]').length,4);
+  await h.changeUser(null);assert.equal(h.document.querySelector('.path-inspector'),null);
+ }finally{h.close();}
+});
+test('paid simulation inspector includes starting equity and expires with changed inputs',async()=>{
+ const h=await load({user:true,tier:'pro',query:'?tool=simulation',handler:d=>d.action==='run'?{result:{curve:[10000,9900,10100]}}:undefined});
+ try{
+  h.document.getElementById('toolForm').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));
+  const details=h.document.querySelector('.path-inspector');assert.match(details.textContent,/not the distribution/);
+  const rows=[...details.querySelectorAll('tbody tr')].map(r=>[...r.children].map(c=>c.textContent));
+  assert.deepEqual(rows,[['Start','10,000','—','0'],['Trade 1','9,900','-100','100'],['Trade 2','10,100','200','0']]);
+  h.document.getElementById('tool-balance').dispatchEvent(new h.document.defaultView.Event('input'));
+  assert.equal(h.document.querySelector('.path-inspector'),null);
+ }finally{h.close();}
+});
+test('empty or invalid paths produce no inspector, and guest analysis remains blocked',async()=>{
+ for(const curve of [[],[1,NaN]]){
+  const h=await load({user:true,tier:'starter',handler:d=>d.action==='run'?{result:{curve}}:undefined});
+  try{h.document.getElementById('toolForm').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));assert.equal(h.document.querySelector('.path-inspector'),null);}finally{h.close();}
+ }
+ const h=await load();try{h.document.getElementById('toolForm').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));assert.equal(h.calls.filter(c=>c.action==='run').length,0);assert.equal(h.document.querySelector('.path-inspector'),null);}finally{h.close();}
+});
+test('saved paid analytics opens with a fresh inspector and switching tools removes it',async()=>{
+ const h=await load({user:true,tier:'starter',handler:d=>d.action==='list'?{items:[{id:'path',name:'Saved path',product:'analytics',input:{},result:{curve:[0,0]}}],limit:25}:undefined});
+ try{
+  h.document.querySelector('#savedItems article button').click();
+  assert.equal(h.document.querySelectorAll('.path-inspector tbody tr').length,2);
+  assert.match(h.document.querySelector('.path-inspector').textContent,/Trade 2/);
+  h.document.querySelector('#productCards [data-key="risk"]').click();assert.equal(h.document.querySelector('.path-inspector'),null);
+ }finally{h.close();}
+});
