@@ -47,3 +47,10 @@ test('portfolio long/short stress preserves signs',()=>{const r=run('portfolio',
 test('simulation endpoints and bounds',()=>{const d={balance:10000,riskPct:1,winRate:0,rewardRisk:2,trades:10};assert.equal(run('simulation',d).lossFrequency,100);assert.equal(run('simulation',{...d,winRate:100}).lossFrequency,0);assert.deepEqual(run('simulation',d),run('simulation',d));assert.throws(()=>run('simulation',{...d,trades:501}));assert.throws(()=>run('simulation',{...d,balance:1e9,riskPct:20,rewardRisk:20,winRate:100,trades:500}));});
 const subscription=()=>({status:'active',livemode:false,metadata:{product:'fynx_consumer_test',fynx_uid:'u',tier:'starter'},items:{data:[{quantity:1,price:{currency:'usd',unit_amount:599,recurring:{interval:'month',interval_count:1}}}]}});
 test('entitlement requires matching user, amount, interval, mode and status',()=>{assert.equal(planForSubscription(subscription(),'u'),'starter');for(const mutate of [s=>s.status='canceled',s=>s.livemode=true,s=>s.metadata.fynx_uid='other',s=>s.items.data[0].price.unit_amount=1,s=>s.items.data[0].price.recurring.interval='year',s=>s.metadata.tier='toString']){const s=subscription();mutate(s);assert.equal(planForSubscription(s,'u'),null);}});
+
+test('Professional drawdown simulation rejects fractional trade counts instead of truncating them',()=>{
+ const input={balance:10000,riskPct:1,winRate:45,rewardRisk:2};
+ for(const trades of [1,10,500,'10'])assert.equal(run('simulation',{...input,trades}).curve.length,Number(trades)+1);
+ for(const trades of [1.5,10.5,'499.9'])assert.throws(()=>run('simulation',{...input,trades}),/whole number/);
+ for(const trades of [0,501])assert.throws(()=>run('simulation',{...input,trades}),/Trades/);
+});
