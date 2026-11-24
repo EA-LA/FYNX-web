@@ -1,0 +1,25 @@
+name: Free compound fee comparison
+on:
+  pull_request:
+    paths:
+      - 'tools/compound.html'
+      - 'assets/js/compound-fee-comparison.js'
+      - 'scripts/test-compound-fee-comparison.cjs'
+      - '.github/workflows/compound-fee-comparison.yml'
+permissions:
+  contents: read
+concurrency:
+  group: compound-fee-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --check assets/js/compound-fee-comparison.js
+      - run: node --test scripts/test-compound-fee-comparison.cjs scripts/test-compound-goal.cjs
