@@ -582,3 +582,80 @@ test('saved paid analytics opens with a fresh inspector and switching tools remo
   h.document.querySelector('#productCards [data-key="risk"]').click();assert.equal(h.document.querySelector('.path-inspector'),null);
  }finally{h.close();}
 });
+
+test('failed saved-list refresh after a Pro downgrade removes stale records and restores current access on retry',async()=>{
+ let tier='pro',fail=false;
+ const item={id:'old-plus',name:'Private portfolio',product:'portfolio',input:{balance:'10000'},result:{grossExposure:987654}};
+ const h=await load({user:true,handler:data=>{
+  if(data.action==='status')return {tier,plans:PLANS,hasBillingAccount:true};
+  if(data.action==='list'){
+   if(fail)throw Error('List unavailable');
+   return {items:[tier==='starter'?{id:item.id,name:item.name,product:item.product,locked:true}:item],limit:PLANS[tier].saved};
+  }
+ }});
+ try{
+  const search=h.document.getElementById('savedSearch');
+  search.value='portfolio';search.dispatchEvent(new h.document.defaultView.Event('input',{bubbles:true}));
+  assert.equal(h.document.querySelector('#savedItems article button').disabled,false);
+  tier='starter';fail=true;
+  await h.document.getElementById('loadSaved').onclick();
+  assert.equal(h.document.querySelectorAll('#savedItems article').length,0);
+  assert.equal(h.document.getElementById('savedSearchControls').hidden,true);
+  assert.equal(h.document.getElementById('savedSearchCount').textContent,'');
+  assert.match(h.document.getElementById('status').textContent,/could not be refreshed/);
+  assert.match(h.document.getElementById('membershipTitle').textContent,/Essential/);
+  assert.equal(h.document.getElementById('manageBilling').hidden,false);
+  fail=false;
+  await h.document.getElementById('loadSaved').onclick();
+  const [open,remove]=h.document.querySelector('#savedItems article').querySelectorAll('button');
+  assert.equal(open.disabled,true);
+  assert.equal(remove.disabled,false);
+  assert.equal(search.value,'portfolio');
+  assert.equal(h.document.getElementById('savedSearchControls').hidden,false);
+ }finally{h.close();}
+});
+
+test('confirmed Pro save stays successful when the saved-list refresh fails',async()=>{
+ let fail=false,items=[];
+ const h=await load({user:true,tier:'starter',query:'?tool=risk',handler:data=>{
+  if(data.action==='save'){
+   items.push({id:data.requestId,name:data.name,product:data.product,input:data.input,result:{units:42}});
+   fail=true;return {saved:true,id:data.requestId,result:{units:42}};
+  }
+  if(data.action==='list'){
+   if(fail)throw Error('List unavailable');
+   return {items,limit:25};
+  }
+ }});
+ try{
+  h.document.getElementById('workspaceName').value='Confirmed risk plan';
+  await h.document.getElementById('saveTool').onclick();
+  assert.match(h.document.getElementById('status').textContent,/Workspace saved to your account.*could not be refreshed/);
+  assert.match(h.document.getElementById('result').textContent,/42/);
+  assert.equal(h.document.querySelectorAll('#savedItems article').length,0);
+  fail=false;await h.document.getElementById('loadSaved').onclick();
+  assert.match(h.document.getElementById('savedItems').textContent,/Confirmed risk plan/);
+  assert.equal(h.calls.filter(c=>c.action==='save').length,1);
+ }finally{h.close();}
+});
+
+test('confirmed Pro deletion reports success even if the list refresh fails',async()=>{
+ let fail=false,items=[{id:'delete-once',name:'Old risk plan',product:'risk',input:{},result:{units:42}}];
+ const h=await load({user:true,tier:'starter',handler:data=>{
+  if(data.action==='list'){
+   if(fail)throw Error('List unavailable');
+   return {items,limit:25};
+  }
+  if(data.action==='delete'){items=[];fail=true;return {deleted:true};}
+ }});
+ try{
+  const [,remove,confirmDelete]=h.document.querySelector('#savedItems article').querySelectorAll('button');
+  remove.onclick();await confirmDelete.onclick();
+  assert.match(h.document.getElementById('status').textContent,/Workspace deleted.*could not be refreshed/);
+  assert.equal(h.document.querySelectorAll('#savedItems article').length,0);
+  assert.equal(h.document.activeElement,h.document.querySelector('.saved h2'));
+  fail=false;await h.document.getElementById('loadSaved').onclick();
+  assert.match(h.document.getElementById('savedItems').textContent,/0 \/ 25 saved/);
+  assert.equal(h.calls.filter(c=>c.action==='delete').length,1);
+ }finally{h.close();}
+});
