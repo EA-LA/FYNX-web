@@ -20,24 +20,36 @@
   url.searchParams.set(viewKey,select.value);
   return url.href;
  }
+ let shareVersion=0;
  function resetShareFeedback(){
+  shareVersion++;
   if(shareStatus)shareStatus.textContent='';
   if(shareFallback){shareFallback.hidden=true;shareFallback.value='';}
  }
  if(shareButton&&shareStatus&&shareFallback)shareButton.addEventListener('click',async()=>{
+  // Serialize clipboard writes so an older selection cannot overwrite a newer copy.
+  if(shareButton.disabled)return;
   const url=shareableURL();
   if(!url){shareStatus.textContent='Unable to create a view link. Please reload the page.';return;}
+  resetShareFeedback();
+  const attempt=shareVersion;
+  shareButton.disabled=true;
+  shareStatus.textContent='Copying view link…';
   try{
    if(!window.navigator?.clipboard?.writeText)throw Error('Clipboard unavailable');
    await window.navigator.clipboard.writeText(url);
+   if(attempt!==shareVersion)return;
    shareFallback.hidden=true;
    shareStatus.textContent='View link copied. Market observations refresh when opened.';
   }catch(_){
+   if(attempt!==shareVersion)return;
    shareFallback.value=url;
    shareFallback.hidden=false;
    shareFallback.focus();
    shareFallback.select();
    shareStatus.textContent='Copy the selected link from the field below. Observations refresh when opened.';
+  }finally{
+   shareButton.disabled=false;
   }
  });
  restoreSharedView();
