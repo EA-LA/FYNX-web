@@ -1,6 +1,30 @@
 {
- "generatedAt": "2026-11-24T02:56:52.906Z",
+ "generatedAt": "2026-11-24T14:57:09.417Z",
  "items": [
+  {
+   "reason": "sensitive subject",
+   "title": "Delhi police bust Alwar-based crypto fraud syndicate; 4 arrested | India News",
+   "sources": [
+    "Hindustan Times"
+   ],
+   "at": "2026-11-24T14:57:09.417Z"
+  },
+  {
+   "reason": "sensitive subject",
+   "title": "India's ₹556 Crore Fraud Case Raises Questions Over Crypto Regulation and Investor Safety",
+   "sources": [
+    "Coin Edition"
+   ],
+   "at": "2026-11-24T14:57:09.417Z"
+  },
+  {
+   "reason": "sensitive subject",
+   "title": "Wall Street catches Jensen Huang fever, but is this all a dead cat bounce?",
+   "sources": [
+    "investingLive"
+   ],
+   "at": "2026-11-24T14:57:09.417Z"
+  },
   {
    "reason": "sensitive subject",
    "title": "China’s Spies Set Sights on A.I. Chips Years Before Nvidia Scandal",
@@ -32,23 +56,6 @@
     "BigGo Finance"
    ],
    "at": "2026-11-21T17:36:51.114Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Republican Senator Tom Cotton says Lutnick ignored his China chip warnings",
-   "sources": [
-    "Al Arabiya English",
-    "Times Now"
-   ],
-   "at": "2026-11-21T09:56:13.672Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Japan's government revises AML policy, rates crypto asset abuse risk as \"considerable\"",
-   "sources": [
-    "BigGo Finance"
-   ],
-   "at": "2026-11-21T09:56:13.672Z"
   }
  ]
 }
