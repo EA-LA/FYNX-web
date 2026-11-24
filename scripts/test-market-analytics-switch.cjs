@@ -387,6 +387,59 @@ test('both public market research views expose accessible share controls and cur
     assert.match(html, /data-analysis-share>/);
     assert.match(html, /data-analysis-share-status[^>]*role="status"/);
     assert.match(html, /data-analysis-share-fallback[^>]*aria-label=/);
-    assert.ok(html.includes('market-analytics.js?v=20261118-share-view-1'), 'script version is refreshed');
+    assert.ok(html.includes('market-analytics.js?v=20261124-share-race-1'), 'script version is refreshed');
   }
+});
+
+test('late clipboard denial cannot expose a link for an abandoned market', async () => {
+  let rejectCopy;
+  const h = setup('liquidity', {
+    clipboard: { writeText: () => new Promise((_, reject) => { rejectCopy = reject; }) }
+  });
+  const pending = h.shareButton.trigger('click');
+  assert.equal(h.shareButton.disabled, true);
+  h.select.value = 'ETH-USD';
+  await h.select.trigger('change');
+  rejectCopy(new Error('denied'));
+  await pending;
+  assert.equal(h.shareFallback.hidden, true);
+  assert.equal(h.shareFallback.value, '');
+  assert.equal(h.shareStatus.textContent, '');
+  assert.notEqual(h.shareFallback.focused, true);
+  assert.equal(h.shareButton.disabled, false);
+});
+
+test('late clipboard success does not claim the new correlation window was copied', async () => {
+  let resolveCopy;
+  const h = setup('correlation', {
+    clipboard: { writeText: () => new Promise(resolve => { resolveCopy = resolve; }) }
+  });
+  const pending = h.shareButton.trigger('click');
+  h.select.value = '90';
+  await h.select.trigger('change');
+  resolveCopy();
+  await pending;
+  assert.equal(h.shareStatus.textContent, '');
+  assert.equal(h.shareButton.disabled, false);
+});
+
+test('clipboard writes do not overlap and the next copy uses the current market', async () => {
+  const writes = [];
+  const h = setup('liquidity', {
+    clipboard: { writeText: url => new Promise(resolve => { writes.push({ url, resolve }); }) }
+  });
+  const first = h.shareButton.trigger('click');
+  h.select.value = 'ETH-USD';
+  await h.select.trigger('change');
+  await h.shareButton.trigger('click');
+  assert.equal(writes.length, 1);
+  writes[0].resolve();
+  await first;
+  const next = h.shareButton.trigger('click');
+  assert.equal(writes.length, 2);
+  assert.match(writes[1].url, /product=ETH-USD$/);
+  writes[1].resolve();
+  await next;
+  assert.match(h.shareStatus.textContent, /copied/);
+  assert.equal(h.shareButton.disabled, false);
 });
