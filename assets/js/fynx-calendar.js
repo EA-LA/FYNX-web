@@ -7,6 +7,7 @@
 (function (root) {
   'use strict';
   const URLS = ['https://raw.githubusercontent.com/EA-LA/FYNX-web/research-data/assets/data/research/calendar.json', '/assets/data/research/calendar.json'];
+  const DAY_MS = 86400000;
   const REFRESH_MS = 60000; // the file changes hourly; checking every minute picks up a new copy quickly
   const CCY = {USD: ['United States', '#3b6fd8'], EUR: ['Euro area', '#2f5fbf'], GBP: ['United Kingdom', '#c8423b'], JPY: ['Japan', '#d0394a'], CNY: ['China', '#d6402f'], AUD: ['Australia', '#1f7a5c'],
     NZD: ['New Zealand', '#2b4f8f'], CAD: ['Canada', '#d23c3c'], CHF: ['Switzerland', '#d43a3a'], INR: ['India', '#e08a2c'], ALL: ['All', '#6b7280']};
@@ -14,6 +15,15 @@
   let cache = null, cacheAt = 0, inflight = null;
 
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined && text !== null) n.textContent = String(text); return n; };
+  function scheduleState(data, now = Date.now()) {
+    const checked = Date.parse(data.updatedAt), end = Date.parse(data.to);
+    // The current-week coverage end is exclusive. Published next-week rows can extend what is shown,
+    // but a saved archive without such rows must not imply the next week is quiet.
+    const hasFutureNextWeek = (Array.isArray(data.nextWeek) ? data.nextWeek : []).some(e => Date.parse(e.time) >= now);
+    if (Number.isFinite(end) && now >= end && !hasFutureNextWeek) return 'expired';
+    if (!Number.isFinite(checked) || checked > now || now - checked >= DAY_MS) return 'stale';
+    return 'current';
+  }
   async function load(force) {
     if (!force && cache && Date.now() - cacheAt < REFRESH_MS - 1000) return cache;
     if (inflight) return inflight;
@@ -25,6 +35,8 @@
           const d = await r.json(); const week = Array.isArray(d?.all) && d.all.length ? d.all : Array.isArray(d?.events) ? d.events.map(e => ({...e, title: e.title || e.name})) : null;
           const seen = new Set((week || []).map(e => e.id)), list = week && [...week, ...(Array.isArray(d.nextWeek) ? d.nextWeek.filter(e => !seen.has(e.id)) : [])].sort((a, b) => a.time.localeCompare(b.time));
           if (list) {
+            const cachedCheck = Date.parse(cache?.updatedAt), newCheck = Date.parse(d.updatedAt);
+            if (Number.isFinite(cachedCheck) && (!Number.isFinite(newCheck) || newCheck < cachedCheck)) continue;
             if (root.crypto?.subtle) await Promise.all(list.map(async e => {
               if (/^[a-f0-9]{64}$/.test(String(e.stableEventID || '')) || !Number.isFinite(Date.parse(e.time))) return;
               // Existing snapshots predate the additive day identity. Their Forex Factory dates use New York time.
@@ -106,6 +118,7 @@
     host.setAttribute('aria-busy', 'true');
     let data = null, alive = true;
     const head = el('div', 'fc-head'), next = el('div', 'fc-next'), controls = el('div', 'fc-controls'), list = el('div', 'fc-list'), foot = el('p', 'fc-foot');
+    const freshness = el('p', 'fc-status'); freshness.setAttribute('role', 'status'); freshness.hidden = true;
     const detail = el('section', 'fc-detail'); detail.hidden = true; detail.setAttribute('aria-label', 'Event intelligence'); detail.tabIndex = -1;
     const requestedEvent = () => { const p = new URLSearchParams(location.search); return p.has('event') ? ([...p].length === 1 && /^[a-f0-9]{64}$/.test(p.get('event')) ? p.get('event') : 'invalid') : null; };
     let selectedID = o.compact ? null : requestedEvent();
@@ -207,14 +220,15 @@
       const focusAdd = document.activeElement && list.contains(document.activeElement) && document.activeElement.dataset.fcEvent; // the 30 s redraw keeps keyboard focus
       list.replaceChildren(); const now = Date.now();
       let rows = filtered();
+      const savedSchedule = scheduleState(data, now) !== 'current';
       if (!o.compact) drawExport(rows);
       let recap = false;
       if (o.compact && !rows.length && st.day === 'upcoming') { // nothing left this week: show the latest releases instead of an empty box
         rows = data.list.filter(e => Date.parse(e.time) <= now && st.imp.has(e.impact === 'other' ? 'low' : e.impact) && (!st.ccy.size || st.ccy.has(e.currency)) && !isAllDay(e)).slice(-o.limit); recap = rows.length > 0;
       }
       if (o.compact) rows = rows.slice(0, o.limit);
-      if (recap) list.append(el('p', 'fc-recap', 'No more important releases are scheduled until the next week’s calendar is published. Latest releases:'));
-      if (!rows.length) { list.append(el('p', 'fc-status', o.compact ? 'No more high or medium importance releases scheduled this week.' : 'No events match these filters.')); return; }
+      if (recap) list.append(el('p', 'fc-recap', savedSchedule ? 'Past events from the saved schedule:' : 'No more important releases are scheduled until the next week’s calendar is published. Latest releases:'));
+      if (!rows.length) { list.append(el('p', 'fc-status', savedSchedule ? 'No matching events in the saved schedule. Check the calendar source for current releases.' : o.compact ? 'No more high or medium importance releases scheduled this week.' : 'No events match these filters.')); return; }
       let last = '', firstUpcoming = null;
       for (const e of rows) {
         const t = Date.parse(e.time), key = dayKey(t);
@@ -235,10 +249,17 @@
       if (focusAdd) [...list.querySelectorAll('.fc-add')].find(b => b.dataset.fcEvent === focusAdd)?.focus({preventScroll: true});
       if (!o.compact && firstUpcoming && st.day === 'week' && !list.dataset.scrolled) { list.dataset.scrolled = '1'; requestAnimationFrame(() => { try { list.scrollTop = Math.max(0, firstUpcoming.offsetTop - list.offsetTop - 40); } catch {} }); }
     }
+    function drawFreshness() {
+      const state = scheduleState(data);
+      const message = state === 'expired' ? 'Current calendar coverage is unavailable. This saved schedule has ended. Check the calendar source for upcoming releases.' : state === 'stale' ? 'Showing a saved economic calendar. Recent changes may not be included. Verify release times at the source.' : '';
+      freshness.hidden = !message;
+      if (freshness.textContent !== message) freshness.textContent = message;
+    }
     function drawFoot() {
+      drawFreshness();
       foot.replaceChildren();
-      foot.append(`Times in your time zone (${Intl.DateTimeFormat().resolvedOptions().timeZone}). Schedule, forecasts and previous values from Forex Factory via FYNX research, updated ${new Date(data.updatedAt).toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'})}. ${data.hasActuals ? 'Actual figures appear here as soon as the feed reports them.' : 'This feed does not include actual results; past releases are marked “Result unavailable” instead of showing an estimate.'}`);
-      if (!data.hasActuals && data.sourceURL && /^https:\/\//.test(data.sourceURL)) { const a = el('a', 'fc-source', 'Calendar source ↗'); a.href = data.sourceURL; a.target = '_blank'; a.rel = 'noopener'; foot.append(' ', a); }
+      foot.append(`Times in your time zone (${Intl.DateTimeFormat().resolvedOptions().timeZone}). Schedule, forecasts and previous values from Forex Factory via FYNX research, last checked ${Number.isFinite(Date.parse(data.updatedAt)) ? new Date(data.updatedAt).toLocaleString() : 'at an unknown time'}. ${data.hasActuals ? 'Actual figures appear here as soon as the feed reports them.' : 'This feed does not include actual results; past releases are marked “Result unavailable” instead of showing an estimate.'}`);
+      if (data.sourceURL && /^https:\/\//.test(data.sourceURL)) { const a = el('a', 'fc-source', 'Calendar source ↗'); a.href = data.sourceURL; a.target = '_blank'; a.rel = 'noopener'; foot.append(' ', a); }
     }
     function draw() { if (!data) return; renderControls(); drawNext(); drawList(); drawFoot(); drawDetail(); }
     async function refresh(force) {
@@ -246,11 +267,11 @@
       host.removeAttribute('aria-busy');
       if (!d) { if (!data) host.replaceChildren(el('p', 'fc-status', 'The economic calendar could not be loaded right now. Check back in a minute.')); return; }
       const first = !data; data = d;
-      if (first) { host.replaceChildren(); head.replaceChildren(next); if (!o.compact) head.append(controls); host.append(head, detail, list, foot); }
+      if (first) { host.replaceChildren(); head.replaceChildren(next); if (!o.compact) head.append(controls); host.append(freshness, head, detail, list, foot); }
       draw();
     }
     refresh(false);
-    const tick = setInterval(() => { if (!document.hidden && data) { drawNext(); drawList(); } }, 30000); // countdowns and "Released" flips
+    const tick = setInterval(() => { if (!document.hidden && data) { drawFreshness(); drawNext(); drawList(); } }, 30000); // countdowns and "Released" flips
     const poll = setInterval(() => { if (!document.hidden) refresh(true); }, REFRESH_MS);
     const vis = () => { if (!document.hidden) refresh(false); }; document.addEventListener('visibilitychange', vis);
     const navigate = () => { if (!o.compact) { selectedID = requestedEvent(); drawDetail(); } }; window.addEventListener('popstate', navigate);

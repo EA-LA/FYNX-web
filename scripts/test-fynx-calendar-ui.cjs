@@ -8,17 +8,17 @@ const {JSDOM} = require('jsdom');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'assets/js/fynx-calendar.js'), 'utf8');
 const page = fs.readFileSync(path.join(__dirname, '..', 'tools/economic-calendar.html'), 'utf8');
-assert.match(page, /fynx-calendar\.js\?v=20261120-audit-1/, 'page loads the updated calendar script');
+assert.match(page, /fynx-calendar\.js\?v=20261125-calendar-freshness-1/, 'page loads the updated calendar script');
 assert.match(page, /verify the actual figure at the source/, 'page does not promise verified release data');
 const home = fs.readFileSync(path.join(__dirname, '..', 'home.html'), 'utf8');
-assert.match(home, /fynx-calendar\.js\?v=20261120-audit-1/, 'homepage preview loads the updated calendar script');
+assert.match(home, /fynx-calendar\.js\?v=20261125-calendar-freshness-1/, 'homepage preview loads the updated calendar script');
 const releaseAssets = require('./build-release-assets.cjs');
-assert.equal(releaseAssets.ASSET_VERSIONS['assets/js/fynx-calendar.js'], '20261120-audit-1',
+assert.equal(releaseAssets.ASSET_VERSIONS['assets/js/fynx-calendar.js'], '20261125-calendar-freshness-1',
   'release asset builder must not undo calendar cache invalidation');
 const rewritten = releaseAssets.rewriteReferences(
   '<script src="/assets/js/fynx-calendar.js?v=20261120-site-pages-1"></script>', 'home.html', new Set(['assets/js/fynx-calendar.js'])
 );
-assert.match(rewritten, /fynx-calendar\.js\?v=20261120-audit-1/,
+assert.match(rewritten, /fynx-calendar\.js\?v=20261125-calendar-freshness-1/,
   'a website build upgrades stale economic calendar script versions');
 
 const base = Date.now();
@@ -158,6 +158,42 @@ const fixture = {updatedAt: new Date(base).toISOString(), all: [
   assert.match(resultLink.title, /in FYNX/i);
   assert.ok(!futureRow.querySelector('.fc-actual'), 'future events do not show a result link');
   stopTruth();
+
+  // A failed primary request must not disguise an expired bundled file as a quiet calendar.
+  const archiveDom = new JSDOM('<!doctype html><body><div id="full"></div><div id="compact"></div></body>', {
+    url: 'https://www.fynxfinanceworld.com/tools/economic-calendar.html', runScripts: 'outside-only', pretendToBeVisual: true
+  });
+  const aw = archiveDom.window;
+  const archive = {...fixture, updatedAt: at(-96), to: at(-48), sourceURL: 'https://www.forexfactory.com/calendar',
+    all: [{...fixture.all[0], title: 'Archived CPI', time: at(-60)}]};
+  let primaryAvailable = false;
+  aw.fetch = async url => url.startsWith('https:')
+    ? {ok: primaryAvailable, json: async () => JSON.parse(JSON.stringify({...fixture, to: at(48)}))}
+    : {ok: true, json: async () => JSON.parse(JSON.stringify(archive))};
+  aw.eval(source);
+  const full = aw.document.getElementById('full'), compact = aw.document.getElementById('compact');
+  const stopFull = aw.FynxCalendar.mount(full);
+  const stopArchiveCompact = aw.FynxCalendar.mount(compact, {compact: true});
+  for (let i = 0; i < 20 && !full.querySelector('.fc-title'); i++) await tick();
+  assert.match(full.querySelector('[role="status"]').textContent, /coverage is unavailable/);
+  assert.match(compact.querySelector('[role="status"]').textContent, /saved schedule has ended/);
+  assert.match(compact.querySelector('.fc-recap').textContent, /Past events from the saved schedule/);
+  assert.doesNotMatch(compact.textContent, /No more important releases are scheduled/);
+  assert.match(full.querySelector('.fc-foot').textContent, /last checked/);
+  assert.ok(full.querySelector('.fc-foot').textContent.includes(new aw.Date(archive.updatedAt).toLocaleString()));
+  assert.ok(full.querySelector('.fc-source'));
+  assert.ok(full.querySelector('.fc-ics').disabled);
+  primaryAvailable = true;
+  // A forced fetch tests recovery without a wall-clock minute; a fresh mount uses its result.
+  await aw.FynxCalendar.load(true);
+  const restored = aw.document.createElement('div');
+  const stopRestored = aw.FynxCalendar.mount(restored);
+  for (let i = 0; i < 20 && !restored.querySelector('.fc-title'); i++) await tick();
+  assert.ok(restored.querySelector('[role="status"]').hidden, 'current coverage has no stale warning');
+  assert.ok(!restored.querySelector('.fc-ics').disabled, 'upcoming export is available after recovery');
+  primaryAvailable = false;
+  assert.equal((await aw.FynxCalendar.load(true)).updatedAt, fixture.updatedAt, 'do not replace a newer verified in-memory snapshot with the older fallback');
+  stopFull(); stopArchiveCompact(); stopRestored(); archiveDom.window.close();
 
   stop();
   assert.ok(fetches >= 1);
