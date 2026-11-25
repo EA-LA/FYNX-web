@@ -632,6 +632,27 @@
         This web version matches your iOS logic: risk = |entry − stop|, reward = |take − entry|, R:R = reward / risk.
       </div>
     </div>
+  <section class="tool-explainer" id="riskRewardCosts" aria-labelledby="riskRewardCostsTitle">
+    <h2 id="riskRewardCostsTitle">What could trading costs change?</h2>
+    <p>Use the entry, stop and target above to see how estimated trading costs change the setup. The original calculator continues to show results before costs.</p>
+    <form id="riskRewardCostForm">
+      <label for="roundTripUnitCost">Round-trip cost per unit</label>
+      <div class="hint" id="roundTripUnitCostHint">Enter spread, commission and estimated slippage combined, in the same currency as the prices. For example, a $5 total cost for 50 shares is $0.10 per share. Use 0 as a before-cost baseline, and do not count costs already reflected in your prices.</div>
+      <input id="roundTripUnitCost" class="field mono" type="text" inputmode="decimal" autocomplete="off" value="0" aria-describedby="roundTripUnitCostHint" style="display:block;max-width:18rem;margin:8px 0 12px">
+      <button id="compareRiskRewardCosts" class="primary" type="submit" disabled>Compare after costs</button>
+    </form>
+    <div role="status" aria-live="polite" aria-atomic="true">
+      <p class="hint" id="riskRewardCostStatus"></p>
+      <dl id="riskRewardCostResults" hidden>
+        <div><dt>Loss per unit at stop</dt><dd id="netStopLoss"></dd></div>
+        <div><dt>Net result per unit at target</dt><dd id="netTargetResult"></dd></div>
+        <div><dt>Reward to risk</dt><dd id="netCostRatio"></dd></div>
+        <div><dt>Break-even win rate</dt><dd id="netCostBreakEven"></dd></div>
+      </dl>
+    </div>
+    <p class="hint">This assumes the same fixed per-unit cost and exact fills at your stop and target. Actual fills and costs may differ. The cost input is not included in calculator share links, exports or Risk API checks.</p>
+    <noscript><p>This comparison needs JavaScript.</p></noscript>
+  </section>
   <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Compares the ratio for your supplied prices.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
 <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Compare a target with the planned downside</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Enter entry, stop and target; the calculator detects long or short from which side of entry the stop sits. Add your win rate from past trades to see expectancy and the losing streak to plan for, and use the 1R/2R/3R targets to compare exits without moving your stop simply to improve the ratio.</p><h3>The calculation or concept</h3><p>Reward-to-risk ratio = distance to target ÷ distance to stop, for the chosen direction.</p></div><div class="tool-example"><h3>Worked example</h3><p>A long entry at $100 with a $98 stop and $106 target has $2 of price risk and $6 of potential reward per unit: 3:1 before costs.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>A large ratio does not make a setup profitable. Win rate, execution costs and the frequency of reaching the target also matter.</p></details></section><!-- tool-guide:end -->
 <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/position-size.html"><strong>Forex Position Size &amp; Risk Calculator</strong><span>Calculate forex position size using account balance, risk percentage and stop distance to plan risk before entering a trade.</span></a><a href="/tools/breakeven.html"><strong>Trading Break-Even Price Calculator</strong><span>Calculate a trade&#39;s estimated break-even price using position size, fees and spread assumptions.</span></a><a href="/tools/stock.html"><strong>Stock Position Sizing Calculator</strong><span>Calculate a stock trade&#39;s position size and risk from account size, risk percentage, entry price and stop price.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
@@ -994,6 +1015,7 @@ calculate();if(el.error.textContent)throw new Error(el.error.textContent);
   </script>
 
 
+<script src="/assets/js/risk-reward-costs.js?v=20261125"></script>
 <script type="module" src="/assets/js/api-calculator-pilot.js"></script>
 <footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
 </body>

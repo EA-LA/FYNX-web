@@ -1,0 +1,26 @@
+name: Free risk and reward after costs
+on:
+  pull_request:
+    paths:
+      - 'tools/risk-reward.html'
+      - 'assets/js/risk-reward-costs.js'
+      - 'assets/vendor/decimal.js'
+      - 'scripts/test-risk-reward-costs.cjs'
+      - '.github/workflows/risk-reward-costs.yml'
+permissions:
+  contents: read
+concurrency:
+  group: free-risk-reward-costs-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --check assets/js/risk-reward-costs.js
+      - run: node --test scripts/test-risk-reward-costs.cjs scripts/test-risk-reward-freshness.cjs
