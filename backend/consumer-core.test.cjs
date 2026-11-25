@@ -108,3 +108,23 @@ test('paid Journal Intelligence does not fabricate trades from an entirely inval
  assert.deepEqual(r.curve,[]);
  assert.match(r.notice,/invalid realized P\/L were omitted/);
 });
+
+test('paid Journal CSV uses the same decimal P/L rules as Journal Intelligence',()=>{
+ const values=[100,' -40.5 ',0,'0','1e1','0x10','0b10',[50],false,true,null,'','  ','=2+2'];
+ const trades=values.map(pl=>({pl}));
+ const report=run('analytics',{},trades);
+ const exported=run('export',{},trades);
+ assert.equal(report.trades,5);
+ assert.equal(report.netPL,69.5);
+ assert.equal(exported.rows,values.length);
+ const expected=['100','-40.5','0','0','10',"'0x10","'0b10","'50","'false","'true",'','','  ',"'=2+2"];
+ assert.deepEqual(exported.csv.split('\r\n').slice(1),expected.map(pl=>'"","","","'+pl+'",""'));
+});
+test('paid Journal CSV preserves malformed P/L text escaping and formula defenses',()=>{
+ const report=run('export',{},[{pl:' -2.5e0',symbol:'=2+2'},{pl:'  \uFEFF=2+2'},{pl:'bad,"value"'},{pl:'-invalid'},{pl:'0o10'}]);
+ assert.ok(report.csv.includes('"\'=2+2","","-2.5"'));
+ assert.ok(report.csv.includes('"\'  \uFEFF=2+2"'));
+ assert.ok(report.csv.includes('"\'bad,""value"""'));
+ assert.ok(report.csv.includes('"\'-invalid"'));
+ assert.ok(report.csv.includes('"\'0o10"'));
+});

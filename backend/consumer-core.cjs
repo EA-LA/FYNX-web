@@ -11,10 +11,12 @@ function risk(d,scenarioFactor=1){const balance=number(d.balance,'Balance',1),ri
 function csv(trades){
  const safe=(value,isRealizedPL=false)=>{
   const text=String(value??'');
-  // Trusted numeric P/L remains numeric in spreadsheets, including negative values.
-  if(isRealizedPL&&text.trim()!==''&&Number.isFinite(Number(text)))return '"'+String(Number(text))+'"';
+  // Use the same decimal validation as Journal Intelligence, including signed losses.
+  const numericPL=isRealizedPL?decimalValue(value):NaN;
+  if(Number.isFinite(numericPL))return '"'+String(numericPL)+'"';
+  // Preserve malformed nonblank P/L as text rather than exporting a fabricated number.
   // Quoting alone does not neutralize formulas hidden behind whitespace, BOM or controls.
-  const neutralized=/^[\s\u0000-\u001f\u007f\u200b\u2060\ufeff]*[=+\-@]/u.test(text)?"'"+text:text;
+  const neutralized=(isRealizedPL&&text.trim()!==''||/^[\s\u0000-\u001f\u007f\u200b\u2060\ufeff]*[=+\-@]/u.test(text))?"'"+text:text;
   return '"'+neutralized.replace(/"/g,'""')+'"';
  };
  return {csv:'Date,Symbol,Session,Realized P/L,Notes\r\n'+trades.map(t=>[t.date,t.symbol,t.session,t.pl,t.notes].map((v,i)=>safe(v,i===3)).join(',')).join('\r\n'),rows:trades.length};
