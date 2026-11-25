@@ -153,10 +153,18 @@ permissionButton.onclick = async () => {
     if (auth.currentUser?.uid !== uid) return;
     permissionStatus.textContent = `Permission: ${result.permission}${result.supported ? '' : ' (unsupported browser)'}`;
     if (result.permission === 'granted') {
-      const { enableFcmFromUserGesture } = await import('/assets/js/fcm-client.js');
-      const token = await enableFcmFromUserGesture();
-      if (!token) throw new Error('Push registration failed');
+      let registered = false;
+      try {
+        const { enableFcmFromUserGesture } = await import('/assets/js/fcm-client.js');
+        const token = await enableFcmFromUserGesture();
+        if (!token) throw new Error('Push registration failed');
+        registered = true;
+      } catch {
+        // Device registration is best-effort. A temporary callable/SW failure must not
+        // leave the confirmed preference unset.
+      }
       if (auth.currentUser?.uid === uid) await preferenceController.set('browserEnabled', true);
+      if (!registered && auth.currentUser?.uid === uid) actionStatus.textContent = 'Browser notifications enabled. Background delivery registration will retry.';
     } else {
       await preferenceController.set('browserEnabled', false);
     }
