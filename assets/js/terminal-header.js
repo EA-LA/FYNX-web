@@ -350,13 +350,18 @@
       else cancelQuickAdd();
     });
     
-    // Mount shared notification dropdown (account-ui.js) on regular pages.
-    // On Profile/notifications the button navigates directly (handled above).
-    import('/assets/js/account-ui.js?v=20261125-header-fix').then(function (m) {
-      if (m.mountNotificationBell) m.mountNotificationBell();
-    }).catch(function (err) {
-      console.warn('[FYNX] notification dropdown unavailable', err && err.message);
-    });
+    // Mount shared notification dropdown only on regular pages.
+    // Profile and notifications.html keep direct navigation (button click handler above).
+    // mountNotificationBell itself guards against duplicate mounting via dataset.
+    const isSettingsPage = location.pathname === '/profile.html' || location.pathname === '/notifications.html';
+    if (!isSettingsPage && !document.body.dataset.fynxBellMounted) {
+      document.body.dataset.fynxBellMounted = '1';
+      import('/assets/js/account-ui.js?v=20261125-header-fix').then(function (m) {
+        if (m.mountNotificationBell) m.mountNotificationBell();
+      }).catch(function (err) {
+        console.warn('[FYNX] notification dropdown unavailable', err && err.message);
+      });
+    }
     // Auto news ingestion (uses existing ingestNewsNotifications).
     if (!document.querySelector('script[data-fynx-auto-news]')) {
       const s = document.createElement('script');
