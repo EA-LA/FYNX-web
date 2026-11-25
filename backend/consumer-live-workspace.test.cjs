@@ -161,3 +161,28 @@ test('server limits match the limits the website advertises',()=>{
  const server=(()=>{const m={exports:{}};vm.runInNewContext(fs.readFileSync(__dirname+'/consumer-live-workspace.cjs','utf8'),{module:m,exports:m.exports,require:n=>({'firebase-functions/v1':{https:{HttpsError:Error},runWith:()=>({https:{onCall:f=>f}})},'firebase-admin':{},'stripe':function(){}}[n]||require(n)),process:{env:{}},console});return m.exports._test.USAGE_LIMITS;})();
  for(const cat of Object.keys(client))for(const tier of ['free','starter','plus','pro'])assert.equal(server[cat][tier],Number.isFinite(client[cat][tier])?client[cat][tier]:null,cat+' '+tier);
 });
+
+test('paid Journal CSV retains dated records whose realized P/L cannot be used in analytics',async()=>{
+ const h=harness({paid:true});
+ const rows=[
+  ['LOSS','-4.25','recorded loss'],
+  ['ZERO',0,'recorded zero'],
+  ['INVALID','not recorded','preserve note'],
+  ['MISSING',undefined,'no realized outcome'],
+  ['HEX','0x10','not decimal'],
+ ];
+ for(const [symbol,pl,notes] of rows)h.data.set('users/owner/trades/'+symbol,{date:'2026-11-01',dateTs:1,session:'NY',symbol,notes,...(pl===undefined?{}:{pl})});
+ const {result:csv}=await h.call({action:'run',product:'export'});
+ assert.equal(csv.rows,5);
+ assert.match(csv.csv,/"LOSS","NY","-4\.25","recorded loss"/);
+ assert.match(csv.csv,/"ZERO","NY","0","recorded zero"/);
+ assert.match(csv.csv,/"INVALID","NY","'not recorded","preserve note"/);
+ assert.match(csv.csv,/"MISSING","NY","","no realized outcome"/);
+ assert.match(csv.csv,/"HEX","NY","'0x10","not decimal"/);
+ // A value dropped before the core used to hide the omission notice.
+ h.data.delete('users/owner/trades/HEX');
+ const {result:analytics}=await h.call({action:'run',product:'analytics'});
+ assert.equal(analytics.trades,2);
+ assert.equal(analytics.netPL,-4.25);
+ assert.match(analytics.notice,/Records with invalid realized P\/L were omitted/);
+});
