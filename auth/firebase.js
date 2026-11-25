@@ -12,6 +12,7 @@ const firebaseConfig = {
   authDomain: "fynx-c7a28.firebaseapp.com",
   projectId: "fynx-c7a28",
   storageBucket: "fynx-c7a28.firebasestorage.app",
+  messagingSenderId: "1011050657868",
   appId: "1:1011050657868:web:2c5ad5a1b275e669b05ce9"
 };
 
