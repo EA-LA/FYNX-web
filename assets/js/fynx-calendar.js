@@ -72,6 +72,14 @@
   let feedActuals = false;
   const phase = (e, now = Date.now(), withActuals = feedActuals) => Date.parse(e.time) > now ? 'Before release' : supplied(e.actual) !== null && e.estimated !== true ? 'Result reported' : withActuals && now - Date.parse(e.time) < AWAIT_MS ? 'Awaiting reported result' : 'Result not in feed';
   const rowStatus = (e, now) => ({'Result reported': 'Released', 'Awaiting reported result': 'Awaiting result', 'Result not in feed': 'Result unavailable'})[phase(e, now)] || '';
+  // These exact USD calendar labels map to BEA release series. Do not infer a publisher
+  // from a generic term such as GDP or CPI across countries, or use a feed-provided URL.
+  function beaResultSource(e) {
+    if (e.currency !== 'USD') return null;
+    if (e.title === 'Prelim GDP q/q') return ['BEA GDP releases', 'https://www.bea.gov/data/gdp/gross-domestic-product'];
+    if (e.title === 'Core PCE Price Index m/m') return ['BEA Personal Income and Outlays releases', 'https://www.bea.gov/data/income-saving/personal-income'];
+    return null;
+  }
   const publicEventID = e => /^[a-f0-9]{64}$/.test(String(e.stableEventID || '')) ? e.stableEventID : e.id;
   const eventURL = e => /^[a-f0-9]{64}$/.test(String(publicEventID(e) || '')) ? 'https://www.fynxfinanceworld.com/tools/economic-calendar.html?event=' + publicEventID(e) : null;
   function comparison(e, now = Date.now()) {
@@ -187,6 +195,13 @@
       const actions = el('div', 'fc-detail-actions'), url = eventURL(e);
       if (Date.parse(e.time) > Date.now() && e.estimated !== true) { const remind = el('button', 'fc-chip', 'Add reminder (.ics)'); remind.type = 'button'; remind.addEventListener('click', () => addOne(e)); actions.append(remind); }
       if (url) { const share = el('button', 'fc-chip', 'Share event'); share.type = 'button'; share.addEventListener('click', async () => { try { if (navigator.share) await navigator.share({title: e.title, url}); else { await navigator.clipboard.writeText(url); expNote.textContent = 'Event link copied.'; } } catch (error) { if (error?.name !== 'AbortError') expNote.textContent = 'Sharing is unavailable. Copy this page’s address to share the event.'; } }); actions.append(share); }
+      const releaseSource = phase(e) === 'Result not in feed' ? beaResultSource(e) : null;
+      if (releaseSource) {
+        const archive = el('a', 'fc-chip', 'Official releases in FYNX'); archive.href = '/news.html#official-sources';
+        const original = el('a', 'fc-chip', releaseSource[0] + ' ↗'); original.href = releaseSource[1]; original.target = '_blank'; original.rel = 'noopener noreferrer';
+        actions.append(archive, original);
+        detail.append(el('p', '', 'Match the release date and reporting period before comparing the publisher’s figure with this schedule.'));
+      }
       detail.append(actions);
       const nextEvents = data.list.filter(row => eventKey(row) !== eventKey(e) && row.currency === e.currency && Date.parse(row.time) > Date.parse(e.time)).slice(0, 5);
       if (nextEvents.length) { detail.append(el('h3', '', 'Following this release')); for (const nextEvent of nextEvents) { const b = el('button', 'fc-detail-related', nextEvent.title + ' · ' + new Date(nextEvent.time).toLocaleString()); b.type = 'button'; b.addEventListener('click', () => selectEvent(nextEvent)); detail.append(b); } }

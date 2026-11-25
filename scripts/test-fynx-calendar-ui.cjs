@@ -8,17 +8,17 @@ const {JSDOM} = require('jsdom');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'assets/js/fynx-calendar.js'), 'utf8');
 const page = fs.readFileSync(path.join(__dirname, '..', 'tools/economic-calendar.html'), 'utf8');
-assert.match(page, /fynx-calendar\.js\?v=20261125-calendar-freshness-1/, 'page loads the updated calendar script');
+assert.match(page, /fynx-calendar\.js\?v=20261125-calendar-bea-links-1/, 'page loads the updated calendar script');
 assert.match(page, /verify the actual figure at the source/, 'page does not promise verified release data');
 const home = fs.readFileSync(path.join(__dirname, '..', 'home.html'), 'utf8');
-assert.match(home, /fynx-calendar\.js\?v=20261125-calendar-freshness-1/, 'homepage preview loads the updated calendar script');
+assert.match(home, /fynx-calendar\.js\?v=20261125-calendar-bea-links-1/, 'homepage preview loads the updated calendar script');
 const releaseAssets = require('./build-release-assets.cjs');
-assert.equal(releaseAssets.ASSET_VERSIONS['assets/js/fynx-calendar.js'], '20261125-calendar-freshness-1',
+assert.equal(releaseAssets.ASSET_VERSIONS['assets/js/fynx-calendar.js'], '20261125-calendar-bea-links-1',
   'release asset builder must not undo calendar cache invalidation');
 const rewritten = releaseAssets.rewriteReferences(
   '<script src="/assets/js/fynx-calendar.js?v=20261120-site-pages-1"></script>', 'home.html', new Set(['assets/js/fynx-calendar.js'])
 );
-assert.match(rewritten, /fynx-calendar\.js\?v=20261125-calendar-freshness-1/,
+assert.match(rewritten, /fynx-calendar\.js\?v=20261125-calendar-bea-links-1/,
   'a website build upgrades stale economic calendar script versions');
 
 const base = Date.now();
@@ -194,6 +194,37 @@ const fixture = {updatedAt: new Date(base).toISOString(), all: [
   primaryAvailable = false;
   assert.equal((await aw.FynxCalendar.load(true)).updatedAt, fixture.updatedAt, 'do not replace a newer verified in-memory snapshot with the older fallback');
   stopFull(); stopArchiveCompact(); stopRestored(); archiveDom.window.close();
+
+  const beaDom = new JSDOM('<!doctype html><body><div id="cal"></div></body>', {
+    url: 'https://www.fynxfinanceworld.com/tools/economic-calendar.html', runScripts: 'outside-only', pretendToBeVisual: true
+  });
+  const bw = beaDom.window;
+  const cases = [
+    ['Prelim GDP q/q', 'USD', -8, 'https://www.bea.gov/data/gdp/gross-domestic-product'],
+    ['Core PCE Price Index m/m', 'USD', -7, 'https://www.bea.gov/data/income-saving/personal-income'],
+    ['Prelim GDP q/q', 'EUR', -6, null],
+    ['Core PCE Price Index m/m', 'USD', 8, null],
+    ['Core PCE Price Index m/m', 'USD', -5, null, '0.3%']
+  ];
+  bw.fetch = async () => ({ok: true, json: async () => ({...fixture, to: at(48), all: cases.map(([title, currency, offset, , actual], i) =>
+    ({id: String(i + 1).repeat(64), time: at(offset), title, currency, impact: 'high', forecast: '0.3%', previous: '0.2%', actual}))
+  })});
+  bw.eval(source);
+  const beaHost = bw.document.getElementById('cal'), stopBea = bw.FynxCalendar.mount(beaHost);
+  for (let i = 0; i < 20 && beaHost.querySelectorAll('.fc-title').length < cases.length; i++) await tick();
+  cases.forEach(([title, currency, offset, expected, actual], i) => {
+    const row = [...beaHost.querySelectorAll('.fc-row')].find(row => row.querySelector('time').dateTime === at(offset));
+    assert.ok(row, `expected fixture row ${i}`);
+    (expected ? row.querySelector('.fc-actual') : row.querySelector('.fc-title')).click();
+    const detail = beaHost.querySelector('.fc-detail');
+    assert.equal(detail.querySelector('.fc-detail-title').textContent, title);
+    const archive = detail.querySelector('a[href="/news.html#official-sources"]'), source = detail.querySelector('a[href^="https://www.bea.gov/"]');
+    assert.equal(!!archive, !!expected, `FYNX release archive must match country, event, missing result and release time (${currency}/${offset})`);
+    assert.equal(source?.getAttribute('href') || null, expected);
+    if (expected) assert.deepEqual([...detail.querySelectorAll('.fc-detail-figures .fc-val b')].map(n => n.textContent), ['—', '0.3%', '0.2%'], 'link must not turn a forecast into an actual');
+    if (actual) assert.equal(detail.querySelector('.fc-detail-figures .fc-val b').textContent, actual);
+  });
+  stopBea(); bw.close();
 
   stop();
   assert.ok(fetches >= 1);
