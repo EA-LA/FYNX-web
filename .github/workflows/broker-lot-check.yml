@@ -1,0 +1,23 @@
+name: Free broker lot-step check
+on:
+  pull_request:
+    paths:
+      - 'tools/position-size.html'
+      - 'assets/js/broker-lot-check.js'
+      - 'assets/vendor/decimal.js'
+      - 'scripts/test-broker-lot-check.cjs'
+      - '.github/workflows/broker-lot-check.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --check assets/js/broker-lot-check.js
+      - run: node --test scripts/test-broker-lot-check.cjs scripts/test-position-stops.cjs scripts/test-position-scenario-privacy.cjs
