@@ -81,3 +81,30 @@ test('paid financial inputs preserve decimal strings, scientific notation, signe
  assert.deepEqual(run('risk',{...risk,riskPct:'1e0'}),run('risk',risk));
  assert.deepEqual(run('simulation',{balance:'10000',riskPct:'1',winRate:'0',rewardRisk:'2',trades:'10'}),run('simulation',{balance:10000,riskPct:1,winRate:0,rewardRisk:2,trades:10}));
 });
+
+test('paid Journal Intelligence excludes coercion-only P/L but counts genuine break-even trades',()=>{
+ const valid=[{pl:100},{pl:' -40.5 '},{pl:0},{pl:'0'},{pl:'1e1'}];
+ const malformed=[{pl:null},{pl:''},{pl:'  '},{pl:false},{pl:true},{pl:[]},{pl:[50]},{pl:'0x10'},{pl:'0b10'},{pl:{}},{pl:Infinity},{pl:'NaN'},{},null];
+ const r=run('analytics',{},[...valid.slice(0,1),...malformed,...valid.slice(1)]);
+ const expected=run('analytics',{},valid);
+ assert.deepEqual({...r,notice:expected.notice},expected);
+ assert.equal(r.trades,5);
+ assert.equal(r.netPL,69.5);
+ assert.equal(r.winRate,40);
+ assert.equal(r.expectancy,13.9);
+ assert.equal(r.maxDrawdown,40.5);
+ assert.deepEqual(r.curve,[100,59.5,59.5,59.5,69.5]);
+ assert.match(r.notice,/invalid realized P\/L were omitted/);
+ assert.doesNotMatch(expected.notice,/were omitted/);
+});
+test('paid Journal Intelligence does not fabricate trades from an entirely invalid history',()=>{
+ const r=run('analytics',{},[{pl:null},{pl:' '},{pl:[]},{pl:false}]);
+ assert.equal(r.trades,0);
+ assert.equal(r.netPL,0);
+ assert.equal(r.winRate,0);
+ assert.equal(r.expectancy,0);
+ assert.equal(r.profitFactor,null);
+ assert.equal(r.maxDrawdown,0);
+ assert.deepEqual(r.curve,[]);
+ assert.match(r.notice,/invalid realized P\/L were omitted/);
+});
