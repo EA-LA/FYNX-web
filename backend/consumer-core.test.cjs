@@ -19,6 +19,13 @@ test('paid scenario risk preserves the existing maximum risk cap',()=>{
  assert.throws(()=>run('scenarios',{...risk,riskPct:101}),/Risk percent/);
 });
 test('process review and watchlist persist meaningful inputs',()=>{assert.equal(run('review',{notes:'Wait for confirmation',plan:true,risk:true}).score,40);assert.deepEqual(run('watchlist',{symbols:['aapl','AAPL','BTCUSD']}).symbols,['AAPL','BTCUSD']);});
+test('paid research watchlists preserve full notes and reject over-limit notes instead of truncating',()=>{
+ const symbols=['aapl'];
+ for(const notes of ['', '  preserve spacing\n', 'x'.repeat(2000)])assert.equal(run('watchlist',{symbols,notes}).notes,notes);
+ assert.equal(run('watchlist',{symbols}).notes,'');
+ assert.throws(()=>run('watchlist',{symbols,notes:'x'.repeat(2001)}),/2,000 characters/);
+ assert.throws(()=>run('watchlist',{symbols,notes:'a'.repeat(1999)+'😀'}),/2,000 characters/);
+});
 test('Pro process review accepts optional blank notes without weakening other validation',()=>{for(const notes of [undefined,'','   ']){const r=run('review',{notes,plan:true,risk:false});assert.equal(r.notes,'');assert.equal(r.score,20);assert.deepEqual(r.completed,['plan']);assert.deepEqual(r.missing,['risk','event','execution','review']);}assert.equal(run('review',{notes:'  Wait for confirmation  ',plan:true}).notes,'Wait for confirmation');assert.throws(()=>run('review',{notes:'X'.repeat(2001)}),/valid name/);});
 test('CSV quotes and blocks spreadsheet formulas',()=>{const r=run('export',{},[{symbol:'=IMPORTXML("x")',pl:-5,notes:'a,b\nline'}]);assert.match(r.csv,/"'=IMPORTXML/);assert.match(r.csv,/"a,b\nline"/);});
 test('Pro journal CSV exports signed realized P/L as spreadsheet numbers',()=>{
