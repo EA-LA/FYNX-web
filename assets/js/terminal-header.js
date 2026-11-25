@@ -45,10 +45,11 @@
     const action = link('+ Quick Add', '/journal.html#quick-add', 'terminal-quick-add');
     action.setAttribute('aria-label', 'Quick Add: add a trade in your journal');
     action.addEventListener('click', function (event) {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       const nativeAction = document.getElementById('quickAddBtn');
       if (!nativeAction) return;
       event.preventDefault();
-      requestQuickAdd();
+      beginQuickAdd();
     });
     return action;
   }
@@ -72,6 +73,17 @@
     return action;
   }
 
+  function cancelQuickAdd() {
+    window.clearTimeout(quickAddTimer);
+    quickAddTimer = undefined;
+    quickAddAttempts = 0;
+  }
+
+  function beginQuickAdd() {
+    cancelQuickAdd();
+    requestQuickAdd();
+  }
+
   function requestQuickAdd() {
     const button = document.getElementById('quickAddBtn');
     const entry = document.getElementById('view-entry');
@@ -79,7 +91,7 @@
     window.clearTimeout(quickAddTimer);
     button.click();
     if (entry.classList.contains('active')) {
-      quickAddAttempts = 0;
+      cancelQuickAdd();
       if (typeof entry.scrollIntoView === 'function') entry.scrollIntoView({ block: 'start' });
       return;
     }
@@ -325,11 +337,12 @@
     if(body.classList.contains('edge-page')&&window.matchMedia('(max-width:639px)').matches){const current=workspaceNav?.querySelector('[aria-current="page"]');if(current)workspaceNav.scrollLeft=current.offsetLeft-workspaceNav.offsetLeft-workspaceNav.clientWidth/2+current.clientWidth/2;}
     startClock();
     document.addEventListener('visibilitychange', updateClock);
-    window.addEventListener('pagehide', function () { window.clearInterval(clockInterval); clockInterval = null; window.clearTimeout(quickAddTimer); });
+    window.addEventListener('pagehide', function () { window.clearInterval(clockInterval); clockInterval = null; cancelQuickAdd(); });
     window.addEventListener('pageshow', startClock);
-    if (location.hash === '#quick-add') requestQuickAdd();
+    if (location.hash === '#quick-add') beginQuickAdd();
     window.addEventListener('hashchange', function () {
-      if (location.hash === '#quick-add') { quickAddAttempts = 0; requestQuickAdd(); }
+      if (location.hash === '#quick-add') beginQuickAdd();
+      else cancelQuickAdd();
     });
     document.dispatchEvent(new CustomEvent('fynx:terminal-header', { bubbles: true }));
   }
