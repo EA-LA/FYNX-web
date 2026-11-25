@@ -118,13 +118,34 @@ assert.deepEqual(JSON.parse(w.localStorage.getItem(savedKey)),maxed,'max-size sh
 assert.match(w.document.querySelector('#cotSavedStatus').textContent,/up to 100 contracts/);
 // A second page visit must read an earlier browser shortlist before the report arrives.
 const dom2=new JSDOM('<table><tbody id="cotRows"></tbody></table><p id="cotStatus"></p><input id="cotSearch"><button id="cotRefresh"></button><button id="cotExport" disabled></button><p id="cotExportStatus"></p><input id="cotSavedOnly" type="checkbox"><p id="cotSavedStatus"></p>',{runScripts:'outside-only',url:'https://www.fynxfinanceworld.com/markets/cot.html'}),w2=dom2.window;
-w2.AbortSignal=AbortSignal;
+// Older Safari/WebViews support AbortController but not AbortSignal.timeout.
+w2.AbortSignal=undefined;
+const timeouts=new Map();let timerId=0;
+const realSetTimeout=w2.setTimeout.bind(w2),realClearTimeout=w2.clearTimeout.bind(w2);
+w2.setTimeout=(fn,ms,...args)=>{if(ms!==15000)return realSetTimeout(fn,ms,...args);const id=++timerId;timeouts.set(id,fn);return id;};
+w2.clearTimeout=id=>{if(!timeouts.delete(id))realClearTimeout(id);};
 w2.localStorage.setItem(savedKey,'["099741"]');
 w2.fetch=async url=>new URL(url).searchParams.get('$limit')==='1'?{ok:true,json:async()=>[{report_date_as_yyyy_mm_dd:date}]}:{ok:true,json:async()=>[row]};
 w2.eval(fs.readFileSync('assets/js/cot-feed.js','utf8'));
 await tick();await tick();
 assert.equal(w2.document.querySelector('#cotRows .cot-save').getAttribute('aria-pressed'),'true','saved contracts survive a new browser visit');
 assert.match(w2.document.querySelector('#cotSavedStatus').textContent,/1 saved contract/);
+assert.equal(timerId,2,'each CFTC request gets a bounded deadline without AbortSignal.timeout');
+assert.equal(timeouts.size,0,'successful requests clear their timers');
+let pendingSignal;
+// Stall the response body, not just the initial HTTP response.
+w2.fetch=async (url,{signal})=>{pendingSignal=signal;return {ok:true,json:()=>new Promise((resolve,reject)=>signal.addEventListener('abort',()=>reject(Error('timed out')),{once:true}))};};
+w2.document.querySelector('#cotRefresh').click();
+await tick();
+assert.equal(timeouts.size,1);
+assert.equal(pendingSignal.aborted,false);
+[...timeouts.values()][0]();
+await tick();await tick();
+assert.equal(pendingSignal.aborted,true,'deadline cancels stalled response body');
+assert.equal(timeouts.size,0,'aborted requests clear their timers');
+assert.match(w2.document.querySelector('#cotStatus').textContent,/Refresh failed/);
+assert.equal(w2.document.querySelector('#cotRefresh').disabled,false);
+assert.equal(w2.document.querySelector('#cotExport').disabled,false,'previous verified report remains exportable');
 dom2.window.close();
 
 const dom3=new JSDOM('<table><tbody id="cotRows"></tbody></table><p id="cotStatus"></p><input id="cotSearch"><button id="cotRefresh"></button><button id="cotExport" disabled></button><p id="cotExportStatus"></p><input type="checkbox" id="cotSavedOnly"><p id="cotSavedStatus"></p>',{runScripts:'outside-only',url:'https://www.fynxfinanceworld.com/markets/cot.html'}),w3=dom3.window;
