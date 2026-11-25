@@ -9,12 +9,26 @@ const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'explore.html'), 'utf8').replace(/<script\b[^>]*src=[^>]*><\/script>/gi, '');
 const code = fs.readFileSync(path.join(root, 'assets/js/discovery.js'), 'utf8');
 
-function search(query) {
+function search(query, { fixture = false, category } = {}) {
   const dom = new JSDOM(html, { url: 'https://www.fynxfinanceworld.com/explore.html?q=' + encodeURIComponent(query), runScripts: 'outside-only', pretendToBeVisual: true });
   const { window } = dom;
   window.fetch = () => Promise.reject(new Error('offline'));
   window.matchMedia = () => ({ matches: false });
+  if (fixture) {
+    const story = window.document.createElement('article');
+    story.className = 'discovery-card';
+    story.dataset.resourceUrl = '/intelligence/test-search-headline/';
+    story.dataset.category = 'News & events';
+    story.dataset.search = 'Qalzor releases a fictional market report';
+    const title = window.document.createElement('h2');
+    title.textContent = 'Qalzor releases a fictional market report';
+    story.append(title);
+    window.document.querySelector('.discovery-grid').append(story);
+  }
   window.eval(code);
+  if (category) {
+    [...window.document.querySelectorAll('[data-filter]')].find((button) => button.dataset.filter === category).click();
+  }
   const visible = [...window.document.querySelectorAll('.discovery-card')].filter((card) => !card.hidden);
   const status = window.document.getElementById('discovery-count').textContent;
   const titles = visible.map((card) => card.querySelector('h2').textContent.trim());
@@ -40,7 +54,15 @@ assert.ok(!search('rsi').titles.some((t) => /currency conversion/i.test(t)), '"r
 assert.ok(/for “fibonacci”/.test(search('fibonaci').status), 'fibonaci is corrected');
 assert.strictEqual(search('zzqxjv').count, 0);
 // Corrections must not swap in an unrelated or generic word.
-assert.ok(!/takes/.test(search('taxes').status), 'taxes must not become takes');
+assert.ok(!/for “takes”/.test(search('taxes').status), 'taxes must not become takes');
+const story = { fixture: true, category: 'News & events' };
+// Independent of the current feed: a headline-only same-length neighbor cannot
+// turn on autocorrection, while straight keyword search still finds the story.
+assert.strictEqual(search('qalzop', story).count, 0, 'a headline must not introduce unrelated substitution');
+const exactStory = search('qalzor', story);
+assert.ok(!/No exact match/.test(exactStory.status));
+assert.ok(exactStory.titles.some((title) => title.startsWith('Qalzor')), 'literal story keyword remains searchable');
+assert.ok(/for “fibonacci”/.test(search('fibonxcci', { category: 'Tools' }).status), 'stable title substitution works in Tools');
 assert.ok(!/trading stop/.test(search('trailing stop').status), 'trailing must not become trading');
 assert.ok(/for “forex”/.test(search('forx').status), 'forx is corrected to forex');
 // Trader shorthand and symbols.

@@ -1,0 +1,26 @@
+name: Explore search regression
+
+on:
+  pull_request:
+    paths:
+      - 'assets/js/discovery.js'
+      - 'scripts/build-discovery.cjs'
+      - 'scripts/test-discovery-search.cjs'
+      - '.github/workflows/explore-search-regression.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  explore-search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run build
+      - run: npm run test:discovery
