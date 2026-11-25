@@ -96,3 +96,68 @@ test('Clear restores blank state and deletes input', () => {
     'Your crypto trade result will appear here.');
   dom.window.close();
 });
+
+test('editing a crypto scenario removes the prior result until it is recalculated', () => {
+  // Mix input and change events: mobile/select controls do not all commit the same way.
+  for (const [id, value, event] of [
+    ['coin', 'ETH / USDT', 'input'],
+    ['capital', '1500', 'input'],
+    ['entryPrice', '101', 'input'],
+    ['exitPrice', '90', 'input'],
+    ['feePercent', '0.2', 'change'],
+    ['tradeType', 'short', 'change'],
+    ['targetProfit', '75', 'input'],
+    ['stopPrice', '92', 'input'],
+  ]) {
+    const dom = calculate({ targetProfit: '50', stopPrice: '95' });
+    try {
+      const { window } = dom;
+      const doc = window.document;
+      const result = doc.getElementById('resultArea');
+      const field = doc.getElementById(id);
+      assert.match(result.textContent, /Net Profit:\s*\$100\.00/);
+      assert.ok(doc.getElementById('moveTable'));
+      assert.ok(doc.getElementById('planCheck'));
+      field.focus();
+      field.value = value;
+      field.dispatchEvent(new window.Event(event, { bubbles: true }));
+      assert.match(result.textContent, /Inputs changed.*Calculate/i, id + ' marks the result as pending');
+      assert.equal(doc.querySelector('.big-result'), null, id + ' removes the old profit/loss');
+      assert.equal(doc.getElementById('moveTable'), null, id + ' removes the old price table');
+      assert.equal(doc.getElementById('planCheck'), null, id + ' removes the old plan check');
+      assert.equal(doc.activeElement, field, id + ' keeps focus on the edited control');
+      if (id === 'exitPrice') {
+        field.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        assert.match(result.textContent, /Net Loss:\s*\$100\.00/, 'Enter calculates using the edited exit');
+      }
+      if (id === 'tradeType') {
+        doc.getElementById('calculateBtn').click();
+        assert.match(result.textContent, /Net Loss:\s*\$100\.00/, 'button calculates using the new direction');
+      }
+    } finally {
+      dom.window.close();
+    }
+  }
+});
+
+test('initial edits do not claim an old result, and Clear resets pending text', () => {
+  const dom = calculate();
+  try {
+    const { window } = dom;
+    const doc = window.document;
+    const entry = doc.getElementById('entryPrice');
+    const clear = doc.getElementById('clearBtn');
+    const result = doc.getElementById('resultArea');
+    const edit = value => {
+      entry.value = value;
+      entry.dispatchEvent(new window.Event('input', { bubbles: true }));
+    };
+    edit('99');
+    assert.match(result.textContent, /Inputs changed/);
+    clear.click();
+    edit('95');
+    assert.equal(result.textContent, 'Your crypto trade result will appear here.');
+  } finally {
+    dom.window.close();
+  }
+});
