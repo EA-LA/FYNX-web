@@ -1,0 +1,23 @@
+name: Header Quick Add recovery
+on:
+  pull_request:
+    paths:
+      - 'assets/js/terminal-header.js'
+      - 'scripts/test-header-quick-add.cjs'
+      - '.github/workflows/header-quick-add-recovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --check assets/js/terminal-header.js
+      - run: node --test scripts/test-header-quick-add.cjs
