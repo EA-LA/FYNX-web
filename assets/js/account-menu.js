@@ -96,6 +96,7 @@ html[data-theme=dark] .fx-acct-menu,body.dark-mode .fx-acct-menu{background:#111
       try {
         // The shared session manager clears account-scoped data and tells other tabs. It only knows the
         // Firebase session on pages that bootstrapped it, so always finish with a direct sign-out too.
+        try { const push = await import('/assets/js/fcm-client.js'); await push.removeFcmToken(); } catch (error) { console.warn('[FYNX] Push cleanup failed', error?.code || error?.name); }
         try { if (window.FynxSession?.logout) await window.FynxSession.logout('manual', '/'); } catch (_) {}
         const m = await import('/auth/firebase.js'); const a = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js');
         await a.signOut(m.auth);
