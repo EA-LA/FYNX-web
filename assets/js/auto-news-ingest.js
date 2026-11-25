@@ -1,28 +1,65 @@
 /* Automatic news notification ingestion for authenticated users.
- * Uses existing ingestNewsNotifications from account-system.
- * Does not create a second system. Respects user preferences via the engine.
+ * Uses the existing ingestNewsNotifications from account-system.
+ * Does not create a second system. Respects preferences and deduplication via the engine.
  */
 (function () {
   'use strict';
   if (window.__fynxAutoNewsIngest) return;
   window.__fynxAutoNewsIngest = true;
 
-  const INTERVAL_MS = 3 * 60 * 1000; // ~3 minutes, within 1-5 min target
+  const INTERVAL_MS = 3 * 60 * 1000;
   let timer = null;
+  let lastAttempt = 0;
+
+  function log(msg, err) {
+    try {
+      if (window.FynxMonitor && window.FynxMonitor.report) {
+        window.FynxMonitor.report('notification', 'auto-ingest', err || new Error(msg));
+      }
+      if (location.search.includes('debug=1') || window.__fynxDebug) {
+        console.info('[FYNX auto-ingest]', msg, err || '');
+      }
+    } catch (_) {}
+  }
 
   async function tryIngest() {
-    if (!window.FynxIdentity?.uid || document.hidden) return;
+    const now = Date.now();
+    if (now - lastAttempt < 30000) return;
+    lastAttempt = now;
+    if (!window.FynxIdentity || !window.FynxIdentity.uid || document.hidden) return;
+
     try {
-      const raw = localStorage.getItem('fynx_news_latest_payload');
-      if (!raw) return;
-      const payload = JSON.parse(raw);
-      if (!payload?.items?.length) return;
-      const mod = await import('/assets/js/account-system.js?v=20261125-header-fix');
-      if (mod.ingestNewsNotifications) {
-        await mod.ingestNewsNotifications(window.FynxIdentity.uid, payload.items);
+      let items = [];
+      try {
+        const raw = localStorage.getItem('fynx_news_latest_payload');
+        if (raw) {
+          const payload = JSON.parse(raw);
+          if (Array.isArray(payload && payload.items)) items = payload.items;
+        }
+      } catch (e) {
+        log('localStorage payload parse failed', e);
       }
-    } catch (e) {
-      // Silent: do not break page if ingestion fails
+
+      if (!items.length) {
+        try {
+          const res = await fetch('/assets/data/news-latest.json', { credentials: 'omit' });
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data && data.items)) items = data.items;
+            else if (Array.isArray(data)) items = data;
+          }
+        } catch (e) {}
+      }
+
+      if (!items.length) return;
+
+      const mod = await import('/assets/js/account-system.js?v=20261125-header-fix');
+      if (mod && typeof mod.ingestNewsNotifications === 'function') {
+        const result = await mod.ingestNewsNotifications(window.FynxIdentity.uid, items);
+        if (result && result.created > 0) log('ingested ' + result.created + ' news notifications');
+      }
+    } catch (err) {
+      log('ingestion failed', err);
     }
   }
 
@@ -32,13 +69,18 @@
     timer = setInterval(tryIngest, INTERVAL_MS);
   }
 
+  function onVisible() {
+    if (!document.hidden) tryIngest();
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', start);
   } else {
     start();
   }
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) tryIngest();
+  document.addEventListener('visibilitychange', onVisible);
+  window.addEventListener('pageshow', onVisible);
+  window.addEventListener('pagehide', function () {
+    if (timer) { clearInterval(timer); timer = null; }
   });
-  window.addEventListener('pagehide', () => { if (timer) clearInterval(timer); });
 })();
