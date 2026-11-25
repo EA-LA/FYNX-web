@@ -39,7 +39,17 @@
   function route(value) { const o = options(value); return o ? '/news/article.html?' + new URLSearchParams(o) : null; }
   /* FYNX Intelligence: stories with an analysis page open there instead of the quick reader. */
   let intelMap = null;
-  const intelPath = id => intelMap && typeof id === 'string' && intelMap[id.slice(0, 16)] ? '/intelligence/' + intelMap[id.slice(0, 16)] + '/' : null;
+  function intelPath(id) {
+    if (!intelMap || typeof id !== 'string' || !/^[a-f0-9]{64}$/.test(id)) return null;
+    const key = id.slice(0, 16);
+    if (!Object.prototype.hasOwnProperty.call(intelMap, key)) return null;
+    const slug = intelMap[key];
+    // Generated Intelligence destinations are single lowercase path segments.
+    // A corrupt cached or downloaded map must never replace the working reader URL.
+    return typeof slug === 'string' && slug.length <= 120 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)
+      ? '/intelligence/' + slug + '/' : null;
+  }
+  const validIntelMap = map => map !== null && typeof map === 'object' && !Array.isArray(map);
   function intelFromReader(href) { try { const u = new URL(href, root.location.href); return u.origin === root.location.origin && u.pathname === '/news/article.html' && u.searchParams.has('edition') ? intelPath(u.searchParams.get('id')) : null; } catch { return null; } }
   (function loadIntel() {
     const KEY = 'fynx_intel_map_v1';
@@ -50,9 +60,9 @@
     };
     // Register before the cached-map fast path: dynamically loaded feed links need the same route.
     root.document?.addEventListener?.('click', event => { const a = event.target?.closest?.('a[href*="/news/article.html?"]'); if (!a) return; const to = intelFromReader(a.getAttribute('href')); if (to) a.setAttribute('href', to); }, true);
-    try { const c = JSON.parse(root.sessionStorage?.getItem(KEY) || 'null'); if (c && Date.now() - c.at < 600000) { apply(c.map); return; } } catch {}
+    try { const c = JSON.parse(root.sessionStorage?.getItem(KEY) || 'null'); if (c && Number.isFinite(c.at) && c.at <= Date.now() && Date.now() - c.at < 600000 && validIntelMap(c.map)) { apply(c.map); return; } } catch {}
     if (typeof root.fetch !== 'function') return;
-    root.fetch('/intelligence/data/map.json', {credentials: 'omit', cache: 'no-cache'}).then(r => r.ok ? r.json() : null).then(d => { if (!d || typeof d.map !== 'object') return; try { root.sessionStorage?.setItem(KEY, JSON.stringify({at: Date.now(), map: d.map})); } catch {} apply(d.map); }).catch(() => {});
+    root.fetch('/intelligence/data/map.json', {credentials: 'omit', cache: 'no-cache'}).then(r => r.ok ? r.json() : null).then(d => { if (!d || !validIntelMap(d.map)) return; try { root.sessionStorage?.setItem(KEY, JSON.stringify({at: Date.now(), map: d.map})); } catch {} apply(d.map); }).catch(() => {});
   })();
   function href(item) { const o = options(item); return (o && intelPath(o.id)) || route(item) || '/news/article.html'; }
   function normalized(value, o) {
