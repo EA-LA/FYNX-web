@@ -159,3 +159,76 @@ test('index entries with unsafe off-site paths fail closed and can recover', asy
   assert.deepEqual(JSON.parse(dom.window.localStorage.getItem(key)), [resource]);
   dom.window.close();
 });
+
+function setupWorkspace({ stored = true } = {}) {
+  const dom = new JSDOM('<main><div data-workspace-saved></div><div data-workspace-recent></div></main>', {
+    url: 'https://www.fynxfinanceworld.com/home.html', runScripts: 'outside-only'
+  });
+  if (stored) {
+    dom.window.localStorage.setItem(key, JSON.stringify([resource]));
+    dom.window.localStorage.setItem('fynx.recent-resources.v1', JSON.stringify([secondResource]));
+  }
+  const requests = [];
+  dom.window.fetch = url => new Promise(resolve => requests.push({url, resolve}));
+  dom.window.eval(source);
+  return {dom, requests, saved: dom.window.document.querySelector('[data-workspace-saved]'),
+    recent: dom.window.document.querySelector('[data-workspace-recent]')};
+}
+
+test('home resource index failure preserves saved paths and retry restores both lists', async () => {
+  const {dom, requests, saved, recent} = setupWorkspace();
+  try {
+    requests[0].resolve({ok: false});
+    await flush();
+    assert.match(saved.textContent, /could not be loaded/);
+    assert.match(recent.textContent, /could not be loaded/);
+    assert.deepEqual(JSON.parse(dom.window.localStorage.getItem(key)), [resource]);
+    const retry = saved.querySelector('button');
+    retry.focus();
+    retry.click();
+    retry.click();
+    assert.equal(requests.length, 2);
+    assert.equal(retry.getAttribute('aria-disabled'), 'true');
+    requests[1].resolve({ok: true, json: async () => [
+      {url: resource, title: 'Position size'}, {url: secondResource, title: 'Debt payoff'}
+    ]});
+    await flush();
+    assert.equal(saved.querySelector('a').getAttribute('href'), resource);
+    assert.equal(recent.querySelector('a').getAttribute('href'), secondResource);
+    assert.equal(dom.window.document.activeElement, saved.querySelector('a'));
+    assert.deepEqual(JSON.parse(dom.window.localStorage.getItem(key)), [resource]);
+  } finally { dom.window.close(); }
+});
+
+test('home resource retry can fail again without losing stored entries or focus', async () => {
+  const {dom, requests, saved} = setupWorkspace();
+  try {
+    requests[0].resolve({ok: false});
+    await flush();
+    const retry = saved.querySelector('button');
+    retry.focus();
+    retry.click();
+    requests[1].resolve({ok: false});
+    await flush();
+    assert.equal(dom.window.document.activeElement, saved.querySelector('button'));
+    assert.notEqual(saved.querySelector('button'), retry);
+    assert.deepEqual(JSON.parse(dom.window.localStorage.getItem(key)), [resource]);
+    saved.querySelector('button').click();
+    assert.equal(requests.length, 3);
+    requests[2].resolve({ok: true, json: async () => [{url: resource, title: 'Position size'}]});
+    await flush();
+    assert.equal(saved.querySelector('a').getAttribute('href'), resource);
+  } finally { dom.window.close(); }
+});
+
+test('home with no stored resource paths retains truthful empty states on index failure', async () => {
+  const {dom, requests, saved, recent} = setupWorkspace({stored: false});
+  try {
+    requests[0].resolve({ok: false});
+    await flush();
+    assert.match(saved.textContent, /Save tools and lessons/);
+    assert.match(recent.textContent, /recently opened resources will appear/);
+    assert.equal(saved.querySelector('button'), null);
+    assert.equal(recent.querySelector('button'), null);
+  } finally { dom.window.close(); }
+});
