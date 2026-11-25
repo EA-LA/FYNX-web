@@ -139,12 +139,37 @@
     document.querySelector('[data-discovery-reset]')?.addEventListener('click',()=>{selected='All';input.value='';urlUpdate();input.focus();});
     window.addEventListener('popstate',()=>{restore();filterLibrary();});restore();filterLibrary();
   }
-  async function renderWorkspace(){
+  async function renderWorkspace(retryButton){
     const host=document.querySelector('[data-workspace-saved]');if(!host)return;
+    const recent=document.querySelector('[data-workspace-recent]');
     const rows=await index();const byURL=new Map(rows.map(r=>[r.url,r]));
-    const render=(node,urls,empty)=>{if(!node)return;node.replaceChildren();const valid=urls.map(url=>byURL.get(url)).filter(Boolean).slice(0,6);if(!valid.length){const p=document.createElement('p');p.textContent=empty;node.append(p);return;}valid.forEach(r=>{const a=document.createElement('a');a.href=r.url;a.textContent=r.title;node.append(a);});};
+    const focusHost=retryButton&&document.activeElement===retryButton?retryButton.parentElement:null;
+    const render=(node,urls,empty)=>{
+      if(!node)return;
+      node.replaceChildren();
+      if(!rows.length&&urls.length){
+        // A failed index lookup is not an empty saved list. Keep stored paths intact and offer recovery.
+        const p=document.createElement('p');p.setAttribute('role','status');p.textContent='Your resources could not be loaded. Try again.';
+        const button=document.createElement('button');button.type='button';button.textContent='Retry loading resources';
+        button.addEventListener('click',()=>{
+          if(button.getAttribute('aria-disabled')==='true')return;
+          button.setAttribute('aria-disabled','true');button.textContent='Loading resources…';
+          renderWorkspace(button);
+        });
+        node.append(p,button);
+      }else{
+        const valid=urls.map(url=>byURL.get(url)).filter(Boolean).slice(0,6);
+        if(!valid.length){const p=document.createElement('p');p.textContent=empty;node.append(p);}
+        else valid.forEach(r=>{const a=document.createElement('a');a.href=r.url;a.textContent=r.title;node.append(a);});
+      }
+      if(node===focusHost){
+        const target=node.querySelector('button, a, p');
+        const control=node.querySelector('button, a')||target;
+        if(control){if(control.tagName==='P')control.tabIndex=-1;control.focus();}
+      }
+    };
     render(host,[...saved],'Save tools and lessons from the resource library to keep them here.');
-    render(document.querySelector('[data-workspace-recent]'),read(recentKey),'Your recently opened resources will appear here.');
+    render(recent,read(recentKey),'Your recently opened resources will appear here.');
   }
   // Store resource paths only. Never record account pages, queries, inputs or trade data.
   const pathname=location.pathname;
