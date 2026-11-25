@@ -128,3 +128,20 @@ test('paid Journal CSV preserves malformed P/L text escaping and formula defense
  assert.ok(report.csv.includes('"\'-invalid"'));
  assert.ok(report.csv.includes('"\'0o10"'));
 });
+
+test('Professional simulation uses the midpoint of the two central ending equities for an even path count',()=>{
+ const input={balance:10000,riskPct:1,winRate:46.5,rewardRisk:2,trades:1};
+ // This fixed seed produces exactly 250 wins and 250 losses for these assumptions.
+ const result=run('simulation',input);
+ assert.equal(result.paths,500);
+ assert.equal(result.lossFrequency,50);
+ assert.equal(result.endingEquityP10,9900);
+ assert.equal(result.endingEquityP90,10200);
+ assert.equal(result.endingEquityMedian,10050);
+ assert.equal(result.drawdownP90,1);
+ assert.deepEqual(result.curve,[10000,10200]);
+});
+test('Professional simulation median remains unchanged when both central outcomes coincide',()=>{
+ const input={balance:10000,riskPct:1,rewardRisk:2,trades:1};
+ for(const [winRate,expected] of [[0,9900],[100,10200]])assert.equal(run('simulation',{...input,winRate}).endingEquityMedian,expected);
+});
