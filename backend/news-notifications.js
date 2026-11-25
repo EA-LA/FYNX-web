@@ -1,8 +1,6 @@
 'use strict';
 /* Server-side automatic news notification delivery.
- * Must be exported from the existing functions entry point:
- *   exports.webNewsPush = require('./news-notifications').webNewsPush;
- * Deploy from the existing functions project (see backend/README.md).
+ * Inactive prototype. Do not deploy; reuse the existing production Web Push queue.
  */
 const functions = require('firebase-functions/v1');
 const admin = require('firebase-admin');
@@ -63,7 +61,9 @@ async function markSent(uid, itemId, item) {
   }, { merge: true });
 }
 
-exports.webNewsPush = functions.runWith({ timeoutSeconds: 120, memory: '256MB', maxInstances: 1 })
+// Retained for reference only: production uses webNotificationDelivery.
+// Deliberately not exported as a deployable Cloud Function.
+const unusedWebNewsPush = functions.runWith({ timeoutSeconds: 120, memory: '256MB', maxInstances: 1 })
   .pubsub.schedule('every 15 minutes')
   .onRun(async () => {
     let feed;
