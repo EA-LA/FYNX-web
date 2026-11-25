@@ -12,13 +12,13 @@ const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const baseOptions={id:ID,edition:'us',category:'all'};
 function article(extra={}){return {id:ID,edition:'us',category:'all',title:'Fixture publisher reports quarterly results',source:'Fixture Publisher',sourceUrl:'https://publisher.example/report',publishedAt:iso(-3600000),preparedAt:iso(-60000),updatedAt:iso(-60000),coverageLevel:'publisher-excerpt',coverageNote:'The publisher excerpt is available.',summary:'The test company reported higher revenue.',keyPoints:[{text:'Revenue increased.',evidence:'Revenue grew.'}],numbers:[],context:[],questions:[],terms:[],related:[],sources:[],isCurrent:true,...extra};}
 const response=value=>({ok:true,status:200,text:async()=>JSON.stringify({kind:'article',article:value})});
-function harness({fetch,stored,hostname='www.fynxfinanceworld.com',intelMap}={}){
+function harness({fetch,stored,hostname='www.fynxfinanceworld.com',intelMap,intelCacheAt=NOW,intelResponse}={}){
  let now=NOW,hidden=false;const calls=[],listeners={},storage=new Map(stored?[['fynx_reader_cache_v1',stored]]:[]);
- if(intelMap)storage.set('fynx_intel_map_v1',JSON.stringify({at:NOW,map:intelMap}));
+ if(intelMap!==undefined)storage.set('fynx_intel_map_v1',JSON.stringify({at:intelCacheAt,map:intelMap}));
  class Clock extends Date{static now(){return now;}}
  const origin=hostname==='127.0.0.1'?'http://127.0.0.1:8765':'https://'+hostname;
  const window={location:{hostname,origin,pathname:'/news/markets.html',href:origin+'/news/markets.html'},FynxEdition:{get:()=> 'us'},document:{get hidden(){return hidden;},addEventListener:(name,fn)=>{(listeners[name]??=[]).push(fn);}},sessionStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)}};
- window.fetch=(url,options)=>{if(String(url).includes('/intelligence/data/map.json'))return Promise.resolve({ok:false,status:404,json:async()=>null});calls.push({url,options});if(fetch)return fetch(url,options);const query=new URL(url,window.location.origin).searchParams;return Promise.resolve(response(article({id:query.get('id'),edition:query.get('edition'),category:query.get('category')})));};
+ window.fetch=(url,options)=>{if(String(url).includes('/intelligence/data/map.json'))return Promise.resolve(intelResponse===undefined?{ok:false,status:404,json:async()=>null}:{ok:true,status:200,json:async()=>intelResponse});calls.push({url,options});if(fetch)return fetch(url,options);const query=new URL(url,window.location.origin).searchParams;return Promise.resolve(response(article({id:query.get('id'),edition:query.get('edition'),category:query.get('category')})));};
  const context=vm.createContext({window,URL,URLSearchParams,AbortController,Date:Clock,setTimeout:(fn,ms)=>{const timer=setTimeout(fn,ms);timer.unref();return timer;},clearTimeout,console});
  vm.runInContext(script,context);
  return {api:window.FYNXNewsReaderData,calls,storage,advance:ms=>{now+=ms;},hidden:value=>{hidden=value;},emit:(name,event={})=>{for(const fn of listeners[name]||[])fn(event);}};
@@ -158,4 +158,35 @@ test('cache storage remains bounded to eighty validated article records',()=>{
  assert.equal(h.api.getCachedArticle({...baseOptions,id:rows[0].id}),null);
  assert.equal(h.api.getCachedArticle({...baseOptions,id:rows[89].id}).id,rows[89].id);
  assert.equal(JSON.parse(h.storage.get('fynx_reader_cache_v1')).length,80);
+});
+
+test('invalid Intelligence map destinations preserve the verified quick-reader route',()=>{
+ const key=ID.slice(0,16), route='/news/article.html?id='+ID+'&edition=us&category=all';
+ for(const slug of ['../profile','%2e%2e','story?other=1','story#fragment','foo/bar','',42,{},'a'.repeat(121)]){
+  const h=harness({intelMap:{[key]:slug}});
+  assert.equal(h.api.href(baseOptions),route);
+  const link={href:route,getAttribute(){return this.href;},setAttribute(_,value){this.href=value;}};
+  h.emit('click',{target:{closest:()=>link}});
+  assert.equal(link.href,route);
+ }
+ const h=harness({intelMap:{[key]:'verified-story'}});
+ const invalid='/news/article.html?id='+key+'&edition=us';
+ const link={href:invalid,getAttribute(){return this.href;},setAttribute(_,value){this.href=value;}};
+ h.emit('click',{target:{closest:()=>link}});
+ assert.equal(link.href,invalid);
+});
+
+test('malformed or future-dated cached maps recover from the current downloaded map',async()=>{
+ const key=ID.slice(0,16), response={map:{[key]:'fresh-story'}};
+ for(const config of [{intelMap:null},{intelMap:[]},{intelMap:{[key]:'old-story'},intelCacheAt:NOW+1}]){
+  const h=harness({...config,intelResponse:response});
+  await tick();
+  assert.equal(h.api.href(baseOptions),'/intelligence/fresh-story/');
+ }
+ for(const map of [null,[],'bad']){
+  const h=harness({intelResponse:{map}});
+  await tick();
+  assert.equal(h.api.href(baseOptions),'/news/article.html?id='+ID+'&edition=us&category=all');
+  assert.equal(h.storage.has('fynx_intel_map_v1'),false);
+ }
 });
