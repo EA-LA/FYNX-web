@@ -85,10 +85,13 @@
     const joinedHit=(t,row)=>t.length>=6&&/^[a-z0-9]+$/.test(t)&&new RegExp('(^| )'+t.split('').join(' ?')).test(row.joined);
     const hit=(t,row)=>t.length<=3&&/^[a-z0-9]+$/.test(t)?row.words.some(w=>w.startsWith(t)):(row.text.includes(t)||row.title.includes(t)||joinedHit(t,row));
     const vocab=new Map(),pairs=new Map();info.forEach(row=>{new Set(row.words).forEach(w=>{if(w.length>=3&&!/^\d+$/.test(w))vocab.set(w,(vocab.get(w)||0)+1);});row.words.forEach((w,k)=>{const n=row.words[k+1];if(n&&w.length>=3&&n.length>=3&&!/\d/.test(w+n))pairs.set(w+n,(pairs.get(w+n)||0)+1);});});
-    // Bigger typos are only corrected to topic words (seen in a resource title) that are not too generic, so "taxes" no longer becomes "takes" and "trailing" no longer becomes "trading".
-    const topics=new Set();info.forEach(row=>{const w=wordsOf(row.title);w.forEach((x,k)=>{topics.add(x);if(w[k+1])topics.add(x+w[k+1]);});});
-    // "Generic" is judged on the core library only: the growing set of dated Intelligence stories must not make "trading" look rare.
-    const coreRows=info.filter((row,i)=>!/^\/intelligence\//.test(cards[i].dataset.resourceUrl||'')),coreCount=new Map();
+    // Keep equal-length substitutions grounded in stable resource titles. A new
+    // Intelligence headline must not silently make "taxes" become "takes".
+    // Dated stories still participate in normal matching.
+    const coreRows=info.filter((row,i)=>!/^\/intelligence\//.test(cards[i].dataset.resourceUrl||''));
+    const topics=new Set();coreRows.forEach(row=>{const w=wordsOf(row.title);w.forEach((x,k)=>{topics.add(x);if(w[k+1])topics.add(x+w[k+1]);});});
+    // Judge generic terms against that same core library.
+    const coreCount=new Map();
     coreRows.forEach(row=>new Set(row.words).forEach(w=>coreCount.set(w,(coreCount.get(w)||0)+1)));
     const generic=coreRows.length*0.2,isGeneric=w=>(coreCount.get(w)||0)>generic;
     // Optimal string alignment distance: one typo, missing letter or swapped pair counts as 1.
