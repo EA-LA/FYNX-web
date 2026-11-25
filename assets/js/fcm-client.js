@@ -1,15 +1,17 @@
 /* FYNX FCM client: service worker registration, token storage, removal on sign-out.
- * Uses the existing Firebase app. Does not replace any existing notification system.
+ * Permission is requested only after an explicit user gesture (call enableFcmFromUserGesture).
+ * Does not replace any existing notification system.
  */
 import { getMessaging, getToken, onMessage, deleteToken } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging.js';
 import { app, auth } from '/auth/firebase.js';
-const db = getFirestore(app);
 import { getFirestore, doc, setDoc, deleteDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
-import { VAPID_PUBLIC_KEY, FCM_SW_PATH } from './fcm-config.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js';
+import { VAPID_PUBLIC_KEY, FCM_SW_PATH } from './fcm-config.js';
 
+const db = getFirestore(app);
 let messaging = null;
 let currentToken = null;
+let currentUid = null;
 
 function log(msg, err) {
   try {
@@ -18,12 +20,14 @@ function log(msg, err) {
   } catch (_) {}
 }
 
-export async function registerFcm() {
+export async function enableFcmFromUserGesture() {
   if (!VAPID_PUBLIC_KEY) {
-    log('VAPID_PUBLIC_KEY is empty — set it in assets/js/fcm-config.js');
+    log('VAPID_PUBLIC_KEY is empty');
     return null;
   }
   if (!('serviceWorker' in navigator) || !('Notification' in window)) return null;
+  const user = auth.currentUser;
+  if (!user) return null;
   try {
     const registration = await navigator.serviceWorker.register(FCM_SW_PATH);
     messaging = getMessaging(app);
@@ -38,8 +42,9 @@ export async function registerFcm() {
     });
     if (!token) return null;
     currentToken = token;
-    const user = auth.currentUser;
-    if (user) await storeToken(user.uid, token);
+    currentUid = user.uid;
+    await storeToken(user.uid, token);
+    listenForeground();
     return token;
   } catch (err) {
     log('FCM registration failed', err);
@@ -61,25 +66,35 @@ async function storeToken(uid, token) {
   }
 }
 
-export async function removeFcmToken() {
-  if (!currentToken || !auth.currentUser) return;
+export async function removeFcmToken(uid) {
+  const targetUid = uid || currentUid;
+  const token = currentToken;
+  if (!targetUid || !token) return;
   try {
     if (messaging) await deleteToken(messaging);
-    const ref = doc(db, 'users', auth.currentUser.uid, 'pushTokens', currentToken.slice(0, 64));
+    const ref = doc(db, 'users', targetUid, 'pushTokens', token.slice(0, 64));
     await deleteDoc(ref);
   } catch (err) {
     log('token removal failed', err);
   }
   currentToken = null;
+  currentUid = null;
 }
 
-// Foreground message handler (tab open)
-export function listenForeground() {
+function listenForeground() {
   if (!messaging) return;
   onMessage(messaging, function (payload) {
-    const title = payload.notification?.title || 'FYNX Intelligence';
-    const body = payload.notification?.body || '';
-    const url = payload.data?.articleUrl || '/notifications.html';
+    const title = payload.notification?.title || payload.data?.title || 'FYNX Intelligence';
+    const body = payload.notification?.body || payload.data?.body || '';
+    const rawUrl = payload.data?.articleUrl || '/notifications.html';
+    const url = (function () {
+      try {
+        const u = new URL(rawUrl, location.origin);
+        if (u.origin !== location.origin) return '/notifications.html';
+        if (u.pathname !== '/notifications.html' && u.pathname !== '/news/article.html') return '/notifications.html';
+        return u.pathname + u.search;
+      } catch { return '/notifications.html'; }
+    })();
     if (Notification.permission === 'granted') {
       const n = new Notification(title, { body, data: { url } });
       n.onclick = function () { window.location.href = url; };
@@ -87,14 +102,11 @@ export function listenForeground() {
   });
 }
 
-// Auto-register when a signed-in user is present and key is set
+// Capture uid while still signed in, then clean up after sign-out.
 onAuthStateChanged(auth, function (user) {
-  if (user && VAPID_PUBLIC_KEY) {
-    registerFcm().then(function () { listenForeground(); });
+  if (user) {
+    currentUid = user.uid;
+  } else if (currentUid && currentToken) {
+    removeFcmToken(currentUid);
   }
-});
-
-// Remove token on sign-out
-auth.onAuthStateChanged(function (user) {
-  if (!user && currentToken) removeFcmToken();
 });

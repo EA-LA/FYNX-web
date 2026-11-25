@@ -1,41 +1,52 @@
 /* FYNX Firebase Cloud Messaging service worker.
- * Handles background notifications and opens the internal FYNX Intelligence article on click.
- * Must be served from the site root.
+ * Handles data-only background messages and opens authorized internal pages on click.
+ * Must be served from the site root. Does not call skipWaiting or claim clients,
+ * so it does not disrupt any other service worker.
  */
 importScripts('https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js');
 
-// Config is injected at registration time via the client, or falls back to a minimal init.
-// The service worker itself does not contain secrets.
 firebase.initializeApp({
   apiKey: 'AIzaSyDGSYIB_YIpbWyUMJ1d-v00-xADnvaWckk',
   authDomain: 'fynx-c7a28.firebaseapp.com',
   projectId: 'fynx-c7a28',
   storageBucket: 'fynx-c7a28.firebasestorage.app',
-  messagingSenderId: '1011050657868'
+  messagingSenderId: '1011050657868',
   appId: '1:1011050657868:web:2c5ad5a1b275e669b05ce9'
 });
 
 const messaging = firebase.messaging();
 
+function isAuthorizedInternal(url) {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const u = new URL(url, self.location.origin);
+    if (u.origin !== self.location.origin) return false;
+    return u.pathname === '/notifications.html' || u.pathname === '/news/article.html';
+  } catch { return false; }
+}
+
+// Only manually display for data-only payloads. If the payload already contains
+// a notification field, FCM displays it automatically — calling showNotification
+// here would create a duplicate.
 messaging.onBackgroundMessage(function (payload) {
-  const title = payload.notification?.title || payload.data?.title || 'FYNX Intelligence';
-  const body = payload.notification?.body || payload.data?.body || '';
-  const articleUrl = payload.data?.articleUrl || payload.fcmOptions?.link || '/notifications.html';
+  if (payload.notification) return;
+  const title = payload.data?.title || 'FYNX Intelligence';
+  const body = payload.data?.body || '';
+  const rawUrl = payload.data?.articleUrl || '/notifications.html';
+  const articleUrl = isAuthorizedInternal(rawUrl) ? rawUrl : '/notifications.html';
   const options = {
     body,
-    icon: '/assets/images/fynx-icon.png',
-    badge: '/assets/images/fynx-icon.png',
     data: { url: articleUrl },
-    tag: payload.data?.tag || 'fynx-news',
-    renotify: true
+    tag: payload.data?.tag || 'fynx-news'
   };
   return self.registration.showNotification(title, options);
 });
 
 self.addEventListener('notificationclick', function (event) {
   event.notification.close();
-  const url = event.notification.data?.url || '/notifications.html';
+  const raw = event.notification.data?.url || '/notifications.html';
+  const url = isAuthorizedInternal(raw) ? raw : '/notifications.html';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (windowClients) {
       for (const client of windowClients) {

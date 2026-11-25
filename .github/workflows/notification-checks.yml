@@ -1,0 +1,17 @@
+name: Notification syntax and unit checks
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check firebase-messaging-sw.js
+      - run: node --check assets/js/fcm-client.js
+      - run: node --check assets/js/fcm-config.js
+      - run: node --check backend/news-notifications.js
+      - run: npm ci --prefix backend
+      - run: node --test backend/news-notifications.test.cjs
+      - run: node scripts/test-critical-js-nonempty.cjs
