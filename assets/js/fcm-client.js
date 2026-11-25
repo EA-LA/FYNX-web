@@ -12,6 +12,7 @@ const db = getFirestore(app);
 let messaging = null;
 let currentToken = null;
 let currentUid = null;
+let foregroundUnsubscribe = null;
 
 function log(msg, err) {
   try {
@@ -29,18 +30,18 @@ export async function enableFcmFromUserGesture() {
   const user = auth.currentUser;
   if (!user) return null;
   try {
-    const registration = await navigator.serviceWorker.register(FCM_SW_PATH);
-    messaging = getMessaging(app);
-    const permission = await Notification.requestPermission();
+    const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
     if (permission !== 'granted') {
       log('notification permission not granted');
       return null;
     }
+    const registration = await navigator.serviceWorker.register(FCM_SW_PATH);
+    messaging = getMessaging(app);
     const token = await getToken(messaging, {
       vapidKey: VAPID_PUBLIC_KEY,
       serviceWorkerRegistration: registration
     });
-    if (!token) return null;
+    if (!token || auth.currentUser?.uid !== user.uid) return null;
     currentToken = token;
     currentUid = user.uid;
     await storeToken(user.uid, token);
@@ -63,6 +64,7 @@ async function storeToken(uid, token) {
     }, { merge: true });
   } catch (err) {
     log('token store failed', err);
+    throw err;
   }
 }
 
@@ -83,7 +85,9 @@ export async function removeFcmToken(uid) {
 
 function listenForeground() {
   if (!messaging) return;
-  onMessage(messaging, function (payload) {
+  if (foregroundUnsubscribe) return;
+  foregroundUnsubscribe = onMessage(messaging, function (payload) {
+    if (!auth.currentUser || auth.currentUser.uid !== currentUid) return;
     const title = payload.notification?.title || payload.data?.title || 'FYNX Intelligence';
     const body = payload.notification?.body || payload.data?.body || '';
     const rawUrl = payload.data?.articleUrl || '/notifications.html';
