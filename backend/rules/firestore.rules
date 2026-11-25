@@ -45,6 +45,10 @@ service cloud.firestore {
           && request.resource.data.symbol is string
           && request.resource.data.pl is number;
       }
+      
+      match /pushTokens/{tokenId} {
+        allow read, write: if isOwner(userId);
+      }
       match /notifications/{notificationId} {
         allow read, write: if isOwner(userId);
       }

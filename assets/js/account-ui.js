@@ -141,10 +141,11 @@ function renderBell(drop, badge, notifications) {
 }
 
 function findBellButton() {
-  return document.querySelector('.top-bar-right .icon-btn[title="Notifications"], .top-bar .icon-btn[title="Notifications"]');
+  return document.querySelector('.top-bar-right .icon-btn[title="Notifications"], .top-bar .icon-btn[title="Notifications"], .terminal-account-bell, .fynx-top-actions [aria-label="Notifications"]');
 }
 
 export async function mountNotificationBell() {
+  if (['/profile.html', '/notifications.html'].includes(location.pathname)) return;
   const bellButton = findBellButton();
   if (!bellButton || bellButton.dataset.notificationsMounted) return;
   bellButton.dataset.notificationsMounted = 'true';

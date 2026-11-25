@@ -247,6 +247,34 @@ topBar.innerHTML = `
 
     }
 
+    // Shared notification dropdown for workspace pages (account-ui.js).
+    // On Profile / notifications settings pages: direct navigation, no dropdown.
+    // Guard prevents duplicate mounting if both header scripts run.
+    const isSettingsPage = location.pathname === '/profile.html' || location.pathname === '/notifications.html';
+    const bellBtn = document.querySelector('.top-bar-right .icon-btn[title="Notifications"], .top-bar .icon-btn[title="Notifications"]');
+    if (isSettingsPage && bellBtn && !bellBtn.dataset.fynxSettingsNav) {
+      bellBtn.dataset.fynxSettingsNav = '1';
+      bellBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        location.href = '/notifications.html';
+      });
+    } else if (!isSettingsPage && !document.body.dataset.fynxBellMounted) {
+      document.body.dataset.fynxBellMounted = '1';
+      import('/assets/js/account-ui.js?v=20261125-header-fix').then(function (m) {
+        if (m.mountNotificationBell) m.mountNotificationBell();
+      }).catch(function (err) {
+        console.warn('[FYNX] notification dropdown unavailable', err && err.message);
+      });
+    }
+    // Auto news ingestion helper.
+    if (!document.querySelector('script[data-fynx-auto-news]')) {
+      const s = document.createElement('script');
+      s.src = '/assets/js/auto-news-ingest.js?v=20261125-header-fix';
+      s.defer = true;
+      s.dataset.fynxAutoNews = '1';
+      document.head.append(s);
+    }
+
   }
 
   if (document.readyState === 'loading') {

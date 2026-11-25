@@ -94,7 +94,11 @@ test('production Notifications page imports controller and avoids optimistic tog
   const html = fs.readFileSync(path.resolve(__dirname, '../notifications.html'), 'utf8');
   assert.match(html, /import \{ createNotificationPreferenceController \} from/);
   assert.match(html, /preferenceController\.toggle\(button\.dataset\.pref\)/);
-  assert.match(html, /preferenceController\.set\('browserEnabled', result\.permission === 'granted'\)/);
+  assert.match(html, /enableFcmFromUserGesture\(\)/);
+  assert.match(html, /if \(!token\) throw new Error/);
+  assert.match(html, /preferenceController\.set\('browserEnabled', true\)/);
+  assert.match(html, /preferenceController\.set\('browserEnabled', false\)/);
+  assert.match(html, /pushEnabled: payload\.browserEnabled/);
   assert.match(html, /preferenceController\.reset\(uid\)/);
   assert.match(html, /authRevision !== revision/);
   assert.doesNotMatch(html, /prefs\[k\]=!prefs\[k\]/);

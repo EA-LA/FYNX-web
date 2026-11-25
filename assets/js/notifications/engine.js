@@ -259,16 +259,18 @@ export class NotificationRulesEngine {
     if (!isBreaking && !prefs.breakingNews) return { created: false, reason: "news-disabled" };
 
     const dedupeKey = story.dedupeKey || `${story.source || "news"}:${story.link || story.title || "story"}`;
+    const external = typeof story.link === "string" && story.link.startsWith("https://") ? story.link : "";
+    const sourceUrl = external ? "/news/article.html?url=" + encodeURIComponent(external) : (story.sourceUrl || "/notifications.html");
     return this.emit(uid, {
       type: isBreaking ? "news.breaking" : "news.market",
       category: isBreaking ? NOTIFICATION_CATEGORY.BREAKING_NEWS : NOTIFICATION_CATEGORY.MARKET_NEWS,
       title: story.title || "Market update",
       message: story.description || "New market story detected.",
       source: story.source || "Market feed",
-      sourceUrl: story.link || "news.html",
+      sourceUrl,
       priority: isBreaking ? PRIORITY.HIGH : PRIORITY.MEDIUM,
       metadata: { publishedAt: story.pubDate || null },
-      deliveryChannels: [CHANNELS.IN_APP, CHANNELS.BROWSER],
+      deliveryChannels: [CHANNELS.IN_APP, CHANNELS.BROWSER, CHANNELS.PUSH],
       dedupeKey
     });
   }

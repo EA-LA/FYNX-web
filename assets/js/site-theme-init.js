@@ -6,7 +6,7 @@
   };
   // Legacy controls remain inert for scripts that retain references to their IDs.
   const policy = document.createElement('style');
-  policy.textContent = `:is([data-journal-theme],[data-fynx-theme-toggle],#themeToggle,#themeBtn,#theme-toggle,.theme-toggle,.theme-btn,.fynx-network-theme,.fynx-theme-toggle):not([data-theme-control]){display:none!important}`;
+  policy.textContent = `:is([data-journal-theme],[data-fynx-theme-toggle],#themeToggle,#themeBtn,#theme-toggle,.theme-toggle,.theme-btn,.fynx-network-theme,.fynx-theme-toggle,[data-theme-control]):not(.profile-appearance-control):not(#appearance-theme):not([data-profile-appearance]):not(.appearance-theme):not(#appearance){display:none!important}`;
   document.head.appendChild(policy);
   // Capture early failures while the reporting script is still loading. Keep
   // only operation identifiers and codes, never exception messages or inputs.

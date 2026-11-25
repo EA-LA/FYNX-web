@@ -117,7 +117,7 @@ permissionButton.disabled = true;
 const preferenceController = createNotificationPreferenceController({
   keys: preferenceButtons.map(button => button.dataset.pref),
   currentUid: () => auth.currentUser?.uid || null,
-  save: saveNotificationPreferences,
+  save: (uid, payload) => saveNotificationPreferences(uid, Object.prototype.hasOwnProperty.call(payload, 'browserEnabled') ? {...payload, pushEnabled: payload.browserEnabled} : payload),
   render: (key, state) => {
     const button = preferenceButtons.find(item => item.dataset.pref === key);
     if (!button) return;
@@ -129,7 +129,19 @@ const preferenceController = createNotificationPreferenceController({
   report: message => { actionStatus.textContent = message; }
 });
 preferenceButtons.forEach(button => {
-  button.onclick = () => preferenceController.toggle(button.dataset.pref);
+  button.onclick = async () => {
+    if (button.dataset.pref === 'browserEnabled' && prefs.browserEnabled) {
+      try {
+        const { removeFcmToken } = await import('/assets/js/fcm-client.js');
+        await removeFcmToken();
+      } catch {
+        actionStatus.textContent = 'Could not disable background push. Please retry.';
+        return;
+      }
+    }
+    if (button.dataset.pref === 'browserEnabled' && !prefs.browserEnabled) { permissionButton.click(); return; }
+    await preferenceController.toggle(button.dataset.pref);
+  };
 });
 
 permissionButton.onclick = async () => {
@@ -140,7 +152,26 @@ permissionButton.onclick = async () => {
     const result = await requestBrowserNotificationPermission();
     if (auth.currentUser?.uid !== uid) return;
     permissionStatus.textContent = `Permission: ${result.permission}${result.supported ? '' : ' (unsupported browser)'}`;
-    await preferenceController.set('browserEnabled', result.permission === 'granted');
+    if (result.permission === 'granted') {
+      try {
+        const { enableFcmFromUserGesture } = await import('/assets/js/fcm-client.js');
+        const token = await enableFcmFromUserGesture();
+        if (!token) throw new Error('Push registration failed');
+        if (auth.currentUser?.uid === uid) {
+          await preferenceController.set('browserEnabled', true);
+          permissionStatus.textContent = 'Permission granted — this device is registered';
+          actionStatus.textContent = 'Browser notifications enabled on this device.';
+        }
+      } catch {
+        if (auth.currentUser?.uid === uid) {
+          permissionStatus.textContent = 'Permission granted — device not registered';
+          actionStatus.textContent = 'Could not register this device for background notifications. Tap Enable to retry.';
+        }
+      }
+    } else {
+      await preferenceController.set('browserEnabled', false);
+      permissionStatus.textContent = 'Permission denied — browser notifications stay off';
+    }
   } catch {
     if (auth.currentUser?.uid === uid) actionStatus.textContent = 'Could not request browser notification permission. Try again.';
   } finally {

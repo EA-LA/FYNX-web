@@ -177,6 +177,20 @@
     if (!clockInterval) clockInterval = window.setInterval(updateClock, 30000);
   }
 
+  
+  function standardizeHeaderOrder(right) {
+    if (!right) return;
+    // Desired authenticated order: Your News, Notification bell, Quick Add, Avatar, Profile
+    const yourNews = right.querySelector('.terminal-your-news, a[href*="/news/your-news"]');
+    const bell = right.querySelector('.icon-btn[title="Notifications"], .terminal-account-bell, button[aria-label="Notifications"]');
+    const quick = right.querySelector('.terminal-quick-add, a[href*="quick-add"]');
+    const avatar = right.querySelector('#avatarInitials, .user-avatar, .fx-acct');
+    const profile = right.querySelector('.terminal-account-profile, a[href*="/profile.html"], a[href*="/auth/login"]');
+    const nodes = [yourNews, bell, quick, avatar, profile].filter(Boolean);
+    // Move them to the end in the required order (preserves other chips/links that precede them)
+    nodes.forEach(function (node) { if (node.parentElement === right) right.appendChild(node); });
+  }
+
   function enhanceWorkspace(body, topBar) {
     const logo = body.querySelector('.nav-logo');
     const left = topBar.querySelector('.top-bar-left') || element('div', 'top-bar-left');
@@ -210,6 +224,7 @@
     right.insertBefore(quickAdd(), right.querySelector('#avatarInitials') || accountLinks || null);
     topBar.classList.add('terminal-masthead');
     body.querySelectorAll('.nav-item.active').forEach(function (item) { item.setAttribute('aria-current', 'page'); });
+    standardizeHeaderOrder(right);
     return true;
   }
 
@@ -222,6 +237,10 @@
     bell.title = 'Notifications';
     bell.setAttribute('aria-label', 'Notifications');
     bell.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>';
+    // Profile and notifications settings page: direct navigation to management UI.
+    if (location.pathname === '/profile.html' || location.pathname === '/notifications.html') {
+      bell.addEventListener('click', function () { location.href = '/notifications.html'; });
+    }
     const avatar = element('div', 'user-avatar');
     avatar.id = 'avatarInitials';
     const account = link('Sign in', '/auth/login.html?returnTo=' + encodeURIComponent(location.pathname + location.search), 'terminal-account-profile');
@@ -308,6 +327,7 @@
         if (account) actions.append(account);
       }
     }
+    standardizeHeaderOrder(container.querySelector(':scope > nav') || container);
     return true;
   }
 
@@ -344,6 +364,28 @@
       if (location.hash === '#quick-add') beginQuickAdd();
       else cancelQuickAdd();
     });
+    
+    // Mount shared notification dropdown only on regular pages.
+    // Profile and notifications.html keep direct navigation (button click handler above).
+    // mountNotificationBell itself guards against duplicate mounting via dataset.
+    const isSettingsPage = location.pathname === '/profile.html' || location.pathname === '/notifications.html';
+    if (!isSettingsPage && !document.body.dataset.fynxBellMounted) {
+      document.body.dataset.fynxBellMounted = '1';
+      import('/assets/js/account-ui.js?v=20261125-header-fix').then(function (m) {
+        if (m.mountNotificationBell) m.mountNotificationBell();
+      }).catch(function (err) {
+        console.warn('[FYNX] notification dropdown unavailable', err && err.message);
+      });
+    }
+    // Auto news ingestion (uses existing ingestNewsNotifications).
+    if (!document.querySelector('script[data-fynx-auto-news]')) {
+      const s = document.createElement('script');
+      s.src = '/assets/js/auto-news-ingest.js?v=20261125-header-fix';
+      s.defer = true;
+      s.dataset.fynxAutoNews = '1';
+      document.head.append(s);
+    }
+
     document.dispatchEvent(new CustomEvent('fynx:terminal-header', { bubbles: true }));
   }
 
