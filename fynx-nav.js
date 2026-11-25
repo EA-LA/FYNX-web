@@ -270,6 +270,10 @@ topBar.innerHTML = `
     if (!document.querySelector('script[data-fynx-auto-news]')) {
       const s = document.createElement('script');
       s.src = '/assets/js/auto-news-ingest.js?v=20261125-header-fix';
+      const fcm = document.createElement('script');
+      fcm.type = 'module';
+      fcm.src = '/assets/js/fcm-client.js?v=20261125-header-fix';
+      document.head.appendChild(fcm);
       s.defer = true;
       s.dataset.fynxAutoNews = '1';
       document.head.append(s);
