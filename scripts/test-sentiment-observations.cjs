@@ -8,7 +8,7 @@ const fixedNow = Date.parse('2026-11-15T04:30:00Z');
 const stamp = iso => String(Math.floor(Date.parse(iso) / 1000));
 const entry = (date, score, label = 'Neutral') => ({timestamp: stamp(date), value: score, value_classification: label});
 
-function setup(responses) {
+function setup(responses, options = {}) {
   const elements = {};
   const create = tag => ({
     tag, children: [], textContent: '', attributes: {},
@@ -24,11 +24,13 @@ function setup(responses) {
   const feed = async () => {
     const response = responses[calls++];
     if (response instanceof Error) throw response;
+    if (typeof response === 'function') return response();
     return {ok: response?.ok ?? true, json: async () => response};
   };
   vm.runInNewContext(source, {
     document: {getElementById: id => elements[id], createElement: create},
-    fetch: feed, AbortSignal, window: {},
+    fetch: feed, AbortSignal: {}, AbortController: options.noController ? undefined : AbortController,
+    setTimeout: options.setTimeout || setTimeout, clearTimeout: options.clearTimeout || clearTimeout, window: {},
     Date: class extends Date { static now() { return fixedNow; } },
     Number, Array, Set, String, Error
   }, {filename: 'sentiment-feed.js'});
@@ -84,6 +86,36 @@ function setup(responses) {
   await e.clicks[0]();
   check('retry restores a valid score', () => assert.equal(e.elements.sentimentValue.textContent,'52 / 100'));
   check('retry re-enables button', () => assert.equal(e.elements.sentimentRefresh.disabled,false));
+
+  const f = setup([{data:[entry('2026-11-14T00:00:00Z',42,'Fear')]}], {noController:true});
+  await f.settle();
+  check('legacy browser without abort APIs can load verified data', () => assert.equal(f.elements.sentimentValue.textContent,'42 / 100'));
+
+  let expire, finishBody, clears = 0;
+  const g = setup([
+    () => ({ok:true, json: () => new Promise(resolve => { finishBody = resolve; })}),
+    {data:[entry('2026-11-14T00:00:00Z',55)]}
+  ], {
+    noController:true,
+    setTimeout(fn, delay) { assert.equal(delay,15000); expire=fn; return 1; },
+    clearTimeout() { clears++; }
+  });
+  await g.settle();
+  check('stalled body leaves refresh disabled only during active request', () => assert.equal(g.elements.sentimentRefresh.disabled,true));
+  expire();
+  await g.settle();
+  check('deadline releases refresh even without AbortController', () => {
+    assert.equal(g.elements.sentimentRefresh.disabled,false);
+    assert.match(g.elements.sentimentStatus.textContent,/unavailable/);
+    assert.equal(clears,1);
+  });
+  await g.clicks[0]();
+  finishBody({data:[entry('2026-11-15T00:00:00Z',99)]});
+  await g.settle();
+  check('late timed-out body cannot replace recovered observation', () => {
+    assert.equal(g.elements.sentimentValue.textContent,'55 / 100');
+    assert.equal(clears,2);
+  });
 
   console.log('RESULT ' + n + ' checks passed');
 })().catch(error => {console.error(error); process.exitCode = 1;});
