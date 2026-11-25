@@ -117,7 +117,7 @@ permissionButton.disabled = true;
 const preferenceController = createNotificationPreferenceController({
   keys: preferenceButtons.map(button => button.dataset.pref),
   currentUid: () => auth.currentUser?.uid || null,
-  save: saveNotificationPreferences,
+  save: (uid, payload) => saveNotificationPreferences(uid, Object.prototype.hasOwnProperty.call(payload, 'browserEnabled') ? {...payload, pushEnabled: payload.browserEnabled} : payload),
   render: (key, state) => {
     const button = preferenceButtons.find(item => item.dataset.pref === key);
     if (!button) return;
@@ -139,6 +139,7 @@ preferenceButtons.forEach(button => {
         return;
       }
     }
+    if (button.dataset.pref === 'browserEnabled' && !prefs.browserEnabled) { permissionButton.click(); return; }
     await preferenceController.toggle(button.dataset.pref);
   };
 });
@@ -151,11 +152,13 @@ permissionButton.onclick = async () => {
     const result = await requestBrowserNotificationPermission();
     if (auth.currentUser?.uid !== uid) return;
     permissionStatus.textContent = `Permission: ${result.permission}${result.supported ? '' : ' (unsupported browser)'}`;
-    await preferenceController.set('browserEnabled', result.permission === 'granted');
     if (result.permission === 'granted') {
       const { enableFcmFromUserGesture } = await import('/assets/js/fcm-client.js');
       const token = await enableFcmFromUserGesture();
-      if (!token && auth.currentUser?.uid === uid) actionStatus.textContent = 'Browser permission granted, but background push registration failed. Try again.';
+      if (!token) throw new Error('Push registration failed');
+      if (auth.currentUser?.uid === uid) await preferenceController.set('browserEnabled', true);
+    } else {
+      await preferenceController.set('browserEnabled', false);
     }
   } catch {
     if (auth.currentUser?.uid === uid) actionStatus.textContent = 'Could not request browser notification permission. Try again.';
