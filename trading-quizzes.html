@@ -102,7 +102,7 @@
     .card h3{margin:0 0 8px; font-size:1.12rem; letter-spacing:-.03em}
     .card p{margin:0; color:var(--text-soft); font-size:.95rem}
     .category-card{cursor:pointer; transition:.18s ease; position:relative; overflow:hidden; width:100%; color:var(--text); font:inherit; text-align:left; appearance:none}
-    .category-card:focus-visible,.option:focus-visible{outline:2px solid var(--text); outline-offset:3px}
+    .category-card:focus-visible,.option:focus-visible,.quiz-focus-heading:focus-visible{outline:2px solid var(--text); outline-offset:3px}
     .category-title{display:block; margin:0 0 8px; font-size:1.12rem; font-weight:700; letter-spacing:-.03em}
     .category-description{display:block; color:var(--text-soft); font-size:.95rem}
     .category-card:hover{transform:translateY(-2px)}
@@ -112,6 +112,7 @@
       padding:7px 10px; border-radius:999px; background:var(--text); color:var(--bg);
     }
     .category-count{display:block; margin-top:10px; color:var(--muted); font-size:.88rem}
+    .quiz-focus-heading{scroll-margin-top:24px}
     .quiz-shell{display:none}
     .quiz-shell.active{display:block}
     .progress-row{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px}
@@ -232,7 +233,7 @@
 
     <section id="setup" class="section">
       <div class="section-title">
-        <h2>Quiz setup</h2>
+        <h2 id="quizSetupHeading" class="quiz-focus-heading" tabindex="-1">Quiz setup</h2>
         <p>Select a category below. Then start a randomized 10-question test.</p>
       </div>
 
@@ -263,7 +264,7 @@
 
       <div class="card question-card" style="margin-top:16px">
         <div class="tag" id="questionCategoryTag">Forex</div>
-        <h3 id="questionText"></h3>
+        <h3 id="questionText" class="quiz-focus-heading" tabindex="-1" aria-describedby="progressMeta"></h3>
         <div id="optionsWrap" class="options"></div>
         <div class="quiz-actions">
           <button id="quitQuizBtn" class="btn">Quit</button>
@@ -274,7 +275,7 @@
 
     <section id="resultsSection" class="section quiz-shell">
       <div class="section-title">
-        <h2>Your results</h2>
+        <h2 id="quizResultsHeading" class="quiz-focus-heading" tabindex="-1">Your results</h2>
         <p>Review your score, then study every wrong answer with the correct explanation.</p>
       </div>
 
@@ -539,6 +540,12 @@
     }
 
     let activeAttempt = null;
+    function focusQuizStage(heading, block = "start"){
+      heading.focus({preventScroll:true});
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      heading.scrollIntoView({behavior:reduceMotion ? "instant" : "smooth", block});
+    }
+
     function startQuiz(){
       activeAttempt = {attempt:crypto.randomUUID(),topic:selectedCategory==='all'?'general':selectedCategory};
       window.dispatchEvent(new CustomEvent('fynx:quiz-started',{detail:activeAttempt}));
@@ -561,7 +568,7 @@
       resultsSection.classList.remove("active");
       quizSection.classList.add("active");
       renderQuestion();
-      quizSection.scrollIntoView({behavior:"smooth", block:"start"});
+      focusQuizStage(questionText);
     }
 
     function renderQuestion(){
@@ -630,7 +637,7 @@
 
       quizSection.classList.remove("active");
       resultsSection.classList.add("active");
-      resultsSection.scrollIntoView({behavior:"smooth", block:"start"});
+      focusQuizStage(document.getElementById("quizResultsHeading"));
     }
 
     startQuizBtn.addEventListener("click", startQuiz);
@@ -650,20 +657,21 @@
       } else {
         currentIndex++;
         renderQuestion();
+        focusQuizStage(questionText, "nearest");
       }
     });
 
     quitQuizBtn.addEventListener("click", () => {
       if(confirm("Quit this quiz and go back to setup?")) {
         quizSection.classList.remove("active");
-        window.scrollTo({top: document.getElementById("setup").offsetTop - 18, behavior: "smooth"});
+        focusQuizStage(document.getElementById("quizSetupHeading"));
       }
     });
 
     retryBtn.addEventListener("click", startQuiz);
     newSetupBtn.addEventListener("click", () => {
       resultsSection.classList.remove("active");
-      window.scrollTo({top: document.getElementById("setup").offsetTop - 18, behavior: "smooth"});
+      focusQuizStage(document.getElementById("quizSetupHeading"));
     });
 
     renderCategories();
