@@ -107,6 +107,43 @@ try {
     assert.equal(frame.style.height, '324px', 'initial frame height works with ResizeObserver supported=' + supported);
     assert.equal(observed, supported, 'observe only when available');
     assert.equal(linkHandlers.length, 1, 'same-origin link handling is installed regardless of ResizeObserver');
+    const link = embedded.createElement('a');
+    link.href = window.location.href + '#module-link-test';
+    const child = embedded.createElement('span');
+    link.append(child);
+    embedded.body.append(link);
+    const handle = linkHandlers[0];
+    const initialLocation = window.location.href;
+    function activate(overrides = {}) {
+      let prevented = false;
+      handle({
+        target: child, button: 0, defaultPrevented: false,
+        preventDefault() { prevented = true; }, ...overrides
+      });
+      return prevented;
+    }
+    for (const gesture of [
+      { ctrlKey: true }, { metaKey: true }, { shiftKey: true }, { altKey: true },
+      { button: 1 }, { button: 2 }, { defaultPrevented: true }
+    ]) {
+      assert.equal(activate(gesture), false, 'Preserve native modified or handled link gestures');
+      assert.equal(window.location.href, initialLocation);
+    }
+    for (const target of ['_blank', '_parent', '_top', 'research-window']) {
+      link.target = target;
+      assert.equal(activate(), false, 'Preserve explicit link target ' + target);
+    }
+    link.removeAttribute('target');
+    link.setAttribute('download', '');
+    assert.equal(activate(), false, 'Preserve download links');
+    link.removeAttribute('download');
+    link.setAttribute('href', '#local');
+    assert.equal(activate(), false, 'Keep anchors inside the embedded document');
+    link.href = initialLocation.split('#')[0] + '#module-link-test';
+    assert.equal(activate(), true, 'Forward ordinary same-tab link clicks');
+    assert.equal(window.location.hash, '#module-link-test');
+    window.history.replaceState(null, '', initialLocation);
+    link.remove();
     for (const handler of linkHandlers) embedded.removeEventListener('click', handler);
   }
 

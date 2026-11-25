@@ -48,8 +48,16 @@
           // same-origin link handling available even in that case.
           if (typeof ResizeObserver === 'function') new ResizeObserver(resize).observe(doc.body);
           doc.addEventListener('click', event => {
-            const link = event.target.closest('a[href]');
-            if (link && link.target !== '_blank' && !link.getAttribute('href').startsWith('#')) { event.preventDefault(); window.location.href = link.href; }
+            // Only forward ordinary same-tab navigation. Let the browser handle
+            // modified clicks, downloads, named targets and in-page anchors.
+            if (event.defaultPrevented || event.button !== 0 || event.metaKey ||
+                event.ctrlKey || event.shiftKey || event.altKey) return;
+            const link = event.target.closest?.('a[href]');
+            if (!link || link.hasAttribute('download') ||
+                (link.target && link.target.toLowerCase() !== '_self') ||
+                link.getAttribute('href').startsWith('#')) return;
+            event.preventDefault();
+            window.location.href = link.href;
           });
         } catch (_) { /* Cross-origin providers control their own layout. */ }
       });
