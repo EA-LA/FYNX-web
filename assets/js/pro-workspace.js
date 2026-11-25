@@ -86,13 +86,19 @@ function renderPathInspector(area,values){
  });
  table.append(body);wrap.append(table);details.append(wrap);area.append(details);
 }
+// Journal cumulative P/L begins at zero; simulated paths already include starting equity.
+function chartValues(product,curve){
+ if(!['analytics','simulation'].includes(product)||!Array.isArray(curve)||!curve.length||!curve.every(Number.isFinite))return [];
+ return product==='analytics'?[0,...curve]:curve;
+}
 function render(result){clearExportUrl();hasCurrentResult=true;const area=$('result');area.replaceChildren();if(result.csv!==undefined){const a=node('a',`Download ${result.rows} journal entries (.csv)`,'primary');const url=URL.createObjectURL(new Blob([result.csv],{type:'text/csv;charset=utf-8'}));exportUrl=url;a.href=url;a.download='fynx-journal.csv';a.addEventListener('click',()=>setTimeout(()=>{expireExport(url);},60000),{once:true});area.append(a);return;}
  const metrics=node('div',undefined,'metric-grid');for(const [key,value] of Object.entries(result)){if(['notice','notes','curve'].includes(key)||(value!==null&&typeof value==='object'))continue;const card=node('div',undefined,'metric');card.append(node('small',title(key)),node('strong',fmt(value,key)));metrics.append(card);}if(metrics.children.length)area.append(metrics);
- if(result.curve?.length){const values=result.curve,min=Math.min(...values),max=Math.max(...values),span=max-min||1;const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 600 170');svg.setAttribute('role','img');svg.setAttribute('aria-label',selected==='simulation'?'One illustrative simulated equity path':'Cumulative realized Journal profit and loss');const line=document.createElementNS(svg.namespaceURI,'polyline');line.setAttribute('points',values.map((v,i)=>`${10+i/Math.max(1,values.length-1)*580},${150-(v-min)/span*130}`).join(' '));line.setAttribute('fill','none');line.setAttribute('stroke','currentColor');line.setAttribute('stroke-width','2');svg.append(line);area.append(svg);area.append(node('p',`${selected==='simulation'?'One illustrative path':'Cumulative P/L'} · range ${fmt(min)} to ${fmt(max)} · account currency`));}
+ const values=chartValues(selected,result.curve);
+ if(values.length){const min=Math.min(...values),max=Math.max(...values),span=max-min||1;const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 600 170');svg.setAttribute('role','img');svg.setAttribute('aria-label',selected==='simulation'?'One illustrative simulated equity path':'Cumulative realized Journal profit and loss, starting at zero');const line=document.createElementNS(svg.namespaceURI,'polyline');line.setAttribute('points',values.map((v,i)=>`${10+i/Math.max(1,values.length-1)*580},${150-(v-min)/span*130}`).join(' '));line.setAttribute('fill','none');line.setAttribute('stroke','currentColor');line.setAttribute('stroke-width','2');svg.append(line);area.append(svg);area.append(node('p',`${selected==='simulation'?'One illustrative path':'Cumulative P/L from zero'} · range ${fmt(min)} to ${fmt(max)} · account currency`));}
  renderPathInspector(area,result.curve);
  for(const key of ['rows','scenarios'])if(result[key]?.length){
   const wrap=node('div',undefined,'table-wrap'),table=node('table');
-  const caption=node('caption',key==='scenarios'?'Scenario comparison results':'Journal analysis results');
+  const caption=node('caption',key==='scenarios'?'Scenario comparison results':selected==='portfolio'?'Portfolio stress test results':'Journal analysis results');
   const thead=node('thead'),head=node('tr');
   const cols=Object.keys(result[key][0]).filter(k=>k!=='notice');
   cols.forEach(k=>{const th=node('th',title(k));th.scope='col';head.append(th);});
