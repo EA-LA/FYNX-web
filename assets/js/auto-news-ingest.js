@@ -30,6 +30,7 @@
 
     try {
       let items = [];
+      // Prefer fresh localStorage payload written by the news feed.
       try {
         const raw = localStorage.getItem('fynx_news_latest_payload');
         if (raw) {
@@ -40,6 +41,7 @@
         log('localStorage payload parse failed', e);
       }
 
+      // If no cached payload, attempt a lightweight fetch from the existing news endpoint if available.
       if (!items.length) {
         try {
           const res = await fetch('/assets/data/news-latest.json', { credentials: 'omit' });
@@ -48,7 +50,9 @@
             if (Array.isArray(data && data.items)) items = data.items;
             else if (Array.isArray(data)) items = data;
           }
-        } catch (e) {}
+        } catch (e) {
+          // Optional endpoint; do not fail hard.
+        }
       }
 
       if (!items.length) return;
