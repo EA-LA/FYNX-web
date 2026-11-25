@@ -124,7 +124,7 @@
   }
   updateExportAvailability();
  }
- async function request(params){const u=new URL('https://publicreporting.cftc.gov/resource/6dca-aqww.json');for(const [k,v] of Object.entries(params))u.searchParams.set(k,v);const r=await fetch(u,{signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('CFTC unavailable');const data=await r.json();if(!Array.isArray(data))throw Error('Invalid report');return data;}
+ async function request(params){const u=new URL('https://publicreporting.cftc.gov/resource/6dca-aqww.json');for(const [k,v] of Object.entries(params))u.searchParams.set(k,v);const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),15000);try{const r=await fetch(u,{signal:controller.signal});if(!r.ok)throw Error('CFTC unavailable');const data=await r.json();if(!Array.isArray(data))throw Error('Invalid report');return data;}finally{clearTimeout(timeout);}}
  async function load(){if(busy)return;busy=true;refresh.disabled=true;updateExportAvailability();status.textContent='Loading the latest published CFTC report…';try{
   const latest=await request({'$select':'report_date_as_yyyy_mm_dd','$order':'report_date_as_yyyy_mm_dd DESC','$limit':'1'});
   const date=latest[0]?.report_date_as_yyyy_mm_dd;if(typeof date!=='string'||!/^\d{4}-\d\d-\d\dT[\d:.]+$/.test(date)||!Number.isFinite(Date.parse(date))||Date.parse(date)>Date.now())throw Error('Invalid report date');
