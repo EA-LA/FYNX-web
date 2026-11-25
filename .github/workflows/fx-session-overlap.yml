@@ -1,0 +1,22 @@
+name: Free Forex session overlap planner
+on:
+  pull_request:
+    paths:
+      - 'tools/market-hours.html'
+      - 'assets/js/fx-session-overlap.js'
+      - 'scripts/test-fx-session-overlap.cjs'
+      - '.github/workflows/fx-session-overlap.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --check assets/js/fx-session-overlap.js
+      - run: node --test scripts/test-fx-session-overlap.cjs scripts/test-market-hours-controls.cjs
