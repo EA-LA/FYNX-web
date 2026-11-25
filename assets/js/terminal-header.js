@@ -177,6 +177,20 @@
     if (!clockInterval) clockInterval = window.setInterval(updateClock, 30000);
   }
 
+  
+  function standardizeHeaderOrder(right) {
+    if (!right) return;
+    // Desired authenticated order: Your News, Notification bell, Quick Add, Avatar, Profile
+    const yourNews = right.querySelector('.terminal-your-news, a[href*="/news/your-news"]');
+    const bell = right.querySelector('.icon-btn[title="Notifications"], .terminal-account-bell, button[aria-label="Notifications"]');
+    const quick = right.querySelector('.terminal-quick-add, a[href*="quick-add"]');
+    const avatar = right.querySelector('#avatarInitials, .user-avatar, .fx-acct');
+    const profile = right.querySelector('.terminal-account-profile, a[href*="/profile.html"], a[href*="/auth/login"]');
+    const nodes = [yourNews, bell, quick, avatar, profile].filter(Boolean);
+    // Move them to the end in the required order (preserves other chips/links that precede them)
+    nodes.forEach(function (node) { if (node.parentElement === right) right.appendChild(node); });
+  }
+
   function enhanceWorkspace(body, topBar) {
     const logo = body.querySelector('.nav-logo');
     const left = topBar.querySelector('.top-bar-left') || element('div', 'top-bar-left');
@@ -210,6 +224,7 @@
     right.insertBefore(quickAdd(), right.querySelector('#avatarInitials') || accountLinks || null);
     topBar.classList.add('terminal-masthead');
     body.querySelectorAll('.nav-item.active').forEach(function (item) { item.setAttribute('aria-current', 'page'); });
+    standardizeHeaderOrder(right);
     return true;
   }
 
@@ -313,6 +328,7 @@
         if (account) actions.append(account);
       }
     }
+    standardizeHeaderOrder(container.querySelector(':scope > nav') || container);
     return true;
   }
 
