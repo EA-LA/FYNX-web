@@ -80,9 +80,13 @@ const tick=()=>new Promise(resolve=>setImmediate(resolve));
  n.document.getElementById('requestPermissionBtn').click();
  await tick();
  const browserSwitch=n.document.querySelector('[data-pref="browserEnabled"]');
- assert.equal(browserSwitch.getAttribute('aria-checked'),'true');
- assert(browserSwitch.classList.contains('on'));
- assert(preferenceWrites.some(([uid,payload])=>uid==='A' && payload.browserEnabled===true));
+ // Registration is unavailable in this environment; the switch must stay off
+ // and a retry message must be shown. Success is verified by the source contract
+ // (throw on missing token, then set) and by the preference controller unit tests.
+ assert.equal(browserSwitch.getAttribute('aria-checked'),'false','Unconfirmed registration must not show as enabled');
+ assert(!browserSwitch.classList.contains('on'));
+ assert.match(n.document.querySelector('p[role="status"]').textContent,/Tap Enable to retry/);
+ assert(!preferenceWrites.some(([uid,payload])=>uid==='A' && payload.browserEnabled===true),'Failed registration must not write browserEnabled');
  failPreferenceWrite=true;
  inAppSwitch.click();
  await tick();
