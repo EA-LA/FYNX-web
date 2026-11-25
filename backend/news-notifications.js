@@ -20,7 +20,7 @@ function inQuietHours(prefs) {
   const tz = q.timezone || 'UTC';
   let minutes;
   try {
-    const fmt = new Intl.DateTimeFormat('en-US', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false });
+    const fmt = new Intl.DateTimeFormat('en-US', { timeZone: tz, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
     const parts = fmt.formatToParts(new Date());
     const h = Number(parts.find(p => p.type === 'hour')?.value || 0);
     const m = Number(parts.find(p => p.type === 'minute')?.value || 0);
@@ -74,7 +74,7 @@ exports.webNewsPush = functions.runWith({ timeoutSeconds: 120, memory: '256MB', 
     } catch { return null; }
     if (!feed?.fetchedAt || !Array.isArray(feed.items)) return null;
     const age = Date.now() - new Date(feed.fetchedAt).getTime();
-    if (!Number.isFinite(age) || age > MAX_AGE_MS) return null;
+    if (!Number.isFinite(age) || age < 0 || age > MAX_AGE_MS) return null;
 
     // Bounded: only users who have at least one push token, limited per run.
     const tokenSnap = await db.collectionGroup('pushTokens').limit(MAX_USERS_PER_RUN * 5).get();
@@ -91,7 +91,7 @@ exports.webNewsPush = functions.runWith({ timeoutSeconds: 120, memory: '256MB', 
       try {
         const prefsSnap = await db.collection('users').doc(uid).collection('account').doc('notificationPreferences').get();
         const prefs = prefsSnap.exists ? prefsSnap.data() : {};
-        if (prefs.browserEnabled !== true && prefs.inAppEnabled !== true) continue;
+        if (prefs.browserEnabled !== true) continue;
         if (prefs.breakingNews === false) continue;
         if (inQuietHours(prefs)) continue;
 
@@ -101,7 +101,8 @@ exports.webNewsPush = functions.runWith({ timeoutSeconds: 120, memory: '256MB', 
         const topics = interestsSnap.exists ? (interestsSnap.data()?.topics || []) : [];
         if (!Array.isArray(topics) || topics.length === 0) continue;
 
-        const tokens = tokenDocs.map(t => t.token).filter(Boolean);
+        const validTokenDocs = tokenDocs.filter(t => typeof t.token === 'string' && t.token.length > 0);
+        const tokens = validTokenDocs.map(t => t.token);
         if (!tokens.length) continue;
 
         for (const item of feed.items.slice(0, MAX_ITEMS_PER_USER)) {
@@ -128,7 +129,7 @@ exports.webNewsPush = functions.runWith({ timeoutSeconds: 120, memory: '256MB', 
             const invalid = [];
             resp.responses.forEach((r, i) => {
               if (!r.success && r.error && ['messaging/invalid-registration-token', 'messaging/registration-token-not-registered'].includes(r.error.code)) {
-                invalid.push(tokenDocs[i]?.id);
+                invalid.push(validTokenDocs[i]?.id);
               }
             });
             for (const badId of invalid) {
