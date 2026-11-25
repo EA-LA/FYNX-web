@@ -184,6 +184,7 @@
       color:rgba(0, 0, 0, .82);
     }
     select:focus,button:focus{border-color:rgba(255, 255, 255, .22)}
+    .controls button[aria-pressed]:focus-visible{outline:2px solid currentColor;outline-offset:3px}
     body:not(.dark-mode) select:focus,
     body:not(.dark-mode) button:focus{border-color:rgba(0, 0, 0, .22)}
     button{cursor:pointer;transition:all .2s ease}
@@ -487,7 +488,7 @@
 
         <div class="group">
           <label>Filter</label>
-          <button id="impactBtn" type="button">High Impact Only</button>
+          <button id="impactBtn" type="button" aria-pressed="false">High Impact Only</button>
         </div>
 
 
@@ -499,11 +500,11 @@
 
         <div class="views">
           <div class="group">
-            <label>View</label>
-            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-              <button id="viewList" type="button" class="toggleOn">List</button>
-              <button id="viewTimeline" type="button">Timeline</button>
-              <button id="viewHeatmap" type="button">Heatmap</button>
+            <label id="holidayViewLabel">View</label>
+            <div role="group" aria-labelledby="holidayViewLabel" style="display:flex;gap:.5rem;flex-wrap:wrap">
+              <button id="viewList" type="button" class="toggleOn" aria-controls="secList" aria-pressed="true">List</button>
+              <button id="viewTimeline" type="button" aria-controls="secTimeline" aria-pressed="false">Timeline</button>
+              <button id="viewHeatmap" type="button" aria-controls="secHeatmap" aria-pressed="false">Heatmap</button>
             </div>
           </div>
         </div>
@@ -1095,11 +1096,16 @@
     }
 
     /* ------------------------------ View switching ------------------------------ */
+    function setPressed(button, pressed) {
+      button.classList.toggle("toggleOn", pressed);
+      button.setAttribute("aria-pressed", String(pressed));
+    }
+
     function setView(v) {
       state.view = v;
-      viewList.classList.toggle("toggleOn", v==="list");
-      viewTimeline.classList.toggle("toggleOn", v==="timeline");
-      viewHeatmap.classList.toggle("toggleOn", v==="heatmap");
+      setPressed(viewList, v==="list");
+      setPressed(viewTimeline, v==="timeline");
+      setPressed(viewHeatmap, v==="heatmap");
 
       secList.classList.toggle("hidden", v!=="list");
       secTimeline.classList.toggle("hidden", v!=="timeline");
@@ -1133,7 +1139,7 @@
     yearSel.addEventListener("change", () => { state.year = Number(yearSel.value); state.month = 0; render(); });
     impactBtn.addEventListener("click", () => {
       state.highImpactOnly = !state.highImpactOnly;
-      impactBtn.classList.toggle("toggleOn", state.highImpactOnly);
+      setPressed(impactBtn, state.highImpactOnly);
       render();
     });
 
@@ -1168,7 +1174,7 @@
       regionSel.value = state.region;
       marketSel.value = state.market;
       yearSel.value = String(state.year);
-      impactBtn.classList.toggle("toggleOn", state.highImpactOnly);
+      setPressed(impactBtn, state.highImpactOnly);
 
       setView("list");
       render();

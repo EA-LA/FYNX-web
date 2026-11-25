@@ -6,6 +6,8 @@ on:
       - 'tools/market-holidays.html'
       - 'assets/js/holiday-calendar-export.js'
       - 'scripts/test-holiday-calendar-export.cjs'
+      - 'scripts/test-market-holidays-heatmap.cjs'
+      - 'package-lock.json'
       - 'package.json'
       - '.github/workflows/holiday-calendar-export.yml'
   workflow_dispatch:
@@ -22,5 +24,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
+      - name: Install locked test dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Validate ICS export, UTF-8 folding and UI wiring
-        run: node --test scripts/test-holiday-calendar-export.cjs
+        run: node --test scripts/test-holiday-calendar-export.cjs scripts/test-market-holidays-heatmap.cjs
