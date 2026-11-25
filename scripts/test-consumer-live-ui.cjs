@@ -569,7 +569,7 @@ test('paid simulation inspector includes starting equity and expires with change
 test('empty or invalid paths produce no inspector, and guest analysis remains blocked',async()=>{
  for(const curve of [[],[1,NaN]]){
   const h=await load({user:true,tier:'starter',handler:d=>d.action==='run'?{result:{curve}}:undefined});
-  try{h.document.getElementById('toolForm').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));assert.equal(h.document.querySelector('.path-inspector'),null);}finally{h.close();}
+  try{h.document.getElementById('toolForm').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));assert.equal(h.document.querySelector('.path-inspector'),null);assert.equal(h.document.querySelector('#result svg'),null);}finally{h.close();}
  }
  const h=await load();try{h.document.getElementById('toolForm').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));assert.equal(h.calls.filter(c=>c.action==='run').length,0);assert.equal(h.document.querySelector('.path-inspector'),null);}finally{h.close();}
 });
@@ -684,5 +684,39 @@ test('signed-out checkout return asks for the checkout account instead of implyi
  try{
   assert.match(h.document.getElementById('status').textContent,/Sign in with the account used at checkout/);
   assert.equal(h.calls.length,0);
+ }finally{h.close();}
+});
+
+test('paid Journal chart includes zero and the first trade even for a single gain or loss',async()=>{
+ for(const [curve,expected,range] of [
+  [[-20],'10,20 590,150','range -20 to 0'],
+  [[20],'10,150 590,20','range 0 to 20'],
+  [[-20,-10],'10,20 300,150 590,85','range -20 to 0']
+ ]){
+  const h=await load({user:true,tier:'starter',query:'?tool=analytics',handler:d=>d.action==='run'?{result:{curve}}:undefined});
+  try{
+   h.document.getElementById('toolForm').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));
+   const area=h.document.getElementById('result');
+   assert.match(area.querySelector('svg').getAttribute('aria-label'),/starting at zero/);
+   assert.equal(area.querySelector('polyline').getAttribute('points'),expected);
+   assert.ok(area.textContent.includes(range));
+   assert.equal(area.querySelectorAll('.path-inspector tbody tr').length,curve.length);
+  }finally{h.close();}
+ }
+});
+test('paid simulation chart retains its starting equity without adding a zero point',async()=>{
+ const h=await load({user:true,tier:'pro',query:'?tool=simulation',handler:d=>d.action==='run'?{result:{curve:[100,80,120]}}:undefined});
+ try{
+  h.document.getElementById('toolForm').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));
+  const area=h.document.getElementById('result');
+  assert.equal(area.querySelector('polyline').getAttribute('points'),'10,85 300,150 590,20');
+  assert.ok(area.textContent.includes('range 80 to 120'));
+ }finally{h.close();}
+});
+test('paid portfolio stress rows have a portfolio-specific accessible caption',async()=>{
+ const h=await load({user:true,tier:'plus',query:'?tool=portfolio',handler:d=>d.action==='run'?{result:{rows:[{symbol:'AAPL',value:100,scenarioPL:-5}]}}:undefined});
+ try{
+  h.document.getElementById('toolForm').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));
+  assert.equal(h.document.querySelector('#result table caption').textContent,'Portfolio stress test results');
  }finally{h.close();}
 });
