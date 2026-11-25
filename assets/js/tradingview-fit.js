@@ -1,15 +1,19 @@
 /* TradingView percentage heights require a definite containing block. */
 (function () {
-  const watched=new WeakSet();
+  const watched = new Set();
   // Older iPhone webviews may not support ResizeObserver; window resize
   // and widget insertion still provide useful fallback triggers.
   const resize = typeof ResizeObserver === 'function' ? new ResizeObserver(() => refresh()) : null;
   function fit() {
+    const activeHosts = new Set();
     document.querySelectorAll('.tradingview-widget-container').forEach(container => {
       if (container.closest('#tvTapeWrap')) return;
       const host = container.closest('.widget-shell, .widget, .tv-wrap') || container.parentElement;
       if (!host) return;
-      if (!watched.has(host)) { watched.add(host); resize?.observe(host); }
+      if (resize) {
+        activeHosts.add(host);
+        if (!watched.has(host)) { watched.add(host); resize.observe(host); }
+      }
       if (!host.clientWidth) return;
       const minimum = parseFloat(getComputedStyle(host).minHeight) || 0;
       // Only size known chart hosts; do not turn ticker/quote badges into charts.
@@ -30,6 +34,11 @@
         frame.setAttribute('height', String(height));
       });
     });
+    // A dynamically replaced chart must not leave its old host registered.
+    // A host shared by multiple current charts remains observed until the last leaves.
+    for (const host of watched) {
+      if (!activeHosts.has(host)) { resize.unobserve(host); watched.delete(host); }
+    }
   }
   let queued = false;
   function refresh() { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; fit(); }); } }
