@@ -1,0 +1,24 @@
+name: Free Learn concept comparisons
+on:
+  pull_request:
+    paths:
+      - 'learn.html'
+      - 'learn/lessons/stocks/a-beginners-guide-to-stock-market-structure.html'
+      - 'learn/lessons/funds/etf-basics-for-new-traders.html'
+      - 'learn/lessons/bonds/bond-prices-and-yields-explained.html'
+      - 'home.html'
+      - 'scripts/test-learn-concept-comparisons.cjs'
+      - '.github/workflows/learn-concept-comparisons.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --test scripts/test-learn-concept-comparisons.cjs
