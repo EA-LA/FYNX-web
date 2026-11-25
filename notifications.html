@@ -141,6 +141,11 @@ permissionButton.onclick = async () => {
     if (auth.currentUser?.uid !== uid) return;
     permissionStatus.textContent = `Permission: ${result.permission}${result.supported ? '' : ' (unsupported browser)'}`;
     await preferenceController.set('browserEnabled', result.permission === 'granted');
+    if (result.permission === 'granted') {
+      const { enableFcmFromUserGesture } = await import('/assets/js/fcm-client.js');
+      const token = await enableFcmFromUserGesture();
+      if (!token && auth.currentUser?.uid === uid) actionStatus.textContent = 'Browser permission granted, but background push registration failed. Try again.';
+    }
   } catch {
     if (auth.currentUser?.uid === uid) actionStatus.textContent = 'Could not request browser notification permission. Try again.';
   } finally {
