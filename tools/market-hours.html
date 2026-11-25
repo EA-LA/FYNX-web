@@ -597,6 +597,16 @@
       font-size: 11px;
       color: var(--text);
     }
+    #fx-overlap{scroll-margin-top:6rem}
+    .fx-overlap-fields{
+      border:0; padding:0; margin:1rem 0; min-width:0;
+      display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.8rem;
+    }
+    .fx-overlap-fields label{display:grid;gap:.35rem;min-width:0}
+    .fx-overlap-fields :is(select,input){width:100%;min-width:0;min-height:44px;font:inherit;padding:.55rem;color:inherit;background:var(--panel);border:1px solid var(--border);border-radius:.6rem}
+    .fx-overlap-fields :is(select,input):focus-visible{outline:2px solid currentColor;outline-offset:3px}
+    #fx-overlap-result{margin-top:.8rem;line-height:1.5;min-height:1.5em}
+    @media(max-width:560px){.fx-overlap-fields{grid-template-columns:minmax(0,1fr)}}
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
@@ -665,6 +675,7 @@
         <div class="titleBlock">
           <h2>Market Hours</h2>
           <p id="subtitle">Loading…</p>
+          <p><a href="#fx-overlap">Plan a forex session overlap ↓</a></p>
         </div>
         <div class="meta">
           <div class="metaChip"><span class="dot"></span><span id="liveChip">Live</span></div>
@@ -724,6 +735,23 @@
         </div>
       </div>
     </div>
+  <section class="tool-explainer" id="fx-overlap" aria-labelledby="fx-overlap-title">
+    <div class="discovery-kicker">SESSION PLANNER</div>
+    <h2 id="fx-overlap-title">Find a forex session overlap</h2>
+    <p>Pick two regional sessions and a date in UTC. Results show the hours in both UTC and the display time zone selected above.</p>
+    <form id="fx-overlap-form" aria-describedby="fx-overlap-limits">
+      <fieldset class="fx-overlap-fields" id="fx-overlap-fields" disabled>
+        <legend class="discovery-kicker">Compare sessions</legend>
+        <label for="fx-overlap-first">First session<select id="fx-overlap-first"></select></label>
+        <label for="fx-overlap-second">Second session<select id="fx-overlap-second"></select></label>
+        <label for="fx-overlap-date">Date (UTC)<input id="fx-overlap-date" type="date" min="2000-01-01" max="2100-12-31" required></label>
+      </fieldset>
+      <button class="btn" id="fx-overlap-run" type="submit" disabled>Find overlap</button>
+    </form>
+    <p id="fx-overlap-result" role="status" aria-live="polite" aria-atomic="true"></p>
+    <p id="fx-overlap-limits">Uses modeled local weekday hours and daylight saving time. It is not a live status check and does not account for holidays, broker schedules, or interruptions.</p>
+    <noscript><p>The session planner requires JavaScript.</p></noscript>
+  </section>
   <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Check sessions in the correct timezone</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Choose your timezone, identify the venue or currency session, and cross-check holiday exceptions before scheduling work.</p><h3>The calculation or concept</h3><p>Exchange hours and indicative forex sessions are different; holidays and daylight-saving changes affect them.</p></div><div class="tool-example"><h3>Worked example</h3><p>New York and London change daylight-saving time on different dates. Their overlap can shift during the intervening weeks.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>A session label does not confirm that a particular instrument is tradable. Broker maintenance and venue interruptions can still apply.</p></details></section><!-- tool-guide:end -->
 <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/market-holidays.html"><strong>Market Holiday Planning Reference</strong><span>Review a partial market holiday planning reference for 2025–2028. Confirm closures and early closing times with the relevant exchange.</span></a><a href="/tools/economic-calendar.html"><strong>Economic Calendar: Releases &amp; Central Bank Events</strong><span>Review scheduled economic releases, inflation data and central bank events with the embedded economic calendar.</span></a><a href="/tools/forex.html"><strong>Forex Trade Planning Calculators</strong><span>Plan a forex trade with links to position sizing and pip value calculators using your account and risk inputs.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </div>
@@ -1458,6 +1486,7 @@ setInterval(tickClock, 15000);
 setInterval(tickMain, 30000);
 </script>
 
+<script src="/assets/js/fx-session-overlap.js?v=20261125"></script>
 <footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
 </body>
 </html>
