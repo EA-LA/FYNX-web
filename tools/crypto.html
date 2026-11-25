@@ -729,12 +729,26 @@
       tradeTypeInput.value = "long";
       targetProfitInput.value = "";
       stopPriceInput.value = "";
+      showPendingResult("Your crypto trade result will appear here.");
+    }
+
+    function showPendingResult(message) {
       resultArea.className = "result-placeholder";
-      resultArea.textContent = "Your crypto trade result will appear here.";
+      resultArea.textContent = message;
+    }
+
+    function invalidateEditedResult() {
+      if (!resultArea.classList.contains("result-box")) return;
+      showPendingResult("Inputs changed. Select Calculate to update your result.");
     }
 
     calculateBtn.addEventListener("click", calculateCryptoTrade);
     clearBtn.addEventListener("click", clearForm);
+
+    [coinInput, capitalInput, entryPriceInput, exitPriceInput, feePercentInput, tradeTypeInput, targetProfitInput, stopPriceInput].forEach(input => {
+      input.addEventListener("input", invalidateEditedResult);
+      input.addEventListener("change", invalidateEditedResult);
+    });
 
     [coinInput, capitalInput, entryPriceInput, exitPriceInput, feePercentInput, targetProfitInput, stopPriceInput].forEach(input => {
       input.addEventListener("keydown", (e) => {
