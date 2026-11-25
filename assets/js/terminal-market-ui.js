@@ -1,7 +1,7 @@
 /* Five-second strip movement; actual prices refresh at the source/cache cadence. */
 (function () {
   'use strict';
-  let latest, rendered, refresh, motion;
+  let latest, rendered, renderedAgeKey, refresh, motion;
   const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)');
   const format=q=>q.price.toLocaleString('en-US',{minimumFractionDigits:['EURUSD=X','GBPUSD=X'].includes(q.symbol)?4:2,maximumFractionDigits:['EURUSD=X','GBPUSD=X'].includes(q.symbol)?4:2});
   const change=q=>q.changePercent===null?'—':`${q.changePercent>0?'▲ ':q.changePercent<0?'▼ ':''}${Math.abs(q.changePercent).toFixed(2)}%`;
@@ -20,9 +20,11 @@
   }
   function render(data) {
     const host=document.querySelector('[data-terminal-ticker]');if(!host)return;
-    if(rendered===data&&host.querySelector('.terminal-ticker-track'))return;
-    const previous=rendered;rendered=data;
     const now=Date.now();
+    // A cached snapshot can cross the source-age threshold without changing identity.
+    const ageKey=window.FynxTerminalData.instruments.map(item=>olderSource(data.quotes[item.symbol],now)?'1':'0').join('');
+    if(rendered===data&&renderedAgeKey===ageKey&&host.querySelector('.terminal-ticker-track'))return;
+    const previous=rendered;rendered=data;renderedAgeKey=ageKey;
     let olderCount=0;
     const track=document.createElement('div');track.className='terminal-ticker-track';track.tabIndex=0;track.setAttribute('aria-label','Global market quotes. Scroll to see more.');
     const inner=document.createElement('div');inner.className='terminal-ticker-inner';

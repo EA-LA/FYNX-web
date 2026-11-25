@@ -8,7 +8,7 @@ const { JSDOM } = require('jsdom');
 const script = fs.readFileSync(path.join(__dirname, '../assets/js/terminal-market-ui.js'), 'utf8');
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
-async function setup({ quoteAsOf, stale = false } = {}) {
+async function setup({ quoteAsOf, stale = false, reuseSnapshot = false } = {}) {
   const dom = new JSDOM('<!doctype html><html><body data-fynx-terminal><div data-terminal-ticker></div><button id="outside">Outside</button></body></html>', {
     url: 'https://www.fynxfinanceworld.com/', runScripts: 'outside-only', pretendToBeVisual: true
   });
@@ -27,9 +27,10 @@ async function setup({ quoteAsOf, stale = false } = {}) {
     },
     fetchedAt: new Date().toISOString(), status: stale ? 'cached' : 'fresh', stale
   });
+  const snapshot = makeData();
   window.FynxTerminalData = {
     instruments: [{ symbol: 'BTC-USD', name: 'Bitcoin', shortName: 'BTC', group: 'Crypto' }],
-    loadQuotes: () => Promise.resolve(makeData())
+    loadQuotes: () => Promise.resolve(reuseSnapshot ? snapshot : makeData())
   };
   window.eval(script);
   await tick();
@@ -119,4 +120,30 @@ test('does not mislabel recent quotes and distinguishes saved data from aged sou
     assert.match(saved.host.querySelector('.terminal-ticker-status').textContent, /Saved · 1 older source quote/);
     assert.match(saved.host.querySelector('.terminal-ticker-item').title, /Saved quote.*Older source quote/);
   } finally { saved.close(); }
+});
+
+test('rechecks source age on a reused cached snapshot without rebuilding unchanged markup', async () => {
+  const now = Date.now();
+  const { window, host, refresh, close } = await setup({
+    quoteAsOf: new Date(now - 44 * 60000).toISOString(),
+    reuseSnapshot: true
+  });
+  try {
+    window.Date.now = () => now;
+    const before = host.querySelector('.terminal-ticker-item');
+    assert.doesNotMatch(before.textContent, /Older/);
+    before.focus();
+    await refresh(100);
+    assert.equal(host.querySelector('.terminal-ticker-item'), before);
+    window.Date.now = () => now + 2 * 60000;
+    await refresh(100);
+    const after = host.querySelector('.terminal-ticker-item');
+    assert.notEqual(after, before);
+    assert.match(after.textContent, /BTC · Older/);
+    assert.match(host.querySelector('.terminal-ticker-status').textContent, /1 older source quote/);
+    assert.equal(window.document.activeElement, after);
+    assert.match(after.textContent, /100\.00/);
+    await refresh(100);
+    assert.equal(host.querySelector('.terminal-ticker-item'), after);
+  } finally { close(); }
 });
