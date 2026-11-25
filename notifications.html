@@ -129,7 +129,18 @@ const preferenceController = createNotificationPreferenceController({
   report: message => { actionStatus.textContent = message; }
 });
 preferenceButtons.forEach(button => {
-  button.onclick = () => preferenceController.toggle(button.dataset.pref);
+  button.onclick = async () => {
+    if (button.dataset.pref === 'browserEnabled' && prefs.browserEnabled) {
+      try {
+        const { removeFcmToken } = await import('/assets/js/fcm-client.js');
+        await removeFcmToken();
+      } catch {
+        actionStatus.textContent = 'Could not disable background push. Please retry.';
+        return;
+      }
+    }
+    await preferenceController.toggle(button.dataset.pref);
+  };
 });
 
 permissionButton.onclick = async () => {
