@@ -233,8 +233,7 @@
   function accountActions() {
     if (document.getElementById('avatarInitials')) return null;
     const box = element('div', 'terminal-account');
-    const bell = element('button', 'icon-btn terminal-account-bell');
-    bell.type = 'button';
+    const bell = link('', '/notifications.html', 'icon-btn terminal-account-bell');
     bell.title = 'Notifications';
     bell.setAttribute('aria-label', 'Notifications');
     bell.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>';
