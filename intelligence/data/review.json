@@ -1,6 +1,14 @@
 {
- "generatedAt": "2026-11-24T14:57:09.417Z",
+ "generatedAt": "2026-11-25T00:50:19.639Z",
  "items": [
+  {
+   "reason": "sensitive subject",
+   "title": "NoVA Daily: Man Killed in Sterling, 2 Arrested for $33K Lorton Wine Heist",
+   "sources": [
+    "Northern Virginia Magazine"
+   ],
+   "at": "2026-11-25T00:50:19.639Z"
+  },
   {
    "reason": "sensitive subject",
    "title": "Delhi police bust Alwar-based crypto fraud syndicate; 4 arrested | India News",
@@ -48,14 +56,6 @@
     "Bankingnews"
    ],
    "at": "2026-11-22T07:00:23.161Z"
-  },
-  {
-   "reason": "sensitive subject",
-   "title": "Japan's government revises AML policy, rates crypto asset abuse risk as \"considerable\"",
-   "sources": [
-    "BigGo Finance"
-   ],
-   "at": "2026-11-21T17:36:51.114Z"
   }
  ]
 }
