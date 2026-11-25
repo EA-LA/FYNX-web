@@ -145,3 +145,66 @@ test('question rendering continues to show the saved selection when navigating',
   assert.equal(h.options()[1].attributes['aria-pressed'], 'true');
   assert.equal(h.options()[0].attributes['aria-pressed'], 'false');
 });
+
+test('keyboard journey follows changing questions, results, retry and confirmed quit', () => {
+  const { JSDOM } = require('jsdom');
+  const dom = new JSDOM(html, { url: 'https://www.fynxfinanceworld.com/trading-quizzes.html', runScripts: 'outside-only' });
+  try {
+    const { window } = dom;
+    window.crypto.randomUUID = require("node:crypto").randomUUID;
+    const doc = window.document;
+    const get = id => doc.getElementById(id);
+    const click = element => { element.focus(); element.click(); };
+    const scrolls = [];
+    window.HTMLElement.prototype.scrollIntoView = function (options) { scrolls.push([this.id, options.behavior]); };
+    window.scrollTo = () => {};
+    window.matchMedia = query => ({ matches: query === '(prefers-reduced-motion: reduce)' });
+    let confirmQuit = false;
+    window.confirm = () => confirmQuit;
+    const alerts = [];
+    window.alert = message => alerts.push(message);
+    const inline = [...doc.scripts].find(script => script.textContent.includes('function startQuiz()'));
+    assert.ok(inline, 'the public quiz page includes its production interaction script');
+    window.eval(inline.textContent);
+    const question = get('questionText');
+    const next = get('nextBtn');
+    click(get('startQuizBtn'));
+    assert.equal(doc.activeElement, question, 'Start puts focus before the first answer');
+    assert.equal(question.getAttribute('aria-describedby'), 'progressMeta');
+    assert.match(get('progressMeta').textContent, /Question 1 of 10/);
+    click(next);
+    assert.equal(alerts.length, 1, 'answer validation remains in place');
+    assert.equal(doc.activeElement, next, 'an invalid Next does not advance focus or question');
+    for (let i = 1; i <= 10; i++) {
+      click(doc.querySelector('#optionsWrap button'));
+      click(next);
+      if (i < 10) {
+        assert.equal(doc.activeElement, question, 'Next returns focus before the newly rendered answers');
+        assert.equal(get('progressMeta').textContent, `Question ${i + 1} of 10`);
+      }
+    }
+    assert.equal(doc.activeElement, get('quizResultsHeading'), 'Finish focuses the now-visible results');
+    assert.match(get('scoreValue').textContent, /^\d+\/10$/);
+    click(get('newSetupBtn'));
+    assert.equal(doc.activeElement, get('quizSetupHeading'));
+    click(get('startQuizBtn'));
+    for (let i = 0; i < 10; i++) {
+      click(doc.querySelector('#optionsWrap button'));
+      click(next);
+    }
+    click(get('retryBtn'));
+    assert.equal(doc.activeElement, question, 'Retry focuses question one instead of leaving focus in hidden results');
+    assert.match(get('progressMeta').textContent, /Question 1 of 10/);
+    click(get('quitQuizBtn'));
+    assert.equal(doc.activeElement, get('quitQuizBtn'), 'cancelled Quit stays on the current question');
+    assert.ok(get('quizSection').classList.contains('active'));
+    confirmQuit = true;
+    click(get('quitQuizBtn'));
+    assert.equal(doc.activeElement, get('quizSetupHeading'));
+    assert.ok(!get('quizSection').classList.contains('active'));
+    assert.ok(scrolls.length > 0 && scrolls.every(([, behavior]) => behavior === 'instant'),
+      'quiz stage movement honors reduced motion');
+  } finally {
+    dom.window.close();
+  }
+});
