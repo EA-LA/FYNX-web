@@ -115,6 +115,28 @@
       display:block;
       opacity:1;
     }
+    .learn-compare{
+      margin:2rem 0 1rem;
+      padding:clamp(1rem, 3vw, 1.75rem);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background:var(--surface);
+      color:var(--text);
+      scroll-margin-top:5rem;
+    }
+    .learn-compare h2{margin:.25rem 0 .5rem}
+    .learn-compare p{line-height:1.55}
+    .learn-compare-note{margin-top:1rem}
+    .learn-compare-items{display:grid;gap:.5rem;margin-top:1rem}
+    .learn-compare details{border:1px solid var(--line);border-radius:.7rem;background:var(--surface-2)}
+    .learn-compare summary{padding:.8rem 1rem;font-weight:700;cursor:pointer}
+    .learn-compare :is(summary,a):focus-visible{outline:2px solid currentColor;outline-offset:3px}
+    .learn-compare-detail{padding:0 1rem 1rem;display:grid;gap:.8rem}
+    .learn-compare-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+    .learn-compare-pair dt{font-weight:700}
+    .learn-compare-pair dd{margin:.25rem 0 0;line-height:1.55}
+    .learn-compare-detail a{width:fit-content;text-decoration:underline;text-underline-offset:.16em}
+    @media(max-width:560px){.learn-compare-pair{grid-template-columns:minmax(0,1fr);gap:.7rem}}
   </style>
   <script type="module" src="assets/js/session-bootstrap.js?v=20261114-consistency-2"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
@@ -180,7 +202,49 @@
           <button id="quizzes-toggle" class="learn-mode-btn" type="button" role="tab" aria-selected="false">Quizzes</button>
         </div>
 
-<div id="learn-content" class="mode-content active"><div class="learning-grid"><article class="learning-card"><span class="eyebrow">01</span><h2>Forex</h2><p>Currencies, pips and position sizing</p><a href="learn/forex-howto.html">Start learning →</a><div class="learning-links"><a href="learn/forex-quizzes.html">Quiz</a><a href="learn/forex-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">02</span><h2>Stocks</h2><p>Shares, valuation and market structure</p><a href="learn/stocks-howto.html">Start learning →</a><div class="learning-links"><a href="learn/stocks-quizzes.html">Quiz</a><a href="learn/stocks-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">03</span><h2>Crypto</h2><p>Digital assets, custody and volatility</p><a href="learn/crypto-howto.html">Start learning →</a><div class="learning-links"><a href="learn/crypto-quizzes.html">Quiz</a><a href="learn/crypto-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">04</span><h2>Funds</h2><p>Diversification, ETFs and fund costs</p><a href="learn/funds-howto.html">Start learning →</a><div class="learning-links"><a href="learn/funds-quizzes.html">Quiz</a><a href="learn/funds-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">05</span><h2>Futures</h2><p>Contracts, margin and expiration</p><a href="learn/futures-howto.html">Start learning →</a><div class="learning-links"><a href="learn/futures-quizzes.html">Quiz</a><a href="learn/futures-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">06</span><h2>Indices</h2><p>Benchmarks and market exposure</p><a href="learn/indices-howto.html">Start learning →</a><div class="learning-links"><a href="learn/indices-quizzes.html">Quiz</a><a href="learn/indices-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">07</span><h2>Bonds</h2><p>Yields, duration and credit risk</p><a href="learn/bonds-howto.html">Start learning →</a><div class="learning-links"><a href="learn/bonds-quizzes.html">Quiz</a><a href="learn/bonds-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">08</span><h2>Economy</h2><p>Inflation, growth and central banks</p><a href="learn/economy-howto.html">Start learning →</a><div class="learning-links"><a href="learn/economy-quizzes.html">Quiz</a><a href="learn/economy-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">09</span><h2>Options</h2><p>Payoffs, Greeks and defined risk</p><a href="learn/options-howto.html">Start learning →</a><div class="learning-links"><a href="learn/options-quizzes.html">Quiz</a><a href="learn/options-glossary.html">Glossary</a></div></article></div></div><div id="quiz-content" class="mode-content" aria-hidden="true"><div class="learning-card"><h2>Test your market knowledge</h2><p>Practice by topic and review your answers.</p><a href="trading-quizzes.html">Open quizzes →</a></div></div>
+<div id="learn-content" class="mode-content active"><div class="learning-grid"><article class="learning-card"><span class="eyebrow">01</span><h2>Forex</h2><p>Currencies, pips and position sizing</p><a href="learn/forex-howto.html">Start learning →</a><div class="learning-links"><a href="learn/forex-quizzes.html">Quiz</a><a href="learn/forex-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">02</span><h2>Stocks</h2><p>Shares, valuation and market structure</p><a href="learn/stocks-howto.html">Start learning →</a><div class="learning-links"><a href="learn/stocks-quizzes.html">Quiz</a><a href="learn/stocks-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">03</span><h2>Crypto</h2><p>Digital assets, custody and volatility</p><a href="learn/crypto-howto.html">Start learning →</a><div class="learning-links"><a href="learn/crypto-quizzes.html">Quiz</a><a href="learn/crypto-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">04</span><h2>Funds</h2><p>Diversification, ETFs and fund costs</p><a href="learn/funds-howto.html">Start learning →</a><div class="learning-links"><a href="learn/funds-quizzes.html">Quiz</a><a href="learn/funds-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">05</span><h2>Futures</h2><p>Contracts, margin and expiration</p><a href="learn/futures-howto.html">Start learning →</a><div class="learning-links"><a href="learn/futures-quizzes.html">Quiz</a><a href="learn/futures-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">06</span><h2>Indices</h2><p>Benchmarks and market exposure</p><a href="learn/indices-howto.html">Start learning →</a><div class="learning-links"><a href="learn/indices-quizzes.html">Quiz</a><a href="learn/indices-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">07</span><h2>Bonds</h2><p>Yields, duration and credit risk</p><a href="learn/bonds-howto.html">Start learning →</a><div class="learning-links"><a href="learn/bonds-quizzes.html">Quiz</a><a href="learn/bonds-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">08</span><h2>Economy</h2><p>Inflation, growth and central banks</p><a href="learn/economy-howto.html">Start learning →</a><div class="learning-links"><a href="learn/economy-quizzes.html">Quiz</a><a href="learn/economy-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">09</span><h2>Options</h2><p>Payoffs, Greeks and defined risk</p><a href="learn/options-howto.html">Start learning →</a><div class="learning-links"><a href="learn/options-quizzes.html">Quiz</a><a href="learn/options-glossary.html">Glossary</a></div></article></div>
+  <section class="learn-compare" id="compare-concepts" aria-labelledby="compare-concepts-title">
+    <div class="editorial-label">QUICK REFERENCE</div>
+    <h2 id="compare-concepts-title">Market concepts side by side</h2>
+    <p>Open a comparison to see what each term means, why the difference matters, and a FYNX lesson to go deeper.</p>
+    <div class="learn-compare-items">
+      <details id="compare-order-types">
+        <summary>Market order vs. limit order</summary>
+        <div class="learn-compare-detail">
+          <dl class="learn-compare-pair">
+            <div><dt>Market order</dt><dd>Seeks a prompt fill at available prices. The execution price can differ from the price you saw.</dd></div>
+            <div><dt>Limit order</dt><dd>Sets the most you will pay on a buy or the least you will accept on a sell. It may not fill.</dd></div>
+          </dl>
+          <p><strong>Example:</strong> If the lowest available offer moves from $50 to $50.20, a market buy may fill above $50; a $50 limit buy cannot pay more than $50.</p>
+          <a href="/learn/lessons/stocks/a-beginners-guide-to-stock-market-structure.html">Read the stock market structure lesson</a>
+        </div>
+      </details>
+      <details id="compare-fund-pricing">
+        <summary>ETF vs. mutual fund pricing</summary>
+        <div class="learn-compare-detail">
+          <dl class="learn-compare-pair">
+            <div><dt>Exchange-traded fund (ETF)</dt><dd>Retail investors trade shares on an exchange during its session. The market price can be above or below net asset value (NAV) per share.</dd></div>
+            <div><dt>Mutual fund</dt><dd>Purchases and redemptions use the fund’s next calculated NAV, typically determined once per business day, before any applicable fees or charges.</dd></div>
+          </dl>
+          <p><strong>Example:</strong> An ETF can trade at $100.20 when its most recently published NAV is $100. A mutual fund order does not lock in that earlier $100 NAV; it uses the next one.</p>
+          <a href="/learn/lessons/funds/etf-basics-for-new-traders.html">Read the ETF basics lesson</a>
+        </div>
+      </details>
+      <details id="compare-bond-yields">
+        <summary>Bond coupon rate vs. current yield</summary>
+        <div class="learn-compare-detail">
+          <dl class="learn-compare-pair">
+            <div><dt>Coupon rate</dt><dd>For a fixed-rate bond, annual coupon payments divided by face value.</dd></div>
+            <div><dt>Current yield</dt><dd>Annual coupon payments divided by today’s market price. It does not count any price gain or loss at maturity.</dd></div>
+          </dl>
+          <p><strong>Example:</strong> A $1,000 face-value bond paying $50 per year has a 5% coupon rate. At a $950 market price, its current yield is about 5.26%. Yield to maturity also takes the repayment and the time remaining into account.</p>
+          <a href="/learn/lessons/bonds/bond-prices-and-yields-explained.html">Read the bond prices and yields lesson</a>
+        </div>
+      </details>
+    </div>
+    <p class="learn-compare-note"><small>Illustrative examples only. No live quotes or investment recommendations.</small></p>
+  </section>
+</div><div id="quiz-content" class="mode-content" aria-hidden="true"><div class="learning-card"><h2>Test your market knowledge</h2><p>Practice by topic and review your answers.</p><a href="trading-quizzes.html">Open quizzes →</a></div></div>
       <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/learn/lessons/stocks/a-beginners-guide-to-stock-market-structure.html"><strong>A Beginner’s Guide to Stock Market Structure</strong><span>How exchanges, sessions, and liquidity windows shape your entries.</span></a><a href="/learn/lessons/bonds/bond-prices-and-yields-explained.html"><strong>Bond Prices and Yields Explained</strong><span>The inverse relationship and practical trading implications.</span></a><a href="/learn/bonds-glossary.html"><strong>Bonds — Glossary</strong><span>Learn Bonds terminology with a practical glossary of market concepts and trading definitions.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </section>
 </main>
