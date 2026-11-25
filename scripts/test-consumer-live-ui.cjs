@@ -76,6 +76,22 @@ test('Pro analysis rejects a late result when a field changes during a request',
  assert.match(h.document.getElementById('status').textContent,/changed while the analysis ran/);
  h.close();
 });
+test('paid research watchlist rejects over-limit notes without truncating the draft or sending a request',async()=>{
+ const h=await load({user:true,tier:'starter',query:'?tool=watchlist',handler:d=>['run','save'].includes(d.action)?{result:{symbols:d.input.symbols,notes:d.input.notes}}:undefined});
+ try{
+  const note=h.document.getElementById('tool-notes'),original='x'.repeat(2001);
+  note.value=original;h.document.getElementById('workspaceName').value='Research';
+  h.document.getElementById('toolForm').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));
+  assert.match(h.document.getElementById('status').textContent,/2,000 characters/);
+  await h.document.getElementById('saveTool').onclick();
+  assert.match(h.document.getElementById('status').textContent,/2,000 characters/);
+  assert.equal(note.value,original);assert.equal(h.calls.filter(c=>['run','save'].includes(c.action)).length,0);
+  note.value=original.slice(0,2000);
+  h.document.getElementById('toolForm').onsubmit({preventDefault(){}});await new Promise(r=>setImmediate(r));
+  assert.equal(h.calls.find(c=>c.action==='run').input.notes,note.value);
+  await h.document.getElementById('saveTool').onclick();assert.equal(h.calls.find(c=>c.action==='save').input.notes,note.value);
+ }finally{h.close();}
+});
 test('Pro analysis invalidates old output when a checklist answer changes',async()=>{
  const h=await load({user:true,tier:'starter',query:'?tool=review',handler:data=>data.action==='run'?{result:{completed:['Entry plan defined']}}:undefined});
  h.document.getElementById('toolForm').onsubmit({preventDefault(){}});
