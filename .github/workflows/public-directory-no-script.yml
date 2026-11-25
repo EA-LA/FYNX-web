@@ -1,0 +1,27 @@
+name: Public lightweight directory without scripts
+on:
+  pull_request:
+    paths:
+      - 'directory.html'
+      - 'scripts/build-account-sync.cjs'
+      - 'scripts/build-discovery.cjs'
+      - 'scripts/test-account-sync-placement.cjs'
+      - 'scripts/verify-discovery.cjs'
+      - '.github/workflows/public-directory-no-script.yml'
+permissions:
+  contents: read
+jobs:
+  directory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node scripts/test-account-sync-placement.cjs
+      - run: npm run build
+      - name: Verify generated directory has no scripts and retains all links
+        run: node scripts/verify-discovery.cjs
