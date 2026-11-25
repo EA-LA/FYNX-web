@@ -67,3 +67,71 @@ test('unknown and injection-shaped section queries never navigate', () => {
     assert.deepEqual(redirect(query), []);
   }
 });
+
+const historical = fs.readFileSync(path.join(root, 'markets/historical-data.html'), 'utf8');
+function historicalHarness(initialAsset = 'EUR/USD', initialPeriod = '1 Week') {
+  const scripts = [], storage = {}, windowEvents = {};
+  function node(props = {}) {
+    const listeners = {};
+    return { ...props, addEventListener(type, callback) { listeners[type] = callback; },
+      fire(type) { listeners[type](); } };
+  }
+  const els = {
+    asset: node({ value: initialAsset }), period: node({ value: initialPeriod }),
+    histResult: node(), histPending: node(), histApply: node(), themeLabel: node(), themeToggle: node(),
+    histWidget: node({ querySelector() { return { appendChild(script) { scripts.push(script); } }; } })
+  };
+  const source = historical.match(/<script data-historical-chart>([\s\S]*?)<\/script>/);
+  assert.ok(source, 'historical chart script is present');
+  vm.runInNewContext(source[1], {
+    document: { getElementById(id) { return els[id]; }, createElement() { return {}; }, body: { classList: { toggle() {} } } },
+    window: { FynxPreferences: { getItem(key) { return storage[key]; }, setItem(key,value) { storage[key] = value; } },
+      addEventListener(type, callback) { windowEvents[type] = callback; } }
+  });
+  const latest = () => JSON.parse(scripts.at(-1).textContent);
+  return { els, scripts, latest, storage, windowEvents };
+}
+test('historical chart starts with the restored valid controls and honest request status', () => {
+  const { els, latest } = historicalHarness('Gold', '3 Months');
+  assert.equal(latest().symbol, 'OANDA:XAUUSD');
+  assert.equal(latest().range, '3M');
+  assert.equal(els.histPending.hidden, true);
+  assert.match(els.histResult.textContent, /Requested 3 Months view for Gold/);
+  assert.match(historical, /id="histResult" role="status"/);
+});
+test('historical chart theme changes do not apply unsubmitted market and range selections', () => {
+  const { els, scripts, latest, storage, windowEvents } = historicalHarness();
+  els.asset.value = 'BTC/USD'; els.asset.fire('change');
+  els.period.value = '1 Year'; els.period.fire('change');
+  assert.equal(els.histPending.hidden, false);
+  assert.equal(scripts.length, 1);
+  els.themeToggle.fire('click');
+  assert.equal(latest().theme, 'dark');
+  assert.equal(latest().symbol, 'FX:EURUSD');
+  assert.equal(latest().range, '5D');
+  storage.fynx_theme = 'light'; windowEvents.storage({ key: 'fynx_theme' });
+  assert.equal(latest().symbol, 'FX:EURUSD');
+  assert.match(els.histResult.textContent, /EUR\/USD/);
+  els.histApply.fire('click');
+  assert.equal(latest().symbol, 'BITSTAMP:BTCUSD');
+  assert.equal(latest().range, '12M');
+  assert.equal(els.histPending.hidden, true);
+});
+test('historical chart ignores obsolete provider failures and enables a real retry', () => {
+  const { els, scripts, latest } = historicalHarness();
+  const first = scripts[0];
+  els.asset.value = 'Gold'; els.asset.fire('change'); els.histApply.fire('click');
+  first.onerror();
+  assert.match(els.histResult.textContent, /^Requested.*Gold/);
+  scripts.at(-1).onerror();
+  assert.match(els.histResult.textContent, /Could not load.*Gold.*retry/);
+  els.histApply.fire('click');
+  assert.equal(latest().symbol, 'OANDA:XAUUSD');
+  assert.match(els.histResult.textContent, /^Requested/);
+});
+test('historical chart ignores unknown configuration values rather than sending them to the provider', () => {
+  const { els, scripts } = historicalHarness();
+  els.asset.value = '__proto__'; els.asset.fire('change'); els.histApply.fire('click');
+  assert.equal(scripts.length, 1);
+  assert.equal(els.histPending.hidden, false);
+});
