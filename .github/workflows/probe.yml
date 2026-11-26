@@ -1,23 +1,17 @@
-name: Probe sentiment publisher (temporary, read-only)
+name: probe crypto sentiment
 on: push
 permissions:
   contents: read
 jobs:
-  probe:
+  p:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - run: node refresh-equities.cjs out
-      - run: time node refresh-sentiment.cjs out
+        with: {node-version: 22}
       - run: |
-          ls -la out
-          node -e "
-          const d=require('./out/sentiment.json');
-          console.log('SUMMARY', d.asOf, d.score, d.label, 'prev', JSON.stringify(d.prev), 'week', JSON.stringify(d.week), 'month', JSON.stringify(d.month), 'year', JSON.stringify(d.year), 'hist', d.history.length, d.history[0]);
-          for (const i of d.indicators) console.log('IND', i.key, i.value, i.score, i.label, i.series.length, i.series[0]&&i.series[0][0]);
-          console.log('LAST30', d.history.slice(-30).map(x=>x[1]).join(' '));
-          console.log('MICH', d.michigan && d.michigan.length, JSON.stringify(d.michigan && d.michigan.slice(-3)), JSON.stringify(d.sources)); console.log('SIZE', JSON.stringify(d).length);
-          "
+          mkdir -p out prev
+          curl -sfL https://raw.githubusercontent.com/EA-LA/FYNX-web/terminal-data/scanner.json -o out/scanner.json && ls -la out
+          curl -sfL https://raw.githubusercontent.com/EA-LA/FYNX-web/terminal-data/equities.json -o out/equities.json || true
+          node probe/refresh-sentiment.cjs out prev
+          node -e "const d=require('./out/sentiment.json');const c=d.crypto;console.log(JSON.stringify({fng:c?.fng&&{asOf:c.fng.asOf,score:c.fng.score,label:c.fng.label,n:c.fng.history.length,prev:c.fng.prev,year:c.fng.year},season:c?.season&&{...c.season,history:c.season.history.length},rsi:c?.rsi&&{...c.rsi,history:c.rsi.history.length},coins:c?.coins?.length,top:c?.coins?.slice(0,12),universe:c?.universe}))"
