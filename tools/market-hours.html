@@ -464,6 +464,9 @@
     }
     @media (max-width: 640px){
       .row{ grid-template-columns: 1fr; }
+      .cardHead{ flex-direction:column; align-items:stretch; }
+      .cardHead .meta{ justify-content:flex-start; }
+      .cardHead .metaChip{ display:block; max-width:100%; white-space:normal; }
     }
     /* [site-qa] run 65: on phones the Timezone label was hidden behind its picker and the Now clock ran past its box; stack the header. */
     @media (max-width: 640px){
@@ -676,10 +679,11 @@
           <h2>Market Hours</h2>
           <p id="subtitle">Loading…</p>
           <p><a href="#fx-overlap">Plan a forex session overlap ↓</a></p>
+          <p>Indicative hours, not a live exchange feed. Holiday exceptions may not be shown. <a href="https://www.nyse.com/trade/hours-calendars">Official NYSE calendar</a> · <a href="/tools/market-holidays.html">Market Holidays</a></p>
         </div>
         <div class="meta">
-          <div class="metaChip"><span class="dot"></span><span id="liveChip">Live</span></div>
-          <div class="metaChip">Next change: <span id="nextChange">—</span></div>
+          <div class="metaChip"><span id="liveChip">Schedule estimate</span></div>
+          <div class="metaChip">Next scheduled change: <span id="nextChange">—</span></div>
         </div>
       </div>
 
@@ -728,7 +732,7 @@
 
       <div class="footerHint">
         <div>
-          Accuracy: uses <code>IANA time zones</code> + DST-aware conversion (no hardcoded offsets).
+          Time-zone conversion uses <code>IANA time zones</code>. NYSE uses core equity hours, with November 26–27, 2026 holiday exceptions; this does not cover extended hours, options, or unscheduled closures.
         </div>
         <div>
           Tip: if you want this to default to <code>America/Boise</code>, keep it selected in the timezone menu.
@@ -970,7 +974,7 @@ const MARKETS = {
         open:{h:9, m:30},
         close:{h:16, m:0},
         color:"c4",
-        blurb:"Tech-heavy. Same cash hours as NYSE; high beta names amplify moves."
+        blurb:"Regular weekday cash hours. Check Nasdaq’s official calendar for exceptions."
       }
     ],
     insights: [
@@ -1102,8 +1106,89 @@ function renderAxis(){
   }
 }
 
+/* ---------- NYSE core equities schedule; no other product or venue overrides ---------- */
+const NYSE_TZ = 'America/New_York';
+const NYSE_THANKSGIVING_2026 = '2026-11-26';
+const NYSE_EARLY_CLOSE_2026 = '2026-11-27';
+const DAY_MS = 86400000;
+
+function nyseCalendarDateMs({year, month, day}){
+  return Date.UTC(year, month - 1, day);
+}
+
+function nyseWallTime(ymd, hour, minute, tz){
+  const wallMs = nyseCalendarDateMs(ymd) + (hour * 60 + minute) * 60000;
+  let utcMs = wallMs;
+  for(let i = 0; i < 3; i++){
+    const shown = partsInTZ(new Date(utcMs), tz);
+    // Some engines return 24:xx on the already-correct calendar date.
+    const shownMs = nyseCalendarDateMs(shown) + ((shown.hour % 24) * 60 + shown.minute) * 60000;
+    if(shownMs === wallMs) break;
+    utcMs += wallMs - shownMs;
+  }
+  return new Date(utcMs);
+}
+
+function nyseCoreWindow(ymd){
+  const dayMs = nyseCalendarDateMs(ymd);
+  const calendar = new Date(dayMs);
+  const key = calendar.toISOString().slice(0, 10);
+  // Published NYSE core equity hours and November 2026 exceptions:
+  // https://www.nyse.com/trade/hours-calendars
+  if(key === NYSE_THANKSGIVING_2026) return {note:'Thanksgiving: closed (ET)'};
+  if([0, 6].includes(calendar.getUTCDay())) return {note:'Weekend: closed (ET)'};
+  const early = key === NYSE_EARLY_CLOSE_2026;
+  return {
+    start: nyseWallTime(ymd, 9, 30, NYSE_TZ),
+    end: nyseWallTime(ymd, early ? 13 : 16, 0, NYSE_TZ),
+    note: early ? 'Early close: 13:00 ET' : 'Core equities: regular hours (ET)'
+  };
+}
+
+function nyseIntervalsForDisplayDay(now, displayTZ){
+  const day = ymdInTZ(now, displayTZ);
+  const start = nyseWallTime(day, 0, 0, displayTZ);
+  const end = nyseWallTime(addDaysYMD(day, 1), 0, 0, displayTZ);
+  const first = ymdInTZ(start, NYSE_TZ);
+  const lastMs = nyseCalendarDateMs(ymdInTZ(new Date(end.getTime() - 1), NYSE_TZ));
+  const intervals = [];
+  for(let offset = 0; nyseCalendarDateMs(addDaysYMD(first, offset)) <= lastMs; offset++){
+    const window = nyseCoreWindow(addDaysYMD(first, offset));
+    if(!window.start) continue;
+    const left = Math.max(start, window.start);
+    const right = Math.min(end, window.end);
+    if(right <= left) continue;
+    const displayMinute = ms => {
+      const p = partsInTZ(new Date(ms), displayTZ);
+      return (p.hour % 24) * 60 + p.minute;
+    };
+    intervals.push({startMin: displayMinute(left), endMin: right === end.getTime() ? 1440 : displayMinute(right)});
+  }
+  return intervals;
+}
+
+function nextNyseEvent(now, displayTZ){
+  const nyseDay = ymdInTZ(now, NYSE_TZ);
+  const displayDay = nyseCalendarDateMs(ymdInTZ(now, displayTZ));
+  for(let i = 0; i < 7; i++){
+    const window = nyseCoreWindow(addDaysYMD(nyseDay, i));
+    if(!window.start || window.end <= now) continue;
+    const opens = window.start > now;
+    const date = opens ? window.start : window.end;
+    const p = partsInTZ(date, displayTZ);
+    return {
+      inDays: (nyseCalendarDateMs(p) - displayDay) / DAY_MS,
+      atMin: (p.hour % 24) * 60 + p.minute,
+      atMs: date.getTime(),
+      kind: opens ? 'opens' : 'closes'
+    };
+  }
+  return null;
+}
+
 /* ---------- Session calculations ---------- */
 function sessionIntervalsForDisplayDay(session, displayTZ, baseDate){
+  if(session.id === "nyse") return nyseIntervalsForDisplayDay(baseDate, displayTZ);
   const ymd = ymdInTZ(baseDate, displayTZ);
 
   const startWall = {year: ymd.year, month: ymd.month, day: ymd.day, hour: session.open.h, minute: session.open.m, second:0};
@@ -1157,6 +1242,10 @@ function breakIntervalsForDisplayDay(session, displayTZ, baseDate){
 }
 
 function isOpenNow(session, displayTZ, now){
+  if(session.id === "nyse"){
+    const {start, end} = nyseCoreWindow(ymdInTZ(now, NYSE_TZ));
+    return {state: start && now >= start && now < end ? "open" : "closed", next: nextNyseEvent(now, displayTZ)};
+  }
   const ints = sessionIntervalsForDisplayDay(session, displayTZ, now);
   if(!ints.length) return {state:'closed', next: null};
   const nowMin = minutesSinceMidnightInTZ(now, displayTZ);
@@ -1174,6 +1263,7 @@ function isOpenNow(session, displayTZ, now){
 }
 
 function nextEventForSession(session, displayTZ, now){
+  if(session.id === "nyse") return nextNyseEvent(now, displayTZ);
   const todayInts = sessionIntervalsForDisplayDay(session, displayTZ, now);
   const todayBreaks = breakIntervalsForDisplayDay(session, displayTZ, now);
   const nowMin = minutesSinceMidnightInTZ(now, displayTZ);
@@ -1306,6 +1396,9 @@ function renderList(activeKey, displayTZ, now){
     if(s.close.h===24 && s.open.h===0){
       openStr = '00:00';
       closeStr = '24:00';
+    } else if(s.id === "nyse" && ints.length){
+      openStr = minutesToHM(ints[0].startMin);
+      closeStr = minutesToHM(ints[ints.length - 1].endMin);
     } else if(ints.length){
       const ymd = ymdInTZ(now, displayTZ);
       const openUtc = zonedWallTimeToUtcDate({year: ymd.year, month: ymd.month, day: ymd.day, hour:s.open.h, minute:s.open.m, second:0}, s.tz);
@@ -1354,7 +1447,7 @@ function renderList(activeKey, displayTZ, now){
     const nx = status.next;
     if(nx){
       const whenMin = nx.atMin + nx.inDays*1440;
-      const deltaMin = Math.max(0, whenMin - nowMin);
+      const deltaMin = Math.max(0, nx.atMs == null ? whenMin - nowMin : (nx.atMs - now.getTime()) / 60000);
       const h = Math.floor(deltaMin/60);
       const m = Math.floor(deltaMin%60);
       nextTxt = `${nx.kind} in ${h}h ${m}m`;
@@ -1393,7 +1486,7 @@ function renderList(activeKey, displayTZ, now){
       const kv2 = document.createElement('div');
       kv2.className = 'kv';
       const title = document.createElement('b'); title.textContent = 'MODE';
-      const val = document.createElement('div'); val.textContent = 'Continuous session (no break)';
+      const val = document.createElement('div'); val.textContent = s.id === 'nyse' ? nyseCoreWindow(ymdInTZ(now, NYSE_TZ)).note : 'Continuous session (no break)';
       kv2.appendChild(title); kv2.appendChild(val);
       right.appendChild(kv2);
     }
@@ -1426,7 +1519,7 @@ function renderInsights(activeKey, displayTZ, now){
 }
 
 function renderSubtitle(displayTZ, now){
-  subtitleEl.textContent = `${humanDay(now, displayTZ)} • ${displayTZ} • Live`;
+  subtitleEl.textContent = `${humanDay(now, displayTZ)} • ${displayTZ} • Indicative schedule`;
   dayLabelEl.textContent = humanDay(now, displayTZ);
 }
 
@@ -1438,11 +1531,11 @@ function renderNextChange(activeKey, displayTZ, now){
   }
   const whenMin = ev.atMin + ev.inDays*1440;
   const nowMin = minutesSinceMidnightInTZ(now, displayTZ);
-  const delta = Math.max(0, whenMin - nowMin);
+  const delta = Math.max(0, ev.atMs == null ? whenMin - nowMin : (ev.atMs - now.getTime()) / 60000);
   const h = Math.floor(delta/60);
   const m = Math.floor(delta%60);
   const at = minutesToHM(ev.atMin);
-  const daySuffix = ev.inDays ? ' tomorrow' : ' today';
+  const daySuffix = ev.inDays > 1 ? ' in ' + ev.inDays + ' days' : ev.inDays ? ' tomorrow' : ' today';
   nextChangeEl.textContent = `${ev.session.venue} ${ev.kind} in ${h}h ${m}m (${at}${daySuffix})`;
 }
 
