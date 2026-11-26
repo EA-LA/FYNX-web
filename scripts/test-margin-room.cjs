@@ -66,3 +66,43 @@ test('invalid inputs hide the card', () => {
   const { hidden } = run({ leverage: '0' });
   assert.equal(hidden, true);
 });
+
+test('native form submission uses existing calculation, validation and reset without navigating', () => {
+  const dom = new JSDOM(page, { url: 'https://www.fynxfinanceworld.com/tools/margin.html', runScripts: 'outside-only' });
+  try {
+    const { window } = dom;
+    const doc = window.document;
+    const get = id => doc.getElementById(id);
+    window.eval(inline);
+    const calculate = get('calculateBtn'), form = calculate.form;
+    assert.ok(form, 'Calculate must be a native form submit button');
+    assert.equal(calculate.type, 'submit');
+    assert.equal(get('lotSize').form, form, 'number fields can submit by Enter');
+    assert.equal(get('resetBtn').type, 'button');
+    assert.equal(get('shareScenarioBtn').type, 'button');
+
+    let submissions = 0;
+    form.addEventListener('submit', event => {
+      submissions++;
+      assert.equal(event.defaultPrevented, true, 'calculation must not navigate');
+    });
+    get('lotSize').value = '0.50';
+    form.requestSubmit(calculate);
+    assert.equal(get('requiredMarginValue').textContent, '$1,833.33');
+    assert.equal(submissions, 1);
+    get('leverage').value = '0';
+    form.requestSubmit(calculate);
+    assert.equal(get('requiredMarginValue').textContent, '—');
+    assert.equal(get('roomCard').hidden, true);
+    assert.equal(submissions, 2);
+    get('resetBtn').click();
+    assert.equal(get('requiredMarginValue').textContent, '$3,666.67');
+    assert.equal(submissions, 2);
+    get('lotSize').value = '0.25';
+    calculate.click(); // Scenario-link restore invokes the same calculate button.
+    assert.equal(get('requiredMarginValue').textContent, '$916.67');
+    assert.equal(submissions, 3);
+  } finally {
+    dom.window.close();
+  }
+});

@@ -494,8 +494,8 @@
       </p>
 
       <div class="panel-grid">
-        <div class="panel">
-          <h2>Trade Inputs</h2>
+        <form class="panel" id="marginInputs" aria-labelledby="marginInputsTitle" novalidate>
+          <h2 id="marginInputsTitle">Trade Inputs</h2>
 
           <div class="form-grid">
             <div class="field">
@@ -552,19 +552,19 @@
           </div>
 
           <div class="button-row">
-            <button class="btn primary" id="calculateBtn">
+            <button class="btn primary" id="calculateBtn" type="submit">
               <i class="fas fa-calculator"></i> Calculate Margin
             </button>
-            <button class="btn secondary" id="resetBtn">
+            <button class="btn secondary" id="resetBtn" type="button">
               <i class="fas fa-rotate-left"></i> Reset
             </button>
             <button class="btn secondary" id="shareScenarioBtn" type="button" data-scenario-fields="pairType,accountBalance,lotSize,contractSize,entryPrice,leverage,conversionRate,pipSize,usedMarginExisting" data-scenario-run="calculateBtn"><i class="fas fa-link"></i> Copy scenario link</button>
           </div>
 
           <div class="hint">
-            For most forex brokers, margin is based on notional value divided by leverage. Cross pairs may require conversion into your account currency.
+            Press Enter from a number field or select Calculate Margin. For most forex brokers, margin is based on notional value divided by leverage. Cross pairs may require conversion into your account currency.
           </div>
-        </div>
+        </form>
 
         <div class="panel">
           <h2>Margin Results</h2>
@@ -921,7 +921,10 @@
       `).join("");
     }
 
-    document.getElementById("calculateBtn").addEventListener("click", calculateMargin);
+    document.getElementById("marginInputs").addEventListener("submit", event => {
+      event.preventDefault();
+      calculateMargin();
+    });
 
     document.getElementById("resetBtn").addEventListener("click", () => {
       document.getElementById("pairType").value = "usdQuoted";

@@ -7,6 +7,8 @@ on:
       - "assets/js/module-loader.js"
       - "assets/css/news-intelligence.css"
       - "scripts/test-news-tabs-keyboard.cjs"
+      - "tools/margin.html"
+      - "scripts/test-margin-room.cjs"
       - "package.json"
       - ".github/workflows/web-tools-regression.yml"
   workflow_dispatch:
