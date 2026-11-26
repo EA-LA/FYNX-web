@@ -16,7 +16,7 @@ const snapshot = {
   etfs: {rows: []}, crypto: {rows: []}, themes: [{id: 'ai', label: 'AI'}]
 };
 
-function fixture(savedState, savedScans = []) {
+function fixture(savedState, savedScans = [], scannerFeed = snapshot) {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {url: 'https://www.fynxfinanceworld.com/terminal.html'});
   const doc = dom.window.document, raw = new Map();
   if (savedState !== undefined) raw.set('scan-state', JSON.stringify(savedState));
@@ -44,7 +44,7 @@ function fixture(savedState, savedScans = []) {
     el, btn, store: {get: k => raw.get(k) ?? null, set: (k, v) => raw.set(k, v)},
     signed: (n, dp, suffix) => n.toFixed(dp) + suffix,
     tone: () => '', fmt: n => String(n), finite: Number.isFinite,
-    getJSON: async () => snapshot, report: () => {}, setSymbol: () => {},
+    getJSON: async () => scannerFeed, report: () => {}, setSymbol: () => {},
     digitsOf: () => 2, rowButton: (cls, handler) => btn('Open', cls, handler),
     TDATA: '/terminal-data/', PAGE_NAMES: [], PANELS: {}, PANEL_DESC: {}, LINK_LABEL: {},
     EXTRA_GROUPS: [], RENDER: {}, panel: () => {
@@ -104,4 +104,53 @@ test('a non-array saved-scan collection is ignored without destroying stored dat
   const host = await renderPage();
   assert.match(host.textContent, /1 of 1 stocks match/);
   assert.equal(raw.get('scan-saved'), original);
+});
+
+test('text headers sort the rendered rows in both directions, using displayed labels and putting missing values last', async () => {
+  const stocks = {rows: [
+    ['A1', 'Zulu Company', 42, 3, 1000000, 850000000, 'Technology', 'Zinc', 'US', 2024, ['a-id']],
+    ['B2', 'alpha Company', 52, 1, 1000000, 850000000, 'Industrials', 'aluminium', 'US', 2024, ['z-id']],
+    ['B10', 'Beta Company', 12, 2, 1000000, 850000000, 'Other', null, 'US', 2024, []]
+  ]};
+  const feed = {...snapshot, stocks, themes: [{id: 'a-id', label: 'Zenith'}, {id: 'z-id', label: 'Arctic'}]};
+  const {renderPage, raw, T} = fixture(undefined, [], feed);
+  let host = await renderPage();
+  const ordered = () => [...host.querySelectorAll('.sc-sym')].map(cell => cell.textContent);
+  const header = name => host.querySelector(`[aria-label="Sort by ${name}"]`);
+  assert.deepEqual(ordered(), ['A1', 'B10', 'B2'], 'initial numeric sort is unchanged');
+  async function sort(name, direction, expected) {
+    header(name).click();
+    host = await renderPage();
+    assert.equal(header(name).closest('th').getAttribute('aria-sort'), direction);
+    assert.deepEqual(ordered(), expected);
+  }
+  await sort('name', 'ascending', ['B2', 'B10', 'A1']);
+  await sort('name', 'descending', ['A1', 'B10', 'B2']);
+  await sort('industry', 'ascending', ['B2', 'A1', 'B10']);
+  await sort('industry', 'descending', ['A1', 'B2', 'B10']);
+  await sort('themes', 'ascending', ['B2', 'A1', 'B10']);
+  await sort('themes', 'descending', ['A1', 'B2', 'B10']);
+  await sort('symbol', 'ascending', ['A1', 'B2', 'B10']);
+  await sort('symbol', 'descending', ['B10', 'B2', 'A1']);
+  assert.deepEqual(JSON.parse(raw.get('scan-state')).sort, ['sym', -1]);
+  const resultPane = await (async () => { await T.RENDER.scan(); return host.ownerDocument.querySelector('section:last-of-type'); })();
+  assert.deepEqual([...resultPane.querySelectorAll('button b')].map(e => e.textContent), ['B10', 'B2', 'A1']);
+  await sort('price', 'descending', ['B2', 'A1', 'B10']);
+});
+
+test('cross-asset group text sorts without changing magnitude-based presets', async () => {
+  const {renderPage, T} = fixture({asset: 'markets', preset: 'unusual', f: {}, sort: ['z', -2]});
+  const history = Array.from({length: 32}, (_, i) => ['2026-11-19', 100 + i]);
+  T.quoteFor = () => null;
+  T.S.mk.quotes = {
+    FX1: {symbol: 'FX1', name: 'Currency example', group: 'FX majors', price: 130, changePercent: -6, vol20: 1, history},
+    RATE1: {symbol: 'RATE1', name: 'Rate example', group: 'US Yields', price: 130, changePercent: 2, vol20: 1, history},
+    EN1: {symbol: 'EN1', name: 'Energy example', group: 'Energy futures', price: 130, changePercent: 4, vol20: 1, history}
+  };
+  let host = await renderPage();
+  const ordered = () => [...host.querySelectorAll('.sc-sym')].map(cell => cell.textContent);
+  assert.deepEqual(ordered(), ['FX1', 'EN1', 'RATE1'], 'negative largest magnitude still ranks first');
+  host.querySelector('[aria-label="Sort by group"]').click();
+  host = await renderPage();
+  assert.deepEqual(ordered(), ['EN1', 'FX1', 'RATE1']);
 });
