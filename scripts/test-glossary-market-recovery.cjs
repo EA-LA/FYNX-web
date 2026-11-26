@@ -9,7 +9,7 @@ const root = path.join(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'trading-glossary.html'), 'utf8');
 const productionCode = fs.readFileSync(path.join(root, 'assets/js/glossary-search.js'), 'utf8');
 const markup = '<div class="glossary"><article class="term"><strong>uniquemarketterm</strong><p>A useful market term</p></article></div>';
-const emptyMarkup = '<div class="glossary"></div>';
+const nonmatchingMarkup = '<div class="glossary"><article class="term"><strong>Other concept</strong><p>A different definition</p></article></div>';
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
 async function flush() { await tick(); await tick(); await tick(); }
 
@@ -34,7 +34,7 @@ function open(fetcher, code = productionCode) {
   return { dom, input, status, retry, more, search };
 }
 
-function response(body = emptyMarkup) {
+function response(body = nonmatchingMarkup) {
   return { ok: true, text: async () => body };
 }
 
@@ -46,7 +46,7 @@ function response(body = emptyMarkup) {
   assert.equal(pending.length, 9, 'all nine market glossaries are queried once');
   assert.match(a.status.textContent, /Checking the market glossaries/i);
   assert.equal(a.retry.hidden, true);
-  pending.forEach((resolve, i) => resolve(response(i === 0 ? markup : emptyMarkup)));
+  pending.forEach((resolve, i) => resolve(response(i === 0 ? markup : nonmatchingMarkup)));
   await flush();
   assert.equal(a.more.hidden, false, 'the market result appears');
   assert.match(a.status.textContent, /market glossaries below/i);
@@ -87,7 +87,7 @@ function response(body = emptyMarkup) {
     if (href.includes('/futures-')) return Promise.resolve(response(
       futuresMarkupHealthy ? markup : '<html><body><h1>Please sign in to continue</h1></body></html>'
     ));
-    return Promise.resolve(response(emptyMarkup));
+    return Promise.resolve(response(nonmatchingMarkup));
   });
   malformed.search('uniquemarketterm');
   await flush();
@@ -102,6 +102,27 @@ function response(body = emptyMarkup) {
   assert.equal(malformed.more.hidden, false, 'market term appears after valid markup returns');
   assert.equal(malformed.retry.hidden, true, 'a valid retry clears incomplete coverage');
   malformed.dom.window.close();
+
+  // Empty shells and partial definitions must not silently count as complete coverage.
+  const incompleteUrls = [];
+  let healthy = false;
+  const incomplete = open(href => {
+    incompleteUrls.push(href);
+    if (!healthy && href.includes('/futures-')) return Promise.resolve(response('<div class="glossary"></div>'));
+    if (!healthy && href.includes('/options-')) return Promise.resolve(response('<div class="glossary"><article class="term"><strong>Missing definition</strong></article></div>'));
+    return Promise.resolve(response(href.includes('/futures-') || href.includes('/options-') ? markup : nonmatchingMarkup));
+  });
+  incomplete.search('uniquemarketterm');
+  await flush();
+  assert.match(incomplete.status.textContent, /unavailable/i);
+  assert.equal(incomplete.retry.hidden, false, 'incomplete markup remains retryable');
+  healthy = true;
+  incomplete.retry.click();
+  await flush();
+  assert.equal(incompleteUrls.length, 11, 'only the two incomplete markets are fetched again');
+  assert.equal(incomplete.more.querySelectorAll('li').length, 2);
+  assert.equal(incomplete.retry.hidden, true);
+  incomplete.dom.window.close();
 
   // Even a fetch that never resolves must end in recoverable feedback rather than indefinite loading.
   const shortTimeoutCode = productionCode.replace('const EXTRA_TIMEOUT_MS = 8000;', 'const EXTRA_TIMEOUT_MS = 35;');

@@ -77,7 +77,12 @@
               // Run 80: market glossary terms carry ids (#term-pip), so a result opens on the term itself.
               const link = node.id && /^term-[a-z0-9-]+$/.test(node.id) ? `${href}#${node.id}` : href;
               return { term, def, market, href: link, title: fold(term), text: fold(term + ' ' + market + ' ' + def) };
-            }).filter(item => item.term);
+            });
+            // Every published market glossary contains definitions. An empty shell
+            // or incomplete term markup is not verified search coverage.
+            if (!items.length || items.some(item => !item.term || !item.def)) {
+              return { items: [], failed: true };
+            }
             return { items, failed: false };
           });
         })
