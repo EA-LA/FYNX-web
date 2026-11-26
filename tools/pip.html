@@ -720,7 +720,10 @@
       const price = parseNum(el.price.value);
       const lots = parseNum(el.lots.value);
 
-      if (!price || price <= 0) { setError("Enter a positive quote-to-account conversion rate"); return; }
+      if (!price || price <= 0) {
+        setError(rateMode === "loading" ? "Reference rate is loading. You can enter your broker’s rate instead." : "Enter a positive quote-to-account conversion rate");
+        return;
+      }
       if (!lots || lots <= 0) { setError("Enter a positive number of lots, e.g. 1 or 0.1"); return; }
       const moveIn = optionalPositive(el.pipMove, "pip move", 100000);
       if (moveIn.error) { setError(moveIn.error); return; }
@@ -792,13 +795,13 @@
     }
 
     function clearAll(){
-      el.price.value = "1";
       el.lots.value = "1";
       el.pipMove.value = "";
       el.riskAmount.value = "";
       hasCalculated = false;
       setError("");
       resetResults();
+      fillRate();
       el.price.focus();
     }
 
@@ -806,6 +809,13 @@
       inp.addEventListener("input", () => {
         const c = clampNumber(inp.value);
         if (c !== inp.value) inp.value = c;
+        if (inp === el.price) {
+          // An explicit entry owns this pair/account selection, even while a
+          // reference request is pending. Update provenance before recalculating.
+          ++rateRequest;
+          rateMode = "manual";
+          rateStatus.textContent = el.price.value ? "Manual rate: you entered it, FYNX did not fetch it." : "Enter a positive quote-to-account rate from your broker.";
+        }
         recalcIfShown();
       });
     });
@@ -822,7 +832,11 @@
       const quote = pair.split("/")[1];
       el.pipIncrement.value = quote === "JPY" ? "0.01" : "0.0001";
       if (quote === acct) { rateMode = "exact"; el.price.value = "1"; rateStatus.textContent = `Same currency: ${quote} quote, ${acct} account. Rate is exactly 1.`; recalcIfShown(); return; }
-      el.price.value = ""; rateStatus.textContent = `Loading the ${quote}→${acct} reference rate…`;
+      rateMode = "loading";
+      el.price.value = "";
+      rateStatus.textContent = `Loading the ${quote}→${acct} reference rate…`;
+      setError("");
+      resetResults(); // Do not show the last pair/account result during the lookup.
       try {
         const res = await fetch(`https://api.frankfurter.dev/v1/latest?base=${encodeURIComponent(quote)}&symbols=${encodeURIComponent(acct)}`, {cache: "no-store", signal: AbortSignal.timeout(8000)});
         if (!res.ok) throw new Error("rate");
@@ -840,7 +854,6 @@
       recalcIfShown();
     }
     pairEl.addEventListener("change", fillRate); acctEl.addEventListener("change", fillRate);
-    el.price.addEventListener("input", () => { if (rateMode !== "manual") { rateMode = "manual"; rateStatus.textContent = "Manual rate: you entered it, FYNX did not fetch it."; } });
     [el.price, el.lots, el.pipMove, el.riskAmount].forEach(inp => {
       inp.addEventListener("keydown", (e) => {
         if (e.key === "Enter"){
