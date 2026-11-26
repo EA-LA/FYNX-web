@@ -1,4 +1,4 @@
-name: probe crypto sentiment
+name: probe live routes
 on: push
 permissions:
   contents: read
@@ -6,12 +6,17 @@ jobs:
   p:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: {node-version: 22}
       - run: |
-          mkdir -p out prev
-          curl -sfL https://raw.githubusercontent.com/EA-LA/FYNX-web/terminal-data/scanner.json -o out/scanner.json && ls -la out
-          curl -sfL https://raw.githubusercontent.com/EA-LA/FYNX-web/terminal-data/equities.json -o out/equities.json || true
-          node probe/refresh-sentiment.cjs out prev
-          node -e "const d=require('./out/sentiment.json');const c=d.crypto;console.log(JSON.stringify({fng:c?.fng&&{asOf:c.fng.asOf,score:c.fng.score,label:c.fng.label,n:c.fng.history.length,prev:c.fng.prev,year:c.fng.year},season:c?.season&&{...c.season,history:c.season.history.length},rsi:c?.rsi&&{...c.rsi,history:c.rsi.history.length},coins:c?.coins?.length,top:c?.coins?.slice(0,12),universe:c?.universe}))"
+          hit(){ echo "=== $1"; curl -s -m 40 -o /tmp/o -w "HTTP %{http_code} %{content_type}\n" "$1" -H 'Accept: application/json' ${2:+-X POST -H 'Content-Type: application/json' -d "$2"}; head -c 400 /tmp/o; echo; }
+          hit "https://fynxfinanceworld.vercel.app/fn/research.js?action=directory"
+          hit "https://fynxfinanceworld.vercel.app/fn/research.js?action=filings&cik=320193"
+          hit "https://us-central1-fynx-c7a28.cloudfunctions.net/webResearchData?action=filings&cik=320193"
+          hit "https://us-central1-fynx-c7a28.cloudfunctions.net/webResearchData?action=financials&cik=320193"
+          hit "https://fynxfinanceworld.vercel.app/fn/market.js?op=closes&symbols=AAPL,SPY&range=1y"
+          hit "https://us-central1-fynx-c7a28.cloudfunctions.net/consumerLiveWorkspace" '{"data":{"action":"status"}}'
+          hit "https://us-central1-fynx-c7a28.cloudfunctions.net/consumerLiveWorkspace" '{"data":{"action":"industries"}}'
+          hit "https://us-central1-fynx-c7a28.cloudfunctions.net/fynxAccountSync" '{"data":{"action":"read"}}'
+          hit "https://raw.githubusercontent.com/EA-LA/FYNX-web/terminal-data/sentiment.json"
+          curl -s https://raw.githubusercontent.com/EA-LA/FYNX-web/terminal-data/sentiment.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const d=JSON.parse(s);console.log(JSON.stringify({gen:d.generatedAt,asOf:d.asOf,score:d.score,label:d.label,ind:d.indicators.filter(i=>Number.isFinite(i.score)).length,hist:d.history.length,mich:d.michigan?.length,crypto:{fng:d.crypto?.fng?.score,season:d.crypto?.season?.value,rsi:d.crypto?.rsi?.value,coins:d.crypto?.coins?.length}}))})"
+          hit "https://www.fynxfinanceworld.com/terminal.html"
+          curl -s https://www.fynxfinanceworld.com/terminal.html | grep -o 'markets-plus.js[^"]*\|markets-dash.js[^"]*\|pages.js[^"]*' | head
