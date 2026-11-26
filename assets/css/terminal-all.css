@@ -667,3 +667,12 @@ html body.fx-terminal .fl-table td,html body.fx-terminal .fl-table th{text-align
 .cs-side b{font:700 17px 'IBM Plex Mono',monospace}.cs-side em{font-style:normal;font-size:10px;color:var(--mu)}
 .cs-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--ln);border:1px solid var(--ln)}.cs-stats div{background:#0b100f;display:flex;justify-content:space-between;gap:8px;padding:4px 7px;font:11px 'IBM Plex Mono',monospace}.cs-stats span{color:var(--mu)}
 @media (max-width:900px){.fg-topgrid,.cs-grid,.nw-grid{grid-template-columns:1fr}.nw-col{max-height:none}.fg-grid{grid-template-columns:1fr}.cs-ov{grid-template-columns:1fr 110px 1fr}.cs-dn{width:110px;height:110px}.fg-back{grid-template-columns:repeat(2,1fr)}}
+.cr-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:4px 0 8px}.cr-card{background:var(--p);border:1px solid var(--ln);padding:6px 10px 8px;min-width:0}
+.cr-card .fg-gauge.compact{padding:2px 0 0}.cr-card .fg-num{font-size:44px;min-width:60px}
+.cr-meter{margin:12px 0 2px}.cr-ends{display:flex;justify-content:space-between;font:700 9.5px 'IBM Plex Mono',monospace;color:var(--mu);margin-top:4px;letter-spacing:.5px}
+.cr-look{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--ln);border:1px solid var(--ln);margin-top:10px}.cr-look span{background:#0b100f;padding:5px 8px;display:flex;flex-direction:column}.cr-look small{font:700 9px 'IBM Plex Mono',monospace;color:var(--mu)}.cr-look b{font:700 15px 'IBM Plex Mono',monospace}
+.cr-grid.compact{grid-template-columns:1fr;gap:6px;padding:4px 8px;margin:0}.cr-grid.compact .cr-card{padding:4px 8px}.cr-grid.compact .fg-30,.cr-grid.compact .fg-back{display:none}.cr-grid.compact .fg-num{font-size:30px}.cr-grid.compact .cr-look{display:none}
+.cr-bars{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1px 16px}.cr-bar{display:grid;grid-template-columns:52px 1fr 64px 52px;align-items:center;gap:6px;font:11px 'IBM Plex Mono',monospace;padding:2px 0}
+.cr-bar span{font-weight:700}.cr-bar.btc span{color:var(--am)}.cr-bar i{position:relative;height:8px;background:#0b100f}.cr-bar i b{position:absolute;top:0;bottom:0}.cr-bar em{font-style:normal;text-align:right}.cr-bar small{color:var(--mu);font-size:10px}
+.em-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:12px}.em-table th,.em-table td{white-space:nowrap}.em-mv{color:var(--am)}.cs-leg .em-iv{color:var(--bl)}
+@media (max-width:900px){.cr-grid,.em-grid{grid-template-columns:1fr}}

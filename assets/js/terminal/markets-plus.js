@@ -130,7 +130,6 @@
     draw();
     host.append(PG.sourceNote(`${d.method} Scale: 0–25 extreme fear, 25–45 fear, 45–55 neutral, 55–75 greed, 75–100 extreme greed. Strength and breadth use ${d.membersUsed || 'the'} S&P 500 members. ${d.sources?.prices || ''}. This is FYNX's own transparent index, not a third-party gauge. Updated ${new Date(d.generatedAt).toLocaleString()}.`));
   };
-  if (PG) { PG.add('sentiment', 'Market sentiment', sentimentPage); PG.add('fng', 'Market sentiment', sentimentPage); }
 
   /* ======================= MARKET HOURS ======================= */
   const H = window.FynxExchangeHolidays || {};
@@ -380,7 +379,103 @@
     })().catch(e => { report('cs', e); if (sec.isConnected) sec.replaceChildren(el('h2', 'pg-h2', 'COMPANY SNAPSHOT'), el('p', 'fx-empty', 'The company snapshot is not available right now.')); });
   });
 
-  T.PAGE_NAMES.push('SENTIMENT', 'FNG', 'HOURS', 'WIRE', 'FILINGS');
+  /* ======================= CRYPTO SENTIMENT ======================= */
+  // A 0–100 meter with labelled ends and bands, a marker at today's value and the look-backs.
+  function meter(value, bands, ends, look) {
+    const w = el('div', 'cr-meter'), bar = el('div', 'fg-scale');
+    for (const [a, b, c] of bands) { const i = el('i'); i.style.cssText = `left:${a}%;width:${b - a}%;background:${c}`; bar.append(i); }
+    const mk = el('b'); mk.style.left = Math.max(0, Math.min(100, value)) + '%'; bar.append(mk);
+    const e = el('div', 'cr-ends'); e.append(el('span', '', ends[0]), el('span', '', ends[1]));
+    w.append(bar, e);
+    if (look) { const lb = el('div', 'cr-look'); for (const [k, v] of look) if (finite(v)) { const c = el('span'); c.append(el('small', '', k), el('b', '', v.toFixed(1))); lb.append(c); } w.append(lb); }
+    return w;
+  }
+  const SEASON_BANDS = [[0, 25, '#f5a524'], [25, 75, '#3a4540'], [75, 100, '#5b8def']], RSI_BANDS = [[0, 30, '#2fb874'], [30, 70, '#3a4540'], [70, 100, '#e5484d']];
+  function cryptoCards(c, {compact = false} = {}) {
+    const g = el('div', 'cr-grid' + (compact ? ' compact' : ''));
+    if (c.fng) { const card = el('div', 'cr-card'); card.append(el('h3', 'cs-h', 'CRYPTO FEAR & GREED'), gauge(c.fng, {compact: true})); g.append(card); }
+    if (c.season) { const card = el('div', 'cr-card'), v = c.season.value, top = el('div', 'fg-top'), n = el('b', 'fg-num', String(Math.round(v))); n.style.color = v >= 75 ? '#5b8def' : v <= 25 ? '#f5a524' : 'var(--tx)';
+      const lab = el('div', 'fg-lab'); lab.append(el('strong', '', c.season.label.toUpperCase()), el('small', '', finite(c.season.prev) ? `${signed(v - c.season.prev, 1)} vs yesterday` : ''), el('small', 'fx-dim', `${Math.round(v)}% of altcoins beat bitcoin over 90 days`)); top.append(n, lab);
+      card.append(el('h3', 'cs-h', 'ALTCOIN SEASON INDEX'), top, meter(v, SEASON_BANDS, ['BITCOIN SEASON', 'ALTCOIN SEASON'], [['1 WEEK AGO', c.season.week], ['1 MONTH AGO', c.season.month]])); g.append(card); }
+    if (c.rsi) { const card = el('div', 'cr-card'), v = c.rsi.value, top = el('div', 'fg-top'), n = el('b', 'fg-num', v.toFixed(1)); n.style.color = v >= 70 ? '#e5484d' : v <= 30 ? '#2fb874' : 'var(--tx)';
+      const lab = el('div', 'fg-lab'); lab.append(el('strong', '', c.rsi.label.toUpperCase()), el('small', '', finite(c.rsi.prev) ? `${signed(v - c.rsi.prev, 1)} vs yesterday` : ''), el('small', 'fx-dim', 'average 14-day RSI of the largest coins')); top.append(n, lab);
+      card.append(el('h3', 'cs-h', 'AVERAGE CRYPTO RSI'), top, meter(v, RSI_BANDS, ['OVERSOLD 30', 'OVERBOUGHT 70'], [['1 WEEK AGO', c.rsi.week], ['1 MONTH AGO', c.rsi.month]])); g.append(card); }
+    return g;
+  }
+  function cryptoSection(c) {
+    const sec = PG.section('CRYPTO SENTIMENT', 'cr-sec'); sec.append(cryptoCards(c));
+    let span = store.get('cr-span') || '1Y'; const charts = el('div', 'fg-grid'); sec.append(charts);
+    const draw = () => {
+      charts.replaceChildren(); const n = SPAN[span];
+      const add = (title, chip, series, opts, foot) => { const card = el('section', 'pg-sec fg-card'), h = el('div', 'fg-ch'); h.append(el('h2', 'pg-h2', title), chip); card.append(h, chart(series, opts), el('p', 'fx-foot', foot)); charts.append(card); };
+      const tabs = PG.pageTabs(Object.keys(SPAN).map(k => [k, k]), span, v => { span = v; store.set('cr-span', v); draw(); });
+      if (c.fng?.history?.length) add('CRYPTO FEAR & GREED · HISTORY', tabs, c.fng.history.slice(-n), {W: 520, H: 190, bands: true, fixed: [0, 100], fmtV: v => v.toFixed(0), aria: 'Crypto fear and greed history'}, `${c.fng.source} · daily`);
+      if (c.season?.history?.length) add('ALTCOIN SEASON · HISTORY', el('span', 'fg-chip', c.season.label.toUpperCase()), c.season.history.slice(-n), {W: 520, H: 190, color: '#5b8def', fixed: [0, 100], ref: 75, fmtV: v => v.toFixed(0), unit: '%', aria: 'Altcoin season history'}, 'Share of altcoins whose 90-day return beats bitcoin’s · 75%+ altcoin season, 25% or less bitcoin season');
+      if (c.rsi?.history?.length) add('AVERAGE CRYPTO RSI · HISTORY', el('span', 'fg-chip', c.rsi.label.toUpperCase()), c.rsi.history.slice(-n), {W: 520, H: 190, color: '#ffd23f', fixed: [0, 100], ref: 50, fmtV: v => v.toFixed(0), aria: 'Average crypto RSI history'}, 'Mean 14-day RSI (Wilder) · above 70 overbought, below 30 oversold');
+    };
+    draw();
+    if (c.coins?.length) {
+      const btc = c.coins.find(x => x.symbol === 'BTC'), list = [...c.coins].sort((a, b) => b.r90 - a.r90), box = PG.section(`90-DAY RETURN VS BITCOIN · ${list.length} COINS`), bars = el('div', 'cr-bars');
+      const mx = Math.max(...list.map(x => Math.abs(x.r90)), 1);
+      for (const x of list) { const r = el('div', 'cr-bar' + (x.symbol === 'BTC' ? ' btc' : '')), beat = btc && x.r90 > btc.r90, b = el('i'), f = el('b'); f.style.width = (Math.abs(x.r90) / mx * 50) + '%'; f.style[x.r90 >= 0 ? 'left' : 'right'] = '50%'; f.style.background = x.symbol === 'BTC' ? 'var(--am)' : beat ? '#5b8def' : '#5a6560'; b.append(f);
+        r.title = `${x.name}: ${signed(x.r90, 1, '%')} over 90 days · RSI ${finite(x.rsi) ? x.rsi.toFixed(0) : '—'}`; r.append(el('span', '', x.symbol), b, el('em', tone(x.r90), signed(x.r90, 1, '%')), el('small', '', finite(x.rsi) ? 'RSI ' + x.rsi.toFixed(0) : '')); bars.append(r); }
+      box.append(bars, el('p', 'fx-foot', `Blue: beat bitcoin over 90 days · ${c.universe || ''}`)); sec.append(box);
+    }
+    return sec;
+  }
+  const origSentiment = sentimentPage;
+  const sentimentWithCrypto = async (host, arg, alive) => { await origSentiment(host, arg, alive); if (!alive() || !SENT.data?.crypto) return; host.insertBefore(cryptoSection(SENT.data.crypto), host.querySelector('.pg-note')); };
+  const cryptoPage = async (host, arg, alive) => {
+    PG.setHead('CSENT', 'Crypto sentiment', 'Crypto Fear & Greed, Altcoin Season and the average RSI of the largest coins');
+    host.append(el('p', 'fx-empty', 'Loading crypto sentiment…')); const d = await loadSent(); if (!alive()) return; host.replaceChildren();
+    if (!d?.crypto) return host.append(el('p', 'fx-empty', 'Crypto sentiment is not available right now.'));
+    host.append(cryptoSection(d.crypto), PG.sourceNote(`Crypto Fear & Greed from Alternative.me (their published index). Altcoin Season and average RSI are FYNX calculations from daily closes: ${d.crypto.universe || ''}. Updated ${new Date(d.generatedAt).toLocaleString()}.`));
+  };
+  if (PG) { PG.add('sentiment', 'Market sentiment', sentimentWithCrypto); PG.add('fng', 'Market sentiment', sentimentWithCrypto); PG.add('csent', 'Crypto sentiment', cryptoPage); PG.add('cryptosent', 'Crypto sentiment', cryptoPage); }
+  T.PANELS.cfng = ['CFNG', 'Crypto sentiment', 'csent']; T.PANEL_DESC.cfng = 'Crypto Fear & Greed, Altcoin Season index and average crypto RSI';
+  T.RENDER.cfng = async () => {
+    const host = T.panel('cfng'); const d = await loadSent(); if (!host.isConnected) return; host.replaceChildren();
+    if (!d?.crypto) return host.append(el('p', 'fx-empty', 'Crypto sentiment is not available right now.'));
+    T.setText('n-cfng', d.crypto.fng ? `${d.crypto.fng.score} · ${d.crypto.fng.label}` : '');
+    host.append(cryptoCards(d.crypto, {compact: true}), el('p', 'fx-foot', 'Fear & Greed: Alternative.me · Altcoin Season and RSI: FYNX from daily closes'));
+  };
+  T.EXTRA_GROUPS.find(g => g[0] === 'Sentiment')?.[1].push('cfng');
+  if (T.DESK_DEFS?.crypto && !T.DESK_DEFS.crypto.slots.includes('cfng')) { const sl = T.DESK_DEFS.crypto.slots, i = sl.indexOf('range'); if (i >= 0) sl[i] = 'cfng'; }
+
+  /* ======================= OPTIONS: EXPECTED MOVE ======================= */
+  T.OPT_SECTIONS = T.OPT_SECTIONS || [];
+  T.OPT_SECTIONS.push((host, u) => {
+    const ex = u.expiries.filter(e => finite(e.straddle) && e.straddle > 0 && e.dte >= 0).slice(0, 16); if (ex.length < 2) return;
+    const sec = PG.section('EXPECTED MOVE', 'em-sec'), wrap = el('div', 'em-grid'), left = el('div', 'cs-card'), right = el('div', 'cs-card'); wrap.append(left, right); sec.append(wrap); host.append(sec);
+    const sigma = e => finite(e.atmIV) ? u.price * e.atmIV * Math.sqrt(Math.max(e.dte, 0.5) / 365) : null;
+    // Table: every expiry with the straddle-implied range and the IV one-sigma range.
+    const t = el('table', 'fx-table pg-table em-table'), h = el('tr'); ['EXPIRY', 'DTE', 'STRADDLE', 'MOVE', 'LOWER', 'UPPER', 'ATM IV', '1σ (IV)'].forEach(x => h.append(el('th', '', x))); t.append(h);
+    for (const e of ex) { const s1 = sigma(e), tr = el('tr'); tr.append(el('th', '', `${new Date(e.date + 'T12:00:00Z').toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: '2-digit', timeZone: 'UTC'})}`), el('td', 'fx-num fx-dim', String(e.dte)), el('td', 'fx-num', '$' + fmt(e.straddle, 2)), el('td', 'fx-num em-mv', `±${fmt(e.straddle, 2)} · ${e.movePercent.toFixed(2)}%`), el('td', 'fx-num fx-down', fmt(u.price - e.straddle, 2)), el('td', 'fx-num fx-up', fmt(u.price + e.straddle, 2)), el('td', 'fx-num', finite(e.atmIV) ? (e.atmIV * 100).toFixed(1) + '%' : '—'), el('td', 'fx-num fx-dim', finite(s1) ? `±${fmt(s1, 2)}` : '—')); t.append(tr); }
+    const sc = el('div', 'pg-scroll'); sc.append(t); right.append(el('h3', 'cs-h', 'EXPECTED MOVE BY EXPIRY'), sc, el('p', 'fx-foot', 'Move = at-the-money straddle (call + put mid) · lower/upper = price ∓ straddle · 1σ (IV) = price × ATM IV × √(days/365) · Cboe delayed chains'));
+    // Cone: recent closes, then the straddle range (amber) and the IV 1σ range (blue) out to each expiry.
+    left.append(el('h3', 'cs-h', `${u.symbol} · EXPECTED MOVE CONE`), el('p', 'fx-empty', 'Loading price history…'));
+    (async () => {
+      let d = null; try { d = await T.fnMarket({op: 'closes', symbols: u.symbol, range: '3mo'}); } catch (e) { report('em-closes', e); }
+      if (!left.isConnected) return; left.lastChild.remove();
+      const hist = (d?.dates || []).map((dt, i) => [Date.parse(dt + 'T21:00:00Z'), d.series?.[u.symbol]?.[i]]).filter(r => finite(r[1])).slice(-45);
+      const now = Date.parse(u.asOf) || Date.now(), pts = ex.map(e => ({t: Date.parse(e.date + 'T21:00:00Z'), m: e.straddle, s: sigma(e), e}));
+      const W = 620, H = 300, L = 6, R = 62, Tp = 10, B = 22, t0 = hist.length ? hist[0][0] : now - 30 * 864e5, t1 = pts.at(-1).t;
+      const ys = [...hist.map(r => r[1]), ...pts.flatMap(p => [u.price + Math.max(p.m, p.s || 0), u.price - Math.max(p.m, p.s || 0)])], lo = Math.min(...ys), hi = Math.max(...ys), pad = (hi - lo) * 0.06;
+      const x = t => L + (t - t0) / (t1 - t0) * (W - L - R), y = v => Tp + (hi + pad - v) / (hi - lo + 2 * pad) * (H - Tp - B);
+      const c = svg('svg', {viewBox: `0 0 ${W} ${H}`, class: 'fx-chart fg-chart', role: 'img', 'aria-label': `${u.symbol} expected move cone`});
+      for (let k = 0; k <= 4; k++) { const v = lo - pad + (hi - lo + 2 * pad) * k / 4; c.append(svg('line', {x1: L, x2: W - R, y1: y(v), y2: y(v), class: 'g'})); const tx = svg('text', {x: W - R + 6, y: y(v) + 4, class: 'a'}); tx.textContent = fmt(v, 2); c.append(tx); }
+      const poly = (k, fill, stroke, dash) => { if (k === 's' && pts.some(p => !finite(p.s))) return; const up = [[x(now), y(u.price)], ...pts.map(p => [x(p.t), y(u.price + p[k])])], dn = [...pts.map(p => [x(p.t), y(u.price - p[k])])].reverse(); c.append(svg('polygon', {points: [...up, ...dn].map(q => q.map(n => n.toFixed(1)).join(',')).join(' '), fill, stroke, 'stroke-width': 1, 'stroke-dasharray': dash || ''})); };
+      poly('s', 'rgba(91,141,239,.10)', '#5b8def', '4 3'); poly('m', 'rgba(255,176,0,.16)', '#ffb000');
+      c.append(svg('line', {x1: x(now), x2: x(now), y1: Tp, y2: H - B, stroke: '#6a7570', 'stroke-dasharray': '2 3'}));
+      if (hist.length > 1) c.append(svg('polyline', {points: hist.map(r => `${x(r[0]).toFixed(1)},${y(r[1]).toFixed(1)}`).join(' '), fill: 'none', stroke: '#e7ece9', 'stroke-width': 1.4}));
+      for (const p of pts.filter((_, i) => i === 0 || i === pts.length - 1 || i === Math.floor(pts.length / 2))) { const tx = svg('text', {x: x(p.t), y: H - 6, class: 'a', 'text-anchor': 'middle'}); tx.textContent = new Date(p.e.date + 'T12:00:00Z').toLocaleDateString('en-US', {month: 'short', day: 'numeric', timeZone: 'UTC'}); c.append(tx); }
+      const last = pts.at(-1); for (const [v, col] of [[u.price + last.m, '#ffb000'], [u.price - last.m, '#ffb000']]) { c.append(svg('rect', {x: W - R + 2, y: y(v) - 8, width: R - 4, height: 15, fill: col})); const tx = svg('text', {x: W - R + 6, y: y(v) + 3.5, fill: '#000', 'font-size': 10, 'font-weight': 700, 'font-family': 'IBM Plex Mono, monospace'}); tx.textContent = fmt(v, 2); c.append(tx); }
+      const leg = el('div', 'cs-leg'); leg.append(el('span', 'a', `Straddle ±${fmt(pts[0].m, 2)} by ${new Date(pts[0].e.date + 'T12:00:00Z').toLocaleDateString('en-US', {month: 'short', day: 'numeric', timeZone: 'UTC'})}`), el('span', 'em-iv', 'IV 1σ (dashed)'), el('span', 'b', 'Price'));
+      left.append(leg, c);
+    })().catch(e => report('em', e));
+  });
+
+  T.PAGE_NAMES.push('SENTIMENT', 'FNG', 'HOURS', 'WIRE', 'FILINGS', 'CSENT', 'CRYPTOSENT');
   const refreshFng = () => { if (!document.hidden && $('tp-fng')) loadSent(true).then(() => T.R('fng')); };
   setInterval(refreshFng, 15 * 60000);
 });

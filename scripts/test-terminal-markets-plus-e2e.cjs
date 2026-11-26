@@ -57,7 +57,21 @@ function sentimentFixture() {
     membersUsed: out.members, michigan: Array.from({length: 131}, (_, i) => [new Date(Date.UTC(2016, 1 + i, 1)).toISOString().slice(0, 10), Number((80 + Math.sin(i / 12) * 12 - i * 0.2).toFixed(1))]),
     sources: {prices: 'Yahoo Finance daily closes (fixture)', michigan: 'University of Michigan Surveys of Consumers (fixture)'}};
 }
-const SENT = sentimentFixture();
+function cryptoFixture() {
+  const dates = Array.from({length: 500}, (_, i) => new Date(Date.UTC(2025, 6, 15) + i * 86400000).toISOString().slice(0, 10)), mk = f => new Map(dates.map((d, i) => [d, f(i)]));
+  const btc = mk(i => 60000 + i * 40 - Math.max(0, i - 440) * 300), alts = Array.from({length: 30}, (_, k) => mk(i => 10 + k + i * (k % 2 ? 0.05 : 0.01) - Math.max(0, i - 440) * (k % 3 ? 0.02 : 0.2)));
+  const b = SN.cryptoBreadth(dates, btc, alts), last = b.season.length - 1;
+  const fng = Array.from({length: 400}, (_, i) => [new Date(Date.UTC(2025, 9, 23) + i * 86400000).toISOString().slice(0, 10), Math.round(50 + Math.sin(i / 20) * 30)]); fng[fng.length - 1][1] = 11;
+  const fl = fng.at(-1), at = n => ({date: fng.at(-1 - n)[0], score: fng.at(-1 - n)[1], label: 'Fear'});
+  return {fng: {asOf: fl[0], score: 11, label: 'Extreme Fear', prev: at(1), week: at(7), month: at(30), year: at(365), history: fng, source: 'Alternative.me Crypto Fear & Greed Index'},
+    season: {asOf: dates[last], value: b.season[last], label: SN.seasonLabel(b.season[last]), prev: b.season[last - 1], week: b.season[last - 7], month: b.season[last - 30], history: dates.map((d, i) => [d, b.season[i]]).filter(r => r[1] != null).slice(-365)},
+    rsi: {asOf: dates[last], value: b.avgRsi[last], label: SN.rsiLabel(b.avgRsi[last]), prev: b.avgRsi[last - 1], week: b.avgRsi[last - 7], month: b.avgRsi[last - 30], history: dates.map((d, i) => [d, b.avgRsi[i]]).filter(r => r[1] != null).slice(-365)},
+    coins: [{symbol: 'BTC', name: 'Bitcoin', r90: -22.2, rsi: 28.3}, {symbol: 'ETH', name: 'Ethereum', r90: -30.6, rsi: 30.1}, {symbol: 'XMR', name: 'Monero', r90: -3.4, rsi: 36.6}, {symbol: 'ZEC', name: 'Zcash', r90: 12.3, rsi: 61}],
+    universe: '30 largest altcoins (fixture)'};
+}
+const SENT = {...sentimentFixture(), crypto: cryptoFixture()};
+const OPTIONS = {version: 1, generatedAt: new Date(NOW).toISOString(), source: 'Cboe delayed (fixture)', underlyings: {SPY: {symbol: 'SPY', price: 680.5, change: 1.2, changePercent: 0.18, iv30: 17.2, iv30Change: -0.4, callVolume: 1e6, putVolume: 1.3e6, putCallVolume: 1.3, callOI: 5e6, putOI: 7e6, putCallOI: 1.4, asOf: new Date(NOW).toISOString(), contracts: 9000, mostActive: [],
+  expiries: [[1, 0.21, 6.1], [2, 0.19, 8.4], [7, 0.175, 15.8], [14, 0.17, 22.3], [30, 0.168, 32.5], [58, 0.172, 45.1], [86, 0.175, 55.9]].map(([dte, iv, st]) => ({date: new Date(NOW + dte * 864e5).toISOString().slice(0, 10), dte, atmStrike: 680, atmIV: iv, straddle: st, movePercent: Math.round(st / 680.5 * 1e4) / 100, maxPain: 675, callVolume: 1, putVolume: 1, callOI: 1, putOI: 1, skew25: 0.04, chain: []}))}}};
 
 test('the publisher output has a score, look-backs and every indicator with history', () => {
   assert.ok(SENT.score >= 0 && SENT.score <= 100);
@@ -132,7 +146,7 @@ async function boot({time = NOW, width = 1600, height = 1100, filingsDown = fals
     if (url.origin === ORIGIN && url.pathname === '/fn/market.js') {
       if (url.searchParams.get('op') === 'closes') {
         const syms = url.searchParams.get('symbols').split(','), dates = Array.from({length: 252}, (_, k) => new Date(Date.UTC(2025, 10, 26) + k * 86400000 * 1.45).toISOString().slice(0, 10));
-        return json(route, {dates, series: Object.fromEntries(syms.map((s, i) => [s, dates.map((_, k) => Number((100 * (1 + k * (i ? 0.0008 : 0.0016)) + Math.sin(k / 9) * 2).toFixed(2)))]))});
+        const base = s => s === 'SPY' ? 600 : 100; return json(route, {dates, series: Object.fromEntries(syms.map((s, i) => [s, dates.map((_, k) => Number((base(s) * (1 + k * (i ? 0.0005 : 0.0016) + Math.sin(k / 9) * 0.02)).toFixed(2)))]))});
       }
       return json(route, {});
     }
@@ -151,6 +165,7 @@ async function boot({time = NOW, width = 1600, height = 1100, filingsDown = fals
       return json(route, {});
     }
     if (url.pathname.endsWith('/terminal-data/sentiment.json')) return json(route, SENT);
+    if (url.pathname.endsWith('/terminal-data/options.json')) return json(route, OPTIONS);
     if (url.pathname.endsWith('/terminal-data/equities.json')) return json(route, equities());
     if (url.pathname.endsWith('/terminal-data/scanner.json')) return json(route, scanner());
     if (url.pathname.endsWith('/terminal-data/markets.json')) return json(route, markets());
@@ -210,9 +225,10 @@ test('SENTIMENT page and FNG panel: Fear & Greed score, last 30 sessions, look-b
   const g = await page.textContent('.fg-gauge');
   assert.match(g, new RegExp('^' + Math.round(SENT.score) + 'EXTREME FEAR'));
   assert.match(g, /PREV CLOSE.*1 WEEK AGO.*1 MONTH AGO.*1 YEAR AGO/);
-  assert.equal(await page.$$eval('.fg-30s span', s => s.length), 30);
-  assert.equal(await page.$$eval('.fg-grid .fg-card', c => c.length), 8, 'seven indicators + Michigan');
-  assert.match(await page.textContent('.fg-grid'), /MARKET MOMENTUM.*STOCK PRICE STRENGTH.*STOCK PRICE BREADTH.*MARKET VOLATILITY.*VOLATILITY TERM STRUCTURE.*SAFE HAVEN DEMAND.*JUNK BOND DEMAND.*CONSUMER SENTIMENT · MICHIGAN/);
+  assert.equal(await page.$$eval('.fg-topgrid .fg-30s span', s => s.length), 30);
+  assert.equal(await page.$$eval('.fg-topgrid + .fg-grid .fg-card', c => c.length), 8, 'seven indicators + Michigan');
+  assert.ok(await page.$('.cr-sec'), 'crypto sentiment follows on the same page');
+  assert.match(await page.textContent('.fg-topgrid + .fg-grid'), /MARKET MOMENTUM.*STOCK PRICE STRENGTH.*STOCK PRICE BREADTH.*MARKET VOLATILITY.*VOLATILITY TERM STRUCTURE.*SAFE HAVEN DEMAND.*JUNK BOND DEMAND.*CONSUMER SENTIMENT · MICHIGAN/);
   const lines1y = await page.$$eval('.fg-topgrid svg line[stroke]', l => l.length);
   await page.click('.fg-topgrid .pg-tabs >> text=1M'); await page.clock.runFor(100);
   const lines1m = await page.$$eval('.fg-topgrid svg line[stroke]', l => l.length);
@@ -294,6 +310,75 @@ test('DES company snapshot: tags, performance vs S&P 500, financial overview fro
   await page.locator('.cs-sec').scrollIntoViewIfNeeded(); await shot(page, 'des-snapshot.png');
   await page.click('.cs-sec >> text=SEC filings ▸'); await page.clock.runFor(500);
   await page.waitForSelector('.fl-table');
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test('Edit: rows are not capped at 28 boxes and "+ All panels" fits every panel on one desk', async () => {
+  const {ctx, page, errors} = await boot();
+  await page.click('#fx-edit'); await page.clock.runFor(300);
+  const info = () => page.evaluate(() => ({boxes: document.querySelectorAll('#fx-main > section.tp').length, panels: document.querySelectorAll('#fx-main > section.tp:not(.tp-empty)').length}));
+  const start = await info();
+  for (let i = 0; i < 6; i++) { await page.click('#fx-ed-row'); await page.clock.runFor(200); }
+  const grown = await info();
+  assert.equal(grown.boxes, start.boxes + 36, 'six more rows: past the old 28-box limit');
+  assert.ok(grown.boxes > 28);
+  await page.click('#fx-ed-all'); await page.clock.runFor(1500);
+  const all = await info();
+  console.log('panels placed', all.panels, 'boxes', all.boxes);
+  assert.ok(all.panels >= 60, `every panel placed: ${all.panels}`);
+  assert.equal(new Set(await page.$$eval('#fx-main > section.tp:not(.tp-empty)', s => s.map(x => x.id))).size, all.panels, 'no duplicates');
+  assert.match(await page.textContent('#fx-say, .fx-say, body'), /Added \d+ panels|Every panel/);
+  await page.click('#fx-ed-all'); await page.clock.runFor(300);
+  assert.equal((await info()).panels, all.panels, 'a second click adds nothing');
+  // The layout survives a reload.
+  await page.click('#fx-ed-done'); await page.reload(); await page.clock.runFor(2000);
+  await page.waitForFunction(() => document.querySelector('#fx-main')?.getAttribute('aria-busy') === 'false', null, {timeout: 20000});
+  assert.equal((await info()).panels, all.panels);
+  await shot(page, 'all-panels.png');
+  assert.deepEqual(errors.filter(e => !/ResizeObserver/.test(e)), []);
+  await ctx.close();
+});
+
+test('crypto sentiment: RSI, altcoin season and the Alternative.me parser', () => {
+  assert.equal(SN.rsi(Array.from({length: 30}, (_, i) => i)).at(-1), 100);
+  const z = SN.rsi(Array.from({length: 60}, (_, i) => 100 + (i % 2 ? 1 : -1))).at(-1); assert.ok(z > 45 && z < 55);
+  const d = Array.from({length: 120}, (_, i) => String(i)), btc = new Map(d.map((x, i) => [x, 100 + i])), up = new Map(d.map((x, i) => [x, 100 + i * 3])), dn = new Map(d.map((x, i) => [x, 100 + i * 0.5]));
+  assert.equal(SN.cryptoBreadth(d, btc, [...Array(15).fill(up), ...Array(5).fill(dn)]).season.at(-1), 75);
+  assert.deepEqual([80, 50, 10].map(SN.seasonLabel), ['Altcoin season', 'Neither', 'Bitcoin season']);
+  assert.deepEqual(SN.parseCryptoFng({data: [{value: '11', value_classification: 'Extreme Fear', timestamp: '1764115200'}]}), [['2025-11-26', 11, 'Extreme Fear']]);
+  const fields = ['id', 'symbol', 'name', 'price', 'change1h', 'change24h', 'change7d', 'marketCap', 'volume', 'rank', 'fromATH', 'categories'], row = (s, n, r, c = []) => [s.toLowerCase(), s, n, 1, 0, 0, 0, 1, 1, r, 0, c];
+  assert.deepEqual(SN.coinUniverse({crypto: {fields, rows: [row('USDT', 'Tether', 3, ['stable']), row('WBTC', 'Wrapped Bitcoin', 9), row('STETH', 'Lido Staked Ether', 7), row('ETH', 'Ethereum', 2), row('BTC', 'Bitcoin', 1), row('STX', 'Stacks', 40)]}}).map(c => c.symbol), ['BTC', 'ETH', 'STX']);
+});
+
+test('CSENT and CFNG: crypto Fear & Greed, Altcoin Season, average RSI and the coin board; also on SENTIMENT', async () => {
+  const {ctx, page, errors} = await boot();
+  await command(page, 'CSENT');
+  await page.waitForSelector('.cr-grid');
+  const t = await page.textContent('.cr-grid');
+  assert.match(t, /CRYPTO FEAR & GREED11EXTREME FEAR/); assert.match(t, /ALTCOIN SEASON INDEX\d+/); assert.match(t, /AVERAGE CRYPTO RSI\d+\.\d/);
+  assert.equal(await page.$$eval('.cr-sec .fg-grid .fg-card', c => c.length), 3);
+  assert.deepEqual(await page.$$eval('.cr-bar span', s => s.map(x => x.textContent)), ['ZEC', 'XMR', 'BTC', 'ETH']);
+  await shot(page, 'crypto-sentiment.png');
+  await command(page, 'SENTIMENT'); await page.waitForSelector('.cr-sec');
+  await page.click('.fx-page-close').catch(() => {}); await page.keyboard.press('Escape'); await page.clock.runFor(300);
+  await page.click('#fx-deskbar-list >> text=CRYPTO'); await page.clock.runFor(1500);
+  await page.waitForSelector('#b-cfng .cr-card');
+  assert.match(await page.textContent('#b-cfng'), /CRYPTO FEAR & GREED.*ALTCOIN SEASON.*AVERAGE CRYPTO RSI/);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test('OPTIONS: expected move table and cone from the straddles', async () => {
+  const {ctx, page, errors} = await boot();
+  await command(page, 'GO OPTIONS');
+  await page.waitForSelector('.em-table'); await page.waitForSelector('.em-sec polygon');
+  const rows = await page.$$eval('.em-table tr', r => r.slice(1).map(x => [...x.children].map(c => c.textContent)));
+  assert.equal(rows.length, 7);
+  assert.deepEqual(rows[2].slice(1), ['7', '$15.80', '±15.80 · 2.32%', '664.70', '696.30', '17.5%', '±' + (680.5 * 0.175 * Math.sqrt(7 / 365)).toFixed(2)]);
+  assert.equal(await page.$$eval('.em-sec polygon', p => p.length), 2, 'straddle and IV ranges');
+  assert.match(await page.textContent('.em-sec .cs-leg'), /Straddle ±6\.10/);
+  await page.locator('.em-sec').scrollIntoViewIfNeeded(); await shot(page, 'expected-move.png');
   assert.deepEqual(errors, []);
   await ctx.close();
 });
