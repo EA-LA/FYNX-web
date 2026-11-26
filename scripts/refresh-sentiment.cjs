@@ -115,6 +115,70 @@ function summarize(dates, out, keep = 520) {
       return {...ind, value: raw[last], score: sc[last], label: label(sc[last]), series}; })};
 }
 
+/* ---------- crypto sentiment ---------- */
+// Wilder RSI(14) of a close series (array, nulls allowed after fill-forward).
+function rsi(vals, n = 14) {
+  const out = new Array(vals.length).fill(null); let ag = 0, al = 0, k = 0;
+  for (let i = 1; i < vals.length; i++) {
+    if (!finite(vals[i]) || !finite(vals[i - 1])) continue;
+    const ch = vals[i] - vals[i - 1], g = Math.max(0, ch), l = Math.max(0, -ch); k++;
+    if (k <= n) { ag += g / n; al += l / n; if (k < n) continue; }
+    else { ag = (ag * (n - 1) + g) / n; al = (al * (n - 1) + l) / n; }
+    out[i] = al === 0 ? 100 : r4(100 - 100 / (1 + ag / al));
+  }
+  return out;
+}
+// Altcoin season (share of the largest altcoins beating bitcoin over 90 days) and the average RSI(14), per day.
+function cryptoBreadth(dates, btc, alts, win = 90) {
+  const B = fillForward(dates.map(d => btc.get(d) ?? null)), A = alts.map(m => fillForward(dates.map(d => m.get(d) ?? null)));
+  const R = [B, ...A].map(v => rsi(v));
+  const season = dates.map((_, i) => {
+    if (i < win || !finite(B[i]) || !finite(B[i - win])) return null; const b = B[i] / B[i - win];
+    let n = 0, beat = 0; for (const v of A) if (finite(v[i]) && finite(v[i - win])) { n++; if (v[i] / v[i - win] > b) beat++; }
+    return n >= 20 ? r4(beat / n * 100) : null;
+  });
+  const avgRsi = dates.map((_, i) => { const xs = R.map(r => r[i]).filter(finite); return xs.length >= 20 ? r4(xs.reduce((a, x) => a + x, 0) / xs.length) : null; });
+  return {season, avgRsi};
+}
+const seasonLabel = s => !finite(s) ? null : s >= 75 ? 'Altcoin season' : s <= 25 ? 'Bitcoin season' : 'Neither';
+const rsiLabel = s => !finite(s) ? null : s >= 70 ? 'Overbought' : s <= 30 ? 'Oversold' : s >= 55 ? 'Bullish' : s <= 45 ? 'Bearish' : 'Neutral';
+// Alternative.me crypto Fear & Greed: {data: [{value, value_classification, timestamp}]} newest first.
+function parseCryptoFng(j) { return (j?.data || []).map(r => [new Date(Number(r.timestamp) * 1000).toISOString().slice(0, 10), Number(r.value), r.value_classification]).filter(r => finite(r[1])).sort((a, b) => a[0] < b[0] ? -1 : 1); }
+// The largest coins from scanner.json (CoinGecko), without stablecoins and wrapped, staked or bridged tokens.
+function coinUniverse(scan, n = 50) {
+  const c = scan?.crypto; if (!c?.rows) return [];
+  const f = Object.fromEntries(c.fields.map((k, i) => [k, i]));
+  const derivative = r => /wrapped|staked|bridged|liquid staking|restak|\bpegged\b/i.test(r[f.name]) || /USD|EUR/.test(r[f.symbol]) || (/^[A-Z]{1,4}(BTC|ETH|SOL)$/.test(r[f.symbol]));
+  return c.rows.filter(r => !(r[f.categories] || []).includes('stable') && !derivative(r))
+    .sort((a, b) => (a[f.rank] || 1e9) - (b[f.rank] || 1e9)).slice(0, n).map(r => ({id: r[f.id], symbol: r[f.symbol], name: r[f.name], price: r[f.price]}));
+}
+async function cryptoSentiment(outDir, prevDir, read, previous) {
+  const scan = await read(path.join(outDir, 'scanner.json')) || (prevDir ? await read(path.join(prevDir, 'scanner.json')) : null);
+  const coins = coinUniverse(scan, 60), out = {};
+  try {
+    const fng = parseCryptoFng(JSON.parse(await fetchText('https://api.alternative.me/fng/?limit=800&format=json', {Accept: 'application/json'}, 20000)));
+    if (fng.length > 30) { const last = fng.at(-1), at = n => fng.at(-1 - n) ? {date: fng.at(-1 - n)[0], score: fng.at(-1 - n)[1], label: fng.at(-1 - n)[2]} : null;
+      out.fng = {asOf: last[0], score: last[1], label: last[2], prev: at(1), week: at(7), month: at(30), year: at(365), history: fng.slice(-730).map(r => [r[0], r[1]]), source: 'Alternative.me Crypto Fear & Greed Index'}; }
+  } catch (e) { console.warn('[sentiment] crypto fear & greed:', e.message); if (previous?.crypto?.fng) out.fng = {...previous.crypto.fng, stale: true}; }
+  if (coins.length >= 30) {
+    const ys = coins.map(c => c.symbol + '-USD'), series = {};
+    for (let i = 0; i < ys.length; i += 20) { try { const r = await spark(ys.slice(i, i + 20), '2y'); for (const s of ys.slice(i, i + 20)) { const m = closes(r?.[s]), coin = coins.find(c => c.symbol + '-USD' === s), last = [...m.values()].at(-1); if (m.size > 200 && finite(coin?.price) && Math.abs(last / coin.price - 1) < 0.15) series[s] = m; } } catch (e) { console.warn('[sentiment] coins:', e.message); } await sleep(300); }
+    const btc = series['BTC-USD'];
+    if (btc) {
+      const dates = [...btc.keys()].sort(), alts = coins.filter(c => c.symbol !== 'BTC' && series[c.symbol + '-USD']);
+      const b = cryptoBreadth(dates, btc, alts.map(c => series[c.symbol + '-USD']));
+      const lastIdx = arr => { for (let i = arr.length - 1; i >= 0; i--) if (finite(arr[i])) return i; return -1; };
+      const pack = (arr, lab) => { const i = lastIdx(arr); if (i < 0) return null; const hist = []; for (let k = Math.max(0, i - 364); k <= i; k++) if (finite(arr[k])) hist.push([dates[k], arr[k]]); const back = n => finite(arr[i - n]) ? arr[i - n] : null; return {asOf: dates[i], value: arr[i], label: lab(arr[i]), prev: back(1), week: back(7), month: back(30), history: hist}; };
+      out.season = pack(b.season, seasonLabel); out.rsi = pack(b.avgRsi, rsiLabel);
+      // Today's per-coin 90-day return against bitcoin, for the leaderboard.
+      const i = dates.length - 1, ret = m => { const v = fillForward(dates.map(d => m.get(d) ?? null)); return finite(v[i]) && finite(v[i - 90]) ? r4((v[i] / v[i - 90] - 1) * 100) : null; };
+      out.coins = [{symbol: 'BTC', name: 'Bitcoin', r90: ret(btc), rsi: rsi(fillForward(dates.map(d => btc.get(d) ?? null))).at(-1)}, ...alts.map(c => { const m = series[c.symbol + '-USD']; return {symbol: c.symbol, name: c.name, r90: ret(m), rsi: rsi(fillForward(dates.map(d => m.get(d) ?? null))).at(-1)}; })].filter(c => finite(c.r90));
+      out.universe = `${alts.length} largest altcoins by market value (CoinGecko, without stablecoins and wrapped or staked tokens) priced against bitcoin on Yahoo Finance`;
+    }
+  }
+  return Object.keys(out).length ? out : previous?.crypto || null;
+}
+
 async function main() {
   const [outDir, prevDir] = process.argv.slice(2);
   if (!outDir) throw new Error('Usage: refresh-sentiment.cjs <output-dir> [previous-dir]');
@@ -135,15 +199,16 @@ async function main() {
     const spx = closes(core['^GSPC']), dates = [...spx.keys()].sort();
     const out = compute({dates, spx, vix: closes(core['^VIX']), vix3m: closes(core['^VIX3M']), spy: closes(core.SPY), ief: closes(core.IEF), hyg: closes(core.HYG), lqd: closes(core.LQD), members});
     const s = summarize(dates, out);
+    const crypto = await cryptoSentiment(outDir, prevDir, read, previous).catch(e => { console.warn('[sentiment] crypto:', e.message); return previous?.crypto || null; });
     const michiganRows = mich ? mich.rows.filter(([d]) => d >= `${new Date(now).getUTCFullYear() - 10}-01-01`) : previous?.michigan || null;
-    const doc = {version: 1, generatedAt: new Date(now).toISOString(), method: 'FYNX Fear & Greed: seven indicators, each scored by its percentile within its own trailing year (inverted where high means fear), averaged.', ...s, membersUsed: out.members, michigan: michiganRows,
+    const doc = {version: 1, generatedAt: new Date(now).toISOString(), method: 'FYNX Fear & Greed: seven indicators, each scored by its percentile within its own trailing year (inverted where high means fear), averaged.', ...s, membersUsed: out.members, michigan: michiganRows, crypto,
       sources: {prices: 'Yahoo Finance daily closes (^GSPC, ^VIX, ^VIX3M, SPY, IEF, HYG, LQD and S&P 500 members)', michigan: mich?.source || previous?.sources?.michigan || null}};
     await fs.writeFile(path.join(outDir, 'sentiment.json'), JSON.stringify(doc) + '\n');
-    console.log(`[sentiment] ${s.asOf} score ${s.score} (${s.label}) · prev ${s.prev?.score} · members ${out.members} · indicators ${s.indicators.filter(i => finite(i.score)).length}/7 · history ${s.history.length}`);
+    console.log(`[sentiment] ${s.asOf} score ${s.score} (${s.label}) · prev ${s.prev?.score} · members ${out.members} · indicators ${s.indicators.filter(i => finite(i.score)).length}/7 · history ${s.history.length} · crypto F&G ${crypto?.fng?.score ?? '—'} · alt season ${crypto?.season?.value ?? '—'} · avg RSI ${crypto?.rsi?.value ?? '—'} (${crypto?.coins?.length || 0} coins)`);
   } catch (e) {
     console.warn('[sentiment] failed:', e.message);
     if (previous) await fs.writeFile(path.join(outDir, 'sentiment.json'), JSON.stringify({...previous, stale: true}) + '\n'); else throw e;
   }
 }
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
-module.exports = {sma, rollingPercentile, label, breadth, compute, summarize, parseFred, parseMichigan, closes, INDICATORS};
+module.exports = {sma, rollingPercentile, label, breadth, compute, summarize, parseFred, parseMichigan, closes, INDICATORS, rsi, cryptoBreadth, parseCryptoFng, coinUniverse, seasonLabel, rsiLabel};

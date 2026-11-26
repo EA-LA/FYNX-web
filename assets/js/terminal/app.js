@@ -1403,10 +1403,12 @@
     return undefined;
   }
   const layoutKey = () => S.sym ? 'sym-' + S.sym.cls : S.deskKey;
+  // Room for every panel on one desk (plus a spare row for market cards), never fewer than the original 28 boxes.
+  const maxSlots = () => Math.max(28, 16 + Math.ceil(Object.keys(PANELS).length / 6) * 6 + 6);
   function getSlots() {
     try {
       const v = JSON.parse(store.get('layout-' + layoutKey()) || 'null');
-      if (Array.isArray(v) && v.length && v.length <= 28) {
+      if (Array.isArray(v) && v.length && v.length <= maxSlots()) {
         const next = v.map(builtinLayoutSlot);
         if (next.every(x => x !== undefined)) return next;
       }
@@ -1489,7 +1491,15 @@
   $('fx-picker-close').addEventListener('click', () => $('fx-picker').close());
   $('fx-edit').addEventListener('click', () => { S.editing = !S.editing; $('fx-edit').setAttribute('aria-pressed', String(S.editing)); $('fx-edit').textContent = S.editing ? 'Done' : 'Edit'; buildGrid(); renderAll(); });
   $('fx-ed-done').addEventListener('click', () => $('fx-edit').click());
-  $('fx-ed-row').addEventListener('click', () => { const v = getSlots(); if (v.length + 6 > 28) return say('Up to 28 boxes.'); setSlots([...v, ...Array(6).fill(null)]); });
+  $('fx-ed-row').addEventListener('click', () => { const v = getSlots(); if (v.length + 6 > maxSlots()) return say(`Up to ${maxSlots()} boxes: enough for every panel.`); setSlots([...v, ...Array(6).fill(null)]); say(`${Math.ceil(v.length / 6) + 1} rows · ${v.length + 6} boxes`); });
+  // One click puts every panel not yet on this desk into the empty boxes, adding rows as needed.
+  $('fx-ed-all').addEventListener('click', () => {
+    const v = getSlots(), have = new Set(v.filter(Boolean)), add = Object.keys(PANELS).filter(k => !have.has(k) && !/^mine-/.test(k) && RENDER[k]);
+    if (!add.length) return say('Every panel is already on this desk.');
+    const next = [...v]; for (const k of add) { const i = next.indexOf(null); if (i >= 0) next[i] = k; else next.push(k); }
+    const {base} = gridAreas(next.length); while (next.length > base && (next.length - base) % 6) next.push(null);
+    setSlots(next.slice(0, maxSlots())); say(`Added ${add.length} panels · ${next.length} boxes`);
+  });
   $('fx-ed-unrow').addEventListener('click', () => { const v = getSlots(), {base} = gridAreas(v.length); if (v.length <= base) return say('This is the smallest layout.'); setSlots(v.slice(0, Math.max(base, v.length - 6))); });
   $('fx-ed-reset').addEventListener('click', () => { store.set('layout-' + layoutKey(), ''); buildGrid(); renderAll(); say('Layout reset'); });
   const EXTRA_GROUPS = [];

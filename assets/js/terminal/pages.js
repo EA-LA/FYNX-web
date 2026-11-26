@@ -677,6 +677,7 @@ window.FynxTerminalPages = T => {
     }
     const es = section('Expiries'); S.optExp = exp; T.optSummary(es, u, i => { exp = i; ocOpen(u.symbol).add(u.expiries[i].date); es.querySelectorAll('button.fx-exp').forEach((r, j) => r.classList.toggle('sel', j === i)); drawChain(); chainSec.scrollIntoView({behavior: 'smooth', block: 'start'}); }); es.querySelector('.fx-calcout')?.remove(); two.append(es);
     host.append(two);
+    for (const f of T.OPT_SECTIONS || []) { try { f(host, u); } catch (e) { T.report('opt-section', e); } }
     host.append(chainSec);
     const drawChain = () => { S.optExp = exp; proChain(chainSec, u, exp); };
     drawChain();
