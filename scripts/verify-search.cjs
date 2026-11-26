@@ -16,7 +16,8 @@ for (const url of urls) {
   for (const script of doc.querySelectorAll("script:not([src])")) {
     if (!script.type || script.type === "text/javascript") new vm.Script(script.textContent, {filename: file});
   }
-  for (const selector of ['title','meta[name="description"]','link[rel="canonical"]']) {
+  // The document title only: an inline SVG may carry its own <title> for accessibility.
+  for (const selector of ['head > title','meta[name="description"]','link[rel="canonical"]']) {
     if (doc.querySelectorAll(selector).length !== 1) throw new Error(`${file}: expected exactly one ${selector}`);
   }
   if (doc.querySelector('link[rel="canonical"]').href !== url) throw new Error(`${file}: incorrect canonical`);
