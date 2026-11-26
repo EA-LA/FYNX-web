@@ -33,6 +33,23 @@ async function entitlement(uid,s){const profile=(await root(uid).get()).data()||
  }
  return {tier,hasBillingAccount:true,subscription:sub?{status:sub.status,cancelAtPeriodEnd:sub.cancel_at_period_end,currentPeriodEnd:sub.items.data[0]?.current_period_end||sub.current_period_end||null}:null};}
 async function appleBridge(uid){if(process.env.FYNX_ACCOUNT_MEMBERSHIP_BRIDGE!=='pro-equivalent')return false;return appleValid((await admin.firestore().collection('intelligenceEntitlements').doc(uid).get()).data(),Date.now());}
+// Use the Journal's recorded session label, not a session inferred from the trade time.
+function journalSessionRows(history){
+ const groups=new Map(['Asia','London','New York','Other','Unclassified'].map(session=>[session,[]]));
+ const aliases=new Map([['asia','Asia'],['london','London'],['new york','New York'],['ny','New York'],['other','Other']]);
+ for(const trade of history){
+  const label=typeof trade?.session==='string'?trade.session.trim().replace(/\s+/g,' ').toLowerCase():'';
+  groups.get(aliases.get(label)||'Unclassified').push(trade);
+ }
+ const rows=[];
+ for(const [session,group] of groups){
+  if(!group.length)continue;
+  // Reuse the same realized P/L validation and win-rate denominator as the headline result.
+  const {trades,winRate,netPL}=run('analytics',{},group);
+  if(trades)rows.push({session,trades,winRatePercent:winRate,netPL});
+ }
+ return rows;
+}
 async function trades(uid){const snap=await admin.firestore().collection('users').doc(uid).collection('trades').orderBy('dateTs','asc').limit(1001).get();if(snap.size>1000)fail('resource-exhausted','This preview supports up to 1,000 dated trades.');// Let Journal Intelligence and CSV apply their distinct realized-P/L policies.
  return snap.docs.map(d=>d.data());}
 // Daily allowances counted on the server (audit Phase 5). The day is the server's UTC date, so changing the device clock,
@@ -117,7 +134,14 @@ async function handler(data,ctx){
  const product=data?.product;if(!plan.products.includes(product))fail('permission-denied','This tool requires a higher plan.');
  if(!['run','save'].includes(data?.action))fail('invalid-argument','Unknown action.');
  const input=data.input||{};if(JSON.stringify(input).length>15000)fail('invalid-argument','Input is too large.');
- const calculate=async()=>{try{return run(product,input,['analytics','export'].includes(product)?await trades(uid):[]);}catch(e){if(e instanceof functions.https.HttpsError)throw e;fail('invalid-argument',e.message);}};
+ const calculate=async()=>{
+  try{
+   const history=['analytics','export'].includes(product)?await trades(uid):[];
+   const result=run(product,input,history);
+   if(product!=='analytics'||!result.trades)return result;
+   return {...result,rows:journalSessionRows(history),notice:result.notice+' Session rows use recorded Journal labels, not trade times. Missing or unrecognized labels are Unclassified.'};
+  }catch(e){if(e instanceof functions.https.HttpsError)throw e;fail('invalid-argument',e.message);}
+ };
  if(data.action==='save'){
   const name=String(data.name||'').trim();if(!name||name.length>100)fail('invalid-argument','Use a name of 1–100 characters.');if(product==='export')fail('invalid-argument','Download the export instead of saving it.');
   const requestId=data.requestId;

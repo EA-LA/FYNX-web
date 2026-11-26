@@ -279,3 +279,34 @@ test('overlong subscription history fails closed at the bounded page limit',asyn
  await assert.rejects(h.call({action:'checkout',tier:'starter'}),{code:'unavailable'});
  assert.equal(h.calls.some(c=>c[0]==='checkout'),false);
 });
+
+test('paid Journal Intelligence groups valid realized trades by their recorded session',async()=>{
+ const h=harness({paid:true});
+ const history=[['Asia',5],[' london ',12],['London',0],['New York','10'],['NY',-5],['Other',4],['',-2],['unrecognized',1],['Asia',null],['London','']];
+ history.forEach(([session,pl],i)=>h.data.set('users/owner/trades/session-'+i,{session,pl,dateTs:i+1}));
+ const {result}=await h.call({action:'run',product:'analytics'});
+ assert.deepEqual(JSON.parse(JSON.stringify(result.rows)),[
+  {session:'Asia',trades:1,winRatePercent:100,netPL:5},
+  {session:'London',trades:2,winRatePercent:50,netPL:12},
+  {session:'New York',trades:2,winRatePercent:50,netPL:5},
+  {session:'Other',trades:1,winRatePercent:100,netPL:4},
+  {session:'Unclassified',trades:2,winRatePercent:50,netPL:-1}
+ ]);
+ assert.equal(result.rows.reduce((n,row)=>n+row.trades,0),result.trades);
+ assert.equal(result.rows.reduce((n,row)=>n+row.netPL,0),result.netPL);
+ assert.match(result.notice,/use recorded Journal labels, not trade times/);
+ assert.match(result.notice,/Records with invalid realized P\/L were omitted/);
+ const request={action:'save',accountUid:'owner',requestId:'12345678-1234-4234-8234-123456789abc',product:'analytics',name:'Session breakdown',input:{}};
+ const saved=await h.call(request);
+ h.data.set('users/owner/trades/later',{dateTs:30,session:'London',pl:50});
+ assert.equal(JSON.stringify((await h.call(request)).result.rows),JSON.stringify(saved.result.rows));
+ assert.equal((await h.call({action:'run',product:'analytics'})).result.rows[1].netPL,62);
+});
+
+test('paid Journal Intelligence does not create a session table from invalid history',async()=>{
+ const h=harness({paid:true});
+ h.data.set('users/owner/trades/invalid',{session:'London',pl:null,dateTs:1});
+ const {result}=await h.call({action:'run',product:'analytics'});
+ assert.equal(result.trades,0);
+ assert.equal(Object.hasOwn(result,'rows'),false);
+});
