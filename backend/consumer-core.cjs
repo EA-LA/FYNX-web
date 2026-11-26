@@ -19,6 +19,14 @@ function analytics(trades){
 }
 // Validate the customer's base risk before applying an internal scenario multiplier.
 function risk(d,scenarioFactor=1){const balance=number(d.balance,'Balance',1),riskPct=Math.min(100,number(d.riskPct,'Risk percent',0.01,100)*scenarioFactor),entry=number(d.entry,'Entry',0.000001),stop=number(d.stop,'Stop',0.000001),target=number(d.target,'Target',0.000001),multiplier=number(d.multiplier??1,'Contract multiplier',0.000001),rate=number(d.rate??1,'Quote-to-account rate',0.000001);if(entry===stop||(entry-stop)*(target-entry)<=0)throw Error('Stop and target must lie on opposite sides of entry.');const budget=balance*riskPct/100,perUnit=Math.abs(entry-stop)*multiplier*rate,units=Math.floor(budget/perUnit*1e6)/1e6;return {riskBudget:budget,units,lossAtStop:units*perUnit,profitAtTarget:units*Math.abs(target-entry)*multiplier*rate,rewardRisk:Math.abs(target-entry)/Math.abs(entry-stop),notice:'Model only. Units use your contract multiplier and conversion rate. Fees, slippage and broker lot increments are excluded.'};}
+// With constant modeled wins and losses, L/(L+W) is the zero-expectancy win rate.
+function breakEvenWinRate(rewardRisk){
+ const pct=Number((100/(1+rewardRisk)).toFixed(3));
+ if(pct===0)return '<0.001%';
+ if(pct===100)return '>99.999%';
+ return pct+'%';
+}
+const breakEvenNotice='Break-even win rate is a modeled threshold before fees and slippage, not a forecast.';
 function csv(trades){
  const safe=(value,isRealizedPL=false)=>{
   const text=String(value??'');
@@ -35,8 +43,8 @@ function csv(trades){
 function run(product,d={},trades=[]){
  if(product==='analytics')return analytics(trades);
  if(product==='export')return csv(trades);
- if(product==='risk')return risk(d);
- if(product==='scenarios'){const base=risk(d);return {base,scenarios:[0.5,1,1.5,2].map(f=>({riskMultiplier:f,...risk(d,f)}))};}
+ if(product==='risk'){const result=risk(d);return {...result,breakEvenWinRate:breakEvenWinRate(result.rewardRisk),notice:result.notice+' '+breakEvenNotice};}
+ if(product==='scenarios'){const base=risk(d);return {base,scenarios:[0.5,1,1.5,2].map(f=>({riskMultiplier:f,...risk(d,f)})),breakEvenWinRate:breakEvenWinRate(base.rewardRisk),notice:breakEvenNotice+' Changing position size does not change this threshold.'};}
  if(product==='review'){const notes=typeof d.notes==='string'&&!d.notes.trim()?'':d.notes===undefined?'':label(d.notes,2000),checks=['plan','risk','event','execution','review'];return {notes,completed:checks.filter(k=>d[k]===true),missing:checks.filter(k=>d[k]!==true),score:checks.filter(k=>d[k]===true).length*20,notice:'Self-assessment of your trading process, not a performance rating.'};}
  if(product==='watchlist'){if(!Array.isArray(d.symbols)||d.symbols.length<1||d.symbols.length>30)throw Error('Add 1–30 symbols.');const notes=typeof d.notes==='string'?d.notes:'';if(notes.length>2000)throw Error('Research notes must be 2,000 characters or fewer.');return {symbols:[...new Set(d.symbols.map(s=>label(s,30).toUpperCase()))],notes,notice:'A saved research list. Prices are not supplied by this tool.'};}
  if(product==='portfolio'){const balance=number(d.balance,'Balance',1),shock=number(d.shock,'Shock percent',-100,100);if(!Array.isArray(d.positions)||!d.positions.length||d.positions.length>30)throw Error('Enter 1–30 positions.');const rows=d.positions.map(p=>{const value=number(p.value,'Signed position value',-1e9,1e9);return {symbol:label(p.symbol,30),value,scenarioPL:value*shock/100};});const grossExposure=rows.reduce((a,p)=>a+Math.abs(p.value),0),netExposure=rows.reduce((a,p)=>a+p.value,0),scenarioPL=rows.reduce((a,p)=>a+p.scenarioPL,0);return {rows,grossExposure,netExposure,scenarioPL,scenarioEquity:balance+scenarioPL,grossLeverage:grossExposure/balance,notice:'Parallel price-shock model. Enter signed notionals in one account currency. Not VaR; ignores correlations, options nonlinearity, fees and liquidation.'};}
