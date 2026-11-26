@@ -147,6 +147,38 @@ try {
     for (const handler of linkHandlers) embedded.removeEventListener('click', handler);
   }
 
+  // A reload must release the old document's observer and forwarding listener.
+  // A queued old callback must not resize the replacement document.
+  const observers = [];
+  window.ResizeObserver = class {
+    constructor(callback) { this.callback = callback; this.disconnects = 0; observers.push(this); }
+    observe(target) { this.target = target; }
+    disconnect() { this.disconnects++; }
+  };
+  frame.dispatchEvent(new window.Event('load'));
+  const previous = observers[0];
+  assert.equal(previous.target, embedded.body);
+  assert.equal(embedded.head.querySelectorAll('style').length, 1, 'reload does not accumulate injected styles');
+  const staleLink = embedded.createElement('a');
+  staleLink.href = window.location.href.split('#')[0] + '#stale-module';
+  embedded.body.append(staleLink);
+  const replacement = document.implementation.createHTMLDocument('Replacement market hours');
+  replacement.body.getBoundingClientRect = () => ({ height: 540 });
+  Object.defineProperty(frame, 'contentDocument', { configurable: true, value: replacement });
+  frame.dispatchEvent(new window.Event('load'));
+  assert.equal(previous.disconnects, 1, 'prior observer is disconnected on document replacement');
+  assert.equal(embedded.head.querySelectorAll('style').length, 0, 'prior injected style is removed');
+  assert.equal(observers[1].target, replacement.body);
+  assert.equal(frame.style.height, '544px');
+  previous.callback();
+  assert.equal(frame.style.height, '544px', 'a queued stale callback cannot resize the new frame');
+  const staleClick = new window.MouseEvent('click', { bubbles: true, cancelable: true, button: 0 });
+  staleLink.dispatchEvent(staleClick);
+  assert.equal(staleClick.defaultPrevented, false, 'old document no longer forwards links to the parent');
+  replacement.body.getBoundingClientRect = () => ({ height: 620 });
+  observers[1].callback();
+  assert.equal(frame.style.height, '624px', 'replacement observer continues resizing');
+
   console.log('Calendar tabs: focus, labels, hidden iframes, keyboard controls and deep links passed');
 } finally {
   setImmediate(() => window.close());
