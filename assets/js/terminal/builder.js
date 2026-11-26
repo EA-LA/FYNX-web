@@ -1282,7 +1282,10 @@
       function showPane(name) {
         paneTab = name;
         pageMemory.tab = name; pageMemory.uid = state.uid;
-        root.querySelectorAll('[data-fxb-tab]').forEach(tab => { const on = tab.getAttribute('data-fxb-tab') === name; tab.classList.toggle('sel', on); tab.setAttribute('aria-selected', String(on)); });
+        root.querySelectorAll('[data-fxb-tab]').forEach(tab => {
+          const on = tab.getAttribute('data-fxb-tab') === name;
+          tab.classList.toggle('sel', on); tab.setAttribute('aria-selected', String(on)); tab.tabIndex = on ? 0 : -1;
+        });
         root.querySelectorAll('[data-fxb-pane]').forEach(pane => { pane.hidden = pane.getAttribute('data-fxb-pane') !== name; });
       }
 
@@ -1409,16 +1412,39 @@
         preview.append(split);
         const tabsRow = el('div', 'fxb-tabs');
         tabsRow.setAttribute('role', 'tablist');
+        tabsRow.setAttribute('aria-label', 'Builder views');
         for (const [key, label] of [['preview', 'Preview'], ['versions', 'Versions'], ['guide', 'Guide & SDK']]) {
           const tab = buttonEl(label, 'fxb-tabbtn', () => showPane(key));
+          tab.id = 'fxb-tab-' + key;
           tab.setAttribute('role', 'tab');
+          tab.setAttribute('aria-controls', 'fxb-pane-' + key);
           tab.setAttribute('data-fxb-tab', key);
           tabsRow.append(tab);
         }
+        tabsRow.addEventListener('keydown', event => {
+          if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+          const tabs = [...tabsRow.querySelectorAll('[role="tab"]')], current = tabs.indexOf(event.target);
+          if (current < 0) return;
+          const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
+            : event.key === 'ArrowLeft' ? (current + tabs.length - 1) % tabs.length
+            : event.key === 'ArrowRight' ? (current + 1) % tabs.length : null;
+          if (next === null) return;
+          event.preventDefault();
+          showPane(tabs[next].dataset.fxbTab);
+          tabs[next].focus();
+        });
         preview.append(tabsRow);
 
-        const pPane = el('div', 'fxb-pane');
-        pPane.setAttribute('data-fxb-pane', 'preview');
+        const tabPanel = (key, cls = 'fxb-pane') => {
+          const node = el('div', cls);
+          node.id = 'fxb-pane-' + key;
+          node.setAttribute('data-fxb-pane', key);
+          node.setAttribute('role', 'tabpanel');
+          node.setAttribute('aria-labelledby', 'fxb-tab-' + key);
+          node.tabIndex = 0;
+          return node;
+        };
+        const pPane = tabPanel('preview');
         const pHead = el('div', 'fxb-row');
         const runState = el('span', 'fxb-runstate', '○ Stopped');
         runState.setAttribute('data-fxb-runstate', '');
@@ -1442,14 +1468,12 @@
         pPane.append(note);
         pPane.append(el('p', 'fxb-note fxb-fine', 'The preview runs in a locked sandbox: no network, no account access. Prices come from this terminal’s snapshot.'));
 
-        const vPane = el('div', 'fxb-pane');
-        vPane.setAttribute('data-fxb-pane', 'versions');
+        const vPane = tabPanel('versions');
         const versions = el('div', 'fxb-versions');
         versions.setAttribute('data-fxb-versions', '');
         vPane.append(versions);
 
-        const gPane = el('div', 'fxb-pane fxb-assist');
-        gPane.setAttribute('data-fxb-pane', 'guide');
+        const gPane = tabPanel('guide', 'fxb-pane fxb-assist');
         const steps = el('ol', 'fxb-steps');
         for (const [title, text] of [['Write', 'Edit main.js. Your tool is one function: render(root, FYNX).'], ['Run', 'Press Run (or Ctrl/Cmd+Enter) to see it in the preview.'], ['Save', 'It autosaves while you type; Save keeps a named version.'], ['Add to my terminal', 'Puts the tool on your desk as its own box. Only you can see it.']]) {
           const li = document.createElement('li'); li.append(el('b', '', title), el('span', '', text)); steps.append(li);
