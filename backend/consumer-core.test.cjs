@@ -145,3 +145,24 @@ test('Professional simulation median remains unchanged when both central outcome
  const input={balance:10000,riskPct:1,rewardRisk:2,trades:1};
  for(const [winRate,expected] of [[0,9900],[100,10200]])assert.equal(run('simulation',{...input,winRate}).endingEquityMedian,expected);
 });
+
+test('paid Journal Intelligence calculates longest win and loss streaks in realized trade order',()=>{
+ const result=run('analytics',{},['+3','2',0,4,-1,'-3',null,'-2',1,2,3,4,-1,0,-1,-1].map(pl=>({pl})));
+ assert.equal(result.longestWinStreak,4);
+ assert.equal(result.longestLossStreak,3);
+ assert.equal(result.trades,15);
+ assert.equal(result.netPL,10);
+ assert.match(result.notice,/break-even trade ends a streak/);
+ assert.match(result.notice,/invalid realized P\/L were omitted/);
+});
+
+test('streaks are zero for missing, invalid, or flat realized history',()=>{
+ for(const trades of [[],[{pl:null}],[{pl:0},{pl:'-0'}]]){
+  const result=run('analytics',{},trades);
+  assert.equal(result.longestWinStreak,0);
+  assert.equal(result.longestLossStreak,0);
+ }
+ for(const [pl,expected] of [[1,[1,0]],[-1,[0,1]]]){
+  const r=run('analytics',{},[{pl}]);assert.deepEqual([r.longestWinStreak,r.longestLossStreak],expected);
+ }
+});

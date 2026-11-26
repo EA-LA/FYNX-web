@@ -5,7 +5,18 @@ const PLANS={starter:{name:'Essential',cents:599,products:PRODUCTS.slice(0,6),sa
 function decimalValue(v){const decimal=typeof v==='number'||(typeof v==='string'&&/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(v.trim()));return decimal?Number(v):NaN;}
 function number(v,name,min=0,max=1e9){const n=decimalValue(v);if(!Number.isFinite(n)||n<min||n>max)throw Error(`${name} must be between ${min} and ${max}.`);return n;}
 function label(v,max=120){if(typeof v!=='string'||!v.trim()||v.length>max)throw Error('Enter a valid name.');return v.trim();}
-function analytics(trades){const values=trades.map(t=>decimalValue(t?.pl)).filter(Number.isFinite);let equity=0,peak=0,drawdown=0;const curve=values.map(pl=>{equity+=pl;peak=Math.max(peak,equity);drawdown=Math.max(drawdown,peak-equity);return equity;});const wins=values.filter(x=>x>0),losses=values.filter(x=>x<0),grossWin=wins.reduce((a,b)=>a+b,0),grossLoss=-losses.reduce((a,b)=>a+b,0);return {trades:values.length,netPL:equity,winRate:values.length?wins.length/values.length*100:0,expectancy:values.length?equity/values.length:0,profitFactor:grossLoss?grossWin/grossLoss:null,maxDrawdown:drawdown,curve,notice:'Based on recorded realized P/L, in account currency. No starting balance or deposits are assumed.'+(values.length<trades.length?' Records with invalid realized P/L were omitted.':'')};}
+function analytics(trades){
+ const values=trades.map(t=>decimalValue(t?.pl)).filter(Number.isFinite);
+ let equity=0,peak=0,drawdown=0,winStreak=0,lossStreak=0,longestWinStreak=0,longestLossStreak=0;
+ const curve=values.map(pl=>{
+  equity+=pl;peak=Math.max(peak,equity);drawdown=Math.max(drawdown,peak-equity);
+  winStreak=pl>0?winStreak+1:0;lossStreak=pl<0?lossStreak+1:0;
+  longestWinStreak=Math.max(longestWinStreak,winStreak);longestLossStreak=Math.max(longestLossStreak,lossStreak);
+  return equity;
+ });
+ const wins=values.filter(x=>x>0),losses=values.filter(x=>x<0),grossWin=wins.reduce((a,b)=>a+b,0),grossLoss=-losses.reduce((a,b)=>a+b,0);
+ return {trades:values.length,netPL:equity,winRate:values.length?wins.length/values.length*100:0,expectancy:values.length?equity/values.length:0,profitFactor:grossLoss?grossWin/grossLoss:null,maxDrawdown:drawdown,longestWinStreak,longestLossStreak,curve,notice:'Based on recorded realized P/L, in account currency. No starting balance or deposits are assumed. A break-even trade ends a streak.'+(values.length<trades.length?' Records with invalid realized P/L were omitted.':'')};
+}
 // Validate the customer's base risk before applying an internal scenario multiplier.
 function risk(d,scenarioFactor=1){const balance=number(d.balance,'Balance',1),riskPct=Math.min(100,number(d.riskPct,'Risk percent',0.01,100)*scenarioFactor),entry=number(d.entry,'Entry',0.000001),stop=number(d.stop,'Stop',0.000001),target=number(d.target,'Target',0.000001),multiplier=number(d.multiplier??1,'Contract multiplier',0.000001),rate=number(d.rate??1,'Quote-to-account rate',0.000001);if(entry===stop||(entry-stop)*(target-entry)<=0)throw Error('Stop and target must lie on opposite sides of entry.');const budget=balance*riskPct/100,perUnit=Math.abs(entry-stop)*multiplier*rate,units=Math.floor(budget/perUnit*1e6)/1e6;return {riskBudget:budget,units,lossAtStop:units*perUnit,profitAtTarget:units*Math.abs(target-entry)*multiplier*rate,rewardRisk:Math.abs(target-entry)/Math.abs(entry-stop),notice:'Model only. Units use your contract multiplier and conversion rate. Fees, slippage and broker lot increments are excluded.'};}
 function csv(trades){
