@@ -11,12 +11,23 @@
  {path:'40,245 110,100 185,260 260,105 335,260 410,100 485,255 560,105 640,55',lines:[[70,100,590,100],[70,260,590,260]],label:'Resistance / support',tip:'The range is bounded by repeated highs and lows. This example shows an upside break, but false breaks can return inside the box.'}
  ];
  const buttons=[...document.querySelectorAll('button.pattern')],out=document.getElementById('patternExample');
- function show(index,focus){const e=examples[index],name=buttons[index].querySelector('h3').textContent;
+ if (!out || !buttons.length) return;
+ function show(index,focus){const e=examples[index],button=buttons[index];
+ if (!e || !button) return;
+ const name=button.querySelector('h3').textContent;
  buttons.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));
- out.replaceChildren();const title=document.createElement('h2');title.textContent=name;out.append(title);
+ out.textContent='';const title=document.createElement('h2');title.textContent=name;out.append(title);
  out.insertAdjacentHTML('beforeend',`<svg viewBox="0 0 700 380" role="img" aria-label="${name} illustrative price line and structure"><path d="M30 30V345H670" fill="none" stroke="currentColor" opacity=".15"/>${e.lines.map(l=>`<line x1="${l[0]}" y1="${l[1]}" x2="${l[2]}" y2="${l[3]}" stroke="#b58b47" stroke-width="2" stroke-dasharray="7 6"/>`).join('')}<polyline points="${e.path}" fill="none" stroke="#4a9274" stroke-width="4" stroke-linejoin="round"/><text x="40" y="365">Time → · Illustrative prices</text><text x="40" y="25">${e.label}</text></svg>`);
  const text=document.createElement('p');text.textContent=e.tip+' Educational illustration, not a live signal or a guaranteed outcome.';out.append(text);
- if(focus){out.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});out.focus({preventScroll:true});}
+ if(focus){
+  // Move focus even when an older WebView cannot handle scroll options.
+  try { out.focus({preventScroll:true}); } catch (_) { out.focus(); }
+  if(typeof out.scrollIntoView==='function'){
+   const reduce=typeof window.matchMedia!=='function'||window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+   try { out.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'}); }
+   catch (_) { out.scrollIntoView(true); }
+  }
+ }
  }
  buttons.forEach((b,i)=>b.addEventListener('click',()=>show(i,true)));show(0,false);
 })();
