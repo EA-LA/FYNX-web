@@ -21,15 +21,35 @@
     return { score, label, at, date: new Date(at).toISOString().slice(0, 10) };
   }
 
+  // Bound the entire response, including JSON decoding, even without newer abort APIs.
+  async function fetchObservation() {
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    let timer;
+    try {
+      const deadline = new Promise((_, reject) => {
+        timer = setTimeout(() => {
+          reject(new Error('Sentiment feed timed out'));
+          controller?.abort();
+        }, 15000);
+      });
+      const request = (async () => {
+        const response = await fetch('https://api.alternative.me/fng/?limit=7', controller ? { signal: controller.signal } : {});
+        if (!response.ok) throw new Error('Feed unavailable');
+        return response.json();
+      })();
+      return await Promise.race([request, deadline]);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   async function load() {
     if (busy) return;
     busy = true;
     refresh.disabled = true;
     status.textContent = 'Checking the latest daily observation…';
     try {
-      const response = await fetch('https://api.alternative.me/fng/?limit=7', { signal: AbortSignal.timeout(15000) });
-      if (!response.ok) throw new Error('Feed unavailable');
-      const payload = await response.json();
+      const payload = await fetchObservation();
       const now = Date.now();
       const data = Array.isArray(payload?.data) ? payload.data : [];
       const seen = new Set();
