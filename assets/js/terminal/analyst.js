@@ -46,6 +46,11 @@
 .fx-an-side ol{margin:0;padding-left:18px;color:#c9d2cd;font-size:12px;line-height:1.55}
 .fx-an-memo{white-space:pre-wrap;font:12px/1.6 'IBM Plex Mono',monospace;color:#d7dfda;background:#0b0f0e;border:1px solid var(--ln);padding:12px;max-height:420px;overflow:auto}
 .fx-an-news li{margin-bottom:4px}.fx-an-news small{color:var(--mu)}
+.fx-an-scenario{display:grid;gap:8px}
+.fx-an-scenario-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:8px}
+.fx-an-scenario-fields label{display:grid;gap:4px;color:var(--tx);font-size:12px}
+.fx-an-scenario .fx-an-in,.fx-an-scenario .fx-ql-btn{min-height:44px}
+.fx-an-scenario .fx-an-in{width:100%;box-sizing:border-box}
 .fx-an-in{background:#0d1312;border:1px solid #26302c;color:var(--tx);font:12px 'IBM Plex Mono',monospace;padding:5px 8px;min-height:30px;width:72px}
 @media (max-width:900px){.fx-an-grid,.fx-an-debate{grid-template-columns:1fr}}`;
   document.head.append(st);
@@ -71,6 +76,23 @@
     for (let t = 1; t <= years; t++) { const g = g0 + (tg - g0) * (t - 1) / (years - 1); r *= 1 + g; const f = r * margin; pv += f / Math.pow(1 + wacc, t); path.push({t, rev: r, fcf: f, g}); }
     const tv = path[years - 1].fcf * (1 + tg) / (wacc - tg), pvTv = tv / Math.pow(1 + wacc, years), ev = pv + pvTv;
     return {ev, equity: ev - netDebt, perShare: (ev - netDebt) / shares, pvTv, tvShare: pvTv / ev, path};
+  }
+  const CUSTOM_FIELDS = [
+    ['g0', 'Year-one revenue growth (%)', -99, 300],
+    ['margin', 'Free-cash-flow margin (%)', -100, 100],
+    ['wacc', 'Discount rate (WACC, %)', 0.1, 100],
+    ['tg', 'Terminal growth (%)', -20, 20]
+  ];
+  function customDcf(base, values) {
+    const custom = {...base};
+    for (const [key, label, min, max] of CUSTOM_FIELDS) {
+      const raw = values[key], value = typeof raw === 'string' && raw.trim() ? Number(raw) : NaN;
+      if (!finite(value) || value < min || value > max) return {error: `${label} must be between ${min} and ${max}.`};
+      custom[key] = value / 100;
+    }
+    if (custom.wacc - custom.tg < 0.001 - 1e-12) return {error: 'WACC must be at least 0.1 percentage point above terminal growth.'};
+    const result = dcf(custom);
+    return finite(result?.perShare) ? {result} : {error: 'This scenario could not be calculated from the available filings.'};
   }
   // Growth the current price implies (base margin, WACC and terminal rate), by bisection.
   function impliedGrowth(base, price) {
@@ -152,6 +174,39 @@
     s.append(svg('line', {x1: X(r.price), x2: X(r.price), y1: padT - 4, y2: h - 14, stroke: AMBER, 'stroke-dasharray': '4 3', 'stroke-width': 1.5})); label(s, X(r.price), h - 3, 'price ' + usd(r.price), {'text-anchor': 'middle', fill: AMBER});
     box.replaceChildren(s);
   }
+  function customDcfCard(r) {
+    const base = r.sc.cases.base;
+    const form = el('form', 'fx-an-scenario'), fields = el('div', 'fx-an-scenario-fields');
+    const actions = el('div', 'fx-ql-row'), result = note('');
+    form.noValidate = true;
+    result.setAttribute('role', 'status');
+    result.setAttribute('aria-atomic', 'true');
+    const entries = CUSTOM_FIELDS.map(([key, label, min, max]) => {
+      const field = el('label', '', label), input = el('input', 'fx-an-in');
+      input.type = 'number'; input.step = 'any'; input.min = min; input.max = max;
+      input.defaultValue = String(+(base[key] * 100).toFixed(8));
+      field.append(input); fields.append(field);
+      return [key, input];
+    });
+    const update = () => {
+      const calc = customDcf(base, Object.fromEntries(entries.map(([k, input]) => [k, input.value])));
+      if (calc.error) { result.textContent = calc.error; return; }
+      const perShare = calc.result.perShare;
+      const compared = r.price > 0 && finite(r.price) ? ` · ${spct(perShare / r.price - 1)} vs the reference close (${usd(r.price)})` : '';
+      const modeled = perShare < 0 ? '−' + usd(-perShare) : usd(perShare);
+      result.textContent = `Modeled value per share: ${modeled}${compared}.`;
+    };
+    const run = el('button', 'fx-ql-btn pri', 'Calculate scenario'); run.type = 'submit';
+    const reset = el('button', 'fx-ql-btn', 'Reset to base case'); reset.type = 'button';
+    reset.addEventListener('click', () => {
+      entries.forEach(([, input]) => { input.value = input.defaultValue; }); update();
+    });
+    form.addEventListener('input', () => { result.textContent = 'Assumptions changed. Calculate to update the modeled value.'; });
+    form.addEventListener('submit', e => { e.preventDefault(); update(); });
+    actions.append(run, reset); form.append(fields, actions, result);
+    update();
+    return card('CUSTOM DCF SCENARIO', note('Starts with this company’s base-case assumptions. Changes apply only here, not to the standard cases, charts or saved data.'), form);
+  }
   async function renderValue(host, arg) {
     if (arg && SYM_RE.test(String(arg).toUpperCase())) { VV.sym = String(arg).toUpperCase(); saveV(); }
     PG.setHead('VALUE', 'Valuation workbench', 'DCF bear/base/bull, the growth the price implies, sensitivity, trading comparables and a buyout check, from SEC filings');
@@ -171,7 +226,7 @@
     const imp = r.sc.implied, hist = r.pf.cagr;
     const v = el('div', 'fx-ql-verdict'); v.style.borderColor = color;
     v.textContent = `${finite(imp) ? `To justify ${usd(r.price)}, revenue would need to ${imp >= 0 ? 'grow' : 'shrink'} about ${pct(Math.abs(imp), 1)} a year at first (fading to 2.5%) with a ${pct(r.sc.m, 0)} free-cash-flow margin, against ${pct(hist, 1)} a year over the last ${Math.min(3, r.pf.rev.length - 1)} years. ${imp > hist + 0.05 ? 'The market is pricing in faster growth than the company has delivered.' : imp < hist - 0.05 ? 'The market is pricing in a slowdown; if growth simply continues, the shares look cheap.' : 'The price is roughly consistent with recent growth.'} ` : ''}The terminal value is ${pct(C.base.tvShare, 0)} of the base-case value, so long-run assumptions dominate${r.pf.capexMissing ? '; capital spending was not reported in the standard tag, so free cash flow may be overstated' : ''}. A DCF is a map of assumptions, not a price target.`;
-    out.append(v);
+    out.append(v, customDcfCard(r));
     const ff = chartBox(80 + 5 * 34); out.append(card('FOOTBALL FIELD · VALUE PER SHARE BY METHOD (WHITE TICK = MIDPOINT, DASHED = PRICE)', ff));
     const two = el('div', 'fx-an-grid'), sg = chartBox(220), pc = chartBox(220); out.append(two);
     two.append(card('SENSITIVITY · VALUE PER SHARE (ROWS: WACC CHANGE IN POINTS, COLUMNS: TERMINAL GROWTH)', sg, note(`Centre cell: WACC ${pct(C.base.wacc, 1)}, terminal growth 2.5%. Green cells are above today’s price.`)), card('BASE-CASE FREE CASH FLOW, HISTORY AND 10-YEAR PROJECTION', pc));
@@ -311,5 +366,5 @@
     T.PAGE_NAMES.push('VALUE', 'DCF', 'COMPS', 'COMMITTEE', 'MEMO', 'AGENTS');
   }
   const grp = T.EXTRA_GROUPS.find(g => g[0] === 'AI lab'); if (grp) grp[1].push('committee'); else T.EXTRA_GROUPS.push(['AI lab', ['committee']]);
-  T.Analyst = {profile, dcf, impliedGrowth, lbo, scenarios, betaOf, headlineTone, technicals, committee, memoText};
+  T.Analyst = {profile, dcf, customDcf, impliedGrowth, lbo, scenarios, betaOf, headlineTone, technicals, committee, memoText};
 });
