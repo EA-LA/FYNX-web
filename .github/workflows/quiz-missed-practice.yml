@@ -1,0 +1,22 @@
+name: Free quiz missed-question practice
+on:
+  pull_request:
+    paths:
+      - 'trading-quizzes.html'
+      - 'learn.html'
+      - 'scripts/test-quiz-missed-practice.cjs'
+      - 'scripts/test-quiz-accessibility.cjs'
+      - '.github/workflows/quiz-missed-practice.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --test scripts/test-quiz-missed-practice.cjs scripts/test-quiz-accessibility.cjs

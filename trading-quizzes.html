@@ -84,6 +84,7 @@
       border-radius:999px; border:1px solid var(--line-strong); font-weight:700; font-size:.94rem;
       transition:.2s ease; background:transparent; color:var(--text); cursor:pointer;
     }
+    #practiceMissedBtn[hidden]{display:none}
     .btn.primary{background:var(--text); color:var(--bg); border-color:transparent}
     .btn:hover{transform:translateY(-1px)}
     .stats{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px}
@@ -276,7 +277,7 @@
     <section id="resultsSection" class="section quiz-shell">
       <div class="section-title">
         <h2 id="quizResultsHeading" class="quiz-focus-heading" tabindex="-1">Your results</h2>
-        <p>Review your score, then study every wrong answer with the correct explanation.</p>
+        <p id="quizResultsIntro">Review your score, then study every wrong answer with the correct explanation.</p>
       </div>
 
       <div class="result-grid">
@@ -287,6 +288,7 @@
       </div>
 
       <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px">
+        <button id="practiceMissedBtn" class="btn" type="button" hidden>Practice missed questions</button>
         <button id="retryBtn" class="btn primary">Retry Same Category</button>
         <button id="newSetupBtn" class="btn">Choose New Category</button>
       </div>
@@ -497,6 +499,10 @@
     const wrongValue = document.getElementById("wrongValue");
     const reviewList = document.getElementById("reviewList");
     const retryBtn = document.getElementById("retryBtn");
+    const practiceMissedBtn = document.getElementById("practiceMissedBtn");
+    const quizResultsHeading = document.getElementById("quizResultsHeading");
+    const quizResultsIntro = document.getElementById("quizResultsIntro");
+    let missedQuestions = [];
     const newSetupBtn = document.getElementById("newSetupBtn");
 
     function shuffle(array){
@@ -549,21 +555,26 @@
     function startQuiz(){
       activeAttempt = {attempt:crypto.randomUUID(),topic:selectedCategory==='all'?'general':selectedCategory};
       window.dispatchEvent(new CustomEvent('fynx:quiz-started',{detail:activeAttempt}));
-      const pool = shuffle(getPool());
-      activeQuestions = pool.slice(0, 10).map(q => {
-        const options = [...q.options];
-        const correctAnswer = q.options[q.correctIndex];
-        const shuffledOptions = shuffle(options);
+      beginQuestions(shuffle(getPool()).slice(0, 10));
+    }
+
+    function beginQuestions(questions, practice = false){
+      activeQuestions = questions.map(q => {
+        const order = shuffle(q.options.map((_, index) => index));
         return {
           ...q,
-          options: shuffledOptions,
-          correctIndex: shuffledOptions.indexOf(correctAnswer)
+          options: order.map(index => q.options[index]),
+          correctIndex: order.indexOf(q.correctIndex)
         };
       });
+      missedQuestions = [];
+      practiceMissedBtn.hidden = true;
       currentIndex = 0;
       selectedAnswers = Array(activeQuestions.length).fill(null);
-      quizTitle.textContent = CATEGORY_LABELS[selectedCategory] + " Quiz";
-      quizSubtitle.textContent = "10 randomized questions. Review every answer at the end.";
+      quizTitle.textContent = practice ? "Practice missed questions" : CATEGORY_LABELS[selectedCategory] + " Quiz";
+      quizSubtitle.textContent = practice
+        ? "Revisit only the questions you missed. This practice score is not saved."
+        : "10 randomized questions. Review every answer at the end.";
       selectedCategoryLabel.textContent = "Category: " + CATEGORY_LABELS[selectedCategory];
       resultsSection.classList.remove("active");
       quizSection.classList.add("active");
@@ -600,13 +611,20 @@
     }
 
     function finishQuiz(){
-      let correct = 0;
-      activeQuestions.forEach((q, idx) => {
-        if(selectedAnswers[idx] === q.correctIndex) correct++;
-      });
+      missedQuestions = activeQuestions.filter((q, idx) => selectedAnswers[idx] !== q.correctIndex);
+      const correct = activeQuestions.length - missedQuestions.length;
+      const isPractice = activeAttempt === null;
+      practiceMissedBtn.hidden = missedQuestions.length === 0;
+      practiceMissedBtn.textContent = `Practice ${missedQuestions.length} missed ${missedQuestions.length === 1 ? "question" : "questions"}`;
+      quizResultsHeading.textContent = isPractice ? "Practice results" : "Your results";
+      quizResultsIntro.textContent = isPractice
+        ? (missedQuestions.length ? "Keep practicing what you missed. This score is not saved." : "You answered all your practice questions correctly. This score is not saved.")
+        : "Review your score, then study every wrong answer with the correct explanation.";
 
       scoreValue.textContent = `${correct}/${activeQuestions.length}`;
-      window.dispatchEvent(new CustomEvent("fynx:quiz-completed", {detail:{...activeAttempt,correct,total:activeQuestions.length}}));
+      if(activeAttempt) {
+        window.dispatchEvent(new CustomEvent("fynx:quiz-completed", {detail:{...activeAttempt,correct,total:activeQuestions.length}}));
+      }
       percentageValue.textContent = `${Math.round((correct / activeQuestions.length) * 100)}%`;
       correctValue.textContent = correct;
       wrongValue.textContent = activeQuestions.length - correct;
@@ -637,7 +655,7 @@
 
       quizSection.classList.remove("active");
       resultsSection.classList.add("active");
-      focusQuizStage(document.getElementById("quizResultsHeading"));
+      focusQuizStage(quizResultsHeading);
     }
 
     startQuizBtn.addEventListener("click", startQuiz);
@@ -668,6 +686,11 @@
       }
     });
 
+    practiceMissedBtn.addEventListener("click", () => {
+      if(!resultsSection.classList.contains("active") || !missedQuestions.length) return;
+      activeAttempt = null;
+      beginQuestions(missedQuestions, true);
+    });
     retryBtn.addEventListener("click", startQuiz);
     newSetupBtn.addEventListener("click", () => {
       resultsSection.classList.remove("active");
