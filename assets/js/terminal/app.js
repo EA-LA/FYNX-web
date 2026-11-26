@@ -301,9 +301,9 @@
     const ots = S.opts?.generatedAt || null;
     if (optNew) for (const u of Object.values(S.opts?.underlyings || {})) {
       TK.ingest(`opt:${u.symbol}:px`, u.price, o(ots, 'cboe', 2)); TK.ingest(`opt:${u.symbol}:iv30`, u.iv30, o(ots, 'cboe', 1)); TK.ingest(`opt:${u.symbol}:pc`, u.putCallVolume, o(ots, 'cboe', 2));
-      for (const e of (u.expiries || []).slice(0, 8)) for (const row of e.chain || []) for (const [side, c] of [['C', row.call], ['P', row.put]]) {
+      for (const e of u.expiries || []) for (const row of e.chain || []) for (const [side, c] of [['C', row.call], ['P', row.put]]) {
         if (!c) continue; const base = `opt:${u.symbol}:${e.date}:${row.strike}${side}:`;
-        TK.ingest(base + 'bid', c.bid, o(ots, 'cboe', 2)); TK.ingest(base + 'ask', c.ask, o(ots, 'cboe', 2)); TK.ingest(base + 'iv', finite(c.iv) && c.iv > 0 ? c.iv * 100 : null, o(ots, 'cboe', 1)); TK.ingest(base + 'volume', c.volume, o(ots, 'cboe', 0));
+        TK.ingest(base + 'bid', c.bid, o(ots, 'cboe', 2)); TK.ingest(base + 'ask', c.ask, o(ots, 'cboe', 2)); TK.ingest(base + 'last', c.last, o(ots, 'cboe', 2)); TK.ingest(base + 'iv', finite(c.iv) && c.iv > 0 ? c.iv * 100 : null, o(ots, 'cboe', 1)); TK.ingest(base + 'volume', c.volume, o(ots, 'cboe', 0));
       }
       for (const c of u.mostActive || []) { const base = `opt:${u.symbol}:${c.expiry}:${c.strike}${c.type}:`; for (const f of ['last', 'bid', 'ask']) TK.ingest(base + f, c[f], o(ots, 'cboe', 2)); }
     }

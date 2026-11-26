@@ -90,9 +90,9 @@
   function stopSampler() { clearInterval(OF.sampler); OF.sampler = 0; }
   // Run only while a panel or page shows the tool.
   setInterval(() => {
-    const visible = !!document.querySelector('.of-canvas') && !document.hidden;
+    const visible = !!document.querySelector('.of-canvas,.of-dom') && !document.hidden;
     if (visible && !OF.wanted) { OF.wanted = true; connect(); }
-    else if (!visible && OF.wanted) { clearTimeout(OF.hideTimer); OF.hideTimer = setTimeout(() => { if (!document.querySelector('.of-canvas') || document.hidden) disconnect(); }, document.hidden ? 60000 : 3000); }
+    else if (!visible && OF.wanted) { clearTimeout(OF.hideTimer); OF.hideTimer = setTimeout(() => { if (!document.querySelector('.of-canvas,.of-dom') || document.hidden) disconnect(); }, document.hidden ? 60000 : 3000); }
   }, 1000);
 
   /* --- signal test --------------------------------------------------------------------------------------- */
@@ -154,7 +154,21 @@
 .fx-of-tape{max-height:300px;overflow:auto;font:500 11.5px 'IBM Plex Mono',monospace}
 .fx-of-tape div{display:grid;grid-template-columns:70px 1fr 1fr;gap:8px;padding:2px 4px;border-bottom:1px solid #111816}
 @media (max-width:900px){.fx-of-grid{grid-template-columns:1fr}.fx-of-page .fx-of-stage{min-height:380px}}
-@media (prefers-reduced-motion:reduce){.fx-of-status[data-s=live]::before{animation:none}}`;
+@media (prefers-reduced-motion:reduce){.fx-of-status[data-s=live]::before{animation:none}}
+.fx-dom{display:flex;flex-direction:column;min-height:0;height:100%;font:500 11.5px 'IBM Plex Mono',monospace}
+.fx-dom-top{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;margin:4px 0}
+.fx-dom-top div{padding:3px 6px;background:var(--p2);border:1px solid var(--ln);min-width:0}.fx-dom-top small{display:block;color:var(--mu);font:600 9px 'IBM Plex Mono',monospace;letter-spacing:.08em}.fx-dom-top b{display:block;font:700 12px 'IBM Plex Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fx-dom-body{flex:1;min-height:0;overflow:hidden}
+.fx-dom-row{display:grid;grid-template-columns:1fr 1.05fr 1fr;height:18px;align-items:stretch;border-bottom:1px solid #111816}
+.fx-dom-head{height:20px;color:var(--mu);font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.06em}.fx-dom-head span{display:flex;align-items:center;justify-content:center}
+.fx-dom-b,.fx-dom-a{position:relative;display:flex;align-items:center;overflow:hidden}.fx-dom-b{justify-content:flex-end}.fx-dom-a{justify-content:flex-start}
+.fx-dom-b i,.fx-dom-a i{position:absolute;top:2px;bottom:2px}.fx-dom-b i{right:0;background:rgba(46,160,90,.55)}.fx-dom-a i{left:0;background:rgba(214,69,58,.55)}
+.fx-dom-b em,.fx-dom-a em{position:relative;font-style:normal;padding:0 6px;color:#e7ece9}
+.fx-dom-p{display:flex;align-items:center;justify-content:center;color:#c5d0ca;background:#0b100f;border-left:1px solid #111816;border-right:1px solid #111816}
+.fx-dom-row.bb .fx-dom-p{background:rgba(46,160,90,.35);color:#fff;font-weight:700}.fx-dom-row.ba .fx-dom-p{background:rgba(214,69,58,.35);color:#fff;font-weight:700;outline:1px solid #ffb000;outline-offset:-1px}
+.fx-dom-row.gap .fx-dom-p{color:var(--mu)}
+.fx-dom-big .fx-dom-row{height:21px;font-size:12.5px}
+.tp-b>.fx-dom{padding:0 6px}`;
   document.head.append(st);
 
   /* --- drawing ------------------------------------------------------------------------------------------- */
@@ -164,8 +178,9 @@
   function draw(force) {
     const now = performance.now(); if (!force && now - lastDraw < 120) { if (!rafQ) rafQ = requestAnimationFrame(() => { rafQ = 0; draw(true); }); return; }
     lastDraw = now;
-    const cvs = [...document.querySelectorAll('.of-canvas')].filter(c => c.offsetParent !== null); if (!cvs.length) return;
-    cvs.forEach(paint); document.querySelectorAll('.of-kpis').forEach(kpiUpdate); document.querySelectorAll('.of-sig').forEach(sigUpdate); document.querySelectorAll('.of-tape').forEach(tapeUpdate);
+    const cvs = [...document.querySelectorAll('.of-canvas')].filter(c => c.offsetParent !== null), doms = [...document.querySelectorAll('.of-dom')].filter(d => d.offsetParent !== null);
+    if (!cvs.length && !doms.length) return;
+    doms.forEach(domUpdate); cvs.forEach(paint); document.querySelectorAll('.of-kpis').forEach(kpiUpdate); document.querySelectorAll('.of-sig').forEach(sigUpdate); document.querySelectorAll('.of-tape').forEach(tapeUpdate);
   }
   function paint(cv) {
     const box = cv.parentElement, w = Math.max(200, box.clientWidth), h = Math.max(120, box.clientHeight), dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -301,6 +316,100 @@
     wrap.append(how);
     requestAnimationFrame(() => draw(true));
   }
+
+  /* --- DOM: depth-of-market price ladder ---------------------------------------------------------------------
+   * The classic trading ladder: one row per price level, resting bid size (green bars) left, ask size (red bars)
+   * right, best bid and best ask highlighted, built from the same live Kraken book (100 levels a side). Levels
+   * are grouped to a tick size chosen from the price (×1 / ×5 / ×10 coarser on request). Rows are created once and
+   * updated in place every quarter second; the ladder only re-centres when the inside market drifts towards an
+   * edge, so it does not jump. Crypto only: futures and stock depth (e.g. CME, Nasdaq TotalView) are paid feeds. */
+  const TICKS = [1e-6, 5e-6, 1e-5, 5e-5, 1e-4, 5e-4, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 50];
+  const domTick = (mid, mult) => (TICKS.find(t => t >= mid * 1e-5) || 50) * mult;
+  const decimals = g => Math.max(0, Math.min(8, Math.ceil(-Math.log10(g) - 1e-9)));
+  const sizeFmt = q => !(q > 0) ? '' : q >= 1000 ? (q / 1000).toFixed(1) + 'k' : q >= 100 ? q.toFixed(0) : q >= 1 ? q.toFixed(2) : q.toFixed(4);
+  function domView(big) {
+    const rows = big ? 34 : 22, wrap = el('div', 'fx-dom of-dom' + (big ? ' fx-dom-big' : ''));
+    const bar = el('div', 'fx-of-bar'), sel = el('select'); sel.setAttribute('aria-label', 'Crypto pair');
+    for (const [p, n] of PAIRS) { const o = el('option', '', `${p} · ${n}`); o.value = p; if (p === OF.pair) o.selected = true; sel.append(o); }
+    sel.addEventListener('change', () => switchPair(sel.value));
+    const grp = el('select'); grp.setAttribute('aria-label', 'Price grouping');
+    for (const [v, l] of [['1', 'Tick ×1'], ['5', 'Tick ×5'], ['10', 'Tick ×10']]) { const o = el('option', '', l); o.value = v; if (v === (store.get('dom-mult') || '1')) o.selected = true; grp.append(o); }
+    grp.addEventListener('change', () => { store.set('dom-mult', grp.value); wrap._center = null; domUpdate(wrap); });
+    const status = el('span', 'fx-of-status of-status', OF.statusText); status.dataset.s = OF.status; status.setAttribute('role', 'status');
+    bar.append(sel, grp, status); wrap.append(bar);
+    const top = el('div', 'fx-dom-top');
+    for (const [id, label] of [['bid', 'BEST BID'], ['ask', 'BEST ASK'], ['spr', 'SPREAD'], ['tick', 'TICK']]) { const d = el('div'); d.dataset.d = id; d.append(el('small', '', label), el('b', '', '—')); top.append(d); }
+    wrap.append(top);
+    const head = el('div', 'fx-dom-row fx-dom-head'); head.append(el('span', '', 'Bid'), el('span', '', 'Price'), el('span', '', 'Ask')); wrap.append(head);
+    const body = el('div', 'fx-dom-body'); body.setAttribute('role', 'table'); body.setAttribute('aria-label', 'Depth of market ladder');
+    wrap._rows = [];
+    for (let i = 0; i < rows; i++) {
+      const r = el('div', 'fx-dom-row'), b = el('span', 'fx-dom-b'), bb = el('i'), bt = el('em'), pr = el('span', 'fx-dom-p'), a = el('span', 'fx-dom-a'), ab = el('i'), at = el('em');
+      b.append(bb, bt); a.append(ab, at); r.append(b, pr, a); body.append(r); wrap._rows.push({r, bb, bt, pr, ab, at, key: ''});
+    }
+    wrap.append(body);
+    return wrap;
+  }
+  function domUpdate(w) {
+    if (!w._rows || !OF.bids.size || !OF.asks.size) return;
+    const bb = bestBid(), ba = bestAsk(); if (!(ba > bb)) return;
+    const mid = (bb + ba) / 2, g = domTick(mid, Number(store.get('dom-mult') || 1)), dg = decimals(g), N = w._rows.length, half = Math.floor(N / 2);
+    const key = p => Math.round(p / g);
+    const bidK = Math.floor(bb / g + 1e-9), askK = Math.ceil(ba / g - 1e-9);
+    // Re-centre only when the inside market reaches the outer 30% of the ladder (or the grouping changed).
+    if (w._center == null || w._g !== g || bidK > w._center + Math.floor(N * 0.2) || bidK < w._center - Math.floor(N * 0.2)) { w._center = bidK; w._g = g; }
+    const topK = w._center + half, bids = new Map(), asks = new Map();
+    for (const [p, q] of OF.bids) { const k = Math.floor(p / g + 1e-9); bids.set(k, (bids.get(k) || 0) + q); }
+    for (const [p, q] of OF.asks) { const k = Math.ceil(p / g - 1e-9); asks.set(k, (asks.get(k) || 0) + q); }
+    let max = 0; for (let i = 0; i < N; i++) { const k = topK - i; max = Math.max(max, bids.get(k) || 0, asks.get(k) || 0); }
+    for (let i = 0; i < N; i++) {
+      const row = w._rows[i], k = topK - i, bq = k <= bidK ? bids.get(k) || 0 : 0, aq = k >= askK ? asks.get(k) || 0 : 0;
+      const price = (k * g).toLocaleString('en-US', {minimumFractionDigits: dg, maximumFractionDigits: dg}), cls = 'fx-dom-row' + (k === bidK ? ' bb' : '') + (k === askK ? ' ba' : '') + (k > bidK && k < askK ? ' gap' : '');
+      if (row.r.className !== cls) row.r.className = cls;
+      if (row.pr.textContent !== price) row.pr.textContent = price;
+      const bt = sizeFmt(bq), at = sizeFmt(aq);
+      if (row.bt.textContent !== bt) row.bt.textContent = bt; if (row.at.textContent !== at) row.at.textContent = at;
+      row.bb.style.width = (max ? bq / max * 100 : 0).toFixed(1) + '%'; row.ab.style.width = (max ? aq / max * 100 : 0).toFixed(1) + '%';
+    }
+    const set = (id, v) => { const n = w.querySelector(`[data-d=${id}] b`); if (n && n.textContent !== v) n.textContent = v; return n; };
+    // The inside market at the exchange's own precision (never rounded to the grouping tick).
+    const decOf = v => Math.min(8, (String(v).split('.')[1] || '').length), pd = Math.max(decOf(bb), decOf(ba), decimals(domTick(mid, 1)));
+    const px = v => v.toLocaleString('en-US', {minimumFractionDigits: pd, maximumFractionDigits: pd});
+    const bidN = set('bid', `${px(bb)} × ${sizeFmt(OF.bids.get(bb))}`), askN = set('ask', `${px(ba)} × ${sizeFmt(OF.asks.get(ba))}`);
+    set('spr', `${px(ba - bb)} (${((ba - bb) / mid * 1e4).toFixed(2)} bp)`); set('tick', g.toFixed(dg));
+    // Tick highlighting on the inside market (each sample once, every ladder on screen flashes for it).
+    const TK = window.FynxTick; if (!TK) return;
+    if (OF.domTickAt !== OF.lastMsg) {
+      const o = {digits: pd, silent: OF.domRebase !== OF.pair + OF.since, src: 'kraken:' + OF.pair};
+      OF.domRebase = OF.pair + OF.since; OF.domTickAt = OF.lastMsg; OF.domShown = new WeakSet();
+      OF.domDirs = {bid: TK.ingest(`dom:${OF.pair}:bid`, bb, o), ask: TK.ingest(`dom:${OF.pair}:ask`, ba, o)};
+    }
+    if (!OF.domShown.has(w)) { OF.domShown.add(w); if (OF.domDirs.bid) TK.flash(bidN, OF.domDirs.bid); if (OF.domDirs.ask) TK.flash(askN, OF.domDirs.ask); }
+  }
+  function renderDomPanel() {
+    const host = panel('dom'); setText('n-dom', OF.pair);
+    host.append(domView(false));
+    const n = el('p', 'fx-of-note', 'Kraken public order book · live · crypto only'); n.style.padding = '0 8px 4px'; host.append(n);
+    requestAnimationFrame(() => draw(true));
+  }
+  function renderDomPage(host) {
+    PG.setHead('DOM', 'Depth of market', 'Live bids and asks: the Kraken order book as a price ladder');
+    const g = el('div', 'fx-of-grid'), c1 = el('div', 'fx-of-card'), c2 = el('div', 'fx-of-card');
+    c1.append(domView(true));
+    c2.append(el('h3', '', 'READING THE LADDER'));
+    for (const t of ['Each row is one price level. Green bars on the left are resting buy orders (bids), red bars on the right resting sell orders (asks), sized against the largest level on screen.', 'The highlighted rows are the inside market: the best bid (green) and best ask (red). Their prices flash green or red as the inside market ticks up or down.', 'Grouping adds up every order inside a tick bucket. Use ×5 or ×10 to see larger walls further from the price.', 'Live and free for crypto because exchanges publish their books. Full depth for futures and stocks (CME MDP 3.0, Nasdaq TotalView) is a paid exchange feed, so it is not shown here.'])
+      c2.append(el('p', 'fx-of-note', t));
+    c2.append(el('h3', '', 'TRADE TAPE')); c2.append(el('div', 'fx-of-tape of-tape'));
+    c2.append(btn('Liquidity heatmap & order flow ▸', 'fx-chip fx-chip-link', () => PG.open('orderflow')));
+    g.append(c1, c2); host.append(g);
+    requestAnimationFrame(() => draw(true));
+  }
+  T.PANELS.dom = ['DOM', 'Depth of market', 'dom'];
+  T.PANEL_DESC.dom = 'Live price ladder: bids and asks at every level (Kraken, crypto)';
+  T.LINK_LABEL.dom = 'Ladder';
+  T.RENDER.dom = renderDomPanel;
+  T.EXTRA_GROUPS.push(['Order book', ['dom']]);
+  if (PG) { PG.add('dom', 'Depth of market', renderDomPage); T.PAGE_NAMES.push('DOM'); }
 
   T.PANELS.oflow = ['OFLOW', 'Order flow · live book', 'orderflow'];
   T.PANEL_DESC.oflow = 'Live crypto order book heatmap, imbalance and trade flow';

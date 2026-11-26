@@ -117,6 +117,16 @@ function parseOCC(code) {
   if (!m) return null;
   return {root: m[1], expiry: `20${m[2]}-${m[3]}-${m[4]}`, type: m[5], strike: Number(m[6]) / 1000};
 }
+// One option contract as the Terminal shows it: quote, sizes, day change and Cboe's Greeks (as published; missing
+// fields stay null rather than being estimated).
+const num = (v, d) => finite(v) ? round(v, d) : null;
+function contractRow(o) {
+  return {bid: round(o.bid, 3), ask: round(o.ask, 3), last: round(o.last_trade_price, 3), change: num(o.change, 3), bidSize: num(o.bid_size, 0), askSize: num(o.ask_size, 0),
+    iv: round(o.iv, 4), delta: round(o.delta, 3), gamma: num(o.gamma, 4), theta: num(o.theta, 4), vega: num(o.vega, 4), volume: o.volume || 0, oi: o.open_interest || 0};
+}
+// Cboe's CDN (Cloudflare) refuses requests that do not look like its own quote pages (HTTP 403 from ~2026-11-19);
+// these are the headers cboe.com itself sends. Verified from GitHub Actions on 2026-11-26.
+const CBOE_HEADERS = {Accept: 'application/json, text/plain, */*', 'Accept-Language': 'en-US,en;q=0.9', Origin: 'https://www.cboe.com', Referer: 'https://www.cboe.com/delayed_quotes/', 'Sec-Fetch-Site': 'same-site', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Dest': 'empty'};
 const mid = o => finite(o.bid) && finite(o.ask) && o.ask > 0 && o.ask >= o.bid ? (o.bid + o.ask) / 2 : finite(o.last_trade_price) && o.last_trade_price > 0 ? o.last_trade_price : null;
 function summarizeOptions(symbol, payload, now) {
   const d = payload?.data, spot = d?.current_price ?? d?.close;
@@ -148,20 +158,20 @@ function summarizeOptions(symbol, payload, now) {
     const near = (type, target) => list.filter(c => c.type === type && finite(c.raw.delta) && finite(c.raw.iv) && c.raw.iv > 0).sort((a, b) => Math.abs(a.raw.delta - target) - Math.abs(b.raw.delta - target))[0];
     const p25 = near('P', -0.25), c25 = near('C', 0.25);
     const ai = strikes.indexOf(atm), window = strikes.slice(Math.max(0, ai - 10), ai + 11);
-    const row = c => c ? {bid: round(c.raw.bid, 3), ask: round(c.raw.ask, 3), last: round(c.raw.last_trade_price, 3), iv: round(c.raw.iv, 4), delta: round(c.raw.delta, 3), volume: c.raw.volume || 0, oi: c.raw.open_interest || 0} : null;
+    const row = c => c ? contractRow(c.raw) : null;
     const chain = window.map(k => ({strike: k, call: row(list.find(c => c.type === 'C' && c.strike === k)), put: row(list.find(c => c.type === 'P' && c.strike === k))}));
     return {date, dte: dte(date), atmStrike: atm, atmIV: ivs.length ? round(ivs.reduce((s, v) => s + v, 0) / ivs.length, 4) : null, straddle: round(straddle, 3), movePercent: finite(straddle) ? round(straddle / spot * 100, 2) : null,
       maxPain: pain, callVolume: cv, putVolume: pv, callOI: coi, putOI: poi, skew25: p25 && c25 ? round(p25.raw.iv - c25.raw.iv, 4) : null, chain};
   });
   const active = contracts.filter(c => (c.raw.volume || 0) > 0).sort((a, b) => b.raw.volume - a.raw.volume).slice(0, 15)
-    .map(c => ({contract: c.raw.option, type: c.type, strike: c.strike, expiry: c.expiry, last: round(c.raw.last_trade_price, 3), bid: round(c.raw.bid, 3), ask: round(c.raw.ask, 3), iv: round(c.raw.iv, 4), delta: round(c.raw.delta, 3), volume: c.raw.volume, oi: c.raw.open_interest || 0}));
-  return {symbol, price: round(spot, 4), change: round(d.price_change, 4), changePercent: round(d.price_change_percent, 3), iv30: round(d.iv30, 3), iv30Change: round(d.iv30_change, 3),
+    .map(c => ({contract: c.raw.option, type: c.type, strike: c.strike, expiry: c.expiry, ...contractRow(c.raw), volume: c.raw.volume}));
+  return {symbol, price: round(spot, 4), change: round(d.price_change, 4), changePercent: round(d.price_change_percent, 3), bid: num(d.bid, 4), ask: num(d.ask, 4), bidSize: num(d.bid_size, 0), askSize: num(d.ask_size, 0), iv30: round(d.iv30, 3), iv30Change: round(d.iv30_change, 3),
     callVolume: callVol, putVolume: putVol, putCallVolume: callVol ? round(putVol / callVol, 3) : null, callOI, putOI, putCallOI: callOI ? round(putOI / callOI, 3) : null,
     asOf: payload.timestamp ? new Date(String(payload.timestamp).replace(' ', 'T') + (/[zZ+]/.test(String(payload.timestamp)) ? '' : 'Z')).toISOString() : iso(now), expiries: summary, mostActive: active, contracts: contracts.length};
 }
 async function fetchOptions(previous, now) {
   const prev = previous?.underlyings || {}, out = {}; let fresh = 0;
-  const results = await pool(OPTION_UNDERLYINGS, 3, symbol => fetchJSON(`https://cdn.cboe.com/api/global/delayed_quotes/options/${symbol}.json`, {timeout: 45000, maxBytes: 8e7, headers: {Accept: 'application/json'}}).then(p => summarizeOptions(symbol, p, now)));
+  const results = await pool(OPTION_UNDERLYINGS, 3, symbol => fetchJSON(`https://cdn.cboe.com/api/global/delayed_quotes/options/${symbol}.json`, {timeout: 45000, maxBytes: 8e7, headers: CBOE_HEADERS}).then(p => summarizeOptions(symbol, p, now)));
   OPTION_UNDERLYINGS.forEach((symbol, i) => {
     const r = results[i];
     if (r.ok) { out[symbol] = {...r.value, status: 'fresh'}; fresh++; }
@@ -213,7 +223,7 @@ async function main() {
   if (markets.status === 'fulfilled') { await write(outDir, 'markets.json', {version: 1, generatedAt: iso(now), source: 'Yahoo Finance chart data (delayed; futures front month, exchange delays apply)', sourceURL: 'https://finance.yahoo.com/', ...markets.value}); published++; console.log(`[terminal-markets] ${markets.value.fresh}/${markets.value.total} quotes fresh`); }
   else { console.warn('[terminal-markets] markets failed:', markets.reason.message); if (prev.markets) await write(outDir, 'markets.json', {...prev.markets, stale: true}); }
   if (options.status === 'fulfilled') { await write(outDir, 'options.json', {version: 1, generatedAt: iso(now), source: 'Cboe delayed option quotes (15-minute delay)', sourceURL: 'https://www.cboe.com/delayed_quotes/', ...options.value}); published++; console.log(`[terminal-options] ${options.value.fresh}/${options.value.total} chains fresh`, JSON.stringify(Object.values(options.value.underlyings).slice(0, 2).map(u => [u.symbol, u.price, u.iv30, u.putCallVolume, u.expiries[0]?.date, u.expiries[0]?.movePercent, u.expiries[0]?.maxPain]))); }
-  else { console.warn('[terminal-options] options failed:', options.reason.message); if (prev.options) await write(outDir, 'options.json', {...prev.options, stale: true}); }
+  else { console.warn('[terminal-options] options failed:', options.reason.message); if (prev.options) await write(outDir, 'options.json', {...prev.options, stale: true, underlyings: Object.fromEntries(Object.entries(prev.options.underlyings || {}).map(([k, u]) => [k, {...u, status: 'stale'}]))}); }
   if (earnings.status === 'fulfilled') { await write(outDir, 'earnings.json', {version: 1, generatedAt: iso(now), source: 'Nasdaq earnings calendar (companies above $5B market value)', sourceURL: 'https://www.nasdaq.com/market-activity/earnings', ...earnings.value}); published++; console.log(`[terminal-earnings] ${earnings.value.events.length} events ${earnings.value.from} → ${earnings.value.to}`); }
   else { console.warn('[terminal-earnings] earnings failed:', earnings.reason.message); if (prev.earnings) await write(outDir, 'earnings.json', {...prev.earnings, stale: true}); }
   // pulse.json: a few-KB slice of markets.json for the live strip on site pages (same data, no history bloat).
@@ -223,4 +233,4 @@ async function main() {
 }
 
 if (require.main === module) main().catch(error => { console.error(error); process.exit(1); });
-module.exports = {buildPulse, parseChart, parseOCC, summarizeOptions, UNIVERSE, OPTION_UNDERLYINGS};
+module.exports = {buildPulse, parseChart, parseOCC, summarizeOptions, contractRow, CBOE_HEADERS, UNIVERSE, OPTION_UNDERLYINGS};
