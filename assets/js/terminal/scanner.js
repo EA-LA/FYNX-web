@@ -15,6 +15,10 @@
   const big = n => !finite(n) ? '—' : n >= 1e12 ? (n / 1e12).toFixed(2) + 'T' : n >= 1e9 ? (n / 1e9).toFixed(2) + 'B' : n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(0) + 'K' : String(Math.round(n));
   const price = p => !finite(p) ? '—' : p >= 1000 ? p.toLocaleString('en-US', {maximumFractionDigits: 2}) : p >= 1 ? p.toFixed(2) : p >= 0.01 ? p.toFixed(4) : p.toPrecision(3);
   const pct = v => finite(v) ? signed(v, 2, '%') : '—';
+  // Tick highlighting: price and day-change cells carry the market's key. A cell only flashes when the value it
+  // shows is the one that just ticked in the terminal's live feed, so screener snapshot rows never flash falsely.
+  const TICK_FIELD = {price: 'px:', chg: 'chg:'};
+  const tick = (td, r, k) => TICK_FIELD[k] && T.tk && r.open ? T.tk(td, TICK_FIELD[k] + r.open, r[k]) : td;
   const CAPS = [['', 'Any size'], ['mega', 'Mega > $200B', 2e11, Infinity], ['large', 'Large $10–200B', 1e10, 2e11], ['mid', 'Mid $2–10B', 2e9, 1e10], ['small', 'Small $300M–2B', 3e8, 2e9], ['micro', 'Micro $50–300M', 5e7, 3e8], ['nano', 'Nano < $50M', 0, 5e7]];
   const CRYPTO_CATS = {ai: 'AI', meme: 'Meme', l1: 'Layer 1', l2: 'Layer 2', defi: 'DeFi', rwa: 'Real-world assets', gaming: 'Gaming', solana: 'Solana ecosystem', depin: 'DePIN', stable: 'Stablecoins'};
   const ETF_THEMES = {ai: 'AI & robotics', semis: 'Semiconductors', crypto: 'Crypto', nuclear: 'Uranium & nuclear', clean: 'Clean energy', ev: 'EV & lithium', cyber: 'Cybersecurity', gold: 'Gold & precious metals', oil: 'Oil & energy', bonds: 'Bonds', dividend: 'Dividend & income', leveraged: 'Leveraged & inverse', international: 'International', covered: 'Covered call & buffer'};
@@ -156,8 +160,8 @@
         const v = r[k];
         if (k === 'sym') { tr.append(el('th', 'sc-sym', v)); continue; }
         if (k === 'themes') { const td = el('td', 'sc-tags'); (v || []).slice(0, 3).forEach(t => td.append(el('span', 'sc-tag', themeLabel(asset, t) || t))); tr.append(td); continue; }
-        if (asset === 'markets' && k === 'price') { tr.append(el('td', 'fx-num', fmt(v, T.digitsOf(r.sym)))); continue; }
-        tr.append(el('td', (f ? 'fx-num ' : '') + (num ? tone(v) : '') + (k === 'name' || k === 'industry' ? ' sc-text' : ''), f ? f(v) : String(v ?? '—')));
+        if (asset === 'markets' && k === 'price') { tr.append(tick(el('td', 'fx-num', fmt(v, T.digitsOf(r.sym))), r, k)); continue; }
+        tr.append(tick(el('td', (f ? 'fx-num ' : '') + (num ? tone(v) : '') + (k === 'name' || k === 'industry' ? ' sc-text' : ''), f ? f(v) : String(v ?? '—')), r, k));
       }
       tb.append(tr);
     }
@@ -264,7 +268,7 @@
     const hits = sortRows(apply(rowsFor(st.asset), st.f, st.asset), st.sort, st.asset).slice(0, 10);
     host.append(el('p', 'pm-lead', (PRESETS[st.asset].find(p => p[0] === st.preset)?.[1] || (st.preset.startsWith('saved:') ? st.preset.slice(6) : 'Custom scan')) + ' · ' + ASSETS.find(a => a[0] === st.asset)[1]));
     const key = st.asset === 'crypto' ? 'c24' : 'chg';
-    for (const r of hits) { const b = T.rowButton('pm-c4', () => T.setSymbol({symbol: r.open, name: r.name}), `${r.sym} ${r.name}`); b.append(el('b', '', r.sym), el('span', 'fx-num', price(r.price)), el('span', 'fx-num ' + tone(r[key]), pct(r[key])), el('span', 'fx-num fx-dim', st.asset === 'markets' ? (finite(r.z) ? signed(r.z, 1, 'σ') : '') : big(r.vol ?? r.cap))); host.append(b); }
+    for (const r of hits) { const b = T.rowButton('pm-c4', () => T.setSymbol({symbol: r.open, name: r.name}), `${r.sym} ${r.name}`); b.append(el('b', '', r.sym), tick(el('span', 'fx-num', price(r.price)), r, 'price'), tick(el('span', 'fx-num ' + tone(r[key]), pct(r[key])), r, key), el('span', 'fx-num fx-dim', st.asset === 'markets' ? (finite(r.z) ? signed(r.z, 1, 'σ') : '') : big(r.vol ?? r.cap))); host.append(b); }
     if (!hits.length) host.append(el('p', 'fx-empty', 'No matches for this scan — open the scanner to adjust it.'));
   };
   T.EXTRA_GROUPS.push(['Scanners', ['scan']]);

@@ -483,6 +483,38 @@ function cleanQuotes(input) {
 }
 var quotes = [];
 var listeners = [];
+/* FYNX.tick(element, key, value): the terminal's tick highlighting inside a widget. The cell flashes green when
+   value is above the last value seen for key, red when below; unchanged, missing or first values never flash.
+   Follows the user's Market Data Display settings, sent by the terminal. */
+var tickPrev = Object.create(null);
+var display = {enabled: true, duration: 650, intensity: 'standard', style: 'background', reducedMotion: false};
+function cleanDisplay(d) {
+  var o = d && typeof d === 'object' ? d : {};
+  return {
+    enabled: o.enabled !== false,
+    duration: [300, 500, 650, 1000].indexOf(Number(o.duration)) >= 0 ? Number(o.duration) : 650,
+    intensity: ['subtle', 'standard', 'strong'].indexOf(o.intensity) >= 0 ? o.intensity : 'standard',
+    style: ['background', 'text', 'both'].indexOf(o.style) >= 0 ? o.style : 'background',
+    reducedMotion: o.reducedMotion === true
+  };
+}
+var TICK_RGB = {up: '0,200,83', down: '255,51,71'};
+var TICK_HEX = {up: '#00C853', down: '#FF3347'};
+function tickCell(node, key, value) {
+  var k = String(key || '').slice(0, 64), n = Number(value);
+  if (!node || node.nodeType !== 1 || !k || value === null || value === undefined || value === '' || !isFinite(n)) return node;
+  var prev = tickPrev[k];
+  tickPrev[k] = n;
+  if (prev === undefined || prev === n || !display.enabled || typeof node.animate !== 'function') return node;
+  var dir = n > prev ? 'up' : 'down', strong = display.intensity === 'strong' && display.style !== 'text';
+  var alpha = (display.style === 'both' ? {subtle: 0.12, standard: 0.2, strong: 1} : {subtle: 0.18, standard: 0.32, strong: 1})[display.intensity];
+  var a = {}, b = {}, c = {};
+  if (display.style !== 'text') { a.backgroundColor = b.backgroundColor = 'rgba(' + TICK_RGB[dir] + ',' + alpha + ')'; c.backgroundColor = 'rgba(0,0,0,0)'; }
+  if (strong || display.style !== 'background') { a.color = b.color = strong ? '#000000' : TICK_HEX[dir]; c.color = realWin.getComputedStyle(node).color || 'inherit'; }
+  a.offset = 0; b.offset = display.reducedMotion ? 0.999 : 0.15; c.offset = 1;
+  try { node.animate([a, b, c], {duration: display.duration, easing: display.reducedMotion ? 'linear' : 'ease-out'}); } catch (e) {}
+  return node;
+}
 function quoteOf(symbol) {
   var key = String(symbol || '');
   for (var i = 0; i < quotes.length; i++) if (quotes[i].symbol === key) return quotes[i];
@@ -500,7 +532,8 @@ var sdk = Object.freeze({
     if (!Number.isFinite(n)) return '\\u2014';
     return (n > 0 ? '+' : n < 0 ? '\\u2212' : '') + Math.abs(n).toFixed(2) + '%';
   },
-  onQuotes: function (fn) { if (typeof fn === 'function') listeners.push(fn); }
+  onQuotes: function (fn) { if (typeof fn === 'function') listeners.push(fn); },
+  tick: tickCell
 });
 function fail(token, error) {
   parent.postMessage({type: 'fynx-error', token: token, message: error && error.message ? String(error.message).slice(0, 500) : 'The widget failed.'}, '*');
@@ -509,6 +542,7 @@ realWin.addEventListener('message', function (event) {
   if (event.source !== parent || !event.data) return;
   if (event.data.type === 'fynx-quotes' && event.data.token) {
     quotes = cleanQuotes(event.data.quotes);
+    if (event.data.display) display = cleanDisplay(event.data.display);
     listeners.slice().forEach(function (fn) { try { fn(); } catch (error) { fail(event.data.token, error); } });
     return;
   }
@@ -516,6 +550,8 @@ realWin.addEventListener('message', function (event) {
   var token = event.data.token;
   if (String(event.data.code || '').length > 48000) { fail(token, new Error('main.js is limited to 48000 characters.')); return; }
   quotes = cleanQuotes(event.data.quotes);
+  display = cleanDisplay(event.data.display);
+  tickPrev = Object.create(null); // a new run starts from a clean baseline: nothing flashes on load
   listeners = [];
   var root = realDoc.getElementById('root');
   root.replaceChildren();
@@ -536,6 +572,7 @@ parent.postMessage({type: 'fynx-ready'}, '*');
     'root is an empty DOM element. Build the widget with document.createElement and textContent. Do not use innerHTML.',
     'FYNX.quote(symbol) returns {symbol, price, changePercent} or null. Symbols include SPY, QQQ, AAPL, BTC-USD, EURUSD=X, GC=F, DX-Y.NYB and ^TNX.',
     'FYNX.quotes() returns the current terminal snapshot. FYNX.format(number, digits) and FYNX.signed(number) format numbers.',
+    'FYNX.tick(element, key, value) returns element and flashes it green or red when value moved since the last value for key (use it on price cells redrawn in FYNX.onQuotes).',
     'FYNX.onQuotes(callback) runs again when that snapshot updates.',
     'The widget cannot access the network. If a private data provider is required, say so in a comment. Do not invent credentials.',
     'The widget must be a financial, economic, or market tool.',
@@ -543,35 +580,41 @@ parent.postMessage({type: 'fynx-ready'}, '*');
   ].join('\n');
 
   const TEMPLATE = `function render(root, FYNX) {
-  const card = document.createElement('section');
-  const title = document.createElement('h2');
-  title.textContent = 'Global Market Intelligence';
-  card.append(title);
-  function row(label, quote, missing) {
-    const line = document.createElement('p');
-    const name = document.createElement('span');
-    name.textContent = label + '  ';
-    line.append(name);
-    if (!quote) {
-      const miss = document.createElement('span');
-      miss.className = 'fxb-miss';
-      miss.textContent = missing;
-      line.append(miss);
+  function draw() {
+    const card = document.createElement('section');
+    const title = document.createElement('h2');
+    title.textContent = 'Global Market Intelligence';
+    card.append(title);
+    function row(label, quote, missing) {
+      const line = document.createElement('p');
+      const name = document.createElement('span');
+      name.textContent = label + '  ';
+      line.append(name);
+      if (!quote) {
+        const miss = document.createElement('span');
+        miss.className = 'fxb-miss';
+        miss.textContent = missing;
+        line.append(miss);
+        return line;
+      }
+      const price = document.createElement('span');
+      price.textContent = FYNX.format(quote.price, 2) + '  ';
+      // Flashes green or red when the price moved since the last update.
+      FYNX.tick(price, quote.symbol, quote.price);
+      const change = document.createElement('span');
+      const n = Number(quote.changePercent);
+      change.textContent = FYNX.signed(quote.changePercent);
+      change.style.color = n > 0 ? '#3ecf8e' : n < 0 ? '#ff6b5f' : '#8e9b94';
+      line.append(price, change);
       return line;
     }
-    const price = document.createElement('span');
-    price.textContent = FYNX.format(quote.price, 2) + '  ';
-    const change = document.createElement('span');
-    const n = Number(quote.changePercent);
-    change.textContent = FYNX.signed(quote.changePercent);
-    change.style.color = n > 0 ? '#3ecf8e' : n < 0 ? '#ff6b5f' : '#8e9b94';
-    line.append(price, change);
-    return line;
+    card.append(row('S&P 500', FYNX.quote('SPY'), 'S&P 500 is not in this terminal snapshot'));
+    card.append(row('Gold', FYNX.quote('GC=F') || FYNX.quote('GLD'), 'Gold is not in this terminal snapshot'));
+    card.append(row('Dollar index', FYNX.quote('DX-Y.NYB'), 'Dollar index is not in this terminal snapshot'));
+    root.replaceChildren(card);
   }
-  card.append(row('S&P 500', FYNX.quote('SPY'), 'S&P 500 is not in this terminal snapshot'));
-  card.append(row('Gold', FYNX.quote('GC=F') || FYNX.quote('GLD'), 'Gold is not in this terminal snapshot'));
-  card.append(row('Dollar index', FYNX.quote('DX-Y.NYB'), 'Dollar index is not in this terminal snapshot'));
-  root.replaceChildren(card);
+  draw();
+  FYNX.onQuotes(draw);
 }
 `;
 

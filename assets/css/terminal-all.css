@@ -69,8 +69,24 @@ button.fx-row:hover,a.fx-row:hover{background:#172120}
 .fx-th>*:not(:first-child),.fx-r3>*:not(:first-child){text-align:right}
 .fx-sort{background:none;border:0;padding:0;font-size:10px;color:var(--mu);text-align:right}
 .fx-sym{display:flex;flex-direction:column;min-width:0}.fx-sym b{font-weight:700}.fx-sym small{font-size:10px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fx-flash-up{animation:fxfu 1.2s}.fx-flash-dn{animation:fxfd 1.2s}
-@keyframes fxfu{0%{background:rgba(62,207,142,.45)}}@keyframes fxfd{0%{background:rgba(255,107,95,.45)}}
+/* Market Data Display: tick highlighting (assets/js/terminal/tick.js). Rectangular cell-level flash painted as an
+   overlay (background) and/or text colour; no box, glow, size or layout change. Colours come from tick.js settings. */
+@property --fx-tk-bg{syntax:'<color>';inherits:false;initial-value:rgba(0,0,0,0)}
+@property --fx-tk-fg{syntax:'<color>';inherits:false;initial-value:rgba(0,0,0,0)}
+body.fx-terminal .fx-tk-b{background-image:linear-gradient(var(--fx-tk-bg),var(--fx-tk-bg))!important}
+body.fx-terminal .fx-tk-f{color:var(--fx-tk-fg)!important}
+.fx-tk-1,.fx-tk-2{animation-duration:var(--fx-tk-dur,650ms);animation-delay:var(--fx-tk-delay,0ms);animation-timing-function:ease-out;animation-fill-mode:both;animation-iteration-count:1}
+.fx-tk-1{animation-name:fxtk1}.fx-tk-2{animation-name:fxtk2}
+@keyframes fxtk1{0%,15%{--fx-tk-bg:var(--fx-tk-bg0);--fx-tk-fg:var(--fx-tk-fg0)}100%{--fx-tk-bg:rgba(0,0,0,0);--fx-tk-fg:var(--fx-tk-fg1)}}
+@keyframes fxtk2{0%,15%{--fx-tk-bg:var(--fx-tk-bg0);--fx-tk-fg:var(--fx-tk-fg0)}100%{--fx-tk-bg:rgba(0,0,0,0);--fx-tk-fg:var(--fx-tk-fg1)}}
+@media (prefers-reduced-motion:reduce){.fx-tk-1,.fx-tk-2{animation-timing-function:steps(1,end)}}
+.fx-mdd-row{display:grid;grid-template-columns:minmax(180px,260px) 1fr;gap:6px 16px;align-items:center;padding:9px 0;border-bottom:1px solid var(--ln)}
+.fx-mdd-label b{display:block;font-size:12px;color:var(--tx)}.fx-mdd-label small{color:var(--mu);font-size:11px}
+.fx-mdd-opts{flex-wrap:wrap;margin:0}
+.fx-mdd-key{display:flex;flex-wrap:wrap;gap:8px 18px;margin:12px 0 4px}
+.fx-mdd-swatch{display:inline-flex;align-items:center;gap:8px}.fx-mdd-swatch i{font-style:normal;font-family:'IBM Plex Mono',ui-monospace,monospace;padding:1px 6px;border:1px solid var(--ln)}
+.fx-mdd-swatch small{color:var(--mu)}
+@media (max-width:640px){.fx-mdd-row{grid-template-columns:1fr}}
 .fx-c3{grid-template-columns:1fr auto auto}
 .fx-c4{grid-template-columns:44px 1fr 52px 54px}.fx-c4>*:nth-child(n+3){text-align:right}
 .fx-c5{grid-template-columns:62px 1fr 42px 40px 36px}.fx-c5>*:nth-child(n+3){text-align:right}

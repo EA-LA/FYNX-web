@@ -82,8 +82,8 @@
   const LINK_LABEL = {des: 'Full page', fa: 'Full', macro: 'Macro Desk', intel: 'All', news: 'All', vol: 'Vol', bias: 'Method', edge: 'Edge Radar', cal: 'Week', calc: 'All calcs', mkts: 'Board', options: 'Full'};
 
   const store = {get: k => { try { return localStorage.getItem('fx-term-' + k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem('fx-term-' + k, v); } catch {} }};
-  const S = {quotes: {}, quotesAt: null, prev: {}, desk: null, edge: null, calendar: null, schedule: null, briefing: [], desks: {}, vix: null, corr: {}, books: {}, history: {}, bars: {}, fin: {}, directory: null, journal: window.FynxTerminalJournal || {status: 'loading'},
-    mk: null, opts: null, earn: null, sym: null, symData: {}, symQuotes: {}, symNews: {}, cards: {}, symbols: null, editing: false, deskKey: 'all', mktTab: null, mktSort: null, focus: 'SPY', range: 126, finTicker: 'AAPL', deskTab: 'forex', curve: 'US', ecoHigh: false, corrWindow: 60, tool: 'calc', optSym: 'SPY', optExp: 0, perfWin: 21, feeds: {}, paused: false};
+  const S = {quotes: {}, quotesAt: null, desk: null, edge: null, calendar: null, schedule: null, briefing: [], desks: {}, vix: null, corr: {}, books: {}, history: {}, bars: {}, fin: {}, directory: null, journal: window.FynxTerminalJournal || {status: 'loading'},
+    mk: null, opts: null, earn: null, sym: null, symData: {}, symQuotes: {}, symNews: {}, cards: {}, symbols: null, editing: false, deskKey: 'all', mktTab: null, mktSort: null, focus: 'SPY', range: 126, finTicker: 'AAPL', deskTab: 'forex', curve: 'US', ecoHigh: false, corrWindow: 60, tool: 'calc', optSym: 'SPY', optExp: 0, perfWin: 21, feeds: {}, paused: false, tickLive: false, tickRebase: new Set()};
   const $ = id => document.getElementById(id);
   const finite = v => typeof v === 'number' && Number.isFinite(v);
   /* Symbol mode: picking one market reloads every box for it. Layouts per asset class. */
@@ -131,7 +131,12 @@
   const big = v => !finite(v) ? '—' : Math.abs(v) >= 1e12 ? '$' + (v / 1e12).toFixed(2) + 'T' : Math.abs(v) >= 1e9 ? '$' + (v / 1e9).toFixed(2) + 'B' : Math.abs(v) >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : '$' + v.toFixed(2);
   const count = v => !finite(v) ? '—' : v >= 1e6 ? (v / 1e6).toFixed(2) + 'M' : v >= 1e4 ? (v / 1e3).toFixed(1) + 'K' : Math.round(v).toLocaleString('en-US');
   const report = (op, e) => { try { window.FynxMonitor?.report('feed', 'terminal-' + op, e); } catch {} };
-  const feed = (name, ok) => { S.feeds[name] = ok; renderLive(); };
+  const feed = (name, ok) => { if (!ok && S.feeds[name] !== false) S.tickRebase.add(name); S.feeds[name] = ok; renderLive(); };
+  /* Tick highlighting (assets/js/terminal/tick.js): tk() tags a value cell with its instrument/field key; the
+     shared painter flashes it when that value just changed in the data. Daily performance colours (tone) are
+     never touched: the flash says where the latest value moved, the tone says how the day is going. */
+  const TK = window.FynxTick || null;
+  const tk = (node, key, value) => TK ? TK.mark(node, key, value) : node;
   async function getJSON(url, {timeout = 25000, bust = false} = {}) {
     const target = bust ? url + (url.includes('?') ? '&' : '?') + 't=' + Math.floor(Date.now() / 120000) : url;
     const r = await fetch(target, {signal: AbortSignal.timeout(timeout), credentials: 'omit', referrerPolicy: 'no-referrer', headers: {Accept: 'application/json'}});
@@ -217,7 +222,7 @@
       const next = {};
       for (const c of CATALOG) { const q = d?.quotes?.[c.symbol]; if (q && finite(q.price) && q.price > 0) next[c.symbol] = {price: q.price, changePercent: finite(q.changePercent) ? q.changePercent : null, asOf: q.asOf, source: q.source || 'Yahoo Finance', delayed: q.delayed !== false}; }
       if (!Object.keys(next).length) throw new Error('No quotes');
-      S.prev = Object.fromEntries(Object.entries(S.quotes).map(([k, v]) => [k, v.price])); S.quotes = next; S.quotesAt = d.fetchedAt || new Date().toISOString(); feed('quotes', true);
+      S.quotes = next; S.quotesAt = d.fetchedAt || new Date().toISOString(); feed('quotes', true);
     } catch (e) { report('quotes', e); feed('quotes', false); }
   }
   async function loadSnapshot(name, check) { try { const d = await getJSON(TDATA + name, {bust: true, timeout: 30000}); if (check(d)) return d; } catch (e) { report(name, e); } return null; }
@@ -261,6 +266,50 @@
     } catch (e) { report('fin', e); return null; }
   }
 
+  /* --- tick commit: every value the terminal shows, recorded once per data batch ---------------------- */
+  // Called after loaders and before the panels redraw, so the redrawn cells find their tick. Silent commits
+  // re-baseline without flashing: start-up, desk/symbol switches, a returning browser tab and the first batch
+  // after a feed outage (a burst of catch-up changes is not a tick).
+  const ecoKey = e => 'eco:' + (e.id || `${e.time}|${e.currency}|${e.title}`);
+  function commitTicks(silent = false) {
+    if (!TK) return;
+    const quiet = silent || !S.tickLive || S.tickRebase.size > 0; S.tickRebase.clear();
+    const o = (ts, src, digits, extra) => ({silent: quiet, ts, src, digits, ...extra});
+    const ids = new Set([...Object.keys(S.quotes), ...Object.keys(MKQ()), ...Object.keys(S.symQuotes), ...Object.keys(EDGE)]);
+    for (const id of ids) {
+      const q = quoteFor(id); if (!q) continue;
+      const src = S.quotes[id] || S.quotes[EDGE_TO_FX[id]] ? 'live' : q.snapshot ? 'snap' : 'sym', ts = q.asOf || null;
+      TK.ingest('px:' + id, q.price, o(ts, src, digitsOf(id)));
+      TK.ingest('chg:' + id, q.changePercent, o(ts, src, 2));
+      if (finite(q.volume)) TK.ingest('vol:' + id, q.volume, o(ts, src, 0));
+      if (finite(q.previousClose)) TK.ingest('prev:' + id, q.previousClose, o(ts, src, digitsOf(id)));
+    }
+    for (const [p, b] of Object.entries(S.books)) {
+      if (!b) continue; const ts = b.time || b.fetchedAt || null;
+      TK.ingest('bid:' + p, b.bid, o(ts, 'coinbase', digitsOf(p))); TK.ingest('ask:' + p, b.ask, o(ts, 'coinbase', digitsOf(p))); TK.ingest('sprd:' + p, b.spreadBps, o(ts, 'coinbase', 2));
+    }
+    for (const q of S.desk?.liveUS?.quotes || []) { TK.ingest('ust:' + q.tenor, q.price, o(q.asOf || null, 'cbot', 3)); if (finite(q.previousClose)) TK.ingest('ustbp:' + q.tenor, (q.price - q.previousClose) * 100, o(q.asOf || null, 'cbot', 1)); }
+    for (const a of ['US', 'EA', 'GB', 'JP']) { const v = M.curveView(S.desk?.curves?.[a]); if (v) for (const r of v.rows) TK.ingest(`curve:${a}:${r.tenor}`, r.value, o(v.latestDate || null, 'official', 2)); }
+    // A policy-rate print is published information rather than a tick: neutral.
+    for (const r of S.desk?.rates?.rows || []) TK.ingest('rate:' + r.area, r.value, o(r.observationDate || null, 'official', 2, {neutral: true}));
+    for (const b of S.schedule?.banks || []) { const rate = M.policyRate(b.currency, S.desk); if (rate) TK.ingest('cb:' + b.short, rate.display, o(rate.observationDate || null, 'official', null, {neutral: true})); }
+    // Economic calendar: a changed forecast or a newly published figure is a neutral update.
+    // Large, slow-changing sets are only re-read when their snapshot object changed.
+    const calNew = S.calendar !== commitTicks.cal, optNew = S.opts !== commitTicks.opts; commitTicks.cal = S.calendar; commitTicks.opts = S.opts;
+    if (calNew) for (const e of S.calendar?.events || []) { const k = ecoKey(e); TK.ingest(k + ':f', e.forecast, o(null, 'cal', null, {neutral: true, track: true})); TK.ingest(k + ':p', e.previous, o(null, 'cal', null, {neutral: true, track: true})); }
+    if (S.vix?.rows?.length) TK.ingest('vixclose', S.vix.rows.at(-1).close, o(S.vix.rows.at(-1).date, 'cboe', 2));
+    const ots = S.opts?.generatedAt || null;
+    if (optNew) for (const u of Object.values(S.opts?.underlyings || {})) {
+      TK.ingest(`opt:${u.symbol}:px`, u.price, o(ots, 'cboe', 2)); TK.ingest(`opt:${u.symbol}:iv30`, u.iv30, o(ots, 'cboe', 1)); TK.ingest(`opt:${u.symbol}:pc`, u.putCallVolume, o(ots, 'cboe', 2));
+      for (const e of (u.expiries || []).slice(0, 8)) for (const row of e.chain || []) for (const [side, c] of [['C', row.call], ['P', row.put]]) {
+        if (!c) continue; const base = `opt:${u.symbol}:${e.date}:${row.strike}${side}:`;
+        TK.ingest(base + 'bid', c.bid, o(ots, 'cboe', 2)); TK.ingest(base + 'ask', c.ask, o(ots, 'cboe', 2)); TK.ingest(base + 'iv', finite(c.iv) && c.iv > 0 ? c.iv * 100 : null, o(ots, 'cboe', 1)); TK.ingest(base + 'volume', c.volume, o(ots, 'cboe', 0));
+      }
+      for (const c of u.mostActive || []) { const base = `opt:${u.symbol}:${c.expiry}:${c.strike}${c.type}:`; for (const f of ['last', 'bid', 'ask']) TK.ingest(base + f, c[f], o(ots, 'cboe', 2)); }
+    }
+    TK.commit({silent: quiet});
+  }
+
   /* --- header: clocks, live, quotes strip, news ticker ---------------------- */
   function zoneState(tz, open, close, now = new Date()) {
     const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', {timeZone: tz, hourCycle: 'h23', weekday: 'short', hour: '2-digit', minute: '2-digit'}).formatToParts(now).map(p => [p.type, p.value]));
@@ -286,10 +335,10 @@
   function renderStrip() {
     const host = $('fx-quotes'); host.replaceChildren();
     const ten = S.desk?.liveUS?.quotes?.find(q => q.tenor === '10Y');
-    if (ten) { const b = btn('', 'fx-q', () => setCurve('US')); b.append(el('b', '', 'US10Y'), el('span', '', ten.price.toFixed(3) + '%'), el('em', tone(ten.price - ten.previousClose), signed((ten.price - ten.previousClose) * 100, 1, 'bp'))); host.append(b); }
+    if (ten) { const b = btn('', 'fx-q', () => setCurve('US')); b.append(el('b', '', 'US10Y'), tk(el('span', '', ten.price.toFixed(3) + '%'), 'ust:10Y', ten.price), tk(el('em', tone(ten.price - ten.previousClose), signed((ten.price - ten.previousClose) * 100, 1, 'bp')), 'ustbp:10Y', (ten.price - ten.previousClose) * 100)); host.append(b); }
     for (const id of stripSymbols()) {
       const q = quoteFor(id); if (!q || id === '^TNX') continue;
-      const b = btn('', 'fx-q', () => focusOn(id), `${nameOf(id)} ${q.price}`); b.append(el('b', '', shortOf(id)), el('span', '', fmt(q.price, digitsOf(id))), el('em', tone(q.changePercent), finite(q.changePercent) ? (q.changePercent >= 0 ? '▲ ' : '▼ ') + Math.abs(q.changePercent).toFixed(2) + '%' : ''));
+      const b = btn('', 'fx-q', () => focusOn(id), `${nameOf(id)} ${q.price}`); b.append(el('b', '', shortOf(id)), tk(el('span', '', fmt(q.price, digitsOf(id))), 'px:' + id, q.price), tk(el('em', tone(q.changePercent), finite(q.changePercent) ? (q.changePercent >= 0 ? '▲ ' : '▼ ') + Math.abs(q.changePercent).toFixed(2) + '%' : ''), 'chg:' + id, q.changePercent));
       host.append(b);
     }
     const t = S.deskKey === 'all' ? S.quotesAt : S.mk?.generatedAt;
@@ -311,9 +360,8 @@
   /* --- quote rows (shared by MKTS, IDX, XA, MOV) ------------------------------- */
   function quoteRow(id, extra, onPick) {
     const q = quoteFor(id), r = rowButton('fx-r3' + (S.focus === id || S.focus === FX_TO_EDGE[id] ? ' sel' : ''), onPick || (() => focusOn(id)), onPick ? `Load the desk for ${nameOf(id)}` : `Chart ${nameOf(id)}`);
-    const flash = q && finite(S.prev[id]) && S.prev[id] !== q.price ? (q.price > S.prev[id] ? ' fx-flash-up' : ' fx-flash-dn') : '';
     const n = el('span', 'fx-sym'); n.append(el('b', '', shortOf(id)), el('small', '', extra || nameOf(id)));
-    r.append(n, el('span', 'fx-num' + flash, q ? fmt(q.price, digitsOf(id)) : '—'), el('span', 'fx-num ' + tone(q?.changePercent), q ? signed(q.changePercent, 2, '%') : '—'));
+    r.append(n, tk(el('span', 'fx-num', q ? fmt(q.price, digitsOf(id)) : '—'), 'px:' + id, q?.price), tk(el('span', 'fx-num ' + tone(q?.changePercent), q ? signed(q.changePercent, 2, '%') : '—'), 'chg:' + id, q?.changePercent));
     return r;
   }
   function renderMkts() {
@@ -355,7 +403,7 @@
     const cols = el('div', 'fx-movers');
     for (const [label, list] of [['GAINERS', sorted.slice(0, n)], ['LOSERS', sorted.slice(-n).reverse()]]) {
       const col = el('div'); col.append(el('div', 'fx-th1', label));
-      list.forEach(id => { const q = quoteFor(id), z = finite(q.vol20) && q.vol20 > 0 ? Math.abs(q.changePercent) / q.vol20 : null; const r = rowButton('fx-mv', () => focusOn(id), `${nameOf(id)} ${signed(q.changePercent, 2, '%')}`); r.append(el('b', '', shortOf(id)), el('span', 'fx-num ' + tone(q.changePercent), signed(q.changePercent, 2, '%')), el('small', 'fx-dim', z ? z.toFixed(1) + 'σ' : '')); col.append(r); });
+      list.forEach(id => { const q = quoteFor(id), z = finite(q.vol20) && q.vol20 > 0 ? Math.abs(q.changePercent) / q.vol20 : null; const r = rowButton('fx-mv', () => focusOn(id), `${nameOf(id)} ${signed(q.changePercent, 2, '%')}`); r.append(el('b', '', shortOf(id)), tk(el('span', 'fx-num ' + tone(q.changePercent), signed(q.changePercent, 2, '%')), 'chg:' + id, q.changePercent), el('small', 'fx-dim', z ? z.toFixed(1) + 'σ' : '')); col.append(r); });
       cols.append(col);
     }
     host.append(cols, el('p', 'fx-foot', 'σ = today’s move vs its own 20-day typical daily move.'));
@@ -450,8 +498,8 @@
     const last = q?.price ?? closes.at(-1), first = closes[0], hi = Math.max(...rows.map(r => r.high ?? r.close)), lo = Math.min(...rows.map(r => r.low ?? r.close));
     const yr = series.rows.slice(-252), hi52 = q?.high52 ?? Math.max(...yr.map(r => r.high ?? r.close)), lo52 = q?.low52 ?? Math.min(...yr.map(r => r.low ?? r.close));
     const stats = el('div', 'fx-stats');
-    const st = (k, v, cls) => { const s = el('div'); s.append(el('span', '', k), el('b', cls || '', v)); stats.append(s); };
-    st('LAST', fmt(last, digits)); st('DAY', q ? signed(q.changePercent, 2, '%') : '—', tone(q?.changePercent)); st('PERIOD', signed((last / first - 1) * 100, 2, '%'), tone(last - first));
+    const st = (k, v, cls, key, raw) => { const s = el('div'); s.append(el('span', '', k), key ? tk(el('b', cls || '', v), key, raw) : el('b', cls || '', v)); stats.append(s); };
+    st('LAST', fmt(last, digits), '', q ? 'px:' + id : null, last); st('DAY', q ? signed(q.changePercent, 2, '%') : '—', tone(q?.changePercent), q ? 'chg:' + id : null, q?.changePercent); st('PERIOD', signed((last / first - 1) * 100, 2, '%'), tone(last - first));
     st('RANGE HI', fmt(hi, digits)); st('RANGE LO', fmt(lo, digits)); st('52W HI', fmt(hi52, digits)); st('52W LO', fmt(lo52, digits));
     if (finite(q?.vol20)) st('20D VOL', q.vol20.toFixed(2) + '%/d');
     host.append(stats, lineChart(rows, {digits, label: nameOf(id), last, source: `${series.source} daily ${EDGE[id] ? 'bid candles' : series.closeOnly ? 'closes' : 'adjusted closes'}`}));
@@ -590,7 +638,7 @@
     for (const b of banks) {
       const rate = M.policyRate(b.currency, S.desk), next = M.nextDecision(b), r = rowButton('fx-c4', () => openPage('cb', b.short), `${b.name} details`);
       const stale = rate && M.lastDecisionBefore(b) > rate.observationDate;
-      r.append(el('b', '', b.short.toUpperCase()), el('span', 'fx-num' + (stale ? ' fx-warn' : ''), rate ? rate.display + (stale ? '*' : '') : '—'), el('span', '', next ? day(next.date) : '—'), el('span', 'fx-num fx-up', next ? (next.at ? M.countdown(next.at - Date.now()) : next.daysAway + 'd') : ''));
+      r.append(el('b', '', b.short.toUpperCase()), tk(el('span', 'fx-num' + (stale ? ' fx-warn' : ''), rate ? rate.display + (stale ? '*' : '') : '—'), 'cb:' + b.short, null), el('span', '', next ? day(next.date) : '—'), el('span', 'fx-num fx-up', next ? (next.at ? M.countdown(next.at - Date.now()) : next.daysAway + 'd') : ''));
       host.append(r);
     }
     const odds = S.desk?.fed?.odds;
@@ -616,7 +664,7 @@
   }
   function tenorGrid(area, v, curve) {
     const grid = el('div', 'fx-tenors');
-    for (const r of v.rows) { const b = btn('', 'fx-tenor', () => inspect(`${M.AREAS[area].short} ${r.tenor}`, h => kv(h, [['Yield', r.value.toFixed(3) + '%'], ['1 week change', signed(r.weekChangeBp, 0, ' bp')], ['1 month change', signed(r.monthChangeBp, 0, ' bp')], ['Close', v.latestDate], ['Source', link(curve.source, curve.sourceURL)]])), `${r.tenor} yield`); b.append(el('span', '', r.tenor), el('b', '', r.value.toFixed(2)), el('em', tone(r.monthChangeBp), signed(r.monthChangeBp, 0))); grid.append(b); }
+    for (const r of v.rows) { const b = btn('', 'fx-tenor', () => inspect(`${M.AREAS[area].short} ${r.tenor}`, h => kv(h, [['Yield', r.value.toFixed(3) + '%'], ['1 week change', signed(r.weekChangeBp, 0, ' bp')], ['1 month change', signed(r.monthChangeBp, 0, ' bp')], ['Close', v.latestDate], ['Source', link(curve.source, curve.sourceURL)]])), `${r.tenor} yield`); b.append(el('span', '', r.tenor), tk(el('b', '', r.value.toFixed(2)), `curve:${area}:${r.tenor}`, r.value), el('em', tone(r.monthChangeBp), signed(r.monthChangeBp, 0))); grid.append(b); }
     return grid;
   }
   function renderCurve() {
@@ -625,7 +673,7 @@
     setText('t-curve', M.AREAS[S.curve].short);
     if (!c) return empty(host, 'Loading yield curves…');
     host.append(c.chart, tenorGrid(S.curve, c.view, c.curve), el('p', 'fx-foot', `${c.view.spread ? `${c.view.spread.label} ${signed(c.view.spread.bp, 0, ' bp')} · ` : ''}close ${c.view.latestDate} · Δ = 1M bp · dashed = a month ago`));
-    if (S.curve === 'US' && S.desk?.liveUS?.quotes) { const live = el('div', 'fx-chips'); S.desk.liveUS.quotes.forEach(q => live.append(el('span', 'fx-chip', `${q.tenor} ${q.price.toFixed(3)} `), el('span', 'fx-chip ' + tone(q.price - q.previousClose), signed((q.price - q.previousClose) * 100, 1, 'bp')))); host.append(live); }
+    if (S.curve === 'US' && S.desk?.liveUS?.quotes) { const live = el('div', 'fx-chips'); S.desk.liveUS.quotes.forEach(q => live.append(tk(el('span', 'fx-chip', `${q.tenor} ${q.price.toFixed(3)} `), 'ust:' + q.tenor, null), tk(el('span', 'fx-chip ' + tone(q.price - q.previousClose), signed((q.price - q.previousClose) * 100, 1, 'bp')), 'ustbp:' + q.tenor, (q.price - q.previousClose) * 100))); host.append(live); }
   }
   function renderGov() {
     const host = panel('gov'), areas = ['US', 'EA', 'GB', 'JP'].map(a => ({a, v: M.curveView(S.desk?.curves?.[a])})).filter(x => x.v);
@@ -634,7 +682,7 @@
     const table = el('table', 'fx-table'), head = el('tr'); head.append(el('th', '', 'AREA')); tenors.forEach(t => head.append(el('th', '', t))); head.append(el('th', '', '2s10s')); table.append(head);
     for (const {a, v} of areas) {
       const tr = el('tr'); tr.append(el('th', '', M.AREAS[a].short));
-      tenors.forEach(t => { const r = pick(v, t), td = el('td', 'fx-num'); if (r) td.append(btn(r.value.toFixed(2), 'fx-cell', () => setCurve(a))); else td.textContent = '—'; tr.append(td); });
+      tenors.forEach(t => { const r = pick(v, t), td = el('td', 'fx-num'); if (r) { td.append(btn(r.value.toFixed(2), 'fx-cell', () => setCurve(a))); tk(td, `curve:${a}:${t}`, r.value); } else td.textContent = '—'; tr.append(td); });
       const s = pick(v, '10Y') && pick(v, '2Y') ? (pick(v, '10Y').value - pick(v, '2Y').value) * 100 : null; tr.append(el('td', 'fx-num ' + tone(s), finite(s) ? signed(s, 0) : '—')); table.append(tr);
     }
     host.append(table);
@@ -645,7 +693,7 @@
     const host = panel('rates'), list = (S.desk?.rates?.rows || []).filter(r => finite(r.value)).map(r => ({ccy: r.area === 'XM' ? 'EA' : r.area, value: r.value, date: r.observationDate})).sort((a, b) => b.value - a.value);
     if (!list.length) return empty(host, 'Loading policy rates…');
     const max = Math.max(...list.map(r => r.value), 1);
-    for (const r of list) { const row = el('div', 'fx-row fx-rate'); const bar = el('span', 'fx-hbar'), fill = el('i'); fill.style.width = Math.max(0, r.value) / max * 100 + '%'; bar.append(fill); row.append(el('b', '', r.ccy), bar, el('span', 'fx-num', r.value.toFixed(2) + '%'), el('small', 'fx-dim', r.date ? day(r.date) : '')); host.append(row); }
+    for (const r of list) { const row = el('div', 'fx-row fx-rate'); const bar = el('span', 'fx-hbar'), fill = el('i'); fill.style.width = Math.max(0, r.value) / max * 100 + '%'; bar.append(fill); row.append(el('b', '', r.ccy), bar, tk(el('span', 'fx-num', r.value.toFixed(2) + '%'), 'rate:' + (r.ccy === 'EA' ? 'XM' : r.ccy), r.value), el('small', 'fx-dim', r.date ? day(r.date) : '')); host.append(row); }
     host.append(el('p', 'fx-foot', `${S.desk.rates.source} · latest observation per bank`));
   }
   function renderTerm() {
@@ -669,12 +717,12 @@
     if (S.vix?.rows?.length) {
       const rows = S.vix.rows.slice(-90), vals = rows.map(r => r.close), last = vals.at(-1), prev = vals.at(-2);
       const top = btn('', 'fx-vixhead', () => openPage('vol'), 'Volatility page');
-      top.append(el('b', '', 'VIX ' + last.toFixed(2)), el('em', tone(last - prev), signed(last - prev, 2)), el('small', '', rows.at(-1).date)); host.append(top);
+      top.append(tk(el('b', '', 'VIX ' + last.toFixed(2)), 'vixclose', null), el('em', tone(last - prev), signed(last - prev, 2)), el('small', '', rows.at(-1).date)); host.append(top);
       const W = 300, H = 50, lo = Math.min(...vals), hi = Math.max(...vals), c = svg('svg', {viewBox: `0 0 ${W} ${H}`, class: 'fx-chart fx-spark', role: 'img', 'aria-label': `VIX last 90 closes, latest ${last.toFixed(2)}`});
       c.append(svg('polyline', {points: vals.map((v, i) => `${i * W / (vals.length - 1)},${H - 3 - (v - lo) / (hi - lo || 1) * (H - 6)}`).join(' '), class: 'ln-w', fill: 'none'})); host.append(c);
     } else host.append(el('p', 'fx-sub', 'VIX loading…'));
     const ten = S.desk?.liveUS?.quotes?.find(q => q.tenor === '10Y'), us = M.curveView(S.desk?.curves?.US);
-    if (ten && S.deskKey !== 'all') { const r = rowButton('fx-c3', () => setCurve('US'), 'US 10-year'); r.append(el('b', '', 'US 10Y'), el('span', 'fx-num', ten.price.toFixed(3) + '%'), el('span', 'fx-num ' + tone(ten.price - ten.previousClose), signed((ten.price - ten.previousClose) * 100, 1, 'bp'))); host.append(r); if (us?.spread) { const s = el('div', 'fx-row fx-c3'); s.append(el('b', '', us.spread.label), el('span'), el('span', 'fx-num ' + tone(us.spread.bp), signed(us.spread.bp, 0, ' bp'))); host.append(s); } }
+    if (ten && S.deskKey !== 'all') { const r = rowButton('fx-c3', () => setCurve('US'), 'US 10-year'); r.append(el('b', '', 'US 10Y'), tk(el('span', 'fx-num', ten.price.toFixed(3) + '%'), 'ust:10Y', ten.price), tk(el('span', 'fx-num ' + tone(ten.price - ten.previousClose), signed((ten.price - ten.previousClose) * 100, 1, 'bp')), 'ustbp:10Y', (ten.price - ten.previousClose) * 100)); host.append(r); if (us?.spread) { const s = el('div', 'fx-row fx-c3'); s.append(el('b', '', us.spread.label), el('span'), el('span', 'fx-num ' + tone(us.spread.bp), signed(us.spread.bp, 0, ' bp'))); host.append(s); } }
     const mood = S.edge?.mood, fxv = S.edge?.volatility;
     if (mood?.value) {
       const m = btn('', 'fx-mood', () => openPage('vol'), 'Market mood details');
@@ -690,7 +738,7 @@
   }
   function bookRow(host, p) {
     const b = S.books[p], r = rowButton('fx-c4', () => focusOn(p), `${p} top of book`);
-    r.append(el('b', '', shortOf(p)), el('span', 'fx-num fx-up', b ? fmt(b.bid, digitsOf(p)) : '—'), el('span', 'fx-num fx-down', b ? fmt(b.ask, digitsOf(p)) : '—'), el('span', 'fx-num', b && finite(b.spreadBps) ? b.spreadBps.toFixed(2) + 'bp' : '—')); host.append(r);
+    r.append(el('b', '', shortOf(p)), tk(el('span', 'fx-num fx-up', b ? fmt(b.bid, digitsOf(p)) : '—'), 'bid:' + p, b?.bid), tk(el('span', 'fx-num fx-down', b ? fmt(b.ask, digitsOf(p)) : '—'), 'ask:' + p, b?.ask), tk(el('span', 'fx-num', b && finite(b.spreadBps) ? b.spreadBps.toFixed(2) + 'bp' : '—'), 'sprd:' + p, b?.spreadBps)); host.append(r);
   }
   function renderBooks() {
     const host = panel('books'), list = ['BTC-USD', 'ETH-USD'];
@@ -755,7 +803,7 @@
   function ecoRow(e) {
     const past = Date.parse(e.time) < Date.now();
     const r = rowButton('fx-eco' + (past ? ' past' : ''), () => inspect(e.title, h => { kv(h, [['Currency', e.currency], ['Time', new Date(e.time).toLocaleString()], ['Impact', e.impact], ['Forecast', e.forecast || '—'], ['Previous', e.previous || '—'], ['Status', past ? 'Scheduled time has passed — check the source for the actual figure' : 'Upcoming'], ['Source', link('Forex Factory ↗︎', 'https://www.forexfactory.com/calendar')]]); h.append(btn('Full calendar ▸', 'fx-chip fx-chip-link', () => openPage('cal'))); }), e.title);
-    r.append(el('time', '', new Date(e.time).toLocaleString([], {weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'})), el('b', 'cc-' + e.currency, e.currency), el('i', 'imp-' + e.impact, ''), el('span', 'fx-ht', e.title), el('span', 'fx-num', e.forecast || ''), el('span', 'fx-num fx-dim', e.previous || ''));
+    r.append(el('time', '', new Date(e.time).toLocaleString([], {weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'})), el('b', 'cc-' + e.currency, e.currency), el('i', 'imp-' + e.impact, ''), el('span', 'fx-ht', e.title), tk(el('span', 'fx-num', e.forecast || ''), ecoKey(e) + ':f', e.forecast || null), tk(el('span', 'fx-num fx-dim', e.previous || ''), ecoKey(e) + ':p', e.previous || null));
     return r;
   }
   function renderEco() {
@@ -798,7 +846,7 @@
   }
   function sessionRows(host) {
     if (D().sessions === 'exchanges') {
-      for (const [code, name, tz, open, close, idx] of EXCHANGES) { const st = zoneState(tz, open, close), q = quoteFor(idx), r = rowButton('fx-sess', () => focusOn(idx), `${name} ${st.open ? 'open' : 'closed'}`); r.append(el('b', '', code), el('span', 'fx-dim', st.time), el('span', st.open ? 'fx-up' : 'fx-dim', st.open ? 'OPEN' : 'CLOSED'), el('span', 'fx-num ' + tone(q?.changePercent), q ? `${shortOf(idx)} ${signed(q.changePercent, 2, '%')}` : '')); host.append(r); }
+      for (const [code, name, tz, open, close, idx] of EXCHANGES) { const st = zoneState(tz, open, close), q = quoteFor(idx), r = rowButton('fx-sess', () => focusOn(idx), `${name} ${st.open ? 'open' : 'closed'}`); r.append(el('b', '', code), el('span', 'fx-dim', st.time), el('span', st.open ? 'fx-up' : 'fx-dim', st.open ? 'OPEN' : 'CLOSED'), tk(el('span', 'fx-num ' + tone(q?.changePercent), q ? `${shortOf(idx)} ${signed(q.changePercent, 2, '%')}` : ''), 'chg:' + idx, q?.changePercent)); host.append(r); }
       return host.append(el('p', 'fx-foot', 'Regular cash-session hours in exchange local time; lunch breaks and holidays not shown.'));
     }
     for (const s of SESSIONS) { const st = sessionState(s), r = el('div', 'fx-row fx-c3'); r.append(el('b', '', st.name), el('span', 'fx-num', st.time + ' local'), el('span', st.open ? 'fx-up' : 'fx-dim', st.open ? 'OPEN' : 'CLOSED')); host.append(r); }
@@ -815,15 +863,15 @@
     for (const u of list) {
       const e = u.expiries.find(x => x.dte >= 1) || u.expiries[0];
       const r = rowButton('fx-omon' + (S.optSym === u.symbol ? ' sel' : ''), () => { S.optSym = u.symbol; S.optExp = 0; R('optlist', 'opt', 'chain', 'active'); if (!$('tp-chain') && !$('tp-opt')) openPage('options', u.symbol); }, `${u.symbol} options`);
-      r.append(el('b', '', u.symbol), el('span', 'fx-num', fmt(u.price, 2)), el('span', 'fx-num ' + tone(u.iv30Change), finite(u.iv30) ? u.iv30.toFixed(1) : '—'), el('span', 'fx-num ' + (u.putCallVolume > 1 ? 'fx-down' : u.putCallVolume < 0.6 ? 'fx-up' : ''), finite(u.putCallVolume) ? u.putCallVolume.toFixed(2) : '—'), el('span', 'fx-num', e?.movePercent ? '±' + e.movePercent.toFixed(1) + '%' : '—'));
+      r.append(el('b', '', u.symbol), tk(el('span', 'fx-num', fmt(u.price, 2)), `opt:${u.symbol}:px`, u.price), tk(el('span', 'fx-num ' + tone(u.iv30Change), finite(u.iv30) ? u.iv30.toFixed(1) : '—'), `opt:${u.symbol}:iv30`, u.iv30), tk(el('span', 'fx-num ' + (u.putCallVolume > 1 ? 'fx-down' : u.putCallVolume < 0.6 ? 'fx-up' : ''), finite(u.putCallVolume) ? u.putCallVolume.toFixed(2) : '—'), `opt:${u.symbol}:pc`, u.putCallVolume), el('span', 'fx-num', e?.movePercent ? '±' + e.movePercent.toFixed(1) + '%' : '—'));
       host.append(r);
     }
     host.append(el('p', 'fx-foot', `${S.opts.source} · MOVE = at-the-money straddle for the next expiry · ${hhmm(S.opts.generatedAt)}`));
   }
   function optSummary(host, u, onPick) {
     const e = u.expiries[S.optExp] || u.expiries[0];
-    const out = el('div', 'fx-calcout fx-c4out'); const card = (k, v, cls) => { const d = el('div'); d.append(el('span', '', k), el('b', cls || '', v)); out.append(d); };
-    card('LAST', fmt(u.price, 2)); card('IV30', finite(u.iv30) ? u.iv30.toFixed(1) + '%' : '—', tone(u.iv30Change)); card('P/C VOL', finite(u.putCallVolume) ? u.putCallVolume.toFixed(2) : '—'); card('P/C OI', finite(u.putCallOI) ? u.putCallOI.toFixed(2) : '—');
+    const out = el('div', 'fx-calcout fx-c4out'); const card = (k, v, cls, key, raw) => { const d = el('div'); d.append(el('span', '', k), key ? tk(el('b', cls || '', v), key, raw) : el('b', cls || '', v)); out.append(d); };
+    card('LAST', fmt(u.price, 2), '', `opt:${u.symbol}:px`, u.price); card('IV30', finite(u.iv30) ? u.iv30.toFixed(1) + '%' : '—', tone(u.iv30Change), `opt:${u.symbol}:iv30`, u.iv30); card('P/C VOL', finite(u.putCallVolume) ? u.putCallVolume.toFixed(2) : '—'); card('P/C OI', finite(u.putCallOI) ? u.putCallOI.toFixed(2) : '—');
     host.append(out);
     const head = el('div', 'fx-th fx-exp'); head.append(el('span', '', 'EXPIRY'), el('span', '', 'ATM IV'), el('span', '', 'MOVE'), el('span', '', 'PAIN'), el('span', '', 'SKEW')); host.append(head);
     u.expiries.slice(0, 8).forEach((x, i) => { const r = rowButton('fx-exp' + (i === S.optExp ? ' sel' : ''), () => { S.optExp = i; if (onPick) onPick(i); else R('opt', 'chain'); }, `Expiry ${x.date}`); r.append(el('b', '', `${day(x.date)} · ${x.dte}d`), el('span', 'fx-num', finite(x.atmIV) ? (x.atmIV * 100).toFixed(1) + '%' : '—'), el('span', 'fx-num', finite(x.movePercent) ? `±${x.movePercent.toFixed(2)}%` : '—'), el('span', 'fx-num', finite(x.maxPain) ? fmt(x.maxPain, 0) : '—'), el('span', 'fx-num ' + tone(x.skew25), finite(x.skew25) ? signed(x.skew25 * 100, 1) : '—')); host.append(r); });
@@ -843,8 +891,8 @@
     [...keys.map(k => ['c', H[k]]), ['k', 'STRIKE'], ...keys.map(k => ['p', H[k]])].forEach(([c, h]) => head.append(el('th', c, h))); table.append(head);
     for (const row of e.chain) {
       const tr = el('tr', row.strike === e.atmStrike ? 'atm' : '');
-      const cells = (o, itm) => keys.map(k => el('td', 'fx-num' + (itm ? ' itm' : ''), !o ? '—' : k === 'iv' ? (finite(o.iv) && o.iv > 0 ? (o.iv * 100).toFixed(1) : '—') : k === 'volume' || k === 'oi' ? count(o[k]) : fmt(o[k], 2)));
-      tr.append(...cells(row.call, row.strike < u.price), el('th', 'k', fmt(row.strike, row.strike % 1 ? 1 : 0)), ...cells(row.put, row.strike > u.price));
+      const cells = (o, itm, side) => keys.map(k => { const td = el('td', 'fx-num' + (itm ? ' itm' : ''), !o ? '—' : k === 'iv' ? (finite(o.iv) && o.iv > 0 ? (o.iv * 100).toFixed(1) : '—') : k === 'volume' || k === 'oi' ? count(o[k]) : fmt(o[k], 2)); return o && k !== 'oi' ? tk(td, `opt:${u.symbol}:${e.date}:${row.strike}${side}:${k}`, k === 'iv' ? (finite(o.iv) && o.iv > 0 ? o.iv * 100 : null) : k === 'volume' ? null : o[k]) : td; });
+      tr.append(...cells(row.call, row.strike < u.price, 'C'), el('th', 'k', fmt(row.strike, row.strike % 1 ? 1 : 0)), ...cells(row.put, row.strike > u.price, 'P'));
       tr.addEventListener('click', () => inspect(`${u.symbol} ${day(e.date)} ${row.strike}`, h => { for (const [t, o] of [['Call', row.call], ['Put', row.put]]) { if (!o) continue; h.append(el('h3', 'fx-h4', t)); const m = finite(o.bid) && finite(o.ask) ? (o.bid + o.ask) / 2 : o.last; kv(h, [['Bid / ask', `${fmt(o.bid, 2)} / ${fmt(o.ask, 2)}`], ['Last', fmt(o.last, 2)], ['Implied vol', finite(o.iv) ? (o.iv * 100).toFixed(1) + '%' : '—'], ['Delta', finite(o.delta) ? o.delta.toFixed(3) : '—'], ['Volume', count(o.volume)], ['Open interest', count(o.oi)], ['Break-even (mid)', finite(m) ? fmt(t === 'Call' ? row.strike + m : row.strike - m, 2) : '—'], ['Cost per contract (mid)', finite(m) ? '$' + (m * 100).toFixed(0) : '—']]); } h.append(btn('Payoff calculator ▸', 'fx-chip fx-chip-link', () => openPage('calc', {kind: 'options', sym: u.symbol, strike: row.strike, premium: row.call ? (row.call.bid + row.call.ask) / 2 : null}))); }));
       table.append(tr);
     }
@@ -865,7 +913,7 @@
     const head = el('div', 'fx-th fx-act'); head.append(el('span', '', 'CONTRACT'), el('span', '', 'LAST'), el('span', '', 'IV'), el('span', '', 'VOL'), el('span', '', 'OI')); host.append(head);
     for (const c of all) {
       const r = rowButton('fx-act', () => { S.optSym = c.u; S.optExp = Math.max(0, OPT()[c.u].expiries.findIndex(x => x.date === c.expiry)); R('optlist', 'opt', 'chain'); if (!$('tp-chain')) openPage('options', c.u); }, `${c.u} ${c.strike} ${c.type === 'C' ? 'call' : 'put'}`);
-      r.append(el('b', c.type === 'C' ? 'fx-up' : 'fx-down', `${c.u} ${day(c.expiry)} ${fmt(c.strike, c.strike % 1 ? 1 : 0)}${c.type}`), el('span', 'fx-num', fmt(c.last, 2)), el('span', 'fx-num', finite(c.iv) ? (c.iv * 100).toFixed(0) + '%' : '—'), el('span', 'fx-num', count(c.volume)), el('span', 'fx-num fx-dim', count(c.oi)));
+      r.append(el('b', c.type === 'C' ? 'fx-up' : 'fx-down', `${c.u} ${day(c.expiry)} ${fmt(c.strike, c.strike % 1 ? 1 : 0)}${c.type}`), tk(el('span', 'fx-num', fmt(c.last, 2)), `opt:${c.u}:${c.expiry}:${c.strike}${c.type}:last`, c.last), el('span', 'fx-num', finite(c.iv) ? (c.iv * 100).toFixed(0) + '%' : '—'), el('span', 'fx-num', count(c.volume)), el('span', 'fx-num fx-dim', count(c.oi)));
       host.append(r);
     }
     host.append(el('p', 'fx-foot', 'Highest-volume contracts across the monitored underlyings today · C = call, P = put'));
@@ -1160,11 +1208,11 @@
     const q = quoteFor(s.symbol), d = S.symData[s.symbol], rows = d?.rows || S.history[s.symbol]?.rows || [], dg = digitsOf(s.symbol);
     setText('t-squote', `${shortOf(s.symbol)} · ${d?.exchange || s.exchange || ''} ${d?.currency ? '· ' + d.currency : ''}`);
     if (!q) return empty(host, 'Loading quote…');
-    const top = el('div', 'fx-sqhead'); top.append(el('b', '', fmt(q.price, dg)), el('em', tone(q.changePercent), signed(q.changePercent, 2, '%')), el('small', '', q.asOf ? new Date(q.asOf).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : ''));
+    const top = el('div', 'fx-sqhead'); top.append(tk(el('b', '', fmt(q.price, dg)), 'px:' + s.symbol, q.price), tk(el('em', tone(q.changePercent), signed(q.changePercent, 2, '%')), 'chg:' + s.symbol, q.changePercent), el('small', '', q.asOf ? new Date(q.asOf).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : ''));
     host.append(el('p', 'fx-sub fx-sqname', s.name || nameOf(s.symbol)), top);
     const st = el('div', 'fx-calcout fx-c4out');
-    const card = (k, v, cls) => { const x = el('div'); x.append(el('span', '', k), el('b', cls || '', v)); st.append(x); };
-    card('PREV', fmt(q.previousClose, dg)); card('DAY LO–HI', finite(q.dayLow) ? `${fmt(q.dayLow, dg)}–${fmt(q.dayHigh, dg)}` : '—'); card('VOLUME', count(q.volume)); card('20D VOL', finite(q.vol20) ? q.vol20.toFixed(2) + '%' : '—');
+    const card = (k, v, cls, key, raw) => { const x = el('div'); x.append(el('span', '', k), key ? tk(el('b', cls || '', v), key, raw) : el('b', cls || '', v)); st.append(x); };
+    card('PREV', fmt(q.previousClose, dg), '', 'prev:' + s.symbol, q.previousClose); card('DAY LO–HI', finite(q.dayLow) ? `${fmt(q.dayLow, dg)}–${fmt(q.dayHigh, dg)}` : '—'); card('VOLUME', count(q.volume), '', 'vol:' + s.symbol, null); card('20D VOL', finite(q.vol20) ? q.vol20.toFixed(2) + '%' : '—');
     host.append(st);
     if (finite(q.high52) && finite(q.low52) && q.high52 > q.low52) { const r = el('div', 'fx-52'); const bar = el('span', 'pg-rbar'), dot = el('i'); dot.style.left = Math.max(0, Math.min(100, (q.price - q.low52) / (q.high52 - q.low52) * 100)) + '%'; bar.append(dot); r.append(el('small', '', '52W ' + fmt(q.low52, dg)), bar, el('small', '', fmt(q.high52, dg))); host.append(r); }
     if (rows.length > 30) { const p = el('div', 'fx-perfrow'); for (const [n, l] of [[5, '1W'], [21, '1M'], [63, '3M'], [126, '6M'], [251, '1Y']]) { const v = perfOf(rows, n); const x = el('span'); x.append(el('small', '', l), el('b', tone(v), finite(v) ? signed(v, 1, '%') : '—')); p.append(x); } host.append(p); }
@@ -1316,6 +1364,7 @@
     renderDeskBar(); buildGrid(); renderAll();
     const d = await symHistory(id);
     if (S.sym?.symbol !== id) return;
+    commitTicks(true);
     if (d?.name && !meta.name) S.sym.name = d.name;
     if (d?.rows?.length && !EDGE[S.focus]) S.history[id] = {source: d.source || 'Yahoo Finance', rows: d.rows};
     S.sym.cls = symClass(id, meta.type || d?.type); document.title = `FYNX Terminal · ${shortOf(id)}`;
@@ -1464,7 +1513,7 @@
     renderAll(); say(`${d.label} desk loaded`);
     if (initial) return;
     await Promise.allSettled([loadSeries(S.focus), d.news !== 'all' ? loadNews(d.news) : null, getSlots().includes('books') ? loadBooks(['BTC-USD', 'ETH-USD']) : null, d.onLoad?.()]);
-    R('focus', 'top', 'intel', 'books', 'story'); renderNews(); R('desks'); d.afterLoad?.();
+    commitTicks(true); R('focus', 'top', 'intel', 'books', 'story'); renderNews(); R('desks'); d.afterLoad?.();
   }
 
 
@@ -1522,7 +1571,7 @@
   const CORE = {S, M, $, el, btn, link, svg, kv, inspect, signed, tone, ago, hhmm, day, fmt, big, count, finite, empty, rowButton, tabs, say,
     CATALOG, EDGE, FX_TO_EDGE, EDGE_TO_FX, NEWS_CATS, DESK_DEFS, DESK_ORDER, SESSIONS, EXCHANGES, FUTSPEC, KEYS, CALC_TITLE,
     info, nameOf, shortOf, quoteFor, stat, digitsOf, universe, resolve, focusOn, setDesk, setSymbol, clearSymbol, openFinder, symHistory, fnMarket, riskStats, compareChart, benchFor, symClass, perfOf, volOf, getSlots, PANELS, PANEL_DESC, EXTRA_GROUPS, LINK_LABEL, RENDER, TABBED, store, TDATA, WDATA, MKQ, report, setText, panel, nextEvents, buildGrid, renderDeskBar, lineChart, curveChart, tenorGrid, finTable, headlineRow, quoteRow, ecoRow, intelItems, intelRow, biasRows, trendPos, optSummary, chainTable, calculator, renderJournal, sessionRows, periodReturn, setCurve,
-    loadSeries, loadFin, loadDirectory, loadNews, loadBriefing, getJSON, D, R, run, renderAll, PAGE_NAMES: PAGES, openPage};
+    loadSeries, loadFin, loadDirectory, loadNews, loadBriefing, getJSON, D, R, run, renderAll, PAGE_NAMES: PAGES, openPage, tk, commitTicks};
   PG = window.FynxTerminalPages ? window.FynxTerminalPages(CORE) : null;
   CORE.PG = PG;
   // Plugins (World desk, portfolio, charts) add panels, desks and pages through CORE.
@@ -1539,17 +1588,18 @@
     const d = D();
     await Promise.allSettled([loadQuotes(), loadMarkets(), loadDesk(), loadSchedule(), loadEdge(), loadCalendar(), loadBriefing(), loadVix(), loadCorr(), loadBooks(getSlots().includes('books') ? ['BTC-USD', 'ETH-USD'] : ['BTC-USD', 'ETH-USD']), loadOptions(), loadEarnings(), d.news !== 'all' ? loadNews(d.news) : null]);
     await loadSeries(S.focus);
-    renderDeskBar(); renderAll(); $('fx-main').setAttribute('aria-busy', 'false');
+    commitTicks(true); // start-up values are the baseline: nothing flashes while the terminal loads
+    renderDeskBar(); renderAll(); $('fx-main').setAttribute('aria-busy', 'false'); S.tickLive = true;
     PG?.rerender();
     window.FYNXNewsReaderData?.remember?.(S.briefing);
   }
   const every = (ms, task) => setInterval(async () => { if (!document.hidden) await task(); }, ms);
-  every(30000, async () => { await loadQuotes(); renderQuotesAll(); R('story'); });
-  every(15000, async () => { if (!getSlots().includes('books') && S.deskKey !== 'all') return; await loadBooks(getSlots().includes('books') ? ['BTC-USD', 'ETH-USD'] : ['BTC-USD', 'ETH-USD']); R('vix', 'books'); });
+  every(30000, async () => { await loadQuotes(); commitTicks(); renderQuotesAll(); R('story'); });
+  every(15000, async () => { if (!getSlots().includes('books') && S.deskKey !== 'all') return; await loadBooks(getSlots().includes('books') ? ['BTC-USD', 'ETH-USD'] : ['BTC-USD', 'ETH-USD']); commitTicks(); R('vix', 'books'); });
   every(30000, () => { renderClocks(); R('cb', 'sess'); });
   every(120000, async () => { await Promise.allSettled([loadBriefing(), D().news !== 'all' ? loadNews(D().news, true) : null]); renderNews(); R('top', 'story', 'intel', 'official'); });
-  every(300000, async () => { await Promise.allSettled([loadDesk(), loadMarkets(), loadOptions(), loadNews(S.deskTab, true)]); renderQuotesAll(); R('cb', 'curve', 'gov', 'rates', 'story', 'bias', 'desks', 'opt', 'optlist', 'chain', 'active', 'intel'); renderStrip(); });
-  every(1800000, async () => { await Promise.allSettled([loadEdge(), loadCalendar(), loadVix(), loadEarnings()]); R('edge', 'pos', 'eco', 'vix', 'earn', 'intel'); });
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadQuotes().then(renderQuotesAll); loadBriefing().then(() => { renderNews(); R('top', 'intel'); }); } });
+  every(300000, async () => { await Promise.allSettled([loadDesk(), loadMarkets(), loadOptions(), loadNews(S.deskTab, true)]); commitTicks(); renderQuotesAll(); R('cb', 'curve', 'gov', 'rates', 'story', 'bias', 'desks', 'opt', 'optlist', 'chain', 'active', 'intel'); renderStrip(); });
+  every(1800000, async () => { await Promise.allSettled([loadEdge(), loadCalendar(), loadVix(), loadEarnings()]); commitTicks(); R('edge', 'pos', 'eco', 'vix', 'earn', 'intel'); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadQuotes().then(() => { commitTicks(true); renderQuotesAll(); }); loadBriefing().then(() => { renderNews(); R('top', 'intel'); }); } });
   start();
 })();
