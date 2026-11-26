@@ -69,8 +69,14 @@ test('unknown and injection-shaped section queries never navigate', () => {
 });
 
 const historical = fs.readFileSync(path.join(root, 'markets/historical-data.html'), 'utf8');
-function historicalHarness(initialAsset = 'EUR/USD', initialPeriod = '1 Week') {
-  const scripts = [], storage = {}, windowEvents = {};
+function historicalHarness(initialAsset = 'EUR/USD', initialPeriod = '1 Week', supportsObserver = true) {
+  const scripts = [], storage = {}, windowEvents = {}, timers = new Map(), observers = [];
+  let nextTimer = 0, frame = null;
+  class FakeObserver {
+    constructor(callback) { this.callback = callback; this.active = false; observers.push(this); }
+    observe() { this.active = true; }
+    disconnect() { this.active = false; }
+  }
   function node(props = {}) {
     const listeners = {};
     return { ...props, addEventListener(type, callback) { listeners[type] = callback; },
@@ -79,17 +85,23 @@ function historicalHarness(initialAsset = 'EUR/USD', initialPeriod = '1 Week') {
   const els = {
     asset: node({ value: initialAsset }), period: node({ value: initialPeriod }),
     histResult: node(), histPending: node(), histApply: node(), themeLabel: node(), themeToggle: node(),
-    histWidget: node({ querySelector() { return { appendChild(script) { scripts.push(script); } }; } })
+    histWidget: node({ querySelector(selector) { return selector === 'iframe' ? frame : { appendChild(script) { scripts.push(script); } }; } })
   };
+  Object.defineProperty(els.histWidget, 'innerHTML', { set() { frame = null; } });
   const source = historical.match(/<script data-historical-chart>([\s\S]*?)<\/script>/);
   assert.ok(source, 'historical chart script is present');
   vm.runInNewContext(source[1], {
+    MutationObserver: supportsObserver ? FakeObserver : undefined,
+    setTimeout(callback, delay) { assert.equal(delay, 15000); const id = ++nextTimer; timers.set(id, callback); return id; },
+    clearTimeout(id) { timers.delete(id); },
     document: { getElementById(id) { return els[id]; }, createElement() { return {}; }, body: { classList: { toggle() {} } } },
     window: { FynxPreferences: { getItem(key) { return storage[key]; }, setItem(key,value) { storage[key] = value; } },
       addEventListener(type, callback) { windowEvents[type] = callback; } }
   });
   const latest = () => JSON.parse(scripts.at(-1).textContent);
-  return { els, scripts, latest, storage, windowEvents };
+  const expire = () => { for (const [id, callback] of [...timers]) { timers.delete(id); callback(); } };
+  const insertFrame = () => { frame = {}; for (const observer of observers) if (observer.active) observer.callback(); };
+  return { els, scripts, latest, storage, windowEvents, timers, observers, expire, insertFrame };
 }
 test('historical chart starts with the restored valid controls and honest request status', () => {
   const { els, latest } = historicalHarness('Gold', '3 Months');
@@ -134,4 +146,43 @@ test('historical chart ignores unknown configuration values rather than sending 
   els.asset.value = '__proto__'; els.asset.fire('change'); els.histApply.fire('click');
   assert.equal(scripts.length, 1);
   assert.equal(els.histPending.hidden, false);
+});
+
+test('historical chart reports a silent missing frame and recovers when it arrives late', () => {
+  const h = historicalHarness();
+  h.expire();
+  assert.match(h.els.histResult.textContent, /has not appeared yet.*retry/);
+  assert.equal(h.timers.size, 0);
+  h.insertFrame();
+  assert.match(h.els.histResult.textContent, /Chart frame opened.*data may be delayed.*blank/);
+  assert.equal(h.observers.filter(o => o.active).length, 0);
+});
+test('historical chart frame arrival cancels the timeout without claiming verified prices', () => {
+  const h = historicalHarness();
+  h.insertFrame();
+  assert.equal(h.timers.size, 0);
+  assert.match(h.els.histResult.textContent, /Chart frame opened.*data may be delayed/);
+  h.expire();
+  assert.doesNotMatch(h.els.histResult.textContent, /has not appeared/);
+});
+test('historical chart superseded timers and observers cannot overwrite a new selection', () => {
+  const h = historicalHarness();
+  const oldTimer = [...h.timers.values()][0], oldObserver = h.observers[0];
+  h.els.asset.value = 'Gold'; h.els.asset.fire('change'); h.els.histApply.fire('click');
+  assert.equal(h.timers.size, 1);
+  assert.equal(oldObserver.active, false);
+  oldTimer(); oldObserver.callback();
+  assert.match(h.els.histResult.textContent, /^Requested.*Gold/);
+  h.scripts.at(-1).onerror();
+  assert.equal(h.timers.size, 0);
+  assert.equal(h.observers.filter(o => o.active).length, 0);
+  assert.match(h.els.histResult.textContent, /Could not load.*Gold/);
+});
+test('historical chart checks for a frame at the deadline without MutationObserver', () => {
+  const missing = historicalHarness('Gold', '1 Week', false);
+  missing.expire();
+  assert.match(missing.els.histResult.textContent, /has not appeared yet/);
+  const present = historicalHarness('Gold', '1 Week', false);
+  present.insertFrame(); present.expire();
+  assert.match(present.els.histResult.textContent, /Chart frame opened.*Gold/);
 });
