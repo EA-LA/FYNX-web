@@ -158,7 +158,9 @@
     const corr = hr.map(a => hr.map(b => cov(a, b) / Math.sqrt(cov(a, a) * cov(b, b))));
     const currencies = [...new Set(series.map(h => h.currency))];
     return {series, weights, last, total, dayPL, vol: sdp * Math.sqrt(252) * 100, beta, mdd: mdd * 100, var95: var95 * 100, varUsd: var95 * total, divRatio, effN: 1 / weights.reduce((s, w) => s + w * w, 0), contrib, corr, vols: vols.map(v => v * Math.sqrt(252) * 100),
-      ret: (value.at(-1) / value[0] - 1) * 100, curve: idx.map((j, k) => ({date: dates[j], close: value[k]})), bench: bench?.rows || [], currencies, days: pr.length};
+      ret: (value.at(-1) / value[0] - 1) * 100, curve: idx.map((j, k) => ({date: dates[j], close: value[k]})), bench: bench?.rows || [], currencies, days: pr.length,
+      // Each holding's profit or loss as % of the portfolio's starting value (one shared deposit, so they add up).
+      pl: {dates: idx.map(j => dates[j]), lines: series.map((h, i) => idx.map(j => h.qty * (priceAt[i][j] - priceAt[i][idx[0]]) / value[0] * 100))}};
   }
   /* Tick highlighting: portfolio value and today's P/L are recomputed from live prices, so they are observed when
      drawn (FynxTick.observe flashes them only right after a real price batch, never on a plain redraw). */
@@ -166,6 +168,46 @@
   const portTicks = a => { if (TK) { TK.observe('port:value', Math.round(a.total), {digits: 0}); TK.observe('port:day', Math.round(a.dayPL), {digits: 0}); } };
   const tickCard = (b, t) => TK && t ? TK.mark(b, t.key, t.value) : b;
   const portCards = a => [['VALUE', '$' + Math.round(a.total).toLocaleString(), '', '', {key: 'port:value', value: Math.round(a.total)}], ['TODAY', signed(a.dayPL, 0), tone(a.dayPL), '', {key: 'port:day', value: Math.round(a.dayPL)}], ['1Y RETURN', signed(a.ret, 1, '%'), tone(a.ret)], ['VOLATILITY', a.vol.toFixed(1) + '% / yr'], ['BETA vs SPY', finite(a.beta) ? a.beta.toFixed(2) : '—'], ['MAX DRAWDOWN', a.mdd.toFixed(1) + '%', 'fx-down'], ['1-DAY VaR 95%', `$${Math.round(a.varUsd).toLocaleString()} (${a.var95.toFixed(2)}%)`], ['DIVERSIFICATION', `${a.divRatio.toFixed(2)}× · ${a.effN.toFixed(1)} effective`]];
+  /* --- Portfolio drawdown: holdings on one shared deposit ---------------------------------------------------------
+   * Top: each holding's P/L as % of the starting portfolio value. Middle: the portfolio total (the sum). Bottom:
+   * underwater — percentage points of the deposit each line sits below its own running peak. From real daily
+   * closes over the last year at today's quantities; nothing is simulated. */
+  const PAL = ['#7ee2a8', '#8fb5ff', '#ff8fab', '#ffd166', '#c4a1ff', '#5ce1e6', '#ff9f68', '#a3e635', '#f472b6', '#60a5fa', '#fca5a5', '#fde68a'];
+  const underwater = line => { let peak = -Infinity; return line.map(v => { peak = Math.max(peak, v); return v - peak; }); };
+  function ddChart(lines, dates, {W = 1200, H = 260, unit = '% of deposit', fill = false, zero = true, aria = ''} = {}) {
+    const L = 8, R = 92, Tp = 10, B = 24, all = lines.flatMap(l => l.v).filter(finite), lo0 = Math.min(0, ...all), hi0 = Math.max(0, ...all), span = hi0 - lo0 || 1;
+    const step = [0.5, 1, 2, 2.5, 5, 10, 20, 25, 50, 100, 200, 500].find(x => span / x <= 5) || 1000, lo = Math.floor(lo0 / step) * step, hi = Math.ceil(hi0 / step) * step;
+    const x = i => L + i * (W - L - R) / Math.max(1, dates.length - 1), y = v => Tp + (hi - v) / (hi - lo || 1) * (H - Tp - B);
+    const c = svg('svg', {viewBox: `0 0 ${W} ${H}`, class: 'fx-chart pf-dd', role: 'img', 'aria-label': aria});
+    for (let v = lo; v <= hi + 1e-9; v += step) { c.append(svg('line', {x1: L, x2: W - R, y1: y(v), y2: y(v), class: 'g'})); const t = svg('text', {x: W - R + 8, y: y(v) + 4, class: 'a'}); t.textContent = v.toFixed(2) + '%'; c.append(t); }
+    const ut = svg('text', {x: W - 10, y: H / 2, class: 'a', transform: `rotate(90 ${W - 10} ${H / 2})`, 'text-anchor': 'middle'}); ut.textContent = unit; c.append(ut);
+    if (zero) c.append(svg('line', {x1: L, x2: W - R, y1: y(0), y2: y(0), stroke: '#55605b', 'stroke-dasharray': '4 4'}));
+    let lastM = ''; dates.forEach((d, i) => { const m = d.slice(0, 7); if (m !== lastM) { lastM = m; if (i > 3 && i < dates.length - 8 && Number(d.slice(5, 7)) % 2 === 1) { const t = svg('text', {x: x(i), y: H - 6, class: 'a', 'text-anchor': 'middle'}); t.textContent = new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', {month: 'short', year: '2-digit', timeZone: 'UTC'}); c.append(t); } } });
+    for (const l of lines) {
+      const pts = l.v.map((v, i) => finite(v) ? `${x(i).toFixed(1)},${y(v).toFixed(1)}` : null).filter(Boolean).join(' ');
+      if (fill) c.append(svg('polygon', {points: `${x(0)},${y(0)} ${pts} ${x(l.v.length - 1)},${y(0)}`, fill: 'rgba(255,255,255,.05)'}));
+      c.append(svg('polyline', {points: pts, fill: 'none', stroke: l.color, 'stroke-width': l.width || 1.2, 'stroke-linejoin': 'round', opacity: l.width ? 1 : 0.9}));
+    }
+    return c;
+  }
+  function drawdownSection(a) {
+    const sec = PG.section('Portfolio drawdown'), dates = a.pl.dates, n = a.series.length;
+    const lines = a.series.map((h, i) => ({label: shortOf(h.symbol), color: PAL[i % PAL.length], v: a.pl.lines[i]}));
+    const total = dates.map((_, k) => lines.reduce((s, l) => s + (finite(l.v[k]) ? l.v[k] : 0), 0)), uwTotal = underwater(total);
+    const uw = lines.map(l => ({...l, v: underwater(l.v), worst: Math.min(...underwater(l.v))}));
+    const worstLine = uw.reduce((w, l) => l.worst < w.worst ? l : w, uw[0]), worstTotal = Math.min(...uwTotal);
+    const legend = el('div', 'pf-legend');
+    lines.forEach((l, i) => { const s = el('span'), sw = el('i'); sw.style.background = l.color; s.append(sw, el('b', '', l.label), el('small', tone(l.v.at(-1)), `${signed(l.v.at(-1), 2, ' pp')} · worst ${uw[i].worst.toFixed(2)} pp`)); legend.append(s); });
+    sec.append(el('p', 'pg-note', `${n} holding${n === 1 ? '' : 's'} on one shared deposit (the portfolio's value ${dates[0]}) · each line is that holding's profit or loss as % of the deposit · today's quantities held through the year.`), legend);
+    sec.append(ddChart(lines, dates, {aria: 'Each holding: profit or loss as percent of the starting portfolio value'}));
+    const t1 = el('div', 'pf-ddhead'); t1.append(el('b', '', 'Portfolio total'), el('span', tone(total.at(-1)), `${signed(total.at(-1), 2, '%')} of deposit`)); sec.append(t1, el('p', 'pg-note', 'additive on one shared deposit · own scale'));
+    sec.append(ddChart([{label: 'Total', color: '#ffffff', width: 2, v: total}], dates, {H: 230, fill: true, aria: 'Portfolio total as percent of the starting value'}));
+    const t2 = el('div', 'pf-ddhead'); t2.append(el('b', '', 'Underwater'), el('span', 'fx-down', `worst ${worstTotal.toFixed(1)} pp of deposit`)); sec.append(t2);
+    sec.append(el('p', 'pg-note', `points of the deposit below the running peak · portfolio total in white · worst single holding ${worstLine.label} ${worstLine.worst.toFixed(1)} pp`));
+    sec.append(ddChart([...uw, {label: 'Total', color: '#ffffff', width: 1.6, v: uwTotal}], dates, {H: 240, unit: 'pp below peak', aria: 'Underwater: percentage points below the running peak'}));
+    return sec;
+  }
+
   T.PANELS.port = ['PORT', 'Portfolio risk', 'port'];
   T.PANEL_DESC.port = 'Your holdings: value, P/L, volatility, beta, VaR';
   T.RENDER.port = async () => {
@@ -211,6 +253,7 @@
     if (!a || a.empty) return res.append(el('p', 'fx-empty', 'Price history is not available for these holdings.'));
     portTicks(a); res.append(PG.cards(portCards(a)));
     if (a.currencies.length > 1) res.append(PG.sourceNote(`Holdings trade in ${a.currencies.join(', ')}; values add them without currency conversion.`));
+    if (a.pl?.dates?.length > 5) res.append(drawdownSection(a));
     const g = PG.grid('pg-g2'), c1 = PG.section('Portfolio vs S&P 500 (SPY) · 1 year'); c1.append(T.compareChart([{label: 'Portfolio', rows: a.curve}, {label: 'SPY', rows: a.bench}], (host.clientWidth || innerWidth) < 700 ? {W: 640, H: 440, scale: 2} : {W: 620, H: 260})); g.append(c1);
     const c2 = PG.section('Where the risk comes from'), t2 = el('table', 'fx-table pg-table'), h2 = el('tr'); ['HOLDING', 'WEIGHT', 'VOL / YR', 'SHARE OF RISK'].forEach(x => h2.append(el('th', '', x))); t2.append(h2);
     a.series.map((h, i) => ({h, i})).sort((x, y) => a.contrib[y.i] - a.contrib[x.i]).forEach(({h, i}) => { const tr = el('tr', 'pg-click'); tr.addEventListener('click', () => T.setSymbol({symbol: h.symbol})); tr.append(el('th', '', shortOf(h.symbol)), el('td', 'fx-num', (a.weights[i] * 100).toFixed(1) + '%'), el('td', 'fx-num', a.vols[i].toFixed(1) + '%'), el('td', 'fx-num', a.contrib[i].toFixed(1) + '%')); t2.append(tr); });

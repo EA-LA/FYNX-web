@@ -571,6 +571,89 @@ window.FynxTerminalPages = T => {
     host.append(sourceNote('Results are arithmetic on the numbers shown. Contract sizes, margins and fees vary by broker. Not advice.'));
   };
 
+  /* --- Pro option chain: every expiry as a collapsible group with ATM IV, calls | strike | puts with the Greeks
+     Cboe publishes (delta, gamma, theta), IV, volume, open interest, bid, ask, last and the contract's day change.
+     Strikes ±5 / ±10 / all around the money; Standard or Quote-only columns. Delayed Cboe data, labelled as such. */
+  const OC_COLS = {standard: ['delta', 'gamma', 'theta', 'iv', 'volume', 'oi', 'bid', 'ask', 'last', 'change'], quote: ['iv', 'volume', 'oi', 'bid', 'ask', 'last', 'change']};
+  const OC_HEAD = {delta: 'Delta', gamma: 'Gamma', theta: 'Theta', iv: 'IV%', volume: 'Volume', oi: 'Open Int', bid: 'Bid', ask: 'Ask', last: 'Last', change: 'Chng'};
+  const ocOpenSets = {};
+  const ocOpen = sym => ocOpenSets[sym] ||= new Set();
+  const ocPref = (k, d) => T.store.get('oc-' + k) || d;
+  const greek = (v, d) => finite(v) ? (v < 0 ? '-' : '') + Math.abs(v).toFixed(d).replace(/^0(?=\.)/, '') : '—';
+  // Standard monthly options expire on the third Friday (day 15–21).
+  const monthly = date => { const d = new Date(date + 'T12:00:00Z'); return d.getUTCDay() === 5 && d.getUTCDate() >= 15 && d.getUTCDate() <= 21; };
+  const ocDate = date => new Date(date + 'T12:00:00Z').toLocaleDateString('en-US', {month: 'short', day: '2-digit', year: '2-digit', timeZone: 'UTC'}).replace(/,? (\d\d)$/, " '$1").toUpperCase();
+  function ocCell(u, e, row, side, k) {
+    const o = side === 'C' ? row.call : row.put, td = el('td', 'fx-num oc-' + k);
+    if (!o) { td.textContent = '—'; return td; }
+    const v = o[k];
+    td.textContent = k === 'iv' ? (finite(v) && v > 0 ? (v * 100).toFixed(2) : '—') : k === 'volume' || k === 'oi' ? (finite(v) ? v.toLocaleString('en-US') : '—')
+      : k === 'delta' ? greek(v, 4) : k === 'gamma' || k === 'theta' ? greek(v, 4) : k === 'change' ? (finite(v) ? signed(v, 2) : '—') : fmt(v, 2);
+    if (k === 'change') td.classList.add(tone(v));
+    if (['bid', 'ask', 'last'].includes(k) && finite(v)) tick(td, {key: `opt:${u.symbol}:${e.date}:${row.strike}${side}:${k}`, value: v});
+    return td;
+  }
+  function ocDetail(u, e, row) {
+    inspect(`${u.symbol} ${ocDate(e.date)} ${fmt(row.strike, row.strike % 1 ? 1 : 0)}`, h => {
+      for (const [t, o] of [['Call', row.call], ['Put', row.put]]) {
+        if (!o) continue; h.append(el('h3', 'fx-h4', t)); const m = finite(o.bid) && finite(o.ask) && o.ask > 0 ? (o.bid + o.ask) / 2 : o.last;
+        kv(h, [['Bid × size', `${fmt(o.bid, 2)} × ${finite(o.bidSize) ? o.bidSize : '—'}`], ['Ask × size', `${fmt(o.ask, 2)} × ${finite(o.askSize) ? o.askSize : '—'}`], ['Last · change', `${fmt(o.last, 2)} · ${finite(o.change) ? signed(o.change, 2) : '—'}`],
+          ['Implied vol', finite(o.iv) && o.iv > 0 ? (o.iv * 100).toFixed(2) + '%' : '—'], ['Delta', greek(o.delta, 4)], ['Gamma', greek(o.gamma, 4)], ['Theta (per day)', greek(o.theta, 4)], ['Vega', greek(o.vega, 4)],
+          ['Volume · open interest', `${count(o.volume)} · ${count(o.oi)}`], ['Break-even (mid)', finite(m) ? fmt(t === 'Call' ? row.strike + m : row.strike - m, 2) : '—'], ['Cost per contract (mid)', finite(m) ? '$' + (m * 100).toFixed(0) : '—']]);
+      }
+      h.append(btn('Payoff calculator ▸', 'fx-chip fx-chip-link', () => open('calc', {kind: 'options', sym: u.symbol})));
+    });
+  }
+  function proChain(host, u, exp) {
+    const strikes = Number(ocPref('strikes', '5')), layout = OC_COLS[ocPref('layout', 'standard')] ? ocPref('layout', 'standard') : 'standard', cols = OC_COLS[layout], opened = ocOpen(u.symbol);
+    if (!opened.size && u.expiries[exp]) opened.add(u.expiries[exp].date);
+    host.replaceChildren(el('h2', 'pg-h2', 'Option chain'));
+    const stale = u.status === 'stale' || S.opts?.stale, headBar = el('div', 'oc-head');
+    const sym = el('div', 'oc-sym'); sym.append(el('b', '', u.symbol), el('small', '', `${T.nameOf(u.symbol) !== u.symbol ? T.nameOf(u.symbol) + ' · ' : ''}USD`));
+    const px = el('div', 'oc-px'); px.append(tick(el('b', tone(u.change), fmt(u.price, 2)), {key: `opt:${u.symbol}:px`, value: u.price}), el('span', tone(u.change), `${finite(u.change) ? signed(u.change, 2) : ''} (${signed(u.changePercent, 2, '%')})`));
+    const ba = el('div', 'oc-ba');
+    if (finite(u.bid)) ba.append(el('span', '', 'Bid '), el('b', '', fmt(u.bid, 2)), el('small', '', finite(u.bidSize) ? ` ×${u.bidSize}` : ''));
+    if (finite(u.ask)) ba.append(el('span', '', ' Ask '), el('b', '', fmt(u.ask, 2)), el('small', '', finite(u.askSize) ? ` ×${u.askSize}` : ''));
+    const asOf = el('div', 'oc-asof' + (stale ? ' fx-warn' : ''), `${stale ? 'PREVIOUS SNAPSHOT · ' : 'Cboe 15-min delayed · '}${new Date(u.asOf).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'})}`);
+    headBar.append(sym, px, ba, asOf); host.append(headBar);
+    const ctrl = el('div', 'oc-ctrl'), group = (label, items, cur, pick) => { const g = el('span', 'oc-sel'); g.append(el('small', '', label)); const t = pageTabs(items, cur, pick); t.classList.add('oc-tabs'); g.append(t); return g; };
+    ctrl.append(group('Strikes', [['5', '±5'], ['10', '±10'], ['99', 'All']], String(strikes), v => { T.store.set('oc-strikes', v); proChain(host, u, exp); }),
+      group('Layout', [['standard', 'Standard'], ['quote', 'Quotes']], layout, v => { T.store.set('oc-layout', v); proChain(host, u, exp); }),
+      btn('Expand all', 'fx-chip', () => { u.expiries.forEach(x => opened.add(x.date)); proChain(host, u, exp); }), btn('Collapse all', 'fx-chip', () => { opened.clear(); opened.add('·'); proChain(host, u, exp); }));
+    host.append(ctrl);
+    const table = el('table', 'fx-table oc-table'), h1 = el('tr', 'oc-h1'), h2 = el('tr', 'oc-h2');
+    const side = (t, cls) => { const th = el('th', cls, t); th.colSpan = cols.length; return th; };
+    h1.append(side('CALLS', 'c'), el('th', 'k', 'STRIKE'), side('PUTS', 'p'));
+    cols.forEach(k => h2.append(el('th', '', OC_HEAD[k]))); h2.append(el('th', 'k', 'Strike')); [...cols].reverse().forEach(k => h2.append(el('th', '', OC_HEAD[k])));
+    const thead = el('thead'); thead.append(h1, h2); table.append(thead);
+    for (const [i, e] of u.expiries.entries()) {
+      const isOpen = opened.has(e.date), tb = el('tbody', 'oc-group' + (isOpen ? ' open' : '')), hr = el('tr', 'oc-exp'), td = el('td');
+      td.colSpan = cols.length * 2 + 1;
+      const b = btn('', 'oc-toggle', () => { if (opened.has(e.date)) opened.delete(e.date); else opened.add(e.date); exp = i; proChain(host, u, exp); }, `${isOpen ? 'Collapse' : 'Expand'} ${ocDate(e.date)}`);
+      b.setAttribute('aria-expanded', String(isOpen));
+      b.append(el('i', '', isOpen ? '▾' : '▸'), el('b', '', ocDate(e.date)), el('span', 'fx-dim', ` (${e.dte}d)`), el('em', '', `100 ${monthly(e.date) ? 'Monthly' : 'Weekly'}`), el('span', 'oc-atm', `ATM IV: ${finite(e.atmIV) ? (e.atmIV * 100).toFixed(1) + '%' : '—'}`));
+      td.append(b); hr.append(td); tb.append(hr);
+      if (isOpen) {
+        const chain = e.chain || [], ai = Math.max(0, chain.findIndex(r => r.strike === e.atmStrike)), rows = strikes >= 99 ? chain : chain.slice(Math.max(0, ai - strikes), ai + strikes + 1);
+        for (const row of rows) {
+          const tr = el('tr', 'oc-row' + (row.strike === e.atmStrike ? ' atm' : ''));
+          const callItm = row.strike < u.price, putItm = row.strike > u.price;
+          cols.forEach(k => { const c = ocCell(u, e, row, 'C', k); if (callItm) c.classList.add('itm'); tr.append(c); });
+          tr.append(el('th', 'k', fmt(row.strike, row.strike % 1 ? 1 : 0)));
+          [...cols].reverse().forEach(k => { const c = ocCell(u, e, row, 'P', k); if (putItm) c.classList.add('itm'); tr.append(c); });
+          tr.tabIndex = 0; tr.setAttribute('aria-label', `${u.symbol} ${ocDate(e.date)} ${row.strike} details`);
+          tr.addEventListener('click', () => ocDetail(u, e, row)); tr.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ocDetail(u, e, row); } });
+          tb.append(tr);
+        }
+        if (!rows.length) { const r = el('tr'), c = el('td', 'fx-empty', 'No strikes published for this expiry.'); c.colSpan = cols.length * 2 + 1; r.append(c); tb.append(r); }
+      }
+      table.append(tb);
+    }
+    const w = el('div', 'pg-scroll oc-scroll'); w.append(table); host.append(w);
+    const greeksMissing = !u.expiries.some(e => (e.chain || []).some(r => finite(r.call?.gamma) || finite(r.put?.gamma)));
+    host.append(sourceNote(`Calls left, puts right · shaded = in the money · ATM strike outlined · Greeks and IV as published by Cboe (theta per calendar day) · Chng = change vs the contract's previous close · ±${strikes >= 99 ? '10' : strikes} of the 21 strikes FYNX stores around the money · click a row for sizes, vega, break-even and the payoff calculator.${greeksMissing ? ' Gamma and theta appear from the next Cboe snapshot.' : ''}`));
+  }
+
   PAGES.options = (host, sym) => {
     const all = S.opts?.underlyings || {};
     if (!sym || !all[sym]) sym = all[S.optSym] ? S.optSym : Object.keys(all)[0];
@@ -590,15 +673,10 @@ window.FynxTerminalPages = T => {
       ivs.forEach((e, i) => { c.append(svg('circle', {cx: x(i), cy: y(vals[i]), r: 3, class: 'cd'})); if (marks.includes(i)) { const t = svg('text', {x: x(i), y: H - 3, class: 'a', 'text-anchor': i === 0 ? 'start' : i === ivs.length - 1 ? 'end' : 'middle'}); t.textContent = `${day(e.date)} ${vals[i].toFixed(1)}%`; c.append(t); } });
       s.append(c); two.append(s);
     }
-    const es = section('Expiries'); S.optExp = exp; T.optSummary(es, u, i => { exp = i; es.querySelectorAll('button.fx-exp').forEach((r, j) => r.classList.toggle('sel', j === i)); drawChain(); chainSec.scrollIntoView({behavior: 'smooth', block: 'start'}); }); es.querySelector('.fx-calcout')?.remove(); two.append(es);
+    const es = section('Expiries'); S.optExp = exp; T.optSummary(es, u, i => { exp = i; ocOpen(u.symbol).add(u.expiries[i].date); es.querySelectorAll('button.fx-exp').forEach((r, j) => r.classList.toggle('sel', j === i)); drawChain(); chainSec.scrollIntoView({behavior: 'smooth', block: 'start'}); }); es.querySelector('.fx-calcout')?.remove(); two.append(es);
     host.append(two);
     host.append(chainSec);
-    const drawChain = () => {
-      chainSec.replaceChildren(el('h2', 'pg-h2', 'Option chain'), pageTabs(u.expiries.slice(0, 10).map((x, i) => [i, `${day(x.date)} · ${x.dte}d`]), exp, v => { exp = v; S.optExp = v; drawChain(); }));
-      const e = u.expiries[exp];
-      chainSec.append(cards([['EXPIRY', day(e.date), '', `${e.dte} days`], ['ATM STRIKE', fmt(e.atmStrike, e.atmStrike % 1 ? 1 : 0)], ['ATM IV', finite(e.atmIV) ? (e.atmIV * 100).toFixed(1) + '%' : '—'], ['EXPECTED MOVE', finite(e.straddle) ? `±${fmt(e.straddle, 2)} (${e.movePercent.toFixed(2)}%)` : '—'], ['MAX PAIN', fmt(e.maxPain, 0)], ['25Δ SKEW', finite(e.skew25) ? signed(e.skew25 * 100, 1, ' pts') : '—']]));
-      const w = el('div', 'pg-scroll'); w.append(T.chainTable(u, e)); chainSec.append(w, sourceNote('Calls left, puts right · shaded = in the money · click a row for greeks, break-even and the payoff calculator.'));
-    };
+    const drawChain = () => { S.optExp = exp; proChain(chainSec, u, exp); };
     drawChain();
     const act = section('Most active contracts'), tb = el('table', 'fx-table pg-table'), h = el('tr'); ['CONTRACT', 'LAST', 'BID', 'ASK', 'IV', 'DELTA', 'VOLUME', 'OPEN INT'].forEach(x => h.append(el('th', '', x))); tb.append(h);
     u.mostActive.forEach(c => { const tr = el('tr'); tr.append(el('th', c.type === 'C' ? 'fx-up' : 'fx-down', `${day(c.expiry)} ${fmt(c.strike, c.strike % 1 ? 1 : 0)} ${c.type === 'C' ? 'Call' : 'Put'}`), ...['last', 'bid', 'ask'].map(f => tick(el('td', 'fx-num', fmt(c[f], 2)), {key: `opt:${u.symbol}:${c.expiry}:${c.strike}${c.type}:${f}`, value: c[f]})), el('td', 'fx-num', finite(c.iv) ? (c.iv * 100).toFixed(1) + '%' : '—'), el('td', 'fx-num', finite(c.delta) ? c.delta.toFixed(2) : '—'), el('td', 'fx-num', count(c.volume)), el('td', 'fx-num fx-dim', count(c.oi))); tb.append(tr); });

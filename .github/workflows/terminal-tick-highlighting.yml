@@ -1,4 +1,4 @@
-name: Terminal tick highlighting regression
+name: Terminal tick highlighting and pro tools regression
 on:
   pull_request:
     paths:
@@ -14,6 +14,9 @@ on:
       - 'assets/css/terminal-all.css'
       - 'terminal.html'
       - 'scripts/test-terminal-tick*.cjs'
+      - 'scripts/test-terminal-pro-tools-e2e.cjs'
+      - 'scripts/refresh-terminal-markets.cjs'
+      - 'tests/macro/terminal-markets.test.cjs'
       - '.github/workflows/terminal-tick-highlighting.yml'
   workflow_dispatch:
 permissions:
@@ -41,3 +44,5 @@ jobs:
       - run: node --test scripts/test-terminal-tick.cjs
       - run: node --test scripts/test-terminal-tick-browser.cjs
       - run: node --test scripts/test-terminal-tick-e2e.cjs
+      - run: node --test tests/macro/terminal-markets.test.cjs
+      - run: node --test scripts/test-terminal-pro-tools-e2e.cjs
