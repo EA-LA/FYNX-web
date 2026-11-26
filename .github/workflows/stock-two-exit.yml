@@ -1,0 +1,23 @@
+name: Free Stock Calculator two-exit scenarios
+on:
+  pull_request:
+    paths:
+      - 'tools/stock.html'
+      - 'assets/js/stock-two-exit.js'
+      - 'assets/vendor/decimal.js'
+      - 'scripts/test-stock-two-exit.cjs'
+      - '.github/workflows/stock-two-exit.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --check assets/js/stock-two-exit.js
+      - run: node --test scripts/test-stock-two-exit.cjs scripts/test-stock-plan.cjs scripts/test-stock-risk-result-freshness.cjs
