@@ -489,6 +489,14 @@
         align-items:flex-start;
       }
     }
+    #glossary-study{scroll-margin-top:6rem}
+    #glossary-study[hidden],#glossary-study-link[hidden],#glossary-study-definition[hidden]{display:none}
+    .glossary-study-controls{display:flex;align-items:end;flex-wrap:wrap;gap:.7rem;margin:1rem 0}
+    .glossary-study-controls label{display:grid;gap:.35rem;width:min(100%,16rem)}
+    .glossary-study-controls select{min-height:44px;font:inherit;padding:.55rem;border:1px solid var(--line);border-radius:.65rem;color:inherit;background:var(--panel)}
+    .glossary-study-controls :is(button,select):focus-visible{outline:2px solid currentColor;outline-offset:3px}
+    .glossary-study-controls button{min-height:44px;font:inherit}
+    #glossary-study-definition{margin-top:.65rem}
   </style>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
   <script src="/assets/js/journal-theme.js?v=20260922-routing" defer></script>
@@ -497,6 +505,7 @@
 <meta name="description" content="Learn financial market terminology covering forex, crypto, stocks, futures, options, technical analysis and trading psychology.">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <script src="/assets/js/glossary-search.js?v=20261124-retry-focus" defer></script>
+<script src="/assets/js/glossary-study.js?v=20261126" defer></script>
 <link rel="canonical" href="https://www.fynxfinanceworld.com/trading-glossary.html">
 <meta property="og:title" content="Finance &amp; Trading Glossary: Market Terms Explained | FYNX">
 <meta property="og:description" content="Learn financial market terminology covering forex, crypto, stocks, futures, options, technical analysis and trading psychology.">
@@ -531,6 +540,7 @@
 
       <div class="hero-actions">
         <a class="btn primary" href="#letter-a">Start Reading</a>
+        <a class="btn secondary" id="glossary-study-link" href="#glossary-study" hidden>Study term cards</a>
         <a class="btn secondary" href="/trading-glossary.html?topic=Risk#glossary-search" data-glossary-topic="Risk">Risk Terms</a>
         <a class="btn secondary" href="/trading-glossary.html?topic=Technical#glossary-search" data-glossary-topic="Technical">Technical Terms</a>
       </div>
@@ -578,6 +588,27 @@
       </section>
     </form>
 
+    <section class="section" id="glossary-study" aria-labelledby="glossary-study-title" hidden>
+      <div class="section-title">
+        <h2 id="glossary-study-title">Study glossary terms</h2>
+        <p>Try defining each core term before revealing its meaning. Cards use the definitions on this page, independent of search filters.</p>
+      </div>
+      <div class="glossary-study-controls">
+        <label for="glossary-study-topic">Study topic<select id="glossary-study-topic"><option value="">All core terms</option></select></label>
+      </div>
+      <div class="term-card">
+        <div role="status" aria-live="polite" aria-atomic="true">
+          <p id="glossary-study-position"></p>
+          <h3 id="glossary-study-term"></h3>
+          <p id="glossary-study-definition" hidden></p>
+        </div>
+        <div class="glossary-study-controls">
+          <button type="button" class="btn primary" id="glossary-study-reveal" aria-expanded="false" aria-controls="glossary-study-definition">Reveal definition</button>
+          <button type="button" class="btn secondary" id="glossary-study-back">Previous term</button>
+          <button type="button" class="btn secondary" id="glossary-study-next">Next term</button>
+        </div>
+      </div>
+    </section>
     <nav class="alpha-nav">
       <a class="alpha-link" href="#letter-a">A</a>
       <a class="alpha-link" href="#letter-b">B</a>
