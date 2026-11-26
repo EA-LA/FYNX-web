@@ -108,3 +108,78 @@ test('result follows the inputs after the first Calculate (no stale numbers)', (
   assert.equal(read(dom).shown, false, 'after Clear nothing calculates until Calculate');
   dom.window.close();
 });
+
+function delayedRates(t) {
+  const dom = open();
+  t.after(() => dom.window.close());
+  const {window:w} = dom, doc = w.document;
+  const get = id => doc.getElementById(id), requests = [];
+  w.AbortSignal.timeout = () => new w.AbortController().signal;
+  w.fetch = url => new Promise((resolve, reject) => requests.push({url: new URL(url), resolve, reject}));
+  const edit = (id, value, type = 'input') => {
+    get(id).value = value;
+    get(id).dispatchEvent(new w.Event(type, {bubbles: true}));
+  };
+  const success = async (index, rate) => {
+    const r = requests[index], curr = r.url.searchParams.get('symbols');
+    r.resolve({ok: true, json: async () => ({date: new Date().toISOString().slice(0, 10), rates: {[curr]:rate}})});
+    await new Promise(setImmediate);
+  };
+  return {dom, get, requests, edit, success};
+}
+
+test('pending reference rate hides old output, and a typed broker rate wins over a late success', async t => {
+  const f = delayedRates(t);
+  f.get('calcBtn').click();
+  assert.equal(read(f.dom).your, '10.00 USD');
+  f.edit('accountCcy', 'EUR', 'change');
+  assert.equal(f.requests.length, 1);
+  assert.equal(f.get('price').value, '');
+  assert.equal(read(f.dom).shown, false, 'last USD result is no longer presented under the EUR selection');
+  f.edit('price', '0.8');
+  assert.equal(read(f.dom).your, '8.00 EUR');
+  assert.match(f.get('noteOut').textContent, /entered manually/);
+  await f.success(0, 0.9);
+  assert.equal(f.get('price').value, '0.8');
+  assert.equal(read(f.dom).your, '8.00 EUR');
+  assert.match(f.get('rateStatus').textContent, /Manual rate/);
+});
+
+test('a late failure cannot clear a typed broker rate, including when the prior rate mode was manual', async t => {
+  const f = delayedRates(t);
+  f.edit('price', '0.95');
+  f.edit('accountCcy', 'GBP', 'change');
+  f.edit('price', '0.7');
+  f.get('calcBtn').click();
+  f.requests[0].reject(Error('Synthetic reference outage'));
+  await new Promise(setImmediate);
+  assert.equal(f.get('price').value, '0.7');
+  assert.equal(read(f.dom).your, '7.00 GBP');
+  assert.match(f.get('rateStatus').textContent, /Manual rate/);
+});
+
+test('Clear does not assume parity: cross-currency restarts the lookup; matching currency keeps exact parity', async t => {
+  const f = delayedRates(t);
+  f.edit('accountCcy', 'EUR', 'change');
+  f.get('clearBtn').click();
+  assert.equal(f.requests.length, 2);
+  assert.equal(f.get('price').value, '');
+  assert.equal(read(f.dom).shown, false);
+  await f.success(0, 0.75);
+  assert.equal(f.get('price').value, '', 'pre-Clear request cannot write into a blank field');
+  await f.success(1, 0.9);
+  assert.equal(f.get('price').value, '0.9');
+  assert.equal(read(f.dom).shown, false, 'Clear restores an uncalculated state');
+  f.get('calcBtn').click();
+  assert.equal(read(f.dom).your, '9.00 EUR');
+  assert.match(f.get('noteOut').textContent, /ECB daily reference rate/);
+  f.edit('accountCcy', 'USD', 'change');
+  f.get('clearBtn').click();
+  assert.equal(f.requests.length, 2);
+  assert.equal(f.get('price').value, '1');
+  assert.match(f.get('rateStatus').textContent, /exactly 1/);
+  f.edit('pair', 'custom', 'change');
+  f.get('clearBtn').click();
+  assert.equal(f.get('price').value, '');
+  assert.equal(f.requests.length, 2);
+});
