@@ -35,6 +35,13 @@ ok(st.beats === 3 && st.beatN === 2 && byFiled['2026-01-26'].surprise?.surpriseP
 ok(st.rows.every(r => near(r.volx, 3, 1e-9)), 'reaction-day volume vs the prior 20 days = 3×');
 ok(Math.abs(st.avgPath[5] - mean5(st.rows.map(r => r.react))) < 0.004 && Math.abs(st.avgPath[4]) < 0.004, 'event-study path jumps at day 0, flat before');
 function mean5(a) { return a.reduce((x, y) => x + y, 0) / a.length; }
+const outcomes = E.study({...d, surprises: [
+  {date: '2025-04-24', consensus: 1, surprisePct: 0},
+  {date: '2025-07-25', consensus: 1, surprisePct: -2},
+  {date: '2025-10-23', consensus: 1, surprisePct: null}
+]}, B, SPY);
+ok(outcomes.beats === 2 && outcomes.beatN === 0 && near(outcomes.missReact, outcomes.rows[1].react),
+  'in-line counts toward reported consensus but does not contaminate the average reaction after misses; null is unavailable');
 ok(st.rho > 0.8 && st.rhoN === 5, `tone ranks with reactions: rho ${st.rho.toFixed(2)}`);
 ok(near(E.spearman([1, 2, 3, 4], [10, 20, 30, 40]), 1) && near(E.spearman([1, 2, 3, 4], [4, 3, 2, 1]), -1) && Number.isNaN(E.spearman([1, 2], [1, 2])), 'Spearman rank correlation edge cases');
 

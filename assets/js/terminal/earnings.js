@@ -18,6 +18,11 @@
   const pct = (v, d = 1) => finite(v) ? (v * 100).toFixed(d) + '%' : '—';
   const spct = (v, d = 1) => finite(v) ? (v >= 0 ? '+' : '−') + Math.abs(v * 100).toFixed(d) + '%' : '—';
   const usd = v => finite(v) ? (v < 0 ? '−$' : '$') + Math.abs(v).toFixed(2) : '—';
+  const outcome = r => {
+    const v = r.surprise?.surprisePct;
+    return !finite(v) ? 'unknown' : v > 0 ? 'beat' : v < 0 ? 'miss' : 'inline';
+  };
+  const OUTCOMES = [['all', 'All releases'], ['beat', 'Beat'], ['inline', 'In line'], ['miss', 'Miss'], ['unknown', 'Result unavailable']];
   const mean = a => { const s = a.filter(finite); return s.length ? s.reduce((x, y) => x + y, 0) / s.length : NaN; };
   const local = ['localhost', '127.0.0.1'].includes(location.hostname);
   // Same read-only research service on two routes (Cloud Function, then the Vercel copy), as the Research desk uses.
@@ -57,7 +62,7 @@
     return {normalVol, rows, avgMove: mean(rows.map(r => Math.abs(r.raw))), avgAbn: mean(rows.map(r => Math.abs(r.react))), ups: rows.filter(r => r.raw > 0).length,
       avgPath, pathPos: group(r => r.tone && r.tone.tone > 0.2), pathNeg: group(r => r.tone && r.tone.tone <= 0.2),
       rho: spearman(withTone.map(r => r.tone.tone), withTone.map(r => r.react)), rhoN: withTone.length,
-      beats: beats.length, beatN, beatReact: mean(beats.filter(r => r.surprise.surprisePct > 0).map(r => r.react)), missReact: mean(beats.filter(r => r.surprise.surprisePct <= 0).map(r => r.react))};
+      beats: beats.length, beatN, beatReact: mean(beats.filter(r => r.surprise.surprisePct > 0).map(r => r.react)), missReact: mean(beats.filter(r => outcome(r) === 'miss').map(r => r.react))};
   }
   function upcoming(sym, rows) {
     const ev = (T.S.earn?.events || []).find(e => e.symbol === sym || e.symbol === sym.replace('-', '.'));
@@ -98,7 +103,7 @@
     const {w, h, s} = frame(box, 'Reaction to each release', 240), pl = 44, pr = 8, pt = 10, pb = 30, iw = w - pl - pr, ih = h - pt - pb, vals = rows.map(r => r.react);
     const hi = Math.max(0.02, ...vals.filter(finite).map(Math.abs)) * 1.15, Y = v => pt + (hi - v) / (2 * hi) * ih, bw = iw / Math.max(1, rows.length), step = Math.max(1, Math.ceil(46 / bw));
     for (const v of [-hi, 0, hi]) { s.append(svg('line', {x1: pl, x2: w - pr, y1: Y(v), y2: Y(v), stroke: v ? '#1b2421' : '#3a4641'})); label(s, pl - 4, Y(v) + 3, spct(v, 0), {'text-anchor': 'end'}); }
-    rows.forEach((r, i) => { if (!finite(r.react)) return; const x = pl + i * bw, col = r.surprise ? (r.surprise.surprisePct > 0 ? GREEN : RED) : r.tone ? (r.tone.tone > 0.2 ? GREEN : r.tone.tone < -0.2 ? RED : AMBER) : GREY; const rect = svg('rect', {x: x + bw * 0.2, y: Math.min(Y(r.react), Y(0)), width: bw * 0.6, height: Math.max(1, Math.abs(Y(r.react) - Y(0))), fill: col, 'fill-opacity': 0.85}); const t = svg('title'); t.textContent = `${r.day}: ${spct(r.react)} vs the S&P 500`; rect.append(t); s.append(rect); if ((rows.length - 1 - i) % step === 0) label(s, x + bw / 2, h - 12, new Date(r.day + 'T12:00:00Z').toLocaleDateString('en-US', {month: 'short', year: '2-digit', timeZone: 'UTC'}), {'text-anchor': 'middle'}); });
+    rows.forEach((r, i) => { if (!finite(r.react)) return; const x = pl + i * bw, col = outcome(r) !== 'unknown' ? ({beat: GREEN, miss: RED, inline: GREY})[outcome(r)] : r.tone ? (r.tone.tone > 0.2 ? GREEN : r.tone.tone < -0.2 ? RED : AMBER) : GREY; const rect = svg('rect', {x: x + bw * 0.2, y: Math.min(Y(r.react), Y(0)), width: bw * 0.6, height: Math.max(1, Math.abs(Y(r.react) - Y(0))), fill: col, 'fill-opacity': 0.85}); const t = svg('title'); t.textContent = `${r.day}: ${spct(r.react)} vs the S&P 500`; rect.append(t); s.append(rect); if ((rows.length - 1 - i) % step === 0) label(s, x + bw / 2, h - 12, new Date(r.day + 'T12:00:00Z').toLocaleDateString('en-US', {month: 'short', year: '2-digit', timeZone: 'UTC'}), {'text-anchor': 'middle'}); });
     box.replaceChildren(s);
   }
 
@@ -142,18 +147,41 @@
     out.append(v);
     const two = el('div', 'fx-qr-two'); out.append(two);
     const ec = chartBox(260), bc = chartBox(260);
-    two.append(card('EVENT STUDY · AVERAGE RETURN VS THE S&P 500 FROM 5 DAYS BEFORE TO 10 AFTER', ec, note('Day 0 is the first session after the release (the next day for after-close reports); the shaded band is days −1 to +1. Green: upbeat releases; red: neutral or cautious ones, when both groups exist.')), card('REACTION-DAY RETURN VS THE S&P 500 · GREEN BEAT / RED MISS (OR TONE)', bc));
-    const t = el('table', 'fx-ql-tbl'), hr = el('tr'); t.style.whiteSpace = 'nowrap'; ['Release', 'Session', 'Quarter EPS', 'vs year ago', 'Consensus', 'Tone', 'Guidance', 'Reaction', '3 days', 'Next 10 days', 'Volume'].forEach(x => hr.append(el('th', '', x))); t.append(hr);
-    for (const x of [...S.rows].reverse()) {
-      const tr = el('tr'), c = (txt, col) => { const td = el('td', '', txt); if (col) td.style.color = col; return td; }, tone = x.tone?.tone;
-      tr.append(c(fmtDay(x.filed)), c(x.session), c(x.eps ? usd(x.eps.eps) : '—'), c(x.eps && finite(x.eps.yoy) ? spct(x.eps.yoy, 0) : '—', x.eps && finite(x.eps.yoy) ? (x.eps.yoy >= 0 ? GREEN : RED) : null),
-        c(x.surprise && finite(x.surprise.consensus) ? `${usd(x.surprise.consensus)} (${x.surprise.surprisePct >= 0 ? 'beat' : 'miss'} ${Math.abs(x.surprise.surprisePct).toFixed(1)}%)` : '—', x.surprise ? (x.surprise.surprisePct > 0 ? GREEN : RED) : null),
-        c(finite(tone) ? (tone >= 0 ? '+' : '') + tone.toFixed(2) : '—', finite(tone) ? (tone > 0.2 ? GREEN : tone < -0.2 ? RED : AMBER) : null), c(x.tone?.guidance || '—', x.tone?.guidance === 'raised' ? GREEN : x.tone?.guidance === 'lowered' ? RED : null),
-        c(spct(x.react), x.react >= 0 ? GREEN : RED), c(spct(x.car3)), c(spct(x.drift)), c(finite(x.volx) ? x.volx.toFixed(1) + '×' : '—'));
-      t.append(tr);
+    two.append(card('EVENT STUDY · AVERAGE RETURN VS THE S&P 500 FROM 5 DAYS BEFORE TO 10 AFTER', ec, note('Day 0 is the first session after the release (the next day for after-close reports); the shaded band is days −1 to +1. Green: upbeat releases; red: neutral or cautious ones, when both groups exist.')), card('REACTION-DAY RETURN VS THE S&P 500 · GREEN BEAT / RED MISS / GRAY IN LINE (TONE WHEN RESULT UNAVAILABLE)', bc));
+    const controls = el('label', '', 'Filter by EPS surprise ');
+    const filter = el('select'); filter.style.cssText = 'max-width:100%;min-height:44px;background:var(--p2,#171c1a);color:var(--tx,#fff);border:1px solid var(--ln2,#34443d);padding:4px';
+    for (const [key, label] of OUTCOMES) {
+      const option = el('option', '', label); option.value = key; filter.append(option);
     }
-    const tw = el('div'); tw.style.cssText = 'overflow:auto;max-height:360px'; tw.append(t);
-    out.append(card('RELEASE HISTORY (SEC 8-K ITEM 2.02) · RETURNS ARE ABNORMAL: STOCK MINUS S&P 500', tw));
+    controls.append(filter);
+    const status = note(''); status.setAttribute('role', 'status');
+    const tw = el('div'); tw.style.cssText = 'overflow:auto;max-height:360px';
+    const t = el('table', 'fx-ql-tbl'), hr = el('tr'), body = el('tbody');
+    t.style.whiteSpace = 'nowrap';
+    const thead = el('thead'); thead.append(hr);
+    ['Release', 'Session', 'Quarter EPS', 'vs year ago', 'Consensus', 'Tone', 'Guidance', 'Reaction', '3 days', 'Next 10 days', 'Volume'].forEach(x => { const th = el('th', '', x); th.scope = 'col'; hr.append(th); });
+    t.append(thead, body); tw.append(t);
+    const refreshHistory = () => {
+      const rows = S.rows.filter(r => filter.value === 'all' || outcome(r) === filter.value).reverse();
+      tw.hidden = !rows.length;
+      status.textContent = rows.length ? `Showing ${rows.length} of ${S.rows.length} releases. Charts and summary still use all releases.` :
+        S.rows.length ? 'No releases match this filter. Charts and summary still use all releases.' : 'No releases are available for this company.';
+      body.replaceChildren();
+      for (const x of rows) {
+        const tr = el('tr'), c = (txt, col) => { const td = el('td', '', txt); if (col) td.style.color = col; return td; }, tone = x.tone?.tone;
+        const result = outcome(x), consensus = x.surprise?.consensus, prefix = finite(consensus) ? usd(consensus) + ' · ' : '';
+        const surpriseLabel = result === 'unknown' ? (finite(consensus) ? usd(consensus) + ' · result unavailable' : '—') :
+          prefix + (result === 'inline' ? 'In line' : `${result === 'beat' ? 'Beat' : 'Miss'} ${Math.abs(x.surprise.surprisePct).toFixed(1)}%`);
+        tr.append(c(fmtDay(x.filed)), c(x.session), c(x.eps ? usd(x.eps.eps) : '—'), c(x.eps && finite(x.eps.yoy) ? spct(x.eps.yoy, 0) : '—', x.eps && finite(x.eps.yoy) ? (x.eps.yoy >= 0 ? GREEN : RED) : null),
+          c(surpriseLabel, result === 'beat' ? GREEN : result === 'miss' ? RED : null),
+          c(finite(tone) ? (tone >= 0 ? '+' : '') + tone.toFixed(2) : '—', finite(tone) ? (tone > 0.2 ? GREEN : tone < -0.2 ? RED : AMBER) : null), c(x.tone?.guidance || '—', x.tone?.guidance === 'raised' ? GREEN : x.tone?.guidance === 'lowered' ? RED : null),
+          c(spct(x.react), !finite(x.react) ? null : x.react >= 0 ? GREEN : RED), c(spct(x.car3)), c(spct(x.drift)), c(finite(x.volx) ? x.volx.toFixed(1) + '×' : '—'));
+        body.append(tr);
+      }
+    };
+    filter.addEventListener('change', refreshHistory);
+    refreshHistory();
+    out.append(card('RELEASE HISTORY (SEC 8-K ITEM 2.02) · RETURNS ARE ABNORMAL: STOCK MINUS S&P 500', controls, status, tw));
     out.append(card('HOW IT WORKS', ...[`Releases: every 8-K reporting Item 2.02 (results of operations) in the last two years from SEC EDGAR, with the SEC acceptance time, so after-close reports are measured on the next session. Tone: the Exhibit 99.1 press release is read on the server and only word counts are kept: (positive − negative) ÷ (positive + negative) using FYNX finance word lists with negation handling, plus whether the outlook was raised, lowered, maintained or given. FinBERT-style language models need a GPU server; word lists are transparent and fast.`, 'EPS: three-month diluted EPS from the company’s XBRL filings, matched to the release, with the same quarter a year earlier. Consensus and surprises come from Nasdaq when available. Implied move: the at-the-money straddle for the first expiry after the report, divided by the price (Cboe delayed), with the ordinary days before expiry taken out using the last expiry before the report (or the stock’s volatility on non-earnings days), so what is left is the move priced for the report itself. Average past move: the absolute reaction-day return.', `Event study: abnormal return = stock log return − S&P 500 log return, cumulated from 5 days before to 10 after. With ${S.rows.length} events, averages are noisy. ${r.d.source}. Not advice.`].map(note)));
     requestAnimationFrame(() => {
       const xs = Array.from({length: 16}, (_, i) => (i - 5 > 0 ? '+' : '') + (i - 5)), series = [{v: S.avgPath, color: AMBER, width: 2.2, name: 'All releases'}];
