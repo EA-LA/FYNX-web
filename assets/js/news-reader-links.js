@@ -117,6 +117,33 @@
       } catch {}
     }
   }
+  // Bound headers and body together, even when a WebView has no abort support
+  // or a network implementation ignores cancellation. Only the winning result
+  // reaches the article validation and cache writes below.
+  async function fetchArticleText(params, maxLength, httpError, sizeError) {
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    let timeout;
+    try {
+      return await Promise.race([
+        new Promise((_, reject) => {
+          timeout = setTimeout(() => {
+            reject(new Error('The story request timed out. Please try again.'));
+            if (controller) controller.abort();
+          }, 14000);
+        }),
+        (async () => {
+          const response = await root.fetch(endpoint+'?'+new URLSearchParams(params),{
+            ...(controller ? {signal:controller.signal} : {}),
+            credentials:'omit',referrerPolicy:'no-referrer',headers:{Accept:'application/json'}
+          });
+          if (!response.ok) throw httpError(response.status);
+          const raw = await response.text();
+          if (raw.length > maxLength) throw Error(sizeError);
+          return raw;
+        })()
+      ]);
+    } finally {clearTimeout(timeout);}
+  }
   async function loadArticle(value={}) {
     const o=options(value); if(!o)throw new Error('Choose a report from the FYNX newsroom to start reading.');
     const k=key(o),old=records.get(k);
@@ -124,17 +151,16 @@
     if(pending.has(k))return pending.get(k);
     // Defer the request until pending is registered, including synchronous fetch errors.
     const task=Promise.resolve().then(async()=>{
-      const controller=new AbortController(); const timeout=setTimeout(()=>controller.abort(),14000);
       try {
-        const response=await root.fetch(endpoint+'?'+new URLSearchParams({kind:'article',...o}),{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer',headers:{Accept:'application/json'}});
-        if(!response.ok)throw new Error(response.status===404||response.status===410?'This story is no longer in the current feed. Open the newsroom for the latest reporting.':'The source could not be checked just now. Please try again.');
-        const raw=await response.text(); if(raw.length>500000)throw new Error('The report could not be verified.');
+        const raw=await fetchArticleText({kind:'article',...o},500000,
+          status=>new Error(status===404||status===410?'This story is no longer in the current feed. Open the newsroom for the latest reporting.':'The source could not be checked just now. Please try again.'),
+          'The report could not be verified.');
         const result=JSON.parse(raw); if(result.kind!=='article')throw new Error('The report could not be verified.');
         return put(o,normalized(result.article,o),true);
       } catch(error) {
         if(old&&Date.now()-old.at<FRESH) return {...old.article,refreshUnavailable:true};
         throw error;
-      } finally {clearTimeout(timeout);pending.delete(k);}
+      } finally {pending.delete(k);}
     });pending.set(k,task);return task;
   }
   function canonicalSource(value){const safe=safeURL(value);if(!safe)return null;const u=new URL(safe);u.hash='';for(const key of [...u.searchParams.keys()])if(/^utm_|^(fbclid|gclid|oc)$/i.test(key))u.searchParams.delete(key);return u.href;}
@@ -143,17 +169,15 @@
     if(value.url){const url=safeURL(value.url);if(!url)throw Error('Invalid source URL.');params.url=url;}
     else if(/^[a-f0-9]{64}$/.test(value.id||''))params.id=value.id;
     else throw Error('Invalid story identifier.');
-    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),14000);
-    try{
-      const response=await root.fetch(endpoint+'?'+new URLSearchParams(params),{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer',headers:{Accept:'application/json'}});
-      if(!response.ok){const error=Error(response.status===404||response.status===410?'This exact story is not available in the shared newsroom.':'The shared reader is temporarily unavailable.');error.status=response.status;throw error;}
-      const raw=await response.text();if(raw.length>180000)throw Error('This story response is too large.');
-      const result=JSON.parse(raw),article=result.article;
-      if(result.kind!=='article'||!article||value.id&&article.id!==value.id)throw Error('The story identity could not be verified.');
-      if(params.url&&canonicalSource(article.sourceUrl)!==canonicalSource(params.url))throw Error('The source does not match this story.');
-      if(article.contentExpiresAt&&(!Number.isFinite(Date.parse(article.contentExpiresAt))||Date.parse(article.contentExpiresAt)<=Date.now()))throw Error('This story has expired.');
-      return normalized(article,{id:article.id,edition:article.edition||'us',category:article.category||'all'});
-    }finally{clearTimeout(timeout);}
+    const raw=await fetchArticleText(params,180000,status=>{
+      const error=Error(status===404||status===410?'This exact story is not available in the shared newsroom.':'The shared reader is temporarily unavailable.');
+      error.status=status;return error;
+    },'This story response is too large.');
+    const result=JSON.parse(raw),article=result.article;
+    if(result.kind!=='article'||!article||value.id&&article.id!==value.id)throw Error('The story identity could not be verified.');
+    if(params.url&&canonicalSource(article.sourceUrl)!==canonicalSource(params.url))throw Error('The source does not match this story.');
+    if(article.contentExpiresAt&&(!Number.isFinite(Date.parse(article.contentExpiresAt))||Date.parse(article.contentExpiresAt)<=Date.now()))throw Error('This story has expired.');
+    return normalized(article,{id:article.id,edition:article.edition||'us',category:article.category||'all'});
   }
   function drain() {
     if(root.document?.hidden)return;
