@@ -166,3 +166,24 @@ test('streaks are zero for missing, invalid, or flat realized history',()=>{
   const r=run('analytics',{},[{pl}]);assert.deepEqual([r.longestWinStreak,r.longestLossStreak],expected);
  }
 });
+
+test('paid Risk Planner and Scenario Comparison show the break-even win rate before costs',()=>{
+ const input={balance:10000,riskPct:1,entry:100,stop:98,target:104,multiplier:1,rate:1};
+ const long=run('risk',input),short=run('risk',{...input,riskPct:2,stop:102,target:96,multiplier:2,rate:3});
+ assert.equal(long.breakEvenWinRate,'33.333%');
+ assert.equal(short.breakEvenWinRate,long.breakEvenWinRate);
+ assert.match(long.notice,/before fees and slippage, not a forecast/);
+ const comparison=run('scenarios',input);
+ assert.equal(comparison.breakEvenWinRate,long.breakEvenWinRate);
+ assert.equal(comparison.scenarios.length,4);
+ assert.ok(comparison.scenarios.every(row=>row.rewardRisk===2&&!Object.hasOwn(row,'breakEvenWinRate')));
+ assert.match(comparison.notice,/Changing position size does not change this threshold/);
+ assert.equal(run('risk',{...input,target:102}).breakEvenWinRate,'50%');
+ assert.equal(run('risk',{...input,target:101}).breakEvenWinRate,'66.667%');
+});
+
+test('extreme valid stop and target distances do not display an exact 0% or 100% threshold',()=>{
+ const input={balance:10000,riskPct:1,entry:100,stop:99.999999,target:1000000,multiplier:1,rate:1};
+ assert.equal(run('risk',input).breakEvenWinRate,'<0.001%');
+ assert.equal(run('risk',{...input,entry:100000,stop:1,target:100000.000001}).breakEvenWinRate,'>99.999%');
+});
