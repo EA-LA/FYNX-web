@@ -27,6 +27,13 @@ ok(Math.abs(flipped.ic + mom.ic) < 1e-9, 'a reversed part flips the IC exactly')
   ok(['mom', 'high', 'steady'].includes(r.best.cand.parts[0].fam) && r.oos.ic > 0.05 && r.oos.t > 2, `loop found a trend factor (${r.best.key}); unseen IC ${r.oos.ic.toFixed(3)}, t ${r.oos.t.toFixed(1)}`);
   ok(r.all.every(a => new Set(a.cand.parts.map(p => p.fam + p.p.join(','))).size === a.cand.parts.length), 'no hypothesis repeats an ingredient');
   ok(r.bonf >= 0 && r.bonf <= 1 && Number.isFinite(r.corr), 'multiple-testing p and research→unseen correlation computed');
+  ok(r.evidence.length === r.oos.n && r.evidence.every((w, i) => w.from === dates[D.oosDays[i]] && w.through === dates[D.oosDays[i] + 21] && w.n === N),
+    'winner evidence shows the exact later-window close dates and counts');
+  ok(Math.abs(r.evidence.reduce((n, w) => n + w.ic, 0) / r.oos.n - r.oos.ic) < 1e-12 &&
+    r.evidence.every((w, i) => w.spread === r.oos.lsSeries[i]), 'window ICs and signed log spreads reconcile to summary');
+  const skip = D.oosDays[0], fixtures = [], sparse = {...D, fwd: {...D.fwd, [skip]: Array(N).fill(NaN)}};
+  F.evaluate(sparse, r.best.cand, D.oosDays.slice(0, 2), fixtures);
+  ok(fixtures.length === 1 && fixtures[0].from === dates[D.oosDays[1]], 'skipped windows never look like zero-return observations');
   console.log(fail ? `${fail} factor loop check(s) failed` : 'Factor research loop: IC maths, planted factor discovery and out-of-sample checks passed');
   process.exit(fail ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });
