@@ -19,7 +19,7 @@ function element(tag = 'div') {
   };
 }
 
-function setup(kind = 'liquidity', { search = '', clipboard } = {}) {
+function setup(kind = 'liquidity', { search = '', clipboard, abortSupported = true } = {}) {
   const select = element('select');
   select.value = kind === 'liquidity' ? 'BTC-USD' : '30';
   select.options = (kind === 'liquidity' ? ['BTC-USD', 'ETH-USD'] : ['30', '60', '90']).map(value => ({value}));
@@ -39,7 +39,8 @@ function setup(kind = 'liquidity', { search = '', clipboard } = {}) {
       }[name] || null;
     }
   };
-  const calls = [], intervals = [], reports = [];
+  const calls = [], intervals = [], reports = [], timeouts = new Map();
+  let timerId = 0;
   const document = {
     hidden: false,
     querySelector(name) { return name === '[data-market-analysis]' ? root : null; },
@@ -57,9 +58,9 @@ function setup(kind = 'liquidity', { search = '', clipboard } = {}) {
     FynxMonitor: { report(...args) { reports.push(args); } }
   };
   const context = {
-    document, window, AbortController, URL, URLSearchParams, Date, Number,
+    document, window, AbortController: abortSupported ? AbortController : undefined, URL, URLSearchParams, Date, Number,
     setInterval(callback) { intervals.push(callback); return intervals.length; },
-    clearInterval() {}, setTimeout() { return 1; }, clearTimeout() {},
+    clearInterval() {}, setTimeout(callback, ms) { const id=++timerId; timeouts.set(id,{callback,ms}); return id; }, clearTimeout(id) { timeouts.delete(id); },
     fetch(url, options) {
       return new Promise((resolve, reject) => {
         calls.push({ url: String(url), signal: options.signal, resolve, reject });
@@ -67,7 +68,7 @@ function setup(kind = 'liquidity', { search = '', clipboard } = {}) {
     }
   };
   vm.runInNewContext(source, context, { filename: 'market-analytics.js' });
-  return { select, button, status, output, link, shareButton, shareStatus, shareFallback, calls, intervals, reports };
+  return { select, button, status, output, link, shareButton, shareStatus, shareFallback, calls, intervals, reports, timeouts };
 }
 
 function sample(product = 'BTC-USD') {
@@ -387,7 +388,7 @@ test('both public market research views expose accessible share controls and cur
     assert.match(html, /data-analysis-share>/);
     assert.match(html, /data-analysis-share-status[^>]*role="status"/);
     assert.match(html, /data-analysis-share-fallback[^>]*aria-label=/);
-    assert.ok(html.includes('market-analytics.js?v=20261124-share-race-1'), 'script version is refreshed');
+    assert.ok(html.includes('market-analytics.js?v=20261126-request-deadline-1'), 'script version is refreshed');
   }
 });
 
@@ -442,4 +443,63 @@ test('clipboard writes do not overlap and the next copy uses the current market'
   await next;
   assert.match(h.shareStatus.textContent, /copied/);
   assert.equal(h.shareButton.disabled, false);
+});
+
+async function expire(h) {
+  assert.equal(h.timeouts.size, 1);
+  const [id, timer] = [...h.timeouts][0];
+  assert.equal(timer.ms, 20000);
+  h.timeouts.delete(id);
+  timer.callback();
+  await new Promise(resolve => setImmediate(resolve));
+}
+
+test('deadline recovers from a fetch that ignores abort and ignores its late response', async () => {
+  const h=setup(), stalled=h.calls[0];
+  await expire(h);
+  assert.equal(stalled.signal.aborted,true);
+  assert.equal(h.button.disabled,false);
+  assert.match(h.status.textContent,/unavailable/);
+  assert.equal(h.reports[0][2].name,'TimeoutError');
+  h.button.trigger('click');
+  await settle(h.calls[1],sample());
+  const table=h.output.children[0];
+  await settle(stalled,sample());
+  assert.equal(h.output.children[0],table);
+  assert.equal(h.timeouts.size,0);
+});
+
+test('deadline covers a response with stalled JSON and preserves verified data', async () => {
+  const h=setup();
+  await settle(h.calls[0],sample());
+  const table=h.output.children[0];
+  h.button.trigger('click');
+  let finish;
+  h.calls[1].resolve({ok:true,json:()=>new Promise(resolve=>{finish=resolve;})});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(typeof finish,'function');
+  await expire(h);
+  assert.equal(h.output.children[0],table);
+  assert.match(h.status.textContent,/Stale data.*Refresh failed/);
+  assert.equal(h.button.disabled,false);
+  finish(sample());
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(h.output.children[0],table);
+});
+
+test('browsers without AbortController can switch markets and recover from a timeout', async () => {
+  const h=setup('liquidity',{abortSupported:false}), old=h.calls[0];
+  assert.equal(old.signal,undefined);
+  h.select.value='ETH-USD';
+  await h.select.trigger('change');
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(h.timeouts.size,1);
+  await expire(h);
+  assert.equal(h.button.disabled,false);
+  await settle(old,sample());
+  assert.equal(h.output.children.length,0);
+  h.button.trigger('click');
+  await settle(h.calls[2],sample('ETH-USD'));
+  assert.match(h.output.children[0].children[0].textContent,/ETH-USD/);
+  assert.equal(h.timeouts.size,0);
 });

@@ -109,18 +109,25 @@
   // Scheduled refreshes never interrupt an active request. Explicit market changes do.
   if(controller&&!force)return;
   const current=++version;
-  controller?.abort();
-  const active=new AbortController();controller=active;
+  controller?.cancel(Error('Request superseded'));
+  const abort=typeof AbortController==='function'?new AbortController():null;
+  let rejectDeadline;
+  const deadline=new Promise((_,reject)=>{rejectDeadline=reject;});
+  const active={cancel(error){rejectDeadline(error);abort?.abort();}};
+  controller=active;
   const selected=select.value;
   button.disabled=true;
   if(last){updateStatus();status.textContent+=' Checking for updated observations…';}
   else status.textContent='Loading source observations…';
-  const timeout=setTimeout(()=>active.abort(),20000);
+  // Race the entire request (including JSON decoding), even when abort is unavailable or ignored.
+  const timeout=setTimeout(()=>{const error=Error('Market observations timed out');error.name='TimeoutError';active.cancel(error);},20000);
   try{
    const params=new URLSearchParams({kind,[kind==='correlation'?'window':'product']:selected});
-   const response=await fetch('https://us-central1-fynx-c7a28.cloudfunctions.net/webMarketAnalytics?'+params,{signal:active.signal});
-   if(!response.ok)throw Error('Source unavailable');
-   const data=await response.json();
+   const data=await Promise.race([deadline,(async()=>{
+    const response=await fetch('https://us-central1-fynx-c7a28.cloudfunctions.net/webMarketAnalytics?'+params,abort?{signal:abort.signal}:{});
+    if(!response.ok)throw Error('Source unavailable');
+    return response.json();
+   })()]);
    if(current!==version)return;
    validate(data,selected);
    render(data);last=data;refreshFailed=false;updateStatus();
