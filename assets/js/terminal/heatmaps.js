@@ -259,8 +259,15 @@
         sec.append(tiles); grid.append(sec); }
       return host.append(grid, scaleBar(1, '%'), legend('Spot FX, quoted as listed (e.g. EURUSD up = euro stronger; USDJPY up = dollar stronger). Colour = today’s move, ±1% is full colour. σ = move vs its 20-day normal.'));
     }
-    host.append(el('p', 'fx-empty', 'Loading crypto…'));
-    const d = await loadScan(); if (!host.isConnected) return; host.lastChild.remove();
+    const loading = el('p', 'fx-empty', 'Loading crypto…');
+    host.append(loading);
+    let d;
+    try { d = await loadScan(); }
+    catch (error) { if (!loading.isConnected) return; throw error; }
+    // Switching the tabs reuses the connected host, but removes this render's
+    // loading marker. Do not let the earlier request modify the new view.
+    if (!loading.isConnected) return;
+    loading.remove();
     const list = coins(d).slice(0, large ? 80 : 40);
     if (!list.length) return host.append(el('p', 'fx-empty', 'The crypto universe is being published.'));
     const capSum = list.reduce((a, b) => a + b.cap, 0), wavg = list.reduce((a, b) => a + b.chg * b.cap, 0) / capSum;
