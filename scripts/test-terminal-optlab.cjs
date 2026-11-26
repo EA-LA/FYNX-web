@@ -27,5 +27,16 @@ ok(a.exps.length === 8 && Math.abs(a.exps[3].F - spot * Math.exp((0.043 - 0.013)
 ok(a.quotes.every(q => q.call === (q.K >= q.F)) && a.train.length + a.test.length === a.quotes.length && a.test.length > 30, `${a.quotes.length} out-of-the-money quotes, ${a.test.length} held out`);
 const S = a.sc;
 ok(S.quad.inside > 0.9 && S.nn.inside > 0.6 && S.flat.inside < 0.3 && S.nn.ivRmse < S.term.ivRmse && S.term.ivRmse < S.flat.ivRmse, `in spread: flat ${(S.flat.inside * 100).toFixed(0)}%, term ${(S.term.inside * 100).toFixed(0)}%, quadratic ${(S.quad.inside * 100).toFixed(0)}%, neural net ${(S.nn.inside * 100).toFixed(0)}%`);
+const evaluation = a.exps.map(e => [e.date, a.evaluation.get(e.date)]);
+ok(evaluation.reduce((n, [, row]) => n + (row?.n || 0), 0) === a.test.length, 'expiry evaluation uses the evaluation subset only');
+for (const model of Object.keys(S)) {
+  const withQuotes = evaluation.map(([, row]) => row).filter(Boolean);
+  const inSpread = withQuotes.reduce((n, row) => n + row.scores[model].insideCount, 0);
+  const sse = withQuotes.reduce((n, row) => n + row.n * row.scores[model].rmse ** 2, 0);
+  ok(inSpread === S[model].insideCount && Math.abs(Math.sqrt(sse / a.test.length) - S[model].rmse) < 1e-9, model + ' expiry counts and squared errors reconcile to global evaluation');
+}
+const shifted = [0, 1, 2, 3, 4, 5].map(j => ({...expiries[6], date: '2027-01-0' + (j + 1), chain: expiries[6].chain.slice(8, 13)}));
+const sparse = O.analyse({symbol: 'SPARSE', price: spot, expiries: shifted});
+ok(sparse.exps.some(e => !sparse.test.some(q => q.exp === e.date) && sparse.evaluation.get(e.date) === null), 'no evaluation quotes is unavailable, not zero model error');
 console.log(fail ? `${fail} options lab check(s) failed` : 'Options lab: Black-76, implied volatility, parity forwards and model ranking checks passed');
 process.exit(fail ? 1 : 0);
