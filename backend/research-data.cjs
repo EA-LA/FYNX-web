@@ -1,5 +1,5 @@
 'use strict';
-const C=require('./research-core.cjs'),E=require('./earnings-core.cjs');
+const C=require('./research-core.cjs'),E=require('./earnings-core.cjs'),F=require('./filings-core.cjs');
 const SEC_AGENT='FYNX Finance World Research https://www.fynxfinanceworld.com/contact.html';
 
 function createResearchService({fetcher=fetch,now=()=>Date.now()}={}) {
@@ -108,6 +108,11 @@ function createResearchService({fetcher=fetch,now=()=>Date.now()}={}) {
         if(symbol)try{surprises=E.parseSurprises(await json(`https://api.nasdaq.com/api/company/${encodeURIComponent(symbol)}/earnings-surprise`,400000,'application/json, text/plain, */*',{'Accept-Language':'en-US,en;q=0.9',Origin:'https://www.nasdaq.com',Referer:'https://www.nasdaq.com/'}));}catch(_){}
         return {cik,name:String(sub.name||'').slice(0,120),releases,surprises,source:'SEC EDGAR (8-K Item 2.02 releases, XBRL EPS)'+(surprises.length?'; Nasdaq consensus':''),fetchedAt:new Date(now()).toISOString()};
       });
+    }
+    if(action==='filings') {
+      if(!/^\d{1,10}$/.test(String(params.cik))||Number(params.cik)<1)throw Object.assign(Error('Choose a valid SEC company.'),{status:400});
+      const cik=Number(params.cik);
+      return cached('filings:'+cik,3600000,async()=>({...F.recentFilings(await json(`https://data.sec.gov/submissions/CIK${String(cik).padStart(10,'0')}.json`,8000000),cik),source:'SEC EDGAR submissions',fetchedAt:new Date(now()).toISOString()}));
     }
     if(action==='history') {
       if(!C.symbolMap[params.symbol]||C.symbolMap[params.symbol].group==='FX')throw Object.assign(Error('Choose a supported USD instrument.'),{status:400});
