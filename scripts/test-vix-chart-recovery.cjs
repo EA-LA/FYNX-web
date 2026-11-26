@@ -51,10 +51,14 @@ const settle = async () => { await new Promise(resolve => setImmediate(resolve))
 function setup(initial = sample(), options = {}) {
   const root = new Element('div');
   const button = new Element('button');
+  const range = new Element('select');
+  const rangeControl = new Element('div');
+  range.value = '90';
+  rangeControl.hidden = true;
   let data = initial, requestCount = 0;
   const calls = [];
   const document = {
-    getElementById: id => id === 'volWidget' ? root : id === 'retryVix' ? button : null,
+    getElementById: id => ({volWidget:root,retryVix:button,vixRange:range,vixRangeControl:rangeControl})[id] ?? null,
     createElement: tag => new Element(tag),
     createElementNS: (_ns, tag) => new Element(tag)
   };
@@ -71,7 +75,7 @@ function setup(initial = sample(), options = {}) {
     }
   };
   vm.runInNewContext(source, sandbox);
-  return {root, button, calls, setData(next) { data = next; }, get requests() { return requestCount; }};
+  return {root, button, range, rangeControl, calls, setData(next) { data = next; }, get requests() { return requestCount; }};
 }
 
 test('renders sorted, source-verified Cboe dates and a monochrome chart', async () => {
@@ -215,4 +219,49 @@ test('a stalled JSON body times out without AbortController; a late response can
   assert.match(app.root.textContent, /20\.25VIX/);
   assert.doesNotMatch(app.root.textContent, /90\.00VIX/);
   assert.equal(clearCount, 2);
+});
+
+test('range uses only latest verified closes, dates and extrema without a request', async () => {
+  const rows = Array.from({length:95},(_,i)=>({
+    date:new Date(Date.UTC(2026,0,1+i)).toISOString().slice(0,10),close:100-i*.5
+  }));
+  const app = setup({rows, observationDate:rows[94].date, fetchedAt:'2026-04-06T00:00:00Z'});
+  assert.equal(app.rangeControl.hidden,true);
+  await settle();
+  assert.equal(app.rangeControl.hidden,false);
+  const points = () => app.root.find('polyline').getAttribute('points').split(' ').length;
+  assert.equal(points(),90);
+  assert.match(app.root.textContent,/90 closes · Low 53\.00 \(2026-04-05\) · High 97\.50 \(2026-01-06\) · First-to-last change -44\.50 VIX points/);
+  app.range.value='20';app.range.listeners.change();
+  assert.equal(points(),20);
+  assert.match(app.root.textContent,/20 closes · Low 53\.00 \(2026-04-05\) · High 62\.50 \(2026-03-17\) · First-to-last change -9\.50 VIX points/);
+  assert.match(app.root.find('svg').getAttribute('aria-label'),/2026-03-17 to 2026-04-05/);
+  app.range.value='60';app.range.listeners.change();
+  assert.equal(points(),60);
+  assert.equal(app.requests,1);
+});
+
+test('partial ranges and failed refresh remain honest across selection and recovery', async () => {
+  const app = setup();
+  await settle();
+  assert.match(app.root.textContent,/3 of 90 requested closes available/);
+  app.setData(new Error('offline'));
+  app.button.click();await settle();
+  app.range.value='20';app.range.listeners.change();
+  assert.match(app.root.textContent,/3 of 20 requested closes available/);
+  assert.match(app.root.textContent,/Update failed.*last sourced daily observations/);
+  assert.equal(app.requests,2);
+  app.setData(sample());
+  app.button.click();await settle();
+  assert.match(app.root.textContent,/3 of 20 requested closes available/);
+  assert.doesNotMatch(app.root.textContent,/Update failed/);
+});
+
+test('never exposes the chart range control before a verified response', async () => {
+  const app = setup({rows:[]});
+  await settle();
+  app.range.value='20';app.range.listeners.change();
+  assert.equal(app.rangeControl.hidden,true);
+  assert.equal(app.root.find('svg'),null);
+  assert.equal(app.requests,1);
 });

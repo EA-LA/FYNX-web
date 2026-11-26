@@ -93,6 +93,14 @@
 
     <div class="card">
       <h2 style="margin-bottom:1rem">VIX · Daily closing values</h2>
+      <div id="vixRangeControl" hidden style="margin:.7rem 0">
+        <label for="vixRange">Chart lookback</label>
+        <select id="vixRange" class="btn" style="font:inherit;margin:.25rem .35rem;min-height:44px;max-width:100%">
+          <option value="20">Last 20 closes</option>
+          <option value="60">Last 60 closes</option>
+          <option value="90" selected>Last 90 closes</option>
+        </select>
+      </div>
       <div id="volWidget" aria-live="polite"><p>Loading Cboe observations…</p></div>
       <p class="desc">Daily closing observations, not an intraday quote. <a href="https://www.cboe.com/tradable_products/vix/vix_historical_data/" target="_blank" rel="noopener">Source: Cboe VIX history ↗︎</a></p><button class="btn" id="retryVix">Refresh</button>
     </div>
@@ -115,7 +123,7 @@ applyTheme(getTheme());
 document.getElementById("themeToggle").addEventListener("click",toggleTheme);
 window.addEventListener("storage",e=>{if(e.key===THEME_KEY)applyTheme(getTheme());});
 </script>
-  <script src="../assets/js/vix-chart.js"></script>
+  <script src="../assets/js/vix-chart.js?v=20261126-lookback"></script>
 
 <footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
 </body>

@@ -3,12 +3,15 @@
   'use strict';
   const root = document.getElementById('volWidget');
   const button = document.getElementById('retryVix');
+  const range = document.getElementById('vixRange');
+  const rangeControl = document.getElementById('vixRangeControl');
   if (!root || !button) return;
 
   const endpoint = 'https://us-central1-fynx-c7a28.cloudfunctions.net/webMarketAnalytics?kind=vix';
   const svgNS = 'http://www.w3.org/2000/svg';
   let busy = false;
-  let hasVerifiedChart = false;
+  let snapshot = null;
+  let refreshFailed = false;
 
   function validDate(value) {
     if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
@@ -51,7 +54,10 @@
     return element;
   }
 
-  function render(data, rows) {
+  function render(data, availableRows) {
+    const selected = Number(range?.value);
+    const count = [20, 60, 90].includes(selected) ? selected : 90;
+    const rows = availableRows.slice(-count);
     const values = rows.map(row => row.close);
     const min = Math.floor(Math.min(...values) - 1);
     const max = Math.ceil(Math.max(...values) + 1);
@@ -90,7 +96,22 @@
     const retrieved = credibleRetrieval ? ` · Retrieved ${new Date(fetchedAt).toLocaleString()}` : ' · Retrieval time unavailable';
     const stale = data.stale === true || Date.now() - Date.parse(`${latest.date}T00:00:00Z`) > 7 * 86400000;
     const status = note(`${stale ? 'Stale source · ' : ''}Latest source observation ${latest.date} (UTC)${retrieved}`);
-    root.replaceChildren(headline, chart, status);
+    const low = rows.reduce((a, b) => a.close <= b.close ? a : b);
+    const high = rows.reduce((a, b) => a.close >= b.close ? a : b);
+    const change = Number((latest.close - rows[0].close).toFixed(2));
+    const period = rows.length < count ? `${rows.length} of ${count} requested closes available` : `${rows.length} closes`;
+    const details = note(`${period} · Low ${low.close.toFixed(2)} (${low.date}) · High ${high.close.toFixed(2)} (${high.date}) · First-to-last change ${change > 0 ? '+' : ''}${change.toFixed(2)} VIX points`);
+    details.dataset.vixRangeSummary = 'true';
+    root.replaceChildren(headline, chart, details, status);
+  }
+
+  function showRefreshWarning() {
+    root.querySelector('[data-vix-retry-status]')?.remove();
+    if (!refreshFailed) return;
+    const warning = note('Update failed. Showing the last sourced daily observations, not a live quote. Retry to check for newer data.');
+    warning.dataset.vixRetryStatus = 'true';
+    warning.setAttribute('role', 'status');
+    root.append(warning);
   }
 
   // Bound both the request and JSON body, including older WebViews that
@@ -122,19 +143,18 @@
     busy = true;
     button.disabled = true;
     root.setAttribute('aria-busy', 'true');
-    if (!hasVerifiedChart) root.textContent = 'Loading Cboe VIX daily observations…';
+    if (!snapshot) root.textContent = 'Loading Cboe VIX daily observations…';
     try {
       const data = await fetchDailyObservations();
-      render(data, verifiedRows(data?.rows, data?.observationDate));
-      hasVerifiedChart = true;
+      const valid = verifiedRows(data?.rows, data?.observationDate);
+      render(data, valid);
+      snapshot = {data, rows: valid};
+      refreshFailed = false;
+      if (rangeControl) rangeControl.hidden = false;
     } catch {
-      const previous = root.querySelector('[data-vix-retry-status]');
-      previous?.remove();
-      if (hasVerifiedChart) {
-        const warning = note('Update failed. Showing the last sourced daily observations, not a live quote. Retry to check for newer data.');
-        warning.dataset.vixRetryStatus = 'true';
-        warning.setAttribute('role', 'status');
-        root.append(warning);
+      if (snapshot) {
+        refreshFailed = true;
+        showRefreshWarning();
       } else {
         root.textContent = 'Cboe VIX observations are unavailable. Retry or open the official source below. No values are estimated.';
       }
@@ -147,5 +167,10 @@
 
   window.FynxVix = {load};
   button.addEventListener('click', load);
+  range?.addEventListener('change', () => {
+    if (!snapshot) return;
+    render(snapshot.data, snapshot.rows);
+    showRefreshWarning();
+  });
   load();
 })();

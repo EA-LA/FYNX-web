@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'assets/js/vix-chart.js'
+      - 'markets/volatility.html'
       - 'scripts/test-vix-chart-recovery.cjs'
       - '.github/workflows/vix-chart-recovery.yml'
   workflow_dispatch:
