@@ -46,7 +46,7 @@
 
   /* --------------------------------------------- evaluation --------------------------------------------- */
   // Monthly cross-sectional test: at each rebalance day, rank stocks by the factor and compare with the next 21 days.
-  function evaluate(D, cand, dates) {
+  function evaluate(D, cand, dates, windows) {
     const ics = [], ls = [];
     for (const t of dates) {
       const vals = [], fwd = [];
@@ -58,7 +58,9 @@
       if (vals.length < 20) continue;
       ics.push(spearman(vals, fwd));
       const o = vals.map((v, i) => [v, fwd[i]]).sort((a, b) => a[0] - b[0]), q = Math.max(1, Math.floor(o.length / 5));
-      ls.push(mean(o.slice(-q).map(x => x[1])) - mean(o.slice(0, q).map(x => x[1])));
+      const spread = mean(o.slice(-q).map(x => x[1])) - mean(o.slice(0, q).map(x => x[1]));
+      ls.push(spread);
+      if (windows) windows.push({from: D.dates[t], through: D.dates[t + D.step], n: vals.length, ic: ics[ics.length - 1], spread});
     }
     const m = mean(ics), s = sd(ics), n = ics.length;
     return {ic: m, t: s > 0 ? m / s * Math.sqrt(n) : 0, n, ls: mean(ls), lsSeries: ls, hit: ics.filter(v => v > 0).length / Math.max(1, n)};
@@ -72,7 +74,7 @@
     // cross-sectional z-scores of one factor on one day, so factors can be added together
     const cache = (part, t) => { const k = part.fam + part.p.join(',') + '@' + t; if (memo.has(k)) return memo.get(k); const raw = Array.from({length: N}, (_, i) => { try { return FAM[part.fam].f(R, i, t, part.p, Pr, M); } catch (_) { return NaN; } }); const ok = raw.filter(finite), m = mean(ok), s = sd(ok) || 1, z = raw.map(v => finite(v) ? Math.max(-3, Math.min(3, (v - m) / s)) : NaN); memo.set(k, z); return z; };
     const cut = Math.floor(days.length * 0.6);
-    return {N, Tn, R, M, Pr, days, fwd, cache, isDays: days.slice(0, cut), oosDays: days.slice(cut), symbols: A.symbols, dates: A.dates};
+    return {N, Tn, R, M, Pr, days, step, fwd, cache, isDays: days.slice(0, cut), oosDays: days.slice(cut), symbols: A.symbols, dates: A.dates};
   }
   function randomPart(rand, fam) { const f = fam || Object.keys(FAM)[Math.floor(rand() * Object.keys(FAM).length)]; return {fam: f, p: FAM[f].P.map(ch => ch[Math.floor(rand() * ch.length)])}; }
   function mutate(rand, c) { const parts = c.parts.map(p => ({fam: p.fam, p: [...p.p], s: p.s || 1})), j = Math.floor(rand() * parts.length), P = FAM[parts[j].fam].P, k = Math.floor(rand() * P.length), opts = P[k].filter(v => v !== parts[j].p[k]); if (opts.length) parts[j].p[k] = opts[Math.floor(rand() * opts.length)]; return {parts}; }
@@ -97,11 +99,12 @@
       log.filter(l => l.round === round).forEach(l => { l.kept = pool.slice(0, 2).includes(l); });
       await new Promise(r => setTimeout(r, 0));
     }
-    const best = pool[0], sign = best.is.ic < 0 ? -1 : 1, oos = evaluate(D, best.cand, D.oosDays);
+    const best = pool[0], sign = best.is.ic < 0 ? -1 : 1, windows = [], oos = evaluate(D, best.cand, D.oosDays, windows);
+    const evidence = windows.map(w => ({...w, ic: sign * w.ic, spread: sign * w.spread}));
     const all = [...tried.values()].map(l => ({...l, oos: evaluate(D, l.cand, D.oosDays)}));
     const bonf = Math.min(1, 2 * (1 - ncdf(Math.abs(best.is.t))) * all.length);
     const corr = spearman(all.map(a => a.is.ic), all.map(a => a.oos.ic));
-    return {log, best, sign, oos: {...oos, ic: sign * oos.ic, t: sign * oos.t, ls: sign * oos.ls, lsSeries: oos.lsSeries.map(v => sign * v), hit: sign > 0 ? oos.hit : 1 - oos.hit}, isS: {...best.is, ic: sign * best.is.ic, t: sign * best.is.t, ls: sign * best.is.ls, lsSeries: best.is.lsSeries.map(v => sign * v)}, all, bonf, corr, tried: all.length};
+    return {log, best, sign, evidence, oos: {...oos, ic: sign * oos.ic, t: sign * oos.t, ls: sign * oos.ls, lsSeries: oos.lsSeries.map(v => sign * v), hit: sign > 0 ? oos.hit : 1 - oos.hit}, isS: {...best.is, ic: sign * best.is.ic, t: sign * best.is.t, ls: sign * best.is.ls, lsSeries: best.is.lsSeries.map(v => sign * v)}, all, bonf, corr, tried: all.length};
   }
 
   /* ------------------------------------------------- page ------------------------------------------------- */
@@ -109,7 +112,10 @@
   const save = () => store.set('factorloop', JSON.stringify(FV));
   const memo = new Map();
   let dataP = null;
-  const data = () => dataP || (dataP = loadCloses(UNIVERSE, '5y').then(d => { const A = alignedReturns(d.series, UNIVERSE); if (!A || A.symbols.length < 30 || A.dates.length < 700) throw new Error('Not enough stock history right now.'); return prepare(A); }).catch(e => { dataP = null; throw e; }));
+  const data = () => dataP || (dataP = loadCloses(UNIVERSE, '5y').then(d => { const A = alignedReturns(d.series, UNIVERSE);
+    if (!A || A.symbols.length < 30 || A.dates.length < 700) throw new Error('Not enough stock history right now.');
+    // alignedReturns labels its returns from index 1 but keeps the first close. Restore the offset for price-indexed dates.
+    return prepare({...A, dates: [null, ...A.dates]}); }).catch(e => { dataP = null; throw e; }));
   const get = () => { const k = FV.seed + '|' + FV.rounds; if (!memo.has(k)) memo.set(k, data().then(D => loop(D, FV.seed, FV.rounds).then(r => ({...r, D}))).catch(e => { memo.delete(k); throw e; })); return memo.get(k); };
   const cum = rs => { let e = 1; return rs.map(v => (e *= Math.exp(v))); };
   function scatter(box, pts, {xl, yl, aria}) {
@@ -130,6 +136,26 @@
     const cb = el('div', 'fx-ql-chart'); w.append(cb);
     requestAnimationFrame(() => lineChart(cb, {series: [{v: [...cum(r.isS.lsSeries), ...r.oos.lsSeries.map(() => NaN)], color: BLUE, width: 1.5, name: 'Research'}, {v: [...r.isS.lsSeries.map((_, i, a) => i === a.length - 1 ? cum(r.isS.lsSeries)[i] : NaN), ...cum(r.oos.lsSeries).map(v => v * cum(r.isS.lsSeries).slice(-1)[0])], color: AMBER, width: 1.5, name: 'Unseen'}], xs: [...r.D.isDays, ...r.D.oosDays].map(t => r.D.dates[t]), log: true, yfmt: v => v.toFixed(2) + '×', aria: 'Long-short growth of the winning factor'}));
   }
+  function evidenceCard(r) {
+    const details = el('details', 'fx-factor-evidence'), summary = el('summary', '', `Show ${r.evidence.length} validation windows`);
+    summary.style.cssText = 'min-height:44px;align-content:center;cursor:pointer';
+    const scroller = el('div'); scroller.style.overflowX = 'auto';
+    const table = el('table', 'fx-ql-tbl'), head = el('thead'), row = el('tr'), body = el('tbody');
+    table.setAttribute('aria-label', 'Winning factor validation windows');
+    for (const label of ['Rank date', 'Return through', 'Stocks', 'Rank IC', 'Long–short log spread']) {
+      const th = el('th', '', label); th.scope = 'col'; row.append(th);
+    }
+    head.append(row); table.append(head, body); scroller.append(table);
+    for (const w of [...r.evidence].reverse()) {
+      const tr = el('tr'), first = el('th', '', w.from || '—'); first.scope = 'row';
+      tr.append(first, el('td', '', w.through || '—'), el('td', '', String(w.n)), el('td', '', num(w.ic, 3)), el('td', '', spct(w.spread, 2)));
+      body.append(tr);
+    }
+    details.append(summary, scroller);
+    return card('WINNER · VALIDATION BY WINDOW',
+      note('Later data only. Each row compares the factor ranking on one date with returns over the next 21 trading days. The spread is the difference in average log return between the two groups, before costs.'),
+      r.evidence.length ? details : note('No validation windows had enough stocks.'));
+  }
   async function renderPage(host) {
     PG.setHead('FACTORLOOP', 'Automated factor research loop', 'Propose, implement, evaluate, feed back: a research loop in the spirit of RD-Agent(Q) on 50 US stocks, then one honest test on unseen years');
     const wrap = el('div', 'fx-ql fx-ql-page'); host.append(wrap); const rerun = () => { if (wrap.isConnected) PG.rerender(); };
@@ -147,15 +173,15 @@
     kpis(out, [['FACTORS TRIED', String(r.tried), `${FV.rounds} rounds`], ['RESEARCH IC', num(r.isS.ic, 3), `t ${num(r.isS.t)} · ${D.isDays.length} months`, BLUE], ['UNSEEN-YEARS IC', num(r.oos.ic, 3), `t ${num(r.oos.t)} · ${D.oosDays.length} months`, col], ['LONG–SHORT / MONTH', spct(r.oos.ls, 2), 'top minus bottom fifth, unseen', r.oos.ls > 0 ? GREEN : RED], ['MULTIPLE-TESTING p', r.bonf < 0.001 ? '< 0.001' : r.bonf.toFixed(3), `Bonferroni over ${r.tried}`, r.bonf < 0.05 ? GREEN : AMBER], ['RESEARCH → UNSEEN', num(r.corr), 'rank correlation of all ICs', r.corr > 0.3 ? GREEN : RED]]);
     const v = el('div', 'fx-ql-verdict'); v.style.borderColor = col;
     v.textContent = `On the research years the winner had an information coefficient of ${num(r.isS.ic, 3)} (t = ${num(r.isS.t)}). On the ${D.oosDays.length} later months it never saw, the IC was ${num(r.oos.ic, 3)} (t = ${num(r.oos.t)}) and a long–short portfolio made ${spct(r.oos.ls, 2)} a month. ${strong ? 'It held up, and stays significant after accounting for every factor tried.' : survived ? `It held up, but with ${r.tried} factors tried the research result is not significant after a Bonferroni correction, so part of it may be luck.` : 'It did not hold up: the classic fate of a factor found by searching.'} Across all candidates, research and unseen ICs had a rank correlation of ${num(r.corr)}${r.corr < 0.3 ? ', so ranking factors on past data told you little about the future' : ''}.`;
-    out.append(v);
+    out.append(v, evidenceCard(r));
     const two = el('div', 'fx-ml-grid'); two.style.cssText = 'display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px'; out.append(two);
     const gc = chartBox(260), sc = chartBox(260);
     two.append(card('WINNER · GROWTH OF A MONTHLY LONG–SHORT PORTFOLIO (BLUE RESEARCH, AMBER UNSEEN)', gc), card('EVERY FACTOR: RESEARCH IC (ACROSS) VS UNSEEN IC (UP)', sc, note('If research performance predicted the future, the dots would line up from bottom-left to top-right. White ring = the winner.')));
     const t = el('table', 'fx-ml-tbl'), hr = el('tr'); ['Round', 'Hypothesis', 'Formula', 'Origin', 'Research IC', 't', 'Unseen IC', 'Kept'].forEach(x => hr.append(el('th', '', x))); t.append(hr);
     t.style.cssText = 'width:100%;border-collapse:collapse;font:500 11.5px "IBM Plex Mono",monospace';
     r.all.sort((a, b) => a.round - b.round || Math.abs(b.is.t) - Math.abs(a.is.t)).forEach(l => {
-      const tr = el('tr'), cells = [String(l.round), l.say, l.key, l.origin, num(l.is.ic, 3), num(l.is.t), num(l.oos.ic, 3), l === r.best ? 'WINNER' : l.kept ? 'kept' : '—'];
-      cells.forEach((c, j) => { const td = el('td', '', c); td.style.cssText = `padding:3px 6px;border-bottom:1px solid #141b19;text-align:${j === 1 || j === 2 || j === 3 ? 'left' : 'right'};${j === 1 ? 'white-space:normal;min-width:260px' : 'white-space:nowrap'}`; if (j === 7 && l === r.best) td.style.color = AMBER; if (j === 6) td.style.color = Math.sign(l.oos.ic) === Math.sign(l.is.ic) ? GREEN : RED; tr.append(td); });
+      const tr = el('tr'), cells = [String(l.round), l.say, l.key, l.origin, num(l.is.ic, 3), num(l.is.t), num(l.oos.ic, 3), l.key === r.best.key ? 'WINNER' : l.kept ? 'kept' : '—'];
+      cells.forEach((c, j) => { const td = el('td', '', c); td.style.cssText = `padding:3px 6px;border-bottom:1px solid #141b19;text-align:${j === 1 || j === 2 || j === 3 ? 'left' : 'right'};${j === 1 ? 'white-space:normal;min-width:260px' : 'white-space:nowrap'}`; if (j === 7 && l.key === r.best.key) td.style.color = AMBER; if (j === 6) td.style.color = Math.sign(l.oos.ic) === Math.sign(l.is.ic) ? GREEN : RED; tr.append(td); });
       t.append(tr);
     });
     const sw = el('div'); sw.style.cssText = 'max-height:380px;overflow:auto'; sw.append(t);
@@ -164,7 +190,7 @@
     requestAnimationFrame(() => {
       const isC = cum(r.isS.lsSeries), last = isC[isC.length - 1], oC = cum(r.oos.lsSeries).map(v => v * last);
       lineChart(gc, {series: [{v: [...isC, ...r.oos.lsSeries.map(() => NaN)], color: BLUE, width: 1.7, name: 'Research'}, {v: [...isC.map((v, i) => i === isC.length - 1 ? v : NaN), ...oC], color: AMBER, width: 1.7, name: 'Unseen years'}], xs: [...D.isDays, ...D.oosDays].map(tt => D.dates[tt]), log: true, yfmt: x => x.toFixed(2) + '×', aria: 'Winner long-short growth'});
-      scatter(sc, r.all.map(a => ({x: a.is.ic, y: a.oos.ic, color: a === r.best ? AMBER : Math.sign(a.oos.ic) === Math.sign(a.is.ic) ? GREEN : RED, big: a === r.best, title: `${a.key}: research ${a.is.ic.toFixed(3)}, unseen ${a.oos.ic.toFixed(3)}`})), {xl: 'research IC', yl: 'unseen IC', aria: 'Research vs unseen IC'});
+      scatter(sc, r.all.map(a => ({x: a.is.ic, y: a.oos.ic, color: a.key === r.best.key ? AMBER : Math.sign(a.oos.ic) === Math.sign(a.is.ic) ? GREEN : RED, big: a.key === r.best.key, title: `${a.key}: research ${a.is.ic.toFixed(3)}, unseen ${a.oos.ic.toFixed(3)}`})), {xl: 'research IC', yl: 'unseen IC', aria: 'Research vs unseen IC'});
     });
   }
 
