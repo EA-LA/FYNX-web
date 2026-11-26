@@ -1,5 +1,5 @@
 /* Welcome / thank-you page. Shows the celebration and tour only after the membership service confirms a paid plan.
-   The ?plan= parameter is a hint for wording while checking; it never decides what is shown as unlocked. */
+   A plan query parameter never decides what is unlocked. Membership status does not confirm a new payment. */
 (function () {
   'use strict';
   const P = window.FYNXPlan;
@@ -85,7 +85,8 @@
     if (!s.signedIn) { show('wlGuest'); return; }
     for (let i = 0; i < 6; i++) {
       const r = await P.refresh();
-      if (['starter', 'plus', 'pro'].includes(r.tier)) { welcome(r.tier); return; }
+      if (!r.signedIn) { show('wlGuest'); return; }
+      if (r.verified === true && ['starter', 'plus', 'pro'].includes(r.tier)) { welcome(r.tier); return; }
       await new Promise(res => setTimeout(res, 2500));
     }
     show('wlPending');
