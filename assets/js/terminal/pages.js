@@ -44,23 +44,48 @@ window.FynxTerminalPages = T => {
   };
   function parseHash(hash) {
     const m = /^#([a-z]+)(?:\/(.*))?$/.exec(hash || ''); if (!m || !NAMES[m[1]]) return null;
-    const name = m[1], raw = m[2] ? decodeURIComponent(m[2]) : undefined;
+    const name = m[1];
+    let raw;
+    try { raw = m[2] ? decodeURIComponent(m[2]) : undefined; } catch { return null; }
     if (name === 'article' && raw) { const [id, edition, category] = raw.split('|'); return {name, arg: {articleId: id, id, edition, category, restored: true}}; }
     if (name === 'news' && raw) return {name, arg: raw.startsWith('cat:') ? {cat: raw.slice(4)} : raw.startsWith('q:') ? {q: raw.slice(2)} : undefined};
     if (name === 'calc' && raw) return {name, arg: {kind: raw}};
     return {name, arg: raw};
   }
+  // Keep only the URL form of each route in browser history, not page data.
+  // In-memory arguments survive ordinary Back/Forward when the prefix matches.
+  const routeStack = () => ({fxDepth: stack.length, fxRoutes: stack.map(p => [hashOf(p.name, p.arg), p.pushed])});
+  function restoreRoutes(state) {
+    const hash = location.hash, routes = state?.fxRoutes;
+    if (Array.isArray(routes) && routes.length === state.fxDepth && routes.at(-1)?.[0] === hash) {
+      const entries = routes.map((entry, i) => {
+        if (!Array.isArray(entry) || typeof entry[0] !== 'string' || typeof entry[1] !== 'boolean') return null;
+        const [href, pushed] = entry, parsed = parseHash(href), current = stack[i];
+        if (!parsed) return null;
+        return current && current.pushed === pushed && hashOf(current.name, current.arg) === href ? current : {...parsed, pushed};
+      });
+      if (entries.every(Boolean)) {
+        stack.length = 0; for (const entry of entries) stack.push(entry);
+        return;
+      }
+    }
+    // Old sessions/standalone links may not have our route snapshot. Trust the
+    // current URL over an old depth counter so Back still shows the right page.
+    const current = parseHash(hash);
+    stack.length = 0;
+    if (current) stack.push({...current, pushed: false});
+  }
   function open(name, arg) {
     if (!NAMES[name]) return;
     $('fx-inspect').hidden = true;
     stack.push({name, arg, pushed: true});
-    history.pushState({fxDepth: stack.length}, '', location.pathname + location.search + hashOf(name, arg));
+    history.pushState(routeStack(), '', location.pathname + location.search + hashOf(name, arg));
     show();
   }
   function back() {
     const top = stack.at(-1); if (!top) return;
     if (top.pushed && history.state?.fxDepth === stack.length) history.back();
-    else { stack.pop(); history.replaceState({fxDepth: stack.length}, '', location.pathname + location.search + (stack.length ? hashOf(stack.at(-1).name, stack.at(-1).arg) : '')); show(); }
+    else { stack.pop(); history.replaceState(routeStack(), '', location.pathname + location.search + (stack.length ? hashOf(stack.at(-1).name, stack.at(-1).arg) : '')); show(); }
   }
   let closing = false;
   const base = () => location.pathname + location.search;
@@ -72,15 +97,13 @@ window.FynxTerminalPages = T => {
   }
   window.addEventListener('popstate', e => {
     if (closing) { closing = false; stack.length = 0; history.replaceState({fxDepth: 0}, '', base()); show(); return; }
-    const depth = e.state?.fxDepth || 0;
-    if (depth < stack.length) stack.length = depth;
-    else if (depth > stack.length) { const p = parseHash(location.hash); if (p) stack.push({...p, pushed: true}); }
+    restoreRoutes(e.state);
     show();
   });
   function fromLocation() {
-    const p = parseHash(location.hash); if (!p) return;
-    stack.length = 0; stack.push({...p, pushed: false});
-    history.replaceState({fxDepth: 1}, '', location.href);
+    restoreRoutes(history.state);
+    if (!stack.length) return;
+    history.replaceState(routeStack(), '', location.href);
     show();
   }
   function show() {
