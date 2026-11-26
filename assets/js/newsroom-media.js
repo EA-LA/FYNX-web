@@ -134,6 +134,29 @@
     try { const now = Date.now(), keep = Object.entries(cache).filter(([, v]) => v && now - v.at < HIT_MS).slice(-150); cache = Object.fromEntries(keep); root.sessionStorage?.setItem(CACHE_KEY, JSON.stringify(cache)); } catch {}
   }
   function fresh(url) { const v = cache[url]; return v && Date.now() - v.at < (v.image ? HIT_MS : MISS_MS) ? v : null; }
+  // A hung fetch or JSON body must release the batch even on older WebViews.
+  async function fetchPreviews(query) {
+    const controller = typeof root.AbortController === 'function' ? new root.AbortController() : null;
+    let deadline;
+    try {
+      return await Promise.race([
+        new Promise(resolve => {
+          deadline = setTimeout(() => {
+            resolve(null);
+            if (controller) controller.abort();
+          }, 15000);
+        }),
+        (async () => {
+          const response = await root.fetch(PREVIEW + '?' + query, {
+            credentials: 'omit', referrerPolicy: 'no-referrer',
+            ...(controller ? {signal: controller.signal} : {})
+          });
+          return response.ok ? response.json() : null;
+        })()
+      ]);
+    } catch { return null; }
+    finally { clearTimeout(deadline); }
+  }
   function flush() {
     timer = null;
     const urls = [...waiting.keys()].filter(u => !inflight.has(u)); if (!urls.length) return;
@@ -141,8 +164,7 @@
     for (let i = 0; i < urls.length; i += 8) {
       const batch = urls.slice(i, i + 8), query = new URLSearchParams(); batch.forEach(u => query.append('u', u));
       const done = data => batch.forEach(u => { const p = data?.previews?.[u], hit = p && safe(p.image) ? {image: safe(p.image), site: String(p.site || '').slice(0, 80), url: safe(p.url) || u, alt: p.alt ? String(p.alt).slice(0, 300) : '', at: Date.now()} : {image: null, at: Date.now()}; cache[u] = hit; inflight.delete(u); (waiting.get(u) || []).forEach(fn => fn(hit)); waiting.delete(u); });
-      root.fetch(PREVIEW + '?' + query, {credentials: 'omit', referrerPolicy: 'no-referrer', signal: root.AbortSignal?.timeout ? root.AbortSignal.timeout(15000) : undefined})
-        .then(r => r.ok ? r.json() : null).catch(() => null).then(data => { if (data) done(data); else batch.forEach(u => { inflight.delete(u); (waiting.get(u) || []).forEach(fn => fn(null)); waiting.delete(u); }); persist(); });
+      fetchPreviews(query).then(data => { if (data) done(data); else batch.forEach(u => { inflight.delete(u); (waiting.get(u) || []).forEach(fn => fn(null)); waiting.delete(u); }); persist(); });
     }
   }
   function lookup(url) {
