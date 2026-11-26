@@ -1,4 +1,4 @@
-name: Probe equities publisher (temporary, read-only)
+name: Probe Dow table (temporary, read-only)
 on: push
 permissions:
   contents: read
@@ -10,16 +10,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node refresh-equities.cjs out
       - run: |
-          ls -la out
           node -e "
-          const d=require('./out/equities.json');
-          console.log('IDX', Object.entries(d.indices).map(([k,v])=>k+':'+v.length).join(' '), 'fresh', d.fresh, '/', d.total, 'sources', JSON.stringify(d.sources));
-          console.log('DOW', d.indices.dow.join(' '));
-          console.log('SAMPLE', JSON.stringify(d.info['BRK-B']), JSON.stringify(d.closes['BRK-B']));
-          console.log('AAPL', JSON.stringify(d.closes.AAPL));
-          console.log('MISSING', [...new Set(Object.values(d.indices).flat())].filter(s=>!d.closes[s]).join(' '));
-          console.log('MACRO', d.macro.dates.length, d.macro.dates[0], d.macro.spx.at(-1), d.macro.tnx.at(-1), d.macro.dxy.at(-1));
-          console.log('SECTORS', [...new Set(d.indices.sp500.map(s=>d.info[s].sec))].join('|'));
-          "
+          const {tables}=require('./refresh-equities.cjs');
+          fetch('https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average',{headers:{'User-Agent':'Mozilla/5.0 Chrome/130'}}).then(r=>r.text()).then(h=>{
+            tables(h).forEach((t,i)=>{ if(t.rows.length>=25&&t.rows.length<=40) console.log('T',i,t.id,JSON.stringify(t.headers),'rows',t.rows.length,JSON.stringify(t.rows[0]),JSON.stringify(t.rows[1])); });
+            const i=h.indexOf('id=\"constituents\"'); console.log('CONST', i, h.slice(i-200,i+2500).replace(/\s+/g,' '));
+          });"
