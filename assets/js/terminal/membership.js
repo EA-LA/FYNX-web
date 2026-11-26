@@ -11,6 +11,8 @@
   const PREMIUM = {
     panic: ['analysis', 'Market panic detector', []], risksim: ['analysis', 'Portfolio risk simulator', ['mcvar']], mcvar: ['analysis', 'Portfolio risk simulator', ['mcvar']],
     orderflow: ['analysis', 'Live order flow', ['oflow-pair']], oflow: ['analysis', 'Live order flow', ['oflow-pair']],
+    // Depth of market follows the Order Flow allowance (same category and limits; Professional and the owner are unlimited).
+    dom: ['analysis', 'Depth of market', ['oflow-pair', 'dom-mult']],
     vclust: ['analysis', 'Volatility clustering detector', ['vclust-sym']], garch: ['analysis', 'Volatility clustering detector', ['vclust-sym']],
     iseas: ['analysis', 'Intraday seasonality map', ['iseas-sym']], seasonality: ['analysis', 'Intraday seasonality map', ['iseas-sym']],
     factor: ['analysis', 'Factor neutrality check', ['factor']], rmom: ['analysis', 'Regime-dependent momentum', ['rmom']], momentum: ['analysis', 'Regime-dependent momentum', ['rmom']],
@@ -58,13 +60,14 @@
   /* header: plan badge + today's allowance */
   const header = document.getElementById('fx-build')?.parentElement;
   if (header && !document.getElementById('fx-plan')) {
-    const b = btn('', 'fx-editbtn fx-planbtn', () => P.paywall({cat: 'analysis', reason: 'upsell'}));
+    const b = btn('', 'fx-editbtn fx-planbtn', () => { if (P.owner) return T.say?.(P.label); P.paywall({cat: 'analysis', reason: 'upsell'}); });
     b.id = 'fx-plan'; b.title = 'Your FYNX plan and today\'s allowance';
     const paint = () => {
       const m = P.meter('analysis');
       b.replaceChildren(el('b', '', P.name.toUpperCase()), el('span', '', Number.isFinite(m.limit) ? ` ${m.left}/${m.limit}` : ' ∞'));
       b.classList.toggle('low', Number.isFinite(m.limit) && m.left <= 1);
-      b.setAttribute('aria-label', `${P.name} plan. ${Number.isFinite(m.limit) ? m.left + ' of ' + m.limit + ' advanced analyses left today' : 'Unlimited analyses'}. Open plans.`);
+      b.setAttribute('aria-label', P.owner ? P.label : `${P.name} plan. ${Number.isFinite(m.limit) ? m.left + ' of ' + m.limit + ' advanced analyses left today' : 'Unlimited analyses'}. Open plans.`);
+      b.title = P.owner ? P.label : 'Your FYNX plan and today\'s allowance'; b.classList.toggle('owner', !!P.owner);
     };
     paint(); P.onChange(paint); P.ready().then(paint);
     header.insertBefore(b, document.getElementById('fx-build'));

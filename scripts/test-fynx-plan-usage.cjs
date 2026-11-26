@@ -34,5 +34,21 @@ function load() {
   ({P} = load()); let guestCalls = 0; P._test.set({call: async () => { guestCalls++; return {}; }}, {tier: 'guest', uid: null, signedIn: false, verified: true});
   assert.equal(await P.charge('ai', 'g1', {silent: true}), true); assert.equal(await P.charge('ai', 'g2', {silent: true}), false, 'guest AI preview = 1 a day');
   assert.equal(guestCalls, 0);
-  console.log('FYNXPlan usage: server-counted allowances, storage reset resistance, repeats, offline fallback and guest limits passed');
+  // FYNX owner: the server's status decides (owner + Professional tier); unlimited, no checkout, never from storage.
+  {
+    let statusCalls = 0;
+    const ownerSvc = reply => ({config: {auth: {currentUser: {uid: 'owner-uid'}}}, call: async d => { if (d.action === 'status') { statusCalls++; return reply; } if (d.action === 'usage') return d.op === 'read' ? {counts: {}} : {allowed: true, used: 0, limit: null}; return {}; }});
+    ({P} = load()); P._test.set(ownerSvc({mode: 'live', tier: 'pro', owner: true, lifetime: true}), {});
+    await P.refresh();
+    assert.equal(P.owner, true); assert.equal(P.tier, 'pro'); assert.equal(P.name, 'FYNX Owner'); assert.equal(P.label, 'FYNX Owner — Lifetime Unlimited Access');
+    assert.equal(P.meter('analysis').limit, Infinity); assert.equal(P.meter('ai').limit, Infinity); assert.equal(P.meter('backtest').limit, Infinity);
+    for (let i = 0; i < 100; i++) assert.equal(await P.charge('analysis', 'o' + i, {silent: true}), true);
+    await assert.rejects(P.checkout('pro'), /complimentary/);
+    // A status that says owner without the Professional tier is not trusted.
+    ({P} = load()); P._test.set(ownerSvc({mode: 'live', tier: 'free', owner: true}), {}); await P.refresh(); assert.equal(P.owner, false); assert.equal(P.tier, 'free');
+    // The plan module never takes owner status from its session cache (the server is asked on every page load).
+    const src = fs.readFileSync(path.join(__dirname, '../assets/js/fynx-plan.js'), 'utf8');
+    assert.match(src, /!cached\.owner &&/); assert.ok(!/ha6876122/.test(src), 'no email check in the browser');
+  }
+  console.log('FYNXPlan usage: server-counted allowances, storage reset resistance, repeats, offline fallback, guest limits and owner access passed');
 })().catch(e => { console.error(e); process.exit(1); });

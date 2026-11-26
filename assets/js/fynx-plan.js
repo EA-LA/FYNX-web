@@ -28,7 +28,10 @@
   };
   const WHAT = {analysis: 'advanced analyses', ai: 'AI forecasts and AI reports', backtest: 'strategy backtests'};
   const STORE = 'fynx.usage.v1', CACHE = 'fynx.plan.v1';
-  let state = {tier: 'guest', uid: null, signedIn: false, verified: false};
+  let state = {tier: 'guest', uid: null, signedIn: false, verified: false, owner: false};
+  // Owner access is decided only by the server (consumerLiveWorkspace status → owner: true); never by email or storage here.
+  const OWNER_NAME = 'FYNX Owner', OWNER_LABEL = 'FYNX Owner — Lifetime Unlimited Access';
+  const nameOf = () => state.owner ? OWNER_NAME : NAMES[state.tier];
   let readyPromise = null, services = null;
   const listeners = new Set();
 
@@ -41,8 +44,8 @@
   }
   function writeUsage(u) { try { root.localStorage.setItem(STORE, JSON.stringify(u)); } catch (_) {} }
   const limitOf = (cat, tier = state.tier) => (LIMITS[cat] || LIMITS.analysis)[tier] ?? 0;
-  function meter(cat = 'analysis') { const u = readUsage(), used = u.counts[cat] || 0, limit = limitOf(cat); return {used, limit, left: Math.max(0, limit - used), tier: state.tier, name: NAMES[state.tier]}; }
-  function emit() { for (const fn of listeners) { try { fn({...state, name: NAMES[state.tier]}); } catch (_) {} } }
+  function meter(cat = 'analysis') { const u = readUsage(), used = u.counts[cat] || 0, limit = limitOf(cat); return {used, limit, left: Math.max(0, limit - used), tier: state.tier, name: nameOf(), owner: state.owner}; }
+  function emit() { for (const fn of listeners) { try { fn({...state, name: nameOf()}); } catch (_) {} } }
 
   async function loadServices() {
     if (services) return services;
@@ -55,16 +58,20 @@
     return services;
   }
   async function verify(user) {
-    if (!user) { state = {tier: 'guest', uid: null, signedIn: false, verified: true}; emit(); return; }
+    if (!user) { state = {tier: 'guest', uid: null, signedIn: false, verified: true, owner: false}; emit(); return; }
+    // The session cache only avoids a second round trip on the same tab; it can never raise the plan above what the
+    // server verified, and the server re-checks the plan on every metered call regardless.
     let cached = null; try { cached = JSON.parse(root.sessionStorage.getItem(CACHE)); } catch (_) {}
-    if (cached && cached.uid === user.uid && Date.now() - cached.at < 10 * 60 * 1000 && ORDER.includes(cached.tier)) { state = {tier: cached.tier, uid: user.uid, signedIn: true, verified: true}; emit(); return; }
-    state = {tier: 'free', uid: user.uid, signedIn: true, verified: false};
+    // Owner status is never taken from this cache: it is re-verified with the server on every page load.
+    if (cached && cached.uid === user.uid && !cached.owner && Date.now() - cached.at < 10 * 60 * 1000 && ORDER.includes(cached.tier)) { state = {tier: cached.tier, uid: user.uid, signedIn: true, verified: true, owner: false}; emit(); return; }
+    state = {tier: 'free', uid: user.uid, signedIn: true, verified: false, owner: false};
     try {
       const s = await services.call({action: 'status'});
-      const tier = s && s.mode === 'live' && !s.billingUnavailable && ['starter', 'plus', 'pro'].includes(s.tier) ? s.tier : 'free';
-      state = {tier, uid: user.uid, signedIn: true, verified: true};
-      try { root.sessionStorage.setItem(CACHE, JSON.stringify({uid: user.uid, tier, at: Date.now()})); } catch (_) {}
-    } catch (_) { state = {tier: 'free', uid: user.uid, signedIn: true, verified: false}; }
+      const owner = !!(s && s.mode === 'live' && s.owner === true && s.tier === 'pro');
+      const tier = owner ? 'pro' : s && s.mode === 'live' && !s.billingUnavailable && ['starter', 'plus', 'pro'].includes(s.tier) ? s.tier : 'free';
+      state = {tier, uid: user.uid, signedIn: true, verified: true, owner};
+      try { root.sessionStorage.setItem(CACHE, JSON.stringify({uid: user.uid, tier, owner, at: Date.now()})); } catch (_) {}
+    } catch (_) { state = {tier: 'free', uid: user.uid, signedIn: true, verified: false, owner: false}; }
     emit(); syncUsage();
   }
   // Today's counts from the server, so the meter is right on every device (best effort, never blocks a tool).
@@ -95,12 +102,12 @@
             if (first) { first = false; resolve(); }
           });
         });
-      } catch (_) { state = {tier: 'guest', uid: null, signedIn: false, verified: false}; }
-      return {...state, name: NAMES[state.tier]};
+      } catch (_) { state = {tier: 'guest', uid: null, signedIn: false, verified: false, owner: false}; }
+      return {...state, name: nameOf()};
     })();
     return readyPromise;
   }
-  function refresh() { try { root.sessionStorage.removeItem(CACHE); } catch (_) {} const user = services?.config?.auth?.currentUser || null; return verify(user).then(() => ({...state, name: NAMES[state.tier]})); }
+  function refresh() { try { root.sessionStorage.removeItem(CACHE); } catch (_) {} const user = services?.config?.auth?.currentUser || null; return verify(user).then(() => ({...state, name: nameOf()})); }
 
   async function charge(cat = 'analysis', key = '', opts = {}) {
     await Promise.race([ready(), new Promise(r => setTimeout(r, 6000))]);
@@ -126,9 +133,16 @@
     return true;
   }
 
+  // A membership-checked server request (e.g. Pro analytics computed on the server). Guests are asked to sign in.
+  async function server(data) {
+    await ready();
+    if (!state.signedIn || !services) { const e = new Error('Sign in to continue.'); e.code = 'unauthenticated'; throw e; }
+    try { return await services.call(data); } catch (e) { const code = String(e?.code || '').replace(/^functions\//, ''); const out = new Error(e?.message || 'Request failed.'); out.code = code; throw out; }
+  }
   async function checkout(tier) {
     if (!PRICES[tier]) tier = 'plus';
     await ready();
+    if (state.owner) throw new Error('Owner access is lifetime and complimentary. No checkout is needed.');
     const back = root.location.pathname + root.location.search + root.location.hash;
     try { root.sessionStorage.setItem('fynx.plan.return', JSON.stringify({path: back, at: Date.now()})); } catch (_) {}
     if (!state.signedIn) { root.location.href = '/auth/signup.html?returnTo=' + encodeURIComponent('/pro.html?plan=' + tier + '#plans'); return; }
@@ -240,12 +254,12 @@
   }
   function chip(cat = 'analysis') {
     style(); const c = el('span', 'fxp-chip');
-    const paint = () => { const m = meter(cat); c.replaceChildren(); if (!Number.isFinite(m.limit)) { c.append(el('b', '', NAMES[m.tier]), document.createTextNode(' · unlimited')); return; } c.append(el('b', '', `${m.left}/${m.limit}`), document.createTextNode(` ${WHAT[cat]} left today`)); c.title = resetText() + (state.signedIn ? ' Counted on your FYNX account.' : ' Guest previews are counted in this browser; a free account keeps the count on your account.'); if (m.tier !== 'pro') { const u = el('button', '', m.tier === 'plus' ? 'Go unlimited' : 'Upgrade'); u.type = 'button'; u.addEventListener('click', () => paywall({cat, reason: 'upsell'})); c.append(u); } };
+    const paint = () => { const m = meter(cat); c.replaceChildren(); if (!Number.isFinite(m.limit)) { c.append(el('b', '', m.name), document.createTextNode(state.owner ? ' · lifetime unlimited' : ' · unlimited')); return; } c.append(el('b', '', `${m.left}/${m.limit}`), document.createTextNode(` ${WHAT[cat]} left today`)); c.title = resetText() + (state.signedIn ? ' Counted on your FYNX account.' : ' Guest previews are counted in this browser; a free account keeps the count on your account.'); if (m.tier !== 'pro') { const u = el('button', '', m.tier === 'plus' ? 'Go unlimited' : 'Upgrade'); u.type = 'button'; u.addEventListener('click', () => paywall({cat, reason: 'upsell'})); c.append(u); } };
     paint(); listeners.add(paint); return c;
   }
 
-  root.FYNXPlan = {ready, refresh, charge, meter, paywall, lockedCard, chip, checkout, onChange: fn => { listeners.add(fn); return () => listeners.delete(fn); },
-    resetText, get tier() { return state.tier; }, get name() { return NAMES[state.tier]; }, LIMITS, NAMES, PRICES, PERKS, limitOf};
+  root.FYNXPlan = {ready, refresh, charge, server, meter, paywall, lockedCard, chip, checkout, onChange: fn => { listeners.add(fn); return () => listeners.delete(fn); },
+    resetText, get tier() { return state.tier; }, get name() { return nameOf(); }, get owner() { return state.owner; }, get label() { return state.owner ? OWNER_LABEL : NAMES[state.tier]; }, OWNER_LABEL, LIMITS, NAMES, PRICES, PERKS, limitOf};
   // Test hook (scripts/test-fynx-plan-usage.cjs only): inject a fake server and account.
   if (root.__FYNX_PLAN_TEST__) root.FYNXPlan._test = {set(svc, st) { services = svc; state = {...state, ...st}; readyPromise = Promise.resolve(state); }};
 })(typeof window !== 'undefined' ? window : globalThis);

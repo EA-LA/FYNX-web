@@ -132,9 +132,18 @@ function harness() {
 let browser;
 test.before(async () => { browser = await chromium.launch({executablePath, args: ['--no-sandbox']}); });
 test.after(async () => { await browser?.close(); });
-async function boot({time = NOW, width = 1600, height = 1100, filingsDown = false} = {}) {
+// Test-only membership server: FYNXPlan's test hook gets a fake 'consumerLiveWorkspace' with the given plan.
+const PLAN_SHIM = `;(function(){var c=window.__PLAN;if(!c||!window.FYNXPlan||!FYNXPlan._test)return;var LIM={free:5,starter:15,plus:60,pro:null};
+var svc={config:{auth:{currentUser:{uid:'u1'}}},call:async function(d){(window.__calls=window.__calls||[]).push(d);
+ if(d.action==='status')return {mode:'live',tier:c.tier==='free'?null:c.tier,owner:!!c.owner};
+ if(d.action==='usage'){if(d.op==='read')return {counts:{analysis:window.__used||0}};var l=LIM[c.tier];if(l!==null&&(window.__used||0)>=l)return {allowed:false,used:window.__used,limit:l};window.__used=(window.__used||0)+1;return {allowed:true,used:window.__used,limit:l,owner:!!c.owner};}
+ if(d.action==='industries'){if(!(c.tier in {starter:1,plus:1,pro:1})){var e=new Error('Advanced industry analytics are part of FYNX Pro membership.');e.code='functions/permission-denied';throw e;}return c.industries;}
+ return {};}};
+FYNXPlan._test.set(svc,{tier:c.tier,uid:'u1',signedIn:true,verified:true,owner:!!c.owner});})();`;
+async function boot({time = NOW, width = 1600, height = 1100, filingsDown = false, plan = null} = {}) {
   const ctx = await browser.newContext({viewport: {width, height}}), page = await ctx.newPage();
   await page.clock.install({time: new Date(time)});
+  if (plan) await page.addInitScript(p => { window.__FYNX_PLAN_TEST__ = true; window.__PLAN = p; window.__used = p.used || 0; }, plan);
   const json = (route, body, status = 200) => route.fulfill({status, contentType: 'application/json', body: JSON.stringify(body)});
   const seen = [];
   await page.route('**/*', route => {
@@ -153,6 +162,7 @@ async function boot({time = NOW, width = 1600, height = 1100, filingsDown = fals
     if (url.origin === ORIGIN) {
       if (url.pathname === '/terminal.html') return route.fulfill({contentType: 'text/html', body: harness()});
       if (url.pathname === '/assets/js/market-intelligence-data.js') return route.fulfill({contentType: 'text/javascript', body: NEWS_STUB});
+      if (url.pathname === '/assets/js/fynx-plan.js' && plan) return route.fulfill({contentType: 'text/javascript', body: fs.readFileSync(path.join(root, 'assets/js/fynx-plan.js'), 'utf8') + PLAN_SHIM});
       const file = path.join(root, decodeURIComponent(url.pathname));
       if (file.startsWith(root) && fs.existsSync(file) && fs.statSync(file).isFile()) return route.fulfill({contentType: TYPES[path.extname(file)] || 'application/octet-stream', body: fs.readFileSync(file)});
       return route.fulfill({status: 404, body: ''});
@@ -379,6 +389,78 @@ test('OPTIONS: expected move table and cone from the straddles', async () => {
   assert.equal(await page.$$eval('.em-sec polygon', p => p.length), 2, 'straddle and IV ranges');
   assert.match(await page.textContent('.em-sec .cs-leg'), /Straddle ±6\.10/);
   await page.locator('.em-sec').scrollIntoViewIfNeeded(); await shot(page, 'expected-move.png');
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+/* ---------- membership: free vs Pro vs owner ---------- */
+const IA = require('../backend/industry-analytics.cjs');
+function industriesFixture() {
+  const syms = [], info = {}, closes = {}, rows = [];
+  [['Information Technology', 'Semiconductors', 1.6], ['Information Technology', 'Systems Software', 1.2], ['Energy', 'Integrated Oil & Gas', 0.8], ['Utilities', 'Electric Utilities', 1.0], ['Financials', 'Diversified Banks', 1.1]].forEach(([sec, ind, drift], g) => { for (let k = 0; k < 5; k++) { const s = `S${g}${k}`; syms.push(s); info[s] = {n: s, sec, ind};
+    const w = Array.from({length: 53}, (_, i) => 100 * (1 + (drift - 1) * i / 52) * (1 + Math.sin(i / 5 + k) * 0.01)), d = Array.from({length: 23}, (_, i) => w[52] * (1 + (drift - 1) * (i - 22) / 250 * (g % 2 ? -1 : 1)));
+    closes[s] = {p: d[22], c: 0.1, d, w, y0: w[0]}; rows.push([s, s, d[22], 0.1, 1, 1e10 * (k + 1), sec, ind]); } });
+  const m = IA.membersFrom({indices: {sp500: syms}, info, closes}, {stocks: {fields: ['symbol', 'name', 'price', 'changePct', 'volume', 'marketCap', 'sector', 'industry'], rows}});
+  const r = IA.compute(m, {group: 'industry'});
+  return {level: 'industry', asOf: new Date(NOW).toISOString(), generatedAt: new Date(NOW).toISOString(), benchmark: r.benchmark, groups: r.groups, method: 'Relative strength (fixture).', sources: 'fixture'};
+}
+const usageCharges = page => page.evaluate(() => (window.__calls || []).filter(c => c.action === 'usage' && c.op === 'charge'));
+
+test('free member: OVERVIEW and HMAP never use an allowance; INDUSTRIES table free, advanced analytics locked', async () => {
+  const {ctx, page, errors} = await boot({plan: {tier: 'free'}});
+  for (let i = 0; i < 4; i++) { await command(page, 'OVERVIEW'); await page.waitForSelector('.ov-card'); await command(page, 'HMAP'); await page.clock.runFor(300); }
+  assert.deepEqual(await usageCharges(page), [], 'OVERVIEW and HMAP are completely free');
+  assert.equal(await page.$('.fxp-lock'), null);
+  await command(page, 'INDUSTRIES');
+  await page.waitForSelector('.ind-table');
+  await page.waitForSelector('.ia-lock');
+  assert.match(await page.textContent('.ia-lock'), /Advanced industry analytics are part of FYNX Pro/);
+  assert.equal(await page.$('.ia-table'), null, 'no advanced results without membership');
+  assert.deepEqual(await usageCharges(page), [], 'the basic industries table uses no allowance');
+  await shot(page, 'industries-free.png');
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test('DOM follows the Order Flow allowance: counted per day on the server, blocked when used up', async () => {
+  const {ctx, page} = await boot({plan: {tier: 'free'}});
+  await command(page, 'DOM'); await page.clock.runFor(500);
+  const charges = await usageCharges(page);
+  assert.equal(charges.length, 1); assert.equal(charges[0].cat, 'analysis'); assert.match(charges[0].key, /^Depth of market\|/);
+  assert.equal(await page.$('.fxp-lock'), null);
+  await ctx.close();
+  const used = await boot({plan: {tier: 'free', used: 5}});
+  await command(used.page, 'DOM'); await used.page.clock.runFor(500);
+  await used.page.waitForSelector('.fxp-lock');
+  assert.match(await used.page.textContent('.fxp-lock'), /Depth of market is ready/);
+  await command(used.page, 'ORDERFLOW'); await used.page.clock.runFor(500);
+  assert.match(await used.page.textContent('.fxp-lock'), /Live order flow is ready/, 'same allowance as Order Flow');
+  await used.ctx.close();
+});
+
+test('Pro member: advanced industry analytics with rotation map and ranked table', async () => {
+  const {ctx, page, errors} = await boot({plan: {tier: 'plus', industries: industriesFixture()}});
+  await command(page, 'INDUSTRIES');
+  await page.waitForSelector('.ia-table');
+  assert.equal(await page.$$eval('.ia-table tr', r => r.length - 1), 5);
+  assert.equal(await page.$$eval('.ia-map circle', c => c.length), 5);
+  assert.match(await page.textContent('.ia-sum'), /LEADING.*IMPROVING.*WEAKENING.*LAGGING/);
+  assert.equal(await page.$eval('.ia-table tr:nth-child(2) th', t => t.textContent), 'Semiconductors');
+  await page.locator('.ia-sec').scrollIntoViewIfNeeded(); await shot(page, 'industries-pro.png');
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test('FYNX owner: lifetime unlimited badge, no limits on DOM/Order Flow, every premium page opens', async () => {
+  const {ctx, page, errors} = await boot({plan: {tier: 'pro', owner: true, used: 10000, industries: industriesFixture()}});
+  await page.waitForSelector('#fx-plan.owner');
+  assert.match(await page.textContent('#fx-plan'), /FYNX OWNER ∞/);
+  assert.equal(await page.getAttribute('#fx-plan', 'title'), 'FYNX Owner — Lifetime Unlimited Access');
+  for (const c of ['DOM', 'ORDERFLOW', 'OVERVIEW', 'HMAP', 'FILINGS AAPL', 'SENTIMENT', 'CSENT', 'HOURS', 'WIRE', 'VCLUST', 'ISEAS', 'BTEST', 'FCAST', 'OPTLAB', 'EARNPREV', 'COMPLY', 'FACTORLOOP', 'VALUE']) { await command(page, c); await page.clock.runFor(400); assert.equal(await page.$('.fxp-lock'), null, c + ' is open'); assert.equal(await page.$('.fxp-dlg'), null, c + ' shows no paywall'); }
+  await command(page, 'INDUSTRIES'); await page.waitForSelector('.ia-table');
+  const charged = await usageCharges(page); assert.ok(charged.length >= 8, 'premium pages still record usage on the server'); 
+  await page.click('#fx-plan'); await page.clock.runFor(200);
+  assert.equal(await page.$('.fxp-dlg'), null, 'the owner is never sent to checkout');
   assert.deepEqual(errors, []);
   await ctx.close();
 });

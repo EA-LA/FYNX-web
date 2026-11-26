@@ -9,7 +9,11 @@ const payloadHash=value=>createHash('sha256').update(canonical(value)).digest('h
 function validateInput(value){return value!==null&&typeof value==='object'&&!Array.isArray(value)&&Buffer.byteLength(JSON.stringify(value),'utf8')<=20000;}
 const plans=require('./developer-plans.cjs');
 // Paid plans apply only in the live environment and only while the billing check is fresh (fail closed to Free).
-function entitlement(profile,env,now=Date.now()){
+// The verified FYNX owner (owner-access.cjs) gets complimentary unlimited monthly calls with no overage billing.
+// The per-second rate (infrastructure protection) stays at the highest standard plan's rate.
+function ownerLimits(){const top=plans.limitsFor('business');return {...top,plan:'owner',name:'FYNX Owner',monthlyCalls:1e12,overage:false,overageBlockCents:null,monthlyPrice:0,unlimited:true,lifetime:true};}
+function entitlement(profile,env,now=Date.now(),{owner=false}={}){
+ if(owner===true)return ownerLimits();
  const paid=env==='live'&&plans.isPlan(profile.plan)&&profile.plan!=='free'&&profile.planCheckedUntil>now;
  return plans.limitsFor(paid?profile.plan:'free');
 }
@@ -20,4 +24,4 @@ function effectiveCap(profile,limits){
  if(saved===null)return limits.monthlyCalls;
  return Math.min(saved,profile.requestCapExplicit&&limits.overage?plans.capCeiling(limits):limits.monthlyCalls);
 }
-module.exports={canonical,payloadHash,validateInput,entitlement,effectiveCap};
+module.exports={canonical,payloadHash,validateInput,entitlement,effectiveCap,ownerLimits};

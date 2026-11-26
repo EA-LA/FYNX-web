@@ -16,6 +16,8 @@ function statelessRoute(route){
  return {group,name,run:input=>fn(name,input)};
 }
 const {payloadHash:canonicalHash,validateInput,entitlement,effectiveCap}=require('./developer-core.cjs');
+const {createOwnerCheck,isOwnerRecord}=require('./owner-access.cjs');
+const ownerOf=createOwnerCheck({getUser:uid=>admin.auth().getUser(uid)});
 const logger=require('firebase-functions/logger');
 const db=()=>admin.firestore();
 const runtime=functions.runWith({secrets:['FYNX_API_STRIPE_SECRET_KEY'],timeoutSeconds:60,memory:'256MB',maxInstances:10});
@@ -34,8 +36,8 @@ const clean=s=>String(s||'').trim().slice(0,120);
 async function actor(context){if(!context.auth)error('unauthenticated','Sign in to your developer account.');const user=await admin.auth().getUser(context.auth.uid);if(user.disabled)error('permission-denied','Account disabled.');return user;}
 async function throttle(uid,limit=90,bucket='manageRate'){const ref=root(uid).collection('private').doc(bucket);await db().runTransaction(async tx=>{const s=(await tx.get(ref)).data()||{},now=Date.now(),count=now-(s.start||0)<60000?(s.count||0)+1:1;if(count>limit)error('resource-exhausted','Too many workspace actions. Retry in a minute.');tx.set(ref,{start:count===1?now:s.start,count});});}
 async function reserveRate(uid,env){
- const ref=envRef(uid,env).collection('private').doc('rate');
- await db().runTransaction(async tx=>{const [p,s]=await Promise.all([tx.get(root(uid)),tx.get(ref)]),limits=entitlement(p.data()||{},env),rate=s.data()||{},window=Math.floor(Date.now()/1000),count=rate.window===window?(rate.count||0)+1:1;if(count>limits.rps)error('resource-exhausted','Per-second rate limit reached.');tx.set(ref,{window,count});});
+ const ref=envRef(uid,env).collection('private').doc('rate'),owner=await ownerOf(uid);
+ await db().runTransaction(async tx=>{const [p,s]=await Promise.all([tx.get(root(uid)),tx.get(ref)]),limits=entitlement(p.data()||{},env,Date.now(),{owner}),rate=s.data()||{},window=Math.floor(Date.now()/1000),count=rate.window===window?(rate.count||0)+1:1;if(count>limits.rps)error('resource-exhausted','Per-second rate limit reached.');tx.set(ref,{window,count});});
 }
 function telemetry(kind,status,started,extra={}){const data={service:'fynx_api',kind,status,duration_ms:Date.now()-started,...extra};if(status>=500)logger.error('FYNX API request failed',data);else logger.info('FYNX API request',data);}
 const errorStatus=e=>e instanceof engine.InputError?422:({'unauthenticated':401,'permission-denied':403,'not-found':404,'already-exists':409,'failed-precondition':409,'resource-exhausted':429,'invalid-argument':422}[e.code]||500);
@@ -47,11 +49,11 @@ async function runOperation(uid,env,route,input,keyHash=null){
  await reserveRate(uid,env);
  const er=envRef(uid,env),reqId=randomUUID(),at=Date.now(),requestRef=er.collection('requests').doc(reqId),usageRef=er.collection('usage').doc(month());
  const parsed=route.match(/^\/v1\/risk\/([a-z-]+)$/),stateless=statelessRoute(route);
- let meterPending=false;
+ let meterPending=false;const owner=await ownerOf(uid);
  const output=await db().runTransaction(async tx=>{meterPending=false;
   const profileSnap=await tx.get(root(uid)),usageSnap=await tx.get(usageRef);
   if(keyHash){const key=await tx.get(db().collection('fynxDeveloperKeys').doc(keyHash));if(!key.exists||key.data().revokedAt)error('unauthenticated','Key was revoked.');if(key.data().uid!==uid||key.data().environment!==env||!access.permits(key.data(),route))error('permission-denied','This key does not allow the requested operation.');}
-  const profile=profileSnap.data()||{},usage=usageSnap.data()||{},limits=entitlement(profile,env);
+  const profile=profileSnap.data()||{},usage=usageSnap.data()||{},limits=entitlement(profile,env,Date.now(),{owner});
   const cap=effectiveCap(profile,limits);
   let result,duplicate=false;
   if(route.startsWith('GET ')){const m=route.match(/^GET \/v1\/propfirm\/accounts\/([-a-zA-Z0-9_]+)\/(status|events)$/);if(!m)error('not-found','Read endpoint not found.');const ar=er.collection('accounts').doc(m[1]),a=await tx.get(ar);if(!a.exists)error('not-found','Account not found.');if(m[2]==='status')result={account_id:a.id,...a.data()};else{let q=ar.collection('events').orderBy('at','desc').orderBy(admin.firestore.FieldPath.documentId(),'desc');if(input.before){if(!Number.isSafeInteger(Number(input.before)))error('invalid-argument','Invalid cursor');q=q.startAfter(Number(input.before),ident(input.beforeId));}result={items:rows(await tx.get(q.limit(25)))};}}
@@ -86,7 +88,7 @@ async function workspace(data,context){
   const ref=root(uid);await db().runTransaction(async tx=>{const s=await tx.get(ref);if(!s.exists)tx.create(ref,{name:clean(user.displayName||'My API workspace'),email:user.email||'',createdAt:Date.now(),plan:'free',requestCap:null});});
   await require('./developer-billing.cjs').refresh(uid);
   const [p,u,k,r,a,q]=await Promise.all([ref.get(),er.collection('usage').doc(month()).get(),er.collection('keys').orderBy('createdAt','desc').limit(50).get(),er.collection('rules').limit(100).get(),er.collection('accounts').limit(100).get(),er.collection('requests').orderBy('at','desc').orderBy(admin.firestore.FieldPath.documentId(),'desc').limit(25).get()]);
-  return {supported_scopes:[...access.SCOPES],profile:p.data(),usage:u.data()||{calls:0},limits:entitlement(p.data(),env),keys:rows(k),rules:rows(r),accounts:rows(a),requests:rows(q),month:month(),billing_mode:'live',emailVerified:user.emailVerified,apiBase:'https://us-central1-fynx-c7a28.cloudfunctions.net/developerGateway'};
+  return {supported_scopes:[...access.SCOPES],profile:p.data(),usage:u.data()||{calls:0},limits:entitlement(p.data(),env,Date.now(),{owner:isOwnerRecord(user)}),keys:rows(k),rules:rows(r),accounts:rows(a),requests:rows(q),month:month(),billing_mode:'live',emailVerified:user.emailVerified,apiBase:'https://us-central1-fynx-c7a28.cloudfunctions.net/developerGateway'};
  }
  if(['createKey','rotateKey','revokeKey'].includes(action)){
   if(!user.emailVerified)error('failed-precondition','Verify your email before creating or changing API keys.');
@@ -102,7 +104,7 @@ async function workspace(data,context){
  }
  if(action==='run'){await require('./developer-billing.cjs').refresh(uid);try{return await runOperation(uid,env,String(data.route||''),data.input||{});}catch(e){const request_id=await recordFailure(uid,env,data.route,e);if(!(e instanceof engine.InputError))throw e;return {request_id,status:422,error:{code:e.code,message:e.message}};}}
  if(action==='history'){const limit=25;let q=data.audit?er.collection('audit'):data.accountId?er.collection('accounts').doc(ident(data.accountId)).collection('events'):er.collection('requests');q=q.orderBy('at','desc').orderBy(admin.firestore.FieldPath.documentId(),'desc');if(data.before!==undefined){if(!Number.isSafeInteger(data.before))error('invalid-argument','Invalid history cursor.');q=q.startAfter(data.before,ident(data.beforeId));}return {items:rows(await q.limit(limit).get())};}
- if(action==='settings'){const name=clean(data.name),cap=Number(data.requestCap),ceiling=plans.capCeiling(entitlement((await root(uid).get()).data()||{},'live'));if(!name||!Number.isInteger(cap)||cap<1||cap>ceiling)error('invalid-argument',`Name and a monthly request cap from 1 to ${ceiling.toLocaleString('en-US')} are required.`);const batch=db().batch();batch.set(root(uid),{name,requestCap:cap,requestCapExplicit:true,updatedAt:Date.now()},{merge:true});batch.create(er.collection('audit').doc(),{at:Date.now(),expireAt:expires(AUDIT_RETENTION_DAYS),action:'settings',name,requestCap:cap});await batch.commit();return {saved:true};}
+ if(action==='settings'){const name=clean(data.name),cap=Number(data.requestCap),ceiling=plans.capCeiling(entitlement((await root(uid).get()).data()||{},'live',Date.now(),{owner:isOwnerRecord(user)}));if(!name||!Number.isInteger(cap)||cap<1||cap>ceiling)error('invalid-argument',`Name and a monthly request cap from 1 to ${ceiling.toLocaleString('en-US')} are required.`);const batch=db().batch();batch.set(root(uid),{name,requestCap:cap,requestCapExplicit:true,updatedAt:Date.now()},{merge:true});batch.create(er.collection('audit').doc(),{at:Date.now(),expireAt:expires(AUDIT_RETENTION_DAYS),action:'settings',name,requestCap:cap});await batch.commit();return {saved:true};}
  if(action==='support'){await throttle(uid,5,'supportRate');const subject=clean(data.subject),message=String(data.message||'').trim();if(!subject||message.length<10||message.length>4000)error('invalid-argument','Add a subject and a message between 10 and 4,000 characters.');const ref=root(uid).collection('support').doc();await ref.set({subject,message,createdAt:Date.now(),status:'open',email:user.email||''});return {ticket_id:ref.id};}
  error('invalid-argument','Unknown workspace action.');
  }catch(e){if(e instanceof engine.InputError)error(e.code==='event_order_conflict'?'failed-precondition':'invalid-argument',e.message);throw e;}

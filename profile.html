@@ -813,6 +813,7 @@
               </div>
 
               <div class="profile-email" id="profileEmail">—</div>
+              <div class="profile-membership" id="profileMembership" role="status" hidden></div>
 
               <!-- ✅ NEW: description shown under email -->
               <div class="profile-desc" id="profileDesc"></div>
@@ -829,6 +830,10 @@
                 <div class="profile-stat-item">
                   <h4>AVG. RETURN</h4>
                   <p id="statAvgReturn">—</p>
+                </div>
+                <div class="profile-stat-item">
+                  <h4>MEMBERSHIP</h4>
+                  <p id="statMembership">—</p>
                 </div>
                 <div class="profile-stat-item">
                   <h4>MEMBER SINCE</h4>
@@ -1157,6 +1162,8 @@
   </script>
 
   <script type="module" src="assets/js/profile-sync.js?v=20261114-consistency-2"></script>
+  <script src="/assets/js/fynx-plan.js?v=20261126-owner-1" defer></script><script src="/assets/js/profile-membership.js?v=20261126-owner-1" defer></script>
+  <style>.profile-membership{margin:6px 0 2px;font-size:12.5px;color:#b8c3bd}.profile-membership b{color:#e8ecea}.profile-membership.owner b{color:#000;background:#ffb000;padding:2px 8px;font-weight:800;letter-spacing:.02em}</style>
 <script src="/assets/js/research-service.js?v=20261113-shared-account-2"></script><script src="/assets/js/quant/profile.js?v=20261113-shared-account-2" defer></script><script src="/assets/js/edge/profile.js?v=20261113-shared-account-2" defer></script><script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
 </body>
 </html>
