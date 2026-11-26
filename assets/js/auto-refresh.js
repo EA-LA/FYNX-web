@@ -26,7 +26,9 @@
       + '.fx-auto.is-updating i{background:#d08a00}'
       + '@keyframes fx-auto-pulse{0%{box-shadow:0 0 0 0 rgba(31,138,90,.5)}70%{box-shadow:0 0 0 7px rgba(31,138,90,0)}100%{box-shadow:0 0 0 0 rgba(31,138,90,0)}}'
       + 'html[data-theme=dark] .fx-auto,body.dark-mode .fx-auto,[data-fynx-terminal] .terminal-dark .fx-auto{color:#7fd3a6;border-color:rgba(127,211,166,.3);background:rgba(127,211,166,.07)}'
-      + '@media (prefers-reduced-motion:reduce){.fx-auto i{animation:none}}';
+      + '@media (prefers-reduced-motion:reduce){.fx-auto i{animation:none}}'
+      // [site-qa] run 112: on phones the chip sits beside its button in rows that do not wrap (News release archive, newsroom headings, Notifications) and was squeezed to "Ne". Let those rows wrap so the chip keeps its width.
+      + '@media (max-width:600px){:has(> [data-fx-auto] + .fx-auto){flex-wrap:wrap;row-gap:8px}.fx-auto{flex-shrink:0}}';
     document.head.append(st);
   }
   function mmss(ms) { const s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
