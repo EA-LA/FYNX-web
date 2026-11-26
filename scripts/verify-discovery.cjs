@@ -20,6 +20,12 @@ for(const entry of inventory){
  const file=entry.url.endsWith('/')?entry.url+'index.html':entry.url;
  const dom=new JSDOM(fs.readFileSync(path.join(root,file),'utf8'),{url:base+entry.url});const doc=dom.window.document;
  assert(doc.querySelector('a[href="/explore.html"]'),'Missing return path: '+entry.url);
+ if(['/risk-management.html','/trading-psychology.html'].includes(entry.url)){
+  const backLink=doc.querySelector('.footer-cta a[href="#top"]');
+  assert(backLink && !backLink.hasAttribute('onclick'),'Back to Top must use native fragment navigation: '+entry.url);
+  const top=doc.getElementById('top');
+  assert(top?.matches('header.site-resource-header[tabindex="-1"]'),'Back to Top must target a focusable header: '+entry.url);
+ }
  if(entry.url.startsWith('/learn/lessons/')){
   lessons++;assert(doc.querySelector('.lesson-article').textContent.split(/\s+/).length>=170,'Incomplete lesson: '+entry.url);
   for(const selector of ['#section-1','#section-2','#example','#practice','.lesson-source a','.lesson-sequence a'])assert(doc.querySelector(selector),'Missing lesson section: '+entry.url+' '+selector);
