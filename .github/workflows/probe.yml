@@ -1,4 +1,4 @@
-name: Probe Dow table (temporary, read-only)
+name: Probe equities publisher (temporary, read-only)
 on: push
 permissions:
   contents: read
@@ -10,10 +10,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: |
-          node -e "
-          const {tables}=require('./refresh-equities.cjs');
-          fetch('https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average',{headers:{'User-Agent':'Mozilla/5.0 Chrome/130'}}).then(r=>r.text()).then(h=>{
-            console.log('LEN',h.length,'TABLES',tables(h).length); tables(h).forEach((t,i)=>{ console.log('T',i,t.id,JSON.stringify(t.headers).slice(0,300),'rows',t.rows.length,JSON.stringify(t.rows[0]).slice(0,300)); });
-            const i=h.indexOf('NYSE'); console.log('CONST', i, h.slice(i-200,i+2500).replace(/\s+/g,' '));
-          });"
+      - run: node refresh-equities.cjs out
+      - run: node -e "const d=require('./out/equities.json'); console.log('DOWRESULT', d.sources.dow, d.indices.dow.join(' '))"

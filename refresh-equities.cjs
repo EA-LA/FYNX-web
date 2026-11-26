@@ -17,8 +17,9 @@ const DAY = 86400000, MEMBERS_TTL = 20 * 3600000;
 const finite = v => typeof v === 'number' && Number.isFinite(v);
 const sig = v => finite(v) ? Number(v.toPrecision(6)) : null;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-// Dow 30 as published by S&P Dow Jones Indices (last change: Nov 2024). Used only if the Wikipedia table cannot be read.
-const DOW_FALLBACK = 'AAPL AMGN AMZN AXP BA CAT CRM CSCO CVX DIS GS HD HON IBM JNJ JPM KO MCD MMM MRK MSFT NKE NVDA PG SHW TRV UNH V VZ WMT'.split(' ');
+// Dow 30 as listed on Wikipedia's DJIA page on 2026-11-26. Used only if the page cannot be read.
+const DOW_FALLBACK = 'AAPL AMGN AMZN AXP BA CAT CRM CSCO CVX DIS GOOGL GS HD HON IBM JNJ JPM KO MCD MMM MRK MSFT NKE NVDA PG SHW TRV UNH V WMT'.split(' ');
+const wikiHref = cell => { const m = /href="(?:https:\/\/en\.wikipedia\.org)?\/wiki\/([^"#?]+)"/.exec(cell); return m ? decodeURIComponent(m[1]) : null; };
 
 async function fetchText(url, headers = {}, timeout = 25000) {
   const r = await fetch(url, {headers: {'User-Agent': UA, ...headers}, signal: AbortSignal.timeout(timeout), redirect: 'follow'});
@@ -34,9 +35,10 @@ const validSym = s => /^[A-Z][A-Z0-9-]{0,7}$/.test(s);
 function tables(html) {
   return (html.match(/<table[\s\S]*?<\/table>/g) || []).map(t => {
     const trs = t.match(/<tr[\s\S]*?<\/tr>/g) || [];
-    const cells = tr => (tr.match(/<t[hd][^>]*>[\s\S]*?<\/t[hd]>/g) || []).map(decode);
+    const raw = tr => tr.match(/<t[hd][^>]*>[\s\S]*?<\/t[hd]>/g) || [], cells = tr => raw(tr).map(decode);
     const head = trs.find(tr => /<th/.test(tr) && !/<td/.test(tr));
-    return {id: (/^<table[^>]*\bid="([^"]+)"/.exec(t) || [])[1] || '', headers: head ? cells(head) : [], rows: trs.filter(tr => tr !== head).map(cells).filter(r => r.length)};
+    const body = trs.filter(tr => tr !== head);
+    return {id: (/^<table[^>]*\bid="([^"]+)"/.exec(t) || [])[1] || '', headers: head ? cells(head) : [], rows: body.map(cells).filter(r => r.length), raw: body.map(raw).filter(r => r.length), html: t};
   });
 }
 function parseSP500(html) {
@@ -44,19 +46,21 @@ function parseSP500(html) {
   if (!t) throw new Error('S&P 500 constituents table not found');
   const ix = name => t.headers.findIndex(h => h.replace(/\s+/g, ' ').includes(name));
   const [iS, iN, iSec, iInd] = [ix('Symbol'), ix('Security'), ix('GICS Sector'), ix('GICS Sub-Industry')];
-  const out = t.rows.map(r => ({symbol: yahooSym(r[iS]), name: r[iN], sector: r[iSec], industry: r[iInd]})).filter(m => validSym(m.symbol) && m.name && m.sector);
+  const out = t.rows.map((r, k) => ({symbol: yahooSym(r[iS]), name: r[iN], sector: r[iSec], industry: r[iInd], article: wikiHref(t.raw[k]?.[iN] || '')})).filter(m => validSym(m.symbol) && m.name && m.sector);
   if (out.length < 480 || out.length > 520) throw new Error(`S&P 500 table has ${out.length} rows`);
   return out;
 }
-function parseDow(html) {
+/* The DJIA page lists its 30 members in a navigation box of company links. Every Dow member is also in the
+ * S&P 500, so the box's article links are matched to S&P 500 rows (Class A when a company has two share classes). */
+function parseDow(html, sp500) {
+  const byArticle = new Map();
+  for (const m of sp500 || []) { if (!m.article) continue; const prev = byArticle.get(m.article); if (!prev || /Class A/i.test(m.name)) byArticle.set(m.article, m); }
   for (const t of tables(html)) {
-    const iS = t.headers.findIndex(h => /^Symbol$/i.test(h)); if (iS < 0) continue;
-    const iC = t.headers.findIndex(h => /^Company$/i.test(h)), iI = t.headers.findIndex(h => /^Industry$/i.test(h));
-    // Wikipedia marks the company as a row header, so header and data cells line up by position.
-    const out = t.rows.map(r => ({symbol: yahooSym(r[iS] || ''), name: r[iC] || '', industry: r[iI] || ''})).filter(m => validSym(m.symbol));
-    if (out.length === 30) return out;
+    const links = [...new Set([...t.html.matchAll(/href="(?:https:\/\/en\.wikipedia\.org)?\/wiki\/([^"#?]+)"/g)].map(x => decodeURIComponent(x[1])))];
+    const hits = links.map(a => byArticle.get(a)).filter(Boolean);
+    if (hits.length === 30 && links.length <= 45) return hits.map(m => ({symbol: m.symbol, name: m.name, industry: m.industry}));
   }
-  throw new Error('Dow 30 components table not found');
+  throw new Error('Dow 30 member list not found');
 }
 function parseNdx(json) {
   const rows = json?.data?.data?.rows;
@@ -67,17 +71,17 @@ function parseNdx(json) {
 }
 async function fetchMembers(previous, now) {
   if (previous?.indices && Date.parse(previous.membersAt) > now - MEMBERS_TTL) return {indices: previous.indices, info: previous.info, membersAt: previous.membersAt, sources: previous.sources};
-  const [sp, ndx, dow] = await Promise.allSettled([
-    fetchText('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies').then(parseSP500),
+  const spP = fetchText('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies').then(parseSP500);
+  const [sp, ndx, dow] = await Promise.allSettled([spP,
     fetchText('https://api.nasdaq.com/api/quote/list-type/nasdaq100', NASDAQ).then(t => parseNdx(JSON.parse(t))),
-    fetchText('https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average').then(parseDow)]);
+    Promise.all([fetchText('https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average'), spP]).then(([h, list]) => parseDow(h, list))]);
   const prevIdx = previous?.indices || {}, info = {...(previous?.info || {})}, indices = {}, sources = {...(previous?.sources || {})};
   if (sp.status === 'fulfilled') { indices.sp500 = sp.value.map(m => m.symbol); sp.value.forEach(m => { info[m.symbol] = {n: m.name, sec: m.sector, ind: m.industry}; }); sources.sp500 = 'Wikipedia, List of S&P 500 companies (GICS sector and sub-industry)'; }
   else { console.warn('[equities] S&P 500:', sp.reason.message); if (prevIdx.sp500) indices.sp500 = prevIdx.sp500; }
   if (ndx.status === 'fulfilled') { indices.ndx = ndx.value.map(m => m.symbol); ndx.value.forEach(m => { info[m.symbol] = {...info[m.symbol], n: info[m.symbol]?.n || m.name, cap: m.marketCap}; }); sources.ndx = 'Nasdaq, Nasdaq-100 constituents'; }
   else { console.warn('[equities] Nasdaq-100:', ndx.reason.message); if (prevIdx.ndx) indices.ndx = prevIdx.ndx; }
-  if (dow.status === 'fulfilled') { indices.dow = dow.value.map(m => m.symbol); dow.value.forEach(m => { info[m.symbol] = {...info[m.symbol], n: info[m.symbol]?.n || m.name}; }); sources.dow = 'Wikipedia, Dow Jones Industrial Average components'; }
-  else { console.warn('[equities] Dow 30:', dow.reason.message); indices.dow = prevIdx.dow || DOW_FALLBACK; if (!prevIdx.dow) sources.dow = 'S&P Dow Jones Indices membership (fallback list, Nov 2024)'; }
+  if (dow.status === 'fulfilled') { indices.dow = dow.value.map(m => m.symbol); dow.value.forEach(m => { info[m.symbol] = {...info[m.symbol], n: info[m.symbol]?.n || m.name}; }); sources.dow = 'Wikipedia, Dow Jones Industrial Average members'; }
+  else { console.warn('[equities] Dow 30:', dow.reason.message); indices.dow = prevIdx.dow || DOW_FALLBACK; if (!prevIdx.dow) sources.dow = 'Wikipedia DJIA members as of 2026-11-26 (fallback list)'; }
   if (!indices.sp500 && !indices.ndx) throw new Error('No index membership available');
   return {indices, info, membersAt: new Date(now).toISOString(), sources};
 }
