@@ -73,3 +73,11 @@
 @media (hover:none) and (pointer:coarse) and (max-width:820px){
   html body .your-news-topic-buttons button{min-width:44px}
 }
+
+/* [site-qa] run 112: "More topics, regions and companies" toggle was 22px tall on iPhone - 44px touch height. */
+@media (hover:none) and (pointer:coarse) and (max-width:820px){
+  html body [data-your-more-interests] > summary{display:flex;align-items:center;min-height:44px;box-sizing:border-box;cursor:pointer}
+  html body [data-your-more-interests] > summary::before{content:"▸";margin-right:8px}
+  html body [data-your-more-interests][open] > summary::before{content:"▾"}
+  html body [data-your-more-interests] > summary::-webkit-details-marker{display:none}
+}
