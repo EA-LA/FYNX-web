@@ -187,3 +187,18 @@ test('extreme valid stop and target distances do not display an exact 0% or 100%
  assert.equal(run('risk',input).breakEvenWinRate,'<0.001%');
  assert.equal(run('risk',{...input,entry:100000,stop:1,target:100000.000001}).breakEvenWinRate,'>99.999%');
 });
+
+test('paid scenario comparison explains only the requested multipliers that exceed the existing cap',()=>{
+ const exact=run('scenarios',{...risk,riskPct:50});
+ assert.equal(exact.scenarios.at(-1).riskBudget,10000);
+ assert.doesNotMatch(exact.notice,/capped/);
+ const single=run('scenarios',{...risk,riskPct:'60'});
+ assert.deepEqual(single.scenarios.map(x=>x.riskBudget),[3000,6000,9000,10000]);
+ assert.match(single.notice,/2× scenario was capped at 100% of account balance/);
+ const two=run('scenarios',{...risk,riskPct:80});
+ assert.deepEqual(two.scenarios.map(x=>x.riskBudget),[4000,8000,10000,10000]);
+ assert.deepEqual(two.scenarios.map(x=>x.riskMultiplier),[0.5,1,1.5,2]);
+ assert.match(two.notice,/1\.5× and 2× scenarios were capped at 100% of account balance/);
+ assert.match(two.notice,/shows the requested multiplier/);
+ assert.equal(two.breakEvenWinRate,exact.breakEvenWinRate);
+});
