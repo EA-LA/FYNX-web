@@ -380,11 +380,11 @@ html body.fx-terminal .fx-ic-src a{display:inline-block;min-height:44px;padding:
       host.append(el('p', 'fx-ilp-empty', `Headlines from the last 72 h · quakes and alerts ${D.hazAt ? 'updated ' + ago(D.hazAt) : 'loading'}. Click any event to open it on the globe.`));
     }
     function eventRow(e) {
-      const b = el('button', 'fx-ilp-ev'); b.type = 'button';
+      const b = el('button', 'fx-ilp-ev'); b.type = 'button'; b.dataset.intelEvent = e.id;
       const dot = el('i'); dot.style.background = e.sev ? SEV[e.sev] : L[e.layer]?.color || '#999';
       const t = el('span'); t.append(el('b', '', e.title)); t.append(el('small', '', [L[e.layer]?.label, e.iso ? countryName(e.iso) : '', e.at ? ago(e.at) : ''].filter(Boolean).join(' · ')));
       const pill = el('em', '', e.sev ? SEV_LABEL[e.sev] : 'REF'); pill.style.background = e.sev ? SEV[e.sev] : '#56635c';
-      b.append(dot, t, pill); b.addEventListener('click', () => openItem(e.id, {zoom: true})); return b;
+      b.append(dot, t, pill); b.addEventListener('click', () => openItem(e.id, {zoom: true, trigger: b})); return b;
     }
     box._paint = paint; paint();
     return box;
@@ -398,9 +398,13 @@ html body.fx-terminal .fx-ic-src a{display:inline-block;min-height:44px;padding:
     pat.append(svg('rect', {width: 6, height: 6, fill: 'rgba(255,72,60,.10)'}), svg('line', {x1: 0, y1: 0, x2: 0, y2: 6, stroke: '#ff5a4f', 'stroke-width': 1.6, 'stroke-opacity': 0.7}));
     defs.append(pat); m.sv.prepend(defs);
     const card = el('div', 'fx-icard'); card.hidden = true; card.setAttribute('role', 'dialog'); card.setAttribute('aria-label', 'Event intelligence'); m.stage.append(card); ctx.card = card;
-    const pick = e => { if (W.lastMoved) return; const t = e.target.closest?.('[data-id]'); if (t) { e.stopPropagation(); openItem(t.dataset.id); } };
+    card.addEventListener('keydown', e => {
+      if (e.key !== 'Escape' || card.hidden) return;
+      e.preventDefault(); e.stopPropagation(); closeCard();
+    });
+    const pick = e => { if (W.lastMoved) return; const t = e.target.closest?.('[data-id]'); if (t) { e.stopPropagation(); openItem(t.dataset.id, {trigger: t}); } };
     for (const g of [m.gIntel, m.gZones, m.gPipes]) g.addEventListener('click', pick);
-    m.gIntel.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset?.id) { e.preventDefault(); openItem(e.target.dataset.id); } });
+    m.gIntel.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset?.id) { e.preventDefault(); openItem(e.target.dataset.id, {trigger: e.target}); } });
     W.intelRedraw = () => { if (!m.sv.isConnected) return; m.redraw(); m.layersBox?._paint?.(); legend(m.legend); if (ctx.selId && !card.hidden) openItem(ctx.selId, {keep: true}); };
     if (!D.at) load(); else build();
     legend(m.legend);
@@ -487,16 +491,23 @@ html body.fx-terminal .fx-ic-src a{display:inline-block;min-height:44px;padding:
   function densify(pts) { const out = []; for (let i = 0; i < pts.length - 1; i++) { const it = G.geoInterpolate(pts[i], pts[i + 1]), n = Math.max(2, Math.ceil(G.geoDistance(pts[i], pts[i + 1]) / 0.03)); for (let j = 0; j < n; j++) out.push(it(j / n)); } out.push(pts.at(-1)); return out; }
 
   /* --- event intelligence card --------------------------------------------------------------------- */
-  function openItem(id, {zoom = false, keep = false} = {}) {
+  function openItem(id, {zoom = false, keep = false, trigger} = {}) {
     const x = D.byId.get(id); if (!x || !ctx) return;
     ctx.selId = id; const card = ctx.card;
+    const active = document.activeElement, inside = card.contains(active);
+    const focusedAction = inside ? active.getAttribute('aria-label') : null;
+    if (!keep && (trigger || !inside)) {
+      const opener = trigger || active;
+      ctx.opener = {node: opener, eventId: opener?.dataset?.intelEvent};
+    }
     if (zoom && x.ll) { W.rot = W.flat ? [-x.ll[0], 0] : [-x.ll[0], -x.ll[1]]; W.scale = Math.max(W.scale, x.layer === 'zones' || x.layer === 'pipelines' ? 2.2 : 3); }
     if (!on[x.layer] && !BASE.has(x.layer)) { setOn(x.layer, true); ctx.layersBox?._paint?.(); }
-    card.replaceChildren(); card.hidden = false;
+    card.replaceChildren(); card.hidden = false; card.setAttribute('aria-label', x.title);
     // On narrow screens the card and the layer panel cannot both fit: fold the panel away.
     if ((ctx.stage.clientWidth || 1000) < 640) { const lb = ctx.stage.querySelector('.fx-ilp'); if (lb && !lb.classList.contains('collapsed')) lb.querySelector('.fx-ilp-head button')?.click(); }
     const live = !x.ref || x.live, top = el('div', 'fx-ic-top');
-    top.append(el('b', '', live ? 'EVENT INTELLIGENCE' : 'SITE INTELLIGENCE'), btn('⌖', '', () => openItem(id, {zoom: true}), 'Zoom to this'), btn('✕', '', closeCard, 'Close'));
+    const zoomButton = btn('⌖', '', () => openItem(id, {zoom: true}), 'Zoom to this'), close = btn('✕', '', closeCard, 'Close');
+    top.append(el('b', '', live ? 'EVENT INTELLIGENCE' : 'SITE INTELLIGENCE'), zoomButton, close);
     const body = el('div', 'fx-ic-body'); card.append(top, body);
     const lay = L[x.layer], color = x.sev ? SEV[x.sev] : lay.color;
     const title = el('div', 'fx-ic-title'); title.style.borderColor = color + '66'; title.append(iconSvg(x.layer === 'alerts' ? 'warn' : x.layer === 'conflict' || x.layer === 'zones' ? 'zone' : lay.icon, color, 18), el('strong', '', x.title)); body.append(title);
@@ -553,8 +564,19 @@ html body.fx-terminal .fx-ic-src a{display:inline-block;min-height:44px;padding:
     if (actions.childElementCount) body.append(actions);
     body.append(el('p', 'fx-ic-note', live ? (x.items ? 'Grouped from headlines by fixed rules; open the sources to verify. Not a forecast.' : x.q ? 'Source: USGS Earthquake Hazards Program.' : x.a ? `Source: ${x.a.src}.` : 'Signals are combined by fixed rules. Not a forecast.') : `Reference data, reviewed ${monthOf(D.ref?.reviewed)}. Positions are approximate.`));
     if (!keep) ctx.redraw();
+    // Opening is intentional focus movement; a passive refresh only restores
+    // focus if it replaced a focused element already in this non-modal card.
+    if (!keep || inside) (focusedAction === 'Zoom to this' ? zoomButton : close).focus();
   }
-  function closeCard() { if (!ctx) return; ctx.card.hidden = true; ctx.selId = null; ctx.redraw(); }
+  function closeCard() {
+    if (!ctx || ctx.card.hidden) return;
+    const {node, eventId} = ctx.opener || {};
+    ctx.card.hidden = true; ctx.selId = null; ctx.opener = null; ctx.redraw();
+    const pane = ctx.layersBox;
+    const replaced = eventId && Array.from(pane?.querySelectorAll('[data-intel-event]') || []).find(b => b.dataset.intelEvent === eventId);
+    const restore = [node, replaced].find(b => b?.isConnected && !b.closest('.fx-ilp.collapsed') && b.style.display !== 'none');
+    (restore || pane?.querySelector('.fx-ilp-head button'))?.focus();
+  }
 
   /* --- country card line ---------------------------------------------------------------------------- */
   function countryLine(iso) {
