@@ -107,6 +107,9 @@
     if (ix === 'fav') return favs().filter(s => D.eq?.closes?.[s]);
     return i[ix] || [];
   }
+  // Shared with other plugins (company snapshot): index membership plus the screener quote, sector and industry.
+  T.Equities = {load: loadEq, quote: sym => { const s = scanMap().get(String(sym).replace(/[./]/g, '-')); return s ? {...s} : null; },
+    membership: sym => Object.entries(INDEX_NAME).filter(([k]) => (D.eq?.indices?.[k] || []).includes(String(sym).replace(/[./]/g, '-'))).map(([, n]) => n)};
   const cleanName = n => String(n || '').replace(/\s*\((Class [A-Z])\)/, ' $1').replace(/,?\s+(Inc\.?|Corp(oration)?\.?|Co\.|Company|plc|N\.V\.|Ltd\.?|Holdings?)$/i, '').trim();
   // One member's quote: the Nasdaq screener (fresher) when it has the symbol, else the latest Yahoo close.
   function mq(sym) {

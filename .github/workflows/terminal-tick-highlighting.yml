@@ -16,8 +16,12 @@ on:
       - 'scripts/test-terminal-tick*.cjs'
       - 'scripts/test-terminal-pro-tools-e2e.cjs'
       - 'scripts/test-terminal-dashboard-e2e.cjs'
+      - 'scripts/test-terminal-markets-plus-e2e.cjs'
+      - 'scripts/refresh-sentiment.cjs'
+      - 'backend/filings-core.cjs'
       - 'scripts/refresh-equities.cjs'
       - 'assets/js/terminal/markets-dash.js'
+      - 'assets/js/terminal/markets-plus.js'
       - 'fn/market.js'
       - 'scripts/refresh-terminal-markets.cjs'
       - 'tests/macro/terminal-markets.test.cjs'
@@ -52,3 +56,5 @@ jobs:
       - run: node --test scripts/test-terminal-pro-tools-e2e.cjs
       - run: node --check assets/js/terminal/markets-dash.js && node --check scripts/refresh-equities.cjs && node --check fn/market.js
       - run: node --test scripts/test-terminal-dashboard-e2e.cjs
+      - run: node --check assets/js/terminal/markets-plus.js && node --check scripts/refresh-sentiment.cjs
+      - run: node --test scripts/test-terminal-markets-plus-e2e.cjs
