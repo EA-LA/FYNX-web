@@ -4,13 +4,22 @@
   const clear = document.getElementById('clearPartnerSearch');
   const sections = [...document.querySelectorAll('.partner-section')];
   const links = [...document.querySelectorAll('[data-partner-category]')];
-  const entries = sections.map(section => ({section,cards:[...section.querySelectorAll('.partner-card')].map(card=>({card,text:card.textContent.toLowerCase()}))}));
+  const normalizeSearch = value => value.trim().toLowerCase().replace(/\s+/g, ' ');
+  const entries = sections.map(section => ({
+    section,
+    cards: [...section.querySelectorAll('.partner-card')].map(card => ({
+      card,
+      // Disclosure and link labels repeat on every card; do not index that boilerplate.
+      searchFields: [...card.querySelectorAll('h3, .partner-category, p')]
+        .map(field => normalizeSearch(field.textContent))
+    }))
+  }));
   function category() { const value=location.hash.slice(1);return sections.some(s=>s.id===value)?value:'all'; }
   function render() {
-    const selected=category();const query=search.value.trim().toLowerCase();let total=0;
+    const selected=category();const query=normalizeSearch(search.value);let total=0;
     for(const {section,cards} of entries){
       let count=0;
-      for(const {card,text} of cards){const visible=(selected==='all'||selected===section.id)&&text.includes(query);card.hidden=!visible;if(visible)count++;}
+      for(const {card,searchFields} of cards){const visible=(selected==='all'||selected===section.id)&&(!query||searchFields.some(field=>field.includes(query)));card.hidden=!visible;if(visible)count++;}
       section.hidden=count===0;total+=count;
     }
     for(const link of links){const active=link.dataset.partnerCategory===selected;link.classList.toggle('active',active);if(active)link.setAttribute('aria-current','true');else link.removeAttribute('aria-current');}
