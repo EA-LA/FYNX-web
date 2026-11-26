@@ -11,7 +11,13 @@ function stable(value){if(Array.isArray(value))return value.map(stable);if(value
 function stripe(){const key=(process.env.FYNX_CONSUMER_STRIPE_SECRET_KEY||'').trim();if(!/^(sk|rk)_live_/.test(key))fail('failed-precondition','Live checkout is not configured. Please contact support.');return new Stripe(key,{maxNetworkRetries:2,timeout:12000});}
 const root=uid=>admin.firestore().collection('fynxConsumerLive').doc(uid);
 async function rateLimit(uid){const ref=root(uid).collection('internal').doc('rate');await admin.firestore().runTransaction(async tx=>{const d=(await tx.get(ref)).data()||{},minute=Math.floor(Date.now()/60000),count=d.minute===minute?(d.count||0)+1:1;if(count>30)fail('resource-exhausted','Please wait a minute before trying again.');tx.set(ref,{minute,count});});}
-async function entitlement(uid,s){const profile=(await root(uid).get()).data()||{};if(!profile.customer)return {tier:null};const list=await s.subscriptions.list({customer:profile.customer,status:'all',limit:100,expand:['data.latest_invoice']});const sub=list.data.find(x=>planForSubscription(x,uid,profile.customer));return {tier:sub?planForSubscription(sub,uid,profile.customer):null,hasBillingAccount:true,subscription:sub?{status:sub.status,cancelAtPeriodEnd:sub.cancel_at_period_end,currentPeriodEnd:sub.items.data[0]?.current_period_end||sub.current_period_end||null}:null};}
+async function entitlement(uid,s){const profile=(await root(uid).get()).data()||{};if(!profile.customer)return {tier:null};const list=await s.subscriptions.list({customer:profile.customer,status:'all',limit:100,expand:['data.latest_invoice']});// Select the highest independently verified paid tier, not the provider's list order.
+ let sub=null,tier=null;
+ for(const candidate of list.data){
+  const verified=planForSubscription(candidate,uid,profile.customer);
+  if(verified&&(!tier||PLANS[verified].products.length>PLANS[tier].products.length)){sub=candidate;tier=verified;}
+ }
+ return {tier,hasBillingAccount:true,subscription:sub?{status:sub.status,cancelAtPeriodEnd:sub.cancel_at_period_end,currentPeriodEnd:sub.items.data[0]?.current_period_end||sub.current_period_end||null}:null};}
 async function appleBridge(uid){if(process.env.FYNX_ACCOUNT_MEMBERSHIP_BRIDGE!=='pro-equivalent')return false;return appleValid((await admin.firestore().collection('intelligenceEntitlements').doc(uid).get()).data(),Date.now());}
 async function trades(uid){const snap=await admin.firestore().collection('users').doc(uid).collection('trades').orderBy('dateTs','asc').limit(1001).get();if(snap.size>1000)fail('resource-exhausted','This preview supports up to 1,000 dated trades.');// Let Journal Intelligence and CSV apply their distinct realized-P/L policies.
  return snap.docs.map(d=>d.data());}

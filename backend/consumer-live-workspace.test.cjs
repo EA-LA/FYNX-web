@@ -203,3 +203,36 @@ test('committed paid Journal saves replay even when the current Journal is unava
  h.state.subscriptions[0].status='canceled';
  await assert.rejects(h.call(request),{code:'permission-denied'});
 });
+
+test('paid workspace honors the highest verified tier regardless of subscription list order',async()=>{
+ const h=harness({paid:true}),essential=h.sub('starter'),plus=h.sub('plus'),professional=h.sub('pro');
+ professional.cancel_at_period_end=true;
+ professional.items.data[0].current_period_end=2000000000;
+ for(const subscriptions of [[essential,plus,professional],[professional,essential,plus]]){
+  h.state.subscriptions=subscriptions;
+  const status=await h.call({action:'status'});
+  assert.equal(status.tier,'pro');
+  assert.equal(status.subscription.cancelAtPeriodEnd,true);
+  assert.equal(status.subscription.currentPeriodEnd,2000000000);
+  assert.equal((await h.call({action:'run',product:'simulation',input:{balance:10000,riskPct:1,winRate:50,rewardRisk:2,trades:1}})).result.paths,500);
+  assert.equal((await h.call({action:'list'})).limit,500);
+  assert.equal((await h.call({action:'usage',cat:'analysis',op:'read'})).limit,null);
+ }
+});
+test('paid workspace ignores unverified higher tiers and falls back after revocation',async()=>{
+ const h=harness({paid:true}),essential=h.sub('starter'),plus=h.sub('plus'),professional=h.sub('pro');
+ professional.latest_invoice.status='open';
+ h.state.subscriptions=[professional,essential,plus];
+ assert.equal((await h.call({action:'status'})).tier,'plus');
+ assert.equal((await h.call({action:'list'})).limit,100);
+ await assert.rejects(h.call({action:'run',product:'simulation',input:{}}),{code:'permission-denied'});
+ plus.status='canceled';
+ professional.latest_invoice.status='paid';
+ professional.metadata.fynx_uid='another-user';
+ assert.equal((await h.call({action:'status'})).tier,'starter');
+ assert.equal((await h.call({action:'list'})).limit,25);
+ await assert.rejects(h.call({action:'run',product:'portfolio',input:{}}),{code:'permission-denied'});
+ essential.status='canceled';
+ assert.equal((await h.call({action:'status'})).tier,null);
+ await assert.rejects(h.call({action:'list'}),{code:'permission-denied'});
+});
