@@ -19,5 +19,5 @@ jobs:
           console.log('SUMMARY', d.asOf, d.score, d.label, 'prev', JSON.stringify(d.prev), 'week', JSON.stringify(d.week), 'month', JSON.stringify(d.month), 'year', JSON.stringify(d.year), 'hist', d.history.length, d.history[0]);
           for (const i of d.indicators) console.log('IND', i.key, i.value, i.score, i.label, i.series.length, i.series[0]&&i.series[0][0]);
           console.log('LAST30', d.history.slice(-30).map(x=>x[1]).join(' '));
-          console.log('MICH', d.michigan && d.michigan.length, JSON.stringify(d.michigan && d.michigan.slice(-3)), JSON.stringify(d.sources));
+          console.log('MICH', d.michigan && d.michigan.length, JSON.stringify(d.michigan && d.michigan.slice(-3)), JSON.stringify(d.sources)); console.log('SIZE', JSON.stringify(d).length);
           "

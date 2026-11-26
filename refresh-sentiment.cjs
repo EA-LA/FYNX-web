@@ -9,11 +9,11 @@
  *  volatility VIX versus its 50-day average (%)                                       high = fear
  *  term       VIX ÷ 3-month VIX (above 1 = near-term stress priced higher)            high = fear
  *  haven      20-day return of stocks (SPY) minus Treasuries (IEF), points            high = greed
- *  junk       High-yield minus investment-grade credit spread (ICE BofA OAS, FRED)    high = fear
+ *  junk       20-day return of high-yield bonds (HYG) minus investment grade (LQD)    high = greed
  * Each indicator is scored 0–100 by where today's value ranks in its own past year (percentile), inverted when a
  * high value means fear; the index is the average of the scores available that day. 0–25 extreme fear, 25–45
- * fear, 45–55 neutral, 55–75 greed, 75–100 extreme greed. Also: University of Michigan consumer sentiment (FRED).
- * Prices: Yahoo Finance daily closes. Nothing is estimated: a day without enough data has no score.
+ * fear, 45–55 neutral, 55–75 greed, 75–100 extreme greed. Also: University of Michigan consumer sentiment (its own CSV).
+ * Prices: Yahoo Finance daily closes; the index uses only market prices, so it updates every trading day. Nothing is estimated: a day without enough data has no score.
  * Usage: node scripts/refresh-sentiment.cjs <output-dir> [previous-dir] */
 const fs = require('node:fs/promises'), path = require('node:path');
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
@@ -45,7 +45,17 @@ function parseFred(text) {
   for (const line of String(text).trim().split(/\r?\n/).slice(1)) { const [d, v] = line.split(','); const n = Number(v); if (/^\d{4}-\d\d-\d\d$/.test(d) && v !== '.' && finite(n)) m.set(d, n); }
   return m;
 }
-const fred = id => fetchText(`https://fred.stlouisfed.org/graph/fredgraph.csv?id=${id}`, {Accept: 'text/csv'}).then(parseFred);
+// University of Michigan Surveys of Consumers, index of consumer sentiment (monthly): Month,YYYY,ICS_ALL rows.
+function parseMichigan(text) {
+  const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'], out = [];
+  for (const line of String(text).split(/\r?\n/)) { const c = line.split(',').map(x => x.trim().replace(/"/g, '')); const m = MONTHS.indexOf((c[0] || '').toLowerCase()), y = Number(c[1]), v = Number(c[2]); if (m >= 0 && y > 1950 && finite(v) && v > 0) out.push([`${y}-${String(m + 1).padStart(2, '0')}-01`, v]); }
+  return out.sort((a, b) => a[0] < b[0] ? -1 : 1);
+}
+async function michigan() {
+  try { const rows = parseMichigan(await fetchText('https://www.sca.isr.umich.edu/files/tbmics.csv', {Accept: 'text/csv'}, 30000)); if (rows.length > 100) return {rows, source: 'University of Michigan Surveys of Consumers (tbmics.csv)'}; } catch (e) { console.warn('[sentiment] Michigan (umich):', e.message); }
+  try { const m = parseFred(await fetchText('https://fred.stlouisfed.org/graph/fredgraph.csv?id=UMCSENT', {Accept: 'text/csv'}, 60000)); if (m.size > 100) return {rows: [...m], source: 'University of Michigan consumer sentiment via FRED (UMCSENT)'}; } catch (e) { console.warn('[sentiment] Michigan (FRED):', e.message); }
+  return null;
+}
 
 /* ---------- indicator maths (pure, tested) ---------- */
 function sma(vals, n) { const out = new Array(vals.length).fill(null); let s = 0, k = 0; for (let i = 0; i < vals.length; i++) { const v = vals[i]; if (finite(v)) { s += v; k++; } if (i >= n) { const o = vals[i - n]; if (finite(o)) { s -= o; k--; } } if (i >= n - 1 && k === n) out[i] = s / n; } return out; }
@@ -76,10 +86,12 @@ const INDICATORS = [
   {key: 'volatility', name: 'Market volatility', unit: '%', invert: true, desc: 'VIX versus its 50-day average. A VIX spike above its average is fear.'},
   {key: 'term', name: 'Volatility term structure', unit: '×', invert: true, desc: 'VIX divided by the 3-month VIX. Above 1 means traders pay more for near-term protection: stress.'},
   {key: 'haven', name: 'Safe haven demand', unit: 'pts', invert: false, desc: '20-day return of stocks (SPY) minus Treasuries (IEF). Bonds beating stocks is fear.'},
-  {key: 'junk', name: 'Junk bond demand', unit: 'pts', invert: true, desc: 'High-yield minus investment-grade credit spread (ICE BofA option-adjusted spreads). A wider gap is fear.'}];
-function compute({dates, spx, vix, vix3m, spy, ief, hy, ig, members}) {
+  {key: 'junk', name: 'Junk bond demand', unit: 'pts', invert: false, desc: '20-day return of high-yield bonds (HYG) minus investment-grade bonds (LQD). Junk lagging is fear.'}];
+function compute({dates, spx, vix, vix3m, spy, ief, hyg, lqd, members}) {
   const at = (m, ff = true) => { const v = dates.map(d => m?.get(d) ?? null); return ff ? fillForward(v) : v; };
-  const S = at(spx), V = at(vix), V3 = at(vix3m), SP = at(spy), IE = at(ief), HY = at(hy), IG = at(ig);
+  const S = at(spx), V = at(vix), V3 = at(vix3m), SP = at(spy), IE = at(ief), HY = at(hyg), LQ = at(lqd);
+  // 20-day return of a minus 20-day return of b, in percentage points.
+  const rel = (a, b) => a.map((v, i) => i >= 20 && finite(v) && finite(a[i - 20]) && finite(b[i]) && finite(b[i - 20]) ? r4(((v / a[i - 20]) - (b[i] / b[i - 20])) * 100) : null);
   const spxMA = sma(S, 125), vixMA = sma(V, 50), b = members?.length ? breadth(dates, members) : {strength: [], breadth: [], members: 0};
   const raw = {
     momentum: S.map((v, i) => finite(spxMA[i]) ? r4((v / spxMA[i] - 1) * 100) : null),
@@ -87,8 +99,7 @@ function compute({dates, spx, vix, vix3m, spy, ief, hy, ig, members}) {
     breadth: b.breadth.length ? b.breadth : dates.map(() => null),
     volatility: V.map((v, i) => finite(vixMA[i]) ? r4((v / vixMA[i] - 1) * 100) : null),
     term: V.map((v, i) => finite(v) && finite(V3[i]) && V3[i] > 0 ? r4(v / V3[i]) : null),
-    haven: SP.map((v, i) => i >= 20 && finite(v) && finite(SP[i - 20]) && finite(IE[i]) && finite(IE[i - 20]) ? r4(((v / SP[i - 20]) - (IE[i] / IE[i - 20])) * 100) : null),
-    junk: HY.map((v, i) => finite(v) && finite(IG[i]) ? r4(v - IG[i]) : null)};
+    haven: rel(SP, IE), junk: rel(HY, LQ)};
   const scores = {};
   for (const ind of INDICATORS) { const p = rollingPercentile(raw[ind.key]); scores[ind.key] = p.map(x => finite(x) ? Math.round((ind.invert ? 100 - x : x) * 10) / 10 : null); }
   const index = dates.map((_, i) => { const s = INDICATORS.map(ind => scores[ind.key][i]).filter(finite); return s.length >= 5 ? Math.round(s.reduce((a, x) => a + x, 0) / s.length * 10) / 10 : null; });
@@ -112,8 +123,7 @@ async function main() {
   const previous = prevDir ? await read(path.join(prevDir, 'sentiment.json')) : null, now = Date.now();
   if (previous && Date.parse(previous.generatedAt) > now - TTL) { await fs.writeFile(path.join(outDir, 'sentiment.json'), JSON.stringify(previous) + '\n'); console.log('[sentiment] fresh enough, kept'); return; }
   try {
-    const core = await spark(['^GSPC', '^VIX', '^VIX3M', 'SPY', 'IEF'], '5y');
-    const [hy, ig, mich] = await Promise.all([fred('BAMLH0A0HYM2').catch(e => (console.warn('[sentiment] HY OAS:', e.message), null)), fred('BAMLC0A0CM').catch(e => (console.warn('[sentiment] IG OAS:', e.message), null)), fred('UMCSENT').catch(e => (console.warn('[sentiment] Michigan:', e.message), null))]);
+    const [core, mich] = await Promise.all([spark(['^GSPC', '^VIX', '^VIX3M', 'SPY', 'IEF', 'HYG', 'LQD'], '5y'), michigan()]);
     const eq = await read(path.join(outDir, 'equities.json')) || (prevDir ? await read(path.join(prevDir, 'equities.json')) : null);
     const syms = eq?.indices?.sp500 || [], members = [];
     for (let i = 0; i < syms.length; i += 60) {
@@ -123,11 +133,11 @@ async function main() {
       await sleep(300);
     }
     const spx = closes(core['^GSPC']), dates = [...spx.keys()].sort();
-    const out = compute({dates, spx, vix: closes(core['^VIX']), vix3m: closes(core['^VIX3M']), spy: closes(core.SPY), ief: closes(core.IEF), hy, ig, members});
+    const out = compute({dates, spx, vix: closes(core['^VIX']), vix3m: closes(core['^VIX3M']), spy: closes(core.SPY), ief: closes(core.IEF), hyg: closes(core.HYG), lqd: closes(core.LQD), members});
     const s = summarize(dates, out);
-    const michigan = mich ? [...mich].filter(([d]) => d >= `${new Date(now).getUTCFullYear() - 10}-01-01`).map(([d, v]) => [d, v]) : previous?.michigan || null;
-    const doc = {version: 1, generatedAt: new Date(now).toISOString(), method: 'FYNX Fear & Greed: seven indicators, each scored by its percentile within its own trailing year (inverted where high means fear), averaged.', ...s, membersUsed: out.members, michigan,
-      sources: {prices: 'Yahoo Finance daily closes (^GSPC, ^VIX, ^VIX3M, SPY, IEF and S&P 500 members)', credit: hy && ig ? 'ICE BofA US High Yield and US Corporate option-adjusted spreads via FRED (BAMLH0A0HYM2, BAMLC0A0CM)' : null, michigan: mich ? 'University of Michigan consumer sentiment via FRED (UMCSENT)' : null}};
+    const michiganRows = mich ? mich.rows.filter(([d]) => d >= `${new Date(now).getUTCFullYear() - 10}-01-01`) : previous?.michigan || null;
+    const doc = {version: 1, generatedAt: new Date(now).toISOString(), method: 'FYNX Fear & Greed: seven indicators, each scored by its percentile within its own trailing year (inverted where high means fear), averaged.', ...s, membersUsed: out.members, michigan: michiganRows,
+      sources: {prices: 'Yahoo Finance daily closes (^GSPC, ^VIX, ^VIX3M, SPY, IEF, HYG, LQD and S&P 500 members)', michigan: mich?.source || previous?.sources?.michigan || null}};
     await fs.writeFile(path.join(outDir, 'sentiment.json'), JSON.stringify(doc) + '\n');
     console.log(`[sentiment] ${s.asOf} score ${s.score} (${s.label}) · prev ${s.prev?.score} · members ${out.members} · indicators ${s.indicators.filter(i => finite(i.score)).length}/7 · history ${s.history.length}`);
   } catch (e) {
@@ -136,4 +146,4 @@ async function main() {
   }
 }
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
-module.exports = {sma, rollingPercentile, label, breadth, compute, summarize, parseFred, closes, INDICATORS};
+module.exports = {sma, rollingPercentile, label, breadth, compute, summarize, parseFred, parseMichigan, closes, INDICATORS};
