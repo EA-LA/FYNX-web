@@ -97,21 +97,27 @@ async function handler(data,ctx){
  const product=data?.product;if(!plan.products.includes(product))fail('permission-denied','This tool requires a higher plan.');
  if(!['run','save'].includes(data?.action))fail('invalid-argument','Unknown action.');
  const input=data.input||{};if(JSON.stringify(input).length>15000)fail('invalid-argument','Input is too large.');
- let result;try{result=run(product,input,['analytics','export'].includes(product)?await trades(uid):[]);}catch(e){if(e instanceof functions.https.HttpsError)throw e;fail('invalid-argument',e.message);}
+ const calculate=async()=>{try{return run(product,input,['analytics','export'].includes(product)?await trades(uid):[]);}catch(e){if(e instanceof functions.https.HttpsError)throw e;fail('invalid-argument',e.message);}};
  if(data.action==='save'){
   const name=String(data.name||'').trim();if(!name||name.length>100)fail('invalid-argument','Use a name of 1–100 characters.');if(product==='export')fail('invalid-argument','Download the export instead of saving it.');
   const requestId=data.requestId;
   if(requestId!==undefined&&(typeof requestId!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)))fail('invalid-argument','Invalid save request. Reopen this research note.');
   const fingerprint=require('crypto').createHash('sha256').update(JSON.stringify(stable({name,product,input}))).digest('hex');
-  const item=requestId?saved.doc('request-'+requestId.toLowerCase()):saved.doc();const savedResult=await admin.firestore().runTransaction(async tx=>{
+  const item=requestId?saved.doc('request-'+requestId.toLowerCase()):saved.doc();
+  const replay=existing=>{if(existing.requestFingerprint!==fingerprint)fail('already-exists','This save request was already used for another note. Reopen the note before changing it.');return existing.result;};
+  // A committed retry must not depend on the current Journal or calculator inputs being readable.
+  // Entitlement and fingerprint checks still apply; the transaction rechecks concurrent saves.
+  if(requestId){const existing=(await item.get()).data();if(existing)return {saved:true,id:item.id,result:replay(existing)};}
+  const result=await calculate();
+  const savedResult=await admin.firestore().runTransaction(async tx=>{
    const existing=requestId?(await tx.get(item)).data():null;
-   if(existing){if(existing.requestFingerprint!==fingerprint)fail('already-exists','This save request was already used for another note. Reopen the note before changing it.');return existing.result;}
+   if(existing)return replay(existing);
    const d=(await tx.get(ref)).data()||{},count=d.savedCount||0;if(count>=plan.saved)fail('resource-exhausted','Saved workspace limit reached. Delete an item before adding another.');
    tx.create(item,{name,product,input,result,createdAt:Date.now(),...(requestId?{requestFingerprint:fingerprint}:{})});tx.set(ref,{savedCount:count+1},{merge:true});
    return result;
   });return {saved:true,id:item.id,result:savedResult};
  }
- return {result,mode:'live'};
+ return {result:await calculate(),mode:'live'};
 }
 exports.consumerLiveWorkspace=functions.runWith({secrets:['FYNX_CONSUMER_STRIPE_SECRET_KEY'],timeoutSeconds:60,memory:'256MB',maxInstances:3}).https.onCall(handler);
 exports._test={handler,USAGE_LIMITS};

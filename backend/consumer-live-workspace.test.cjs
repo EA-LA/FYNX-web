@@ -5,8 +5,8 @@ const {PLANS}=require('./consumer-core.cjs');
 function harness(options={}){
  const data=new Map(),calls=[];let serial=0;
  const snapshot=path=>({exists:data.has(path),data:()=>data.get(path)});
- function ref(path){return {path,get:async()=>snapshot(path),set:async(v,o)=>data.set(path,o?.merge?{...data.get(path),...v}:v),collection:name=>collection(path+'/'+name)};}
- function collection(path){return {doc:id=>ref(path+'/'+(id||'auto'+(++serial))),orderBy(){return this;},limit(){return this;},get:async()=>({docs:[...data].filter(([k])=>k.startsWith(path+'/')&&!k.slice(path.length+1).includes('/')).map(([k,v])=>({id:k.split('/').pop(),data:()=>v})),size:0})};}
+ function ref(path){return {path,id:path.split('/').pop(),get:async()=>snapshot(path),set:async(v,o)=>data.set(path,o?.merge?{...data.get(path),...v}:v),collection:name=>collection(path+'/'+name)};}
+ function collection(path){return {doc:id=>ref(path+'/'+(id||'auto'+(++serial))),orderBy(){return this;},limit(){return this;},get:async()=>{if(path.endsWith('/trades')&&state.failTrades)throw Error('Journal temporarily unavailable');return {docs:[...data].filter(([k])=>k.startsWith(path+'/')&&!k.slice(path.length+1).includes('/')).map(([k,v])=>({id:k.split('/').pop(),data:()=>v})),size:0};}};}
  const db={collection,runTransaction:async fn=>fn({get:async r=>snapshot(r.path),set:(r,v,o)=>r.set(v,o),create:(r,v)=>r.set(v),delete:r=>data.delete(r.path)})};
  function sub(tier='starter'){return {id:'sub_paid',customer:'cus_owner',livemode:true,status:'active',metadata:{product:PRODUCT,fynx_uid:'owner',tier},items:{data:[{quantity:1,price:{id:PRICES[tier],livemode:true,type:'recurring',unit_amount:PLANS[tier].cents,currency:'usd',recurring:{interval:'month',interval_count:1,usage_type:'licensed'}}}]},latest_invoice:{customer:'cus_owner',livemode:true,status:'paid',paid:true}};}
  const state={subscriptions:options.paid?[sub(options.tier)]:[],sessions:[],failCreate:false};
@@ -185,4 +185,21 @@ test('paid Journal CSV retains dated records whose realized P/L cannot be used i
  assert.equal(analytics.trades,2);
  assert.equal(analytics.netPL,-4.25);
  assert.match(analytics.notice,/Records with invalid realized P\/L were omitted/);
+});
+
+test('committed paid Journal saves replay even when the current Journal is unavailable',async()=>{
+ const h=harness({paid:true});h.data.set('users/owner/trades/first',{pl:100,dateTs:1});
+ const request={action:'save',accountUid:'owner',requestId:'12345678-1234-4234-8234-123456789abe',product:'analytics',name:'Saved snapshot',input:{}};
+ const first=await h.call(request);
+ assert.equal(first.id,'request-'+request.requestId);
+ h.state.failTrades=true;
+ await assert.rejects(h.call({action:'run',product:'analytics'}),/Journal temporarily unavailable/);
+ await assert.rejects(h.call({...request,requestId:'12345678-1234-4234-8234-123456789abf'}),/Journal temporarily unavailable/);
+ const retry=await h.call(request);
+ assert.equal(retry.id,first.id);assert.deepEqual(retry.result,first.result);
+ assert.equal(h.data.get('fynxConsumerLive/owner').savedCount,1);
+ assert.equal((await h.call({action:'list'})).items.length,1);
+ await assert.rejects(h.call({...request,name:'Changed name'}),{code:'already-exists'});
+ h.state.subscriptions[0].status='canceled';
+ await assert.rejects(h.call(request),{code:'permission-denied'});
 });
