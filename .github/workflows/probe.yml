@@ -1,4 +1,4 @@
-name: Probe equities publisher (temporary, read-only)
+name: Probe sentiment publisher (temporary, read-only)
 on: push
 permissions:
   contents: read
@@ -11,4 +11,13 @@ jobs:
         with:
           node-version: '22'
       - run: node refresh-equities.cjs out
-      - run: node -e "const d=require('./out/equities.json'); console.log('DOWRESULT', d.sources.dow, d.indices.dow.join(' '))"
+      - run: time node refresh-sentiment.cjs out
+      - run: |
+          ls -la out
+          node -e "
+          const d=require('./out/sentiment.json');
+          console.log('SUMMARY', d.asOf, d.score, d.label, 'prev', JSON.stringify(d.prev), 'week', JSON.stringify(d.week), 'month', JSON.stringify(d.month), 'year', JSON.stringify(d.year), 'hist', d.history.length, d.history[0]);
+          for (const i of d.indicators) console.log('IND', i.key, i.value, i.score, i.label, i.series.length, i.series[0]&&i.series[0][0]);
+          console.log('LAST30', d.history.slice(-30).map(x=>x[1]).join(' '));
+          console.log('MICH', d.michigan && d.michigan.length, JSON.stringify(d.michigan && d.michigan.slice(-3)), JSON.stringify(d.sources));
+          "
