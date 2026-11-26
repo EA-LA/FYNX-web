@@ -34,20 +34,26 @@
       const button = document.createElement('button');
       button.type = 'button'; button.textContent = frame.title;
       button.addEventListener('click', () => select(frame, true)); toolbar.append(button);
+      let releaseEmbedded = () => {};
       frame.addEventListener('load', () => {
+        // A frame can navigate or reload without being removed. Release the old
+        // document's observer and click handler before touching the new one.
+        releaseEmbedded();
+        releaseEmbedded = () => {};
         try {
           const doc = frame.contentDocument;
           if (!doc || new URL(frame.src).origin !== location.origin) return;
           doc.documentElement.classList.add('fynx-embedded');
           const style = doc.createElement('style');
           style.textContent = `html.fynx-embedded body{height:auto!important;min-height:0!important}html.fynx-embedded body>header,html.fynx-embedded .theme-utility{display:none!important}html.fynx-embedded body>main,html.fynx-embedded body>.wrap{width:100%!important;max-width:none!important;padding:24px!important;margin:0!important}html.fynx-embedded .hero{padding:0 0 20px!important;min-height:0!important}html.fynx-embedded .hero h1{font-size:30px!important}html.fynx-embedded .clock-wrap,html.fynx-embedded .hero-badges,html.fynx-embedded .hero-stats,html.fynx-embedded .hero-right{display:none!important}html.fynx-embedded .content{grid-template-columns:minmax(0,1fr)!important}html.fynx-embedded .side-panel{display:none!important}`;
-          doc.head.append(style);
-          const resize = () => { const height = Math.ceil(doc.body.getBoundingClientRect().height); if(height > 0) frame.style.height = `${height + 4}px`; };
-          resize();
-          // Older Safari/WebViews may lack ResizeObserver. Keep initial sizing and
-          // same-origin link handling available even in that case.
-          if (typeof ResizeObserver === 'function') new ResizeObserver(resize).observe(doc.body);
-          doc.addEventListener('click', event => {
+          let active = true;
+          let resizeObserver;
+          const resize = () => {
+            if (!active) return;
+            const height = Math.ceil(doc.body.getBoundingClientRect().height);
+            if (height > 0) frame.style.height = `${height + 4}px`;
+          };
+          const forwardLink = event => {
             // Only forward ordinary same-tab navigation. Let the browser handle
             // modified clicks, downloads, named targets and in-page anchors.
             if (event.defaultPrevented || event.button !== 0 || event.metaKey ||
@@ -58,7 +64,22 @@
                 link.getAttribute('href').startsWith('#')) return;
             event.preventDefault();
             window.location.href = link.href;
-          });
+          };
+          releaseEmbedded = () => {
+            active = false;
+            if (resizeObserver) resizeObserver.disconnect();
+            doc.removeEventListener('click', forwardLink);
+            style.remove();
+          };
+          doc.head.append(style);
+          resize();
+          // Older Safari/WebViews may lack ResizeObserver. Keep initial sizing and
+          // same-origin link handling available even in that case.
+          if (typeof ResizeObserver === 'function') {
+            resizeObserver = new ResizeObserver(resize);
+            resizeObserver.observe(doc.body);
+          }
+          doc.addEventListener('click', forwardLink);
         } catch (_) { /* Cross-origin providers control their own layout. */ }
       });
     });
