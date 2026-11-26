@@ -3,6 +3,8 @@ const functions=require('firebase-functions/v1'),admin=require('firebase-admin')
 const {PLANS,run}=require('./consumer-core.cjs');
 const {PRODUCT,PRICES,priceMatches,planForSubscription}=require('./consumer-live-policy.cjs');
 const {appleValid}=require('./account-sync-membership.cjs');
+const {isOwnerRecord,ownerMembership}=require('./owner-access.cjs');
+const industries=require('./industry-analytics.cjs');
 const SITE='https://www.fynxfinanceworld.com/pro.html';
 const TOOLS=new Set(Object.values(PLANS).flatMap(plan=>plan.products));
 function returnUrl(tool,outcome){const url=new URL(SITE);url.searchParams.set('tool',TOOLS.has(tool)?tool:'analytics');if(outcome)url.searchParams.set('checkout',outcome);return url.href;}
@@ -83,27 +85,34 @@ async function handler(data,ctx){
  const user=await admin.auth().getUser(uid);if(user.disabled)fail('permission-denied','This account is disabled.');
  const signedIn=ctx.auth.token?.auth_time;
  if(!Number.isSafeInteger(signedIn)||signedIn<=0||signedIn>Math.floor(Date.now()/1000)+60||Date.parse(user.tokensValidAfterTime)>signedIn*1000)fail('unauthenticated','Session expired. Sign in again.');
- if(!['status','checkout','portal','list','delete','run','save','usage'].includes(data?.action))fail('invalid-argument','Unknown action.');
+ if(!['status','checkout','portal','list','delete','run','save','usage','industries'].includes(data?.action))fail('invalid-argument','Unknown action.');
  await rateLimit(uid);
- const s=stripe(),ref=root(uid);
+ // The FYNX owner's verified account (owner-access.cjs) is entitled without Stripe: no customer, subscription or payment.
+ const owner=isOwnerRecord({...user,uid},process.env);
+ const s=owner?null:stripe(),ref=root(uid);
  // Payment-method updates and cancellation must not depend on entitlement reads.
  if(data?.action==='portal'){
-  const customer=(await ref.get()).data()?.customer;if(!customer)fail('failed-precondition','No billing account yet.');
+  const customer=(await ref.get()).data()?.customer;if(!customer)fail('failed-precondition',owner?'Owner access is complimentary and has no billing account.':'No billing account yet.');
+  const s=stripe();
   const config=await s.billingPortal.configurations.create({business_profile:{headline:'FYNX membership billing'},features:{invoice_history:{enabled:true},payment_method_update:{enabled:true},subscription_cancel:{enabled:true,mode:'at_period_end'}}},{idempotencyKey:'fynx-consumer-live-portal-v1'});
   return {url:(await s.billingPortal.sessions.create({customer,configuration:config.id,return_url:returnUrl(data.tool)})).url,mode:'live'};
  }
- let state;const appleAccess=await appleBridge(uid);
- try{state=await entitlement(uid,s);}catch(error){
+ let state;const appleAccess=owner?false:await appleBridge(uid);
+ if(owner)state={...ownerMembership(),hasBillingAccount:!!(await ref.get()).data()?.customer};
+ else try{state=await entitlement(uid,s);}catch(error){
   if(data.action!=='status'&&!appleAccess)throw error;
   state={tier:null,hasBillingAccount:!!(await ref.get()).data()?.customer,billingUnavailable:true};
  }
  if(appleAccess)state={...state,tier:'pro',accessProvider:'apple',stripeTier:state.tier};
  if(data?.action==='status')return {mode:'live',...state,plans:PLANS,features:{researchNotesVersion:1}};
- if(data?.action==='usage')return usage(uid,state.tier,data);
+ if(data?.action==='usage')return {...await usage(uid,state.tier,data),...(owner?{owner:true}:{})};
+ // Advanced industry analytics are computed here, so only an entitled account ever receives them.
+ if(data?.action==='industries'){if(!PLANS[state.tier])fail('permission-denied','Advanced industry analytics are part of FYNX Pro membership.');return industries.analyticsFor(data);}
  if(data?.action==='checkout'){
   await admin.firestore().runTransaction(async tx=>{const d=(await tx.get(ref)).data()||{};if(d.checkoutLockUntil>Date.now())fail('aborted','Checkout is already opening. Please retry shortly.');tx.set(ref,{checkoutLockUntil:Date.now()+120000},{merge:true});});
   try {
   const tier=data.tier,plan=Object.hasOwn(PLANS,tier)?PLANS[tier]:null;if(!plan)fail('invalid-argument','Choose a valid monthly plan.');
+  if(owner)fail('already-exists','Owner access is lifetime and complimentary. No checkout is needed.');
   if(state.tier)fail('already-exists','A subscription is already active. Manage it before starting another.');
   const price=await s.prices.retrieve(PRICES[tier]);if(!priceMatches(price,tier)||!price.active)fail('failed-precondition','This plan is temporarily unavailable. No payment was taken.');
   if(!user.email)fail('failed-precondition','An active account with an email is required.');

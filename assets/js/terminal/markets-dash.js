@@ -107,6 +107,9 @@
     if (ix === 'fav') return favs().filter(s => D.eq?.closes?.[s]);
     return i[ix] || [];
   }
+  // Shared with other plugins (company snapshot): index membership plus the screener quote, sector and industry.
+  T.Equities = {load: loadEq, quote: sym => { const s = scanMap().get(String(sym).replace(/[./]/g, '-')); return s ? {...s} : null; },
+    membership: sym => Object.entries(INDEX_NAME).filter(([k]) => (D.eq?.indices?.[k] || []).includes(String(sym).replace(/[./]/g, '-'))).map(([, n]) => n)};
   const cleanName = n => String(n || '').replace(/\s*\((Class [A-Z])\)/, ' $1').replace(/,?\s+(Inc\.?|Corp(oration)?\.?|Co\.|Company|plc|N\.V\.|Ltd\.?|Holdings?)$/i, '').trim();
   // One member's quote: the Nasdaq screener (fresher) when it has the symbol, else the latest Yahoo close.
   function mq(sym) {
@@ -530,8 +533,69 @@
       }
       const sc = el('div', 'pg-scroll'); sc.append(t); wrap.append(el('p', 'pg-note', `${list.length} sub-industries · returns weighted by market value · click a row to see its companies`), sc);
     }
-    host.append(wrap, PG.sourceNote(`GICS sub-industries from Wikipedia's S&P 500 list · market values from the Nasdaq screener · prices from the Nasdaq screener and Yahoo Finance closes (delayed)`));
-    draw();
+    // Free: the performance table above. FYNX Pro: rotation, relative strength, breadth and dispersion, computed on
+    // the server (consumerLiveWorkspace → industries), which checks membership before returning anything.
+    const pro = PG.section('ADVANCED INDUSTRY ANALYTICS · PRO', 'ia-sec');
+    host.append(wrap, pro, PG.sourceNote(`GICS sub-industries from Wikipedia's S&P 500 list · market values from the Nasdaq screener · prices from the Nasdaq screener and Yahoo Finance closes (delayed)`));
+    draw(); advanced(pro, alive);
   });
+  const QUAD = {Leading: '#2fb874', Weakening: '#ffb000', Lagging: '#e5484d', Improving: '#5b8def'};
+  function advanced(sec, alive) {
+    const P = window.FYNXPlan, body = el('div'); sec.append(body);
+    let level = pref('ia-level', 'industry'), sort = pref('ia-sort', 'score'), cache = {};
+    const locked = (title, text) => { const c = el('div', 'ia-lock'); c.append(el('b', '', title), el('p', '', text));
+      const row = el('div', 'ia-lock-row'); if (P) { row.append(btn('See FYNX Pro plans', 'fx-chip fx-chip-link', () => P.paywall({cat: 'analysis', reason: 'upsell', feature: 'Advanced industry analytics', title: 'Advanced industry analytics are part of FYNX Pro.', lead: 'Rotation quadrants, relative strength against the S&P 500, breadth, distance from highs and dispersion for every GICS sub-industry and sector. The industry table above stays free.'}))); }
+      c.append(row); return c; };
+    async function load(force) {
+      body.replaceChildren(el('p', 'fx-empty', 'Checking your membership…'));
+      if (!P?.server) return body.replaceChildren(locked('Membership service unavailable.', 'Advanced industry analytics need a verified FYNX Pro membership. The industry table above stays free.'));
+      let d = cache[level];
+      if (!d || force) { try { d = cache[level] = await P.server({action: 'industries', level}); } catch (e) {
+        if (!alive() || !sec.isConnected) return;
+        if (e.code === 'unauthenticated') return body.replaceChildren(locked('Sign in with a FYNX Pro membership to open advanced industry analytics.', 'Rotation quadrants, relative strength against the S&P 500, breadth and dispersion for every sub-industry. The industry table above stays free.'));
+        if (e.code === 'permission-denied') return body.replaceChildren(locked('Advanced industry analytics are part of FYNX Pro.', 'Rotation quadrants, relative strength against the S&P 500, breadth, distance from 52-week highs and dispersion for every sub-industry and sector. The industry table above stays free for everyone.'));
+        T.report('industries-pro', e); return body.replaceChildren(el('p', 'fx-empty', 'Advanced industry analytics are not available right now. Try again in a minute.')); } }
+      if (!alive() || !sec.isConnected) return; render(d);
+    }
+    function render(d) {
+      body.replaceChildren();
+      const bar = el('div', 'ia-bar'); bar.append(PG.pageTabs([['industry', 'SUB-INDUSTRIES'], ['sector', 'SECTORS']], level, v => { level = v; setPref('ia-level', v); load(); }));
+      const counts = {}; for (const g of d.groups) if (g.quadrant) counts[g.quadrant] = (counts[g.quadrant] || 0) + 1;
+      const sum = el('div', 'ia-sum'); for (const q of ['Leading', 'Improving', 'Weakening', 'Lagging']) { const c = el('span'); c.style.borderColor = QUAD[q]; c.append(el('b', '', String(counts[q] || 0)), el('small', '', q.toUpperCase())); sum.append(c); }
+      const b = d.benchmark; sum.append(el('em', '', `S&P 500 members: 1M ${pct(b.r1m)} · 3M ${pct(b.r3m)} · 1Y ${pct(b.r1y)}`));
+      body.append(bar, sum);
+      // Rotation map: x = 3-month relative strength, y = momentum of relative strength.
+      const pts = d.groups.filter(g => finite(g.rs3m) && finite(g.momentum)), W = 1200, H = 400, L = 16, R = 16, Tp = 14, B = 26;
+      const xm = Math.max(4, ...pts.map(g => Math.abs(g.rs3m))) * 1.08, ym = Math.max(2, ...pts.map(g => Math.abs(g.momentum))) * 1.1;
+      const x = v => L + (v + xm) / (2 * xm) * (W - L - R), y = v => Tp + (ym - v) / (2 * ym) * (H - Tp - B);
+      const c = svg('svg', {viewBox: `0 0 ${W} ${H}`, class: 'fx-chart ia-map', role: 'img', 'aria-label': 'Industry rotation map'});
+      for (const [qx, qy, q] of [[1, 1, 'Leading'], [1, -1, 'Weakening'], [-1, -1, 'Lagging'], [-1, 1, 'Improving']]) {
+        c.append(svg('rect', {x: qx > 0 ? x(0) : L, y: qy > 0 ? Tp : y(0), width: (W - L - R) / 2, height: (H - Tp - B) / 2, fill: QUAD[q], opacity: 0.07}));
+        const t = svg('text', {x: qx > 0 ? W - R - 6 : L + 6, y: qy > 0 ? Tp + 14 : H - B - 6, class: 'a', 'text-anchor': qx > 0 ? 'end' : 'start', fill: QUAD[q]}); t.textContent = q.toUpperCase(); c.append(t);
+      }
+      c.append(svg('line', {x1: x(0), x2: x(0), y1: Tp, y2: H - B, stroke: '#3a4540'}), svg('line', {x1: L, x2: W - R, y1: y(0), y2: y(0), stroke: '#3a4540'}));
+      for (const v of [-xm * 0.75, -xm * 0.375, xm * 0.375, xm * 0.75]) { const t = svg('text', {x: x(v), y: H - 8, class: 'a', 'text-anchor': 'middle'}); t.textContent = signed(v, 1, '%'); c.append(t); }
+      const xl = svg('text', {x: x(0) + 6, y: H - B - 6, class: 'a', 'text-anchor': 'start'}); xl.textContent = '3M RELATIVE STRENGTH →'; c.append(xl);
+      const yl = svg('text', {x: x(0) + 6, y: Tp + 12, class: 'a', 'text-anchor': 'start'}); yl.textContent = '↑ MOMENTUM'; c.append(yl);
+      const label = level === 'sector' || pts.length <= 20;
+      for (const g of pts) { const dot = svg('circle', {cx: x(g.rs3m), cy: y(g.momentum), r: level === 'sector' ? 6 : Math.max(3, Math.min(9, Math.sqrt(g.cap / 2e10))), fill: QUAD[g.quadrant] || '#8e9b94', 'fill-opacity': 0.8, stroke: '#000'});
+        const tt = svg('title'); tt.textContent = `${g.name} · ${g.quadrant}\nRS 3M ${pct(g.rs3m)} · momentum ${signed(g.momentum, 1)} · score ${g.score ?? '—'}`; dot.append(tt); c.append(dot);
+        if (label) { const right = x(g.rs3m) > W * 0.78, t = svg('text', {x: x(g.rs3m) + (right ? -8 : 8), y: y(g.momentum) + 3, class: 'a', fill: '#cfd6d2', 'text-anchor': right ? 'end' : 'start'}); t.textContent = SHORT_SECTOR[g.name] || g.name; c.append(t); } }
+      body.append(c);
+      // Ranked table.
+      const cols = [['rank', '#'], ['name', level === 'sector' ? 'SECTOR' : 'SUB-INDUSTRY'], ['score', 'SCORE'], ['quadrant', 'ROTATION'], ['rs1m', 'RS 1M'], ['rs3m', 'RS 3M'], ['rs6m', 'RS 6M'], ['momentum', 'MOMENTUM'], ['aboveMa', '> 10W AVG'], ['nearHigh', 'NEAR 52W HIGH'], ['dispersion', 'DISPERSION'], ['leaders', 'LEADERS 3M']];
+      const sortable = new Set(['score', 'rs1m', 'rs3m', 'rs6m', 'momentum', 'aboveMa', 'nearHigh', 'dispersion']);
+      const list = [...d.groups].sort((a, b) => (b[sort] ?? -Infinity) - (a[sort] ?? -Infinity)), t = el('table', 'fx-table pg-table ia-table'), h = el('tr');
+      for (const [k, l] of cols) { const th = el('th'); if (sortable.has(k)) th.append(btn(l + (sort === k ? ' ↓' : ''), 'sc-sort', () => { sort = k; setPref('ia-sort', k); render(d); }, 'Sort by ' + l)); else th.textContent = l; h.append(th); }
+      t.append(h);
+      list.forEach((g, i) => { const tr = el('tr'), q = el('td'), chip = el('span', 'ia-q', g.quadrant || '—'); if (g.quadrant) chip.style.cssText = `color:${QUAD[g.quadrant]};border-color:${QUAD[g.quadrant]}`; q.append(chip);
+        const sc = el('td', 'fx-num ia-score'); if (finite(g.score)) { const bb = el('i'), f = el('b'); f.style.width = g.score + '%'; bb.append(f); sc.append(el('span', '', String(g.score)), bb); } else sc.textContent = '—';
+        tr.append(el('td', 'fx-num fx-dim', String(i + 1)), el('th', '', g.name), sc, q, ...['rs1m', 'rs3m', 'rs6m'].map(k => el('td', 'fx-num ' + tone(g[k]), pct(g[k]))), el('td', 'fx-num ' + tone(g.momentum), finite(g.momentum) ? signed(g.momentum, 1) : '—'),
+          el('td', 'fx-num', finite(g.aboveMa) ? Math.round(g.aboveMa) + '%' : '—'), el('td', 'fx-num', finite(g.nearHigh) ? Math.round(g.nearHigh) + '%' : '—'), el('td', 'fx-num fx-dim', finite(g.dispersion) ? g.dispersion.toFixed(1) : '—'), el('td', 'pg-name', g.leaders.map(x => `${x.sym} ${pct(x.r3m, 0)}`).join(' · ')));
+        t.append(tr); });
+      const scr = el('div', 'pg-scroll'); scr.append(t); body.append(scr, el('p', 'pg-note', `${d.method} ${d.sources}. Computed ${new Date(d.generatedAt).toLocaleString()}.`));
+    }
+    load();
+  }
   T.PAGE_NAMES.push('OVERVIEW', 'HMAP', 'INDUSTRIES');
 });

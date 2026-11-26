@@ -294,11 +294,13 @@ window.FynxTerminalPages = T => {
     id = T.resolve(id) || id || S.focus;
     const q = T.quoteFor(id), inf = T.info(id), dg = T.digitsOf(id);
     setHead('DES', `${T.shortOf(id)} · ${T.nameOf(id)}`, `${inf.group || ''}${q?.asOf ? ' · as of ' + new Date(q.asOf).toLocaleString() : ''}`);
-    host.append(chips([btn('Chart on desk ▸', 'fx-chip fx-chip-link', () => { closeAll(); T.focusOn(id); }), S.opts?.underlyings?.[id] ? go('Options', 'options', id) : null, inf.group === 'Stocks' ? go('Financials', 'fa', id) : null, T.EDGE[id] ? go('Edge Radar', 'edge', id) : null, go('News', 'news', {q: T.shortOf(id), name: T.nameOf(id)}), link('Price alert ↗︎', '/tools/price-alerts.html', 'fx-chip fx-chip-link'), link('Backtest ↗︎', `/quant-analyst.html?symbol=${encodeURIComponent(id)}`, 'fx-chip fx-chip-link')]));
+    host.append(chips([btn('Chart on desk ▸', 'fx-chip fx-chip-link', () => { closeAll(); T.focusOn(id); }), S.opts?.underlyings?.[id] ? go('Options', 'options', id) : null, inf.group === 'Stocks' ? go('Financials', 'fa', id) : null, inf.group === 'Stocks' && PAGES.filings ? go('Filings', 'filings', id) : null, T.EDGE[id] ? go('Edge Radar', 'edge', id) : null, go('News', 'news', {q: T.shortOf(id), name: T.nameOf(id)}), link('Price alert ↗︎', '/tools/price-alerts.html', 'fx-chip fx-chip-link'), link('Backtest ↗︎', `/quant-analyst.html?symbol=${encodeURIComponent(id)}`, 'fx-chip fx-chip-link')]));
     if (q) host.append(cards([['LAST', fmt(q.price, dg), '', '', {key: 'px:' + id, value: q.price, live: 'num', digits: dg}], ['CHANGE', signed(q.changePercent, 2, '%'), tone(q.changePercent), '', finite(q.changePercent) ? {key: 'chg:' + id, value: q.changePercent, live: 'pct', digits: 2} : null], ['PREV CLOSE', fmt(q.previousClose, dg), '', '', {key: 'prev:' + id, value: q.previousClose}], ['DAY RANGE', finite(q.dayLow) ? `${fmt(q.dayLow, dg)}–${fmt(q.dayHigh, dg)}` : '—'], ['52W RANGE', finite(q.low52) ? `${fmt(q.low52, dg)}–${fmt(q.high52, dg)}` : '—'], ['VOLUME', count(q.volume)], ['20D VOL', finite(q.vol20) ? q.vol20.toFixed(2) + '% / day' : '—'], ['SOURCE', q.snapshot ? 'Yahoo (15-min snapshot)' : q.source || '—']]));
     const perf = [[5, '1W'], [21, '1M'], [63, '3M'], ['ytd', 'YTD'], [251, '1Y']].map(([w, l]) => { const r = T.periodReturn(id, w); return [l, finite(r) ? signed(r, 2, '%') : '—', tone(r)]; });
     if (perf.some(p => p[1] !== '—')) host.append(cards(perf));
     bigChart(host, id);
+    // Plugin sections (company snapshot, …): each appends its own section and loads in the background.
+    for (const f of T.DES_SECTIONS || []) { try { f(host, id, {inf, q, alive}); } catch (e) { T.report('des-section', e); } }
     const edgeM = S.edge?.markets?.find(m => m.symbol === id);
     if (edgeM) {
       const s = section('Regime, bias and positioning'), pair = M.PAIRS.find(p => p.id === id), b = pair ? M.smartBias(pair, {desk: S.desk, edgeMarket: edgeM, livePrice: q?.price}) : null;
@@ -322,7 +324,7 @@ window.FynxTerminalPages = T => {
   PAGES.fa = async (host, arg, alive) => {
     const cik = /^cik\d+$/i.test(arg || '') ? arg.slice(3) : null, ticker = cik ? null : (arg || S.finTicker).toUpperCase();
     setHead('FA', `${ticker || 'CIK ' + cik} · financial statements`, 'Annual 10-K facts from SEC EDGAR');
-    host.append(chips([go('Search any company', 'research'), ticker ? go('Security page', 'des', ticker) : null]));
+    host.append(chips([go('Search any company', 'research'), ticker ? go('Security page', 'des', ticker) : null, ticker && PAGES.filings ? go('SEC filings', 'filings', ticker) : null]));
     const box = el('div'); box.append(el('p', 'fx-empty', 'Loading SEC filings…')); host.append(box);
     const f = await T.loadFin(ticker, cik); if (!alive()) return;
     box.replaceChildren();
@@ -675,6 +677,7 @@ window.FynxTerminalPages = T => {
     }
     const es = section('Expiries'); S.optExp = exp; T.optSummary(es, u, i => { exp = i; ocOpen(u.symbol).add(u.expiries[i].date); es.querySelectorAll('button.fx-exp').forEach((r, j) => r.classList.toggle('sel', j === i)); drawChain(); chainSec.scrollIntoView({behavior: 'smooth', block: 'start'}); }); es.querySelector('.fx-calcout')?.remove(); two.append(es);
     host.append(two);
+    for (const f of T.OPT_SECTIONS || []) { try { f(host, u); } catch (e) { T.report('opt-section', e); } }
     host.append(chainSec);
     const drawChain = () => { S.optExp = exp; proChain(chainSec, u, exp); };
     drawChain();
