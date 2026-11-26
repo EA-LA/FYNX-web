@@ -142,6 +142,7 @@
     .learn-compare-pair dd{margin:.25rem 0 0;line-height:1.55}
     .learn-compare-detail a{width:fit-content;text-decoration:underline;text-underline-offset:.16em}
     @media(max-width:560px){.learn-compare-pair{grid-template-columns:minmax(0,1fr);gap:.7rem}}
+    @media (hover:none) and (pointer:coarse){.learn-compare-detail a{display:inline-flex;align-items:center;min-height:44px}} /* [site-qa] run 112: lesson links were 22px tall on iPhone */
   </style>
   <script type="module" src="assets/js/session-bootstrap.js?v=20261114-consistency-2"></script>
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">

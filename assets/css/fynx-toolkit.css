@@ -26,3 +26,5 @@ html[data-theme=dark] .fxk-plan{background:#13201b;color:#cfe5d8}
 @media (prefers-reduced-motion:reduce){.fxk-card{transition:none}.fxk-card:hover{transform:none}}
 section.fxk .fxk-kicker,section.fxk a.fxk-plans{color:#1f4d3a}
 html[data-theme=dark] section.fxk .fxk-kicker,html[data-theme=dark] section.fxk a.fxk-plans{color:#a5d2ba}
+/* [site-qa] run 112: "Compare plans →" was 17px tall on iPhone - 44px touch height, same look. */
+@media (hover:none) and (pointer:coarse){section.fxk a.fxk-plans,.fxk-plans{display:inline-flex;align-items:center;min-height:44px}}
