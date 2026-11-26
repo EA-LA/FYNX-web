@@ -1,0 +1,25 @@
+name: Terminal panel route history
+
+on:
+  pull_request:
+    paths:
+      - 'assets/js/terminal/pages.js'
+      - 'scripts/test-terminal-route-history.cjs'
+      - 'terminal.html'
+      - '.github/workflows/terminal-route-history.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  route-history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --test scripts/test-terminal-route-history.cjs
