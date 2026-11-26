@@ -589,6 +589,7 @@
         <div class="card">
           <h3>Results</h3>
           <div class="hint">Lot results round down to 0.01. Confirm your broker’s minimum and lot step. Units use the same rounded quantity.</div>
+          <p class="hint"><a href="#broker-lot-check">Check a different broker lot step or minimum ↓</a></p>
 
           <div class="resultsBox">
             <div class="kv">
@@ -656,6 +657,27 @@
       </div>
     </div>
   <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Uses the calculator’s Forex contract model and 0.01-lot increment. The stop is modeled below entry by your stop distance. Supply an explicit cross-currency conversion rate. Broker specifications remain unverified.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
+  <section class="tool-explainer" id="broker-lot-check" aria-labelledby="broker-lot-title" style="scroll-margin-top:6rem">
+    <div class="discovery-kicker">OPTIONAL BROKER CHECK</div>
+    <h2 id="broker-lot-title">Check your broker’s lot step and minimum</h2>
+    <p>Check whether your risk budget fits a different lot increment. Use your broker’s settings and enter all values below. This check does not change or reuse the calculator’s results.</p>
+    <form id="broker-lot-form" aria-describedby="broker-lot-limits">
+      <fieldset id="broker-lot-fields" disabled style="border:0;padding:0;min-width:0;margin:1rem 0">
+        <legend class="discovery-kicker">Your planned order</legend>
+        <div class="tool-explainer-grid" style="margin:.65rem 0">
+          <div class="row"><label for="broker-risk">Maximum planned loss (USD)</label><input id="broker-risk" class="field mono" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 70"></div>
+          <div class="row"><label for="broker-stop">Stop distance (pips)</label><input id="broker-stop" class="field mono" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 20"></div>
+          <div class="row"><label for="broker-pip-value">Pip value for 1 lot (USD)</label><input id="broker-pip-value" class="field mono" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 10"></div>
+          <div class="row"><label for="broker-step">Broker lot increment</label><input id="broker-step" class="field mono" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0.05"></div>
+          <div class="row"><label for="broker-minimum">Broker minimum (lots, optional)</label><input id="broker-minimum" class="field mono" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 0.10"></div>
+        </div>
+      </fieldset>
+      <button class="primary" id="broker-lot-run" type="submit" disabled>Check lot size</button>
+    </form>
+    <p id="broker-lot-result" role="status" aria-live="polite" aria-atomic="true" style="margin:.75rem 0;overflow-wrap:anywhere"></p>
+    <p id="broker-lot-limits">The size must be a multiple of your increment, at or above the minimum. Leave the minimum blank to check from one increment. The modeled loss assumes an exact stop fill and excludes costs, margin, maximum-order rules, and other broker restrictions. Nothing is placed, saved, or shared.</p>
+    <noscript><p>This check requires JavaScript.</p></noscript>
+  </section>
 <!-- tool-guide:start --><section class="tool-explainer" aria-labelledby="tool-guide-title"><div class="discovery-kicker">HOW TO USE THIS TOOL</div><h2 id="tool-guide-title">Size a position from the loss you can plan for</h2><div class="tool-explainer-grid"><div><h3>Start with your inputs</h3><p>Choose the currency pair or gold contract, enter your account value and risk budget, then enter the stop distance in pips. Check the price and account-currency conversion; a manual-price mode is available.</p><h3>The calculation or concept</h3><p>Risk budget = account equity × risk percentage. Units = risk budget ÷ loss per unit at the stop.</p></div><div class="tool-example"><h3>Worked example</h3><p>A hypothetical $10,000 account with a 1% risk budget allows $100 of planned risk. For a USD-quoted forex pair with a $10 pip value per standard lot and a 20-pip stop, that budget gives 0.5 standard lots before costs.</p><small>Hypothetical example, not a current quote.</small></div></div><details><summary>Assumptions and limitations</summary><p>Stops can slip or gap. Round down to a tradable size and allow for commissions, spread and other positions; a calculated size is not a guaranteed loss cap.</p></details></section><!-- tool-guide:end -->
 <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/tools/margin.html"><strong>Forex Margin &amp; Leverage Calculator</strong><span>Estimate required margin, notional position size, free margin and margin level for a leveraged forex trade.</span></a><a href="/tools/risk-reward.html"><strong>Risk-to-Reward Ratio Calculator</strong><span>Compare potential trade risk and reward using entry, stop-loss and target prices before planning a position.</span></a><a href="/tools/atr-stop.html"><strong>ATR Stop-Loss Calculator</strong><span>Estimate a volatility-based stop-loss distance using average true range and a chosen multiplier before planning a trade.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
@@ -1359,6 +1381,7 @@ const selected=els.pair.value;if(isGoldPair(selected))throw new Error('Gold cont
   </script>
 
 <script type="module" src="/assets/js/api-calculator-pilot.js"></script>
+<script src="/assets/js/broker-lot-check.js?v=20261125"></script>
 <footer></footer><script type="module" src="/assets/js/account-sync.js?v=20261115-intelligence-1"></script>
 </body>
 </html>
