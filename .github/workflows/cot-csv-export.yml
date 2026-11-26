@@ -5,6 +5,7 @@ on:
       - 'assets/js/cot-feed.js'
       - 'markets/cot.html'
       - 'scripts/test-cot-feed.cjs'
+      - 'scripts/test-cot-net-percent.cjs'
       - '.github/workflows/cot-csv-export.yml'
   workflow_dispatch:
 
@@ -26,5 +27,7 @@ jobs:
         run: node --check assets/js/cot-feed.js && node --check scripts/test-cot-feed.cjs
       - name: Verify report retrieval, matching export, CSV escaping and recovery
         run: node scripts/test-cot-feed.cjs
+      - name: Verify normalized net-position display
+        run: node --test scripts/test-cot-net-percent.cjs
       - name: Check Markets directory navigation
         run: node scripts/test-market-index-links.cjs
