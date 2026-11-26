@@ -224,6 +224,34 @@ const fixture = {updatedAt: new Date(base).toISOString(), all: [
     if (expected) assert.deepEqual([...detail.querySelectorAll('.fc-detail-figures .fc-val b')].map(n => n.textContent), ['—', '0.3%', '0.2%'], 'link must not turn a forecast into an actual');
     if (actual) assert.equal(detail.querySelector('.fc-detail-figures .fc-val b').textContent, actual);
   });
+  // A list redraw replaces the event node, but must keep its equivalent
+  // control focused. Closing details then returns to the exact current opener.
+  const firstEventRow = () => beaHost.querySelector('.fc-row');
+  const firstTitle = () => firstEventRow().querySelector('.fc-title');
+  const firstResult = () => firstEventRow().querySelector('.fc-actual');
+  const closeDetails = () => beaHost.querySelector('.fc-detail [data-fc-close]');
+  const previousTitle = firstTitle();
+  previousTitle.focus(); bw.document.dispatchEvent(new bw.Event('visibilitychange')); await tick();
+  assert.equal(previousTitle.isConnected, false, 'visibility refresh really rebuilt the row');
+  assert.equal(bw.document.activeElement, firstTitle(), 'event title focus survives list redraw');
+  const oldResult = firstResult();
+  oldResult.focus(); oldResult.click();
+  const previousClose = closeDetails();
+  previousClose.focus(); bw.document.dispatchEvent(new bw.Event('visibilitychange')); await tick();
+  assert.equal(previousClose.isConnected, false, 'visibility refresh really rebuilt the detail');
+  assert.equal(bw.document.activeElement, closeDetails(), 'Close event keeps focus across refresh');
+  closeDetails().click();
+  assert.equal(bw.document.activeElement, firstResult(), 'Close restores the rebuilt Result details control');
+  firstTitle().focus(); firstTitle().click(); closeDetails().focus();
+  bw.history.replaceState(null, '', '/tools/economic-calendar.html');
+  bw.dispatchEvent(new bw.PopStateEvent('popstate'));
+  assert.equal(bw.document.activeElement, firstTitle(), 'Back-to-list restores the event title');
+  firstTitle().click();
+  const currentSearch = beaHost.querySelector('.fc-search');
+  currentSearch.value = 'no synthetic match';
+  currentSearch.dispatchEvent(new bw.Event('input', {bubbles: true}));
+  closeDetails().click();
+  assert.equal(bw.document.activeElement, currentSearch, 'when the opener is filtered out, focus returns to search');
   stopBea(); bw.close();
 
   stop();
