@@ -57,7 +57,7 @@
     $('wlKick').textContent = `${name.toUpperCase()} MEMBERSHIP ACTIVE`;
     $('wlTitle').textContent = `Thank you. Welcome to FYNX ${name}.`;
     $('wlLead').textContent = LEADS[tier];
-    $('wlPlan').textContent = name; $('wlPrice').textContent = P.PRICES[tier] + ' / month';
+    $('wlPlan').textContent = P.owner ? P.label : name; $('wlPrice').textContent = P.owner ? 'Lifetime · complimentary' : P.PRICES[tier] + ' / month';
     $('wlToday').textContent = Number.isFinite(m.limit) ? `${m.left} of ${m.limit} analyses left` : 'Unlimited';
     const perks = $('wlPerks'); perks.replaceChildren();
     P.PERKS[tier].forEach((x, i) => { const li = document.createElement('li'); li.textContent = x; li.style.animationDelay = (i * 90) + 'ms'; perks.append(li); });
