@@ -1,0 +1,26 @@
+name: Probe index data sources (temporary, read-only)
+on: push
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe
+        run: |
+          cat > p.mjs <<'JS'
+          const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
+          const get = async (u, h = {}) => { const r = await fetch(u, {headers: {'User-Agent': UA, ...h}}); return {status: r.status, text: await r.text()}; };
+          for (const [name, u] of [['sp500', 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'], ['ndx', 'https://en.wikipedia.org/wiki/Nasdaq-100'], ['dow', 'https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average']]) {
+            try { const r = await get(u); const tables = r.text.match(/<table[^>]*id="constituents"[\s\S]*?<\/table>/g) || []; console.log(name, r.status, r.text.length, 'constituents tables', tables.length, tables[0] ? (tables[0].match(/<tr/g) || []).length : 0);
+              if (tables[0]) console.log(name, 'SAMPLE', tables[0].slice(0, 1500).replace(/\s+/g, ' ')); } catch (e) { console.log(name, 'ERR', e.message); }
+          }
+          for (const u of ['https://api.nasdaq.com/api/quote/list-type/nasdaq100', 'https://api.nasdaq.com/api/quote/list-type/sp500', 'https://api.nasdaq.com/api/quote/list-type/dow30']) {
+            try { const r = await get(u, {Accept: 'application/json', Origin: 'https://www.nasdaq.com', Referer: 'https://www.nasdaq.com/'}); console.log('nasdaq-list', u, r.status, r.text.length, r.text.slice(0, 600)); } catch (e) { console.log('nasdaq-list ERR', e.message); }
+          }
+          const syms = ['AAPL','MSFT','NVDA','AMZN','GOOGL','META','TSLA','AVGO','JPM','BRK-B','V','WMT','XOM','LLY','UNH','MA','HD','PG','COST','ORCL'];
+          for (const h of ['query1', 'query2']) { try { const r = await get(`https://${h}.finance.yahoo.com/v8/finance/spark?symbols=${syms.join(',')}&range=1y&interval=1d`, {Accept: 'application/json'}); console.log('spark', h, r.status, r.text.length, r.text.slice(0, 700)); } catch (e) { console.log('spark ERR', e.message); } }
+          for (const p of ['includePrePost=true', 'includePrePost=false']) { try { const r = await get(`https://query1.finance.yahoo.com/v8/finance/chart/SPY?range=1d&interval=5m&${p}`, {Accept: 'application/json'}); const j = JSON.parse(r.text).chart.result[0]; const ts = j.timestamp || []; console.log('intraday', p, r.status, 'bars', ts.length, new Date(ts[0]*1000).toISOString(), new Date(ts.at(-1)*1000).toISOString(), 'meta', JSON.stringify({rp: j.meta.regularMarketPrice, pc: j.meta.chartPreviousClose, period: j.meta.currentTradingPeriod})); } catch (e) { console.log('intraday ERR', e.message); } }
+          for (const s of ['^GSPC', '^TNX', 'DX-Y.NYB']) { try { const r = await get(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(s)}?range=15y&interval=1wk`, {Accept: 'application/json'}); const j = JSON.parse(r.text).chart.result[0]; console.log('long', s, r.status, (j.timestamp||[]).length, new Date(j.timestamp[0]*1000).toISOString()); } catch (e) { console.log('long ERR', s, e.message); } }
+          JS
+          node p.mjs
