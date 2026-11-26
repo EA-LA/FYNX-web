@@ -68,8 +68,10 @@ async function closes(symbols, range) {
 }
 // Intraday bars for seasonality work. Each bar carries its exchange-local minute of day and weekday (DST-aware).
 const BAR_RANGE = {'5m': '60d', '15m': '60d', '1h': '730d', '1d': '10y'};
-async function bars(symbol, interval) {
-  const data = await yahoo(`/v8/finance/chart/${encodeURIComponent(symbol)}?range=${BAR_RANGE[interval]}&interval=${interval}&includePrePost=false${interval === '1d' ? '&events=div%2Csplit' : ''}`);
+// prepost: today's 5-minute bars including pre-market and after-hours, with the session times and previous close
+// (Terminal index cards and the normalized performance chart).
+async function bars(symbol, interval, prepost = false) {
+  const data = await yahoo(`/v8/finance/chart/${encodeURIComponent(symbol)}?range=${prepost ? '1d' : BAR_RANGE[interval]}&interval=${interval}&includePrePost=${prepost}${interval === '1d' ? '&events=div%2Csplit' : ''}`);
   const r = data?.chart?.result?.[0], m = r?.meta;
   if (!m || !Array.isArray(r.timestamp)) throw Object.assign(new Error('No intraday data for this symbol.'), {status: 404});
   const tz = m.exchangeTimezoneName || 'UTC', q = r.indicators?.quote?.[0] || {};
@@ -86,7 +88,9 @@ async function bars(symbol, interval) {
     out.t.push(ts); out.o.push(r6(o * k)); out.h.push(r6(Math.max(hi, o, c) * k)); out.l.push(r6(Math.min(lo, o, c) * k)); out.c.push(r6(c * k)); out.v.push(finite(q.volume?.[i]) ? q.volume[i] : 0);
     out.tod.push((+p.hour % 24) * 60 + +p.minute); out.dow.push(DOW[p.weekday] ?? 0); out.day.push(`${p.year}-${p.month}-${p.day}`);
   });
-  return {symbol: m.symbol || symbol, name: m.longName || m.shortName || symbol, timezone: tz, type: m.instrumentType || null, interval, ...out};
+  const p = m.currentTradingPeriod, span = x => x && finite(x.start) && finite(x.end) ? {start: x.start, end: x.end} : null;
+  const extra = prepost ? {previousClose: r6(m.chartPreviousClose ?? m.previousClose), regularPrice: r6(m.regularMarketPrice), regularTime: finite(m.regularMarketTime) ? m.regularMarketTime : null, sessions: p ? {pre: span(p.pre), regular: span(p.regular), post: span(p.post)} : null} : {};
+  return {symbol: m.symbol || symbol, name: m.longName || m.shortName || symbol, timezone: tz, type: m.instrumentType || null, interval, ...extra, ...out};
 }
 async function search(q) {
   const d = await yahoo(`/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=20&newsCount=10&enableFuzzyQuery=false&lang=en-US&region=US`);
@@ -121,10 +125,10 @@ module.exports = async (req, res) => {
       body = {quotes, errors, source: 'Yahoo Finance (delayed)', fetchedAt: new Date().toISOString()};
       res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
     } else if (q.op === 'bars') {
-      const symbol = String(q.symbol || ''), interval = BAR_RANGE[q.interval] ? q.interval : '5m';
+      const prepost = q.prepost === '1', symbol = String(q.symbol || ''), interval = prepost ? '5m' : BAR_RANGE[q.interval] ? q.interval : '5m';
       if (!SYMBOL.test(symbol)) return res.status(400).json({error: 'Invalid symbol.'});
-      body = {...await bars(symbol, interval), source: 'Yahoo Finance intraday bars (delayed)', fetchedAt: new Date().toISOString()};
-      res.setHeader('Cache-Control', `public, s-maxage=${interval === '1d' ? 21600 : 1800}, stale-while-revalidate=${interval === '1d' ? 86400 : 7200}`);
+      body = {...await bars(symbol, interval, prepost), source: `Yahoo Finance intraday bars${prepost ? ' with pre-market and after-hours' : ''} (delayed)`, fetchedAt: new Date().toISOString()};
+      res.setHeader('Cache-Control', prepost ? 'public, s-maxage=120, stale-while-revalidate=600' : `public, s-maxage=${interval === '1d' ? 21600 : 1800}, stale-while-revalidate=${interval === '1d' ? 86400 : 7200}`);
     } else if (q.op === 'closes') {
       const symbols = [...new Set(String(q.symbols || '').split(',').map(s => s.trim()).filter(Boolean))], range = ['1y', '2y', '5y', '10y'].includes(q.range) ? q.range : '5y';
       if (!symbols.length || symbols.length > 60 || !symbols.every(s => SYMBOL.test(s))) return res.status(400).json({error: 'Choose 1 to 60 valid symbols.'});
