@@ -94,6 +94,7 @@ try {
     let observed = false;
     window.ResizeObserver = supported ? class {
       observe(target) { observed = target === embedded.body; }
+      disconnect() {}
     } : undefined;
     frame.style.height = '';
     const linkHandlers = [];
