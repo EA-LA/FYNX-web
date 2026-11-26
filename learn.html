@@ -106,6 +106,11 @@
       color:var(--text);
       border-color:var(--line);
     }
+    .learn-mode-btn:focus-visible,
+    .mode-content[role="tabpanel"]:focus-visible{
+      outline:2px solid var(--text);
+      outline-offset:3px;
+    }
     .mode-content{
       display:none;
       opacity:0;
@@ -197,12 +202,12 @@
 <!-- discovery-crumb:start --><div class="resource-wayfinding"><nav aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/explore.html?category=Learning">Learning</a></nav><div><a href="/explore.html">Find a resource</a><button type="button" data-save-resource>Save resource</button></div></div><!-- discovery-crumb:end -->
 <div class="editorial-label">BUILD YOUR MARKET KNOWLEDGE</div>
         <p class="hub-intro">Explore the markets. Develop your process. Test what you know.</p>
-        <div class="learn-mode-toggle" role="tablist" aria-label="Learn mode toggle">
-          <button id="learning-toggle" class="learn-mode-btn active" type="button" role="tab" aria-selected="true">Learning</button>
-          <button id="quizzes-toggle" class="learn-mode-btn" type="button" role="tab" aria-selected="false">Quizzes</button>
+        <div class="learn-mode-toggle" role="tablist" aria-label="Learning center modes">
+          <button id="learning-toggle" class="learn-mode-btn active" type="button" role="tab" aria-selected="true" aria-controls="learn-content" tabindex="0">Learning</button>
+          <button id="quizzes-toggle" class="learn-mode-btn" type="button" role="tab" aria-selected="false" aria-controls="quiz-content" tabindex="-1">Quizzes</button>
         </div>
 
-<div id="learn-content" class="mode-content active"><div class="learning-grid"><article class="learning-card"><span class="eyebrow">01</span><h2>Forex</h2><p>Currencies, pips and position sizing</p><a href="learn/forex-howto.html">Start learning →</a><div class="learning-links"><a href="learn/forex-quizzes.html">Quiz</a><a href="learn/forex-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">02</span><h2>Stocks</h2><p>Shares, valuation and market structure</p><a href="learn/stocks-howto.html">Start learning →</a><div class="learning-links"><a href="learn/stocks-quizzes.html">Quiz</a><a href="learn/stocks-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">03</span><h2>Crypto</h2><p>Digital assets, custody and volatility</p><a href="learn/crypto-howto.html">Start learning →</a><div class="learning-links"><a href="learn/crypto-quizzes.html">Quiz</a><a href="learn/crypto-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">04</span><h2>Funds</h2><p>Diversification, ETFs and fund costs</p><a href="learn/funds-howto.html">Start learning →</a><div class="learning-links"><a href="learn/funds-quizzes.html">Quiz</a><a href="learn/funds-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">05</span><h2>Futures</h2><p>Contracts, margin and expiration</p><a href="learn/futures-howto.html">Start learning →</a><div class="learning-links"><a href="learn/futures-quizzes.html">Quiz</a><a href="learn/futures-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">06</span><h2>Indices</h2><p>Benchmarks and market exposure</p><a href="learn/indices-howto.html">Start learning →</a><div class="learning-links"><a href="learn/indices-quizzes.html">Quiz</a><a href="learn/indices-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">07</span><h2>Bonds</h2><p>Yields, duration and credit risk</p><a href="learn/bonds-howto.html">Start learning →</a><div class="learning-links"><a href="learn/bonds-quizzes.html">Quiz</a><a href="learn/bonds-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">08</span><h2>Economy</h2><p>Inflation, growth and central banks</p><a href="learn/economy-howto.html">Start learning →</a><div class="learning-links"><a href="learn/economy-quizzes.html">Quiz</a><a href="learn/economy-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">09</span><h2>Options</h2><p>Payoffs, Greeks and defined risk</p><a href="learn/options-howto.html">Start learning →</a><div class="learning-links"><a href="learn/options-quizzes.html">Quiz</a><a href="learn/options-glossary.html">Glossary</a></div></article></div>
+<div id="learn-content" class="mode-content active" role="tabpanel" aria-labelledby="learning-toggle" aria-hidden="false" tabindex="0"><div class="learning-grid"><article class="learning-card"><span class="eyebrow">01</span><h2>Forex</h2><p>Currencies, pips and position sizing</p><a href="learn/forex-howto.html">Start learning →</a><div class="learning-links"><a href="learn/forex-quizzes.html">Quiz</a><a href="learn/forex-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">02</span><h2>Stocks</h2><p>Shares, valuation and market structure</p><a href="learn/stocks-howto.html">Start learning →</a><div class="learning-links"><a href="learn/stocks-quizzes.html">Quiz</a><a href="learn/stocks-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">03</span><h2>Crypto</h2><p>Digital assets, custody and volatility</p><a href="learn/crypto-howto.html">Start learning →</a><div class="learning-links"><a href="learn/crypto-quizzes.html">Quiz</a><a href="learn/crypto-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">04</span><h2>Funds</h2><p>Diversification, ETFs and fund costs</p><a href="learn/funds-howto.html">Start learning →</a><div class="learning-links"><a href="learn/funds-quizzes.html">Quiz</a><a href="learn/funds-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">05</span><h2>Futures</h2><p>Contracts, margin and expiration</p><a href="learn/futures-howto.html">Start learning →</a><div class="learning-links"><a href="learn/futures-quizzes.html">Quiz</a><a href="learn/futures-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">06</span><h2>Indices</h2><p>Benchmarks and market exposure</p><a href="learn/indices-howto.html">Start learning →</a><div class="learning-links"><a href="learn/indices-quizzes.html">Quiz</a><a href="learn/indices-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">07</span><h2>Bonds</h2><p>Yields, duration and credit risk</p><a href="learn/bonds-howto.html">Start learning →</a><div class="learning-links"><a href="learn/bonds-quizzes.html">Quiz</a><a href="learn/bonds-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">08</span><h2>Economy</h2><p>Inflation, growth and central banks</p><a href="learn/economy-howto.html">Start learning →</a><div class="learning-links"><a href="learn/economy-quizzes.html">Quiz</a><a href="learn/economy-glossary.html">Glossary</a></div></article><article class="learning-card"><span class="eyebrow">09</span><h2>Options</h2><p>Payoffs, Greeks and defined risk</p><a href="learn/options-howto.html">Start learning →</a><div class="learning-links"><a href="learn/options-quizzes.html">Quiz</a><a href="learn/options-glossary.html">Glossary</a></div></article></div>
   <section class="learn-compare" id="compare-concepts" aria-labelledby="compare-concepts-title">
     <div class="editorial-label">QUICK REFERENCE</div>
     <h2 id="compare-concepts-title">Market concepts side by side</h2>
@@ -244,7 +249,7 @@
     </div>
     <p class="learn-compare-note"><small>Illustrative examples only. No live quotes or investment recommendations.</small></p>
   </section>
-</div><div id="quiz-content" class="mode-content" aria-hidden="true"><div class="learning-card"><h2>Test your market knowledge</h2><p>Practice by topic and review your answers.</p><a href="trading-quizzes.html">Open quizzes →</a></div></div>
+</div><div id="quiz-content" class="mode-content" role="tabpanel" aria-labelledby="quizzes-toggle" aria-hidden="true" tabindex="0" hidden><div class="learning-card"><h2>Test your market knowledge</h2><p>Practice by topic and review your answers.</p><a href="trading-quizzes.html">Open quizzes →</a></div></div>
       <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/learn/lessons/stocks/a-beginners-guide-to-stock-market-structure.html"><strong>A Beginner’s Guide to Stock Market Structure</strong><span>How exchanges, sessions, and liquidity windows shape your entries.</span></a><a href="/learn/lessons/bonds/bond-prices-and-yields-explained.html"><strong>Bond Prices and Yields Explained</strong><span>The inverse relationship and practical trading implications.</span></a><a href="/learn/bonds-glossary.html"><strong>Bonds — Glossary</strong><span>Learn Bonds terminology with a practical glossary of market concepts and trading definitions.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </section>
 </main>
@@ -257,25 +262,25 @@
       window.FynxPreferences?.getItem(THEME_KEY) === "dark"
     );
 
-    const learningToggle = document.getElementById("learning-toggle");
-    const quizzesToggle = document.getElementById("quizzes-toggle");
-    const learnContent = document.getElementById("learn-content");
-    const quizContent = document.getElementById("quiz-content");
+    const modeTabs = [...document.querySelectorAll(".learn-mode-toggle [role=tab]")];
 
-    function setLearnMode(mode) {
-      const isLearning = mode === "learning";
-      learningToggle.classList.toggle("active", isLearning);
-      quizzesToggle.classList.toggle("active", !isLearning);
-      learningToggle.setAttribute("aria-selected", isLearning ? "true" : "false");
-      quizzesToggle.setAttribute("aria-selected", isLearning ? "false" : "true");
-      learnContent.classList.toggle("active", isLearning);
-      quizContent.classList.toggle("active", !isLearning);
-      quizContent.setAttribute("aria-hidden", isLearning ? "true" : "false");
-      learnContent.setAttribute("aria-hidden", isLearning ? "false" : "true");
+    function setLearnMode(activeIndex) {
+      modeTabs.forEach((tab, index) => {
+        const selected = index === activeIndex;
+        const panel = document.getElementById(tab.getAttribute("aria-controls"));
+        tab.classList.toggle("active", selected);
+        tab.setAttribute("aria-selected", String(selected));
+        tab.tabIndex = selected ? 0 : -1;
+        panel.classList.toggle("active", selected);
+        panel.hidden = !selected;
+        panel.setAttribute("aria-hidden", String(!selected));
+      });
     }
 
-    learningToggle.addEventListener("click", () => setLearnMode("learning"));
-    quizzesToggle.addEventListener("click", () => setLearnMode("quizzes"));
+    // The shared module loader handles arrow, Home and End navigation.
+    modeTabs.forEach((tab, index) => {
+      tab.addEventListener("click", () => setLearnMode(index));
+    });
 
   </script>
 

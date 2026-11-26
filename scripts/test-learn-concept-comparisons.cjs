@@ -71,3 +71,50 @@ test('switching to Quizzes hides the comparison and back to Learning restores it
   assert.equal(panel.classList.contains('active'), true);
   assert.equal(panel.getAttribute('aria-hidden'), 'false');
 });
+
+test('keyboard tablist keeps a single stop and moves focus, selection and panel together', t => {
+  const { window } = open('learn.html', t);
+  const { document } = window;
+  const controller = [...document.scripts].find(script => script.textContent.includes('function setLearnMode('));
+  assert.ok(controller);
+  const tabs = [...document.querySelectorAll('[role="tablist"] [role="tab"]')];
+  const panels = ['learn-content', 'quiz-content'].map(id => document.getElementById(id));
+  function verify(active) {
+    tabs.forEach((tab, index) => {
+      const panel = panels[index], selected = index === active;
+      assert.equal(tab.getAttribute('aria-controls'), panel.id);
+      assert.equal(tab.getAttribute('aria-selected'), String(selected));
+      assert.equal(tab.tabIndex, selected ? 0 : -1);
+      assert.equal(panel.getAttribute('role'), 'tabpanel');
+      assert.equal(panel.getAttribute('aria-labelledby'), tab.id);
+      assert.equal(panel.hidden, !selected);
+      assert.equal(panel.tabIndex, 0);
+    });
+  }
+  assert.match(document.querySelector('script[src*="module-loader.js"]').getAttribute('src'), /module-loader\.js/);
+  verify(0); // The first paint has the same state as the interactive widget.
+  window.eval(controller.textContent);
+  window.eval(fs.readFileSync(path.join(root, 'assets/js/module-loader.js'), 'utf8'));
+  tabs[0].focus();
+  const key = (name, modifiers = {}) => {
+    const event = new window.KeyboardEvent('keydown', { key: name, cancelable: true, bubbles: true, ...modifiers });
+    document.activeElement.dispatchEvent(event);
+    return event.defaultPrevented;
+  };
+  function move(name, active) {
+    assert.ok(key(name), name + ' should not scroll the page');
+    verify(active);
+    assert.equal(document.activeElement, tabs[active], name + ' should move focus with selection');
+  }
+  move('ArrowRight', 1);
+  assert.equal(panels[1].querySelector('a').pathname, '/trading-quizzes.html');
+  move('ArrowRight', 0);
+  move('ArrowLeft', 1);
+  move('Home', 0);
+  move('End', 1);
+  assert.equal(key('ArrowDown'), false, 'ordinary page scrolling stays available');
+  assert.equal(key('Tab'), false, 'Tab keeps its native sequential focus behavior');
+  verify(1);
+  tabs[0].click();
+  verify(0);
+});
