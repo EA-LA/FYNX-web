@@ -85,9 +85,22 @@
     if (f === 'futures') return /futures/i.test(g); if (f === 'commod') return /Energy|Metals|Agriculture|Commodity/.test(g);
     if (f === 'rates') return /Yields|Rate|Bond/.test(g); if (f === 'funds') return /funds/i.test(g); return g === f;
   }
-  function sortRows(rows, [key, dir]) {
-    const v = r => key === 'z' ? Math.abs(r.z ?? NaN) : r[key];
-    return rows.slice().sort((a, b) => { const x = v(a), y = v(b); if (!finite(x) && !finite(y)) return 0; if (!finite(x)) return 1; if (!finite(y)) return -1; return (dir < 0 ? y - x : x - y); });
+  const TEXT_SORT = new Set(['sym', 'name', 'group', 'industry', 'themes']);
+  const alphabetical = new Intl.Collator('en', {numeric: true, sensitivity: 'base'});
+  function sortRows(rows, [key, dir], asset) {
+    const text = TEXT_SORT.has(key);
+    const value = r => {
+      if (key === 'z') return Math.abs(r.z ?? NaN);
+      if (key === 'themes') return (r.themes || []).slice(0, 3).map(id => themeLabel(asset, id) || id).join(', ');
+      return r[key];
+    };
+    const present = v => text ? typeof v === 'string' && v.trim() !== '' : finite(v);
+    return rows.map(row => ({row, sortValue: value(row)})).sort(({sortValue: x}, {sortValue: y}) => {
+      const hasX = present(x), hasY = present(y);
+      if (!hasX || !hasY) return Number(hasY) - Number(hasX);
+      const comparison = text ? alphabetical.compare(x, y) : x - y;
+      return dir < 0 ? -comparison : comparison;
+    }).map(({row}) => row);
   }
 
   /* ---------- Columns ---------- */
@@ -220,7 +233,7 @@
     fold.addEventListener('toggle', () => save('scan-filters-open', fold.open));
     host.append(fold);
     // Results.
-    const all = rowsFor(st.asset), hits = sortRows(apply(all, f, st.asset), st.sort);
+    const all = rowsFor(st.asset), hits = sortRows(apply(all, f, st.asset), st.sort, st.asset);
     const bar = el('div', 'sc-bar');
     bar.append(el('b', '', `${hits.length.toLocaleString()} of ${all.length.toLocaleString()} ${st.asset === 'markets' ? 'markets' : st.asset === 'crypto' ? 'assets' : st.asset === 'etfs' ? 'ETFs' : 'stocks'} match`));
     bar.append(btn('Save scan', 'fx-chip', () => { const name = prompt('Name this scan', PRESETS[st.asset].find(p => p[0] === st.preset)?.[1] || 'My scan'); if (!name) return; const list = savedScans().filter(x => !(x.asset === st.asset && x.name === name)); list.unshift({asset: st.asset, name: name.slice(0, 40), f: st.f, sort: st.sort}); save('scan-saved', list.slice(0, 30)); setSt({preset: 'saved:' + name.slice(0, 40)}); }),
@@ -229,7 +242,7 @@
     host.append(bar);
     if (!hits.length) { host.append(el('p', 'pg-lead', 'No market matches every filter. Loosen one filter — for example widen the price range or clear the theme.')); }
     else {
-      const wrap = el('div', 'pg-scroll sc-wrap'); wrap.append(table(st.asset, hits, st.sort, k => setSt({sort: [k, st.sort[0] === k ? -st.sort[1] : -1]}), st.limit)); host.append(wrap);
+      const wrap = el('div', 'pg-scroll sc-wrap'); wrap.append(table(st.asset, hits, st.sort, k => setSt({sort: [k, st.sort[0] === k ? -st.sort[1] : TEXT_SORT.has(k) ? 1 : -1]}), st.limit)); host.append(wrap);
       if (hits.length > st.limit) host.append(PG.chips([btn(`Show ${Math.min(100, hits.length - st.limit)} more`, 'fx-chip fx-chip-link', () => setSt({limit: st.limit + 100}))]));
     }
     const src = st.asset === 'markets' ? `FYNX market snapshot (${S.mk?.source || 'Yahoo Finance, delayed'}). “Vs normal” = today’s move ÷ its 20-day typical daily move.`
@@ -248,7 +261,7 @@
     const host = T.panel('scan'); host.append(el('p', 'fx-empty', 'Loading scanner…'));
     await load(); if (!host.isConnected) return; host.replaceChildren();
     const st = restoreScanState(read('scan-state', null)) || (() => { const a = deskAsset(), p = PRESETS[a][0]; return {asset: a, preset: p[0], f: {...p[2]}, sort: p[3]}; })();
-    const hits = sortRows(apply(rowsFor(st.asset), st.f, st.asset), st.sort).slice(0, 10);
+    const hits = sortRows(apply(rowsFor(st.asset), st.f, st.asset), st.sort, st.asset).slice(0, 10);
     host.append(el('p', 'pm-lead', (PRESETS[st.asset].find(p => p[0] === st.preset)?.[1] || (st.preset.startsWith('saved:') ? st.preset.slice(6) : 'Custom scan')) + ' · ' + ASSETS.find(a => a[0] === st.asset)[1]));
     const key = st.asset === 'crypto' ? 'c24' : 'chg';
     for (const r of hits) { const b = T.rowButton('pm-c4', () => T.setSymbol({symbol: r.open, name: r.name}), `${r.sym} ${r.name}`); b.append(el('b', '', r.sym), el('span', 'fx-num', price(r.price)), el('span', 'fx-num ' + tone(r[key]), pct(r[key])), el('span', 'fx-num fx-dim', st.asset === 'markets' ? (finite(r.z) ? signed(r.z, 1, 'σ') : '') : big(r.vol ?? r.cap))); host.append(b); }
