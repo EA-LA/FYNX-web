@@ -202,3 +202,18 @@ test('paid scenario comparison explains only the requested multipliers that exce
  assert.match(two.notice,/shows the requested multiplier/);
  assert.equal(two.breakEvenWinRate,exact.breakEvenWinRate);
 });
+
+test('Professional simulator counts paths that reach fixed drawdown thresholds',()=>{
+ const initial={balance:1,riskPct:20,winRate:0,rewardRisk:2,trades:1};
+ const result=input=>run('simulation',{...initial,...input});
+ const thresholds=r=>[r.pathsReachingTenPercentDrawdown,r.pathsReachingTwentyPercentDrawdown];
+ assert.deepEqual(thresholds(result({})),['100%','100%'],'an exact 20% first loss counts despite floating-point error');
+ assert.deepEqual(thresholds(result({riskPct:10})),['100%','0%'],'an exact 10% first loss counts');
+ assert.deepEqual(thresholds(result({riskPct:6,trades:2})),['100%','0%'],'cumulative losses cross 10%');
+ assert.deepEqual(thresholds(result({winRate:100,trades:4})),['0%','0%']);
+ const oneTradeMixed=result({winRate:50});
+ assert.deepEqual(thresholds(oneTradeMixed),[oneTradeMixed.lossFrequency+'%',oneTradeMixed.lossFrequency+'%']);
+ const mixed=result({winRate:50,trades:10});
+ assert.ok(parseFloat(mixed.pathsReachingTwentyPercentDrawdown)>mixed.lossFrequency,'recovered paths still count');
+ assert.match(mixed.notice,/even if they recovered/);
+});
