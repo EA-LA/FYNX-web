@@ -160,7 +160,12 @@
     return {series, weights, last, total, dayPL, vol: sdp * Math.sqrt(252) * 100, beta, mdd: mdd * 100, var95: var95 * 100, varUsd: var95 * total, divRatio, effN: 1 / weights.reduce((s, w) => s + w * w, 0), contrib, corr, vols: vols.map(v => v * Math.sqrt(252) * 100),
       ret: (value.at(-1) / value[0] - 1) * 100, curve: idx.map((j, k) => ({date: dates[j], close: value[k]})), bench: bench?.rows || [], currencies, days: pr.length};
   }
-  const portCards = a => [['VALUE', '$' + Math.round(a.total).toLocaleString()], ['TODAY', signed(a.dayPL, 0), tone(a.dayPL)], ['1Y RETURN', signed(a.ret, 1, '%'), tone(a.ret)], ['VOLATILITY', a.vol.toFixed(1) + '% / yr'], ['BETA vs SPY', finite(a.beta) ? a.beta.toFixed(2) : '—'], ['MAX DRAWDOWN', a.mdd.toFixed(1) + '%', 'fx-down'], ['1-DAY VaR 95%', `$${Math.round(a.varUsd).toLocaleString()} (${a.var95.toFixed(2)}%)`], ['DIVERSIFICATION', `${a.divRatio.toFixed(2)}× · ${a.effN.toFixed(1)} effective`]];
+  /* Tick highlighting: portfolio value and today's P/L are recomputed from live prices, so they are observed when
+     drawn (FynxTick.observe flashes them only right after a real price batch, never on a plain redraw). */
+  const TK = window.FynxTick || null;
+  const portTicks = a => { if (TK) { TK.observe('port:value', Math.round(a.total), {digits: 0}); TK.observe('port:day', Math.round(a.dayPL), {digits: 0}); } };
+  const tickCard = (b, t) => TK && t ? TK.mark(b, t.key, t.value) : b;
+  const portCards = a => [['VALUE', '$' + Math.round(a.total).toLocaleString(), '', '', {key: 'port:value', value: Math.round(a.total)}], ['TODAY', signed(a.dayPL, 0), tone(a.dayPL), '', {key: 'port:day', value: Math.round(a.dayPL)}], ['1Y RETURN', signed(a.ret, 1, '%'), tone(a.ret)], ['VOLATILITY', a.vol.toFixed(1) + '% / yr'], ['BETA vs SPY', finite(a.beta) ? a.beta.toFixed(2) : '—'], ['MAX DRAWDOWN', a.mdd.toFixed(1) + '%', 'fx-down'], ['1-DAY VaR 95%', `$${Math.round(a.varUsd).toLocaleString()} (${a.var95.toFixed(2)}%)`], ['DIVERSIFICATION', `${a.divRatio.toFixed(2)}× · ${a.effN.toFixed(1)} effective`]];
   T.PANELS.port = ['PORT', 'Portfolio risk', 'port'];
   T.PANEL_DESC.port = 'Your holdings: value, P/L, volatility, beta, VaR';
   T.RENDER.port = async () => {
@@ -168,11 +173,22 @@
     host.append(el('p', 'fx-empty', 'Analyzing…'));
     const a = await analyze(); if (!host.isConnected) return; host.replaceChildren();
     if (!a || a.empty) return host.append(el('p', 'fx-empty', 'Price history is not available for these holdings.'));
-    const out = el('div', 'fx-calcout'); portCards(a).slice(0, 6).forEach(([k, v, cls]) => { const d = el('div'); d.append(el('span', '', k), el('b', cls || '', v)); out.append(d); }); host.append(out);
+    portTicks(a);
+    const out = el('div', 'fx-calcout'); portCards(a).slice(0, 6).forEach(([k, v, cls, , t]) => { const d = el('div'); d.append(el('span', '', k), tickCard(el('b', cls || '', v), t)); out.append(d); }); host.append(out);
     a.series.map((h, i) => ({h, w: a.weights[i], c: a.contrib[i]})).sort((x, y) => y.w - x.w).slice(0, 6).forEach(({h, w, c}) => { const r = el('div', 'fx-row fx-c3'); r.append(el('b', '', shortOf(h.symbol)), el('span', 'fx-num', (w * 100).toFixed(1) + '% wt'), el('span', 'fx-num fx-dim', c.toFixed(0) + '% risk')); host.append(r); });
     host.append(btn('Full analysis ▸', 'fx-chip fx-chip-link', () => T.openPage('port')));
   };
   T.EXTRA_GROUPS.push(['Portfolio & charts', ['port', 'cmp']]);
+  // New prices arrived: update the value and today's P/L where they are shown, in place (no redraw, no layout
+  // change), and flash them by their own direction. Runs only while one of them is on screen.
+  if (TK && typeof window.addEventListener === 'function') window.addEventListener('fynx:ticks', async () => {
+    if (!holdings().length || !document.querySelector('[data-tick="port:value"],[data-tick="port:day"]')) return;
+    const a = await analyze(); if (!a || a.empty) return;
+    for (const [key, value, text, cls] of [['port:value', Math.round(a.total), '$' + Math.round(a.total).toLocaleString(), ''], ['port:day', Math.round(a.dayPL), signed(a.dayPL, 0), tone(a.dayPL)]]) {
+      const dir = TK.ingest(key, value, {digits: 0});
+      document.querySelectorAll(`[data-tick="${key}"]`).forEach(b => { b.textContent = text; b.classList.remove('fx-up', 'fx-down', 'fx-flat'); if (cls) b.classList.add(cls); b.dataset.tickV = String(value); if (dir) TK.flash(b, dir); });
+    }
+  });
   PG.add('port', 'Portfolio', async (host, arg, alive) => {
     PG.setHead('PORT', 'Portfolio analytics', 'Your holdings, priced live, with risk measured from a year of real daily prices · shared with your signed-in devices');
     const ed = PG.section('Holdings'), tb = el('table', 'fx-table pg-table'), h = el('tr'); ['SYMBOL', 'NAME', 'QUANTITY', 'PRICE', 'VALUE', 'DAY', ''].forEach(x => h.append(el('th', '', x))); tb.append(h);
@@ -180,7 +196,7 @@
       const q = quoteFor(x.symbol), tr = el('tr'), qty = el('input'); qty.type = 'number'; qty.min = '0'; qty.step = 'any'; qty.value = x.qty; qty.className = 'pg-qty'; qty.setAttribute('aria-label', `Quantity of ${x.symbol}`);
       qty.addEventListener('change', () => { const n = Number(qty.value); if (!(qty.value !== '' && finite(n) && n > 0)) { qty.value = x.qty; T.say('Quantity must be above 0. Use ✕ to remove a holding.'); return; } editHoldings(l => { const h = l.find(y => y.symbol === x.symbol); if (h) h.qty = n; }); PG.rerender(); });
       const td = el('td'); td.append(qty);
-      tr.append(el('th', '', x.symbol), el('td', 'pg-name', nameOf(x.symbol)), td, el('td', 'fx-num', q ? fmt(q.price, digitsOf(x.symbol)) : '…'), el('td', 'fx-num', q ? '$' + Math.round(q.price * x.qty).toLocaleString() : '…'), el('td', 'fx-num ' + tone(q?.changePercent), q ? signed(q.changePercent, 2, '%') : ''));
+      tr.append(el('th', '', x.symbol), el('td', 'pg-name', nameOf(x.symbol)), td, tickCard(el('td', 'fx-num', q ? fmt(q.price, digitsOf(x.symbol)) : '…'), q && {key: 'px:' + x.symbol, value: q.price}), tickCard(el('td', 'fx-num', q ? '$' + Math.round(q.price * x.qty).toLocaleString() : '…'), q && {key: 'px:' + x.symbol}), tickCard(el('td', 'fx-num ' + tone(q?.changePercent), q ? signed(q.changePercent, 2, '%') : ''), q && {key: 'chg:' + x.symbol, value: q.changePercent}));
       const rm = el('td'); rm.append(btn('✕', 'fx-chip', () => { editHoldings(l => { const k = l.findIndex(y => y.symbol === x.symbol); if (k >= 0) l.splice(k, 1); }); PG.rerender(); }, `Remove ${x.symbol}`)); tr.append(rm); tb.append(tr);
     }
     const w = el('div', 'pg-scroll'); w.append(tb); ed.append(w);
@@ -193,7 +209,7 @@
     const res = el('div'); res.append(el('p', 'fx-empty', 'Loading a year of prices…')); host.append(res);
     const a = await analyze(); if (!alive()) return; res.replaceChildren();
     if (!a || a.empty) return res.append(el('p', 'fx-empty', 'Price history is not available for these holdings.'));
-    res.append(PG.cards(portCards(a)));
+    portTicks(a); res.append(PG.cards(portCards(a)));
     if (a.currencies.length > 1) res.append(PG.sourceNote(`Holdings trade in ${a.currencies.join(', ')}; values add them without currency conversion.`));
     const g = PG.grid('pg-g2'), c1 = PG.section('Portfolio vs S&P 500 (SPY) · 1 year'); c1.append(T.compareChart([{label: 'Portfolio', rows: a.curve}, {label: 'SPY', rows: a.bench}], (host.clientWidth || innerWidth) < 700 ? {W: 640, H: 440, scale: 2} : {W: 620, H: 260})); g.append(c1);
     const c2 = PG.section('Where the risk comes from'), t2 = el('table', 'fx-table pg-table'), h2 = el('tr'); ['HOLDING', 'WEIGHT', 'VOL / YR', 'SHARE OF RISK'].forEach(x => h2.append(el('th', '', x))); t2.append(h2);

@@ -16,8 +16,8 @@
 
   /* --- state ------------------------------------------------------------------------------------------- */
   const OF = {pair: PAIRS.some(p => p[0] === store.get('oflow-pair')) ? store.get('oflow-pair') : 'BTC/USD', ws: null, status: 'idle', statusText: 'Not connected', bids: new Map(), asks: new Map(),
-    cols: [], trades: [], samples: {t: [], mid: [], obi: [], cvd: []}, cvd: 0, buyVol: 0, sellVol: 0, lastMsg: 0, retry: 0, timer: 0, sampler: 0, zoom: 1, wanted: false, since: 0};
-  const resetData = () => { OF.bids.clear(); OF.asks.clear(); OF.cols = []; OF.trades = []; OF.samples = {t: [], mid: [], obi: [], cvd: []}; OF.cvd = 0; OF.buyVol = 0; OF.sellVol = 0; OF.since = Date.now(); };
+    cols: [], trades: [], samples: {t: [], mid: [], obi: [], cvd: []}, tickRebase: true, cvd: 0, buyVol: 0, sellVol: 0, lastMsg: 0, retry: 0, timer: 0, sampler: 0, zoom: 1, wanted: false, since: 0};
+  const resetData = () => { OF.tickRebase = true; OF.bids.clear(); OF.asks.clear(); OF.cols = []; OF.trades = []; OF.samples = {t: [], mid: [], obi: [], cvd: []}; OF.cvd = 0; OF.buyVol = 0; OF.sellVol = 0; OF.since = Date.now(); };
   const bestBid = () => { let b = -Infinity; for (const p of OF.bids.keys()) if (p > b) b = p; return b; };
   const bestAsk = () => { let a = Infinity; for (const p of OF.asks.keys()) if (p < a) a = p; return a; };
   function sortedSide(map, desc) { return [...map.entries()].sort((a, b) => desc ? b[0] - a[0] : a[0] - b[0]); }
@@ -226,7 +226,19 @@
     const min = OF.trades.filter(t => t.t > Date.now() - 60000), buyPct = OF.buyVol + OF.sellVol ? OF.buyVol / (OF.buyVol + OF.sellVol) : null;
     const set = (id, v, color) => { const n = k.querySelector(`[data-k=${id}] b`); if (n) { n.textContent = v; n.style.color = color || ''; } };
     const digits = last.mid >= 1000 ? 2 : last.mid >= 1 ? 4 : 6;
-    set('mid', last.mid.toFixed(digits)); set('spr', spreadBps.toFixed(2) + ' bp'); set('obi', (o >= 0 ? '+' : '') + o.toFixed(2), o > 0.15 ? '#3ecf8e' : o < -0.15 ? '#ff5a4f' : '');
+    set('mid', last.mid.toFixed(digits)); set('spr', spreadBps.toFixed(2) + ' bp');
+    // Tick highlighting on the streamed mid and best bid/ask. The first sample after a (re)connect or pair switch
+    // is a new baseline, never a tick.
+    // Each sample is recorded once; every KPI block showing it (panel and page) flashes once for it.
+    const TK = window.FynxTick;
+    if (TK) {
+      if (OF.tickAt !== last.t) {
+        const o = {digits, silent: OF.tickRebase, ts: last.t, src: 'kraken:' + OF.pair};
+        OF.tickAt = last.t; OF.tickRebase = false; OF.tickShown = new WeakSet();
+        OF.tickDirs = {mid: TK.ingest(`oflow:${OF.pair}:mid`, last.mid, o), spr: TK.ingest(`oflow:${OF.pair}:spr`, spreadBps, {...o, digits: 2})};
+      }
+      if (!OF.tickShown.has(k)) { OF.tickShown.add(k); for (const [id, dir] of Object.entries(OF.tickDirs)) if (dir) TK.flash(k.querySelector(`[data-k=${id}] b`), dir); }
+    } set('obi', (o >= 0 ? '+' : '') + o.toFixed(2), o > 0.15 ? '#3ecf8e' : o < -0.15 ? '#ff5a4f' : '');
     set('cvd', (OF.cvd >= 0 ? '+' : '') + OF.cvd.toFixed(OF.cvd && Math.abs(OF.cvd) < 10 ? 3 : 1), OF.cvd >= 0 ? '#3ecf8e' : '#ff5a4f'); set('tpm', String(min.length)); set('buy', buyPct === null ? '—' : Math.round(buyPct * 100) + '%');
   }
   function sigUpdate(host) {

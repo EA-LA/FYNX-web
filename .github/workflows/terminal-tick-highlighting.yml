@@ -1,0 +1,43 @@
+name: Terminal tick highlighting regression
+on:
+  pull_request:
+    paths:
+      - 'assets/js/terminal/tick.js'
+      - 'assets/js/terminal/app.js'
+      - 'assets/js/terminal/pages.js'
+      - 'assets/js/terminal/portfolio.js'
+      - 'assets/js/terminal/scanner.js'
+      - 'assets/js/terminal/orderflow.js'
+      - 'assets/js/terminal/world.js'
+      - 'assets/js/terminal/builder-core.js'
+      - 'assets/js/terminal/builder.js'
+      - 'assets/css/terminal-all.css'
+      - 'terminal.html'
+      - 'scripts/test-terminal-tick*.cjs'
+      - '.github/workflows/terminal-tick-highlighting.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tick-highlighting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci --ignore-scripts
+      - name: Install browser test harness
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          if [ -n "$CHROME" ]; then
+            echo "FYNX_CHROMIUM_PATH=$CHROME" >> "$GITHUB_ENV"
+          else
+            npx playwright install --with-deps chromium
+          fi
+      - run: node --check assets/js/terminal/tick.js
+      - run: node --test scripts/test-terminal-tick.cjs
+      - run: node --test scripts/test-terminal-tick-browser.cjs
+      - run: node --test scripts/test-terminal-tick-e2e.cjs

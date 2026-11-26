@@ -183,9 +183,9 @@
       const head = el('div', 'fx-gc-head'); head.append(el('b', 'fx-gc-iso', iso), el('strong', '', nameOfC(iso)), el('span', 'fx-pill fx-pill-' + st.level, st.level === 'grey' ? 'NO SIGNAL' : st.level.toUpperCase()), btn('✕', 'fx-gc-x', () => { card.hidden = true; W.sel = null; }, 'Close'));
       card.append(head);
       if (st.reasons.length) { const ul = el('ul'); st.reasons.slice(0, 3).forEach(r => ul.append(el('li', '', r))); card.append(ul); } else card.append(el('p', '', st.level === 'grey' ? 'No live market or news feed covers this country yet.' : 'Quiet: no unusual move and no major event this week.'));
-      const facts = el('div', 'fx-gc-facts'), fact = (k, v) => { if (v === null || v === undefined) return; const s = el('span'); s.append(el('small', '', k), el('b', '', v)); facts.append(s); };
-      if (m?.idx && quoteFor(m.idx)) fact(shortOf(m.idx), signed(quoteFor(m.idx).changePercent, 2, '%'));
-      if (m?.fx && quoteFor(m.fx)) fact(shortOf(m.fx), fmt(quoteFor(m.fx).price, digitsOf(m.fx)));
+      const facts = el('div', 'fx-gc-facts'), fact = (k, v, key, raw) => { if (v === null || v === undefined) return; const s = el('span'), b = el('b', '', v); s.append(el('small', '', k), key && T.tk ? T.tk(b, key, raw) : b); facts.append(s); };
+      if (m?.idx && quoteFor(m.idx)) fact(shortOf(m.idx), signed(quoteFor(m.idx).changePercent, 2, '%'), 'chg:' + m.idx, quoteFor(m.idx).changePercent);
+      if (m?.fx && quoteFor(m.fx)) fact(shortOf(m.fx), fmt(quoteFor(m.fx).price, digitsOf(m.fx)), 'px:' + m.fx, quoteFor(m.fx).price);
       if (m?.ccy) { const r = M.policyRate(m.ccy, S.desk); if (r) fact('POLICY', r.display); }
       if (c?.data?.growth) fact(`GDP ${c.data.growth.year}`, signed(c.data.growth.value, 1, '%'));
       if (c?.data?.inflation) fact(`CPI ${c.data.inflation.year}`, c.data.inflation.value.toFixed(1) + '%');

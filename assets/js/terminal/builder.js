@@ -266,6 +266,8 @@
   }
 
   function snapshot(T) { return Core.snapshotQuotes(T.S && T.S.quotes); }
+  // Market Data Display settings for FYNX.tick inside widgets (plain data only).
+  function tickDisplay() { try { return window.FynxTick ? window.FynxTick.sandboxSettings() : null; } catch (e) { return null; } }
 
   function sweepFrames() {
     for (const frame of [...frames]) {
@@ -314,7 +316,7 @@
       if (event.data.type === 'fynx-ready') {
         if (readySeen) { hooks.onError?.('Stopped. The widget tried to leave the sandbox.'); stop(); return; }
         readySeen = true;
-        try { frame.contentWindow.postMessage({type: 'fynx-run', token, code, quotes: Core.snapshotQuotes(quotes)}, '*'); }
+        try { frame.contentWindow.postMessage({type: 'fynx-run', token, code, quotes: Core.snapshotQuotes(quotes), display: tickDisplay()}, '*'); }
         catch (error) { finish(); hooks.onError?.(String(error.message || 'The widget failed.').slice(0, 500)); }
         return;
       }
@@ -346,7 +348,7 @@
     const quotes = snapshot(window.FynxTerminalCore);
     frames.forEach(frame => {
       if (!frame.isConnected || !frame.contentWindow) { frame._fxbStop?.(); return; }
-      try { frame.contentWindow.postMessage({type: 'fynx-quotes', token: frame.dataset.token || '', quotes}, '*'); } catch (e) {}
+      try { frame.contentWindow.postMessage({type: 'fynx-quotes', token: frame.dataset.token || '', quotes, display: tickDisplay()}, '*'); } catch (e) {}
     });
   }, 30000);
 
