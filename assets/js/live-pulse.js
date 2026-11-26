@@ -133,17 +133,30 @@
   async function load(strip) {
     // An initial offline request must not permanently remove the pulse.
     if (pending || !strip.isConnected) return;
-    const controller = new AbortController();
-    pending = controller;
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    pending = true;
     const retry = strip.querySelector('.lp-retry');
     retry.disabled = true;
-    const timeout = setTimeout(() => controller.abort(), 12000);
+    let timeout;
     try {
-      const res = await fetch(SRC + '?t=' + Math.floor(Date.now() / 300000), {
-        cache: 'no-store', signal: controller.signal
-      });
-      if (!res.ok) throw new Error('Market source unavailable');
-      const data = await res.json(); render(strip, data); lastData = data; lastStrip = strip;
+      // Bound the complete response, including a stalled JSON body or a
+      // WebView where abort is unavailable or not honored by the transport.
+      const data = await Promise.race([
+        new Promise((_, reject) => {
+          timeout = setTimeout(() => {
+            reject(new Error('Market source timed out'));
+            if (controller) controller.abort();
+          }, 12000);
+        }),
+        (async () => {
+          const res = await fetch(SRC + '?t=' + Math.floor(Date.now() / 300000), {
+            cache: 'no-store', ...(controller ? {signal: controller.signal} : {})
+          });
+          if (!res.ok) throw new Error('Market source unavailable');
+          return res.json();
+        })()
+      ]);
+      render(strip, data); lastData = data; lastStrip = strip;
     } catch (_) {
       const previous = !!strip.querySelector('.lp-item');
       strip.classList.toggle('is-error', !previous);

@@ -8,14 +8,15 @@ const source = fs.readFileSync(path.join(__dirname, '../assets/js/live-pulse.js'
 const tick = () => new Promise(resolve => setImmediate(resolve));
 async function settle() { await tick(); await tick(); }
 
-function setup(mode = 'ok') {
+function setup(mode = 'ok', {withoutAbort = false} = {}) {
   const dom = new JSDOM('<!doctype html><html><head></head><body><main></main></body></html>', {
     url: 'https://www.fynxfinanceworld.com/learn.html', runScripts: 'outside-only'
   });
   const w = dom.window;
+  if (withoutAbort) w.AbortController = undefined;
   Object.defineProperty(w.document, 'hidden', {configurable: true, value: false});
   const intervals = [], timeouts = new Map();
-  let sequence = 0, requests = 0, pendingSignal = null;
+  let sequence = 0, requests = 0, pendingSignal = null, resolveLateBody;
   const quote = {
     generatedAt: new Date(Date.now() - 10 * 60000).toISOString(), stale: false,
     items: [{symbol: '^GSPC', label: 'S&P 500', price: 7515.05,
@@ -28,7 +29,12 @@ function setup(mode = 'ok') {
   w.fetch = (_url, options) => {
     requests++;
     assert.equal(options.cache, 'no-store');
-    assert.ok(options.signal, 'requests must support cancellation');
+    if (withoutAbort) assert.equal(options.signal, undefined);
+    else assert.ok(options.signal, 'requests must support cancellation');
+    if (mode === 'body-stall') return Promise.resolve({ok: true, json: () => new Promise(resolve => {
+      pendingSignal = options.signal;
+      resolveLateBody = () => resolve({...quote, items: [{...quote.items[0], price: 9999}]});
+    })});
     if (mode === 'fail') return Promise.reject(new Error('offline'));
     if (mode === 'empty') return Promise.resolve({ok: true, json: async () => ({items: []})});
     if (mode === 'stall') return new Promise((_, reject) => {
@@ -63,6 +69,7 @@ function setup(mode = 'ok') {
     w, intervals, timeouts, setMode: value => { mode = value; },
     get requests() { return requests; },
     get pendingSignal() { return pendingSignal; },
+    finishLateBody: () => resolveLateBody(),
     strip: () => w.document.querySelector('.lp-strip'),
     close: () => w.close()
   };
@@ -283,4 +290,32 @@ test('fresh canonical ticker quote does not inherit an older source-batch badge'
     assert.equal(strip.querySelectorAll('.lp-age').length, 0, 'fresh canonical observations must not inherit batch staleness');
     assert.match(strip.querySelector('.lp-asof').textContent, /Stale snapshot/, 'the older source batch remains disclosed');
   } finally { app.close(); }
+});
+
+test('a stalled JSON body releases retry even without AbortController and a late body cannot overwrite recovery', async () => {
+  for (const withoutAbort of [false, true]) {
+    const app = setup('body-stall', {withoutAbort});
+    try {
+      await settle();
+      assert.equal(app.requests, 1);
+      assert.equal(app.timeouts.size, 1);
+      app.intervals[0]();
+      assert.equal(app.requests, 1);
+      [...app.timeouts.values()][0]();
+      await settle();
+      if (!withoutAbort) assert.equal(app.pendingSignal.aborted, true);
+      assert.match(app.strip().textContent, /Market pulse unavailable/);
+      assert.equal(app.strip().querySelector('.lp-retry').disabled, false);
+      assert.equal(app.timeouts.size, 0);
+      app.setMode('ok');
+      app.strip().querySelector('.lp-retry').click();
+      await settle();
+      assert.match(app.strip().querySelector('.lp-item').textContent, /7,515/);
+      app.finishLateBody();
+      await settle();
+      assert.match(app.strip().querySelector('.lp-item').textContent, /7,515/);
+      assert.doesNotMatch(app.strip().textContent, /9,999/);
+      assert.equal(app.strip().querySelector('.lp-feedback').hidden, true);
+    } finally { app.close(); }
+  }
 });
