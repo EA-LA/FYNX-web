@@ -106,3 +106,61 @@ test('native form submission uses existing calculation, validation and reset wit
     dom.window.close();
   }
 });
+
+// Run 114: "Same trade, different leverage" table and stale-result guard.
+// Expected values checked independently in Python decimal (run 114).
+function runLev(values) {
+  const dom = new JSDOM(page, { url: 'https://www.fynxfinanceworld.com/tools/margin.html', runScripts: 'outside-only' });
+  dom.window.eval(inline);
+  const doc = dom.window.document;
+  for (const [id, value] of Object.entries(values)) doc.getElementById(id).value = value;
+  doc.getElementById('calculateBtn').click();
+  const rows = [...doc.querySelectorAll('#levTable tbody tr')].map(tr => [...tr.cells].map(td => td.textContent.trim()));
+  const note = doc.getElementById('levNote').textContent;
+  return { dom, doc, rows, note, hidden: doc.getElementById('levCard').hidden };
+}
+
+test('leverage table: EURUSD default, yours marked, 10:1 already below stop-out', () => {
+  const { dom, rows, note, hidden } = runLev({});
+  try {
+    assert.equal(hidden, false);
+    assert.deepEqual(rows, [
+      ['10:1', '$11,000.00', '43%', 'Already below 50%'],
+      ['20:1', '$5,500.00', '83%', '200.0'],
+      ['30:1yours', '$3,666.67', '120%', '291.7'],
+      ['50:1', '$2,200.00', '185%', '365.0'],
+      ['100:1', '$1,100.00', '312%', '420.0'],
+      ['200:1', '$550.00', '476%', '447.5'],
+      ['500:1', '$220.00', '694%', '464.0'],
+    ]);
+    assert.match(note, /One pip is worth \$10\.00 at every leverage/);
+  } finally { dom.window.close(); }
+});
+
+test('leverage table: custom leverage is added in order; USD-base JPY pair', () => {
+  const { dom, rows } = runLev({ pairType: 'usdBase', accountBalance: '10000', lotSize: '2', entryPrice: '150.25', leverage: '75', pipSize: '0.01', usedMarginExisting: '0' });
+  try {
+    assert.deepEqual(rows.map(r => r[0]), ['10:1', '20:1', '30:1', '50:1', '75:1yours', '100:1', '200:1', '500:1']);
+    assert.deepEqual(rows[1].slice(1), ['$10,000.00', '100%', '375.6']);
+    assert.deepEqual(rows[5].slice(1), ['$2,000.00', '500%', '676.1']);
+    assert.deepEqual(rows[7].slice(1), ['$400.00', '2,500%', '736.2']);
+  } finally { dom.window.close(); }
+});
+
+test('editing any input clears the old result until Calculate is pressed', () => {
+  const { dom, doc } = runLev({});
+  try {
+    assert.equal(doc.getElementById('requiredMarginValue').textContent, '$3,666.67');
+    const lev = doc.getElementById('leverage');
+    lev.value = '50';
+    lev.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+    assert.equal(doc.getElementById('requiredMarginValue').textContent, '—');
+    assert.equal(doc.getElementById('roomCard').hidden, true);
+    assert.equal(doc.getElementById('levCard').hidden, true);
+    assert.equal(doc.getElementById('statusTitle').textContent, 'Inputs changed');
+    doc.getElementById('calculateBtn').click();
+    assert.equal(doc.getElementById('requiredMarginValue').textContent, '$2,200.00');
+    doc.getElementById('pairType').dispatchEvent(new dom.window.Event('change', { bubbles: true }));
+    assert.equal(doc.getElementById('requiredMarginValue').textContent, '—');
+  } finally { dom.window.close(); }
+});

@@ -411,6 +411,10 @@
     .room-lots{margin-top:.7rem;display:grid;gap:.35rem}
     .room-lots div{font-size:.92rem;color:var(--text-soft)}
     .room-lots strong{color:var(--text)}
+    .lev-table td.lev-you{font-weight:700}
+    .lev-table .lev-tag{display:inline-block;margin-left:.3rem;color:var(--text-muted);font-size:.75rem;font-weight:600}
+    .lev-table .lev-below{display:inline-block;white-space:normal;min-width:5.5em;font-size:.85em;color:var(--text-soft)}
+    @media (max-width:430px){.lev-table th{letter-spacing:0;text-transform:none}.lev-table .lev-tag{display:block;margin-left:0}}
     @media (max-width: 480px){
       .room-card{padding:.85rem .7rem}
       .room-table th,.room-table td{padding:.55rem .3rem;font-size:.84rem}
@@ -652,6 +656,18 @@
         <div class="room-note">Brokers set their own levels: 100% margin call and 50% stop-out are common, but check yours. Assumes margin and pip value stay at their opening values and ignores spread, swaps and commission.</div>
       </section>
 
+      <section class="room-card" id="levCard" hidden aria-labelledby="levTitle">
+        <h2 id="levTitle">Same trade, different leverage</h2>
+        <div class="room-note" id="levIntro">Margin this trade locks up at other leverage settings, with your other positions unchanged.</div>
+        <div class="room-scroll">
+          <table class="room-table lev-table" id="levTable">
+            <thead><tr><th>Leverage</th><th>Margin needed</th><th>Margin level</th><th>Pips to stop-out (50%)</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="room-note" id="levNote"></div>
+      </section>
+
       <div class="hint">
         Keep free margin healthy. Even if the broker allows the trade, using too much margin makes the account fragile and much easier to liquidate during normal volatility.
       </div>
@@ -785,6 +801,29 @@
       card.hidden = false;
     }
 
+    function renderLeverage(ctx){
+      const card = document.getElementById("levCard");
+      if (!ctx){ card.hidden = true; return; }
+      const { balance, existingUsedMargin, notionalUSD, pipValueUSD, leverage } = ctx;
+      const list = [10, 20, 30, 50, 100, 200, 500].filter(l => l !== leverage).concat([leverage]).sort((a, b) => a - b);
+      const rows = list.map(lev => {
+        const need = notionalUSD / lev;
+        const total = existingUsedMargin + need;
+        const level = total > 0 ? balance / total * 100 : 0;
+        const loss = balance - total * 0.5;
+        const pips = loss > 0 && pipValueUSD > 0
+          ? loss / pipValueUSD
+          : null;
+        const mine = lev === leverage;
+        const levText = `${lev.toLocaleString("en-US", { maximumFractionDigits: 2 })}:1`;
+        return `<tr><td${mine ? ' class="lev-you"' : ""}>${levText}${mine ? '<span class="lev-tag">yours</span>' : ""}</td><td>${formatCurrency(need)}</td><td>${Math.round(level).toLocaleString("en-US")}%</td><td>${pips === null ? '<span class="lev-below">Already below 50%</span>' : pips.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</td></tr>`;
+      });
+      document.querySelector("#levTable tbody").innerHTML = rows.join("");
+      document.getElementById("levNote").textContent =
+        `One pip is worth ${formatCurrency(pipValueUSD)} at every leverage: leverage changes how much of your balance is locked up as margin, not what the trade gains or loses per pip. Higher leverage leaves more room before a 50% stop-out only because less margin is reserved. Your broker sets the leverage it allows.`;
+      card.hidden = false;
+    }
+
     function resetOutput(){
       document.getElementById("requiredMarginValue").textContent = "—";
       document.getElementById("notionalValue").textContent = "—";
@@ -803,6 +842,7 @@
       `;
       setStatus("neutral","No calculation yet","Enter your trade details to see required margin and account impact.");
       renderRoom(null);
+      renderLeverage(null);
     }
 
     function calculateMargin(){
@@ -818,6 +858,7 @@
 
       if(balance <= 0 || lotSize <= 0 || contractSize <= 0 || entryPrice <= 0 || leverage <= 0 || conversionRate <= 0 || existingUsedMargin < 0){
         resetOutput();
+        resultShown = false;
         setStatus("bad","Invalid inputs","All required values must be valid positive numbers.");
         return;
       }
@@ -868,6 +909,8 @@
 
       setStatus(level, title, desc);
       renderRoom({ balance, existingUsedMargin, requiredMargin, totalUsedMargin, pipValueUSD, pipSize, entryPrice, lotSize });
+      renderLeverage({ balance, existingUsedMargin, notionalUSD, pipValueUSD, leverage });
+      resultShown = true;
 
       const rows = [
         {
@@ -920,6 +963,16 @@
         </tr>
       `).join("");
     }
+
+    let resultShown = false;
+    function markStale(){
+      if (!resultShown) return;
+      resultShown = false;
+      resetOutput();
+      setStatus("neutral", "Inputs changed", "Press Calculate to update the margin for your new numbers.");
+    }
+    document.getElementById("marginInputs").addEventListener("input", markStale);
+    document.getElementById("marginInputs").addEventListener("change", markStale);
 
     document.getElementById("marginInputs").addEventListener("submit", event => {
       event.preventDefault();
