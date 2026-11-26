@@ -118,9 +118,23 @@
     $('[data-newsroom-latest-section]').hidden = !latest.length;
     $('[data-newsroom-latest]').replaceChildren(...latest.slice(0, visibleLatest).map(item => story(item, 'latest')));
     $('[data-newsroom-count]').textContent = latest.length + (latest.length === 1 ? ' report' : ' reports');
+    updateMore(latest.length);
+  }
+  function updateMore(count) {
     const more = $('[data-newsroom-more]');
-    more.hidden = latest.length <= visibleLatest;
-    more.textContent = 'Show more reporting (' + Math.max(0, latest.length - visibleLatest) + ')';
+    more.hidden = count <= visibleLatest;
+    more.textContent = 'Show more reporting (' + Math.max(0, count - visibleLatest) + ')';
+  }
+  function showMore() {
+    const latest = rows.slice(4);
+    const additional = latest.slice(visibleLatest, visibleLatest + 8).map(item => story(item, 'latest'));
+    if (!additional.length) return;
+    visibleLatest += additional.length;
+    // Only add the newly revealed reports. Rebuilding the lead or prior list
+    // restarts images and discards the reader's current place in the feed.
+    $('[data-newsroom-latest]').append(...additional);
+    updateMore(latest.length);
+    additional[0].querySelector('h3 a')?.focus();
   }
   function setStatus(result) {
     const saved = result.status === 'cached';
@@ -277,7 +291,7 @@
   document.addEventListener('fynx:news-preferences-change', syncFollow);
   syncFollow();
   $('[data-newsroom-refresh]').addEventListener('click', () => refresh(true));
-  $('[data-newsroom-more]').addEventListener('click', () => { visibleLatest += 8; if (rows.length) render(); });
+  $('[data-newsroom-more]').addEventListener('click', showMore);
   document.addEventListener('fynx:edition-change', () => refresh(true));
   document.addEventListener('visibilitychange', checkCoverage);
   window.addEventListener('pagehide', () => clearInterval(timer));
