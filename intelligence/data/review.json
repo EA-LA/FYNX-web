@@ -1,6 +1,30 @@
 {
- "generatedAt": "2026-11-26T13:59:07.131Z",
+ "generatedAt": "2026-11-26T23:03:19.352Z",
  "items": [
+  {
+   "reason": "sensitive subject",
+   "title": "US Crypto Fraud Crackdown Targets Over 800 Defendants Globally",
+   "sources": [
+    "The Cryptonomist"
+   ],
+   "at": "2026-11-26T23:03:19.352Z"
+  },
+  {
+   "reason": "sensitive subject",
+   "title": "X wins UK High Court ruling over £207,384 Bitcoin fraud",
+   "sources": [
+    "NewsBytes"
+   ],
+   "at": "2026-11-26T23:03:19.352Z"
+  },
+  {
+   "reason": "sensitive subject",
+   "title": "X wins lawsuit in the UK against operators of a fake news network about bitcoin",
+   "sources": [
+    "portalcripto.com.br"
+   ],
+   "at": "2026-11-26T23:03:19.352Z"
+  },
   {
    "reason": "sensitive subject",
    "title": "Alice Huang Firms Financed $270M in AI Servers for China Data Centres",
