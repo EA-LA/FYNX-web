@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {parseChart, parseOCC, summarizeOptions, UNIVERSE, OPTION_UNDERLYINGS} = require('../../scripts/refresh-terminal-markets.cjs');
+const {parseChart, parseOCC, summarizeOptions, contractRow, CBOE_HEADERS, UNIVERSE, OPTION_UNDERLYINGS} = require('../../scripts/refresh-terminal-markets.cjs');
 
 const DAY = 86400;
 function chart(symbol, closes, {start = Date.UTC(2026, 9, 1) / 1000, price, time} = {}) {
@@ -68,4 +68,17 @@ test('option summaries compute put/call ratios, expected move, max pain and skew
   assert.equal(u.asOf, '2026-11-11T15:00:00.000Z');
   assert.throws(() => summarizeOptions('XYZ', {data: {current_price: 100, options: []}}, now), /No live contracts/);
   assert.throws(() => summarizeOptions('XYZ', {data: {}}, now), /No option data/);
+});
+
+test('option contracts keep the Greeks, day change and sizes Cboe publishes; missing fields stay null', () => {
+  const row = contractRow({bid: 8.05, bid_size: 100, ask: 8.15, ask_size: 75, iv: 0.1825, open_interest: 1695, volume: 200, delta: 0.694, gamma: 0.0123, vega: 0.25, theta: -0.0782, change: -1.25, last_trade_price: 8.1});
+  assert.deepEqual(row, {bid: 8.05, ask: 8.15, last: 8.1, change: -1.25, bidSize: 100, askSize: 75, iv: 0.1825, delta: 0.694, gamma: 0.0123, theta: -0.0782, vega: 0.25, volume: 200, oi: 1695});
+  const bare = contractRow({bid: 1, ask: 1.1, iv: 0.2, delta: 0.5, last_trade_price: 1.05});
+  assert.equal(bare.gamma, null); assert.equal(bare.theta, null); assert.equal(bare.change, null); assert.equal(bare.bidSize, null);
+});
+
+test('Cboe requests carry the cboe.com origin headers its CDN requires (403 without them since Nov 2026)', () => {
+  assert.equal(CBOE_HEADERS.Origin, 'https://www.cboe.com');
+  assert.match(CBOE_HEADERS.Referer, /^https:\/\/www\.cboe\.com\//);
+  assert.equal(CBOE_HEADERS['Sec-Fetch-Site'], 'same-site');
 });
