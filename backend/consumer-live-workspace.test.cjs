@@ -10,7 +10,7 @@ function harness(options={}){
  const db={collection,runTransaction:async fn=>fn({get:async r=>snapshot(r.path),set:(r,v,o)=>r.set(v,o),create:(r,v)=>r.set(v),delete:r=>data.delete(r.path)})};
  function sub(tier='starter'){return {id:'sub_paid',customer:'cus_owner',livemode:true,status:'active',metadata:{product:PRODUCT,fynx_uid:'owner',tier},items:{data:[{quantity:1,price:{id:PRICES[tier],livemode:true,type:'recurring',unit_amount:PLANS[tier].cents,currency:'usd',recurring:{interval:'month',interval_count:1,usage_type:'licensed'}}}]},latest_invoice:{customer:'cus_owner',livemode:true,status:'paid',paid:true}};}
  const state={subscriptions:options.paid?[sub(options.tier)]:[],sessions:[],failCreate:false};
- const stripe={subscriptions:{list:async()=>{if(options.stripeDown)throw Error('Stripe unavailable');return {data:state.subscriptions};}},prices:{retrieve:async id=>{const tier=Object.keys(PRICES).find(t=>PRICES[t]===id);return {...sub(tier).items.data[0].price,active:true,...options.price};}},customers:{create:async(...args)=>{calls.push(['customer',...args]);return {id:'cus_owner'};}},checkout:{sessions:{list:async()=>({data:state.sessions}),retrieve:async()=>({status:'expired'}),expire:async id=>calls.push(['expire',id]),create:async(...args)=>{calls.push(['checkout',...args]);if(state.failCreate)throw Error('Timeout');return {id:'cs_new',url:'https://checkout.stripe.com/c/pay/cs_new'};}}},billingPortal:{configurations:{create:async()=>({id:'bpc_owner'})},sessions:{create:async args=>{calls.push(['portal',args]);return {url:'https://billing.stripe.com/session/live'};}}}};
+ const stripe={subscriptions:{list:async params=>{if(options.stripeDown||state.failSubscriptionPage&&params.starting_after)throw Error('Stripe unavailable');if(!options.paginated)return {data:state.subscriptions};calls.push(['subscription-list',{...params}]);const start=params.starting_after?state.subscriptions.findIndex(s=>s.id===params.starting_after)+1:0;return {data:state.subscriptions.slice(start,start+params.limit),has_more:state.subscriptions.length>start+params.limit};}},prices:{retrieve:async id=>{const tier=Object.keys(PRICES).find(t=>PRICES[t]===id);return {...sub(tier).items.data[0].price,active:true,...options.price};}},customers:{create:async(...args)=>{calls.push(['customer',...args]);return {id:'cus_owner'};}},checkout:{sessions:{list:async()=>({data:state.sessions}),retrieve:async()=>({status:'expired'}),expire:async id=>calls.push(['expire',id]),create:async(...args)=>{calls.push(['checkout',...args]);if(state.failCreate)throw Error('Timeout');return {id:'cs_new',url:'https://checkout.stripe.com/c/pay/cs_new'};}}},billingPortal:{configurations:{create:async()=>({id:'bpc_owner'})},sessions:{create:async args=>{calls.push(['portal',args]);return {url:'https://billing.stripe.com/session/live'};}}}};
  class HttpsError extends Error{constructor(code,message){super(message);this.code=code;}}
  const module={exports:{}};const stubs={'firebase-functions/v1':{https:{HttpsError},runWith:()=>({https:{onCall:f=>f}})},'firebase-admin':{firestore:()=>db,auth:()=>({getUser:async()=>({email:'owner@example.invalid',disabled:false,...options.user})})},stripe:function(){return stripe;}};
  vm.runInNewContext(fs.readFileSync(__dirname+'/consumer-live-workspace.cjs','utf8'),{module,exports:module.exports,process:{env:{FYNX_CONSUMER_STRIPE_SECRET_KEY:options.key||'sk_live_UNIT_TEST_ONLY',FYNX_ACCOUNT_MEMBERSHIP_BRIDGE:options.bridge?'pro-equivalent':''}},require:n=>stubs[n]||require(n),Date,URL});
@@ -235,4 +235,78 @@ test('paid workspace ignores unverified higher tiers and falls back after revoca
  essential.status='canceled';
  assert.equal((await h.call({action:'status'})).tier,null);
  await assert.rejects(h.call({action:'list'}),{code:'permission-denied'});
+});
+
+test('paid membership verifies the highest tier across Stripe subscription pages',async()=>{
+ const h=harness({paid:true,paginated:true}),starter={...h.sub('starter'),id:'starter'},pro={...h.sub('pro'),id:'professional'};
+ h.state.subscriptions=[...Array.from({length:99},(_,i)=>({...h.sub(),id:'old-'+i,status:'canceled'})),starter,pro];
+ const status=await h.call({action:'status'});
+ assert.equal(status.tier,'pro');
+ const reads=h.calls.filter(c=>c[0]==='subscription-list');
+ assert.equal(reads.length,2);
+ assert.equal(reads[1][1].starting_after,'starter');
+ assert.equal(reads[1][1].expand[0],'data.latest_invoice');
+ assert.equal((await h.call({action:'list'})).limit,500);
+});
+test('later-page delinquent subscriptions prevent duplicate checkout',async()=>{
+ const h=harness({customer:true,paginated:true});
+ h.state.subscriptions=[...Array.from({length:100},(_,i)=>({...h.sub(),id:'old-'+i,status:'canceled'})),{...h.sub(),id:'delinquent',status:'past_due'}];
+ await assert.rejects(h.call({action:'checkout',tier:'starter'}),{code:'already-exists'});
+ assert.equal(h.calls.some(c=>c[0]==='checkout'),false);
+ assert.equal(h.data.get('fynxConsumerLive/owner').checkoutLockUntil,0);
+});
+test('partial subscription history cannot grant access or start checkout and leaves portal available',async()=>{
+ const h=harness({paid:true,paginated:true});
+ h.state.subscriptions=[...Array.from({length:100},(_,i)=>({...h.sub(),id:'old-'+i,status:'canceled'})),{...h.sub(),id:'paid'}];
+ h.state.subscriptions[0].status='active';
+ h.state.failSubscriptionPage=true;
+ const status=await h.call({action:'status'});
+ assert.equal(status.tier,null);
+ assert.equal(status.billingUnavailable,true);
+ assert.equal(status.hasBillingAccount,true);
+ await assert.rejects(h.call({action:'run',product:'watchlist',input:{symbols:['AAPL']}}),/Stripe unavailable/);
+ await assert.rejects(h.call({action:'checkout',tier:'starter'}),/Stripe unavailable/);
+ assert.equal(h.calls.some(c=>c[0]==='checkout'),false);
+ assert.match((await h.call({action:'portal'})).url,/billing.stripe.com/);
+});
+test('overlong subscription history fails closed at the bounded page limit',async()=>{
+ const h=harness({customer:true,paginated:true});
+ h.state.subscriptions=Array.from({length:1001},(_,i)=>({...h.sub(),id:'old-'+i,status:'canceled'}));
+ const status=await h.call({action:'status'});
+ assert.equal(status.billingUnavailable,true);
+ assert.equal(status.tier,null);
+ assert.equal(h.calls.filter(c=>c[0]==='subscription-list').length,10);
+ await assert.rejects(h.call({action:'checkout',tier:'starter'}),{code:'unavailable'});
+ assert.equal(h.calls.some(c=>c[0]==='checkout'),false);
+});
+
+test('paid Journal Intelligence groups valid realized trades by their recorded session',async()=>{
+ const h=harness({paid:true});
+ const history=[['Asia',5],[' london ',12],['London',0],['New York','10'],['NY',-5],['Other',4],['',-2],['unrecognized',1],['Asia',null],['London','']];
+ history.forEach(([session,pl],i)=>h.data.set('users/owner/trades/session-'+i,{session,pl,dateTs:i+1}));
+ const {result}=await h.call({action:'run',product:'analytics'});
+ assert.deepEqual(JSON.parse(JSON.stringify(result.rows)),[
+  {session:'Asia',trades:1,winRatePercent:100,netPL:5},
+  {session:'London',trades:2,winRatePercent:50,netPL:12},
+  {session:'New York',trades:2,winRatePercent:50,netPL:5},
+  {session:'Other',trades:1,winRatePercent:100,netPL:4},
+  {session:'Unclassified',trades:2,winRatePercent:50,netPL:-1}
+ ]);
+ assert.equal(result.rows.reduce((n,row)=>n+row.trades,0),result.trades);
+ assert.equal(result.rows.reduce((n,row)=>n+row.netPL,0),result.netPL);
+ assert.match(result.notice,/use recorded Journal labels, not trade times/);
+ assert.match(result.notice,/Records with invalid realized P\/L were omitted/);
+ const request={action:'save',accountUid:'owner',requestId:'12345678-1234-4234-8234-123456789abc',product:'analytics',name:'Session breakdown',input:{}};
+ const saved=await h.call(request);
+ h.data.set('users/owner/trades/later',{dateTs:30,session:'London',pl:50});
+ assert.equal(JSON.stringify((await h.call(request)).result.rows),JSON.stringify(saved.result.rows));
+ assert.equal((await h.call({action:'run',product:'analytics'})).result.rows[1].netPL,62);
+});
+
+test('paid Journal Intelligence does not create a session table from invalid history',async()=>{
+ const h=harness({paid:true});
+ h.data.set('users/owner/trades/invalid',{session:'London',pl:null,dateTs:1});
+ const {result}=await h.call({action:'run',product:'analytics'});
+ assert.equal(result.trades,0);
+ assert.equal(Object.hasOwn(result,'rows'),false);
 });

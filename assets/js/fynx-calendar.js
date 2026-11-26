@@ -129,7 +129,7 @@
     const freshness = el('p', 'fc-status'); freshness.setAttribute('role', 'status'); freshness.hidden = true;
     const detail = el('section', 'fc-detail'); detail.hidden = true; detail.setAttribute('aria-label', 'Event intelligence'); detail.tabIndex = -1;
     const requestedEvent = () => { const p = new URLSearchParams(location.search); return p.has('event') ? ([...p].length === 1 && /^[a-f0-9]{64}$/.test(p.get('event')) ? p.get('event') : 'invalid') : null; };
-    let selectedID = o.compact ? null : requestedEvent();
+    let selectedID = o.compact ? null : requestedEvent(), detailOpener = null;
     list.setAttribute('role', 'list');
 
     function filtered() {
@@ -170,16 +170,35 @@
       const slug = `${e.currency}-${e.title}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || 'event';
       saveICS([e], `fynx-${slug}.ics`, `Saved “${e.currency} ${e.title}”. Open the file to add it to your calendar.`);
     }
-    function selectEvent(e, remember = true) {
+    const markEvent = (button, e, action) => {
+      if (o.compact) return;
+      button.dataset.fcEvent = publicEventID(e) || eventKey(e); button.dataset.fcAction = action;
+    };
+    const eventFocusKey = button => button?.dataset?.fcEvent ? {event: button.dataset.fcEvent, action: button.dataset.fcAction} : null;
+    function restoreEventFocus(key, preventScroll) {
+      const candidates = key ? [...list.querySelectorAll('[data-fc-event]')].filter(b => b.dataset.fcEvent === key.event) : [];
+      (candidates.find(b => b.dataset.fcAction === key?.action) || candidates.find(b => b.dataset.fcAction === 'title') || q).focus({preventScroll});
+    }
+    function selectEvent(e, opener) {
+      if (!o.compact && opener) detailOpener = eventFocusKey(opener);
       selectedID = publicEventID(e) || eventKey(e);
       const url = eventURL(e);
-      if (!o.compact && remember && url) history.pushState(null, '', new URL(url).pathname + new URL(url).search);
+      if (!o.compact && url) history.pushState(null, '', new URL(url).pathname + new URL(url).search);
       drawDetail(); detail.focus({preventScroll: true}); detail.scrollIntoView?.({block: 'nearest', behavior: 'smooth'});
     }
     function drawDetail() {
+      const focusClose = !o.compact && document.activeElement?.dataset?.fcClose === 'event' && detail.contains(document.activeElement);
       detail.hidden = !selectedID; detail.replaceChildren(); if (!selectedID || !data) return;
-      const close = el('button', 'fc-chip', 'Close event'); close.type = 'button'; close.addEventListener('click', () => { selectedID = null; if (!o.compact) { const u = new URL(location.href); u.searchParams.delete('event'); history.pushState(null, '', u.pathname + u.search); } drawDetail(); });
+      const close = el('button', 'fc-chip', 'Close event'); close.type = 'button'; close.dataset.fcClose = 'event';
+      close.addEventListener('click', () => {
+        selectedID = null;
+        if (!o.compact) { const u = new URL(location.href); u.searchParams.delete('event'); history.pushState(null, '', u.pathname + u.search); }
+        drawDetail();
+        if (!o.compact) restoreEventFocus(detailOpener, false);
+        detailOpener = null;
+      });
       detail.append(el('small', 'fc-detail-kicker', 'FYNX / EVENT INTELLIGENCE'), close);
+      if (focusClose) close.focus({preventScroll: true});
       const e = data.list.find(row => eventKey(row) === selectedID || row.stableEventID === selectedID);
       if (!e) { detail.append(el('h2', '', 'This event is not in the current calendar'), el('p', '', 'Its schedule may have changed or the source week may have expired. No other release has been substituted. Browse the calendar below or check the original source.')); return; }
       const title = el('h2', 'fc-detail-title', e.title); detail.append(title);
@@ -232,7 +251,7 @@
       next.append(el('span', 'fc-next-k', 'NEXT ' + (n.impact === 'high' ? 'HIGH-IMPACT' : 'EVENT')), chip(n.currency), el('b', '', n.title), el('span', 'fc-next-t', `${until(Date.parse(n.time) - now)} · ${timeLabel(n.time)}`));
     }
     function drawList() {
-      const focusAdd = document.activeElement && list.contains(document.activeElement) && document.activeElement.dataset.fcEvent; // the 30 s redraw keeps keyboard focus
+      const focusRow = !o.compact && list.contains(document.activeElement) && eventFocusKey(document.activeElement);
       list.replaceChildren(); const now = Date.now();
       let rows = filtered();
       const savedSchedule = scheduleState(data, now) !== 'current';
@@ -243,7 +262,7 @@
       }
       if (o.compact) rows = rows.slice(0, o.limit);
       if (recap) list.append(el('p', 'fc-recap', savedSchedule ? 'Past events from the saved schedule:' : 'No more important releases are scheduled until the next week’s calendar is published. Latest releases:'));
-      if (!rows.length) { list.append(el('p', 'fc-status', savedSchedule ? 'No matching events in the saved schedule. Check the calendar source for current releases.' : o.compact ? 'No more high or medium importance releases scheduled this week.' : 'No events match these filters.')); return; }
+      if (!rows.length) { list.append(el('p', 'fc-status', savedSchedule ? 'No matching events in the saved schedule. Check the calendar source for current releases.' : o.compact ? 'No more high or medium importance releases scheduled this week.' : 'No events match these filters.')); if (focusRow) restoreEventFocus(focusRow, true); return; }
       let last = '', firstUpcoming = null;
       for (const e of rows) {
         const t = Date.parse(e.time), key = dayKey(t);
@@ -253,15 +272,15 @@
         r.setAttribute('aria-label', `${timeLabel(e.time, allDay)}, ${CCY[e.currency]?.[0] || e.currency}, ${e.title}, ${IMPACT[e.impact]?.[1] || ''}${supplied(e.forecast) !== null ? ', forecast ' + e.forecast : ''}${supplied(e.previous) !== null ? ', previous ' + e.previous : ''}`);
         const when = el('div', 'fc-when'); when.append(el('time', '', timeLabel(e.time, allDay))); when.lastChild.dateTime = e.time;
         when.append(el('small', past ? 'fc-done' : 'fc-soon', past ? (allDay ? '' : rowStatus(e, now)) : until(t - now)));
-        const what = el('div', 'fc-what'); const meta = el('div', 'fc-meta'); meta.append(chip(e.currency), bars(e.impact)); const title = el('button', 'fc-title fc-open-event', e.title); title.type = 'button'; title.addEventListener('click', () => selectEvent(e)); what.append(meta, title);
+        const what = el('div', 'fc-what'); const meta = el('div', 'fc-meta'); meta.append(chip(e.currency), bars(e.impact)); const title = el('button', 'fc-title fc-open-event', e.title); title.type = 'button'; markEvent(title, e, 'title'); title.addEventListener('click', () => selectEvent(e, title)); what.append(meta, title);
         const nums = el('div', 'fc-nums'); nums.append(value('Forecast', e.forecast), value('Previous', e.previous));
         // Results stay in FYNX: show the actual figure when the feed has it, otherwise open the event detail here.
-        if (past && !allDay) { if (phase(e) === 'Result reported') nums.append(value('Actual', e.actual)); else { const a = el('button', 'fc-actual', 'Result details ▸'); a.type = 'button'; a.title = 'Open this release in FYNX'; a.addEventListener('click', () => selectEvent(e)); nums.append(a); } }
-        if (!o.compact && !past) { const add = el('button', 'fc-add', '+ Calendar'); add.type = 'button'; add.dataset.fcEvent = eventKey(e); add.setAttribute('aria-label', `Add ${e.currency} ${e.title} to your calendar (.ics)`); add.title = allDay ? 'Download this day as an all-day calendar event' : 'Download this release as a calendar event with a 10-minute reminder'; add.addEventListener('click', () => addOne(e)); nums.append(add); }
+        if (past && !allDay) { if (phase(e) === 'Result reported') nums.append(value('Actual', e.actual)); else { const a = el('button', 'fc-actual', 'Result details ▸'); a.type = 'button'; a.title = 'Open this release in FYNX'; markEvent(a, e, 'result'); a.addEventListener('click', () => selectEvent(e, a)); nums.append(a); } }
+        if (!o.compact && !past) { const add = el('button', 'fc-add', '+ Calendar'); add.type = 'button'; markEvent(add, e, 'calendar'); add.setAttribute('aria-label', `Add ${e.currency} ${e.title} to your calendar (.ics)`); add.title = allDay ? 'Download this day as an all-day calendar event' : 'Download this release as a calendar event with a 10-minute reminder'; add.addEventListener('click', () => addOne(e)); nums.append(add); }
         r.append(when, what, nums); list.append(r);
         if (!past && !firstUpcoming) firstUpcoming = r;
       }
-      if (focusAdd) [...list.querySelectorAll('.fc-add')].find(b => b.dataset.fcEvent === focusAdd)?.focus({preventScroll: true});
+      if (focusRow) restoreEventFocus(focusRow, true);
       if (!o.compact && firstUpcoming && st.day === 'week' && !list.dataset.scrolled) { list.dataset.scrolled = '1'; requestAnimationFrame(() => { try { list.scrollTop = Math.max(0, firstUpcoming.offsetTop - list.offsetTop - 40); } catch {} }); }
     }
     function drawFreshness() {
@@ -289,7 +308,13 @@
     const tick = setInterval(() => { if (!document.hidden && data) { drawFreshness(); drawNext(); drawList(); } }, 30000); // countdowns and "Released" flips
     const poll = setInterval(() => { if (!document.hidden) refresh(true); }, REFRESH_MS);
     const vis = () => { if (!document.hidden) refresh(false); }; document.addEventListener('visibilitychange', vis);
-    const navigate = () => { if (!o.compact) { selectedID = requestedEvent(); drawDetail(); } }; window.addEventListener('popstate', navigate);
+    const navigate = () => {
+      if (o.compact) return;
+      const hadFocus = detail.contains(document.activeElement);
+      selectedID = requestedEvent(); drawDetail();
+      if (!selectedID && hadFocus) restoreEventFocus(detailOpener, false);
+    };
+    window.addEventListener('popstate', navigate);
     return () => { alive = false; clearInterval(tick); clearInterval(poll); document.removeEventListener('visibilitychange', vis); window.removeEventListener('popstate', navigate); };
   }
   root.FynxCalendar = {mount, load, toICS, phase, comparison, eventURL};

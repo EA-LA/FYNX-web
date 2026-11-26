@@ -1,7 +1,7 @@
 /* FYNX Terminal plugin: OPTLAB. Options pricing on real delayed Cboe chains: Black–Scholes (Black-76 on the forward
  * implied by put–call parity) with one volatility, with a term structure, a per-expiry quadratic smile, and a neural
  * network that learns the whole implied-volatility surface. Every model is fitted on 70% of the quotes and priced on
- * the 30% it never saw, scored against the market's own bid–ask spread. Includes a rotatable 3-D volatility surface,
+ * an evaluation subset, scored against the market's own bid–ask spread. Includes a rotatable 3-D volatility surface,
  * the smile for any expiry and the term structure. Not advice. */
 (window.FynxTerminalPlugins = window.FynxTerminalPlugins || []).push((T, PG) => {
   'use strict';
@@ -75,7 +75,7 @@
     for (const [k] of MODELS) {
       let se = 0, ive = 0, ape = 0, inside = 0;
       for (const q of test) { const s = models[k](q), p = black(q.F, q.K, q.Tm, s, q.D, q.call); se += (p - q.mid) ** 2; ive += (s - q.iv) ** 2; ape += Math.abs(p - q.mid) / q.mid; if (p >= q.bid - 1e-9 && p <= q.ask + 1e-9) inside++; }
-      out[k] = {rmse: Math.sqrt(se / test.length), ivRmse: Math.sqrt(ive / test.length), mape: ape / test.length, inside: inside / test.length};
+      out[k] = {rmse: Math.sqrt(se / test.length), ivRmse: Math.sqrt(ive / test.length), mape: ape / test.length, inside: inside / test.length, insideCount: inside};
     }
     return out;
   }
@@ -84,8 +84,13 @@
     if (quotes.length < 30 || exps.length < 2) throw new Error(`Not enough two-sided quotes for ${u.symbol} right now.`);
     let s = 12345; const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
     const train = [], test = []; quotes.forEach(q => (rnd() < 0.7 ? train : test).push(q));
+    if (!train.length || !test.length) throw new Error('Not enough distinct quotes for a model evaluation.');
     const models = fitModels(train, exps), sc = score(models, test), full = fitModels(quotes, exps);
-    return {u, quotes, exps, train, test, sc, full, best: MODELS.map(m => m[0]).sort((a, b) => sc[b].inside - sc[a].inside || sc[a].rmse - sc[b].rmse)[0]};
+    const evaluation = new Map(exps.map(({date}) => {
+      const selected = test.filter(q => q.exp === date);
+      return [date, selected.length ? {n: selected.length, scores: score(models, selected)} : null];
+    }));
+    return {u, quotes, exps, train, test, sc, evaluation, full, best: MODELS.map(m => m[0]).sort((a, b) => sc[b].inside - sc[a].inside || sc[a].rmse - sc[b].rmse)[0]};
   }
 
   /* ------------------------------------------------ charts ------------------------------------------------ */
@@ -140,7 +145,7 @@
   }
   async function renderPage(host, arg) {
     if (arg && /^[A-Z]{1,6}$/.test(String(arg).toUpperCase())) { OV.sym = String(arg).toUpperCase(); save(); }
-    PG.setHead('OPTLAB', 'Options pricing lab', 'Black–Scholes against a neural-network volatility surface on real Cboe chains, priced on quotes the models never saw, with a 3-D volatility surface');
+    PG.setHead('OPTLAB', 'Options pricing lab', 'Black–Scholes against a neural-network volatility surface on real Cboe chains, evaluated on quotes excluded from the fit, with a 3-D volatility surface');
     const wrap = el('div', 'fx-ql fx-ql-page'); host.append(wrap); const rerun = () => { if (wrap.isConnected) PG.rerender(); };
     const ic = el('div', 'fx-ql-card'); ic.append(el('h3', '', 'UNDERLYING'));
     const out = el('div'); out.style.cssText = 'display:flex;flex-direction:column;gap:12px'; wrap.append(ic, out); out.append(note('Reading the delayed option chains and fitting four pricing models…'));
@@ -150,10 +155,10 @@
     if (!out.isConnected) return; out.replaceChildren();
     const S = a.sc, f = S.flat, n = S.nn, q = S.quad, best = MODELS.find(m => m[0] === a.best);
     const hd = el('div', 'fx-ql-head'), s0 = el('span', 'fx-ql-state', `${best[1].toUpperCase()} PRICES BEST`); s0.style.color = best[2];
-    hd.append(s0, el('span', 'fx-ql-sub', `${a.u.symbol} at ${usd(a.u.price)}: ${a.quotes.length} out-of-the-money quotes across ${a.exps.length} expiries (${a.exps[0].dte} to ${a.exps[a.exps.length - 1].dte} days). Models fitted on ${a.train.length}, priced on the ${a.test.length} they never saw. ${T.S.opts.source}, ${new Date(T.S.opts.generatedAt).toLocaleString()}.`)); out.append(hd);
+    hd.append(s0, el('span', 'fx-ql-sub', `${a.u.symbol} at ${usd(a.u.price)}: ${a.quotes.length} out-of-the-money quotes across ${a.exps.length} expiries (${a.exps[0].dte} to ${a.exps[a.exps.length - 1].dte} days). Models fitted on ${a.train.length}, evaluated on ${a.test.length} quotes excluded from the fit. ${T.S.opts.source}, ${new Date(T.S.opts.generatedAt).toLocaleString()}.`)); out.append(hd);
     kpis(out, MODELS.map(([k, name, c]) => [name.toUpperCase(), pct(S[k].inside, 0) + ' in spread', `price RMSE ${usd(S[k].rmse)} · IV error ${(S[k].ivRmse * 100).toFixed(2)} pts`, c]));
     const v = el('div', 'fx-ql-verdict'); v.style.borderColor = AMBER;
-    v.textContent = `On quotes it never saw, a single Black–Scholes volatility lands inside the market’s bid–ask spread only ${pct(f.inside, 0)} of the time (average miss ${pct(f.mape, 0)} of the price): real options have a volatility smile and a term structure that one number cannot capture. Adding the term structure helps (${pct(S.term.inside, 0)}); a quadratic smile per expiry gets ${pct(q.inside, 0)}; the neural network, which learns the whole surface from moneyness and time, gets ${pct(n.inside, 0)} with an implied-volatility error of ${(n.ivRmse * 100).toFixed(2)} points. Pricing inside the spread is the bar a market maker cares about.`;
+    v.textContent = `On the evaluation quotes, a single Black–Scholes volatility lands inside the market’s bid–ask spread only ${pct(f.inside, 0)} of the time (average miss ${pct(f.mape, 0)} of the price): real options have a volatility smile and a term structure that one number cannot capture. Adding the term structure helps (${pct(S.term.inside, 0)}); a quadratic smile per expiry gets ${pct(q.inside, 0)}; the neural network, which learns the whole surface from moneyness and time, gets ${pct(n.inside, 0)} with an implied-volatility error of ${(n.ivRmse * 100).toFixed(2)} points. Pricing inside the spread is the bar a market maker cares about.`;
     out.append(v);
     const sc = chartBox(380), slider = el('input'); slider.type = 'range'; slider.min = 0; slider.max = 360; slider.value = OV.az; slider.setAttribute('aria-label', 'Rotate the surface'); slider.style.width = '220px';
     const rot = el('label', 'fx-ql-sub', 'Rotate '); rot.append(slider);
@@ -162,9 +167,36 @@
     const two = el('div', 'fx-ml-grid'); two.style.cssText = 'display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px'; out.append(two);
     const exp = a.exps.find(x => x.date === OV.exp) ? OV.exp : a.exps[Math.min(2, a.exps.length - 1)].date, smc = chartBox(260), tc = chartBox(260);
     const es = el('select'); a.exps.forEach(x => { const o = el('option', '', `${x.date} · ${x.dte}d · ATM ${pct(x.atmIV, 1)}`); o.value = x.date; if (x.date === exp) o.selected = true; es.append(o); }); es.setAttribute('aria-label', 'Expiry');
-    es.addEventListener('change', () => { OV.exp = es.value; save(); smile(smc, a, OV.exp); fillTable(OV.exp); });
+    es.style.minHeight = '44px';
+    es.addEventListener('change', () => { OV.exp = es.value; save(); smile(smc, a, OV.exp); fillTable(OV.exp); renderEvaluation(OV.exp); });
     const lg = el('div', 'fx-ql-sub', 'Dots: market (green calls, red puts) · lines: grey one volatility, blue term structure, violet quadratic, amber neural net');
     two.append(card('VOLATILITY SMILE', es, smc, lg), card('TERM STRUCTURE · AT-THE-MONEY IMPLIED VOLATILITY', tc, note('Upward-sloping is normal; an inverted curve (short-dated volatility above long-dated) means the market expects near-term turbulence.')));
+    const evalSummary = note(''), evalTable = el('div');
+    evalSummary.setAttribute('role', 'status');
+    evalTable.style.overflowX = 'auto';
+    function renderEvaluation(date) {
+      const row = a.evaluation.get(date);
+      evalSummary.textContent = row ? `${date} · ${row.n} evaluation quote${row.n === 1 ? '' : 's'}. Small samples can make model comparisons noisy.` :
+        `${date} · No evaluation quotes for this expiry. Choose another expiry.`;
+      evalTable.textContent = '';
+      if (!row) return;
+      const table = el('table', 'fx-ql-tbl'), thead = el('thead'), hr = el('tr'), tbody = el('tbody');
+      table.setAttribute('aria-label', 'Evaluation scores for ' + date);
+      for (const title of ['Model', 'Inside bid–ask', 'Price RMSE']) {
+        const th = el('th', '', title); th.scope = 'col'; hr.append(th);
+      }
+      thead.append(hr); table.append(thead, tbody);
+      for (const [key, label] of MODELS) {
+        const m = row.scores[key], tr = el('tr'), th = el('th', '', label);
+        th.scope = 'row'; th.style.whiteSpace = 'normal';
+        tr.append(th, el('td', '', `${m.insideCount} / ${row.n} (${pct(m.inside, 0)})`), el('td', '', usd(m.rmse)));
+        tbody.append(tr);
+      }
+      evalTable.append(table);
+    }
+    renderEvaluation(exp);
+    out.append(card('MODEL EVALUATION BY EXPIRY', evalSummary, evalTable,
+      note('Fitted on the training subset and scored only on the evaluation quotes. Both groups use the same chain-derived forward and at-the-money volatility. Price RMSE is the typical size of a model’s price error in dollars; lower is better.')));
     const tbWrap = el('div'); tbWrap.style.cssText = 'max-height:340px;overflow:auto';
     function fillTable(date) {
       const t = el('table', 'fx-ql-tbl'), hr = el('tr'); ['Strike', 'Type', 'Bid', 'Ask', 'Market IV', 'One-vol BS', 'Quadratic', 'Neural net', 'Set'].forEach(x => hr.append(el('th', '', x))); t.append(hr);
@@ -175,7 +207,7 @@
       }
       tbWrap.replaceChildren(t);
     }
-    out.append(card('MODEL PRICES FOR THE SELECTED EXPIRY · GREEN = INSIDE THE BID–ASK SPREAD', tbWrap));
+    out.append(card('MODEL PRICES FOR THE SELECTED EXPIRY · REFIT ON ALL QUOTES · GREEN = INSIDE BID–ASK', tbWrap));
     out.append(card('HOW IT WORKS', ...[`Data: ${T.S.opts.source}, the 21 strikes around the money for the next ten expiries. Only out-of-the-money options with a live bid and ask are used (calls above the forward, puts below), the standard practice because they are the most liquid.`, `Pricing: Black-76 on the forward implied by put–call parity at the three strikes nearest the money, discounted at ${(R * 100).toFixed(1)}%. Implied volatilities are solved from each mid price with the same model, so every comparison is like for like.`, 'Models: one volatility (the median at-the-money implied volatility); a term structure (at-the-money volatility interpolated by expiry); a quadratic smile in log-moneyness fitted per expiry; and a neural network (two layers of 24 tanh units) that learns the smile around each expiry’s at-the-money level from moneyness, moneyness ÷ √time and √time, across all expiries at once. 70% of quotes train, 30% test.', 'The snapshot covers short-dated expiries only, so the surface describes the next few weeks. Not advice.'].map(note)));
     requestAnimationFrame(() => {
       surface3d(sc, a, OV.az); smile(smc, a, exp); fillTable(exp);

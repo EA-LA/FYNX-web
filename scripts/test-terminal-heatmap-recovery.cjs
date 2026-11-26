@@ -8,7 +8,7 @@ const {JSDOM} = require('jsdom');
 
 const source = readFileSync(path.join(__dirname, '..', 'assets/js/terminal/heatmaps.js'), 'utf8');
 
-function harness({saved = {}, headlines = [], desks = {}, failScanner = false} = {}) {
+function harness({saved = {}, headlines = [], desks = {}, failScanner = false, fxQuote = null} = {}) {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'https://www.fynxfinanceworld.com/terminal.html'
   });
@@ -38,7 +38,7 @@ function harness({saved = {}, headlines = [], desks = {}, failScanner = false} =
       return element;
     },
     signed: value => String(value), big: value => String(value), finite: Number.isFinite,
-    quoteFor: () => null, universe: () => [], shortOf: value => value, nameOf: value => value,
+    quoteFor: () => fxQuote, universe: groups => fxQuote && groups.includes('FX majors') ? ['EURUSD=X'] : [], shortOf: value => value, nameOf: value => value,
     focusOn() {}, panel: id => {
       if (!roots.has(id)) {
         const root = el('section'); document.body.append(root); roots.set(id, root);
@@ -157,4 +157,57 @@ test('a valid recently published headline still produces a news heat map', async
 test('Terminal boot page requests the fixed heatmap JavaScript rather than a cached version', () => {
   const html = readFileSync(path.join(__dirname, '..', 'terminal.html'), 'utf8');
   assert.match(html, /assets\/js\/terminal\/heatmaps\.js\?v=20261121-heatmap-recovery-1/);
+});
+
+const cryptoFixture = {
+  crypto: {fields:['symbol', 'name', 'price', 'marketCap', 'change24h', 'change7d', 'volume', 'categories'],
+    rows:[['BTC', 'Bitcoin fixture', 100, 1e9, 1.2, 2.4, 1e8, []]]},
+  sources: {crypto:'Synthetic test feed'}
+};
+
+function currencyHeatmap() {
+  return harness({fxQuote:{changePercent:0.3, vol20:0.2}});
+}
+
+test('a late Crypto response must not replace the active Currency view', async () => {
+  const h = currencyHeatmap(), host = h.host();
+  let settle;
+  h.T.loadScanner = () => new Promise(resolve => {settle = resolve;});
+  const pending = h.pages.heatmaps(host, 'cfx');
+  assert.match(host.textContent, /Loading crypto/);
+  [...host.querySelectorAll('button')].find(b => b.textContent === 'Currencies').click();
+  const legend = host.querySelector('.hm-legend');
+  assert.match(legend?.textContent, /Spot FX/);
+  settle(cryptoFixture); await pending;
+  assert.ok(legend.isConnected, 'the existing FX legend is not removed');
+  assert.equal(host.querySelectorAll('.hm-stage').length, 0, 'no Crypto treemap leaks into Currencies');
+  assert.match(host.querySelector('.hm-legend').textContent, /Spot FX/);
+});
+
+test('switching back to Crypto while the shared load is pending renders only the latest Crypto view', async () => {
+  const h = currencyHeatmap(), host = h.host();
+  let settle;
+  const shared = new Promise(resolve => {settle = resolve;});
+  h.T.loadScanner = () => shared;
+  const pending = h.pages.heatmaps(host, 'cfx');
+  const tab = name => [...host.querySelectorAll('button')].find(b => b.textContent === name);
+  tab('Currencies').click();
+  tab('Crypto').click();
+  settle(cryptoFixture); await pending; await new Promise(setImmediate);
+  assert.equal(host.querySelectorAll('.hm-stage').length, 1);
+  assert.equal(host.querySelectorAll('.hm-legend').length, 1);
+  assert.match(host.querySelector('.hm-legend').textContent, /Synthetic test feed/);
+});
+
+test('a late rejection does not erase Currencies or show a retry for inactive Crypto', async () => {
+  const h = currencyHeatmap(), host = h.host();
+  let reject;
+  h.T.loadScanner = () => new Promise((resolve, bad) => {reject = bad;});
+  const pending = h.pages.heatmaps(host, 'cfx');
+  [...host.querySelectorAll('button')].find(b => b.textContent === 'Currencies').click();
+  reject(Error('Synthetic scanner outage'));
+  await pending;
+  assert.match(host.querySelector('.hm-legend').textContent, /Spot FX/);
+  assert.ok(!host.querySelector('[role="alert"]'));
+  assert.equal(h.reported.length, 0);
 });

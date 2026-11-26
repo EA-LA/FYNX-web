@@ -580,6 +580,17 @@
     .rel-v{font-weight:900;font-size:.98rem;text-align:right;white-space:nowrap;flex-shrink:0;font-variant-numeric:tabular-nums}
     .rel-note{margin-top:.7rem}
     @media (max-width:380px){.rel-card{padding:.85rem}.rel-list li{flex-wrap:wrap;gap:.3rem}.rel-v{text-align:left}}
+    .roll-controls{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .75rem;margin-top:.7rem}
+    .roll-controls label{font-size:.88rem;font-weight:800;color:var(--text-soft)}
+    .roll-controls select{min-height:44px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);border-radius:12px;padding:.45rem .7rem;font:inherit;font-size:16px}
+    .roll-chart{display:block;width:100%;height:96px;margin-top:.75rem;color:var(--text)}
+    .roll-chart .roll-zero{stroke:var(--text-faint);stroke-width:1;stroke-dasharray:4 4}
+    .roll-chart .roll-band{fill:var(--text);opacity:.06}
+    .roll-chart .roll-line{fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+    .roll-chart text{fill:var(--text-faint);font-size:10px}
+    .roll-axis{display:flex;justify-content:space-between;gap:.5rem;color:var(--text-faint);font-size:.78rem;margin-top:.2rem}
+    @media (max-width:380px){.roll-axis-mid{display:none}}
+    .roll-nb{white-space:nowrap}
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
@@ -780,6 +791,27 @@
               </ul>
               <div class="rel-note">Pearson test, assuming roughly normal, independent observations. Use returns (% changes), not raw prices: two trending price series can show a high r with no real link. Past correlation can change quickly.</div>
             </section>
+
+            <section class="rel-card" id="rollCard" aria-labelledby="rollTitle" hidden>
+              <h3 id="rollTitle">Is the link changing?</h3>
+              <div class="rel-intro">Rolling correlation: r for every run of consecutive pairs, in the order you entered them. One r for all pairs can hide a link that came and went.</div>
+              <div class="roll-controls">
+                <label for="rollWindow">Pairs per window</label>
+                <select id="rollWindow"></select>
+              </div>
+              <div class="rel-verdict" id="rollVerdict" role="status" aria-live="polite"></div>
+              <svg class="roll-chart" id="rollChart" viewBox="0 0 300 96" preserveAspectRatio="none" role="img" aria-labelledby="rollChartLabel"><title id="rollChartLabel">Rolling correlation chart</title></svg>
+              <div class="roll-axis" aria-hidden="true"><span id="rollAxisStart">Start of list</span><span class="roll-axis-mid">r from −1 to +1 · dashed line = 0</span><span id="rollAxisEnd">End of list</span></div>
+              <ul class="rel-list">
+                <li><span class="rel-k" id="rollFirstLabel">First window</span><span class="rel-v" id="rollFirst">—</span></li>
+                <li><span class="rel-k" id="rollLastLabel">Last window</span><span class="rel-v" id="rollLast">—</span></li>
+                <li><span class="rel-k" id="rollMinLabel">Lowest window</span><span class="rel-v" id="rollMin">—</span></li>
+                <li><span class="rel-k" id="rollMaxLabel">Highest window</span><span class="rel-v" id="rollMax">—</span></li>
+                <li><span class="rel-k" id="rollSameLabel">Windows with the same sign as all pairs</span><span class="rel-v" id="rollSame">—</span></li>
+                <li><span class="rel-k" id="rollCritLabel">r one window needs to pass the 5% test</span><span class="rel-v" id="rollCrit">—</span></li>
+              </ul>
+              <div class="rel-note">Put the oldest pair first so “last window” means the most recent data. Short windows are noisy: swings smaller than the shaded band (the 5% test level for one window) can happen by chance. This describes your past data only; it is not a forecast.</div>
+            </section>
           </div>
 
           <div class="footer-note">
@@ -843,7 +875,7 @@
 </main>
 
   <script src="../assets/js/correlation-export.js"></script>
-  <script src="../assets/js/correlation-stats.js?v=20261120-site-qa-110"></script>
+  <script src="../assets/js/correlation-stats.js?v=20261126-site-qa-112"></script>
   <script>
     const THEME_KEY = "fynx_theme";
 
@@ -1063,8 +1095,85 @@
       setRel("relVerdict", verdict);
     }
 
+    const rollCard = document.getElementById("rollCard");
+    const rollWindowSel = document.getElementById("rollWindow");
+    let rollData = null;
+    function hideRolling(){ rollCard.hidden = true; rollData = null; }
+    function rollRange(win){ return `pairs\u00a0${win.start}\u2060–\u2060${win.end}`; }
+    function rollR(win){ return win && win.r !== null ? relR(win.r) : "flat"; }
+    function drawRolling(res){
+      const svg = document.getElementById("rollChart");
+      const W = 300, H = 96, pad = 4;
+      const y = r => pad + (1 - r) / 2 * (H - 2 * pad);
+      const n = res.windows.length;
+      const x = i => n === 1 ? W / 2 : i / (n - 1) * W;
+      const ns = "http://www.w3.org/2000/svg";
+      const title = svg.querySelector("title");
+      svg.replaceChildren(title);
+      const band = document.createElementNS(ns, "rect");
+      band.setAttribute("class", "roll-band"); band.setAttribute("x", "0"); band.setAttribute("width", String(W));
+      band.setAttribute("y", y(res.criticalR).toFixed(2)); band.setAttribute("height", (y(-res.criticalR) - y(res.criticalR)).toFixed(2));
+      const zero = document.createElementNS(ns, "line");
+      zero.setAttribute("class", "roll-zero"); zero.setAttribute("x1", "0"); zero.setAttribute("x2", String(W));
+      zero.setAttribute("y1", String(y(0))); zero.setAttribute("y2", String(y(0)));
+      svg.append(band, zero);
+      let pts = [];
+      const flush = () => {
+        if(pts.length > 1){ const pl = document.createElementNS(ns, "polyline"); pl.setAttribute("class", "roll-line"); pl.setAttribute("points", pts.join(" ")); svg.append(pl); }
+        else if(pts.length === 1){ const c = document.createElementNS(ns, "circle"); const [cx, cy] = pts[0].split(","); c.setAttribute("cx", cx); c.setAttribute("cy", cy); c.setAttribute("r", "2"); c.setAttribute("fill", "currentColor"); svg.append(c); }
+        pts = [];
+      };
+      res.windows.forEach((win, i) => { if(win.r === null) flush(); else pts.push(`${x(i).toFixed(2)},${y(win.r).toFixed(2)}`); });
+      flush();
+      title.textContent = `Rolling ${res.window}-pair correlation from ${rollR(res.first)} (${rollRange(res.first)}) to ${rollR(res.last)} (${rollRange(res.last)}), lowest ${relR(res.min.r)}, highest ${relR(res.max.r)}.`;
+    }
+    function renderRolling(){
+      if(!rollData || !window.FynxCorrelationStats || !window.FynxCorrelationStats.rolling){ rollCard.hidden = true; return; }
+      const S = window.FynxCorrelationStats;
+      const w = Number(rollWindowSel.value);
+      const res = S.rolling(rollData.seriesA, rollData.seriesB, w);
+      if(!res){ rollCard.hidden = true; return; }
+      rollCard.hidden = false;
+      const { labelA, labelB } = rollData;
+      document.getElementById("rollFirstLabel").textContent = `First ${w} pairs (${res.first.start}\u2060–\u2060${res.first.end})`;
+      document.getElementById("rollFirst").textContent = rollR(res.first);
+      document.getElementById("rollLastLabel").textContent = `Last ${w} pairs (${res.last.start}\u2060–\u2060${res.last.end})`;
+      document.getElementById("rollLast").textContent = rollR(res.last);
+      document.getElementById("rollMinLabel").textContent = `Lowest window (${rollRange(res.min)})`;
+      document.getElementById("rollMin").textContent = relR(res.min.r);
+      document.getElementById("rollMaxLabel").textContent = `Highest window (${rollRange(res.max)})`;
+      document.getElementById("rollMax").textContent = relR(res.max.r);
+      document.getElementById("rollSameLabel").textContent = res.overall === null || res.overall === 0
+        ? "Windows with the same sign as all pairs"
+        : `Windows with the same sign as all pairs (r = ${relR(res.overall)})`;
+      document.getElementById("rollSame").textContent = res.sameSign === null ? "—" : `${res.sameSign} of ${res.valid}`;
+      document.getElementById("rollCritLabel").textContent = `r one ${w}-pair window needs to pass the 5% test`;
+      document.getElementById("rollCrit").textContent = `±${res.criticalR.toFixed(3)}`;
+      const spread = (res.max.r - res.min.r).toFixed(3);
+      const flatNote = res.flat ? ` ${res.flat} window${res.flat === 1 ? "" : "s"} had a series that did not move and ${res.flat === 1 ? "is" : "are"} left out.` : "";
+      let verdict;
+      if(res.pattern === "steady") verdict = `No clear change: every ${w}-pair window lies between ${relR(res.min.r)} and ${relR(res.max.r)}. A spread of ${spread} is within what ${w}-pair windows can show by chance.`;
+      else if(res.pattern === "flipped") verdict = `The link flipped: ${labelA} and ${labelB} moved clearly together in ${rollRange(res.max)} (r = ${relR(res.max.r)}) but clearly opposite in ${rollRange(res.min)} (r = ${relR(res.min.r)}). The single r for all pairs hides this.`;
+      else verdict = `The link changed: rolling r ranged from ${relR(res.min.r)} (${rollRange(res.min)}) to ${relR(res.max.r)} (${rollRange(res.max)}), more than ${w}-pair windows usually vary by chance.`;
+      document.getElementById("rollVerdict").textContent = verdict + flatNote;
+      drawRolling(res);
+    }
+    function showRolling(seriesA, seriesB, labelA, labelB){
+      const S = window.FynxCorrelationStats;
+      if(!S || !S.rolling){ hideRolling(); return; }
+      const options = S.windowOptions(seriesA.length);
+      if(!options.length){ hideRolling(); return; }
+      const previous = Number(rollWindowSel.value);
+      rollWindowSel.replaceChildren(...options.map(w => { const o = document.createElement("option"); o.value = String(w); o.textContent = `${w} pairs`; return o; }));
+      rollWindowSel.value = String(options.includes(previous) ? previous : S.defaultWindow(seriesA.length));
+      rollData = { seriesA: seriesA.slice(), seriesB: seriesB.slice(), labelA, labelB };
+      renderRolling();
+    }
+    rollWindowSel.addEventListener("change", renderRolling);
+
     function invalidateCorrelation(){
       hideReliability();
+      hideRolling();
       completedCorrelation = null;
       exportCsvBtn.disabled = true;
       exportStatus.textContent = "Inputs changed. Recalculate before exporting paired observations.";
@@ -1113,6 +1222,7 @@
         tradeReadDescEl.textContent = "No valid result.";
         updateMatrix(labelA, labelB, null);
         hideReliability();
+        hideRolling();
         return;
       }
 
@@ -1129,6 +1239,7 @@
         tradeReadDescEl.textContent = "No valid result.";
         updateMatrix(labelA, labelB, null);
         hideReliability();
+        hideRolling();
         return;
       }
 
@@ -1150,6 +1261,7 @@
 
       updateMatrix(labelA, labelB, corr);
       renderReliability(seriesA, seriesB, labelA, labelB);
+      showRolling(seriesA, seriesB, labelA, labelB);
       completedCorrelation = { labelA, labelB, seriesA: seriesA.slice(), seriesB: seriesB.slice(), corr };
       exportCsvBtn.disabled = false;
       exportStatus.textContent = "Ready: download a local CSV containing each paired observation and the calculated Pearson r.";

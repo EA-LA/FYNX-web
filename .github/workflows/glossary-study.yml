@@ -1,0 +1,23 @@
+name: Free glossary term cards
+on:
+  pull_request:
+    paths:
+      - 'trading-glossary.html'
+      - 'assets/js/glossary-study.js'
+      - 'assets/js/glossary-search.js'
+      - 'scripts/test-glossary-study.cjs'
+      - '.github/workflows/glossary-study.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --check assets/js/glossary-study.js
+      - run: node --test scripts/test-glossary-study.cjs scripts/test-glossary-term-anchors.cjs scripts/test-glossary-market-recovery.cjs

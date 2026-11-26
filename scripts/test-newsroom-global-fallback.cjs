@@ -220,3 +220,37 @@ test('an unavailable Global response with residual items cannot appear as verifi
     assert.match(app.label.textContent, /Sources unavailable/);
   } finally { app.close(); }
 });
+
+test('Show more appends reporting without replacing the lead and focuses the first newly revealed link', async () => {
+  const fresh = Array.from({length:23}, (_,i)=>({
+    ...story('us'), title:'Fixture report '+(i+1), url:'https://example.com/report-'+i, rank:i+1
+  }));
+  const app = setup(async()=>({items:fresh,status:'fresh',fetchedAt:new Date().toISOString()}));
+  try {
+    await settle();
+    const more = app.doc.querySelector('[data-newsroom-more]');
+    const lead = app.lead.querySelector('article'), secondary = app.doc.querySelector('[data-newsroom-secondary] article');
+    const latest = app.doc.querySelector('[data-newsroom-latest]');
+    const cards = () => [...latest.querySelectorAll('article')];
+    const heading = article => article.querySelector('h3 a');
+    const prior = cards()[0];
+    assert.equal(cards().length,8);
+    assert.equal(more.hidden,false);
+    assert.match(more.textContent,/11/);
+    more.focus(); more.click();
+    assert.equal(cards().length,16);
+    assert.strictEqual(cards()[0],prior);
+    assert.strictEqual(app.lead.querySelector('article'),lead);
+    assert.strictEqual(app.doc.querySelector('[data-newsroom-secondary] article'),secondary);
+    assert.strictEqual(app.doc.activeElement,heading(cards()[8]));
+    assert.equal(more.hidden,false);
+    assert.match(more.textContent,/3/);
+    more.focus(); more.click();
+    assert.equal(cards().length,19);
+    assert.strictEqual(cards()[0],prior);
+    assert.equal(more.hidden,true);
+    assert.strictEqual(app.doc.activeElement,heading(cards()[16]));
+    assert.equal(new Set(cards().map(card=>heading(card).textContent)).size,19,'no duplicates');
+    assert.equal(app.doc.querySelector('[data-newsroom-count]').textContent,'19 reports');
+  } finally { app.close(); }
+});

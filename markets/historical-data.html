@@ -125,6 +125,11 @@
   const result=document.getElementById("histResult"), pending=document.getElementById("histPending");
   const wrap=document.getElementById("histWidget");
   let applied={asset:"EUR/USD",period:"1 Week"}, generation=0;
+  let frameObserver=null, frameTimer=null;
+  function stopFrameWatch(){
+    if(frameTimer!==null){clearTimeout(frameTimer);frameTimer=null;}
+    if(frameObserver){frameObserver.disconnect();frameObserver=null;}
+  }
   function getTheme(){return window.FynxPreferences?.getItem(THEME_KEY)==="dark"?"dark":"light";}
   function applyTheme(theme){
     document.body.classList.toggle("dark-mode",theme==="dark");
@@ -141,14 +146,33 @@
   }
   function renderWidget(theme){
     const request=++generation;
+    stopFrameWatch();
     const selection=applied.period+" view for "+applied.asset;
     result.textContent="Requested "+selection+". TradingView chart data may be delayed.";
-    wrap.innerHTML='<div class="tradingview-widget-container" style="height:100%;width:100%"><div id="hist_inner" style="height:100%;width:100%"></div></div>';
+    wrap.innerHTML='<div class="tradingview-widget-container" style="height:100%;width:100%"><div class="tradingview-widget-container__widget" id="hist_inner" style="height:100%;width:100%"></div></div>';
+    // Script success alone does not mean that the external chart frame exists.
+    // A cross-origin frame also cannot prove that price data loaded successfully.
+    function checkFrame(){
+      if(request!==generation||!wrap.querySelector("iframe"))return false;
+      stopFrameWatch();
+      result.textContent="Chart frame opened for "+selection+". TradingView data may be delayed. If the chart is blank, choose Show chart to retry.";
+      return true;
+    }
+    if(typeof MutationObserver==="function"){
+      frameObserver=new MutationObserver(checkFrame);
+      frameObserver.observe(wrap,{childList:true,subtree:true});
+    }
+    frameTimer=setTimeout(()=>{
+      if(request!==generation)return;
+      frameTimer=null;
+      if(!checkFrame())result.textContent="The TradingView chart for "+selection+" has not appeared yet. Choose Show chart to retry, or see connection help below.";
+    },15000);
     const s=document.createElement("script");
     s.src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     s.async=true;
     s.onerror=()=>{
       if(request!==generation)return;
+      stopFrameWatch();
       result.textContent="Could not load the TradingView chart for "+selection+". Choose Show chart to retry, or see connection help below.";
     };
     s.textContent=JSON.stringify({

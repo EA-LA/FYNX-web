@@ -93,7 +93,7 @@
         $('landingQuoteStatus').textContent='Global quote sources are unavailable. No quote values have been loaded.';
       }
     });quotes();
-    document.addEventListener('fynx:terminal-quotes',event=>renderQuotes(event.detail));
+    document.addEventListener('fynx:terminal-quotes',event=>{try{renderQuotes(event.detail);}catch{/* [site-qa] run 112: an empty snapshot keeps the existing rows/status (set by quotes() above) instead of throwing an uncaught error */}});
     document.addEventListener('fynx:edition-change',()=>{activeEdition=edition();++request;pending='';briefing=null;visibleStories='';$('landingLiveNews').replaceChildren(node('p','Checking '+label(activeEdition)+' reporting…'));$('landingLiveNews').setAttribute('aria-busy','true');$('landingNewsStatus').textContent='Checking published sources for the selected edition.';const grid=$('landingHeadlineGrid');if(grid){grid.replaceChildren(node('p','Checking '+label(activeEdition)+' reporting…','fw-headline-empty'));grid.setAttribute('aria-busy','true');}if($('landingHeadlineStatus'))$('landingHeadlineStatus').textContent='Checking published sources for the '+label(activeEdition)+' edition.';refresh();});
     function check(){if(document.hidden)return;if(briefing&&recent().map(item=>item.url).join('|')!==visibleStories)renderNews();if(Date.now()-lastAttempt>=cadence)refresh();quotes();}
     setInterval(check,60000);document.addEventListener('visibilitychange',check);

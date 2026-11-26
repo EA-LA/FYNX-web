@@ -2,10 +2,25 @@
 (() => {
  const host=document.getElementById('cotRows'),status=document.getElementById('cotStatus'),search=document.getElementById('cotSearch'),refresh=document.getElementById('cotRefresh'),exportButton=document.getElementById('cotExport'),exportStatus=document.getElementById('cotExportStatus'),savedOnly=document.getElementById('cotSavedOnly'),savedStatus=document.getElementById('cotSavedStatus');
  if(!host||!status||!search||!refresh||!exportButton||!exportStatus||!savedOnly||!savedStatus)return;
- let rows=[],busy=false,reportDate=null,retrievedAt=null;
+ const netPercent=document.getElementById('cotNetPercent'),noncommercialHeading=document.getElementById('cotNoncommercialHeading'),commercialHeading=document.getElementById('cotCommercialHeading');
+ let rows=[],busy=false,reportDate=null,retrievedAt=null,visibleNetCells=[];
  const fields=['noncomm_positions_long_all','noncomm_positions_short_all','comm_positions_long_all','comm_positions_short_all','open_interest_all'];
  function summary(){return `${Date.now()-Date.parse(reportDate)>10*86400000?'Older report (over 10 days) — ':''}Positions as of ${reportDate.slice(0,10)} · ${rows.length} contracts · Retrieved ${new Date(retrievedAt).toLocaleString()} · Weekly CFTC Legacy Futures Only. Net positions = long minus short contracts.`;}
  const number=new Intl.NumberFormat(undefined,{signDisplay:'exceptZero'});
+ const percent=new Intl.NumberFormat(undefined,{style:'percent',signDisplay:'exceptZero',maximumFractionDigits:2});
+ function formatNet(net,openInterest){
+  if(!netPercent?.checked)return number.format(net);
+  if(!openInterest)return 'Not available';
+  const fraction=net/openInterest;
+  if(fraction!==0&&Math.abs(fraction)<0.0001)return fraction>0?'Net long <0.01%':'Net short <0.01%';
+  return percent.format(fraction);
+ }
+ function updateNetDisplay(){
+  const suffix=netPercent?.checked?' (% of open interest)':'';
+  if(noncommercialHeading)noncommercialHeading.textContent='Non-commercial net'+suffix;
+  if(commercialHeading)commercialHeading.textContent='Commercial net'+suffix;
+  for(const {cells,net,openInterest} of visibleNetCells)for(let i=0;i<cells.length;i++)cells[i].textContent=formatNet(net[i],openInterest);
+ }
  // A local shortlist of contract identifiers, not positions, account data or live alerts.
  const SAVED_KEY='fynx:cot:saved-contract-codes:v1';
  const MAX_SAVED=100;
@@ -104,10 +119,20 @@
  }
  function render(){
   host.replaceChildren();
+  visibleNetCells=[];
   const filtered=matchingRows();
   for(const r of filtered){
    const tr=document.createElement('tr');
-   for(const value of [r.market_and_exchange_names,number.format(Number(r.noncomm_positions_long_all)-Number(r.noncomm_positions_short_all)),number.format(Number(r.comm_positions_long_all)-Number(r.comm_positions_short_all)),Number(r.open_interest_all).toLocaleString()]){const td=document.createElement('td');td.textContent=value;tr.append(td);}
+   const openInterest=Number(r.open_interest_all);
+   const net=[Number(r.noncomm_positions_long_all)-Number(r.noncomm_positions_short_all),Number(r.comm_positions_long_all)-Number(r.comm_positions_short_all)];
+   const cells=[];
+   for(const [i,value] of [r.market_and_exchange_names,'','',openInterest.toLocaleString()].entries()){
+    const td=document.createElement('td');
+    td.textContent=value;
+    if(i===1||i===2)cells.push(td);
+    tr.append(td);
+   }
+   visibleNetCells.push({cells,net,openInterest});
    const cell=document.createElement('td'),button=document.createElement('button');
    button.type='button';button.className='cot-save';setSavedButton(button,r);
    button.addEventListener('click',()=>{
@@ -122,7 +147,7 @@
    td.textContent=savedOnly.checked?(savedCodes.size?'No saved contracts match the current search or published report. Clear the search or show all contracts.':'No saved contracts yet. Show all contracts and select Save next to a market.'):'No matching contracts. Try a currency, commodity or exchange name.';
    tr.append(td);host.append(tr);
   }
-  updateExportAvailability();
+  updateNetDisplay();updateExportAvailability();
  }
  async function request(params){const u=new URL('https://publicreporting.cftc.gov/resource/6dca-aqww.json');for(const [k,v] of Object.entries(params))u.searchParams.set(k,v);const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),15000);try{const r=await fetch(u,{signal:controller.signal});if(!r.ok)throw Error('CFTC unavailable');const data=await r.json();if(!Array.isArray(data))throw Error('Invalid report');return data;}finally{clearTimeout(timeout);}}
  async function load(){if(busy)return;busy=true;refresh.disabled=true;updateExportAvailability();status.textContent='Loading the latest published CFTC report…';try{
@@ -138,6 +163,7 @@
  }catch(e){window.FynxMonitor?.report('feed','feed-load',e);status.textContent=rows.length?summary()+' Refresh failed — previous observations retained; check the official report.':'CFTC data is unavailable right now. Open the official report below or retry. No estimated positions are shown.';}finally{busy=false;refresh.disabled=false;updateExportAvailability();}}
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
  window.addEventListener('pageshow',event=>{if(event.persisted)load();});
+ netPercent?.addEventListener('change',updateNetDisplay);
  search.addEventListener('input',()=>{render();exportStatus.textContent='';});
  savedOnly.addEventListener('change',()=>{render();exportStatus.textContent='';updateSavedStatus();});
  window.addEventListener('storage',event=>{

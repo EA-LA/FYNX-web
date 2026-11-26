@@ -13,14 +13,45 @@ function stable(value){if(Array.isArray(value))return value.map(stable);if(value
 function stripe(){const key=(process.env.FYNX_CONSUMER_STRIPE_SECRET_KEY||'').trim();if(!/^(sk|rk)_live_/.test(key))fail('failed-precondition','Live checkout is not configured. Please contact support.');return new Stripe(key,{maxNetworkRetries:2,timeout:12000});}
 const root=uid=>admin.firestore().collection('fynxConsumerLive').doc(uid);
 async function rateLimit(uid){const ref=root(uid).collection('internal').doc('rate');await admin.firestore().runTransaction(async tx=>{const d=(await tx.get(ref)).data()||{},minute=Math.floor(Date.now()/60000),count=d.minute===minute?(d.count||0)+1:1;if(count>30)fail('resource-exhausted','Please wait a minute before trying again.');tx.set(ref,{minute,count});});}
-async function entitlement(uid,s){const profile=(await root(uid).get()).data()||{};if(!profile.customer)return {tier:null};const list=await s.subscriptions.list({customer:profile.customer,status:'all',limit:100,expand:['data.latest_invoice']});// Select the highest independently verified paid tier, not the provider's list order.
+// Stripe returns at most 100 subscriptions per page. Never treat incomplete history as verified.
+async function listSubscriptions(s,customer,expandInvoice=false){
+ const params={customer,status:'all',limit:100,...(expandInvoice?{expand:['data.latest_invoice']}:{})};
+ const subscriptions=[],seen=new Set();
+ for(let pageNumber=0;pageNumber<10;pageNumber++){
+  const page=await s.subscriptions.list(params);
+  subscriptions.push(...page.data);
+  if(!page.has_more)return subscriptions;
+  const cursor=page.data[page.data.length-1]?.id;
+  if(!cursor||seen.has(cursor))break;
+  seen.add(cursor);params.starting_after=cursor;
+ }
+ fail('unavailable','Subscription history could not be fully verified. Please retry or contact support.');
+}
+async function entitlement(uid,s){const profile=(await root(uid).get()).data()||{};if(!profile.customer)return {tier:null};const list=await listSubscriptions(s,profile.customer,true);// Select the highest independently verified paid tier, not the provider's list order.
  let sub=null,tier=null;
- for(const candidate of list.data){
+ for(const candidate of list){
   const verified=planForSubscription(candidate,uid,profile.customer);
   if(verified&&(!tier||PLANS[verified].products.length>PLANS[tier].products.length)){sub=candidate;tier=verified;}
  }
  return {tier,hasBillingAccount:true,subscription:sub?{status:sub.status,cancelAtPeriodEnd:sub.cancel_at_period_end,currentPeriodEnd:sub.items.data[0]?.current_period_end||sub.current_period_end||null}:null};}
 async function appleBridge(uid){if(process.env.FYNX_ACCOUNT_MEMBERSHIP_BRIDGE!=='pro-equivalent')return false;return appleValid((await admin.firestore().collection('intelligenceEntitlements').doc(uid).get()).data(),Date.now());}
+// Use the Journal's recorded session label, not a session inferred from the trade time.
+function journalSessionRows(history){
+ const groups=new Map(['Asia','London','New York','Other','Unclassified'].map(session=>[session,[]]));
+ const aliases=new Map([['asia','Asia'],['london','London'],['new york','New York'],['ny','New York'],['other','Other']]);
+ for(const trade of history){
+  const label=typeof trade?.session==='string'?trade.session.trim().replace(/\s+/g,' ').toLowerCase():'';
+  groups.get(aliases.get(label)||'Unclassified').push(trade);
+ }
+ const rows=[];
+ for(const [session,group] of groups){
+  if(!group.length)continue;
+  // Reuse the same realized P/L validation and win-rate denominator as the headline result.
+  const {trades,winRate,netPL}=run('analytics',{},group);
+  if(trades)rows.push({session,trades,winRatePercent:winRate,netPL});
+ }
+ return rows;
+}
 async function trades(uid){const snap=await admin.firestore().collection('users').doc(uid).collection('trades').orderBy('dateTs','asc').limit(1001).get();if(snap.size>1000)fail('resource-exhausted','This preview supports up to 1,000 dated trades.');// Let Journal Intelligence and CSV apply their distinct realized-P/L policies.
  return snap.docs.map(d=>d.data());}
 // Daily allowances counted on the server (audit Phase 5). The day is the server's UTC date, so changing the device clock,
@@ -87,7 +118,7 @@ async function handler(data,ctx){
   if(!user.email)fail('failed-precondition','An active account with an email is required.');
   let customer=(await ref.get()).data()?.customer;
   if(!customer){const c=await s.customers.create({email:user.email,metadata:{product:PRODUCT,fynx_uid:uid}},{idempotencyKey:'fynx-consumer-live-customer-'+uid});customer=c.id;await ref.set({customer},{merge:true});}
-  const subs=await s.subscriptions.list({customer,status:'all',limit:100});if(subs.data.some(x=>x.metadata?.product===PRODUCT&&['active','trialing','past_due','unpaid','incomplete','paused'].includes(x.status)))fail('already-exists','Manage your existing subscription before opening a new one.');
+  const subs=await listSubscriptions(s,customer);if(subs.some(x=>x.metadata?.product===PRODUCT&&['active','trialing','past_due','unpaid','incomplete','paused'].includes(x.status)))fail('already-exists','Manage your existing subscription before opening a new one.');
   const open=await s.checkout.sessions.list({customer,status:'open',limit:100});for(const session of open.data){if(session.metadata?.product!==PRODUCT)continue;if(session.metadata.tier===tier)return {url:session.url,mode:'live'};await s.checkout.sessions.expire(session.id);}
   const tool=TOOLS.has(data.tool)?data.tool:'analytics';
   let attempt=(await ref.get()).data()?.checkoutAttempt;
@@ -112,7 +143,14 @@ async function handler(data,ctx){
  const product=data?.product;if(!plan.products.includes(product))fail('permission-denied','This tool requires a higher plan.');
  if(!['run','save'].includes(data?.action))fail('invalid-argument','Unknown action.');
  const input=data.input||{};if(JSON.stringify(input).length>15000)fail('invalid-argument','Input is too large.');
- const calculate=async()=>{try{return run(product,input,['analytics','export'].includes(product)?await trades(uid):[]);}catch(e){if(e instanceof functions.https.HttpsError)throw e;fail('invalid-argument',e.message);}};
+ const calculate=async()=>{
+  try{
+   const history=['analytics','export'].includes(product)?await trades(uid):[];
+   const result=run(product,input,history);
+   if(product!=='analytics'||!result.trades)return result;
+   return {...result,rows:journalSessionRows(history),notice:result.notice+' Session rows use recorded Journal labels, not trade times. Missing or unrecognized labels are Unclassified.'};
+  }catch(e){if(e instanceof functions.https.HttpsError)throw e;fail('invalid-argument',e.message);}
+ };
  if(data.action==='save'){
   const name=String(data.name||'').trim();if(!name||name.length>100)fail('invalid-argument','Use a name of 1–100 characters.');if(product==='export')fail('invalid-argument','Download the export instead of saving it.');
   const requestId=data.requestId;

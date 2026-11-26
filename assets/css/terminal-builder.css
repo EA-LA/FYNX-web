@@ -184,7 +184,7 @@ html body.fx-terminal #fx-page-body .fxb .cm-s-fynx span.CodeMirror-matchingbrac
 html body.fx-terminal #fx-page-body .fxb .CodeMirror-scrollbar-filler,
 html body.fx-terminal #fx-page-body .fxb .CodeMirror-gutter-filler{background:#030405!important}
 
-html body.fx-terminal #fx-page-body .fxb :is(button,summary,input,textarea,select):focus-visible{outline:2px solid var(--fxb-amber)!important;outline-offset:1px!important}
+html body.fx-terminal #fx-page-body .fxb :is(button,summary,input,textarea,select,[role="tabpanel"]):focus-visible{outline:2px solid var(--fxb-amber)!important;outline-offset:1px!important}
 
 @media (max-width:1100px){
   html body.fx-terminal #fx-page-body > .fxb{grid-template-columns:1fr!important;grid-template-rows:auto!important}

@@ -17,6 +17,16 @@ ok(Math.abs(flat.ev - 1000) < 1e-6 && Math.abs(flat.perShare - 100) < 1e-9, 'no-
 const gg = A.dcf({rev0: 1000, g0: 0.03, margin: 0.1, wacc: 0.09, tg: 0.03, netDebt: 200, shares: 10});
 ok(Math.abs(gg.ev - 103 / 0.06) < 1e-6 && Math.abs(gg.perShare - (103 / 0.06 - 200) / 10) < 1e-9, 'constant growth DCF equals Gordon growth: ' + gg.ev.toFixed(2));
 ok(Number.isNaN(A.dcf({rev0: 1, g0: 0, margin: 0.1, wacc: 0.03, tg: 0.03, netDebt: 0, shares: 1})), 'WACC ≤ terminal growth is rejected');
+// Custom inputs are percentages. Keep filed metrics and base assumptions separate.
+const filed = {rev0: 1000, g0: 0.15, margin: 0.2, wacc: 0.12, tg: 0.025, netDebt: 100, shares: 10};
+const valid = {g0: '0', margin: '10', wacc: '10', tg: '0'};
+ok(Math.abs(A.customDcf(filed, valid).result.perShare - 90) < 1e-9 &&
+  filed.g0 === 0.15 && filed.margin === 0.2, 'custom DCF converts percentages without mutating the base');
+for (const bad of [{wacc: ''}, {g0: 'Infinity'}, {margin: '101'}, {tg: '10'}, {tg: '9.95'}]) {
+  ok(!!A.customDcf(filed, {...valid, ...bad}).error, 'rejects invalid custom inputs: ' + JSON.stringify(bad));
+}
+ok(Number.isFinite(A.customDcf(filed, {...valid, wacc: '2.6', tg: '2.5'}).result.perShare), 'accepts the stated 0.1-point discount spread');
+ok(A.customDcf(filed, {...valid, g0: '-5.5', margin: '-10', tg: '-1'}).result.perShare < 0, 'allows negative growth and cash-flow margins without concealing negative modeled value');
 // reverse DCF recovers the growth used to make a price
 const base = {rev0: 5e9, g0: 0.12, margin: 0.2, wacc: 0.085, tg: 0.025, netDebt: 1e9, shares: 1e8}, price = A.dcf(base).perShare;
 ok(Math.abs(A.impliedGrowth(base, price) - 0.12) < 1e-6, 'reverse DCF recovers 12% growth');

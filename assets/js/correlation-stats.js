@@ -103,5 +103,57 @@
     };
   }
 
-  return { describe, tTwoSidedP, criticalR, regularizedBeta };
+  function pearson(x, y, from, to) {
+    const n = to - from;
+    let mx = 0, my = 0;
+    for (let i = from; i < to; i++) { mx += x[i]; my += y[i]; }
+    mx /= n; my /= n;
+    let sxy = 0, sxx = 0, syy = 0;
+    for (let i = from; i < to; i++) {
+      const dx = x[i] - mx, dy = y[i] - my;
+      sxy += dx * dy; sxx += dx * dx; syy += dy * dy;
+    }
+    if (!(sxx > 0) || !(syy > 0)) return null;
+    return Math.max(-1, Math.min(1, sxy / Math.sqrt(sxx * syy)));
+  }
+
+  // Default rolling window: 20 pairs from 40, 10 from 20, 5 from 10 (at least two windows' worth of data).
+  function defaultWindow(n) {
+    if (n >= 40) return 20;
+    if (n >= 20) return 10;
+    if (n >= 10) return 5;
+    return null;
+  }
+
+  // Window sizes offered for n pairs (each must leave at least 2 windows).
+  function windowOptions(n) {
+    return [5, 10, 20, 30, 60, 120].filter(w => w * 2 <= n);
+  }
+
+  // Correlation of every run of `w` consecutive pairs, in list order. Windows where a series is flat get r = null.
+  function rolling(x, y, w) {
+    const n = Array.isArray(x) ? x.length : 0;
+    if (!Number.isInteger(w) || w < 3 || n < w + 1 || !Array.isArray(y) || y.length !== n
+      || !x.every(Number.isFinite) || !y.every(Number.isFinite)) return null;
+    const windows = [];
+    for (let end = w; end <= n; end++) windows.push({ start: end - w + 1, end, r: pearson(x, y, end - w, end) });
+    const valid = windows.filter(win => win.r !== null);
+    if (!valid.length) return null;
+    let min = valid[0], max = valid[0];
+    for (const win of valid) { if (win.r < min.r) min = win; if (win.r > max.r) max = win; }
+    const overall = pearson(x, y, 0, n);
+    const sameSign = overall === null ? null : valid.filter(win => Math.sign(win.r) === Math.sign(overall) && win.r !== 0).length;
+    const crit = criticalR(w, 0.05);
+    let pattern;
+    if (max.r - min.r <= crit) pattern = 'steady';
+    else if (min.r <= -crit && max.r >= crit) pattern = 'flipped';
+    else pattern = 'changing';
+    return {
+      window: w, windows, valid: valid.length, flat: windows.length - valid.length,
+      first: windows[0], last: windows[windows.length - 1], min, max, overall, sameSign,
+      criticalR: crit, pattern,
+    };
+  }
+
+  return { describe, tTwoSidedP, criticalR, regularizedBeta, rolling, defaultWindow, windowOptions };
 });

@@ -31,7 +31,13 @@ function setup({ reducedMotion = false, hash = '' } = {}) {
   sections.forEach(section => { section.heading = node(); });
   const cards = sections.map((section, i) => {
     const card = node();
-    card.textContent = ['FTMO Funded Platform', 'IC Markets Broker', 'Tradezella Trading Tool'][i];
+    const values = [
+      ['FTMO', 'Funded Platform', 'Evaluation and funded account pathways.'],
+      ['IC Markets', 'Broker', 'Forex, indices, and CFD market access.'],
+      ['Tradezella', 'Trading Tool', 'Trading journal and analytics.']
+    ][i];
+    card.textContent = [...values, 'FYNX may earn a commission from some partner links.'].join(' ');
+    card.querySelectorAll = selector => selector === 'h3, .partner-category, p' ? values.map(textContent => ({ textContent })) : [];
     section.querySelectorAll = selector => selector === '.partner-card' ? [card] : [];
     return card;
   });
@@ -172,4 +178,27 @@ test('all-platforms keyboard navigation focuses the first matching visible headi
   assert.equal(app.sections[0].heading.focused, undefined);
   assert.equal(app.sections[1].heading.focused, true);
   assert.equal(app.elements.all.scrolls.length, 1);
+});
+
+test('search ignores recurring disclosure text but keeps useful metadata searchable', () => {
+  const app = setup();
+  const { partnerSearch, partnerResultCount, partnerEmpty } = app.elements;
+  for (const [term, expected] of [['commission', -1], ['forex', 1], ['broker', 1], ['FTMO', 0]]) {
+    partnerSearch.value = term;
+    partnerSearch.dispatch('input');
+    assert.deepEqual(app.cards.map(card => !card.hidden), app.cards.map((_, i) => i === expected));
+    assert.equal(partnerResultCount.textContent, expected < 0 ? '0 platforms found' : '1 platform found');
+    assert.equal(partnerEmpty.hidden, expected >= 0);
+  }
+});
+
+test('search accepts mixed case and extra spaces within a platform name', () => {
+  const app = setup({ hash: '#brokers' });
+  app.elements.partnerSearch.value = '  iC   MARKETS  ';
+  app.elements.partnerSearch.dispatch('input');
+  assert.deepEqual(app.cards.map(card => card.hidden), [true, false, true]);
+  app.elements.clearPartnerSearch.dispatch('click');
+  assert.equal(app.elements.partnerSearch.value, '');
+  assert.equal(app.location.hash, '#brokers');
+  assert.equal(app.elements.partnerResultCount.textContent, '1 platform');
 });

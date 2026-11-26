@@ -601,6 +601,7 @@
       color: var(--text);
     }
     #fx-overlap{scroll-margin-top:6rem}
+    @media (pointer:coarse){.fx-overlap-jump{display:inline-flex;align-items:center;min-height:44px}}
     .fx-overlap-fields{
       border:0; padding:0; margin:1rem 0; min-width:0;
       display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.8rem;
@@ -678,7 +679,7 @@
         <div class="titleBlock">
           <h2>Market Hours</h2>
           <p id="subtitle">Loading…</p>
-          <p><a href="#fx-overlap">Plan a forex session overlap ↓</a></p>
+          <p><a class="fx-overlap-jump" href="#fx-overlap">Plan a forex session overlap ↓</a></p>
           <p>Indicative hours, not a live exchange feed. Holiday exceptions may not be shown. <a href="https://www.nyse.com/trade/hours-calendars">Official NYSE calendar</a> · <a href="/tools/market-holidays.html">Market Holidays</a></p>
         </div>
         <div class="meta">
