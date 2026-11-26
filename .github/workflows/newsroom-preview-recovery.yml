@@ -1,0 +1,21 @@
+name: Newsroom preview request recovery
+on:
+  pull_request:
+    paths:
+      - 'assets/js/newsroom-media.js'
+      - 'scripts/test-newsroom-preview-recovery.cjs'
+      - '.github/workflows/newsroom-preview-recovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check assets/js/newsroom-media.js
+      - run: node --test scripts/test-newsroom-preview-recovery.cjs
