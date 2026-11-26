@@ -211,7 +211,8 @@
     .timelineTitle{font-size:1.5rem;font-weight:300}
     .iconBtn{padding:.55rem .7rem;border-radius:12px}
     .iconBtn[disabled]{opacity:.35;cursor:not-allowed}
-    .grid7{display:grid;grid-template-columns:repeat(7,1fr);gap:.5rem}
+    #timelineGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.5rem}
+    @media(max-width:540px){#timelineGrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
     .dayCell{
       aspect-ratio:1/1;
       border:1px solid rgba(255, 255, 255, .10);
@@ -221,6 +222,7 @@
       transition:all .15s ease;
       overflow:hidden;
     }
+    .dayCell.has-events{aspect-ratio:auto}
     .dayCell:hover{background:rgba(255, 255, 255, .05);border-color:rgba(255, 255, 255, .14)}
     body:not(.dark-mode) .dayCell{
       border:1px solid rgba(0, 0, 0, .10);
@@ -245,10 +247,7 @@
       font-size:.68rem;
       color:rgba(255, 255, 255, .55);
       line-height:1.25;
-      display:-webkit-box;
-      -webkit-line-clamp:3;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
+      overflow-wrap:anywhere;
     }
     body:not(.dark-mode) .dayName{color:rgba(0, 0, 0, .58)}
     /* Heatmap table */
@@ -1042,23 +1041,29 @@
       nextMonth.disabled = (state.month === 11);
 
       const daysInMonth = new Date(state.year, state.month + 1, 0).getDate();
-      const monthItems = items.filter(h => h.date.getMonth() === state.month);
+      const eventsByDay = new Map();
+      for (const event of items) {
+        if (event.date.getMonth() !== state.month) continue;
+        const day = event.date.getDate();
+        if (!eventsByDay.has(day)) eventsByDay.set(day, []);
+        eventsByDay.get(day).push(event);
+      }
 
       timelineGrid.innerHTML = "";
       for (let d=1; d<=daysInMonth; d++) {
-        const holiday = monthItems.find(h => h.date.getDate() === d) || null;
+        const events = eventsByDay.get(d) || [];
+        events.sort((a,b) => impactRank(b.impact) - impactRank(a.impact));
         const cell = document.createElement("div");
-        cell.className = "dayCell";
-        if (holiday) {
-          cell.title = `${holiday.name} · ${statusLabel(holiday.status)}`;
+        cell.className = events.length ? "dayCell has-events" : "dayCell";
+        if (events.length) {
+          cell.title = events.map(event => `${event.name} · ${statusLabel(event.status)}`).join("\n");
         }
-        const dotClass = holiday ? impactClass(holiday.impact) : "";
         cell.innerHTML = `
           <div class="dayTop">
             <div class="dayNum">${d}</div>
-            ${holiday ? `<div class="impactDot ${dotClass}"></div>` : ``}
+            ${events.length ? `<div class="impactDot ${impactClass(events[0].impact)}" aria-hidden="true"></div>` : ``}
           </div>
-          ${holiday ? `<div class="dayName">${escapeHtml(holiday.name)}</div>` : ``}
+          ${events.map(event => `<div class="dayName">${escapeHtml(event.name)}</div>`).join("")}
         `;
         timelineGrid.appendChild(cell);
       }

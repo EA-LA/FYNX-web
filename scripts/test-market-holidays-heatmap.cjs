@@ -101,6 +101,38 @@ console.log('Market Holidays heatmap regression checks passed');
     assert.equal(impact.classList.contains('toggleOn'), false);
     assert.equal(Number(get('count').textContent), total);
     verifyView('List');
+
+    // Thanksgiving has both a cash-equity closure and an FX warning. The timeline
+    // must retain both records on the same day and omit filtered-out records.
+    get('regionSel').value = 'Americas';
+    get('regionSel').dispatchEvent(new window.Event('change', { bubbles: true }));
+    get('viewTimeline').click();
+    for (let i = 0; i < 10; i++) get('nextMonth').click();
+    assert.equal(get('timelineTitle').textContent, 'November 2026');
+    const day = (number) => get('timelineGrid').children[number - 1];
+    const namesOn = number => [...day(number).querySelectorAll('.dayName')].map(node => node.textContent);
+    const stockHoliday = 'Thanksgiving Day', fxWarning = 'Thanksgiving (FX Liquidity)';
+    assert.deepEqual(namesOn(26), [stockHoliday, fxWarning]);
+    assert.match(day(26).title, /Thanksgiving Day · Market Closed/);
+    assert.match(day(26).title, /Thanksgiving \(FX Liquidity\) · Liquidity Warning/);
+    assert.ok(day(26).querySelector('.impactHigh'));
+    assert.deepEqual(namesOn(27), ['Day After Thanksgiving (Early Close)']);
+    assert.deepEqual(namesOn(25), []);
+    const market = get('marketSel');
+    function marketOnly(value) {
+      market.value = value;
+      market.dispatchEvent(new window.Event('change', { bubbles: true }));
+    }
+    marketOnly('Forex');
+    assert.deepEqual(namesOn(26), [fxWarning]);
+    assert.ok(day(26).querySelector('.impactMed'));
+    assert.deepEqual(namesOn(27), []);
+    marketOnly('Stocks');
+    assert.deepEqual(namesOn(26), [stockHoliday]);
+    assert.deepEqual(namesOn(27), ['Day After Thanksgiving (Early Close)']);
+    marketOnly('all');
+    impact.click();
+    assert.deepEqual(namesOn(26), [stockHoliday], 'high impact filter omits the medium FX warning');
   } finally {
     dom.window.close();
   }
