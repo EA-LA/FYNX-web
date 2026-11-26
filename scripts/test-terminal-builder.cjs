@@ -252,3 +252,49 @@ test('syntax checks parse without running, and account merge keeps only this bro
   assert.deepEqual(kept.projects.map(project => project.id), [otherId]);
 });
 
+
+test('guest Builder tabs link their panels and keep one keyboard tab stop', t => {
+  const {JSDOM} = require('jsdom');
+  const {window:w} = new JSDOM('<!doctype html><body class="fx-terminal"><main id="fx-page-body"></main></body>', {
+    url:'https://www.fynxfinanceworld.com/terminal.html#builder', runScripts:'outside-only'
+  });
+  t.after(() => w.close());
+  w.FynxBuilderCore = core;
+  w.requestAnimationFrame = () => 0; // This tab test does not run the preview or connect to storage.
+  w.eval(read('assets/js/terminal/builder.js'));
+  const pages = {}, doc = w.document;
+  w.FynxTerminalPlugins[0]({S:{deskKey:'all', quotes:{}}}, {add:(name,label,render)=>pages[name]=render, setHead(){}});
+  pages.builder(doc.getElementById('fx-page-body'));
+  const list = doc.querySelector('.fxb-tabs'), tabs = [...list.querySelectorAll('[role=tab]')];
+  assert.equal(list.getAttribute('aria-label'),'Builder views');
+  assert.deepEqual(tabs.map(tab=>tab.textContent),['Preview','Versions','Guide & SDK']);
+
+  function selected(index) {
+    tabs.forEach((tab,i) => {
+      const on = i === index, panel = doc.getElementById(tab.getAttribute('aria-controls'));
+      assert.ok(panel, 'tab points to a real panel');
+      assert.equal(tab.getAttribute('aria-selected'),String(on));
+      assert.equal(tab.tabIndex,on?0:-1);
+      assert.equal(panel.getAttribute('role'),'tabpanel');
+      assert.equal(panel.getAttribute('aria-labelledby'),tab.id);
+      assert.equal(panel.hidden,!on);
+      assert.equal(panel.tabIndex,0);
+    });
+  }
+  function send(key, modifiers={}) {
+    const event = new w.KeyboardEvent('keydown',{key,bubbles:true,cancelable:true,...modifiers});
+    doc.activeElement.dispatchEvent(event);
+    return event.defaultPrevented;
+  }
+  selected(0); tabs[0].focus();
+  for (const [key,index] of [['ArrowRight',1],['End',2],['ArrowRight',0],['ArrowLeft',2],['Home',0]]) {
+    assert.equal(send(key),true,key+' suppresses default scrolling');
+    assert.equal(doc.activeElement,tabs[index],key+' moves focus');
+    selected(index);
+  }
+  assert.equal(send('Tab'),false);
+  assert.equal(send('ArrowDown'),false);
+  assert.equal(send('ArrowLeft',{altKey:true}),false,'browser Back shortcut stays native');
+  tabs[2].click();
+  selected(2);
+});
