@@ -46,9 +46,9 @@ test("bad, missing and nonfinite observations cannot be exported", () => {
   assert.throws(() => makeCsv(snapshot({ seriesA: [1] ,seriesB: [2] })), /valid correlation/);
 });
 
-function loadRealCalculator() {
+function loadRealCalculator(query = "") {
   // Execute the actual inline calculator controller against a real DOM, with no network calls.
-  const dom = new JSDOM(page, { url: "https://www.fynxfinanceworld.com/tools/correlation.html", runScripts: "outside-only" });
+  const dom = new JSDOM(page, { url: "https://www.fynxfinanceworld.com/tools/correlation.html" + query, runScripts: "outside-only" });
   const win = dom.window;
   const downloads = [];
   win.FynxPreferences = { getItem: () => null, setItem: () => {} };
@@ -119,4 +119,57 @@ test("invalid or constant series never enables export, swapping valid inputs rec
   assert.equal(get("exportCsvBtn").disabled, false);
   assert.equal(get("corrValue").textContent, "1.0000");
   dom.window.close();
+});
+
+test("explicit blank observations cannot shift the pairing or be exported/shared", () => {
+  const { dom, get, type, downloads, win } = loadRealCalculator();
+  try {
+    let copied = 0;
+    Object.defineProperty(win.navigator, "clipboard", { value: { writeText() { copied++; return Promise.resolve(); } } });
+    type("seriesA", "1,,3,4");
+    type("seriesB", "1,2,,4");
+    get("calculateBtn").click();
+    assert.equal(get("corrValue").textContent, "Error");
+    assert.match(get("corrDesc").textContent, /Both series contain blank observations/);
+    assert.equal(get("exportCsvBtn").disabled, true);
+    get("exportCsvBtn").click();
+    get("shareScenarioBtn").click();
+    assert.equal(downloads.length, 0);
+    assert.equal(copied, 0);
+    assert.match(get("shareStatus").textContent, /blank observations/);
+
+    type("seriesA", "1; ;3");
+    type("seriesB", "3;2;1");
+    get("calculateBtn").click();
+    assert.match(get("corrDesc").textContent, /Series A contains a blank observation/);
+    assert.equal(get("exportCsvBtn").disabled, true);
+
+    type("seriesA", "1,\n\n2, 3");
+    type("seriesB", "3  2\n1");
+    get("calculateBtn").click();
+    assert.equal(get("corrValue").textContent, "-1.0000", "normal line wraps and whitespace remain accepted");
+    assert.equal(get("exportCsvBtn").disabled, false);
+
+    type("seriesB", "3;2;1;");
+    get("calculateBtn").click();
+    assert.match(get("corrDesc").textContent, /Series B contains a blank observation/);
+    assert.equal(get("exportCsvBtn").disabled, true);
+  } finally {
+    dom.window.close();
+  }
+});
+
+test("a shared link cannot silently collapse blanks; normal existing links still open", () => {
+  const bad = loadRealCalculator("?a=1,,3,4&b=1,2,,4");
+  const valid = loadRealCalculator("?a=1,2,3&b=3,2,1");
+  try {
+    assert.match(bad.get("shareStatus").textContent, /Could not open the shared scenario.*blank observations/);
+    assert.equal(bad.get("seriesA").value, "");
+    assert.equal(bad.get("exportCsvBtn").disabled, true);
+    assert.equal(valid.get("corrValue").textContent, "-1.0000");
+    assert.equal(valid.get("exportCsvBtn").disabled, false);
+  } finally {
+    bad.dom.window.close();
+    valid.dom.window.close();
+  }
 });

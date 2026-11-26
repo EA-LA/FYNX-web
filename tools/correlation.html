@@ -684,14 +684,15 @@
                 <input id="seriesBLabel" type="text" placeholder="Series B name" />
               </div>
 
+              <p class="section-note full-span" id="seriesFormatHint">Use commas, semicolons, spaces, or line breaks. Keep the dates in the same order, and exclude both values for any date with a missing observation.</p>
               <div class="input-group full-span">
                 <label for="seriesA">Series A Data</label>
-                <textarea id="seriesA" placeholder="Example: 0.20, -0.10, 0.35, 0.50, -0.22"></textarea>
+                <textarea id="seriesA" aria-describedby="seriesFormatHint" placeholder="Example: 0.20, -0.10, 0.35, 0.50, -0.22"></textarea>
               </div>
 
               <div class="input-group full-span">
                 <label for="seriesB">Series B Data</label>
-                <textarea id="seriesB" placeholder="Example: 0.18, -0.07, 0.29, 0.42, -0.19"></textarea>
+                <textarea id="seriesB" aria-describedby="seriesFormatHint" placeholder="Example: 0.18, -0.07, 0.29, 0.42, -0.19"></textarea>
               </div>
             </div>
 
@@ -901,6 +902,17 @@
     updateClocks();
     setInterval(updateClocks, 1000);
 
+    function blankObservationMessage(textA, textB){
+      // Punctuation explicitly separates fields. Ignoring an empty field would
+      // move later observations to the wrong dates. Whitespace-only lists
+      // and ordinary line wraps keep their existing parsing.
+      const blankField = /(?:^|[,;])\s*[,;]|[,;]\s*$/;
+      const a = blankField.test(textA), b = blankField.test(textB);
+      if(!a && !b) return "";
+      const intro = a && b ? "Both series contain blank observations." : `Series ${a ? "A" : "B"} contains a blank observation.`;
+      return intro + " Supply the missing value or remove that date from both series.";
+    }
+
     function parseSeries(text){
       return text
         .split(/[\s,;\n\t]+/)
@@ -1075,8 +1087,11 @@
       exportStatus.textContent = "A valid calculation is required for export.";
       const labelA = document.getElementById("seriesALabel").value.trim() || "Series A";
       const labelB = document.getElementById("seriesBLabel").value.trim() || "Series B";
-      const seriesA = parseSeries(document.getElementById("seriesA").value);
-      const seriesB = parseSeries(document.getElementById("seriesB").value);
+      const inputA = document.getElementById("seriesA").value;
+      const inputB = document.getElementById("seriesB").value;
+      const blankObservation = blankObservationMessage(inputA, inputB);
+      const seriesA = parseSeries(inputA);
+      const seriesB = parseSeries(inputB);
 
       const corrValueEl = document.getElementById("corrValue");
       const corrDescEl = document.getElementById("corrDesc");
@@ -1086,13 +1101,14 @@
       const tradeReadEl = document.getElementById("tradeRead");
       const tradeReadDescEl = document.getElementById("tradeReadDesc");
 
-      if(seriesA.length !== seriesB.length || seriesA.length < 2 || !seriesA.every(Number.isFinite) || !seriesB.every(Number.isFinite)){
+      if(blankObservation || seriesA.length !== seriesB.length || seriesA.length < 2 || !seriesA.every(Number.isFinite) || !seriesB.every(Number.isFinite)){
         corrValueEl.textContent = "Error";
         corrValueEl.className = "metric-value red";
-        corrDescEl.textContent = "Both datasets must contain the same number of valid numeric values, with at least 2 points each.";
+        corrDescEl.textContent = blankObservation || "Both datasets must contain the same number of valid numeric values, with at least 2 points each.";
         relationshipValueEl.textContent = "Invalid";
-        relationshipDescEl.textContent = "Fix the input lengths and try again.";
-        sampleSizeEl.textContent = `${seriesA.length} / ${seriesB.length}`;
+        relationshipDescEl.textContent = blankObservation ? "Observations must stay paired by date." : "Fix the input lengths and try again.";
+        sampleSizeEl.textContent = blankObservation ? "—" : `${seriesA.length} / ${seriesB.length}`;
+        if(blankObservation) exportStatus.textContent = blankObservation;
         tradeReadEl.textContent = "—";
         tradeReadDescEl.textContent = "No valid result.";
         updateMatrix(labelA, labelB, null);
@@ -1193,8 +1209,12 @@
       const validLabel = v => LABEL.test(v.trim());
 
       const params = new URLSearchParams(window.location.search);
-      const a = tokens(params.get("a")), b = tokens(params.get("b"));
-      if (validSeries(a) && validSeries(b)) {
+      const rawA = params.get("a") || "", rawB = params.get("b") || "";
+      const a = tokens(rawA), b = tokens(rawB);
+      const gapsInLink = blankObservationMessage(rawA, rawB);
+      if (gapsInLink && rawA && rawB) {
+        shareStatus.textContent = "Could not open the shared scenario. " + gapsInLink;
+      } else if (validSeries(a) && validSeries(b)) {
         document.getElementById("seriesA").value = a.join(", ");
         document.getElementById("seriesB").value = b.join(", ");
         const la = String(params.get("la") || ""), lb = String(params.get("lb") || "");
@@ -1205,7 +1225,14 @@
       }
 
       shareBtn.addEventListener("click", () => {
-        const sa = tokens(document.getElementById("seriesA").value), sb = tokens(document.getElementById("seriesB").value);
+        const currentA = document.getElementById("seriesA").value;
+        const currentB = document.getElementById("seriesB").value;
+        const gaps = blankObservationMessage(currentA, currentB);
+        if (gaps) {
+          shareStatus.textContent = gaps;
+          return;
+        }
+        const sa = tokens(currentA), sb = tokens(currentB);
         if (!validSeries(sa) || !validSeries(sb)) {
           shareStatus.textContent = `Enter 2 to ${MAX} plain numbers in each series to share a link.`;
           return;
