@@ -2,5 +2,5 @@
 
 .products .product{border:1px solid var(--line);border-radius:9px}.products .product h3{font-size:19px;margin:10px 0}.products .product button{font-size:12px;width:100%;margin-top:14px}.products .product:has(button[aria-pressed=true]){border-color:var(--accent);background:var(--soft)}.work-title #toolGuide{display:inline-block;font-size:13px;margin-bottom:16px}
 
-/* Long links, symbols and IDs in paid results must stay readable inside the workbench. */
-#workbench #result > p{overflow-wrap:anywhere}
+/* Preserve the structure of paid notes and keep long links inside the workbench. */
+#workbench #result > p{white-space:pre-wrap;overflow-wrap:anywhere}

@@ -4,9 +4,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const { JSDOM } = require('jsdom');
-const { PLANS } = require('../backend/consumer-core.cjs');
+const { PLANS, run } = require('../backend/consumer-core.cjs');
 
-test('paid Trade Review result text can wrap a long unbroken research reference', async () => {
+test('paid Trade Review result preserves note line breaks and wraps long research references', async () => {
   const dom = new JSDOM(fs.readFileSync('pro.html', 'utf8'), {
     url: 'https://www.fynxfinanceworld.com/pro.html?tool=review'
   });
@@ -16,7 +16,7 @@ test('paid Trade Review result text can wrap a long unbroken research reference'
     const style = document.createElement('style');
     style.textContent = fs.readFileSync('assets/css/pro-workspace.css', 'utf8');
     document.head.append(style);
-    const note = 'https://example.invalid/research/' + 'ABC'.repeat(70);
+    const note = 'Event: CPI\n\n  Plan: reduce risk\nhttps://example.invalid/research/' + 'ABC'.repeat(70);
     let ready, ran;
     const modules = {
       '../../auth/firebase.js': { app: {}, auth: {}, authPersistenceReady: Promise.resolve() },
@@ -29,7 +29,7 @@ test('paid Trade Review result text can wrap a long unbroken research reference'
           if (req.action === 'status') return { data: { tier: 'starter', plans: PLANS } };
           if (req.action === 'list') return { data: { items: [], limit: 25 } };
           ran = req;
-          return { data: { result: { notes: req.input.notes, score: 0 } } };
+          return { data: { result: run(req.product, req.input) } };
         }
       }
     };
@@ -52,6 +52,8 @@ test('paid Trade Review result text can wrap a long unbroken research reference'
     const rendered = [...document.querySelectorAll('#workbench #result > p')]
       .find(p => p.textContent === note);
     assert.ok(rendered, 'the original reference remains in the result');
+    assert.equal(window.getComputedStyle(rendered).whiteSpace, 'pre-wrap');
+    assert.notEqual(window.getComputedStyle(document.querySelector('.intro')).whiteSpace, 'pre-wrap');
     assert.equal(window.getComputedStyle(rendered).overflowWrap, 'anywhere');
     assert.notEqual(window.getComputedStyle(document.querySelector('.intro')).overflowWrap, 'anywhere');
   } finally {
