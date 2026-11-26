@@ -181,3 +181,60 @@ test('timer rechecks form ownership and manual-only opt-out after registration',
     assert.equal(retryClicks, 1);
   } finally { app.close(); }
 });
+
+test('replacing a refresh control removes its orphan countdown and registers the replacement', async () => {
+  const app = await setup();
+  try {
+    const old = app.document.getElementById('refreshBtn');
+    const orphan = old.nextElementSibling;
+    const replacement = app.document.createElement('button');
+    replacement.id = old.id;
+    replacement.textContent = 'Refresh';
+    old.replaceWith(replacement);
+    await new Promise(resolve => app.window.setTimeout(resolve, 0));
+    assert.equal(orphan.isConnected, false);
+    assert.equal(old.dataset.fxAuto, undefined);
+    assert.equal(replacement.dataset.fxAuto, '1');
+    assert.equal(replacement.nextElementSibling.classList.contains('fx-auto'), true);
+    let calls = 0;
+    replacement.addEventListener('click', () => calls++);
+    app.advance(10 * 60 * 1000 + 1);
+    assert.equal(calls, 1);
+  } finally { app.close(); }
+});
+
+test('moving a refresh control transfers its countdown without leaving a duplicate', async () => {
+  const app = await setup();
+  try {
+    const button = app.document.getElementById('refreshBtn');
+    const orphan = button.nextElementSibling;
+    const toolbar = app.document.createElement('div');
+    app.document.body.append(toolbar);
+    toolbar.append(button);
+    await new Promise(resolve => app.window.setTimeout(resolve, 0));
+    assert.equal(orphan.isConnected, false);
+    assert.equal(toolbar.querySelectorAll('.fx-auto').length, 1);
+    assert.equal(button.nextElementSibling.classList.contains('fx-auto'), true);
+    let calls = 0;
+    button.addEventListener('click', () => calls++);
+    app.advance(10 * 60 * 1000 + 1);
+    assert.equal(calls, 1);
+  } finally { app.close(); }
+});
+
+test('removing and reinserting the same refresh control restores registration', async () => {
+  const app = await setup();
+  try {
+    const button = app.document.getElementById('refreshBtn');
+    const parent = button.parentElement;
+    const orphan = button.nextElementSibling;
+    button.remove();
+    await new Promise(resolve => app.window.setTimeout(resolve, 0));
+    assert.equal(orphan.isConnected, false);
+    assert.equal(button.dataset.fxAuto, undefined);
+    parent.append(button);
+    await new Promise(resolve => app.window.setTimeout(resolve, 0));
+    assert.equal(button.dataset.fxAuto, '1');
+    assert.equal(button.nextElementSibling.classList.contains('fx-auto'), true);
+  } finally { app.close(); }
+});

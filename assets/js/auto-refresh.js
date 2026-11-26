@@ -3,7 +3,7 @@
    Buttons marked data-no-auto-refresh (manual-entry tools, weekly reports) are never clicked automatically.
    every page section that had a refresh control now updates itself every 10 minutes while the
    page is visible, and immediately when you come back to a tab that has gone stale.
-   The original buttons stay in the DOM (hidden) so each section keeps its own refresh logic. */
+   The original buttons remain visible so each section keeps its own manual refresh logic. */
 (function () {
   'use strict';
   if (window.__fynxAutoRefresh) return; window.__fynxAutoRefresh = true;
@@ -16,7 +16,7 @@
   const SKIP = '#billing-refresh,#refresh-verification,#refreshCloudReminders,#loadSaved,[data-media-reset],[data-no-auto-refresh],form [type=submit]';
   const TEXT = /^\s*[↻⟳]?\s*(refresh|check now)(\s+(now|data|quotes|marks|coverage|report|observation|headlines|news|prices))?\s*[↻⟳]?\s*$/i;
   let next = Date.now() + EVERY, last = Date.now();
-  const chips = new Set();
+  const chips = new Map(); // refresh button -> its countdown
 
   function style() {
     if (document.getElementById('fx-auto-style')) return;
@@ -32,8 +32,8 @@
   function mmss(ms) { const s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
   function paint() {
     const left = next - Date.now();
-    chips.forEach(chip => {
-      if (!chip.isConnected) { chips.delete(chip); return; }
+    chips.forEach((chip, button) => {
+      if (!button.isConnected || !chip.isConnected || button.nextElementSibling !== chip) return;
       if (chip.classList.contains('is-updating')) return;
       chip.lastChild.textContent = 'Next check ' + mmss(left);
     });
@@ -57,12 +57,26 @@
     const chip = document.createElement('span'); chip.className = 'fx-auto'; chip.setAttribute('aria-hidden', 'true');
     chip.title = 'FYNX checks this section’s source again every 10 minutes while the page is open. The data is only as current as its source: see the time and source shown with it (live, delayed or reference).';
     chip.append(document.createElement('i'), document.createTextNode(''));
-    button.after(chip); chips.add(chip); paint();
+    button.after(chip); chips.set(button, chip); paint();
   }
   function scan(root) {
     if (!root || !root.querySelectorAll) return;
     if (root.matches && eligible(root)) adopt(root);
     root.querySelectorAll('button').forEach(b => { if (eligible(b)) adopt(b); });
+  }
+  // Dynamic sections can replace a button without removing its sibling chip,
+  // or move the button to a different toolbar. Keep the countdown attached
+  // only to its owning control and release detached elements promptly.
+  function reconcile() {
+    const reattach = [];
+    chips.forEach((chip, button) => {
+      if (button.isConnected && chip.isConnected && button.nextElementSibling === chip) return;
+      chips.delete(button);
+      chip.remove();
+      delete button.dataset.fxAuto;
+      if (button.isConnected) reattach.push(button);
+    });
+    reattach.forEach(button => { if (eligible(button)) adopt(button); });
   }
   // Do not fire actions in inactive tabs, collapsed panels, or disabled form groups.
   // They may contain loaded-but-hidden widgets whose refresh handlers have side effects.
@@ -88,7 +102,13 @@
   }
   function init() {
     style(); scan(document.body);
-    new MutationObserver(list => list.forEach(m => m.addedNodes.forEach(n => n.nodeType === 1 && scan(n)))).observe(document.body, {childList: true, subtree: true});
+    new MutationObserver(list => {
+      // Countdown text updates are not structural mutations.
+      const structural = list.some(m => [...m.addedNodes, ...m.removedNodes].some(n => n.nodeType === 1));
+      if (!structural) return;
+      reconcile();
+      list.forEach(m => m.addedNodes.forEach(n => { if (n.nodeType === 1 && n.isConnected) scan(n); }));
+    }).observe(document.body, {childList: true, subtree: true});
     setInterval(() => { if (document.hidden) return; if (Date.now() >= next) run(); else paint(); }, 1000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - last >= EVERY) run(); });
   }
