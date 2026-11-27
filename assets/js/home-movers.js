@@ -130,8 +130,10 @@
         })
       ]);
       const stockKeys = ['gainers', 'losers', 'active', 'aiUnder3'];
-      const validStocks = verifiedTime(j?.stocksAsOf) && stockKeys.every(key => Array.isArray(j[key]));
-      const validCrypto = verifiedTime(j?.cryptoAsOf) && Array.isArray(j?.crypto);
+      // A cached or out-of-order response must not replace a newer verified snapshot.
+      const notOlder = (incoming, retained) => !verifiedTime(retained) || Date.parse(incoming) >= Date.parse(retained);
+      const validStocks = verifiedTime(j?.stocksAsOf) && stockKeys.every(key => Array.isArray(j[key])) && notOlder(j.stocksAsOf, data?.stocksAsOf);
+      const validCrypto = verifiedTime(j?.cryptoAsOf) && Array.isArray(j?.crypto) && notOlder(j.cryptoAsOf, data?.cryptoAsOf);
       if (!validStocks && !validCrypto) throw new Error('unverified snapshot');
       const previous = data;
       const keepStocks = !validStocks && previous && verifiedTime(previous.stocksAsOf);
