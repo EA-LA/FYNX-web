@@ -81,3 +81,6 @@ html body.edge-page>.terminal-ticker-host{display:flex!important;min-height:36px
 @media(max-width:639px){.edge-wl-tools{top:-22px;margin-inline:-22px;padding-inline:22px}}
 @media(max-width:519px){.edge-wl-group .edge-watchlist-grid{grid-template-columns:1fr}}
 .edge-wl-group legend .edge-wl-link{font:600 12px/1.2 Inter,Arial,sans-serif;letter-spacing:0;text-transform:none}
+
+/* [site-qa] run 118: brand link was 38px tall on phones; give it a 44px tap height without changing desktop */
+@media (pointer:coarse){html body.edge-page[data-fynx-terminal] .terminal-public-masthead > .terminal-brand{min-height:44px;justify-content:center}}
