@@ -96,6 +96,8 @@
 
       <div class="card">
         <h2 style="margin-bottom:1rem">Technical Overview Widget</h2>
+        <p class="desc" id="techWidgetStatus" role="status"></p>
+        <button class="btn" id="techWidgetReload" type="button" aria-disabled="true">Reload widget</button>
         <div class="widget" id="techWidget"></div>
       </div>
     </div>
@@ -112,8 +114,16 @@
       renderWidget();
     }
     function toggleTheme(){const next=getTheme()==="dark"?"light":"dark";window.FynxPreferences?.setItem(THEME_KEY,next);applyTheme(next);}
+    const wrap=document.getElementById("techWidget");
+    const status=document.getElementById("techWidgetStatus");
+    const reload=document.getElementById("techWidgetReload");
+    let stopWatching=()=>{}, renderId=0;
     function renderWidget(){
-      const wrap=document.getElementById("techWidget");
+      const id=++renderId;
+      stopWatching();
+      wrap.hidden=false;
+      status.textContent="Opening the TradingView widget…";
+      reload.setAttribute("aria-disabled","true");
       wrap.innerHTML='<div class="tradingview-widget-container" style="height:100%;width:100%"><div id="technical-analysis" style="height:100%;width:100%"></div></div>';
       const s=document.createElement("script");
       s.src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js";
@@ -129,8 +139,40 @@
         colorTheme:getTheme(),
         isTransparent:true
       });
-      wrap.querySelector('.tradingview-widget-container').appendChild(s);
+      const container=wrap.querySelector('.tradingview-widget-container');
+      let timer, observer;
+      stopWatching=()=>{clearTimeout(timer);observer?.disconnect();};
+      const enableReload=()=>reload.setAttribute("aria-disabled","false");
+      // An iframe can be present even when the provider has no current readings.
+      function checkFrame(){
+        if(id!==renderId||!container.querySelector("iframe"))return false;
+        stopWatching();
+        status.textContent="";
+        enableReload();
+        return true;
+      }
+      if(typeof MutationObserver==="function"){
+        observer=new MutationObserver(checkFrame);
+        observer.observe(container,{childList:true,subtree:true});
+      }
+      timer=setTimeout(()=>{
+        if(id!==renderId||checkFrame())return;
+        status.textContent="The TradingView widget has not appeared. Reload the widget or use the indicator reference.";
+        enableReload();
+      },15000);
+      s.onload=checkFrame;
+      s.onerror=()=>{
+        if(id!==renderId)return;
+        stopWatching();
+        wrap.hidden=true;
+        status.textContent="Could not load the TradingView widget. Reload the widget or use the indicator reference.";
+        enableReload();
+      };
+      container.appendChild(s);
     }
+    reload.addEventListener("click",()=>{
+      if(reload.getAttribute("aria-disabled")!=="true")renderWidget();
+    });
     applyTheme(getTheme());
     document.getElementById("themeToggle").addEventListener("click",toggleTheme);
     window.addEventListener("storage",e=>{if(e.key===THEME_KEY)applyTheme(getTheme());});
