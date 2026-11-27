@@ -12,7 +12,7 @@ jobs:
         with: {ref: terminal/no-chart-selection, path: app}
       - uses: actions/setup-node@v4
         with: {node-version: 22}
-      - run: cd app && npm ci --no-audit --no-fund && npx playwright install --with-deps webkit
+      - run: cd app && npm ci --no-audit --no-fund && npx playwright-core install --with-deps webkit
       - name: webkit drag
         run: |
           git config --global user.name probe && git config --global user.email probe@users.noreply.github.com
