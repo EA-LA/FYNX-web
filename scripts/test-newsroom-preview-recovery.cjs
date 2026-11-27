@@ -57,3 +57,36 @@ test('a synchronous fetch failure releases the batch and successful recovery cle
   const retry = h.lookup(story); h.fire(40); assert.equal((await retry).image, photo);
   assert.equal(h.timers.size, 0);
 });
+
+test('provider errors, omitted entries and invalid images are not cached as no-photo results', async () => {
+  for (const previews of [{[story]: {error: 'temporary failure'}}, {}, {[story]: {image: 'invalid'}}]) {
+    let calls = 0;
+    const h = setup(() => Promise.resolve(++calls === 1 ? {ok: true, json: async () => ({previews})} : reply()));
+    const first = h.lookup(story); h.fire(40);
+    assert.equal(await first, null);
+    const retry = h.lookup(story); h.fire(40);
+    assert.equal((await retry).image, photo);
+    assert.equal(calls, 2);
+  }
+});
+test('a confirmed no-photo response is cached while a failed sibling remains retryable', async () => {
+  const other = 'https://example.com/other';
+  let calls = 0;
+  const h = setup(() => Promise.resolve(++calls === 1
+    ? {ok: true, json: async () => ({previews: {[story]: {image: null}, [other]: {error: 'temporary'}}})}
+    : {ok: true, json: async () => ({previews: {[other]: {image: photo}}})}));
+  const first = h.lookup(story), second = h.lookup(other); h.fire(40);
+  assert.equal((await first).image, null);
+  assert.equal(await second, null);
+  assert.equal((await h.lookup(story)).image, null);
+  assert.equal(calls, 1);
+  const retry = h.lookup(other); h.fire(40);
+  assert.equal((await retry).image, photo);
+  assert.equal(calls, 2);
+});
+test('section lookup works without Object.hasOwn on older Safari', () => {
+  const window = {};
+  vm.runInNewContext('Object.hasOwn = undefined;\n' + source, {window});
+  assert.ok(window.FYNXNewsroomMedia.get('markets'));
+  assert.equal(window.FYNXNewsroomMedia.get('toString'), null);
+});
