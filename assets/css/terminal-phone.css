@@ -1,0 +1,155 @@
+/* FYNX Terminal · iPhone layout (≤760px). Loaded after terminal-all.css. Desktop and tablet are untouched.
+ * One system: 12px page gutter, 12px card radius, 44px primary controls, 38px segmented controls, one accent (amber). */
+.fx-mright,.fx-msheet,.fx-mscrim{display:none}
+
+@media (max-width:760px){
+  html body.fx-terminal{--ph-g:12px;--ph-card:#0d1211;--ph-head:#111816;--ph-line:#1e2824;--ph-ctl:#121917;--ph-ctl-ln:#28332f;background:#05080a}
+
+  /* ── Header: brand · status · bell · menu, then a full-width search ───────────────────────────── */
+  html body.fx-terminal>header.fx-top{display:flex!important;flex-wrap:wrap!important;align-items:center;gap:10px 8px!important;height:auto!important;min-height:0!important;
+    padding:10px var(--ph-g) 12px!important;position:relative!important;z-index:80;border-bottom:1px solid var(--ph-line)!important;background:#090d0d!important}
+  html body.fx-terminal .fx-brand{order:0;display:inline-flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;min-height:40px!important;height:40px!important;padding:0!important;line-height:1}
+  html body.fx-terminal .fx-brand b{font-size:20px!important;letter-spacing:-.01em;line-height:1}
+  html body.fx-terminal .fx-brand span{font-size:8.5px!important;letter-spacing:.32em!important;line-height:1;margin:0!important}
+  html body.fx-terminal #fx-mood:not([hidden]){order:1;height:26px;padding:0 8px;margin:0;font-size:9.5px;border-radius:13px}
+  html body.fx-terminal .fx-mstat{order:2;margin-left:auto;display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 9px;border:1px solid var(--ph-line);border-radius:13px;background:#0e1413;font-size:9.5px!important;white-space:nowrap}
+  html body.fx-terminal .fx-mstat small{display:none!important}
+  html body.fx-terminal .fx-clocks{display:none!important}
+  html body.fx-terminal .fx-mright{order:3;display:flex;align-items:center;gap:8px}
+  html body.fx-terminal .fx-mright .fx-bellwrap{display:flex}
+  html body.fx-terminal .fx-mbtn,html body.fx-terminal .fx-mright .fx-bell:not([hidden]){display:inline-flex!important;align-items:center;justify-content:center;width:40px!important;height:40px!important;min-height:0!important;min-width:0!important;padding:0!important;
+    border:1px solid var(--ph-ctl-ln)!important;border-radius:11px!important;background:var(--ph-ctl)!important;color:var(--tx)!important;position:relative}
+  html body.fx-terminal .fx-mbtn[aria-expanded="true"]{border-color:var(--am)!important;color:var(--am)!important}
+  html body.fx-terminal .fx-mright .fx-bellbadge{top:-5px;right:-5px}
+  html body.fx-terminal .fx-belldrop{z-index:95;border-radius:14px;overflow:hidden}
+
+  html body.fx-terminal .fx-cmd{order:10;flex:1 1 100%!important;display:flex;align-items:center;gap:8px;height:46px!important;margin:0!important;padding:0 4px 0 14px!important;
+    background:#0b100f!important;border:1px solid var(--ph-ctl-ln)!important;border-radius:12px!important;transition:border-color .15s,box-shadow .15s}
+  html body.fx-terminal .fx-cmd:focus-within{border-color:var(--am)!important;box-shadow:0 0 0 3px rgba(255,176,0,.14)}
+  html body.fx-terminal .fx-cmd>span{color:var(--am);font-weight:700}
+  html body.fx-terminal .fx-cmd input{font:16px Inter,system-ui,sans-serif!important;min-height:0!important;height:44px!important}
+  html body.fx-terminal .fx-cmd input::placeholder{color:#6f7d76}
+  html body.fx-terminal .fx-cmd button{height:38px!important;min-height:0!important;padding:0 16px!important;border-radius:9px!important;font:800 13px Inter,system-ui,sans-serif!important;letter-spacing:.02em}
+  /* Command feedback: a toast under the search bar, not a permanent row. */
+  html body.fx-terminal .fx-cmd-msg{position:absolute!important;left:var(--ph-g);right:var(--ph-g);top:calc(100% + 8px);z-index:85;margin:0!important;max-width:none!important;
+    padding:10px 12px;border:1px solid var(--ph-ctl-ln);border-radius:10px;background:#0f1614;color:var(--tx);font-size:12.5px!important;line-height:1.35;white-space:normal!important;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;transform:translateY(-4px);pointer-events:none;transition:opacity .18s,transform .18s}
+  html body.fx-terminal .fx-cmd-msg.fx-show{opacity:1;transform:none}
+
+  /* Menu sheet: the same Plan, Feeds, Tour, Build, Edit and Exit buttons, laid out as an even grid. */
+  html body.fx-terminal .fx-msheet:not([hidden]){display:block;position:absolute;left:8px;right:8px;top:calc(100% + 6px);z-index:90;padding:12px;background:#0b100f;border:1px solid var(--ph-ctl-ln);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.65)}
+  html body.fx-terminal .fx-mscrim:not([hidden]){display:block;position:fixed;inset:0;z-index:75;background:rgba(2,4,4,.55);backdrop-filter:blur(2px)}
+  html body.fx-terminal .fx-mhead{display:flex;align-items:center;justify-content:space-between;margin:0 2px 10px}
+  html body.fx-terminal .fx-mhead b{font:700 10.5px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:var(--mu)}
+  html body.fx-terminal .fx-mclose{width:34px;height:34px;border-radius:9px;border:1px solid var(--ph-line);background:none;color:var(--mu);font-size:14px}
+  html body.fx-terminal .fx-mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  html body.fx-terminal .fx-mgrid>:not([hidden]){display:flex!important;align-items:center;justify-content:center;gap:8px;width:100%;height:48px!important;min-height:0!important;margin:0!important;padding:0 12px!important;
+    border:1px solid var(--ph-ctl-ln)!important;border-radius:11px!important;background:var(--ph-ctl)!important;color:var(--tx)!important;font:600 14px Inter,system-ui,sans-serif!important;text-decoration:none;box-sizing:border-box}
+  html body.fx-terminal .fx-mgrid>#fx-plan,html body.fx-terminal .fx-mgrid>#fx-live{grid-column:1/-1}
+  html body.fx-terminal .fx-mgrid>#fx-plan{border-color:rgba(255,176,0,.45)!important;background:rgba(255,176,0,.07)!important}
+  html body.fx-terminal .fx-mgrid>#fx-live{justify-content:flex-start;font:600 12.5px 'IBM Plex Mono',monospace!important}
+  html body.fx-terminal .fx-mgrid>#fx-classic{color:var(--tx)!important}
+  body.fx-mopen{overflow:hidden}
+
+  /* ── Desks: scrolling underline tabs, then mode switch + Find + Scanner ───────────────────────── */
+  html body.fx-terminal .fx-deskbar:not([hidden]){display:grid!important;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"list list list" "mode find scan" "chip chip chip";
+    align-items:center;gap:10px 8px;height:auto!important;padding:0 var(--ph-g) 12px!important;background:#090d0d!important;border-bottom:1px solid var(--ph-line)!important;flex-wrap:nowrap!important}
+  html body.fx-terminal .fx-deskbar-label,html body.fx-terminal .fx-deskbar-note{display:none!important}
+  html body.fx-terminal .fx-deskbar-list{grid-area:list;position:relative;display:flex;gap:2px;margin:0 calc(var(--ph-g) * -1);padding:0 calc(var(--ph-g) - 4px);overflow-x:auto;scrollbar-width:none;
+    border-bottom:1px solid var(--ph-line);-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent);min-width:0;flex:none!important}
+  html body.fx-terminal .fx-deskbar-list::-webkit-scrollbar{display:none}
+  html body.fx-terminal .fx-desk{flex:none;height:46px!important;min-height:0!important;padding:0 12px!important;background:none!important;border:0!important;border-bottom:2px solid transparent!important;border-radius:0!important;
+    color:#8a978f!important;font:600 12px 'IBM Plex Mono',monospace!important;letter-spacing:.06em}
+  html body.fx-terminal .fx-desk.on{color:var(--am)!important;border-bottom-color:var(--am)!important;background:none!important}
+  html body.fx-terminal .fx-modebar{grid-area:mode;display:flex;height:40px;border:1px solid var(--ph-ctl-ln);border-radius:11px;overflow:hidden;background:var(--ph-ctl)}
+  html body.fx-terminal .fx-mode{flex:1 1 0;min-width:0!important;height:100%!important;min-height:0!important;padding:0!important;border:0!important;border-right:1px solid var(--ph-ctl-ln)!important;font:700 11px 'IBM Plex Mono',monospace!important;letter-spacing:.05em}
+  html body.fx-terminal .fx-mode:last-child{border-right:0!important}
+  html body.fx-terminal .fx-mode.on{background:var(--am)!important;color:#000!important}
+  html body.fx-terminal #fx-find-btn,html body.fx-terminal #fx-scan-btn{height:40px!important;min-height:0!important;margin:0!important;border:1px solid var(--ph-ctl-ln)!important;border-radius:11px!important;background:var(--ph-ctl)!important;color:var(--tx)!important;font:600 12.5px Inter,system-ui,sans-serif!important}
+  html body.fx-terminal #fx-find-btn{grid-area:find;width:42px;padding:0!important;justify-content:center}
+  html body.fx-terminal #fx-scan-btn{grid-area:scan;padding:0 12px!important}
+  html body.fx-terminal .fx-symchip:not([hidden]){grid-area:chip;display:flex!important;width:100%;max-width:none!important;height:40px;box-sizing:border-box;border-radius:11px;padding:0 4px 0 12px!important}
+  html body.fx-terminal .fx-symchip:not([hidden]):has(.fx-cmpchip){padding:0 4px!important;gap:6px!important}
+  html body.fx-terminal .fx-cmpchip{height:30px;border-radius:8px;flex:none}
+
+  /* ── Quote strip and headlines ─────────────────────────────────────────────────────────────── */
+  html body.fx-terminal .fx-strip{height:42px!important;padding:0 6px;border-bottom:1px solid var(--ph-line)}
+  html body.fx-terminal .fx-q{height:42px;min-height:0!important;align-items:center;padding:0 10px;font-size:12.5px}
+  html body.fx-terminal .fx-news{height:44px!important;border-bottom:1px solid var(--ph-line)}
+  html body.fx-terminal .fx-livebadge{padding:0 10px;font-size:10px;letter-spacing:.08em}
+  html body.fx-terminal .fx-hl{font-size:13px}
+  html body.fx-terminal #fx-news-pause{min-width:56px;padding:0 10px;font-size:12px}
+
+  /* ── Cards: every panel is a full-width card that sizes to its content ───────────────────────── */
+  html body.fx-terminal>main.fx-grid:not([hidden]){display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-auto-rows:auto!important;gap:12px!important;padding:12px var(--ph-g) 4px!important;height:auto!important}
+  html body.fx-terminal .fx-grid>.tp{max-height:none!important;min-height:0!important;height:auto;border:1px solid var(--ph-line)!important;border-radius:12px;overflow:hidden;background:var(--ph-card)}
+  html body.fx-terminal .tp>header{flex-wrap:wrap;align-items:center;gap:8px 10px!important;min-height:46px!important;padding:8px 12px!important;background:var(--ph-head)!important;border-bottom:1px solid var(--ph-line)!important}
+  html body.fx-terminal .tp>header h2{flex:1 1 0;min-width:0;font-size:12.5px!important;gap:8px!important;align-items:baseline}
+  html body.fx-terminal .tp>header h2 b{font-size:12px!important;letter-spacing:.1em!important}
+  html body.fx-terminal .tp>header .tp-right{display:contents}
+  html body.fx-terminal .tp>header .tp-note{order:2;font-size:11px}
+  html body.fx-terminal .tp>header .tp-link,html body.fx-terminal .tp>header button.tp-link{order:1;margin-left:auto;min-height:30px!important;min-width:0!important;padding:0 2px!important;font-size:12.5px!important;font-weight:600}
+  /* Panel tabs: one even segmented control across the card. */
+  html body.fx-terminal .tp>header .tp-tabs:not([hidden]){order:3;flex:1 1 100%;max-width:none!important;display:flex;gap:0;height:36px;border:1px solid var(--ph-ctl-ln);border-radius:10px;overflow-x:auto;overflow-y:hidden;background:var(--ph-ctl)}
+  html body.fx-terminal .tp-tabs button{flex:1 0 auto;min-width:46px!important;height:100%!important;min-height:0!important;padding:0 10px!important;border:0!important;border-right:1px solid var(--ph-ctl-ln)!important;border-radius:0!important;
+    background:none!important;color:#a9b5ae!important;font:700 11.5px 'IBM Plex Mono',monospace!important}
+  html body.fx-terminal .tp-tabs button:last-child{border-right:0!important}
+  html body.fx-terminal .tp-tabs button.on{background:#e8eee9!important;color:#050807!important}
+  html body.fx-terminal .tp-b{flex:0 1 auto!important;max-height:min(70vh,560px);overflow:auto;-webkit-overflow-scrolling:touch}
+  html body.fx-terminal #tp-focus .tp-b,html body.fx-terminal #tp-squote .tp-b{max-height:none}
+  html body.fx-terminal #tp-focus{min-height:0!important}
+  html body.fx-terminal .fx-chartwrap{flex:none!important;height:240px;min-height:240px}
+  /* Action links under a chart: one even row that scrolls sideways instead of wrapping into ragged lines. */
+  html body.fx-terminal .fx-chips:not([hidden]):has(>.fx-chip-link){display:flex;flex-wrap:nowrap!important;gap:8px;overflow-x:auto;scrollbar-width:none;padding:12px!important}
+  html body.fx-terminal .fx-chips:has(>.fx-chip-link)::-webkit-scrollbar{display:none}
+  html body.fx-terminal .fx-chip-link{flex:none;height:38px;min-height:0!important;padding:0 14px!important;border-radius:10px;border:1px solid var(--ph-ctl-ln)!important;background:var(--ph-ctl)!important;font-size:13px!important;font-weight:600}
+  html body.fx-terminal .fx-chip-link.pg-primary{border-color:var(--am)!important;color:var(--am)!important}
+  html body.fx-terminal .fx-chips:has(>.fx-chip-link)>.fx-chip:not(.fx-chip-link){flex:none;height:38px;min-height:0;padding:0 14px;border-radius:10px;font-size:12.5px;color:var(--mu)}
+  html body.fx-terminal .fx-chip:not(.fx-chip-link){border-radius:7px}
+  html body.fx-terminal .fx-stats>div{padding:9px 12px}
+  html body.fx-terminal .fx-table th,html body.fx-terminal .fx-table th button{white-space:nowrap}
+  html body.fx-terminal .fx-readout{padding:6px 12px;font-size:11.5px}
+  html body.fx-terminal .fx-empty{padding:16px 14px;font-size:13px;line-height:1.5}
+  html body.fx-terminal .fx-table td,html body.fx-terminal .fx-table th{padding-top:7px;padding-bottom:7px}
+  html body.fx-terminal .fx-table td:first-child,html body.fx-terminal .fx-table th:first-child{padding-left:12px}
+  html body.fx-terminal .fx-table td:last-child,html body.fx-terminal .fx-table th:last-child{padding-right:12px}
+
+  /* ── Pages grid (function keys) ─────────────────────────────────────────────────────────────── */
+  html body.fx-terminal .fx-keys:not([hidden]){display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;height:auto!important;padding:20px var(--ph-g) calc(28px + env(safe-area-inset-bottom))!important;background:#05080a!important;border-top:0!important}
+  html body.fx-terminal .fx-keys::before{content:'PAGES';grid-column:1/-1;font:700 10.5px 'IBM Plex Mono',monospace;letter-spacing:.16em;color:var(--mu);padding:0 2px 2px}
+  html body.fx-terminal .fx-key{height:46px;min-height:0!important;flex:none!important;border:1px solid var(--ph-line)!important;border-radius:11px;background:var(--ph-card)!important;font:600 13px Inter,system-ui,sans-serif!important}
+  html body.fx-terminal .fx-key b{display:none}
+  /* Fixes from the first visual pass */
+  html body.fx-terminal .fx-cmd input:focus,html body.fx-terminal .fx-cmd input:focus-visible{outline:none!important;box-shadow:none!important}
+  html body.fx-terminal .tp>header .tp-tabs:has(>button:only-child){display:none}
+  /* Panel notes (counts, dates) get their own quiet line so the title is never squeezed. */
+  html body.fx-terminal .tp>header .tp-right>:not(.tp-link):not(.tp-tabs):not(button):not(select){order:4;flex:1 1 100%;margin:-4px 0 0;color:var(--mu);font-size:11px;white-space:normal}
+  html body.fx-terminal .tp>header .tp-right>:empty{display:none}
+  html body.fx-terminal .tp-b>button:not(.tp-link):not(.fx-chip),html body.fx-terminal .tp-b>p:not(.fx-empty):not(.fx-readout):not(.fx-story),html body.fx-terminal .tp-b>h4{margin-left:12px;margin-right:12px}
+  html body.fx-terminal .tp-b>button:not(.tp-link):not(.fx-chip){margin-bottom:12px;min-height:38px;padding:0 14px;border-radius:10px}
+  /* Pages grid: an even last row whatever the number of pages. */
+  html body.fx-terminal .fx-keys:not([hidden]){grid-template-columns:repeat(6,minmax(0,1fr))}
+  /* Retry and other lone action buttons sit inside the card's padding. */
+  html body.fx-terminal .tp-b>button.fx-chip{margin:0 12px 12px;height:38px;padding:0 14px;border-radius:10px}
+  /* Filter chips on full pages (calendar currencies and similar): even pills that scroll in one row. */
+  html body.fx-terminal #fx-page-body .fx-chips:has(>button.fx-chip):not(:has(>.fx-chip-link)){display:flex;flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;gap:6px;margin-left:calc(var(--ph-g) * -1);margin-right:calc(var(--ph-g) * -1);padding:2px var(--ph-g)}
+  html body.fx-terminal #fx-page-body .fx-chips>button.fx-chip{flex:none;height:36px;min-height:0!important;min-width:0!important;padding:0 14px;border-radius:18px;font-size:12px}
+  /* While a full page is open, the quote strip and headline ticker step aside so the page starts higher. */
+  body.fx-paging.fx-terminal .fx-strip,body.fx-paging.fx-terminal .fx-news{display:none!important}
+  /* Full pages: tab rows scroll sideways as one even row; the page head lines up with the cards. */
+  html body.fx-terminal .pg-tabs{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;gap:6px!important;margin:10px calc(var(--ph-g) * -1) 12px!important;padding:0 var(--ph-g)}
+  html body.fx-terminal .pg-tabs::-webkit-scrollbar{display:none}
+  html body.fx-terminal .pg-tabs button{flex:none;height:36px;min-height:0!important;min-width:0!important;padding:0 14px!important;border-radius:18px!important;font-size:12px!important}
+  html body.fx-terminal .pg-toolbar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  html body.fx-terminal .fx-page-head{padding:10px var(--ph-g)!important;gap:8px}
+  html body.fx-terminal .fx-page-back,html body.fx-terminal .fx-page-close{height:38px!important;min-height:0!important;padding:0 14px!important;border-radius:10px!important;border:1px solid var(--ph-ctl-ln)!important;background:var(--ph-ctl)!important;color:var(--tx)!important;outline-offset:2px}
+  html body.fx-terminal .fx-page-body{padding:12px var(--ph-g) 28px!important}
+  html body.fx-terminal .fx-key{grid-column:span 2}
+  html body.fx-terminal .fx-key:nth-last-child(2):nth-child(3n+1),html body.fx-terminal .fx-key:last-child:nth-child(3n+2){grid-column:span 3}
+  html body.fx-terminal .fx-key:last-child:nth-child(3n+1){grid-column:1/-1}
+
+}
+@media (max-width:360px){
+  html body.fx-terminal #fx-mood:not([hidden]){display:none}
+  html body.fx-terminal #fx-scan-btn{padding:0 10px!important;font-size:12px!important}
+}

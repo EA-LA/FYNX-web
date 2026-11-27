@@ -1516,11 +1516,14 @@
   }
   window.addEventListener('popstate', () => setTimeout(syncWorkspaceUrl, 0));
   // Back to ALL: drop the focus and the comparison, keep the desk, its layout and every preference.
-  function clearFocus() {
+  // Leave FOCUS / COMPARE (no re-render): used before switching desk, from a desk button or a typed desk name.
+  function leaveFocus() {
+    if (!S.sym && !S.cmp) return;
     S.sym = null; S.cmp = null; S.focusGen++; store.set('sym', ''); store.set('cmp', '');
     const u = new URL(location.href); u.searchParams.delete('sym'); u.searchParams.delete('cmp'); history.replaceState(history.state, '', u);
-    announce(); setDesk(S.deskKey);
+    announce();
   }
+  function clearFocus() { leaveFocus(); setDesk(S.deskKey); }
   // Tell plugins (order flow, depth of market, charts…) which instruments the workspace is on.
   function announce() { try { window.dispatchEvent(new CustomEvent('fynx:focus', {detail: {mode: modeOf(), symbol: S.sym?.symbol || null, cls: S.sym?.cls || null, ids: S.cmp ? [...S.cmp] : S.sym ? [S.sym.symbol] : []}})); } catch {} }
   // Canonical instrument id: the Yahoo-style symbol the quote feeds use (EURUSD → EURUSD=X, BTC → BTC-USD).
@@ -1704,7 +1707,7 @@
   Object.assign(PANEL_DESC, {cmpq: 'The selected markets side by side: price, day, 1W–1Y returns, 52-week range', cmpcorr: 'Correlation matrix of the selected markets (1Y daily returns)', cmprisk: 'Volatility, drawdown, VaR and beta for each selected market', cmpnews: 'Headlines about any of the selected markets'});
   function renderDeskBar() {
     const host = $('fx-deskbar-list'); host.replaceChildren();
-    for (const k of DESK_ORDER) { const b = btn(DESK_DEFS[k].label, 'fx-desk' + (k === S.deskKey && !S.sym && !S.cmp ? ' on' : k === S.deskKey ? ' base' : ''), () => { if (S.sym || S.cmp) { S.sym = null; S.cmp = null; S.focusGen++; store.set('sym', ''); store.set('cmp', ''); const u = new URL(location.href); u.searchParams.delete('sym'); u.searchParams.delete('cmp'); history.replaceState(history.state, '', u); announce(); } setDesk(k); }, `${DESK_DEFS[k].label} desk`); b.setAttribute('aria-pressed', String(k === S.deskKey && !S.sym)); host.append(b); }
+    for (const k of DESK_ORDER) { const b = btn(DESK_DEFS[k].label, 'fx-desk' + (k === S.deskKey && !S.sym && !S.cmp ? ' on' : k === S.deskKey ? ' base' : ''), () => { leaveFocus(); setDesk(k); }, `${DESK_DEFS[k].label} desk`); b.setAttribute('aria-pressed', String(k === S.deskKey && !S.sym)); host.append(b); }
     renderModeBar();
     const chip = $('fx-symchip'); chip.replaceChildren(); chip.hidden = !S.sym && !S.cmp;
     if (S.sym) { chip.append(el('b', '', shortOf(S.sym.symbol)), el('span', '', S.sym.name || ''), btn('+', 'fx-symx fx-symadd', () => openFinder({onPick: addCompare, title: `Compare ${shortOf(S.sym.symbol)} with…`}), `Compare ${S.sym.symbol} with another market`), btn('✕', 'fx-symx', clearFocus, `Close ${S.sym.symbol}, back to the ${DESK_DEFS[S.deskKey].label} desk`)); }
@@ -1751,7 +1754,7 @@
     const parts = cmd.trim().toUpperCase().split(/\s+/), [verb, arg] = parts, rest = cmd.trim().split(/\s+/).slice(1).join(' ');
     if (!verb) return;
     if (verb === 'HELP' || verb === '?') { openPage('help'); return say('Commands and keys'); }
-    if (verb === 'DESK' || DESK_DEFS[verb.toLowerCase()] && !resolve(verb)) { const k = (verb === 'DESK' ? arg : verb || '').toLowerCase(); if (DESK_DEFS[k]) { setDesk(k); return; } return say('Desks: ' + DESK_ORDER.map(k => DESK_DEFS[k].label).join(', ')); }
+    if (verb === 'DESK' || DESK_DEFS[verb.toLowerCase()] && !resolve(verb)) { const k = (verb === 'DESK' ? arg : verb || '').toLowerCase(); if (DESK_DEFS[k]) { if (k === 'all' && verb === 'ALL' && (S.sym || S.cmp)) return clearFocus(); leaveFocus(); setDesk(k); return; } return say('Desks: ' + DESK_ORDER.map(k => DESK_DEFS[k].label).join(', ')); }
     if (verb === 'NEWS' || verb === 'N') { const c = NEWS_CATS.find(([k, l]) => k.toUpperCase() === arg || l.toUpperCase() === arg); if (c) { openPage('news', {cat: c[0]}); return say(`News: ${c[1]}`); } openPage('news', rest ? {q: rest} : undefined); return say(rest ? `News search: ${rest}` : 'All news'); }
     if (verb === 'CURVE') { const a = {US: 'US', EA: 'EA', EU: 'EA', UK: 'GB', GB: 'GB', JP: 'JP', JAPAN: 'JP'}[arg || 'US']; if (a) { setCurve(a); return say('Curve: ' + M.AREAS[a].short); } return say('Use CURVE US, EA, UK or JP.'); }
     if (verb === 'CB') { const b = S.schedule?.banks?.find(x => x.short.toUpperCase() === arg || x.currency === arg); if (b) { openPage('cb', b.short); return say(b.name); } return say('Use CB FED, ECB, BOE, BOJ, SNB, BOC, RBA or RBNZ.'); }

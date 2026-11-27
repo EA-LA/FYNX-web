@@ -178,9 +178,9 @@ test('terminal page wires the builder without replacing desks, panels, or shortc
   assert.doesNotMatch(html, /cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net\/npm\/codemirror|unpkg\.com\/codemirror/);
   assert.ok(html.indexOf('codemirror.js') < html.indexOf('builder-core.js'));
   assert.ok(html.indexOf('builder.js') < html.indexOf('terminal/app.js'));
-  assert.match(html, /assets\/js\/terminal\/app\.js\?v=20261127-audit-1/);
+  assert.match(html, /assets\/js\/terminal\/app\.js\?v=20261127-phone-1/);
   assert.match(html, /assets\/js\/terminal\/pages\.js\?v=20261127-audit-1/);
-  assert.match(release, /'assets\/js\/terminal\/app\.js':'20261127-audit-1'/);
+  assert.match(release, /'assets\/js\/terminal\/app\.js':'20261127-phone-1'/);
   assert.match(release, /'assets\/js\/terminal\/pages\.js':'20261127-audit-1'/);
   const buildAt = app.indexOf("verb === 'BUILD'");
   const symbolAt = app.indexOf('if (/^[A-Za-z0-9.\\-=^&]{1,24}$/.test(cmd.trim()))');

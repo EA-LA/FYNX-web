@@ -155,8 +155,8 @@ function fakeBridge(cfg) {
     terminalList: () => [...st.followed], saveTerminalList: async l => { st.saved.push(l); st.followed = l; acb.forEach(cb => cb(acct())); }
   };
 }
-async function boot({time = NOW, width = 1600, height = 1100, filingsDown = false, plan = null, bridge = null, url = ''} = {}) {
-  const ctx = await browser.newContext({viewport: {width, height}}), page = await ctx.newPage();
+async function boot({time = NOW, width = 1600, height = 1100, filingsDown = false, plan = null, bridge = null, url = '', phone = false} = {}) {
+  const ctx = await browser.newContext(phone ? {viewport: {width, height}, deviceScaleFactor: 2, isMobile: true, hasTouch: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1'} : {viewport: {width, height}}), page = await ctx.newPage();
   await page.clock.install({time: new Date(time)});
   if (bridge) await page.addInitScript(fakeBridge, bridge);
   if (plan) await page.addInitScript(p => { window.__FYNX_PLAN_TEST__ = true; window.__PLAN = p; window.__used = p.used || 0; }, plan);
@@ -794,4 +794,102 @@ test('mobile 390px and ultrawide 3440px: mode switch, comparison chips and the b
     assert.deepEqual(errors, []);
     await ctx.close();
   }
+});
+
+// Visual pass only (FYNX_PHONE_SHOTS=dir): iPhone screenshots of every desk and the main pages.
+test('iPhone screenshots', {skip: !process.env.FYNX_PHONE_SHOTS}, async () => {
+  const dir = process.env.FYNX_PHONE_SHOTS; fs.mkdirSync(dir, {recursive: true});
+  const {ctx, page, errors} = await boot({width: Number(process.env.FYNX_W || 393), height: Number(process.env.FYNX_H || 852), phone: true, plan: {tier: 'free', used: 0}, bridge: {user: {uid: 'u1'}, items: [{id: 'a', title: 'AAPL +5.10% today', category: 'market_alerts', read: false, timestamp: new Date(NOW).toISOString(), sourceUrl: '/terminal.html?sym=AAPL', metadata: {symbol: 'AAPL'}}, {id: 'b', title: 'NVDA earnings tomorrow after the close', category: 'market_alerts', read: true, timestamp: new Date(NOW - 3600e3).toISOString(), sourceUrl: '/terminal.html?sym=NVDA', metadata: {symbol: 'NVDA'}}]}});
+  const snap = async (name, frames = Number(process.env.FYNX_FRAMES || 1)) => {
+    await page.clock.runFor(1500); await page.evaluate(() => window.scrollTo(0, 0));
+    for (let i = 0; i < frames; i++) { await page.evaluate(k => window.scrollTo(0, k * (innerHeight - 60)), i); await page.clock.runFor(200); await page.screenshot({path: path.join(dir, `${name}${i ? '-' + i : ''}.png`)}); }
+    await page.evaluate(() => window.scrollTo(0, 0));
+  };
+  await snap('00-all', Number(process.env.FYNX_ALL_FRAMES || 1));
+  if (process.env.FYNX_MENU) { await page.click('#fx-mmenu'); await page.clock.runFor(300); await page.screenshot({path: path.join(dir, 'menu.png')}); await page.keyboard.press('Escape'); await page.click('.fx-bell'); await page.clock.runFor(300); await page.screenshot({path: path.join(dir, 'bell.png')}); await page.click('.fx-bell'); }
+  for (const d of (process.env.FYNX_DESKS || 'DASHBOARD,STOCKS,CRYPTO,FOREX').split(',')) { await command(page, d); await snap('desk-' + d.toLowerCase()); }
+  await command(page, 'AAPL'); await snap('focus-aapl');
+  await command(page, 'AAPL NVDA MSFT'); await snap('compare');
+  await command(page, 'ALL');
+  for (const p of (process.env.FYNX_PAGES || 'NEWS,MKTS,HELP,SETTINGS').split(',')) { await command(page, p); await snap('page-' + p.toLowerCase()); await page.keyboard.press('Escape'); await page.clock.runFor(300); }
+  console.log('errors', JSON.stringify(errors));
+  await ctx.close();
+});
+
+test('dump phone dom', {skip: !process.env.FYNX_DUMP}, async () => {
+  const {ctx, page} = await boot({width: 393, height: 852, phone: true, plan: {tier: 'free', used: 0}});
+  await page.addInitScript(() => {}); await page.evaluate(s => { window.process = {env: {FYNX_DUMP_SEL: s}}; }, process.env.FYNX_DUMP_SEL || '');
+  await page.clock.runFor(1500);
+  console.log(await page.evaluate(() => {
+    const d = (n, depth = 0) => { if (depth > 3) return ''; const r = n.getBoundingClientRect(); let out = '  '.repeat(depth) + n.tagName.toLowerCase() + (n.id ? '#' + n.id : '') + (n.className && typeof n.className === 'string' ? '.' + n.className.trim().split(/\s+/).join('.') : '') + (n.hidden ? ' [hidden]' : '') + ` ${Math.round(r.x)},${Math.round(r.y)} ${Math.round(r.width)}x${Math.round(r.height)}` + (n.children.length ? '' : ' "' + (n.textContent || '').trim().slice(0, 30) + '"') + '\n'; for (const c of n.children) if (!['SCRIPT','svg','STYLE'].includes(c.tagName) && c.tagName !== 'svg') out += d(c, depth + 1); return out; };
+    return process.env.FYNX_DUMP_SEL ? [...document.querySelectorAll(process.env.FYNX_DUMP_SEL)].map(n => d(n)).join('---\n') : [...document.body.children].filter(n => !['SCRIPT','LINK','STYLE'].includes(n.tagName)).map(n => n.id === 'fx-main' ? d(n, 2) : d(n)).join('');
+  }));
+  await ctx.close();
+});
+
+test('phone probe', {skip: !process.env.FYNX_PROBE}, async () => {
+  const {ctx, page} = await boot({width: 393, height: 852, phone: true, plan: {tier: 'free', used: 0}});
+  await page.clock.runFor(1500);
+  console.log(await page.evaluate(new Function(process.env.FYNX_PROBE)));
+  await ctx.close();
+});
+
+test('iPhone layout: compact header, menu sheet, desk tabs, even controls, pages on top, nothing off-screen', async () => {
+  for (const [w, h] of [[375, 667], [393, 852], [430, 932]]) {
+    const {ctx, page, errors} = await boot({width: w, height: h, phone: true, bridge: {items: [{id: 'a', title: 'AAPL +5.10% today', category: 'market_alerts', read: false, timestamp: new Date(NOW).toISOString(), sourceUrl: '/terminal.html?sym=AAPL', metadata: {symbol: 'AAPL'}}]}});
+    const r = sel => page.$eval(sel, n => { const b = n.getBoundingClientRect(); return {x: b.left, y: b.top, w: b.width, h: b.height, r: b.right, b: b.bottom}; });
+    const noSideScroll = async label => assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1), `${w}px ${label}: no sideways page scroll`);
+    // Header: brand, status, bell and menu on one row, search below. About half the old 252px.
+    assert.ok((await r('header.fx-top')).h <= 132, `${w}px: header is compact`);
+    for (const sel of ['.fx-brand', '.fx-mstat', '.fx-bell', '#fx-mmenu']) { const b = await r(sel); assert.ok(b.y < 60 && b.r <= w, `${w}px: ${sel} on the first row`); }
+    const cmd = await r('#fx-cmd-form'); assert.ok(cmd.h >= 44 && Math.abs(cmd.x - 12) <= 1 && Math.abs(w - cmd.r - 12) <= 1, `${w}px: full-width search bar`);
+    // Secondary buttons live in the menu sheet, as one even grid.
+    for (const id of ['fx-plan', 'fx-live', 'fx-tour-btn', 'fx-build', 'fx-edit', 'fx-classic']) assert.equal(await page.$eval('#' + id, n => n.closest('#fx-msheet') !== null), true, `${id} is in the menu`);
+    await page.click('#fx-mmenu'); await page.clock.runFor(200);
+    const items = await page.$$eval('.fx-mgrid > *', ns => ns.map(n => { const b = n.getBoundingClientRect(); return {id: n.id, h: b.height, r: b.right, txt: n.textContent.trim()}; }));
+    assert.equal(items.length, 6, `${w}px: six menu items (no stray ones)`); assert.ok(items.every(i => i.h >= 44 && i.r <= w && i.txt), `${w}px: menu items are even, labelled and on screen`);
+    await page.keyboard.press('Escape'); assert.equal(await page.$eval('#fx-msheet', n => n.hidden), true, 'Escape closes the menu');
+    // Desk tabs scroll; mode switch, Find and Scanner share one row.
+    const tabs = await page.$$eval('.fx-desk', ns => ns.map(n => n.getBoundingClientRect().height)); assert.ok(tabs.length >= 10 && tabs.every(x => x >= 44), `${w}px: every desk is a full-height tab`);
+    const mode = await r('#fx-modebar'), find = await r('#fx-find-btn'), scan = await r('#fx-scan-btn');
+    assert.ok(Math.abs(mode.y - find.y) < 2 && Math.abs(mode.y - scan.y) < 2 && scan.r <= w - 11, `${w}px: mode, Find and Scanner on one row`);
+    // Bell menu opens on screen and above the header.
+    await page.click('.fx-bell'); await page.clock.runFor(200);
+    const d = await r('#fx-belldrop'); assert.ok(d.x >= 0 && d.r <= w && d.h > 100, `${w}px: bell menu visible`);
+    assert.equal(await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('#fx-belldrop'), [d.x + d.w / 2, d.y + 20]), true, `${w}px: bell menu is not under the header`);
+    await page.click('.fx-bell');
+    await noSideScroll('ALL desk');
+    // Cards: full width, even gutters, sized to content (no tall empty boxes).
+    const cards = await page.$$eval('#fx-main > section.tp', ns => ns.map(n => { const b = n.getBoundingClientRect(), body = n.querySelector('.tp-b'); return {id: n.id, x: b.left, r: b.right, gap: body ? body.getBoundingClientRect().height - body.scrollHeight : 0}; }));
+    assert.ok(cards.every(c => Math.abs(c.x - 12) <= 1 && Math.abs(w - c.r - 12) <= 1), `${w}px: every card has the same 12px gutters`);
+    for (const c of cards) assert.ok(c.gap < 24, `${w}px: ${c.id} has no empty filler space (${c.gap}px)`);
+    // Focus and compare, then typed desk commands leave them.
+    await command(page, 'AAPL'); await noSideScroll('FOCUS');
+    await command(page, 'AAPL NVDA MSFT'); await page.clock.runFor(1500); await noSideScroll('COMPARE');
+    await command(page, 'ALL'); assert.equal(await page.$eval('.fx-mode.on', n => n.textContent), 'ALL', 'ALL leaves compare');
+    await command(page, 'AAPL'); await command(page, 'STOCKS');
+    assert.equal(await page.$eval('.fx-mode.on', n => n.textContent), 'ALL', 'a desk name leaves focus'); assert.equal(await page.$eval('.fx-desk.on', n => n.textContent), 'STOCKS');
+    // Full pages open at the top of the screen, with the panels hidden underneath.
+    for (const p of ['NEWS', 'CAL', 'HELP']) {
+      await command(page, p); await page.clock.runFor(800);
+      const pg = await r('#fx-page'); assert.ok(pg.y < 260 && pg.h > 200, `${w}px: ${p} page starts near the top (${Math.round(pg.y)})`);
+      assert.equal(await page.$eval('#fx-main', n => getComputedStyle(n).display), 'none', `${w}px: panels hidden under ${p}`);
+      await noSideScroll(p + ' page');
+      await page.keyboard.press('Escape'); await page.clock.runFor(300);
+    }
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
+});
+
+test('desktop keeps its header buttons (phone menu only below 761px)', async () => {
+  const {ctx, page} = await boot({width: 1600, height: 1000});
+  for (const id of ['fx-plan', 'fx-live', 'fx-tour-btn', 'fx-build', 'fx-edit', 'fx-classic']) assert.equal(await page.$eval('#' + id, n => n.closest('#fx-msheet') === null && n.closest('header.fx-top') !== null), true, `${id} stays in the header`);
+  assert.equal(await page.$eval('#fx-mmenu', n => n.getBoundingClientRect().width), 0, 'no menu button on desktop');
+  await page.setViewportSize({width: 393, height: 852}); await page.clock.runFor(300);
+  assert.equal(await page.$eval('#fx-edit', n => n.closest('#fx-msheet') !== null), true, 'narrowing the window moves them into the menu');
+  await page.setViewportSize({width: 1600, height: 1000}); await page.clock.runFor(300);
+  if (process.env.FYNX_DBG) console.log(await page.evaluate(() => JSON.stringify({mq: matchMedia('(max-width:760px)').matches, iw: innerWidth, edit: document.getElementById('fx-edit').parentElement.className, comments: [...document.querySelector('header.fx-top').childNodes].filter(n => n.nodeType === 8).map(n => n.data)})));
+  assert.equal(await page.$eval('#fx-edit', n => n.closest('#fx-msheet') === null), true, 'and widening moves them back');
+  await ctx.close();
 });
