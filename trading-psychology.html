@@ -287,6 +287,38 @@
     .checklist li b{
       color: var(--text);
     }
+    #pre-trade-checklist{
+      scroll-margin-top: 5rem;
+    }
+    [data-pretrade-criteria].pretrade-active > li{
+      padding: 0;
+    }
+    .pretrade-choice{
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: start;
+      gap: .75rem;
+      padding: 13px 14px;
+      min-height: 44px;
+      cursor: pointer;
+    }
+    .pretrade-choice input{
+      inline-size: 1.125rem;
+      block-size: 1.125rem;
+      margin: .13em 0 0;
+    }
+    .pretrade-choice:focus-within{
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+      border-radius: 14px;
+    }
+    [data-pretrade-controls]{
+      margin-top: 1rem;
+    }
+    [data-pretrade-controls] button{
+      margin-block: .75rem;
+      cursor: pointer;
+    }
     .quote{
       padding: 22px;
       border-radius: 24px;
@@ -488,6 +520,7 @@
 
       <div class="hero-actions">
         <a class="btn primary" href="#core-framework">Start Learning</a>
+        <a class="btn secondary" href="#pre-trade-checklist">Pre-trade Checklist</a>
         <a class="btn secondary" href="#journal">Journal Prompts</a>
       </div>
 
@@ -688,9 +721,9 @@
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" id="pre-trade-checklist" aria-labelledby="pre-trade-title">
       <div class="section-title">
-        <h2>Pre-trade checklist</h2>
+        <h2 id="pre-trade-title">Pre-trade checklist</h2>
         <p>
           This is where psychology becomes practical. A checklist removes emotion from the moment of action.
         </p>
@@ -699,7 +732,7 @@
       <div class="grid two">
         <div class="card">
           <div class="tag">Before Entry</div>
-          <ul class="checklist">
+          <ul class="checklist" data-pretrade-criteria>
             <li><b>Market selected:</b> I know exactly what I am trading.</li>
             <li><b>Context clear:</b> I understand trend, structure, volatility, and session.</li>
             <li><b>Edge present:</b> This setup matches my system.</li>
@@ -707,6 +740,11 @@
             <li><b>Invalidation known:</b> I know where the trade is wrong.</li>
             <li><b>Emotion checked:</b> I am not trading from boredom, fear, greed, or revenge.</li>
           </ul>
+          <div data-pretrade-controls hidden>
+            <p role="status" data-pretrade-progress></p>
+            <button type="button" class="btn secondary" data-pretrade-reset>Clear all checks</button>
+            <p>Your answers stay on this page and aren’t saved by FYNX. Checking every item doesn’t tell you whether a trade is safe or advisable.</p>
+          </div>
         </div>
 
         <div class="card">
@@ -956,6 +994,7 @@
   <!-- discovery-related:start --><section class="resource-related" aria-label="Related resources"><div><span class="discovery-kicker">CONTINUE YOUR RESEARCH</span><h2>Useful next steps.</h2></div><div class="resource-related-links"><a href="/learn/lessons/stocks/a-beginners-guide-to-stock-market-structure.html"><strong>A Beginner’s Guide to Stock Market Structure</strong><span>How exchanges, sessions, and liquidity windows shape your entries.</span></a><a href="/learn/lessons/bonds/bond-prices-and-yields-explained.html"><strong>Bond Prices and Yields Explained</strong><span>The inverse relationship and practical trading implications.</span></a><a href="/learn/bonds-glossary.html"><strong>Bonds — Glossary</strong><span>Learn Bonds terminology with a practical glossary of market concepts and trading definitions.</span></a><a href="/explore.html"><strong>Explore the full library →</strong><span>Find tools, guides and market research by topic.</span></a></div></section><!-- discovery-related:end -->
 </main>
 
+  <script defer src="/assets/js/pre-trade-checklist.js?v=20261127"></script>
   <script>
     const THEME_KEY = "fynx_theme";
 
