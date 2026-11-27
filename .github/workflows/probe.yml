@@ -1,22 +1,28 @@
-name: terminal live audit
+name: probe terminal audit
 on: push
 permissions:
-  contents: read
+  contents: write
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
-    strategy:
-      fail-fast: false
-      matrix:
-        vp: ['1920x1080', '1440x900', '3440x1440', '3840x2160', '1024x1366', '390x844']
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-        with: {ref: feature/terminal-audit-focus}
+        with: {ref: feature/terminal-audit-focus, path: app}
       - uses: actions/setup-node@v4
         with: {node-version: 22}
-      - run: npm ci --ignore-scripts --no-audit --no-fund
-      - run: node scripts/audit-terminal.cjs out --viewport=${{ matrix.vp }} ${{ (matrix.vp == '1920x1080' || matrix.vp == '1440x900') && ' ' || '--quick' }}
-        env: {FYNX_CHROMIUM_PATH: /usr/bin/google-chrome}
-      - uses: actions/upload-artifact@v4
-        with: {name: 'audit-${{ matrix.vp }}', path: out, retention-days: 3}
+      - run: cd app && npm ci --ignore-scripts --no-audit --no-fund
+      - name: audit
+        run: |
+          cd app
+          export FYNX_CHROMIUM_PATH=$(which google-chrome)
+          for vp in 1920x1080 1366x768 3440x1440 3840x2160 820x1180 390x844; do
+            extra=""; [ "$vp" = 1920x1080 ] && extra="--pageshots"
+            timeout 900 node scripts/audit-terminal.cjs ../out --viewport=$vp $extra > ../out-$vp.log 2>&1 || echo "audit $vp exit $?"
+          done
+          ls -la ../out | head
+      - name: store
+        run: |
+          mkdir -p audit && cp -r out/* audit/ && cp out-*.log audit/ || true
+          git config user.name probe && git config user.email probe@users.noreply.github.com
+          git add audit && git commit -qm "audit results $(date -u +%H%M)" && git push -q
