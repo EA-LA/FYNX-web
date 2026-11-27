@@ -34,7 +34,7 @@ async function withPaidResult(tool, exercise) {
     };
     const ctx = vm.createContext({
       window, document, location: window.location, history: window.history,
-      URL, URLSearchParams, sessionStorage: window.sessionStorage,
+      URL, URLSearchParams, Blob, sessionStorage: window.sessionStorage,
       loadModule: async path => modules[path]
     });
     vm.runInContext(fs.readFileSync('assets/js/pro-catalog.js', 'utf8'), ctx);
@@ -96,5 +96,24 @@ test('paid Research Watchlist keeps long symbols visible without changing their 
     assert.equal(window.getComputedStyle(link).overflowWrap, 'anywhere');
     link.focus();
     assert.equal(document.activeElement, link);
+  });
+});
+
+test('paid Journal download stays one target and keeps its file name', async () => {
+  await withPaidResult('export', async ({window, document, lastRequest}) => {
+    document.getElementById('runTool').click();
+    await new Promise(resolve => setImmediate(resolve));
+    const link = document.querySelector('#workbench #result > a[download]');
+    assert.ok(link);
+    assert.equal(lastRequest()?.product, 'export');
+    try {
+      assert.equal(link.download, 'fynx-journal.csv');
+      assert.equal(window.getComputedStyle(link).display, 'inline-block');
+      assert.equal(window.getComputedStyle(link).maxWidth, '100%');
+      link.focus();
+      assert.equal(document.activeElement, link);
+    } finally {
+      URL.revokeObjectURL(link.href);
+    }
   });
 });
