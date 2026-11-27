@@ -161,3 +161,28 @@ test('injection is idempotent and leaves lightweight, authentication, and privat
     for (const [file,source] of first) assert.equal(fs.readFileSync(path.join(temporary,file),'utf8'),source,'Second injection changed: '+file);
   } finally {fs.rmSync(temporary,{recursive:true,force:true});}
 });
+
+test('failed modal activation retains the static products link and can be retried', async () => {
+  const {dom,w,errors} = await page();
+  try {
+    const trigger = w.document.querySelector('[data-company-products-open]');
+    const dialog = w.document.querySelector('#fynx-products-dialog');
+    const show = dialog.showModal;
+    dialog.showModal = function () { throw new w.DOMException('Modal unavailable', 'InvalidStateError'); };
+    let intercepted;
+    trigger.addEventListener('click', event => {
+      intercepted = event.defaultPrevented;
+      event.preventDefault(); // Suppress actual navigation in JSDOM only.
+    }, {once:true});
+    trigger.click(); await tick();
+    assert.equal(intercepted, false, 'The normal products link must remain navigable');
+    assert.equal(trigger.getAttribute('href'), '/products.html');
+    assert.equal(trigger.getAttribute('aria-expanded'), 'false');
+    assert.equal(dialog.open, false);
+    assert.equal(w.document.documentElement.classList.contains('fp-menu-open'), false);
+    assert.deepEqual(errors, []);
+    dialog.showModal = show;
+    openDirectory(w); await tick();
+    assert.equal(trigger.getAttribute('aria-expanded'), 'true');
+  } finally {dom.window.close();}
+});
