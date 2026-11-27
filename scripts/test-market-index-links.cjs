@@ -285,3 +285,65 @@ test('older browsers can detect a mounted frame without MutationObserver', () =>
   assert.equal(els.techWidgetStatus.textContent,'');
   assert.equal(els.techWidgetReload.getAttribute('aria-disabled'),'false');
 });
+
+const currencies = fs.readFileSync(path.join(root, 'markets/currencies.html'), 'utf8');
+function conversionHarness({amount = '12.34', rate = 1.09} = {}) {
+  function control(value) {
+    const listeners = {};
+    return {value, textContent:'', addEventListener(type, fn) { listeners[type] = fn; },
+      fire(type, event) { return listeners[type]?.(event); }};
+  }
+  const els = {amount:control(amount), pair:control('EURUSD'), fxResult:control(), fxConvertForm:control()};
+  const start = currencies.indexOf('    let conversionRequest=');
+  const end = currencies.indexOf('    function renderWidget()', start);
+  assert.ok(start >= 0 && end > start, 'Find the converter wiring, not the third-party quote widget');
+  const requests = [];
+  let complete;
+  const ctx = vm.createContext({
+    document:{getElementById:id=>els[id]}, AbortSignal,
+    fetch(url) {
+      requests.push(url);
+      return Promise.resolve({ok:true, json:() => complete || Promise.resolve({rate,date:'2026-11-26'})});
+    }
+  });
+  vm.runInContext(currencies.slice(start,end),ctx);
+  return {els, requests, convert:()=>vm.runInContext('convertFx()',ctx), delay:()=>new Promise(resolve=>{
+    complete = new Promise(finish=>resolve(finish));
+  })};
+}
+
+test('Currencies converter submits natively from the amount field without reloading', async () => {
+  const h = conversionHarness();
+  assert.match(currencies, /<form [^>]*id="fxConvertForm"[^>]*>[\s\S]*<input [^>]*step="any"[^>]*id="amount"[\s\S]*<button [^>]*type="submit"[^>]*>Calculate<\/button>\s*<\/form>/);
+  let prevented=false;
+  await h.els.fxConvertForm.fire('submit',{preventDefault(){prevented=true;}});
+  assert.equal(prevented,true);
+  assert.match(h.els.fxResult.textContent,/12\.34 EUR ≈ 13\.45 USD/);
+  assert.deepEqual(h.requests,['https://api.frankfurter.dev/v2/providers/ecb/rate/eur/usd']);
+});
+
+test('Currencies distinguishes a tiny positive conversion from an actual zero', async () => {
+  const h = conversionHarness({amount:'0.0001'});
+  await h.convert();
+  assert.match(h.els.fxResult.textContent,/^0\.0001 EUR ≈ <0\.01 USD · Rate 1\.09 · Observation 2026-11-26$/);
+  h.els.amount.value='0';
+  await h.convert();
+  assert.match(h.els.fxResult.textContent,/^0 EUR ≈ 0 USD/);
+  h.els.amount.value='0.007';
+  await h.convert();
+  assert.match(h.els.fxResult.textContent,/^0\.007 EUR ≈ 0\.01 USD/);
+});
+
+test('Currencies handles overflow and does not render results after the input changes', async () => {
+  const h = conversionHarness({amount:'1e308',rate:2});
+  await h.convert();
+  assert.match(h.els.fxResult.textContent,/too large to convert/i);
+  const release = await h.delay();
+  h.els.amount.value='100';
+  const request=h.convert();
+  h.els.amount.value='12';
+  h.els.amount.fire('input');
+  release({rate:1.09,date:'2026-11-26'});
+  await request;
+  assert.equal(h.els.fxResult.textContent,'Press Calculate to convert this amount.');
+});
