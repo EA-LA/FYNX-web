@@ -34,6 +34,15 @@ const st = gb.trades.find(t => t.why === 'stop' && t.exitI === k + 2); ok(st && 
 const ls = S.backtest(B, S.parseRules('Buy when roc(10) > 0. Short when roc(10) < 0.'), {feeBps: 0, slipBps: 0, sizing: 'full', allowShort: true, ann: 252});
 ok(ls.trades.some(t => t.side < 0) && ls.trades.some(t => t.side > 0), 'long and short trades both occur');
 const perf = S.perf(bt.eq, bt.start, N - 1, 252); ok(perf && perf.psr > 0.9 && perf.mdd <= 0, 'perf + PSR computed: ' + perf.psr.toFixed(3));
+// CSV covers the whole simulation, not the UI's last 40 rows.
+const closed = {side: -1, entryI: 0, exitI: 1, entry: 10, exit: 12, bars: 1, ret: -0.2, why: 'stop'};
+const open = {...closed, side: 1, open: true};
+const csv = S.tradeCsv([...Array(42).fill(closed), open], B.t, 'EURUSD=X', '1d').trimEnd().split('\r\n');
+ok(csv.length === 44 && csv[42].startsWith('42,EURUSD=X,1d,short,closed'), 'exports all 43 rows, in trade order');
+ok(csv[1].endsWith('1970-01-02T00:00:00.000Z,12,1,-20,stop'), 'UTC bar and negative numeric return survive export');
+ok(csv[43] === '43,EURUSD=X,1d,long,open,1970-01-01T00:00:00.000Z,10,,,1,,', 'open trades never receive invented exit fills or realized returns');
+const shielded = S.tradeCsv([{...closed, why: 'a,"b"'}], [], '=FORMULA', '1d').split('\r\n')[1];
+ok(shielded.startsWith("1,'=FORMULA,") && shielded.endsWith('"a,""b"""') && !shielded.includes('Invalid Date'), 'quotes text, protects formulas, and blanks invalid timestamps');
 // ---- optimizer
 const w = S.projCapped([0.9, 0.5, -0.2, 0.1], 0.4); ok(Math.abs(w.reduce((a, b) => a + b) - 1) < 1e-6 && Math.max(...w) <= 0.4 + 1e-9 && Math.min(...w) >= 0, 'capped simplex projection ' + w.map(x => x.toFixed(3)));
 const Sd = [[1, 0], [0, 4]]; const mvw = S.minVarLambda(Sd, [0, 0], 1, 0); ok(Math.abs(mvw[0] - 0.8) < 1e-4, 'min variance 0.8/0.2: ' + mvw.map(x => x.toFixed(4)));
