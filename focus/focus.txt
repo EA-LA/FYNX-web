@@ -1,0 +1,520 @@
+### META via command → mode=focus desk=stocks sym={"symbol":"META","name":"Meta Platforms, Inc.","cls":"stock","type":null,"exchange":null} url=?desk=stocks&sym=META chip="METAMeta Platforms, Inc.☆+✕" errors=0
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","fin","earn","opt","cmp","desks","heat","eco","xa","tools"]
+  mkts        1542  MKTSMeta Platforms, Inc.  | SYMBOL LAST CHG ↕ AAPL Apple 355.58 +0.43% MSFT Microsoft 489.93 −1.25% NVDA NVIDIA 149.30 −3.91% AMZN Amazon 
+  focus        302  GPMETA · Meta  | LAST 609.89 DAY +3.40% PERIOD −3.41% RANGE HI 779.82 RANGE LO 524.08 52W HI 779.82 52W LO 520.26 20D VOL 2.98%
+  squote       252  QUOTEMETA · NasdaqGS · USD  | Meta Platforms, Inc. 609.89 +3.40% Delayed · Nov 25, 09:00 PM CLOSED PREV 589.82 DAY LO–HI 567.75–611.03 VOLUM
+  intel        608  INTELFYNX Intelligence · META: what matters now  | 1 Options price ±2.64% by Nov 27 IV30 45.2% · put/call 0.59 · max pain 600 OPT 58 2 Michael Burry Shares Stark
+  snews       1015  NEWSMETA headlines  | 06:31 Michael Burry Shares Stark Warning About AI Boom, as Nvidia, Oracle and Meta Face Surging Debt Insurance
+  story        316  STORYMETA today · 8:33 AM  | META higher Meta Platforms, Inc. is at 609.89, +3.40% today, 1.1× its typical daily move. Over a month it is −
+  srisk        215  RISKRisk vs SPY · 1 year  | VOLATILITY 42.7% / yr MAX DRAWDOWN -28.7% 1-DAY VaR 95% 3.96% BETA vs SPY 1.40 CORRELATION 0.49 1Y RETURN −0.2
+  fin           81  FAMETA · annual SEC filings  | Financial statements are not available from SEC EDGAR for this company right now.
+  earn          86  ERNEarnings · META  | No earnings dates for META in the published window (next 14 days, large US companies).
+  opt          469  OPTMETA options  | LAST 612.47 IV30 45.2% P/C VOL 0.59 P/C OI 0.53 EXPIRY ATM IV MOVE PAIN SKEW Nov 27 · 1d 45.6% ±2.64% 600 +4.8
+  cmp          104  CMPMETA vs SPY vs QQQ · 1Y  | META −3.81% SPY +7.32% QQQ +4.60% −20.6% −8.3% +4.1% +16.4% +28.8% Nov 25 Nov 25 Compare more and draw ▸
+  desks       2833  NEWSDesks  | 07:15 SpaceX shares jump on alternative trading platform after Musk says he will expand on Trump Account share
+  heat         339  HEATDay change heat map  | AAPL +0.43% MSFT −1.25% NVDA −3.91% AMZN −3.12% GOOGL −2.13% META +3.40% TSLA −1.18% AVGO −0.07% BRK-B +0.37% 
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  xa           334  XACross-asset vs Meta Platforms, Inc.  | SYMBOL LAST CHG SPX S&P 500 7,182.78 −0.25% NDX Nasdaq 100 26,046.90 −0.64% US10Y US 10-year yield 4.848 −1.14
+  tools        323  TOOLSShare size  | Symbol AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V MA LLY UNH WMT COST HD PG JNJ XOM CVX ORCL CRM NFL
+### META via find → mode=focus desk=stocks sym={"symbol":"META","name":"Meta","cls":"stock","type":"Stocks","exchange":"FYNX terminal"} url=?desk=stocks&sym=META chip="METAMeta☆+✕" errors=0
+  find results: ["METAMetaSTOCKFYNX terminal","METAMMeta Platforms, Inc. - Depositary Shares representing a 1/20th Interest in a Share of SeriSTOCKNasdaq","ACBEPacer Metaurus Enhanced Core Income Autocallable ETFFUNDNasdaq","ACBHPacer Metaurus High Income Autocallable ETFFUNDNasdaq","APXCApex Critical Metals Corp. - American Depositary SharesSTOCKNasdaq","AQMSAqua Metals, Inc.STOCKNasdaq","ARVRFirst Trust Indxx Metaverse ETFFUNDNasdaq","BMMBlue Moon Metals Inc. - Common SharesSTOCKNasdaq"]
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","fin","earn","opt","cmp","desks","heat","eco","xa","tools"]
+  mkts        1542  MKTSMeta  | SYMBOL LAST CHG ↕ AAPL Apple 355.58 +0.43% MSFT Microsoft 489.93 −1.25% NVDA NVIDIA 149.30 −3.91% AMZN Amazon 
+  focus        302  GPMETA · Meta  | LAST 609.89 DAY +3.40% PERIOD −3.41% RANGE HI 779.82 RANGE LO 524.08 52W HI 779.82 52W LO 520.26 20D VOL 2.98%
+  squote       236  QUOTEMETA · NasdaqGS · USD  | Meta 609.89 +3.40% Delayed · Nov 25, 09:00 PM CLOSED PREV 589.82 DAY LO–HI 567.75–611.03 VOLUME 18.56M 20D VOL
+  intel        267  INTELFYNX Intelligence · META: what matters now  | 1 Options price ±2.64% by Nov 27 IV30 45.2% · put/call 0.59 · max pain 600 OPT 58 2 META +3.40% today 1.1× its
+  snews       1015  NEWSMETA headlines  | 06:31 Michael Burry Shares Stark Warning About AI Boom, as Nvidia, Oracle and Meta Face Surging Debt Insurance
+  story        300  STORYMETA today · 8:33 AM  | META higher Meta is at 609.89, +3.40% today, 1.1× its typical daily move. Over a month it is −1.7% and over a 
+  srisk        215  RISKRisk vs SPY · 1 year  | VOLATILITY 42.7% / yr MAX DRAWDOWN -28.7% 1-DAY VaR 95% 3.96% BETA vs SPY 1.40 CORRELATION 0.49 1Y RETURN −0.2
+  fin           81  FAMETA · annual SEC filings  | Financial statements are not available from SEC EDGAR for this company right now.
+  earn          86  ERNEarnings · META  | No earnings dates for META in the published window (next 14 days, large US companies).
+  opt          469  OPTMETA options  | LAST 612.47 IV30 45.2% P/C VOL 0.59 P/C OI 0.53 EXPIRY ATM IV MOVE PAIN SKEW Nov 27 · 1d 45.6% ±2.64% 600 +4.8
+  cmp          104  CMPMETA vs SPY vs QQQ · 1Y  | META −3.81% SPY +7.32% QQQ +4.60% −20.6% −8.3% +4.1% +16.4% +28.8% Nov 25 Nov 25 Compare more and draw ▸
+  desks       2833  NEWSDesks  | 07:15 SpaceX shares jump on alternative trading platform after Musk says he will expand on Trump Account share
+  heat         339  HEATDay change heat map  | AAPL +0.43% MSFT −1.25% NVDA −3.91% AMZN −3.12% GOOGL −2.13% META +3.40% TSLA −1.18% AVGO −0.07% BRK-B +0.37% 
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  xa           334  XACross-asset vs Meta  | SYMBOL LAST CHG SPX S&P 500 7,182.78 −0.25% NDX Nasdaq 100 26,046.90 −0.64% US10Y US 10-year yield 4.848 −1.14
+  tools        323  TOOLSShare size  | Symbol AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V MA LLY UNH WMT COST HD PG JNJ XOM CVX ORCL CRM NFL
+### AAPL via command → mode=focus desk=stocks sym={"symbol":"AAPL","name":"Apple Inc.","cls":"stock","type":null,"exchange":null} url=?desk=stocks&sym=AAPL chip="AAPLApple Inc.☆+✕" errors=0
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","fin","earn","opt","cmp","desks","heat","eco","xa","tools"]
+  mkts        1542  MKTSApple Inc.  | SYMBOL LAST CHG ↕ AAPL Apple 355.58 +0.43% MSFT Microsoft 489.93 −1.25% NVDA NVIDIA 149.30 −3.91% AMZN Amazon 
+  focus        303  GPAAPL · Apple  | LAST 355.58 DAY +0.43% PERIOD +14.13% RANGE HI 360.83 RANGE LO 273.31 52W HI 360.83 52W LO 243.42 20D VOL 1.81
+  squote       245  QUOTEAAPL · NasdaqGS · USD  | Apple Inc. 355.58 +0.43% Delayed · Nov 25, 09:00 PM CLOSED PREV 354.07 DAY LO–HI 345.13–356.75 VOLUME 53.06M 2
+  intel        328  INTELFYNX Intelligence · AAPL: what matters now  | 1 Near its 52-week high 52-week range 243.42–360.83 LEVEL 62 2 Options price ±1.34% by Nov 27 IV30 24.1% · put
+  snews        944  NEWSAAPL headlines  | 03:19 Apple (AAPL) Has Found a New AI Opportunity That Has Little to Do With the iPhone Insider Monkey 03:17 T
+  story        295  STORYAAPL today · 8:34 AM  | AAPL higher Apple Inc. is at 355.58, +0.43% today, 0.2× its typical daily move. Over a month it is +2.5% and o
+  srisk        215  RISKRisk vs SPY · 1 year  | VOLATILITY 24.9% / yr MAX DRAWDOWN -13.8% 1-DAY VaR 95% 2.07% BETA vs SPY 0.57 CORRELATION 0.34 1Y RETURN +29.
+  fin          625  FAAAPL · annual SEC filings  | Apple Inc. · CIK 320193 FY END 2026-09 2025-09 2024-09 2023-09 Revenue $478.83B $416.16B $391.04B $383.29B Net
+  earn          86  ERNEarnings · AAPL  | No earnings dates for AAPL in the published window (next 14 days, large US companies).
+  opt          467  OPTAAPL options  | LAST 355.17 IV30 24.1% P/C VOL 1.74 P/C OI 0.92 EXPIRY ATM IV MOVE PAIN SKEW Nov 27 · 1d 23.2% ±1.34% 353 +4.4
+  cmp          105  CMPAAPL vs SPY vs QQQ · 1Y  | AAPL +28.83% SPY +7.32% QQQ +4.60% −14.1% −2.5% +9.1% +20.7% +32.3% Nov 25 Nov 25 Compare more and draw ▸
+  desks       2833  NEWSDesks  | 07:15 SpaceX shares jump on alternative trading platform after Musk says he will expand on Trump Account share
+  heat         339  HEATDay change heat map  | AAPL +0.43% MSFT −1.25% NVDA −3.91% AMZN −3.12% GOOGL −2.13% META +3.40% TSLA −1.18% AVGO −0.07% BRK-B +0.37% 
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  xa           334  XACross-asset vs Apple Inc.  | SYMBOL LAST CHG SPX S&P 500 7,182.78 −0.25% NDX Nasdaq 100 26,046.90 −0.64% US10Y US 10-year yield 4.848 −1.14
+  tools        323  TOOLSShare size  | Symbol AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V MA LLY UNH WMT COST HD PG JNJ XOM CVX ORCL CRM NFL
+### AAPL via find → mode=focus desk=stocks sym={"symbol":"AAPL","name":"Apple","cls":"stock","type":"Stocks","exchange":"FYNX terminal"} url=?desk=stocks&sym=AAPL chip="AAPLApple☆+✕" errors=0
+  find results: ["AAPLAppleSTOCKFYNX terminal","AAPBGraniteShares 2x Long AAPL Daily ETFFUNDNasdaq","AAPDDirexion Daily AAPL Bear 1X ETFFUNDNasdaq","AAPUDirexion Daily AAPL Bull 2X ETFFUNDNasdaq","AAPELeverage Shares 2X Long AAPL Daily ETFFUNDCboe BZX","AAPWRoundhill AAPL WeeklyPay ETFFUNDCboe BZX","AAPYKurv Yield Premium Strategy Apple (AAPL) ETFFUNDCboe BZX","APLYYieldMax AAPL Option Income Strategy ETFFUNDNYSE Arca"]
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","fin","earn","opt","cmp","desks","heat","eco","xa","tools"]
+  mkts        1542  MKTSApple  | SYMBOL LAST CHG ↕ AAPL Apple 355.58 +0.43% MSFT Microsoft 489.93 −1.25% NVDA NVIDIA 149.30 −3.91% AMZN Amazon 
+  focus        303  GPAAPL · Apple  | LAST 355.58 DAY +0.43% PERIOD +14.13% RANGE HI 360.83 RANGE LO 273.31 52W HI 360.83 52W LO 243.42 20D VOL 1.81
+  squote       240  QUOTEAAPL · NasdaqGS · USD  | Apple 355.58 +0.43% Delayed · Nov 25, 09:00 PM CLOSED PREV 354.07 DAY LO–HI 345.13–356.75 VOLUME 53.06M 20D VO
+  intel        328  INTELFYNX Intelligence · AAPL: what matters now  | 1 Near its 52-week high 52-week range 243.42–360.83 LEVEL 62 2 Options price ±1.34% by Nov 27 IV30 24.1% · put
+  snews        944  NEWSAAPL headlines  | 03:19 Apple (AAPL) Has Found a New AI Opportunity That Has Little to Do With the iPhone Insider Monkey 03:17 T
+  story        290  STORYAAPL today · 8:34 AM  | AAPL higher Apple is at 355.58, +0.43% today, 0.2× its typical daily move. Over a month it is +2.5% and over a
+  srisk        215  RISKRisk vs SPY · 1 year  | VOLATILITY 24.9% / yr MAX DRAWDOWN -13.8% 1-DAY VaR 95% 2.07% BETA vs SPY 0.57 CORRELATION 0.34 1Y RETURN +29.
+  fin          625  FAAAPL · annual SEC filings  | Apple Inc. · CIK 320193 FY END 2026-09 2025-09 2024-09 2023-09 Revenue $478.83B $416.16B $391.04B $383.29B Net
+  earn          86  ERNEarnings · AAPL  | No earnings dates for AAPL in the published window (next 14 days, large US companies).
+  opt          467  OPTAAPL options  | LAST 355.17 IV30 24.1% P/C VOL 1.74 P/C OI 0.92 EXPIRY ATM IV MOVE PAIN SKEW Nov 27 · 1d 23.2% ±1.34% 353 +4.4
+  cmp          105  CMPAAPL vs SPY vs QQQ · 1Y  | AAPL +28.83% SPY +7.32% QQQ +4.60% −14.1% −2.5% +9.1% +20.7% +32.3% Nov 25 Nov 25 Compare more and draw ▸
+  desks       2833  NEWSDesks  | 07:15 SpaceX shares jump on alternative trading platform after Musk says he will expand on Trump Account share
+  heat         339  HEATDay change heat map  | AAPL +0.43% MSFT −1.25% NVDA −3.91% AMZN −3.12% GOOGL −2.13% META +3.40% TSLA −1.18% AVGO −0.07% BRK-B +0.37% 
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  xa           334  XACross-asset vs Apple  | SYMBOL LAST CHG SPX S&P 500 7,182.78 −0.25% NDX Nasdaq 100 26,046.90 −0.64% US10Y US 10-year yield 4.848 −1.14
+  tools        323  TOOLSShare size  | Symbol AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V MA LLY UNH WMT COST HD PG JNJ XOM CVX ORCL CRM NFL
+### NVDA via command → mode=focus desk=stocks sym={"symbol":"NVDA","name":"NVIDIA Corporation","cls":"stock","type":null,"exchange":null} url=?desk=stocks&sym=NVDA chip="NVDANVIDIA Corporation☆+✕" errors=0
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","fin","earn","opt","cmp","desks","heat","eco","xa","tools"]
+  mkts        1542  MKTSNVIDIA Corporation  | SYMBOL LAST CHG ↕ AAPL Apple 355.58 +0.43% MSFT Microsoft 489.93 −1.25% NVDA NVIDIA 149.30 −3.91% AMZN Amazon 
+  focus        303  GPNVDA · NVIDIA  | LAST 149.30 DAY −3.91% PERIOD −29.13% RANGE HI 243.37 RANGE LO 124.50 52W HI 243.37 52W LO 124.50 20D VOL 8.00
+  squote       255  QUOTENVDA · NasdaqGS · USD  | NVIDIA Corporation 149.30 −3.91% Delayed · Nov 25, 09:00 PM CLOSED PREV 155.38 DAY LO–HI 141.17–150.37 VOLUME 
+  intel        659  INTELFYNX Intelligence · NVDA: what matters now  | 1 Options price ±4.59% by Nov 27 IV30 70.1% · put/call 0.54 · max pain 150 OPT 58 2 Billionaire David Tepper o
+  snews       1453  NEWSNVDA headlines  | 08:20 Billionaire David Tepper of Appaloosa Management Has 65% of His Portfolio Invested in These 7 Artificial
+  story        315  STORYNVDA today · 8:34 AM  | NVDA lower NVIDIA Corporation is at 149.30, −3.91% today, 0.5× its typical daily move. Over a month it is −31.
+  srisk        216  RISKRisk vs SPY · 1 year  | VOLATILITY 52.2% / yr MAX DRAWDOWN -47.5% 1-DAY VaR 95% 4.34% BETA vs SPY 2.41 CORRELATION 0.69 1Y RETURN −18.
+  fin          568  FANVDA · annual SEC filings  | NVIDIA CORP · CIK 1045810 FY END 2026-01 2025-01 2024-01 2023-01 Revenue $215.94B $130.50B $60.92B $26.97B Net
+  earn          86  ERNEarnings · NVDA  | No earnings dates for NVDA in the published window (next 14 days, large US companies).
+  opt          472  OPTNVDA options  | LAST 151.26 IV30 70.1% P/C VOL 0.54 P/C OI 0.86 EXPIRY ATM IV MOVE PAIN SKEW Nov 27 · 1d 74.7% ±4.59% 150 +1.1
+  cmp          106  CMPNVDA vs SPY vs QQQ · 1Y  | NVDA −15.84% SPY +7.32% QQQ +4.60% −34.4% −15.8% +2.8% +21.4% +40.0% Nov 25 Nov 25 Compare more and draw ▸
+  desks       2833  NEWSDesks  | 07:15 SpaceX shares jump on alternative trading platform after Musk says he will expand on Trump Account share
+  heat         339  HEATDay change heat map  | AAPL +0.43% MSFT −1.25% NVDA −3.91% AMZN −3.12% GOOGL −2.13% META +3.40% TSLA −1.18% AVGO −0.07% BRK-B +0.37% 
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  xa           334  XACross-asset vs NVIDIA Corporation  | SYMBOL LAST CHG SPX S&P 500 7,182.78 −0.25% NDX Nasdaq 100 26,046.90 −0.64% US10Y US 10-year yield 4.848 −1.14
+  tools        323  TOOLSShare size  | Symbol AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V MA LLY UNH WMT COST HD PG JNJ XOM CVX ORCL CRM NFL
+### NVDA via find → mode=focus desk=stocks sym={"symbol":"NVDA","name":"NVIDIA","cls":"stock","type":"Stocks","exchange":"FYNX terminal"} url=?desk=stocks&sym=NVDA chip="NVDANVIDIA☆+✕" errors=0
+  find results: ["NVDANVIDIASTOCKFYNX terminal","ANVGraniteShares Autocallable NVDA ETFFUNDNasdaq","NVDGraniteShares 2x Short NVDA Daily ETFFUNDNasdaq","NVDDDirexion Daily NVDA Bear 1X ETFFUNDNasdaq","NVDGLeverage Shares 2X Long NVDA Daily ETFFUNDNasdaq","NVDLGraniteShares 2x Long NVDA Daily ETFFUNDNasdaq","NVDSTradr 1.5X Short NVDA Daily ETFFUNDNasdaq","NVDUDirexion Daily NVDA Bull 2X ETFFUNDNasdaq"]
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","fin","earn","opt","cmp","desks","heat","eco","xa","tools"]
+  mkts        1542  MKTSNVIDIA  | SYMBOL LAST CHG ↕ AAPL Apple 355.58 +0.43% MSFT Microsoft 489.93 −1.25% NVDA NVIDIA 149.30 −3.91% AMZN Amazon 
+  focus        303  GPNVDA · NVIDIA  | LAST 149.30 DAY −3.91% PERIOD −29.13% RANGE HI 243.37 RANGE LO 124.50 52W HI 243.37 52W LO 124.50 20D VOL 8.00
+  squote       243  QUOTENVDA · NasdaqGS · USD  | NVIDIA 149.30 −3.91% Delayed · Nov 25, 09:00 PM CLOSED PREV 155.38 DAY LO–HI 141.17–150.37 VOLUME 359.53M 20D 
+  intel        267  INTELFYNX Intelligence · NVDA: what matters now  | 1 Options price ±4.59% by Nov 27 IV30 70.1% · put/call 0.54 · max pain 150 OPT 58 2 NVDA −3.91% today 0.5× its
+  snews       1177  NEWSNVDA headlines  | 08:20 Billionaire David Tepper of Appaloosa Management Has 65% of His Portfolio Invested in These 7 Artificial
+  story        303  STORYNVDA today · 8:35 AM  | NVDA lower NVIDIA is at 149.30, −3.91% today, 0.5× its typical daily move. Over a month it is −31.5% and over 
+  srisk        216  RISKRisk vs SPY · 1 year  | VOLATILITY 52.2% / yr MAX DRAWDOWN -47.5% 1-DAY VaR 95% 4.34% BETA vs SPY 2.41 CORRELATION 0.69 1Y RETURN −18.
+  fin          568  FANVDA · annual SEC filings  | NVIDIA CORP · CIK 1045810 FY END 2026-01 2025-01 2024-01 2023-01 Revenue $215.94B $130.50B $60.92B $26.97B Net
+  earn          86  ERNEarnings · NVDA  | No earnings dates for NVDA in the published window (next 14 days, large US companies).
+  opt          472  OPTNVDA options  | LAST 151.26 IV30 70.1% P/C VOL 0.54 P/C OI 0.86 EXPIRY ATM IV MOVE PAIN SKEW Nov 27 · 1d 74.7% ±4.59% 150 +1.1
+  cmp          106  CMPNVDA vs SPY vs QQQ · 1Y  | NVDA −15.84% SPY +7.32% QQQ +4.60% −34.4% −15.8% +2.8% +21.4% +40.0% Nov 25 Nov 25 Compare more and draw ▸
+  desks        412  NEWSDesks  | 07:15 SpaceX shares jump on alternative trading platform after Musk says he will expand on Trump Account share
+  heat         339  HEATDay change heat map  | AAPL +0.43% MSFT −1.25% NVDA −3.91% AMZN −3.12% GOOGL −2.13% META +3.40% TSLA −1.18% AVGO −0.07% BRK-B +0.37% 
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  xa           334  XACross-asset vs NVIDIA  | SYMBOL LAST CHG SPX S&P 500 7,182.78 −0.25% NDX Nasdaq 100 26,046.90 −0.64% US10Y US 10-year yield 4.848 −1.14
+  tools        323  TOOLSShare size  | Symbol AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V MA LLY UNH WMT COST HD PG JNJ XOM CVX ORCL CRM NFL
+### MSFT via command → mode=focus desk=stocks sym={"symbol":"MSFT","name":"Microsoft Corporation","cls":"stock","type":null,"exchange":null} url=?desk=stocks&sym=MSFT chip="MSFTMicrosoft Corporation☆+✕" errors=0
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","fin","earn","opt","cmp","desks","heat","eco","xa","tools"]
+  mkts        1542  MKTSMicrosoft Corporation  | SYMBOL LAST CHG ↕ AAPL Apple 355.58 +0.43% MSFT Microsoft 489.93 −1.25% NVDA NVIDIA 149.30 −3.91% AMZN Amazon 
+  focus        302  GPMSFT · Microsoft  | LAST 489.93 DAY −1.25% PERIOD +9.23% RANGE HI 558.07 RANGE LO 347.87 52W HI 559.15 52W LO 349.20 20D VOL 2.42%
+  squote       254  QUOTEMSFT · NasdaqGS · USD  | Microsoft Corporation 489.93 −1.25% Delayed · Nov 25, 09:00 PM CLOSED PREV 496.13 DAY LO–HI 477.39–493.44 VOLU
+  intel        267  INTELFYNX Intelligence · MSFT: what matters now  | 1 Options price ±1.97% by Nov 27 IV30 35.1% · put/call 0.57 · max pain 500 OPT 58 2 MSFT −1.25% today 0.5× its
+  snews        957  NEWSMSFT headlines  | 07:40 PhonePe resumes IPO plans with $15bn valuation target- report Electronic Payments 06:34 Miles Masterclas
+  story        316  STORYMSFT today · 8:35 AM  | MSFT lower Microsoft Corporation is at 489.93, −1.25% today, 0.5× its typical daily move. Over a month it is −
+  srisk        214  RISKRisk vs SPY · 1 year  | VOLATILITY 34.0% / yr MAX DRAWDOWN -28.0% 1-DAY VaR 95% 2.87% BETA vs SPY 0.94 CORRELATION 0.41 1Y RETURN +4.2
+  fin          635  FAMSFT · annual SEC filings  | MICROSOFT CORP · CIK 789019 FY END 2026-06 2025-06 2024-06 2023-06 Revenue $331.84B $281.72B $245.12B $211.91B
+  earn          86  ERNEarnings · MSFT  | No earnings dates for MSFT in the published window (next 14 days, large US companies).
+  opt          467  OPTMSFT options  | LAST 491.45 IV30 35.1% P/C VOL 0.57 P/C OI 0.58 EXPIRY ATM IV MOVE PAIN SKEW Nov 27 · 1d 33.3% ±1.97% 500 +3.9
+  cmp          105  CMPMSFT vs SPY vs QQQ · 1Y  | MSFT +3.56% SPY +7.32% QQQ +4.60% −29.8% −15.0% −0.2% +14.6% +29.4% Nov 25 Nov 25 Compare more and draw ▸
+  desks        412  NEWSDesks  | 07:15 SpaceX shares jump on alternative trading platform after Musk says he will expand on Trump Account share
+  heat         339  HEATDay change heat map  | AAPL +0.43% MSFT −1.25% NVDA −3.91% AMZN −3.12% GOOGL −2.13% META +3.40% TSLA −1.18% AVGO −0.07% BRK-B +0.37% 
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  xa           334  XACross-asset vs Microsoft Corporation  | SYMBOL LAST CHG SPX S&P 500 7,182.78 −0.25% NDX Nasdaq 100 26,046.90 −0.64% US10Y US 10-year yield 4.848 −1.14
+  tools        323  TOOLSShare size  | Symbol AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V MA LLY UNH WMT COST HD PG JNJ XOM CVX ORCL CRM NFL
+### MSFT via find → mode=focus desk=stocks sym={"symbol":"MSFT","name":"Microsoft","cls":"stock","type":"Stocks","exchange":"FYNX terminal"} url=?desk=stocks&sym=MSFT chip="MSFTMicrosoft☆+✕" errors=0
+  find results: ["MSFTMicrosoftSTOCKFYNX terminal","MSFDDirexion Daily MSFT Bear 1X ETFFUNDNasdaq","MSFLGraniteShares 2x Long MSFT Daily ETFFUNDNasdaq","MSFUDirexion Daily MSFT Bull 2X ETFFUNDNasdaq","MSFCCorgi MSFT 2x Daily ETFFUNDCboe BZX","MSFOYieldMax MSFT Option Income Strategy ETFFUNDNYSE Arca","MSFWRoundhill MSFT WeeklyPay ETFFUNDCboe BZX","MSFYKurv Yield Premium Strategy Microsoft (MSFT) ETFFUNDCboe BZX"]
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","fin","earn","opt","cmp","desks","heat","eco","xa","tools"]
+  mkts        1542  MKTSMicrosoft  | SYMBOL LAST CHG ↕ AAPL Apple 355.58 +0.43% MSFT Microsoft 489.93 −1.25% NVDA NVIDIA 149.30 −3.91% AMZN Amazon 
+  focus        302  GPMSFT · Microsoft  | LAST 489.93 DAY −1.25% PERIOD +9.23% RANGE HI 558.07 RANGE LO 347.87 52W HI 559.15 52W LO 349.20 20D VOL 2.42%
+  squote       242  QUOTEMSFT · NasdaqGS · USD  | Microsoft 489.93 −1.25% Delayed · Nov 25, 09:00 PM CLOSED PREV 496.13 DAY LO–HI 477.39–493.44 VOLUME 26.10M 20
+  intel        710  INTELFYNX Intelligence · MSFT: what matters now  | 1 Options price ±1.97% by Nov 27 IV30 35.1% · put/call 0.57 · max pain 500 OPT 58 2 PhonePe resumes IPO plans 
+  snews        957  NEWSMSFT headlines  | 07:40 PhonePe resumes IPO plans with $15bn valuation target- report Electronic Payments 06:34 Miles Masterclas
+  story        304  STORYMSFT today · 8:35 AM  | MSFT lower Microsoft is at 489.93, −1.25% today, 0.5× its typical daily move. Over a month it is −7.6% and ove
+  srisk        214  RISKRisk vs SPY · 1 year  | VOLATILITY 34.0% / yr MAX DRAWDOWN -28.0% 1-DAY VaR 95% 2.87% BETA vs SPY 0.94 CORRELATION 0.41 1Y RETURN +4.2
+  fin          635  FAMSFT · annual SEC filings  | MICROSOFT CORP · CIK 789019 FY END 2026-06 2025-06 2024-06 2023-06 Revenue $331.84B $281.72B $245.12B $211.91B
+  earn          86  ERNEarnings · MSFT  | No earnings dates for MSFT in the published window (next 14 days, large US companies).
+  opt          467  OPTMSFT options  | LAST 491.45 IV30 35.1% P/C VOL 0.57 P/C OI 0.58 EXPIRY ATM IV MOVE PAIN SKEW Nov 27 · 1d 33.3% ±1.97% 500 +3.9
+  cmp          105  CMPMSFT vs SPY vs QQQ · 1Y  | MSFT +3.56% SPY +7.32% QQQ +4.60% −29.8% −15.0% −0.2% +14.6% +29.4% Nov 25 Nov 25 Compare more and draw ▸
+  desks        412  NEWSDesks  | 07:15 SpaceX shares jump on alternative trading platform after Musk says he will expand on Trump Account share
+  heat         339  HEATDay change heat map  | AAPL +0.43% MSFT −1.25% NVDA −3.91% AMZN −3.12% GOOGL −2.13% META +3.40% TSLA −1.18% AVGO −0.07% BRK-B +0.37% 
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  xa           334  XACross-asset vs Microsoft  | SYMBOL LAST CHG SPX S&P 500 7,182.78 −0.25% NDX Nasdaq 100 26,046.90 −0.64% US10Y US 10-year yield 4.848 −1.14
+  tools        323  TOOLSShare size  | Symbol AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V MA LLY UNH WMT COST HD PG JNJ XOM CVX ORCL CRM NFL
+### BFLR via command → mode=focus desk=stocks sym={"symbol":"BFLR","name":"BlueFlare, Inc.","cls":"stock","type":null,"exchange":null} url=?desk=stocks&sym=BFLR chip="BFLRBlueFlare, Inc.☆+✕" errors=0
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","fin","earn","opt","cmp","desks","heat","eco","xa","tools"]
+  mkts        1578  MKTSBlueFlare, Inc.  | SYMBOL LAST CHG ↕ BFLR BlueFlare, Inc. 0.0170 −22.73% AAPL Apple 355.58 +0.43% MSFT Microsoft 489.93 −1.25% NV
+  focus        283  GPBFLR · BlueFlare, Inc.  | LAST 0.0170 DAY −22.73% PERIOD −97.79% RANGE HI 1.0900 RANGE LO 0.0140 52W HI 1.6800 52W LO 0.0140 20D VOL 15.
+  squote       265  QUOTEBFLR · NasdaqGM · USD  | BlueFlare, Inc. 0.0170 −22.73% Delayed · Nov 25, 09:00 PM CLOSED PREV 0.0220 DAY LO–HI 0.0140–0.0180 VOLUME 36
+  intel        242  INTELFYNX Intelligence · BFLR: what matters now  | 1 Near its 52-week low 52-week range 0.01–1.68 LEVEL 62 2 BFLR −22.73% today 1.5× its typical daily move (20-d
+  snews         45  NEWSBFLR headlines  | Nov 25 BC-Most Active Stocks Associated Press
+  story        253  STORYBFLR today · 8:35 AM  | BFLR lower on a big move BlueFlare, Inc. is at 0.0170, −22.73% today, 1.5× its typical daily move. Over a mont
+  srisk        218  RISKRisk vs SPY · 1 year  | VOLATILITY 193.3% / yr MAX DRAWDOWN -98.9% 1-DAY VaR 95% 15.70% BETA vs SPY 2.06 CORRELATION 0.16 1Y RETURN −9
+  fin          625  FAAAPL · annual SEC filings  | Apple Inc. · CIK 320193 FY END 2026-09 2025-09 2024-09 2023-09 Revenue $478.83B $416.16B $391.04B $383.29B Net
+  earn          86  ERNEarnings · BFLR  | No earnings dates for BFLR in the published window (next 14 days, large US companies).
+  opt          467  OPTAAPL options  | LAST 355.17 IV30 24.1% P/C VOL 1.74 P/C OI 0.92 EXPIRY ATM IV MOVE PAIN SKEW Nov 27 · 1d 23.2% ±1.34% 353 +4.4
+  cmp          107  CMPBFLR vs SPY vs QQQ · 1Y  | BFLR −98.75% SPY +7.32% QQQ +4.60% −108.7% −72.7% −36.7% −0.7% +35.3% Nov 25 Nov 25 Compare more and draw ▸
+  desks        412  NEWSDesks  | 07:15 SpaceX shares jump on alternative trading platform after Musk says he will expand on Trump Account share
+  heat         339  HEATDay change heat map  | AAPL +0.43% MSFT −1.25% NVDA −3.91% AMZN −3.12% GOOGL −2.13% META +3.40% TSLA −1.18% AVGO −0.07% BRK-B +0.37% 
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  xa           334  XACross-asset vs BlueFlare, Inc.  | SYMBOL LAST CHG SPX S&P 500 7,182.78 −0.25% NDX Nasdaq 100 26,046.90 −0.64% US10Y US 10-year yield 4.848 −1.14
+  tools        323  TOOLSShare size  | Symbol AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V MA LLY UNH WMT COST HD PG JNJ XOM CVX ORCL CRM NFL
+### BFLR via find → mode=focus desk=stocks sym={"symbol":"BFLR","name":"BlueFlare, Inc.","cls":"stock","type":"EQUITY","exchange":"Nasdaq"} url=?desk=stocks&sym=BFLR chip="BFLRBlueFlare, Inc.☆+✕" errors=0
+  find results: ["BFLRBlueFlare, Inc.STOCKNasdaqNEW"]
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","fin","earn","opt","cmp","desks","heat","eco","xa","tools"]
+  mkts        1578  MKTSBlueFlare, Inc.  | SYMBOL LAST CHG ↕ BFLR BlueFlare, Inc. 0.0170 −22.73% AAPL Apple 355.58 +0.43% MSFT Microsoft 489.93 −1.25% NV
+  focus        283  GPBFLR · BlueFlare, Inc.  | LAST 0.0170 DAY −22.73% PERIOD −97.79% RANGE HI 1.0900 RANGE LO 0.0140 52W HI 1.6800 52W LO 0.0140 20D VOL 15.
+  squote       265  QUOTEBFLR · NasdaqGM · USD  | BlueFlare, Inc. 0.0170 −22.73% Delayed · Nov 25, 09:00 PM CLOSED PREV 0.0220 DAY LO–HI 0.0140–0.0180 VOLUME 36
+  intel        242  INTELFYNX Intelligence · BFLR: what matters now  | 1 Near its 52-week low 52-week range 0.01–1.68 LEVEL 62 2 BFLR −22.73% today 1.5× its typical daily move (20-d
+  snews         45  NEWSBFLR headlines  | Nov 25 BC-Most Active Stocks Associated Press
+  story        253  STORYBFLR today · 8:36 AM  | BFLR lower on a big move BlueFlare, Inc. is at 0.0170, −22.73% today, 1.5× its typical daily move. Over a mont
+  srisk        218  RISKRisk vs SPY · 1 year  | VOLATILITY 193.3% / yr MAX DRAWDOWN -98.9% 1-DAY VaR 95% 15.70% BETA vs SPY 2.06 CORRELATION 0.16 1Y RETURN −9
+  fin           81  FABFLR · annual SEC filings  | Financial statements are not available from SEC EDGAR for this company right now.
+  earn          86  ERNEarnings · BFLR  | No earnings dates for BFLR in the published window (next 14 days, large US companies).
+  opt          467  OPTAAPL options  | LAST 355.17 IV30 24.1% P/C VOL 1.74 P/C OI 0.92 EXPIRY ATM IV MOVE PAIN SKEW Nov 27 · 1d 23.2% ±1.34% 353 +4.4
+  cmp          107  CMPBFLR vs SPY vs QQQ · 1Y  | BFLR −98.75% SPY +7.32% QQQ +4.60% −108.7% −72.7% −36.7% −0.7% +35.3% Nov 25 Nov 25 Compare more and draw ▸
+  desks        412  NEWSDesks  | 07:15 SpaceX shares jump on alternative trading platform after Musk says he will expand on Trump Account share
+  heat         339  HEATDay change heat map  | AAPL +0.43% MSFT −1.25% NVDA −3.91% AMZN −3.12% GOOGL −2.13% META +3.40% TSLA −1.18% AVGO −0.07% BRK-B +0.37% 
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  xa           334  XACross-asset vs BlueFlare, Inc.  | SYMBOL LAST CHG SPX S&P 500 7,182.78 −0.25% NDX Nasdaq 100 26,046.90 −0.64% US10Y US 10-year yield 4.848 −1.14
+  tools        323  TOOLSShare size  | Symbol AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V MA LLY UNH WMT COST HD PG JNJ XOM CVX ORCL CRM NFL
+### ANT via command → mode=focus desk=stocks sym={"symbol":"ANT","name":"Anthropic, PBC","cls":"stock","type":null,"exchange":null} url=?desk=stocks&sym=ANT chip="ANTAnthropic, PBC☆+✕" errors=0
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","fin","earn","opt","cmp","desks","heat","eco","xa","tools"]
+  mkts        1574  MKTSAnthropic, PBC  | SYMBOL LAST CHG ↕ ANT Anthropic, PBC 82.79 +1.07% AAPL Apple 355.58 +0.43% MSFT Microsoft 489.93 −1.25% NVDA N
+  focus        256  GPANT · Anthropic, PBC  | LAST 82.79 DAY +1.07% PERIOD −14.80% RANGE HI 115.10 RANGE LO 73.85 52W HI 115.10 52W LO 73.85 80.69 85.11 89.
+  squote       203  QUOTEANT · NasdaqGS · USD  | Anthropic, PBC 82.79 +1.07% Delayed · Nov 25, 09:00 PM CLOSED PREV 81.91 DAY LO–HI 73.85–85.92 VOLUME 292.33M 
+  intel        162  INTELFYNX Intelligence · ANT: what matters now  | 1 ANT +1.07% today Today’s change MOVE 45 Ranked from 8 live feeds: moves vs normal, headlines, events, centra
+  snews       1350  NEWSANT headlines  | 07:34 Wall St futures surge as investors return from holiday Reuters 07:23 Prediction: This Will Be Anthropic’
+  story        170  STORYANT today · 8:36 AM  | ANT higher Anthropic, PBC is at 82.79, +1.07% today. It sits 22% of the way up its 52-week range. Written from
+  srisk         42  RISKRisk vs SPY · 1 year  | Not enough daily history for risk numbers.
+  fin          625  FAAAPL · annual SEC filings  | Apple Inc. · CIK 320193 FY END 2026-09 2025-09 2024-09 2023-09 Revenue $478.83B $416.16B $391.04B $383.29B Net
+  earn          85  ERNEarnings · ANT  | No earnings dates for ANT in the published window (next 14 days, large US companies).
+  opt          467  OPTAAPL options  | LAST 355.17 IV30 24.1% P/C VOL 1.74 P/C OI 0.92 EXPIRY ATM IV MOVE PAIN SKEW Nov 27 · 1d 23.2% ±1.34% 353 +4.4
+  cmp          103  CMPANT vs SPY vs QQQ · 1Y  | ANT −14.80% SPY +0.12% QQQ −1.72% −17.0% −12.2% −7.4% −2.6% +2.3% Nov 19 Nov 25 Compare more and draw ▸
+  desks       2927  NEWSDesks  | 07:15 SpaceX shares jump on alternative trading platform after Musk says he will expand on Trump Account share
+  heat         339  HEATDay change heat map  | AAPL +0.43% MSFT −1.25% NVDA −3.91% AMZN −3.12% GOOGL −2.13% META +3.40% TSLA −1.18% AVGO −0.07% BRK-B +0.37% 
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  xa           334  XACross-asset vs Anthropic, PBC  | SYMBOL LAST CHG SPX S&P 500 7,182.78 −0.25% NDX Nasdaq 100 26,046.90 −0.64% US10Y US 10-year yield 4.848 −1.14
+  tools        323  TOOLSShare size  | Symbol AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V MA LLY UNH WMT COST HD PG JNJ XOM CVX ORCL CRM NFL
+### ANT via find → mode=focus desk=stocks sym={"symbol":"ANT","name":"Anthropic, PBC - Class A","cls":"stock","type":"EQUITY","exchange":"Nasdaq"} url=?desk=stocks&sym=ANT chip="ANTAnthropic, PBC - Class A☆+✕" errors=0
+  find results: ["ANTAnthropic, PBC - Class ASTOCKNasdaqNEW","PLTRPalantirSTOCKFYNX terminal","ANTAAntalpha Platform Holding Company - Class A Ordinary SharesSTOCKNasdaq","ANTCDefiance 2X ANT Long Daily ETFFUNDNasdaqNEW","ANTDDirexion Daily Anthropic Bear 2X ETFFUNDNasdaqNEW","ANTODirexion Daily Anthropic Bull 2X ETFFUNDNasdaqNEW","ANTQDefiance 2X ANT Short Daily ETFFUNDNasdaqNEW","ANTUProShares Ultra AnthropicFUNDNasdaqNEW"]
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","fin","earn","opt","cmp","desks","heat","eco","xa","tools"]
+  mkts        1574  MKTSAnthropic, PBC - Class A  | SYMBOL LAST CHG ↕ ANT Anthropic, PBC 82.79 +1.07% AAPL Apple 355.58 +0.43% MSFT Microsoft 489.93 −1.25% NVDA N
+  focus        256  GPANT · Anthropic, PBC  | LAST 82.79 DAY +1.07% PERIOD −14.80% RANGE HI 115.10 RANGE LO 73.85 52W HI 115.10 52W LO 73.85 80.69 85.11 89.
+  squote       213  QUOTEANT · NasdaqGS · USD  | Anthropic, PBC - Class A 82.79 +1.07% Delayed · Nov 25, 09:00 PM CLOSED PREV 81.91 DAY LO–HI 73.85–85.92 VOLUM
+  intel        162  INTELFYNX Intelligence · ANT: what matters now  | 1 ANT +1.07% today Today’s change MOVE 45 Ranked from 8 live feeds: moves vs normal, headlines, events, centra
+  snews       1248  NEWSANT headlines  | 07:34 Wall St futures surge as investors return from holiday Reuters 07:23 Prediction: This Will Be Anthropic’
+  story        180  STORYANT today · 8:36 AM  | ANT higher Anthropic, PBC - Class A is at 82.79, +1.07% today. It sits 22% of the way up its 52-week range. Wr
+  srisk         42  RISKRisk vs SPY · 1 year  | Not enough daily history for risk numbers.
+  fin           81  FAANT · annual SEC filings  | Financial statements are not available from SEC EDGAR for this company right now.
+  earn          85  ERNEarnings · ANT  | No earnings dates for ANT in the published window (next 14 days, large US companies).
+  opt          467  OPTAAPL options  | LAST 355.17 IV30 24.1% P/C VOL 1.74 P/C OI 0.92 EXPIRY ATM IV MOVE PAIN SKEW Nov 27 · 1d 23.2% ±1.34% 353 +4.4
+  cmp          103  CMPANT vs SPY vs QQQ · 1Y  | ANT −14.80% SPY +0.12% QQQ −1.72% −17.0% −12.2% −7.4% −2.6% +2.3% Nov 19 Nov 25 Compare more and draw ▸
+  desks        412  NEWSDesks  | 07:15 SpaceX shares jump on alternative trading platform after Musk says he will expand on Trump Account share
+  heat         339  HEATDay change heat map  | AAPL +0.43% MSFT −1.25% NVDA −3.91% AMZN −3.12% GOOGL −2.13% META +3.40% TSLA −1.18% AVGO −0.07% BRK-B +0.37% 
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  xa           334  XACross-asset vs Anthropic, PBC - Class A  | SYMBOL LAST CHG SPX S&P 500 7,182.78 −0.25% NDX Nasdaq 100 26,046.90 −0.64% US10Y US 10-year yield 4.848 −1.14
+  tools        323  TOOLSShare size  | Symbol AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V MA LLY UNH WMT COST HD PG JNJ XOM CVX ORCL CRM NFL
+### EURUSD via command → mode=focus desk=stocks sym={"symbol":"EURUSD=X","name":"EUR/USD","cls":"fx","type":null,"exchange":null} url=?desk=stocks&sym=EURUSD%3DX chip="EURUSDEUR/USD☆+✕" errors=0
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","bias","cb","eco","range","pos","corr","curve","sess","tools"]
+  mkts         782  MKTSEUR/USD  | SYMBOL LAST CHG ↕ EURUSD EUR/USD 1.09670 −0.03% GBPUSD GBP/USD 1.31230 +0.08% USDJPY USD/JPY 159.416 +0.13% AU
+  focus        385  GPEURUSD · EUR/USD  | LAST 1.09670 DAY −0.03% PERIOD −5.90% RANGE HI 1.17115 RANGE LO 1.09531 52W HI 1.20240 52W LO 1.08840 20D VOL 
+  squote       238  QUOTEEURUSD · CCY · USD  | EUR/USD 1.09670 −0.03% Delayed · Nov 27, 08:35 AM OPEN PREV 1.09701 DAY LO–HI 1.09640–1.09870 VOLUME 0 20D VOL
+  intel        334  INTELFYNX Intelligence · EURUSD: what matters now  | 1 Positioning crowded short CFTC net −25% COT 60 2 Smart Bias -30 (Bearish) Trend -81 · Yield momentum -7 · Ra
+  snews       1058  NEWSEURUSD headlines  | Nov 26 US Dollar Price Forecast: Yields Slide, DXY Eyes 104.08 as EUR/USD, GBP/USD Stall FX Empire Nov 25 US D
+  story        240  STORYEURUSD today · 8:36 AM  | EURUSD little changed EUR/USD is at 1.09670, −0.03% today, 0.1× its typical daily move. Over a month it is −1.
+  srisk        215  RISKRisk vs DXY · 1 year  | VOLATILITY 5.6% / yr MAX DRAWDOWN -9.2% 1-DAY VaR 95% 0.58% BETA vs DXY -0.11 CORRELATION -0.10 1Y RETURN −5.8
+  bias         186  BIASSmart Bias  | USDCAD 1.42430 +37 USDJPY 159.416 +35 USDCHF 0.83380 +22 GBPJPY 208.814 +9 EURGBP 0.83670 -1 EURJPY 174.721 -3
+  cb           344  CBCentral banks  | BANK RATE NEXT IN FED 3.75–4.00% Dec 9 12d 10h ECB 2.50% Dec 17 20d 4h BOE 4.00% Dec 17 20d 3h BOJ 1.25% Dec 1
+  eco          530  ECOEUR/USD calendar  | Mon 08:15 EUR French Flash Manufacturing PMI 49.8 49.3 Mon 08:15 EUR French Flash Services PMI 47.4 48.4 Mon 0
+  range        132  RNGEUR/USD daily range · 1 year  | 22 166 Latest day 43 pips · 29th percentile · busier than 29% of days Median 55 · typical 42–74 pips · 252 day
+  pos           85  COTFutures positioning  | EURUSD −25%! ! = crowded vs its own history · speculators, net (long − short) / total
+  corr         303  CORRFX correlation  | EURUSD GBPUSD USDJPY USDCHF AUDUSD USDCAD EURUSD 0.85 -0.37 -0.47 0.56 -0.49 GBPUSD 0.85 -0.41 -0.49 0.66 -0.5
+  curve        314  CURVEUS Treasuries  | 4.06 4.73 5.40 1M 3M 6M 1Y 2Y 3Y 5Y 7Y 10Y 20Y 30Y 1M 4.27 +16 3M 4.34 +12 6M 4.44 +9 1Y 4.56 +9 2Y 4.61 −7 3Y
+  sess         163  SESSTrading sessions  | Sydney 19:36 local CLOSED Tokyo 17:36 local OPEN London 08:36 local OPEN New York 03:36 local CLOSED Regular w
+  tools        262  TOOLSPosition size  | Pair EURUSD GBPUSD USDJPY AUDUSD USDCAD USDCHF NZDUSD EURJPY GBPJPY EURGBP XAUUSD Balance $ Risk % Stop (pips)
+### EURUSD via find → mode=focus desk=stocks sym={"symbol":"EURUSD=X","name":"EUR/USD","cls":"fx","type":"FX","exchange":"FYNX terminal"} url=?desk=stocks&sym=EURUSD%3DX chip="EURUSDEUR/USD☆+✕" errors=0
+  find results: ["EURUSD=XEUR/USDFXFYNX terminal","EURUSDEUR/USDEDGEFYNX terminal","M6E=FMicro EUR/USD Futures,Dec-2026FUTUREChicago Mercantile Exchange","M6EH27.CMEMicro EUR/USD Futures,Mar-2027FUTUREChicago Mercantile Exchange","M6EZ26.CMEMicro EUR/USD Futures,Dec-2026FUTUREChicago Mercantile Exchange","Q0SF.ZConstant Matur. Collar EURUSDIINDEXZurich Stock Exchange","KEOZ26.NYBEUR/USD 125 - NYCC - Dec26FUTUREICE Futures","18QQ.ZSGI FX Forwar. EUR/USD in USD IINDEXZurich Stock Exchange"]
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","bias","cb","eco","range","pos","corr","curve","sess","tools"]
+  mkts         782  MKTSEUR/USD  | SYMBOL LAST CHG ↕ EURUSD EUR/USD 1.09670 −0.03% GBPUSD GBP/USD 1.31220 +0.07% USDJPY USD/JPY 159.413 +0.12% AU
+  focus        385  GPEURUSD · EUR/USD  | LAST 1.09670 DAY −0.03% PERIOD −5.90% RANGE HI 1.17115 RANGE LO 1.09531 52W HI 1.20240 52W LO 1.08840 20D VOL 
+  squote       238  QUOTEEURUSD · CCY · USD  | EUR/USD 1.09670 −0.03% Delayed · Nov 27, 08:36 AM OPEN PREV 1.09701 DAY LO–HI 1.09640–1.09870 VOLUME 0 20D VOL
+  intel        334  INTELFYNX Intelligence · EURUSD: what matters now  | 1 Positioning crowded short CFTC net −25% COT 60 2 Smart Bias -30 (Bearish) Trend -81 · Yield momentum -7 · Ra
+  snews       1058  NEWSEURUSD headlines  | Nov 26 US Dollar Price Forecast: Yields Slide, DXY Eyes 104.08 as EUR/USD, GBP/USD Stall FX Empire Nov 25 US D
+  story        240  STORYEURUSD today · 8:37 AM  | EURUSD little changed EUR/USD is at 1.09670, −0.03% today, 0.1× its typical daily move. Over a month it is −1.
+  srisk        215  RISKRisk vs DXY · 1 year  | VOLATILITY 5.6% / yr MAX DRAWDOWN -9.2% 1-DAY VaR 95% 0.58% BETA vs DXY -0.11 CORRELATION -0.10 1Y RETURN −5.8
+  bias         186  BIASSmart Bias  | USDCAD 1.42420 +36 USDJPY 159.413 +35 USDCHF 0.83590 +27 GBPJPY 208.814 +9 EURGBP 0.83670 -1 EURJPY 174.721 -3
+  cb           344  CBCentral banks  | BANK RATE NEXT IN FED 3.75–4.00% Dec 9 12d 10h ECB 2.50% Dec 17 20d 4h BOE 4.00% Dec 17 20d 3h BOJ 1.25% Dec 1
+  eco          530  ECOEUR/USD calendar  | Mon 08:15 EUR French Flash Manufacturing PMI 49.8 49.3 Mon 08:15 EUR French Flash Services PMI 47.4 48.4 Mon 0
+  range        132  RNGEUR/USD daily range · 1 year  | 22 166 Latest day 43 pips · 29th percentile · busier than 29% of days Median 55 · typical 42–74 pips · 252 day
+  pos           85  COTFutures positioning  | EURUSD −25%! ! = crowded vs its own history · speculators, net (long − short) / total
+  corr         303  CORRFX correlation  | EURUSD GBPUSD USDJPY USDCHF AUDUSD USDCAD EURUSD 0.85 -0.37 -0.47 0.56 -0.49 GBPUSD 0.85 -0.41 -0.49 0.66 -0.5
+  curve        314  CURVEUS Treasuries  | 4.06 4.73 5.40 1M 3M 6M 1Y 2Y 3Y 5Y 7Y 10Y 20Y 30Y 1M 4.27 +16 3M 4.34 +12 6M 4.44 +9 1Y 4.56 +9 2Y 4.61 −7 3Y
+  sess         163  SESSTrading sessions  | Sydney 19:37 local CLOSED Tokyo 17:37 local OPEN London 08:37 local OPEN New York 03:37 local CLOSED Regular w
+  tools        262  TOOLSPosition size  | Pair EURUSD GBPUSD USDJPY AUDUSD USDCAD USDCHF NZDUSD EURJPY GBPJPY EURGBP XAUUSD Balance $ Risk % Stop (pips)
+### GBPUSD via command → mode=focus desk=stocks sym={"symbol":"GBPUSD=X","name":"GBP/USD","cls":"fx","type":null,"exchange":null} url=?desk=stocks&sym=GBPUSD%3DX chip="GBPUSDGBP/USD☆+✕" errors=0
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","bias","cb","eco","range","pos","corr","curve","sess","tools"]
+  mkts         782  MKTSGBP/USD  | SYMBOL LAST CHG ↕ EURUSD EUR/USD 1.09670 −0.03% GBPUSD GBP/USD 1.31220 +0.07% USDJPY USD/JPY 159.413 +0.12% AU
+  focus        382  GPGBPUSD · GBP/USD  | LAST 1.31220 DAY +0.07% PERIOD −2.40% RANGE HI 1.36755 RANGE LO 1.30755 52W HI 1.38470 52W LO 1.30130 20D VOL 
+  squote       238  QUOTEGBPUSD · CCY · USD  | GBP/USD 1.31220 +0.07% Delayed · Nov 27, 08:36 AM OPEN PREV 1.31130 DAY LO–HI 1.30940–1.31310 VOLUME 0 20D VOL
+  intel        282  INTELFYNX Intelligence · GBPUSD: what matters now  | 1 Smart Bias -24 (Bearish) Trend -68 · Yield momentum -5 · Rate gap +4 · Positioning 0 BIAS 58 2 GBPUSD +0.07%
+  snews       1143  NEWSGBPUSD headlines  | Nov 26 US Dollar Price Forecast: Yields Slide, DXY Eyes 104.08 as EUR/USD, GBP/USD Stall FX Empire Nov 25 US D
+  story        253  STORYGBPUSD today · 8:37 AM  | GBPUSD little changed GBP/USD is at 1.31220, +0.07% today, 0.2× its typical daily move. Over a month it is −1.
+  srisk        215  RISKRisk vs DXY · 1 year  | VOLATILITY 6.4% / yr MAX DRAWDOWN -5.7% 1-DAY VaR 95% 0.68% BETA vs DXY -0.10 CORRELATION -0.09 1Y RETURN −1.5
+  bias         186  BIASSmart Bias  | USDCAD 1.42420 +36 USDJPY 159.413 +35 USDCHF 0.83590 +27 GBPJPY 208.814 +9 EURGBP 0.83670 -1 EURJPY 174.721 -3
+  cb           344  CBCentral banks  | BANK RATE NEXT IN FED 3.75–4.00% Dec 9 12d 10h ECB 2.50% Dec 17 20d 4h BOE 4.00% Dec 17 20d 3h BOJ 1.25% Dec 1
+  eco          411  ECOGBP/USD calendar  | Mon 09:30 GBP Flash Manufacturing PMI 53.0 52.8 Mon 09:30 GBP Flash Services PMI 53.0 53.1 Mon 14:45 USD Flash
+  range        132  RNGGBP/USD daily range · 1 year  | 32 198 Latest day 53 pips · 23rd percentile · busier than 23% of days Median 70 · typical 55–93 pips · 252 day
+  pos           84  COTFutures positioning  | GBPUSD +25% ! = crowded vs its own history · speculators, net (long − short) / total
+  corr         303  CORRFX correlation  | EURUSD GBPUSD USDJPY USDCHF AUDUSD USDCAD EURUSD 0.85 -0.37 -0.47 0.56 -0.49 GBPUSD 0.85 -0.41 -0.49 0.66 -0.5
+  curve        314  CURVEUS Treasuries  | 4.06 4.73 5.40 1M 3M 6M 1Y 2Y 3Y 5Y 7Y 10Y 20Y 30Y 1M 4.27 +16 3M 4.34 +12 6M 4.44 +9 1Y 4.56 +9 2Y 4.61 −7 3Y
+  sess         163  SESSTrading sessions  | Sydney 19:37 local CLOSED Tokyo 17:37 local OPEN London 08:37 local OPEN New York 03:37 local CLOSED Regular w
+  tools        262  TOOLSPosition size  | Pair EURUSD GBPUSD USDJPY AUDUSD USDCAD USDCHF NZDUSD EURJPY GBPJPY EURGBP XAUUSD Balance $ Risk % Stop (pips)
+### GBPUSD via find → mode=focus desk=stocks sym={"symbol":"GBPUSD=X","name":"GBP/USD","cls":"fx","type":"FX","exchange":"FYNX terminal"} url=?desk=stocks&sym=GBPUSD%3DX chip="GBPUSDGBP/USD☆+✕" errors=0
+  find results: ["GBPUSD=XGBP/USDFXFYNX terminal","GBPUSDGBP/USDEDGEFYNX terminal","M6B=FMicro GBP/USD Futures,Dec-2026FUTUREChicago Mercantile Exchange","M6BH27.CMEMicro GBP/USD Futures,Mar-2027FUTUREChicago Mercantile Exchange","MPZ26.NYBSm GBP/USD - NYCC - Dec26FUTUREICE Futures","M6BZ26.CMEMicro GBP/USD Futures,Dec-2026FUTUREChicago Mercantile Exchange","0P0001QC78.LFidelity Glb ShrtDurIncY-MCDISTG-GBPUSDHFUNDLondon","18QR.ZSGI FX Forwar. GBP/USD in USD IINDEXZurich Stock Exchange"]
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","bias","cb","eco","range","pos","corr","curve","sess","tools"]
+  mkts         782  MKTSGBP/USD  | SYMBOL LAST CHG ↕ EURUSD EUR/USD 1.09670 −0.03% GBPUSD GBP/USD 1.31230 +0.08% USDJPY USD/JPY 159.416 +0.13% AU
+  focus        382  GPGBPUSD · GBP/USD  | LAST 1.31230 DAY +0.08% PERIOD −2.40% RANGE HI 1.36755 RANGE LO 1.30755 52W HI 1.38470 52W LO 1.30130 20D VOL 
+  squote       238  QUOTEGBPUSD · CCY · USD  | GBP/USD 1.31230 +0.08% Delayed · Nov 27, 08:35 AM OPEN PREV 1.31130 DAY LO–HI 1.30940–1.31310 VOLUME 0 20D VOL
+  intel        282  INTELFYNX Intelligence · GBPUSD: what matters now  | 1 Smart Bias -24 (Bearish) Trend -68 · Yield momentum -5 · Rate gap +4 · Positioning 0 BIAS 58 2 GBPUSD +0.08%
+  snews       1143  NEWSGBPUSD headlines  | Nov 26 US Dollar Price Forecast: Yields Slide, DXY Eyes 104.08 as EUR/USD, GBP/USD Stall FX Empire Nov 25 US D
+  story        253  STORYGBPUSD today · 8:37 AM  | GBPUSD little changed GBP/USD is at 1.31230, +0.08% today, 0.2× its typical daily move. Over a month it is −1.
+  srisk        215  RISKRisk vs DXY · 1 year  | VOLATILITY 6.4% / yr MAX DRAWDOWN -5.7% 1-DAY VaR 95% 0.68% BETA vs DXY -0.10 CORRELATION -0.09 1Y RETURN −1.5
+  bias         186  BIASSmart Bias  | USDCAD 1.42430 +37 USDJPY 159.416 +35 USDCHF 0.83590 +27 GBPJPY 208.814 +9 EURGBP 0.83670 -1 EURJPY 174.721 -3
+  cb           344  CBCentral banks  | BANK RATE NEXT IN FED 3.75–4.00% Dec 9 12d 10h ECB 2.50% Dec 17 20d 4h BOE 4.00% Dec 17 20d 3h BOJ 1.25% Dec 1
+  eco          411  ECOGBP/USD calendar  | Mon 09:30 GBP Flash Manufacturing PMI 53.0 52.8 Mon 09:30 GBP Flash Services PMI 53.0 53.1 Mon 14:45 USD Flash
+  range        132  RNGGBP/USD daily range · 1 year  | 32 198 Latest day 53 pips · 23rd percentile · busier than 23% of days Median 70 · typical 55–93 pips · 252 day
+  pos           84  COTFutures positioning  | GBPUSD +25% ! = crowded vs its own history · speculators, net (long − short) / total
+  corr         303  CORRFX correlation  | EURUSD GBPUSD USDJPY USDCHF AUDUSD USDCAD EURUSD 0.85 -0.37 -0.47 0.56 -0.49 GBPUSD 0.85 -0.41 -0.49 0.66 -0.5
+  curve        314  CURVEUS Treasuries  | 4.06 4.73 5.40 1M 3M 6M 1Y 2Y 3Y 5Y 7Y 10Y 20Y 30Y 1M 4.27 +16 3M 4.34 +12 6M 4.44 +9 1Y 4.56 +9 2Y 4.61 −7 3Y
+  sess         163  SESSTrading sessions  | Sydney 19:37 local CLOSED Tokyo 17:37 local OPEN London 08:37 local OPEN New York 03:37 local CLOSED Regular w
+  tools        262  TOOLSPosition size  | Pair EURUSD GBPUSD USDJPY AUDUSD USDCAD USDCHF NZDUSD EURJPY GBPJPY EURGBP XAUUSD Balance $ Risk % Stop (pips)
+### BTC via command → mode=focus desk=stocks sym={"symbol":"BTC-USD","name":"Bitcoin USD","cls":"crypto","type":null,"exchange":null} url=?desk=stocks&sym=BTC-USD chip="BTCBitcoin USD☆+✕" errors=0
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","books","edge","dom","cmp","xa","desks","heat","eco","tools"]
+  mkts         463  MKTSBitcoin USD  | SYMBOL LAST CHG ↕ BTC Bitcoin 61,654.76 +1.34% ETH Ethereum 1,727.72 +1.68% SOL Solana 73.06 +2.89% XRP XRP 0.
+  focus        309  GPBTC · Bitcoin  | LAST 61,654.76 DAY +1.34% PERIOD −4.13% RANGE HI 87,363.76 RANGE LO 55,149.57 52W HI 97,860.60 52W LO 55,149.5
+  squote       269  QUOTEBTC · CCC · USD  | Bitcoin USD 61,654.76 +1.34% Delayed · Nov 27, 08:37 AM OPEN PREV 60,378.20 DAY LO–HI 60,440.95–61,637.91 VOLU
+  intel        184  INTELFYNX Intelligence · BTC: what matters now  | 1 BTC +1.34% today 0.6× its typical daily move (20-day) MOVE 38 Ranked from 8 live feeds: moves vs normal, hea
+  snews       1649  NEWSBTC headlines  | No headlines mention this market yet · latest market news 08:05 Private markets are more accessible than ever 
+  story        250  STORYBTC today · 8:37 AM  | BTC higher Bitcoin USD is at 61,654.76, +1.34% today, 0.6× its typical daily move. Over a month it is −18.6% a
+  srisk        216  RISKRisk vs QQQ · 1 year  | VOLATILITY 44.4% / yr MAX DRAWDOWN -39.6% 1-DAY VaR 95% 3.54% BETA vs QQQ 0.75 CORRELATION 0.42 1Y RETURN −32.
+  books        198  BOOKCoinbase top of book  | BOOK BID ASK SPRD BTC 61,654.76 61,654.77 0.00bp ETH 1,727.38 1,727.63 1.45bp BTC bid size 0.1298 BTC BTC ask 
+  edge         169  EDGERegimes  | MKT REGIME TREND VOL EVENT BTCUSD Strong trend −0.54 100th 24h ETHUSD Trend −0.60 99th 24h Snapshot 4d ago · t
+  dom          681  DOMDepth of market  | BTC/USD · Bitcoin ETH/USD · Ether SOL/USD · Solana XRP/USD · XRP DOGE/USD · Dogecoin ADA/USD · Cardano LINK/US
+  cmp          106  CMPBTC vs QQQ vs ETH · 1Y  | BTC −10.25% QQQ +8.04% ETH −16.80% −29.3% −12.4% +4.5% +21.4% +38.4% Mar 21 Nov 27 Compare more and draw ▸
+  xa           320  XACross-asset vs Bitcoin USD  | SYMBOL LAST CHG NDX Nasdaq 100 26,046.90 −0.64% SPX S&P 500 7,182.78 −0.25% DXY US Dollar Index 103.72 +0.05% 
+  desks       1872  NEWSDesks  | 07:18 LIVE – Crypto News Today: Why Is Bitcoin Up? Gold and Wall Street Rally Fuel BTC Bounce - TradingView Tr
+  heat         112  HEATDay change heat map  | BTC +1.34% ETH +1.68% SOL +2.89% XRP +2.33% BNB +1.53% DOGE +2.88% ADA +3.69% AVAX +1.44% LINK +4.70% LTC +1.9
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  tools        237  TOOLSCrypto size  | Coin BTC ETH SOL XRP BNB DOGE ADA AVAX LINK LTC Account $ Risk % Entry Stop RISK $100.00 UNITS 0.0540 POSITION
+### BTC via find → mode=focus desk=stocks sym={"symbol":"BTC-USD","name":"Bitcoin","cls":"crypto","type":"Crypto","exchange":"FYNX terminal"} url=?desk=stocks&sym=BTC-USD chip="BTCBitcoin☆+✕" errors=0
+  find results: ["BTC-USDBitcoinCRYPTOFYNX terminal","BTC=FCME BitcoinFXFYNX terminal","BTCGrayscale Bitcoin Mini Trust (BTC)FUNDNYSE Arca","BTCUSDBitcoin (CFD)EDGEFYNX terminal","BTCSBTCS Inc.STOCKNasdaq","BTCTBTC Digital Ltd. - Ordinary SharesSTOCKNasdaq","BTCCGrayscale Bitcoin High Income ETFFUNDNYSE Arca","BTCINEOS Bitcoin High Income ETFFUNDCboe BZX"]
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","books","edge","dom","cmp","xa","desks","heat","eco","tools"]
+  mkts         463  MKTSBitcoin  | SYMBOL LAST CHG ↕ BTC Bitcoin 61,654.76 +1.34% ETH Ethereum 1,727.72 +1.68% SOL Solana 73.06 +2.89% XRP XRP 0.
+  focus        309  GPBTC · Bitcoin  | LAST 61,654.76 DAY +1.34% PERIOD −4.13% RANGE HI 87,363.76 RANGE LO 55,149.57 52W HI 97,860.60 52W LO 55,149.5
+  squote       265  QUOTEBTC · CCC · USD  | Bitcoin 61,654.76 +1.34% Delayed · Nov 27, 08:37 AM OPEN PREV 60,378.20 DAY LO–HI 60,440.95–61,637.91 VOLUME 2
+  intel        184  INTELFYNX Intelligence · BTC: what matters now  | 1 BTC +1.34% today 0.6× its typical daily move (20-day) MOVE 38 Ranked from 8 live feeds: moves vs normal, hea
+  snews       1649  NEWSBTC headlines  | No headlines mention this market yet · latest market news 08:05 Private markets are more accessible than ever 
+  story        246  STORYBTC today · 8:38 AM  | BTC higher Bitcoin is at 61,654.76, +1.34% today, 0.6× its typical daily move. Over a month it is −18.6% and o
+  srisk        216  RISKRisk vs QQQ · 1 year  | VOLATILITY 44.4% / yr MAX DRAWDOWN -39.6% 1-DAY VaR 95% 3.54% BETA vs QQQ 0.75 CORRELATION 0.42 1Y RETURN −32.
+  books        198  BOOKCoinbase top of book  | BOOK BID ASK SPRD BTC 61,685.09 61,685.10 0.00bp ETH 1,727.63 1,727.72 0.52bp BTC bid size 0.0003 BTC BTC ask 
+  edge         169  EDGERegimes  | MKT REGIME TREND VOL EVENT BTCUSD Strong trend −0.54 100th 24h ETHUSD Trend −0.60 99th 24h Snapshot 4d ago · t
+  dom          683  DOMDepth of market  | BTC/USD · Bitcoin ETH/USD · Ether SOL/USD · Solana XRP/USD · XRP DOGE/USD · Dogecoin ADA/USD · Cardano LINK/US
+  cmp          106  CMPBTC vs QQQ vs ETH · 1Y  | BTC −10.25% QQQ +8.04% ETH −16.80% −29.3% −12.4% +4.5% +21.4% +38.4% Mar 21 Nov 27 Compare more and draw ▸
+  xa           320  XACross-asset vs Bitcoin  | SYMBOL LAST CHG NDX Nasdaq 100 26,046.90 −0.64% SPX S&P 500 7,182.78 −0.25% DXY US Dollar Index 103.72 +0.05% 
+  desks       1872  NEWSDesks  | 07:18 LIVE – Crypto News Today: Why Is Bitcoin Up? Gold and Wall Street Rally Fuel BTC Bounce - TradingView Tr
+  heat         112  HEATDay change heat map  | BTC +1.34% ETH +1.68% SOL +2.89% XRP +2.33% BNB +1.53% DOGE +2.88% ADA +3.69% AVAX +1.44% LINK +4.70% LTC +1.9
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  tools        237  TOOLSCrypto size  | Coin BTC ETH SOL XRP BNB DOGE ADA AVAX LINK LTC Account $ Risk % Entry Stop RISK $100.00 UNITS 0.0540 POSITION
+### ETH via command → mode=focus desk=stocks sym={"symbol":"ETH-USD","name":"Ethereum USD","cls":"crypto","type":null,"exchange":null} url=?desk=stocks&sym=ETH-USD chip="ETHEthereum USD☆+✕" errors=0
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","books","edge","dom","cmp","xa","desks","heat","eco","tools"]
+  mkts         463  MKTSEthereum USD  | SYMBOL LAST CHG ↕ BTC Bitcoin 61,654.76 +1.34% ETH Ethereum 1,727.72 +1.68% SOL Solana 73.06 +2.89% XRP XRP 0.
+  focus        299  GPETH · Ethereum  | LAST 1,727.72 DAY +1.68% PERIOD −7.77% RANGE HI 2,805.50 RANGE LO 1,538.60 52W HI 3,446.62 52W LO 1,506.51 20D
+  squote       263  QUOTEETH · CCC · USD  | Ethereum USD 1,727.72 +1.68% Delayed · Nov 27, 08:37 AM OPEN PREV 1,690.77 DAY LO–HI 1,686.56–1,733.04 VOLUME 
+  intel        184  INTELFYNX Intelligence · ETH: what matters now  | 1 ETH +1.68% today 0.5× its typical daily move (20-day) MOVE 38 Ranked from 8 live feeds: moves vs normal, hea
+  snews        365  NEWSETH headlines  | Nov 26 Crypto Today: Bitcoin, Ethereum and XRP post modest recoveries amid continuing crypto investment outflo
+  story        250  STORYETH today · 8:38 AM  | ETH higher Ethereum USD is at 1,727.72, +1.68% today, 0.5× its typical daily move. Over a month it is −22.7% a
+  srisk        216  RISKRisk vs BTC · 1 year  | VOLATILITY 60.7% / yr MAX DRAWDOWN -53.4% 1-DAY VaR 95% 4.72% BETA vs BTC 1.25 CORRELATION 0.91 1Y RETURN −42.
+  books        198  BOOKCoinbase top of book  | BOOK BID ASK SPRD BTC 61,673.16 61,673.17 0.00bp ETH 1,727.19 1,727.20 0.06bp BTC bid size 0.0003 BTC BTC ask 
+  edge         169  EDGERegimes  | MKT REGIME TREND VOL EVENT BTCUSD Strong trend −0.54 100th 24h ETHUSD Trend −0.60 99th 24h Snapshot 4d ago · t
+  dom          717  DOMDepth of market  | BTC/USD · Bitcoin ETH/USD · Ether SOL/USD · Solana XRP/USD · XRP DOGE/USD · Dogecoin ADA/USD · Cardano LINK/US
+  cmp           95  CMPETH vs BTC · 1Y  | ETH −16.80% BTC −10.25% −29.3% −12.4% +4.5% +21.4% +38.4% Mar 21 Nov 27 Compare more and draw ▸
+  xa           320  XACross-asset vs Ethereum USD  | SYMBOL LAST CHG NDX Nasdaq 100 26,046.90 −0.64% SPX S&P 500 7,182.78 −0.25% DXY US Dollar Index 103.72 +0.05% 
+  desks       1872  NEWSDesks  | 07:18 LIVE – Crypto News Today: Why Is Bitcoin Up? Gold and Wall Street Rally Fuel BTC Bounce - TradingView Tr
+  heat         112  HEATDay change heat map  | BTC +1.34% ETH +1.68% SOL +2.89% XRP +2.33% BNB +1.53% DOGE +2.88% ADA +3.69% AVAX +1.44% LINK +4.70% LTC +1.9
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  tools        237  TOOLSCrypto size  | Coin BTC ETH SOL XRP BNB DOGE ADA AVAX LINK LTC Account $ Risk % Entry Stop RISK $100.00 UNITS 0.0540 POSITION
+### ETH via find → mode=focus desk=stocks sym={"symbol":"ETH-USD","name":"Ethereum","cls":"crypto","type":"Crypto","exchange":"FYNX terminal"} url=?desk=stocks&sym=ETH-USD chip="ETHEthereum☆+✕" errors=0
+  find results: ["ETH-USDEthereumCRYPTOFYNX terminal","ETHGrayscale Ethereum Staking Mini ETF SharesFUNDNYSE Arca","ETHUSDEthereum (CFD)EDGEFYNX terminal","ETHAiShares Ethereum Trust ETFFUNDNasdaq","ETHBiShares Staked Ethereum Trust ETFFUNDNasdaq","ETHDProShares UltraShort Ether ETFFUNDNYSE Arca","ETHEGrayscale Ethereum Staking ETF SharesFUNDNYSE Arca","ETHOAmplify Etho Climate Leadership U.S. ETFFUNDNYSE Arca"]
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","books","edge","dom","cmp","xa","desks","heat","eco","tools"]
+  mkts         463  MKTSEthereum  | SYMBOL LAST CHG ↕ BTC Bitcoin 61,654.76 +1.34% ETH Ethereum 1,727.72 +1.68% SOL Solana 73.06 +2.89% XRP XRP 0.
+  focus        299  GPETH · Ethereum  | LAST 1,727.72 DAY +1.68% PERIOD −7.77% RANGE HI 2,805.50 RANGE LO 1,538.60 52W HI 3,446.62 52W LO 1,506.51 20D
+  squote       259  QUOTEETH · CCC · USD  | Ethereum 1,727.72 +1.68% Delayed · Nov 27, 08:37 AM OPEN PREV 1,690.77 DAY LO–HI 1,686.56–1,733.04 VOLUME 7774
+  intel        184  INTELFYNX Intelligence · ETH: what matters now  | 1 ETH +1.68% today 0.5× its typical daily move (20-day) MOVE 38 Ranked from 8 live feeds: moves vs normal, hea
+  snews        365  NEWSETH headlines  | Nov 26 Crypto Today: Bitcoin, Ethereum and XRP post modest recoveries amid continuing crypto investment outflo
+  story        246  STORYETH today · 8:38 AM  | ETH higher Ethereum is at 1,727.72, +1.68% today, 0.5× its typical daily move. Over a month it is −22.7% and o
+  srisk        216  RISKRisk vs BTC · 1 year  | VOLATILITY 60.7% / yr MAX DRAWDOWN -53.4% 1-DAY VaR 95% 4.72% BETA vs BTC 1.25 CORRELATION 0.91 1Y RETURN −42.
+  books        198  BOOKCoinbase top of book  | BOOK BID ASK SPRD BTC 61,658.80 61,658.81 0.00bp ETH 1,727.12 1,727.26 0.81bp BTC bid size 0.0181 BTC BTC ask 
+  edge         169  EDGERegimes  | MKT REGIME TREND VOL EVENT BTCUSD Strong trend −0.54 100th 24h ETHUSD Trend −0.60 99th 24h Snapshot 4d ago · t
+  dom          709  DOMDepth of market  | BTC/USD · Bitcoin ETH/USD · Ether SOL/USD · Solana XRP/USD · XRP DOGE/USD · Dogecoin ADA/USD · Cardano LINK/US
+  cmp           95  CMPETH vs BTC · 1Y  | ETH −16.80% BTC −10.25% −29.3% −12.4% +4.5% +21.4% +38.4% Mar 21 Nov 27 Compare more and draw ▸
+  xa           320  XACross-asset vs Ethereum  | SYMBOL LAST CHG NDX Nasdaq 100 26,046.90 −0.64% SPX S&P 500 7,182.78 −0.25% DXY US Dollar Index 103.72 +0.05% 
+  desks       1872  NEWSDesks  | 07:18 LIVE – Crypto News Today: Why Is Bitcoin Up? Gold and Wall Street Rally Fuel BTC Bounce - TradingView Tr
+  heat         112  HEATDay change heat map  | BTC +1.34% ETH +1.68% SOL +2.89% XRP +2.33% BNB +1.53% DOGE +2.88% ADA +3.69% AVAX +1.44% LINK +4.70% LTC +1.9
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  tools        237  TOOLSCrypto size  | Coin BTC ETH SOL XRP BNB DOGE ADA AVAX LINK LTC Account $ Risk % Entry Stop RISK $100.00 UNITS 0.0540 POSITION
+### SPY via command → mode=focus desk=stocks sym={"symbol":"SPY","name":"State Street SPDR S&P 500 ETF Trust","cls":"fund","type":null,"exchange":null} url=?desk=stocks&sym=SPY chip="SPYState Street SPDR S&P 500 ETF Trust☆+✕" errors=0
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","perf","opt","cmp","xa","desks","heat","eco","term","tools"]
+  mkts        1519  MKTSState Street SPDR S&P 500 ETF Trust  | SYMBOL LAST CHG ↕ SPY S&P 500 ETF 716.70 −0.29% VOO Vanguard S&P 500 658.87 −0.28% QQQ Nasdaq 100 ETF 633.93 −
+  focus        289  GPSPY · S&P 500 ETF  | LAST 716.70 DAY −0.29% PERIOD −4.78% RANGE HI 781.62 RANGE LO 686.75 52W HI 781.62 52W LO 629.28 20D VOL 2.00%
+  squote       267  QUOTESPY · NYSEArca · USD  | State Street SPDR S&P 500 ETF Trust 716.70 −0.29% Delayed · Nov 25, 09:00 PM CLOSED PREV 718.78 DAY LO–HI 695.
+  intel        266  INTELFYNX Intelligence · SPY: what matters now  | 1 Options price ±1.36% by Nov 27 IV30 23.0% · put/call 1.23 · max pain 721 OPT 58 2 SPY −0.29% today 0.1× its 
+  snews        954  NEWSSPY headlines  | 23:07 Dave Ramsey Is 66 and Owns Zero Bonds. Should Retirees Follow Him? 24/7 Wall St. 22:07 Jim Lebenthal Say
+  story        338  STORYSPY today · 8:38 AM  | SPY little changed State Street SPDR S&P 500 ETF Trust is at 716.70, −0.29% today, 0.1× its typical daily move
+  srisk        214  RISKRisk vs QQQ · 1 year  | VOLATILITY 14.9% / yr MAX DRAWDOWN -11.5% 1-DAY VaR 95% 1.52% BETA vs QQQ 0.60 CORRELATION 0.94 1Y RETURN +8.3
+  perf        1184  PERFPerformance  | UNG United States Natural Gas +6.8% XLP Consumer staples +5.9% VNQ Vanguard Real Estate +3.5% XLRE Real estate
+  opt          464  OPTSPY options  | LAST 720.20 IV30 23.0% P/C VOL 1.23 P/C OI 1.56 EXPIRY ATM IV MOVE PAIN SKEW Nov 27 · 1d 23.0% ±1.36% 721 +4.7
+  cmp          103  CMPSPY vs QQQ vs TLT · 1Y  | SPY +7.32% QQQ +4.60% TLT −4.58% −13.8% −3.3% +7.2% +17.7% +28.2% Nov 25 Nov 25 Compare more and draw ▸
+  xa           274  XACross-asset vs State Street SPDR S&P 500 ETF Trust  | SYMBOL LAST CHG SPX S&P 500 7,182.78 −0.25% US10Y US 10-year yield 4.848 −1.14% DXY US Dollar Index 103.72 +0.
+  desks       3416  NEWSDesks  | 07:15 SpaceX shares jump on alternative trading platform after Musk says he will expand on Trump Account share
+  heat         121  HEATDay change heat map  | XLK −0.83% XLF +0.71% XLE +0.74% XLV −0.56% XLY −0.20% XLP +0.46% XLI +0.83% XLU +0.48% XLB +2.07% XLRE +0.92%
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  term         317  VOLVolatility  | 9D 29.6 30D 26.8 3M 26.3 6M 26.9 Inverted (backwardation): near-term fear above longer-term — a stress signal.
+  tools        323  TOOLSShare size  | Symbol AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V MA LLY UNH WMT COST HD PG JNJ XOM CVX ORCL CRM NFL
+### SPY via find → mode=focus desk=stocks sym={"symbol":"SPY","name":"S&P 500 ETF","cls":"fund","type":"ETFs","exchange":"FYNX terminal"} url=?desk=stocks&sym=SPY chip="SPYS&P 500 ETF☆+✕" errors=0
+  find results: ["SPYS&P 500 ETFFUNDFYNX terminal","SPYQTradr 2X Long SPY Quarterly ETFFUNDNasdaq","SPYATwin Oak Endure ETFFUNDCboe BZX","SPYCSimplify US Equity PLUS Convexity ETFFUNDNYSE Arca","SPYDState Street SPDR Portfolio S&P 500 High Dividend ETFFUNDNYSE Arca","SPYGState Street SPDR Portfolio S&P 500 Growth ETFFUNDNYSE Arca","SPYHNEOS S&P 500 Hedged Equity Income ETFFUNDCboe BZX","SPYINEOS S&P 500 High Income ETFFUNDCboe BZX"]
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","perf","opt","cmp","xa","desks","heat","eco","term","tools"]
+  mkts        1519  MKTSS&P 500 ETF  | SYMBOL LAST CHG ↕ SPY S&P 500 ETF 716.70 −0.29% VOO Vanguard S&P 500 658.87 −0.28% QQQ Nasdaq 100 ETF 633.93 −
+  focus        289  GPSPY · S&P 500 ETF  | LAST 716.70 DAY −0.29% PERIOD −4.78% RANGE HI 781.62 RANGE LO 686.75 52W HI 781.62 52W LO 629.28 20D VOL 2.00%
+  squote       243  QUOTESPY · NYSEArca · USD  | S&P 500 ETF 716.70 −0.29% Delayed · Nov 25, 09:00 PM CLOSED PREV 718.78 DAY LO–HI 695.45–718.43 VOLUME 72.38M 
+  intel        596  INTELFYNX Intelligence · SPY: what matters now  | 1 Options price ±1.36% by Nov 27 IV30 23.0% · put/call 1.23 · max pain 721 OPT 58 2 SPY −0.29% today 0.1× its 
+  snews       1490  NEWSSPY headlines  | 23:07 Dave Ramsey Is 66 and Owns Zero Bonds. Should Retirees Follow Him? 24/7 Wall St. 22:38 US Stock Market o
+  story        314  STORYSPY today · 8:39 AM  | SPY little changed S&P 500 ETF is at 716.70, −0.29% today, 0.1× its typical daily move. Over a month it is −6.
+  srisk        214  RISKRisk vs QQQ · 1 year  | VOLATILITY 14.9% / yr MAX DRAWDOWN -11.5% 1-DAY VaR 95% 1.52% BETA vs QQQ 0.60 CORRELATION 0.94 1Y RETURN +8.3
+  perf        1184  PERFPerformance  | UNG United States Natural Gas +6.8% XLP Consumer staples +5.9% VNQ Vanguard Real Estate +3.5% XLRE Real estate
+  opt          464  OPTSPY options  | LAST 720.20 IV30 23.0% P/C VOL 1.23 P/C OI 1.56 EXPIRY ATM IV MOVE PAIN SKEW Nov 27 · 1d 23.0% ±1.36% 721 +4.7
+  cmp          103  CMPSPY vs QQQ vs TLT · 1Y  | SPY +7.32% QQQ +4.60% TLT −4.58% −13.8% −3.3% +7.2% +17.7% +28.2% Nov 25 Nov 25 Compare more and draw ▸
+  xa           274  XACross-asset vs S&P 500 ETF  | SYMBOL LAST CHG SPX S&P 500 7,182.78 −0.25% US10Y US 10-year yield 4.848 −1.14% DXY US Dollar Index 103.72 +0.
+  desks       3416  NEWSDesks  | 07:15 SpaceX shares jump on alternative trading platform after Musk says he will expand on Trump Account share
+  heat         121  HEATDay change heat map  | XLK −0.83% XLF +0.71% XLE +0.74% XLV −0.56% XLY −0.20% XLP +0.46% XLI +0.83% XLU +0.48% XLB +2.07% XLRE +0.92%
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  term         317  VOLVolatility  | 9D 29.6 30D 26.8 3M 26.3 6M 26.9 Inverted (backwardation): near-term fear above longer-term — a stress signal.
+  tools        323  TOOLSShare size  | Symbol AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V MA LLY UNH WMT COST HD PG JNJ XOM CVX ORCL CRM NFL
+### XAUUSD via command → mode=focus desk=stocks sym={"symbol":"XAUUSD","name":"Gold","cls":"other","type":null,"exchange":null} url=?desk=stocks&sym=XAUUSD chip="XAUUSDGold☆+✕" errors=0
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","perf","cmp","xa","term","pos","desks","heat","eco","tools"]
+  mkts        1558  MKTSGold  | SYMBOL LAST CHG ↕ XAUUSD Gold — — AAPL Apple 355.58 +0.43% MSFT Microsoft 489.93 −1.25% NVDA NVIDIA 149.30 −3.
+  focus        339  GPXAUUSD · Gold  | LAST 3,538.18 DAY — PERIOD −22.02% RANGE HI 4,696.64 RANGE LO 3,502.69 52W HI 5,596.81 52W LO 3,502.69 3,446.8
+  squote        14  QUOTEXAUUSD ·  | Loading quote…
+  intel         24  INTELFYNX Intelligence · XAUUSD: what matters now  | Scanning the live feeds…
+  snews        297  NEWSXAUUSD headlines  | 04:55 Global Gold Retreats From $3,580 Level as US Economy Beats Forecasts; Vietnam's SJC Gold Still Rises VND
+  story          8  STORYXAUUSD today · 8:39 AM  | Loading…
+  srisk        216  RISKRisk vs SPY · 1 year  | VOLATILITY 29.5% / yr MAX DRAWDOWN -35.8% 1-DAY VaR 95% 3.02% BETA vs SPY 0.71 CORRELATION 0.34 1Y RETURN −16.
+  perf        1105  PERFPerformance  | DIS Disney +13.9% HD Home Depot +13.4% WMT Walmart +10.6% COST Costco +9.5% PG Procter & Gamble +8.8% LLY Eli 
+  cmp          106  CMPXAUUSD vs SPY vs TLT · 1Y  | XAUUSD −15.90% SPY +5.93% TLT −3.66% −19.7% −6.0% +7.6% +21.2% +34.8% Dec 3 Nov 25 Compare more and draw ▸
+  xa           334  XACross-asset vs Gold  | SYMBOL LAST CHG SPX S&P 500 7,182.78 −0.25% NDX Nasdaq 100 26,046.90 −0.64% US10Y US 10-year yield 4.848 −1.14
+  term         317  VOLVolatility  | 9D 29.6 30D 26.8 3M 26.3 6M 26.9 Inverted (backwardation): near-term fear above longer-term — a stress signal.
+  pos           84  COTFutures positioning  | XAUUSD +73% ! = crowded vs its own history · speculators, net (long − short) / total
+  desks       3416  NEWSDesks  | 07:15 SpaceX shares jump on alternative trading platform after Musk says he will expand on Trump Account share
+  heat         339  HEATDay change heat map  | AAPL +0.43% MSFT −1.25% NVDA −3.91% AMZN −3.12% GOOGL −2.13% META +3.40% TSLA −1.18% AVGO −0.07% BRK-B +0.37% 
+  eco          320  ECOXAU/USD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  tools        323  TOOLSShare size  | Symbol AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V MA LLY UNH WMT COST HD PG JNJ XOM CVX ORCL CRM NFL
+### XAUUSD via find → mode=focus desk=stocks sym={"symbol":"XAUUSD","name":"Gold","cls":"other","type":"Edge","exchange":"FYNX terminal"} url=?desk=stocks&sym=XAUUSD chip="XAUUSDGold☆+✕" errors=0
+  find results: ["XAUUSDGoldEDGEFYNX terminal"]
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","perf","cmp","xa","term","pos","desks","heat","eco","tools"]
+  mkts        1558  MKTSGold  | SYMBOL LAST CHG ↕ XAUUSD Gold — — AAPL Apple 355.58 +0.43% MSFT Microsoft 489.93 −1.25% NVDA NVIDIA 149.30 −3.
+  focus        339  GPXAUUSD · Gold  | LAST 3,538.18 DAY — PERIOD −22.02% RANGE HI 4,696.64 RANGE LO 3,502.69 52W HI 5,596.81 52W LO 3,502.69 3,446.8
+  squote        14  QUOTEXAUUSD · FYNX terminal  | Loading quote…
+  intel         24  INTELFYNX Intelligence · XAUUSD: what matters now  | Scanning the live feeds…
+  snews        297  NEWSXAUUSD headlines  | 04:55 Global Gold Retreats From $3,580 Level as US Economy Beats Forecasts; Vietnam's SJC Gold Still Rises VND
+  story          8  STORYXAUUSD today · 8:39 AM  | Loading…
+  srisk        216  RISKRisk vs SPY · 1 year  | VOLATILITY 29.5% / yr MAX DRAWDOWN -35.8% 1-DAY VaR 95% 3.02% BETA vs SPY 0.71 CORRELATION 0.34 1Y RETURN −16.
+  perf        1105  PERFPerformance  | DIS Disney +13.9% HD Home Depot +13.4% WMT Walmart +10.6% COST Costco +9.5% PG Procter & Gamble +8.8% LLY Eli 
+  cmp          106  CMPXAUUSD vs SPY vs TLT · 1Y  | XAUUSD −15.90% SPY +5.93% TLT −3.66% −19.7% −6.0% +7.6% +21.2% +34.8% Dec 3 Nov 25 Compare more and draw ▸
+  xa           334  XACross-asset vs Gold  | SYMBOL LAST CHG SPX S&P 500 7,182.78 −0.25% NDX Nasdaq 100 26,046.90 −0.64% US10Y US 10-year yield 4.848 −1.14
+  term         317  VOLVolatility  | 9D 29.6 30D 26.8 3M 26.3 6M 26.9 Inverted (backwardation): near-term fear above longer-term — a stress signal.
+  pos           84  COTFutures positioning  | XAUUSD +73% ! = crowded vs its own history · speculators, net (long − short) / total
+  desks       3416  NEWSDesks  | 07:15 SpaceX shares jump on alternative trading platform after Musk says he will expand on Trump Account share
+  heat         339  HEATDay change heat map  | AAPL +0.43% MSFT −1.25% NVDA −3.91% AMZN −3.12% GOOGL −2.13% META +3.40% TSLA −1.18% AVGO −0.07% BRK-B +0.37% 
+  eco          320  ECOXAU/USD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  tools        323  TOOLSShare size  | Symbol AAPL MSFT NVDA AMZN GOOGL META TSLA AVGO BRK-B JPM V MA LLY UNH WMT COST HD PG JNJ XOM CVX ORCL CRM NFL
+### USDTRY via command → mode=focus desk=stocks sym={"symbol":"TRY=X","name":"USD/TRY","cls":"fx","type":null,"exchange":null} url=?desk=stocks&sym=TRY%3DX chip="USDTRYUSD/TRY☆+✕" errors=0
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","bias","cb","eco","range","pos","corr","curve","sess","tools"]
+  mkts         782  MKTSUSD/TRY  | SYMBOL LAST CHG ↕ EURUSD EUR/USD 1.09650 −0.05% GBPUSD GBP/USD 1.31180 +0.04% USDJPY USD/JPY 159.221 −0.03% AU
+  focus        278  GPUSDTRY · USD/TRY  | LAST 50.785 DAY +0.21% PERIOD +10.25% RANGE HI 50.793 RANGE LO 45.996 52W HI 50.793 52W LO 42.378 20D VOL 0.08
+  squote       244  QUOTEUSDTRY · CCY · TRY  | USD/TRY 50.785 +0.21% Delayed · Nov 27, 08:39 AM OPEN PREV 50.676 DAY LO–HI 50.606–50.793 VOLUME 0 20D VOL 0.0
+  intel        246  INTELFYNX Intelligence · USDTRY: what matters now  | 1 USDTRY +0.21% today 2.7× its typical daily move (20-day) MOVE 71 2 Near its 52-week high 52-week range 42.38
+  snews        349  NEWSUSDTRY headlines  | Nov 24 S&P joins Fitch in downgrading Turkish white goods maker Arcelik on “ongoing challenges” IntelliNews No
+  story        255  STORYUSDTRY today · 8:39 AM  | USDTRY little changed on a big move USD/TRY is at 50.785, +0.21% today, 2.7× its typical daily move. Over a mo
+  srisk        214  RISKRisk vs DXY · 1 year  | VOLATILITY 1.5% / yr MAX DRAWDOWN -0.3% 1-DAY VaR 95% 0.04% BETA vs DXY 0.01 CORRELATION 0.02 1Y RETURN +19.5%
+  bias         186  BIASSmart Bias  | USDCAD 1.42450 +37 USDJPY 159.221 +32 USDCHF 0.83600 +28 GBPJPY 208.814 +9 EURGBP 0.83670 -1 EURJPY 174.721 -3
+  cb           344  CBCentral banks  | BANK RATE NEXT IN FED 3.75–4.00% Dec 9 12d 10h ECB 2.50% Dec 17 20d 4h BOE 4.00% Dec 17 20d 3h BOJ 1.25% Dec 1
+  eco           16  ECOTRY calendar  | No events match.
+  range        132  RNGEUR/USD daily range · 1 year  | 22 166 Latest day 43 pips · 29th percentile · busier than 29% of days Median 55 · typical 42–74 pips · 252 day
+  pos          193  COTFutures positioning  | USDCHF +60%! USDCAD +52% AUDUSD +31% GBPUSD +25% GBPJPY +18% USDJPY +11% EURJPY −7% EURUSD −25%! EURGBP −25% N
+  corr         303  CORRFX correlation  | EURUSD GBPUSD USDJPY USDCHF AUDUSD USDCAD EURUSD 0.85 -0.37 -0.47 0.56 -0.49 GBPUSD 0.85 -0.41 -0.49 0.66 -0.5
+  curve        314  CURVEUS Treasuries  | 4.06 4.73 5.40 1M 3M 6M 1Y 2Y 3Y 5Y 7Y 10Y 20Y 30Y 1M 4.27 +16 3M 4.34 +12 6M 4.44 +9 1Y 4.56 +9 2Y 4.61 −7 3Y
+  sess         163  SESSTrading sessions  | Sydney 19:39 local CLOSED Tokyo 17:39 local OPEN London 08:39 local OPEN New York 03:39 local CLOSED Regular w
+  tools        262  TOOLSPosition size  | Pair EURUSD GBPUSD USDJPY AUDUSD USDCAD USDCHF NZDUSD EURJPY GBPJPY EURGBP XAUUSD Balance $ Risk % Stop (pips)
+  !!! EUR/USD shown in: mkts, bias, range, pos, corr, tools
+### USDTRY via find → mode=focus desk=stocks sym={"symbol":"TRY=X","name":"USD/TRY","cls":"fx","type":"FX emerging","exchange":"FYNX terminal"} url=?desk=stocks&sym=TRY%3DX chip="USDTRYUSD/TRY☆+✕" errors=0
+  find results: ["TRY=XUSD/TRYFXFYNX terminal"]
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","bias","cb","eco","range","pos","corr","curve","sess","tools"]
+  mkts         782  MKTSUSD/TRY  | SYMBOL LAST CHG ↕ EURUSD EUR/USD 1.09650 −0.05% GBPUSD GBP/USD 1.31180 +0.04% USDJPY USD/JPY 159.421 +0.13% AU
+  focus        278  GPUSDTRY · USD/TRY  | LAST 50.785 DAY +0.21% PERIOD +10.25% RANGE HI 50.793 RANGE LO 45.996 52W HI 50.793 52W LO 42.378 20D VOL 0.08
+  squote       244  QUOTEUSDTRY · CCY · TRY  | USD/TRY 50.785 +0.21% Delayed · Nov 27, 08:39 AM OPEN PREV 50.676 DAY LO–HI 50.606–50.793 VOLUME 0 20D VOL 0.0
+  intel        246  INTELFYNX Intelligence · USDTRY: what matters now  | 1 USDTRY +0.21% today 2.7× its typical daily move (20-day) MOVE 71 2 Near its 52-week high 52-week range 42.38
+  snews        349  NEWSUSDTRY headlines  | Nov 24 S&P joins Fitch in downgrading Turkish white goods maker Arcelik on “ongoing challenges” IntelliNews No
+  story        255  STORYUSDTRY today · 8:40 AM  | USDTRY little changed on a big move USD/TRY is at 50.785, +0.21% today, 2.7× its typical daily move. Over a mo
+  srisk        214  RISKRisk vs DXY · 1 year  | VOLATILITY 1.5% / yr MAX DRAWDOWN -0.3% 1-DAY VaR 95% 0.04% BETA vs DXY 0.01 CORRELATION 0.02 1Y RETURN +19.5%
+  bias         186  BIASSmart Bias  | USDCAD 1.42450 +37 USDJPY 159.421 +35 USDCHF 0.83380 +22 GBPJPY 208.814 +9 EURGBP 0.83670 -1 EURJPY 174.721 -3
+  cb           344  CBCentral banks  | BANK RATE NEXT IN FED 3.75–4.00% Dec 9 12d 10h ECB 2.50% Dec 17 20d 4h BOE 4.00% Dec 17 20d 3h BOJ 1.25% Dec 1
+  eco           16  ECOTRY calendar  | No events match.
+  range        132  RNGEUR/USD daily range · 1 year  | 22 166 Latest day 43 pips · 29th percentile · busier than 29% of days Median 55 · typical 42–74 pips · 252 day
+  pos          193  COTFutures positioning  | USDCHF +60%! USDCAD +52% AUDUSD +31% GBPUSD +25% GBPJPY +18% USDJPY +11% EURJPY −7% EURUSD −25%! EURGBP −25% N
+  corr         303  CORRFX correlation  | EURUSD GBPUSD USDJPY USDCHF AUDUSD USDCAD EURUSD 0.85 -0.37 -0.47 0.56 -0.49 GBPUSD 0.85 -0.41 -0.49 0.66 -0.5
+  curve        314  CURVEUS Treasuries  | 4.06 4.73 5.40 1M 3M 6M 1Y 2Y 3Y 5Y 7Y 10Y 20Y 30Y 1M 4.27 +16 3M 4.34 +12 6M 4.44 +9 1Y 4.56 +9 2Y 4.61 −7 3Y
+  sess         163  SESSTrading sessions  | Sydney 19:40 local CLOSED Tokyo 17:40 local OPEN London 08:40 local OPEN New York 03:40 local CLOSED Regular w
+  tools        262  TOOLSPosition size  | Pair EURUSD GBPUSD USDJPY AUDUSD USDCAD USDCHF NZDUSD EURJPY GBPJPY EURGBP XAUUSD Balance $ Risk % Stop (pips)
+  !!! EUR/USD shown in: mkts, bias, range, pos, corr, tools
+### SOL via command → mode=focus desk=stocks sym={"symbol":"SOL-USD","name":"Solana USD","cls":"crypto","type":null,"exchange":null} url=?desk=stocks&sym=SOL-USD chip="SOLSolana USD☆+✕" errors=0
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","books","edge","dom","cmp","xa","desks","heat","eco","tools"]
+  mkts         463  MKTSSolana USD  | SYMBOL LAST CHG ↕ BTC Bitcoin 61,630.66 +1.30% ETH Ethereum 1,726.89 +1.64% SOL Solana 73.08 +2.92% XRP XRP 0.
+  focus        273  GPSOL · Solana  | LAST 73.08 DAY +2.92% PERIOD −1.81% RANGE HI 124.62 RANGE LO 65.20 52W HI 148.22 52W LO 60.41 20D VOL 3.58%/d 
+  squote       244  QUOTESOL · CCC · USD  | Solana USD 73.08 +2.92% Delayed · Nov 27, 08:39 AM OPEN PREV 70.39 DAY LO–HI 70.92–73.00 VOLUME 1714.40M 20D V
+  intel        184  INTELFYNX Intelligence · SOL: what matters now  | 1 SOL +2.92% today 0.8× its typical daily move (20-day) MOVE 42 Ranked from 8 live feeds: moves vs normal, hea
+  snews        114  NEWSSOL headlines  | 01:40 Has the US Stock Market Nvidia Crisis Truly Been Resolved? Wall Street Risks a Fatal Misjudgment - 36Kr 
+  story        245  STORYSOL today · 8:40 AM  | SOL higher Solana USD is at 73.08, +2.92% today, 0.8× its typical daily move. Over a month it is −18.8% and ov
+  srisk        216  RISKRisk vs BTC · 1 year  | VOLATILITY 61.9% / yr MAX DRAWDOWN -57.6% 1-DAY VaR 95% 5.11% BETA vs BTC 1.23 CORRELATION 0.88 1Y RETURN −48.
+  books        198  BOOKCoinbase top of book  | BOOK BID ASK SPRD BTC 61,636.48 61,636.49 0.00bp ETH 1,727.46 1,727.56 0.58bp BTC bid size 0.1152 BTC BTC ask 
+  edge         169  EDGERegimes  | MKT REGIME TREND VOL EVENT BTCUSD Strong trend −0.54 100th 24h ETHUSD Trend −0.60 99th 24h Snapshot 4d ago · t
+  dom          580  DOMDepth of market  | BTC/USD · Bitcoin ETH/USD · Ether SOL/USD · Solana XRP/USD · XRP DOGE/USD · Dogecoin ADA/USD · Cardano LINK/US
+  cmp          107  CMPSOL vs BTC vs ETH · 1Y  | SOL −16.41% BTC −10.25% ETH −16.80% −34.4% −14.5% +5.3% +25.2% +45.0% Mar 21 Nov 27 Compare more and draw ▸
+  xa           320  XACross-asset vs Solana USD  | SYMBOL LAST CHG NDX Nasdaq 100 26,046.90 −0.64% SPX S&P 500 7,182.78 −0.25% DXY US Dollar Index 103.72 +0.05% 
+  desks       1872  NEWSDesks  | 07:18 LIVE – Crypto News Today: Why Is Bitcoin Up? Gold and Wall Street Rally Fuel BTC Bounce - TradingView Tr
+  heat         112  HEATDay change heat map  | BTC +1.30% ETH +1.64% SOL +2.92% XRP +2.33% BNB +1.53% DOGE +2.88% ADA +3.69% AVAX +1.44% LINK +4.70% LTC +2.0
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  tools        237  TOOLSCrypto size  | Coin BTC ETH SOL XRP BNB DOGE ADA AVAX LINK LTC Account $ Risk % Entry Stop RISK $100.00 UNITS 0.0540 POSITION
+### SOL via find → mode=focus desk=stocks sym={"symbol":"SOL-USD","name":"Solana","cls":"crypto","type":"Crypto","exchange":"FYNX terminal"} url=?desk=stocks&sym=SOL-USD chip="SOLSolana☆+✕" errors=0
+  find results: ["SOL-USDSolanaCRYPTOFYNX terminal","RB=FRBOB gasolineENERGYFYNX terminal","TANSolarFUNDFYNX terminal","ADVAdvantage Solutions Inc. - Class ASTOCKNasdaq","ASPSAltisource Portfolio Solutions S.A.STOCKNasdaq","ASPSWAltisource Portfolio Solutions S.A. - Net Settle Stakeholder WarrantsSTOCKNasdaq","ASPSZAltisource Portfolio Solutions S.A. - Cash Exercise Stakeholder WarrantsSTOCKNasdaq","ASTIAscent Solar Technologies, IncSTOCKNasdaq"]
+  slots: ["mkts","focus","squote","intel","snews","story","srisk","books","edge","dom","cmp","xa","desks","heat","eco","tools"]
+  mkts         463  MKTSSolana  | SYMBOL LAST CHG ↕ BTC Bitcoin 61,630.66 +1.30% ETH Ethereum 1,726.89 +1.64% SOL Solana 73.08 +2.92% XRP XRP 0.
+  focus        273  GPSOL · Solana  | LAST 73.08 DAY +2.92% PERIOD −1.81% RANGE HI 124.62 RANGE LO 65.20 52W HI 148.22 52W LO 60.41 20D VOL 3.58%/d 
+  squote       240  QUOTESOL · CCC · USD  | Solana 73.08 +2.92% Delayed · Nov 27, 08:39 AM OPEN PREV 70.39 DAY LO–HI 70.92–73.00 VOLUME 1714.40M 20D VOL 3
+  intel        184  INTELFYNX Intelligence · SOL: what matters now  | 1 SOL +2.92% today 0.8× its typical daily move (20-day) MOVE 42 Ranked from 8 live feeds: moves vs normal, hea
+  snews       1510  NEWSSOL headlines  | No headlines mention this market yet · latest market news 08:05 Private markets are more accessible than ever 
+  story        241  STORYSOL today · 8:40 AM  | SOL higher Solana is at 73.08, +2.92% today, 0.8× its typical daily move. Over a month it is −18.8% and over a
+  srisk        216  RISKRisk vs BTC · 1 year  | VOLATILITY 61.9% / yr MAX DRAWDOWN -57.6% 1-DAY VaR 95% 5.11% BETA vs BTC 1.23 CORRELATION 0.88 1Y RETURN −48.
+  books        198  BOOKCoinbase top of book  | BOOK BID ASK SPRD BTC 61,651.19 61,651.20 0.00bp ETH 1,727.87 1,727.88 0.06bp BTC bid size 0.0003 BTC BTC ask 
+  edge         169  EDGERegimes  | MKT REGIME TREND VOL EVENT BTCUSD Strong trend −0.54 100th 24h ETHUSD Trend −0.60 99th 24h Snapshot 4d ago · t
+  dom          580  DOMDepth of market  | BTC/USD · Bitcoin ETH/USD · Ether SOL/USD · Solana XRP/USD · XRP DOGE/USD · Dogecoin ADA/USD · Cardano LINK/US
+  cmp          107  CMPSOL vs BTC vs ETH · 1Y  | SOL −16.41% BTC −10.25% ETH −16.80% −34.4% −14.5% +5.3% +25.2% +45.0% Mar 21 Nov 27 Compare more and draw ▸
+  xa           320  XACross-asset vs Solana  | SYMBOL LAST CHG NDX Nasdaq 100 26,046.90 −0.64% SPX S&P 500 7,182.78 −0.25% DXY US Dollar Index 103.72 +0.05% 
+  desks       1872  NEWSDesks  | 07:18 LIVE – Crypto News Today: Why Is Bitcoin Up? Gold and Wall Street Rally Fuel BTC Bounce - TradingView Tr
+  heat         112  HEATDay change heat map  | BTC +1.30% ETH +1.64% SOL +2.92% XRP +2.33% BNB +1.53% DOGE +2.88% ADA +3.69% AVAX +1.44% LINK +4.70% LTC +2.0
+  eco          320  ECOUSD calendar  | Mon 14:45 USD Flash Manufacturing PMI 54.5 56.0 Mon 14:45 USD Flash Services PMI 55.6 57.9 Tue 15:00 USD CB Co
+  tools        237  TOOLSCrypto size  | Coin BTC ETH SOL XRP BNB DOGE ADA AVAX LINK LTC Account $ Risk % Entry Stop RISK $100.00 UNITS 0.0540 POSITION
