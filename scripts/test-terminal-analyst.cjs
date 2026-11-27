@@ -49,5 +49,15 @@ ok(up.score > 0.2 && dn.score < -0.2 && ['BUY', 'ACCUMULATE'].includes(up.decisi
 ok(up.sizes.every(s => s.size > 0 && s.size <= 0.1 && s.stop < up.t.last) && up.sizes[0].size >= up.sizes[2].size, 'risk team: sizes capped, stops below price, aggressive ≥ conservative');
 const memo = A.memoText('UP', 'Up Inc', up, null, [{title: 'Stock surges', publisher: 'Wire'}]);
 ok(/DECISION: (BUY|ACCUMULATE)/.test(memo) && /BULL CASE/.test(memo) && /RISK TEAM/.test(memo) && /Not investment advice/.test(memo), 'memo has decision, bull case, risk team and disclaimer');
+const full = A.committeeInputs({pf}, mk(0.002), mk(0.001), {status: 'fulfilled', value: {news: [{title: 'Usable'}, {}, null, {title: ' '}] }});
+ok(full.news.length === 1 && full.market?.c.length === 400 && full.coverage[0][1] === '4 fiscal years in valuation profile' &&
+  full.coverage[3][1] === '1 usable headline in this run', 'eligible coverage counts exactly the usable inputs');
+const partial = A.committeeInputs(null, mk(0.002), {c: [1]}, {status: 'fulfilled', value: {news: []}});
+ok(!partial.market && partial.coverage[2][1] === 'Usable benchmark history unavailable' && partial.coverage[3][1] === 'No usable headlines returned',
+  'missing benchmark and successful empty news are explicit');
+const bad = A.committeeInputs(null, mk(0.002), null, {status: 'rejected'});
+const malformed = A.committeeInputs(null, mk(0.002), null, {status: 'fulfilled', value: {news: {title: 'bad shape'}}});
+ok(bad.coverage[3][1] === 'Headline feed unavailable' && malformed.coverage[3][1] === 'Headline feed unavailable', 'failed and malformed headline feeds are not empty success');
+ok(A.memoText('UP', 'Up Inc', up, null, [], bad.coverage).includes('Headlines: Headline feed unavailable'), 'copy/download memo preserves evidence coverage');
 console.log(fail ? `${fail} analyst check(s) failed` : 'Analyst desk: DCF, reverse DCF, buyout, filings profile, committee and memo checks passed');
 process.exit(fail ? 1 : 0);
