@@ -1,0 +1,59 @@
+TAP version 13
+# Subtest: dragging on charts never selects them (no grey-green highlight) on any desk or chart page
+not ok 1 - dragging on charts never selects them (no grey-green highlight) on any desk or chart page
+  ---
+  duration_ms: 1.211482
+  type: 'test'
+  location: '/home/runner/work/FYNX-web/FYNX-web/app/scripts/test-terminal-markets-plus-e2e.cjs:1187:1'
+  failureType: 'hookFailed'
+  error: |-
+    Cannot find module 'playwright'
+    Require stack:
+    - /home/runner/work/FYNX-web/FYNX-web/app/scripts/test-terminal-markets-plus-e2e.cjs
+  code: 'MODULE_NOT_FOUND'
+  stack: |-
+    Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)
+    Function.resolve (node:internal/modules/helpers:157:19)
+    TestContext.<anonymous> (/home/runner/work/FYNX-web/FYNX-web/app/scripts/test-terminal-markets-plus-e2e.cjs:172:99)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    TestHook.run (node:internal/util:580:20)
+    Test.createHook (node:internal/test_runner/test:872:33)
+    Function.before (node:internal/test_runner/harness:335:12)
+    Object.<anonymous> (/home/runner/work/FYNX-web/FYNX-web/app/scripts/test-terminal-markets-plus-e2e.cjs:172:6)
+  ...
+# Subtest: a real press-and-drag across any chart selects nothing (and in Safari would without the fix)
+not ok 2 - a real press-and-drag across any chart selects nothing (and in Safari would without the fix)
+  ---
+  duration_ms: 0.069491
+  type: 'test'
+  location: '/home/runner/work/FYNX-web/FYNX-web/app/scripts/test-terminal-markets-plus-e2e.cjs:1197:1'
+  failureType: 'hookFailed'
+  error: |-
+    Cannot find module 'playwright'
+    Require stack:
+    - /home/runner/work/FYNX-web/FYNX-web/app/scripts/test-terminal-markets-plus-e2e.cjs
+  code: 'MODULE_NOT_FOUND'
+  stack: |-
+    Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)
+    Function.resolve (node:internal/modules/helpers:157:19)
+    TestContext.<anonymous> (/home/runner/work/FYNX-web/FYNX-web/app/scripts/test-terminal-markets-plus-e2e.cjs:172:99)
+    TestHook.runInAsyncScope (node:async_hooks:214:14)
+    TestHook.run (node:internal/test_runner/test:1047:25)
+    TestHook.run (node:internal/test_runner/test:1354:18)
+    TestHook.run (node:internal/util:580:20)
+    Test.createHook (node:internal/test_runner/test:872:33)
+    Function.before (node:internal/test_runner/harness:335:12)
+    Object.<anonymous> (/home/runner/work/FYNX-web/FYNX-web/app/scripts/test-terminal-markets-plus-e2e.cjs:172:6)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 935.190299
+exit 1
