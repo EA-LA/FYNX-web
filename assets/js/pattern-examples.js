@@ -12,13 +12,17 @@
  ];
  const buttons=[...document.querySelectorAll('button.pattern')],out=document.getElementById('patternExample');
  if (!out || !buttons.length) return;
- function show(index,focus){const e=examples[index],button=buttons[index];
- if (!e || !button) return;
- const name=button.querySelector('h3').textContent;
+ function draw(host,index,heading){
+ const e=examples[index],name=buttons[index].querySelector('h3').textContent;
+ const label=name.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+ host.textContent='';const title=document.createElement(heading);title.textContent=name;host.append(title);
+ host.insertAdjacentHTML('beforeend',`<svg viewBox="0 0 700 380" role="img" aria-label="${label} illustrative price line and structure"><path d="M30 30V345H670" fill="none" stroke="currentColor" opacity=".15"/>${e.lines.map(l=>`<line x1="${l[0]}" y1="${l[1]}" x2="${l[2]}" y2="${l[3]}" stroke="#b58b47" stroke-width="2" stroke-dasharray="7 6"/>`).join('')}<polyline points="${e.path}" fill="none" stroke="#4a9274" stroke-width="4" stroke-linejoin="round"/><text x="40" y="365">Time → · Illustrative prices</text><text x="40" y="25">${e.label}</text></svg>`);
+ const text=document.createElement('p');text.textContent=e.tip+(heading==='h2'?' Educational illustration, not a live signal or a guaranteed outcome.':'');host.append(text);
+ }
+ function show(index,focus){
+ if (!examples[index] || !buttons[index]) return;
  buttons.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));
- out.textContent='';const title=document.createElement('h2');title.textContent=name;out.append(title);
- out.insertAdjacentHTML('beforeend',`<svg viewBox="0 0 700 380" role="img" aria-label="${name} illustrative price line and structure"><path d="M30 30V345H670" fill="none" stroke="currentColor" opacity=".15"/>${e.lines.map(l=>`<line x1="${l[0]}" y1="${l[1]}" x2="${l[2]}" y2="${l[3]}" stroke="#b58b47" stroke-width="2" stroke-dasharray="7 6"/>`).join('')}<polyline points="${e.path}" fill="none" stroke="#4a9274" stroke-width="4" stroke-linejoin="round"/><text x="40" y="365">Time → · Illustrative prices</text><text x="40" y="25">${e.label}</text></svg>`);
- const text=document.createElement('p');text.textContent=e.tip+' Educational illustration, not a live signal or a guaranteed outcome.';out.append(text);
+ draw(out,index,'h2');
  if(focus){
   // Move focus even when an older WebView cannot handle scroll options.
   try { out.focus({preventScroll:true}); } catch (_) { out.focus(); }
@@ -30,4 +34,30 @@
  }
  }
  buttons.forEach((b,i)=>b.addEventListener('click',()=>show(i,true)));show(0,false);
+
+ const compare=document.getElementById('patternCompare');
+ if(!compare || Math.min(buttons.length,examples.length)<2)return;
+ const first=document.getElementById('patternCompareFirst'),second=document.getElementById('patternCompareSecond');
+ const status=document.getElementById('patternCompareStatus'),grid=document.getElementById('patternCompareGrid');
+ for(const select of [first,second])buttons.slice(0,examples.length).forEach((button,index)=>{
+  const option=document.createElement('option');
+  option.value=String(index);option.textContent=button.querySelector('h3').textContent;select.append(option);
+ });
+ first.value=first.options.length>5?'4':'0';second.value=second.options.length>5?'5':'1';
+ function renderComparison(){
+  const picks=[first,second].map(select=>/^\d+$/.test(select.value)?Number(select.value):-1);
+  grid.textContent='';
+  if(picks.some(index=>!examples[index] || !buttons[index]) || picks[0]===picks[1]){
+   status.textContent='Choose two different patterns to compare.';return;
+  }
+  for(const index of picks){
+   const card=document.createElement('article');card.className='pattern-compare-card';
+   draw(card,index,'h3');grid.append(card);
+  }
+  status.textContent=`Comparing ${first.selectedOptions[0].textContent} and ${second.selectedOptions[0].textContent}.`;
+ }
+ for(const select of [first,second])select.addEventListener('change',renderComparison);
+ renderComparison();
+ compare.hidden=false;
+ document.getElementById('patternCompareLink').hidden=false;
 })();

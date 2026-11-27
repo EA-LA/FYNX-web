@@ -27,7 +27,7 @@ function fixture({ reduced = false, noMedia = false, legacy = false, noScroll = 
   const window = noMedia ? {} : {matchMedia: () => ({matches:reduced})};
   const document = {
     querySelectorAll: () => buttons,
-    getElementById: () => missing ? null : out,
+    getElementById: name => !missing && name==='patternExample' ? out : null,
     createElement: tagName => ({tagName,textContent:''})
   };
   vm.runInNewContext(source,{window,document,matchMedia:window.matchMedia});
