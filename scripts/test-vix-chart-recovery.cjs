@@ -55,10 +55,15 @@ function setup(initial = sample(), options = {}) {
   const rangeControl = new Element('div');
   range.value = '90';
   rangeControl.hidden = true;
+  const table = new Element('details');
+  const tableBody = new Element('tbody');
+  const tableCaption = new Element('caption');
+  table.hidden = true;
+  table.open = false;
   let data = initial, requestCount = 0;
   const calls = [];
   const document = {
-    getElementById: id => ({volWidget:root,retryVix:button,vixRange:range,vixRangeControl:rangeControl})[id] ?? null,
+    getElementById: id => ({volWidget:root,retryVix:button,vixRange:range,vixRangeControl:rangeControl,vixObservationTable:table,vixObservationRows:tableBody,vixObservationCaption:tableCaption})[id] ?? null,
     createElement: tag => new Element(tag),
     createElementNS: (_ns, tag) => new Element(tag)
   };
@@ -75,7 +80,7 @@ function setup(initial = sample(), options = {}) {
     }
   };
   vm.runInNewContext(source, sandbox);
-  return {root, button, range, rangeControl, calls, setData(next) { data = next; }, get requests() { return requestCount; }};
+  return {root, button, range, rangeControl, table, tableBody, tableCaption, calls, setData(next) { data = next; }, get requests() { return requestCount; }};
 }
 
 test('renders sorted, source-verified Cboe dates and a monochrome chart', async () => {
@@ -264,4 +269,60 @@ test('never exposes the chart range control before a verified response', async (
   assert.equal(app.rangeControl.hidden,true);
   assert.equal(app.root.find('svg'),null);
   assert.equal(app.requests,1);
+});
+
+test('daily observation table stays hidden until valid data and matches the selected chart range', async () => {
+  const rows = Array.from({length:95},(_,i)=>({
+    date:new Date(Date.UTC(2026,0,1+i)).toISOString().slice(0,10),close:18+i*.125
+  }));
+  const app = setup({rows,observationDate:rows[94].date,fetchedAt:'2026-04-06T00:00:00Z'});
+  assert.equal(app.table.hidden,true);
+  await settle();
+  assert.equal(app.table.hidden,false);
+  assert.equal(app.tableBody.children.length,90);
+  const first = app.tableBody.children[0];
+  assert.equal(first.children[0].textContent,rows[94].date);
+  assert.equal(first.children[0].getAttribute('scope'),'row');
+  assert.equal(first.children[1].textContent,String(rows[94].close));
+  assert.equal(app.tableBody.children[89].children[0].textContent,rows[5].date);
+  app.table.open=true;
+  app.range.value='20';app.range.listeners.change();
+  assert.equal(app.tableBody.children.length,20);
+  assert.equal(app.tableBody.children[19].children[0].textContent,rows[75].date);
+  assert.match(app.tableCaption.textContent,/20 closes.*newest first/);
+  assert.equal(app.table.open,true);
+  assert.equal(app.requests,1);
+});
+
+test('table retains validated observations during failed refresh and replaces them on recovery', async () => {
+  const app=setup({rows:[]});
+  await settle();
+  assert.equal(app.table.hidden,true);
+  assert.equal(app.tableBody.children.length,0);
+  app.setData(sample());app.button.click();await settle();
+  assert.equal(app.table.hidden,false);
+  assert.match(app.tableCaption.textContent,/3 of 90 requested closes available/);
+  app.table.open=true;
+  app.setData(new Error('offline'));app.button.click();await settle();
+  assert.equal(app.tableBody.children.length,3);
+  assert.match(app.root.textContent,/Update failed/);
+  app.range.value='20';app.range.listeners.change();
+  assert.match(app.tableCaption.textContent,/3 of 20 requested closes available/);
+  assert.equal(app.tableBody.children.length,3);
+  app.setData({...sample(),observationDate:'2026-11-15',rows:[{date:'2026-11-14',close:22},{date:'2026-11-15',close:23}]});
+  app.button.click();await settle();
+  assert.equal(app.tableBody.children.length,2);
+  assert.equal(app.tableBody.children[0].children[1].textContent,'23');
+  assert.equal(app.table.open,true);
+  assert.doesNotMatch(app.root.textContent,/Update failed/);
+});
+
+test('public page provides a native disclosure and labeled table outside the chart live region', () => {
+  const html=fs.readFileSync(require('node:path').join(__dirname,'../markets/volatility.html'),'utf8');
+  assert.match(html,/<div id="volWidget" aria-live="polite">[^]*?<\/div>\s*<details[^>]+id="vixObservationTable" hidden>/);
+  assert.match(html,/<summary>View daily closing values<\/summary>/);
+  assert.match(html,/<caption id="vixObservationCaption">/);
+  assert.match(html,/<th scope="col">Date \(UTC\)<\/th><th scope="col">VIX close<\/th>/);
+  assert.match(html,/<tbody id="vixObservationRows"><\/tbody>/);
+  assert.match(html,/vix-chart\.js\?v=20261127-observation-table/);
 });

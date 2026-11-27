@@ -5,6 +5,9 @@
   const button = document.getElementById('retryVix');
   const range = document.getElementById('vixRange');
   const rangeControl = document.getElementById('vixRangeControl');
+  const table = document.getElementById('vixObservationTable');
+  const tableBody = document.getElementById('vixObservationRows');
+  const tableCaption = document.getElementById('vixObservationCaption');
   if (!root || !button) return;
 
   const endpoint = 'https://us-central1-fynx-c7a28.cloudfunctions.net/webMarketAnalytics?kind=vix';
@@ -103,6 +106,23 @@
     const details = note(`${period} · Low ${low.close.toFixed(2)} (${low.date}) · High ${high.close.toFixed(2)} (${high.date}) · First-to-last change ${change > 0 ? '+' : ''}${change.toFixed(2)} VIX points`);
     details.dataset.vixRangeSummary = 'true';
     root.replaceChildren(headline, chart, details, status);
+    // The exact same validated slice backs the chart and the accessible data table.
+    // Keep the disclosure outside the live region so refreshes do not announce 90 rows.
+    if (table && tableBody && tableCaption) {
+      const entries = rows.slice().reverse().map(row => {
+        const tr = document.createElement('tr');
+        const day = document.createElement('th');
+        day.setAttribute('scope', 'row');
+        day.textContent = row.date;
+        const value = document.createElement('td');
+        value.textContent = String(row.close);
+        tr.append(day, value);
+        return tr;
+      });
+      tableBody.replaceChildren(...entries);
+      tableCaption.textContent = `Cboe VIX daily closes · ${period} · newest first`;
+      table.hidden = false;
+    }
   }
 
   function showRefreshWarning() {
