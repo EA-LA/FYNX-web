@@ -398,7 +398,9 @@
     if (ten) { const b = btn('', 'fx-q', () => setCurve('US')); b.append(el('b', '', 'US10Y'), tk(el('span', '', ten.price.toFixed(3) + '%'), 'ust:10Y', ten.price), tk(el('em', tone(ten.price - ten.previousClose), signed((ten.price - ten.previousClose) * 100, 1, 'bp')), 'ustbp:10Y', (ten.price - ten.previousClose) * 100)); host.append(b); }
     for (const id of stripSymbols()) {
       const q = quoteFor(id); if (!q || id === '^TNX') continue;
-      const b = btn('', 'fx-q', () => focusOn(id), `${nameOf(id)} ${q.price}`); b.append(el('b', '', shortOf(id)), tk(el('span', '', fmt(q.price, digitsOf(id))), 'px:' + id, q.price), tk(el('em', tone(q.changePercent), finite(q.changePercent) ? (q.changePercent >= 0 ? '▲ ' : '▼ ') + Math.abs(q.changePercent).toFixed(2) + '%' : ''), 'chg:' + id, q.changePercent));
+      // A ticker pick in FOCUS changes the whole workspace, not just its chart.
+      const select = () => S.sym ? setSymbol({symbol: id}) : focusOn(id);
+      const b = btn('', 'fx-q', select, `${nameOf(id)} ${q.price}`); b.append(el('b', '', shortOf(id)), tk(el('span', '', fmt(q.price, digitsOf(id))), 'px:' + id, q.price), tk(el('em', tone(q.changePercent), finite(q.changePercent) ? (q.changePercent >= 0 ? '▲ ' : '▼ ') + Math.abs(q.changePercent).toFixed(2) + '%' : ''), 'chg:' + id, q.changePercent));
       host.append(b);
     }
     const t = S.deskKey === 'all' ? S.quotesAt : S.mk?.generatedAt;

@@ -567,6 +567,76 @@ test('FOCUS: typing a ticker turns every box to it; ✕ returns to ALL with the 
   await ctx.close();
 });
 
+test('the quote ticker changes the whole FOCUS workspace without changing ALL or COMPARE semantics', async () => {
+  for (const width of [1365, 390]) {
+    const phone = width === 390;
+    const {ctx, page, errors} = await boot({width, height: 900, phone});
+    try {
+      const chart = page.locator('#t-focus');
+      const params = () => new URL(page.url()).searchParams;
+      const apple = page.locator('#fx-quotes').getByRole('button', {name: /^Apple /});
+      const select = el => phone ? el.tap() : el.click();
+      const fullLayout = await boxes(page);
+
+      // The global ticker still previews the chart without entering FOCUS from ALL.
+      await select(apple);
+      await page.waitForFunction(() => /AAPL/.test(document.querySelector('#t-focus')?.textContent));
+      assert.equal(await mode(page), 'ALL* FOCUS COMPARE');
+      assert.equal(params().get('sym'), null);
+      assert.deepEqual(await boxes(page), fullLayout);
+
+      await select(page.locator('#fx-find-btn'));
+      await page.fill('#fx-finder-input', 'EUR/USD');
+      const pair = page.locator('#fx-finder-list .fx-find').filter({has: page.getByText('EURUSD=X', {exact: true})}).first();
+      await select(pair);
+      await page.clock.runFor(1000);
+      assert.equal(params().get('sym'), 'EURUSD=X');
+      assert.match(await chart.textContent(), /EURUSD|EUR\/USD/);
+      assert.match(await page.textContent('#t-squote'), /EURUSD/);
+      if (phone) await apple.tap(); else await apple.press('Enter');
+      await page.clock.runFor(1000);
+      assert.match(await chart.textContent(), /AAPL/);
+      assert.equal(params().get('sym'), 'AAPL', 'ticker must not leave the focused address on EUR/USD');
+      assert.equal(await mode(page), 'ALL FOCUS* COMPARE');
+      assert.match(await page.textContent('#t-squote'), /AAPL/);
+      assert.match(await page.textContent('#t-intel'), /AAPL/);
+      assert.match(await page.textContent('#t-earn'), /Earnings · AAPL/);
+
+      // A detail history step and a reload should both preserve the same workspace.
+      await command(page, 'DES AAPL');
+      assert.equal(new URL(page.url()).hash, '#des/AAPL');
+      await page.goBack();
+      await page.clock.runFor(1000);
+      assert.equal(new URL(page.url()).hash, '');
+      assert.equal(params().get('sym'), 'AAPL');
+      assert.match(await page.textContent('#t-squote'), /AAPL/);
+      await page.goForward();
+      await page.clock.runFor(1000);
+      assert.equal(new URL(page.url()).hash, '#des/AAPL');
+      assert.equal(params().get('sym'), 'AAPL');
+      await page.goBack();
+      await page.reload();
+      await page.clock.runFor(2000);
+      assert.equal(params().get('sym'), 'AAPL');
+      for (const id of ['focus', 'squote', 'intel']) assert.match(await page.textContent('#t-' + id), /AAPL/);
+
+      await command(page, 'ALL');
+      assert.equal(await mode(page), 'ALL* FOCUS COMPARE');
+      assert.equal(params().get('sym'), null);
+      assert.deepEqual(await boxes(page), fullLayout);
+
+      await command(page, 'CMP AAPL NVDA');
+      assert.equal(params().get('cmp'), 'AAPL,NVDA');
+      await select(apple);
+      await page.clock.runFor(1000);
+      assert.equal(params().get('cmp'), 'AAPL,NVDA', 'a ticker preview must not replace a comparison');
+      assert.equal(params().get('sym'), null);
+      assert.equal(await mode(page), 'ALL FOCUS COMPARE*');
+      assert.deepEqual(errors, []);
+    } finally { await ctx.close(); }
+  }
+});
+
 test('COMPARE: AAPL NVDA MSFT in the command bar, add/remove, focus one, clear, URL restore, one request per market', async () => {
   const {ctx, page, errors} = await boot();
   globalThis.__chartCalls = [];
