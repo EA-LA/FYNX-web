@@ -108,14 +108,14 @@ function tickerOverlap() {
   const inv = await page.evaluate(() => { const T = window.__AUDIT_T; return {desks: T.DESK_ORDER.filter(k => T.DESK_DEFS[k]), deskDefs: Object.keys(T.DESK_DEFS), panels: Object.keys(T.PANELS), pages: Object.keys(window.__AUDIT_PAGES || {}), commands: [...T.PAGE_NAMES]}; });
   const result = {viewport: `${W}x${H}`, bootMs, inventory: inv, desks: {}, pages: {}, allPanels: null, ticker: null, errors, consoleErrors, failed, requests};
   result.ticker = await page.evaluate(tickerOverlap);
-  await page.screenshot({path: path.join(out, `boot-${W}x${H}.png`)});
+  await page.screenshot({path: path.join(out, `boot-${W}x${H}.jpg`), type: 'jpeg', quality: 55});
   const deskList = args.quick ? inv.desks.slice(0, 3) : inv.deskDefs;
   for (const k of deskList) {
     const before = errors.length;
     await page.evaluate(k => window.__AUDIT_T.setDesk(k), k).catch(e => errors.push('setDesk ' + k + ': ' + e.message));
     await sleep(args.quick ? 2500 : 5000);
     result.desks[k] = {panels: await page.evaluate(inspect, 'desk'), newErrors: errors.slice(before)};
-    await page.screenshot({path: path.join(out, `desk-${k}-${W}x${H}.png`)});
+    await page.screenshot({path: path.join(out, `desk-${k}-${W}x${H}.jpg`), type: 'jpeg', quality: 55});
   }
   // Every panel: one desk holding every panel (the Edit "+ All panels" layout), inspected box by box.
   await page.evaluate(() => window.__AUDIT_T.setDesk('all'));
@@ -130,7 +130,7 @@ function tickerOverlap() {
     await sleep(args.quick ? 2000 : 4500);
     const info = await page.evaluate(inspect, 'page');
     result.pages[name] = {...info[0], newErrors: errors.slice(before)};
-    if (!args.quick) await page.screenshot({path: path.join(out, `page-${name}-${W}x${H}.png`)});
+    if (!args.quick && args.pageshots) await page.screenshot({path: path.join(out, `page-${name}-${W}x${H}.jpg`), type: 'jpeg', quality: 55});
     await page.evaluate(() => window.__AUDIT_T.PG?.closeAll()).catch(() => {});
   }
   result.heap = await page.evaluate(() => performance.memory ? {usedMB: +(performance.memory.usedJSHeapSize / 1048576).toFixed(1)} : null);
