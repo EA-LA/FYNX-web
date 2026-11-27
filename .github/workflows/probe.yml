@@ -5,8 +5,9 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 170
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/checkout@v4
         with: {ref: feature/terminal-audit-focus, path: app}
       - uses: actions/setup-node@v4
@@ -14,15 +15,11 @@ jobs:
       - run: cd app && npm ci --ignore-scripts --no-audit --no-fund
       - name: audit
         run: |
-          cd app
+          git config --global user.name probe && git config --global user.email probe@users.noreply.github.com
           export FYNX_CHROMIUM_PATH=$(which google-chrome)
-          for vp in 1920x1080 1366x768 3440x1440 3840x2160 820x1180 390x844; do
-            extra=""; [ "$vp" = 1920x1080 ] && extra="--pageshots"
-            timeout 900 node scripts/audit-terminal.cjs ../out --viewport=$vp $extra > ../out-$vp.log 2>&1 || echo "audit $vp exit $?"
+          for vp in 1920x1080 390x844 1366x768 3440x1440 3840x2160 820x1180; do
+            extra="--nopages"; [ "$vp" = 1920x1080 ] && extra="--pageshots"; [ "$vp" = 390x844 ] && extra=""
+            mkdir -p out-$vp; (cd app && timeout 1500 node scripts/audit-terminal.cjs ../out-$vp --viewport=$vp $extra > ../out-$vp/run.log 2>&1 || echo "audit $vp exit $?" >> ../out-$vp/run.log)
+            mkdir -p audit/$vp && cp -r out-$vp/* audit/$vp/ 2>/dev/null || true
+            git add audit && git commit -qm "audit $vp" && git pull -q --rebase && git push -q || echo "push failed $vp"
           done
-          ls -la ../out | head
-      - name: store
-        run: |
-          mkdir -p audit && cp -r out/* audit/ && cp out-*.log audit/ || true
-          git config user.name probe && git config user.email probe@users.noreply.github.com
-          git add audit && git commit -qm "audit results $(date -u +%H%M)" && git push -q
