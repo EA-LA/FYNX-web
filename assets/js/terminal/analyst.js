@@ -336,9 +336,10 @@
   const committeeGet = sym => cached('committee|' + sym, () => committeeRun(sym));
   const DCOL = {BUY: GREEN, ACCUMULATE: GREEN, HOLD: AMBER, REDUCE: RED, SELL: RED};
   async function renderCommitteePanel() {
-    const host = panel('committee'); empty(host, `The committee is reviewing ${CV.sym}…`);
-    let r; try { r = await committeeGet(CV.sym); } catch (e) { report('committee', e); return empty(host, e.message); }
-    if (!$('tp-committee')) return; host.replaceChildren(); setText('n-committee', `${CV.sym} · ${r.cm.decision.toLowerCase()}`);
+    const own = T.S?.sym && !T.S.cmp ? T.S.sym.symbol : null, sym = own || CV.sym;
+    const host = panel('committee'); empty(host, `The committee is reviewing ${sym}…`);
+    let r; try { r = await committeeGet(sym); } catch (e) { report('committee', e); return empty(host, own ? `The AI committee cannot review ${sym}: ${e.message}` : e.message); }
+    if (!$('tp-committee')) return; host.replaceChildren(); setText('n-committee', `${sym} · ${r.cm.decision.toLowerCase()}`);
     const w = el('div', 'fx-ql'); host.append(w);
     kpis(w, [['DECISION', r.cm.decision, `score ${r.cm.score >= 0 ? '+' : ''}${r.cm.score.toFixed(2)}`, DCOL[r.cm.decision]], ['CONVICTION', pct(r.cm.conviction, 0), `${r.cm.agents.length} analysts`], ['SIZE (NEUTRAL)', pct(r.cm.sizes[1].size, 1), `stop ${usd(r.cm.sizes[1].stop)}`]]);
     const g = el('div', 'fx-an-agents'); r.cm.agents.forEach(a => { const c = el('div', 'fx-an-agent'), h = el('h4'); c.style.setProperty('--c', a.score > 0.25 ? GREEN : a.score < -0.25 ? RED : GREY); h.append(a.name, el('b', '', (a.score >= 0 ? '+' : '') + a.score.toFixed(1))); c.append(h); g.append(c); }); w.append(g);

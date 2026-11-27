@@ -70,7 +70,9 @@ function cryptoFixture() {
     universe: '30 largest altcoins (fixture)'};
 }
 const SENT = {...sentimentFixture(), crypto: cryptoFixture()};
-const CHART_BASE = {AAPL: 270, NVDA: 180, MSFT: 480, 'EURUSD=X': 1.08, 'GBPUSD=X': 1.27, 'BTC-USD': 90000, SPY: 680, QQQ: 600, 'DX-Y.NYB': 99};
+const CHART_BASE = {AAPL: 270, NVDA: 180, MSFT: 480, 'EURUSD=X': 1.08, 'GBPUSD=X': 1.27, 'BTC-USD': 90000, SPY: 680, QQQ: 600, 'DX-Y.NYB': 99,
+  // Markets from the production reports: Meta (two share classes in SEC EDGAR), two new listings, an emerging-market pair, a coin without a Kraken book.
+  META: 610, BFLR: 0.017, ANT: 82.8, 'TRY=X': 50.8, 'PEPE-USD': 0.00001};
 const OPTIONS = {version: 1, generatedAt: new Date(NOW).toISOString(), source: 'Cboe delayed (fixture)', underlyings: {SPY: {symbol: 'SPY', price: 680.5, change: 1.2, changePercent: 0.18, iv30: 17.2, iv30Change: -0.4, callVolume: 1e6, putVolume: 1.3e6, putCallVolume: 1.3, callOI: 5e6, putOI: 7e6, putCallOI: 1.4, asOf: new Date(NOW).toISOString(), contracts: 9000, mostActive: [],
   expiries: [[1, 0.21, 6.1], [2, 0.19, 8.4], [7, 0.175, 15.8], [14, 0.17, 22.3], [30, 0.168, 32.5], [58, 0.172, 45.1], [86, 0.175, 55.9]].map(([dte, iv, st]) => ({date: new Date(NOW + dte * 864e5).toISOString().slice(0, 10), dte, atmStrike: 680, atmIV: iv, straddle: st, movePercent: Math.round(st / 680.5 * 1e4) / 100, maxPain: 675, callVolume: 1, putVolume: 1, callOI: 1, putOI: 1, skew25: 0.04, chain: []}))}}};
 
@@ -123,13 +125,48 @@ const markets = () => {
 const equities = () => ({version: 1, generatedAt: new Date(NOW).toISOString(), indices: {sp500: ['AAPL', 'MSFT'], ndx: ['AAPL'], dow: ['AAPL']}, info: {AAPL: {n: 'Apple Inc.', sec: 'Information Technology', ind: 'Technology Hardware'}}, closes: {}, macro: null});
 const scanner = () => ({version: 1, generatedAt: new Date(NOW).toISOString(), stocks: {fields: ['symbol', 'name', 'price', 'changePct', 'volume', 'marketCap', 'sector', 'industry', 'country', 'ipoYear', 'themes'], rows: [['AAPL', 'Apple Inc.', 276.4, 0.4, 4e7, 4.1e12, 'Technology', 'Computer Manufacturing', 'United States', 1980, []]]}, etfs: {rows: []}, crypto: {rows: []}});
 
-function harness() {
+function harness({account = false} = {}) {
   return fs.readFileSync(path.join(root, 'terminal.html'), 'utf8')
     .replace(/<!-- terminal-gate:start -->[\s\S]*?<!-- terminal-gate:end -->/, '')
     .replace(/<!-- FYNX ADSENSE VERIFICATION START -->[\s\S]*?<!-- FYNX ADSENSE VERIFICATION END -->/, '')
-    .replace(/<script type="module"[^>]*><\/script>/g, '')
+    .replace(/<script type="module"[^>]*><\/script>/g, m => account && m.includes('/assets/js/saved-settings.js') ? m : '')
     .replace(/<link[^>]+fonts\.(googleapis|gstatic)[^>]*>/g, '');
 }
+// Test account server: the real fynxAccountSync service over the in-memory database used by the backend tests.
+const {FakeDB} = require('../backend/test-support/account-sync-fake-db.cjs');
+const {createService} = require('../backend/account-sync-service.cjs');
+function accountServer() {
+  const db = new FakeDB(), service = createService({db, now: () => Date.now()});
+  const server = {db, service, down: false, writes: 0, reads: 0,
+    async handle(uid, payload) {
+      if (server.down) return {ok: false, error: {message: 'Network error', code: 'unavailable'}};
+      if (payload?.action === 'mutate') server.writes++; else server.reads++;
+      try { return {ok: true, data: await service.handle(payload, {auth: uid ? {uid, token: {firebase: {sign_in_provider: 'password'}}} : null})}; }
+      catch (e) { return {ok: false, error: {message: e.message, code: e.code, details: e.details}}; }
+    },
+    async settings(uid) { const r = await service.handle({action: 'read', expectedUid: uid, domains: ['preferences']}, {auth: {uid, token: {firebase: {sign_in_provider: 'password'}}}}); return r.records.find(x => x.domain === 'preferences' && x.id === 'default')?.data?.savedSettings?.keys || {}; }
+  };
+  return server;
+}
+// The browser half of account sync with only Firebase swapped out: same Store, same cache scope, same refresh triggers.
+const FAKE_ACCOUNT_SYNC = `import './account-sync-core.js?v=20261115-intelligence-1';
+const listeners = new Set();
+export async function stableID(value) { return [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))].map(b => b.toString(16).padStart(2, '0')).join(''); }
+export const sync = new globalThis.FynxAccountSyncCore.Store({storage: localStorage, call: async payload => { const r = await window.__acctCall(payload); if (r.ok) return r.data; const e = new Error(r.error.message); e.code = r.error.code; e.details = r.error.details; throw e; }, changed: s => listeners.forEach(fn => { try { fn(s); } catch {} })});
+export const subscribe = fn => { listeners.add(fn); fn(sync); return () => listeners.delete(fn); };
+export const connected = (async () => { const uid = window.__ACCT_UID || null; await sync.switchUser(uid, uid ? 'fynx.account.sync.v1.' + await stableID(uid) : null); })();
+export const save = (...a) => sync.save(...a);
+export const accountData = (domain, id = 'default') => sync.record(domain, id)?.data || null;
+window.addEventListener('online', () => sync.refresh());
+window.addEventListener('focus', () => sync.refresh());
+setInterval(() => { if (!document.hidden && sync.uid && !sync.pending.length) sync.refresh(); }, 5000);`;
+// Run the page clock until cond() is true in the page (account calls are real promises between ticks).
+async function until(page, cond, arg, {step = 500, max = 40} = {}) {
+  for (let i = 0; i < max; i++) { if (await page.evaluate(cond, arg)) return true; await page.clock.runFor(step); await new Promise(r => setTimeout(r, 30)); }
+  return false;
+}
+const synced = page => until(page, () => window.FynxSavedSettings?.state.restored && ['synced', 'partial'].includes(window.FynxSavedSettings.state.status));
+
 let browser;
 test.before(async () => { browser = await chromium.launch({executablePath, args: ['--no-sandbox']}); });
 test.after(async () => { await browser?.close(); });
@@ -155,10 +192,18 @@ function fakeBridge(cfg) {
     terminalList: () => [...st.followed], saveTerminalList: async l => { st.saved.push(l); st.followed = l; acb.forEach(cb => cb(acct())); }
   };
 }
-async function boot({time = NOW, width = 1600, height = 1100, filingsDown = false, plan = null, bridge = null, url = '', phone = false} = {}) {
+async function boot({time = NOW, width = 1600, height = 1100, filingsDown = false, plan = null, bridge = null, url = '', phone = false, account = null, seed = null} = {}) {
   const ctx = await browser.newContext(phone ? {viewport: {width, height}, deviceScaleFactor: 2, isMobile: true, hasTouch: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1'} : {viewport: {width, height}}), page = await ctx.newPage();
   await page.clock.install({time: new Date(time)});
   if (bridge) await page.addInitScript(fakeBridge, bridge);
+  // Settings already on this device before the page starts (written once, before any FYNX script runs).
+  if (seed) await page.addInitScript(seed => { if (sessionStorage.getItem('seeded')) return; sessionStorage.setItem('seeded', '1'); for (const [k, v] of Object.entries(seed)) localStorage.setItem(k, v); }, seed);
+  if (account) {
+    // A signed-in FYNX account: the real account-sync Store in the page, the real fynxAccountSync service in the
+    // test, which takes the user id from the verified auth context (here: this browser's signed-in user).
+    await page.addInitScript(uid => { window.__ACCT_UID = sessionStorage.getItem('test-uid') ?? uid; if (window.__ACCT_UID) try { localStorage.setItem('fynx_auth_email', window.__ACCT_UID + '@example.com'); } catch {} }, account.uid);
+    await page.exposeFunction('__acctCall', payload => page.evaluate(() => window.__ACCT_UID).then(uid => account.server.handle(uid, payload)));
+  }
   if (plan) await page.addInitScript(p => { window.__FYNX_PLAN_TEST__ = true; window.__PLAN = p; window.__used = p.used || 0; }, plan);
   const json = (route, body, status = 200) => route.fulfill({status, contentType: 'application/json', body: JSON.stringify(body)});
   const seen = [];
@@ -184,7 +229,8 @@ async function boot({time = NOW, width = 1600, height = 1100, filingsDown = fals
       return json(route, {});
     }
     if (url.origin === ORIGIN) {
-      if (url.pathname === '/terminal.html') return route.fulfill({contentType: 'text/html', body: harness()});
+      if (url.pathname === '/terminal.html') return route.fulfill({contentType: 'text/html', body: harness({account: !!account})});
+      if (url.pathname === '/assets/js/account-sync.js') return route.fulfill({contentType: 'text/javascript', body: FAKE_ACCOUNT_SYNC});
       if (url.pathname === '/assets/js/market-intelligence-data.js') return route.fulfill({contentType: 'text/javascript', body: NEWS_STUB});
       if (url.pathname === '/assets/js/fynx-plan.js' && plan) return route.fulfill({contentType: 'text/javascript', body: fs.readFileSync(path.join(root, 'assets/js/fynx-plan.js'), 'utf8') + PLAN_SHIM});
       const file = path.join(root, decodeURIComponent(url.pathname));
@@ -193,8 +239,9 @@ async function boot({time = NOW, width = 1600, height = 1100, filingsDown = fals
     }
     if (url.pathname.endsWith('/webResearchData')) {
       const a = url.searchParams.get('action');
-      if (a === 'directory') return json(route, {companies: [{symbol: 'AAPL', cik: 320193, name: 'Apple Inc.'}]});
-      if (a === 'financials') return json(route, FIN);
+      // SEC EDGAR groups share classes under one CIK ("META, METAM"); BFLR is not listed; ANT has no 10-K yet.
+      if (a === 'directory') return json(route, {companies: [{symbol: 'AAPL', cik: 320193, name: 'Apple Inc.'}, {symbol: 'META, METAM', cik: 1326801, name: 'Meta Platforms, Inc.'}, {symbol: 'ANT', cik: 2130357, name: 'Anthropic, PBC'}]});
+      if (a === 'financials') { const cik = Number(url.searchParams.get('cik')); if (cik === 1326801) return json(route, {...FIN, cik, name: 'Meta Platforms, Inc.'}); if (cik === 2130357) return json(route, {error: 'No supported US-GAAP annual facts were returned.'}, 404); return json(route, FIN); }
       if (a === 'filings') return filingsDown ? json(route, {error: 'down'}, 502) : json(route, FILINGS);
       return json(route, {});
     }
@@ -892,4 +939,226 @@ test('desktop keeps its header buttons (phone menu only below 761px)', async () 
   if (process.env.FYNX_DBG) console.log(await page.evaluate(() => JSON.stringify({mq: matchMedia('(max-width:760px)').matches, iw: innerWidth, edit: document.getElementById('fx-edit').parentElement.className, comments: [...document.querySelector('header.fx-top').childNodes].filter(n => n.nodeType === 8).map(n => n.data)})));
   assert.equal(await page.$eval('#fx-edit', n => n.closest('#fx-msheet') === null), true, 'and widening moves them back');
   await ctx.close();
+});
+
+test('focus probe', {skip: !process.env.FYNX_FOCUS}, async () => {
+  for (const sym of process.env.FYNX_FOCUS.split(',')) {
+    const {ctx, page, errors} = await boot({width: 1920, height: 1080, url: '?desk=stocks&sym=' + encodeURIComponent(sym)});
+    await page.clock.runFor(4000);
+    const info = await page.evaluate(() => [...document.querySelectorAll('#fx-main > section.tp')].map(n => { const h = n.querySelector('header h2')?.textContent.replace(/\s+/g, ' ').trim(); const t = n.querySelector('.tp-b')?.innerText || ''; return {id: n.id, h, eur: /EUR\s?\/?\s?USD/.test(h + ' ' + t), len: t.length, empty: /unavailable|Loading|No |not /i.test(t.slice(0, 80)) ? t.slice(0, 70).replace(/\s+/g, ' ') : ''}; }));
+    console.log('### ' + sym + ' mode=' + (await page.$eval('.fx-mode.on', n => n.textContent)) + ' chip=' + (await page.$eval('#fx-symchip', n => n.hidden ? 'hidden' : n.textContent.replace(/\s+/g, ' ').slice(0, 40))) + ' url=' + (await page.evaluate(() => location.search)) + ' errors=' + errors.length);
+    for (const i of info) console.log('  ' + i.id.padEnd(12) + (i.eur ? ' **EURUSD** ' : '            ') + String(i.len).padStart(5) + '  ' + (i.h || '').slice(0, 60) + (i.empty ? '  [' + i.empty + ']' : ''));
+    await ctx.close();
+  }
+});
+
+/* ── Account-wide settings: separate browser contexts are separate devices (own localStorage), one account server ── */
+const layoutOf = page => page.evaluate(() => localStorage.getItem('fx-term-layout-all'));
+const boxesOf = page => page.$$eval('#fx-main > section.tp:not(.tp-empty)', s => s.map(x => x.id));
+const pageNow = page => page.evaluate(() => Date.now());
+
+test('account sync: a workspace customised on one device opens the same on a new device, browser and screen size', async () => {
+  const server = accountServer();
+  // Device A: a big monitor. Customise the ALL desk with the real Edit controls.
+  const A = await boot({width: 3440, height: 1440, account: {server, uid: 'alice'}});
+  assert.ok(await synced(A.page), 'A connected to the account');
+  await A.page.click('#fx-edit'); await A.page.clock.runFor(300);
+  for (let i = 0; i < 2; i++) { await A.page.click('#fx-ed-row'); await A.page.clock.runFor(200); }
+  await A.page.click('#fx-ed-all'); await A.page.clock.runFor(800);
+  await A.page.click('#fx-ed-done'); await A.page.clock.runFor(300);
+  const layoutA = await layoutOf(A.page), boxesA = await boxesOf(A.page);
+  assert.ok(layoutA && boxesA.length >= 60, 'A has a customised layout with every panel');
+  assert.ok(await until(A.page, async () => true) && await (async () => { for (let i = 0; i < 40; i++) { if ((await server.settings('alice'))['fx-term-layout-all']?.v === layoutA) return true; await A.page.clock.runFor(1000); await new Promise(r => setTimeout(r, 30)); } return false; })(), 'saved to the account automatically (no Save button)');
+  // Device B: a laptop that has never opened FYNX, a later clock.
+  const B = await boot({width: 1366, height: 768, time: await pageNow(A.page) + 5000, account: {server, uid: 'alice'}});
+  assert.ok(await synced(B.page), 'B connected');
+  assert.equal(await layoutOf(B.page), layoutA, 'B received the account layout');
+  assert.ok(await until(B.page, n => document.querySelectorAll('#fx-main > section.tp:not(.tp-empty)').length === n, boxesA.length), 'B shows the same panels');
+  assert.deepEqual(await boxesOf(B.page), boxesA, 'same panels in the same order');
+  // B's smaller screen adapts the presentation but writes nothing back.
+  const writes = server.writes; await B.page.clock.runFor(20000);
+  assert.equal(server.writes, writes, 'opening on a smaller screen saves nothing (the big-monitor layout is untouched)');
+  // A phone: same panels, phone layout, still no writes.
+  const P = await boot({width: 393, height: 852, phone: true, time: await pageNow(B.page) + 5000, account: {server, uid: 'alice'}});
+  assert.ok(await synced(P.page)); assert.deepEqual(await boxesOf(P.page), boxesA, 'the phone shows the same panels'); await P.page.clock.runFor(15000);
+  assert.equal(server.writes, writes, 'the phone saves nothing either');
+  // Refresh B: still the same.
+  await B.page.reload(); await B.page.clock.runFor(2000); assert.ok(await synced(B.page)); assert.equal(await layoutOf(B.page), layoutA);
+  for (const d of [A, B, P]) { assert.deepEqual(d.errors, []); await d.ctx.close(); }
+});
+
+test('account sync: two devices open at once see each other’s changes without reloading, never mid-edit', async () => {
+  const server = accountServer();
+  const A = await boot({width: 1920, height: 1080, account: {server, uid: 'alice'}});
+  assert.ok(await synced(A.page));
+  const B = await boot({width: 1440, height: 900, time: await pageNow(A.page) + 2000, account: {server, uid: 'alice'}});
+  assert.ok(await synced(B.page));
+  const before = (await boxesOf(B.page)).length;
+  // A adds every panel.
+  await A.page.click('#fx-edit'); await A.page.clock.runFor(300); await A.page.click('#fx-ed-all'); await A.page.clock.runFor(800); await A.page.click('#fx-ed-done');
+  const want = (await boxesOf(A.page)).length; assert.ok(want > before);
+  // B is in the middle of editing: its screen is not replaced under the user.
+  await B.page.click('#fx-edit'); await B.page.clock.runFor(300);
+  for (let i = 0; i < 30 && !(await server.settings('alice'))['fx-term-layout-all']; i++) { await A.page.clock.runFor(1000); await new Promise(r => setTimeout(r, 30)); }
+  await B.page.evaluate(() => window.FynxSavedSettings.refresh()); await B.page.clock.runFor(2000);
+  assert.equal((await boxesOf(B.page)).length, before, 'no change while B is editing');
+  await B.page.click('#fx-ed-done');
+  assert.ok(await until(B.page, n => document.querySelectorAll('#fx-main > section.tp:not(.tp-empty)').length === n, want), 'B shows A’s layout as soon as editing ends, without a reload');
+  // A different desk changed on B reaches A live; A's own current desk choice is not hijacked.
+  await command(B.page, 'STOCKS'); await B.page.click('#fx-edit'); await B.page.clock.runFor(300); await B.page.click('#fx-ed-row'); await B.page.clock.runFor(300); await B.page.click('#fx-ed-done');
+  const stocksB = await B.page.evaluate(() => localStorage.getItem('fx-term-layout-stocks'));
+  assert.ok(await until(A.page, () => window.FynxSavedSettings.refresh().then(() => true)) || true);
+  let got = null; for (let i = 0; i < 40 && got !== stocksB; i++) { await B.page.clock.runFor(1000); await A.page.evaluate(() => window.FynxSavedSettings.refresh()); await A.page.clock.runFor(1000); got = await A.page.evaluate(() => localStorage.getItem('fx-term-layout-stocks')); }
+  assert.equal(got, stocksB, 'B’s Stocks layout reached A');
+  assert.equal(await A.page.$eval('.fx-desk.on', n => n.textContent), 'ALL', 'A stays on the desk its user is looking at');
+  for (const d of [A, B]) { assert.deepEqual(d.errors, []); await d.ctx.close(); }
+});
+
+test('account sync: offline edits are kept, and an older device never overwrites a newer change', async () => {
+  const server = accountServer();
+  const A = await boot({width: 1920, height: 1080, account: {server, uid: 'alice'}});
+  assert.ok(await synced(A.page));
+  // A goes offline and changes a setting.
+  server.down = true;
+  await A.page.evaluate(() => localStorage.setItem('fx-term-layout-bonds', '["curve","rates"]'));
+  await A.page.clock.runFor(4000);
+  // Later, B (online) sets the same setting to something newer.
+  const B = await boot({width: 1440, height: 900, time: await pageNow(A.page) + 60000, account: {server, uid: 'alice'}});
+  server.down = false; assert.ok(await synced(B.page));
+  await B.page.evaluate(() => localStorage.setItem('fx-term-layout-bonds', '["gov","curve"]')); await B.page.clock.runFor(2000);
+  for (let i = 0; i < 30 && (await server.settings('alice'))['fx-term-layout-bonds']?.v !== '["gov","curve"]'; i++) { await B.page.clock.runFor(1000); await new Promise(r => setTimeout(r, 30)); }
+  // A reconnects: its older offline value must not replace B's newer one; A shows B's.
+  await A.page.evaluate(() => window.dispatchEvent(new Event('online'))); 
+  let a = null; for (let i = 0; i < 40 && a !== '["gov","curve"]'; i++) { await A.page.clock.runFor(1500); await A.page.evaluate(() => window.FynxSavedSettings.refresh()); await new Promise(r => setTimeout(r, 30)); a = await A.page.evaluate(() => localStorage.getItem('fx-term-layout-bonds')); }
+  assert.equal(a, '["gov","curve"]', 'A shows the newer value'); assert.equal((await server.settings('alice'))['fx-term-layout-bonds'].v, '["gov","curve"]', 'the account kept the newer value');
+  // A newer offline edit does win once it reaches the account.
+  server.down = true; await A.page.evaluate(() => localStorage.setItem('fx-term-layout-bonds', '["term"]')); await A.page.clock.runFor(3000); server.down = false;
+  let saved = null; for (let i = 0; i < 40 && saved !== '["term"]'; i++) { await A.page.clock.runFor(2000); await A.page.evaluate(() => window.FynxSavedSettings.flush()); await new Promise(r => setTimeout(r, 30)); saved = (await server.settings('alice'))['fx-term-layout-bonds']?.v; }
+  assert.equal(saved, '["term"]', 'the offline edit made after B’s reached the account on reconnect');
+  for (const d of [A, B]) await d.ctx.close();
+});
+
+test('account sync: accounts are private; signing out and in on a shared browser never mixes settings', async () => {
+  const server = accountServer();
+  const A = await boot({width: 1600, height: 1000, account: {server, uid: 'alice'}});
+  assert.ok(await synced(A.page));
+  await A.page.evaluate(() => localStorage.setItem('fx-term-layout-all', '["heat","top"]')); await A.page.clock.runFor(2000);
+  for (let i = 0; i < 30 && !(await server.settings('alice'))['fx-term-layout-all']; i++) { await A.page.clock.runFor(1000); await new Promise(r => setTimeout(r, 30)); }
+  // Bob signs in on the same browser: he does not see or receive Alice's layout.
+  await A.page.evaluate(() => sessionStorage.setItem('test-uid', 'bob')); await A.page.reload(); await A.page.clock.runFor(1500);
+  assert.ok(await synced(A.page));
+  assert.equal(await layoutOf(A.page), null, 'Alice’s layout is not shown to Bob');
+  await A.page.clock.runFor(15000);
+  assert.deepEqual(Object.keys(await server.settings('bob')).filter(k => k === 'fx-term-layout-all'), [], 'nothing of Alice’s was uploaded into Bob’s account');
+  // Bob's page cannot read or write Alice's account: the server binds every call to the signed-in user.
+  const spoof = await A.page.evaluate(() => window.__acctCall({action: 'read', expectedUid: 'alice', domains: ['preferences']}));
+  assert.equal(spoof.ok, false, 'reading another account is refused');
+  // Alice signs back in: her layout comes back from her account.
+  await A.page.evaluate(() => sessionStorage.setItem('test-uid', 'alice')); await A.page.reload(); await A.page.clock.runFor(1500);
+  assert.ok(await synced(A.page)); assert.equal(await layoutOf(A.page), '["heat","top"]', 'Alice’s layout restored after signing back in');
+  // Signed out: the device keeps working locally, nothing is sent.
+  const writes = server.writes;
+  await A.page.evaluate(() => sessionStorage.setItem('test-uid', '')); await A.page.reload(); await A.page.clock.runFor(3000);
+  await A.page.evaluate(() => localStorage.setItem('fx-term-layout-all', '["guest"]')); await A.page.clock.runFor(15000);
+  assert.equal(server.writes, writes, 'guests are device-only');
+  await A.ctx.close();
+});
+
+test('account sync: settings saved before this update are migrated once, and a different older layout is kept as a choice', async () => {
+  const server = accountServer();
+  // Desktop customised before account saving existed.
+  const A = await boot({width: 1920, height: 1080, account: {server, uid: 'alice'}, seed: {'fx-term-layout-all': '["heat","top","eco"]', 'fx-term-market-display': '{"enabled":false}'}});
+  assert.ok(await synced(A.page));
+  for (let i = 0; i < 30 && !(await server.settings('alice'))['fx-term-layout-all']; i++) { await A.page.clock.runFor(1000); await new Promise(r => setTimeout(r, 30)); }
+  assert.equal((await server.settings('alice'))['fx-term-layout-all'].v, '["heat","top","eco"]', 'the existing desktop layout was saved to the account, not replaced by a default');
+  assert.equal(await layoutOf(A.page), '["heat","top","eco"]', 'and the desktop still shows it');
+  // A laptop with its own older layout: shows the account's, keeps its own as a one-click choice.
+  const B = await boot({width: 1440, height: 900, time: await pageNow(A.page) + 5000, account: {server, uid: 'alice'}, seed: {'fx-term-layout-all': '["cb","curve"]'}});
+  assert.ok(await synced(B.page));
+  assert.equal(await layoutOf(B.page), '["heat","top","eco"]');
+  assert.ok(await B.page.$('#fx-syncnote'), 'the laptop is told and offered its own layout');
+  await B.page.click('#fx-syncnote .fx-chip-link'); await B.page.clock.runFor(500);
+  assert.equal(await layoutOf(B.page), '["cb","curve"]');
+  let v = null; for (let i = 0; i < 30 && v !== '["cb","curve"]'; i++) { await B.page.clock.runFor(1000); await new Promise(r => setTimeout(r, 30)); v = (await server.settings('alice'))['fx-term-layout-all']?.v; }
+  assert.equal(v, '["cb","curve"]', 'choosing it saves it for every device');
+  for (const d of [A, B]) await d.ctx.close();
+});
+
+/* ── FOCUS shows the selected market and nothing else in its place ───────────────────────────────────────────── */
+// Every box of a FOCUS workspace: its title and text. A box may show context, but never another market as if it were this one.
+const focusBoxes = page => page.$$eval('#fx-main > section.tp:not(.tp-empty)', ns => Object.fromEntries(ns.map(n => [n.id.replace('tp-', ''), {title: (n.querySelector('header h2')?.textContent || '').replace(/\s+/g, ' ').trim(), text: (n.querySelector('.tp-b')?.innerText || '').replace(/\s+/g, ' ').trim()}])));
+
+test('FOCUS regression: META, BFLR and ANT never show EUR/USD, Apple’s statements or another company’s options', async () => {
+  for (const [sym, via] of [['META', 'command'], ['BFLR', 'command'], ['ANT', 'command'], ['META', 'link'], ['BFLR', 'link'], ['ANT', 'link']]) {
+    const {ctx, page, errors} = await boot({width: 1920, height: 1080, url: via === 'link' ? `?desk=stocks&sym=${sym}` : '?desk=stocks'});
+    if (via === 'command') { await page.clock.runFor(1500); await command(page, sym); }
+    await page.clock.runFor(4000);
+    const b = await focusBoxes(page), label = `${sym} via ${via}`;
+    assert.equal(await page.$eval('.fx-mode.on', n => n.textContent), 'FOCUS', label);
+    assert.match(await page.evaluate(() => location.search), new RegExp('sym=' + sym), label + ': URL names the market');
+    assert.ok(Object.keys(b).length >= 20, `${label}: a full workspace (${Object.keys(b).length} boxes)`);
+    for (const [id, x] of Object.entries(b)) assert.doesNotMatch(x.title + ' ' + x.text, /EUR\s?\/?\s?USD/, `${label}: ${id} shows EUR/USD`);
+    assert.match(b.fin.title, new RegExp('^FA' + sym), `${label}: financials are ${sym}'s`);
+    assert.doesNotMatch(b.fin.text, /Apple Inc\.|CIK 320193/, `${label}: never Apple's statements`);
+    if (sym === 'META') assert.match(b.fin.text, /Meta Platforms, Inc\. · CIK 1326801/, 'Meta is found under "META, METAM"');
+    if (sym === 'BFLR') assert.match(b.fin.text, /BFLR is not in SEC EDGAR's company list/);
+    if (sym === 'ANT') assert.match(b.fin.text, /no annual \(10-K\) US-GAAP statements for ANT yet/);
+    assert.match(b.opt.title, new RegExp('^OPT' + sym + ' options'), `${label}: options title`);
+    assert.doesNotMatch(b.opt.text, /AAPL|SPY/, `${label}: no other underlying's options`);
+    assert.equal(await page.$eval('#tp-tools select', n => n.value), sym, `${label}: the position-size tool starts on ${sym}`);
+    for (const id of ['committee', 'earnprev']) assert.doesNotMatch(b[id].text + b[id].title, /\b(MSFT|NVDA|AAPL)\b/, `${label}: ${id} reviews ${sym}`);
+    assert.equal(await page.title(), `FYNX Terminal · ${sym}`, label + ': page title');
+    assert.deepEqual(errors, [], label);
+    await ctx.close();
+  }
+});
+
+test('FOCUS regression: an emerging-market pair and an uncovered coin get honest boxes, never EUR/USD or BTC in their place', async () => {
+  {
+    const {ctx, page, errors} = await boot({width: 1920, height: 1080, url: '?sym=' + encodeURIComponent('TRY=X')});
+    await page.clock.runFor(4000);
+    const b = await focusBoxes(page);
+    assert.match(b.range.title + b.range.text, /USDTRY daily range.*not one of them/, 'no EUR/USD range for USD/TRY');
+    assert.doesNotMatch(b.range.text + b.tools.text, /EURUSD|EUR\/USD/, 'range and calculator never fall back to EUR/USD');
+    assert.match(b.bias.title, /pairs sharing USD or TRY \(USDTRY not covered\)/, 'Smart Bias says which pairs it shows and why');
+    assert.match(b.mkts.title, /USDTRY and related markets/);
+    assert.match(b.mkts.text, /^SYMBOL LAST CHG.{0,3}USDTRY/, 'the focused pair leads the market table');
+    assert.deepEqual(errors, []); await ctx.close();
+  }
+  {
+    const {ctx, page, errors} = await boot({width: 1920, height: 1080, url: '?sym=PEPE-USD'});
+    await page.clock.runFor(4000);
+    const b = await focusBoxes(page);
+    for (const id of ['dom', 'oflow']) { assert.match(b[id].text, /PEPE is not one of them/, `${id} says the coin has no live book`); assert.doesNotMatch(b[id].text, /BTC\/USD|ETH\/USD/, `${id} shows no other coin`); }
+    assert.deepEqual(errors, []); await ctx.close();
+  }
+});
+
+test('FOCUS regression: rapid switching and back/forward never leave another market on screen', async () => {
+  const {ctx, page, errors} = await boot({width: 1920, height: 1080, url: '?desk=stocks'});
+  await page.clock.runFor(1500);
+  for (const s of ['META', 'BFLR', 'EURUSD', 'ANT', 'BTC', 'META']) { await page.fill('#fx-command', s); await page.press('#fx-command', 'Enter'); await page.clock.runFor(120); }
+  await page.clock.runFor(5000);
+  let b = await focusBoxes(page);
+  assert.match(await page.evaluate(() => location.search), /sym=META/);
+  for (const id of ['focus', 'squote', 'fin', 'opt', 'snews', 'story', 'vstat']) assert.match(b[id].title + ' ' + b[id].text, /META|Meta/, `${id} shows META after rapid switching (stale responses discarded): ${b[id].title}`);
+  for (const [id, x] of Object.entries(b)) assert.doesNotMatch(x.title, /\b(BFLR|ANT|EURUSD|BTC)\b/, `${id} kept an earlier market: ${x.title}`);
+  // Back to ALL restores the saved desk layout; the browser's Back returns to META.
+  await command(page, 'ALL'); await page.clock.runFor(1500);
+  assert.equal(await page.$eval('.fx-mode.on', n => n.textContent), 'ALL');
+  assert.doesNotMatch(await page.evaluate(() => location.search), /sym=/);
+  await page.reload(); await page.clock.runFor(2500);
+  assert.equal(await page.$eval('.fx-mode.on', n => n.textContent), 'ALL', 'refresh keeps ALL');
+  await page.goto(page.url().replace(/\?.*$/, '') + '?sym=ANT'); await page.clock.runFor(4000);
+  b = await focusBoxes(page); assert.match(b.focus.title, /ANT/); assert.match(b.fin.title, /^FAANT/);
+  assert.deepEqual(errors, []); await ctx.close();
+});
+
+test('FOCUS: an old saved FOCUS layout with only a few boxes does not leave the workspace empty (and is kept)', async () => {
+  const {ctx, page, errors} = await boot({width: 1920, height: 1080, seed: {'fx-term-layout-sym-stock': JSON.stringify(['range', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null])}, url: '?sym=META'});
+  await page.clock.runFor(4000);
+  const b = await focusBoxes(page);
+  assert.ok(Object.keys(b).length >= 20, `full workspace (${Object.keys(b).length} boxes), not one chart`);
+  assert.equal(await page.evaluate(() => localStorage.getItem('fx-term-layout-sym-stock')), JSON.stringify(['range', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]), 'the saved layout is not deleted');
+  assert.deepEqual(errors, []); await ctx.close();
 });

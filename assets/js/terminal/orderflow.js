@@ -407,14 +407,16 @@
   T.PANELS.dom = ['DOM', 'Depth of market', 'dom'];
   T.PANEL_DESC.dom = 'Live price ladder: bids and asks at every level (Kraken, crypto)';
   T.LINK_LABEL.dom = 'Ladder';
-  T.RENDER.dom = renderDomPanel;
+  // FOCUS on a coin with no Kraken book: say so, never keep showing the previous pair (often BTC/USD).
+  const notCovered = id => { const sy = T.S?.sym; if (!sy || T.S.cmp || sy.cls !== 'crypto' || pairFor(sy.symbol)) return false; const host = T.panel(id); host.append(T.el('p', 'fx-empty', `The live order book covers ${PAIRS.length} Kraken pairs. ${sy.symbol.replace('-USD', '')} is not one of them, so no other coin's book is shown here.`)); return true; };
+  T.RENDER.dom = () => notCovered('dom') || renderDomPanel();
   T.EXTRA_GROUPS.push(['Order book', ['dom']]);
   if (PG) { PG.add('dom', 'Depth of market', renderDomPage); T.PAGE_NAMES.push('DOM'); }
 
   T.PANELS.oflow = ['OFLOW', 'Order flow · live book', 'orderflow'];
   T.PANEL_DESC.oflow = 'Live crypto order book heatmap, imbalance and trade flow';
   T.LINK_LABEL.orderflow = 'Full';
-  T.RENDER.oflow = renderPanel;
+  T.RENDER.oflow = () => notCovered('oflow') || renderPanel();
   if (PG) { PG.add('orderflow', 'Order flow', renderPage); PG.add('oflow', 'Order flow', renderPage); T.PAGE_NAMES.push('OFLOW', 'ORDERFLOW'); }
   // Crypto desk: live order flow in place of the static top-of-book box.
   const cd = T.DESK_DEFS?.crypto; if (cd && !cd.slots.includes('oflow')) cd.slots = cd.slots.map(s => s === 'books' ? 'oflow' : s);

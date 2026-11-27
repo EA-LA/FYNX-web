@@ -347,9 +347,9 @@ window.FynxTerminalPages = T => {
     const draw = () => {
       const q = input.value.trim().toLowerCase(); list.replaceChildren();
       if (!dir.length) return list.append(el('p', 'fx-empty', 'The SEC directory is unavailable right now.'));
-      const hits = q ? dir.filter(c => (c.symbol || '').toLowerCase() === q || (c.symbol || '').toLowerCase().startsWith(q) || (c.name || '').toLowerCase().includes(q)).slice(0, 60) : T.CATALOG.filter(c => c.group === 'Stocks').map(c => dir.find(d => d.symbol === c.symbol || d.symbol === c.symbol.replace('-', '.'))).filter(Boolean);
+      const hits = q ? dir.filter(c => (c.symbol || '').toLowerCase().split(/\s*,\s*/).some(x => x === q || x.startsWith(q)) || (c.name || '').toLowerCase().includes(q)).slice(0, 60) : T.CATALOG.filter(c => c.group === 'Stocks').map(c => T.findCompany(dir, c.symbol)).filter(Boolean);
       list.append(el('p', 'pg-note', q ? `${hits.length >= 60 ? '60+' : hits.length} matches of ${dir.length.toLocaleString()} companies` : `Popular · ${dir.length.toLocaleString()} companies in the directory`));
-      for (const c of hits) { const r = rowButton('pg-co', () => open('fa', c.symbol || 'cik' + c.cik), `${c.name} financials`); r.append(el('b', '', c.symbol || '—'), el('span', '', c.name), el('small', 'fx-dim', 'CIK ' + c.cik)); list.append(r); }
+      for (const c of hits) { const r = rowButton('pg-co', () => open('fa', 'cik' + c.cik), `${c.name} financials`); r.append(el('b', '', c.symbol || '—'), el('span', '', c.name), el('small', 'fx-dim', 'CIK ' + c.cik)); list.append(r); }
     };
     bar.addEventListener('submit', e => { e.preventDefault(); draw(); }); input.addEventListener('input', () => { if (input.value.length === 0 || input.value.length > 1) draw(); });
     draw(); input.focus();

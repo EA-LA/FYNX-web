@@ -189,7 +189,7 @@
       const tiles = el('div', 'hm-futtiles');
       for (const id of r.ids.sort((a, b) => Math.abs(quoteFor(b).changePercent) - Math.abs(quoteFor(a).changePercent))) {
         const q = quoteFor(id), z = finite(q.vol20) && q.vol20 > 0 ? q.changePercent / q.vol20 : null, v = mode === 'sigma' ? z : q.changePercent;
-        const t = btn('', 'hm-ftile', () => focusOn(id), `${nameOf(id)}: ${pct(q.changePercent)}${finite(z) ? `, ${signed(z, 1, 'σ')} vs its normal day` : ''}`);
+        const t = btn('', 'hm-ftile', () => openSym(id, nameOf(id)), `${nameOf(id)}: ${pct(q.changePercent)}${finite(z) ? `, ${signed(z, 1, 'σ')} vs its normal day` : ''}`);
         t.style.background = heat(v, mode === 'sigma' ? 3 : 2.5);
         t.append(el('b', '', shortOf(id)), el('span', '', pct(q.changePercent)), el('small', '', finite(z) ? signed(z, 1, 'σ') : nameOf(id).slice(0, 14)));
         if (finite(z) && Math.abs(z) >= 2) t.classList.add('hm-hot');
@@ -269,7 +269,7 @@
       setText('n-cfx', `${groups.reduce((a, g) => a + g.ids.length, 0)} pairs`);
       const grid = el('div', 'hm-fut' + (large ? ' hm-fut-lg' : ''));
       for (const g of groups) { const sec = el('div', 'hm-futrow'), lab = el('div', 'hm-futlab'); lab.append(el('b', '', g.l)); sec.append(lab); const tiles = el('div', 'hm-futtiles');
-        for (const id of g.ids) { const q = quoteFor(id), z = finite(q.vol20) && q.vol20 > 0 ? q.changePercent / q.vol20 : null; const t = btn('', 'hm-ftile', () => focusOn(id), `${nameOf(id)} ${pct(q.changePercent)}`); t.style.background = heat(q.changePercent, 1); t.append(el('b', '', shortOf(id)), el('span', '', pct(q.changePercent)), el('small', '', finite(z) ? signed(z, 1, 'σ') : '')); if (finite(z) && Math.abs(z) >= 2) t.classList.add('hm-hot'); tiles.append(t); }
+        for (const id of g.ids) { const q = quoteFor(id), z = finite(q.vol20) && q.vol20 > 0 ? q.changePercent / q.vol20 : null; const t = btn('', 'hm-ftile', () => openSym(id, nameOf(id)), `${nameOf(id)} ${pct(q.changePercent)}`); t.style.background = heat(q.changePercent, 1); t.append(el('b', '', shortOf(id)), el('span', '', pct(q.changePercent)), el('small', '', finite(z) ? signed(z, 1, 'σ') : '')); if (finite(z) && Math.abs(z) >= 2) t.classList.add('hm-hot'); tiles.append(t); }
         sec.append(tiles); grid.append(sec); }
       return host.append(grid, scaleBar(1, '%'), legend('Spot FX, quoted as listed (e.g. EURUSD up = euro stronger; USDJPY up = dollar stronger). Colour = today’s move, ±1% is full colour. σ = move vs its 20-day normal.'));
     }

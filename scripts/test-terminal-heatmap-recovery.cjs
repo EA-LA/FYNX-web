@@ -156,7 +156,7 @@ test('a valid recently published headline still produces a news heat map', async
 
 test('Terminal boot page requests the fixed heatmap JavaScript rather than a cached version', () => {
   const html = readFileSync(path.join(__dirname, '..', 'terminal.html'), 'utf8');
-  assert.match(html, /assets\/js\/terminal\/heatmaps\.js\?v=20261127-audit-1/);
+  assert.match(html, /assets\/js\/terminal\/heatmaps\.js\?v=20261127-focus-1/);
 });
 
 const cryptoFixture = {
