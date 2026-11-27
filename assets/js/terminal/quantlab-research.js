@@ -400,6 +400,48 @@
     w.append(head, hb, legendScale());
     requestAnimationFrame(() => heatmap(hb, {rows: d.h.days.map(x => DOWS[x]), cols: d.h.hours.map(h => String(h).padStart(2, '0')), cells: d.h.vol.map(r => r.map(c => c?.v)), now: nc.rc, small: true, aria: `${iSym} volatility by weekday and hour`, title: (v, r, c) => `${DOWS[d.h.days[r]]} ${String(d.h.hours[c]).padStart(2, '0')}:00 ${tzCity(d.tz)} · ${v.toFixed(2)}× average |return|`}));
   }
+  function weekdayHourRows(analysis, weekday) {
+    const row = analysis.days.indexOf(weekday);
+    if (row < 0) return [];
+    return analysis.hours.flatMap((hour, i) => {
+      const c = analysis.vol[row]?.[i];
+      if (!c || c.n < 8) return [];
+      const volumeRatio = analysis.volu?.[row]?.[i]?.v;
+      const move = analysis.avgA === 0 ? 0 : c.v * analysis.avgA;
+      return [{hour, n: c.n, move, moveRatio: c.v, volumeRatio}];
+    });
+  }
+  function weekdayHourCard(H, city, currentDay) {
+    const label = el('label', '', 'Weekday ');
+    const picker = el('select'); picker.style.minHeight = '44px'; label.append(picker);
+    for (const day of H.days) {
+      const option = el('option', '', DOWS[day]); option.value = String(day); picker.append(option);
+    }
+    picker.value = String(H.days.includes(currentDay) ? currentDay : H.days[0]);
+    const status = note(''); status.setAttribute('role', 'status');
+    const scroll = el('div'); scroll.style.overflowX = 'auto';
+    const table = el('table', 'fx-ql-tbl'), thead = el('thead'), tr = el('tr'), body = el('tbody');
+    table.setAttribute('aria-label', 'Hourly seasonality by weekday');
+    for (const name of ['Local hour', 'Samples', 'Avg. absolute move', 'Move vs average', 'Volume vs average']) {
+      const th = el('th', '', name); th.scope = 'col'; tr.append(th);
+    }
+    thead.append(tr); table.append(thead, body); scroll.append(table);
+    const ratio = v => finite(v) ? v.toFixed(2) + '×' : '—';
+    const refresh = () => {
+      const day = Number(picker.value), rows = weekdayHourRows(H, day);
+      status.textContent = rows.length ? `${DOWS[day]} · ${rows.length} hour slot${rows.length === 1 ? '' : 's'} · ${city} time` : `${DOWS[day]} · No hours have at least eight samples.`;
+      scroll.hidden = !rows.length; body.textContent = '';
+      for (const x of rows) {
+        const row = el('tr'), hour = el('th', '', hhmm(x.hour * 60)); hour.scope = 'row';
+        row.append(hour, el('td', '', String(x.n)), el('td', '', pct(x.move, 3)),
+          el('td', '', ratio(x.moveRatio)), el('td', '', ratio(x.volumeRatio)));
+        body.append(row);
+      }
+    };
+    picker.addEventListener('change', refresh); refresh();
+    return card('HOURLY SEASONALITY DETAILS', label, status, scroll,
+      note('Moves are absolute hourly log returns, using the same observations as the heatmap. “Average” means all hourly samples for this market. Slots with fewer than eight samples are omitted; a dash means a ratio is unavailable.'));
+  }
   async function renderIseasPage(host, arg) {
     if (arg && SYM_RE.test(String(arg).toUpperCase())) { iSym = String(arg).toUpperCase(); store.set('iseas-sym', iSym); }
     PG.setHead('ISEAS', 'Intraday seasonality map', `${iSym} · when in the day and week does this market move? Andersen–Bollerslev intraday periodicity`);
@@ -420,6 +462,7 @@
       const hb = chartBox(Math.max(220, 34 * H.days.length + 24)), vb = H.volu ? chartBox(Math.max(200, 30 * H.days.length + 24)) : null;
       out.append(card(`VOLATILITY HEATMAP · AVERAGE |RETURN| BY WEEKDAY AND HOUR (${city.toUpperCase()} TIME)`, hb, legendScale(), note('Each cell is the average absolute hourly return in that weekday-hour divided by the average over all hours: 1.00× is a normal hour, 2.00× twice as volatile. The white box is now. Hover a cell for details.')));
       if (vb) out.append(card('VOLUME HEATMAP · AVERAGE VOLUME BY WEEKDAY AND HOUR', vb, note('Same layout for traded volume. Volatility and volume move together through the day, as Andersen and Bollerslev found.')));
+      out.append(weekdayHourCard(H, city, nc.n?.dow));
       requestAnimationFrame(() => {
         heatmap(hb, {rows: H.days.map(x => DOWS[x]), cols: H.hours.map(h => String(h).padStart(2, '0') + 'h'), cells: H.vol.map(r => r.map(c => c?.v)), now: nc.rc, aria: `${iSym} volatility by weekday and hour`, title: (v, r, c) => `${DOWS[H.days[r]]} ${String(H.hours[c]).padStart(2, '0')}:00 ${city} · ${v.toFixed(2)}× average |return| · ${H.vol[r][c].n} hours`});
         if (vb) heatmap(vb, {rows: H.days.map(x => DOWS[x]), cols: H.hours.map(h => String(h).padStart(2, '0') + 'h'), cells: H.volu.map(r => r.map(c => c?.v)), now: nc.rc, aria: `${iSym} volume by weekday and hour`, title: (v, r, c) => `${DOWS[H.days[r]]} ${String(H.hours[c]).padStart(2, '0')}:00 · ${v.toFixed(2)}× average volume`});
@@ -693,5 +736,5 @@
     T.PAGE_NAMES.push('VCLUST', 'GARCH', 'ISEAS', 'SEASONALITY', 'FACTOR', 'RMOM', 'MOMENTUM');
   }
   if (T.DESK_DEFS?.quant) Object.assign(T.DESK_DEFS.quant, {slots: ['oflow', 'panic', 'mcvar', 'vclust', 'iseas', 'factor', 'rmom'], grid: {cols: '1fr 1fr 1fr 1fr 1fr 1fr', areas: ['s1 s1 s1 s2 s2 s2', 's1 s1 s1 s2 s2 s2', 's3 s3 s4 s4 s5 s5', 's6 s6 s6 s7 s7 s7']}});
-  T.QuantResearch = {acf, garch, fittedBandCoverage, ols, ljungBox, chi2p, intradayReturns, loadBars, mean, sd, ui: {frame, label, lineChart, heatmap, heatColor, legendScale, card, chartBox, note, chips, symbolBox, pill, betaBar}};
+  T.QuantResearch = {acf, garch, weekdayHourRows, fittedBandCoverage, ols, ljungBox, chi2p, intradayReturns, loadBars, mean, sd, ui: {frame, label, lineChart, heatmap, heatColor, legendScale, card, chartBox, note, chips, symbolBox, pill, betaBar}};
 });
