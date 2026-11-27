@@ -21,6 +21,9 @@ function boot() {
         innerHTML: '',
         className: '',
         listeners: {},
+        attributes: new Map(),
+        setAttribute(name, value) { this.attributes.set(name, value); },
+        removeAttribute(name) { this.attributes.delete(name); },
         addEventListener(name, fn) {
           (this.listeners[name] ||= []).push(fn);
         }
@@ -41,10 +44,10 @@ function boot() {
   };
   const window = {addEventListener() {}};
   vm.runInNewContext(controller, {document, window, Intl}, {timeout: 1000});
-  function fire(id, name) {
+  function fire(id, name, event) {
     const handlers = el(id).listeners[name] || [];
     assert.ok(handlers.length, id + ' must register ' + name);
-    handlers.forEach(fn => fn());
+    handlers.forEach(fn => fn(event));
   }
   return {el, fire};
 }
@@ -133,4 +136,85 @@ test('an extra payment that rescues a too-low payment is explained, negative ext
   el('extraPayment').value = '-5';
   fire('calculateBtn', 'click');
   assert.match(el('resultStatus').textContent, /valid positive values/);
+});
+
+
+test('one-time principal compares interest and time without changing the regular schedule', () => {
+  const {el, fire} = boot();
+  const rows = el('scheduleBody').innerHTML;
+  el('upfrontPayment').value = '2000';
+  fire('upfrontPayment', 'input');
+  assert.match(el('upfrontResult').textContent, /Calculate again/);
+  assert.equal(el('scheduleBody').innerHTML, rows);
+  fire('calculateBtn', 'click');
+  assert.match(el('upfrontResult').textContent, /40 months and \$1,764\.16.*31 months and \$1,085\.22.*9 months sooner and save \$678\.94/);
+  assert.equal(el('scheduleBody').innerHTML, rows);
+  assert.equal(el('monthsValue').textContent, '40 months');
+  el('upfrontPayment').value = '10000';
+  fire('calculateBtn', 'click');
+  assert.match(el('upfrontResult').textContent, /paid off today.*40 months sooner and save \$1,764\.16/);
+});
+
+test('a lower balance can rescue an otherwise non-amortizing plan without claiming savings', () => {
+  const {el, fire} = boot();
+  el('loanAmount').value = '5000';
+  el('interestRate').value = '24';
+  el('monthlyPayment').value = '90';
+  el('upfrontPayment').value = '1000';
+  fire('calculateBtn', 'click');
+  assert.match(el('resultStatus').textContent, /Payment is too low/);
+  assert.match(el('upfrontResult').textContent, /Without.*does not exceed.*With.*\d months and .*Interest savings cannot be estimated/);
+});
+
+test('a zero rate correctly shows zero future interest savings', () => {
+  const {el, fire} = boot();
+  el('interestRate').value = '0';
+  el('upfrontPayment').value = '2000';
+  fire('calculateBtn', 'click');
+  assert.match(el('upfrontResult').textContent, /34 months and \$0\.00.*27 months and \$0\.00.*7 months sooner and save \$0\.00/);
+});
+
+test('invalid upfront inputs never alter the regular schedule and are recoverable', () => {
+  const {el, fire} = boot();
+  for (const value of ['10000.01', '-1', '0', '0.001']) {
+    el('upfrontPayment').value = value;
+    fire('calculateBtn', 'click');
+    assert.equal(el('upfrontPayment').attributes.get('aria-invalid'), 'true');
+    assert.match(el('upfrontResult').textContent, /no greater than the loan balance/);
+    assert.equal(el('monthsValue').textContent, '40 months');
+  }
+  el('upfrontPayment').value = '.50';
+  fire('upfrontPayment', 'input');
+  assert.equal(el('upfrontPayment').attributes.has('aria-invalid'), false);
+  fire('calculateBtn', 'click');
+  assert.match(el('upfrontResult').textContent, /With \$0\.50 paid today/);
+});
+
+test('model changes and reset clear stale comparisons; the scenario link omits upfront data', () => {
+  const {el, fire} = boot();
+  el('upfrontPayment').value = '2000';
+  fire('calculateBtn', 'click');
+  el('extraPayment').value = '100';
+  fire('extraPayment', 'input');
+  assert.match(el('upfrontResult').textContent, /Calculate again/);
+  fire('calculateBtn', 'click');
+  assert.match(el('upfrontResult').textContent, /Without the one-time payment: 29 months/);
+  fire('resetBtn', 'click');
+  assert.equal(el('upfrontPayment').value, '');
+  assert.match(el('upfrontResult').textContent, /Enter a one-time principal payment/);
+  assert.doesNotMatch(html.match(/data-scenario-fields="[^"]+"/)[0], /upfrontPayment/);
+});
+
+test('Enter in the one-time input prevents a native change from immediately clearing results', () => {
+  const {el, fire} = boot();
+  el('upfrontPayment').value = '2000';
+  let prevented = false;
+  fire('upfrontPayment', 'keydown', {key: 'Enter', preventDefault() { prevented = true; }});
+  assert.equal(prevented, true);
+  assert.match(el('upfrontResult').textContent, /9 months sooner/);
+  fire('upfrontPayment', 'change');
+  assert.match(el('upfrontResult').textContent, /9 months sooner/);
+  el('upfrontPayment').value = '500';
+  fire('upfrontPayment', 'change');
+  assert.match(el('upfrontResult').textContent, /Calculate again/);
 });
