@@ -111,7 +111,7 @@ async function handler(data,ctx){
  await rateLimit(uid);
  // The FYNX owner's verified account (owner-access.cjs) is entitled without Stripe: no customer, subscription or payment.
  const owner=isOwnerRecord({...user,uid},process.env);
- const s=owner?null:stripe(),ref=root(uid);
+ const ref=root(uid);
  // Payment-method updates and cancellation must not depend on entitlement reads.
  if(data?.action==='portal'){
   const customer=(await ref.get()).data()?.customer;if(!customer)fail('failed-precondition',owner?'Owner access is complimentary and has no billing account.':'No billing account yet.');
@@ -119,13 +119,19 @@ async function handler(data,ctx){
   const config=await s.billingPortal.configurations.create({business_profile:{headline:'FYNX membership billing'},features:{invoice_history:{enabled:true},payment_method_update:{enabled:true},subscription_cancel:{enabled:true,mode:'at_period_end'}}},{idempotencyKey:'fynx-consumer-live-portal-v1'});
   return {url:(await s.billingPortal.sessions.create({customer,configuration:config.id,return_url:returnUrl(data.tool)})).url,mode:'live'};
  }
- let state;const appleAccess=owner?false:await appleBridge(uid);
+ let state,s;const appleAccess=owner?false:await appleBridge(uid);
+ // Independently verified Apple access does not depend on Stripe configuration or uptime.
+ // Preserve the existing Stripe configuration requirement for accounts without Apple access.
+ if(!owner&&!appleAccess)s=stripe();
  if(owner)state={...ownerMembership(),hasBillingAccount:!!(await ref.get()).data()?.customer};
- else try{state=await entitlement(uid,s);}catch(error){
+ else try{s??=stripe();state=await entitlement(uid,s);}catch(error){
   if(data.action!=='status'&&!appleAccess)throw error;
   state={tier:null,hasBillingAccount:!!(await ref.get()).data()?.customer,billingUnavailable:true};
  }
- if(appleAccess)state={...state,tier:'pro',accessProvider:'apple',stripeTier:state.tier};
+ if(appleAccess){
+  const {billingUnavailable,...verified}=state;
+  state={...verified,tier:'pro',accessProvider:'apple',stripeTier:state.tier,...(billingUnavailable?{stripeBillingUnavailable:true}:{})};
+ }
  if(data?.action==='status')return {mode:'live',...state,plans:PLANS,features:{researchNotesVersion:1}};
  if(data?.action==='usage')return {...await usage(uid,state.tier,data),...(owner?{owner:true}:{})};
  // Advanced industry analytics are computed here, so only an entitled account ever receives them.

@@ -359,3 +359,33 @@ test('bounded open checkout pagination fails closed instead of processing partia
  assert.equal(h.calls.some(c=>['expire','checkout'].includes(c[0])),false);
  assert.equal(h.data.get('fynxConsumerLive/owner').checkoutLockUntil,0);
 });
+
+test('verified Apple website access survives Stripe subscription lookup failure',async()=>{
+ const h=harness({bridge:true,customer:true,stripeDown:true});
+ h.data.set('intelligenceEntitlements/owner',{source:'app-store-server',productId:'com.fynx.financeworld.monthly',environment:'Production',expiresAt:Date.now()+600000,verifiedAt:Date.now()-1000});
+ const status=await h.call({action:'status'});
+ assert.equal(status.tier,'pro');assert.equal(status.accessProvider,'apple');
+ assert.equal(status.billingUnavailable,undefined);assert.equal(status.stripeBillingUnavailable,true);
+ assert.equal(status.hasBillingAccount,true);
+ assert.equal((await h.call({action:'run',product:'watchlist',input:{symbols:['AAPL']}})).mode,'live');
+ assert.equal((await h.call({action:'list'})).limit,PLANS.pro.saved);
+ await assert.rejects(h.call({action:'checkout',tier:'pro'}),{code:'already-exists'});
+ assert.match((await h.call({action:'portal'})).url,/billing.stripe.com/);
+ assert.equal(h.calls.some(c=>c[0]==='checkout'),false);
+});
+
+test('verified Apple website access survives missing live Stripe configuration without enabling checkout',async()=>{
+ const h=harness({bridge:true,customer:true,key:'sk_test_SAMPLE'});
+ const proof={source:'app-store-server',productId:'com.fynx.financeworld.monthly',environment:'Production',expiresAt:Date.now()+600000,verifiedAt:Date.now()-1000};
+ h.data.set('intelligenceEntitlements/owner',proof);
+ const status=await h.call({action:'status'});
+ assert.equal(status.tier,'pro');assert.equal(status.accessProvider,'apple');
+ assert.equal(status.billingUnavailable,undefined);assert.equal(status.stripeBillingUnavailable,true);
+ assert.equal((await h.call({action:'run',product:'watchlist',input:{symbols:['AAPL']}})).mode,'live');
+ await assert.rejects(h.call({action:'checkout',tier:'pro'}),{code:'already-exists'});
+ await assert.rejects(h.call({action:'portal'}),{code:'failed-precondition'});
+ h.data.set('intelligenceEntitlements/owner',{...proof,revoked:true});
+ await assert.rejects(h.call({action:'status'}),{code:'failed-precondition'});
+ await assert.rejects(h.call({action:'run',product:'watchlist',input:{symbols:['AAPL']}}),{code:'failed-precondition'});
+ assert.equal(h.calls.some(c=>c[0]==='checkout'),false);
+});
