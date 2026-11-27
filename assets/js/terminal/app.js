@@ -87,12 +87,15 @@
   const $ = id => document.getElementById(id);
   const finite = v => typeof v === 'number' && Number.isFinite(v);
   /* Symbol mode: picking one market reloads every box for it. Layouts per asset class. */
+  // FOCUS: a full research desk for one market. Every box either shows the focused market itself (chart, quote,
+  // risk, financials, options, volatility, AI committee…) or is labelled context for it (its sector, its currencies'
+  // central banks, related headlines). Six extra boxes complete a fourth row.
   const SYM_SLOTS = {
-    stock: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'fin', 'earn', 'opt', 'cmp', 'desks', 'heat', 'eco', 'xa', 'tools'],
-    fund: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'perf', 'opt', 'cmp', 'xa', 'desks', 'heat', 'eco', 'term', 'tools'],
-    fx: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'bias', 'cb', 'eco', 'range', 'pos', 'corr', 'curve', 'sess', 'tools'],
-    crypto: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'books', 'edge', 'dom', 'cmp', 'xa', 'desks', 'heat', 'eco', 'tools'],
-    other: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'perf', 'cmp', 'xa', 'term', 'pos', 'desks', 'heat', 'eco', 'tools']
+    stock: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'fin', 'earn', 'opt', 'cmp', 'desks', 'heat', 'eco', 'xa', 'tools', 'committee', 'earnprev', 'vstat', 'idx', 'movers', 'top'],
+    fund: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'perf', 'opt', 'cmp', 'xa', 'desks', 'heat', 'eco', 'term', 'tools', 'vstat', 'idx', 'movers', 'rates', 'gov', 'top'],
+    fx: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'bias', 'cb', 'eco', 'range', 'pos', 'corr', 'curve', 'sess', 'tools', 'vstat', 'str', 'rates', 'gov', 'mood', 'top'],
+    crypto: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'books', 'edge', 'dom', 'cmp', 'xa', 'desks', 'heat', 'eco', 'tools', 'vstat', 'oflow', 'cfng', 'movers', 'mood', 'top'],
+    other: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'perf', 'cmp', 'xa', 'term', 'pos', 'desks', 'heat', 'eco', 'tools', 'vstat', 'range', 'rates', 'gov', 'mood', 'top']
   };
   S.focusGen = 0; S.cmp = null; S.cmpSeed = null;
   { const j = k => { try { return JSON.parse(store.get(k) || 'null'); } catch { return null; } }; S.lastSym = j('last-sym'); S.lastCmp = Array.isArray(j('last-cmp')) ? j('last-cmp') : null; }
@@ -109,12 +112,24 @@
     return 'other';
   }
   function symCurrencies(symbol) {
-    const e = FX_TO_EDGE[symbol] || symbol, m = /^([A-Z]{3})([A-Z]{3})$/.exec(e);
+    const e = FX_TO_EDGE[symbol] || symbol, m = /^([A-Z]{3})([A-Z]{3})(=X)?$/.exec(e);
     if (m) return [m[1], m[2]];
+    // Yahoo quotes USD/XXX as "XXX=X" (TRY=X is USD/TRY).
+    const y = /^([A-Z]{3})=X$/.exec(e); if (y) return ['USD', y[1]];
     const cur = S.symData[symbol]?.currency; return cur ? [cur.toUpperCase()] : ['USD'];
   }
+  // The desk whose context fits a market of another kind: gold and oil → commodities, ^TNX → bonds, ^GSPC → indices,
+  // ES=F → futures. Never the desk the user happened to be on (a Stocks desk list is not context for gold).
+  function contextDesk(symbol) {
+    const s = String(symbol || '').toUpperCase();
+    if (/^(XAU|XAG|XPT|XPD)/.test(s) || /^(GC|SI|HG|PL|PA|CL|BZ|NG|RB|HO|ZC|ZS|ZW|KC|SB|CC|CT|LE|HE)=F$/.test(s)) return 'commodities';
+    if (/^\^(TNX|FVX|TYX|IRX)$/.test(s) || /^(ZN|ZB|ZF|ZT|UB)=F$/.test(s)) return 'bonds';
+    if (/^\^/.test(s) || /^(US30|NAS100|SPX500|GER40|UK100|JPN225)$/.test(s)) return 'indices';
+    if (/=F$/.test(s)) return 'futures';
+    return null;
+  }
   function symDef() {
-    const s = S.sym, cls = s.cls, base = DESK_DEFS[{stock: 'stocks', fund: 'funds', fx: 'forex', crypto: 'crypto'}[cls]] || DESK_DEFS[S.deskKey] || DESK_DEFS.all, edgeId = FX_TO_EDGE[s.symbol] || (EDGE[s.symbol] ? s.symbol : null);
+    const s = S.sym, cls = s.cls, base = DESK_DEFS[{stock: 'stocks', fund: 'funds', fx: 'forex', crypto: 'crypto'}[cls] || contextDesk(s.symbol)] || DESK_DEFS.all, edgeId = FX_TO_EDGE[s.symbol] || (EDGE[s.symbol] ? s.symbol : null);
     const news = {fx: 'forex', crypto: 'crypto', fund: 'finance', stock: 'stocks'}[cls] || base.news;
     return {...base, label: shortOf(s.symbol), noun: s.name || s.symbol, who: `${shortOf(s.symbol)} traders`, slots: SYM_SLOTS[cls] || SYM_SLOTS.other, focus: s.symbol, storyKind: 'symbol', symbol: true,
       calc: {stock: 'shares', fund: 'shares', fx: 'fx', crypto: 'crypto'}[cls] || (FUTSPEC[s.symbol] ? 'futures' : base.calc), ccy: symCurrencies(s.symbol), edge: edgeId ? [edgeId] : base.edge, range: edgeId || base.range,
@@ -289,14 +304,24 @@
     return S.history[id] || null;
   }
   async function loadDirectory() { if (!S.directory) { try { const d = await getJSON(FN('webResearchData') + '?action=directory', {timeout: 30000}); S.directory = d.companies || []; } catch (e) { report('directory', e); } } return S.directory || []; }
+  // SEC EDGAR lists every share class of a company under one CIK, so a directory entry's symbol can be
+  // "META, METAM" or "BRK-A, BRK-B". Match any listed class, never a prefix or another company.
+  function findCompany(dir, ticker) {
+    const t = String(ticker || '').toUpperCase(), alt = [t, t.replace('-', '.'), t.replace('.', '-')];
+    return (dir || []).find(c => String(c.symbol || '').toUpperCase().split(/\s*,\s*/).some(x => alt.includes(x))) || null;
+  }
   async function loadFin(ticker, cik) {
     const key = cik ? 'cik' + cik : ticker;
     if (S.fin[key]) return S.fin[key];
     try {
-      if (!cik) { const dir = await loadDirectory(); const symbol = ticker.replace('-', '.'), company = dir.find(c => c.symbol === ticker || c.symbol === symbol); if (!company) return null; cik = company.cik; }
+      if (!cik) {
+        const dir = await loadDirectory(), company = findCompany(dir, ticker);
+        if (!company) return dir?.length ? {missing: 'directory'} : null;
+        cik = company.cik;
+      }
       S.fin[key] = await getJSON(FN('webResearchData') + '?action=financials&cik=' + cik, {timeout: 30000});
       return S.fin[key];
-    } catch (e) { report('fin', e); return null; }
+    } catch (e) { report('fin', e); return {missing: 'filings', message: e?.message || ''}; }
   }
 
   /* --- tick commit: every value the terminal shows, recorded once per data batch ---------------------- */
@@ -398,7 +423,8 @@
 
   /* --- quote rows (shared by MKTS, IDX, XA, MOV) ------------------------------- */
   function quoteRow(id, extra, onPick) {
-    const q = quoteFor(id), r = rowButton('fx-r3' + (S.focus === id || S.focus === FX_TO_EDGE[id] ? ' sel' : ''), onPick || (() => focusOn(id)), onPick ? `Load the desk for ${nameOf(id)}` : `Chart ${nameOf(id)}`);
+    // Every market row opens that market's FOCUS workspace: one selection behaviour everywhere.
+    const q = quoteFor(id), r = rowButton('fx-r3' + (S.focus === id || S.focus === FX_TO_EDGE[id] ? ' sel' : ''), onPick || (() => setSymbol({symbol: id})), `Open ${nameOf(id)}`);
     const n = el('span', 'fx-sym'); n.append(el('b', '', shortOf(id)), el('small', '', extra || nameOf(id)));
     r.append(n, tk(el('span', 'fx-num', q ? fmt(q.price, digitsOf(id)) : '—'), 'px:' + id, q?.price), tk(el('span', 'fx-num ' + tone(q?.changePercent), q ? signed(q.changePercent, 2, '%') : '—'), 'chg:' + id, q?.changePercent));
     return r;
@@ -407,7 +433,7 @@
     // Tabs backed by a live list (★ followed markets) are shown only when the list has markets.
     const d = D(), groups = d.mkts.filter(t => Array.isArray(t[1]) || t[1].syms.length), all = groups.length > 1 ? [['ALL', {syms: [...new Set(groups.flatMap(g => universe(g[1])))]}], ...groups] : groups;
     if (!all.some(t => t[0] === S.mktTab)) S.mktTab = all[0][0];
-    setText('t-mkts', d.noun);
+    setText('t-mkts', S.sym && !S.cmp ? `${shortOf(S.sym.symbol)} and related markets` : d.noun);
     tabs('mkts-tabs', all.map(t => [t[0], t[0]]), S.mktTab, v => { S.mktTab = v; renderMkts(); });
     const host = panel('mkts');
     let list = universe(all.find(t => t[0] === S.mktTab)[1]);
@@ -582,7 +608,9 @@
     const host = panel('fin'); empty(host, 'Loading SEC filings…');
     const f = await loadFin(t); if (t !== S.finTicker) return;
     host.replaceChildren();
-    if (!f?.periods?.length) return empty(host, 'Financial statements are not available from SEC EDGAR for this company right now.');
+    // Say exactly why, for this company: never show another company's statements instead.
+    if (f?.missing === 'directory') return empty(host, `${t} is not in SEC EDGAR's company list, so FYNX has no SEC financial statements for it. New listings are added within days; companies that do not file with the SEC never appear.`);
+    if (!f?.periods?.length) return empty(host, f?.missing === 'filings' ? `SEC EDGAR has no annual (10-K) US-GAAP statements for ${t} yet. Recently listed companies file their first 10-K after their first fiscal year; foreign issuers file other forms.` : 'Financial statements are not available from SEC EDGAR for this company right now.');
     host.append(el('p', 'fx-sub', `${f.name} · CIK ${f.cik}`), finTable(f, t, f.periods.slice(0, 4)), el('p', 'fx-foot', 'Annual 10-K facts from SEC EDGAR · click a value for its filing.'));
   }
 
@@ -794,14 +822,31 @@
   function biasRows() { return M.PAIRS.map(p => ({p, b: M.smartBias(p, {desk: S.desk, edgeMarket: S.edge?.markets?.find(m => m.symbol === p.id), livePrice: quoteFor(p.id)?.price})})).sort((a, c) => (c.b.score ?? -999) - (a.b.score ?? -999)); }
   function renderBias() {
     const host = panel('bias');
-    for (const {p, b} of biasRows()) {
+    let rows = biasRows();
+    if (S.sym) {
+      const ccy = symCurrencies(S.sym.symbol), own = FX_TO_EDGE[S.sym.symbol] || S.sym.symbol;
+      const direct = rows.filter(r => r.p.id === own), related = rows.filter(r => r.p.id !== own && (ccy.includes(r.p.base) || ccy.includes(r.p.quote)));
+      rows = [...direct, ...related];
+      setText('t-bias', direct.length ? `Smart Bias · ${shortOf(S.sym.symbol)} and related pairs` : `Smart Bias · pairs sharing ${ccy.join(' or ')} (${shortOf(S.sym.symbol)} not covered)`);
+      if (!rows.length) return empty(host, `Smart Bias covers the 10 major pairs. None of them includes ${ccy.join(' or ')}.`);
+    } else setText('t-bias', 'Smart Bias');
+    for (const {p, b} of rows) {
       const r = rowButton('fx-bias', () => { focusOn(p.id, {quiet: true}); openPage('bias', p.id); }, `${p.base}/${p.quote} bias`);
       const bar = el('span', 'fx-bbar'), fill = el('i', (b.score ?? 0) >= 0 ? 'up' : 'dn'), w = Math.abs(b.score ?? 0) / 2; fill.style.width = w + '%'; fill.style.left = ((b.score ?? 0) >= 0 ? 50 : 50 - w) + '%'; bar.append(el('b'), fill);
       r.append(el('b', '', `${p.base}${p.quote}`), el('span', 'fx-num fx-dim', quoteFor(p.id) ? fmt(quoteFor(p.id).price, EDGE[p.id][2]) : ''), bar, el('span', 'fx-num ' + ((b.score ?? 0) >= 15 ? 'fx-up' : (b.score ?? 0) <= -15 ? 'fx-down' : 'fx-flat'), finite(b.score) ? `${b.score > 0 ? '+' : ''}${b.score}` : 'n/a'));
       host.append(r);
     }
   }
-  const edgeMarkets = () => (S.edge?.markets || []).filter(m => !D().edge || D().edge.includes(m.symbol));
+  const edgeMarkets = () => {
+    const all = S.edge?.markets || [];
+    if (S.sym && !S.cmp) {
+      const own = FX_TO_EDGE[S.sym.symbol] || S.sym.symbol, ccy = S.sym.cls === 'fx' ? symCurrencies(S.sym.symbol) : [];
+      const direct = all.filter(m => m.symbol === own);
+      const fx = new Set(Object.values(FX_TO_EDGE));
+      return direct.length ? direct : all.filter(m => fx.has(m.symbol) && ccy.some(c => m.symbol.includes(c)));
+    }
+    return all.filter(m => !D().edge || D().edge.includes(m.symbol));
+  };
   function trendPos(st) { return finite(st.close?.value) && finite(st.high20?.value) && finite(st.low20?.value) && st.high20.value > st.low20.value ? (st.close.value - st.low20.value) / (st.high20.value - st.low20.value) * 2 - 1 : null; }
   function renderEdge() {
     const host = panel('edge'), ms = edgeMarkets();
@@ -819,6 +864,7 @@
     const host = panel('pos'), ms = edgeMarkets().filter(m => finite(m.positioning?.net?.value)).sort((a, b) => b.positioning.net.value - a.positioning.net.value);
     if (!ms.length) return S.edge ? empty(host, 'No CFTC positioning for this desk.') : pending(host, 'edge', 'Loading positioning…', 'CFTC positioning is unavailable right now. FYNX retries automatically.');
     setText('n-pos', 'CFTC ' + (ms[0].positioning.reportDate || ''));
+    if (S.sym && !S.cmp) { const own = FX_TO_EDGE[S.sym.symbol] || S.sym.symbol; setText('t-pos', ms.some(m => m.symbol === own) ? `Futures positioning · ${shortOf(S.sym.symbol)}` : `Futures positioning · related pairs (no CFTC contract for ${shortOf(S.sym.symbol)})`); } else setText('t-pos', 'Futures positioning');
     for (const m of ms) {
       const n = m.positioning.net.value, r = rowButton('fx-posrow', () => openPage('edge', m.symbol), `${m.symbol} net ${Math.round(n * 100)}%`);
       const bar = el('span', 'fx-bbar'), fill = el('i', n >= 0 ? 'up' : 'dn'), w = Math.min(50, Math.abs(n) * 50); fill.style.width = w + '%'; fill.style.left = (n >= 0 ? 50 : 50 - w) + '%'; bar.append(el('b'), fill);
@@ -827,7 +873,10 @@
     host.append(el('p', 'fx-foot', '! = crowded vs its own history · speculators, net (long − short) / total'));
   }
   async function renderRange() {
-    const id = D().range || 'EURUSD', host = panel('range');
+    const host = panel('range'), focusId = S.sym ? (FX_TO_EDGE[S.sym.symbol] || (EDGE[S.sym.symbol] ? S.sym.symbol : null)) : null;
+    if (S.sym && !focusId) { setText('t-range', `${shortOf(S.sym.symbol)} daily range`); return empty(host, `The daily range distribution covers the FX pairs, metals, indices and coins in FYNX Edge Radar. ${shortOf(S.sym.symbol)} is not one of them, so no other market is shown here.`); }
+    const id = focusId || D().range;
+    if (!id) { setText('t-range', 'Daily range'); return empty(host, 'Pick a market to see its daily range distribution.'); }
     setText('t-range', `${EDGE[id]?.[0] || id} daily range · 1 year`);
     if (!S.bars[id]) { empty(host, 'Loading daily candles…'); await loadSeries(id); if (!$('b-range')) return; host.replaceChildren(); }
     const v = M.volDistribution(S.bars[id]?.raw, {symbol: id, pip: EDGE[id]?.[1]});
@@ -879,6 +928,8 @@
     if (load && !S.corr[S.corrWindow]) { empty(host, 'Loading…'); await loadCorr(); host.replaceChildren(); }
     const c = S.corr[S.corrWindow]; if (!c?.matrix) return empty(host, 'Correlation data is loading or unavailable.');
     const names = c.pairs.map(p => (typeof p === 'string' ? p : p.label || p.id || '').replace('/', ''));
+    const ownPair = S.sym && !S.cmp ? (FX_TO_EDGE[S.sym.symbol] || S.sym.symbol) : null;
+    setText('t-corr', ownPair && !names.includes(ownPair) ? `FX correlation · majors (context; ${shortOf(S.sym.symbol)} not included)` : 'FX correlation');
     const grid = el('div', 'fx-corr'); grid.style.gridTemplateColumns = `48px repeat(${names.length}, minmax(0,1fr))`;
     grid.append(el('span')); names.forEach(n => grid.append(el('span', 'fx-ch', n.slice(0, 6))));
     c.matrix.forEach((row, i) => {
@@ -923,6 +974,11 @@
     return e;
   }
   function renderOpt() {
+    if (S.sym) {
+      const own = S.sym.symbol;
+      if (!OPT()[own]) { setText('t-opt', `${shortOf(own)} options`); const host = panel('opt'); return S.opts ? empty(host, `FYNX's options feed has no listed option chain for ${shortOf(own)}. Chains cover ${Object.keys(OPT()).length} US underlyings; no other market's options are shown here.`) : pending(host, 'options', 'Loading option chains…', 'Option chains are unavailable right now. FYNX retries automatically.'); }
+      S.optSym = own;
+    }
     const sym = OPT()[S.optSym] ? S.optSym : OPT()[D().opt] ? D().opt : Object.keys(OPT())[0];
     if (sym) S.optSym = sym;
     setText('t-opt', sym ? `${sym} options` : 'Options');
@@ -1045,7 +1101,16 @@
     tabs('tools-tabs', [['calc', 'CALC'], ['jrnl', 'JRNL'], ['sess', 'SESS']], S.tool, v => { S.tool = v; renderTools(); });
     const host = panel('tools');
     setText('t-tools', {calc: CALC_TITLE[kind], jrnl: 'Your journal', sess: 'Trading sessions'}[S.tool]);
-    if (S.tool === 'calc') { calculator(host, kind, {compact: true}); return host.append(btn('All calculators ▸', 'fx-chip fx-chip-link', () => openPage('calc', {kind}))); }
+    if (S.tool === 'calc') {
+      let preset;
+      if (S.sym && (kind === 'shares' || kind === 'crypto')) preset = {sym: S.sym.symbol, entry: null, stop: null};
+      if (S.sym && kind === 'fx') {
+        const pair = FX_TO_EDGE[S.sym.symbol] || S.sym.symbol;
+        if (!M.PAIRS.some(p => p.id === pair) && pair !== 'XAUUSD') return empty(host, `Position sizing needs a pip value and contract size; FYNX defines them for the 10 major pairs and gold. ${shortOf(S.sym.symbol)} is not one of them.`);
+        preset = {pair};
+      }
+      calculator(host, kind, {compact: true, preset}); return host.append(btn('All calculators ▸', 'fx-chip fx-chip-link', () => openPage('calc', {kind})));
+    }
     if (S.tool === 'jrnl') return renderJournal(host);
     sessionRows(host);
   }
@@ -1083,7 +1148,8 @@
       const def = kind === 'crypto' ? 'BTC-USD' : (info(S.focus).group === 'Stocks' || /funds/.test(info(S.focus).group) ? S.focus : 'AAPL');
       if (!st.sym || (preset?.sym)) st.sym = preset?.sym || def;
       const syms = kind === 'crypto' ? universe(['Crypto']) : universe(['Stocks', 'Equity funds', 'Sector funds']);
-      const sel = field(kind === 'crypto' ? 'Coin' : 'Symbol', select((syms.length ? syms : [st.sym]).map(s => [s, shortOf(s)]), st.sym));
+      const opts = syms.includes(st.sym) ? syms : [st.sym, ...syms];
+      const sel = field(kind === 'crypto' ? 'Coin' : 'Symbol', select(opts.map(s => [s, shortOf(s)]), st.sym));
       const bal = field('Account $', num(st.balance, '100')), risk = field('Risk %', num(st.risk, '0.1'));
       const live = () => quoteFor(sel.value)?.price;
       const entry = field('Entry', num(st.entry ?? (finite(live()) ? +live().toFixed(digitsOf(sel.value)) : ''), 'any')), stop = field('Stop', num(st.stop ?? (finite(live()) ? +(live() * 0.97).toFixed(digitsOf(sel.value)) : ''), 'any'));
@@ -1210,6 +1276,11 @@
     if (!series?.rows?.length) { S.tried['sym:' + symbol] = false; return null; }
     const v = {symbol, name: nameOf(symbol), rows: series.rows, source: series.source, at: Date.now(), fallback: true};
     S.symData[key] = v; if (!S.symData[symbol]) S.symData[symbol] = v;
+    S.tried['sym:' + symbol] = true;
+    if (!quoteFor(symbol)) {
+      const closes = series.rows.map(r => r.close ?? r.c ?? r.value).filter(finite), last = closes.at(-1), prev = closes.at(-2), date = series.rows.at(-1)?.date || series.rows.at(-1)?.t;
+      if (finite(last)) S.symQuotes[symbol] = {dailyClose: true, price: last, changePercent: finite(prev) && prev ? (last / prev - 1) * 100 : null, previousClose: prev, asOf: date, source: `Last daily close (${series.source || 'daily history'}) · no intraday quote for this market`};
+    }
     return v;
   }
   function volOf(closes, n) { const r = []; for (let i = Math.max(1, closes.length - n); i < closes.length; i++) r.push(Math.log(closes[i] / closes[i - 1]) * 100); if (r.length < 5) return null; const m = r.reduce((a, b) => a + b, 0) / r.length; return Math.sqrt(r.reduce((a, b) => a + (b - m) ** 2, 0) / (r.length - 1)); }
@@ -1259,7 +1330,7 @@
     const q = quoteFor(s.symbol), d = S.symData[s.symbol], rows = d?.rows || S.history[s.symbol]?.rows || [], dg = digitsOf(s.symbol);
     setText('t-squote', `${shortOf(s.symbol)} · ${d?.exchange || s.exchange || ''} ${d?.currency ? '· ' + d.currency : ''}`);
     if (!q) return pending(host, 'sym:' + s.symbol, 'Loading quote…', `No quote for ${shortOf(s.symbol)} is available from FYNX's market data providers right now.`);
-    const top = el('div', 'fx-sqhead'); top.append(tk(el('b', '', fmt(q.price, dg)), 'px:' + s.symbol, q.price), tk(el('em', tone(q.changePercent), signed(q.changePercent, 2, '%')), 'chg:' + s.symbol, q.changePercent), el('small', 'fx-sqasof', `${q.delayed !== false || q.snapshot ? 'Delayed' : 'Last'}${q.asOf ? ' · ' + new Date(q.asOf).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : ''}`), sessionBadge(s.symbol, s.cls, S.symData[s.symbol]?.exchange || s.exchange));
+    const top = el('div', 'fx-sqhead'); top.append(tk(el('b', '', fmt(q.price, dg)), 'px:' + s.symbol, q.price), tk(el('em', tone(q.changePercent), signed(q.changePercent, 2, '%')), 'chg:' + s.symbol, q.changePercent), el('small', 'fx-sqasof', `${q.dailyClose ? 'Daily close' : q.delayed !== false || q.snapshot ? 'Delayed' : 'Last'}${q.asOf ? ' · ' + new Date(q.asOf).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : ''}`), sessionBadge(s.symbol, s.cls, S.symData[s.symbol]?.exchange || s.exchange));
     host.append(el('p', 'fx-sub fx-sqname', s.name || nameOf(s.symbol)), top);
     const st = el('div', 'fx-calcout fx-c4out');
     const card = (k, v, cls, key, raw) => { const x = el('div'); x.append(el('span', '', k), key ? tk(el('b', cls || '', v), key, raw) : el('b', cls || '', v)); st.append(x); };
@@ -1500,7 +1571,9 @@
     commitTicks(true);
     if (d?.name && !meta.name) S.sym.name = d.name;
     if (d?.rows?.length && !EDGE[S.focus]) S.history[id] = {source: d.source || 'Yahoo Finance', rows: d.rows};
-    S.sym.cls = symClass(id, meta.type || d?.type); document.title = `FYNX Terminal · ${shortOf(id)}`;
+    const was = S.sym.cls; S.sym.cls = symClass(id, meta.type || d?.type); document.title = `FYNX Terminal · ${shortOf(id)}`;
+    if (S.sym.cls === 'stock') S.finTicker = id.replace('.', '-');
+    if (was !== S.sym.cls) { buildGrid(); renderAll(); }
     renderDeskBar(); buildGrid(); renderAll(); say(d ? `${shortOf(id)} loaded: every box shows this market` : `${id}: no data found`);
     await loadSeries(S.focus); R('focus');
   }
@@ -1611,7 +1684,10 @@
       const v = JSON.parse(store.get('layout-' + layoutKey()) || 'null');
       if (Array.isArray(v) && v.length && v.length <= maxSlots()) {
         const next = v.map(builtinLayoutSlot);
-        if (next.every(x => x !== undefined)) return next;
+        // A FOCUS or COMPARE workspace is a full research desk: a saved one with fewer than 6 panels (left from
+        // older versions) is not used, but it is kept untouched in the user's settings.
+        const sparse = (S.sym || S.cmp) && next.filter(Boolean).length < 6;
+        if (next.every(x => x !== undefined) && !sparse) return next;
       }
     } catch {}
     return [...D().slots];
@@ -1659,7 +1735,7 @@
       } else {
         if (TABBED.has(kind)) { const tb = el('div', 'tp-tabs'); tb.id = kind + '-tabs'; tb.setAttribute('aria-label', title + ' options'); right.append(tb); }
         const note = el('span', 'tp-note'); note.id = 'n-' + id; right.append(note);
-        if (page) right.append(btn((LINK_LABEL[page] || 'Open') + ' ▸', 'tp-link', () => openPage(page, card ? slot.slice(5) : page === 'fa' ? S.finTicker : page === 'des' || page === 'chart' ? (S.sym?.symbol || S.focus) : page === 'options' ? S.optSym : page === 'edge' && kind === 'range' ? D().range : undefined), `Open ${title} full page`));
+        if (page) right.append(btn((LINK_LABEL[page] || 'Open') + ' ▸', 'tp-link', () => openPage(page, card ? slot.slice(5) : page === 'fa' ? S.finTicker : S.sym && !S.cmp && ['committee', 'earnprev', 'vstat', 'kronos'].includes(page) ? S.sym.symbol : page === 'des' || page === 'chart' ? (S.sym?.symbol || S.focus) : page === 'options' ? S.optSym : page === 'edge' && kind === 'range' ? D().range : undefined), `Open ${title} full page`));
       }
       head.append(right);
       const body = el('div', 'tp-b' + (['focus', 'curve', 'globe'].includes(kind) ? ' tp-flex' : '')); body.id = 'b-' + id;
@@ -1804,7 +1880,7 @@
   const CORE = {S, M, $, el, btn, link, svg, kv, inspect, signed, tone, ago, hhmm, day, fmt, big, count, finite, empty, rowButton, tabs, say,
     CATALOG, EDGE, FX_TO_EDGE, EDGE_TO_FX, NEWS_CATS, DESK_DEFS, DESK_ORDER, SESSIONS, EXCHANGES, FUTSPEC, KEYS, CALC_TITLE,
     info, nameOf, shortOf, quoteFor, stat, digitsOf, universe, resolve, focusOn, setDesk, setSymbol, clearSymbol, clearFocus, setCompare, addCompare, removeCompare, setMode, modeOf, canon, symCurrencies, openFinder, symHistory, fnMarket, riskStats, compareChart, benchFor, symClass, perfOf, volOf, getSlots, PANELS, PANEL_DESC, EXTRA_GROUPS, LINK_LABEL, RENDER, TABBED, store, TDATA, WDATA, MKQ, report, setText, panel, nextEvents, buildGrid, renderDeskBar, lineChart, curveChart, tenorGrid, finTable, headlineRow, quoteRow, ecoRow, intelItems, intelRow, biasRows, trendPos, optSummary, chainTable, calculator, renderJournal, sessionRows, periodReturn, setCurve,
-    loadSeries, loadFin, loadDirectory, loadNews, loadBriefing, getJSON, D, R, run, renderAll, PAGE_NAMES: PAGES, openPage, tk, commitTicks};
+    loadSeries, loadFin, loadDirectory, findCompany, loadNews, loadBriefing, getJSON, D, R, run, renderAll, PAGE_NAMES: PAGES, openPage, tk, commitTicks};
   PG = window.FynxTerminalPages ? window.FynxTerminalPages(CORE) : null;
   CORE.PG = PG;
   // Plugins (World desk, portfolio, charts) add panels, desks and pages through CORE.
@@ -1833,6 +1909,37 @@
     PG?.rerender();
     window.FYNXNewsReaderData?.remember?.(S.briefing);
   }
+  /* Settings saved to the FYNX account (assets/js/saved-settings.js). When this device receives a newer layout or
+   * Terminal setting from another device, redraw: never while the user is editing the layout (applied when they
+   * press Done). On a device's first restore, open the account's desk unless a link chose one or the user already
+   * moved. A device whose own older customisation was replaced is told, with a way to use its version instead. */
+  let userMoved = false, settingsWaiting = false;
+  for (const t of ['pointerdown', 'keydown']) addEventListener(t, () => { userMoved = true; }, {once: true, capture: true});
+  function applySavedSettings() {
+    if (S.editing) { settingsWaiting = true; return; }
+    settingsWaiting = false;
+    try { S.lastSym = JSON.parse(store.get('last-sym') || 'null'); const c = JSON.parse(store.get('last-cmp') || 'null'); S.lastCmp = Array.isArray(c) ? c : null; } catch {}
+    buildGrid(); renderAll(); renderDeskBar();
+  }
+  window.addEventListener('fynx:saved-settings', e => {
+    const keys = (e.detail?.keys || []).filter(k => k.startsWith('fx-term-')); if (!keys.length) return;
+    const p = new URLSearchParams(location.search);
+    if (e.detail.reason === 'restore' && keys.includes('fx-term-desk') && !userMoved && !p.get('desk') && !p.get('sym') && !p.get('cmp') && !S.sym && !S.cmp && !document.body.classList.contains('fx-paging')) {
+      const want = String(store.get('desk') || '').toLowerCase();
+      if (DESK_DEFS[want] && want !== S.deskKey) { setDesk(want); return; }
+    }
+    applySavedSettings();
+  });
+  $('fx-edit').addEventListener('click', () => { if (!S.editing && settingsWaiting) setTimeout(applySavedSettings, 0); });
+  window.addEventListener('fynx:saved-settings-ready', e => {
+    const replaced = (e.detail?.backup || []).filter(k => /^fx-term-(layout-|dash-)/.test(k));
+    if (!replaced.length || $('fx-syncnote')) return;
+    const bar = el('div', 'fx-syncnote'); bar.id = 'fx-syncnote'; bar.setAttribute('role', 'status');
+    bar.append(el('span', '', 'Your Terminal now uses the layout saved in your FYNX account, the same on every device. This browser had a different layout.'));
+    bar.append(btn('Use this browser’s layout everywhere', 'fx-chip fx-chip-link', () => { window.FynxSavedSettings?.restoreBackup(replaced); bar.remove(); applySavedSettings(); say('This browser’s layout is now saved to your account.'); }));
+    bar.append(btn('Keep account layout', 'fx-chip', () => { window.FynxSavedSettings?.dismissBackup(); bar.remove(); }));
+    $('fx-main').before(bar);
+  });
   const every = (ms, task) => setInterval(async () => { if (!document.hidden) await task(); }, ms);
   every(30000, async () => { await loadQuotes(); commitTicks(); renderQuotesAll(); R('story'); });
   // Crypto top of book: every 15 s while the Book box is on screen, every 60 s when only the Risk box shows its spread line.

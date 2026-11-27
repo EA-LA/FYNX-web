@@ -89,7 +89,7 @@
   const imSub = o => o?.post ? `report only: ${o.post.date} straddle ±${pct(o.post.raw, 1)}${o.post.method === 'pre' ? ` less the ${o.post.pre} expiry` : o.post.method === 'history' ? ' less normal days' : ''}` : o?.beyond ? `report falls after the last listed expiry (${o.last})` : o ? 'no expiry covers the report' : 'not in the options snapshot';
   const memo = new Map();
   async function run(sym) {
-    const dir = await T.loadDirectory(), co = dir.find(c => c.symbol === sym || c.symbol === sym.replace('-', '.'));
+    const dir = await T.loadDirectory(), co = T.findCompany(dir, sym);
     if (!co) throw new Error(`${sym} is not a US-listed company with SEC filings (funds, ADRs filing 6-K and indexes are not covered).`);
     const [d, B, SPY] = await Promise.all([fetchEarnings(co.cik, sym), loadBars(sym, '1d'), loadBars('SPY', '1d')]);
     if (!d?.releases) throw new Error('Earnings filings are unavailable right now. Try again shortly.');
@@ -112,9 +112,12 @@
   const EV = (() => { let s = {}; try { s = JSON.parse(store.get('earnings') || '{}') || {}; } catch (_) {} return {sym: SYM_RE.test(s.sym || '') ? s.sym : 'AAPL'}; })();
   const save = () => store.set('earnings', JSON.stringify(EV));
   async function renderPanel() {
-    const host = panel('earnprev'); empty(host, `Reading ${EV.sym}’s earnings filings…`);
-    let r; try { r = await get(EV.sym); } catch (e) { report('earnings', e); return empty(host, e.message); }
-    if (!$('tp-earnprev')) return; host.replaceChildren(); setText('n-earnprev', `${EV.sym} · ${r.next ? fmtDay(r.next.date) : 'no date'}`);
+    const own = T.S?.sym && !T.S.cmp ? T.S.sym.symbol : null, sym = own || EV.sym;
+    const host = panel('earnprev');
+    if (own && T.S.sym.cls !== 'stock') return empty(host, `Earnings previews cover US-listed companies. ${own} does not report earnings.`);
+    empty(host, `Reading ${sym}’s earnings filings…`);
+    let r; try { r = await get(sym); } catch (e) { report('earnings', e); return empty(host, e.message); }
+    if (!$('tp-earnprev')) return; host.replaceChildren(); setText('n-earnprev', `${sym} · ${r.next ? fmtDay(r.next.date) : 'no date'}`);
     const w = el('div', 'fx-ql'); host.append(w);
     kpis(w, [['NEXT REPORT', r.next ? fmtDay(r.next.date) : '—', r.next ? (r.next.confirmed ? r.next.time || 'scheduled' : 'estimated') : 'not scheduled'], ['OPTIONS PRICE', r.opt?.post ? '±' + pct(r.opt.post.move, 1) : '—', r.opt?.post ? 'move priced for the report' : r.opt?.beyond ? 'report after listed expiries' : 'not available'], ['PAST AVERAGE', '±' + pct(r.s.avgMove, 1), `${r.s.rows.length} releases`]]);
     const cb = el('div', 'fx-ql-chart'); w.append(cb); requestAnimationFrame(() => barsChart(cb, r.s.rows));

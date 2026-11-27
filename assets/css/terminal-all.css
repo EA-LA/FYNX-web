@@ -735,3 +735,6 @@ html body.fx-terminal .ia-table tr:not(:first-child) th{text-align:left!importan
 /* Tablets and small laptops: the header row (clocks, feeds, plan, tour, build, bell, edit, exit) is wider than
    the screen, which made the whole Terminal scroll sideways. Let it wrap to a second row and trim the clocks. */
 @media (min-width:761px) and (max-width:1365px){html body.fx-terminal>header.fx-top{height:auto!important;min-height:44px!important;flex-wrap:wrap!important;row-gap:4px;padding:4px 10px!important}html body.fx-terminal .fx-clocks{flex:1 1 auto;min-width:0;overflow:hidden}html body.fx-terminal .fx-cmd-msg{flex:0 1 160px}}
+/* Account layout notice (saved-settings.js): shown once when this browser's older layout was replaced by the account's. */
+.fx-syncnote{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:8px 10px 0;padding:10px 12px;border:1px solid rgba(255,176,0,.45);border-radius:8px;background:rgba(255,176,0,.07);color:var(--tx);font-size:13px}
+.fx-syncnote>span{flex:1 1 320px}

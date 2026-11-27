@@ -354,7 +354,7 @@
     if (title) host.append(el('div', 'fx-th1', title));
     for (const id of ids) {
       const q = quoteFor(id); if (!q) continue;
-      const r = T.rowButton('fx-qrow', () => T.focusOn(id), `${nameOf(id)}`);
+      const r = T.rowButton('fx-qrow', () => T.setSymbol({symbol: id}), `Open ${nameOf(id)}`);
       r.append(el('span', '', nameOf(id)), tk(el('span', 'fx-num', fmt(q.price, T.digitsOf(id))), 'px:' + id, q.price), tk(el('span', 'fx-num ' + tone(q.changePercent), pct(q.changePercent)), 'chg:' + id, q.changePercent));
       host.append(r);
     }

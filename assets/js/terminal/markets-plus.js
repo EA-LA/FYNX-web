@@ -266,7 +266,7 @@
     }
     throw last || new Error('Research service unavailable');
   }
-  async function cikFor(ticker) { const dir = await T.loadDirectory(); const s = String(ticker || '').toUpperCase(), alt = s.replace('-', '.'); return (dir || []).find(c => c.symbol === s || c.symbol === alt)?.cik || null; }
+  async function cikFor(ticker) { const c = T.findCompany(await T.loadDirectory(), ticker); return c ? c.cik : null; }
   async function loadFilings(ticker) {
     const key = String(ticker).toUpperCase(); if (FIL[key] && Date.now() - FIL[key].at < 30 * 60000) return FIL[key].d;
     const cik = /^\d+$/.test(key) ? Number(key) : await cikFor(key); if (!cik) throw Object.assign(new Error('nf'), {notFound: true});
