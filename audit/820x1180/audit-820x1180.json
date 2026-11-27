@@ -1,0 +1,2359 @@
+{
+ "viewport": "820x1180",
+ "bootMs": 7113,
+ "inventory": {
+  "desks": [
+   "all",
+   "dash",
+   "world",
+   "quant",
+   "strategy",
+   "ailab",
+   "stocks",
+   "forex",
+   "bonds",
+   "crypto",
+   "funds",
+   "futures",
+   "indices",
+   "economy",
+   "options",
+   "commodities"
+  ],
+  "deskDefs": [
+   "all",
+   "stocks",
+   "forex",
+   "bonds",
+   "crypto",
+   "funds",
+   "futures",
+   "indices",
+   "economy",
+   "options",
+   "commodities",
+   "world",
+   "quant",
+   "strategy",
+   "ailab",
+   "dash"
+  ],
+  "panels": [
+   "mkts",
+   "focus",
+   "heat",
+   "fin",
+   "story",
+   "intel",
+   "top",
+   "desks",
+   "cb",
+   "curve",
+   "vix",
+   "bias",
+   "edge",
+   "pos",
+   "eco",
+   "corr",
+   "tools",
+   "movers",
+   "xa",
+   "idx",
+   "sess",
+   "earn",
+   "opt",
+   "optlist",
+   "chain",
+   "active",
+   "term",
+   "rates",
+   "gov",
+   "books",
+   "range",
+   "perf",
+   "official",
+   "squote",
+   "srisk",
+   "snews",
+   "cmp",
+   "cmpq",
+   "cmpcorr",
+   "cmprisk",
+   "cmpnews",
+   "globe",
+   "cwatch",
+   "ships",
+   "cnews",
+   "cdata",
+   "dom",
+   "oflow",
+   "panic",
+   "mcvar",
+   "vclust",
+   "iseas",
+   "factor",
+   "rmom",
+   "btest",
+   "optim",
+   "fcast",
+   "kronos",
+   "mlpred",
+   "volml",
+   "regime",
+   "pca",
+   "pairs",
+   "anomaly",
+   "rltrade",
+   "optlab",
+   "committee",
+   "earnprev",
+   "factorloop",
+   "port",
+   "cot",
+   "wirp",
+   "vstat",
+   "obook",
+   "mood",
+   "scan",
+   "idxc",
+   "nperf",
+   "dsect",
+   "big",
+   "glam",
+   "ixm",
+   "ratesdx",
+   "tsy",
+   "usm",
+   "glob",
+   "fng",
+   "cfng",
+   "aimap",
+   "sectmap",
+   "futmap",
+   "newsmap",
+   "cfx",
+   "str"
+  ],
+  "pages": [
+   "help",
+   "sources",
+   "news",
+   "article",
+   "des",
+   "fa",
+   "research",
+   "macro",
+   "cb",
+   "bias",
+   "edge",
+   "mkts",
+   "cal",
+   "journal",
+   "calc",
+   "options",
+   "vol",
+   "intel",
+   "builder",
+   "settings",
+   "world",
+   "ctry",
+   "state",
+   "dom",
+   "orderflow",
+   "oflow",
+   "panic",
+   "risksim",
+   "mcvar",
+   "vclust",
+   "garch",
+   "iseas",
+   "seasonality",
+   "factor",
+   "rmom",
+   "momentum",
+   "btest",
+   "backtest",
+   "optim",
+   "optimize",
+   "fcast",
+   "forecast",
+   "kronos",
+   "mlpred",
+   "predict",
+   "volml",
+   "volforecast",
+   "regime",
+   "regimes",
+   "pca",
+   "factors",
+   "pairs",
+   "cointegration",
+   "anomaly",
+   "anomalies",
+   "rltrade",
+   "rl",
+   "optlab",
+   "ivsurf",
+   "bsnn",
+   "value",
+   "dcf",
+   "comps",
+   "committee",
+   "memo",
+   "agents",
+   "comply",
+   "compliance",
+   "finra",
+   "earnprev",
+   "earnings-preview",
+   "eventstudy",
+   "factorloop",
+   "rdagent",
+   "factorlab",
+   "chart",
+   "port",
+   "listings",
+   "cot",
+   "wirp",
+   "vstat",
+   "obook",
+   "mood",
+   "book",
+   "scan",
+   "overview",
+   "hmap",
+   "industries",
+   "hours",
+   "wire",
+   "filings",
+   "sentiment",
+   "fng",
+   "csent",
+   "cryptosent",
+   "heatmaps",
+   "strength",
+   "str"
+  ],
+  "commands": [
+   "HELP",
+   "NEWS",
+   "MKTS",
+   "MACRO",
+   "EDGE",
+   "INTEL",
+   "RESEARCH",
+   "JOURNAL",
+   "CALC",
+   "CAL",
+   "OPTIONS",
+   "VOL",
+   "BIAS",
+   "SOURCES",
+   "SETTINGS",
+   "WORLD",
+   "CTRY",
+   "STATE",
+   "DOM",
+   "OFLOW",
+   "ORDERFLOW",
+   "PANIC",
+   "RISKSIM",
+   "MCVAR",
+   "VCLUST",
+   "GARCH",
+   "ISEAS",
+   "SEASONALITY",
+   "FACTOR",
+   "RMOM",
+   "MOMENTUM",
+   "BTEST",
+   "BACKTEST",
+   "OPTIM",
+   "OPTIMIZE",
+   "FCAST",
+   "FORECAST",
+   "KRONOS",
+   "MLPRED",
+   "PREDICT",
+   "VOLML",
+   "VOLFORECAST",
+   "REGIME",
+   "REGIMES",
+   "PCA",
+   "FACTORS",
+   "PAIRS",
+   "COINTEGRATION",
+   "ANOMALY",
+   "ANOMALIES",
+   "RLTRADE",
+   "RL",
+   "OPTLAB",
+   "IVSURF",
+   "BSNN",
+   "VALUE",
+   "DCF",
+   "COMPS",
+   "COMMITTEE",
+   "MEMO",
+   "AGENTS",
+   "COMPLY",
+   "COMPLIANCE",
+   "FINRA",
+   "EARNPREV",
+   "EVENTSTUDY",
+   "FACTORLOOP",
+   "RDAGENT",
+   "FACTORLAB",
+   "CHART",
+   "PORT",
+   "LISTINGS",
+   "COT",
+   "WIRP",
+   "VSTAT",
+   "BOOK",
+   "MOOD",
+   "SCAN",
+   "OVERVIEW",
+   "HMAP",
+   "INDUSTRIES",
+   "SENTIMENT",
+   "FNG",
+   "HOURS",
+   "WIRE",
+   "FILINGS",
+   "CSENT",
+   "CRYPTOSENT",
+   "HEATMAPS",
+   "STR",
+   "STRENGTH",
+   "TOUR"
+  ]
+ },
+ "desks": {
+  "all": {
+   "panels": [
+    {
+     "id": "tp-mkts",
+     "title": "MKTSMarketsALLEQETFCRYFXFUTIDXBoard ▸",
+     "chars": 4345,
+     "problems": []
+    },
+    {
+     "id": "tp-focus",
+     "title": "GPSPY · S&P 500 ETF1M3M6M1Y2YFull page ▸",
+     "chars": 304,
+     "problems": []
+    },
+    {
+     "id": "tp-story",
+     "title": "STORYToday · 4:02 AMMacro Desk ▸",
+     "chars": 419,
+     "problems": []
+    },
+    {
+     "id": "tp-intel",
+     "title": "INTELFYNX Intelligence · markets ranked nowAll ▸",
+     "chars": 677,
+     "problems": []
+    },
+    {
+     "id": "tp-cb",
+     "title": "CBCentral banksMacro Desk ▸",
+     "chars": 341,
+     "problems": []
+    },
+    {
+     "id": "tp-eco",
+     "title": "ECOEconomic calendarAllHighWeek ▸",
+     "chars": 810,
+     "problems": []
+    },
+    {
+     "id": "tp-top",
+     "title": "TOPLatest headlinesAll ▸",
+     "chars": 2958,
+     "problems": []
+    },
+    {
+     "id": "tp-curve",
+     "title": "CURVEUS TreasuriesUSEAUKJPMacro Desk ▸",
+     "chars": 314,
+     "problems": []
+    },
+    {
+     "id": "tp-bias",
+     "title": "BIASSmart BiasMethod ▸",
+     "chars": 187,
+     "problems": []
+    },
+    {
+     "id": "tp-edge",
+     "title": "EDGERegimesEdge Radar ▸",
+     "chars": 624,
+     "problems": []
+    },
+    {
+     "id": "tp-heat",
+     "title": "HEATDay change heat map24 up · 25 down",
+     "chars": 553,
+     "problems": []
+    },
+    {
+     "id": "tp-fin",
+     "title": "FAAAPL · annual SEC filingsFull ▸",
+     "chars": 625,
+     "problems": []
+    },
+    {
+     "id": "tp-desks",
+     "title": "NEWSDesksFXMacroEconStocksFinanceCryptoCmdtyEnergyTechIndustryPolicyWorldAnalysi",
+     "chars": 2504,
+     "problems": []
+    },
+    {
+     "id": "tp-vix",
+     "title": "RISKVIX, mood & crypto bookVol ▸",
+     "chars": 306,
+     "problems": []
+    },
+    {
+     "id": "tp-pos",
+     "title": "COTFutures positioningCFTC 2026-11-17Edge Radar ▸",
+     "chars": 272,
+     "problems": []
+    },
+    {
+     "id": "tp-tools",
+     "title": "TOOLSPosition sizeCALCJRNLSESSAll calcs ▸",
+     "chars": 262,
+     "problems": []
+    },
+    {
+     "id": "tp-aimap",
+     "title": "AIMAPAI bubble map$21.41T · −1.76% wtdOpen ▸",
+     "chars": 169,
+     "problems": []
+    },
+    {
+     "id": "tp-sectmap",
+     "title": "SECTStocks by sector890 stocks · best Basic +2.54%Open ▸",
+     "chars": 501,
+     "problems": []
+    },
+    {
+     "id": "tp-futmap",
+     "title": "FUTMAPFutures heat map16 up · 13 downOpen ▸",
+     "chars": 648,
+     "problems": []
+    },
+    {
+     "id": "tp-newsmap",
+     "title": "NEWSMAPNews heat map165 headlines · hottest Japan & BoJOpen ▸",
+     "chars": 432,
+     "problems": []
+    },
+    {
+     "id": "tp-cfx",
+     "title": "CFXCrypto & currencies40 coins · +0.21% wtdOpen ▸",
+     "chars": 138,
+     "problems": []
+    },
+    {
+     "id": "tp-scan",
+     "title": "SCANMarket scannerScanner ▸",
+     "chars": 259,
+     "problems": []
+    }
+   ],
+   "newErrors": []
+  },
+  "stocks": {
+   "panels": [
+    {
+     "id": "tp-mkts",
+     "title": "MKTSStocksALLSTKIDXSECTBoard ▸",
+     "chars": 1547,
+     "problems": []
+    },
+    {
+     "id": "tp-focus",
+     "title": "GPAAPL · Apple1M3M6M1Y2YFull page ▸",
+     "chars": 319,
+     "problems": []
+    },
+    {
+     "id": "tp-intel",
+     "title": "INTELFYNX Intelligence · stocks ranked nowAll ▸",
+     "chars": 808,
+     "problems": []
+    },
+    {
+     "id": "tp-movers",
+     "title": "MOVTop movers13 up · 17 downBoard ▸",
+     "chars": 264,
+     "problems": []
+    },
+    {
+     "id": "tp-top",
+     "title": "TOPStocks headlinesAll ▸",
+     "chars": 3073,
+     "problems": []
+    },
+    {
+     "id": "tp-eco",
+     "title": "ECOUSD calendarAllHighWeek ▸",
+     "chars": 320,
+     "problems": []
+    },
+    {
+     "id": "tp-story",
+     "title": "STORYStocks today · 4:02 AMMacro Desk ▸",
+     "chars": 528,
+     "problems": []
+    },
+    {
+     "id": "tp-idx",
+     "title": "IDXIndex & sector fundsBoard ▸",
+     "chars": 681,
+     "problems": []
+    },
+    {
+     "id": "tp-earn",
+     "title": "ERNEarnings calendarWeek ▸",
+     "chars": 1487,
+     "problems": []
+    },
+    {
+     "id": "tp-vix",
+     "title": "RISKVIX, mood & crypto bookVol ▸",
+     "chars": 208,
+     "problems": []
+    },
+    {
+     "id": "tp-sectmap",
+     "title": "SECTStocks by sector890 stocks · best Basic +2.54%Open ▸",
+     "chars": 549,
+     "problems": []
+    },
+    {
+     "id": "tp-fin",
+     "title": "FAAAPL · annual SEC filingsFull ▸",
+     "chars": 625,
+     "problems": []
+    },
+    {
+     "id": "tp-aimap",
+     "title": "AIMAPAI bubble map$21.41T · −1.76% wtdOpen ▸",
+     "chars": 222,
+     "problems": []
+    },
+    {
+     "id": "tp-desks",
+     "title": "NEWSDesksStocksFinanceTechIndustryAnalysisAll ▸",
+     "chars": 3073,
+     "problems": []
+    },
+    {
+     "id": "tp-opt",
+     "title": "OPTAAPL optionsFull ▸",
+     "chars": 467,
+     "problems": []
+    },
+    {
+     "id": "tp-tools",
+     "title": "TOOLSShare sizeCALCJRNLSESSAll calcs ▸",
+     "chars": 385,
+     "problems": []
+    }
+   ],
+   "newErrors": []
+  },
+  "forex": {
+   "panels": [
+    {
+     "id": "tp-mkts",
+     "title": "MKTSFXALLMAJCRSEMFUTBoard ▸",
+     "chars": 787,
+     "problems": []
+    },
+    {
+     "id": "tp-focus",
+     "title": "GPEURUSD · EUR/USD1M3M6M1Y2YFull page ▸",
+     "chars": 385,
+     "problems": []
+    },
+    {
+     "id": "tp-intel",
+     "title": "INTELFYNX Intelligence · fx ranked nowAll ▸",
+     "chars": 598,
+     "problems": []
+    },
+    {
+     "id": "tp-story",
+     "title": "STORYFX today · 4:02 AMMacro Desk ▸",
+     "chars": 419,
+     "problems": []
+    },
+    {
+     "id": "tp-cb",
+     "title": "CBCentral banksMacro Desk ▸",
+     "chars": 341,
+     "problems": []
+    },
+    {
+     "id": "tp-eco",
+     "title": "ECOEconomic calendarAllHighWeek ▸",
+     "chars": 810,
+     "problems": []
+    },
+    {
+     "id": "tp-top",
+     "title": "TOPFX headlinesAll ▸",
+     "chars": 2504,
+     "problems": []
+    },
+    {
+     "id": "tp-bias",
+     "title": "BIASSmart BiasMethod ▸",
+     "chars": 187,
+     "problems": []
+    },
+    {
+     "id": "tp-edge",
+     "title": "EDGERegimesEdge Radar ▸",
+     "chars": 420,
+     "problems": []
+    },
+    {
+     "id": "tp-range",
+     "title": "RNGEUR/USD daily range · 1 yearEdge Radar ▸",
+     "chars": 132,
+     "problems": []
+    },
+    {
+     "id": "tp-sess",
+     "title": "SESSTrading sessions",
+     "chars": 163,
+     "problems": []
+    },
+    {
+     "id": "tp-corr",
+     "title": "CORRFX correlation30D60D90D",
+     "chars": 303,
+     "problems": []
+    },
+    {
+     "id": "tp-pos",
+     "title": "COTFutures positioningCFTC 2026-11-17Edge Radar ▸",
+     "chars": 193,
+     "problems": []
+    },
+    {
+     "id": "tp-desks",
+     "title": "NEWSDesksFXMacroEconPolicyWorldAll ▸",
+     "chars": 2504,
+     "problems": []
+    },
+    {
+     "id": "tp-str",
+     "title": "STRCurrency strengthTD1W1M3M6MUSD ▲ AUD ▼Full ▸",
+     "chars": 180,
+     "problems": []
+    },
+    {
+     "id": "tp-tools",
+     "title": "TOOLSPosition sizeCALCJRNLSESSAll calcs ▸",
+     "chars": 262,
+     "problems": []
+    }
+   ],
+   "newErrors": []
+  },
+  "bonds": {
+   "panels": [
+    {
+     "id": "tp-mkts",
+     "title": "MKTSBondsALLYLDFUTETFBoard ▸",
+     "chars": 714,
+     "problems": []
+    },
+    {
+     "id": "tp-focus",
+     "title": "GPUS10Y · US 10-year yield1M3M6M1Y2YFull page ▸",
+     "chars": 288,
+     "problems": []
+    },
+    {
+     "id": "tp-intel",
+     "title": "INTELFYNX Intelligence · bonds ranked nowAll ▸",
+     "chars": 556,
+     "problems": []
+    },
+    {
+     "id": "tp-story",
+     "title": "STORYBonds today · 4:02 AMMacro Desk ▸",
+     "chars": 419,
+     "problems": []
+    },
+    {
+     "id": "tp-curve",
+     "title": "CURVEUS TreasuriesUSEAUKJPMacro Desk ▸",
+     "chars": 314,
+     "problems": []
+    },
+    {
+     "id": "tp-gov",
+     "title": "GOVTGovernment yieldsMacro Desk ▸",
+     "chars": 236,
+     "problems": []
+    },
+    {
+     "id": "tp-cb",
+     "title": "CBCentral banksMacro Desk ▸",
+     "chars": 341,
+     "problems": []
+    },
+    {
+     "id": "tp-rates",
+     "title": "RATESPolicy ratesMacro Desk ▸",
+     "chars": 218,
+     "problems": []
+    },
+    {
+     "id": "tp-eco",
+     "title": "ECOUSD/EUR/GBP/JPY calendarAllHighWeek ▸",
+     "chars": 664,
+     "problems": []
+    },
+    {
+     "id": "tp-top",
+     "title": "TOPEcon headlinesAll ▸",
+     "chars": 2504,
+     "problems": []
+    },
+    {
+     "id": "tp-heat",
+     "title": "HEATDay change heat map8 up · 4 down",
+     "chars": 127,
+     "problems": []
+    },
+    {
+     "id": "tp-term",
+     "title": "VOLVolatilityVol ▸",
+     "chars": 317,
+     "problems": []
+    },
+    {
+     "id": "tp-opt",
+     "title": "OPTTLT optionsFull ▸",
+     "chars": 456,
+     "problems": []
+    },
+    {
+     "id": "tp-movers",
+     "title": "MOVTop movers8 up · 8 downBoard ▸",
+     "chars": 265,
+     "problems": []
+    },
+    {
+     "id": "tp-desks",
+     "title": "NEWSDesksMacroEconFinancePolicyWorldAll ▸",
+     "chars": 2504,
+     "problems": []
+    },
+    {
+     "id": "tp-tools",
+     "title": "TOOLSBond priceCALCJRNLSESSAll calcs ▸",
+     "chars": 218,
+     "problems": []
+    }
+   ],
+   "newErrors": []
+  },
+  "crypto": {
+   "panels": [
+    {
+     "id": "tp-mkts",
+     "title": "MKTSCryptoALLCOINPROXYBoard ▸",
+     "chars": 468,
+     "problems": []
+    },
+    {
+     "id": "tp-focus",
+     "title": "GPBTC · Bitcoin1M3M6M1Y2YFull page ▸",
+     "chars": 324,
+     "problems": []
+    },
+    {
+     "id": "tp-intel",
+     "title": "INTELFYNX Intelligence · crypto ranked nowAll ▸",
+     "chars": 930,
+     "problems": []
+    },
+    {
+     "id": "tp-story",
+     "title": "STORYCrypto today · 4:02 AMMacro Desk ▸",
+     "chars": 473,
+     "problems": []
+    },
+    {
+     "id": "tp-movers",
+     "title": "MOVTop movers8 up · 2 downBoard ▸",
+     "chars": 232,
+     "problems": []
+    },
+    {
+     "id": "tp-oflow",
+     "title": "OFLOWOrder flow · live bookBTC/USDFull ▸",
+     "chars": 429,
+     "problems": []
+    },
+    {
+     "id": "tp-top",
+     "title": "TOPCrypto headlinesAll ▸",
+     "chars": 2261,
+     "problems": []
+    },
+    {
+     "id": "tp-edge",
+     "title": "EDGERegimesEdge Radar ▸",
+     "chars": 169,
+     "problems": []
+    },
+    {
+     "id": "tp-pos",
+     "title": "COTFutures positioningCFTC 2026-11-17Edge Radar ▸",
+     "chars": 95,
+     "problems": []
+    },
+    {
+     "id": "tp-cfx",
+     "title": "CFXCrypto & currencies40 coins · +0.21% wtdOpen ▸",
+     "chars": 138,
+     "problems": []
+    },
+    {
+     "id": "tp-xa",
+     "title": "XACross-asset vs cryptoBoard ▸",
+     "chars": 320,
+     "problems": []
+    },
+    {
+     "id": "tp-desks",
+     "title": "NEWSDesksFinanceCryptoTechPolicyAnalysisAll ▸",
+     "chars": 2261,
+     "problems": []
+    },
+    {
+     "id": "tp-eco",
+     "title": "ECOUSD calendarAllHighWeek ▸",
+     "chars": 320,
+     "problems": []
+    },
+    {
+     "id": "tp-cfng",
+     "title": "CFNGCrypto sentiment11 · Extreme FearOpen ▸",
+     "chars": 401,
+     "problems": []
+    },
+    {
+     "id": "tp-vix",
+     "title": "RISKVIX, mood & crypto bookVol ▸",
+     "chars": 208,
+     "problems": []
+    },
+    {
+     "id": "tp-tools",
+     "title": "TOOLSCrypto sizeCALCJRNLSESSAll calcs ▸",
+     "chars": 236,
+     "problems": []
+    }
+   ],
+   "newErrors": []
+  },
+  "funds": {
+   "panels": [
+    {
+     "id": "tp-mkts",
+     "title": "MKTSFundsALLEQSECTBONDINTLCMDYBoard ▸",
+     "chars": 1524,
+     "problems": []
+    },
+    {
+     "id": "tp-focus",
+     "title": "GPSPY · S&P 500 ETF1M3M6M1Y2YFull page ▸",
+     "chars": 304,
+     "problems": []
+    },
+    {
+     "id": "tp-intel",
+     "title": "INTELFYNX Intelligence · funds ranked nowAll ▸",
+     "chars": 676,
+     "problems": []
+    },
+    {
+     "id": "tp-movers",
+     "title": "MOVTop movers28 up · 11 downBoard ▸",
+     "chars": 262,
+     "problems": []
+    },
+    {
+     "id": "tp-story",
+     "title": "STORYFunds today · 4:02 AMMacro Desk ▸",
+     "chars": 481,
+     "problems": []
+    },
+    {
+     "id": "tp-heat",
+     "title": "HEATDay change heat map8 up · 3 down",
+     "chars": 121,
+     "problems": []
+    },
+    {
+     "id": "tp-perf",
+     "title": "PERFPerformance1W1M3MYTD1YBoard ▸",
+     "chars": 1184,
+     "problems": []
+    },
+    {
+     "id": "tp-opt",
+     "title": "OPTSPY optionsFull ▸",
+     "chars": 464,
+     "problems": []
+    },
+    {
+     "id": "tp-top",
+     "title": "TOPFinance headlinesAll ▸",
+     "chars": 3391,
+     "problems": []
+    },
+    {
+     "id": "tp-eco",
+     "title": "ECOUSD calendarAllHighWeek ▸",
+     "chars": 320,
+     "problems": []
+    },
+    {
+     "id": "tp-xa",
+     "title": "XACross-asset vs fundsBoard ▸",
+     "chars": 274,
+     "problems": []
+    },
+    {
+     "id": "tp-desks",
+     "title": "NEWSDesksEconStocksFinanceWorldAnalysisAll ▸",
+     "chars": 3391,
+     "problems": []
+    },
+    {
+     "id": "tp-curve",
+     "title": "CURVEUS TreasuriesUSEAUKJPMacro Desk ▸",
+     "chars": 314,
+     "problems": []
+    },
+    {
+     "id": "tp-term",
+     "title": "VOLVolatilityVol ▸",
+     "chars": 317,
+     "problems": []
+    },
+    {
+     "id": "tp-cb",
+     "title": "CBCentral banksMacro Desk ▸",
+     "chars": 341,
+     "problems": []
+    },
+    {
+     "id": "tp-tools",
+     "title": "TOOLSShare sizeCALCJRNLSESSAll calcs ▸",
+     "chars": 385,
+     "problems": []
+    }
+   ],
+   "newErrors": []
+  },
+  "futures": {
+   "panels": [
+    {
+     "id": "tp-mkts",
+     "title": "MKTSFuturesALLEQRATENRGMETAGSCCYBoard ▸",
+     "chars": 935,
+     "problems": []
+    },
+    {
+     "id": "tp-focus",
+     "title": "GPES · E-mini S&P 5001M3M6M1Y2YFull page ▸",
+     "chars": 315,
+     "problems": []
+    },
+    {
+     "id": "tp-intel",
+     "title": "INTELFYNX Intelligence · futures ranked nowAll ▸",
+     "chars": 802,
+     "problems": []
+    },
+    {
+     "id": "tp-story",
+     "title": "STORYFutures today · 4:03 AMMacro Desk ▸",
+     "chars": 495,
+     "problems": []
+    },
+    {
+     "id": "tp-movers",
+     "title": "MOVTop movers16 up · 13 downBoard ▸",
+     "chars": 249,
+     "problems": []
+    },
+    {
+     "id": "tp-futmap",
+     "title": "FUTMAPFutures heat map16 up · 13 downOpen ▸",
+     "chars": 648,
+     "problems": []
+    },
+    {
+     "id": "tp-perf",
+     "title": "PERFPerformance1W1M3MYTD1YBoard ▸",
+     "chars": 675,
+     "problems": []
+    },
+    {
+     "id": "tp-pos",
+     "title": "COTFutures positioningCFTC 2026-11-17Edge Radar ▸",
+     "chars": 176,
+     "problems": []
+    },
+    {
+     "id": "tp-cb",
+     "title": "CBCentral banksMacro Desk ▸",
+     "chars": 341,
+     "problems": []
+    },
+    {
+     "id": "tp-eco",
+     "title": "ECOUSD calendarAllHighWeek ▸",
+     "chars": 320,
+     "problems": []
+    },
+    {
+     "id": "tp-top",
+     "title": "TOPCmdty headlinesAll ▸",
+     "chars": 2944,
+     "problems": []
+    },
+    {
+     "id": "tp-term",
+     "title": "VOLVolatilityVol ▸",
+     "chars": 317,
+     "problems": []
+    },
+    {
+     "id": "tp-curve",
+     "title": "CURVEUS TreasuriesUSEAUKJPMacro Desk ▸",
+     "chars": 314,
+     "problems": []
+    },
+    {
+     "id": "tp-desks",
+     "title": "NEWSDesksMacroEconStocksCmdtyEnergyAll ▸",
+     "chars": 2944,
+     "problems": []
+    },
+    {
+     "id": "tp-sess",
+     "title": "SESSTrading sessions",
+     "chars": 163,
+     "problems": []
+    },
+    {
+     "id": "tp-tools",
+     "title": "TOOLSFutures contractsCALCJRNLSESSAll calcs ▸",
+     "chars": 432,
+     "problems": []
+    }
+   ],
+   "newErrors": []
+  },
+  "indices": {
+   "panels": [
+    {
+     "id": "tp-mkts",
+     "title": "MKTSWorld indicesALLAMEREURAPACFUTVOLBoard ▸",
+     "chars": 1114,
+     "problems": []
+    },
+    {
+     "id": "tp-focus",
+     "title": "GPSPX · S&P 5001M3M6M1Y2YFull page ▸",
+     "chars": 316,
+     "problems": []
+    },
+    {
+     "id": "tp-intel",
+     "title": "INTELFYNX Intelligence · world indices ranked nowAll ▸",
+     "chars": 846,
+     "problems": []
+    },
+    {
+     "id": "tp-story",
+     "title": "STORYWorld indices today · 4:03 AMMacro Desk ▸",
+     "chars": 482,
+     "problems": []
+    },
+    {
+     "id": "tp-movers",
+     "title": "MOVTop movers14 up · 3 downBoard ▸",
+     "chars": 271,
+     "problems": []
+    },
+    {
+     "id": "tp-sess",
+     "title": "SESSWorld exchanges",
+     "chars": 423,
+     "problems": []
+    },
+    {
+     "id": "tp-perf",
+     "title": "PERFPerformance1W1M3MYTD1YBoard ▸",
+     "chars": 432,
+     "problems": []
+    },
+    {
+     "id": "tp-newsmap",
+     "title": "NEWSMAPNews heat map165 headlines · hottest Japan & BoJOpen ▸",
+     "chars": 432,
+     "problems": []
+    },
+    {
+     "id": "tp-edge",
+     "title": "EDGERegimesEdge Radar ▸",
+     "chars": 189,
+     "problems": []
+    },
+    {
+     "id": "tp-term",
+     "title": "VOLVolatilityVol ▸",
+     "chars": 317,
+     "problems": []
+    },
+    {
+     "id": "tp-top",
+     "title": "TOPWorld headlinesAll ▸",
+     "chars": 3240,
+     "problems": []
+    },
+    {
+     "id": "tp-eco",
+     "title": "ECOEconomic calendarAllHighWeek ▸",
+     "chars": 810,
+     "problems": []
+    },
+    {
+     "id": "tp-pos",
+     "title": "COTFutures positioningCFTC 2026-11-17Edge Radar ▸",
+     "chars": 105,
+     "problems": []
+    },
+    {
+     "id": "tp-desks",
+     "title": "NEWSDesksEconStocksPolicyWorldAnalysisAll ▸",
+     "chars": 3240,
+     "problems": []
+    },
+    {
+     "id": "tp-optlist",
+     "title": "OMONOptions monitorFull ▸",
+     "chars": 615,
+     "problems": []
+    },
+    {
+     "id": "tp-tools",
+     "title": "TOOLSShare sizeCALCJRNLSESSAll calcs ▸",
+     "chars": 385,
+     "problems": []
+    }
+   ],
+   "newErrors": []
+  },
+  "economy": {
+   "panels": [
+    {
+     "id": "tp-eco",
+     "title": "ECOEconomic calendarAllHighWeek ▸",
+     "chars": 810,
+     "problems": []
+    },
+    {
+     "id": "tp-cb",
+     "title": "CBCentral banksMacro Desk ▸",
+     "chars": 341,
+     "problems": []
+    },
+    {
+     "id": "tp-intel",
+     "title": "INTELFYNX Intelligence · economy ranked nowAll ▸",
+     "chars": 712,
+     "problems": []
+    },
+    {
+     "id": "tp-story",
+     "title": "STORYEconomy today · 4:03 AMMacro Desk ▸",
+     "chars": 419,
+     "problems": []
+    },
+    {
+     "id": "tp-curve",
+     "title": "CURVEUS TreasuriesUSEAUKJPMacro Desk ▸",
+     "chars": 314,
+     "problems": []
+    },
+    {
+     "id": "tp-gov",
+     "title": "GOVTGovernment yieldsMacro Desk ▸",
+     "chars": 236,
+     "problems": []
+    },
+    {
+     "id": "tp-top",
+     "title": "TOPEcon headlinesAll ▸",
+     "chars": 2504,
+     "problems": []
+    },
+    {
+     "id": "tp-rates",
+     "title": "RATESPolicy ratesMacro Desk ▸",
+     "chars": 218,
+     "problems": []
+    },
+    {
+     "id": "tp-bias",
+     "title": "BIASSmart BiasMethod ▸",
+     "chars": 187,
+     "problems": []
+    },
+    {
+     "id": "tp-xa",
+     "title": "XACross-asset vs economyBoard ▸",
+     "chars": 325,
+     "problems": []
+    },
+    {
+     "id": "tp-desks",
+     "title": "NEWSDesksMacroEconFinancePolicyWorldAll ▸",
+     "chars": 2504,
+     "problems": []
+    },
+    {
+     "id": "tp-official",
+     "title": "OFFLOfficial releasesAll ▸",
+     "chars": 41,
+     "problems": []
+    },
+    {
+     "id": "tp-term",
+     "title": "VOLVolatilityVol ▸",
+     "chars": 317,
+     "problems": []
+    },
+    {
+     "id": "tp-cdata",
+     "title": "ECONEconomies at a glanceWorld ▸",
+     "chars": 1119,
+     "problems": []
+    },
+    {
+     "id": "tp-sess",
+     "title": "SESSTrading sessions",
+     "chars": 163,
+     "problems": []
+    },
+    {
+     "id": "tp-tools",
+     "title": "TOOLSReal returnCALCJRNLSESSAll calcs ▸",
+     "chars": 242,
+     "problems": []
+    }
+   ],
+   "newErrors": []
+  },
+  "options": {
+   "panels": [
+    {
+     "id": "tp-optlist",
+     "title": "OMONOptions monitorFull ▸",
+     "chars": 615,
+     "problems": []
+    },
+    {
+     "id": "tp-chain",
+     "title": "CHAINSPY 720.20 · 1d · ATM IV 23.0%Nov 27Nov 30Dec 1Dec 2Dec 3Dec 4Dec 7Dec 8Ful",
+     "chars": 1115,
+     "problems": []
+    },
+    {
+     "id": "tp-intel",
+     "title": "INTELFYNX Intelligence · options ranked nowAll ▸",
+     "chars": 658,
+     "problems": []
+    },
+    {
+     "id": "tp-opt",
+     "title": "OPTSPY optionsFull ▸",
+     "chars": 464,
+     "problems": []
+    },
+    {
+     "id": "tp-focus",
+     "title": "GPSPY · S&P 500 ETF1M3M6M1Y2YFull page ▸",
+     "chars": 304,
+     "problems": []
+    },
+    {
+     "id": "tp-term",
+     "title": "VOLVolatilityVol ▸",
+     "chars": 317,
+     "problems": []
+    },
+    {
+     "id": "tp-active",
+     "title": "MOSTMost active contractsFull ▸",
+     "chars": 1048,
+     "problems": []
+    },
+    {
+     "id": "tp-earn",
+     "title": "ERNEarnings calendarWeek ▸",
+     "chars": 1487,
+     "problems": []
+    },
+    {
+     "id": "tp-eco",
+     "title": "ECOUSD calendarAllHighWeek ▸",
+     "chars": 320,
+     "problems": []
+    },
+    {
+     "id": "tp-story",
+     "title": "STORYOptions today · 4:03 AMMacro Desk ▸",
+     "chars": 580,
+     "problems": []
+    },
+    {
+     "id": "tp-top",
+     "title": "TOPStocks headlinesAll ▸",
+     "chars": 3073,
+     "problems": []
+    },
+    {
+     "id": "tp-vix",
+     "title": "RISKVIX, mood & crypto bookVol ▸",
+     "chars": 208,
+     "problems": []
+    },
+    {
+     "id": "tp-xa",
+     "title": "XACross-asset vs optionsBoard ▸",
+     "chars": 300,
+     "problems": []
+    },
+    {
+     "id": "tp-desks",
+     "title": "NEWSDesksEconStocksFinanceTechAnalysisAll ▸",
+     "chars": 3073,
+     "problems": []
+    },
+    {
+     "id": "tp-movers",
+     "title": "MOVTop movers16 up · 23 downBoard ▸",
+     "chars": 264,
+     "problems": []
+    },
+    {
+     "id": "tp-tools",
+     "title": "TOOLSOption payoffCALCJRNLSESSAll calcs ▸",
+     "chars": 226,
+     "problems": []
+    }
+   ],
+   "newErrors": []
+  },
+  "commodities": {
+   "panels": [
+    {
+     "id": "tp-mkts",
+     "title": "MKTSCommoditiesALLNRGMETAGSETFBoard ▸",
+     "chars": 870,
+     "problems": []
+    },
+    {
+     "id": "tp-focus",
+     "title": "GPCL · WTI crude oil1M3M6M1Y2YFull page ▸",
+     "chars": 288,
+     "problems": []
+    },
+    {
+     "id": "tp-intel",
+     "title": "INTELFYNX Intelligence · commodities ranked nowAll ▸",
+     "chars": 720,
+     "problems": []
+    },
+    {
+     "id": "tp-story",
+     "title": "STORYCommodities today · 4:03 AMMacro Desk ▸",
+     "chars": 469,
+     "problems": []
+    },
+    {
+     "id": "tp-movers",
+     "title": "MOVTop movers18 up · 7 downBoard ▸",
+     "chars": 251,
+     "problems": []
+    },
+    {
+     "id": "tp-futmap",
+     "title": "FUTMAPFutures heat map16 up · 13 downOpen ▸",
+     "chars": 648,
+     "problems": []
+    },
+    {
+     "id": "tp-perf",
+     "title": "PERFPerformance1W1M3MYTD1YBoard ▸",
+     "chars": 394,
+     "problems": []
+    },
+    {
+     "id": "tp-pos",
+     "title": "COTFutures positioningCFTC 2026-11-17Edge Radar ▸",
+     "chars": 95,
+     "problems": []
+    },
+    {
+     "id": "tp-edge",
+     "title": "EDGERegimesEdge Radar ▸",
+     "chars": 161,
+     "problems": []
+    },
+    {
+     "id": "tp-term",
+     "title": "VOLVolatilityVol ▸",
+     "chars": 317,
+     "problems": []
+    },
+    {
+     "id": "tp-top",
+     "title": "TOPCmdty headlinesAll ▸",
+     "chars": 2944,
+     "problems": []
+    },
+    {
+     "id": "tp-desks",
+     "title": "NEWSDesksEconCmdtyEnergyIndustryWorldAll ▸",
+     "chars": 2944,
+     "problems": []
+    },
+    {
+     "id": "tp-xa",
+     "title": "XACross-asset vs commoditiesBoard ▸",
+     "chars": 280,
+     "problems": []
+    },
+    {
+     "id": "tp-eco",
+     "title": "ECOUSD/AUD/CAD calendarAllHighWeek ▸",
+     "chars": 466,
+     "problems": []
+    },
+    {
+     "id": "tp-opt",
+     "title": "OPTGLD optionsFull ▸",
+     "chars": 463,
+     "problems": []
+    },
+    {
+     "id": "tp-tools",
+     "title": "TOOLSFutures contractsCALCJRNLSESSAll calcs ▸",
+     "chars": 432,
+     "problems": []
+    }
+   ],
+   "newErrors": []
+  },
+  "world": {
+   "panels": [
+    {
+     "id": "tp-cwatch",
+     "title": "WATCHCountries by status7 red · 46 yellowWorld ▸",
+     "chars": 7234,
+     "problems": []
+    },
+    {
+     "id": "tp-ships",
+     "title": "SHIPShips · 5,576 tracked",
+     "chars": 850,
+     "problems": []
+    },
+    {
+     "id": "tp-globe",
+     "title": "WORLDLive world · global intelligenceWorld ▸",
+     "chars": 283,
+     "problems": []
+    },
+    {
+     "id": "tp-cnews",
+     "title": "WNEWSWorld headlinesAll ▸",
+     "chars": 2871,
+     "problems": []
+    },
+    {
+     "id": "tp-cb",
+     "title": "CBCentral banksMacro Desk ▸",
+     "chars": 341,
+     "problems": []
+    },
+    {
+     "id": "tp-xa",
+     "title": "XACross-asset vs worldBoard ▸",
+     "chars": 388,
+     "problems": []
+    },
+    {
+     "id": "tp-eco",
+     "title": "ECOEconomic calendarAllHighWeek ▸",
+     "chars": 810,
+     "problems": []
+    },
+    {
+     "id": "tp-cdata",
+     "title": "ECONEconomies at a glanceWorld ▸",
+     "chars": 1119,
+     "problems": []
+    },
+    {
+     "id": "tp-intel",
+     "title": "INTELFYNX Intelligence · world ranked nowAll ▸",
+     "chars": 814,
+     "problems": []
+    }
+   ],
+   "newErrors": []
+  },
+  "quant": {
+   "panels": [
+    {
+     "id": "tp-oflow",
+     "title": "OFLOWOrder flow · live bookBTC/USDFull ▸",
+     "chars": 429,
+     "problems": []
+    },
+    {
+     "id": "tp-panic",
+     "title": "PANICMarket panic detector2026-11-25Full ▸",
+     "chars": 164,
+     "problems": []
+    },
+    {
+     "id": "tp-mcvar",
+     "title": "MCVARPortfolio risk simulator1D10D1M2 assets · fat tailsFull ▸",
+     "chars": 228,
+     "problems": []
+    },
+    {
+     "id": "tp-vclust",
+     "title": "VCLUSTVolatility clustering4 hot · 3 calmFull ▸",
+     "chars": 576,
+     "problems": []
+    },
+    {
+     "id": "tp-iseas",
+     "title": "ISEASIntraday seasonalitySPY · New York timeFull ▸",
+     "chars": 239,
+     "problems": []
+    },
+    {
+     "id": "tp-factor",
+     "title": "FACTORFactor neutralityTech heavy · 12mFull ▸",
+     "chars": 133,
+     "problems": []
+    },
+    {
+     "id": "tp-rmom",
+     "title": "RMOMRegime momentum50 US stocks · 12-1Full ▸",
+     "chars": 302,
+     "problems": []
+    }
+   ],
+   "newErrors": []
+  },
+  "strategy": {
+   "panels": [
+    {
+     "id": "tp-btest",
+     "title": "BTESTStrategy backtesterSPY · dailyFull ▸",
+     "chars": 251,
+     "problems": []
+    },
+    {
+     "id": "tp-fcast",
+     "title": "FCASTK-line forecasterSPY · next 10 daysFull ▸",
+     "chars": 172,
+     "problems": []
+    },
+    {
+     "id": "tp-optim",
+     "title": "OPTIMPortfolio optimizerGlobal multi-asset · walk-forwardFull ▸",
+     "chars": 366,
+     "problems": []
+    },
+    {
+     "id": "tp-mcvar",
+     "title": "MCVARPortfolio risk simulator1D10D1M2 assets · fat tailsFull ▸",
+     "chars": 228,
+     "problems": []
+    }
+   ],
+   "newErrors": []
+  },
+  "ailab": {
+   "panels": [
+    {
+     "id": "tp-mlpred",
+     "title": "MLPREDPredict tomorrow (ML)SPY · tomorrowFull ▸",
+     "chars": 187,
+     "problems": []
+    },
+    {
+     "id": "tp-regime",
+     "title": "REGIMEMarket regimes (GMM)SPY · Normal downtrendFull ▸",
+     "chars": 169,
+     "problems": []
+    },
+    {
+     "id": "tp-volml",
+     "title": "VOLMLVolatility forecast (ML)SPY · next 5 daysFull ▸",
+     "chars": 183,
+     "problems": []
+    },
+    {
+     "id": "tp-anomaly",
+     "title": "ANOMALYAnomaly detectionSPY · 24 flaggedFull ▸",
+     "chars": 159,
+     "problems": []
+    },
+    {
+     "id": "tp-pairs",
+     "title": "PAIRSPairs trading test91 pairsFull ▸",
+     "chars": 197,
+     "problems": []
+    },
+    {
+     "id": "tp-rltrade",
+     "title": "RLTRADEReinforcement learning traderSPY · cash todayFull ▸",
+     "chars": 194,
+     "problems": []
+    }
+   ],
+   "newErrors": []
+  },
+  "dash": {
+   "panels": [
+    {
+     "id": "tp-nperf",
+     "title": "NPERFNormalized market performanceTODAY1W1M3MYTD1Y3Y5Y",
+     "chars": 225,
+     "problems": []
+    },
+    {
+     "id": "tp-idxc",
+     "title": "IDXIndex funds · extended hoursFull page ▸",
+     "chars": 427,
+     "problems": []
+    },
+    {
+     "id": "tp-dsect",
+     "title": "SECTSectorsTODAY1W1M3MYTDHeat map ▸",
+     "chars": 351,
+     "problems": []
+    },
+    {
+     "id": "tp-usm",
+     "title": "USMKTUS marketsBoard ▸",
+     "chars": 327,
+     "problems": []
+    },
+    {
+     "id": "tp-glob",
+     "title": "GLOBALGlobal marketsINDICESCRYPTOFXCMDTYBoard ▸",
+     "chars": 444,
+     "problems": []
+    },
+    {
+     "id": "tp-tsy",
+     "title": "TSYTreasuries & bond futuresMacro Desk ▸",
+     "chars": 412,
+     "problems": []
+    },
+    {
+     "id": "tp-big",
+     "title": "LARGELargest companies◀1/5▶Overview ▸",
+     "chars": 541,
+     "problems": []
+    },
+    {
+     "id": "tp-ixm",
+     "title": "IXMOVIndex gainers & losersS&P 500NDXDJIA373 up · 130 downOverview ▸",
+     "chars": 1010,
+     "problems": []
+    },
+    {
+     "id": "tp-glam",
+     "title": "USMOVUS stocks moversGAINERSLOSERSACTIVEScanner ▸",
+     "chars": 958,
+     "problems": []
+    },
+    {
+     "id": "tp-ratesdx",
+     "title": "RATESRates & dollarRATESCURVE5Y10YMAXMacro Desk ▸",
+     "chars": 259,
+     "problems": []
+    },
+    {
+     "id": "tp-fng",
+     "title": "FNGFear & Greed12 · Extreme fearSentiment ▸",
+     "chars": 558,
+     "problems": []
+    }
+   ],
+   "newErrors": []
+  }
+ },
+ "pages": {},
+ "allPanels": [
+  {
+   "id": "tp-mkts",
+   "title": "MKTSMarketsALLEQETFCRYFXFUTIDXBoard ▸",
+   "chars": 4345,
+   "problems": []
+  },
+  {
+   "id": "tp-focus",
+   "title": "GPSPY · S&P 500 ETF1M3M6M1Y2YFull page ▸",
+   "chars": 304,
+   "problems": []
+  },
+  {
+   "id": "tp-heat",
+   "title": "HEATDay change heat map24 up · 25 down",
+   "chars": 553,
+   "problems": []
+  },
+  {
+   "id": "tp-fin",
+   "title": "FAAAPL · annual SEC filingsFull ▸",
+   "chars": 625,
+   "problems": []
+  },
+  {
+   "id": "tp-story",
+   "title": "STORYToday · 4:03 AMMacro Desk ▸",
+   "chars": 419,
+   "problems": []
+  },
+  {
+   "id": "tp-intel",
+   "title": "INTELFYNX Intelligence · markets ranked nowAll ▸",
+   "chars": 677,
+   "problems": []
+  },
+  {
+   "id": "tp-top",
+   "title": "TOPLatest headlinesAll ▸",
+   "chars": 2958,
+   "problems": []
+  },
+  {
+   "id": "tp-desks",
+   "title": "NEWSDesksFXMacroEconStocksFinanceCryptoCmdtyEnergyTechIndustryPolicyWorldAnalysi",
+   "chars": 2504,
+   "problems": []
+  },
+  {
+   "id": "tp-cb",
+   "title": "CBCentral banksMacro Desk ▸",
+   "chars": 341,
+   "problems": []
+  },
+  {
+   "id": "tp-curve",
+   "title": "CURVEUS TreasuriesUSEAUKJPMacro Desk ▸",
+   "chars": 314,
+   "problems": []
+  },
+  {
+   "id": "tp-vix",
+   "title": "RISKVIX, mood & crypto bookVol ▸",
+   "chars": 306,
+   "problems": []
+  },
+  {
+   "id": "tp-bias",
+   "title": "BIASSmart BiasMethod ▸",
+   "chars": 187,
+   "problems": []
+  },
+  {
+   "id": "tp-edge",
+   "title": "EDGERegimesEdge Radar ▸",
+   "chars": 624,
+   "problems": []
+  },
+  {
+   "id": "tp-pos",
+   "title": "COTFutures positioningCFTC 2026-11-17Edge Radar ▸",
+   "chars": 272,
+   "problems": []
+  },
+  {
+   "id": "tp-eco",
+   "title": "ECOEconomic calendarAllHighWeek ▸",
+   "chars": 810,
+   "problems": []
+  },
+  {
+   "id": "tp-corr",
+   "title": "CORRFX correlation30D60D90D",
+   "chars": 303,
+   "problems": []
+  },
+  {
+   "id": "tp-tools",
+   "title": "TOOLSPosition sizeCALCJRNLSESSAll calcs ▸",
+   "chars": 262,
+   "problems": []
+  },
+  {
+   "id": "tp-movers",
+   "title": "MOVTop movers87 up · 50 downBoard ▸",
+   "chars": 262,
+   "problems": []
+  },
+  {
+   "id": "tp-xa",
+   "title": "XACross-asset vs marketsBoard ▸",
+   "chars": 334,
+   "problems": []
+  },
+  {
+   "id": "tp-idx",
+   "title": "IDXIndices & sectorsBoard ▸",
+   "chars": 239,
+   "problems": []
+  },
+  {
+   "id": "tp-sess",
+   "title": "SESSTrading sessions",
+   "chars": 163,
+   "problems": []
+  },
+  {
+   "id": "tp-earn",
+   "title": "ERNEarnings calendarWeek ▸",
+   "chars": 1487,
+   "problems": []
+  },
+  {
+   "id": "tp-opt",
+   "title": "OPTAAPL optionsFull ▸",
+   "chars": 467,
+   "problems": []
+  },
+  {
+   "id": "tp-optlist",
+   "title": "OMONOptions monitorFull ▸",
+   "chars": 615,
+   "problems": []
+  },
+  {
+   "id": "tp-chain",
+   "title": "CHAINAAPL 355.17 · 1d · ATM IV 23.2%Nov 27Nov 30Dec 2Dec 4Dec 7Dec 9Dec 11Dec 18",
+   "chars": 1100,
+   "problems": []
+  },
+  {
+   "id": "tp-active",
+   "title": "MOSTMost active contractsFull ▸",
+   "chars": 1048,
+   "problems": []
+  },
+  {
+   "id": "tp-term",
+   "title": "VOLVolatilityVol ▸",
+   "chars": 317,
+   "problems": []
+  },
+  {
+   "id": "tp-rates",
+   "title": "RATESPolicy ratesMacro Desk ▸",
+   "chars": 218,
+   "problems": []
+  },
+  {
+   "id": "tp-gov",
+   "title": "GOVTGovernment yieldsMacro Desk ▸",
+   "chars": 236,
+   "problems": []
+  },
+  {
+   "id": "tp-books",
+   "title": "BOOKCoinbase top of book",
+   "chars": 198,
+   "problems": []
+  },
+  {
+   "id": "tp-range",
+   "title": "RNGEUR/USD daily range · 1 yearEdge Radar ▸",
+   "chars": 132,
+   "problems": []
+  },
+  {
+   "id": "tp-perf",
+   "title": "PERFPerformance1W1M3MYTD1YBoard ▸",
+   "chars": 3194,
+   "problems": []
+  },
+  {
+   "id": "tp-official",
+   "title": "OFFLOfficial releasesAll ▸",
+   "chars": 41,
+   "problems": []
+  },
+  {
+   "id": "tp-squote",
+   "title": "QUOTEQuote & performanceFull page ▸",
+   "chars": 24,
+   "problems": []
+  },
+  {
+   "id": "tp-srisk",
+   "title": "RISKRiskPortfolio ▸",
+   "chars": 108,
+   "problems": []
+  },
+  {
+   "id": "tp-snews",
+   "title": "NEWSHeadlinesAll ▸",
+   "chars": 75,
+   "problems": []
+  },
+  {
+   "id": "tp-cmp",
+   "title": "CMPSPY vs QQQ vs TLT · 1YChart ▸",
+   "chars": 103,
+   "problems": []
+  },
+  {
+   "id": "tp-cmpq",
+   "title": "CMPQCompare · quotes & performanceChart ▸",
+   "chars": 79,
+   "problems": []
+  },
+  {
+   "id": "tp-cmpcorr",
+   "title": "CCORRCompare · correlationChart ▸",
+   "chars": 28,
+   "problems": []
+  },
+  {
+   "id": "tp-cmprisk",
+   "title": "CRISKCompare · riskPortfolio ▸",
+   "chars": 28,
+   "problems": []
+  },
+  {
+   "id": "tp-cmpnews",
+   "title": "CNEWSCompare · headlinesAll ▸",
+   "chars": 28,
+   "problems": []
+  },
+  {
+   "id": "tp-globe",
+   "title": "WORLDLive world · global intelligenceWorld ▸",
+   "chars": 805,
+   "problems": []
+  },
+  {
+   "id": "tp-cwatch",
+   "title": "WATCHCountries by status7 red · 46 yellowWorld ▸",
+   "chars": 7234,
+   "problems": []
+  },
+  {
+   "id": "tp-ships",
+   "title": "SHIPShips · 5,576 tracked",
+   "chars": 850,
+   "problems": []
+  },
+  {
+   "id": "tp-cnews",
+   "title": "WNEWSWorld headlinesAll ▸",
+   "chars": 2871,
+   "problems": []
+  },
+  {
+   "id": "tp-cdata",
+   "title": "ECONEconomies at a glanceWorld ▸",
+   "chars": 1119,
+   "problems": []
+  },
+  {
+   "id": "tp-dom",
+   "title": "DOMDepth of marketBTC/USDLadder ▸",
+   "chars": 705,
+   "problems": []
+  },
+  {
+   "id": "tp-oflow",
+   "title": "OFLOWOrder flow · live bookBTC/USDFull ▸",
+   "chars": 429,
+   "problems": []
+  },
+  {
+   "id": "tp-panic",
+   "title": "PANICMarket panic detector2026-11-25Full ▸",
+   "chars": 164,
+   "problems": []
+  },
+  {
+   "id": "tp-mcvar",
+   "title": "MCVARPortfolio risk simulator1D10D1M2 assets · fat tailsFull ▸",
+   "chars": 228,
+   "problems": []
+  },
+  {
+   "id": "tp-vclust",
+   "title": "VCLUSTVolatility clustering4 hot · 3 calmFull ▸",
+   "chars": 576,
+   "problems": []
+  },
+  {
+   "id": "tp-iseas",
+   "title": "ISEASIntraday seasonalitySPY · New York timeFull ▸",
+   "chars": 239,
+   "problems": []
+  },
+  {
+   "id": "tp-factor",
+   "title": "FACTORFactor neutralityTech heavy · 12mFull ▸",
+   "chars": 133,
+   "problems": []
+  },
+  {
+   "id": "tp-rmom",
+   "title": "RMOMRegime momentum50 US stocks · 12-1Full ▸",
+   "chars": 302,
+   "problems": []
+  },
+  {
+   "id": "tp-btest",
+   "title": "BTESTStrategy backtesterSPY · dailyFull ▸",
+   "chars": 251,
+   "problems": []
+  },
+  {
+   "id": "tp-optim",
+   "title": "OPTIMPortfolio optimizerGlobal multi-asset · walk-forwardFull ▸",
+   "chars": 366,
+   "problems": []
+  },
+  {
+   "id": "tp-fcast",
+   "title": "FCASTK-line forecasterSPY · next 10 daysFull ▸",
+   "chars": 172,
+   "problems": []
+  },
+  {
+   "id": "tp-kronos",
+   "title": "KRONOSKronos AI forecastAI forecastFull ▸",
+   "chars": 161,
+   "problems": []
+  },
+  {
+   "id": "tp-mlpred",
+   "title": "MLPREDPredict tomorrow (ML)SPY · tomorrowFull ▸",
+   "chars": 187,
+   "problems": []
+  },
+  {
+   "id": "tp-volml",
+   "title": "VOLMLVolatility forecast (ML)SPY · next 5 daysFull ▸",
+   "chars": 183,
+   "problems": []
+  },
+  {
+   "id": "tp-regime",
+   "title": "REGIMEMarket regimes (GMM)SPY · Normal downtrendFull ▸",
+   "chars": 169,
+   "problems": []
+  },
+  {
+   "id": "tp-pca",
+   "title": "PCAHidden factors (PCA)50 stocks · 2yFull ▸",
+   "chars": 153,
+   "problems": []
+  },
+  {
+   "id": "tp-pairs",
+   "title": "PAIRSPairs trading test91 pairsFull ▸",
+   "chars": 197,
+   "problems": []
+  },
+  {
+   "id": "tp-anomaly",
+   "title": "ANOMALYAnomaly detectionSPY · 24 flaggedFull ▸",
+   "chars": 159,
+   "problems": []
+  },
+  {
+   "id": "tp-rltrade",
+   "title": "RLTRADEReinforcement learning traderSPY · cash todayFull ▸",
+   "chars": 194,
+   "problems": []
+  },
+  {
+   "id": "tp-optlab",
+   "title": "OPTLABOptions pricing labSPY · 210 quotesFull ▸",
+   "chars": 177,
+   "problems": []
+  },
+  {
+   "id": "tp-committee",
+   "title": "COMMITTEEAI investment committeeMSFT · holdFull ▸",
+   "chars": 193,
+   "problems": []
+  },
+  {
+   "id": "tp-earnprev",
+   "title": "EARNINGSEarnings previewAAPL · Feb 1, 2027Full ▸",
+   "chars": 150,
+   "problems": []
+  },
+  {
+   "id": "tp-factorloop",
+   "title": "FACTORLOOPFactor research loop20 factors triedFull ▸",
+   "chars": 175,
+   "problems": []
+  },
+  {
+   "id": "tp-port",
+   "title": "PORTPortfolio riskPortfolio ▸",
+   "chars": 93,
+   "problems": []
+  },
+  {
+   "id": "tp-cot",
+   "title": "COTHedge fund positioningCFTC Nov 17, 26All markets ▸",
+   "chars": 405,
+   "problems": []
+  },
+  {
+   "id": "tp-wirp",
+   "title": "WIRPRate curvesRate curves ▸",
+   "chars": 256,
+   "problems": []
+  },
+  {
+   "id": "tp-vstat",
+   "title": "VSTATVolatility statsFull stats ▸",
+   "chars": 112,
+   "problems": []
+  },
+  {
+   "id": "tp-obook",
+   "title": "BOOKOrder & position bookBooks ▸",
+   "chars": 87,
+   "problems": []
+  },
+  {
+   "id": "tp-mood",
+   "title": "MOODRisk sentimentHow it works ▸",
+   "chars": 248,
+   "problems": []
+  },
+  {
+   "id": "tp-scan",
+   "title": "SCANMarket scannerScanner ▸",
+   "chars": 259,
+   "problems": []
+  },
+  {
+   "id": "tp-idxc",
+   "title": "IDXIndex funds · extended hoursFull page ▸",
+   "chars": 427,
+   "problems": []
+  },
+  {
+   "id": "tp-nperf",
+   "title": "NPERFNormalized market performanceTODAY1W1M3MYTD1Y3Y5Y",
+   "chars": 225,
+   "problems": []
+  },
+  {
+   "id": "tp-dsect",
+   "title": "SECTSectorsTODAY1W1M3MYTDHeat map ▸",
+   "chars": 351,
+   "problems": []
+  },
+  {
+   "id": "tp-big",
+   "title": "LARGELargest companies◀1/5▶Overview ▸",
+   "chars": 541,
+   "problems": []
+  },
+  {
+   "id": "tp-glam",
+   "title": "USMOVUS stocks moversGAINERSLOSERSACTIVEScanner ▸",
+   "chars": 958,
+   "problems": []
+  },
+  {
+   "id": "tp-ixm",
+   "title": "IXMOVIndex gainers & losersS&P 500NDXDJIA373 up · 130 downOverview ▸",
+   "chars": 1010,
+   "problems": []
+  },
+  {
+   "id": "tp-ratesdx",
+   "title": "RATESRates & dollarRATESCURVE5Y10YMAXMacro Desk ▸",
+   "chars": 259,
+   "problems": []
+  },
+  {
+   "id": "tp-tsy",
+   "title": "TSYTreasuries & bond futuresMacro Desk ▸",
+   "chars": 412,
+   "problems": []
+  },
+  {
+   "id": "tp-usm",
+   "title": "USMKTUS marketsBoard ▸",
+   "chars": 327,
+   "problems": []
+  },
+  {
+   "id": "tp-glob",
+   "title": "GLOBALGlobal marketsINDICESCRYPTOFXCMDTYBoard ▸",
+   "chars": 444,
+   "problems": []
+  },
+  {
+   "id": "tp-fng",
+   "title": "FNGFear & Greed12 · Extreme fearSentiment ▸",
+   "chars": 558,
+   "problems": []
+  },
+  {
+   "id": "tp-cfng",
+   "title": "CFNGCrypto sentiment11 · Extreme FearOpen ▸",
+   "chars": 401,
+   "problems": []
+  },
+  {
+   "id": "tp-aimap",
+   "title": "AIMAPAI bubble map$21.41T · −1.76% wtdOpen ▸",
+   "chars": 169,
+   "problems": []
+  },
+  {
+   "id": "tp-sectmap",
+   "title": "SECTStocks by sector890 stocks · best Basic +2.54%Open ▸",
+   "chars": 501,
+   "problems": []
+  },
+  {
+   "id": "tp-futmap",
+   "title": "FUTMAPFutures heat map16 up · 13 downOpen ▸",
+   "chars": 648,
+   "problems": []
+  },
+  {
+   "id": "tp-newsmap",
+   "title": "NEWSMAPNews heat map165 headlines · hottest Japan & BoJOpen ▸",
+   "chars": 432,
+   "problems": []
+  },
+  {
+   "id": "tp-cfx",
+   "title": "CFXCrypto & currencies40 coins · +0.21% wtdOpen ▸",
+   "chars": 138,
+   "problems": []
+  },
+  {
+   "id": "tp-str",
+   "title": "STRCurrency strengthTD1W1M3M6MUSD ▲ AUD ▼Full ▸",
+   "chars": 180,
+   "problems": []
+  }
+ ],
+ "ticker": {
+  "items": 1,
+  "overlaps": 0,
+  "inner": 0,
+  "sample": ""
+ },
+ "errors": [],
+ "consoleErrors": [
+  "Failed to load resource: the server responded with a status of 400 ()",
+  "Failed to load resource: the server responded with a status of 400 ()",
+  "Failed to load resource: the server responded with a status of 400 ()",
+  "Failed to load resource: the server responded with a status of 400 ()",
+  "Failed to load resource: the server responded with a status of 400 ()"
+ ],
+ "failed": {
+  "us-central1-fynx-c7a28.cloudfunctions.net": [
+   "https://us-central1-fynx-c7a28.cloudfunctions.net/webMarketFeed?edition=us&category=all net::ERR_ABORTED",
+   "https://us-central1-fynx-c7a28.cloudfunctions.net/webMarketFeed?edition=us&category=economics net::ERR_ABORTED",
+   "https://us-central1-fynx-c7a28.cloudfunctions.net/webMarketFeed?edition=us&category=energy net::ERR_ABORTED",
+   "400 https://us-central1-fynx-c7a28.cloudfunctions.net/webOperationalEvent",
+   "400 https://us-central1-fynx-c7a28.cloudfunctions.net/webOperationalEvent",
+   "400 https://us-central1-fynx-c7a28.cloudfunctions.net/webOperationalEvent",
+   "400 https://us-central1-fynx-c7a28.cloudfunctions.net/webResearchData?action=earnings&cik=320193&symbol=AAPL",
+   "400 https://us-central1-fynx-c7a28.cloudfunctions.net/webOperationalEvent"
+  ]
+ },
+ "requests": {
+  "www.fynxfinanceworld.com/terminal.html": 1,
+  "www.fynxfinanceworld.com/assets/js/*.js": 16,
+  "www.fynxfinanceworld.com/assets/*.css": 3,
+  "www.fynxfinanceworld.com/assets/css/*.css": 4,
+  "www.fynxfinanceworld.com/assets/vendor/codemirror/*.css": 1,
+  "www.fynxfinanceworld.com/assets/vendor/codemirror/*.js": 5,
+  "www.fynxfinanceworld.com/assets/js/terminal/*.js": 31,
+  "www.fynxfinanceworld.com/assets/js/macro-desk/*.js": 1,
+  "fonts.googleapis.com/css2": 2,
+  "fonts.gstatic.com/s/ibmplexmono/v23/-F63fjptAgt5VM-kVkqdyU8n1i8q1w.woff2": 1,
+  "fonts.gstatic.com/s/ibmplexmono/v23/-F6qfjptAgt5VM-kVkqdyU8n3pQPwlBFgg.woff2": 1,
+  "fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2": 1,
+  "www.fynxfinanceworld.com/auth/*.js": 1,
+  "www.fynxfinanceworld.com/intelligence/data/*.json": 1,
+  "www.fynxfinanceworld.com/assets/data/macro/*.json": 1,
+  "fonts.gstatic.com/s/ibmplexmono/v23/-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgg.woff2": 1,
+  "www.gstatic.com/firebasejs/10.12.5/*.js": 4,
+  "fonts.gstatic.com/s/ibmplexmono/v23/-F6qfjptAgt5VM-kVkqdyU8n3vAOwlBFgg.woff2": 1,
+  "raw.githubusercontent.com/EA-LA/FYNX-web/macro-data/*.json": 1,
+  "raw.githubusercontent.com/EA-LA/FYNX-web/research-data/assets/data/research/*.json": 2,
+  "www.fynxfinanceworld.com/*.png": 17,
+  "raw.githubusercontent.com/EA-LA/FYNX-web/terminal-data/*.json": 17,
+  "us-central1-fynx-c7a28.cloudfunctions.net/webMarketAnalytics": 8,
+  "us-central1-fynx-c7a28.cloudfunctions.net/webResearchData": 14,
+  "us-central1-fynx-c7a28.cloudfunctions.net/webMarketFeed": 12,
+  "fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1pL7SUc.woff2": 1,
+  "raw.githubusercontent.com/EA-LA/FYNX-web/research-data/assets/data/research/bars/*.json": 2,
+  "fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa0ZL7SUc.woff2": 1,
+  "www.fynxfinanceworld.com/assets/data/world/*.json": 2,
+  "raw.githubusercontent.com/EA-LA/FYNX-web/world-data/*.json": 7,
+  "fynxfinanceworld.vercel.app/fn/*.js": 37,
+  "www.fynxfinanceworld.com/fn/*.js": 11
+ },
+ "heap": {
+  "usedMB": 83.5
+ },
+ "domNodes": 4683
+}
