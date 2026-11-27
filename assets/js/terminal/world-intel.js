@@ -321,7 +321,7 @@ html body.fx-terminal .fx-ic-src a{display:inline-block;min-height:44px;padding:
   function panel({redraw}) {
     const box = el('div', 'fx-ilp');
     box.setAttribute('role', 'region'); box.setAttribute('aria-label', 'Intelligence layers');
-    const narrow = () => (box.parentElement?.clientWidth || 1200) < 640;
+    const narrow = () => (box.parentElement?.clientWidth || window.innerWidth || 1200) < 640;
     let collapsed = store.get('globe-ilp-collapsed') === '1';
     const head = el('div', 'fx-ilp-head'), count = el('small'), tog = btn(collapsed ? '+' : '–', '', () => { collapsed = !collapsed; store.set('globe-ilp-collapsed', collapsed ? '1' : '0'); paint(); }, 'Show or hide the layer panel');
     head.append(el('b', '', 'INTELLIGENCE LAYERS'), count, tog);
@@ -506,7 +506,7 @@ html body.fx-terminal .fx-ic-src a{display:inline-block;min-height:44px;padding:
     // On narrow screens the card and the layer panel cannot both fit: fold the panel away.
     if ((ctx.stage.clientWidth || 1000) < 640) { const lb = ctx.stage.querySelector('.fx-ilp'); if (lb && !lb.classList.contains('collapsed')) lb.querySelector('.fx-ilp-head button')?.click(); }
     const live = !x.ref || x.live, top = el('div', 'fx-ic-top');
-    const zoomButton = btn('⌖', '', () => openItem(id, {zoom: true}), 'Zoom to this'), close = btn('✕', '', closeCard, 'Close');
+    const zoomButton = btn('⌖', '', () => { openItem(id, {zoom: true}); if (W.mapMode === 'satellite' && x.ll) W.satFlyTo?.(x.ll, x.ref ? 7 : 5); }, 'Zoom to this'), close = btn('✕', '', closeCard, 'Close');
     top.append(el('b', '', live ? 'EVENT INTELLIGENCE' : 'SITE INTELLIGENCE'), zoomButton, close);
     const body = el('div', 'fx-ic-body'); card.append(top, body);
     const lay = L[x.layer], color = x.sev ? SEV[x.sev] : lay.color;
@@ -586,7 +586,7 @@ html body.fx-terminal .fx-ic-src a{display:inline-block;min-height:44px;padding:
     return [hs ? `Intel hotspot (score ${hs.score})` : '', ...ev.map(e => `${e.n} ${e.layer === 'protests' ? 'protest' : e.layer} report${e.n === 1 ? '' : 's'}`)].filter(Boolean).join(' · ') + ' in 72 h';
   }
 
-  W.intel = {panel: o => { const b = panel(o); if (ctx) ctx.layersBox = b; W._ilpBox = b; return b; }, mount: m => { mount({...m, layersBox: W._ilpBox}); }, draw, countryLine, open: id => openItem(id, {zoom: true}), load, layers: L, isOn};
+  W.intel = {panel: o => { const b = panel(o); if (ctx) ctx.layersBox = b; W._ilpBox = b; return b; }, mount: m => { mount({...m, layersBox: W._ilpBox}); }, draw, countryLine, open: id => openItem(id, {zoom: true}), load, layers: L, isOn, icons: ICON, setLayer: (k, v) => { setOn(k, !!v); W.intelRedraw?.(); W.updateSatelliteMarkers?.(); }};
   // Refresh: rebuild from fresh headlines whenever the World data reloads; hazards every 10 minutes.
   setInterval(() => { if (document.hidden || !document.getElementById('tp-globe')) return; build(); W.intelRedraw?.(); }, 120000);
   setInterval(() => { if (document.hidden || !document.getElementById('tp-globe')) return; loadHazards().then(() => { build(); D.at = Date.now(); W.intelRedraw?.(); }); }, 600000);

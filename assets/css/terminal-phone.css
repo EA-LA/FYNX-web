@@ -98,6 +98,8 @@
   html body.fx-terminal .tp-b{flex:0 1 auto!important;max-height:min(70vh,560px);overflow:auto;-webkit-overflow-scrolling:touch}
   html body.fx-terminal #tp-focus .tp-b,html body.fx-terminal #tp-squote .tp-b{max-height:none}
   html body.fx-terminal #tp-focus{min-height:0!important}
+  /* The world map draws into an absolutely placed stage, so its box needs a real height on a phone. */
+  html body.fx-terminal .tp-b.fx-globe{flex:none!important;height:min(78vh,640px);max-height:none;overflow:hidden!important}
   html body.fx-terminal .fx-chartwrap{flex:none!important;height:240px;min-height:240px}
   /* Action links under a chart: one even row that scrolls sideways instead of wrapping into ragged lines. */
   html body.fx-terminal .fx-chips:not([hidden]):has(>.fx-chip-link){display:flex;flex-wrap:nowrap!important;gap:8px;overflow-x:auto;scrollbar-width:none;padding:12px!important}
