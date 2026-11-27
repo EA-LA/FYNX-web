@@ -82,3 +82,29 @@ test('invalid cross-tab edition does not corrupt current selection', () => {
   b.storage(KEY, 'not-an-edition');
   assert.equal(b.get(), 'uk');
 });
+
+test('clearing storage preserves the current permalink after an explicit edition change', () => {
+  const b = browser({ url:'https://www.fynxfinanceworld.com/news.html?edition=global&topic=markets#latest' });
+  b.window.FynxEdition.set('asia');
+  b.events.length = 0;
+  b.localStorage.clear();
+  b.storage(null, null);
+  assert.equal(b.get(), 'asia');
+  assert.equal(b.selects[0].value, 'asia');
+  assert.equal(b.labels[0].textContent, 'Asia edition');
+  assert.equal(b.window.location.href, 'https://www.fynxfinanceworld.com/news.html?edition=asia&topic=markets#latest');
+  assert.equal(b.localStorage.getItem(KEY), null);
+  assert.equal(b.events.length, 0);
+});
+
+test('removing a stored preference preserves the updated permalink after a cross-tab change', () => {
+  const b = browser({ url:'https://www.fynxfinanceworld.com/news.html?edition=global' });
+  b.storage(KEY, 'canada');
+  b.events.length = 0;
+  b.localStorage.removeItem(KEY);
+  b.storage(KEY, null);
+  assert.equal(b.get(), 'canada');
+  assert.equal(b.window.location.href, 'https://www.fynxfinanceworld.com/news.html?edition=canada');
+  assert.equal(b.localStorage.getItem(KEY), null);
+  assert.equal(b.events.length, 0);
+});
