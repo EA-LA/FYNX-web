@@ -299,7 +299,8 @@
     .pill strong{color:var(--text-strong); transition:color .25s ease;}
     .mono{font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
     .toggle{
-      display:flex; align-items:center; justify-content:space-between;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      width:100%; min-height:44px; text-align:left; cursor:pointer; font:inherit;
       padding: 10px 12px;
       border-radius: 12px;
       border: 1px solid var(--border2);
@@ -307,6 +308,7 @@
       margin-bottom: 10px;
       transition:border-color .25s ease,background .25s ease;
     }
+    .toggle:focus-visible{outline:2px solid var(--text-strong);outline-offset:3px}
     .toggle .t-left{display:flex; flex-direction:column; gap:2px}
     .toggle .t-left strong{font-size: 13px; color:var(--text-strong); transition:color .25s ease;}
     .toggle .t-left small{color: var(--muted2); font-size: 12px; transition:color .25s ease;}
@@ -326,11 +328,11 @@
       background: var(--switch-knob);
       transition: left .12s ease, background .25s ease;
     }
-    .switch.on{
+    .toggle.on .switch{
       background: var(--switch-on-bg);
       border-color: var(--switch-on-border);
     }
-    .switch.on::after{ left:25px; }
+    .toggle.on .switch::after{ left:25px; }
     .actions{
       display:flex; gap:10px; flex-wrap:wrap;
       margin-top: 12px;
@@ -537,13 +539,13 @@
             <input id="balance" class="field mono" type="text" inputmode="decimal" value="1000" />
           </div>
 
-          <div class="toggle">
-            <div class="t-left">
-              <strong>Risk as %</strong>
-              <small>ON = percent risk, OFF = fixed dollars</small>
-            </div>
-            <div id="riskSwitch" class="switch on" role="switch" aria-checked="true" tabindex="0"></div>
-          </div>
+          <button id="riskSwitch" class="toggle on" type="button" role="switch" aria-checked="true" aria-labelledby="riskSwitchLabel" aria-describedby="riskSwitchHint">
+            <span class="t-left">
+              <strong id="riskSwitchLabel">Risk as %</strong>
+              <small id="riskSwitchHint">ON = percent risk, OFF = fixed dollars</small>
+            </span>
+            <span class="switch" aria-hidden="true"></span>
+          </button>
 
           <div class="row" id="riskPercentRow">
             <label for="riskPercent">Risk %</label>
@@ -1209,9 +1211,6 @@
         clearResults();
       };
       els.riskSwitch.addEventListener("click", toggleRisk);
-      els.riskSwitch.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleRisk(); }
-      });
 
       els.pair.addEventListener("change", () => {
         els.manualPrice.value = "";

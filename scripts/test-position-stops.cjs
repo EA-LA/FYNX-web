@@ -71,3 +71,61 @@ test("invalid inputs hide the table", () => {
   assert.equal(run(100, 0, 10).hidden, true);
   assert.equal(run(100, 25, 0).hidden, true);
 });
+
+test("the real risk mode switch is named, and clicking its label updates the calculator", async () => {
+  const { window } = new JSDOM(html, {
+    url: "https://www.fynxfinanceworld.com/tools/position-size.html",
+    runScripts: "outside-only"
+  });
+  try {
+    const doc = window.document;
+    const get = id => doc.getElementById(id);
+    const control = get("riskSwitch");
+    assert.equal(control.tagName, "BUTTON", "native keyboard activation");
+    assert.equal(control.type, "button");
+    assert.equal(control.getAttribute("role"), "switch");
+    const label = get(control.getAttribute("aria-labelledby"));
+    assert.equal(label.textContent, "Risk as %");
+    assert.match(get(control.getAttribute("aria-describedby")).textContent, /OFF = fixed dollars/);
+
+    window.AbortSignal.timeout = () => new window.AbortController().signal;
+    window.fetch = () => Promise.reject(new Error("Offline fixture"));
+    window.eval(decimalSrc);
+    const controller = [...doc.scripts].find(script => script.textContent.includes("function syncRiskUI()"));
+    assert.ok(controller);
+    window.eval(controller.textContent);
+
+    assert.equal(control.getAttribute("aria-checked"), "true");
+    assert.equal(get("riskDollarsRow").style.display, "none");
+    control.focus();
+    label.click();
+    assert.equal(doc.activeElement, control);
+    assert.equal(control.getAttribute("aria-checked"), "false");
+    assert.equal(control.classList.contains("on"), false);
+    assert.equal(get("riskPercentRow").style.display, "none");
+    assert.equal(get("riskDollarsRow").style.display, "grid");
+
+    get("pair").value = "EUR/USD";
+    get("pair").dispatchEvent(new window.Event("change", { bubbles: true }));
+    get("manualModeBtn").click();
+    const update = (id, value) => {
+      get(id).value = value;
+      get(id).dispatchEvent(new window.Event("input", { bubbles: true }));
+    };
+    update("manualPrice", "1.1");
+    update("riskDollars", "25");
+    get("calcBtn").click();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(get("lotsOut").textContent, "0.10", get("message").textContent);
+    label.click();
+    assert.equal(control.getAttribute("aria-checked"), "true");
+    assert.equal(control.classList.contains("on"), true);
+    assert.equal(get("riskDollarsRow").style.display, "none");
+    assert.equal(get("lotsOut").textContent, "—");
+    get("calcBtn").click();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(get("lotsOut").textContent, "0.04");
+  } finally {
+    window.close();
+  }
+});
