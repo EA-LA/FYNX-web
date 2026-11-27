@@ -402,6 +402,19 @@
     #sizeError:empty{display:none}
     #sizeError:not(:empty){display:block}
     .rowLine span:last-child{text-align:right;overflow-wrap:anywhere}
+    /* [site-qa] run 117: Same ATR, other multiples table. */
+    .multWrap{margin-top:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:14px;border:1px solid var(--border2)}
+    .multTable{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+    .multTable th,.multTable td{padding:9px 8px;text-align:right;border-bottom:1px solid var(--border2);white-space:nowrap}
+    .multTable thead th{font-size:11px;font-weight:950;text-transform:uppercase;letter-spacing:.3px;color:var(--muted2);white-space:normal;vertical-align:bottom}
+    .multTable tbody th{font-weight:800;color:var(--text)}
+    .multTable th:first-child,.multTable td:first-child{text-align:left}
+    .multTable tbody tr:last-child td{border-bottom:0}
+    .multTable td{font-weight:800}
+    .multTable tr.yours td,.multTable tr.yours th{font-weight:950;background:rgba(127,127,127,.12)}
+    .multTable .yTag{display:inline-block;margin-left:4px;font-size:10.5px;font-weight:950;text-transform:uppercase;color:var(--muted)}
+    @media (max-width:430px){.multTable th:nth-child(4),.multTable td:nth-child(4){display:none}}
+    @media (max-width:360px){.multTable th,.multTable td{padding-left:5px;padding-right:5px;font-size:12px}}
   </style>
   <link rel="stylesheet" href="../assets/css/mobile-fixes.css">
   <link rel="stylesheet" href="/assets/funded-system.css?v=20260915-global">
@@ -564,6 +577,19 @@
           <p class="sizeNote">1R is the distance from entry to the ATR stop. Contract sizes assume 100,000 units per Forex lot, 100 oz per gold lot and 1 coin per BTC; check your broker's specification. Account in USD; USD/JPY uses your entry price to convert yen to dollars.</p>
         </div>
 
+        <!-- [site-qa] run 117: compare ATR multiples side by side. -->
+        <div class="card" id="multCard">
+          <h3>Same ATR, Other Multiples</h3>
+          <p class="sizeNote" id="multIntro">A wider stop gives the trade more room but, for the same dollar risk, allows a smaller position. Enter a balance in "Size This Stop" to see sizes.</p>
+          <div class="multWrap" id="multWrap" hidden>
+            <table class="multTable" aria-describedby="multIntro">
+              <thead><tr><th scope="col">Multiple</th><th scope="col">Stop</th><th scope="col">Pips</th><th scope="col">2R target</th><th scope="col" id="multSizeHead">Size</th></tr></thead>
+              <tbody id="multBody"></tbody>
+            </table>
+          </div>
+          <p class="sizeNote" id="multNote" hidden></p>
+        </div>
+
       </div>
     </div>
   <section class="fynx-api-check" aria-label="Optional Risk API verification"><h2>Check this calculation with FYNX Risk API</h2><p>Compares the theoretical Forex stop at the displayed precision. Gold and crypto verification are outside this rollout.</p><p>Optional: one successful request uses your free test allowance. Your inputs are sent to your FYNX developer workspace only when you select Check. No trade is placed.</p><button id="api-check" type="button">Check with FYNX Risk API</button> <a href="/api/workspace.html">Developer sign in</a><p id="api-check-result" role="status" aria-live="polite"></p></section>
@@ -572,6 +598,7 @@
 </main>
 
   <script src="/assets/vendor/decimal.js"></script>
+  <script src="/assets/js/atr-multiples.js?v=20261127-site-qa-117"></script>
 <script>
     const THEME_KEY = "fynx_theme";
     (function applyThemeFromStorage(){
@@ -697,6 +724,7 @@
         multOut.textContent = `${currentMultiple.toFixed(1)}x`;
         periodOut.textContent = "—";
         updateSize(null);
+        renderMultiples();
         return;
       }
 
@@ -713,6 +741,7 @@
       multOut.textContent = `${currentMultiple.toFixed(1)}x`;
       periodOut.textContent = String(periodVal);
       updateSize({meta, entryVal, atrDistance});
+      renderMultiples();
     }
 
     // [site-qa] run 96: position size for the ATR stop (fixed-fractional risk) and 1R/2R/3R targets.
@@ -773,6 +802,57 @@
         lossOut.textContent = usd(lots * lossPerLot);
       }
       sizeRows.hidden = false;
+    }
+
+    // [site-qa] run 117: "Same ATR, other multiples" table (assets/js/atr-multiples.js).
+    function renderMultiples(){
+      const body = document.getElementById("multBody");
+      const wrap = document.getElementById("multWrap");
+      const note = document.getElementById("multNote");
+      const head = document.getElementById("multSizeHead");
+      const lib = window.FynxAtrMultiples;
+      body.textContent = "";
+      wrap.hidden = true; note.hidden = true;
+      if(!lib || errorBox.style.display === "block") return;
+      const meta = getSelectedPairMeta();
+      const bal = parseLoose(document.getElementById("balance").value);
+      const pct = parseLoose(document.getElementById("riskPct").value);
+      const sizing = bal !== null && Number.isFinite(bal) && bal > 0 && Number.isFinite(pct) && pct > 0 && pct <= 100;
+      const rows = lib.multipleRows({name: meta.name, side: currentSide, entry: Number(entry.value), atr: Number(atrValue.value), pip: meta.pip, current: currentMultiple, balance: sizing ? bal : null, riskPct: pct});
+      if(!rows.length) return;
+      head.textContent = sizing ? `Size at ${usd(bal * pct / 100)} risk` : "Size";
+      const coins = meta.name === "BTC/USD";
+      rows.forEach(r => {
+        const tr = document.createElement("tr");
+        if(r.yours) tr.className = "yours";
+        const cells = [
+          `${r.multiple.toFixed(1)}x`,
+          r.stop === null ? "below 0" : formatPrice(r.stop, meta.decimals),
+          r.pips.toFixed(1),
+          r.target2R === null ? "below 0" : formatPrice(r.target2R, meta.decimals),
+          !sizing ? "—" : (r.stop === null || !r.size) ? "—" : r.size.belowMin ? "Below min" : (coins ? `${r.size.lots.toFixed(4)} BTC` : `${r.size.lots.toFixed(2)} lots`)
+        ];
+        cells.forEach((c, i) => {
+          const td = document.createElement(i === 0 ? "th" : "td");
+          if(i === 0){ td.scope = "row"; }
+          td.textContent = c;
+          if(i === 0 && r.yours){ const t = document.createElement("span"); t.className = "yTag"; t.textContent = "yours"; td.appendChild(t); }
+          if(i === 4 && sizing && r.size && !r.belowMin) td.title = `Loss at stop ${usd(r.size.loss)}`;
+          tr.appendChild(td);
+        });
+        body.appendChild(tr);
+      });
+      wrap.hidden = false;
+      const mine = rows.find(r => r.yours);
+      const tight = rows[0], wide = rows[rows.length - 1];
+      if(sizing && tight.size && wide.size && !tight.size.belowMin && !wide.size.belowMin){
+        note.textContent = `Same ${usd(bal * pct / 100)} risk: ${tight.multiple.toFixed(1)}x ATR allows ${coins ? tight.size.lots.toFixed(4) + " BTC" : tight.size.lots.toFixed(2) + " lots"} with a ${tight.pips.toFixed(1)}-pip stop; ${wide.multiple.toFixed(1)}x allows ${coins ? wide.size.lots.toFixed(4) + " BTC" : wide.size.lots.toFixed(2) + " lots"} with a ${wide.pips.toFixed(1)}-pip stop. Sizes are rounded down, so the loss at the stop can be a little under your risk.`;
+      } else if(sizing){
+        note.textContent = "\"Below min\" means even the smallest size would lose more than your risk at that stop.";
+      } else {
+        note.textContent = mine ? `Your ${mine.multiple.toFixed(1)}x stop is ${mine.pips.toFixed(1)} pips away. Enter a balance in "Size This Stop" to compare position sizes.` : "";
+      }
+      note.hidden = !note.textContent;
     }
 
     ["balance", "riskPct"].forEach(id => document.getElementById(id).addEventListener("input", updateCalc));
