@@ -186,3 +186,102 @@ test('historical chart checks for a frame at the deadline without MutationObserv
   present.insertFrame(); present.expire();
   assert.match(present.els.histResult.textContent, /Chart frame opened.*Gold/);
 });
+
+const indicators = fs.readFileSync(path.join(root, 'markets/indicators.html'), 'utf8');
+function indicatorHarness({ observer = true } = {}) {
+  const source = [...indicators.matchAll(/<script>([\s\S]*?)<\/script>/g)].find(([, s]) => s.includes('embed-widget-technical-analysis.js'));
+  assert.ok(source, 'indicator embed script exists');
+  let latest, theme, timerId = 0;
+  const timers = new Map(), requests = [], watches = [];
+  function node(props = {}) {
+    const handlers = new Map(), attrs = new Map();
+    return Object.assign({
+      addEventListener(type, h) { handlers.set(type, h); },
+      setAttribute(k, v) { attrs.set(k, v); },
+      getAttribute(k) { return attrs.get(k); },
+      fire(type) { handlers.get(type)?.(); },
+    }, props);
+  }
+  const wrap = {
+    set innerHTML(_) {
+      latest = { frame:false,
+        querySelector(selector) { return selector === 'iframe' && this.frame; },
+        appendChild(script) { requests.push({script, container:this}); } };
+    },
+    querySelector() { return latest; }
+  };
+  const els = {techWidget:wrap, techWidgetReload:node(), techWidgetStatus:node(), themeToggle:node(), themeLabel:node()};
+  class Observer {
+    constructor(callback) { this.callback = callback; watches.push(this); }
+    observe(container, options) { assert.ok(options.subtree); this.container = container; this.active = true; }
+    disconnect() { this.active = false; }
+  }
+  vm.runInNewContext(source[1], {
+    window:{FynxPreferences:{getItem:()=>theme, setItem:(k,v)=>{theme=v;}},addEventListener(){}},
+    document: {getElementById:id=>els[id], createElement:()=>({}), body:{classList:{toggle(){}}}},
+    setTimeout(fn,delay){assert.equal(delay,15000);timers.set(++timerId,fn);return timerId;},
+    clearTimeout(id){timers.delete(id);},
+    MutationObserver:observer ? Observer : undefined
+  });
+  const insertFrame = (which = -1) => {
+    const {container} = requests.at(which); container.frame = true;
+    for (const watch of watches.filter(x => x.active && x.container === container)) watch.callback();
+  };
+  const expire = () => { for (const [id,fn] of [...timers]) { timers.delete(id);fn(); } };
+  return {els, requests, watches, timers, expire, insertFrame};
+}
+
+test('the free Indicators overview exposes an accessible loading/failure message and stable retry control', () => {
+  assert.match(indicators, /id="techWidgetStatus" role="status"/);
+  assert.match(indicators, /id="techWidgetReload" type="button"/);
+  const {els,requests,insertFrame} = indicatorHarness();
+  assert.match(els.techWidgetStatus.textContent, /Opening/);
+  assert.equal(els.techWidgetReload.getAttribute('aria-disabled'),'true');
+  els.techWidgetReload.fire('click');
+  assert.equal(requests.length,1);
+  requests[0].script.onerror();
+  assert.match(els.techWidgetStatus.textContent, /Could not load.*indicator reference/);
+  assert.equal(els.techWidgetReload.getAttribute('aria-disabled'),'false');
+  assert.equal(els.techWidget.hidden,true);
+  els.techWidgetReload.fire('click');
+  assert.equal(requests.length,2);
+  assert.equal(els.techWidget.hidden,false);
+  assert.equal(JSON.parse(requests[1].script.innerHTML).symbol,'FX:EURUSD');
+  insertFrame();
+  assert.equal(els.techWidgetStatus.textContent,'');
+  assert.equal(els.techWidgetReload.getAttribute('aria-disabled'),'false');
+});
+
+test('a script that loads without mounting an iframe times out, but a late frame clears the warning', () => {
+  const {els,requests,watches,timers,expire,insertFrame} = indicatorHarness();
+  requests[0].script.onload();
+  assert.match(els.techWidgetStatus.textContent, /Opening/);
+  expire();
+  assert.match(els.techWidgetStatus.textContent, /has not appeared/);
+  assert.equal(els.techWidgetReload.getAttribute('aria-disabled'),'false');
+  insertFrame();
+  assert.equal(els.techWidgetStatus.textContent,'');
+  assert.equal(watches.filter(x=>x.active).length,0);
+  assert.equal(timers.size,0);
+});
+
+test('an outdated theme render cannot bury a new embed with a late error or iframe', () => {
+  const {els,requests,watches,timers,insertFrame} = indicatorHarness();
+  const oldTimer=[...timers.values()][0], oldObserver=watches[0];
+  els.themeToggle.fire('click');
+  assert.equal(JSON.parse(requests[1].script.innerHTML).colorTheme,'dark');
+  requests[0].script.onerror(); insertFrame(0); oldObserver.callback(); oldTimer();
+  assert.match(els.techWidgetStatus.textContent,/Opening/);
+  assert.equal(els.techWidget.hidden,false);
+  assert.equal(watches.filter(x=>x.active).length,1);
+  insertFrame();
+  assert.equal(els.techWidgetStatus.textContent,'');
+});
+
+test('older browsers can detect a mounted frame without MutationObserver', () => {
+  const {els,insertFrame,expire} = indicatorHarness({observer:false});
+  insertFrame();
+  expire();
+  assert.equal(els.techWidgetStatus.textContent,'');
+  assert.equal(els.techWidgetReload.getAttribute('aria-disabled'),'false');
+});
