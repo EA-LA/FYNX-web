@@ -418,5 +418,9 @@
   if (PG) { PG.add('orderflow', 'Order flow', renderPage); PG.add('oflow', 'Order flow', renderPage); T.PAGE_NAMES.push('OFLOW', 'ORDERFLOW'); }
   // Crypto desk: live order flow in place of the static top-of-book box.
   const cd = T.DESK_DEFS?.crypto; if (cd && !cd.slots.includes('oflow')) cd.slots = cd.slots.map(s => s === 'books' ? 'oflow' : s);
-  T.OrderFlow = {state: OF, signalTest, handle};
+  // Follow the workspace focus: a focused crypto market that Kraken lists switches the book and the ladder to it.
+  // Anything else (stocks, FX, unlisted coins) leaves the book on its own pair, labelled as such.
+  const pairFor = sym => { const m = /^([A-Z0-9]{2,10})-USD$/.exec(String(sym || '')); const p = m ? `${m[1]}/USD` : null; return p && PAIRS.some(x => x[0] === p) ? p : null; };
+  window.addEventListener('fynx:focus', e => { const p = e.detail?.cls === 'crypto' ? pairFor(e.detail.symbol) : null; if (p && p !== OF.pair) switchPair(p); });
+  T.OrderFlow = {state: OF, signalTest, handle, pairFor};
 });

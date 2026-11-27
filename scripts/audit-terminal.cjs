@@ -123,7 +123,7 @@ function tickerOverlap() {
   await sleep(args.quick ? 4000 : 10000);
   result.allPanels = await page.evaluate(inspect, 'desk');
   await page.evaluate(() => { window.__AUDIT_T.store.set('layout-all', ''); window.__AUDIT_T.buildGrid(); window.__AUDIT_T.renderAll(); });
-  const pageList = args.quick ? inv.pages.slice(0, 8) : inv.pages;
+  const pageList = args.nopages ? [] : args.quick ? inv.pages.slice(0, 8) : inv.pages;
   for (const name of pageList) {
     const before = errors.length;
     await page.evaluate(n => window.__AUDIT_T.openPage(n), name).catch(e => errors.push('open ' + name + ': ' + e.message));

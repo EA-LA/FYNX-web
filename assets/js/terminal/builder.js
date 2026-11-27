@@ -756,7 +756,7 @@
           updateInstallButton();
           return;
         }
-        const layoutKey = T.S && T.S.sym ? 'sym-' + T.S.sym.cls : (T.S && T.S.deskKey);
+        const layoutKey = T.S && T.S.cmp ? 'cmp' : T.S && T.S.sym ? 'sym-' + T.S.sym.cls : (T.S && T.S.deskKey);
         if (layoutKey && T.store) T.store.set('layout-' + layoutKey, JSON.stringify(placed));
         try { PG.closeAll(); } catch (e) {}
         try { T.buildGrid(); T.renderAll(); } catch (e) {}

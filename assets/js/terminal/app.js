@@ -91,11 +91,15 @@
     stock: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'fin', 'earn', 'opt', 'cmp', 'desks', 'heat', 'eco', 'xa', 'tools'],
     fund: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'perf', 'opt', 'cmp', 'xa', 'desks', 'heat', 'eco', 'term', 'tools'],
     fx: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'bias', 'cb', 'eco', 'range', 'pos', 'corr', 'curve', 'sess', 'tools'],
-    crypto: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'books', 'edge', 'pos', 'cmp', 'xa', 'desks', 'heat', 'eco', 'tools'],
+    crypto: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'books', 'edge', 'dom', 'cmp', 'xa', 'desks', 'heat', 'eco', 'tools'],
     other: ['mkts', 'focus', 'squote', 'intel', 'snews', 'story', 'srisk', 'perf', 'cmp', 'xa', 'term', 'pos', 'desks', 'heat', 'eco', 'tools']
   };
+  S.focusGen = 0; S.cmp = null; S.cmpSeed = null;
+  { const j = k => { try { return JSON.parse(store.get(k) || 'null'); } catch { return null; } }; S.lastSym = j('last-sym'); S.lastCmp = Array.isArray(j('last-cmp')) ? j('last-cmp') : null; }
   S.tried = {}; // loaders without a LIVE feed badge: true = answered with data, false = failed (see pending())
-  const D = () => S.sym ? symDef() : DESK_DEFS[S.deskKey];
+  // Workspace mode: ALL (a desk), FOCUS (S.sym: one instrument) or COMPARE (S.cmp: 2–8 instruments). One shared state.
+  const D = () => S.cmp ? cmpDef() : S.sym ? symDef() : DESK_DEFS[S.deskKey];
+  const modeOf = () => S.cmp ? 'compare' : S.sym ? 'focus' : 'all';
   function symClass(symbol, type) {
     const t = String(type || '').toUpperCase();
     if (t === 'CURRENCY' || /=X$/.test(symbol) || (EDGE[symbol] && /^[A-Z]{6}$/.test(symbol) && !/^(XAU|XAG|BTC|ETH)/.test(symbol))) return 'fx';
@@ -115,6 +119,19 @@
     return {...base, label: shortOf(s.symbol), noun: s.name || s.symbol, who: `${shortOf(s.symbol)} traders`, slots: SYM_SLOTS[cls] || SYM_SLOTS.other, focus: s.symbol, storyKind: 'symbol', symbol: true,
       calc: {stock: 'shares', fund: 'shares', fx: 'fx', crypto: 'crypto'}[cls] || (FUTSPEC[s.symbol] ? 'futures' : base.calc), ccy: symCurrencies(s.symbol), edge: edgeId ? [edgeId] : base.edge, range: edgeId || base.range,
       opt: S.opts?.underlyings?.[s.symbol] ? s.symbol : base.opt, news, newsTabs: base.newsTabs?.includes(news) ? base.newsTabs : [news, ...(base.newsTabs || []).slice(0, 4)], heat: cls === 'crypto' ? ['Crypto'] : cls === 'fx' ? ['FX majors', 'FX crosses'] : base.heat || ['Stocks'], grid: null};
+  }
+
+  // COMPARE: the selected instruments drive the market list, heat map, cross-asset list, calendar currencies and earnings.
+  // Wide boxes for the comparison table and chart, a tall column for the headlines.
+  const CMP_SLOTS = ['mkts', 'cmpq', 'cmpcorr', 'cmpnews', 'heat', 'cmp', 'cmprisk', 'earn', 'top', 'eco', 'sess', 'vix', 'intel', 'tools'];
+  const CMP_GRID = {areas: ['s1 s2 s2 s3 s4 s5', 's1 s6 s6 s7 s4 s8', 's9 s10 s11 s12 s13 s14']};
+  function cmpDef() {
+    const ids = S.cmp, classes = ids.map(id => symClass(id)), same = classes.every(c => c === classes[0]) ? classes[0] : null;
+    const base = DESK_DEFS[{stock: 'stocks', fund: 'funds', fx: 'forex', crypto: 'crypto'}[same]] || DESK_DEFS.all;
+    const news = {fx: 'forex', crypto: 'crypto', fund: 'finance', stock: 'stocks'}[same] || 'all';
+    const ccy = [...new Set(ids.flatMap(id => symCurrencies(id)))];
+    return {...base, label: 'COMPARE', noun: ids.map(shortOf).join(' · '), who: `${ids.length} selected markets`, slots: CMP_SLOTS, focus: FX_TO_EDGE[ids[0]] || ids[0], compare: true, storyKind: base.storyKind,
+      mkts: [['SEL', {syms: ids}]], heat: {syms: ids}, xa: ids, ccy, news, newsTabs: base.newsTabs, earnSyms: ids.filter((id, i) => classes[i] === 'stock'), grid: CMP_GRID, edge: ids.map(id => FX_TO_EDGE[id] || id).filter(id => EDGE[id]).concat(), range: base.range};
   }
 
   /* --- utilities --------------------------------------------------------- */
@@ -202,7 +219,7 @@
     return 2;
   }
   const universe = groups => {
-    if (groups && !Array.isArray(groups)) return groups.syms.filter(s => MKQ()[s] || S.quotes[s]);
+    if (groups && !Array.isArray(groups)) return groups.syms.filter(s => MKQ()[s] || S.quotes[s] || S.symQuotes[s]);
     const all = Object.values(MKQ()), fromSnap = groups.flatMap(g => all.filter(q => q.group === g).map(q => q.symbol));
     if (fromSnap.length) return fromSnap;
     const map = {Stocks: 'Stocks', Crypto: 'Crypto', 'FX majors': 'FX', 'Equity funds': 'ETFs', 'Sector funds': 'ETFs', 'Bond funds': 'ETFs', 'Commodity funds': 'ETFs'};
@@ -381,7 +398,8 @@
     return r;
   }
   function renderMkts() {
-    const d = D(), groups = d.mkts, all = groups.length > 1 ? [['ALL', {syms: [...new Set(groups.flatMap(g => universe(g[1])))]}], ...groups] : groups;
+    // Tabs backed by a live list (★ followed markets) are shown only when the list has markets.
+    const d = D(), groups = d.mkts.filter(t => Array.isArray(t[1]) || t[1].syms.length), all = groups.length > 1 ? [['ALL', {syms: [...new Set(groups.flatMap(g => universe(g[1])))]}], ...groups] : groups;
     if (!all.some(t => t[0] === S.mktTab)) S.mktTab = all[0][0];
     setText('t-mkts', d.noun);
     tabs('mkts-tabs', all.map(t => [t[0], t[0]]), S.mktTab, v => { S.mktTab = v; renderMkts(); });
@@ -405,7 +423,7 @@
   function renderXA() {
     // Desks without their own cross-asset list (e.g. ALL) use the broad market set.
     const ids = (D().xa || DESK_DEFS.stocks.xa || []).filter(id => quoteFor(id));
-    setText('t-xa', `Cross-asset vs ${D().noun.toLowerCase()}`);
+    const nm = D().compare || D().symbol ? D().noun : D().noun.toLowerCase(); setText('t-xa', `Cross-asset vs ${nm}`);
     renderList('xa', ids);
     const host = $('b-xa'); if (!host || !ids.length) return;
     const risk = ['^GSPC', '^NDX', 'BTC-USD'].map(id => quoteFor(id)?.changePercent).filter(finite), safe = ['GC=F', '^TNX'].map(id => quoteFor(id)?.changePercent).filter(finite);
@@ -835,7 +853,10 @@
     const nowLine = host.querySelector('.fx-nowline'); if (nowLine) host.scrollTop += nowLine.getBoundingClientRect().top - host.getBoundingClientRect().top;
   }
   function renderEarn() {
-    const host = panel('earn'), today = new Date().toISOString().slice(0, 10), ev = (S.earn?.events || []).filter(e => e.date >= today);
+    const only = D().earnSyms || (S.sym?.cls === 'stock' ? [S.sym.symbol] : null), want = only ? new Set(only.map(x => x.replace('.', '-'))) : null;
+    const host = panel('earn'), today = new Date().toISOString().slice(0, 10), ev = (S.earn?.events || []).filter(e => e.date >= today && (!want || want.has(String(e.symbol).replace('.', '-'))));
+    setText('t-earn', want ? `Earnings · ${[...want].map(shortOf).join(', ')}` : 'Earnings calendar');
+    if (want && !ev.length && S.earn) return empty(host, `No earnings dates for ${[...want].map(shortOf).join(', ')} in the published window (next ${S.earn.days || 14} days, large US companies).`);
     if (!ev.length) return S.earn ? empty(host, 'No large-company earnings in the published window.') : pending(host, 'earnings', 'Loading earnings calendar…', 'The earnings calendar is unavailable right now. FYNX retries automatically.');
     let last = '';
     for (const e of ev.slice(0, 40)) {
@@ -1005,7 +1026,7 @@
   }
   function renderIntel() {
     const host = panel('intel'), items = S.sym ? symIntel() : intelItems();
-    setText('t-intel', S.sym ? `FYNX Intelligence · ${shortOf(S.sym.symbol)}: what matters now` : `FYNX Intelligence · ${D().noun.toLowerCase()} ranked now`);
+    setText('t-intel', S.sym ? `FYNX Intelligence · ${shortOf(S.sym.symbol)}: what matters now` : `FYNX Intelligence · ${D().compare ? 'markets' : D().noun.toLowerCase()} ranked now`);
     if (!items.length) return empty(host, 'Scanning the live feeds…');
     items.slice(0, 8).forEach((it, i) => host.append(intelRow(it, i)));
     host.append(el('p', 'fx-foot', `Ranked from ${Object.values(S.feeds).filter(Boolean).length} live feeds: moves vs normal, headlines, events, central banks, rates, positioning and options. Not advice.`));
@@ -1161,9 +1182,16 @@
     }
     throw last;
   }
-  async function symHistory(symbol, range = '2y') {
+  // One request per market and range at a time: panels asking together share the same promise.
+  const symInflight = new Map();
+  function symHistory(symbol, range = '2y') {
     const key = symbol + '|' + range, hit = S.symData[key];
-    if (hit && Date.now() - hit.at < 300000) return hit;
+    if (hit && Date.now() - hit.at < 300000) return Promise.resolve(hit);
+    if (symInflight.has(key)) return symInflight.get(key);
+    const p = symHistoryFetch(symbol, range, key).finally(() => symInflight.delete(key));
+    symInflight.set(key, p); return p;
+  }
+  async function symHistoryFetch(symbol, range, key) {
     try {
       const d = await fnMarket({op: 'chart', symbol, range});
       if (Array.isArray(d?.rows) && d.rows.length) {
@@ -1199,7 +1227,7 @@
     return {vol, mdd: mdd * 100, var95, total, beta, corr, ratio: vol ? total / vol : null, days: rets.length};
   }
   /* Normalized % comparison chart for several series. */
-  const CMP_COLORS = ['#ffb000', '#5b8def', '#3ecf8e', '#c4a1ff', '#ff8a80', '#5ed3d3'];
+  const CMP_COLORS = ['#ffb000', '#5b8def', '#3ecf8e', '#c4a1ff', '#ff8a80', '#5ed3d3', '#f4e285', '#e0e0e0'];
   function compareChart(series, {W = 640, H = 220, sessions = 252, scale = 1} = {}) {
     // scale > 1 (phones) enlarges axis text, margins and lines so they stay readable once the SVG is shrunk to a ~300px column.
     const wrap = el('div', 'fx-chartwrap'), valid = series.filter(x => x.rows?.length > 2);
@@ -1259,12 +1287,82 @@
     // Every headline opens as a FYNX article page (summary or brief), never at the publisher.
     for (const h of items.slice(0, 25)) host.append(headlineRow(h));
   }
+  /* --- COMPARE panels: every number comes from each market's own daily history (symHistory) and quote ------------- */
+  const cmpRows = id => S.symData[id]?.rows || S.history[FX_TO_EDGE[id] || id]?.rows || null;
+  async function cmpHistories() { const ids = S.cmp || [], gen = S.focusGen; const data = await Promise.all(ids.map(id => symHistory(id))); return gen === S.focusGen ? ids.map((id, i) => ({id, rows: data[i]?.rows || null})) : null; }
+  function cmpPerYear(id) { return symClass(id) === 'crypto' ? 365 : symClass(id) === 'fx' ? 260 : 252; }
+  async function renderCmpQ() {
+    const host = panel('cmpq'), ids = S.cmp; if (!ids) return empty(host, 'Pick 2–8 markets to compare: type them in the command bar, e.g. AAPL NVDA MSFT.');
+    setText('t-cmpq', `${ids.length} markets · quotes & performance`);
+    const list = await cmpHistories(); if (!list || !$('b-cmpq')) return; host.replaceChildren();
+    const t = el('table', 'fx-table fx-cmpt'), h = el('tr'); ['MARKET', 'LAST', 'DAY', '1W', '1M', '3M', '1Y', '52W RANGE'].forEach(x => h.append(el('th', '', x))); t.append(h);
+    list.forEach(({id, rows}, i) => {
+      const q = quoteFor(id), dg = digitsOf(id), tr = el('tr'), name = el('th'), sw = el('i', 'fx-sw'); sw.style.background = CMP_COLORS[i % CMP_COLORS.length];
+      name.append(sw, btn(shortOf(id), 'fx-cmplink', () => setSymbol({symbol: id}), `Focus on ${id}`), el('small', '', ' ' + (nameOf(id) !== shortOf(id) ? nameOf(id) : S.symData[id]?.name || '')));
+      const r = rows || [], hi = q?.high52, lo = q?.low52, pos = finite(hi) && finite(lo) && hi > lo && finite(q?.price) ? (q.price - lo) / (hi - lo) : null;
+      const bar = el('td', 'fx-rng'); if (finite(pos)) { const b = el('i'), f = el('b'); f.style.left = (pos * 100).toFixed(0) + '%'; b.append(f); bar.append(b); bar.title = `${fmt(lo, dg)} – ${fmt(hi, dg)}`; } else bar.textContent = '—';
+      tr.append(name, el('td', 'fx-num', ''), el('td', 'fx-num ' + tone(q?.changePercent), q ? signed(q.changePercent, 2, '%') : '—'), ...[5, 21, 63, cmpPerYear(id)].map(n => { const v = r.length ? perfOf(r, n) : null; return el('td', 'fx-num ' + tone(v), finite(v) ? signed(v, 1, '%') : '—'); }), bar);
+      tr.children[1].append(q ? tk(el('span', '', fmt(q.price, dg)), 'px:' + id, q.price) : document.createTextNode('—'));
+      if (q?.changePercent !== undefined) tk(tr.children[2], 'chg:' + id, q.changePercent);
+      t.append(tr);
+    });
+    const sc = el('div', 'fx-scroll'); sc.append(t); host.append(sc);
+    const miss = list.filter(x => !x.rows?.length).map(x => shortOf(x.id));
+    host.append(el('p', 'fx-foot', `Returns from daily closes (sessions: 5 = 1W, 21 = 1M, 63 = 3M, one year of sessions = 1Y) · delayed quotes${miss.length ? ` · no history for ${miss.join(', ')}` : ''}`));
+  }
+  function alignedReturns(a, b) {
+    const m = new Map(); for (let i = 1; i < b.length; i++) m.set(b[i].date.slice(0, 10), b[i].close / b[i - 1].close - 1);
+    const out = []; for (let i = Math.max(1, a.length - 260); i < a.length; i++) { const d = a[i].date.slice(0, 10); if (m.has(d)) out.push([a[i].close / a[i - 1].close - 1, m.get(d)]); }
+    return out;
+  }
+  function pearson(p) { if (p.length < 30) return null; const n = p.length, ma = p.reduce((s, x) => s + x[0], 0) / n, mb = p.reduce((s, x) => s + x[1], 0) / n; let c = 0, va = 0, vb = 0; for (const [x, y] of p) { c += (x - ma) * (y - mb); va += (x - ma) ** 2; vb += (y - mb) ** 2; } return va && vb ? c / Math.sqrt(va * vb) : null; }
+  async function renderCmpCorr() {
+    const host = panel('cmpcorr'), ids = S.cmp; if (!ids) return empty(host, 'Pick 2–8 markets to compare.');
+    setText('t-cmpcorr', 'Correlation · 1Y daily returns');
+    const list = await cmpHistories(); if (!list || !$('b-cmpcorr')) return; host.replaceChildren();
+    const ok = list.filter(x => x.rows?.length > 31); if (ok.length < 2) return empty(host, 'Correlation needs at least two markets with a year of daily history.');
+    const t = el('table', 'fx-table fx-corrm'), h = el('tr'); h.append(el('th', '', '')); ok.forEach(x => h.append(el('th', '', shortOf(x.id)))); t.append(h);
+    for (const a of ok) { const tr = el('tr'); tr.append(el('th', '', shortOf(a.id)));
+      for (const b of ok) { const v = a === b ? 1 : pearson(alignedReturns(a.rows, b.rows)), td = el('td', 'fx-num', finite(v) ? v.toFixed(2) : '—');
+        if (finite(v)) { td.style.background = v >= 0 ? `rgba(47,184,116,${Math.min(0.55, Math.abs(v) * 0.55)})` : `rgba(229,72,77,${Math.min(0.55, Math.abs(v) * 0.55)})`; td.title = `${shortOf(a.id)} vs ${shortOf(b.id)}: ${v.toFixed(2)} over matching trading days`; }
+        tr.append(td); }
+      t.append(tr); }
+    const sc = el('div', 'fx-scroll'); sc.append(t); host.append(sc, el('p', 'fx-foot', 'Pearson correlation of daily returns on days both markets traded (up to one year). +1 = move together, −1 = opposite.'));
+  }
+  async function renderCmpRisk() {
+    const host = panel('cmprisk'), ids = S.cmp; if (!ids) return empty(host, 'Pick 2–8 markets to compare.');
+    setText('t-cmprisk', 'Risk · 1 year');
+    const list = await cmpHistories(); if (!list || !$('b-cmprisk')) return;
+    const benches = [...new Set(list.map(x => benchFor(x.id, symClass(x.id))))], bh = {}; await Promise.all(benches.map(async b => { bh[b] = (await symHistory(b))?.rows || null; }));
+    if (!$('b-cmprisk') || ids !== S.cmp) return; host.replaceChildren();
+    const t = el('table', 'fx-table fx-cmpt'), h = el('tr'); ['MARKET', 'VOL', 'MAX DD', 'VaR 95', 'BETA', 'VS'].forEach(x => h.append(el('th', '', x))); t.append(h);
+    for (const {id, rows} of list) { const b = benchFor(id, symClass(id)), r = rows ? riskStats(rows, bh[b], cmpPerYear(id)) : null, tr = el('tr');
+      tr.append(el('th', '', shortOf(id)), el('td', 'fx-num', r ? r.vol.toFixed(1) + '%' : '—'), el('td', 'fx-num fx-down', r ? signed(r.mdd, 1, '%') : '—'), el('td', 'fx-num', r ? r.var95.toFixed(2) + '%' : '—'), el('td', 'fx-num', finite(r?.beta) ? r.beta.toFixed(2) : '—'), el('td', 'fx-dim', b === id ? '—' : shortOf(b)));
+      t.append(tr); }
+    const sc = el('div', 'fx-scroll'); sc.append(t); host.append(sc, el('p', 'fx-foot', 'Annualised volatility, deepest peak-to-trough fall and one-day 95% VaR from a year of daily closes; beta against each market\'s own benchmark.'));
+  }
+  async function renderCmpNews() {
+    const host = panel('cmpnews'), ids = S.cmp; if (!ids) return empty(host, 'Pick 2–8 markets to compare.');
+    setText('t-cmpnews', `Headlines · ${ids.map(shortOf).join(', ')}`);
+    const gen = S.focusGen, need = ids.filter(id => !S.symNews[id]);
+    if (need.length) { empty(host, 'Searching headlines…'); await Promise.allSettled(need.map(async id => { try { const r = await fnMarket({op: 'search', q: id.replace(/=X$|=F$|^\^/g, '')}); S.symNews[id] = r.news || []; } catch { S.symNews[id] = []; } })); if (!$('b-cmpnews') || gen !== S.focusGen) return; host.replaceChildren(); }
+    const seen = new Set(), items = [];
+    for (const id of ids) {
+      const nm = (S.symData[id]?.name || nameOf(id) || '').replace(/,? (Inc|Corp|Corporation|Ltd|plc|Holdings|Group|N\.V\.|S\.A\.|AG|SE|Co)\.?$/i, '').split(' ').slice(0, 2).join(' ').toLowerCase(), tick = shortOf(id).toLowerCase();
+      const words = [nm, tick.length > 2 ? tick : ''].filter(w => w && w.length > 2);
+      const room = [...S.briefing, ...Object.values(S.desks).flatMap(x => x.items || [])].filter(h => words.some(w => h.title.toLowerCase().includes(w)));
+      for (const h of [...room, ...S.symNews[id].map(n => ({title: n.title, url: n.url, source: n.publisher, publishedAt: n.publishedAt || null, external: true}))]) { const k = h.title.toLowerCase(); if (seen.has(k) || !h.publishedAt) continue; seen.add(k); items.push({...h, sym: id}); }
+    }
+    items.sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+    if (!items.length) return fallbackNews(host, 'No headlines mention the selected markets yet · latest market news', 15);
+    for (const h of items.slice(0, 40)) { const row = headlineRow(h); row.prepend(el('span', 'fx-chip fx-symtag', shortOf(h.sym))); host.append(row); }
+  }
   async function renderCmp() {
-    const host = panel('cmp'), sym = S.sym?.symbol || S.focus, cls = S.sym?.cls || symClass(sym);
-    const peers = [sym, benchFor(sym, cls), ...(cls === 'stock' ? ['QQQ'] : cls === 'crypto' ? ['ETH-USD'] : cls === 'fx' ? ['GC=F'] : ['TLT'])].filter((v, i, a) => a.indexOf(v) === i).slice(0, 3);
+    const host = panel('cmp'), sym = S.sym?.symbol || S.focus, cls = S.sym?.cls || symClass(sym), gen = S.focusGen;
+    const peers = S.cmp ? [...S.cmp] : [sym, benchFor(sym, cls), ...(cls === 'stock' ? ['QQQ'] : cls === 'crypto' ? ['ETH-USD'] : cls === 'fx' ? ['GC=F'] : ['TLT'])].filter((v, i, a) => a.indexOf(v) === i).slice(0, 3);
     setText('t-cmp', `${peers.map(shortOf).join(' vs ')} · 1Y`);
     const data = await Promise.all(peers.map(p => symHistory(p)));
-    if (!$('b-cmp')) return; host.replaceChildren();
+    if (!$('b-cmp') || gen !== S.focusGen) return; host.replaceChildren();
     host.append(compareChart(data.map((d, i) => ({label: shortOf(peers[i]), rows: d?.rows || []}))), btn('Compare more and draw ▸', 'fx-chip fx-chip-link', () => openPage('chart', sym)));
   }
   function symbolStoryText() {
@@ -1372,15 +1470,17 @@
   async function setSymbol(meta) {
     const symbol = String(meta?.symbol || '').trim(); if (!symbol) return;
     const id = FX_TO_EDGE[symbol] && EDGE[FX_TO_EDGE[symbol]] ? symbol : symbol;
+    S.cmp = null; S.focusGen++;
     S.sym = {symbol: id, name: meta.name || nameOf(id), type: meta.type || null, exchange: meta.exchange || null, cls: symClass(id, meta.type)};
+    S.lastSym = {...S.sym}; store.set('last-sym', JSON.stringify(S.lastSym));
     S.focus = FX_TO_EDGE[id] || id; S.mktTab = null; if (S.sym.cls === 'stock') S.finTicker = id.replace('.', '-');
     if (S.opts?.underlyings?.[id]) { S.optSym = id; S.optExp = 0; }
-    const u = new URL(location.href); u.searchParams.set('sym', id); history.replaceState(history.state, '', u);
-    store.set('sym', JSON.stringify(S.sym));
-    say(`Loading ${id}…`); PG?.closeAll();
+    const u = new URL(location.href); u.searchParams.set('sym', id); u.searchParams.delete('cmp'); history.replaceState(history.state, '', u);
+    store.set('sym', JSON.stringify(S.sym)); store.set('cmp', '');
+    say(`Loading ${id}…`); PG?.closeAll(); announce();
     renderDeskBar(); buildGrid(); renderAll();
-    const d = await symHistory(id);
-    if (S.sym?.symbol !== id) return;
+    const gen = S.focusGen, d = await symHistory(id);
+    if (S.sym?.symbol !== id || gen !== S.focusGen) return;
     commitTicks(true);
     if (d?.name && !meta.name) S.sym.name = d.name;
     if (d?.rows?.length && !EDGE[S.focus]) S.history[id] = {source: d.source || 'Yahoo Finance', rows: d.rows};
@@ -1388,14 +1488,69 @@
     renderDeskBar(); buildGrid(); renderAll(); say(d ? `${shortOf(id)} loaded: every box shows this market` : `${id}: no data found`);
     await loadSeries(S.focus); R('focus');
   }
-  function clearSymbol() { S.sym = null; store.set('sym', ''); const u = new URL(location.href); u.searchParams.delete('sym'); history.replaceState(history.state, '', u); setDesk(S.deskKey); }
+  function clearSymbol() { clearFocus(); }
+  // Back to ALL: drop the focus and the comparison, keep the desk, its layout and every preference.
+  function clearFocus() {
+    S.sym = null; S.cmp = null; S.focusGen++; store.set('sym', ''); store.set('cmp', '');
+    const u = new URL(location.href); u.searchParams.delete('sym'); u.searchParams.delete('cmp'); history.replaceState(history.state, '', u);
+    announce(); setDesk(S.deskKey);
+  }
+  // Tell plugins (order flow, depth of market, charts…) which instruments the workspace is on.
+  function announce() { try { window.dispatchEvent(new CustomEvent('fynx:focus', {detail: {mode: modeOf(), symbol: S.sym?.symbol || null, cls: S.sym?.cls || null, ids: S.cmp ? [...S.cmp] : S.sym ? [S.sym.symbol] : []}})); } catch {} }
+  // Canonical instrument id: the Yahoo-style symbol the quote feeds use (EURUSD → EURUSD=X, BTC → BTC-USD).
+  function canon(input) {
+    const raw = String(input || '').trim(); if (!raw) return null;
+    const r = resolve(raw); if (r) return EDGE_TO_FX[r] || r;
+    const up = raw.toUpperCase().replace(/\s+/g, '');
+    if (/^[A-Z]{3}\/?[A-Z]{3}$/.test(up) && EDGE[up.replace('/', '')]) return EDGE_TO_FX[up.replace('/', '')] || up.replace('/', '');
+    return /^[A-Za-z0-9.\-=^&]{1,24}$/.test(raw) ? up : null;
+  }
+  // COMPARE: 2–8 instruments side by side. One instrument is a FOCUS instead.
+  async function setCompare(list, {quiet = false} = {}) {
+    const ids = [...new Set(list.map(canon).filter(Boolean))].slice(0, 8);
+    if (!ids.length) return say('No market recognised.');
+    if (ids.length === 1) return setSymbol({symbol: ids[0]});
+    S.sym = null; S.cmp = ids; S.focusGen++; S.lastCmp = [...ids]; S.mktTab = null;
+    store.set('cmp', JSON.stringify(ids)); store.set('last-cmp', JSON.stringify(ids)); store.set('sym', '');
+    const u = new URL(location.href); u.searchParams.set('cmp', ids.join(',')); u.searchParams.delete('sym'); history.replaceState(history.state, '', u);
+    document.title = `FYNX Terminal · ${ids.map(shortOf).join(' vs ')}`;
+    PG?.closeAll(); announce(); renderDeskBar(); buildGrid(); renderAll();
+    if (!quiet) say(`Comparing ${ids.map(shortOf).join(', ')}: loading every box…`);
+    const gen = S.focusGen, hist = await Promise.all(ids.map(id => symHistory(id)));
+    if (gen !== S.focusGen) return;
+    const missing = ids.filter((id, i) => !hist[i]?.rows?.length);
+    commitTicks(true); renderDeskBar(); renderAll();
+    say(missing.length ? `Comparing ${ids.length} markets · no data for ${missing.map(shortOf).join(', ')}` : `Comparing ${ids.length} markets: every box shows the selection`);
+  }
+  function addCompare(meta) {
+    const id = canon(meta?.symbol || meta); if (!id) return;
+    const now = S.cmp ? [...S.cmp] : S.sym ? [S.sym.symbol] : [];
+    if (now.includes(id)) return say(`${shortOf(id)} is already selected.`);
+    if (now.length >= 8) return say('Compare up to 8 markets at once.');
+    setCompare([...now, id]);
+  }
+  function seedCompare(m) {
+    S.cmpSeed = [...(S.cmpSeed || []), m.symbol];
+    if (S.cmpSeed.length >= 2) { const l = S.cmpSeed; S.cmpSeed = null; return setCompare(l); }
+    say(`${shortOf(m.symbol)} selected · pick one more market`); openFinder({onPick: seedCompare, title: `Compare ${shortOf(m.symbol)} with…`});
+  }
+  function removeCompare(id) {
+    const left = (S.cmp || []).filter(x => x !== id);
+    if (left.length >= 2) setCompare(left, {quiet: true}); else if (left.length === 1) setSymbol({symbol: left[0]}); else clearFocus();
+  }
+  function setMode(mode) {
+    if (mode === 'all') return clearFocus();
+    if (mode === 'focus') { const s = S.sym || (S.cmp ? {symbol: S.cmp[0]} : S.lastSym); if (s) return setSymbol(s); return openFinder({title: 'Focus the workspace on a market'}); }
+    if (mode === 'compare') { if (S.cmp) return; const last = S.lastCmp; if (S.sym) return openFinder({onPick: addCompare, title: `Compare ${shortOf(S.sym.symbol)} with…`}); if (last?.length >= 2) return setCompare(last); S.cmpSeed = []; return openFinder({onPick: seedCompare, title: 'Pick the first market to compare'}); }
+  }
 
   /* --- layout: desk bar, editable panels --------------------------------------------------------- */
   const RENDER = {mkts: renderMkts, focus: renderFocus, heat: renderHeat, fin: renderFin, story: renderStory, intel: renderIntel, top: renderTop, desks: () => renderDesks(), cb: renderCB, curve: renderCurve, vix: renderRisk, bias: renderBias,
     edge: renderEdge, pos: renderPos, eco: renderEco, corr: () => renderCorr(), tools: renderTools, movers: renderMovers, xa: renderXA, idx: renderIdx, sess: renderSess, earn: renderEarn, opt: renderOpt, optlist: renderOptList, chain: renderChain,
     active: renderActive, term: renderTerm, rates: renderRates, gov: renderGov, books: renderBooks, range: () => renderRange(), perf: renderPerf, official: renderOfficial,
-    squote: renderSQuote, srisk: () => renderSRisk(), snews: () => renderSNews(), cmp: () => renderCmp()};
-  Object.assign(PANELS, {squote: ['QUOTE', 'Quote & performance', 'des'], srisk: ['RISK', 'Risk', 'port'], snews: ['NEWS', 'Headlines', 'news'], cmp: ['CMP', 'Compare', 'chart']});
+    squote: renderSQuote, srisk: () => renderSRisk(), snews: () => renderSNews(), cmp: () => renderCmp(), cmpq: () => renderCmpQ(), cmpcorr: () => renderCmpCorr(), cmprisk: () => renderCmpRisk(), cmpnews: () => renderCmpNews()};
+  Object.assign(PANELS, {squote: ['QUOTE', 'Quote & performance', 'des'], srisk: ['RISK', 'Risk', 'port'], snews: ['NEWS', 'Headlines', 'news'], cmp: ['CMP', 'Compare', 'chart'],
+    cmpq: ['CMPQ', 'Compare · quotes & performance', 'chart'], cmpcorr: ['CCORR', 'Compare · correlation', 'chart'], cmprisk: ['CRISK', 'Compare · risk', 'port'], cmpnews: ['CNEWS', 'Compare · headlines', 'news']});
   Object.assign(LINK_LABEL, {chart: 'Chart', port: 'Portfolio', ctry: 'Country', world: 'World'});
   const TABBED = new Set(['mkts', 'focus', 'desks', 'curve', 'eco', 'corr', 'tools', 'perf', 'chain']);
   const PANEL_GROUPS = [
@@ -1419,7 +1574,7 @@
     if (/^mine-p[a-z0-9]{8,24}$/.test(slot)) return null;
     return undefined;
   }
-  const layoutKey = () => S.sym ? 'sym-' + S.sym.cls : S.deskKey;
+  const layoutKey = () => S.cmp ? 'cmp' : S.sym ? 'sym-' + S.sym.cls : S.deskKey;
   // Room for every panel on one desk (plus a spare row for market cards), never fewer than the original 28 boxes.
   const maxSlots = () => Math.max(28, 16 + Math.ceil(Object.keys(PANELS).length / 6) * 6 + 6);
   function getSlots() {
@@ -1450,7 +1605,7 @@
     const main = $('fx-main'), keep = [...main.children].filter(n => !n.classList.contains('tp'));
     const slots = getSlots(), {rows, base, cols} = gridAreas(slots.length);
     main.replaceChildren(...keep);
-    main.dataset.desk = S.sym ? 'sym' : S.deskKey;
+    main.dataset.desk = S.cmp ? 'cmp' : S.sym ? 'sym' : S.deskKey;
     main.style.setProperty('--fx-areas', rows.map(r => `"${r}"`).join(' '));
     main.style.setProperty('--fx-rows', rows.length > 3 ? `repeat(${rows.length}, minmax(270px, 1fr))` : `repeat(${rows.length}, minmax(0, 1fr))`); main.dataset.tall = rows.length > 3 ? '1' : '';
     if (cols) main.style.setProperty('--fx-cols', cols); else main.style.removeProperty('--fx-cols');
@@ -1519,14 +1674,29 @@
   });
   $('fx-ed-unrow').addEventListener('click', () => { const v = getSlots(), {base} = gridAreas(v.length); if (v.length <= base) return say('This is the smallest layout.'); setSlots(v.slice(0, Math.max(base, v.length - 6))); });
   $('fx-ed-reset').addEventListener('click', () => { store.set('layout-' + layoutKey(), ''); buildGrid(); renderAll(); say('Layout reset'); });
-  const EXTRA_GROUPS = [];
+  const EXTRA_GROUPS = [['Compare (selected markets)', ['cmpq', 'cmpcorr', 'cmprisk', 'cmpnews']]];
+  Object.assign(PANEL_DESC, {cmpq: 'The selected markets side by side: price, day, 1W–1Y returns, 52-week range', cmpcorr: 'Correlation matrix of the selected markets (1Y daily returns)', cmprisk: 'Volatility, drawdown, VaR and beta for each selected market', cmpnews: 'Headlines about any of the selected markets'});
   function renderDeskBar() {
     const host = $('fx-deskbar-list'); host.replaceChildren();
-    for (const k of DESK_ORDER) { const b = btn(DESK_DEFS[k].label, 'fx-desk' + (k === S.deskKey && !S.sym ? ' on' : k === S.deskKey ? ' base' : ''), () => { if (S.sym) { S.sym = null; store.set('sym', ''); const u = new URL(location.href); u.searchParams.delete('sym'); history.replaceState(history.state, '', u); } setDesk(k); }, `${DESK_DEFS[k].label} desk`); b.setAttribute('aria-pressed', String(k === S.deskKey && !S.sym)); host.append(b); }
-    const chip = $('fx-symchip'); chip.replaceChildren(); chip.hidden = !S.sym;
-    if (S.sym) { chip.append(el('b', '', shortOf(S.sym.symbol)), el('span', '', S.sym.name || ''), btn('✕', 'fx-symx', clearSymbol, `Close ${S.sym.symbol}, back to the ${D().label} desk`)); }
-    setText('fx-deskbar-note', S.sym ? `Every box shows ${shortOf(S.sym.symbol)}` : `FYNX Intelligence ranking ${Object.keys(S.feeds).length || 'the'} live feeds for ${D().who}`);
+    for (const k of DESK_ORDER) { const b = btn(DESK_DEFS[k].label, 'fx-desk' + (k === S.deskKey && !S.sym && !S.cmp ? ' on' : k === S.deskKey ? ' base' : ''), () => { if (S.sym || S.cmp) { S.sym = null; S.cmp = null; S.focusGen++; store.set('sym', ''); store.set('cmp', ''); const u = new URL(location.href); u.searchParams.delete('sym'); u.searchParams.delete('cmp'); history.replaceState(history.state, '', u); announce(); } setDesk(k); }, `${DESK_DEFS[k].label} desk`); b.setAttribute('aria-pressed', String(k === S.deskKey && !S.sym)); host.append(b); }
+    renderModeBar();
+    const chip = $('fx-symchip'); chip.replaceChildren(); chip.hidden = !S.sym && !S.cmp;
+    if (S.sym) { chip.append(el('b', '', shortOf(S.sym.symbol)), el('span', '', S.sym.name || ''), btn('+', 'fx-symx fx-symadd', () => openFinder({onPick: addCompare, title: `Compare ${shortOf(S.sym.symbol)} with…`}), `Compare ${S.sym.symbol} with another market`), btn('✕', 'fx-symx', clearFocus, `Close ${S.sym.symbol}, back to the ${DESK_DEFS[S.deskKey].label} desk`)); }
+    if (S.cmp) {
+      S.cmp.forEach((id, i) => { const c = el('span', 'fx-cmpchip'); c.style.borderColor = CMP_COLORS[i % CMP_COLORS.length]; c.append(btn(shortOf(id), 'fx-cmpname', () => setSymbol({symbol: id}), `Focus on ${id}`), btn('✕', 'fx-cmpx', () => removeCompare(id), `Remove ${id} from the comparison`)); chip.append(c); });
+      if (S.cmp.length < 8) chip.append(btn('+ Add', 'fx-cmpadd', () => openFinder({onPick: addCompare, title: 'Add a market to the comparison'}), 'Add a market to the comparison'));
+      chip.append(btn('Clear ✕', 'fx-cmpclear', clearFocus, 'Clear the selection and return to the ALL workspace'));
+    }
+    setText('fx-deskbar-note', S.cmp ? `Every box compares ${S.cmp.length} markets` : S.sym ? `Every box shows ${shortOf(S.sym.symbol)}` : `FYNX Intelligence ranking ${Object.keys(S.feeds).length || 'the'} live feeds for ${D().who}`);
     const on = host.querySelector('.on'); if (on && host.scrollWidth > host.clientWidth) on.scrollIntoView({block: 'nearest', inline: 'nearest'});
+  }
+  // ALL · FOCUS · COMPARE switch. ALL keeps the global desks; FOCUS and COMPARE remember the last selection.
+  function renderModeBar() {
+    const host = $('fx-modebar'); if (!host) return; host.replaceChildren();
+    const m = modeOf(), focusName = S.sym ? shortOf(S.sym.symbol) : S.cmp ? shortOf(S.cmp[0]) : S.lastSym ? shortOf(S.lastSym.symbol) : '';
+    for (const [k, l, hint] of [['all', 'ALL', 'Global markets: the desks'], ['focus', 'FOCUS', focusName ? `One market: ${focusName}` : 'Pick one market for every box'], ['compare', 'COMPARE', S.cmp ? S.cmp.map(shortOf).join(', ') : 'Pick 2–8 markets to compare']]) {
+      const b = btn(l, 'fx-mode' + (m === k ? ' on' : ''), () => setMode(k), hint); b.setAttribute('aria-pressed', String(m === k)); b.title = hint; host.append(b);
+    }
   }
   async function setDesk(key, {initial = false} = {}) {
     if (!DESK_DEFS[key]) key = 'all';
@@ -1570,7 +1740,14 @@
     if (verb === 'FIND' || verb === 'SEARCH') { openFinder(); if (rest) { $('fx-finder-input').value = rest; renderFinder(rest); } return; }
     if (verb === 'EDIT') { $('fx-edit').click(); return; }
     if (verb === 'BUILD' || verb === 'BUILDER') { if (!window.FynxBuilderReady) return say('Builder is still loading.'); openPage('builder'); return say('FYNX Builder'); }
-    if (verb === 'ALLDESK' || verb === 'CLEAR') { if (S.sym) clearSymbol(); return; }
+    if (verb === 'ALLDESK' || verb === 'CLEAR' || verb === 'ALL') { if (S.sym || S.cmp) clearFocus(); else setDesk('all'); return; }
+    if (verb === 'CMP' || verb === 'COMPARE' || verb === 'VS') { const l = rest.split(/[\s,+&]+|\bvs\b/i).filter(Boolean); if (l.length) return setCompare(S.sym && l.length === 1 ? [S.sym.symbol, ...l] : l); return setMode('compare'); }
+    if (verb === 'FOCUS') { if (rest) return setSymbol({symbol: canon(rest) || rest.toUpperCase()}); return setMode('focus'); }
+    if (/^\+\s*\S/.test(cmd.trim())) { addCompare(cmd.trim().replace(/^\+\s*/, '')); return; }
+    // Several markets typed together (AAPL NVDA MSFT · EUR/USD + GBP/USD + XAU/USD) open COMPARE.
+    { const toks = cmd.trim().split(/\s*[+,&]\s*|\s+vs\.?\s+|\s+/i).filter(Boolean);
+      // Each part must be a known market or typed as a ticker (upper case), so "Apple Inc" or "EUR USD" still mean one market.
+      if (toks.length >= 2 && toks.length <= 8 && !PAGES.includes(verb) && !resolve(cmd) && toks.every(t => resolve(t) || /^[A-Z0-9.\-=^\/]{1,12}$/.test(t))) return setCompare(toks); }
     const id = resolve(cmd);
     if (id) { setSymbol({symbol: EDGE_TO_FX[id] || id}); return say(`${nameOf(id)}: loading every box`); }
     if (/^[A-Za-z0-9.\-=^&]{1,24}$/.test(cmd.trim())) { setSymbol({symbol: cmd.trim().toUpperCase()}); return; }
@@ -1597,12 +1774,18 @@
 
   const CORE = {S, M, $, el, btn, link, svg, kv, inspect, signed, tone, ago, hhmm, day, fmt, big, count, finite, empty, rowButton, tabs, say,
     CATALOG, EDGE, FX_TO_EDGE, EDGE_TO_FX, NEWS_CATS, DESK_DEFS, DESK_ORDER, SESSIONS, EXCHANGES, FUTSPEC, KEYS, CALC_TITLE,
-    info, nameOf, shortOf, quoteFor, stat, digitsOf, universe, resolve, focusOn, setDesk, setSymbol, clearSymbol, openFinder, symHistory, fnMarket, riskStats, compareChart, benchFor, symClass, perfOf, volOf, getSlots, PANELS, PANEL_DESC, EXTRA_GROUPS, LINK_LABEL, RENDER, TABBED, store, TDATA, WDATA, MKQ, report, setText, panel, nextEvents, buildGrid, renderDeskBar, lineChart, curveChart, tenorGrid, finTable, headlineRow, quoteRow, ecoRow, intelItems, intelRow, biasRows, trendPos, optSummary, chainTable, calculator, renderJournal, sessionRows, periodReturn, setCurve,
+    info, nameOf, shortOf, quoteFor, stat, digitsOf, universe, resolve, focusOn, setDesk, setSymbol, clearSymbol, clearFocus, setCompare, addCompare, removeCompare, setMode, modeOf, canon, symCurrencies, openFinder, symHistory, fnMarket, riskStats, compareChart, benchFor, symClass, perfOf, volOf, getSlots, PANELS, PANEL_DESC, EXTRA_GROUPS, LINK_LABEL, RENDER, TABBED, store, TDATA, WDATA, MKQ, report, setText, panel, nextEvents, buildGrid, renderDeskBar, lineChart, curveChart, tenorGrid, finTable, headlineRow, quoteRow, ecoRow, intelItems, intelRow, biasRows, trendPos, optSummary, chainTable, calculator, renderJournal, sessionRows, periodReturn, setCurve,
     loadSeries, loadFin, loadDirectory, loadNews, loadBriefing, getJSON, D, R, run, renderAll, PAGE_NAMES: PAGES, openPage, tk, commitTicks};
   PG = window.FynxTerminalPages ? window.FynxTerminalPages(CORE) : null;
   CORE.PG = PG;
   // Plugins (World desk, portfolio, charts) add panels, desks and pages through CORE.
-  for (const plug of window.FynxTerminalPlugins || []) { try { plug(CORE, PG); } catch (e) { report('plugin', e); } }
+  // A plugin that redefines an existing panel or renderer would silently replace it (two features on one id): record it.
+  const collisions = window.__fynxPanelCollisions = [];
+  for (const plug of window.FynxTerminalPlugins || []) {
+    const before = {p: {...PANELS}, r: {...RENDER}};
+    try { plug(CORE, PG); } catch (e) { report('plugin', e); }
+    for (const k of Object.keys(before.p)) if (PANELS[k] !== before.p[k] || RENDER[k] !== before.r[k]) { collisions.push(k); report('panel-collision', new Error(k)); }
+  }
 
   async function start() {
     const params = new URLSearchParams(location.search);
@@ -1610,7 +1793,8 @@
     renderKeys(); renderClocks();
     await setDesk(DESK_DEFS[want] ? want : 'all', {initial: true});
     if (params.get('symbol')) S.focus = resolve(params.get('symbol')) || S.focus;
-    if (params.get('sym')) setSymbol({symbol: params.get('sym')});
+    if (params.get('cmp')) setCompare(params.get('cmp').split(',').filter(Boolean).slice(0, 8), {quiet: true});
+    else if (params.get('sym')) setSymbol({symbol: params.get('sym')});
     PG?.fromLocation();
     const d = D();
     await Promise.allSettled([loadQuotes(), loadMarkets(), loadDesk(), loadSchedule(), loadEdge(), loadCalendar(), loadBriefing(), loadVix(), loadCorr(), loadBooks(getSlots().includes('books') ? ['BTC-USD', 'ETH-USD'] : ['BTC-USD', 'ETH-USD']), loadOptions(), loadEarnings(), d.news !== 'all' ? loadNews(d.news) : null]);

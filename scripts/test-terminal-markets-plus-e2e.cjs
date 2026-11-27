@@ -70,6 +70,7 @@ function cryptoFixture() {
     universe: '30 largest altcoins (fixture)'};
 }
 const SENT = {...sentimentFixture(), crypto: cryptoFixture()};
+const CHART_BASE = {AAPL: 270, NVDA: 180, MSFT: 480, 'EURUSD=X': 1.08, 'GBPUSD=X': 1.27, 'BTC-USD': 90000, SPY: 680, QQQ: 600, 'DX-Y.NYB': 99};
 const OPTIONS = {version: 1, generatedAt: new Date(NOW).toISOString(), source: 'Cboe delayed (fixture)', underlyings: {SPY: {symbol: 'SPY', price: 680.5, change: 1.2, changePercent: 0.18, iv30: 17.2, iv30Change: -0.4, callVolume: 1e6, putVolume: 1.3e6, putCallVolume: 1.3, callOI: 5e6, putOI: 7e6, putCallOI: 1.4, asOf: new Date(NOW).toISOString(), contracts: 9000, mostActive: [],
   expiries: [[1, 0.21, 6.1], [2, 0.19, 8.4], [7, 0.175, 15.8], [14, 0.17, 22.3], [30, 0.168, 32.5], [58, 0.172, 45.1], [86, 0.175, 55.9]].map(([dte, iv, st]) => ({date: new Date(NOW + dte * 864e5).toISOString().slice(0, 10), dte, atmStrike: 680, atmIV: iv, straddle: st, movePercent: Math.round(st / 680.5 * 1e4) / 100, maxPain: 675, callVolume: 1, putVolume: 1, callOI: 1, putOI: 1, skew25: 0.04, chain: []}))}}};
 
@@ -140,9 +141,24 @@ var svc={config:{auth:{currentUser:{uid:'u1'}}},call:async function(d){(window._
  if(d.action==='industries'){if(!(c.tier in {starter:1,plus:1,pro:1})){var e=new Error('Advanced industry analytics are part of FYNX Pro membership.');e.code='functions/permission-denied';throw e;}return c.industries;}
  return {};}};
 FYNXPlan._test.set(svc,{tier:c.tier,uid:'u1',signedIn:true,verified:true,owner:!!c.owner});})();`;
-async function boot({time = NOW, width = 1600, height = 1100, filingsDown = false, plan = null} = {}) {
+// Test-only notification bridge (the real one is the account module notify-bridge.js): records what would be saved.
+function fakeBridge(cfg) {
+  const st = {user: cfg.user === null ? null : {uid: 'u1'}, items: cfg.items || [], followed: cfg.followed || [], rules: cfg.rules || [], prefs: cfg.prefs || {}, emits: [], read: [], allRead: [], saved: []};
+  const ucb = [], icb = [], acb = [];
+  const acct = () => ({followed: st.followed, rules: st.rules, prefs: st.prefs});
+  window.__bridge = st;
+  window.FynxNotifyBridge = {
+    onUser: cb => { ucb.push(cb); cb(st.user); }, onNotifications: cb => { icb.push(cb); cb(st.items); }, onAccount: cb => { acb.push(cb); cb(acct()); },
+    markRead: async id => { st.read.push(id); }, markAllRead: async ids => { st.allRead.push(...ids); },
+    emit: async p => { st.emits.push(p); st.items = [{id: 'n' + st.emits.length, ...p, read: false, timestamp: new Date().toISOString()}, ...st.items]; icb.forEach(cb => cb(st.items)); return {created: true}; },
+    savePrefs: async p => { Object.assign(st.prefs, p); acb.forEach(cb => cb(acct())); }, requestDesktop: async () => ({permission: 'granted'}),
+    terminalList: () => [...st.followed], saveTerminalList: async l => { st.saved.push(l); st.followed = l; acb.forEach(cb => cb(acct())); }
+  };
+}
+async function boot({time = NOW, width = 1600, height = 1100, filingsDown = false, plan = null, bridge = null} = {}) {
   const ctx = await browser.newContext({viewport: {width, height}}), page = await ctx.newPage();
   await page.clock.install({time: new Date(time)});
+  if (bridge) await page.addInitScript(fakeBridge, bridge);
   if (plan) await page.addInitScript(p => { window.__FYNX_PLAN_TEST__ = true; window.__PLAN = p; window.__used = p.used || 0; }, plan);
   const json = (route, body, status = 200) => route.fulfill({status, contentType: 'application/json', body: JSON.stringify(body)});
   const seen = [];
@@ -153,6 +169,14 @@ async function boot({time = NOW, width = 1600, height = 1100, filingsDown = fals
       return filingsDown ? json(route, {error: 'SEC down'}, 502) : json(route, FILINGS);
     }
     if (url.origin === ORIGIN && url.pathname === '/fn/market.js') {
+      if (url.searchParams.get('op') === 'chart') {
+        const sym = url.searchParams.get('symbol'); if (!CHART_BASE[sym]) return json(route, {error: 'No data'}, 404);
+        (globalThis.__chartCalls ||= []).push(sym);
+        const b = CHART_BASE[sym], rows = Array.from({length: 300}, (_, k) => ({date: new Date(Date.UTC(2025, 8, 1) + k * 86400000 * 1.4).toISOString().slice(0, 10), open: b, high: b * 1.01, low: b * 0.99, close: Number((b * (1 + k * 0.0004 * (sym.charCodeAt(0) % 5 - 1)) * (1 + Math.sin(k / (3 + sym.charCodeAt(1) % 7)) * 0.03 + Math.cos(k / (4 + sym.charCodeAt(0) % 5)) * 0.02)).toFixed(4))}));
+        const last = rows.at(-1).close, prev = rows.at(-2).close;
+        return json(route, {symbol: sym, name: {AAPL: 'Apple Inc.', NVDA: 'NVIDIA Corporation', MSFT: 'Microsoft Corporation', 'EURUSD=X': 'EUR/USD', 'GBPUSD=X': 'GBP/USD', 'BTC-USD': 'Bitcoin USD', SPY: 'SPDR S&P 500', 'DX-Y.NYB': 'US Dollar Index', QQQ: 'Invesco QQQ'}[sym] || sym, rows, price: last, changePercent: (last / prev - 1) * 100, previousClose: prev, high52: Math.max(...rows.map(r => r.close)), low52: Math.min(...rows.map(r => r.close)), currency: 'USD', exchange: 'NMS', asOf: new Date(NOW).toISOString(), type: sym.endsWith('=X') ? 'CURRENCY' : sym.endsWith('-USD') ? 'CRYPTOCURRENCY' : 'EQUITY'});
+      }
+      if (url.searchParams.get('op') === 'search') return json(route, {quotes: [], news: [{title: `${url.searchParams.get('q')} fixture story`, url: 'https://www.reuters.com/x', publisher: 'Reuters', publishedAt: new Date(NOW - 3600000).toISOString()}]});
       if (url.searchParams.get('op') === 'closes') {
         const syms = url.searchParams.get('symbols').split(','), dates = Array.from({length: 252}, (_, k) => new Date(Date.UTC(2025, 10, 26) + k * 86400000 * 1.45).toISOString().slice(0, 10));
         const base = s => s === 'SPY' ? 600 : 100; return json(route, {dates, series: Object.fromEntries(syms.map((s, i) => [s, dates.map((_, k) => Number((base(s) * (1 + k * (i ? 0.0005 : 0.0016) + Math.sin(k / 9) * 0.02)).toFixed(2)))]))});
@@ -461,6 +485,169 @@ test('FYNX owner: lifetime unlimited badge, no limits on DOM/Order Flow, every p
   const charged = await usageCharges(page); assert.ok(charged.length >= 8, 'premium pages still record usage on the server'); 
   await page.click('#fx-plan'); await page.clock.runFor(200);
   assert.equal(await page.$('.fxp-dlg'), null, 'the owner is never sent to checkout');
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+/* ---------- Global Market Focus: ALL · FOCUS · COMPARE ---------- */
+const mode = page => page.$$eval('#fx-modebar .fx-mode', b => b.map(x => x.textContent + (x.classList.contains('on') ? '*' : '')).join(' '));
+const boxes = page => page.$$eval('#fx-main > section.tp', s => s.map(x => x.id.replace('tp-', '')));
+
+test('FOCUS: typing a ticker turns every box to it; ✕ returns to ALL with the desk layout intact', async () => {
+  const {ctx, page, errors} = await boot();
+  assert.deepEqual(await page.evaluate(() => window.__fynxPanelCollisions), [], 'no two features share a panel id');
+  const allBoxes = await boxes(page);
+  assert.equal(await mode(page), 'ALL* FOCUS COMPARE');
+  await command(page, 'AAPL'); await page.clock.runFor(1500);
+  assert.equal(await mode(page), 'ALL FOCUS* COMPARE');
+  assert.match(new URL(page.url()).search, /sym=AAPL/);
+  const fb = await boxes(page); assert.ok(fb.includes('squote') && fb.includes('snews') && fb.includes('srisk'), 'market boxes');
+  await page.waitForFunction(() => /AAPL/.test(document.querySelector('#t-squote')?.textContent || ''));
+  assert.match(await page.textContent('#fx-deskbar-note'), /Every box shows AAPL/);
+  assert.match(await page.textContent('#t-earn'), /Earnings · AAPL/, 'earnings filtered to the focus');
+  await page.click('#fx-symchip .fx-symx:last-child'); await page.clock.runFor(800);
+  assert.equal(await mode(page), 'ALL* FOCUS COMPARE');
+  assert.deepEqual(await boxes(page), allBoxes, 'ALL workspace restored exactly');
+  assert.doesNotMatch(page.url(), /sym=/);
+  // FOCUS remembers the last market.
+  await page.click('#fx-modebar .fx-mode >> text=FOCUS'); await page.clock.runFor(1200);
+  assert.match(page.url(), /sym=AAPL/);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test('COMPARE: AAPL NVDA MSFT in the command bar, add/remove, focus one, clear, URL restore, one request per market', async () => {
+  const {ctx, page, errors} = await boot();
+  globalThis.__chartCalls = [];
+  await command(page, 'AAPL NVDA MSFT'); await page.clock.runFor(2000);
+  assert.equal(await mode(page), 'ALL FOCUS COMPARE*');
+  assert.match(page.url(), /cmp=AAPL%2CNVDA%2CMSFT|cmp=AAPL,NVDA,MSFT/);
+  await page.waitForSelector('#b-cmpq .fx-cmpt tr:nth-child(4)');
+  const rows = await page.$$eval('#b-cmpq .fx-cmpt tr', r => r.slice(1).map(x => x.querySelector('.fx-cmplink').textContent));
+  assert.deepEqual(rows, ['AAPL', 'NVDA', 'MSFT']);
+  await page.waitForSelector('#b-cmpcorr .fx-corrm');
+  assert.equal(await page.$$eval('#b-cmpcorr .fx-corrm tr', r => r.length), 4, '3×3 matrix');
+  const diag = await page.$$eval('#b-cmpcorr .fx-corrm tr:nth-child(2) td', t => t.map(x => x.textContent)); assert.equal(diag[0], '1.00');
+  await page.waitForSelector('#b-cmprisk .fx-cmpt');
+  assert.equal(await page.$$eval('#b-cmprisk .fx-cmpt tr', r => r.length), 4);
+  await page.waitForSelector('#b-cmpnews .fx-symtag');
+  assert.equal(await page.$$eval('#b-cmp svg polyline', p => p.length) >= 3, true, 'one line per market');
+  const counts = globalThis.__chartCalls.reduce((m, x) => (m[x] = (m[x] || 0) + 1, m), {});
+  for (const k of ['AAPL', 'NVDA', 'MSFT']) assert.equal(counts[k], 1, `${k} history fetched once, shared by every panel (${JSON.stringify(counts)})`);
+  assert.deepEqual(await page.$$eval('#fx-symchip .fx-cmpname', b => b.map(x => x.textContent)), ['AAPL', 'NVDA', 'MSFT']);
+  await shot(page, 'compare.png');
+  // + adds a market; ✕ removes one.
+  await command(page, '+SPY'); await page.clock.runFor(1500);
+  assert.deepEqual(await page.$$eval('#fx-symchip .fx-cmpname', b => b.map(x => x.textContent)), ['AAPL', 'NVDA', 'MSFT', 'SPY']);
+  await page.click('#fx-symchip .fx-cmpchip:nth-child(2) .fx-cmpx'); await page.clock.runFor(1500);
+  assert.deepEqual(await page.$$eval('#fx-symchip .fx-cmpname', b => b.map(x => x.textContent)), ['AAPL', 'MSFT', 'SPY']);
+  assert.ok(!(await page.textContent('#b-cmpq')).includes('NVDA'), 'no data from the removed market');
+  // Refresh restores the comparison from the URL.
+  await page.reload(); await page.clock.runFor(2500);
+  await page.waitForFunction(() => document.querySelector('#fx-main')?.getAttribute('aria-busy') === 'false', null, {timeout: 20000});
+  await page.waitForSelector('#b-cmpq .fx-cmpt');
+  assert.equal(await mode(page), 'ALL FOCUS COMPARE*');
+  // Click one name: FOCUS on it. COMPARE brings the comparison back.
+  await page.click('#b-cmpq .fx-cmplink >> text=MSFT'); await page.clock.runFor(1500);
+  assert.equal(await mode(page), 'ALL FOCUS* COMPARE'); assert.match(page.url(), /sym=MSFT/);
+  await page.click('#fx-modebar .fx-mode >> text=COMPARE'); await page.clock.runFor(200);
+  await page.waitForSelector('#fx-finder[open]'); await page.keyboard.press('Escape');
+  await command(page, 'CMP AAPL'); await page.clock.runFor(1500);
+  assert.deepEqual(await page.$$eval('#fx-symchip .fx-cmpname', b => b.map(x => x.textContent)), ['MSFT', 'AAPL'], 'CMP adds to the focused market');
+  await page.click('.fx-cmpclear'); await page.clock.runFor(800);
+  assert.equal(await mode(page), 'ALL* FOCUS COMPARE'); assert.doesNotMatch(page.url(), /cmp=|sym=/);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test('COMPARE FX: EUR/USD + GBP/USD; "EUR USD" and "Apple Inc" stay one market; unknown markets are reported, not invented', async () => {
+  const {ctx, page, errors} = await boot();
+  await command(page, 'EUR/USD + GBP/USD'); await page.clock.runFor(2000);
+  assert.equal(await mode(page), 'ALL FOCUS COMPARE*');
+  assert.deepEqual(await page.$$eval('#fx-symchip .fx-cmpname', b => b.map(x => x.textContent)), ['EURUSD', 'GBPUSD']);
+  await page.waitForSelector('#b-cmprisk .fx-cmpt');
+  assert.match(await page.textContent('#b-cmprisk'), /DXY|DX-Y/, 'FX risk measured against the dollar index');
+  assert.ok(!/EPS|P\/E|Earnings · /.test(await page.textContent('#b-earn')), 'no stock metrics for currencies');
+  await command(page, 'CLEAR'); await page.clock.runFor(600);
+  await command(page, 'EUR USD'); await page.clock.runFor(1500);
+  assert.equal(await mode(page), 'ALL FOCUS* COMPARE');
+  await command(page, 'AAPL ZZZZ'); await page.clock.runFor(2500);
+  await page.waitForSelector('#b-cmpq .fx-cmpt');
+  assert.match(await page.textContent('#fx-cmd-msg'), /no data for ZZZZ/);
+  const z = await page.$$eval('#b-cmpq .fx-cmpt tr', r => r.slice(1).map(x => x.textContent)).then(r => r.find(x => x.includes('ZZZZ')));
+  assert.match(z, /—.*—/, 'unavailable values show as —');
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test('FOCUS crypto: order flow and depth of market follow a Kraken-listed coin', async () => {
+  const {ctx, page, errors} = await boot();
+  await command(page, 'ETH-USD'); await page.clock.runFor(1500);
+  assert.ok((await boxes(page)).includes('dom'));
+  assert.equal(await page.evaluate(() => localStorage.getItem('fx-term-oflow-pair')), 'ETH/USD');
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+/* ---------- notifications: bell, follow, alerts ---------- */
+test('bell: unread count, read/unread, symbol chips, clicking opens the market inside the Terminal', async () => {
+  const items = [{id: 'a', title: 'AAPL +5.10% today', message: 'Apple · last 280', category: 'market_alerts', priority: 'high', read: false, timestamp: new Date(NOW - 600000).toISOString(), sourceUrl: '/terminal.html?sym=AAPL', metadata: {symbol: 'AAPL'}},
+    {id: 'b', title: 'Fed holds rates', category: 'economic_calendar', read: false, timestamp: new Date(NOW - 3600000).toISOString(), sourceUrl: '/news/article.html?url=x', metadata: {}},
+    {id: 'c', title: 'Old alert', category: 'market_alerts', read: true, timestamp: new Date(NOW - 86400000).toISOString(), sourceUrl: '/terminal.html?sym=MSFT', metadata: {symbol: 'MSFT'}}];
+  const {ctx, page, errors} = await boot({bridge: {items}});
+  await page.waitForSelector('.fx-bell');
+  assert.equal(await page.textContent('.fx-bellbadge'), '2');
+  await page.click('.fx-bell');
+  assert.equal(await page.$$eval('.fx-bellitem', b => b.length), 3);
+  assert.equal(await page.$$eval('.fx-bellitem.unread', b => b.length), 2);
+  assert.match(await page.textContent('.fx-bellitem >> nth=0'), /AAPL.*MARKET.*10m.*AAPL \+5\.10% today/);
+  await shot(page, 'bell.png');
+  await page.click('.fx-bellitem >> nth=0'); await page.clock.runFor(1500);
+  assert.match(page.url(), /sym=AAPL/, 'opened in the Terminal without leaving the page');
+  assert.deepEqual(await page.evaluate(() => window.__bridge.read), ['a']);
+  assert.equal(await page.textContent('.fx-bellbadge'), '1');
+  await page.click('.fx-bell'); await page.click('.fx-bellhead .fx-belllink');
+  assert.deepEqual(await page.evaluate(() => window.__bridge.allRead), ['b']);
+  assert.equal(await page.isHidden('.fx-bellbadge'), true);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test('follow ★: saves to the account watchlist, adds a ★ tab, alerts for followed markets are sent once', async () => {
+  const rule = {id: 'r1', symbol: 'AAPL', kind: 'priceAbove', threshold: 1, enabled: true};
+  const {ctx, page, errors} = await boot({bridge: {followed: ['^VIX'], rules: [rule]}});
+  await command(page, 'NVDA'); await page.clock.runFor(1500);
+  await page.click('.fx-follow');
+  assert.deepEqual(await page.evaluate(() => window.__bridge.saved.at(-1)), ['^VIX', 'NVDA']);
+  assert.equal(await page.textContent('.fx-follow'), '★');
+  await page.click('.fx-symchip .fx-symx:last-child'); await page.clock.runFor(800);
+  await page.waitForSelector('#mkts-tabs >> text=★');
+  await page.click('#mkts-tabs >> text=★'); await page.clock.runFor(200);
+  assert.match(await page.textContent('#b-mkts'), /VIX/);
+  // Scans run on each tick commit and every minute; one alert per key.
+  await page.clock.runFor(61000); await page.clock.runFor(61000);
+  const emits = await page.evaluate(() => window.__bridge.emits);
+  const keys = emits.map(e => e.dedupeKey);
+  assert.ok(keys.includes('rule:r1:2026-11-26'), keys.join(','));
+  assert.ok(keys.some(k => /^move:\^VIX:2026-11-26:down$/.test(k)), 'VIX −5% is a big move');
+  assert.equal(new Set(keys).size, keys.length, 'never twice');
+  const r = emits.find(e => e.dedupeKey === 'rule:r1:2026-11-26');
+  assert.equal(r.category, 'market_alerts'); assert.equal(r.priority, 'high'); assert.equal(r.sourceUrl, '/terminal.html?sym=AAPL'); assert.deepEqual(r.metadata, {symbol: 'AAPL', kind: 'rule'});
+  // Turning market alerts off stops new ones.
+  await page.click('.fx-bell'); await page.click('.fx-bellpref >> text=Market alerts');
+  assert.equal(await page.evaluate(() => window.__bridge.prefs.marketAlerts), false);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test('guest: the bell asks to sign in; following needs an account; nothing is sent', async () => {
+  const {ctx, page, errors} = await boot({bridge: {user: null}});
+  await page.click('.fx-bell');
+  assert.match(await page.textContent('.fx-belldrop'), /Sign in to follow markets/);
+  await page.keyboard.press('Escape');
+  await command(page, 'AAPL'); await page.clock.runFor(1200);
+  await page.click('.fx-follow');
+  assert.deepEqual(await page.evaluate(() => [window.__bridge.saved, window.__bridge.emits]), [[], []]);
   assert.deepEqual(errors, []);
   await ctx.close();
 });
