@@ -5,17 +5,17 @@ permissions:
 jobs:
   audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
-        with: {ref: terminal/focus-sync, path: app}
+        with: {ref: terminal/no-chart-selection, path: app}
       - uses: actions/setup-node@v4
         with: {node-version: 22}
-      - run: cd app && npm ci --ignore-scripts --no-audit --no-fund
-      - name: focus
+      - run: cd app && npm ci --no-audit --no-fund && npx playwright install --with-deps webkit
+      - name: webkit drag
         run: |
           git config --global user.name probe && git config --global user.email probe@users.noreply.github.com
-          export FYNX_CHROMIUM_PATH=$(which google-chrome)
-          rm -rf focus2; mkdir -p focus2; (cd app && timeout 3000 node scripts/probe-focus.cjs ../focus2 --symbols=META,AAPL,NVDA,MSFT,BFLR,ANT,EURUSD,GBPUSD,USDTRY,BTC,ETH,SOL,SPY,XAUUSD > ../focus2/run.log 2>&1 || echo "exit $?" >> ../focus2/run.log)
-          git add focus2 && git commit -qm "focus probe 2" && git pull -q --rebase && git push -q
+          mkdir -p webkit
+          (cd app && FYNX_BROWSER=webkit timeout 1800 node --test --test-name-pattern="real press-and-drag|dragging on charts" scripts/test-terminal-markets-plus-e2e.cjs > ../webkit/drag.txt 2>&1 || echo "exit $?" >> ../webkit/drag.txt)
+          git add webkit && git commit -qm "webkit drag" && git pull -q --rebase && git push -q
