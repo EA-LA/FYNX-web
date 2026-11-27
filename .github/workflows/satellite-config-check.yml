@@ -8,6 +8,7 @@ on:
       - assets/js/terminal/world-intel.js
       - assets/css/terminal-satellite.css
       - scripts/test-satellite-config.cjs
+      - scripts/test-world-search-provider.cjs
       - scripts/test-satellite-browser.cjs
       - .github/workflows/satellite-config-check.yml
       - terminal.html
@@ -24,6 +25,7 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/test-satellite-config.cjs
+      - run: node --test scripts/test-world-search-provider.cjs
       - name: Install browser smoke test dependencies
         run: |
           mkdir -p "$RUNNER_TEMP/fynx-browser-test"

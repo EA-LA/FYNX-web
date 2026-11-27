@@ -660,13 +660,12 @@
   }
   async function searchPlaces(q) {
     const cfg = await readConfig();
+    // The public OSM geocoder does not permit client-side autocomplete.
+    // Without an explicitly configured geocoder the existing FYNX results stand alone.
+    if (!cfg.key) return undefined;
     try {
-      if (cfg.key) {
-        const d = await (await fetch(`https://api.maptiler.com/geocoding/${encodeURIComponent(q)}.json?key=${encodeURIComponent(cfg.key)}&limit=6`)).json();
-        return (d.features || []).map(f => ({group: 'Places worldwide', title: f.text || f.place_name, sub: f.place_name || '', ll: f.center, zoom: (f.place_type || []).includes('country') ? 4 : (f.place_type || []).some(t => /region|state/.test(t)) ? 6 : 10}));
-      }
-      const d = await (await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=6`, {headers: {Accept: 'application/json'}})).json();
-      return (d || []).map(p => ({group: 'Places worldwide', title: String(p.display_name || '').split(',')[0], sub: p.display_name || '', ll: [+p.lon, +p.lat], zoom: 8}));
+      const d = await (await fetch(`https://api.maptiler.com/geocoding/${encodeURIComponent(q)}.json?key=${encodeURIComponent(cfg.key)}&limit=6`)).json();
+      return (d.features || []).map(f => ({group: 'Places worldwide', title: f.text || f.place_name, sub: f.place_name || '', ll: f.center, zoom: (f.place_type || []).includes('country') ? 4 : (f.place_type || []).some(t => /region|state/.test(t)) ? 6 : 10}));
     } catch (_) { return null; }
   }
   function buildSearch(tools) {
@@ -718,6 +717,11 @@
       if (q.length < 3 || /^-?\d/.test(q)) return;
       const places = await searchPlaces(q);
       if (my !== seq || input.value.trim() !== q) return;
+      if (places === undefined) {
+        const message = list.querySelector('.fx-wsearch-none');
+        if (message) message.textContent = `Nothing in FYNX’s world data matches “${q}”. Worldwide place search is not configured.`;
+        return;
+      }
       if (places === null && !local.length) { render([]); const p = list.querySelector('.fx-wsearch-none'); if (p) p.textContent = `Nothing in FYNX’s world data matches “${q}”, and the worldwide place search is unavailable right now.`; return; }
       if (places && !places.length && !local.length) { render([]); const p = list.querySelector('.fx-wsearch-none'); if (p) p.textContent = `No country, event, site, ship or place matches “${q}”.`; return; }
       render([...local, ...(places || [])]);
