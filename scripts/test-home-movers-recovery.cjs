@@ -332,3 +332,45 @@ test('stalled JSON parsing cannot leave Market Movers loading indefinitely', asy
     assert.match(app.host().textContent, /AAPL/);
   } finally { app.close(); }
 });
+
+test('an older valid snapshot cannot replace newer stock prices while crypto advances', async () => {
+  const app = setup();
+  try {
+    await flush(); await flush();
+    const older = new Date(Date.parse(snapshot.stocksAsOf) - 60000).toISOString();
+    app.snapshot({...snapshot, stocksAsOf: older,
+      gainers:[{symbol:'OLD',name:'Old stock',price:1,changePct:3}],
+      cryptoAsOf:new Date(Date.parse(snapshot.cryptoAsOf) + 1000).toISOString(),
+      crypto:[{symbol:'ETH',price:3000,changePct:2}]});
+    app.intervals[0](); await flush(); await flush();
+    assert.match(app.host().textContent, /AAPL/);
+    assert.doesNotMatch(app.host().textContent, /OLD/);
+    assert.match(app.host().textContent, /Update failed. Showing the previous snapshot/);
+    app.host().querySelector('[data-tab="crypto"]').click();
+    assert.match(app.host().textContent, /ETH/);
+    assert.match(app.host().textContent, /Update failed for stock movers/);
+    app.snapshot({...snapshot, stocksAsOf:new Date(Date.parse(snapshot.stocksAsOf) + 2000).toISOString(),
+      gainers:[{symbol:'MSFT',price:400,changePct:2}],
+      cryptoAsOf:new Date(Date.parse(snapshot.cryptoAsOf) + 2000).toISOString(),
+      crypto:[{symbol:'ETH',price:3001,changePct:2}]});
+    app.host().querySelector('[data-movers-retry]').click(); await flush(); await flush();
+    app.host().querySelector('[data-tab="gainers"]').click();
+    assert.match(app.host().textContent, /MSFT/);
+    assert.doesNotMatch(app.host().textContent, /Update failed/);
+  } finally { app.close(); }
+});
+test('when both sources regress the previous verified snapshots are preserved', async () => {
+  const app = setup('ok', {...snapshot,crypto:[{symbol:'BTC',price:90000,changePct:1}]});
+  try {
+    await flush(); await flush();
+    const older = new Date(Date.parse(snapshot.stocksAsOf) - 60000).toISOString();
+    app.snapshot({...snapshot, stocksAsOf:older, cryptoAsOf:older,
+      gainers:[{symbol:'OLD',price:1,changePct:1}], crypto:[{symbol:'OLD',price:1,changePct:1}]});
+    app.intervals[0](); await flush(); await flush();
+    assert.match(app.host().textContent, /AAPL/);
+    assert.match(app.host().textContent, /Update failed/);
+    app.host().querySelector('[data-tab="crypto"]').click();
+    assert.match(app.host().textContent, /BTC/);
+    assert.doesNotMatch(app.host().textContent, /OLD/);
+  } finally { app.close(); }
+});
