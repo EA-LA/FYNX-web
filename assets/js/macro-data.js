@@ -16,8 +16,9 @@
  const link=(text,url)=>{const a=el('a',text);a.href=url;a.target='_blank';a.rel='noopener noreferrer';return a;};
  const pct=(value,precision=2)=>Number.isFinite(value)?value.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:precision})+'%':'Unavailable';
  function render(){
-  rows.replaceChildren();
+  // An empty dataset has its own loading/error state, not a search result.
   if(!dataset)return;
+  rows.replaceChildren();
   const query=document.getElementById('macroSearch').value.trim().toLowerCase();
   const visible=economies.filter(e=>`${e.name} ${e.currency} ${e.bank}`.toLowerCase().includes(query));
   visible.forEach(e=>{
@@ -47,7 +48,9 @@
   document.getElementById('differenceDates').textContent=a&&b?`${base.currency}: ${a.observationDate} · ${quote.currency}: ${b.observationDate}. Reported policy instruments may differ.`:'Both published observations are required.';
  }
  async function load(){
-  refresh.disabled=true;rows.setAttribute('aria-busy','true');status.textContent='Checking published observations…';status.classList.remove('macro-warning');
+  // Keep keyboard focus on Check data while a retry is in progress.
+  if(refresh.getAttribute('aria-disabled')==='true')return;
+  refresh.setAttribute('aria-disabled','true');rows.setAttribute('aria-busy','true');status.textContent='Checking published observations…';status.classList.remove('macro-warning');
   try{
    const response=await fetch(`https://us-central1-fynx-c7a28.cloudfunctions.net/webMacroData?kind=${kind}`,{signal:AbortSignal.timeout(55000)});
    if(!response.ok)throw new Error('Source unavailable');
@@ -60,7 +63,7 @@
    status.textContent=dataset?`Refresh failed. Previously retrieved data from ${new Date(dataset.fetchedAt).toLocaleString()} remains displayed. Check the official source.`:'Published data is temporarily unavailable. No estimated values are displayed. Use the official source links or try again.';
    status.classList.add('macro-warning');
    if(!dataset){rows.replaceChildren();rows.append(el('p','Data unavailable','macro-empty'));}
-  }finally{refresh.disabled=false;rows.setAttribute('aria-busy','false');}
+  }finally{refresh.removeAttribute('aria-disabled');rows.setAttribute('aria-busy','false');}
  }
  document.getElementById('macroSearch').addEventListener('input',render);refresh.addEventListener('click',load);
  document.getElementById('sourceDetails').append(link(kind==='rates'?'BIS policy-rate data':'World Bank indicator data',kind==='rates'?'https://data.bis.org/topics/CBPOL':'https://data.worldbank.org/'));
