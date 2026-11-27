@@ -75,6 +75,24 @@
   if(library){
     const input=document.getElementById('resource-query'), form=input.closest('form'), cards=[...library.querySelectorAll('.discovery-card')],buttons=[...library.querySelectorAll('[data-filter]')];
     const allowed=new Set(buttons.map(b=>b.dataset.filter));let selected='All';
+    // Use the publisher's small URL-only inventory, not the multi-MB story data.
+    const storyPath=url=>typeof url==='string'&&url.match(/^(\/intelligence\/[a-z0-9-]+\/)(?:index\.html)?$/)?.[1];
+    const storyCards=new Map(cards.map(card=>[card,storyPath(card.dataset.resourceUrl)]).filter(([,url])=>url));
+    const verifiedStories=new Set();
+    const isPublished=card=>!storyCards.has(card)||verifiedStories.has(storyCards.get(card));
+    let storyMessage, storyStatus, checkingStories=storyCards.size>0;
+    if(storyCards.size){
+      storyMessage=document.createElement('p');
+      storyMessage.id='discovery-intelligence-message';
+      storyStatus=document.createElement('span');
+      storyStatus.setAttribute('role','status');
+      storyStatus.textContent='Checking current Intelligence links. ';
+      const browse=document.createElement('a');
+      browse.href='/intelligence/';
+      browse.textContent='Browse all current Intelligence stories';
+      storyMessage.append(storyStatus,browse);
+      library.querySelector('.discovery-grid').before(storyMessage);
+    }
     const normalize=s=>s.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'');
     const synonyms={leverage:['margin'],sizing:['position'],lot:['forex','position'],cpi:['inflation','economic'],nfp:['jobs','economic'],etf:['funds'],pnl:['profit'],rr:['reward'],tp:['target'],takeprofit:['target']};
     function restore(){const params=new URLSearchParams(location.search);input.value=params.get('q')||'';selected=allowed.has(params.get('category'))?params.get('category'):'All';}
@@ -84,7 +102,9 @@
     // Joined spellings ("breakeven", "stoploss", "positionsize") also match "break-even", "stop loss", "position size".
     const joinedHit=(t,row)=>t.length>=6&&/^[a-z0-9]+$/.test(t)&&new RegExp('(^| )'+t.split('').join(' ?')).test(row.joined);
     const hit=(t,row)=>t.length<=3&&/^[a-z0-9]+$/.test(t)?row.words.some(w=>w.startsWith(t)):(row.text.includes(t)||row.title.includes(t)||joinedHit(t,row));
-    const vocab=new Map(),pairs=new Map();info.forEach(row=>{new Set(row.words).forEach(w=>{if(w.length>=3&&!/^\d+$/.test(w))vocab.set(w,(vocab.get(w)||0)+1);});row.words.forEach((w,k)=>{const n=row.words[k+1];if(n&&w.length>=3&&n.length>=3&&!/\d/.test(w+n))pairs.set(w+n,(pairs.get(w+n)||0)+1);});});
+    const vocab=new Map(),pairs=new Map();
+    function refreshVocabulary(){vocab.clear();pairs.clear();info.filter((_,i)=>isPublished(cards[i])).forEach(row=>{new Set(row.words).forEach(w=>{if(w.length>=3&&!/^\d+$/.test(w))vocab.set(w,(vocab.get(w)||0)+1);});row.words.forEach((w,k)=>{const n=row.words[k+1];if(n&&w.length>=3&&n.length>=3&&!/\d/.test(w+n))pairs.set(w+n,(pairs.get(w+n)||0)+1);});});}
+    refreshVocabulary();
     // Keep equal-length substitutions grounded in stable resource titles. A new
     // Intelligence headline must not silently make "taxes" become "takes".
     // Dated stories still participate in normal matching.
@@ -118,7 +138,7 @@
       return best;
     }
     const matches=(tokens,i)=>tokens.every(t=>[t,...(synonyms[t]||[])].some(word=>hit(word,info[i])));
-    const inView=card=>selected==='All'||selected===card.dataset.category||(selected==='Saved'&&saved.has(card.dataset.resourceUrl));
+    const inView=card=>isPublished(card)&&(selected==='All'||selected===card.dataset.category||(selected==='Saved'&&saved.has(card.dataset.resourceUrl)));
     filterLibrary=()=>{
       const query=input.value.trim();let tokens=normalize(query).replace(/\btake[\s-]+profits?\b/g,'takeprofit').split(/\s+/).filter(Boolean),fixed=null;
       const countFor=list=>cards.reduce((n,card,i)=>n+(matches(list,i)&&inView(card)?1:0),0);
@@ -133,7 +153,10 @@
       const grid=library.querySelector('.discovery-grid');ranked.sort((a,b)=>b.score-a.score||a.i-b.i).forEach(row=>grid.append(row.card));
       const label=`${count} ${count===1?'resource':'resources'}`;
       const countEl=document.getElementById('discovery-count');countEl.style.whiteSpace=fixed?'normal':'';countEl.style.flexBasis=fixed?'100%':'';countEl.textContent=fixed?`No exact match for \u201c${query}\u201d. Showing ${label} for \u201c${fixed}\u201d.`:`${label}${query?' found':''}`;
-      document.getElementById('discovery-empty').hidden=count!==0;
+      if(storyMessage)storyMessage.hidden=selected!=='All'&&selected!=='Saved'&&![...storyCards.keys()].some(card=>card.dataset.category===selected);
+      const checking=checkingStories&&storyMessage&&!storyMessage.hidden&&count===0;
+      if(checking)countEl.textContent='Checking Intelligence stories…';
+      document.getElementById('discovery-empty').hidden=count!==0||checking;
       buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter===selected)));
     };
     function urlUpdate(){const url=new URL(location.href);input.value.trim()?url.searchParams.set('q',input.value.trim()):url.searchParams.delete('q');selected==='All'?url.searchParams.delete('category'):url.searchParams.set('category',selected);try{history.replaceState(null,'',url);}catch{}filterLibrary();}
@@ -141,6 +164,40 @@
     buttons.forEach(b=>b.addEventListener('click',()=>{selected=b.dataset.filter;urlUpdate();}));
     document.querySelector('[data-discovery-reset]')?.addEventListener('click',()=>{selected='All';input.value='';urlUpdate();input.focus();});
     window.addEventListener('popstate',()=>{restore();filterLibrary();});restore();filterLibrary();
+    if(storyCards.size){
+      const controller=typeof AbortController==='function'?new AbortController():null;
+      let timeoutId;
+      const timeout=new Promise((_,reject)=>{timeoutId=setTimeout(()=>{
+        controller?.abort();reject(Error('Intelligence index timed out'));
+      },4000);});
+      const request=Promise.resolve().then(()=>fetch('/intelligence/sitemap.xml',{cache:'no-cache',signal:controller?.signal})).then(r=>{
+        if(!r.ok)throw Error('Intelligence index unavailable');
+        return r.text();
+      });
+      Promise.race([request,timeout]).then(xml=>{
+        const indexDoc=new DOMParser().parseFromString(xml,'application/xml');
+        if(indexDoc.documentElement.localName!=='urlset'||indexDoc.querySelector('parsererror'))throw Error('Invalid Intelligence index');
+        const publisher='https://www.fynxfinanceworld.com';
+        const entries=[...indexDoc.querySelectorAll('url > loc')].map(node=>node.textContent.trim());
+        if(!entries.includes(publisher+'/intelligence/'))throw Error('Invalid Intelligence index');
+        const current=new Set(entries.filter(url=>url.startsWith(publisher+'/')).map(url=>storyPath(url.slice(publisher.length))).filter(Boolean));
+        storyCards.forEach((canonical,card)=>{
+          if(!current.has(canonical))return;
+          verifiedStories.add(canonical);
+          // Keep the saved resource identity intact; only the outgoing href changes.
+          card.querySelector('h2 a')?.setAttribute('href',canonical);
+        });
+        storyStatus.textContent='';
+        refreshVocabulary();
+      }).catch(()=>{storyStatus.textContent='Could not verify direct Intelligence links here. ';})
+        .finally(()=>{
+          clearTimeout(timeoutId);checkingStories=false;
+          if(!library.isConnected)return;
+          const focus=document.activeElement;
+          filterLibrary();
+          if(library.contains(focus)&&!focus.closest('[hidden]')&&document.activeElement!==focus)focus.focus({preventScroll:true});
+        });
+    }
   }
   async function renderWorkspace(retryButton){
     const host=document.querySelector('[data-workspace-saved]');if(!host)return;
