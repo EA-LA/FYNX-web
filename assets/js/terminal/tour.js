@@ -85,6 +85,7 @@
   };
   const HEADER = [
     ['#fx-command', 'Command bar', 'Type any market (EURUSD, AAPL, gold), a desk (FOREX) or a command such as NEWS, CAL, STR or HELP, then press Enter. Press / from anywhere to jump here.'],
+    ['#fx-mmenu', 'Menu', 'On a phone, your plan, the data feeds, this tour, Build your own, Edit layout and Exit are in this menu.'],
     ['#fx-clocks', 'Market sessions', 'The world’s trading sessions at a glance — which are open now and which open next.'],
     ['#fx-live', 'Live status', 'Shows whether live data is connected. Click it to see every data source and how fresh it is.'],
     ['#fx-deskbar-list', 'Desks: ready-made layouts', 'Each desk is a ready-made layout for a style of trading — ALL, STOCKS, FOREX, BONDS, CRYPTO and more. Pick one and every panel reloads for it.'],
