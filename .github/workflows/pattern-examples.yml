@@ -5,6 +5,7 @@ on:
       - 'assets/js/pattern-examples.js'
       - 'markets/patterns.html'
       - 'scripts/test-pattern-examples.cjs'
+      - 'scripts/test-pattern-comparison.cjs'
       - '.github/workflows/pattern-examples.yml'
 permissions:
   contents: read
@@ -16,4 +17,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node --test scripts/test-pattern-examples.cjs
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --test scripts/test-pattern-examples.cjs scripts/test-pattern-comparison.cjs
