@@ -350,3 +350,12 @@ test('checkout creates a new session only after expiring competing tiers',async(
  assert.match((await h.call({action:'checkout',tier:'starter'})).url,/cs_new/);
  assert.deepEqual(h.calls.map(c=>c[0]),['expire','checkout']);
 });
+
+test('bounded open checkout pagination fails closed instead of processing partial history',async()=>{
+ const h=harness({customer:true,paginatedCheckout:true});
+ h.state.sessions=Array.from({length:1001},(_,i)=>openCheckout('cs_'+i,'plus'));
+ await assert.rejects(h.call({action:'checkout',tier:'starter'}),{code:'unavailable'});
+ assert.equal(h.calls.filter(c=>c[0]==='checkout-list').length,10);
+ assert.equal(h.calls.some(c=>['expire','checkout'].includes(c[0])),false);
+ assert.equal(h.data.get('fynxConsumerLive/owner').checkoutLockUntil,0);
+});
