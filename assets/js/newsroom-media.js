@@ -78,7 +78,7 @@
   // image URL -> story URL it was first used for, so one photo never illustrates two different stories.
   const usedImages = new Map();
   const taken = (img, story) => usedImages.has(img) && usedImages.get(img) !== story;
-  function get(section) { return Object.hasOwn(sections, section) ? sections[section] : null; }
+  function get(section) { return Object.prototype.hasOwnProperty.call(sections, section) ? sections[section] : null; }
   function createFigure(section, options) {
     const item = get(section), doc = root.document;
     if (!item || !doc) return null;
@@ -163,7 +163,17 @@
     urls.forEach(u => inflight.add(u));
     for (let i = 0; i < urls.length; i += 8) {
       const batch = urls.slice(i, i + 8), query = new URLSearchParams(); batch.forEach(u => query.append('u', u));
-      const done = data => batch.forEach(u => { const p = data?.previews?.[u], hit = p && safe(p.image) ? {image: safe(p.image), site: String(p.site || '').slice(0, 80), url: safe(p.url) || u, alt: p.alt ? String(p.alt).slice(0, 300) : '', at: Date.now()} : {image: null, at: Date.now()}; cache[u] = hit; inflight.delete(u); (waiting.get(u) || []).forEach(fn => fn(hit)); waiting.delete(u); });
+      const done = data => batch.forEach(u => {
+        const p = data?.previews?.[u];
+        const image = p && typeof p === 'object' && !p.error ? safe(p.image) : null;
+        // Missing entries, explicit provider errors and malformed images are transient.
+        // Only a successful preview explicitly reporting no photo is a cacheable miss.
+        const hit = image
+          ? {image, site: String(p.site || '').slice(0, 80), url: safe(p.url) || u, alt: p.alt ? String(p.alt).slice(0, 300) : '', at: Date.now()}
+          : p && typeof p === 'object' && !p.error && p.image === null ? {image: null, at: Date.now()} : null;
+        if (hit) cache[u] = hit;
+        inflight.delete(u); (waiting.get(u) || []).forEach(fn => fn(hit)); waiting.delete(u);
+      });
       fetchPreviews(query).then(data => { if (data) done(data); else batch.forEach(u => { inflight.delete(u); (waiting.get(u) || []).forEach(fn => fn(null)); waiting.delete(u); }); persist(); });
     }
   }
