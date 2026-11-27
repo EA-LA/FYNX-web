@@ -9,17 +9,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
-        with: {ref: feature/terminal-audit-focus, path: app}
+        with: {ref: terminal/focus-sync, path: app}
       - uses: actions/setup-node@v4
         with: {node-version: 22}
       - run: cd app && npm ci --ignore-scripts --no-audit --no-fund
-      - name: audit
+      - name: focus
         run: |
           git config --global user.name probe && git config --global user.email probe@users.noreply.github.com
           export FYNX_CHROMIUM_PATH=$(which google-chrome)
-          for vp in 1920x1080 390x844 1366x768 3440x1440 3840x2160 820x1180; do
-            extra="--nopages"; [ "$vp" = 1920x1080 ] && extra="--pageshots"; [ "$vp" = 390x844 ] && extra=""
-            mkdir -p out-$vp; (cd app && timeout 1500 node scripts/audit-terminal.cjs ../out-$vp --viewport=$vp $extra > ../out-$vp/run.log 2>&1 || echo "audit $vp exit $?" >> ../out-$vp/run.log)
-            mkdir -p audit/$vp && cp -r out-$vp/* audit/$vp/ 2>/dev/null || true
-            git add audit && git commit -qm "audit $vp" && git pull -q --rebase && git push -q || echo "push failed $vp"
-          done
+          mkdir -p focus; (cd app && timeout 2400 node scripts/probe-focus.cjs ../focus > ../focus/run.log 2>&1 || echo "exit $?" >> ../focus/run.log)
+          git add focus && git commit -qm "focus probe" && git pull -q --rebase && git push -q
