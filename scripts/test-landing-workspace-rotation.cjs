@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
 const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
-function setup(reduced = false) {
+function setup(reduced = false, legacyMotion = false) {
   const dom = new JSDOM(read('index.html'), {
     url: 'https://www.fynxfinanceworld.com/',
     runScripts: 'outside-only', pretendToBeVisual: true
@@ -13,11 +13,14 @@ function setup(reduced = false) {
   const { window } = dom;
   const timers = new Map(), listeners = [];
   let id = 0;
-  const media = { matches: reduced, addEventListener(_, fn) { listeners.push(fn); } };
+  const media = { matches: reduced };
+  if (legacyMotion) media.addListener = fn => listeners.push(fn);
+  else media.addEventListener = (_, fn) => listeners.push(fn);
+  let onIntersection;
   window.matchMedia = () => media;
   window.IntersectionObserver = class {
-    constructor(fn) { this.fn = fn; }
-    observe() { this.fn([{ isIntersecting: true }]); }
+    constructor(fn) { onIntersection = fn; }
+    observe() { onIntersection([{ isIntersecting: true, intersectionRatio: 1 }]); }
   };
   window.setInterval = (fn, ms) => {
     assert.equal(ms, 7000);
@@ -31,7 +34,8 @@ function setup(reduced = false) {
     dom, window, timers, terminal,
     toggle: terminal.querySelector('[data-fw-rotation-toggle]'),
     tabs: [...terminal.querySelectorAll('[data-fw-tab]')],
-    changeMotion(value) { media.matches = value; listeners.forEach(fn => fn({matches:value})); }
+    changeMotion(value) { media.matches = value; listeners.forEach(fn => fn({matches:value})); },
+    intersect(ratio) { onIntersection([{ isIntersecting: ratio > 0, intersectionRatio: ratio }]); }
   };
 }
 test('pause, manual tab selection and resume are functional', () => {
@@ -114,5 +118,31 @@ test('leaving hover does not override reduced-motion or explicit pause choices',
     dispatchPointer(app, 'pointerleave', 'pen');
     assert.equal(app.timers.size, 0);
     assert.match(app.toggle.textContent, /Resume rotation/);
+  } finally { app.dom.window.close(); }
+});
+
+test('a partially visible Market Desk does not rotate below the visibility threshold', () => {
+  const app = setup();
+  try {
+    app.intersect(.1);
+    assert.equal(app.timers.size, 0);
+    app.intersect(.25);
+    assert.equal(app.timers.size, 1);
+    app.toggle.click();
+    app.intersect(0);
+    app.intersect(1);
+    assert.equal(app.timers.size, 0, 'visibility must not override manual pause');
+  } finally { app.dom.window.close(); }
+});
+test('legacy Safari media-query listeners pause rotation when Reduce Motion changes', () => {
+  const app = setup(false, true);
+  try {
+    assert.equal(app.timers.size, 1);
+    app.changeMotion(true);
+    assert.equal(app.timers.size, 0);
+    app.changeMotion(false);
+    assert.equal(app.timers.size, 0, 'resume requires explicit visitor action');
+    app.toggle.click();
+    assert.equal(app.timers.size, 1);
   } finally { app.dom.window.close(); }
 });
